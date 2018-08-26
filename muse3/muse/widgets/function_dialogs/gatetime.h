@@ -24,6 +24,7 @@
 #define __GATETIME_H__
 
 #include "ui_gatetimebase.h"
+#include "function_dialog_base.h"
 
 class QButtonGroup;
 
@@ -37,29 +38,22 @@ namespace MusEGui {
 //   GateTime
 //---------------------------------------------------------
 
-class GateTime : public QDialog, public Ui::GateTimeBase {
+class GateTime : public FunctionDialogBase, public Ui::GateTimeBase {
  	Q_OBJECT
-   private:
-      
-      QButtonGroup *rangeGroup;
 
    protected slots:
-      void accept();
       void pullValues();
 
    public:
       GateTime(QWidget* parent=0);
 
-      static int range;
       static int rateVal;
       static int offsetVal;
       
       static void read_configuration(MusECore::Xml& xml);
       void write_configuration(int level, MusECore::Xml& xml);
-
       
-   public slots:
-      int exec();
+      void setupDialog();
       };
 
 } // namespace MusEGui

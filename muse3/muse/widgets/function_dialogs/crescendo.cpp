@@ -26,48 +26,71 @@
 
 namespace MusEGui {
 
-int Crescendo::range = 3;
 int Crescendo::start_val = 80;
 int Crescendo::end_val = 130;
 bool Crescendo::absolute = 0;
   
 Crescendo::Crescendo(QWidget* parent)
-	: QDialog(parent)
+	: FunctionDialogBase(parent)
 {
 	setupUi(this);
-	range_group = new QButtonGroup;
-	range_group->addButton(looped_events_button,2);
-	range_group->addButton(selected_looped_button,3);
+  
+  //--------------------------------------------
+  // Set range and parts containers if available.
+  //--------------------------------------------
+  
+  _range_container = rangeBox;
+  _parts_container = partsBox;
+  
+  //--------------------------------------------
+  // Add element widgets to range and parts groups.
+  //--------------------------------------------
+  
+  _range_group->addButton(looped_events_button, FunctionLoopedButton);
+  _range_group->addButton(selected_looped_button, FunctionSelectedLoopedButton);
+  
+  _parts_group->addButton(not_all_parts_button, FunctionSelectedPartsButton);
+  _parts_group->addButton(all_parts_button, FunctionAllPartsButton);
+  
 	
 	connect(absolute_button, SIGNAL(toggled(bool)), SLOT(absolute_changed(bool)));
 }
 
 void Crescendo::pull_values()
 {
-	range = range_group->checkedId();
+  //--------------------------------------------
+  // Grab IDs or values from common base object
+  //  (range and parts groups etc.)
+  //--------------------------------------------
+  
+  FunctionDialogBase::pull_values();
+  
+  //--------------------------------------------
+  // Grab this dialog's specific IDs or values.
+  //--------------------------------------------
+  
 	start_val = start_spinbox->value();
 	end_val = end_spinbox->value();
 	absolute = absolute_button->isChecked();
 }
 
-void Crescendo::accept()
+void Crescendo::setupDialog()
 {
-	pull_values();
-	QDialog::accept();
+  //------------------------------------
+  // Setup common base object items.
+  //------------------------------------
+  
+  FunctionDialogBase::setupDialog();
+  
+  //------------------------------------
+  // Setup this dialog's specific items.
+  //------------------------------------
+  
+  start_spinbox->setValue(start_val);
+  end_spinbox->setValue(end_val);
+  absolute_button->setChecked(absolute);
 }
 
-int Crescendo::exec()
-{
-	if ((range < 2) || (range > 3)) range=3;
-	
-	range_group->button(range)->setChecked(true);
-	start_spinbox->setValue(start_val);
-	end_spinbox->setValue(end_val);
-	absolute_button->setChecked(absolute);
-	absolute_changed(absolute);
-	
-	return QDialog::exec();
-}
 
 void Crescendo::read_configuration(MusECore::Xml& xml)
 {
@@ -81,16 +104,26 @@ void Crescendo::read_configuration(MusECore::Xml& xml)
 		switch (token)
 		{
 			case MusECore::Xml::TagStart:
-				if (tag == "range")
-					range=xml.parseInt();
-				else if (tag == "start")
-					start_val=xml.parseInt();
-				else if (tag == "end")
-					end_val=xml.parseInt();
-				else if (tag == "absolute")
-					absolute=xml.parseInt();
-				else
-					xml.unknown("Crescendo");
+				        
+				//-----------------------------------------
+				// Handle any common base settings.
+				//-----------------------------------------
+				
+				if(!FunctionDialogBase::read_configuration(tag, xml))
+				{
+					//-----------------------------------------
+					// Handle this dialog's specific settings.
+					//-----------------------------------------
+					
+					if (tag == "start")
+						start_val=xml.parseInt();
+					else if (tag == "end")
+						end_val=xml.parseInt();
+					else if (tag == "absolute")
+						absolute=xml.parseInt();
+					else
+						xml.unknown("Crescendo");
+				}
 				break;
 				
 			case MusECore::Xml::TagEnd:
@@ -106,7 +139,17 @@ void Crescendo::read_configuration(MusECore::Xml& xml)
 void Crescendo::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "crescendo");
-	xml.intTag(level, "range", range);
+  
+  //-----------------------------------------
+  // Write any common base settings.
+  //-----------------------------------------
+  
+  FunctionDialogBase::write_configuration(level, xml);
+  
+  //-----------------------------------------
+  // Write this dialog's specific settings.
+  //-----------------------------------------
+  
 	xml.intTag(level, "start", start_val);
 	xml.intTag(level, "end", end_val);
 	xml.intTag(level, "absolute", absolute);

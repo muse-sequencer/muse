@@ -336,17 +336,11 @@ void MidiEditor::tagItems(bool tagAllItems, bool tagAllParts, bool range,
             if(range)
             {
               pos = e.pos();
-              if(pos >= p0 && pos < p1)
-              {
-                e.setTagged(true);
-                part->setEventsTagged(true);
-              }
+              if(!(pos >= p0 && pos < p1))
+                continue;
             }
-            else
-            {
-              e.setTagged(true);
-              part->setEventsTagged(true);
-            }
+            e.setTagged(true);
+            part->setEventsTagged(true);
           }
         }
       }
@@ -363,17 +357,11 @@ void MidiEditor::tagItems(bool tagAllItems, bool tagAllParts, bool range,
           if(range)
           {
             pos = e.pos();
-            if(pos >= p0 && pos < p1)
-            {
-              e.setTagged(true);
-              part->setEventsTagged(true);
-            }
+            if(!(pos >= p0 && pos < p1))
+              continue;
           }
-          else
-          {
-            e.setTagged(true);
-            part->setEventsTagged(true);
-          }
+          e.setTagged(true);
+          part->setEventsTagged(true);
         }
       }
     }

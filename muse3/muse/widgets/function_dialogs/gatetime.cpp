@@ -30,7 +30,6 @@
 
 namespace MusEGui {
 
-int GateTime::range = 1;
 int GateTime::rateVal = 100;
 int GateTime::offsetVal = 0;
       
@@ -39,25 +38,28 @@ int GateTime::offsetVal = 0;
 //---------------------------------------------------------
 
 GateTime::GateTime(QWidget* parent)
-   : QDialog(parent)
+   : FunctionDialogBase(parent)
       {
       setupUi(this);
-      rangeGroup = new QButtonGroup(rangeBox);
-      rangeGroup->addButton(allButton, 0);
-      rangeGroup->addButton(selButton, 1);
-      rangeGroup->addButton(loopButton, 2);
-      rangeGroup->addButton(sloopButton, 3);
-      rangeGroup->setExclusive(true);
-      }
+  
+      //--------------------------------------------
+      // Set range and parts containers if available.
+      //--------------------------------------------
+      
+      _range_container = rangeBox;
+      _parts_container = partsBox;
 
-//---------------------------------------------------------
-//   accept
-//---------------------------------------------------------
-
-void GateTime::accept()
-      {
-      pullValues();
-      QDialog::accept();
+      //--------------------------------------------
+      // Add element widgets to range and parts groups.
+      //--------------------------------------------
+      
+      _range_group->addButton(allButton, FunctionAllEventsButton);
+      _range_group->addButton(selButton,FunctionSelectedEventsButton);
+      _range_group->addButton(loopButton, FunctionLoopedButton);
+      _range_group->addButton(sloopButton, FunctionSelectedLoopedButton);
+      
+      _parts_group->addButton(not_all_parts_button, FunctionSelectedPartsButton);
+      _parts_group->addButton(all_parts_button, FunctionAllPartsButton);
       }
 
 //---------------------------------------------------------
@@ -66,24 +68,36 @@ void GateTime::accept()
 
 void GateTime::pullValues()
       {
-      range     = rangeGroup->checkedId();
+      //--------------------------------------------
+      // Grab IDs or values from common base object
+      //  (range and parts groups etc.)
+      //--------------------------------------------
+      
+      FunctionDialogBase::pull_values();
+      
+      //--------------------------------------------
+      // Grab this dialog's specific IDs or values.
+      //--------------------------------------------
+      
       rateVal   = rate->value();
       offsetVal = offset->value();
       }
 
-//---------------------------------------------------------
-//   exec
-//---------------------------------------------------------
-
-int GateTime::exec()
-      {
-      rangeGroup->button(range)->setChecked(true);
-      rate->setValue(rateVal);
-      offset->setValue(offsetVal);
-      
-      return QDialog::exec();
-      }
-
+void GateTime::setupDialog()
+{
+  //------------------------------------
+  // Setup common base object items.
+  //------------------------------------
+  
+  FunctionDialogBase::setupDialog();
+  
+  //------------------------------------
+  // Setup this dialog's specific items.
+  //------------------------------------
+  
+  rate->setValue(rateVal);
+  offset->setValue(offsetVal);
+}
 
 void GateTime::read_configuration(MusECore::Xml& xml)
 {
@@ -97,14 +111,24 @@ void GateTime::read_configuration(MusECore::Xml& xml)
 		switch (token)
 		{
 			case MusECore::Xml::TagStart:
-				if (tag == "range")
-					range=xml.parseInt();
-				else if (tag == "rate")
-					rateVal=xml.parseInt();
-				else if (tag == "offset")
-					offsetVal=xml.parseInt();
-				else
-					xml.unknown("ModLen");
+				        
+				//-----------------------------------------
+				// Handle any common base settings.
+				//-----------------------------------------
+				
+				if(!FunctionDialogBase::read_configuration(tag, xml))
+				{
+					//-----------------------------------------
+					// Handle this dialog's specific settings.
+					//-----------------------------------------
+					
+					if (tag == "rate")
+						rateVal=xml.parseInt();
+					else if (tag == "offset")
+						offsetVal=xml.parseInt();
+					else
+						xml.unknown("ModLen");
+				}
 				break;
 				
 			case MusECore::Xml::TagEnd:
@@ -120,7 +144,17 @@ void GateTime::read_configuration(MusECore::Xml& xml)
 void GateTime::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "mod_len");
-	xml.intTag(level, "range", range);
+  
+  //-----------------------------------------
+  // Write any common base settings.
+  //-----------------------------------------
+  
+  FunctionDialogBase::write_configuration(level, xml);
+  
+  //-----------------------------------------
+  // Write this dialog's specific settings.
+  //-----------------------------------------
+  
 	xml.intTag(level, "offset", offsetVal);
 	xml.intTag(level, "rate", rateVal);
 	xml.tag(level, "/mod_len");

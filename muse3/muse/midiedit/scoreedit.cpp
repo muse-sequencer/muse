@@ -579,6 +579,18 @@ void ScoreEdit::add_parts(MusECore::PartList* pl, bool all_in_one)
     score_canvas->add_staves(pl, all_in_one);
 }
 
+// REMOVE Tim. citem. Added.
+//---------------------------------------------------------
+//   tagItems
+//---------------------------------------------------------
+
+void ScoreEdit::tagItems(bool tagAllItems, bool tagAllParts, bool range,
+        const MusECore::Pos& p0, const MusECore::Pos& p1) const
+{
+  if(score_canvas)
+    score_canvas->tagItems(tagAllItems, tagAllParts, range, p0, p1);
+}
+
 void ScoreEdit::init_name()
 {
     int no=1;
@@ -766,10 +778,16 @@ void ScoreEdit::menu_command(int cmd)
         case CMD_SELECT_ILOOP: select_in_loop(score_canvas->get_all_parts()); break;
         case CMD_SELECT_OLOOP: select_not_in_loop(score_canvas->get_all_parts()); break;
 
+// REMOVE Tim. citem. Changed.
+//         case CMD_CUT:
+//             copy_notes(score_canvas->get_all_parts(), 1);
+//             erase_notes(score_canvas->get_all_parts(), 1);
+//             break;
         case CMD_CUT:
-            copy_notes(score_canvas->get_all_parts(), 1);
-            erase_notes(score_canvas->get_all_parts(), 1);
+              tagItems();
+              MusECore::cut_items();
             break;
+            
         case CMD_COPY: copy_notes(score_canvas->get_all_parts(), 1); break;
         case CMD_COPY_RANGE: copy_notes(score_canvas->get_all_parts(),
           MusECore::any_event_selected(score_canvas->get_all_parts(), MusECore::AllEventsRelevant) ?
@@ -787,8 +805,32 @@ void ScoreEdit::menu_command(int cmd)
         case CMD_CRESCENDO: crescendo(score_canvas->get_all_parts()); break;
         case CMD_NOTELEN: modify_notelen(score_canvas->get_all_parts()); break;
         case CMD_TRANSPOSE: transpose_notes(score_canvas->get_all_parts()); break;
-        case CMD_ERASE: erase_notes(score_canvas->get_all_parts()); break;
-        case CMD_DEL: erase_notes(score_canvas->get_all_parts(),1); break;
+// REMOVE Tim. citem. Changed.
+//         case CMD_ERASE: erase_notes(score_canvas->get_all_parts()); break;
+        case CMD_ERASE:
+            {
+              FunctionDialogReturnVeloLen ret =
+                erase_items_dialog(FunctionDialogMode(
+                  FunctionAllEventsButton |
+                  FunctionSelectedEventsButton |
+                  FunctionLoopedButton |
+                  FunctionSelectedLoopedButton
+                  // | FunctionAllPartsButton | 
+                  // FunctionSelectedPartsButton
+                ));
+              if(ret._valid)
+                tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+              MusECore::erase_items(ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
+            }
+            break;
+        
+// REMOVE Tim. citem. Changed.
+//         case CMD_DEL: erase_notes(score_canvas->get_all_parts(),1); break;
+        case CMD_DEL:
+              tagItems();
+              MusECore::erase_items();
+            break;
+
         case CMD_MOVE: move_notes(score_canvas->get_all_parts()); break;
         case CMD_FIXED_LEN: set_notelen(score_canvas->get_all_parts()); break;
         case CMD_DELETE_OVERLAPS: delete_overlaps(score_canvas->get_all_parts()); break;
@@ -1178,6 +1220,269 @@ void ScoreEdit::write_configuration(int level, MusECore::Xml& xml)
 }
 
 
+
+// REMOVE Tim. citem. Added.
+//---------------------------------------------------------
+//   tagItems
+//---------------------------------------------------------
+
+void ScoreCanvas::tagItems(bool tagAllItems, bool tagAllParts, bool range,
+        const MusECore::Pos& p0, const MusECore::Pos& p1) const
+{
+  // Here we can choose between using tagAllParts for parts or staves.
+  // If we choose parts, it's kind of difficult for the user to tell which part is selected.
+  // Whereas, if we choose staves, it's much easier to see that a staff is currently selected.
+  // TODO: Possibly add 'staves' radio buttons to the function dialogs instead.
+  const bool use_staves_for_tag_all_parts = true;
+  // For now we don't use the tagAllParts flag.
+  const bool use_tag_all_parts = false;
+  
+  //MusECore::PartList* pl;
+  MusECore::Part* part;
+  MusECore::Event e;
+  MusECore::Pos pos;
+  FloItem fi;
+  for(list<staff_t>::const_iterator is = staves.begin(); is != staves.end(); ++is)
+  {
+    const staff_t& staff = *is;
+
+    if(use_tag_all_parts && use_staves_for_tag_all_parts && !tagAllParts && (&staff != &(*current_staff)))
+      continue;
+    
+//     const ScoreEventList& sel = staff.eventlist;
+//     for(ScoreEventList::const_iterator ise = sel.begin(); ise != sel.end(); ++ise)
+//     {
+//       const pair<unsigned, FloEvent>& se = *ise;
+//       const FloEvent& fe = se.second;
+//       e = fe.source_event;
+//       part = fe.source_part;
+//     }
+    
+    const ScoreItemList& sil = staff.itemlist;
+    for(ScoreItemList::const_iterator isi = sil.begin(); isi != sil.end(); ++isi)
+    {
+      const set<FloItem, floComp>& si = isi->second;
+      for(set<FloItem, floComp>::const_iterator efi = si.begin(); efi != si.end(); ++efi)
+      {
+        fi = *efi;
+        
+        // Make sure the event and part pointers are valid.
+        if(!fi.source_event || !fi.source_part)
+          continue;
+        
+        e = *fi.source_event;
+        
+        // HACK Hm, source part is const pointer. Tim.
+        part = *((MusECore::Part**)(&fi.source_part));
+        
+        if(use_tag_all_parts && !use_staves_for_tag_all_parts && !tagAllParts && part != selected_part)
+          continue;
+        
+        if(range)
+        {
+          pos = e.pos();
+          if(!(pos >= p0 && pos < p1))
+            continue;
+        }
+        
+        if(tagAllItems || e.selected())
+        {
+          e.setTagged(true);
+          part->setEventsTagged(true);
+        }
+      }
+    }
+    
+//     for(set<const MusECore::Part*>::iterator ise = staff.parts.begin(); ise != staff.parts.end(); ++ise)
+//     {
+//       
+//     }
+  }
+  
+//   if(tagAllParts || tagAllItems)
+//   {
+//     MusECore::Track* track;
+//     MusECore::PartList* pl;
+//     MusECore::Part* part;
+//     MusECore::Pos pos;
+//     MusECore::TrackList* tl = MusEGlobal::song->tracks();
+//     
+//     for(MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it)
+//     {
+//       track = *it;
+//       pl = track->parts();
+//       for(MusECore::ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//       {
+//         part = ip->second;
+//         if(!tagAllParts && !track->isVisible())
+//           continue;
+//         if(tagAllParts || part->selected())
+//         {
+//           if(tagAllItems)
+//           {
+//             MusECore::EventList& el = part->nonconst_events();
+//             for(MusECore::iEvent ie = el.begin(); ie != el.end(); ++ie)
+//             {
+//               MusECore::Event& e = ie->second;
+//               pos = e.pos();
+//               if(!range || (pos >= p0 && pos < p1))
+//               {
+//                 e.setTagged(true);
+//                 part->setEventsTagged(true);
+//               }
+//             }
+//           }
+//           else
+//           {
+//             part->setTagged(true);
+//           }
+//         }
+//       }
+//     }
+//   }
+//   else
+//   {
+//     // This step uses the tagging features to mark the objects (events)
+//     //  as having been visited already, to avoid duplicates in the list.
+//     if(arranger && arranger->getCanvas())
+//       arranger->getCanvas()->tagItems(false, false, range, p0, p1);
+//   }
+  
+//   // If tagging all items, don't bother with the controller editors below,
+//   //  since everything that they could tag will already be tagged.
+//   if(tagAllItems)
+//   {
+//     MusECore::Part* part;
+//     MusECore::Pos pos;
+//     if(tagAllParts)
+//     {
+//       if(_pl)
+//       {
+//         for(MusECore::ciPart ip = _pl->begin(); ip != _pl->end(); ++ip)
+//         {
+//           part = ip->second;
+//           MusECore::EventList& el = part->nonconst_events();
+//           for(MusECore::iEvent ie = el.begin(); ie != el.end(); ++ie)
+//           {
+//             MusECore::Event& e = ie->second;
+//             if(range)
+//             {
+//               pos = e.pos();
+//               if(pos >= p0 && pos < p1)
+//               {
+//                 e.setTagged(true);
+//                 part->setEventsTagged(true);
+//               }
+//             }
+//             else
+//             {
+//               e.setTagged(true);
+//               part->setEventsTagged(true);
+//             }
+//           }
+//         }
+//       }
+//     }
+//     else
+//     {
+//       if(canvas && canvas->part())
+//       {
+//         part = canvas->part();
+//         MusECore::EventList& el = part->nonconst_events();
+//         for(MusECore::iEvent ie = el.begin(); ie != el.end(); ++ie)
+//         {
+//           MusECore::Event& e = ie->second;
+//           if(range)
+//           {
+//             pos = e.pos();
+//             if(pos >= p0 && pos < p1)
+//             {
+//               e.setTagged(true);
+//               part->setEventsTagged(true);
+//             }
+//           }
+//           else
+//           {
+//             e.setTagged(true);
+//             part->setEventsTagged(true);
+//           }
+//         }
+//       }
+//     }
+//   }
+//   else
+//   {
+//     // These two steps use the tagging features to mark the objects (events)
+//     //  as having been visited already, to avoid duplicates in the list.
+//     if(canvas)
+//       canvas->tagItems(false, tagAllParts, range, p0, p1);
+//     for(ciCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i)
+//       (*i)->tagItems(false, tagAllParts, range, p0, p1);
+//   }
+//   
+//   
+//   
+//   
+//   CItem* item;
+//   MusECore::Part* part;
+//   if(range)
+//   {
+//     if(tagAllItems || tagAllParts)
+//     {
+//       for(ciCItemSet i = items.begin(); i != items.end(); ++i)
+//       {
+//         item = *i;
+//         part = item->part();
+//         if(!tagAllParts && (part != curPart || (part && part->track() != curTrack)))
+//           continue;
+//         if(!tagAllItems && !item->isSelected())
+//           continue;
+//         if(item->isObjectInRange(p0, p1))
+//           item->setObjectTagged(true);
+//       }
+//     }
+//     else
+//     {
+//       for(ciCItemSet i = selection.begin(); i != selection.end(); ++i)
+//       {
+//         item = *i;
+//         part = item->part();
+//         if(part != curPart || (part && part->track() != curTrack))
+//           continue;
+//         if(item->isObjectInRange(p0, p1))
+//           item->setObjectTagged(true);
+//       }
+//     }
+//   }
+//   else
+//   {
+//     if(tagAllItems || tagAllParts)
+//     {
+//       for(ciCItemSet i = items.begin(); i != items.end(); ++i)
+//       {
+//         item = *i;
+//         part = item->part();
+//         if(!tagAllParts && (part != curPart || (part && part->track() != curTrack)))
+//           continue;
+//         if(!tagAllItems && !item->isSelected())
+//           continue;
+//         item->setObjectTagged(true);
+//       }
+//     }
+//     else
+//     {
+//       for(ciCItemSet i = selection.begin(); i != selection.end(); ++i)
+//       {
+//         item = *i;
+//         part = item->part();
+//         if(part != curPart || (part && part->track() != curTrack))
+//           continue;
+//         item->setObjectTagged(true);
+//       }
+//     }
+//   }
+  
+}
 
 
 void ScoreCanvas::add_staves(MusECore::PartList* pl, bool all_in_one)

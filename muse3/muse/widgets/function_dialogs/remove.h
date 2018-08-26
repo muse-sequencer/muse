@@ -24,6 +24,7 @@
 #define __REMOVE_H__
 
 #include "ui_removebase.h"
+#include "function_dialog_base.h"
 
 class QButtonGroup;
 
@@ -33,35 +34,41 @@ class Xml;
 
 namespace MusEGui {
 
-class Remove : public QDialog, public Ui::RemoveBase
+// REMOVE Tim. citem. Changed.
+// class Remove : public QDialog, public Ui::RemoveBase
+class Remove : public FunctionDialogBase, public Ui::RemoveBase
 {
- 	Q_OBJECT
-	private:
-		
-		QButtonGroup* range_group;
-		QButtonGroup* parts_group;
-		
-	protected slots:
-		void accept();
-		void pull_values();
+  Q_OBJECT
+//   private:
+    
+// REMOVE Tim. citem. Removed.
+//     QButtonGroup* range_group;
+//     QButtonGroup* parts_group;
+    
+  protected slots:
+// REMOVE Tim. citem. Removed.
+//     void accept();
+    void pull_values();
 
-	public:
-		Remove(QWidget* parent = 0);
-		~Remove();
+  public:
+    Remove(QWidget* parent = 0);
+//     ~Remove();
 
-		static int range;
-		static int parts;
-		static int velo_threshold;
-		static bool velo_thres_used;
-		static int len_threshold;
-		static bool len_thres_used;
-		
-		static void read_configuration(MusECore::Xml& xml);
-		void write_configuration(int level, MusECore::Xml& xml);
-		
-		
-	public slots:
-		int exec(bool showEventsButtons = true, bool showPartsButtons = false, bool showMarkerButtons = true);
+// REMOVE Tim. citem. Removed.
+//     static int range;
+//     static int parts;
+    static int velo_threshold;
+    static bool velo_thres_used;
+    static int len_threshold;
+    static bool len_thres_used;
+    
+    static void read_configuration(MusECore::Xml& xml);
+    void write_configuration(int level, MusECore::Xml& xml);
+    
+    void setupDialog();
+    
+//   public slots:
+//     int exec();
 };
 
 } // namespace MusEGui

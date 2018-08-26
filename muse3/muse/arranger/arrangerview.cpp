@@ -482,6 +482,201 @@ void ArrangerView::writeConfiguration(int level, MusECore::Xml& xml)
       }
 
 
+// REMOVE Tim. citem. Added.
+//---------------------------------------------------------
+//   tagItems
+//---------------------------------------------------------
+
+void ArrangerView::tagItems(bool tagAllItems, bool tagAllParts, bool range,
+        const MusECore::Pos& p0, const MusECore::Pos& p1) const
+{
+  if(tagAllParts || tagAllItems)
+  {
+    MusECore::Track* track;
+    MusECore::PartList* pl;
+    MusECore::Part* part;
+    MusECore::Pos pos;
+    MusECore::TrackList* tl = MusEGlobal::song->tracks();
+    
+    for(MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it)
+    {
+      track = *it;
+      pl = track->parts();
+      for(MusECore::ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+      {
+        part = ip->second;
+        if(!tagAllParts && !track->isVisible())
+          continue;
+        if(tagAllParts || part->selected())
+        {
+          if(tagAllItems)
+          {
+            MusECore::EventList& el = part->nonconst_events();
+            for(MusECore::iEvent ie = el.begin(); ie != el.end(); ++ie)
+            {
+              MusECore::Event& e = ie->second;
+              if(range)
+              {
+                pos = e.pos();
+                if(!(pos >= p0 && pos < p1))
+                  continue;
+              }
+              e.setTagged(true);
+              part->setEventsTagged(true);
+            }
+          }
+          else
+          {
+            part->setTagged(true);
+          }
+        }
+      }
+    }
+  }
+  else
+  {
+    // This step uses the tagging features to mark the objects (events)
+    //  as having been visited already, to avoid duplicates in the list.
+    if(arranger && arranger->getCanvas())
+      arranger->getCanvas()->tagItems(false, false, range, p0, p1);
+  }
+  
+//   // If tagging all items, don't bother with the controller editors below,
+//   //  since everything that they could tag will already be tagged.
+//   if(tagAllItems)
+//   {
+//     MusECore::Part* part;
+//     MusECore::Pos pos;
+//     if(tagAllParts)
+//     {
+//       if(_pl)
+//       {
+//         for(MusECore::ciPart ip = _pl->begin(); ip != _pl->end(); ++ip)
+//         {
+//           part = ip->second;
+//           MusECore::EventList& el = part->nonconst_events();
+//           for(MusECore::iEvent ie = el.begin(); ie != el.end(); ++ie)
+//           {
+//             MusECore::Event& e = ie->second;
+//             if(range)
+//             {
+//               pos = e.pos();
+//               if(pos >= p0 && pos < p1)
+//               {
+//                 e.setTagged(true);
+//                 part->setEventsTagged(true);
+//               }
+//             }
+//             else
+//             {
+//               e.setTagged(true);
+//               part->setEventsTagged(true);
+//             }
+//           }
+//         }
+//       }
+//     }
+//     else
+//     {
+//       if(canvas && canvas->part())
+//       {
+//         part = canvas->part();
+//         MusECore::EventList& el = part->nonconst_events();
+//         for(MusECore::iEvent ie = el.begin(); ie != el.end(); ++ie)
+//         {
+//           MusECore::Event& e = ie->second;
+//           if(range)
+//           {
+//             pos = e.pos();
+//             if(pos >= p0 && pos < p1)
+//             {
+//               e.setTagged(true);
+//               part->setEventsTagged(true);
+//             }
+//           }
+//           else
+//           {
+//             e.setTagged(true);
+//             part->setEventsTagged(true);
+//           }
+//         }
+//       }
+//     }
+//   }
+//   else
+//   {
+//     // These two steps use the tagging features to mark the objects (events)
+//     //  as having been visited already, to avoid duplicates in the list.
+//     if(canvas)
+//       canvas->tagItems(false, tagAllParts, range, p0, p1);
+//     for(ciCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i)
+//       (*i)->tagItems(false, tagAllParts, range, p0, p1);
+//   }
+//   
+//   
+//   
+//   
+//   CItem* item;
+//   MusECore::Part* part;
+//   if(range)
+//   {
+//     if(tagAllItems || tagAllParts)
+//     {
+//       for(ciCItemSet i = items.begin(); i != items.end(); ++i)
+//       {
+//         item = *i;
+//         part = item->part();
+//         if(!tagAllParts && (part != curPart || (part && part->track() != curTrack)))
+//           continue;
+//         if(!tagAllItems && !item->isSelected())
+//           continue;
+//         if(item->isObjectInRange(p0, p1))
+//           item->setObjectTagged(true);
+//       }
+//     }
+//     else
+//     {
+//       for(ciCItemSet i = selection.begin(); i != selection.end(); ++i)
+//       {
+//         item = *i;
+//         part = item->part();
+//         if(part != curPart || (part && part->track() != curTrack))
+//           continue;
+//         if(item->isObjectInRange(p0, p1))
+//           item->setObjectTagged(true);
+//       }
+//     }
+//   }
+//   else
+//   {
+//     if(tagAllItems || tagAllParts)
+//     {
+//       for(ciCItemSet i = items.begin(); i != items.end(); ++i)
+//       {
+//         item = *i;
+//         part = item->part();
+//         if(!tagAllParts && (part != curPart || (part && part->track() != curTrack)))
+//           continue;
+//         if(!tagAllItems && !item->isSelected())
+//           continue;
+//         item->setObjectTagged(true);
+//       }
+//     }
+//     else
+//     {
+//       for(ciCItemSet i = selection.begin(); i != selection.end(); ++i)
+//       {
+//         item = *i;
+//         part = item->part();
+//         if(part != curPart || (part && part->track() != curTrack))
+//           continue;
+//         item->setObjectTagged(true);
+//       }
+//     }
+//   }
+  
+}
+
 void ArrangerView::cmd(int cmd)
       {
       // Don't process if user is dragging or has clicked on the parts. 
@@ -602,7 +797,23 @@ void ArrangerView::cmd(int cmd)
             case CMD_CRESCENDO: MusECore::crescendo(); break;
             case CMD_NOTELEN: MusECore::modify_notelen(); break;
             case CMD_TRANSPOSE: MusECore::transpose_notes(); break;
-            case CMD_ERASE: MusECore::erase_notes(); break;
+            
+            case CMD_ERASE:
+            {
+// REMOVE Tim. citem. Changed.
+//               MusECore::erase_notes();
+              FunctionDialogReturnVeloLen ret =
+                erase_items_dialog(FunctionDialogMode(
+                  FunctionAllEventsButton |
+                  FunctionLoopedButton |
+                  FunctionAllPartsButton | 
+                  FunctionSelectedPartsButton));
+              if(ret._valid)
+                tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+              MusECore::erase_items(ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
+            }
+            break;
+            
             case CMD_MOVE: MusECore::move_notes(); break;
             case CMD_FIXED_LEN: MusECore::set_notelen(); break;
             case CMD_DELETE_OVERLAPS: MusECore::delete_overlaps(); break;

@@ -28,6 +28,7 @@
 #include "dialogs.h"
 #include "type_defs.h"
 #include "pos.h" // REMOVE Tim. citem. Added.
+#include "function_dialog_consts.h" // REMOVE Tim. citem. Added.
 #include <QWidget>
 
 class QString;
@@ -37,61 +38,227 @@ class QMimeData;
 #define FUNCTION_RANGE_ONLY_BETWEEN_MARKERS 2
 #define FUNCTION_ALL_PARTS 1
 
-namespace MusECore {
-class Undo;
-
+namespace MusEGui {
+  
 struct FunctionDialogMode{
-	bool _eventButtons;
-	bool _partsButtons;
-	bool _rangeButtons;
-	Pos  _pos0;
-	Pos  _pos1;
-	FunctionDialogMode() : _eventButtons(false), _partsButtons(false), _rangeButtons(false) { }
-	FunctionDialogMode(bool eventButtons, bool partsButtons,
-										 bool rangeButtons = false,
-										 const Pos& pos0 = Pos(), const Pos& pos1 = Pos()) :
-		_eventButtons(eventButtons), _partsButtons(partsButtons),
-		_rangeButtons(rangeButtons), _pos0(pos0), _pos1(pos1) { }
+  FunctionDialogElements_t _buttons;
+  MusECore::Pos  _pos0;
+  MusECore::Pos  _pos1;
+  
+  FunctionDialogMode() : _buttons(FunctionAllEventsButton | FunctionSelectedEventsButton |
+                                  FunctionLoopedButton | FunctionSelectedLoopedButton) { }
+  FunctionDialogMode(MusEGui::FunctionDialogElements_t buttons = 
+                             FunctionAllEventsButton | FunctionSelectedEventsButton |
+                             FunctionLoopedButton | FunctionSelectedLoopedButton,
+                     const MusECore::Pos& pos0 = MusECore::Pos(), const MusECore::Pos& pos1 = MusECore::Pos()) :
+    _buttons(buttons), _pos0(pos0), _pos1(pos1) { }
 };
 
 class FunctionDialogReturnBase
 {
- public:
-	bool _valid;
-	bool _allEvents;
-	bool _allParts;
-	bool _range;
-	Pos  _pos0;
-	Pos  _pos1;
-	
-	FunctionDialogReturnBase() :_valid(false), _allEvents(false), _allParts(false), _range(false) { }
-	FunctionDialogReturnBase(bool allEvents, bool allParts,
-											 bool useRange = false,
-											 const Pos& pos0 = Pos(), const Pos& pos1 = Pos()) :
-		_valid(true), _allEvents(allEvents),
-		_allParts(allParts), _range(useRange), _pos0(pos0), _pos1(pos1) { }
+  public:
+  bool _valid;
+  bool _allEvents;
+  bool _allParts;
+  bool _range;
+  MusECore::Pos _pos0;
+  MusECore::Pos _pos1;
+
+  FunctionDialogReturnBase() :_valid(false), _allEvents(false), _allParts(false), _range(false) { }
+  FunctionDialogReturnBase(bool allEvents, bool allParts,
+                        bool useRange = false,
+                        const MusECore::Pos& pos0 = MusECore::Pos(), const MusECore::Pos& pos1 = MusECore::Pos()) :
+    _valid(true), _allEvents(allEvents),
+    _allParts(allParts), _range(useRange), _pos0(pos0), _pos1(pos1) { }
 };
 
 class FunctionDialogReturnVeloLen : public FunctionDialogReturnBase
 {
- public:
-	bool _veloThresUsed;
+  public:
+  bool _veloThresUsed;
   int  _veloThreshold;
-	bool _lenThresUsed;
-	int  _lenThreshold;
-	
-	FunctionDialogReturnVeloLen() : FunctionDialogReturnBase(),
-			_veloThresUsed(false), _veloThreshold(0),
-			_lenThresUsed(false), _lenThreshold(0) { }
-	FunctionDialogReturnVeloLen(bool allEvents, bool allParts,
-											 bool useRange = false,
-											 const Pos& pos0 = Pos(), const Pos& pos1 = Pos(),
-											 bool veloThresUsed = false, int veloThreshold = 0,
-											 bool lenThresUsed = false, int lenThreshold = 0) :
-				 FunctionDialogReturnBase(allEvents, allParts, useRange, pos0, pos1), 
-		_veloThresUsed(veloThresUsed), _veloThreshold(veloThreshold),
-		_lenThresUsed(lenThresUsed), _lenThreshold(lenThreshold) { }
+  bool _lenThresUsed;
+  int  _lenThreshold;
+
+  FunctionDialogReturnVeloLen() : FunctionDialogReturnBase(),
+      _veloThresUsed(false), _veloThreshold(0),
+      _lenThresUsed(false), _lenThreshold(0) { }
+  FunctionDialogReturnVeloLen(bool allEvents, bool allParts,
+                        bool useRange = false,
+                        const MusECore::Pos& pos0 = MusECore::Pos(), const MusECore::Pos& pos1 = MusECore::Pos(),
+                        bool veloThresUsed = false, int veloThreshold = 0,
+                        bool lenThresUsed = false, int lenThreshold = 0) :
+          FunctionDialogReturnBase(allEvents, allParts, useRange, pos0, pos1), 
+    _veloThresUsed(veloThresUsed), _veloThreshold(veloThreshold),
+    _lenThresUsed(lenThresUsed), _lenThreshold(lenThreshold) { }
 };
+  
+class FunctionDialogReturnCrescendo : public FunctionDialogReturnBase
+{
+  public:
+
+  int _start_val;
+  int _end_val;
+  bool _absolute;
+
+  FunctionDialogReturnCrescendo() : FunctionDialogReturnBase(),
+      _start_val(0), _end_val(0), _absolute(false) { }
+  FunctionDialogReturnCrescendo(bool allEvents, bool allParts,
+                        bool useRange = false,
+                        const MusECore::Pos& pos0 = MusECore::Pos(), const MusECore::Pos& pos1 = MusECore::Pos(),
+                        int startVal = 0, int endVal = 0,
+                        bool absolute = false) :
+          FunctionDialogReturnBase(allEvents, allParts, useRange, pos0, pos1), 
+    _start_val(startVal), _end_val(endVal),
+    _absolute(absolute) { }
+};
+  
+class FunctionDialogReturnDelOverlaps : public FunctionDialogReturnBase
+{
+  public:
+
+  FunctionDialogReturnDelOverlaps() : FunctionDialogReturnBase() { }
+  FunctionDialogReturnDelOverlaps(bool allEvents, bool allParts,
+                        bool useRange = false,
+                        const MusECore::Pos& pos0 = MusECore::Pos(), const MusECore::Pos& pos1 = MusECore::Pos()) :
+          FunctionDialogReturnBase(allEvents, allParts, useRange, pos0, pos1) { }
+};
+  
+class FunctionDialogReturnGateTime : public FunctionDialogReturnBase
+{
+  public:
+
+  int _rateVal;
+  int _offsetVal;
+
+  FunctionDialogReturnGateTime() : FunctionDialogReturnBase(), _rateVal(0), _offsetVal(0) { }
+  FunctionDialogReturnGateTime(bool allEvents, bool allParts,
+                        bool useRange = false,
+                        const MusECore::Pos& pos0 = MusECore::Pos(), const MusECore::Pos& pos1 = MusECore::Pos(),
+                        int rateVal = 0, int offsetVal = 0) :
+          FunctionDialogReturnBase(allEvents, allParts, useRange, pos0, pos1), 
+    _rateVal(rateVal), _offsetVal(offsetVal) { }
+};
+  
+class FunctionDialogReturnLegato : public FunctionDialogReturnBase
+{
+  public:
+
+  int _min_len;
+  bool _allow_shortening;
+
+  FunctionDialogReturnLegato() : FunctionDialogReturnBase(),
+      _min_len(0), _allow_shortening(false) { }
+  FunctionDialogReturnLegato(bool allEvents, bool allParts,
+                        bool useRange = false,
+                        const MusECore::Pos& pos0 = MusECore::Pos(), const MusECore::Pos& pos1 = MusECore::Pos(),
+                        int minLen = 0, bool allowShortening = false) :
+          FunctionDialogReturnBase(allEvents, allParts, useRange, pos0, pos1), 
+    _min_len(minLen), _allow_shortening(allowShortening) { }
+};
+  
+class FunctionDialogReturnMove : public FunctionDialogReturnBase
+{
+  public:
+
+  int _amount;
+
+  FunctionDialogReturnMove() : FunctionDialogReturnBase(), _amount(0) { }
+  FunctionDialogReturnMove(bool allEvents, bool allParts,
+                        bool useRange = false,
+                        const MusECore::Pos& pos0 = MusECore::Pos(), const MusECore::Pos& pos1 = MusECore::Pos(),
+                        int amount = 0) :
+          FunctionDialogReturnBase(allEvents, allParts, useRange, pos0, pos1), 
+    _amount(amount) { }
+};
+  
+class FunctionDialogReturnQuantize : public FunctionDialogReturnBase
+{
+  public:
+
+  int _strength;
+  int _threshold;
+  int _raster_index;
+  int _swing;
+  bool _quant_len;
+
+  FunctionDialogReturnQuantize() : FunctionDialogReturnBase(),
+      _strength(0), _threshold(0), _raster_index(0), _swing(0), _quant_len(false) { }
+  FunctionDialogReturnQuantize(bool allEvents, bool allParts,
+                        bool useRange = false,
+                        const MusECore::Pos& pos0 = MusECore::Pos(), const MusECore::Pos& pos1 = MusECore::Pos(),
+                        int strength = 0, int threshold = 0, int rasterIndex = 0,
+                        int swing = 0, bool quantLen = false) :
+          FunctionDialogReturnBase(allEvents, allParts, useRange, pos0, pos1), 
+    _strength(strength), _threshold(threshold), _raster_index(rasterIndex),
+    _swing(swing), _quant_len(quantLen) { }
+};
+  
+class FunctionDialogReturnSetLen : public FunctionDialogReturnBase
+{
+  public:
+
+  int _len;
+
+  FunctionDialogReturnSetLen() : FunctionDialogReturnBase(), _len(0) { }
+  FunctionDialogReturnSetLen(bool allEvents, bool allParts,
+                        bool useRange = false,
+                        const MusECore::Pos& pos0 = MusECore::Pos(), const MusECore::Pos& pos1 = MusECore::Pos(),
+                        int len = 0) :
+          FunctionDialogReturnBase(allEvents, allParts, useRange, pos0, pos1), 
+    _len(len) { }
+};
+  
+class FunctionDialogReturnTranspose : public FunctionDialogReturnBase
+{
+  public:
+
+  int _amount;
+
+  FunctionDialogReturnTranspose() : FunctionDialogReturnBase(), _amount(0) { }
+  FunctionDialogReturnTranspose(bool allEvents, bool allParts,
+                        bool useRange = false,
+                        const MusECore::Pos& pos0 = MusECore::Pos(), const MusECore::Pos& pos1 = MusECore::Pos(),
+                        int amount = 0) :
+          FunctionDialogReturnBase(allEvents, allParts, useRange, pos0, pos1), 
+    _amount(amount) { }
+};
+  
+class FunctionDialogReturnVelocity : public FunctionDialogReturnBase
+{
+  public:
+
+  int _rateVal;
+  int _offsetVal;
+
+  FunctionDialogReturnVelocity() : FunctionDialogReturnBase(), _rateVal(0), _offsetVal(0) { }
+  FunctionDialogReturnVelocity(bool allEvents, bool allParts,
+                        bool useRange = false,
+                        const MusECore::Pos& pos0 = MusECore::Pos(), const MusECore::Pos& pos1 = MusECore::Pos(),
+                        int rateVal = 0, int offsetVal = 0) :
+          FunctionDialogReturnBase(allEvents, allParts, useRange, pos0, pos1), 
+    _rateVal(rateVal), _offsetVal(offsetVal) { }
+};
+  
+  //the below functions automatically open the dialog
+  //they return true if you click "ok" and false if "abort"
+  FunctionDialogReturnVeloLen     erase_items_dialog      (const FunctionDialogMode&);
+  FunctionDialogReturnCrescendo   crescendo_items_dialog  (const FunctionDialogMode&);
+  FunctionDialogReturnDelOverlaps deloverlaps_items_dialog(const FunctionDialogMode&);
+  FunctionDialogReturnGateTime    gatetime_items_dialog   (const FunctionDialogMode&);
+  FunctionDialogReturnLegato      legato_items_dialog     (const FunctionDialogMode&);
+  FunctionDialogReturnMove        move_items_dialog       (const FunctionDialogMode&);
+  FunctionDialogReturnQuantize    quantize_items_dialog   (const FunctionDialogMode&);
+  FunctionDialogReturnSetLen      setlen_items_dialog     (const FunctionDialogMode&);
+  FunctionDialogReturnTranspose   transpose_items_dialog  (const FunctionDialogMode&);
+  FunctionDialogReturnVelocity    velocity_items_dialog   (const FunctionDialogMode&);
+  
+} // namespace MusEGui
+
+
+
+namespace MusECore {
+class Undo;
 
 std::set<const Part*> partlist_to_set(PartList* pl);
 std::set<const Part*> part_to_set(const Part* p);
@@ -103,16 +270,26 @@ bool modify_velocity(const std::set<const Part*>& parts, int range, int rate, in
 bool modify_off_velocity(const std::set<const Part*>& parts, int range, int rate, int offset=0);
 bool modify_notelen(const std::set<const Part*>& parts, int range, int rate, int offset=0);
 bool quantize_notes(const std::set<const Part*>& parts, int range, int raster, bool len=false, int strength=100, int swing=0, int threshold=0);
-bool erase_notes(const std::set<const Part*>& parts, int range, int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
-bool erase_items(int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
+// REMOVE Tim. citem. Removed.
+// bool erase_notes(const std::set<const Part*>& parts, int range, int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
 bool delete_overlaps(const std::set<const Part*>& parts, int range);
 bool set_notelen(const std::set<const Part*>& parts, int range, int len);
 bool move_notes(const std::set<const Part*>& parts, int range, signed int ticks);
 bool transpose_notes(const std::set<const Part*>& parts, int range, signed int halftonesteps);
 bool crescendo(const std::set<const Part*>& parts, int range, int start_val, int end_val, bool absolute);
 bool legato(const std::set<const Part*>& parts, int range, int min_len=1, bool dont_shorten=false);
+
+
+
+
+bool erase_items(int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
+bool cut_items();
+bool delete_overlaps_items();
+bool crescendo_items(int start_val, int end_val, bool absolute);
 // Ensures that all events are untagged. Useful for aborting dialog etc.
 void untag_all_items();
+
+
 
 
 //the below functions automatically open the dialog
@@ -124,8 +301,8 @@ bool set_notelen(const std::set<const Part*>& parts);
 bool move_notes(const std::set<const Part*>& parts);
 bool transpose_notes(const std::set<const Part*>& parts);
 bool crescendo(const std::set<const Part*>& parts);
-bool erase_notes(const std::set<const Part*>& parts);
-FunctionDialogReturnVeloLen erase_items_dialog(const FunctionDialogMode&);
+// bool erase_notes(const std::set<const Part*>& parts);  // REMOVE Tim. citem. Removed.
+// FunctionDialogReturnVeloLen erase_items_dialog(const FunctionDialogMode&); // REMOVE Tim. citem. Removed. Moved into MusEGui.
 bool delete_overlaps(const std::set<const Part*>& parts);
 bool legato(const std::set<const Part*>& parts);
 
@@ -137,7 +314,7 @@ bool set_notelen();
 bool move_notes();
 bool transpose_notes();
 bool crescendo();
-bool erase_notes();
+// bool erase_notes();  // REMOVE Tim. citem. Removed.
 bool delete_overlaps();
 bool legato();
 
@@ -154,8 +331,10 @@ void paste_items(const std::set<const Part*>& parts, int max_distance=3072,
                  bool always_new_part=false, bool never_new_part=false,
                  const Part* paste_into_part=NULL, int amount=1, int raster=3072);
 QMimeData* selected_events_to_mime(const std::set<const Part*>& parts, int range);
-QMimeData* selected_items_to_mime(); // REMOVE Tim. citem. Added.
 QMimeData* parts_to_mime(const std::set<const Part*>& parts);
+// REMOVE Tim. citem. Added.
+// QMimeData* tagged_items_to_mime(bool untag_when_done = true); // REMOVE Tim. citem. Added.
+QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode = false, bool untag_when_done = true);
 
 
 void paste_at(const QString& pt, int pos, int max_distance=3072,

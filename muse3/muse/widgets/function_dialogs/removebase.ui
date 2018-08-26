@@ -9,9 +9,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>272</width>
-    <height>517</height>
+    <width>273</width>
+    <height>515</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>MusE: Erase Notes</string>
@@ -34,6 +40,12 @@
    </property>
    <item>
     <widget class="QGroupBox" name="rangeBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="title">
       <string>Range</string>
      </property>
@@ -56,7 +68,7 @@
       <item>
        <widget class="QRadioButton" name="all_events_button">
         <property name="text">
-         <string>&amp;All Events</string>
+         <string>All Eve&amp;nts</string>
         </property>
        </widget>
       </item>
@@ -89,6 +101,12 @@
    </item>
    <item>
     <widget class="QGroupBox" name="partsBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="title">
       <string>Parts</string>
      </property>
@@ -113,6 +131,9 @@
         <property name="text">
          <string>Selected parts or c&amp;urrent part</string>
         </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
@@ -127,6 +148,12 @@
    </item>
    <item>
     <widget class="QGroupBox" name="groupBox_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="title">
       <string>Thresholds</string>
      </property>
@@ -239,6 +266,9 @@ p, li { white-space: pre-wrap; }
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Expanding</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>

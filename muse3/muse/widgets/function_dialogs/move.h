@@ -24,6 +24,7 @@
 #define __MOVE_H__
 
 #include "ui_movebase.h"
+#include "function_dialog_base.h"
 
 class QButtonGroup;
 
@@ -33,29 +34,22 @@ class Xml;
 
 namespace MusEGui {
 
-class Move : public QDialog, public Ui::MoveBase
+class Move : public FunctionDialogBase, public Ui::MoveBase
 {
  	Q_OBJECT
-	private:
-		
-		QButtonGroup* range_group;
 		
 	protected slots:
-		void accept();
 		void pull_values();
 
 	public:
 		Move(QWidget* parent = 0);
 
-		static int range;
 		static int amount;
 		
 		static void read_configuration(MusECore::Xml& xml);
 		void write_configuration(int level, MusECore::Xml& xml);
-		
-	
-	public slots:
-		int exec();
+    
+    void setupDialog();
 };
 
 } // namespace MusEGui

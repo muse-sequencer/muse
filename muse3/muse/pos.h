@@ -66,6 +66,8 @@ class Pos {
 
       Pos& operator+=(Pos a);
       Pos& operator+=(int a);
+      Pos& operator-=(Pos a);
+      Pos& operator-=(int a);
 
       bool operator>=(const Pos& s) const;
       bool operator>(const Pos& s) const;
@@ -76,6 +78,8 @@ class Pos {
 
       friend Pos operator+(Pos a, Pos b);
       friend Pos operator+(Pos a, int b);
+      friend Pos operator-(Pos a, Pos b);
+      friend Pos operator-(Pos a, int b);
 
       unsigned tick() const;
       unsigned frame() const;

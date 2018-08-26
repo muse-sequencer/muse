@@ -26,7 +26,6 @@
 
 namespace MusEGui {
 
-int Quantize::range = 1;
 int Quantize::strength = 90;
 int Quantize::threshold = 0;
 int Quantize::raster_index = 3;
@@ -49,19 +48,43 @@ int rasterVals[] = {
 };
 
 Quantize::Quantize(QWidget* parent)
-	: QDialog(parent)
+	: FunctionDialogBase(parent)
 {
 	setupUi(this);
-	range_group = new QButtonGroup;
-	range_group->addButton(all_events_button,0);
-	range_group->addButton(selected_events_button,1);
-	range_group->addButton(looped_events_button,2);
-	range_group->addButton(selected_looped_button,3);
+  
+  //--------------------------------------------
+  // Set range and parts containers if available.
+  //--------------------------------------------
+  
+  _range_container = rangeBox;
+  _parts_container = partsBox;
+
+  //--------------------------------------------
+  // Add element widgets to range and parts groups.
+  //--------------------------------------------
+  
+  _range_group->addButton(all_events_button, FunctionAllEventsButton);
+  _range_group->addButton(selected_events_button,FunctionSelectedEventsButton);
+  _range_group->addButton(looped_events_button, FunctionLoopedButton);
+  _range_group->addButton(selected_looped_button, FunctionSelectedLoopedButton);
+  
+  _parts_group->addButton(not_all_parts_button, FunctionSelectedPartsButton);
+  _parts_group->addButton(all_parts_button, FunctionAllPartsButton);
 }
 
 void Quantize::pull_values()
 {
-	range = range_group->checkedId();
+  //--------------------------------------------
+  // Grab IDs or values from common base object
+  //  (range and parts groups etc.)
+  //--------------------------------------------
+  
+  FunctionDialogBase::pull_values();
+  
+  //--------------------------------------------
+  // Grab this dialog's specific IDs or values.
+  //--------------------------------------------
+  
 	strength = strength_spinbox->value();
 	threshold = threshold_spinbox->value();
 	raster_index = raster_combobox->currentIndex();
@@ -69,24 +92,23 @@ void Quantize::pull_values()
 	swing = swing_spinbox->value();
 }
 
-void Quantize::accept()
+void Quantize::setupDialog()
 {
-	pull_values();
-	QDialog::accept();
-}
-
-int Quantize::exec()
-{
-	if ((range < 0) || (range > 3)) range=0;
-	
-	range_group->button(range)->setChecked(true);
+  //------------------------------------
+  // Setup common base object items.
+  //------------------------------------
+  
+  FunctionDialogBase::setupDialog();
+  
+  //------------------------------------
+  // Setup this dialog's specific items.
+  //------------------------------------
+  
 	strength_spinbox->setValue(strength);
 	threshold_spinbox->setValue(threshold);
   raster_combobox->setCurrentIndex(raster_index);
 	len_checkbox->setChecked(quant_len);
 	swing_spinbox->setValue(swing);
-	
-	return QDialog::exec();
 }
 
 void Quantize::read_configuration(MusECore::Xml& xml)
@@ -101,20 +123,30 @@ void Quantize::read_configuration(MusECore::Xml& xml)
 		switch (token)
 		{
 			case MusECore::Xml::TagStart:
-				if (tag == "range")
-					range=xml.parseInt();
-				else if (tag == "strength")
-					strength=xml.parseInt();
-				else if (tag == "threshold")
-					threshold=xml.parseInt();
-				else if (tag == "raster")
-					raster_index=xml.parseInt();
-				else if (tag == "swing")
-					swing=xml.parseInt();
-				else if (tag == "quant_len")
-					quant_len=xml.parseInt();
-				else
-					xml.unknown("Quantize");
+				        
+				//-----------------------------------------
+				// Handle any common base settings.
+				//-----------------------------------------
+				
+				if(!FunctionDialogBase::read_configuration(tag, xml))
+				{
+					//-----------------------------------------
+					// Handle this dialog's specific settings.
+					//-----------------------------------------
+					
+					if (tag == "strength")
+						strength=xml.parseInt();
+					else if (tag == "threshold")
+						threshold=xml.parseInt();
+					else if (tag == "raster")
+						raster_index=xml.parseInt();
+					else if (tag == "swing")
+						swing=xml.parseInt();
+					else if (tag == "quant_len")
+						quant_len=xml.parseInt();
+					else
+						xml.unknown("Quantize");
+				}
 				break;
 				
 			case MusECore::Xml::TagEnd:
@@ -130,7 +162,17 @@ void Quantize::read_configuration(MusECore::Xml& xml)
 void Quantize::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "quantize");
-	xml.intTag(level, "range", range);
+  
+  //-----------------------------------------
+  // Write any common base settings.
+  //-----------------------------------------
+  
+  FunctionDialogBase::write_configuration(level, xml);
+  
+  //-----------------------------------------
+  // Write this dialog's specific settings.
+  //-----------------------------------------
+  
 	xml.intTag(level, "strength", strength);
 	xml.intTag(level, "threshold", threshold);
   xml.intTag(level, "raster", raster_index);

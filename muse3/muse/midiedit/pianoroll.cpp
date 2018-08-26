@@ -846,85 +846,91 @@ void PianoRoll::cmd(int cmd)
         if(canvas->getCurrentDrag())
           return;
         
-			switch (cmd)
-						{
-// REMOVE Tim. citem. Changed.
-//             case PianoCanvas::CMD_CUT:
-//                   copy_notes(partlist_to_set(parts()), 1);
-//                   erase_notes(partlist_to_set(parts()), 1);
-//                   break;
-//             case PianoCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
-//             case PianoCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()),
-//               MusECore::any_event_selected(partlist_to_set(parts()), MusECore::AllEventsRelevant) ?
-//                   3 : 2); break;
-//             case PianoCanvas::CMD_PASTE: 
-//                               ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-//                               MusECore::paste_notes(3072, false, true, canvas->part());
-//                               break;
-// 						case PianoCanvas::CMD_PASTE: 
-// 															((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-// 															MusECore::paste_notes(3072, false, true);
-// 															break;
-// 						case PianoCanvas::CMD_PASTE_TO_CUR_PART: 
-// 															((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-// 															MusECore::paste_notes(3072, false, true, canvas->part());
-// 															break;
-// 						case PianoCanvas::CMD_PASTE_DIALOG: 
-// 															((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-// 															MusECore::paste_notes((canvas->part()));
-// 															break;
-						case PianoCanvas::CMD_CUT:
-									tagItems();
-									MusECore::erase_items();
-									break;
-						case PianoCanvas::CMD_COPY:
-									tagItems();
-									MusECore::copy_items();
-									break;
-						case PianoCanvas::CMD_COPY_RANGE:
-									tagItems(!itemsAreSelected(), true, false, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
-									MusECore::copy_items();
-									break;
-						case PianoCanvas::CMD_PASTE: 
-															((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-															MusECore::paste_items(partlist_to_set(parts()), 3072, false, true);
-															break;
-						case PianoCanvas::CMD_PASTE_TO_CUR_PART: 
-															((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-															MusECore::paste_items(partlist_to_set(parts()), 3072, false, true, canvas->part());
-															break;
-						case PianoCanvas::CMD_PASTE_DIALOG: 
-															((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-															MusECore::paste_items(partlist_to_set(parts()), (canvas->part()));
-															break;
-															
-						case PianoCanvas::CMD_MODIFY_GATE_TIME: modify_notelen(partlist_to_set(parts())); break;
-						case PianoCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
-						case PianoCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
-						case PianoCanvas::CMD_QUANTIZE: quantize_notes(partlist_to_set(parts())); break;
-						case PianoCanvas::CMD_TRANSPOSE: transpose_notes(partlist_to_set(parts())); break;
-// 						case PianoCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
-						case PianoCanvas::CMD_ERASE_EVENT:
+      switch (cmd)
             {
-							MusECore::FunctionDialogReturnVeloLen ret =
-							  MusECore::erase_items_dialog(MusECore::FunctionDialogMode(true, true, true));
+  // REMOVE Tim. citem. Changed.
+  //             case PianoCanvas::CMD_CUT:
+  //                   copy_notes(partlist_to_set(parts()), 1);
+  //                   erase_notes(partlist_to_set(parts()), 1);
+  //                   break;
+  //             case PianoCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
+  //             case PianoCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()),
+  //               MusECore::any_event_selected(partlist_to_set(parts()), MusECore::AllEventsRelevant) ?
+  //                   3 : 2); break;
+  //             case PianoCanvas::CMD_PASTE: 
+  //                               ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
+  //                               MusECore::paste_notes(3072, false, true, canvas->part());
+  //                               break;
+  // 						case PianoCanvas::CMD_PASTE: 
+  // 															((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
+  // 															MusECore::paste_notes(3072, false, true);
+  // 															break;
+  // 						case PianoCanvas::CMD_PASTE_TO_CUR_PART: 
+  // 															((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
+  // 															MusECore::paste_notes(3072, false, true, canvas->part());
+  // 															break;
+  // 						case PianoCanvas::CMD_PASTE_DIALOG: 
+  // 															((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
+  // 															MusECore::paste_notes((canvas->part()));
+  // 															break;
+            case PianoCanvas::CMD_CUT:
+                  tagItems();
+                  MusECore::cut_items();
+                  break;
+            case PianoCanvas::CMD_COPY:
+                  tagItems();
+                  MusECore::copy_items();
+                  break;
+            case PianoCanvas::CMD_COPY_RANGE:
+                  tagItems(!itemsAreSelected(), true, false, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
+                  MusECore::copy_items();
+                  break;
+            case PianoCanvas::CMD_PASTE: 
+                              ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
+                              MusECore::paste_items(partlist_to_set(parts()), 3072, false, true);
+                              break;
+            case PianoCanvas::CMD_PASTE_TO_CUR_PART: 
+                              ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
+                              MusECore::paste_items(partlist_to_set(parts()), 3072, false, true, canvas->part());
+                              break;
+            case PianoCanvas::CMD_PASTE_DIALOG: 
+                              ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
+                              MusECore::paste_items(partlist_to_set(parts()), (canvas->part()));
+                              break;
+                              
+            case PianoCanvas::CMD_MODIFY_GATE_TIME: modify_notelen(partlist_to_set(parts())); break;
+            case PianoCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
+            case PianoCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
+            case PianoCanvas::CMD_QUANTIZE: quantize_notes(partlist_to_set(parts())); break;
+            case PianoCanvas::CMD_TRANSPOSE: transpose_notes(partlist_to_set(parts())); break;
+  // 						case PianoCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
+            case PianoCanvas::CMD_ERASE_EVENT:
+            {
+              FunctionDialogReturnVeloLen ret =
+                erase_items_dialog(FunctionDialogMode(
+                  FunctionAllEventsButton |
+                  FunctionSelectedEventsButton |
+                  FunctionLoopedButton |
+                  FunctionSelectedLoopedButton |
+                  FunctionAllPartsButton | 
+                  FunctionSelectedPartsButton));
               if(ret._valid)
                 tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
-							MusECore::erase_items(ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
+              MusECore::erase_items(ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
             }
-						break;
-// 						case PianoCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break;
-						case PianoCanvas::CMD_DEL:
-							tagItems();
-							MusECore::erase_items();
-							break;
-						case PianoCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
-						case PianoCanvas::CMD_FIXED_LEN: set_notelen(partlist_to_set(parts())); break;
-						case PianoCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
-						case PianoCanvas::CMD_LEGATO: legato(partlist_to_set(parts())); break;
-						
-						default: ((PianoCanvas*)canvas)->cmd(cmd);
-					  }
+            break;
+  // 						case PianoCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break;
+            case PianoCanvas::CMD_DEL:
+              tagItems();
+              MusECore::erase_items();
+              break;
+            case PianoCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
+            case PianoCanvas::CMD_FIXED_LEN: set_notelen(partlist_to_set(parts())); break;
+            case PianoCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
+            case PianoCanvas::CMD_LEGATO: legato(partlist_to_set(parts())); break;
+            
+            default: ((PianoCanvas*)canvas)->cmd(cmd);
+            }
       }
 
 //---------------------------------------------------------

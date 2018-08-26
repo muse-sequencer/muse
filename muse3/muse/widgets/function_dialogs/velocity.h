@@ -24,6 +24,7 @@
 #define __VELOCITY_H__
 
 #include "ui_velocitybase.h"
+#include "function_dialog_base.h"
 
 class QButtonGroup;
 
@@ -37,29 +38,22 @@ namespace MusEGui {
 //   Velocity
 //---------------------------------------------------------
 
-class Velocity : public QDialog, public Ui::VelocityBase {
+class Velocity : public FunctionDialogBase, public Ui::VelocityBase {
       Q_OBJECT
-   private:
-      
-      QButtonGroup* rangeGroup;
 
    protected slots:
-      void accept();
       void pullValues();
 
    public:
       Velocity(QWidget* parent = 0);
 
-      static int range;
       static int rateVal;
       static int offsetVal;
       
       static void read_configuration(MusECore::Xml& xml);
       void write_configuration(int level, MusECore::Xml& xml);
       
-      
-   public slots:
-      int exec();
+      void setupDialog();
       };
 
 } // namespace MusEGui

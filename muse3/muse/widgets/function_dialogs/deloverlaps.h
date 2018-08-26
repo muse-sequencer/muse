@@ -24,6 +24,7 @@
 #define __DELOVERLAPS_H__
 
 #include "ui_deloverlapsbase.h"
+#include "function_dialog_base.h"
 
 class QButtonGroup;
 
@@ -33,27 +34,18 @@ class Xml;
 
 namespace MusEGui {
 
-class DelOverlaps : public QDialog, public Ui::DelOverlapsBase
+class DelOverlaps : public FunctionDialogBase, public Ui::DelOverlapsBase
 {
  	Q_OBJECT
-	private:
-		
-		QButtonGroup* range_group;
 		
 	protected slots:
-		void accept();
 		void pull_values();
 
 	public:
 		DelOverlaps(QWidget* parent = 0);
 
-		static int range;
-		
 		static void read_configuration(MusECore::Xml& xml);
 		void write_configuration(int level, MusECore::Xml& xml);
-		
-	public slots:
-		int exec();
 };
 
 } // namespace MusEGui

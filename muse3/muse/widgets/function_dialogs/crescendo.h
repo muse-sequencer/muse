@@ -24,6 +24,7 @@
 #define __CRESCENDO_H__
 
 #include "ui_crescendobase.h"
+#include "function_dialog_base.h"
 
 class QButtonGroup;
 
@@ -33,21 +34,16 @@ class Xml;
 
 namespace MusEGui {
 
-class Crescendo : public QDialog, public Ui::CrescendoBase
+class Crescendo : public FunctionDialogBase, public Ui::CrescendoBase
 {
  	Q_OBJECT
-	private:
-		
-		QButtonGroup* range_group;
 		
 	protected slots:
-		void accept();
 		void pull_values();
 
 	public:
 		Crescendo(QWidget* parent = 0);
 
-		static int range;
 		static int start_val;
 		static int end_val;
 		static bool absolute;
@@ -55,10 +51,8 @@ class Crescendo : public QDialog, public Ui::CrescendoBase
 		static void read_configuration(MusECore::Xml& xml);
 		void write_configuration(int level, MusECore::Xml& xml);
 		
+    void setupDialog();
 		
-	public slots:
-		int exec();
-	
 	private slots:
 		void absolute_changed(bool);
 };

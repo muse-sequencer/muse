@@ -24,6 +24,7 @@
 #define __SETLEN_H__
 
 #include "ui_setlenbase.h"
+#include "function_dialog_base.h"
 
 class QButtonGroup;
 
@@ -33,29 +34,22 @@ class Xml;
 
 namespace MusEGui {
 
-class Setlen : public QDialog, public Ui::SetlenBase
+class Setlen : public FunctionDialogBase, public Ui::SetlenBase
 {
  	Q_OBJECT
-	private:
-		
-		QButtonGroup* range_group;
 		
 	protected slots:
-		void accept();
 		void pull_values();
 
 	public:
 		Setlen(QWidget* parent = 0);
 
-		static int range;
 		static int len;
 		
 		static void read_configuration(MusECore::Xml& xml);
 		void write_configuration(int level, MusECore::Xml& xml);
 		
-		
-	public slots:
-		int exec();
+    void setupDialog();
 };
 
 } // namespace MusEGui

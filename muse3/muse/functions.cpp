@@ -61,6 +61,179 @@ using namespace std;
 
 using MusEGlobal::config;
 
+
+namespace MusEGui {
+
+FunctionDialogReturnVeloLen erase_items_dialog(const FunctionDialogMode& mode)
+{
+  erase_dialog->setElements(mode._buttons);
+  if(!erase_dialog->exec())
+    return FunctionDialogReturnVeloLen();
+    
+//   return FunctionDialogReturnVeloLen(!(MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_SELECTED),
+//                               MusEGui::erase_dialog->parts & FUNCTION_ALL_PARTS,
+//                               MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS,
+//                               MusEGlobal::song->lPos(), MusEGlobal::song->rPos(),
+//                               MusEGui::erase_dialog->velo_thres_used, MusEGui::erase_dialog->velo_threshold,
+//                               MusEGui::erase_dialog->len_thres_used, MusEGui::erase_dialog->len_threshold);
+//   const int range = erase_dialog->range;
+//   const int parts = erase_dialog->parts;
+//   const bool all_events = range == FunctionAllEventsButton || range == FunctionLoopedButton;
+//   const bool range_events = range == FunctionLoopedButton || range == FunctionSelectedLoopedButton;
+//   const bool all_parts = parts == FunctionAllPartsButton;
+
+  const int flags = erase_dialog->_ret_flags;
+  return FunctionDialogReturnVeloLen(flags & FunctionReturnAllEvents,
+                                     flags & FunctionReturnAllParts,
+                                     flags & FunctionReturnLooped,
+                                     MusEGlobal::song->lPos(), MusEGlobal::song->rPos(),
+                                     erase_dialog->velo_thres_used, erase_dialog->velo_threshold,
+                                     erase_dialog->len_thres_used, erase_dialog->len_threshold);
+
+  //   // TODO For now only do current part. Add support for 'all parts' option.
+  //   if(range_items)
+  //     editor->tagItems(!selected_items, false, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
+  //   else
+  //     editor->tagItems(!selected_items, false);
+  //   
+  //   erase_items(MusEGui::erase_dialog->velo_threshold, MusEGui::erase_dialog->velo_thres_used, 
+  //               MusEGui::erase_dialog->len_threshold, MusEGui::erase_dialog->len_thres_used );
+  // 
+  //   return true;
+}
+
+FunctionDialogReturnCrescendo crescendo_items_dialog(const FunctionDialogMode& mode)
+{
+  crescendo_dialog->setElements(mode._buttons);
+  if(!crescendo_dialog->exec())
+    return FunctionDialogReturnCrescendo();
+    
+  const int flags = crescendo_dialog->_ret_flags;
+  return FunctionDialogReturnCrescendo(flags & FunctionReturnAllEvents,
+                                     flags & FunctionReturnAllParts,
+                                     flags & FunctionReturnLooped,
+                                     MusEGlobal::song->lPos(), MusEGlobal::song->rPos(),
+                                     crescendo_dialog->start_val, crescendo_dialog->end_val,
+                                     crescendo_dialog->absolute);
+}
+
+FunctionDialogReturnDelOverlaps deloverlaps_items_dialog(const FunctionDialogMode& mode)
+{
+  del_overlaps_dialog->setElements(mode._buttons);
+  if(!del_overlaps_dialog->exec())
+    return FunctionDialogReturnDelOverlaps();
+    
+  const int flags = del_overlaps_dialog->_ret_flags;
+  return FunctionDialogReturnDelOverlaps(flags & FunctionReturnAllEvents,
+                                     flags & FunctionReturnAllParts,
+                                     flags & FunctionReturnLooped,
+                                     MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
+}
+
+FunctionDialogReturnGateTime gatetime_items_dialog(const FunctionDialogMode& mode)
+{
+  gatetime_dialog->setElements(mode._buttons);
+  if(!gatetime_dialog->exec())
+    return FunctionDialogReturnGateTime();
+    
+  const int flags = gatetime_dialog->_ret_flags;
+  return FunctionDialogReturnGateTime(flags & FunctionReturnAllEvents,
+                                     flags & FunctionReturnAllParts,
+                                     flags & FunctionReturnLooped,
+                                     MusEGlobal::song->lPos(), MusEGlobal::song->rPos(), 
+                                     gatetime_dialog->rateVal, gatetime_dialog->offsetVal);
+}
+
+FunctionDialogReturnLegato legato_items_dialog(const FunctionDialogMode& mode)
+{
+  legato_dialog->setElements(mode._buttons);
+  if(!legato_dialog->exec())
+    return FunctionDialogReturnLegato();
+    
+  const int flags = legato_dialog->_ret_flags;
+  return FunctionDialogReturnLegato(flags & FunctionReturnAllEvents,
+                                     flags & FunctionReturnAllParts,
+                                     flags & FunctionReturnLooped,
+                                     MusEGlobal::song->lPos(), MusEGlobal::song->rPos(), 
+                                     legato_dialog->min_len, legato_dialog->allow_shortening);
+}
+
+FunctionDialogReturnMove move_items_dialog(const FunctionDialogMode& mode)
+{
+  move_notes_dialog->setElements(mode._buttons);
+  if(!move_notes_dialog->exec())
+    return FunctionDialogReturnMove();
+    
+  const int flags = move_notes_dialog->_ret_flags;
+  return FunctionDialogReturnMove(flags & FunctionReturnAllEvents,
+                                     flags & FunctionReturnAllParts,
+                                     flags & FunctionReturnLooped,
+                                     MusEGlobal::song->lPos(), MusEGlobal::song->rPos(), 
+                                     move_notes_dialog->amount);
+}
+
+FunctionDialogReturnQuantize quantize_items_dialog(const FunctionDialogMode& mode)
+{
+  quantize_dialog->setElements(mode._buttons);
+  if(!quantize_dialog->exec())
+    return FunctionDialogReturnQuantize();
+    
+  const int flags = quantize_dialog->_ret_flags;
+  return FunctionDialogReturnQuantize(flags & FunctionReturnAllEvents,
+                                     flags & FunctionReturnAllParts,
+                                     flags & FunctionReturnLooped,
+                                     MusEGlobal::song->lPos(), MusEGlobal::song->rPos(), 
+                                     quantize_dialog->strength, quantize_dialog->threshold, 
+                                     quantize_dialog->raster_index, quantize_dialog->swing, 
+                                     quantize_dialog->quant_len);
+}
+
+FunctionDialogReturnSetLen setlen_items_dialog(const FunctionDialogMode& mode)
+{
+  set_notelen_dialog->setElements(mode._buttons);
+  if(!set_notelen_dialog->exec())
+    return FunctionDialogReturnSetLen();
+    
+  const int flags = set_notelen_dialog->_ret_flags;
+  return FunctionDialogReturnSetLen(flags & FunctionReturnAllEvents,
+                                     flags & FunctionReturnAllParts,
+                                     flags & FunctionReturnLooped,
+                                     MusEGlobal::song->lPos(), MusEGlobal::song->rPos(), 
+                                     set_notelen_dialog->len);
+}
+
+FunctionDialogReturnTranspose transpose_items_dialog(const FunctionDialogMode& mode)
+{
+  transpose_dialog->setElements(mode._buttons);
+  if(!transpose_dialog->exec())
+    return FunctionDialogReturnTranspose();
+    
+  const int flags = transpose_dialog->_ret_flags;
+  return FunctionDialogReturnTranspose(flags & FunctionReturnAllEvents,
+                                     flags & FunctionReturnAllParts,
+                                     flags & FunctionReturnLooped,
+                                     MusEGlobal::song->lPos(), MusEGlobal::song->rPos(), 
+                                     transpose_dialog->amount);
+}
+
+FunctionDialogReturnVelocity velocity_items_dialog(const FunctionDialogMode& mode)
+{
+  velocity_dialog->setElements(mode._buttons);
+  if(!velocity_dialog->exec())
+    return FunctionDialogReturnVelocity();
+    
+  const int flags = velocity_dialog->_ret_flags;
+  return FunctionDialogReturnVelocity(flags & FunctionReturnAllEvents,
+                                     flags & FunctionReturnAllParts,
+                                     flags & FunctionReturnLooped,
+                                     MusEGlobal::song->lPos(), MusEGlobal::song->rPos(), 
+                                     velocity_dialog->rateVal, velocity_dialog->offsetVal);
+}
+
+
+} // namespace MusEGui
+
+
 namespace MusECore {
 
 // unit private functions:
@@ -235,23 +408,25 @@ bool quantize_notes(const set<const Part*>& parts)
 	return true;
 }
 
-bool erase_notes(const set<const Part*>& parts)
-{
-	if (!MusEGui::erase_dialog->exec())
-		return false;
-		
-	erase_notes(parts,MusEGui::erase_dialog->range, MusEGui::erase_dialog->velo_threshold, MusEGui::erase_dialog->velo_thres_used, 
-	                                       MusEGui::erase_dialog->len_threshold, MusEGui::erase_dialog->len_thres_used );
-	
-	return true;
-}
+// REMOVE Tim. citem. Removed.
+// bool erase_notes(const set<const Part*>& parts)
+// {
+//   MusEGui::erase_dialog->setButtons();
+// 	if (!MusEGui::erase_dialog->exec())
+// 		return false;
+// 		
+// 	erase_notes(parts,MusEGui::erase_dialog->range, MusEGui::erase_dialog->velo_threshold, MusEGui::erase_dialog->velo_thres_used, 
+// 	                                       MusEGui::erase_dialog->len_threshold, MusEGui::erase_dialog->len_thres_used );
+// 	
+// 	return true;
+// }
 
 bool delete_overlaps(const set<const Part*>& parts)
 {
 	if (!MusEGui::del_overlaps_dialog->exec())
 		return false;
 		
-	delete_overlaps(parts,MusEGui::erase_dialog->range);
+	delete_overlaps(parts,MusEGui::erase_dialog->_range);
 	
 	return true;
 }
@@ -365,22 +540,24 @@ bool quantize_notes()
 	return true;
 }
 
-bool erase_notes()
-{
-	if (!MusEGui::erase_dialog->exec())
-		return false;
-		
-	set<const Part*> parts;
-	if (MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
-		parts=get_all_selected_parts();
-	else
-		parts=get_all_parts();
-		
-	erase_notes(parts,MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::erase_dialog->velo_threshold, MusEGui::erase_dialog->velo_thres_used, 
-	            MusEGui::erase_dialog->len_threshold, MusEGui::erase_dialog->len_thres_used );
-	
-	return true;
-}
+// REMOVE Tim. citem. Removed.
+// bool erase_notes()
+// {
+//   MusEGui::erase_dialog->setButtons();
+// 	if (!MusEGui::erase_dialog->exec())
+// 		return false;
+// 		
+// 	set<const Part*> parts;
+// 	if (MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+// 		parts=get_all_selected_parts();
+// 	else
+// 		parts=get_all_parts();
+// 		
+// 	erase_notes(parts,MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::erase_dialog->velo_threshold, MusEGui::erase_dialog->velo_thres_used, 
+// 	            MusEGui::erase_dialog->len_threshold, MusEGui::erase_dialog->len_thres_used );
+// 	
+// 	return true;
+// }
 
 bool delete_overlaps()
 {
@@ -393,7 +570,7 @@ bool delete_overlaps()
 	else
 		parts=get_all_parts();
 		
-	delete_overlaps(parts,MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS);
+	delete_overlaps(parts,MusEGui::erase_dialog->_range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS);
 	
 	return true;
 }
@@ -675,29 +852,30 @@ bool quantize_notes(const set<const Part*>& parts, int range, int raster, bool q
 		return false;
 }
 
-bool erase_notes(const set<const Part*>& parts, int range, int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
-{
-	map<const Event*, const Part*> events = get_events(parts, range);
-	Undo operations;
-	
-	if (!events.empty())
-	{
-		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
-		{
-			const Event& event=*(it->first);
-			const Part* part=it->second;
-
-			if ( (!velo_thres_used && !len_thres_used) ||
-			     (velo_thres_used && event.velo() < velo_threshold) ||
-			     (len_thres_used && int(event.lenTick()) < len_threshold) )
-				operations.push_back(UndoOp(UndoOp::DeleteEvent, event, part, false, false));
-		}
-		
-		return MusEGlobal::song->applyOperationGroup(operations);
-	}
-	else
-		return false;
-}
+// REMOVE Tim. citem. Removed.
+// bool erase_notes(const set<const Part*>& parts, int range, int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
+// {
+// 	map<const Event*, const Part*> events = get_events(parts, range);
+// 	Undo operations;
+// 	
+// 	if (!events.empty())
+// 	{
+// 		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
+// 		{
+// 			const Event& event=*(it->first);
+// 			const Part* part=it->second;
+// 
+// 			if ( (!velo_thres_used && !len_thres_used) ||
+// 			     (velo_thres_used && event.velo() < velo_threshold) ||
+// 			     (len_thres_used && int(event.lenTick()) < len_threshold) )
+// 				operations.push_back(UndoOp(UndoOp::DeleteEvent, event, part, false, false));
+// 		}
+// 		
+// 		return MusEGlobal::song->applyOperationGroup(operations);
+// 	}
+// 	else
+// 		return false;
+// }
 
 bool erase_items(int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
 {
@@ -731,7 +909,7 @@ bool erase_items(int velo_threshold, bool velo_thres_used, int len_threshold, bo
                   (len_thres_used && int(e.lenTick()) < len_threshold) )
             {
               changed = true;
-              operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, false, false));
+              operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
             }
           }
         }
@@ -745,28 +923,131 @@ bool erase_items(int velo_threshold, bool velo_thres_used, int len_threshold, bo
     return false;
 }
 
-FunctionDialogReturnVeloLen erase_items_dialog(const FunctionDialogMode& mode)
+bool crescendo_items(int start_val, int end_val, bool absolute)
 {
-	if (!MusEGui::erase_dialog->exec(mode._eventButtons, mode._partsButtons, mode._rangeButtons))
-		return FunctionDialogReturnVeloLen();
-		
-	return FunctionDialogReturnVeloLen(!(MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_SELECTED),
-															MusEGui::erase_dialog->parts & FUNCTION_ALL_PARTS,
-															MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS,
-															MusEGlobal::song->lPos(), MusEGlobal::song->rPos(),
-															MusEGui::erase_dialog->velo_thres_used, MusEGui::erase_dialog->velo_threshold,
-															MusEGui::erase_dialog->len_thres_used, MusEGui::erase_dialog->len_threshold);
+  Undo operations;
+  
+  const Pos& from = MusEGlobal::song->lPos();
+  const Pos& to = MusEGlobal::song->rPos();
+  Pos pos;
+  float curr_val;
+  
+  bool changed = false;
+  if(to > from)
+  {
+    Part* part;
+    PartList* pl;
+    TrackList* tl = MusEGlobal::song->tracks();
 
-//   // TODO For now only do current part. Add support for 'all parts' option.
-//   if(range_items)
-//     editor->tagItems(!selected_items, false, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
-//   else
-//     editor->tagItems(!selected_items, false);
-//   
-//   erase_items(MusEGui::erase_dialog->velo_threshold, MusEGui::erase_dialog->velo_thres_used, 
-//               MusEGui::erase_dialog->len_threshold, MusEGui::erase_dialog->len_thres_used );
-// 
-//   return true;
+    for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+    {
+      pl = (*it)->parts();
+      for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+      {
+        part = ip->second;
+        part->setTagged(false);
+        if(part->eventsTagged())
+        {
+          part->setEventsTagged(false);
+          EventList& el = part->nonconst_events();
+          for(iEvent ie = el.begin(); ie != el.end(); ie++)
+          {
+            Event& e = ie->second;
+            if(e.tagged())
+            {
+              e.setTagged(false);
+              
+              // This operation can only apply to notes.
+              if(e.type() != Note)
+                continue;
+
+              pos = e.pos() + *part;
+              curr_val = (float)start_val + (float)(end_val - start_val) * (pos - from).posValue() / (to - from).posValue();
+
+              Event newEvent = e.clone();
+              int velo = e.velo();
+
+              if (absolute)
+                velo=curr_val;
+              else
+                velo=curr_val*velo/100;
+
+              if (velo > 127) velo=127;
+              if (velo <= 0) velo=1;
+              newEvent.setVelo(velo);
+              
+              changed = true;
+              operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  if(changed)
+    return MusEGlobal::song->applyOperationGroup(operations);
+  else
+    return false;
+}
+
+bool delete_overlaps_items()
+{
+  Undo operations;
+  
+  bool changed = false;
+  Part* part;
+  PartList* pl;
+  TrackList* tl = MusEGlobal::song->tracks();
+
+  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  {
+    pl = (*it)->parts();
+    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    {
+      part = ip->second;
+      part->setTagged(false);
+      if(part->eventsTagged())
+      {
+        part->setEventsTagged(false);
+        EventList& el = part->nonconst_events();
+        for(iEvent ie = el.begin(); ie != el.end(); ie++)
+        {
+          Event& e = ie->second;
+          if(e.tagged())
+          {
+            e.setTagged(false);
+            // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
+            if ( e.type() != Note || (!velo_thres_used && !len_thres_used) ||
+                   (velo_thres_used && e.velo() < velo_threshold) ||
+                  (len_thres_used && int(e.lenTick()) < len_threshold) )
+            {
+              changed = true;
+              operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  if(changed)
+    return MusEGlobal::song->applyOperationGroup(operations);
+  else
+    return false;
+}
+
+bool cut_items()
+{
+  QMimeData* drag = cut_or_copy_tagged_items_to_mime(true, true);
+
+  if(drag)
+  {
+    QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
+    return true;
+  }
+  
+  return false;
 }
 
 bool transpose_notes(const set<const Part*>& parts, int range, signed int halftonesteps)
@@ -999,7 +1280,7 @@ void copy_notes(const set<const Part*>& parts, int range)
 
 void copy_items()
 {
-	QMimeData* drag = selected_items_to_mime();
+	QMimeData* drag = cut_or_copy_tagged_items_to_mime();
 
 	if (drag)
 		QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
@@ -1145,11 +1426,121 @@ QMimeData* selected_events_to_mime(const set<const Part*>& parts, int range)
 }
 
 // REMOVE Tim. citem. Added.
+// // if nothing is selected/relevant, this function returns NULL
+// QMimeData* tagged_items_to_mime(bool untag_when_done)
+// {
+//     unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
+// 
+//     Part* part;
+//     PartList* pl;
+//     TrackList* tl = MusEGlobal::song->tracks();
+//     for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//     {
+//       pl = (*it)->parts();
+//       for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//       {
+//         part = ip->second;
+//         if(part->eventsTagged())
+//         {
+//           const EventList& el = part->events();
+//           for(ciEvent ie = el.begin(); ie != el.end(); ie++)
+//           {
+//             const Event& e = ie->second;
+//             if(e.tagged()) // && is_relevant(e, part, range, AllEventsRelevant))
+//             {
+//               if(e.tick() < start_tick)
+//                 start_tick = e.tick();
+//             }
+//           }
+//         }
+//       }
+//     }
+//     
+//     if (start_tick == INT_MAX)
+//     {
+//       if(untag_when_done)
+//       {
+//         // We must clear all the tagged flags...
+//         for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//         {
+//           pl = (*it)->parts();
+//           for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//           {
+//             part = ip->second;
+//             part->setTagged(false);
+//             if(part->eventsTagged())
+//             {
+//               part->setEventsTagged(false);
+//               EventList& el = part->nonconst_events();
+//               for(iEvent ie = el.begin(); ie != el.end(); ie++)
+//                 ie->second.setTagged(false);
+//             }
+//           }
+//         }
+//       }
+//       return NULL;
+//     }
+// 
+//     //---------------------------------------------------
+//     //    write events as XML into tmp file
+//     //---------------------------------------------------
+// 
+//     FILE* tmp = tmpfile();
+//     if (tmp == 0)
+//     {
+//         fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
+//         return 0;
+//     }
+// 
+//     Xml xml(tmp);
+//     int level = 0;
+// 
+//     for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//     {
+//       pl = (*it)->parts();
+//       for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//       {
+//         part = ip->second;
+//         if(untag_when_done)
+//           part->setTagged(false);
+//         if(part->eventsTagged())
+//         {
+//           if(untag_when_done)
+//             part->setEventsTagged(false);
+//           xml.tag(level++, "eventlist part_id=\"%d\"", part->sn());
+//           EventList& el = part->nonconst_events();
+//           for(iEvent ie = el.begin(); ie != el.end(); ie++)
+//           {
+//             Event& e = ie->second;
+//             if(e.tagged())
+//             {
+//               if(untag_when_done)
+//                 e.setTagged(false);
+//               
+//               //if(is_relevant(e, part, range, AllEventsRelevant))
+//                 e.write(level, xml, -start_tick);
+//             }
+//           }
+//           xml.etag(--level, "eventlist");
+//         }
+//       }
+//     }
+//     
+//     QMimeData *mimeData =  file_to_mimedata(tmp, "text/x-muse-groupedeventlists" );
+//     fclose(tmp);
+//     return mimeData;
+// }
+
+// REMOVE Tim. citem. Added.
 // if nothing is selected/relevant, this function returns NULL
-QMimeData* selected_items_to_mime()
+QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode, bool untag_when_done)
 {
     unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
 
+    Undo operations;
+  
+    //bool do_cut = false;
+    bool changed = false;
     Part* part;
     PartList* pl;
     TrackList* tl = MusEGlobal::song->tracks();
@@ -1159,12 +1550,23 @@ QMimeData* selected_items_to_mime()
       for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
       {
         part = ip->second;
+        // As an optimization, we only walk the events if the part says events are tagged.
         if(part->eventsTagged())
         {
           const EventList& el = part->events();
           for(ciEvent ie = el.begin(); ie != el.end(); ie++)
           {
             const Event& e = ie->second;
+//             do_cut = false;
+//             if(cut_mode)
+//             {
+//               // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
+//               do_cut = (e.type() != Note) || (!cut_velo_thres_used && !cut_len_thres_used) ||
+//                        (cut_velo_thres_used && e.velo() < cut_velo_threshold) ||
+//                        (cut_len_thres_used && int(e.lenTick()) < cut_len_threshold);
+//             }
+            
+//             if(e.tagged() && (!cut_mode || do_cut)) // && is_relevant(e, part, range, AllEventsRelevant))
             if(e.tagged()) // && is_relevant(e, part, range, AllEventsRelevant))
             {
               if(e.tick() < start_tick)
@@ -1177,20 +1579,24 @@ QMimeData* selected_items_to_mime()
     
     if (start_tick == INT_MAX)
     {
-      // We must clear all the tagged flags...
-      for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+      if(untag_when_done)
       {
-        pl = (*it)->parts();
-        for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+        // We must clear all the tagged flags...
+        for(ciTrack it = tl->begin(); it != tl->end(); ++it)
         {
-          part = ip->second;
-          part->setTagged(false);
-          if(part->eventsTagged())
+          pl = (*it)->parts();
+          for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
           {
-            part->setEventsTagged(false);
-            EventList& el = part->nonconst_events();
-            for(iEvent ie = el.begin(); ie != el.end(); ie++)
-              ie->second.setTagged(false);
+            part = ip->second;
+            part->setTagged(false);
+            // As an optimization, we only walk the events if the part says events are tagged.
+            if(part->eventsTagged())
+            {
+              part->setEventsTagged(false);
+              EventList& el = part->nonconst_events();
+              for(iEvent ie = el.begin(); ie != el.end(); ie++)
+                ie->second.setTagged(false);
+            }
           }
         }
       }
@@ -1217,10 +1623,13 @@ QMimeData* selected_items_to_mime()
       for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
       {
         part = ip->second;
-        part->setTagged(false);
+        if(untag_when_done)
+          part->setTagged(false);
+        // As an optimization, we only walk the events if the part says events are tagged.
         if(part->eventsTagged())
         {
-          part->setEventsTagged(false);
+          if(untag_when_done)
+            part->setEventsTagged(false);
           xml.tag(level++, "eventlist part_id=\"%d\"", part->sn());
           EventList& el = part->nonconst_events();
           for(iEvent ie = el.begin(); ie != el.end(); ie++)
@@ -1228,9 +1637,29 @@ QMimeData* selected_items_to_mime()
             Event& e = ie->second;
             if(e.tagged())
             {
-              e.setTagged(false);
+              if(untag_when_done)
+                e.setTagged(false);
+
+//               do_cut = false;
+//               if(cut_mode)
+//               {
+//                 // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
+//                 do_cut = (e.type() != Note) || (!cut_velo_thres_used && !cut_len_thres_used) ||
+//                         (cut_velo_thres_used && e.velo() < cut_velo_threshold) ||
+//                         (cut_len_thres_used && int(e.lenTick()) < cut_len_threshold);
+//               }
+                
+              
               //if(is_relevant(e, part, range, AllEventsRelevant))
+//               if(!cut_mode || do_cut)
                 e.write(level, xml, -start_tick);
+                
+//               if(cut_mode && do_cut)
+              if(cut_mode)
+              {
+                changed = true;
+                operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
+              }
             }
           }
           xml.etag(--level, "eventlist");
@@ -1240,6 +1669,10 @@ QMimeData* selected_items_to_mime()
     
     QMimeData *mimeData =  file_to_mimedata(tmp, "text/x-muse-groupedeventlists" );
     fclose(tmp);
+    
+    if(changed)
+      MusEGlobal::song->applyOperationGroup(operations);
+    
     return mimeData;
 }
 

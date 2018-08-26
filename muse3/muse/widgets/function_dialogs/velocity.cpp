@@ -26,7 +26,6 @@
 
 namespace MusEGui {
 
-int Velocity::range = 1;
 int Velocity::rateVal = 100;
 int Velocity::offsetVal = 0;
       
@@ -35,24 +34,28 @@ int Velocity::offsetVal = 0;
 //---------------------------------------------------------
 
 Velocity::Velocity(QWidget* parent)
-   : QDialog(parent)
+   : FunctionDialogBase(parent)
       {
       setupUi(this);
-      rangeGroup = new QButtonGroup;
-      rangeGroup->addButton(allEvents,0);
-      rangeGroup->addButton(selectedEvents,1);
-      rangeGroup->addButton(loopedEvents,2);
-      rangeGroup->addButton(selectedLooped,3);
-      }
+  
+      //--------------------------------------------
+      // Set range and parts containers if available.
+      //--------------------------------------------
+      
+      _range_container = rangeBox;
+      _parts_container = partsBox;
 
-//---------------------------------------------------------
-//   accept
-//---------------------------------------------------------
-
-void Velocity::accept()
-      {
-      pullValues();
-      QDialog::accept();
+      //--------------------------------------------
+      // Add element widgets to range and parts groups.
+      //--------------------------------------------
+      
+      _range_group->addButton(allEvents, FunctionAllEventsButton);
+      _range_group->addButton(selectedEvents,FunctionSelectedEventsButton);
+      _range_group->addButton(loopedEvents, FunctionLoopedButton);
+      _range_group->addButton(selectedLooped, FunctionSelectedLoopedButton);
+      
+      _parts_group->addButton(not_all_parts_button, FunctionSelectedPartsButton);
+      _parts_group->addButton(all_parts_button, FunctionAllPartsButton);
       }
 
 //---------------------------------------------------------
@@ -61,23 +64,36 @@ void Velocity::accept()
 
 void Velocity::pullValues()
       {
-      range     = rangeGroup->checkedId();
+      //--------------------------------------------
+      // Grab IDs or values from common base object
+      //  (range and parts groups etc.)
+      //--------------------------------------------
+      
+      FunctionDialogBase::pull_values();
+      
+      //--------------------------------------------
+      // Grab this dialog's specific IDs or values.
+      //--------------------------------------------
+      
       rateVal   = rate->value();
       offsetVal = offset->value();
       }
 
-//---------------------------------------------------------
-//   exec
-//---------------------------------------------------------
-
-int Velocity::exec()
-      {
-      rangeGroup->button(range)->setChecked(true);
+void Velocity::setupDialog()
+{
+      //------------------------------------
+      // Setup common base object items.
+      //------------------------------------
+      
+      FunctionDialogBase::setupDialog();
+      
+      //------------------------------------
+      // Setup this dialog's specific items.
+      //------------------------------------
+      
       rate->setValue(rateVal);
       offset->setValue(offsetVal);
-      
-      return QDialog::exec();
-      }
+}
 
 void Velocity::read_configuration(MusECore::Xml& xml)
 {
@@ -91,14 +107,24 @@ void Velocity::read_configuration(MusECore::Xml& xml)
 		switch (token)
 		{
 			case MusECore::Xml::TagStart:
-				if (tag == "range")
-					range=xml.parseInt();
-				else if (tag == "rate")
+				        
+				//-----------------------------------------
+				// Handle any common base settings.
+				//-----------------------------------------
+				
+				if(!FunctionDialogBase::read_configuration(tag, xml))
+				{
+					//-----------------------------------------
+					// Handle this dialog's specific settings.
+					//-----------------------------------------
+					
+					if (tag == "rate")
 					rateVal=xml.parseInt();
-				else if (tag == "offset")
-					offsetVal=xml.parseInt();
-				else
-					xml.unknown("ModVelo");
+					else if (tag == "offset")
+						offsetVal=xml.parseInt();
+					else
+						xml.unknown("ModVelo");
+				}
 				break;
 				
 			case MusECore::Xml::TagEnd:
@@ -114,7 +140,17 @@ void Velocity::read_configuration(MusECore::Xml& xml)
 void Velocity::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "mod_velo");
-	xml.intTag(level, "range", range);
+  
+  //-----------------------------------------
+  // Write any common base settings.
+  //-----------------------------------------
+  
+  FunctionDialogBase::write_configuration(level, xml);
+  
+  //-----------------------------------------
+  // Write this dialog's specific settings.
+  //-----------------------------------------
+  
 	xml.intTag(level, "offset", offsetVal);
 	xml.intTag(level, "rate", rateVal);
 	xml.tag(level, "/mod_velo");

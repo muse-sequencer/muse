@@ -159,6 +159,11 @@ class ArrangerView : public TopWin
 		void readStatus(MusECore::Xml& xml);
 		static void readConfiguration(MusECore::Xml&);
 		void writeConfiguration(int, MusECore::Xml&);
+		
+    // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
+    void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
+      const MusECore::Pos& = MusECore::Pos(),
+      const MusECore::Pos& = MusECore::Pos()) const;
 };
 
 }  // namespace MusEGui

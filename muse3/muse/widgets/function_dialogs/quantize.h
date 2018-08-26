@@ -24,6 +24,7 @@
 #define __QUANTIZE_H__
 
 #include "ui_quantbase.h"
+#include "function_dialog_base.h"
 
 class QButtonGroup;
 
@@ -34,21 +35,16 @@ class Xml;
 namespace MusEGui {
 
 
-class Quantize : public QDialog, public Ui::QuantBase
+class Quantize : public FunctionDialogBase, public Ui::QuantBase
 {
  	Q_OBJECT
-	private:
-		
-		QButtonGroup* range_group;
 		
 	protected slots:
-		void accept();
 		void pull_values();
 
 	public:
 		Quantize(QWidget* parent = 0);
 
-		static int range;
 		static int strength;
 		static int threshold;
 		static int raster_index;
@@ -57,9 +53,8 @@ class Quantize : public QDialog, public Ui::QuantBase
 		
 		static void read_configuration(MusECore::Xml& xml);
 		void write_configuration(int level, MusECore::Xml& xml);
-		
-	public slots:
-		int exec();
+    
+    void setupDialog();
 };
 
 extern int rasterVals[];

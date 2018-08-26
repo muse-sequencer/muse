@@ -244,6 +244,10 @@ class PartCanvas : public Canvas {
       void updateItems();
 // REMOVE Tim. citem. Added.
       //void updateItemSelections();
+      // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
+      //void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
+      //  const MusECore::Pos& p0 = MusECore::Pos(),
+      //  const MusECore::Pos& p1 = MusECore::Pos()) const;
 
       void cmd(int);
       void songIsClearing();

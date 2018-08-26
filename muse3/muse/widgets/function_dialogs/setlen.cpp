@@ -26,40 +26,62 @@
 
 namespace MusEGui {
 
-int Setlen::range = 1;
 int Setlen::len = 384;
   
 Setlen::Setlen(QWidget* parent)
-	: QDialog(parent)
+  : FunctionDialogBase(parent)
 {
-	setupUi(this);
-	range_group = new QButtonGroup;
-	range_group->addButton(all_events_button,0);
-	range_group->addButton(selected_events_button,1);
-	range_group->addButton(looped_events_button,2);
-	range_group->addButton(selected_looped_button,3);
+  setupUi(this);
+  
+  //--------------------------------------------
+  // Set range and parts containers if available.
+  //--------------------------------------------
+  
+  _range_container = rangeBox;
+  _parts_container = partsBox;
+
+  //--------------------------------------------
+  // Add element widgets to range and parts groups.
+  //--------------------------------------------
+  
+  _range_group->addButton(all_events_button, FunctionAllEventsButton);
+  _range_group->addButton(selected_events_button,FunctionSelectedEventsButton);
+  _range_group->addButton(looped_events_button, FunctionLoopedButton);
+  _range_group->addButton(selected_looped_button, FunctionSelectedLoopedButton);
+  
+  _parts_group->addButton(not_all_parts_button, FunctionSelectedPartsButton);
+  _parts_group->addButton(all_parts_button, FunctionAllPartsButton);
 }
 
 void Setlen::pull_values()
 {
-	range = range_group->checkedId();
+  //--------------------------------------------
+  // Grab IDs or values from common base object
+  //  (range and parts groups etc.)
+  //--------------------------------------------
+  
+  FunctionDialogBase::pull_values();
+  
+  //--------------------------------------------
+  // Grab this dialog's specific IDs or values.
+  //--------------------------------------------
+  
 	len = len_spinbox->value();
 }
 
-void Setlen::accept()
+void Setlen::setupDialog()
 {
-	pull_values();
-	QDialog::accept();
-}
-
-int Setlen::exec()
-{
-	if ((range < 0) || (range > 3)) range=0;
-	
-	range_group->button(range)->setChecked(true);
+  //------------------------------------
+  // Setup common base object items.
+  //------------------------------------
+  
+  FunctionDialogBase::setupDialog();
+  
+  //------------------------------------
+  // Setup this dialog's specific items.
+  //------------------------------------
+  
 	len_spinbox->setValue(len);
-	
-	return QDialog::exec();
 }
 
 void Setlen::read_configuration(MusECore::Xml& xml)
@@ -74,12 +96,22 @@ void Setlen::read_configuration(MusECore::Xml& xml)
 		switch (token)
 		{
 			case MusECore::Xml::TagStart:
-				if (tag == "range")
-					range=xml.parseInt();
-				else if (tag == "len")
-					len=xml.parseInt();
-				else
-					xml.unknown("SetLen");
+				        
+				//-----------------------------------------
+				// Handle any common base settings.
+				//-----------------------------------------
+				
+				if(!FunctionDialogBase::read_configuration(tag, xml))
+				{
+					//-----------------------------------------
+					// Handle this dialog's specific settings.
+					//-----------------------------------------
+					
+					if (tag == "len")
+						len=xml.parseInt();
+					else
+						xml.unknown("SetLen");
+				}
 				break;
 				
 			case MusECore::Xml::TagEnd:
@@ -95,7 +127,17 @@ void Setlen::read_configuration(MusECore::Xml& xml)
 void Setlen::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "setlen");
-	xml.intTag(level, "range", range);
+  
+  //-----------------------------------------
+  // Write any common base settings.
+  //-----------------------------------------
+  
+  FunctionDialogBase::write_configuration(level, xml);
+  
+  //-----------------------------------------
+  // Write this dialog's specific settings.
+  //-----------------------------------------
+  
 	xml.intTag(level, "len", len);
 	xml.tag(level, "/setlen");
 }

@@ -26,37 +26,29 @@
 
 namespace MusEGui {
 
-int DelOverlaps::range = 1;
-
 DelOverlaps::DelOverlaps(QWidget* parent)
-	: QDialog(parent)
+	: FunctionDialogBase(parent)
 {
-	setupUi(this);
-	range_group = new QButtonGroup;
-	range_group->addButton(all_events_button,0);
-	range_group->addButton(selected_events_button,1);
-	range_group->addButton(looped_events_button,2);
-	range_group->addButton(selected_looped_button,3);
-}
+  setupUi(this);
+  
+  //--------------------------------------------
+  // Set range and parts containers if available.
+  //--------------------------------------------
+  
+  _range_container = rangeBox;
+  _parts_container = partsBox;
 
-void DelOverlaps::pull_values()
-{
-	range = range_group->checkedId();
-}
-
-void DelOverlaps::accept()
-{
-	pull_values();
-	QDialog::accept();
-}
-
-int DelOverlaps::exec()
-{
-	if ((range < 0) || (range > 3)) range=0;
-	
-	range_group->button(range)->setChecked(true);
-	
-	return QDialog::exec();
+  //--------------------------------------------
+  // Add element widgets to range and parts groups.
+  //--------------------------------------------
+  
+  _range_group->addButton(all_events_button, FunctionAllEventsButton);
+  _range_group->addButton(selected_events_button,FunctionSelectedEventsButton);
+  _range_group->addButton(looped_events_button, FunctionLoopedButton);
+  _range_group->addButton(selected_looped_button, FunctionSelectedLoopedButton);
+  
+  _parts_group->addButton(not_all_parts_button, FunctionSelectedPartsButton);
+  _parts_group->addButton(all_parts_button, FunctionAllPartsButton);
 }
 
 void DelOverlaps::read_configuration(MusECore::Xml& xml)
@@ -71,10 +63,21 @@ void DelOverlaps::read_configuration(MusECore::Xml& xml)
 		switch (token)
 		{
 			case MusECore::Xml::TagStart:
-				if (tag == "range")
-					range=xml.parseInt();
-				else
+				        
+				//-----------------------------------------
+				// Handle any common base settings.
+				//-----------------------------------------
+				
+				if(!FunctionDialogBase::read_configuration(tag, xml))
+				{
+					//-----------------------------------------
+					// Handle this dialog's specific settings.
+					//-----------------------------------------
+					
+					// None.
+					
 					xml.unknown("DelOverlaps");
+				}
 				break;
 				
 			case MusECore::Xml::TagEnd:
@@ -90,7 +93,19 @@ void DelOverlaps::read_configuration(MusECore::Xml& xml)
 void DelOverlaps::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "del_overlaps");
-	xml.intTag(level, "range", range);
+  
+  //-----------------------------------------
+  // Write any common base settings.
+  //-----------------------------------------
+  
+  FunctionDialogBase::write_configuration(level, xml);
+  
+  //-----------------------------------------
+  // Write this dialog's specific settings.
+  //-----------------------------------------
+  
+  // None.
+  
 	xml.tag(level, "/del_overlaps");
 }
 

@@ -212,6 +212,12 @@ class ScoreEdit : public TopWin
 		void add_parts(MusECore::PartList* pl, bool all_in_one=false);
 		QString get_name() { return name; }
 		bool get_apply_velo() { return apply_velo; }
+		
+		// REMOVE Tim. citem. Added.
+		// Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
+		void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
+			const MusECore::Pos& = MusECore::Pos(),
+			const MusECore::Pos& = MusECore::Pos()) const;
 	};
 
 
@@ -872,6 +878,13 @@ class ScoreCanvas : public MusEGui::View
 		int delta_tick_to_delta_x(int t);
 		int x_to_tick(int x);
 		int calc_posadd(int t);
+    
+
+		// Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
+
+		void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
+			const MusECore::Pos& = MusECore::Pos(),
+			const MusECore::Pos& = MusECore::Pos()) const;
 };
 
 int calc_measure_len(const list<int>& nums, int denom);

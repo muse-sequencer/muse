@@ -166,6 +166,42 @@ Pos& Pos::operator+=(int a)
       return *this;
       }
 
+//---------------------------------------------------------
+//   operator-=
+//---------------------------------------------------------
+
+Pos& Pos::operator-=(Pos a)
+      {
+      switch(_type) {
+            case FRAMES:
+                  _frame -= a.frame();
+                  break;
+            case TICKS:
+                  _tick -= a.tick();
+                  break;
+            }
+      sn = -1;          // invalidate cached values
+      return *this;
+      }
+
+//---------------------------------------------------------
+//   operator-=
+//---------------------------------------------------------
+
+Pos& Pos::operator-=(int a)
+      {
+      switch(_type) {
+            case FRAMES:
+                  _frame -= a;
+                  break;
+            case TICKS:
+                  _tick -= a;
+                  break;
+            }
+      sn = -1;          // invalidate cached values
+      return *this;
+      }
+
 Pos operator+(Pos a, int b)
       {
       Pos c = a;
@@ -177,6 +213,19 @@ Pos operator+(Pos a, Pos b)
       {
       Pos c = a;
       return c += b;
+      }
+
+Pos operator-(Pos a, int b)
+      {
+      Pos c = a;
+      c.setType(a.type());
+      return c -= b;
+      }
+
+Pos operator-(Pos a, Pos b)
+      {
+      Pos c = a;
+      return c -= b;
       }
 
 bool Pos::operator>=(const Pos& s) const

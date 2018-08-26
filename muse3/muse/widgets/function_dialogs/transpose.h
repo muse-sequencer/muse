@@ -24,6 +24,7 @@
 #define __TRANSPOSE_H__
 
 #include "ui_transposebase.h"
+#include "function_dialog_base.h"
 
 class QButtonGroup;
 
@@ -33,27 +34,22 @@ class Xml;
 
 namespace MusEGui {
 
-class Transpose : public QDialog, public Ui::TransposeBase
+class Transpose : public FunctionDialogBase, public Ui::TransposeBase
 {
 		Q_OBJECT
-		QButtonGroup* range_group;
 		
 	protected slots:
-		void accept();
 		void pull_values();
 
 	public:
 		Transpose(QWidget* parent = 0);
 
-		static int range;
 		static int amount;
 		
 		static void read_configuration(MusECore::Xml& xml);
 		void write_configuration(int level, MusECore::Xml& xml);
 		
-		
-	public slots:
-		int exec();
+    void setupDialog();
 };
 
 } // namespace MusEGui

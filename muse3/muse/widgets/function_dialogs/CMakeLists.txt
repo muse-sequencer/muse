@@ -27,6 +27,7 @@
 QT5_WRAP_CPP (widgets_functiondialogs_mocs
       crescendo.h
       deloverlaps.h
+      function_dialog_base.h
       gatetime.h
       move.h
       quantize.h
@@ -61,6 +62,7 @@ QT5_WRAP_UI (widgets_functiondialogs_ui_headers ${widgets_functiondialogs_ui_fil
 file (GLOB widgets_functiondialogs_source_files
       crescendo.cpp
       deloverlaps.cpp
+      function_dialog_base.cpp
       gatetime.cpp
       move.cpp
       quantize.cpp

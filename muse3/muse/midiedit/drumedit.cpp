@@ -1382,100 +1382,106 @@ void DrumEdit::cmd(int cmd)
       if(canvas->getCurrentDrag())
         return;
       
-			switch(cmd) {
-// REMOVE Tim. citem. Changed.
-//             case DrumCanvas::CMD_CUT:
-//                   copy_notes(partlist_to_set(parts()), 1);
-//                   erase_notes(partlist_to_set(parts()), 1);
-//                   break;
-//             case DrumCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
-//             case DrumCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()),
-//               MusECore::any_event_selected(partlist_to_set(parts()), MusECore::AllEventsRelevant) ?
-//                   3 : 2); break;
-//             case DrumCanvas::CMD_PASTE: 
-//                   ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-//                   MusECore::paste_notes(3072, false, true, canvas->part());
-//                   break;
-// 						case DrumCanvas::CMD_PASTE: 
-// 															((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-// 															MusECore::paste_notes(3072, false, true);
-// 															break;
-// 						case DrumCanvas::CMD_PASTE_TO_CUR_PART: 
-// 															((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-// 															MusECore::paste_notes(3072, false, true, canvas->part());
-// 															break;
-// 						case DrumCanvas::CMD_PASTE_DIALOG: 
-// 									((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-// 									MusECore::paste_notes((canvas->part()));
-// 									break;
-						case DrumCanvas::CMD_CUT:
-									tagItems();
-									MusECore::erase_items();
-									break;
-						case DrumCanvas::CMD_COPY:
-									tagItems();
-									MusECore::copy_items();
-									break;
-						case DrumCanvas::CMD_COPY_RANGE:
-									tagItems(!itemsAreSelected(), false, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
-									MusECore::copy_items();
-									break;
-						case DrumCanvas::CMD_PASTE: 
-															((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-															MusECore::paste_items(partlist_to_set(parts()), 3072, false, true);
-															break;
-						case DrumCanvas::CMD_PASTE_TO_CUR_PART: 
-															((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-															MusECore::paste_items(partlist_to_set(parts()), 3072, false, true, canvas->part());
-															break;
-						case DrumCanvas::CMD_PASTE_DIALOG: 
-															((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-															MusECore::paste_items(partlist_to_set(parts()), (canvas->part()));
-															break;
-															
-						case DrumCanvas::CMD_LOAD: load(); break;
-						case DrumCanvas::CMD_SAVE: save(); break;
-						case DrumCanvas::CMD_RESET: reset(); break;
-						case DrumCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
-						case DrumCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
-						case DrumCanvas::CMD_QUANTIZE:
-									{
-									int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
-									if (quantize_dialog->exec())
-												quantize_notes(partlist_to_set(parts()), quantize_dialog->range, 
-																				(MusEGlobal::config.division*4)/raster,
-																				/* quant_len= */false, quantize_dialog->strength,  // DELETETHIS
-																				quantize_dialog->swing, quantize_dialog->threshold);
-									break;
-									}
-// 						case DrumCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
-						case DrumCanvas::CMD_ERASE_EVENT:
+      switch(cmd) {
+  // REMOVE Tim. citem. Changed.
+  //             case DrumCanvas::CMD_CUT:
+  //                   copy_notes(partlist_to_set(parts()), 1);
+  //                   erase_notes(partlist_to_set(parts()), 1);
+  //                   break;
+  //             case DrumCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
+  //             case DrumCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()),
+  //               MusECore::any_event_selected(partlist_to_set(parts()), MusECore::AllEventsRelevant) ?
+  //                   3 : 2); break;
+  //             case DrumCanvas::CMD_PASTE: 
+  //                   ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+  //                   MusECore::paste_notes(3072, false, true, canvas->part());
+  //                   break;
+  // 						case DrumCanvas::CMD_PASTE: 
+  // 															((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+  // 															MusECore::paste_notes(3072, false, true);
+  // 															break;
+  // 						case DrumCanvas::CMD_PASTE_TO_CUR_PART: 
+  // 															((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+  // 															MusECore::paste_notes(3072, false, true, canvas->part());
+  // 															break;
+  // 						case DrumCanvas::CMD_PASTE_DIALOG: 
+  // 									((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+  // 									MusECore::paste_notes((canvas->part()));
+  // 									break;
+            case DrumCanvas::CMD_CUT:
+                  tagItems();
+                  MusECore::cut_items();
+                  break;
+            case DrumCanvas::CMD_COPY:
+                  tagItems();
+                  MusECore::copy_items();
+                  break;
+            case DrumCanvas::CMD_COPY_RANGE:
+                  tagItems(!itemsAreSelected(), false, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
+                  MusECore::copy_items();
+                  break;
+            case DrumCanvas::CMD_PASTE: 
+                              ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+                              MusECore::paste_items(partlist_to_set(parts()), 3072, false, true);
+                              break;
+            case DrumCanvas::CMD_PASTE_TO_CUR_PART: 
+                              ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+                              MusECore::paste_items(partlist_to_set(parts()), 3072, false, true, canvas->part());
+                              break;
+            case DrumCanvas::CMD_PASTE_DIALOG: 
+                              ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+                              MusECore::paste_items(partlist_to_set(parts()), (canvas->part()));
+                              break;
+                              
+            case DrumCanvas::CMD_LOAD: load(); break;
+            case DrumCanvas::CMD_SAVE: save(); break;
+            case DrumCanvas::CMD_RESET: reset(); break;
+            case DrumCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
+            case DrumCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
+            case DrumCanvas::CMD_QUANTIZE:
+                  {
+                  int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
+                  if (quantize_dialog->exec())
+                        quantize_notes(partlist_to_set(parts()), quantize_dialog->range, 
+                                        (MusEGlobal::config.division*4)/raster,
+                                        /* quant_len= */false, quantize_dialog->strength,  // DELETETHIS
+                                        quantize_dialog->swing, quantize_dialog->threshold);
+                  break;
+                  }
+  // 						case DrumCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
+            case DrumCanvas::CMD_ERASE_EVENT:
             {
-							MusECore::FunctionDialogReturnVeloLen ret =
-							  MusECore::erase_items_dialog(MusECore::FunctionDialogMode(true, true, true));
+              FunctionDialogReturnVeloLen ret =
+                erase_items_dialog(FunctionDialogMode(
+                  FunctionAllEventsButton |
+                  FunctionSelectedEventsButton |
+                  FunctionLoopedButton |
+                  FunctionSelectedLoopedButton |
+                  FunctionAllPartsButton | 
+                  FunctionSelectedPartsButton));
               if(ret._valid)
                 tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
-							MusECore::erase_items(ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
+              MusECore::erase_items(ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
             }
-						break;
-// 						case DrumCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break; //delete selected events
-						case DrumCanvas::CMD_DEL:
-							tagItems();
-							MusECore::erase_items();
-						break;
-						case DrumCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
-						case DrumCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
-						case DrumCanvas::CMD_REORDER_LIST: ((DrumCanvas*)(canvas))->moveAwayUnused(); break;
-						//case DrumCanvas::CMD_FIXED_LEN: // this must be handled by the drum canvas, due to its
-																							// special nature (each drum has its own length)
-						
-						case DrumCanvas::CMD_GROUP_NONE: _group_mode=DONT_GROUP; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
-						case DrumCanvas::CMD_GROUP_CHAN: _group_mode=GROUP_SAME_CHANNEL; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
-						case DrumCanvas::CMD_GROUP_MAX: _group_mode=GROUP_MAX; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
-						
-						default: ((DrumCanvas*)(canvas))->cmd(cmd);
-						}
-			}
+            break;
+  // 						case DrumCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break; //delete selected events
+            case DrumCanvas::CMD_DEL:
+              tagItems();
+              MusECore::erase_items();
+            break;
+            case DrumCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
+            case DrumCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
+            case DrumCanvas::CMD_REORDER_LIST: ((DrumCanvas*)(canvas))->moveAwayUnused(); break;
+            //case DrumCanvas::CMD_FIXED_LEN: // this must be handled by the drum canvas, due to its
+                                              // special nature (each drum has its own length)
+            
+            case DrumCanvas::CMD_GROUP_NONE: _group_mode=DONT_GROUP; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
+            case DrumCanvas::CMD_GROUP_CHAN: _group_mode=GROUP_SAME_CHANNEL; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
+            case DrumCanvas::CMD_GROUP_MAX: _group_mode=GROUP_MAX; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
+            
+            default: ((DrumCanvas*)(canvas))->cmd(cmd);
+            }
+      }
 
 //---------------------------------------------------------
 //   clipboardChanged

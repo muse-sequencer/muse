@@ -26,43 +26,65 @@
 
 namespace MusEGui {
 
-int Legato::range = 1;
 int Legato::min_len = 0;
 bool Legato::allow_shortening = 0;
   
 Legato::Legato(QWidget* parent)
-	: QDialog(parent)
+  : FunctionDialogBase(parent)
 {
-	setupUi(this);
-	range_group = new QButtonGroup;
-	range_group->addButton(all_events_button,0);
-	range_group->addButton(selected_events_button,1);
-	range_group->addButton(looped_events_button,2);
-	range_group->addButton(selected_looped_button,3);
+  setupUi(this);
+  
+  //--------------------------------------------
+  // Set range and parts containers if available.
+  //--------------------------------------------
+  
+  _range_container = rangeBox;
+  _parts_container = partsBox;
+
+  //--------------------------------------------
+  // Add element widgets to range and parts groups.
+  //--------------------------------------------
+  
+  _range_group->addButton(all_events_button, FunctionAllEventsButton);
+  _range_group->addButton(selected_events_button,FunctionSelectedEventsButton);
+  _range_group->addButton(looped_events_button, FunctionLoopedButton);
+  _range_group->addButton(selected_looped_button, FunctionSelectedLoopedButton);
+  
+  _parts_group->addButton(not_all_parts_button, FunctionSelectedPartsButton);
+  _parts_group->addButton(all_parts_button, FunctionAllPartsButton);
 }
 
 void Legato::pull_values()
 {
-	range = range_group->checkedId();
+  //--------------------------------------------
+  // Grab IDs or values from common base object
+  //  (range and parts groups etc.)
+  //--------------------------------------------
+  
+  FunctionDialogBase::pull_values();
+  
+  //--------------------------------------------
+  // Grab this dialog's specific IDs or values.
+  //--------------------------------------------
+  
 	min_len = len_spinbox->value();
 	allow_shortening = allow_shorten_checkbox->isChecked();
 }
 
-void Legato::accept()
+void Legato::setupDialog()
 {
-	pull_values();
-	QDialog::accept();
-}
-
-int Legato::exec()
-{
-	if ((range < 0) || (range > 3)) range=0;
-	
-	range_group->button(range)->setChecked(true);
+  //------------------------------------
+  // Setup common base object items.
+  //------------------------------------
+  
+  FunctionDialogBase::setupDialog();
+  
+  //------------------------------------
+  // Setup this dialog's specific items.
+  //------------------------------------
+  
 	len_spinbox->setValue(min_len);
 	allow_shorten_checkbox->setChecked(allow_shortening);
-	
-	return QDialog::exec();
 }
 
 void Legato::read_configuration(MusECore::Xml& xml)
@@ -77,14 +99,24 @@ void Legato::read_configuration(MusECore::Xml& xml)
 		switch (token)
 		{
 			case MusECore::Xml::TagStart:
-				if (tag == "range")
-					range=xml.parseInt();
-				else if (tag == "min_len")
-					min_len=xml.parseInt();
-				else if (tag == "allow_shortening")
-					allow_shortening=xml.parseInt();
-				else
-					xml.unknown("Legato");
+				        
+				//-----------------------------------------
+				// Handle any common base settings.
+				//-----------------------------------------
+				
+				if(!FunctionDialogBase::read_configuration(tag, xml))
+				{
+					//-----------------------------------------
+					// Handle this dialog's specific settings.
+					//-----------------------------------------
+					
+					if (tag == "min_len")
+						min_len=xml.parseInt();
+					else if (tag == "allow_shortening")
+						allow_shortening=xml.parseInt();
+					else
+						xml.unknown("Legato");
+				}
 				break;
 				
 			case MusECore::Xml::TagEnd:
@@ -100,7 +132,17 @@ void Legato::read_configuration(MusECore::Xml& xml)
 void Legato::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "legato");
-	xml.intTag(level, "range", range);
+  
+  //-----------------------------------------
+  // Write any common base settings.
+  //-----------------------------------------
+  
+  FunctionDialogBase::write_configuration(level, xml);
+  
+  //-----------------------------------------
+  // Write this dialog's specific settings.
+  //-----------------------------------------
+  
 	xml.intTag(level, "min_len", min_len);
 	xml.intTag(level, "allow_shortening", allow_shortening);
 	xml.tag(level, "/legato");

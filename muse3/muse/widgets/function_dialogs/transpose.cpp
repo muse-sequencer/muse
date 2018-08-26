@@ -26,40 +26,62 @@
 
 namespace MusEGui {
 
-int Transpose::range = 1;
 int Transpose::amount = 0;
   
 Transpose::Transpose(QWidget* parent)
-	: QDialog(parent)
+	: FunctionDialogBase(parent)
 {
 	setupUi(this);
-	range_group = new QButtonGroup;
-	range_group->addButton(all_events_button,0);
-	range_group->addButton(selected_events_button,1);
-	range_group->addButton(looped_events_button,2);
-	range_group->addButton(selected_looped_button,3);
+  
+  //--------------------------------------------
+  // Set range and parts containers if available.
+  //--------------------------------------------
+  
+  _range_container = rangeBox;
+  _parts_container = partsBox;
+
+  //--------------------------------------------
+  // Add element widgets to range and parts groups.
+  //--------------------------------------------
+  
+  _range_group->addButton(all_events_button, FunctionAllEventsButton);
+  _range_group->addButton(selected_events_button,FunctionSelectedEventsButton);
+  _range_group->addButton(looped_events_button, FunctionLoopedButton);
+  _range_group->addButton(selected_looped_button, FunctionSelectedLoopedButton);
+  
+  _parts_group->addButton(not_all_parts_button, FunctionSelectedPartsButton);
+  _parts_group->addButton(all_parts_button, FunctionAllPartsButton);
 }
 
 void Transpose::pull_values()
 {
-	range = range_group->checkedId();
+  //--------------------------------------------
+  // Grab IDs or values from common base object
+  //  (range and parts groups etc.)
+  //--------------------------------------------
+  
+  FunctionDialogBase::pull_values();
+  
+  //--------------------------------------------
+  // Grab this dialog's specific IDs or values.
+  //--------------------------------------------
+  
 	amount = amount_spinbox->value();
 }
 
-void Transpose::accept()
+void Transpose::setupDialog()
 {
-	pull_values();
-	QDialog::accept();
-}
-
-int Transpose::exec()
-{
-	if ((range < 0) || (range > 3)) range=0;
-	
-	range_group->button(range)->setChecked(true);
+  //------------------------------------
+  // Setup common base object items.
+  //------------------------------------
+  
+  FunctionDialogBase::setupDialog();
+  
+  //------------------------------------
+  // Setup this dialog's specific items.
+  //------------------------------------
+  
 	amount_spinbox->setValue(amount);
-	
-	return QDialog::exec();
 }
 
 void Transpose::read_configuration(MusECore::Xml& xml)
@@ -74,12 +96,22 @@ void Transpose::read_configuration(MusECore::Xml& xml)
 		switch (token)
 		{
 			case MusECore::Xml::TagStart:
-				if (tag == "range")
-					range=xml.parseInt();
-				else if (tag == "amount")
-					amount=xml.parseInt();
-				else
-					xml.unknown("Transpose");
+				        
+				//-----------------------------------------
+				// Handle any common base settings.
+				//-----------------------------------------
+				
+				if(!FunctionDialogBase::read_configuration(tag, xml))
+				{
+					//-----------------------------------------
+					// Handle this dialog's specific settings.
+					//-----------------------------------------
+					
+					if (tag == "amount")
+						amount=xml.parseInt();
+					else
+						xml.unknown("Transpose");
+				}
 				break;
 				
 			case MusECore::Xml::TagEnd:
@@ -95,7 +127,17 @@ void Transpose::read_configuration(MusECore::Xml& xml)
 void Transpose::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "transpose");
-	xml.intTag(level, "range", range);
+  
+  //-----------------------------------------
+  // Write any common base settings.
+  //-----------------------------------------
+  
+  FunctionDialogBase::write_configuration(level, xml);
+  
+  //-----------------------------------------
+  // Write this dialog's specific settings.
+  //-----------------------------------------
+  
 	xml.intTag(level, "amount", amount);
 	xml.tag(level, "/transpose");
 }

@@ -24,6 +24,7 @@
 #define __LEGATO_H__
 
 #include "ui_legatobase.h"
+#include "function_dialog_base.h"
 
 class QButtonGroup;
 
@@ -33,30 +34,23 @@ class Xml;
 
 namespace MusEGui {
 
-class Legato : public QDialog, public Ui::LegatoBase
+class Legato : public FunctionDialogBase, public Ui::LegatoBase
 {
  	Q_OBJECT
-	private:
-		
-		QButtonGroup* range_group;
 		
 	protected slots:
-		void accept();
 		void pull_values();
 
 	public:
 		Legato(QWidget* parent = 0);
 
-		static int range;
 		static int min_len;
 		static bool allow_shortening;
 		
 		static void read_configuration(MusECore::Xml& xml);
 		void write_configuration(int level, MusECore::Xml& xml);
 		
-		
-	public slots:
-		int exec();
+    void setupDialog();
 };
 
 } // namespace MusEGui

@@ -266,9 +266,9 @@ class Canvas : public View {
       // Checks for duplicates, employing the 'tagged' features.
       //void getAllSelectedItems(CItemSet&) const;
       // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
-      void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
-        const MusECore::Pos& = MusECore::Pos(),
-        const MusECore::Pos& = MusECore::Pos()) const;
+      virtual void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
+        const MusECore::Pos& p0 = MusECore::Pos(),
+        const MusECore::Pos& p1 = MusECore::Pos()) const;
 
       Tool tool() const { return _tool; }
       MusECore::Part* part() const { return curPart; }
