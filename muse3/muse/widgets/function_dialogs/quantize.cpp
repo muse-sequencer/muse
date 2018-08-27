@@ -26,26 +26,15 @@
 
 namespace MusEGui {
 
+FunctionReturnDialogFlags_t Quantize::_ret_flags = FunctionReturnNoFlags;
+FunctionDialogElements_t Quantize::_elements = FunctionDialogNoElements;
+int Quantize::_range = FunctionSelectedEventsButton;
+int Quantize::_parts = FunctionSelectedPartsButton;
 int Quantize::strength = 90;
 int Quantize::threshold = 0;
 int Quantize::raster_index = 3;
 int Quantize::swing = 0;
 bool Quantize::quant_len = 1;
-
-
-int rasterVals[] = {
-  1, // Whole note divisor
-  2, // Half note divisor
-  4, // 4th note divisor
-  6, // 4thT divisor
-  8, // 8th divisor
-  12,//8thT divisor
-  16,// ...
-  24,
-  32,
-  48,
-  64
-};
 
 Quantize::Quantize(QWidget* parent)
 	: FunctionDialogBase(parent)
@@ -134,7 +123,11 @@ void Quantize::read_configuration(MusECore::Xml& xml)
 					// Handle this dialog's specific settings.
 					//-----------------------------------------
 					
-					if (tag == "strength")
+					if (tag == "range")
+						_range = xml.parseInt();
+					else if (tag == "parts")
+						_parts = xml.parseInt();
+					else if (tag == "strength")
 						strength=xml.parseInt();
 					else if (tag == "threshold")
 						threshold=xml.parseInt();
@@ -161,7 +154,7 @@ void Quantize::read_configuration(MusECore::Xml& xml)
 
 void Quantize::write_configuration(int level, MusECore::Xml& xml)
 {
-	xml.tag(level++, "quantize");
+  xml.tag(level++, "quantize");
   
   //-----------------------------------------
   // Write any common base settings.
@@ -173,12 +166,14 @@ void Quantize::write_configuration(int level, MusECore::Xml& xml)
   // Write this dialog's specific settings.
   //-----------------------------------------
   
-	xml.intTag(level, "strength", strength);
-	xml.intTag(level, "threshold", threshold);
+  xml.intTag(level, "range", _range);
+  xml.intTag(level, "parts", _parts);
+  xml.intTag(level, "strength", strength);
+  xml.intTag(level, "threshold", threshold);
   xml.intTag(level, "raster", raster_index);
-	xml.intTag(level, "swing", swing);
-	xml.intTag(level, "quant_len", quant_len);
-	xml.tag(level, "/quantize");
+  xml.intTag(level, "swing", swing);
+  xml.intTag(level, "quant_len", quant_len);
+  xml.tag(level, "/quantize");
 }
 
 } // namespace MusEGui

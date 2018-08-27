@@ -26,6 +26,10 @@
 
 namespace MusEGui {
 
+FunctionReturnDialogFlags_t Move::_ret_flags = FunctionReturnNoFlags;
+FunctionDialogElements_t Move::_elements = FunctionDialogNoElements;
+int Move::_range = FunctionSelectedEventsButton;
+int Move::_parts = FunctionSelectedPartsButton;
 int Move::amount = 0;
   
 Move::Move(QWidget* parent)
@@ -107,7 +111,11 @@ void Move::read_configuration(MusECore::Xml& xml)
 					// Handle this dialog's specific settings.
 					//-----------------------------------------
 					
-					if (tag == "amount")
+					if (tag == "range")
+						_range = xml.parseInt();
+					else if (tag == "parts")
+						_parts = xml.parseInt();
+					else if (tag == "amount")
 						amount=xml.parseInt();
 					else
 						xml.unknown("Move");
@@ -126,7 +134,7 @@ void Move::read_configuration(MusECore::Xml& xml)
 
 void Move::write_configuration(int level, MusECore::Xml& xml)
 {
-	xml.tag(level++, "move");
+  xml.tag(level++, "move");
   
   //-----------------------------------------
   // Write any common base settings.
@@ -138,8 +146,10 @@ void Move::write_configuration(int level, MusECore::Xml& xml)
   // Write this dialog's specific settings.
   //-----------------------------------------
   
-	xml.intTag(level, "amount", amount);
-	xml.tag(level, "/move");
+  xml.intTag(level, "range", _range);
+  xml.intTag(level, "parts", _parts);
+  xml.intTag(level, "amount", amount);
+  xml.tag(level, "/move");
 }
 
 } // namespace MusEGui

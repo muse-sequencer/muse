@@ -72,7 +72,7 @@ class FunctionDialogReturnBase
     _allParts(allParts), _range(useRange), _pos0(pos0), _pos1(pos1) { }
 };
 
-class FunctionDialogReturnVeloLen : public FunctionDialogReturnBase
+class FunctionDialogReturnErase : public FunctionDialogReturnBase
 {
   public:
   bool _veloThresUsed;
@@ -80,10 +80,10 @@ class FunctionDialogReturnVeloLen : public FunctionDialogReturnBase
   bool _lenThresUsed;
   int  _lenThreshold;
 
-  FunctionDialogReturnVeloLen() : FunctionDialogReturnBase(),
+  FunctionDialogReturnErase() : FunctionDialogReturnBase(),
       _veloThresUsed(false), _veloThreshold(0),
       _lenThresUsed(false), _lenThreshold(0) { }
-  FunctionDialogReturnVeloLen(bool allEvents, bool allParts,
+  FunctionDialogReturnErase(bool allEvents, bool allParts,
                         bool useRange = false,
                         const MusECore::Pos& pos0 = MusECore::Pos(), const MusECore::Pos& pos1 = MusECore::Pos(),
                         bool veloThresUsed = false, int veloThreshold = 0,
@@ -242,7 +242,7 @@ class FunctionDialogReturnVelocity : public FunctionDialogReturnBase
   
   //the below functions automatically open the dialog
   //they return true if you click "ok" and false if "abort"
-  FunctionDialogReturnVeloLen     erase_items_dialog      (const FunctionDialogMode&);
+  FunctionDialogReturnErase       erase_items_dialog      (const FunctionDialogMode&);
   FunctionDialogReturnCrescendo   crescendo_items_dialog  (const FunctionDialogMode&);
   FunctionDialogReturnDelOverlaps deloverlaps_items_dialog(const FunctionDialogMode&);
   FunctionDialogReturnGateTime    gatetime_items_dialog   (const FunctionDialogMode&);
@@ -270,8 +270,7 @@ bool modify_velocity(const std::set<const Part*>& parts, int range, int rate, in
 bool modify_off_velocity(const std::set<const Part*>& parts, int range, int rate, int offset=0);
 bool modify_notelen(const std::set<const Part*>& parts, int range, int rate, int offset=0);
 bool quantize_notes(const std::set<const Part*>& parts, int range, int raster, bool len=false, int strength=100, int swing=0, int threshold=0);
-// REMOVE Tim. citem. Removed.
-// bool erase_notes(const std::set<const Part*>& parts, int range, int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
+bool erase_notes(const std::set<const Part*>& parts, int range, int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
 bool delete_overlaps(const std::set<const Part*>& parts, int range);
 bool set_notelen(const std::set<const Part*>& parts, int range, int len);
 bool move_notes(const std::set<const Part*>& parts, int range, signed int ticks);
@@ -283,9 +282,28 @@ bool legato(const std::set<const Part*>& parts, int range, int min_len=1, bool d
 
 
 bool erase_items(int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
+void copy_items();
 bool cut_items();
 bool delete_overlaps_items();
 bool crescendo_items(int start_val, int end_val, bool absolute);
+bool modify_notelen_items(int rate, int offset=0);
+bool legato_items(int min_len=1, bool dont_shorten=false);
+bool move_items(signed int ticks);
+bool quantize_items(int raster, bool quant_len=false, int strength=100, int swing=0, int threshold=0);
+bool set_notelen_items(int len);
+bool transpose_items(signed int halftonesteps);
+bool modify_velocity_items(int rate, int offset=0);
+bool modify_off_velocity_items(int rate, int offset=0);
+
+QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode = false, bool untag_when_done = true);
+
+bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part=NULL); // shows a dialog
+void paste_items(const std::set<const Part*>& parts, int max_distance=3072,
+                 bool always_new_part=false, bool never_new_part=false,
+                 const Part* paste_into_part=NULL, int amount=1, int raster=3072);
+void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int pos, int max_distance=3072,
+              bool always_new_part=false, bool never_new_part=false,
+              const Part* paste_into_part=NULL, int amount=1, int raster=3072);
 // Ensures that all events are untagged. Useful for aborting dialog etc.
 void untag_all_items();
 
@@ -294,53 +312,40 @@ void untag_all_items();
 
 //the below functions automatically open the dialog
 //they return true if you click "ok" and false if "abort"
-bool modify_velocity(const std::set<const Part*>& parts);
-bool modify_notelen(const std::set<const Part*>& parts);
-bool quantize_notes(const std::set<const Part*>& parts);
-bool set_notelen(const std::set<const Part*>& parts);
-bool move_notes(const std::set<const Part*>& parts);
-bool transpose_notes(const std::set<const Part*>& parts);
-bool crescendo(const std::set<const Part*>& parts);
-// bool erase_notes(const std::set<const Part*>& parts);  // REMOVE Tim. citem. Removed.
-// FunctionDialogReturnVeloLen erase_items_dialog(const FunctionDialogMode&); // REMOVE Tim. citem. Removed. Moved into MusEGui.
-bool delete_overlaps(const std::set<const Part*>& parts);
-bool legato(const std::set<const Part*>& parts);
-
-//the below functions operate on selected parts
-bool modify_velocity();
-bool modify_notelen();
-bool quantize_notes();
-bool set_notelen();
-bool move_notes();
-bool transpose_notes();
-bool crescendo();
-// bool erase_notes();  // REMOVE Tim. citem. Removed.
-bool delete_overlaps();
-bool legato();
+// REMOVE Tim. citem. Removed.
+// bool modify_velocity(const std::set<const Part*>& parts);
+// bool modify_notelen(const std::set<const Part*>& parts);
+// bool quantize_notes(const std::set<const Part*>& parts);
+// bool set_notelen(const std::set<const Part*>& parts);
+// bool move_notes(const std::set<const Part*>& parts);
+// bool transpose_notes(const std::set<const Part*>& parts);
+// bool crescendo(const std::set<const Part*>& parts);
+// bool erase_notes(const std::set<const Part*>& parts);
+// bool delete_overlaps(const std::set<const Part*>& parts);
+// bool legato(const std::set<const Part*>& parts);
+// 
+// //the below functions operate on selected parts
+// bool modify_velocity();
+// bool modify_notelen();
+// bool quantize_notes();
+// bool set_notelen();
+// bool move_notes();
+// bool transpose_notes();
+// bool crescendo();
+// bool erase_notes();
+// bool delete_overlaps();
+// bool legato();
 
 
 //functions for copy'n'paste
 void copy_notes(const std::set<const Part*>& parts, int range);
-void copy_items();  // REMOVE Tim. citem. Added.
 bool paste_notes(const Part* paste_into_part=NULL); // shows a dialog
 void paste_notes(int max_distance=3072,
                  bool always_new_part=false, bool never_new_part=false,
                  const Part* paste_into_part=NULL, int amount=1, int raster=3072);
-bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part=NULL); // shows a dialog
-void paste_items(const std::set<const Part*>& parts, int max_distance=3072,
-                 bool always_new_part=false, bool never_new_part=false,
-                 const Part* paste_into_part=NULL, int amount=1, int raster=3072);
 QMimeData* selected_events_to_mime(const std::set<const Part*>& parts, int range);
 QMimeData* parts_to_mime(const std::set<const Part*>& parts);
-// REMOVE Tim. citem. Added.
-// QMimeData* tagged_items_to_mime(bool untag_when_done = true); // REMOVE Tim. citem. Added.
-QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode = false, bool untag_when_done = true);
-
-
 void paste_at(const QString& pt, int pos, int max_distance=3072,
-              bool always_new_part=false, bool never_new_part=false,
-              const Part* paste_into_part=NULL, int amount=1, int raster=3072);
-void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int pos, int max_distance=3072,
               bool always_new_part=false, bool never_new_part=false,
               const Part* paste_into_part=NULL, int amount=1, int raster=3072);
 

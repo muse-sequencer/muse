@@ -26,6 +26,10 @@
 
 namespace MusEGui {
 
+FunctionReturnDialogFlags_t Transpose::_ret_flags = FunctionReturnNoFlags;
+FunctionDialogElements_t Transpose::_elements = FunctionDialogNoElements;
+int Transpose::_range = FunctionSelectedEventsButton;
+int Transpose::_parts = FunctionSelectedPartsButton;
 int Transpose::amount = 0;
   
 Transpose::Transpose(QWidget* parent)
@@ -107,7 +111,11 @@ void Transpose::read_configuration(MusECore::Xml& xml)
 					// Handle this dialog's specific settings.
 					//-----------------------------------------
 					
-					if (tag == "amount")
+					if (tag == "range")
+						_range = xml.parseInt();
+					else if (tag == "parts")
+						_parts = xml.parseInt();
+					else if (tag == "amount")
 						amount=xml.parseInt();
 					else
 						xml.unknown("Transpose");
@@ -126,7 +134,7 @@ void Transpose::read_configuration(MusECore::Xml& xml)
 
 void Transpose::write_configuration(int level, MusECore::Xml& xml)
 {
-	xml.tag(level++, "transpose");
+  xml.tag(level++, "transpose");
   
   //-----------------------------------------
   // Write any common base settings.
@@ -138,8 +146,10 @@ void Transpose::write_configuration(int level, MusECore::Xml& xml)
   // Write this dialog's specific settings.
   //-----------------------------------------
   
-	xml.intTag(level, "amount", amount);
-	xml.tag(level, "/transpose");
+  xml.intTag(level, "range", _range);
+  xml.intTag(level, "parts", _parts);
+  xml.intTag(level, "amount", amount);
+  xml.tag(level, "/transpose");
 }
 
 } // namespace MusEGui

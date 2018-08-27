@@ -688,6 +688,13 @@ void ArrangerView::cmd(int cmd)
       int l = MusEGlobal::song->lpos();
       int r = MusEGlobal::song->rpos();
 
+      
+      const FunctionDialogElements_t fn_element_dflt =
+        FunctionAllEventsButton |
+        FunctionLoopedButton |
+        FunctionAllPartsButton | 
+        FunctionSelectedPartsButton;
+
       switch(cmd) {
             case CMD_CUT:
                   arranger->cmd(Arranger::CMD_CUT_PART);
@@ -792,32 +799,119 @@ void ArrangerView::cmd(int cmd)
             case CMD_EXPAND_PART: MusECore::expand_parts(); break;
             case CMD_CLEAN_PART: MusECore::clean_parts(); break;      
 
-            case CMD_QUANTIZE: MusECore::quantize_notes(); break;
-            case CMD_VELOCITY: MusECore::modify_velocity(); break;
-            case CMD_CRESCENDO: MusECore::crescendo(); break;
-            case CMD_NOTELEN: MusECore::modify_notelen(); break;
-            case CMD_TRANSPOSE: MusECore::transpose_notes(); break;
+// REMOVE Tim. citem. Changed.
+//             case CMD_QUANTIZE: MusECore::quantize_notes(); break;
+            case CMD_QUANTIZE:
+                  {
+                  FunctionDialogReturnQuantize ret =
+                    quantize_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::quantize_items(ret._raster_index,
+                                           /*ret._quant_len*/ false,  // DELETETHIS
+                                           ret._strength,
+                                           ret._swing,
+                                           ret._threshold);
+                  break;
+                  }
+            
+//             case CMD_VELOCITY: MusECore::modify_velocity(); break;
+            case CMD_VELOCITY:
+                  {
+                  FunctionDialogReturnVelocity ret =
+                    velocity_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::modify_velocity_items(ret._rateVal, ret._offsetVal);
+                  break;
+                  }
+//             case CMD_CRESCENDO: MusECore::crescendo(); break;
+            case CMD_CRESCENDO:
+                  {
+                  FunctionDialogReturnCrescendo ret =
+                    crescendo_items_dialog(FunctionDialogMode(
+                      FunctionLoopedButton |
+                      FunctionSelectedLoopedButton |
+                      FunctionAllPartsButton | 
+                      FunctionSelectedPartsButton));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::crescendo_items(ret._start_val, ret._end_val, ret._absolute);
+                  break;
+                  }
+//             case CMD_NOTELEN: MusECore::modify_notelen(); break;
+            case CMD_NOTELEN:
+                  {
+                  FunctionDialogReturnGateTime ret =
+                    gatetime_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::modify_notelen_items(ret._rateVal, ret._offsetVal);
+                  break;
+                  }
+//             case CMD_TRANSPOSE: MusECore::transpose_notes(); break;
+            case CMD_TRANSPOSE:
+                  {
+                  FunctionDialogReturnTranspose ret =
+                    transpose_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::transpose_items(ret._amount);
+                  break;
+                  }
             
             case CMD_ERASE:
             {
 // REMOVE Tim. citem. Changed.
 //               MusECore::erase_notes();
-              FunctionDialogReturnVeloLen ret =
-                erase_items_dialog(FunctionDialogMode(
-                  FunctionAllEventsButton |
-                  FunctionLoopedButton |
-                  FunctionAllPartsButton | 
-                  FunctionSelectedPartsButton));
+              FunctionDialogReturnErase ret =
+                erase_items_dialog(FunctionDialogMode(fn_element_dflt));
               if(ret._valid)
                 tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
               MusECore::erase_items(ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
             }
             break;
             
-            case CMD_MOVE: MusECore::move_notes(); break;
-            case CMD_FIXED_LEN: MusECore::set_notelen(); break;
-            case CMD_DELETE_OVERLAPS: MusECore::delete_overlaps(); break;
-            case CMD_LEGATO: MusECore::legato(); break;
+//             case CMD_MOVE: MusECore::move_notes(); break;
+            case CMD_MOVE:
+                  {
+                  FunctionDialogReturnMove ret =
+                    move_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::move_items(ret._amount);
+                  break;
+                  }
+//             case CMD_FIXED_LEN: MusECore::set_notelen(); break;
+            case CMD_FIXED_LEN:
+                  {
+                  FunctionDialogReturnSetLen ret =
+                    setlen_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::set_notelen_items(ret._len);
+                  break;
+                  }
+//             case CMD_DELETE_OVERLAPS: MusECore::delete_overlaps(); break;
+            case CMD_DELETE_OVERLAPS:
+                  {
+                  FunctionDialogReturnDelOverlaps ret =
+                    deloverlaps_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::delete_overlaps_items();
+                  break;
+                  }
+//             case CMD_LEGATO: MusECore::legato(); break;
+            case CMD_LEGATO:
+                  {
+                  FunctionDialogReturnLegato ret =
+                    legato_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::legato_items(ret._min_len, !ret._allow_shortening);
+                  break;
+                  }
 
             }
       }

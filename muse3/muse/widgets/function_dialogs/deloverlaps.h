@@ -38,14 +38,27 @@ class DelOverlaps : public FunctionDialogBase, public Ui::DelOverlapsBase
 {
  	Q_OBJECT
 		
-	protected slots:
-		void pull_values();
-
 	public:
 		DelOverlaps(QWidget* parent = 0);
 
+		static int _range;
+		static int _parts;
+		static FunctionReturnDialogFlags_t _ret_flags;
+		static FunctionDialogElements_t _elements;
+
+		static void setElements(FunctionDialogElements_t elements =
+			FunctionAllEventsButton | FunctionSelectedEventsButton |
+			FunctionLoopedButton | FunctionSelectedLoopedButton) { _elements = elements; }
+
 		static void read_configuration(MusECore::Xml& xml);
 		void write_configuration(int level, MusECore::Xml& xml);
+    
+    int curRange() const { return _range; }
+    void setCurRange(int range) { _range = range; }
+    int curParts() const { return _parts; }
+    void setCurParts(int parts) { _parts = parts; }
+    void setReturnFlags(FunctionReturnDialogFlags_t f) { _ret_flags = f; }
+    FunctionDialogElements_t elements() const { return _elements; }
 };
 
 } // namespace MusEGui

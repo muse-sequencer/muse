@@ -64,46 +64,29 @@ using MusEGlobal::config;
 
 namespace MusEGui {
 
-FunctionDialogReturnVeloLen erase_items_dialog(const FunctionDialogMode& mode)
+FunctionDialogReturnErase erase_items_dialog(const FunctionDialogMode& mode)
 {
   erase_dialog->setElements(mode._buttons);
   if(!erase_dialog->exec())
-    return FunctionDialogReturnVeloLen();
+    return FunctionDialogReturnErase();
     
-//   return FunctionDialogReturnVeloLen(!(MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_SELECTED),
-//                               MusEGui::erase_dialog->parts & FUNCTION_ALL_PARTS,
-//                               MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS,
-//                               MusEGlobal::song->lPos(), MusEGlobal::song->rPos(),
-//                               MusEGui::erase_dialog->velo_thres_used, MusEGui::erase_dialog->velo_threshold,
-//                               MusEGui::erase_dialog->len_thres_used, MusEGui::erase_dialog->len_threshold);
-//   const int range = erase_dialog->range;
-//   const int parts = erase_dialog->parts;
-//   const bool all_events = range == FunctionAllEventsButton || range == FunctionLoopedButton;
-//   const bool range_events = range == FunctionLoopedButton || range == FunctionSelectedLoopedButton;
-//   const bool all_parts = parts == FunctionAllPartsButton;
-
   const int flags = erase_dialog->_ret_flags;
-  return FunctionDialogReturnVeloLen(flags & FunctionReturnAllEvents,
+  return FunctionDialogReturnErase(flags & FunctionReturnAllEvents,
                                      flags & FunctionReturnAllParts,
                                      flags & FunctionReturnLooped,
                                      MusEGlobal::song->lPos(), MusEGlobal::song->rPos(),
                                      erase_dialog->velo_thres_used, erase_dialog->velo_threshold,
                                      erase_dialog->len_thres_used, erase_dialog->len_threshold);
-
-  //   // TODO For now only do current part. Add support for 'all parts' option.
-  //   if(range_items)
-  //     editor->tagItems(!selected_items, false, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
-  //   else
-  //     editor->tagItems(!selected_items, false);
-  //   
-  //   erase_items(MusEGui::erase_dialog->velo_threshold, MusEGui::erase_dialog->velo_thres_used, 
-  //               MusEGui::erase_dialog->len_threshold, MusEGui::erase_dialog->len_thres_used );
-  // 
-  //   return true;
 }
 
 FunctionDialogReturnCrescendo crescendo_items_dialog(const FunctionDialogMode& mode)
 {
+  if (MusEGlobal::song->rPos() <= MusEGlobal::song->lPos())
+  {
+    QMessageBox::warning(NULL, QObject::tr("Error"), QObject::tr("Please first select the range for crescendo with the loop markers."));
+    return FunctionDialogReturnCrescendo();
+  }
+  
   crescendo_dialog->setElements(mode._buttons);
   if(!crescendo_dialog->exec())
     return FunctionDialogReturnCrescendo();
@@ -349,64 +332,40 @@ map<const Event*, const Part*> get_events(const set<const Part*>& parts, int ran
 }
 
 
-void untag_all_items()
-{
-	Part* part;
-	PartList* pl;
-	TrackList* tl = MusEGlobal::song->tracks();
-	
-	// We must clear all the tagged flags...
-	for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-	{
-		pl = (*it)->parts();
-		for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-		{
-			part = ip->second;
-			part->setTagged(false);
-			if(part->eventsTagged())
-			{
-				part->setEventsTagged(false);
-				EventList& el = part->nonconst_events();
-				for(iEvent ie = el.begin(); ie != el.end(); ie++)
-					ie->second.setTagged(false);
-			}
-		}
-	}
-}
 
-
-bool modify_notelen(const set<const Part*>& parts)
-{
-	if (!MusEGui::gatetime_dialog->exec())
-		return false;
-		
-	modify_notelen(parts,MusEGui::gatetime_dialog->range,MusEGui::gatetime_dialog->rateVal,MusEGui::gatetime_dialog->offsetVal);
-	
-	return true;
-}
-
-bool modify_velocity(const set<const Part*>& parts)
-{
-	if (!MusEGui::velocity_dialog->exec())
-		return false;
-		
-	modify_velocity(parts,MusEGui::velocity_dialog->range,MusEGui::velocity_dialog->rateVal,MusEGui::velocity_dialog->offsetVal);
-	
-	return true;
-}
-
-bool quantize_notes(const set<const Part*>& parts)
-{
-	if (!MusEGui::quantize_dialog->exec())
-		return false;
-
-  int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
-  quantize_notes(parts, MusEGui::quantize_dialog->range, (MusEGlobal::config.division*4)/raster,
-	               MusEGui::quantize_dialog->quant_len, MusEGui::quantize_dialog->strength, MusEGui::quantize_dialog->swing,
-	               MusEGui::quantize_dialog->threshold);
-	
-	return true;
-}
+// REMOVE Tim. citem. Removed.
+// bool modify_notelen(const set<const Part*>& parts)
+// {
+// 	if (!MusEGui::gatetime_dialog->exec())
+// 		return false;
+// 		
+// 	modify_notelen(parts,MusEGui::gatetime_dialog->range,MusEGui::gatetime_dialog->rateVal,MusEGui::gatetime_dialog->offsetVal);
+// 	
+// 	return true;
+// }
+// 
+// bool modify_velocity(const set<const Part*>& parts)
+// {
+// 	if (!MusEGui::velocity_dialog->exec())
+// 		return false;
+// 		
+// 	modify_velocity(parts,MusEGui::velocity_dialog->range,MusEGui::velocity_dialog->rateVal,MusEGui::velocity_dialog->offsetVal);
+// 	
+// 	return true;
+// }
+// 
+// bool quantize_notes(const set<const Part*>& parts)
+// {
+// 	if (!MusEGui::quantize_dialog->exec())
+// 		return false;
+// 
+//   int raster = MusEGui::functionQuantizeRasterVals[MusEGui::quantize_dialog->raster_index];
+//   quantize_notes(parts, MusEGui::quantize_dialog->range, (MusEGlobal::config.division*4)/raster,
+// 	               MusEGui::quantize_dialog->quant_len, MusEGui::quantize_dialog->strength, MusEGui::quantize_dialog->swing,
+// 	               MusEGui::quantize_dialog->threshold);
+// 	
+// 	return true;
+// }
 
 // REMOVE Tim. citem. Removed.
 // bool erase_notes(const set<const Part*>& parts)
@@ -420,7 +379,7 @@ bool quantize_notes(const set<const Part*>& parts)
 // 	
 // 	return true;
 // }
-
+/*
 bool delete_overlaps(const set<const Part*>& parts)
 {
 	if (!MusEGui::del_overlaps_dialog->exec())
@@ -532,13 +491,13 @@ bool quantize_notes()
 	else
 		parts=get_all_parts();
 
-  int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
+  int raster = MusEGui::functionQuantizeRasterVals[MusEGui::quantize_dialog->raster_index];
   quantize_notes(parts, MusEGui::quantize_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, (config.division*4)/raster,
 	               MusEGui::quantize_dialog->quant_len, MusEGui::quantize_dialog->strength, MusEGui::quantize_dialog->swing,
 	               MusEGui::quantize_dialog->threshold);
 	
 	return true;
-}
+}*/
 
 // REMOVE Tim. citem. Removed.
 // bool erase_notes()
@@ -559,110 +518,111 @@ bool quantize_notes()
 // 	return true;
 // }
 
-bool delete_overlaps()
-{
-	if (!MusEGui::del_overlaps_dialog->exec())
-		return false;
-		
-	set<const Part*> parts;
-	if (MusEGui::del_overlaps_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
-		parts=get_all_selected_parts();
-	else
-		parts=get_all_parts();
-		
-	delete_overlaps(parts,MusEGui::erase_dialog->_range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS);
-	
-	return true;
-}
-
-bool set_notelen()
-{
-	if (!MusEGui::set_notelen_dialog->exec())
-		return false;
-		
-	set<const Part*> parts;
-	if (MusEGui::set_notelen_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
-		parts=get_all_selected_parts();
-	else
-		parts=get_all_parts();
-		
-	set_notelen(parts,MusEGui::set_notelen_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::set_notelen_dialog->len);
-	
-	return true;
-}
-
-bool move_notes()
-{
-	if (!MusEGui::move_notes_dialog->exec())
-		return false;
-		
-	set<const Part*> parts;
-	if (MusEGui::move_notes_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
-		parts=get_all_selected_parts();
-	else
-		parts=get_all_parts();
-		
-	move_notes(parts,MusEGui::move_notes_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::move_notes_dialog->amount);
-	
-	return true;
-}
-
-bool transpose_notes()
-{
-	if (!MusEGui::transpose_dialog->exec())
-		return false;
-		
-	set<const Part*> parts;
-	if (MusEGui::transpose_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
-		parts=get_all_selected_parts();
-	else
-		parts=get_all_parts();
-		
-	transpose_notes(parts,MusEGui::transpose_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::transpose_dialog->amount);
-	
-	return true;
-}
-
-bool crescendo()
-{
-	if (MusEGlobal::song->rpos() <= MusEGlobal::song->lpos())
-	{
-		QMessageBox::warning(NULL, QObject::tr("Error"), QObject::tr("Please first select the range for crescendo with the loop markers."));
-		return false;
-	}
-	
-	if (!MusEGui::crescendo_dialog->exec())
-		return false;
-		
-	set<const Part*> parts;
-	if (MusEGui::crescendo_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
-		parts=get_all_selected_parts();
-	else
-		parts=get_all_parts();
-		
-	crescendo(parts,MusEGui::crescendo_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::crescendo_dialog->start_val,MusEGui::crescendo_dialog->end_val,MusEGui::crescendo_dialog->absolute);
-	
-	return true;
-}
-
-bool legato()
-{
-	if (!MusEGui::legato_dialog->exec())
-		return false;
-		
-	set<const Part*> parts;
-	if (MusEGui::legato_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
-		parts=get_all_selected_parts();
-	else
-		parts=get_all_parts();
-		
-	legato(parts,MusEGui::legato_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::legato_dialog->min_len, !MusEGui::legato_dialog->allow_shortening);
-	
-	return true;
-}
-
-
-
+// REMOVE Tim. citem. Removed.
+// bool delete_overlaps()
+// {
+// 	if (!MusEGui::del_overlaps_dialog->exec())
+// 		return false;
+// 		
+// 	set<const Part*> parts;
+// 	if (MusEGui::del_overlaps_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+// 		parts=get_all_selected_parts();
+// 	else
+// 		parts=get_all_parts();
+// 		
+// 	delete_overlaps(parts,MusEGui::erase_dialog->_range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS);
+// 	
+// 	return true;
+// }
+// 
+// bool set_notelen()
+// {
+// 	if (!MusEGui::set_notelen_dialog->exec())
+// 		return false;
+// 		
+// 	set<const Part*> parts;
+// 	if (MusEGui::set_notelen_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+// 		parts=get_all_selected_parts();
+// 	else
+// 		parts=get_all_parts();
+// 		
+// 	set_notelen(parts,MusEGui::set_notelen_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::set_notelen_dialog->len);
+// 	
+// 	return true;
+// }
+// 
+// bool move_notes()
+// {
+// 	if (!MusEGui::move_notes_dialog->exec())
+// 		return false;
+// 		
+// 	set<const Part*> parts;
+// 	if (MusEGui::move_notes_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+// 		parts=get_all_selected_parts();
+// 	else
+// 		parts=get_all_parts();
+// 		
+// 	move_notes(parts,MusEGui::move_notes_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::move_notes_dialog->amount);
+// 	
+// 	return true;
+// }
+// 
+// bool transpose_notes()
+// {
+// 	if (!MusEGui::transpose_dialog->exec())
+// 		return false;
+// 		
+// 	set<const Part*> parts;
+// 	if (MusEGui::transpose_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+// 		parts=get_all_selected_parts();
+// 	else
+// 		parts=get_all_parts();
+// 		
+// 	transpose_notes(parts,MusEGui::transpose_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::transpose_dialog->amount);
+// 	
+// 	return true;
+// }
+// 
+// bool crescendo()
+// {
+// 	if (MusEGlobal::song->rpos() <= MusEGlobal::song->lpos())
+// 	{
+// 		QMessageBox::warning(NULL, QObject::tr("Error"), QObject::tr("Please first select the range for crescendo with the loop markers."));
+// 		return false;
+// 	}
+// 	
+// 	if (!MusEGui::crescendo_dialog->exec())
+// 		return false;
+// 		
+// 	set<const Part*> parts;
+// 	if (MusEGui::crescendo_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+// 		parts=get_all_selected_parts();
+// 	else
+// 		parts=get_all_parts();
+// 		
+// 	crescendo(parts,MusEGui::crescendo_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::crescendo_dialog->start_val,MusEGui::crescendo_dialog->end_val,MusEGui::crescendo_dialog->absolute);
+// 	
+// 	return true;
+// }
+// 
+// bool legato()
+// {
+// 	if (!MusEGui::legato_dialog->exec())
+// 		return false;
+// 		
+// 	set<const Part*> parts;
+// 	if (MusEGui::legato_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+// 		parts=get_all_selected_parts();
+// 	else
+// 		parts=get_all_parts();
+// 		
+// 	legato(parts,MusEGui::legato_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::legato_dialog->min_len, !MusEGui::legato_dialog->allow_shortening);
+// 	
+// 	return true;
+// }
+// 
+// 
+// 
 
 
 
@@ -852,204 +812,31 @@ bool quantize_notes(const set<const Part*>& parts, int range, int raster, bool q
 		return false;
 }
 
+bool erase_notes(const set<const Part*>& parts, int range, int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
+{
+	map<const Event*, const Part*> events = get_events(parts, range);
+	Undo operations;
+	
+	if (!events.empty())
+	{
+		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
+		{
+			const Event& event=*(it->first);
+			const Part* part=it->second;
+
+			if ( (!velo_thres_used && !len_thres_used) ||
+			     (velo_thres_used && event.velo() < velo_threshold) ||
+			     (len_thres_used && int(event.lenTick()) < len_threshold) )
+				operations.push_back(UndoOp(UndoOp::DeleteEvent, event, part, false, false));
+		}
+		
+		return MusEGlobal::song->applyOperationGroup(operations);
+	}
+	else
+		return false;
+}
+
 // REMOVE Tim. citem. Removed.
-// bool erase_notes(const set<const Part*>& parts, int range, int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
-// {
-// 	map<const Event*, const Part*> events = get_events(parts, range);
-// 	Undo operations;
-// 	
-// 	if (!events.empty())
-// 	{
-// 		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
-// 		{
-// 			const Event& event=*(it->first);
-// 			const Part* part=it->second;
-// 
-// 			if ( (!velo_thres_used && !len_thres_used) ||
-// 			     (velo_thres_used && event.velo() < velo_threshold) ||
-// 			     (len_thres_used && int(event.lenTick()) < len_threshold) )
-// 				operations.push_back(UndoOp(UndoOp::DeleteEvent, event, part, false, false));
-// 		}
-// 		
-// 		return MusEGlobal::song->applyOperationGroup(operations);
-// 	}
-// 	else
-// 		return false;
-// }
-
-bool erase_items(int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
-{
-  Undo operations;
-  
-  bool changed = false;
-  Part* part;
-  PartList* pl;
-  TrackList* tl = MusEGlobal::song->tracks();
-
-  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-  {
-    pl = (*it)->parts();
-    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-    {
-      part = ip->second;
-      part->setTagged(false);
-      if(part->eventsTagged())
-      {
-        part->setEventsTagged(false);
-        EventList& el = part->nonconst_events();
-        for(iEvent ie = el.begin(); ie != el.end(); ie++)
-        {
-          Event& e = ie->second;
-          if(e.tagged())
-          {
-            e.setTagged(false);
-            // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
-            if ( e.type() != Note || (!velo_thres_used && !len_thres_used) ||
-                   (velo_thres_used && e.velo() < velo_threshold) ||
-                  (len_thres_used && int(e.lenTick()) < len_threshold) )
-            {
-              changed = true;
-              operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
-            }
-          }
-        }
-      }
-    }
-  }
-  
-  if(changed)
-    return MusEGlobal::song->applyOperationGroup(operations);
-  else
-    return false;
-}
-
-bool crescendo_items(int start_val, int end_val, bool absolute)
-{
-  Undo operations;
-  
-  const Pos& from = MusEGlobal::song->lPos();
-  const Pos& to = MusEGlobal::song->rPos();
-  Pos pos;
-  float curr_val;
-  
-  bool changed = false;
-  if(to > from)
-  {
-    Part* part;
-    PartList* pl;
-    TrackList* tl = MusEGlobal::song->tracks();
-
-    for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-    {
-      pl = (*it)->parts();
-      for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-      {
-        part = ip->second;
-        part->setTagged(false);
-        if(part->eventsTagged())
-        {
-          part->setEventsTagged(false);
-          EventList& el = part->nonconst_events();
-          for(iEvent ie = el.begin(); ie != el.end(); ie++)
-          {
-            Event& e = ie->second;
-            if(e.tagged())
-            {
-              e.setTagged(false);
-              
-              // This operation can only apply to notes.
-              if(e.type() != Note)
-                continue;
-
-              pos = e.pos() + *part;
-              curr_val = (float)start_val + (float)(end_val - start_val) * (pos - from).posValue() / (to - from).posValue();
-
-              Event newEvent = e.clone();
-              int velo = e.velo();
-
-              if (absolute)
-                velo=curr_val;
-              else
-                velo=curr_val*velo/100;
-
-              if (velo > 127) velo=127;
-              if (velo <= 0) velo=1;
-              newEvent.setVelo(velo);
-              
-              changed = true;
-              operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
-            }
-          }
-        }
-      }
-    }
-  }
-  
-  if(changed)
-    return MusEGlobal::song->applyOperationGroup(operations);
-  else
-    return false;
-}
-
-bool delete_overlaps_items()
-{
-  Undo operations;
-  
-  bool changed = false;
-  Part* part;
-  PartList* pl;
-  TrackList* tl = MusEGlobal::song->tracks();
-
-  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-  {
-    pl = (*it)->parts();
-    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-    {
-      part = ip->second;
-      part->setTagged(false);
-      if(part->eventsTagged())
-      {
-        part->setEventsTagged(false);
-        EventList& el = part->nonconst_events();
-        for(iEvent ie = el.begin(); ie != el.end(); ie++)
-        {
-          Event& e = ie->second;
-          if(e.tagged())
-          {
-            e.setTagged(false);
-            // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
-            if ( e.type() != Note || (!velo_thres_used && !len_thres_used) ||
-                   (velo_thres_used && e.velo() < velo_threshold) ||
-                  (len_thres_used && int(e.lenTick()) < len_threshold) )
-            {
-              changed = true;
-              operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
-            }
-          }
-        }
-      }
-    }
-  }
-  
-  if(changed)
-    return MusEGlobal::song->applyOperationGroup(operations);
-  else
-    return false;
-}
-
-bool cut_items()
-{
-  QMimeData* drag = cut_or_copy_tagged_items_to_mime(true, true);
-
-  if(drag)
-  {
-    QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
-    return true;
-  }
-  
-  return false;
-}
-
 bool transpose_notes(const set<const Part*>& parts, int range, signed int halftonesteps)
 {
 	map<const Event*, const Part*> events = get_events(parts, range);
@@ -1161,7 +948,6 @@ bool move_notes(const set<const Part*>& parts, int range, signed int ticks)
 	else
 		return false;
 }
-
 
 bool delete_overlaps(const set<const Part*>& parts, int range)
 {
@@ -1278,14 +1064,6 @@ void copy_notes(const set<const Part*>& parts, int range)
 		QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
 }
 
-void copy_items()
-{
-	QMimeData* drag = cut_or_copy_tagged_items_to_mime();
-
-	if (drag)
-		QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
-}
-
 unsigned get_groupedevents_len(const QString& pt)
 {
 	unsigned maxlen=0;
@@ -1357,323 +1135,6 @@ void paste_notes(int max_distance, bool always_new_part, bool never_new_part, co
 	QString tmp="x-muse-groupedeventlists"; // QClipboard::text() expects a QString&, not a QString :(
 	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);
 	paste_at(s, MusEGlobal::song->cpos(), max_distance, always_new_part, never_new_part, paste_into_part, amount, raster);
-}
-
-bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part)
-{
-	unsigned temp_begin = AL::sigmap.raster1(MusEGlobal::song->cpos(),0);
-	unsigned temp_end = AL::sigmap.raster2(temp_begin + get_clipboard_len(), 0);
-	MusEGui::paste_events_dialog->raster = temp_end - temp_begin;
-	MusEGui::paste_events_dialog->into_single_part_allowed = (paste_into_part!=NULL);
-	
-	if (!MusEGui::paste_events_dialog->exec())
-		return false;
-		
-	paste_items(parts, MusEGui::paste_events_dialog->max_distance, MusEGui::paste_events_dialog->always_new_part,
-	            MusEGui::paste_events_dialog->never_new_part, MusEGui::paste_events_dialog->into_single_part ? paste_into_part : NULL,
-	            MusEGui::paste_events_dialog->number, MusEGui::paste_events_dialog->raster);
-	
-	return true;
-}
-
-void paste_items(const set<const Part*>& parts, int max_distance, bool always_new_part, bool never_new_part, const Part* paste_into_part, int amount, int raster)
-{
-	QString tmp="x-muse-groupedeventlists"; // QClipboard::text() expects a QString&, not a QString :(
-	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);
-	paste_items_at(parts, s, MusEGlobal::song->cpos(), max_distance, always_new_part, never_new_part, paste_into_part, amount, raster);
-}
-
-// if nothing is selected/relevant, this function returns NULL
-QMimeData* selected_events_to_mime(const set<const Part*>& parts, int range)
-{
-    unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
-
-    for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-        for (ciEvent ev=(*part)->events().begin(); ev!=(*part)->events().end(); ev++)
-            if (is_relevant(ev->second, *part, range, AllEventsRelevant))
-                if (ev->second.tick() < start_tick)
-                    start_tick=ev->second.tick();
-
-    if (start_tick == INT_MAX)
-        return NULL;
-
-    //---------------------------------------------------
-    //    write events as XML into tmp file
-    //---------------------------------------------------
-
-    FILE* tmp = tmpfile();
-    if (tmp == 0)
-    {
-        fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
-        return 0;
-    }
-
-    Xml xml(tmp);
-    int level = 0;
-
-    for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-    {
-        xml.tag(level++, "eventlist part_id=\"%d\"", (*part)->sn());
-        for (ciEvent ev=(*part)->events().begin(); ev!=(*part)->events().end(); ev++)
-            if (is_relevant(ev->second, *part, range, AllEventsRelevant))
-                ev->second.write(level, xml, -start_tick);
-        xml.etag(--level, "eventlist");
-    }
-
-    QMimeData *mimeData =  file_to_mimedata(tmp, "text/x-muse-groupedeventlists" );
-    fclose(tmp);
-    return mimeData;
-}
-
-// REMOVE Tim. citem. Added.
-// // if nothing is selected/relevant, this function returns NULL
-// QMimeData* tagged_items_to_mime(bool untag_when_done)
-// {
-//     unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
-// 
-//     Part* part;
-//     PartList* pl;
-//     TrackList* tl = MusEGlobal::song->tracks();
-//     for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//     {
-//       pl = (*it)->parts();
-//       for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//       {
-//         part = ip->second;
-//         if(part->eventsTagged())
-//         {
-//           const EventList& el = part->events();
-//           for(ciEvent ie = el.begin(); ie != el.end(); ie++)
-//           {
-//             const Event& e = ie->second;
-//             if(e.tagged()) // && is_relevant(e, part, range, AllEventsRelevant))
-//             {
-//               if(e.tick() < start_tick)
-//                 start_tick = e.tick();
-//             }
-//           }
-//         }
-//       }
-//     }
-//     
-//     if (start_tick == INT_MAX)
-//     {
-//       if(untag_when_done)
-//       {
-//         // We must clear all the tagged flags...
-//         for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//         {
-//           pl = (*it)->parts();
-//           for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//           {
-//             part = ip->second;
-//             part->setTagged(false);
-//             if(part->eventsTagged())
-//             {
-//               part->setEventsTagged(false);
-//               EventList& el = part->nonconst_events();
-//               for(iEvent ie = el.begin(); ie != el.end(); ie++)
-//                 ie->second.setTagged(false);
-//             }
-//           }
-//         }
-//       }
-//       return NULL;
-//     }
-// 
-//     //---------------------------------------------------
-//     //    write events as XML into tmp file
-//     //---------------------------------------------------
-// 
-//     FILE* tmp = tmpfile();
-//     if (tmp == 0)
-//     {
-//         fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
-//         return 0;
-//     }
-// 
-//     Xml xml(tmp);
-//     int level = 0;
-// 
-//     for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//     {
-//       pl = (*it)->parts();
-//       for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//       {
-//         part = ip->second;
-//         if(untag_when_done)
-//           part->setTagged(false);
-//         if(part->eventsTagged())
-//         {
-//           if(untag_when_done)
-//             part->setEventsTagged(false);
-//           xml.tag(level++, "eventlist part_id=\"%d\"", part->sn());
-//           EventList& el = part->nonconst_events();
-//           for(iEvent ie = el.begin(); ie != el.end(); ie++)
-//           {
-//             Event& e = ie->second;
-//             if(e.tagged())
-//             {
-//               if(untag_when_done)
-//                 e.setTagged(false);
-//               
-//               //if(is_relevant(e, part, range, AllEventsRelevant))
-//                 e.write(level, xml, -start_tick);
-//             }
-//           }
-//           xml.etag(--level, "eventlist");
-//         }
-//       }
-//     }
-//     
-//     QMimeData *mimeData =  file_to_mimedata(tmp, "text/x-muse-groupedeventlists" );
-//     fclose(tmp);
-//     return mimeData;
-// }
-
-// REMOVE Tim. citem. Added.
-// if nothing is selected/relevant, this function returns NULL
-QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode, bool untag_when_done)
-{
-    unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
-
-    Undo operations;
-  
-    //bool do_cut = false;
-    bool changed = false;
-    Part* part;
-    PartList* pl;
-    TrackList* tl = MusEGlobal::song->tracks();
-    for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-    {
-      pl = (*it)->parts();
-      for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-      {
-        part = ip->second;
-        // As an optimization, we only walk the events if the part says events are tagged.
-        if(part->eventsTagged())
-        {
-          const EventList& el = part->events();
-          for(ciEvent ie = el.begin(); ie != el.end(); ie++)
-          {
-            const Event& e = ie->second;
-//             do_cut = false;
-//             if(cut_mode)
-//             {
-//               // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
-//               do_cut = (e.type() != Note) || (!cut_velo_thres_used && !cut_len_thres_used) ||
-//                        (cut_velo_thres_used && e.velo() < cut_velo_threshold) ||
-//                        (cut_len_thres_used && int(e.lenTick()) < cut_len_threshold);
-//             }
-            
-//             if(e.tagged() && (!cut_mode || do_cut)) // && is_relevant(e, part, range, AllEventsRelevant))
-            if(e.tagged()) // && is_relevant(e, part, range, AllEventsRelevant))
-            {
-              if(e.tick() < start_tick)
-                start_tick = e.tick();
-            }
-          }
-        }
-      }
-    }
-    
-    if (start_tick == INT_MAX)
-    {
-      if(untag_when_done)
-      {
-        // We must clear all the tagged flags...
-        for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-        {
-          pl = (*it)->parts();
-          for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-          {
-            part = ip->second;
-            part->setTagged(false);
-            // As an optimization, we only walk the events if the part says events are tagged.
-            if(part->eventsTagged())
-            {
-              part->setEventsTagged(false);
-              EventList& el = part->nonconst_events();
-              for(iEvent ie = el.begin(); ie != el.end(); ie++)
-                ie->second.setTagged(false);
-            }
-          }
-        }
-      }
-      return NULL;
-    }
-
-    //---------------------------------------------------
-    //    write events as XML into tmp file
-    //---------------------------------------------------
-
-    FILE* tmp = tmpfile();
-    if (tmp == 0)
-    {
-        fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
-        return 0;
-    }
-
-    Xml xml(tmp);
-    int level = 0;
-
-    for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-    {
-      pl = (*it)->parts();
-      for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-      {
-        part = ip->second;
-        if(untag_when_done)
-          part->setTagged(false);
-        // As an optimization, we only walk the events if the part says events are tagged.
-        if(part->eventsTagged())
-        {
-          if(untag_when_done)
-            part->setEventsTagged(false);
-          xml.tag(level++, "eventlist part_id=\"%d\"", part->sn());
-          EventList& el = part->nonconst_events();
-          for(iEvent ie = el.begin(); ie != el.end(); ie++)
-          {
-            Event& e = ie->second;
-            if(e.tagged())
-            {
-              if(untag_when_done)
-                e.setTagged(false);
-
-//               do_cut = false;
-//               if(cut_mode)
-//               {
-//                 // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
-//                 do_cut = (e.type() != Note) || (!cut_velo_thres_used && !cut_len_thres_used) ||
-//                         (cut_velo_thres_used && e.velo() < cut_velo_threshold) ||
-//                         (cut_len_thres_used && int(e.lenTick()) < cut_len_threshold);
-//               }
-                
-              
-              //if(is_relevant(e, part, range, AllEventsRelevant))
-//               if(!cut_mode || do_cut)
-                e.write(level, xml, -start_tick);
-                
-//               if(cut_mode && do_cut)
-              if(cut_mode)
-              {
-                changed = true;
-                operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
-              }
-            }
-          }
-          xml.etag(--level, "eventlist");
-        }
-      }
-    }
-    
-    QMimeData *mimeData =  file_to_mimedata(tmp, "text/x-muse-groupedeventlists" );
-    fclose(tmp);
-    
-    if(changed)
-      MusEGlobal::song->applyOperationGroup(operations);
-    
-    return mimeData;
 }
 
 // if nothing is selected/relevant, this function returns NULL
@@ -1992,7 +1453,6 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 											}
 											break;
 											
-											// Be careful with sysex and meta - there's no way to really determine if they are the same or not.
 											case Sysex:
 											{
 												EventList el;
@@ -2089,338 +1549,6 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 				}
 				else
 					xml.unknown("paste_at");
-				break;
-				
-			case Xml::Attribut:
-			case Xml::TagEnd:
-			default:
-				break;
-		}
-	}
-	
-	out_of_paste_at_for:
-	
-	for (map<const Part*, unsigned>::iterator it = expand_map.begin(); it!=expand_map.end(); it++)
-		if (it->second != it->first->lenTick())
-			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
-
-	MusEGlobal::song->informAboutNewParts(new_part_map); // must be called before apply. otherwise
-	                                                     // pointer changes (by resize) screw it up
-	MusEGlobal::song->applyOperationGroup(operations);
-	MusEGlobal::song->update(SC_SELECTION | SC_PART_SELECTION);
-}
-
-void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int pos, int max_distance,
-                    bool always_new_part, bool never_new_part,
-                    const Part* paste_into_part, int amount, int raster)
-{
-	Undo operations;
-	map<const Part*, unsigned> expand_map;
-	map<const Part*, set<const Part*> > new_part_map;
-	
-	QByteArray pt_= pt.toLatin1();
-	Xml xml(pt_.constData());
-	for (;;) 
-	{
-		Xml::Token token = xml.parse();
-		const QString& tag = xml.s1();
-		switch (token) 
-		{
-			case Xml::Error:
-			case Xml::End:
-				goto out_of_paste_at_for;
-				
-			case Xml::TagStart:
-				if (tag == "eventlist")
-				{
-					EventList el;
-					int part_id;
-		
-					if (read_eventlist_and_part(xml, &el, &part_id))
-					{
-						const Part* dest_part;
-						Track* dest_track;
-						const Part* old_dest_part;
-						
-						if (paste_into_part == NULL)
-							dest_part = partFromSerialNumber(part_id);
-						else
-							dest_part=paste_into_part;
-						
-						if (dest_part == NULL)
-						{
-							printf("ERROR: destination part wasn't found. ignoring these events\n");
-						}
-						else
-						{
-							// Paste into the destination part ONLY if it is included in the given set of parts,
-							//  typically the parts used by an editor window instance's canvas. (WYSIWYG).
-							// Override if paste_into_part is given, to allow 'Paste to current part' to work.
-							if(paste_into_part || parts.find(dest_part) != parts.end())
-							{
-								dest_track=dest_part->track();
-								old_dest_part=dest_part;
-								unsigned first_paste_tick = el.begin()->first + pos;
-								bool create_new_part = ( (dest_part->tick() > first_paste_tick) ||   // dest_part begins too late
-										( ( (dest_part->endTick() + max_distance < first_paste_tick) || // dest_part is too far away
-																				always_new_part ) && !never_new_part ) );    // respect function arguments
-								
-								for (int i=0;i<amount;i++)
-								{
-									unsigned curr_pos = pos + i*raster;
-									first_paste_tick = el.begin()->first + curr_pos;
-									
-									if (create_new_part)
-									{
-										dest_part = NULL;
-										Part* newpart = dest_track->newPart();
-										if(newpart)
-										{
-											newpart->setTick(AL::sigmap.raster1(first_paste_tick, config.division));
-											new_part_map[old_dest_part].insert(dest_part);
-											operations.push_back(UndoOp(UndoOp::AddPart, dest_part));
-											dest_part = newpart;
-										}
-									}
-									
-									if(dest_part)
-									{
-										for (iEvent i = el.begin(); i != el.end(); ++i)
-										{
-											// If the destination part is a midi part, any midi event is allowed.
-											// If the destination part is a wave part, any wave event is allowed.
-											switch(i->second.type())
-											{
-												case Note:
-												case Controller:
-												case Sysex:
-												case Meta:
-													if(dest_part->type() == Pos::FRAMES)
-														continue;
-												break;
-												
-												case Wave:
-													// FIXME TODO: To support pasting wave events, some code below must be made agnostic.
-													//             For now just ignore wave events.
-													//if(dest_part->type() == Pos::TICKS)
-														continue;
-												break;
-											}
-											
-	// FIXME TODO: To support pasting wave events, this code block and some code below it MUST be made position-agnostic.
-											Event e = i->second.clone();
-											int tick = e.tick() + curr_pos - dest_part->tick();
-											if (tick<0)
-											{
-												printf("ERROR: trying to add event before current part! ignoring this event\n");
-												continue;
-											}
-
-											e.setTick(tick);
-											e.setSelected(true);  // No need to select clones, AddEvent operation below will take care of that.
-											
-											if (e.endTick() > dest_part->lenTick()) // event exceeds part?
-											{
-												if (dest_part->hasHiddenEvents()) // auto-expanding is forbidden?
-												{
-													if (e.tick() < dest_part->lenTick())
-														e.setLenTick(dest_part->lenTick() - e.tick()); // clip
-													else
-														e.setLenTick(0); // don't insert that note at all
-												}
-												else
-												{
-													if (e.endTick() > expand_map[dest_part])
-														expand_map[dest_part]=e.endTick();
-												}
-											}
-											
-		// REMOVE Tim. citem. Changed.
-		// 									if (e.lenTick() != 0) operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
-											// Don't add Note or Wave event types if they have no length.
-											// Otherwise, controllers, sysex, and meta should all be allowed.
-											//if ((e.type() != Note && e.type() != Wave) || e.lenTick() != 0)
-											//	operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
-											switch(e.type())
-											{
-												case Note:
-													// Don't add Note event types if they have no length.
-													// Notes are allowed to overlap. There is no DeleteEvent or ModifyEvent first.
-													if(e.lenTick() != 0)
-														operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
-												break;
-												
-												case Wave:
-													// Don't add Wave event types if they have no length.
-													if(e.lenFrame() != 0)
-													{
-														EventList el;
-														// Compare time, and wave position, path, and start position.
-														dest_part->events().findSimilarType(e, el, true, false, false, false,
-																																true, true, true);
-														// Do NOT add the new wave event if it already exists at the position.
-														// Don't event bother replacing it using DeletEvent or ModifyEvent.
-														if(el.empty())
-														{
-															// REMOVE Tim. citem. Added. Diagnostic.
-															fprintf(stderr, "paste_items_at: Adding new wave event: time:%u file:%s\n",
-																			e.posValue(), e.sndFile().name().toLatin1().constData());
-															operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
-														}
-														else
-														{
-															// Delete all but one of them. There shouldn't be more than one wave event
-															//  at a time for a given wave event anyway.
-															iEvent nie;
-															for(iEvent ie = el.begin(); ie != el.end(); ++ie)
-															{
-																// Break on the second-last one, to leave one item intact.
-																nie = ie;
-																++nie;
-																if(nie == el.end())
-																{
-																	// REMOVE Tim. citem. Added. Diagnostic.
-																	fprintf(stderr, "paste_items_at: Leaving existing wave event intact: time:%u file:%s\n",
-																					ie->second.posValue(), ie->second.sndFile().name().toLatin1().constData());
-																	break;
-																}
-																
-																// REMOVE Tim. citem. Added. Diagnostic.
-																fprintf(stderr, "paste_items_at: Deleting existing wave event: time:%u file:%s\n",
-																				ie->second.posValue(), ie->second.sndFile().name().toLatin1().constData());
-																
-																operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
-															}
-														}
-														
-													}
-												break;
-												
-												case Controller:
-												{
-													EventList el;
-													// Compare time and controller number (data A) only.
-													dest_part->events().findSimilarType(e, el, true, true);
-													// Delete them all. There shouldn't be more than one controller event
-													//  at a time for a given controller number anyway.
-													for(iEvent ie = el.begin(); ie != el.end(); ++ie)
-													{
-														
-														// REMOVE Tim. citem. Added. Diagnostic.
-														fprintf(stderr, "paste_items_at: Deleting existing controller event: time:%u number:%d\n",
-																		ie->second.posValue(), ie->second.dataA());
-														
-														operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, true, true));
-													}
-													
-													// REMOVE Tim. citem. Added. Diagnostic.
-													if(!el.empty())
-														fprintf(stderr, "paste_items_at: Adding replacement controller event: time:%u number:%d\n",
-																		e.posValue(), e.dataA());
-													
-													// Do port controller values and clone parts. 
-													operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, true, true));
-												}
-												break;
-												
-												// Be careful with sysex and meta - there's no way to really determine if they are the same or not.
-												case Sysex:
-												{
-													EventList el;
-													// Compare time and sysex data only.
-													dest_part->events().findSimilarType(e, el, true);
-													// Do NOT add the new sysex if it already exists at the position.
-													// Don't event bother replacing it using DeletEvent or ModifyEvent.
-													if(el.empty())
-													{
-														// REMOVE Tim. citem. Added. Diagnostic.
-														fprintf(stderr, "paste_items_at: Adding new sysex: time:%u len:%d\n",
-																		e.posValue(), e.dataLen());
-														operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
-													}
-													else
-													{
-														// Delete all but one of them. There shouldn't be more than one sysex event
-														//  at a time for a given sysex anyway.
-														iEvent nie;
-														for(iEvent ie = el.begin(); ie != el.end(); ++ie)
-														{
-															// Break on the second-last one, to leave one item intact.
-															nie = ie;
-															++nie;
-															if(nie == el.end())
-															{
-																// REMOVE Tim. citem. Added. Diagnostic.
-																fprintf(stderr, "paste_items_at: Leaving existing sysex intact: time:%u len:%d\n",
-																				ie->second.posValue(), ie->second.dataLen());
-																break;
-															}
-															
-															// REMOVE Tim. citem. Added. Diagnostic.
-															fprintf(stderr, "paste_items_at: Deleting existing sysex event: time:%u len:%d\n",
-																			ie->second.posValue(), ie->second.dataLen());
-															
-															operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
-														}
-													}
-												}
-												break;
-												
-												case Meta:
-												{
-													EventList el;
-													// Compare time and meta data only.
-													dest_part->events().findSimilarType(e, el, true);
-													// Do NOT add the new meta if it already exists at the position.
-													// Don't event bother replacing it using DeletEvent or ModifyEvent.
-													if(el.empty())
-													{
-														// REMOVE Tim. citem. Added. Diagnostic.
-														fprintf(stderr, "paste_items_at: Adding new meta: time:%u len:%d\n",
-																		e.posValue(), e.dataLen());
-														operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
-													}
-													else
-													{
-														// Delete all but one of them. There shouldn't be more than one meta event
-														//  at a time for a given meta anyway.
-														iEvent nie;
-														for(iEvent ie = el.begin(); ie != el.end(); ++ie)
-														{
-															// Break on the second-last one, to leave one item intact.
-															nie = ie;
-															++nie;
-															if(nie == el.end())
-															{
-																// REMOVE Tim. citem. Added. Diagnostic.
-																fprintf(stderr, "paste_items_at: Leaving existing meta intact: time:%u len:%d\n",
-																				ie->second.posValue(), ie->second.dataLen());
-																break;
-															}
-															
-															// REMOVE Tim. citem. Added. Diagnostic.
-															fprintf(stderr, "paste_items_at: Deleting existing meta event: time:%u len:%d\n",
-																			ie->second.posValue(), ie->second.dataLen());
-															
-															operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
-														}
-													}
-												}
-												break;
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-					else
-					{
-						printf("ERROR: reading eventlist from clipboard failed. ignoring this one...\n");
-					}
-				}
-				else
-					xml.unknown("paste_items_at");
 				break;
 				
 			case Xml::Attribut:
@@ -2835,6 +1963,1257 @@ bool delete_selected_parts()
 	MusEGlobal::song->applyOperationGroup(operations);
 	
 	return partSelected;
+}
+
+//=============================================================================
+
+void untag_all_items()
+{
+	Part* part;
+	PartList* pl;
+	TrackList* tl = MusEGlobal::song->tracks();
+	
+	// We must clear all the tagged flags...
+	for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+	{
+		pl = (*it)->parts();
+		for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+		{
+			part = ip->second;
+			part->setTagged(false);
+			if(part->eventsTagged())
+			{
+				part->setEventsTagged(false);
+				EventList& el = part->nonconst_events();
+				for(iEvent ie = el.begin(); ie != el.end(); ie++)
+					ie->second.setTagged(false);
+			}
+		}
+	}
+}
+
+bool erase_items(int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
+{
+  Undo operations;
+  
+  Part* part;
+  PartList* pl;
+  TrackList* tl = MusEGlobal::song->tracks();
+
+  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  {
+    pl = (*it)->parts();
+    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    {
+      part = ip->second;
+      part->setTagged(false);
+      if(part->eventsTagged())
+      {
+        part->setEventsTagged(false);
+        EventList& el = part->nonconst_events();
+        for(iEvent ie = el.begin(); ie != el.end(); ie++)
+        {
+          Event& e = ie->second;
+          if(e.tagged())
+          {
+            e.setTagged(false);
+            // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
+            if ( e.type() != Note || (!velo_thres_used && !len_thres_used) ||
+                   (velo_thres_used && e.velo() < velo_threshold) ||
+                  (len_thres_used && int(e.lenTick()) < len_threshold) )
+            {
+              operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  return MusEGlobal::song->applyOperationGroup(operations);
+}
+
+bool crescendo_items(int start_val, int end_val, bool absolute)
+{
+  const Pos& from = MusEGlobal::song->lPos();
+  const Pos& to = MusEGlobal::song->rPos();
+  if(to <= from)
+  {
+    // Must untag all items.
+    untag_all_items();
+    return false;
+  }
+  
+  Undo operations;
+  Pos pos;
+  float curr_val;
+  unsigned int pos_val = (to - from).posValue();
+  Part* part;
+  PartList* pl;
+  TrackList* tl = MusEGlobal::song->tracks();
+
+  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  {
+    pl = (*it)->parts();
+    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    {
+      part = ip->second;
+      part->setTagged(false);
+      if(part->eventsTagged())
+      {
+        part->setEventsTagged(false);
+        EventList& el = part->nonconst_events();
+        for(iEvent ie = el.begin(); ie != el.end(); ie++)
+        {
+          Event& e = ie->second;
+          if(e.tagged())
+          {
+            e.setTagged(false);
+            
+            // This operation can only apply to notes.
+            if(e.type() != Note)
+              continue;
+
+            pos = e.pos() + *part;
+            curr_val = (float)start_val + (float)(end_val - start_val) * (pos - from).posValue() / pos_val;
+
+            Event newEvent = e.clone();
+            int velo = e.velo();
+
+            if (absolute)
+              velo=curr_val;
+            else
+              velo=curr_val*velo/100;
+
+            if (velo > 127) velo=127;
+            if (velo <= 0) velo=1;
+            newEvent.setVelo(velo);
+            
+            operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
+          }
+        }
+      }
+    }
+  }
+  
+  return MusEGlobal::song->applyOperationGroup(operations);
+}
+
+bool delete_overlaps_items()
+{
+  Undo operations;
+  
+  set<const Event*> deleted_events;
+  int new_len;
+  Event new_event1;
+  Part* part;
+  PartList* pl;
+  TrackList* tl = MusEGlobal::song->tracks();
+
+  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  {
+    pl = (*it)->parts();
+    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    {
+      part = ip->second;
+      part->setTagged(false);
+      if(part->eventsTagged())
+      {
+        part->setEventsTagged(false);
+        EventList& el = part->nonconst_events();
+        for(iEvent ie = el.begin(); ie != el.end(); ++ie)
+        {
+          Event& e = ie->second;
+          if(e.tagged())
+          {
+            e.setTagged(false);
+            
+            // This operation can only apply to notes.
+            if(e.type() != Note)
+              continue;
+            
+            iEvent ie2 = ie;
+            ++ie2;
+            for( ; ie2 != el.end(); ++ie2)
+            {
+              Event& e2 = ie2->second;
+              
+              if (!(e == e2) &&                                        // event1 and event2 don't point to the same event
+                  (deleted_events.find(&e2) == deleted_events.end()) ) // and event2 hasn't been deleted before
+              {
+                if ( (e.pitch() == e2.pitch()) &&
+                    (e.tick() <= e2.tick()) &&
+                    (e.endTick() > e2.tick()) ) //they overlap
+                {
+                  new_len = e2.tick() - e.tick();
+
+                  if(new_len==0)
+                  {
+                    operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, false, false));
+                    deleted_events.insert(&e);
+                  }
+                  else
+                  {
+                    new_event1 = e.clone();
+                    new_event1.setLenTick(new_len);
+                    
+                    operations.push_back(UndoOp(UndoOp::ModifyEvent, new_event1, e, part, false, false));
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  return MusEGlobal::song->applyOperationGroup(operations);
+}
+
+bool modify_notelen_items(int rate, int offset)
+{
+  if(rate == 100 && offset == 0)
+  {
+    // Must untag all items.
+    untag_all_items();
+    return false;
+  }
+    
+  Undo operations;
+  
+  unsigned int len;
+  map<const Part*, int> partlen;
+  Event newEvent;
+  Part* part;
+  PartList* pl;
+  TrackList* tl = MusEGlobal::song->tracks();
+
+  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  {
+    pl = (*it)->parts();
+    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    {
+      part = ip->second;
+      part->setTagged(false);
+      if(part->eventsTagged())
+      {
+        part->setEventsTagged(false);
+        EventList& el = part->nonconst_events();
+        for(iEvent ie = el.begin(); ie != el.end(); ie++)
+        {
+          Event& e = ie->second;
+          if(e.tagged())
+          {
+            e.setTagged(false);
+            
+            // This operation can only apply to notes.
+            if(e.type() != Note)
+              continue;
+            
+            len = e.lenTick(); //prevent compiler warning: comparison signed/unsigned
+
+            len = (len * rate) / 100;
+            len += offset;
+
+            if (len <= 0)
+              len = 1;
+            
+            if ((e.tick()+len > part->lenTick()) && (!part->hasHiddenEvents()))
+              partlen[part] = e.tick() + len; // schedule auto-expanding
+              
+            if (e.lenTick() != len)
+            {
+              newEvent = e.clone();
+              newEvent.setLenTick(len);
+              operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
+            }
+          }
+          
+          for (map<const Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
+            schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
+        }
+      }
+    }
+  }
+  
+  return MusEGlobal::song->applyOperationGroup(operations);
+}
+
+bool legato_items(int min_len, bool dont_shorten)
+{
+  Undo operations;
+  
+  if (min_len<=0) min_len=1;
+  
+  unsigned len = INT_MAX;
+  bool relevant;
+  Event new_event1;
+  Part* part;
+  PartList* pl;
+  TrackList* tl = MusEGlobal::song->tracks();
+
+  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  {
+    pl = (*it)->parts();
+    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    {
+      part = ip->second;
+      part->setTagged(false);
+      if(part->eventsTagged())
+      {
+        part->setEventsTagged(false);
+        EventList& el = part->nonconst_events();
+        for(iEvent ie = el.begin(); ie != el.end(); ie++)
+        {
+          Event& e = ie->second;
+          if(e.tagged())
+          {
+            e.setTagged(false);
+            
+            // This operation can only apply to notes.
+            if(e.type() != Note)
+              continue;
+            
+            iEvent ie2 = ie;
+            ++ie2;
+            for( ; ie2 != el.end(); ++ie2)
+            {
+              Event& e2 = ie2->second;
+
+              relevant = (e2.tick() >= e.tick() + min_len);
+              if (dont_shorten)
+                relevant = relevant && (e2.tick() >= e.endTick());
+              
+              if ( relevant &&                      // they're not too near (respect min_len and dont_shorten)
+                   (e2.tick() - e.tick() < len ) )  // that's the nearest relevant following note
+                len = e2.tick() - e.tick();
+            }            
+            
+            if (len==INT_MAX) len = e.lenTick(); // if no following note was found, keep the length
+            
+            if (e.lenTick() != len)
+            {
+              new_event1 = e.clone();
+              new_event1.setLenTick(len);
+              
+              operations.push_back(UndoOp(UndoOp::ModifyEvent, new_event1, e, part, false, false));
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  return MusEGlobal::song->applyOperationGroup(operations);
+}
+
+bool move_items(signed int ticks)
+{
+  if(ticks == 0)
+  {
+    // Must untag all items.
+    untag_all_items();
+    return false;
+  }
+  
+  Undo operations;
+  map<const Part*, int> partlen;
+  
+  bool del;
+  Event newEvent;
+  Part* part;
+  PartList* pl;
+  TrackList* tl = MusEGlobal::song->tracks();
+
+  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  {
+    pl = (*it)->parts();
+    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    {
+      part = ip->second;
+      part->setTagged(false);
+      if(part->eventsTagged())
+      {
+        part->setEventsTagged(false);
+        EventList& el = part->nonconst_events();
+        for(iEvent ie = el.begin(); ie != el.end(); ie++)
+        {
+          Event& e = ie->second;
+          if(e.tagged())
+          {
+            e.setTagged(false);
+            
+            del = false;
+            
+            // This operation can only apply to notes.
+            // Hm no, should be OK for all types.
+            //if(e.type() != Note)
+            //  continue;
+            
+            newEvent = e.clone();
+            if ((signed)e.tick() + ticks < 0) //don't allow moving before the part's begin
+              newEvent.setTick(0);
+            else
+              newEvent.setTick(e.tick() + ticks);
+            
+            if (newEvent.endTick() > part->lenTick()) //if exceeding the part's end:
+            {
+              if (part->hasHiddenEvents()) // auto-expanding is forbidden, clip
+              {
+                if (part->lenTick() > newEvent.tick())
+                  newEvent.setLenTick(part->lenTick() - newEvent.tick());
+                else
+                  del = true; //if the new length would be <= 0, erase the note
+              }
+              else
+                partlen[part] = newEvent.endTick(); // schedule auto-expanding
+            }
+            
+            if (del == false)
+              //operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
+              operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, true, true));
+            else
+              //operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, false, false));
+              operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
+          }
+          
+          for (map<const Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
+            schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
+        }
+      }
+    }
+  }
+  
+  return MusEGlobal::song->applyOperationGroup(operations);
+}
+
+bool quantize_items(int raster_idx, bool quant_len, int strength, int swing, int threshold)
+{
+  const int rv = MusEGui::functionQuantizeRasterVals[raster_idx];
+  if(rv <= 0)
+  {
+    // Must untag all items.
+    untag_all_items();
+    return false;
+  }
+  
+  const int raster = (MusEGlobal::config.division*4) / rv;
+  
+  Undo operations;
+  
+  unsigned begin_tick;
+  int begin_diff;
+  unsigned len;
+  unsigned end_tick;
+  int len_diff;
+  Event newEvent;
+  Part* part;
+  PartList* pl;
+  TrackList* tl = MusEGlobal::song->tracks();
+
+  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  {
+    pl = (*it)->parts();
+    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    {
+      part = ip->second;
+      part->setTagged(false);
+      if(part->eventsTagged())
+      {
+        part->setEventsTagged(false);
+        EventList& el = part->nonconst_events();
+        for(iEvent ie = el.begin(); ie != el.end(); ie++)
+        {
+          Event& e = ie->second;
+          if(e.tagged())
+          {
+            e.setTagged(false);
+            
+            // This operation can only apply to notes.
+            if(e.type() != Note)
+              continue;
+            
+            begin_tick = e.tick() + part->tick();
+            begin_diff = quantize_tick(begin_tick, raster, swing) - begin_tick;
+
+            if (abs(begin_diff) > threshold)
+              begin_tick = begin_tick + begin_diff*strength/100;
+
+            len = e.lenTick();
+            
+            end_tick = begin_tick + len;
+            len_diff = quantize_tick(end_tick, raster, swing) - end_tick;
+              
+            if ((abs(len_diff) > threshold) && quant_len)
+              len = len + len_diff*strength/100;
+
+            if (len <= 0)
+              len = 1;
+
+              
+            if ( (e.lenTick() != len) || (e.tick() + part->tick() != begin_tick) )
+            {
+              newEvent = e.clone();
+              newEvent.setTick(begin_tick - part->tick());
+              newEvent.setLenTick(len);
+              operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  return MusEGlobal::song->applyOperationGroup(operations);
+}
+
+bool set_notelen_items(int len)
+{
+  return modify_notelen_items(0, len);
+}
+
+bool transpose_items(signed int halftonesteps)
+{
+  if(halftonesteps == 0)
+  {
+    // Must untag all items.
+    untag_all_items();
+    return false;
+  }
+  
+  Undo operations;
+  
+  Event newEvent;
+  int pitch;
+  Part* part;
+  PartList* pl;
+  TrackList* tl = MusEGlobal::song->tracks();
+
+  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  {
+    pl = (*it)->parts();
+    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    {
+      part = ip->second;
+      part->setTagged(false);
+      if(part->eventsTagged())
+      {
+        part->setEventsTagged(false);
+        EventList& el = part->nonconst_events();
+        for(iEvent ie = el.begin(); ie != el.end(); ie++)
+        {
+          Event& e = ie->second;
+          if(e.tagged())
+          {
+            e.setTagged(false);
+            
+            // This operation can only apply to notes.
+            if(e.type() != Note)
+              continue;
+            
+            newEvent = e.clone();
+            pitch = e.pitch() + halftonesteps;
+            if (pitch > 127) pitch = 127;
+            if (pitch < 0) pitch = 0;
+            newEvent.setPitch(pitch);
+            operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
+          }
+        }
+      }
+    }
+  }
+  
+  return MusEGlobal::song->applyOperationGroup(operations);
+}
+
+bool modify_velocity_items(int rate, int offset)
+{
+  if(rate == 100 && offset == 0)
+  {
+    // Must untag all items.
+    untag_all_items();
+    return false;
+  }
+  
+  Undo operations;
+  int velo;
+  Event newEvent;
+  Part* part;
+  PartList* pl;
+  TrackList* tl = MusEGlobal::song->tracks();
+
+  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  {
+    pl = (*it)->parts();
+    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    {
+      part = ip->second;
+      part->setTagged(false);
+      if(part->eventsTagged())
+      {
+        part->setEventsTagged(false);
+        EventList& el = part->nonconst_events();
+        for(iEvent ie = el.begin(); ie != el.end(); ie++)
+        {
+          Event& e = ie->second;
+          if(e.tagged())
+          {
+            e.setTagged(false);
+            
+            // This operation can only apply to notes.
+            if(e.type() != Note)
+              continue;
+            
+            velo = e.velo();
+
+            velo = (velo * rate) / 100;
+            velo += offset;
+
+            if (velo <= 0)
+              velo = 1;
+            else if (velo > 127)
+              velo = 127;
+              
+            if (e.velo() != velo)
+            {
+              newEvent = e.clone();
+              newEvent.setVelo(velo);
+              operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  return MusEGlobal::song->applyOperationGroup(operations);
+}
+
+bool modify_off_velocity_items(int rate, int offset)
+{
+  if(rate == 100 && offset == 0)
+  {
+    // Must untag all items.
+    untag_all_items();
+    return false;
+  }
+  
+  Undo operations;
+  int velo;
+  Event newEvent;
+  Part* part;
+  PartList* pl;
+  TrackList* tl = MusEGlobal::song->tracks();
+
+  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  {
+    pl = (*it)->parts();
+    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    {
+      part = ip->second;
+      part->setTagged(false);
+      if(part->eventsTagged())
+      {
+        part->setEventsTagged(false);
+        EventList& el = part->nonconst_events();
+        for(iEvent ie = el.begin(); ie != el.end(); ie++)
+        {
+          Event& e = ie->second;
+          if(e.tagged())
+          {
+            e.setTagged(false);
+            
+            // This operation can only apply to notes.
+            if(e.type() != Note)
+              continue;
+            
+            velo = e.veloOff();
+
+            velo = (velo * rate) / 100;
+            velo += offset;
+
+            if (velo <= 0)
+              velo = 1;
+            else if (velo > 127)
+              velo = 127;
+              
+            if (e.veloOff() != velo)
+            {
+              newEvent = e.clone();
+              newEvent.setVeloOff(velo);
+              operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  return MusEGlobal::song->applyOperationGroup(operations);
+}
+
+void copy_items()
+{
+ QMimeData* drag = cut_or_copy_tagged_items_to_mime();
+
+ if (drag)
+   QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
+}
+
+bool cut_items()
+{
+  QMimeData* drag = cut_or_copy_tagged_items_to_mime(true, true);
+
+  if(drag)
+  {
+    QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
+    return true;
+  }
+  
+  return false;
+}
+
+// if nothing is selected/relevant, this function returns NULL
+QMimeData* selected_events_to_mime(const set<const Part*>& parts, int range)
+{
+    unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
+
+    for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+        for (ciEvent ev=(*part)->events().begin(); ev!=(*part)->events().end(); ev++)
+            if (is_relevant(ev->second, *part, range, AllEventsRelevant))
+                if (ev->second.tick() < start_tick)
+                    start_tick=ev->second.tick();
+
+    if (start_tick == INT_MAX)
+        return NULL;
+
+    //---------------------------------------------------
+    //    write events as XML into tmp file
+    //---------------------------------------------------
+
+    FILE* tmp = tmpfile();
+    if (tmp == 0)
+    {
+        fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
+        return 0;
+    }
+
+    Xml xml(tmp);
+    int level = 0;
+
+    for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+    {
+        xml.tag(level++, "eventlist part_id=\"%d\"", (*part)->sn());
+        for (ciEvent ev=(*part)->events().begin(); ev!=(*part)->events().end(); ev++)
+            if (is_relevant(ev->second, *part, range, AllEventsRelevant))
+                ev->second.write(level, xml, -start_tick);
+        xml.etag(--level, "eventlist");
+    }
+
+    QMimeData *mimeData =  file_to_mimedata(tmp, "text/x-muse-groupedeventlists" );
+    fclose(tmp);
+    return mimeData;
+}
+
+// REMOVE Tim. citem. Added.
+// if nothing is selected/relevant, this function returns NULL
+QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode, bool untag_when_done)
+{
+    unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
+
+    Undo operations;
+  
+    //bool do_cut = false;
+    bool changed = false;
+    Part* part;
+    PartList* pl;
+    TrackList* tl = MusEGlobal::song->tracks();
+    for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+    {
+      pl = (*it)->parts();
+      for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+      {
+        part = ip->second;
+        // As an optimization, we only walk the events if the part says events are tagged.
+        if(part->eventsTagged())
+        {
+          const EventList& el = part->events();
+          for(ciEvent ie = el.begin(); ie != el.end(); ie++)
+          {
+            const Event& e = ie->second;
+//             do_cut = false;
+//             if(cut_mode)
+//             {
+//               // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
+//               do_cut = (e.type() != Note) || (!cut_velo_thres_used && !cut_len_thres_used) ||
+//                        (cut_velo_thres_used && e.velo() < cut_velo_threshold) ||
+//                        (cut_len_thres_used && int(e.lenTick()) < cut_len_threshold);
+//             }
+            
+//             if(e.tagged() && (!cut_mode || do_cut)) // && is_relevant(e, part, range, AllEventsRelevant))
+            if(e.tagged()) // && is_relevant(e, part, range, AllEventsRelevant))
+            {
+              if(e.tick() < start_tick)
+                start_tick = e.tick();
+            }
+          }
+        }
+      }
+    }
+    
+    if (start_tick == INT_MAX)
+    {
+      if(untag_when_done)
+      {
+        // We must clear all the tagged flags...
+        for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+        {
+          pl = (*it)->parts();
+          for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+          {
+            part = ip->second;
+            part->setTagged(false);
+            // As an optimization, we only walk the events if the part says events are tagged.
+            if(part->eventsTagged())
+            {
+              part->setEventsTagged(false);
+              EventList& el = part->nonconst_events();
+              for(iEvent ie = el.begin(); ie != el.end(); ie++)
+                ie->second.setTagged(false);
+            }
+          }
+        }
+      }
+      return NULL;
+    }
+
+    //---------------------------------------------------
+    //    write events as XML into tmp file
+    //---------------------------------------------------
+
+    FILE* tmp = tmpfile();
+    if (tmp == 0)
+    {
+        fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
+        return 0;
+    }
+
+    Xml xml(tmp);
+    int level = 0;
+
+    for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+    {
+      pl = (*it)->parts();
+      for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+      {
+        part = ip->second;
+        if(untag_when_done)
+          part->setTagged(false);
+        // As an optimization, we only walk the events if the part says events are tagged.
+        if(part->eventsTagged())
+        {
+          if(untag_when_done)
+            part->setEventsTagged(false);
+          xml.tag(level++, "eventlist part_id=\"%d\"", part->sn());
+          EventList& el = part->nonconst_events();
+          for(iEvent ie = el.begin(); ie != el.end(); ie++)
+          {
+            Event& e = ie->second;
+            if(e.tagged())
+            {
+              if(untag_when_done)
+                e.setTagged(false);
+
+//               do_cut = false;
+//               if(cut_mode)
+//               {
+//                 // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
+//                 do_cut = (e.type() != Note) || (!cut_velo_thres_used && !cut_len_thres_used) ||
+//                         (cut_velo_thres_used && e.velo() < cut_velo_threshold) ||
+//                         (cut_len_thres_used && int(e.lenTick()) < cut_len_threshold);
+//               }
+                
+              
+              //if(is_relevant(e, part, range, AllEventsRelevant))
+//               if(!cut_mode || do_cut)
+                e.write(level, xml, -start_tick);
+                
+//               if(cut_mode && do_cut)
+              if(cut_mode)
+              {
+                changed = true;
+                operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
+              }
+            }
+          }
+          xml.etag(--level, "eventlist");
+        }
+      }
+    }
+    
+    QMimeData *mimeData =  file_to_mimedata(tmp, "text/x-muse-groupedeventlists" );
+    fclose(tmp);
+    
+    if(changed)
+      MusEGlobal::song->applyOperationGroup(operations);
+    
+    return mimeData;
+}
+
+bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part)
+{
+	unsigned temp_begin = AL::sigmap.raster1(MusEGlobal::song->cpos(),0);
+	unsigned temp_end = AL::sigmap.raster2(temp_begin + get_clipboard_len(), 0);
+	MusEGui::paste_events_dialog->raster = temp_end - temp_begin;
+	MusEGui::paste_events_dialog->into_single_part_allowed = (paste_into_part!=NULL);
+	
+	if (!MusEGui::paste_events_dialog->exec())
+		return false;
+		
+	paste_items(parts, MusEGui::paste_events_dialog->max_distance, MusEGui::paste_events_dialog->always_new_part,
+	            MusEGui::paste_events_dialog->never_new_part, MusEGui::paste_events_dialog->into_single_part ? paste_into_part : NULL,
+	            MusEGui::paste_events_dialog->number, MusEGui::paste_events_dialog->raster);
+	
+	return true;
+}
+
+void paste_items(const set<const Part*>& parts, int max_distance, bool always_new_part, bool never_new_part, const Part* paste_into_part, int amount, int raster)
+{
+	QString tmp="x-muse-groupedeventlists"; // QClipboard::text() expects a QString&, not a QString :(
+	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);
+	paste_items_at(parts, s, MusEGlobal::song->cpos(), max_distance, always_new_part, never_new_part, paste_into_part, amount, raster);
+}
+
+void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int pos, int max_distance,
+                    bool always_new_part, bool never_new_part,
+                    const Part* paste_into_part, int amount, int raster)
+{
+	Undo operations;
+	map<const Part*, unsigned> expand_map;
+	map<const Part*, set<const Part*> > new_part_map;
+	
+	QByteArray pt_= pt.toLatin1();
+	Xml xml(pt_.constData());
+	for (;;) 
+	{
+		Xml::Token token = xml.parse();
+		const QString& tag = xml.s1();
+		switch (token) 
+		{
+			case Xml::Error:
+			case Xml::End:
+				goto out_of_paste_at_for;
+				
+			case Xml::TagStart:
+				if (tag == "eventlist")
+				{
+					EventList el;
+					int part_id;
+		
+					if (read_eventlist_and_part(xml, &el, &part_id))
+					{
+						const Part* dest_part;
+						Track* dest_track;
+						const Part* old_dest_part;
+						
+						if (paste_into_part == NULL)
+							dest_part = partFromSerialNumber(part_id);
+						else
+							dest_part=paste_into_part;
+						
+						if (dest_part == NULL)
+						{
+							printf("ERROR: destination part wasn't found. ignoring these events\n");
+						}
+						else
+						{
+							// Paste into the destination part ONLY if it is included in the given set of parts,
+							//  typically the parts used by an editor window instance's canvas. (WYSIWYG).
+							// Override if paste_into_part is given, to allow 'Paste to current part' to work.
+							if(paste_into_part || parts.find(dest_part) != parts.end())
+							{
+								dest_track=dest_part->track();
+								old_dest_part=dest_part;
+								unsigned first_paste_tick = el.begin()->first + pos;
+								bool create_new_part = ( (dest_part->tick() > first_paste_tick) ||   // dest_part begins too late
+										( ( (dest_part->endTick() + max_distance < first_paste_tick) || // dest_part is too far away
+																				always_new_part ) && !never_new_part ) );    // respect function arguments
+								
+								for (int i=0;i<amount;i++)
+								{
+									unsigned curr_pos = pos + i*raster;
+									first_paste_tick = el.begin()->first + curr_pos;
+									
+									if (create_new_part)
+									{
+										dest_part = NULL;
+										Part* newpart = dest_track->newPart();
+										if(newpart)
+										{
+											newpart->setTick(AL::sigmap.raster1(first_paste_tick, config.division));
+											new_part_map[old_dest_part].insert(dest_part);
+											operations.push_back(UndoOp(UndoOp::AddPart, dest_part));
+											dest_part = newpart;
+										}
+									}
+									
+									if(dest_part)
+									{
+										for (iEvent i = el.begin(); i != el.end(); ++i)
+										{
+											// If the destination part is a midi part, any midi event is allowed.
+											// If the destination part is a wave part, any wave event is allowed.
+											switch(i->second.type())
+											{
+												case Note:
+												case Controller:
+												case Sysex:
+												case Meta:
+													if(dest_part->type() == Pos::FRAMES)
+														continue;
+												break;
+												
+												case Wave:
+													// FIXME TODO: To support pasting wave events, some code below must be made agnostic.
+													//             For now just ignore wave events.
+													//if(dest_part->type() == Pos::TICKS)
+														continue;
+												break;
+											}
+											
+	// FIXME TODO: To support pasting wave events, this code block and some code below it MUST be made position-agnostic.
+											Event e = i->second.clone();
+											int tick = e.tick() + curr_pos - dest_part->tick();
+											if (tick<0)
+											{
+												printf("ERROR: trying to add event before current part! ignoring this event\n");
+												continue;
+											}
+
+											e.setTick(tick);
+											e.setSelected(true);  // No need to select clones, AddEvent operation below will take care of that.
+											
+											if (e.endTick() > dest_part->lenTick()) // event exceeds part?
+											{
+												if (dest_part->hasHiddenEvents()) // auto-expanding is forbidden?
+												{
+													if (e.tick() < dest_part->lenTick())
+														e.setLenTick(dest_part->lenTick() - e.tick()); // clip
+													else
+														e.setLenTick(0); // don't insert that note at all
+												}
+												else
+												{
+													if (e.endTick() > expand_map[dest_part])
+														expand_map[dest_part]=e.endTick();
+												}
+											}
+											
+		// REMOVE Tim. citem. Changed.
+		// 									if (e.lenTick() != 0) operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
+											// Don't add Note or Wave event types if they have no length.
+											// Otherwise, controllers, sysex, and meta should all be allowed.
+											//if ((e.type() != Note && e.type() != Wave) || e.lenTick() != 0)
+											//	operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
+											switch(e.type())
+											{
+												case Note:
+													// Don't add Note event types if they have no length.
+													// Notes are allowed to overlap. There is no DeleteEvent or ModifyEvent first.
+													if(e.lenTick() != 0)
+														operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
+												break;
+												
+												case Wave:
+													// Don't add Wave event types if they have no length.
+													if(e.lenFrame() != 0)
+													{
+														EventList el;
+														// Compare time, and wave position, path, and start position.
+														dest_part->events().findSimilarType(e, el, true, false, false, false,
+																																true, true, true);
+														// Do NOT add the new wave event if it already exists at the position.
+														// Don't event bother replacing it using DeletEvent or ModifyEvent.
+														if(el.empty())
+														{
+															// REMOVE Tim. citem. Added. Diagnostic.
+															fprintf(stderr, "paste_items_at: Adding new wave event: time:%u file:%s\n",
+																			e.posValue(), e.sndFile().name().toLatin1().constData());
+															operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
+														}
+														else
+														{
+															// Delete all but one of them. There shouldn't be more than one wave event
+															//  at a time for a given wave event anyway.
+															iEvent nie;
+															for(iEvent ie = el.begin(); ie != el.end(); ++ie)
+															{
+																// Break on the second-last one, to leave one item intact.
+																nie = ie;
+																++nie;
+																if(nie == el.end())
+																{
+																	// REMOVE Tim. citem. Added. Diagnostic.
+																	fprintf(stderr, "paste_items_at: Leaving existing wave event intact: time:%u file:%s\n",
+																					ie->second.posValue(), ie->second.sndFile().name().toLatin1().constData());
+																	break;
+																}
+																
+																// REMOVE Tim. citem. Added. Diagnostic.
+																fprintf(stderr, "paste_items_at: Deleting existing wave event: time:%u file:%s\n",
+																				ie->second.posValue(), ie->second.sndFile().name().toLatin1().constData());
+																
+																operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
+															}
+														}
+														
+													}
+												break;
+												
+												case Controller:
+												{
+													EventList el;
+													// Compare time and controller number (data A) only.
+													dest_part->events().findSimilarType(e, el, true, true);
+													// Delete them all. There shouldn't be more than one controller event
+													//  at a time for a given controller number anyway.
+													for(iEvent ie = el.begin(); ie != el.end(); ++ie)
+													{
+														
+														// REMOVE Tim. citem. Added. Diagnostic.
+														fprintf(stderr, "paste_items_at: Deleting existing controller event: time:%u number:%d\n",
+																		ie->second.posValue(), ie->second.dataA());
+														
+														operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, true, true));
+													}
+													
+													// REMOVE Tim. citem. Added. Diagnostic.
+													if(!el.empty())
+														fprintf(stderr, "paste_items_at: Adding replacement controller event: time:%u number:%d\n",
+																		e.posValue(), e.dataA());
+													
+													// Do port controller values and clone parts. 
+													operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, true, true));
+												}
+												break;
+												
+												case Sysex:
+												{
+													EventList el;
+													// Compare time and sysex data only.
+													dest_part->events().findSimilarType(e, el, true);
+													// Do NOT add the new sysex if it already exists at the position.
+													// Don't event bother replacing it using DeletEvent or ModifyEvent.
+													if(el.empty())
+													{
+														// REMOVE Tim. citem. Added. Diagnostic.
+														fprintf(stderr, "paste_items_at: Adding new sysex: time:%u len:%d\n",
+																		e.posValue(), e.dataLen());
+														operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
+													}
+													else
+													{
+														// Delete all but one of them. There shouldn't be more than one sysex event
+														//  at a time for a given sysex anyway.
+														iEvent nie;
+														for(iEvent ie = el.begin(); ie != el.end(); ++ie)
+														{
+															// Break on the second-last one, to leave one item intact.
+															nie = ie;
+															++nie;
+															if(nie == el.end())
+															{
+																// REMOVE Tim. citem. Added. Diagnostic.
+																fprintf(stderr, "paste_items_at: Leaving existing sysex intact: time:%u len:%d\n",
+																				ie->second.posValue(), ie->second.dataLen());
+																break;
+															}
+															
+															// REMOVE Tim. citem. Added. Diagnostic.
+															fprintf(stderr, "paste_items_at: Deleting existing sysex event: time:%u len:%d\n",
+																			ie->second.posValue(), ie->second.dataLen());
+															
+															operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
+														}
+													}
+												}
+												break;
+												
+												case Meta:
+												{
+													EventList el;
+													// Compare time and meta data only.
+													dest_part->events().findSimilarType(e, el, true);
+													// Do NOT add the new meta if it already exists at the position.
+													// Don't event bother replacing it using DeletEvent or ModifyEvent.
+													if(el.empty())
+													{
+														// REMOVE Tim. citem. Added. Diagnostic.
+														fprintf(stderr, "paste_items_at: Adding new meta: time:%u len:%d\n",
+																		e.posValue(), e.dataLen());
+														operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
+													}
+													else
+													{
+														// Delete all but one of them. There shouldn't be more than one meta event
+														//  at a time for a given meta anyway.
+														iEvent nie;
+														for(iEvent ie = el.begin(); ie != el.end(); ++ie)
+														{
+															// Break on the second-last one, to leave one item intact.
+															nie = ie;
+															++nie;
+															if(nie == el.end())
+															{
+																// REMOVE Tim. citem. Added. Diagnostic.
+																fprintf(stderr, "paste_items_at: Leaving existing meta intact: time:%u len:%d\n",
+																				ie->second.posValue(), ie->second.dataLen());
+																break;
+															}
+															
+															// REMOVE Tim. citem. Added. Diagnostic.
+															fprintf(stderr, "paste_items_at: Deleting existing meta event: time:%u len:%d\n",
+																			ie->second.posValue(), ie->second.dataLen());
+															
+															operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
+														}
+													}
+												}
+												break;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					else
+					{
+						printf("ERROR: reading eventlist from clipboard failed. ignoring this one...\n");
+					}
+				}
+				else
+					xml.unknown("paste_items_at");
+				break;
+				
+			case Xml::Attribut:
+			case Xml::TagEnd:
+			default:
+				break;
+		}
+	}
+	
+	out_of_paste_at_for:
+	
+	for (map<const Part*, unsigned>::iterator it = expand_map.begin(); it!=expand_map.end(); it++)
+		if (it->second != it->first->lenTick())
+			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
+
+	MusEGlobal::song->informAboutNewParts(new_part_map); // must be called before apply. otherwise
+	                                                     // pointer changes (by resize) screw it up
+	MusEGlobal::song->applyOperationGroup(operations);
+	MusEGlobal::song->update(SC_SELECTION | SC_PART_SELECTION);
 }
 
 } // namespace MusECore

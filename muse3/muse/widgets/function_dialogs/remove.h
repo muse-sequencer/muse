@@ -54,18 +54,30 @@ class Remove : public FunctionDialogBase, public Ui::RemoveBase
     Remove(QWidget* parent = 0);
 //     ~Remove();
 
-// REMOVE Tim. citem. Removed.
-//     static int range;
-//     static int parts;
+    static int _range;
+    static int _parts;
     static int velo_threshold;
     static bool velo_thres_used;
     static int len_threshold;
     static bool len_thres_used;
+    static FunctionReturnDialogFlags_t _ret_flags;
+    static FunctionDialogElements_t _elements;
     
+    static void setElements(FunctionDialogElements_t elements =
+      FunctionAllEventsButton | FunctionSelectedEventsButton |
+      FunctionLoopedButton | FunctionSelectedLoopedButton) { _elements = elements; }
+      
     static void read_configuration(MusECore::Xml& xml);
     void write_configuration(int level, MusECore::Xml& xml);
     
     void setupDialog();
+    
+    int curRange() const { return _range; }
+    void setCurRange(int range) { _range = range; }
+    int curParts() const { return _parts; }
+    void setCurParts(int parts) { _parts = parts; }
+    void setReturnFlags(FunctionReturnDialogFlags_t f) { _ret_flags = f; }
+    FunctionDialogElements_t elements() const { return _elements; }
     
 //   public slots:
 //     int exec();

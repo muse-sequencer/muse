@@ -26,6 +26,10 @@
 
 namespace MusEGui {
 
+FunctionReturnDialogFlags_t Velocity::_ret_flags = FunctionReturnNoFlags;
+FunctionDialogElements_t Velocity::_elements = FunctionDialogNoElements;
+int Velocity::_range = FunctionSelectedEventsButton;
+int Velocity::_parts = FunctionSelectedPartsButton;
 int Velocity::rateVal = 100;
 int Velocity::offsetVal = 0;
       
@@ -62,7 +66,7 @@ Velocity::Velocity(QWidget* parent)
 //   pullValues
 //---------------------------------------------------------
 
-void Velocity::pullValues()
+void Velocity::pull_values()
       {
       //--------------------------------------------
       // Grab IDs or values from common base object
@@ -118,7 +122,11 @@ void Velocity::read_configuration(MusECore::Xml& xml)
 					// Handle this dialog's specific settings.
 					//-----------------------------------------
 					
-					if (tag == "rate")
+					if (tag == "range")
+						_range = xml.parseInt();
+					else if (tag == "parts")
+						_parts = xml.parseInt();
+					else if (tag == "rate")
 					rateVal=xml.parseInt();
 					else if (tag == "offset")
 						offsetVal=xml.parseInt();
@@ -139,7 +147,7 @@ void Velocity::read_configuration(MusECore::Xml& xml)
 
 void Velocity::write_configuration(int level, MusECore::Xml& xml)
 {
-	xml.tag(level++, "mod_velo");
+  xml.tag(level++, "mod_velo");
   
   //-----------------------------------------
   // Write any common base settings.
@@ -151,9 +159,11 @@ void Velocity::write_configuration(int level, MusECore::Xml& xml)
   // Write this dialog's specific settings.
   //-----------------------------------------
   
-	xml.intTag(level, "offset", offsetVal);
-	xml.intTag(level, "rate", rateVal);
-	xml.tag(level, "/mod_velo");
+  xml.intTag(level, "range", _range);
+  xml.intTag(level, "parts", _parts);
+  xml.intTag(level, "offset", offsetVal);
+  xml.intTag(level, "rate", rateVal);
+  xml.tag(level, "/mod_velo");
 }
 
 } // namespace MusEGui

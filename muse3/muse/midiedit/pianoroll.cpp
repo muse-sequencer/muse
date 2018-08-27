@@ -846,6 +846,14 @@ void PianoRoll::cmd(int cmd)
         if(canvas->getCurrentDrag())
           return;
         
+      const FunctionDialogElements_t fn_element_dflt =
+        FunctionAllEventsButton |
+        FunctionSelectedEventsButton |
+        FunctionLoopedButton |
+        FunctionSelectedLoopedButton |
+        FunctionAllPartsButton |
+        FunctionSelectedPartsButton;
+      
       switch (cmd)
             {
   // REMOVE Tim. citem. Changed.
@@ -874,15 +882,15 @@ void PianoRoll::cmd(int cmd)
   // 															MusECore::paste_notes((canvas->part()));
   // 															break;
             case PianoCanvas::CMD_CUT:
-                  tagItems();
+                  tagItems(false, true);
                   MusECore::cut_items();
                   break;
             case PianoCanvas::CMD_COPY:
-                  tagItems();
+                  tagItems(false, true);
                   MusECore::copy_items();
                   break;
             case PianoCanvas::CMD_COPY_RANGE:
-                  tagItems(!itemsAreSelected(), true, false, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
+                  tagItems(!itemsAreSelected(), true, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
                   MusECore::copy_items();
                   break;
             case PianoCanvas::CMD_PASTE: 
@@ -898,22 +906,70 @@ void PianoRoll::cmd(int cmd)
                               MusECore::paste_items(partlist_to_set(parts()), (canvas->part()));
                               break;
                               
-            case PianoCanvas::CMD_MODIFY_GATE_TIME: modify_notelen(partlist_to_set(parts())); break;
-            case PianoCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
-            case PianoCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
-            case PianoCanvas::CMD_QUANTIZE: quantize_notes(partlist_to_set(parts())); break;
-            case PianoCanvas::CMD_TRANSPOSE: transpose_notes(partlist_to_set(parts())); break;
+//             case PianoCanvas::CMD_MODIFY_GATE_TIME: modify_notelen(partlist_to_set(parts())); break;
+            case PianoCanvas::CMD_MODIFY_GATE_TIME:
+                  {
+                  FunctionDialogReturnGateTime ret =
+                    gatetime_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::modify_notelen_items(ret._rateVal, ret._offsetVal);
+                  break;
+                  }
+//             case PianoCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
+            case PianoCanvas::CMD_MODIFY_VELOCITY:
+                  {
+                  FunctionDialogReturnVelocity ret =
+                    velocity_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::modify_velocity_items(ret._rateVal, ret._offsetVal);
+                  break;
+                  }
+//             case PianoCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
+            case PianoCanvas::CMD_CRESCENDO:
+                  {
+                  FunctionDialogReturnCrescendo ret =
+                    crescendo_items_dialog(FunctionDialogMode(
+                      FunctionLoopedButton |
+                      FunctionSelectedLoopedButton |
+                      FunctionAllPartsButton | 
+                      FunctionSelectedPartsButton));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::crescendo_items(ret._start_val, ret._end_val, ret._absolute);
+                  break;
+                  }
+//             case PianoCanvas::CMD_QUANTIZE: quantize_notes(partlist_to_set(parts())); break;
+            case PianoCanvas::CMD_QUANTIZE:
+                  {
+                  FunctionDialogReturnQuantize ret =
+                    quantize_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::quantize_items(ret._raster_index,
+                                           /*ret._quant_len*/ false,  // DELETETHIS
+                                           ret._strength,
+                                           ret._swing,
+                                           ret._threshold);
+                  break;
+                  }
+            
+//             case PianoCanvas::CMD_TRANSPOSE: transpose_notes(partlist_to_set(parts())); break;
+            case PianoCanvas::CMD_TRANSPOSE:
+                  {
+                  FunctionDialogReturnTranspose ret =
+                    transpose_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::transpose_items(ret._amount);
+                  break;
+                  }
   // 						case PianoCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
             case PianoCanvas::CMD_ERASE_EVENT:
             {
-              FunctionDialogReturnVeloLen ret =
-                erase_items_dialog(FunctionDialogMode(
-                  FunctionAllEventsButton |
-                  FunctionSelectedEventsButton |
-                  FunctionLoopedButton |
-                  FunctionSelectedLoopedButton |
-                  FunctionAllPartsButton | 
-                  FunctionSelectedPartsButton));
+              FunctionDialogReturnErase ret =
+                erase_items_dialog(FunctionDialogMode(fn_element_dflt));
               if(ret._valid)
                 tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
               MusECore::erase_items(ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
@@ -921,13 +977,49 @@ void PianoRoll::cmd(int cmd)
             break;
   // 						case PianoCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break;
             case PianoCanvas::CMD_DEL:
-              tagItems();
+              tagItems(false, true);
               MusECore::erase_items();
               break;
-            case PianoCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
-            case PianoCanvas::CMD_FIXED_LEN: set_notelen(partlist_to_set(parts())); break;
-            case PianoCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
-            case PianoCanvas::CMD_LEGATO: legato(partlist_to_set(parts())); break;
+//             case PianoCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
+            case PianoCanvas::CMD_NOTE_SHIFT:
+                  {
+                  FunctionDialogReturnMove ret =
+                    move_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::move_items(ret._amount);
+                  break;
+                  }
+//             case PianoCanvas::CMD_FIXED_LEN: set_notelen(partlist_to_set(parts())); break;
+            case PianoCanvas::CMD_FIXED_LEN:
+                  {
+                  FunctionDialogReturnSetLen ret =
+                    setlen_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::set_notelen_items(ret._len);
+                  break;
+                  }
+//             case PianoCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
+            case PianoCanvas::CMD_DELETE_OVERLAPS:
+                  {
+                  FunctionDialogReturnDelOverlaps ret =
+                    deloverlaps_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::delete_overlaps_items();
+                  break;
+                  }
+//             case PianoCanvas::CMD_LEGATO: legato(partlist_to_set(parts())); break;
+            case PianoCanvas::CMD_LEGATO:
+                  {
+                  FunctionDialogReturnLegato ret =
+                    legato_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::legato_items(ret._min_len, !ret._allow_shortening);
+                  break;
+                  }
             
             default: ((PianoCanvas*)canvas)->cmd(cmd);
             }
@@ -1627,11 +1719,15 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
           return;
       }
       else if (key == shortcuts[SHRT_INC_VELOCITY].key) {
-          modify_velocity(partlist_to_set(parts()), 1, 100, 1);
+//           modify_velocity(partlist_to_set(parts()), 1, 100, 1);
+          tagItems(false, true);
+          MusECore::modify_velocity_items(100, 1);
           return;
       }
       else if (key == shortcuts[SHRT_DEC_VELOCITY].key) {
-          modify_velocity(partlist_to_set(parts()), 1, 100, -1);
+//           modify_velocity(partlist_to_set(parts()), 1, 100, -1);
+          tagItems(false, true);
+          MusECore::modify_velocity_items(100, -1);
           return;
       }
       else { //Default:

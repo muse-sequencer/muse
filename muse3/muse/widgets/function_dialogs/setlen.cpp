@@ -26,6 +26,10 @@
 
 namespace MusEGui {
 
+FunctionReturnDialogFlags_t Setlen::_ret_flags = FunctionReturnNoFlags;
+FunctionDialogElements_t Setlen::_elements = FunctionDialogNoElements;
+int Setlen::_range = FunctionSelectedEventsButton;
+int Setlen::_parts = FunctionSelectedPartsButton;
 int Setlen::len = 384;
   
 Setlen::Setlen(QWidget* parent)
@@ -107,7 +111,11 @@ void Setlen::read_configuration(MusECore::Xml& xml)
 					// Handle this dialog's specific settings.
 					//-----------------------------------------
 					
-					if (tag == "len")
+					if (tag == "range")
+						_range = xml.parseInt();
+					else if (tag == "parts")
+						_parts = xml.parseInt();
+					else if (tag == "len")
 						len=xml.parseInt();
 					else
 						xml.unknown("SetLen");
@@ -126,7 +134,7 @@ void Setlen::read_configuration(MusECore::Xml& xml)
 
 void Setlen::write_configuration(int level, MusECore::Xml& xml)
 {
-	xml.tag(level++, "setlen");
+  xml.tag(level++, "setlen");
   
   //-----------------------------------------
   // Write any common base settings.
@@ -138,8 +146,10 @@ void Setlen::write_configuration(int level, MusECore::Xml& xml)
   // Write this dialog's specific settings.
   //-----------------------------------------
   
-	xml.intTag(level, "len", len);
-	xml.tag(level, "/setlen");
+  xml.intTag(level, "range", _range);
+  xml.intTag(level, "parts", _parts);
+  xml.intTag(level, "len", len);
+  xml.tag(level, "/setlen");
 }
 
 } // namespace MusEGui

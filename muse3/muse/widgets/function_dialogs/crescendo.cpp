@@ -26,6 +26,10 @@
 
 namespace MusEGui {
 
+FunctionReturnDialogFlags_t Crescendo::_ret_flags = FunctionReturnNoFlags;
+FunctionDialogElements_t Crescendo::_elements = FunctionDialogNoElements;
+int Crescendo::_range = FunctionLoopedButton;
+int Crescendo::_parts = FunctionSelectedPartsButton;
 int Crescendo::start_val = 80;
 int Crescendo::end_val = 130;
 bool Crescendo::absolute = 0;
@@ -115,7 +119,11 @@ void Crescendo::read_configuration(MusECore::Xml& xml)
 					// Handle this dialog's specific settings.
 					//-----------------------------------------
 					
-					if (tag == "start")
+					if (tag == "range")
+						_range = xml.parseInt();
+					else if (tag == "parts")
+						_parts = xml.parseInt();
+					else if (tag == "start")
 						start_val=xml.parseInt();
 					else if (tag == "end")
 						end_val=xml.parseInt();
@@ -138,7 +146,7 @@ void Crescendo::read_configuration(MusECore::Xml& xml)
 
 void Crescendo::write_configuration(int level, MusECore::Xml& xml)
 {
-	xml.tag(level++, "crescendo");
+  xml.tag(level++, "crescendo");
   
   //-----------------------------------------
   // Write any common base settings.
@@ -150,10 +158,12 @@ void Crescendo::write_configuration(int level, MusECore::Xml& xml)
   // Write this dialog's specific settings.
   //-----------------------------------------
   
-	xml.intTag(level, "start", start_val);
-	xml.intTag(level, "end", end_val);
-	xml.intTag(level, "absolute", absolute);
-	xml.tag(level, "/crescendo");
+  xml.intTag(level, "range", _range);
+  xml.intTag(level, "parts", _parts);
+  xml.intTag(level, "start", start_val);
+  xml.intTag(level, "end", end_val);
+  xml.intTag(level, "absolute", absolute);
+  xml.tag(level, "/crescendo");
 }
 
 void Crescendo::absolute_changed(bool val)

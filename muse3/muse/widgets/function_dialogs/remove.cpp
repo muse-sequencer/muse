@@ -26,9 +26,10 @@
 
 namespace MusEGui {
 
-// REMOVE Tim. citem. Removed.
-// int Remove::range = 1;
-// int Remove::parts = 0;
+FunctionReturnDialogFlags_t Remove::_ret_flags = FunctionReturnNoFlags;
+FunctionDialogElements_t Remove::_elements = FunctionDialogNoElements;
+int Remove::_range = FunctionSelectedEventsButton;
+int Remove::_parts = FunctionSelectedPartsButton;
 int Remove::velo_threshold = 16;
 bool Remove::velo_thres_used = false;
 int Remove::len_threshold = 12;
@@ -270,7 +271,11 @@ void Remove::read_configuration(MusECore::Xml& xml)
 					// Handle this dialog's specific settings.
 					//-----------------------------------------
 					
-					if (tag == "velo_threshold")
+					if (tag == "range")
+						_range = xml.parseInt();
+					else if (tag == "parts")
+						_parts = xml.parseInt();
+					else if (tag == "velo_threshold")
 						velo_threshold=xml.parseInt();
 					else if (tag == "velo_thres_used")
 						velo_thres_used=xml.parseInt();
@@ -311,12 +316,14 @@ void Remove::write_configuration(int level, MusECore::Xml& xml)
   // Write this dialog's specific settings.
   //-----------------------------------------
   
-	xml.intTag(level, "velo_threshold", velo_threshold);
-	xml.intTag(level, "velo_thres_used", velo_thres_used);
-	xml.intTag(level, "len_threshold", len_threshold);
-	xml.intTag(level, "len_thres_used", len_thres_used);
+  xml.intTag(level, "range", _range);
+  xml.intTag(level, "parts", _parts);
+  xml.intTag(level, "velo_threshold", velo_threshold);
+  xml.intTag(level, "velo_thres_used", velo_thres_used);
+  xml.intTag(level, "len_threshold", len_threshold);
+  xml.intTag(level, "len_thres_used", len_thres_used);
   
-	xml.tag(level, "/erase");
+  xml.tag(level, "/erase");
 }
 
 } // namespace MusEGui

@@ -46,15 +46,18 @@ class FunctionDialogBase : public QDialog
 
     void setupButton(QButtonGroup* group, int buttonID, bool show);
     
-    virtual void set_return_flags()
+    virtual FunctionReturnDialogFlags_t calc_return_flags()
     {
-      _ret_flags = FunctionReturnNoFlags;
-      if(_range == FunctionAllEventsButton || _range == FunctionLoopedButton)
-        _ret_flags |= FunctionReturnAllEvents;
-      if(_parts == FunctionAllPartsButton)
-        _ret_flags |= FunctionReturnAllParts;
-      if(_range == FunctionLoopedButton || _range == FunctionSelectedLoopedButton)
-        _ret_flags |= FunctionReturnLooped;
+      const int cr = curRange();
+      const int cp = curParts();
+      FunctionReturnDialogFlags_t ret_flags = FunctionReturnNoFlags;
+      if(cr == FunctionAllEventsButton || cr == FunctionLoopedButton)
+        ret_flags |= FunctionReturnAllEvents;
+      if(cp == FunctionAllPartsButton)
+        ret_flags |= FunctionReturnAllParts;
+      if(cr == FunctionLoopedButton || cr == FunctionSelectedLoopedButton)
+        ret_flags |= FunctionReturnLooped;
+      return ret_flags;
     }
     
   protected slots:
@@ -65,22 +68,19 @@ class FunctionDialogBase : public QDialog
     FunctionDialogBase(QWidget* parent = 0);
     virtual ~FunctionDialogBase();
 
-    static int _range;
-    static int _parts;
-    static FunctionReturnDialogFlags_t _ret_flags;
-    static FunctionDialogElements_t _elements;
-    
     // Returns true if the tag was handled by this base class, otherwsise false.
     static bool read_configuration(const QString& tag, MusECore::Xml& xml);
     // Writes a small portion, just part of the overall method in the sub classes.
     virtual void write_configuration(int level, MusECore::Xml& xml);
     
-    static void setElements(FunctionDialogElements_t elements =
-      FunctionAllEventsButton | FunctionSelectedEventsButton |
-      FunctionLoopedButton | FunctionSelectedLoopedButton) { 
-        _elements = elements; }
-      
     virtual void setupDialog();
+
+    virtual int curRange() const { return -1; }
+    virtual void setCurRange(int) {  }
+    virtual int curParts() const { return -1; }
+    virtual void setCurParts(int) {  }
+    virtual FunctionDialogElements_t elements() const { return FunctionDialogNoElements; }
+    virtual void setReturnFlags(FunctionReturnDialogFlags_t) {  }
     
   public slots:
     virtual int exec();

@@ -403,21 +403,39 @@ void Event::readAudio(MusECore::WavePart* part, unsigned offset, float** bpp, in
       {
         if(ev) ev->readAudio(part, offset, bpp, channels, nn, doSeek, overwrite);
       }
-void Event::setTick(unsigned val)       { if(ev) ev->setTick(val); }
-unsigned Event::tick() const            { return ev ? ev->tick() : 0; }
-unsigned Event::frame() const           { return ev ? ev->frame() : 0; }
-unsigned Event::posValue() const        { return ev ? ev->posValue() : 0; }
-void Event::setFrame(unsigned val)      { if(ev) ev->setFrame(val); }
-void Event::setLenTick(unsigned val)    { if(ev) ev->setLenTick(val); }
-void Event::setLenFrame(unsigned val)   { if(ev) ev->setLenFrame(val); }
-unsigned Event::lenTick() const         { return ev ? ev->lenTick() : 0; }
-unsigned Event::lenFrame() const        { return ev ? ev->lenFrame() : 0; }
-unsigned Event::lenValue() const        { return ev ? ev->lenValue() : 0; }
-Pos Event::end() const                  { return ev ? ev->end() : Pos(); }
-unsigned Event::endTick() const         { return ev ? ev->end().tick() : 0; }
-unsigned Event::endFrame() const        { return ev ? ev->end().frame() : 0; }
+
+//--------------------------------------------------------
+// 'Agnostic' position methods - can be TICKS and FRAMES.
+//--------------------------------------------------------
+
 Pos Event::pos() const                  { return ev ? *ev : Pos(); }
 void Event::setPos(const Pos& p)        { if(ev) ev->setPos(p); }
+Pos Event::end() const                  { return ev ? ev->end() : Pos(); }
 PosLen Event::posLen() const            { return ev ? *ev : PosLen(); }
+
+unsigned Event::posValue() const        { return ev ? ev->posValue() : 0; }
+unsigned Event::posValue(Pos::TType time_type) const { return ev ? ev->posValue(time_type) : 0; }
+void Event::setPosValue(unsigned val)   { if(ev) ev->setPosValue(val); }
+void Event::setPosValue(unsigned val, Pos::TType time_type) { if(ev) ev->setPosValue(val, time_type); }
+
+unsigned Event::lenValue() const        { return ev ? ev->lenValue() : 0; }
+unsigned Event::lenValue(Pos::TType time_type) const { return ev ? ev->lenValue(time_type) : 0; }
+void Event::setLenValue(unsigned val)   { if(ev) ev->setLenValue(val); }
+void Event::setLenValue(unsigned val, Pos::TType time_type) { if(ev) ev->setLenValue(val, time_type); }
+
+//--------------------------------------------------------
+// 'Resolving' position methods - must be TICKS or FRAMES.
+//--------------------------------------------------------
+
+unsigned Event::tick() const            { return ev ? ev->tick() : 0; }
+void Event::setTick(unsigned val)       { if(ev) ev->setTick(val); }
+unsigned Event::frame() const           { return ev ? ev->frame() : 0; }
+void Event::setFrame(unsigned val)      { if(ev) ev->setFrame(val); }
+unsigned Event::lenTick() const         { return ev ? ev->lenTick() : 0; }
+void Event::setLenTick(unsigned val)    { if(ev) ev->setLenTick(val); }
+unsigned Event::lenFrame() const        { return ev ? ev->lenFrame() : 0; }
+void Event::setLenFrame(unsigned val)   { if(ev) ev->setLenFrame(val); }
+unsigned Event::endTick() const         { return ev ? ev->end().tick() : 0; }
+unsigned Event::endFrame() const        { return ev ? ev->end().frame() : 0; }
 
 } // namespace MusECore

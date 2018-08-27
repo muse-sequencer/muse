@@ -723,6 +723,7 @@ void View::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
       p.setWorldMatrixEnabled(false);
       
       int xx,bar1, bar2, beat;
+      int rast_mapx;
       unsigned tick;
       AL::sigmap.tickValues(x, &bar1, &beat, &tick);
       AL::sigmap.tickValues(x+w, &bar2, &beat, &tick);
@@ -747,8 +748,20 @@ void View::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
             //int q = rmapx(raster);
             int qq = raster;
             //if (q < 8)        // grid too dense
-            if (rmapx(raster) < 8)        // grid too dense
+            
+// REMOVE Tim. citem. Changed.
+//             if (rmapx(raster) < 8)        // grid too dense
+//                   qq *= 2;
+
+            rast_mapx = rmapx(raster);
+            // grid too dense?
+            if (rast_mapx == 1)        
+                  qq *= 8;
+            else if (rast_mapx < 4)
+                  qq *= 4;
+            else if (rast_mapx < 8)
                   qq *= 2;
+            
             p.setPen(MusEGlobal::config.midiCanvasBeatColor);
             if (raster>=4) {
                         ///int xx = x + qq;

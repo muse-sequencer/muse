@@ -132,22 +132,41 @@ class Event {
       
       virtual void readAudio(MusECore::WavePart* part, unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite);
       
-      void setTick(unsigned val);
-      unsigned tick() const;
-      unsigned frame() const;
-      unsigned posValue() const;
-      void setFrame(unsigned val);
-      void setLenTick(unsigned val);
-      void setLenFrame(unsigned val);
-      unsigned lenTick() const;
-      unsigned lenFrame() const;
-      unsigned lenValue() const;
-      Pos end() const;
-      unsigned endTick() const;
-      unsigned endFrame() const;
+      //--------------------------------------------------------
+      // 'Agnostic' position methods - can be TICKS and FRAMES.
+      //--------------------------------------------------------
+
       Pos pos() const;
       void setPos(const Pos& p);
+      Pos end() const;
       PosLen posLen() const;
+      
+      unsigned posValue() const;
+      unsigned posValue(Pos::TType time_type) const;
+      void setPosValue(unsigned val);
+      void setPosValue(unsigned val, Pos::TType time_type);
+      
+      unsigned lenValue() const;
+      unsigned lenValue(Pos::TType time_type) const;
+      void setLenValue(unsigned val);
+      void setLenValue(unsigned val, Pos::TType time_type);     
+      
+      //--------------------------------------------------------
+      // 'Resolving' position methods - must be TICKS or FRAMES.
+      //--------------------------------------------------------
+
+      unsigned tick() const;
+      void setTick(unsigned val);
+      unsigned frame() const;
+      void setFrame(unsigned val);
+      
+      unsigned lenTick() const;
+      void setLenTick(unsigned val);
+      unsigned lenFrame() const;
+      void setLenFrame(unsigned val);
+      
+      unsigned endTick() const;
+      unsigned endFrame() const;
       };
 
 typedef std::multimap <unsigned, Event, std::less<unsigned> > EL;

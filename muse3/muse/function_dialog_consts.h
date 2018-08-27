@@ -78,6 +78,21 @@ enum FunctionDialogReturnFlags
 // Combination of FunctionDialogReturnFlags flags.
 typedef int FunctionReturnDialogFlags_t;
 
+const int functionQuantizeRasterVals[] = {
+  1, // Whole note divisor
+  2, // Half note divisor
+  4, // 4th note divisor
+  6, // 4thT divisor
+  8, // 8th divisor
+  12,//8thT divisor
+  16,// ...
+  24,
+  32,
+  48,
+  64
+};
+
+
 } // namespace MusEGui
 
 #endif

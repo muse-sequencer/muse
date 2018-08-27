@@ -26,6 +26,10 @@
 
 namespace MusEGui {
 
+FunctionReturnDialogFlags_t Legato::_ret_flags = FunctionReturnNoFlags;
+FunctionDialogElements_t Legato::_elements = FunctionDialogNoElements;
+int Legato::_range = FunctionSelectedEventsButton;
+int Legato::_parts = FunctionSelectedPartsButton;
 int Legato::min_len = 0;
 bool Legato::allow_shortening = 0;
   
@@ -110,7 +114,11 @@ void Legato::read_configuration(MusECore::Xml& xml)
 					// Handle this dialog's specific settings.
 					//-----------------------------------------
 					
-					if (tag == "min_len")
+					if (tag == "range")
+						_range = xml.parseInt();
+					else if (tag == "parts")
+						_parts = xml.parseInt();
+					else if (tag == "min_len")
 						min_len=xml.parseInt();
 					else if (tag == "allow_shortening")
 						allow_shortening=xml.parseInt();
@@ -131,7 +139,7 @@ void Legato::read_configuration(MusECore::Xml& xml)
 
 void Legato::write_configuration(int level, MusECore::Xml& xml)
 {
-	xml.tag(level++, "legato");
+  xml.tag(level++, "legato");
   
   //-----------------------------------------
   // Write any common base settings.
@@ -143,9 +151,11 @@ void Legato::write_configuration(int level, MusECore::Xml& xml)
   // Write this dialog's specific settings.
   //-----------------------------------------
   
-	xml.intTag(level, "min_len", min_len);
-	xml.intTag(level, "allow_shortening", allow_shortening);
-	xml.tag(level, "/legato");
+  xml.intTag(level, "range", _range);
+  xml.intTag(level, "parts", _parts);
+  xml.intTag(level, "min_len", min_len);
+  xml.intTag(level, "allow_shortening", allow_shortening);
+  xml.tag(level, "/legato");
 }
 
 } // namespace MusEGui

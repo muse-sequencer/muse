@@ -71,7 +71,7 @@
 #include "popupmenu.h"
 #include "menutitleitem.h"
 #include "operations.h"
-#include "widgets/function_dialogs/quantize.h"
+// #include "widgets/function_dialogs/quantize.h"
 #include "trackinfo_layout.h"
 
 namespace MusEGui {
@@ -1382,6 +1382,14 @@ void DrumEdit::cmd(int cmd)
       if(canvas->getCurrentDrag())
         return;
       
+      const FunctionDialogElements_t fn_element_dflt =
+        FunctionAllEventsButton |
+        FunctionSelectedEventsButton |
+        FunctionLoopedButton |
+        FunctionSelectedLoopedButton |
+        FunctionAllPartsButton |
+        FunctionSelectedPartsButton;
+      
       switch(cmd) {
   // REMOVE Tim. citem. Changed.
   //             case DrumCanvas::CMD_CUT:
@@ -1409,15 +1417,15 @@ void DrumEdit::cmd(int cmd)
   // 									MusECore::paste_notes((canvas->part()));
   // 									break;
             case DrumCanvas::CMD_CUT:
-                  tagItems();
+                  tagItems(false, true);
                   MusECore::cut_items();
                   break;
             case DrumCanvas::CMD_COPY:
-                  tagItems();
+                  tagItems(false, true);
                   MusECore::copy_items();
                   break;
             case DrumCanvas::CMD_COPY_RANGE:
-                  tagItems(!itemsAreSelected(), false, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
+                  tagItems(!itemsAreSelected(), true, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
                   MusECore::copy_items();
                   break;
             case DrumCanvas::CMD_PASTE: 
@@ -1436,29 +1444,58 @@ void DrumEdit::cmd(int cmd)
             case DrumCanvas::CMD_LOAD: load(); break;
             case DrumCanvas::CMD_SAVE: save(); break;
             case DrumCanvas::CMD_RESET: reset(); break;
-            case DrumCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
-            case DrumCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
+//             case DrumCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
+            case DrumCanvas::CMD_MODIFY_VELOCITY:
+                  {
+                  FunctionDialogReturnVelocity ret =
+                    velocity_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::modify_velocity_items(ret._rateVal, ret._offsetVal);
+                  break;
+                  }
+//             case DrumCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
+            case DrumCanvas::CMD_CRESCENDO:
+                  {
+                  FunctionDialogReturnCrescendo ret =
+                    crescendo_items_dialog(FunctionDialogMode(
+                      FunctionLoopedButton |
+                      FunctionSelectedLoopedButton |
+                      FunctionAllPartsButton | 
+                      FunctionSelectedPartsButton));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::crescendo_items(ret._start_val, ret._end_val, ret._absolute);
+                  break;
+                  }
+//             case DrumCanvas::CMD_QUANTIZE:
+//                   {
+//                   int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
+//                   if (quantize_dialog->exec())
+//                         quantize_notes(partlist_to_set(parts()), quantize_dialog->range, 
+//                                         (MusEGlobal::config.division*4)/raster,
+//                                         /* quant_len= */false, quantize_dialog->strength,  // DELETETHIS
+//                                         quantize_dialog->swing, quantize_dialog->threshold);
+//                   break;
+//                   }
             case DrumCanvas::CMD_QUANTIZE:
                   {
-                  int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
-                  if (quantize_dialog->exec())
-                        quantize_notes(partlist_to_set(parts()), quantize_dialog->range, 
-                                        (MusEGlobal::config.division*4)/raster,
-                                        /* quant_len= */false, quantize_dialog->strength,  // DELETETHIS
-                                        quantize_dialog->swing, quantize_dialog->threshold);
+                  FunctionDialogReturnQuantize ret =
+                    quantize_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::quantize_items(ret._raster_index,
+                                           /*ret._quant_len*/ false,  // DELETETHIS
+                                           ret._strength,
+                                           ret._swing,
+                                           ret._threshold);
                   break;
                   }
   // 						case DrumCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
             case DrumCanvas::CMD_ERASE_EVENT:
             {
-              FunctionDialogReturnVeloLen ret =
-                erase_items_dialog(FunctionDialogMode(
-                  FunctionAllEventsButton |
-                  FunctionSelectedEventsButton |
-                  FunctionLoopedButton |
-                  FunctionSelectedLoopedButton |
-                  FunctionAllPartsButton | 
-                  FunctionSelectedPartsButton));
+              FunctionDialogReturnErase ret =
+                erase_items_dialog(FunctionDialogMode(fn_element_dflt));
               if(ret._valid)
                 tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
               MusECore::erase_items(ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
@@ -1466,11 +1503,29 @@ void DrumEdit::cmd(int cmd)
             break;
   // 						case DrumCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break; //delete selected events
             case DrumCanvas::CMD_DEL:
-              tagItems();
+              tagItems(false, true);
               MusECore::erase_items();
             break;
-            case DrumCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
-            case DrumCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
+//             case DrumCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
+            case DrumCanvas::CMD_DELETE_OVERLAPS:
+                  {
+                  FunctionDialogReturnDelOverlaps ret =
+                    deloverlaps_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::delete_overlaps_items();
+                  break;
+                  }
+//             case DrumCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
+            case DrumCanvas::CMD_NOTE_SHIFT:
+                  {
+                  FunctionDialogReturnMove ret =
+                    move_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                    tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+                  MusECore::move_items(ret._amount);
+                  break;
+                  }
             case DrumCanvas::CMD_REORDER_LIST: ((DrumCanvas*)(canvas))->moveAwayUnused(); break;
             //case DrumCanvas::CMD_FIXED_LEN: // this must be handled by the drum canvas, due to its
                                               // special nature (each drum has its own length)
@@ -1889,11 +1944,15 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
           return;
       }
       else if (key == shortcuts[SHRT_INC_VELOCITY].key) {
-          modify_velocity(partlist_to_set(parts()), 1, 100, 1);
+//           modify_velocity(partlist_to_set(parts()), 1, 100, 1);
+          tagItems(false, true);
+          MusECore::modify_velocity_items(100, 1);
           return;
       }
       else if (key == shortcuts[SHRT_DEC_VELOCITY].key) {
-          modify_velocity(partlist_to_set(parts()), 1, 100, -1);
+//           modify_velocity(partlist_to_set(parts()), 1, 100, -1);
+          tagItems(false, true);
+          MusECore::modify_velocity_items(100, -1);
           return;
       }
       else { //Default:

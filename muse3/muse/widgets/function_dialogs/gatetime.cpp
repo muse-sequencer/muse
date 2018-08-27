@@ -30,6 +30,10 @@
 
 namespace MusEGui {
 
+FunctionReturnDialogFlags_t GateTime::_ret_flags = FunctionReturnNoFlags;
+FunctionDialogElements_t GateTime::_elements = FunctionDialogNoElements;
+int GateTime::_range = FunctionSelectedEventsButton;
+int GateTime::_parts = FunctionSelectedPartsButton;
 int GateTime::rateVal = 100;
 int GateTime::offsetVal = 0;
       
@@ -66,7 +70,7 @@ GateTime::GateTime(QWidget* parent)
 //   pullValues
 //---------------------------------------------------------
 
-void GateTime::pullValues()
+void GateTime::pull_values()
       {
       //--------------------------------------------
       // Grab IDs or values from common base object
@@ -122,7 +126,11 @@ void GateTime::read_configuration(MusECore::Xml& xml)
 					// Handle this dialog's specific settings.
 					//-----------------------------------------
 					
-					if (tag == "rate")
+					if (tag == "range")
+						_range = xml.parseInt();
+					else if (tag == "parts")
+						_parts = xml.parseInt();
+					else if (tag == "rate")
 						rateVal=xml.parseInt();
 					else if (tag == "offset")
 						offsetVal=xml.parseInt();
@@ -143,7 +151,7 @@ void GateTime::read_configuration(MusECore::Xml& xml)
 
 void GateTime::write_configuration(int level, MusECore::Xml& xml)
 {
-	xml.tag(level++, "mod_len");
+  xml.tag(level++, "mod_len");
   
   //-----------------------------------------
   // Write any common base settings.
@@ -155,9 +163,11 @@ void GateTime::write_configuration(int level, MusECore::Xml& xml)
   // Write this dialog's specific settings.
   //-----------------------------------------
   
-	xml.intTag(level, "offset", offsetVal);
-	xml.intTag(level, "rate", rateVal);
-	xml.tag(level, "/mod_len");
+  xml.intTag(level, "range", _range);
+  xml.intTag(level, "parts", _parts);
+  xml.intTag(level, "offset", offsetVal);
+  xml.intTag(level, "rate", rateVal);
+  xml.tag(level, "/mod_len");
 }
 
 } // namespace MusEGui

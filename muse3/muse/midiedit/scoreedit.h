@@ -214,6 +214,7 @@ class ScoreEdit : public TopWin
 		bool get_apply_velo() { return apply_velo; }
 		
 		// REMOVE Tim. citem. Added.
+		bool itemsAreSelected() const;
 		// Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
 		void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
 			const MusECore::Pos& = MusECore::Pos(),
@@ -880,8 +881,9 @@ class ScoreCanvas : public MusEGui::View
 		int calc_posadd(int t);
     
 
+		// REMOVE Tim. citem. Added.
+		bool itemsAreSelected() const;
 		// Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
-
 		void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
 			const MusECore::Pos& = MusECore::Pos(),
 			const MusECore::Pos& = MusECore::Pos()) const;

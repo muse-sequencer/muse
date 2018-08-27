@@ -245,9 +245,12 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       drag   = DRAG_OFF;
       tool   = MusEGui::PointerTool;
       button = Qt::NoButton;
-      pos[0] = 0;
-      pos[1] = 0;
-      pos[2] = 0;
+      
+      // Initialize the position markers.
+      pos[0] = MusEGlobal::song->cPos().tick();
+      pos[1] = MusEGlobal::song->lPos().tick();
+      pos[2] = MusEGlobal::song->rPos().tick();
+      
       noEvents=false;
       _perNoteVeloMode = MusEGlobal::config.velocityPerNote;
       if(_panel)

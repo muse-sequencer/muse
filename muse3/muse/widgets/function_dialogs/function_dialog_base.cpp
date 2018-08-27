@@ -28,11 +28,6 @@
 
 namespace MusEGui {
 
-int FunctionDialogBase::_range = 1;
-int FunctionDialogBase::_parts = 0;
-int FunctionDialogBase::_ret_flags = FunctionReturnNoFlags;
-FunctionDialogElements_t FunctionDialogBase::_elements = FunctionDialogNoElements;
-
 FunctionDialogBase::FunctionDialogBase(QWidget* parent)
   : QDialog(parent)
 {
@@ -56,14 +51,14 @@ void FunctionDialogBase::pull_values()
   // Grab current IDs from range and parts groups.
   //--------------------------------------------
   
-  _range = _range_group->checkedId();
-  _parts = _parts_group->checkedId();
+  setCurRange(_range_group->checkedId());
+  setCurParts(_parts_group->checkedId());
   
   //--------------------------------------------
   // Set convenience return flags.
   //--------------------------------------------
   
-  set_return_flags();
+  setReturnFlags(calc_return_flags());
 }
 
 void FunctionDialogBase::accept()
@@ -83,16 +78,18 @@ void FunctionDialogBase::setupButton(QButtonGroup* group, int buttonID, bool sho
 
 void FunctionDialogBase::setupDialog()
 {
+  const FunctionDialogElements_t elem = elements();
+  
   //--------------------------------------------
   // Show or hide the range and parts containers.
   // The containers need to be enabled first before
   //  their controls can be enabled in setupButton().
   //--------------------------------------------
-  
+
   if(_range_container)
   {
     const bool show =
-      _elements & (FunctionAllEventsButton | FunctionSelectedEventsButton |
+      elem & (FunctionAllEventsButton | FunctionSelectedEventsButton |
                    FunctionLoopedButton | FunctionSelectedLoopedButton);
     _range_container->setEnabled(show);
     _range_container->setVisible(show);
@@ -100,7 +97,7 @@ void FunctionDialogBase::setupDialog()
   
   if(_parts_container)
   {
-    const bool show = _elements & (FunctionAllPartsButton | FunctionSelectedPartsButton);
+    const bool show = elem & (FunctionAllPartsButton | FunctionSelectedPartsButton);
     _parts_container->setEnabled(show);
     _parts_container->setVisible(show);
   }
@@ -110,20 +107,20 @@ void FunctionDialogBase::setupDialog()
   //  the range and parts containers.
   //--------------------------------------------
   
-  setupButton(_range_group, FunctionAllEventsButton, _elements & FunctionAllEventsButton);
-  setupButton(_range_group, FunctionSelectedEventsButton, _elements & FunctionSelectedEventsButton);
-  setupButton(_range_group, FunctionLoopedButton, _elements & FunctionLoopedButton);
-  setupButton(_range_group, FunctionSelectedLoopedButton, _elements & FunctionSelectedLoopedButton);
+  setupButton(_range_group, FunctionAllEventsButton, elem & FunctionAllEventsButton);
+  setupButton(_range_group, FunctionSelectedEventsButton, elem & FunctionSelectedEventsButton);
+  setupButton(_range_group, FunctionLoopedButton, elem & FunctionLoopedButton);
+  setupButton(_range_group, FunctionSelectedLoopedButton, elem & FunctionSelectedLoopedButton);
 
-  setupButton(_parts_group, FunctionAllPartsButton, _elements & FunctionAllPartsButton);
-  setupButton(_parts_group, FunctionSelectedPartsButton, _elements & FunctionSelectedPartsButton);
+  setupButton(_parts_group, FunctionAllPartsButton, elem & FunctionAllPartsButton);
+  setupButton(_parts_group, FunctionSelectedPartsButton, elem & FunctionSelectedPartsButton);
 
   //---------------------------------------
   // If the current range is invalid or the
   //  button is not visible, choose another.
   //---------------------------------------
 
-  QAbstractButton* bt = _range_group->button(_range);
+  QAbstractButton* bt = _range_group->button(curRange());
   if(!bt || !bt->isEnabled())
   {
     QList<QAbstractButton*> bl = _range_group->buttons();
@@ -133,12 +130,12 @@ void FunctionDialogBase::setupDialog()
       bt = bl.at(i);
       if(bt->isEnabled())
       {
-        _range = _range_group->id(bt);
+        setCurRange(_range_group->id(bt));
         break;
       }
     }
   }
-  bt =_range_group->button(_range);
+  bt =_range_group->button(curRange());
   if(bt)
     bt->setChecked(true);
   
@@ -147,7 +144,7 @@ void FunctionDialogBase::setupDialog()
   //  button is not visible, choose another.
   //---------------------------------------
   
-  bt = _parts_group->button(_parts);
+  bt = _parts_group->button(curParts());
   if(!bt || !bt->isEnabled())
   {
     QList<QAbstractButton*> bl = _parts_group->buttons();
@@ -157,12 +154,12 @@ void FunctionDialogBase::setupDialog()
       bt = bl.at(i);
       if(bt->isEnabled())
       {
-        _parts = _parts_group->id(bt);
+        setCurParts(_parts_group->id(bt));
         break;
       }
     }
   }
-  bt = _parts_group->button(_parts);
+  bt = _parts_group->button(curParts());
   if(bt)
     bt->setChecked(true);
 }
@@ -183,53 +180,26 @@ int FunctionDialogBase::exec()
   return QDialog::exec();
 }
 
-bool FunctionDialogBase::read_configuration(const QString& tag, MusECore::Xml& xml)
+bool FunctionDialogBase::read_configuration(const QString& /*tag*/, MusECore::Xml& /*xml*/)
 {
-  if (tag == "range")
-  {
-    _range=xml.parseInt();
-    return true;
-  }
-  else if (tag == "parts")
-  {
-    _parts=xml.parseInt();
-    return true;
-  }
+//   if (tag == "range")
+//   {
+//     setCurRange(xml.parseInt());
+//     return true;
+//   }
+//   else if (tag == "parts")
+//   {
+//     setCurParts(xml.parseInt());
+//     return true;
+//   }
   
   return false;
-        
-//   for (;;)
-//   {
-//     MusECore::Xml::Token token = xml.parse();
-//     if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
-//       break;
-//       
-//     const QString& tag = xml.s1();
-//     switch (token)
-//     {
-//       case MusECore::Xml::TagStart:
-//         if (tag == "range")
-//           range=xml.parseInt();
-//         else if (tag == "parts")
-//           parts=xml.parseInt();
-//         else
-//           xml.unknown("Erase");
-//         break;
-//         
-//       case MusECore::Xml::TagEnd:
-//         if (tag == "erase")
-//           return;
-//         
-//       default:
-//         break;
-//     }
-//   }
 }
  
-void FunctionDialogBase::write_configuration(int level, MusECore::Xml& xml)
+void FunctionDialogBase::write_configuration(int /*level*/, MusECore::Xml& /*xml*/)
 {
-  xml.intTag(level, "range", _range);
-  xml.intTag(level, "parts", _parts);
+//   xml.intTag(level, "range", curRange());
+//   xml.intTag(level, "parts", curParts());
 }
 
 } // namespace MusEGui

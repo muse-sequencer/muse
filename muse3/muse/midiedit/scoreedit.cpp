@@ -581,6 +581,18 @@ void ScoreEdit::add_parts(MusECore::PartList* pl, bool all_in_one)
 
 // REMOVE Tim. citem. Added.
 //---------------------------------------------------------
+//   itemsAreSelected
+//---------------------------------------------------------
+
+bool ScoreEdit::itemsAreSelected() const
+{
+  if(score_canvas)
+    return score_canvas->itemsAreSelected();
+  return false;
+}
+
+// REMOVE Tim. citem. Added.
+//---------------------------------------------------------
 //   tagItems
 //---------------------------------------------------------
 
@@ -756,6 +768,14 @@ void ScoreEdit::closeEvent(QCloseEvent* e)
 
 void ScoreEdit::menu_command(int cmd)
 {
+    const FunctionDialogElements_t fn_element_dflt =
+      FunctionAllEventsButton |
+      FunctionSelectedEventsButton |
+      FunctionLoopedButton |
+      FunctionSelectedLoopedButton;
+      // | FunctionAllPartsButton |
+      // FunctionSelectedPartsButton
+      
     switch (cmd)
     {
         case CMD_SET_NAME:
@@ -784,40 +804,101 @@ void ScoreEdit::menu_command(int cmd)
 //             erase_notes(score_canvas->get_all_parts(), 1);
 //             break;
         case CMD_CUT:
-              tagItems();
+              tagItems(false, true);
               MusECore::cut_items();
             break;
             
-        case CMD_COPY: copy_notes(score_canvas->get_all_parts(), 1); break;
-        case CMD_COPY_RANGE: copy_notes(score_canvas->get_all_parts(),
-          MusECore::any_event_selected(score_canvas->get_all_parts(), MusECore::AllEventsRelevant) ?
-              3 : 2); break;
+//         case CMD_COPY: copy_notes(score_canvas->get_all_parts(), 1); break;
+        case CMD_COPY:
+              tagItems(false, true);
+              MusECore::copy_items();
+              break;
+//         case CMD_COPY_RANGE: copy_notes(score_canvas->get_all_parts(),
+//           MusECore::any_event_selected(score_canvas->get_all_parts(), MusECore::AllEventsRelevant) ?
+//               3 : 2); break;
+        case CMD_COPY_RANGE:
+              //tagItems(!itemsAreSelected(), false, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
+              // For now, unlike the other editors, just tag all parts.
+              tagItems(!itemsAreSelected(), true, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
+              MusECore::copy_items();
+              break;
         case CMD_PASTE:
             menu_command(CMD_SELECT_NONE);
-            MusECore::paste_notes(3072, false, true, score_canvas->get_selected_part());
+//             MusECore::paste_notes(3072, false, true, score_canvas->get_selected_part());
+            MusECore::paste_items(score_canvas->get_all_parts(), 3072, false, true);
             break;
         case CMD_PASTE_DIALOG:
             menu_command(CMD_SELECT_NONE);
-            MusECore::paste_notes(score_canvas->get_selected_part());
+//             MusECore::paste_notes(score_canvas->get_selected_part());
+            MusECore::paste_items(score_canvas->get_all_parts(), score_canvas->get_selected_part());
             break;
-        case CMD_QUANTIZE: quantize_notes(score_canvas->get_all_parts()); break;
-        case CMD_VELOCITY: modify_velocity(score_canvas->get_all_parts()); break;
-        case CMD_CRESCENDO: crescendo(score_canvas->get_all_parts()); break;
-        case CMD_NOTELEN: modify_notelen(score_canvas->get_all_parts()); break;
-        case CMD_TRANSPOSE: transpose_notes(score_canvas->get_all_parts()); break;
 // REMOVE Tim. citem. Changed.
-//         case CMD_ERASE: erase_notes(score_canvas->get_all_parts()); break;
-        case CMD_ERASE:
-            {
-              FunctionDialogReturnVeloLen ret =
-                erase_items_dialog(FunctionDialogMode(
-                  FunctionAllEventsButton |
-                  FunctionSelectedEventsButton |
+//         case CMD_QUANTIZE: quantize_notes(score_canvas->get_all_parts()); break;
+        case CMD_QUANTIZE:
+        {
+          FunctionDialogReturnQuantize ret =
+            quantize_items_dialog(FunctionDialogMode(fn_element_dflt));
+          if(ret._valid)
+            tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+          MusECore::quantize_items(ret._raster_index,
+                                    /*ret._quant_len*/ false,  // DELETETHIS
+                                    ret._strength,
+                                    ret._swing,
+                                    ret._threshold);
+        break;
+        }
+
+//         case CMD_VELOCITY: modify_velocity(score_canvas->get_all_parts()); break;
+        case CMD_VELOCITY:
+              {
+              FunctionDialogReturnVelocity ret =
+                velocity_items_dialog(FunctionDialogMode(fn_element_dflt));
+              if(ret._valid)
+                tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+              MusECore::modify_velocity_items(ret._rateVal, ret._offsetVal);
+              break;
+              }
+//         case CMD_CRESCENDO: crescendo(score_canvas->get_all_parts()); break;
+        case CMD_CRESCENDO:
+              {
+              FunctionDialogReturnCrescendo ret =
+                crescendo_items_dialog(FunctionDialogMode(
                   FunctionLoopedButton |
                   FunctionSelectedLoopedButton
                   // | FunctionAllPartsButton | 
                   // FunctionSelectedPartsButton
                 ));
+              if(ret._valid)
+                tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+              MusECore::crescendo_items(ret._start_val, ret._end_val, ret._absolute);
+              break;
+              }
+//         case CMD_NOTELEN: modify_notelen(score_canvas->get_all_parts()); break;
+        case CMD_NOTELEN:
+              {
+              FunctionDialogReturnGateTime ret =
+                gatetime_items_dialog(FunctionDialogMode(fn_element_dflt));
+              if(ret._valid)
+                tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+              MusECore::modify_notelen_items(ret._rateVal, ret._offsetVal);
+              break;
+              }
+//         case CMD_TRANSPOSE: transpose_notes(score_canvas->get_all_parts()); break;
+        case CMD_TRANSPOSE:
+              {
+              FunctionDialogReturnTranspose ret =
+                transpose_items_dialog(FunctionDialogMode(fn_element_dflt));
+              if(ret._valid)
+                tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+              MusECore::transpose_items(ret._amount);
+              break;
+              }
+// REMOVE Tim. citem. Changed.
+//         case CMD_ERASE: erase_notes(score_canvas->get_all_parts()); break;
+        case CMD_ERASE:
+            {
+              FunctionDialogReturnErase ret =
+                erase_items_dialog(FunctionDialogMode(fn_element_dflt));
               if(ret._valid)
                 tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
               MusECore::erase_items(ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
@@ -827,14 +908,50 @@ void ScoreEdit::menu_command(int cmd)
 // REMOVE Tim. citem. Changed.
 //         case CMD_DEL: erase_notes(score_canvas->get_all_parts(),1); break;
         case CMD_DEL:
-              tagItems();
+              tagItems(false, true);
               MusECore::erase_items();
             break;
 
-        case CMD_MOVE: move_notes(score_canvas->get_all_parts()); break;
-        case CMD_FIXED_LEN: set_notelen(score_canvas->get_all_parts()); break;
-        case CMD_DELETE_OVERLAPS: delete_overlaps(score_canvas->get_all_parts()); break;
-        case CMD_LEGATO: legato(score_canvas->get_all_parts()); break;
+//         case CMD_MOVE: move_notes(score_canvas->get_all_parts()); break;
+        case CMD_MOVE:
+              {
+              FunctionDialogReturnMove ret =
+                move_items_dialog(FunctionDialogMode(fn_element_dflt));
+              if(ret._valid)
+                tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+              MusECore::move_items(ret._amount);
+              break;
+              }
+//         case CMD_FIXED_LEN: set_notelen(score_canvas->get_all_parts()); break;
+        case CMD_FIXED_LEN:
+              {
+              FunctionDialogReturnSetLen ret =
+                setlen_items_dialog(FunctionDialogMode(fn_element_dflt));
+              if(ret._valid)
+                tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+              MusECore::set_notelen_items(ret._len);
+              break;
+              }
+//         case CMD_DELETE_OVERLAPS: delete_overlaps(score_canvas->get_all_parts()); break;
+        case CMD_DELETE_OVERLAPS:
+              {
+              FunctionDialogReturnDelOverlaps ret =
+                deloverlaps_items_dialog(FunctionDialogMode(fn_element_dflt));
+              if(ret._valid)
+                tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+              MusECore::delete_overlaps_items();
+              break;
+              }
+//         case CMD_LEGATO: legato(score_canvas->get_all_parts()); break;
+        case CMD_LEGATO:
+              {
+              FunctionDialogReturnLegato ret =
+                legato_items_dialog(FunctionDialogMode(fn_element_dflt));
+              if(ret._valid)
+                tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+              MusECore::legato_items(ret._min_len, !ret._allow_shortening);
+              break;
+              }
 
         default:
             score_canvas->menu_command(cmd);
@@ -1220,6 +1337,32 @@ void ScoreEdit::write_configuration(int level, MusECore::Xml& xml)
 }
 
 
+
+// REMOVE Tim. citem. Added.
+//---------------------------------------------------------
+//   itemsAreSelected
+//---------------------------------------------------------
+
+bool ScoreCanvas::itemsAreSelected() const
+{
+  FloItem fi;
+  for(list<staff_t>::const_iterator is = staves.begin(); is != staves.end(); ++is)
+  {
+    const staff_t& staff = *is;
+    const ScoreItemList& sil = staff.itemlist;
+    for(ScoreItemList::const_iterator isi = sil.begin(); isi != sil.end(); ++isi)
+    {
+      const set<FloItem, floComp>& si = isi->second;
+      for(set<FloItem, floComp>::const_iterator efi = si.begin(); efi != si.end(); ++efi)
+      {
+        fi = *efi;
+        if(fi.source_event && (*fi.source_event).selected())
+          return true;
+      }
+    }
+  }   
+  return false;
+}
 
 // REMOVE Tim. citem. Added.
 //---------------------------------------------------------
@@ -4825,7 +4968,12 @@ void ScoreCanvas::set_velo(int velo)
     note_velo_init=velo;
 
     if (parent->get_apply_velo())
-        modify_velocity(get_all_parts(),1, 0,velo);
+    {
+// REMOVE Tim. citem. Changed.
+//         modify_velocity(get_all_parts(),1, 0,velo);
+        tagItems(false, true);
+        MusECore::modify_velocity_items(0, velo);
+    }
 }
 
 void ScoreCanvas::set_velo_off(int velo)
@@ -4834,7 +4982,12 @@ void ScoreCanvas::set_velo_off(int velo)
     note_velo_off_init=velo;
 
     if (parent->get_apply_velo())
-        modify_off_velocity(get_all_parts(),1, 0,velo);
+    {
+// REMOVE Tim. citem. Changed.
+//         modify_off_velocity(get_all_parts(),1, 0,velo);
+        tagItems(false, true);
+        MusECore::modify_off_velocity_items(0, velo);
+    }
 }
 
 void ScoreCanvas::deselect_all()
