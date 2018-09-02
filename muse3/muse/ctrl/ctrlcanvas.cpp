@@ -238,7 +238,13 @@ void CEventList::clearDelete()
 CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
    const char* name, CtrlPanel* pnl) : View(parent, xmag, 1, name)
       {
-      setBg(MusEGlobal::config.midiControllerViewBg);
+      if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
+            setBg(MusEGlobal::config.midiCanvasBg);
+            setBg(QPixmap());
+      }
+      else {
+            setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
+      }
       setFont(MusEGlobal::config.fonts[3]);  
       editor = e;
       _panel = pnl;
@@ -618,6 +624,13 @@ bool CtrlCanvas::setCurTrackAndPart()
 
 void CtrlCanvas::configChanged()    
 { 
+  if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
+        setBg(MusEGlobal::config.midiCanvasBg);
+        setBg(QPixmap());
+  }
+  else {
+        setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
+  }
   songChanged(SC_CONFIG); 
 }
 
@@ -2490,21 +2503,20 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect, const QRegion&)
         View::pdraw(p, rect);
         p.restore();
         
-        int xp = mapx(pos[0]);
+        pen.setColor(Qt::blue);
+        p.setPen(pen);
+        int xp = mapx(pos[1]);
         if (xp >= x && xp < x+w) {
-              pen.setColor(Qt::red);
-              p.setPen(pen);
-              p.drawLine(xp, y, xp, y+h);
-              }
-        xp = mapx(pos[1]);
-        if (xp >= x && xp < x+w) {
-              pen.setColor(Qt::blue);
-              p.setPen(pen);
               p.drawLine(xp, y, xp, y+h);
               }
         xp = mapx(pos[2]);
         if (xp >= x && xp < x+w) {
-              pen.setColor(Qt::blue);
+              p.drawLine(xp, y, xp, y+h);
+              }
+        // Draw the red main position cursor last, on top of the others.
+        xp = mapx(pos[0]);
+        if (xp >= x && xp < x+w) {
+              pen.setColor(Qt::red);
               p.setPen(pen);
               p.drawLine(xp, y, xp, y+h);
               }
@@ -2573,21 +2585,20 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect, const QRegion&)
         View::pdraw(p, rect);
         p.restore();
         
-        int xp = mapx(pos[0]);
+        pen.setColor(Qt::blue);
+        p.setPen(pen);
+        int xp = mapx(pos[1]);
         if (xp >= x && xp < x+w) {
-              pen.setColor(Qt::red);
-              p.setPen(pen);
-              p.drawLine(xp, y, xp, y+h);
-              }
-        xp = mapx(pos[1]);
-        if (xp >= x && xp < x+w) {
-              pen.setColor(Qt::blue);
-              p.setPen(pen);
               p.drawLine(xp, y, xp, y+h);
               }
         xp = mapx(pos[2]);
         if (xp >= x && xp < x+w) {
-              pen.setColor(Qt::blue);
+              p.drawLine(xp, y, xp, y+h);
+              }
+        // Draw the red main position cursor last, on top of the others.
+        xp = mapx(pos[0]);
+        if (xp >= x && xp < x+w) {
+              pen.setColor(Qt::red);
               p.setPen(pen);
               p.drawLine(xp, y, xp, y+h);
               }
@@ -2670,10 +2681,15 @@ QRect CtrlCanvas::overlayRect() const
 
 // REMOVE Tim. citem. Changed.
 // void CtrlCanvas::draw(QPainter& p, const QRect& rect)
-void CtrlCanvas::draw(QPainter& p, const QRect& rect, const QRegion&)
+void CtrlCanvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       {
-      drawTickRaster(p, rect.x(), rect.y(),
-         rect.width(), rect.height(), editor->raster());
+// REMOVE Tim. citem. Changed.
+//       drawTickRaster(p, rect.x(), rect.y(),
+//          rect.width(), rect.height(), editor->raster());
+      drawTickRaster_new(p, rect, rg, editor->raster(),
+                         false, false, false,
+                         MusEGlobal::config.midiCanvasBarColor, 
+                         MusEGlobal::config.midiCanvasBeatColor);
 
       //---------------------------------------------------
       //    draw line tool

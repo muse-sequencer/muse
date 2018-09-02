@@ -343,11 +343,11 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       //---------------------------------------------------
 
       splitter = new MusEGui::Splitter(Qt::Vertical, mainw, "splitter");
-      splitter->setHandleWidth(2);  
+      //splitter->setHandleWidth(2);  
       
       hsplitter = new MusEGui::Splitter(Qt::Horizontal, mainw, "hsplitter");
       hsplitter->setChildrenCollapsible(true);
-      hsplitter->setHandleWidth(4);
+      //hsplitter->setHandleWidth(4);
       
       ctrl = new QPushButton(tr("ctrl"), mainw);
       ctrl->setObjectName("Ctrl");
@@ -499,7 +499,8 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       clipboardChanged(); // enable/disable "Paste"
       selectionChanged(); // enable/disable "Copy" & "Paste"
-      initShortcuts(); // initialize shortcuts
+//       initShortcuts(); // initialize shortcuts
+      configChanged();  // set configuration values, initialize shortcuts
 
       const MusECore::Pos cpos=MusEGlobal::song->cPos();
       canvas->setPos(0, cpos.tick(), true);
@@ -600,6 +601,13 @@ void PianoRoll::songChanged1(MusECore::SongChangedStruct_t bits)
 
 void PianoRoll::configChanged()
       {
+      if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
+            canvas->setBg(MusEGlobal::config.midiCanvasBg);
+            canvas->setBg(QPixmap());
+      }
+      else {
+            canvas->setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
+      }
       initShortcuts();
       }
 

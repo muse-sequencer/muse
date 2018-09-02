@@ -213,16 +213,16 @@ void WaveView::draw(QPainter& p, const QRect& r, const QRegion&)
       //
       //    draw marker & centerline
       //
-      p.setPen(Qt::red);
-      if (pos[0] >= x && pos[0] < x2) {
-            p.drawLine(pos[0], y, pos[0], y2);
-            }
       p.setPen(Qt::blue);
       if (pos[1] >= x && pos[1] < x2) {
             p.drawLine(pos[1], y, pos[1], y2);
             }
       if (pos[2] >= x && pos[2] < x2)
             p.drawLine(pos[2], y, pos[2], y2);
+      p.setPen(Qt::red);
+      if (pos[0] >= x && pos[0] < x2) {
+            p.drawLine(pos[0], y, pos[0], y2);
+            }
 
       int n = 1;
       if(curPart)

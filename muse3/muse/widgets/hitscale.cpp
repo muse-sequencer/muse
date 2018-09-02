@@ -140,15 +140,16 @@ void HitScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
       //    draw location marker
       //---------------------------------------------------
 
-      p.setPen(Qt::red);
-      int xp = mapx(pos[0]);
-      if (xp >= x && xp < x+w)
-            p.drawLine(xp, 0, xp, height());
       p.setPen(Qt::blue);
-      xp = mapx(pos[1]);
+      int xp = mapx(pos[1]);
       if (xp >= x && xp < x+w)
             p.drawLine(xp, 0, xp, height());
       xp = mapx(pos[2]);
+      if (xp >= x && xp < x+w)
+            p.drawLine(xp, 0, xp, height());
+      // Draw the red main position cursor last, on top of the others.
+      p.setPen(Qt::red);
+      xp = mapx(pos[0]);
       if (xp >= x && xp < x+w)
             p.drawLine(xp, 0, xp, height());
       }

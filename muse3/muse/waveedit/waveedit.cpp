@@ -321,7 +321,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
       hsplitter = new MusEGui::Splitter(Qt::Horizontal, mainw, "hsplitter");
       hsplitter->setChildrenCollapsible(true);
-      hsplitter->setHandleWidth(4);
+      //hsplitter->setHandleWidth(4);
       
       trackInfoWidget = new TrackInfoWidget(hsplitter);
       genTrackInfo(trackInfoWidget);

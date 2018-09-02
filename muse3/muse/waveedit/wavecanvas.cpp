@@ -787,7 +787,9 @@ void WaveCanvas::draw(QPainter& p, const QRect& r, const QRegion&)
             mx = mapx(pos[2]);
             p.drawLine(mx, my, mx, my2);
             }
-      p.setPen(Qt::red);
+      // Draw the red main position cursor last, on top of the others.
+      pen.setColor(Qt::red);
+      p.setPen(pen);
       if (pos[0] >= unsigned(x) && pos[0] < unsigned(x2)) {
             mx = mapx(pos[0]);
             p.drawLine(mx, my, mx, my2);
@@ -909,6 +911,7 @@ void WaveCanvas::drawTickRaster(QPainter& p, int x, int y, int w, int h, int ras
       pen.setCosmetic(true);
       
       int xx,bar1, bar2, beat;
+      int rast_mapx;
       unsigned tick;
 //      AL::sigmap.tickValues(x, &bar1, &beat, &tick);
 //      AL::sigmap.tickValues(x+w, &bar2, &beat, &tick);
@@ -925,16 +928,32 @@ void WaveCanvas::drawTickRaster(QPainter& p, int x, int y, int w, int h, int ras
 //            unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
             unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
             int xt = mapx(MusEGlobal::tempomap.tick2frame(xb));
-            pen.setColor(Qt::black);
+//             pen.setColor(Qt::black);
+            pen.setColor(MusEGlobal::config.midiCanvasBarColor);
             p.setPen(pen);
             p.drawLine(xt, my, xt, y2);
             
             int z, n;
             AL::sigmap.timesig(xb, z, n);
             int qq = raster;
-            if (rmapx(raster) < 8)        // grid too dense
+            
+// REMOVE Tim. citem. Changed.
+//             if (rmapx(raster) < 8)        // grid too dense
+//                   qq *= 2;
+            
+            rast_mapx = rmapx(raster);
+            // grid too dense?
+            if (rast_mapx <= 1)        
+                  qq *= 16;
+            else if (rast_mapx <= 2)
+                  qq *= 8;
+            else if (rast_mapx <= 4)
+                  qq *= 4;
+            else if (rast_mapx <= 8)
                   qq *= 2;
-            pen.setColor(Qt::lightGray);
+            
+//             pen.setColor(Qt::lightGray);
+            pen.setColor(MusEGlobal::config.midiCanvasBeatColor);
             p.setPen(pen);
             if (raster>=4) {
                         xx = xb + qq;
@@ -1782,18 +1801,23 @@ void WaveCanvas::adjustWaveOffset()
 
 // REMOVE Tim. citem. Changed.
 // void WaveCanvas::drawCanvas(QPainter& p, const QRect& rect)
-void WaveCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion&)
+void WaveCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
       {
-      int x = rect.x();
-      int y = rect.y();
-      int w = rect.width();
-      int h = rect.height();
+// REMOVE Tim. citem. Removed.
+//       int x = rect.x();
+//       int y = rect.y();
+//       int w = rect.width();
+//       int h = rect.height();
 
       //---------------------------------------------------
       // vertical lines
       //---------------------------------------------------
 
-      drawTickRaster(p, x, y, w, h, editor->raster());
+// REMOVE Tim. citem. Changed.
+//       drawTickRaster(p, x, y, w, h, editor->raster());
+      drawTickRaster_new(p, rect, rg, editor->raster(), true, false, false,
+                         MusEGlobal::config.midiCanvasBarColor, 
+                         MusEGlobal::config.midiCanvasBeatColor);
       }
 
 //---------------------------------------------------------

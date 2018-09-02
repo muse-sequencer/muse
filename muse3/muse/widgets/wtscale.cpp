@@ -213,15 +213,16 @@ void WTScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
       int h = height()-12;
 
       if (barLocator) {
-            p.setPen(Qt::red);
-            int xp = mapx(pos[0]);
-            if (xp >= x && xp < x+w)
-                  p.drawLine(xp, y, xp, h);
             p.setPen(Qt::blue);
-            xp = mapx(pos[1]);
+            int xp = mapx(pos[1]);
             if (xp >= x && xp < x+w)
                   p.drawLine(xp, y, xp, h);
             xp = mapx(pos[2]);
+            if (xp >= x && xp < x+w)
+                  p.drawLine(xp, y, xp, h);
+            // Draw the red main position cursor last, on top of the others.
+            p.setPen(Qt::red);
+            xp = mapx(pos[0]);
             if (xp >= x && xp < x+w)
                   p.drawLine(xp, y, xp, h);
             }

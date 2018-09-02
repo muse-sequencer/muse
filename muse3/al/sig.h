@@ -82,7 +82,6 @@ typedef SIGLIST::const_reverse_iterator criSigEvent;
 class SigList : public SIGLIST {
    friend struct MusECore::PendingOperationItem;
    
-      int ticks_beat(int N) const;
       int ticksMeasure(const TimeSignature&) const;
       int ticksMeasure(int z, int n) const;
       void add(unsigned tick, SigEvent* e, bool do_normalize = true);
@@ -101,6 +100,7 @@ class SigList : public SIGLIST {
       
       void dump() const;
 
+      int ticks_beat(int N) const;
       TimeSignature timesig(unsigned tick) const;
       void timesig(unsigned tick, int& z, int& n) const;
       void tickValues(unsigned t, int* bar, int* beat, unsigned* tick) const;

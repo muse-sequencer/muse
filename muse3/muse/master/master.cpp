@@ -39,6 +39,8 @@
 #include "midieditor.h"
 #include "icons.h"
 #include "audio.h"
+// REMOVE Tim. citem. Changed.
+#include "gconfig.h"
 
 namespace MusEGui {
 
@@ -193,12 +195,7 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
       //    draw marker
       //---------------------------------------------------
 
-      int xp = mapx(pos[0]);
-      if (xp >= x && xp < x+w) {
-            p.setPen(Qt::red);
-            p.drawLine(xp, y, xp, y+h);
-            }
-      xp = mapx(pos[1]);
+      int xp = mapx(pos[1]);
       if (xp >= x && xp < x+w) {
             p.setPen(Qt::blue);
             p.drawLine(xp, y, xp, y+h);
@@ -206,6 +203,12 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
       xp = mapx(pos[2]);
       if (xp >= x && xp < x+w) {
             p.setPen(Qt::blue);
+            p.drawLine(xp, y, xp, y+h);
+            }
+      // Draw the red main position cursor last, on top of the others.
+      xp = mapx(pos[0]);
+      if (xp >= x && xp < x+w) {
+            p.setPen(Qt::red);
             p.drawLine(xp, y, xp, y+h);
             }
 
@@ -217,11 +220,16 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
 
 // REMOVE Tim. citem. Changed.
 // void Master::draw(QPainter& p, const QRect& rect)
-void Master::draw(QPainter& p, const QRect& rect, const QRegion&)
+void Master::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       {
-      drawTickRaster(p, rect.x(), rect.y(),
-         rect.width(), rect.height(), 0);
-
+// REMOVE Tim. citem. Changed.
+//       drawTickRaster(p, rect.x(), rect.y(),
+//          rect.width(), rect.height(), 0);
+      drawTickRaster_new(p, rect, rg, 0,
+                         false, false, false,
+                         MusEGlobal::config.midiCanvasBarColor, 
+                         MusEGlobal::config.midiCanvasBeatColor);
+      
       if ((tool == MusEGui::DrawTool) && drawLineMode) {
             p.setPen(Qt::black);
             p.drawLine(line1x, line1y, line2x, line2y);

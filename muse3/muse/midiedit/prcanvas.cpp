@@ -773,7 +773,7 @@ void PianoCanvas::pianoReleased(int /*pitch*/, bool)
 
 // REMOVE Tim. citem. Changed.
 // void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect)
-void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion&)
+void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
       {
       int x = rect.x();
       int y = rect.y();
@@ -809,7 +809,11 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion&)
       // vertical lines
       //---------------------------------------------------
 
-      drawTickRaster(p, x, y, w, h, editor->raster());
+// REMOVE Tim. citem. Changed.
+//       drawTickRaster(p, x, y, w, h, editor->raster());
+      drawTickRaster_new(p, rect, rg, editor->raster(), false, false, false,
+                         MusEGlobal::config.midiCanvasBarColor, 
+                         MusEGlobal::config.midiCanvasBeatColor);
       
       }
 

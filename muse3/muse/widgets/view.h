@@ -76,6 +76,16 @@ class View : public QWidget {
       
       virtual QRect overlayRect() const { return QRect(0, 0, 0, 0); }
       virtual void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
+      virtual void drawTickRaster_new(QPainter& p, const QRect&, const QRegion& = QRegion(), int raster = 0,
+                                      bool waveMode = false,
+                                      bool useGivenColors = false,
+                                      bool drawText = false,
+                                      const QColor& bar_color = QColor(),
+                                      const QColor& beat_color = QColor(),
+                                      const QColor& text_color = QColor(),
+                                      const QFont& large_font = QFont(),
+                                      const QFont& small_font = QFont()
+                                     );
 
 // REMOVE Tim. citem. Changed.
 //       virtual void pdraw(QPainter&, const QRect&);
@@ -141,6 +151,7 @@ class View : public QWidget {
       void setOrigin(int x, int y);
       void setVirt(bool flag)  { _virt = flag; }
       bool virt() const        { return _virt; }
+      QRect rmap(const QRect&) const;
       int rmapxDev(int x) const;
       int rmapx(int x) const;
       };

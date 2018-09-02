@@ -55,6 +55,8 @@
 #include "functions.h"
 #include "helper.h"
 #include "operations.h"
+// REMOVE Tim. citem. Added.
+#include "gconfig.h"
 
 #define CARET   10
 #define CARET2   5
@@ -830,7 +832,7 @@ void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect, c
 
 // REMOVE Tim. citem. Changed.
 // void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect)
-void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion&)
+void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
       {
       int x = rect.x();
       int y = rect.y();
@@ -855,7 +857,11 @@ void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion&)
       // vertical lines
       //---------------------------------------------------
 
-      drawTickRaster(p, x, y, w, h, editor->raster());
+// REMOVE Tim. citem. Changed.
+//       drawTickRaster(p, x, y, w, h, editor->raster());
+      drawTickRaster_new(p, rect, rg, editor->raster(), false, false, false,
+                         MusEGlobal::config.midiCanvasBarColor, 
+                         MusEGlobal::config.midiCanvasBeatColor);
       }
 
 //---------------------------------------------------------

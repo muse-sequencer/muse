@@ -517,10 +517,11 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     settings_menu->addAction(shareAction);
     settings_menu->addAction(fullscreenAction);
 
-
-    init_shortcuts();
-
-    connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(init_shortcuts()));
+// REMOVE Tim. citem. Changed.
+//     init_shortcuts();
+//     connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(init_shortcuts()));
+    config_changed();  // set configuration values, initialize shortcuts
+    connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(config_changed()));
 
     QClipboard* cb = QApplication::clipboard();
     connect(cb, SIGNAL(dataChanged()), SLOT(clipboard_changed()));
@@ -544,6 +545,14 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
     initTopwinState();
     finalizeInit();
+}
+
+void ScoreEdit::config_changed()
+{
+    if(score_canvas)
+      score_canvas->config_changed();
+    
+    init_shortcuts();
 }
 
 void ScoreEdit::init_shortcuts()
@@ -1782,7 +1791,8 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 
     connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(pos_changed(int,unsigned,bool)));
     connect(MusEGlobal::song, SIGNAL(playChanged(bool)), SLOT(play_changed(bool)));
-    connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(config_changed()));
+// REMOVE Tim. citem. Removed.
+//     connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(config_changed()));
 
 
     staff_menu=new QMenu(this);
@@ -4841,6 +4851,13 @@ void ScoreCanvas::play_changed(bool)
 
 void ScoreCanvas::config_changed()
 {
+    if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
+          setBg(MusEGlobal::config.midiCanvasBg);
+          setBg(QPixmap());
+    }
+    else {
+          setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
+    }
     redraw();
 }
 

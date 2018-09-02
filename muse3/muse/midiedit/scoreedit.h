@@ -185,6 +185,7 @@ class ScoreEdit : public TopWin
 		void init_shortcuts();
 		void selection_changed();
 		void clipboard_changed();
+    void config_changed();
 		
 	signals:
 		void isDeleting(MusEGui::TopWin*);
@@ -792,7 +793,6 @@ class ScoreCanvas : public MusEGui::View
 		void remove_staff_slot();
 		
 		void play_changed(bool);
-		void config_changed();
 		
 		void deselect_all();
 		void midi_note(int pitch, int velo);
@@ -807,6 +807,7 @@ class ScoreCanvas : public MusEGui::View
 		void goto_tick(int,bool);
 		void pos_changed(int i, unsigned u, bool b);
 		void heartbeat_timer_event();
+		void config_changed();
 
 		void set_tool(int);
 		void set_quant(int);

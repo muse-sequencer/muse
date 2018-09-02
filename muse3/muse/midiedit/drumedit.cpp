@@ -503,7 +503,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       hsplitter = new MusEGui::Splitter(Qt::Horizontal, mainw, "hsplitter");
       hsplitter->setChildrenCollapsible(true);
-      hsplitter->setHandleWidth(4);
+      //hsplitter->setHandleWidth(4);
       
       trackInfoWidget = new TrackInfoWidget(hsplitter);
       genTrackInfo(trackInfoWidget);
@@ -712,7 +712,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       clipboardChanged(); // enable/disable "Paste"
       selectionChanged(); // enable/disable "Copy" & "Paste"
-      initShortcuts();
+//       initShortcuts(); // initialize shortcuts
+      configChanged();  // set configuration values, initialize shortcuts
 
       const MusECore::Pos cpos=MusEGlobal::song->cPos();
       canvas->setPos(0, cpos.tick(), true);
@@ -1737,6 +1738,13 @@ void DrumEdit::newCanvasWidth(int w)
 
 void DrumEdit::configChanged()
       {
+      if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
+            canvas->setBg(MusEGlobal::config.midiCanvasBg);
+            canvas->setBg(QPixmap());
+      }
+      else {
+            canvas->setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
+      }
       initShortcuts();
       }
 

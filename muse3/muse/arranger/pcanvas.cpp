@@ -3323,8 +3323,8 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
 
 void PartCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
 {
-      int x = rect.x();
-      int w = rect.width();
+//       int x = rect.x();
+//       int w = rect.width();
 
       // Changed to draw in device coordinate space instead of virtual, transformed space.     Tim.
 
@@ -3347,65 +3347,96 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
       QColor baseColor(MusEGlobal::config.partCanvasBg.light(104));
       QPen pen;
       pen.setCosmetic(true);
-      pen.setColor(baseColor);
-      p.setPen(pen);
+//       pen.setColor(baseColor);
+//       p.setPen(pen);
 
       //--------------------------------
       // vertical lines
       //-------------------------------
       if (MusEGlobal::config.canvasShowGrid) {
-          int bar, beat;
-          unsigned tick;
+// REMOVE Tim. citem. Changed.
+//           int bar, beat;
+//           unsigned tick;
+// 
+//           AL::sigmap.tickValues(x, &bar, &beat, &tick);
+//           for (;;) {
+//             int xt = AL::sigmap.bar2tick(bar++, 0, 0);
+//             //int xt = mapx(AL::sigmap.bar2tick(bar++, 0, 0));
+//             if (xt >= x + w)
+//             //if (xt >= mx + mw)
+//                   break;
+//             if (!((bar-1) % 4))
+//                 pen.setColor(baseColor.dark(115));
+//             else
+//                 pen.setColor(baseColor);
+//             p.setPen(pen);
+//             //p.drawLine(xt, y, xt, y+h);
+//             int xtm = mapx(xt);
+//             p.drawLine(xtm, my, xtm, my+mh);
+// 
+//             // append
+//             int noDivisors=0;
+//             if (*_raster == MusEGlobal::config.division *2)         // 1/2
+//                 noDivisors=2;
+//             else if (*_raster== MusEGlobal::config.division)        // 1/4
+//                 noDivisors=4;
+//             else if (*_raster==MusEGlobal::config.division/2)         // 1/8
+//                 noDivisors=8;
+//             else if (*_raster==MusEGlobal::config.division/4)          // 1/16
+//                 noDivisors=16;
+//             else if (*_raster==MusEGlobal::config.division/8)          // 1/16
+//                 noDivisors=32;
+//             else if (*_raster==MusEGlobal::config.division/16)          // 1/16
+//                 noDivisors=64;
+// 
+//             int r = *_raster;
+//             int rr = rmapx(r);
+//             if (*_raster > 1) {
+//               while (rr < 4) {
+//                 r *= 2;
+//                 rr = rmapx(r);
+//                 noDivisors=noDivisors/2;
+//               }
+//               p.setPen(baseColor);
+//               int xx;
+//               for (int t=1;t< noDivisors;t++)
+//               {
+//                 //p.drawLine(xt+r*t, y, xt+r*t, y+h);
+//                 xx = mapx(xt + r * t);
+//                 p.drawLine(xx, my, xx, my+mh);
+//               }
+//             }
+//           }
+          
 
-          AL::sigmap.tickValues(x, &bar, &beat, &tick);
-          for (;;) {
-            int xt = AL::sigmap.bar2tick(bar++, 0, 0);
-            //int xt = mapx(AL::sigmap.bar2tick(bar++, 0, 0));
-            if (xt >= x + w)
-            //if (xt >= mx + mw)
-                  break;
-            if (!((bar-1) % 4))
-                pen.setColor(baseColor.dark(115));
-            else
-                pen.setColor(baseColor);
-            p.setPen(pen);
-            //p.drawLine(xt, y, xt, y+h);
-            int xtm = mapx(xt);
-            p.drawLine(xtm, my, xtm, my+mh);
-
-            // append
-            int noDivisors=0;
-            if (*_raster == MusEGlobal::config.division *2)         // 1/2
-                noDivisors=2;
-            else if (*_raster== MusEGlobal::config.division)        // 1/4
-                noDivisors=4;
-            else if (*_raster==MusEGlobal::config.division/2)         // 1/8
-                noDivisors=8;
-            else if (*_raster==MusEGlobal::config.division/4)          // 1/16
-                noDivisors=16;
-            else if (*_raster==MusEGlobal::config.division/8)          // 1/16
-                noDivisors=32;
-            else if (*_raster==MusEGlobal::config.division/16)          // 1/16
-                noDivisors=64;
-
-            int r = *_raster;
-            int rr = rmapx(r);
-            if (*_raster > 1) {
-              while (rr < 4) {
-                r *= 2;
-                rr = rmapx(r);
-                noDivisors=noDivisors/2;
-              }
-              p.setPen(baseColor);
-              int xx;
-              for (int t=1;t< noDivisors;t++)
-              {
-                //p.drawLine(xt+r*t, y, xt+r*t, y+h);
-                xx = mapx(xt + r * t);
-                p.drawLine(xx, my, xx, my+mh);
-              }
-            }
-          }
+//           int noDivisors=0;
+//           if (*_raster == MusEGlobal::config.division *2)         // 1/2
+//               noDivisors=2;
+//           else if (*_raster== MusEGlobal::config.division)        // 1/4
+//               noDivisors=4;
+//           else if (*_raster==MusEGlobal::config.division/2)         // 1/8
+//               noDivisors=8;
+//           else if (*_raster==MusEGlobal::config.division/4)          // 1/16
+//               noDivisors=16;
+//           else if (*_raster==MusEGlobal::config.division/8)          // 1/16
+//               noDivisors=32;
+//           else if (*_raster==MusEGlobal::config.division/16)          // 1/16
+//               noDivisors=64;
+        
+        int rast = *_raster;
+        if(rast == 0) // Special for arranger 'bar' snap.
+        {
+          //int z, n;
+          //AL::sigmap.timesig(x, z, n);
+          //rast = MusEGlobal::config.division;
+          rast = AL::sigmap.ticks_beat(1);
+        }
+        
+        drawTickRaster_new(p, rect, rg, rast,
+        //drawTickRaster_new(p, rect.x(), rect.y(), rect.width(), rect.height(), noDivisors,
+                         false, false, false,
+                         baseColor.dark(115), 
+                         baseColor);
       }
 
       //--------------------------------

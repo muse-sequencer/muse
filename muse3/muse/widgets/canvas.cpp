@@ -528,6 +528,17 @@ void Canvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
 {
 //      printf("draw canvas %x virt %d\n", this, virt());
 
+      // REMOVE Tim. citem. Added. For testing.
+      const int rg_sz = rg.rectCount();
+      int rg_r_cnt = 0;
+      fprintf(stderr, "Canvas::draw: virt:%d rect: x:%d y:%d w:%d h:%d region rect count:%d\n",
+              virt(), rect.x(), rect.y(), rect.width(), rect.height(), rg_sz);
+      for(QRegion::const_iterator i = rg.begin(); i != rg.end(); ++i, ++rg_r_cnt)
+      {
+        const QRect& rg_r = *i;
+        fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
+      }
+      
       int x = rect.x();
       int y = rect.y();
       int w = rect.width();
@@ -639,6 +650,19 @@ void Canvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
             QRegion new_rg;
             for(QRegion::const_iterator i = rg.begin(); i != rg.end(); ++i)
               new_rg += devToVirt(*i);
+            
+            // REMOVE Tim. citem. Added. For testing.
+            const int rg_sz = new_rg.rectCount();
+            int rg_r_cnt = 0;
+            fprintf(stderr, "Canvas::draw: virt:%d new rect: x:%d y:%d w:%d h:%d new region rect count:%d\n",
+                    virt(), new_rect.x(), new_rect.y(), new_rect.width(), new_rect.height(), rg_sz);
+            for(QRegion::const_iterator i = new_rg.begin(); i != new_rg.end(); ++i, ++rg_r_cnt)
+            {
+              const QRect& rg_r = *i;
+              fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
+            }
+            
+            
 //             drawCanvas(p, new_rect, rg);
             drawCanvas(p, new_rect, new_rg);
             p.restore();
@@ -734,6 +758,7 @@ void Canvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
             mx = mapx(pos[2]);
             p.drawLine(mx, my, mx, my2);
             }
+      // Draw the red main position cursor last, on top of the others.
       pen.setColor(Qt::red);
       p.setPen(pen);
       if (pos[0] >= unsigned(x) && pos[0] < unsigned(x2)) {
