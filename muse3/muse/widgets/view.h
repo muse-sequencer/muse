@@ -57,6 +57,15 @@ class View : public QWidget {
       int yorg;
       int xpos, ypos;
       int xmag, ymag;
+      
+      struct ScaleRetStruct
+      {
+        bool _drawBar;
+        bool _isSmall;
+      };
+      ScaleRetStruct scale(bool drawText, int bar, double tpix) const;
+      void drawBarText(QPainter& p, int tick, int bar, const QRect& vr, const QColor& textColor, const QFont& font) const;
+
 
       virtual void keyPressEvent(QKeyEvent* event);
       virtual void keyReleaseEvent(QKeyEvent* event);
@@ -75,8 +84,8 @@ class View : public QWidget {
       virtual void drawOverlay(QPainter&, const QRect&, const QRegion& = QRegion()) {}
       
       virtual QRect overlayRect() const { return QRect(0, 0, 0, 0); }
-      virtual void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
-      virtual void drawTickRaster_new(QPainter& p, const QRect&, const QRegion& = QRegion(), int raster = 0,
+//       virtual void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
+      virtual void drawTickRaster(QPainter& p, const QRect&, const QRegion& = QRegion(), int raster = 0,
                                       bool waveMode = false,
                                       bool useGivenColors = false,
                                       bool drawText = false,
@@ -114,6 +123,7 @@ class View : public QWidget {
       void map(const QRegion& rg_in, QRegion& rg_out) const;
       QRect mapDev(const QRect&) const;
       QPoint mapDev(const QPoint&) const;
+      void mapDev(const QRegion& rg_in, QRegion& rg_out) const;
 
       int mapx(int x) const;
       int mapy(int y) const;

@@ -565,82 +565,102 @@ void View::setBg(const QPixmap& bgpm)
       redraw();
       }
 
+// REMOVE Tim. citem. Changed.
+// //---------------------------------------------------------
+// //   devToVirt
+// //---------------------------------------------------------
+// 
+// QRect View::devToVirt(const QRect& r) const
+// {
+//   int x = r.x();
+//   int y = r.y();
+//   int w = r.width();
+//   int h = r.height();
+//   x = mapxDev(x);
+//   y = mapyDev(y);
+//   if (xmag <= 0) {
+//         // TODO These adjustments are required, otherwise gaps. Tried, unable to remove them for now.  p4.0.30
+// // REMOVE Tim. citem. Removed.
+// //         x -= 1;   
+// //         w += 2;
+//         //x = (x + xpos + rmapx(xorg)) * (-xmag);
+// //         x = lrint((double(x + xpos) + rmapx_f(xorg)) * double(-xmag));
+//         //x = lrint((double(x + xpos) + double(xorg) / double(-xmag)) * double(-xmag));
+//         //x = (x + xpos) * -xmag + xorg;
+//         //x = mapxDev(x);
+//     
+//         w = w * (-xmag);
+//         }
+//   else {
+//         //x = (x + xpos + rmapx(xorg)) / xmag;
+// //         x = lrint((double(x + xpos) + rmapx_f(xorg)) / double(xmag));
+//         //x = lrint((double(x + xpos) + double(xorg) * double(xmag)) / double(xmag));
+//         //x = double(x + xpos) / double(xmag) + xorg;
+//         //x = mapxDev(x);
+//         
+//         //w = (w + xmag - 1) / xmag;
+//         w = lrint(double(w) / double(xmag));
+// // REMOVE Tim. citem. Removed.
+// //         x -= 1;
+// //         w += 2;
+//         }
+//   if (ymag <= 0) {
+// // REMOVE Tim. citem. Removed.
+// //         y -= 1;
+// //         h += 2;
+//         //y = (y + ypos + rmapy(yorg)) * (-ymag);
+// //         y = lrint((double(y + ypos) + rmapy_f(yorg)) * double(-ymag));
+//         //y = lrint((double(y + ypos) + (double(yorg) / double(-ymag))) * double(-ymag));
+//         //y = (y + ypos) * -ymag + yorg;
+//         //y = mapyDev(y);
+// 
+//         h = h * (-ymag);
+//         }
+//   else {
+//         //y = (y + ypos + rmapy(yorg)) / ymag;
+// //         y = lrint((double(y + ypos) + rmapy_f(yorg)) / double(ymag));
+//         //y = lrint((double(y + ypos) + (double(yorg) * double(ymag))) / double(ymag));
+//         //y = double(y + ypos) / double(ymag) + double(yorg);
+//         //y = mapyDev(y);
+//         
+//         //h = (h + ymag - 1) / ymag;
+//         h = lrint(double(h) / double(ymag));
+// // REMOVE Tim. citem. Removed.
+// //         y -= 1;
+// //         h += 2;
+//         }
+// 
+//   if (x < 0)
+//         x = 0;
+//   if (y < 0)
+//         y = 0;
+//   
+//   return QRect(x, y, w, h);
+// }
+
+// REMOVE Tim. citem. Changed.
+//---------------------------------------------------------
+//   devToVirt
+//---------------------------------------------------------
+
+// void View::devToVirt(const QRegion& rg_in, QRegion& rg_out) const
+// {
+//   for(QRegion::const_iterator i = rg_in.begin(); i != rg_in.end(); ++i)
+//     rg_out += devToVirt(*i);
+// }
+
 //---------------------------------------------------------
 //   devToVirt
 //---------------------------------------------------------
 
 QRect View::devToVirt(const QRect& r) const
 {
-  int x = r.x();
-  int y = r.y();
-  int w = r.width();
-  int h = r.height();
-  x = mapxDev(x);
-  y = mapyDev(y);
-  if (xmag <= 0) {
-        // TODO These adjustments are required, otherwise gaps. Tried, unable to remove them for now.  p4.0.30
-// REMOVE Tim. citem. Removed.
-//         x -= 1;   
-//         w += 2;
-        //x = (x + xpos + rmapx(xorg)) * (-xmag);
-//         x = lrint((double(x + xpos) + rmapx_f(xorg)) * double(-xmag));
-        //x = lrint((double(x + xpos) + double(xorg) / double(-xmag)) * double(-xmag));
-        //x = (x + xpos) * -xmag + xorg;
-        //x = mapxDev(x);
-    
-        w = w * (-xmag);
-        }
-  else {
-        //x = (x + xpos + rmapx(xorg)) / xmag;
-//         x = lrint((double(x + xpos) + rmapx_f(xorg)) / double(xmag));
-        //x = lrint((double(x + xpos) + double(xorg) * double(xmag)) / double(xmag));
-        //x = double(x + xpos) / double(xmag) + xorg;
-        //x = mapxDev(x);
-        
-        //w = (w + xmag - 1) / xmag;
-        w = lrint(double(w) / double(xmag));
-// REMOVE Tim. citem. Removed.
-//         x -= 1;
-//         w += 2;
-        }
-  if (ymag <= 0) {
-// REMOVE Tim. citem. Removed.
-//         y -= 1;
-//         h += 2;
-        //y = (y + ypos + rmapy(yorg)) * (-ymag);
-//         y = lrint((double(y + ypos) + rmapy_f(yorg)) * double(-ymag));
-        //y = lrint((double(y + ypos) + (double(yorg) / double(-ymag))) * double(-ymag));
-        //y = (y + ypos) * -ymag + yorg;
-        //y = mapyDev(y);
-
-        h = h * (-ymag);
-        }
-  else {
-        //y = (y + ypos + rmapy(yorg)) / ymag;
-//         y = lrint((double(y + ypos) + rmapy_f(yorg)) / double(ymag));
-        //y = lrint((double(y + ypos) + (double(yorg) * double(ymag))) / double(ymag));
-        //y = double(y + ypos) / double(ymag) + double(yorg);
-        //y = mapyDev(y);
-        
-        //h = (h + ymag - 1) / ymag;
-        h = lrint(double(h) / double(ymag));
-// REMOVE Tim. citem. Removed.
-//         y -= 1;
-//         h += 2;
-        }
-
-  if (x < 0)
-        x = 0;
-  if (y < 0)
-        y = 0;
-  
-  return QRect(x, y, w, h);
+  return mapDev(r);
 }
 
 void View::devToVirt(const QRegion& rg_in, QRegion& rg_out) const
 {
-  for(QRegion::const_iterator i = rg_in.begin(); i != rg_in.end(); ++i)
-    rg_out += devToVirt(*i);
+  mapDev(rg_in, rg_out);
 }
 
 //---------------------------------------------------------
@@ -730,129 +750,276 @@ void View::setPainter(QPainter& p)
       p.scale(xMag, yMag);
       }
 
-//---------------------------------------------------------
-//   drawTickRaster
-//---------------------------------------------------------
-
-void View::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
-      {
-      // Changed to draw in device coordinate space instead of virtual, transformed space.     Tim. p4.0.30  
-      
-      //int mx = mapx(x);
-      int my = mapy(y);
-      //int mw = mapx(x + w) - mx;
-      //int mw = mapx(x + w) - mx - 1;
-      //int mh = mapy(y + h) - my;
-      //int mh = mapy(y + h) - my - 1;
-      
-      //p.save();
-      bool wmtxen = p.worldMatrixEnabled();
-      p.setWorldMatrixEnabled(false);
-      
-      int xx,bar1, bar2, beat;
-      int rast_mapx;
-      bool draw_bar;
-      unsigned tick;
-      AL::sigmap.tickValues(x, &bar1, &beat, &tick);
-      AL::sigmap.tickValues(x+w, &bar2, &beat, &tick);
-      ++bar2;
-      ///int y2 = y + h;
-      //int y2 = my + mh;
-      int y2 = mapy(y + h) - 1;
-      //printf("View::drawTickRaster x:%d y:%d w:%d h:%d mx:%d my:%d mw:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, mx, my, mw, mh, y2, bar1, bar2);  
-      //printf("View::drawTickRaster x:%d y:%d w:%d h:%d my:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, my, mh, y2, bar1, bar2);  
-      for (int bar = bar1; bar < bar2; ++bar) {
-            int qq = raster;
-        
-            rast_mapx = rmapx(raster);
-            // grid too dense?
-//             if (rast_mapx <= 1)        
-//                   qq *= 16;
-//             else if (rast_mapx <= 2)
-//                   qq *= 8;
-//             else if (rast_mapx <= 4)
-//                   qq *= 4;
-//             else if (rast_mapx <= 8)
-//                   qq *= 2;
-            draw_bar = true;
-            if (rast_mapx < 64) {
-                  // donï¿½t show beats if measure is this small
-                  int n = 1;
-                  if (rast_mapx < 32)
-                        n = 2;
-                  if (rast_mapx <= 16)
-                        n = 4;
-                  if (rast_mapx < 8)
-                        n = 8;
-                  if (rast_mapx <= 4)
-                        n = 16;
-                  if (rast_mapx <= 2)
-                        n = 32;
-                  if (bar % n)
-//                         continue;
-                        draw_bar = false;
-            }
-            
-            ///unsigned x = AL::sigmap.bar2tick(bar, 0, 0);
-            unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
-            if(draw_bar)
-            {
-              int xt = mapx(xb);
-              p.setPen(MusEGlobal::config.midiCanvasBarColor);
-              ///p.drawLine(x, y, x, y2);
-              p.drawLine(xt, my, xt, y2);
-            }
-            int z, n;
-            ///AL::sigmap.timesig(x, z, n);
-            AL::sigmap.timesig(xb, z, n);
-            ///int q = p.xForm(QPoint(raster, 0)).x() - p.xForm(QPoint(0, 0)).x();
-            ///int q = p.combinedTransform().map(QPoint(raster, 0)).x() - p.combinedTransform().map(QPoint(0, 0)).x();
-            //int q = rmapx(raster);
-//             int qq = raster;
-            //if (q < 8)        // grid too dense
-            
 // REMOVE Tim. citem. Changed.
-//             if (rmapx(raster) < 8)        // grid too dense
-//                   qq *= 2;
+// //---------------------------------------------------------
+// //   drawTickRaster
+// //---------------------------------------------------------
+// 
+// void View::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
+//       {
+//       // Changed to draw in device coordinate space instead of virtual, transformed space.     Tim. p4.0.30  
+//       
+//       //int mx = mapx(x);
+//       int my = mapy(y);
+//       //int mw = mapx(x + w) - mx;
+//       //int mw = mapx(x + w) - mx - 1;
+//       //int mh = mapy(y + h) - my;
+//       //int mh = mapy(y + h) - my - 1;
+//       
+//       //p.save();
+//       bool wmtxen = p.worldMatrixEnabled();
+//       p.setWorldMatrixEnabled(false);
+//       
+//       int xx,bar1, bar2, beat;
+//       int rast_mapx;
+//       bool draw_bar;
+//       unsigned tick;
+//       AL::sigmap.tickValues(x, &bar1, &beat, &tick);
+//       AL::sigmap.tickValues(x+w, &bar2, &beat, &tick);
+//       ++bar2;
+//       ///int y2 = y + h;
+//       //int y2 = my + mh;
+//       int y2 = mapy(y + h) - 1;
+//       //printf("View::drawTickRaster x:%d y:%d w:%d h:%d mx:%d my:%d mw:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, mx, my, mw, mh, y2, bar1, bar2);  
+//       //printf("View::drawTickRaster x:%d y:%d w:%d h:%d my:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, my, mh, y2, bar1, bar2);  
+//       for (int bar = bar1; bar < bar2; ++bar) {
+//             int qq = raster;
+//         
+//             rast_mapx = rmapx(raster);
+//             // grid too dense?
+// //             if (rast_mapx <= 1)        
+// //                   qq *= 16;
+// //             else if (rast_mapx <= 2)
+// //                   qq *= 8;
+// //             else if (rast_mapx <= 4)
+// //                   qq *= 4;
+// //             else if (rast_mapx <= 8)
+// //                   qq *= 2;
+//             draw_bar = true;
+//             if (rast_mapx < 64) {
+//                   // donï¿½t show beats if measure is this small
+//                   int n = 1;
+//                   if (rast_mapx < 32)
+//                         n = 2;
+//                   if (rast_mapx <= 16)
+//                         n = 4;
+//                   if (rast_mapx < 8)
+//                         n = 8;
+//                   if (rast_mapx <= 4)
+//                         n = 16;
+//                   if (rast_mapx <= 2)
+//                         n = 32;
+//                   if (bar % n)
+// //                         continue;
+//                         draw_bar = false;
+//             }
+//             
+//             ///unsigned x = AL::sigmap.bar2tick(bar, 0, 0);
+//             unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
+//             if(draw_bar)
+//             {
+//               int xt = mapx(xb);
+//               p.setPen(MusEGlobal::config.midiCanvasBarColor);
+//               ///p.drawLine(x, y, x, y2);
+//               p.drawLine(xt, my, xt, y2);
+//             }
+//             int z, n;
+//             ///AL::sigmap.timesig(x, z, n);
+//             AL::sigmap.timesig(xb, z, n);
+//             ///int q = p.xForm(QPoint(raster, 0)).x() - p.xForm(QPoint(0, 0)).x();
+//             ///int q = p.combinedTransform().map(QPoint(raster, 0)).x() - p.combinedTransform().map(QPoint(0, 0)).x();
+//             //int q = rmapx(raster);
+// //             int qq = raster;
+//             //if (q < 8)        // grid too dense
+//             
+// // REMOVE Tim. citem. Changed.
+// //             if (rmapx(raster) < 8)        // grid too dense
+// //                   qq *= 2;
+// 
+//             p.setPen(MusEGlobal::config.midiCanvasBeatColor);
+//             if (raster>=4) {
+//                         ///int xx = x + qq;
+//                         //int xx = mapx(xb + qq);
+//                         xx = xb + qq;
+//                         int xxx = AL::sigmap.bar2tick(bar, z, 0);
+//                         //int xxx = mapx(AL::sigmap.bar2tick(bar, z, 0));
+//                         while (xx <= xxx) {
+//                                ///p.drawLine(xx, y, xx, y2);
+//                                int x = mapx(xx);
+//                                p.drawLine(x, my, x, y2);
+//                                xx += qq;
+//                                //xx += rmapx(qq);
+//                                }
+//                         //xx = xxx;
+//                         }
+// 
+//             p.setPen(Qt::darkGray);
+//             for (int beat = 1; beat < z; beat++) {
+//                         ///int xx = AL::sigmap.bar2tick(bar, beat, 0);
+//                         xx = mapx(AL::sigmap.bar2tick(bar, beat, 0));
+//                         //printf(" bar:%d z:%d beat:%d xx:%d\n", bar, z, beat, xx);  
+//                         ///p.drawLine(xx, y, xx, y2);
+//                         p.drawLine(xx, my, xx, y2);
+//                         }
+// 
+//             }
+//       //p.setWorldMatrixEnabled(true);
+//       p.setWorldMatrixEnabled(wmtxen);
+//       //p.restore();      
+//       }
 
-            p.setPen(MusEGlobal::config.midiCanvasBeatColor);
-            if (raster>=4) {
-                        ///int xx = x + qq;
-                        //int xx = mapx(xb + qq);
-                        xx = xb + qq;
-                        int xxx = AL::sigmap.bar2tick(bar, z, 0);
-                        //int xxx = mapx(AL::sigmap.bar2tick(bar, z, 0));
-                        while (xx <= xxx) {
-                               ///p.drawLine(xx, y, xx, y2);
-                               int x = mapx(xx);
-                               p.drawLine(x, my, x, y2);
-                               xx += qq;
-                               //xx += rmapx(qq);
-                               }
-                        //xx = xxx;
-                        }
+void View::drawBarText(QPainter& p, int tick, int bar, const QRect& vr, const QColor& textColor, const QFont& font) const
+{
+  const int vw1000 = rmapxDev(1000);
+  const int vw2 = rmapxDev(2);
+  const int vy = vr.y();
+  const int vh_m1 = vr.height() - rmapyDev(1);
+  
+  QPen pen;
+  pen.setCosmetic(true);
+  pen.setColor(textColor);
+  p.setPen(pen);
+  
+  QString s;
+  s.setNum(bar + 1);
+  
+  p.setFont(font);
+  int brw = rmapxDev(p.fontMetrics().boundingRect(s).width());
+  //const int brh = rmapyDev(br.width());
+  //int w_txt = rmapxDev(1000);
+  //const int h_txt = rmapyDev(height() - 1);
+  if(brw > vw1000)
+    brw = vw1000;
+  //if(brh < h_txt)
+  //  h_txt = brh;
+  const QRect br_txt = QRect(tick + vw2, vy, brw, vh_m1);
+  
+//   // REMOVE Tim. citem. Added.
+//   fprintf(stderr,
+//       "drawBarText: Bar text: bar:%d vx:%d vy:%d"
+//       " vw:%d vh:%d tick:%d br x:%d y:%d w:%d h:%d\n",
+//       bar, vr.x(), vr.y(), vr.width(), vr.height(), tick,
+//       br_txt.x(), br_txt.y(), br_txt.width(), br_txt.height());
+  
+  //if(r_txt.intersects(mr))
+  if(br_txt.intersects(vr))
+  {
+//     // REMOVE Tim. citem. Added.
+//     fprintf(stderr, "...bar text within range. xorg:%d xmag:%d xpos:%d Drawing bar text at x:%d y:%d w:%d h:%d\n",
+//             xorg, xmag, xpos, map(br_txt).x(), map(br_txt).y(), map(br_txt).width(), map(br_txt).height());
+    
+    //p.drawText(r_txt, Qt::AlignLeft|Qt::AlignVCenter|Qt::TextDontClip, s);
+    p.drawText(map(br_txt), Qt::AlignLeft|Qt::AlignVCenter|Qt::TextDontClip, s);
+  }
+}
 
-            p.setPen(Qt::darkGray);
-            for (int beat = 1; beat < z; beat++) {
-                        ///int xx = AL::sigmap.bar2tick(bar, beat, 0);
-                        xx = mapx(AL::sigmap.bar2tick(bar, beat, 0));
-                        //printf(" bar:%d z:%d beat:%d xx:%d\n", bar, z, beat, xx);  
-                        ///p.drawLine(xx, y, xx, y2);
-                        p.drawLine(xx, my, xx, y2);
-                        }
-
-            }
-      //p.setWorldMatrixEnabled(true);
-      p.setWorldMatrixEnabled(wmtxen);
-      //p.restore();      
-      }
+View::ScaleRetStruct View::scale(bool drawText, int bar, double tpix) const
+{
+  ScaleRetStruct ret;
+  ret._drawBar = true;
+  ret._isSmall = drawText ? (tpix < 64) : (tpix < 32);
+  
+  if(!ret._isSmall)
+    return ret;
+  
+  int n = 1;
+  if(drawText)
+  {
+    //fprintf(stderr, "drawText: tpix < 64:%f\n", tpix);
+    if (tpix <= 2)
+    {
+      //fprintf(stderr, "drawText: tpix <= 2\n");
+      n <<= 5;
+    }
+    else if (tpix <= 4)
+    {
+      //fprintf(stderr, "drawText: tpix <= 4\n");
+      n <<= 4;
+    }
+    else if (tpix < 8)
+    {
+      //fprintf(stderr, "drawText: tpix < 8\n");
+      n <<= 3;
+    }
+    else if (tpix <= 16)
+    {
+      //fprintf(stderr, "drawText: tpix <= 16\n");
+      n <<= 2;
+    }
+    else if (tpix < 32)
+    {
+      //fprintf(stderr, "drawText: tpix < 32\n");
+      n <<= 1;
+    }
+  }
+  else
+  {
+    //fprintf(stderr, "tpix < 32:%f\n", tpix);
+    n = 1;
+    if (tpix <= 0.01)
+    {
+      //fprintf(stderr, "tpix <= 0.01\n");
+      n <<= 10;
+    }
+    else if (tpix <= 0.03125)
+    {
+      //fprintf(stderr, "tpix <= 0.03125\n");
+      n <<= 9;
+    }
+    else if (tpix <= 0.0625)
+    {
+      //fprintf(stderr, "tpix <= 0.0625\n");
+      n <<= 8;
+    }
+    else if (tpix <= 0.125)
+    {
+      //fprintf(stderr, "tpix <= 0.125\n");
+      n <<= 7;
+    }
+    else if (tpix <= 0.25)
+    {
+      //fprintf(stderr, "tpix <= 0.25\n");
+      n <<= 6;
+    }
+    else if (tpix <= 0.5)
+    {
+      //fprintf(stderr, "tpix <= 0.5\n");
+      n <<= 5;
+    }
+    else if (tpix <= 1.0)
+    {
+      //fprintf(stderr, "tpix <= 1.0\n");
+      n <<= 4;
+    }
+    else if (tpix <= 2.0)
+    {
+      //fprintf(stderr, "tpix <= 2.0\n");
+      n <<= 3;
+    }
+    else if (tpix <= 4.0)
+    {
+      //fprintf(stderr, "tpix <= 4.0\n");
+      n <<= 2;
+    }
+    else if (tpix <= 8.0)
+    {
+      //fprintf(stderr, "tpix <= 8.0\n");
+      n <<= 1;
+    }
+  }
+  
+  if (bar % n)
+    ret._drawBar = false;
+  
+  return ret;
+}
 
 //---------------------------------------------------------
 //   drawTickRaster
 //---------------------------------------------------------
 
-void View::drawTickRaster_new(
-  QPainter& p, const QRect& r, const QRegion& /*rg*/, int raster,
+void View::drawTickRaster(
+  QPainter& p, const QRect& vr, const QRegion& /*vrg*/, int raster,
   bool waveMode, 
   bool /*useGivenColors*/,
   bool drawText,
@@ -865,12 +1032,12 @@ void View::drawTickRaster_new(
 {
       // Changed to draw in device coordinate space instead of virtual, transformed space.     Tim. p4.0.30  
       
-      const int x = r.x();
-//       const int y = r.y();
-      const int w = r.width();
-      const int h = r.height();
+      const int vx = vr.x();
+      const int vy = vr.y();
+      const int vw = vr.width();
+      const int vh = vr.height();
       
-      if(w == 0 || h == 0)
+      if(vw == 0 || vh == 0)
         return;
       
       //int mx = mapx(x);
@@ -887,34 +1054,46 @@ void View::drawTickRaster_new(
       bool wmtxen = p.worldMatrixEnabled();
       p.setWorldMatrixEnabled(false);
 
-      const int x2 = x + w;
+      const int vx_2 = vx + vw;
+
+      
+      // Limiter required because AL::sigmap.tickValues takes unsigned only !
+      const int vx_lim = vx < 0 ? 0 : vx;
+      const int vx_2lim = vx_2 < 0 ? 0 : vx_2;
 
 
 //       int my2 = mapy(y + h) - 1;
       //int my2 = mapy(y + h - 1);
 //       int my2_1 = mapy(y + h + 1);
       
-      const QFontMetrics fm = p.fontMetrics();
-
-      const QRect mr = map(r);
+      const QRect mr = map(vr);
 //       const int mx = mr.x();
       const int my = mr.y();
 //       const int mw = mr.width();
-      const int mh = mr.height();
+//       const int mh = mr.height();
 
-      const int my2 = mr.bottom();
+      const int mbottom = mr.bottom();
 
 //       int mx2 = x + w - mapx(1);
 
+      //const int vtop        = mapyDev(0);
+      const int vw2         = rmapxDev(2);
+      const int vw1000      = rmapxDev(1000);
+      const int vh2         = rmapyDev(2);
+      //const int vheight_m1  = rmapyDev(height() - 1);
+      const int vh_m1       = vh - rmapyDev(1);
+      const int vh_m3       = vh - rmapyDev(3);
       
 //       unsigned ctick;
       int bar1, bar2, beat;
-      bool draw_bar, draw_fake_bar;
-      bool is_small;
+      //bool draw_bar, draw_fake_bar;
+      ScaleRetStruct scale_info;
+      //bool is_small;
       bool is_beat_small;
 //       bool is_raster_small;
       int beat_start_beat, rast_x, rast_z, rast_n, rast_xx, rast_xxx; //, qq; //, rast_mapx;
       unsigned tick, rast_xb;
+
       QPen pen;
       pen.setCosmetic(true);
 
@@ -1007,8 +1186,8 @@ void View::drawTickRaster_new(
 //             AL::sigmap.tickValues(ctick, &bar1, &beat, &tick);
 //             AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mapxDev(x+w)),
 //                &bar2, &beat, &tick);
-            AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(x),   &bar1, &beat, &tick);
-            AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(x2), &bar2, &beat, &tick);
+            AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(vx_lim),   &bar1, &beat, &tick);
+            AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(vx_2lim), &bar2, &beat, &tick);
 //             AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mx2), &bar2, &beat, &tick);
             }
       else {
@@ -1016,15 +1195,16 @@ void View::drawTickRaster_new(
 //             AL::sigmap.tickValues(ctick, &bar1, &beat, &tick);
 //             AL::sigmap.tickValues(mapxDev(x+w), &bar2, &beat, &tick);
 //             ctick = x;
-            AL::sigmap.tickValues(x,   &bar1, &beat, &tick);
-            AL::sigmap.tickValues(x2, &bar2, &beat, &tick);
+            AL::sigmap.tickValues(vx_lim,   &bar1, &beat, &tick);
+            AL::sigmap.tickValues(vx_2lim, &bar2, &beat, &tick);
 //             AL::sigmap.tickValues(mx2, &bar2, &beat, &tick);
             }
 
-//printf("bar %d  %d-%d=%d\n", bar, ntick, stick, ntick-stick);
+      //printf("bar %d  %d-%d=%d\n", bar, ntick, stick, ntick-stick);
 
       int stick = AL::sigmap.bar2tick(bar1, 0, 0);
       int ntick;
+      ScaleRetStruct prev_scale_info;
       for (int bar = bar1; bar <= bar2; bar++, stick = ntick) {
 //       for (int bar = bar1; bar < bar2; bar++, stick = ntick) {
             ntick     = AL::sigmap.bar2tick(bar+1, 0, 0);
@@ -1042,161 +1222,59 @@ void View::drawTickRaster_new(
                   tpix  = rmapx_f(ntick - stick);
                   }
                   
-            draw_bar = true;
-            draw_fake_bar = /*true*/ false;
+            //draw_fake_bar = /*true*/ false;
             is_beat_small = tpix < 32;
-            is_small = drawText ? (tpix < 64) : (tpix < 32);
             
-            if (is_small) {
-                  // donï¿½t show beats if measure is this small
-//                   int n = 1;
-//                   if (tpix < 32)
-//                         n = 2;
-//                   if (tpix <= 16)
-//                         n = 4;
-//                   if (tpix < 8)
-//                   {
-//                         is_beat_small = true;
-//                         n = 8;
-//                   }
-//                   if (tpix <= 4)
-//                         n = 16;
-//                   if (tpix <= 2)
-//                         n = 32;
-              
-                  int n = 1;
-                  if(drawText)
-                  {
-//                     fprintf(stderr, "drawText: tpix < 64:%f\n", tpix);
-                    if (tpix <= 2)
-                    {
-//                           fprintf(stderr, "drawText: tpix <= 2\n");
-                          n <<= 5;
+            scale_info = scale(drawText, bar, tpix);
+            
+            if(drawText && !scale_info._drawBar)
+            {
+              // Only check this on the first starting bar.
+              if(bar == bar1)
+              {
+                int prev_a, prev_b=0;
+                double prev_tpix;
+                int prev_stick;
+                int prev_ntick = stick;
+                int prev_bar = bar1 - 1;
+                for( ; prev_bar >= 0; --prev_bar, prev_ntick = prev_stick)
+                {
+                  prev_stick = AL::sigmap.bar2tick(prev_bar, 0, 0);
+                  if (waveMode) {
+                        prev_a = MusEGlobal::tempomap.tick2frame(prev_ntick);
+                        prev_b = MusEGlobal::tempomap.tick2frame(prev_stick);
+                        //prev_tpix  = rmapx(b - prev_b);
+                        prev_tpix  = rmapx_f(prev_a - prev_b);
                     }
-                    else if (tpix <= 4)
-                    {
-//                           fprintf(stderr, "drawText: tpix <= 4\n");
-                          n <<= 4;
-                    }
-                    else if (tpix < 8)
-                    {
-//                           fprintf(stderr, "drawText: tpix < 8\n");
-                          n <<= 3;
-                    }
-                    else if (tpix <= 16)
-                    {
-//                           fprintf(stderr, "drawText: tpix <= 16\n");
-                          n <<= 2;
-                    }
-                    else if (tpix < 32)
-                    {
-//                           fprintf(stderr, "drawText: tpix < 32\n");
-                          n <<= 1;
-                    }
-                  }
-                  else
-                  {
-//                     fprintf(stderr, "tpix < 32:%f\n", tpix);
-                    
-                    n = 1;
-                    
-                    if (tpix <= 0.01)
-                    {
-//                           fprintf(stderr, "tpix <= 0.01\n");
-                          n <<= 10;
-                    }
-                    else if (tpix <= 0.03125)
-                    {
-//                           fprintf(stderr, "tpix <= 0.03125\n");
-                          n <<= 9;
-                    }
-                    else if (tpix <= 0.0625)
-                    {
-//                           fprintf(stderr, "tpix <= 0.0625\n");
-                          n <<= 8;
-                    }
-                    else if (tpix <= 0.125)
-                    {
-//                           fprintf(stderr, "tpix <= 0.125\n");
-                          n <<= 7;
-                    }
-                    else if (tpix <= 0.25)
-                    {
-//                           fprintf(stderr, "tpix <= 0.25\n");
-                          n <<= 6;
-                    }
-                    else if (tpix <= 0.5)
-                    {
-//                           fprintf(stderr, "tpix <= 0.5\n");
-                          n <<= 5;
-                    }
-                    else if (tpix <= 1.0)
-                    {
-//                           fprintf(stderr, "tpix <= 1.0\n");
-                          n <<= 4;
-                    }
-                    else if (tpix <= 2.0)
-                    {
-//                           fprintf(stderr, "tpix <= 2.0\n");
-                          n <<= 3;
-                    }
-                    else if (tpix <= 4.0)
-                    {
-//                           fprintf(stderr, "tpix <= 4.0\n");
-                          n <<= 2;
-                    }
-                    else if (tpix <= 8.0)
-                    {
-//                           fprintf(stderr, "tpix <= 8.0\n");
-                          n <<= 1;
-                    }
-//                     else if (tpix <= 16)
-//                           n = 2;
-                    
-  //                   else if (tpix < 32)
-  //                         n = 8;
-  //                   else if (tpix <= 64)
-  //                         n = 4;
-  //                   else if (tpix < 128)
-  //                         n = 2;
-                    
-  //                   int n = 1;
-  //                   if (tpix <= 2)
-  //                         n = 128;
-  //                   else if (tpix <= 4)
-  //                         n = 64;
-  //                   else if (tpix < 8)
-  //                         n = 32;
-  //                   else if (tpix <= 16)
-  //                         n = 16;
-  //                   else if (tpix < 32)
-  //                         n = 8;
-  //                   else if (tpix < 64)
-  //                         n = 4;
-  //                   else if (tpix < 128)
-  //                         n = 2;
-                  }
+                  else {
+                        //prev_tpix  = rmapx(stick - prev_stick);
+                        prev_tpix  = rmapx_f(prev_ntick - prev_stick);
+                        }
                   
-                  if (bar % n)
-                  {
-//                         continue;
-                        draw_bar = false;
-//                         if((n < 4) || (bar % (n/4)))
-//                           draw_fake_bar = false;
-                  }
-                        
+                  prev_scale_info = scale(drawText, prev_bar, prev_tpix);
+
+                  // REMOVE Tim. citem. Added.
+                  fprintf(stderr,
+                      "drawTickRaster: Bar check: bar1:%d bar2:%d bar:%d prev_bar:%d stick:%d prev_stick:%d prev_ntick:%d prev_tpix:%f vx:%d vy:%d"
+                      " vw:%d vh:%d drawBar:%d\n",
+                      bar1, bar2, bar, prev_bar, stick, prev_stick, prev_ntick, prev_tpix,
+                      vx, vy, vw, vh, prev_scale_info._drawBar);
+
+                  if(prev_scale_info._drawBar)
+                    break;
+                }
+                
+                if(prev_bar >= 0)
+                {
+                  const int prev_tick = waveMode ? prev_b : prev_stick;
+                  drawBarText(p, prev_tick, prev_bar, vr, text_color, large_font);
+                }
+              }
+                
+              continue;
             }
             
-            if(drawText && !draw_bar)
-//             if(!draw_bar)
-              continue;
-            
-            //if(drawText)
-            //{
-              //if(!draw_bar)
-              //  continue;
-//             if(draw_bar && (!drawText || (drawText && is_small)))
-            if(!drawText || (drawText && is_small))
+            if(!drawText || (drawText && scale_info._isSmall))
             {
                   const int tick_small = waveMode ? b : stick;
                   const int x_small = mapx(tick_small);
@@ -1207,72 +1285,93 @@ void View::drawTickRaster_new(
                     pen.setColor(bar_color);
                   p.setPen(pen);
                   
-                  if(draw_bar || draw_fake_bar)
+                  //if(scale_info._drawBar || draw_fake_bar)
+                  if(scale_info._drawBar)
                   {
-//                     fprintf(stderr,
-//                       "...is_small:%d x:%d mx:%d mw:%d x_small:%d w:%d stick:%d ntick:%d bar1:%d bar2:%d bar:%d\n",
-//                       is_small, x, mx, mw, x_small, w, stick, ntick, bar1, bar2, bar);
-                    //if((x_small >= x) && (x_small < x + w))
-                    //if((x_small >= mx) && (x_small < mw))
-                    if(tick_small >= x && tick_small < x2)
+                    // REMOVE Tim. citem. Added.
+                    //fprintf(stderr,
+                    //  "...is_small:%d x:%d mx:%d mw:%d x_small:%d w:%d stick:%d ntick:%d bar1:%d bar2:%d bar:%d\n",
+                    //  scale_info._isSmall, x, mx, mw, x_small, w, stick, ntick, bar1, bar2, bar);
+                    
+                    if(tick_small >= vx && tick_small < vx_2)
                     {
-//                       fprintf(stderr, "...Line is within range. Drawing line...\n");
-//                       p.setPen(pen);
-                      p.drawLine(x_small, my, x_small, my2);
+                      // REMOVE Tim. citem. Added.
+                      //fprintf(stderr, "...Line is within range. Drawing line...\n");
+                      p.drawLine(x_small, my, x_small, mbottom);
+                      //p.drawLine(x_small, 0, x_small, height());
                     }
                   }
                   
                   if(drawText)
                   {
-  //                  QRect r = QRect(x+2, y, 0, h);
-//                     QRect r_txt = QRect(x_small+2, my, 1000, mh);
-                    //if(r.x() >= x && (r.x() + r.width()) < (x + w))
-                    //if(r.x() >= x && r.x() < (x + w) &&
-                    //  (r.x() + r.width()) < (x + w))
-                    QString s;
-                    s.setNum(bar + 1);
-                    QRect br_txt = fm.boundingRect(s);
-                    br_txt.moveTo(x_small + 2, my + 1);
-                    //br_txt.moveLeft(x_small);
-                    
-                    //if(r_txt.intersects(mr))
-                    if(br_txt.intersects(mr))
-                    {
+// //                     QRect r_txt = QRect(x_small+2, my, 1000, mh);
+//                     QString s;
+//                     s.setNum(bar + 1);
+//                     
+//                     const QRect br = fm.boundingRect(s);
+//                     int brw = rmapxDev(br.width());
+//                     //const int brh = rmapyDev(br.width());
+//                     //int w_txt = rmapxDev(1000);
+//                     //const int h_txt = rmapyDev(height() - 1);
+//                     if(brw > vw1000)
+//                       brw = vw1000;
+//                     //if(brh < h_txt)
+//                     //  h_txt = brh;
+//                     const QRect br_txt = QRect(tick_small + vw2, vy, brw, vh_m1);
+//                     
+//                     // REMOVE Tim. citem. Added.
+//                     fprintf(stderr,
+//                         "drawTickRaster: Bar text: bar1:%d bar2:%d bar:%d vx:%d vy:%d"
+//                         " vw:%d vh:%d mx:%d my:%d mw:%d mh:%d tick_small:%d x_small:%d br x:%d y:%d w:%d h:%d\n",
+//                         bar1, bar2, bar, vx, vy, vw, vh, mr.x(), my, mr.width(), mr.height(),
+//                         tick_small, x_small, br_txt.x(), br_txt.y(), br_txt.width(), br_txt.height());
+//                     
+//                     
+//                     //if(r_txt.intersects(mr))
+//                     if(br_txt.intersects(vr))
+//                     {
+//                       // REMOVE Tim. citem. Added.
 //                       fprintf(stderr, "...Text is within range. Drawing text...\n");
-                      p.setFont(large_font);
-                      //p.drawText(r_txt, Qt::AlignLeft|Qt::AlignVCenter|Qt::TextDontClip, s);
-                      p.drawText(br_txt, Qt::AlignLeft|Qt::AlignVCenter|Qt::TextDontClip, s);
-                    }
+//                       fprintf(stderr, "...bar text within range. xorg:%d xmag:%d xpos:%d Drawing bar text at x:%d y:%d w:%d h:%d\n",
+//                               xorg, xmag, xpos, map(br_txt).x(), map(br_txt).y(), map(br_txt).width(), map(br_txt).height());
+//                       p.setFont(large_font);
+//                       //p.drawText(r_txt, Qt::AlignLeft|Qt::AlignVCenter|Qt::TextDontClip, s);
+//                       p.drawText(map(br_txt), Qt::AlignLeft|Qt::AlignVCenter|Qt::TextDontClip, s);
+//                     }
+                    
+                    drawBarText(p, tick_small, bar, vr, text_color, large_font);
                   }
             }
 //             else {
 
-//             if(!drawText && !draw_bar && !draw_fake_bar)
-            if(!drawText && !is_small && !draw_fake_bar)
+//             if(!drawText && !scale_info._drawBar && !draw_fake_bar)
+//             if(!drawText && !scale_info._isSmall && !draw_fake_bar)
+            if(!drawText && !scale_info._isSmall)
             {
               if (raster>=4) {
                           pen.setColor(Qt::darkGray);
                           p.setPen(pen);
                           rast_xb = AL::sigmap.bar2tick(bar, 0, 0);
                           AL::sigmap.timesig(rast_xb, rast_z, rast_n);
-                          rast_xx = rast_xb + (draw_bar ? qq : 0);
+                          rast_xx = rast_xb + (scale_info._drawBar ? qq : 0);
                           rast_xxx = AL::sigmap.bar2tick(bar, rast_z, 0);
                           while (rast_xx <= rast_xxx) {
                                 rast_x = mapx(rast_xx);
-                                p.drawLine(rast_x, my, rast_x, my2);
+                                p.drawLine(rast_x, my, rast_x, mbottom);
                                 rast_xx += qq;
                                 }
                           }
             }
                         
             //if((!drawText && !is_small) || (drawText && !is_small)) {
-            //if((!drawText && !is_beat_small && !draw_bar && !draw_fake_bar) || (drawText && !is_small)) {
-            if((!drawText && !is_beat_small) || (drawText && !is_small)) {
+            //if((!drawText && !is_beat_small && !scale_info._drawBar && !draw_fake_bar) || (drawText && !is_small)) {
+            if((!drawText && !is_beat_small) || (drawText && !scale_info._isSmall)) {
                   int z, n;
                   AL::sigmap.timesig(stick, z, n);
                   
                   //for (int beat = 0; beat < z; beat++) {
-                  beat_start_beat = (drawText || (!drawText && !draw_bar && !draw_fake_bar)) ? 0 : 1;
+//                   beat_start_beat = (drawText || (!drawText && !scale_info._drawBar && !draw_fake_bar)) ? 0 : 1;
+                  beat_start_beat = (drawText || (!drawText && !scale_info._drawBar)) ? 0 : 1;
                   for (int beat = beat_start_beat; beat < z; beat++) {
                         int xx = AL::sigmap.bar2tick(bar, beat, 0);
                         if (waveMode)
@@ -1285,47 +1384,98 @@ void View::drawTickRaster_new(
                         if((xx_e - xx) < raster)
                           continue;
                         
-                        int xp = mapx(xx);
+                        int mxx = mapx(xx);
                         //int xp_e = mapx(xx_e);
                         
                         if(drawText)
                         {
 //                           QRect r(xp+2, y, 1000, h);
-                          QRect r(xp+2, my, 1000, mh);
+                          //QRect r(xp+2, my, 1000, mh);
                           int y1;
                           int num;
+                          int yt = vy;
+                          int h_txt;
+                          
+                          //const QString s = m->second.name();
+                          //const QRect br = fm.boundingRect(s);
+                          //const int brw = rmapxDev(br.width());
+                          //const int brh = rmapyDev(br.width());
+                          //const int h_txt = rmapyDev(12);
+                          //if(brw < w_txt)
+                          //  w_txt = brw;
+                          //if(brh < h_txt)
+                          //  h_txt = brh;
+                          //const QRect br_txt = QRect(xp + rmapxDev(10), y, w_txt, h_txt);
+                          
+                          
                           if (beat == 0) {
                                 num = bar + 1;
 //                                 y1  = y + 1;
 //                                 y1  = my_1;
                                 y1  = my + 1;
+                                h_txt = vh_m1;
                                 p.setFont(large_font);
                                 }
                           else {
                                 num = beat + 1;
 //                                 y1  = y + 7;
 //                                 y1  = my_7;
-                                y1  = my + 7;
+                                y1  = my + 6;
 //                                 r.setY(y+3);
 //                                 r.setY(my_3);
-                                r.setY(my + 3);
+//                                 r.setY(my + 3);
+                                yt = vy + vh2;
+                                h_txt = vh_m3;
                                 p.setFont(small_font);
                                 }
+
+                                
                           pen.setColor(text_color);
-//                           p.drawLine(xp, y1, xp, y+1+h);
-//                           p.drawLine(xp, y1, xp, my2_1);
-//                           fprintf(stderr, "View::drawTickRaster_new(): beat: my:%d y1:%d\n", my, y1);
                           p.setPen(pen);
-                          p.drawLine(xp, y1, xp, my2 + 1);
+                          if(xx >= vx && xx < vx_2)
+                            //p.drawLine(mxx, y1, mxx, my2 + 1);
+                            p.drawLine(mxx, y1, mxx, mbottom);
+                                
                           QString s;
                           s.setNum(num);
-                          p.drawText(r, Qt::AlignLeft|Qt::AlignVCenter|Qt::TextDontClip, s);
+                          int brw = rmapxDev(p.fontMetrics().boundingRect(s).width());
+                          //int w_txt = vw1000;
+                          if(brw > vw1000)
+                            brw = vw1000;
+                          QRect br_txt(xx + vw2, yt, brw, h_txt);
+                                
+                          // REMOVE Tim. citem. Added.
+//                           fprintf(stderr,
+//                               "drawBarText: Bar text: bar:%d beat:%d vx:%d vy:%d"
+//                               " vw:%d vh:%d tick:%d br x:%d y:%d w:%d h:%d\n",
+//                               bar, beat, vr.x(), vr.y(), vr.width(), vr.height(), tick,
+//                               br_txt.x(), br_txt.y(), br_txt.width(), br_txt.height());
+  
+                          if(br_txt.intersects(vr))
+                          {
+                            // REMOVE Tim. citem. Added.
+//                             fprintf(stderr, "...bar text within range. xorg:%d xmag:%d xpos:%d Drawing bar text at x:%d y:%d w:%d h:%d\n",
+//                                     xorg, xmag, xpos, map(br_txt).x(), map(br_txt).y(), map(br_txt).width(), map(br_txt).height());
+    
+                            //pen.setColor(text_color);
+  //                           p.drawLine(xp, y1, xp, y+1+h);
+  //                           p.drawLine(xp, y1, xp, my2_1);
+  //                           fprintf(stderr, "View::drawTickRaster_new(): beat: my:%d y1:%d\n", my, y1);
+                            //p.setPen(pen);
+                            //p.drawLine(xp, y1, xp, my2 + 1);
+                            //QString s;
+                            //s.setNum(num);
+                            p.drawText(map(br_txt), Qt::AlignLeft|Qt::AlignVCenter|Qt::TextDontClip, s);
+                          }
                         }
                         else
                         {
-                          pen.setColor(beat_color);
-                          p.setPen(pen);
-//                           p.drawLine(xp, my, xp, my2);
+                          if(xx >= vx && xx < vx_2)
+                          {
+                            pen.setColor(beat_color);
+                            p.setPen(pen);
+                            p.drawLine(mxx, my, mxx, mbottom);
+                          }
                         }
                         }
                   }
@@ -1425,15 +1575,21 @@ void View::drawTickRaster_new(
 //---------------------------------------------------------
 
 QRect View::mapDev(const QRect& r) const
-      {
-      return QRect(mapxDev(r.x()), mapyDev(r.y()),
-         rmapxDev(r.width()), rmapyDev(r.height()));
-      }
+{
+  return QRect(mapxDev(r.x()), mapyDev(r.y()),
+      rmapxDev(r.width()), rmapyDev(r.height()));
+}
 
 QPoint View::mapDev(const QPoint& r) const
-      {
-      return QPoint(mapxDev(r.x()), mapyDev(r.y()));
-      }
+{
+  return QPoint(mapxDev(r.x()), mapyDev(r.y()));
+}
+
+void View::mapDev(const QRegion& rg_in, QRegion& rg_out) const
+{
+  for(QRegion::const_iterator i = rg_in.begin(); i != rg_in.end(); ++i)
+    rg_out += mapDev(*i);
+}
 
 #if 0
   //
@@ -1694,8 +1850,11 @@ int View::mapxDev(int x) const
             //val = lrint((double(x + xpos) + double(xorg) * double(xmag)) / double(xmag));  
             //val = lrint((double(x + xpos) + double(xorg) * double(xmag)) / double(xmag));  
             val = floor(double(x + xpos) / double(xmag)) + xorg;
-      if (val < 0)            // DEBUG
-            val = 0;
+            
+// REMOVE Tim. citem. Removed.
+//       if (val < 0)            // DEBUG
+//             val = 0;
+      
       return val;
       }
 

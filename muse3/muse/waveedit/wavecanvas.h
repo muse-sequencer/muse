@@ -107,7 +107,8 @@ class WaveCanvas : public EventCanvas {
       
    protected:
       virtual QPoint raster(const QPoint&) const;
-      void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
+// REMOVE Tim. citem. Removed.
+//       void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
       void drawParts(QPainter&, const QRect&, bool do_cur_part);
   
 // REMOVE Tim. citem. Changed.

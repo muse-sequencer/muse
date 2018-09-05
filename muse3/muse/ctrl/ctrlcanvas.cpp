@@ -2686,7 +2686,7 @@ void CtrlCanvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
 // REMOVE Tim. citem. Changed.
 //       drawTickRaster(p, rect.x(), rect.y(),
 //          rect.width(), rect.height(), editor->raster());
-      drawTickRaster_new(p, rect, rg, editor->raster(),
+      drawTickRaster(p, rect, rg, editor->raster(),
                          false, false, false,
                          MusEGlobal::config.midiCanvasBarColor, 
                          MusEGlobal::config.midiCanvasBeatColor);

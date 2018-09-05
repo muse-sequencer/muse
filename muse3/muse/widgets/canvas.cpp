@@ -750,19 +750,29 @@ void Canvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       pen.setColor(Qt::blue);
       p.setPen(pen);
       int mx;
-      if (pos[1] >= unsigned(x) && pos[1] < unsigned(x2)) {
+      if ((int)pos[1] >= x && (int)pos[1] < x2) {
             mx = mapx(pos[1]);
             p.drawLine(mx, my, mx, my2);
             }
-      if (pos[2] >= unsigned(x) && pos[2] < unsigned(x2)) {
+      if ((int)pos[2] >= x && (int)pos[2] < x2) {
             mx = mapx(pos[2]);
             p.drawLine(mx, my, mx, my2);
             }
       // Draw the red main position cursor last, on top of the others.
       pen.setColor(Qt::red);
       p.setPen(pen);
-      if (pos[0] >= unsigned(x) && pos[0] < unsigned(x2)) {
+      
+      // REMOVE Tim. citem. Added. For testing.
+//       fprintf(stderr, "...location marker: pos[0]%d x:%d x2:%d\n",
+//               pos[0], x, x2);
+      
+      if ((int)pos[0] >= x && (int)pos[0] < x2) {
             mx = mapx(pos[0]);
+            
+            // REMOVE Tim. citem. Added. For testing.
+//             fprintf(stderr, "...location marker in range. Drawing line at mx:%d my:%d mx:%d my2:%d\n",
+//                 mx, my, mx, my2);
+            
             p.drawLine(mx, my, mx, my2);
             }
       

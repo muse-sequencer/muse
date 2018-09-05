@@ -3321,7 +3321,7 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
 //       p.restore();
 // }
 
-void PartCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
+void PartCanvas::drawCanvas(QPainter& p, const QRect& vr, const QRegion& vrg)
 {
 //       int x = rect.x();
 //       int w = rect.width();
@@ -3329,9 +3329,9 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
       // Changed to draw in device coordinate space instead of virtual, transformed space.     Tim.
 
       //QRect mr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
-      QRect mr = map(rect);                      // Use our own map instead.
+      QRect mr = map(vr);                      // Use our own map instead.
       QRegion mrg;
-      map(rg, mrg);                              // Use our own map instead.
+      map(vrg, mrg);                           // Use our own map instead.
 
       p.save();
       p.setWorldMatrixEnabled(false);
@@ -3432,7 +3432,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
           rast = AL::sigmap.ticks_beat(1);
         }
         
-        drawTickRaster_new(p, rect, rg, rast,
+        drawTickRaster(p, vr, vrg, rast,
         //drawTickRaster_new(p, rect.x(), rect.y(), rect.width(), rect.height(), noDivisors,
                          false, false, false,
                          baseColor.dark(115), 
@@ -3469,10 +3469,17 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
             // Here is a different situation than PartCanvas::drawItem which uses un-clipped part bounding boxes and
             //  does NOT depend on the update rectangle (except to check intersection). That's why this issue
             //  does not show up there. Should probably try to make that routine more efficient, just like here.   Tim.
-            QRect r(mx, yy, mw, th);
+// REMOVE Tim. citem. Changed.
+//             QRect r(mx, yy, mw, th);
+//             {
+//               if (!track->isMidiTrack() && (track->type() != MusECore::Track::WAVE)) {
+//                     drawAudioTrack(p, mr, mrg, r, (MusECore::AudioTrack*)track);
+//               }
+//             }
+            QRect vbbox(vr.x(), mapyDev(yy), vr.width(), rmapyDev(th));
             {
               if (!track->isMidiTrack() && (track->type() != MusECore::Track::WAVE)) {
-                    drawAudioTrack(p, mr, mrg, r, (MusECore::AudioTrack*)track);
+                    drawAudioTrack(p, vr, mrg, vbbox, (MusECore::AudioTrack*)track);
               }
             }
             yy += th;
@@ -3633,45 +3640,208 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect, const QRegion&)
 
 }
 
+// REMOVE Tim. citem. Changed.
+// //---------------------------------------------------------
+// //   drawAudioTrack
+// //---------------------------------------------------------
+// // REMOVE Tim. citem. Changed.
+// // void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, MusECore::AudioTrack* /*t*/)
+// void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, const QRegion& /*rg*/, const QRect& bbox, MusECore::AudioTrack* /*t*/)
+// {
+//       QRect mr = r & bbox;
+//       if(mr.isNull())
+//         return;
+//       int mx = mr.x();
+//       int my = mr.y();
+//       int mw = mr.width();
+//       int mh = mr.height();
+//       int mex = bbox.x();
+//       int mey = bbox.y();
+//       //int mew = bbox.width();
+//       int meh = bbox.height();
+// 
+//       QPen pen;
+//       pen.setCosmetic(true);
+//       pen.setColor(Qt::black);
+//       p.setPen(pen);
+//       QColor c(Qt::gray);
+//       c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+//       QLinearGradient gradient(mex + 1, mey + 1, mex + 1, mey + meh - 1);    // Inside the border
+//       gradient.setColorAt(0, c);
+//       gradient.setColorAt(1, c.darker());
+//       QBrush brush(gradient);
+//       p.fillRect(mr, brush);
+// 
+// //       if(mex >= mx && mex <= mx + mw)
+//       if(mex >= mx && mex < mx + mw)
+//         p.drawLine(mex, my, mex, my + mh - 1);                // The left edge
+//       //if(mex + mew >= mx && mex + mew <= mx + mw) DELETETHIS 2
+//       //  p.drawLine(mex + mew, my, mex + mew, my + mh - 1);  // The right edge. Not used - infinite to the right
+// //       if(mey >= my && mey <= my + mh)
+//       if(mey >= my && mey < my + mh)
+//         p.drawLine(mx, mey, mx + mw - 1, mey);                // The top edge
+//       if(mey + meh >= my && mey + meh <= my + mh)
+//         p.drawLine(mx, mey + meh, mx + mw - 1, mey + meh);    // The bottom edge. Special for Audio track - draw one past bottom.
+// }
+
 //---------------------------------------------------------
 //   drawAudioTrack
 //---------------------------------------------------------
 // REMOVE Tim. citem. Changed.
 // void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, MusECore::AudioTrack* /*t*/)
-void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, const QRegion& /*rg*/, const QRect& bbox, MusECore::AudioTrack* /*t*/)
+void PartCanvas::drawAudioTrack(QPainter& p, const QRect& vr, const QRegion& /*vrg*/, const QRect& vbbox, MusECore::AudioTrack* /*t*/)
 {
-      QRect mr = r & bbox;
-      if(mr.isNull())
-        return;
-      int mx = mr.x();
-      int my = mr.y();
-      int mw = mr.width();
-      int mh = mr.height();
-      int mex = bbox.x();
-      int mey = bbox.y();
-      //int mew = bbox.width();
-      int meh = bbox.height();
+      const QRect vbr = vr & vbbox;
+//       if(vbr.isNull())
+//         return;
+//       const QRect mr = map(vr);
+//       const QRect mbr = map(vbr);
+      const QRect mbb = map(vbbox);
+      
+      const int vx = vr.x();
+      const int vy = vr.y();
+      const int vw = vr.width();
+      const int vh = vr.height();
+      
+      const int vx_2 = vx + vw;
+      const int vy_2 = vy + vh;
+//       const int mx = mr.x();
+//       const int my = mr.y();
+//       const int mw = mr.width();
+//       const int mh = mr.height();
+      
+      //const int vbbx = vbbox.x();
+      const int vbby = vbbox.y();
+      //const int vbbw = vbbox.width();
+      const int vbbh = vbbox.height();
+      
+      const int vbby_2 = vbby + vbbh;
+      
+      const int mbbx = mbb.x();
+      const int mbby = mbb.y();
+      const int mbbw = mbb.width();
+      const int mbbh = mbb.height();
+      
+      const int mbbx_2 = mbbx + mbbw;
+      const int mbby_2 = mbby + mbbh;
+      
+      const int vbrx = vbr.x();
+      const int vbry = vbr.y();
+      const int vbrw = vbr.width();
+      const int vbrh = vbr.height();
+      
+//       const int mbrx = mbr.x();
+//       const int mbry = mbr.y();
+//       const int mbrw = mbr.width();
+//       const int mbrh = mbr.height();
+      
+      const int vx0 = 0;
+      const int mx0 = mapx(vx0);
 
       QPen pen;
       pen.setCosmetic(true);
       pen.setColor(Qt::black);
       p.setPen(pen);
-      QColor c(Qt::gray);
-      c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-      QLinearGradient gradient(mex + 1, mey + 1, mex + 1, mey + meh - 1);    // Inside the border
-      gradient.setColorAt(0, c);
-      gradient.setColorAt(1, c.darker());
-      QBrush brush(gradient);
-      p.fillRect(mr, brush);
+      
+      // REMOVE Tim. citem. Added.
+//       fprintf(stderr, "PartCanvas::drawAudioTrack vr x:%d y:%d w:%d h:%d mbrx:%d mbry:%d mbrw:%d mbrh:%d mbbox x:%d y:%d w:%d h:%d vx0:%d mx0:%d\n",
+//               vr.x(), vr.y(), vr.width(), vr.height(), mbrx, mbry, mbrw, mbrh, mbb.x(), mbb.y(), mbb.width(), mbb.height(), vx0, mx0);
 
-      if(mex >= mx && mex <= mx + mw)
-        p.drawLine(mex, my, mex, my + mh - 1);                // The left edge
+      if(!vbr.isNull())
+      {
+        const QRect tr(vx0, vbry, vbrx + vbrw - vx0, vbrh);
+        if(!tr.isEmpty())
+        {
+          QRect wr = vr.intersected(tr);
+        
+          // REMOVE Tim. citem. Added.
+  //         fprintf(stderr, "...wr x:%d y:%d w:%d h:%d\n",
+  //                 wr.x(), wr.y(), wr.width(), wr.height());
+          
+          if(!wr.isEmpty()) 
+          //if(vbx >= vx0)
+          //if(vx0 >= vbx)
+          {
+            // REMOVE Tim. citem. Added.
+            //fprintf(stderr, "...gradient in range. Drawing gradient at mx:%d my:%d mw:%d mh:%d\n",
+            //        map(tr).x(), map(tr).y(), map(tr).width(), map(tr).height());
+  //           fprintf(stderr, "...gradient in range. Drawing gradient at mx:%d my:%d mw:%d mh:%d\n",
+  //                   map(wr).x(), map(wr).y(), map(wr).width(), map(wr).height());
+            
+            QColor c(Qt::gray);
+            c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+            QLinearGradient gradient(mbbx + 1, mbby + 1, mbbx + 1, mbby + mbbh - 1);    // Inside the border
+      //       QLinearGradient gradient(mx0 + 1, mbby + 1, mx0 + 1, mbby + mbbh - 1);    // Inside the border
+            gradient.setColorAt(0, c);
+            gradient.setColorAt(1, c.darker());
+            QBrush brush(gradient);
+    //         p.fillRect(mbr, brush);
+  //           p.fillRect(map(tr), brush);
+            p.fillRect(map(wr), brush);
+    //       const QRect fill_r(mx0, mbry, mbrw, mbrh);
+    //       p.fillRect(fill_r, brush);
+          }
+        }
+      }
+
+      int mx0_lim = mx0;
+      if(mx0_lim < 0)
+        mx0_lim = 0;
+      
+      const int vbby_is = vbby > vy ? vbby : vy;
+      const int vbby_2is = vbby_2 < vy_2 ? vbby_2 : vy_2;
+      
+//       if(mex >= mx && mex <= mx + mw)
+      //if(mex >= mx && mex < mx + mw)
+      if(vx0 >= vx && vx0 < vx_2 &&
+         //((vbby >= vy && vbby < vy_2) || (vbby_2 > vy && vbby_2 <= vy_2)))
+         vbby_2is >= vbby_is)
+      {
+        // REMOVE Tim. citem. Added.
+//         fprintf(stderr, "...left edge in range. Drawing left edge at mx0:%d mapy(vbby_is):%d mx0:%d mapy(vbby_2is):%d\n",
+//                 mx0, mapy(vbby_is), mx0, mapy(vbby_2is));
+        
+//         p.drawLine(mex, my, mex, my + mh - 1);                // The left edge
+        //p.drawLine(mx0, mbry, mx0, mbry + mbrh - 1);                // The left edge
+        //p.drawLine(mx0, mbby, mx0, mbby_2);                // The left edge
+        p.drawLine(mx0, mapy(vbby_is), mx0, mapy(vbby_2is));                // The left edge
+      }
       //if(mex + mew >= mx && mex + mew <= mx + mw) DELETETHIS 2
       //  p.drawLine(mex + mew, my, mex + mew, my + mh - 1);  // The right edge. Not used - infinite to the right
-      if(mey >= my && mey <= my + mh)
-        p.drawLine(mx, mey, mx + mw - 1, mey);                // The top edge
-      if(mey + meh >= my && mey + meh <= my + mh)
-        p.drawLine(mx, mey + meh, mx + mw - 1, mey + meh);    // The bottom edge. Special for Audio track - draw one past bottom.
+//       if(mey >= my && mey <= my + mh)
+//       if(vbby >= vby && vbby < vby + vbh)
+//         p.drawLine(vbx, vbby, vbx + vbw - 1, vbby);                // The top edge
+//       if(vbby + vbbh >= vby && vbby + vbbh <= vby + vbh)
+//         p.drawLine(vbx, vbby + vbbh, vbx + vbw - 1, vbby + vbbh);    // The bottom edge. Special for Audio track - draw one past bottom.
+
+
+      if(mx0_lim <= mbbx + mbbw)
+      {
+  //       if(vbby >= vby && vbby < vby + vbh)
+        //if(vx0 >= vbrx && vx0 < vbrx + vbrw && vbby >= vbry && vbby < vbry + vbrh)
+        if(//vx0 >= vbrx &&
+          vbby >= vy && vbby < vy_2)
+        {
+          // REMOVE Tim. citem. Added.
+//           fprintf(stderr, "...top edge in range. Drawing line at mx0:%d mx0_lim:%d mbby:%d mbbx_2:%d mbby:%d\n",
+//                   mx0, mx0_lim, mbby, mbbx_2, mbby);
+          
+  //         p.drawLine(mbrx, mbby, vbx + vbw - 1, mbby);                // The top edge
+          p.drawLine(mx0_lim, mbby, mbbx_2, mbby);                // The top edge
+        }
+          
+  //       if(vbby + vbbh >= vbry && vbby + vbbh <= vbry + vbrh)
+  //         p.drawLine(mbrx, mbby + mbbh, mbrx + mbrw - 1, mbby + mbbh);    // The bottom edge. Special for Audio track - draw one past bottom.
+        if(vx0 < vx_2 &&
+          vbby_2 >= vy && vbby_2 < vy_2)
+        {
+          // REMOVE Tim. citem. Added.
+//           fprintf(stderr, "...bottom edge in range. Drawing line at mx0:%d mx0_lim:%d mbby_2:%d mbbx_2:%d mbby_2:%d\n",
+//                   mx0, mx0_lim, mbby_2, mbbx_2, mbby_2);
+          
+          p.drawLine(mx0_lim, mbby_2, mbbx_2, mbby_2);    // The bottom edge. Special for Audio track - draw one past bottom.
+        }
+      }
 }
 
 //---------------------------------------------------------

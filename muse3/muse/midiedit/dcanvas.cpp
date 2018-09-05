@@ -859,7 +859,7 @@ void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
 
 // REMOVE Tim. citem. Changed.
 //       drawTickRaster(p, x, y, w, h, editor->raster());
-      drawTickRaster_new(p, rect, rg, editor->raster(), false, false, false,
+      drawTickRaster(p, rect, rg, editor->raster(), false, false, false,
                          MusEGlobal::config.midiCanvasBarColor, 
                          MusEGlobal::config.midiCanvasBeatColor);
       }

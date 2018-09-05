@@ -60,7 +60,7 @@ QT5_WRAP_CPP (widget_mocs
       genset.h  
       mdisettings.h  
       header.h  
-      hitscale.h  
+      # hitscale.h  
       intlabel.h  
       knob.h  
       knob_and_meter.h
@@ -204,7 +204,7 @@ file (GLOB widgets_source_files
       genset.cpp 
       mdisettings.cpp 
       header.cpp 
-      hitscale.cpp 
+      # hitscale.cpp 
       intlabel.cpp 
       knob.cpp 
       knob_and_meter.cpp

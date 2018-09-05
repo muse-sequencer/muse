@@ -54,9 +54,9 @@ Master::Master(MidiEditor* e, QWidget* parent, int xmag, int ymag)
       editor = e;
       setBg(Qt::white);
       vscroll = 0;
-      pos[0]  = 0;
-      pos[1]  = 0;
-      pos[2]  = 0;
+      pos[0]  = MusEGlobal::song->cpos();
+      pos[1]  = MusEGlobal::song->lpos();
+      pos[2]  = MusEGlobal::song->rpos();
       drag = DRAG_OFF;
       tool = MusEGui::PointerTool; // should be overridden soon anyway, but to be sure...
       setFocusPolicy(Qt::StrongFocus);  
@@ -225,7 +225,7 @@ void Master::draw(QPainter& p, const QRect& rect, const QRegion& rg)
 // REMOVE Tim. citem. Changed.
 //       drawTickRaster(p, rect.x(), rect.y(),
 //          rect.width(), rect.height(), 0);
-      drawTickRaster_new(p, rect, rg, 0,
+      drawTickRaster(p, rect, rg, 0,
                          false, false, false,
                          MusEGlobal::config.midiCanvasBarColor, 
                          MusEGlobal::config.midiCanvasBeatColor);

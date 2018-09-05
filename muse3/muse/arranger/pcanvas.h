@@ -194,7 +194,7 @@ class PartCanvas : public Canvas {
       MusECore::Track* y2Track(int) const;
 // REMOVE Tim. citem. Changed.
 //       void drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, MusECore::AudioTrack* track);
-      void drawAudioTrack(QPainter& p, const QRect& r, const QRegion& rg, const QRect& bbox, MusECore::AudioTrack* track);
+      void drawAudioTrack(QPainter& p, const QRect& vr, const QRegion& vrg, const QRect& vbbox, MusECore::AudioTrack* track);
       void drawAutomation(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
       void drawAutomationPoints(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
       void drawAutomationText(QPainter& p, const QRect& r, MusECore::AudioTrack* track);

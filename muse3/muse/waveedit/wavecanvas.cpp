@@ -779,18 +779,18 @@ void WaveCanvas::draw(QPainter& p, const QRect& r, const QRegion&)
       pen.setColor(Qt::blue);
       p.setPen(pen);
       int mx;
-      if (pos[1] >= unsigned(x) && pos[1] < unsigned(x2)) {
+      if ((int)pos[1] >= x && (int)pos[1] < x2) {
             mx = mapx(pos[1]);
             p.drawLine(mx, my, mx, my2);
             }
-      if (pos[2] >= unsigned(x) && pos[2] < unsigned(x2)) {
+      if ((int)pos[2] >= x && (int)pos[2] < x2) {
             mx = mapx(pos[2]);
             p.drawLine(mx, my, mx, my2);
             }
       // Draw the red main position cursor last, on top of the others.
       pen.setColor(Qt::red);
       p.setPen(pen);
-      if (pos[0] >= unsigned(x) && pos[0] < unsigned(x2)) {
+      if ((int)pos[0] >= x && (int)pos[0] < x2) {
             mx = mapx(pos[0]);
             p.drawLine(mx, my, mx, my2);
             }
@@ -885,101 +885,102 @@ void WaveCanvas::drawParts(QPainter& p, const QRect& r, bool do_cur_part)
       
       p.setWorldMatrixEnabled(wmtxen);
 }
-      
-// TODO: Overridden because we're in units of frames. 
-//       After BBT/frame mode is added to Canvas, remove this override and let View or Canvas do it.
-//---------------------------------------------------------
-//   drawTickRaster
-//---------------------------------------------------------
 
-void WaveCanvas::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
-      {
-      // Changed to draw in device coordinate space instead of virtual, transformed space. Tim. 
-      
-      //int mx = mapx(x);
-      int my = mapy(y);
-      //int mw = mapx(x + w) - mx;
-      //int mw = mapx(x + w) - mx - 1;
-      //int mh = mapy(y + h) - my;
-      //int mh = mapy(y + h) - my - 1;
-      
-      //p.save();
-      bool wmtxen = p.worldMatrixEnabled();
-      p.setWorldMatrixEnabled(false);
-      
-      QPen pen;
-      pen.setCosmetic(true);
-      
-      int xx,bar1, bar2, beat;
-      int rast_mapx;
-      unsigned tick;
-//      AL::sigmap.tickValues(x, &bar1, &beat, &tick);
-//      AL::sigmap.tickValues(x+w, &bar2, &beat, &tick);
-      AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(x), &bar1, &beat, &tick);
-      AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(x+w), &bar2, &beat, &tick);
-      ++bar2;
-      ///int y2 = y + h;
-      //int y2 = my + mh;
-      int y2 = mapy(y + h) - 1;
-      //printf("View::drawTickRaster x:%d y:%d w:%d h:%d mx:%d my:%d mw:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, mx, my, mw, mh, y2, bar1, bar2);  
-      //printf("View::drawTickRaster x:%d y:%d w:%d h:%d my:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, my, mh, y2, bar1, bar2);  
-      for (int bar = bar1; bar < bar2; ++bar) {
-        
-//            unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
-            unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
-            int xt = mapx(MusEGlobal::tempomap.tick2frame(xb));
-//             pen.setColor(Qt::black);
-            pen.setColor(MusEGlobal::config.midiCanvasBarColor);
-            p.setPen(pen);
-            p.drawLine(xt, my, xt, y2);
-            
-            int z, n;
-            AL::sigmap.timesig(xb, z, n);
-            int qq = raster;
-            
-// REMOVE Tim. citem. Changed.
-//             if (rmapx(raster) < 8)        // grid too dense
+// REMOVE Tim. citem. Removed.
+// // TODO: Overridden because we're in units of frames. 
+// //       After BBT/frame mode is added to Canvas, remove this override and let View or Canvas do it.
+// //---------------------------------------------------------
+// //   drawTickRaster
+// //---------------------------------------------------------
+// 
+// void WaveCanvas::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
+//       {
+//       // Changed to draw in device coordinate space instead of virtual, transformed space. Tim. 
+//       
+//       //int mx = mapx(x);
+//       int my = mapy(y);
+//       //int mw = mapx(x + w) - mx;
+//       //int mw = mapx(x + w) - mx - 1;
+//       //int mh = mapy(y + h) - my;
+//       //int mh = mapy(y + h) - my - 1;
+//       
+//       //p.save();
+//       bool wmtxen = p.worldMatrixEnabled();
+//       p.setWorldMatrixEnabled(false);
+//       
+//       QPen pen;
+//       pen.setCosmetic(true);
+//       
+//       int xx,bar1, bar2, beat;
+//       int rast_mapx;
+//       unsigned tick;
+// //      AL::sigmap.tickValues(x, &bar1, &beat, &tick);
+// //      AL::sigmap.tickValues(x+w, &bar2, &beat, &tick);
+//       AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(x), &bar1, &beat, &tick);
+//       AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(x+w), &bar2, &beat, &tick);
+//       ++bar2;
+//       ///int y2 = y + h;
+//       //int y2 = my + mh;
+//       int y2 = mapy(y + h) - 1;
+//       //printf("View::drawTickRaster x:%d y:%d w:%d h:%d mx:%d my:%d mw:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, mx, my, mw, mh, y2, bar1, bar2);  
+//       //printf("View::drawTickRaster x:%d y:%d w:%d h:%d my:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, my, mh, y2, bar1, bar2);  
+//       for (int bar = bar1; bar < bar2; ++bar) {
+//         
+// //            unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
+//             unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
+//             int xt = mapx(MusEGlobal::tempomap.tick2frame(xb));
+// //             pen.setColor(Qt::black);
+//             pen.setColor(MusEGlobal::config.midiCanvasBarColor);
+//             p.setPen(pen);
+//             p.drawLine(xt, my, xt, y2);
+//             
+//             int z, n;
+//             AL::sigmap.timesig(xb, z, n);
+//             int qq = raster;
+//             
+// // REMOVE Tim. citem. Changed.
+// //             if (rmapx(raster) < 8)        // grid too dense
+// //                   qq *= 2;
+//             
+//             rast_mapx = rmapx(raster);
+//             // grid too dense?
+//             if (rast_mapx <= 1)        
+//                   qq *= 16;
+//             else if (rast_mapx <= 2)
+//                   qq *= 8;
+//             else if (rast_mapx <= 4)
+//                   qq *= 4;
+//             else if (rast_mapx <= 8)
 //                   qq *= 2;
-            
-            rast_mapx = rmapx(raster);
-            // grid too dense?
-            if (rast_mapx <= 1)        
-                  qq *= 16;
-            else if (rast_mapx <= 2)
-                  qq *= 8;
-            else if (rast_mapx <= 4)
-                  qq *= 4;
-            else if (rast_mapx <= 8)
-                  qq *= 2;
-            
-//             pen.setColor(Qt::lightGray);
-            pen.setColor(MusEGlobal::config.midiCanvasBeatColor);
-            p.setPen(pen);
-            if (raster>=4) {
-                        xx = xb + qq;
-                        int xxx = MusEGlobal::tempomap.tick2frame(AL::sigmap.bar2tick(bar, z, 0));
-                        //while (MusEGlobal::tempomap.tick2frame(xx) <= xxx) {
-                        while (1) {
-                               int xxf = MusEGlobal::tempomap.tick2frame(xx);
-                               if(xxf > xxx)
-                                 break;
-                               //int x = mapx(MusEGlobal::tempomap.tick2frame(xx));
-                               int x = mapx(xxf);
-                               p.drawLine(x, my, x, y2);
-                               xx += qq;
-                               }
-                        }
-            pen.setColor(Qt::gray);
-            p.setPen(pen);
-            for (int beat = 1; beat < z; beat++) {
-                        xx = mapx(MusEGlobal::tempomap.tick2frame(AL::sigmap.bar2tick(bar, beat, 0)));
-                        //printf(" bar:%d z:%d beat:%d xx:%d\n", bar, z, beat, xx);  
-                        p.drawLine(xx, my, xx, y2);
-                        }
-
-            }
-      p.setWorldMatrixEnabled(wmtxen);
-      }
+//             
+// //             pen.setColor(Qt::lightGray);
+//             pen.setColor(MusEGlobal::config.midiCanvasBeatColor);
+//             p.setPen(pen);
+//             if (raster>=4) {
+//                         xx = xb + qq;
+//                         int xxx = MusEGlobal::tempomap.tick2frame(AL::sigmap.bar2tick(bar, z, 0));
+//                         //while (MusEGlobal::tempomap.tick2frame(xx) <= xxx) {
+//                         while (1) {
+//                                int xxf = MusEGlobal::tempomap.tick2frame(xx);
+//                                if(xxf > xxx)
+//                                  break;
+//                                //int x = mapx(MusEGlobal::tempomap.tick2frame(xx));
+//                                int x = mapx(xxf);
+//                                p.drawLine(x, my, x, y2);
+//                                xx += qq;
+//                                }
+//                         }
+//             pen.setColor(Qt::gray);
+//             p.setPen(pen);
+//             for (int beat = 1; beat < z; beat++) {
+//                         xx = mapx(MusEGlobal::tempomap.tick2frame(AL::sigmap.bar2tick(bar, beat, 0)));
+//                         //printf(" bar:%d z:%d beat:%d xx:%d\n", bar, z, beat, xx);  
+//                         p.drawLine(xx, my, xx, y2);
+//                         }
+// 
+//             }
+//       p.setWorldMatrixEnabled(wmtxen);
+//       }
 
 // TODO: Overridden because we're in units of frames. 
 //       After BBT/frame mode is added to Canvas, remove this override and let Canvas do it.
@@ -1815,7 +1816,7 @@ void WaveCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
 
 // REMOVE Tim. citem. Changed.
 //       drawTickRaster(p, x, y, w, h, editor->raster());
-      drawTickRaster_new(p, rect, rg, editor->raster(), true, false, false,
+      drawTickRaster(p, rect, rg, editor->raster(), true, false, false,
                          MusEGlobal::config.midiCanvasBarColor, 
                          MusEGlobal::config.midiCanvasBeatColor);
       }
