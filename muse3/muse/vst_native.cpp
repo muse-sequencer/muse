@@ -1517,12 +1517,12 @@ void VstNativeSynthIF::showNativeGui(bool v)
         }
         else
         {
-          Qt::WindowFlags wflags = Qt::Window
+          Qt::WindowFlags wflags(Qt::Window
                   | Qt::CustomizeWindowHint
                   | Qt::WindowTitleHint
                   | Qt::WindowSystemMenuHint
                   | Qt::WindowMinMaxButtonsHint
-                  | Qt::WindowCloseButtonHint;
+                  | Qt::WindowCloseButtonHint);
           _editor = new MusEGui::VstNativeEditor(NULL, wflags);
           _editor->open(this, 0);
         }
@@ -3604,12 +3604,12 @@ void VstNativePluginWrapper::showNativeGui(PluginI *p, bool bShow)
       }
       else
       {
-         Qt::WindowFlags wflags = Qt::Window
+         Qt::WindowFlags wflags(Qt::Window
                                   | Qt::CustomizeWindowHint
                                   | Qt::WindowTitleHint
                                   | Qt::WindowSystemMenuHint
                                   | Qt::WindowMinMaxButtonsHint
-                                  | Qt::WindowCloseButtonHint;
+                                  | Qt::WindowCloseButtonHint);
          state->editor = new MusEGui::VstNativeEditor(NULL, wflags);
          state->editor->open(0, state);
       }

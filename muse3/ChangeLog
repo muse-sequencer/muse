@@ -1,3 +1,7 @@
+11.09.2018
+      - Fix compile bug 635 by Pablo Tassi: "invalid conversion from
+         ‘unsigned int’ to ‘Qt::WindowType’ in vst_native.cpp at lines
+         1520 and 3607. (Tim)
 11.08.2018
       - New: SongChanged flags are now a structure with extra info. (Tim)
         Introducing SongChangedStruct_t. SongChangedFlags_t is now a
