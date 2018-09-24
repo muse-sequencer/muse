@@ -338,6 +338,7 @@ class EItem : public PItem {
 typedef std::multimap<int, CItem*, std::less<int> >::iterator iCItem;
 typedef std::multimap<int, CItem*, std::less<int> >::const_iterator ciCItem;
 typedef std::multimap<int, CItem*, std::less<int> >::const_reverse_iterator rciCItem;
+typedef std::pair<iCItem, iCItem> iCItemRange;
 
 //---------------------------------------------------------
 //   CItemList

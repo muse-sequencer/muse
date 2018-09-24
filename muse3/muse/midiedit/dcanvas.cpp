@@ -516,6 +516,8 @@ CItem* DrumCanvas::newItem(const QPoint& p, int state)
       else if ((state & k1) == k1 && !(state & nk1))
             velo = ourDrumMap[instr].lv1;
       int tick = p.x();
+      if(tick < 0)
+        tick = 0;
       if(!(state & Qt::ShiftModifier))
         tick = editor->rasterVal(tick);
       return newItem(tick, instr, velo);
@@ -735,25 +737,93 @@ void DrumCanvas::itemMoved(const CItem* item, const QPoint& pos)
       }
       }
 
+// REMOVE Tim. citem. Changed.
+// //---------------------------------------------------------
+// //   drawItem
+// //---------------------------------------------------------
+// 
+// // REMOVE Tim. citem. Changed.
+// // void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
+// void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect, const QRegion&)
+//       {
+//       DEvent* e   = (DEvent*) item;
+//       int x = 0, y = 0;
+//         x = mapx(item->pos().x());
+//         y = mapy(item->pos().y());
+//       QPolygon pa(4);
+//       pa.setPoint(0, x - CARET2, y);
+//       pa.setPoint(1, x,          y - CARET2);
+//       pa.setPoint(2, x + CARET2, y);
+//       pa.setPoint(3, x,          y + CARET2);
+//       QRect r(pa.boundingRect());
+//       r = r.intersected(rect);
+//       if(!r.isValid())
+//         return;
+//       
+//       QPen pen;
+//       pen.setCosmetic(true);
+//       pen.setColor(Qt::black);
+//       p.setPen(pen);
+//       
+//       if (e->part() != curPart)
+//       {
+//             if(item->isMoving()) 
+//               p.setBrush(Qt::gray);
+//             else if(item->isSelected()) 
+//               p.setBrush(Qt::black);
+//             else  
+//               p.setBrush(Qt::lightGray);
+//       }      
+//       else if (item->isMoving()) {
+//               p.setBrush(Qt::gray);
+//             }
+//       else if (item->isSelected())
+//       {
+//             p.setBrush(Qt::black);
+//       }
+//       else
+//       {
+//             int velo    = e->event().velo();
+//             MusECore::DrumMap* dm = &ourDrumMap[y2pitch(y)]; //Get the drum item
+//             QColor color;
+//             if (velo < dm->lv1)
+//                   color.setRgb(240, 240, 255);
+//             else if (velo < dm->lv2)
+//                   color.setRgb(200, 200, 255);
+//             else if (velo < dm->lv3)
+//                   color.setRgb(170, 170, 255);
+//             else
+//                   color.setRgb(0, 0, 255);
+//             p.setBrush(color);
+//       }
+//             
+//       p.drawPolygon(pa);
+//       }
+
 //---------------------------------------------------------
 //   drawItem
 //---------------------------------------------------------
 
 // REMOVE Tim. citem. Changed.
 // void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
-void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect, const QRegion&)
+void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& mr, const QRegion&)
       {
       DEvent* e   = (DEvent*) item;
-      int x = 0, y = 0;
-        x = mapx(item->pos().x());
-        y = mapy(item->pos().y());
+      int mx = 0, my = 0;
+      mx = mapx(item->pos().x());
+      my = mapy(item->pos().y());
+//       mx = item->pos().x();
+//       my = item->pos().y();
+//       const ViewXCoordinate vx(item->pos().x(), false);
+//       const ViewYCoordinate vy(item->pos().y(), false);
+      
       QPolygon pa(4);
-      pa.setPoint(0, x - CARET2, y);
-      pa.setPoint(1, x,          y - CARET2);
-      pa.setPoint(2, x + CARET2, y);
-      pa.setPoint(3, x,          y + CARET2);
+      pa.setPoint(0, mx - CARET2, my);
+      pa.setPoint(1, mx,          my - CARET2);
+      pa.setPoint(2, mx + CARET2, my);
+      pa.setPoint(3, mx,          my + CARET2);
       QRect r(pa.boundingRect());
-      r = r.intersected(rect);
+      r = r.intersected(mr);
       if(!r.isValid())
         return;
       
@@ -781,7 +851,7 @@ void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect, const
       else
       {
             int velo    = e->event().velo();
-            MusECore::DrumMap* dm = &ourDrumMap[y2pitch(y)]; //Get the drum item
+            MusECore::DrumMap* dm = &ourDrumMap[y2pitch(my)]; //Get the drum item
             QColor color;
             if (velo < dm->lv1)
                   color.setRgb(240, 240, 255);
@@ -796,7 +866,7 @@ void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect, const
             
       p.drawPolygon(pa);
       }
-
+      
 //---------------------------------------------------------
 //   drawMoving
 //    draws moving items
@@ -832,12 +902,18 @@ void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect, c
 
 // REMOVE Tim. citem. Changed.
 // void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect)
-void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
+void DrumCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
       {
-      int x = rect.x();
-      int y = rect.y();
-      int w = rect.width();
-      int h = rect.height();
+      const QRect ur = mapDev(mr);
+
+      int ux = ur.x();
+      if(ux < 0)
+        ux = 0;
+      const int uy = ur.y();
+      const int uw = ur.width();
+      const int uh = ur.height();
+      const int ux_2 = ux + uw;
+      const int uy_2 = uy + uh;
 
       QPen pen;
       pen.setCosmetic(true);
@@ -848,18 +924,21 @@ void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
       //  horizontal lines
       //---------------------------------------------------
 
-      int yy  = ((y-1) / TH) * TH + TH;
-      for (; yy < y + h; yy += TH) {
-            p.drawLine(x, yy, x + w, yy);
+      int uyy  = ((uy-1) / TH) * TH + TH;
+      
+      // REMOVE Tim. citem. Added.
+      //fprintf(stderr, "DrumCanvas::drawCanvas x:%d y:%d w:%d h:%d yy:%d\n", x, y, w, h, yy);
+      fprintf(stderr, "DrumCanvas::drawCanvas ux:%d uy:%d uw:%d uh:%d uyy:%d\n", ux, uy, uw, uh, uyy);
+      
+      for (; uyy < uy_2; uyy += TH) {
+            p.drawLine(ux, uyy, ux_2, uyy);
             }
 
       //---------------------------------------------------
       // vertical lines
       //---------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-//       drawTickRaster(p, x, y, w, h, editor->raster());
-      drawTickRaster(p, rect, rg, editor->raster(), false, false, false,
+      drawTickRaster(p, mr, rg, editor->raster(), false, false, false,
                          MusEGlobal::config.midiCanvasBarColor, 
                          MusEGlobal::config.midiCanvasBeatColor);
       }

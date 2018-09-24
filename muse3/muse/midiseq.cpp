@@ -536,6 +536,7 @@ void MidiSeq::processTimerTick()
       unsigned curFrame = MusEGlobal::audio->curFrame();
       
       if (!MusEGlobal::extSyncFlag.value()) {
+            // Do not round up here since (audio) frame resolution is higher than tick resolution.
             const unsigned int curTick = muse_multiply_64_div_64_to_64(
               (uint64_t)MusEGlobal::config.division * (uint64_t)MusEGlobal::tempomap.globalTempo() * 10000UL, curFrame,
               (uint64_t)MusEGlobal::sampleRate * (uint64_t)MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos()));

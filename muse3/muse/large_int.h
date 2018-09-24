@@ -54,24 +54,56 @@
 
 namespace MusECore {
 
+enum LargeIntRoundMode { LargeIntRoundDown, LargeIntRoundUp, LargeIntRoundNearest };
+  
+  
 static inline uint64_t muse_multiply_64_div_64_to_64(
-  uint64_t a, uint64_t b, uint64_t c, bool round_up = false)
+  uint64_t a, uint64_t b, uint64_t c, LargeIntRoundMode round_mode = LargeIntRoundDown)
 { 
 #if defined(LARGE_INT_VC) && defined(LARGE_INT_IS_X86_64)
     uint64_t t_hi;
     const uint64_t t_lo = _umul128(a, b, &t_hi);
     uint64_t q, r;
     q = libdivide::libdivide_128_div_64_to_64(t_hi, t_lo, c, &r);
-    if(round_up && r)
-      q++;
+    switch(round_mode)
+    {
+      case LargeIntRoundDown:
+      break;
+      case LargeIntRoundUp:
+        if(r)
+          q++;
+      break;
+      case LargeIntRoundNearest:
+        if(r >= (c / 2))
+          q++;
+      break;
+    }
     return q;
 #elif defined(LARGE_INT_HAS_INT128_T)
-    if(round_up)
+    switch(round_mode)
     {
-      __uint128_t dividend = (__uint128_t)a * (__uint128_t)b;
-      // FIXME Too bad this is slowed by divide and mod. No 128-bit support for div() in stdlib. Go asm ?
-      return dividend / (__uint128_t)c + (dividend % (__uint128_t)c ? 1 : 0);
+      case LargeIntRoundDown:
+      break;
+      
+      case LargeIntRoundUp:
+      {
+        const __uint128_t dividend = (__uint128_t)a * (__uint128_t)b;
+        const __uint128_t cc = (__uint128_t)c;
+        // FIXME Too bad this is slowed by divide and mod. No 128-bit support for div() in stdlib. Go asm ?
+        return dividend / cc + (dividend % cc ? 1 : 0);
+      }
+      break;
+      
+      case LargeIntRoundNearest:
+      {
+        const __uint128_t dividend = (__uint128_t)a * (__uint128_t)b;
+        const __uint128_t cc = (__uint128_t)c;
+        // FIXME Too bad this is slowed by divide and mod. No 128-bit support for div() in stdlib. Go asm ?
+        return dividend / cc + ((dividend % cc >= (cc / 2)) ? 1 : 0);
+      }
+      break;
     }
+    
     return ((__uint128_t)a * (__uint128_t)b / (__uint128_t)c);
 #else
   
@@ -95,8 +127,19 @@ static inline uint64_t muse_multiply_64_div_64_to_64(
     (a * b) + w1 + k,
     (t << 32) + w3,
     c, &r);
-  if(round_up && r)
-    q++;
+  switch(round_mode)
+  {
+    case LargeIntRoundDown:
+    break;
+    case LargeIntRoundUp:
+      if(r)
+        q++;
+    break;
+    case LargeIntRoundNearest:
+      if(r >= (c / 2))
+        q++;
+    break;
+  }
   return q;
   
 #endif

@@ -49,8 +49,6 @@ class CtrlEdit : public QWidget {
       CtrlCanvas* canvas;
       CtrlPanel* panel;
 
-      
-
    private slots:
       void destroy();
 

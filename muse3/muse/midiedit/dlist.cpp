@@ -255,14 +255,20 @@ bool DPitchEdit::event(QEvent* e)
 
 // REMOVE Tim. citem. Changed.
 // void DList::draw(QPainter& p, const QRect& rect)
-void DList::draw(QPainter& p, const QRect& rect, const QRegion&)
+void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
       {
       using MusECore::WorkingDrumMapEntry;
 
-      int x = rect.x();
-      int y = rect.y();
-      int w = rect.width();
-      int h = rect.height();
+      const QRect ur = mapDev(mr);
+      
+//       int x = mr.x();
+//       int y = mr.y();
+//       int w = mr.width();
+//       int h = mr.height();
+      int ux = ur.x();
+      int uy = ur.y();
+      int uw = ur.width();
+      int uh = ur.height();
 
       //---------------------------------------------------
       //    Tracks
@@ -276,13 +282,13 @@ void DList::draw(QPainter& p, const QRect& rect, const QRegion&)
 
       for (int instrument = 0; instrument < ourDrumMapSize; ++instrument) {
             int yy = instrument * TH;
-            if (yy+TH < y)
+            if (yy+TH < uy)
                   continue;
-            if (yy > y + h)
+            if (yy > uy + uh)
                   break;
             MusECore::DrumMap* dm = &ourDrumMap[instrument];
             if (dm == currentlySelected)
-                  p.fillRect(x, yy, w, TH, Qt::yellow);
+                  p.fillRect(ux, yy, uw, TH, Qt::yellow);
 //            else
 //                  p.eraseRect(x, yy, w, TH); DELETETHIS?
             QHeaderView *h = header;
@@ -695,9 +701,9 @@ void DList::draw(QPainter& p, const QRect& rect, const QRegion&)
       //---------------------------------------------------
 
       p.setPen(Qt::gray);
-      int yy  = (y / TH) * TH;
-      for (; yy < y + h; yy += TH) {
-            p.drawLine(x, yy, x + w, yy);
+      int yy  = (uy / TH) * TH;
+      for (; yy < uy + uh; yy += TH) {
+            p.drawLine(ux, yy, ux + uw, yy);
             }
 
       if (drag == DRAG) {
@@ -705,8 +711,8 @@ void DList::draw(QPainter& p, const QRect& rect, const QRegion&)
             int dy = startY - y;
             int yy = curY - dy;
             p.setPen(Qt::green);
-            p.drawLine(x, yy, x + w, yy);
-            p.drawLine(x, yy+TH, x + w, yy+TH);
+            p.drawLine(ux, yy, ux + uw, yy);
+            p.drawLine(ux, yy+TH, ux + uw, yy+TH);
             p.setPen(Qt::gray);
             }
 
@@ -716,10 +722,10 @@ void DList::draw(QPainter& p, const QRect& rect, const QRegion&)
 
       p.setWorldMatrixEnabled(false);
       int n = header->count();
-      x = 0;
+      ux = 0;
       for (int i = 0; i < n; i++) {
-            x += header->sectionSize(header->visualIndex(i));
-            p.drawLine(x, 0, x, height());
+            ux += header->sectionSize(header->visualIndex(i));
+            p.drawLine(ux, 0, ux, height());
             }
       p.setWorldMatrixEnabled(true);
       }

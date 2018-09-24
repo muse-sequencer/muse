@@ -1391,6 +1391,11 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
       if(!curPart || !_controller)         
         return;
       
+      if(x1 < 0)
+        x1 = 0;
+      if(x2 < 0)
+        x2 = 0;
+      
       if(x2 - x1 < 0)
       {
         int a = x1;
@@ -1637,6 +1642,8 @@ void CtrlCanvas::newVal(int x1, int y)
       if(!curPart || !_controller)         
         return;
       
+      if(x1 < 0)
+        x1 = 0;
       int xx1  = editor->rasterVal1(x1);
       int xx2  = editor->rasterVal2(x1);
       // If x1 happens to lie directly on a raster, xx1 will equal xx2, 
@@ -1841,6 +1848,11 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
       if(!curPart || !_controller)         
         return;
       
+      if(x1 < 0)
+        x1 = 0;
+      if(x2 < 0)
+        x2 = 0;
+      
       if(x2 - x1 < 0)
       {
         int a = x1;
@@ -2030,6 +2042,11 @@ void CtrlCanvas::deleteVal(int x1, int x2, int)
       {
       if(!curPart)         
         return;
+      
+      if(x1 < 0)
+        x1 = 0;
+      if(x2 < 0)
+        x2 = 0;
       
       if(x2 - x1 < 0)
       {

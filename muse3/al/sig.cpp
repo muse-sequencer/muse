@@ -79,14 +79,14 @@ SigList::~SigList()
 void SigList::add(unsigned tick, const TimeSignature& s)
       {
       if (s.z == 0 || s.n == 0) {
-            printf("illegal signature %d/%d\n", s.z, s.n);
+            fprintf(stderr, "illegal signature %d/%d\n", s.z, s.n);
             return;
             }
       tick = raster1(tick, 0);
       iSigEvent e = upper_bound(tick);
       if(e == end())
       {
-        printf("SigList::add Signal not found tick:%d\n", tick);
+        fprintf(stderr, "SigList::add Signal not found tick:%d\n", tick);
         return;
       }
       
@@ -172,13 +172,13 @@ void SigList::del(unsigned tick)
 // printf("SigList::del(%d)\n", tick);
       iSigEvent e = find(tick);
       if (e == end()) {
-            printf("SigList::del(%d): not found\n", tick);
+            fprintf(stderr, "SigList::del(%d): not found\n", tick);
             return;
             }
       iSigEvent ne = e;
       ++ne;
       if (ne == end()) {
-            printf("SigList::del() next event not found!\n");
+            fprintf(stderr, "SigList::del() next event not found!\n");
             return;
             }
       ne->second->sig = e->second->sig;
@@ -192,7 +192,7 @@ void SigList::del(iSigEvent e, bool do_normalize)
       iSigEvent ne = e;
       ++ne;
       if (ne == end()) {
-            printf("SigList::del() HALLO\n");
+            fprintf(stderr, "SigList::del() HALLO\n");
             return;
             }
       ne->second->sig = e->second->sig;
@@ -210,7 +210,7 @@ void SigList::delOperation(unsigned tick, MusECore::PendingOperationList& ops)
 {
   iSigEvent e = find(tick);
   if (e == end()) {
-        printf("SigList::delOperation tick:%d not found\n", tick);
+        fprintf(stderr, "SigList::delOperation tick:%d not found\n", tick);
         return;
         }
   MusECore::PendingOperationItem poi(this, e, MusECore::PendingOperationItem::DeleteSig);
@@ -257,9 +257,9 @@ void SigList::normalize()
 
 void SigList::dump() const
       {
-      printf("\nSigList:\n");
+      fprintf(stderr, "\nSigList:\n");
       for (ciSigEvent i = begin(); i != end(); ++i) {
-            printf("%6d %06d Bar %3d %02d/%d\n",
+            fprintf(stderr, "%6d %06d Bar %3d %02d/%d\n",
                i->first, i->second->tick,
                i->second->bar, i->second->sig.z, i->second->sig.n);
             }
@@ -291,7 +291,7 @@ int SigList::ticksMeasure(unsigned tick) const
       {
       ciSigEvent i = upper_bound(tick);
       if (i == end()) {
-            printf("ticksMeasure: not found %d\n", tick);
+            fprintf(stderr, "ticksMeasure: not found %d\n", tick);
             return 0;
             }
       return ticksMeasure(i->second->sig);
@@ -306,7 +306,7 @@ int SigList::ticksBeat(unsigned tick) const
       ciSigEvent i = upper_bound(tick);
       if(i == end())
       {
-        printf("SigList::ticksBeat event not found! tick:%d\n", tick);
+        fprintf(stderr, "SigList::ticksBeat event not found! tick:%d\n", tick);
         return 0;
       }
       return ticks_beat(i->second->sig.n);
@@ -339,7 +339,7 @@ TimeSignature SigList::timesig(unsigned tick) const
       {
       ciSigEvent i = upper_bound(tick);
       if (i == end()) {
-            printf("timesig(%d): not found\n", tick);
+            fprintf(stderr, "timesig(%d): not found\n", tick);
             return TimeSignature(4,4);
             }
       return i->second->sig;
@@ -349,7 +349,7 @@ void SigList::timesig(unsigned tick, int& z, int& n) const
       {
       ciSigEvent i = upper_bound(tick);
       if (i == end()) {
-            printf("timesig(%d): not found\n", tick);
+            fprintf(stderr, "timesig(%d): not found\n", tick);
             z = 4;
             n = 4;
             }
@@ -417,7 +417,7 @@ unsigned SigList::raster(unsigned t, int raster) const
             return t;
       ciSigEvent e = upper_bound(t);
       if (e == end()) {
-            printf("SigList::raster(%x,)\n", t);
+            fprintf(stderr, "SigList::raster(%x,)\n", t);
             return t;
             }
       int delta  = t - e->second->tick;
@@ -441,7 +441,7 @@ unsigned SigList::raster1(unsigned t, int raster) const
       ciSigEvent e = upper_bound(t);
       if(e == end())
       {
-        printf("SigList::raster1 event not found tick:%d\n", t);
+        fprintf(stderr, "SigList::raster1 event not found tick:%d\n", t);
         return t;
       }
 
@@ -466,7 +466,7 @@ unsigned SigList::raster2(unsigned t, int raster) const
       ciSigEvent e = upper_bound(t);
       if(e == end())
       {
-        printf("SigList::raster2 event not found tick:%d\n", t);
+        fprintf(stderr, "SigList::raster2 event not found tick:%d\n", t);
         //return 0;
         return t;
       }
@@ -490,7 +490,7 @@ int SigList::rasterStep(unsigned t, int raster) const
             ciSigEvent e = upper_bound(t);
             if(e == end())
             {
-              printf("SigList::rasterStep event not found tick:%d\n", t);
+              fprintf(stderr, "SigList::rasterStep event not found tick:%d\n", t);
               //return 0;
               return raster;
             }

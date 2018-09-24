@@ -109,11 +109,14 @@ class WaveCanvas : public EventCanvas {
       virtual QPoint raster(const QPoint&) const;
 // REMOVE Tim. citem. Removed.
 //       void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
-      void drawParts(QPainter&, const QRect&, bool do_cur_part);
+// REMOVE Tim. citem. Changed.
+//       void drawParts(QPainter&, const QRect&, bool do_cur_part);
+      void drawParts(QPainter&, bool /*do_cur_part*/, const QRect&, const QRegion& = QRegion());
   
 // REMOVE Tim. citem. Changed.
 //       virtual void draw(QPainter&, const QRect& rect);
-      virtual void draw(QPainter&, const QRect& rect, const QRegion& = QRegion());
+// REMOVE Tim. citem. Removed.
+//       virtual void draw(QPainter&, const QRect& rect, const QRegion& = QRegion());
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void wheelEvent(QWheelEvent*);
       virtual bool mousePress(QMouseEvent*);
@@ -124,6 +127,9 @@ class WaveCanvas : public EventCanvas {
       virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
 // REMOVE Tim. citem. Changed.
 //       void drawTopItem(QPainter& p, const QRect& rect);
+// REMOVE Tim. citem. Added.
+      void drawMarkers(QPainter& p, const QRect& mr, const QRegion& mrg = QRegion());
+      
       void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion());
 // REMOVE Tim. citem. Changed.
 //       virtual void drawMoving(QPainter&, const CItem*, const QRect&);

@@ -512,16 +512,151 @@ Piano::Piano(QWidget* parent, int ymag, MidiEditor* editor)
       button = Qt::NoButton;
       }
 
+// REMOVE Tim. citem. Changed.
+// //---------------------------------------------------------
+// //   draw
+// //---------------------------------------------------------
+// 
+// // REMOVE Tim. citem. Changed.
+// // void Piano::draw(QPainter& p, const QRect& r)
+// void Piano::draw(QPainter& p, const QRect& r, const QRegion&)
+//       {
+//       QPoint offset(0, KH*2);
+//       p.drawTiledPixmap(r, *octave, r.topLeft()+offset);
+// 
+//       if (_curSelectedPitch != -1 && _curSelectedPitch != curPitch)
+//       {
+//         int y = pitch2y(_curSelectedPitch);
+//         QPixmap* pm;
+//         switch(_curSelectedPitch % 12) {
+//               case 0:
+//               case 5:
+//                     pm = mk7;
+//                     break;
+//               case 2:
+//               case 7:
+//               case 9:
+//                     pm = mk6;
+//                     break;
+//               case 4:
+//               case 11:
+//                     pm = mk5;
+//                     break;
+//               default:
+//                     pm = mk8;
+//                     break;
+//               }
+//         p.drawPixmap(0, y, *pm);
+//       }
+//       
+//       if (curPitch != -1)
+//       {
+//         int y = pitch2y(curPitch);
+//         QPixmap* pm;
+//         switch(curPitch % 12) {
+//               case 0:
+//               case 5:
+//                     pm = mk3;
+//                     break;
+//               case 2:
+//               case 7:
+//               case 9:
+//                     pm = mk2;
+//                     break;
+//               case 4:
+//               case 11:
+//                     pm = mk1;
+//                     break;
+//               default:
+//                     pm = mk4;
+//                     break;
+//               }
+//         p.drawPixmap(0, y, *pm);
+//       }
+//       
+//       // draw C notes
+//       for (int drawKey = 0; drawKey < 9;drawKey++) {
+//         int octaveSize=91;
+// 
+//         int drawY = octaveSize * drawKey + 82 - KH*2;
+//         if (drawY > r.y() && drawY < r.y() + r.height()) {
+//           p.drawPixmap(0,drawY,*c_keys[drawKey]);
+//         }
+//       }
+//       
+// 
+//       if(!_midiEditor)
+//         return;
+//       MusECore::PartList* part_list = _midiEditor->parts();
+//       MusECore::Part* cur_part = _midiEditor->curCanvasPart();
+//       if(!part_list || !cur_part || !cur_part->track()->isMidiTrack())
+//         return;
+//       
+//       MusECore::MidiTrack* track = (MusECore::MidiTrack*)(cur_part->track());
+//       int channel      = track->outChannel();
+//       MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
+//       MusECore::MidiCtrlValListList* cll = port->controller();
+//       const int min = channel << 24;
+//       const int max = min + 0x1000000;
+// 
+//       for(MusECore::ciMidiCtrlValList it = cll->lower_bound(min); it != cll->lower_bound(max); ++it)
+//       {
+//         MusECore::MidiCtrlValList* cl = it->second;
+//         MusECore::MidiController* c   = port->midiController(cl->num());
+//         if(!c->isPerNoteController())
+//           continue;
+//         int cnum = c->num();
+//         int num = cl->num();
+//         int pitch = num & 0x7f;
+//         bool used = false;
+//         for (MusECore::ciEvent ie = cur_part->events().begin(); ie != cur_part->events().end(); ++ie)
+//         {
+//           MusECore::Event e = ie->second;
+//           if(e.type() != MusECore::Controller)
+//             continue;
+//           int ctl_num = e.dataA();
+//           if((ctl_num | 0xff) == cnum && (ctl_num & 0x7f) == pitch)
+//           {
+//             used = true;
+//             break;
+//           }
+//         }
+// 
+//         bool off = cl->hwVal() == MusECore::CTRL_VAL_UNKNOWN;  // Does it have a value or is it 'off'?
+// 
+//         int y = pitch2y(pitch) + 3;
+//         if(used)
+//         {
+//           if(off)
+//             p.drawPixmap(0, y, 6, 6, *greendot12x12Icon);
+//           else
+//             p.drawPixmap(0, y, 6, 6, *orangedot12x12Icon);
+//         }
+//         else
+//         {
+//           if(off)
+//             p.drawPixmap(0, y, 6, 6, *graydot12x12Icon);
+//           else
+//             p.drawPixmap(0, y, 6, 6, *bluedot12x12Icon);
+//         }
+//       }
+//       
+//       }
+
 //---------------------------------------------------------
 //   draw
 //---------------------------------------------------------
 
 // REMOVE Tim. citem. Changed.
 // void Piano::draw(QPainter& p, const QRect& r)
-void Piano::draw(QPainter& p, const QRect& r, const QRegion&)
+void Piano::draw(QPainter& p, const QRect& mr, const QRegion&)
       {
+      // FIXME: For some reason need the expansion otherwise drawing
+      //        artifacts (incomplete drawing). Can't figure out why.
+      const QRect ur = mapDev(mr).adjusted(0, -4, 0, 4);
+      
       QPoint offset(0, KH*2);
-      p.drawTiledPixmap(r, *octave, r.topLeft()+offset);
+      p.drawTiledPixmap(ur, *octave, ur.topLeft()+offset);
 
       if (_curSelectedPitch != -1 && _curSelectedPitch != curPitch)
       {
@@ -578,7 +713,7 @@ void Piano::draw(QPainter& p, const QRect& r, const QRegion&)
         int octaveSize=91;
 
         int drawY = octaveSize * drawKey + 82 - KH*2;
-        if (drawY > r.y() && drawY < r.y() + r.height()) {
+        if (drawY > ur.y() && drawY < ur.y() + ur.height()) {
           p.drawPixmap(0,drawY,*c_keys[drawKey]);
         }
       }
@@ -641,7 +776,7 @@ void Piano::draw(QPainter& p, const QRect& r, const QRegion&)
       }
       
       }
-
+      
 //---------------------------------------------------------
 //   pitch2y
 //---------------------------------------------------------

@@ -167,11 +167,15 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
             setCursor(QCursor(Qt::ArrowCursor));
       
       int x = event->x();
-      if (waveMode)
-            x = MusEGlobal::tempomap.frame2tick(x);
-      x = AL::sigmap.raster(x, *raster);
       if (x < 0)
             x = 0;
+      if (waveMode)
+// REMOVE Tim. citem. Changed.
+//             x = MusEGlobal::tempomap.frame2tick(x);
+            // Normally frame to tick methods round down. But here we need it to 'snap'
+            //  the frame from either side of a tick to the tick. So round to nearest.
+            x = MusEGlobal::tempomap.frame2tick(x, 0, MusECore::LargeIntRoundNearest);
+      x = AL::sigmap.raster(x, *raster);
       //printf("MTScale::viewMouseMoveEvent\n");  
       emit timeChanged(x);
       int i;
@@ -605,9 +609,10 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
         //drawTickRaster_new(p, rect.x(), rect.y(), rect.width(), rect.height(), noDivisors,
         //drawTickRaster_new(p, devToVirt(QRect(r.x(), y + 1, r.width(), h)), rg, 0,
 //         drawTickRaster_new(p, devToVirt(QRect(x, y12 + 1, w, h)), rg, 0,
-        QRegion vrg;
-        devToVirt(mrg, vrg);
-        drawTickRaster(p, devToVirt(QRect(mr.x(), my13, mr.width(), mh_m12)), vrg, 0,
+//         QRegion vrg;
+//         devToVirt(mrg, vrg);
+//         drawTickRaster(p, devToVirt(QRect(mr.x(), my13, mr.width(), mh_m12)), vrg, 0,
+        drawTickRaster(p, QRect(mr.x(), my13, mr.width(), mh_m12), mrg, 0,
                          waveMode, false, true,
                          MusEGlobal::config.rulerFg, 
                          MusEGlobal::config.rulerFg,

@@ -590,7 +590,7 @@ void MidiSyncContainer::mmcInput(int port, const unsigned char* p, int n)
                         int type = (p[6] >> 5) & 3;
                         // MTC time resolution is less than frame resolution. 
                         // Round up so that the reciprocal function (frame to time) matches value for value.
-                        unsigned mmcPos = muse_multiply_64_div_64_to_64(mtc.timeUS(type), MusEGlobal::sampleRate, 1000000UL, true);
+                        unsigned mmcPos = muse_multiply_64_div_64_to_64(mtc.timeUS(type), MusEGlobal::sampleRate, 1000000UL, LargeIntRoundUp);
 
                         Pos tp(mmcPos, false);
                         MusEGlobal::audioDevice->seekTransport(tp);
@@ -736,7 +736,7 @@ void MidiSyncContainer::mtcInputFull(int port, const unsigned char* p, int n)
         {
           // MTC time resolution is less than frame resolution. 
           // Round up so that the reciprocal function (frame to time) matches value for value.
-          const unsigned t_frame = muse_multiply_64_div_64_to_64(MusEGlobal::mtcCurTime.timeUS(type), MusEGlobal::sampleRate, 1000000UL, true);
+          const unsigned t_frame = muse_multiply_64_div_64_to_64(MusEGlobal::mtcCurTime.timeUS(type), MusEGlobal::sampleRate, 1000000UL, LargeIntRoundUp);
           
           Pos tp(t_frame, false);
           MusEGlobal::audioDevice->seekTransport(tp);

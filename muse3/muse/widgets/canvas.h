@@ -147,7 +147,7 @@ class Canvas : public View {
       virtual void viewMouseReleaseEvent(QMouseEvent*);
 // REMOVE Tim. citem. Changed.
 //       virtual void draw(QPainter&, const QRect& rect);
-      virtual void draw(QPainter&, const QRect& rect, const QRegion& = QRegion());
+      virtual void draw(QPainter& p, const QRect& mr, const QRegion& mrg = QRegion());
       virtual void wheelEvent(QWheelEvent* e);
 
       virtual void keyPress(QKeyEvent*);
@@ -155,6 +155,8 @@ class Canvas : public View {
       virtual bool mousePress(QMouseEvent*) { return true; }
       virtual void mouseMove(QMouseEvent* event) = 0;
       virtual void mouseRelease(const QPoint&) {}
+// REMOVE Tim. citem. Added.
+      virtual void drawParts(QPainter&, bool /*do_cur_part*/, const QRect&, const QRegion& = QRegion()) { }
 // REMOVE Tim. citem. Changed.
 //       virtual void drawCanvas(QPainter&, const QRect&) = 0;
       virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion()) = 0;
@@ -162,6 +164,9 @@ class Canvas : public View {
 //       virtual void drawTopItem(QPainter& p, const QRect& rect) = 0;
       virtual void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion()) = 0;
 
+// REMOVE Tim. citem. Added.
+      virtual void drawMarkers(QPainter& p, const QRect& mr, const QRegion& mrg = QRegion());
+      
 // REMOVE Tim. citem. Changed.
 //       virtual void drawItem(QPainter&, const CItem*, const QRect&) = 0;
       virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion()) = 0;

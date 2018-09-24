@@ -1770,40 +1770,876 @@ void PartCanvas::keyRelease(QKeyEvent* event)
   Canvas::keyRelease(event);
 }
 
+// REMOVE Tim. citem. Changed.
+// //---------------------------------------------------------
+// //   drawPart
+// //    draws a part
+// //---------------------------------------------------------
+// 
+// // REMOVE Tim. citem. Changed.
+// // void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
+// void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect, const QRegion&)
+//       {
+//       int from   = rect.x();
+//       int to     = from + rect.width();
+// 
+//       MusECore::Part* part = ((NPart*)item)->part();
+//       int pTick  = part->tick();
+//       from      -= pTick;
+//       to        -= pTick;
+//       if(from < 0)
+//         from = 0;
+//       if((unsigned int)to > part->lenTick())
+//         to = part->lenTick();
+// 
+//       QBrush brush;
+// 
+//       QRect r    = item->bbox();
+//       // Compensation required for two pixel wide border. FIXME Prefer to do this after the map, but r is needed below.
+//       r.moveTop(r.y() + rmapyDev(1));
+//       //QRect rr = p.transform().mapRect(r);    // Gives inconsistent positions. Source shows wrong operation for our needs.
+//       QRect rr = map(r);                        // Use our own map instead.
+// 
+//       QRect mr = map(rect);
+// 
+//       // Item bounding box x is in tick coordinates, same as rectangle.
+//       if((rr & mr).isNull())
+//         return;
+// 
+//       const bool item_selected = item->isSelected();
+//       p.setWorldMatrixEnabled(false);
+// 
+//       // NOTE: Optimization: For each item, hasHiddenEvents() is called once in Canvas::draw(), and we use cachedHasHiddenEvents().
+//       // Not used for now.
+//       //int het = part->cachedHasHiddenEvents(); DELETETHIS or FIXME or whatever?
+//       int het = part->hasHiddenEvents();
+// 
+//       int xs_0 = rr.x();
+//       int xe_0 = xs_0 + rr.width();
+//       int xs_1 = xs_0 + 1;
+//       if(xs_1 > xe_0)
+//         xs_1 = xe_0;
+//       int xs_2 = xs_0 + 2;
+//       if(xs_2 > xe_0)
+//         xs_2 = xe_0;
+//       int xs_j = xs_0 + 8;
+//       if(xs_j > xe_0)
+//         xs_j = xe_0;
+// 
+//       int xe_1 = xe_0 - 1;
+//       if(xe_1 < xs_0)
+//         xe_1 = xs_0;
+//       int xe_2 = xe_0 - 2;
+//       if(xe_2 < xs_0)
+//         xe_2 = xs_0;
+//       int xe_j = xe_0 - 8;
+//       if(xe_j < xs_0)
+//         xe_j = xs_0;
+// 
+//       int ys_0 = rr.y();
+//       int ye_0 = ys_0 + rr.height();
+//       int ys_1 = ys_0 + 1;
+//       if(ys_1 > ye_0)
+//         ys_1 = ye_0;
+//       int ys_2 = ys_0 + 2;
+//       if(ys_2 > ye_0)
+//         ys_2 = ye_0;
+//       int ys_3 = ys_0 + 3;
+//       if(ys_3 > ye_0)
+//         ys_3 = ye_0;
+// 
+//       int ye_1 = ye_0 - 1;
+//       if(ye_1 < ys_0)
+//         ye_1 = ys_0;
+//       int ye_2 = ye_0 - 2;
+//       if(ye_2 < ys_0)
+//         ye_2 = ys_0;
+// 
+//       int mrxs_0 = mr.x();
+//       int mrxe_0 = mrxs_0 + mr.width();
+//       bool lbt = ((NPart*)item)->leftBorderTouches;
+//       bool rbt = ((NPart*)item)->rightBorderTouches;
+//       int lbx = lbt?xs_1:xs_0;
+//       int rbx = rbt?xe_1:xe_0;
+//       int lbx_c = lbx < mrxs_0 ? mrxs_0 : lbx;
+//       int rbx_c = rbx > mrxe_0 ? mrxe_0 : rbx;
+// 
+//       int cidx = part->colorIndex();
+//       if (item->isMoving())
+//       {
+//             QColor c(Qt::gray);
+//             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+//             QLinearGradient gradient(rr.topLeft(), rr.bottomLeft());
+//             gradient.setColorAt(0, c);
+//             gradient.setColorAt(1, c.darker());
+//             brush = QBrush(gradient);
+//       }
+//       else
+// // REMOVE Tim. citem. Changed.
+// //       if (part->selected())
+//       if (item_selected)
+//       {
+//           QColor c(Qt::black);
+//           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+//           QLinearGradient gradient(rr.topLeft(), rr.bottomLeft());
+//           // Use a colour only about 20% lighter than black, rather than the 50% we use in MusECore::gGradientFromQColor
+//           //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
+//           //c.setRgba(64, 64, 64, c.alpha());
+//           gradient.setColorAt(0, QColor(51, 51, 51, MusEGlobal::config.globalAlphaBlend));
+//           gradient.setColorAt(1, c);
+//           brush = QBrush(gradient);
+//       }
+//       else
+//       if (part->mute())
+//       {
+//             QColor c(Qt::white);
+//             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+//             QLinearGradient gradient(rr.topLeft(), rr.bottomLeft());
+//             gradient.setColorAt(0, c);
+//             gradient.setColorAt(1, c.darker());
+//             brush = QBrush(gradient);
+//       }
+//       else
+//       {
+//             QColor c(MusEGlobal::config.partColors[cidx]);
+//             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+//             brush = QBrush(MusECore::gGradientFromQColor(c, rr.topLeft(), rr.bottomLeft()));
+//       }
+// 
+//       int h = rr.height();
+//       double s = double(h) / 4.0;
+//       int y0 = ys_0;
+//       int y2 = y0 + lrint(s * 2.0);
+//       int y4 = y0 + h;
+// 
+//       QPoint points[8];
+//       int pts;
+// 
+//       // Fill the part rectangles, accounting for hidden events by using 'jagged' edges...
+// 
+//       p.setBrush(brush);
+//       p.setPen(Qt::NoPen);
+// 
+//       if(het)
+//       {
+//         // TODO: Make this part respect the requested drawing rectangle (rr & mr), for speed !
+// 
+//         pts = 0;
+//         if(het == (MusECore::Part::LeftEventsHidden | MusECore::Part::RightEventsHidden))
+//         {
+//           points[pts++] = QPoint(xs_0, y0);
+//           points[pts++] = QPoint(xe_0, y0);
+//           points[pts++] = QPoint(xe_j, y2);
+//           points[pts++] = QPoint(xe_0, y4);
+//           points[pts++] = QPoint(xs_0, y4);
+//           points[pts++] = QPoint(xs_j, y2);
+// 
+//           p.drawConvexPolygon(points, pts);   // Help says may be faster on some platforms (X11).
+//         }
+//         else
+//         if(het == MusECore::Part::LeftEventsHidden)
+//         {
+//           points[pts++] = QPoint(xs_0, y0);
+//           points[pts++] = QPoint(xe_0, y0);
+//           points[pts++] = QPoint(xe_0, y4);
+//           points[pts++] = QPoint(xs_0, y4);
+//           points[pts++] = QPoint(xs_j, y2);
+// 
+//           p.drawConvexPolygon(points, pts);
+//         }
+//         else
+//         if(het == MusECore::Part::RightEventsHidden)
+//         {
+//           points[pts++] = QPoint(xs_0, y0);
+//           points[pts++] = QPoint(xe_0, y0);
+//           points[pts++] = QPoint(xe_j, y2);
+//           points[pts++] = QPoint(xe_0, y4);
+//           points[pts++] = QPoint(xs_0, y4);
+// 
+//           p.drawConvexPolygon(points, pts);
+//         }
+// 
+//         // Draw remaining 'hidden events' decorations with 'jagged' edges...
+// 
+//         int part_r, part_g, part_b, brightness, color_brightness;
+//         MusEGlobal::config.partColors[cidx].getRgb(&part_r, &part_g, &part_b);
+//         brightness =  part_r*29 + part_g*59 + part_b*12;
+// // REMOVE Tim. citem. Changed.
+// //         if ((brightness >= 12000 && !part->selected()))
+//         if ((brightness >= 12000 && !item_selected))
+//           color_brightness=96; //0;    // too light: use dark color
+//         else
+//           color_brightness=180; //255;   // too dark: use lighter color
+//         QColor c(color_brightness,color_brightness,color_brightness, MusEGlobal::config.globalAlphaBlend);
+//         p.setBrush(QBrush(MusECore::gGradientFromQColor(c, rr.topLeft(), rr.bottomLeft())));
+//         if(het & MusECore::Part::RightEventsHidden)
+//         {
+//           pts = 0;
+//           points[pts++] = QPoint(xe_0, y0);
+//           points[pts++] = QPoint(xe_0, y4);
+//           points[pts++] = QPoint(xe_j, y2);
+// 
+//           p.drawConvexPolygon(points, pts);
+//         }
+//         if(het & MusECore::Part::LeftEventsHidden)
+//         {
+//           pts = 0;
+//           points[pts++] = QPoint(xs_0, y0);
+//           points[pts++] = QPoint(xs_j, y2);
+//           points[pts++] = QPoint(xs_0, y4);
+// 
+//           p.drawConvexPolygon(points, pts);
+//         }
+//       }
+//       else
+//       {
+//         p.fillRect(rr & mr, brush);  // Respect the requested drawing rectangle. Gives speed boost!
+//       }
+// 
+//       // Draw a pattern brush on muted parts...
+//       if(part->mute())
+//       {
+//         p.setPen(Qt::NoPen);
+//         brush.setStyle(Qt::Dense7Pattern);
+// 
+//         p.fillRect(rr & mr, brush);   // Respect the requested drawing rectangle. Gives speed boost!
+//       }
+// 
+//       p.setWorldMatrixEnabled(true);
+// 
+//       MusECore::MidiPart* mp = 0;
+//       MusECore::WavePart* wp = 0;
+//       MusECore::Track::TrackType type = part->track()->type();
+//       if (type == MusECore::Track::WAVE)
+//             wp =(MusECore::WavePart*)part;
+//       else
+//             mp = (MusECore::MidiPart*)part;
+// 
+//       if (wp)
+//           drawWavePart(p, rect, wp, r);
+//       else if (mp)
+// // REMOVE Tim. citem. Changed.
+// //           drawMidiPart(p, rect, mp, r, from, to);
+//           drawMidiPart(p, rect, mp, r, from, to, item_selected);
+// 
+//       p.setWorldMatrixEnabled(false);
+// 
+//         //
+//         // Now draw the borders, using custom segments...
+//         //
+// 
+//         p.setBrush(Qt::NoBrush);
+// 
+//         QColor pc((part->mute() || item->isMoving())? Qt::white : MusEGlobal::config.partColors[cidx]);
+//         QPen penSelect1H(pc);
+//         QPen penSelect2H(pc, 2.0);
+//         QPen penSelect1V(pc);
+//         QPen penSelect2V(pc, 2.0);
+//         penSelect1H.setCosmetic(true);
+//         penSelect2H.setCosmetic(true);
+//         penSelect1V.setCosmetic(true);
+//         penSelect2V.setCosmetic(true);
+// 
+//         pc = Qt::black;
+//         QPen penNormal1H(pc);
+//         QPen penNormal2H(pc, 2.0);
+//         QPen penNormal1V(pc);
+//         QPen penNormal2V(pc, 2.0);
+//         penNormal1H.setCosmetic(true);
+//         penNormal2H.setCosmetic(true);
+//         penNormal1V.setCosmetic(true);
+//         penNormal2V.setCosmetic(true);
+// 
+//         QVector<qreal> customDashPattern;
+//         if(part->hasClones())
+//         {
+//           customDashPattern << 4.0 << 6.0;
+//           penSelect1H.setDashPattern(customDashPattern);
+//           penNormal1H.setDashPattern(customDashPattern);
+//           penSelect1V.setDashPattern(customDashPattern);
+//           penNormal1V.setDashPattern(customDashPattern);
+//           penSelect1V.setDashOffset(2.0);
+//           penNormal1V.setDashOffset(2.0);
+//           //penHidden1.setDashPattern(customDashPattern);
+//           customDashPattern.clear();
+//           customDashPattern << 2.0 << 3.0;
+//           penSelect2H.setDashPattern(customDashPattern);
+//           penNormal2H.setDashPattern(customDashPattern);
+//           penSelect2V.setDashPattern(customDashPattern);
+//           penNormal2V.setDashPattern(customDashPattern);
+//           penSelect2V.setDashOffset(1.0);
+//           penNormal2V.setDashOffset(1.0);
+//           //penHidden2.setDashPattern(customDashPattern);
+// 
+//           // FIXME: Some shifting still going on. Values likely not quite right here.
+//           int xdiff = mrxs_0 - lbx;
+//           if(xdiff > 0)
+//           {
+//             int doff = xdiff % 10;
+//             penSelect1H.setDashOffset(doff);
+//             penNormal1H.setDashOffset(doff);
+//             doff = xdiff % 5;
+//             penSelect2H.setDashOffset(doff);
+//             penNormal2H.setDashOffset(doff);
+//           }
+//         }
+// 
+//         if(((NPart*)item)->rightBorderTouches)
+// //           p.setPen(part->selected() ? penSelect1V : penNormal1V);
+//           p.setPen(item_selected ? penSelect1V : penNormal1V);
+//         else
+// //           p.setPen(part->selected() ? penSelect2V : penNormal2V);
+//           p.setPen(item_selected ? penSelect2V : penNormal2V);
+// 
+//         if(rbx >= mrxs_0 && rbx <= mrxe_0)  // Respect the requested drawing rectangle. Gives speed boost!
+//         {
+//           QLine l2(rbx, ys_0, rbx, ye_0);            // Right
+//           p.drawLine(l2);        // Right line
+//         }
+// 
+//         if(((NPart*)item)->leftBorderTouches)
+// //           p.setPen(part->selected() ? penSelect1V : penNormal1V);
+//           p.setPen(item_selected ? penSelect1V : penNormal1V);
+//         else
+// //           p.setPen(part->selected() ? penSelect2V : penNormal2V);
+//           p.setPen(item_selected ? penSelect2V : penNormal2V);
+// 
+//         if(xs_0 >= mrxs_0 && xs_0 <= mrxe_0)
+//         {
+//           QLine l4(xs_0, ys_0, xs_0, ye_0);            // Left
+//           p.drawLine(l4);        //  Left line
+//         }
+// 
+// //         p.setPen(part->selected() ? penSelect2H : penNormal2H);
+//         p.setPen(item_selected ? penSelect2H : penNormal2H);
+// 
+//         // Respect the requested drawing rectangle. Gives speed boost!
+//         QLine l1(lbx_c, ys_0, rbx_c, ys_0);
+//         p.drawLine(l1);  // Top line
+//         QLine l3(lbx_c, ye_0, rbx_c, ye_0);
+//         p.drawLine(l3);  // Bottom line
+// 
+//       if (MusEGlobal::config.canvasShowPartType & 1) {     // show names
+//             // draw name
+//             // FN: Set text color depending on part color (black / white)
+//             int part_r, part_g, part_b, brightness;
+//             // Since we'll draw the text on the bottom (to accommodate drum 'slivers'),
+//             //  get the lowest colour in the gradient used to draw the part.
+//             QRect tr = rr;
+//             tr.setX(tr.x() + 3);
+//             MusECore::gGradientFromQColor(MusEGlobal::config.partColors[cidx], tr.topLeft(), tr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
+//             brightness =  part_r*29 + part_g*59 + part_b*12;
+// //             bool rev = brightness >= 12000 && !part->selected();
+//             bool rev = brightness >= 12000 && !item_selected;
+//             p.setFont(MusEGlobal::config.fonts[4]);
+//             if (rev)
+//               p.setPen(Qt::white);
+//             else
+//               p.setPen(Qt::black);
+//             p.drawText(tr.translated(1, 1), Qt::AlignBottom|Qt::AlignLeft, part->name());
+//             if (rev)
+//               p.setPen(Qt::black);
+//             else
+//               p.setPen(Qt::white);
+//             p.drawText(tr, Qt::AlignBottom|Qt::AlignLeft, part->name());
+//             }
+// 
+//       p.setWorldMatrixEnabled(true);
+//       }
+
+
+
+
+
+// //---------------------------------------------------------
+// //   drawPart
+// //    draws a part
+// //---------------------------------------------------------
+// 
+// void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& vr, const QRegion&)
+//       {
+//       int vfrom   = vr.x();
+//       int vto     = vfrom + vr.width();
+// 
+//       MusECore::Part* part = ((NPart*)item)->part();
+//       int pTick  = part->tick();
+//       vfrom      -= pTick;
+//       vto        -= pTick;
+//       if(vfrom < 0)
+//         vfrom = 0;
+//       if((unsigned int)vto > part->lenTick())
+//         vto = part->lenTick();
+// 
+//       const int vw1 = rmapxDev(1);
+//       const int vh1 = rmapyDev(1);
+//       const int vh2 = rmapyDev(2);
+//       
+//       QBrush brush;
+// 
+//       // This is the actual item drawing rectangle, ignoring any borders we place on it.
+//       QRect vbbr    = item->bbox();
+//       // Compensation required for our two-pixel wide border. This is due to how Qt draws borders with width > 1.
+//       // For example if our top is at y=10, Qt will draw the top border starting at y=9.
+//       // Thus we need to make our top y=11 so that it draws starting at y=10. Same with bottom. Just move rectangle down.
+//       // The left and right edges do NOT need adjustment here. // FIXME Prefer to do this after the map, but vbbr is needed below.
+//       vbbr.moveTop(vbbr.y() + vh1);
+//       
+//       //QRect rr = p.transform().mapRect(r);    // Gives inconsistent positions. Source shows wrong operation for our needs.
+//       QRect mbbr = map(vbbr);                        // Use our own map instead.
+// 
+//       // This is the update comparison rectangle. This would normally be the same as the item's bounding rectangle
+//       //  but in this case we have a two-pixel wide border. To accommodate for our border, expand the left edge
+//       //  left by one, the right edge right by one, and the bottom edge down by TWO. This way we catch the full
+//       //  necessary drawing rectangle when checking the requested update rectangle.
+//       QRect vbbr_exp = item->bbox().adjusted(rmapxDev(-1), 0, vw1, vh2);
+//       
+//       QRect mr = map(vr);
+// 
+//       // REMOVE Tim. citem. Added.
+// //       fprintf(stderr, "PartCanvas::drawItem: vr x:%d y:%d w:%d h:%d vbbr x:%d y:%d w:%d h:%d"
+// //                        " mr x:%d y:%d w:%d h:%d mbbr x:%d y:%d w:%d h:%d vfrom:%d vto:%d\n",
+// //               vr.x(), vr.y(), vr.width(), vr.height(),
+// //               vbbr.x(), vbbr.y(), vbbr.width(), vbbr.height(),
+// //               mr.x(), mr.y(), mr.width(), mr.height(),
+// //               mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height(), 
+// //               vfrom, vto);
+// //       fprintf(stderr, "PartCanvas::drawItem: vr x:%d y:%d w:%d h:%d vbbr_exp x:%d y:%d w:%d h:%d"
+// //                        " mr x:%d y:%d w:%d h:%d mbbr x:%d y:%d w:%d h:%d vfrom:%d vto:%d\n",
+// //               vr.x(), vr.y(), vr.width(), vr.height(),
+// //               vbbr_exp.x(), vbbr_exp.y(), vbbr_exp.width(), vbbr_exp.height(),
+// //               mr.x(), mr.y(), mr.width(), mr.height(),
+// //               mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height(), 
+// //               vfrom, vto);
+//       
+//       // Item bounding box x is in tick coordinates, same as rectangle.
+// //       if((mbbr & mr).isNull())
+// //       if((vbbr & vr).isEmpty())
+//       // Now check intersection of the expanded comparison rectangle and the requested update rectangle.
+//       // Item bounding box x is in tick coordinates, same as rectangle.
+//       if((vbbr_exp & vr).isEmpty())
+//       {
+//         // REMOVE Tim. citem. Added.
+// //         fprintf(stderr, "...vbbr & vr is empty. Returning.\n");
+//         
+//         return;
+//       }
+// 
+//       const bool item_selected = item->isSelected();
+//       p.setWorldMatrixEnabled(false);
+// 
+//       // NOTE: Optimization: For each item, hasHiddenEvents() is called once in Canvas::draw(), and we use cachedHasHiddenEvents().
+//       // Not used for now.
+//       //int het = part->cachedHasHiddenEvents(); DELETETHIS or FIXME or whatever?
+//       int het = part->hasHiddenEvents();
+// 
+//       int xs_0 = mbbr.x();
+//       int xe_0 = xs_0 + mbbr.width();
+//       int xs_1 = xs_0 + 1;
+//       if(xs_1 > xe_0)
+//         xs_1 = xe_0;
+//       int xs_2 = xs_0 + 2;
+//       if(xs_2 > xe_0)
+//         xs_2 = xe_0;
+//       int xs_j = xs_0 + 8;
+//       if(xs_j > xe_0)
+//         xs_j = xe_0;
+// 
+//       int xe_1 = xe_0 - 1;
+//       if(xe_1 < xs_0)
+//         xe_1 = xs_0;
+//       int xe_2 = xe_0 - 2;
+//       if(xe_2 < xs_0)
+//         xe_2 = xs_0;
+//       int xe_j = xe_0 - 8;
+//       if(xe_j < xs_0)
+//         xe_j = xs_0;
+// 
+//       int ys_0 = mbbr.y();
+//       int ye_0 = ys_0 + mbbr.height();
+//       int ys_1 = ys_0 + 1;
+//       if(ys_1 > ye_0)
+//         ys_1 = ye_0;
+//       int ys_2 = ys_0 + 2;
+//       if(ys_2 > ye_0)
+//         ys_2 = ye_0;
+//       int ys_3 = ys_0 + 3;
+//       if(ys_3 > ye_0)
+//         ys_3 = ye_0;
+// 
+//       int ye_1 = ye_0 - 1;
+//       if(ye_1 < ys_0)
+//         ye_1 = ys_0;
+//       int ye_2 = ye_0 - 2;
+//       if(ye_2 < ys_0)
+//         ye_2 = ys_0;
+// 
+//       int mrxs_0 = mr.x();
+//       int mrxe_0 = mrxs_0 + mr.width();
+//       bool lbt = ((NPart*)item)->leftBorderTouches;
+//       bool rbt = ((NPart*)item)->rightBorderTouches;
+//       int lbx = lbt?xs_1:xs_0;
+//       int rbx = rbt?xe_1:xe_0;
+//       int lbx_c = lbx < mrxs_0 ? mrxs_0 : lbx;
+//       int rbx_c = rbx > mrxe_0 ? mrxe_0 : rbx;
+// 
+//       int cidx = part->colorIndex();
+//       if (item->isMoving())
+//       {
+//             QColor c(Qt::gray);
+//             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+//             QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
+//             gradient.setColorAt(0, c);
+//             gradient.setColorAt(1, c.darker());
+//             brush = QBrush(gradient);
+//       }
+//       else
+// // REMOVE Tim. citem. Changed.
+// //       if (part->selected())
+//       if (item_selected)
+//       {
+//           QColor c(Qt::black);
+//           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+//           QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
+//           // Use a colour only about 20% lighter than black, rather than the 50% we use in MusECore::gGradientFromQColor
+//           //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
+//           //c.setRgba(64, 64, 64, c.alpha());
+//           gradient.setColorAt(0, QColor(51, 51, 51, MusEGlobal::config.globalAlphaBlend));
+//           gradient.setColorAt(1, c);
+//           brush = QBrush(gradient);
+//       }
+//       else
+//       if (part->mute())
+//       {
+//             QColor c(Qt::white);
+//             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+//             QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
+//             gradient.setColorAt(0, c);
+//             gradient.setColorAt(1, c.darker());
+//             brush = QBrush(gradient);
+//       }
+//       else
+//       {
+//             QColor c(MusEGlobal::config.partColors[cidx]);
+//             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+//             brush = QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft()));
+//       }
+// 
+//       int h = mbbr.height();
+//       double s = double(h) / 4.0;
+//       int y0 = ys_0;
+//       int y2 = y0 + lrint(s * 2.0);
+//       int y4 = y0 + h;
+// 
+//       QPoint points[8];
+//       int pts;
+// 
+//       // Fill the part rectangles, accounting for hidden events by using 'jagged' edges...
+// 
+//       p.setBrush(brush);
+//       p.setPen(Qt::NoPen);
+// 
+//       if(het)
+//       {
+//         // TODO: Make this part respect the requested drawing rectangle (rr & mr), for speed !
+// 
+//         pts = 0;
+//         if(het == (MusECore::Part::LeftEventsHidden | MusECore::Part::RightEventsHidden))
+//         {
+//           points[pts++] = QPoint(xs_0, y0);
+//           points[pts++] = QPoint(xe_0, y0);
+//           points[pts++] = QPoint(xe_j, y2);
+//           points[pts++] = QPoint(xe_0, y4);
+//           points[pts++] = QPoint(xs_0, y4);
+//           points[pts++] = QPoint(xs_j, y2);
+// 
+//           p.drawConvexPolygon(points, pts);   // Help says may be faster on some platforms (X11).
+//         }
+//         else
+//         if(het == MusECore::Part::LeftEventsHidden)
+//         {
+//           points[pts++] = QPoint(xs_0, y0);
+//           points[pts++] = QPoint(xe_0, y0);
+//           points[pts++] = QPoint(xe_0, y4);
+//           points[pts++] = QPoint(xs_0, y4);
+//           points[pts++] = QPoint(xs_j, y2);
+// 
+//           p.drawConvexPolygon(points, pts);
+//         }
+//         else
+//         if(het == MusECore::Part::RightEventsHidden)
+//         {
+//           points[pts++] = QPoint(xs_0, y0);
+//           points[pts++] = QPoint(xe_0, y0);
+//           points[pts++] = QPoint(xe_j, y2);
+//           points[pts++] = QPoint(xe_0, y4);
+//           points[pts++] = QPoint(xs_0, y4);
+// 
+//           p.drawConvexPolygon(points, pts);
+//         }
+// 
+//         // Draw remaining 'hidden events' decorations with 'jagged' edges...
+// 
+//         int part_r, part_g, part_b, brightness, color_brightness;
+//         MusEGlobal::config.partColors[cidx].getRgb(&part_r, &part_g, &part_b);
+//         brightness =  part_r*29 + part_g*59 + part_b*12;
+// // REMOVE Tim. citem. Changed.
+// //         if ((brightness >= 12000 && !part->selected()))
+//         if ((brightness >= 12000 && !item_selected))
+//           color_brightness=96; //0;    // too light: use dark color
+//         else
+//           color_brightness=180; //255;   // too dark: use lighter color
+//         QColor c(color_brightness,color_brightness,color_brightness, MusEGlobal::config.globalAlphaBlend);
+//         p.setBrush(QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft())));
+//         if(het & MusECore::Part::RightEventsHidden)
+//         {
+//           pts = 0;
+//           points[pts++] = QPoint(xe_0, y0);
+//           points[pts++] = QPoint(xe_0, y4);
+//           points[pts++] = QPoint(xe_j, y2);
+// 
+//           p.drawConvexPolygon(points, pts);
+//         }
+//         if(het & MusECore::Part::LeftEventsHidden)
+//         {
+//           pts = 0;
+//           points[pts++] = QPoint(xs_0, y0);
+//           points[pts++] = QPoint(xs_j, y2);
+//           points[pts++] = QPoint(xs_0, y4);
+// 
+//           p.drawConvexPolygon(points, pts);
+//         }
+//       }
+//       else
+//       {
+//         p.fillRect(mbbr & mr, brush);  // Respect the requested drawing rectangle. Gives speed boost!
+//       }
+// 
+//       // Draw a pattern brush on muted parts...
+//       if(part->mute())
+//       {
+//         p.setPen(Qt::NoPen);
+//         brush.setStyle(Qt::Dense7Pattern);
+// 
+//         p.fillRect(mbbr & mr, brush);   // Respect the requested drawing rectangle. Gives speed boost!
+//       }
+// 
+//       p.setWorldMatrixEnabled(true);
+// 
+//       MusECore::MidiPart* mp = 0;
+//       MusECore::WavePart* wp = 0;
+//       MusECore::Track::TrackType type = part->track()->type();
+//       if (type == MusECore::Track::WAVE)
+//             wp =(MusECore::WavePart*)part;
+//       else
+//             mp = (MusECore::MidiPart*)part;
+// 
+//       if (wp)
+//           drawWavePart(p, vr, wp, vbbr);
+//       else if (mp)
+// // REMOVE Tim. citem. Changed.
+// //           drawMidiPart(p, rect, mp, r, from, to);
+//           drawMidiPart(p, vr, mp, vbbr, vfrom, vto, item_selected);
+// 
+//       p.setWorldMatrixEnabled(false);
+// 
+//         //
+//         // Now draw the borders, using custom segments...
+//         //
+// 
+//         p.setBrush(Qt::NoBrush);
+// 
+//         QColor pc((part->mute() || item->isMoving())? Qt::white : MusEGlobal::config.partColors[cidx]);
+//         QPen penSelect1H(pc);
+//         QPen penSelect2H(pc, 2.0);
+//         QPen penSelect1V(pc);
+//         QPen penSelect2V(pc, 2.0);
+//         penSelect1H.setCosmetic(true);
+//         penSelect2H.setCosmetic(true);
+//         penSelect1V.setCosmetic(true);
+//         penSelect2V.setCosmetic(true);
+// 
+//         pc = Qt::black;
+//         QPen penNormal1H(pc);
+//         QPen penNormal2H(pc, 2.0);
+//         QPen penNormal1V(pc);
+//         QPen penNormal2V(pc, 2.0);
+//         penNormal1H.setCosmetic(true);
+//         penNormal2H.setCosmetic(true);
+//         penNormal1V.setCosmetic(true);
+//         penNormal2V.setCosmetic(true);
+// 
+//         QVector<qreal> customDashPattern;
+//         if(part->hasClones())
+//         {
+//           customDashPattern << 4.0 << 6.0;
+//           penSelect1H.setDashPattern(customDashPattern);
+//           penNormal1H.setDashPattern(customDashPattern);
+//           penSelect1V.setDashPattern(customDashPattern);
+//           penNormal1V.setDashPattern(customDashPattern);
+//           penSelect1V.setDashOffset(2.0);
+//           penNormal1V.setDashOffset(2.0);
+//           //penHidden1.setDashPattern(customDashPattern);
+//           customDashPattern.clear();
+//           customDashPattern << 2.0 << 3.0;
+//           penSelect2H.setDashPattern(customDashPattern);
+//           penNormal2H.setDashPattern(customDashPattern);
+//           penSelect2V.setDashPattern(customDashPattern);
+//           penNormal2V.setDashPattern(customDashPattern);
+//           penSelect2V.setDashOffset(1.0);
+//           penNormal2V.setDashOffset(1.0);
+//           //penHidden2.setDashPattern(customDashPattern);
+// 
+//           // FIXME: Some shifting still going on. Values likely not quite right here.
+//           int xdiff = mrxs_0 - lbx;
+//           if(xdiff > 0)
+//           {
+//             int doff = xdiff % 10;
+//             penSelect1H.setDashOffset(doff);
+//             penNormal1H.setDashOffset(doff);
+//             doff = xdiff % 5;
+//             penSelect2H.setDashOffset(doff);
+//             penNormal2H.setDashOffset(doff);
+//           }
+//         }
+// 
+//         if(((NPart*)item)->rightBorderTouches)
+// //           p.setPen(part->selected() ? penSelect1V : penNormal1V);
+//           p.setPen(item_selected ? penSelect1V : penNormal1V);
+//         else
+// //           p.setPen(part->selected() ? penSelect2V : penNormal2V);
+//           p.setPen(item_selected ? penSelect2V : penNormal2V);
+// 
+//         if(rbx >= mrxs_0 && rbx <= mrxe_0)  // Respect the requested drawing rectangle. Gives speed boost!
+//         {
+//           QLine l2(rbx, ys_0, rbx, ye_0);            // Right
+//           p.drawLine(l2);        // Right line
+//         }
+// 
+//         if(((NPart*)item)->leftBorderTouches)
+// //           p.setPen(part->selected() ? penSelect1V : penNormal1V);
+//           p.setPen(item_selected ? penSelect1V : penNormal1V);
+//         else
+// //           p.setPen(part->selected() ? penSelect2V : penNormal2V);
+//           p.setPen(item_selected ? penSelect2V : penNormal2V);
+// 
+//         if(xs_0 >= mrxs_0 && xs_0 <= mrxe_0)
+//         {
+//           QLine l4(xs_0, ys_0, xs_0, ye_0);            // Left
+//           p.drawLine(l4);        //  Left line
+//         }
+// 
+// //         p.setPen(part->selected() ? penSelect2H : penNormal2H);
+//         p.setPen(item_selected ? penSelect2H : penNormal2H);
+// 
+//         // Respect the requested drawing rectangle. Gives speed boost!
+//         QLine l1(lbx_c, ys_0, rbx_c, ys_0);
+//         p.drawLine(l1);  // Top line
+//         QLine l3(lbx_c, ye_0, rbx_c, ye_0);
+//         p.drawLine(l3);  // Bottom line
+// 
+//       if (MusEGlobal::config.canvasShowPartType & 1) {     // show names
+//             // draw name
+//             // FN: Set text color depending on part color (black / white)
+//             int part_r, part_g, part_b, brightness;
+//             // Since we'll draw the text on the bottom (to accommodate drum 'slivers'),
+//             //  get the lowest colour in the gradient used to draw the part.
+//             QRect tr = mbbr;
+//             tr.setX(tr.x() + 3);
+//             MusECore::gGradientFromQColor(MusEGlobal::config.partColors[cidx], tr.topLeft(), tr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
+//             brightness =  part_r*29 + part_g*59 + part_b*12;
+// //             bool rev = brightness >= 12000 && !part->selected();
+//             bool rev = brightness >= 12000 && !item_selected;
+//             p.setFont(MusEGlobal::config.fonts[4]);
+//             if (rev)
+//               p.setPen(Qt::white);
+//             else
+//               p.setPen(Qt::black);
+//             p.drawText(tr.translated(1, 1), Qt::AlignBottom|Qt::AlignLeft, part->name());
+//             if (rev)
+//               p.setPen(Qt::black);
+//             else
+//               p.setPen(Qt::white);
+//             p.drawText(tr, Qt::AlignBottom|Qt::AlignLeft, part->name());
+//             }
+// 
+//       p.setWorldMatrixEnabled(true);
+//       }
+
+
 //---------------------------------------------------------
 //   drawPart
 //    draws a part
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
-void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect, const QRegion&)
+void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const QRegion&)
       {
-      int from   = rect.x();
-      int to     = from + rect.width();
+      const QRect ur = mapDev(mr);
+      
+      int vfrom   = ur.x();
+      int vto     = vfrom + ur.width();
 
       MusECore::Part* part = ((NPart*)item)->part();
       int pTick  = part->tick();
-      from      -= pTick;
-      to        -= pTick;
-      if(from < 0)
-        from = 0;
-      if((unsigned int)to > part->lenTick())
-        to = part->lenTick();
+      vfrom      -= pTick;
+      vto        -= pTick;
+      if(vfrom < 0)
+        vfrom = 0;
+      if((unsigned int)vto > part->lenTick())
+        vto = part->lenTick();
 
+      const int uw1 = rmapxDev(1);
+      const int uh1 = rmapyDev(1);
+      const int uh2 = rmapyDev(2);
+      
       QBrush brush;
 
-      QRect r    = item->bbox();
-      // Compensation required for two pixel wide border. FIXME Prefer to do this after the map, but r is needed below.
-      r.moveTop(r.y() + rmapyDev(1));
+      // This is the actual item drawing rectangle, ignoring any borders we place on it.
+      QRect ubbr    = item->bbox();
+      // Compensation required for our two-pixel wide border. This is due to how Qt draws borders with width > 1.
+      // For example if our top is at y=10, Qt will draw the top border starting at y=9.
+      // Thus we need to make our top y=11 so that it draws starting at y=10. Same with bottom. Just move rectangle down.
+      // The left and right edges do NOT need adjustment here. // FIXME Prefer to do this after the map, but vbbr is needed below.
+      ubbr.moveTop(ubbr.y() + uh1);
+      
       //QRect rr = p.transform().mapRect(r);    // Gives inconsistent positions. Source shows wrong operation for our needs.
-      QRect rr = map(r);                        // Use our own map instead.
+      QRect mbbr = map(ubbr);                        // Use our own map instead.
 
-      QRect mr = map(rect);
+      // This is the update comparison rectangle. This would normally be the same as the item's bounding rectangle
+      //  but in this case we have a two-pixel wide border. To accommodate for our border, expand the left edge
+      //  left by one, the right edge right by one, and the bottom edge down by TWO. This way we catch the full
+      //  necessary drawing rectangle when checking the requested update rectangle.
+      QRect ubbr_exp = item->bbox().adjusted(rmapxDev(-1), 0, uw1, uh2);
+      
+//       QRect mr = map(ur);
 
+      // REMOVE Tim. citem. Added.
+//       fprintf(stderr, "PartCanvas::drawItem: vr x:%d y:%d w:%d h:%d vbbr x:%d y:%d w:%d h:%d"
+//                        " mr x:%d y:%d w:%d h:%d mbbr x:%d y:%d w:%d h:%d vfrom:%d vto:%d\n",
+//               vr.x(), vr.y(), vr.width(), vr.height(),
+//               vbbr.x(), vbbr.y(), vbbr.width(), vbbr.height(),
+//               mr.x(), mr.y(), mr.width(), mr.height(),
+//               mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height(), 
+//               vfrom, vto);
+//       fprintf(stderr, "PartCanvas::drawItem: vr x:%d y:%d w:%d h:%d vbbr_exp x:%d y:%d w:%d h:%d"
+//                        " mr x:%d y:%d w:%d h:%d mbbr x:%d y:%d w:%d h:%d vfrom:%d vto:%d\n",
+//               vr.x(), vr.y(), vr.width(), vr.height(),
+//               vbbr_exp.x(), vbbr_exp.y(), vbbr_exp.width(), vbbr_exp.height(),
+//               mr.x(), mr.y(), mr.width(), mr.height(),
+//               mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height(), 
+//               vfrom, vto);
+      
       // Item bounding box x is in tick coordinates, same as rectangle.
-      if((rr & mr).isNull())
+//       if((mbbr & mr).isNull())
+//       if((vbbr & vr).isEmpty())
+      // Now check intersection of the expanded comparison rectangle and the requested update rectangle.
+      // Item bounding box x is in tick coordinates, same as rectangle.
+      if((ubbr_exp & ur).isEmpty())
+      {
+        // REMOVE Tim. citem. Added.
+//         fprintf(stderr, "...vbbr & vr is empty. Returning.\n");
+        
         return;
+      }
 
       const bool item_selected = item->isSelected();
       p.setWorldMatrixEnabled(false);
@@ -1813,8 +2649,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect, con
       //int het = part->cachedHasHiddenEvents(); DELETETHIS or FIXME or whatever?
       int het = part->hasHiddenEvents();
 
-      int xs_0 = rr.x();
-      int xe_0 = xs_0 + rr.width();
+      int xs_0 = mbbr.x();
+      int xe_0 = xs_0 + mbbr.width();
       int xs_1 = xs_0 + 1;
       if(xs_1 > xe_0)
         xs_1 = xe_0;
@@ -1835,8 +2671,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect, con
       if(xe_j < xs_0)
         xe_j = xs_0;
 
-      int ys_0 = rr.y();
-      int ye_0 = ys_0 + rr.height();
+      int ys_0 = mbbr.y();
+      int ye_0 = ys_0 + mbbr.height();
       int ys_1 = ys_0 + 1;
       if(ys_1 > ye_0)
         ys_1 = ye_0;
@@ -1868,7 +2704,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect, con
       {
             QColor c(Qt::gray);
             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-            QLinearGradient gradient(rr.topLeft(), rr.bottomLeft());
+            QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
             gradient.setColorAt(0, c);
             gradient.setColorAt(1, c.darker());
             brush = QBrush(gradient);
@@ -1880,7 +2716,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect, con
       {
           QColor c(Qt::black);
           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-          QLinearGradient gradient(rr.topLeft(), rr.bottomLeft());
+          QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
           // Use a colour only about 20% lighter than black, rather than the 50% we use in MusECore::gGradientFromQColor
           //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
           //c.setRgba(64, 64, 64, c.alpha());
@@ -1893,7 +2729,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect, con
       {
             QColor c(Qt::white);
             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-            QLinearGradient gradient(rr.topLeft(), rr.bottomLeft());
+            QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
             gradient.setColorAt(0, c);
             gradient.setColorAt(1, c.darker());
             brush = QBrush(gradient);
@@ -1902,10 +2738,10 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect, con
       {
             QColor c(MusEGlobal::config.partColors[cidx]);
             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-            brush = QBrush(MusECore::gGradientFromQColor(c, rr.topLeft(), rr.bottomLeft()));
+            brush = QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft()));
       }
 
-      int h = rr.height();
+      int h = mbbr.height();
       double s = double(h) / 4.0;
       int y0 = ys_0;
       int y2 = y0 + lrint(s * 2.0);
@@ -1970,7 +2806,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect, con
         else
           color_brightness=180; //255;   // too dark: use lighter color
         QColor c(color_brightness,color_brightness,color_brightness, MusEGlobal::config.globalAlphaBlend);
-        p.setBrush(QBrush(MusECore::gGradientFromQColor(c, rr.topLeft(), rr.bottomLeft())));
+        p.setBrush(QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft())));
         if(het & MusECore::Part::RightEventsHidden)
         {
           pts = 0;
@@ -1992,7 +2828,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect, con
       }
       else
       {
-        p.fillRect(rr & mr, brush);  // Respect the requested drawing rectangle. Gives speed boost!
+        p.fillRect(mbbr & mr, brush);  // Respect the requested drawing rectangle. Gives speed boost!
       }
 
       // Draw a pattern brush on muted parts...
@@ -2001,7 +2837,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect, con
         p.setPen(Qt::NoPen);
         brush.setStyle(Qt::Dense7Pattern);
 
-        p.fillRect(rr & mr, brush);   // Respect the requested drawing rectangle. Gives speed boost!
+        p.fillRect(mbbr & mr, brush);   // Respect the requested drawing rectangle. Gives speed boost!
       }
 
       p.setWorldMatrixEnabled(true);
@@ -2015,11 +2851,11 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect, con
             mp = (MusECore::MidiPart*)part;
 
       if (wp)
-          drawWavePart(p, rect, wp, r);
+          drawWavePart(p, ur, wp, ubbr);
       else if (mp)
 // REMOVE Tim. citem. Changed.
 //           drawMidiPart(p, rect, mp, r, from, to);
-          drawMidiPart(p, rect, mp, r, from, to, item_selected);
+          drawMidiPart(p, ur, mp, ubbr, vfrom, vto, item_selected);
 
       p.setWorldMatrixEnabled(false);
 
@@ -2124,7 +2960,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect, con
             int part_r, part_g, part_b, brightness;
             // Since we'll draw the text on the bottom (to accommodate drum 'slivers'),
             //  get the lowest colour in the gradient used to draw the part.
-            QRect tr = rr;
+            QRect tr = mbbr;
             tr.setX(tr.x() + 3);
             MusECore::gGradientFromQColor(MusEGlobal::config.partColors[cidx], tr.topLeft(), tr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
             brightness =  part_r*29 + part_g*59 + part_b*12;
@@ -2145,6 +2981,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect, con
 
       p.setWorldMatrixEnabled(true);
       }
+
+
 
 //---------------------------------------------------------
 //   drawMoving
@@ -3109,9 +3947,10 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
           printf("type1\n");
             text = QString(event->mimeData()->data("text/partlist"));
 
-            int x = AL::sigmap.raster(event->pos().x(), *_raster);
+            int x = event->pos().x();
             if (x < 0)
                   x = 0;
+            x = AL::sigmap.raster(x, *_raster);
             unsigned trackNo = y2pitch(event->pos().y());
             MusECore::Track* track = 0;
             if (trackNo < tracks->size())
@@ -3130,9 +3969,10 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
           if (trackNo < tracks->size())
                 track = tracks->index(trackNo);
 
-          int x = AL::sigmap.raster(event->pos().x(), *_raster);
+          int x = event->pos().x();
           if (x < 0)
                 x = 0;
+          x = AL::sigmap.raster(x, *_raster);
 
           foreach(QUrl url, event->mimeData()->urls())
           {
@@ -3321,26 +4161,219 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
 //       p.restore();
 // }
 
-void PartCanvas::drawCanvas(QPainter& p, const QRect& vr, const QRegion& vrg)
+// void PartCanvas::drawCanvas(QPainter& p, const QRect& vr, const QRegion& vrg)
+// {
+// //       int x = rect.x();
+// //       int w = rect.width();
+// 
+//       // Changed to draw in device coordinate space instead of virtual, transformed space.     Tim.
+// 
+//       //QRect mr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
+//       QRect mr = map(vr);                      // Use our own map instead.
+//       QRegion mrg;
+//       map(vrg, mrg);                           // Use our own map instead.
+// 
+//       p.save();
+//       p.setWorldMatrixEnabled(false);
+// 
+//       int mx = mr.x();
+//       int my = mr.y();
+//       int mw = mr.width();
+//       int mh = mr.height();
+// 
+//       //////////
+//       // GRID //
+//       //////////
+//       QColor baseColor(MusEGlobal::config.partCanvasBg.light(104));
+//       QPen pen;
+//       pen.setCosmetic(true);
+// //       pen.setColor(baseColor);
+// //       p.setPen(pen);
+// 
+//       //--------------------------------
+//       // vertical lines
+//       //-------------------------------
+//       if (MusEGlobal::config.canvasShowGrid) {
+// // REMOVE Tim. citem. Changed.
+// //           int bar, beat;
+// //           unsigned tick;
+// // 
+// //           AL::sigmap.tickValues(x, &bar, &beat, &tick);
+// //           for (;;) {
+// //             int xt = AL::sigmap.bar2tick(bar++, 0, 0);
+// //             //int xt = mapx(AL::sigmap.bar2tick(bar++, 0, 0));
+// //             if (xt >= x + w)
+// //             //if (xt >= mx + mw)
+// //                   break;
+// //             if (!((bar-1) % 4))
+// //                 pen.setColor(baseColor.dark(115));
+// //             else
+// //                 pen.setColor(baseColor);
+// //             p.setPen(pen);
+// //             //p.drawLine(xt, y, xt, y+h);
+// //             int xtm = mapx(xt);
+// //             p.drawLine(xtm, my, xtm, my+mh);
+// // 
+// //             // append
+// //             int noDivisors=0;
+// //             if (*_raster == MusEGlobal::config.division *2)         // 1/2
+// //                 noDivisors=2;
+// //             else if (*_raster== MusEGlobal::config.division)        // 1/4
+// //                 noDivisors=4;
+// //             else if (*_raster==MusEGlobal::config.division/2)         // 1/8
+// //                 noDivisors=8;
+// //             else if (*_raster==MusEGlobal::config.division/4)          // 1/16
+// //                 noDivisors=16;
+// //             else if (*_raster==MusEGlobal::config.division/8)          // 1/16
+// //                 noDivisors=32;
+// //             else if (*_raster==MusEGlobal::config.division/16)          // 1/16
+// //                 noDivisors=64;
+// // 
+// //             int r = *_raster;
+// //             int rr = rmapx(r);
+// //             if (*_raster > 1) {
+// //               while (rr < 4) {
+// //                 r *= 2;
+// //                 rr = rmapx(r);
+// //                 noDivisors=noDivisors/2;
+// //               }
+// //               p.setPen(baseColor);
+// //               int xx;
+// //               for (int t=1;t< noDivisors;t++)
+// //               {
+// //                 //p.drawLine(xt+r*t, y, xt+r*t, y+h);
+// //                 xx = mapx(xt + r * t);
+// //                 p.drawLine(xx, my, xx, my+mh);
+// //               }
+// //             }
+// //           }
+//           
+// 
+// //           int noDivisors=0;
+// //           if (*_raster == MusEGlobal::config.division *2)         // 1/2
+// //               noDivisors=2;
+// //           else if (*_raster== MusEGlobal::config.division)        // 1/4
+// //               noDivisors=4;
+// //           else if (*_raster==MusEGlobal::config.division/2)         // 1/8
+// //               noDivisors=8;
+// //           else if (*_raster==MusEGlobal::config.division/4)          // 1/16
+// //               noDivisors=16;
+// //           else if (*_raster==MusEGlobal::config.division/8)          // 1/16
+// //               noDivisors=32;
+// //           else if (*_raster==MusEGlobal::config.division/16)          // 1/16
+// //               noDivisors=64;
+//         
+//         int rast = *_raster;
+//         if(rast == 0) // Special for arranger 'bar' snap.
+//         {
+//           //int z, n;
+//           //AL::sigmap.timesig(x, z, n);
+//           //rast = MusEGlobal::config.division;
+//           rast = AL::sigmap.ticks_beat(1);
+//         }
+//         
+//         drawTickRaster(p, vr, vrg, rast,
+//         //drawTickRaster_new(p, rect.x(), rect.y(), rect.width(), rect.height(), noDivisors,
+//                          false, false, false,
+//                          baseColor.dark(115), 
+//                          baseColor);
+//       }
+// 
+//       //--------------------------------
+//       // horizontal lines
+//       //--------------------------------
+// 
+//       MusECore::TrackList* tl = MusEGlobal::song->tracks();
+//       int yy = -rmapy(yorg) - ypos;
+//       int th;
+//       for (MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it) {
+//             if (yy > my + mh)
+//                   break;
+//             MusECore::Track* track = *it;
+//             th = track->height();
+//             if (!th)
+//               continue;
+//             if (MusEGlobal::config.canvasShowGrid && (track->isMidiTrack() || track->type() == MusECore::Track::WAVE))   // Tim.
+//             {
+//               pen.setColor(baseColor.dark(130));
+//               p.setPen(pen);
+//               p.drawLine(mx, yy + th, mx + mw, yy + th);
+//             }
+// 
+//             // The update rectangle (rect and mr etc) is clipped at x<0 and y<0 in View::pdraw().
+//             // The 'corrupt drawing' bug of drawAudioTrack was actually because the recently added gradient
+//             //  used the update rectangle, so the gradient was also being clipped at 0,0.
+//             // One could remove that limiter, but no, that is the correct way. So instead let's construct a
+//             //  'pseudo bounding box' (half update rectangle, half bounding box), un-clipped. The gradient needs this!
+//             //
+//             // Here is a different situation than PartCanvas::drawItem which uses un-clipped part bounding boxes and
+//             //  does NOT depend on the update rectangle (except to check intersection). That's why this issue
+//             //  does not show up there. Should probably try to make that routine more efficient, just like here.   Tim.
+// // REMOVE Tim. citem. Changed.
+// //             QRect r(mx, yy, mw, th);
+// //             {
+// //               if (!track->isMidiTrack() && (track->type() != MusECore::Track::WAVE)) {
+// //                     drawAudioTrack(p, mr, mrg, r, (MusECore::AudioTrack*)track);
+// //               }
+// //             }
+//             //QRect vbbox(vr.x(), mapyDev(yy), vr.width(), rmapyDev(th));
+//             QRect vbbox(0, mapyDev(yy), vr.x() + vr.width(), rmapyDev(th));
+//             {
+//               if (!track->isMidiTrack() && (track->type() != MusECore::Track::WAVE)) {
+//                     drawAudioTrack(p, vr, mrg, vbbox, (MusECore::AudioTrack*)track);
+//               }
+//             }
+//             yy += th;
+//       }
+// 
+//       p.restore();
+// }
+
+void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
 {
 //       int x = rect.x();
 //       int w = rect.width();
 
       // Changed to draw in device coordinate space instead of virtual, transformed space.     Tim.
 
-      //QRect mr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
-      QRect mr = map(vr);                      // Use our own map instead.
-      QRegion mrg;
-      map(vrg, mrg);                           // Use our own map instead.
+//       //QRect mr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
+//       QRect mr = map(vr);                      // Use our own map instead.
+//       QRegion mrg;
+//       map(vrg, mrg);                           // Use our own map instead.
 
       p.save();
       p.setWorldMatrixEnabled(false);
 
+      const ViewRect vr(mr, true);
+      const ViewXCoordinate& vx = vr._x;
+      const ViewWCoordinate& vw = vr._width;
+      const ViewXCoordinate vx_2 = mathXCoordinates(vx, vw, MathAdd);
+      //const ViewYCoordinate& vy = vr._y;
+      //const ViewHCoordinate& vh = vr._height;
+      //const ViewYCoordinate vy_2 = mathYCoordinates(vy, vh, MathAdd);
+      
       int mx = mr.x();
       int my = mr.y();
       int mw = mr.width();
       int mh = mr.height();
+      int mx_2 = mx + mw;
+      int my_2 = my + mh;
 
+      // Since the bounding box is open-ended (extends infintely to the right),
+      //  form an end-point from screen coordinates.
+      const ViewXCoordinate vbbx(0, false);
+      const ViewXCoordinate vbbx_2(x() + width(), true);
+      const ViewXCoordinate vdbbw(mathXCoordinates(vbbx_2, vbbx, MathSubtract));
+      // Turn vdbbw into a width coordinate.
+      const ViewWCoordinate vbbw(vdbbw._value, vdbbw.isMapped());
+      const int mbbx = asIntMapped(vbbx);
+      int mx0_lim = mbbx;
+      if(mx0_lim < mx)
+        mx0_lim = mx;
+      if(mx0_lim < 0)
+        mx0_lim = 0;
+            
+            
       //////////
       // GRID //
       //////////
@@ -3432,7 +4465,8 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& vr, const QRegion& vrg)
           rast = AL::sigmap.ticks_beat(1);
         }
         
-        drawTickRaster(p, vr, vrg, rast,
+//         drawTickRaster(p, vr, vrg, rast,
+        drawTickRaster(p, mr, mrg, rast,
         //drawTickRaster_new(p, rect.x(), rect.y(), rect.width(), rect.height(), noDivisors,
                          false, false, false,
                          baseColor.dark(115), 
@@ -3444,22 +4478,69 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& vr, const QRegion& vrg)
       //--------------------------------
 
       MusECore::TrackList* tl = MusEGlobal::song->tracks();
-      int yy = -rmapy(yorg) - ypos;
-      int th;
+      int myy = -rmapy(yorg) - ypos;
+      int mth;
       for (MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it) {
-            if (yy > my + mh)
+        
+            if (myy > my_2)
                   break;
+            
             MusECore::Track* track = *it;
-            th = track->height();
-            if (!th)
+            mth = track->height();
+            if(!mth)
               continue;
-            if (MusEGlobal::config.canvasShowGrid && (track->isMidiTrack() || track->type() == MusECore::Track::WAVE))   // Tim.
-            {
-              pen.setColor(baseColor.dark(130));
-              p.setPen(pen);
-              p.drawLine(mx, yy + th, mx + mw, yy + th);
-            }
+            
+            const int myy_2 = myy + mth;
+            
+            const ViewYCoordinate vbby(myy, true);
+            const ViewHCoordinate vbbh(mth, true);
+            //const ViewYCoordinate vbby_2(myy + mth, true);
+            const ViewRect vbbox(vbbx, vbby, vbbw, vbbh);
+            
+            // REMOVE Tim. citem. Added.
+            vbbox.dump("PartCanvas::drawCanvas vbbox");
+            
+            
+            //const ViewYCoordinate& vbby = vbbox._y;
+      //       const ViewWCoordinate& vbbw = vbbox._width;
+            //const ViewHCoordinate& vbbh = vbbox._height;
+            
+      //       const int vbby_2 = vbby + vbbh;
+            //const ViewYCoordinate vbby_2 = mathYCoordinates(vbby, vbbh, MathAdd);
+        
+//             if (myy > my + mh)
+//                   break;
+//             MusECore::Track* track = *it;
+//             th = track->height();
+//             if (!mth)
+//               continue;
+            
+//             if (MusEGlobal::config.canvasShowGrid && (track->isMidiTrack() || track->type() == MusECore::Track::WAVE))   // Tim.
+//             {
+//               pen.setColor(baseColor.dark(130));
+//               p.setPen(pen);
+//               p.drawLine(mx, myy_2, mx_2, myy_2);
+//             }
 
+            
+            
+            if(MusEGlobal::config.canvasShowGrid && (track->isMidiTrack() || track->type() == MusECore::Track::WAVE))
+            {
+              if(compareXCoordinates(vx_2, vbbx, CompareGreaterEqual) && 
+                //isYInRange(vbby, vy, vy_2))
+                //isYInRange(vbby_2, vy, vy_2))
+                (myy_2 >= my && myy_2 < my_2))
+              {
+                // REMOVE Tim. citem. Added.
+                fprintf(stderr, "... bottom edge in range. Drawing bottom edge at mx0_lim:%d myy_2:%d mx_2:%d myy_2:%d\n",
+                        mx0_lim, myy_2, mx_2, myy_2);
+                
+                pen.setColor(baseColor.dark(130));
+                p.setPen(pen);
+                p.drawLine(mx0_lim, myy_2, mx_2, myy_2);
+              }
+            }
+            
             // The update rectangle (rect and mr etc) is clipped at x<0 and y<0 in View::pdraw().
             // The 'corrupt drawing' bug of drawAudioTrack was actually because the recently added gradient
             //  used the update rectangle, so the gradient was also being clipped at 0,0.
@@ -3476,26 +4557,50 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& vr, const QRegion& vrg)
 //                     drawAudioTrack(p, mr, mrg, r, (MusECore::AudioTrack*)track);
 //               }
 //             }
-            QRect vbbox(vr.x(), mapyDev(yy), vr.width(), rmapyDev(th));
-            {
-              if (!track->isMidiTrack() && (track->type() != MusECore::Track::WAVE)) {
-                    drawAudioTrack(p, vr, mrg, vbbox, (MusECore::AudioTrack*)track);
-              }
+            //QRect vbbox(vr.x(), mapyDev(yy), vr.width(), rmapyDev(th));
+//             QRect vbbox(0, mapyDev(yy), vr.x() + vr.width(), rmapyDev(th));
+
+//             // Since the bounding box is open-ended (extends infintely to the right),
+//             //  form an end-point from screen coordinates.
+//             const ViewXCoordinate bbx(0, false);
+// //             const ViewXCoordinate bbx_2(x() + width(), true);
+//             //const ViewXCoordinate wx(x(), true);
+//             //const ViewWCoordinate ww(width(), true);
+//             //const ViewWCoordinate wx_2(mathXCoordinates(wx, ww, MathAdd));
+//             //const ViewWCoordinate bbw(mathXCoordinates(wx_2, bbx, MathSubtract));
+// //             const ViewWCoordinate bbw(mathXCoordinates(bbx_2, bbx, MathSubtract));
+//             const ViewWCoordinate bbw(1000000, true);
+// //             const ViewWCoordinate bbw(1000000, false);
+//             const ViewRect bbox(bbx,
+//                                 ViewYCoordinate(yy, true),
+// //                                 ViewYCoordinate(yy, false),
+//                                 bbw,
+//                                 ViewHCoordinate(th, true));
+// //                                 ViewHCoordinate(th, false));
+//             
+// // REMOVE Tim. citem. Added.
+//             bbox.dump("PartCanvas::drawCanvas bbox");
+            
+            if (!track->isMidiTrack() && (track->type() != MusECore::Track::WAVE)) {
+//                     drawAudioTrack(p, vr, mrg, vbbox, (MusECore::AudioTrack*)track);
+                  drawAudioTrack(p, mr, mrg, vbbox, (MusECore::AudioTrack*)track);
             }
-            yy += th;
+            myy += mth;
       }
 
       p.restore();
 }
+
 
 //---------------------------------------------------------
 //   drawLast
 //---------------------------------------------------------
 // REMOVE Tim. citem. Changed.
 // void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
-void PartCanvas::drawTopItem(QPainter& p, const QRect& rect, const QRegion&)
+void PartCanvas::drawTopItem(QPainter& p, const QRect& mr, const QRegion&)
 {
-    QRect mr = map(rect);
+// REMOVE Tim. citem. Removed.
+//     QRect mr = map(rect);
 
     int mx = mr.x();
     int my = mr.y();
@@ -3632,7 +4737,7 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect, const QRegion&)
                }
 // REMOVE Tim. citem. Changed.
 //                drawMidiPart(p, rect, myEventList, mt, 0, partRect,startPos,0,MusEGlobal::song->cpos()-startPos);
-               drawMidiPart(p, rect, myEventList, mt, 0, partRect,startPos,0,MusEGlobal::song->cpos()-startPos, false);
+               drawMidiPart(p, mr, myEventList, mt, 0, partRect,startPos,0,MusEGlobal::song->cpos()-startPos, false);
            }
            yPos+=track->height();
       }
@@ -3689,54 +4794,94 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect, const QRegion&)
 //---------------------------------------------------------
 // REMOVE Tim. citem. Changed.
 // void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, MusECore::AudioTrack* /*t*/)
-void PartCanvas::drawAudioTrack(QPainter& p, const QRect& vr, const QRegion& /*vrg*/, const QRect& vbbox, MusECore::AudioTrack* /*t*/)
+// void PartCanvas::drawAudioTrack(QPainter& p, const QRect& vr, const QRegion& /*vrg*/,
+//                                 const QRect& vbbox, MusECore::AudioTrack* /*t*/)
+void PartCanvas::drawAudioTrack(QPainter& p, const QRect& mr, const QRegion& /*mrg*/,
+                                const ViewRect& vbbox, MusECore::AudioTrack* /*t*/)
 {
-      const QRect vbr = vr & vbbox;
+      const ViewRect vr(mr, true);
+      const ViewXCoordinate& vx = vr._x;
+      const ViewWCoordinate& vw = vr._width;
+      const ViewXCoordinate vx_2 = mathXCoordinates(vx, vw, MathAdd);
+      const ViewYCoordinate& vy = vr._y;
+      const ViewHCoordinate& vh = vr._height;
+      const ViewYCoordinate vy_2 = mathYCoordinates(vy, vh, MathAdd);
+      
+//       const QRect vbr = vr & vbbox;
+//       const ViewRect vbr = intersected(vr, vbbox);
+      
+      // The gradient is to be on the inside of the border.
+      const ViewRect vbb_gr = adjustedRect(
+        vbbox,
+        ViewWCoordinate(1, true),
+        ViewHCoordinate(1, true),
+        ViewWCoordinate(0, true),
+        // Usually this would be -2 but here we want the bottom extended by 1.
+        ViewHCoordinate(-1, true));
+      
+      const ViewRect vbr = intersected(vr, vbbox);
+      const ViewRect vbr_gr = intersected(vr, vbb_gr);
+//       const ViewRect vbr_gr = intersected(vr, vbbox);
+      
 //       if(vbr.isNull())
 //         return;
 //       const QRect mr = map(vr);
+      
 //       const QRect mbr = map(vbr);
-      const QRect mbb = map(vbbox);
+//       const QRect mbr    = asMappedQRect(vbr);
+      const QRect mbb    = asQRectMapped(vbbox);
+      const QRect mbb_gr = asQRectMapped(vbb_gr);
+//       const QRect mbb_gr = asQRectMapped(vbbox);
+      const QRect mbr_gr = asQRectMapped(vbr_gr);
       
-      const int vx = vr.x();
-      const int vy = vr.y();
-      const int vw = vr.width();
-      const int vh = vr.height();
+//       const int vx = mr.x();
+//       const int vy = mr.y();
+//       const int vw = mr.width();
+//       const int vh = mr.height();
       
-      const int vx_2 = vx + vw;
-      const int vy_2 = vy + vh;
-//       const int mx = mr.x();
+//       const int vx_2 = vx + vw;
+//       const int vy_2 = vy + vh;
+      
+      const int mx = mr.x();
 //       const int my = mr.y();
-//       const int mw = mr.width();
+      const int mw = mr.width();
 //       const int mh = mr.height();
       
-      //const int vbbx = vbbox.x();
-      const int vbby = vbbox.y();
-      //const int vbbw = vbbox.width();
-      const int vbbh = vbbox.height();
+      const int mx_2 = mx + mw;
+//       const int my_2 = my + mh;
       
-      const int vbby_2 = vbby + vbbh;
+//       const int vbbx = vbbox.x();
+//       const int vbby = vbbox.y();
+// //       const int vbbw = vbbox.width();
+//       const int vbbh = vbbox.height();
+      const ViewXCoordinate& vbbx = vbbox._x;
+      const ViewYCoordinate& vbby = vbbox._y;
+//       const ViewWCoordinate& vbbw = vbbox._width;
+      const ViewHCoordinate& vbbh = vbbox._height;
+      
+//       const int vbby_2 = vbby + vbbh;
+      const ViewYCoordinate vbby_2 = mathYCoordinates(vbby, vbbh, MathAdd);
       
       const int mbbx = mbb.x();
       const int mbby = mbb.y();
-      const int mbbw = mbb.width();
+//       const int mbbw = mbb.width();
       const int mbbh = mbb.height();
       
-      const int mbbx_2 = mbbx + mbbw;
+//       const int mbbx_2 = mbbx + mbbw;
       const int mbby_2 = mbby + mbbh;
       
-      const int vbrx = vbr.x();
-      const int vbry = vbr.y();
-      const int vbrw = vbr.width();
-      const int vbrh = vbr.height();
+//       const int vbrx = vbr.x();
+//       const int vbry = vbr.y();
+//       const int vbrw = vbr.width();
+//       const int vbrh = vbr.height();
       
 //       const int mbrx = mbr.x();
 //       const int mbry = mbr.y();
 //       const int mbrw = mbr.width();
 //       const int mbrh = mbr.height();
       
-      const int vx0 = 0;
-      const int mx0 = mapx(vx0);
+//       const int vx0 = 0;
+//       const int mx0 = mapx(vx0);
 
       QPen pen;
       pen.setCosmetic(true);
@@ -3746,66 +4891,111 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& vr, const QRegion& /*v
       // REMOVE Tim. citem. Added.
 //       fprintf(stderr, "PartCanvas::drawAudioTrack vr x:%d y:%d w:%d h:%d mbrx:%d mbry:%d mbrw:%d mbrh:%d mbbox x:%d y:%d w:%d h:%d vx0:%d mx0:%d\n",
 //               vr.x(), vr.y(), vr.width(), vr.height(), mbrx, mbry, mbrw, mbrh, mbb.x(), mbb.y(), mbb.width(), mbb.height(), vx0, mx0);
+//       fprintf(stderr, "PartCanvas::drawAudioTrack vr x:%d y:%d w:%d h:%d vbrx:%d vbry:%d vbrw:%d vbrh:%d mbbox x:%d y:%d w:%d h:%d\n",
+//               vx._value, vy._value, vw._value, vh._value, vbr._x._value, vbr._y._value, vbr._width._value, vbr._height._value,
+//               mbb.x(), mbb.y(), mbb.width(), mbb.height());
+      fprintf(stderr, "\nPartCanvas::drawAudioTrack: mbbox:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+              mbb.x(), mbb.y(), mbb.width(), mbb.height());
+      vbbox.dump("vbbox:");
+      vr.dump("vr:");
+      vbr.dump("vbr:");
+      vbr_gr.dump("vbr_gr:");
 
-      if(!vbr.isNull())
+//       if(!vbr.isNull())
+//       if(!mbr.isEmpty())
+//       if(!mbb.isEmpty() && !mbr.isEmpty())
+//       if(!isViewRectEmpty(vbbox) && !isViewRectEmpty(vbr))
+//       if(!isViewRectEmpty(vbr))
+      if(!isViewRectEmpty(vbr_gr))
       {
-        const QRect tr(vx0, vbry, vbrx + vbrw - vx0, vbrh);
-        if(!tr.isEmpty())
+        //const QRect tr(vx0, vbry, vbrx + vbrw - vx0, vbrh);
+        //const QRect tr(vbrx, vbry, vbrw, vbrh);
+        //if(!tr.isEmpty())
         {
-          QRect wr = vr.intersected(tr);
+          //QRect wr = vr.intersected(tr);
         
           // REMOVE Tim. citem. Added.
   //         fprintf(stderr, "...wr x:%d y:%d w:%d h:%d\n",
   //                 wr.x(), wr.y(), wr.width(), wr.height());
           
-          if(!wr.isEmpty()) 
           //if(vbx >= vx0)
           //if(vx0 >= vbx)
+//           if(!wr.isEmpty()) 
           {
             // REMOVE Tim. citem. Added.
             //fprintf(stderr, "...gradient in range. Drawing gradient at mx:%d my:%d mw:%d mh:%d\n",
             //        map(tr).x(), map(tr).y(), map(tr).width(), map(tr).height());
-  //           fprintf(stderr, "...gradient in range. Drawing gradient at mx:%d my:%d mw:%d mh:%d\n",
-  //                   map(wr).x(), map(wr).y(), map(wr).width(), map(wr).height());
+//             fprintf(stderr, "...gradient in range. Drawing gradient at mx:%d my:%d mw:%d mh:%d\n",
+//                     map(wr).x(), map(wr).y(), map(wr).width(), map(wr).height());
+//             fprintf(stderr, "...gradient in range. Drawing gradient at mx:%d my:%d mw:%d mh:%d\n",
+//                     map(vbr).x(), map(vbr).y(), map(vbr).width(), map(vbr).height());
+//             fprintf(stderr, "\n...gradient in range. Drawing gradient at:\nmbr.x:%8d\t\tmbr.y:%8d\t\tmbr.w:%8d\t\tmbr.h:%8d\n\n",
+//                     mbr.x(), mbr.y(), mbr.width(), mbr.height());
+            fprintf(stderr, "\n...gradient in range. Drawing gradient at:\nmbr_gr.x:%8d\t\tmbr_gr.y:%8d\t\tmbr_gr.w:%8d\t\tmbr_gr.h:%8d\n\n",
+                    mbr_gr.x(), mbr_gr.y(), mbr_gr.width(), mbr_gr.height());
             
             QColor c(Qt::gray);
             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-            QLinearGradient gradient(mbbx + 1, mbby + 1, mbbx + 1, mbby + mbbh - 1);    // Inside the border
       //       QLinearGradient gradient(mx0 + 1, mbby + 1, mx0 + 1, mbby + mbbh - 1);    // Inside the border
+//             QLinearGradient gradient(mbbx + 1, mbby + 1, mbbx + 1, mbby + mbbh - 1);    // Inside the border
+            QLinearGradient gradient(mbb_gr.x(), mbb_gr.y(), mbb_gr.x(), mbb_gr.y() + mbb_gr.height());    // Inside the border
+//             QLinearGradient gradient(mbr_gr.x(), mbr_gr.y(), mbr_gr.x(), mbr_gr.y() + mbr_gr.height());    // Inside the border
             gradient.setColorAt(0, c);
             gradient.setColorAt(1, c.darker());
             QBrush brush(gradient);
     //         p.fillRect(mbr, brush);
   //           p.fillRect(map(tr), brush);
-            p.fillRect(map(wr), brush);
-    //       const QRect fill_r(mx0, mbry, mbrw, mbrh);
-    //       p.fillRect(fill_r, brush);
+//             p.fillRect(map(wr), brush);
+//             p.fillRect(map(vbr), brush);
+//             p.fillRect(mbr, brush);
+            p.fillRect(mbr_gr, brush);
           }
         }
       }
 
-      int mx0_lim = mx0;
+//       int mx0_lim = mx0;
+//       int mx0_lim = mx;
+      int mx0_lim = mbbx;
+      if(mx0_lim < mx)
+        mx0_lim = mx;
       if(mx0_lim < 0)
         mx0_lim = 0;
+
       
-      const int vbby_is = vbby > vy ? vbby : vy;
-      const int vbby_2is = vbby_2 < vy_2 ? vbby_2 : vy_2;
+//       const int vbby_is = vbby > vy ? vbby : vy;
+//       const int vbby_2is = vbby_2 < vy_2 ? vbby_2 : vy_2;
+      
+      const ViewYCoordinate vbby_is = 
+        compareYCoordinates(vy, vbby, CompareLess) ? vbby : vy;
+      
+      const ViewYCoordinate vbby_2is = 
+        compareYCoordinates(vbby_2, vy_2, CompareLess) ? vbby_2 : vy_2;
       
 //       if(mex >= mx && mex <= mx + mw)
       //if(mex >= mx && mex < mx + mw)
-      if(vx0 >= vx && vx0 < vx_2 &&
+//       if(vx0 >= vx && vx0 < vx_2 &&
+//       if(vbbx >= vx && vbbx < vx_2 &&
+      if(isXInRange(vbbx, vx, vx_2) &&
          //((vbby >= vy && vbby < vy_2) || (vbby_2 > vy && vbby_2 <= vy_2)))
-         vbby_2is >= vbby_is)
+         compareYCoordinates(vbby_2is, vbby_is, CompareGreaterEqual))
       {
         // REMOVE Tim. citem. Added.
 //         fprintf(stderr, "...left edge in range. Drawing left edge at mx0:%d mapy(vbby_is):%d mx0:%d mapy(vbby_2is):%d\n",
 //                 mx0, mapy(vbby_is), mx0, mapy(vbby_2is));
+        fprintf(stderr, "...left edge in range. Drawing left edge at mbbx:%d asMapped(vbby_is):%d mbbx:%d asMapped(vbby_2is):%d\n",
+                mbbx, asMapped(vbby_is)._value, mbbx, asMapped(vbby_2is)._value);
         
 //         p.drawLine(mex, my, mex, my + mh - 1);                // The left edge
         //p.drawLine(mx0, mbry, mx0, mbry + mbrh - 1);                // The left edge
         //p.drawLine(mx0, mbby, mx0, mbby_2);                // The left edge
-        p.drawLine(mx0, mapy(vbby_is), mx0, mapy(vbby_2is));                // The left edge
+//         p.drawLine(mx0, mapy(vbby_is), mx0, mapy(vbby_2is));                // The left edge
+//         p.drawLine(mbbx, mapy(vbby_is), mbbx, mapy(vbby_2is));                // The left edge
+        p.drawLine(mbbx, asMapped(vbby_is)._value, mbbx, asMapped(vbby_2is)._value); // The left edge
       }
+      
+
+
+
       //if(mex + mew >= mx && mex + mew <= mx + mw) DELETETHIS 2
       //  p.drawLine(mex + mew, my, mex + mew, my + mh - 1);  // The right edge. Not used - infinite to the right
 //       if(mey >= my && mey <= my + mh)
@@ -3815,32 +5005,55 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& vr, const QRegion& /*v
 //         p.drawLine(vbx, vbby + vbbh, vbx + vbw - 1, vbby + vbbh);    // The bottom edge. Special for Audio track - draw one past bottom.
 
 
-      if(mx0_lim <= mbbx + mbbw)
+//       if(mx0_lim <= mbbx + mbbw)
+      if(compareXCoordinates(vx_2, vbbx, CompareGreaterEqual))
       {
+
+
+
+        
+        //int mbbx = asMapped(vbbx)._value;
   //       if(vbby >= vby && vbby < vby + vbh)
         //if(vx0 >= vbrx && vx0 < vbrx + vbrw && vbby >= vbry && vbby < vbry + vbrh)
         if(//vx0 >= vbrx &&
-          vbby >= vy && vbby < vy_2)
+//           vbby >= vy && vbby < vy_2)
+          isYInRange(vbby, vy, vy_2))
         {
           // REMOVE Tim. citem. Added.
 //           fprintf(stderr, "...top edge in range. Drawing line at mx0:%d mx0_lim:%d mbby:%d mbbx_2:%d mbby:%d\n",
 //                   mx0, mx0_lim, mbby, mbbx_2, mbby);
+//           fprintf(stderr, "...top edge in range. Drawing line at mbbx:%d mx0_lim:%d mbby:%d mbbx_2:%d mbby:%d\n",
+//                   mbbx, mx0_lim, mbby, mbbx_2, mbby);
+          fprintf(stderr, "...top edge in range. Drawing top edge at mx0_lim:%d mbby:%d mx_2:%d mbby:%d\n",
+                  mx0_lim, mbby, mx_2, mbby);
           
   //         p.drawLine(mbrx, mbby, vbx + vbw - 1, mbby);                // The top edge
-          p.drawLine(mx0_lim, mbby, mbbx_2, mbby);                // The top edge
+//           p.drawLine(mx0_lim, mbby, mbbx_2, mbby);                // The top edge
+          p.drawLine(mx0_lim, mbby, mx_2, mbby); // The top edge
         }
-          
+
+        
+        
+        
   //       if(vbby + vbbh >= vbry && vbby + vbbh <= vbry + vbrh)
   //         p.drawLine(mbrx, mbby + mbbh, mbrx + mbrw - 1, mbby + mbbh);    // The bottom edge. Special for Audio track - draw one past bottom.
-        if(vx0 < vx_2 &&
-          vbby_2 >= vy && vbby_2 < vy_2)
+//         if(vx0 < vx_2 &&
+//         if(vbbx < vx_2 &&
+//           vbby_2 >= vy && vbby_2 < vy_2)
+        if(//compareXCoordinates(vbbx, vx_2, CompareLess) &&
+           isYInRange(vbby_2, vy, vy_2))
         {
           // REMOVE Tim. citem. Added.
 //           fprintf(stderr, "...bottom edge in range. Drawing line at mx0:%d mx0_lim:%d mbby_2:%d mbbx_2:%d mbby_2:%d\n",
 //                   mx0, mx0_lim, mbby_2, mbbx_2, mbby_2);
+//           fprintf(stderr, "...bottom edge in range. Drawing line at mbbx:%d mx0_lim:%d mbby_2:%d mbbx_2:%d mbby_2:%d\n",
+//                   mbbx, mx0_lim, mbby_2, mbbx_2, mbby_2);
+          fprintf(stderr, "...bottom edge in range. Drawing bottom edge at mx0_lim:%d mbby_2:%d mx_2:%d mbby_2:%d\n",
+                  mx0_lim, mbby_2, mx_2, mbby_2);
           
-          p.drawLine(mx0_lim, mbby_2, mbbx_2, mbby_2);    // The bottom edge. Special for Audio track - draw one past bottom.
+          p.drawLine(mx0_lim, mbby_2, mx_2, mbby_2);    // The bottom edge. Special for Audio track - draw one past bottom.
         }
+
       }
 }
 

@@ -580,7 +580,11 @@ void WaveEdit::setTime(unsigned samplepos)
         return;
       }
      
-      unsigned tick = MusEGlobal::tempomap.frame2tick(samplepos);
+// REMOVE Tim. citem. Changed.
+//       unsigned tick = MusEGlobal::tempomap.frame2tick(samplepos);
+      // Normally frame to tick methods round down. But here we need it to 'snap'
+      //  the frame from either side of a tick to the tick. So round to nearest.
+      unsigned tick = MusEGlobal::tempomap.frame2tick(samplepos, 0, MusECore::LargeIntRoundNearest);
       pos1->setValue(tick);
       pos2->setValue(samplepos);
       time->setPos(3, tick, false);

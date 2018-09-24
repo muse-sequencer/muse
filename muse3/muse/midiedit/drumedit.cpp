@@ -546,14 +546,15 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       
       hsplitter->addWidget(split1_w);
           
+      QSizePolicy tipolicy, epolicy;
       hsplitter->setStretchFactor(hsplitter->indexOf(trackInfoWidget), 0);
-      QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+      tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
       tipolicy.setHorizontalStretch(0);
       tipolicy.setVerticalStretch(100);
       trackInfoWidget->setSizePolicy(tipolicy);
 
       hsplitter->setStretchFactor(hsplitter->indexOf(split1_w), 1);
-      QSizePolicy epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+      epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
       epolicy.setHorizontalStretch(255);
       epolicy.setVerticalStretch(100);
       split1->setSizePolicy(epolicy);
@@ -564,6 +565,20 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       split1w1            = new QWidget(split2);
       QWidget* split1w2   = new QWidget(split2);
+
+      split1w1->setContentsMargins(0, 0, 0, 0);
+      split1w2->setContentsMargins(0, 0, 0, 0);
+      split1->setContentsMargins(0, 0, 0, 0);
+      split2->setContentsMargins(0, 0, 0, 0);
+      hsplitter->setContentsMargins(0, 0, 0, 0);
+      // NOTICE: For vertical splitter split1, we need to ignore the horizontal size
+      //          otherwise we get strange runaway resizing when split2 is moved towards
+      //          the left, which also depends oddly on the minimum size of the widget
+      //          in the left of hsplitter. For the other splitters, I guess we'll
+      //          do the same since it took a whole day to solve this problem. Tim.
+      split1->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+      split2->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
+      hsplitter->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
       
       split2->setStretchFactor(split2->indexOf(split1w1), 0);
       tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
@@ -607,10 +622,6 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       mops.append(_canvasWidthInit);
       hsplitter->setSizes(mops);
       
-      // By T356. Not much choice but to disable this for now, to stop runaway resize bug.
-      // Can't seem to get the splitter to readjust when manually setting sizes.
-      //split2->setResizeMode(split1w1, QSplitter::KeepSize); DELETETHIS or FIXME?
-
       gridS2->setRowStretch(1, 100);
       gridS2->setColumnStretch(0, 100);
       
@@ -660,7 +671,6 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       gridS1->setColumnStretch(0, 100);
       gridS1->addWidget(header, 0, 0);
       gridS1->addWidget(dlist, 1, 0);
-
 
       connect(canvas, SIGNAL(newWidth(int)), SLOT(newCanvasWidth(int)));
       connect(canvas, SIGNAL(verticalScroll(unsigned)), vscroll, SLOT(setPos(unsigned)));

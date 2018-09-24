@@ -278,6 +278,41 @@ void Canvas::setPos(int idx, unsigned val, bool adjustScrollbar)
       }
 
 //---------------------------------------------------------
+//   drawMarkers
+//---------------------------------------------------------
+
+void Canvas::drawMarkers(QPainter& p, const QRect& mr, const QRegion&)
+{
+      const int mx = mr.x();
+      const int my = mr.y();
+      const int mw = mr.width();
+      const int mh = mr.height();
+//       const int mx_2 = mx + mw;
+      const int my_2 = my + mh;
+      
+      const ViewXCoordinate vx(mx, true);
+      const ViewWCoordinate vw(mw, true);
+      const ViewXCoordinate vx_2(mx + mw, true);
+      
+      QPen pen;
+      pen.setCosmetic(true);
+      
+      MusECore::MarkerList* marker = MusEGlobal::song->marker();
+      pen.setColor(Qt::green);
+      p.setPen(pen);
+      for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
+//             int xp = m->second.tick();
+            const ViewXCoordinate xp(m->second.tick(), false);
+//             if (xp >= mx && xp < mx+mw) {
+            if (isXInRange(xp, vx, vx_2)) {
+                  const int mxp = asMapped(xp)._value;
+//                   p.drawLine(mapx(xp), my, mapx(xp), my_2);
+                  p.drawLine(mxp, my, mxp, my_2);
+                  }
+            }
+}
+      
+//---------------------------------------------------------
 //   draw
 //---------------------------------------------------------
 
@@ -524,45 +559,100 @@ void Canvas::setPos(int idx, unsigned val, bool adjustScrollbar)
 //       }
 // }
 
-void Canvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
+void Canvas::draw(QPainter& p, const QRect& mr, const QRegion& mrg)
 {
 //      printf("draw canvas %x virt %d\n", this, virt());
 
       // REMOVE Tim. citem. Added. For testing.
-      const int rg_sz = rg.rectCount();
+      const int rg_sz = mrg.rectCount();
       int rg_r_cnt = 0;
       fprintf(stderr, "Canvas::draw: virt:%d rect: x:%d y:%d w:%d h:%d region rect count:%d\n",
-              virt(), rect.x(), rect.y(), rect.width(), rect.height(), rg_sz);
-      for(QRegion::const_iterator i = rg.begin(); i != rg.end(); ++i, ++rg_r_cnt)
+              virt(), mr.x(), mr.y(), mr.width(), mr.height(), rg_sz);
+      for(QRegion::const_iterator i = mrg.begin(); i != mrg.end(); ++i, ++rg_r_cnt)
       {
         const QRect& rg_r = *i;
         fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
       }
       
-      int x = rect.x();
-      int y = rect.y();
-      int w = rect.width();
-      int h = rect.height();
-      int x2 = x + w;
-
+      const int mx = mr.x();
+      const int my = mr.y();
+      const int mw = mr.width();
+      const int mh = mr.height();
+      const int mx_2 = mx + mw;
+      const int my_2 = my + mh;
+      
+      const ViewXCoordinate vx(mx, true);
+      const ViewWCoordinate vw(mw, true);
+      const ViewXCoordinate vx_2(mx + mw, true);
+      
+//       // If the end point is zero or less, force it to 1 (not zero) so that
+//       //  all the left-most items get a chance to update - this is important
+//       //  since for example the parts on the part canvas want to draw a
+//       //  two-pixel wide border which for an item at position x=0 actually
+//       //  begins at x=-1 and needs to include that small adjustment during updates.
+      int ux_2lim = mapxDev(mx_2);
+      if(ux_2lim <= 0)
+        //x2_lim = 1;
+        ux_2lim = 0;
+      
+      // Force it to +1 so that all the left-most items, or items immediately to the right,
+      //  get a chance to update - this is important since for example the parts on the
+      //  part canvas want to draw a two-pixel wide border which for an item at position x=0
+      //  actually begins at x=-1 and needs to include that small adjustment during updates...
+      ux_2lim += rmapxDev(1);
+      
       std::vector<CItem*> list1;
       std::vector<CItem*> list2;
       std::vector<CItem*> list4;
 
       if (virt()) {
-            drawCanvas(p, rect, rg);
+            drawCanvas(p, mr, mrg);
 
             //---------------------------------------------------
             // draw Canvas Items
             //---------------------------------------------------
 
-            iCItem to(items.lower_bound(x2));
-            for(iCItem i = items.begin(); i != to; ++i)
+            
+            // REMOVE Tim. citem. Added.
+//             // Look for a 'from' iterator. This is a multimap so we
+//             //  must be careful how we move back and forth, to skip
+//             //  over multiple items at the same position or make sure
+//             //  we start at the first of such multiple items.
+//             iCItem from(items.upper_bound(x));
+//             if(from != items.begin())
+//             {
+//               // It has returned the first item found with a position
+//               //  greater than x. Nudge the iterator to the last 
+//               //  previous item to get an item with x equal to or
+//               //  less than x.
+//               --from;
+//               // Look for the first
+//               from = items.lower_bound(from->first);
+//             }
+            
+//             iCItem to(items.lower_bound(x2));
+//             iCItem to(items.lower_bound(x2_lim));
+            // ... and we want the upper bound, not lower bound, so that items immediately
+            //  to the right can be updated.
+            iCItem to(items.upper_bound(ux_2lim));
+            
+            // REMOVE Tim. citem. Added. For testing.
+            fprintf(stderr, "Canvas::draw: virt:%d x2:%d ux2_lim:%d\n", virt(), mx_2, ux_2lim);
+            if(to == items.end())
+              fprintf(stderr, "...item not found\n");
+            else
+              fprintf(stderr, "...item found\n");
+            
+            int ii = 0;
+            for(iCItem i = items.begin(); i != to; ++i, ++ii)
             { 
               CItem* ci = i->second;
               // NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
               // Not required for now.
               //ci->part()->hasHiddenEvents();
+              
+              // REMOVE Tim. citem. Added. For testing.
+              fprintf(stderr, "...item:%d bbox x:%d y:%d w:%d h:%d\n", ii, ci->bbox().x(), ci->bbox().y(), ci->bbox().width(), ci->bbox().height());
               
               // Draw items from other parts behind all others.
               // Only for items with events (not arranger parts).
@@ -578,29 +668,38 @@ void Canvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
                   list2.push_back(ci);
               }  
             }
+            
+            // Draw non-current part backgrounds behind all others:
+            drawParts(p, false, mr, mrg);
+
             int i;
             int sz = list1.size();
             for(i = 0; i != sz; ++i) 
-              drawItem(p, list1[i], rect, rg);
+              drawItem(p, list1[i], mr, mrg);
+
+            // Draw current part background in front of all others:
+            drawParts(p, true, mr, mrg);
+
             sz = list2.size();
             for(i = 0; i != sz; ++i) 
-              drawItem(p, list2[i], rect, rg);
+              drawItem(p, list2[i], mr, mrg);
             sz = list4.size();
             for(i = 0; i != sz; ++i) 
-              drawItem(p, list4[i], rect, rg);
+              drawItem(p, list4[i], mr, mrg);
             
             // Draw items being moved, a special way in their original location.
-            to = moving.lower_bound(x2);
+//             to = moving.lower_bound(mx_2);
+            to = moving.lower_bound(ux_2lim);
             for (iCItem i = moving.begin(); i != to; ++i) 
-                  drawItem(p, i->second, rect, rg);
+                  drawItem(p, i->second, mr, mrg);
 
             // Draw special top item for new recordings etc.
-            drawTopItem(p,rect, rg);
+            drawTopItem(p,mr, mrg);
 
             // Draw special new item for first-time placement.
             // It is not in the item list yet. It will be added when mouse released.
             if(newCItem)
-              drawItem(p, newCItem, rect, rg);
+              drawItem(p, newCItem, mr, mrg);
       }
       else {  
             p.save();
@@ -638,33 +737,34 @@ void Canvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
             
 //             x2 = x + w;
 
-//             QRect new_rect(x, y, w, h);
-            QRect new_rect = devToVirt(rect);
-            x = new_rect.x();
-            y = new_rect.y();
-            w = new_rect.width();
-            h = new_rect.height();
+// //             QRect new_rect(x, y, w, h);
+//             QRect new_rect = devToVirt(mr);
+//             mx = new_rect.x();
+//             my = new_rect.y();
+//             mw = new_rect.width();
+//             mh = new_rect.height();
+//             
+//             mx_2 = mx + mw;
+//             
+//             QRegion new_rg;
+//             for(QRegion::const_iterator i = mrg.begin(); i != mrg.end(); ++i)
+//               new_rg += devToVirt(*i);
             
-            x2 = x + w;
-            
-            QRegion new_rg;
-            for(QRegion::const_iterator i = rg.begin(); i != rg.end(); ++i)
-              new_rg += devToVirt(*i);
-            
-            // REMOVE Tim. citem. Added. For testing.
-            const int rg_sz = new_rg.rectCount();
-            int rg_r_cnt = 0;
-            fprintf(stderr, "Canvas::draw: virt:%d new rect: x:%d y:%d w:%d h:%d new region rect count:%d\n",
-                    virt(), new_rect.x(), new_rect.y(), new_rect.width(), new_rect.height(), rg_sz);
-            for(QRegion::const_iterator i = new_rg.begin(); i != new_rg.end(); ++i, ++rg_r_cnt)
-            {
-              const QRect& rg_r = *i;
-              fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
-            }
+//             // REMOVE Tim. citem. Added. For testing.
+//             const int rg_sz = new_rg.rectCount();
+//             int rg_r_cnt = 0;
+//             fprintf(stderr, "Canvas::draw: virt:%d new rect: x:%d y:%d w:%d h:%d new region rect count:%d\n",
+//                     virt(), new_rect.x(), new_rect.y(), new_rect.width(), new_rect.height(), rg_sz);
+//             for(QRegion::const_iterator i = new_rg.begin(); i != new_rg.end(); ++i, ++rg_r_cnt)
+//             {
+//               const QRect& rg_r = *i;
+//               fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
+//             }
             
             
 //             drawCanvas(p, new_rect, rg);
-            drawCanvas(p, new_rect, new_rg);
+//             drawCanvas(p, new_rect, new_rg);
+            drawCanvas(p, mr, mrg);
             p.restore();
 
             //---------------------------------------------------
@@ -692,28 +792,37 @@ void Canvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
                   list2.push_back(ci);
               }  
             }
+
+            // Draw non-current part backgrounds behind all others:
+            drawParts(p, false, mr, mrg);
+
             int i;
             int sz = list1.size();
             for(i = 0; i != sz; ++i) 
-              drawItem(p, list1[i], rect, rg);
+              drawItem(p, list1[i], mr, mrg);
+
+            // Draw current part background in front of all others:
+            drawParts(p, true, mr, mrg);
+
             sz = list2.size();
             for(i = 0; i != sz; ++i) 
-              drawItem(p, list2[i], rect, rg);
+              drawItem(p, list2[i], mr, mrg);
             sz = list4.size();
             for(i = 0; i != sz; ++i) 
-              drawItem(p, list4[i], rect, rg);
+              drawItem(p, list4[i], mr, mrg);
 
             // Draw items being moved, a special way in their original location.
             for (iCItem i = moving.begin(); i != moving.end(); ++i) 
-                        drawItem(p, i->second, rect, rg);
+                        drawItem(p, i->second, mr, mrg);
             
             // Draw special top item for new recordings etc.
-            drawTopItem(p, new_rect, new_rg);
+//             drawTopItem(p, new_rect, new_rg);
+            drawTopItem(p, mr, mrg);
 
             // Draw special new item for first-time placement.
             // It is not in the item list yet. It will be added when mouse released.
             if(newCItem)
-              drawItem(p, newCItem, rect, rg);
+              drawItem(p, newCItem, mr, mrg);
             
             p.save();
             setPainter(p);
@@ -731,32 +840,45 @@ void Canvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       bool wmtxen = p.worldMatrixEnabled();
       p.setWorldMatrixEnabled(false);
       
-      int my = mapy(y);
-      int my2 = mapy(y + h);
-      MusECore::MarkerList* marker = MusEGlobal::song->marker();
-      pen.setColor(Qt::green);
-      p.setPen(pen);
-      for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
-            int xp = m->second.tick();
-            if (xp >= x && xp < x+w) {
-                  p.drawLine(mapx(xp), my, mapx(xp), my2);
-                  }
-            }
-
+// //       int my = mapy(my);
+// //       int my2 = mapy(my + mh);
+//       MusECore::MarkerList* marker = MusEGlobal::song->marker();
+//       pen.setColor(Qt::green);
+//       p.setPen(pen);
+//       for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
+// //             int xp = m->second.tick();
+//             const ViewXCoordinate xp(m->second.tick(), false);
+// //             if (xp >= mx && xp < mx+mw) {
+//             if (isXInRange(xp, vx, vx_2)) {
+//                   const int mxp = asMapped(xp)._value;
+// //                   p.drawLine(mapx(xp), my, mapx(xp), my_2);
+//                   p.drawLine(mxp, my, mxp, my_2);
+//                   }
+//             }
+       drawMarkers(p, mr, mrg);
+       
+       
       //---------------------------------------------------
       //    draw location marker
       //---------------------------------------------------
 
       pen.setColor(Qt::blue);
       p.setPen(pen);
-      int mx;
-      if ((int)pos[1] >= x && (int)pos[1] < x2) {
-            mx = mapx(pos[1]);
-            p.drawLine(mx, my, mx, my2);
+      int mlx;
+      ViewXCoordinate lxp0(pos[0], false);
+      ViewXCoordinate lxp1(pos[1], false);
+      ViewXCoordinate lxp2(pos[2], false);
+//       if ((int)pos[1] >= mx && (int)pos[1] < mx_2) {
+      if (isXInRange(lxp1, vx, vx_2)) {
+//             mlx = mapx(pos[1]);
+            mlx = asMapped(lxp1)._value;
+            p.drawLine(mlx, my, mlx, my_2);
             }
-      if ((int)pos[2] >= x && (int)pos[2] < x2) {
-            mx = mapx(pos[2]);
-            p.drawLine(mx, my, mx, my2);
+//       if ((int)pos[2] >= mx && (int)pos[2] < mx_2) {
+      if (isXInRange(lxp2, vx, vx_2)) {
+//             mlx = mapx(pos[2]);
+            mlx = asMapped(lxp2)._value;
+            p.drawLine(mlx, my, mlx, my_2);
             }
       // Draw the red main position cursor last, on top of the others.
       pen.setColor(Qt::red);
@@ -766,14 +888,16 @@ void Canvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
 //       fprintf(stderr, "...location marker: pos[0]%d x:%d x2:%d\n",
 //               pos[0], x, x2);
       
-      if ((int)pos[0] >= x && (int)pos[0] < x2) {
-            mx = mapx(pos[0]);
+//       if ((int)pos[0] >= mx && (int)pos[0] < mx_2) {
+      if (isXInRange(lxp0, vx, vx_2)) {
+//             mlx = mapx(pos[0]);
+            mlx = asMapped(lxp0)._value;
             
             // REMOVE Tim. citem. Added. For testing.
 //             fprintf(stderr, "...location marker in range. Drawing line at mx:%d my:%d mx:%d my2:%d\n",
 //                 mx, my, mx, my2);
             
-            p.drawLine(mx, my, mx, my2);
+            p.drawLine(mlx, my, mlx, my_2);
             }
       
       if(drag == DRAG_ZOOM)
@@ -809,13 +933,13 @@ void Canvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       if(virt()) 
       {
         for(iCItem i = moving.begin(); i != moving.end(); ++i) 
-          drawMoving(p, i->second, rect, rg);
+          drawMoving(p, i->second, mr, mrg);
       }
       else 
       {  
         p.restore();
         for(iCItem i = moving.begin(); i != moving.end(); ++i) 
-          drawMoving(p, i->second, rect, rg);
+          drawMoving(p, i->second, mr, mrg);
         setPainter(p);
       }
 }

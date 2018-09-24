@@ -144,8 +144,11 @@ void MTScaleFlo::mouseMoveEvent(QMouseEvent* event)
       else
             setCursor(QCursor(Qt::ArrowCursor));
       
-      int tick = AL::sigmap.raster(parent->x_to_tick(event->x()-xoffset+xpos), parent->quant_ticks());
+      int x = event->x();
+      if (x<0) x=0;
+      int tick = parent->x_to_tick(x-xoffset+xpos);
       if (tick<0) tick=0;
+      tick = AL::sigmap.raster(tick, parent->quant_ticks());
 
       int i;
       switch (button) {

@@ -248,6 +248,11 @@ void Master::newValRamp(int x1, int y1, int x2, int y2)
 // loop through all tick positions between x1 and x2
 // remove all tempo changes and add new ones for changed
 
+  if(x1 < 0)
+    x1 = 0;
+  if(x2 < 0)
+    x2 = 0;
+  
   int tickStart = editor->rasterVal1(x1);
   int tickEnd = editor->rasterVal2(x2);
 
@@ -420,6 +425,10 @@ bool Master::deleteVal1(unsigned int x1, unsigned int x2)
 
 void Master::deleteVal(int x1, int x2)
       {
+      if(x1 < 0)
+        x1 = 0;
+      if(x2 < 0)
+        x2 = 0;
       if (deleteVal1(editor->rasterVal1(x1), x2))
             redraw();
       }
@@ -452,6 +461,10 @@ void Master::setTool(int t)
 
 void Master::newVal(int x1, int x2, int y)
       {
+      if(x1 < 0)
+        x1 = 0;
+      if(x2 < 0)
+        x2 = 0;
       int xx1 = editor->rasterVal1(x1);
       int xx2 = editor->rasterVal2(x2);
 

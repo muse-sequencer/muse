@@ -137,6 +137,8 @@ void EventCanvas::mouseMove(QMouseEvent* event)
       {
       emit pitchChanged(y2pitch(event->pos().y()));
       int x = event->pos().x();
+      if(x < 0)
+        x = 0;
       emit timeChanged(editor->rasterVal(x));
       }
 
@@ -677,7 +679,10 @@ void EventCanvas::viewDropEvent(QDropEvent* event)
       if (event->mimeData()->hasFormat("text/x-muse-groupedeventlists")) {
             text = QString(event->mimeData()->data("text/x-muse-groupedeventlists"));
       
-            int x = editor->rasterVal(event->pos().x());
+            int x = event->pos().x();
+            if(x < 0)
+              x = 0;
+            x = editor->rasterVal(x);
             if (x < 0)
                   x = 0;
             paste_at(text,x,3072,false,false,curPart);
