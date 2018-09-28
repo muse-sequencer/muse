@@ -1432,8 +1432,10 @@ void ScoreCanvas::tagItems(bool tagAllItems, bool tagAllParts, bool range,
         
         if(range)
         {
-          pos = e.pos();
-          if(!(pos >= p0 && pos < p1))
+          // Don't forget to add the part's position.
+          pos = e.pos() + *part;
+          // p1 should be considered outside (one past) the very last position in the range.
+          if(pos < p0 || pos >= p1)
             continue;
         }
         

@@ -2969,8 +2969,8 @@ ViewRect View::intersected(const ViewRect& r1, const ViewRect& r2) const
     fw = fx_2 - fx_1;
     
     // REMOVE Tim. citem. Added.
-    fprintf(stderr, "View::intersected: xmag:%d vr1x:%d vr1x_2:%d vr2x:%d vr2x_2:%d fx_1:%d fx_2:%d\n",
-            xmag, vr1x, vr1x_2, vr2x, vr2x_2, fx_1, fx_2);
+//     fprintf(stderr, "View::intersected: xmag:%d vr1x:%d vr1x_2:%d vr2x:%d vr2x_2:%d fx_1:%d fx_2:%d\n",
+//             xmag, vr1x, vr1x_2, vr2x, vr2x_2, fx_1, fx_2);
   }
   else
   {
@@ -2985,8 +2985,8 @@ ViewRect View::intersected(const ViewRect& r1, const ViewRect& r2) const
     fw = fx_2 - fx_1;
     
     // REMOVE Tim. citem. Added.
-    fprintf(stderr, "View::intersected: xmag:%d mr1x:%d mr1x_2:%d mr2x:%d mr2x_2:%d fx_1:%d fx_2:%d\n",
-            xmag, mr1x, mr1x_2, mr2x, mr2x_2, fx_1, fx_2);
+//     fprintf(stderr, "View::intersected: xmag:%d mr1x:%d mr1x_2:%d mr2x:%d mr2x_2:%d fx_1:%d fx_2:%d\n",
+//             xmag, mr1x, mr1x_2, mr2x, mr2x_2, fx_1, fx_2);
   }
   
   if (ymag <= 0)
@@ -3002,8 +3002,8 @@ ViewRect View::intersected(const ViewRect& r1, const ViewRect& r2) const
     fh = fy_2 - fy_1;
     
     // REMOVE Tim. citem. Added.
-    fprintf(stderr, "View::intersected: ymag:%d vr1y:%d vr1y_2:%d vr2y:%d vr2y_2:%d fy_1:%d fy_2:%d\n",
-            ymag, vr1y, vr1y_2, vr2y, vr2y_2, fy_1, fy_2);
+//     fprintf(stderr, "View::intersected: ymag:%d vr1y:%d vr1y_2:%d vr2y:%d vr2y_2:%d fy_1:%d fy_2:%d\n",
+//             ymag, vr1y, vr1y_2, vr2y, vr2y_2, fy_1, fy_2);
   }
   else
   {
@@ -3018,8 +3018,8 @@ ViewRect View::intersected(const ViewRect& r1, const ViewRect& r2) const
     fh = fy_2 - fy_1;
     
     // REMOVE Tim. citem. Added.
-    fprintf(stderr, "View::intersected: ymag:%d mr1y:%d mr1y_2:%d mr2y:%d mr2y_2:%d fy_1:%d fy_2:%d\n",
-            ymag, mr1y, mr1y_2, mr2y, mr2y_2, fy_1, fy_2);
+//     fprintf(stderr, "View::intersected: ymag:%d mr1y:%d mr1y_2:%d mr2y:%d mr2y_2:%d fy_1:%d fy_2:%d\n",
+//             ymag, mr1y, mr1y_2, mr2y, mr2y_2, fy_1, fy_2);
   }
   
   return ViewRect(ViewXCoordinate(fx_1, !xunmap),
@@ -3199,8 +3199,8 @@ bool View::intersects(const ViewRect& r1, const ViewRect& r2) const
     fx_2 = vr1x_2 < vr2x_2 ? vr1x_2 : vr2x_2;
     
     // REMOVE Tim. citem. Added.
-    fprintf(stderr, "View::intersects: xmag:%d vr1x:%d vr1x_2:%d vr2x:%d vr2x_2:%d fx_1:%d fx_2:%d\n",
-            xmag, vr1x, vr1x_2, vr2x, vr2x_2, fx_1, fx_2);
+//     fprintf(stderr, "View::intersects: xmag:%d vr1x:%d vr1x_2:%d vr2x:%d vr2x_2:%d fx_1:%d fx_2:%d\n",
+//             xmag, vr1x, vr1x_2, vr2x, vr2x_2, fx_1, fx_2);
   }
   else
   {
@@ -3214,8 +3214,8 @@ bool View::intersects(const ViewRect& r1, const ViewRect& r2) const
     fx_2 = mr1x_2 < mr2x_2 ? mr1x_2 : mr2x_2;
     
     // REMOVE Tim. citem. Added.
-    fprintf(stderr, "View::intersects: xmag:%d mr1x:%d mr1x_2:%d mr2x:%d mr2x_2:%d fx_1:%d fx_2:%d\n",
-            xmag, mr1x, mr1x_2, mr2x, mr2x_2, fx_1, fx_2);
+//     fprintf(stderr, "View::intersects: xmag:%d mr1x:%d mr1x_2:%d mr2x:%d mr2x_2:%d fx_1:%d fx_2:%d\n",
+//             xmag, mr1x, mr1x_2, mr2x, mr2x_2, fx_1, fx_2);
   }
   
   if (ymag <= 0)
@@ -3230,8 +3230,8 @@ bool View::intersects(const ViewRect& r1, const ViewRect& r2) const
     fy_2 = vr1y_2 < vr2y_2 ? vr1y_2 : vr2y_2;
     
     // REMOVE Tim. citem. Added.
-    fprintf(stderr, "View::intersects: ymag:%d vr1y:%d vr1y_2:%d vr2y:%d vr2y_2:%d fy_1:%d fy_2:%d\n",
-            ymag, vr1y, vr1y_2, vr2y, vr2y_2, fy_1, fy_2);
+//     fprintf(stderr, "View::intersects: ymag:%d vr1y:%d vr1y_2:%d vr2y:%d vr2y_2:%d fy_1:%d fy_2:%d\n",
+//             ymag, vr1y, vr1y_2, vr2y, vr2y_2, fy_1, fy_2);
   }
   else
   {
@@ -3245,8 +3245,8 @@ bool View::intersects(const ViewRect& r1, const ViewRect& r2) const
     fy_2 = mr1y_2 < mr2y_2 ? mr1y_2 : mr2y_2;
     
     // REMOVE Tim. citem. Added.
-    fprintf(stderr, "View::intersects: ymag:%d mr1y:%d mr1y_2:%d mr2y:%d mr2y_2:%d fy_1:%d fy_2:%d\n",
-            ymag, mr1y, mr1y_2, mr2y, mr2y_2, fy_1, fy_2);
+//     fprintf(stderr, "View::intersects: ymag:%d mr1y:%d mr1y_2:%d mr2y:%d mr2y_2:%d fy_1:%d fy_2:%d\n",
+//             ymag, mr1y, mr1y_2, mr2y, mr2y_2, fy_1, fy_2);
   }
   
   return fx_1 < fx_2 && fy_1 < fy_2;

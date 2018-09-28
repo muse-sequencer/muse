@@ -145,7 +145,11 @@ void CEvent::setObjectTagged(bool v)
 
 bool CEvent::isObjectInRange(const MusECore::Pos& p0, const MusECore::Pos& p1) const
 {
-  return _event.pos() >= p0 && _event.pos() < p1;
+//   return _event.pos() >= p0 && _event.pos() < p1;
+  MusECore::Pos pos = _event.pos();
+  if(_part)
+    pos += (*_part);
+  return pos >= p0 && pos < p1;
 }
 
 //---------------------------------------------------------
@@ -1095,6 +1099,8 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
       
       bool ctrlKey = event->modifiers() & Qt::ControlModifier;
       int xpos = start.x();
+      if(xpos < 0)
+        xpos = 0;
       int ypos = start.y();
 
       MusECore::MidiController::ControllerType type = MusECore::midiControllerType(_controller->num());
@@ -1242,12 +1248,15 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
             default:
                   break;
             }
+      if(pos.x() < 0)
+        pos.setX(0);
       if (tool == MusEGui::DrawTool && drawLineMode) {
             line2x = pos.x();
             line2y = pos.y();
             redraw();
             }
-      emit xposChanged(pos.x());
+      //emit xposChanged(pos.x());
+      emit xposChanged(editor->rasterVal(pos.x()));
       
       
       int val = computeVal(_controller, pos.y(), height());

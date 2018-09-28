@@ -75,6 +75,12 @@ iEvent EventList::add(Event event)
       // There was a bug that all the wave events' tick values were not correct,
       // since they were computed BEFORE the tempo map was loaded.
       
+      // From cppreference.com about the insert hint parameter (we now use C++11):
+      // hint -
+      // iterator, used as a suggestion as to where to start the search (until C++11)
+      // iterator to the position before which the new element will be inserted (since C++11)
+      //                          ------
+
       if(event.type() == Wave)
         return insert(std::pair<const unsigned, Event> (event.frame(), event));          
 
@@ -86,11 +92,37 @@ iEvent EventList::add(Event event)
       }
       else
       {
-        iEvent i = lower_bound(key);
-        while(i != end() && i->first == key && i->second.type() != Note)
-          ++i;
-        return insert(i, std::pair<const unsigned, Event> (key, event));   
+        if(event.type() == Controller)
+        {
+          EventRange er = equal_range(key);
+          iEvent i = er.second;
+          iEvent loc = i;
+          const int data_a = event.dataA();
+          while(i != er.first)
+          {
+            --i;
+            // Special: There must be only ONE value per controller per position.
+            // If there is already a controller value for this controller number
+            //  at this position, just replace it and return.
+            if(i->second.type() == Controller && i->second.dataA() == data_a)
+            {
+              i->second.setB(event.dataB());
+              return i;
+            }
+            if(i->second.type() == Note)
+              loc = i;
+          }
+          return insert(loc, std::pair<const unsigned, Event> (key, event));   
+        }
+        else
+        {        
+          iEvent i = lower_bound(key);
+          while(i != end() && i->first == key && i->second.type() != Note)
+            ++i;
+          return insert(i, std::pair<const unsigned, Event> (key, event));   
+        }
       }
+      return end();
       }
 
 //---------------------------------------------------------

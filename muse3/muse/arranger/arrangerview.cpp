@@ -495,7 +495,7 @@ void ArrangerView::tagItems(bool tagAllItems, bool tagAllParts, bool range,
     MusECore::Track* track;
     MusECore::PartList* pl;
     MusECore::Part* part;
-    MusECore::Pos pos;
+    MusECore::Pos pos, part_pos, part_endpos;
     MusECore::TrackList* tl = MusEGlobal::song->tracks();
     
     for(MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it)
@@ -511,15 +511,30 @@ void ArrangerView::tagItems(bool tagAllItems, bool tagAllParts, bool range,
         {
           if(tagAllItems)
           {
+            if(range)
+            {
+              part_pos = *part;
+              part_endpos = part->end();
+              // Optimize: Is the part within the range?
+              // p1 should be considered outside (one past) the very last position in the range.
+              if(part_endpos <= p0 || part_pos >= p1)
+                continue;
+            }
             MusECore::EventList& el = part->nonconst_events();
             for(MusECore::iEvent ie = el.begin(); ie != el.end(); ++ie)
             {
               MusECore::Event& e = ie->second;
               if(range)
               {
-                pos = e.pos();
-                if(!(pos >= p0 && pos < p1))
+                // Don't forget to add the part's position.
+                pos = e.pos() + part_pos;
+                // If the event position is before p0, keep looking...
+                if(pos < p0)
                   continue;
+                // If the event position is at or after p1 then we are done.
+                // p1 should be considered outside (one past) the very last position in the range.
+                if(pos >= p1)
+                  break;
               }
               e.setTagged(true);
               part->setEventsTagged(true);

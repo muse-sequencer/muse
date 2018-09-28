@@ -564,15 +564,15 @@ void Canvas::draw(QPainter& p, const QRect& mr, const QRegion& mrg)
 //      printf("draw canvas %x virt %d\n", this, virt());
 
       // REMOVE Tim. citem. Added. For testing.
-      const int rg_sz = mrg.rectCount();
-      int rg_r_cnt = 0;
-      fprintf(stderr, "Canvas::draw: virt:%d rect: x:%d y:%d w:%d h:%d region rect count:%d\n",
-              virt(), mr.x(), mr.y(), mr.width(), mr.height(), rg_sz);
-      for(QRegion::const_iterator i = mrg.begin(); i != mrg.end(); ++i, ++rg_r_cnt)
-      {
-        const QRect& rg_r = *i;
-        fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
-      }
+//       const int rg_sz = mrg.rectCount();
+//       int rg_r_cnt = 0;
+//       fprintf(stderr, "Canvas::draw: virt:%d rect: x:%d y:%d w:%d h:%d region rect count:%d\n",
+//               virt(), mr.x(), mr.y(), mr.width(), mr.height(), rg_sz);
+//       for(QRegion::const_iterator i = mrg.begin(); i != mrg.end(); ++i, ++rg_r_cnt)
+//       {
+//         const QRect& rg_r = *i;
+//         fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
+//       }
       
       const int mx = mr.x();
       const int my = mr.y();
@@ -637,11 +637,11 @@ void Canvas::draw(QPainter& p, const QRect& mr, const QRegion& mrg)
             iCItem to(items.upper_bound(ux_2lim));
             
             // REMOVE Tim. citem. Added. For testing.
-            fprintf(stderr, "Canvas::draw: virt:%d x2:%d ux2_lim:%d\n", virt(), mx_2, ux_2lim);
-            if(to == items.end())
-              fprintf(stderr, "...item not found\n");
-            else
-              fprintf(stderr, "...item found\n");
+//             fprintf(stderr, "Canvas::draw: virt:%d x2:%d ux2_lim:%d\n", virt(), mx_2, ux_2lim);
+//             if(to == items.end())
+//               fprintf(stderr, "...item not found\n");
+//             else
+//               fprintf(stderr, "...item found\n");
             
             int ii = 0;
             for(iCItem i = items.begin(); i != to; ++i, ++ii)
@@ -652,7 +652,7 @@ void Canvas::draw(QPainter& p, const QRect& mr, const QRegion& mrg)
               //ci->part()->hasHiddenEvents();
               
               // REMOVE Tim. citem. Added. For testing.
-              fprintf(stderr, "...item:%d bbox x:%d y:%d w:%d h:%d\n", ii, ci->bbox().x(), ci->bbox().y(), ci->bbox().width(), ci->bbox().height());
+//               fprintf(stderr, "...item:%d bbox x:%d y:%d w:%d h:%d\n", ii, ci->bbox().x(), ci->bbox().y(), ci->bbox().width(), ci->bbox().height());
               
               // Draw items from other parts behind all others.
               // Only for items with events (not arranger parts).

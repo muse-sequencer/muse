@@ -983,8 +983,11 @@ bool delete_overlaps(const set<const Part*>& parts, int range)
 
 						if (new_len==0)
 						{
-							operations.push_back(UndoOp(UndoOp::DeleteEvent, event1, part1, false, false));
-							deleted_events.insert(&event1);
+// REMOVE Tim. citem. Changed. Mistake by original author? Multiple deletion of event1 !
+// 							operations.push_back(UndoOp(UndoOp::DeleteEvent, event1, part1, false, false));
+// 							deleted_events.insert(&event1);
+							operations.push_back(UndoOp(UndoOp::DeleteEvent, event2, part2, false, false));
+							deleted_events.insert(&event2);
 						}
 						else
 						{
@@ -1054,7 +1057,47 @@ bool legato(const set<const Part*>& parts, int range, int min_len, bool dont_sho
 		return false;
 }
 
+// if nothing is selected/relevant, this function returns NULL
+QMimeData* selected_events_to_mime(const set<const Part*>& parts, int range)
+{
+    unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
 
+    for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+        for (ciEvent ev=(*part)->events().begin(); ev!=(*part)->events().end(); ev++)
+            if (is_relevant(ev->second, *part, range, AllEventsRelevant))
+                if (ev->second.tick() < start_tick)
+                    start_tick=ev->second.tick();
+
+    if (start_tick == INT_MAX)
+        return NULL;
+
+    //---------------------------------------------------
+    //    write events as XML into tmp file
+    //---------------------------------------------------
+
+    FILE* tmp = tmpfile();
+    if (tmp == 0)
+    {
+        fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
+        return 0;
+    }
+
+    Xml xml(tmp);
+    int level = 0;
+
+    for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+    {
+        xml.tag(level++, "eventlist part_id=\"%d\"", (*part)->sn());
+        for (ciEvent ev=(*part)->events().begin(); ev!=(*part)->events().end(); ev++)
+            if (is_relevant(ev->second, *part, range, AllEventsRelevant))
+                ev->second.write(level, xml, -start_tick);
+        xml.etag(--level, "eventlist");
+    }
+
+    QMimeData *mimeData =  file_to_mimedata(tmp, "text/x-muse-groupedeventlists" );
+    fclose(tmp);
+    return mimeData;
+}
 
 void copy_notes(const set<const Part*>& parts, int range)
 {
@@ -1992,6 +2035,34 @@ void untag_all_items()
 	}
 }
 
+//--------------------------------------------------------
+// untag_clones
+// Untags any clones of the given event in the given part.
+// Does not untag the given event or the given part.
+//--------------------------------------------------------
+
+void untag_clones(Part* part, const Event& event)
+{
+  Part* p = part;
+  do
+  {
+    // Only for other clones. Leave the given part and event alone.
+    // Optimization: Only if the part says events are tagged.
+    if(p != part && p->eventsTagged())
+    {
+      iEvent ie = p->nonconst_events().findWithId(event);
+      if(ie != p->nonconst_events().end())
+      {
+        // Untag the event. Don't bother resetting the part's eventsTagged flag
+        //  since there may be still be other tagged events.
+        ie->second.setTagged(false);
+      }
+    }
+    p = p->nextClone();
+  }
+  while(p != part);
+}
+
 bool erase_items(int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
 {
   Undo operations;
@@ -2017,6 +2088,10 @@ bool erase_items(int velo_threshold, bool velo_thres_used, int len_threshold, bo
           if(e.tagged())
           {
             e.setTagged(false);
+            
+            // If there are clones of this event, untag all of them now except this one.
+            untag_clones(part, e);
+            
             // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
             if ( e.type() != Note || (!velo_thres_used && !len_thres_used) ||
                    (velo_thres_used && e.velo() < velo_threshold) ||
@@ -2069,6 +2144,9 @@ bool crescendo_items(int start_val, int end_val, bool absolute)
           if(e.tagged())
           {
             e.setTagged(false);
+            
+            // If there are clones of this event, untag all of them now except this one.
+            untag_clones(part, e);
             
             // This operation can only apply to notes.
             if(e.type() != Note)
@@ -2128,37 +2206,55 @@ bool delete_overlaps_items()
           {
             e.setTagged(false);
             
+            // If there are clones of this event, untag all of them now.
+            untag_clones(part, e);
+            
             // This operation can only apply to notes.
             if(e.type() != Note)
               continue;
             
+            // Has this event already been scheduled for deletion? Ignore it.
+            if(deleted_events.find(&e) != deleted_events.end())
+              continue;
+                  
             iEvent ie2 = ie;
             ++ie2;
             for( ; ie2 != el.end(); ++ie2)
             {
               Event& e2 = ie2->second;
               
-              if (!(e == e2) &&                                        // event1 and event2 don't point to the same event
-                  (deleted_events.find(&e2) == deleted_events.end()) ) // and event2 hasn't been deleted before
+              // Do e2 and e point to the same event? Or has e2 already been scheduled for deletion? Ignore it.
+              if(e == e2 || deleted_events.find(&e2) != deleted_events.end())
+                continue;
+              
+              if ( (e.pitch() == e2.pitch()) &&
+                  (e.tick() <= e2.tick()) &&
+                  (e.endTick() > e2.tick()) ) //they overlap
               {
-                if ( (e.pitch() == e2.pitch()) &&
-                    (e.tick() <= e2.tick()) &&
-                    (e.endTick() > e2.tick()) ) //they overlap
-                {
-                  new_len = e2.tick() - e.tick();
+                new_len = e2.tick() - e.tick();
 
-                  if(new_len==0)
-                  {
-                    operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, false, false));
-                    deleted_events.insert(&e);
-                  }
-                  else
-                  {
-                    new_event1 = e.clone();
-                    new_event1.setLenTick(new_len);
-                    
-                    operations.push_back(UndoOp(UndoOp::ModifyEvent, new_event1, e, part, false, false));
-                  }
+                if(new_len==0)
+                {
+                  // Might as well untag e2 and any of its clones, since it has been processed now.
+                  e2.setTagged(false);
+                  untag_clones(part, e2);
+// REMOVE Tim. citem. Changed. Mistake by original author? Multiple deletion of e !
+//                     operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, false, false));
+//                     deleted_events.insert(&e);
+                  operations.push_back(UndoOp(UndoOp::DeleteEvent, e2, part, false, false));
+                  deleted_events.insert(&e2);
+                }
+                else
+                {
+                  new_event1 = e.clone();
+                  new_event1.setLenTick(new_len);
+                  
+                  operations.push_back(UndoOp(UndoOp::ModifyEvent, new_event1, e, part, false, false));
+                  
+                  // After resizing the event, it should not be necessary to continue with any further
+                  //  events in this loop since any more sorted events will come at or AFTER e2's position
+                  //  which we have just resized the end of e to.
+                  break;
                 }
               }
             }
@@ -2206,6 +2302,9 @@ bool modify_notelen_items(int rate, int offset)
           if(e.tagged())
           {
             e.setTagged(false);
+            
+            // If there are clones of this event, untag all of them now.
+            untag_clones(part, e);
             
             // This operation can only apply to notes.
             if(e.type() != Note)
@@ -2275,6 +2374,9 @@ bool legato_items(int min_len, bool dont_shorten)
             if(e.type() != Note)
               continue;
             
+            // If there are clones of this event, untag all of them now.
+            untag_clones(part, e);
+            
             iEvent ie2 = ie;
             ++ie2;
             for( ; ie2 != el.end(); ++ie2)
@@ -2343,6 +2445,9 @@ bool move_items(signed int ticks)
           if(e.tagged())
           {
             e.setTagged(false);
+            
+            // If there are clones of this event, untag all of them now.
+            untag_clones(part, e);
             
             del = false;
             
@@ -2430,6 +2535,9 @@ bool quantize_items(int raster_idx, bool quant_len, int strength, int swing, int
           {
             e.setTagged(false);
             
+            // If there are clones of this event, untag all of them now.
+            untag_clones(part, e);
+            
             // This operation can only apply to notes.
             if(e.type() != Note)
               continue;
@@ -2508,6 +2616,9 @@ bool transpose_items(signed int halftonesteps)
           {
             e.setTagged(false);
             
+            // If there are clones of this event, untag all of them now.
+            untag_clones(part, e);
+            
             // This operation can only apply to notes.
             if(e.type() != Note)
               continue;
@@ -2560,6 +2671,9 @@ bool modify_velocity_items(int rate, int offset)
           if(e.tagged())
           {
             e.setTagged(false);
+            
+            // If there are clones of this event, untag all of them now.
+            untag_clones(part, e);
             
             // This operation can only apply to notes.
             if(e.type() != Note)
@@ -2663,7 +2777,7 @@ void copy_items()
 
 bool cut_items()
 {
-  QMimeData* drag = cut_or_copy_tagged_items_to_mime(true, true);
+  QMimeData* drag = cut_or_copy_tagged_items_to_mime(true);
 
   if(drag)
   {
@@ -2674,57 +2788,21 @@ bool cut_items()
   return false;
 }
 
-// if nothing is selected/relevant, this function returns NULL
-QMimeData* selected_events_to_mime(const set<const Part*>& parts, int range)
-{
-    unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
-
-    for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-        for (ciEvent ev=(*part)->events().begin(); ev!=(*part)->events().end(); ev++)
-            if (is_relevant(ev->second, *part, range, AllEventsRelevant))
-                if (ev->second.tick() < start_tick)
-                    start_tick=ev->second.tick();
-
-    if (start_tick == INT_MAX)
-        return NULL;
-
-    //---------------------------------------------------
-    //    write events as XML into tmp file
-    //---------------------------------------------------
-
-    FILE* tmp = tmpfile();
-    if (tmp == 0)
-    {
-        fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
-        return 0;
-    }
-
-    Xml xml(tmp);
-    int level = 0;
-
-    for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-    {
-        xml.tag(level++, "eventlist part_id=\"%d\"", (*part)->sn());
-        for (ciEvent ev=(*part)->events().begin(); ev!=(*part)->events().end(); ev++)
-            if (is_relevant(ev->second, *part, range, AllEventsRelevant))
-                ev->second.write(level, xml, -start_tick);
-        xml.etag(--level, "eventlist");
-    }
-
-    QMimeData *mimeData =  file_to_mimedata(tmp, "text/x-muse-groupedeventlists" );
-    fclose(tmp);
-    return mimeData;
-}
-
 // REMOVE Tim. citem. Added.
 // if nothing is selected/relevant, this function returns NULL
-QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode, bool untag_when_done)
+QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode /*, bool untag_when_done*/)
 {
-    unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
+//     unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
+  
+    // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
+//     unsigned start_tick = 0;
+    //Event start_event;
+    Pos start_pos;
 
     Undo operations;
   
     //bool do_cut = false;
+    bool found = false;
     bool changed = false;
     Part* part;
     PartList* pl;
@@ -2742,6 +2820,8 @@ QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode, bool untag_when_done)
           for(ciEvent ie = el.begin(); ie != el.end(); ie++)
           {
             const Event& e = ie->second;
+            //Event e = ie->second;
+            
 //             do_cut = false;
 //             if(cut_mode)
 //             {
@@ -2754,17 +2834,36 @@ QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode, bool untag_when_done)
 //             if(e.tagged() && (!cut_mode || do_cut)) // && is_relevant(e, part, range, AllEventsRelevant))
             if(e.tagged()) // && is_relevant(e, part, range, AllEventsRelevant))
             {
-              if(e.tick() < start_tick)
-                start_tick = e.tick();
+//               if(e.tick() < start_tick)
+              
+              // Make sure the very first item is always processed.
+              //if(!found || e.tick() < start_tick)
+              if(!found || e.pos() < start_pos)
+              {
+                found = true;
+//                 start_tick = e.tick();
+                //start_event = e;
+                start_pos = e.pos();
+              }
+              
+              // If there are clones of this event, untag all of them now except this one.
+              // This prevents the operations system from warning of double operations.
+              // The operations system will automatically take care of clones when performing
+              //  an operation on any ONE of them. So make sure THIS is the only one tagged.
+              // Since this is the first clone found, its position is the one considered
+              //  for start_tick above, and this should be OK since the parts and events are
+              //  sorted by position.
+              untag_clones(part, e);
             }
           }
         }
       }
     }
     
-    if (start_tick == INT_MAX)
+//     if (start_tick == INT_MAX)
+    if(!found)
     {
-      if(untag_when_done)
+      //if(untag_when_done)
       {
         // We must clear all the tagged flags...
         for(ciTrack it = tl->begin(); it != tl->end(); ++it)
@@ -2808,12 +2907,12 @@ QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode, bool untag_when_done)
       for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
       {
         part = ip->second;
-        if(untag_when_done)
+        //if(untag_when_done)
           part->setTagged(false);
         // As an optimization, we only walk the events if the part says events are tagged.
         if(part->eventsTagged())
         {
-          if(untag_when_done)
+          //if(untag_when_done)
             part->setEventsTagged(false);
           xml.tag(level++, "eventlist part_id=\"%d\"", part->sn());
           EventList& el = part->nonconst_events();
@@ -2822,7 +2921,7 @@ QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode, bool untag_when_done)
             Event& e = ie->second;
             if(e.tagged())
             {
-              if(untag_when_done)
+              //if(untag_when_done)
                 e.setTagged(false);
 
 //               do_cut = false;
@@ -2835,9 +2934,14 @@ QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode, bool untag_when_done)
 //               }
                 
               
-              //if(is_relevant(e, part, range, AllEventsRelevant))
 //               if(!cut_mode || do_cut)
-                e.write(level, xml, -start_tick);
+                //e.write(level, xml, -start_tick);
+                //Event ne(e);
+                Event ne = e.clone();
+                //ne.setPos(ne.pos() - start_event.pos());
+                ne.setPos(ne.pos() - start_pos);
+                ne.write(level, xml, Pos(0, e.pos().type() == Pos::TICKS));
+                //ne.write(level, xml, -start_pos);
                 
 //               if(cut_mode && do_cut)
               if(cut_mode)

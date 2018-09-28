@@ -321,7 +321,7 @@ void MidiEditor::tagItems(bool tagAllItems, bool tagAllParts, bool range,
   if(tagAllItems)
   {
     MusECore::Part* part;
-    MusECore::Pos pos;
+    MusECore::Pos pos, part_pos, part_endpos;
     if(tagAllParts)
     {
       if(_pl)
@@ -329,15 +329,30 @@ void MidiEditor::tagItems(bool tagAllItems, bool tagAllParts, bool range,
         for(MusECore::ciPart ip = _pl->begin(); ip != _pl->end(); ++ip)
         {
           part = ip->second;
+          if(range)
+          {
+            part_pos = *part;
+            part_endpos = part->end();
+            // Optimize: Is the part within the range?
+            // p1 should be considered outside (one past) the very last position in the range.
+            if(part_endpos <= p0 || part_pos >= p1)
+              continue;
+          }
           MusECore::EventList& el = part->nonconst_events();
           for(MusECore::iEvent ie = el.begin(); ie != el.end(); ++ie)
           {
             MusECore::Event& e = ie->second;
             if(range)
             {
-              pos = e.pos();
-              if(!(pos >= p0 && pos < p1))
+              // Don't forget to add the part's position.
+              pos = e.pos() + part_pos;
+              // If the event position is before p0, keep looking...
+              if(pos < p0)
                 continue;
+              // If the event position is at or after p1 then we are done.
+              // p1 should be considered outside (one past) the very last position in the range.
+              if(pos >= p1)
+                break;
             }
             e.setTagged(true);
             part->setEventsTagged(true);
@@ -350,15 +365,30 @@ void MidiEditor::tagItems(bool tagAllItems, bool tagAllParts, bool range,
       if(canvas && canvas->part())
       {
         part = canvas->part();
+        if(range)
+        {
+          part_pos = *part;
+          part_endpos = part->end();
+          // Optimize: Is the part within the range?
+          // p1 should be considered outside (one past) the very last position in the range.
+          if(part_endpos <= p0 || part_pos >= p1)
+            return;
+        }
         MusECore::EventList& el = part->nonconst_events();
         for(MusECore::iEvent ie = el.begin(); ie != el.end(); ++ie)
         {
           MusECore::Event& e = ie->second;
           if(range)
           {
-            pos = e.pos();
-            if(!(pos >= p0 && pos < p1))
+            // Don't forget to add the part's position.
+            pos = e.pos() + part_pos;
+            // If the event position is before p0, keep looking...
+            if(pos < p0)
               continue;
+            // If the event position is at or after p1 then we are done.
+            // p1 should be considered outside (one past) the very last position in the range.
+            if(pos >= p1)
+              break;
           }
           e.setTagged(true);
           part->setEventsTagged(true);

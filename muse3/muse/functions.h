@@ -295,7 +295,7 @@ bool transpose_items(signed int halftonesteps);
 bool modify_velocity_items(int rate, int offset=0);
 bool modify_off_velocity_items(int rate, int offset=0);
 
-QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode = false, bool untag_when_done = true);
+QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode = false /*, bool untag_when_done = true*/);
 
 bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part=NULL); // shows a dialog
 void paste_items(const std::set<const Part*>& parts, int max_distance=3072,

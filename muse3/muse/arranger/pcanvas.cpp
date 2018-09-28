@@ -4498,7 +4498,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
             const ViewRect vbbox(vbbx, vbby, vbbw, vbbh);
             
             // REMOVE Tim. citem. Added.
-            vbbox.dump("PartCanvas::drawCanvas vbbox");
+//             vbbox.dump("PartCanvas::drawCanvas vbbox");
             
             
             //const ViewYCoordinate& vbby = vbbox._y;
@@ -4532,8 +4532,8 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
                 (myy_2 >= my && myy_2 < my_2))
               {
                 // REMOVE Tim. citem. Added.
-                fprintf(stderr, "... bottom edge in range. Drawing bottom edge at mx0_lim:%d myy_2:%d mx_2:%d myy_2:%d\n",
-                        mx0_lim, myy_2, mx_2, myy_2);
+//                 fprintf(stderr, "... bottom edge in range. Drawing bottom edge at mx0_lim:%d myy_2:%d mx_2:%d myy_2:%d\n",
+//                         mx0_lim, myy_2, mx_2, myy_2);
                 
                 pen.setColor(baseColor.dark(130));
                 p.setPen(pen);
@@ -4819,7 +4819,7 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& mr, const QRegion& /*m
         // Usually this would be -2 but here we want the bottom extended by 1.
         ViewHCoordinate(-1, true));
       
-      const ViewRect vbr = intersected(vr, vbbox);
+//       const ViewRect vbr = intersected(vr, vbbox);
       const ViewRect vbr_gr = intersected(vr, vbb_gr);
 //       const ViewRect vbr_gr = intersected(vr, vbbox);
       
@@ -4894,12 +4894,13 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& mr, const QRegion& /*m
 //       fprintf(stderr, "PartCanvas::drawAudioTrack vr x:%d y:%d w:%d h:%d vbrx:%d vbry:%d vbrw:%d vbrh:%d mbbox x:%d y:%d w:%d h:%d\n",
 //               vx._value, vy._value, vw._value, vh._value, vbr._x._value, vbr._y._value, vbr._width._value, vbr._height._value,
 //               mbb.x(), mbb.y(), mbb.width(), mbb.height());
-      fprintf(stderr, "\nPartCanvas::drawAudioTrack: mbbox:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
-              mbb.x(), mbb.y(), mbb.width(), mbb.height());
-      vbbox.dump("vbbox:");
-      vr.dump("vr:");
-      vbr.dump("vbr:");
-      vbr_gr.dump("vbr_gr:");
+      
+//       fprintf(stderr, "\nPartCanvas::drawAudioTrack: mbbox:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+//               mbb.x(), mbb.y(), mbb.width(), mbb.height());
+//       vbbox.dump("vbbox:");
+//       vr.dump("vr:");
+//       vbr.dump("vbr:");
+//       vbr_gr.dump("vbr_gr:");
 
 //       if(!vbr.isNull())
 //       if(!mbr.isEmpty())
@@ -4931,8 +4932,9 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& mr, const QRegion& /*m
 //                     map(vbr).x(), map(vbr).y(), map(vbr).width(), map(vbr).height());
 //             fprintf(stderr, "\n...gradient in range. Drawing gradient at:\nmbr.x:%8d\t\tmbr.y:%8d\t\tmbr.w:%8d\t\tmbr.h:%8d\n\n",
 //                     mbr.x(), mbr.y(), mbr.width(), mbr.height());
-            fprintf(stderr, "\n...gradient in range. Drawing gradient at:\nmbr_gr.x:%8d\t\tmbr_gr.y:%8d\t\tmbr_gr.w:%8d\t\tmbr_gr.h:%8d\n\n",
-                    mbr_gr.x(), mbr_gr.y(), mbr_gr.width(), mbr_gr.height());
+            
+//             fprintf(stderr, "\n...gradient in range. Drawing gradient at:\nmbr_gr.x:%8d\t\tmbr_gr.y:%8d\t\tmbr_gr.w:%8d\t\tmbr_gr.h:%8d\n\n",
+//                     mbr_gr.x(), mbr_gr.y(), mbr_gr.width(), mbr_gr.height());
             
             QColor c(Qt::gray);
             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
@@ -4982,8 +4984,9 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& mr, const QRegion& /*m
         // REMOVE Tim. citem. Added.
 //         fprintf(stderr, "...left edge in range. Drawing left edge at mx0:%d mapy(vbby_is):%d mx0:%d mapy(vbby_2is):%d\n",
 //                 mx0, mapy(vbby_is), mx0, mapy(vbby_2is));
-        fprintf(stderr, "...left edge in range. Drawing left edge at mbbx:%d asMapped(vbby_is):%d mbbx:%d asMapped(vbby_2is):%d\n",
-                mbbx, asMapped(vbby_is)._value, mbbx, asMapped(vbby_2is)._value);
+        
+//         fprintf(stderr, "...left edge in range. Drawing left edge at mbbx:%d asMapped(vbby_is):%d mbbx:%d asMapped(vbby_2is):%d\n",
+//                 mbbx, asMapped(vbby_is)._value, mbbx, asMapped(vbby_2is)._value);
         
 //         p.drawLine(mex, my, mex, my + mh - 1);                // The left edge
         //p.drawLine(mx0, mbry, mx0, mbry + mbrh - 1);                // The left edge
@@ -5024,8 +5027,9 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& mr, const QRegion& /*m
 //                   mx0, mx0_lim, mbby, mbbx_2, mbby);
 //           fprintf(stderr, "...top edge in range. Drawing line at mbbx:%d mx0_lim:%d mbby:%d mbbx_2:%d mbby:%d\n",
 //                   mbbx, mx0_lim, mbby, mbbx_2, mbby);
-          fprintf(stderr, "...top edge in range. Drawing top edge at mx0_lim:%d mbby:%d mx_2:%d mbby:%d\n",
-                  mx0_lim, mbby, mx_2, mbby);
+          
+//           fprintf(stderr, "...top edge in range. Drawing top edge at mx0_lim:%d mbby:%d mx_2:%d mbby:%d\n",
+//                   mx0_lim, mbby, mx_2, mbby);
           
   //         p.drawLine(mbrx, mbby, vbx + vbw - 1, mbby);                // The top edge
 //           p.drawLine(mx0_lim, mbby, mbbx_2, mbby);                // The top edge
@@ -5048,8 +5052,9 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& mr, const QRegion& /*m
 //                   mx0, mx0_lim, mbby_2, mbbx_2, mbby_2);
 //           fprintf(stderr, "...bottom edge in range. Drawing line at mbbx:%d mx0_lim:%d mbby_2:%d mbbx_2:%d mbby_2:%d\n",
 //                   mbbx, mx0_lim, mbby_2, mbbx_2, mbby_2);
-          fprintf(stderr, "...bottom edge in range. Drawing bottom edge at mx0_lim:%d mbby_2:%d mx_2:%d mbby_2:%d\n",
-                  mx0_lim, mbby_2, mx_2, mbby_2);
+          
+//           fprintf(stderr, "...bottom edge in range. Drawing bottom edge at mx0_lim:%d mbby_2:%d mx_2:%d mbby_2:%d\n",
+//                   mx0_lim, mbby_2, mx_2, mbby_2);
           
           p.drawLine(mx0_lim, mbby_2, mx_2, mbby_2);    // The bottom edge. Special for Audio track - draw one past bottom.
         }

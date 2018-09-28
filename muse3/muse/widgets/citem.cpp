@@ -149,7 +149,11 @@ void EItem::setObjectTagged(bool v)
 
 bool EItem::isObjectInRange(const MusECore::Pos& p0, const MusECore::Pos& p1) const
 {
-  return _event.pos() >= p0 && _event.pos() < p1;
+//   return _event.pos() >= p0 && _event.pos() < p1;
+  MusECore::Pos pos = _event.pos();
+  if(_part)
+    pos += (*_part);
+  return pos >= p0 && pos < p1;
 }
 
 //---------------------------------------------------------

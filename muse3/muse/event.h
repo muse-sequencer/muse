@@ -213,7 +213,12 @@ class EventList : public EL {
       iEvent findId(EventID_t id);                    // Slow, index t is not known
       ciEvent findWithId(const Event&) const; // Finds event base or event id. Fast, index t is known.
       iEvent findWithId(const Event&);        // Finds event base or event id. Fast, index t is known.
-      
+
+      // Returns an iterator that points to the inserted event.
+      // Returns end() if an error occurred.
+      // Special for controllers: There must be only ONE value per controller per position.
+      // If there is already a controller value for the controller number at the given position,
+      //  add just replaces it with the given value and returns that iterator.
       iEvent add(Event event);
       void move(Event& event, unsigned tick);
       void dump() const;

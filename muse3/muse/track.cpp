@@ -1143,15 +1143,22 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
 Part* MidiTrack::newPart(Part*p, bool clone)
       {
       MidiPart* part;
-      if (clone)
+      if(!p)
       {
-            part = (MidiPart*)p->createNewClone();
-            part->setTrack(this);
+        part = new MidiPart(this);
       }
       else
       {
-            part = (MidiPart*)p->duplicate();
-            part->setTrack(this);
+        if (clone)
+        {
+              part = (MidiPart*)p->createNewClone();
+              part->setTrack(this);
+        }
+        else
+        {
+              part = (MidiPart*)p->duplicate();
+              part->setTrack(this);
+        }
       }
       return part;
       }

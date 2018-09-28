@@ -1104,7 +1104,7 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
       const ViewRect vbr_exp = intersected(vr, vbbr_exp);
       //const QRect mbr_exp = asQRectMapped(vbr_exp);
       
-      const QRect mbbr = asQRectMapped(vbbr_exp);
+      const QRect mbbr_exp = asQRectMapped(vbbr_exp);
       
       const ViewXCoordinate vbx_exp = vbr_exp._x;
       const ViewYCoordinate vby_exp = vbr_exp._y;
@@ -1113,10 +1113,10 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
       const ViewXCoordinate vbx_2exp = mathXCoordinates(vbx_exp, vbw_exp, MathAdd);
       const ViewYCoordinate vby_2exp = mathYCoordinates(vby_exp, vbh_exp, MathAdd);
       
-      const int mbbx_is = asIntMapped(vbx_exp);
-      const int mbbx_2is = asIntMapped(vbx_2exp);
-      const int mbby_is = asIntMapped(vby_exp);
-      const int mbby_2is = asIntMapped(vby_2exp);
+      const int mbx_exp  = asIntMapped(vbx_exp);
+      const int mbx_2exp = asIntMapped(vbx_2exp);
+      const int mby_exp  = asIntMapped(vby_exp);
+      const int mby_2exp = asIntMapped(vby_2exp);
 
 //       if(mbr.isNull())
 //         return;
@@ -1136,14 +1136,14 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
 //               mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height());
       
       // REMOVE Tim. citem. Added.
-      fprintf(stderr, "\nPianoCanvas::drawItem:\nmr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
-              mr.x(), mr.y(), mr.width(), mr.height());
-      fprintf(stderr, "\nmbbr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
-              mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height());
-      vbbr.dump("vbbr:");
-      vbbr_exp.dump("vbbr_exp:");
-      vr.dump("vr:");
-      vbr.dump("vbr:");
+//       fprintf(stderr, "\nPianoCanvas::drawItem:\nmr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+//               mr.x(), mr.y(), mr.width(), mr.height());
+//       fprintf(stderr, "\nmbbr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+//               mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height());
+//       vbbr.dump("vbbr:");
+//       vbbr_exp.dump("vbbr_exp:");
+//       vr.dump("vr:");
+//       vbr.dump("vbr:");
 
       
       // Now check intersection of the expanded comparison rectangle and the requested update rectangle.
@@ -1265,22 +1265,30 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
 //       int vbbx_2exp = vbbx_exp + vbbw_exp;
 //       int vbby_2exp = vbby_exp + vbbh_exp;
 
+      const ViewWCoordinate vw1m(1, true);
+      const ViewHCoordinate vh1m(1, true);
       const ViewXCoordinate& vbbx_exp = vbbr_exp._x;
       const ViewYCoordinate& vbby_exp = vbbr_exp._y;
-      const ViewWCoordinate& vbbw_exp = vbbr_exp._width;
-      const ViewHCoordinate& vbbh_exp = vbbr_exp._height;
+//       const ViewWCoordinate& vbbw_exp = vbbr_exp._width;
+//       const ViewHCoordinate& vbbh_exp = vbbr_exp._height;
+      // Ensure that the border RECTANGLE never shrinks below 2 pixels wide, so that users can at least see
+      //  that there is SOMETHING there, when placed on top of a grid line for example.
+      const ViewWCoordinate vbbw_exp = compareWCoordinates(vbbr_exp._width, vw1m, CompareLess) ? vw1m : vbbr_exp._width;
+      const ViewHCoordinate vbbh_exp = compareHCoordinates(vbbr_exp._height, vh1m, CompareLess) ? vh1m : vbbr_exp._height;
       const ViewXCoordinate vbbx_2exp(mathXCoordinates(vbbx_exp, vbbw_exp, MathAdd));
       const ViewYCoordinate vbby_2exp(mathYCoordinates(vbby_exp, vbbh_exp, MathAdd));
+//       const ViewXCoordinate vbbx_2exp(mathXCoordinates(vbbr_exp._x, vbbr_exp._width, MathAdd));
+//       const ViewYCoordinate vbby_2exp(mathYCoordinates(vbbr_exp._y, vbbr_exp._height, MathAdd));
       // Normally we would want the y + h for our border, but here we need to
       //  use the bottom because of the uneven black/white key 6 - 7 - 6 height progressions.
       //const ViewYCoordinate vbby_2exp(rectBottomUnmapped(vbbr_exp));
 
-      const int mbbx = asIntMapped(vbbx_exp);
-      const int mbby = asIntMapped(vbby_exp);
-//       const int mbbw = asIntMapped(vbbw_exp);
-//       const int mbbh = asIntMapped(vbbh_exp);
-      const int mbbx_2 = asIntMapped(vbbx_2exp);
-      const int mbby_2 = asIntMapped(vbby_2exp);
+      const int mbbx_exp  = asIntMapped(vbbx_exp);
+      const int mbby_exp  = asIntMapped(vbby_exp);
+//       const int mbbw_exp  = asIntMapped(vbbw_exp);
+//       const int mbbh_exp  = asIntMapped(vbbh_exp);
+      const int mbbx_2exp = asIntMapped(vbbx_2exp);
+      const int mbby_2exp = asIntMapped(vbby_2exp);
       
       
       color.setAlpha(MusEGlobal::config.globalAlphaBlend);
@@ -1318,7 +1326,7 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
       if(compareYCoordinates(vby_2exp, vby_exp, CompareGreaterEqual))
       {
         // REMOVE Tim. citem. Added.
-        fprintf(stderr, "...checking left edge: vx:%d vx_2:%d vbbx_exp:%d\n", vx._value, vx_2._value, vbbx_exp._value);
+//         fprintf(stderr, "...checking left edge: vx:%d vx_2:%d vbbx_exp:%d\n", vx._value, vx_2._value, vbbx_exp._value);
         
   //       if(mex >= mx && mex <= mx + mw)
         //if(mex >= mx && mex < mx + mw)
@@ -1329,17 +1337,17 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
           //compareYCoordinates(vbby_2is, vbby_is, CompareGreaterEqual))
         {
           
-          fprintf(stderr, "...left edge in range. Drawing left edge at mbbx:%d mbby_is:%d mbbx:%d mbby_2is:%d\n",
-                  mbbx, mbby_is, mbbx, mbby_2is);
+//           fprintf(stderr, "...left edge in range. Drawing left edge at mbbx:%d mbby_is:%d mbbx:%d mbby_2is:%d\n",
+//                   mbbx, mbby_is, mbbx, mbby_2is);
           
   //       if(vbbx_exp >= vx && vbbx_exp < vx_2)
           //p.drawLine(mbbx, mbry, mbbx, mbry_2);                       // The left edge
   //         p.drawLine(mbbx, mbby, mbbx, mbby_2);                       // The left edge
-          p.drawLine(mbbx, mbby_is, mbbx, mbby_2is); // The left edge
+          p.drawLine(mbbx_exp, mby_exp, mbbx_exp, mby_2exp); // The left edge
         }
 
         // REMOVE Tim. citem. Added.
-        fprintf(stderr, "...checking right edge: vx:%d vx_2:%d vbbx_2exp:%d\n", vx._value, vx_2._value, vbbx_2exp._value);
+//         fprintf(stderr, "...checking right edge: vx:%d vx_2:%d vbbx_2exp:%d\n", vx._value, vx_2._value, vbbx_2exp._value);
         
         if(isXInRange(vbbx_2exp, vx, vx_2)) // &&
           //((vbby >= vy && vbby < vy_2) || (vbby_2 > vy && vbby_2 <= vy_2)))
@@ -1347,11 +1355,11 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
   //       if(vbbx_2exp >= vx && vbbx_2exp <= vx_2)
         {
           // REMOVE Tim. citem. Added.
-          fprintf(stderr, "...right edge in range. Drawing right edge at mbbx_2:%d mbby_is:%d mbbx_2:%d mbby_2is:%d\n", 
-                  mbbx_2, mbby_is, mbbx_2, mbby_2is);
+//           fprintf(stderr, "...right edge in range. Drawing right edge at mbbx_2:%d mbby_is:%d mbbx_2:%d mbby_2is:%d\n", 
+//                   mbbx_2, mbby_is, mbbx_2, mbby_2is);
           
           //p.drawLine(mbbx_2, mbry, mbbx_2, mbry_2);           // The right edge
-          p.drawLine(mbbx_2, mbby_is, mbbx_2, mbby_2is);           // The right edge
+          p.drawLine(mbbx_2exp, mby_exp, mbbx_2exp, mby_2exp);           // The right edge
         }
       }
 
@@ -1360,7 +1368,7 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
       {
         
         // REMOVE Tim. citem. Added.
-        fprintf(stderr, "...checking top edge: vy:%d vy_2:%d vbby_exp:%d\n", vy._value, vy_2._value, vbby_exp._value);
+//         fprintf(stderr, "...checking top edge: vy:%d vy_2:%d vbby_exp:%d\n", vy._value, vy_2._value, vbby_exp._value);
 
         //int mbbx = asMapped(vbbx)._value;
   //       if(vbby >= vby && vbby < vby + vbh)
@@ -1370,26 +1378,26 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
           isYInRange(vbby_exp, vy, vy_2))
         {
           // REMOVE Tim. citem. Added.
-          fprintf(stderr, "...top edge in range. Drawing top edge at mbbx:%d mbby:%d mbbx_2:%d mbby:%d\n", 
-                  mbbx, mbby, mbbx_2, mbby);
+//           fprintf(stderr, "...top edge in range. Drawing top edge at mbbx:%d mbby:%d mbbx_2:%d mbby:%d\n", 
+//                   mbbx, mbby, mbbx_2, mbby);
           
           //p.drawLine(mbrx, mbby, mbrx_2, mbby);                       // The top edge
-          p.drawLine(mbbx_is, mbby, mbbx_2is, mbby);                       // The top edge
+          p.drawLine(mbx_exp, mbby_exp, mbx_2exp, mbby_exp);                       // The top edge
         }
         
         // REMOVE Tim. citem. Added.
-        fprintf(stderr, "...checking bottom edge: vy:%d vy_2:%d vbby_2exp:%d\n", vy._value, vy_2._value, vbby_2exp._value);
+//         fprintf(stderr, "...checking bottom edge: vy:%d vy_2:%d vbby_2exp:%d\n", vy._value, vy_2._value, vbby_2exp._value);
         
         if(//compareXCoordinates(vbbx, vx_2, CompareLess) &&
           isYInRange(vbby_2exp, vy, vy_2))
   //       if(vbby_2exp >= vy && vbby_2exp <= vy_2)
         {
           // REMOVE Tim. citem. Added.
-          fprintf(stderr, "...bottom edge in range. Drawing bottom edge at mbbx:%d mbby_2:%d mbbx_2:%d mbby_2:%d\n", 
-                  mbbx, mbby_2, mbbx_2, mbby_2);
+//           fprintf(stderr, "...bottom edge in range. Drawing bottom edge at mbbx:%d mbby_2:%d mbbx_2:%d mbby_2:%d\n", 
+//                   mbbx, mbby_2, mbbx_2, mbby_2);
           
           //p.drawLine(mbrx, mbby_2, mbrx_2, mbby_2);   // The bottom edge
-          p.drawLine(mbbx_is, mbby_2, mbbx_2is, mbby_2);   // The bottom edge
+          p.drawLine(mbx_exp, mbby_2exp, mbx_2exp, mbby_2exp);   // The bottom edge
         }
       }
 
@@ -1413,7 +1421,7 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
         }
         QString noteStr = MusECore::pitch2string(event.pitch());
 
-        p.drawText(mbbr,Qt::AlignHCenter|Qt::AlignVCenter, noteStr.toUpper());
+        p.drawText(mbbr_exp,Qt::AlignHCenter|Qt::AlignVCenter, noteStr.toUpper());
       }
 
 
