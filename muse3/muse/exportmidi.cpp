@@ -468,6 +468,7 @@ void MusE::exportMidi()
             //          - copyright
             //          - time signature
             //          - tempo map
+            //          - cue points
             //---------------------------------------------------
 
             if (track_count == 0) {

@@ -499,7 +499,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                         {
                         const unsigned char* data = ev.data();
                         switch (ev.dataA()) {
-                              case ME_META_TEXT_1_COMMENT: // Text
+                              case ME_META_TEXT_1_COMMENT:
                                     if (track->comment().isEmpty())
                                           track->setComment(QString((const char*)data));
                                     else
@@ -508,21 +508,43 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                               case ME_META_TEXT_3_TRACK_NAME: // Sequence-/TrackName
                                     track->setName(QString((char*)data));
                                     break;
-                              case ME_META_TEXT_6_MARKER:   // Marker
+                              case ME_META_TEXT_6_MARKER:
                                     {
                                     unsigned ltick  = CALC_TICK(tick);
                                     MusEGlobal::song->addMarker(QString((const char*)(data)), ltick, false);
                                     }
                                     break;
-                              case ME_META_TEXT_5_LYRIC:   // Lyrics
-                              case ME_META_TEXT_8:   // text
-                              case ME_META_TEXT_9_DEVICE_NAME:
+                              // Copyright is supposed to occur only at the beginning of the first track, but we don't
+                              //  specifically catch it yet during import, so let's just allow it 'wherever' for now.
+                              case ME_META_TEXT_2_COPYRIGHT:
+                              // Lyrics are allowed anywhere.
+                              case ME_META_TEXT_5_LYRIC:
+                              // Cue points are supposed to occur only in the first track, but we don't support them
+                              //  yet (need a list just like markers), so just allow them 'wherever' for now.
+                              case ME_META_TEXT_7_CUE_POINT:
+                              // Program name is allowed anywhere.
+                              case ME_META_TEXT_8_PROGRAM_NAME:
+                              // No documentation could be found for these, so just allow them 'wherever' for now.
                               case ME_META_TEXT_A:
+                              case ME_META_TEXT_B:
+                              case ME_META_TEXT_C:
+                              case ME_META_TEXT_D:
+                              case ME_META_TEXT_E:
+                              // We don't specifically support key signature metas yet, so just allow them 'wherever' for now.
+                              case ME_META_KEY_SIGNATURE:
+                                    e.setType(Meta);
+                                    e.setA(ev.dataA());
+                                    e.setData(ev.data(), ev.len());
                                     break;
-                              case ME_META_TEXT_F_TRACK_COMMENT:        // Track Comment
+                              // Instrument and device name metas are already handled by the midi importing code.
+                              case ME_META_TEXT_4_INSTRUMENT_NAME:
+                              case ME_META_TEXT_9_DEVICE_NAME:
+                                    break;
+
+                              case ME_META_TEXT_F_TRACK_COMMENT:
                                     track->setComment(QString((char*)data));
                                     break;
-                              case ME_META_SET_TEMPO:        // Tempo
+                              case ME_META_SET_TEMPO:
                                     {
                                     unsigned tempo = data[2] + (data[1] << 8) + (data[0] <<16);
                                     unsigned ltick  = CALC_TICK(tick);
@@ -530,7 +552,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                     MusEGlobal::tempomap.addTempo(ltick, tempo);
                                     }
                                     break;
-                              case ME_META_TIME_SIGNATURE:        // Time Signature
+                              case ME_META_TIME_SIGNATURE:
                                     {
                                     int timesig_z = data[0];
                                     int n = data[1];
@@ -541,13 +563,13 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                     AL::sigmap.add(ltick, AL::TimeSignature(timesig_z, timesig_n));
                                     }
                                     break;
-                              case ME_META_KEY_SIGNATURE:  // Key Signature
-                                    break;
                               default:
-                                    fprintf(stderr, "buildMidiEventList: unknown Meta 0x%x %d unabsorbed, adding instead to track:%s\n", ev.dataA(), ev.dataA(), track->name().toLatin1().constData());
+                                    fprintf(stderr, "buildMidiEventList: unknown Meta 0x%x %d unabsorbed, adding instead to track:%s\n",
+                                            ev.dataA(), ev.dataA(), track->name().toLatin1().constData());
                                     e.setType(Meta);
                                     e.setA(ev.dataA());
                                     e.setData(ev.data(), ev.len());
+                                    break;
                               }
                         }
                         break;

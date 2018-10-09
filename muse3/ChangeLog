@@ -1,3 +1,6 @@
+09.10.2018
+      - Fix bug 629 by mqnc: Meta events (lyrics) not imported. (Tim)
+        Lyrics + few other metas were ignored in buildMidiEventList().
 11.09.2018
       - Fix compile bug 635 by Pablo Tassi: "invalid conversion from
          ‘unsigned int’ to ‘Qt::WindowType’ in vst_native.cpp at lines
