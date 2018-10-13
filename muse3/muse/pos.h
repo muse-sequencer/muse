@@ -125,6 +125,7 @@ class PosLen : public Pos {
       Pos end() const;
       unsigned endTick() const    { return end().tick(); }
       unsigned endFrame() const   { return end().frame(); }
+      unsigned endPosValue() const;
       void setPos(const Pos&);
       static unsigned convertLen(unsigned val, unsigned len, TType from_type, TType to_type);
       };

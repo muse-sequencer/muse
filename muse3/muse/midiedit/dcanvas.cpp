@@ -301,7 +301,7 @@ bool DrumCanvas::index2Note(int index, int* port, int* channel, int* note)
 //   moveCanvasItems
 //---------------------------------------------------------
 
-MusECore::Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype, bool rasterize)
+MusECore::Undo DrumCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, DragType dtype, bool rasterize)
 {      
 
   if(editor->parts()->empty())

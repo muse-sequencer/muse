@@ -61,6 +61,7 @@ typedef CloneList::iterator iClone;
 class Part : public PosLen {
    public:
       enum HiddenEventsType { NoEventsHidden = 0, LeftEventsHidden, RightEventsHidden };
+      enum PartType { MidiPartType = 0x01, WavePartType = 0x02 };
       
       static Part* readFromXml(Xml&, Track*, bool doClone = false, bool toTrack = true);
    
@@ -72,12 +73,15 @@ class Part : public PosLen {
       QString _name;
       bool _selected;
       // REMOVE Tim. citem. Added.
-      // Temporary general purpose tag. Used for example when iterating
-      //  midi controller canvases for selected canvas items to copy to the clipboard
-      //  and needing to see if the event was already put into the selected item list.
-      // This greatly saves from having to check the selected item list for duplicates
+      // Temporary general purpose tag. Used for example when iterating canvases for
+      //  selected canvas items to copy to the clipboard and needing to see if the
+      //  event was already put into the selected item list.
+      // This saves from having to check the selected item list for duplicates
       //  for every item encountered. Just make sure to reset the tag at some point!
       bool _tagged;
+      // REMOVE Tim. citem. Added.
+      // Optimization: This saves from having to iterate the event list just to see if
+      //  any event was tagged. It indicates that at least one event was tagged.
       bool _eventsTagged;
       bool _mute;
       int _colorIndex;
@@ -93,6 +97,9 @@ class Part : public PosLen {
    public:
       Part(Track*);
       virtual ~Part();
+      
+      virtual PartType partType() const = 0;
+      
       virtual Part* duplicate() const;
       virtual Part* duplicateEmpty() const = 0;
       virtual Part* createNewClone() const; // this does NOT chain clones yet. Chain is updated only when the part is really added!
@@ -159,6 +166,9 @@ class MidiPart : public Part {
    public:
       MidiPart(MidiTrack* t) : Part((Track*)t) {}
       virtual ~MidiPart() {}
+      
+      virtual PartType partType() const { return MidiPartType; }
+      
       virtual MidiPart* duplicate() const;
       virtual MidiPart* duplicateEmpty() const;
       virtual MidiPart* createNewClone() const;
@@ -184,6 +194,9 @@ class WavePart : public Part {
    public:
       WavePart(WaveTrack* t);
       virtual ~WavePart() {}
+
+      virtual PartType partType() const { return WavePartType; }
+
       virtual WavePart* duplicate() const;
       virtual WavePart* duplicateEmpty() const;
       virtual WavePart* createNewClone() const;

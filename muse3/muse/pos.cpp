@@ -758,6 +758,23 @@ Pos PosLen::end() const
       }
 
 //---------------------------------------------------------
+//   endPosValue
+//---------------------------------------------------------
+
+unsigned PosLen::endPosValue() const
+      {
+      switch(type()) {
+            case FRAMES:
+                  return frame() + _lenFrame;
+                  break;
+            case TICKS:
+                  return tick() + _lenTick;
+                  break;
+            }
+      return 0;
+      }
+
+//---------------------------------------------------------
 //   setPos
 //---------------------------------------------------------
 

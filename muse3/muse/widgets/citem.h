@@ -25,6 +25,7 @@
 
 #include <list>
 #include <map>
+#include <set>
 #include <QPoint>
 #include <QRect>
 
@@ -335,17 +336,17 @@ class EItem : public PItem {
       };
 
       
+//---------------------------------------------------------
+//   CItemMap
+//    Canvas Item List
+//---------------------------------------------------------
+
 typedef std::multimap<int, CItem*, std::less<int> >::iterator iCItem;
 typedef std::multimap<int, CItem*, std::less<int> >::const_iterator ciCItem;
 typedef std::multimap<int, CItem*, std::less<int> >::const_reverse_iterator rciCItem;
 typedef std::pair<iCItem, iCItem> iCItemRange;
 
-//---------------------------------------------------------
-//   CItemList
-//    Canvas Item List
-//---------------------------------------------------------
-
-class CItemList: public std::multimap<int, CItem*, std::less<int> > {
+class CItemMap: public std::multimap<int, CItem*, std::less<int> > {
    public:
       void add(CItem*);
       CItem* find(const QPoint& pos) const;
@@ -356,18 +357,47 @@ class CItemList: public std::multimap<int, CItem*, std::less<int> > {
             }
       };
 
-typedef std::list<CItem*>::iterator iCItemSet;
-typedef std::list<CItem*>::const_iterator ciCItemSet;
+//---------------------------------------------------------
+//   CItemList
+//   Simple list of CItem pointers.
+//---------------------------------------------------------
+
+typedef std::list<CItem*>::iterator iCItemList;
+typedef std::list<CItem*>::const_iterator ciCItemList;
+
+class CItemList: public std::list<CItem*> {
+   public:
+      void add(CItem* item) { push_back(item); }
+      void clearDelete() {
+        for(ciCItemList i = begin(); i != end(); ++i) {
+          CItem* ce = *i;
+          if(ce)
+            delete ce;
+        }
+        clear();
+      }
+};
 
 //---------------------------------------------------------
 //   CItemSet
-//   Simple collection of CItem pointers.
+//   Simple set of unique CItem pointers.
 //---------------------------------------------------------
 
-class CItemSet: public std::list<CItem*> {
+typedef std::set<CItem*>::iterator iCItemSet;
+typedef std::set<CItem*>::const_iterator ciCItemSet;
+
+class CItemSet: public std::set<CItem*> {
    public:
-      void add(CItem* item) { push_back(item); }
-      };
+      void add(CItem* item) { insert(item); }
+      void clearDelete() {
+        for(ciCItemSet i = begin(); i != end(); ++i) {
+          CItem* ce = *i;
+          if(ce)
+            delete ce;
+        }
+        clear();
+      }
+};
 
 } // namespace MusEGui
 

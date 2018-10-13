@@ -301,7 +301,8 @@ bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part
 void paste_items(const std::set<const Part*>& parts, int max_distance=3072,
                  bool always_new_part=false, bool never_new_part=false,
                  const Part* paste_into_part=NULL, int amount=1, int raster=3072);
-void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int pos, int max_distance=3072,
+//void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int pos, int max_distance=3072,
+void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const Pos& pos, int max_distance=3072,
               bool always_new_part=false, bool never_new_part=false,
               const Part* paste_into_part=NULL, int amount=1, int raster=3072);
 // Ensures that all events are untagged. Useful for aborting dialog etc.

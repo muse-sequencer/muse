@@ -1500,7 +1500,7 @@ void PianoCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
 //   moveCanvasItems
 //---------------------------------------------------------
 
-MusECore::Undo PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype, bool rasterize)
+MusECore::Undo PianoCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, DragType dtype, bool rasterize)
 {      
   if(editor->parts()->empty())
     return MusECore::Undo(); //return empty list

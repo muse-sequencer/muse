@@ -110,8 +110,8 @@ class Canvas : public View {
             RESIZE_TO_THE_RIGHT
       };
             
-      CItemList items;
-      CItemList moving;
+      CItemMap items;
+      CItemMap moving;
       CItem* newCItem;
       CItem* curItem;
       MusECore::Part* curPart;

@@ -122,7 +122,7 @@ class DrumCanvas : public EventCanvas {
 // REMOVE Tim. citem. Changed.
 //       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
       virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
-      virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true);
+      virtual MusECore::Undo moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true);
       virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true);
       virtual CItem* newItem(const QPoint&, int);
       virtual void resizeItem(CItem*, bool, bool) { } // Non-virt width is meaningless, such as drums.

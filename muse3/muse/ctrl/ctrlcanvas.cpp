@@ -224,16 +224,16 @@ bool CEvent::containsXRange(int x1, int x2) const
 //   }
 //   clear();
 // }
-void CEventList::clearDelete()
-{
-  for(ciCItemSet i = begin(); i != end(); ++i) 
-  {
-    CItem* ce = *i;
-    if(ce)
-      delete ce;
-  }
-  clear();
-}
+// void CEventList::clearDelete()
+// {
+//   for(ciCItemSet i = begin(); i != end(); ++i) 
+//   {
+//     CItem* ce = *i;
+//     if(ce)
+//       delete ce;
+//   }
+//   clear();
+// }
 
 //---------------------------------------------------------
 //   CtrlCanvas
@@ -427,7 +427,7 @@ QPoint CtrlCanvas::raster(const QPoint& p) const
 void CtrlCanvas::deselectAll()
       {
         // To save time searching the potentially large 'items' list, a selection list is used.
-        for(iCItemSet i = selection.begin(); i != selection.end(); ++i)
+        for(iCItemList i = selection.begin(); i != selection.end(); ++i)
             (*i)->setSelected(false);
 
 // REMOVE Tim. citem. Removed. Let itemSelectionsChanged() handle it later.
@@ -442,7 +442,7 @@ void CtrlCanvas::selectItem(CEvent* e)
       {
       e->setSelected(true);
 // REMOVE Tim. citem. Added.      
-      for (iCItemSet i = selection.begin(); i != selection.end(); ++i) {
+      for (iCItemList i = selection.begin(); i != selection.end(); ++i) {
             if (*i == e) {
                     // It was found in the list. Just return.
                     // It will be selected by now, from setSelected() above.
@@ -479,7 +479,7 @@ void CtrlCanvas::deselectItem(CEvent* e)
 
 void CtrlCanvas::removeSelection(CEvent* e)
 {
-      for (iCItemSet i = selection.begin(); i != selection.end(); ++i) {
+      for (iCItemList i = selection.begin(); i != selection.end(); ++i) {
             if (*i == e) {
                   selection.erase(i);
                   break;
@@ -519,7 +519,7 @@ void CtrlCanvas::tagItems(bool tagAllItems, bool tagAllParts, bool range,
   {
     if(tagAllItems || tagAllParts)
     {
-      for(ciCItemSet i = items.begin(); i != items.end(); ++i)
+      for(ciCItemList i = items.begin(); i != items.end(); ++i)
       {
         item = *i;
         part = item->part();
@@ -533,7 +533,7 @@ void CtrlCanvas::tagItems(bool tagAllItems, bool tagAllParts, bool range,
     }
     else
     {
-      for(ciCItemSet i = selection.begin(); i != selection.end(); ++i)
+      for(ciCItemList i = selection.begin(); i != selection.end(); ++i)
       {
         item = *i;
         part = item->part();
@@ -548,7 +548,7 @@ void CtrlCanvas::tagItems(bool tagAllItems, bool tagAllParts, bool range,
   {
     if(tagAllItems || tagAllParts)
     {
-      for(ciCItemSet i = items.begin(); i != items.end(); ++i)
+      for(ciCItemList i = items.begin(); i != items.end(); ++i)
       {
         item = *i;
         part = item->part();
@@ -561,7 +561,7 @@ void CtrlCanvas::tagItems(bool tagAllItems, bool tagAllParts, bool range,
     }
     else
     {
-      for(ciCItemSet i = selection.begin(); i != selection.end(); ++i)
+      for(ciCItemList i = selection.begin(); i != selection.end(); ++i)
       {
         item = *i;
         part = item->part();
@@ -813,7 +813,7 @@ bool CtrlCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselect
       
       // To save time searching the potentially large 'items' list, a selection list is used.
       //for(ciCEvent i = selection.begin(); i != selection.end(); ++i) {
-      for(ciCItemSet i = selection.begin(); i != selection.end() ; ) {
+      for(ciCItemList i = selection.begin(); i != selection.end() ; ) {
 //             NPart* npart = (NPart*)(i->second);
 //             CItem* item = i->second;
             CItem* item = *i;
@@ -1017,6 +1017,28 @@ void CtrlCanvas::updateItems()
       redraw();
     }
 
+// REMOVE Tim. citem. Added.
+// //---------------------------------------------------------
+// //   evaluateItems
+// //---------------------------------------------------------
+// 
+// void CtrlCanvas::evaluateItems()
+// {
+//   for(ciCItemSet i = items.begin(); i != items.end(); ++i)
+//   {
+//   // To save time searching the potentially large 'items' list, a selection list is used.
+//   //for(ciCEvent i = selection.begin(); i != selection.end(); ++i) {
+// //             NPart* npart = static_cast<NPart*>(i->second);
+// //             CItem* item = i->second;
+//         CItem* item = *i;
+// //             item_selected = i->second->isSelected();
+// //             part_selected = npart->part()->selected();
+//         
+//         //item_selected = item->isSelected();
+//         obj_selected = item->objectIsSelected();
+//   }
+// }
+    
 // REMOVE Tim. citem. Removed.
 // //---------------------------------------------------------
 // //   updateSelections
@@ -1048,7 +1070,7 @@ void CtrlCanvas::updateItemSelections()
       //bool item_selected;
       bool obj_selected;
 //       for (iCItem i = items.begin(); i != items.end(); ++i) {
-      for(ciCItemSet i = items.begin(); i != items.end(); ++i) {
+      for(ciCItemList i = items.begin(); i != items.end(); ++i) {
       // To save time searching the potentially large 'items' list, a selection list is used.
       //for(ciCEvent i = selection.begin(); i != selection.end(); ++i) {
 //             NPart* npart = static_cast<NPart*>(i->second);
@@ -1236,7 +1258,9 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
                   break;
 
             case DRAG_NEW:
+// REMOVE Tim. citem. Changed.
                   newVal(start.x(), start.y(), pos.x(), pos.y());
+                  //newVal(pos.x(), pos.y());
                   start = pos;
                   break;
 
@@ -1255,7 +1279,6 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
             line2y = pos.y();
             redraw();
             }
-      //emit xposChanged(pos.x());
       emit xposChanged(editor->rasterVal(pos.x()));
       
       
@@ -1325,7 +1348,7 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
                     int h = height();
                     CEvent* item;
 //                     int tickstep = rmapxDev(1);
-                    for (iCItemSet i = items.begin(); i != items.end(); ++i) {
+                    for (iCItemList i = items.begin(); i != items.end(); ++i) {
                           item = static_cast<CEvent*>(*i);
                           if(item->part() != curPart)
                             continue;
@@ -1439,7 +1462,7 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
 
       unsigned curPartTick = curPart->tick();
       int lastpv = MusECore::CTRL_VAL_UNKNOWN;
-      for (ciCItemSet i = items.begin(); i != items.end(); ++i) {
+      for (ciCItemList i = items.begin(); i != items.end(); ++i) {
             CItem* ev = *i;
             if (ev->part() != curPart)
               continue;
@@ -1511,7 +1534,7 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
 // REMOVE Tim. citem. Removed.
 //       MusECore::Undo operations;
       
-      for (ciCItemSet i = items.begin(); i != items.end(); ++i) {
+      for (ciCItemList i = items.begin(); i != items.end(); ++i) {
             CEvent* ev = static_cast<CEvent*>(*i);
             if (ev->containsXRange(x1, x2)) {
                   //CItem* ev       = *i;
@@ -1580,7 +1603,7 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
       int newval = computeVal(_controller, y, height());
       int type = _controller->num();
 
-      for (ciCItemSet i = items.begin(); i != items.end(); ++i) {
+      for (ciCItemList i = items.begin(); i != items.end(); ++i) {
             CEvent* ev = static_cast<CEvent*>(*i);
             if (!ev->containsXRange(x1, x2))
                   continue;
@@ -1665,9 +1688,9 @@ void CtrlCanvas::newVal(int x1, int y)
 
       bool found        = false;
       bool do_redraw = false;
-      iCItemSet ice_tmp;
-      iCItemSet prev_ev = items.end();     // End is OK with multi-part, this is just an end 'invalid' marker at first.
-      iCItemSet insertPoint = items.end(); // Similar case here. 
+      iCItemList ice_tmp;
+      iCItemList prev_ev = items.end();     // End is OK with multi-part, this is just an end 'invalid' marker at first.
+      iCItemList insertPoint = items.end(); // Similar case here. 
       bool curPartFound = false;
 
       int lastpv = MusECore::CTRL_VAL_UNKNOWN;
@@ -1675,7 +1698,7 @@ void CtrlCanvas::newVal(int x1, int y)
         lastpv = ctrl->hwVal();
         
       int partTick = curPart->tick();
-      for (iCItemSet i = items.begin(); i != items.end() ; ) 
+      for (iCItemList i = items.begin(); i != items.end() ; ) 
       {
             CEvent* ev = static_cast<CEvent*>(*i);
             if(ev->part() != curPart)
@@ -1744,10 +1767,22 @@ void CtrlCanvas::newVal(int x1, int y)
 //                 // Indicate do port controller values and clone parts.
 //                 MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
 //                                   newEvent, event, curPart, true, true), MusECore::Song::OperationUndoable);
+                
+                // REMOVE Tim. citem. Added.
+                fprintf(stderr, "CtrlCanvas::newVal: Found. Pushing ModifyEvent\n");
+                
                 // Operation is undoable but do not start/end undo.
                 // Indicate do port controller values and clone parts.
                 _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
                                   newEvent, event, curPart, true, true));
+              
+                // Now that the modify command has been sent, 'event' will stay alive
+                //  (its reference count stays alive) in the operation/undo lists etc,
+                //  so it is now safe to overwrite the canvas item's event.
+                // This is important so that successive modify commands use newEvent as the 'old event',
+                //  otherwise the undo/operation system will complain about 'double deletes' etc.
+                // The undo/operation system then optimizes the entire sequence down to just one modify command.
+                ev->setEvent(newEvent);
                 
                 do_redraw = true;      
               }
@@ -1774,12 +1809,22 @@ void CtrlCanvas::newVal(int x1, int y)
                   // Indicate do port controller values and clone parts.
 //                   MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
 //                              event, curPart, true, true), MusECore::Song::OperationUndoable);
+                  
+                  // REMOVE Tim. citem. Added.
+                  fprintf(stderr, "CtrlCanvas::newVal: Found. Pushing DeleteEvent\n");
+                
                   _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
                              event, curPart, true, true));
                   
-                  delete (ev);
+                  // Now that the delete command has been sent, 'event' will stay alive
+                  //  (its reference count stays alive) in the operation/undo lists etc,
+                  //  so it is now safe to delete the canvas item and its event.
+                  delete ev;
+                  
+                  // Erase the item from the item list and get the next item.
                   i = items.erase(i);
                   ev = static_cast<CEvent*>(*i);
+                  
                   // Is there a previous item?
                   if(prev_ev != items.end())
                   {
@@ -1822,6 +1867,10 @@ void CtrlCanvas::newVal(int x1, int y)
               // Indicate do port controller values and clone parts. 
 //               MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
 //                                 event, curPart, true, true), MusECore::Song::OperationUndoable);
+              
+              // REMOVE Tim. citem. Added.
+              fprintf(stderr, "CtrlCanvas::newVal: Not found. Pushing AddEvent\n");
+                
               _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
                                 event, curPart, true, true));
               
@@ -1901,13 +1950,13 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
       
       // delete existing events
 
-      iCItemSet prev_ev = items.end();     // End is OK with multi-part, this is just an end 'invalid' marker at first.
-      iCItemSet insertPoint = items.end(); // Similar case here. 
-      iCItemSet ice_tmp;
+      iCItemList prev_ev = items.end();     // End is OK with multi-part, this is just an end 'invalid' marker at first.
+      iCItemList insertPoint = items.end(); // Similar case here. 
+      iCItemList ice_tmp;
       bool curPartFound = false;
       int lastpv = MusECore::CTRL_VAL_UNKNOWN;
       int partTick = curPart->tick();
-      for (iCItemSet i = items.begin(); i != items.end() ; ) 
+      for (iCItemList i = items.begin(); i != items.end() ; ) 
       {
             CEvent* ev = static_cast<CEvent*>(*i);
             if(ev->part() != curPart)
@@ -1962,6 +2011,10 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
             // Indicate do port controller values and clone parts.
 //             MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
 //                              event, curPart, true, true), MusECore::Song::OperationUndoable);
+            
+            // REMOVE Tim. citem. Added.
+            fprintf(stderr, "CtrlCanvas::newVal 2: Pushing DeleteEvent\n");
+                
             _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
                              event, curPart, true, true));
             
@@ -2017,6 +2070,10 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
             // Indicate do port controller values and clone parts. 
 //             MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
 //                               event, curPart, true, true), MusECore::Song::OperationUndoable);
+            
+            // REMOVE Tim. citem. Added.
+            fprintf(stderr, "CtrlCanvas::newVal 2: Pushing AddEvent\n");
+                
             _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
                               event, curPart, true, true));
             
@@ -2075,11 +2132,11 @@ void CtrlCanvas::deleteVal(int x1, int x2, int)
       xx1 -= partTick;
       xx2 -= partTick;
 
-      iCItemSet prev_ev = items.end();
+      iCItemList prev_ev = items.end();
       bool curPartFound = false;
       bool do_redraw = false;
       
-      for (iCItemSet i = items.begin(); i != items.end() ;) 
+      for (iCItemList i = items.begin(); i != items.end() ;) 
       {
             CEvent* ev = static_cast<CEvent*>(*i);
             if(ev->part() != curPart)
@@ -2188,7 +2245,7 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
   if(velo) 
   {
     noEvents=false;
-    for(iCItemSet i = items.begin(); i != items.end(); ++i) 
+    for(iCItemList i = items.begin(); i != items.end(); ++i) 
     {
       CEvent* e = static_cast<CEvent*>(*i);
       // Draw selected part velocity events on top of unselected part events.
@@ -2270,7 +2327,7 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
     int x1   = rect.x();
     int lval = MusECore::CTRL_VAL_UNKNOWN;
     bool selected = false;
-    for (iCItemSet i = items.begin(); i != items.end(); ++i) 
+    for (iCItemList i = items.begin(); i != items.end(); ++i) 
     {
       noEvents=false;
       CEvent* e = static_cast<CEvent*>(*i);
@@ -2426,7 +2483,7 @@ void CtrlCanvas::pdrawExtraDrumCtrlItems(QPainter& p, const QRect& rect, const M
     int x1   = rect.x();
     int lval = MusECore::CTRL_VAL_UNKNOWN;
     //bool selected = false;
-    for (iCItemSet i = items.begin(); i != items.end(); ++i) 
+    for (iCItemList i = items.begin(); i != items.end(); ++i) 
     {
       noEvents=false;
       CEvent* e = static_cast<CEvent*>(*i);

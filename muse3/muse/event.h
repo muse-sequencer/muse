@@ -151,6 +151,8 @@ class Event {
       void setLenValue(unsigned val);
       void setLenValue(unsigned val, Pos::TType time_type);     
       
+      unsigned endPosValue() const;
+      
       //--------------------------------------------------------
       // 'Resolving' position methods - must be TICKS or FRAMES.
       //--------------------------------------------------------
@@ -223,6 +225,13 @@ class EventList : public EL {
       void move(Event& event, unsigned tick);
       void dump() const;
       void read(Xml& xml, const char* name, bool midi);
+      
+      // Returns the exents of the contents of the list, as a PosLen.
+      // If wave is true it only looks at wave events, otherwise it
+      //  only looks at midi events. The returned PosLen is in units
+      //  of frames or ticks respective of wave.
+      // numEvents indicates the number of events found and whether PosLen is valid.
+      PosLen range(bool wave, int* numEvents) const;
       };
 
 } // namespace MusECore

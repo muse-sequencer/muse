@@ -1350,9 +1350,9 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 									if(newpart)
 									{
 										newpart->setTick(AL::sigmap.raster1(first_paste_tick, config.division));
+										dest_part = newpart;
 										new_part_map[old_dest_part].insert(dest_part);
 										operations.push_back(UndoOp(UndoOp::AddPart, dest_part));
-										dest_part = newpart;
 									}
 								}
 								
@@ -1502,7 +1502,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 												// Compare time and sysex data only.
 												dest_part->events().findSimilarType(e, el, true);
 												// Do NOT add the new sysex if it already exists at the position.
-												// Don't event bother replacing it using DeletEvent or ModifyEvent.
+												// Don't even bother replacing it using DeletEvent or ModifyEvent.
 												if(el.empty())
 												{
 													// REMOVE Tim. citem. Added. Diagnostic.
@@ -1544,7 +1544,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 												// Compare time and meta data only.
 												dest_part->events().findSimilarType(e, el, true);
 												// Do NOT add the new meta if it already exists at the position.
-												// Don't event bother replacing it using DeletEvent or ModifyEvent.
+												// Don't even bother replacing it using DeletEvent or ModifyEvent.
 												if(el.empty())
 												{
 													// REMOVE Tim. citem. Added. Diagnostic.
@@ -2986,10 +2986,12 @@ void paste_items(const set<const Part*>& parts, int max_distance, bool always_ne
 {
 	QString tmp="x-muse-groupedeventlists"; // QClipboard::text() expects a QString&, not a QString :(
 	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);
-	paste_items_at(parts, s, MusEGlobal::song->cpos(), max_distance, always_new_part, never_new_part, paste_into_part, amount, raster);
+// 	paste_items_at(parts, s, MusEGlobal::song->cpos(), max_distance, always_new_part, never_new_part, paste_into_part, amount, raster);
+	paste_items_at(parts, s, MusEGlobal::song->cPos(), max_distance, always_new_part, never_new_part, paste_into_part, amount, raster);
 }
 
-void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int pos, int max_distance,
+// void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int pos, int max_distance,
+void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const Pos& pos, int max_distance,
                     bool always_new_part, bool never_new_part,
                     const Part* paste_into_part, int amount, int raster)
 {
@@ -3018,6 +3020,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int p
 					if (read_eventlist_and_part(xml, &el, &part_id))
 					{
 						const Part* dest_part;
+						//Part* dest_part;
 						Track* dest_track;
 						const Part* old_dest_part;
 						
@@ -3037,254 +3040,350 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int p
 							// Override if paste_into_part is given, to allow 'Paste to current part' to work.
 							if(paste_into_part || parts.find(dest_part) != parts.end())
 							{
-								dest_track=dest_part->track();
-								old_dest_part=dest_part;
-								unsigned first_paste_tick = el.begin()->first + pos;
-								bool create_new_part = ( (dest_part->tick() > first_paste_tick) ||   // dest_part begins too late
-										( ( (dest_part->endTick() + max_distance < first_paste_tick) || // dest_part is too far away
-																				always_new_part ) && !never_new_part ) );    // respect function arguments
-								
-								for (int i=0;i<amount;i++)
+								const bool wave_mode = dest_part->partType() == Part::WavePartType;
+								const Pos::TType time_type = wave_mode ? Pos::FRAMES : Pos::TICKS;
+                
+								// Extract the suitable events from the list and the number of events extracted.
+								int num_events;
+								const PosLen el_range = el.range(wave_mode, &num_events);
+								if(num_events > 0)
 								{
-									unsigned curr_pos = pos + i*raster;
-									first_paste_tick = el.begin()->first + curr_pos;
+									const unsigned pos_value = pos.posValue(time_type);
+									unsigned dest_part_pos_value = dest_part->posValue(time_type);
+									unsigned dest_part_end_value = dest_part->end().posValue(time_type);
+									dest_track=dest_part->track();
+									old_dest_part=dest_part;
+// 									unsigned first_paste_tick = el.begin()->first + pos;
+									//Pos first_paste_tick = el_range + pos;
+// 									Pos last_paste_tick = el_range.end() + pos;
+									unsigned first_paste_pos_value = el_range.posValue() + pos_value;
+// 									unsigned last_paste_tick = el_range.endPosValue() + pos_value;
+// 									bool create_new_part = ( (dest_part->tick() > first_paste_tick) ||   // dest_part begins too late
+// 											( ( (dest_part->endTick() + max_distance < first_paste_tick) || // dest_part is too far away
+// 																					always_new_part ) && !never_new_part ) );    // respect function arguments
+									//bool create_new_part = ( (first_paste_tick < *dest_part) ||       // dest_part begins too late
+									//                         (last_paste_tick >= dest_part->end()) ||   // dest_part not long enough
+									//		( ( (dest_part->end() + max_distance < first_paste_tick) ||   // dest_part is too far away
+									//												always_new_part ) && !never_new_part ) ); // respect function arguments
+									bool create_new_part = ( (first_paste_pos_value < dest_part_pos_value) || // dest_part begins too late
+									                         //(last_paste_tick >= dest_part_end_value) || // dest_part not long enough
+											( ( (dest_part_end_value + max_distance < first_paste_pos_value) ||   // dest_part is too far away
+																					always_new_part ) && !never_new_part ) );    // respect function arguments
 									
-									if (create_new_part)
+									for (int i=0;i<amount;i++)
 									{
-										dest_part = NULL;
-										Part* newpart = dest_track->newPart();
-										if(newpart)
+// 										unsigned curr_pos = pos + i*raster;
+										//Pos curr_pos = Pos(i*raster, el_range.type()) + pos;
+										unsigned curr_pos = pos_value + i*raster;
+// 										first_paste_tick = el.begin()->first + curr_pos;
+										//first_paste_tick = el_range + curr_pos;
+										                          first_paste_pos_value = el_range.posValue() + curr_pos;
+										
+										if (create_new_part)
 										{
-											newpart->setTick(AL::sigmap.raster1(first_paste_tick, config.division));
-											new_part_map[old_dest_part].insert(dest_part);
-											operations.push_back(UndoOp(UndoOp::AddPart, dest_part));
-											dest_part = newpart;
+											dest_part = NULL;
+											Part* newpart = dest_track->newPart();
+											if(newpart)
+											{
+// 												newpart->setTick(AL::sigmap.raster1(first_paste_tick, config.division));
+												//newpart->setTick(AL::sigmap.raster1(first_paste_tick.tick(), config.division));
+												// TODO: Shouldn't we snap to frames for wave parts? But snap to what exactly?
+												const unsigned pos_tick = Pos(first_paste_pos_value, !wave_mode).tick();
+												const unsigned rast_pos_tick = AL::sigmap.raster1(pos_tick, config.division);
+												newpart->setTick(rast_pos_tick);
+												const unsigned len_rast_off_value = pos_tick >= rast_pos_tick ? pos_tick - rast_pos_tick : 0;
+												newpart->setLenValue(el_range.lenValue() + len_rast_off_value, time_type);
+												dest_part = newpart;
+												dest_part_pos_value = dest_part->posValue(time_type);
+												dest_part_end_value = dest_part->end().posValue(time_type);
+												new_part_map[old_dest_part].insert(dest_part);
+												operations.push_back(UndoOp(UndoOp::AddPart, dest_part));
+											}
 										}
-									}
-									
-									if(dest_part)
-									{
-										for (iEvent i = el.begin(); i != el.end(); ++i)
+										
+										if(dest_part)
 										{
-											// If the destination part is a midi part, any midi event is allowed.
-											// If the destination part is a wave part, any wave event is allowed.
-											switch(i->second.type())
+											const unsigned dest_part_len_value = dest_part->lenValue(time_type);
+											for (iEvent i = el.begin(); i != el.end(); ++i)
 											{
-												case Note:
-												case Controller:
-												case Sysex:
-												case Meta:
-													if(dest_part->type() == Pos::FRAMES)
-														continue;
-												break;
+												// If the destination part is a midi part, any midi event is allowed.
+												// If the destination part is a wave part, any wave event is allowed.
+												switch(i->second.type())
+												{
+													case Note:
+													case Controller:
+													case Sysex:
+													case Meta:
+														if(dest_part->type() == Pos::FRAMES)
+															continue;
+													break;
+													
+													case Wave:
+														if(dest_part->type() == Pos::TICKS)
+															continue;
+													break;
+												}
 												
-												case Wave:
-													// FIXME TODO: To support pasting wave events, some code below must be made agnostic.
-													//             For now just ignore wave events.
-													//if(dest_part->type() == Pos::TICKS)
-														continue;
-												break;
-											}
-											
-	// FIXME TODO: To support pasting wave events, this code block and some code below it MUST be made position-agnostic.
-											Event e = i->second.clone();
-											int tick = e.tick() + curr_pos - dest_part->tick();
-											if (tick<0)
-											{
-												printf("ERROR: trying to add event before current part! ignoring this event\n");
-												continue;
-											}
+												Event e = i->second.clone();
+// 												int tick = e.tick() + curr_pos - dest_part->tick();
+// 												Pos tick = e.pos() + curr_pos - *dest_part;
+												//int tick = (e.pos() + curr_pos).posValue(el_range.type()) - dest_part->posValue(el_range.type());
+												unsigned tick = e.posValue(time_type) + curr_pos;
+												if (tick < dest_part_pos_value)
+												//if (tick.posValue() < 0)
+												{
+													printf("ERROR: trying to add event before current part! ignoring this event\n");
+													continue;
+												}
+												tick -= dest_part_pos_value;
 
-											e.setTick(tick);
-											e.setSelected(true);  // No need to select clones, AddEvent operation below will take care of that.
-											
-											if (e.endTick() > dest_part->lenTick()) // event exceeds part?
-											{
-												if (dest_part->hasHiddenEvents()) // auto-expanding is forbidden?
-												{
-													if (e.tick() < dest_part->lenTick())
-														e.setLenTick(dest_part->lenTick() - e.tick()); // clip
-													else
-														e.setLenTick(0); // don't insert that note at all
-												}
-												else
-												{
-													if (e.endTick() > expand_map[dest_part])
-														expand_map[dest_part]=e.endTick();
-												}
-											}
-											
-		// REMOVE Tim. citem. Changed.
-		// 									if (e.lenTick() != 0) operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
-											// Don't add Note or Wave event types if they have no length.
-											// Otherwise, controllers, sysex, and meta should all be allowed.
-											//if ((e.type() != Note && e.type() != Wave) || e.lenTick() != 0)
-											//	operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
-											switch(e.type())
-											{
-												case Note:
-													// Don't add Note event types if they have no length.
-													// Notes are allowed to overlap. There is no DeleteEvent or ModifyEvent first.
-													if(e.lenTick() != 0)
-														operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
-												break;
+// 												e.setTick(tick);
+												//e.setPos(tick);
+												e.setPosValue(tick, time_type);
+												e.setSelected(true);  // No need to select clones, AddEvent operation below will take care of that.
 												
-												case Wave:
-													// Don't add Wave event types if they have no length.
-													if(e.lenFrame() != 0)
+// 												if (e.endTick() > dest_part->lenTick()) // event exceeds part?
+												//if (e.endPosValue() > dest_part_len_value) // event exceeds part?
+												// Don't bother with expansion if these are new parts.
+												//if (!create_new_part && e.end() > dest_part->lenTick()) // event exceeds part?
+												// Don't bother with expansion if these are new parts.
+												if (!create_new_part && e.endPosValue() > dest_part_len_value) // event exceeds part?
+												{
+													if (dest_part->hasHiddenEvents()) // auto-expanding is forbidden?
 													{
-														EventList el;
-														// Compare time, and wave position, path, and start position.
-														dest_part->events().findSimilarType(e, el, true, false, false, false,
-																																true, true, true);
-														// Do NOT add the new wave event if it already exists at the position.
-														// Don't event bother replacing it using DeletEvent or ModifyEvent.
-														if(el.empty())
+// 														if (e.tick() < dest_part->lenTick())
+// 															e.setLenTick(dest_part->lenTick() - e.tick()); // clip
+// 														else
+// 															e.setLenTick(0); // don't insert that note at all
+														if (e.posValue(time_type) < dest_part_len_value)
+															e.setLenValue(dest_part_len_value - e.posValue(time_type), time_type); // clip
+														else
+// 															e.setLenTick(0); // don't insert that note at all
+															e.setLenValue(0, time_type); // don't insert that note at all
+													}
+													else
+													{
+// 														if (e.endTick() > expand_map[dest_part])
+// 															expand_map[dest_part]=e.endTick();
+														if (e.endPosValue() > expand_map[dest_part])
+															expand_map[dest_part]=e.endPosValue();
+													}
+												}
+												
+			// REMOVE Tim. citem. Changed.
+			// 									if (e.lenTick() != 0) operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
+												// Don't add Note or Wave event types if they have no length.
+												// Otherwise, controllers, sysex, and meta should all be allowed.
+												//if ((e.type() != Note && e.type() != Wave) || e.lenTick() != 0)
+												//	operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
+												switch(e.type())
+												{
+													case Note:
+														// Don't add Note event types if they have no length.
+														// Notes are allowed to overlap. There is no DeleteEvent or ModifyEvent first.
+														//if(e.lenTick() != 0)
+														//{
+															// If this is a fresh new part, to avoid double operation warnings when undoing
+															//  just add the event directly to the part instead of an operation.
+															if(create_new_part)
+																((Part*)dest_part)->addEvent(e);
+															else
+																operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
+														//}
+													break;
+													
+													case Wave:
+														// Don't add Wave event types if they have no length.
+														//if(e.lenFrame() != 0)
+														//{
+															// If this is a fresh new part, to avoid double operation warnings when undoing
+															//  just add the event directly to the part instead of an operation.
+															if(create_new_part)
+															{
+																((Part*)dest_part)->addEvent(e);
+															}
+															else
+															{
+																EventList el;
+																// Compare time, and wave position, path, and start position.
+																dest_part->events().findSimilarType(e, el, true, false, false, false,
+																																		true, true, true);
+																// Do NOT add the new wave event if it already exists at the position.
+																// Don't event bother replacing it using DeletEvent or ModifyEvent.
+																if(el.empty())
+																{
+																	// REMOVE Tim. citem. Added. Diagnostic.
+																	fprintf(stderr, "paste_items_at: Adding new wave event: time:%u file:%s\n",
+																					e.posValue(), e.sndFile().name().toLatin1().constData());
+																	operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
+																}
+																else
+																{
+																	// Delete all but one of them. There shouldn't be more than one wave event
+																	//  at a time for a given wave event anyway.
+																	iEvent nie;
+																	for(iEvent ie = el.begin(); ie != el.end(); ++ie)
+																	{
+																		// Break on the second-last one, to leave one item intact.
+																		nie = ie;
+																		++nie;
+																		if(nie == el.end())
+																		{
+																			// REMOVE Tim. citem. Added. Diagnostic.
+																			fprintf(stderr, "paste_items_at: Leaving existing wave event intact: time:%u file:%s\n",
+																							ie->second.posValue(), ie->second.sndFile().name().toLatin1().constData());
+																			break;
+																		}
+																		
+																		// REMOVE Tim. citem. Added. Diagnostic.
+																		fprintf(stderr, "paste_items_at: Deleting existing wave event: time:%u file:%s\n",
+																						ie->second.posValue(), ie->second.sndFile().name().toLatin1().constData());
+																		
+																		operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
+																	}
+																}
+															}
+														//}
+													break;
+													
+													case Controller:
+													{
+														// If this is a fresh new part, to avoid double DeleteMidiCtrlVal warnings when undoing
+														//  just add the event directly to the part instead of an operation.
+														if(create_new_part)
 														{
-															// REMOVE Tim. citem. Added. Diagnostic.
-															fprintf(stderr, "paste_items_at: Adding new wave event: time:%u file:%s\n",
-																			e.posValue(), e.sndFile().name().toLatin1().constData());
-															operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
+															((Part*)dest_part)->addEvent(e);
 														}
 														else
 														{
-															// Delete all but one of them. There shouldn't be more than one wave event
-															//  at a time for a given wave event anyway.
-															iEvent nie;
+															EventList el;
+															// Compare time and controller number (data A) only.
+															dest_part->events().findSimilarType(e, el, true, true);
+															// Delete them all. There shouldn't be more than one controller event
+															//  at a time for a given controller number anyway.
 															for(iEvent ie = el.begin(); ie != el.end(); ++ie)
 															{
-																// Break on the second-last one, to leave one item intact.
-																nie = ie;
-																++nie;
-																if(nie == el.end())
+																
+																// REMOVE Tim. citem. Added. Diagnostic.
+																fprintf(stderr, "paste_items_at: Deleting existing controller event: time:%u number:%d\n",
+																				ie->second.posValue(), ie->second.dataA());
+																
+																operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, true, true));
+															}
+															
+															// REMOVE Tim. citem. Added. Diagnostic.
+															if(!el.empty())
+																fprintf(stderr, "paste_items_at: Adding replacement controller event: time:%u number:%d\n",
+																				e.posValue(), e.dataA());
+															
+															// Do port controller values and clone parts. 
+															operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, true, true));
+														}
+													}
+													break;
+													
+													case Sysex:
+													{
+														// If this is a fresh new part, to avoid double operation warnings when undoing
+														//  just add the event directly to the part instead of an operation.
+														if(create_new_part)
+														{
+															((Part*)dest_part)->addEvent(e);
+														}
+														else
+														{
+															EventList el;
+															// Compare time and sysex data only.
+															dest_part->events().findSimilarType(e, el, true);
+															// Do NOT add the new sysex if it already exists at the position.
+															// Don't event bother replacing it using DeletEvent or ModifyEvent.
+															if(el.empty())
+															{
+																// REMOVE Tim. citem. Added. Diagnostic.
+																fprintf(stderr, "paste_items_at: Adding new sysex: time:%u len:%d\n",
+																				e.posValue(), e.dataLen());
+																operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
+															}
+															else
+															{
+																// Delete all but one of them. There shouldn't be more than one sysex event
+																//  at a time for a given sysex anyway.
+																iEvent nie;
+																for(iEvent ie = el.begin(); ie != el.end(); ++ie)
 																{
+																	// Break on the second-last one, to leave one item intact.
+																	nie = ie;
+																	++nie;
+																	if(nie == el.end())
+																	{
+																		// REMOVE Tim. citem. Added. Diagnostic.
+																		fprintf(stderr, "paste_items_at: Leaving existing sysex intact: time:%u len:%d\n",
+																						ie->second.posValue(), ie->second.dataLen());
+																		break;
+																	}
+																	
 																	// REMOVE Tim. citem. Added. Diagnostic.
-																	fprintf(stderr, "paste_items_at: Leaving existing wave event intact: time:%u file:%s\n",
-																					ie->second.posValue(), ie->second.sndFile().name().toLatin1().constData());
-																	break;
+																	fprintf(stderr, "paste_items_at: Deleting existing sysex event: time:%u len:%d\n",
+																					ie->second.posValue(), ie->second.dataLen());
+																	
+																	operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
 																}
-																
-																// REMOVE Tim. citem. Added. Diagnostic.
-																fprintf(stderr, "paste_items_at: Deleting existing wave event: time:%u file:%s\n",
-																				ie->second.posValue(), ie->second.sndFile().name().toLatin1().constData());
-																
-																operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
 															}
 														}
-														
 													}
-												break;
-												
-												case Controller:
-												{
-													EventList el;
-													// Compare time and controller number (data A) only.
-													dest_part->events().findSimilarType(e, el, true, true);
-													// Delete them all. There shouldn't be more than one controller event
-													//  at a time for a given controller number anyway.
-													for(iEvent ie = el.begin(); ie != el.end(); ++ie)
-													{
-														
-														// REMOVE Tim. citem. Added. Diagnostic.
-														fprintf(stderr, "paste_items_at: Deleting existing controller event: time:%u number:%d\n",
-																		ie->second.posValue(), ie->second.dataA());
-														
-														operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, true, true));
-													}
+													break;
 													
-													// REMOVE Tim. citem. Added. Diagnostic.
-													if(!el.empty())
-														fprintf(stderr, "paste_items_at: Adding replacement controller event: time:%u number:%d\n",
-																		e.posValue(), e.dataA());
-													
-													// Do port controller values and clone parts. 
-													operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, true, true));
-												}
-												break;
-												
-												case Sysex:
-												{
-													EventList el;
-													// Compare time and sysex data only.
-													dest_part->events().findSimilarType(e, el, true);
-													// Do NOT add the new sysex if it already exists at the position.
-													// Don't event bother replacing it using DeletEvent or ModifyEvent.
-													if(el.empty())
+													case Meta:
 													{
-														// REMOVE Tim. citem. Added. Diagnostic.
-														fprintf(stderr, "paste_items_at: Adding new sysex: time:%u len:%d\n",
-																		e.posValue(), e.dataLen());
-														operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
-													}
-													else
-													{
-														// Delete all but one of them. There shouldn't be more than one sysex event
-														//  at a time for a given sysex anyway.
-														iEvent nie;
-														for(iEvent ie = el.begin(); ie != el.end(); ++ie)
+														// If this is a fresh new part, to avoid double operation warnings when undoing
+														//  just add the event directly to the part instead of an operation.
+														if(create_new_part)
 														{
-															// Break on the second-last one, to leave one item intact.
-															nie = ie;
-															++nie;
-															if(nie == el.end())
+															((Part*)dest_part)->addEvent(e);
+														}
+														else
+														{
+															EventList el;
+															// Compare time and meta data only.
+															dest_part->events().findSimilarType(e, el, true);
+															// Do NOT add the new meta if it already exists at the position.
+															// Don't event bother replacing it using DeletEvent or ModifyEvent.
+															if(el.empty())
 															{
 																// REMOVE Tim. citem. Added. Diagnostic.
-																fprintf(stderr, "paste_items_at: Leaving existing sysex intact: time:%u len:%d\n",
-																				ie->second.posValue(), ie->second.dataLen());
-																break;
+																fprintf(stderr, "paste_items_at: Adding new meta: time:%u len:%d\n",
+																				e.posValue(), e.dataLen());
+																operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
 															}
-															
-															// REMOVE Tim. citem. Added. Diagnostic.
-															fprintf(stderr, "paste_items_at: Deleting existing sysex event: time:%u len:%d\n",
-																			ie->second.posValue(), ie->second.dataLen());
-															
-															operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
-														}
-													}
-												}
-												break;
-												
-												case Meta:
-												{
-													EventList el;
-													// Compare time and meta data only.
-													dest_part->events().findSimilarType(e, el, true);
-													// Do NOT add the new meta if it already exists at the position.
-													// Don't event bother replacing it using DeletEvent or ModifyEvent.
-													if(el.empty())
-													{
-														// REMOVE Tim. citem. Added. Diagnostic.
-														fprintf(stderr, "paste_items_at: Adding new meta: time:%u len:%d\n",
-																		e.posValue(), e.dataLen());
-														operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
-													}
-													else
-													{
-														// Delete all but one of them. There shouldn't be more than one meta event
-														//  at a time for a given meta anyway.
-														iEvent nie;
-														for(iEvent ie = el.begin(); ie != el.end(); ++ie)
-														{
-															// Break on the second-last one, to leave one item intact.
-															nie = ie;
-															++nie;
-															if(nie == el.end())
+															else
 															{
-																// REMOVE Tim. citem. Added. Diagnostic.
-																fprintf(stderr, "paste_items_at: Leaving existing meta intact: time:%u len:%d\n",
-																				ie->second.posValue(), ie->second.dataLen());
-																break;
+																// Delete all but one of them. There shouldn't be more than one meta event
+																//  at a time for a given meta anyway.
+																iEvent nie;
+																for(iEvent ie = el.begin(); ie != el.end(); ++ie)
+																{
+																	// Break on the second-last one, to leave one item intact.
+																	nie = ie;
+																	++nie;
+																	if(nie == el.end())
+																	{
+																		// REMOVE Tim. citem. Added. Diagnostic.
+																		fprintf(stderr, "paste_items_at: Leaving existing meta intact: time:%u len:%d\n",
+																						ie->second.posValue(), ie->second.dataLen());
+																		break;
+																	}
+																	
+																	// REMOVE Tim. citem. Added. Diagnostic.
+																	fprintf(stderr, "paste_items_at: Deleting existing meta event: time:%u len:%d\n",
+																					ie->second.posValue(), ie->second.dataLen());
+																	
+																	operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
+																}
 															}
-															
-															// REMOVE Tim. citem. Added. Diagnostic.
-															fprintf(stderr, "paste_items_at: Deleting existing meta event: time:%u len:%d\n",
-																			ie->second.posValue(), ie->second.dataLen());
-															
-															operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
 														}
 													}
+													break;
 												}
-												break;
 											}
 										}
 									}
@@ -3311,7 +3410,9 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int p
 	out_of_paste_at_for:
 	
 	for (map<const Part*, unsigned>::iterator it = expand_map.begin(); it!=expand_map.end(); it++)
-		if (it->second != it->first->lenTick())
+// 		if (it->second != it->first->lenTick())
+// 			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
+		if (it->second != it->first->lenValue())
 			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
 
 	MusEGlobal::song->informAboutNewParts(new_part_map); // must be called before apply. otherwise

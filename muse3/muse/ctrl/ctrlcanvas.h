@@ -23,8 +23,7 @@
 #ifndef __CTRLCANVAS_H__
 #define __CTRLCANVAS_H__
 
-#include <list>
-
+#include <set>
 
 #include "type_defs.h"
 #include "view.h"
@@ -120,10 +119,11 @@ class CEvent : public CItem {
 //       
 //       void clearDelete();
 //       };
-class CEventList: public CItemSet {
-   public:
-      void clearDelete();
-      };
+      
+// class CEventList: public CItemList {
+//    public:
+//       void clearDelete();
+//       };
 
 //---------------------------------------------------------
 //   CtrlCanvas
@@ -187,9 +187,15 @@ class CtrlCanvas : public MusEGui::View {
             DRAG_RESIZE, DRAG_LASSO_START, DRAG_LASSO
             };
 
-      CEventList items;
-      CEventList selection;
-      CEventList moving;
+      CItemList items;
+      // To avoid working directly with a potentially huge number of items
+      //  in the item list, these 'indexing' lists are used instead.
+      CItemList selection;
+      CItemList moving;
+      CItemSet  adding;
+      CItemSet  modifying;
+      CItemSet  deleting;
+      
       CEvent* curItem;
 
       DragMode drag;
@@ -216,6 +222,10 @@ class CtrlCanvas : public MusEGui::View {
 
       void setMidiController(int);
       void updateItems();
+// REMOVE Tim. citem. Added.
+//       // Checks the item indexing lists for events which should be created, deleted, or modified,
+//       //  and executes any necessary corresponding operations.
+//       void evaluateItems();
 // REMOVE Tim. citem. Removed.
 //       void updateSelections();
       // REMOVE Tim. citem. Added.

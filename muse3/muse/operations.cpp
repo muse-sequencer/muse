@@ -964,6 +964,12 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
           i->is_deleted = false;
       }
       flags |= SC_PART_INSERTED;
+      // REMOVE Tim. citem. Added.
+      // If the part has events, then treat it as if they were inserted with separate AddEvent operations.
+      // Even if some will be inserted later in this operations group with actual separate AddEvent operations,
+      //  that's an SC_EVENT_INSERTED anyway, so hopefully no harm.
+      if(!_part->events().empty())
+        flags |= SC_EVENT_INSERTED;
     break;
     
     case DeletePart:
@@ -981,6 +987,13 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
           i->is_deleted = true;
       }
       flags |= SC_PART_REMOVED;
+      // REMOVE Tim. citem. Added.
+      // If the part had events, then treat it as if they were removed with separate DeleteEvent operations.
+      // Even if they will be deleted later in this operations group with actual separate DeleteEvent operations,
+      //  that's an SC_EVENT_REMOVED anyway, so hopefully no harm. This fixes a problem with midi controller canvas
+      //  not updating after such a 'delete part with events, no separate AddEvents were used when creating the part'.
+      if(!p->events().empty())
+        flags |= SC_EVENT_REMOVED;
     }
     break;
 

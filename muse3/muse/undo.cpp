@@ -773,15 +773,38 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           }
           else if(uo.type == UndoOp::ModifyEvent && uo.part == n_op.part)  
           {
-            if(uo.oEvent == n_op.oEvent && uo.nEvent == n_op.nEvent)
+            // REMOVE Tim. citem. Added. For testing.
+            fprintf(stderr, "MusE: Undo::insert(): Double ModifyEvent...\n");
+              
+            if(uo.oEvent == n_op.oEvent)
             {
-              fprintf(stderr, "MusE error: Undo::insert(): Double ModifyEvent. Ignoring.\n");
-              return;
+              if(uo.nEvent == n_op.nEvent)
+              {
+                fprintf(stderr, "MusE error: Undo::insert(): Double ModifyEvent. Ignoring.\n");
+                return;
+              }
+              else
+              {
+                // REMOVE Tim. citem. Added. For testing.
+                fprintf(stderr, "MusE: Undo::insert(): Double ModifyEvent. Same old events. Merging.\n");
+                
+                // Two modify commands with old events the same is equivalent to just one modify command.
+                // Replace the existing ModifyEvent command's new event with the requested ModifyEvent command's new event.
+                uo.nEvent = n_op.nEvent;
+                return;  
+              }
             }
-            // Are inner add/delete pair the same event?
+            // REMOVE Tim. citem. Added. Remove. I think we CAN replace two different events with the same event.
+            //else if(uo.nEvent == n_op.nEvent)
+            //{
+            //  // Cannot replace two different events with the same event.
+            //  fprintf(stderr, "MusE error: Undo::insert(): Double ModifyEvent: different old events but same new event. Ignoring.\n");
+            //  return;
+            //}
+            // Are inner new/old pair the same event?
             else if(uo.nEvent == n_op.oEvent) 
             {
-              // Are outer delete/add pair the same event?
+              // Are outer old/new pair the same event?
               if(uo.oEvent == n_op.nEvent)
               {
                 // First ModifyEvent old event and second ModifyEvent new event are both the same, equivalent to doing nothing.
@@ -791,18 +814,32 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
               }
               else
               {
-                // Outer delete/add pair are not the same event... 
-                // Transform the existing ModifyEvent operation into a DeleteEvent.
-                uo.type = UndoOp::DeleteEvent;
-                uo.nEvent = uo.oEvent;
-                // Transform the requested ModifyEvent operation into an AddEvent.
-                n_op.type = UndoOp::AddEvent;
-                // Allow it to add...
+// REMOVE Tim. citem. Changed.
+//                 // Outer delete/add pair are not the same event... 
+//                 // Transform the existing ModifyEvent operation into a DeleteEvent.
+//                 uo.type = UndoOp::DeleteEvent;
+//                 uo.nEvent = uo.oEvent;
+//                 // Transform the requested ModifyEvent operation into an AddEvent.
+//                 n_op.type = UndoOp::AddEvent;
+//                 // Allow it to add...
+
+                // REMOVE Tim. citem. Added. For testing.
+                fprintf(stderr, "MusE: Undo::insert(): Double ModifyEvent. Inner new/old pair same, outer old/new pair not same. Merging to one ModifyEvent.\n");
+            
+                // Inner new/old pair are the same event and outer old/new pair are not the same event.
+                // A modify command with new event followed by a modify command with old event the same
+                //  is equivalent to just one modify command. Replace the existing ModifyEvent command's
+                //  new event with the requested ModifyEvent command's new event.
+                uo.nEvent = n_op.nEvent;
+                return;  
               }
             }
-            // Inner add/delete pair are not the same event. Are outer delete/add pair the same event?
+            // Inner new/old pair are not the same event. Are outer old/new pair the same event?
             else if(uo.oEvent == n_op.nEvent) 
             {
+                // REMOVE Tim. citem. Added. For testing.
+                fprintf(stderr, "MusE: Undo::insert(): Double ModifyEvent. Inner new/old pair not same, outer old/new pair same. Transforming to Add and Delete.\n");
+            
               // Transform the existing ModifyEvent operation into an AddEvent.
               uo.type = UndoOp::AddEvent;
               // Transform the requested ModifyEvent operation into a DeleteEvent.
@@ -813,8 +850,14 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           }
           else if(uo.type == UndoOp::AddEvent && uo.part == n_op.part)
           {
+            // REMOVE Tim. citem. Added. For testing.
+            fprintf(stderr, "MusE: Undo::insert(): AddEvent then ModifyEvent...\n");
+            
             if(uo.nEvent == n_op.oEvent)
             {
+              // REMOVE Tim. citem. Added. For testing.
+              fprintf(stderr, "MusE: Undo::insert(): AddEvent then ModifyEvent. Same event. Merging to AddEvent.\n");
+            
               // Add followed by modify with old event same as added event, is equivalent to just adding modify's new event.
               // Replace the existing AddEvent command's event with the requested ModifyEvent command's new event.
               uo.nEvent = n_op.nEvent;
@@ -837,6 +880,9 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             }
             if(uo.nEvent == n_op.nEvent)
             {
+              // REMOVE Tim. citem. Added. For testing.
+              fprintf(stderr, "MusE: Undo::insert(): DeleteEvent then ModifyEvent. Same event. Merging to DeleteEvent.\n");
+            
               // Delete followed by modify with new event same as deleted event, is equivalent to just deleting modify's old event.
               // Replace the existing DeleteEvent command's event with the requested ModifyEvent command's old event.
               uo.nEvent = n_op.oEvent;
@@ -2275,6 +2321,13 @@ void Song::revertOperationGroup1(Undo& operations)
 #endif                        
                         editable_part->track()->parts()->delOperation(editable_part, pendingOperations);
                         updateFlags |= SC_PART_REMOVED;
+                        // REMOVE Tim. citem. Added.
+                        // If the part had events, then treat it as if they were removed with separate DeleteEvent operations.
+                        // Even if they will be deleted later in this operations group with actual separate DeleteEvent operations,
+                        //  that's an SC_EVENT_REMOVED anyway, so hopefully no harm. This fixes a problem with midi controller canvas
+                        //  not updating after such a 'delete part with events, no separate AddEvents were used when creating the part'.
+                        if(!editable_part->events().empty())
+                          updateFlags |= SC_EVENT_REMOVED;
                         break;
                     
                   case UndoOp::DeletePart:
@@ -2288,6 +2341,12 @@ void Song::revertOperationGroup1(Undo& operations)
                         
                         editable_part->track()->parts()->addOperation(editable_part, pendingOperations);
                         updateFlags |= SC_PART_INSERTED;
+                        // REMOVE Tim. citem. Added.
+                        // If the part has events, then treat it as if they were inserted with separate AddEvent operations.
+                        // Even if some will be inserted later in this operations group with actual separate AddEvent operations,
+                        //  that's an SC_EVENT_INSERTED anyway, so should be no harm.
+                        if(!editable_part->events().empty())
+                          updateFlags |= SC_EVENT_INSERTED;
                         break;
 
                         
@@ -3055,6 +3114,12 @@ void Song::executeOperationGroup1(Undo& operations)
                           
                           editable_part->track()->parts()->addOperation(editable_part, pendingOperations);
                           updateFlags |= SC_PART_INSERTED;
+                          // REMOVE Tim. citem. Added.
+                          // If the part has events, then treat it as if they were inserted with separate AddEvent operations.
+                          // Even if some will be inserted later in this operations group with actual separate AddEvent operations,
+                          //  that's an SC_EVENT_INSERTED anyway, so should be no harm.
+                          if(!editable_part->events().empty())
+                            updateFlags |= SC_EVENT_INSERTED;
                         }
                         break;
                     
@@ -3064,6 +3129,13 @@ void Song::executeOperationGroup1(Undo& operations)
 #endif                        
                         editable_part->track()->parts()->delOperation(editable_part, pendingOperations);
                         updateFlags |= SC_PART_REMOVED;
+                        // REMOVE Tim. citem. Added.
+                        // If the part had events, then treat it as if they were removed with separate DeleteEvent operations.
+                        // Even if they will be deleted later in this operations group with actual separate DeleteEvent operations,
+                        //  that's an SC_EVENT_REMOVED anyway, so hopefully no harm. This fixes a problem with midi controller canvas
+                        //  not updating after such a 'delete part with events, no separate AddEvents were used when creating the part'.
+                        if(!editable_part->events().empty())
+                          updateFlags |= SC_EVENT_REMOVED;
                         break;
                     
                   case UndoOp::AddEvent: {

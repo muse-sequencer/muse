@@ -157,10 +157,10 @@ bool EItem::isObjectInRange(const MusECore::Pos& p0, const MusECore::Pos& p1) co
 }
 
 //---------------------------------------------------------
-//   CItemList
+//   CItemMap
 //---------------------------------------------------------
 
-CItem* CItemList::find(const QPoint& pos) const
+CItem* CItemMap::find(const QPoint& pos) const
       {
       CItem* item = 0;
       for (rciCItem i = rbegin(); i != rend(); ++i) {
@@ -180,10 +180,10 @@ CItem* CItemList::find(const QPoint& pos) const
       }
 
 //---------------------------------------------------------
-//   CItemList
+//   CItemMap
 //---------------------------------------------------------
 
-void CItemList::add(CItem* item)
+void CItemMap::add(CItem* item)
       {
       std::multimap<int, CItem*, std::less<int> >::insert(std::pair<const int, CItem*> (item->bbox().x(), item));
       }

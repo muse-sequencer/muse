@@ -338,4 +338,92 @@ void EventList::dump() const
             i->second.dump();
       }
 
+PosLen EventList::range(bool wave, int* numEvents) const
+{
+  PosLen res;
+  res.setType(wave ? Pos::FRAMES : Pos::TICKS);
+
+  int e_found = 0;
+  bool first_found = false;
+  unsigned start_time = 0;
+  unsigned end_time = 0;
+  for(ciEvent ie = begin(); ie != end(); ++ie)
+  {
+    const Event& e = ie->second;
+    // Only events of the given type are considered.
+    //if(e.pos().type() != type)
+    //  continue;
+    EventType et = e.type();
+    switch(et)
+    {
+      case Note:
+        if(wave)
+          continue;
+        // Don't add Note event types if they have no length.
+        // Hm, it is possible for zero-length events to be
+        //  accidentally present in the list. So the user should
+        //  at least be allowed to cut and paste them. The EventList
+        //  class will probably be correcting this condition anyway
+        //  when adding the event to the list.
+        //if(e.lenValue() == 0)
+        //  continue;
+        if(!first_found)
+        {
+          start_time = e.posValue();
+          first_found = true;
+        }
+        if(e.endPosValue() > end_time)
+          end_time = e.endPosValue();
+        ++e_found;
+      break;
+      
+      case Wave:
+        if(!wave)
+          continue;
+        // Don't add Wave event types if they have no length.
+        //if(e.lenValue() == 0)
+        //  continue;
+        if(!first_found)
+        {
+          start_time = e.posValue();
+          first_found = true;
+        }
+        if(e.endPosValue() > end_time)
+          end_time = e.endPosValue();
+        ++e_found;
+      break;
+      
+      case Controller:
+      case Meta:
+      case Sysex:
+        if(wave)
+          continue;
+        // For these events, even if duplicates are already found at this position,
+        //  the range is still the same, which simplifies this code - go ahead and count it...
+        
+        if(!first_found)
+        {
+          start_time = e.posValue();
+          first_found = true;
+        }
+        // For these events, minimum 1 unit time, to qualify as a valid 'range'.
+        //if(end_time == 0)
+        //  end_time = 1;
+        if((e.posValue() + 1) > end_time)
+          end_time = e.posValue() + 1;
+        ++e_found;
+      break;
+    }
+  }
+
+  // Protect, just in case. Using minimum 1 unit time.
+  //if(end_time <= start_time)
+  //  end_time = start_time + 1;
+  
+  res.setPosValue(start_time);
+  res.setLenValue(end_time - start_time);
+  *numEvents = e_found;
+  return res;
+}
+
 } // namespace MusECore
