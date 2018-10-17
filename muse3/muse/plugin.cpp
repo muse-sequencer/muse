@@ -973,112 +973,6 @@ CtrlList::Mode Plugin::ctrlMode(unsigned long i) const
       return ladspaCtrlMode(plugin, i);
       }
 
-// REMOVE Tim. scan. Changed.
-// //---------------------------------------------------------
-// //   loadPluginLib
-// //---------------------------------------------------------
-// 
-// static void loadPluginLib(QFileInfo* fi)
-// {
-//   void* handle = dlopen(fi->filePath().toLatin1().constData(), RTLD_NOW);
-//   if (handle == 0) {
-//         fprintf(stderr, "dlopen(%s) failed: %s\n",
-//            fi->filePath().toLatin1().constData(), dlerror());
-//         return;
-//         }
-// 
-//   #ifdef DSSI_SUPPORT
-//   DSSI_Descriptor_Function dssi = (DSSI_Descriptor_Function)dlsym(handle, "dssi_descriptor");
-//   if(dssi)
-//   {
-//     const DSSI_Descriptor* descr;
-//     for (unsigned long i = 0;; ++i)
-//     {
-//       descr = dssi(i);
-//       if (descr == 0)
-//             break;
-// 
-//       // Make sure it doesn't already exist.
-//       if(MusEGlobal::plugins.find(fi->completeBaseName(), QString(descr->LADSPA_Plugin->Label)) != 0)
-//         continue;
-// 
-//       Plugin::PluginFeatures reqfeat = Plugin::NoFeatures;
-//       if(LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties))
-//         reqfeat |= Plugin::NoInPlaceProcessing;
-// 
-//       // Hack: Special flag required for example for control processing.
-//       bool vst = false;
-//       if(fi->completeBaseName() == QString("dssi-vst"))
-//       {
-//         vst = true;
-//         reqfeat |= Plugin::FixedBlockSize;
-//       }
-// 
-//       #ifdef PLUGIN_DEBUGIN
-//       fprintf(stderr, "loadPluginLib: dssi effect name:%s inPlaceBroken:%d\n", descr->LADSPA_Plugin->Name, LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties));
-//       #endif
-// 
-//       bool is_synth = descr->run_synth || descr->run_synth_adding
-//                   || descr->run_multiple_synths || descr->run_multiple_synths_adding;
-//       if(MusEGlobal::debugMsg)
-//         fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s synth:%d isDssiVst:%d required features:%d\n",
-//                 fi->filePath().toLatin1().constData(),
-//                 descr->LADSPA_Plugin->Name, descr->LADSPA_Plugin->Label,
-//                 is_synth, vst, reqfeat
-//                 );
-// 
-//       MusEGlobal::plugins.add(fi, descr->LADSPA_Plugin, true, is_synth, vst, reqfeat);
-//     }
-//   }
-//   else
-//   #endif
-//   {
-//     LADSPA_Descriptor_Function ladspa = (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
-//     if(!ladspa)
-//     {
-//       const char *txt = dlerror();
-//       if(txt)
-//       {
-//         fprintf(stderr,
-//               "Unable to find ladspa_descriptor() function in plugin "
-//               "library file \"%s\": %s.\n"
-//               "Are you sure this is a LADSPA plugin file?\n",
-//               fi->filePath().toLatin1().constData(),
-//               txt);
-//       }
-//       dlclose(handle);
-//       return;
-//     }
-// 
-//     const LADSPA_Descriptor* descr;
-//     for (unsigned long i = 0;; ++i)
-//     {
-//       descr = ladspa(i);
-//       if (descr == NULL)
-//             break;
-// 
-//       // Make sure it doesn't already exist.
-//       if(MusEGlobal::plugins.find(fi->completeBaseName(), QString(descr->Label)) != 0)
-//         continue;
-// 
-//       Plugin::PluginFeatures reqfeat = Plugin::NoFeatures;
-//       if(LADSPA_IS_INPLACE_BROKEN(descr->Properties))
-//         reqfeat |= Plugin::NoInPlaceProcessing;
-// 
-//       #ifdef PLUGIN_DEBUGIN
-//       fprintf(stderr, "loadPluginLib: ladspa effect name:%s inPlaceBroken:%d\n", descr->Name, LADSPA_IS_INPLACE_BROKEN(descr->Properties));
-//       #endif
-// 
-//       if(MusEGlobal::debugMsg)
-//         fprintf(stderr, "loadPluginLib: adding ladspa plugin:%s name:%s label:%s required features:%d\n",
-//                 fi->filePath().toLatin1().constData(), descr->Name, descr->Label, reqfeat);
-//       MusEGlobal::plugins.add(fi, descr, false, false, false, reqfeat);
-//     }
-//   }
-// 
-//   dlclose(handle);
-// }
-
 //---------------------------------------------------------
 //   loadPluginLib
 //---------------------------------------------------------
@@ -1087,9 +981,9 @@ static void loadPluginLib(QFileInfo* fi)
 {
   const char* message = "Plugins: loadPluginLib: ";
   PluginScanList scan_list;
-  if(!pluginScan(fi->filePath(), scan_list))
+  if(!pluginScan(fi->filePath(), scan_list, MusEGlobal::debugMsg))
   {
-    fprintf(stderr, "Plugins: pluginScan(%s) failed\n",
+    fprintf(stderr, "Plugins: *FAILED* pluginScan(%s)\n\n",
        fi->filePath().toLatin1().constData());
   }
   
@@ -1103,7 +997,14 @@ static void loadPluginLib(QFileInfo* fi)
         if(MusEGlobal::loadPlugins)
         {
           // Make sure it doesn't already exist.
-          if(MusEGlobal::plugins.find(info._fi.completeBaseName(), info._label) == 0)
+          if(const Plugin* pl = MusEGlobal::plugins.find(info._fi.completeBaseName(), info._label))
+          {
+            fprintf(stderr, "Ignoring LADSPA effect label:%s path:%s duplicate of path:%s\n",
+                    info._label.toLatin1().constData(),
+                    info._fi.filePath().toLatin1().constData(),
+                    pl->filePath().toLatin1().constData());
+          }
+          else
           {
             if(MusEGlobal::debugMsg)
               info.dump(message);
@@ -1124,7 +1025,14 @@ static void loadPluginLib(QFileInfo* fi)
              info._class & PluginScanInfo::PluginClassInstrument)
           {
             // Make sure it doesn't already exist.
-            if(MusEGlobal::plugins.find(info._fi.completeBaseName(), info._label) == 0)
+            if(const Plugin* pl = MusEGlobal::plugins.find(info._fi.completeBaseName(), info._label))
+            {
+              fprintf(stderr, "Ignoring DSSI effect label:%s path:%s duplicate of path:%s\n",
+                      info._label.toLatin1().constData(),
+                      info._fi.filePath().toLatin1().constData(),
+                      pl->filePath().toLatin1().constData());
+            }
+            else
             {
               if(MusEGlobal::debugMsg)
                 info.dump(message);

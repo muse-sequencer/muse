@@ -302,230 +302,13 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
       return 0;
       }
 
-// REMOVE Tim. scan. Removed.
-// //---------------------------------------------------------
-// //   loadPluginLib
-// //---------------------------------------------------------
-// 
-// static bool scanSubPlugin(QFileInfo& fi, AEffect *plugin, int id, void *handle)
-// {
-//    char buffer[128];
-//    QString effectName;
-//    QString vendorString;
-//    QString productString;
-//    int vendorVersion;
-//    QString vendorVersionString;
-//    std::vector<Synth*>::iterator is;
-//    int vst_version = 0;
-//    VstNativeSynth* new_synth = NULL;
-// 
-//    if(!(plugin->flags & effFlagsHasEditor))
-//    {
-//      if(MusEGlobal::debugMsg)
-//        fprintf(stderr, "Plugin has no GUI\n");
-//    }
-//    else if(MusEGlobal::debugMsg)
-//      fprintf(stderr, "Plugin has a GUI\n");
-// 
-//    if(!(plugin->flags & effFlagsCanReplacing))
-//      fprintf(stderr, "Plugin does not support processReplacing\n");
-//    else if(MusEGlobal::debugMsg)
-//      fprintf(stderr, "Plugin supports processReplacing\n");
-// 
-//    plugin->dispatcher(plugin, effOpen, 0, 0, NULL, 0);
-// 
-//    buffer[0] = 0;
-//    plugin->dispatcher(plugin, effGetEffectName, 0, 0, buffer, 0);
-//    if(buffer[0])
-//      effectName = QString(buffer);
-// 
-//    buffer[0] = 0;
-//    plugin->dispatcher(plugin, effGetVendorString, 0, 0, buffer, 0);
-//    if (buffer[0])
-//      vendorString = QString(buffer);
-// 
-//    buffer[0] = 0;
-//    plugin->dispatcher(plugin, effGetProductString, 0, 0, buffer, 0);
-//    if (buffer[0])
-//      productString = QString(buffer);
-// 
-//    vendorVersion = plugin->dispatcher(plugin, effGetVendorVersion, 0, 0, NULL, 0);
-// 
-//    // Some (older) plugins don't have any of these strings. We only have the filename to use.
-//    if(effectName.isEmpty())
-//      effectName = fi.completeBaseName();
-//    if(productString.isEmpty())
-//      //productString = fi.completeBaseName();
-//      productString = effectName;
-// 
-//    // Make sure it doesn't already exist.
-//    for(is = MusEGlobal::synthis.begin(); is != MusEGlobal::synthis.end(); ++is)
-//      if((*is)->name() == effectName && (*is)->baseName() == fi.completeBaseName())
-//      {
-//         fprintf(stderr, "VST %s already exists!\n", (char *)effectName.toUtf8().constData());
-//        return false;
-//      }
-// 
-//    // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
-//    vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
-//    bool isSynth = true;
-//    if(!((plugin->flags & effFlagsIsSynth) || (vst_version >= 2 && plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0)))
-//    {
-//      isSynth = false;
-//    }
-// 
-//    vendorVersionString = QString("%1.%2.%3").arg((vendorVersion >> 16) & 0xff).arg((vendorVersion >> 8) & 0xff).arg(vendorVersion & 0xff);
-//    
-//    Plugin::PluginFeatures reqfeat = Plugin::NoFeatures;
-//    
-//    new_synth = new VstNativeSynth(fi, plugin, 
-//                                   effectName, productString, vendorString, vendorVersionString, 
-//                                   id, handle, isSynth, reqfeat);
-// 
-//    if(MusEGlobal::debugMsg)
-//      fprintf(stderr, "scanVstNativeLib: adding vst synth plugin:%s name:%s effectName:%s vendorString:%s productString:%s vstver:%d\n",
-//              fi.filePath().toLatin1().constData(),
-//              fi.completeBaseName().toLatin1().constData(),
-//              effectName.toLatin1().constData(),
-//              vendorString.toLatin1().constData(),
-//              productString.toLatin1().constData(),
-//              vst_version
-//              );
-// 
-//    MusEGlobal::synthis.push_back(new_synth);
-// 
-//    if(new_synth->inPorts() > 0 && new_synth->outPorts() > 0)
-//    {
-//       MusEGlobal::plugins.push_back(new VstNativePluginWrapper(new_synth, reqfeat));
-//    }
-// 
-//    return true;
-// 
-// }
-
-// REMOVE Tim. scan. Changed.
-// static void scanVstNativeLib(QFileInfo& fi)
-// {
-//   sem_wait(&_vstIdLock);
-//   currentPluginId = 0;
-//   bool bDontDlCLose = false;
-//   AEffect *plugin = NULL;
-//   void* handle = dlopen(fi.filePath().toLatin1().constData(), RTLD_NOW);
-//   if (handle == NULL)
-//   {
-//     fprintf(stderr, "scanVstNativeLib: dlopen(%s) failed: %s\n", fi.filePath().toLatin1().constData(), dlerror());
-//     goto _end;
-//   }
-//   
-//   AEffect *(*getInstance)(audioMasterCallback);
-//   getInstance = (AEffect*(*)(audioMasterCallback))dlsym(handle, NEW_PLUGIN_ENTRY_POINT);
-//   if(!getInstance)
-//   {
-//     if(MusEGlobal::debugMsg)
-//     {
-//       fprintf(stderr, "VST 2.4 entrypoint \"" NEW_PLUGIN_ENTRY_POINT "\" not found in library %s, looking for \""
-//                       OLD_PLUGIN_ENTRY_POINT "\"\n", fi.filePath().toLatin1().constData());
-//     }
-// 
-//     getInstance = (AEffect*(*)(audioMasterCallback))dlsym(handle, OLD_PLUGIN_ENTRY_POINT);
-//     if(!getInstance)
-//     {
-//       fprintf(stderr, "ERROR: VST entrypoints \"" NEW_PLUGIN_ENTRY_POINT "\" or \""
-//                       OLD_PLUGIN_ENTRY_POINT "\" not found in library\n");
-//       goto _end;
-//     }
-//     else if(MusEGlobal::debugMsg)
-//     {
-//       fprintf(stderr, "VST entrypoint \"" OLD_PLUGIN_ENTRY_POINT "\" found\n");
-//     }
-//   }
-//   else if(MusEGlobal::debugMsg)
-//   {
-//     fprintf(stderr, "VST entrypoint \"" NEW_PLUGIN_ENTRY_POINT "\" found\n");
-//   }
-// 
-//   plugin = getInstance(vstNativeHostCallback);
-//   if(!plugin)
-//   {
-//     fprintf(stderr, "ERROR: Failed to instantiate plugin in VST library \"%s\"\n", fi.filePath().toLatin1().constData());
-//     goto _end;
-//   }
-//   else if(MusEGlobal::debugMsg)
-//     fprintf(stderr, "plugin instantiated\n");
-// 
-//   if(plugin->magic != kEffectMagic)
-//   {
-//     fprintf(stderr, "Not a VST plugin in library \"%s\"\n", fi.filePath().toLatin1().constData());
-//     goto _end;
-//   }
-//   else if(MusEGlobal::debugMsg)
-//     fprintf(stderr, "plugin is a VST\n");
-// 
-//   if(plugin->dispatcher(plugin, 24 + 11 /* effGetCategory */, 0, 0, 0, 0) == 10 /* kPlugCategShell */)
-//   {
-//      bDontDlCLose = true;
-//      std::map<VstIntPtr, std::string> shellPlugs;
-//      char cPlugName [128];
-//      do
-//      {
-//         memset(cPlugName, 0, sizeof(cPlugName));
-//         VstIntPtr id = plugin->dispatcher(plugin, 24 + 46 /* effShellGetNextPlugin */, 0, 0, cPlugName, 0);
-//         if(id != 0 && cPlugName [0] != 0)
-//         {
-//            shellPlugs.insert(std::make_pair(id, std::string(cPlugName)));
-//         }
-//         else
-//            break;
-//      }
-//      while(true);
-// 
-//      for(std::map<VstIntPtr, std::string>::iterator it = shellPlugs.begin(); it != shellPlugs.end(); ++it)
-//      {
-//         if(plugin)
-//         {
-//             plugin->dispatcher(plugin, effClose, 0, 0, NULL, 0);
-//             plugin = NULL;
-//         }
-// 
-//         currentPluginId = it->first;
-//         getInstance = (AEffect*(*)(audioMasterCallback))dlsym(handle, NEW_PLUGIN_ENTRY_POINT);
-//         if(!getInstance)
-//           goto _end;
-// 
-//         AEffect *plugin = getInstance(vstNativeHostCallback);
-//         if(!plugin)
-//         {
-//           fprintf(stderr, "ERROR: Failed to instantiate plugin in VST library \"%s\", shell id=%ld\n", fi.filePath().toLatin1().constData(), (long)currentPluginId);
-//           goto _end;
-//         }
-//         scanSubPlugin(fi, plugin, currentPluginId, handle);
-//         currentPluginId = 0;
-//      }
-//   }
-//   else
-//   {
-//      scanSubPlugin(fi, plugin, 0, 0);
-//   }
-// 
-// 
-//   //plugin->dispatcher(plugin, effMainsChanged, 0, 0, NULL, 0);
-//   if(plugin)
-//       plugin->dispatcher(plugin, effClose, 0, 0, NULL, 0);
-// 
-//   _end:
-//   if(handle && !bDontDlCLose)
-//       dlclose(handle);
-// 
-//   sem_post(&_vstIdLock);
-// }
-
 static void scanVstNativeLib(QFileInfo& fi)
 {
   const char* message = "scanVstNativeLib: ";
   PluginScanList scan_list;
-  if(!pluginScan(fi.filePath(), scan_list))
+  if(!pluginScan(fi.filePath(), scan_list, MusEGlobal::debugMsg))
   {
-    fprintf(stderr, "scanVstNativeLib: pluginScan(%s) failed\n",
+    fprintf(stderr, "scanVstNativeLib: *FAILED* pluginScan(%s)\n\n",
        fi.filePath().toLatin1().constData());
   }
   
@@ -539,15 +322,36 @@ static void scanVstNativeLib(QFileInfo& fi)
 #ifdef VST_NATIVE_SUPPORT
         if(MusEGlobal::loadNativeVST)
         {
+          const Plugin* plug_found = MusEGlobal::plugins.find(info._fi.completeBaseName(), info._name);
+          const Synth* synth_found = MusEGlobal::synthis.find(info._fi.completeBaseName(), info._name);
+          
+          if(plug_found)
+          {
+            fprintf(stderr, "Ignoring LinuxVST effect name:%s path:%s duplicate of path:%s\n",
+                    info._name.toLatin1().constData(),
+                    info._fi.filePath().toLatin1().constData(),
+                    plug_found->filePath().toLatin1().constData());
+          }
+          if(synth_found)
+          {
+            fprintf(stderr, "Ignoring LinuxVST synth name:%s path:%s duplicate of path:%s\n",
+                    info._name.toLatin1().constData(),
+                    info._fi.filePath().toLatin1().constData(),
+                    synth_found->filePath().toLatin1().constData());
+          }
+          
           const bool is_effect = info._class & PluginScanInfo::PluginClassEffect;
           const bool is_synth  = info._class & PluginScanInfo::PluginClassInstrument;
+          
           const bool add_plug  = (is_effect || is_synth) &&
                                  info._inports > 0 &&
                                  info._outports > 0 &&
-                                 MusEGlobal::plugins.find(info._fi.completeBaseName(), info._name) == 0;
+                                 !plug_found;
+                                 
           // For now we allow effects as a synth track. Until we allow programs (and midi) in the effect rack.
           const bool add_synth = (is_synth || is_effect) &&
-                                 MusEGlobal::synthis.find(info._fi.completeBaseName(), info._name) == 0;
+                                 !synth_found;
+                                 
           if(add_plug || add_synth)
           {
             VstNativeSynth* new_synth = new VstNativeSynth(info);

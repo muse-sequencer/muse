@@ -32,74 +32,6 @@
 
 namespace MusECore {
 
-// REMOVE Tim. scan. Changed.
-// QString PluginScanInfo::dssiUiFilename() const
-// {
-//   QString libr(lib());
-//   if(dirPath().isEmpty() || libr.isEmpty())
-//     return QString();
-// 
-//   QString guiPath(dirPath() + "/" + libr);
-// 
-//   QDir guiDir(guiPath, "*", QDir::Unsorted, QDir::Files);
-//   if(!guiDir.exists())
-//     return QString();
-// 
-//   QStringList list = guiDir.entryList();
-// 
-// //   QString plug(pluginLabel());
-//   QString plug(_label);
-//   QString lib_qt_ui;
-//   QString lib_any_ui;
-//   QString plug_qt_ui;
-//   QString plug_any_ui;
-// 
-//   for(int i = 0; i < list.count(); ++i)
-//   {
-//     QFileInfo fi(guiPath + QString("/") + list[i]);
-//     QString gui(fi.filePath());
-//     struct stat buf;
-//     if(stat(gui.toLatin1().constData(), &buf))
-//       continue;
-//     if(!((S_ISREG(buf.st_mode) || S_ISLNK(buf.st_mode)) &&
-//         (buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH))))
-//       continue;
-// 
-//     // FIXME: Qt::CaseInsensitive - a quick and dirty way to accept any suffix. Should be case sensitive...
-//     if(!libr.isEmpty())
-//     {
-//       if(lib_qt_ui.isEmpty() && list[i].contains(libr + QString("_qt"), Qt::CaseInsensitive))
-//         lib_qt_ui = gui;
-//       if(lib_any_ui.isEmpty() && list[i].contains(libr + QString('_') /*, Qt::CaseInsensitive*/))
-//         lib_any_ui = gui;
-//     }
-//     if(!plug.isEmpty())
-//     {
-//       if(plug_qt_ui.isEmpty() && list[i].contains(plug + QString("_qt"), Qt::CaseInsensitive))
-//         plug_qt_ui = gui;
-//       if(plug_any_ui.isEmpty() && list[i].contains(plug + QString('_') /*, Qt::CaseInsensitive*/))
-//         plug_any_ui = gui;
-//     }
-//   }
-// 
-//   // Prefer qt plugin ui
-//   if(!plug_qt_ui.isEmpty())
-//     return plug_qt_ui;
-//   // Prefer any plugin ui
-//   if(!plug_any_ui.isEmpty())
-//     return plug_any_ui;
-//   // Prefer qt lib ui
-//   if(!lib_qt_ui.isEmpty())
-//     return lib_qt_ui;
-//   // Prefer any lib ui
-//   if(!lib_any_ui.isEmpty())
-//     return lib_any_ui;
-// 
-//   // No suitable UI file found
-//   return QString();
-// };
-
-  
 //---------------------------------------------------------
 //   write
 //---------------------------------------------------------
@@ -150,7 +82,6 @@ void PluginScanInfo::write(int level, Xml& xml)
             
       xml.tag(level--, "/plugin");
       }
-
 
 //---------------------------------------------------------
 //   readPort
@@ -352,7 +283,6 @@ void PluginScanInfo::dump(const char* prefixMessage) const
   );
 }
 
-
 //---------------------------------------------------------
 //   readPluginScan
 //    return true on error
@@ -406,7 +336,7 @@ bool readPluginScan(Xml& xml, PluginScanList& plugin_scan_list)
 //     Returns true on success
 //---------------------------------------------------------
 
-bool pluginScan(const QString& filename, PluginScanList& scanList)
+bool pluginScan(const QString& filename, PluginScanList& scanList, bool debugStdErr)
 {
   QProcess process;
   
@@ -431,35 +361,38 @@ bool pluginScan(const QString& filename, PluginScanList& scanList)
   
   if(!process.waitForFinished(4000))
   {
-    fprintf(stderr, "pluginScan: waitForFinished failed\n");
+    fprintf(stderr, "\npluginScan: waitForFinished failed\n");
     return false;
   }
   
   if(process.exitStatus() != QProcess::NormalExit)
   {
-    fprintf(stderr, "pluginScan: process not exited normally\n");
+    fprintf(stderr, "\npluginScan: process not exited normally\n");
     return false;
   }
   
   if(process.exitCode() != 0)
   {
-    fprintf(stderr, "pluginScan: process exit code not zero\n");
+    fprintf(stderr, "\npluginScan: process exit code not zero\n");
     return false;
   }
   
-  QByteArray err_array = process.readAllStandardError();
-  if(!err_array.isEmpty())
+  if(debugStdErr)
   {
-    // Terminate just to be sure.
-    err_array.append(char(0));
-    fprintf(stderr, "pluginScan: stderr array:%s\n", err_array.constData());
+    QByteArray err_array = process.readAllStandardError();
+    if(!err_array.isEmpty())
+    {
+      // Terminate just to be sure.
+      err_array.append(char(0));
+      fprintf(stderr, "\npluginScan: stderr array:%s\n", err_array.constData());
+    }
   }
   
   QByteArray array = process.readAllStandardOutput();
   
   if(array.isEmpty())
   {
-    fprintf(stderr, "pluginScan: stdout array is empty\n");
+    fprintf(stderr, "\npluginScan: stdout array is empty\n");
     return false;
   }
   
@@ -472,14 +405,10 @@ bool pluginScan(const QString& filename, PluginScanList& scanList)
   // Read the list of plugins found in the xml.
   if(readPluginScan(xml, scanList))
   {
-    fprintf(stderr, "pluginScan: readPluginScan failed\n");
+    fprintf(stderr, "\npluginScan: readPluginScan failed\n");
   }
-  //else
-  //{
-  //  fprintf(stderr, "pluginScan: readPluginScan success: scanList num plugins:%d\n", (int)scanList.size());
-  //}
   
-  fprintf(stderr, "pluginScan: success: stdout array:\n%s\n", array.constData());
+  //fprintf(stderr, "pluginScan: success: stdout array:\n%s\n", array.constData());
   
   return true;
 }

@@ -79,58 +79,6 @@ int SS_map_logdomain2pluginparam(float pluginparam_log)
    return scaled;
 }
 
-// REMOVE Tim. scan. Changed.
-// //---------------------------------------------------------
-// //   loadPluginLib
-// //---------------------------------------------------------
-// 
-// static void loadPluginLib(QFileInfo* fi)
-//       {
-//       SP_TRACE_IN
-//       if (SP_DEBUG_LADSPA) {
-//             fprintf(stderr, "loadPluginLib: %s\n", fi->fileName().toLatin1().constData());
-//             }
-//       void* handle = dlopen(fi->filePath().toLatin1().constData(), RTLD_NOW);
-//       if (handle == 0) {
-//             fprintf(stderr, "dlopen(%s) failed: %s\n",
-//               fi->filePath().toLatin1().constData(), dlerror());
-//             return;
-//             }
-//       LADSPA_Descriptor_Function ladspa = (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
-// 
-//       if (!ladspa) {
-//             const char *txt = dlerror();
-//             if (txt) {
-//                   fprintf(stderr,
-//                         "Unable to find ladspa_descriptor() function in plugin "
-//                         "library file \"%s\": %s.\n"
-//                         "Are you sure this is a LADSPA plugin file?\n",
-//                         fi->filePath().toLatin1().constData(),
-//                         txt);
-//                   dlclose(handle);
-//                   return;//exit(1);
-//                   }
-//             }
-//       const LADSPA_Descriptor* descr;
-//       for (int i = 0;; ++i) {
-//             descr = ladspa(i);
-//             if (descr == NULL)
-//                   break;
-//             
-//             // Make sure it doesn't already exist.
-//             if(plugins.find(fi->completeBaseName(), QString(descr->Label)) != 0)
-//               continue;
-// 
-//             plugins.push_back(new LadspaPlugin(fi, ladspa, descr));
-//             }
-// 
-//       // Close the library for now. It will be opened 
-//       //  again when an instance is created.
-//       dlclose(handle);
-//       
-//       SP_TRACE_OUT
-//       }
-
 //---------------------------------------------------------
 //   loadPluginLib
 //---------------------------------------------------------
@@ -145,7 +93,7 @@ static void loadPluginLib(QFileInfo* fi)
   MusECore::PluginScanList scan_list;
   if(!MusECore::pluginScan(fi->filePath(), scan_list))
   {
-    fprintf(stderr, "simpler_plugin: pluginScan(%s) failed\n",
+    fprintf(stderr, "simpler_plugin: *FAILED* pluginScan(%s) failed\n\n",
        fi->filePath().toLatin1().constData());
   }
   
@@ -159,7 +107,14 @@ static void loadPluginLib(QFileInfo* fi)
         //if(MusEGlobal::loadPlugins)
         {
           // Make sure it doesn't already exist.
-          if(plugins.find(info._fi.completeBaseName(), info._label) == 0)
+          if(/*Plugin* pl =*/ plugins.find(info._fi.completeBaseName(), info._label))
+          {
+            //fprintf(stderr, "Ignoring LADSPA effect label:%s path:%s duplicate of path:%s\n",
+            //        info._label.toLatin1().constData(),
+            //        info._fi.filePath().toLatin1().constData(),
+            //        pl->filePath().toLatin1().constData());
+          }
+          else
           {
             plugins.push_back(new LadspaPlugin(info));
           }
@@ -339,35 +294,17 @@ LadspaPlugin::LadspaPlugin(const QFileInfo* f,
             }*/
 
       if ((_inports != _outports) || (LADSPA_IS_INPLACE_BROKEN(d->Properties)))
-        _requiredFeatures |= NoInPlaceProcessing;
+        _requiredFeatures |= MusECore::PluginNoInPlaceProcessing;
       
       SP_TRACE_OUT
       }
 
-// REMOVE Tim. scan. Added.
 LadspaPlugin::LadspaPlugin(const MusECore::PluginScanInfo& info)
   : Plugin(info)
 {
    SP_TRACE_IN
    
   _plugin = NULL;
-  
-//   _requiredFeatures = info._requiredFeatures;
-  
-//   switch(info._type)
-//   {
-//     case MusECore::PluginScanInfo::PluginTypeLADSPA:
-//     break;
-//     
-//     case MusECore::PluginScanInfo::PluginTypeDSSI:
-//     case MusECore::PluginScanInfo::PluginTypeDSSIVST:
-//     case MusECore::PluginScanInfo::PluginTypeVST:
-//     case MusECore::PluginScanInfo::PluginTypeLV2:
-//     case MusECore::PluginScanInfo::PluginTypeLinuxVST:
-//     case MusECore::PluginScanInfo::PluginTypeMESS:
-//     case MusECore::PluginScanInfo::PluginTypeAll:
-//     break;
-//   }
   
   _label = info._label;
   _name = info._name;
@@ -402,9 +339,6 @@ LadspaPlugin::LadspaPlugin(const MusECore::PluginScanInfo& info)
     }
   }
 
-//   if((_inports != _outports) || (info._requiredFeatures & MusECore::PluginScanInfo::NoInPlaceProcessing))
-//     _requiredFeatures |= NoInPlaceProcessing;
-  
   SP_TRACE_OUT
 }
       
@@ -455,9 +389,6 @@ int LadspaPlugin::incReferences(int val)
       fprintf(stderr, "LadspaPlugin::incReferences no more instances, closing library\n");
       #endif
 
-      // REMOVE Tim. scan. Added.
-      //fprintf(stderr, "LadspaPlugin::incReferences no more instances, closing library\n");
-      
       dlclose(_libHandle);
     }
 
@@ -473,9 +404,6 @@ int LadspaPlugin::incReferences(int val)
 
   if(_libHandle == 0)
   {
-    // REMOVE Tim. scan. Added.
-    //fprintf(stderr, "LadspaPlugin::incReferences opening library...\n");
-    
     _libHandle = dlopen(_fi.filePath().toLatin1().constData(), RTLD_NOW);
 
     if(_libHandle == 0)
@@ -564,7 +492,7 @@ int LadspaPlugin::incReferences(int val)
   }
 
   if ((_inports != _outports) || (LADSPA_IS_INPLACE_BROKEN(_plugin->Properties)))
-    _requiredFeatures |= NoInPlaceProcessing;
+    _requiredFeatures |= MusECore::PluginNoInPlaceProcessing;
   
   _references = newref;
 
@@ -835,9 +763,6 @@ PluginI::PluginI()
 
 PluginI::~PluginI()
       {
-// REMOVE Tim. scan. Added.
-      //fprintf(stderr, "PluginI::~PluginI\n");
-      
       if(_audioInSilenceBuf)
         free(_audioInSilenceBuf);
       if(_audioOutDummyBuf)
@@ -1113,9 +1038,6 @@ LadspaPluginI::LadspaPluginI()
 
 LadspaPluginI::~LadspaPluginI()
 {
-  // REMOVE Tim. scan. Added.
-  //fprintf(stderr, "LadspaPluginI::~LadspaPluginI\n");
-      
   if(_plugin) {
     // Deactivate is pure virtual, it cannot be 
     //  called from the base destructor. Do it here.

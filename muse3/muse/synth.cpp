@@ -303,8 +303,6 @@ static SynthI* createSynthInstance(const QString& sclass, const QString& label, 
 Synth::Synth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver, PluginFeatures_t reqFeatures)
    : info(fi), _name(label), _description(descr), _maker(maker), _version(ver), _requiredFeatures(reqFeatures)
       {
-// REMOVE Tim. scan. Removed. Hm... Was added in 2016 by me.
-//       _requiredFeatures = Plugin::NoFeatures;
       _instances = 0;
       }
 
@@ -868,72 +866,6 @@ void MessSynthIF::deactivate3()
             }
       }
 
-// REMOVE Tim. scan. Changed.
-// //---------------------------------------------------------
-// //   initMidiSynth
-// //    search for software MusEGlobal::synthis and advertise
-// //---------------------------------------------------------
-// 
-// void initMidiSynth()
-//       {
-//       QString s = MusEGlobal::museGlobalLib + "/synthi";
-// 
-//       QDir pluginDir(s, QString("*.so")); // ddskrjo
-//       if (MusEGlobal::debugMsg)
-//             fprintf(stderr, "searching for software synthesizer in <%s>\n", s.toLatin1().constData());
-//       if (pluginDir.exists()) {
-//             QFileInfoList list = pluginDir.entryInfoList();
-// 	    QFileInfoList::iterator it=list.begin();
-//             QFileInfo* fi;
-//             while(it!=list.end()) {
-//                   fi = &*it;
-// 
-//                   QByteArray ba = fi->filePath().toLatin1();
-//                   const char* path = ba.constData();
-// 
-//                   // load Synti dll
-//                   void* handle = dlopen(path, RTLD_NOW);
-//                   if (handle == 0) {
-//                         fprintf(stderr, "initMidiSynth: MESS dlopen(%s) failed: %s\n", path, dlerror());
-//                         ++it;
-//                         continue;
-//                         }
-//                   typedef const MESS* (*MESS_Function)();
-//                   MESS_Function msynth = (MESS_Function)dlsym(handle, "mess_descriptor");
-// 
-//                   if (!msynth) {
-//                         #if 1
-//                         const char *txt = dlerror();
-//                         if (txt) {
-//                               fprintf(stderr,
-//                                 "Unable to find msynth_descriptor() function in plugin "
-//                                 "library file \"%s\": %s.\n"
-//                                 "Are you sure this is a MESS plugin file?\n",
-//                                 path, txt);
-//                               }
-//                         #endif
-//                           dlclose(handle);
-//                           ++it;
-//                           continue;
-//                         }
-//                   const MESS* descr = msynth();
-//                   if (descr == 0) {
-//                         fprintf(stderr, "initMidiSynth: no MESS descr found in %s\n", path);
-//                         dlclose(handle);
-//                         ++it;
-//                         continue;
-//                         }
-// 
-//                   MusEGlobal::synthis.push_back(new MessSynth(*fi, QString(descr->name), QString(descr->description), QString(""), QString(descr->version)));
-// 
-//                   dlclose(handle);
-//                   ++it;
-//                   }
-//             if (MusEGlobal::debugMsg)
-//                   fprintf(stderr, "%zd soft synth found\n", MusEGlobal::synthis.size());
-//             }
-//       }
-
 //---------------------------------------------------------
 //   initMidiSynth
 //    search for software MusEGlobal::synthis and advertise
@@ -954,9 +886,9 @@ void initMidiSynth()
     {
       const QFileInfo& fi = *it;
       MusECore::PluginScanList scan_list;
-      if(!MusECore::pluginScan(fi.filePath(), scan_list))
+      if(!MusECore::pluginScan(fi.filePath(), scan_list, MusEGlobal::debugMsg))
       {
-        fprintf(stderr, "initMidiSynth: pluginScan(%s) failed\n",
+        fprintf(stderr, "initMidiSynth: *FAILED* pluginScan(%s)\n\n",
           fi.filePath().toLatin1().constData());
       }
       
@@ -970,7 +902,14 @@ void initMidiSynth()
             if(MusEGlobal::loadMESS)
             {
               // Make sure it doesn't already exist.
-              if(MusEGlobal::synthis.find(info._fi.completeBaseName(), info._name) == 0)
+              if(const Synth* sy = MusEGlobal::synthis.find(info._fi.completeBaseName(), info._name))
+              {
+                fprintf(stderr, "Ignoring MESS synth name:%s path:%s duplicate of path:%s\n",
+                        info._name.toLatin1().constData(),
+                        info._fi.filePath().toLatin1().constData(),
+                        sy->filePath().toLatin1().constData());
+              }
+              else
               {
                 MusEGlobal::synthis.push_back(
                   new MessSynth(info._fi, info._name, info._description, QString(""), info._version));

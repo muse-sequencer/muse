@@ -214,7 +214,8 @@ typedef PluginScanList::iterator iPluginScanList;
 typedef PluginScanList::const_iterator ciPluginScanList;
 
 
-bool pluginScan(const QString& filename, PluginScanList& scanList);
+// If debugStdErr is true, any stderr content received from the scan program will be printed.
+bool pluginScan(const QString& filename, PluginScanList& scanList, bool debugStdErr = false);
 
 } // namespace MusECore
 

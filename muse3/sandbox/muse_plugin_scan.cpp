@@ -22,9 +22,7 @@
 //=========================================================
 
 #include <stdio.h>
-// #include <stdlib.h>
 #include <unistd.h>
-// #include <string.h>
 
 #include <dlfcn.h>
 #include <ladspa.h>
@@ -71,10 +69,6 @@ typedef intptr_t VstIntPtr;
 #endif
 #endif
 
-// #include "vst_native_editor.h"
-// #include "synth.h"
-// #include "plugin.h"
-// #include "midictrl.h"
 //#include <semaphore.h>
 //#include <QSemaphore>
 
@@ -395,14 +389,6 @@ static bool scanSubPlugin(int level, MusECore::Xml& xml,
     //productString = fi.completeBaseName();
     productString = effectName;
 
-//    // Make sure it doesn't already exist.
-//    for(is = MusEGlobal::synthis.begin(); is != MusEGlobal::synthis.end(); ++is)
-//      if((*is)->name() == effectName && (*is)->baseName() == fi.completeBaseName())
-//      {
-//         fprintf(stderr, "VST %s already exists!\n", (char *)effectName.toUtf8().constData());
-//        return false;
-//      }
-
   // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
   vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
   
@@ -465,6 +451,7 @@ static bool scanSubPlugin(int level, MusECore::Xml& xml,
   if((info._inports != info._outports)  /*|| LADSPA_IS_INPLACE_BROKEN(ladspa_descr->Properties)*/ )
     info._requiredFeatures |= MusECore::PluginNoInPlaceProcessing;
 
+// TODO
 //   if()
 //   {
 //     info._requiredFeatures |= MusECore::PluginScanInfo::FixedBlockSize;
@@ -525,7 +512,6 @@ QString dssiUiFilename(const MusECore::PluginScanInfo& info)
 
   QStringList list = guiDir.entryList();
 
-//   QString plug(pluginLabel());
   QString plug(info._label);
   QString lib_qt_ui;
   QString lib_any_ui;
@@ -583,21 +569,26 @@ QString dssiUiFilename(const MusECore::PluginScanInfo& info)
 //    Returns true on success
 //---------------------------------------------------------
 
-// static void loadPluginLib(QFileInfo* fi)
 static bool loadPluginLib(const char* filename)
 {
       DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: %s\n", filename);
       
 //#ifdef VST_NATIVE_SUPPORT
+      
+// TODO: Copied from vst_native.cpp shell support code (below).
+//       Since it would be executed all the time if VST_NATIVE_SUPPORT was enabled -
+//        we don't yet know what type the lib is! - we'll just try this for all plugins...
+//       Tested with QSemaphore (not sem_wait): This caused it to freeze. Conflicts with QProcess?
 //       sem_wait(&_vstIdLock);
       //_vstIdLock.acquire();
+      
       currentPluginId = 0;
 //#endif // VST_NATIVE_SUPPORT
               
       void* handle = dlopen(filename, RTLD_NOW);
       if (handle == 0)
       {
-        fprintf(stderr, "loadPluginLib: dlopen(%s) failed: %s\n",
+        fprintf(stderr, "muse_plugin_scan: dlopen(%s) failed: %s\n",
           filename, dlerror());
         return false;
       }
@@ -970,10 +961,6 @@ static bool loadPluginLib(const char* filename)
 //               sem_post(&_vstIdLock);
 //               _vstIdLock.release();
               
-              
-              
-              
-              
               ret = true;
             }
             else
@@ -1007,7 +994,6 @@ static bool loadPluginLib(const char* filename)
 void usage(const char* fname, const char* txt)
       {
       fprintf(stderr, "%s: %s\n", fname, txt);
-//      fprintf(stderr, "usage:\n");
       }
 
 //---------------------------------------------------------
@@ -1016,53 +1002,14 @@ void usage(const char* fname, const char* txt)
 
 int main(int argc, char* argv[])
       {
-      //const char* type = 0;
       const char* filename = 0;
       int c;
-//       while ((c = getopt(argc, argv, "f")) != EOF) {
-      //while ((c = getopt(argc, argv, "t:f:")) != EOF) {
       while ((c = getopt(argc, argv, "f:")) != EOF) {
             switch (c) {
-//                   case 'f': printName = true; break;
-                  //case 't': type = optarg; break;
                   case 'f': filename = optarg; break;
-//                   default:  usage(argv[0], "bad argument"); return -1;
-                  //default:  usage(argv[0], "-t <type=ladspa, dssi, linuxvst> -f <filename>"); return -1;
                   default:  usage(argv[0], "-f <filename>"); return -1;
                   }
             }
-//       argc -= optind;
-//       ++argc;
-//       const char* p = 0;
-//       for (int i = 1; i < argc; ++i) {
-//             switch (grepMidi(argv[i])) {
-//                   case 0:     break;
-//                   case -1:    p = "not found"; break;
-//                   case -2:    p = "no 'MThd': not a midi file"; break;
-//                   case -3:    p = "file too short"; break;
-//                   case -4:    p = "bad file type"; break;
-//                   case -5:    p = "no 'MTrk': not a midi file"; break;
-//                   case -6:    p = "no running state"; break;
-//                   default:
-//                         printf("was??\n");
-//                         return -1;
-//                   }
-//             }
-//       if (p)
-//             printf("Error: <%s>\n", p);
-
-//       if (optind >= argc)
-//       { 
-//         fprintf(stderr, "Expected argument after options\n"); 
-//         return -1;
-//       }
-
-
-//       if(!type)
-//       {
-//         fprintf(stderr, "Error: No type given\n");
-//         return -1;
-//       }
       
       if(!filename)
       {
@@ -1074,7 +1021,6 @@ int main(int argc, char* argv[])
       
       if(!res)
       {
-        //fprintf(stderr, "Error loading %s plugin: <%s>\n", type, filename);
         fprintf(stderr, "Error loading plugin: <%s>\n", filename);
         return -1;
       }
