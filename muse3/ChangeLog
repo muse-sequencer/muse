@@ -1,3 +1,18 @@
+17.10.2018
+      * NEW! Safe Plugin Scanner 'sandbox': (Tim)
+      - MusE should NEVER crash due to plugin scanning at startup now!
+      - All LADSPA, MESS, DSSI, and LinuxVST plugins are each scanned
+         in a separate QProcess program upon MusE startup.
+        Those that fail are NOT INCLUDED for further use.
+        Currently the QProcess communicates back to muse via 
+         an xml-encoded text on stdout.
+        But this could change to shared memory.
+        (Hint hint: Grow into an actual plugin run-time sandbox host!)
+      - All items in globaldefs.h that were in the global namespace
+         are now part of MusECore namespace, including MIDI_CHANNELS
+         which was a #define.
+      - Added command-line option -S (Don't load MESS plugins).
+      - Fixed crash in Deicsonze: Failure to initialize lfoDelayIndex.
 09.10.2018
       - Fix bug 629 by mqnc: Meta events (lyrics) not imported. (Tim)
         Lyrics + few other metas were ignored in buildMidiEventList().
