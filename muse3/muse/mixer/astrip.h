@@ -170,7 +170,7 @@ class AudioStrip : public Strip {
       double volume;
       bool _volPressed;
 
-      ClipperLabel* _clipperLabel[MAX_CHANNELS];
+      ClipperLabel* _clipperLabel[MusECore::MAX_CHANNELS];
       QHBoxLayout* _clipperLayout;
 
       void setClipperTooltip(int ch);

@@ -3050,7 +3050,7 @@ void MusE::switchMixerAutomation()
               if ((*i)->isMidiTrack())
                     continue;
               MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*i);
-              if(track->automationType() != AUTO_OFF) // && track->automationType() != AUTO_WRITE)
+              if(track->automationType() != MusECore::AUTO_OFF) // && track->automationType() != MusECore::AUTO_WRITE)
                 track->controller()->updateCurValues(MusEGlobal::audio->curFramePos());
               }
       }
@@ -3111,7 +3111,7 @@ void MusE::takeAutomationSnapshot()
      MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*i);
             MusECore::CtrlListList* cll = track->controller();
             // Need to update current 'manual' values from the automation values at this time.
-            if(track->automationType() != AUTO_OFF) // && track->automationType() != AUTO_WRITE)
+            if(track->automationType() != MusECore::AUTO_OFF) // && track->automationType() != MusECore::AUTO_WRITE)
               cll->updateCurValues(frame);
 
             for (MusECore::iCtrlList icl = cll->begin(); icl != cll->end(); ++icl) {

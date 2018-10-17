@@ -1291,8 +1291,8 @@ void AudioTrack::readVolume(Xml& xml)
 
 void Track::setChannels(int n)
       {
-      if(n > MAX_CHANNELS)
-        _channels = MAX_CHANNELS;
+      if(n > MusECore::MAX_CHANNELS)
+        _channels = MusECore::MAX_CHANNELS;
       else
         _channels = n;
       for (int i = 0; i < _channels; ++i) {
@@ -2022,10 +2022,10 @@ void AudioTrack::setTotalOutChannels(int num)
         _totalOutChannels = num;
         int new_chans = num;
         // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less.
-        if(new_chans < MAX_CHANNELS)
-          new_chans = MAX_CHANNELS;
-        if(chans < MAX_CHANNELS)
-          chans = MAX_CHANNELS;
+        if(new_chans < MusECore::MAX_CHANNELS)
+          new_chans = MusECore::MAX_CHANNELS;
+        if(chans < MusECore::MAX_CHANNELS)
+          chans = MusECore::MAX_CHANNELS;
         if(new_chans != chans)
         {
           if(outBuffers)
@@ -2047,8 +2047,8 @@ void AudioTrack::setTotalOutChannels(int num)
       }
       chans = num;
       // Limit the actual track (meters, copying etc, all 'normal' operation) to two-channel stereo.
-      if(chans > MAX_CHANNELS)
-        chans = MAX_CHANNELS;
+      if(chans > MusECore::MAX_CHANNELS)
+        chans = MusECore::MAX_CHANNELS;
       setChannels(chans);
 }
 

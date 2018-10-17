@@ -699,7 +699,7 @@ void Audio::process(unsigned frames)
         // It is possible for the timestamps to be out of order. Deal with it.
         // Sort all the timestamps. Do not miss a clock, better that it is at least
         //  included in the count.
-        if(port >= 0 && port < MIDI_PORTS && port == MusEGlobal::config.curMidiSyncInPort)
+        if(port >= 0 && port < MusECore::MIDI_PORTS && port == MusEGlobal::config.curMidiSyncInPort)
         {
           // False = don't use the size snapshot.
           const int clk_fifo_sz = md->extClockHistory()->getSize(false);
@@ -992,7 +992,7 @@ void Audio::processMsg(AudioMsg* msg)
                   break;
 
             case SEQM_RESET_DEVICES:
-                  for (int i = 0; i < MIDI_PORTS; ++i)                         
+                  for (int i = 0; i < MusECore::MIDI_PORTS; ++i)                         
                   {      
                     if(MusEGlobal::midiPorts[i].device())                       
                       MusEGlobal::midiPorts[i].instrument()->reset(i);
@@ -1011,7 +1011,7 @@ void Audio::processMsg(AudioMsg* msg)
                   {
                   const MidiPlayEvent ev = *((MidiPlayEvent*)(msg->p1));
                   const int port = ev.port();
-                  if(port < 0 || port >= MIDI_PORTS)
+                  if(port < 0 || port >= MusECore::MIDI_PORTS)
                     break;
                   
                   // This is the audio thread. Just set directly.
@@ -1161,7 +1161,7 @@ void Audio::startRolling()
       // Don't send if external sync is on. The master, and our sync routing system will take care of that.
       if(!MusEGlobal::extSyncFlag.value())
       {
-        for(int port = 0; port < MIDI_PORTS; ++port) 
+        for(int port = 0; port < MusECore::MIDI_PORTS; ++port) 
         {
           MidiPort* mp = &MusEGlobal::midiPorts[port];
           MidiDevice* dev = mp->device();
@@ -1189,11 +1189,11 @@ void Audio::startRolling()
       updateMidiClick();
       
       // re-enable sustain 
-      for (int i = 0; i < MIDI_PORTS; ++i) {
+      for (int i = 0; i < MusECore::MIDI_PORTS; ++i) {
           MidiPort* mp = &MusEGlobal::midiPorts[i];
           if(!mp->device())
             continue;
-          for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
+          for (int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch) {
               if (mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) {
                         const MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 127);
                         mp->device()->putEvent(ev, MidiDevice::NotLate);

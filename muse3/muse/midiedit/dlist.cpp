@@ -741,8 +741,8 @@ bool DList::devicesPopupMenu(MusECore::DrumMap* t, int x, int y)
       int n = act->data().toInt();
       delete p;
 
-      const int openConfigId = MIDI_PORTS;
-      const int defaultId    = MIDI_PORTS + 1;
+      const int openConfigId = MusECore::MIDI_PORTS;
+      const int defaultId    = MusECore::MIDI_PORTS + 1;
 
       if(n < 0 || n > defaultId)     // Invalid item.
         return false;
@@ -1251,7 +1251,7 @@ void DList::valEdit(int line, int section)
                   break;
 
                   case COL_OUTCHANNEL:
-                  val_editor->setRange(0, MIDI_CHANNELS);
+                  val_editor->setRange(0, MusECore::MUSE_MIDI_CHANNELS);
                   // Default to track port if -1 and track channel if -1.
                   if(dm->channel != -1)
                     val_editor->setValue(dm->channel+1);
@@ -1582,8 +1582,8 @@ void DList::valEdited()
               val = -1;
             else
               val--;
-            if (val >= MIDI_CHANNELS)
-              val = MIDI_CHANNELS - 1;
+            if (val >= MusECore::MUSE_MIDI_CHANNELS)
+              val = MusECore::MUSE_MIDI_CHANNELS - 1;
             break;
 
         default: break;

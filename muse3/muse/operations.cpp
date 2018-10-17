@@ -416,7 +416,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       _midi_instrument_list->push_back(_midi_instrument);
 
       // Change all ports which used the original instrument.
-      for(int port = 0; port < MIDI_PORTS; ++port)
+      for(int port = 0; port < MusECore::MIDI_PORTS; ++port)
       {
         MidiPort* mp = &MusEGlobal::midiPorts[port];
         if(mp->instrument() != orig)
@@ -445,7 +445,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
         if(mt->type() != Track::NEW_DRUM)
           continue;
         mt_port = mt->outPort();
-        if(mt_port < 0 || mt_port >= MIDI_PORTS)
+        if(mt_port < 0 || mt_port >= MusECore::MIDI_PORTS)
           continue;
         mt_mp = &MusEGlobal::midiPorts[mt_port];
         // We are looking for tracks which are now using the new instrument.

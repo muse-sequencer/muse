@@ -589,7 +589,7 @@ void MidiInstrument::reset(int portNo)
       ev.setTime(0);  // Immediate processing. TODO: Use curFrame?
       ev.setB(64);
 
-      for (int chan = 0; chan < MIDI_CHANNELS; ++chan)
+      for (int chan = 0; chan < MusECore::MUSE_MIDI_CHANNELS; ++chan)
       {
             ev.setChannel(chan);
             for (int pitch = 0; pitch < 128; ++pitch)

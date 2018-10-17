@@ -64,7 +64,6 @@
 
 #include "app.h"
 #include "globals.h"
-#include "globaldefs.h"
 #include "gconfig.h"
 #include "widgets/popupmenu.h"
 #include "widgets/menutitleitem.h"
@@ -339,7 +338,7 @@ void initLV2()
          LilvNodes *fts = lilv_plugin_get_required_features(plugin);
          LilvIter *nit = lilv_nodes_begin(fts);
 
-         Plugin::PluginFeatures reqfeat = Plugin::NoFeatures;
+         PluginFeatures_t reqfeat = PluginNoFeatures;
          while(true)
          {
             if(lilv_nodes_is_end(fts, nit))
@@ -357,9 +356,9 @@ void initLV2()
             if(isSupported)
             {
               if(strcmp(uri, LV2_F_FIXED_BLOCK_LENGTH) == 0)
-                reqfeat |= Plugin::FixedBlockSize;
+                reqfeat |= PluginFixedBlockSize;
               else if(strcmp(uri, LV2_F_POWER_OF_2_BLOCK_LENGTH) == 0)
-                reqfeat |= Plugin::PowerOf2BlockSize;
+                reqfeat |= PluginPowerOf2BlockSize;
             }
             else
             {
@@ -2188,7 +2187,7 @@ void LV2SynthIF::lv2prg_Changed(LV2_Programs_Handle handle, int32_t index)
 }
 
 
-LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString author, const LilvPlugin *_plugin, Plugin::PluginFeatures reqFeatures)
+LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString author, const LilvPlugin *_plugin, PluginFeatures_t reqFeatures)
    : Synth(fi, label, name, author, QString(""), reqFeatures),
      _handle(_plugin),
      _features(NULL),
@@ -2780,7 +2779,7 @@ bool LV2SynthIF::init(LV2Synth *s)
       _synth->midiCtl2PortMap.insert(std::pair<int, int>(ctlnum, i));
       _synth->port2MidiCtlMap.insert(std::pair<int, int>(i, ctlnum));
 
-      int id = genACnum(MAX_PLUGINS, i);
+      int id = genACnum(MusECore::MAX_PLUGINS, i);
       CtrlList *cl;
       CtrlListList *cll = track()->controller();
       iCtrlList icl = cll->find(id);
@@ -3003,7 +3002,7 @@ void LV2SynthIF::sendLv2MidiEvent(LV2EvBuf *evBuf, long frame, int paramCount, u
 
 int LV2SynthIF::channels() const
 {
-   return (_outports) > MAX_CHANNELS ? MAX_CHANNELS : (_outports) ;
+   return (_outports) > MusECore::MAX_CHANNELS ? MusECore::MAX_CHANNELS : (_outports) ;
 
 }
 
@@ -3640,7 +3639,7 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
    const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
    // All ports must be connected to something!
    const unsigned long nop = ((unsigned long) ports) > _outports ? _outports : ((unsigned long) ports);
-   const bool usefixedrate = (requiredFeatures() & Plugin::FixedBlockSize);;
+   const bool usefixedrate = (requiredFeatures() & PluginFixedBlockSize);;
    const unsigned long min_per = (usefixedrate || MusEGlobal::config.minControlProcessPeriod > nframes) ? nframes : MusEGlobal::config.minControlProcessPeriod;
    const unsigned long min_per_mask = min_per - 1; // min_per must be power of 2
 
@@ -4754,7 +4753,7 @@ void LV2PluginWrapper_Window::startFromGuiThread()
 }
 
 
-LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, PluginFeatures reqFeatures)
+LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, PluginFeatures_t reqFeatures)
 {
    _synth = s;
 

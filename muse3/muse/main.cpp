@@ -255,6 +255,7 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "   -Y  n    Force midi real time priority to n (default: audio driver prio -1)\n");
       fprintf(stderr, "\n");
       fprintf(stderr, "   -p       Don't load LADSPA plugins\n");
+      fprintf(stderr, "   -S       Don't load MESS plugins\n");
 #ifdef VST_SUPPORT
       fprintf(stderr, "   -V       Don't load VST plugins\n");
 #endif
@@ -534,7 +535,7 @@ int main(int argc, char* argv[])
         // Working with Breeze maintainer to fix problem... 2017/06/06 Tim.
         MusEGui::updateThemeAndStyle();
 
-        QString optstr("aJjFAhvdDumMsP:Y:l:py");
+        QString optstr("aJjFAhvdDumMsP:Y:l:pSy");
   #ifdef VST_SUPPORT
         optstr += QString("V");
   #endif
@@ -601,6 +602,7 @@ int main(int argc, char* argv[])
                     case 'P': MusEGlobal::realTimePriority = atoi(optarg); break;
                     case 'Y': MusEGlobal::midiRTPrioOverride = atoi(optarg); break;
                     case 'p': MusEGlobal::loadPlugins = false; break;
+                    case 'S': MusEGlobal::loadMESS = false; break;
                     case 'V': MusEGlobal::loadVST = false; break;
                     case 'N': MusEGlobal::loadNativeVST = false; break;
                     case 'I': MusEGlobal::loadDSSI = false; break;
@@ -726,7 +728,8 @@ int main(int argc, char* argv[])
 
         MusEGui::initIcons(MusEGlobal::config.useThemeIconsIfPossible);
 
-        MusECore::initMidiSynth(); // Need to do this now so that Add Track -> Synth menu is populated when MusE is created.
+        if (MusEGlobal::loadMESS)
+          MusECore::initMidiSynth(); // Need to do this now so that Add Track -> Synth menu is populated when MusE is created.
 
         MusEGlobal::muse = new MusEGui::MusE();
         app.setMuse(MusEGlobal::muse);

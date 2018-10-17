@@ -255,7 +255,7 @@ void Track::init()
       _height        = MusEGlobal::config.trackHeight;
       _locked        = false;
       _recMonitor    = false;
-      for (int i = 0; i < MAX_CHANNELS; ++i) {
+      for (int i = 0; i < MusECore::MAX_CHANNELS; ++i) {
             _meter[i] = 0.0;
             _peak[i]  = 0.0;
             _isClipped[i] = false;
@@ -275,7 +275,7 @@ Track::Track(const Track& t, int flags)
   // we'll see if there is any draw back to that.
   _name = t.name();
   internal_assign(t, flags | ASSIGN_PROPERTIES);
-  for (int i = 0; i < MAX_CHANNELS; ++i) {
+  for (int i = 0; i < MusECore::MAX_CHANNELS; ++i) {
         _meter[i] = 0.0;
         _peak[i]  = 0.0;
         _isClipped[i] = false;
@@ -671,8 +671,8 @@ void MidiTrack::internal_assign(const Track& t, int flags)
         // Add default track <-> midiport routes. 
         int c;
         bool defOutFound = false;                /// TODO: Remove this if and when multiple output routes supported.
-        const int chmask = (1 << MIDI_CHANNELS) - 1;
-        for(int i = 0; i < MIDI_PORTS; ++i)
+        const int chmask = (1 << MusECore::MUSE_MIDI_CHANNELS) - 1;
+        for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
         {
           MidiPort* mp = &MusEGlobal::midiPorts[i];
           
@@ -687,7 +687,7 @@ void MidiTrack::internal_assign(const Track& t, int flags)
                 _inRoutes.push_back(Route(i));
               else
               // Add individual channels:  
-              for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+              for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)
               {
                 if(c & (1 << ch))
                   _inRoutes.push_back(Route(i, ch));
@@ -704,7 +704,7 @@ void MidiTrack::internal_assign(const Track& t, int flags)
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
                 if(c == -1)
                   c = 1;  // Just to be safe, shouldn't happen, default to channel 0.
-                for(int ch = 0; ch < MIDI_CHANNELS; ++ch)   
+                for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)   
                 {
                   if(c & (1 << ch))
                   {
@@ -721,7 +721,7 @@ void MidiTrack::internal_assign(const Track& t, int flags)
                   _outRoutes.push_back(Route(i));
                 else
                 // Add individual channels:  
-                for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+                for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)
                 {
                   if(c & (1 << ch))
                     _outRoutes.push_back(Route(i, ch));
@@ -896,7 +896,7 @@ void MidiTrack::init()
       // let's set the port to the last instantiated device
       // if midi-channel defaults are set in the configuration it
       // will override this setting
-      for (int i = MIDI_PORTS - 1; i > -1; i--)
+      for (int i = MusECore::MIDI_PORTS - 1; i > -1; i--)
       {
         if (MusEGlobal::midiPorts[i].device() != NULL)
         {
@@ -968,11 +968,11 @@ RouteCapabilitiesStruct MidiTrack::routeCapabilities() const
 { 
   RouteCapabilitiesStruct s;
   s._midiPortChannels._inRoutable = true;
-  s._midiPortChannels._inChannels = MIDI_CHANNELS;
+  s._midiPortChannels._inChannels = MusECore::MUSE_MIDI_CHANNELS;
   s._trackChannels._outRoutable = true;  // Support Midi Track to Audio Input Track routes (for soloing chain).
   
 #ifndef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-  s._midiPortChannels._outChannels = MIDI_CHANNELS;
+  s._midiPortChannels._outChannels = MusECore::MUSE_MIDI_CHANNELS;
 #endif
   
   return s;
@@ -1096,7 +1096,7 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
     if(!MusEGlobal::midiPorts[port].foundInSongFile())
       continue;
       
-    const int allch = (1 << MIDI_CHANNELS) - 1;
+    const int allch = (1 << MusECore::MUSE_MIDI_CHANNELS) - 1;
     // Check if Omni route will do...
     if(chanmask == allch)
     {
@@ -1110,7 +1110,7 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
     }
     else
     // Add individual channels:
-    for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+    for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)
     {
       // Route wanted?
       if(portmask & (1 << port) && (chanmask & (1 << ch)))
@@ -1451,7 +1451,7 @@ void MidiTrack::dumpMap()
   if(type() != NEW_DRUM)
     return;
   const int port = outPort();
-  if(port < 0 || port >= MIDI_PORTS)
+  if(port < 0 || port >= MusECore::MIDI_PORTS)
     return;
   MidiPort* mp = &MusEGlobal::midiPorts[port];
   const int chan = outChannel();
@@ -1539,7 +1539,7 @@ void MidiTrack::read(Xml& xml)
                                 int port = xml.parseInt();
                                 if(port == -1)
                                 {
-                                  for(int i = 0; i < MIDI_PORTS; ++i)
+                                  for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
                                   {
                                     if(MusEGlobal::midiPorts[i].defaultOutChannels())
                                     {
@@ -1556,10 +1556,10 @@ void MidiTrack::read(Xml& xml)
                                 int chan = xml.parseInt();
                                 if(chan == -1)
                                 {
-                                  for(int i = 0; i < MIDI_PORTS; ++i)
+                                  for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
                                   {
                                     int defchans = MusEGlobal::midiPorts[i].defaultOutChannels();
-                                    for(int c = 0; c < MIDI_CHANNELS; ++c)
+                                    for(int c = 0; c < MusECore::MUSE_MIDI_CHANNELS; ++c)
                                     {
                                       if(defchans & (1 << c))
                                       {
@@ -1744,8 +1744,8 @@ bool Track::readProperties(Xml& xml, const QString& tag)
       else if (tag == "channels")
       {
         _channels = xml.parseInt();
-        if(_channels > MAX_CHANNELS)
-          _channels = MAX_CHANNELS;
+        if(_channels > MusECore::MAX_CHANNELS)
+          _channels = MusECore::MAX_CHANNELS;
       }      
       else if (tag == "locked")
             _locked = xml.parseInt();
@@ -1989,7 +1989,7 @@ isInstrumentMod
   if(type() != NEW_DRUM)
     return;
   const int port = outPort();
-  if(port < 0 || port >= MIDI_PORTS)
+  if(port < 0 || port >= MusECore::MIDI_PORTS)
     return;
   MidiPort* mp = &MusEGlobal::midiPorts[port];
   const int chan = outChannel();
@@ -2182,7 +2182,7 @@ void MidiTrack::getMapItemAt(int tick, int index, DrumMap& dest_map, int overrid
     return;
   }
   const int port = outPort();
-  if(port < 0 || port >= MIDI_PORTS)
+  if(port < 0 || port >= MusECore::MIDI_PORTS)
   {
     dest_map = iNewDrumMap[index];
     return;
@@ -2209,7 +2209,7 @@ void MidiTrack::getMapItem(int patch, int index, DrumMap& dest_map, int override
     return;
   }
   const int port = outPort();
-  if(port < 0 || port >= MIDI_PORTS)
+  if(port < 0 || port >= MusECore::MIDI_PORTS)
   {
     dest_map = iNewDrumMap[index];
     return;
@@ -2337,7 +2337,7 @@ int MidiTrack::isWorkingMapItem(int index, int fields, int patch) const
 
   // Is there an instrument override for this drum map item?
   const int port = outPort();
-  if(port >= 0 && port < MIDI_PORTS)
+  if(port >= 0 && port < MusECore::MIDI_PORTS)
   {
     const MidiPort* mp = &MusEGlobal::midiPorts[port];
     // Grab the patch number while we are here, if we asked for it.
@@ -2612,7 +2612,7 @@ bool MidiTrack::normalizeDrumMap()
   if(type() != NEW_DRUM)
     return false;
   const int port = outPort();
-  if(port < 0 || port >= MIDI_PORTS)
+  if(port < 0 || port >= MusECore::MIDI_PORTS)
     return false;
   const int chan = outChannel();
   const int patch = MusEGlobal::midiPorts[port].hwCtrlState(chan, MusECore::CTRL_PROGRAM);

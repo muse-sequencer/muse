@@ -313,7 +313,7 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
 
 static void writeDeviceOrPortMeta(int port, MPEventList* mpel)
 {
-  if(port >= 0 && port < MIDI_PORTS)
+  if(port >= 0 && port < MusECore::MIDI_PORTS)
   {
     if(MusEGlobal::config.exportPortsDevices & MusEGlobal::PORT_NUM_META)
     {
@@ -607,7 +607,7 @@ void MusE::exportMidi()
             std::set<int>::iterator iup = used_ports.find(port);
             if(iup == used_ports.end())
             {
-              if(port >= 0 && port < MIDI_PORTS)
+              if(port >= 0 && port < MusECore::MIDI_PORTS)
               {
                 if(track_count == 0 || MusEGlobal::config.smfFormat != 0)
                   MusECore::writeInitSeqOrInstrNameMeta(port, channel, l);

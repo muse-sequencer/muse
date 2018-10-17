@@ -138,7 +138,7 @@ void MidiSyncConfig::addDevice(QTreeWidgetItem *item, QTreeWidget *tree)
 void MidiSyncLViewItem::setPort(int port)
 { 
   _port = port; 
-  if(_port < 0 || port >= MIDI_PORTS)
+  if(_port < 0 || port >= MusECore::MIDI_PORTS)
     return;
     
   copyFromSyncInfo(MusEGlobal::midiPorts[port].syncInfo());
@@ -353,11 +353,11 @@ void MidiSyncConfig::songChanged(MusECore::SongChangedStruct_t flags)
 void MidiSyncConfig::heartBeat()
 {
       //inHeartBeat = true;
-  for (int i = MIDI_PORTS-1; i >= 0; --i)
+  for (int i = MusECore::MIDI_PORTS-1; i >= 0; --i)
     {
       MidiSyncLViewItem* lvi = (MidiSyncLViewItem*)devicesListView->topLevelItem(i);
       int port = lvi->port();
-      if(port >= 0 && port < MIDI_PORTS)
+      if(port >= 0 && port < MusECore::MIDI_PORTS)
         {
           bool sdet = MusEGlobal::midiPorts[port].syncInfo().MCSyncDetect();
           if(sdet)
@@ -669,11 +669,11 @@ void MidiSyncConfig::apply()
       MusEGlobal::mtcOffset.setF(mtcOffF->value());
       MusEGlobal::mtcOffset.setSf(mtcOffSf->value());
 
-      for (int i = MIDI_PORTS-1; i >= 0; --i)	    
+      for (int i = MusECore::MIDI_PORTS-1; i >= 0; --i)	    
       {
 	MidiSyncLViewItem* lvi = (MidiSyncLViewItem*)devicesListView->topLevelItem(i);
         int port = lvi->port();
-        if(port >= 0 && port < MIDI_PORTS)
+        if(port >= 0 && port < MusECore::MIDI_PORTS)
           lvi->copyToSyncInfo(MusEGlobal::midiPorts[port].syncInfo());
         
       }
@@ -704,7 +704,7 @@ void MidiSyncConfig::apply()
 void MidiSyncConfig::updateSyncInfoLV()
       {
       devicesListView->clear();
-      for(int i = 0; i < MIDI_PORTS; ++i) 
+      for(int i = 0; i < MusECore::MIDI_PORTS; ++i) 
       {
             MusECore::MidiPort* port  = &MusEGlobal::midiPorts[i];
             MusECore::MidiDevice* dev = port->device();
@@ -912,7 +912,7 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
       
       MidiSyncLViewItem* lvi = (MidiSyncLViewItem*)item;
       int no = lvi->port();
-      if (no < 0 || no >= MIDI_PORTS)
+      if (no < 0 || no >= MusECore::MIDI_PORTS)
         return;
       //MusECore::MidiDevice* dev = lvi->device();
       // Does the device really exist?

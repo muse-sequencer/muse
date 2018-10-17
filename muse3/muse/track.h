@@ -117,9 +117,9 @@ class Track {
 
       int _activity;
       int _lastActivity;
-      double _meter[MAX_CHANNELS];
-      double _peak[MAX_CHANNELS];
-      bool _isClipped[MAX_CHANNELS]; //used in audio mixer strip. Persistent.
+      double _meter[MusECore::MAX_CHANNELS];
+      double _peak[MusECore::MAX_CHANNELS];
+      bool _isClipped[MusECore::MAX_CHANNELS]; //used in audio mixer strip. Persistent.
 
       int _y;
       int _height;            // visual height in arranger
@@ -288,8 +288,8 @@ class Track {
       virtual void setAutomationType(AutomationType t) = 0;
       static void setVisible(bool) { }
       bool isVisible();
-      inline bool isClipped(int ch) const { if(ch >= MAX_CHANNELS) return false; return _isClipped[ch]; }
-      void resetClipper() { for(int ch = 0; ch < MAX_CHANNELS; ++ch) _isClipped[ch] = false; }
+      inline bool isClipped(int ch) const { if(ch >= MusECore::MAX_CHANNELS) return false; return _isClipped[ch]; }
+      void resetClipper() { for(int ch = 0; ch < MusECore::MAX_CHANNELS; ++ch) _isClipped[ch] = false; }
       };
 
 //---------------------------------------------------------
@@ -673,7 +673,7 @@ class AudioTrack : public Track {
 //---------------------------------------------------------
 
 class AudioInput : public AudioTrack {
-      void* jackPorts[MAX_CHANNELS];
+      void* jackPorts[MusECore::MAX_CHANNELS];
       virtual bool getData(unsigned, int, unsigned, float**);
       static bool _isVisible;
       void internal_assign(const Track& t, int flags);
@@ -706,9 +706,9 @@ class AudioInput : public AudioTrack {
 //---------------------------------------------------------
 
 class AudioOutput : public AudioTrack {
-      void* jackPorts[MAX_CHANNELS];
-      float* buffer[MAX_CHANNELS];
-      float* buffer1[MAX_CHANNELS];
+      void* jackPorts[MusECore::MAX_CHANNELS];
+      float* buffer[MusECore::MAX_CHANNELS];
+      float* buffer1[MusECore::MAX_CHANNELS];
       unsigned long _nframes;
       static bool _isVisible;
       void internal_assign(const Track& t, int flags);
@@ -765,7 +765,7 @@ class AudioGroup : public AudioTrack {
 //---------------------------------------------------------
 
 class AudioAux : public AudioTrack {
-      float* buffer[MAX_CHANNELS];
+      float* buffer[MusECore::MAX_CHANNELS];
       static bool _isVisible;
       int _index;
    public:

@@ -115,7 +115,7 @@ MidiSyncInfo::MidiSyncInfo()
   _recMTCtype    = 0;
   _recRewOnStart  = true;
   _actDetectBits = 0;
-  for(int i = 0; i < MIDI_CHANNELS; ++i)
+  for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
   {
     _lastActTime[i] = 0.0;
     _actTrig[i]     = false;
@@ -147,7 +147,7 @@ MidiSyncInfo& MidiSyncInfo::operator=(const MidiSyncInfo &sp)
   _MMCDetect     = sp._MMCDetect;
   _MTCDetect     = sp._MTCDetect;
   _recMTCtype    = sp._recMTCtype;
-  for(int i = 0; i < MIDI_CHANNELS; ++i)
+  for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
   {
     _lastActTime[i] = sp._lastActTime[i];
     _actTrig[i]     = sp._actTrig[i];
@@ -244,7 +244,7 @@ void MidiSyncInfo::setTime()
     _MTCDetect = false;
   }
 
-  for(int i = 0; i < MIDI_CHANNELS; i++)
+  for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; i++)
   {
     if(_actTrig[i])
     {
@@ -353,7 +353,7 @@ void MidiSyncInfo::trigMTCDetect()
 
 bool MidiSyncInfo::actDetect(const int ch) const
 {
-  if(ch < 0 || ch >= MIDI_CHANNELS)
+  if(ch < 0 || ch >= MusECore::MUSE_MIDI_CHANNELS)
     return false;
 
   return _actDetect[ch];
@@ -365,7 +365,7 @@ bool MidiSyncInfo::actDetect(const int ch) const
 
 void MidiSyncInfo::trigActDetect(const int ch)
 {
-  if(ch < 0 || ch >= MIDI_CHANNELS)
+  if(ch < 0 || ch >= MusECore::MUSE_MIDI_CHANNELS)
     return;
 
   _actDetectBits |= (1 << ch);
@@ -781,7 +781,7 @@ void MidiSyncContainer::setSongPosition(int port, int midiBeat)
             return;
 
       // Re-transmit song position to other devices if clock out turned on.
-      for(int p = 0; p < MIDI_PORTS; ++p)
+      for(int p = 0; p < MusECore::MIDI_PORTS; ++p)
         if(p != port && MusEGlobal::midiPorts[p].syncInfo().MRTOut())
           MusEGlobal::midiPorts[p].sendSongpos(midiBeat);
 
@@ -884,7 +884,7 @@ void MidiSyncContainer::realtimeSystemInput(int port, int c)
                   break;
             case ME_START:  // start
                   // Re-transmit start to other devices if clock out turned on.
-                  for(int p = 0; p < MIDI_PORTS; ++p)
+                  for(int p = 0; p < MusECore::MIDI_PORTS; ++p)
                     if(p != port && MusEGlobal::midiPorts[p].syncInfo().MRTOut())
                     {
                       // If we aren't rewinding on start, there's no point in re-sending start.
@@ -919,7 +919,7 @@ void MidiSyncContainer::realtimeSystemInput(int port, int c)
                   break;
             case ME_CONTINUE:  // continue
                   // Re-transmit continue to other devices if clock out turned on.
-                  for(int p = 0; p < MIDI_PORTS; ++p)
+                  for(int p = 0; p < MusECore::MIDI_PORTS; ++p)
                     if(p != port && MusEGlobal::midiPorts[p].syncInfo().MRTOut())
                       MusEGlobal::midiPorts[p].sendContinue();
 
@@ -940,7 +940,7 @@ void MidiSyncContainer::realtimeSystemInput(int port, int c)
                     playStateExt = ExtMidiClock::ExternStopped;
 
                     // Re-transmit stop to other devices if clock out turned on.
-                    for(int p = 0; p < MIDI_PORTS; ++p)
+                    for(int p = 0; p < MusECore::MIDI_PORTS; ++p)
                       if(p != port && MusEGlobal::midiPorts[p].syncInfo().MRTOut())
                         MusEGlobal::midiPorts[p].sendStop();
 
@@ -980,7 +980,7 @@ void MidiSyncContainer::realtimeSystemInput(int port, int c)
 
 ExtMidiClock MidiSyncContainer::midiClockInput(int port, unsigned int frame)
 {
-  if(port < 0 || port >= MIDI_PORTS)
+  if(port < 0 || port >= MusECore::MIDI_PORTS)
     return ExtMidiClock();
 
   MidiPort* mp = &MusEGlobal::midiPorts[port];
@@ -1004,7 +1004,7 @@ ExtMidiClock MidiSyncContainer::midiClockInput(int port, unsigned int frame)
   // Would re-transmit mixture of multiple clocks - confusing receivers.
   // Solution: Added MusEGlobal::curMidiSyncInPort.
   // Maybe in MidiSyncContainer::processTimerTick(), call sendClock for the other devices, instead of here.
-  for(int p = 0; p < MIDI_PORTS; ++p)
+  for(int p = 0; p < MusECore::MIDI_PORTS; ++p)
     if(p != port && MusEGlobal::midiPorts[p].syncInfo().MCOut())
       MusEGlobal::midiPorts[p].sendClock();
 

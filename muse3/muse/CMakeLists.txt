@@ -183,7 +183,9 @@ file (GLOB wavepreview_source_files
 file (GLOB xml_source_files
       xml.cpp
       )
-
+file (GLOB plugin_scan_source_files
+      plugin_scan.cpp
+      )
 ##
 ## Define target
 ##
@@ -206,6 +208,9 @@ add_library ( wavepreview_module SHARED
       )
 add_library ( xml_module SHARED
       ${xml_source_files}
+      )
+add_library ( plugin_scan_module SHARED
+      ${plugin_scan_source_files}
       )
 
 add_library ( core ${MODULES_BUILD}
@@ -301,6 +306,10 @@ set_target_properties( xml_module
       PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_xml_module
       )
+set_target_properties( plugin_scan_module
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+      OUTPUT_NAME muse_plugin_scan_module
+      )
       
 ##
 ## Linkage
@@ -322,7 +331,11 @@ target_link_libraries(wavepreview_module
 target_link_libraries(xml_module
       ${QT_LIBRARIES}
       )
-
+target_link_libraries(plugin_scan_module
+      xml_module
+      ${QT_LIBRARIES}
+      )
+      
 target_link_libraries(core
       al
       arranger
@@ -342,6 +355,7 @@ target_link_libraries(core
       mpevent_module
       mplugins
       muse_string
+      plugin_scan_module
       synti
       sysex_helper_module
       waveedit
@@ -442,6 +456,7 @@ install(TARGETS
         memory_module 
         evdata_module 
         mpevent_module 
+        plugin_scan_module 
         wavepreview_module
         xml_module
       DESTINATION ${MusE_MODULES_DIR}

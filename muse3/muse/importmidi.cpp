@@ -145,7 +145,7 @@ bool MusE::importMidi(const QString name, bool merge)
       bool dev_changed = false;
       for(MusECore::iMidiFilePort imp = usedPortMap->begin(); imp != usedPortMap->end(); ++imp) 
       {
-        MType midi_type = imp->second._midiType;
+        MusECore::MType midi_type = imp->second._midiType;
         QString instr_name = MusEGlobal::config.importInstrNameMetas ? imp->second._instrName : QString();
         MusECore::MidiInstrument* typed_instr = 0;
         MusECore::MidiInstrument* named_instr = 0;
@@ -153,11 +153,11 @@ bool MusE::importMidi(const QString name, bool merge)
         for(MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i != MusECore::midiInstruments.end(); ++i) 
         {
           MusECore::MidiInstrument* mi = *i;
-          if(midi_type != MT_UNKNOWN && midi_type == mi->midiType())
+          if(midi_type != MusECore::MT_UNKNOWN && midi_type == mi->midiType())
             typed_instr = mi;
           if(!instr_name.isEmpty() && instr_name == mi->iname())
             named_instr = mi;
-          if((typed_instr && named_instr) || ((typed_instr && instr_name.isEmpty()) || (named_instr && midi_type == MT_UNKNOWN)))
+          if((typed_instr && named_instr) || ((typed_instr && instr_name.isEmpty()) || (named_instr && midi_type == MusECore::MT_UNKNOWN)))
             break;  // Done searching
         }
 
@@ -223,7 +223,7 @@ bool MusE::importMidi(const QString name, bool merge)
         // If the instrument is one of the three standard GM, GS, or XG, mark the usedPort as "ch 10 is drums".
         // Otherwise it's anybody's guess what channel(s) drums are on.
         // Code is a bit HACKISH just to accomplish passing this bool value to the next stage, where tracks are created. 
-        if(instr->midiType() != MT_UNKNOWN)
+        if(instr->midiType() != MusECore::MT_UNKNOWN)
           imp->second._isStandardDrums = true;
           
         // Set the device's instrument - ONLY for non-synths because they provide their own. 

@@ -392,9 +392,9 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                               if(onlyReadChannelState)      // p4.0.41
                                 return;
                               
-                              if (idx < 0 || idx >= MIDI_PORTS) {
+                              if (idx < 0 || idx >= MusECore::MIDI_PORTS) {
                                     fprintf(stderr, "bad midi port %d (>%d)\n",
-                                       idx, MIDI_PORTS);
+                                       idx, MusECore::MIDI_PORTS);
                                     idx = 0;
                                     }
                               
@@ -1417,7 +1417,7 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
             // write information about all midi ports, their assigned
             // instruments and all managed midi controllers
             //
-            for (int i = 0; i < MIDI_PORTS; ++i) {
+            for (int i = 0; i < MusECore::MIDI_PORTS; ++i) {
                   bool used = false;
                   MidiPort* mport = &MusEGlobal::midiPorts[i];
                   MidiDevice* dev = mport->device();
@@ -1428,7 +1428,7 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                   // This prevents bogus routes from being saved and propagated in the med file.
                   // Hmm tough decision, should we save if no device? That would preserve routes in case user upgrades HW, 
                   //  or ALSA reorders or renames devices etc etc, then we have at least kept the track <-> port routes.
-                     mport->defaultInChannels() != (1<<MIDI_CHANNELS)-1 ||   // p4.0.17 Default is now to connect to all channels.
+                     mport->defaultInChannels() != (1<<MusECore::MUSE_MIDI_CHANNELS)-1 ||   // p4.0.17 Default is now to connect to all channels.
                      mport->defaultOutChannels() ||
                      (!mport->instrument()->iname().isEmpty() && mport->instrument()->midiType() != MT_GM) ||
                      !mport->syncInfo().isDefault()) 
@@ -1451,7 +1451,7 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                         continue;
                   xml.tag(level++, "midiport idx=\"%d\"", i);
                   
-                  if(mport->defaultInChannels() != (1<<MIDI_CHANNELS)-1)     // p4.0.17 Default is now to connect to all channels.
+                  if(mport->defaultInChannels() != (1<<MusECore::MUSE_MIDI_CHANNELS)-1)     // p4.0.17 Default is now to connect to all channels.
                     xml.intTag(level, "defaultInChans", mport->defaultInChannels());
                   if(mport->defaultOutChannels())
                     xml.intTag(level, "defaultOutChans", mport->defaultOutChannels());
@@ -1466,7 +1466,7 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                   mport->syncInfo().write(level, xml);
                   // write out registered controller for all channels
                   MidiCtrlValListList* vll = mport->controller();
-                  for (int k = 0; k < MIDI_CHANNELS; ++k) {
+                  for (int k = 0; k < MusECore::MUSE_MIDI_CHANNELS; ++k) {
                         int min = k << 24;
                         int max = min + 0x100000;
                         bool found = false;

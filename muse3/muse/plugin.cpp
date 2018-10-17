@@ -624,7 +624,7 @@ void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, flo
 //   Plugin
 //---------------------------------------------------------
 
-Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDssiSynth, bool isDssiVst, PluginFeatures reqFeatures)
+Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDssiSynth, bool isDssiVst, PluginFeatures_t reqFeatures)
 {
   _isDssi = isDssi;
   _isDssiSynth = isDssiSynth;
@@ -681,7 +681,89 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDss
 
   // Hack: Blacklist vst plugins in-place, configurable for now.
   if ((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
-        _requiredFeatures |= NoInPlaceProcessing;
+        _requiredFeatures |= PluginNoInPlaceProcessing;
+}
+
+Plugin::Plugin(const PluginScanInfo& info)
+{
+  _isDssi = false;
+  _isDssiSynth = false;
+  _isDssiVst = false;
+  _isLV2Plugin = false;
+  _isLV2Synth = false;
+  _isVstNativePlugin = false;
+  _isVstNativeSynth = false;
+  _requiredFeatures = info._requiredFeatures;
+  
+  switch(info._type)
+  {
+    case PluginScanInfo::PluginTypeLADSPA:
+    break;
+    
+    case PluginScanInfo::PluginTypeDSSI:
+    {
+      _isDssi = true;
+      switch(info._class)
+      {
+        case PluginScanInfo::PluginClassEffect:
+        break;
+        case PluginScanInfo::PluginClassInstrument:
+          _isDssiSynth = true;
+        break;
+      }
+    }
+    break;
+    
+    case PluginScanInfo::PluginTypeDSSIVST:
+    {
+      _isDssi = true;
+      _isDssiVst = true;
+      switch(info._class)
+      {
+        case PluginScanInfo::PluginClassEffect:
+        break;
+        case PluginScanInfo::PluginClassInstrument:
+          _isDssiSynth = true;
+        break;
+      }
+    }
+    break;
+    
+    case PluginScanInfo::PluginTypeVST:
+    case PluginScanInfo::PluginTypeLV2:
+    case PluginScanInfo::PluginTypeLinuxVST:
+    case PluginScanInfo::PluginTypeMESS:
+    case PluginScanInfo::PluginTypeAll:
+    break;
+  }
+  
+  #ifdef DSSI_SUPPORT
+  dssi_descr = NULL;
+  #endif
+
+  fi = info._fi;
+  plugin = NULL;
+  ladspa = NULL;
+  _handle = 0;
+  _references = 0;
+  _instNo     = 0;
+  
+  _label = info._label;
+  _name = info._name;
+  _uniqueID = info._uniqueID;
+  _maker = info._maker;
+  _copyright = info._copyright;
+
+  _portCount = info._portCount;
+
+  _inports = info._inports;
+  _outports = info._outports;
+  _controlInPorts = info._controlInPorts;
+  _controlOutPorts = info._controlOutPorts;
+
+  // Hack: Blacklist vst plugins in-place, configurable for now.
+  if(_isDssiVst && !MusEGlobal::config.vstInPlace)
+    _requiredFeatures |= PluginNoInPlaceProcessing;
 }
 
 Plugin::~Plugin()
@@ -835,7 +917,7 @@ int Plugin::incReferences(int val)
 
       // Hack: Blacklist vst plugins in-place, configurable for now.
       if ((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
-        _requiredFeatures |= NoInPlaceProcessing;
+        _requiredFeatures |= PluginNoInPlaceProcessing;
     }
   }
 
@@ -891,109 +973,177 @@ CtrlList::Mode Plugin::ctrlMode(unsigned long i) const
       return ladspaCtrlMode(plugin, i);
       }
 
+// REMOVE Tim. scan. Changed.
+// //---------------------------------------------------------
+// //   loadPluginLib
+// //---------------------------------------------------------
+// 
+// static void loadPluginLib(QFileInfo* fi)
+// {
+//   void* handle = dlopen(fi->filePath().toLatin1().constData(), RTLD_NOW);
+//   if (handle == 0) {
+//         fprintf(stderr, "dlopen(%s) failed: %s\n",
+//            fi->filePath().toLatin1().constData(), dlerror());
+//         return;
+//         }
+// 
+//   #ifdef DSSI_SUPPORT
+//   DSSI_Descriptor_Function dssi = (DSSI_Descriptor_Function)dlsym(handle, "dssi_descriptor");
+//   if(dssi)
+//   {
+//     const DSSI_Descriptor* descr;
+//     for (unsigned long i = 0;; ++i)
+//     {
+//       descr = dssi(i);
+//       if (descr == 0)
+//             break;
+// 
+//       // Make sure it doesn't already exist.
+//       if(MusEGlobal::plugins.find(fi->completeBaseName(), QString(descr->LADSPA_Plugin->Label)) != 0)
+//         continue;
+// 
+//       Plugin::PluginFeatures reqfeat = Plugin::NoFeatures;
+//       if(LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties))
+//         reqfeat |= Plugin::NoInPlaceProcessing;
+// 
+//       // Hack: Special flag required for example for control processing.
+//       bool vst = false;
+//       if(fi->completeBaseName() == QString("dssi-vst"))
+//       {
+//         vst = true;
+//         reqfeat |= Plugin::FixedBlockSize;
+//       }
+// 
+//       #ifdef PLUGIN_DEBUGIN
+//       fprintf(stderr, "loadPluginLib: dssi effect name:%s inPlaceBroken:%d\n", descr->LADSPA_Plugin->Name, LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties));
+//       #endif
+// 
+//       bool is_synth = descr->run_synth || descr->run_synth_adding
+//                   || descr->run_multiple_synths || descr->run_multiple_synths_adding;
+//       if(MusEGlobal::debugMsg)
+//         fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s synth:%d isDssiVst:%d required features:%d\n",
+//                 fi->filePath().toLatin1().constData(),
+//                 descr->LADSPA_Plugin->Name, descr->LADSPA_Plugin->Label,
+//                 is_synth, vst, reqfeat
+//                 );
+// 
+//       MusEGlobal::plugins.add(fi, descr->LADSPA_Plugin, true, is_synth, vst, reqfeat);
+//     }
+//   }
+//   else
+//   #endif
+//   {
+//     LADSPA_Descriptor_Function ladspa = (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
+//     if(!ladspa)
+//     {
+//       const char *txt = dlerror();
+//       if(txt)
+//       {
+//         fprintf(stderr,
+//               "Unable to find ladspa_descriptor() function in plugin "
+//               "library file \"%s\": %s.\n"
+//               "Are you sure this is a LADSPA plugin file?\n",
+//               fi->filePath().toLatin1().constData(),
+//               txt);
+//       }
+//       dlclose(handle);
+//       return;
+//     }
+// 
+//     const LADSPA_Descriptor* descr;
+//     for (unsigned long i = 0;; ++i)
+//     {
+//       descr = ladspa(i);
+//       if (descr == NULL)
+//             break;
+// 
+//       // Make sure it doesn't already exist.
+//       if(MusEGlobal::plugins.find(fi->completeBaseName(), QString(descr->Label)) != 0)
+//         continue;
+// 
+//       Plugin::PluginFeatures reqfeat = Plugin::NoFeatures;
+//       if(LADSPA_IS_INPLACE_BROKEN(descr->Properties))
+//         reqfeat |= Plugin::NoInPlaceProcessing;
+// 
+//       #ifdef PLUGIN_DEBUGIN
+//       fprintf(stderr, "loadPluginLib: ladspa effect name:%s inPlaceBroken:%d\n", descr->Name, LADSPA_IS_INPLACE_BROKEN(descr->Properties));
+//       #endif
+// 
+//       if(MusEGlobal::debugMsg)
+//         fprintf(stderr, "loadPluginLib: adding ladspa plugin:%s name:%s label:%s required features:%d\n",
+//                 fi->filePath().toLatin1().constData(), descr->Name, descr->Label, reqfeat);
+//       MusEGlobal::plugins.add(fi, descr, false, false, false, reqfeat);
+//     }
+//   }
+// 
+//   dlclose(handle);
+// }
+
 //---------------------------------------------------------
 //   loadPluginLib
 //---------------------------------------------------------
 
 static void loadPluginLib(QFileInfo* fi)
 {
-  void* handle = dlopen(fi->filePath().toLatin1().constData(), RTLD_NOW);
-  if (handle == 0) {
-        fprintf(stderr, "dlopen(%s) failed: %s\n",
-           fi->filePath().toLatin1().constData(), dlerror());
-        return;
+  const char* message = "Plugins: loadPluginLib: ";
+  PluginScanList scan_list;
+  if(!pluginScan(fi->filePath(), scan_list))
+  {
+    fprintf(stderr, "Plugins: pluginScan(%s) failed\n",
+       fi->filePath().toLatin1().constData());
+  }
+  
+  for(ciPluginScanList isl = scan_list.begin(); isl != scan_list.end(); ++isl)
+  {
+    const PluginScanInfo& info = *isl;
+    switch(info._type)
+    {
+      case PluginScanInfo::PluginTypeLADSPA:
+      {
+        if(MusEGlobal::loadPlugins)
+        {
+          // Make sure it doesn't already exist.
+          if(MusEGlobal::plugins.find(info._fi.completeBaseName(), info._label) == 0)
+          {
+            if(MusEGlobal::debugMsg)
+              info.dump(message);
+            MusEGlobal::plugins.add(info);
+          }
         }
-
-  #ifdef DSSI_SUPPORT
-  DSSI_Descriptor_Function dssi = (DSSI_Descriptor_Function)dlsym(handle, "dssi_descriptor");
-  if(dssi)
-  {
-    const DSSI_Descriptor* descr;
-    for (unsigned long i = 0;; ++i)
-    {
-      descr = dssi(i);
-      if (descr == 0)
-            break;
-
-      // Make sure it doesn't already exist.
-      if(MusEGlobal::plugins.find(fi->completeBaseName(), QString(descr->LADSPA_Plugin->Label)) != 0)
-        continue;
-
-      Plugin::PluginFeatures reqfeat = Plugin::NoFeatures;
-      if(LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties))
-        reqfeat |= Plugin::NoInPlaceProcessing;
-
-      // Hack: Special flag required for example for control processing.
-      bool vst = false;
-      if(fi->completeBaseName() == QString("dssi-vst"))
-      {
-        vst = true;
-        reqfeat |= Plugin::FixedBlockSize;
       }
-
-      #ifdef PLUGIN_DEBUGIN
-      fprintf(stderr, "loadPluginLib: dssi effect name:%s inPlaceBroken:%d\n", descr->LADSPA_Plugin->Name, LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties));
-      #endif
-
-      bool is_synth = descr->run_synth || descr->run_synth_adding
-                  || descr->run_multiple_synths || descr->run_multiple_synths_adding;
-      if(MusEGlobal::debugMsg)
-        fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s synth:%d isDssiVst:%d required features:%d\n",
-                fi->filePath().toLatin1().constData(),
-                descr->LADSPA_Plugin->Name, descr->LADSPA_Plugin->Label,
-                is_synth, vst, reqfeat
-                );
-
-      MusEGlobal::plugins.add(fi, descr->LADSPA_Plugin, true, is_synth, vst, reqfeat);
+      break;
+      
+      case PluginScanInfo::PluginTypeDSSI:
+      case PluginScanInfo::PluginTypeDSSIVST:
+      {
+#ifdef DSSI_SUPPORT
+        if(MusEGlobal::loadDSSI)
+        {
+          // Allow both effects and instruments for now.
+          if(info._class & PluginScanInfo::PluginClassEffect ||
+             info._class & PluginScanInfo::PluginClassInstrument)
+          {
+            // Make sure it doesn't already exist.
+            if(MusEGlobal::plugins.find(info._fi.completeBaseName(), info._label) == 0)
+            {
+              if(MusEGlobal::debugMsg)
+                info.dump(message);
+              MusEGlobal::plugins.add(info);
+            }
+          }
+        }
+#endif
+      }
+      break;
+      
+      case PluginScanInfo::PluginTypeVST:
+      case PluginScanInfo::PluginTypeLV2:
+      case PluginScanInfo::PluginTypeLinuxVST:
+      case PluginScanInfo::PluginTypeMESS:
+      case PluginScanInfo::PluginTypeAll:
+      break;
     }
   }
-  else
-  #endif
-  {
-    LADSPA_Descriptor_Function ladspa = (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
-    if(!ladspa)
-    {
-      const char *txt = dlerror();
-      if(txt)
-      {
-        fprintf(stderr,
-              "Unable to find ladspa_descriptor() function in plugin "
-              "library file \"%s\": %s.\n"
-              "Are you sure this is a LADSPA plugin file?\n",
-              fi->filePath().toLatin1().constData(),
-              txt);
-      }
-      dlclose(handle);
-      return;
-    }
-
-    const LADSPA_Descriptor* descr;
-    for (unsigned long i = 0;; ++i)
-    {
-      descr = ladspa(i);
-      if (descr == NULL)
-            break;
-
-      // Make sure it doesn't already exist.
-      if(MusEGlobal::plugins.find(fi->completeBaseName(), QString(descr->Label)) != 0)
-        continue;
-
-      Plugin::PluginFeatures reqfeat = Plugin::NoFeatures;
-      if(LADSPA_IS_INPLACE_BROKEN(descr->Properties))
-        reqfeat |= Plugin::NoInPlaceProcessing;
-
-      #ifdef PLUGIN_DEBUGIN
-      fprintf(stderr, "loadPluginLib: ladspa effect name:%s inPlaceBroken:%d\n", descr->Name, LADSPA_IS_INPLACE_BROKEN(descr->Properties));
-      #endif
-
-      if(MusEGlobal::debugMsg)
-        fprintf(stderr, "loadPluginLib: adding ladspa plugin:%s name:%s label:%s required features:%d\n",
-                fi->filePath().toLatin1().constData(), descr->Name, descr->Label, reqfeat);
-      MusEGlobal::plugins.add(fi, descr, false, false, false, reqfeat);
-    }
-  }
-
-  dlclose(handle);
 }
 
 //---------------------------------------------------------
@@ -1128,10 +1278,10 @@ void initPlugins()
 //   find
 //---------------------------------------------------------
 
-Plugin* PluginList::find(const QString& file, const QString& name)
+Plugin* PluginList::find(const QString& file, const QString& label) const
       {
-      for (iPlugin i = begin(); i != end(); ++i) {
-            if ((file == (*i)->lib()) && (name == (*i)->label()))
+      for (ciPlugin i = begin(); i != end(); ++i) {
+            if ((file == (*i)->lib()) && (label == (*i)->label()))
                   return *i;
             }
 
@@ -1145,11 +1295,11 @@ Plugin* PluginList::find(const QString& file, const QString& name)
 Pipeline::Pipeline()
    : std::vector<PluginI*>()
       {
-      for(int i = 0; i < MAX_CHANNELS; ++i)
+      for(int i = 0; i < MusECore::MAX_CHANNELS; ++i)
         buffer[i] = NULL;
       initBuffers();
 
-      for (int i = 0; i < PipelineDepth; ++i)
+      for (int i = 0; i < MusECore::PipelineDepth; ++i)
             push_back(0);
       }
 
@@ -1160,11 +1310,11 @@ Pipeline::Pipeline()
 Pipeline::Pipeline(const Pipeline& p, AudioTrack* t)
    : std::vector<PluginI*>()
       {
-      for(int i = 0; i < MAX_CHANNELS; ++i)
+      for(int i = 0; i < MusECore::MAX_CHANNELS; ++i)
         buffer[i] = NULL;
       initBuffers();
 
-      for(int i = 0; i < PipelineDepth; ++i)
+      for(int i = 0; i < MusECore::PipelineDepth; ++i)
       {
         PluginI* pli = p[i];
         if(pli)
@@ -1198,14 +1348,14 @@ Pipeline::Pipeline(const Pipeline& p, AudioTrack* t)
 Pipeline::~Pipeline()
       {
       removeAll();
-      for (int i = 0; i < MAX_CHANNELS; ++i)
+      for (int i = 0; i < MusECore::MAX_CHANNELS; ++i)
           if(buffer[i])
             ::free(buffer[i]);
       }
 
 void Pipeline::initBuffers()
 {
-  for(int i = 0; i < MAX_CHANNELS; ++i)
+  for(int i = 0; i < MusECore::MAX_CHANNELS; ++i)
   {
     if(!buffer[i])
     {
@@ -1218,7 +1368,7 @@ void Pipeline::initBuffers()
     }
   }
 
-  for(int i = 0; i < MAX_CHANNELS; ++i)
+  for(int i = 0; i < MusECore::MAX_CHANNELS; ++i)
   {
     if(MusEGlobal::config.useDenormalBias)
     {
@@ -1238,7 +1388,7 @@ float Pipeline::latency()
 {
   float l = 0.0;
   PluginI* p;
-  for(int i = 0; i < PipelineDepth; ++i)
+  for(int i = 0; i < MusECore::PipelineDepth; ++i)
   {
     p = (*this)[i];
     if(p)
@@ -1256,10 +1406,10 @@ float Pipeline::latency()
 bool Pipeline::addScheduledControlEvent(int track_ctrl_id, double val, unsigned frame)
 {
   // If a track controller, or the special dssi synth controller block, just return.
-  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MAX_PLUGINS, 0))
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MusECore::MAX_PLUGINS, 0))
     return true;
   int rack_idx = (track_ctrl_id - AC_PLUGIN_CTL_BASE) >> AC_PLUGIN_CTL_BASE_POW;
-  for (int i = 0; i < PipelineDepth; ++i)
+  for (int i = 0; i < MusECore::PipelineDepth; ++i)
   {
     PluginI* p = (*this)[i];
     if(p && p->id() == rack_idx)
@@ -1277,10 +1427,10 @@ bool Pipeline::addScheduledControlEvent(int track_ctrl_id, double val, unsigned 
 bool Pipeline::controllerEnabled(int track_ctrl_id)
 {
   // If a track controller, or the special dssi synth controller block, just return.
-  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MAX_PLUGINS, 0))
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MusECore::MAX_PLUGINS, 0))
     return false;
   int rack_idx = (track_ctrl_id - AC_PLUGIN_CTL_BASE) >> AC_PLUGIN_CTL_BASE_POW;
-  for (int i = 0; i < PipelineDepth; ++i)
+  for (int i = 0; i < MusECore::PipelineDepth; ++i)
   {
     PluginI* p = (*this)[i];
     if(p && p->id() == rack_idx)
@@ -1298,10 +1448,10 @@ bool Pipeline::controllerEnabled(int track_ctrl_id)
 void Pipeline::enableController(int track_ctrl_id, bool en)
 {
   // If a track controller, or the special dssi synth controller block, just return.
-  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MAX_PLUGINS, 0))
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MusECore::MAX_PLUGINS, 0))
     return;
   int rack_idx = (track_ctrl_id - AC_PLUGIN_CTL_BASE) >> AC_PLUGIN_CTL_BASE_POW;
-  for (int i = 0; i < PipelineDepth; ++i)
+  for (int i = 0; i < MusECore::PipelineDepth; ++i)
   {
     PluginI* p = (*this)[i];
     if(p && p->id() == rack_idx)
@@ -1318,7 +1468,7 @@ void Pipeline::enableController(int track_ctrl_id, bool en)
 
 void Pipeline::setChannels(int n)
       {
-      for (int i = 0; i < PipelineDepth; ++i)
+      for (int i = 0; i < MusECore::PipelineDepth; ++i)
             if ((*this)[i])
                   (*this)[i]->setChannels(n);
       }
@@ -1352,7 +1502,7 @@ void Pipeline::remove(int index)
 
 void Pipeline::removeAll()
       {
-      for (int i = 0; i < PipelineDepth; ++i)
+      for (int i = 0; i < MusECore::PipelineDepth; ++i)
             remove(i);
       }
 
@@ -1564,7 +1714,7 @@ void Pipeline::showNativeGui(int idx, bool flag)
 
 void Pipeline::deleteGui(int idx)
 {
-  if(idx >= PipelineDepth)
+  if(idx >= MusECore::PipelineDepth)
     return;
   PluginI* p = (*this)[idx];
   if(p)
@@ -1592,7 +1742,7 @@ void Pipeline::deleteGui(int idx)
 
 void Pipeline::deleteAllGuis()
 {
-  for(int i = 0; i < PipelineDepth; i++)
+  for(int i = 0; i < MusECore::PipelineDepth; i++)
     deleteGui(i);
 }
 
@@ -1649,7 +1799,7 @@ void Pipeline::apply(unsigned pos, unsigned long ports, unsigned long nframes, f
             {
               if (p->on())
               {
-                if (!(p->requiredFeatures() & Plugin::NoInPlaceProcessing))
+                if (!(p->requiredFeatures() & PluginNoInPlaceProcessing))
                 {
                       if (swap)
                             p->apply(pos, nframes, ports, buffer, buffer);
@@ -2590,6 +2740,7 @@ bool PluginI::loadControl(Xml& xml)
                                 }
                                 initControlValues = true;
                               }
+                              return false;
                           }
                         return true;
                   default:
@@ -2889,7 +3040,7 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
   const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
   unsigned long sample = 0;
 
-  const bool usefixedrate = (requiredFeatures() & Plugin::FixedBlockSize);
+  const bool usefixedrate = (requiredFeatures() & PluginFixedBlockSize);
 
   // Note for dssi-vst this MUST equal audio period. It doesn't like broken-up runs (it stutters),
   //  even with fixed sizes. Could be a Wine + Jack thing, wanting a full Jack buffer's length.
@@ -3913,7 +4064,7 @@ void PluginGui::ctrlPressed(double /*val*/, int param)
 
 void PluginGui::ctrlReleased(double /*val*/, int param)
 {
-      AutomationType at = AUTO_OFF;
+      MusECore::AutomationType at = MusECore::AUTO_OFF;
       MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
@@ -3934,8 +4085,8 @@ void PluginGui::ctrlReleased(double /*val*/, int param)
       }
 
       // Special for switch - don't enable controller until transport stopped.
-      if ((at == AUTO_OFF) ||
-          (at == AUTO_TOUCH && (params[param].type != GuiParam::GUI_SWITCH ||
+      if ((at == MusECore::AUTO_OFF) ||
+          (at == MusECore::AUTO_TOUCH && (params[param].type != GuiParam::GUI_SWITCH ||
                                 !MusEGlobal::audio->isPlaying()) ) )
         plugin->enableController(param, true);
 
@@ -3984,14 +4135,14 @@ void PluginGui::switchPressed(int param)
 
 void PluginGui::switchReleased(int param)
 {
-      AutomationType at = AUTO_OFF;
+      MusECore::AutomationType at = MusECore::AUTO_OFF;
       MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
 
       // Special for switch - don't enable controller until transport stopped.
-      if ((at == AUTO_OFF) ||
-          (at == AUTO_TOUCH && (params[param].type != GuiParam::GUI_SWITCH ||
+      if ((at == MusECore::AUTO_OFF) ||
+          (at == MusECore::AUTO_TOUCH && (params[param].type != GuiParam::GUI_SWITCH ||
                                 !MusEGlobal::audio->isPlaying()) ) )
         plugin->enableController(param, true);
 
@@ -4269,7 +4420,7 @@ void PluginGui::updateControls()
                     double v = plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), i),
                                                                     MusEGlobal::audio->curFramePos(),
                                                                     !MusEGlobal::automation ||
-                                                                    plugin->track()->automationType() == AUTO_OFF ||
+                                                                    plugin->track()->automationType() == MusECore::AUTO_OFF ||
                                                                     !plugin->controllerEnabled(i));
                     if (gp->type == GuiParam::GUI_SLIDER) {
                             {
@@ -4316,7 +4467,7 @@ void PluginGui::updateControls()
                   double v = plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), param),
                                                                   MusEGlobal::audio->curFramePos(),
                                                                   !MusEGlobal::automation ||
-                                                                  plugin->track()->automationType() == AUTO_OFF ||
+                                                                  plugin->track()->automationType() == MusECore::AUTO_OFF ||
                                                                   !plugin->controllerEnabled(param));
                   widget->blockSignals(true);
                   switch(type) {
@@ -4471,14 +4622,14 @@ void PluginGui::guiParamReleased(int idx)
       unsigned long param  = gw[idx].param;
       int type   = gw[idx].type;
 
-      AutomationType at = AUTO_OFF;
+      MusECore::AutomationType at = MusECore::AUTO_OFF;
       MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
 
       // Special for switch - don't enable controller until transport stopped.
-      if ((at == AUTO_OFF) ||
-          (at == AUTO_TOUCH && (type != GuiWidgets::QCHECKBOX ||
+      if ((at == MusECore::AUTO_OFF) ||
+          (at == MusECore::AUTO_TOUCH && (type != GuiWidgets::QCHECKBOX ||
                                 !MusEGlobal::audio->isPlaying()) ) )
         plugin->enableController(param, true);
 
@@ -4559,7 +4710,7 @@ void PluginGui::guiSliderReleased(double /*val*/, int idx)
       int param  = gw[idx].param;
       QWidget *w = gw[idx].widget;
 
-      AutomationType at = AUTO_OFF;
+      MusECore::AutomationType at = MusECore::AUTO_OFF;
       MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
@@ -4574,8 +4725,8 @@ void PluginGui::guiSliderReleased(double /*val*/, int idx)
         track->stopAutoRecord(id, val);
       }
 
-      if (at == AUTO_OFF ||
-          at == AUTO_TOUCH)
+      if (at == MusECore::AUTO_OFF ||
+          at == MusECore::AUTO_TOUCH)
         plugin->enableController(param, true);
 
       gw[idx].pressed = false;

@@ -553,7 +553,7 @@ void MidiSeq::processTimerTick()
                   
                   bool used = false;
                   
-                    for(int port = 0; port < MIDI_PORTS; ++port)
+                    for(int port = 0; port < MusECore::MIDI_PORTS; ++port)
                     {
                       MidiPort* mp = &MusEGlobal::midiPorts[port];
                       

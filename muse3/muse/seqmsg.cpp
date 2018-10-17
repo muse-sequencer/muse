@@ -781,7 +781,7 @@ void Audio::msgInitMidiDevices(bool force)
         
         if(!found)
         {
-          for(int i = 0; i < MIDI_PORTS; ++i)
+          for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
           {
             MidiPort* mp = &MusEGlobal::midiPorts[i];
             if(mp->device() && (mp->device()->openFlags() & 1) && 

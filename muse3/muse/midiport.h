@@ -70,7 +70,7 @@ class MidiPort {
       MidiDevice* _device;
       QString _state;               // result of device open
       MidiInstrument* _instrument;
-      AutomationType _automationType[MIDI_CHANNELS];
+      AutomationType _automationType[MusECore::MUSE_MIDI_CHANNELS];
       // Holds sync settings and detection monitors.
       MidiSyncInfo _syncInfo;
       // Just a flag to say the port was found in the song file, even if it has no device right now.
@@ -247,7 +247,7 @@ extern MidiControllerList defaultManagedMidiController;
 } // namespace MusECore
 
 namespace MusEGlobal {
-extern MusECore::MidiPort midiPorts[MIDI_PORTS];
+extern MusECore::MidiPort midiPorts[MusECore::MIDI_PORTS];
 }
 
 #endif

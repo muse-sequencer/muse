@@ -913,7 +913,7 @@ bool MidiCtrlValListList::update_RPN_Ctrls_Reserved()
   // TODO: If per-channel instruments are ever added to MusE, this routine would need changing.
   
   int num, h, l;
-  for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+  for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)
   {
     const unsigned ch_bits = (ch << 24);
     

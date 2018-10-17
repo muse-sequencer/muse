@@ -128,7 +128,7 @@ class MidiDevice {
       
    private:
       // Used for multiple reads of fifos during process.
-      int _tmpRecordCount[MIDI_CHANNELS + 1];
+      int _tmpRecordCount[MusECore::MUSE_MIDI_CHANNELS + 1];
       bool _sysexFIFOProcessed;
 
    protected:
@@ -157,10 +157,10 @@ class MidiDevice {
       LockFreeMPSCRingBuffer<MidiPlayEvent> *_userEventBuffers;
       
       // Recording fifos. To speed up processing, one per channel plus one special system 'channel' for channel-less events like sysex.
-      MidiRecFifo _recordFifo[MIDI_CHANNELS + 1];   
+      MidiRecFifo _recordFifo[MusECore::MUSE_MIDI_CHANNELS + 1];   
 
       // To hold current output program, and RPN/NRPN parameter numbers and values.
-      MidiOutputParams _curOutParamNums[MIDI_CHANNELS];
+      MidiOutputParams _curOutParamNums[MusECore::MUSE_MIDI_CHANNELS];
       
       RouteList _inRoutes, _outRoutes;
       

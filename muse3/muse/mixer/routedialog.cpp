@@ -217,7 +217,7 @@ bool RouteTreeWidgetItem::setChannels()
               case MusECore::Track::DRUM:
               case MusECore::Track::NEW_DRUM:
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-                chans = _isInput ? MIDI_CHANNELS : rcaps._midiPortChannels._inChannels;
+                chans = _isInput ? MusECore::MUSE_MIDI_CHANNELS : rcaps._midiPortChannels._inChannels;
 #else                  
                 chans = _isInput ? rcaps._midiPortChannels._outChannels : rcaps._midiPortChannels._inChannels;
 #endif              
@@ -278,7 +278,7 @@ void RouteTreeWidgetItem::getSelectedRoutes(MusECore::RouteList& routes)
             const int sz = _channels.size();
             if(_route.track->isMidiTrack())
             {  
-              for(int i = 0; i < sz && i < MIDI_CHANNELS; ++i)
+              for(int i = 0; i < sz && i < MusECore::MUSE_MIDI_CHANNELS; ++i)
               {
                 //if(_channels.testBit(i))
                 if(_channels.selected(i))
@@ -479,7 +479,7 @@ void RouteTreeWidgetItem::computeChannelYValues(int col_width)
               case MusECore::Route::MIDI_PORT_ROUTE:
                 if(ir->isValid() && ir->channel != -1)
                 {
-  //                 for(int i = 0; i < MIDI_CHANNELS; ++i)
+  //                 for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
   //                 {
   //                   if(ir->channel & (1 << i))
   //                   {
@@ -706,7 +706,7 @@ bool RouteTreeWidgetItem::mousePressHandler(QMouseEvent* e, const QRect& rect)
           {
 //             int chans;
 //             if(_route.track->isMidiTrack())
-//               chans = MIDI_CHANNELS;
+//               chans = MusECore::MUSE_MIDI_CHANNELS;
 //             else
 //             {
 //               MusECore::AudioTrack* atrack = static_cast<MusECore::AudioTrack*>(_route.track);
@@ -929,7 +929,7 @@ bool RouteTreeWidgetItem::mouseMoveHandler(QMouseEvent* e, const QRect& rect)
 // //               if(_route.track->isMidiTrack())
 // //               {
 // //                 //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint track is midi\n");  // REMOVE Tim.
-// //                 chans = MIDI_CHANNELS;
+// //                 chans = MusECore::MUSE_MIDI_CHANNELS;
 // //               }
 // //               else
 // //               {
@@ -1348,7 +1348,7 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
 // //           //int chans; 
 // //           const int chans = _channels.size(); 
 // // //           if(_route.track->isMidiTrack())
-// // //             chans = MIDI_CHANNELS;
+// // //             chans = MusECore::MUSE_MIDI_CHANNELS;
 // // //           else
 // // //           {
 // // //             MusECore::AudioTrack* atrack = static_cast<MusECore::AudioTrack*>(_route.track);
@@ -1520,7 +1520,7 @@ QSize RouteTreeWidgetItem::getSizeHint(int column, int width) const
 //           //int chans; 
 //           const int chans = _channels.size(); 
 // //           if(_route.track->isMidiTrack())
-// //             chans = MIDI_CHANNELS;
+// //             chans = MusECore::MUSE_MIDI_CHANNELS;
 // //           else
 // //           {
 // //             MusECore::AudioTrack* atrack = static_cast<MusECore::AudioTrack*>(_route.track);
@@ -1952,7 +1952,7 @@ void ConnectionsView::paintEvent(QPaintEvent*)
 //             case MusECore::Route::TRACK_ROUTE:
 //               if(src_chan != -1 && src.track && src.track->isMidiTrack())
 //               {
-//                 for(int i = 0; i < MIDI_CHANNELS; ++i)
+//                 for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
 //                   if(src_chan & (1 << i))
 //                   {
 //                     src_chan = i;
@@ -1972,7 +1972,7 @@ void ConnectionsView::paintEvent(QPaintEvent*)
 //             case MusECore::Route::TRACK_ROUTE:
 //               if(dst_chan != -1 && dst.track && dst.track->isMidiTrack())
 //               {
-//                 for(int i = 0; i < MIDI_CHANNELS; ++i)
+//                 for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
 //                   if(dst_chan & (1 << i))
 //                   {
 //                     dst_chan = i;
@@ -2330,7 +2330,7 @@ void RouteTreeWidget::getSelectedRoutes(MusECore::RouteList& routes)
 //             {  
 //               for(int i = 0; i < sz; ++i)
 //               {
-//                 if(i >= MIDI_CHANNELS)
+//                 if(i >= MusECore::MUSE_MIDI_CHANNELS)
 //                   break;
 //                 if(ba.testBit(i))
 //                 {
@@ -2460,7 +2460,7 @@ void RouteTreeWidget::mousePressEvent(QMouseEvent* e)
         {
           int chans;
           if(r.track->isMidiTrack())
-            chans = MIDI_CHANNELS;
+            chans = MusECore::MUSE_MIDI_CHANNELS;
           else
           {
             MusECore::AudioTrack* atrack = static_cast<MusECore::AudioTrack*>(r.track);
@@ -3118,7 +3118,7 @@ void RoutingItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 //               if(r.track->isMidiTrack())
 //               {
 //                 //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint track is midi\n");  // REMOVE Tim.
-//                 chans = MIDI_CHANNELS;
+//                 chans = MusECore::MUSE_MIDI_CHANNELS;
 //               }
 //               else
 //               {
@@ -3310,7 +3310,7 @@ void RoutingItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 //       if(spin_box)
 //       {
 //         spin_box->setMinimum(0);
-//         spin_box->setMaximum(MIDI_CHANNELS - 1);
+//         spin_box->setMaximum(MusECore::MUSE_MIDI_CHANNELS - 1);
 //       }
 //       return widget;
 //     }
@@ -3621,7 +3621,7 @@ QSize RoutingItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QM
 //           {
 //             int chans; 
 //             if(r.track->isMidiTrack())
-//               chans = MIDI_CHANNELS;
+//               chans = MusECore::MUSE_MIDI_CHANNELS;
 //             else
 //             {
 //               MusECore::AudioTrack* atrack = static_cast<MusECore::AudioTrack*>(r.track);
@@ -4827,7 +4827,7 @@ void RouteDialog::connectClicked()
                 // We cannot 'remove' a simulated midi track output port and channel route.
                 // (Midi port cannot be -1 meaning 'no port'.)
                 // Only remove it if it's a different port or channel. 
-                if(src.channel >= 0 && src.channel < MIDI_CHANNELS && (mt->outPort() != dst.midiPort || mt->outChannel() != src.channel))
+                if(src.channel >= 0 && src.channel < MusECore::MUSE_MIDI_CHANNELS && (mt->outPort() != dst.midiPort || mt->outChannel() != src.channel))
                 {
                   MusEGlobal::audio->msgIdle(true);
                   changed |= mt->setOutPortAndChannelAndUpdate(dst.midiPort, src.channel, false);
@@ -4936,7 +4936,7 @@ void RouteDialog::srcSelectionChanged()
 //           instead of just single port and channel properties. The route is exclusive.
                 useMTOutProps = true;
                 MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(src.track);
-                if(src.channel >= 0 && src.channel < MIDI_CHANNELS && (mt->outPort() != dst.midiPort || mt->outChannel() != src.channel))
+                if(src.channel >= 0 && src.channel < MusECore::MUSE_MIDI_CHANNELS && (mt->outPort() != dst.midiPort || mt->outChannel() != src.channel))
                   ++mt_to_mp_cnt;
 #endif
                 
@@ -5039,7 +5039,7 @@ void RouteDialog::srcSelectionChanged()
             const int sz = ba.size();
             for(int i = 0; i < sz; ++i)
             {
-              if(i >= MIDI_CHANNELS)
+              if(i >= MusECore::MUSE_MIDI_CHANNELS)
                 break;
               if(ba.testBit(i))
                 src.channel |= (1 << i);
@@ -5288,7 +5288,7 @@ QTreeWidgetItem* RouteDialog::findRoutesItem(const MusECore::Route& src, const M
 //             {  
 //               for(int i = 0; i < sz; ++i)
 //               {
-//                 if(i >= MIDI_CHANNELS)
+//                 if(i >= MusECore::MUSE_MIDI_CHANNELS)
 //                   break;
 //                 if(ba.testBit(i))
 //                 {
@@ -5550,7 +5550,7 @@ void RouteDialog::selectRoutes(bool doNormalSelections)
 //         
 //         if(r == MusECore::Route(md, -1))
 //           return true;
-//         for(int channel = 0; channel < MIDI_CHANNELS; ++channel)
+//         for(int channel = 0; channel < MusECore::MUSE_MIDI_CHANNELS; ++channel)
 //           if(r == MusECore::Route(md, channel))
 //             return true;
 //       }
@@ -5607,7 +5607,7 @@ void RouteDialog::addItems()
       case MusECore::Track::DRUM:
       case MusECore::Track::NEW_DRUM:
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-        src_chans = MIDI_CHANNELS;
+        src_chans = MusECore::MUSE_MIDI_CHANNELS;
 #else        
         src_chans = rcaps._midiPortChannels._outChannels;
 #endif        
@@ -5707,7 +5707,7 @@ void RouteDialog::addItems()
               //subitem = new QTreeWidgetItem(item, QStringList() << QString() << QString() );
               subitem = new RouteTreeWidgetItem(item, QStringList() << QString(), RouteTreeWidgetItem::ChannelsItem, false, sub_r);
               //subitem->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(sub_r));
-              //subitem->setData(ROUTE_NAME_COL, RouteDialog::ChannelsRole, QVariant::fromValue(QBitArray(MIDI_CHANNELS)));
+              //subitem->setData(ROUTE_NAME_COL, RouteDialog::ChannelsRole, QVariant::fromValue(QBitArray(MusECore::MUSE_MIDI_CHANNELS)));
               subitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
               subitem->setTextAlignment(ROUTE_NAME_COL, align_flags);
               newDstList->blockSignals(false);
@@ -5798,7 +5798,7 @@ void RouteDialog::addItems()
               break;
             }
             
-//             for(int i = 0; i < MIDI_CHANNELS; ++i)
+//             for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
             {
 //               int chbits = 1 << i;
 //               if(r->channel & chbits)
@@ -6000,7 +6000,7 @@ void RouteDialog::addItems()
 #endif                
             )
           {
-          //for(int channel = 0; channel < MIDI_CHANNELS; ++channel)
+          //for(int channel = 0; channel < MusECore::MUSE_MIDI_CHANNELS; ++channel)
           //{
 //             const MusECore::Route sub_r(track, 0);
             const MusECore::Route sub_r(track, 0, track->isMidiTrack() ? -1 : 1);
@@ -6027,7 +6027,7 @@ void RouteDialog::addItems()
               );
               
               //subitem->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(sub_r));
-              //subitem->setData(ROUTE_NAME_COL, RouteDialog::ChannelsRole, QVariant::fromValue(QBitArray(MIDI_CHANNELS)));
+              //subitem->setData(ROUTE_NAME_COL, RouteDialog::ChannelsRole, QVariant::fromValue(QBitArray(MusECore::MUSE_MIDI_CHANNELS)));
               subitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
               subitem->setTextAlignment(ROUTE_NAME_COL, align_flags);
               newSrcList->blockSignals(false);
@@ -6161,7 +6161,7 @@ void RouteDialog::addItems()
               break;
             }
             
-//             for(int i = 0; i < MIDI_CHANNELS; ++i)
+//             for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
             {
 //               int chbits = 1 << i;
 //               if(r->channel & chbits)
@@ -6271,7 +6271,7 @@ void RouteDialog::addItems()
   const QString none_str = tr("<none>");
   dstCatItem = newDstList->findCategoryItem(midiPortsCat);
   srcCatItem = newSrcList->findCategoryItem(midiPortsCat);
-  for(int i = 0; i < MIDI_PORTS; ++i) 
+  for(int i = 0; i < MusECore::MIDI_PORTS; ++i) 
   {
     MusECore::MidiPort* mp = &MusEGlobal::midiPorts[i];
     if(!mp)
@@ -6377,7 +6377,7 @@ void RouteDialog::addItems()
         item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newDstList->blockSignals(false);
       }
-//       for(int channel = 0; channel < MIDI_CHANNELS; ++channel)
+//       for(int channel = 0; channel < MusECore::MUSE_MIDI_CHANNELS; ++channel)
 //       {
 //         const MusECore::Route sub_r(md, channel);
 //         subitem = findDstItem(sub_r);
@@ -6573,7 +6573,7 @@ void RouteDialog::addItems()
         item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newSrcList->blockSignals(false);
       }
-//       for(int channel = 0; channel < MIDI_CHANNELS; ++channel)
+//       for(int channel = 0; channel < MusECore::MUSE_MIDI_CHANNELS; ++channel)
 //       {
 //         const MusECore::Route src_r(md, channel);
 //         subitem = findSrcItem(src_r);
@@ -6795,7 +6795,7 @@ void RouteDialog::addItems()
         item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newDstList->blockSignals(false);
       }
-//       for(int channel = 0; channel < MIDI_CHANNELS; ++channel)
+//       for(int channel = 0; channel < MusECore::MUSE_MIDI_CHANNELS; ++channel)
 //       {
 //         const MusECore::Route sub_r(md, channel);
 //         subitem = findDstItem(sub_r);
@@ -7034,7 +7034,7 @@ void RouteDialog::addItems()
         item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newSrcList->blockSignals(false);
       }
-//       for(int channel = 0; channel < MIDI_CHANNELS; ++channel)
+//       for(int channel = 0; channel < MusECore::MUSE_MIDI_CHANNELS; ++channel)
 //       {
 //         const MusECore::Route src_r(md, channel);
 //         subitem = findSrcItem(src_r);

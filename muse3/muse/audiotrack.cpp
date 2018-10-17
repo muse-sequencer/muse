@@ -103,8 +103,8 @@ void AudioTrack::initBuffers()
 {
   int chans = _totalOutChannels;
   // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less.
-  if(chans < MAX_CHANNELS)
-    chans = MAX_CHANNELS;
+  if(chans < MusECore::MAX_CHANNELS)
+    chans = MusECore::MAX_CHANNELS;
   if(!outBuffers)
   {
     outBuffers = new float*[chans];
@@ -131,8 +131,8 @@ void AudioTrack::initBuffers()
 
   if(!outBuffersExtraMix)
   {
-    outBuffersExtraMix = new float*[MAX_CHANNELS];
-    for(int i = 0; i < MAX_CHANNELS; ++i)
+    outBuffersExtraMix = new float*[MusECore::MAX_CHANNELS];
+    for(int i = 0; i < MusECore::MAX_CHANNELS; ++i)
     {
       int rv = posix_memalign((void**)&outBuffersExtraMix[i], 16, sizeof(float) * MusEGlobal::segmentSize);
       if(rv != 0)
@@ -142,7 +142,7 @@ void AudioTrack::initBuffers()
       }
     }
   }
-  for(int i = 0; i < MAX_CHANNELS; ++i)
+  for(int i = 0; i < MusECore::MAX_CHANNELS; ++i)
   {
     if(MusEGlobal::config.useDenormalBias)
     {
@@ -267,7 +267,7 @@ AudioTrack::AudioTrack(TrackType t)
       audioOutDummyBuf = 0;
       _dataBuffers = 0;
 
-      _totalOutChannels = MAX_CHANNELS;
+      _totalOutChannels = MusECore::MAX_CHANNELS;
 
       // This is only set by multi-channel syntis...
       _totalInChannels = 0;
@@ -357,7 +357,7 @@ void AudioTrack::internal_assign(const Track& t, int flags)
           }
 
           // Copy the special synth controller block...
-          const int synth_id = (int)genACnum(MAX_PLUGINS, 0);     // The beginning of the special synth controller block.
+          const int synth_id = (int)genACnum(MusECore::MAX_PLUGINS, 0);     // The beginning of the special synth controller block.
           const int synth_id_end = synth_id + AC_PLUGIN_CTL_BASE; // The end of the special block.
           icl           = at._controller.lower_bound(synth_id);
           icl_this      = _controller.lower_bound(synth_id);
@@ -407,7 +407,7 @@ void AudioTrack::internal_assign(const Track& t, int flags)
 
       if(flags & (ASSIGN_STD_CTRLS | ASSIGN_PLUGIN_CTRLS))
       {
-        const int synth_id = (int)genACnum(MAX_PLUGINS, 0);     // The beginning of the special synth controller block.
+        const int synth_id = (int)genACnum(MusECore::MAX_PLUGINS, 0);     // The beginning of the special synth controller block.
         const int synth_id_end = synth_id + AC_PLUGIN_CTL_BASE; // The end of the special block.
         ciCtrlList icl, icl_end, icl_this, icl_this_end;
         int id, id_this;
@@ -567,7 +567,7 @@ AudioTrack::~AudioTrack()
 
       if(outBuffersExtraMix)
       {
-        for(int i = 0; i < MAX_CHANNELS; ++i)
+        for(int i = 0; i < MusECore::MAX_CHANNELS; ++i)
         {
           if(outBuffersExtraMix[i])
             free(outBuffersExtraMix[i]);
@@ -577,8 +577,8 @@ AudioTrack::~AudioTrack()
 
       int chans = _totalOutChannels;
       // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less.
-      if(chans < MAX_CHANNELS)
-        chans = MAX_CHANNELS;
+      if(chans < MusECore::MAX_CHANNELS)
+        chans = MusECore::MAX_CHANNELS;
       if(outBuffers)
       {
         for(int i = 0; i < chans; ++i)
@@ -612,7 +612,7 @@ void AudioTrack::deleteAllEfxGuis()
 void AudioTrack::clearEfxList()
 {
   if(_efxPipe)
-    for(int i = 0; i < PipelineDepth; i++)
+    for(int i = 0; i < MusECore::PipelineDepth; i++)
       (*_efxPipe)[i] = 0;
 }
 
@@ -737,7 +737,7 @@ void AudioTrack::removeController(int id)
 
 void AudioTrack::swapControllerIDX(int idx1, int idx2)
 {
-  if(idx1 == idx2 || idx1 < 0 || idx2 < 0 || idx1 >= PipelineDepth || idx2 >= PipelineDepth)
+  if(idx1 == idx2 || idx1 < 0 || idx2 < 0 || idx1 >= MusECore::PipelineDepth || idx2 >= MusECore::PipelineDepth)
     return;
 
   CtrlList *cl;
@@ -1202,7 +1202,7 @@ double AudioTrack::pluginCtrlVal(int ctlID) const
       }
       else
       {
-        if(ctlID < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special synth controller block.
+        if(ctlID < (int)genACnum(MusECore::MAX_PLUGINS, 0))  // The beginning of the special synth controller block.
         {
           en = _efxPipe->controllerEnabled(ctlID);
         }
@@ -1265,7 +1265,7 @@ bool AudioTrack::addScheduledControlEvent(int track_ctrl_id, double val, unsigne
   }
   else
   {
-    if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special synth controller block.
+    if(track_ctrl_id < (int)genACnum(MusECore::MAX_PLUGINS, 0))  // The beginning of the special synth controller block.
       return _efxPipe->addScheduledControlEvent(track_ctrl_id, val, frame);
     else
     {
@@ -1300,7 +1300,7 @@ void AudioTrack::enableController(int track_ctrl_id, bool en)
   }
   else
   {
-    if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special synth controller block.
+    if(track_ctrl_id < (int)genACnum(MusECore::MAX_PLUGINS, 0))  // The beginning of the special synth controller block.
       _efxPipe->enableController(track_ctrl_id, en);
     else
     {
@@ -1332,7 +1332,7 @@ bool AudioTrack::controllerEnabled(int track_ctrl_id) const
       }
       else
       {
-        if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special synth controller block.
+        if(track_ctrl_id < (int)genACnum(MusECore::MAX_PLUGINS, 0))  // The beginning of the special synth controller block.
         {
           return _efxPipe->controllerEnabled(track_ctrl_id);
         }
@@ -1522,12 +1522,12 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
       if (tag == "plugin")
       {
             int rackpos;
-            for(rackpos = 0; rackpos < PipelineDepth; ++rackpos)
+            for(rackpos = 0; rackpos < MusECore::PipelineDepth; ++rackpos)
             {
               if(!(*_efxPipe)[rackpos])
                 break;
             }
-            if(rackpos < PipelineDepth)
+            if(rackpos < MusECore::PipelineDepth)
             {
               PluginI* pi = new PluginI();
               pi->setTrack(this);
@@ -1565,10 +1565,10 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             bool ctlfound = false;
             unsigned m = l->id() & AC_PLUGIN_CTL_ID_MASK;
             int n = (l->id() >> AC_PLUGIN_CTL_BASE_POW) - 1;
-            if(n >= 0 && n < PipelineDepth)
+            if(n >= 0 && n < MusECore::PipelineDepth)
               p = (*_efxPipe)[n];
             // Support a special block for synth controllers.
-            else if(n == MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)
+            else if(n == MusECore::MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)
             {
               const SynthI* synti = static_cast < SynthI* > (this);
               const SynthIF* sif = synti->sif();
@@ -1618,7 +1618,7 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
 
 void AudioTrack::showPendingPluginNativeGuis()
 {
-  for(int idx = 0; idx < PipelineDepth; ++idx)
+  for(int idx = 0; idx < MusECore::PipelineDepth; ++idx)
   {
     PluginI* p = (*_efxPipe)[idx];
     if(!p)
@@ -1636,7 +1636,7 @@ void AudioTrack::showPendingPluginNativeGuis()
 void AudioTrack::mapRackPluginsToControllers()
 {
   // Iterate all possible plugin controller indexes...
-  for(int idx = PipelineDepth - 1; idx >= 0; idx--)
+  for(int idx = MusECore::PipelineDepth - 1; idx >= 0; idx--)
   {
     iCtrlList icl = _controller.lower_bound((idx + 1) * AC_PLUGIN_CTL_BASE);
     if(icl == _controller.end() || ((icl->second->id() >> AC_PLUGIN_CTL_BASE_POW) - 1) != idx)
@@ -1669,7 +1669,7 @@ void AudioTrack::mapRackPluginsToControllers()
   //  are stuck at zero can't be adjusted.
   // Muse med files created before the automation patches (before 0.9pre1) may have broken
   //  controller sections, so this will allow more tolerance of them.
-  for(int idx = 0; idx < PipelineDepth; idx++)
+  for(int idx = 0; idx < MusECore::PipelineDepth; idx++)
   {
     PluginI* p = (*_efxPipe)[idx];
     if(!p)
@@ -1723,10 +1723,10 @@ void AudioTrack::mapRackPluginsToControllers()
       int idx = (id >> AC_PLUGIN_CTL_BASE_POW) - 1;
 
       const PluginIBase* p = 0;
-      if(idx >= 0 && idx < PipelineDepth)
+      if(idx >= 0 && idx < MusECore::PipelineDepth)
         p = (*_efxPipe)[idx];
       // Support a special block for synth controllers.
-      else if(idx == MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)
+      else if(idx == MusECore::MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)
       {
         const SynthI* synti = static_cast < const SynthI* > (this);
         SynthIF* sif = synti->sif();
@@ -1810,14 +1810,14 @@ AudioInput::AudioInput()
       {
       // set Default for Input Ports:
       setChannels(1);
-      for (int i = 0; i < MAX_CHANNELS; ++i)
+      for (int i = 0; i < MusECore::MAX_CHANNELS; ++i)
             jackPorts[i] = 0;
       }
 
 AudioInput::AudioInput(const AudioInput& t, int flags)
   : AudioTrack(t, flags)
 {
-  for (int i = 0; i < MAX_CHANNELS; ++i)
+  for (int i = 0; i < MusECore::MAX_CHANNELS; ++i)
         jackPorts[i] = 0;
 
   // Register ports.
@@ -1951,14 +1951,14 @@ RouteCapabilitiesStruct AudioInput::routeCapabilities() const
 AudioOutput::AudioOutput()
    : AudioTrack(AUDIO_OUTPUT)
       {
-      for (int i = 0; i < MAX_CHANNELS; ++i)
+      for (int i = 0; i < MusECore::MAX_CHANNELS; ++i)
             jackPorts[i] = 0;
       }
 
 AudioOutput::AudioOutput(const AudioOutput& t, int flags)
   : AudioTrack(t, flags)
 {
-  for (int i = 0; i < MAX_CHANNELS; ++i)
+  for (int i = 0; i < MusECore::MAX_CHANNELS; ++i)
         jackPorts[i] = 0;
   _nframes = 0;
 
@@ -2152,7 +2152,7 @@ AudioAux::AudioAux()
    : AudioTrack(AUDIO_AUX)
 {
       _index = getNextAuxIndex();
-      for(int i = 0; i < MAX_CHANNELS; ++i)
+      for(int i = 0; i < MusECore::MAX_CHANNELS; ++i)
       {
         if(i < channels())
         {
@@ -2179,7 +2179,7 @@ AudioAux::AudioAux(const AudioAux& t, int flags)
    : AudioTrack(t, flags)
 {
       _index = getNextAuxIndex();
-      for(int i = 0; i < MAX_CHANNELS; ++i)
+      for(int i = 0; i < MusECore::MAX_CHANNELS; ++i)
       {
         if(i < channels())
         {
@@ -2207,7 +2207,7 @@ AudioAux::AudioAux(const AudioAux& t, int flags)
 
 AudioAux::~AudioAux()
 {
-      for (int i = 0; i < MAX_CHANNELS; ++i) {
+      for (int i = 0; i < MusECore::MAX_CHANNELS; ++i) {
             if (buffer[i])
                 free(buffer[i]);
       }

@@ -59,115 +59,177 @@
 
 #include "app.h"
 #include "globals.h"
-#include "globaldefs.h"
 #include "gconfig.h"
 #include "popupmenu.h"
 #include "lock_free_buffer.h"
 
 namespace MusECore {
 
+// REMOVE Tim. scan. Changed.
+// //---------------------------------------------------------
+// //   scanDSSILib
+// //---------------------------------------------------------
+// 
+// static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
+//       {
+//       void* handle = dlopen(fi.filePath().toLatin1().constData(), RTLD_NOW);
+//       
+//       if (handle == 0) {
+//             fprintf(stderr, "scanDSSILib: dlopen(%s) failed: %s\n",
+//               fi.filePath().toLatin1().constData(), dlerror());
+//               
+//             return;
+//             }
+//       DSSI_Descriptor_Function dssi = (DSSI_Descriptor_Function)dlsym(handle, "dssi_descriptor");
+// 
+//       if (!dssi) 
+//       {
+//         dlclose(handle);
+//         return;
+//       }
+//       else
+//       {
+//         for (int i = 0;; ++i) 
+//         {
+//           const DSSI_Descriptor* descr;
+//           
+//           descr = dssi(i);
+//           if (descr == 0)
+//                 break;
+//           
+//           #ifdef DSSI_DEBUG 
+//           fprintf(stderr, "scanDSSILib: name:%s inPlaceBroken:%d\n", descr->LADSPA_Plugin->Name, LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties));
+//           #endif
+//           
+//           // Listing synths only while excluding effect plugins:
+//           // Do the exact opposite of what dssi-vst.cpp does for listing ladspa plugins.
+//           // That way we cover all bases - effect plugins and synths. 
+//           // Non-synths will show up in the ladspa effect dialog, while synths will show up here...
+//           // There should be nothing left out...
+//           // TIP: Until we add programs to plugins, comment these four checks to load dssi effects as synths, in order to have programs. 
+//           if(descr->run_synth ||                  
+//             descr->run_synth_adding ||
+//             descr->run_multiple_synths ||
+//             descr->run_multiple_synths_adding) 
+//           {
+//             const QString label(descr->LADSPA_Plugin->Label);
+//             
+//             // Make sure it doesn't already exist.
+//             std::vector<Synth*>::iterator is;
+//             for(is = MusEGlobal::synthis.begin(); is != MusEGlobal::synthis.end(); ++is)
+//             {
+//               Synth* s = *is;
+//               if(s->name() == label && s->baseName() == fi.completeBaseName())
+//                 break;
+//             }
+//             if(is != MusEGlobal::synthis.end())
+//               continue;
+// 
+//             Plugin::PluginFeatures reqfeat = Plugin::NoFeatures;
+//             if(LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties))
+//               reqfeat |= Plugin::NoInPlaceProcessing;
+//             
+//             // Hack: Special flag required for example for control processing.
+//             bool vst = false;
+//             if(fi.completeBaseName() == QString("dssi-vst"))
+//             {
+//               vst = true;
+//               reqfeat |= Plugin::FixedBlockSize;
+//             }
+//             
+//             DssiSynth* s = new DssiSynth(fi, descr, vst, reqfeat);
+//             
+//             if(MusEGlobal::debugMsg)
+//             {
+//               fprintf(stderr, "scanDSSILib: name:%s listname:%s lib:%s listlib:%s\n", 
+//                       label.toLatin1().constData(), s->name().toLatin1().constData(), fi.completeBaseName().toLatin1().constData(), s->baseName().toLatin1().constData());
+//               int ai = 0, ao = 0, ci = 0, co = 0;
+//               for(unsigned long pt = 0; pt < descr->LADSPA_Plugin->PortCount; ++pt)
+//               {
+//                 LADSPA_PortDescriptor pd = descr->LADSPA_Plugin->PortDescriptors[pt];
+//                 if(LADSPA_IS_PORT_INPUT(pd) && LADSPA_IS_PORT_AUDIO(pd))
+//                   ai++;
+//                 else  
+//                 if(LADSPA_IS_PORT_OUTPUT(pd) && LADSPA_IS_PORT_AUDIO(pd))
+//                   ao++;
+//                 else  
+//                 if(LADSPA_IS_PORT_INPUT(pd) && LADSPA_IS_PORT_CONTROL(pd))
+//                   ci++;
+//                 else  
+//                 if(LADSPA_IS_PORT_OUTPUT(pd) && LADSPA_IS_PORT_CONTROL(pd))
+//                   co++;
+//               }  
+//               fprintf(stderr, "  audio ins:%d outs:%d control ins:%d outs:%d\n", ai, ao, ci, co);
+//             }
+//             
+//             MusEGlobal::synthis.push_back(s);
+//           }
+//         }
+//       }  
+//       dlclose(handle);
+//       }
+
 //---------------------------------------------------------
 //   scanDSSILib
 //---------------------------------------------------------
 
-static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
+static void scanDSSILib(const QFileInfo& fi)
+{
+  //const char* message = "scanDSSILib: ";
+  PluginScanList scan_list;
+  if(!pluginScan(fi.filePath(), scan_list))
+  {
+    fprintf(stderr, "scanDSSILib: pluginScan(%s) failed\n",
+       fi.filePath().toLatin1().constData());
+  }
+  
+  for(ciPluginScanList isl = scan_list.begin(); isl != scan_list.end(); ++isl)
+  {
+    const PluginScanInfo& info = *isl;
+    switch(info._type)
+    {
+      case PluginScanInfo::PluginTypeDSSI:
+      case PluginScanInfo::PluginTypeDSSIVST:
       {
-      void* handle = dlopen(fi.filePath().toLatin1().constData(), RTLD_NOW);
-      
-      if (handle == 0) {
-            fprintf(stderr, "scanDSSILib: dlopen(%s) failed: %s\n",
-              fi.filePath().toLatin1().constData(), dlerror());
-              
-            return;
-            }
-      DSSI_Descriptor_Function dssi = (DSSI_Descriptor_Function)dlsym(handle, "dssi_descriptor");
-
-      if (!dssi) 
-      {
-        dlclose(handle);
-        return;
-      }
-      else
-      {
-        for (int i = 0;; ++i) 
+#ifdef DSSI_SUPPORT
+        if(MusEGlobal::loadDSSI)
         {
-          const DSSI_Descriptor* descr;
-          
-          descr = dssi(i);
-          if (descr == 0)
-                break;
-          
-          #ifdef DSSI_DEBUG 
-          fprintf(stderr, "scanDSSILib: name:%s inPlaceBroken:%d\n", descr->LADSPA_Plugin->Name, LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties));
-          #endif
-          
-          // Listing synths only while excluding effect plugins:
-          // Do the exact opposite of what dssi-vst.cpp does for listing ladspa plugins.
-          // That way we cover all bases - effect plugins and synths. 
-          // Non-synths will show up in the ladspa effect dialog, while synths will show up here...
-          // There should be nothing left out...
-          // TIP: Until we add programs to plugins, comment these four checks to load dssi effects as synths, in order to have programs. 
-          if(descr->run_synth ||                  
-            descr->run_synth_adding ||
-            descr->run_multiple_synths ||
-            descr->run_multiple_synths_adding) 
+          // * Done in plugin.cpp already. *
+          //if(info._class & PluginScanInfo::PluginClassEffect)
+          //{
+          //  Make sure it doesn't already exist.
+          //  if(MusEGlobal::plugins.find(info._fi.completeBaseName(), info._label) == 0)
+          //  {
+          //    if(MusEGlobal::debugMsg)
+          //      info.dump(message);
+          //    MusEGlobal::plugins.add(info);
+          //  }
+          //}
+            
+          if(info._class & PluginScanInfo::PluginClassInstrument)
           {
-            const QString label(descr->LADSPA_Plugin->Label);
-            
             // Make sure it doesn't already exist.
-            std::vector<Synth*>::iterator is;
-            for(is = MusEGlobal::synthis.begin(); is != MusEGlobal::synthis.end(); ++is)
+            if(MusEGlobal::synthis.find(info._fi.completeBaseName(), info._label) == 0)
             {
-              Synth* s = *is;
-              if(s->name() == label && s->baseName() == fi.completeBaseName())
-                break;
+              DssiSynth* s = new DssiSynth(info);
+              MusEGlobal::synthis.push_back(s);
             }
-            if(is != MusEGlobal::synthis.end())
-              continue;
-
-            Plugin::PluginFeatures reqfeat = Plugin::NoFeatures;
-            if(LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties))
-              reqfeat |= Plugin::NoInPlaceProcessing;
-            
-            // Hack: Special flag required for example for control processing.
-            bool vst = false;
-            if(fi.completeBaseName() == QString("dssi-vst"))
-            {
-              vst = true;
-              reqfeat |= Plugin::FixedBlockSize;
-            }
-            
-            DssiSynth* s = new DssiSynth(fi, descr, vst, reqfeat);
-            
-            if(MusEGlobal::debugMsg)
-            {
-              fprintf(stderr, "scanDSSILib: name:%s listname:%s lib:%s listlib:%s\n", 
-                      label.toLatin1().constData(), s->name().toLatin1().constData(), fi.completeBaseName().toLatin1().constData(), s->baseName().toLatin1().constData());
-              int ai = 0, ao = 0, ci = 0, co = 0;
-              for(unsigned long pt = 0; pt < descr->LADSPA_Plugin->PortCount; ++pt)
-              {
-                LADSPA_PortDescriptor pd = descr->LADSPA_Plugin->PortDescriptors[pt];
-                if(LADSPA_IS_PORT_INPUT(pd) && LADSPA_IS_PORT_AUDIO(pd))
-                  ai++;
-                else  
-                if(LADSPA_IS_PORT_OUTPUT(pd) && LADSPA_IS_PORT_AUDIO(pd))
-                  ao++;
-                else  
-                if(LADSPA_IS_PORT_INPUT(pd) && LADSPA_IS_PORT_CONTROL(pd))
-                  ci++;
-                else  
-                if(LADSPA_IS_PORT_OUTPUT(pd) && LADSPA_IS_PORT_CONTROL(pd))
-                  co++;
-              }  
-              fprintf(stderr, "  audio ins:%d outs:%d control ins:%d outs:%d\n", ai, ao, ci, co);
-            }
-            
-            MusEGlobal::synthis.push_back(s);
           }
         }
-      }  
-      dlclose(handle);
+#endif
       }
+      break;
+      
+      case PluginScanInfo::PluginTypeLADSPA:
+      case PluginScanInfo::PluginTypeVST:
+      case PluginScanInfo::PluginTypeLV2:
+      case PluginScanInfo::PluginTypeLinuxVST:
+      case PluginScanInfo::PluginTypeMESS:
+      case PluginScanInfo::PluginTypeAll:
+      break;
+    }
+  }
+}
 
 //---------------------------------------------------------
 //   scanVstDir
@@ -233,13 +295,13 @@ void initDSSI()
 
 //---------------------------------------------------------
 //   DssiSynth
-//   Synth.label   =  plug.Label 
-//   Synth.descr   =  plug.Name
+//   Synth.name    =  plug.Label (In LADSPA and DSSI this is the more important unique string)
+//   Synth.descr   =  plug.Name  (In LADSPA and DSSI this is the less important name string)
 //   Synth.maker   =  plug.maker 
 //   Synth.version =  nil (no such field in ladspa, maybe try copyright instead)
 //---------------------------------------------------------
 
-DssiSynth::DssiSynth(QFileInfo& fi, const DSSI_Descriptor* d, bool isDssiVst, Plugin::PluginFeatures reqFeatures) : // ddskrjo removed const from QFileInfo
+DssiSynth::DssiSynth(QFileInfo& fi, const DSSI_Descriptor* d, bool isDssiVst, PluginFeatures_t reqFeatures) : // ddskrjo removed const from QFileInfo
   Synth(fi, QString(d->LADSPA_Plugin->Label), QString(d->LADSPA_Plugin->Name), QString(d->LADSPA_Plugin->Maker), QString(), reqFeatures) 
 {
   df = 0;
@@ -280,7 +342,44 @@ DssiSynth::DssiSynth(QFileInfo& fi, const DSSI_Descriptor* d, bool isDssiVst, Pl
   
   // Hack: Blacklist vst plugins in-place, configurable for now. 
   if ((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
-    _requiredFeatures |= Plugin::NoInPlaceProcessing;
+    _requiredFeatures |= PluginNoInPlaceProcessing;
+}
+
+//---------------------------------------------------------
+//   DssiSynth
+//   Synth.name    =  plug.Label (In LADSPA and DSSI this is the more important unique string)
+//   Synth.descr   =  plug.Name  (In LADSPA and DSSI this is the less important name string)
+//   Synth.maker   =  plug.maker 
+//   Synth.version =  nil (no such field in ladspa, maybe try copyright instead)
+//---------------------------------------------------------
+
+DssiSynth::DssiSynth(const PluginScanInfo& info) 
+ : Synth(info._fi,
+         info._label,
+         info._name,
+         info._maker,
+         QString(),
+         info._requiredFeatures) 
+{
+  df = 0;
+  handle = 0;
+  dssi = 0;
+  _isDssiVst = info._type == PluginScanInfo::PluginTypeDSSIVST;
+  
+  // TODO: Hm, why false? // REMOVE Tim. scan. Added.
+//   _hasGui = false;
+  _hasGui = info._hasGui;
+
+  _portCount = info._portCount;
+  
+  _inports = info._inports;
+  _outports = info._outports;
+  _controlInPorts = info._controlInPorts;
+  _controlOutPorts = info._controlOutPorts;
+
+  // Hack: Blacklist vst plugins in-place, configurable for now. 
+  if(_isDssiVst && !MusEGlobal::config.vstInPlace)
+    _requiredFeatures |= PluginNoInPlaceProcessing;
 }
 
 DssiSynth::~DssiSynth() 
@@ -385,7 +484,7 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
           
           // Hack: Blacklist vst plugins in-place, configurable for now. 
           if((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
-            _requiredFeatures |= Plugin::NoInPlaceProcessing;
+            _requiredFeatures |= PluginNoInPlaceProcessing;
         }  
       }  
       
@@ -402,9 +501,10 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
       ++_instances;
       sif->init(this);
 
-      QString guiPath(info.path() + "/" + info.baseName());
-      QDir guiDir(guiPath, "*", QDir::Unsorted, QDir::Files);
-      _hasGui = guiDir.exists();
+// REMOVE Tim. scan. Removed. _hasGui is already taken care of by scanner.
+//       QString guiPath(info.path() + "/" + info.baseName());
+//       QDir guiDir(guiPath, "*", QDir::Unsorted, QDir::Files);
+//       _hasGui = guiDir.exists();
       
       return sif;
 }
@@ -630,7 +730,7 @@ bool DssiSynthIF::init(DssiSynth* s)
             
             // Support a special block for dssi synth ladspa controllers. 
             // Put the ID at a special block after plugins (far after).
-            int id = genACnum(MAX_PLUGINS, cip);
+            int id = genACnum(MusECore::MAX_PLUGINS, cip);
             const char* name = ld->PortNames[k];
             float min, max;
             ladspaControlRange(ld, k, &min, &max);
@@ -1502,7 +1602,7 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
   // But this 'packet' method sure seems to work nicely so far, so we'll throw it in...
   //
   // Must make this detectable for dssi vst synths, just like the plugins' in-place blacklist.
-  const bool usefixedrate = (requiredFeatures() & Plugin::FixedBlockSize);
+  const bool usefixedrate = (requiredFeatures() & PluginFixedBlockSize);
 
   // Note for dssi-vst this MUST equal MusEGlobal::audio period. It doesn't like broken-up runs (it stutters),
   //  even with fixed sizes. Could be a Wine + Jack thing, wanting a full Jack buffer's length.
@@ -2425,7 +2525,7 @@ int DssiSynthIF::getControllerInfo(int id, QString* name, int* ctrl, int* min, i
 
 int DssiSynthIF::channels() const 
 { 
-    return ((int)_synth->_outports) > MAX_CHANNELS ? MAX_CHANNELS : ((int)_synth->_outports) ;
+    return ((int)_synth->_outports) > MusECore::MAX_CHANNELS ? MusECore::MAX_CHANNELS : ((int)_synth->_outports) ;
 }
 
 int DssiSynthIF::totalOutChannels() const 
@@ -2449,7 +2549,7 @@ void DssiSynthIF::deactivate3()
 //--------------------------------
 
 unsigned long DssiSynthIF::pluginID()                        { return (_synth && _synth->dssi) ? _synth->dssi->LADSPA_Plugin->UniqueID : 0; }
-int DssiSynthIF::id()                                        { return MAX_PLUGINS; } // Set for special block reserved for dssi synth. p4.0.20
+int DssiSynthIF::id()                                        { return MusECore::MAX_PLUGINS; } // Set for special block reserved for dssi synth. p4.0.20
 QString DssiSynthIF::pluginLabel() const                     { return (_synth && _synth->dssi) ? QString(_synth->dssi->LADSPA_Plugin->Label) : QString(); }
 QString DssiSynthIF::lib() const                             { return _synth ? _synth->completeBaseName() : QString(); }
 QString DssiSynthIF::dirPath() const                         { return _synth ? _synth->absolutePath() : QString(); }
