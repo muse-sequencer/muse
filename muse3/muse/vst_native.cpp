@@ -545,7 +545,8 @@ static void scanVstNativeLib(QFileInfo& fi)
                                  info._inports > 0 &&
                                  info._outports > 0 &&
                                  MusEGlobal::plugins.find(info._fi.completeBaseName(), info._name) == 0;
-          const bool add_synth = is_synth &&
+          // For now we allow effects as a synth track. Until we allow programs (and midi) in the effect rack.
+          const bool add_synth = (is_synth || is_effect) &&
                                  MusEGlobal::synthis.find(info._fi.completeBaseName(), info._name) == 0;
           if(add_plug || add_synth)
           {
