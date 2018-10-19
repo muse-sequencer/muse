@@ -49,6 +49,7 @@
 #include <alsa/asoundlib.h>
 #endif
 
+#include "al/al.h"
 #include "al/dsp.h"
 #include "app.h"
 #include "audio.h"
@@ -622,6 +623,14 @@ int main(int argc, char* argv[])
                           return -1;
                     }
               }
+
+        // Set some AL library namespace debug flags as well.
+        // Make sure the AL namespace variables mirror our variables.
+        AL::debugMsg = MusEGlobal::debugMsg;
+        AL::denormalBias = MusEGlobal::denormalBias;
+        AL::division = MusEGlobal::config.division;
+        AL::sampleRate = MusEGlobal::sampleRate;
+        AL::mtcType = MusEGlobal::mtcType;
 
         argc_copy -= optind;
         ++argc_copy;

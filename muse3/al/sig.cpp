@@ -21,9 +21,8 @@
 //=============================================================================
 
 
-#include "gconfig.h"
+#include "al.h"
 #include "sig.h"
-#include "operations.h"
 
 namespace AL {
 
@@ -130,40 +129,6 @@ void SigList::add(unsigned tick, SigEvent* e, bool do_normalize)
 }
 
 //---------------------------------------------------------
-//   addOperation
-//---------------------------------------------------------
-
-void SigList::addOperation(unsigned tick, const TimeSignature& s, MusECore::PendingOperationList& ops)
-{
-  //if (tick > MAX_TICK)
-  //  tick = MAX_TICK;
-  
-  if (s.z == 0 || s.n == 0) {
-        fprintf(stderr, "SigList::addOperation illegal signature %d/%d\n", s.z, s.n);
-        return;
-        }
-  iSigEvent e = upper_bound(tick);
-  if(tick == e->second->tick)
-    ops.add(MusECore::PendingOperationItem(this, e, s, MusECore::PendingOperationItem::ModifySig));
-  else 
-  {
-    MusECore::PendingOperationItem poi(this, 0, tick, MusECore::PendingOperationItem::AddSig);
-    MusECore::iPendingOperation ipo = ops.findAllocationOp(poi);
-    if(ipo != ops.end())
-    {
-      MusECore::PendingOperationItem& poi = *ipo;
-      // Simply replace the value.
-      poi._sig_event->sig = s;
-    }
-    else
-    {
-      poi._sig_event = new SigEvent(s, tick); // These are the desired tick and sig but...
-      ops.add(poi);                           //  add will do the proper swapping with next event.
-    }
-  }
-}
-
-//---------------------------------------------------------
 //   del
 //---------------------------------------------------------
 
@@ -201,21 +166,6 @@ void SigList::del(iSigEvent e, bool do_normalize)
       if(do_normalize)
         normalize();
       }
-
-//---------------------------------------------------------
-//   delOperation
-//---------------------------------------------------------
-
-void SigList::delOperation(unsigned tick, MusECore::PendingOperationList& ops)
-{
-  iSigEvent e = find(tick);
-  if (e == end()) {
-        printf("SigList::delOperation tick:%d not found\n", tick);
-        return;
-        }
-  MusECore::PendingOperationItem poi(this, e, MusECore::PendingOperationItem::DeleteSig);
-  ops.add(poi);
-}
 
 //---------------------------------------------------------
 //   SigList::normalize
@@ -314,7 +264,7 @@ int SigList::ticksBeat(unsigned tick) const
 
 int SigList::ticks_beat(int n) const
       {
-      int m = MusEGlobal::config.division;
+      int m = division;
       
       switch (n) {
             case  1:  m <<= 2; break;           // 1536

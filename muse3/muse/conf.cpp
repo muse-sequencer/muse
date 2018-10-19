@@ -73,6 +73,7 @@
 #include "track.h"
 #include "plugin.h"
 #include "filedialog.h"
+#include "al/al.h"
 
 namespace MusECore {
 
@@ -666,7 +667,11 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "midiFilterCtrl4")
                               MusEGlobal::midiFilterCtrl4 = xml.parseInt();
                         else if (tag == "mtctype")
+                        {
                               MusEGlobal::mtcType= xml.parseInt();
+                              // Make sure the AL namespace variables mirror our variables.
+                              AL::mtcType = MusEGlobal::mtcType;
+                        }
                         else if (tag == "sendClockDelay")
                               MusEGlobal::syncSendFirstClockDelay = xml.parseUInt();
                         else if (tag == "extSync")
@@ -1114,7 +1119,11 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "enableAlsaMidiDriver")
                               MusEGlobal::config.enableAlsaMidiDriver = xml.parseInt();
                         else if (tag == "division")
+                        {
                               MusEGlobal::config.division = xml.parseInt();
+                              // Make sure the AL namespace variable mirrors our variable.
+                              AL::division = MusEGlobal::config.division;
+                        }
                         else if (tag == "guiDivision")
                               MusEGlobal::config.guiDivision = xml.parseInt();
                         else if (tag == "rtcTicks")

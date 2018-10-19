@@ -29,8 +29,6 @@
 
 namespace MusECore {
 class Xml;
-class PendingOperationList;
-struct PendingOperationItem;
 }
 
 namespace AL {
@@ -80,20 +78,18 @@ typedef SIGLIST::reverse_iterator riSigEvent;
 typedef SIGLIST::const_reverse_iterator criSigEvent;
 
 class SigList : public SIGLIST {
-   friend struct MusECore::PendingOperationItem;
-   
       int ticks_beat(int N) const;
       int ticksMeasure(const TimeSignature&) const;
       int ticksMeasure(int z, int n) const;
-      void add(unsigned tick, SigEvent* e, bool do_normalize = true);
-      void del(iSigEvent, bool do_normalize = true);
 
    public:
       SigList();
       ~SigList();
       void clear();
       void add(unsigned tick, const TimeSignature& s);
+      void add(unsigned tick, SigEvent* e, bool do_normalize = true);
       void del(unsigned tick);
+      void del(iSigEvent, bool do_normalize = true);
       void normalize();
       
       void read(MusECore::Xml&);
@@ -112,9 +108,6 @@ class SigList : public SIGLIST {
       unsigned raster1(unsigned tick, int raster) const;    // round down
       unsigned raster2(unsigned tick, int raster) const;    // round up
       int rasterStep(unsigned tick, int raster) const;
-      
-      void addOperation(unsigned tick, const TimeSignature& s, MusECore::PendingOperationList& ops); 
-      void delOperation(unsigned tick, MusECore::PendingOperationList& ops);
       };
 
 extern SigList sigmap;

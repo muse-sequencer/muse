@@ -39,6 +39,7 @@
 #include "icons.h"
 #include "helper.h"
 #include "filedialog.h"
+#include "al/al.h"
 
 namespace MusEGui {
 
@@ -360,6 +361,8 @@ void GlobalSettingsConfig::apply()
 
       int div            = midiDivisionSelect->currentIndex();
       MusEGlobal::config.division    = divisions[div];
+      // Make sure the AL namespace variable mirrors our variable.
+      AL::division = MusEGlobal::config.division;
       div                = guiDivisionSelect->currentIndex();
       MusEGlobal::config.guiDivision = divisions[div];
       

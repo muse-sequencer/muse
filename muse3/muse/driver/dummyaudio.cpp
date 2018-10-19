@@ -39,6 +39,7 @@
 #include "pos.h"
 #include "gconfig.h"
 #include "large_int.h"
+#include "al/al.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_DUMMY(dev, format, args...) // fprintf(dev, format, ##args);
@@ -184,6 +185,8 @@ DummyAudioDevice* dummyAudio = 0;
 DummyAudioDevice::DummyAudioDevice() : AudioDevice()
       {
       MusEGlobal::sampleRate = MusEGlobal::config.deviceAudioSampleRate;
+      // Make sure the AL namespace variables mirror our variables.
+      AL::sampleRate = MusEGlobal::sampleRate;
       MusEGlobal::segmentSize = MusEGlobal::config.deviceAudioBufSize;
       int rv = posix_memalign((void**)&buffer, 16, sizeof(float) * MusEGlobal::segmentSize);
       if(rv != 0)

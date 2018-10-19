@@ -58,6 +58,8 @@
 #include "jackmidi.h"
 #include "muse_atomic.h"
 
+#include "al/al.h"
+
 #define JACK_DEBUG 0 
 
 #define JACK_CALLBACK_FIFO_SIZE 512
@@ -595,6 +597,8 @@ bool initJackAudio()
       //jackAudio->registerClient(); 
 
       MusEGlobal::sampleRate  = jack_get_sample_rate(client);
+      // Make sure the AL namespace variables mirror our variables.
+      AL::sampleRate = MusEGlobal::sampleRate;
       MusEGlobal::segmentSize = jack_get_buffer_size(client);
       
       return false;

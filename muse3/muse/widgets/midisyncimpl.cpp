@@ -42,6 +42,7 @@
 #include "midisyncimpl.h"
 #include "driver/audiodev.h"
 #include "audio.h"
+#include "al/al.h"
 
 namespace MusEGui {
 
@@ -641,6 +642,8 @@ void MidiSyncConfig::apply()
       MusEGlobal::syncSendFirstClockDelay = syncDelaySpinBox->value();
       
       MusEGlobal::mtcType     = mtcSyncType->currentIndex();
+      // Make sure the AL namespace variables mirror our variables.
+      AL::mtcType = MusEGlobal::mtcType;
       MusEGlobal::extSyncFlag.setValue(extSyncCheckbox->isChecked());
       MusEGlobal::useJackTransport.setValue(useJackTransportCheckbox->isChecked());
 //      if(MusEGlobal::useJackTransport)

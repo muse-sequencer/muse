@@ -365,6 +365,17 @@ bool pluginScan(const QString& filename, PluginScanList& scanList, bool debugStd
     return false;
   }
   
+  if(debugStdErr)
+  {
+    QByteArray err_array = process.readAllStandardError();
+    if(!err_array.isEmpty())
+    {
+      // Terminate just to be sure.
+      err_array.append(char(0));
+      fprintf(stderr, "\npluginScan: stderr array:%s\n", err_array.constData());
+    }
+  }
+  
   if(process.exitStatus() != QProcess::NormalExit)
   {
     fprintf(stderr, "\npluginScan: process not exited normally\n");
@@ -375,17 +386,6 @@ bool pluginScan(const QString& filename, PluginScanList& scanList, bool debugStd
   {
     fprintf(stderr, "\npluginScan: process exit code not zero\n");
     return false;
-  }
-  
-  if(debugStdErr)
-  {
-    QByteArray err_array = process.readAllStandardError();
-    if(!err_array.isEmpty())
-    {
-      // Terminate just to be sure.
-      err_array.append(char(0));
-      fprintf(stderr, "\npluginScan: stderr array:%s\n", err_array.constData());
-    }
   }
   
   QByteArray array = process.readAllStandardOutput();

@@ -38,8 +38,6 @@
 namespace MusECore {
 
 class Xml;
-class PendingOperationList;
-struct PendingOperationItem;
 
 //---------------------------------------------------------
 //   Tempo Event
@@ -127,9 +125,6 @@ class TempoList : public TEMPOLIST {
       bool setMasterFlag(unsigned tick, bool val);
       int globalTempo() const           { return _globalTempo; }
       void setGlobalTempo(int val);
-      
-      void addOperation(unsigned tick, int tempo, PendingOperationList& ops); 
-      void delOperation(unsigned tick, PendingOperationList& ops);
       };
 
 //---------------------------------------------------------
