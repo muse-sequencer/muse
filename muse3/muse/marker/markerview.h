@@ -34,10 +34,6 @@ class QToolBar;
 class QToolButton;
 class QTreeWidget;
 
-namespace Awl {
-      class PosEdit;
-      };
-
 namespace MusECore {
 class Marker;
 ///class PosEdit;
@@ -45,6 +41,8 @@ class Pos;
 }
 
 namespace MusEGui {
+
+class PosEdit;
 
 //---------------------------------------------------------
 //   MarkerItem
@@ -73,8 +71,8 @@ class MarkerView : public TopWin {
     
       QTreeWidget* table;
       QLineEdit* editName;
-      Awl::PosEdit* editSMPTE;
-      Awl::PosEdit* editTick;
+      PosEdit* editSMPTE;
+      PosEdit* editTick;
       QToolButton* lock;
       QToolBar* tools;
       

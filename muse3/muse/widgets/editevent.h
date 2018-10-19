@@ -35,10 +35,6 @@ class QRadioButton;
 class QListWidgetItem;
 class QMenu;
 
-namespace Awl {
-      class PosEdit;
-      };
-
 namespace MusECore {
 class Event;
 class MidiPart;
@@ -48,6 +44,7 @@ class MidiInstrument;
 namespace MusEGui {
 
 class IntLabel;
+class PosEdit;
 class PitchEdit;
 
 //---------------------------------------------------------
@@ -144,7 +141,7 @@ class EditMetaDialog : public EditEventDialog {
 
       unsigned char* meta;
       int len;
-      Awl::PosEdit* epos;
+      PosEdit* epos;
       QTextEdit* edit;
       MusEGui::IntLabel* il2;
       QRadioButton* hexButton;

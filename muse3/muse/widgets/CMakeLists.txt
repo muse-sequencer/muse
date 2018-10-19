@@ -89,7 +89,7 @@ QT5_WRAP_CPP (widget_mocs
       plugindialog.h
       popup_double_spinbox.h
       popupmenu.h  
-      # posedit.h  
+      posedit.h  
       poslabel.h  
       projectcreateimpl.h
       routepopup.h  
@@ -234,7 +234,7 @@ file (GLOB widgets_source_files
       plugindialog.cpp
       popup_double_spinbox.cpp
       popupmenu.cpp 
-      # posedit.cpp 
+      posedit.cpp 
       poslabel.cpp
       projectcreateimpl.cpp
       routepopup.cpp 

@@ -1,11 +1,12 @@
-//=========================================================
-//  MusE
-//  Linux Music Editor
-//    $Id: posedit.h,v 1.1.1.1.2.1 2004/12/27 19:47:25 lunar_shuttle Exp $
-//  (C) Copyright 2001 Werner Schweer (ws@seh.de)
+//=============================================================================
+//  Awl
+//  Audio Widget Library
+//  $Id:$
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
+//  Copyright (C) 1999-2011 by Werner Schweer and others
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License
 //  as published by the Free Software Foundation; version 2 of
 //  the License, or (at your option) any later version.
 //
@@ -17,107 +18,73 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-//
-//=========================================================
+//=============================================================================
 
 #ifndef __POSEDIT_H__
 #define __POSEDIT_H__
 
-#include <QWidget>
-
+///#include "al/pos.h"
 #include "pos.h"
-#include "section.h"
 
-class QResizeEvent;
-class QTimerEvent;
-
-class PosEditor;
-class SpinBox;
+#include <QAbstractSpinBox>
 
 namespace MusEGui {
+
+      ///using AL::Pos;
 
 //---------------------------------------------------------
 //   PosEdit
 //---------------------------------------------------------
 
-class PosEdit : public QWidget
+class PosEdit : public QAbstractSpinBox
       {
       Q_OBJECT
-      Q_PROPERTY(QString separator READ separator WRITE setSeparator)
       Q_PROPERTY(bool smpte READ smpte WRITE setSmpte)
 
-      void init();
-      void setSections();
-      QString sectionText(int sec);
-      Section midiSections[3];
-      Section smpteSections[4];
-      Section* sec;
-
       bool _smpte;
-
-      bool adv;
-      bool overwrite;
-      int timerId;
-      bool typing;
-      Pos min;
-      Pos max;
-      bool changed;
-      PosEditor *ed;
-      SpinBox* controls;
-
-   private slots:
-      void stepUp();
-      void stepDown();
+      MusECore::Pos _pos;
+      bool initialized;
+      bool _returnMode;
+      int cur_minute, cur_sec, cur_frame, cur_subframe;
+      int cur_bar, cur_beat, cur_tick;
+      
+      QIntValidator* validator;
+      
+      virtual void paintEvent(QPaintEvent* event);
+      virtual void stepBy(int steps);
+      virtual StepEnabled stepEnabled() const;
+      virtual void fixup(QString& input) const;
+      virtual QValidator::State validate(QString&, int&) const;
+      int curSegment() const;
+      virtual bool event(QEvent*);
+      bool finishEdit();
 
    signals:
-      void valueChanged(const Pos&);
+      void valueChanged(const MusECore::Pos&);
+      
+      // Choose these carefully, watch out for focusing recursion. 
       void returnPressed();
-
-   protected:
-      virtual bool event(QEvent *e );
-      void timerEvent(QTimerEvent* e);
-      virtual void resizeEvent(QResizeEvent*);
-      QString sectionFormattedText(int sec);
-      void addNumber(int sec, int num);
-      void removeLastNumber(int sec);
-      bool setFocusSection(int s);
-
-      virtual bool outOfRange(int, int) const;
-      virtual void setSec(int, int);
-      friend class PosEditor;
-
-   protected slots:
-      void updateButtons();
+      void escapePressed();
+      void lostFocus();      
+      // This is emitted when focus lost or return pressed (same as QAbstractSpinBox). 
+      void editingFinished();
 
    public slots:
-      virtual void setValue(const Pos& time);
+      void setValue(const MusECore::Pos& time);
       void setValue(int t);
       void setValue(const QString& s);
-      // Added p3.3.43
-      virtual void setEnabled(bool);
 
    public:
-      PosEdit(QWidget* = 0,  const char* = 0);
-      PosEdit(const Pos& time, QWidget*,  const char* = 0);
-      ~PosEdit();
-
+      PosEdit(QWidget* parent = 0);
       QSize sizeHint() const;
-      Pos pos() const;
-      virtual void setAutoAdvance(bool advance) { adv = advance; }
-      bool autoAdvance() const                  { return adv; }
 
-      virtual void setMinValue(const Pos& d)    { setRange(d, maxValue()); }
-      Pos minValue() const;
-      virtual void setMaxValue( const Pos& d )  { setRange(minValue(), d ); }
-      Pos maxValue() const;
-      virtual void setRange(const Pos& min, const Pos& max);
-      QString separator() const;
-      virtual void setSeparator(const QString& s);
+      MusECore::Pos pos() const { return _pos; }
       void setSmpte(bool);
-      bool smpte() const;
-      void enterPressed();
+      bool smpte() const { return _smpte; }
+      void setReturnMode(bool v) { _returnMode = v; } 
+      bool returnMode() const    { return _returnMode; }
+      void updateValue();
       };
-
-} // namespace MusEGui
+}
 
 #endif

@@ -1281,6 +1281,7 @@ void DList::pitchEdit(int line, int section)
                      SLOT(pitchEdited()));
                   connect(pitch_editor, SIGNAL(escapePressed()),
                      SLOT(escapePressed()));
+                  connect(MusEGlobal::song, SIGNAL(midiNote(int, int)), pitch_editor, SLOT(midiNote(int,int)));
                   pitch_editor->setFrame(true);
                   }
             int colx = mapx(header->sectionPosition(section));

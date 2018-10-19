@@ -129,7 +129,7 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="Awl::PosEdit" name="epos"/>
+    <widget class="MusEGui::PosEdit" name="epos"/>
    </item>
    <item row="1" column="1">
     <widget class="QSpinBox" name="il1">
@@ -163,9 +163,9 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>Awl::PosEdit</class>
+   <class>MusEGui::PosEdit</class>
    <extends>QWidget</extends>
-   <header>awl/posedit.h</header>
+   <header>posedit.h</header>
    <container>0</container>
   </customwidget>
   <customwidget>

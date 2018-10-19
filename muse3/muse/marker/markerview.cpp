@@ -30,7 +30,7 @@
 #include "sync.h"
 #include "icons.h"
 #include "song.h"
-#include "awl/posedit.h"
+#include "posedit.h"
 
 #include <QCloseEvent>
 #include <QGroupBox>
@@ -241,11 +241,11 @@ MarkerView::MarkerView(QWidget* parent)
       QHBoxLayout *hbox = new QHBoxLayout;
 
       ///editTick = new PosEdit;
-      editTick = new Awl::PosEdit;
+      editTick = new PosEdit;
       editTick->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
          QSizePolicy::Fixed));
 
-      editSMPTE = new Awl::PosEdit;
+      editSMPTE = new PosEdit;
       editSMPTE->setSmpte(true);
       editSMPTE->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
          QSizePolicy::Fixed));

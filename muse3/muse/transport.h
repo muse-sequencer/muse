@@ -30,11 +30,8 @@
 #include <QWidget>
 
 namespace Awl {
-      class PosEdit;
       class SigEdit;
       };
-
-using Awl::PosEdit;
 
 class QComboBox;
 class QHBoxLayout;
@@ -48,6 +45,7 @@ class Pos;
 }
 
 namespace MusEGui {
+class PosEdit;
 class DoubleLabel;
 class SigLabel;
 class IconButton;
