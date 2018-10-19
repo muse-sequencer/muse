@@ -29,6 +29,7 @@
 #include "cobject.h"
 #include "mdisettings.h"
 
+#include <QButtonGroup>
 #include <QShowEvent>
 #include <list>
 
