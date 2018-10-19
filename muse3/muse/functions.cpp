@@ -39,7 +39,7 @@
 #include "widgets/function_dialogs/move.h"
 #include "widgets/function_dialogs/deloverlaps.h"
 #include "widgets/function_dialogs/legato.h"
-#include "widgets/pasteeventsdialog.h"
+#include "components/pasteeventsdialog.h"
 
 #include <limits.h>
 #include <iostream>

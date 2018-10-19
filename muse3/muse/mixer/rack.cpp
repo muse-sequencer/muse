@@ -34,7 +34,7 @@
 #include <QPalette>
 #include <QStyledItemDelegate>
 #include <QUrl>
-#include "widgets/popupmenu.h"
+#include "popupmenu.h"
 
 #include <errno.h>
 

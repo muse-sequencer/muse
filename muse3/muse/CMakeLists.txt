@@ -30,6 +30,7 @@ include_directories(
 set (SubDirs
       arranger
       cliplist
+      components
       ctrl
       driver
       instruments
@@ -237,6 +238,7 @@ set (FILES_TO_TRANSLATE
 ##
 include_directories (
       arranger
+      components
       driver
       instruments
       liste
@@ -252,6 +254,7 @@ include_directories (
 # Make sure to include the uic generated headers paths.
 include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}/arranger
+      ${CMAKE_CURRENT_BINARY_DIR}/components
       ${CMAKE_CURRENT_BINARY_DIR}/driver
       ${CMAKE_CURRENT_BINARY_DIR}/instruments
       ${CMAKE_CURRENT_BINARY_DIR}/liste
@@ -269,7 +272,7 @@ include_directories(
 ##
 set_target_properties( core
       # PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      # PROPERTIES COMPILE_FLAGS "-Imidiedit -Iarranger -Iliste -Iwidgets -Imixer -Idriver -Iwaveedit -Implugins -Iinstruments -Iremote ${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h "
+      # PROPERTIES COMPILE_FLAGS "-Imidiedit -Iarranger -Iliste -Icomponents -Iwidgets -Imixer -Idriver -Iwaveedit -Implugins -Iinstruments -Iremote ${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h "
       # PROPERTIES COMPILE_FLAGS "${REM_CPP_FLAGS} -DINSTPREFIX='\"${CMAKE_INSTALL_PREFIX}\"' -DINSTLIBDIR='\"${LIBRARY_OUTPUT_DIRECTORY}\"' -include ${PROJECT_BINARY_DIR}/all.h "
       PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK} ${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h"
       
@@ -341,6 +344,7 @@ target_link_libraries(core
       arranger
       awl
       cliplist
+      components
       ctrl
       driver
       evdata_module

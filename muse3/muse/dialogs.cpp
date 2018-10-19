@@ -31,8 +31,8 @@
 #include "widgets/function_dialogs/move.h"
 #include "widgets/function_dialogs/deloverlaps.h"
 #include "widgets/function_dialogs/legato.h"
-#include "widgets/pastedialog.h"
-#include "widgets/pasteeventsdialog.h"
+#include "components/pastedialog.h"
+#include "components/pasteeventsdialog.h"
 
 #include "xml.h"
 

@@ -1,3 +1,9 @@
+19.10.2018
+      - Moved complex 'widgets' to new folder 'components'. (Tim)
+        New library 'components' separated from 'widgets'.
+      - Finished completely isolating libraries AL, AWL, and widgets
+         so that Deicsonze and SimpleDrums MESS synths load now.
+      - So things are even more modular now for less unresolved dependencies.
 17.10.2018
       * NEW! Safe Plugin Scanner 'sandbox': (Tim)
       - MusE should NEVER crash due to plugin scanning at startup now!

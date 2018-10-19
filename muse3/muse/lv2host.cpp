@@ -65,7 +65,7 @@
 #include "app.h"
 #include "globals.h"
 #include "gconfig.h"
-#include "widgets/popupmenu.h"
+#include "components/popupmenu.h"
 #include "widgets/menutitleitem.h"
 #include "icons.h"
 #include <ladspa.h>
