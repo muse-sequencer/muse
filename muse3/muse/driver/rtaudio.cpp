@@ -40,6 +40,7 @@
 #include "gconfig.h"
 //#include "utils.h"
 #include "large_int.h"
+#include "al/al.h"
 
 #define MASTER_LEFT (void*)1
 #define MASTER_RIGHT (void*)2
@@ -309,6 +310,8 @@ RtAudioDevice::RtAudioDevice(bool forceDefault) : AudioDevice()
       {
       fprintf(stderr, "Init RtAudioDevice\n");
       MusEGlobal::sampleRate = MusEGlobal::config.deviceAudioSampleRate;
+      // Make sure the AL namespace variables mirror our variables.
+      AL::sampleRate = MusEGlobal::sampleRate;
       MusEGlobal::segmentSize = MusEGlobal::config.deviceAudioBufSize;
 
       _start_timeUS = systemTimeUS();
@@ -565,6 +568,8 @@ bool RtAudioDevice::start(int priority)
   }
 
   MusEGlobal::sampleRate = fin_sr;
+  // Make sure the AL namespace variables mirror our variables.
+  AL::sampleRate = MusEGlobal::sampleRate;
   
   double data[2];
 

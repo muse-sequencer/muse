@@ -1,0 +1,389 @@
+<?xml version="1.0"?>
+<muse version="1.0">
+  <drumMapPatch patch="268435456">
+    <entry idx="0">
+      <name>0</name>
+    </entry>
+    <entry idx="1">
+      <name>1</name>
+    </entry>
+    <entry idx="2">
+      <name>2</name>
+    </entry>
+    <entry idx="3">
+      <name>3</name>
+    </entry>
+    <entry idx="4">
+      <name>4</name>
+    </entry>
+    <entry idx="5">
+      <name>5</name>
+    </entry>
+    <entry idx="6">
+      <name>6</name>
+    </entry>
+    <entry idx="7">
+      <name>7</name>
+    </entry>
+    <entry idx="8">
+      <name>8</name>
+    </entry>
+    <entry idx="9">
+      <name>9</name>
+    </entry>
+    <entry idx="10">
+      <name>10</name>
+    </entry>
+    <entry idx="11">
+      <name>11</name>
+    </entry>
+    <entry idx="12">
+      <name>12</name>
+    </entry>
+    <entry idx="13">
+      <name>13</name>
+    </entry>
+    <entry idx="14">
+      <name>14</name>
+    </entry>
+    <entry idx="15">
+      <name>15</name>
+    </entry>
+    <entry idx="16">
+      <name>16</name>
+    </entry>
+    <entry idx="17">
+      <name>17</name>
+    </entry>
+    <entry idx="18">
+      <name>18</name>
+    </entry>
+    <entry idx="19">
+      <name>19</name>
+    </entry>
+    <entry idx="20">
+      <name>20</name>
+    </entry>
+    <entry idx="21">
+      <name>21</name>
+    </entry>
+    <entry idx="22">
+      <name>22</name>
+    </entry>
+    <entry idx="23">
+      <name>23</name>
+    </entry>
+    <entry idx="24">
+      <name>24</name>
+    </entry>
+    <entry idx="25">
+      <name>25</name>
+    </entry>
+    <entry idx="26">
+      <name>26</name>
+    </entry>
+    <entry idx="27">
+      <name>27</name>
+    </entry>
+    <entry idx="28">
+      <name>28</name>
+    </entry>
+    <entry idx="29">
+      <name>29</name>
+    </entry>
+    <entry idx="30">
+      <name>30</name>
+    </entry>
+    <entry idx="31">
+      <name>31</name>
+    </entry>
+    <entry idx="32">
+      <name>32</name>
+    </entry>
+    <entry idx="33">
+      <name>33</name>
+    </entry>
+    <entry idx="34">
+      <name>34</name>
+    </entry>
+    <entry idx="35">
+      <name>35</name>
+    </entry>
+    <entry idx="36">
+      <name>36</name>
+    </entry>
+    <entry idx="37">
+      <name>37</name>
+    </entry>
+    <entry idx="38">
+      <name>38</name>
+    </entry>
+    <entry idx="39">
+      <name>39</name>
+    </entry>
+    <entry idx="40">
+      <name>40</name>
+    </entry>
+    <entry idx="41">
+      <name>41</name>
+    </entry>
+    <entry idx="42">
+      <name>42</name>
+    </entry>
+    <entry idx="43">
+      <name>43</name>
+    </entry>
+    <entry idx="44">
+      <name>44</name>
+    </entry>
+    <entry idx="45">
+      <name>45</name>
+    </entry>
+    <entry idx="46">
+      <name>46</name>
+    </entry>
+    <entry idx="47">
+      <name>47</name>
+    </entry>
+    <entry idx="48">
+      <name>48</name>
+    </entry>
+    <entry idx="49">
+      <name>49</name>
+    </entry>
+    <entry idx="50">
+      <name>50</name>
+    </entry>
+    <entry idx="51">
+      <name>51</name>
+    </entry>
+    <entry idx="52">
+      <name>52</name>
+    </entry>
+    <entry idx="53">
+      <name>53</name>
+    </entry>
+    <entry idx="54">
+      <name>54</name>
+    </entry>
+    <entry idx="55">
+      <name>55</name>
+    </entry>
+    <entry idx="56">
+      <name>56</name>
+    </entry>
+    <entry idx="57">
+      <name>57</name>
+    </entry>
+    <entry idx="58">
+      <name>58</name>
+    </entry>
+    <entry idx="59">
+      <name>59</name>
+    </entry>
+    <entry idx="60">
+      <name>60</name>
+    </entry>
+    <entry idx="61">
+      <name>61</name>
+    </entry>
+    <entry idx="62">
+      <name>62</name>
+    </entry>
+    <entry idx="63">
+      <name>63</name>
+    </entry>
+    <entry idx="64">
+      <name>64</name>
+    </entry>
+    <entry idx="65">
+      <name>65</name>
+    </entry>
+    <entry idx="66">
+      <name>66</name>
+    </entry>
+    <entry idx="67">
+      <name>67</name>
+    </entry>
+    <entry idx="68">
+      <name>68</name>
+    </entry>
+    <entry idx="69">
+      <name>69</name>
+    </entry>
+    <entry idx="70">
+      <name>70</name>
+    </entry>
+    <entry idx="71">
+      <name>71</name>
+    </entry>
+    <entry idx="72">
+      <name>72</name>
+    </entry>
+    <entry idx="73">
+      <name>73</name>
+    </entry>
+    <entry idx="74">
+      <name>74</name>
+    </entry>
+    <entry idx="75">
+      <name>75</name>
+    </entry>
+    <entry idx="76">
+      <name>76</name>
+    </entry>
+    <entry idx="77">
+      <name>77</name>
+    </entry>
+    <entry idx="78">
+      <name>78</name>
+    </entry>
+    <entry idx="79">
+      <name>79</name>
+    </entry>
+    <entry idx="80">
+      <name>80</name>
+    </entry>
+    <entry idx="81">
+      <name>81</name>
+    </entry>
+    <entry idx="82">
+      <name>82</name>
+    </entry>
+    <entry idx="83">
+      <name>83</name>
+    </entry>
+    <entry idx="84">
+      <name>84</name>
+    </entry>
+    <entry idx="85">
+      <name>85</name>
+    </entry>
+    <entry idx="86">
+      <name>86</name>
+    </entry>
+    <entry idx="87">
+      <name>87</name>
+    </entry>
+    <entry idx="88">
+      <name>88</name>
+    </entry>
+    <entry idx="89">
+      <name>89</name>
+    </entry>
+    <entry idx="90">
+      <name>90</name>
+    </entry>
+    <entry idx="91">
+      <name>91</name>
+    </entry>
+    <entry idx="92">
+      <name>92</name>
+    </entry>
+    <entry idx="93">
+      <name>93</name>
+    </entry>
+    <entry idx="94">
+      <name>94</name>
+    </entry>
+    <entry idx="95">
+      <name>95</name>
+    </entry>
+    <entry idx="96">
+      <name>96</name>
+    </entry>
+    <entry idx="97">
+      <name>97</name>
+    </entry>
+    <entry idx="98">
+      <name>98</name>
+    </entry>
+    <entry idx="99">
+      <name>99</name>
+    </entry>
+    <entry idx="100">
+      <name>100</name>
+    </entry>
+    <entry idx="101">
+      <name>101</name>
+    </entry>
+    <entry idx="102">
+      <name>102</name>
+    </entry>
+    <entry idx="103">
+      <name>103</name>
+    </entry>
+    <entry idx="104">
+      <name>104</name>
+    </entry>
+    <entry idx="105">
+      <name>105</name>
+    </entry>
+    <entry idx="106">
+      <name>106</name>
+    </entry>
+    <entry idx="107">
+      <name>107</name>
+    </entry>
+    <entry idx="108">
+      <name>108</name>
+    </entry>
+    <entry idx="109">
+      <name>109</name>
+    </entry>
+    <entry idx="110">
+      <name>110</name>
+    </entry>
+    <entry idx="111">
+      <name>111</name>
+    </entry>
+    <entry idx="112">
+      <name>112</name>
+    </entry>
+    <entry idx="113">
+      <name>113</name>
+    </entry>
+    <entry idx="114">
+      <name>114</name>
+    </entry>
+    <entry idx="115">
+      <name>115</name>
+    </entry>
+    <entry idx="116">
+      <name>116</name>
+    </entry>
+    <entry idx="117">
+      <name>117</name>
+    </entry>
+    <entry idx="118">
+      <name>118</name>
+    </entry>
+    <entry idx="119">
+      <name>119</name>
+    </entry>
+    <entry idx="120">
+      <name>120</name>
+    </entry>
+    <entry idx="121">
+      <name>121</name>
+    </entry>
+    <entry idx="122">
+      <name>122</name>
+    </entry>
+    <entry idx="123">
+      <name>123</name>
+    </entry>
+    <entry idx="124">
+      <name>124</name>
+    </entry>
+    <entry idx="125">
+      <name>125</name>
+    </entry>
+    <entry idx="126">
+      <name>126</name>
+    </entry>
+    <entry idx="127">
+      <name>127</name>
+    </entry>
+  </drumMapPatch>
+</muse>

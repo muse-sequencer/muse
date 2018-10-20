@@ -101,6 +101,7 @@ extern bool debugMsg;
 extern bool heavyDebugMsg;
 extern bool debugSync;
 extern bool loadPlugins;
+extern bool loadMESS;
 extern bool loadVST;
 extern bool loadNativeVST;
 extern bool loadDSSI;

@@ -2,11 +2,12 @@
 #include <QSignalMapper>
 #include <QInputDialog>
 
+#include "globaldefs.h"
 #include "popupmenu.h"
 #include "menutitleitem.h"
 
 #include "plugindialog.h"
-#include "ui_plugindialogbase.h"
+//#include "ui_plugindialogbase.h"
 #include "plugin.h"
 
 
@@ -465,11 +466,11 @@ void PluginDialog::fillPlugs()
             item->setText(5,  QString().setNum(ao));
             item->setText(6,  QString().setNum(ci));
             item->setText(7,  QString().setNum(co));
-            if( !((*i)->requiredFeatures() & MusECore::Plugin::NoInPlaceProcessing) )
+            if( !((*i)->requiredFeatures() & MusECore::PluginNoInPlaceProcessing) )
               item->setText(8,  "*");
-            if( (*i)->requiredFeatures() & MusECore::Plugin::FixedBlockSize )
+            if( (*i)->requiredFeatures() & MusECore::PluginFixedBlockSize )
               item->setText(9,  "*");
-            if( (*i)->requiredFeatures() & MusECore::Plugin::PowerOf2BlockSize )
+            if( (*i)->requiredFeatures() & MusECore::PluginPowerOf2BlockSize )
               item->setText(10,  "*");
             item->setText(11,  QString().setNum((*i)->id()));
             item->setText(12,  (*i)->maker());

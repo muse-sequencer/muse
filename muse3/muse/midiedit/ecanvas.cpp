@@ -806,7 +806,7 @@ void EventCanvas::stopPlayEvent()
       {
         MusECore::MidiPlayEvent ev(_stuckNotes.at(i));
         port = ev.port();
-        if(port < 0 || port >= MIDI_PORTS)
+        if(port < 0 || port >= MusECore::MIDI_PORTS)
           continue;
         ev.setType(MusECore::ME_NOTEOFF);
         ev.setTime(frame);

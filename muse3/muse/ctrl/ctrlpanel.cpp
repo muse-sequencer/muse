@@ -573,7 +573,7 @@ void CtrlPanel::ctrlChanged(double val, bool off, int /*id*/, int /*scrollMode*/
       int ival = lrint(val);
       int outport = _track->outPort();
       int chan = _track->outChannel();
-      if(chan < 0 || chan >= MIDI_CHANNELS || outport < 0 || outport >= MIDI_PORTS)
+      if(chan < 0 || chan >= MusECore::MUSE_MIDI_CHANNELS || outport < 0 || outport >= MusECore::MIDI_PORTS)
           return;
       int cdp = ctrlcanvas->getCurDrumPitch();
       if(_ctrl->isPerNoteController() && cdp >= 0)

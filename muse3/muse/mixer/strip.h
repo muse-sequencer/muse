@@ -689,7 +689,7 @@ class Strip : public QFrame {
       TrackNameLabel* label;
       QGridLayout* grid;
       int _curGridRow;
-      Meter* meter[MAX_CHANNELS];
+      Meter* meter[MusECore::MAX_CHANNELS];
       // Extra width applied to the sizeHint, from user expanding the strip.
       int _userWidth;
       ExpanderHandle* _handle;

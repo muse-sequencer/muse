@@ -1,9 +1,9 @@
 #ifndef PLUGINDIALOG_H
 #define PLUGINDIALOG_H
 
+#include "ui_plugindialogbase.h"
 #include <QDialog>
 #include "globals.h"
-#include "ui_plugindialogbase.h"
 
 class QAbstractButton;
 

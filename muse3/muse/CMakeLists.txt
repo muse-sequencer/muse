@@ -28,10 +28,13 @@ include_directories(
       )
 
 set (SubDirs
+      widgets
+      components
       arranger
       cliplist
       ctrl
       driver
+      function_dialogs
       instruments
       liste
       marker
@@ -40,7 +43,6 @@ set (SubDirs
       mixer
       mplugins
       waveedit
-      widgets
       )
 if(LV2_SUPPORT)
   if(LV2_USE_SUPPLIED_VERSION)
@@ -135,7 +137,7 @@ file (GLOB core_source_files
       route.cpp
       seqmsg.cpp
       shortcuts.cpp
-      sig.cpp
+      #sig.cpp
       song.cpp
       songfile.cpp
       stringparam.cpp
@@ -183,7 +185,9 @@ file (GLOB wavepreview_source_files
 file (GLOB xml_source_files
       xml.cpp
       )
-
+file (GLOB plugin_scan_source_files
+      plugin_scan.cpp
+      )
 ##
 ## Define target
 ##
@@ -206,6 +210,9 @@ add_library ( wavepreview_module SHARED
       )
 add_library ( xml_module SHARED
       ${xml_source_files}
+      )
+add_library ( plugin_scan_module SHARED
+      ${plugin_scan_source_files}
       )
 
 add_library ( core ${MODULES_BUILD}
@@ -232,7 +239,9 @@ set (FILES_TO_TRANSLATE
 ##
 include_directories (
       arranger
+      components
       driver
+      function_dialogs
       instruments
       liste
       midiedit
@@ -256,16 +265,14 @@ include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}/remote
       ${CMAKE_CURRENT_BINARY_DIR}/waveedit
       ${CMAKE_CURRENT_BINARY_DIR}/widgets
-      ${CMAKE_CURRENT_BINARY_DIR}/widgets/function_dialogs
+      ${CMAKE_CURRENT_BINARY_DIR}/components
+      ${CMAKE_CURRENT_BINARY_DIR}/function_dialogs
       )
 
 ##
 ## Compilation flags and target name
 ##
 set_target_properties( core
-      # PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      # PROPERTIES COMPILE_FLAGS "-Imidiedit -Iarranger -Iliste -Iwidgets -Imixer -Idriver -Iwaveedit -Implugins -Iinstruments -Iremote ${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h "
-      # PROPERTIES COMPILE_FLAGS "${REM_CPP_FLAGS} -DINSTPREFIX='\"${CMAKE_INSTALL_PREFIX}\"' -DINSTLIBDIR='\"${LIBRARY_OUTPUT_DIRECTORY}\"' -include ${PROJECT_BINARY_DIR}/all.h "
       PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK} ${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h"
       
       OUTPUT_NAME muse_core
@@ -301,6 +308,10 @@ set_target_properties( xml_module
       PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_xml_module
       )
+set_target_properties( plugin_scan_module
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+      OUTPUT_NAME muse_plugin_scan_module
+      )
       
 ##
 ## Linkage
@@ -322,7 +333,11 @@ target_link_libraries(wavepreview_module
 target_link_libraries(xml_module
       ${QT_LIBRARIES}
       )
-
+target_link_libraries(plugin_scan_module
+      xml_module
+      ${QT_LIBRARIES}
+      )
+      
 target_link_libraries(core
       al
       arranger
@@ -342,11 +357,13 @@ target_link_libraries(core
       mpevent_module
       mplugins
       muse_string
+      plugin_scan_module
       synti
       sysex_helper_module
       waveedit
       wavepreview_module
       widgets
+      components
       widgets_functiondialogs
       xml_module
 
@@ -442,6 +459,7 @@ install(TARGETS
         memory_module 
         evdata_module 
         mpevent_module 
+        plugin_scan_module 
         wavepreview_module
         xml_module
       DESTINATION ${MusE_MODULES_DIR}

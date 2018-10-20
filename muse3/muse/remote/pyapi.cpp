@@ -763,7 +763,7 @@ PyObject* getTrackEffects(PyObject*, PyObject* args)
       AudioTrack* track = (AudioTrack*) t;
       PyObject* pyfxnames = Py_BuildValue("[]");
       const Pipeline* pipeline = track->efxPipe();
-      for (int i = 0; i < PipelineDepth; i++) {
+      for (int i = 0; i < MusECore::PipelineDepth; i++) {
             QString name = pipeline->name(i);
             printf("fx %d name: %s\n", i, name.toLatin1().constData());
             PyObject* pyname = Py_BuildValue("s", name.toLatin1().constData());

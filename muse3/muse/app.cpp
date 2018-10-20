@@ -54,16 +54,16 @@
 #include "audio.h"
 #include "audiodev.h"
 #include "audioprefetch.h"
-#include "bigtime.h"
+#include "components/bigtime.h"
 #include "cliplist/cliplist.h"
 #include "conf.h"
 #include "config.h"
 #include "debug.h"
-#include "didyouknow.h"
+#include "components/didyouknow.h"
 #include "drumedit.h"
-#include "filedialog.h"
+#include "components/filedialog.h"
 #include "gconfig.h"
-#include "genset.h"
+#include "components/genset.h"
 #include "gui.h"
 #include "helper.h"
 #include "icons.h"
@@ -71,7 +71,7 @@
 #include "listedit.h"
 #include "marker/markerview.h"
 #include "master/masteredit.h"
-#include "metronome.h"
+#include "components/metronome.h"
 #include "midifilterimpl.h"
 #include "midiitransform.h"
 #include "midiseq.h"
@@ -79,7 +79,7 @@
 #include "miditransform.h"
 #include "mitplugin.h"
 #include "mittranspose.h"
-#include "mixdowndialog.h"
+#include "components/mixdowndialog.h"
 #include "mrconfig.h"
 #include "pianoroll.h"
 #include "scoreedit.h"
@@ -87,21 +87,21 @@
 #ifdef BUILD_EXPERIMENTAL
   #include "rhythm.h"
 #endif
-#include "routepopup.h"
-#include "shortcutconfig.h"
-#include "songinfo.h"
+#include "components/routepopup.h"
+#include "components/shortcutconfig.h"
+#include "components/songinfo.h"
 #include "ticksynth.h"
 #include "transport.h"
 #include "tlist.h"
 #include "waveedit.h"
-#include "widgets/projectcreateimpl.h"
+#include "components/projectcreateimpl.h"
 #include "widgets/menutitleitem.h"
-#include "tools.h"
-#include "widgets/unusedwavefiles.h"
+#include "components/tools.h"
+#include "components/unusedwavefiles.h"
 #include "functions.h"
-#include "songpos_toolbar.h"
-#include "sig_tempo_toolbar.h"
-#include "cpu_toolbar.h"
+#include "components/songpos_toolbar.h"
+#include "components/sig_tempo_toolbar.h"
+#include "widgets/cpu_toolbar.h"
 
 
 namespace MusECore {
@@ -3050,7 +3050,7 @@ void MusE::switchMixerAutomation()
               if ((*i)->isMidiTrack())
                     continue;
               MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*i);
-              if(track->automationType() != AUTO_OFF) // && track->automationType() != AUTO_WRITE)
+              if(track->automationType() != MusECore::AUTO_OFF) // && track->automationType() != MusECore::AUTO_WRITE)
                 track->controller()->updateCurValues(MusEGlobal::audio->curFramePos());
               }
       }
@@ -3111,7 +3111,7 @@ void MusE::takeAutomationSnapshot()
      MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*i);
             MusECore::CtrlListList* cll = track->controller();
             // Need to update current 'manual' values from the automation values at this time.
-            if(track->automationType() != AUTO_OFF) // && track->automationType() != AUTO_WRITE)
+            if(track->automationType() != MusECore::AUTO_OFF) // && track->automationType() != MusECore::AUTO_WRITE)
               cll->updateCurValues(frame);
 
             for (MusECore::iCtrlList icl = cll->begin(); icl != cll->end(); ++icl) {

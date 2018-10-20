@@ -71,7 +71,7 @@
 #include "popupmenu.h"
 #include "menutitleitem.h"
 #include "operations.h"
-// #include "widgets/function_dialogs/quantize.h"
+// #include "function_dialogs/quantize.h"
 #include "trackinfo_layout.h"
 
 namespace MusEGui {

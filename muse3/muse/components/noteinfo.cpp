@@ -24,7 +24,7 @@
 
 #include "config.h"
 #include "noteinfo.h"
-#include "awl/posedit.h"
+#include "posedit.h"
 //#include "awl/pitchedit.h"
 #include "song.h"
 #include "globals.h"
@@ -61,7 +61,7 @@ NoteInfo::NoteInfo(QWidget* parent)
       label->setIndent(3);
       addWidget(label);
       
-      selTime = new Awl::PosEdit;
+      selTime = new PosEdit;
       selTime->setFocusPolicy(Qt::StrongFocus);
       selTime->setObjectName("Start");
       

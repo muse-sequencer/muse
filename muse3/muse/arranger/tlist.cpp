@@ -434,7 +434,7 @@ void TList::paint(const QRect& r)
                                   if(md)
                                   {
                                     int outport = md->midiPort();
-                                    if((outport >= 0) && (outport < MIDI_PORTS))
+                                    if((outport >= 0) && (outport < MusECore::MIDI_PORTS))
                                       s = QString("%1:%2").arg(outport+1).arg(MusEGlobal::midiPorts[outport].portname());
                                     else
                                       s = tr("<none>");
@@ -836,7 +836,7 @@ void TList::setTrackChannel(MusECore::Track *track, bool isDelta, int channel, i
     {
       if(isDelta)
         channel = mt->outChannel() + delta;
-      if(channel >= MIDI_CHANNELS) channel = MIDI_CHANNELS - 1;
+      if(channel >= MusECore::MUSE_MIDI_CHANNELS) channel = MusECore::MUSE_MIDI_CHANNELS - 1;
       if(channel < 0) channel = 0;
       if(channel != mt->outChannel()) 
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, mt, mt->outChannel(), channel));
@@ -849,7 +849,7 @@ void TList::setTrackChannel(MusECore::Track *track, bool isDelta, int channel, i
         MusECore::MidiTrack* t = *it;
         if(isDelta)
           channel = t->outChannel() + delta;
-        if(channel >= MIDI_CHANNELS) channel = MIDI_CHANNELS - 1;
+        if(channel >= MusECore::MUSE_MIDI_CHANNELS) channel = MusECore::MUSE_MIDI_CHANNELS - 1;
         else if(channel < 0) channel = 0;
         if(channel != t->outChannel() && (doAllTracks || t->selected()))
           operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, t, t->outChannel(), channel));
@@ -863,8 +863,8 @@ void TList::setTrackChannel(MusECore::Track *track, bool isDelta, int channel, i
   {
     if(track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
     {
-      if(channel > MAX_CHANNELS)
-        channel = MAX_CHANNELS;
+      if(channel > MusECore::MAX_CHANNELS)
+        channel = MusECore::MAX_CHANNELS;
       else if(channel < 1)
         channel = 1;
       
@@ -872,7 +872,7 @@ void TList::setTrackChannel(MusECore::Track *track, bool isDelta, int channel, i
       {
         if(isDelta)
           channel = track->channels() + delta;
-        if(channel > MAX_CHANNELS) channel = MAX_CHANNELS;
+        if(channel > MusECore::MAX_CHANNELS) channel = MusECore::MAX_CHANNELS;
         else if(channel < 1) channel = 1;
         if(channel != track->channels())
           operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, track, track->channels(), channel));
@@ -887,7 +887,7 @@ void TList::setTrackChannel(MusECore::Track *track, bool isDelta, int channel, i
           MusECore::Track* t = *it;
           if(isDelta)
             channel = t->channels() + delta;
-          if(channel > MAX_CHANNELS) channel = MAX_CHANNELS;
+          if(channel > MusECore::MAX_CHANNELS) channel = MusECore::MAX_CHANNELS;
           else if(channel < 1) channel = 1;
           if(channel != t->channels() && (doAllTracks || t->selected()))
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, t, t->channels(), channel));
@@ -975,12 +975,12 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                       }
                       if (t->isMidiTrack())
                       {  
-                        chan_edit->setMaximum(MIDI_CHANNELS);
+                        chan_edit->setMaximum(MusECore::MUSE_MIDI_CHANNELS);
                         chan_edit->setValue(((MusECore::MidiTrack*)editTrack)->outChannel()+1);
                       }  
                       else // if(t->type() != MusECore::Track::AUDIO_SOFTSYNTH)
                       {
-                        chan_edit->setMaximum(MAX_CHANNELS);
+                        chan_edit->setMaximum(MusECore::MAX_CHANNELS);
                         chan_edit->setValue(((MusECore::AudioTrack*)editTrack)->channels());
                       }  
                       int w=colw;
@@ -1359,9 +1359,9 @@ void TList::changeAutomation(QAction* act)
   // if automation is OFF for the track we change it to READ as a convenience
   // hopefully this confuses users far less than not understanding why the
   // automation does not do anything.
-  if (((MusECore::AudioTrack*)editAutomation)->automationType() == AUTO_OFF)
+  if (((MusECore::AudioTrack*)editAutomation)->automationType() == MusECore::AUTO_OFF)
   {
-      MusEGlobal::audio->msgSetTrackAutomationType((MusECore::AudioTrack*)editAutomation, AUTO_READ);
+      MusEGlobal::audio->msgSetTrackAutomationType((MusECore::AudioTrack*)editAutomation, MusECore::AUTO_READ);
       if (MusEGlobal::debugMsg)
           printf("Changing automation from OFF to READ\n");
   }
@@ -1691,10 +1691,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       }
                       else
                       {
-                        if(ctrl < (int)MusECore::genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+                        if(ctrl < (int)MusECore::genACnum(MusECore::MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
                         {
                           int rackpos = (ctrl - AC_PLUGIN_CTL_BASE) >> AC_PLUGIN_CTL_BASE_POW;
-                          if(rackpos < PipelineDepth)
+                          if(rackpos < MusECore::PipelineDepth)
                           {
                             if(rackpos != last_rackpos)
                             {

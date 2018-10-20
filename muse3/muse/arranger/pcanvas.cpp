@@ -41,7 +41,7 @@
 #include <QDrag>
 
 #include "fastlog.h"
-#include "widgets/tools.h"
+#include "components/tools.h"
 #include "arranger.h"
 #include "arrangerview.h"
 #include "structure.h"
@@ -65,7 +65,7 @@
 #include "midictrl.h"
 #include "utils.h"
 #include "dialogs.h"
-#include "widgets/pastedialog.h"
+#include "components/pastedialog.h"
 #include "undo.h"
 #include "muse_math.h"
 

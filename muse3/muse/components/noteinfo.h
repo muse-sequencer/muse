@@ -24,16 +24,13 @@
 
 #include <QToolBar>
 
-namespace Awl {
-      class PosEdit;
-      };
-
 namespace MusECore {
 class Pos;
 }
 
 namespace MusEGui {
 
+class PosEdit;
 class PitchEdit;
 class SpinBox;
 class PixmapButton;
@@ -46,7 +43,7 @@ class PixmapButton;
 class NoteInfo : public QToolBar {
       Q_OBJECT
       
-      Awl::PosEdit* selTime;
+      PosEdit* selTime;
       SpinBox* selLen;
       PitchEdit* selPitch;
       SpinBox* selVelOn;

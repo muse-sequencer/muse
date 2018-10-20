@@ -2505,7 +2505,7 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:DeleteTempo ** calling tempomap.addOperation tick:%d tempo:%d\n", i->a, i->b);
 #endif                        
-                        MusEGlobal::tempomap.addOperation(i->a, i->b, pendingOperations);
+                        pendingOperations.addTempoOperation(i->a, i->b, &MusEGlobal::tempomap);
                         updateFlags |= SC_TEMPO;
                         break;
                         
@@ -2513,7 +2513,7 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:AddTempo ** calling tempomap.delOperation tick:%d\n", i->a);
 #endif                        
-                        MusEGlobal::tempomap.delOperation(i->a, pendingOperations);
+                        pendingOperations.delTempoOperation(i->a, &MusEGlobal::tempomap);
                         updateFlags |= SC_TEMPO;
                         break;
                         
@@ -2521,7 +2521,7 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:ModifyTempo ** calling tempomap.addOperation tick:%d tempo:%d\n", i->a, i->b);
 #endif                        
-                        MusEGlobal::tempomap.addOperation(i->a, i->b, pendingOperations);
+                        pendingOperations.addTempoOperation(i->a, i->b, &MusEGlobal::tempomap);
                         updateFlags |= SC_TEMPO;
                         break;
                         
@@ -2559,7 +2559,7 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:DeleteSig ** calling sigmap.addOperation\n");
 #endif                        
-                        AL::sigmap.addOperation(i->a, AL::TimeSignature(i->b, i->c), pendingOperations);
+                        pendingOperations.addTimeSigOperation(i->a, AL::TimeSignature(i->b, i->c), &AL::sigmap);
                         updateFlags |= SC_SIG;
                         break;
                         
@@ -2567,7 +2567,7 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:AddSig ** calling sigmap.delOperation\n");
 #endif                        
-                        AL::sigmap.delOperation(i->a, pendingOperations);
+                        pendingOperations.delTimeSigOperation(i->a, &AL::sigmap);
                         updateFlags |= SC_SIG;
                         break;
                         
@@ -2575,7 +2575,8 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:ModifySig ** calling sigmap.addOperation\n");
 #endif                        
-                        AL::sigmap.addOperation(i->a, AL::TimeSignature(i->b, i->c), pendingOperations);
+                        // TODO: Hm should that be ->d and ->e like in executeOperationGroup1?
+                        pendingOperations.addTimeSigOperation(i->a, AL::TimeSignature(i->b, i->c), &AL::sigmap);
                         updateFlags |= SC_SIG;
                         break;
                         
@@ -3294,7 +3295,7 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:AddTempo ** calling tempomap.addOperation tick:%d tempo:%d\n", i->a, i->b);
 #endif                        
-                        MusEGlobal::tempomap.addOperation(i->a, i->b, pendingOperations);
+                        pendingOperations.addTempoOperation(i->a, i->b, &MusEGlobal::tempomap);
                         updateFlags |= SC_TEMPO;
                         break;
                         
@@ -3302,7 +3303,7 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:DeleteTempo ** calling tempomap.delOperation tick:%d\n", i->a);
 #endif                        
-                        MusEGlobal::tempomap.delOperation(i->a, pendingOperations);
+                        pendingOperations.delTempoOperation(i->a, &MusEGlobal::tempomap);
                         updateFlags |= SC_TEMPO;
                         break;
                         
@@ -3310,7 +3311,7 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:ModifyTempo ** calling tempomap.addOperation tick:%d tempo:%d\n", i->a, i->c);
 #endif                        
-                        MusEGlobal::tempomap.addOperation(i->a, i->c, pendingOperations);
+                        pendingOperations.addTempoOperation(i->a, i->c, &MusEGlobal::tempomap);
                         updateFlags |= SC_TEMPO;
                         break;
 
@@ -3348,7 +3349,7 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:AddSig ** calling sigmap.addOperation\n");
 #endif                        
-                        AL::sigmap.addOperation(i->a, AL::TimeSignature(i->b, i->c), pendingOperations);
+                        pendingOperations.addTimeSigOperation(i->a, AL::TimeSignature(i->b, i->c), &AL::sigmap);
                         updateFlags |= SC_SIG;
                         break;
                         
@@ -3356,7 +3357,7 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:DeleteSig ** calling sigmap.delOperation\n");
 #endif                        
-                        AL::sigmap.delOperation(i->a, pendingOperations);
+                        pendingOperations.delTimeSigOperation(i->a, &AL::sigmap);
                         updateFlags |= SC_SIG;
                         break;
                         
@@ -3364,7 +3365,7 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:ModifySig ** calling sigmap.addOperation\n");
 #endif                        
-                        AL::sigmap.addOperation(i->a, AL::TimeSignature(i->d, i->e), pendingOperations);
+                        pendingOperations.addTimeSigOperation(i->a, AL::TimeSignature(i->d, i->e), &AL::sigmap);
                         updateFlags |= SC_SIG;
                         break;
 

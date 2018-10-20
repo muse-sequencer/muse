@@ -49,7 +49,7 @@
 #include "song.h"
 #include "event.h"
 #include "arranger.h"
-#include "widgets/filedialog.h"
+#include "components/filedialog.h"
 #include "waveedit/waveedit.h"
 #include "globals.h"
 #include "conf.h"

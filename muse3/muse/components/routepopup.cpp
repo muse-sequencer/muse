@@ -374,7 +374,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
     {
       // Count the number of required rows. 
       int rows = 0;
-      for(int i = 0; i < MIDI_PORTS; ++i)
+      for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
       {
         md = MusEGlobal::midiPorts[i].device();
         // This is desirable, but could lead to 'hidden' routes unless we add more support such as removing the existing routes when user changes flags.
@@ -403,7 +403,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
       
       int row = 0;
       MusECore::Route r(-1);   // Midi port route.
-      for(int i = 0; i < MIDI_PORTS; ++i)
+      for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
       {
         md = MusEGlobal::midiPorts[i].device();
         // This is desirable, but could lead to 'hidden' routes unless we add more support such as removing the existing routes when user changes flags.
@@ -419,8 +419,10 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
         if(md->deviceType() != dtype)
           continue;
         
-        //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this, QString("%1:%2").arg(i + 1).arg(md->name()));
-        RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, 0, 0, this, QString("%1:%2").arg(i + 1).arg(md->name()));
+        //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(
+        //  MusECore::MUSE_MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this, QString("%1:%2").arg(i + 1).arg(md->name()));
+        RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(
+          MusECore::MUSE_MIDI_CHANNELS, 0, 0, this, QString("%1:%2").arg(i + 1).arg(md->name()));
         if(row == 0)
         {
           switch(dtype)
@@ -483,7 +485,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
     {
       // Count the number of required rows. 
       int rows = 0;
-      for(int i = 0; i < MIDI_PORTS; ++i)
+      for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
       {
         md = MusEGlobal::midiPorts[i].device();
         // This is desirable, but could lead to 'hidden' routes unless we add more support such as removing the existing routes when user changes flags.
@@ -505,7 +507,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
       
       // It's an input. Allow 'Omni' routes'...
       int row = 0;
-      for(int i = 0; i < MIDI_PORTS; ++i)
+      for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
       {
         md = MusEGlobal::midiPorts[i].device();
         // This is desirable, but could lead to 'hidden' routes unless we add more support such as removing the existing routes when user changes flags.
@@ -522,8 +524,10 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
           continue;
         
         MusECore::Route r(i, -1);
-        //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this, QString("%1:%2").arg(i + 1).arg(md->name()));
-        RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, 0, 0, this, QString("%1:%2").arg(i + 1).arg(md->name()));
+        //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(
+        //  MusECore::MUSE_MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this, QString("%1:%2").arg(i + 1).arg(md->name()));
+        RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(
+          MusECore::MUSE_MIDI_CHANNELS, 0, 0, this, QString("%1:%2").arg(i + 1).arg(md->name()));
         if(row == 0)
         {
           wa->array()->setCheckBoxTitle(tr("Omni"));
@@ -553,7 +557,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
         wa->setData(QVariant::fromValue(r)); // Ignore the routing channel and channels - our action holds the channels.
       
 #ifdef _USE_MIDI_ROUTE_PER_CHANNEL_
-        for(int col = 0; col < MIDI_CHANNELS; ++col)
+        for(int col = 0; col < MusECore::MUSE_MIDI_CHANNELS; ++col)
         {  
           r.channel = col;
           if(rl->contains(r))
@@ -580,7 +584,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
         }
         if(chans != 0 && chans != -1)
         {
-          for(int col = 0; col < MIDI_CHANNELS; ++col)
+          for(int col = 0; col < MusECore::MUSE_MIDI_CHANNELS; ++col)
           {
             if(chans & (1 << col))
               wa->array()->setValue(col, true);
@@ -657,7 +661,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
       subp->setTitle(md->name()); 
       QAction* act;
       
-      for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+      for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch) 
       {
         act = subp->addAction(QString("Channel %1").arg(ch+1));
         act->setCheckable(true);
@@ -672,7 +676,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
       }
       act = subp->addAction(QString("Toggle all"));
       //act->setCheckable(true);
-      MusECore::Route togRoute(i, (1 << MIDI_CHANNELS) - 1);    // Set all channel bits.
+      MusECore::Route togRoute(i, (1 << MusECore::MUSE_MIDI_CHANNELS) - 1);    // Set all channel bits.
       act->setData(QVariant::fromValue(togRoute));   
       pup->addMenu(subp);
     }    
@@ -2452,7 +2456,7 @@ void RoutePopupMenu::updateRouteMenus()
       {
         if(ir->type == MusECore::Route::TRACK_ROUTE && ir->track && ir->track->type() == MusECore::Track::AUDIO_INPUT)
         {
-          for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+          for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)
           {
             int chbits = 1 << ch;
             if(ir->channel & chbits)
@@ -2498,7 +2502,7 @@ void RoutePopupMenu::updateRouteMenus()
       
 #else
       //printf("RoutePopupMenu::updateRouteMenus MIDI_PORT_ROUTE\n");  
-      for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+      for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)
       {
         int chbits = 1 << ch;
         if(irl->channel & chbits)
@@ -2788,7 +2792,7 @@ void RoutePopupMenu::audioTrackPopupActivated(QAction* action, MusECore::Route& 
         const QBitArray ba = cs_wa->currentState();
         const int ba_sz = ba.size();
         int chbits = 0;
-        for(int mch = 0; mch < MIDI_CHANNELS && mch < ba_sz; ++mch)
+        for(int mch = 0; mch < MusECore::MUSE_MIDI_CHANNELS && mch < ba_sz; ++mch)
         {
           if(ba.at(mch))
             chbits |= (1 << mch);
@@ -2988,7 +2992,7 @@ void RoutePopupMenu::midiTrackPopupActivated(QAction* action, MusECore::Route& r
             if(rem_route.isValid() && rem_route.midiPort != -1)
             {
               // Do channel routes...
-              for(int col = 0; col < cols && col < MIDI_CHANNELS; ++col)
+              for(int col = 0; col < cols && col < MusECore::MUSE_MIDI_CHANNELS; ++col)
               {
                 const bool val = matrix_wa->array()->value(col);
 
@@ -3446,7 +3450,7 @@ void RoutePopupMenu::prepare()
         QAction* act = 0;
         // Warn if no devices available. Add an item to open midi config. 
         int pi = 0;
-        for( ; pi < MIDI_PORTS; ++pi)
+        for( ; pi < MusECore::MIDI_PORTS; ++pi)
         {
           MusECore::MidiDevice* md = MusEGlobal::midiPorts[pi].device();
           //if(md && !md->isSynti() && (md->rwFlags() & 2))
@@ -3454,7 +3458,7 @@ void RoutePopupMenu::prepare()
           if(md && (md->rwFlags() & (_isOutMenu ? 1 : 2))) // Allow synth as input.
             break;
         }
-        if(pi == MIDI_PORTS)
+        if(pi == MusECore::MIDI_PORTS)
         {
           if(_isOutMenu)
             act = addAction(tr("Warning: No output devices!"));
@@ -3560,8 +3564,8 @@ void RoutePopupMenu::prepare()
                 RoutePopupMenu* subp = new RoutePopupMenu(_route, this, _isOutMenu, _broadcastChanges);
                 wa_subp->addAction(new MenuTitleItem(tr("Channels"), this));
                 act->setMenu(wa_subp);
-                //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(1, MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this);
-                RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(1, MIDI_CHANNELS, 0, 0, this);
+                //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(1, MusECore::MUSE_MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this);
+                RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(1, MusECore::MUSE_MIDI_CHANNELS, 0, 0, this);
                 wa->setData(QVariant::fromValue(r)); // Ignore the routing channel and channels - our action holds the channels.
                 int chans = 0;
                 // Is there already a route?
@@ -3583,7 +3587,7 @@ void RoutePopupMenu::prepare()
                 }
                 if(chans != 0 && chans != -1)
                 {
-                  for(int col = 0; col < MIDI_CHANNELS; ++col)
+                  for(int col = 0; col < MusECore::MUSE_MIDI_CHANNELS; ++col)
                   {
                     if(chans & (1 << col))
                       wa->array()->setValue(0, col, true);
@@ -3648,7 +3652,7 @@ void RoutePopupMenu::prepare()
             if(ir != rl->end())
               continue;
             
-            for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+            for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch) 
             {
               act = subp->addAction(QString("Channel %1").arg(ch+1));
               act->setCheckable(true);
@@ -3664,11 +3668,11 @@ void RoutePopupMenu::prepare()
               
               ++gid;  
             }
-            //gid = MIDI_PORTS * MIDI_CHANNELS + i;           // Make sure each 'toggle' item gets a unique id.
+            //gid = MIDI_PORTS * MusECore::MUSE_MIDI_CHANNELS + i;           // Make sure each 'toggle' item gets a unique id.
             act = subp->addAction(QString("Toggle all"));
             //act->setCheckable(true);
             act->setData(gid);
-            MusECore::Route togRoute(i, (1 << MIDI_CHANNELS) - 1);    // Set all channel bits.
+            MusECore::Route togRoute(i, (1 << MusECore::MUSE_MIDI_CHANNELS) - 1);    // Set all channel bits.
             gRoutingMenuMap.insert( pRouteMenuMap(gid, togRoute) );
             ++gid;
             morep->addMenu(subp);

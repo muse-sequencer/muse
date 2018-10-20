@@ -534,6 +534,12 @@ class PendingOperationList : public std::list<PendingOperationItem>
     // Find an existing special allocation command (like AddMidiCtrlValList). 
     // The comparison ignores the actual allocated value, so that such commands can be found before they do their allocating.
     iterator findAllocationOp(const PendingOperationItem& op);
+
+    // Returns true if successful.
+    bool addTimeSigOperation(unsigned tick, const AL::TimeSignature& s, AL::SigList* sl);
+    bool delTimeSigOperation(unsigned tick, AL::SigList* sl);
+    bool addTempoOperation(unsigned tick, int tempo, TempoList* tl);
+    bool delTempoOperation(unsigned tick, TempoList* tl);
 };
 
 typedef PendingOperationList::iterator iPendingOperation;

@@ -133,7 +133,7 @@ void MidiDevice::init()
 
 MidiDevice::MidiDevice()
       {
-      for(unsigned int i = 0; i < MIDI_CHANNELS + 1; ++i)
+      for(unsigned int i = 0; i < MusECore::MUSE_MIDI_CHANNELS + 1; ++i)
         _tmpRecordCount[i] = 0;
       
       _sysexFIFOProcessed = false;
@@ -144,7 +144,7 @@ MidiDevice::MidiDevice()
 MidiDevice::MidiDevice(const QString& n)
    : _name(n)
       {
-      for(unsigned int i = 0; i < MIDI_CHANNELS + 1; ++i)
+      for(unsigned int i = 0; i < MusECore::MUSE_MIDI_CHANNELS + 1; ++i)
         _tmpRecordCount[i] = 0;
       
       _sysexFIFOProcessed = false;
@@ -247,7 +247,7 @@ bool filterEvent(const MEvent& event, int type, bool thru)
 
 void MidiDevice::afterProcess()
 {
-  for(unsigned int i = 0; i < MIDI_CHANNELS + 1; ++i)
+  for(unsigned int i = 0; i < MusECore::MUSE_MIDI_CHANNELS + 1; ++i)
   {
     while (_tmpRecordCount[i]--)
       _recordFifo[i].remove();
@@ -261,7 +261,7 @@ void MidiDevice::afterProcess()
 
 void MidiDevice::beforeProcess()
 {
-  for(unsigned int i = 0; i < MIDI_CHANNELS + 1; ++i)
+  for(unsigned int i = 0; i < MusECore::MUSE_MIDI_CHANNELS + 1; ++i)
     _tmpRecordCount[i] = _recordFifo[i].getSize();
   
   // Reset this.
@@ -367,7 +367,7 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
         return;
       
       // Split the events up into channel fifos. Special 'channel' number 17 for sysex events.
-      unsigned int ch = (typ == ME_SYSEX)? MIDI_CHANNELS : event.channel();
+      unsigned int ch = (typ == ME_SYSEX)? MusECore::MUSE_MIDI_CHANNELS : event.channel();
       if(_recordFifo[ch].put(event))
         fprintf(stderr, "MidiDevice::recordEvent: fifo channel %d overflow\n", ch);
       }
@@ -483,7 +483,7 @@ void MidiDevice::resetCurOutParamNums(int chan)
 {
   if(chan == -1)
   {
-    for(int i = 0; i < MIDI_CHANNELS; ++i)
+    for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
       _curOutParamNums[i].resetParamNums();
     return;
   }
@@ -685,7 +685,7 @@ void MidiDevice::handleStop()
   //    reset sustain
   //---------------------------------------------------
   
-  for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+  for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch) 
   {
     if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
     {

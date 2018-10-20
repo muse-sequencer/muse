@@ -34,10 +34,8 @@
 #include <QTreeWidgetItem>
 
 namespace Awl {
-      class PosEdit;
       class SigEdit;
       };
-using Awl::PosEdit;
 using Awl::SigEdit;
 
 class QLineEdit;
@@ -45,6 +43,8 @@ class QComboBox;
 
 namespace MusEGui {
 
+class PosEdit;
+  
 enum LMASTER_LVTYPE
    {
       LMASTER_TEMPO = 0,

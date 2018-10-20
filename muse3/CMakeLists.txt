@@ -102,6 +102,8 @@ SET(MusE_VERSION_FULL  "3.0.2")
 SET(MusE_INSTALL_NAME  "muse-3.0")
 SET(MusE_EXEC_NAME     "muse3")
 
+SET(MusE_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
+
 ## The directory where we will install the shared components:
 SET(MusE_MODULES_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/modules)
 
@@ -565,10 +567,14 @@ include_directories(
    .
    ${PROJECT_SOURCE_DIR}
    ${PROJECT_SOURCE_DIR}/muse
+   ${PROJECT_SOURCE_DIR}/muse/function_dialogs
    ${PROJECT_SOURCE_DIR}/muse/widgets
+   ${PROJECT_SOURCE_DIR}/muse/components
    ${PROJECT_BINARY_DIR}
    ${PROJECT_BINARY_DIR}/muse
+   ${PROJECT_BINARY_DIR}/muse/function_dialogs
    ${PROJECT_BINARY_DIR}/muse/widgets
+   ${PROJECT_BINARY_DIR}/muse/components
    ${PROJECT_BINARY_DIR}/muse/instruments
    ${PROJECT_BINARY_DIR}/muse/ctrl
    )
@@ -601,8 +607,8 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
   SET(CPACK_SYSTEM_NAME ${CMAKE_SYSTEM_NAME})
 
   SET(CPACK_PACKAGE_FILE_NAME "${CPACK_SOURCE_PACKAGE_FILE_NAME}-${CPACK_SYSTEM_NAME}")
-  SET(CPACK_STRIP_FILES "bin/muse;bin/grepmidi")
-  SET(CPACK_PACKAGE_EXECUTABLES "muse" "MusE" "grepmidi" "grepmidi")
+  SET(CPACK_STRIP_FILES "bin/muse;bin/grepmidi;bin/muse_plugin_scan")
+  SET(CPACK_PACKAGE_EXECUTABLES "muse" "MusE" "grepmidi" "grepmidi" "muse_plugin_scan" "muse_plugin_scan")
   INCLUDE(CPack)
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
@@ -616,7 +622,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -g -O0 -DQT_DEBUG -Werror -Wall -Wextra -f
 
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale
-subdirs(doc libs al awl grepmidi man plugins muse synti packaging utils demos share)
+subdirs(doc libs al awl grepmidi sandbox man plugins muse synti packaging utils demos share)
 
 ## Install doc files
 file (GLOB doc_files

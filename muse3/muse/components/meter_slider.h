@@ -53,7 +53,7 @@ class MeterSlider : public Slider
     MeterSlider(QWidget *parent, const char *name = 0,
                 Qt::Orientation orient = Qt::Vertical,
                 ScalePos scalePos = None,
-                int maxMeterChans = MAX_CHANNELS,
+                int maxMeterChans = MusECore::MAX_CHANNELS,
                 int grooveWidth = 8,
                 QColor fillColor = QColor(100, 100, 255));
   

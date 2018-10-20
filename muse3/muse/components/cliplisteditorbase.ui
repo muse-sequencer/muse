@@ -83,7 +83,7 @@
        </widget>
       </item>
       <item>
-       <widget class="Awl::PosEdit" name="start" native="true">
+       <widget class="MusEGui::PosEdit" name="start" native="true">
         <property name="smpte" stdset="0">
          <bool>true</bool>
         </property>
@@ -100,7 +100,7 @@
        </widget>
       </item>
       <item>
-       <widget class="Awl::PosEdit" name="len" native="true">
+       <widget class="MusEGui::PosEdit" name="len" native="true">
         <property name="smpte" stdset="0">
          <bool>true</bool>
         </property>
@@ -130,9 +130,9 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>Awl::PosEdit</class>
+   <class>MusEGui::PosEdit</class>
    <extends>QWidget</extends>
-   <header>awl/posedit.h</header>
+   <header>posedit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

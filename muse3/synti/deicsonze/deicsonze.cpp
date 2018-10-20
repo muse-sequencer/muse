@@ -604,6 +604,7 @@ void DeicsOnze::initChannel(int c) {
   _global.channel[c].release = MIDRELEASE;
   _global.channel[c].pitchBendCoef = 1.0;
   _global.channel[c].lfoIndex = 0;
+  _global.channel[c].lfoDelayIndex = 0.0;
   _global.channel[c].nbrVoices = 8;
   _global.channel[c].isLastNote = false;
   _global.channel[c].chorusAmount = 0.0;

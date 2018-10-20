@@ -216,7 +216,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
       if (MusEGlobal::config.unhideTracks) SynthI::setVisible(true);
 
       // Add instance last in midi device list.
-      for (int i = 0; i < MIDI_PORTS; ++i) 
+      for (int i = 0; i < MusECore::MIDI_PORTS; ++i) 
       {
         MidiPort* port  = &MusEGlobal::midiPorts[i];
         MidiDevice* dev = port->device();
@@ -329,8 +329,8 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
         MidiTrack* mt = (MidiTrack*)track;
         int c;
         bool defOutFound = false;                /// TODO: Remove this if and when multiple output routes supported.
-        const int chmask = (1 << MIDI_CHANNELS) - 1;
-        for(int i = 0; i < MIDI_PORTS; ++i)
+        const int chmask = (1 << MusECore::MUSE_MIDI_CHANNELS) - 1;
+        for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
         {
           MidiPort* mp = &MusEGlobal::midiPorts[i];
           if(!mp->device())  // Only if device is valid.
@@ -345,7 +345,7 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
                 track->inRoutes()->push_back(Route(i));
               else
               // Add individual channels:  
-              for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+              for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)
               {
                 if(c & (1 << ch))
                   track->inRoutes()->push_back(Route(i, ch));
@@ -364,7 +364,7 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
                 if(c == -1)
                   c = 1;  // Just to be safe, shouldn't happen, default to channel 0.
-                for(int ch = 0; ch < MIDI_CHANNELS; ++ch)   
+                for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)   
                 {
                   if(c & (1 << ch))
                   {
@@ -382,7 +382,7 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
                   track->outRoutes()->push_back(Route(i));
                 else
                 // Add individual channels:  
-                for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+                for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)
                 {
                   if(c & (1 << ch))
                     track->outRoutes()->push_back(Route(i, ch));
@@ -396,7 +396,7 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
         if (!defOutFound) { // no default port found
           // set it to the port with highest number
 
-          for(int i = MIDI_PORTS-1; i >= 0; --i) {
+          for(int i = MusECore::MIDI_PORTS-1; i >= 0; --i) {
 
             MidiPort* mp = &MusEGlobal::midiPorts[i];
 
@@ -1677,7 +1677,7 @@ void Song::beat()
       _xRunsCount = MusEGlobal::audio->getXruns();
 
       // Keep the sync detectors running... 
-      for(int port = 0; port < MIDI_PORTS; ++port)
+      for(int port = 0; port < MusECore::MIDI_PORTS; ++port)
           MusEGlobal::midiPorts[port].syncInfo().setTime();
       
       
@@ -1972,7 +1972,7 @@ void Song::clear(bool signal, bool clear_all)
       _auxs.clearDelete();       // aux sends
       
       // p3.3.45 Clear all midi port devices.
-      for(int i = 0; i < MIDI_PORTS; ++i)
+      for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
       {
         // p3.3.50 Since midi ports are not deleted, clear all midi port in/out routes. They point to non-existant tracks now.
         MusEGlobal::midiPorts[i].inRoutes()->clear();
@@ -2049,7 +2049,7 @@ void Song::clear(bool signal, bool clear_all)
       clearMidiInputTransforms();
 
       // Clear all midi port controller values.
-      for(int i = 0; i < MIDI_PORTS; ++i)
+      for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
       {
         // Remove the controllers AND the values so we start with a clean slate.
         MusEGlobal::midiPorts[i].controller()->clearDelete(true);
@@ -2142,7 +2142,7 @@ void Song::cleanupForQuit()
         printf("deleting midiport controllers\n");
       
       // Clear all midi port controllers and values.
-      for(int i = 0; i < MIDI_PORTS; ++i)
+      for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
       {
         MusEGlobal::midiPorts[i].controller()->clearDelete(true); // Remove the controllers and the values.
         MusEGlobal::midiPorts[i].setMidiDevice(0);
@@ -2895,10 +2895,10 @@ bool Song::processIpcInEventBuffers()
   {
     buf_ev = _ipcInEventBuffers->peek(i);
     port = buf_ev.port();
-    if(port < 0 || port >= MIDI_PORTS)
+    if(port < 0 || port >= MusECore::MIDI_PORTS)
       continue;
     chan = buf_ev.channel();
-    if(chan < 0 || chan >= MIDI_CHANNELS)
+    if(chan < 0 || chan >= MusECore::MUSE_MIDI_CHANNELS)
       continue;
     
     ctrl = buf_ev.translateCtrlNum();
@@ -2946,10 +2946,10 @@ bool Song::processIpcInEventBuffers()
       continue;
     
     port = buf_ev.port();
-    if(port < 0 || port >= MIDI_PORTS)
+    if(port < 0 || port >= MusECore::MIDI_PORTS)
       continue;
     chan = buf_ev.channel();
-    if(chan < 0 || chan >= MIDI_CHANNELS)
+    if(chan < 0 || chan >= MusECore::MUSE_MIDI_CHANNELS)
       continue;
     
     ctrl = buf_ev.translateCtrlNum();

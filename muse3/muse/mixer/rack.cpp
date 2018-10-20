@@ -34,7 +34,7 @@
 #include <QPalette>
 #include <QStyledItemDelegate>
 #include <QUrl>
-#include "widgets/popupmenu.h"
+#include "popupmenu.h"
 
 #include <errno.h>
 
@@ -192,7 +192,7 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
       setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setSelectionMode(QAbstractItemView::SingleSelection);
 
-      for (int i = 0; i < PipelineDepth; ++i)
+      for (int i = 0; i < MusECore::PipelineDepth; ++i)
             new RackSlot(this, track, i, itemheight);
       updateContents();
 
@@ -211,7 +211,7 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
 
 void EffectRack::updateContents()
       {
-      for (int i = 0; i < PipelineDepth; ++i) {
+      for (int i = 0; i < MusECore::PipelineDepth; ++i) {
             QString name = track->efxPipe()->name(i);
             item(i)->setText(name);
             item(i)->setToolTip(name == QString("empty") ? tr("effect rack") : name );
@@ -254,7 +254,7 @@ QSize EffectRack::minimumSizeHint() const
       return QSize(10, 
         2 * frameWidth() + 
         (fontMetrics().height() + 2 * EffectRackDelegate::itemYMargin + 2 * EffectRackDelegate::itemTextYMargin) 
-        * PipelineDepth);
+        * MusECore::PipelineDepth);
       }
 
 //---------------------------------------------------------
@@ -353,7 +353,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
             menu->removeAction(newAction);
             if (idx == 0)
                   upAction->setEnabled(true);
-            if (idx == (PipelineDepth-1))
+            if (idx == (MusECore::PipelineDepth-1))
                   downAction->setEnabled(false);
             //if(!pipe->isDssiPlugin(idx))
             if(!pipe->has_dssi_ui(idx))     // p4.0.19 Tim.
@@ -445,7 +445,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
                         }
                   break;
             case DOWN:
-                  if (idx < (PipelineDepth-1)) {
+                  if (idx < (MusECore::PipelineDepth-1)) {
                         setCurrentItem(item(idx+1));
                         pipe->move(idx, false);
                         }

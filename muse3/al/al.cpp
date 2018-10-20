@@ -23,9 +23,10 @@
 #include "al.h"
 
 namespace AL {
-      //int sampleRate = 44100;
-      //int mtcType = 0;
-      //int division = 384;
+      int sampleRate = 44100;
+      int mtcType = 0;
+      int division = 384;
       bool debugMsg = false;
+      float denormalBias = 1e-18;
       }
 

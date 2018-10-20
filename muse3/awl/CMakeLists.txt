@@ -42,7 +42,7 @@ QT5_WRAP_CPP (awl_mocs
       panknob.h
       pitchedit.h
       pitchlabel.h
-      posedit.h
+      # posedit.h
       # poslabel.h
       sigedit.h
       sigspinbox.h
@@ -78,7 +78,7 @@ file (GLOB awl_source_files
       panknob.cpp
       pitchedit.cpp
       pitchlabel.cpp
-      posedit.cpp
+      # posedit.cpp
       # poslabel.cpp
       sigedit.cpp
       sigspinbox.cpp

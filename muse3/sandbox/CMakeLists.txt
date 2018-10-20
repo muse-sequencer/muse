@@ -22,58 +22,28 @@
 #=============================================================================
 
 ##
-## Expand Qt macros in source files
-##
-QT5_WRAP_CPP (cliplist_mocs
-      cliplist.h
-      )
-
-##
 ## List of source files to compile
 ##
-file (GLOB cliplist_source_files
-      cliplist.cpp 
+file (GLOB plugin_scan_source_files
+      muse_plugin_scan.cpp
       )
 
 ##
 ## Define target
 ##
-add_library ( cliplist ${MODULES_BUILD}
-      ${cliplist_source_files}
-      ${cliplist_mocs}
+add_executable ( muse_plugin_scan
+      ${plugin_scan_source_files}
       )
 
-##
-## Append to the list of translations
-##
-set (FILES_TO_TRANSLATE
-      ${FILES_TO_TRANSLATE}
-      ${cliplist_source_files}
-      CACHE INTERNAL ""
-      )
-
-##
-## Compilation flags and target name
-##
-set_target_properties( cliplist
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_cliplist
-      )
-
-##
-## Linkage
-##
-target_link_libraries ( cliplist
+target_link_libraries(muse_plugin_scan
+      plugin_scan_module
+      dl
       ${QT_LIBRARIES}
-      widgets
       )
 
 ##
 ## Install location
 ##
-if ( ${MODULES_BUILD} STREQUAL SHARED )
-      install(TARGETS cliplist
-            DESTINATION ${MusE_MODULES_DIR}
-            )
-endif ( ${MODULES_BUILD} STREQUAL SHARED )
-
+install(TARGETS muse_plugin_scan
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+      )

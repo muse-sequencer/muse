@@ -29,7 +29,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
-#include "awl/posedit.h"
+#include "posedit.h"
 #include "awl/sigedit.h"
 
 #include "song.h"
@@ -353,7 +353,7 @@ Transport::Transport(QWidget* parent, const char* name)
       marken->setSpacing(0);
       marken->setContentsMargins(0, 0, 0, 0);
 
-      tl1 = new Awl::PosEdit(0);
+      tl1 = new PosEdit(0);
       tl1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       tl1->setFocusPolicy(Qt::NoFocus);
 
@@ -364,7 +364,7 @@ Transport::Transport(QWidget* parent, const char* name)
       l5->setAlignment(Qt::AlignCenter);
       marken->addWidget(l5);
 
-      tl2 = new Awl::PosEdit(0);
+      tl2 = new PosEdit(0);
       tl2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       marken->addWidget(tl2);
       tl2->setFocusPolicy(Qt::NoFocus);
@@ -387,8 +387,8 @@ Transport::Transport(QWidget* parent, const char* name)
       QHBoxLayout *hbox1 = new QHBoxLayout;
       hbox1->setContentsMargins(0, 0, 0, 0);
       
-      time1 = new Awl::PosEdit(0);
-      time2 = new Awl::PosEdit(0);
+      time1 = new PosEdit(0);
+      time2 = new PosEdit(0);
       time2->setSmpte(true);
       time1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       time2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));

@@ -54,7 +54,7 @@
     </widget>
    </item>
    <item row="0" column="4">
-    <widget class="Awl::PosEdit" name="timePos"/>
+    <widget class="MusEGui::PosEdit" name="timePos"/>
    </item>
    <item row="1" column="3" rowspan="2" colspan="2">
     <widget class="QStackedWidget" name="widgetStack">
@@ -802,9 +802,9 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>Awl::PosEdit</class>
+   <class>MusEGui::PosEdit</class>
    <extends>QWidget</extends>
-   <header>awl/posedit.h</header>
+   <header>posedit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

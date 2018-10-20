@@ -29,7 +29,6 @@
 #include "globals.h"
 #include "gconfig.h"
 #include "xml.h"
-#include "operations.h"
 
 #include <stdint.h>
 #include "large_int.h"
@@ -107,36 +106,6 @@ void TempoList::add(unsigned tick, TEvent* e, bool do_normalize)
     
     if(do_normalize)      
       normalize();
-  }
-}
-
-//---------------------------------------------------------
-//   addOperation
-//---------------------------------------------------------
-
-void TempoList::addOperation(unsigned tick, int tempo, PendingOperationList& ops)
-{
-  if (tick > MAX_TICK)
-    tick = MAX_TICK;
-  iTEvent e = upper_bound(tick);
-
-  if(tick == e->second->tick)
-    ops.add(PendingOperationItem(this, e, tempo, PendingOperationItem::ModifyTempo));
-  else 
-  {
-    PendingOperationItem poi(this, 0, tick, PendingOperationItem::AddTempo);
-    iPendingOperation ipo = ops.findAllocationOp(poi);
-    if(ipo != ops.end())
-    {
-      PendingOperationItem& poi = *ipo;
-      // Simply replace the value.
-      poi._tempo_event->tempo = tempo;
-    }
-    else
-    {
-      poi._tempo_event = new TEvent(tempo, tick); // These are the desired tick and tempo but...
-      ops.add(poi);                               //  add will do the proper swapping with next event.
-    }
   }
 }
 
@@ -278,22 +247,6 @@ void TempoList::del(iTEvent e, bool do_normalize)
         normalize();
       ++_tempoSN;
       }
-
-//---------------------------------------------------------
-//   delOperation
-//---------------------------------------------------------
-
-void TempoList::delOperation(unsigned tick, PendingOperationList& ops)
-{
-  iTEvent e = find(tick);
-  if (e == end()) {
-        printf("TempoList::delOperation tick:%d not found\n", tick);
-        return;
-        }
-  PendingOperationItem poi(this, e, PendingOperationItem::DeleteTempo);
-  // NOTE: Deletion is done in post-RT stage 3.
-  ops.add(poi);
-}
 
 //---------------------------------------------------------
 //   setTempo

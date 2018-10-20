@@ -20,7 +20,7 @@
 //
 //=========================================================
 
-#include "awl/posedit.h"
+#include "posedit.h"
 #include "awl/sigedit.h"
 
 #include "lmaster.h"
@@ -264,7 +264,7 @@ LMaster::LMaster(QWidget* parent, const char* name)
       sig_editor->setFrame(false);
       sig_editor->hide();
       connect(sig_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
-      pos_editor = new Awl::PosEdit(view->viewport());
+      pos_editor = new PosEdit(view->viewport());
       pos_editor->setFrame(false);
       pos_editor->hide();
       connect(pos_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));

@@ -64,20 +64,20 @@ class MidiSyncInfo
     uint64_t _lastMRTTime;
     uint64_t _lastMMCTime;
     uint64_t _lastMTCTime;
-    uint64_t _lastActTime[MIDI_CHANNELS];
+    uint64_t _lastActTime[MusECore::MUSE_MIDI_CHANNELS];
     
     bool     _clockTrig;
     bool     _tickTrig;
     bool     _MRTTrig;
     bool     _MMCTrig;
     bool     _MTCTrig;
-    bool     _actTrig[MIDI_CHANNELS];
+    bool     _actTrig[MusECore::MUSE_MIDI_CHANNELS];
     bool     _clockDetect;
     bool     _tickDetect;
     bool     _MRTDetect;
     bool     _MMCDetect;
     bool     _MTCDetect;
-    bool     _actDetect[MIDI_CHANNELS];
+    bool     _actDetect[MusECore::MUSE_MIDI_CHANNELS];
     int      _actDetectBits;
     
   public:

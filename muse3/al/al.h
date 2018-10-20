@@ -25,10 +25,11 @@
 
 namespace AL {
 
+      extern int sampleRate;
+      extern int mtcType;
+      extern int division;
       extern bool debugMsg;
-      //extern int sampleRate;
-      //extern int mtcType;
-      //extern int division;
+      extern float denormalBias;
 
       }
 

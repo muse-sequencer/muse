@@ -193,7 +193,7 @@ void MidiAudioControl::portChanged(int idx)
   if(idx == -1)
     return;
   int port_num = portComboBox->itemData(idx).toInt();
-  if(port_num < 0 || port_num >= MIDI_PORTS)
+  if(port_num < 0 || port_num >= MusECore::MIDI_PORTS)
     return;
 
   _port = port_num;
@@ -292,7 +292,7 @@ void MidiAudioControl::update()
   portComboBox->clear();
 
   int item_idx = 0;
-  for (int i = 0; i < MIDI_PORTS; ++i) {
+  for (int i = 0; i < MusECore::MIDI_PORTS; ++i) {
         MusECore::MidiDevice* md = MusEGlobal::midiPorts[i].device(); 
         if(!md)  // In the case of this combo box, don't bother listing empty ports.             
           continue;

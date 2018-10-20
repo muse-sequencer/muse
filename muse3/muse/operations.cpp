@@ -423,7 +423,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       _midi_instrument_list->push_back(_midi_instrument);
 
       // Change all ports which used the original instrument.
-      for(int port = 0; port < MIDI_PORTS; ++port)
+      for(int port = 0; port < MusECore::MIDI_PORTS; ++port)
       {
         MidiPort* mp = &MusEGlobal::midiPorts[port];
         if(mp->instrument() != orig)
@@ -452,7 +452,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
         if(mt->type() != Track::NEW_DRUM)
           continue;
         mt_port = mt->outPort();
-        if(mt_port < 0 || mt_port >= MIDI_PORTS)
+        if(mt_port < 0 || mt_port >= MusECore::MIDI_PORTS)
           continue;
         mt_mp = &MusEGlobal::midiPorts[mt_port];
         // We are looking for tracks which are now using the new instrument.
@@ -2483,6 +2483,106 @@ iPendingOperation PendingOperationList::findAllocationOp(const PendingOperationI
       return ipos->second;
   }  
   return end();
+}
+
+
+//---------------------------------------------------------
+//   addTimeSigOperation
+//---------------------------------------------------------
+
+bool PendingOperationList::addTimeSigOperation(unsigned tick, const AL::TimeSignature& s, AL::SigList* sl)
+{
+  //if (tick > MAX_TICK)
+  //  tick = MAX_TICK;
+  
+  if (s.z == 0 || s.n == 0) {
+        fprintf(stderr, "PendingOperationList::addOperation illegal time signature %d/%d\n", s.z, s.n);
+        return false;
+        }
+  AL::iSigEvent e = sl->upper_bound(tick);
+  if(tick == e->second->tick)
+    add(PendingOperationItem(sl, e, s, MusECore::PendingOperationItem::ModifySig));
+  else 
+  {
+    MusECore::PendingOperationItem poi(sl, 0, tick, PendingOperationItem::AddSig);
+    MusECore::iPendingOperation ipo = findAllocationOp(poi);
+    if(ipo != end())
+    {
+      MusECore::PendingOperationItem& poi = *ipo;
+      // Simply replace the value.
+      poi._sig_event->sig = s;
+    }
+    else
+    {
+      poi._sig_event = new AL::SigEvent(s, tick); // These are the desired tick and sig but...
+      add(poi);                           //  add will do the proper swapping with next event.
+    }
+  }
+  return true;
+}
+
+//---------------------------------------------------------
+//   delTimeSigOperation
+//---------------------------------------------------------
+
+bool PendingOperationList::delTimeSigOperation(unsigned tick, AL::SigList* sl)
+{
+  AL::iSigEvent e = sl->find(tick);
+  if (e == sl->end()) {
+        printf("PendingOperationList::delTimeSigOperation tick:%d not found\n", tick);
+        return false;
+        }
+  MusECore::PendingOperationItem poi(sl, e, PendingOperationItem::DeleteSig);
+  add(poi);
+  return true;
+}
+
+//---------------------------------------------------------
+//   addTempoOperation
+//---------------------------------------------------------
+
+bool PendingOperationList::addTempoOperation(unsigned tick, int tempo, TempoList* tl)
+{
+  if (tick > MAX_TICK)
+    tick = MAX_TICK;
+  iTEvent e = tl->upper_bound(tick);
+
+  if(tick == e->second->tick)
+    add(PendingOperationItem(tl, e, tempo, PendingOperationItem::ModifyTempo));
+  else 
+  {
+    PendingOperationItem poi(tl, 0, tick, PendingOperationItem::AddTempo);
+    iPendingOperation ipo = findAllocationOp(poi);
+    if(ipo != end())
+    {
+      PendingOperationItem& poi = *ipo;
+      // Simply replace the value.
+      poi._tempo_event->tempo = tempo;
+    }
+    else
+    {
+      poi._tempo_event = new TEvent(tempo, tick); // These are the desired tick and tempo but...
+      add(poi);                               //  add will do the proper swapping with next event.
+    }
+  }
+  return true;
+}
+
+//---------------------------------------------------------
+//   delTempoOperation
+//---------------------------------------------------------
+
+bool PendingOperationList::delTempoOperation(unsigned tick, TempoList* tl)
+{
+  iTEvent e = tl->find(tick);
+  if (e == tl->end()) {
+        printf("PendingOperationList::delTempoOperation tick:%d not found\n", tick);
+        return false;
+        }
+  PendingOperationItem poi(tl, e, PendingOperationItem::DeleteTempo);
+  // NOTE: Deletion is done in post-RT stage 3.
+  add(poi);
+  return true;
 }
 
 

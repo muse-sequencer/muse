@@ -737,7 +737,7 @@ void Song::write(int level, Xml& xml) const
             (*i)->writeRouting(level, xml);
 
       // Write midi port routing.
-      for (int i = 0; i < MIDI_PORTS; ++i)
+      for (int i = 0; i < MusECore::MIDI_PORTS; ++i)
             MusEGlobal::midiPorts[i].writeRouting(level, xml);
 
       MusEGlobal::tempomap.write(level, xml);

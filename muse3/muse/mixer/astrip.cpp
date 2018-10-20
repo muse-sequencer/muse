@@ -553,7 +553,7 @@ void AudioComponentRack::controllerPressed(double v, int id)
 void AudioComponentRack::controllerReleased(double v, int id)
 {
   DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::controllerReleased id:%d\n", id);
-  AutomationType at = _track->automationType();
+  MusECore::AutomationType at = _track->automationType();
   double val = 0.0;
   iComponentWidget ic = _components.find(controllerComponent, -1, id);
   if(ic != _components.end())
@@ -564,7 +564,7 @@ void AudioComponentRack::controllerReleased(double v, int id)
     cw._pressed = false;
   }
   _track->stopAutoRecord(id, val);
-  if(at == AUTO_OFF || at == AUTO_TOUCH)
+  if(at == MusECore::AUTO_OFF || at == MusECore::AUTO_TOUCH)
   {
     DEBUG_AUDIO_STRIP(stderr, "    calling enableController(true)\n");
     _track->enableController(id, true);
@@ -990,12 +990,12 @@ void AudioStrip::songChanged(MusECore::SongChangedStruct_t val)
             autoType->setCurrentItem(track->automationType());
             QPalette palette;
             //QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
-            if(track->automationType() == AUTO_TOUCH || track->automationType() == AUTO_WRITE)
+            if(track->automationType() == MusECore::AUTO_TOUCH || track->automationType() == MusECore::AUTO_WRITE)
                   {
                   palette.setColor(QPalette::Button, QColor(215, 76, 39)); // red
                   autoType->setPalette(palette);
                   }
-            else if(track->automationType() == AUTO_READ)
+            else if(track->automationType() == MusECore::AUTO_READ)
                   {
                   palette.setColor(QPalette::Button, QColor(100, 172, 49)); // green
                   autoType->setPalette(palette);
@@ -1219,10 +1219,10 @@ void AudioStrip::volumeReleased(double val, int id)
         return;
 
       MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(track);
-      AutomationType atype = at->automationType();
+      MusECore::AutomationType atype = at->automationType();
       DEBUG_AUDIO_STRIP(stderr, "    val:%.20f\n", volume);
       at->stopAutoRecord(id, volume);
-      if(atype == AUTO_OFF || atype == AUTO_TOUCH)
+      if(atype == MusECore::AUTO_OFF || atype == MusECore::AUTO_TOUCH)
       {
         DEBUG_AUDIO_STRIP(stderr, "    calling enableController(true)\n");
         at->enableController(id, true);
@@ -1443,7 +1443,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
             connect(_clipperLabel[ch], SIGNAL(clicked()), SLOT(resetClipper()));
             
       }
-      for (; ch < MAX_CHANNELS; ++ch)
+      for (; ch < MusECore::MAX_CHANNELS; ++ch)
       {
             meter[ch] = 0;
             _clipperLabel[ch] = 0;
@@ -1732,19 +1732,19 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       autoType->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       //autoType->setAutoFillBackground(true);
       
-      autoType->addAction(tr("Off"), AUTO_OFF);
-      autoType->addAction(tr("Read"), AUTO_READ);
-      autoType->addAction(tr("Touch"), AUTO_TOUCH);
-      autoType->addAction(tr("Write"), AUTO_WRITE);
+      autoType->addAction(tr("Off"), MusECore::AUTO_OFF);
+      autoType->addAction(tr("Read"), MusECore::AUTO_READ);
+      autoType->addAction(tr("Touch"), MusECore::AUTO_TOUCH);
+      autoType->addAction(tr("Write"), MusECore::AUTO_WRITE);
       autoType->setCurrentItem(at->automationType());
 
       QPalette palette;
-      if(at->automationType() == AUTO_TOUCH || at->automationType() == AUTO_WRITE)
+      if(at->automationType() == MusECore::AUTO_TOUCH || at->automationType() == MusECore::AUTO_WRITE)
             {
             palette.setColor(QPalette::Button, QColor(215, 76, 39));  // red
             autoType->setPalette(palette);
             }
-      else if(at->automationType() == AUTO_READ)
+      else if(at->automationType() == MusECore::AUTO_READ)
             {
             palette.setColor(QPalette::Button, QColor(100, 172, 49));  // green
             autoType->setPalette(palette);

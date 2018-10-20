@@ -269,7 +269,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
       MidiPort* mp = 0;
       MidiInstrument* minstr = 0;
       const int port = track->outPort();
-      if(port >= 0 && port < MIDI_PORTS)
+      if(port >= 0 && port < MusECore::MIDI_PORTS)
       {
         mp = &MusEGlobal::midiPorts[port];
         minstr = mp->instrument();
@@ -499,7 +499,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                         {
                         const unsigned char* data = ev.data();
                         switch (ev.dataA()) {
-                              case ME_META_TEXT_1_COMMENT: // Text
+                              case ME_META_TEXT_1_COMMENT:
                                     if (track->comment().isEmpty())
                                           track->setComment(QString((const char*)data));
                                     else
@@ -508,21 +508,43 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                               case ME_META_TEXT_3_TRACK_NAME: // Sequence-/TrackName
                                     track->setName(QString((char*)data));
                                     break;
-                              case ME_META_TEXT_6_MARKER:   // Marker
+                              case ME_META_TEXT_6_MARKER:
                                     {
                                     unsigned ltick  = CALC_TICK(tick);
                                     MusEGlobal::song->addMarker(QString((const char*)(data)), ltick, false);
                                     }
                                     break;
-                              case ME_META_TEXT_5_LYRIC:   // Lyrics
-                              case ME_META_TEXT_8:   // text
-                              case ME_META_TEXT_9_DEVICE_NAME:
+                              // Copyright is supposed to occur only at the beginning of the first track, but we don't
+                              //  specifically catch it yet during import, so let's just allow it 'wherever' for now.
+                              case ME_META_TEXT_2_COPYRIGHT:
+                              // Lyrics are allowed anywhere.
+                              case ME_META_TEXT_5_LYRIC:
+                              // Cue points are supposed to occur only in the first track, but we don't support them
+                              //  yet (need a list just like markers), so just allow them 'wherever' for now.
+                              case ME_META_TEXT_7_CUE_POINT:
+                              // Program name is allowed anywhere.
+                              case ME_META_TEXT_8_PROGRAM_NAME:
+                              // No documentation could be found for these, so just allow them 'wherever' for now.
                               case ME_META_TEXT_A:
+                              case ME_META_TEXT_B:
+                              case ME_META_TEXT_C:
+                              case ME_META_TEXT_D:
+                              case ME_META_TEXT_E:
+                              // We don't specifically support key signature metas yet, so just allow them 'wherever' for now.
+                              case ME_META_KEY_SIGNATURE:
+                                    e.setType(Meta);
+                                    e.setA(ev.dataA());
+                                    e.setData(ev.data(), ev.len());
                                     break;
-                              case ME_META_TEXT_F_TRACK_COMMENT:        // Track Comment
+                              // Instrument and device name metas are already handled by the midi importing code.
+                              case ME_META_TEXT_4_INSTRUMENT_NAME:
+                              case ME_META_TEXT_9_DEVICE_NAME:
+                                    break;
+
+                              case ME_META_TEXT_F_TRACK_COMMENT:
                                     track->setComment(QString((char*)data));
                                     break;
-                              case ME_META_SET_TEMPO:        // Tempo
+                              case ME_META_SET_TEMPO:
                                     {
                                     unsigned tempo = data[2] + (data[1] << 8) + (data[0] <<16);
                                     unsigned ltick  = CALC_TICK(tick);
@@ -530,7 +552,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                     MusEGlobal::tempomap.addTempo(ltick, tempo);
                                     }
                                     break;
-                              case ME_META_TIME_SIGNATURE:        // Time Signature
+                              case ME_META_TIME_SIGNATURE:
                                     {
                                     int timesig_z = data[0];
                                     int n = data[1];
@@ -541,13 +563,13 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                     AL::sigmap.add(ltick, AL::TimeSignature(timesig_z, timesig_n));
                                     }
                                     break;
-                              case ME_META_KEY_SIGNATURE:  // Key Signature
-                                    break;
                               default:
-                                    fprintf(stderr, "buildMidiEventList: unknown Meta 0x%x %d unabsorbed, adding instead to track:%s\n", ev.dataA(), ev.dataA(), track->name().toLatin1().constData());
+                                    fprintf(stderr, "buildMidiEventList: unknown Meta 0x%x %d unabsorbed, adding instead to track:%s\n",
+                                            ev.dataA(), ev.dataA(), track->name().toLatin1().constData());
                                     e.setType(Meta);
                                     e.setA(ev.dataA());
                                     e.setData(ev.data(), ev.len());
+                                    break;
                               }
                         }
                         break;
@@ -742,8 +764,8 @@ void Audio::sendLocalOff()
       ev.setType(MusECore::ME_CONTROLLER);
       ev.setA(MusECore::CTRL_LOCAL_OFF);
       ev.setB(0);
-      for (int k = 0; k < MIDI_PORTS; ++k) {
-            for (int i = 0; i < MIDI_CHANNELS; ++i)
+      for (int k = 0; k < MusECore::MIDI_PORTS; ++k) {
+            for (int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
             {
                   ev.setPort(k);
                   ev.setChannel(i);
@@ -768,9 +790,9 @@ void Audio::panic()
       ev.setB(0);
 
       // TODO Reset those controllers back to unknown!
-      for (int i = 0; i < MIDI_PORTS; ++i) {
+      for (int i = 0; i < MusECore::MIDI_PORTS; ++i) {
             MusECore::MidiPort* port = &MusEGlobal::midiPorts[i];
-            for (int chan = 0; chan < MIDI_CHANNELS; ++chan) {
+            for (int chan = 0; chan < MusECore::MUSE_MIDI_CHANNELS; ++chan) {
                   if (MusEGlobal::debugMsg)
                     fprintf(stderr, "send all sound of to midi port %d channel %d\n", i, chan);
                   
@@ -803,7 +825,7 @@ void Audio::panic()
 
 void Audio::initDevices(bool force)
       {
-      for (int i = 0; i < MIDI_PORTS; ++i) {
+      for (int i = 0; i < MusECore::MIDI_PORTS; ++i) {
             MusEGlobal::midiPorts[i].sendPendingInitializations(force);
             }
       }
@@ -819,16 +841,16 @@ void Audio::seekMidi()
   const bool playing = isPlaying();
   
   // Bit-wise channels that are used.
-  int used_ports[MIDI_PORTS];
+  int used_ports[MusECore::MIDI_PORTS];
   // Initialize the array.
-  for(int i = 0; i < MIDI_PORTS; ++i)
+  for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
     used_ports[i] = 0;
 
   // Find all used channels on all used ports.
   bool drum_found = false;
   if(MusEGlobal::song->click() && 
-     MusEGlobal::clickPort < MIDI_PORTS &&
-     MusEGlobal::clickChan < MIDI_CHANNELS)
+     MusEGlobal::clickPort < MusECore::MIDI_PORTS &&
+     MusEGlobal::clickChan < MusECore::MUSE_MIDI_CHANNELS)
     used_ports[MusEGlobal::clickPort] |= (1 << MusEGlobal::clickChan);
   MidiTrackList* tl = MusEGlobal::song->midis();
   for(ciMidiTrack imt = tl->begin(); imt != tl->end(); ++imt)
@@ -846,7 +868,7 @@ void Audio::seekMidi()
 
       MidiPlayEvent ev(*i);
       const int ev_port = ev.port();
-      if(ev_port >= 0 && ev_port < MIDI_PORTS)
+      if(ev_port >= 0 && ev_port < MusECore::MIDI_PORTS)
       {
         MidiPort* mp = &MusEGlobal::midiPorts[ev_port];
         ev.setTime(0);  // Immediate processing. TODO Use curFrame?
@@ -873,7 +895,7 @@ void Audio::seekMidi()
           int mchan = MusEGlobal::drumMap[i].channel;
           if(mchan == -1)
             mchan = mt->outChannel();
-          if(mport >= 0 && mport < MIDI_PORTS && mchan >= 0 && mchan < MIDI_CHANNELS)
+          if(mport >= 0 && mport < MusECore::MIDI_PORTS && mchan >= 0 && mchan < MusECore::MUSE_MIDI_CHANNELS)
             used_ports[mport] |= (1 << mchan);
         }
       }
@@ -882,7 +904,7 @@ void Audio::seekMidi()
     {
         const int mport = mt->outPort();
         const int mchan = mt->outChannel();
-        if(mport >= 0 && mport < MIDI_PORTS && mchan >= 0 && mchan < MIDI_CHANNELS)
+        if(mport >= 0 && mport < MusECore::MIDI_PORTS && mchan >= 0 && mchan < MusECore::MUSE_MIDI_CHANNELS)
           used_ports[mport] |= (1 << mchan);
     }
     
@@ -908,7 +930,7 @@ void Audio::seekMidi()
                 int mchan = MusEGlobal::drumMap[i].channel;
                 if(mchan == -1)
                   mchan = ir->channel;
-                if(mport >= 0 && mport < MIDI_PORTS && mchan >= 0 && mchan < MIDI_CHANNELS)
+                if(mport >= 0 && mport < MIDI_PORTS && mchan >= 0 && mchan < MusECore::MUSE_MIDI_CHANNELS)
                   used_ports[mport] |= (1 << mchan);
               }
             }
@@ -917,7 +939,7 @@ void Audio::seekMidi()
           {
               const int mport = ir->midiPort;
               const int mchan = ir->channel;
-              if(mport >= 0 && mport < MIDI_PORTS && mchan >= 0 && mchan < MIDI_CHANNELS)
+              if(mport >= 0 && mport < MIDI_PORTS && mchan >= 0 && mchan < MusECore::MUSE_MIDI_CHANNELS)
                 used_ports[mport] |= (1 << mchan);
           }
         }
@@ -932,7 +954,7 @@ void Audio::seekMidi()
 #endif
   }
   
-  for(int i = 0; i < MIDI_PORTS; ++i)
+  for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
   {
     if(used_ports[i] == 0)
       continue;
@@ -971,7 +993,7 @@ void Audio::seekMidi()
     
     if(md)
     {
-      for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+      for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch) 
       {
         if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
         {
@@ -1596,7 +1618,7 @@ void Audio::processMidi(unsigned int frames)
                     if(p[1] == MUSE_SYSEX_SYSTEM_ID && p[2] == MUSE_SYSEX_SYSTEM_UPDATE_DRUM_MAPS_ID)
                     {
                       intercepted = true;
-                      if(port >= 0 && port < MIDI_PORTS)
+                      if(port >= 0 && port < MusECore::MIDI_PORTS)
                         MusEGlobal::midiPorts[port].updateDrumMaps();
                     }
                   }
@@ -1627,7 +1649,7 @@ void Audio::processMidi(unsigned int frames)
         if(port < 0)
           continue;
 
-        for(int chan = 0; chan < MIDI_CHANNELS; ++chan)
+        for(int chan = 0; chan < MusECore::MUSE_MIDI_CHANNELS; ++chan)
         {
           MusECore::MidiRecFifo& rf = md->recordEvents(chan);
           int count = md->tmpRecordCount(chan);
@@ -1742,7 +1764,7 @@ void Audio::processMidi(unsigned int frames)
             const int t_port = track->outPort();
             const int t_channel = track->outChannel();
             MidiPort* mp = 0;
-            if(t_port >= 0 && t_port < MIDI_PORTS)
+            if(t_port >= 0 && t_port < MusECore::MIDI_PORTS)
               mp = &MusEGlobal::midiPorts[t_port];
             MidiDevice* md = 0;
             if(mp)
@@ -1786,7 +1808,7 @@ void Audio::processMidi(unsigned int frames)
                           continue;
 #endif // _USE_MIDI_ROUTE_PER_CHANNEL_
 
-                        for(int channel = 0; channel < MIDI_CHANNELS; ++channel)
+                        for(int channel = 0; channel < MusECore::MUSE_MIDI_CHANNELS; ++channel)
                         {
 
 #ifdef _USE_MIDI_ROUTE_PER_CHANNEL_
@@ -1800,9 +1822,9 @@ void Audio::processMidi(unsigned int frames)
                           if(!dev->sysexFIFOProcessed())
                           {
                             // Set to the sysex fifo at first.
-                            MidiRecFifo& rf = dev->recordEvents(MIDI_CHANNELS);
+                            MidiRecFifo& rf = dev->recordEvents(MusECore::MUSE_MIDI_CHANNELS);
                             // Get the frozen snapshot of the size.
-                            int count = dev->tmpRecordCount(MIDI_CHANNELS);
+                            int count = dev->tmpRecordCount(MusECore::MUSE_MIDI_CHANNELS);
 
                             for(int i = 0; i < count; ++i)
                             {

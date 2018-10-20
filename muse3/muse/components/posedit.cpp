@@ -21,7 +21,7 @@
 //=============================================================================
 
 #include "al/al.h"
-#include "awl.h"
+//#include "awl.h"
 #include "posedit.h"
 #include "al/sig.h"
 
@@ -32,7 +32,7 @@
 #include <QString>
 #include <QStyleOption>
 
-namespace Awl {
+namespace MusEGui {
 
       using AL::sigmap;
 
