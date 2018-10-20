@@ -1254,7 +1254,7 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               xml.unknown("configuration");
                         break;
                   case Xml::Text:
-                        printf("text <%s>\n", xml.s1().toLatin1().constData());
+                        fprintf(stderr, "text <%s>\n", xml.s1().toLatin1().constData());
                         break;
                   case Xml::Attribut:
                         if (doReadMidiPortConfig==false)
@@ -1294,7 +1294,7 @@ bool readConfiguration(const char *configFile)
         configFile = ba.constData();
       }
 
-      printf("Config File <%s>\n", configFile);
+      fprintf(stderr, "Config File <%s>\n", configFile);
       FILE* f = fopen(configFile, "r");
       if (f == 0) {
             if (MusEGlobal::debugMsg || MusEGlobal::debugMode)
@@ -1612,7 +1612,7 @@ void MusE::writeGlobalConfiguration() const
       {
       FILE* f = fopen(MusEGlobal::configName.toLatin1().constData(), "w");
       if (f == 0) {
-            printf("save configuration to <%s> failed: %s\n",
+            fprintf(stderr, "save configuration to <%s> failed: %s\n",
                MusEGlobal::configName.toLatin1().constData(), strerror(errno));
             return;
             }

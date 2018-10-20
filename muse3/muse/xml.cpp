@@ -224,7 +224,7 @@ Xml::Token Xml::parse()
       if (c == EOF) {
             //if (level > 0 || MusEGlobal::debugMsg)
             if (level > 0)
-              printf("WARNING: unexpected EOF reading xml file at level %d, line %d, <%s><%s><%s>\n",
+              fprintf(stderr, "WARNING: unexpected EOF reading xml file at level %d, line %d, <%s><%s><%s>\n",
                 level, _line, _tag.toLatin1().constData(), _s1.toLatin1().constData(), _s2.toLatin1().constData());
             return level == 0 ? End : Error;
             }
@@ -238,7 +238,7 @@ Xml::Token Xml::parse()
                   nextc();
                   token('>');
                   if (c != '>') {
-                        printf("Xml: unexpected char '%c', expected '>'\n", c);
+                        fprintf(stderr, "Xml: unexpected char '%c', expected '>'\n", c);
                         goto error;
                         }
                   _s1   = _tag;
@@ -250,6 +250,13 @@ Xml::Token Xml::parse()
             token('=');
             _s1 = _s2;
             nextc();      // skip space
+            if (c == EOF) {
+                  //if (level > 0 || MusEGlobal::debugMsg)
+                  if (level > 0)
+                    fprintf(stderr, "WARNING: unexpected EOF reading xml file at level %d, line %d, <%s><%s><%s>\n",
+                      level, _line, _tag.toLatin1().constData(), _s1.toLatin1().constData(), _s2.toLatin1().constData());
+                  return level == 0 ? End : Error;
+                  }
             if (c == '"')
                   stoken();
             else
@@ -531,7 +538,7 @@ double Xml::parseDouble()
 
 void Xml::unknown(const char* s)
       {
-      printf("%s: unknown tag <%s> at line %d\n",
+      fprintf(stderr, "%s: unknown tag <%s> at line %d\n",
          s, _s1.toLatin1().constData(), _line+1);
       parse1();
       }
