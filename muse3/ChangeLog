@@ -1,3 +1,7 @@
+20.10.2018
+      - Oops, fix previous fix of 19.10.2018 (Tim)
+        Move function_dialogs folder out to muse folder.
+        Re-order the cmake subdirectory list so that things get built first.
 19.10.2018
       - Moved complex 'widgets' to new folder 'components'. (Tim)
         New library 'components' separated from 'widgets'.

@@ -104,6 +104,7 @@ set_target_properties( widgets_functiondialogs
 ##
 target_link_libraries ( widgets_functiondialogs
       ${QT_LIBRARIES}
+      xml_module #
       icons
       )
 

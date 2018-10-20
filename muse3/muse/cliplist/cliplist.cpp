@@ -31,7 +31,7 @@
 #include "globals.h"
 #include "wave.h"
 #include "xml.h"
-#include "ui_cliplisteditorbase.h"
+//#include "ui_cliplisteditorbase.h"
 #include "app.h"
 
 

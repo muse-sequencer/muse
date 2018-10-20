@@ -21,11 +21,26 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-set (SubDirs 
-      function_dialogs 
-      )
 
-subdirs (${SubDirs})
+
+#=============================================================================
+## NOTICE:
+## The 'widgets' folder and library is meant to be kept as
+##  self-contained and independent as possible, since it might
+##  be shared with other libraries, for example our SimpleDrums
+##  MESS synth, which is a plugin and must strive be independent.
+## Not all our 'widgets' could be stripped down like this,
+##  so the 'components' folder and library contains more complex
+##  controls which are too dependent on other MusE modules or
+##  controls and dialogs which are really only useful to the
+##  main app or could never really be publicly exposed.
+##
+## As more of the 'components' might be stripped down and moved
+##  into the 'widgets' folder, the original structure of the
+##  complete widgets cmake file is preserved below for convenience
+##  and history and comparison.
+#=============================================================================
+
 
 ##
 ## Expand Qt macros in source files

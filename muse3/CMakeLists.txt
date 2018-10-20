@@ -567,10 +567,14 @@ include_directories(
    .
    ${PROJECT_SOURCE_DIR}
    ${PROJECT_SOURCE_DIR}/muse
+   ${PROJECT_SOURCE_DIR}/muse/function_dialogs
    ${PROJECT_SOURCE_DIR}/muse/widgets
+   ${PROJECT_SOURCE_DIR}/muse/components
    ${PROJECT_BINARY_DIR}
    ${PROJECT_BINARY_DIR}/muse
+   ${PROJECT_BINARY_DIR}/muse/function_dialogs
    ${PROJECT_BINARY_DIR}/muse/widgets
+   ${PROJECT_BINARY_DIR}/muse/components
    ${PROJECT_BINARY_DIR}/muse/instruments
    ${PROJECT_BINARY_DIR}/muse/ctrl
    )

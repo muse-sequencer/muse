@@ -28,11 +28,13 @@ include_directories(
       )
 
 set (SubDirs
+      widgets
+      components
       arranger
       cliplist
-      components
       ctrl
       driver
+      function_dialogs
       instruments
       liste
       marker
@@ -41,7 +43,6 @@ set (SubDirs
       mixer
       mplugins
       waveedit
-      widgets
       )
 if(LV2_SUPPORT)
   if(LV2_USE_SUPPLIED_VERSION)
@@ -240,6 +241,7 @@ include_directories (
       arranger
       components
       driver
+      function_dialogs
       instruments
       liste
       midiedit
@@ -254,7 +256,6 @@ include_directories (
 # Make sure to include the uic generated headers paths.
 include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}/arranger
-      ${CMAKE_CURRENT_BINARY_DIR}/components
       ${CMAKE_CURRENT_BINARY_DIR}/driver
       ${CMAKE_CURRENT_BINARY_DIR}/instruments
       ${CMAKE_CURRENT_BINARY_DIR}/liste
@@ -264,16 +265,14 @@ include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}/remote
       ${CMAKE_CURRENT_BINARY_DIR}/waveedit
       ${CMAKE_CURRENT_BINARY_DIR}/widgets
-      ${CMAKE_CURRENT_BINARY_DIR}/widgets/function_dialogs
+      ${CMAKE_CURRENT_BINARY_DIR}/components
+      ${CMAKE_CURRENT_BINARY_DIR}/function_dialogs
       )
 
 ##
 ## Compilation flags and target name
 ##
 set_target_properties( core
-      # PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      # PROPERTIES COMPILE_FLAGS "-Imidiedit -Iarranger -Iliste -Icomponents -Iwidgets -Imixer -Idriver -Iwaveedit -Implugins -Iinstruments -Iremote ${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h "
-      # PROPERTIES COMPILE_FLAGS "${REM_CPP_FLAGS} -DINSTPREFIX='\"${CMAKE_INSTALL_PREFIX}\"' -DINSTLIBDIR='\"${LIBRARY_OUTPUT_DIRECTORY}\"' -include ${PROJECT_BINARY_DIR}/all.h "
       PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK} ${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h"
       
       OUTPUT_NAME muse_core
@@ -344,7 +343,6 @@ target_link_libraries(core
       arranger
       awl
       cliplist
-      components
       ctrl
       driver
       evdata_module
@@ -365,6 +363,7 @@ target_link_libraries(core
       waveedit
       wavepreview_module
       widgets
+      components
       widgets_functiondialogs
       xml_module
 

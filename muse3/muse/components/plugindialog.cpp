@@ -7,7 +7,7 @@
 #include "menutitleitem.h"
 
 #include "plugindialog.h"
-#include "ui_plugindialogbase.h"
+//#include "ui_plugindialogbase.h"
 #include "plugin.h"
 
 
