@@ -34,6 +34,7 @@
 #endif // HAVE_LRDF
 
 #include <cstring>
+#include <cstdlib>
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_PLUGIN_RDF(dev, format, args...)  // std::fprintf(dev, format, ##args);
@@ -108,13 +109,13 @@ void scanLrdfDir(const QString& dirname,
 
 void scanLrdfPlugins(QStringList* rdfs, bool debugStdErr)
 {
-  QString lrdfPath = qEnvironmentVariable("LRDF_PATH");
+  QString lrdfPath = std::getenv("LRDF_PATH");
   if(lrdfPath.isEmpty())
   {
     QString share_rdf_dir(SHAREDIR);
     if(!share_rdf_dir.isEmpty())
       share_rdf_dir += "/rdf:";
-    QString homePath = qEnvironmentVariable("HOME");
+    QString homePath = std::getenv("HOME");
     if(!homePath.isEmpty())
       homePath += QString("/lrdf:");
     

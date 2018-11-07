@@ -31,6 +31,7 @@
 #include <map>
   
 #include <cstring>
+#include <cstdlib>
 
 #include "plugin_cache_reader.h"
 
@@ -419,10 +420,10 @@ QStringList pluginGetLadspaDirectories(const QString& museGlobalLib)
   // Add our own LADSPA plugin directory...
   sl.append(museGlobalLib + QString("/plugins"));
   // Now add other directories...
-  QString ladspaPath = qEnvironmentVariable("LADSPA_PATH");
+  QString ladspaPath = std::getenv("LADSPA_PATH");
   if(ladspaPath.isEmpty())
   {
-    QString homePath = qEnvironmentVariable("HOME");
+    QString homePath = std::getenv("HOME");
     if(!homePath.isEmpty())
       homePath += QString("/ladspa:");
     ladspaPath = homePath + QString("/usr/local/lib64/ladspa:/usr/lib64/ladspa:/usr/local/lib/ladspa:/usr/lib/ladspa");
@@ -442,10 +443,10 @@ QStringList pluginGetMessDirectories(const QString& museGlobalLib)
   // Add our own MESS plugin directory...
   sl.append(museGlobalLib + QString("/synthi"));
   // Now add other directories...
-  QString messPath = qEnvironmentVariable("MESS_PATH");
+  QString messPath = std::getenv("MESS_PATH");
   if(messPath.isEmpty())
   {
-    QString homePath = qEnvironmentVariable("HOME");
+    QString homePath = std::getenv("HOME");
     if(!homePath.isEmpty())
       homePath += QString("/MESS:");
     messPath = homePath + QString("/usr/local/lib64/MESS:/usr/lib64/MESS:/usr/local/lib/MESS:/usr/lib/MESS");
@@ -462,10 +463,10 @@ QStringList pluginGetMessDirectories(const QString& museGlobalLib)
 QStringList pluginGetDssiDirectories()
 {
   QStringList sl;
-  QString dssiPath = qEnvironmentVariable("DSSI_PATH");
+  QString dssiPath = std::getenv("DSSI_PATH");
   if(dssiPath.isEmpty())
   {
-    QString homePath = qEnvironmentVariable("HOME");
+    QString homePath = std::getenv("HOME");
     if(!homePath.isEmpty())
       homePath += QString("/dssi:");
     dssiPath = homePath + QString("/usr/local/lib64/dssi:/usr/lib64/dssi:/usr/local/lib/dssi:/usr/lib/dssi");
@@ -482,14 +483,14 @@ QStringList pluginGetDssiDirectories()
 QStringList pluginGetLinuxVstDirectories()
 {
   QStringList sl;
-  QString vstPath = qEnvironmentVariable("LINUX_VST_PATH");
+  QString vstPath = std::getenv("LINUX_VST_PATH");
   if(vstPath.isEmpty())
   {
-    vstPath = qEnvironmentVariable("VST_PATH");
+    vstPath = std::getenv("VST_PATH");
     {
       if(vstPath.isEmpty())
       {
-        QString homePath = qEnvironmentVariable("HOME");
+        QString homePath = std::getenv("HOME");
         if(!homePath.isEmpty())
           homePath += QString("/.vst:") + homePath + QString("/vst:");
         vstPath = homePath + QString("/usr/local/lib64/vst:/usr/local/lib/vst:/usr/lib64/vst:/usr/lib/vst");
@@ -508,10 +509,10 @@ QStringList pluginGetLinuxVstDirectories()
 QStringList pluginGetVstDirectories()
 {
   QStringList sl;
-  QString vstPath = qEnvironmentVariable("VST_PATH");
+  QString vstPath = std::getenv("VST_PATH");
   if(vstPath.isEmpty())
   {
-    QString homePath = qEnvironmentVariable("HOME");
+    QString homePath = std::getenv("HOME");
     if(!homePath.isEmpty())
       homePath += QString("/.vst:") + homePath + QString("/vst:");
     vstPath = homePath + QString("/usr/local/lib64/vst:/usr/local/lib/vst:/usr/lib64/vst:/usr/lib/vst");
@@ -528,10 +529,10 @@ QStringList pluginGetVstDirectories()
 QStringList pluginGetLv2Directories()
 {
   QStringList sl;
-  QString lv2Path = qEnvironmentVariable("LV2_PATH");
+  QString lv2Path = std::getenv("LV2_PATH");
   if(lv2Path.isEmpty())
   {
-    QString homePath = qEnvironmentVariable("HOME");
+    QString homePath = std::getenv("HOME");
     if(!homePath.isEmpty())
       homePath += QString("/.lv2:");
     lv2Path = homePath + QString("/usr/local/lib64/lv2:/usr/lib64/lv2:/usr/local/lib/lv2:/usr/lib/lv2");
