@@ -1,5 +1,3 @@
-// THIS FILE IS ORPHANED: nothing uses its functions
-
 //=========================================================
 //  MusE
 //  Linux Music Editor
@@ -26,7 +24,6 @@
 #include <stdio.h>
 #include "sig.h"
 #include "gconfig.h"
-#include "xml.h"
 
 namespace MusEGlobal {
 MusECore::SigList sigmap;
@@ -35,12 +32,45 @@ MusECore::SigList sigmap;
 namespace MusECore {
 
 //---------------------------------------------------------
+//---------------------------------------------------------
+//   isValid
+//---------------------------------------------------------
+
+bool TimeSignature::isValid() const
+{
+  if((z < 1) || (z > 63))
+    return false;
+            
+  switch(n) 
+  {
+    case  1:
+    case  2:
+    case  3:
+    case  4:
+    case  8:
+    case 16:
+    case 32:
+    case 64:
+    case 128:
+      return true;
+    default:
+      return false;
+  }                
+}
+
+//---------------------------------------------------------
 //   SigList
 //---------------------------------------------------------
 
 SigList::SigList()
       {
-      insert(std::pair<const unsigned, SigEvent*> (MAX_TICK, new SigEvent(4, 4, 0)));
+      insert(std::pair<const unsigned, SigEvent*> (MAX_TICK, new SigEvent(TimeSignature(4, 4), 0)));
+      }
+
+SigList::~SigList()
+      {
+      for (iSigEvent i = begin(); i != end(); ++i)
+            delete i->second;
       }
 
 //---------------------------------------------------------
@@ -49,36 +79,58 @@ SigList::SigList()
 //    a bar
 //---------------------------------------------------------
 
-void SigList::add(unsigned tick, int z, int n)
+void SigList::add(unsigned tick, const TimeSignature& s)
       {
-      if (z == 0 || n == 0) {
-            printf("THIS SHOULD NEVER HAPPEN: SigList::add() illegal signature %d/%d\n", z, n);
-            
-            // Added p3.3.43
+      if (s.z == 0 || s.n == 0) {
+            printf("illegal signature %d/%d\n", s.z, s.n);
             return;
             }
       tick = raster1(tick, 0);
       iSigEvent e = upper_bound(tick);
-      if (e == end())
+      if(e == end())
       {
-        printf("THIS SHOULD NEVER HAPPEN: could not find upper_bound(%i) in SigList::add()!\n", tick);
+        printf("SigList::add Signal not found tick:%d\n", tick);
         return;
       }
-
+      
       if (tick == e->second->tick) {
-            e->second->z = z;
-            e->second->n = n;
+            e->second->sig = s;
             }
       else {
             SigEvent* ne = e->second;
-            SigEvent* ev = new SigEvent(ne->z, ne->n, ne->tick);
-            ne->z = z;
-            ne->n = n;
+            SigEvent* ev = new SigEvent(ne->sig, ne->tick);
+            ne->sig = s;
             ne->tick = tick;
             insert(std::pair<const unsigned, SigEvent*> (tick, ev));
             }
       normalize();
       }
+
+void SigList::add(unsigned tick, SigEvent* e, bool do_normalize)
+{
+  TimeSignature ts = e->sig;
+  std::pair<iSigEvent, bool> res = insert(std::pair<const unsigned, SigEvent*> (tick, e));
+  if(!res.second)
+  {
+    fprintf(stderr, "SigList::add insert failed: siglist:%p sig:%p %d/%d tick:%d\n", 
+                      this, e, ts.z, ts.n, e->tick);
+  }
+  else
+  {
+    iSigEvent ise = res.first;
+    ++ise; // There is always a 'next' sig event - there is always one at index MAX_TICK.
+    SigEvent* ne = ise->second;
+    
+    // Swap the values. (This is how the sig list works.)
+    e->sig = ne->sig;
+    e->tick = ne->tick;
+    ne->sig = ts;
+    ne->tick = tick;
+    
+    if(do_normalize)      
+      normalize();
+  }
+}
 
 //---------------------------------------------------------
 //   del
@@ -86,6 +138,7 @@ void SigList::add(unsigned tick, int z, int n)
 
 void SigList::del(unsigned tick)
       {
+// printf("SigList::del(%d)\n", tick);
       iSigEvent e = find(tick);
       if (e == end()) {
             printf("SigList::del(%d): not found\n", tick);
@@ -94,14 +147,28 @@ void SigList::del(unsigned tick)
       iSigEvent ne = e;
       ++ne;
       if (ne == end()) {
+            printf("SigList::del() next event not found!\n");
+            return;
+            }
+      ne->second->sig = e->second->sig;
+      ne->second->tick  = e->second->tick;
+      erase(e);
+      normalize();
+      }
+
+void SigList::del(iSigEvent e, bool do_normalize)
+      {
+      iSigEvent ne = e;
+      ++ne;
+      if (ne == end()) {
             printf("SigList::del() HALLO\n");
             return;
             }
-      ne->second->z = e->second->z;
-      ne->second->n = e->second->n;
-      ne->second->tick = e->second->tick;
+      ne->second->sig = e->second->sig;
+      ne->second->tick  = e->second->tick;
       erase(e);
-      normalize();
+      if(do_normalize)
+        normalize();
       }
 
 //---------------------------------------------------------
@@ -110,18 +177,16 @@ void SigList::del(unsigned tick)
 
 void SigList::normalize()
       {
-      int z = 0;
-      int n = 0;
+      TimeSignature sig(0, 0);
       unsigned tick = 0;
       iSigEvent ee;
 
       for (iSigEvent e = begin(); e != end();) {
-            if (z == e->second->z && n == e->second->n) {
+            if (sig.z == e->second->sig.z && sig.n == e->second->sig.n) {
                   e->second->tick = tick;
                   erase(ee);
                   }
-            z    = e->second->z;
-            n    = e->second->n;
+            sig  = e->second->sig;
             ee   = e;
             tick = e->second->tick;
             ++e;
@@ -131,10 +196,10 @@ void SigList::normalize()
       for (iSigEvent e = begin(); e != end();) {
             e->second->bar = bar;
             int delta  = e->first - e->second->tick;
-            int ticksB = ticks_beat(e->second->n);
-            int ticksM = ticksB * e->second->z;
+            int ticksB = ticks_beat(e->second->sig.n);
+            int ticksM = ticksB * e->second->sig.z;
             bar += delta / ticksM;
-            if (delta % ticksM)     // Part of a measure
+            if (delta % ticksM)     // Teil eines Taktes
                   ++bar;
             ++e;
             }
@@ -150,7 +215,7 @@ void SigList::dump() const
       for (ciSigEvent i = begin(); i != end(); ++i) {
             printf("%6d %06d Bar %3d %02d/%d\n",
                i->first, i->second->tick,
-               i->second->bar, i->second->z, i->second->n);
+               i->second->bar, i->second->sig.z, i->second->sig.n);
             }
       }
 
@@ -159,12 +224,17 @@ void SigList::clear()
       for (iSigEvent i = begin(); i != end(); ++i)
             delete i->second;
       SIGLIST::clear();
-      insert(std::pair<const unsigned, SigEvent*> (MAX_TICK, new SigEvent(4, 4, 0)));
+      insert(std::pair<const unsigned, SigEvent*> (MAX_TICK, new SigEvent(TimeSignature(4, 4), 0)));
       }
 
 //---------------------------------------------------------
 //   ticksMeasure
 //---------------------------------------------------------
+
+int SigList::ticksMeasure(const TimeSignature& sig) const
+      {
+      return ticks_beat(sig.n) * sig.z;
+      }
 
 int SigList::ticksMeasure(int Z, int N) const
       {
@@ -178,7 +248,7 @@ int SigList::ticksMeasure(unsigned tick) const
             printf("ticksMeasure: not found %d\n", tick);
             return 0;
             }
-      return ticksMeasure(i->second->z, i->second->n);
+      return ticksMeasure(i->second->sig);
       }
 
 //---------------------------------------------------------
@@ -188,17 +258,18 @@ int SigList::ticksMeasure(unsigned tick) const
 int SigList::ticksBeat(unsigned tick) const
       {
       ciSigEvent i = upper_bound(tick);
-      if (i == end())
+      if(i == end())
       {
-        printf("THIS SHOULD NEVER HAPPEN: couldn't find sig event for tick=%i in SigList::ticksBeat()!\n",tick);
+        printf("SigList::ticksBeat event not found! tick:%d\n", tick);
         return 0;
       }
-      return ticks_beat(i->second->n);
+      return ticks_beat(i->second->sig.n);
       }
 
 int SigList::ticks_beat(int n) const
       {
       int m = MusEGlobal::config.division;
+      
       switch (n) {
             case  1:  m <<= 2; break;           // 1536
             case  2:  m <<= 1; break;           // 768
@@ -209,7 +280,7 @@ int SigList::ticks_beat(int n) const
             case 32:  m >>= 3; break;           // 48
             case 64:  m >>= 4; break;           // 24
             case 128: m >>= 5; break;           // 12
-            default: printf("THIS SHOULD NEVER HAPPEN: invalid function call in SigList::ticks_beat(): n=%i\n",n); break;
+            default: break;
             }
       return m;
       }
@@ -217,6 +288,16 @@ int SigList::ticks_beat(int n) const
 //---------------------------------------------------------
 //   timesig
 //---------------------------------------------------------
+
+TimeSignature SigList::timesig(unsigned tick) const
+      {
+      ciSigEvent i = upper_bound(tick);
+      if (i == end()) {
+            printf("timesig(%d): not found\n", tick);
+            return TimeSignature(4,4);
+            }
+      return i->second->sig;
+      }
 
 void SigList::timesig(unsigned tick, int& z, int& n) const
       {
@@ -227,8 +308,8 @@ void SigList::timesig(unsigned tick, int& z, int& n) const
             n = 4;
             }
       else  {
-            z = i->second->z;
-            n = i->second->n;
+            z = i->second->sig.z;
+            n = i->second->sig.n;
             }
       }
 
@@ -248,8 +329,8 @@ void SigList::tickValues(unsigned t, int* bar, int* beat, unsigned* tick) const
             }
 
       int delta  = t - e->second->tick;
-      int ticksB = ticks_beat(e->second->n);
-      int ticksM = ticksB * e->second->z;
+      int ticksB = ticks_beat(e->second->sig.n);
+      int ticksM = ticksB * e->second->sig.z;
       *bar       = e->second->bar + delta / ticksM;
       int rest   = delta % ticksM;
       *beat      = rest / ticksB;
@@ -275,8 +356,8 @@ unsigned SigList::bar2tick(int bar, int beat, unsigned tick) const
                   break;
             e = ee;
             }
-      int ticksB = ticks_beat(e->second->n);
-      int ticksM = ticksB * e->second->z;
+      int ticksB = ticks_beat(e->second->sig.n);
+      int ticksM = ticksB * e->second->sig.z;
       return e->second->tick + (bar-e->second->bar)*ticksM + ticksB*beat + tick;
       }
 
@@ -294,7 +375,7 @@ unsigned SigList::raster(unsigned t, int raster) const
             return t;
             }
       int delta  = t - e->second->tick;
-      int ticksM = ticks_beat(e->second->n) * e->second->z;
+      int ticksM = ticks_beat(e->second->sig.n) * e->second->sig.z;
       if (raster == 0)
             raster = ticksM;
       int rest   = delta % ticksM;
@@ -312,14 +393,14 @@ unsigned SigList::raster1(unsigned t, int raster) const
       if (raster == 1)
             return t;
       ciSigEvent e = upper_bound(t);
-      if (e == end())
+      if(e == end())
       {
-        printf("THIS SHOULD NEVER HAPPEN: couldn't find sig event for tick=%i in SigList::raster1()!\n", t);
-        return 0;
+        printf("SigList::raster1 event not found tick:%d\n", t);
+        return t;
       }
 
       int delta  = t - e->second->tick;
-      int ticksM = ticks_beat(e->second->n) * e->second->z;
+      int ticksM = ticks_beat(e->second->sig.n) * e->second->sig.z;
       if (raster == 0)
             raster = ticksM;
       int rest   = delta % ticksM;
@@ -337,14 +418,15 @@ unsigned SigList::raster2(unsigned t, int raster) const
       if (raster == 1)
             return t;
       ciSigEvent e = upper_bound(t);
-      if (e == end())
+      if(e == end())
       {
-        printf("THIS SHOULD NEVER HAPPEN: couldn't find sig event for tick=%i in SigList::raster2()!\n", t);
-        return 0;
+        printf("SigList::raster2 event not found tick:%d\n", t);
+        //return 0;
+        return t;
       }
 
       int delta  = t - e->second->tick;
-      int ticksM = ticks_beat(e->second->n) * e->second->z;
+      int ticksM = ticks_beat(e->second->sig.n) * e->second->sig.z;
       if (raster == 0)
             raster = ticksM;
       int rest   = delta % ticksM;
@@ -360,21 +442,19 @@ int SigList::rasterStep(unsigned t, int raster) const
       {
       if (raster == 0) {
             ciSigEvent e = upper_bound(t);
-            if (e == end())
+            if(e == end())
             {
-              printf("THIS SHOULD NEVER HAPPEN: couldn't find sig event for tick=%i in SigList::rasterStep()!\n", t);
-              return 0;
+              printf("SigList::rasterStep event not found tick:%d\n", t);
+              //return 0;
+              return raster;
             }
-            return ticks_beat(e->second->n) * e->second->z;
+      
+            return ticks_beat(e->second->sig.n) * e->second->sig.z;
             }
       return raster;
       }
 
-//---------------------------------------------------------
-//   SigList::write
-//---------------------------------------------------------
-
-void SigList::write(int level, Xml& xml) const
+void SigList::write(int level, MusECore::Xml& xml) const
       {
       xml.tag(level++, "siglist");
       for (ciSigEvent i = begin(); i != end(); ++i)
@@ -382,20 +462,16 @@ void SigList::write(int level, Xml& xml) const
       xml.tag(level, "/siglist");
       }
 
-//---------------------------------------------------------
-//   SigList::read
-//---------------------------------------------------------
-
-void SigList::read(Xml& xml)
+void SigList::read(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
             switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return;
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "sig") {
                               SigEvent* t = new SigEvent();
                               unsigned tick = t->read(xml);
@@ -407,9 +483,9 @@ void SigList::read(Xml& xml)
                         else
                               xml.unknown("SigList");
                         break;
-                  case Xml::Attribut:
+                  case MusECore::Xml::Attribut:
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "siglist") {
                               normalize();
                               return;
@@ -420,48 +496,40 @@ void SigList::read(Xml& xml)
             }
       }
 
-//---------------------------------------------------------
-//   SigEvent::write
-//---------------------------------------------------------
-
-void SigEvent::write(int level, Xml& xml, int at) const
+void SigEvent::write(int level, MusECore::Xml& xml, int at) const
       {
       xml.tag(level++, "sig at=\"%d\"", at);
       xml.intTag(level, "tick", tick);
-      xml.intTag(level, "nom", z);
-      xml.intTag(level, "denom", n);
+      xml.intTag(level, "nom", sig.z);
+      xml.intTag(level, "denom", sig.n);
       xml.tag(level, "/sig");
       }
 
-//---------------------------------------------------------
-//   SigEvent::read
-//---------------------------------------------------------
-
-int SigEvent::read(Xml& xml)
+int SigEvent::read(MusECore::Xml& xml)
       {
       int at = 0;
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
             switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return 0;
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "tick")
                               tick = xml.parseInt();
                         else if (tag == "nom")
-                              z = xml.parseInt();
+                              sig.z = xml.parseInt();
                         else if (tag == "denom")
-                              n = xml.parseInt();
+                              sig.n = xml.parseInt();
                         else
                               xml.unknown("SigEvent");
                         break;
-                  case Xml::Attribut:
+                  case MusECore::Xml::Attribut:
                         if (tag == "at")
                               at = xml.s2().toInt();
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "sig")
                               return at;
                   default:

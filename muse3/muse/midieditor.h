@@ -24,7 +24,6 @@
 #define __MIDIEDITOR_H__
 
 #include "type_defs.h"
-#include "al/sig.h"
 #include "cobject.h"
 
 
@@ -93,10 +92,10 @@ class MidiEditor : public TopWin  {
          QWidget* parent = 0, const char* name = 0);
       ~MidiEditor();
 
-      int rasterStep(unsigned tick) const   { return AL::sigmap.rasterStep(tick, _raster); }
-      unsigned rasterVal(unsigned v)  const { return AL::sigmap.raster(v, _raster);  }
-      unsigned rasterVal1(unsigned v) const { return AL::sigmap.raster1(v, _raster); }
-      unsigned rasterVal2(unsigned v) const { return AL::sigmap.raster2(v, _raster); }
+      int rasterStep(unsigned tick) const;
+      unsigned rasterVal(unsigned v)  const;
+      unsigned rasterVal1(unsigned v) const;
+      unsigned rasterVal2(unsigned v) const;
       int raster() const           { return _raster; }
       void setRaster(int val)      { _raster = val; }
       MusECore::PartList* parts()            { return _pl;  }

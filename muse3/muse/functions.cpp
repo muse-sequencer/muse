@@ -563,7 +563,7 @@ unsigned quantize_tick(unsigned tick, unsigned raster, int swing)
 	//this is so complicated because this function supports
 	//swing: if swing is 50, the resulting rhythm is not
 	//"daa daa daa daa" but "daaaa da daaaa da"...
-	int tick_dest1 = AL::sigmap.raster1(tick, raster*2); //round down
+	int tick_dest1 = MusEGlobal::sigmap.raster1(tick, raster*2); //round down
 	int tick_dest2 = tick_dest1 + raster + raster*swing/100;
 	int tick_dest3 = tick_dest1 + raster*2;
 
@@ -928,8 +928,8 @@ unsigned get_clipboard_len()
 
 bool paste_notes(const Part* paste_into_part)
 {
-	unsigned temp_begin = AL::sigmap.raster1(MusEGlobal::song->cpos(),0);
-	unsigned temp_end = AL::sigmap.raster2(temp_begin + get_clipboard_len(), 0);
+	unsigned temp_begin = MusEGlobal::sigmap.raster1(MusEGlobal::song->cpos(),0);
+	unsigned temp_end = MusEGlobal::sigmap.raster2(temp_begin + get_clipboard_len(), 0);
 	MusEGui::paste_events_dialog->raster = temp_end - temp_begin;
 	MusEGui::paste_events_dialog->into_single_part_allowed = (paste_into_part!=NULL);
 	
@@ -1158,7 +1158,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 								if (create_new_part)
 								{
 									Part* newpart = dest_track->newPart();
-									newpart->setTick(AL::sigmap.raster1(first_paste_tick, config.division));
+									newpart->setTick(MusEGlobal::sigmap.raster1(first_paste_tick, config.division));
 
 									new_part_map[old_dest_part].insert(dest_part);
 									operations.push_back(UndoOp(UndoOp::AddPart, dest_part));

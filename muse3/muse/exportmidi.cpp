@@ -26,7 +26,7 @@
 #include <QString>
 #include <QMessageBox>
 
-#include "al/sig.h"  // Tim.
+#include "sig.h"  // Tim.
 #include "app.h"
 #include "midifile.h"
 #include "midi.h"
@@ -535,9 +535,9 @@ void MusE::exportMidi()
                   //---------------------------------------------------
                   //    Write Signatures
                   //
-                  const AL::SigList* sl = &AL::sigmap;
-                  for (AL::ciSigEvent e = sl->begin(); e != sl->end(); ++e) {
-                        AL::SigEvent* event = e->second;
+                  const MusECore::SigList* sl = &MusEGlobal::sigmap;
+                  for (MusECore::ciSigEvent e = sl->begin(); e != sl->end(); ++e) {
+                        MusECore::SigEvent* event = e->second;
                         int sz = (MusEGlobal::config.exp2ByteTimeSigs ? 2 : 4); // export 2 byte timesigs instead of 4 ?
                         unsigned char data[sz];
                         data[0] = event->sig.z;

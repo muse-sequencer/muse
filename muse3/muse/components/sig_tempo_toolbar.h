@@ -34,15 +34,11 @@ class QLabel;
 class QString;
 class QToolButton;
 
-namespace Awl
-{
-  class SigEdit;
-}
-
 namespace MusEGui
 {
   class TempoEdit;
   class IconButton;
+  class SigEdit;
 
   class TempoToolbar : public QToolBar
   {
@@ -86,7 +82,7 @@ namespace MusEGui
     
     private:
       QLabel* label;
-      Awl::SigEdit* sig_edit;   
+      SigEdit* sig_edit;   
       
       void init();
             

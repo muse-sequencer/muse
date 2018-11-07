@@ -113,9 +113,10 @@ QT5_WRAP_CPP (components_mocs
 #       scrollscale.h  
       shortcutcapturedialog.h  
       shortcutconfig.h  
-      # sigedit.h  
+      sigedit.h  
       siglabel.h  
       sigscale.h  
+      sigspinbox.h  
       sig_tempo_toolbar.h 
       slider.h  
 #       sliderbase.h  
@@ -261,9 +262,10 @@ file (GLOB components_source_files
       scrollscale.cpp  
       shortcutcapturedialog.cpp 
       shortcutconfig.cpp 
-      # sigedit.cpp 
+      sigedit.cpp 
       siglabel.cpp 
       sigscale.cpp 
+      sigspinbox.cpp
       sig_tempo_toolbar.cpp 
       slider.cpp 
 #       sliderbase.cpp 

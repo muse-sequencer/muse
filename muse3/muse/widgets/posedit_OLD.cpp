@@ -672,16 +672,16 @@ void PosEdit::setSec(int secNo, int val)
                   case 1:
                         {
                         int z, n;
-                        int tick = sigmap.bar2tick(sec[0].val, val, sec[2].val);
-                        sigmap.timesig(tick, z, n);
+                        int tick = MusEGlobal::sigmap.bar2tick(sec[0].val, val, sec[2].val);
+                        MusEGlobal::sigmap.timesig(tick, z, n);
                         if (val >= n)
                               val = n-1;
                         }
                         break;
                   case 2:
                         {
-                        int tick = sigmap.bar2tick(sec[0].val, sec[1].val, val);
-                        int tb = sigmap.ticksBeat(tick);
+                        int tick = MusEGlobal::sigmap.bar2tick(sec[0].val, sec[1].val, val);
+                        int tb = MusEGlobal::sigmap.ticksBeat(tick);
                         if (val >= tb)
                               val = tb-1;
                         }
@@ -744,14 +744,14 @@ bool PosEdit::outOfRange(int secNo, int val) const
                   case 1:
                         {
                         int z;
-                        int tick = sigmap.bar2tick(sec[0].val, val, sec[2].val);
-                        sigmap.timesig(tick, z, limit);
+                        int tick = MusEGlobal::sigmap.bar2tick(sec[0].val, val, sec[2].val);
+                        MusEGlobal::sigmap.timesig(tick, z, limit);
                         limit -= 1;
                         }
                         break;
                   case 2:
-                        int tick = sigmap.bar2tick(sec[0].val, sec[1].val, val);
-                        limit = sigmap.ticksBeat(tick) - 1;
+                        int tick = MusEGlobal::sigmap.bar2tick(sec[0].val, sec[1].val, val);
+                        limit = MusEGlobal::sigmap.ticksBeat(tick) - 1;
                         break;
                   }
             }

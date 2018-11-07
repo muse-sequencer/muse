@@ -767,9 +767,9 @@ void DrumEdit::updateHScrollRange()
       int s, e;
       canvas->range(&s, &e);
       // Show one more measure.
-      e += AL::sigmap.ticksMeasure(e);  
+      e += MusEGlobal::sigmap.ticksMeasure(e);  
       // Show another quarter measure due to imprecise drawing at canvas end point.
-      e += AL::sigmap.ticksMeasure(e) / 4;
+      e += MusEGlobal::sigmap.ticksMeasure(e) / 4;
       // Compensate for drum list, splitter handle, and vscroll widths. 
       e += canvas->rmapxDev(dlist->width() + split2->handleWidth() - vscroll->width()); 
       int s1, e1;

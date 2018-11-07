@@ -35,7 +35,7 @@
 #include "pos.h"
 #include "globaldefs.h"
 #include "tempo.h"
-#include "al/sig.h"
+#include "sig.h"
 #include "undo.h"
 #include "track.h"
 #include "synth.h"
@@ -262,7 +262,7 @@ class Song : public QObject {
       long xRunsCount() const { return _xRunsCount; }
 
       //-----------------------------------------
-      //    access tempomap/sigmap  (Mastertrack)
+      //    access tempomap/MusEGlobal::sigmap  (Mastertrack)
       //-----------------------------------------
 
       unsigned len() const { return _len; }
@@ -427,7 +427,7 @@ public:
 
       void setTempo(int t);
       void setSig(int a, int b);
-      void setSig(const AL::TimeSignature&);
+      void setSig(const MusECore::TimeSignature&);
       void setTempo(double tempo)  { setTempo(int(60000000.0/tempo)); }
 
       void setMasterFlag(bool flag);

@@ -982,7 +982,7 @@ void DrumCanvas::cmd(int cmd)
                       if(spos > 0)
                       {
                         spos -= 1;     // Nudge by -1, then snap down with raster1.
-                        spos = AL::sigmap.raster1(spos, editor->rasterStep(pos[0]));
+                        spos = MusEGlobal::sigmap.raster1(spos, editor->rasterStep(pos[0]));
                       }
                       if(spos < 0)
                         spos = 0;
@@ -992,7 +992,7 @@ void DrumCanvas::cmd(int cmd)
                   break;
             case CMD_RIGHT:
                   {
-                      int spos = AL::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
+                      int spos = MusEGlobal::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
                       MusECore::Pos p(spos,true);
                       MusEGlobal::song->setPos(0, p, true, true, true);
                   }
@@ -1435,14 +1435,14 @@ int DrumCanvas::getNextStep(unsigned int pos, int basicStep, int stepSize)
   int newPos = pos;
   for (int i =0; i<stepSize;i++) {
     if (basicStep > 0) { // moving right
-      newPos = AL::sigmap.raster2(newPos + basicStep, editor->rasterStep(newPos));    // Nudge by +1, then snap up with raster2.
+      newPos = MusEGlobal::sigmap.raster2(newPos + basicStep, editor->rasterStep(newPos));    // Nudge by +1, then snap up with raster2.
       if (unsigned(newPos) > curPart->endTick()- editor->rasterStep(curPart->endTick()))
         newPos = curPart->tick();
     }
     else { // moving left
-      newPos = AL::sigmap.raster1(newPos + basicStep, editor->rasterStep(newPos));    // Nudge by -1, then snap up with raster1.
+      newPos = MusEGlobal::sigmap.raster1(newPos + basicStep, editor->rasterStep(newPos));    // Nudge by -1, then snap up with raster1.
       if (unsigned(newPos) < curPart->tick() ) {
-        newPos = AL::sigmap.raster1(curPart->endTick()-1, editor->rasterStep(curPart->endTick()));
+        newPos = MusEGlobal::sigmap.raster1(curPart->endTick()-1, editor->rasterStep(curPart->endTick()));
       }
     }
   }

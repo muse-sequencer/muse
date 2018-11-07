@@ -94,6 +94,7 @@
 #include "stringparam.h"
 
 #include "plugin.h"
+#include "plugin_list.h"
 
 #endif
 
@@ -284,7 +285,8 @@ private:
     double _sampleRate;
     float _fSampleRate;
     bool _isSynth;
-    int _uniqueID;
+// LV2 does not use unique id numbers and frowns upon using anything but the uri.
+//     int _uniqueID;
     uint32_t _midi_event_id;
     LilvUIs *_uis;
     std::map<uint32_t, uint32_t> _idxToControlMap;

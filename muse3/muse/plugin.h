@@ -44,7 +44,7 @@
 #include "globals.h"
 #include "ctrl.h"
 #include "controlfifo.h"
-#include "plugin_scan.h"
+#include "plugin_list.h"
 
 #include "config.h"
 
@@ -137,7 +137,7 @@ class Plugin {
       Plugin(QFileInfo* f, const LADSPA_Descriptor* d, 
              bool isDssi = false, bool isDssiSynth = false, bool isDssiVst = false,
              PluginFeatures_t reqFeatures = PluginNoFeatures);
-      Plugin(const PluginScanInfo&);
+      Plugin(const MusEPlugin::PluginScanInfoStruct&);
       virtual ~Plugin();
       virtual PluginFeatures_t requiredFeatures() const { return _requiredFeatures; }
       virtual QString label() const                        { return _label; }
@@ -248,7 +248,7 @@ class PluginList : public std::list<Plugin *> {
         push_back(new Plugin(fi, d, isDssi, isDssiSynth, isDssiVst, reqFeatures));
       }
 
-      void add(const PluginScanInfo& scan_info)
+      void add(const MusEPlugin::PluginScanInfoStruct& scan_info)
       { push_back(new Plugin(scan_info)); }
 
       Plugin* find(const QString& file, const QString& label) const;

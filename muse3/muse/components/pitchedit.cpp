@@ -39,11 +39,38 @@ PitchEdit::PitchEdit(QWidget* parent)
       deltaMode = false;
       }
 
+// //---------------------------------------------------------
+// //   mapValueToText
+// //---------------------------------------------------------
+// 
+// QString PitchEdit::mapValueToText(int v)
+//       {
+//       if (deltaMode) {
+//             QString s;
+//             s.setNum(v);
+//             return s;
+//             }
+//       else
+//             return MusECore::pitch2string(v);
+//       }
+
+// //---------------------------------------------------------
+// //   mapTextToValue
+// //---------------------------------------------------------
+// 
+// int PitchEdit::mapTextToValue(bool* ok)
+//       {
+//       printf("PitchEdit: mapTextToValue: not impl.\n");
+//       if (ok)
+//             *ok = false;
+//       return 0;
+//       }
+
 //---------------------------------------------------------
 //   mapValueToText
 //---------------------------------------------------------
 
-QString PitchEdit::mapValueToText(int v)
+QString PitchEdit::textFromValue(int v) const
       {
       if (deltaMode) {
             QString s;
@@ -58,11 +85,11 @@ QString PitchEdit::mapValueToText(int v)
 //   mapTextToValue
 //---------------------------------------------------------
 
-int PitchEdit::mapTextToValue(bool* ok)
+int PitchEdit::valueFromText(const QString & /*text*/) const
       {
-      printf("PitchEdit: mapTextToValue: not impl.\n");
-      if (ok)
-            *ok = false;
+      printf("PitchEdit: valueFromText: not impl.\n");
+      //if (text)
+            //*text = false;
       return 0;
       }
 
@@ -81,5 +108,11 @@ void PitchEdit::setDeltaMode(bool val)
       else
             setRange(0, 127);
       }
+
+void PitchEdit::midiNote(int pitch, int velo)
+{
+  if (hasFocus() && velo)
+    setValue(pitch);
+}
 
 } // namespace MusEGui

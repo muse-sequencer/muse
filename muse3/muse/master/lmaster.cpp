@@ -21,7 +21,7 @@
 //=========================================================
 
 #include "posedit.h"
-#include "awl/sigedit.h"
+#include "sigedit.h"
 
 #include "lmaster.h"
 #include "xml.h"
@@ -312,7 +312,7 @@ void LMaster::focusCanvas()
 //   insertSig
 //---------------------------------------------------------
 
-void LMaster::insertSig(const AL::SigEvent* ev)
+void LMaster::insertSig(const MusECore::SigEvent* ev)
       {
       new LMasterSigEventItem(view, ev);
       }
@@ -347,11 +347,11 @@ void LMaster::updateList()
       
       view->clear();
       const MusECore::TempoList* t = &MusEGlobal::tempomap;
-      const AL::SigList* s   = &AL::sigmap;
+      const MusECore::SigList* s   = &MusEGlobal::sigmap;
       const MusECore::KeyList* k   = &MusEGlobal::keymap;
 
       MusECore::criTEvent it   = t->rbegin();
-      AL::criSigEvent is = s->rbegin();
+      MusECore::criSigEvent is = s->rbegin();
       MusECore::criKeyEvent ik = k->rbegin();
 
         // three lists that should be added to the view.
@@ -784,7 +784,7 @@ void LMaster::returnPressed()
       //
       else if (editedItem->getType() == LMASTER_SIGEVENT && editorColumn == LMASTER_VAL_COL) 
       {
-            AL::TimeSignature newSig = sig_editor->sig();
+            MusECore::TimeSignature newSig = sig_editor->sig();
             
             sig_editor->hide();
             
@@ -877,7 +877,7 @@ LMasterKeyEventItem::LMasterKeyEventItem(QTreeWidget* parent, const MusECore::Ke
       unsigned t = ev.tick;
       int bar, beat;
       unsigned tick;
-      AL::sigmap.tickValues(t, &bar, &beat, &tick);
+      MusEGlobal::sigmap.tickValues(t, &bar, &beat, &tick);
       c1 = QString("%1.%2.%3")
           .arg(bar + 1,      4, 10, QLatin1Char('0'))
           .arg(beat + 1,     2, 10, QLatin1Char('0'))
@@ -912,7 +912,7 @@ LMasterTempoItem::LMasterTempoItem(QTreeWidget* parent, const MusECore::TEvent* 
       unsigned t = ev->tick;
       int bar, beat;
       unsigned tick;
-      AL::sigmap.tickValues(t, &bar, &beat, &tick);
+      MusEGlobal::sigmap.tickValues(t, &bar, &beat, &tick);
       c1 = QString("%1.%2.%3")
           .arg(bar + 1,      4, 10, QLatin1Char('0'))
           .arg(beat + 1,     2, 10, QLatin1Char('0'))
@@ -939,14 +939,14 @@ LMasterTempoItem::LMasterTempoItem(QTreeWidget* parent, const MusECore::TEvent* 
 //   LMasterSigEventItem
 //!  Initializes a ListView item with a SigEvent
 //---------------------------------------------------------
-LMasterSigEventItem::LMasterSigEventItem(QTreeWidget* parent, const AL::SigEvent* ev)
+LMasterSigEventItem::LMasterSigEventItem(QTreeWidget* parent, const MusECore::SigEvent* ev)
       : LMasterLViewItem(parent)
       {
       sigEvent = ev;
       unsigned t = ev->tick;
       int bar, beat;
       unsigned tick;
-      AL::sigmap.tickValues(t, &bar, &beat, &tick);
+      MusEGlobal::sigmap.tickValues(t, &bar, &beat, &tick);
       c1 = QString("%1.%2.%3")
           .arg(bar + 1,      4, 10, QLatin1Char('0'))
           .arg(beat + 1,     2, 10, QLatin1Char('0'))
@@ -980,7 +980,7 @@ void LMaster::tempoButtonClicked()
 //      Pos p = Pos(beatString);
 //      p.mbt(&m, &b, &t);
 //      m++; //Next bar
-//      int newTick = AL::sigmap.bar2tick(m, b, t);
+//      int newTick = MusEGlobal::sigmap.bar2tick(m, b, t);
       int newTick = MusEGlobal::song->cpos();
       MusECore::TEvent* ev = new MusECore::TEvent(lastTempo->tempo(), newTick);
       new LMasterTempoItem(view, ev);
@@ -1006,9 +1006,9 @@ void LMaster::timeSigButtonClicked()
 //      Pos p = Pos(beatString);
 //      p.mbt(&m, &b, &t);
 //      m++;
-//      int newTick = AL::sigmap.bar2tick(m, b, t);
+//      int newTick = MusEGlobal::sigmap.bar2tick(m, b, t);
       int newTick = MusEGlobal::song->cpos();
-      AL::SigEvent* ev = new AL::SigEvent(AL::TimeSignature(lastSig->z(), lastSig->n()), newTick);
+      MusECore::SigEvent* ev = new MusECore::SigEvent(MusECore::TimeSignature(lastSig->z(), lastSig->n()), newTick);
       new LMasterSigEventItem(view, ev);
       QTreeWidgetItem* newSigItem = view->topLevelItem(0);
 

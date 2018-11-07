@@ -35,7 +35,7 @@
 
 #include "math.h"
 
-#include "al/sig.h"  
+#include "sig.h"  
 
 // Don't use this, it was just for debugging. 
 // It's much slower than muse-1 no matter how hard I tried.
@@ -614,8 +614,8 @@ void View::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
       
       int xx,bar1, bar2, beat;
       unsigned tick;
-      AL::sigmap.tickValues(x, &bar1, &beat, &tick);
-      AL::sigmap.tickValues(x+w, &bar2, &beat, &tick);
+      MusEGlobal::sigmap.tickValues(x, &bar1, &beat, &tick);
+      MusEGlobal::sigmap.tickValues(x+w, &bar2, &beat, &tick);
       ++bar2;
       ///int y2 = y + h;
       //int y2 = my + mh;
@@ -623,15 +623,15 @@ void View::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
       //printf("View::drawTickRaster x:%d y:%d w:%d h:%d mx:%d my:%d mw:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, mx, my, mw, mh, y2, bar1, bar2);  
       //printf("View::drawTickRaster x:%d y:%d w:%d h:%d my:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, my, mh, y2, bar1, bar2);  
       for (int bar = bar1; bar < bar2; ++bar) {
-            ///unsigned x = AL::sigmap.bar2tick(bar, 0, 0);
-            unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
+            ///unsigned x = MusEGlobal::sigmap.bar2tick(bar, 0, 0);
+            unsigned xb = MusEGlobal::sigmap.bar2tick(bar, 0, 0);
             int xt = mapx(xb);
             p.setPen(MusEGlobal::config.midiCanvasBarColor);
             ///p.drawLine(x, y, x, y2);
             p.drawLine(xt, my, xt, y2);
             int z, n;
-            ///AL::sigmap.timesig(x, z, n);
-            AL::sigmap.timesig(xb, z, n);
+            ///MusEGlobal::sigmap.timesig(x, z, n);
+            MusEGlobal::sigmap.timesig(xb, z, n);
             ///int q = p.xForm(QPoint(raster, 0)).x() - p.xForm(QPoint(0, 0)).x();
             ///int q = p.combinedTransform().map(QPoint(raster, 0)).x() - p.combinedTransform().map(QPoint(0, 0)).x();
             //int q = rmapx(raster);
@@ -644,8 +644,8 @@ void View::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
                         ///int xx = x + qq;
                         //int xx = mapx(xb + qq);
                         xx = xb + qq;
-                        int xxx = AL::sigmap.bar2tick(bar, z, 0);
-                        //int xxx = mapx(AL::sigmap.bar2tick(bar, z, 0));
+                        int xxx = MusEGlobal::sigmap.bar2tick(bar, z, 0);
+                        //int xxx = mapx(MusEGlobal::sigmap.bar2tick(bar, z, 0));
                         while (xx <= xxx) {
                                ///p.drawLine(xx, y, xx, y2);
                                int x = mapx(xx);
@@ -658,8 +658,8 @@ void View::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
 
             p.setPen(Qt::darkGray);
             for (int beat = 1; beat < z; beat++) {
-                        ///int xx = AL::sigmap.bar2tick(bar, beat, 0);
-                        xx = mapx(AL::sigmap.bar2tick(bar, beat, 0));
+                        ///int xx = MusEGlobal::sigmap.bar2tick(bar, beat, 0);
+                        xx = mapx(MusEGlobal::sigmap.bar2tick(bar, beat, 0));
                         //printf(" bar:%d z:%d beat:%d xx:%d\n", bar, z, beat, xx);  
                         ///p.drawLine(xx, y, xx, y2);
                         p.drawLine(xx, my, xx, y2);

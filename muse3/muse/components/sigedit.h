@@ -1,11 +1,12 @@
-//=========================================================
-//  MusE
-//  Linux Music Editor
-//    $Id: sigedit.h,v 1.1.1.1.2.1 2004/12/28 23:23:51 lunar_shuttle Exp $
-//  (C) Copyright 2002 Werner Schweer (ws@seh.de)
+//=============================================================================
+//  Awl
+//  Audio Widget Library
+//  $Id:$
 //
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
+//  Copyright (C) 1999-2011 by Werner Schweer and others
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License
 //  as published by the Free Software Foundation; version 2 of
 //  the License, or (at your option) any later version.
 //
@@ -17,31 +18,19 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-//
-//=========================================================
+//=============================================================================
 
-#ifndef __SIGEDIT_H__
-#define __SIGEDIT_H__
+#ifndef __MUSE_SIGEDIT_H__
+#define __MUSE_SIGEDIT_H__
+
+#include "sig.h"
+#include "sigspinbox.h"
 
 #include <QWidget>
-
-#include "section.h"
-
-class QResizeEvent;
-class QTimerEvent;
+#include <QHBoxLayout>
+#include <QLabel>
 
 namespace MusEGui {
-
-class SigEditor;
-class SpinBox;
-
-struct Sig {
-      int z;
-      int n;
-   public:
-      Sig(int _z, int _n) : z(_z), n(_n) {}
-      bool isValid() const;
-      };
 
 //---------------------------------------------------------
 //   SigEdit
@@ -50,58 +39,37 @@ struct Sig {
 class SigEdit : public QWidget
       {
       Q_OBJECT
-      void init();
+      
+      MusECore::TimeSignature _sig;
+      bool initialized;
+      QLabel *slash;
+      SigSpinBox *zSpin;
+      SigSpinBox *nSpin;
+      QHBoxLayout *layout;
 
-      QString sectionText(int sec);
-      Section sec[2];
-
-      bool adv;
-      bool overwrite;
-      int timerId;
-      bool typing;
-      bool changed;
-      SigEditor *ed;
-      SpinBox* controls;
-
-   private slots:
-      void stepUp();
-      void stepDown();
+      virtual void paintEvent(QPaintEvent* event);
+      void updateValue();
 
    signals:
-      void valueChanged(int, int);
+      void valueChanged(const MusECore::TimeSignature&);
       void returnPressed();
+      void escapePressed();
 
-   protected:
-      virtual bool event(QEvent *e );
-      void timerEvent(QTimerEvent* e);
-      virtual void resizeEvent(QResizeEvent*);
-      QString sectionFormattedText(int sec);
-      void addNumber(int sec, int num);
-      void removeLastNumber(int sec);
-      bool setFocusSection(int s);
-
-      virtual bool outOfRange(int, int) const;
-      virtual void setSec(int, int);
-      friend class SigEditor;
-
-   protected slots:
-      void updateButtons();
+   private slots:
+      void setN(const int n);
+      void setZ(const int z);
+      void moveFocus();
 
    public slots:
-      virtual void setValue(const Sig& sig);
-      void setValue(const QString& s);
+      void setValue(const MusECore::TimeSignature&);
+      void setFocus();
 
    public:
-      SigEdit(QWidget*,  const char* = 0);
+      SigEdit(QWidget* parent = 0);
       ~SigEdit();
-
-      QSize sizeHint() const;
-      Sig sig() const;
-      virtual void setAutoAdvance(bool advance) { adv = advance; }
-      bool autoAdvance() const                  { return adv; }
-      void enterPressed();
+      MusECore::TimeSignature sig() const { return _sig; }
+      void setFrame(bool v) { zSpin->setFrame(v); nSpin->setFrame(v); }
       };
-
-} // namespace MusEGui
+}
 
 #endif

@@ -23,10 +23,11 @@
 
 #include "sig_tempo_toolbar.h"
 #include "tempolabel.h"
-#include "awl/sigedit.h"
+#include "sigedit.h"
 #include "song.h"
 #include "icons.h"
 #include "pixmap_button.h"
+#include "sig.h"
 
 #include <QLabel>
 #include <QToolButton>
@@ -186,10 +187,10 @@ SigToolbar::SigToolbar(const QString& title, QWidget* parent)
 void SigToolbar::init()
 {
   setObjectName("Signature toolbar");
-  sig_edit=new Awl::SigEdit(this);
+  sig_edit=new SigEdit(this);
   sig_edit->setContentsMargins(0, 0, 0, 0);
   sig_edit->setFocusPolicy(Qt::StrongFocus);
-  sig_edit->setValue(AL::TimeSignature(4, 4));
+  sig_edit->setValue(MusECore::TimeSignature(4, 4));
   sig_edit->setToolTip(tr("time signature at current position"));
   
   label=new QLabel(tr("Signature: "),this);
@@ -201,7 +202,7 @@ void SigToolbar::init()
   connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(song_changed(MusECore::SongChangedStruct_t)));
   connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(pos_changed(int,unsigned,bool)));
   
-  connect(sig_edit, SIGNAL(valueChanged(const AL::TimeSignature&)), MusEGlobal::song, SLOT(setSig(const AL::TimeSignature&)));
+  connect(sig_edit, SIGNAL(valueChanged(const MusECore::TimeSignature&)), MusEGlobal::song, SLOT(setSig(const MusECore::TimeSignature&)));
   connect(sig_edit, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
   connect(sig_edit, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
 
@@ -219,9 +220,9 @@ void SigToolbar::song_changed(MusECore::SongChangedStruct_t type)
   if(type._flags & SC_SIG)
   {
     int z, n;
-    AL::sigmap.timesig(MusEGlobal::song->cpos(), z, n);
+    MusEGlobal::sigmap.timesig(MusEGlobal::song->cpos(), z, n);
     sig_edit->blockSignals(true);
-    sig_edit->setValue(AL::TimeSignature(z, n));
+    sig_edit->setValue(MusECore::TimeSignature(z, n));
     sig_edit->blockSignals(false);
   }
 }

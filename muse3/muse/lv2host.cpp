@@ -48,6 +48,7 @@
 #include <QtGui/QWindow>
 #include <QVBoxLayout>
 
+#include "pluglist.h"
 #include "lv2host.h"
 #include "synth.h"
 #include "audio.h"
@@ -72,7 +73,6 @@
 
 #include <cmath>
 #include <assert.h>
-#include <stdio.h>
 #include <stdarg.h>
 
 #include <sys/types.h>
@@ -132,7 +132,8 @@ namespace MusECore
 
 
 static LilvWorld *lilvWorld = 0;
-static int uniqueID = 1;
+// LV2 does not use unique id numbers and frowns upon using anything but the uri.
+// static int uniqueID = 1;
 
 //uri cache structure.
 typedef struct
@@ -234,216 +235,204 @@ std::vector<LV2Synth *> synthsToFree;
 void initLV2()
 {
 #ifdef HAVE_GTK2
-   //----------------- 
-   // Initialize Gtk
-   //----------------- 
-   MusEGui::lv2Gtk2Helper_init();
+  //----------------- 
+  // Initialize Gtk
+  //----------------- 
+  MusEGui::lv2Gtk2Helper_init();
 #endif
+    
+  std::set<std::string> supportedFeatures;
+  uint32_t i = 0;
+
+  if(MusEGlobal::debugMsg)
+    std::cerr << "LV2: MusE supports these features:" << std::endl;
+    
+  for(i = 0; i < SIZEOF_ARRAY(lv2Features); i++)
+  {
+    supportedFeatures.insert(lv2Features [i].URI);
+    if(MusEGlobal::debugMsg)
+      std::cerr << "\t" << lv2Features [i].URI << std::endl;
+  }
+
+  lilvWorld = lilv_world_new();
+
+  lv2CacheNodes.atom_AtomPort          = lilv_new_uri(lilvWorld, LV2_ATOM__AtomPort);
+  lv2CacheNodes.ev_EventPort           = lilv_new_uri(lilvWorld, LV2_EVENT__EventPort);
+  lv2CacheNodes.lv2_AudioPort          = lilv_new_uri(lilvWorld, LV2_CORE__AudioPort);
+  lv2CacheNodes.lv2_ControlPort        = lilv_new_uri(lilvWorld, LV2_CORE__ControlPort);
+  lv2CacheNodes.lv2_InputPort          = lilv_new_uri(lilvWorld, LV2_CORE__InputPort);
+  lv2CacheNodes.lv2_OutputPort         = lilv_new_uri(lilvWorld, LV2_CORE__OutputPort);
+  lv2CacheNodes.lv2_connectionOptional = lilv_new_uri(lilvWorld, LV2_CORE__connectionOptional);
+  lv2CacheNodes.host_uiType            = lilv_new_uri(lilvWorld, LV2_UI_HOST_URI);
+  lv2CacheNodes.ext_uiType             = lilv_new_uri(lilvWorld, LV2_UI_EXTERNAL);
+  lv2CacheNodes.ext_d_uiType           = lilv_new_uri(lilvWorld, LV2_UI_EXTERNAL_DEPRECATED);
+  lv2CacheNodes.lv2_portContinuous     = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__continuousCV);
+  lv2CacheNodes.lv2_portDiscrete       = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__discreteCV);
+  lv2CacheNodes.lv2_portLogarithmic    = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__logarithmic);
+  lv2CacheNodes.lv2_portInteger        = lilv_new_uri(lilvWorld, LV2_CORE__integer);
+  lv2CacheNodes.lv2_portTrigger        = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__trigger);
+  lv2CacheNodes.lv2_portToggled        = lilv_new_uri(lilvWorld, LV2_CORE__toggled);
+  lv2CacheNodes.lv2_TimePosition       = lilv_new_uri(lilvWorld, LV2_TIME__Position);
+  lv2CacheNodes.lv2_FreeWheelPort      = lilv_new_uri(lilvWorld, LV2_CORE__freeWheeling);
+  lv2CacheNodes.lv2_SampleRate         = lilv_new_uri(lilvWorld, LV2_CORE__sampleRate);
+  lv2CacheNodes.lv2_CVPort             = lilv_new_uri(lilvWorld, LV2_CORE__CVPort);
+  lv2CacheNodes.lv2_psetPreset         = lilv_new_uri(lilvWorld, LV2_PRESETS__Preset);
+  lv2CacheNodes.lv2_rdfsLabel          = lilv_new_uri(lilvWorld, "http://www.w3.org/2000/01/rdf-schema#label");
+  lv2CacheNodes.lv2_actionSavePreset   = lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionSavePreset");
+  lv2CacheNodes.lv2_actionUpdatePresets= lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionUpdatePresets");
+  lv2CacheNodes.end                    = NULL;
+
+  lilv_world_load_all(lilvWorld);
+  
+  // "Return a list of all found plugins.
+  // The returned list contains just enough references to query
+  // or instantiate plugins.  The data for a particular plugin will not be
+  // loaded into memory until a call to an lilv_plugin_* function results in
+  // a query (at which time the data is cached with the LilvPlugin so future
+  // queries are very fast)."
+  const LilvPlugins *plugins = lilv_world_get_all_plugins(lilvWorld);
+   
+  const char* message = "initLV2: ";
+  const MusEPlugin::PluginScanList& scan_list = MusEPlugin::pluginList;
+  for(MusEPlugin::ciPluginScanList isl = scan_list.begin(); isl != scan_list.end(); ++isl)
+  {
+    const MusEPlugin::PluginScanInfoRef inforef = *isl;
+    const MusEPlugin::PluginScanInfoStruct& info = inforef->info();
+    switch(info._type)
+    {
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
+      {
+        if(MusEGlobal::loadLV2)
+        {
+          const QString inf_cbname = PLUGIN_GET_QSTRING(info._completeBaseName);
+          const QString inf_name   = PLUGIN_GET_QSTRING(info._name);
+          const Plugin* plug_found = MusEGlobal::plugins.find(inf_cbname, inf_name);
+          const Synth* synth_found = MusEGlobal::synthis.find(inf_cbname, inf_name);
+          
+          if(plug_found)
+          {
+            fprintf(stderr, "Ignoring LV2 effect name:%s path:%s duplicate of path:%s\n",
+                    PLUGIN_GET_CSTRING(info._name),
+                    PLUGIN_GET_CSTRING(info.filePath()),
+                    plug_found->filePath().toLatin1().constData());
+          }
+          if(synth_found)
+          {
+            fprintf(stderr, "Ignoring LV2 synth name:%s path:%s duplicate of path:%s\n",
+                    PLUGIN_GET_CSTRING(info._name),
+                    PLUGIN_GET_CSTRING(info.filePath()),
+                    synth_found->filePath().toLatin1().constData());
+          }
+          
+          const bool is_effect = info._class & MusEPlugin::PluginScanInfoStruct::PluginClassEffect;
+          const bool is_synth  = info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument;
+          
+          const bool add_plug  = (is_effect || is_synth) &&
+                                 info._inports > 0 && info._outports > 0 &&
+                                 !plug_found;
+                                 
+          // For now we allow effects as a synth track. Until we allow programs (and midi) in the effect rack.
+          const bool add_synth = (is_synth || is_effect) && !synth_found;
+                                 
+          if(add_plug || add_synth)
+          {
+            const LilvPlugin* plugin = NULL;
+            LilvNode* plugin_uri_node = lilv_new_uri(lilvWorld, PLUGIN_GET_CSTRING(info._uri));
+            if(plugin_uri_node)
+            {
+              plugin = lilv_plugins_get_by_uri(plugins, plugin_uri_node);
+              lilv_node_free(plugin_uri_node);
+              if(!plugin)
+              {
+                std::cerr << "LV2Synth: Plugin not found " << PLUGIN_GET_CSTRING(info._label) << "!" << std::endl;
+                break;
+              }
+            }
+            
+            //QString pluginName = MusEPlugin::getQString(info._name);
+            QString pluginName;
+
+            LilvNode *nameNode = lilv_plugin_get_name(plugin);
+            if(nameNode)
+            {
+              if(lilv_node_is_string(nameNode))
+                pluginName = QString(lilv_node_as_string(nameNode));
+              lilv_node_free(nameNode);
+            }
+            
+            if(!pluginName.isEmpty())
+            {
+              //QString pluginUri = MusEPlugin::getQString(info._uri);
+              //QString pluginUri;
+              //const LilvNode *uriNode = lilv_plugin_get_uri(plugin);
+              //if(uriNode)
+              //{
+              //  if(lilv_node_is_string(uriNode))
+              //    pluginUri = QString(lilv_node_as_string(uriNode));
+              //}
+              
+              //const QString name = MusEPlugin::getQString(info._name);
+              const QString name = QString(pluginName) + QString(" LV2");
+              
+              //QString label = QString(pluginUri) + QString("_LV2");
+              //const QString label = MusEPlugin::getQString(info._label);
+              
+              //const QString author = MusEPlugin::getQString(info._maker);
+              QString author;
+              LilvNode *nAuthor = lilv_plugin_get_author_name(plugin);
+              if(nAuthor)
+              {
+                author = lilv_node_as_string(nAuthor);
+                lilv_node_free(nAuthor);
+              }
+
+              LV2Synth *new_synth = new LV2Synth(
+                PLUGIN_GET_QSTRING(info.filePath()),
+                name,
+                name,
+                author,
+                plugin,
+                info._requiredFeatures);
+
+              if(new_synth->isConstructed())
+              {
+                if(add_synth)
+                {
+                  MusEGlobal::synthis.push_back(new_synth);
+                }
+                else
+                {
+                    synthsToFree.push_back(new_synth);
+                }
+
+                if(add_plug)
+                {
+                  if(MusEGlobal::debugMsg)
+                    info.dump(message);
+                  MusEGlobal::plugins.push_back(new LV2PluginWrapper(new_synth, info._requiredFeatures));
+                }
+              }
+              else
+              {
+                delete new_synth;
+              }
+            }
+          }
+        }
+      }
+      break;
       
-   std::set<std::string> supportedFeatures;
-   uint32_t i = 0;
-
-   if(MusEGlobal::debugMsg)
-     std::cerr << "LV2: MusE supports these features:" << std::endl;
-     
-   for(i = 0; i < SIZEOF_ARRAY(lv2Features); i++)
-   {
-      supportedFeatures.insert(lv2Features [i].URI);
-      if(MusEGlobal::debugMsg)
-        std::cerr << "\t" << lv2Features [i].URI << std::endl;
-   }
-
-   lilvWorld = lilv_world_new();
-
-   lv2CacheNodes.atom_AtomPort          = lilv_new_uri(lilvWorld, LV2_ATOM__AtomPort);
-   lv2CacheNodes.ev_EventPort           = lilv_new_uri(lilvWorld, LV2_EVENT__EventPort);
-   lv2CacheNodes.lv2_AudioPort          = lilv_new_uri(lilvWorld, LV2_CORE__AudioPort);
-   lv2CacheNodes.lv2_ControlPort        = lilv_new_uri(lilvWorld, LV2_CORE__ControlPort);
-   lv2CacheNodes.lv2_InputPort          = lilv_new_uri(lilvWorld, LV2_CORE__InputPort);
-   lv2CacheNodes.lv2_OutputPort         = lilv_new_uri(lilvWorld, LV2_CORE__OutputPort);
-   lv2CacheNodes.lv2_connectionOptional = lilv_new_uri(lilvWorld, LV2_CORE__connectionOptional);
-   lv2CacheNodes.host_uiType            = lilv_new_uri(lilvWorld, LV2_UI_HOST_URI);
-   lv2CacheNodes.ext_uiType             = lilv_new_uri(lilvWorld, LV2_UI_EXTERNAL);
-   lv2CacheNodes.ext_d_uiType           = lilv_new_uri(lilvWorld, LV2_UI_EXTERNAL_DEPRECATED);
-   lv2CacheNodes.lv2_portContinuous     = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__continuousCV);
-   lv2CacheNodes.lv2_portDiscrete       = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__discreteCV);
-   lv2CacheNodes.lv2_portLogarithmic    = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__logarithmic);
-   lv2CacheNodes.lv2_portInteger        = lilv_new_uri(lilvWorld, LV2_CORE__integer);
-   lv2CacheNodes.lv2_portTrigger        = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__trigger);
-   lv2CacheNodes.lv2_portToggled        = lilv_new_uri(lilvWorld, LV2_CORE__toggled);
-   lv2CacheNodes.lv2_TimePosition       = lilv_new_uri(lilvWorld, LV2_TIME__Position);
-   lv2CacheNodes.lv2_FreeWheelPort      = lilv_new_uri(lilvWorld, LV2_CORE__freeWheeling);
-   lv2CacheNodes.lv2_SampleRate         = lilv_new_uri(lilvWorld, LV2_CORE__sampleRate);
-   lv2CacheNodes.lv2_CVPort             = lilv_new_uri(lilvWorld, LV2_CORE__CVPort);
-   lv2CacheNodes.lv2_psetPreset         = lilv_new_uri(lilvWorld, LV2_PRESETS__Preset);
-   lv2CacheNodes.lv2_rdfsLabel          = lilv_new_uri(lilvWorld, "http://www.w3.org/2000/01/rdf-schema#label");
-   lv2CacheNodes.lv2_actionSavePreset   = lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionSavePreset");
-   lv2CacheNodes.lv2_actionUpdatePresets= lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionUpdatePresets");
-   lv2CacheNodes.end                    = NULL;
-
-   lilv_world_load_all(lilvWorld);
-   const LilvPlugins *plugins = lilv_world_get_all_plugins(lilvWorld);
-   LilvIter *pit = lilv_plugins_begin(plugins);
-
-   while(true)
-   {
-      if(lilv_plugins_is_end(plugins, pit))
-      {
-         break;
-      }
-
-      const LilvPlugin *plugin = lilv_plugins_get(plugins, pit);
-
-      if(lilv_plugin_is_replaced(plugin))
-      {
-         pit = lilv_plugins_next(plugins, pit);
-         continue;
-      }
-
-      LilvNode *nameNode = lilv_plugin_get_name(plugin);
-      //const LilvNode *uriNode = lilv_plugin_get_uri(plugin);
-
-      if(lilv_node_is_string(nameNode))
-      {
-         bool shouldLoad = true;
-         const char *pluginName = lilv_node_as_string(nameNode);
-         //const char *pluginUri = lilv_node_as_string(uriNode);
-         if(MusEGlobal::debugMsg)
-           std::cerr << "Found LV2 plugin: " << pluginName << std::endl;
-         // lilv_uri_to_path is deprecated. Use lilv_file_uri_parse instead. Return value must be freed with lilv_free.
-         const char *lfp = lilv_file_uri_parse(lilv_node_as_string(lilv_plugin_get_library_uri(plugin)), NULL);
-         if(MusEGlobal::debugMsg)
-           std::cerr << "Library path: " << lfp << std::endl;
-
-         if(MusEGlobal::debugMsg)
-         {
-            const LilvPluginClass *cls = lilv_plugin_get_class(plugin);
-            const LilvNode *ncuri = lilv_plugin_class_get_uri(cls);
-            const char *clsname = lilv_node_as_uri(ncuri);
-            std::cerr << "Plugin class: " << clsname << std::endl;
-            bool isSynth = false;
-            if(strcmp(clsname, LV2_INSTRUMENT_CLASS) == 0)
-            {
-                isSynth = true;
-            }
-            if(isSynth)
-            {
-                std::cerr << "Plugin is synth" << std::endl;
-            }
-         }
-
-#ifdef DEBUG_LV2
-         std::cerr <<  "\tRequired features (by uri):" << std::endl;
-#endif
-         LilvNodes *fts = lilv_plugin_get_required_features(plugin);
-         LilvIter *nit = lilv_nodes_begin(fts);
-
-         PluginFeatures_t reqfeat = PluginNoFeatures;
-         while(true)
-         {
-            if(lilv_nodes_is_end(fts, nit))
-            {
-               break;
-            }
-
-            const LilvNode *fnode = lilv_nodes_get(fts, nit);
-            const char *uri = lilv_node_as_uri(fnode);
-            bool isSupported = (supportedFeatures.find(uri) != supportedFeatures.end());
-#ifdef DEBUG_LV2
-            std::cerr << "\t - " << uri << " (" << (isSupported ? "supported" : "not supported") << ")" << std::endl;
-#endif
-
-            if(isSupported)
-            {
-              if(strcmp(uri, LV2_F_FIXED_BLOCK_LENGTH) == 0)
-                reqfeat |= PluginFixedBlockSize;
-              else if(strcmp(uri, LV2_F_POWER_OF_2_BLOCK_LENGTH) == 0)
-                reqfeat |= PluginPowerOf2BlockSize;
-            }
-            else
-            {
-               shouldLoad = false;
-               std::cerr << "\t LV2: " << pluginName << ": Required feature: " << uri << ": not supported!" << std::endl;
-            }
-
-            nit = lilv_nodes_next(fts, nit);
-
-         }
-
-         lilv_nodes_free(fts);
-
-
-
-         //if (shouldLoad && isSynth)
-         if(shouldLoad)   //load all plugins for now, not only synths
-         {
-            QFileInfo fi(lfp);
-            QString name = QString(pluginName) + QString(" LV2");
-            //QString label = QString(pluginUri) + QString("_LV2");
-            // Make sure it doesn't already exist.
-            std::vector<Synth *>::iterator is;
-
-            for(is = MusEGlobal::synthis.begin(); is != MusEGlobal::synthis.end(); ++is)
-            {
-               Synth *s = *is;
-
-               if(s->name() == name && s->baseName() == fi.completeBaseName())
-               {
-                  break;
-               }
-            }
-
-            if(is == MusEGlobal::synthis.end())
-            {
-               LilvNode *nAuthor = lilv_plugin_get_author_name(plugin);
-               QString author;
-
-               if(nAuthor != NULL)
-               {
-                  author = lilv_node_as_string(nAuthor);
-                  lilv_node_free(nAuthor);
-               }
-
-               LV2Synth *s = new LV2Synth(fi, name, name, author, plugin, reqfeat);
-
-               if(s->isConstructed())
-               {
-
-                  if((s->isSynth() && s->outPorts() > 0)
-                          || (s->inPorts() > 0 && s->outPorts() > 0))
-                      //insert plugins with audio ins and outs to synths list too
-                  {
-                     MusEGlobal::synthis.push_back(s);
-                  }
-                  else
-                  {
-                     synthsToFree.push_back(s);
-                  }
-
-                  if(s->inPorts() > 0 && s->outPorts() > 0)   // insert to plugin list
-                  {
-                     MusEGlobal::plugins.push_back(new LV2PluginWrapper(s, reqfeat));
-
-                  }
-               }
-               else
-               {
-                  delete s;
-               }
-
-            }
-         }
-         lilv_free((void*)lfp); // Must free.
-      }
-
-      if(nameNode != NULL)
-      {
-         lilv_node_free(nameNode);
-      }
-
-      pit = lilv_plugins_next(plugins, pit);
-   }
-
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
+      break;
+    }
+  }
 }
 
 void deinitLV2()
@@ -2203,7 +2192,9 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
 {
 
    //fake id for LV2PluginWrapper functionality
-   _uniqueID = uniqueID++;
+// LV2 does not use unique id numbers and frowns upon using anything but the uri.
+//    _uniqueID = uniqueID++;
+//    _uniqueID = 0;
 
    _midi_event_id = mapUrid(LV2_MIDI__MidiEvent);
 
@@ -2561,7 +2552,8 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
 
 LV2Synth::~LV2Synth()
 {
-   LV2Synth::lv2state_UnloadLoadPresets(this);
+   if(_handle)
+     LV2Synth::lv2state_UnloadLoadPresets(this);
 
    if(_ppfeatures)
    {
@@ -2586,6 +2578,24 @@ LV2Synth::~LV2Synth()
       lilv_uis_free(_uis);
       _uis = NULL;
    }
+   
+  if(_pluginControlsDefault)
+  {
+    delete [] _pluginControlsDefault;
+    _pluginControlsDefault = NULL;
+  }
+    
+  if(_pluginControlsMin)
+  {
+    delete [] _pluginControlsMin;
+    _pluginControlsMin = NULL;
+  }
+    
+  if(_pluginControlsMax)
+  {
+    delete [] _pluginControlsMax;
+    _pluginControlsMax = NULL;
+  }
 }
 
 
@@ -4761,7 +4771,9 @@ LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, PluginFeatures_t reqFeatures)
    
    _fakeLd.Label      = strdup(_synth->name().toUtf8().constData());
    _fakeLd.Name       = strdup(_synth->name().toUtf8().constData());
-   _fakeLd.UniqueID   = _synth->_uniqueID;
+// LV2 does not use unique id numbers and frowns upon using anything but the uri.
+//    _fakeLd.UniqueID   = _synth->_uniqueID;
+   _fakeLd.UniqueID   = 0;
    _fakeLd.Maker      = strdup(_synth->maker().toUtf8().constData());
    _fakeLd.Copyright  = strdup(_synth->version().toUtf8().constData());
    _isLV2Plugin = true;

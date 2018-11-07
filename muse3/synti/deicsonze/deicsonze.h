@@ -616,7 +616,7 @@ class DeicsOnze : public Mess {
   virtual ~DeicsOnze();
 };
 
-extern QString DEI_configPath;
+extern QString DEI_hostConfigPath;
 extern QString DEI_sharePath;
 extern unsigned int DEI_segmentSize;
 extern int DEI_sampleRate;

@@ -116,6 +116,7 @@ struct GlobalConfigValues {
       QStringList pluginVstPathList;
       QStringList pluginLinuxVstPathList;
       QStringList pluginLv2PathList;
+      bool pluginCacheTriggerRescan; // Whether to trigger a plugin cache rescan.
 
       int globalAlphaBlend;
       QColor palette[16];

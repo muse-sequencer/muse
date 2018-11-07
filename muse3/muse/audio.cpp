@@ -441,11 +441,11 @@ bool Audio::startPreCount()
         
         int bar, beat;
         unsigned tick;
-        AL::sigmap.tickValues(curTickPos, &bar, &beat, &tick);
+        MusEGlobal::sigmap.tickValues(curTickPos, &bar, &beat, &tick);
 
         int z, n;
         if (MusEGlobal::precountFromMastertrackFlag)
-              AL::sigmap.timesig(curTickPos, z, n);
+              MusEGlobal::sigmap.timesig(curTickPos, z, n);
         else {
               z = MusEGlobal::precountSigZ;
               n = MusEGlobal::precountSigN;
@@ -1395,10 +1395,10 @@ void Audio::updateMidiClick()
   // Set the correct initial metronome midiClick.
   int bar, beat;
   unsigned tick;
-  AL::sigmap.tickValues(curTickPos, &bar, &beat, &tick);
+  MusEGlobal::sigmap.tickValues(curTickPos, &bar, &beat, &tick);
   if(tick)
     beat += 1;
-  midiClick = AL::sigmap.bar2tick(bar, beat, 0);
+  midiClick = MusEGlobal::sigmap.bar2tick(bar, beat, 0);
 }
 
 //---------------------------------------------------------

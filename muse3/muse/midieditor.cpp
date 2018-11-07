@@ -65,6 +65,11 @@ MidiEditor::MidiEditor(ToplevelType t, int r, MusECore::PartList* pl,
       connect(MusEGlobal::song, SIGNAL(newPartsCreated(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&)), SLOT(addNewParts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&)));
       }
 
+int MidiEditor::rasterStep(unsigned tick) const   { return MusEGlobal::sigmap.rasterStep(tick, _raster); }
+unsigned MidiEditor::rasterVal(unsigned v)  const { return MusEGlobal::sigmap.raster(v, _raster);  }
+unsigned MidiEditor::rasterVal1(unsigned v) const { return MusEGlobal::sigmap.raster1(v, _raster); }
+unsigned MidiEditor::rasterVal2(unsigned v) const { return MusEGlobal::sigmap.raster2(v, _raster); }
+
 //---------------------------------------------------------
 //   genPartlist
 //---------------------------------------------------------

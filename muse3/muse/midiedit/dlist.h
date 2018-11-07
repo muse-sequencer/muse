@@ -29,7 +29,7 @@
 #include <QSpinBox>
 
 #include "type_defs.h"
-#include "awl/pitchedit.h"
+#include "pitchedit.h"
 #include "view.h"
 
 #define TH  18                // normal Track-hight
@@ -53,6 +53,7 @@ namespace MusEGui {
 
 class ScrollScale;
 class DrumCanvas;
+class PitchEdit;
 
 enum DrumColumn {
   COL_HIDE = 0,
@@ -114,7 +115,7 @@ class DrumListSpinBox : public QSpinBox {
 //   DPitchEdit
 //---------------------------------------------------------
 
-class DPitchEdit: public Awl::PitchEdit
+class DPitchEdit: public PitchEdit
 {
   Q_OBJECT
 

@@ -172,7 +172,7 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
       int x = event->x();
       if (waveMode)
             x = MusEGlobal::tempomap.frame2tick(x);
-      x = AL::sigmap.raster(x, *raster);
+      x = MusEGlobal::sigmap.raster(x, *raster);
       if (x < 0)
             x = 0;
       //printf("MTScale::viewMouseMoveEvent\n");  
@@ -366,22 +366,22 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
 
       if (waveMode) {
             ctick = MusEGlobal::tempomap.frame2tick(mapxDev(x));
-            AL::sigmap.tickValues(ctick, &bar1, &beat, &tick);
-            AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mapxDev(x+w)),
+            MusEGlobal::sigmap.tickValues(ctick, &bar1, &beat, &tick);
+            MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mapxDev(x+w)),
                &bar2, &beat, &tick);
             }
       else {
             ctick = mapxDev(x);
-            AL::sigmap.tickValues(ctick, &bar1, &beat, &tick);
-            AL::sigmap.tickValues(mapxDev(x+w), &bar2, &beat, &tick);
+            MusEGlobal::sigmap.tickValues(ctick, &bar1, &beat, &tick);
+            MusEGlobal::sigmap.tickValues(mapxDev(x+w), &bar2, &beat, &tick);
             }
 
 //printf("bar %d  %d-%d=%d\n", bar, ntick, stick, ntick-stick);
 
-      int stick = AL::sigmap.bar2tick(bar1, 0, 0);
+      int stick = MusEGlobal::sigmap.bar2tick(bar1, 0, 0);
       int ntick;
       for (int bar = bar1; bar <= bar2; bar++, stick = ntick) {
-            ntick     = AL::sigmap.bar2tick(bar+1, 0, 0);
+            ntick     = MusEGlobal::sigmap.bar2tick(bar+1, 0, 0);
             int tpix, a, b=0;
             if (waveMode) {
                   a = MusEGlobal::tempomap.tick2frame(ntick);
@@ -417,9 +417,9 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
                   }
             else {
                   int z, n;
-                  AL::sigmap.timesig(stick, z, n);
+                  MusEGlobal::sigmap.timesig(stick, z, n);
                   for (int beat = 0; beat < z; beat++) {
-                        int xx = AL::sigmap.bar2tick(bar, beat, 0);
+                        int xx = MusEGlobal::sigmap.bar2tick(bar, beat, 0);
                         if (waveMode)
                               xx = MusEGlobal::tempomap.tick2frame(xx);
                         int xp = mapx(xx);

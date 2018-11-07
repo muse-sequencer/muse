@@ -37,6 +37,7 @@ add_executable ( muse_plugin_scan
 
 target_link_libraries(muse_plugin_scan
       plugin_scan_module
+      plugin_cache_writer_module
       dl
       ${QT_LIBRARIES}
       )

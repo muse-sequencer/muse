@@ -23,14 +23,11 @@
 #ifndef __POSEDIT_H__
 #define __POSEDIT_H__
 
-///#include "al/pos.h"
 #include "pos.h"
 
 #include <QAbstractSpinBox>
 
 namespace MusEGui {
-
-      ///using AL::Pos;
 
 //---------------------------------------------------------
 //   PosEdit

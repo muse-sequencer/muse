@@ -30,7 +30,7 @@
 #include "libsynti/mess.h"
 #include "common.h"
 #include "common_defs.h"
-#include "muse/mpevent.h"   
+#include "mpevent.h"   
 #include "simpledrumsgui.h"
 #include "libsimpleplugin/simpler_plugin.h"
 

@@ -58,7 +58,7 @@
 #include "stringparam.h"
 
 #include "plugin.h"
-#include "plugin_scan.h"
+#include "plugin_list.h"
 
 //#include <QMenu>
 #include "popupmenu.h"
@@ -96,7 +96,7 @@ class DssiSynth : public Synth {
    public:
       DssiSynth(QFileInfo&, const DSSI_Descriptor*, bool isDssiVst = false, 
                 PluginFeatures_t reqFeatures = PluginNoFeatures); // removed const for QFileInfo
-      DssiSynth(const PluginScanInfo& info);
+      DssiSynth(const MusEPlugin::PluginScanInfoStruct& info);
       virtual ~DssiSynth();
       virtual Type synthType() const { return DSSI_SYNTH; }
 

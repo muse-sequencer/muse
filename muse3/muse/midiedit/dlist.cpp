@@ -244,7 +244,7 @@ bool DPitchEdit::event(QEvent* e)
   }
 
   // Do not pass ANY events on to the parent.
-  Awl::PitchEdit::event(e);
+  PitchEdit::event(e);
   e->accept();
   return true;
 }

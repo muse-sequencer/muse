@@ -409,7 +409,7 @@ void WaveEdit::updateHScrollRange()
 {
       int s, e;
       canvas->range(&s, &e);   // Range in frames
-      unsigned tm = AL::sigmap.ticksMeasure(MusEGlobal::tempomap.frame2tick(e));
+      unsigned tm = MusEGlobal::sigmap.ticksMeasure(MusEGlobal::tempomap.frame2tick(e));
       
       // Show one more measure, and show another quarter measure due to imprecise drawing at canvas end point.
       //e += MusEGlobal::tempomap.tick2frame(tm + tm / 4);  // TODO: Try changing scrollbar to use units of frames?

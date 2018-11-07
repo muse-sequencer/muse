@@ -62,30 +62,25 @@
 #include "gconfig.h"
 #include "popupmenu.h"
 #include "lock_free_buffer.h"
+#include "pluglist.h"
 
 namespace MusECore {
 
 //---------------------------------------------------------
-//   scanDSSILib
+//   initDSSI
 //---------------------------------------------------------
 
-static void scanDSSILib(const QFileInfo& fi)
+void initDSSI()
 {
-  //const char* message = "scanDSSILib: ";
-  PluginScanList scan_list;
-  if(!pluginScan(fi.filePath(), scan_list, MusEGlobal::debugMsg))
+  const MusEPlugin::PluginScanList& scan_list = MusEPlugin::pluginList;
+  for(MusEPlugin::ciPluginScanList isl = scan_list.begin(); isl != scan_list.end(); ++isl)
   {
-    fprintf(stderr, "scanDSSILib: *FAILED* pluginScan(%s)\n\n",
-       fi.filePath().toLatin1().constData());
-  }
-  
-  for(ciPluginScanList isl = scan_list.begin(); isl != scan_list.end(); ++isl)
-  {
-    const PluginScanInfo& info = *isl;
+    const MusEPlugin::PluginScanInfoRef inforef = *isl;
+    const MusEPlugin::PluginScanInfoStruct& info = inforef->info();
     switch(info._type)
     {
-      case PluginScanInfo::PluginTypeDSSI:
-      case PluginScanInfo::PluginTypeDSSIVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST:
       {
 #ifdef DSSI_SUPPORT
         if(MusEGlobal::loadDSSI)
@@ -111,15 +106,16 @@ static void scanDSSILib(const QFileInfo& fi)
           //}
             
           // For now we allow effects as a synth track. Until we allow programs (and midi) in the effect rack.
-          if(info._class & PluginScanInfo::PluginClassEffect ||
-            info._class & PluginScanInfo::PluginClassInstrument)
+          if(info._class & MusEPlugin::PluginScanInfoStruct::PluginClassEffect ||
+            info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument)
           {
             // Make sure it doesn't already exist.
-            if(const Synth* sy = MusEGlobal::synthis.find(info._fi.completeBaseName(), info._label))
+            if(const Synth* sy = MusEGlobal::synthis.find(PLUGIN_GET_QSTRING(info._completeBaseName),
+               PLUGIN_GET_QSTRING(info._label)))
             {
               fprintf(stderr, "Ignoring DSSI synth label:%s path:%s duplicate of path:%s\n",
-                      info._label.toLatin1().constData(),
-                      info._fi.filePath().toLatin1().constData(),
+                      PLUGIN_GET_CSTRING(info._label),
+                      PLUGIN_GET_CSTRING(info.filePath()),
                       sy->filePath().toLatin1().constData());
             }
             else
@@ -133,78 +129,17 @@ static void scanDSSILib(const QFileInfo& fi)
       }
       break;
       
-      case PluginScanInfo::PluginTypeLADSPA:
-      case PluginScanInfo::PluginTypeVST:
-      case PluginScanInfo::PluginTypeLV2:
-      case PluginScanInfo::PluginTypeLinuxVST:
-      case PluginScanInfo::PluginTypeMESS:
-      case PluginScanInfo::PluginTypeAll:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
       break;
     }
   }
 }
-
-//---------------------------------------------------------
-//   scanVstDir
-//---------------------------------------------------------
-
-static void scanDSSIDir(const QString& s)
-{
-      if(MusEGlobal::debugMsg)
-        printf("scanDSSIDir: scan DSSI plugin dir <%s>\n", s.toLatin1().constData());
-
-#ifdef __APPLE__
-      QDir pluginDir(s, QString("*.dylib"), QDir::Unsorted, QDir::Files);
-#else
-      QDir pluginDir(s, QString("*.so"), QDir::Unsorted, QDir::Files);
-#endif
-      if(!pluginDir.exists())
-        return;
-
-      QStringList list = pluginDir.entryList();
-      for(int i = 0; i < list.count(); ++i) 
-      {
-        if(MusEGlobal::debugMsg)
-          printf("scanDSSIDir: found %s\n", (s + QString("/") + list[i]).toLatin1().constData());
-
-        QFileInfo fi(s + QString("/") + list[i]);
-        scanDSSILib(fi);
-      }
-}
-
-//---------------------------------------------------------
-//   initDSSI
-//---------------------------------------------------------
-
-void initDSSI()
-      {
-      std::string s;
-      const char* dssiPath = getenv("DSSI_PATH");
-      if (dssiPath == 0)
-      {
-          const char* home = getenv("HOME");
-          s = std::string(home) + std::string("/dssi:/usr/local/lib64/dssi:/usr/lib64/dssi:/usr/local/lib/dssi:/usr/lib/dssi");
-          dssiPath = s.c_str();
-      }
-      const char* p = dssiPath;
-      while (*p != '\0') {
-            const char* pe = p;
-            while (*pe != ':' && *pe != '\0')
-                  pe++;
-
-            int n = pe - p;
-            if (n) {
-                  char* buffer = new char[n + 1];
-                  strncpy(buffer, p, n);
-                  buffer[n] = '\0';
-                  scanDSSIDir(QString(buffer));
-                  delete[] buffer;
-                  }
-            p = pe;
-            if (*p == ':')
-                  p++;
-            }
-      }
 
 //---------------------------------------------------------
 //   DssiSynth
@@ -266,21 +201,21 @@ DssiSynth::DssiSynth(QFileInfo& fi, const DSSI_Descriptor* d, bool isDssiVst, Pl
 //   Synth.version =  nil (no such field in ladspa, maybe try copyright instead)
 //---------------------------------------------------------
 
-DssiSynth::DssiSynth(const PluginScanInfo& info) 
- : Synth(info._fi,
-         info._label,
-         info._name,
-         info._maker,
+DssiSynth::DssiSynth(const MusEPlugin::PluginScanInfoStruct& info) 
+ : Synth(PLUGIN_GET_QSTRING(info.filePath()),
+         PLUGIN_GET_QSTRING(info._label),
+         PLUGIN_GET_QSTRING(info._name),
+         PLUGIN_GET_QSTRING(info._maker),
          QString(),
          info._requiredFeatures) 
 {
   df = 0;
   handle = 0;
   dssi = 0;
-  _isDssiVst = info._type == PluginScanInfo::PluginTypeDSSIVST;
+  _isDssiVst = info._type == MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST;
   
 //   _hasGui = false;
-  _hasGui = info._hasGui;
+  _hasGui = info._pluginFlags & MusEPlugin::PluginScanInfoStruct::HasGui;
 
   _portCount = info._portCount;
   

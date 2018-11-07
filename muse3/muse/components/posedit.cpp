@@ -20,10 +20,9 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //=============================================================================
 
-#include "al/al.h"
-//#include "awl.h"
+#include "sync.h"
 #include "posedit.h"
-#include "al/sig.h"
+#include "sig.h"
 
 #include <QApplication>
 #include <QKeyEvent>
@@ -34,7 +33,7 @@
 
 namespace MusEGui {
 
-      using AL::sigmap;
+      using MusEGlobal::sigmap;
 
 //---------------------------------------------------------
 //   PosEdit
@@ -307,7 +306,7 @@ QAbstractSpinBox::StepEnabled PosEdit::stepEnabled() const
                         else
                         {
                           int nf = 23;    // 24 frames sec
-                          switch(AL::mtcType) {
+                          switch(MusEGlobal::mtcType) {
                                 //case 0:     // 24 frames sec
                                 //      nf = 23;
                                 //      break;
@@ -337,9 +336,9 @@ QAbstractSpinBox::StepEnabled PosEdit::stepEnabled() const
       else {
             int bar, beat;
             unsigned tick;
-            AL::sigmap.tickValues(_pos.tick(), &bar, &beat, &tick);
-            unsigned tb = AL::sigmap.ticksBeat(_pos.tick());
-            unsigned tm = AL::sigmap.ticksMeasure(_pos.tick());
+            MusEGlobal::sigmap.tickValues(_pos.tick(), &bar, &beat, &tick);
+            unsigned tb = MusEGlobal::sigmap.ticksBeat(_pos.tick());
+            unsigned tm = MusEGlobal::sigmap.ticksMeasure(_pos.tick());
             int bm = tm / tb;
 
             switch (segment) {
@@ -415,7 +414,7 @@ QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
           rv = state;
           
         int nf = 23;      // 24 frames sec
-        switch(AL::mtcType) {
+        switch(MusEGlobal::mtcType) {
               //case 0:     // 24 frames sec
               //      nf = 23;
               //      break;
@@ -451,8 +450,8 @@ QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
           return QValidator::Invalid;
         }
           
-        int tb = AL::sigmap.ticksBeat(_pos.tick());
-        unsigned tm = AL::sigmap.ticksMeasure(_pos.tick());
+        int tb = MusEGlobal::sigmap.ticksBeat(_pos.tick());
+        unsigned tm = MusEGlobal::sigmap.ticksMeasure(_pos.tick());
         if (tm==0)
           return QValidator::Invalid;
         int bm = tm / tb;
@@ -558,7 +557,7 @@ void PosEdit::stepBy(int steps)
                   case 2:
                         {
                           int nf = 23;      // 24 frames sec
-                          switch(AL::mtcType) {
+                          switch(MusEGlobal::mtcType) {
                                 //case 0:     // 24 frames sec
                                 //      nf = 23;
                                 //      break;
@@ -605,10 +604,10 @@ void PosEdit::stepBy(int steps)
             int bar, beat, tick;
             _pos.mbt(&bar, &beat, &tick);
 
-            int tb = AL::sigmap.ticksBeat(_pos.tick());
-            //int tb = sigmap.ticksBeat(_pos.tick());
-            unsigned tm = AL::sigmap.ticksMeasure(_pos.tick());
-            //unsigned tm = sigmap.ticksMeasure(_pos.tick());
+            int tb = MusEGlobal::sigmap.ticksBeat(_pos.tick());
+            //int tb = MusEGlobal::sigmap.ticksBeat(_pos.tick());
+            unsigned tm = MusEGlobal::sigmap.ticksMeasure(_pos.tick());
+            //unsigned tm = MusEGlobal::sigmap.ticksMeasure(_pos.tick());
             int bm = tm / tb;
 
             switch(segment) {
@@ -711,6 +710,6 @@ bool PosEdit::finishEdit()
 }
 
 
-} // namespace Awl
+} // namespace MusEGui
 
 

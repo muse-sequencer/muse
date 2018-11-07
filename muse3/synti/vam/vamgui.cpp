@@ -43,7 +43,7 @@
 #include <QSignalMapper>
 #include <QSlider>
 
-#include "muse/xml.h"
+#include "xml.h"
 #include "muse/midi_consts.h"
 #include "muse/midictrl_consts.h"
 #include "muse/icons.h"

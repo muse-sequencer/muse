@@ -32,7 +32,7 @@
 #include "midictrl.h" 
 #include "ctrl.h"
 #include "tempo.h" 
-#include "al/sig.h" 
+#include "sig.h" 
 #include "keyevent.h"
 #include "part.h"
 #include "track.h"
@@ -229,7 +229,7 @@ struct PendingOperationItem
     MidiCtrlValListList* _mcvll;
     CtrlListList* _aud_ctrl_list_list;
     TempoList* _tempo_list;  
-    AL::SigList* _sig_list; 
+    MusECore::SigList* _sig_list; 
     KeyList* _key_list;
     PartList* _part_list; 
     TrackList* _track_list;
@@ -247,7 +247,7 @@ struct PendingOperationItem
     MidiCtrlValList* _mcvl;
     CtrlList* _aud_ctrl_list;
     TEvent* _tempo_event; 
-    AL::SigEvent* _sig_event; 
+    MusECore::SigEvent* _sig_event; 
     Route* _dst_route_pointer;
     float* _newAudioSamples;
   };
@@ -259,7 +259,7 @@ struct PendingOperationItem
   iCtrl _iCtrl;
   iCtrlList _iCtrlList;
   iTEvent _iTEvent;
-  AL::iSigEvent _iSigEvent;
+  MusECore::iSigEvent _iSigEvent;
   iKeyEvent _iKeyEvent;
   iMidiInstrument _iMidiInstrument;
   iMidiDevice _iMidiDevice;
@@ -456,15 +456,15 @@ struct PendingOperationItem
 
     
   // NOTE: 'tick' is the desired tick. se is a new SigEvent with sig and (same) desired tick. Swapping with NEXT event is done.
-  PendingOperationItem(AL::SigList* sl, AL::SigEvent* se, int tick, PendingOperationType type = AddSig)
+  PendingOperationItem(MusECore::SigList* sl, MusECore::SigEvent* se, int tick, PendingOperationType type = AddSig)
     { _type = type; _sig_list = sl; _sig_event = se; _intA = tick; }
     
   // NOTE: _sig_event is required. We must erase 'ise' in stage 2, then delete the SigEvent* in stage 3 (not stage 1),
   //        so 'ise' is unavailable to fetch the SigEvent* from it (in ise->second).
-  PendingOperationItem(AL::SigList* sl, const AL::iSigEvent& ise, PendingOperationType type = DeleteSig)
+  PendingOperationItem(MusECore::SigList* sl, const MusECore::iSigEvent& ise, PendingOperationType type = DeleteSig)
     { _type = type; _sig_list = sl; _iSigEvent = ise; _sig_event = ise->second; }
     
-  PendingOperationItem(AL::SigList* sl, const AL::iSigEvent& ise, const AL::TimeSignature& s, PendingOperationType type = ModifySig)
+  PendingOperationItem(MusECore::SigList* sl, const MusECore::iSigEvent& ise, const MusECore::TimeSignature& s, PendingOperationType type = ModifySig)
     { _type = type; _sig_list = sl; _iSigEvent = ise; _intA = s.z; _intB = s.n; }
     
     
@@ -525,8 +525,8 @@ class PendingOperationList : public std::list<PendingOperationItem>
     iterator findAllocationOp(const PendingOperationItem& op);
 
     // Returns true if successful.
-    bool addTimeSigOperation(unsigned tick, const AL::TimeSignature& s, AL::SigList* sl);
-    bool delTimeSigOperation(unsigned tick, AL::SigList* sl);
+    bool addTimeSigOperation(unsigned tick, const MusECore::TimeSignature& s, MusECore::SigList* sl);
+    bool delTimeSigOperation(unsigned tick, MusECore::SigList* sl);
     bool addTempoOperation(unsigned tick, int tempo, TempoList* tl);
     bool delTempoOperation(unsigned tick, TempoList* tl);
 };

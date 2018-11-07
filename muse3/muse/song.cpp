@@ -63,12 +63,12 @@
 #include "midi_audio_control.h"
 #include "tracks_duplicate.h"
 #include "midi.h"
-#include "al/sig.h"
+#include "sig.h"
 #include "keyevent.h"
 #include <sys/wait.h>
 #include "tempo.h"
 #include "route.h"
-#include "libs/strntcpy.h"
+#include "strntcpy.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
@@ -159,7 +159,7 @@ void Song::setSig(int z, int n)
             }
       }
 
-void Song::setSig(const AL::TimeSignature& sig)
+void Song::setSig(const MusECore::TimeSignature& sig)
       {
       if (_masterFlag) {
             MusEGlobal::audio->msgAddSig(pos[0].tick(), sig.z, sig.n);
@@ -872,9 +872,9 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
             newpart      = new MidiPart(mt);
             
             // Round the start down using the Arranger part snap raster value. 
-            startTick = AL::sigmap.raster1(startTick, arrangerRaster());
+            startTick = MusEGlobal::sigmap.raster1(startTick, arrangerRaster());
             // Round the end up using the Arranger part snap raster value. 
-            endTick   = AL::sigmap.raster2(endTick, arrangerRaster());
+            endTick   = MusEGlobal::sigmap.raster2(endTick, arrangerRaster());
             
             newpart->setTick(startTick);
             newpart->setLenTick(endTick - startTick);
@@ -905,7 +905,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
                   }
             
             // Round the end up (again) using the Arranger part snap raster value. 
-            endTick   = AL::sigmap.raster2(endTick, arrangerRaster());
+            endTick   = MusEGlobal::sigmap.raster2(endTick, arrangerRaster());
             
             operations.push_back(UndoOp(UndoOp::ModifyPartLength, part, part->lenValue(), endTick, Pos::TICKS));
       }
@@ -1371,7 +1371,7 @@ void Song::updatePos()
 
 void Song::initLen()
       {
-      _len = AL::sigmap.bar2tick(40, 0, 0);    // default song len
+      _len = MusEGlobal::sigmap.bar2tick(40, 0, 0);    // default song len
       for (iTrack t = _tracks.begin(); t != _tracks.end(); ++t) {
             Track* track = dynamic_cast<Track*>(*t);
             if (track == 0)
@@ -1394,9 +1394,9 @@ int Song::roundUpBar(int t) const
       {
       int bar, beat;
       unsigned tick;
-      AL::sigmap.tickValues(t, &bar, &beat, &tick);
+      MusEGlobal::sigmap.tickValues(t, &bar, &beat, &tick);
       if (beat || tick)
-            return AL::sigmap.bar2tick(bar+1, 0, 0);
+            return MusEGlobal::sigmap.bar2tick(bar+1, 0, 0);
       return t;
       }
 
@@ -1408,9 +1408,9 @@ int Song::roundUpBeat(int t) const
       {
       int bar, beat;
       unsigned tick;
-      AL::sigmap.tickValues(t, &bar, &beat, &tick);
+      MusEGlobal::sigmap.tickValues(t, &bar, &beat, &tick);
       if (tick)
-            return AL::sigmap.bar2tick(bar, beat+1, 0);
+            return MusEGlobal::sigmap.bar2tick(bar, beat+1, 0);
       return t;
       }
 
@@ -1422,8 +1422,8 @@ int Song::roundDownBar(int t) const
       {
       int bar, beat;
       unsigned tick;
-      AL::sigmap.tickValues(t, &bar, &beat, &tick);
-      return AL::sigmap.bar2tick(bar, 0, 0);
+      MusEGlobal::sigmap.tickValues(t, &bar, &beat, &tick);
+      return MusEGlobal::sigmap.bar2tick(bar, 0, 0);
       }
 
 //---------------------------------------------------------
@@ -1433,7 +1433,7 @@ int Song::roundDownBar(int t) const
 void Song::dumpMaster()
       {
       MusEGlobal::tempomap.dump();
-      AL::sigmap.dump();
+      MusEGlobal::sigmap.dump();
       }
 
 //---------------------------------------------------------
@@ -2019,7 +2019,7 @@ void Song::clear(bool signal, bool clear_all)
       
       MusEGlobal::tempomap.clear();
       MusEGlobal::tempo_rec_list.clear();
-      AL::sigmap.clear();
+      MusEGlobal::sigmap.clear();
       MusEGlobal::keymap.clear();
       
       undoList->clearDelete();
@@ -2060,7 +2060,7 @@ void Song::clear(bool signal, bool clear_all)
       _cycleMode     = CYCLE_NORMAL;
       _click         = false;
       _quantize      = false;
-      _len           = AL::sigmap.bar2tick(150, 0, 0);  // default song len in ticks set for 150 bars
+      _len           = MusEGlobal::sigmap.bar2tick(150, 0, 0);  // default song len in ticks set for 150 bars
       _follow        = JUMP;
       dirty          = false;
       initDrumMap();
@@ -2115,7 +2115,7 @@ void Song::cleanupForQuit()
       _synthIs.clearDelete();    // each ~SynthI() -> deactivate3() -> ~SynthIF()
 
       MusEGlobal::tempomap.clear();
-      AL::sigmap.clear();
+      MusEGlobal::sigmap.clear();
       MusEGlobal::keymap.clear();
       
       if(MusEGlobal::debugMsg)
@@ -3690,12 +3690,12 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
               printf("SENDING TO SCRIPT, part start: %d\n", part->tick());
 
             int z, n;
-            AL::sigmap.timesig(part->tick(), z, n);
+            MusEGlobal::sigmap.timesig(part->tick(), z, n);
             sprintf(tempStr, "TIMESIG %d %d\n", z, n);
             writeStringToFile(fp,tempStr);
             sprintf(tempStr, "PART %d %d\n", part->tick(), part->lenTick());
             writeStringToFile(fp,tempStr);
-            sprintf(tempStr, "BEATLEN %d\n", AL::sigmap.ticksBeat(part->tick()));
+            sprintf(tempStr, "BEATLEN %d\n", MusEGlobal::sigmap.ticksBeat(part->tick()));
             writeStringToFile(fp,tempStr);
             sprintf(tempStr, "QUANTLEN %d\n", quant);
             writeStringToFile(fp,tempStr);

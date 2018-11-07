@@ -23,10 +23,12 @@
 //
 //=========================================================
 
-#ifndef __SIG_H__
-#define __SIG_H__
+#ifndef __MUSE_SIG_H__
+#define __MUSE_SIG_H__
 
 #include <map>
+
+#include "xml.h"
 
 #ifndef MAX_TICK
 #define MAX_TICK (0x7fffffff/100)
@@ -34,24 +36,31 @@
 
 namespace MusECore {
 
-class Xml;
+//---------------------------------------------------------
+//   TimeSignature
+//---------------------------------------------------------
+
+struct TimeSignature {
+      int z, n;
+      TimeSignature() { z = 4; n = 4; }
+      TimeSignature(int a, int b) { z = a; n = b; }
+      bool isValid() const;
+     };
 
 //---------------------------------------------------------
 //   Signature Event
 //---------------------------------------------------------
 
 struct SigEvent {
-      int z, n;            // beat signature
-      unsigned tick;       // valid from this position
-      int bar;             // precomputed
-
-      int read(Xml&);
-      void write(int, Xml&, int) const;
+      TimeSignature sig;
+      unsigned tick;    // signature valid from this position
+      int bar;          // precomputed
+      int read(MusECore::Xml&);
+      void write(int, MusECore::Xml&, int) const;
 
       SigEvent() { }
-      SigEvent(int Z, int N, unsigned tk) {
-            z = Z;
-            n = N;
+      SigEvent(const TimeSignature& s, unsigned tk) {
+            sig = s;
             tick = tk;
             bar = 0;
             }
@@ -69,19 +78,25 @@ typedef SIGLIST::const_reverse_iterator criSigEvent;
 
 class SigList : public SIGLIST {
       int ticks_beat(int N) const;
-      void normalize();
+      int ticksMeasure(const TimeSignature&) const;
       int ticksMeasure(int z, int n) const;
 
    public:
       SigList();
+      ~SigList();
       void clear();
-      void add(unsigned tick, int z, int n);
+      void add(unsigned tick, const TimeSignature& s);
+      void add(unsigned tick, SigEvent* e, bool do_normalize = true);
       void del(unsigned tick);
-
-      void read(Xml&);
-      void write(int, Xml&) const;
+      void del(iSigEvent, bool do_normalize = true);
+      void normalize();
+      
+      void read(MusECore::Xml&);
+      void write(int, MusECore::Xml&) const;
+      
       void dump() const;
 
+      TimeSignature timesig(unsigned tick) const;
       void timesig(unsigned tick, int& z, int& n) const;
       void tickValues(unsigned t, int* bar, int* beat, unsigned* tick) const;
       unsigned bar2tick(int bar, int beat, unsigned tick) const;
@@ -89,8 +104,8 @@ class SigList : public SIGLIST {
       int ticksMeasure(unsigned tick) const;
       int ticksBeat(unsigned tick) const;
       unsigned raster(unsigned tick, int raster) const;
-      unsigned raster1(unsigned tick, int raster) const;
-      unsigned raster2(unsigned tick, int raster) const;
+      unsigned raster1(unsigned tick, int raster) const;    // round down
+      unsigned raster2(unsigned tick, int raster) const;    // round up
       int rasterStep(unsigned tick, int raster) const;
       };
 
@@ -98,6 +113,6 @@ class SigList : public SIGLIST {
 
 namespace MusEGlobal {
 extern MusECore::SigList sigmap;
-}
+} // namespace MusEGlobal
 
 #endif

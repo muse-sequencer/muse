@@ -38,7 +38,7 @@
 
 #include <jack/thread.h>
 
-#include "libs/strntcpy.h"
+#include "strntcpy.h"
 #include "audio.h"
 #include "globals.h"
 #include "song.h"
@@ -336,7 +336,7 @@ static void timebase_callback(jack_transport_state_t /* state */,
       pos->beat++;
       
       int z, n;
-      AL::sigmap.timesig(p.tick(), z, n);
+      MusEGlobal::sigmap.timesig(p.tick(), z, n);
       pos->beats_per_bar = z;
       pos->beat_type = n;
       pos->ticks_per_beat = MusEGlobal::config.division;

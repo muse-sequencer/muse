@@ -28,8 +28,8 @@
 
 #include <limits.h>
 #include "poslabel.h"
-///#include "sig.h"
-#include "al/sig.h"
+#include "sync.h"
+#include "sig.h"
 #include "tempo.h"
 #include "globals.h"
 
@@ -115,7 +115,7 @@ void PosLabel::updateValue()
       else {
             int bar, beat;
             unsigned tick;
-            AL::sigmap.tickValues(_tickValue, &bar, &beat, &tick);
+            MusEGlobal::sigmap.tickValues(_tickValue, &bar, &beat, &tick);
             s = QString("%1.%2.%3")
                 .arg(bar + 1,      4, 10, QLatin1Char('0'))
                 .arg(beat + 1,     2, 10, QLatin1Char('0'))

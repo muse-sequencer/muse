@@ -37,12 +37,15 @@ class PitchEdit : public SpinBox {
       bool deltaMode;
 
    protected:
-      virtual QString mapValueToText(int v);
-      virtual int mapTextToValue(bool* ok);
-
+      virtual QString textFromValue(int v) const;
+      virtual int valueFromText(const QString&) const;
+      
    public:
       PitchEdit(QWidget* parent=0);
       void setDeltaMode(bool);
+
+   public slots:
+      void midiNote(int pitch, int velo);
       };
 
 } // namespace MusEGui

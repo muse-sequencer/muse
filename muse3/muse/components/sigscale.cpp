@@ -25,7 +25,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 
-#include "al/sig.h"  // Tim.
+#include "sig.h"  // Tim.
 #include "globals.h"
 #include "midieditor.h"
 #include "sigscale.h"
@@ -91,7 +91,7 @@ void SigScale::viewMouseReleaseEvent(QMouseEvent*)
 
 void SigScale::viewMouseMoveEvent(QMouseEvent* event)
       {
-      int x = AL::sigmap.raster(event->x(), *raster);
+      int x = MusEGlobal::sigmap.raster(event->x(), *raster);
       emit timeChanged(x);
       int i;
       switch (button) {
@@ -136,10 +136,10 @@ void SigScale::pdraw(QPainter& p, const QRect& r)
       if (x < 0)
             x = 0;
       p.setFont(MusEGlobal::config.fonts[3]);
-      ///for (ciSigEvent si = sigmap.begin(); si != sigmap.end(); ++si) {
-      for (AL::ciSigEvent si = AL::sigmap.begin(); si != AL::sigmap.end(); ++si) {
+      ///for (ciSigEvent si = MusEGlobal::sigmap.begin(); si != MusEGlobal::sigmap.end(); ++si) {
+      for (MusECore::ciSigEvent si = MusEGlobal::sigmap.begin(); si != MusEGlobal::sigmap.end(); ++si) {
             ///SigEvent* e = si->second;
-            AL::SigEvent* e = si->second;
+            MusECore::SigEvent* e = si->second;
             int xp = mapx(e->tick);
             if (xp > x+w)
                   break;

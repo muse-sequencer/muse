@@ -2362,7 +2362,7 @@ void MusE::kbAccel(int key)
             if(spos > 0)
             {
               spos -= 1;     // Nudge by -1, then snap down with raster1.
-              spos = AL::sigmap.raster1(spos, MusEGlobal::song->arrangerRaster());
+              spos = MusEGlobal::sigmap.raster1(spos, MusEGlobal::song->arrangerRaster());
             }
             if(spos < 0)
               spos = 0;
@@ -2371,13 +2371,13 @@ void MusE::kbAccel(int key)
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_INC].key) {
-            int spos = AL::sigmap.raster2(MusEGlobal::song->cpos() + 1, MusEGlobal::song->arrangerRaster());    // Nudge by +1, then snap up with raster2.
+            int spos = MusEGlobal::sigmap.raster2(MusEGlobal::song->cpos() + 1, MusEGlobal::song->arrangerRaster());    // Nudge by +1, then snap up with raster2.
             MusECore::Pos p(spos,true);
             MusEGlobal::song->setPos(0, p, true, true, true); //CDW
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_DEC_NOSNAP].key) {
-            int spos = MusEGlobal::song->cpos() - AL::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster());
+            int spos = MusEGlobal::song->cpos() - MusEGlobal::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster());
             if(spos < 0)
               spos = 0;
             MusECore::Pos p(spos,true);
@@ -2385,7 +2385,7 @@ void MusE::kbAccel(int key)
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_INC_NOSNAP].key) {
-            MusECore::Pos p(MusEGlobal::song->cpos() + AL::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster()), true);
+            MusECore::Pos p(MusEGlobal::song->cpos() + MusEGlobal::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster()), true);
             MusEGlobal::song->setPos(0, p, true, true, true);
             return;
             }

@@ -133,11 +133,12 @@ file (GLOB core_source_files
       osc.cpp
       part.cpp
       plugin.cpp
+      pluglist.cpp
       pos.cpp
       route.cpp
       seqmsg.cpp
       shortcuts.cpp
-      #sig.cpp
+      sig.cpp
       song.cpp
       songfile.cpp
       stringparam.cpp
@@ -164,55 +165,17 @@ file (GLOB icons_source_files
       icons.cpp
       )
 
-file (GLOB sysex_helper_source_files
-      sysex_helper.cpp
-      )
-file (GLOB memory_source_files
-      memory.cpp
-      )
-file (GLOB evdata_source_files
-      evdata.cpp
-      )
-file (GLOB mpevent_source_files
-      mpevent.cpp
-      )
-file (GLOB event_source_files
-      event.cpp
-      )
 file (GLOB wavepreview_source_files
       wavepreview.cpp
       )
-file (GLOB xml_source_files
-      xml.cpp
-      )
-file (GLOB plugin_scan_source_files
-      plugin_scan.cpp
-      )
+
 ##
 ## Define target
 ##
 
-add_library ( sysex_helper_module SHARED
-      ${sysex_helper_source_files}
-      )
-add_library ( memory_module SHARED
-      ${memory_source_files}
-      )
-add_library ( evdata_module SHARED
-      ${evdata_source_files}
-      )
-add_library ( mpevent_module SHARED
-      ${mpevent_source_files}
-      )
 add_library ( wavepreview_module SHARED
       ${wavepreview_moc_headers}
       ${wavepreview_source_files}
-      )
-add_library ( xml_module SHARED
-      ${xml_source_files}
-      )
-add_library ( plugin_scan_module SHARED
-      ${plugin_scan_source_files}
       )
 
 add_library ( core ${MODULES_BUILD}
@@ -284,64 +247,25 @@ set_target_properties( icons
       PROPERTIES OUTPUT_NAME muse_icons
       )
 
-set_target_properties( sysex_helper_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_sysex_helper_module
-      )
-set_target_properties( memory_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_memory_module
-      )
-set_target_properties( evdata_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_evdata_module
-      )
-set_target_properties( mpevent_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_mpevent_module
-      )
 set_target_properties( wavepreview_module
       PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_wavepreview_module
-      )
-set_target_properties( xml_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_xml_module
-      )
-set_target_properties( plugin_scan_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_plugin_scan_module
       )
       
 ##
 ## Linkage
 ##
 
-target_link_libraries(evdata_module
-      memory_module
-      sysex_helper_module
-      )
-target_link_libraries(mpevent_module
-      evdata_module
-      sysex_helper_module
-      )
 target_link_libraries(wavepreview_module
       ${QT_LIBRARIES}
       ${SNDFILE_LIBRARIES}
       ${SAMPLERATE_LIBRARIES}
       )
-target_link_libraries(xml_module
-      ${QT_LIBRARIES}
-      )
-target_link_libraries(plugin_scan_module
-      xml_module
-      ${QT_LIBRARIES}
-      )
+
       
 target_link_libraries(core
       al
       arranger
-      awl
       cliplist
       ctrl
       driver
@@ -358,6 +282,7 @@ target_link_libraries(core
       mplugins
       muse_string
       plugin_scan_module
+      plugin_cache_writer_module
       synti
       sysex_helper_module
       waveedit
@@ -431,7 +356,7 @@ if(LV2_SUPPORT)
             target_link_libraries(lv2host_module lv2_gtk2_support)
       endif(HAVE_GTK2)
 
-#       target_link_libraries(lv2host_module ${QT_LIBRARIES})
+      target_link_libraries(lv2host_module ${QT_LIBRARIES})
       
       target_link_libraries(core lv2host_module)
 endif(LV2_SUPPORT)
@@ -455,25 +380,13 @@ install( TARGETS muse
       )
       
 install(TARGETS
-        sysex_helper_module 
-        memory_module 
-        evdata_module 
-        mpevent_module 
-        plugin_scan_module 
         wavepreview_module
-        xml_module
       DESTINATION ${MusE_MODULES_DIR}
       )
       
 if ( ${MODULES_BUILD} STREQUAL SHARED )
       install(TARGETS core icons 
-              # sysex_helper_module 
-              # memory_module 
-              # evdata_module 
               lv2host_module 
-              # mpevent_module 
-              # wavepreview_module
-              # xml_module
             DESTINATION ${MusE_MODULES_DIR}
             )
 endif ( ${MODULES_BUILD} STREQUAL SHARED )
