@@ -494,7 +494,6 @@ if (ENABLE_LV2)
             ${muse_serd_dir}
             ${muse_lilv_dir}
         )
-        include_directories(${PROJECT_SOURCE_DIR}/muse/lv2Support)
 
     else (LV2_USE_SUPPLIED_VERSION)
         if (LILV_FOUND)
@@ -508,6 +507,7 @@ if (ENABLE_LV2)
         endif (LV2_FOUND)
     endif (LV2_USE_SUPPLIED_VERSION)
     
+    include_directories(${PROJECT_SOURCE_DIR}/muse/lv2Support)
 else (ENABLE_LV2)
       message("LV2 disabled")
 endif (ENABLE_LV2)
@@ -795,6 +795,7 @@ summary_add("ALSA support" ALSA_SUPPORT)
 # summary_add("DSSI ALSA Compatibility support" DSSI_ALSA_COMPAT_SUPPORT)
 summary_add("RTAudio support" HAVE_RTAUDIO)
 summary_add("Lash support" HAVE_LASH)
+summary_add("Lrdf support" HAVE_LRDF)
 summary_add("OSC (Liblo) support" OSC_SUPPORT)
 summary_add("Python support" PYTHON_SUPPORT)
 summary_add("DSSI support" DSSI_SUPPORT)

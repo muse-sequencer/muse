@@ -123,7 +123,11 @@ static void setPluginScanFileInfo(const char* filename, PluginScanInfoStruct* in
 bool scanLadspaPorts(
   const LADSPA_Descriptor* ladspa_descr,
   PluginScanInfoStruct* info,
-  bool do_rdf)
+  bool
+#ifdef HAVE_LRDF
+  do_rdf
+#endif
+)
 {
   info->_portCount = ladspa_descr->PortCount;
   unsigned long ip = 0, op = 0, cip = 0, cop = 0;
