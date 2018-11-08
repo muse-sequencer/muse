@@ -35,7 +35,7 @@
 #include <math.h>
 
 #include "globaldefs.h"
-#include "plugin_scan.h"
+#include "plugin_cache_reader.h"
 
 #define SS_PLUGIN_PARAM_MIN                  0
 #define SS_PLUGIN_PARAM_MAX                127
@@ -89,11 +89,7 @@ class Plugin
           _portCount(0),_inports(0), _outports(0),
           _controlInPorts(0),_controlOutPorts(0),
           _requiredFeatures(MusECore::PluginNoFeatures) { }
-      Plugin(const MusECore::PluginScanInfo& info)
-        : _fi(info._fi), _libHandle(0), _references(0), _instNo(0),
-          _uniqueID(info._uniqueID), _portCount(info._portCount), _inports(info._inports), _outports(info._outports),
-          _controlInPorts(info._controlInPorts), _controlOutPorts(info._controlOutPorts),
-          _requiredFeatures(info._requiredFeatures) { }
+      Plugin(const MusEPlugin::PluginScanInfoStruct& info);
       virtual ~Plugin() {}
       
       //----------------------------------------------------
@@ -133,7 +129,7 @@ class Plugin
       unsigned long parameterOut() const    { return _controlOutPorts; }
       unsigned long inports() const         { return _inports;     }
       unsigned long outports() const        { return _outports;     }
-      bool inPlaceCapable() const           { return _requiredFeatures & MusECore::PluginNoInPlaceProcessing; }
+      bool inPlaceCapable() const           { return !(_requiredFeatures & MusECore::PluginNoInPlaceProcessing); }
 
       
       //----------------------------------------------------
@@ -186,7 +182,7 @@ class LadspaPlugin : public Plugin
       
    public:
       LadspaPlugin(const QFileInfo* f, const LADSPA_Descriptor_Function, const LADSPA_Descriptor* d);
-      LadspaPlugin(const MusECore::PluginScanInfo& info);
+      LadspaPlugin(const MusEPlugin::PluginScanInfoStruct& info);
       virtual ~LadspaPlugin() { }
 
       // Create and initialize a LADSPA plugin instance. Returns null if failure.
@@ -534,7 +530,7 @@ class PluginList : public std::list<Plugin*> {
       ~PluginList();
       };
 
-extern void SS_initPlugins(const QString& globalLibPath);
+extern void SS_initPlugins(const QString& hostConfigPath);
 extern PluginList plugins;
 
 } // namespace MusESimplePlugin

@@ -22,6 +22,7 @@
 //=========================================================
 
 #include "mtc.h"
+#include "sync.h"
 #include <stdio.h>
 
 namespace MusEGlobal {

@@ -47,7 +47,7 @@
 #include <QToolButton>
 #include <QToolTip>
 
-#include "al/sig.h"
+#include "sig.h"
 #include "app.h"
 #include "arrangerview.h"
 #include "audio.h"

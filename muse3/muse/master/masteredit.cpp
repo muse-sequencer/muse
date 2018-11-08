@@ -20,8 +20,6 @@
 //
 //=========================================================
 
-#include "awl/sigedit.h"
-
 #include "masteredit.h"
 #include "mtscale.h"
 #include "hitscale.h"

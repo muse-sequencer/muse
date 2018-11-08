@@ -39,7 +39,7 @@
 
 #ifdef VST_NATIVE_SUPPORT
 
-#include "plugin_scan.h"
+#include "plugin_list.h"
 #include "globaldefs.h"
 
 class VstNativeSynthIF;
@@ -135,7 +135,7 @@ class VstNativeSynth : public Synth {
       VstNativeSynth(const QFileInfo& fi, AEffect* plugin,
                      const QString& label, const QString& desc, const QString& maker, const QString& ver,
                      VstIntPtr id, void *dlHandle, bool isSynth, PluginFeatures_t reqFeatures = PluginNoFeatures);
-      VstNativeSynth(const PluginScanInfo& info);
+      VstNativeSynth(const MusEPlugin::PluginScanInfoStruct& info);
 
       virtual ~VstNativeSynth() {}
       virtual Type synthType() const { return _isSynth ? VST_NATIVE_SYNTH : VST_NATIVE_EFFECT; }

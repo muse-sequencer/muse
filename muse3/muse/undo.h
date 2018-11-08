@@ -29,12 +29,9 @@
 #include "event.h"
 #include "marker/marker.h"
 #include "route.h"
+#include "sig.h"
 
 class QString;
-
-namespace AL {
-struct TimeSignature;
-}
 
 namespace MusECore {
 
@@ -165,7 +162,7 @@ struct UndoOp {
       UndoOp(UndoType type, const Track* track, int ctrlID, int frame, double value, bool noUndo = false);
       UndoOp(UndoType type, const Track* track, bool value, bool noUndo = false);
       UndoOp(UndoType type, CtrlListList* ctrl_ll, CtrlList* eraseCtrlList, CtrlList* addCtrlList, bool noUndo = false);
-      UndoOp(UndoType type, int tick, const AL::TimeSignature old_sig, const AL::TimeSignature new_sig, bool noUndo = false);
+      UndoOp(UndoType type, int tick, const MusECore::TimeSignature old_sig, const MusECore::TimeSignature new_sig, bool noUndo = false);
       UndoOp(UndoType type, const Route& route_from, const Route& route_to, bool noUndo = false);
       UndoOp(UndoType type);
 };

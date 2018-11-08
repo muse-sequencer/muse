@@ -25,12 +25,6 @@
 
 #include <map>
 
-#include "../muse/xml.h"
-
-namespace MusECore {
-class Xml;
-}
-
 namespace AL {
 
 #ifndef MAX_TICK
@@ -56,8 +50,6 @@ struct SigEvent {
       TimeSignature sig;
       unsigned tick;    // signature valid from this position
       int bar;          // precomputed
-      int read(MusECore::Xml&);
-      void write(int, MusECore::Xml&, int) const;
 
       SigEvent() { }
       SigEvent(const TimeSignature& s, unsigned tk) {
@@ -90,9 +82,6 @@ class SigList : public SIGLIST {
       void del(unsigned tick);
       void del(iSigEvent, bool do_normalize = true);
       void normalize();
-      
-      void read(MusECore::Xml&);
-      void write(int, MusECore::Xml&) const;
       
       void dump() const;
 

@@ -25,13 +25,9 @@
 #define __TRANSPORT_H__
 
 #include "type_defs.h"
-#include "al/sig.h"
+#include "sig.h"
 
 #include <QWidget>
-
-namespace Awl {
-      class SigEdit;
-      };
 
 class QComboBox;
 class QHBoxLayout;
@@ -50,6 +46,7 @@ class DoubleLabel;
 class SigLabel;
 class IconButton;
 class TempoEdit;
+class SigEdit;
 
 //---------------------------------------------------------
 //    TempoSig
@@ -60,7 +57,7 @@ class TempoSig : public QWidget {
     
       IconButton* _masterButton;
       TempoEdit* l1;
-      Awl::SigEdit* l2;
+      SigEdit* l2;
       QLabel* l3;
       
    private slots:
@@ -73,7 +70,7 @@ class TempoSig : public QWidget {
 
    signals:
       void tempoChanged(int);
-      void sigChanged(const AL::TimeSignature&);
+      void sigChanged(const MusECore::TimeSignature&);
       void masterTrackChanged(bool);
       void returnPressed();
       void escapePressed();
@@ -147,7 +144,7 @@ class Transport : public QWidget
       void stopToggled(bool);
       void playToggled(bool);
       void configChanged();
-      void sigChange(const AL::TimeSignature&);
+      void sigChange(const MusECore::TimeSignature&);
 
    public slots:
       void setTempo(int tempo);

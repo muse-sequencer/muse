@@ -38,7 +38,7 @@
 
 #include "math.h"
 
-#include "al/sig.h"  
+#include "sig.h"  
 
 // Don't use this, it was just for debugging. 
 // It's much slower than muse-1 no matter how hard I tried.
@@ -778,8 +778,8 @@ void View::setPainter(QPainter& p)
 //       int rast_mapx;
 //       bool draw_bar;
 //       unsigned tick;
-//       AL::sigmap.tickValues(x, &bar1, &beat, &tick);
-//       AL::sigmap.tickValues(x+w, &bar2, &beat, &tick);
+//       MusEGlobal::sigmap.tickValues(x, &bar1, &beat, &tick);
+//       MusEGlobal::sigmap.tickValues(x+w, &bar2, &beat, &tick);
 //       ++bar2;
 //       ///int y2 = y + h;
 //       //int y2 = my + mh;
@@ -818,8 +818,8 @@ void View::setPainter(QPainter& p)
 //                         draw_bar = false;
 //             }
 //             
-//             ///unsigned x = AL::sigmap.bar2tick(bar, 0, 0);
-//             unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
+//             ///unsigned x = MusEGlobal::sigmap.bar2tick(bar, 0, 0);
+//             unsigned xb = MusEGlobal::sigmap.bar2tick(bar, 0, 0);
 //             if(draw_bar)
 //             {
 //               int xt = mapx(xb);
@@ -828,8 +828,8 @@ void View::setPainter(QPainter& p)
 //               p.drawLine(xt, my, xt, y2);
 //             }
 //             int z, n;
-//             ///AL::sigmap.timesig(x, z, n);
-//             AL::sigmap.timesig(xb, z, n);
+//             ///MusEGlobal::sigmap.timesig(x, z, n);
+//             MusEGlobal::sigmap.timesig(xb, z, n);
 //             ///int q = p.xForm(QPoint(raster, 0)).x() - p.xForm(QPoint(0, 0)).x();
 //             ///int q = p.combinedTransform().map(QPoint(raster, 0)).x() - p.combinedTransform().map(QPoint(0, 0)).x();
 //             //int q = rmapx(raster);
@@ -845,8 +845,8 @@ void View::setPainter(QPainter& p)
 //                         ///int xx = x + qq;
 //                         //int xx = mapx(xb + qq);
 //                         xx = xb + qq;
-//                         int xxx = AL::sigmap.bar2tick(bar, z, 0);
-//                         //int xxx = mapx(AL::sigmap.bar2tick(bar, z, 0));
+//                         int xxx = MusEGlobal::sigmap.bar2tick(bar, z, 0);
+//                         //int xxx = mapx(MusEGlobal::sigmap.bar2tick(bar, z, 0));
 //                         while (xx <= xxx) {
 //                                ///p.drawLine(xx, y, xx, y2);
 //                                int x = mapx(xx);
@@ -859,8 +859,8 @@ void View::setPainter(QPainter& p)
 // 
 //             p.setPen(Qt::darkGray);
 //             for (int beat = 1; beat < z; beat++) {
-//                         ///int xx = AL::sigmap.bar2tick(bar, beat, 0);
-//                         xx = mapx(AL::sigmap.bar2tick(bar, beat, 0));
+//                         ///int xx = MusEGlobal::sigmap.bar2tick(bar, beat, 0);
+//                         xx = mapx(MusEGlobal::sigmap.bar2tick(bar, beat, 0));
 //                         //printf(" bar:%d z:%d beat:%d xx:%d\n", bar, z, beat, xx);  
 //                         ///p.drawLine(xx, y, xx, y2);
 //                         p.drawLine(xx, my, xx, y2);
@@ -1294,7 +1294,7 @@ View::ScaleRetStruct View::scale(bool drawText, int bar, double tpix) const
 //       const int vx_2 = vx + vw;
 // 
 //       
-//       // Limiter required because AL::sigmap.tickValues takes unsigned only !
+//       // Limiter required because MusEGlobal::sigmap.tickValues takes unsigned only !
 //       const int vx_lim = vx < 0 ? 0 : vx;
 //       const int vx_2lim = vx_2 < 0 ? 0 : vx_2;
 // 
@@ -1420,31 +1420,31 @@ View::ScaleRetStruct View::scale(bool drawText, int bar, double tpix) const
 //       if (waveMode) {
 // //             ctick = MusEGlobal::tempomap.frame2tick(mapxDev(x));
 // //             ctick = MusEGlobal::tempomap.frame2tick(x);
-// //             AL::sigmap.tickValues(ctick, &bar1, &beat, &tick);
-// //             AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mapxDev(x+w)),
+// //             MusEGlobal::sigmap.tickValues(ctick, &bar1, &beat, &tick);
+// //             MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mapxDev(x+w)),
 // //                &bar2, &beat, &tick);
-//             AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(vx_lim),   &bar1, &beat, &tick);
-//             AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(vx_2lim), &bar2, &beat, &tick);
-// //             AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mx2), &bar2, &beat, &tick);
+//             MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(vx_lim),   &bar1, &beat, &tick);
+//             MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(vx_2lim), &bar2, &beat, &tick);
+// //             MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mx2), &bar2, &beat, &tick);
 //             }
 //       else {
 // //             ctick = mapxDev(x);
-// //             AL::sigmap.tickValues(ctick, &bar1, &beat, &tick);
-// //             AL::sigmap.tickValues(mapxDev(x+w), &bar2, &beat, &tick);
+// //             MusEGlobal::sigmap.tickValues(ctick, &bar1, &beat, &tick);
+// //             MusEGlobal::sigmap.tickValues(mapxDev(x+w), &bar2, &beat, &tick);
 // //             ctick = x;
-//             AL::sigmap.tickValues(vx_lim,   &bar1, &beat, &tick);
-//             AL::sigmap.tickValues(vx_2lim, &bar2, &beat, &tick);
-// //             AL::sigmap.tickValues(mx2, &bar2, &beat, &tick);
+//             MusEGlobal::sigmap.tickValues(vx_lim,   &bar1, &beat, &tick);
+//             MusEGlobal::sigmap.tickValues(vx_2lim, &bar2, &beat, &tick);
+// //             MusEGlobal::sigmap.tickValues(mx2, &bar2, &beat, &tick);
 //             }
 // 
 //       //printf("bar %d  %d-%d=%d\n", bar, ntick, stick, ntick-stick);
 // 
-//       int stick = AL::sigmap.bar2tick(bar1, 0, 0);
+//       int stick = MusEGlobal::sigmap.bar2tick(bar1, 0, 0);
 //       int ntick;
 //       ScaleRetStruct prev_scale_info;
 //       for (int bar = bar1; bar <= bar2; bar++, stick = ntick) {
 // //       for (int bar = bar1; bar < bar2; bar++, stick = ntick) {
-//             ntick     = AL::sigmap.bar2tick(bar+1, 0, 0);
+//             ntick     = MusEGlobal::sigmap.bar2tick(bar+1, 0, 0);
 // //             int tpix, a, b=0;
 //             int a, b=0;
 //             double tpix;
@@ -1476,7 +1476,7 @@ View::ScaleRetStruct View::scale(bool drawText, int bar, double tpix) const
 //                 int prev_bar = bar1 - 1;
 //                 for( ; prev_bar >= 0; --prev_bar, prev_ntick = prev_stick)
 //                 {
-//                   prev_stick = AL::sigmap.bar2tick(prev_bar, 0, 0);
+//                   prev_stick = MusEGlobal::sigmap.bar2tick(prev_bar, 0, 0);
 //                   if (waveMode) {
 //                         prev_a = MusEGlobal::tempomap.tick2frame(prev_ntick);
 //                         prev_b = MusEGlobal::tempomap.tick2frame(prev_stick);
@@ -1588,10 +1588,10 @@ View::ScaleRetStruct View::scale(bool drawText, int bar, double tpix) const
 //               if (raster>=4) {
 //                           pen.setColor(Qt::darkGray);
 //                           p.setPen(pen);
-//                           rast_xb = AL::sigmap.bar2tick(bar, 0, 0);
-//                           AL::sigmap.timesig(rast_xb, rast_z, rast_n);
+//                           rast_xb = MusEGlobal::sigmap.bar2tick(bar, 0, 0);
+//                           MusEGlobal::sigmap.timesig(rast_xb, rast_z, rast_n);
 //                           rast_xx = rast_xb + (scale_info._drawBar ? qq : 0);
-//                           rast_xxx = AL::sigmap.bar2tick(bar, rast_z, 0);
+//                           rast_xxx = MusEGlobal::sigmap.bar2tick(bar, rast_z, 0);
 //                           while (rast_xx <= rast_xxx) {
 //                                 rast_x = mapx(rast_xx);
 //                                 p.drawLine(rast_x, my, rast_x, mbottom);
@@ -1604,17 +1604,17 @@ View::ScaleRetStruct View::scale(bool drawText, int bar, double tpix) const
 //             //if((!drawText && !is_beat_small && !scale_info._drawBar && !draw_fake_bar) || (drawText && !is_small)) {
 //             if((!drawText && !is_beat_small) || (drawText && !scale_info._isSmall)) {
 //                   int z, n;
-//                   AL::sigmap.timesig(stick, z, n);
+//                   MusEGlobal::sigmap.timesig(stick, z, n);
 //                   
 //                   //for (int beat = 0; beat < z; beat++) {
 // //                   beat_start_beat = (drawText || (!drawText && !scale_info._drawBar && !draw_fake_bar)) ? 0 : 1;
 //                   beat_start_beat = (drawText || (!drawText && !scale_info._drawBar)) ? 0 : 1;
 //                   for (int beat = beat_start_beat; beat < z; beat++) {
-//                         int xx = AL::sigmap.bar2tick(bar, beat, 0);
+//                         int xx = MusEGlobal::sigmap.bar2tick(bar, beat, 0);
 //                         if (waveMode)
 //                               xx = MusEGlobal::tempomap.tick2frame(xx);
 //                         
-//                         int xx_e = AL::sigmap.bar2tick(bar, beat + 1, 0);
+//                         int xx_e = MusEGlobal::sigmap.bar2tick(bar, beat + 1, 0);
 //                         if (waveMode)
 //                               xx_e = MusEGlobal::tempomap.tick2frame(xx_e);
 //                         
@@ -1736,8 +1736,8 @@ View::ScaleRetStruct View::scale(bool drawText, int bar, double tpix) const
 // //       int xx,bar1, bar2, beat;
 // //       int rast_mapx;
 // //       unsigned tick;
-// //       AL::sigmap.tickValues(x, &bar1, &beat, &tick);
-// //       AL::sigmap.tickValues(x+w, &bar2, &beat, &tick);
+// //       MusEGlobal::sigmap.tickValues(x, &bar1, &beat, &tick);
+// //       MusEGlobal::sigmap.tickValues(x+w, &bar2, &beat, &tick);
 // //       ++bar2;
 // //       ///int y2 = y + h;
 // //       //int y2 = my + mh;
@@ -1745,15 +1745,15 @@ View::ScaleRetStruct View::scale(bool drawText, int bar, double tpix) const
 // //       //printf("View::drawTickRaster x:%d y:%d w:%d h:%d mx:%d my:%d mw:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, mx, my, mw, mh, y2, bar1, bar2);  
 // //       //printf("View::drawTickRaster x:%d y:%d w:%d h:%d my:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, my, mh, y2, bar1, bar2);  
 // //       for (int bar = bar1; bar < bar2; ++bar) {
-// //             ///unsigned x = AL::sigmap.bar2tick(bar, 0, 0);
-// //             unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
+// //             ///unsigned x = MusEGlobal::sigmap.bar2tick(bar, 0, 0);
+// //             unsigned xb = MusEGlobal::sigmap.bar2tick(bar, 0, 0);
 // //             int xt = mapx(xb);
 // //             p.setPen(MusEGlobal::config.midiCanvasBarColor);
 // //             ///p.drawLine(x, y, x, y2);
 // //             p.drawLine(xt, my, xt, y2);
 // //             int z, n;
-// //             ///AL::sigmap.timesig(x, z, n);
-// //             AL::sigmap.timesig(xb, z, n);
+// //             ///MusEGlobal::sigmap.timesig(x, z, n);
+// //             MusEGlobal::sigmap.timesig(xb, z, n);
 // //             ///int q = p.xForm(QPoint(raster, 0)).x() - p.xForm(QPoint(0, 0)).x();
 // //             ///int q = p.combinedTransform().map(QPoint(raster, 0)).x() - p.combinedTransform().map(QPoint(0, 0)).x();
 // //             //int q = rmapx(raster);
@@ -1780,8 +1780,8 @@ View::ScaleRetStruct View::scale(bool drawText, int bar, double tpix) const
 // //                         ///int xx = x + qq;
 // //                         //int xx = mapx(xb + qq);
 // //                         xx = xb + qq;
-// //                         int xxx = AL::sigmap.bar2tick(bar, z, 0);
-// //                         //int xxx = mapx(AL::sigmap.bar2tick(bar, z, 0));
+// //                         int xxx = MusEGlobal::sigmap.bar2tick(bar, z, 0);
+// //                         //int xxx = mapx(MusEGlobal::sigmap.bar2tick(bar, z, 0));
 // //                         while (xx <= xxx) {
 // //                                ///p.drawLine(xx, y, xx, y2);
 // //                                int x = mapx(xx);
@@ -1794,8 +1794,8 @@ View::ScaleRetStruct View::scale(bool drawText, int bar, double tpix) const
 // // 
 // //             p.setPen(Qt::darkGray);
 // //             for (int beat = 1; beat < z; beat++) {
-// //                         ///int xx = AL::sigmap.bar2tick(bar, beat, 0);
-// //                         xx = mapx(AL::sigmap.bar2tick(bar, beat, 0));
+// //                         ///int xx = MusEGlobal::sigmap.bar2tick(bar, beat, 0);
+// //                         xx = mapx(MusEGlobal::sigmap.bar2tick(bar, beat, 0));
 // //                         //printf(" bar:%d z:%d beat:%d xx:%d\n", bar, z, beat, xx);  
 // //                         ///p.drawLine(xx, y, xx, y2);
 // //                         p.drawLine(xx, my, xx, y2);
@@ -1863,15 +1863,14 @@ void View::drawTickRaster(
 
 //       const int vx_2 = vx + vw;
 
-      // Limiter required because AL::sigmap.tickValues takes unsigned only !
+      // Limiter required because MusEGlobal::sigmap.tickValues takes unsigned only !
 //       const int vx_lim = vx < 0 ? 0 : vx;
 //       const int vx_2lim = vx_2 < 0 ? 0 : vx_2;
       
-      // Limiter required because AL::sigmap.tickValues takes unsigned only !
+      // Limiter required because MusEGlobal::sigmap.tickValues takes unsigned only !
       const ViewXCoordinate lim_v0(0, false);
       const ViewXCoordinate x_lim = compareXCoordinates(x, lim_v0, CompareLess) ? lim_v0 : x;
       const ViewXCoordinate x_2lim = compareXCoordinates(x_2, lim_v0, CompareLess) ? lim_v0 : x_2;
-
 
 //       int my2 = mapy(y + h) - 1;
       //int my2 = mapy(y + h - 1);
@@ -1891,7 +1890,7 @@ void View::drawTickRaster(
 //       int mx2 = x + w - mapx(1);
       
 //       const int mx_2 = mx + mw;
-      // Limiter required because AL::sigmap.tickValues takes unsigned only !
+      // Limiter required because MusEGlobal::sigmap.tickValues takes unsigned only !
 //       const int mx_lim = mx < 0 ? 0 : mx;
 //       const int mx_2lim = mx_2 < 0 ? 0 : mx_2;
       //const int vx_lim = mapxDev(mx_lim);
@@ -2014,33 +2013,33 @@ void View::drawTickRaster(
       if (waveMode) {
 // //             ctick = MusEGlobal::tempomap.frame2tick(mapxDev(x));
 // //             ctick = MusEGlobal::tempomap.frame2tick(x);
-// //             AL::sigmap.tickValues(ctick, &bar1, &beat, &tick);
-// //             AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mapxDev(x+w)),
+// //             MusEGlobal::sigmap.tickValues(ctick, &bar1, &beat, &tick);
+// //             MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mapxDev(x+w)),
 // //                &bar2, &beat, &tick);
-// //             AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mx2), &bar2, &beat, &tick);
-            AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(asUnmapped(x_lim)._value), &bar1, &beat, &tick);
-            AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(asUnmapped(x_2lim)._value), &bar2, &beat, &tick);
-            //AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mapxDev(mx_lim)), &bar1, &beat, &tick);
-            //AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mapxDev(mx_2lim)), &bar2, &beat, &tick);
+// //             MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mx2), &bar2, &beat, &tick);
+            MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(asUnmapped(x_lim)._value), &bar1, &beat, &tick);
+            MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(asUnmapped(x_2lim)._value), &bar2, &beat, &tick);
+            //MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mapxDev(mx_lim)), &bar1, &beat, &tick);
+            //MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mapxDev(mx_2lim)), &bar2, &beat, &tick);
             }
       else {
 // //             ctick = mapxDev(x);
-// //             AL::sigmap.tickValues(ctick, &bar1, &beat, &tick);
-// //             AL::sigmap.tickValues(mapxDev(x+w), &bar2, &beat, &tick);
+// //             MusEGlobal::sigmap.tickValues(ctick, &bar1, &beat, &tick);
+// //             MusEGlobal::sigmap.tickValues(mapxDev(x+w), &bar2, &beat, &tick);
 // //             ctick = x;
-// //             AL::sigmap.tickValues(mx2, &bar2, &beat, &tick);
-            AL::sigmap.tickValues(asUnmapped(x_lim)._value, &bar1, &beat, &tick);
-            AL::sigmap.tickValues(asUnmapped(x_2lim)._value, &bar2, &beat, &tick);
+// //             MusEGlobal::sigmap.tickValues(mx2, &bar2, &beat, &tick);
+            MusEGlobal::sigmap.tickValues(asUnmapped(x_lim)._value, &bar1, &beat, &tick);
+            MusEGlobal::sigmap.tickValues(asUnmapped(x_2lim)._value, &bar2, &beat, &tick);
             }
 
       //printf("bar %d  %d-%d=%d\n", bar, ntick, stick, ntick-stick);
 
-      int stick = AL::sigmap.bar2tick(bar1, 0, 0);
+      int stick = MusEGlobal::sigmap.bar2tick(bar1, 0, 0);
       int ntick;
       ScaleRetStruct prev_scale_info;
       for (int bar = bar1; bar <= bar2; bar++, stick = ntick) {
 //       for (int bar = bar1; bar < bar2; bar++, stick = ntick) {
-            ntick     = AL::sigmap.bar2tick(bar+1, 0, 0);
+            ntick     = MusEGlobal::sigmap.bar2tick(bar+1, 0, 0);
 //             int tpix, a, b=0;
             int a, b=0;
             double tpix;
@@ -2072,7 +2071,7 @@ void View::drawTickRaster(
                 int prev_bar = bar1 - 1;
                 for( ; prev_bar >= 0; --prev_bar, prev_ntick = prev_stick)
                 {
-                  prev_stick = AL::sigmap.bar2tick(prev_bar, 0, 0);
+                  prev_stick = MusEGlobal::sigmap.bar2tick(prev_bar, 0, 0);
                   if (waveMode) {
                         prev_a = MusEGlobal::tempomap.tick2frame(prev_ntick);
                         prev_b = MusEGlobal::tempomap.tick2frame(prev_stick);
@@ -2197,10 +2196,10 @@ void View::drawTickRaster(
               if (raster>=4) {
                           pen.setColor(Qt::darkGray);
                           p.setPen(pen);
-                          rast_xb = AL::sigmap.bar2tick(bar, 0, 0);
-                          AL::sigmap.timesig(rast_xb, rast_z, rast_n);
+                          rast_xb = MusEGlobal::sigmap.bar2tick(bar, 0, 0);
+                          MusEGlobal::sigmap.timesig(rast_xb, rast_z, rast_n);
                           rast_xx = rast_xb + (scale_info._drawBar ? qq : 0);
-                          rast_xxx = AL::sigmap.bar2tick(bar, rast_z, 0);
+                          rast_xxx = MusEGlobal::sigmap.bar2tick(bar, rast_z, 0);
                           while (rast_xx <= rast_xxx) {
                                 rast_x = mapx(rast_xx);
                                 p.drawLine(rast_x, my, rast_x, mbottom);
@@ -2213,17 +2212,17 @@ void View::drawTickRaster(
             //if((!drawText && !is_beat_small && !scale_info._drawBar && !draw_fake_bar) || (drawText && !is_small)) {
             if((!drawText && !is_beat_small) || (drawText && !scale_info._isSmall)) {
                   int z, n;
-                  AL::sigmap.timesig(stick, z, n);
+                  MusEGlobal::sigmap.timesig(stick, z, n);
                   
                   //for (int beat = 0; beat < z; beat++) {
 //                   beat_start_beat = (drawText || (!drawText && !scale_info._drawBar && !draw_fake_bar)) ? 0 : 1;
                   beat_start_beat = (drawText || (!drawText && !scale_info._drawBar)) ? 0 : 1;
                   for (int beat = beat_start_beat; beat < z; beat++) {
-                        int xx = AL::sigmap.bar2tick(bar, beat, 0);
+                        int xx = MusEGlobal::sigmap.bar2tick(bar, beat, 0);
                         if (waveMode)
                               xx = MusEGlobal::tempomap.tick2frame(xx);
                         
-                        int xx_e = AL::sigmap.bar2tick(bar, beat + 1, 0);
+                        int xx_e = MusEGlobal::sigmap.bar2tick(bar, beat + 1, 0);
                         if (waveMode)
                               xx_e = MusEGlobal::tempomap.tick2frame(xx_e);
                         
@@ -2378,8 +2377,8 @@ void View::drawTickRaster(
 //       int xx,bar1, bar2, beat;
 //       int rast_mapx;
 //       unsigned tick;
-//       AL::sigmap.tickValues(x, &bar1, &beat, &tick);
-//       AL::sigmap.tickValues(x+w, &bar2, &beat, &tick);
+//       MusEGlobal::sigmap.tickValues(x, &bar1, &beat, &tick);
+//       MusEGlobal::sigmap.tickValues(x+w, &bar2, &beat, &tick);
 //       ++bar2;
 //       ///int y2 = y + h;
 //       //int y2 = my + mh;
@@ -2387,15 +2386,15 @@ void View::drawTickRaster(
 //       //printf("View::drawTickRaster x:%d y:%d w:%d h:%d mx:%d my:%d mw:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, mx, my, mw, mh, y2, bar1, bar2);  
 //       //printf("View::drawTickRaster x:%d y:%d w:%d h:%d my:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, my, mh, y2, bar1, bar2);  
 //       for (int bar = bar1; bar < bar2; ++bar) {
-//             ///unsigned x = AL::sigmap.bar2tick(bar, 0, 0);
-//             unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
+//             ///unsigned x = MusEGlobal::sigmap.bar2tick(bar, 0, 0);
+//             unsigned xb = MusEGlobal::sigmap.bar2tick(bar, 0, 0);
 //             int xt = mapx(xb);
 //             p.setPen(MusEGlobal::config.midiCanvasBarColor);
 //             ///p.drawLine(x, y, x, y2);
 //             p.drawLine(xt, my, xt, y2);
 //             int z, n;
-//             ///AL::sigmap.timesig(x, z, n);
-//             AL::sigmap.timesig(xb, z, n);
+//             ///MusEGlobal::sigmap.timesig(x, z, n);
+//             MusEGlobal::sigmap.timesig(xb, z, n);
 //             ///int q = p.xForm(QPoint(raster, 0)).x() - p.xForm(QPoint(0, 0)).x();
 //             ///int q = p.combinedTransform().map(QPoint(raster, 0)).x() - p.combinedTransform().map(QPoint(0, 0)).x();
 //             //int q = rmapx(raster);
@@ -2422,8 +2421,8 @@ void View::drawTickRaster(
 //                         ///int xx = x + qq;
 //                         //int xx = mapx(xb + qq);
 //                         xx = xb + qq;
-//                         int xxx = AL::sigmap.bar2tick(bar, z, 0);
-//                         //int xxx = mapx(AL::sigmap.bar2tick(bar, z, 0));
+//                         int xxx = MusEGlobal::sigmap.bar2tick(bar, z, 0);
+//                         //int xxx = mapx(MusEGlobal::sigmap.bar2tick(bar, z, 0));
 //                         while (xx <= xxx) {
 //                                ///p.drawLine(xx, y, xx, y2);
 //                                int x = mapx(xx);
@@ -2436,8 +2435,8 @@ void View::drawTickRaster(
 // 
 //             p.setPen(Qt::darkGray);
 //             for (int beat = 1; beat < z; beat++) {
-//                         ///int xx = AL::sigmap.bar2tick(bar, beat, 0);
-//                         xx = mapx(AL::sigmap.bar2tick(bar, beat, 0));
+//                         ///int xx = MusEGlobal::sigmap.bar2tick(bar, beat, 0);
+//                         xx = mapx(MusEGlobal::sigmap.bar2tick(bar, beat, 0));
 //                         //printf(" bar:%d z:%d beat:%d xx:%d\n", bar, z, beat, xx);  
 //                         ///p.drawLine(xx, y, xx, y2);
 //                         p.drawLine(xx, my, xx, y2);

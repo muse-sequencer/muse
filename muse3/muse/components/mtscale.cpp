@@ -175,7 +175,7 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
             // Normally frame to tick methods round down. But here we need it to 'snap'
             //  the frame from either side of a tick to the tick. So round to nearest.
             x = MusEGlobal::tempomap.frame2tick(x, 0, MusECore::LargeIntRoundNearest);
-      x = AL::sigmap.raster(x, *raster);
+      x = MusEGlobal::sigmap.raster(x, *raster);
       //printf("MTScale::viewMouseMoveEvent\n");  
       emit timeChanged(x);
       int i;

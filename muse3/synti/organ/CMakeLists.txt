@@ -48,7 +48,6 @@ file (GLOB organ_source_files
 ## Define target
 ##
 add_library ( organ SHARED
-      ${PROJECT_SOURCE_DIR}/muse/xml.cpp
       ${organ_source_files}
       ${organ_mocs}
       ${organ_uis}

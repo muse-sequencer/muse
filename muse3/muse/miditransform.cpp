@@ -715,7 +715,7 @@ void MidiTransformerDialog::processEvent(MusECore::Event& event, MusECore::MidiP
             case MusECore::Quantize:
                   {
                   int tick = event.tick();
-                  int rt = AL::sigmap.raster(tick, data->cmt->quantVal) - tick;
+                  int rt = MusEGlobal::sigmap.raster(tick, data->cmt->quantVal) - tick;
                   if (tick != rt) {
                         MusECore::Event newEvent = event.clone();
                         newEvent.setTick(rt);
@@ -851,7 +851,7 @@ bool MidiTransformerDialog::isSelected(const MusECore::Event& event)
             }
       int bar, beat;
       unsigned tick;
-      AL::sigmap.tickValues(event.tick(), &bar, &beat, &tick);
+      MusEGlobal::sigmap.tickValues(event.tick(), &bar, &beat, &tick);
       int beat1 = cmt->selRangeA / 1000;
       unsigned tick1 = cmt->selRangeA % 1000;
       int beat2 = cmt->selRangeB / 1000;

@@ -31,11 +31,6 @@
 #include "noteinfo.h"
 #include "cobject.h"
 
-namespace Awl {
-      class SigEdit;
-      };
-using Awl::SigEdit;
-
 class QCloseEvent;
 class QToolBar;
 

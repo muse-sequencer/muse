@@ -41,7 +41,7 @@
 #include "globals.h"
 #include "event.h"
 #include "audio.h"
-#include "al/sig.h"
+#include "sig.h"
 #include "part.h"
 #include "track.h"
 #include "wavepreview.h"
@@ -1259,9 +1259,9 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
 // REMOVE Tim. Wave. Removed. Probably I should never have done this. It's more annoying than helpful. Look at it another way: Importing a wave DOES NOT do this.
 //       // Round the start down using the Arranger part snap raster value.
 //       int a_rast = MusEGlobal::song->arrangerRaster();
-//       unsigned sframe = (a_rast == 1) ? s.frame() : Pos(AL::sigmap.raster1(s.tick(), MusEGlobal::song->arrangerRaster())).frame();
+//       unsigned sframe = (a_rast == 1) ? s.frame() : Pos(MusEGlobal::sigmap.raster1(s.tick(), MusEGlobal::song->arrangerRaster())).frame();
 //       // Round the end up using the Arranger part snap raster value.
-//       unsigned eframe = (a_rast == 1) ? e.frame() : Pos(AL::sigmap.raster2(e.tick(), MusEGlobal::song->arrangerRaster())).frame();
+//       unsigned eframe = (a_rast == 1) ? e.frame() : Pos(MusEGlobal::sigmap.raster2(e.tick(), MusEGlobal::song->arrangerRaster())).frame();
 // //       unsigned etick = Pos(eframe, false).tick();
       unsigned sframe = s.frame();
       unsigned eframe = e.frame();

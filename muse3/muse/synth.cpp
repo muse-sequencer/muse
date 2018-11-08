@@ -60,7 +60,8 @@
 #include "helper.h"
 #include "gconfig.h"
 #include "globals.h"
-#include "plugin_scan.h"
+#include "plugin_list.h"
+#include "pluglist.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_SYNTH(dev, format, args...)  //fprintf(dev, format, ##args);
@@ -326,9 +327,8 @@ void* MessSynth::instantiate(const QString& instanceName)
             MusEGlobal::undoSetuid();
             return 0;
             }
-      typedef const MESS* (*MESS_Function)();
-      MESS_Function msynth = (MESS_Function)dlsym(handle, "mess_descriptor");
-
+            
+      MESS_Descriptor_Function msynth = (MESS_Descriptor_Function)dlsym(handle, "mess_descriptor");
       if (!msynth) {
             const char *txt = dlerror();
             if (txt) {
@@ -873,66 +873,52 @@ void MessSynthIF::deactivate3()
 
 void initMidiSynth()
 {
-  QString s = MusEGlobal::museGlobalLib + "/synthi";
-
-  QDir pluginDir(s, QString("*.so")); // ddskrjo
-  if (MusEGlobal::debugMsg)
-        fprintf(stderr, "searching for software synthesizer in <%s>\n", s.toLatin1().constData());
-  if (pluginDir.exists())
+  const MusEPlugin::PluginScanList& scan_list = MusEPlugin::pluginList;
+  for(MusEPlugin::ciPluginScanList isl = scan_list.begin(); isl != scan_list.end(); ++isl)
   {
-    QFileInfoList list = pluginDir.entryInfoList();
-    
-    for(QFileInfoList::iterator it = list.begin(); it != list.end(); ++it)
+    const MusEPlugin::PluginScanInfoRef inforef = *isl;
+    const MusEPlugin::PluginScanInfoStruct& info = inforef->info();
+    switch(info._type)
     {
-      const QFileInfo& fi = *it;
-      MusECore::PluginScanList scan_list;
-      if(!MusECore::pluginScan(fi.filePath(), scan_list, MusEGlobal::debugMsg))
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
       {
-        fprintf(stderr, "initMidiSynth: *FAILED* pluginScan(%s)\n\n",
-          fi.filePath().toLatin1().constData());
-      }
-      
-      for(MusECore::ciPluginScanList isl = scan_list.begin(); isl != scan_list.end(); ++isl)
-      {
-        const MusECore::PluginScanInfo& info = *isl;
-        switch(info._type)
+        if(MusEGlobal::loadMESS)
         {
-          case MusECore::PluginScanInfo::PluginTypeMESS:
+          // Make sure it doesn't already exist.
+          if(const Synth* sy = MusEGlobal::synthis.find(PLUGIN_GET_QSTRING(info._completeBaseName),
+              PLUGIN_GET_QSTRING(info._name)))
           {
-            if(MusEGlobal::loadMESS)
-            {
-              // Make sure it doesn't already exist.
-              if(const Synth* sy = MusEGlobal::synthis.find(info._fi.completeBaseName(), info._name))
-              {
-                fprintf(stderr, "Ignoring MESS synth name:%s path:%s duplicate of path:%s\n",
-                        info._name.toLatin1().constData(),
-                        info._fi.filePath().toLatin1().constData(),
-                        sy->filePath().toLatin1().constData());
-              }
-              else
-              {
-                MusEGlobal::synthis.push_back(
-                  new MessSynth(info._fi, info._name, info._description, QString(""), info._version));
-              }
-            }
+            fprintf(stderr, "Ignoring MESS synth name:%s path:%s duplicate of path:%s\n",
+                    PLUGIN_GET_CSTRING(info._name),
+                    PLUGIN_GET_CSTRING(info.filePath()),
+                    sy->filePath().toLatin1().constData());
           }
-          break;
-          
-          case MusECore::PluginScanInfo::PluginTypeLADSPA:
-          case MusECore::PluginScanInfo::PluginTypeDSSI:
-          case MusECore::PluginScanInfo::PluginTypeDSSIVST:
-          case MusECore::PluginScanInfo::PluginTypeVST:
-          case MusECore::PluginScanInfo::PluginTypeLV2:
-          case MusECore::PluginScanInfo::PluginTypeLinuxVST:
-          case MusECore::PluginScanInfo::PluginTypeAll:
-          break;
+          else
+          {
+            MusEGlobal::synthis.push_back(
+              new MessSynth(PLUGIN_GET_QSTRING(info.filePath()),
+                            PLUGIN_GET_QSTRING(info._name),
+                            PLUGIN_GET_QSTRING(info._description),
+                            QString(""),
+                            PLUGIN_GET_QSTRING(info._version)));
+          }
         }
       }
+      break;
+      
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
+      break;
     }
-    
-    if(MusEGlobal::debugMsg)
-      fprintf(stderr, "%zd soft synth found\n", MusEGlobal::synthis.size());
   }
+  if(MusEGlobal::debugMsg)
+    fprintf(stderr, "%zd soft synth found\n", MusEGlobal::synthis.size());
 }
 
 //---------------------------------------------------------

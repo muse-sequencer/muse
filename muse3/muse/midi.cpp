@@ -560,7 +560,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                     for (int i = 0; i < n; i++)
                                           timesig_n *= 2;
                                     int ltick  = CALC_TICK(tick);
-                                    AL::sigmap.add(ltick, AL::TimeSignature(timesig_z, timesig_n));
+                                    MusEGlobal::sigmap.add(ltick, MusECore::TimeSignature(timesig_z, timesig_n));
                                     }
                                     break;
                               default:
@@ -2483,8 +2483,8 @@ void Audio::processMidi(unsigned int frames)
                 "Audio::processMidi: playing: syncFrame:%u _pos.frame():%u midiClick:%u nextTickPos:%u clickno:%d\n",
                 syncFrame, _pos.frame(), midiClick, nextTickPos, clickno);
               
-              AL::sigmap.tickValues(midiClick, &bar, &beat, &tick);
-              AL::sigmap.timesig(midiClick, z, n);
+              MusEGlobal::sigmap.tickValues(midiClick, &bar, &beat, &tick);
+              MusEGlobal::sigmap.timesig(midiClick, z, n);
 
               if (do_play && MusEGlobal::song->click() 
                   && (MusEGlobal::audioClickFlag || MusEGlobal::midiClickFlag)
@@ -2555,20 +2555,20 @@ void Audio::processMidi(unsigned int frames)
               if (MusEGlobal::clickSamples == MusEGlobal::newSamples) {
                   if (tick == 0) {//  ON key
                     if (beat % 2)
-                      midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
+                      midiClick = MusEGlobal::sigmap.bar2tick(bar, beat+1, 0);
                     else
-                      midiClick = AL::sigmap.bar2tick(bar, beat, MusEGlobal::config.division - ((MusEGlobal::config.division/n)));
+                      midiClick = MusEGlobal::sigmap.bar2tick(bar, beat, MusEGlobal::config.division - ((MusEGlobal::config.division/n)));
                   }
                   else if (tick >= unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)))) { // second accent tick
-                      midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
+                      midiClick = MusEGlobal::sigmap.bar2tick(bar, beat+1, 0);
                   }
                   else if (tick < unsigned(MusEGlobal::config.division - ((MusEGlobal::config.division/(n*2))))) { // first accent tick
-                      midiClick = AL::sigmap.bar2tick(bar, beat, MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)));
+                      midiClick = MusEGlobal::sigmap.bar2tick(bar, beat, MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)));
                   }
               }
               else
               {
-                midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
+                midiClick = MusEGlobal::sigmap.bar2tick(bar, beat+1, 0);
               }
             }
       }

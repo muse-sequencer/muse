@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>606</width>
-    <height>539</height>
+    <height>562</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -640,6 +640,29 @@
             <widget class="QLabel" name="label_12">
              <property name="text">
               <string>Ordered by priority. Changes take effect on restart.</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="pluginRescanButton">
+             <property name="toolTip">
+              <string>Force a full plugin rescan on next restart</string>
+             </property>
+             <property name="whatsThis">
+              <string>The plugin cache is used for safety
+ and speed. It automatically rescans
+ when any of the given directories
+ change, for example by installing
+ a new plugin. Click this button to
+ force the cache to recreate upon
+  next restart. 
+Do not store frequently changing
+ files such as plugin configuration
+ data in these directories as it may
+ trigger frequent rescans.</string>
+             </property>
+             <property name="text">
+              <string>&amp;Force plugin rescan and cache recreation on next restart</string>
              </property>
             </widget>
            </item>
@@ -1296,8 +1319,8 @@ Adjusts responsiveness of audio controls and
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>550</width>
-            <height>452</height>
+            <width>554</width>
+            <height>517</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -1651,7 +1674,7 @@ Certain operations will also force them to be resent,
               <item>
                <widget class="QRadioButton" name="recordAllButton">
                 <property name="text">
-                 <string>&amp;Record all instruments</string>
+                 <string>Record a&amp;ll instruments</string>
                 </property>
                </widget>
               </item>
@@ -1735,9 +1758,9 @@ Certain operations will also force them to be resent,
              <property name="geometry">
               <rect>
                <x>0</x>
-               <y>-300</y>
-               <width>524</width>
-               <height>628</height>
+               <y>0</y>
+               <width>528</width>
+               <height>700</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
@@ -2246,7 +2269,7 @@ Benign XCB connection errors may still
           <item row="0" column="0">
            <widget class="QRadioButton" name="onlyOldDrumBtn">
             <property name="text">
-             <string>&amp;Only offer old-style drumtracks</string>
+             <string>Only offer old-s&amp;tyle drumtracks</string>
             </property>
            </widget>
           </item>
@@ -2333,7 +2356,7 @@ Benign XCB connection errors may still
                <x>0</x>
                <y>0</y>
                <width>554</width>
-               <height>362</height>
+               <height>368</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">

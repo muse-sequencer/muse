@@ -56,7 +56,7 @@ using namespace std;
 #include "app.h"
 #include "xml.h"
 #include "mtscale.h"
-#include "al/sig.h"
+#include "sig.h"
 #include "scoreedit.h"
 #include "tools.h"
 #include "ttoolbar.h"
@@ -2226,12 +2226,12 @@ bool operator< (const note_pos_t& a, const note_pos_t& b)
 
 int flo_quantize(int tick, int quant_ticks)
 {
-    return AL::sigmap.raster(tick, quant_ticks);
+    return MusEGlobal::sigmap.raster(tick, quant_ticks);
 }
 
 int flo_quantize_floor(int tick, int quant_ticks)
 {
-    return AL::sigmap.raster1(tick, quant_ticks);
+    return MusEGlobal::sigmap.raster1(tick, quant_ticks);
 }
 
 
@@ -2249,8 +2249,8 @@ int flo_quantize_floor(int tick, int quant_ticks)
  */
 void staff_t::create_appropriate_eventlist()
 {
-    using AL::sigmap;
-    using AL::iSigEvent;
+    using MusEGlobal::sigmap;
+    using MusECore::iSigEvent;
 
     eventlist.clear();
 
@@ -2289,11 +2289,11 @@ void staff_t::create_appropriate_eventlist()
     }
 
     //insert bars and time signatures
-    for (iSigEvent it=sigmap.begin(); it!=sigmap.end(); it++)
+    for (iSigEvent it=MusEGlobal::sigmap.begin(); it!=MusEGlobal::sigmap.end(); it++)
     {
         unsigned from=it->second->tick;
         unsigned to=it->first;
-        unsigned ticks_per_measure=sigmap.ticksMeasure(it->second->tick);
+        unsigned ticks_per_measure=MusEGlobal::sigmap.ticksMeasure(it->second->tick);
 
         if (to > unsigned(SONG_LENGTH))
             to=SONG_LENGTH;
@@ -3475,14 +3475,14 @@ void staff_t::calc_item_pos()
 
 void ScoreCanvas::calc_pos_add_list()
 {
-    using AL::sigmap;
-    using AL::iSigEvent;
+    using MusEGlobal::sigmap;
+    using MusECore::iSigEvent;
 
 
     pos_add_list.clear();
 
     //process time signatures
-    for (iSigEvent it=sigmap.begin(); it!=sigmap.end(); it++)
+    for (iSigEvent it=MusEGlobal::sigmap.begin(); it!=MusEGlobal::sigmap.end(); it++)
         pos_add_list[it->second->tick]+=calc_timesig_width(it->second->sig.z, it->second->sig.n);
 
 
@@ -4120,7 +4120,7 @@ timesig_t ScoreCanvas::timesig_at_tick(int t_)
     timesig_t tmp;
     unsigned int t= (t_>=0) ? t_ : 0;
 
-    AL::sigmap.timesig(t, tmp.num, tmp.denom);
+    MusEGlobal::sigmap.timesig(t, tmp.num, tmp.denom);
 
     return tmp;
 }

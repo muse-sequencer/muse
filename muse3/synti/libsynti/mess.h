@@ -184,5 +184,7 @@ extern "C" {
       const MESS* mess_descriptor();
       }
 
+typedef const MESS* (*MESS_Descriptor_Function)();
+
 #endif
 

@@ -1,7 +1,30 @@
+07.11.2018
+      * NEW! Safe Plugin Scanner version 2: (Tim)
+      - The plugin scans are cached now, in ./config/MusE/scanner.
+        This means faster startup time since it no longer has to 
+         rescan each time.
+      - Deicsonze and SimpleDrums MESS synths load muuuch faster
+         now since each instance no longer has to scan plugins.
+      - New command line option -R forces rescan.
+        Also new 'Force rescan' checkbox under plugin paths tab
+         in Global Settings dialog.
+      - Automatically detects changes in any of the plugin paths
+         given in Global Settings dialog, and rescans.
+      - Added Ladspa RDF (lrdf) support. Initial support for now.
+      - More major rearrangements: Moved several module libraries
+         out of the muse tree into the libs tree, since they stand
+         on their own.
+        Created new libs folder 'plugin' containing all of the
+         plugin scanning and caching code.
+        Awl and AL libraries are now fully separated and isolated
+         from the main app. Awl is NO LONGER linked in with the
+         main app, only with the Deicsonze MESS synth. Yay.
 20.10.2018
       - Oops, fix previous fix of 19.10.2018 (Tim)
         Move function_dialogs folder out to muse folder.
         Re-order the cmake subdirectory list so that things get built first.
+      - Fix freeze or crash in Xml::parse() under certain conditions
+         with corrupt files.
 19.10.2018
       - Moved complex 'widgets' to new folder 'components'. (Tim)
         New library 'components' separated from 'widgets'.

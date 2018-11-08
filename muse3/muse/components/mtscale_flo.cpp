@@ -148,7 +148,7 @@ void MTScaleFlo::mouseMoveEvent(QMouseEvent* event)
       if (x<0) x=0;
       int tick = parent->x_to_tick(x-xoffset+xpos);
       if (tick<0) tick=0;
-      tick = AL::sigmap.raster(tick, parent->quant_ticks());
+      tick = MusEGlobal::sigmap.raster(tick, parent->quant_ticks());
 
       int i;
       switch (button) {
@@ -282,14 +282,14 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r, const QRegion&)
       unsigned tick;
 
 			ctick = parent->x_to_tick(x - xoffset + xpos);
-			AL::sigmap.tickValues(ctick, &bar1, &beat, &tick);
-			AL::sigmap.tickValues(parent->x_to_tick(x+w - xoffset + xpos), &bar2, &beat, &tick);
+			MusEGlobal::sigmap.tickValues(ctick, &bar1, &beat, &tick);
+			MusEGlobal::sigmap.tickValues(parent->x_to_tick(x+w - xoffset + xpos), &bar2, &beat, &tick);
 
 
-      int stick = AL::sigmap.bar2tick(bar1, 0, 0);
+      int stick = MusEGlobal::sigmap.bar2tick(bar1, 0, 0);
       int ntick;
       for (int bar = bar1; bar <= bar2; bar++, stick = ntick) {
-            ntick     = AL::sigmap.bar2tick(bar+1, 0, 0);
+            ntick     = MusEGlobal::sigmap.bar2tick(bar+1, 0, 0);
             int tpix = parent->delta_tick_to_delta_x(ntick - stick);
             if (tpix < 64) {
                   // donï¿½t show beats if measure is this small
@@ -317,9 +317,9 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r, const QRegion&)
                   }
             else {
                   int z, n;
-                  AL::sigmap.timesig(stick, z, n);
+                  MusEGlobal::sigmap.timesig(stick, z, n);
                   for (int beat = 0; beat < z; beat++) {
-                        int xp = parent->tick_to_x(AL::sigmap.bar2tick(bar, beat, 0)) + xoffset - xpos;
+                        int xp = parent->tick_to_x(MusEGlobal::sigmap.bar2tick(bar, beat, 0)) + xoffset - xpos;
                         QString s;
                         QRect r(xp+2, y, 1000, h);
                         int y1;

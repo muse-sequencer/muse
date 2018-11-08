@@ -292,6 +292,7 @@ void GlobalSettingsConfig::updateSettings()
       pluginLv2PathList->clear();
       pluginLv2PathList->addItems(MusEGlobal::config.pluginLv2PathList);
 
+      pluginRescanButton->setChecked(MusEGlobal::config.pluginCacheTriggerRescan);
       updateMdiSettings();
 }
 
@@ -488,6 +489,8 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.pluginLv2PathList.clear();
       for (int i = 0; i < pluginLv2PathList->count(); ++i)
             MusEGlobal::config.pluginLv2PathList << pluginLv2PathList->item(i)->text();
+      
+      MusEGlobal::config.pluginCacheTriggerRescan = pluginRescanButton->isChecked();
       
       applyMdiSettings();
       

@@ -423,7 +423,7 @@ QPoint PartCanvas::raster(const QPoint& p) const
       int x = p.x();
       if (x < 0)
             x = 0;
-      x = AL::sigmap.raster(x, *_raster);
+      x = MusEGlobal::sigmap.raster(x, *_raster);
       if (x < 0)
             x = 0;
       return QPoint(x, y);
@@ -727,11 +727,11 @@ void PartCanvas::resizeItem(CItem* i, bool noSnap, bool ctrl)
    int pos = p->tick() + i->width();
    int snappedpos = pos;
    if (!noSnap) {
-      snappedpos = AL::sigmap.raster(pos, *_raster);
+      snappedpos = MusEGlobal::sigmap.raster(pos, *_raster);
    }
    unsigned int newwidth = snappedpos - p->tick();
    if (newwidth == 0)
-      newwidth = AL::sigmap.rasterStep(p->tick(), *_raster);
+      newwidth = MusEGlobal::sigmap.rasterStep(p->tick(), *_raster);
 
    bool doMove = false;
    int newPos = 0;
@@ -758,7 +758,7 @@ CItem* PartCanvas::newItem(const QPoint& pos, int key_modifiers)
       if (x < 0)
             x = 0;
       if(!(key_modifiers & Qt::ShiftModifier))
-        x = AL::sigmap.raster1(x, *_raster);
+        x = MusEGlobal::sigmap.raster1(x, *_raster);
       int len   = pos.x() - x;
       if(len < 0)
         len = 0;
@@ -817,7 +817,7 @@ void PartCanvas::newItem(CItem* i, bool noSnap)
       if (x < 0)
             x = 0;
       if(!noSnap)
-        x = AL::sigmap.raster1(x, *_raster);
+        x = MusEGlobal::sigmap.raster1(x, *_raster);
       p->setTick(x);
 
       unsigned trackIndex = y2pitch(i->y());
@@ -867,9 +867,9 @@ void PartCanvas::newItem(CItem* i, bool noSnap)
 
       int len = i->width();
       if (!noSnap)
-            len = AL::sigmap.raster(len, *_raster);
+            len = MusEGlobal::sigmap.raster(len, *_raster);
       if (len == 0)
-            len = AL::sigmap.rasterStep(p->tick(), *_raster);
+            len = MusEGlobal::sigmap.rasterStep(p->tick(), *_raster);
       p->setLenTick(len);
       p->setSelected(true);
 // REMOVE Tim. citem. Changed.
@@ -903,7 +903,7 @@ void PartCanvas::splitItem(CItem* item, const QPoint& pt)
       int x = pt.x();
       if (x < 0)
             x = 0;
-      split_part(p,AL::sigmap.raster(x, *_raster));
+      split_part(p,MusEGlobal::sigmap.raster(x, *_raster));
       }
 
 //---------------------------------------------------------
@@ -1302,12 +1302,12 @@ void PartCanvas::mouseMove(QMouseEvent* event)
         event->accept();
         bool slowMotion = event->modifiers() & Qt::ShiftModifier;
         processAutomationMovements(event->pos(), slowMotion);
-        emit timeChanged(AL::sigmap.raster(x, *_raster));
+        emit timeChanged(MusEGlobal::sigmap.raster(x, *_raster));
         return;
       }
 
       event->ignore();
-      emit timeChanged(AL::sigmap.raster(x, *_raster));
+      emit timeChanged(MusEGlobal::sigmap.raster(x, *_raster));
       }
 
 //---------------------------------------------------------
@@ -1379,7 +1379,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
             if(spos > 0)
             {
               spos -= 1;     // Nudge by -1, then snap down with raster1.
-              spos = AL::sigmap.raster1(spos, *_raster);
+              spos = MusEGlobal::sigmap.raster1(spos, *_raster);
             }
             if(spos < 0)
               spos = 0;
@@ -1388,13 +1388,13 @@ void PartCanvas::keyPress(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_POS_INC].key) {
-            int spos = AL::sigmap.raster2(pos[0] + 1, *_raster);    // Nudge by +1, then snap up with raster2.
+            int spos = MusEGlobal::sigmap.raster2(pos[0] + 1, *_raster);    // Nudge by +1, then snap up with raster2.
             MusECore::Pos p(spos,true);
             MusEGlobal::song->setPos(0, p, true, true, true);
             return;
             }
       else if (key == shortcuts[SHRT_POS_DEC_NOSNAP].key) {
-            int spos = pos[0] - AL::sigmap.rasterStep(pos[0], *_raster);
+            int spos = pos[0] - MusEGlobal::sigmap.rasterStep(pos[0], *_raster);
             if(spos < 0)
               spos = 0;
             MusECore::Pos p(spos,true);
@@ -1402,7 +1402,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_POS_INC_NOSNAP].key) {
-            MusECore::Pos p(pos[0] + AL::sigmap.rasterStep(pos[0], *_raster), true);
+            MusECore::Pos p(pos[0] + MusEGlobal::sigmap.rasterStep(pos[0], *_raster), true);
             MusEGlobal::song->setPos(0, p, true, true, true);
             return;
             }
@@ -3490,8 +3490,8 @@ void PartCanvas::cmd(int cmd)
                   break;
             case CMD_PASTE_DIALOG:
             {
-                  unsigned temp_begin = AL::sigmap.raster1(MusEGlobal::song->vcpos(),0);
-                  unsigned temp_end = AL::sigmap.raster2(temp_begin + MusECore::get_paste_len(), 0);
+                  unsigned temp_begin = MusEGlobal::sigmap.raster1(MusEGlobal::song->vcpos(),0);
+                  unsigned temp_end = MusEGlobal::sigmap.raster2(temp_begin + MusECore::get_paste_len(), 0);
                   paste_dialog->raster = temp_end - temp_begin;
 
                   if (paste_dialog->exec())
@@ -3513,7 +3513,7 @@ void PartCanvas::cmd(int cmd)
             }
             case CMD_INSERT_EMPTYMEAS:
                   int startPos=MusEGlobal::song->vcpos();
-                  int oneMeas=AL::sigmap.ticksMeasure(startPos);
+                  int oneMeas=MusEGlobal::sigmap.ticksMeasure(startPos);
                   MusECore::Undo temp=MusECore::movePartsTotheRight(startPos,oneMeas);
                   MusEGlobal::song->applyOperationGroup(temp);
                   break;
@@ -3950,7 +3950,7 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
             int x = event->pos().x();
             if (x < 0)
                   x = 0;
-            x = AL::sigmap.raster(x, *_raster);
+            x = MusEGlobal::sigmap.raster(x, *_raster);
             unsigned trackNo = y2pitch(event->pos().y());
             MusECore::Track* track = 0;
             if (trackNo < tracks->size())
@@ -3972,7 +3972,7 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
           int x = event->pos().x();
           if (x < 0)
                 x = 0;
-          x = AL::sigmap.raster(x, *_raster);
+          x = MusEGlobal::sigmap.raster(x, *_raster);
 
           foreach(QUrl url, event->mimeData()->urls())
           {
@@ -4068,10 +4068,10 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
 //           int bar, beat;
 //           unsigned tick;
 // 
-//           AL::sigmap.tickValues(x, &bar, &beat, &tick);
+//           MusEGlobal::sigmap.tickValues(x, &bar, &beat, &tick);
 //           for (;;) {
-//             int xt = AL::sigmap.bar2tick(bar++, 0, 0);
-//             //int xt = mapx(AL::sigmap.bar2tick(bar++, 0, 0));
+//             int xt = MusEGlobal::sigmap.bar2tick(bar++, 0, 0);
+//             //int xt = mapx(MusEGlobal::sigmap.bar2tick(bar++, 0, 0));
 //             if (xt >= x + w)
 //             //if (xt >= mx + mw)
 //                   break;
@@ -4198,10 +4198,10 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
 // //           int bar, beat;
 // //           unsigned tick;
 // // 
-// //           AL::sigmap.tickValues(x, &bar, &beat, &tick);
+// //           MusEGlobal::sigmap.tickValues(x, &bar, &beat, &tick);
 // //           for (;;) {
-// //             int xt = AL::sigmap.bar2tick(bar++, 0, 0);
-// //             //int xt = mapx(AL::sigmap.bar2tick(bar++, 0, 0));
+// //             int xt = MusEGlobal::sigmap.bar2tick(bar++, 0, 0);
+// //             //int xt = mapx(MusEGlobal::sigmap.bar2tick(bar++, 0, 0));
 // //             if (xt >= x + w)
 // //             //if (xt >= mx + mw)
 // //                   break;
@@ -4267,9 +4267,9 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
 //         if(rast == 0) // Special for arranger 'bar' snap.
 //         {
 //           //int z, n;
-//           //AL::sigmap.timesig(x, z, n);
+//           //MusEGlobal::sigmap.timesig(x, z, n);
 //           //rast = MusEGlobal::config.division;
-//           rast = AL::sigmap.ticks_beat(1);
+//           rast = MusEGlobal::sigmap.ticks_beat(1);
 //         }
 //         
 //         drawTickRaster(p, vr, vrg, rast,
@@ -4391,10 +4391,10 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
 //           int bar, beat;
 //           unsigned tick;
 // 
-//           AL::sigmap.tickValues(x, &bar, &beat, &tick);
+//           MusEGlobal::sigmap.tickValues(x, &bar, &beat, &tick);
 //           for (;;) {
-//             int xt = AL::sigmap.bar2tick(bar++, 0, 0);
-//             //int xt = mapx(AL::sigmap.bar2tick(bar++, 0, 0));
+//             int xt = MusEGlobal::sigmap.bar2tick(bar++, 0, 0);
+//             //int xt = mapx(MusEGlobal::sigmap.bar2tick(bar++, 0, 0));
 //             if (xt >= x + w)
 //             //if (xt >= mx + mw)
 //                   break;
@@ -4460,9 +4460,9 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
         if(rast == 0) // Special for arranger 'bar' snap.
         {
           //int z, n;
-          //AL::sigmap.timesig(x, z, n);
+          //MusEGlobal::sigmap.timesig(x, z, n);
           //rast = MusEGlobal::config.division;
-          rast = AL::sigmap.ticks_beat(1);
+          rast = MusEGlobal::sigmap.ticks_beat(1);
         }
         
 //         drawTickRaster(p, vr, vrg, rast,

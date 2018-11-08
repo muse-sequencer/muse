@@ -23,7 +23,7 @@
 
 #include "assert.h"
 
-#include "al/sig.h"  
+#include "sig.h"  
 #include "keyevent.h"
 
 #include "undo.h"
@@ -1513,7 +1513,7 @@ void Song::revertOperationGroup2(Undo& /*operations*/)
         // Special for sig: Need to normalize the signature list. 
         // To save time this is done here, not item by item.
         if(updateFlags._flags & SC_SIG)
-          AL::sigmap.normalize();
+          MusEGlobal::sigmap.normalize();
 
         // Special for track inserted: If it's an aux track, need to add missing aux sends to all tracks,
         //  else if it's another audio track need to add aux sends to it.
@@ -1550,7 +1550,7 @@ void Song::executeOperationGroup2(Undo& /*operations*/)
         // Special for sig: Need to normalize the signature list. 
         // To save time this is done here, not item by item.
         if(updateFlags._flags & SC_SIG)
-          AL::sigmap.normalize();
+          MusEGlobal::sigmap.normalize();
         
         // Special for track inserted: If it's an aux track, need to add missing aux sends to all tracks,
         //  else if it's another audio track need to add aux sends to it.
@@ -1661,9 +1661,9 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
           
           // Must rasterize the tick value HERE instead of in SigMap::addOperation(),
           //  so that the rasterized value is recorded in the undo item.
-          a = AL::sigmap.raster1(a, 0);
+          a = MusEGlobal::sigmap.raster1(a, 0);
           
-          AL::iSigEvent ise = AL::sigmap.upper_bound(a);
+          MusECore::iSigEvent ise = MusEGlobal::sigmap.upper_bound(a);
           if((int)ise->second->tick == a)
           {
             // Transform the AddSig operation into a ModifySig.
@@ -1700,7 +1700,7 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
       
       }
 
-UndoOp::UndoOp(UndoType type_, int tick, const AL::TimeSignature old_sig, const AL::TimeSignature new_sig, bool noUndo)
+UndoOp::UndoOp(UndoType type_, int tick, const MusECore::TimeSignature old_sig, const MusECore::TimeSignature new_sig, bool noUndo)
 {
       assert(type_==ModifySig);
       type    = type_;
@@ -2557,26 +2557,26 @@ void Song::revertOperationGroup1(Undo& operations)
                         
                   case UndoOp::DeleteSig:
 #ifdef _UNDO_DEBUG_
-                        fprintf(stderr, "Song::revertOperationGroup1:DeleteSig ** calling sigmap.addOperation\n");
+                        fprintf(stderr, "Song::revertOperationGroup1:DeleteSig ** calling MusEGlobal::sigmap.addOperation\n");
 #endif                        
-                        pendingOperations.addTimeSigOperation(i->a, AL::TimeSignature(i->b, i->c), &AL::sigmap);
+                        pendingOperations.addTimeSigOperation(i->a, MusECore::TimeSignature(i->b, i->c), &MusEGlobal::sigmap);
                         updateFlags |= SC_SIG;
                         break;
                         
                   case UndoOp::AddSig:
 #ifdef _UNDO_DEBUG_
-                        fprintf(stderr, "Song::revertOperationGroup1:AddSig ** calling sigmap.delOperation\n");
+                        fprintf(stderr, "Song::revertOperationGroup1:AddSig ** calling MusEGlobal::sigmap.delOperation\n");
 #endif                        
-                        pendingOperations.delTimeSigOperation(i->a, &AL::sigmap);
+                        pendingOperations.delTimeSigOperation(i->a, &MusEGlobal::sigmap);
                         updateFlags |= SC_SIG;
                         break;
                         
                   case UndoOp::ModifySig:
 #ifdef _UNDO_DEBUG_
-                        fprintf(stderr, "Song::revertOperationGroup1:ModifySig ** calling sigmap.addOperation\n");
+                        fprintf(stderr, "Song::revertOperationGroup1:ModifySig ** calling MusEGlobal::sigmap.addOperation\n");
 #endif                        
                         // TODO: Hm should that be ->d and ->e like in executeOperationGroup1?
-                        pendingOperations.addTimeSigOperation(i->a, AL::TimeSignature(i->b, i->c), &AL::sigmap);
+                        pendingOperations.addTimeSigOperation(i->a, MusECore::TimeSignature(i->b, i->c), &MusEGlobal::sigmap);
                         updateFlags |= SC_SIG;
                         break;
                         
@@ -3347,25 +3347,25 @@ void Song::executeOperationGroup1(Undo& operations)
                         
                   case UndoOp::AddSig:
 #ifdef _UNDO_DEBUG_
-                        fprintf(stderr, "Song::executeOperationGroup1:AddSig ** calling sigmap.addOperation\n");
+                        fprintf(stderr, "Song::executeOperationGroup1:AddSig ** calling MusEGlobal::sigmap.addOperation\n");
 #endif                        
-                        pendingOperations.addTimeSigOperation(i->a, AL::TimeSignature(i->b, i->c), &AL::sigmap);
+                        pendingOperations.addTimeSigOperation(i->a, MusECore::TimeSignature(i->b, i->c), &MusEGlobal::sigmap);
                         updateFlags |= SC_SIG;
                         break;
                         
                   case UndoOp::DeleteSig:
 #ifdef _UNDO_DEBUG_
-                        fprintf(stderr, "Song::executeOperationGroup1:DeleteSig ** calling sigmap.delOperation\n");
+                        fprintf(stderr, "Song::executeOperationGroup1:DeleteSig ** calling MusEGlobal::sigmap.delOperation\n");
 #endif                        
-                        pendingOperations.delTimeSigOperation(i->a, &AL::sigmap);
+                        pendingOperations.delTimeSigOperation(i->a, &MusEGlobal::sigmap);
                         updateFlags |= SC_SIG;
                         break;
                         
                   case UndoOp::ModifySig:
 #ifdef _UNDO_DEBUG_
-                        fprintf(stderr, "Song::executeOperationGroup1:ModifySig ** calling sigmap.addOperation\n");
+                        fprintf(stderr, "Song::executeOperationGroup1:ModifySig ** calling MusEGlobal::sigmap.addOperation\n");
 #endif                        
-                        pendingOperations.addTimeSigOperation(i->a, AL::TimeSignature(i->d, i->e), &AL::sigmap);
+                        pendingOperations.addTimeSigOperation(i->a, MusECore::TimeSignature(i->d, i->e), &MusEGlobal::sigmap);
                         updateFlags |= SC_SIG;
                         break;
 

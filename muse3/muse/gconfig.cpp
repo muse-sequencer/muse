@@ -46,6 +46,7 @@ GlobalConfigValues config = {
       QStringList(),              // pluginVstPathList
       QStringList(),              // pluginLinuxVstPathList
       QStringList(),              // pluginLv2PathList
+      false,                      // pluginCacheTriggerRescan Whether to trigger a plugin cache rescan.
       170,                        // globalAlphaBlend    
       {
         QColor(0xff, 0xff, 0xff),   // palette

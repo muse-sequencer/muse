@@ -72,6 +72,7 @@
 #include "tools.h"
 #include "copy_on_write.h"
 #include "helper.h"
+#include "sig.h"
 
 namespace MusEGui {
 
@@ -395,8 +396,8 @@ QString WaveCanvas::getCaption() const
       {
       int bar1, bar2, xx;
       unsigned x;
-      AL::sigmap.tickValues(curPart->tick(), &bar1, &xx, &x);
-      AL::sigmap.tickValues(curPart->tick() + curPart->lenTick(), &bar2, &xx, &x);
+      MusEGlobal::sigmap.tickValues(curPart->tick(), &bar1, &xx, &x);
+      MusEGlobal::sigmap.tickValues(curPart->tick() + curPart->lenTick(), &bar2, &xx, &x);
 
       return QString("MusE: Part <") + curPart->name()
          + QString("> %1-%2").arg(bar1+1).arg(bar2+1);
@@ -955,10 +956,10 @@ void WaveCanvas::drawParts(QPainter& p, bool do_cur_part, const QRect& mr, const
 //       int xx,bar1, bar2, beat;
 //       int rast_mapx;
 //       unsigned tick;
-// //      AL::sigmap.tickValues(x, &bar1, &beat, &tick);
-// //      AL::sigmap.tickValues(x+w, &bar2, &beat, &tick);
-//       AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(x), &bar1, &beat, &tick);
-//       AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(x+w), &bar2, &beat, &tick);
+// //      MusEGlobal::sigmap.tickValues(x, &bar1, &beat, &tick);
+// //      MusEGlobal::sigmap.tickValues(x+w, &bar2, &beat, &tick);
+//       MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(x), &bar1, &beat, &tick);
+//       MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(x+w), &bar2, &beat, &tick);
 //       ++bar2;
 //       ///int y2 = y + h;
 //       //int y2 = my + mh;
@@ -967,8 +968,8 @@ void WaveCanvas::drawParts(QPainter& p, bool do_cur_part, const QRect& mr, const
 //       //printf("View::drawTickRaster x:%d y:%d w:%d h:%d my:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, my, mh, y2, bar1, bar2);  
 //       for (int bar = bar1; bar < bar2; ++bar) {
 //         
-// //            unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
-//             unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
+// //            unsigned xb = MusEGlobal::sigmap.bar2tick(bar, 0, 0);
+//             unsigned xb = MusEGlobal::sigmap.bar2tick(bar, 0, 0);
 //             int xt = mapx(MusEGlobal::tempomap.tick2frame(xb));
 // //             pen.setColor(Qt::black);
 //             pen.setColor(MusEGlobal::config.midiCanvasBarColor);
@@ -976,7 +977,7 @@ void WaveCanvas::drawParts(QPainter& p, bool do_cur_part, const QRect& mr, const
 //             p.drawLine(xt, my, xt, y2);
 //             
 //             int z, n;
-//             AL::sigmap.timesig(xb, z, n);
+//             MusEGlobal::sigmap.timesig(xb, z, n);
 //             int qq = raster;
 //             
 // // REMOVE Tim. citem. Changed.
@@ -999,7 +1000,7 @@ void WaveCanvas::drawParts(QPainter& p, bool do_cur_part, const QRect& mr, const
 //             p.setPen(pen);
 //             if (raster>=4) {
 //                         xx = xb + qq;
-//                         int xxx = MusEGlobal::tempomap.tick2frame(AL::sigmap.bar2tick(bar, z, 0));
+//                         int xxx = MusEGlobal::tempomap.tick2frame(MusEGlobal::sigmap.bar2tick(bar, z, 0));
 //                         //while (MusEGlobal::tempomap.tick2frame(xx) <= xxx) {
 //                         while (1) {
 //                                int xxf = MusEGlobal::tempomap.tick2frame(xx);
@@ -1014,7 +1015,7 @@ void WaveCanvas::drawParts(QPainter& p, bool do_cur_part, const QRect& mr, const
 //             pen.setColor(Qt::gray);
 //             p.setPen(pen);
 //             for (int beat = 1; beat < z; beat++) {
-//                         xx = mapx(MusEGlobal::tempomap.tick2frame(AL::sigmap.bar2tick(bar, beat, 0)));
+//                         xx = mapx(MusEGlobal::tempomap.tick2frame(MusEGlobal::sigmap.bar2tick(bar, beat, 0)));
 //                         //printf(" bar:%d z:%d beat:%d xx:%d\n", bar, z, beat, xx);  
 //                         p.drawLine(xx, my, xx, y2);
 //                         }
@@ -1144,7 +1145,7 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
             x = 0;
       emit timeChanged(x);
       //emit timeChanged(editor->rasterVal(x));
-      //emit timeChanged(AL::sigmap.raster(x, *_raster));
+      //emit timeChanged(MusEGlobal::sigmap.raster(x, *_raster));
 
       switch (button) {
             case Qt::LeftButton:
@@ -2518,7 +2519,7 @@ void WaveCanvas::waveCmd(int cmd)
                   if(spos > 0) 
                   {
                     spos -= 1;     // Nudge by -1, then snap down with raster1.
-                    spos = AL::sigmap.raster1(spos, editor->rasterStep(pos[0]));
+                    spos = MusEGlobal::sigmap.raster1(spos, editor->rasterStep(pos[0]));
                   }  
                   if(spos < 0)
                     spos = 0;
@@ -2528,7 +2529,7 @@ void WaveCanvas::waveCmd(int cmd)
                   break;
             case CMD_RIGHT:
                   {
-                  int spos = AL::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
+                  int spos = MusEGlobal::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
                   MusECore::Pos p(spos,true);
                   MusEGlobal::song->setPos(0, p, true, true, true); 
                   }

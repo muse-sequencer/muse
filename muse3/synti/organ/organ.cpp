@@ -28,8 +28,8 @@
 #include <cmath>
 #include <stdio.h>
 
-#include "muse/midi_consts.h"
-#include "muse/mpevent.h"   
+#include "midi_consts.h"
+#include "mpevent.h"
 
 //#include "common_defs.h"
 #include "organ.h"

@@ -21,45 +21,5 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-include(${PROJECT_SOURCE_DIR}/pch.txt)
+subdirs(evdata memory mpevent string sysex_helper xml plugin)
 
-##
-## List of source files to compile
-##
-file (GLOB muse_string_source_files
-      strntcpy.cpp
-      )
-
-##
-## Define target
-##
-add_library(muse_string ${MODULES_BUILD}
-      ${PROJECT_BINARY_DIR}/all-pic.h
-      ${muse_string_source_files}
-      )
-
-##
-## Append to the list of translations
-##
-set (FILES_TO_TRANSLATE
-      ${FILES_TO_TRANSLATE}
-      ${muse_string_source_files}
-      CACHE INTERNAL ""
-      )
-
-##
-## Compilation flags and target name
-##
-set_target_properties( muse_string
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-      ## OUTPUT_NAME muse_helper_str
-      )
-
-##
-## Install location
-##
-if ( ${MODULES_BUILD} STREQUAL SHARED )
-      install(TARGETS muse_string
-            DESTINATION ${MusE_MODULES_DIR}
-            )
-endif ( ${MODULES_BUILD} STREQUAL SHARED )

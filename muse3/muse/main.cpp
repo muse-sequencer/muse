@@ -66,6 +66,8 @@
 #include "mididev.h"
 #include "plugin.h"
 #include "wavepreview.h"
+#include "plugin_cache_writer.h"
+#include "pluglist.h"
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
@@ -255,6 +257,7 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "                        (Dummy only, default 40. Else fixed by Jack.)\n");
       fprintf(stderr, "   -Y  n    Force midi real time priority to n (default: audio driver prio -1)\n");
       fprintf(stderr, "\n");
+      fprintf(stderr, "   -R       Force plugin cache re-scan. (Automatic if any plugin path directories changed.)\n");
       fprintf(stderr, "   -p       Don't load LADSPA plugins\n");
       fprintf(stderr, "   -S       Don't load MESS plugins\n");
 #ifdef VST_SUPPORT
@@ -489,6 +492,7 @@ int main(int argc, char* argv[])
       else
         setenv("LV2_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
 
+      bool plugin_rescan_already_done = false;
       int rv = 0;
       bool is_restarting = true; // First-time init true.
       while(is_restarting)
@@ -536,7 +540,7 @@ int main(int argc, char* argv[])
         // Working with Breeze maintainer to fix problem... 2017/06/06 Tim.
         MusEGui::updateThemeAndStyle();
 
-        QString optstr("aJjFAhvdDumMsP:Y:l:pSy");
+        QString optstr("aJjFAhvdDumMsP:Y:l:pRSy");
   #ifdef VST_SUPPORT
         optstr += QString("V");
   #endif
@@ -557,6 +561,7 @@ int main(int argc, char* argv[])
   #endif
 
         AudioDriverSelect audioType = DriverConfigSetting;
+        bool force_plugin_rescan = false;
         int i;
 
         // Now read the remaining arguments as our own...
@@ -603,6 +608,7 @@ int main(int argc, char* argv[])
                     case 'P': MusEGlobal::realTimePriority = atoi(optarg); break;
                     case 'Y': MusEGlobal::midiRTPrioOverride = atoi(optarg); break;
                     case 'p': MusEGlobal::loadPlugins = false; break;
+                    case 'R': force_plugin_rescan = true; break;
                     case 'S': MusEGlobal::loadMESS = false; break;
                     case 'V': MusEGlobal::loadVST = false; break;
                     case 'N': MusEGlobal::loadNativeVST = false; break;
@@ -732,7 +738,105 @@ int main(int argc, char* argv[])
         }
         MusEGlobal::museUserInstruments = uinstrPath;
 
+        //-------------------------------------------------------
+        //    BEGIN SHOW MUSE SPLASH SCREEN
+        //-------------------------------------------------------
+
+        QString splash_prefix;
+        QSplashScreen* muse_splash = NULL;
+        if (MusEGlobal::config.showSplashScreen) {
+            QPixmap splsh(MusEGlobal::museGlobalShare + "/splash.png");
+
+            if (!splsh.isNull()) {
+                muse_splash = new QSplashScreen(splsh,
+                  Qt::WindowStaysOnTopHint);
+                muse_splash->setAttribute(Qt::WA_DeleteOnClose);  // Possibly also Qt::X11BypassWindowManagerHint
+                muse_splash->show();
+                splash_prefix = QString("MusE ") + QString(VERSION);
+                muse_splash->showMessage(splash_prefix);
+            }
+        }
+        
+        //-------------------------------------------------------
+        //    END SHOW MUSE SPLASH SCREEN
+        //-------------------------------------------------------
+
+        //-------------------------------------------------------
+        //    BEGIN Plugin scanning
+        //-------------------------------------------------------
+
+        if(muse_splash)
+        {
+          muse_splash->showMessage(splash_prefix + QString(" Creating plugin cache files..."));
+          qApp->processEvents();
+        }
+        
+        bool do_rescan = false;
+        if(force_plugin_rescan)
+        {
+          force_plugin_rescan = false;
+          if(!plugin_rescan_already_done)
+          {
+            do_rescan = true;
+            plugin_rescan_already_done = true;
+          }
+        }
+        
+        if(MusEGlobal::config.pluginCacheTriggerRescan)
+        {
+          do_rescan = true;
+          // Done with rescan trigger. Reset it now.
+          MusEGlobal::config.pluginCacheTriggerRescan = false;
+        }
+        
+        // Scan all known plugins from the cache file, or if it does not exist
+        //  create the cache file by reading plugins in a safe 'sandbox'.
+        MusEPlugin::PluginScanInfoStruct::PluginType_t types = MusEPlugin::PluginScanInfoStruct::PluginTypeNone;
+        if(MusEGlobal::loadPlugins)
+          types |= MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA;
+        if(MusEGlobal::loadMESS)
+          types |= MusEPlugin::PluginScanInfoStruct::PluginTypeMESS;
+        if(MusEGlobal::loadVST)
+          types |= MusEPlugin::PluginScanInfoStruct::PluginTypeVST;
+        if(MusEGlobal::loadNativeVST)
+          types |= MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST;
+        if(MusEGlobal::loadDSSI)
+          types |= (MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI |
+                    MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST);
+        if(MusEGlobal::loadLV2)
+          types |= MusEPlugin::PluginScanInfoStruct::PluginTypeLV2;
+
+        MusEPlugin::checkPluginCacheFiles(MusEGlobal::configPath + "/scanner",
+                                        // List of plugins to scan into and write to cache files from.
+                                        &MusEPlugin::pluginList,
+                                        // Don't bother reading any port information that might exist in the cache.
+                                        false,
+                                        // Whether to force recreation.
+                                        do_rescan,
+                                        // When creating, where to find the application's own plugins.
+                                        MusEGlobal::museGlobalLib,
+                                        // Plugin types to check.
+                                        types,
+                                        // Debug messages.
+                                        MusEGlobal::debugMsg);
+
+        // Done with rescan trigger. Reset it now.
+        if(do_rescan)
+          MusEGlobal::config.pluginCacheTriggerRescan = false;
+
+        //-------------------------------------------------------
+        //   END Plugin scanning
+        //-------------------------------------------------------
+
+
         AL::initDsp();
+        
+        if(muse_splash)
+        {
+          muse_splash->showMessage(splash_prefix + QString(" Initializing audio system..."));
+          qApp->processEvents();
+        }
+        
         MusECore::initAudio();
 
         MusEGui::initIcons(MusEGlobal::config.useThemeIconsIfPossible);
@@ -742,26 +846,14 @@ int main(int argc, char* argv[])
 
         MusEGlobal::muse = new MusEGui::MusE();
         app.setMuse(MusEGlobal::muse);
-
+        
         MusEGui::init_function_dialogs();
         MusEGui::retranslate_function_dialogs();
 
-        // SHOW MUSE SPLASH SCREEN
-        if (MusEGlobal::config.showSplashScreen) {
-            QPixmap splsh(MusEGlobal::museGlobalShare + "/splash.png");
-
-            if (!splsh.isNull()) {
-                QSplashScreen* muse_splash = new QSplashScreen(splsh,
-                  Qt::WindowStaysOnTopHint);
-                muse_splash->setAttribute(Qt::WA_DeleteOnClose);  // Possibly also Qt::X11BypassWindowManagerHint
-                muse_splash->show();
-                muse_splash->showMessage("MusE " + QString(VERSION) );
-                QTimer* stimer = new QTimer(0);
-                muse_splash->connect(stimer, SIGNAL(timeout()), muse_splash, SLOT(close()));
-                stimer->setSingleShot(true);
-                stimer->start(6000);
-                QApplication::processEvents();
-            }
+        if(muse_splash)
+        {
+          muse_splash->showMessage(splash_prefix + QString(" Initializing audio driver..."));
+          qApp->processEvents();
         }
 
         if (MusEGlobal::config.useDenormalBias) {
@@ -900,6 +992,12 @@ int main(int argc, char* argv[])
         MusEGlobal::fifoLength = 131072 / MusEGlobal::segmentSize;
         MusECore::initAudioPrefetch();
 
+        if(muse_splash)
+        {
+          muse_splash->showMessage(splash_prefix + QString(" Initializing midi devices..."));
+          qApp->processEvents();
+        }
+
         // WARNING Must do it this way. Call registerClient long AFTER Jack client is created and MusE ALSA client is
         // created (in initMidiDevices), otherwise random crashes can occur within Jack <= 1.9.8. Fixed in Jack 1.9.9.  Tim.
         // This initMidiDevices will automatically initialize the midiSeq sequencer thread, but not start it - that's a bit later on.
@@ -913,6 +1011,12 @@ int main(int argc, char* argv[])
         MusECore::initMidiController();
         MusECore::initMidiInstruments();
         MusECore::initMidiPorts();
+
+        if(muse_splash)
+        {
+          muse_splash->showMessage(splash_prefix + QString(" Initializing plugins..."));
+          qApp->processEvents();
+        }
 
         if (MusEGlobal::loadPlugins)
               MusECore::initPlugins();
@@ -943,6 +1047,12 @@ int main(int argc, char* argv[])
           MusEGui::lash_client = 0;
           if(MusEGlobal::useLASH)
           {
+            if(muse_splash)
+            {
+              muse_splash->showMessage(splash_prefix + QString(" Initializing LASH support..."));
+              qApp->processEvents();
+            }
+
             int lash_flags = LASH_Config_File;
             const char *muse_name = PACKAGE_NAME;
             MusEGui::lash_client = lash_init (lash_args, muse_name, lash_flags, LASH_PROTOCOL(2,0));
@@ -965,6 +1075,12 @@ int main(int argc, char* argv[])
               if (mlockall(MCL_CURRENT | MCL_FUTURE))
                     perror("WARNING: Cannot lock memory:");
               }
+
+        if(muse_splash)
+        {
+          muse_splash->showMessage(splash_prefix + QString(" populating track types..."));
+          qApp->processEvents();
+        }
 
         MusEGlobal::muse->populateAddTrack(); // could possibly be done in a thread.
 
@@ -1000,6 +1116,17 @@ int main(int argc, char* argv[])
           !MusEGlobal::config.startSongLoadConfig)
           MusECore::populateMidiPorts();
 
+        if(muse_splash)
+        {
+          // From this point on, slap a timer on it so that it stays up for few seconds,
+          //  since closing it now might be too short display time.
+          // It will auto-destory itself.
+          QTimer* stimer = new QTimer(muse_splash);
+          muse_splash->connect(stimer, SIGNAL(timeout()), muse_splash, SLOT(close()));
+          stimer->setSingleShot(true);
+          stimer->start(3000);
+        }
+
         //--------------------------------------------------
         // Load the default song.
         //--------------------------------------------------
@@ -1007,7 +1134,16 @@ int main(int argc, char* argv[])
 
         QTimer::singleShot(100, MusEGlobal::muse, SLOT(showDidYouKnowDialog()));
 
+        //--------------------------------------------------
+        // Start the application...
+        //--------------------------------------------------
+
         rv = app.exec();
+
+        //--------------------------------------------------
+        // ... Application finished.
+        //--------------------------------------------------
+
         if(MusEGlobal::debugMsg)
           fprintf(stderr, "app.exec() returned:%d\nDeleting main MusE object\n", rv);
 

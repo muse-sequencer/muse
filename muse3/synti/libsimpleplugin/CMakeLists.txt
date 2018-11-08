@@ -92,7 +92,7 @@ target_link_libraries(simpler_plugingui
       )
       
 target_link_libraries(simpler_plugin
-      plugin_scan_module
+      plugin_cache_reader_module
       ${QT_LIBRARIES}
       dl
       )

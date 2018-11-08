@@ -28,7 +28,7 @@
 #include "organ.h"
 #include "libsynti/gui.h"
 //#include "libsynti/mpevent.h"
-#include "muse/mpevent.h"   
+#include "mpevent.h"   
 
 class QWidget;
 class QSignalMapper;

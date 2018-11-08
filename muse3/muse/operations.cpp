@@ -2490,7 +2490,7 @@ iPendingOperation PendingOperationList::findAllocationOp(const PendingOperationI
 //   addTimeSigOperation
 //---------------------------------------------------------
 
-bool PendingOperationList::addTimeSigOperation(unsigned tick, const AL::TimeSignature& s, AL::SigList* sl)
+bool PendingOperationList::addTimeSigOperation(unsigned tick, const MusECore::TimeSignature& s, MusECore::SigList* sl)
 {
   //if (tick > MAX_TICK)
   //  tick = MAX_TICK;
@@ -2499,7 +2499,7 @@ bool PendingOperationList::addTimeSigOperation(unsigned tick, const AL::TimeSign
         fprintf(stderr, "PendingOperationList::addOperation illegal time signature %d/%d\n", s.z, s.n);
         return false;
         }
-  AL::iSigEvent e = sl->upper_bound(tick);
+  MusECore::iSigEvent e = sl->upper_bound(tick);
   if(tick == e->second->tick)
     add(PendingOperationItem(sl, e, s, MusECore::PendingOperationItem::ModifySig));
   else 
@@ -2514,7 +2514,7 @@ bool PendingOperationList::addTimeSigOperation(unsigned tick, const AL::TimeSign
     }
     else
     {
-      poi._sig_event = new AL::SigEvent(s, tick); // These are the desired tick and sig but...
+      poi._sig_event = new MusECore::SigEvent(s, tick); // These are the desired tick and sig but...
       add(poi);                           //  add will do the proper swapping with next event.
     }
   }
@@ -2525,9 +2525,9 @@ bool PendingOperationList::addTimeSigOperation(unsigned tick, const AL::TimeSign
 //   delTimeSigOperation
 //---------------------------------------------------------
 
-bool PendingOperationList::delTimeSigOperation(unsigned tick, AL::SigList* sl)
+bool PendingOperationList::delTimeSigOperation(unsigned tick, MusECore::SigList* sl)
 {
-  AL::iSigEvent e = sl->find(tick);
+  MusECore::iSigEvent e = sl->find(tick);
   if (e == sl->end()) {
         printf("PendingOperationList::delTimeSigOperation tick:%d not found\n", tick);
         return false;

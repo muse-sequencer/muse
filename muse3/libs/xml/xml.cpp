@@ -22,14 +22,9 @@
 //
 //=========================================================
 
-#include <stdio.h>
 #include <stdarg.h>
 
 #include <QByteArray>
-#include <QString>
-#include <QColor>
-#include <QWidget>
-#include <QRect>
 
 #include "xml.h"
 
@@ -224,7 +219,7 @@ Xml::Token Xml::parse()
       if (c == EOF) {
             //if (level > 0 || MusEGlobal::debugMsg)
             if (level > 0)
-              printf("WARNING: unexpected EOF reading xml file at level %d, line %d, <%s><%s><%s>\n",
+              fprintf(stderr, "WARNING: unexpected EOF reading xml file at level %d, line %d, <%s><%s><%s>\n",
                 level, _line, _tag.toLatin1().constData(), _s1.toLatin1().constData(), _s2.toLatin1().constData());
             return level == 0 ? End : Error;
             }
@@ -238,7 +233,7 @@ Xml::Token Xml::parse()
                   nextc();
                   token('>');
                   if (c != '>') {
-                        printf("Xml: unexpected char '%c', expected '>'\n", c);
+                        fprintf(stderr, "Xml: unexpected char '%c', expected '>'\n", c);
                         goto error;
                         }
                   _s1   = _tag;
@@ -250,6 +245,13 @@ Xml::Token Xml::parse()
             token('=');
             _s1 = _s2;
             nextc();      // skip space
+            if (c == EOF) {
+                  //if (level > 0 || MusEGlobal::debugMsg)
+                  if (level > 0)
+                    fprintf(stderr, "WARNING: unexpected EOF reading xml file at level %d, line %d, <%s><%s><%s>\n",
+                      level, _line, _tag.toLatin1().constData(), _s1.toLatin1().constData(), _s2.toLatin1().constData());
+                  return level == 0 ? End : Error;
+                  }
             if (c == '"')
                   stoken();
             else
@@ -531,7 +533,7 @@ double Xml::parseDouble()
 
 void Xml::unknown(const char* s)
       {
-      printf("%s: unknown tag <%s> at line %d\n",
+      fprintf(stderr, "%s: unknown tag <%s> at line %d\n",
          s, _s1.toLatin1().constData(), _line+1);
       parse1();
       }
@@ -789,4 +791,80 @@ void Xml::dump(QString &dump)
        fsetpos(f, &pos);
       }
 
+
+//---------------------------------------------------------
+//   Basic functions:
+//---------------------------------------------------------
+
+//---------------------------------------------------------
+//   readGeometry
+//---------------------------------------------------------
+
+QRect readGeometry(Xml& xml, const QString& name)
+      {
+      QRect r(0, 0, 50, 50);
+      int val;
+
+      for (;;) {
+            Xml::Token token = xml.parse();
+            if (token == Xml::Error || token == Xml::End)
+                  break;
+            QString tag = xml.s1();
+            switch (token) {
+                  case Xml::TagStart:
+                        xml.parse1();
+                        break;
+                  case Xml::Attribut:
+                        val = xml.s2().toInt();
+                        if (tag == "x")
+                              r.setX(val);
+                        else if (tag == "y")
+                              r.setY(val);
+                        else if (tag == "w")
+                              r.setWidth(val);
+                        else if (tag == "h")
+                              r.setHeight(val);
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == name)
+                              return r;
+                  default:
+                        break;
+                  }
+            }
+      return r;
+      }
+
+
+//---------------------------------------------------------
+//   readColor
+//---------------------------------------------------------
+
+QColor readColor(Xml& xml)
+       {
+       int val, r=0, g=0, b=0;
+
+      for (;;) {
+            Xml::Token token = xml.parse();
+            if (token != Xml::Attribut)
+                  break;
+            QString tag = xml.s1();
+            switch (token) {
+                  case Xml::Attribut:
+                        val = xml.s2().toInt();
+                        if (tag == "r")
+                              r = val;
+                        else if (tag == "g")
+                              g = val;
+                        else if (tag == "b")
+                              b = val;
+                        break;
+                  default:
+                        break;
+                  }
+            }
+
+      return QColor(r, g, b);
+      }
+      
 } // namespace MusECore

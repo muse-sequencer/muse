@@ -31,7 +31,7 @@
 #include "amixer.h"
 #include "tempo.h"
 ///#include "sig.h"
-#include "al/sig.h"
+#include "sig.h"
 #include "audio.h"
 #include "mididev.h"
 #include "audiodev.h"

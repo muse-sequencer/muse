@@ -29,7 +29,8 @@
 #include <QResizeEvent>
 #include <QPainter>
 
-#include "al/sig.h"
+#include "sync.h"
+#include "sig.h"
 #include "globals.h"
 #include "bigtime.h"
 #include "app.h"
@@ -244,7 +245,7 @@ bool BigTime::setString(unsigned v)
       
       int bar, beat;
       unsigned tick;
-      AL::sigmap.tickValues(v, &bar, &beat, &tick);
+      MusEGlobal::sigmap.tickValues(v, &bar, &beat, &tick);
       double time = double(absFrame)/double(MusEGlobal::sampleRate);
       //int hour    = int(time) / 3600;
       //int min     = (int(time) / 60) % 60;

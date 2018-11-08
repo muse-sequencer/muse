@@ -59,6 +59,7 @@
 #include "checkbox.h"
 #include "meter.h"
 #include "utils.h"
+#include "pluglist.h"
 
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
@@ -71,7 +72,6 @@
 #include "audio.h"
 #include "al/dsp.h"
 
-#include "config.h"
 #include "muse_math.h"
 
 // Turn on debugging messages.
@@ -684,7 +684,7 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDss
         _requiredFeatures |= PluginNoInPlaceProcessing;
 }
 
-Plugin::Plugin(const PluginScanInfo& info)
+Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
 {
   _isDssi = false;
   _isDssiSynth = false;
@@ -697,43 +697,32 @@ Plugin::Plugin(const PluginScanInfo& info)
   
   switch(info._type)
   {
-    case PluginScanInfo::PluginTypeLADSPA:
+    case MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA:
     break;
     
-    case PluginScanInfo::PluginTypeDSSI:
+    case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI:
     {
       _isDssi = true;
-      switch(info._class)
-      {
-        case PluginScanInfo::PluginClassEffect:
-        break;
-        case PluginScanInfo::PluginClassInstrument:
-          _isDssiSynth = true;
-        break;
-      }
+      if(info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument)
+        _isDssiSynth = true;
     }
     break;
     
-    case PluginScanInfo::PluginTypeDSSIVST:
+    case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST:
     {
       _isDssi = true;
       _isDssiVst = true;
-      switch(info._class)
-      {
-        case PluginScanInfo::PluginClassEffect:
-        break;
-        case PluginScanInfo::PluginClassInstrument:
-          _isDssiSynth = true;
-        break;
-      }
+      if(info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument)
+        _isDssiSynth = true;
     }
     break;
     
-    case PluginScanInfo::PluginTypeVST:
-    case PluginScanInfo::PluginTypeLV2:
-    case PluginScanInfo::PluginTypeLinuxVST:
-    case PluginScanInfo::PluginTypeMESS:
-    case PluginScanInfo::PluginTypeAll:
+    case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
+    case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
+    case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
+    case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
+    case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
+    case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
     break;
   }
   
@@ -741,18 +730,19 @@ Plugin::Plugin(const PluginScanInfo& info)
   dssi_descr = NULL;
   #endif
 
-  fi = info._fi;
+//   fi = info._fi;
+  fi = QFileInfo(PLUGIN_GET_QSTRING(info.filePath()));
   plugin = NULL;
   ladspa = NULL;
   _handle = 0;
   _references = 0;
   _instNo     = 0;
   
-  _label = info._label;
-  _name = info._name;
+  _label = PLUGIN_GET_QSTRING(info._label);
+  _name = PLUGIN_GET_QSTRING(info._name);
   _uniqueID = info._uniqueID;
-  _maker = info._maker;
-  _copyright = info._copyright;
+  _maker = PLUGIN_GET_QSTRING(info._maker);
+  _copyright = PLUGIN_GET_QSTRING(info._copyright);
 
   _portCount = info._portCount;
 
@@ -973,107 +963,6 @@ CtrlList::Mode Plugin::ctrlMode(unsigned long i) const
       return ladspaCtrlMode(plugin, i);
       }
 
-//---------------------------------------------------------
-//   loadPluginLib
-//---------------------------------------------------------
-
-static void loadPluginLib(QFileInfo* fi)
-{
-  const char* message = "Plugins: loadPluginLib: ";
-  PluginScanList scan_list;
-  if(!pluginScan(fi->filePath(), scan_list, MusEGlobal::debugMsg))
-  {
-    fprintf(stderr, "Plugins: *FAILED* pluginScan(%s)\n\n",
-       fi->filePath().toLatin1().constData());
-  }
-  
-  for(ciPluginScanList isl = scan_list.begin(); isl != scan_list.end(); ++isl)
-  {
-    const PluginScanInfo& info = *isl;
-    switch(info._type)
-    {
-      case PluginScanInfo::PluginTypeLADSPA:
-      {
-        if(MusEGlobal::loadPlugins)
-        {
-          // Make sure it doesn't already exist.
-          if(const Plugin* pl = MusEGlobal::plugins.find(info._fi.completeBaseName(), info._label))
-          {
-            fprintf(stderr, "Ignoring LADSPA effect label:%s path:%s duplicate of path:%s\n",
-                    info._label.toLatin1().constData(),
-                    info._fi.filePath().toLatin1().constData(),
-                    pl->filePath().toLatin1().constData());
-          }
-          else
-          {
-            if(MusEGlobal::debugMsg)
-              info.dump(message);
-            MusEGlobal::plugins.add(info);
-          }
-        }
-      }
-      break;
-      
-      case PluginScanInfo::PluginTypeDSSI:
-      case PluginScanInfo::PluginTypeDSSIVST:
-      {
-#ifdef DSSI_SUPPORT
-        if(MusEGlobal::loadDSSI)
-        {
-          // Allow both effects and instruments for now.
-          if(info._class & PluginScanInfo::PluginClassEffect ||
-             info._class & PluginScanInfo::PluginClassInstrument)
-          {
-            // Make sure it doesn't already exist.
-            if(const Plugin* pl = MusEGlobal::plugins.find(info._fi.completeBaseName(), info._label))
-            {
-              fprintf(stderr, "Ignoring DSSI effect label:%s path:%s duplicate of path:%s\n",
-                      info._label.toLatin1().constData(),
-                      info._fi.filePath().toLatin1().constData(),
-                      pl->filePath().toLatin1().constData());
-            }
-            else
-            {
-              if(MusEGlobal::debugMsg)
-                info.dump(message);
-              MusEGlobal::plugins.add(info);
-            }
-          }
-        }
-#endif
-      }
-      break;
-      
-      case PluginScanInfo::PluginTypeVST:
-      case PluginScanInfo::PluginTypeLV2:
-      case PluginScanInfo::PluginTypeLinuxVST:
-      case PluginScanInfo::PluginTypeMESS:
-      case PluginScanInfo::PluginTypeAll:
-      break;
-    }
-  }
-}
-
-//---------------------------------------------------------
-//   loadPluginDir
-//---------------------------------------------------------
-
-static void loadPluginDir(const QString& s)
-      {
-      if (MusEGlobal::debugMsg)
-            printf("scan ladspa plugin dir <%s>\n", s.toLatin1().constData());
-      QDir pluginDir(s, QString("*.so")); // ddskrjo
-      if (pluginDir.exists()) {
-            QFileInfoList list = pluginDir.entryInfoList();
-        QFileInfoList::iterator it=list.begin();
-            while(it != list.end()) {
-                  loadPluginLib(&*it);
-                  ++it;
-                  }
-            }
-      }
-
-
 void PluginGroups::shift_left(int first, int last)
 {
   for (int i=first; i<=last; i++)
@@ -1106,81 +995,84 @@ void PluginGroups::replace_group(int old, int now)
   }
 }
 
-
 //---------------------------------------------------------
 //   initPlugins
 //---------------------------------------------------------
 
 void initPlugins()
+{
+  const char* message = "Plugins: loadPluginLib: ";
+  const MusEPlugin::PluginScanList& scan_list = MusEPlugin::pluginList;
+  for(MusEPlugin::ciPluginScanList isl = scan_list.begin(); isl != scan_list.end(); ++isl)
+  {
+    const MusEPlugin::PluginScanInfoRef inforef = *isl;
+    const MusEPlugin::PluginScanInfoStruct& info = inforef->info();
+    switch(info._type)
+    {
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA:
       {
-      loadPluginDir(MusEGlobal::museGlobalLib + QString("/plugins"));
-
-      std::string s;
-      const char* p = 0;
-
-      // Take care of DSSI plugins first...
-      #ifdef DSSI_SUPPORT
-      const char* dssiPath = getenv("DSSI_PATH");
-      if (dssiPath == 0)
-      {
-          const char* home = getenv("HOME");
-          s = std::string(home) + std::string("/dssi:/usr/local/lib64/dssi:/usr/lib64/dssi:/usr/local/lib/dssi:/usr/lib/dssi");
-          dssiPath = s.c_str();
+        if(MusEGlobal::loadPlugins)
+        {
+          // Make sure it doesn't already exist.
+          if(const Plugin* pl = MusEGlobal::plugins.find(PLUGIN_GET_QSTRING(info._completeBaseName),
+             PLUGIN_GET_QSTRING(info._label)))
+          {
+            fprintf(stderr, "Ignoring LADSPA effect label:%s path:%s duplicate of path:%s\n",
+                    PLUGIN_GET_CSTRING(info._label),
+                    PLUGIN_GET_CSTRING(info.filePath()),
+                    pl->filePath().toLatin1().constData());
+          }
+          else
+          {
+            if(MusEGlobal::debugMsg)
+              info.dump(message);
+            MusEGlobal::plugins.add(info);
+          }
+        }
       }
-      p = dssiPath;
-      while (*p != '\0') {
-            const char* pe = p;
-            while (*pe != ':' && *pe != '\0')
-                  pe++;
-
-            int n = pe - p;
-            if (n) {
-                  char* buffer = new char[n + 1];
-                  strncpy(buffer, p, n);
-                  buffer[n] = '\0';
-                  loadPluginDir(QString(buffer));
-                  delete[] buffer;
-                  }
-            p = pe;
-            if (*p == ':')
-                  p++;
+      break;
+      
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST:
+      {
+#ifdef DSSI_SUPPORT
+        if(MusEGlobal::loadDSSI)
+        {
+          // Allow both effects and instruments for now.
+          if(info._class & MusEPlugin::PluginScanInfoStruct::PluginClassEffect ||
+             info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument)
+          {
+            // Make sure it doesn't already exist.
+            if(const Plugin* pl = MusEGlobal::plugins.find(PLUGIN_GET_QSTRING(info._completeBaseName),
+               PLUGIN_GET_QSTRING(info._label)))
+            {
+              fprintf(stderr, "Ignoring DSSI effect label:%s path:%s duplicate of path:%s\n",
+                      PLUGIN_GET_CSTRING(info._label),
+                      PLUGIN_GET_CSTRING(info.filePath()),
+                      pl->filePath().toLatin1().constData());
             }
-      #endif
-
-      // Now do LADSPA plugins...
-      const char* ladspaPath = getenv("LADSPA_PATH");
-      if (ladspaPath == 0)
-      {
-          const char* home = getenv("HOME");
-          s = std::string(home) + std::string("/ladspa:/usr/local/lib64/ladspa:/usr/lib64/ladspa:/usr/local/lib/ladspa:/usr/lib/ladspa");
-          ladspaPath = s.c_str();
-      }
-      p = ladspaPath;
-
-      if(MusEGlobal::debugMsg)
-        fprintf(stderr, "loadPluginDir: ladspa path:%s\n", ladspaPath);
-
-      while (*p != '\0') {
-            const char* pe = p;
-            while (*pe != ':' && *pe != '\0')
-                  pe++;
-
-            int n = pe - p;
-            if (n) {
-                  char* buffer = new char[n + 1];
-                  strncpy(buffer, p, n);
-                  buffer[n] = '\0';
-                  if(MusEGlobal::debugMsg)
-                    fprintf(stderr, "loadPluginDir: loading ladspa dir:%s\n", buffer);
-
-                  loadPluginDir(QString(buffer));
-                  delete[] buffer;
-                  }
-            p = pe;
-            if (*p == ':')
-                  p++;
+            else
+            {
+              if(MusEGlobal::debugMsg)
+                info.dump(message);
+              MusEGlobal::plugins.add(info);
             }
+          }
+        }
+#endif
       }
+      break;
+      
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
+      break;
+    }
+  }
+}
 
 //---------------------------------------------------------
 //   find

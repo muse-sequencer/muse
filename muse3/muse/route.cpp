@@ -39,7 +39,7 @@
 #include "icons.h"
 #include "driver/jackmidi.h"
 #include "driver/alsamidi.h"
-#include "libs/strntcpy.h"
+#include "strntcpy.h"
 
 //#define ROUTE_DEBUG 
 

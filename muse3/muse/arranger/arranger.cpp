@@ -475,7 +475,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       //    Editor
       //---------------------------------------------------
 
-      int offset = AL::sigmap.ticksMeasure(0);
+      int offset = MusEGlobal::sigmap.ticksMeasure(0);
       hscroll = new ScrollScale(-2000, -5, xscale, MusEGlobal::song->len(), Qt::Horizontal, this, -offset);
       hscroll->setFocusPolicy(Qt::NoFocus);
       hscroll->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -703,7 +703,7 @@ void Arranger::focusCanvas()
 
 void Arranger::songlenChanged(int n)
       {
-      int newLen = AL::sigmap.bar2tick(n, 0, 0);
+      int newLen = MusEGlobal::sigmap.bar2tick(n, 0, 0);
       MusEGlobal::song->setLen(newLen);
       }
       
@@ -801,14 +801,14 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
            SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))  
         {
           unsigned endTick = MusEGlobal::song->len();
-          int offset  = AL::sigmap.ticksMeasure(endTick);
+          int offset  = MusEGlobal::sigmap.ticksMeasure(endTick);
           hscroll->setRange(-offset, endTick + offset);  //DEBUG
           canvas->setOrigin(-offset, 0);
           time->setOrigin(-offset, 0);
     
           int bar, beat;
           unsigned tick;
-          AL::sigmap.tickValues(endTick, &bar, &beat, &tick);
+          MusEGlobal::sigmap.tickValues(endTick, &bar, &beat, &tick);
           if (tick || beat)
                 ++bar;
           lenEntry->blockSignals(true);

@@ -80,34 +80,34 @@ int SS_map_logdomain2pluginparam(float pluginparam_log)
 }
 
 //---------------------------------------------------------
-//   loadPluginLib
+//   initPlugins
+//    search for LADSPA plugins
 //---------------------------------------------------------
 
-static void loadPluginLib(QFileInfo* fi)
+void SS_initPlugins(const QString& hostConfigPath)
 {
   SP_TRACE_IN
-  if (SP_DEBUG_LADSPA) {
-        fprintf(stderr, "loadPluginLib: %s\n", fi->fileName().toLatin1().constData());
-        }
-            
-  MusECore::PluginScanList scan_list;
-  if(!MusECore::pluginScan(fi->filePath(), scan_list))
-  {
-    fprintf(stderr, "simpler_plugin: *FAILED* pluginScan(%s) failed\n\n",
-       fi->filePath().toLatin1().constData());
-  }
   
-  for(MusECore::ciPluginScanList isl = scan_list.begin(); isl != scan_list.end(); ++isl)
+  MusEPlugin::PluginScanList scan_list;
+  // Read host plugin cache file. We only want ladspa plugins for now...
+  MusEPlugin::readPluginCacheFile(hostConfigPath + "/scanner",
+                                  &scan_list,
+                                  false,
+                                  false,
+                                  MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA);
+  for(MusEPlugin::ciPluginScanList isl = scan_list.begin(); isl != scan_list.end(); ++isl)
   {
-    const MusECore::PluginScanInfo& info = *isl;
+    const MusEPlugin::PluginScanInfoRef inforef = *isl;
+    const MusEPlugin::PluginScanInfoStruct& info = inforef->info();
     switch(info._type)
     {
-      case MusECore::PluginScanInfo::PluginTypeLADSPA:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA:
       {
         //if(MusEGlobal::loadPlugins)
         {
           // Make sure it doesn't already exist.
-          if(/*Plugin* pl =*/ plugins.find(info._fi.completeBaseName(), info._label))
+          if(/*Plugin* pl =*/ plugins.find(PLUGIN_GET_QSTRING(info._completeBaseName),
+             PLUGIN_GET_QSTRING(info._label)))
           {
             //fprintf(stderr, "Ignoring LADSPA effect label:%s path:%s duplicate of path:%s\n",
             //        info._label.toLatin1().constData(),
@@ -122,79 +122,20 @@ static void loadPluginLib(QFileInfo* fi)
       }
       break;
       
-      case MusECore::PluginScanInfo::PluginTypeDSSI:
-      case MusECore::PluginScanInfo::PluginTypeDSSIVST:
-      case MusECore::PluginScanInfo::PluginTypeVST:
-      case MusECore::PluginScanInfo::PluginTypeLV2:
-      case MusECore::PluginScanInfo::PluginTypeLinuxVST:
-      case MusECore::PluginScanInfo::PluginTypeMESS:
-      case MusECore::PluginScanInfo::PluginTypeAll:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
       break;
     }
   }
   
   SP_TRACE_OUT
 }
-
-//---------------------------------------------------------
-//   loadPluginDir
-//---------------------------------------------------------
-
-static void loadPluginDir(const QString& s)
-      {
-      SP_TRACE_IN
-      QDir pluginDir(s, QString("*.so"), 0, QDir::Files);
-      if (pluginDir.exists()) {
-            QFileInfoList list = pluginDir.entryInfoList();
-            int n = list.size();
-            for (int i = 0; i < n; ++i) {
-                  QFileInfo fi = list.at(i);
-                  loadPluginLib(&fi);
-                  }
-            }
-      SP_TRACE_OUT
-      }
-
-//---------------------------------------------------------
-//   initPlugins
-//    search for LADSPA plugins
-//---------------------------------------------------------
-
-void SS_initPlugins(const QString& globalLibPath)
-      {
-      SP_TRACE_IN
-
-      loadPluginDir(globalLibPath + QString("/plugins"));
-      
-      std::string s;
-      const char* ladspaPath = getenv("LADSPA_PATH");
-      if (ladspaPath == 0)
-      {
-          const char* home = getenv("HOME");
-          s = std::string(home) + std::string("/ladspa:/usr/local/lib64/ladspa:/usr/lib64/ladspa:/usr/local/lib/ladspa:/usr/lib/ladspa");
-          ladspaPath = s.c_str();
-      }
-      const char* p = ladspaPath;
-      while (*p != '\0') {
-            const char* pe = p;
-            while (*pe != ':' && *pe != '\0')
-                  pe++;
-
-            int n = pe - p;
-            if (n) {
-                  char* buffer = new char[n + 1];
-                  strncpy(buffer, p, n);
-                  buffer[n] = '\0';
-                  loadPluginDir(QString(buffer));
-                  delete[] buffer;
-                  }
-            p = pe;
-            if (*p == ':')
-                  p++;
-            }
-      SP_TRACE_OUT
-      }
-
 
 //---------------------------------------------------------
 //   find
@@ -233,6 +174,27 @@ PluginList::~PluginList()
 }
 
 //---------------------------------------------------------
+//   Plugin
+//---------------------------------------------------------
+
+Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
+  : _fi(PLUGIN_GET_QSTRING(info.filePath())),
+    _libHandle(0),
+    _references(0),
+    _instNo(0),
+    _uniqueID(info._uniqueID), 
+    _label(PLUGIN_GET_QSTRING(info._label)),
+    _name(PLUGIN_GET_QSTRING(info._name)),
+    _maker(PLUGIN_GET_QSTRING(info._maker)),
+    _copyright(PLUGIN_GET_QSTRING(info._copyright)),
+    _portCount(info._portCount),
+    _inports(info._inports),
+    _outports(info._outports),
+    _controlInPorts(info._controlInPorts),
+    _controlOutPorts(info._controlOutPorts),
+    _requiredFeatures(info._requiredFeatures) { }
+
+//---------------------------------------------------------
 //   LadspaPlugin
 //---------------------------------------------------------
 
@@ -260,13 +222,11 @@ LadspaPlugin::LadspaPlugin(const QFileInfo* f,
           if(pd & LADSPA_PORT_INPUT)
           {
             ++_inports;
-            _iIdx.push_back(k);
           }
           else
           if(pd & LADSPA_PORT_OUTPUT)
           {
             ++_outports;
-            _oIdx.push_back(k);
           }
         }
         else
@@ -275,13 +235,11 @@ LadspaPlugin::LadspaPlugin(const QFileInfo* f,
           if(pd & LADSPA_PORT_INPUT)
           {
             ++_controlInPorts;
-            _pIdx.push_back(k);
           }
           else
           if(pd & LADSPA_PORT_OUTPUT)
           {
             ++_controlOutPorts;
-            _poIdx.push_back(k);
           }
         }
       }
@@ -299,45 +257,10 @@ LadspaPlugin::LadspaPlugin(const QFileInfo* f,
       SP_TRACE_OUT
       }
 
-LadspaPlugin::LadspaPlugin(const MusECore::PluginScanInfo& info)
-  : Plugin(info)
+LadspaPlugin::LadspaPlugin(const MusEPlugin::PluginScanInfoStruct& info)
+  : Plugin(info), _plugin(NULL)
 {
    SP_TRACE_IN
-   
-  _plugin = NULL;
-  
-  _label = info._label;
-  _name = info._name;
-  _uniqueID = info._uniqueID;
-  _maker = info._maker;
-  _copyright = info._copyright;
-
-  _portCount = info._portCount;
-
-  _inports = info._inports;
-  _outports = info._outports;
-  _controlInPorts = info._controlInPorts;
-  _controlOutPorts = info._controlOutPorts;
-
-  for(unsigned long k = 0; k < _portCount; ++k)
-  {
-    const MusECore::PluginPortInfo& port_info = info._portList[k];
-
-    if(port_info._type & MusECore::PluginPortInfo::AudioPort)
-    {
-      if(port_info._type & MusECore::PluginPortInfo::InputPort)
-        _iIdx.push_back(k);
-      else if(port_info._type & MusECore::PluginPortInfo::OutputPort)
-        _oIdx.push_back(k);
-    }
-    else if(port_info._type & MusECore::PluginPortInfo::ControlPort)
-    {
-      if(port_info._type & MusECore::PluginPortInfo::InputPort)
-        _pIdx.push_back(k);
-      else if(port_info._type & MusECore::PluginPortInfo::OutputPort)
-        _poIdx.push_back(k);
-    }
-  }
 
   SP_TRACE_OUT
 }
@@ -398,6 +321,7 @@ int LadspaPlugin::incReferences(int val)
     _poIdx.clear();
     _iIdx.clear();
     _oIdx.clear();
+    _requiredFeatures = MusECore::PluginNoFeatures;
 
     return 0;
   }
@@ -434,13 +358,14 @@ int LadspaPlugin::incReferences(int val)
 
     if(_plugin != NULL)
     {
-      _name = QString(_plugin->Name);
       _uniqueID = _plugin->UniqueID;
+
+      _label = QString(_plugin->Label);
+      _name = QString(_plugin->Name);
       _maker = QString(_plugin->Maker);
       _copyright = QString(_plugin->Copyright);
 
       _portCount = _plugin->PortCount;
-
       _inports = 0;
       _outports = 0;
       _controlInPorts = 0;

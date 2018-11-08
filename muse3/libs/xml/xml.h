@@ -27,10 +27,9 @@
 #include <stdio.h>
 
 #include <QString>
-
-class QColor;
-class QRect;
-class QWidget;
+#include <QColor>
+#include <QRect>
+#include <QWidget>
 
 namespace MusECore {
 
@@ -123,7 +122,16 @@ class Xml {
       void skip(const QString& tag);
       };
 
-extern QRect readGeometry(Xml&, const QString&);
+// REMOVE Tim. Scan. Removed.
+// extern QRect readGeometry(Xml&, const QString&);
+
+  //---------------------------------------------------------
+  //   Basic functions:
+  //---------------------------------------------------------
+
+  QRect readGeometry(Xml& xml, const QString& name);
+  QColor readColor(Xml& xml);
+
 
 } // namespace MusECore
 

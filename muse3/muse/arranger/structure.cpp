@@ -28,7 +28,7 @@
 #include "track.h"
 #include "song.h"
 #include "tempo.h"
-#include "al/sig.h"
+#include "sig.h"
 #include "keyevent.h"
 #include "audio.h"
 #include "marker/marker.h"
@@ -50,11 +50,11 @@ namespace MusECore {
 void adjustGlobalLists(Undo& operations, int startPos, int diff)
 {
   const TempoList* t = &MusEGlobal::tempomap;
-  const AL::SigList* s   = &AL::sigmap;
+  const SigList* s   = &MusEGlobal::sigmap;
   const KeyList* k   = &MusEGlobal::keymap;
 
   criTEvent it   = t->rbegin();
-  AL::criSigEvent is = s->rbegin();
+  criSigEvent is = s->rbegin();
   criKeyEvent ik = k->rbegin();
 
   // key
@@ -101,7 +101,7 @@ void adjustGlobalLists(Undo& operations, int startPos, int diff)
 
   // sig
   for (; is != s->rend(); is++) {
-    const AL::SigEvent* ev = (AL::SigEvent*)is->second;
+    const MusECore::SigEvent* ev = (MusECore::SigEvent*)is->second;
     int tick = ev->tick;
     if (tick < startPos )
       break;

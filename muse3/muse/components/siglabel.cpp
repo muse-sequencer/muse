@@ -51,7 +51,7 @@ SigLabel::SigLabel(int zz, int nn, QWidget* parent) : QLabel(parent)
       setValue(zz, nn);
       }
 
-SigLabel::SigLabel(const AL::TimeSignature& sig, QWidget* parent) : QLabel(parent)
+SigLabel::SigLabel(const MusECore::TimeSignature& sig, QWidget* parent) : QLabel(parent)
       {
       z = n = 0;
       setFocusPolicy(Qt::NoFocus);
@@ -85,7 +85,7 @@ void SigLabel::mousePressEvent(QMouseEvent* event)
             }
       if ((zz != z) || (nn != n)) {
             setValue(zz, nn);
-            emit valueChanged(AL::TimeSignature(zz, nn));
+            emit valueChanged(MusECore::TimeSignature(zz, nn));
             }
       }
 
@@ -149,7 +149,7 @@ void SigLabel::wheelEvent(QWheelEvent* event)
       incValue(zaehler, inc, zz, nn);
       if ((zz != z) || (nn != n)) {
             setValue(zz, nn);
-            emit valueChanged(AL::TimeSignature(zz, nn));
+            emit valueChanged(MusECore::TimeSignature(zz, nn));
             }
       }
 
