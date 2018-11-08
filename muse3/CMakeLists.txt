@@ -494,6 +494,7 @@ if (ENABLE_LV2)
             ${muse_serd_dir}
             ${muse_lilv_dir}
         )
+
     else (LV2_USE_SUPPLIED_VERSION)
         if (LILV_FOUND)
             include_directories(${LILV_INCLUDE_DIRS})
@@ -794,6 +795,7 @@ summary_add("ALSA support" ALSA_SUPPORT)
 # summary_add("DSSI ALSA Compatibility support" DSSI_ALSA_COMPAT_SUPPORT)
 summary_add("RTAudio support" HAVE_RTAUDIO)
 summary_add("Lash support" HAVE_LASH)
+summary_add("Lrdf support" HAVE_LRDF)
 summary_add("OSC (Liblo) support" OSC_SUPPORT)
 summary_add("Python support" PYTHON_SUPPORT)
 summary_add("DSSI support" DSSI_SUPPORT)
