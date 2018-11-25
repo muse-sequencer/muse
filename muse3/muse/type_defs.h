@@ -145,6 +145,38 @@ enum RelevantSelectedEvents { NotesRelevant = 0x01, ControllersRelevant = 0x02,
                                     SysexRelevant | MetaRelevant | WaveRelevant};
 typedef int RelevantSelectedEvents_t;
 
+//--------------------------------------------------------------
+// Event tagging flags and structure for the tagging and
+//  copying/pasting system.
+//--------------------------------------------------------------
+
+enum EventTagFlags { NoEventTagFlags = 0x0,
+  EventTagged = 0x01,
+  // Whether the EventTagStruct 'width' member is valid.
+  EventTagWidthValid = 0x02,
+  // This is the last event in a tagged series of events - controllers for example.
+  // ie. a range was selected and then another range after it with a gap in between,
+  //  and this is the last event in that first group before the gap.
+  EventTagLastInGroup = 0x04
+};
+typedef int EventTagFlags_t;
+
+struct EventTagStruct
+{
+  EventTagFlags_t _flags;
+  // A value intended for controller events which carries
+  //  a width of a controller 'bar' and gives the position
+  //  of the next controller event (the same as the 'ex' 
+  //  value in CItem). The value is the width of a
+  //  controller 'bar' as visualized on controller graphs.
+  unsigned int _width;
+  
+  EventTagStruct(EventTagFlags_t flags = NoEventTagFlags, unsigned int width = 0) : _flags(flags), _width(width) { }
+  void clear() { _flags = NoEventTagFlags; _width = 0; }
+  void setTagged(bool v) { v ? _flags |= EventTagged : _flags &= ~EventTagged; }
+  bool isTagged() const { return _flags & EventTagged; }
+  void appendFlags(EventTagFlags_t flags) { _flags |= flags; }
+};
 
 }   // namespace MusECore
 

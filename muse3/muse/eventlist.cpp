@@ -104,6 +104,15 @@ iEvent EventList::add(Event event)
             // Special: There must be only ONE value per controller per position.
             // If there is already a controller value for this controller number
             //  at this position, just replace it and return.
+            //
+            // This is meant as a last line of defense against accidental multiple
+            //  controller values at a given time. The rule of thumb when executing
+            //  add event commands is you must check beforehand whether an event
+            //  exists and tell the command system to delete it so that the undo
+            //  system can remember what was replaced.
+            // In some cases the command/undo system may do that for you.
+            // But simply relying on this low-level catch-all is not good, the undo
+            //  system won't remember what was deleted.
             if(i->second.type() == Controller && i->second.dataA() == data_a)
             {
               i->second.setB(event.dataB());

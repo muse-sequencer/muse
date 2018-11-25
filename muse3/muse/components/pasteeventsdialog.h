@@ -53,6 +53,8 @@ class PasteEventsDialog : public QDialog, public Ui::PasteEventsDialogBase
 		static int raster;
 		static bool always_new_part;
 		static bool never_new_part;
+		static bool ctrl_erase;
+		static bool ctrl_erase_wysiwyg;
 		static unsigned max_distance;
 		static bool into_single_part;
 		bool into_single_part_allowed;

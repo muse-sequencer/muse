@@ -138,7 +138,19 @@ CEvent::CEvent(const MusECore::Event& e, MusECore::Part* pt, int v) : CItem()
 
 void CEvent::setObjectTagged(bool v)
 {
-  _event.setTagged(v);
+  const unsigned int pos = _event.posValue();
+  MusECore::EventTagStruct tag;
+  tag.setTagged(v);
+  // Special: Make sure to pass along the 'ex' part of the item, which holds the
+  //  time of the next controller item (the difference is the 'width' of the visual
+  //  controller item rectangle). Ex can be -1 meaning 'open-ended'.
+  // This information is essential when pasting if we are to determine what to erase beforehand.
+  //if(EX() > pos)
+  if(EX() >= 0)
+    tag.appendFlags(MusECore::EventTagWidthValid);
+  tag._width = EX() - pos;
+  
+  _event.setTag(tag);
   if(_part)
     _part->setEventsTagged(true);
 }

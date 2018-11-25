@@ -35,6 +35,8 @@ bool PasteEventsDialog::always_new_part = 0;
 bool PasteEventsDialog::never_new_part = 0;
 unsigned PasteEventsDialog::max_distance = 3072;
 bool PasteEventsDialog::into_single_part = 0;
+bool PasteEventsDialog::ctrl_erase = true;
+bool PasteEventsDialog::ctrl_erase_wysiwyg = true;
   
 PasteEventsDialog::PasteEventsDialog(QWidget* parent)
 	: QDialog(parent)
@@ -55,6 +57,19 @@ void PasteEventsDialog::pull_values()
 	into_single_part = all_into_selected_part_checkbox->isChecked();
 	always_new_part = always_new_button->isChecked();
 	never_new_part = never_new_button->isChecked();
+	if(no_ctrl_erase_button->isChecked())
+	{
+	  ctrl_erase = ctrl_erase_wysiwyg = false;
+	}
+	else if(ctrl_erase_button->isChecked())
+	{
+	  ctrl_erase = true;
+		ctrl_erase_wysiwyg = false;
+	}
+	else
+	{
+	  ctrl_erase = ctrl_erase_wysiwyg = true;
+	}
 	
 	int temp = max_distance_spinbox->value();
 	if (temp < 0)
@@ -89,7 +104,14 @@ int PasteEventsDialog::exec()
 	
 	n_spinbox->setValue(number);
 	raster_spinbox->setValue(raster);
-	
+
+	if(!ctrl_erase && !ctrl_erase_wysiwyg)
+		no_ctrl_erase_button->setChecked(true);
+	else if(ctrl_erase && !ctrl_erase_wysiwyg)
+		ctrl_erase_button->setChecked(true);
+	else
+		ctrl_erase_wysiwyg_button->setChecked(true);
+
 	return QDialog::exec();
 }
 
@@ -151,6 +173,10 @@ void PasteEventsDialog::read_configuration(MusECore::Xml& xml)
 					max_distance=xml.parseInt();
 				else if (tag == "into_single_part")
 					into_single_part=xml.parseInt();
+				else if (tag == "ctrl_erase")
+					ctrl_erase=xml.parseInt();
+				else if (tag == "ctrl_erase_wysiwyg")
+					ctrl_erase_wysiwyg=xml.parseInt();
 				else
 					xml.unknown("PasteEventsDialog");
 				break;
@@ -174,6 +200,8 @@ void PasteEventsDialog::write_configuration(int level, MusECore::Xml& xml)
 	xml.intTag(level, "never_new_part", never_new_part);
 	xml.intTag(level, "max_distance", max_distance);
 	xml.intTag(level, "into_single_part", into_single_part);
+	xml.intTag(level, "ctrl_erase", ctrl_erase);
+	xml.intTag(level, "ctrl_erase_wysiwyg", ctrl_erase_wysiwyg);
 	xml.tag(level, "/pasteeventsdialog");
 }
 

@@ -44,7 +44,6 @@ EventBase::EventBase(EventType t)
       Pos::setType(_type == Wave ? FRAMES : TICKS);
       refCount  = 0;
       _selected = false;
-      _tagged = false;
       _uniqueId = newId();
       _id = _uniqueId;
       }
@@ -54,7 +53,7 @@ EventBase::EventBase(const EventBase& ev, bool duplicate_not_clone)
       {
       refCount  = 0;
       _selected = ev._selected;
-      _tagged = ev._tagged;
+      _tag = ev._tag;
       _type     = ev._type;
       _uniqueId = newId();
       _id = duplicate_not_clone ? _uniqueId : ev._id;
@@ -70,7 +69,7 @@ void EventBase::assign(const EventBase& ev)
   
   (PosLen&)(*this) = (const PosLen&)ev;
   setSelected(ev.selected());
-  setTagged(ev.tagged());
+  setTag(ev.tag());
 }
 
 //---------------------------------------------------------
@@ -330,8 +329,10 @@ bool Event::isSimilarType(const Event& e,
 int Event::getRefCount() const    { return ev ? ev->getRefCount() : 0; }
 bool Event::selected() const      { return ev ? ev->_selected : false; }
 void Event::setSelected(bool val) { if(ev) ev->_selected = val; }
-bool Event::tagged() const        { return ev ? ev->_tagged : false; }
-void Event::setTagged(bool val)   { if(ev) ev->_tagged = val; }
+EventTagStruct Event::tag() const { return ev ? ev->tag() : EventTagStruct(); } 
+void Event::setTag(const EventTagStruct& tag) { if(ev) ev->setTag(tag); } 
+bool Event::tagged() const        { return ev ? ev->tagged() : false; }
+void Event::setTagged(bool val)   { if(ev) ev->setTagged(val); }
 void Event::move(int offset)      { if(ev) ev->move(offset); }
 
 void Event::read(Xml& xml)            

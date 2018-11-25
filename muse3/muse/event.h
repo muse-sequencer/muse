@@ -83,6 +83,8 @@ class Event {
       int getRefCount() const;
       bool selected() const;
       void setSelected(bool val);
+      EventTagStruct tag() const;
+      void setTag(const EventTagStruct& tag);
       bool tagged() const;
       void setTagged(bool v);
       void move(int offset);

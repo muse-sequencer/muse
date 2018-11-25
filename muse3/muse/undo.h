@@ -187,6 +187,7 @@ class Undo : public std::list<UndoOp> {
        *  other is deleted from the UndoList. */
       bool merge_combo(const Undo& other);
       
+      void push_front(const UndoOp& op);
       void push_back(const UndoOp& op);
       void insert(iterator position, const_iterator first, const_iterator last);
       void insert(iterator position, const UndoOp& op);

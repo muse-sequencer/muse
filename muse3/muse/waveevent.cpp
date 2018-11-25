@@ -126,6 +126,7 @@ void WaveEventBase::dump(int n) const
 
 void WaveEventBase::read(Xml& xml)
       {
+      EventTagStruct ts;
       for (;;) {
             Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
@@ -139,6 +140,10 @@ void WaveEventBase::read(Xml& xml)
                               PosLen::read(xml, "poslen");
                         else if (tag == "frame")
                               _spos = xml.parseInt();
+                        else if (tag == "tags")
+                              ts._flags = xml.parseInt();
+                        else if (tag == "w")
+                              ts._width = xml.parseUInt();
                         else if (tag == "file") {
                               SndFileR wf = getWave(xml.parse1(), true);
                               if (wf) f = wf;
@@ -149,6 +154,9 @@ void WaveEventBase::read(Xml& xml)
                   case Xml::TagEnd:
                         if (tag == "event") {
                               Pos::setType(FRAMES);   // DEBUG
+                              // Set any tagging features.
+                              if(ts.isTagged())
+                                setTag(ts);
                               return;
                               }
                   default:
@@ -171,6 +179,12 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
       wpos += offset;
       wpos.write(level, xml, "poslen");
       xml.intTag(level, "frame", _spos);  // offset in wave file
+      if (tagged())
+      {
+        const EventTagStruct ts = tag();
+        xml.intTag(level, "tags", ts._flags);
+        xml.uintTag(level, "w", ts._width);
+      }
 
       //
       // waves in the project directory are stored

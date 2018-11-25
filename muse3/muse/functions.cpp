@@ -49,6 +49,7 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <math.h>
+#include <map>
 
 #include <QMimeData>
 #include <QByteArray>
@@ -2923,7 +2924,7 @@ QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode /*, bool untag_when_do
             if(e.tagged())
             {
               //if(untag_when_done)
-                e.setTagged(false);
+//                 e.setTagged(false);
 
 //               do_cut = false;
 //               if(cut_mode)
@@ -2943,6 +2944,10 @@ QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode /*, bool untag_when_do
                 ne.setPos(ne.pos() - start_pos);
                 ne.write(level, xml, Pos(0, e.pos().type() == Pos::TICKS));
                 //ne.write(level, xml, -start_pos);
+   
+                // Reset the tag now, after the write. 
+                // Allow the tag info in the write, so that the paste routines can use the info.
+                e.setTagged(false);
                 
 //               if(cut_mode && do_cut)
               if(cut_mode)
@@ -2977,29 +2982,56 @@ bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part
 		return false;
 		
 	paste_items(parts, MusEGui::paste_events_dialog->max_distance, MusEGui::paste_events_dialog->always_new_part,
-	            MusEGui::paste_events_dialog->never_new_part, MusEGui::paste_events_dialog->into_single_part ? paste_into_part : NULL,
-	            MusEGui::paste_events_dialog->number, MusEGui::paste_events_dialog->raster);
+							MusEGui::paste_events_dialog->never_new_part, MusEGui::paste_events_dialog->into_single_part ? paste_into_part : NULL,
+							MusEGui::paste_events_dialog->number, MusEGui::paste_events_dialog->raster,
+							MusEGui::paste_events_dialog->ctrl_erase, MusEGui::paste_events_dialog->ctrl_erase_wysiwyg);
 	
 	return true;
 }
 
-void paste_items(const set<const Part*>& parts, int max_distance, bool always_new_part, bool never_new_part, const Part* paste_into_part, int amount, int raster)
+void paste_items(const set<const Part*>& parts, int max_distance,
+								 bool always_new_part, bool never_new_part, const Part* paste_into_part, int amount, int raster,
+                    bool erase_controllers,
+                    bool erase_controllers_wysiwyg)
 {
 	QString tmp="x-muse-groupedeventlists"; // QClipboard::text() expects a QString&, not a QString :(
 	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);
 // 	paste_items_at(parts, s, MusEGlobal::song->cpos(), max_distance, always_new_part, never_new_part, paste_into_part, amount, raster);
-	paste_items_at(parts, s, MusEGlobal::song->cPos(), max_distance, always_new_part, never_new_part, paste_into_part, amount, raster);
+	paste_items_at(parts, s, MusEGlobal::song->cPos(), max_distance,
+								always_new_part, never_new_part, paste_into_part, amount, raster,
+								erase_controllers, erase_controllers_wysiwyg);
 }
 
 // void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int pos, int max_distance,
 void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const Pos& pos, int max_distance,
                     bool always_new_part, bool never_new_part,
-                    const Part* paste_into_part, int amount, int raster)
+                    const Part* paste_into_part, int amount, int raster,
+                    bool erase_controllers, 
+                    bool erase_controllers_wysiwyg)
 {
-	Undo operations;
+	// To maximize speed and minimize memory use, the processing below 
+	//  can only find any delete operations AFTER it has gathered
+	//  add operations. So we keep two separate operations lists and
+	//  combine them later so that all the deletes come BEFORE all the adds.
+	Undo add_operations, operations;
+	
 	map<const Part*, unsigned> expand_map;
 	map<const Part*, set<const Part*> > new_part_map;
+
+	// For erasing controller events before pasting controller events.
+	typedef pair<unsigned long /*t0*/, unsigned long /*t1*/ > tpair_t;
+	typedef pair<unsigned long /*t0*/, tpair_t > tmap_pair_t;
+	typedef map<unsigned long /*t0*/, tpair_t> tmap_t;
+	typedef tmap_t::iterator i_tmap_t;
+	typedef tmap_t::const_iterator ci_tmap_t;
+	typedef pair<int /*ctlnum*/, tmap_t > ctlmap_pair_t;
+	typedef map<int /*ctlnum*/, tmap_t> ctlmap_t;
+	typedef ctlmap_t::iterator i_ctlmap_t;
+	typedef ctlmap_t::const_iterator ci_ctlmap_t;
+	ctlmap_t ctl_map;
 	
+	int ctl_num;
+	unsigned int ctl_time, ctl_end_time, /*prev_ctl_time,*/ prev_ctl_end_time;
 	QByteArray pt_= pt.toLatin1();
 	Xml xml(pt_.constData());
 	for (;;) 
@@ -3078,7 +3110,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 										unsigned curr_pos = pos_value + i*raster;
 // 										first_paste_tick = el.begin()->first + curr_pos;
 										//first_paste_tick = el_range + curr_pos;
-										                          first_paste_pos_value = el_range.posValue() + curr_pos;
+										first_paste_pos_value = el_range.posValue() + curr_pos;
 										
 										if (create_new_part)
 										{
@@ -3098,7 +3130,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 												dest_part_pos_value = dest_part->posValue(time_type);
 												dest_part_end_value = dest_part->end().posValue(time_type);
 												new_part_map[old_dest_part].insert(dest_part);
-												operations.push_back(UndoOp(UndoOp::AddPart, dest_part));
+												add_operations.push_back(UndoOp(UndoOp::AddPart, dest_part));
 											}
 										}
 										
@@ -3189,7 +3221,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 															if(create_new_part)
 																((Part*)dest_part)->addEvent(e);
 															else
-																operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
+																add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
 														//}
 													break;
 													
@@ -3216,7 +3248,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 																	// REMOVE Tim. citem. Added. Diagnostic.
 																	fprintf(stderr, "paste_items_at: Adding new wave event: time:%u file:%s\n",
 																					e.posValue(), e.sndFile().name().toLatin1().constData());
-																	operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
+																	add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
 																}
 																else
 																{
@@ -3257,28 +3289,90 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 														}
 														else
 														{
-															EventList el;
-															// Compare time and controller number (data A) only.
-															dest_part->events().findSimilarType(e, el, true, true);
-															// Delete them all. There shouldn't be more than one controller event
-															//  at a time for a given controller number anyway.
-															for(iEvent ie = el.begin(); ie != el.end(); ++ie)
+															// If we are erasing existing controller values first, this block will
+															//  take care of all of the erasures. But even if we are NOT specifically
+															//  erasing first, we still MUST erase any existing controller values found
+															//  at that exact time value. So that is done in the next block.
+															if(erase_controllers && (e.tag()._flags & EventTagWidthValid))
 															{
+																ctl_num = e.dataA();
+																ctl_time = e.posValue();
+																ctl_end_time = ctl_time + e.tag()._width;
+																i_ctlmap_t icm = ctl_map.find(ctl_num);
+																if(icm == ctl_map.end())
+																{
+																	tpair_t tpair(ctl_time, ctl_end_time);
+																	tmap_t new_tmap;
+																	new_tmap.insert(tmap_pair_t(ctl_time, tpair));
+																	ctl_map.insert(ctlmap_pair_t(ctl_num, new_tmap));
+																}
+																else
+																{
+																	tmap_t& tmap = icm->second;
+																	i_tmap_t itm = tmap.upper_bound(ctl_time);
+																	if(itm != tmap.begin())
+																	{
+																		--itm;
+																		tpair_t& tpair = itm->second;
+																		prev_ctl_end_time = tpair.second;
+																		if(ctl_end_time <= prev_ctl_end_time)
+																		{
+																			tpair.second = ctl_end_time;
+																		}
+																		else
+																		{
+																			// If we want wysiwyg pasting, we erase existing events up to
+																			//  the end-time of the last tmap item which ended a contiguous
+																			//  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
+																			//  the start-time of that last tmap item. So, that last item in the
+																			//  cluster can be deleted since we already have the start-time and
+																			//  end-time of the SECOND-LAST tmap item in the cluster.
+																			//if(!erase_controllers_wysiwyg)
+																			//	tmap.erase(itm);
+																			
+																			
+																			// If we want wysiwyg pasting, we erase existing events up to
+																			//  the end-time of the last tmap item which ended a contiguous
+																			//  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
+																			//  the start-time of that last tmap item. So we 'truncate' that
+																			//  last item in the cluster by setting the end-time to the start-time,
+																			//  so that the gathering routine below knows to erase that last
+																			//  single-time position.
+																			if(!erase_controllers_wysiwyg)
+																				tpair.second = tpair.first;
+																			
+																			tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
+																		}
+																	}
+																}
+															}
+															else
+															// Here we are not specifically erasing first. But we still MUST erase any
+															//  existing controller values found at that exact time value.
+															{
+																EventList el;
+																// Compare time and controller number (data A) only.
+																dest_part->events().findSimilarType(e, el, true, true);
+																// Delete them all. There shouldn't be more than one controller event
+																//  at a time for a given controller number anyway.
+																for(iEvent ie = el.begin(); ie != el.end(); ++ie)
+																{
+																	
+																	// REMOVE Tim. citem. Added. Diagnostic.
+																	fprintf(stderr, "paste_items_at: Deleting existing controller event: time:%u number:%d\n",
+																					ie->second.posValue(), ie->second.dataA());
+																	
+																	operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, true, true));
+																}
 																
 																// REMOVE Tim. citem. Added. Diagnostic.
-																fprintf(stderr, "paste_items_at: Deleting existing controller event: time:%u number:%d\n",
-																				ie->second.posValue(), ie->second.dataA());
-																
-																operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, true, true));
+																if(!el.empty())
+																	fprintf(stderr, "paste_items_at: Adding replacement controller event: time:%u number:%d\n",
+																					e.posValue(), e.dataA());
 															}
 															
-															// REMOVE Tim. citem. Added. Diagnostic.
-															if(!el.empty())
-																fprintf(stderr, "paste_items_at: Adding replacement controller event: time:%u number:%d\n",
-																				e.posValue(), e.dataA());
-															
 															// Do port controller values and clone parts. 
-															operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, true, true));
+															add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, true, true));
 														}
 													}
 													break;
@@ -3303,7 +3397,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 																// REMOVE Tim. citem. Added. Diagnostic.
 																fprintf(stderr, "paste_items_at: Adding new sysex: time:%u len:%d\n",
 																				e.posValue(), e.dataLen());
-																operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
+																add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
 															}
 															else
 															{
@@ -3354,7 +3448,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 																// REMOVE Tim. citem. Added. Diagnostic.
 																fprintf(stderr, "paste_items_at: Adding new meta: time:%u len:%d\n",
 																				e.posValue(), e.dataLen());
-																operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
+																add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
 															}
 															else
 															{
@@ -3388,6 +3482,36 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 											}
 										}
 									}
+									
+									// If this is not a fresh new part, gather the operations to
+									//  erase existing controller events in the part.
+									if(!create_new_part && dest_part && !ctl_map.empty())
+									{
+										unsigned e_pos;
+										const EventList& el = dest_part->events();
+										for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
+										{
+											const Event& e = ie->second;
+											if(e.type() != Controller)
+												continue;
+											
+											ci_ctlmap_t icm = ctl_map.find(e.dataA());
+											if(icm == ctl_map.end())
+												continue;
+											
+											const tmap_t& tmap = icm->second;
+											e_pos = e.posValue();
+											ci_tmap_t itm = tmap.upper_bound(e_pos);
+											if(itm == tmap.begin())
+												continue;
+											
+											--itm;
+											const tpair_t& tpair = itm->second;
+											
+											if(e_pos >= tpair.first && e_pos < tpair.second)
+												operations.push_back(UndoOp(UndoOp::DeleteEvent, e, dest_part, true, true));
+										}
+									}
 								}
 							}
 						}
@@ -3410,6 +3534,11 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 	
 	out_of_paste_at_for:
 	
+	// Merge the delete operations into the add operations so that all of the 'deletes' come first.
+	//add_operations.splice(add_operations.begin(), delete_operations);
+	for(ciUndoOp iuo = add_operations.begin(); iuo != add_operations.end(); ++iuo)
+		operations.push_back(*iuo);
+	
 	for (map<const Part*, unsigned>::iterator it = expand_map.begin(); it!=expand_map.end(); it++)
 // 		if (it->second != it->first->lenTick())
 // 			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
@@ -3418,6 +3547,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 
 	MusEGlobal::song->informAboutNewParts(new_part_map); // must be called before apply. otherwise
 	                                                     // pointer changes (by resize) screw it up
+	
 	MusEGlobal::song->applyOperationGroup(operations);
 	MusEGlobal::song->update(SC_SELECTION | SC_PART_SELECTION);
 }

@@ -156,7 +156,13 @@ void MidiEventBase::write(int level, Xml& xml, const Pos& offset, bool /*forcePa
             xml.nput(" b=\"%d\"", b);
       if (c)
             xml.nput(" c=\"%d\"", c);
-      
+
+      if (tagged())
+      {
+            const EventTagStruct ts = tag();
+            xml.nput(" tags=\"%d\" w=\"%u\"", ts._flags, ts._width);
+      }
+
       if (edata.dataLen) {
             xml.nput(" datalen=\"%d\">\n", edata.dataLen);
             xml.nput(level, "");
@@ -180,6 +186,7 @@ void MidiEventBase::read(Xml& xml)
       a      = 0;
       b      = 0;
       c      = 0;
+      EventTagStruct ts;
 
       int dataLen = 0;
       for (;;) {
@@ -220,11 +227,19 @@ void MidiEventBase::read(Xml& xml)
                               b = xml.s2().toInt();
                         else if (tag == "c")
                               c = xml.s2().toInt();
+                        else if (tag == "tags")
+                              ts._flags = xml.s2().toInt();
+                        else if (tag == "w")
+                              ts._width = xml.s2().toUInt();
                         else if (tag == "datalen")
                               dataLen = xml.s2().toInt();
                         break;
                   case Xml::TagEnd:
                         if (tag == "event") {
+                              // Set any tagging features.
+                              if(ts.isTagged())
+                                setTag(ts);
+
                               // Convert obsolete PAfter and CAfter events to newer controllers
                               if(ev_type == 3) // PAfter
                               {

@@ -54,7 +54,8 @@ class EventBase : public PosLen {
       //  and needing to see if the event was already put into the selected item list.
       // This greatly saves from having to check the selected item list for duplicates
       //  for every item encountered. Just make sure to reset the tag at some point!
-      bool _tagged;
+      //bool _tagged;
+      EventTagStruct _tag;
 
    public:
       EventBase(EventType t);
@@ -74,8 +75,10 @@ class EventBase : public PosLen {
       void setType(EventType t)  { _type = t;  }
       bool selected() const      { return _selected; }
       void setSelected(bool val) { _selected = val; }
-      bool tagged() const { return _tagged; }
-      void setTagged(bool v) { _tagged = v; }
+      EventTagStruct tag() const { return _tag; } 
+      void setTag(const EventTagStruct& tag) { _tag = tag; } 
+      bool tagged() const { return _tag.isTagged(); }
+      void setTagged(bool v) { _tag.setTagged(v); }
 
       void move(int offset);
       

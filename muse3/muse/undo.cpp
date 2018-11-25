@@ -317,6 +317,11 @@ void Song::setUndoRedoText()
   }
 }
 
+void Undo::push_front(const UndoOp& op)
+{
+  insert(begin(), op);
+}
+
 void Undo::push_back(const UndoOp& op)
 {
   insert(end(), op);
