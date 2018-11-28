@@ -10,7 +10,7 @@
   </clipPath>
  </defs>
  <defs class="TextShapeIndex">
-  <g ooo:slide="id1" ooo:id-list="id3 id4 id5 id6 id7 id8 id9 id10 id11 id12 id13 id14 id15 id16 id17 id18 id19"/>
+  <g ooo:slide="id1" ooo:id-list="id3 id4 id5 id6 id7 id8 id9 id10 id11 id12 id13 id14 id15 id16 id17 id18 id19 id20 id21"/>
  </defs>
  <defs class="EmbeddedBulletChars">
   <g id="bullet-char-template-57356" transform="scale(0.00048828125,-0.00048828125)">
@@ -100,7 +100,7 @@
       </g>
       <g class="com.sun.star.drawing.CustomShape">
        <g id="id9">
-        <rect class="BoundingBox" stroke="none" fill="none" x="179" y="300" width="271" height="300"/>
+        <rect class="BoundingBox" stroke="none" fill="none" x="178" y="300" width="272" height="300"/>
         <path fill="rgb(0,0,0)" stroke="none" d="M 370,300 L 370,463 449,463 314,599 179,463 259,463 259,300 370,300 Z"/>
        </g>
       </g>
@@ -146,7 +146,7 @@
       </g>
       <g class="com.sun.star.drawing.CustomShape">
        <g id="id16">
-        <rect class="BoundingBox" stroke="none" fill="none" x="4061" y="285" width="272" height="300"/>
+        <rect class="BoundingBox" stroke="none" fill="none" x="4062" y="285" width="271" height="300"/>
         <path fill="rgb(0,0,0)" stroke="none" d="M 4253,285 L 4253,448 4332,448 4197,584 4062,448 4142,448 4142,285 4253,285 Z"/>
        </g>
       </g>
@@ -165,7 +165,19 @@
       <g class="com.sun.star.drawing.CustomShape">
        <g id="id19">
         <rect class="BoundingBox" stroke="none" fill="none" x="1401" y="501" width="302" height="602"/>
-        <path fill="rgb(0,0,0)" stroke="none" d="M 1401,709 L 1579,709 1579,501 1702,801 1579,1102 1579,894 1401,894 1401,709 Z"/>
+        <path fill="rgb(0,0,0)" stroke="none" d="M 1401,709 L 1579,709 1579,501 1702,801 1579,1102 1579,893 1401,893 1401,709 Z"/>
+       </g>
+      </g>
+      <g class="com.sun.star.drawing.CustomShape">
+       <g id="id20">
+        <rect class="BoundingBox" stroke="none" fill="none" x="447" y="302" width="272" height="300"/>
+        <path fill="rgb(0,0,0)" stroke="none" d="M 639,302 L 639,465 718,465 583,601 448,465 528,465 528,302 639,302 Z"/>
+       </g>
+      </g>
+      <g class="com.sun.star.drawing.CustomShape">
+       <g id="id21">
+        <rect class="BoundingBox" stroke="none" fill="none" x="3825" y="285" width="271" height="300"/>
+        <path fill="rgb(0,0,0)" stroke="none" d="M 4016,285 L 4016,448 4095,448 3960,584 3825,448 3905,448 3905,285 4016,285 Z"/>
        </g>
       </g>
      </g>

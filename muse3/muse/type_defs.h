@@ -153,11 +153,12 @@ typedef int RelevantSelectedEvents_t;
 enum EventTagFlags { NoEventTagFlags = 0x0,
   EventTagged = 0x01,
   // Whether the EventTagStruct 'width' member is valid.
-  EventTagWidthValid = 0x02,
+  EventTagWidthValid = 0x02
+  // REMOVE Tim. citem. Added.
   // This is the last event in a tagged series of events - controllers for example.
   // ie. a range was selected and then another range after it with a gap in between,
   //  and this is the last event in that first group before the gap.
-  EventTagLastInGroup = 0x04
+  //EventTagLastInGroup = 0x04
 };
 typedef int EventTagFlags_t;
 

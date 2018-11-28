@@ -2984,30 +2984,34 @@ bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part
 	paste_items(parts, MusEGui::paste_events_dialog->max_distance, MusEGui::paste_events_dialog->always_new_part,
 							MusEGui::paste_events_dialog->never_new_part, MusEGui::paste_events_dialog->into_single_part ? paste_into_part : NULL,
 							MusEGui::paste_events_dialog->number, MusEGui::paste_events_dialog->raster,
-							MusEGui::paste_events_dialog->ctrl_erase, MusEGui::paste_events_dialog->ctrl_erase_wysiwyg);
+							MusEGui::paste_events_dialog->ctrl_erase,
+							MusEGui::paste_events_dialog->ctrl_erase_wysiwyg,
+							MusEGui::paste_events_dialog->ctrl_erase_inclusive);
 	
 	return true;
 }
 
 void paste_items(const set<const Part*>& parts, int max_distance,
 								 bool always_new_part, bool never_new_part, const Part* paste_into_part, int amount, int raster,
-                    bool erase_controllers,
-                    bool erase_controllers_wysiwyg)
+								 bool erase_controllers,
+								 bool erase_controllers_wysiwyg,
+								 bool erase_controllers_inclusive)
 {
 	QString tmp="x-muse-groupedeventlists"; // QClipboard::text() expects a QString&, not a QString :(
 	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);
 // 	paste_items_at(parts, s, MusEGlobal::song->cpos(), max_distance, always_new_part, never_new_part, paste_into_part, amount, raster);
 	paste_items_at(parts, s, MusEGlobal::song->cPos(), max_distance,
 								always_new_part, never_new_part, paste_into_part, amount, raster,
-								erase_controllers, erase_controllers_wysiwyg);
+								erase_controllers, erase_controllers_wysiwyg, erase_controllers_inclusive);
 }
 
 // void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int pos, int max_distance,
 void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const Pos& pos, int max_distance,
-                    bool always_new_part, bool never_new_part,
-                    const Part* paste_into_part, int amount, int raster,
-                    bool erase_controllers, 
-                    bool erase_controllers_wysiwyg)
+										bool always_new_part, bool never_new_part,
+										const Part* paste_into_part, int amount, int raster,
+										bool erase_controllers, 
+										bool erase_controllers_wysiwyg,
+										bool erase_controllers_inclusive)
 {
 	// To maximize speed and minimize memory use, the processing below 
 	//  can only find any delete operations AFTER it has gathered
@@ -3031,7 +3035,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 	ctlmap_t ctl_map;
 	
 	int ctl_num;
-	unsigned int ctl_time, ctl_end_time, /*prev_ctl_time,*/ prev_ctl_end_time;
+	unsigned int ctl_time, ctl_end_time, prev_ctl_time, prev_ctl_end_time, sec_prev_ctl_end_time;
 	QByteArray pt_= pt.toLatin1();
 	Xml xml(pt_.constData());
 	for (;;) 
@@ -3293,11 +3297,14 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 															//  take care of all of the erasures. But even if we are NOT specifically
 															//  erasing first, we still MUST erase any existing controller values found
 															//  at that exact time value. So that is done in the next block.
-															if(erase_controllers && (e.tag()._flags & EventTagWidthValid))
+															//if(erase_controllers && (e.tag()._flags & EventTagWidthValid))
+															if(erase_controllers)
 															{
 																ctl_num = e.dataA();
 																ctl_time = e.posValue();
-																ctl_end_time = ctl_time + e.tag()._width;
+																ctl_end_time = ctl_time;
+																if(e.tag()._flags & EventTagWidthValid)
+																	ctl_end_time += e.tag()._width;
 																i_ctlmap_t icm = ctl_map.find(ctl_num);
 																if(icm == ctl_map.end())
 																{
@@ -3309,15 +3316,39 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 																else
 																{
 																	tmap_t& tmap = icm->second;
-																	i_tmap_t itm = tmap.upper_bound(ctl_time);
+																	// The event times are sorted already, so this always returns end().
+																	//i_tmap_t itm = tmap.upper_bound(ctl_time);
+																	i_tmap_t itm = tmap.end();
 																	if(itm != tmap.begin())
 																	{
 																		--itm;
 																		tpair_t& tpair = itm->second;
+																		prev_ctl_time = tpair.first;
 																		prev_ctl_end_time = tpair.second;
-																		if(ctl_end_time <= prev_ctl_end_time)
+																		
+																		i_tmap_t itm_2 = tmap.end();
+																		if(itm != tmap.begin())
 																		{
-																			tpair.second = ctl_end_time;
+																			itm_2 = itm;
+																			--itm_2;
+																		}
+																		
+																		if((prev_ctl_end_time >= ctl_time) || erase_controllers_inclusive)
+																		{
+																			if(erase_controllers_inclusive)
+																			  tpair.second = ctl_time;
+																			
+																			if(itm_2 != tmap.end())
+																			{
+																				tpair_t& tpair_2 = itm_2->second;
+																				if((tpair_2.second >= prev_ctl_time) || erase_controllers_inclusive)
+																				{
+																					tpair_2.second = tpair.second;
+																					tmap.erase(itm);
+																				}
+																			}
+																			
+																			tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
 																		}
 																		else
 																		{
@@ -3338,8 +3369,34 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 																			//  last item in the cluster by setting the end-time to the start-time,
 																			//  so that the gathering routine below knows to erase that last
 																			//  single-time position.
-																			if(!erase_controllers_wysiwyg)
-																				tpair.second = tpair.first;
+																			if(erase_controllers_wysiwyg)
+																			{
+																				if(itm_2 != tmap.end())
+																				{
+																					tpair_t& tpair_2 = itm_2->second;
+																					sec_prev_ctl_end_time = tpair_2.second;
+																					if(sec_prev_ctl_end_time >= prev_ctl_time)
+																					{
+																			      tpair_2.second = prev_ctl_end_time;
+																						tmap.erase(itm);
+																					}
+																				}
+																			}
+																			else
+																			{
+																				if(itm_2 != tmap.end())
+																				{
+																					tpair_t& tpair_2 = itm_2->second;
+																					sec_prev_ctl_end_time = tpair_2.second;
+																					if(sec_prev_ctl_end_time >= prev_ctl_time)
+																					{
+																						// Nudge it forward by one.
+																						tpair_2.second = prev_ctl_time + 1;
+																						tmap.erase(itm);
+																					}
+																				}
+																				//tpair.second = tpair.first;
+																			}
 																			
 																			tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
 																		}

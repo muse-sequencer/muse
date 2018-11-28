@@ -304,7 +304,9 @@ void paste_items(const std::set<const Part*>& parts, int max_distance=3072,
                  // Erase existing controllers first.
                  bool erase_controllers = true,
                  // If erasing first: How to handle the last item in any 'cluster' of controller events.
-                 bool erase_controllers_wysiwyg = true);
+                 bool erase_controllers_wysiwyg = true,
+                 // Erase empty space between 'clusters'.
+                 bool erase_controllers_inclusive = false);
 //void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int pos, int max_distance=3072,
 void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const Pos& pos, int max_distance=3072,
               bool always_new_part=false, bool never_new_part=false,
@@ -315,7 +317,9 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
               // Whether to erase ONLY UP TO AND INCLUDING the last item in a cluster, or erase
               //  PAST the last item to include the WIDTH of the last controller 'bar' as it was viewed
               //  in the copying source (What You See Is What You Get editing).
-              bool erase_controllers_wysiwyg = true);
+              bool erase_controllers_wysiwyg = true,
+              // Erase empty space between 'clusters'.
+              bool erase_controllers_inclusive = false);
 // Ensures that all events are untagged. Useful for aborting dialog etc.
 void untag_all_items();
 

@@ -45,6 +45,7 @@ class PasteEventsDialog : public QDialog, public Ui::PasteEventsDialogBase
 		void max_distance_changed(int);
 		void raster_changed(int);
 		void number_changed(int);
+		void ctrl_erase_changed();
 
 	public:
 		PasteEventsDialog(QWidget* parent = 0);
@@ -55,6 +56,7 @@ class PasteEventsDialog : public QDialog, public Ui::PasteEventsDialogBase
 		static bool never_new_part;
 		static bool ctrl_erase;
 		static bool ctrl_erase_wysiwyg;
+		static bool ctrl_erase_inclusive;
 		static unsigned max_distance;
 		static bool into_single_part;
 		bool into_single_part_allowed;

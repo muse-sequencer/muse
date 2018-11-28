@@ -37,6 +37,7 @@ unsigned PasteEventsDialog::max_distance = 3072;
 bool PasteEventsDialog::into_single_part = 0;
 bool PasteEventsDialog::ctrl_erase = true;
 bool PasteEventsDialog::ctrl_erase_wysiwyg = true;
+bool PasteEventsDialog::ctrl_erase_inclusive = false;
   
 PasteEventsDialog::PasteEventsDialog(QWidget* parent)
 	: QDialog(parent)
@@ -48,6 +49,7 @@ PasteEventsDialog::PasteEventsDialog(QWidget* parent)
 	connect(raster_spinbox, SIGNAL(valueChanged(int)), this, SLOT(raster_changed(int)));
 	connect(n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(number_changed(int)));
 	connect(max_distance_spinbox, SIGNAL(valueChanged(int)), this, SLOT(max_distance_changed(int)));
+	connect(ctrl_erase_button, SIGNAL(toggled(bool)), this, SLOT(ctrl_erase_changed()));
 	
 	into_single_part_allowed=true;
 }
@@ -59,16 +61,13 @@ void PasteEventsDialog::pull_values()
 	never_new_part = never_new_button->isChecked();
 	if(no_ctrl_erase_button->isChecked())
 	{
-	  ctrl_erase = ctrl_erase_wysiwyg = false;
+	  ctrl_erase = ctrl_erase_wysiwyg = ctrl_erase_inclusive = false;
 	}
 	else if(ctrl_erase_button->isChecked())
 	{
 	  ctrl_erase = true;
-		ctrl_erase_wysiwyg = false;
-	}
-	else
-	{
-	  ctrl_erase = ctrl_erase_wysiwyg = true;
+		ctrl_erase_wysiwyg = ctrl_erase_wysiwyg_button->isChecked();
+		ctrl_erase_inclusive = ctrl_erase_inclusive_button->isChecked();
 	}
 	
 	int temp = max_distance_spinbox->value();
@@ -105,12 +104,28 @@ int PasteEventsDialog::exec()
 	n_spinbox->setValue(number);
 	raster_spinbox->setValue(raster);
 
-	if(!ctrl_erase && !ctrl_erase_wysiwyg)
-		no_ctrl_erase_button->setChecked(true);
-	else if(ctrl_erase && !ctrl_erase_wysiwyg)
+
+	ctrl_erase_button->blockSignals(true);
+	no_ctrl_erase_button->blockSignals(true);
+	ctrl_erase_inclusive_button->blockSignals(true);
+	ctrl_erase_wysiwyg_button->blockSignals(true);
+	
+	if(ctrl_erase)
 		ctrl_erase_button->setChecked(true);
 	else
-		ctrl_erase_wysiwyg_button->setChecked(true);
+		no_ctrl_erase_button->setChecked(true);
+	ctrl_erase_inclusive_button->setChecked(ctrl_erase_inclusive);
+	ctrl_erase_wysiwyg_button->setChecked(ctrl_erase_wysiwyg);
+	
+	ctrl_erase_button->blockSignals(false);
+	no_ctrl_erase_button->blockSignals(false);
+	ctrl_erase_inclusive_button->blockSignals(false);
+	ctrl_erase_wysiwyg_button->blockSignals(false);
+	
+	const bool en = ctrl_erase_button->isChecked();
+	ctrl_erase_wysiwyg_button->setEnabled(en);
+	ctrl_erase_inclusive_button->setEnabled(en);
+
 
 	return QDialog::exec();
 }
@@ -148,6 +163,12 @@ void PasteEventsDialog::number_changed(int n)
 	insert_quarters->setText(ticks_to_quarter_string(n*raster_spinbox->value()));
 }
 
+void PasteEventsDialog::ctrl_erase_changed()
+{
+	const bool en = ctrl_erase_button->isChecked();
+	ctrl_erase_wysiwyg_button->setEnabled(en);
+	ctrl_erase_inclusive_button->setEnabled(en);
+}
 
 void PasteEventsDialog::read_configuration(MusECore::Xml& xml)
 {
@@ -177,6 +198,8 @@ void PasteEventsDialog::read_configuration(MusECore::Xml& xml)
 					ctrl_erase=xml.parseInt();
 				else if (tag == "ctrl_erase_wysiwyg")
 					ctrl_erase_wysiwyg=xml.parseInt();
+				else if (tag == "ctrl_erase_inclusive")
+					ctrl_erase_inclusive=xml.parseInt();
 				else
 					xml.unknown("PasteEventsDialog");
 				break;
@@ -202,6 +225,7 @@ void PasteEventsDialog::write_configuration(int level, MusECore::Xml& xml)
 	xml.intTag(level, "into_single_part", into_single_part);
 	xml.intTag(level, "ctrl_erase", ctrl_erase);
 	xml.intTag(level, "ctrl_erase_wysiwyg", ctrl_erase_wysiwyg);
+	xml.intTag(level, "ctrl_erase_inclusive", ctrl_erase_inclusive);
 	xml.tag(level, "/pasteeventsdialog");
 }
 

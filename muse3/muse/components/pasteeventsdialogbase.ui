@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>315</width>
-    <height>566</height>
+    <height>614</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -301,14 +301,14 @@ to be expanded by more than </string>
          </size>
         </property>
         <property name="checked">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="ctrl_erase_wysiwyg_button">
+       <widget class="QCheckBox" name="ctrl_erase_wysiwyg_button">
         <property name="text">
-         <string>Erase W&amp;YSIWYG</string>
+         <string>Erase WYSIWYG</string>
         </property>
         <property name="icon">
          <iconset resource="../../resources.qrc">
@@ -322,6 +322,23 @@ to be expanded by more than </string>
         </property>
         <property name="checked">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="ctrl_erase_inclusive_button">
+        <property name="text">
+         <string>Erase inclusive</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../resources.qrc">
+          <normaloff>:/svg/paste_ctrl_erase_inclusive.svg</normaloff>:/svg/paste_ctrl_erase_inclusive.svg</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>114</width>
+          <height>38</height>
+         </size>
         </property>
        </widget>
       </item>

@@ -2250,7 +2250,13 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
   int wh = height();
 //   const QColor selection_base_color(Qt::blue);
 //   const QColor selection_color(selection_base_color.lighter());
-  const QColor selection_color(0, 160, 255);
+  const QColor selection_color(0, 160, 255, MusEGlobal::config.globalAlphaBlend);
+  QColor graph_fg_color = MusEGlobal::config.ctrlGraphFg;
+  graph_fg_color.setAlpha(MusEGlobal::config.globalAlphaBlend);
+  QColor dark_gray_color = Qt::darkGray;
+  dark_gray_color.setAlpha(MusEGlobal::config.globalAlphaBlend / 2);
+  QColor gray_color = Qt::gray;
+  gray_color.setAlpha(MusEGlobal::config.globalAlphaBlend);
   
   noEvents=true;
 
@@ -2380,19 +2386,19 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
       {
         // fg means 'draw unselected parts'.
         if(!fg)
-          p.fillRect(x1, 0, tick - x1, wh, Qt::darkGray);
+          p.fillRect(x1, 0, tick - x1, wh, dark_gray_color);
       }
       else
       {
         if(fg)
         {  
-          pen.setColor(Qt::gray);
+          pen.setColor(gray_color);
           p.setPen(pen);
           p.drawLine(x1, lval, tick, lval);
         }  
         else
           //p.fillRect(x1, lval, tick - x1, wh - lval, selected ? Qt::blue : MusEGlobal::config.ctrlGraphFg);
-          p.fillRect(x1, lval, tick - x1, wh - lval, selected ? selection_color : MusEGlobal::config.ctrlGraphFg);
+          p.fillRect(x1, lval, tick - x1, wh - lval, selected ? selection_color : graph_fg_color);
       }
       
       
@@ -2411,20 +2417,20 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
     if (lval == MusECore::CTRL_VAL_UNKNOWN)
     {
       if(!fg) {
-        p.fillRect(x1, 0, (x+w) - x1, wh, Qt::darkGray);
+        p.fillRect(x1, 0, (x+w) - x1, wh, dark_gray_color);
       }
     }
     else
     {
       if(fg)
       {  
-        pen.setColor(Qt::gray);
+        pen.setColor(gray_color);
         p.setPen(pen);
         p.drawLine(x1, lval, x + w, lval);
       }  
       else
         //p.fillRect(x1, lval, (x+w) - x1, wh - lval, selected ? Qt::blue : MusEGlobal::config.ctrlGraphFg);
-        p.fillRect(x1, lval, (x+w) - x1, wh - lval, selected ? selection_color : MusEGlobal::config.ctrlGraphFg);
+        p.fillRect(x1, lval, (x+w) - x1, wh - lval, selected ? selection_color : graph_fg_color);
     }
   }       
 }
@@ -2589,7 +2595,8 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect, const QRegion&)
       //---------------------------------------------------
 
       bool velo = (MusECore::midiControllerType(_controller->num()) == MusECore::MidiController::Velo);
-      if(velo) 
+// REMOVE Tim. citem. Removed.
+//       if(velo) 
       {
         //---------------------------------------------------
         // draw the grid and markers now - before velocity items
@@ -2616,7 +2623,9 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect, const QRegion&)
               p.drawLine(xp, y, xp, y+h);
               }
       }  
-      else
+// REMOVE Tim. citem. Changed.
+//       else
+      if(!velo)
         // Draw non-fg non-velocity items for the current part
         pdrawItems(p, rect, curPart, false, false);
         
@@ -2671,33 +2680,34 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect, const QRegion&)
         // Draw fg velocity items for the current part
         pdrawItems(p, rect, curPart, true, true);
       }
-      else
-      {
-        //---------------------------------------------------
-        // draw the grid and markers now - after non-velocity items
-        //---------------------------------------------------
-        p.save();
-        View::pdraw(p, rect);
-        p.restore();
-        
-        pen.setColor(Qt::blue);
-        p.setPen(pen);
-        int xp = mapx(pos[1]);
-        if (xp >= x && xp < x+w) {
-              p.drawLine(xp, y, xp, y+h);
-              }
-        xp = mapx(pos[2]);
-        if (xp >= x && xp < x+w) {
-              p.drawLine(xp, y, xp, y+h);
-              }
-        // Draw the red main position cursor last, on top of the others.
-        xp = mapx(pos[0]);
-        if (xp >= x && xp < x+w) {
-              pen.setColor(Qt::red);
-              p.setPen(pen);
-              p.drawLine(xp, y, xp, y+h);
-              }
-      }
+// REMOVE Tim. citem. Removed.
+//       else
+//       {
+//         //---------------------------------------------------
+//         // draw the grid and markers now - after non-velocity items
+//         //---------------------------------------------------
+//         p.save();
+//         View::pdraw(p, rect);
+//         p.restore();
+//         
+//         pen.setColor(Qt::blue);
+//         p.setPen(pen);
+//         int xp = mapx(pos[1]);
+//         if (xp >= x && xp < x+w) {
+//               p.drawLine(xp, y, xp, y+h);
+//               }
+//         xp = mapx(pos[2]);
+//         if (xp >= x && xp < x+w) {
+//               p.drawLine(xp, y, xp, y+h);
+//               }
+//         // Draw the red main position cursor last, on top of the others.
+//         xp = mapx(pos[0]);
+//         if (xp >= x && xp < x+w) {
+//               pen.setColor(Qt::red);
+//               p.setPen(pen);
+//               p.drawLine(xp, y, xp, y+h);
+//               }
+//       }
       
       //---------------------------------------------------
       //    draw lasso

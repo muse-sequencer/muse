@@ -45,6 +45,7 @@
     <file>svg/metronome_on.svg</file>
     <file>svg/paste_ctrl.svg</file>
     <file>svg/paste_ctrl_erase.svg</file>
+    <file>svg/paste_ctrl_erase_inclusive.svg</file>
     <file>svg/paste_ctrl_erase_wysiwyg.svg</file>
   </qresource>
 </RCC>
