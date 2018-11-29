@@ -3035,7 +3035,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 	ctlmap_t ctl_map;
 	
 	int ctl_num;
-	unsigned int ctl_time, ctl_end_time, prev_ctl_time, prev_ctl_end_time, sec_prev_ctl_end_time;
+	unsigned int ctl_time, ctl_end_time, prev_ctl_time, prev_ctl_end_time;
 	QByteArray pt_= pt.toLatin1();
 	Xml xml(pt_.constData());
 	for (;;) 
@@ -3369,33 +3369,23 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 																			//  last item in the cluster by setting the end-time to the start-time,
 																			//  so that the gathering routine below knows to erase that last
 																			//  single-time position.
-																			if(erase_controllers_wysiwyg)
+																			if(itm_2 != tmap.end())
 																			{
-																				if(itm_2 != tmap.end())
+																				tpair_t& tpair_2 = itm_2->second;
+																				if(tpair_2.second >= prev_ctl_time)
 																				{
-																					tpair_t& tpair_2 = itm_2->second;
-																					sec_prev_ctl_end_time = tpair_2.second;
-																					if(sec_prev_ctl_end_time >= prev_ctl_time)
+																					if(erase_controllers_wysiwyg)
 																					{
-																			      tpair_2.second = prev_ctl_end_time;
+																						tpair_2.second = prev_ctl_end_time;
 																						tmap.erase(itm);
 																					}
-																				}
-																			}
-																			else
-																			{
-																				if(itm_2 != tmap.end())
-																				{
-																					tpair_t& tpair_2 = itm_2->second;
-																					sec_prev_ctl_end_time = tpair_2.second;
-																					if(sec_prev_ctl_end_time >= prev_ctl_time)
+																					else
 																					{
 																						// Nudge it forward by one.
 																						tpair_2.second = prev_ctl_time + 1;
 																						tmap.erase(itm);
 																					}
 																				}
-																				//tpair.second = tpair.first;
 																			}
 																			
 																			tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
@@ -3542,8 +3532,44 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 									
 									// If this is not a fresh new part, gather the operations to
 									//  erase existing controller events in the part.
-									if(!create_new_part && dest_part && !ctl_map.empty())
+									if(erase_controllers && !create_new_part && dest_part && !ctl_map.empty())
 									{
+										// Tidy up the very last items in the list.
+										for(i_ctlmap_t icm = ctl_map.begin(); icm != ctl_map.end(); ++icm)
+										{
+											tmap_t& tmap = icm->second;
+											i_tmap_t itm = tmap.end();
+											if(itm != tmap.begin())
+											{
+												--itm;
+												tpair_t& tpair = itm->second;
+												
+												if(!erase_controllers_wysiwyg)
+													tpair.second = tpair.first;
+												
+												if(itm != tmap.begin())
+												{
+													i_tmap_t itm_2 = itm;
+													--itm_2;
+													tpair_t& tpair_2 = itm_2->second;
+													if((tpair_2.second >= tpair.second) || erase_controllers_inclusive)
+													{
+														if(erase_controllers_wysiwyg)
+														{
+															tpair_2.second = tpair.second;
+															tmap.erase(itm);
+														}
+														else
+														{
+															// Nudge it forward by one.
+															tpair_2.second = tpair.first + 1;
+															tmap.erase(itm);
+														}
+													}
+												}
+											}
+										}
+										
 										unsigned e_pos;
 										const EventList& el = dest_part->events();
 										for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
