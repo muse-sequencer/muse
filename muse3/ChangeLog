@@ -1,3 +1,7 @@
+19.12.2018
+      - Fix fluidsynth fluid_synth_error() deprecated in 2.0.2 (Tim)
+      - For bug 632: Fix slight text error in Global Settings option:
+         Now reads "Ctrl + right click sets left range marker".
 07.11.2018
       * NEW! Safe Plugin Scanner version 2: (Tim)
       - The plugin scans are cached now, in ./config/MusE/scanner.
