@@ -155,6 +155,9 @@ class Canvas : public View {
       virtual bool mousePress(QMouseEvent*) { return true; }
       virtual void mouseMove(QMouseEvent* event) = 0;
       virtual void mouseRelease(const QPoint&) {}
+      // Resets all mouse operations if detecting missed mouseRelease event (which DOES happen).
+      // Returns true if reset was actually done.
+      virtual bool cancelMouseOps();
 // REMOVE Tim. citem. Added.
       virtual void drawParts(QPainter&, bool /*do_cur_part*/, const QRect&, const QRegion& = QRegion()) { }
 // REMOVE Tim. citem. Changed.
@@ -222,7 +225,7 @@ class Canvas : public View {
       virtual void deleteItem(const QPoint&);
 
       // moving
-      void startMoving(const QPoint&, DragType, bool rasterize = true);
+      void startMoving(const QPoint&, int dir, DragType, bool rasterize = true);
       void moveItems(const QPoint&, int dir = 0, bool rasterize = true);
       virtual void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true) = 0;
 

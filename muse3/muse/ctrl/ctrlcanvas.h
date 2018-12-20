@@ -92,6 +92,7 @@ class CEvent : public CItem {
       void setEX(int v)            { ex = v; }
 // REMOVE Tim. citem. Removed.
 //       MusECore::MidiPart* part() const       { return _part;  }
+      bool containsPoint(const MusECore::MidiController* mc, const QPoint& p, const int tickstep, const int wh) const;
       bool containsXRange(int x1, int x2) const;
       bool intersectsController(const MusECore::MidiController*, const QRect&, const int tickstep, const int windowHeight) const;
       int EX()                      { return ex; }
@@ -148,6 +149,12 @@ class CtrlCanvas : public MusEGui::View {
       bool drawLineMode;
       bool noEvents;
       bool filterTrack;
+      // Whether we have grabbed the mouse.
+      bool _mouseGrabbed;
+
+      QPoint _curDragOffset;
+      unsigned int _dragFirstXPos;
+      //bool _rasterizeDrag;
 
       void viewMousePressEvent(QMouseEvent* event);
       void viewMouseMoveEvent(QMouseEvent*);
@@ -173,18 +180,29 @@ class CtrlCanvas : public MusEGui::View {
       void deleteVal(int x1, int x2, int y);
 
       bool setCurTrackAndPart();
+//       void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
+      void drawMoving(QPainter& p, const QRect& rect, const QRegion& region, const MusECore::MidiPart* part);
       void pdrawItems(QPainter& p, const QRect& rect, const MusECore::MidiPart* part, bool velo, bool fg);
+      void pFillBackgrounds(QPainter& p, const QRect& rect, const MusECore::MidiPart* part);
       void pdrawExtraDrumCtrlItems(QPainter& p, const QRect& rect, const MusECore::MidiPart* part, int drum_ctl);
       void partControllers(const MusECore::MidiPart*, int, int*, int*, MusECore::MidiController**, MusECore::MidiCtrlValList**);
       // Checks if the current drum pitch requires setting the midi controller and rebuilding the items.
       // Returns whether setMidiController() and updateItems() were in fact called.
       bool drumPitchChanged();
-      
+      CEvent* findCurrentItem(const QPoint& p, const int tickstep, const int h);
+      // Sets or resets the _mouseGrabbed flag and grabs or releases the mouse.
+      void setMouseGrab(bool grabbed = false);
 
    protected:
       enum DragMode { DRAG_OFF, DRAG_NEW, DRAG_MOVE_START, DRAG_MOVE,
             DRAG_DELETE, DRAG_COPY_START, DRAG_COPY,
+            DRAGX_MOVE, DRAGY_MOVE,
+            DRAGX_COPY, DRAGY_COPY,
             DRAG_RESIZE, DRAG_LASSO_START, DRAG_LASSO
+            };
+
+      enum DragType {
+            MOVE_MOVE, MOVE_COPY
             };
 
       CItemList items;
@@ -192,9 +210,9 @@ class CtrlCanvas : public MusEGui::View {
       //  in the item list, these 'indexing' lists are used instead.
       CItemList selection;
       CItemList moving;
-      CItemSet  adding;
-      CItemSet  modifying;
-      CItemSet  deleting;
+      //CItemSet  adding;
+      //CItemSet  modifying;
+      //CItemSet  deleting;
       
       CEvent* curItem;
 
@@ -205,7 +223,7 @@ class CtrlCanvas : public MusEGui::View {
       unsigned pos[3];
       int curDrumPitch;    //Used by the drum-editor to view velocity of only one key (one drum)
       bool _perNoteVeloMode;
-      int button;
+//       int button;
       
       // Accumulated operations during drawing etc.
       MusECore::Undo _operations;
@@ -236,7 +254,17 @@ class CtrlCanvas : public MusEGui::View {
       //  so operations can be chained.
       bool itemSelectionsChanged(MusECore::Undo* operations = 0, bool deselectAll = false);
       void updateItemSelections();
-      
+
+      // moving
+      void startMoving(const QPoint&, int dir, DragType, bool rasterize = true);
+      void moveItems(const QPoint&, int dir = 0, bool rasterize = true);
+      void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true);
+      MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true);
+      bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true);
+      // Resets all mouse operations if detecting missed mouseRelease event (which DOES happen).
+      // Returns true if reset was actually done.
+      bool cancelMouseOps();
+
    private slots:
       void songChanged(MusECore::SongChangedStruct_t type);
       void configChanged();    

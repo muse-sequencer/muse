@@ -320,6 +320,9 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, Drag
     for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
     {
       CItem* ci = ici->second;
+      // REMOVE Tim. citem. Added.
+      ci->setMoving(false);
+
       if(ci->part() != part)
         continue;
       

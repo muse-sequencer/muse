@@ -3302,9 +3302,10 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 															{
 																ctl_num = e.dataA();
 																ctl_time = e.posValue();
-																ctl_end_time = ctl_time;
 																if(e.tag()._flags & EventTagWidthValid)
-																	ctl_end_time += e.tag()._width;
+																	ctl_end_time = ctl_time + e.tag()._width;
+																else
+																	ctl_end_time = ctl_time + 1;
 																i_ctlmap_t icm = ctl_map.find(ctl_num);
 																if(icm == ctl_map.end())
 																{
@@ -3360,8 +3361,12 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 																			//  end-time of the SECOND-LAST tmap item in the cluster.
 																			//if(!erase_controllers_wysiwyg)
 																			//	tmap.erase(itm);
+
 																			
+																			if(!erase_controllers_wysiwyg)
+																				tpair.second = tpair.first + 1;
 																			
+
 																			// If we want wysiwyg pasting, we erase existing events up to
 																			//  the end-time of the last tmap item which ended a contiguous
 																			//  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
@@ -3372,19 +3377,21 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 																			if(itm_2 != tmap.end())
 																			{
 																				tpair_t& tpair_2 = itm_2->second;
-																				if(tpair_2.second >= prev_ctl_time)
+																				if(tpair_2.second >= tpair.first)
 																				{
-																					if(erase_controllers_wysiwyg)
-																					{
-																						tpair_2.second = prev_ctl_end_time;
-																						tmap.erase(itm);
-																					}
-																					else
-																					{
-																						// Nudge it forward by one.
-																						tpair_2.second = prev_ctl_time + 1;
-																						tmap.erase(itm);
-																					}
+// 																					if(erase_controllers_wysiwyg)
+// 																					{
+// 																						tpair_2.second = tpair.second;
+// 																						tmap.erase(itm);
+// 																					}
+// 																					else
+// 																					{
+// 																						// Nudge it forward by one.
+// 																						tpair_2.second = tpair.first + 1;
+// 																						tmap.erase(itm);
+// 																					}
+																					tpair_2.second = tpair.second;
+																					tmap.erase(itm);
 																				}
 																			}
 																			
@@ -3545,7 +3552,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 												tpair_t& tpair = itm->second;
 												
 												if(!erase_controllers_wysiwyg)
-													tpair.second = tpair.first;
+													tpair.second = tpair.first + 1;
 												
 												if(itm != tmap.begin())
 												{
@@ -3554,17 +3561,19 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 													tpair_t& tpair_2 = itm_2->second;
 													if((tpair_2.second >= tpair.second) || erase_controllers_inclusive)
 													{
-														if(erase_controllers_wysiwyg)
-														{
-															tpair_2.second = tpair.second;
-															tmap.erase(itm);
-														}
-														else
-														{
-															// Nudge it forward by one.
-															tpair_2.second = tpair.first + 1;
-															tmap.erase(itm);
-														}
+// 														if(erase_controllers_wysiwyg)
+// 														{
+// 															tpair_2.second = tpair.second;
+// 															tmap.erase(itm);
+// 														}
+// 														else
+// 														{
+// 															// Nudge it forward by one.
+// 															tpair_2.second = tpair.first + 1;
+// 															tmap.erase(itm);
+// 														}
+														tpair_2.second = tpair.second;
+														tmap.erase(itm);
 													}
 												}
 											}

@@ -51,7 +51,7 @@ class CItem {
       bool _isSelected;
       bool _isMoving;
 // REMOVE Tim. citem. Removed.
-//       QPoint moving;
+      QPoint moving;
 //       QRect  _bbox;
 //       QPoint _pos;
 
@@ -85,8 +85,8 @@ class CItem {
 //       int width() const            { return _bbox.width(); }
 //       void setWidth(int l)         { _bbox.setWidth(l); }
 //       void setHeight(int l)        { _bbox.setHeight(l); }
-//       void setMp(const QPoint&p)   { moving = p;    }
-//       const QPoint mp() const      { return moving; }
+      virtual void setMp(const QPoint&p)   { moving = p;    }
+      virtual const QPoint mp() const      { return moving; }
 //       int x() const                { return _pos.x(); }
 //       int y() const                { return _pos.y(); }
 //       void setY(int y)             { _bbox.setY(y); }
@@ -104,8 +104,8 @@ class CItem {
       virtual int width() const            { return 0; }
       virtual void setWidth(int)           { }
       virtual void setHeight(int)          { }
-      virtual void setMp(const QPoint&)    { }
-      virtual const QPoint mp() const      { return QPoint(); }
+      //virtual void setMp(const QPoint&)    { }
+      //virtual const QPoint mp() const      { return QPoint(); }
       virtual int x() const                { return 0; }
       virtual int y() const                { return 0; }
       virtual void setY(int)               { }
@@ -145,7 +145,7 @@ class BItem : public CItem {
       
 //       bool _isSelected;
 //       bool _isMoving;
-      QPoint moving;
+//       QPoint moving;
       QRect  _bbox;
       QPoint _pos;
 
@@ -177,8 +177,8 @@ class BItem : public CItem {
       int width() const            { return _bbox.width(); }
       void setWidth(int l)         { _bbox.setWidth(l); }
       void setHeight(int l)        { _bbox.setHeight(l); }
-      void setMp(const QPoint&p)   { moving = p;    }
-      const QPoint mp() const      { return moving; }
+      //void setMp(const QPoint&p)   { moving = p;    }
+      //const QPoint mp() const      { return moving; }
       int x() const                { return _pos.x(); }
       int y() const                { return _pos.y(); }
       void setY(int y)             { _bbox.setY(y); }

@@ -325,6 +325,8 @@ void PartCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, DragType dtype
   for(iCItem ici = items.begin(); ici != items.end(); ++ici)
   {
     CItem* ci = ici->second;
+    // REMOVE Tim. citem. Added.
+    ci->setMoving(false);
 
     int x = ci->pos().x();
     int y = ci->pos().y();

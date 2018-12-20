@@ -1061,7 +1061,7 @@ void Canvas::selectItem(CItem* e, bool flag)
 //    copy selection-List to moving-List
 //---------------------------------------------------------
 
-void Canvas::startMoving(const QPoint& pos, DragType, bool rasterize)
+void Canvas::startMoving(const QPoint& pos, int dir, DragType, bool rasterize)
       {
       for (iCItem i = items.begin(); i != items.end(); ++i) {
             if (i->second->isSelected()) {
@@ -1069,7 +1069,7 @@ void Canvas::startMoving(const QPoint& pos, DragType, bool rasterize)
                   moving.add(i->second);
                   }
             }
-      moveItems(pos, 0, rasterize);
+      moveItems(pos, dir, rasterize);
       }
 
 //---------------------------------------------------------
@@ -1131,11 +1131,14 @@ void Canvas::viewKeyReleaseEvent(QKeyEvent* event)
 
 void Canvas::viewMousePressEvent(QMouseEvent* event)
       {
-      showCursor();  
+// REMOVE Tim. citem. Removed.
+//       showCursor();  
       
       if (!mousePress(event))
       {
-          setMouseGrab(false);
+// REMOVE Tim. citem. Changed.
+//           setMouseGrab(false);
+          cancelMouseOps();
           return;
       }
       keyState = event->modifiers();
@@ -1146,14 +1149,22 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       // like moving or drawing lasso is performed.
       if (event->buttons() & Qt::RightButton & ~(button)) {
           //printf("viewMousePressEvent special buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
-          setMouseGrab(false);
+//           setMouseGrab(false);
           switch (drag) {
               case DRAG_LASSO:
                 drag = DRAG_OFF;
+                // REMOVE Tim. citem. Added.
+                setCursor();
+                setMouseGrab(false);
+          
                 redraw();
                 return;
               case DRAG_MOVE:
                 drag = DRAG_OFF;
+                // REMOVE Tim. citem. Added.
+                setCursor();
+                setMouseGrab(false);
+                
                 endMoveItems (start, MOVE_MOVE, 0);
                 return;
               default:
@@ -1164,10 +1175,17 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       // ignore event if (another) button is already active:
       if (event->buttons() ^ button) {
             //printf("viewMousePressEvent ignoring buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
-          setMouseGrab(false);
+// REMOVE Tim. citem. Removed.
+//           setMouseGrab(false);
+            // Do nothing, even if the mouse is grabbed or we have a moving list.
             return;
             }
-            
+
+      // REMOVE Tim. citem. Added.
+      // Cancel all previous mouse ops. Right now there should be no moving list and drag should be off etc.
+      // If there is, it's an error. It likely means we missed a mouseRelease event.
+      cancelMouseOps();
+      
       bool alt        = keyState & Qt::AltModifier;
       bool ctrl       = keyState & Qt::ControlModifier;
       
@@ -1233,6 +1251,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         else
                               drag = DRAG_LASSO_START;
                         setCursor();
+                        setMouseGrab(true); // CAUTION
                         break;
 
                   case RubberTool:
@@ -1255,6 +1274,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                                   else if (!ctrl && !alt)
                                         drag = DRAG_MOVE_START;
                                   setCursor();
+                                  setMouseGrab(true); // CAUTION
                                   break;
                                 }
                                 else {
@@ -1592,6 +1612,17 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
       //fprintf(stderr, "ypos=%d yorg=%d ymag=%d event->y=%d ->gy:%d mapy(yorg)=%d rmapy0=%d yOffset=%d rmapy(yOffset()=%d\n",
       //                 ypos,   yorg,   ymag,   event->y(), event->globalY(), mapy(yorg), rmapy(0), yOffset(), rmapy(yOffset()));
 
+      // Drag not off and left mouse button not pressed? It's an error.
+      // Meaning likely mouseRelease was not called (which CAN happen).
+      if(drag != DRAG_OFF && !(event->buttons() & Qt::LeftButton))
+      {
+        // REMOVE Tim. citem. Added.
+        fprintf(stderr, "Canvas::viewMouseMoveEvent: calling cancelMouseOps()\n");
+        
+        // Be sure to cancel any relative stuff. Otherwise it's left in a bad state.
+        cancelMouseOps();
+      }
+      
       QRect  screen_rect    = QApplication::desktop()->screenGeometry();
       QPoint screen_center  = QPoint(screen_rect.width()/2, screen_rect.height()/2);
       QPoint glob_dist      = event->globalPos() - ev_global_pos;
@@ -1603,7 +1634,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
       int ax       = ABS(rmapx(dist.x()));
       int ay       = ABS(rmapy(dist.y()));
       bool isMoving  = (ax >= 2) || (ay > 2);
-      int modifiers = event->modifiers();
+      Qt::KeyboardModifiers modifiers = event->modifiers();
       bool ctrl  = modifiers & Qt::ControlModifier;
       bool shift = modifiers & Qt::ShiftModifier;
       bool meta  = modifiers & Qt::MetaModifier;
@@ -1730,8 +1761,10 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
             case DRAG_MOVE_START:
             case DRAG_COPY_START:
             case DRAG_CLONE_START:
+            {
                   if (!isMoving)
                         break;
+                  int dir = 0;
                   if (keyState & Qt::ShiftModifier) {
                         if (ax > ay) {
                               if (drag == DRAG_MOVE_START)
@@ -1740,6 +1773,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                                     drag = DRAGX_COPY;
                               else
                                     drag = DRAGX_CLONE;
+                              dir = 1;
                               }
                         else {
                               if (drag == DRAG_MOVE_START)
@@ -1748,6 +1782,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                                     drag = DRAGY_COPY;
                               else
                                     drag = DRAGY_CLONE;
+                              dir = 2;
                               }
                         }
                   else {
@@ -1775,8 +1810,9 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   else
                         dt = MOVE_CLONE;
                   
-                  startMoving(ev_pos, dt, !(keyState & Qt::ShiftModifier));
+                  startMoving(ev_pos, dir, dt, !(keyState & Qt::ShiftModifier));
                   break;
+            }
 
             case DRAG_MOVE:
             case DRAG_COPY:
@@ -1789,14 +1825,14 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
             case DRAGX_COPY:
             case DRAGX_CLONE:
                   if(!scrollTimer)
-                    moveItems(ev_pos, 1, false);
+                    moveItems(ev_pos, 1, !shift);
                   break;
 
             case DRAGY_MOVE:
             case DRAGY_COPY:
             case DRAGY_CLONE:
                   if(!scrollTimer)
-                    moveItems(ev_pos, 2, false);
+                    moveItems(ev_pos, 2, !shift);
                   break;
 
             case DRAG_NEW:
@@ -1923,13 +1959,28 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
       canScrollRight = true;
       canScrollUp = true;
       canScrollDown = true;
-      if (event->buttons() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(event->button())) 
+//       if (event->buttons() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(event->button())) 
+      // We want only the left mouse release events. Ignore anything else.
+      // Do nothing, even if the mouse is grabbed or we have a moving list.
+      if(event->button() != Qt::LeftButton) 
       {
-        // Make sure this is done. See mousePressEvent.
-        showCursor();
-        setMouseGrab(false);
+// REMOVE Tim. citem. Removed.
+//         // Make sure this is done. See mousePressEvent.
+//         showCursor();
+//         setMouseGrab(false);
+        // REMOVE Tim. citem. Added.
+        // Cancel all previous mouse ops. Right now there should be no moving list and drag should be off etc.
+        // If there is, it's an error. It likely means we missed a mouseRelease event.
+        //cancelMouseOps();
+      
         return;
       }
+
+      // Immediately cancel any mouse grabbing.
+      // Because for example there are a few message boxes that may appear
+      //  in the subsequent code, and the mouse will not work in them if it
+      //  is still grabbed.
+      setMouseGrab(false);
 
       QPoint pos = event->pos();
       bool ctrl = event->modifiers() & Qt::ControlModifier;
@@ -1970,28 +2021,28 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                   endMoveItems(pos, MOVE_COPY, 0, !shift);
                   break;
             case DRAGX_COPY:
-                  endMoveItems(pos, MOVE_COPY, 1, false);
+                  endMoveItems(pos, MOVE_COPY, 1, !shift);
                   break;
             case DRAGY_COPY:
-                  endMoveItems(pos, MOVE_COPY, 2, false);
+                  endMoveItems(pos, MOVE_COPY, 2, !shift);
                   break;
             case DRAG_MOVE:
                   endMoveItems(pos, MOVE_MOVE, 0, !shift);
                   break;
             case DRAGX_MOVE:
-                  endMoveItems(pos, MOVE_MOVE, 1, false);
+                  endMoveItems(pos, MOVE_MOVE, 1, !shift);
                   break;
             case DRAGY_MOVE:
-                  endMoveItems(pos, MOVE_MOVE, 2, false);
+                  endMoveItems(pos, MOVE_MOVE, 2, !shift);
                   break;
             case DRAG_CLONE:
                   endMoveItems(pos, MOVE_CLONE, 0, !shift);
                   break;
             case DRAGX_CLONE:
-                  endMoveItems(pos, MOVE_CLONE, 1, false);
+                  endMoveItems(pos, MOVE_CLONE, 1, !shift);
                   break;
             case DRAGY_CLONE:
-                  endMoveItems(pos, MOVE_CLONE, 2, false);
+                  endMoveItems(pos, MOVE_CLONE, 2, !shift);
                   break;
             case DRAG_OFF:
                   break;
@@ -2085,14 +2136,19 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
         update(pt.x(), pt.y(), zoomIcon->width(), zoomIcon->height());
       }
       
-      drag = DRAG_OFF;
+// REMOVE Tim. citem. Changed.
+//       drag = DRAG_OFF;
+      // Cancel all previous mouse ops. Right now there should be no moving list and drag should be off etc.
+      cancelMouseOps();
+
       if (redrawFlag)
             redraw();
 
-      // Make sure this is done. See mousePressEvent.
-      setCursor(); // Calls showCursor().
-      setMouseGrab(false);
-
+// REMOVE Tim. citem. Removed.
+//       // Make sure this is done. See mousePressEvent.
+//       setCursor(); // Calls showCursor().
+//       setMouseGrab(false);
+      
       mouseRelease(pos);
 }
 
@@ -2198,7 +2254,7 @@ void Canvas::setTool(int t)
       }
 
 //---------------------------------------------------------
-//   setCursor
+//   findCurrentItem
 //---------------------------------------------------------
 
 CItem *Canvas::findCurrentItem(const QPoint &cStart)
@@ -2543,6 +2599,38 @@ void Canvas::setCurrentPart(MusECore::Part* part)
   curPart = part;
   curPartId = curPart->sn();
   curPartChanged();
+}
+
+//---------------------------------------------------------
+//   cancelMouseOps
+//---------------------------------------------------------
+
+bool Canvas::cancelMouseOps()
+{
+  bool changed = false;
+  
+  // Make sure this is done. See mousePressEvent.
+  showCursor();
+  setMouseGrab(false);
+
+  // Be sure to clear the moving list and especially the item moving flags!
+  if(!moving.empty())
+  {
+    for(iCItem i = moving.begin(); i != moving.end(); ++i)
+      i->second->setMoving(false);
+    moving.clear();
+    changed = true;
+  }
+  
+  if(drag != DRAG_OFF)
+  {
+    drag = DRAG_OFF;
+    changed = true;
+  }
+
+  redraw();
+  
+  return changed;
 }
 
 } // namespace MusEGui
