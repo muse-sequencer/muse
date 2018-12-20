@@ -44,6 +44,10 @@
 #include "fluidsynti.h"
 #include "muse/midi_consts.h"
 
+// fluid_synth_error() is deprecated in 2.0.2 and will cause a compile error.
+#if !(FLUIDSYNTH_VERSION_MAJOR >= 2 && FLUIDSYNTH_VERSION_MINOR >= 0 && FLUIDSYNTH_VERSION_MICRO >= 2)
+#define FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR 1
+#endif
 
 #ifdef HAVE_INSTPATCH
 #include <libinstpatch/libinstpatch.h>
@@ -152,7 +156,11 @@ FluidSynth::~FluidSynth()
         //Try to unload soundfont
         int err = fluid_synth_sfunload(fluidsynth, it->intid, 0);
         if(err == -1)  
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
           std::cerr << DEBUG_ARGS << "Error unloading soundfont!" << fluid_synth_error(fluidsynth) << std::endl;
+#else
+          std::cerr << DEBUG_ARGS << "Error unloading soundfont! id: " << it->intid << std::endl;
+#endif
       }
         
 #if FLUIDSYNTH_VERSION_MAJOR < 2
@@ -825,13 +833,23 @@ bool FluidSynth::playNote(int channel, int pitch, int velo)
       if (velo) {
             if (fluid_synth_noteon(fluidsynth, channel, pitch, velo)) {
                   if (FS_DEBUG)
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
                         std::cerr << DEBUG_ARGS << "error processing noteon event: " << fluid_synth_error(fluidsynth);
+#else                    
+                        std::cerr << DEBUG_ARGS << "error processing noteon event: channel: "
+                          << channel << " pitch: " << pitch << " velo: " << velo << std::endl;
+#endif
                   }
             }
       else {
             if (fluid_synth_noteoff(fluidsynth, channel, pitch))
                   if (FS_DEBUG)
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
                         std::cerr << DEBUG_ARGS << "error processing noteoff event: " << fluid_synth_error(fluidsynth) << std::endl;
+#else                    
+                        std::cerr << DEBUG_ARGS << "error processing noteoff event: channel: "
+                        << channel << " pitch: " << pitch << std::endl;
+#endif
             }
       return false;
       }
@@ -1126,7 +1144,12 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                   
                   err = fluid_synth_program_select(fluidsynth, channel, font_intid , banknum, patch);
                   if (err)
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
                         printf("FluidSynth::setController() - Error changing program on soundfont %s, channel: %d\n", fluid_synth_error(fluidsynth), channel);
+#else
+                        printf("FluidSynth::setController() - Error changing program on soundfont, channel: %d id: %d banknum: %d patch:%d\n",
+                               channel, font_intid, banknum, patch);
+#endif
                   else {
                         channels[channel].preset = val;//setChannelPreset(val, channel);
                         channels[channel].banknum = banknum;
@@ -1141,7 +1164,11 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
             }
 
       if (err)
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
             printf ("FluidSynth::setController() - error processing controller event: %s\n", fluid_synth_error(fluidsynth));
+#else
+            printf ("FluidSynth::setController() - error processing controller event, channel: %d, ctrl: %d val: %d\n", channel, id, val);
+#endif
       }
 
 //---------------------------------------------------------
@@ -1357,7 +1384,12 @@ void FluidSynth::rewriteChannelSettings()
                   || int_id == FS_UNSPECIFIED_ID)) {
                   int rv = fluid_synth_program_select(fluidsynth, i, int_id, banknum, preset);
                   if (rv)
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
                         std::cerr << DEBUG_ARGS << "Error changing preset! " << fluid_synth_error(fluidsynth) << std::endl;
+#else
+                        std::cerr << DEBUG_ARGS << "Error changing preset! id: "
+                          << int_id << " banknum: " << banknum << " preset: " << preset << std::endl;
+#endif
                   }
             }
       }
@@ -1581,7 +1613,11 @@ bool FluidSynth::popSoundfont (int ext_id)
                currentlyLoadedFonts--;
             }
          else //OK, there was trouble
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
                std::cerr << DEBUG_ARGS << "Error unloading soundfont!" << fluid_synth_error(fluidsynth) << std::endl;
+#else
+               std::cerr << DEBUG_ARGS << "Error unloading soundfont! id: " << int_id << std::endl;
+#endif
       }
       if (FS_DEBUG)
             printf("Removed soundfont with ext it: %d\n",ext_id);
@@ -1615,10 +1651,15 @@ void LoadFontWorker::execLoadFont(void * t)
       int rv = fluid_synth_sfload(fptr->fluidsynth, filename, 1);
 
       if (rv ==-1) {
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
             fptr->sendError(fluid_synth_error(fptr->fluidsynth));
+#endif
             if (FS_DEBUG)
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
                   std::cerr << DEBUG_ARGS << "error loading soundfont: " << fluid_synth_error(fptr->fluidsynth) << std::endl;
-
+#else
+                  std::cerr << DEBUG_ARGS << "error loading soundfont: " << filename << std::endl;
+#endif
             delete h;
             return;
       }
