@@ -22,6 +22,7 @@
 //=========================================================
 
 #include <QDir>
+#include <QTemporaryFile>
 #include <QFile>
 #include <QFileInfo>
 #include <QFileInfoList>
@@ -106,24 +107,6 @@
 //#define PORTS_ARE_SINGLE_LINE_TAGS 1
 
 namespace MusEPlugin {
-
-static void beginPluginDescrMarker()
-{
-  // Put markers to tell our xml stuff from any stuff written
-  //  to comm channel by the plugins.
-  std::fflush(stdout);
-  std::fprintf(stdout, "BEGIN MUSE PLUGIN DESCR\n");
-  std::fflush(stdout);
-}
-
-static void endPluginDescrMarker()
-{
-  // Put markers to tell our xml stuff from any stuff written
-  //  to comm channel by the plugins.
-  std::fflush(stdout);
-  std::fprintf(stdout, "END MUSE PLUGIN DESCR\n");
-  std::fflush(stdout);
-}
 
 static void setPluginScanFileInfo(const char* filename, PluginScanInfoStruct* info)
 {
@@ -504,14 +487,7 @@ bool writeLadspaInfo (
   const LADSPA_Descriptor* descr;
   for(unsigned long i = 0;; ++i)
   {
-    // Put markers to tell our xml stuff from any stuff written
-    //  to comm channel by the plugins.
-    beginPluginDescrMarker();
-
     descr = ladspa(i);
-
-    endPluginDescrMarker();
-      
     if(descr == NULL)
       break;
     PluginScanInfoStruct info;
@@ -558,14 +534,7 @@ bool scanMessDescriptor(const char* filename, const MESS* mess_descr, PluginScan
 
 bool writeMessInfo(const char* filename, MESS_Descriptor_Function mess, bool do_ports, int level, MusECore::Xml& xml)
 {
-  // Put markers to tell our xml stuff from any stuff written
-  //  to comm channel by the plugins.
-  beginPluginDescrMarker();
-
   const MESS* mess_descr = mess();
-
-  endPluginDescrMarker();
-
   if(mess_descr)
   {
     PluginScanInfoStruct info;
@@ -713,14 +682,7 @@ bool writeDssiInfo(const char* filename, DSSI_Descriptor_Function dssi, bool do_
   const DSSI_Descriptor* dssi_descr;
   for(unsigned long i = 0;; ++i)
   {
-    // Put markers to tell our xml stuff from any stuff written
-    //  to comm channel by the plugins.
-    beginPluginDescrMarker();
-
     dssi_descr = dssi(i);
-
-    endPluginDescrMarker();
-
     if(dssi_descr == 0)
       break;
     PluginScanInfoStruct info;
@@ -1241,14 +1203,7 @@ bool writeLinuxVstInfo(
 
   AEffect *plugin = NULL;
 
-  // Put markers to tell our xml stuff from any stuff written
-  //  to comm channel by the plugins.
-  beginPluginDescrMarker();
-
   plugin = lvst(vstNativeHostCallback);
-
-  endPluginDescrMarker();
-
   if(!plugin)
   {
     std::fprintf(stderr, "ERROR: Failed to instantiate plugin in VST library \"%s\"\n", filename);
@@ -1300,14 +1255,7 @@ bool writeLinuxVstInfo(
 
         currentPluginId = it->first;
 
-        // Put markers to tell our xml stuff from any stuff written
-        //  to comm channel by the plugins.
-        beginPluginDescrMarker();
-
         plugin = lvst(vstNativeHostCallback);
-
-        endPluginDescrMarker();
-
         if(!plugin)
         {
           std::fprintf(stderr, "ERROR: Failed to instantiate plugin in VST library \"%s\", shell id=%ld\n",
@@ -1561,7 +1509,19 @@ static bool pluginScan(
   bool debugStdErr)
 {
   const QByteArray filename_ba = filename.toLocal8Bit();
-
+  QTemporaryFile tmpfile;
+  // Must open the temp file to get its name.
+  if(!tmpfile.open())
+  {
+    std::fprintf(stderr, "\npluginScan FAILED: Could not create temporary output file for input file: %s\n\n", filename_ba.constData());
+    return false;
+  }
+  // Get the unique temp file name.
+  const QString tmpfilename = tmpfile.fileName();
+  const QByteArray tmpfilename_ba = tmpfilename.toLocal8Bit();
+  // Close the temp file. It exists until tmpfile goes out of scope.
+  tmpfile.close();
+  
   if(debugStdErr)
     std::fprintf(stderr, "\nChecking file: <%s>\n", filename_ba.constData());
 
@@ -1570,7 +1530,7 @@ static bool pluginScan(
   const QString prog = QString(BINDIR) + QString("/muse_plugin_scan");
 
   QStringList args;
-  args << QString("-t") + QString::number(types) << QString("-f") + filename;
+  args << QString("-t") + QString::number(types) << QString("-f") + filename << QString("-o") + tmpfilename;
   if(scanPorts)
     args << QString("-p");
 
@@ -1594,36 +1554,17 @@ static bool pluginScan(
     return false;
   }
 
-// NOTE: For IPC I looked at the ideal QLocalSocket and QLocalServer.
-//       But they require the Qt network module.
-//       QSharedMemory is nice but it's not serial like we need.
-//       And its fixed created size must be known beforehand.
-//       (But we may use it for audio in a future runtime sandbox.)
-//       And the problem with stdout or stderr is the plugin itself
-//        can put stuff there as well. Thus an extractor is needed.
-//       I tried putting our content on stderr, thinking flushing
-//        was not needed with it. Didn't work! My marker lines were
-//        inter-mingled with the error output lines of some plugins
-//        instead of the expected order. Not sure why except
-//        possibly those plugins run another process and we're
-//        seeing the delayed (skewed) output of that.
-//       Or maybe it was some QProcess channel buffering interfering?
-//       So stdout is used for communicating our content, and
-//        flushing is enforced (it was required) immediately
-//        BEFORE and AFTER our markers are output during the scan.
-//       It may still be possible that some plugins might run another
-//        process and output on stdout and we'll see delayed output
-//        inter-mingled with ours, but so far the stdout method
-//        works with all tested plugins so far.
-//       Ultimately a better marking method would help but if we
-//        are to use xml it might require marking EACH xml line
-//        which would be difficult.    Tim.
-
-  
   if(debugStdErr)
   {
+    QByteArray out_array = process.readAllStandardOutput();
+    if(!out_array.isEmpty() && out_array.at(0) != 0)
+    {
+      // Terminate just to be sure.
+      out_array.append(char(0));
+      std::fprintf(stderr, "\npluginScan: Standard output from scan:\n%s\n", out_array.constData());
+    }
     QByteArray err_array = process.readAllStandardError();
-    if(!err_array.isEmpty())
+    if(!err_array.isEmpty() && err_array.at(0) != 0)
     {
       // Terminate just to be sure.
       err_array.append(char(0));
@@ -1642,102 +1583,24 @@ static bool pluginScan(
     std::fprintf(stderr, "\npluginScan FAILED: Scan exit code not 0: file: %s\n\n", filename_ba.constData());
     return false;
   }
-
-  QByteArray array = process.readAllStandardOutput();
-
-  if(array.isEmpty() || array.at(0) == 0)
+  
+  // Open the temp file again...
+  QFile infile(tmpfilename);
+  if(!infile.exists())
   {
-    std::fprintf(stderr, "\npluginScan FAILED: stdout array is empty. Plugin did not return any info ??? file: %s\n\n",
-                 filename_ba.constData());
+    std::fprintf(stderr, "\npluginScan FAILED: Temporary file does not exist: %s\n\n", tmpfilename_ba.constData());
     return false;
   }
-
-  // Terminate just to be sure.
-  array.append(char(0));
-
-  // An array of any output from the plugin itself, stripped from the complete array.
-  QByteArray plugin_array;
-  
-  //std::fprintf(stderr, "pluginScan: stdout array:\n%s\n", array.constData());
-  
-  //-----------------------------------------------------------------
-  // Strip out any unwanted stuff between pairs of special markers...
-  //-----------------------------------------------------------------
-  
-  const QByteArray begOpStr("BEGIN MUSE OPEN PLUGIN\n");
-  const QByteArray endOpStr("END MUSE OPEN PLUGIN\n");
-  const QByteArray begStr("BEGIN MUSE PLUGIN DESCR\n");
-  const QByteArray endStr("END MUSE PLUGIN DESCR\n");
-  const int begOpStrSz = begOpStr.size();
-  const int endOpStrSz = endOpStr.size();
-  const int begStrSz = begStr.size();
-  const int endStrSz = endStr.size();
-  int begOpIdx, endOpIdx, begPlIdx, endPlIdx;
-  int cut_len, extra_len;
-  while(1)
+  if(!infile.open(QIODevice::ReadOnly /*| QIODevice::Text*/))
   {
-    begOpIdx = array.indexOf(begOpStr);
-    begPlIdx = array.indexOf(begStr);
-    if(begOpIdx == -1 && begPlIdx == -1)
-      break;
-    
-    if(begOpIdx != -1 && (begPlIdx == -1 || begOpIdx <= begPlIdx))
-    {
-      endOpIdx = array.indexOf(endOpStr, begOpIdx);
-      if(endOpIdx == -1)
-      {
-        std::fprintf(stderr, "\npluginScan FAILED: %s without %s in stdout array: file: %s\n\n",
-                     begOpStr.constData(), endOpStr.constData(), filename_ba.constData());
-        return false;
-      }
-      cut_len = (endOpIdx + endOpStrSz) - begOpIdx;
-      extra_len = endOpIdx - (begOpIdx + begOpStrSz);
-      plugin_array.append(array.mid(begOpIdx + begOpStrSz, extra_len));
-      array.remove(begOpIdx, cut_len);
-      continue;
-    }
-    
-    if(begPlIdx != -1)
-    {
-      endPlIdx = array.indexOf(endStr, begPlIdx);
-      if(endPlIdx == -1)
-      {
-        std::fprintf(stderr, "\npluginScan FAILED: %s without %s in stdout array: file: %s\n\n", 
-                     begStr.constData(), endStr.constData(), filename_ba.constData());
-        return false;
-      }
-      cut_len = endPlIdx + endStrSz - begPlIdx;
-      extra_len = endPlIdx - (begPlIdx + begStrSz);
-      plugin_array.append(array.mid(begPlIdx + begStrSz, extra_len));
-      array.remove(begPlIdx, cut_len);
-      continue;
-    }
-    
-    break;
-  }
-
-  if(debugStdErr && !plugin_array.isEmpty() && plugin_array.at(0) != 0)
-  {
-    // Terminate just to be sure.
-    plugin_array.append(char(0));
-    std::fprintf(stderr, "\npluginScan: Standard output from scan:\n%s\n", plugin_array.constData());
-  }
-  
-  if(array.isEmpty() || array.at(0) == 0)
-  {
-    std::fprintf(stderr, "\npluginScan FAILED: stripped stdout array is empty. Plugin did not return any info ??? file: %s\n\n",
-                 filename_ba.constData());
+    std::fprintf(stderr, "\npluginScan FAILED: Could not re-open temporary output file: %s\n\n",
+                 tmpfilename_ba.constData());
     return false;
   }
-
-  // Terminate just to be sure.
-  array.append(char(0));
   
-  //std::fprintf(stderr, "pluginScan: stripped stdout array:\n%s\n", array.constData());
-
-  // Create an xml object based on the array.
-  MusECore::Xml xml(array.constData());
-
+  // Create an xml object based on the file.
+  MusECore::Xml xml(&infile);
+  
   // Read the list of plugins found in the xml.
   // For now we don't supply a separate scanEnums flag in pluginScan(), so just use scanPorts instead.
   if(readPluginScan(xml, list, scanPorts, scanPorts))
@@ -1745,6 +1608,11 @@ static bool pluginScan(
     std::fprintf(stderr, "\npluginScan FAILED: On readPluginScan(): file: %s\n\n", filename_ba.constData());
   }
 
+  // Close the temp file.
+  infile.close();
+  
+  // Now going out of scope destroys the temporary file...
+  
   return true;
 }
 
@@ -2568,18 +2436,10 @@ bool writePluginCacheFile(
   }
   else
   {
-    FILE* cfile = fdopen(targ_qfile.handle(), "w");
-    if(cfile == 0)
-    {
-      std::fprintf(stderr, "writePluginCacheFile: fdopen failed: filename:%s\n",
-                         filename.toLatin1().constData());
-    }
-    else
-    {
-      MusECore::Xml xml(cfile);
+      MusECore::Xml xml(&targ_qfile);
       int level = 0;
       xml.header();
-      xml.nput(0, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
+      level = xml.putFileVersion(level);
       
       for(ciPluginScanList ips = list.begin(); ips != list.end(); ++ips)
       {
@@ -2592,28 +2452,14 @@ bool writePluginCacheFile(
       }
       
       xml.tag(1, "/muse");
-      if(fclose(cfile) != 0)
-      {
-        std::fprintf(stderr, "writePluginCacheFile: fclose failed: filename:%s\n",
-                             filename.toLatin1().constData());
-      }
       
+      DEBUG_PLUGIN_SCAN(stderr, "writePluginCacheFile: targ_qfile closing filename:%s\n",
+                      filename.toLatin1().constData());
+      targ_qfile.close();
+
       res = true;
-    }
   }
   
-  if(targ_qfile.isOpen())
-  {
-    DEBUG_PLUGIN_SCAN(stderr, "writePluginCacheFile: targ_qfile closing filename:%s\n",
-                     filename.toLatin1().constData());
-    targ_qfile.close();
-  }
-  else
-  {
-    DEBUG_PLUGIN_SCAN(stderr, "writePluginCacheFile: targ_qfile not open: filename:%s\n",
-                     filename.toLatin1().constData());
-  }
-    
   return res;
 }
 

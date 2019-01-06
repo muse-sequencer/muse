@@ -121,10 +121,15 @@ Xml::Xml(QIODevice* d)
 void Xml::next()
       {
       if (*bufptr == 0) {
-            if (f == 0 || fgets(lbuffer, 512, f) == 0) {
-                  c = EOF;
-                  return;
-                  }
+        
+            if((!f && !_destIODev) ||
+               (f && fgets(lbuffer, 512, f) == 0) ||
+               (_destIODev && _destIODev->readLine(lbuffer, 512) <= 0))
+            {
+              c = EOF;
+              return;
+            }
+                  
             bufptr = lbuffer;
             }
       c = *bufptr++;

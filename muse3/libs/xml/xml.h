@@ -89,13 +89,13 @@ class Xml {
             _minorVersion = min;
             _majorVersion = maj;
             }
-      // For writing and reading. Constructs an xml from a FILE*.
+      // For writing and reading a FILE. Constructs an xml from a FILE.
       Xml(FILE*);
-      // For reading from a char array only. Writing may cause error. Constructs an xml from a const char*.
+      // For reading from a char array only. Writing may cause error. Constructs an xml from a char array.
       Xml(const char*);
-      // For writing to a QString only. Reading may cause error. Constructs an xml from a QString*.
+      // For writing to a QString only. Reading may cause error. Constructs an xml from a QString.
       Xml(QString*);
-      // For writing to a QIODevice only. Reading may cause error. Constructs an xml from a QIODevice*.
+      // For writing and reading a QIODevice. Constructs an xml from a QIODevice.
       Xml(QIODevice*);
 
       Token parse();

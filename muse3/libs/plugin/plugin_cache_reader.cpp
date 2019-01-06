@@ -846,15 +846,7 @@ bool readPluginCacheFile(
   }
   else
   {
-    FILE* cfile = fdopen(targ_qfile.handle(), "r");
-    if(cfile == 0)
-    {
-      std::fprintf(stderr, "readPluginCacheFile: fdopen failed: filename:%s\n",
-                         targ_filepath.toLatin1().constData());
-    }
-    else
-    {
-      MusECore::Xml xml(cfile);
+      MusECore::Xml xml(&targ_qfile);
 
       // Returns true on error.
       if(readPluginScan(xml, list, readPorts, readEnums))
@@ -863,26 +855,11 @@ bool readPluginCacheFile(
                              targ_filepath.toLatin1().constData());
       }
 
-      if(fclose(cfile) != 0)
-      {
-        std::fprintf(stderr, "readPluginCacheFile: fclose failed: filename:%s\n",
-                             targ_filepath.toLatin1().constData());
-      }
-
+      DEBUG_PLUGIN_SCAN(stderr, "readPluginCacheFile: targ_qfile closing filename:%s\n",
+                      filename.toLatin1().constData());
+      targ_qfile.close();
+      
       res = true;
-    }
-  }
-
-  if(targ_qfile.isOpen())
-  {
-    DEBUG_PLUGIN_SCAN(stderr, "readPluginCacheFile: targ_qfile closing filename:%s\n",
-                     filename.toLatin1().constData());
-    targ_qfile.close();
-  }
-  else
-  {
-    DEBUG_PLUGIN_SCAN(stderr, "readPluginCacheFile: targ_qfile not open: filename:%s\n",
-                     filename.toLatin1().constData());
   }
 
   return res;

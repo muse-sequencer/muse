@@ -1,4 +1,9 @@
 06.01.2019
+      - Scanner: Replaced silly stdout stuff with QTemporaryFile. (Tim)
+      - Class Xml now supports directly reading and writing a QIODevice
+         and writing to a QString, instead of requiring a FILE*.
+      - Using the above, eliminated two usages of fdopen().
+06.01.2019
       - Fix plugin scanner bug reported by artofmusic in forum. (Tim)
         Some plugins may output stuff on stdout. This was confusing
          our xml scanner. So a method of separating our xml from the
