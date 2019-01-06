@@ -48,6 +48,8 @@ const int Xml::_latestMinorVersion = 1;   // Latest known songfile minor version
 Xml::Xml(FILE* _f)
       {
       f          = _f;
+      _destStr   = 0;
+      _destIODev = 0;
       _line      = 0;
       _col       = 0;
       level      = 0;
@@ -62,6 +64,8 @@ Xml::Xml(FILE* _f)
 Xml::Xml(const char* buf)
       {
       f         = 0;
+      _destStr  = 0;
+      _destIODev = 0;
       _line     = 0;
       _col      = 0;
       level     = 0;
@@ -72,6 +76,44 @@ Xml::Xml(const char* buf)
       _majorVersion = -1;
       }
 
+Xml::Xml(QString* s)
+      {
+      f         = 0;
+      _destIODev = 0;
+      _line     = 0;
+      _col      = 0;
+      level     = 0;
+      inTag     = false;
+      inComment = false;
+      lbuffer[0] = 0;
+      bufptr     = lbuffer;
+      _destStr   = s;
+      _minorVersion = -1;
+      _majorVersion = -1;
+      }
+
+Xml::Xml(QIODevice* d)
+      {
+      f         = 0;
+      _destStr   = 0;
+      _destIODev = d;
+      _line     = 0;
+      _col      = 0;
+      level     = 0;
+      inTag     = false;
+      inComment = false;
+      lbuffer[0] = 0;
+      bufptr     = lbuffer;
+      _minorVersion = -1;
+      _majorVersion = -1;
+      }
+
+
+//---------------------------------------------------------
+//   BEGIN Read functions:
+//---------------------------------------------------------
+
+      
 //---------------------------------------------------------
 //   next
 //---------------------------------------------------------
@@ -528,206 +570,6 @@ double Xml::parseDouble()
       }
 
 //---------------------------------------------------------
-//   unknown
-//---------------------------------------------------------
-
-void Xml::unknown(const char* s)
-      {
-      fprintf(stderr, "%s: unknown tag <%s> at line %d\n",
-         s, _s1.toLatin1().constData(), _line+1);
-      parse1();
-      }
-
-//---------------------------------------------------------
-//   header
-//---------------------------------------------------------
-
-void Xml::header()
-      {
-      fprintf(f, "<?xml version=\"1.0\"?>\n");
-      }
-
-//---------------------------------------------------------
-//   put
-//---------------------------------------------------------
-
-void Xml::put(const char* format, ...)
-      {
-      va_list args;
-      va_start(args, format);
-
-      vfprintf(f, format, args);
-      va_end(args);
-      putc('\n', f);
-      }
-
-void Xml::put(int level, const char* format, ...)
-      {
-      va_list args;
-      va_start(args, format);
-      putLevel(level);
-      vfprintf(f, format, args);
-      va_end(args);
-      putc('\n', f);
-      }
-
-//---------------------------------------------------------
-//   nput
-//---------------------------------------------------------
-
-void Xml::nput(int level, const char* format, ...)
-      {
-      va_list args;
-      va_start(args, format);
-      putLevel(level);
-      vfprintf(f, format, args);
-      va_end(args);
-      }
-
-void Xml::nput(const char* format, ...)
-      {
-      va_list args;
-      va_start(args, format);
-      vfprintf(f, format, args);
-      va_end(args);
-      }
-
-//---------------------------------------------------------
-//   tag
-//---------------------------------------------------------
-
-void Xml::tag(int level, const char* format, ...)
-      {
-      va_list args;
-      va_start(args, format);
-      putLevel(level);
-      putc('<', f);
-      vfprintf(f, format, args);
-      va_end(args);
-      putc('>', f);
-      putc('\n', f);
-      }
-
-//---------------------------------------------------------
-//   etag
-//---------------------------------------------------------
-
-void Xml::etag(int level, const char* format, ...)
-      {
-      va_list args;
-      va_start(args, format);
-      putLevel(level);
-      putc('<', f);
-      putc('/', f);
-      vfprintf(f, format, args);
-      va_end(args);
-      putc('>', f);
-      putc('\n', f);
-      }
-
-void Xml::putLevel(int n)
-      {
-      for (int i = 0; i < n*2; ++i)
-            putc(' ', f);
-      }
-
-void Xml::intTag(int level, const char* name, int val)
-      {
-      putLevel(level);
-      fprintf(f, "<%s>%d</%s>\n", name, val, name);
-      }
-
-void Xml::uintTag(int level, const char* name, unsigned int val)
-      {
-      putLevel(level);
-      fprintf(f, "<%s>%u</%s>\n", name, val, name);
-      }
-
-void Xml::floatTag(int level, const char* name, float val)
-      {
-      putLevel(level);
-      QString s("<%1>%2</%3>\n");
-      fprintf(f, "%s", s.arg(name).arg(val).arg(name).toLatin1().constData());
-      }
-
-void Xml::doubleTag(int level, const char* name, double val)
-      {
-      putLevel(level);
-      QString s("<%1>%2</%3>\n");
-      fprintf(f, "%s", s.arg(name).arg(val).arg(name).toLatin1().constData());
-      }
-
-void Xml::strTag(int level, const char* name, const char* val)
-      {
-      putLevel(level);
-      fprintf(f, "<%s>", name);
-      if (val) {
-            while (*val) {
-                  switch(*val) {
-                        case '&': fprintf(f, "&amp;"); break;
-                        case '<': fprintf(f, "&lt;"); break;
-                        case '>': fprintf(f, "&gt;"); break;
-                        case '\'': fprintf(f, "&apos;"); break;
-                        case '"': fprintf(f, "&quot;"); break;
-                        default: fputc(*val, f); break;
-                        }
-                  ++val;
-                  }
-            }
-      fprintf(f, "</%s>\n", name);
-      }
-
-//---------------------------------------------------------
-//   colorTag
-//---------------------------------------------------------
-
-void Xml::colorTag(int level, const char* name, const QColor& color)
-      {
-      putLevel(level);
-      fprintf(f, "<%s r=\"%d\" g=\"%d\" b=\"%d\"></%s>\n",
-	    name, color.red(), color.green(), color.blue(), name);
-      }
-
-void Xml::colorTag(int level, const QString& name, const QColor& color)
-{
-  colorTag(level, name.toLocal8Bit().constData(), color);
-}
-
-//---------------------------------------------------------
-//   geometryTag
-//---------------------------------------------------------
-
-void Xml::geometryTag(int level, const char* name, const QWidget* g)
-      {
-      qrectTag(level, name, QRect(g->pos(), g->size()));
-      }
-
-//---------------------------------------------------------
-//   qrectTag
-//---------------------------------------------------------
-
-void Xml::qrectTag(int level, const char* name, const QRect& r)
-      {
-      putLevel(level);
-      fprintf(f, "<%s x=\"%d\" y=\"%d\" w=\"%d\" h=\"%d\"></%s>\n",
-         name, r.x(), r.y(), r.width(), r.height(), name);
-      }
-
-//---------------------------------------------------------
-//   strTag
-//---------------------------------------------------------
-
-void Xml::strTag(int level, const char* name, const QString& val)
-      {
-      strTag(level, name, val.toLocal8Bit().constData());
-      }
-
-void Xml::strTag(int level, const QString& name, const QString& val)
-{
-  strTag(level, name.toLocal8Bit().constData(), val.toLocal8Bit().constData());
-}
-      
-//---------------------------------------------------------
 //   Xml::skip
 //---------------------------------------------------------
 
@@ -755,30 +597,6 @@ void Xml::skip(const QString& etag)
             }
       }
 
-//---------------------------------------------------------
-//   xmlString
-//---------------------------------------------------------
-
-QString Xml::xmlString(const char* s)
-      {
-      return Xml::xmlString(QString(s));
-      }
-
-//---------------------------------------------------------
-//   xmlString
-//---------------------------------------------------------
-
-QString Xml::xmlString(const QString& ss)
-      {
-      QString s(ss);
-      s.replace('&', "&amp;");
-      s.replace('<', "&lt;");
-      s.replace('>', "&gt;");
-      s.replace('\'', "&apos;");
-      s.replace('"', "&quot;");
-      return s;
-      }
-
 void Xml::dump(QString &dump)
       {
       if (f == 0)
@@ -790,7 +608,6 @@ void Xml::dump(QString &dump)
           dump.append(lbuffer);
        fsetpos(f, &pos);
       }
-
 
 //---------------------------------------------------------
 //   Basic functions:
@@ -867,4 +684,439 @@ QColor readColor(Xml& xml)
       return QColor(r, g, b);
       }
       
+//---------------------------------------------------------
+//   unknown
+//---------------------------------------------------------
+
+void Xml::unknown(const char* s)
+      {
+      fprintf(stderr, "%s: unknown tag <%s> at line %d\n",
+         s, _s1.toLatin1().constData(), _line+1);
+      parse1();
+      }
+
+      
+//---------------------------------------------------------
+//   BEGIN Write functions:
+//---------------------------------------------------------
+
+
+//---------------------------------------------------------
+//   header
+//---------------------------------------------------------
+
+void Xml::header()
+      {
+      if(f)
+        fprintf(f, "<?xml version=\"1.0\"?>\n");
+      else
+      {
+        const char* s = "<?xml version=\"1.0\"?>\n";
+        if(_destIODev)
+          _destIODev->write(s);
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
+//---------------------------------------------------------
+//   putFileVersion
+//---------------------------------------------------------
+
+int Xml::putFileVersion(int level)
+{
+  nput(level++, "<muse version=\"%d.%d\">\n", latestMajorVersion(), latestMinorVersion());
+  return level;
+}
+
+//---------------------------------------------------------
+//   put
+//---------------------------------------------------------
+
+void Xml::put(const char* format, ...)
+      {
+      va_list args;
+      va_start(args, format);
+
+      if(f)
+      {
+        vfprintf(f, format, args);
+        va_end(args);
+        putc('\n', f);
+      }
+      else
+      {
+        const QString s = QString::vasprintf(format, args) + '\n';
+        va_end(args);
+        if(_destIODev)
+          _destIODev->write(s.toLatin1());
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
+void Xml::put(int level, const char* format, ...)
+      {
+      va_list args;
+      va_start(args, format);
+      putLevel(level);
+
+      if(f)
+      {
+        vfprintf(f, format, args);
+        va_end(args);
+        putc('\n', f);
+      }
+      else
+      {
+        const QString s = QString::vasprintf(format, args) + '\n';
+        va_end(args);
+        if(_destIODev)
+          _destIODev->write(s.toLatin1());
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
+//---------------------------------------------------------
+//   nput
+//---------------------------------------------------------
+
+void Xml::nput(int level, const char* format, ...)
+      {
+      va_list args;
+      va_start(args, format);
+      putLevel(level);
+
+      if(f)
+      {
+        vfprintf(f, format, args);
+        va_end(args);
+      }
+      else
+      {
+        const QString s = QString::vasprintf(format, args);
+        va_end(args);
+        if(_destIODev)
+          _destIODev->write(s.toLatin1());
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
+void Xml::nput(const char* format, ...)
+      {
+      va_list args;
+      va_start(args, format);
+
+      if(f)
+      {
+        vfprintf(f, format, args);
+        va_end(args);
+      }
+      else
+      {
+        const QString s = QString::vasprintf(format, args);
+        va_end(args);
+        if(_destIODev)
+          _destIODev->write(s.toLatin1());
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
+//---------------------------------------------------------
+//   tag
+//---------------------------------------------------------
+
+void Xml::tag(int level, const char* format, ...)
+      {
+      va_list args;
+      va_start(args, format);
+      putLevel(level);
+
+      if(f)
+      {
+        putc('<', f);
+        vfprintf(f, format, args);
+        va_end(args);
+        putc('>', f);
+        putc('\n', f);
+      }
+      else
+      {
+        const QString s = '<' + QString::vasprintf(format, args) + ">\n";
+        va_end(args);
+        if(_destIODev)
+          _destIODev->write(s.toLatin1());
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
+//---------------------------------------------------------
+//   etag
+//---------------------------------------------------------
+
+void Xml::etag(int level, const char* format, ...)
+      {
+      va_list args;
+      va_start(args, format);
+      putLevel(level);
+
+      if(f)
+      {
+        putc('<', f);
+        putc('/', f);
+        vfprintf(f, format, args);
+        va_end(args);
+        putc('>', f);
+        putc('\n', f);
+      }
+      else
+      {
+        const QString s = "</" + QString::vasprintf(format, args) + ">\n";
+        va_end(args);
+        if(_destIODev)
+          _destIODev->write(s.toLatin1());
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
+void Xml::putLevel(int n)
+      {
+      if(f)
+      {
+        for (int i = 0; i < n*2; ++i)
+              putc(' ', f);
+      }
+      else if(_destIODev)
+      {
+        for (int i = 0; i < n*2; ++i)
+              _destIODev->putChar(' ');
+      }
+      else if(_destStr)
+      {
+        for (int i = 0; i < n*2; ++i)
+              _destStr->append(' ');
+      }
+      }
+
+void Xml::intTag(int level, const char* name, int val)
+      {
+      putLevel(level);
+      if(f)
+      {
+        fprintf(f, "<%s>%d</%s>\n", name, val, name);
+      }
+      else
+      {
+        const QString s = QString::asprintf("<%s>%d</%s>\n", name, val, name);
+        if(_destIODev)
+        _destIODev->write(s.toLatin1());
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
+void Xml::uintTag(int level, const char* name, unsigned int val)
+      {
+      putLevel(level);
+      if(f)
+      {
+        fprintf(f, "<%s>%u</%s>\n", name, val, name);
+      }
+      else
+      {
+        const QString s = QString::asprintf("<%s>%u</%s>\n", name, val, name);
+        if(_destIODev)
+        _destIODev->write(s.toLatin1());
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
+void Xml::floatTag(int level, const char* name, float val)
+      {
+      putLevel(level);
+      const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
+      const QByteArray ba = s.toLatin1();
+      if(f)
+      {
+        fprintf(f, "%s", ba.constData());
+      }
+      else
+      {
+        if(_destIODev)
+          _destIODev->write(ba);
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
+void Xml::doubleTag(int level, const char* name, double val)
+      {
+      putLevel(level);
+      const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
+      const QByteArray ba = s.toLatin1();
+      if(f)
+      {
+        fprintf(f, "%s", ba.constData());
+      }
+      else
+      {
+        if(_destIODev)
+          _destIODev->write(ba);
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
+void Xml::strTag(int level, const char* name, const char* val)
+      {
+      putLevel(level);
+      if(f)
+      {
+        fprintf(f, "<%s>", name);
+        if (val) {
+              while (*val) {
+                    switch(*val) {
+                          case '&': fprintf(f, "&amp;"); break;
+                          case '<': fprintf(f, "&lt;"); break;
+                          case '>': fprintf(f, "&gt;"); break;
+                          case '\'': fprintf(f, "&apos;"); break;
+                          case '"': fprintf(f, "&quot;"); break;
+                          default: fputc(*val, f); break;
+                          }
+                    ++val;
+                    }
+              }
+        fprintf(f, "</%s>\n", name);
+      }
+      else
+      {
+        QString s = QString("<%1>").arg(name);
+        if (val) {
+              while (*val) {
+                    switch(*val) {
+                          case '&': s.append("&amp;"); break;
+                          case '<': s.append("&lt;"); break;
+                          case '>': s.append("&gt;"); break;
+                          case '\'': s.append("&apos;"); break;
+                          case '"': s.append("&quot;"); break;
+                          default: s.append(*val); break;
+                          }
+                    ++val;
+                    }
+              }
+        s.append(QString("</%1>\n").arg(name));
+        if(_destIODev)
+          _destIODev->write(s.toLatin1());
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
+//---------------------------------------------------------
+//   colorTag
+//---------------------------------------------------------
+
+void Xml::colorTag(int level, const char* name, const QColor& color)
+      {
+      putLevel(level);
+      if(f)
+      {
+        fprintf(f, "<%s r=\"%d\" g=\"%d\" b=\"%d\"></%s>\n",
+	      name, color.red(), color.green(), color.blue(), name);
+      }
+      else
+      {
+        const QString s = 
+          QString::asprintf("<%s r=\"%d\" g=\"%d\" b=\"%d\"></%s>\n",
+            name, color.red(), color.green(), color.blue(), name);
+        if(_destIODev)
+          _destIODev->write(s.toLatin1());
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
+void Xml::colorTag(int level, const QString& name, const QColor& color)
+{
+  colorTag(level, name.toLocal8Bit().constData(), color);
+}
+
+//---------------------------------------------------------
+//   geometryTag
+//---------------------------------------------------------
+
+void Xml::geometryTag(int level, const char* name, const QWidget* g)
+      {
+      qrectTag(level, name, QRect(g->pos(), g->size()));
+      }
+
+//---------------------------------------------------------
+//   qrectTag
+//---------------------------------------------------------
+
+void Xml::qrectTag(int level, const char* name, const QRect& r)
+      {
+      putLevel(level);
+      if(f)
+      {
+        fprintf(f, "<%s x=\"%d\" y=\"%d\" w=\"%d\" h=\"%d\"></%s>\n",
+           name, r.x(), r.y(), r.width(), r.height(), name);
+      }
+      else
+      {
+        const QString s = 
+          QString::asprintf("<%s x=\"%d\" y=\"%d\" w=\"%d\" h=\"%d\"></%s>\n",
+           name, r.x(), r.y(), r.width(), r.height(), name);
+        if(_destIODev)
+          _destIODev->write(s.toLatin1());
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
+//---------------------------------------------------------
+//   strTag
+//---------------------------------------------------------
+
+void Xml::strTag(int level, const char* name, const QString& val)
+      {
+      strTag(level, name, val.toLocal8Bit().constData());
+      }
+
+void Xml::strTag(int level, const QString& name, const QString& val)
+{
+  strTag(level, name.toLocal8Bit().constData(), val.toLocal8Bit().constData());
+}
+      
+//---------------------------------------------------------
+//   xmlString
+//---------------------------------------------------------
+
+QString Xml::xmlString(const char* s)
+      {
+      return Xml::xmlString(QString(s));
+      }
+
+//---------------------------------------------------------
+//   xmlString
+//---------------------------------------------------------
+
+QString Xml::xmlString(const QString& ss)
+      {
+      QString s(ss);
+      s.replace('&', "&amp;");
+      s.replace('<', "&lt;");
+      s.replace('>', "&gt;");
+      s.replace('\'', "&apos;");
+      s.replace('"', "&quot;");
+      return s;
+      }
+
+
 } // namespace MusECore

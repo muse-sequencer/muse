@@ -36,6 +36,7 @@
 // For sorting port enum values.
 #include <map>
   
+#include <cstdio>
 #include <cstring>
 #include <cmath>
 
@@ -106,6 +107,23 @@
 
 namespace MusEPlugin {
 
+static void beginPluginDescrMarker()
+{
+  // Put markers to tell our xml stuff from any stuff written
+  //  to comm channel by the plugins.
+  std::fflush(stdout);
+  std::fprintf(stdout, "BEGIN MUSE PLUGIN DESCR\n");
+  std::fflush(stdout);
+}
+
+static void endPluginDescrMarker()
+{
+  // Put markers to tell our xml stuff from any stuff written
+  //  to comm channel by the plugins.
+  std::fflush(stdout);
+  std::fprintf(stdout, "END MUSE PLUGIN DESCR\n");
+  std::fflush(stdout);
+}
 
 static void setPluginScanFileInfo(const char* filename, PluginScanInfoStruct* info)
 {
@@ -486,7 +504,14 @@ bool writeLadspaInfo (
   const LADSPA_Descriptor* descr;
   for(unsigned long i = 0;; ++i)
   {
+    // Put markers to tell our xml stuff from any stuff written
+    //  to comm channel by the plugins.
+    beginPluginDescrMarker();
+
     descr = ladspa(i);
+
+    endPluginDescrMarker();
+      
     if(descr == NULL)
       break;
     PluginScanInfoStruct info;
@@ -533,7 +558,14 @@ bool scanMessDescriptor(const char* filename, const MESS* mess_descr, PluginScan
 
 bool writeMessInfo(const char* filename, MESS_Descriptor_Function mess, bool do_ports, int level, MusECore::Xml& xml)
 {
+  // Put markers to tell our xml stuff from any stuff written
+  //  to comm channel by the plugins.
+  beginPluginDescrMarker();
+
   const MESS* mess_descr = mess();
+
+  endPluginDescrMarker();
+
   if(mess_descr)
   {
     PluginScanInfoStruct info;
@@ -681,7 +713,14 @@ bool writeDssiInfo(const char* filename, DSSI_Descriptor_Function dssi, bool do_
   const DSSI_Descriptor* dssi_descr;
   for(unsigned long i = 0;; ++i)
   {
+    // Put markers to tell our xml stuff from any stuff written
+    //  to comm channel by the plugins.
+    beginPluginDescrMarker();
+
     dssi_descr = dssi(i);
+
+    endPluginDescrMarker();
+
     if(dssi_descr == 0)
       break;
     PluginScanInfoStruct info;
@@ -1201,7 +1240,15 @@ bool writeLinuxVstInfo(
 // bool bDontDlCLose = false;
 
   AEffect *plugin = NULL;
+
+  // Put markers to tell our xml stuff from any stuff written
+  //  to comm channel by the plugins.
+  beginPluginDescrMarker();
+
   plugin = lvst(vstNativeHostCallback);
+
+  endPluginDescrMarker();
+
   if(!plugin)
   {
     std::fprintf(stderr, "ERROR: Failed to instantiate plugin in VST library \"%s\"\n", filename);
@@ -1253,7 +1300,14 @@ bool writeLinuxVstInfo(
 
         currentPluginId = it->first;
 
+        // Put markers to tell our xml stuff from any stuff written
+        //  to comm channel by the plugins.
+        beginPluginDescrMarker();
+
         plugin = lvst(vstNativeHostCallback);
+
+        endPluginDescrMarker();
+
         if(!plugin)
         {
           std::fprintf(stderr, "ERROR: Failed to instantiate plugin in VST library \"%s\", shell id=%ld\n",
@@ -1524,13 +1578,13 @@ static bool pluginScan(
 
 //   if(!process.waitForStarted(4000))
 //   {
-//     fprintf(stderr, "pluginScan: waitForStarted failed\n");
+//     std::fprintf(stderr, "pluginScan: waitForStarted failed\n");
 //     return false;
 //   }
 
 //   if(!process.waitForReadyRead(4000))
 //   {
-//     fprintf(stderr, "pluginScan: waitForReadyRead failed\n");
+//     std::fprintf(stderr, "pluginScan: waitForReadyRead failed\n");
 //     return false;
 //   }
 
@@ -1540,6 +1594,32 @@ static bool pluginScan(
     return false;
   }
 
+// NOTE: For IPC I looked at the ideal QLocalSocket and QLocalServer.
+//       But they require the Qt network module.
+//       QSharedMemory is nice but it's not serial like we need.
+//       And its fixed created size must be known beforehand.
+//       (But we may use it for audio in a future runtime sandbox.)
+//       And the problem with stdout or stderr is the plugin itself
+//        can put stuff there as well. Thus an extractor is needed.
+//       I tried putting our content on stderr, thinking flushing
+//        was not needed with it. Didn't work! My marker lines were
+//        inter-mingled with the error output lines of some plugins
+//        instead of the expected order. Not sure why except
+//        possibly those plugins run another process and we're
+//        seeing the delayed (skewed) output of that.
+//       Or maybe it was some QProcess channel buffering interfering?
+//       So stdout is used for communicating our content, and
+//        flushing is enforced (it was required) immediately
+//        BEFORE and AFTER our markers are output during the scan.
+//       It may still be possible that some plugins might run another
+//        process and output on stdout and we'll see delayed output
+//        inter-mingled with ours, but so far the stdout method
+//        works with all tested plugins so far.
+//       Ultimately a better marking method would help but if we
+//        are to use xml it might require marking EACH xml line
+//        which would be difficult.    Tim.
+
+  
   if(debugStdErr)
   {
     QByteArray err_array = process.readAllStandardError();
@@ -1547,7 +1627,7 @@ static bool pluginScan(
     {
       // Terminate just to be sure.
       err_array.append(char(0));
-      std::fprintf(stderr, "\npluginScan: Output from scan:\n%s\n", err_array.constData());
+      std::fprintf(stderr, "\npluginScan: Standard error output from scan:\n%s\n", err_array.constData());
     }
   }
 
@@ -1565,14 +1645,95 @@ static bool pluginScan(
 
   QByteArray array = process.readAllStandardOutput();
 
-  if(array.isEmpty())
+  if(array.isEmpty() || array.at(0) == 0)
   {
-    DEBUG_PLUGIN_SCAN(stderr, "\npluginScan: stdout array is empty\n\n");
+    std::fprintf(stderr, "\npluginScan FAILED: stdout array is empty. Plugin did not return any info ??? file: %s\n\n",
+                 filename_ba.constData());
     return false;
   }
 
   // Terminate just to be sure.
   array.append(char(0));
+
+  // An array of any output from the plugin itself, stripped from the complete array.
+  QByteArray plugin_array;
+  
+  //std::fprintf(stderr, "pluginScan: stdout array:\n%s\n", array.constData());
+  
+  //-----------------------------------------------------------------
+  // Strip out any unwanted stuff between pairs of special markers...
+  //-----------------------------------------------------------------
+  
+  const QByteArray begOpStr("BEGIN MUSE OPEN PLUGIN\n");
+  const QByteArray endOpStr("END MUSE OPEN PLUGIN\n");
+  const QByteArray begStr("BEGIN MUSE PLUGIN DESCR\n");
+  const QByteArray endStr("END MUSE PLUGIN DESCR\n");
+  const int begOpStrSz = begOpStr.size();
+  const int endOpStrSz = endOpStr.size();
+  const int begStrSz = begStr.size();
+  const int endStrSz = endStr.size();
+  int begOpIdx, endOpIdx, begPlIdx, endPlIdx;
+  int cut_len, extra_len;
+  while(1)
+  {
+    begOpIdx = array.indexOf(begOpStr);
+    begPlIdx = array.indexOf(begStr);
+    if(begOpIdx == -1 && begPlIdx == -1)
+      break;
+    
+    if(begOpIdx != -1 && (begPlIdx == -1 || begOpIdx <= begPlIdx))
+    {
+      endOpIdx = array.indexOf(endOpStr, begOpIdx);
+      if(endOpIdx == -1)
+      {
+        std::fprintf(stderr, "\npluginScan FAILED: %s without %s in stdout array: file: %s\n\n",
+                     begOpStr.constData(), endOpStr.constData(), filename_ba.constData());
+        return false;
+      }
+      cut_len = (endOpIdx + endOpStrSz) - begOpIdx;
+      extra_len = endOpIdx - (begOpIdx + begOpStrSz);
+      plugin_array.append(array.mid(begOpIdx + begOpStrSz, extra_len));
+      array.remove(begOpIdx, cut_len);
+      continue;
+    }
+    
+    if(begPlIdx != -1)
+    {
+      endPlIdx = array.indexOf(endStr, begPlIdx);
+      if(endPlIdx == -1)
+      {
+        std::fprintf(stderr, "\npluginScan FAILED: %s without %s in stdout array: file: %s\n\n", 
+                     begStr.constData(), endStr.constData(), filename_ba.constData());
+        return false;
+      }
+      cut_len = endPlIdx + endStrSz - begPlIdx;
+      extra_len = endPlIdx - (begPlIdx + begStrSz);
+      plugin_array.append(array.mid(begPlIdx + begStrSz, extra_len));
+      array.remove(begPlIdx, cut_len);
+      continue;
+    }
+    
+    break;
+  }
+
+  if(debugStdErr && !plugin_array.isEmpty() && plugin_array.at(0) != 0)
+  {
+    // Terminate just to be sure.
+    plugin_array.append(char(0));
+    std::fprintf(stderr, "\npluginScan: Standard output from scan:\n%s\n", plugin_array.constData());
+  }
+  
+  if(array.isEmpty() || array.at(0) == 0)
+  {
+    std::fprintf(stderr, "\npluginScan FAILED: stripped stdout array is empty. Plugin did not return any info ??? file: %s\n\n",
+                 filename_ba.constData());
+    return false;
+  }
+
+  // Terminate just to be sure.
+  array.append(char(0));
+  
+  //std::fprintf(stderr, "pluginScan: stripped stdout array:\n%s\n", array.constData());
 
   // Create an xml object based on the array.
   MusECore::Xml xml(array.constData());
@@ -1583,8 +1744,6 @@ static bool pluginScan(
   {
     std::fprintf(stderr, "\npluginScan FAILED: On readPluginScan(): file: %s\n\n", filename_ba.constData());
   }
-
-  //std::fprintf(stderr, "pluginScan: success: stdout array:\n%s\n", array.constData());
 
   return true;
 }
@@ -1681,9 +1840,9 @@ void scanLinuxVSTPlugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
 {
 #ifdef VST_NATIVE_SUPPORT
   #ifdef VST_VESTIGE_SUPPORT
-    printf("Initializing Native VST support. Using VESTIGE compatibility implementation.\n");
+    std::fprintf(stderr, "Initializing Native VST support. Using VESTIGE compatibility implementation.\n");
   #else
-    printf("Initializing Native VST support. Using Steinberg VSTSDK.\n");
+    std::fprintf(stderr, "Initializing Native VST support. Using Steinberg VSTSDK.\n");
   #endif
     
 //   sem_init(&_vstIdLock, 0, 1);

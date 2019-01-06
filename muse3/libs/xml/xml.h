@@ -30,6 +30,7 @@
 #include <QColor>
 #include <QRect>
 #include <QWidget>
+#include <QIODevice>
 
 namespace MusECore {
 
@@ -39,7 +40,12 @@ namespace MusECore {
 //---------------------------------------------------------
 
 class Xml {
+      // When constructed with a FILE* parameter, this will be valid.
       FILE* f;
+      // When constructed with a QString* parameter, this will be valid.
+      QString* _destStr;
+      // When constructed with a QIODevice* parameter, this will be valid.
+      QIODevice* _destIODev;
       int _line;
       int _col;
       QString _s1, _s2, _tag;
@@ -59,6 +65,7 @@ class Xml {
 
       int c;            // current char
       char lbuffer[512];
+      // When constructed with a const char* parameter, this will be valid.
       const char* bufptr;
 
       void next();
@@ -82,8 +89,15 @@ class Xml {
             _minorVersion = min;
             _majorVersion = maj;
             }
+      // For writing and reading. Constructs an xml from a FILE*.
       Xml(FILE*);
+      // For reading from a char array only. Writing may cause error. Constructs an xml from a const char*.
       Xml(const char*);
+      // For writing to a QString only. Reading may cause error. Constructs an xml from a QString*.
+      Xml(QString*);
+      // For writing to a QIODevice only. Reading may cause error. Constructs an xml from a QIODevice*.
+      Xml(QIODevice*);
+
       Token parse();
       QString parse(const QString&);
       QString parse1();
@@ -99,6 +113,8 @@ class Xml {
       void dump(QString &dump);
 
       void header();
+      // Returns level incremented by one.
+      int putFileVersion(int level);
       void put(const char* format, ...);
       void put(int level, const char* format, ...);
       void nput(int level, const char* format, ...);
@@ -121,9 +137,6 @@ class Xml {
 
       void skip(const QString& tag);
       };
-
-// REMOVE Tim. Scan. Removed.
-// extern QRect readGeometry(Xml&, const QString&);
 
   //---------------------------------------------------------
   //   Basic functions:

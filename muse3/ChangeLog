@@ -1,3 +1,8 @@
+06.01.2019
+      - Fix plugin scanner bug reported by artofmusic in forum. (Tim)
+        Some plugins may output stuff on stdout. This was confusing
+         our xml scanner. So a method of separating our xml from the
+         rest of stdout was added. Tested OK with LinVst and sforzando.
 19.12.2018
       - Fix fluidsynth fluid_synth_error() deprecated in 2.0.2 (Tim)
       - For bug 632: Fix slight text error in Global Settings option:

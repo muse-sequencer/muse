@@ -33,7 +33,6 @@
 #include <ladspa.h>
 #include "synti/libsynti/mess.h"
 
-
 #ifdef DSSI_SUPPORT
 #include <dssi.h>
 #endif
@@ -82,10 +81,22 @@ static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
 //       sem_wait(&_vstIdLock);
       //_vstIdLock.acquire();
 //#endif // VST_NATIVE_SUPPORT
-              
+
       int ret = -1;
-      
+
+      // Must flush out here! Otherwise it can appear AFTER the output from the dlopen.
+      std::fflush(stdout);
+      // Put markers to tell our xml stuff from any stuff written
+      //  to comm channel by the plugins.
+      std::fprintf(stdout, "BEGIN MUSE OPEN PLUGIN\n");
+      std::fflush(stdout);
+
       void* handle = dlopen(filename, RTLD_NOW);
+      std::fflush(stdout);
+
+      std::fprintf(stdout, "END MUSE OPEN PLUGIN\n");
+      std::fflush(stdout);
+
       if (handle == 0)
       {
         std::fprintf(stderr, "muse_plugin_scan: dlopen(%s) failed: %s\n",
@@ -102,11 +113,11 @@ static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
         if(dssi)
         {
           DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Is a DSSI library\n");
-          // Open the standard out channel to communicate back to the main app.
+          
           MusECore::Xml xml(stdout);
           xml.header();
           int level = 0;
-          xml.nput(level++, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
+          level = xml.putFileVersion(level);
       
           MusEPlugin::writeDssiInfo(filename, dssi, do_ports, level, xml);
 
@@ -135,7 +146,7 @@ static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
             MusECore::Xml xml(stdout);
             xml.header();
             int level = 0;
-            xml.nput(level++, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
+            level = xml.putFileVersion(level);
 
             MusEPlugin::writeMessInfo(filename, msynth, do_ports, level, xml);
 
@@ -162,7 +173,7 @@ static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
               MusECore::Xml xml(stdout);
               xml.header();
               int level = 0;
-              xml.nput(level++, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
+              level = xml.putFileVersion(level);
 
               MusEPlugin::writeLadspaInfo(filename, ladspa, do_ports, level, xml);
 
@@ -210,7 +221,7 @@ static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
                 MusECore::Xml xml(stdout);
                 xml.header();
                 int level = 0;
-                xml.nput(level++, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
+                level = xml.putFileVersion(level);
 
                 MusEPlugin::writeLinuxVstInfo(filename, getInstance, do_ports, level, xml);
 
@@ -236,7 +247,7 @@ static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
       }
        
 //       _end:
-      
+
       // Close the library for now. It will be opened 
       //  again when an instance is created.
       if(handle)
@@ -246,6 +257,7 @@ static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
 //       sem_post(&_vstIdLock);
       //_vstIdLock.release();
 //#endif // VST_NATIVE_SUPPORT
+      
       
       return ret;
 }
@@ -273,7 +285,7 @@ int main(int argc, char* argv[])
                   }
             }
 
-      if(!filename)
+      if(!filename || filename[0] == 0)
       {
         std::fprintf(stderr, "Error: No filename given\n");
         return -1;
