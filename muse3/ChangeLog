@@ -1,3 +1,9 @@
+07.01.2019
+      - Xml class full makeover. (Tim)
+        Removed all QByteArray stuff. Now it works directly with _s1 or _s2,
+         which cures concerns about deep copying the b.a. back to _s1/_s2,
+         stuff which was hastily added at Qt4 to make it work.
+        Tightened up several of the routines.
 06.01.2019
       - Scanner: Replaced silly stdout stuff with QTemporaryFile. (Tim)
       - Class Xml now supports directly reading and writing a QIODevice
