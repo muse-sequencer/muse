@@ -703,6 +703,12 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.lineEditStyleHack = xml.parseInt();
                         else if (tag == "preferMidiVolumeDb")
                               MusEGlobal::config.preferMidiVolumeDb = xml.parseInt();
+                        else if (tag == "midiCtrlGraphMergeErase")
+                              MusEGlobal::config.midiCtrlGraphMergeErase = xml.parseInt();
+                        else if (tag == "midiCtrlGraphMergeEraseInclusive")
+                              MusEGlobal::config.midiCtrlGraphMergeEraseInclusive = xml.parseInt();
+                        else if (tag == "midiCtrlGraphMergeEraseWysiwyg")
+                              MusEGlobal::config.midiCtrlGraphMergeEraseWysiwyg = xml.parseInt();
                         else if (tag == "styleSheetFile")
                               MusEGlobal::config.styleSheetFile = xml.parse1();
                         else if (tag == "useOldStyleStopShortCut")
@@ -1731,6 +1737,9 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "monitorOnRecord", MusEGlobal::config.monitorOnRecord);
       xml.intTag(level, "lineEditStyleHack", MusEGlobal::config.lineEditStyleHack);
       xml.intTag(level, "preferMidiVolumeDb", MusEGlobal::config.preferMidiVolumeDb);
+      xml.intTag(level, "midiCtrlGraphMergeErase", MusEGlobal::config.midiCtrlGraphMergeErase);
+      xml.intTag(level, "midiCtrlGraphMergeEraseInclusive", MusEGlobal::config.midiCtrlGraphMergeEraseInclusive);
+      xml.intTag(level, "midiCtrlGraphMergeEraseWysiwyg", MusEGlobal::config.midiCtrlGraphMergeEraseWysiwyg);
       xml.intTag(level, "lv2UiBehavior", static_cast<int>(MusEGlobal::config.lv2UiBehavior));
       xml.strTag(level, "mixdownPath", MusEGlobal::config.mixdownPath);
       xml.intTag(level, "showNoteNamesInPianoRoll", MusEGlobal::config.showNoteNamesInPianoRoll);

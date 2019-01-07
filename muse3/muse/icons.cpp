@@ -26,6 +26,7 @@
 //         Therefore the separate icons must be manually set upon each state.
 
 #include <QIcon>
+#include <QCursor>
 
 #include "xpm/track_comment.xpm"
 #include "xpm/audio_bounce_to_file.xpm"
@@ -70,6 +71,14 @@
 #include "xpm/zoom.xpm"
 #include "xpm/zoom_at.xpm"
 #include "xpm/size_all.xpm"
+#include "xpm/midi_ctrl_graph_merge.xpm"
+#include "xpm/midi_ctrl_graph_merge_erase.xpm"
+#include "xpm/midi_ctrl_graph_merge_erase_inclusive.xpm"
+#include "xpm/midi_ctrl_graph_merge_erase_wysiwyg.xpm"
+#include "xpm/midi_ctrl_graph_merge_copy.xpm"
+#include "xpm/midi_ctrl_graph_merge_copy_erase.xpm"
+#include "xpm/midi_ctrl_graph_merge_copy_erase_inclusive.xpm"
+#include "xpm/midi_ctrl_graph_merge_copy_erase_wysiwyg.xpm"
 
 #include "xpm/record1.xpm"
 #include "xpm/record.xpm"
@@ -381,6 +390,14 @@ QPixmap* openHandIcon;
 QPixmap* zoomIcon;
 QPixmap* zoomAtIcon;
 QPixmap* sizeAllIcon;
+QPixmap* midiCtrlMergeIcon;
+QPixmap* midiCtrlMergeEraseIcon;
+QPixmap* midiCtrlMergeEraseInclusiveIcon;
+QPixmap* midiCtrlMergeEraseWysiwygIcon;
+QPixmap* midiCtrlMergeCopyIcon;
+QPixmap* midiCtrlMergeCopyEraseIcon;
+QPixmap* midiCtrlMergeCopyEraseInclusiveIcon;
+QPixmap* midiCtrlMergeCopyEraseWysiwygIcon;
 
 QPixmap* record1_Icon;
 QPixmap* record_on_Icon;
@@ -489,6 +506,8 @@ QIcon* editpasteCloneIcon;
 QIcon* editpaste2TrackIcon;
 QIcon* editpasteClone2TrackIcon;
 */
+QPixmap* editpasteSIcon;
+QPixmap* editpasteCloneSIcon;
 
 QPixmap* toggle_small_Icon;
 QPixmap* redLedIcon;
@@ -713,6 +732,14 @@ QIcon* jackTransportOnSVGIcon;
 QIcon* metronomeOffSVGIcon;
 QIcon* metronomeOnSVGIcon;
 
+//----------------------------------
+// Cursors
+//----------------------------------
+
+QCursor* editpasteSCursor;
+QCursor* editpasteCloneSCursor;
+
+
 //---------------------------------------------------------
 //   initIcons
 //---------------------------------------------------------
@@ -737,6 +764,15 @@ void initIcons(bool useThemeIconsIfPossible)
       zoomIcon     = MPIXMAP(zoom_xpm, NULL);
       zoomAtIcon   = MPIXMAP(zoom_at_xpm, NULL);
       sizeAllIcon  = MPIXMAP(size_all_xpm, NULL);
+      zoomIcon     = MPIXMAP(zoom_xpm, NULL);
+      midiCtrlMergeIcon                   = MPIXMAP(midi_ctrl_graph_merge_xpm, NULL);
+      midiCtrlMergeEraseIcon              = MPIXMAP(midi_ctrl_graph_merge_erase_xpm, NULL);
+      midiCtrlMergeEraseInclusiveIcon     = MPIXMAP(midi_ctrl_graph_merge_erase_inclusive_xpm, NULL);
+      midiCtrlMergeEraseWysiwygIcon       = MPIXMAP(midi_ctrl_graph_merge_erase_wysiwyg_xpm, NULL);
+      midiCtrlMergeCopyIcon               = MPIXMAP(midi_ctrl_graph_merge_copy_xpm, NULL);
+      midiCtrlMergeCopyEraseIcon          = MPIXMAP(midi_ctrl_graph_merge_copy_erase_xpm, NULL);
+      midiCtrlMergeCopyEraseInclusiveIcon = MPIXMAP(midi_ctrl_graph_merge_copy_erase_inclusive_xpm, NULL);
+      midiCtrlMergeCopyEraseWysiwygIcon   = MPIXMAP(midi_ctrl_graph_merge_copy_erase_wysiwyg_xpm, NULL);
 
       record1_Icon  = MPIXMAP(record1_xpm, NULL);
       record_on_Icon = MPIXMAP(record_on_xpm, NULL);
@@ -833,6 +869,8 @@ void initIcons(bool useThemeIconsIfPossible)
       editpaste2TrackIcon       = MICON(editpaste2track_xpm, NULL);
       editpasteClone2TrackIcon  = MICON(editpasteclone2track_xpm, NULL);
       */
+      editpasteSIcon      = MPIXMAP(editpasteS_xpm, NULL);
+      editpasteCloneSIcon = MPIXMAP(editpastecloneS_xpm, NULL);
 
       //exitIcon             = MPIXMAP(exit_xpm, "application-exit");
       //exit1Icon            = MPIXMAP(exit1_xpm, "application-exit");
@@ -1134,6 +1172,13 @@ void initIcons(bool useThemeIconsIfPossible)
       
       metronomeOffSVGIcon = new QIcon(*metronomeOffSVGPixmap);
       metronomeOnSVGIcon = new QIcon(*metronomeOnSVGPixmap);
+      
+      //----------------------------------
+      // Cursors
+      //----------------------------------
+
+      editpasteSCursor = new QCursor(*editpasteSIcon, 8, 8);
+      editpasteCloneSCursor = new QCursor(*editpasteCloneSIcon, 8, 8);
       }
 
 //---------------------------------------------------------
@@ -1158,6 +1203,14 @@ void deleteIcons()
       delete zoomIcon;
       delete zoomAtIcon;
       delete sizeAllIcon;
+      delete midiCtrlMergeIcon;
+      delete midiCtrlMergeEraseIcon;
+      delete midiCtrlMergeEraseInclusiveIcon;
+      delete midiCtrlMergeEraseWysiwygIcon;
+      delete midiCtrlMergeCopyIcon;
+      delete midiCtrlMergeCopyEraseIcon;
+      delete midiCtrlMergeCopyEraseInclusiveIcon;
+      delete midiCtrlMergeCopyEraseWysiwygIcon;
 
       delete record1_Icon;
       delete record_on_Icon;
@@ -1252,6 +1305,8 @@ void deleteIcons()
       delete editpaste2TrackIcon;       
       delete editpasteClone2TrackIcon; 
       */
+      delete editpasteSIcon;
+      delete editpasteCloneSIcon;
 
       delete exitIcon;             
       delete exit1Icon;            
@@ -1515,6 +1570,13 @@ void deleteIcons()
       
       delete metronomeOffSVGIcon;
       delete metronomeOnSVGIcon;
+
+      //----------------------------------
+      // Cursors
+      //----------------------------------
+
+      delete editpasteSCursor;
+      delete editpasteCloneSCursor;
       }
 
 } // namespace MusEGui

@@ -50,6 +50,7 @@ namespace MusEGui {
 
 class CtrlPanel;
 class MidiEditor;
+class PopupMenu;
 
 //---------------------------------------------------------
 //   CEvent
@@ -151,10 +152,15 @@ class CtrlCanvas : public MusEGui::View {
       bool filterTrack;
       // Whether we have grabbed the mouse.
       bool _mouseGrabbed;
+      // The number of times we have called QApplication::setOverrideCursor().
+      // This should always be one or zero, anything else is an error, but unforeseen 
+      //  events might cause us to miss a decrement with QApplication::restoreOverrideCursor().
+      int _cursorOverrideCount;
 
       QPoint _curDragOffset;
       unsigned int _dragFirstXPos;
       //bool _rasterizeDrag;
+      //Qt::CursorShape _cursorShape;
 
       void viewMousePressEvent(QMouseEvent* event);
       void viewMouseMoveEvent(QMouseEvent*);
@@ -190,6 +196,9 @@ class CtrlCanvas : public MusEGui::View {
       // Returns whether setMidiController() and updateItems() were in fact called.
       bool drumPitchChanged();
       CEvent* findCurrentItem(const QPoint& p, const int tickstep, const int h);
+      // If show is true, calls QApplication::restoreOverrideCursor() until _cursorOverrideCount-- is <= 0.
+      // If show is false, calls QApplication::setOverrideCursor with a blank cursor.
+      void showCursor(bool show = true);
       // Sets or resets the _mouseGrabbed flag and grabs or releases the mouse.
       void setMouseGrab(bool grabbed = false);
 
@@ -198,7 +207,8 @@ class CtrlCanvas : public MusEGui::View {
             DRAG_DELETE, DRAG_COPY_START, DRAG_COPY,
             DRAGX_MOVE, DRAGY_MOVE,
             DRAGX_COPY, DRAGY_COPY,
-            DRAG_RESIZE, DRAG_LASSO_START, DRAG_LASSO
+            DRAG_RESIZE, DRAG_LASSO_START, DRAG_LASSO,
+            DRAG_PAN, DRAG_ZOOM
             };
 
       enum DragType {
@@ -215,10 +225,13 @@ class CtrlCanvas : public MusEGui::View {
       //CItemSet  deleting;
       
       CEvent* curItem;
+      CEvent* _movingItemUnderCursor;
 
       DragMode drag;
+      DragType _dragType;
       QRect lasso;
       QPoint start;
+      QPoint _mouseDist;
       MusEGui::Tool tool;
       unsigned pos[3];
       int curDrumPitch;    //Used by the drum-editor to view velocity of only one key (one drum)
@@ -227,7 +240,11 @@ class CtrlCanvas : public MusEGui::View {
       
       // Accumulated operations during drawing etc.
       MusECore::Undo _operations;
-      
+
+      void setCursor();
+      void keyPressEvent(QKeyEvent *event);
+      void keyReleaseEvent(QKeyEvent *event);
+      void enterEvent(QEvent*e);
       void leaveEvent(QEvent*e);
       QPoint raster(const QPoint&) const;
 
@@ -256,15 +273,26 @@ class CtrlCanvas : public MusEGui::View {
       void updateItemSelections();
 
       // moving
-      void startMoving(const QPoint&, int dir, DragType, bool rasterize = true);
+      void startMoving(const QPoint&, int dir, bool rasterize = true);
       void moveItems(const QPoint&, int dir = 0, bool rasterize = true);
-      void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true);
+      //void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true);
+      void endMoveItems();
       MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true);
       bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true);
+      // Resets the moving flag of all items in moving list, then clears the list.
+      // Returns true if anything was changed.
+      bool clearMoving();
       // Resets all mouse operations if detecting missed mouseRelease event (which DOES happen).
       // Returns true if reset was actually done.
       bool cancelMouseOps();
 
+      // Populates a popup menu with items related to drag/drop merging.
+      void populateMergeOptions(PopupMenu* menu);
+      
+      // Merges any dragged items. Merges copies of items if 'copy' is true. Otherwise moves the items.
+      // Returns true if items were merged, and it was successful. False if no items were moving, or error.
+      bool mergeDraggedItems(bool copy);
+     
    private slots:
       void songChanged(MusECore::SongChangedStruct_t type);
       void configChanged();    
