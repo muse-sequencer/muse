@@ -22,6 +22,7 @@
 //=========================================================
 
 #include <QDir>
+#include <QTemporaryFile>
 #include <QFile>
 #include <QFileInfo>
 #include <QFileInfoList>
@@ -36,6 +37,7 @@
 // For sorting port enum values.
 #include <map>
   
+#include <cstdio>
 #include <cstring>
 #include <cmath>
 
@@ -105,7 +107,6 @@
 //#define PORTS_ARE_SINGLE_LINE_TAGS 1
 
 namespace MusEPlugin {
-
 
 static void setPluginScanFileInfo(const char* filename, PluginScanInfoStruct* info)
 {
@@ -1201,6 +1202,7 @@ bool writeLinuxVstInfo(
 // bool bDontDlCLose = false;
 
   AEffect *plugin = NULL;
+
   plugin = lvst(vstNativeHostCallback);
   if(!plugin)
   {
@@ -1507,7 +1509,19 @@ static bool pluginScan(
   bool debugStdErr)
 {
   const QByteArray filename_ba = filename.toLocal8Bit();
-
+  QTemporaryFile tmpfile;
+  // Must open the temp file to get its name.
+  if(!tmpfile.open())
+  {
+    std::fprintf(stderr, "\npluginScan FAILED: Could not create temporary output file for input file: %s\n\n", filename_ba.constData());
+    return false;
+  }
+  // Get the unique temp file name.
+  const QString tmpfilename = tmpfile.fileName();
+  const QByteArray tmpfilename_ba = tmpfilename.toLocal8Bit();
+  // Close the temp file. It exists until tmpfile goes out of scope.
+  tmpfile.close();
+  
   if(debugStdErr)
     std::fprintf(stderr, "\nChecking file: <%s>\n", filename_ba.constData());
 
@@ -1516,7 +1530,7 @@ static bool pluginScan(
   const QString prog = QString(BINDIR) + QString("/muse_plugin_scan");
 
   QStringList args;
-  args << QString("-t") + QString::number(types) << QString("-f") + filename;
+  args << QString("-t") + QString::number(types) << QString("-f") + filename << QString("-o") + tmpfilename;
   if(scanPorts)
     args << QString("-p");
 
@@ -1524,13 +1538,13 @@ static bool pluginScan(
 
 //   if(!process.waitForStarted(4000))
 //   {
-//     fprintf(stderr, "pluginScan: waitForStarted failed\n");
+//     std::fprintf(stderr, "pluginScan: waitForStarted failed\n");
 //     return false;
 //   }
 
 //   if(!process.waitForReadyRead(4000))
 //   {
-//     fprintf(stderr, "pluginScan: waitForReadyRead failed\n");
+//     std::fprintf(stderr, "pluginScan: waitForReadyRead failed\n");
 //     return false;
 //   }
 
@@ -1542,12 +1556,19 @@ static bool pluginScan(
 
   if(debugStdErr)
   {
+    QByteArray out_array = process.readAllStandardOutput();
+    if(!out_array.isEmpty() && out_array.at(0) != 0)
+    {
+      // Terminate just to be sure.
+      out_array.append(char(0));
+      std::fprintf(stderr, "\npluginScan: Standard output from scan:\n%s\n", out_array.constData());
+    }
     QByteArray err_array = process.readAllStandardError();
-    if(!err_array.isEmpty())
+    if(!err_array.isEmpty() && err_array.at(0) != 0)
     {
       // Terminate just to be sure.
       err_array.append(char(0));
-      std::fprintf(stderr, "\npluginScan: Output from scan:\n%s\n", err_array.constData());
+      std::fprintf(stderr, "\npluginScan: Standard error output from scan:\n%s\n", err_array.constData());
     }
   }
 
@@ -1562,21 +1583,24 @@ static bool pluginScan(
     std::fprintf(stderr, "\npluginScan FAILED: Scan exit code not 0: file: %s\n\n", filename_ba.constData());
     return false;
   }
-
-  QByteArray array = process.readAllStandardOutput();
-
-  if(array.isEmpty())
+  
+  // Open the temp file again...
+  QFile infile(tmpfilename);
+  if(!infile.exists())
   {
-    DEBUG_PLUGIN_SCAN(stderr, "\npluginScan: stdout array is empty\n\n");
+    std::fprintf(stderr, "\npluginScan FAILED: Temporary file does not exist: %s\n\n", tmpfilename_ba.constData());
     return false;
   }
-
-  // Terminate just to be sure.
-  array.append(char(0));
-
-  // Create an xml object based on the array.
-  MusECore::Xml xml(array.constData());
-
+  if(!infile.open(QIODevice::ReadOnly /*| QIODevice::Text*/))
+  {
+    std::fprintf(stderr, "\npluginScan FAILED: Could not re-open temporary output file: %s\n\n",
+                 tmpfilename_ba.constData());
+    return false;
+  }
+  
+  // Create an xml object based on the file.
+  MusECore::Xml xml(&infile);
+  
   // Read the list of plugins found in the xml.
   // For now we don't supply a separate scanEnums flag in pluginScan(), so just use scanPorts instead.
   if(readPluginScan(xml, list, scanPorts, scanPorts))
@@ -1584,8 +1608,11 @@ static bool pluginScan(
     std::fprintf(stderr, "\npluginScan FAILED: On readPluginScan(): file: %s\n\n", filename_ba.constData());
   }
 
-  //std::fprintf(stderr, "pluginScan: success: stdout array:\n%s\n", array.constData());
-
+  // Close the temp file.
+  infile.close();
+  
+  // Now going out of scope destroys the temporary file...
+  
   return true;
 }
 
@@ -1681,9 +1708,9 @@ void scanLinuxVSTPlugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
 {
 #ifdef VST_NATIVE_SUPPORT
   #ifdef VST_VESTIGE_SUPPORT
-    printf("Initializing Native VST support. Using VESTIGE compatibility implementation.\n");
+    std::fprintf(stderr, "Initializing Native VST support. Using VESTIGE compatibility implementation.\n");
   #else
-    printf("Initializing Native VST support. Using Steinberg VSTSDK.\n");
+    std::fprintf(stderr, "Initializing Native VST support. Using Steinberg VSTSDK.\n");
   #endif
     
 //   sem_init(&_vstIdLock, 0, 1);
@@ -2409,18 +2436,10 @@ bool writePluginCacheFile(
   }
   else
   {
-    FILE* cfile = fdopen(targ_qfile.handle(), "w");
-    if(cfile == 0)
-    {
-      std::fprintf(stderr, "writePluginCacheFile: fdopen failed: filename:%s\n",
-                         filename.toLatin1().constData());
-    }
-    else
-    {
-      MusECore::Xml xml(cfile);
+      MusECore::Xml xml(&targ_qfile);
       int level = 0;
       xml.header();
-      xml.nput(0, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
+      level = xml.putFileVersion(level);
       
       for(ciPluginScanList ips = list.begin(); ips != list.end(); ++ips)
       {
@@ -2433,28 +2452,14 @@ bool writePluginCacheFile(
       }
       
       xml.tag(1, "/muse");
-      if(fclose(cfile) != 0)
-      {
-        std::fprintf(stderr, "writePluginCacheFile: fclose failed: filename:%s\n",
-                             filename.toLatin1().constData());
-      }
       
+      DEBUG_PLUGIN_SCAN(stderr, "writePluginCacheFile: targ_qfile closing filename:%s\n",
+                      filename.toLatin1().constData());
+      targ_qfile.close();
+
       res = true;
-    }
   }
   
-  if(targ_qfile.isOpen())
-  {
-    DEBUG_PLUGIN_SCAN(stderr, "writePluginCacheFile: targ_qfile closing filename:%s\n",
-                     filename.toLatin1().constData());
-    targ_qfile.close();
-  }
-  else
-  {
-    DEBUG_PLUGIN_SCAN(stderr, "writePluginCacheFile: targ_qfile not open: filename:%s\n",
-                     filename.toLatin1().constData());
-  }
-    
   return res;
 }
 

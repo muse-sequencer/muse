@@ -45,62 +45,7 @@
 #include "config.h"
 #include "globaldefs.h"
 
-#ifdef PLUGIN_SCAN_INCLUDE_XML
-#include "xml.h"
-#endif
-
-
-
-#ifdef PLUGIN_SCAN_INCLUDE_WRITE_FUNCTIONS
-
-#include <QString>
-#include <QFileInfo>
-#include <QSharedPointer>
-#include <ladspa.h>
-#include "synti/libsynti/mess.h"
-
-#ifdef DSSI_SUPPORT
-#include <dssi.h>
-#endif
-
-#ifdef VST_NATIVE_SUPPORT
-#ifdef VST_SDK_QUIRK
-#define __cdecl
-#endif
-
-#include "aeffectx.h"
-
-#ifdef VST_VESTIGE_SUPPORT
-#ifndef effGetProgramNameIndexed
-#define effGetProgramNameIndexed 29
-#endif
-#endif
-
-#ifndef VST_2_4_EXTENSIONS
-#ifndef VST_VESTIGE_SUPPORT
-typedef long     VstInt32;
-typedef long     VstIntPtr;
-#else
-typedef int32_t  VstInt32;
-typedef intptr_t VstIntPtr;
-#define VSTCALLBACK
-#endif
-#endif
-
-// A handy typedef consistent with that used for ladspa, dssi, mess etc.
-typedef AEffect* (*LinuxVST_Instance_Function)(audioMasterCallback);
-
-#endif // VST_NATIVE_SUPPORT
-
-#endif // PLUGIN_SCAN_INCLUDE_WRITE_FUNCTIONS
-
-
-#ifdef PLUGIN_SCAN_INCLUDE_XML
-namespace MusECore {
-class Xml;
-}
-#endif
-
+  
 namespace MusEPlugin {
 
 const char* const VST_OLD_PLUGIN_ENTRY_POINT = "main";

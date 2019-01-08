@@ -21,6 +21,8 @@
 //
 //=========================================================
 
+#include <QFile>
+
 #include <cstdio>
 #include <unistd.h>
 
@@ -32,7 +34,6 @@
 
 #include <ladspa.h>
 #include "synti/libsynti/mess.h"
-
 
 #ifdef DSSI_SUPPORT
 #include <dssi.h>
@@ -69,7 +70,7 @@ namespace MusEPluginScan {
 //---------------------------------------------------------
 
 static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
-                          const char* filename, bool do_ports)
+                          const char* filename, const char* outfilename, bool do_ports)
 {
       DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: filename:%s\n", filename);
       
@@ -82,9 +83,9 @@ static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
 //       sem_wait(&_vstIdLock);
       //_vstIdLock.acquire();
 //#endif // VST_NATIVE_SUPPORT
-              
+
       int ret = -1;
-      
+
       void* handle = dlopen(filename, RTLD_NOW);
       if (handle == 0)
       {
@@ -93,6 +94,21 @@ static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
         return ret;
       }
 
+      // Open the output file...
+      QFile outfile(outfilename);
+      if(!outfile.exists())
+      {
+        std::fprintf(stderr, "muse_plugin_scan: the output file does not exist: %s for filename: %s\n", outfilename, filename);
+        dlclose(handle);
+        return ret;
+      }
+      if(!outfile.open(QIODevice::WriteOnly /*| QIODevice::Text*/))
+      {
+        std::fprintf(stderr, "muse_plugin_scan: failed to open outfilename: %s for filename: %s\n", outfilename, filename);
+        dlclose(handle);
+        return ret;
+      }
+      
       // Check if it's a DSSI plugin first...
 #ifdef DSSI_SUPPORT
       DSSI_Descriptor_Function dssi = NULL;
@@ -102,11 +118,11 @@ static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
         if(dssi)
         {
           DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Is a DSSI library\n");
-          // Open the standard out channel to communicate back to the main app.
-          MusECore::Xml xml(stdout);
+          
+          MusECore::Xml xml(&outfile);
           xml.header();
           int level = 0;
-          xml.nput(level++, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
+          level = xml.putFileVersion(level);
       
           MusEPlugin::writeDssiInfo(filename, dssi, do_ports, level, xml);
 
@@ -131,11 +147,10 @@ static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
           if(msynth)
           {
             DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Is a MESS library\n");
-            // Open the standard out channel to communicate back to the main app.
-            MusECore::Xml xml(stdout);
+            MusECore::Xml xml(&outfile);
             xml.header();
             int level = 0;
-            xml.nput(level++, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
+            level = xml.putFileVersion(level);
 
             MusEPlugin::writeMessInfo(filename, msynth, do_ports, level, xml);
 
@@ -158,11 +173,10 @@ static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
             if(ladspa)
             {
               DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Is a LADSPA library\n");
-              // Open the standard out channel to communicate back to the main app.
-              MusECore::Xml xml(stdout);
+              MusECore::Xml xml(&outfile);
               xml.header();
               int level = 0;
-              xml.nput(level++, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
+              level = xml.putFileVersion(level);
 
               MusEPlugin::writeLadspaInfo(filename, ladspa, do_ports, level, xml);
 
@@ -206,11 +220,10 @@ static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
   //               currentPluginId = 0;
   //               bool bDontDlCLose = false;
 
-                // Open the standard out channel to communicate back to the main app.
-                MusECore::Xml xml(stdout);
+                MusECore::Xml xml(&outfile);
                 xml.header();
                 int level = 0;
-                xml.nput(level++, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
+                level = xml.putFileVersion(level);
 
                 MusEPlugin::writeLinuxVstInfo(filename, getInstance, do_ports, level, xml);
 
@@ -236,6 +249,9 @@ static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
       }
        
 //       _end:
+
+      // Flush and close the output file.
+      outfile.close();
       
       // Close the library for now. It will be opened 
       //  again when an instance is created.
@@ -246,6 +262,7 @@ static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
 //       sem_post(&_vstIdLock);
       //_vstIdLock.release();
 //#endif // VST_NATIVE_SUPPORT
+      
       
       return ret;
 }
@@ -261,25 +278,33 @@ int main(int argc, char* argv[])
       {
       bool do_ports = false;
       const char* filename = 0;
+      const char* outfilename = 0;
       MusEPlugin::PluginScanInfoStruct::PluginType_t types = MusEPlugin::PluginScanInfoStruct::PluginTypeAll;
       int c;
-      while ((c = getopt(argc, argv, "f:t:p")) != EOF) {
+      while ((c = getopt(argc, argv, "f:t:o:p")) != EOF) {
             switch (c) {
                   case 'f': filename = optarg; break;
+                  case 'o': outfilename = optarg; break;
                   case 't': types = MusEPlugin::PluginScanInfoStruct::PluginType_t(atoi(optarg)); break;
                   case 'p': do_ports = true; break;
-                  default:  std::fprintf(stderr, "%s: -t <types flags> -f <filename> -p (scan plugin ports)\n",
+                  default:  std::fprintf(stderr, "%s: -t <types flags> -f <filename> -o <output filename> -p (scan plugin ports)\n",
                               argv[0]);  return -1;
                   }
             }
 
-      if(!filename)
+      if(!filename || filename[0] == 0)
       {
         std::fprintf(stderr, "Error: No filename given\n");
         return -1;
       }
       
-      const int res = MusEPluginScan::loadPluginLib(types, filename, do_ports);
+      if(!outfilename || outfilename[0] == 0)
+      {
+        std::fprintf(stderr, "Error: No output filename given\n");
+        return -1;
+      }
+      
+      const int res = MusEPluginScan::loadPluginLib(types, filename, outfilename, do_ports);
       
       // -1 = error, 0 = OK, 1 = unknown library.
       if(res == -1)
