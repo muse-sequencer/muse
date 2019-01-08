@@ -25,6 +25,7 @@
 #define __EVENT_H__
 
 #include <map>
+#include <set>
 #include <sys/types.h>
 
 #include "type_defs.h"
@@ -220,9 +221,16 @@ class EventList : public EL {
 
       // Returns an iterator that points to the inserted event.
       // Returns end() if an error occurred.
-      // Special for controllers: There must be only ONE value per controller per position.
-      // If there is already a controller value for the controller number at the given position,
-      //  add just replaces it with the given value and returns that iterator.
+// REMOVE Tim. citem. Changed. It seems we must allow multiple controller events
+//  if they are to be moved, dragged, and dropped.
+//       // Special for controllers: There must be only ONE value per controller per position.
+//       // If there is already a controller value for the controller number at the given position,
+//       //  add just replaces it with the given value and returns that iterator.
+      // Accepts duplicate controller items at the same position, to accurately reflect
+      //  what is really in the event lists. Mostly for the purpose of dragging and dropping
+      //  controller events and allowing them to be on top of each other TEMPORARILY.
+      // But ultimately once dropping is finished there must be only ONE value per controller
+      //  per position per part.
       iEvent add(Event event);
       void move(Event& event, unsigned tick);
       void dump() const;
@@ -230,10 +238,14 @@ class EventList : public EL {
       
       // Returns the exents of the contents of the list, as a PosLen.
       // If wave is true it only looks at wave events, otherwise it
-      //  only looks at midi events. The returned PosLen is in units
-      //  of frames or ticks respective of wave.
+      //  only looks at midi events. It also looks only for relevant.
+      // If ctrlNum is not -1, it looks only for that controller number.
+      // The returned PosLen is in units of frames or ticks respective of wave.
       // numEvents indicates the number of events found and whether PosLen is valid.
-      PosLen range(bool wave, int* numEvents) const;
+      PosLen range(bool wave, RelevantSelectedEvents_t relevant, int* numEvents, int ctrlNum = -1) const;
+      // Fills set with the different controller numbers found in the event list.
+      // Looks for midi controller events, or wave controller events if wave is true (does nothing ATM).
+      void findControllers(bool wave, std::set<int>* list) const;
       };
 
 } // namespace MusECore

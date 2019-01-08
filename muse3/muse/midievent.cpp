@@ -160,7 +160,9 @@ void MidiEventBase::write(int level, Xml& xml, const Pos& offset, bool /*forcePa
       if (tagged())
       {
             const EventTagStruct ts = tag();
-            xml.nput(" tags=\"%d\" w=\"%u\"", ts._flags, ts._width);
+            xml.nput(" tags=\"%d\"", ts._flags);
+            if(ts._flags & EventTagWidthValid)
+              xml.nput(" w=\"%u\"", ts._width);
       }
 
       if (edata.dataLen) {

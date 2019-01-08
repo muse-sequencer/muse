@@ -1287,21 +1287,28 @@ int MidiCtrlValList::visibleValue(unsigned int tick, Part* part, bool inclMutedP
 
 //---------------------------------------------------------
 //   add
-//    return true if new controller value added or replaced
+//    return true if new controller value added
+// REMOVE Tim. citem. ctl. Changed.
+// //    or replaced
+//   Accepts duplicate controller items at the same position, to accurately reflect
+//    what is really in the event lists.
 //---------------------------------------------------------
 
 bool MidiCtrlValList::addMCtlVal(int tick, int val, Part* part)
       {
-      iMidiCtrlVal e = findMCtlVal(tick, part);
-      
-      if (e != end()) {
-            if(e->second.val != val)
-            {
-              e->second.val = val;
-              return true;
-            }  
-            return false;
-          }
+// REMOVE Tim. citem. ctl. Removed. To accurately reflect what is really in the event lists.
+// Mostly for the purpose of dragging and dropping controller events and allowing them to be
+//  on top of each other TEMPORARILY.
+//       iMidiCtrlVal e = findMCtlVal(tick, part, val);
+//       
+//       if (e != end()) {
+//             if(e->second.val != val)
+//             {
+//               e->second.val = val;
+//               return true;
+//             }  
+//             return false;
+//           }
             
       insert(std::pair<const int, MidiCtrlVal> (tick, MidiCtrlVal(part, val)));
       return true;
@@ -1311,9 +1318,11 @@ bool MidiCtrlValList::addMCtlVal(int tick, int val, Part* part)
 //   del
 //---------------------------------------------------------
 
-void MidiCtrlValList::delMCtlVal(int tick, Part* part)
+void MidiCtrlValList::delMCtlVal(int tick, Part* part, int val)
 {
-      iMidiCtrlVal e = findMCtlVal(tick, part);
+// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
+//       iMidiCtrlVal e = findMCtlVal(tick, part);
+      iMidiCtrlVal e = findMCtlVal(tick, part, val);
       if (e == end()) {
 	if(MusEGlobal::debugMsg)
               printf("MidiCtrlValList::delMCtlVal(%d): not found (size %zd)\n", tick, size());
@@ -1326,12 +1335,14 @@ void MidiCtrlValList::delMCtlVal(int tick, Part* part)
 //   find
 //---------------------------------------------------------
 
-iMidiCtrlVal MidiCtrlValList::findMCtlVal(int tick, Part* part)
+iMidiCtrlVal MidiCtrlValList::findMCtlVal(int tick, Part* part, int val)
 {
   MidiCtrlValRange range = equal_range(tick);
   for(iMidiCtrlVal i = range.first; i != range.second; ++i) 
   {
-    if(i->second.part == part)
+// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
+//     if(i->second.part == part)
+    if(i->second.part == part && (val == -1 || i->second.val == val))
       return i;
   }
   return end();

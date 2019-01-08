@@ -146,6 +146,7 @@ void removePortCtrlEvents(MidiTrack* t)
       {
         int tick  = ev.tick() + part->tick();
         int cntrl = ev.dataA();
+        int val = ev.dataB();
         int ch = t->outChannel();
         
         MidiPort* mp = &MusEGlobal::midiPorts[t->outPort()];
@@ -166,7 +167,9 @@ void removePortCtrlEvents(MidiTrack* t)
           }
         }
 
-        mp->deleteController(ch, tick, cntrl, part);
+// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
+//         mp->deleteController(ch, tick, cntrl, part);
+        mp->deleteController(ch, tick, cntrl, val, part);
       }
     }
   }

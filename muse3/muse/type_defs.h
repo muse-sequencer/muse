@@ -139,16 +139,48 @@ struct SongChangedStruct_t
 typedef int64_t EventID_t;
 #define MUSE_INVALID_EVENT_ID   -1
 
-enum RelevantSelectedEvents { NotesRelevant = 0x01, ControllersRelevant = 0x02,
+enum RelevantSelectedEvents { NoEventsRelevant = 0x00, NotesRelevant = 0x01, ControllersRelevant = 0x02,
                 SysexRelevant = 0x04, MetaRelevant = 0x08, WaveRelevant = 0x10,
                 AllEventsRelevant = NotesRelevant | ControllersRelevant |
                                     SysexRelevant | MetaRelevant | WaveRelevant};
 typedef int RelevantSelectedEvents_t;
 
+enum FunctionOptions {
+  FunctionNoOptions = 0x00,
+  // Erase existing items first.
+  FunctionEraseItems = 0x01,
+  // If erasing first: How to handle the last item in any 'cluster' of controller events.
+  FunctionEraseItemsWysiwyg = 0x02,
+  // Erase empty space between 'clusters'.
+  FunctionEraseItemsInclusive = 0x04,
+  FunctionEraseItemsDefault =
+    FunctionEraseItems | FunctionEraseItemsWysiwyg,
+  FunctionAllOptions =
+    FunctionEraseItems | FunctionEraseItemsWysiwyg | FunctionEraseItemsInclusive
+};
+typedef int FunctionOptions_t;
+
+
 //--------------------------------------------------------------
 // Event tagging flags and structure for the tagging and
 //  copying/pasting system.
 //--------------------------------------------------------------
+
+enum EventTagOptions {
+  TagNoOptions = 0x00,
+  // Tag selected events.
+  TagSelected = 0x01,
+  // Tag moving events.
+  TagMoving = 0x02,
+  // Whether to tag all events regardless of selection or moving.
+  TagAllEvents = 0x04,
+  // Whether to tag all parts regardless of selection or moving.
+  TagAllParts = 0x08,
+  // Whether the range parameters are valid.
+  TagRange = 0x10,
+  EventTagAllOptions = TagSelected | TagMoving | TagAllEvents | TagAllParts | TagRange
+};
+typedef int EventTagOptions_t;
 
 enum EventTagFlags { NoEventTagFlags = 0x0,
   EventTagged = 0x01,
@@ -170,6 +202,7 @@ struct EventTagStruct
   //  of the next controller event (the same as the 'ex' 
   //  value in CItem). The value is the width of a
   //  controller 'bar' as visualized on controller graphs.
+  // It is valid only if the EventTagWidthValid flag is set.
   unsigned int _width;
   
   EventTagStruct(EventTagFlags_t flags = NoEventTagFlags, unsigned int width = 0) : _flags(flags), _width(width) { }

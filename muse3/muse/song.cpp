@@ -698,6 +698,7 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
           continue;
           
         int cntrl = ev.dataA();
+        int val = ev.dataB();
         
         // Is it a drum controller event, according to the track port's instrument?
         MidiController* mc = trackmp->drumController(cntrl);
@@ -722,7 +723,9 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
             MidiPort* mp = &MusEGlobal::midiPorts[port];
             cntrl = (cntrl & ~0xff) | MusEGlobal::drumMap[note].anote;
             // Remove the port controller value.
-            mp->deleteController(ch, tick, cntrl, part);
+// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
+//             mp->deleteController(ch, tick, cntrl, part);
+            mp->deleteController(ch, tick, cntrl, val, part);
 
             if(newnote != -1 && newnote != MusEGlobal::drumMap[note].anote)
               cntrl = (cntrl & ~0xff) | newnote;
@@ -732,7 +735,7 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
               port = newport;
             mp = &MusEGlobal::midiPorts[port];
             // Add the port controller value.
-            mp->setControllerVal(ch, tick, cntrl, ev.dataB(), part);
+            mp->setControllerVal(ch, tick, cntrl, val, part);
           }
         }
       }
@@ -748,7 +751,7 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
 
 void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
 {
-  int ch, trackch, cntrl, tick;
+  int ch, trackch, cntrl, tick, val;
   MidiPort* mp, *trackmp;
   for(ciMidiTrack it = _midis.begin(); it != _midis.end(); ++it) 
   {
@@ -770,6 +773,7 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
           continue;
           
         cntrl = ev.dataA();
+        val = ev.dataB();
         mp = trackmp;
         ch = trackch;
         
@@ -797,10 +801,12 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
         
         if(add)
           // Add the port controller value.
-          mp->setControllerVal(ch, tick, cntrl, ev.dataB(), part);
+          mp->setControllerVal(ch, tick, cntrl, val, part);
         else  
           // Remove the port controller value.
-          mp->deleteController(ch, tick, cntrl, part);
+// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
+//           mp->deleteController(ch, tick, cntrl, part);
+          mp->deleteController(ch, tick, cntrl, val, part);
       }
     }  
   }

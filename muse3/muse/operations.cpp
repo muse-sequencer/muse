@@ -1098,6 +1098,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage AddMidiCtrlVal: mcvl:%p part:%p tick:%d val:%d\n", _mcvl, _part, _intA, _intB);
 #endif      
       _mcvl->insert(std::pair<const int, MidiCtrlVal> (_intA, MidiCtrlVal(_part, _intB))); // FIXME FINDMICHJETZT XTicks!!
+      // No song changed flags are required to be set here.
     break;
     case DeleteMidiCtrlVal:
 #ifdef _PENDING_OPS_DEBUG_
@@ -1105,6 +1106,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
                        _mcvl, _imcv->first, _imcv->second.part, _imcv->second.val);
 #endif      
       _mcvl->erase(_imcv);
+      // No song changed flags are required to be set here.
     break;
     case ModifyMidiCtrlVal:
 #ifdef _PENDING_OPS_DEBUG_
@@ -1913,70 +1915,131 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
       
       case PendingOperationItem::AddMidiCtrlVal:
-        if(poi._type == PendingOperationItem::AddMidiCtrlVal && poi._mcvl == op._mcvl && poi._part == op._part)
+// REMOVE Tim. citem. ctl. Changed.
+//         if(poi._type == PendingOperationItem::AddMidiCtrlVal && poi._mcvl == op._mcvl && poi._part == op._part)
+//         {
+//           // Simply replace the value.
+//           poi._intB = op._intB;
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::DeleteMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._part)
+//         {
+//           // Transform existing delete command into a modify command.
+//           poi._type = PendingOperationItem::ModifyMidiCtrlVal;
+//           poi._intA = op._intB; 
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::ModifyMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._part)
+//         {
+//           // Simply replace the value.
+//           poi._intA = op._intB;
+//           return true;
+//         }
+
+        if(poi._type == PendingOperationItem::DeleteMidiCtrlVal && 
+           poi._mcvl == op._mcvl && 
+           poi._imcv->second.part == op._part &&
+           poi._imcv->second.val == op._intB)
         {
-          // Simply replace the value.
-          poi._intB = op._intB; 
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::DeleteMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._part)
-        {
-          // Transform existing delete command into a modify command.
-          poi._type = PendingOperationItem::ModifyMidiCtrlVal;
-          poi._intA = op._intB; 
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::ModifyMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._part)
-        {
-          // Simply replace the value.
-          poi._intA = op._intB;
+          // Delete followed by add is useless. Cancel out the delete + add by erasing the delete command.
+          erase(ipos->second);
+          _map.erase(ipos);
           return true;
         }
       break;
       
       case PendingOperationItem::DeleteMidiCtrlVal:
-        if(poi._type == PendingOperationItem::DeleteMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._imcv->second.part)
-        {
-          // Multiple delete commands not allowed! 
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double DeleteMidiCtrlVal. Ignoring.\n");
-          return false;
-        }
-        else if(poi._type == PendingOperationItem::AddMidiCtrlVal && poi._mcvl == op._mcvl && poi._part == op._imcv->second.part)
+// REMOVE Tim. citem. ctl. Changed.
+//         if(poi._type == PendingOperationItem::DeleteMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._imcv->second.part)
+//         {
+//           // Multiple delete commands not allowed! 
+//           fprintf(stderr, "MusE error: PendingOperationList::add(): Double DeleteMidiCtrlVal. Ignoring.\n");
+//           return false;
+//         }
+//         else if(poi._type == PendingOperationItem::AddMidiCtrlVal && poi._mcvl == op._mcvl && poi._part == op._imcv->second.part)
+//         {
+//           // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
+//           erase(ipos->second);
+//           _map.erase(ipos);
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::ModifyMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._imcv->second.part)
+//         {
+//           // Modify followed by delete is equivalent to just deleting.
+//           // Transform existing modify command into a delete command.
+//           poi._type = PendingOperationItem::DeleteMidiCtrlVal;
+//           return true;
+//         }
+
+// TODO FIXME Be sure _intB is set
+        if(poi._type == PendingOperationItem::AddMidiCtrlVal && 
+           poi._mcvl == op._mcvl && 
+           poi._part == op._imcv->second.part &&
+           poi._intB == op._imcv->second.val)
         {
           // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
           erase(ipos->second);
           _map.erase(ipos);
           return true;
         }
-        else if(poi._type == PendingOperationItem::ModifyMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._imcv->second.part)
-        {
-          // Modify followed by delete is equivalent to just deleting.
-          // Transform existing modify command into a delete command.
-          poi._type = PendingOperationItem::DeleteMidiCtrlVal;
-          return true;
-        }
+//         else if(poi._type == PendingOperationItem::ModifyMidiCtrlVal &&
+//                 poi._mcvl == op._mcvl && 
+//                 poi._imcv->second.part == op._imcv->second.part &&
+//                 poi._imcv->second.val == op._imcv->second.val)
+//         {
+//           // Modify followed by delete is equivalent to just deleting.
+//           // Transform existing modify command into a delete command.
+//           poi._type = PendingOperationItem::DeleteMidiCtrlVal;
+//           return true;
+//         }
       break;
       
       case PendingOperationItem::ModifyMidiCtrlVal:
-        if(poi._type == PendingOperationItem::ModifyMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._imcv->second.part)
-        {
-          // Simply replace the value.
-          poi._intA = op._intA;
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::DeleteMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._imcv->second.part)
-        {
-          // Transform existing delete command into a modify command.
-          poi._type = PendingOperationItem::ModifyMidiCtrlVal;
-          poi._intA = op._intA; 
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::AddMidiCtrlVal && poi._mcvl == op._mcvl && poi._part == op._imcv->second.part)
-        {
-          // Simply replace the add value with the modify value.
-          poi._intB = op._intA; 
-          return true;
-        }
+// REMOVE Tim. citem. ctl. Changed.
+//         if(poi._type == PendingOperationItem::ModifyMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._imcv->second.part)
+//         {
+//           // Simply replace the value.
+//           poi._intA = op._intA;
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::DeleteMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._imcv->second.part)
+//         {
+//           // Transform existing delete command into a modify command.
+//           poi._type = PendingOperationItem::ModifyMidiCtrlVal;
+//           poi._intA = op._intA; 
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::AddMidiCtrlVal && poi._mcvl == op._mcvl && poi._part == op._imcv->second.part)
+//         {
+//           // Simply replace the add value with the modify value.
+//           poi._intB = op._intA; 
+//           return true;
+//         }
+
+// TODO FIXME Finish this
+// TODO FIXME Be sure _intB/A is set
+//         if(poi._type == PendingOperationItem::ModifyMidiCtrlVal &&
+//            poi._mcvl == op._mcvl && 
+//            poi._imcv->second.part == op._imcv->second.part &&
+//            poi._imcv->second.val == op._imcv->second.val)
+//         {
+//           // Simply replace the value.
+//           poi._intA = op._intA;
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::DeleteMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._imcv->second.part)
+//         {
+//           // Transform existing delete command into a modify command.
+//           poi._type = PendingOperationItem::ModifyMidiCtrlVal;
+//           poi._intA = op._intA; 
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::AddMidiCtrlVal && poi._mcvl == op._mcvl && poi._part == op._imcv->second.part)
+//         {
+//           // Simply replace the add value with the modify value.
+//           poi._intB = op._intA; 
+//           return true;
+//         }
       break;
       
       
@@ -2031,7 +2094,9 @@ bool PendingOperationList::add(PendingOperationItem op)
         {
           // Modify followed by delete is equivalent to just deleting.
           // Transform existing modify command into a delete command.
-          poi._type = PendingOperationItem::DeleteMidiCtrlVal;
+// REMOVE Tim. citem. ctl. Changed. Oops! Left over from original code!
+//           poi._type = PendingOperationItem::DeleteMidiCtrlVal;
+          poi._type = PendingOperationItem::DeleteAudioCtrlVal;
           return true;
         }
       break;

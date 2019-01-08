@@ -182,10 +182,17 @@ class MidiCtrlValList : public std::multimap<int, MidiCtrlVal, std::less<int> > 
       // Determine value at tick, using values stored by the SPECIFIC part,
       //  ignoring values that are OUTSIDE of the part, or muted or off part or track.
       int visibleValue(unsigned int tick, Part* part, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const;
+      // Adds the new value. Accepts duplicate controller items at the same position, to accurately reflect
+      //  what is really in the event lists. Mostly for the purpose of dragging and dropping
+      //  controller events and allowing them to be on top of each other TEMPORARILY.
+      // But ultimately once dropping is finished there must be only ONE value per controller
+      //  per position per part.
       bool addMCtlVal(int tick, int value, Part* part);
-      void delMCtlVal(int tick, Part* part);
+      // If val is not -1 it will search for that value.
+      void delMCtlVal(int tick, Part* part, int val/* = -1*/);
       
-      iMidiCtrlVal findMCtlVal(int tick, Part* part);
+      // If val is not -1 it will search for that value.
+      iMidiCtrlVal findMCtlVal(int tick, Part* part, int val/* = -1*/);
 
       // Current set value in midi hardware. Can be CTRL_VAL_UNKNOWN.
       inline int hwVal() const { return MidiController::dValToInt(_hwVal); }

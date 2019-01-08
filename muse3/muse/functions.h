@@ -301,24 +301,34 @@ bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part
 void paste_items(const std::set<const Part*>& parts, int max_distance=3072,
                  bool always_new_part=false, bool never_new_part=false,
                  const Part* paste_into_part=NULL, int amount=1, int raster=3072,
-                 // Erase existing controllers first.
+                 // Choose which events to paste.
+                 RelevantSelectedEvents_t relevant = AllEventsRelevant,
+                 // If pasting controllers, paste into this controller number if not -1.
+                 // If the source has multiple controllers, user will be asked which one to paste.
+                 int paste_to_ctrl_num = -1,
+                 // Erase target existing controllers first.
                  bool erase_controllers = true,
                  // If erasing first: How to handle the last item in any 'cluster' of controller events.
                  bool erase_controllers_wysiwyg = true,
-                 // Erase empty space between 'clusters'.
+                 // Erase target space between source 'clusters'.
                  bool erase_controllers_inclusive = false);
 //void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int pos, int max_distance=3072,
 void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const Pos& pos, int max_distance=3072,
               bool always_new_part=false, bool never_new_part=false,
               const Part* paste_into_part=NULL, int amount=1, int raster=3072,
-              // Erase existing controllers first.
+              // Choose which events to paste.
+              RelevantSelectedEvents_t relevant = AllEventsRelevant,
+              // If pasting controllers, paste into this controller number if not -1.
+              // If the source has multiple controllers, user will be asked which one to paste.
+              int paste_to_ctrl_num = -1,
+              // Erase target existing controllers first.
               bool erase_controllers = true,
               // If erasing first: How to handle the last item in any 'cluster' of controller events:
               // Whether to erase ONLY UP TO AND INCLUDING the last item in a cluster, or erase
               //  PAST the last item to include the WIDTH of the last controller 'bar' as it was viewed
               //  in the copying source (What You See Is What You Get editing).
               bool erase_controllers_wysiwyg = true,
-              // Erase empty space between 'clusters'.
+              // Erase target space between source 'clusters'.
               bool erase_controllers_inclusive = false);
 // Ensures that all events are untagged. Useful for aborting dialog etc.
 void untag_all_items();

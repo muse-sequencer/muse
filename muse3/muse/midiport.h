@@ -128,7 +128,7 @@ class MidiPort {
       bool setHwCtrlStates(int ch, int ctrl, int val, int lastval);
       bool setHwCtrlStates(int ch, int ctrl, double val, double lastval);
       bool setHwCtrlState(const MidiPlayEvent&);
-      void deleteController(int ch, int tick, int ctrl, Part* part);
+      void deleteController(int ch, int tick, int ctrl, int val, Part* part);
       void addDefaultControllers();
       
       bool guiVisible() const;

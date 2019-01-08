@@ -1622,7 +1622,9 @@ bool MidiPort::setHwCtrlStates(int ch, int ctrl, double val, double lastval)
 //   setControllerVal
 //   This function sets a controller value, 
 //   creating the controller if necessary.
-//   Returns true if a value was actually added or replaced.
+// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
+// //   Returns true if a value was actually added or replaced.
+//   Returns true if a value was actually added.
 //---------------------------------------------------------
 
 bool MidiPort::setControllerVal(int ch, int tick, int ctrl, int val, Part* part)
@@ -1776,7 +1778,7 @@ int MidiPort::getVisibleCtrl(int ch, int tick, int ctrl, Part* part, bool inclMu
 //   deleteController
 //---------------------------------------------------------
 
-void MidiPort::deleteController(int ch, int tick, int ctrl, Part* part)
+void MidiPort::deleteController(int ch, int tick, int ctrl, int val, Part* part)
     {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end()) {
@@ -1786,7 +1788,9 @@ void MidiPort::deleteController(int ch, int tick, int ctrl, Part* part)
             return;
             }
       
-      cl->second->delMCtlVal(tick, part);
+// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
+//       cl->second->delMCtlVal(tick, part);
+      cl->second->delMCtlVal(tick, part, val);
       }
 
 //---------------------------------------------------------

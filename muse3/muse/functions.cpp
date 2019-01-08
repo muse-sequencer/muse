@@ -50,6 +50,7 @@
 #include <sys/mman.h>
 #include <math.h>
 #include <map>
+#include <set>
 
 #include <QMimeData>
 #include <QByteArray>
@@ -2984,6 +2985,7 @@ bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part
 	paste_items(parts, MusEGui::paste_events_dialog->max_distance, MusEGui::paste_events_dialog->always_new_part,
 							MusEGui::paste_events_dialog->never_new_part, MusEGui::paste_events_dialog->into_single_part ? paste_into_part : NULL,
 							MusEGui::paste_events_dialog->number, MusEGui::paste_events_dialog->raster,
+							AllEventsRelevant, -1 /*paste to ctrl num*/,
 							MusEGui::paste_events_dialog->ctrl_erase,
 							MusEGui::paste_events_dialog->ctrl_erase_wysiwyg,
 							MusEGui::paste_events_dialog->ctrl_erase_inclusive);
@@ -2993,6 +2995,8 @@ bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part
 
 void paste_items(const set<const Part*>& parts, int max_distance,
 								 bool always_new_part, bool never_new_part, const Part* paste_into_part, int amount, int raster,
+								 RelevantSelectedEvents_t relevant,
+								 int paste_to_ctrl_num,
 								 bool erase_controllers,
 								 bool erase_controllers_wysiwyg,
 								 bool erase_controllers_inclusive)
@@ -3001,7 +3005,7 @@ void paste_items(const set<const Part*>& parts, int max_distance,
 	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);
 // 	paste_items_at(parts, s, MusEGlobal::song->cpos(), max_distance, always_new_part, never_new_part, paste_into_part, amount, raster);
 	paste_items_at(parts, s, MusEGlobal::song->cPos(), max_distance,
-								always_new_part, never_new_part, paste_into_part, amount, raster,
+								always_new_part, never_new_part, paste_into_part, amount, raster, relevant, paste_to_ctrl_num,
 								erase_controllers, erase_controllers_wysiwyg, erase_controllers_inclusive);
 }
 
@@ -3009,6 +3013,8 @@ void paste_items(const set<const Part*>& parts, int max_distance,
 void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const Pos& pos, int max_distance,
 										bool always_new_part, bool never_new_part,
 										const Part* paste_into_part, int amount, int raster,
+										RelevantSelectedEvents_t relevant,
+										int paste_to_ctrl_num,
 										bool erase_controllers, 
 										bool erase_controllers_wysiwyg,
 										bool erase_controllers_inclusive)
@@ -3079,10 +3085,20 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 							{
 								const bool wave_mode = dest_part->partType() == Part::WavePartType;
 								const Pos::TType time_type = wave_mode ? Pos::FRAMES : Pos::TICKS;
-                
+              
+								std::set<int> ctrlList;
+								el.findControllers(wave_mode, &ctrlList);
+								int ctrlsFound = 0;
+								if(!ctrlList.empty())
+									ctrlsFound = ctrlList.size();
+								if(paste_to_ctrl_num >= 0 && ctrlsFound > 0)
+								{
+									
+								}
+
 								// Extract the suitable events from the list and the number of events extracted.
 								int num_events;
-								const PosLen el_range = el.range(wave_mode, &num_events);
+								const PosLen el_range = el.range(wave_mode, relevant, &num_events);
 								if(num_events > 0)
 								{
 									const unsigned pos_value = pos.posValue(time_type);

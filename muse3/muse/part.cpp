@@ -235,13 +235,16 @@ void addPortCtrlEvents(const Event& event, Part* part, unsigned int tick, unsign
     else
     {
       mcvl = imcvll->second;
-      iMidiCtrlVal imcv = mcvl->findMCtlVal(tck, part);
-      if(imcv != mcvl->end()) 
-      {
-        ops.add(PendingOperationItem(mcvl, imcv, val, PendingOperationItem::ModifyMidiCtrlVal));
-        return;
-      }
-    }    
+
+// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
+//       iMidiCtrlVal imcv = mcvl->findMCtlVal(tck, part);
+//       if(imcv != mcvl->end()) 
+//       {
+//         ops.add(PendingOperationItem(mcvl, imcv, val, PendingOperationItem::ModifyMidiCtrlVal));
+//         return;
+//       }
+    }
+
     //assert(mcvl != NULL); //FIXME: Can this happen? (danvd). UPDATE: Yes, it can (danvd)
     if(mcvl != NULL)
     {
@@ -341,6 +344,8 @@ void removePortCtrlEvents(Event& event, Part* part)
       int ch = mt->outChannel();
       int tck  = event.tick() + part->tick();
       int cntrl = event.dataA();
+      int val   = event.dataB();
+      
       // Is it a drum controller event, according to the track port's instrument?
       if(mt->type() == Track::DRUM)
       {
@@ -357,7 +362,9 @@ void removePortCtrlEvents(Event& event, Part* part)
           cntrl |= MusEGlobal::drumMap[note].anote;
         }
       }
-      mp->deleteController(ch, tck, cntrl, part);
+// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
+//       mp->deleteController(ch, tck, cntrl, part);
+      mp->deleteController(ch, tck, cntrl, val, part);
     }
   }
 }
@@ -375,6 +382,8 @@ void removePortCtrlEvents(const Event& event, Part* part, Track* track, PendingO
     
     int tck  = event.tick() + part->tick();
     int cntrl = event.dataA();
+    int val   = event.dataB();
+    
     // Is it a drum controller event, according to the track port's instrument?
     if(mt->type() == Track::DRUM)
     {
@@ -400,7 +409,9 @@ void removePortCtrlEvents(const Event& event, Part* part, Track* track, PendingO
           return;
           }
     MidiCtrlValList* mcvl = cl->second;
-    iMidiCtrlVal imcv = mcvl->findMCtlVal(tck, part);
+// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
+//     iMidiCtrlVal imcv = mcvl->findMCtlVal(tck, part);
+    iMidiCtrlVal imcv = mcvl->findMCtlVal(tck, part, val);
     if (imcv == mcvl->end()) {
             fprintf(stderr, "removePortCtrlEvents (%d): not found (size %zd)\n", tck, mcvl->size());
           return;
@@ -434,6 +445,7 @@ void removePortCtrlEvents(Part* part, bool doClones)
         {
           int tck  = ev.tick() + p->tick();
           int cntrl = ev.dataA();
+          int val   = ev.dataB();
           
           // Is it a drum controller event, according to the track port's instrument?
           if(mt->type() == Track::DRUM)
@@ -451,7 +463,9 @@ void removePortCtrlEvents(Part* part, bool doClones)
               cntrl |= MusEGlobal::drumMap[note].anote;
             }
           }
-          mp->deleteController(ch, tck, cntrl, p);
+// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
+//           mp->deleteController(ch, tck, cntrl, p);
+          mp->deleteController(ch, tck, cntrl, val, p);
         }
       }
     }  
@@ -496,6 +510,7 @@ void modifyPortCtrlEvents(const Event& old_event, const Event& event, Part* part
   
   int tck_erase  = old_event.tick() + part->tick();
   int cntrl_erase = old_event.dataA();
+  int val_erase = old_event.dataB();
   iMidiCtrlVal imcv_erase;
   bool found_erase = false;
   // Is it a drum controller old_event, according to the track port's instrument?
@@ -527,11 +542,14 @@ void modifyPortCtrlEvents(const Event& old_event, const Event& event, Part* part
   else
   {
     mcvl_erase = cl_erase->second;
-    imcv_erase = mcvl_erase->findMCtlVal(tck_erase, part);
+// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
+//     imcv_erase = mcvl_erase->findMCtlVal(tck_erase, part);
+    imcv_erase = mcvl_erase->findMCtlVal(tck_erase, part, val_erase);
     if(imcv_erase == mcvl_erase->end()) 
     {
       if(MusEGlobal::debugMsg)
-        printf("MidiCtrlValList::delMCtlVal(%d): not found (size %zd)\n", tck_erase, mcvl_erase->size());
+//         printf("MidiCtrlValList::delMCtlVal(%d): not found (size %zd)\n", tck_erase, mcvl_erase->size());
+        printf("MidiCtrlValList::delMCtlVal(tick:%d val:%d): not found (size %zd)\n", tck_erase, val_erase, mcvl_erase->size());
     }
     else
       found_erase = true;
@@ -596,7 +614,9 @@ void modifyPortCtrlEvents(const Event& old_event, const Event& event, Part* part
     else
     {
       mcvl_add = imcvll_add->second;
-      iMidiCtrlVal imcv_add = mcvl_add->findMCtlVal(tck_add, part);
+// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
+//       iMidiCtrlVal imcv_add = mcvl_add->findMCtlVal(tck_add, part);
+      iMidiCtrlVal imcv_add = mcvl_add->findMCtlVal(tck_add, part, val_add);
       if(imcv_add != mcvl_add->end()) 
       {
         if(tck_erase == tck_add && mcvl_erase == mcvl_add)

@@ -92,44 +92,46 @@ iEvent EventList::add(Event event)
       }
       else
       {
-        if(event.type() == Controller)
-        {
-          EventRange er = equal_range(key);
-          iEvent i = er.second;
-          iEvent loc = i;
-          const int data_a = event.dataA();
-          while(i != er.first)
-          {
-            --i;
-            // Special: There must be only ONE value per controller per position.
-            // If there is already a controller value for this controller number
-            //  at this position, just replace it and return.
-            //
-            // This is meant as a last line of defense against accidental multiple
-            //  controller values at a given time. The rule of thumb when executing
-            //  add event commands is you must check beforehand whether an event
-            //  exists and tell the command system to delete it so that the undo
-            //  system can remember what was replaced.
-            // In some cases the command/undo system may do that for you.
-            // But simply relying on this low-level catch-all is not good, the undo
-            //  system won't remember what was deleted.
-            if(i->second.type() == Controller && i->second.dataA() == data_a)
-            {
-              i->second.setB(event.dataB());
-              return i;
-            }
-            if(i->second.type() == Note)
-              loc = i;
-          }
-          return insert(loc, std::pair<const unsigned, Event> (key, event));   
-        }
-        else
-        {        
+// REMOVE Tim. citem. ctl. Added. It seems we must allow multiple controller events
+//  if they are to be moved, dragged, and dropped.
+//         if(event.type() == Controller)
+//         {
+//           EventRange er = equal_range(key);
+//           iEvent i = er.second;
+//           iEvent loc = i;
+//           const int data_a = event.dataA();
+//           while(i != er.first)
+//           {
+//             --i;
+//             // Special: There must be only ONE value per controller per position.
+//             // If there is already a controller value for this controller number
+//             //  at this position, just replace it and return.
+//             //
+//             // This is meant as a last line of defense against accidental multiple
+//             //  controller values at a given time. The rule of thumb when executing
+//             //  add event commands is you must check beforehand whether an event
+//             //  exists and tell the command system to delete it so that the undo
+//             //  system can remember what was replaced.
+//             // In some cases the command/undo system may do that for you.
+//             // But simply relying on this low-level catch-all is not good, the undo
+//             //  system won't remember what was deleted.
+//             if(i->second.type() == Controller && i->second.dataA() == data_a)
+//             {
+//               i->second.setB(event.dataB());
+//               return i;
+//             }
+//             if(i->second.type() == Note)
+//               loc = i;
+//           }
+//           return insert(loc, std::pair<const unsigned, Event> (key, event));   
+//         }
+//         else
+//         {        
           iEvent i = lower_bound(key);
           while(i != end() && i->first == key && i->second.type() != Note)
             ++i;
           return insert(i, std::pair<const unsigned, Event> (key, event));   
-        }
+//         }
       }
       return end();
       }
@@ -141,7 +143,8 @@ iEvent EventList::add(Event event)
 void EventList::move(Event& event, unsigned tick)
       {
       iEvent i = find(event);
-      erase(i);
+      if(i != end())
+        erase(i);
       
       if(event.type() == Wave)
       {
@@ -347,7 +350,7 @@ void EventList::dump() const
             i->second.dump();
       }
 
-PosLen EventList::range(bool wave, int* numEvents) const
+PosLen EventList::range(bool wave, RelevantSelectedEvents_t relevant, int* numEvents, int ctrlNum) const
 {
   PosLen res;
   res.setType(wave ? Pos::FRAMES : Pos::TICKS);
@@ -362,11 +365,11 @@ PosLen EventList::range(bool wave, int* numEvents) const
     // Only events of the given type are considered.
     //if(e.pos().type() != type)
     //  continue;
-    EventType et = e.type();
+    const EventType et = e.type();
     switch(et)
     {
       case Note:
-        if(wave)
+        if(wave || (relevant & NotesRelevant) == NoEventsRelevant)
           continue;
         // Don't add Note event types if they have no length.
         // Hm, it is possible for zero-length events to be
@@ -387,7 +390,7 @@ PosLen EventList::range(bool wave, int* numEvents) const
       break;
       
       case Wave:
-        if(!wave)
+        if(!wave || (relevant & WaveRelevant) == NoEventsRelevant)
           continue;
         // Don't add Wave event types if they have no length.
         //if(e.lenValue() == 0)
@@ -407,6 +410,29 @@ PosLen EventList::range(bool wave, int* numEvents) const
       case Sysex:
         if(wave)
           continue;
+        switch(et)
+        {
+          case Controller:
+            if((relevant & ControllersRelevant) == NoEventsRelevant)
+              continue;
+            if(ctrlNum >= 0 && e.dataA() != ctrlNum) 
+              continue;
+          break;
+
+          case Meta:
+            if((relevant & MetaRelevant) == NoEventsRelevant)
+              continue;
+          break;
+
+          case Sysex:
+            if((relevant & SysexRelevant) == NoEventsRelevant)
+              continue;
+          break;
+
+          default:
+            continue;
+          break;
+        }
         // For these events, even if duplicates are already found at this position,
         //  the range is still the same, which simplifies this code - go ahead and count it...
         
@@ -433,6 +459,34 @@ PosLen EventList::range(bool wave, int* numEvents) const
   res.setLenValue(end_time - start_time);
   *numEvents = e_found;
   return res;
+}
+
+void EventList::findControllers(bool wave, std::set<int>* list) const
+{
+  for(ciEvent ie = begin(); ie != end(); ++ie)
+  {
+    const Event& e = ie->second;
+    const EventType et = e.type();
+    switch(et)
+    {
+      case Note:
+      case Meta:
+      case Sysex:
+          continue;
+      break;
+      
+      case Wave:
+        if(!wave)
+          continue;
+      break;
+      
+      case Controller:
+        if(wave)
+          continue;
+        list->insert(e.dataA());
+      break;
+    }
+  }
 }
 
 } // namespace MusECore
