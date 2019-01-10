@@ -28,6 +28,8 @@
 // REMOVE Tim. citem. Added.
 //#include "citem.h"
 #include "ctrl/ctrledit.h"
+#include "event_tag_list.h"
+
 
 
 #include <set>
@@ -122,13 +124,16 @@ class MidiEditor : public TopWin  {
       void addPart(MusECore::Part*);
       // REMOVE Tim. citem. Added.
       bool itemsAreSelected() const;
-      // Adds all selected items to the given list. Does not clear the list first.
-      // Checks for duplicates, employing the 'tagged' features.
-      //void getAllSelectedItems(CItemSet&) const;
-      // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
-      void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
-        const MusECore::Pos& = MusECore::Pos(),
-        const MusECore::Pos& = MusECore::Pos()) const;
+//       // Adds all selected items to the given list. Does not clear the list first.
+//       // Checks for duplicates, employing the 'tagged' features.
+//       //void getAllSelectedItems(CItemSet&) const;
+//       // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
+//       void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
+//         const MusECore::Pos& = MusECore::Pos(),
+//         const MusECore::Pos& = MusECore::Pos()) const;
+      // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
+      // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
+      void tagItems(MusECore::TagEventList* list, const MusECore::EventTagOptionsStruct& options) const;
       };
 
 } // namespace MusEGui

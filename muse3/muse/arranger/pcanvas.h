@@ -32,6 +32,8 @@
 #include "song.h"
 #include "canvas.h"
 #include "trackautomationview.h"
+// REMOVE Tim. citem. Added.
+//#include "event_tag_list.h"
 
 class QDropEvent;
 class QMouseEvent;
@@ -249,6 +251,9 @@ class PartCanvas : public Canvas {
       //void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
       //  const MusECore::Pos& p0 = MusECore::Pos(),
       //  const MusECore::Pos& p1 = MusECore::Pos()) const;
+//       // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
+//       // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
+//       void tagItems(MusECore::TagEventList* list, const MusECore::EventTagOptionsStruct& options) const;
 
       void cmd(int);
       void songIsClearing();

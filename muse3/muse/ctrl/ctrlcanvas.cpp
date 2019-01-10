@@ -143,24 +143,24 @@ CEvent::CEvent(const MusECore::Event& e, MusECore::Part* pt, int v) : CItem()
   ex     = !e.empty() ? e.tick() : 0;
 }
 
-void CEvent::setObjectTagged(bool v)
-{
-  const unsigned int pos = _event.posValue();
-  MusECore::EventTagStruct tag;
-  tag.setTagged(v);
-  // Special: Make sure to pass along the 'ex' part of the item, which holds the
-  //  time of the next controller item (the difference is the 'width' of the visual
-  //  controller item rectangle). Ex can be -1 meaning 'open-ended'.
-  // This information is essential when pasting if we are to determine what to erase beforehand.
-  //if(EX() > pos)
-  if(EX() >= 0)
-    tag.appendFlags(MusECore::EventTagWidthValid);
-  tag._width = EX() - pos;
-  
-  _event.setTag(tag);
-  if(_part)
-    _part->setEventsTagged(true);
-}
+// void CEvent::setObjectTagged(bool v)
+// {
+//   const unsigned int pos = _event.posValue();
+//   MusECore::EventTagStruct tag;
+//   tag.setTagged(v);
+//   // Special: Make sure to pass along the 'ex' part of the item, which holds the
+//   //  time of the next controller item (the difference is the 'width' of the visual
+//   //  controller item rectangle). Ex can be -1 meaning 'open-ended'.
+//   // This information is essential when pasting if we are to determine what to erase beforehand.
+//   //if(EX() > pos)
+//   if(EX() >= 0)
+//     tag.appendFlags(MusECore::EventTagWidthValid);
+//   tag._width = EX() - pos;
+//   
+//   _event.setTag(tag);
+//   if(_part)
+//     _part->setEventsTagged(true);
+// }
 
 bool CEvent::isObjectInRange(const MusECore::Pos& p0, const MusECore::Pos& p1) const
 {
@@ -247,6 +247,31 @@ bool CEvent::containsXRange(int x1, int x2) const
          || (tick2 > x1 && tick2 < x2)
          || (tick1 < x1 && tick2 >= x2));
       }
+
+// REMOVE Tim. citem. Added.
+//---------------------------------------------------------
+//   eventWithLength
+// HACK This returns a clone of the event with the length set to the visual length.
+//      It should only be used for temporary things like copy/paste and the length
+//       value should be reset to zero after it has been used.
+//---------------------------------------------------------
+
+MusECore::Event CEvent::eventWithLength() const
+{ 
+  MusECore::Event new_e = _event.clone();
+  const unsigned int pos_val = new_e.posValue();
+  unsigned int len = 0;
+  if(ex >= 0)
+  {
+    if((unsigned int)ex > pos_val)
+      len = ex - pos_val;
+    else
+      // It's an error, but give it a minimum length of 1.
+      len = 1;
+  }
+  new_e.setLenValue(len);
+  return new_e;
+}
 
 // REMOVE Tim. citem. Removed.
 // //---------------------------------------------------------
@@ -614,41 +639,146 @@ void CtrlCanvas::removeSelection(CEvent* e)
 // }
 
 // REMOVE Tim. citem. Added.
+// //---------------------------------------------------------
+// //   tagItems
+// //---------------------------------------------------------
+// 
+// void CtrlCanvas::tagItems(bool tagAllItems, bool tagAllParts, bool range,
+//      const MusECore::Pos& p0, const MusECore::Pos& p1) const
+// { 
+//   CItem* item;
+//   MusECore::Part* part;
+//   if(range)
+//   {
+//     if(tagAllItems || tagAllParts)
+//     {
+//       for(ciCItemList i = items.begin(); i != items.end(); ++i)
+//       {
+//         item = *i;
+//         part = item->part();
+//         if(!tagAllParts && (part != curPart || (part && part->track() != curTrack)))
+//           continue;
+//         if(!tagAllItems && !item->isSelected())
+//           continue;
+//         if(item->isObjectInRange(p0, p1))
+//           item->setObjectTagged(true);
+//       }
+//     }
+//     else
+//     {
+//       for(ciCItemList i = selection.begin(); i != selection.end(); ++i)
+//       {
+//         item = *i;
+//         part = item->part();
+//         if(part != curPart || (part && part->track() != curTrack))
+//           continue;
+//         if(item->isObjectInRange(p0, p1))
+//           item->setObjectTagged(true);
+//       }
+//     }
+//   }
+//   else
+//   {
+//     if(tagAllItems || tagAllParts)
+//     {
+//       for(ciCItemList i = items.begin(); i != items.end(); ++i)
+//       {
+//         item = *i;
+//         part = item->part();
+//         if(!tagAllParts && (part != curPart || (part && part->track() != curTrack)))
+//           continue;
+//         if(!tagAllItems && !item->isSelected())
+//           continue;
+//         item->setObjectTagged(true);
+//       }
+//     }
+//     else
+//     {
+//       for(ciCItemList i = selection.begin(); i != selection.end(); ++i)
+//       {
+//         item = *i;
+//         part = item->part();
+//         if(part != curPart || (part && part->track() != curTrack))
+//           continue;
+//         item->setObjectTagged(true);
+//       }
+//     }
+//   }
+// }
+
 //---------------------------------------------------------
 //   tagItems
 //---------------------------------------------------------
 
-void CtrlCanvas::tagItems(bool tagAllItems, bool tagAllParts, bool range,
-     const MusECore::Pos& p0, const MusECore::Pos& p1) const
+void CtrlCanvas::tagItems(MusECore::TagEventList* list, const MusECore::EventTagOptionsStruct& options) const
 { 
-  CItem* item;
+  const bool tagSelected = options._flags & MusECore::TagSelected;
+  const bool tagMoving   = options._flags & MusECore::TagMoving;
+  const bool tagAllItems = options._flags & MusECore::TagAllItems;
+  const bool tagAllParts = options._flags & MusECore::TagAllParts;
+  const bool range       = options._flags & MusECore::TagRange;
+  const MusECore::Pos& p0 = options._p0;
+  const MusECore::Pos& p1 = options._p1;
+  
+  MusECore::Event new_e;
+  CEvent* item;
   MusECore::Part* part;
   if(range)
   {
     if(tagAllItems || tagAllParts)
     {
-      for(ciCItemList i = items.begin(); i != items.end(); ++i)
+      for(ciCItemList i = items.cbegin(); i != items.cend(); ++i)
       {
-        item = *i;
+        item = static_cast<CEvent*>(*i);
         part = item->part();
         if(!tagAllParts && (part != curPart || (part && part->track() != curTrack)))
           continue;
-        if(!tagAllItems && !item->isSelected())
+        if(!(tagAllItems
+             || (tagSelected && item->isSelected())
+             || (tagMoving && item->isMoving())))
           continue;
         if(item->isObjectInRange(p0, p1))
-          item->setObjectTagged(true);
+        {
+          new_e = item->eventWithLength();
+          list->add(part, &new_e);
+        }
       }
     }
     else
     {
-      for(ciCItemList i = selection.begin(); i != selection.end(); ++i)
+      if(tagSelected)
       {
-        item = *i;
-        part = item->part();
-        if(part != curPart || (part && part->track() != curTrack))
-          continue;
-        if(item->isObjectInRange(p0, p1))
-          item->setObjectTagged(true);
+        for(ciCItemList i = selection.cbegin(); i != selection.cend(); ++i)
+        {
+          item = static_cast<CEvent*>(*i);
+          part = item->part();
+          if(part != curPart || (part && part->track() != curTrack))
+            continue;
+          if(item->isObjectInRange(p0, p1))
+          {
+            new_e = item->eventWithLength();
+            list->add(part, &new_e);
+          }
+        }
+      }
+      
+      if(tagMoving)
+      {
+        for(ciCItemList i = moving.cbegin(); i != moving.cend(); ++i)
+        {
+          item = static_cast<CEvent*>(*i);
+          part = item->part();
+          if(part != curPart || (part && part->track() != curTrack))
+            continue;
+          if(item->isObjectInRange(p0, p1))
+          {
+            // Avoid duplicates.
+            if(tagSelected && selection.cfind(item) != selection.cend())
+              continue;
+            new_e = item->eventWithLength();
+            list->add(part, &new_e);
+          }
+        }
       }
     }
   }
@@ -656,26 +786,49 @@ void CtrlCanvas::tagItems(bool tagAllItems, bool tagAllParts, bool range,
   {
     if(tagAllItems || tagAllParts)
     {
-      for(ciCItemList i = items.begin(); i != items.end(); ++i)
+      for(ciCItemList i = items.cbegin(); i != items.cend(); ++i)
       {
-        item = *i;
+        item = static_cast<CEvent*>(*i);
         part = item->part();
         if(!tagAllParts && (part != curPart || (part && part->track() != curTrack)))
           continue;
-        if(!tagAllItems && !item->isSelected())
+        if(!(tagAllItems
+             || (tagSelected && item->isSelected())
+             || (tagMoving && item->isMoving())))
           continue;
-        item->setObjectTagged(true);
+        new_e = item->eventWithLength();
+        list->add(part, &new_e);
       }
     }
     else
     {
-      for(ciCItemList i = selection.begin(); i != selection.end(); ++i)
+      if(tagSelected)
       {
-        item = *i;
-        part = item->part();
-        if(part != curPart || (part && part->track() != curTrack))
-          continue;
-        item->setObjectTagged(true);
+        for(ciCItemList i = selection.cbegin(); i != selection.cend(); ++i)
+        {
+          item = static_cast<CEvent*>(*i);
+          part = item->part();
+          if(part != curPart || (part && part->track() != curTrack))
+            continue;
+          new_e = item->eventWithLength();
+          list->add(part, &new_e);
+        }
+      }
+      
+      if(tagMoving)
+      {
+        for(ciCItemList i = moving.cbegin(); i != moving.cend(); ++i)
+        {
+          item = static_cast<CEvent*>(*i);
+          // Avoid duplicates.
+          if(tagSelected && selection.cfind(item) != selection.cend())
+            continue;
+          part = item->part();
+          if(part != curPart || (part && part->track() != curTrack))
+            continue;
+          new_e = item->eventWithLength();
+          list->add(part, &new_e);
+        }
       }
     }
   }

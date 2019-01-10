@@ -161,56 +161,57 @@ enum FunctionOptions {
 typedef int FunctionOptions_t;
 
 
-//--------------------------------------------------------------
-// Event tagging flags and structure for the tagging and
-//  copying/pasting system.
-//--------------------------------------------------------------
-
-enum EventTagOptions {
-  TagNoOptions = 0x00,
-  // Tag selected events.
-  TagSelected = 0x01,
-  // Tag moving events.
-  TagMoving = 0x02,
-  // Whether to tag all events regardless of selection or moving.
-  TagAllEvents = 0x04,
-  // Whether to tag all parts regardless of selection or moving.
-  TagAllParts = 0x08,
-  // Whether the range parameters are valid.
-  TagRange = 0x10,
-  EventTagAllOptions = TagSelected | TagMoving | TagAllEvents | TagAllParts | TagRange
-};
-typedef int EventTagOptions_t;
-
-enum EventTagFlags { NoEventTagFlags = 0x0,
-  EventTagged = 0x01,
-  // Whether the EventTagStruct 'width' member is valid.
-  EventTagWidthValid = 0x02
-  // REMOVE Tim. citem. Added.
-  // This is the last event in a tagged series of events - controllers for example.
-  // ie. a range was selected and then another range after it with a gap in between,
-  //  and this is the last event in that first group before the gap.
-  //EventTagLastInGroup = 0x04
-};
-typedef int EventTagFlags_t;
-
-struct EventTagStruct
-{
-  EventTagFlags_t _flags;
-  // A value intended for controller events which carries
-  //  a width of a controller 'bar' and gives the position
-  //  of the next controller event (the same as the 'ex' 
-  //  value in CItem). The value is the width of a
-  //  controller 'bar' as visualized on controller graphs.
-  // It is valid only if the EventTagWidthValid flag is set.
-  unsigned int _width;
-  
-  EventTagStruct(EventTagFlags_t flags = NoEventTagFlags, unsigned int width = 0) : _flags(flags), _width(width) { }
-  void clear() { _flags = NoEventTagFlags; _width = 0; }
-  void setTagged(bool v) { v ? _flags |= EventTagged : _flags &= ~EventTagged; }
-  bool isTagged() const { return _flags & EventTagged; }
-  void appendFlags(EventTagFlags_t flags) { _flags |= flags; }
-};
+// REMOVE Tim. Moved into event_tag_list.h
+// //--------------------------------------------------------------
+// // Event tagging flags and structure for the tagging and
+// //  copying/pasting system.
+// //--------------------------------------------------------------
+// 
+// enum EventTagOptions {
+//   TagNoOptions = 0x00,
+//   // Tag selected events.
+//   TagSelected = 0x01,
+//   // Tag moving events.
+//   TagMoving = 0x02,
+//   // Whether to tag all events regardless of selection or moving.
+//   TagAllEvents = 0x04,
+//   // Whether to tag all parts regardless of selection or moving.
+//   TagAllParts = 0x08,
+//   // Whether the range parameters are valid.
+//   TagRange = 0x10,
+//   EventTagAllOptions = TagSelected | TagMoving | TagAllEvents | TagAllParts | TagRange
+// };
+// typedef int EventTagOptions_t;
+// 
+// enum EventTagFlags { NoEventTagFlags = 0x0,
+//   EventTagged = 0x01,
+//   // Whether the EventTagStruct 'width' member is valid.
+//   EventTagWidthValid = 0x02
+//   // REMOVE Tim. citem. Added.
+//   // This is the last event in a tagged series of events - controllers for example.
+//   // ie. a range was selected and then another range after it with a gap in between,
+//   //  and this is the last event in that first group before the gap.
+//   //EventTagLastInGroup = 0x04
+// };
+// typedef int EventTagFlags_t;
+// 
+// struct EventTagStruct
+// {
+//   EventTagFlags_t _flags;
+//   // A value intended for controller events which carries
+//   //  a width of a controller 'bar' and gives the position
+//   //  of the next controller event (the same as the 'ex' 
+//   //  value in CItem). The value is the width of a
+//   //  controller 'bar' as visualized on controller graphs.
+//   // It is valid only if the EventTagWidthValid flag is set.
+//   unsigned int _width;
+//   
+//   EventTagStruct(EventTagFlags_t flags = NoEventTagFlags, unsigned int width = 0) : _flags(flags), _width(width) { }
+//   void clear() { _flags = NoEventTagFlags; _width = 0; }
+//   void setTagged(bool v) { v ? _flags |= EventTagged : _flags &= ~EventTagged; }
+//   bool isTagged() const { return _flags & EventTagged; }
+//   void appendFlags(EventTagFlags_t flags) { _flags |= flags; }
+// };
 
 }   // namespace MusECore
 

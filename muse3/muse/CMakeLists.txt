@@ -109,6 +109,7 @@ file (GLOB core_source_files
       dssihost.cpp
       event.cpp
       eventlist.cpp
+      event_tag_list.cpp
       exportmidi.cpp
       functions.cpp
       gconfig.cpp

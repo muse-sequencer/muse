@@ -2476,13 +2476,52 @@ int Canvas::selectionSize() const
 //   }
 // }
 
+// //---------------------------------------------------------
+// //   tagItems
+// //---------------------------------------------------------
+// 
+// void Canvas::tagItems(bool tagAllItems, bool tagAllParts, bool range,
+//         const MusECore::Pos& p0, const MusECore::Pos& p1) const
+// { 
+//   CItem* item;
+//   if(range)
+//   {
+//     for(ciCItem i = items.begin(); i != items.end(); ++i)
+//     {
+//       item = i->second;
+//       if(!tagAllParts && item->part() != curPart)
+//         continue;
+//       if((tagAllItems || item->isSelected()) && item->isObjectInRange(p0, p1))
+//         item->setObjectTagged(true);
+//     }
+//   }
+//   else
+//   {
+//     for(ciCItem i = items.begin(); i != items.end(); ++i)
+//     {
+//       item = i->second;
+//       if(!tagAllParts && item->part() != curPart)
+//         continue;
+//       if(tagAllItems || item->isSelected())
+//         item->setObjectTagged(true);
+//     }
+//   }
+// }
+
 //---------------------------------------------------------
 //   tagItems
 //---------------------------------------------------------
 
-void Canvas::tagItems(bool tagAllItems, bool tagAllParts, bool range,
-        const MusECore::Pos& p0, const MusECore::Pos& p1) const
+void Canvas::tagItems(MusECore::TagEventList* list, const MusECore::EventTagOptionsStruct& options) const
 { 
+  const bool tagSelected = options._flags & MusECore::TagSelected;
+  const bool tagMoving   = options._flags & MusECore::TagMoving;
+  const bool tagAllItems = options._flags & MusECore::TagAllItems;
+  const bool tagAllParts = options._flags & MusECore::TagAllParts;
+  const bool range       = options._flags & MusECore::TagRange;
+  const MusECore::Pos& p0 = options._p0;
+  const MusECore::Pos& p1 = options._p1;
+  
   CItem* item;
   if(range)
   {
@@ -2491,8 +2530,14 @@ void Canvas::tagItems(bool tagAllItems, bool tagAllParts, bool range,
       item = i->second;
       if(!tagAllParts && item->part() != curPart)
         continue;
-      if((tagAllItems || item->isSelected()) && item->isObjectInRange(p0, p1))
-        item->setObjectTagged(true);
+      if((tagAllItems
+          || (tagSelected && item->isSelected())
+          || (tagMoving && item->isMoving()))
+         && item->isObjectInRange(p0, p1))
+      {
+        const MusECore::Event e = item->event();
+        list->add(item->part(), &e);
+      }
     }
   }
   else
@@ -2502,8 +2547,13 @@ void Canvas::tagItems(bool tagAllItems, bool tagAllParts, bool range,
       item = i->second;
       if(!tagAllParts && item->part() != curPart)
         continue;
-      if(tagAllItems || item->isSelected())
-        item->setObjectTagged(true);
+      if(tagAllItems
+        || (tagSelected && item->isSelected())
+        || (tagMoving && item->isMoving()))
+      {
+        const MusECore::Event e = item->event();
+        list->add(item->part(), &e);
+      }
     }
   }
 }

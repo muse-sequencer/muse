@@ -28,6 +28,8 @@
 #include "view.h"
 #include "tools.h"
 #include "undo.h"
+// REMOVE Tim. citem. Added.
+#include "event_tag_list.h"
 
 #include <QWheelEvent>
 #include <QMouseEvent>
@@ -270,13 +272,16 @@ class Canvas : public View {
       int selectionSize() const;
       bool itemsAreSelected() const;
 // REMOVE Tim. citem. Added.
-      // Adds all selected items to the given list. Does not clear the list first.
-      // Checks for duplicates, employing the 'tagged' features.
-      //void getAllSelectedItems(CItemSet&) const;
-      // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
-      virtual void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
-        const MusECore::Pos& p0 = MusECore::Pos(),
-        const MusECore::Pos& p1 = MusECore::Pos()) const;
+//       // Adds all selected items to the given list. Does not clear the list first.
+//       // Checks for duplicates, employing the 'tagged' features.
+//       //void getAllSelectedItems(CItemSet&) const;
+//       // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
+//       virtual void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
+//         const MusECore::Pos& p0 = MusECore::Pos(),
+//         const MusECore::Pos& p1 = MusECore::Pos()) const;
+      // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
+      // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
+      virtual void tagItems(MusECore::TagEventList* list, const MusECore::EventTagOptionsStruct& options) const;
 
       Tool tool() const { return _tool; }
       MusECore::Part* part() const { return curPart; }

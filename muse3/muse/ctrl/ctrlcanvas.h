@@ -33,6 +33,7 @@
 // REMOVE Tim. citem. Added.
 #include "citem.h"
 #include "undo.h"
+#include "event_tag_list.h"
 
 class QWheelEvent;
 class QMouseEvent;
@@ -83,8 +84,8 @@ class CEvent : public CItem {
 //       void setSelected(bool v);
       //bool isSelected() const { return _isSelected; }
       //void setSelected(bool f) { _isSelected = f; }
-      bool isObjectTagged() const { return _event.tagged(); }
-      void setObjectTagged(bool v);
+//       bool isObjectTagged() const { return _event.tagged(); }
+//       void setObjectTagged(bool v);
       bool isObjectInRange(const MusECore::Pos&, const MusECore::Pos&) const;
       bool objectIsSelected() const { return _event.selected(); }
       
@@ -100,6 +101,10 @@ class CEvent : public CItem {
 
 // REMOVE Tim. citem. Added.
       MusECore::Event event() const         { return _event;  }
+      // HACK This returns a clone of the event with the length set to the visual length.
+      //      It should only be used for temporary things like copy/paste and the length
+      //       value should be reset to zero after it has been used.
+      MusECore::Event eventWithLength() const;
       void setEvent(const MusECore::Event& e)     { _event = e;     }
       MusECore::Part* part() const  { return _part;  }
       void setPart(MusECore::Part* p)       { _part = p; }
@@ -329,8 +334,11 @@ class CtrlCanvas : public MusEGui::View {
       // Checks for duplicates, employing the 'tagged' features.
       //void getAllSelectedItems(CItemSet&) const;
       // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
-      void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
-        const MusECore::Pos& = MusECore::Pos(), const MusECore::Pos& = MusECore::Pos()) const;
+//       void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
+//         const MusECore::Pos& = MusECore::Pos(), const MusECore::Pos& = MusECore::Pos()) const;
+      // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
+      // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
+      void tagItems(MusECore::TagEventList* list, const MusECore::EventTagOptionsStruct& options) const;
       };
 
 } // namespace MusEGui

@@ -116,15 +116,15 @@ bool PItem::objectIsSelected() const
   return _part->selected();
 }
 
-bool PItem::isObjectTagged() const
-{
-  return _part->tagged();
-}
-
-void PItem::setObjectTagged(bool v)
-{
-  _part->setTagged(v);
-}
+// bool PItem::isObjectTagged() const
+// {
+//   return _part->tagged();
+// }
+// 
+// void PItem::setObjectTagged(bool v)
+// {
+//   _part->setTagged(v);
+// }
 
 // REMOVE Tim. citem. Added.
 //---------------------------------------------------------
@@ -140,12 +140,12 @@ EItem::EItem(const MusECore::Event& e, MusECore::Part* p) : PItem(p)
       _event = e;
       }
 
-void EItem::setObjectTagged(bool v)
-{
-  _event.setTagged(v);
-  if(_part)
-    _part->setEventsTagged(true);
-}
+// void EItem::setObjectTagged(bool v)
+// {
+//   _event.setTagged(v);
+//   if(_part)
+//     _part->setEventsTagged(true);
+// }
 
 bool EItem::isObjectInRange(const MusECore::Pos& p0, const MusECore::Pos& p1) const
 {

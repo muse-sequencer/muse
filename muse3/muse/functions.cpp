@@ -52,6 +52,7 @@
 #include <map>
 #include <set>
 
+#include <QTemporaryFile>
 #include <QMimeData>
 #include <QByteArray>
 #include <QDrag>
@@ -2013,97 +2014,124 @@ bool delete_selected_parts()
 
 //=============================================================================
 
-void untag_all_items()
-{
-	Part* part;
-	PartList* pl;
-	TrackList* tl = MusEGlobal::song->tracks();
-	
-	// We must clear all the tagged flags...
-	for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-	{
-		pl = (*it)->parts();
-		for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-		{
-			part = ip->second;
-			part->setTagged(false);
-			if(part->eventsTagged())
-			{
-				part->setEventsTagged(false);
-				EventList& el = part->nonconst_events();
-				for(iEvent ie = el.begin(); ie != el.end(); ie++)
-					ie->second.setTagged(false);
-			}
-		}
-	}
-}
+// void untag_all_items()
+// {
+// 	Part* part;
+// 	PartList* pl;
+// 	TrackList* tl = MusEGlobal::song->tracks();
+// 	
+// 	// We must clear all the tagged flags...
+// 	for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+// 	{
+// 		pl = (*it)->parts();
+// 		for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+// 		{
+// 			part = ip->second;
+// 			part->setTagged(false);
+// 			if(part->eventsTagged())
+// 			{
+// 				part->setEventsTagged(false);
+// 				EventList& el = part->nonconst_events();
+// 				for(iEvent ie = el.begin(); ie != el.end(); ie++)
+// 					ie->second.setTagged(false);
+// 			}
+// 		}
+// 	}
+// }
 
-//--------------------------------------------------------
-// untag_clones
-// Untags any clones of the given event in the given part.
-// Does not untag the given event or the given part.
-//--------------------------------------------------------
+// //--------------------------------------------------------
+// // untag_clones
+// // Untags any clones of the given event in the given part.
+// // Does not untag the given event or the given part.
+// //--------------------------------------------------------
+// 
+// void untag_clones(Part* part, const Event& event)
+// {
+//   Part* p = part;
+//   do
+//   {
+//     // Only for other clones. Leave the given part and event alone.
+//     // Optimization: Only if the part says events are tagged.
+//     if(p != part && p->eventsTagged())
+//     {
+//       iEvent ie = p->nonconst_events().findWithId(event);
+//       if(ie != p->nonconst_events().end())
+//       {
+//         // Untag the event. Don't bother resetting the part's eventsTagged flag
+//         //  since there may be still be other tagged events.
+//         ie->second.setTagged(false);
+//       }
+//     }
+//     p = p->nextClone();
+//   }
+//   while(p != part);
+// }
 
-void untag_clones(Part* part, const Event& event)
-{
-  Part* p = part;
-  do
-  {
-    // Only for other clones. Leave the given part and event alone.
-    // Optimization: Only if the part says events are tagged.
-    if(p != part && p->eventsTagged())
-    {
-      iEvent ie = p->nonconst_events().findWithId(event);
-      if(ie != p->nonconst_events().end())
-      {
-        // Untag the event. Don't bother resetting the part's eventsTagged flag
-        //  since there may be still be other tagged events.
-        ie->second.setTagged(false);
-      }
-    }
-    p = p->nextClone();
-  }
-  while(p != part);
-}
+// bool erase_items(int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
+// {
+//   Undo operations;
+//   
+//   Part* part;
+//   PartList* pl;
+//   TrackList* tl = MusEGlobal::song->tracks();
+// 
+//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//   {
+//     pl = (*it)->parts();
+//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//     {
+//       part = ip->second;
+//       part->setTagged(false);
+//       if(part->eventsTagged())
+//       {
+//         part->setEventsTagged(false);
+//         EventList& el = part->nonconst_events();
+//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
+//         {
+//           Event& e = ie->second;
+//           if(e.tagged())
+//           {
+//             e.setTagged(false);
+//             
+//             // If there are clones of this event, untag all of them now except this one.
+//             untag_clones(part, e);
+//             
+//             // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
+//             if ( e.type() != Note || (!velo_thres_used && !len_thres_used) ||
+//                    (velo_thres_used && e.velo() < velo_threshold) ||
+//                   (len_thres_used && int(e.lenTick()) < len_threshold) )
+//             {
+//               operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+//   
+//   return MusEGlobal::song->applyOperationGroup(operations);
+// }
 
-bool erase_items(int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
+bool erase_items(TagEventList* list, int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
 {
   Undo operations;
   
-  Part* part;
-  PartList* pl;
-  TrackList* tl = MusEGlobal::song->tracks();
-
-  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  const Part* part;
+    
+  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
   {
-    pl = (*it)->parts();
-    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    part = itl->first;
+    const EventList& el = itl->second;
+    for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
-      part = ip->second;
-      part->setTagged(false);
-      if(part->eventsTagged())
+      const Event& e = ie->second;
+
+      // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
+      if ( e.type() != Note || (!velo_thres_used && !len_thres_used) ||
+              (velo_thres_used && e.velo() < velo_threshold) ||
+            (len_thres_used && int(e.lenTick()) < len_threshold) )
       {
-        part->setEventsTagged(false);
-        EventList& el = part->nonconst_events();
-        for(iEvent ie = el.begin(); ie != el.end(); ie++)
-        {
-          Event& e = ie->second;
-          if(e.tagged())
-          {
-            e.setTagged(false);
-            
-            // If there are clones of this event, untag all of them now except this one.
-            untag_clones(part, e);
-            
-            // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
-            if ( e.type() != Note || (!velo_thres_used && !len_thres_used) ||
-                   (velo_thres_used && e.velo() < velo_threshold) ||
-                  (len_thres_used && int(e.lenTick()) < len_threshold) )
-            {
-              operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
-            }
-          }
-        }
+        operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
       }
     }
   }
@@ -2111,156 +2139,272 @@ bool erase_items(int velo_threshold, bool velo_thres_used, int len_threshold, bo
   return MusEGlobal::song->applyOperationGroup(operations);
 }
 
-bool crescendo_items(int start_val, int end_val, bool absolute)
+// bool crescendo_items(int start_val, int end_val, bool absolute)
+// {
+//   const Pos& from = MusEGlobal::song->lPos();
+//   const Pos& to = MusEGlobal::song->rPos();
+//   if(to <= from)
+//   {
+//     // Must untag all items.
+//     untag_all_items();
+//     return false;
+//   }
+//   
+//   Undo operations;
+//   Pos pos;
+//   float curr_val;
+//   unsigned int pos_val = (to - from).posValue();
+//   Part* part;
+//   PartList* pl;
+//   TrackList* tl = MusEGlobal::song->tracks();
+// 
+//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//   {
+//     pl = (*it)->parts();
+//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//     {
+//       part = ip->second;
+//       part->setTagged(false);
+//       if(part->eventsTagged())
+//       {
+//         part->setEventsTagged(false);
+//         EventList& el = part->nonconst_events();
+//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
+//         {
+//           Event& e = ie->second;
+//           if(e.tagged())
+//           {
+//             e.setTagged(false);
+//             
+//             // If there are clones of this event, untag all of them now except this one.
+//             untag_clones(part, e);
+//             
+//             // This operation can only apply to notes.
+//             if(e.type() != Note)
+//               continue;
+// 
+//             pos = e.pos() + *part;
+//             curr_val = (float)start_val + (float)(end_val - start_val) * (pos - from).posValue() / pos_val;
+// 
+//             Event newEvent = e.clone();
+//             int velo = e.velo();
+// 
+//             if (absolute)
+//               velo=curr_val;
+//             else
+//               velo=curr_val*velo/100;
+// 
+//             if (velo > 127) velo=127;
+//             if (velo <= 0) velo=1;
+//             newEvent.setVelo(velo);
+//             
+//             operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
+//           }
+//         }
+//       }
+//     }
+//   }
+//   
+//   return MusEGlobal::song->applyOperationGroup(operations);
+// }
+
+bool crescendo_items(TagEventList* list, int start_val, int end_val, bool absolute)
 {
   const Pos& from = MusEGlobal::song->lPos();
   const Pos& to = MusEGlobal::song->rPos();
   if(to <= from)
-  {
-    // Must untag all items.
-    untag_all_items();
     return false;
-  }
   
   Undo operations;
   Pos pos;
   float curr_val;
   unsigned int pos_val = (to - from).posValue();
-  Part* part;
-  PartList* pl;
-  TrackList* tl = MusEGlobal::song->tracks();
-
-  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  const Part* part;
+    
+  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
   {
-    pl = (*it)->parts();
-    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    part = itl->first;
+    const EventList& el = itl->second;
+    for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
-      part = ip->second;
-      part->setTagged(false);
-      if(part->eventsTagged())
-      {
-        part->setEventsTagged(false);
-        EventList& el = part->nonconst_events();
-        for(iEvent ie = el.begin(); ie != el.end(); ie++)
-        {
-          Event& e = ie->second;
-          if(e.tagged())
-          {
-            e.setTagged(false);
-            
-            // If there are clones of this event, untag all of them now except this one.
-            untag_clones(part, e);
-            
-            // This operation can only apply to notes.
-            if(e.type() != Note)
-              continue;
+      const Event& e = ie->second;
 
-            pos = e.pos() + *part;
-            curr_val = (float)start_val + (float)(end_val - start_val) * (pos - from).posValue() / pos_val;
+      // This operation can only apply to notes.
+      if(e.type() != Note)
+        continue;
 
-            Event newEvent = e.clone();
-            int velo = e.velo();
+      pos = e.pos() + *part;
+      curr_val = (float)start_val + (float)(end_val - start_val) * (pos - from).posValue() / pos_val;
 
-            if (absolute)
-              velo=curr_val;
-            else
-              velo=curr_val*velo/100;
+      Event newEvent = e.clone();
+      int velo = e.velo();
 
-            if (velo > 127) velo=127;
-            if (velo <= 0) velo=1;
-            newEvent.setVelo(velo);
-            
-            operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
-          }
-        }
-      }
+      if (absolute)
+        velo=curr_val;
+      else
+        velo=curr_val*velo/100;
+
+      if (velo > 127) velo=127;
+      if (velo <= 0) velo=1;
+      newEvent.setVelo(velo);
+      
+      operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
     }
   }
   
   return MusEGlobal::song->applyOperationGroup(operations);
 }
 
-bool delete_overlaps_items()
+// bool delete_overlaps_items()
+// {
+//   Undo operations;
+//   
+//   set<const Event*> deleted_events;
+//   int new_len;
+//   Event new_event1;
+//   Part* part;
+//   PartList* pl;
+//   TrackList* tl = MusEGlobal::song->tracks();
+// 
+//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//   {
+//     pl = (*it)->parts();
+//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//     {
+//       part = ip->second;
+//       part->setTagged(false);
+//       if(part->eventsTagged())
+//       {
+//         part->setEventsTagged(false);
+//         EventList& el = part->nonconst_events();
+//         for(iEvent ie = el.begin(); ie != el.end(); ++ie)
+//         {
+//           Event& e = ie->second;
+//           if(e.tagged())
+//           {
+//             e.setTagged(false);
+//             
+//             // If there are clones of this event, untag all of them now.
+//             untag_clones(part, e);
+//             
+//             // This operation can only apply to notes.
+//             if(e.type() != Note)
+//               continue;
+//             
+//             // Has this event already been scheduled for deletion? Ignore it.
+//             if(deleted_events.find(&e) != deleted_events.end())
+//               continue;
+//                   
+//             iEvent ie2 = ie;
+//             ++ie2;
+//             for( ; ie2 != el.end(); ++ie2)
+//             {
+//               Event& e2 = ie2->second;
+//               
+//               // Do e2 and e point to the same event? Or has e2 already been scheduled for deletion? Ignore it.
+//               if(e == e2 || deleted_events.find(&e2) != deleted_events.end())
+//                 continue;
+//               
+//               if ( (e.pitch() == e2.pitch()) &&
+//                   (e.tick() <= e2.tick()) &&
+//                   (e.endTick() > e2.tick()) ) //they overlap
+//               {
+//                 new_len = e2.tick() - e.tick();
+// 
+//                 if(new_len==0)
+//                 {
+//                   // Might as well untag e2 and any of its clones, since it has been processed now.
+//                   e2.setTagged(false);
+//                   untag_clones(part, e2);
+// // REMOVE Tim. citem. Changed. Mistake by original author? Multiple deletion of e !
+// //                     operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, false, false));
+// //                     deleted_events.insert(&e);
+//                   operations.push_back(UndoOp(UndoOp::DeleteEvent, e2, part, false, false));
+//                   deleted_events.insert(&e2);
+//                 }
+//                 else
+//                 {
+//                   new_event1 = e.clone();
+//                   new_event1.setLenTick(new_len);
+//                   
+//                   operations.push_back(UndoOp(UndoOp::ModifyEvent, new_event1, e, part, false, false));
+//                   
+//                   // After resizing the event, it should not be necessary to continue with any further
+//                   //  events in this loop since any more sorted events will come at or AFTER e2's position
+//                   //  which we have just resized the end of e to.
+//                   break;
+//                 }
+//               }
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+//   
+//   return MusEGlobal::song->applyOperationGroup(operations);
+// }
+
+bool delete_overlaps_items(TagEventList* list)
 {
   Undo operations;
   
   set<const Event*> deleted_events;
   int new_len;
   Event new_event1;
-  Part* part;
-  PartList* pl;
-  TrackList* tl = MusEGlobal::song->tracks();
-
-  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  const Part* part;
+    
+  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
   {
-    pl = (*it)->parts();
-    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    part = itl->first;
+    const EventList& el = itl->second;
+    for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
-      part = ip->second;
-      part->setTagged(false);
-      if(part->eventsTagged())
-      {
-        part->setEventsTagged(false);
-        EventList& el = part->nonconst_events();
-        for(iEvent ie = el.begin(); ie != el.end(); ++ie)
-        {
-          Event& e = ie->second;
-          if(e.tagged())
-          {
-            e.setTagged(false);
-            
-            // If there are clones of this event, untag all of them now.
-            untag_clones(part, e);
-            
-            // This operation can only apply to notes.
-            if(e.type() != Note)
-              continue;
-            
-            // Has this event already been scheduled for deletion? Ignore it.
-            if(deleted_events.find(&e) != deleted_events.end())
-              continue;
-                  
-            iEvent ie2 = ie;
-            ++ie2;
-            for( ; ie2 != el.end(); ++ie2)
-            {
-              Event& e2 = ie2->second;
-              
-              // Do e2 and e point to the same event? Or has e2 already been scheduled for deletion? Ignore it.
-              if(e == e2 || deleted_events.find(&e2) != deleted_events.end())
-                continue;
-              
-              if ( (e.pitch() == e2.pitch()) &&
-                  (e.tick() <= e2.tick()) &&
-                  (e.endTick() > e2.tick()) ) //they overlap
-              {
-                new_len = e2.tick() - e.tick();
+      const Event& e = ie->second;
 
-                if(new_len==0)
-                {
-                  // Might as well untag e2 and any of its clones, since it has been processed now.
-                  e2.setTagged(false);
-                  untag_clones(part, e2);
-// REMOVE Tim. citem. Changed. Mistake by original author? Multiple deletion of e !
-//                     operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, false, false));
-//                     deleted_events.insert(&e);
-                  operations.push_back(UndoOp(UndoOp::DeleteEvent, e2, part, false, false));
-                  deleted_events.insert(&e2);
-                }
-                else
-                {
-                  new_event1 = e.clone();
-                  new_event1.setLenTick(new_len);
-                  
-                  operations.push_back(UndoOp(UndoOp::ModifyEvent, new_event1, e, part, false, false));
-                  
-                  // After resizing the event, it should not be necessary to continue with any further
-                  //  events in this loop since any more sorted events will come at or AFTER e2's position
-                  //  which we have just resized the end of e to.
-                  break;
-                }
-              }
-            }
+      // This operation can only apply to notes.
+      if(e.type() != Note)
+        continue;
+      
+      // Has this event already been scheduled for deletion? Ignore it.
+      if(deleted_events.find(&e) != deleted_events.end())
+        continue;
+            
+      ciEvent ie2 = ie;
+      ++ie2;
+      for( ; ie2 != el.end(); ++ie2)
+      {
+        const Event& e2 = ie2->second;
+        
+        // Do e2 and e point to the same event? Or has e2 already been scheduled for deletion? Ignore it.
+        if(e == e2 || deleted_events.find(&e2) != deleted_events.end())
+          continue;
+        
+        if ( (e.pitch() == e2.pitch()) &&
+            (e.tick() <= e2.tick()) &&
+            (e.endTick() > e2.tick()) ) //they overlap
+        {
+          new_len = e2.tick() - e.tick();
+
+          if(new_len==0)
+          {
+  // REMOVE Tim. citem. Changed. Mistake by original author? Multiple deletion of e !
+  //                     operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, false, false));
+  //                     deleted_events.insert(&e);
+            operations.push_back(UndoOp(UndoOp::DeleteEvent, e2, part, false, false));
+            deleted_events.insert(&e2);
+          }
+          else
+          {
+            new_event1 = e.clone();
+            new_event1.setLenTick(new_len);
+            
+            operations.push_back(UndoOp(UndoOp::ModifyEvent, new_event1, e, part, false, false));
+            
+            // After resizing the event, it should not be necessary to continue with any further
+            //  events in this loop since any more sorted events will come at or AFTER e2's position
+            //  which we have just resized the end of e to.
+            break;
           }
         }
       }
@@ -2270,79 +2414,200 @@ bool delete_overlaps_items()
   return MusEGlobal::song->applyOperationGroup(operations);
 }
 
-bool modify_notelen_items(int rate, int offset)
+// bool modify_notelen_items(int rate, int offset)
+// {
+//   if(rate == 100 && offset == 0)
+//   {
+//     // Must untag all items.
+//     untag_all_items();
+//     return false;
+//   }
+//     
+//   Undo operations;
+//   
+//   unsigned int len;
+//   map<const Part*, int> partlen;
+//   Event newEvent;
+//   Part* part;
+//   PartList* pl;
+//   TrackList* tl = MusEGlobal::song->tracks();
+// 
+//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//   {
+//     pl = (*it)->parts();
+//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//     {
+//       part = ip->second;
+//       part->setTagged(false);
+//       if(part->eventsTagged())
+//       {
+//         part->setEventsTagged(false);
+//         EventList& el = part->nonconst_events();
+//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
+//         {
+//           Event& e = ie->second;
+//           if(e.tagged())
+//           {
+//             e.setTagged(false);
+//             
+//             // If there are clones of this event, untag all of them now.
+//             untag_clones(part, e);
+//             
+//             // This operation can only apply to notes.
+//             if(e.type() != Note)
+//               continue;
+//             
+//             len = e.lenTick(); //prevent compiler warning: comparison signed/unsigned
+// 
+//             len = (len * rate) / 100;
+//             len += offset;
+// 
+//             if (len <= 0)
+//               len = 1;
+//             
+//             if ((e.tick()+len > part->lenTick()) && (!part->hasHiddenEvents()))
+//               partlen[part] = e.tick() + len; // schedule auto-expanding
+//               
+//             if (e.lenTick() != len)
+//             {
+//               newEvent = e.clone();
+//               newEvent.setLenTick(len);
+//               operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
+//             }
+//           }
+//           
+//           for (map<const Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
+//             schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
+//         }
+//       }
+//     }
+//   }
+//   
+//   return MusEGlobal::song->applyOperationGroup(operations);
+// }
+
+bool modify_notelen_items(TagEventList* list, int rate, int offset)
 {
   if(rate == 100 && offset == 0)
-  {
-    // Must untag all items.
-    untag_all_items();
     return false;
-  }
     
   Undo operations;
   
   unsigned int len;
   map<const Part*, int> partlen;
   Event newEvent;
-  Part* part;
-  PartList* pl;
-  TrackList* tl = MusEGlobal::song->tracks();
-
-  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  const Part* part;
+    
+  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
   {
-    pl = (*it)->parts();
-    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    part = itl->first;
+    const EventList& el = itl->second;
+    for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
-      part = ip->second;
-      part->setTagged(false);
-      if(part->eventsTagged())
+      const Event& e = ie->second;
+
+      // This operation can only apply to notes.
+      if(e.type() != Note)
+        continue;
+      
+      len = e.lenTick(); //prevent compiler warning: comparison signed/unsigned
+
+      len = (len * rate) / 100;
+      len += offset;
+
+      if (len <= 0)
+        len = 1;
+      
+      if ((e.tick()+len > part->lenTick()) && (!part->hasHiddenEvents()))
+        partlen[part] = e.tick() + len; // schedule auto-expanding
+        
+      if (e.lenTick() != len)
       {
-        part->setEventsTagged(false);
-        EventList& el = part->nonconst_events();
-        for(iEvent ie = el.begin(); ie != el.end(); ie++)
-        {
-          Event& e = ie->second;
-          if(e.tagged())
-          {
-            e.setTagged(false);
-            
-            // If there are clones of this event, untag all of them now.
-            untag_clones(part, e);
-            
-            // This operation can only apply to notes.
-            if(e.type() != Note)
-              continue;
-            
-            len = e.lenTick(); //prevent compiler warning: comparison signed/unsigned
-
-            len = (len * rate) / 100;
-            len += offset;
-
-            if (len <= 0)
-              len = 1;
-            
-            if ((e.tick()+len > part->lenTick()) && (!part->hasHiddenEvents()))
-              partlen[part] = e.tick() + len; // schedule auto-expanding
-              
-            if (e.lenTick() != len)
-            {
-              newEvent = e.clone();
-              newEvent.setLenTick(len);
-              operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
-            }
-          }
-          
-          for (map<const Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
-            schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
-        }
+        newEvent = e.clone();
+        newEvent.setLenTick(len);
+        operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
       }
     }
+    
+    for (map<const Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
+      schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
   }
   
   return MusEGlobal::song->applyOperationGroup(operations);
 }
 
-bool legato_items(int min_len, bool dont_shorten)
+// bool legato_items(int min_len, bool dont_shorten)
+// {
+//   Undo operations;
+//   
+//   if (min_len<=0) min_len=1;
+//   
+//   unsigned len = INT_MAX;
+//   bool relevant;
+//   Event new_event1;
+//   Part* part;
+//   PartList* pl;
+//   TrackList* tl = MusEGlobal::song->tracks();
+// 
+//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//   {
+//     pl = (*it)->parts();
+//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//     {
+//       part = ip->second;
+//       part->setTagged(false);
+//       if(part->eventsTagged())
+//       {
+//         part->setEventsTagged(false);
+//         EventList& el = part->nonconst_events();
+//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
+//         {
+//           Event& e = ie->second;
+//           if(e.tagged())
+//           {
+//             e.setTagged(false);
+//             
+//             // This operation can only apply to notes.
+//             if(e.type() != Note)
+//               continue;
+//             
+//             // If there are clones of this event, untag all of them now.
+//             untag_clones(part, e);
+//             
+//             iEvent ie2 = ie;
+//             ++ie2;
+//             for( ; ie2 != el.end(); ++ie2)
+//             {
+//               Event& e2 = ie2->second;
+// 
+//               relevant = (e2.tick() >= e.tick() + min_len);
+//               if (dont_shorten)
+//                 relevant = relevant && (e2.tick() >= e.endTick());
+//               
+//               if ( relevant &&                      // they're not too near (respect min_len and dont_shorten)
+//                    (e2.tick() - e.tick() < len ) )  // that's the nearest relevant following note
+//                 len = e2.tick() - e.tick();
+//             }            
+//             
+//             if (len==INT_MAX) len = e.lenTick(); // if no following note was found, keep the length
+//             
+//             if (e.lenTick() != len)
+//             {
+//               new_event1 = e.clone();
+//               new_event1.setLenTick(len);
+//               
+//               operations.push_back(UndoOp(UndoOp::ModifyEvent, new_event1, e, part, false, false));
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+//   
+//   return MusEGlobal::song->applyOperationGroup(operations);
+// }
+
+bool legato_items(TagEventList* list, int min_len, bool dont_shorten)
 {
   Undo operations;
   
@@ -2351,61 +2616,43 @@ bool legato_items(int min_len, bool dont_shorten)
   unsigned len = INT_MAX;
   bool relevant;
   Event new_event1;
-  Part* part;
-  PartList* pl;
-  TrackList* tl = MusEGlobal::song->tracks();
-
-  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  const Part* part;
+    
+  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
   {
-    pl = (*it)->parts();
-    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    part = itl->first;
+    const EventList& el = itl->second;
+    for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
-      part = ip->second;
-      part->setTagged(false);
-      if(part->eventsTagged())
-      {
-        part->setEventsTagged(false);
-        EventList& el = part->nonconst_events();
-        for(iEvent ie = el.begin(); ie != el.end(); ie++)
-        {
-          Event& e = ie->second;
-          if(e.tagged())
-          {
-            e.setTagged(false);
-            
-            // This operation can only apply to notes.
-            if(e.type() != Note)
-              continue;
-            
-            // If there are clones of this event, untag all of them now.
-            untag_clones(part, e);
-            
-            iEvent ie2 = ie;
-            ++ie2;
-            for( ; ie2 != el.end(); ++ie2)
-            {
-              Event& e2 = ie2->second;
+      const Event& e = ie->second;
 
-              relevant = (e2.tick() >= e.tick() + min_len);
-              if (dont_shorten)
-                relevant = relevant && (e2.tick() >= e.endTick());
-              
-              if ( relevant &&                      // they're not too near (respect min_len and dont_shorten)
-                   (e2.tick() - e.tick() < len ) )  // that's the nearest relevant following note
-                len = e2.tick() - e.tick();
-            }            
-            
-            if (len==INT_MAX) len = e.lenTick(); // if no following note was found, keep the length
-            
-            if (e.lenTick() != len)
-            {
-              new_event1 = e.clone();
-              new_event1.setLenTick(len);
-              
-              operations.push_back(UndoOp(UndoOp::ModifyEvent, new_event1, e, part, false, false));
-            }
-          }
-        }
+      // This operation can only apply to notes.
+      if(e.type() != Note)
+        continue;
+      
+      ciEvent ie2 = ie;
+      ++ie2;
+      for( ; ie2 != el.end(); ++ie2)
+      {
+        const Event& e2 = ie2->second;
+
+        relevant = (e2.tick() >= e.tick() + min_len);
+        if (dont_shorten)
+          relevant = relevant && (e2.tick() >= e.endTick());
+        
+        if ( relevant &&                      // they're not too near (respect min_len and dont_shorten)
+              (e2.tick() - e.tick() < len ) )  // that's the nearest relevant following note
+          len = e2.tick() - e.tick();
+      }            
+      
+      if (len==INT_MAX) len = e.lenTick(); // if no following note was found, keep the length
+      
+      if (e.lenTick() != len)
+      {
+        new_event1 = e.clone();
+        new_event1.setLenTick(len);
+        
+        operations.push_back(UndoOp(UndoOp::ModifyEvent, new_event1, e, part, false, false));
       }
     }
   }
@@ -2413,98 +2660,238 @@ bool legato_items(int min_len, bool dont_shorten)
   return MusEGlobal::song->applyOperationGroup(operations);
 }
 
-bool move_items(signed int ticks)
+// bool move_items(signed int ticks)
+// {
+//   if(ticks == 0)
+//   {
+//     // Must untag all items.
+//     untag_all_items();
+//     return false;
+//   }
+//   
+//   Undo operations;
+//   map<const Part*, int> partlen;
+//   
+//   bool del;
+//   Event newEvent;
+//   Part* part;
+//   PartList* pl;
+//   TrackList* tl = MusEGlobal::song->tracks();
+// 
+//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//   {
+//     pl = (*it)->parts();
+//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//     {
+//       part = ip->second;
+//       part->setTagged(false);
+//       if(part->eventsTagged())
+//       {
+//         part->setEventsTagged(false);
+//         EventList& el = part->nonconst_events();
+//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
+//         {
+//           Event& e = ie->second;
+//           if(e.tagged())
+//           {
+//             e.setTagged(false);
+//             
+//             // If there are clones of this event, untag all of them now.
+//             untag_clones(part, e);
+//             
+//             del = false;
+//             
+//             // This operation can only apply to notes.
+//             // Hm no, should be OK for all types.
+//             //if(e.type() != Note)
+//             //  continue;
+//             
+//             newEvent = e.clone();
+//             if ((signed)e.tick() + ticks < 0) //don't allow moving before the part's begin
+//               newEvent.setTick(0);
+//             else
+//               newEvent.setTick(e.tick() + ticks);
+//             
+//             if (newEvent.endTick() > part->lenTick()) //if exceeding the part's end:
+//             {
+//               if (part->hasHiddenEvents()) // auto-expanding is forbidden, clip
+//               {
+//                 if (part->lenTick() > newEvent.tick())
+//                   newEvent.setLenTick(part->lenTick() - newEvent.tick());
+//                 else
+//                   del = true; //if the new length would be <= 0, erase the note
+//               }
+//               else
+//                 partlen[part] = newEvent.endTick(); // schedule auto-expanding
+//             }
+//             
+//             if (del == false)
+//               //operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
+//               operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, true, true));
+//             else
+//               //operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, false, false));
+//               operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
+//           }
+//           
+//           for (map<const Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
+//             schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
+//         }
+//       }
+//     }
+//   }
+//   
+//   return MusEGlobal::song->applyOperationGroup(operations);
+// }
+
+bool move_items(TagEventList* list, signed int ticks)
 {
   if(ticks == 0)
-  {
-    // Must untag all items.
-    untag_all_items();
     return false;
-  }
   
   Undo operations;
   map<const Part*, int> partlen;
   
   bool del;
   Event newEvent;
-  Part* part;
-  PartList* pl;
-  TrackList* tl = MusEGlobal::song->tracks();
-
-  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  const Part* part;
+    
+  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
   {
-    pl = (*it)->parts();
-    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    part = itl->first;
+    const EventList& el = itl->second;
+    for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
-      part = ip->second;
-      part->setTagged(false);
-      if(part->eventsTagged())
+      const Event& e = ie->second;
+
+      del = false;
+      
+      // This operation can only apply to notes.
+      // Hm no, should be OK for all types.
+      //if(e.type() != Note)
+      //  continue;
+      
+      newEvent = e.clone();
+      if ((signed)e.tick() + ticks < 0) //don't allow moving before the part's begin
+        newEvent.setTick(0);
+      else
+        newEvent.setTick(e.tick() + ticks);
+      
+      if (newEvent.endTick() > part->lenTick()) //if exceeding the part's end:
       {
-        part->setEventsTagged(false);
-        EventList& el = part->nonconst_events();
-        for(iEvent ie = el.begin(); ie != el.end(); ie++)
+        if (part->hasHiddenEvents()) // auto-expanding is forbidden, clip
         {
-          Event& e = ie->second;
-          if(e.tagged())
-          {
-            e.setTagged(false);
-            
-            // If there are clones of this event, untag all of them now.
-            untag_clones(part, e);
-            
-            del = false;
-            
-            // This operation can only apply to notes.
-            // Hm no, should be OK for all types.
-            //if(e.type() != Note)
-            //  continue;
-            
-            newEvent = e.clone();
-            if ((signed)e.tick() + ticks < 0) //don't allow moving before the part's begin
-              newEvent.setTick(0);
-            else
-              newEvent.setTick(e.tick() + ticks);
-            
-            if (newEvent.endTick() > part->lenTick()) //if exceeding the part's end:
-            {
-              if (part->hasHiddenEvents()) // auto-expanding is forbidden, clip
-              {
-                if (part->lenTick() > newEvent.tick())
-                  newEvent.setLenTick(part->lenTick() - newEvent.tick());
-                else
-                  del = true; //if the new length would be <= 0, erase the note
-              }
-              else
-                partlen[part] = newEvent.endTick(); // schedule auto-expanding
-            }
-            
-            if (del == false)
-              //operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
-              operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, true, true));
-            else
-              //operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, false, false));
-              operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
-          }
-          
-          for (map<const Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
-            schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
+          if (part->lenTick() > newEvent.tick())
+            newEvent.setLenTick(part->lenTick() - newEvent.tick());
+          else
+            del = true; //if the new length would be <= 0, erase the note
         }
+        else
+          partlen[part] = newEvent.endTick(); // schedule auto-expanding
       }
+      
+      if (del == false)
+        //operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
+        operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, true, true));
+      else
+        //operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, false, false));
+        operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
     }
+    
+    for (map<const Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
+      schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
   }
   
   return MusEGlobal::song->applyOperationGroup(operations);
 }
 
-bool quantize_items(int raster_idx, bool quant_len, int strength, int swing, int threshold)
+// bool quantize_items(int raster_idx, bool quant_len, int strength, int swing, int threshold)
+// {
+//   const int rv = MusEGui::functionQuantizeRasterVals[raster_idx];
+//   if(rv <= 0)
+//   {
+//     // Must untag all items.
+//     untag_all_items();
+//     return false;
+//   }
+//   
+//   const int raster = (MusEGlobal::config.division*4) / rv;
+//   
+//   Undo operations;
+//   
+//   unsigned begin_tick;
+//   int begin_diff;
+//   unsigned len;
+//   unsigned end_tick;
+//   int len_diff;
+//   Event newEvent;
+//   Part* part;
+//   PartList* pl;
+//   TrackList* tl = MusEGlobal::song->tracks();
+// 
+//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//   {
+//     pl = (*it)->parts();
+//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//     {
+//       part = ip->second;
+//       part->setTagged(false);
+//       if(part->eventsTagged())
+//       {
+//         part->setEventsTagged(false);
+//         EventList& el = part->nonconst_events();
+//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
+//         {
+//           Event& e = ie->second;
+//           if(e.tagged())
+//           {
+//             e.setTagged(false);
+//             
+//             // If there are clones of this event, untag all of them now.
+//             untag_clones(part, e);
+//             
+//             // This operation can only apply to notes.
+//             if(e.type() != Note)
+//               continue;
+//             
+//             begin_tick = e.tick() + part->tick();
+//             begin_diff = quantize_tick(begin_tick, raster, swing) - begin_tick;
+// 
+//             if (abs(begin_diff) > threshold)
+//               begin_tick = begin_tick + begin_diff*strength/100;
+// 
+//             len = e.lenTick();
+//             
+//             end_tick = begin_tick + len;
+//             len_diff = quantize_tick(end_tick, raster, swing) - end_tick;
+//               
+//             if ((abs(len_diff) > threshold) && quant_len)
+//               len = len + len_diff*strength/100;
+// 
+//             if (len <= 0)
+//               len = 1;
+// 
+//               
+//             if ( (e.lenTick() != len) || (e.tick() + part->tick() != begin_tick) )
+//             {
+//               newEvent = e.clone();
+//               newEvent.setTick(begin_tick - part->tick());
+//               newEvent.setLenTick(len);
+//               operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+//   
+//   return MusEGlobal::song->applyOperationGroup(operations);
+// }
+
+bool quantize_items(TagEventList* list, int raster_idx, bool quant_len, int strength, int swing, int threshold)
 {
   const int rv = MusEGui::functionQuantizeRasterVals[raster_idx];
   if(rv <= 0)
-  {
-    // Must untag all items.
-    untag_all_items();
     return false;
-  }
   
   const int raster = (MusEGlobal::config.division*4) / rv;
   
@@ -2516,62 +2903,44 @@ bool quantize_items(int raster_idx, bool quant_len, int strength, int swing, int
   unsigned end_tick;
   int len_diff;
   Event newEvent;
-  Part* part;
-  PartList* pl;
-  TrackList* tl = MusEGlobal::song->tracks();
-
-  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  const Part* part;
+    
+  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
   {
-    pl = (*it)->parts();
-    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    part = itl->first;
+    const EventList& el = itl->second;
+    for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
-      part = ip->second;
-      part->setTagged(false);
-      if(part->eventsTagged())
+      const Event& e = ie->second;
+
+      // This operation can only apply to notes.
+      if(e.type() != Note)
+        continue;
+      
+      begin_tick = e.tick() + part->tick();
+      begin_diff = quantize_tick(begin_tick, raster, swing) - begin_tick;
+
+      if (abs(begin_diff) > threshold)
+        begin_tick = begin_tick + begin_diff*strength/100;
+
+      len = e.lenTick();
+      
+      end_tick = begin_tick + len;
+      len_diff = quantize_tick(end_tick, raster, swing) - end_tick;
+        
+      if ((abs(len_diff) > threshold) && quant_len)
+        len = len + len_diff*strength/100;
+
+      if (len <= 0)
+        len = 1;
+
+        
+      if ( (e.lenTick() != len) || (e.tick() + part->tick() != begin_tick) )
       {
-        part->setEventsTagged(false);
-        EventList& el = part->nonconst_events();
-        for(iEvent ie = el.begin(); ie != el.end(); ie++)
-        {
-          Event& e = ie->second;
-          if(e.tagged())
-          {
-            e.setTagged(false);
-            
-            // If there are clones of this event, untag all of them now.
-            untag_clones(part, e);
-            
-            // This operation can only apply to notes.
-            if(e.type() != Note)
-              continue;
-            
-            begin_tick = e.tick() + part->tick();
-            begin_diff = quantize_tick(begin_tick, raster, swing) - begin_tick;
-
-            if (abs(begin_diff) > threshold)
-              begin_tick = begin_tick + begin_diff*strength/100;
-
-            len = e.lenTick();
-            
-            end_tick = begin_tick + len;
-            len_diff = quantize_tick(end_tick, raster, swing) - end_tick;
-              
-            if ((abs(len_diff) > threshold) && quant_len)
-              len = len + len_diff*strength/100;
-
-            if (len <= 0)
-              len = 1;
-
-              
-            if ( (e.lenTick() != len) || (e.tick() + part->tick() != begin_tick) )
-            {
-              newEvent = e.clone();
-              newEvent.setTick(begin_tick - part->tick());
-              newEvent.setLenTick(len);
-              operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
-            }
-          }
-        }
+        newEvent = e.clone();
+        newEvent.setTick(begin_tick - part->tick());
+        newEvent.setLenTick(len);
+        operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
       }
     }
   }
@@ -2579,127 +2948,211 @@ bool quantize_items(int raster_idx, bool quant_len, int strength, int swing, int
   return MusEGlobal::song->applyOperationGroup(operations);
 }
 
-bool set_notelen_items(int len)
+// bool set_notelen_items(int len)
+// {
+//   return modify_notelen_items(0, len);
+// }
+
+bool set_notelen_items(TagEventList* list, int len)
 {
-  return modify_notelen_items(0, len);
+  return modify_notelen_items(list, 0, len);
 }
 
-bool transpose_items(signed int halftonesteps)
+// bool transpose_items(signed int halftonesteps)
+// {
+//   if(halftonesteps == 0)
+//   {
+//     // Must untag all items.
+//     untag_all_items();
+//     return false;
+//   }
+//   
+//   Undo operations;
+//   
+//   Event newEvent;
+//   int pitch;
+//   Part* part;
+//   PartList* pl;
+//   TrackList* tl = MusEGlobal::song->tracks();
+// 
+//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//   {
+//     pl = (*it)->parts();
+//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//     {
+//       part = ip->second;
+//       part->setTagged(false);
+//       if(part->eventsTagged())
+//       {
+//         part->setEventsTagged(false);
+//         EventList& el = part->nonconst_events();
+//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
+//         {
+//           Event& e = ie->second;
+//           if(e.tagged())
+//           {
+//             e.setTagged(false);
+//             
+//             // If there are clones of this event, untag all of them now.
+//             untag_clones(part, e);
+//             
+//             // This operation can only apply to notes.
+//             if(e.type() != Note)
+//               continue;
+//             
+//             newEvent = e.clone();
+//             pitch = e.pitch() + halftonesteps;
+//             if (pitch > 127) pitch = 127;
+//             if (pitch < 0) pitch = 0;
+//             newEvent.setPitch(pitch);
+//             operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
+//           }
+//         }
+//       }
+//     }
+//   }
+//   
+//   return MusEGlobal::song->applyOperationGroup(operations);
+// }
+
+bool transpose_items(TagEventList* list, signed int halftonesteps)
 {
   if(halftonesteps == 0)
-  {
-    // Must untag all items.
-    untag_all_items();
     return false;
-  }
   
   Undo operations;
   
   Event newEvent;
   int pitch;
-  Part* part;
-  PartList* pl;
-  TrackList* tl = MusEGlobal::song->tracks();
-
-  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  const Part* part;
+    
+  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
   {
-    pl = (*it)->parts();
-    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    part = itl->first;
+    const EventList& el = itl->second;
+    for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
-      part = ip->second;
-      part->setTagged(false);
-      if(part->eventsTagged())
-      {
-        part->setEventsTagged(false);
-        EventList& el = part->nonconst_events();
-        for(iEvent ie = el.begin(); ie != el.end(); ie++)
-        {
-          Event& e = ie->second;
-          if(e.tagged())
-          {
-            e.setTagged(false);
-            
-            // If there are clones of this event, untag all of them now.
-            untag_clones(part, e);
-            
-            // This operation can only apply to notes.
-            if(e.type() != Note)
-              continue;
-            
-            newEvent = e.clone();
-            pitch = e.pitch() + halftonesteps;
-            if (pitch > 127) pitch = 127;
-            if (pitch < 0) pitch = 0;
-            newEvent.setPitch(pitch);
-            operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
-          }
-        }
-      }
+      const Event& e = ie->second;
+
+      // This operation can only apply to notes.
+      if(e.type() != Note)
+        continue;
+      
+      newEvent = e.clone();
+      pitch = e.pitch() + halftonesteps;
+      if (pitch > 127) pitch = 127;
+      if (pitch < 0) pitch = 0;
+      newEvent.setPitch(pitch);
+      operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
     }
   }
   
   return MusEGlobal::song->applyOperationGroup(operations);
 }
 
-bool modify_velocity_items(int rate, int offset)
+// bool modify_velocity_items(int rate, int offset)
+// {
+//   if(rate == 100 && offset == 0)
+//   {
+//     // Must untag all items.
+//     untag_all_items();
+//     return false;
+//   }
+//   
+//   Undo operations;
+//   int velo;
+//   Event newEvent;
+//   Part* part;
+//   PartList* pl;
+//   TrackList* tl = MusEGlobal::song->tracks();
+// 
+//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//   {
+//     pl = (*it)->parts();
+//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//     {
+//       part = ip->second;
+//       part->setTagged(false);
+//       if(part->eventsTagged())
+//       {
+//         part->setEventsTagged(false);
+//         EventList& el = part->nonconst_events();
+//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
+//         {
+//           Event& e = ie->second;
+//           if(e.tagged())
+//           {
+//             e.setTagged(false);
+//             
+//             // If there are clones of this event, untag all of them now.
+//             untag_clones(part, e);
+//             
+//             // This operation can only apply to notes.
+//             if(e.type() != Note)
+//               continue;
+//             
+//             velo = e.velo();
+// 
+//             velo = (velo * rate) / 100;
+//             velo += offset;
+// 
+//             if (velo <= 0)
+//               velo = 1;
+//             else if (velo > 127)
+//               velo = 127;
+//               
+//             if (e.velo() != velo)
+//             {
+//               newEvent = e.clone();
+//               newEvent.setVelo(velo);
+//               operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+//   
+//   return MusEGlobal::song->applyOperationGroup(operations);
+// }
+
+bool modify_velocity_items(TagEventList* list, int rate, int offset)
 {
   if(rate == 100 && offset == 0)
-  {
-    // Must untag all items.
-    untag_all_items();
     return false;
-  }
   
   Undo operations;
   int velo;
   Event newEvent;
-  Part* part;
-  PartList* pl;
-  TrackList* tl = MusEGlobal::song->tracks();
-
-  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  const Part* part;
+    
+  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
   {
-    pl = (*it)->parts();
-    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    part = itl->first;
+    const EventList& el = itl->second;
+    for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
-      part = ip->second;
-      part->setTagged(false);
-      if(part->eventsTagged())
+      const Event& e = ie->second;
+
+      // This operation can only apply to notes.
+      if(e.type() != Note)
+        continue;
+      
+      velo = e.velo();
+
+      velo = (velo * rate) / 100;
+      velo += offset;
+
+      if (velo <= 0)
+        velo = 1;
+      else if (velo > 127)
+        velo = 127;
+        
+      if (e.velo() != velo)
       {
-        part->setEventsTagged(false);
-        EventList& el = part->nonconst_events();
-        for(iEvent ie = el.begin(); ie != el.end(); ie++)
-        {
-          Event& e = ie->second;
-          if(e.tagged())
-          {
-            e.setTagged(false);
-            
-            // If there are clones of this event, untag all of them now.
-            untag_clones(part, e);
-            
-            // This operation can only apply to notes.
-            if(e.type() != Note)
-              continue;
-            
-            velo = e.velo();
-
-            velo = (velo * rate) / 100;
-            velo += offset;
-
-            if (velo <= 0)
-              velo = 1;
-            else if (velo > 127)
-              velo = 127;
-              
-            if (e.velo() != velo)
-            {
-              newEvent = e.clone();
-              newEvent.setVelo(velo);
-              operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
-            }
-          }
-        }
+        newEvent = e.clone();
+        newEvent.setVelo(velo);
+        operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
       }
     }
   }
@@ -2707,62 +3160,106 @@ bool modify_velocity_items(int rate, int offset)
   return MusEGlobal::song->applyOperationGroup(operations);
 }
 
-bool modify_off_velocity_items(int rate, int offset)
+// bool modify_off_velocity_items(int rate, int offset)
+// {
+//   if(rate == 100 && offset == 0)
+//   {
+//     // Must untag all items.
+//     untag_all_items();
+//     return false;
+//   }
+//   
+//   Undo operations;
+//   int velo;
+//   Event newEvent;
+//   Part* part;
+//   PartList* pl;
+//   TrackList* tl = MusEGlobal::song->tracks();
+// 
+//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//   {
+//     pl = (*it)->parts();
+//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//     {
+//       part = ip->second;
+//       part->setTagged(false);
+//       if(part->eventsTagged())
+//       {
+//         part->setEventsTagged(false);
+//         EventList& el = part->nonconst_events();
+//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
+//         {
+//           Event& e = ie->second;
+//           if(e.tagged())
+//           {
+//             e.setTagged(false);
+//             
+//             // This operation can only apply to notes.
+//             if(e.type() != Note)
+//               continue;
+//             
+//             velo = e.veloOff();
+// 
+//             velo = (velo * rate) / 100;
+//             velo += offset;
+// 
+//             if (velo <= 0)
+//               velo = 1;
+//             else if (velo > 127)
+//               velo = 127;
+//               
+//             if (e.veloOff() != velo)
+//             {
+//               newEvent = e.clone();
+//               newEvent.setVeloOff(velo);
+//               operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+//   
+//   return MusEGlobal::song->applyOperationGroup(operations);
+// }
+
+bool modify_off_velocity_items(TagEventList* list, int rate, int offset)
 {
   if(rate == 100 && offset == 0)
-  {
-    // Must untag all items.
-    untag_all_items();
     return false;
-  }
   
   Undo operations;
   int velo;
   Event newEvent;
-  Part* part;
-  PartList* pl;
-  TrackList* tl = MusEGlobal::song->tracks();
+  const Part* part;
 
-  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
   {
-    pl = (*it)->parts();
-    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    part = itl->first;
+    const EventList& el = itl->second;
+    for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
-      part = ip->second;
-      part->setTagged(false);
-      if(part->eventsTagged())
+      const Event& e = ie->second;
+      
+      // This operation can only apply to notes.
+      if(e.type() != Note)
+        continue;
+      
+      velo = e.veloOff();
+
+      velo = (velo * rate) / 100;
+      velo += offset;
+
+      if (velo <= 0)
+        velo = 1;
+      else if (velo > 127)
+        velo = 127;
+        
+      if (e.veloOff() != velo)
       {
-        part->setEventsTagged(false);
-        EventList& el = part->nonconst_events();
-        for(iEvent ie = el.begin(); ie != el.end(); ie++)
-        {
-          Event& e = ie->second;
-          if(e.tagged())
-          {
-            e.setTagged(false);
-            
-            // This operation can only apply to notes.
-            if(e.type() != Note)
-              continue;
-            
-            velo = e.veloOff();
-
-            velo = (velo * rate) / 100;
-            velo += offset;
-
-            if (velo <= 0)
-              velo = 1;
-            else if (velo > 127)
-              velo = 127;
-              
-            if (e.veloOff() != velo)
-            {
-              newEvent = e.clone();
-              newEvent.setVeloOff(velo);
-              operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
-            }
-          }
-        }
+        newEvent = e.clone();
+        newEvent.setVeloOff(velo);
+        operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
       }
     }
   }
@@ -2770,17 +3267,38 @@ bool modify_off_velocity_items(int rate, int offset)
   return MusEGlobal::song->applyOperationGroup(operations);
 }
 
-void copy_items()
+// void copy_items()
+// {
+//  QMimeData* drag = cut_or_copy_tagged_items_to_mime();
+// 
+//  if (drag)
+//    QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
+// }
+
+void copy_items(TagEventList* list)
 {
- QMimeData* drag = cut_or_copy_tagged_items_to_mime();
+ QMimeData* drag = cut_or_copy_tagged_items_to_mime(list);
 
  if (drag)
    QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
 }
 
-bool cut_items()
+// bool cut_items()
+// {
+//   QMimeData* drag = cut_or_copy_tagged_items_to_mime(true);
+// 
+//   if(drag)
+//   {
+//     QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
+//     return true;
+//   }
+//   
+//   return false;
+// }
+
+bool cut_items(TagEventList* list)
 {
-  QMimeData* drag = cut_or_copy_tagged_items_to_mime(true);
+  QMimeData* drag = cut_or_copy_tagged_items_to_mime(list, true);
 
   if(drag)
   {
@@ -2792,141 +3310,334 @@ bool cut_items()
 }
 
 // REMOVE Tim. citem. Added.
+// // if nothing is selected/relevant, this function returns NULL
+// QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode /*, bool untag_when_done*/)
+// {
+// //     unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
+//   
+//     // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
+// //     unsigned start_tick = 0;
+//     //Event start_event;
+//     Pos start_pos;
+// 
+//     Undo operations;
+//   
+//     //bool do_cut = false;
+//     bool found = false;
+//     bool changed = false;
+//     Part* part;
+//     PartList* pl;
+//     TrackList* tl = MusEGlobal::song->tracks();
+//     for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//     {
+//       pl = (*it)->parts();
+//       for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//       {
+//         part = ip->second;
+//         // As an optimization, we only walk the events if the part says events are tagged.
+//         if(part->eventsTagged())
+//         {
+//           const EventList& el = part->events();
+//           for(ciEvent ie = el.begin(); ie != el.end(); ie++)
+//           {
+//             const Event& e = ie->second;
+//             //Event e = ie->second;
+//             
+// //             do_cut = false;
+// //             if(cut_mode)
+// //             {
+// //               // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
+// //               do_cut = (e.type() != Note) || (!cut_velo_thres_used && !cut_len_thres_used) ||
+// //                        (cut_velo_thres_used && e.velo() < cut_velo_threshold) ||
+// //                        (cut_len_thres_used && int(e.lenTick()) < cut_len_threshold);
+// //             }
+//             
+// //             if(e.tagged() && (!cut_mode || do_cut)) // && is_relevant(e, part, range, AllEventsRelevant))
+//             if(e.tagged()) // && is_relevant(e, part, range, AllEventsRelevant))
+//             {
+// //               if(e.tick() < start_tick)
+//               
+//               // Make sure the very first item is always processed.
+//               //if(!found || e.tick() < start_tick)
+//               if(!found || e.pos() < start_pos)
+//               {
+//                 found = true;
+// //                 start_tick = e.tick();
+//                 //start_event = e;
+//                 start_pos = e.pos();
+//               }
+//               
+//               // If there are clones of this event, untag all of them now except this one.
+//               // This prevents the operations system from warning of double operations.
+//               // The operations system will automatically take care of clones when performing
+//               //  an operation on any ONE of them. So make sure THIS is the only one tagged.
+//               // Since this is the first clone found, its position is the one considered
+//               //  for start_tick above, and this should be OK since the parts and events are
+//               //  sorted by position.
+// // //               // FIXME Oops. No this is flawed and can fail if clone part on Track 1 is
+// // //               //        AFTER clone part on Track 2. This will pick the position of that
+// // //               //        clone on the right in Track
+//               untag_clones(part, e);
+//             }
+//           }
+//         }
+//       }
+//     }
+//     
+// //     if (start_tick == INT_MAX)
+//     if(!found)
+//     {
+//       //if(untag_when_done)
+//       {
+//         // We must clear all the tagged flags...
+//         for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//         {
+//           pl = (*it)->parts();
+//           for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//           {
+//             part = ip->second;
+//             part->setTagged(false);
+//             // As an optimization, we only walk the events if the part says events are tagged.
+//             if(part->eventsTagged())
+//             {
+//               part->setEventsTagged(false);
+//               EventList& el = part->nonconst_events();
+//               for(iEvent ie = el.begin(); ie != el.end(); ie++)
+//                 ie->second.setTagged(false);
+//             }
+//           }
+//         }
+//       }
+//       return NULL;
+//     }
+// 
+//     //---------------------------------------------------
+//     //    write events as XML into tmp file
+//     //---------------------------------------------------
+// 
+//     FILE* tmp = tmpfile();
+//     if (tmp == 0)
+//     {
+//         fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
+//         return 0;
+//     }
+// 
+//     Xml xml(tmp);
+//     int level = 0;
+// 
+//     for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//     {
+//       pl = (*it)->parts();
+//       for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//       {
+//         part = ip->second;
+//         //if(untag_when_done)
+//           part->setTagged(false);
+//         // As an optimization, we only walk the events if the part says events are tagged.
+//         if(part->eventsTagged())
+//         {
+//           //if(untag_when_done)
+//             part->setEventsTagged(false);
+//           xml.tag(level++, "eventlist part_id=\"%d\"", part->sn());
+//           EventList& el = part->nonconst_events();
+//           for(iEvent ie = el.begin(); ie != el.end(); ie++)
+//           {
+//             Event& e = ie->second;
+//             if(e.tagged())
+//             {
+//               //if(untag_when_done)
+// //                 e.setTagged(false);
+// 
+// //               do_cut = false;
+// //               if(cut_mode)
+// //               {
+// //                 // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
+// //                 do_cut = (e.type() != Note) || (!cut_velo_thres_used && !cut_len_thres_used) ||
+// //                         (cut_velo_thres_used && e.velo() < cut_velo_threshold) ||
+// //                         (cut_len_thres_used && int(e.lenTick()) < cut_len_threshold);
+// //               }
+//                 
+//               
+// //               if(!cut_mode || do_cut)
+//                 //e.write(level, xml, -start_tick);
+//                 //Event ne(e);
+//                 Event ne = e.clone();
+//                 //ne.setPos(ne.pos() - start_event.pos());
+//                 ne.setPos(ne.pos() - start_pos);
+//                 ne.write(level, xml, Pos(0, e.pos().type() == Pos::TICKS));
+//                 //ne.write(level, xml, -start_pos);
+//    
+//                 // Reset the tag now, after the write. 
+//                 // Allow the tag info in the write, so that the paste routines can use the info.
+//                 e.setTagged(false);
+//                 
+// //               if(cut_mode && do_cut)
+//               if(cut_mode)
+//               {
+//                 changed = true;
+//                 operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
+//               }
+//             }
+//           }
+//           xml.etag(--level, "eventlist");
+//         }
+//       }
+//     }
+//     
+//     QMimeData *mimeData =  file_to_mimedata(tmp, "text/x-muse-groupedeventlists" );
+//     fclose(tmp);
+//     
+//     if(changed)
+//       MusEGlobal::song->applyOperationGroup(operations);
+//     
+//     return mimeData;
+// }
+
 // if nothing is selected/relevant, this function returns NULL
-QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode /*, bool untag_when_done*/)
+QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* list, bool cut_mode)
 {
+    if(list->empty())
+      return NULL;
+  
+    QTemporaryFile tmp;
+    if(!tmp.open())
+    {
+        fprintf(stderr, "cut_or_copy_tagged_items_to_mime(): ERROR: Failed to open temporary file\n");
+        return NULL;
+    }
+    
 //     unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
   
     // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
 //     unsigned start_tick = 0;
     //Event start_event;
-    Pos start_pos;
+    Pos start_pos = list->startPos();
 
     Undo operations;
   
-    //bool do_cut = false;
-    bool found = false;
+//     //bool do_cut = false;
+// //     bool found = false;
     bool changed = false;
-    Part* part;
-    PartList* pl;
-    TrackList* tl = MusEGlobal::song->tracks();
-    for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-    {
-      pl = (*it)->parts();
-      for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-      {
-        part = ip->second;
-        // As an optimization, we only walk the events if the part says events are tagged.
-        if(part->eventsTagged())
-        {
-          const EventList& el = part->events();
-          for(ciEvent ie = el.begin(); ie != el.end(); ie++)
-          {
-            const Event& e = ie->second;
-            //Event e = ie->second;
-            
-//             do_cut = false;
-//             if(cut_mode)
+    const Part* part;
+// 
+//     for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
+//     {
+//       part = itl->first;
+//       const EventList& el = itl->second;
+//       for(ciEvent ie = el.begin(); ie != el.end(); ie++)
+//       {
+//         const Event& e = ie->second;
+//       
+//             
+// //             do_cut = false;
+// //             if(cut_mode)
+// //             {
+// //               // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
+// //               do_cut = (e.type() != Note) || (!cut_velo_thres_used && !cut_len_thres_used) ||
+// //                        (cut_velo_thres_used && e.velo() < cut_velo_threshold) ||
+// //                        (cut_len_thres_used && int(e.lenTick()) < cut_len_threshold);
+// //             }
+//             
+// //             if(e.tagged() && (!cut_mode || do_cut)) // && is_relevant(e, part, range, AllEventsRelevant))
+//             if(e.tagged()) // && is_relevant(e, part, range, AllEventsRelevant))
 //             {
-//               // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
-//               do_cut = (e.type() != Note) || (!cut_velo_thres_used && !cut_len_thres_used) ||
-//                        (cut_velo_thres_used && e.velo() < cut_velo_threshold) ||
-//                        (cut_len_thres_used && int(e.lenTick()) < cut_len_threshold);
+// //               if(e.tick() < start_tick)
+//               
+//               // Make sure the very first item is always processed.
+//               //if(!found || e.tick() < start_tick)
+//               if(!found || e.pos() < start_pos)
+//               {
+//                 found = true;
+// //                 start_tick = e.tick();
+//                 //start_event = e;
+//                 start_pos = e.pos();
+//               }
+//               
+//               // If there are clones of this event, untag all of them now except this one.
+//               // This prevents the operations system from warning of double operations.
+//               // The operations system will automatically take care of clones when performing
+//               //  an operation on any ONE of them. So make sure THIS is the only one tagged.
+//               // Since this is the first clone found, its position is the one considered
+//               //  for start_tick above, and this should be OK since the parts and events are
+//               //  sorted by position.
+//               untag_clones(part, e);
 //             }
-            
-//             if(e.tagged() && (!cut_mode || do_cut)) // && is_relevant(e, part, range, AllEventsRelevant))
-            if(e.tagged()) // && is_relevant(e, part, range, AllEventsRelevant))
-            {
-//               if(e.tick() < start_tick)
-              
-              // Make sure the very first item is always processed.
-              //if(!found || e.tick() < start_tick)
-              if(!found || e.pos() < start_pos)
-              {
-                found = true;
-//                 start_tick = e.tick();
-                //start_event = e;
-                start_pos = e.pos();
-              }
-              
-              // If there are clones of this event, untag all of them now except this one.
-              // This prevents the operations system from warning of double operations.
-              // The operations system will automatically take care of clones when performing
-              //  an operation on any ONE of them. So make sure THIS is the only one tagged.
-              // Since this is the first clone found, its position is the one considered
-              //  for start_tick above, and this should be OK since the parts and events are
-              //  sorted by position.
-              untag_clones(part, e);
-            }
-          }
-        }
-      }
-    }
-    
-//     if (start_tick == INT_MAX)
-    if(!found)
-    {
-      //if(untag_when_done)
-      {
-        // We must clear all the tagged flags...
-        for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-        {
-          pl = (*it)->parts();
-          for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-          {
-            part = ip->second;
-            part->setTagged(false);
-            // As an optimization, we only walk the events if the part says events are tagged.
-            if(part->eventsTagged())
-            {
-              part->setEventsTagged(false);
-              EventList& el = part->nonconst_events();
-              for(iEvent ie = el.begin(); ie != el.end(); ie++)
-                ie->second.setTagged(false);
-            }
-          }
-        }
-      }
-      return NULL;
-    }
+//           }
+//         }
+//       }
+//     }
+//     
+// //     if (start_tick == INT_MAX)
+//     if(!found)
+//     {
+//       //if(untag_when_done)
+//       {
+//         // We must clear all the tagged flags...
+//         for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//         {
+//           pl = (*it)->parts();
+//           for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//           {
+//             part = ip->second;
+//             part->setTagged(false);
+//             // As an optimization, we only walk the events if the part says events are tagged.
+//             if(part->eventsTagged())
+//             {
+//               part->setEventsTagged(false);
+//               EventList& el = part->nonconst_events();
+//               for(iEvent ie = el.begin(); ie != el.end(); ie++)
+//                 ie->second.setTagged(false);
+//             }
+//           }
+//         }
+//       }
+//       return NULL;
+//     }
 
     //---------------------------------------------------
     //    write events as XML into tmp file
     //---------------------------------------------------
 
-    FILE* tmp = tmpfile();
-    if (tmp == 0)
-    {
-        fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
-        return 0;
-    }
-
-    Xml xml(tmp);
+//     FILE* tmp = tmpfile();
+//     if (tmp == 0)
+//     {
+//         fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
+//         return 0;
+//     }
+    
+//     Xml xml(tmp);
+    Xml xml(&tmp);
     int level = 0;
 
-    for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//     for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+//     {
+//       pl = (*it)->parts();
+//       for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+//       {
+//         part = ip->second;
+//         //if(untag_when_done)
+//           part->setTagged(false);
+//         // As an optimization, we only walk the events if the part says events are tagged.
+//         if(part->eventsTagged())
+//         {
+//           //if(untag_when_done)
+//             part->setEventsTagged(false);
+            
+            
+            
+    for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
     {
-      pl = (*it)->parts();
-      for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+      part = itl->first;
+      const EventList& el = itl->second;
+      if(el.empty())
+        continue;
+      
+      xml.tag(level++, "eventlist part_id=\"%d\"", part->sn());
+      for(ciEvent ie = el.begin(); ie != el.end(); ie++)
       {
-        part = ip->second;
-        //if(untag_when_done)
-          part->setTagged(false);
-        // As an optimization, we only walk the events if the part says events are tagged.
-        if(part->eventsTagged())
-        {
-          //if(untag_when_done)
-            part->setEventsTagged(false);
-          xml.tag(level++, "eventlist part_id=\"%d\"", part->sn());
-          EventList& el = part->nonconst_events();
-          for(iEvent ie = el.begin(); ie != el.end(); ie++)
-          {
-            Event& e = ie->second;
-            if(e.tagged())
-            {
-              //if(untag_when_done)
-//                 e.setTagged(false);
-
+        const Event& e = ie->second;
+      
+            
 //               do_cut = false;
 //               if(cut_mode)
 //               {
@@ -2938,34 +3649,32 @@ QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode /*, bool untag_when_do
                 
               
 //               if(!cut_mode || do_cut)
-                //e.write(level, xml, -start_tick);
-                //Event ne(e);
-                Event ne = e.clone();
-                //ne.setPos(ne.pos() - start_event.pos());
-                ne.setPos(ne.pos() - start_pos);
-                ne.write(level, xml, Pos(0, e.pos().type() == Pos::TICKS));
-                //ne.write(level, xml, -start_pos);
-   
-                // Reset the tag now, after the write. 
-                // Allow the tag info in the write, so that the paste routines can use the info.
-                e.setTagged(false);
-                
+          //e.write(level, xml, -start_tick);
+          //Event ne(e);
+          Event ne = e.clone();
+          //ne.setPos(ne.pos() - start_event.pos());
+          ne.setPos(ne.pos() - start_pos);
+          ne.write(level, xml, Pos(0, e.pos().type() == Pos::TICKS));
+          //ne.write(level, xml, -start_pos);
+
+          // Reset the tag now, after the write. 
+          // Allow the tag info in the write, so that the paste routines can use the info.
+//                 e.setTagged(false);
+          
 //               if(cut_mode && do_cut)
-              if(cut_mode)
-              {
-                changed = true;
-                operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
-              }
-            }
-          }
-          xml.etag(--level, "eventlist");
+        if(cut_mode)
+        {
+          changed = true;
+          operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
         }
       }
+      xml.etag(--level, "eventlist");
     }
     
-    QMimeData *mimeData =  file_to_mimedata(tmp, "text/x-muse-groupedeventlists" );
-    fclose(tmp);
-    
+    const QByteArray data = tmp.readAll();
+    QMimeData* mimeData = new QMimeData();
+    mimeData->setData("text/x-muse-groupedeventlists", data);
+
     if(changed)
       MusEGlobal::song->applyOperationGroup(operations);
     
@@ -3301,6 +4010,9 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 													
 													case Controller:
 													{
+														const unsigned int len_val = e.lenValue();
+														// HACK Be sure to reset this always as we use it for indicating the visual width.
+														e.setLenValue(0);
 														// If this is a fresh new part, to avoid double DeleteMidiCtrlVal warnings when undoing
 														//  just add the event directly to the part instead of an operation.
 														if(create_new_part)
@@ -3318,8 +4030,10 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 															{
 																ctl_num = e.dataA();
 																ctl_time = e.posValue();
-																if(e.tag()._flags & EventTagWidthValid)
-																	ctl_end_time = ctl_time + e.tag()._width;
+// 																if(e.tag()._flags & EventTagWidthValid)
+// 																	ctl_end_time = ctl_time + e.tag()._width;
+																if(len_val > 0)
+																	ctl_end_time = ctl_time + len_val;
 																else
 																	ctl_end_time = ctl_time + 1;
 																i_ctlmap_t icm = ctl_map.find(ctl_num);

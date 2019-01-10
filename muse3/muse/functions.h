@@ -27,8 +27,11 @@
 #include "part.h"
 #include "dialogs.h"
 #include "type_defs.h"
-#include "pos.h" // REMOVE Tim. citem. Added.
-#include "function_dialog_consts.h" // REMOVE Tim. citem. Added.
+// REMOVE Tim. citem. Added.
+#include "event_tag_list.h"
+#include "pos.h"
+#include "function_dialog_consts.h"
+
 #include <QWidget>
 
 class QString;
@@ -281,21 +284,38 @@ bool legato(const std::set<const Part*>& parts, int range, int min_len=1, bool d
 
 
 
-bool erase_items(int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
-void copy_items();
-bool cut_items();
-bool delete_overlaps_items();
-bool crescendo_items(int start_val, int end_val, bool absolute);
-bool modify_notelen_items(int rate, int offset=0);
-bool legato_items(int min_len=1, bool dont_shorten=false);
-bool move_items(signed int ticks);
-bool quantize_items(int raster, bool quant_len=false, int strength=100, int swing=0, int threshold=0);
-bool set_notelen_items(int len);
-bool transpose_items(signed int halftonesteps);
-bool modify_velocity_items(int rate, int offset=0);
-bool modify_off_velocity_items(int rate, int offset=0);
+// bool modify_velocity_items(int rate, int offset=0);
+// bool modify_off_velocity_items(int rate, int offset=0);
+// bool modify_notelen_items(int rate, int offset=0);
+// bool quantize_items(int raster, bool quant_len=false, int strength=100, int swing=0, int threshold=0);
+// bool erase_items(int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
+// bool delete_overlaps_items();
+// bool set_notelen_items(int len);
+// bool move_items(signed int ticks);
+// bool transpose_items(signed int halftonesteps);
+// bool crescendo_items(int start_val, int end_val, bool absolute);
+// bool legato_items(int min_len=1, bool dont_shorten=false);
 
-QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode = false /*, bool untag_when_done = true*/);
+
+bool modify_velocity_items(TagEventList* list, int rate, int offset=0);
+bool modify_off_velocity_items(TagEventList* list, int rate, int offset=0);
+bool modify_notelen_items(TagEventList* list, int rate, int offset=0);
+bool quantize_items(TagEventList* list, int raster, bool quant_len=false, int strength=100, int swing=0, int threshold=0);
+bool erase_items(TagEventList* list, int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
+bool delete_overlaps_items(TagEventList* list);
+bool set_notelen_items(TagEventList* list, int len);
+bool move_items(TagEventList* list, signed int ticks);
+bool transpose_items(TagEventList* list, signed int halftonesteps);
+bool crescendo_items(TagEventList* list, int start_val, int end_val, bool absolute);
+bool legato_items(TagEventList* list, int min_len=1, bool dont_shorten=false);
+
+
+// void copy_items();
+void copy_items(TagEventList* list);
+// bool cut_items();
+bool cut_items(TagEventList* list);
+// QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode = false /*, bool untag_when_done = true*/);
+QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* list, bool cut_mode = false);
 
 bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part=NULL); // shows a dialog
 void paste_items(const std::set<const Part*>& parts, int max_distance=3072,
@@ -331,7 +351,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
               // Erase target space between source 'clusters'.
               bool erase_controllers_inclusive = false);
 // Ensures that all events are untagged. Useful for aborting dialog etc.
-void untag_all_items();
+// void untag_all_items();
 
 
 
