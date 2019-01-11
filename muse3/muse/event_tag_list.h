@@ -51,9 +51,16 @@ class TagEventList : public TagEventList_t
     TagEventList() : _startPosValid(false) { }
     
     // Adds a part and optionally an event.
-    // If no event is given, does not add the part if a clone
-    //  or the part itself already exists in the list.
-    // If the event is given, does not allow clone events to be added,
+// //     // If no event is given, does not add the part if a clone
+// //     //  or the part itself already exists in the list.
+    // If no event is given, does not add the part if the part
+    //  already exists in the list.
+    // Adding a part alone with an empty event list means to add
+    //  ALL of its events, which is an optimization so that all events
+    //  do not have to added and the reader will know to use all of
+    //  the part's event list rather than this event list.
+// //     // If the event is given, does not allow clone events to be added,
+    // If the event is given, does not allow duplicate events to be added,
     //  but does allow clone parts in order to catch 'rogue' events
     //  that might be missing from other clone parts by mistake.
     // The cached starting position is set to the 'soonest' event.

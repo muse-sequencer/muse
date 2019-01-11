@@ -696,8 +696,9 @@ Part::Part(Track* t)
       _clonemaster_sn = _sn;
       _track      = t;
       _selected   = false;
-      _tagged     = false;
-      _eventsTagged = false;
+// REMOVE Tim. citem. Added.
+//       _tagged     = false;
+//       _eventsTagged = false;
       _mute       = false;
       _colorIndex = 0;
       }

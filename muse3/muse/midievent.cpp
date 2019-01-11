@@ -144,6 +144,15 @@ void MidiEventBase::write(int level, Xml& xml, const Pos& offset, bool /*forcePa
             case Note:
                   xml.nput(" len=\"%d\"", lenTick());
                   break;
+// REMOVE Tim. citem. Added.
+            case Controller:
+                  // HACK We abuse the length member as a visual length for certain temporary
+                  //       operations such as copy/paste. Write it here but make sure
+                  //       to DISCARD it later, never store it into an actual file,
+                  //       the length is normally ZERO for all controllers.
+                  if(lenTick() != 0)
+                    xml.nput(" len=\"%d\"", lenTick());
+                  break;
             default:
                   xml.nput(" type=\"%d\"", type());
                   break;

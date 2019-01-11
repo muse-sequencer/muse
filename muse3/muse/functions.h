@@ -309,7 +309,6 @@ bool transpose_items(TagEventList* list, signed int halftonesteps);
 bool crescendo_items(TagEventList* list, int start_val, int end_val, bool absolute);
 bool legato_items(TagEventList* list, int min_len=1, bool dont_shorten=false);
 
-
 // void copy_items();
 void copy_items(TagEventList* list);
 // bool cut_items();
@@ -319,37 +318,72 @@ QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* list, bool cut_mode = 
 
 bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part=NULL); // shows a dialog
 void paste_items(const std::set<const Part*>& parts, int max_distance=3072,
-                 bool always_new_part=false, bool never_new_part=false,
-                 const Part* paste_into_part=NULL, int amount=1, int raster=3072,
+                 // Options. Default is erase target existing controllers first + erase wysiwyg.
+                 const FunctionOptionsStruct& options = FunctionOptionsStruct(),
+                 // Paste into this part instead of the original part(s).
+                 const Part* paste_into_part=NULL,
+                 // Number of copies to paste.
+                 int amount=1,
+                 // Separation between copies.
+                 int raster=3072,
                  // Choose which events to paste.
                  RelevantSelectedEvents_t relevant = AllEventsRelevant,
                  // If pasting controllers, paste into this controller number if not -1.
                  // If the source has multiple controllers, user will be asked which one to paste.
-                 int paste_to_ctrl_num = -1,
-                 // Erase target existing controllers first.
-                 bool erase_controllers = true,
-                 // If erasing first: How to handle the last item in any 'cluster' of controller events.
-                 bool erase_controllers_wysiwyg = true,
-                 // Erase target space between source 'clusters'.
-                 bool erase_controllers_inclusive = false);
+                 int paste_to_ctrl_num = -1
+                 );
+
 //void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int pos, int max_distance=3072,
-void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const Pos& pos, int max_distance=3072,
-              bool always_new_part=false, bool never_new_part=false,
-              const Part* paste_into_part=NULL, int amount=1, int raster=3072,
-              // Choose which events to paste.
-              RelevantSelectedEvents_t relevant = AllEventsRelevant,
-              // If pasting controllers, paste into this controller number if not -1.
-              // If the source has multiple controllers, user will be asked which one to paste.
-              int paste_to_ctrl_num = -1,
-              // Erase target existing controllers first.
-              bool erase_controllers = true,
-              // If erasing first: How to handle the last item in any 'cluster' of controller events:
-              // Whether to erase ONLY UP TO AND INCLUDING the last item in a cluster, or erase
-              //  PAST the last item to include the WIDTH of the last controller 'bar' as it was viewed
-              //  in the copying source (What You See Is What You Get editing).
-              bool erase_controllers_wysiwyg = true,
-              // Erase target space between source 'clusters'.
-              bool erase_controllers_inclusive = false);
+void paste_items_at(
+  // List of parts from which to look for original part(s).
+  const std::set<const Part*>& parts,
+  // Text Xml list of parts and events to paste.
+  const QString& pt,
+  // Position to paste at.
+  const Pos& pos,
+  // Distance at which destination part is too far away
+  //  (too soon, to the left) so a new part will be created.
+  int max_distance=3072,
+  // Erase target existing controllers first + erase wysiwyg.
+  const FunctionOptionsStruct& options = FunctionOptionsStruct(),
+  // Paste into this part instead of the original part(s).
+  const Part* paste_into_part=NULL,
+  // Number of copies to paste.
+  int amount=1,
+  // Separation between copies.
+  int raster=3072,
+  // Choose which events to paste.
+  RelevantSelectedEvents_t relevant = AllEventsRelevant,
+  // If pasting controllers, paste into this controller number if not -1.
+  // If the source has multiple controllers, user will be asked which one to paste.
+  int paste_to_ctrl_num = -1
+  );
+
+void paste_items_at(
+  // List of parts from which to look for original part(s).
+  const std::set<const Part*>& parts,
+  // List of parts and events to paste.
+  const TagEventList* tag_list,
+  // Position to paste at.
+  const Pos& pos,
+  // Distance at which destination part is too far away
+  //  (too soon, to the left) so a new part will be created.
+  int max_distance=3072,
+  // Erase target existing controllers first + erase wysiwyg.
+  const FunctionOptionsStruct& options = FunctionOptionsStruct(),
+  // Paste into this part instead of the original part(s).
+  const Part* paste_into_part=NULL,
+  // Number of copies to paste.
+  int amount=1,
+  // Separation between copies.
+  int raster=3072,
+  // Choose which events to paste.
+  RelevantSelectedEvents_t relevant = AllEventsRelevant,
+  // If pasting controllers, paste into this controller number if not -1.
+  // If the source has multiple controllers, user will be asked which one to paste.
+  int paste_to_ctrl_num = -1
+  );
+
 // Ensures that all events are untagged. Useful for aborting dialog etc.
 // void untag_all_items();
 

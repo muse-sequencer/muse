@@ -1449,15 +1449,20 @@ void DrumEdit::cmd(int cmd)
                            true, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos()));
                   MusECore::copy_items(&list);
                   break;
-            case DrumCanvas::CMD_PASTE: 
+            case DrumCanvas::CMD_PASTE:
                               ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-                              MusECore::paste_items(partlist_to_set(parts()), 3072, false, true);
+                              MusECore::paste_items(partlist_to_set(parts()), 3072,
+                                MusECore::FunctionOptionsStruct(
+                                  MusECore::FunctionEraseItemsDefault | MusECore::FunctionPasteNeverNewPart));
                               break;
-            case DrumCanvas::CMD_PASTE_TO_CUR_PART: 
+            case DrumCanvas::CMD_PASTE_TO_CUR_PART:
                               ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-                              MusECore::paste_items(partlist_to_set(parts()), 3072, false, true, canvas->part());
+                              MusECore::paste_items(partlist_to_set(parts()), 3072,
+                                MusECore::FunctionOptionsStruct(
+                                  MusECore::FunctionEraseItemsDefault | MusECore::FunctionPasteNeverNewPart),
+                                canvas->part());
                               break;
-            case DrumCanvas::CMD_PASTE_DIALOG: 
+            case DrumCanvas::CMD_PASTE_DIALOG:
                               ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
                               MusECore::paste_items(partlist_to_set(parts()), (canvas->part()));
                               break;

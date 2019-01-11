@@ -91,7 +91,7 @@ struct SongChangedStruct_t
   // The object's own songChanged() slot (if present) can use this to
   //  ignore self-generated songChanged signals. This is the only practical
   //  mechanism available for objects needing to do so. There's really
-  //  no other easy way to igore such signals.
+  //  no other easy way to ignore such signals.
   void* _sender;
   
   SongChangedStruct_t(SongChangedFlags_t flags = 0, SongChangedSubFlags_t subFlags = 0, void* sender = 0) :
@@ -147,19 +147,38 @@ typedef int RelevantSelectedEvents_t;
 
 enum FunctionOptions {
   FunctionNoOptions = 0x00,
-  // Erase existing items first.
-  FunctionEraseItems = 0x01,
-  // If erasing first: How to handle the last item in any 'cluster' of controller events.
-  FunctionEraseItemsWysiwyg = 0x02,
-  // Erase empty space between 'clusters'.
-  FunctionEraseItemsInclusive = 0x04,
+  // For pasting. Whether to cut the given items before pasting.
+  // Don't call cut_items() AND then set this flag on paste_at().
+  // Here, cutting is usually reserved for direct pasting
+  //  (calling paste_items_at() with an EventTagList*).
+  FunctionCutItems = 0x01,
+  // Always paste into a new part.
+  FunctionPasteAlwaysNewPart = 0x02,
+  // Never paste into a new part.
+  FunctionPasteNeverNewPart = 0x04,
+  // Erase existing target controller items first.
+  FunctionEraseItems = 0x08,
+  // If FunctionEraseItems is set: How to handle the last item in any 'cluster' of controller events.
+  FunctionEraseItemsWysiwyg = 0x10,
+  // If FunctionEraseItems is set: Erase existing target items in empty source space between 'clusters'.
+  FunctionEraseItemsInclusive = 0x20,
   FunctionEraseItemsDefault =
     FunctionEraseItems | FunctionEraseItemsWysiwyg,
   FunctionAllOptions =
+    FunctionCutItems | FunctionPasteAlwaysNewPart | FunctionPasteNeverNewPart |
     FunctionEraseItems | FunctionEraseItemsWysiwyg | FunctionEraseItemsInclusive
 };
 typedef int FunctionOptions_t;
 
+struct FunctionOptionsStruct
+{
+  FunctionOptions_t _flags;
+  
+  FunctionOptionsStruct(const FunctionOptions_t& flags = FunctionEraseItemsDefault) : _flags(flags) { }
+  void clear() { _flags = FunctionNoOptions; }
+  void appendFlags(const FunctionOptions_t& flags) { _flags |= flags; }
+  void removeFlags(const FunctionOptions_t& flags) { _flags &= ~flags; }
+};
 
 // REMOVE Tim. Moved into event_tag_list.h
 // //--------------------------------------------------------------

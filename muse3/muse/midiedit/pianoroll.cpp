@@ -906,11 +906,14 @@ void PianoRoll::cmd(int cmd)
                   break;
             case PianoCanvas::CMD_PASTE: 
                               ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-                              MusECore::paste_items(partlist_to_set(parts()), 3072, false, true);
+                              MusECore::paste_items(partlist_to_set(parts()), 3072, MusECore::FunctionOptionsStruct(
+                                  MusECore::FunctionEraseItemsDefault | MusECore::FunctionPasteNeverNewPart));
                               break;
             case PianoCanvas::CMD_PASTE_TO_CUR_PART: 
                               ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-                              MusECore::paste_items(partlist_to_set(parts()), 3072, false, true, canvas->part());
+                              MusECore::paste_items(partlist_to_set(parts()), 3072, MusECore::FunctionOptionsStruct(
+                                  MusECore::FunctionEraseItemsDefault | MusECore::FunctionPasteNeverNewPart),
+                                  canvas->part());
                               break;
             case PianoCanvas::CMD_PASTE_DIALOG: 
                               ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);

@@ -848,7 +848,8 @@ void ScoreEdit::menu_command(int cmd)
         case CMD_PASTE:
             menu_command(CMD_SELECT_NONE);
 //             MusECore::paste_notes(3072, false, true, score_canvas->get_selected_part());
-            MusECore::paste_items(score_canvas->get_all_parts(), 3072, false, true);
+            MusECore::paste_items(score_canvas->get_all_parts(), 3072, MusECore::FunctionOptionsStruct(
+                                  MusECore::FunctionEraseItemsDefault | MusECore::FunctionPasteNeverNewPart));
             break;
         case CMD_PASTE_DIALOG:
             menu_command(CMD_SELECT_NONE);

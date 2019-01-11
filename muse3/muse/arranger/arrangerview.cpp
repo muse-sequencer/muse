@@ -762,6 +762,7 @@ void ArrangerView::tagItems(MusECore::TagEventList* list, const MusECore::EventT
           else
           {
 //             part->setTagged(true);
+            // Adding a part alone means adding ALL of its events.
             list->add(part);
           }
         }

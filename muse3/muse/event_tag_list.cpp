@@ -42,24 +42,31 @@ bool TagEventList::add(const Part* part, const Event* event, bool resetStartPos)
   //  we'll check the event lists so we don't miss anything ...
   if(event)
   {
+    ciTagEventList found_part_itl = cend();
     const Event& e = *event;
-    iTagEventList itl = begin();
-    for( ; itl != end(); ++itl)
+    ciTagEventList itl = cbegin();
+    for( ; itl != cend(); ++itl)
     {
       const Part* p = itl->first;
-      // Stop if we found the given part.
-      if(p == part)
-        break;
-      // From here on we're looking for clone parts.
-      if(!p->isCloneOf(part))
-        continue;
-
-      // Is the event already listed in this clone part?
-      // FIXME TODO: Avoid duplicate events or clone events.
+// REMOVE Tim. citem. Added.
+//       // Stop if we found the given part.
+//       if(p == part)
+//         break;
+//       // From here on we're looking for clone parts.
+//       if(!p->isCloneOf(part))
+//         continue;
+// 
+//       // Is the event already listed in this clone part?
+//       // FIXME TODO: Avoid duplicate events or clone events.
+      
+      // Is the event already listed in this part?
       const EventList& el = itl->second;
       ciEvent ie = el.findWithId(e);
-      if(ie != el.end())
+      if(ie != el.cend())
         return false;
+      
+      if(p == part)
+        found_part_itl = itl;
     }
     
     if(!_startPosValid || e.pos() < _startPos)
@@ -68,7 +75,7 @@ bool TagEventList::add(const Part* part, const Event* event, bool resetStartPos)
       _startPos = e.pos();
     }
 
-    if(itl == end())
+    if(found_part_itl == cend())
     {
       EventList el;
       el.add(*event);
@@ -76,25 +83,27 @@ bool TagEventList::add(const Part* part, const Event* event, bool resetStartPos)
     }
     else
     {
-      EventList& el = itl->second;
+      EventList& el = found_part_itl->second;
       el.add(*event);
     }
   }
   else
-  // No event was given. Do not add the part if a clone
-  //  or the part itself already exists in the list.
   {
-    for(iTagEventList itl = begin(); itl != end(); ++itl)
-    {
-      const Part* p = itl->first;
-      // Is the given part already listed?
-      if(p == part)
-        return false;
-      // Is a clone part already listed?
-      if(p->isCloneOf(part))
-        return false;
-    }
-
+// REMOVE Tim. citem. Added.
+// TODO Hm, clones or no clones?
+//     // No event was given. Do not add the part if a clone
+//     //  or the part itself already exists in the list.
+//     for(iTagEventList itl = begin(); itl != end(); ++itl)
+//     {
+//       const Part* p = itl->first;
+//       // Is the given part already listed?
+//       if(p == part)
+//         return false;
+//       // Is a clone part already listed?
+//       if(p->isCloneOf(part))
+//         return false;
+//     }
+    
     EventList el;
     insert(TagEventListPair_t(part, el));
   }
