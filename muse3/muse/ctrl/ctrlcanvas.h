@@ -103,8 +103,12 @@ class CEvent : public CItem {
       MusECore::Event event() const         { return _event;  }
       // HACK This returns a clone of the event with the length set to the visual length.
       //      It should only be used for temporary things like copy/paste and the length
-      //       value should be reset to zero after it has been used.
-      MusECore::Event eventWithLength() const;
+      //       value should be reset to zero after usage.
+      //      Normally an event's length is ALWAYS zero for all controller events.
+      //      For convenience for the tagging feature, it also accepts an offset vector
+      //       which is added to each of the events so that only the first event position
+      //       is needed to pass to any pasting routines later.
+      MusECore::Event eventWithLength(const QPoint& offset = QPoint()) const;
       void setEvent(const MusECore::Event& e)     { _event = e;     }
       MusECore::Part* part() const  { return _part;  }
       void setPart(MusECore::Part* p)       { _part = p; }
@@ -219,6 +223,13 @@ class CtrlCanvas : public MusEGui::View {
       enum DragType {
             MOVE_MOVE, MOVE_COPY
             };
+
+      static const int contextIdCancelDrag;
+      static const int contextIdMerge;
+      static const int contextIdMergeCopy;
+      static const int contextIdErase;
+      static const int contextIdEraseWysiwyg;
+      static const int contextIdEraseInclusive;
 
       CItemList items;
       // To avoid working directly with a potentially huge number of items
@@ -338,7 +349,7 @@ class CtrlCanvas : public MusEGui::View {
 //         const MusECore::Pos& = MusECore::Pos(), const MusECore::Pos& = MusECore::Pos()) const;
       // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
       // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
-      void tagItems(MusECore::TagEventList* list, const MusECore::EventTagOptionsStruct& options) const;
+      void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
       };
 
 } // namespace MusEGui

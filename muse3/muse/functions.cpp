@@ -2112,16 +2112,16 @@ bool delete_selected_parts()
 //   return MusEGlobal::song->applyOperationGroup(operations);
 // }
 
-bool erase_items(TagEventList* list, int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
+bool erase_items(TagEventList* tag_list, int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
 {
   Undo operations;
   
   const Part* part;
     
-  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
+  for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
     part = itl->first;
-    const EventList& el = itl->second;
+    const EventList& el = itl->second.evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -2208,7 +2208,7 @@ bool erase_items(TagEventList* list, int velo_threshold, bool velo_thres_used, i
 //   return MusEGlobal::song->applyOperationGroup(operations);
 // }
 
-bool crescendo_items(TagEventList* list, int start_val, int end_val, bool absolute)
+bool crescendo_items(TagEventList* tag_list, int start_val, int end_val, bool absolute)
 {
   const Pos& from = MusEGlobal::song->lPos();
   const Pos& to = MusEGlobal::song->rPos();
@@ -2221,10 +2221,10 @@ bool crescendo_items(TagEventList* list, int start_val, int end_val, bool absolu
   unsigned int pos_val = (to - from).posValue();
   const Part* part;
     
-  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
+  for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
     part = itl->first;
-    const EventList& el = itl->second;
+    const EventList& el = itl->second.evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -2345,7 +2345,7 @@ bool crescendo_items(TagEventList* list, int start_val, int end_val, bool absolu
 //   return MusEGlobal::song->applyOperationGroup(operations);
 // }
 
-bool delete_overlaps_items(TagEventList* list)
+bool delete_overlaps_items(TagEventList* tag_list)
 {
   Undo operations;
   
@@ -2354,10 +2354,10 @@ bool delete_overlaps_items(TagEventList* list)
   Event new_event1;
   const Part* part;
     
-  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
+  for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
     part = itl->first;
-    const EventList& el = itl->second;
+    const EventList& el = itl->second.evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -2486,7 +2486,7 @@ bool delete_overlaps_items(TagEventList* list)
 //   return MusEGlobal::song->applyOperationGroup(operations);
 // }
 
-bool modify_notelen_items(TagEventList* list, int rate, int offset)
+bool modify_notelen_items(TagEventList* tag_list, int rate, int offset)
 {
   if(rate == 100 && offset == 0)
     return false;
@@ -2498,10 +2498,10 @@ bool modify_notelen_items(TagEventList* list, int rate, int offset)
   Event newEvent;
   const Part* part;
     
-  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
+  for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
     part = itl->first;
-    const EventList& el = itl->second;
+    const EventList& el = itl->second.evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -2607,7 +2607,7 @@ bool modify_notelen_items(TagEventList* list, int rate, int offset)
 //   return MusEGlobal::song->applyOperationGroup(operations);
 // }
 
-bool legato_items(TagEventList* list, int min_len, bool dont_shorten)
+bool legato_items(TagEventList* tag_list, int min_len, bool dont_shorten)
 {
   Undo operations;
   
@@ -2618,10 +2618,10 @@ bool legato_items(TagEventList* list, int min_len, bool dont_shorten)
   Event new_event1;
   const Part* part;
     
-  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
+  for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
     part = itl->first;
-    const EventList& el = itl->second;
+    const EventList& el = itl->second.evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -2743,7 +2743,7 @@ bool legato_items(TagEventList* list, int min_len, bool dont_shorten)
 //   return MusEGlobal::song->applyOperationGroup(operations);
 // }
 
-bool move_items(TagEventList* list, signed int ticks)
+bool move_items(TagEventList* tag_list, signed int ticks)
 {
   if(ticks == 0)
     return false;
@@ -2755,10 +2755,10 @@ bool move_items(TagEventList* list, signed int ticks)
   Event newEvent;
   const Part* part;
     
-  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
+  for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
     part = itl->first;
-    const EventList& el = itl->second;
+    const EventList& el = itl->second.evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -2887,7 +2887,7 @@ bool move_items(TagEventList* list, signed int ticks)
 //   return MusEGlobal::song->applyOperationGroup(operations);
 // }
 
-bool quantize_items(TagEventList* list, int raster_idx, bool quant_len, int strength, int swing, int threshold)
+bool quantize_items(TagEventList* tag_list, int raster_idx, bool quant_len, int strength, int swing, int threshold)
 {
   const int rv = MusEGui::functionQuantizeRasterVals[raster_idx];
   if(rv <= 0)
@@ -2905,10 +2905,10 @@ bool quantize_items(TagEventList* list, int raster_idx, bool quant_len, int stre
   Event newEvent;
   const Part* part;
     
-  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
+  for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
     part = itl->first;
-    const EventList& el = itl->second;
+    const EventList& el = itl->second.evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -2953,9 +2953,9 @@ bool quantize_items(TagEventList* list, int raster_idx, bool quant_len, int stre
 //   return modify_notelen_items(0, len);
 // }
 
-bool set_notelen_items(TagEventList* list, int len)
+bool set_notelen_items(TagEventList* tag_list, int len)
 {
-  return modify_notelen_items(list, 0, len);
+  return modify_notelen_items(tag_list, 0, len);
 }
 
 // bool transpose_items(signed int halftonesteps)
@@ -3015,7 +3015,7 @@ bool set_notelen_items(TagEventList* list, int len)
 //   return MusEGlobal::song->applyOperationGroup(operations);
 // }
 
-bool transpose_items(TagEventList* list, signed int halftonesteps)
+bool transpose_items(TagEventList* tag_list, signed int halftonesteps)
 {
   if(halftonesteps == 0)
     return false;
@@ -3026,10 +3026,10 @@ bool transpose_items(TagEventList* list, signed int halftonesteps)
   int pitch;
   const Part* part;
     
-  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
+  for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
     part = itl->first;
-    const EventList& el = itl->second;
+    const EventList& el = itl->second.evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -3116,7 +3116,7 @@ bool transpose_items(TagEventList* list, signed int halftonesteps)
 //   return MusEGlobal::song->applyOperationGroup(operations);
 // }
 
-bool modify_velocity_items(TagEventList* list, int rate, int offset)
+bool modify_velocity_items(TagEventList* tag_list, int rate, int offset)
 {
   if(rate == 100 && offset == 0)
     return false;
@@ -3126,10 +3126,10 @@ bool modify_velocity_items(TagEventList* list, int rate, int offset)
   Event newEvent;
   const Part* part;
     
-  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
+  for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
     part = itl->first;
-    const EventList& el = itl->second;
+    const EventList& el = itl->second.evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -3223,7 +3223,7 @@ bool modify_velocity_items(TagEventList* list, int rate, int offset)
 //   return MusEGlobal::song->applyOperationGroup(operations);
 // }
 
-bool modify_off_velocity_items(TagEventList* list, int rate, int offset)
+bool modify_off_velocity_items(TagEventList* tag_list, int rate, int offset)
 {
   if(rate == 100 && offset == 0)
     return false;
@@ -3233,10 +3233,10 @@ bool modify_off_velocity_items(TagEventList* list, int rate, int offset)
   Event newEvent;
   const Part* part;
 
-  for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
+  for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
     part = itl->first;
-    const EventList& el = itl->second;
+    const EventList& el = itl->second.evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -3275,9 +3275,9 @@ bool modify_off_velocity_items(TagEventList* list, int rate, int offset)
 //    QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
 // }
 
-void copy_items(TagEventList* list)
+void copy_items(TagEventList* tag_list)
 {
- QMimeData* drag = cut_or_copy_tagged_items_to_mime(list);
+ QMimeData* drag = cut_or_copy_tagged_items_to_mime(tag_list);
 
  if (drag)
    QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
@@ -3296,9 +3296,9 @@ void copy_items(TagEventList* list)
 //   return false;
 // }
 
-bool cut_items(TagEventList* list)
+bool cut_items(TagEventList* tag_list)
 {
-  QMimeData* drag = cut_or_copy_tagged_items_to_mime(list, true);
+  QMimeData* drag = cut_or_copy_tagged_items_to_mime(tag_list, true);
 
   if(drag)
   {
@@ -3494,9 +3494,9 @@ bool cut_items(TagEventList* list)
 // }
 
 // if nothing is selected/relevant, this function returns NULL
-QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* list, bool cut_mode)
+QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* tag_list, bool cut_mode)
 {
-    if(list->empty())
+    if(tag_list->empty())
       return NULL;
   
     QTemporaryFile tmp;
@@ -3508,10 +3508,11 @@ QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* list, bool cut_mode)
     
 //     unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
   
-    // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
-//     unsigned start_tick = 0;
-    //Event start_event;
-    Pos start_pos = list->startPos();
+//     // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
+// //     unsigned start_tick = 0;
+//     //Event start_event;
+// //     Pos start_pos = tag_list->startPos();
+    const Pos start_pos = tag_list->globalStats().evrange();
 
     Undo operations;
   
@@ -3625,10 +3626,10 @@ QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* list, bool cut_mode)
             
             
             
-    for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
+    for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
     {
       part = itl->first;
-      const EventList& el = itl->second;
+      const EventList& el = itl->second.evlist();
       if(el.empty())
         continue;
       
@@ -3671,6 +3672,8 @@ QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* list, bool cut_mode)
       xml.etag(--level, "eventlist");
     }
     
+    tmp.flush();
+    tmp.seek(0);
     const QByteArray data = tmp.readAll();
     QMimeData* mimeData = new QMimeData();
     mimeData->setData("text/x-muse-groupedeventlists", data);
@@ -3802,7 +3805,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 								const bool wave_mode = dest_part->partType() == Part::WavePartType;
 								const Pos::TType time_type = wave_mode ? Pos::FRAMES : Pos::TICKS;
               
-								std::set<int> ctrlList;
+								FindMidiCtlsList_t ctrlList;
 								el.findControllers(wave_mode, &ctrlList);
 								int ctrlsFound = 0;
 								if(!ctrlList.empty())
@@ -3814,7 +3817,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 
 								// Extract the suitable events from the list and the number of events extracted.
 								int num_events;
-								const PosLen el_range = el.range(wave_mode, relevant, &num_events);
+								const PosLen el_range = el.evrange(wave_mode, relevant, &num_events);
 								if(num_events > 0)
 								{
 									const unsigned pos_value = pos.posValue(time_type);
@@ -4425,6 +4428,28 @@ void paste_items_at(
     int ctl_num;
     unsigned int ctl_time, ctl_end_time, prev_ctl_time, prev_ctl_end_time;
     
+    // Find the lowest position of all the events - the 'start' position.
+    const Pos start_pos = tag_list->globalStats().evrange(relevant);
+
+    // At this point the tag list's event list will still have any controller
+    //  visual lengths HACK applied.
+    // Those lengths will be reset below. But for now we could use them...
+    FindMidiCtlsList_t globalCtrlList;
+    int globalCtrlsFound = 0;
+    if(!globalCtrlList.empty())
+      globalCtrlsFound = globalCtrlList.size();
+    if(paste_to_ctrl_num >= 0)
+    {
+      tag_list->globalCtlStats(&globalCtrlList, paste_to_ctrl_num);
+      if(!globalCtrlList.empty())
+        globalCtrlsFound = globalCtrlList.size();
+      if(globalCtrlsFound > 0)
+      {
+        // Prompt user to choose controller...
+        
+      }
+    }
+    
     for(ciTagEventList itl = tag_list->cbegin(); itl != tag_list->cend(); ++itl)
     {
       const Part* dest_part = NULL;
@@ -4439,7 +4464,7 @@ void paste_items_at(
         // Paste to specific part.
         dest_part=paste_into_part;
 
-      const EventList& el = itl->second;
+      const EventList& el = itl->second.evlist();
     
       if (dest_part == NULL)
       {
@@ -4455,19 +4480,25 @@ void paste_items_at(
           const bool wave_mode = dest_part->partType() == Part::WavePartType;
           const Pos::TType time_type = wave_mode ? Pos::FRAMES : Pos::TICKS;
         
-          std::set<int> ctrlList;
-          el.findControllers(wave_mode, &ctrlList);
-          int ctrlsFound = 0;
-          if(!ctrlList.empty())
-            ctrlsFound = ctrlList.size();
-          if(paste_to_ctrl_num >= 0 && ctrlsFound > 0)
-          {
-            
-          }
+//           FindMidiCtlsList_t ctrlList;
+//           el.findControllers(wave_mode, &ctrlList);
+//           int ctrlsFound = 0;
+//           if(!ctrlList.empty())
+//             ctrlsFound = ctrlList.size();
+//           if(paste_to_ctrl_num >= 0 && ctrlsFound > 0)
+//           {
+//             
+//           }
 
           // Extract the suitable events from the list and the number of events extracted.
           int num_events;
-          const PosLen el_range = el.range(wave_mode, relevant, &num_events);
+//           const PosLen el_range = el.evrange(wave_mode, relevant, &num_events) - start_pos;
+          PosLen el_range = el.evrange(wave_mode, relevant, &num_events);
+          // Be sure to subtract the position of the very first event of interest.
+          // This is exactly what the copy/cut functions do before they write the results
+          //  to an output file. But here the events in the directly-passed source list
+          //  cannot be time-modified beforehand. So here we subtract this start position:
+          el_range -= start_pos;
           if(num_events > 0)
           {
             const unsigned pos_value = pos.posValue(time_type);
@@ -4528,9 +4559,17 @@ void paste_items_at(
                 const unsigned dest_part_len_value = dest_part->lenValue(time_type);
                 for (ciEvent i = el.cbegin(); i != el.cend(); ++i)
                 {
+//                   const Event& old_e = i->second;
+                  
+                  const Event& old_e = i->second;
+                  Event e = old_e.clone();
+                  
+//                   // Be sure to subtract the position of the very first event of interest.
+//                   e.setPos(e.pos() - start_pos);
+                  
                   // If the destination part is a midi part, any midi event is allowed.
                   // If the destination part is a wave part, any wave event is allowed.
-                  switch(i->second.type())
+                  switch(old_e.type())
                   {
                     case Note:
                     case Controller:
@@ -4546,20 +4585,30 @@ void paste_items_at(
                     break;
                   }
                   
-                  const Event& old_e = i->second;
-                  
                   if(cut_mode && src_part)
                     operations.push_back(UndoOp(UndoOp::DeleteEvent, old_e, src_part, true, true));
                   
-                  Event e = old_e.clone();
     // 												int tick = e.tick() + curr_pos - dest_part->tick();
     // 												Pos tick = e.pos() + curr_pos - *dest_part;
                   //int tick = (e.pos() + curr_pos).posValue(el_range.type()) - dest_part->posValue(el_range.type());
+
                   unsigned tick = e.posValue(time_type) + curr_pos;
+
+                  // Be sure to subtract the position of the very first event of interest.
+                  const unsigned sp_val = start_pos.posValue(time_type);
+                  if(tick > sp_val)
+                    tick -= sp_val;
+                  else
+                  {
+                    printf("WARNING: paste_items_at(): Should not happen: event pos value: %u less than start pos value: %u\n",
+                           tick, sp_val);
+                    tick = 0;
+                  }
+
                   if (tick < dest_part_pos_value)
                   //if (tick.posValue() < 0)
                   {
-                    printf("ERROR: trying to add event before current part! ignoring this event\n");
+                    printf("ERROR: paste_items_at(): trying to add event before current part! ignoring this event\n");
                     continue;
                   }
                   tick -= dest_part_pos_value;

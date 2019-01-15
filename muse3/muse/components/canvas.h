@@ -281,7 +281,7 @@ class Canvas : public View {
 //         const MusECore::Pos& p1 = MusECore::Pos()) const;
       // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
       // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
-      virtual void tagItems(MusECore::TagEventList* list, const MusECore::EventTagOptionsStruct& options) const;
+      virtual void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
 
       Tool tool() const { return _tool; }
       MusECore::Part* part() const { return curPart; }

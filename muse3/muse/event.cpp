@@ -427,7 +427,7 @@ unsigned Event::lenValue(Pos::TType time_type) const { return ev ? ev->lenValue(
 void Event::setLenValue(unsigned val)   { if(ev) ev->setLenValue(val); }
 void Event::setLenValue(unsigned val, Pos::TType time_type) { if(ev) ev->setLenValue(val, time_type); }
 
-unsigned Event::endPosValue() const     { return ev ? ev->endPosValue() : 0; }
+unsigned Event::endPosValue() const     { return ev ? ev->endValue() : 0; }
 
 //--------------------------------------------------------
 // 'Resolving' position methods - must be TICKS or FRAMES.

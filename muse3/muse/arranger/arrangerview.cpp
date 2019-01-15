@@ -697,7 +697,7 @@ void ArrangerView::writeConfiguration(int level, MusECore::Xml& xml)
 //   tagItems
 //---------------------------------------------------------
 
-void ArrangerView::tagItems(MusECore::TagEventList* list, const MusECore::EventTagOptionsStruct& options) const
+void ArrangerView::tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const
 {
   const bool tagSelected = options._flags & MusECore::TagSelected;
   //const bool tagMoving   = options._flags & MusECore::TagMoving;
@@ -756,14 +756,14 @@ void ArrangerView::tagItems(MusECore::TagEventList* list, const MusECore::EventT
                 if(pos >= p1)
                   break;
               }
-              list->add(part, &e);
+              tag_list->add(part, e);
             }
           }
           else
           {
 //             part->setTagged(true);
-            // Adding a part alone means adding ALL of its events.
-            list->add(part);
+//             // Adding a part alone means adding ALL of its events.
+            tag_list->add(part);
           }
         }
       }
@@ -779,7 +779,7 @@ void ArrangerView::tagItems(MusECore::TagEventList* list, const MusECore::EventT
       
       MusECore::EventTagOptionsStruct opts = options;
       opts.removeFlags(MusECore::TagAllItems | MusECore::TagAllParts);
-      arranger->getCanvas()->tagItems(list, opts);
+      arranger->getCanvas()->tagItems(tag_list, opts);
     }
   }
   
@@ -930,7 +930,7 @@ void ArrangerView::cmd(int cmd)
       int l = MusEGlobal::song->lpos();
       int r = MusEGlobal::song->rpos();
 
-      MusECore::TagEventList list;
+      MusECore::TagEventList tag_list;
       
       const FunctionDialogElements_t fn_element_dflt =
         FunctionAllEventsButton |
@@ -1051,9 +1051,9 @@ void ArrangerView::cmd(int cmd)
                   if(ret._valid)
                   {
 //                     tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
-                    tagItems(&list, MusECore::EventTagOptionsStruct(
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::quantize_items(&list, ret._raster_index,
+                    MusECore::quantize_items(&tag_list, ret._raster_index,
                                             /*ret._quant_len*/ false,  // DELETETHIS
                                             ret._strength,
                                             ret._swing,
@@ -1075,9 +1075,9 @@ void ArrangerView::cmd(int cmd)
                   if(ret._valid)
                   {
 //                     tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
-                    tagItems(&list, MusECore::EventTagOptionsStruct(
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::modify_velocity_items(&list, ret._rateVal, ret._offsetVal);
+                    MusECore::modify_velocity_items(&tag_list, ret._rateVal, ret._offsetVal);
                   }
 //                   MusECore::modify_velocity_items(ret._rateVal, ret._offsetVal);
                   break;
@@ -1093,9 +1093,9 @@ void ArrangerView::cmd(int cmd)
                       FunctionSelectedPartsButton));
                   if(ret._valid)
                   {
-                    tagItems(&list, MusECore::EventTagOptionsStruct(
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::crescendo_items(&list, ret._start_val, ret._end_val, ret._absolute);
+                    MusECore::crescendo_items(&tag_list, ret._start_val, ret._end_val, ret._absolute);
                   }
                   break;
                   }
@@ -1106,9 +1106,9 @@ void ArrangerView::cmd(int cmd)
                     gatetime_items_dialog(FunctionDialogMode(fn_element_dflt));
                   if(ret._valid)
                   {
-                    tagItems(&list, MusECore::EventTagOptionsStruct(
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::modify_notelen_items(&list, ret._rateVal, ret._offsetVal);
+                    MusECore::modify_notelen_items(&tag_list, ret._rateVal, ret._offsetVal);
                   }
                   break;
                   }
@@ -1119,9 +1119,9 @@ void ArrangerView::cmd(int cmd)
                     transpose_items_dialog(FunctionDialogMode(fn_element_dflt));
                   if(ret._valid)
                   {
-                    tagItems(&list, MusECore::EventTagOptionsStruct(
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::transpose_items(&list, ret._amount);
+                    MusECore::transpose_items(&tag_list, ret._amount);
                   }
                   break;
                   }
@@ -1134,9 +1134,9 @@ void ArrangerView::cmd(int cmd)
                 erase_items_dialog(FunctionDialogMode(fn_element_dflt));
               if(ret._valid)
               {
-                tagItems(&list, MusECore::EventTagOptionsStruct(
+                tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                MusECore::erase_items(&list, ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
+                MusECore::erase_items(&tag_list, ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
               }
             }
             break;
@@ -1148,9 +1148,9 @@ void ArrangerView::cmd(int cmd)
                     move_items_dialog(FunctionDialogMode(fn_element_dflt));
                   if(ret._valid)
                   {
-                    tagItems(&list, MusECore::EventTagOptionsStruct(
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::move_items(&list, ret._amount);
+                    MusECore::move_items(&tag_list, ret._amount);
                   }
                   break;
                   }
@@ -1161,9 +1161,9 @@ void ArrangerView::cmd(int cmd)
                     setlen_items_dialog(FunctionDialogMode(fn_element_dflt));
                   if(ret._valid)
                   {
-                    tagItems(&list, MusECore::EventTagOptionsStruct(
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::set_notelen_items(&list, ret._len);
+                    MusECore::set_notelen_items(&tag_list, ret._len);
                   }
                   break;
                   }
@@ -1174,9 +1174,9 @@ void ArrangerView::cmd(int cmd)
                     deloverlaps_items_dialog(FunctionDialogMode(fn_element_dflt));
                   if(ret._valid)
                   {
-                    tagItems(&list, MusECore::EventTagOptionsStruct(
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::delete_overlaps_items(&list);
+                    MusECore::delete_overlaps_items(&tag_list);
                   }
                   break;
                   }
@@ -1187,9 +1187,9 @@ void ArrangerView::cmd(int cmd)
                     legato_items_dialog(FunctionDialogMode(fn_element_dflt));
                   if(ret._valid)
                   {
-                    tagItems(&list, MusECore::EventTagOptionsStruct(
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::legato_items(&list, ret._min_len, !ret._allow_shortening);
+                    MusECore::legato_items(&tag_list, ret._min_len, !ret._allow_shortening);
                   }
                   break;
                   }

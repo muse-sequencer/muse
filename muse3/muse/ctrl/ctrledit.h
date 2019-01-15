@@ -87,8 +87,8 @@ class CtrlEdit : public QWidget {
 //         if(canvas) canvas->tagItems (tagAllItems, tagAllParts, range, p0, p1); }
       // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
       // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
-      void tagItems(MusECore::TagEventList* list, const MusECore::EventTagOptionsStruct& options) const
-      { if(canvas) canvas->tagItems(list, options); }
+      void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const
+      { if(canvas) canvas->tagItems(tag_list, options); }
       };
 
       

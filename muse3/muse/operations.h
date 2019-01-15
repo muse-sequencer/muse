@@ -521,7 +521,15 @@ class PendingOperationList : public std::list<PendingOperationItem>
     
   public: 
     PendingOperationList() : _sc_flags(0) { }
-    // Add an operation. Returns false if already exists, otherwise true. Optimizes all added items (merge, discard, alter, embellish etc.)
+    // Add an operation. Returns false if the operation already exists or could not be added
+    //  (such as with a DeleteEvent being cancelled by an AddEvent on identical base events),
+    //  or various other optimizations that essentially render the operation ineffectual.
+    // Some operations optimize by replacing an existing operation with the requested one.
+    // For example requesting operations which simply change a value replace any existing
+    //  such operation with the requested new value. Thus only one operation exists - the LATEST.
+    // Returns true in those cases so that the caller can proceed to perform other operations
+    //  on the item even though the operation was not officially added to the list (it replaced one).
+    // Otherwise returns true. Optimizes all added items (merge, discard, alter, embellish etc.)
     bool add(PendingOperationItem);
     // Execute the RT portion of the operations contained in the list. Called only from RT stage 2.
     SongChangedStruct_t executeRTStage();

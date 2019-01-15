@@ -250,7 +250,7 @@ extern void addPortCtrlEvents(Part* part, unsigned int tick, unsigned int len, T
 extern void removePortCtrlEvents(Part* part, bool doClones);
 extern void removePortCtrlEvents(Part* part, Track* track, PendingOperationList& ops);
 extern void removePortCtrlEvents(Event& event, Part* part);
-extern void removePortCtrlEvents(const Event& event, Part* part, Track* track, PendingOperationList& ops);
+extern bool removePortCtrlEvents(const Event& event, Part* part, Track* track, PendingOperationList& ops);
 extern void modifyPortCtrlEvents(const Event& old_event, const Event& event, Part* part, PendingOperationList& ops);
 
 } // namespace MusECore

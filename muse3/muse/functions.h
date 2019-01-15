@@ -297,24 +297,33 @@ bool legato(const std::set<const Part*>& parts, int range, int min_len=1, bool d
 // bool legato_items(int min_len=1, bool dont_shorten=false);
 
 
-bool modify_velocity_items(TagEventList* list, int rate, int offset=0);
-bool modify_off_velocity_items(TagEventList* list, int rate, int offset=0);
-bool modify_notelen_items(TagEventList* list, int rate, int offset=0);
-bool quantize_items(TagEventList* list, int raster, bool quant_len=false, int strength=100, int swing=0, int threshold=0);
-bool erase_items(TagEventList* list, int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
-bool delete_overlaps_items(TagEventList* list);
-bool set_notelen_items(TagEventList* list, int len);
-bool move_items(TagEventList* list, signed int ticks);
-bool transpose_items(TagEventList* list, signed int halftonesteps);
-bool crescendo_items(TagEventList* list, int start_val, int end_val, bool absolute);
-bool legato_items(TagEventList* list, int min_len=1, bool dont_shorten=false);
+bool modify_velocity_items(TagEventList* tag_list, int rate, int offset=0);
+bool modify_off_velocity_items(TagEventList* tag_list, int rate, int offset=0);
+bool modify_notelen_items(TagEventList* tag_list, int rate, int offset=0);
+bool quantize_items(TagEventList* tag_list, int raster, bool quant_len=false, int strength=100, int swing=0, int threshold=0);
+bool erase_items(TagEventList* tag_list, int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
+bool delete_overlaps_items(TagEventList* tag_list);
+bool set_notelen_items(TagEventList* tag_list, int len);
+bool move_items(TagEventList* tag_list, signed int ticks);
+bool transpose_items(TagEventList* tag_list, signed int halftonesteps);
+bool crescendo_items(TagEventList* tag_list, int start_val, int end_val, bool absolute);
+bool legato_items(TagEventList* tag_list, int min_len=1, bool dont_shorten=false);
+
+
+//------------------------------------------------------------------------
+// NOTE: The copy/cut/paste functions are for event lists such as found in
+//  the various editors like pianoroll and drum editor.
+// A different set of copy and paste functions are used for the
+//  part canvas (in the arranger). Use them for copying and pasting parts.
+// TODO TODO Unify those part copy/cut/paste routines into these routines !
+//------------------------------------------------------------------------
 
 // void copy_items();
-void copy_items(TagEventList* list);
+void copy_items(TagEventList* tag_list);
 // bool cut_items();
-bool cut_items(TagEventList* list);
+bool cut_items(TagEventList* tag_list);
 // QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode = false /*, bool untag_when_done = true*/);
-QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* list, bool cut_mode = false);
+QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* tag_list, bool cut_mode = false);
 
 bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part=NULL); // shows a dialog
 void paste_items(const std::set<const Part*>& parts, int max_distance=3072,

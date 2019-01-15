@@ -146,6 +146,7 @@ void MidiEventBase::write(int level, Xml& xml, const Pos& offset, bool /*forcePa
                   break;
 // REMOVE Tim. citem. Added.
             case Controller:
+                  xml.nput(" type=\"%d\"", type());
                   // HACK We abuse the length member as a visual length for certain temporary
                   //       operations such as copy/paste. Write it here but make sure
                   //       to DISCARD it later, never store it into an actual file,

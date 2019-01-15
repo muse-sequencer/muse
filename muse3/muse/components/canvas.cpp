@@ -2512,7 +2512,7 @@ int Canvas::selectionSize() const
 //   tagItems
 //---------------------------------------------------------
 
-void Canvas::tagItems(MusECore::TagEventList* list, const MusECore::EventTagOptionsStruct& options) const
+void Canvas::tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const
 { 
   const bool tagSelected = options._flags & MusECore::TagSelected;
   const bool tagMoving   = options._flags & MusECore::TagMoving;
@@ -2535,8 +2535,7 @@ void Canvas::tagItems(MusECore::TagEventList* list, const MusECore::EventTagOpti
           || (tagMoving && item->isMoving()))
          && item->isObjectInRange(p0, p1))
       {
-        const MusECore::Event e = item->event();
-        list->add(item->part(), &e);
+        tag_list->add(item->part(), item->event());
       }
     }
   }
@@ -2551,8 +2550,7 @@ void Canvas::tagItems(MusECore::TagEventList* list, const MusECore::EventTagOpti
         || (tagSelected && item->isSelected())
         || (tagMoving && item->isMoving()))
       {
-        const MusECore::Event e = item->event();
-        list->add(item->part(), &e);
+        tag_list->add(item->part(), item->event());
       }
     }
   }

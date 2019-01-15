@@ -1393,7 +1393,7 @@ void DrumEdit::cmd(int cmd)
       if(canvas->getCurrentDrag())
         return;
 
-      MusECore::TagEventList list;
+      MusECore::TagEventList tag_list;
 
       const FunctionDialogElements_t fn_element_dflt =
         FunctionAllEventsButton |
@@ -1432,22 +1432,22 @@ void DrumEdit::cmd(int cmd)
             case DrumCanvas::CMD_CUT:
 //                   tagItems(false, true);
 //                   MusECore::cut_items();
-                  tagItems(&list, MusECore::EventTagOptionsStruct(false, true));
-                  MusECore::cut_items(&list);
+                  tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
+                  MusECore::cut_items(&tag_list);
                   break;
             case DrumCanvas::CMD_COPY:
 //                   tagItems(false, true);
 //                   MusECore::copy_items();
-                  tagItems(&list, MusECore::EventTagOptionsStruct(false, true));
-                  MusECore::copy_items(&list);
+                  tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
+                  MusECore::copy_items(&tag_list);
                   break;
             case DrumCanvas::CMD_COPY_RANGE:
 //                   tagItems(!itemsAreSelected(), true, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
 //                   MusECore::copy_items();
-                  tagItems(&list, 
-                           MusECore::EventTagOptionsStruct(!itemsAreSelected(),
+                  tagItems(&tag_list, 
+                           MusECore::EventTagOptionsStruct::fromOptions(!itemsAreSelected(),
                            true, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos()));
-                  MusECore::copy_items(&list);
+                  MusECore::copy_items(&tag_list);
                   break;
             case DrumCanvas::CMD_PASTE:
                               ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
@@ -1477,9 +1477,9 @@ void DrumEdit::cmd(int cmd)
                     velocity_items_dialog(FunctionDialogMode(fn_element_dflt));
                   if(ret._valid)
                   {
-                    tagItems(&list, MusECore::EventTagOptionsStruct(
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::modify_velocity_items(&list, ret._rateVal, ret._offsetVal);
+                    MusECore::modify_velocity_items(&tag_list, ret._rateVal, ret._offsetVal);
                   }
                   break;
                   }
@@ -1494,9 +1494,9 @@ void DrumEdit::cmd(int cmd)
                       FunctionSelectedPartsButton));
                   if(ret._valid)
                   {
-                    tagItems(&list, MusECore::EventTagOptionsStruct(
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::crescendo_items(&list, ret._start_val, ret._end_val, ret._absolute);
+                    MusECore::crescendo_items(&tag_list, ret._start_val, ret._end_val, ret._absolute);
                   }
                   break;
                   }
@@ -1516,9 +1516,9 @@ void DrumEdit::cmd(int cmd)
                     quantize_items_dialog(FunctionDialogMode(fn_element_dflt));
                   if(ret._valid)
                   {
-                    tagItems(&list, MusECore::EventTagOptionsStruct(
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::quantize_items(&list, ret._raster_index,
+                    MusECore::quantize_items(&tag_list, ret._raster_index,
                                            /*ret._quant_len*/ false,  // DELETETHIS
                                            ret._strength,
                                            ret._swing,
@@ -1533,16 +1533,16 @@ void DrumEdit::cmd(int cmd)
                 erase_items_dialog(FunctionDialogMode(fn_element_dflt));
               if(ret._valid)
               {
-                tagItems(&list, MusECore::EventTagOptionsStruct(
+                tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                MusECore::erase_items(&list, ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
+                MusECore::erase_items(&tag_list, ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
               }
             }
             break;
   // 						case DrumCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break; //delete selected events
             case DrumCanvas::CMD_DEL:
-              tagItems(&list, MusECore::EventTagOptionsStruct(false, true));
-              MusECore::erase_items(&list);
+              tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
+              MusECore::erase_items(&tag_list);
             break;
 //             case DrumCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
             case DrumCanvas::CMD_DELETE_OVERLAPS:
@@ -1551,9 +1551,9 @@ void DrumEdit::cmd(int cmd)
                     deloverlaps_items_dialog(FunctionDialogMode(fn_element_dflt));
                   if(ret._valid)
                   {
-                    tagItems(&list, MusECore::EventTagOptionsStruct(
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::delete_overlaps_items(&list);
+                    MusECore::delete_overlaps_items(&tag_list);
                   }
                   break;
                   }
@@ -1564,9 +1564,9 @@ void DrumEdit::cmd(int cmd)
                     move_items_dialog(FunctionDialogMode(fn_element_dflt));
                   if(ret._valid)
                   {
-                    tagItems(&list, MusECore::EventTagOptionsStruct(
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::move_items(&list, ret._amount);
+                    MusECore::move_items(&tag_list, ret._amount);
                   }
                   break;
                   }
@@ -1996,16 +1996,16 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
       }
       else if (key == shortcuts[SHRT_INC_VELOCITY].key) {
 //           modify_velocity(partlist_to_set(parts()), 1, 100, 1);
-          MusECore::TagEventList list;
-          tagItems(&list, MusECore::EventTagOptionsStruct(false, true));
-          MusECore::modify_velocity_items(&list, 100, 1);
+          MusECore::TagEventList tag_list;
+          tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
+          MusECore::modify_velocity_items(&tag_list, 100, 1);
           return;
       }
       else if (key == shortcuts[SHRT_DEC_VELOCITY].key) {
 //           modify_velocity(partlist_to_set(parts()), 1, 100, -1);
-          MusECore::TagEventList list;
-          tagItems(&list, MusECore::EventTagOptionsStruct(false, true));
-          MusECore::modify_velocity_items(&list, 100, -1);
+          MusECore::TagEventList tag_list;
+          tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
+          MusECore::modify_velocity_items(&tag_list, 100, -1);
           return;
       }
       else { //Default:

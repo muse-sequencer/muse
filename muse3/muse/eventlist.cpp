@@ -350,7 +350,7 @@ void EventList::dump() const
             i->second.dump();
       }
 
-PosLen EventList::range(bool wave, RelevantSelectedEvents_t relevant, int* numEvents, int ctrlNum) const
+PosLen EventList::evrange(bool wave, RelevantSelectedEvents_t relevant, int* numEvents, int ctrlNum) const
 {
   PosLen res;
   res.setType(wave ? Pos::FRAMES : Pos::TICKS);
@@ -461,9 +461,9 @@ PosLen EventList::range(bool wave, RelevantSelectedEvents_t relevant, int* numEv
   return res;
 }
 
-void EventList::findControllers(bool wave, std::set<int>* list) const
+void EventList::findControllers(bool wave, FindMidiCtlsList_t* outList, int findCtl) const
 {
-  for(ciEvent ie = begin(); ie != end(); ++ie)
+  for(ciEvent ie = cbegin(); ie != cend(); ++ie)
   {
     const Event& e = ie->second;
     const EventType et = e.type();
@@ -478,12 +478,30 @@ void EventList::findControllers(bool wave, std::set<int>* list) const
       case Wave:
         if(!wave)
           continue;
+        // TODO Audio controllers.
+        //list->insert( ? );
       break;
       
       case Controller:
         if(wave)
           continue;
-        list->insert(e.dataA());
+        if(findCtl < 0 || findCtl == e.dataA())
+        {
+          const PosLen epl = e.posLen();
+          FindMidiCtlsListInsResPair_t pres = outList->insert(FindMidiCtlsPair_t(e.dataA(), epl));
+//           if(pres.second)
+//           {
+//             
+//           }
+//           else
+          if(!pres.second)
+          {
+            iFindMidiCtlsList ifml = pres.first;
+            PosLen& fml = ifml->second;
+            if(fml > epl)
+              fml = epl;
+          }
+        }
       break;
     }
   }

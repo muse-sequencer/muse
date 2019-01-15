@@ -53,6 +53,14 @@ static MusECore::MidiCtrlValList veloList(MusECore::CTRL_VELOCITY);    // dummy
 
 namespace MusEGui {
 
+// Static.
+const int CtrlCanvas::contextIdCancelDrag = 0x01;
+const int CtrlCanvas::contextIdMerge = 0x02;
+const int CtrlCanvas::contextIdMergeCopy = 0x04;
+const int CtrlCanvas::contextIdErase = 0x8;
+const int CtrlCanvas::contextIdEraseWysiwyg = 0x10;
+const int CtrlCanvas::contextIdEraseInclusive = 0x20;
+  
 //---------------------------------------------------------
 //   computeVal
 //---------------------------------------------------------
@@ -251,14 +259,17 @@ bool CEvent::containsXRange(int x1, int x2) const
 // REMOVE Tim. citem. Added.
 //---------------------------------------------------------
 //   eventWithLength
-// HACK This returns a clone of the event with the length set to the visual length.
-//      It should only be used for temporary things like copy/paste and the length
-//       value should be reset to zero after it has been used.
+//   See header comments about this small Event hack...
 //---------------------------------------------------------
 
-MusECore::Event CEvent::eventWithLength() const
+MusECore::Event CEvent::eventWithLength(const QPoint& offset) const
 { 
+  // Grab a clone of the event.
   MusECore::Event new_e = _event.clone();
+  
+  // Synthesize a length value.
+  // This is HACK for copy/paste and the value must be reset
+  //  to zero after usage.
   const unsigned int pos_val = new_e.posValue();
   unsigned int len = 0;
   if(ex >= 0)
@@ -270,6 +281,26 @@ MusECore::Event CEvent::eventWithLength() const
       len = 1;
   }
   new_e.setLenValue(len);
+  
+// REMOVE Tim. citem. Added.
+//   // Add in the given offset x value.
+//   unsigned int new_pos_val;
+//   if(offset.x() < 0)
+//   {
+//     const unsigned int uoff = (unsigned int)(-offset.x());
+//     if(new_e.posValue() > uoff)
+//       new_pos_val = new_e.posValue() - uoff;
+//     else
+//       new_pos_val = 0;
+//   }
+//   else
+//     new_pos_val = new_e.posValue() + offset.x();
+//   
+//   new_e.setPosValue(new_pos_val);
+  
+  // Add in the given offset y value.
+  new_e.setB(new_e.dataB() + offset.y());
+  
   return new_e;
 }
 
@@ -710,7 +741,7 @@ void CtrlCanvas::removeSelection(CEvent* e)
 //   tagItems
 //---------------------------------------------------------
 
-void CtrlCanvas::tagItems(MusECore::TagEventList* list, const MusECore::EventTagOptionsStruct& options) const
+void CtrlCanvas::tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const
 { 
   const bool tagSelected = options._flags & MusECore::TagSelected;
   const bool tagMoving   = options._flags & MusECore::TagMoving;
@@ -739,8 +770,17 @@ void CtrlCanvas::tagItems(MusECore::TagEventList* list, const MusECore::EventTag
           continue;
         if(item->isObjectInRange(p0, p1))
         {
-          new_e = item->eventWithLength();
-          list->add(part, &new_e);
+          // Grab a clone of the event with a synthesized length
+          //  representing the visual length of the 'bar' on the graph.
+          // This is a HACK of the Event length for this temporary purpose.
+          // Normally the length is always zero for controllers.
+          // The caller (xml copy/paste routines etc.) resets this back to zero
+          //  upon reception of the event when it is done with the information.
+//           // For moving items, add in the current drag offset so that only
+//           //  the first event position is needed to pass to any pasting routines.
+          // For moving items, add in the current drag offset y value (x is ignored).
+          new_e = item->eventWithLength((tagMoving && item->isMoving()) ? _curDragOffset : QPoint());
+          tag_list->add(part, new_e);
         }
       }
     }
@@ -757,7 +797,7 @@ void CtrlCanvas::tagItems(MusECore::TagEventList* list, const MusECore::EventTag
           if(item->isObjectInRange(p0, p1))
           {
             new_e = item->eventWithLength();
-            list->add(part, &new_e);
+            tag_list->add(part, new_e);
           }
         }
       }
@@ -772,11 +812,11 @@ void CtrlCanvas::tagItems(MusECore::TagEventList* list, const MusECore::EventTag
             continue;
           if(item->isObjectInRange(p0, p1))
           {
-            // Avoid duplicates.
+            // Avoid duplicates found in moving list.
             if(tagSelected && selection.cfind(item) != selection.cend())
               continue;
-            new_e = item->eventWithLength();
-            list->add(part, &new_e);
+            new_e = item->eventWithLength(_curDragOffset);
+            tag_list->add(part, new_e);
           }
         }
       }
@@ -796,8 +836,8 @@ void CtrlCanvas::tagItems(MusECore::TagEventList* list, const MusECore::EventTag
              || (tagSelected && item->isSelected())
              || (tagMoving && item->isMoving())))
           continue;
-        new_e = item->eventWithLength();
-        list->add(part, &new_e);
+        new_e = item->eventWithLength((tagMoving && item->isMoving()) ? _curDragOffset : QPoint());
+        tag_list->add(part, new_e);
       }
     }
     else
@@ -811,7 +851,7 @@ void CtrlCanvas::tagItems(MusECore::TagEventList* list, const MusECore::EventTag
           if(part != curPart || (part && part->track() != curTrack))
             continue;
           new_e = item->eventWithLength();
-          list->add(part, &new_e);
+          tag_list->add(part, new_e);
         }
       }
       
@@ -820,14 +860,14 @@ void CtrlCanvas::tagItems(MusECore::TagEventList* list, const MusECore::EventTag
         for(ciCItemList i = moving.cbegin(); i != moving.cend(); ++i)
         {
           item = static_cast<CEvent*>(*i);
-          // Avoid duplicates.
+          // Avoid duplicates found in selection list.
           if(tagSelected && selection.cfind(item) != selection.cend())
             continue;
           part = item->part();
           if(part != curPart || (part && part->track() != curTrack))
             continue;
-          new_e = item->eventWithLength();
-          list->add(part, &new_e);
+          new_e = item->eventWithLength(_curDragOffset);
+          tag_list->add(part, new_e);
         }
       }
     }
@@ -1467,15 +1507,50 @@ void CtrlCanvas::moveItems(const QPoint& pos, int dir, bool rasterize)
 
 void CtrlCanvas::endMoveItems()
 {
-  // TODO: Merge the items...
+  if(!curPart)
+    return;
+  
+  // Tag only moving items, regardless of selection (avoid the redundant
+  //  search in the selection list).
+  MusECore::TagEventList tag_list;
+  tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagMoving));
+  
+  // HACK tagItems() returns a list of cloned events with the lengths set to the visual lengths.
+  //      We only use it for temporary things like copy/paste.
+  //      The lengths will be reset to zero after when done, in the paste_items_at() function.
+  //      Normally an event's length is ALWAYS zero for all controller events.
+  
+  // Whee ! Now paste the items directly from the list. No Xml conversion required.
+  MusECore::paste_items_at(
+    // Part list to search for given parts.
+    part_to_set(curPart),
+    // List of events to paste.
+    &tag_list,
+//     // The paste position. The _curDragOffset vector component has already been added to the
+//     //  events in the tagItems() method. So here we need only pass the first event position.
+//     MusECore::Pos(_dragFirstXPos + _curDragOffset.x(), true),  // true = ticks.
+//     // Paste at 'zero' position. The positions are all contained in the event positions.
+//     MusECore::Pos(0, true),  // true = ticks.
+    // The paste position.
+    MusECore::Pos(_dragFirstXPos + _curDragOffset.x(), true),  // true = ticks.
+    // Max distance before new part created.
+    3072,
+    // Pasting options including whether to cut, how to erase existing target events,
+    //  and whether to create a new part.
+    MusECore::FunctionOptionsStruct(
+      (_dragType == MOVE_MOVE ? MusECore::FunctionCutItems : MusECore::FunctionNoOptions)
+      | (MusEGlobal::config.midiCtrlGraphMergeErase ? MusECore::FunctionEraseItems : MusECore::FunctionNoOptions)
+      | (MusEGlobal::config.midiCtrlGraphMergeEraseWysiwyg ? MusECore::FunctionEraseItemsWysiwyg : MusECore::FunctionNoOptions)
+      | (MusEGlobal::config.midiCtrlGraphMergeEraseInclusive ? MusECore::FunctionEraseItemsInclusive : MusECore::FunctionNoOptions)
+      | (MusECore::FunctionPasteNeverNewPart)
+      )
+    );
+  
+  // Be sure to clear the items' moving flag and the moving list!
   if(!moving.empty())
   {
     for(iCItemList i = moving.begin(); i != moving.end(); ++i)
-    {
-      
-      
       (*i)->setMoving(false);
-    }
     moving.clear();
   }
   
@@ -1861,13 +1936,37 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
         populateMergeOptions(itemPopupMenu);
         QAction *act = itemPopupMenu->exec(event->globalPos());
         int idx = -1;
+        bool is_checked = false;
         if(act && act->data().isValid())
+        {
           idx = act->data().toInt();
+          is_checked = act->isChecked();
+        }
         delete itemPopupMenu;
         switch(idx)
         {
-          case 0x0:
+          case contextIdCancelDrag:
             cancelMouseOps();
+          break;
+          
+          case contextIdMerge:
+            // TODO
+          break;
+          
+          case contextIdMergeCopy:
+            // TODO
+          break;
+          
+          case contextIdErase:
+            MusEGlobal::config.midiCtrlGraphMergeErase = is_checked;
+          break;
+          
+          case contextIdEraseWysiwyg:
+            MusEGlobal::config.midiCtrlGraphMergeEraseWysiwyg = is_checked;
+          break;
+          
+          case contextIdEraseInclusive:
+            MusEGlobal::config.midiCtrlGraphMergeEraseInclusive = is_checked;
           break;
           
           default:
@@ -4867,19 +4966,19 @@ void CtrlCanvas::populateMergeOptions(PopupMenu* menu)
   menu->addAction(new MenuTitleItem(tr("Merge options"), menu));
   
   QAction* act = menu->addAction(QIcon(*midiCtrlMergeEraseIcon), tr("Erase"));
-  act->setData(0x100);
+  act->setData(contextIdErase);
   act->setCheckable(true);
   act->setChecked(MusEGlobal::config.midiCtrlGraphMergeErase);
   act->setToolTip(tr("Erase target events between source events"));
   
   act = menu->addAction(QIcon(*midiCtrlMergeEraseWysiwygIcon), tr("Erase WYSIWYG"));
-  act->setData(0x101);
+  act->setData(contextIdEraseWysiwyg);
   act->setCheckable(true);
   act->setChecked(MusEGlobal::config.midiCtrlGraphMergeEraseWysiwyg);
   act->setToolTip(tr("Include last source item width when erasing"));
   
   act = menu->addAction(QIcon(*midiCtrlMergeEraseInclusiveIcon), tr("Erase inclusive"));
-  act->setData(0x102);
+  act->setData(contextIdEraseInclusive);
   act->setCheckable(true);
   act->setChecked(MusEGlobal::config.midiCtrlGraphMergeEraseInclusive);
   act->setToolTip(tr("Include entire source range when erasing"));
@@ -4889,19 +4988,19 @@ void CtrlCanvas::populateMergeOptions(PopupMenu* menu)
   const bool is_mv = !moving.empty();
   
   act = menu->addAction(QIcon(*editpasteSIcon), tr("Merge"));
-  act->setData(0x1);
+  act->setData(contextIdMerge);
   act->setCheckable(false);
   act->setToolTip(tr("Merge the dragged items"));
   act->setEnabled(is_mv);
   
   act = menu->addAction(QIcon(*editpasteCloneSIcon), tr("Merge a copy"));
-  act->setData(0x2);
+  act->setData(contextIdMergeCopy);
   act->setCheckable(false);
   act->setToolTip(tr("Merge a copy of the dragged items"));
   act->setEnabled(is_mv);
   
   act = menu->addAction(QIcon(*filecloseIcon), tr("Cancel drag"));
-  act->setData(0x0);
+  act->setData(contextIdCancelDrag);
   act->setCheckable(false);
   act->setToolTip(tr("Cancel dragging the items"));
   act->setEnabled(is_mv);

@@ -416,7 +416,7 @@ bool MidiEditor::itemsAreSelected() const
 //   tagItems
 //---------------------------------------------------------
 
-void MidiEditor::tagItems(MusECore::TagEventList* list, const MusECore::EventTagOptionsStruct& options) const
+void MidiEditor::tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const
 {
   //const bool tagSelected = options._flags & MusECore::TagSelected;
   //const bool tagMoving   = options._flags & MusECore::TagMoving;
@@ -464,7 +464,7 @@ void MidiEditor::tagItems(MusECore::TagEventList* list, const MusECore::EventTag
               if(pos >= p1)
                 break;
             }
-            list->add(part, &e);
+            tag_list->add(part, e);
           }
         }
       }
@@ -499,7 +499,7 @@ void MidiEditor::tagItems(MusECore::TagEventList* list, const MusECore::EventTag
             if(pos >= p1)
               break;
           }
-          list->add(part, &e);
+          tag_list->add(part, e);
         }
       }
     }
@@ -511,9 +511,9 @@ void MidiEditor::tagItems(MusECore::TagEventList* list, const MusECore::EventTag
     // These two steps use the tagging features to mark the objects (events)
     //  as having been visited already, to avoid duplicates in the list.
     if(canvas)
-      canvas->tagItems(list, opts);
+      canvas->tagItems(tag_list, opts);
     for(ciCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i)
-      (*i)->tagItems(list, opts);
+      (*i)->tagItems(tag_list, opts);
   }
 }
 

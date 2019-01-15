@@ -224,7 +224,7 @@ class ScoreEdit : public TopWin
 // 			const MusECore::Pos& = MusECore::Pos()) const;
 		// Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
 		// Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
-		void tagItems(MusECore::TagEventList* list, const MusECore::EventTagOptionsStruct& options) const;
+		void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
 	};
 
 
@@ -895,7 +895,7 @@ class ScoreCanvas : public MusEGui::View
 // 			const MusECore::Pos& = MusECore::Pos()) const;
 		// Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
 		// Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
-		void tagItems(MusECore::TagEventList* list, const MusECore::EventTagOptionsStruct& options) const;
+		void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
 };
 
 int calc_measure_len(const list<int>& nums, int denom);

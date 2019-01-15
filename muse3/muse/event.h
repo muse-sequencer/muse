@@ -175,6 +175,12 @@ class Event {
       unsigned endFrame() const;
       };
 
+typedef std::pair<int /*ctl num*/, PosLen /*range*/> FindMidiCtlsPair_t;
+typedef std::map<int /*ctl num*/, PosLen /*range*/, std::less<int> > FindMidiCtlsList_t;
+typedef FindMidiCtlsList_t::iterator iFindMidiCtlsList;
+typedef FindMidiCtlsList_t::const_iterator ciFindMidiCtlsList;
+typedef std::pair <iFindMidiCtlsList, bool> FindMidiCtlsListInsResPair_t;
+
 typedef std::multimap <unsigned, Event, std::less<unsigned> > EL;
 typedef EL::iterator iEvent;
 typedef EL::reverse_iterator riEvent;
@@ -243,10 +249,12 @@ class EventList : public EL {
       // If ctrlNum is not -1, it looks only for that controller number.
       // The returned PosLen is in units of frames or ticks respective of wave.
       // numEvents indicates the number of events found and whether PosLen is valid.
-      PosLen range(bool wave, RelevantSelectedEvents_t relevant, int* numEvents, int ctrlNum = -1) const;
+      PosLen evrange(bool wave, RelevantSelectedEvents_t relevant, int* numEvents, int ctrlNum = -1) const;
       // Fills set with the different controller numbers found in the event list.
       // Looks for midi controller events, or wave controller events if wave is true (does nothing ATM).
-      void findControllers(bool wave, std::set<int>* list) const;
+      // If findCtl is given it finds that specific controller.
+      // Otherwise if findCtl -1 it finds all controllers.
+      void findControllers(bool wave, FindMidiCtlsList_t* outList, int findCtl = -1) const;
       };
 
 } // namespace MusECore

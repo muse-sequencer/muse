@@ -30,25 +30,94 @@
 #include "part.h"
 #include "event.h"
 #include "pos.h"
+#include "type_defs.h"
 
 namespace MusECore {
 
-//typedef std::set<const Event> TagEvents_t;
-//typedef std::pair<const Part*, TagEvents_t> TagPartsPair_t;
-typedef std::pair<const Part*, EventList> TagEventListPair_t;
+class TagEventStatsStruct
+{
+  private:
 
-typedef std::map< const Part*, EventList, std::less<const Part*> > TagEventList_t;
+    unsigned int _notes;
+    unsigned int _midiCtrls;
+    unsigned int _sysexes;
+    unsigned int _metas;
+    unsigned int _waves;
+
+    PosLen _noteRange;
+    PosLen _midiCtrlRange;
+    PosLen _sysexRange;
+    PosLen _metaRange;
+    PosLen _waveRange;
+
+  public:
+
+    TagEventStatsStruct() : _notes(0), _midiCtrls(0), _sysexes(0), _metas(0), _waves(0),
+      _waveRange(false /* use Pos::FRAMES */) {}
+    
+    // Be sure to use this instead of EventList::add(), to use the statistics feature.
+    void add(const Event& e);
+    
+    //--------------
+    // Statistics:
+    //--------------
+    
+    unsigned int notes() const { return _notes; }
+    unsigned int mctrls() const { return _midiCtrls; }
+    unsigned int sysexes() const { return _sysexes; }
+    unsigned int metas() const { return _metas; }
+    unsigned int waves() const { return _waves; }
+
+    PosLen noteRange() const { return  _noteRange; }
+    PosLen midiCtrlRange() const { return _midiCtrlRange; }
+    PosLen sysexRange() const { return _sysexRange; }
+    PosLen metaRange() const { return  _metaRange; }
+    PosLen waveRange() const { return  _waveRange; }
+    
+    PosLen evrange(const RelevantSelectedEvents_t& types = AllEventsRelevant) const;
+};
+
+//-------------------------------------------
+// TagEventListStruct
+// Basically meant to be filled once then discarded.
+// Removing items would not be of much use since the
+//  statistics would have to recomputed each time.
+//-------------------------------------------
+  
+class TagEventListStruct
+{
+  private:
+    EventList _evlist;
+    TagEventStatsStruct _stats;
+
+  public:
+
+    TagEventListStruct()  {}
+    
+    EventList& evlist() { return _evlist; }
+    const EventList& evlist() const { return _evlist; }
+    // Be sure to use this instead of EventList::add(), to use the statistics feature.
+    // Returns true if successfully added.
+    bool add(const Event& e);
+    
+    //--------------
+    // Statistics:
+    //--------------
+    const TagEventStatsStruct& stats() const { return _stats; }
+};
+
+typedef std::pair<const Part*, TagEventListStruct> TagEventListPair_t;
+typedef std::map<const Part*, TagEventListStruct, std::less<const Part*> > TagEventList_t;
 
 class TagEventList : public TagEventList_t
 {
   private:
   
-    bool _startPosValid;
-    Pos _startPos;
+    TagEventStatsStruct _globalStats;
     
   public:
     
-    TagEventList() : _startPosValid(false) { }
+    TagEventList() { }
     
     // Adds a part and optionally an event.
 // //     // If no event is given, does not add the part if a clone
@@ -68,17 +137,29 @@ class TagEventList : public TagEventList_t
     //  and recomputes it from scratch, effectively the same as calling
     //  getStartPos() but faster and more convenient.
     // Returns true if successfully added.
-    bool add(const Part*, const Event* = NULL, bool resetStartPos = false);
-    // Returns the cached position of the leftmost event.
-    Pos startPos() const { return _startPosValid ? _startPos : Pos(); }
-    // Recomputes cached position of the leftmost event and returns the position.
-    Pos getStartPos();
+//     bool add(const Part*, const Event& = Event(), bool resetStartPos = false);
+    bool add(const Part*, const Event& = Event());
+    
+//     // Returns the cached position of the leftmost event.
+//     Pos startPos() const { return _startPosValid ? _startPos : Pos(); }
+//     // Recomputes cached position of the leftmost event and returns the position.
+//     Pos getStartPos();
+    
+    //--------------
+    // Statistics:
+    //--------------
+    const TagEventStatsStruct& globalStats() const { return _globalStats; }
+    // Fills tclist with info about found controllers.
+    // If findCtl is given it finds that specific controller.
+    // Otherwise if findCtl -1 it finds all controllers.
+    void globalCtlStats(FindMidiCtlsList_t* tclist, int findCtl = -1) const;
 };
 
 // typedef TagEvents_t::const_iterator ciTagEvents;
 // typedef TagEvents_t::iterator iTagEvents;
 typedef TagEventList::const_iterator ciTagEventList;
 typedef TagEventList::iterator iTagEventList;
+typedef std::pair<iTagEventList, bool> TagEventListInsertResultPair_t;
 
 
 //--------------------------------------------------------------
@@ -130,6 +211,7 @@ enum EventTagOptions {
   TagAllParts = 0x08,
   // Whether the range parameters are valid.
   TagRange = 0x10,
+  TagDefaults = TagSelected | TagAllParts,
   EventTagAllOptions = TagSelected | TagMoving | TagAllItems | TagAllParts | TagRange
 };
 typedef int EventTagOptions_t;
@@ -140,16 +222,31 @@ struct EventTagOptionsStruct
   Pos _p0;
   Pos _p1;
 
+  EventTagOptionsStruct() :
+    _flags(TagDefaults) { }
+    
   EventTagOptionsStruct(const EventTagOptions_t& flags, Pos p0 = Pos(), Pos p1 = Pos()) :
     _flags(flags), _p0(p0), _p1(p1) { }
-  EventTagOptionsStruct(bool tagAllItems, bool tagAllParts, bool tagRange, Pos p0 = Pos(), Pos p1 = Pos(),
-                        bool tagSelected = true, bool tagMoving = false) :
-    _flags((tagAllItems ? TagAllItems : TagNoOptions) |
-           (tagAllParts ? TagAllParts : TagNoOptions) |
-           (tagRange    ? TagRange    : TagNoOptions) |
-           (tagSelected ? TagSelected : TagNoOptions) |
-           (tagMoving   ? TagMoving   : TagNoOptions)),
-    _p0(p0), _p1(p1) { }
+//   EventTagOptionsStruct(bool tagAllItems, bool tagAllParts, bool tagRange, Pos p0 = Pos(), Pos p1 = Pos(),
+//                         bool tagSelected = true, bool tagMoving = false) :
+//     _flags((tagAllItems ? TagAllItems : TagNoOptions) |
+//            (tagAllParts ? TagAllParts : TagNoOptions) |
+//            (tagRange    ? TagRange    : TagNoOptions) |
+//            (tagSelected ? TagSelected : TagNoOptions) |
+//            (tagMoving   ? TagMoving   : TagNoOptions)),
+//     _p0(p0), _p1(p1) { }
+
+  static EventTagOptionsStruct fromOptions(bool tagAllItems, bool tagAllParts, bool tagRange, Pos p0 = Pos(), Pos p1 = Pos(),
+                        bool tagSelected = true, bool tagMoving = false)
+  {
+    return EventTagOptionsStruct(
+      (tagAllItems ? TagAllItems : TagNoOptions) |
+      (tagAllParts ? TagAllParts : TagNoOptions) |
+      (tagRange    ? TagRange    : TagNoOptions) |
+      (tagSelected ? TagSelected : TagNoOptions) |
+      (tagMoving   ? TagMoving   : TagNoOptions),
+      p0, p1);
+  }
   void clear() { _flags = TagNoOptions; _p0 = Pos(); _p1 = Pos(); }
   void appendFlags(const EventTagOptions_t& flags) { _flags |= flags; }
   void removeFlags(const EventTagOptions_t& flags) { _flags &= ~flags; }

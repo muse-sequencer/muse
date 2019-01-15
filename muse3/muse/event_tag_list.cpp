@@ -25,27 +25,157 @@
 
 namespace MusECore {
 
-bool TagEventList::add(const Part* part, const Event* event, bool resetStartPos)
+//----------------------------------
+//  TagEventStatsStruct
+//----------------------------------
+
+void TagEventStatsStruct::add(const Event& e)
 {
-  if(resetStartPos)
-  {
-    // Reset these.
-    _startPosValid = false;
-    _startPos = Pos();
-  }
+  //if(e.empty())
+  //  return;
   
+  switch(e.type())
+  {
+    case Note:
+      if(_notes == 0 || (e.pos() < _noteRange))
+        _noteRange.setPos(e.pos());
+      if(_notes == 0 || (e.end() > _noteRange.end()))
+        _noteRange.setEnd(e.end());
+
+      ++_notes;
+    break;
+
+    case Wave:
+      if(_waves == 0 || (e.pos() < _waveRange))
+        _waveRange.setPos(e.pos());
+      if(_waves == 0 || (e.end() > _waveRange.end()))
+        _waveRange.setEnd(e.end());
+
+      ++_waves;
+    break;
+
+    case Controller:
+      if(_midiCtrls == 0 || (e.pos() < _midiCtrlRange))
+        _midiCtrlRange.setPos(e.pos());
+      // For these events, minimum 1 unit time, to qualify as a valid 'range'.
+      if(_midiCtrls == 0 || (e.posValue() + 1 > _midiCtrlRange.endValue()))
+        _midiCtrlRange.setEndValue(e.posValue() + 1);
+
+      ++_midiCtrls;
+    break;
+
+    case Sysex:
+      if(_sysexes == 0 || (e.pos() < _sysexRange))
+        _sysexRange.setPos(e.pos());
+      // For these events, minimum 1 unit time, to qualify as a valid 'range'.
+      if(_sysexes == 0 || (e.posValue() + 1 > _sysexRange.endValue()))
+        _sysexRange.setEndValue(e.posValue() + 1);
+
+      ++_sysexes;
+    break;
+
+    case Meta:
+      if(_metas == 0 || (e.pos() < _metaRange))
+        _metaRange.setPos(e.pos());
+      // For these events, minimum 1 unit time, to qualify as a valid 'range'.
+      if(_metas == 0 || (e.posValue() + 1 > _metaRange.endValue()))
+        _metaRange.setEndValue(e.posValue() + 1);
+
+      ++_metas;
+    break;
+  }
+}
+  
+PosLen TagEventStatsStruct::evrange(const RelevantSelectedEvents_t& types) const
+{
+  // If wave events are included the result is in FRAMES.
+  // Otherwise the result is in TICKS.
+  PosLen pl(!(types & WaveRelevant));
+  bool first = true;
+  if(types & NotesRelevant)
+  {
+    if(first || pl > _noteRange)
+      pl.setPos(_noteRange);
+    if(first || pl.end() < _noteRange.end())
+      pl.setEnd(_noteRange.end());
+    first = false;
+  }
+  if(types & ControllersRelevant)
+  {
+    if(first || pl > _midiCtrlRange)
+      pl.setPos(_midiCtrlRange);
+    if(first || pl.end() < _midiCtrlRange.end())
+      pl.setEnd(_midiCtrlRange.end());
+    first = false;
+  }
+  if(types & SysexRelevant)
+  {
+    if(first || pl > _sysexRange)
+      pl.setPos(_sysexRange);
+    if(first || pl.end() < _sysexRange.end())
+      pl.setEnd(_sysexRange.end());
+    first = false;
+  }
+  if(types & MetaRelevant)
+  {
+    if(first || pl > _metaRange)
+      pl.setPos(_metaRange);
+    if(first || pl.end() < _metaRange.end())
+      pl.setEnd(_metaRange.end());
+    first = false;
+  }
+  if(types & WaveRelevant)
+  {
+    if(first || pl > _waveRange)
+      pl.setPos(_waveRange);
+    if(first || pl.end() < _waveRange.end())
+      pl.setEnd(_waveRange.end());
+    first = false;
+  }
+  return pl;
+}  
+
+
+//----------------------------------
+//  TagEventListStruct
+//----------------------------------
+
+bool TagEventListStruct::add(const Event& e)
+{
+  //if(e.empty())
+  //  return _evlist.end();
+  _stats.add(e);
+  return _evlist.add(e) != _evlist.end();
+}
+
+
+//----------------------------------
+//  TagEventList
+//----------------------------------
+
+//bool TagEventList::add(const Part* part, const Event& event, bool resetStartPos)
+bool TagEventList::add(const Part* part, const Event& event)
+{
+//   if(resetStartPos)
+//   {
+//     // Reset these.
+//     _startPosValid = false;
+//     _startPos = Pos();
+//   }
+
   // If the event is given, do not allow clone events to be added.
   // We allow clone parts to be in the list here just in case by
   //  some mistake an event is included in one part but not another.
   // But normally we should ignore simply if any clone part is found,
   //  because they're all supposed to be IDENTICAL, but just to be safe
   //  we'll check the event lists so we don't miss anything ...
-  if(event)
+  if(!event.empty())
   {
-    ciTagEventList found_part_itl = cend();
-    const Event& e = *event;
-    ciTagEventList itl = cbegin();
-    for( ; itl != cend(); ++itl)
+    //iTagEventList found_part_itl = end();
+//     EventList* found_part_el = NULL;
+    TagEventListStruct* found_part_el = NULL;
+    iTagEventList itl = begin();
+    for( ; itl != end(); ++itl)
     {
       const Part* p = itl->first;
 // REMOVE Tim. citem. Added.
@@ -58,34 +188,48 @@ bool TagEventList::add(const Part* part, const Event* event, bool resetStartPos)
 // 
 //       // Is the event already listed in this clone part?
 //       // FIXME TODO: Avoid duplicate events or clone events.
-      
-      // Is the event already listed in this part?
-      const EventList& el = itl->second;
-      ciEvent ie = el.findWithId(e);
+
+      // Is the event or a clone of the event already listed in this part?
+      const EventList& el = itl->second.evlist();
+      ciEvent ie = el.findWithId(event);
       if(ie != el.cend())
         return false;
-      
+
       if(p == part)
-        found_part_itl = itl;
-    }
-    
-    if(!_startPosValid || e.pos() < _startPos)
-    {
-      _startPosValid = true;
-      _startPos = e.pos();
+        //found_part_itl = itl;
+        found_part_el = &itl->second;
     }
 
-    if(found_part_itl == cend())
+//     if(!_startPosValid || event.pos() < _startPos)
+//     {
+//       _startPosValid = true;
+//       _startPos = event.pos();
+//     }
+
+//     if(found_part_itl == end())
+//     {
+//       EventList el;
+//       el.add(*event);
+//       insert(TagEventListPair_t(part, el));
+//     }
+//     else
+//     {
+//       EventList& el = found_part_itl->second;
+//       el.add(*event);
+//     }
+
+    if(!found_part_el)
     {
-      EventList el;
-      el.add(*event);
-      insert(TagEventListPair_t(part, el));
+            TagEventListInsertResultPair_t ires = insert(TagEventListPair_t(part, TagEventListStruct()));
+      if(!ires.second)
+        return false;
+      found_part_el = &ires.first->second;
     }
-    else
-    {
-      EventList& el = found_part_itl->second;
-      el.add(*event);
-    }
+
+    if(!found_part_el->add(event))
+      return false;
+    _globalStats.add(event);
+    return true;
   }
   else
   {
@@ -104,33 +248,50 @@ bool TagEventList::add(const Part* part, const Event* event, bool resetStartPos)
 //         return false;
 //     }
     
-    EventList el;
-    insert(TagEventListPair_t(part, el));
+//     EventList el;
+//     insert(TagEventListPair_t(part, el));
+        TagEventListInsertResultPair_t ires = insert(TagEventListPair_t(part, TagEventListStruct()));
+    return ires.second;
   }
 
-  return true;
+  return false;
 }
   
-Pos TagEventList::getStartPos()
+void TagEventList::globalCtlStats(FindMidiCtlsList_t* tclist, int findCtl) const
 {
-  // Reset these.
-  _startPosValid = false;
-  _startPos = Pos();
-  for(ciTagEventList itl = begin(); itl != end(); ++itl)
+//   _evlist.
+//   for(ciEvent ie = _evlist.begin(); ie != _evlist.end() ++ie)
+//   {
+//     const Event& e = ie->second;
+//     
+//   }
+  for(ciTagEventList itl = cbegin(); itl != cend(); ++itl)
   {
-    const EventList& el = itl->second;
-    for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
-    {
-      const Event& e = ie->second;
-      if(!_startPosValid || e.pos() < _startPos)
-      {
-        _startPosValid = true;
-        _startPos = e.pos();
-      }
-    }
+    const TagEventListStruct& tel = itl->second;
+    tel.evlist().findControllers(false, tclist, findCtl);
   }
-  return _startPos;
 }
+
+// Pos TagEventList::getStartPos()
+// {
+//   // Reset these.
+//   _startPosValid = false;
+//   _startPos = Pos();
+//   for(ciTagEventList itl = begin(); itl != end(); ++itl)
+//   {
+//     const EventList& el = itl->second;
+//     for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
+//     {
+//       const Event& e = ie->second;
+//       if(!_startPosValid || e.pos() < _startPos)
+//       {
+//         _startPosValid = true;
+//         _startPos = e.pos();
+//       }
+//     }
+//   }
+//   return _startPos;
+// }
   
   
 } // namespace MusECore

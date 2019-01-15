@@ -369,10 +369,10 @@ void removePortCtrlEvents(Event& event, Part* part)
   }
 }
 
-void removePortCtrlEvents(const Event& event, Part* part, Track* track, PendingOperationList& ops)
+bool removePortCtrlEvents(const Event& event, Part* part, Track* track, PendingOperationList& ops)
 {
   if(!track || !track->isMidiTrack())
-    return;
+    return false;
   
   if(event.type() == Controller)
   {
@@ -406,7 +406,7 @@ void removePortCtrlEvents(const Event& event, Part* part, Track* track, PendingO
     if (cl == mcvll->end()) {
                 fprintf(stderr, "removePortCtrlEvents: controller %d(0x%x) for channel %d not found size %zd\n",
                     cntrl, cntrl, ch, mcvll->size());
-          return;
+          return false;
           }
     MidiCtrlValList* mcvl = cl->second;
 // REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
@@ -414,10 +414,11 @@ void removePortCtrlEvents(const Event& event, Part* part, Track* track, PendingO
     iMidiCtrlVal imcv = mcvl->findMCtlVal(tck, part, val);
     if (imcv == mcvl->end()) {
             fprintf(stderr, "removePortCtrlEvents (%d): not found (size %zd)\n", tck, mcvl->size());
-          return;
+          return false;
           }
-    ops.add(PendingOperationItem(mcvl, imcv, PendingOperationItem::DeleteMidiCtrlVal));
+    return ops.add(PendingOperationItem(mcvl, imcv, PendingOperationItem::DeleteMidiCtrlVal));
   }
+  return false;
 }
 
 //---------------------------------------------------------
