@@ -1510,6 +1510,11 @@ void CtrlCanvas::endMoveItems()
   if(!curPart)
     return;
   
+  // Limit the paste position at zero.
+  unsigned int pos = 0;
+  if(_curDragOffset.x() > 0 || (_dragFirstXPos > ((unsigned int) -_curDragOffset.x())))
+    pos = _dragFirstXPos + _curDragOffset.x();
+  
   // Tag only moving items, regardless of selection (avoid the redundant
   //  search in the selection list).
   MusECore::TagEventList tag_list;
@@ -1532,7 +1537,7 @@ void CtrlCanvas::endMoveItems()
 //     // Paste at 'zero' position. The positions are all contained in the event positions.
 //     MusECore::Pos(0, true),  // true = ticks.
     // The paste position.
-    MusECore::Pos(_dragFirstXPos + _curDragOffset.x(), true),  // true = ticks.
+    MusECore::Pos(pos, true),  // true = ticks.
     // Max distance before new part created.
     3072,
     // Pasting options including whether to cut, how to erase existing target events,
@@ -1543,7 +1548,20 @@ void CtrlCanvas::endMoveItems()
       | (MusEGlobal::config.midiCtrlGraphMergeEraseWysiwyg ? MusECore::FunctionEraseItemsWysiwyg : MusECore::FunctionNoOptions)
       | (MusEGlobal::config.midiCtrlGraphMergeEraseInclusive ? MusECore::FunctionEraseItemsInclusive : MusECore::FunctionNoOptions)
       | (MusECore::FunctionPasteNeverNewPart)
-      )
+      ),
+    // Paste into this part instead of the original part(s).
+//     NULL,
+    curPart,
+    // Number of copies to paste.
+    1,
+    // Separation between copies.
+    3072,
+    // Choose which events to paste.
+//     MusECore::AllEventsRelevant,
+    MusECore::ControllersRelevant,
+    // If pasting controllers, paste into this controller number if not -1.
+    // If the source has multiple controllers, user will be asked which one to paste.
+    _cnum
     );
   
   // Be sure to clear the items' moving flag and the moving list!

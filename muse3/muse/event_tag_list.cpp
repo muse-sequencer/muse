@@ -90,47 +90,62 @@ PosLen TagEventStatsStruct::evrange(const RelevantSelectedEvents_t& types) const
 {
   // If wave events are included the result is in FRAMES.
   // Otherwise the result is in TICKS.
-  PosLen pl(!(types & WaveRelevant));
+  PosLen pl(_waves == 0 || !(types & WaveRelevant));
   bool first = true;
   if(types & NotesRelevant)
   {
-    if(first || pl > _noteRange)
-      pl.setPos(_noteRange);
-    if(first || pl.end() < _noteRange.end())
-      pl.setEnd(_noteRange.end());
-    first = false;
+    if(_notes > 0)
+    {
+      if(first || pl > _noteRange)
+        pl.setPos(_noteRange);
+      if(first || pl.end() < _noteRange.end())
+        pl.setEnd(_noteRange.end());
+      first = false;
+    }
   }
   if(types & ControllersRelevant)
   {
-    if(first || pl > _midiCtrlRange)
-      pl.setPos(_midiCtrlRange);
-    if(first || pl.end() < _midiCtrlRange.end())
-      pl.setEnd(_midiCtrlRange.end());
-    first = false;
+    if(_midiCtrls > 0)
+    {
+      if(first || pl > _midiCtrlRange)
+        pl.setPos(_midiCtrlRange);
+      if(first || pl.end() < _midiCtrlRange.end())
+        pl.setEnd(_midiCtrlRange.end());
+      first = false;
+    }
   }
   if(types & SysexRelevant)
   {
-    if(first || pl > _sysexRange)
-      pl.setPos(_sysexRange);
-    if(first || pl.end() < _sysexRange.end())
-      pl.setEnd(_sysexRange.end());
-    first = false;
+    if(_sysexes > 0)
+    {
+      if(first || pl > _sysexRange)
+        pl.setPos(_sysexRange);
+      if(first || pl.end() < _sysexRange.end())
+        pl.setEnd(_sysexRange.end());
+      first = false;
+    }
   }
   if(types & MetaRelevant)
   {
-    if(first || pl > _metaRange)
-      pl.setPos(_metaRange);
-    if(first || pl.end() < _metaRange.end())
-      pl.setEnd(_metaRange.end());
-    first = false;
+    if(_metas > 0)
+    {
+      if(first || pl > _metaRange)
+        pl.setPos(_metaRange);
+      if(first || pl.end() < _metaRange.end())
+        pl.setEnd(_metaRange.end());
+      first = false;
+    }
   }
   if(types & WaveRelevant)
   {
-    if(first || pl > _waveRange)
-      pl.setPos(_waveRange);
-    if(first || pl.end() < _waveRange.end())
-      pl.setEnd(_waveRange.end());
-    first = false;
+    if(_waves > 0)
+    {
+      if(first || pl > _waveRange)
+        pl.setPos(_waveRange);
+      if(first || pl.end() < _waveRange.end())
+        pl.setEnd(_waveRange.end());
+      first = false;
+    }
   }
   return pl;
 }  
