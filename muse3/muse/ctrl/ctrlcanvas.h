@@ -105,10 +105,11 @@ class CEvent : public CItem {
       //      It should only be used for temporary things like copy/paste and the length
       //       value should be reset to zero after usage.
       //      Normally an event's length is ALWAYS zero for all controller events.
-      //      For convenience for the tagging feature, it also accepts an offset vector
-      //       which is added to each of the events so that only the first event position
-      //       is needed to pass to any pasting routines later.
-      MusECore::Event eventWithLength(const QPoint& offset = QPoint()) const;
+//       //      For convenience for the tagging feature, it also accepts an offset vector
+//       //       which is added to each of the events so that only the first event position
+//       //       is needed to pass to any pasting routines later.
+//       MusECore::Event eventWithLength(const QPoint& offset = QPoint()) const;
+      MusECore::Event eventWithLength() const;
       void setEvent(const MusECore::Event& e)     { _event = e;     }
       MusECore::Part* part() const  { return _part;  }
       void setPart(MusECore::Part* p)       { _part = p; }
@@ -142,7 +143,27 @@ class CEvent : public CItem {
 
 class CtrlCanvas : public MusEGui::View {
       Q_OBJECT
-    
+
+    public:
+
+      //---------------------------------------------------------
+      //   CtrlCanvasInfoStruct
+      //    Structure for returning info from CtrlCanvas::getCtrlInfo()
+      //---------------------------------------------------------
+
+      struct CtrlCanvasInfoStruct
+      {
+        int fin_ctrl_num;
+        bool is_drum_ctl;
+        bool is_newdrum_ctl;
+        int min;
+        int max;
+        int bias;
+        
+        CtrlCanvasInfoStruct() : fin_ctrl_num(0), is_drum_ctl(false), is_newdrum_ctl(false), min(0), max(127), bias(0) {}
+      };
+
+    private:
       MidiEditor* editor;
       MusECore::MidiTrack* curTrack;
       MusECore::MidiPart* curPart;
@@ -152,6 +173,9 @@ class CtrlCanvas : public MusEGui::View {
       int _cnum;
       int _dnum; // Current real drum controller number (anote).
       int _didx; // Current real drum controller index.
+      // For current part.
+      CtrlCanvasInfoStruct _ctrlInfo;
+
       int line1x;
       int line1y;
       int line2x;
@@ -170,6 +194,8 @@ class CtrlCanvas : public MusEGui::View {
       unsigned int _dragFirstXPos;
       //bool _rasterizeDrag;
       //Qt::CursorShape _cursorShape;
+
+      void applyYOffset(MusECore::Event& e, int yoffset) const;
 
       void viewMousePressEvent(QMouseEvent* event);
       void viewMouseMoveEvent(QMouseEvent*);
@@ -200,7 +226,11 @@ class CtrlCanvas : public MusEGui::View {
       void pdrawItems(QPainter& p, const QRect& rect, const MusECore::MidiPart* part, bool velo, bool fg);
       void pFillBackgrounds(QPainter& p, const QRect& rect, const MusECore::MidiPart* part);
       void pdrawExtraDrumCtrlItems(QPainter& p, const QRect& rect, const MusECore::MidiPart* part, int drum_ctl);
-      void partControllers(const MusECore::MidiPart*, int, int*, int*, MusECore::MidiController**, MusECore::MidiCtrlValList**);
+      void partControllers(
+        const MusECore::MidiPart* part, int num,
+        int* dnum, int* didx,
+        MusECore::MidiController** mc, MusECore::MidiCtrlValList** mcvl,
+        CtrlCanvasInfoStruct* ctrlInfo);
       // Checks if the current drum pitch requires setting the midi controller and rebuilding the items.
       // Returns whether setMidiController() and updateItems() were in fact called.
       bool drumPitchChanged();
@@ -263,6 +293,7 @@ class CtrlCanvas : public MusEGui::View {
       void enterEvent(QEvent*e);
       void leaveEvent(QEvent*e);
       QPoint raster(const QPoint&) const;
+//       void getCtrlInfo(const MusECore::MidiPart* part, const int ctrlNum, CtrlCanvasInfoStruct* infoOut) const;
 
       // selection
       bool isSingleSelection()  { return selection.size() == 1; }

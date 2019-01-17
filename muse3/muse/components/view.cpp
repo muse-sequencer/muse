@@ -2891,6 +2891,36 @@ int View::rmapyDev(int y, bool round) const
               return floor(double(y) / double(ymag));
       }
       }
+QPoint View::rmapDev(const QPoint& p, bool round) const
+{
+  int x, y;
+
+  if (xmag <= 0)
+    x = p.x() * (-xmag);
+  else
+  {
+// REMOVE Tim. citem. Changed.
+//    x = lrint(double(p.x()) / double(xmag));
+    if(round)
+      x = ceil(double(p.x()) / double(xmag));
+    else
+      x = floor(double(p.x()) / double(xmag));
+  }
+
+  if (ymag <= 0)
+    y = p.y() * (-ymag);
+  else
+  {
+// REMOVE Tim. citem. Changed.
+//     y =  lrint(double(p.y()) / double(ymag));
+    if(round)
+      y = ceil(double(p.y()) / double(ymag));
+    else
+      y = floor(double(p.y()) / double(ymag));
+  }
+
+  return QPoint(x, y);
+}
 #endif
 
 double View::rmapx_f(double x) const

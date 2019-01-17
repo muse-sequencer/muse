@@ -4493,7 +4493,7 @@ void paste_items_at(
           // Extract the suitable events from the list and the number of events extracted.
           int num_events;
 //           const PosLen el_range = el.evrange(wave_mode, relevant, &num_events) - start_pos;
-          PosLen el_range = el.evrange(wave_mode, relevant, &num_events);
+          PosLen el_range = el.evrange(wave_mode, relevant, &num_events, paste_to_ctrl_num);
           // Be sure to subtract the position of the very first event of interest.
           // This is exactly what the copy/cut functions do before they write the results
           //  to an output file. But here the events in the directly-passed source list
@@ -4562,7 +4562,9 @@ void paste_items_at(
 //                   const Event& old_e = i->second;
                   
                   const Event& old_e = i->second;
-                  Event e = old_e.clone();
+
+                  // REMOVE Tim. citem Added. Diagnostics.
+                  fprintf(stderr, "paste_items_at(): old_e.dataB: %d ", old_e.dataB());
                   
 //                   // Be sure to subtract the position of the very first event of interest.
 //                   e.setPos(e.pos() - start_pos);
@@ -4572,15 +4574,28 @@ void paste_items_at(
                   switch(old_e.type())
                   {
                     case Note:
+                      if(!(relevant & NotesRelevant) || dest_part->type() == Pos::FRAMES)
+                        continue;
+                    break;
+
                     case Controller:
+                      if(!(relevant & ControllersRelevant) || dest_part->type() == Pos::FRAMES ||
+                         (paste_to_ctrl_num >= 0 && paste_to_ctrl_num != old_e.dataA()))
+                        continue;
+                    break;
+
                     case Sysex:
+                      if(!(relevant & SysexRelevant) || dest_part->type() == Pos::FRAMES)
+                        continue;
+                    break;
+
                     case Meta:
-                      if(dest_part->type() == Pos::FRAMES)
+                      if(!(relevant & MetaRelevant) || dest_part->type() == Pos::FRAMES)
                         continue;
                     break;
                     
                     case Wave:
-                      if(dest_part->type() == Pos::TICKS)
+                      if(!(relevant & WaveRelevant) || dest_part->type() == Pos::TICKS)
                         continue;
                     break;
                   }
@@ -4592,6 +4607,7 @@ void paste_items_at(
     // 												Pos tick = e.pos() + curr_pos - *dest_part;
                   //int tick = (e.pos() + curr_pos).posValue(el_range.type()) - dest_part->posValue(el_range.type());
 
+                  Event e = old_e.clone();
                   unsigned tick = e.posValue(time_type) + curr_pos;
 
                   // Be sure to subtract the position of the very first event of interest.
@@ -4645,6 +4661,9 @@ void paste_items_at(
                         expand_map[dest_part]=e.endPosValue();
                     }
                   }
+                  
+                  // REMOVE Tim. citem Added. Diagnostics.
+                  fprintf(stderr, "e.dataB: %d\n", e.dataB());
                   
     // REMOVE Tim. citem. Changed.
     // 									if (e.lenTick() != 0) operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));

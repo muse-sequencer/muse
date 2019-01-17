@@ -3163,12 +3163,18 @@ void Song::executeOperationGroup1(Undo& operations)
                         }
                         break;
                         
-                  case UndoOp::DeleteEvent:
+                  case UndoOp::DeleteEvent: {
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:DeleteEvent ** calling deleteEvent\n");
 #endif                        
-                        deleteEventOperation(i->nEvent, editable_part, i->doCtrls, i->doClones);
+                        // REMOVE Tim. citem. Added.
+                        // Special: Replace the undo item's event with the real actual event found in the event lists.
+                        // This way even a modified event can be passed in to the DeleteEvent operation constructor,
+                        //  and as long as the ID AND position values match it will find and use the ORIGINAL event.
+                        // (It's safe, the = operator quickly returns if the two events have the same base pointer.)
+                        i->nEvent = deleteEventOperation(i->nEvent, editable_part, i->doCtrls, i->doClones);
                         updateFlags |= SC_EVENT_REMOVED;
+                        }
                         break;
                         
                   case UndoOp::ModifyEvent:

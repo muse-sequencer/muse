@@ -672,6 +672,8 @@ void Song::changeEventOperation(const Event& oldEvent, const Event& newEvent, Pa
     }
     else
     {
+      // Use the actual old found event, not the given oldEvent.
+      const Event& e = ie->second;
       // Go ahead and include deletion of the old event.
       if(pendingOperations.add(PendingOperationItem(p, ie, PendingOperationItem::DeleteEvent)))
       {
@@ -680,17 +682,18 @@ void Song::changeEventOperation(const Event& oldEvent, const Event& newEvent, Pa
         // This is safe since the event is deleted then added again.
         // But if the new and old event IDs are not the same we MUST make sure the
         //  new event does not already exist.
-        if(newEvent.id() == oldEvent.id() || p->events().findWithId(newEvent) == p->events().cend())
+        if((newEvent.id() == oldEvent.id() || p->events().findWithId(newEvent) == p->events().cend()) &&
+           pendingOperations.add(PendingOperationItem(p, newEvent, PendingOperationItem::AddEvent)))
         {
-          if(pendingOperations.add(PendingOperationItem(p, newEvent, PendingOperationItem::AddEvent)))
-          {
-            if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
-            {
-              // Use the actual old found event, not the given oldEvent.
-              const Event& e = ie->second;
-              modifyPortCtrlEvents(e, newEvent, p, pendingOperations);  // Port controller values.
-            }
-          }
+          if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
+            modifyPortCtrlEvents(e, newEvent, p, pendingOperations);  // Port controller values.
+        }
+        else
+        {
+          // Adding the new event failed.
+          // Just go ahead and include removal of the old cached value.
+          if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
+            removePortCtrlEvents(e, p, p->track(), pendingOperations);  // Port controller values.
         }
       }
     }
@@ -725,8 +728,9 @@ void Song::changeEventOperation(const Event& oldEvent, const Event& newEvent, Pa
 //   deleteEvent
 //---------------------------------------------------------
 
-void Song::deleteEventOperation(const Event& event, Part* part, bool do_port_ctrls, bool do_clone_port_ctrls)
+Event Song::deleteEventOperation(const Event& event, Part* part, bool do_port_ctrls, bool do_clone_port_ctrls)
 {
+  Event p_res, res;
   Part* p = part;
   do
   {
@@ -736,6 +740,12 @@ void Song::deleteEventOperation(const Event& event, Part* part, bool do_port_ctr
    if(ie != p->nonconst_events().end())
    {
      const Event& e = ie->second;
+     // Prefer to return the event found in the given part's event list, not a clone part's.
+     if(p == part)
+       p_res = e;
+     if(res.empty())
+       res = e;
+
      // Include removal of any corresponding cached controller value.
      // By using the found existing event instead of the given one, this allows
      //  us to pre-modify an event - EXCEPT the event's time and ID - before
@@ -744,15 +754,27 @@ void Song::deleteEventOperation(const Event& event, Part* part, bool do_port_ctr
      //  ORIGINAL event and cannot find a modified event.
      // By default, here we MUST include all clones so that we find the event in
      //  the correct corresponding part.
-     if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
-       removePortCtrlEvents(e, p, p->track(), pendingOperations);  // Port controller values.
+//      if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
+//        removePortCtrlEvents(e, p, p->track(), pendingOperations);  // Port controller values.
      // Include removal of the event.
-     pendingOperations.add(PendingOperationItem(p, ie, PendingOperationItem::DeleteEvent));
+//      pendingOperations.add(PendingOperationItem(p, ie, PendingOperationItem::DeleteEvent));
+     
+     if(pendingOperations.add(PendingOperationItem(p, ie, PendingOperationItem::DeleteEvent)))
+     {
+       if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
+         removePortCtrlEvents(e, p, p->track(), pendingOperations);  // Port controller values.
+     }
    }
     
     p = p->nextClone();
   }
   while(p != part);
+  
+  // Prefer to return the event found in the given part's event list, not a clone part's.
+  if(!p_res.empty())
+    return p_res;
+  
+  return res;
 }
 
 //---------------------------------------------------------

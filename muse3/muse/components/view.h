@@ -230,6 +230,7 @@ class View : public QWidget {
       int mapxDev(int x) const;
       int rmapy(int y, bool round = false) const;
       int rmapyDev(int y, bool round = false) const;
+      QPoint rmapDev(const QPoint&, bool round = false) const;
       QRect devToVirt(const QRect&) const;
       void devToVirt(const QRegion& rg_in, QRegion& rg_out) const;
       double rmapx_f(double x) const;

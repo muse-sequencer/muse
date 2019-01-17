@@ -262,8 +262,12 @@ bool CEvent::containsXRange(int x1, int x2) const
 //   See header comments about this small Event hack...
 //---------------------------------------------------------
 
-MusECore::Event CEvent::eventWithLength(const QPoint& offset) const
+// MusECore::Event CEvent::eventWithLength(const QPoint& offset) const
+MusECore::Event CEvent::eventWithLength() const
 { 
+  // REMOVE Tim. citem Added. Diagnostics.
+//   fprintf(stderr, "eventWithLength(): _event.dataB: %d offset.y(): %d", _event.dataB(), offset.y());
+  
   // Grab a clone of the event.
   MusECore::Event new_e = _event.clone();
   
@@ -298,9 +302,14 @@ MusECore::Event CEvent::eventWithLength(const QPoint& offset) const
 //   
 //   new_e.setPosValue(new_pos_val);
   
-  // Add in the given offset y value.
-  new_e.setB(new_e.dataB() + offset.y());
+//   // Add in the given offset y value.
+//   // Note that offset is in screen orientation - top to bottom low to high value.
+//   // So subtract it.
+//   new_e.setB(new_e.dataB() - offset.y());
   
+  // REMOVE Tim. citem Added. Diagnostics.
+//   fprintf(stderr, "... _event.dataB: %d new_e.dataB: %d\n", _event.dataB(), new_e.dataB());
+
   return new_e;
 }
 
@@ -509,7 +518,7 @@ void CtrlCanvas::setPos(int idx, unsigned val, bool adjustScrollbar)
 void CtrlCanvas::setMidiController(int num)
       {
       _cnum = num;    
-      partControllers(curPart, _cnum, &_dnum, &_didx, &_controller, &ctrl);
+      partControllers(curPart, _cnum, &_dnum, &_didx, &_controller, &ctrl, &_ctrlInfo);
       
       if(_panel)
       {
@@ -569,6 +578,66 @@ void CtrlCanvas::leaveEvent(QEvent*)
       emit yposChanged(-1);
       }
 
+      
+// //---------------------------------------------------------
+// //   getCtrlInfo
+// //---------------------------------------------------------
+// 
+// void CtrlCanvas::getCtrlInfo(const MusECore::MidiPart* part, const int ctrlNum, CtrlCanvasInfoStruct* infoOut) const
+// {
+//     MusECore::MidiTrack* mt = part->track();
+//     MusECore::MidiPort* mp;
+//     int cnum = ctrlNum;
+//     bool is_drum_ctl = (mt->type() == MusECore::Track::DRUM) && (curDrumPitch >= 0) && ((ctrlNum & 0xff) == 0xff);
+//     bool is_newdrum_ctl = (mt->type() == MusECore::Track::NEW_DRUM) && (curDrumPitch >= 0) && ((ctrlNum & 0xff) == 0xff);
+// 
+//     if(is_drum_ctl)
+//     {
+//       // Default to track port if -1 and track channel if -1.
+//       int mport = MusEGlobal::drumMap[curDrumPitch].port;
+//       if(mport == -1)
+//         mport = mt->outPort();
+//       mp = &MusEGlobal::midiPorts[mport];
+//       cnum = (ctrlNum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
+//     }
+//     else if(is_newdrum_ctl)
+//     {
+//       // Default to track port if -1 and track channel if -1.
+//       int mport = mt->drummap()[curDrumPitch].port;
+//       if(mport == -1)
+//         mport = mt->outPort();
+//       mp = &MusEGlobal::midiPorts[mport];
+//       cnum = (ctrlNum & ~0xff) | mt->drummap()[curDrumPitch].anote;
+//     }
+//     else
+//       mp = &MusEGlobal::midiPorts[mt->outPort()];          
+//     
+//     MusECore::MidiController* mc = mp->midiController(cnum);
+//     
+//     int min;
+//     int max;
+//     int bias;
+//     if(cnum == MusECore::CTRL_PROGRAM)
+//     {
+//       min = 1;
+//       max = 128;
+//       bias = 0;
+//     }
+//     else
+//     {
+//       min  = mc->minVal();
+//       max  = mc->maxVal();
+//       bias  = mc->bias();
+//     }
+//     
+//     infoOut->fin_ctrl_num = cnum;
+//     infoOut->is_drum_ctl = is_drum_ctl;
+//     infoOut->is_newdrum_ctl = is_newdrum_ctl;
+//     infoOut->min = min;
+//     infoOut->max = max;
+//     infoOut->bias = bias;
+// }
+      
 //---------------------------------------------------------
 //   raster
 //---------------------------------------------------------
@@ -737,12 +806,29 @@ void CtrlCanvas::removeSelection(CEvent* e)
 //   }
 // }
 
+void CtrlCanvas::applyYOffset(MusECore::Event& e, int yoffset) const
+{
+  if(!curPart)
+    return;
+
+  // Y offset is top to bottom. Reverse it.
+  int new_v = e.dataB() - yoffset;
+  if(new_v < _ctrlInfo.min)
+    new_v = _ctrlInfo.min;
+  if(new_v > _ctrlInfo.max)
+    new_v = _ctrlInfo.max;
+  e.setB(new_v);
+}
+
 //---------------------------------------------------------
 //   tagItems
 //---------------------------------------------------------
 
 void CtrlCanvas::tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const
 { 
+  if(!curPart)
+    return;
+  
   const bool tagSelected = options._flags & MusECore::TagSelected;
   const bool tagMoving   = options._flags & MusECore::TagMoving;
   const bool tagAllItems = options._flags & MusECore::TagAllItems;
@@ -751,6 +837,20 @@ void CtrlCanvas::tagItems(MusECore::TagEventList* tag_list, const MusECore::Even
   const MusECore::Pos& p0 = options._p0;
   const MusECore::Pos& p1 = options._p1;
   
+//   CtrlCanvasInfoStruct info_out;
+//   getCtrlInfo(curPart, _cnum, &info_out);
+//   const int cnum = info_out.fin_ctrl_num;
+//   const bool is_drum_ctl = info_out.is_drum_ctl;
+//   const bool is_newdrum_ctl = info_out.is_newdrum_ctl;    
+//   const int min = info_out.min;
+//   const int max = info_out.max;
+//   const int bias = info_out.bias;
+
+  //lval = wh - ((pval - min) * wh / (max - min)) + mapy(_curDragOffset.y());
+
+  // Protect against divide by zero.
+  const int offset_y = rmapyDev(height() == 0 ? 0 : _curDragOffset.y() * (_ctrlInfo.max - _ctrlInfo.min) / height());
+
   MusECore::Event new_e;
   CEvent* item;
   MusECore::Part* part;
@@ -778,8 +878,11 @@ void CtrlCanvas::tagItems(MusECore::TagEventList* tag_list, const MusECore::Even
           //  upon reception of the event when it is done with the information.
 //           // For moving items, add in the current drag offset so that only
 //           //  the first event position is needed to pass to any pasting routines.
-          // For moving items, add in the current drag offset y value (x is ignored).
-          new_e = item->eventWithLength((tagMoving && item->isMoving()) ? _curDragOffset : QPoint());
+//           // For moving items, add in the current drag offset y value (x is ignored).
+//           new_e = item->eventWithLength((tagMoving && item->isMoving()) ? offset : QPoint());
+          new_e = item->eventWithLength();
+          if(tagMoving && item->isMoving())
+            applyYOffset(new_e, offset_y);
           tag_list->add(part, new_e);
         }
       }
@@ -815,7 +918,8 @@ void CtrlCanvas::tagItems(MusECore::TagEventList* tag_list, const MusECore::Even
             // Avoid duplicates found in moving list.
             if(tagSelected && selection.cfind(item) != selection.cend())
               continue;
-            new_e = item->eventWithLength(_curDragOffset);
+            new_e = item->eventWithLength();
+            applyYOffset(new_e, offset_y);
             tag_list->add(part, new_e);
           }
         }
@@ -836,7 +940,9 @@ void CtrlCanvas::tagItems(MusECore::TagEventList* tag_list, const MusECore::Even
              || (tagSelected && item->isSelected())
              || (tagMoving && item->isMoving())))
           continue;
-        new_e = item->eventWithLength((tagMoving && item->isMoving()) ? _curDragOffset : QPoint());
+        new_e = item->eventWithLength();
+        if(tagMoving && item->isMoving())
+          applyYOffset(new_e, offset_y);
         tag_list->add(part, new_e);
       }
     }
@@ -866,7 +972,8 @@ void CtrlCanvas::tagItems(MusECore::TagEventList* tag_list, const MusECore::Even
           part = item->part();
           if(part != curPart || (part && part->track() != curTrack))
             continue;
-          new_e = item->eventWithLength(_curDragOffset);
+          new_e = item->eventWithLength();
+          applyYOffset(new_e, offset_y);
           tag_list->add(part, new_e);
         }
       }
@@ -989,7 +1096,8 @@ void CtrlCanvas::songChanged(MusECore::SongChangedStruct_t type)
 //---------------------------------------------------------
 
 void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* dnum, int* didx,
-                                 MusECore::MidiController** mc, MusECore::MidiCtrlValList** mcvl)
+                                 MusECore::MidiController** mc, MusECore::MidiCtrlValList** mcvl,
+                                 CtrlCanvasInfoStruct* ctrlInfo)
 {
   if(num == MusECore::CTRL_VELOCITY) // special case
   {    
@@ -1001,6 +1109,8 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
       *dnum = num;
     if(didx)
       *didx = num;
+    if(ctrlInfo)
+      *ctrlInfo = CtrlCanvasInfoStruct();
   }
   else 
   {
@@ -1014,19 +1124,25 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
         *dnum = 0;
       if(didx)
         *didx = 0;
+      if(ctrlInfo)
+        *ctrlInfo = CtrlCanvasInfoStruct();
       return;
     }
     
     MusECore::MidiTrack* mt = part->track();
     MusECore::MidiPort* mp = NULL;
+    MusECore::MidiController* mp_mc = NULL;
     int di = 0;
     int n = 0;
+    bool is_drum_ctl = false;
+    bool is_newdrum_ctl = false;
 
     if((curDrumPitch >= 0) && ((num & 0xff) == 0xff))
     {
       di = (num & ~0xff) | curDrumPitch;
       if((mt->type() == MusECore::Track::DRUM))
       {
+        is_drum_ctl = true;
         n = (num & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;  
         // Default to track port if -1 and track channel if -1.
         int mport = MusEGlobal::drumMap[curDrumPitch].port;
@@ -1036,14 +1152,13 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
       }
       else if(mt->type() == MusECore::Track::NEW_DRUM)
       {
+        is_newdrum_ctl = true;
         n = (num & ~0xff) | mt->drummap()[curDrumPitch].anote;
         // Default to track port if -1 and track channel if -1.
         int mport = mt->drummap()[curDrumPitch].port;
         if(mport == -1)
           mport = mt->outPort();
         mp = &MusEGlobal::midiPorts[mport];
-
-
       }
       else if(mt->type() == MusECore::Track::MIDI) 
       {
@@ -1058,6 +1173,9 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
        mp = &MusEGlobal::midiPorts[mt->outPort()];          
     }
     
+    if(mp)
+      mp_mc = mp->midiController(n);
+    
     if(dnum)
       *dnum = n;
           
@@ -1065,7 +1183,34 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
       *didx = di;
       
     if(mc)
-      *mc = mp->midiController(n);
+      *mc = mp_mc;
+    
+    if(ctrlInfo)
+    {
+      int min = 0;
+      int max = 127;
+      int bias = 0;
+      if(n == MusECore::CTRL_PROGRAM)
+      {
+        min = 1;
+        max = 128;
+        bias = 0;
+      }
+      else
+      if(mp_mc)
+      {
+        min  = mp_mc->minVal();
+        max  = mp_mc->maxVal();
+        bias  = mp_mc->bias();
+      }
+      
+      ctrlInfo->fin_ctrl_num = n;
+      ctrlInfo->is_drum_ctl = is_drum_ctl;
+      ctrlInfo->is_newdrum_ctl = is_newdrum_ctl;
+      ctrlInfo->min = min;
+      ctrlInfo->max = max;
+      ctrlInfo->bias = bias;
+    }
       
     if(mcvl)
     {
@@ -1216,7 +1361,7 @@ void CtrlCanvas::updateItems()
                 continue;
               
               MusECore::MidiCtrlValList* mcvl;
-              partControllers(part, _cnum, 0, 0, 0, &mcvl);
+              partControllers(part, _cnum, 0, 0, 0, &mcvl, 0);
               unsigned len = part->lenTick();
 
               for (MusECore::ciEvent i = part->events().begin(); i != part->events().end(); ++i) 
@@ -1528,7 +1673,8 @@ void CtrlCanvas::endMoveItems()
   // Whee ! Now paste the items directly from the list. No Xml conversion required.
   MusECore::paste_items_at(
     // Part list to search for given parts.
-    part_to_set(curPart),
+//     part_to_set(curPart),
+    std::set<const MusECore::Part*>(),
     // List of events to paste.
     &tag_list,
 //     // The paste position. The _curDragOffset vector component has already been added to the
@@ -3973,50 +4119,60 @@ void CtrlCanvas::drawMoving(QPainter& p, const QRect& rect, const QRegion& /*reg
     QPen pen;
     pen.setCosmetic(true);
     
-    MusECore::MidiTrack* mt = part->track();
-    MusECore::MidiPort* mp;
-    int cnum = _cnum;
-    bool is_drum_ctl = (mt->type() == MusECore::Track::DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
-    bool is_newdrum_ctl = (mt->type() == MusECore::Track::NEW_DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
-
-    if(is_drum_ctl)
-    {
-      // Default to track port if -1 and track channel if -1.
-      int mport = MusEGlobal::drumMap[curDrumPitch].port;
-      if(mport == -1)
-        mport = mt->outPort();
-      mp = &MusEGlobal::midiPorts[mport];
-      cnum = (_cnum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
-    }
-    else if(is_newdrum_ctl)
-    {
-      // Default to track port if -1 and track channel if -1.
-      int mport = mt->drummap()[curDrumPitch].port;
-      if(mport == -1)
-        mport = mt->outPort();
-      mp = &MusEGlobal::midiPorts[mport];
-      cnum = (_cnum & ~0xff) | mt->drummap()[curDrumPitch].anote;
-    }
-    else
-      mp = &MusEGlobal::midiPorts[mt->outPort()];          
+//     MusECore::MidiTrack* mt = part->track();
+//     MusECore::MidiPort* mp;
+//     int cnum = _cnum;
+//     bool is_drum_ctl = (mt->type() == MusECore::Track::DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
+//     bool is_newdrum_ctl = (mt->type() == MusECore::Track::NEW_DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
+// 
+//     if(is_drum_ctl)
+//     {
+//       // Default to track port if -1 and track channel if -1.
+//       int mport = MusEGlobal::drumMap[curDrumPitch].port;
+//       if(mport == -1)
+//         mport = mt->outPort();
+//       mp = &MusEGlobal::midiPorts[mport];
+//       cnum = (_cnum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
+//     }
+//     else if(is_newdrum_ctl)
+//     {
+//       // Default to track port if -1 and track channel if -1.
+//       int mport = mt->drummap()[curDrumPitch].port;
+//       if(mport == -1)
+//         mport = mt->outPort();
+//       mp = &MusEGlobal::midiPorts[mport];
+//       cnum = (_cnum & ~0xff) | mt->drummap()[curDrumPitch].anote;
+//     }
+//     else
+//       mp = &MusEGlobal::midiPorts[mt->outPort()];          
+//     
+//     MusECore::MidiController* mc = mp->midiController(cnum);
+//     
+//     int min;
+//     int max;
+//     int bias;
+//     if(cnum == MusECore::CTRL_PROGRAM)
+//     {
+//       min = 1;
+//       max = 128;
+//       bias = 0;
+//     }
+//     else
+//     {
+//       min  = mc->minVal();
+//       max  = mc->maxVal();
+//       bias  = mc->bias();
+//     }
     
-    MusECore::MidiController* mc = mp->midiController(cnum);
-    
-    int min;
-    int max;
-    int bias;
-    if(cnum == MusECore::CTRL_PROGRAM)
-    {
-      min = 1;
-      max = 128;
-      bias = 0;
-    }
-    else
-    {
-      min  = mc->minVal();
-      max  = mc->maxVal();
-      bias  = mc->bias();
-    }
+    CtrlCanvasInfoStruct info_out;
+//     getCtrlInfo(part, _cnum, &info_out);
+    partControllers(curPart, _cnum, 0, 0, 0, 0, &info_out);
+    const int cnum = info_out.fin_ctrl_num;
+    const bool is_drum_ctl = info_out.is_drum_ctl;
+    const bool is_newdrum_ctl = info_out.is_newdrum_ctl;    
+    const int min = info_out.min;
+    const int max = info_out.max;
+    const int bias = info_out.bias;
     
 //     int drag_offset = _curDragOffset.x();
 //     if(curItem && curItem->part() == part)
