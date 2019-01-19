@@ -1,3 +1,6 @@
+19.01.2019
+      - Merge pull 634 "Run properly on HiDPI screens" from hfiguiere. (Tim)
+        Modified slightly, to check Qt version.
 07.01.2019
       - Xml class full makeover. (Tim)
         Removed all QByteArray stuff. Now it works directly with _s1 or _s2,

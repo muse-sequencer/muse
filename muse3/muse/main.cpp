@@ -527,7 +527,9 @@ int main(int argc, char* argv[])
   #endif
 
         // Now create the application, and let Qt remove recognized arguments.
+#if QT_VERSION >= 0x050600
         QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
         MuseApplication app(argc_copy, argv_copy);
         if(QStyle* def_style = app.style())
         {
