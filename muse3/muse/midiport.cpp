@@ -1627,7 +1627,7 @@ bool MidiPort::setHwCtrlStates(int ch, int ctrl, double val, double lastval)
 //   Returns true if a value was actually added.
 //---------------------------------------------------------
 
-bool MidiPort::setControllerVal(int ch, int tick, int ctrl, int val, Part* part)
+bool MidiPort::setControllerVal(int ch, unsigned int tick, int ctrl, int val, Part* part)
 {
       MidiCtrlValList* pvl;
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
@@ -1738,7 +1738,7 @@ bool MidiPort::updateDrumMaps()
 //   getCtrl
 //---------------------------------------------------------
 
-int MidiPort::getCtrl(int ch, int tick, int ctrl) const
+int MidiPort::getCtrl(int ch, unsigned int tick, int ctrl) const
       {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end())
@@ -1747,7 +1747,7 @@ int MidiPort::getCtrl(int ch, int tick, int ctrl) const
       return cl->second->value(tick);
       }
 
-int MidiPort::getCtrl(int ch, int tick, int ctrl, Part* part) const
+int MidiPort::getCtrl(int ch, unsigned int tick, int ctrl, Part* part) const
       {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end())
@@ -1756,7 +1756,7 @@ int MidiPort::getCtrl(int ch, int tick, int ctrl, Part* part) const
       return cl->second->value(tick, part);
       }
 
-int MidiPort::getVisibleCtrl(int ch, int tick, int ctrl, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const
+int MidiPort::getVisibleCtrl(int ch, unsigned int tick, int ctrl, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const
       {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end())
@@ -1765,7 +1765,7 @@ int MidiPort::getVisibleCtrl(int ch, int tick, int ctrl, bool inclMutedParts, bo
       return cl->second->visibleValue(tick, inclMutedParts, inclMutedTracks, inclOffTracks);
       }
 
-int MidiPort::getVisibleCtrl(int ch, int tick, int ctrl, Part* part, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const
+int MidiPort::getVisibleCtrl(int ch, unsigned int tick, int ctrl, Part* part, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const
       {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end())
@@ -1778,7 +1778,7 @@ int MidiPort::getVisibleCtrl(int ch, int tick, int ctrl, Part* part, bool inclMu
 //   deleteController
 //---------------------------------------------------------
 
-void MidiPort::deleteController(int ch, int tick, int ctrl, int val, Part* part)
+void MidiPort::deleteController(int ch, unsigned int tick, int ctrl, int val, Part* part)
     {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end()) {

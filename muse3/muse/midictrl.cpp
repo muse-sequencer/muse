@@ -1140,7 +1140,7 @@ bool MidiCtrlValList::setHwVals(const double v, const double lastv)
 //   partAtTick
 //---------------------------------------------------------
 
-Part* MidiCtrlValList::partAtTick(int tick) const
+Part* MidiCtrlValList::partAtTick(unsigned int tick) const
 {
       // Determine (first) part at tick. Return 0 if none found.
       
@@ -1157,7 +1157,7 @@ Part* MidiCtrlValList::partAtTick(int tick) const
 //   iValue
 //---------------------------------------------------------
 
-iMidiCtrlVal MidiCtrlValList::iValue(int tick) 
+iMidiCtrlVal MidiCtrlValList::iValue(unsigned int tick) 
 {
       // Determine value at tick, using values stored by ANY part...
       
@@ -1174,7 +1174,7 @@ iMidiCtrlVal MidiCtrlValList::iValue(int tick)
 //   value
 //---------------------------------------------------------
 
-int MidiCtrlValList::value(int tick) const
+int MidiCtrlValList::value(unsigned int tick) const
 {
       // Determine value at tick, using values stored by ANY part...
       
@@ -1187,7 +1187,7 @@ int MidiCtrlValList::value(int tick) const
       return i->second.val;
 }
 
-int MidiCtrlValList::value(int tick, Part* part) const
+int MidiCtrlValList::value(unsigned int tick, Part* part) const
 {
   // Determine value at tick, using values stored by the SPECIFIC part...
   
@@ -1218,7 +1218,7 @@ int MidiCtrlValList::visibleValue(unsigned int tick, bool inclMutedParts, bool i
   // Get the first value found with with a tick equal or greater than specified tick.
   ciMidiCtrlVal i = lower_bound(tick);
   // Since values from different parts can have the same tick, scan for part in all values at that tick.
-  for(ciMidiCtrlVal j = i; j != end() && (unsigned int)j->first == tick; ++j)
+  for(ciMidiCtrlVal j = i; j != end() && j->first == tick; ++j)
   {
     const Part* part = j->second.part;
     // Ignore values that are outside of the part.
@@ -1264,7 +1264,7 @@ int MidiCtrlValList::visibleValue(unsigned int tick, Part* part, bool inclMutedP
   ciMidiCtrlVal i = lower_bound(tick);
   // Ignore if part or track is muted or off.
   // Since values from different parts can have the same tick, scan for part in all values at that tick.
-  for(ciMidiCtrlVal j = i; j != end() && (unsigned int)j->first == tick; ++j)
+  for(ciMidiCtrlVal j = i; j != end() && j->first == tick; ++j)
   {
     if(j->second.part == part)
     {
@@ -1294,7 +1294,7 @@ int MidiCtrlValList::visibleValue(unsigned int tick, Part* part, bool inclMutedP
 //    what is really in the event lists.
 //---------------------------------------------------------
 
-bool MidiCtrlValList::addMCtlVal(int tick, int val, Part* part)
+bool MidiCtrlValList::addMCtlVal(unsigned int tick, int val, Part* part)
       {
 // REMOVE Tim. citem. ctl. Removed. To accurately reflect what is really in the event lists.
 // Mostly for the purpose of dragging and dropping controller events and allowing them to be
@@ -1310,7 +1310,7 @@ bool MidiCtrlValList::addMCtlVal(int tick, int val, Part* part)
 //             return false;
 //           }
             
-      insert(std::pair<const int, MidiCtrlVal> (tick, MidiCtrlVal(part, val)));
+      insert(MidiCtrlValListInsertPair_t(tick, MidiCtrlVal(part, val)));
       return true;
       }
 
@@ -1318,14 +1318,14 @@ bool MidiCtrlValList::addMCtlVal(int tick, int val, Part* part)
 //   del
 //---------------------------------------------------------
 
-void MidiCtrlValList::delMCtlVal(int tick, Part* part, int val)
+void MidiCtrlValList::delMCtlVal(unsigned int tick, Part* part, int val)
 {
 // REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
 //       iMidiCtrlVal e = findMCtlVal(tick, part);
       iMidiCtrlVal e = findMCtlVal(tick, part, val);
       if (e == end()) {
 	if(MusEGlobal::debugMsg)
-              printf("MidiCtrlValList::delMCtlVal(%d): not found (size %zd)\n", tick, size());
+              printf("MidiCtrlValList::delMCtlVal(%u): not found (size %zd)\n", tick, size());
             return;
             }
       erase(e);
@@ -1335,7 +1335,7 @@ void MidiCtrlValList::delMCtlVal(int tick, Part* part, int val)
 //   find
 //---------------------------------------------------------
 
-iMidiCtrlVal MidiCtrlValList::findMCtlVal(int tick, Part* part, int val)
+iMidiCtrlVal MidiCtrlValList::findMCtlVal(unsigned int tick, Part* part, int val)
 {
   MidiCtrlValRange range = equal_range(tick);
   for(iMidiCtrlVal i = range.first; i != range.second; ++i) 

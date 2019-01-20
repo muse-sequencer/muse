@@ -314,7 +314,7 @@ class Audio {
       void msgSeekPrevACEvent(AudioTrack*, int);
       void msgSeekNextACEvent(AudioTrack*, int);
 //       void msgEraseACEvent(AudioTrack*, int, int);
-      void msgEraseRangeACEvents(AudioTrack*, int, int, int);
+      void msgEraseRangeACEvents(AudioTrack* node, int acid, unsigned int frame1, unsigned int frame2);
 //       void msgAddACEvent(AudioTrack*, int, int, double);
       void msgChangeACEvent(AudioTrack* node, int acid, int frame, int newFrame, double val);
       void msgSetHwCtrlState(MidiPort*, int, int, int);

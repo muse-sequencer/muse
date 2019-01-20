@@ -390,7 +390,7 @@ void Audio::msgSeekNextACEvent(AudioTrack* node, int acid)
 //   msgEraseRangeACEvents
 //---------------------------------------------------------
 
-void Audio::msgEraseRangeACEvents(AudioTrack* node, int acid, int frame1, int frame2)
+void Audio::msgEraseRangeACEvents(AudioTrack* node, int acid, unsigned int frame1, unsigned int frame2)
 {
   ciCtrlList icl = node->controller()->find(acid);
   if(icl == node->controller()->end())
@@ -402,7 +402,7 @@ void Audio::msgEraseRangeACEvents(AudioTrack* node, int acid, int frame1, int fr
     
   if(frame2 < frame1)
   {
-    const int tmp = frame1;
+    const unsigned int tmp = frame1;
     frame1 = frame2;
     frame2 = tmp;
   }

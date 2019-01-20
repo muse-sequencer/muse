@@ -149,7 +149,7 @@ struct UndoOp {
       UndoOp(UndoType type, const Part* part, bool noUndo = false);
       UndoOp(UndoType type, const Part* part, const QString& old_name, const QString& new_name, bool noUndo = false);
       UndoOp(UndoType type, const Part* part, bool selected, bool selected_old, bool noUndo = false);
-      UndoOp(UndoType type, const Part* part, int old_len_or_pos, int new_len_or_pos, Pos::TType new_time_type = Pos::TICKS,
+      UndoOp(UndoType type, const Part* part, unsigned int old_len_or_pos, unsigned int new_len_or_pos, Pos::TType new_time_type = Pos::TICKS,
              const Track* oTrack = 0, const Track* nTrack = 0, bool noUndo = false);
       UndoOp(UndoType type, const Event& nev, const Event& oev, const Part* part, bool doCtrls, bool doClones, bool noUndo = false);
       UndoOp(UndoType type, const Event& nev, const Part* part, bool, bool, bool noUndo = false);

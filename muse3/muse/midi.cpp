@@ -837,7 +837,7 @@ void Audio::initDevices(bool force)
 
 void Audio::seekMidi()
 {
-  unsigned pos = MusEGlobal::audio->tickPos();
+  unsigned int pos = MusEGlobal::audio->tickPos();
   const bool playing = isPlaying();
   
   // Bit-wise channels that are used.
@@ -1019,9 +1019,9 @@ void Audio::seekMidi()
       bool found_value = false;
       
       iMidiCtrlVal imcv = vl->lower_bound(pos);
-      if(imcv != vl->end() && imcv->first == (int)pos)
+      if(imcv != vl->end() && imcv->first == pos)
       {
-        for( ; imcv != vl->end() && imcv->first == (int)pos; ++imcv)
+        for( ; imcv != vl->end() && imcv->first == pos; ++imcv)
         {
           const Part* p = imcv->second.part;
           if(!p)

@@ -103,7 +103,7 @@ class Part : public PosLen {
       virtual Part* duplicate() const;
       virtual Part* duplicateEmpty() const = 0;
       virtual Part* createNewClone() const; // this does NOT chain clones yet. Chain is updated only when the part is really added!
-      virtual void splitPart(int tickpos, Part*& p1, Part*& p2) const;
+      virtual void splitPart(unsigned int tickpos, Part*& p1, Part*& p2) const;
       
       void setSn(int n)                { _sn = n; }
       int clonemaster_sn() const       { return _clonemaster_sn; }
@@ -218,38 +218,43 @@ class WavePart : public Part {
 //   PartList
 //---------------------------------------------------------
 
-typedef std::multimap<int, Part*, std::less<unsigned> >::iterator iPart;
-typedef std::multimap<int, Part*, std::less<unsigned> >::reverse_iterator riPart;
-typedef std::multimap<int, Part*, std::less<unsigned> >::const_iterator ciPart;
+typedef std::pair<unsigned int, Part*> PartListInsertPair_t;
+typedef std::multimap<unsigned int, Part*, std::less<unsigned int> > PartList_t;
 
-class PartList : public std::multimap<int, Part*, std::less<unsigned> > {
+class PartList : public PartList_t {
    public:
-      iPart findPart(unsigned tick);
-      iPart add(Part*);
+      iterator findPart(unsigned tick);
+      iterator add(Part*);
       void remove(Part* part);
       int index(const Part*) const;
       Part* find(int idx);
       void clearDelete() {
-            for (iPart i = begin(); i != end(); ++i)
+            for (iterator i = begin(); i != end(); ++i)
                   delete i->second;
             clear();
             }
             
       void addOperation(Part* part, PendingOperationList& ops); 
       void delOperation(Part* part, PendingOperationList& ops);
-      void movePartOperation(Part* part, int new_pos, PendingOperationList& ops, Track* track = 0);
+      void movePartOperation(Part* part, unsigned int new_pos, PendingOperationList& ops, Track* track = 0);
       };
+
+typedef PartList_t::iterator iPart;
+typedef PartList_t::reverse_iterator riPart;
+typedef PartList_t::const_iterator ciPart;
 
 extern void chainCheckErr(Part* p);
 extern void unchainTrackParts(Track* t);
 extern void chainTrackParts(Track* t);
 extern void addPortCtrlEvents(Part* part, bool doClones);
 extern void addPortCtrlEvents(const Event& event, Part* part, unsigned int tick, unsigned int len, Track* track, PendingOperationList& ops);
-extern void addPortCtrlEvents(Event& event, Part* part);
+// REMOVE Tim. citem. ctl. Removed.
+// extern void addPortCtrlEvents(Event& event, Part* part);
 extern void addPortCtrlEvents(Part* part, unsigned int tick, unsigned int len, Track* track, PendingOperationList& ops);
 extern void removePortCtrlEvents(Part* part, bool doClones);
 extern void removePortCtrlEvents(Part* part, Track* track, PendingOperationList& ops);
-extern void removePortCtrlEvents(Event& event, Part* part);
+// REMOVE Tim. citem. ctl. Removed.
+// extern void removePortCtrlEvents(Event& event, Part* part);
 extern bool removePortCtrlEvents(const Event& event, Part* part, Track* track, PendingOperationList& ops);
 extern void modifyPortCtrlEvents(const Event& old_event, const Event& event, Part* part, PendingOperationList& ops);
 

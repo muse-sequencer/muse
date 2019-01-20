@@ -108,16 +108,16 @@ class MidiPort {
       //
       MidiCtrlValListList* controller() { return _controller; }
       // Determine controller value at tick on channel, using values stored by ANY part.
-      int getCtrl(int ch, int tick, int ctrl) const;
+      int getCtrl(int ch, unsigned int tick, int ctrl) const;
       // Determine controller value at tick on channel, using values stored by the SPECIFIC part.
-      int getCtrl(int ch, int tick, int ctrl, Part* part) const;
+      int getCtrl(int ch, unsigned int tick, int ctrl, Part* part) const;
       // Determine controller value at tick on channel, using values stored by ANY part,
       //  ignoring values that are OUTSIDE of their parts, or muted or off parts or tracks.
-      int getVisibleCtrl(int ch, int tick, int ctrl, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const;
+      int getVisibleCtrl(int ch, unsigned int tick, int ctrl, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const;
       // Determine controller value at tick on channel, using values stored by the SPECIFIC part,
       //  ignoring values that are OUTSIDE of the part, or muted or off part or track.
-      int getVisibleCtrl(int ch, int tick, int ctrl, Part* part, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const;
-      bool setControllerVal(int ch, int tick, int ctrl, int val, Part* part);
+      int getVisibleCtrl(int ch, unsigned int tick, int ctrl, Part* part, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const;
+      bool setControllerVal(int ch, unsigned int tick, int ctrl, int val, Part* part);
       // Can be CTRL_VAL_UNKNOWN until a valid state is set
       int lastValidHWCtrlState(int ch, int ctrl) const;
       double lastValidHWDCtrlState(int ch, int ctrl) const;
@@ -128,7 +128,7 @@ class MidiPort {
       bool setHwCtrlStates(int ch, int ctrl, int val, int lastval);
       bool setHwCtrlStates(int ch, int ctrl, double val, double lastval);
       bool setHwCtrlState(const MidiPlayEvent&);
-      void deleteController(int ch, int tick, int ctrl, int val, Part* part);
+      void deleteController(int ch, unsigned int tick, int ctrl, int val, Part* part);
       void addDefaultControllers();
       
       bool guiVisible() const;

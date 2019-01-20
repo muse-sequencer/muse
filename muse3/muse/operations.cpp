@@ -43,14 +43,14 @@ bool PendingOperationItem::isAllocationOp(const PendingOperationItem& op) const
     break;
     
     case AddTempo:
-      // A is tick.
-      if(_type == AddTempo && _tempo_list == op._tempo_list && _intA == op._intA)
+      // _posLenVal is tick.
+      if(_type == AddTempo && _tempo_list == op._tempo_list && _posLenVal == op._posLenVal)
         return true;
     break;
       
     case AddSig:
-      // A is tick.
-      if(_type == AddSig && _sig_list == op._sig_list && _intA == op._intA)
+      // _posLenVal is tick.
+      if(_type == AddSig && _sig_list == op._sig_list && _posLenVal == op._posLenVal)
         return true;
     break;
     
@@ -68,7 +68,7 @@ bool PendingOperationItem::isAllocationOp(const PendingOperationItem& op) const
   return false;
 }
 
-int PendingOperationItem::getIndex() const
+unsigned int PendingOperationItem::getIndex() const
 {
   switch(_type)
   {
@@ -141,7 +141,7 @@ int PendingOperationItem::getIndex() const
       
       
     case AddMidiCtrlVal:
-      return _intA;  // Tick
+      return _posLenVal;  // Tick
     
     case DeleteMidiCtrlVal:
       return _imcv->first;  // Tick
@@ -151,7 +151,7 @@ int PendingOperationItem::getIndex() const
 
     
     case AddAudioCtrlVal:
-      return _frame;  // Frame
+      return _posLenVal;  // Frame
     
     case DeleteAudioCtrlVal:
       return _iCtrl->first;  // Frame
@@ -161,7 +161,7 @@ int PendingOperationItem::getIndex() const
 
     
     case AddTempo:
-      return _intA;  // Tick
+      return _posLenVal;  // Tick
     
     case DeleteTempo:
       return _iTEvent->first;  // Tick
@@ -172,7 +172,7 @@ int PendingOperationItem::getIndex() const
     
     
     case AddSig:
-      return _intA;  // Tick
+      return _posLenVal;  // Tick
     
     case DeleteSig:
       return _iSigEvent->first;  // Tick
@@ -183,7 +183,7 @@ int PendingOperationItem::getIndex() const
 
     
     case AddKey:
-      return _intA;  // Tick
+      return _posLenVal;  // Tick
     
     case DeleteKey:
       return _iKeyEvent->first;  // Tick
@@ -999,16 +999,16 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
 
     case ModifyPartLength:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyPartLength part:%p old_val:%d new_val:%d\n", _part, _part->lenValue(), _intA);
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyPartLength part:%p old_val:%d new_val:%u\n", _part, _part->lenValue(), _posLenVal);
 #endif      
-      //_part->type() == Pos::FRAMES ? _part->setLenFrame(_intA) : _part->setLenTick(_intA);
-      _part->setLenValue(_intA);
+      //_part->type() == Pos::FRAMES ? _part->setLenFrame(_posLenVal) : _part->setLenTick(_posLenVal);
+      _part->setLenValue(_posLenVal);
       flags |= SC_PART_MODIFIED;
     break;
     
     case MovePart:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage MovePart part:%p track:%p new_pos:%d\n", _part, _track, _intA);
+      fprintf(stderr, "PendingOperationItem::executeRTStage MovePart part:%p track:%p new_pos:%u\n", _part, _track, _posLenVal);
 #endif      
       if(_track)
       {
@@ -1018,25 +1018,25 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
           flags |= SC_PART_REMOVED;
         }
         _part->setTrack(_track);
-        //_part->setTick(_intA);
-        _part->setPosValue(_intA);
+        //_part->setTick(_posLenVal);
+        _part->setPosValue(_posLenVal);
         _track->parts()->add(_part);
         flags |= SC_PART_INSERTED;
       }
       else
       {
-        //_part->setTick(_intA);
-        _part->setPosValue(_intA);
+        //_part->setTick(_posLenVal);
+        _part->setPosValue(_posLenVal);
       }
       flags |= SC_PART_MODIFIED;
     break;
 
     case SelectPart:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage SelectPart part:%p select:%d\n", _part, _intA);
+      fprintf(stderr, "PendingOperationItem::executeRTStage SelectPart part:%p select:%u\n", _part, _posLenVal);
 #endif      
       if(_part)
-        _part->setSelected(_intA);
+        _part->setSelected(_posLenVal);
       
       flags |= SC_PART_SELECTION;
     break;
@@ -1095,14 +1095,22 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
     case AddMidiCtrlVal:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddMidiCtrlVal: mcvl:%p part:%p tick:%d val:%d\n", _mcvl, _part, _intA, _intB);
+      fprintf(stderr, "PendingOperationItem::executeRTStage AddMidiCtrlVal: mcvl:%p part:%p tick:%u val:%d\n", _mcvl, _part, _posLenVal, _intB);
 #endif      
-      _mcvl->insert(std::pair<const int, MidiCtrlVal> (_intA, MidiCtrlVal(_part, _intB))); // FIXME FINDMICHJETZT XTicks!!
+      // REMOVE Tim. citem. ctl. Added.
+      // Do not attempt to add cached events which are outside of the part.
+      // Or to muted parts, or muted tracks, or 'off' tracks.
+      if(_posLenVal >= _part->posValue() &&
+         _posLenVal < _part->posValue() + _part->lenValue() &&
+         !_part->mute() && 
+         (!_part->track() || (!_part->track()->isMute() && !_part->track()->off())))
+         // FIXME FINDMICHJETZT XTicks!!
+        _mcvl->insert(MidiCtrlValListInsertPair_t(_posLenVal, MidiCtrlVal(_part, _intB)));
       // No song changed flags are required to be set here.
     break;
     case DeleteMidiCtrlVal:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage DeleteMidiCtrlVal: mcvl:%p tick:%d part:%p val:%d\n", 
+      fprintf(stderr, "PendingOperationItem::executeRTStage DeleteMidiCtrlVal: mcvl:%p tick:%u part:%p val:%d\n", 
                        _mcvl, _imcv->first, _imcv->second.part, _imcv->second.val);
 #endif      
       _mcvl->erase(_imcv);
@@ -1131,10 +1139,10 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
     case AddAudioCtrlVal:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddAudioCtrlVal: ctrl_l:%p frame:%d val:%f\n", 
-              _aud_ctrl_list, _frame, _ctl_dbl_val);
+      fprintf(stderr, "PendingOperationItem::executeRTStage AddAudioCtrlVal: ctrl_l:%p frame:%u val:%f\n", 
+              _aud_ctrl_list, _posLenVal, _ctl_dbl_val);
 #endif      
-      _aud_ctrl_list->insert(std::pair<const int, CtrlVal> (_frame, CtrlVal(_frame, _ctl_dbl_val)));
+      _aud_ctrl_list->insert(CtrlListInsertPair_t(_posLenVal, CtrlVal(_posLenVal, _ctl_dbl_val)));
       flags |= SC_AUDIO_CONTROLLER;
     break;
     case DeleteAudioCtrlVal:
@@ -1147,11 +1155,11 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
     case ModifyAudioCtrlVal:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyAudioCtrlVal: frame:%d old_val:%f new_val:%f\n", 
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyAudioCtrlVal: frame:%u old_val:%f new_val:%f\n", 
                        _iCtrl->first, _iCtrl->second.val, _ctl_dbl_val);
 #endif
       // If the frame is the same, just change the value.
-      if(_iCtrl->second.frame == _frame)
+      if(_iCtrl->second.frame == _posLenVal)
       {
         _iCtrl->second.val = _ctl_dbl_val;
       }
@@ -1159,7 +1167,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       else
       {
         _aud_ctrl_list->erase(_iCtrl);
-        _aud_ctrl_list->insert(std::pair<const int, CtrlVal> (_frame, CtrlVal(_frame, _ctl_dbl_val)));
+        _aud_ctrl_list->insert(CtrlListInsertPair_t(_posLenVal, CtrlVal(_posLenVal, _ctl_dbl_val)));
       }
       flags |= SC_AUDIO_CONTROLLER;
     break;
@@ -1167,17 +1175,17 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     case AddTempo:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddTempo: tempolist:%p tempo:%p %d tick:%d\n", 
+      fprintf(stderr, "PendingOperationItem::executeRTStage AddTempo: tempolist:%p tempo:%p %d tick:%u\n", 
                        _tempo_list, _tempo_event, _tempo_event->tempo, _tempo_event->tick);
 #endif      
-      _tempo_list->add(_intA, _tempo_event, false);  // Defer normalize until end of stage 2.
+      _tempo_list->add(_posLenVal, _tempo_event, false);  // Defer normalize until end of stage 2.
       flags |= SC_TEMPO;
     break;
     
     case DeleteTempo:
       {
 #ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationItem::executeRTStage DeleteTempo: tempolist:%p event:%p: tick:%d tempo:%d\n", 
+        fprintf(stderr, "PendingOperationItem::executeRTStage DeleteTempo: tempolist:%p event:%p: tick:%u tempo:%d\n", 
                          _tempo_list, _iTEvent->second, _iTEvent->second->tick,  _iTEvent->second->tempo);
 #endif      
         _tempo_list->del(_iTEvent, false); // Defer normalize until end of stage 2.
@@ -1187,7 +1195,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     case ModifyTempo:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyTempo: tempolist:%p event:%p: tick:%d old_tempo:%d new_tempo:%d\n", 
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyTempo: tempolist:%p event:%p: tick:%u old_tempo:%d new_tempo:%d\n", 
                        _tempo_list, _iTEvent->second, _iTEvent->second->tick,  _iTEvent->second->tempo, _intA);
 #endif      
       _iTEvent->second->tempo = _intA;
@@ -1213,17 +1221,17 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     case AddSig:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddSig: siglist:%p sig:%p %d/%d tick:%d\n", 
+      fprintf(stderr, "PendingOperationItem::executeRTStage AddSig: siglist:%p sig:%p %d/%d tick:%u\n", 
                        _sig_list, _sig_event, _sig_event->sig.z, _sig_event->sig.n, _sig_event->tick);
 #endif      
-      _sig_list->add(_intA, _sig_event, false);  // Defer normalize until end of stage 2.
+      _sig_list->add(_posLenVal, _sig_event, false);  // Defer normalize until end of stage 2.
       flags |= SC_SIG;
     break;
     
     case DeleteSig:
       {
 #ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationItem::executeRTStage DeleteSig: siglist:%p event:%p: tick:%d sig:%d/%d\n", 
+        fprintf(stderr, "PendingOperationItem::executeRTStage DeleteSig: siglist:%p event:%p: tick:%u sig:%d/%d\n", 
                          _sig_list, _iSigEvent->second, _iSigEvent->second->tick,  _iSigEvent->second->sig.z, _iSigEvent->second->sig.n);
 #endif      
         _sig_list->del(_iSigEvent, false); // Defer normalize until end of stage 2.
@@ -1233,7 +1241,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     case ModifySig:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifySig: siglist:%p event:%p: tick:%d old_sig:%d/%d new_sig:%d/%d\n", 
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifySig: siglist:%p event:%p: tick:%u old_sig:%d/%d new_sig:%d/%d\n", 
                        _sig_list, _iSigEvent->second, _iSigEvent->second->tick,  _iSigEvent->second->sig.z, _iSigEvent->second->sig.n, _intA, _intB);
 #endif      
       _iSigEvent->second->sig.z = _intA;
@@ -1244,16 +1252,16 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     case AddKey:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddKey: keylist:%p key:%d tick:%d\n", _key_list, _intB, _intA);
+      fprintf(stderr, "PendingOperationItem::executeRTStage AddKey: keylist:%p key:%d tick:%u\n", _key_list, _intB, _posLenVal);
 #endif      
-      _key_list->add(KeyEvent(key_enum(_intB), _intA)); 
+      _key_list->add(KeyEvent(key_enum(_intB), _posLenVal)); 
       flags |= SC_KEY;
     break;
     
     case DeleteKey:
       {
 #ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationItem::executeRTStage DeleteKey: keylist:%p key:%d tick:%d\n",
+        fprintf(stderr, "PendingOperationItem::executeRTStage DeleteKey: keylist:%p key:%d tick:%u\n",
                          _key_list, _iKeyEvent->second.key, _iKeyEvent->second.tick);
 #endif      
         _key_list->del(_iKeyEvent);
@@ -1263,7 +1271,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     case ModifyKey:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyKey: keylist:%p old_key:%d new_key:%d tick:%d\n", 
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyKey: keylist:%p old_key:%d new_key:%d tick:%u\n", 
                        _key_list, _iKeyEvent->second.key, _intA, _iKeyEvent->second.tick);
 #endif      
       _iKeyEvent->second.key = key_enum(_intA);
@@ -1273,9 +1281,9 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     case ModifySongLength:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifySongLength: len:%d\n", _intA);
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifySongLength: len:%d\n", _posLenVal);
 #endif      
-      MusEGlobal::song->setLen(_intA, false); // false = Do not emit update signals here !
+      MusEGlobal::song->setLen(_posLenVal, false); // false = Do not emit update signals here !
       flags |= SC_EVERYTHING;
     break;
     
@@ -1485,7 +1493,7 @@ void PendingOperationList::clear()
 
 bool PendingOperationList::add(PendingOperationItem op)
 {
-  int t = op.getIndex();
+  unsigned int t = op.getIndex();
 
   switch(op._type)
   {
@@ -1495,7 +1503,7 @@ bool PendingOperationList::add(PendingOperationItem op)
     case PendingOperationItem::AddSig:
     {
       iPendingOperation iipo = insert(end(), op);
-      _map.insert(std::pair<int, iPendingOperation>(t, iipo));
+      _map.insert(std::pair<unsigned int, iPendingOperation>(t, iipo));
       return true;
     }
     break;
@@ -1880,7 +1888,7 @@ bool PendingOperationList::add(PendingOperationItem op)
           // Simply replace the values.
           poi._iPart = op._iPart;
           poi._track = op._track;
-          poi._intA = op._intA;
+          poi._posLenVal = op._posLenVal;
           // An operation will still take place.
           return true;
         }
@@ -2539,7 +2547,7 @@ bool PendingOperationList::add(PendingOperationItem op)
      op._type == PendingOperationItem::ModifySig || 
      op._type == PendingOperationItem::ModifyKey)
   {
-    int idx = 0;
+    unsigned int idx = 0;
     if(op._type == PendingOperationItem::ModifyTempo)
       idx = op._iTEvent->first;
     else if(op._type == PendingOperationItem::ModifySig)
@@ -2559,7 +2567,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         if(poi._type == PendingOperationItem::DeleteTempo && poi._tempo_list == op._tempo_list)
         {
 #ifdef _PENDING_OPS_DEBUG_
-          fprintf(stderr, "PendingOperationList::add() DeleteTempo + ModifyTempo: Incrementing modify iterator: idx:%d cur tempo:%d tick:%d\n", 
+          fprintf(stderr, "PendingOperationList::add() DeleteTempo + ModifyTempo: Incrementing modify iterator: idx:%u cur tempo:%d tick:%u\n", 
                   idx, op._iTEvent->second->tempo, op._iTEvent->second->tick);
 #endif      
           op._iTEvent++;
@@ -2571,7 +2579,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         if(poi._type == PendingOperationItem::DeleteSig && poi._sig_list == op._sig_list)
         {
 #ifdef _PENDING_OPS_DEBUG_
-          fprintf(stderr, "PendingOperationList::add() DeleteSig + ModifySig: Incrementing modify iterator: idx:%d cur sig:%d/%d tick:%d\n", 
+          fprintf(stderr, "PendingOperationList::add() DeleteSig + ModifySig: Incrementing modify iterator: idx:%u cur sig:%d/%d tick:%u\n", 
                   idx, op._iSigEvent->second->sig.z, op._iSigEvent->second->sig.n, op._iSigEvent->second->tick);
 #endif      
           op._iSigEvent++;
@@ -2583,7 +2591,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         if(poi._type == PendingOperationItem::DeleteKey && poi._key_list == op._key_list)
         {
 #ifdef _PENDING_OPS_DEBUG_
-          fprintf(stderr, "PendingOperationList::add() DeleteKey + ModifyKey: Incrementing modify iterator: idx:%d cur key:%d tick:%d\n", 
+          fprintf(stderr, "PendingOperationList::add() DeleteKey + ModifyKey: Incrementing modify iterator: idx:%u cur key:%d tick:%u\n", 
                   idx, op._iKeyEvent->second.key, op._iKeyEvent->second.tick);
 #endif      
           op._iKeyEvent++;
@@ -2594,7 +2602,7 @@ bool PendingOperationList::add(PendingOperationItem op)
   }
   
   iPendingOperation iipo = insert(end(), op);
-  _map.insert(std::pair<int, iPendingOperation>(t, iipo));
+  _map.insert(std::pair<unsigned int, iPendingOperation>(t, iipo));
   return true;
 }
 

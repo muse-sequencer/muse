@@ -270,6 +270,8 @@ struct PendingOperationItem
   
   union {
     int _intA;
+    unsigned int _uintA;
+    unsigned int _posLenVal;
     bool _boolA;
     bool _select;
     const QString *_name;
@@ -278,7 +280,6 @@ struct PendingOperationItem
     int _from_idx;
     int _address_client;
     int _rw_flags;
-    int _frame;
     int _newAudioSamplesLen;
     //DrumMapOperation* _drum_map_operation;
     DrumMapTrackOperation* _drum_map_track_operation;
@@ -289,6 +290,7 @@ struct PendingOperationItem
   
   union {
     int _intB;
+    unsigned int _uintB;
     int _to_idx;
     int _address_port;
     int _open_flags;
@@ -297,6 +299,7 @@ struct PendingOperationItem
 
   union {
     int _intC;
+    unsigned int _uintC;
     int _ctl_val;
     double _ctl_dbl_val;
   };
@@ -393,13 +396,14 @@ struct PendingOperationItem
     
   // Type is ModifyPartLength or SelectPart, or some (likely) future boolean or int operation.
   // For ModifyPartLength, v must already be in the part's time domain (ticks or frames).
-  PendingOperationItem(Part* part, int v, PendingOperationType type)
-    { _type = type; _part = part; _intA = v; }
+  PendingOperationItem(Part* part, unsigned int v, PendingOperationType type)
+    { _type = type; _part = part; _posLenVal = v; }
   
   // Erases ip from part->track()->parts(), then adds part to new_track. NOTE: ip may be part->track()->parts()->end().
   // new_pos must already be in the part's time domain (ticks or frames).
-  PendingOperationItem(iPart ip, Part* part, int new_pos, PendingOperationType type = MovePart, Track* new_track = 0)
-    { _type = type; _iPart = ip; _part = part; _track = new_track; _intA = new_pos;}
+  PendingOperationItem(iPart ip, Part* part, unsigned int new_pos, PendingOperationType type = MovePart, Track* new_track = 0)
+    { _type = type; _iPart = ip; _part = part; _track = new_track; 
+        _posLenVal = new_pos;}
     
   PendingOperationItem(PartList* pl, Part* part, PendingOperationType type = AddPart)
     { _type = type; _part_list = pl; _part = part; }
@@ -424,8 +428,9 @@ struct PendingOperationItem
   PendingOperationItem(MidiCtrlValListList* mcvll, MidiCtrlValList* mcvl, int channel, int control_num, PendingOperationType type = AddMidiCtrlValList)
     { _type = type; _mcvll = mcvll; _mcvl = mcvl; _intA = channel; _intB = control_num; }
     
-  PendingOperationItem(MidiCtrlValList* mcvl, Part* part, int tick, int val, PendingOperationType type = AddMidiCtrlVal)
-    { _type = type; _mcvl = mcvl; _part = part; _intA = tick; _intB = val; }
+  PendingOperationItem(MidiCtrlValList* mcvl, Part* part, unsigned int tick, int val, PendingOperationType type = AddMidiCtrlVal)
+    { _type = type; _mcvl = mcvl; _part = part; 
+        _posLenVal = tick; _intB = val; }
     
   PendingOperationItem(MidiCtrlValList* mcvl, const iMidiCtrlVal& imcv, PendingOperationType type = DeleteMidiCtrlVal)
     { _type = type; _mcvl = mcvl; _imcv = imcv; }
@@ -438,20 +443,21 @@ struct PendingOperationItem
   PendingOperationItem(const iCtrlList& ictl_l, CtrlList* ctrl_l, PendingOperationType type = ModifyAudioCtrlValList)
     { _type = type; _iCtrlList = ictl_l; _aud_ctrl_list = ctrl_l; }
     
-  PendingOperationItem(CtrlList* ctrl_l, int frame, double ctrl_val, PendingOperationType type = AddAudioCtrlVal)
-    { _type = type; _aud_ctrl_list = ctrl_l; _frame = frame; _ctl_dbl_val = ctrl_val; }
+  PendingOperationItem(CtrlList* ctrl_l, unsigned int frame, double ctrl_val, PendingOperationType type = AddAudioCtrlVal)
+    { _type = type; _aud_ctrl_list = ctrl_l; _posLenVal = frame; _ctl_dbl_val = ctrl_val; }
     
   PendingOperationItem(CtrlList* ctrl_l, const iCtrl& ictl, PendingOperationType type = DeleteAudioCtrlVal)
     { _type = type; _aud_ctrl_list = ctrl_l; _iCtrl = ictl; }
     
   // NOTE: ctrl_l is supplied in case the operation needs to be merged, or transformed into an AddAudioCtrlVal.
-  PendingOperationItem(CtrlList* ctrl_l, const iCtrl& ictl, int new_frame, double new_ctrl_val, PendingOperationType type = ModifyAudioCtrlVal)
-    { _type = type; _aud_ctrl_list = ctrl_l; _iCtrl = ictl; _frame = new_frame; _ctl_dbl_val = new_ctrl_val; }
+  PendingOperationItem(CtrlList* ctrl_l, const iCtrl& ictl, unsigned int new_frame,
+                       double new_ctrl_val, PendingOperationType type = ModifyAudioCtrlVal)
+    { _type = type; _aud_ctrl_list = ctrl_l; _iCtrl = ictl; _posLenVal = new_frame; _ctl_dbl_val = new_ctrl_val; }
     
   
   // NOTE: 'tick' is the desired tick. te is a new TEvent with tempo and (same) desired tick. Swapping with NEXT event is done.
-  PendingOperationItem(TempoList* tl, TEvent* te, int tick, PendingOperationType type = AddTempo)
-    { _type = type; _tempo_list = tl; _tempo_event = te; _intA = tick; }
+  PendingOperationItem(TempoList* tl, TEvent* te, unsigned int tick, PendingOperationType type = AddTempo)
+    { _type = type; _tempo_list = tl; _tempo_event = te; _posLenVal = tick; }
     
   // NOTE: _tempo_event is required. We must erase 'ite' in stage 2, then delete the TEvent* in stage 3 (not stage 1),
   //        so 'ite' is unavailable to fetch the TEvent* from it (in ite->second).
@@ -467,8 +473,8 @@ struct PendingOperationItem
 
     
   // NOTE: 'tick' is the desired tick. se is a new SigEvent with sig and (same) desired tick. Swapping with NEXT event is done.
-  PendingOperationItem(MusECore::SigList* sl, MusECore::SigEvent* se, int tick, PendingOperationType type = AddSig)
-    { _type = type; _sig_list = sl; _sig_event = se; _intA = tick; }
+  PendingOperationItem(MusECore::SigList* sl, MusECore::SigEvent* se, unsigned int tick, PendingOperationType type = AddSig)
+    { _type = type; _sig_list = sl; _sig_event = se; _posLenVal = tick; }
     
   // NOTE: _sig_event is required. We must erase 'ise' in stage 2, then delete the SigEvent* in stage 3 (not stage 1),
   //        so 'ise' is unavailable to fetch the SigEvent* from it (in ise->second).
@@ -480,8 +486,8 @@ struct PendingOperationItem
     
     
   // NOTE: 'tick' is the desired tick. ke is a new SigEvent with sig and (same) desired tick. Swapping with NEXT event is done.
-  PendingOperationItem(KeyList* kl, key_enum ke, int tick, PendingOperationType type = AddKey)
-    { _type = type; _key_list = kl; _intA = tick; _intB = ke; }
+  PendingOperationItem(KeyList* kl, key_enum ke, unsigned int tick, PendingOperationType type = AddKey)
+    { _type = type; _key_list = kl; _posLenVal = tick; _intB = ke; }
     
   PendingOperationItem(KeyList* kl, const iKeyEvent& ike, PendingOperationType type = DeleteKey)
     { _type = type; _key_list = kl; _iKeyEvent = ike; }
@@ -489,8 +495,8 @@ struct PendingOperationItem
   PendingOperationItem(KeyList* kl, const iKeyEvent& ike, key_enum ke, PendingOperationType type = ModifyKey)
     { _type = type; _key_list = kl; _iKeyEvent = ike; _intA = ke; }
     
-  PendingOperationItem(int len, PendingOperationType type = ModifySongLength)
-    { _type = type; _intA = len; }
+  PendingOperationItem(unsigned int len, PendingOperationType type = ModifySongLength)
+    { _type = type; _posLenVal = len; }
 
   PendingOperationItem(PendingOperationType type) // type is EnableAllAudioControllers.
     { _type = type; }
@@ -503,7 +509,7 @@ struct PendingOperationItem
   // Execute the operation. Called only from post RT stage 3.
     SongChangedStruct_t executeNonRTStage(); 
   // Get an appropriate indexing value from ops like AddEvent that use it. Other ops like AddMidiCtrlValList return their type (rather than say, zero).
-  int getIndex() const;
+  unsigned int getIndex() const;
   // Whether the two special allocating ops (like AddMidiCtrlValList) are the same. 
   // The comparison ignores the actual allocated value, so that such commands can be found before they do their allocating.
   bool isAllocationOp(const PendingOperationItem&) const;
@@ -515,7 +521,7 @@ class PendingOperationList : public std::list<PendingOperationItem>
     // Holds sorted version of list. Index is time value for items which have it like events or parts,
     //  otherwise it is the operation type for other items. It doesn't matter too much that ticks and frames
     //  are mixed here, sorting by time is just to speed up searches, we look for operation types.
-    std::multimap<int, iterator, std::less<int> > _map; 
+    std::multimap<unsigned int, iterator, std::less<unsigned int> > _map; 
     // Accumulated song changed flags.
     SongChangedStruct_t _sc_flags;
     
@@ -551,8 +557,8 @@ class PendingOperationList : public std::list<PendingOperationItem>
 };
 
 typedef PendingOperationList::iterator iPendingOperation;
-typedef std::multimap<int, iPendingOperation, std::less<int> >::iterator iPendingOperationSorted;
-typedef std::multimap<int, iPendingOperation, std::less<int> >::reverse_iterator riPendingOperationSorted;
+typedef std::multimap<unsigned int, iPendingOperation, std::less<unsigned int> >::iterator iPendingOperationSorted;
+typedef std::multimap<unsigned int, iPendingOperation, std::less<unsigned int> >::reverse_iterator riPendingOperationSorted;
 typedef std::pair <iPendingOperationSorted, iPendingOperationSorted> iPendingOperationSortedRange;
 
 } // namespace MusECore

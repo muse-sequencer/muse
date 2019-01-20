@@ -47,7 +47,7 @@ namespace MusECore {
 //    'diff' number of ticks.
 //---------------------------------------------------------
 
-void adjustGlobalLists(Undo& operations, int startPos, int diff)
+void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
 {
   const TempoList* t = &MusEGlobal::tempomap;
   const SigList* s   = &MusEGlobal::sigmap;
@@ -60,7 +60,7 @@ void adjustGlobalLists(Undo& operations, int startPos, int diff)
   // key
   for (; ik != k->rend(); ik++) {
     const KeyEvent &ev = (KeyEvent)ik->second;
-    int tick = ev.tick;
+    unsigned int tick = ev.tick;
     int key = ev.key;
     if (tick < startPos )
       break;
@@ -81,7 +81,7 @@ void adjustGlobalLists(Undo& operations, int startPos, int diff)
   // tempo
   for (; it != t->rend(); it++) {
     const TEvent* ev = (TEvent*)it->second;
-    int tick = ev->tick;
+    unsigned int tick = ev->tick;
     int tempo = ev->tempo;
     if (tick < startPos )
       break;
@@ -102,7 +102,7 @@ void adjustGlobalLists(Undo& operations, int startPos, int diff)
   // sig
   for (; is != s->rend(); is++) {
     const MusECore::SigEvent* ev = (MusECore::SigEvent*)is->second;
-    int tick = ev->tick;
+    unsigned int tick = ev->tick;
     if (tick < startPos )
       break;
 
@@ -125,7 +125,7 @@ void adjustGlobalLists(Undo& operations, int startPos, int diff)
   for(iMarker i = markerlist->begin(); i != markerlist->end(); ++i)
   {
       Marker* m = &i->second;
-      int tick = m->tick();
+      unsigned int tick = m->tick();
       if (tick >= startPos)
       {
 // REMOVE Tim. global cut. Changed.
@@ -153,9 +153,9 @@ void adjustGlobalLists(Undo& operations, int startPos, int diff)
 
 void globalCut(bool onlySelectedTracks)
       {
-      int lpos = MusEGlobal::song->lpos();
-      int rpos = MusEGlobal::song->rpos();
-      if ((lpos - rpos) >= 0)
+      unsigned int lpos = MusEGlobal::song->lpos();
+      unsigned int rpos = MusEGlobal::song->rpos();
+      if (lpos >= rpos)
             return;
 
       Undo operations;
@@ -168,8 +168,8 @@ void globalCut(bool onlySelectedTracks)
             PartList* pl = track->parts();
             for (iPart p = pl->begin(); p != pl->end(); ++p) {
                   Part* part = p->second;
-                  int t = part->tick();
-                  int l = part->lenTick();
+                  unsigned int t = part->tick();
+                  unsigned int l = part->lenTick();
                   if (t + l <= lpos)
                         continue;
                   if ((t >= lpos) && ((t+l) <= rpos)) {
@@ -177,7 +177,7 @@ void globalCut(bool onlySelectedTracks)
                         }
                   else if ((t < lpos) && ((t+l) > lpos) && ((t+l) <= rpos)) {
                       // remove part tail
-                      int len = lpos - t;
+                      unsigned int len = lpos - t;
                       
                       if (part->nextClone()==part) // no clones
                       {
@@ -222,15 +222,16 @@ void globalCut(bool onlySelectedTracks)
                         }
                   else if (t >= rpos) {
                         // move part to the left
-                        int nt = part->tick();
-                        operations.push_back(UndoOp(UndoOp::MovePart, part, part->posValue(), nt - (rpos -lpos), Pos::TICKS ));
+                        unsigned int nt = part->tick();
+                        if(nt > (rpos - lpos))
+                          operations.push_back(UndoOp(UndoOp::MovePart, part, part->posValue(), nt - (rpos -lpos), Pos::TICKS ));
                         }
                   }
             }
 // REMOVE Tim. global cut. Changed.
 //       int diff = lpos - rpos;
 //      adjustGlobalLists(operations, lpos, diff);
-      int diff = lpos > rpos ? lpos - rpos : rpos - lpos;
+      unsigned int diff = lpos > rpos ? lpos - rpos : rpos - lpos;
       adjustGlobalLists(operations, lpos > rpos ? rpos : lpos, diff);
 
       MusEGlobal::song->applyOperationGroup(operations);
@@ -245,15 +246,16 @@ void globalCut(bool onlySelectedTracks)
 
 void globalInsert(bool onlySelectedTracks)
 {
-      Undo operations=movePartsTotheRight(MusEGlobal::song->lpos(), MusEGlobal::song->rpos()-MusEGlobal::song->lpos(), onlySelectedTracks);
+      Undo operations=movePartsTotheRight(
+        MusEGlobal::song->lpos() <= MusEGlobal::song->rpos() ? MusEGlobal::song->lpos() : MusEGlobal::song->rpos(),
+        MusEGlobal::song->lpos() <= MusEGlobal::song->rpos() ?
+          MusEGlobal::song->rpos() - MusEGlobal::song->lpos() : MusEGlobal::song->lpos() - MusEGlobal::song->rpos(),
+        onlySelectedTracks);
       MusEGlobal::song->applyOperationGroup(operations);
 }
 
-Undo movePartsTotheRight(unsigned int startTicks, int moveTicks, bool only_selected, set<Track*>* tracklist)
+Undo movePartsTotheRight(unsigned int startTicks, unsigned int moveTicks, bool only_selected, set<Track*>* tracklist)
 {
-      if (moveTicks<=0)
-            return Undo();
-
       Undo operations;
       TrackList* tracks = MusEGlobal::song->tracks();
       
@@ -267,7 +269,7 @@ Undo movePartsTotheRight(unsigned int startTicks, int moveTicks, bool only_selec
             for (riPart p = pl->rbegin(); p != pl->rend(); ++p) {
                   Part* part = p->second;
                   unsigned t = part->tick();
-                  int l = part->lenTick();
+                  unsigned int l = part->lenTick();
                   if (t + l <= startTicks)
                         continue;
                   if (startTicks > t && startTicks < (t+l)) {

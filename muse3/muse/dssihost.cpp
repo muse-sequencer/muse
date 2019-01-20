@@ -1537,7 +1537,7 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
         // Always refresh the interpolate struct at first, since things may have changed.
         // Or if the frame is outside of the interpolate range - and eStop is not true.  // FIXME TODO: Be sure these comparisons are correct.
         if(cur_slice == 0 || (!ci.eStop && MusEGlobal::audio->isPlaying() &&
-            (slice_frame < (unsigned long)ci.sFrame || (ci.eFrame != -1 && slice_frame >= (unsigned long)ci.eFrame)) ) )
+            (slice_frame < (unsigned long)ci.sFrame || (ci.eFrameValid && slice_frame >= (unsigned long)ci.eFrame)) ) )
         {
           if(cl && plug_id != -1 && (unsigned long)cl->id() == genACnum(plug_id, k))
           {
@@ -1551,7 +1551,8 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
             // Keep the current icl iterator, because since they are sorted by frames,
             //  if the IDs didn't match it means we can just let k catch up with icl.
             ci.sFrame   = 0;
-            ci.eFrame   = -1;
+            ci.eFrame   = 0;
+            ci.eFrameValid = false;
             ci.sVal     = _controls[k].val;
             ci.eVal     = ci.sVal;
             ci.doInterp = false;
@@ -1560,11 +1561,12 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
         }
         else
         {
-          if(ci.eStop && ci.eFrame != -1 && slice_frame >= (unsigned long)ci.eFrame)  // FIXME TODO: Get that comparison right.
+          if(ci.eStop && ci.eFrameValid && slice_frame >= (unsigned long)ci.eFrame)  // FIXME TODO: Get that comparison right.
           {
             // Clear the stop condition and set up the interp struct appropriately as an endless value.
             ci.sFrame   = 0; //ci->eFrame;
-            ci.eFrame   = -1;
+            ci.eFrame   = 0;
+            ci.eFrameValid = false;
             ci.sVal     = ci.eVal;
             ci.doInterp = false;
             ci.eStop    = false;
@@ -1576,7 +1578,7 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
         if(!usefixedrate && MusEGlobal::audio->isPlaying())
         {
           unsigned long samps = nsamp;
-          if(ci.eFrame != -1)
+          if(ci.eFrameValid)
             samps = (unsigned long)ci.eFrame - slice_frame;
 
           if(!ci.doInterp && samps > min_per)
@@ -1661,6 +1663,7 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
         CtrlInterpolate* ci = &_controls[v.idx].interp;
         // Tell it to stop the current ramp at this frame, when it does stop, set this value:
         ci->eFrame = frame;
+        ci->eFrameValid = true;
         ci->eVal   = v.value;
         ci->eStop  = true;  
       }

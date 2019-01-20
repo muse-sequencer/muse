@@ -535,13 +535,31 @@ void CtrlCanvas::setMidiController(int num)
 
 void CtrlCanvas::keyPressEvent(QKeyEvent *event)
 {
-  if(event->key() != Qt::Key_Control)
+  switch(event->key())
   {
-    View::keyPressEvent(event);
-    return;
+    case Qt::Key_Control:
+      _dragType = MOVE_COPY;
+      setCursor();
+      event->accept();
+      return;
+    break;
+    
+    case Qt::Key_Escape:
+      if(!moving.empty())
+      {
+        cancelMouseOps();
+        setCursor();
+        event->accept();
+        return;
+      }
+    break;
+    
+    default:
+    break;
   }
-  _dragType = MOVE_COPY;
-  setCursor();
+  
+  event->ignore();
+  View::keyPressEvent(event);
 }
 
 //---------------------------------------------------------
@@ -550,13 +568,21 @@ void CtrlCanvas::keyPressEvent(QKeyEvent *event)
 
 void CtrlCanvas::keyReleaseEvent(QKeyEvent *event)
 {
-  if(event->key() != Qt::Key_Control)
+  switch(event->key())
   {
-    View::keyReleaseEvent(event);
-    return;
+    case Qt::Key_Control:
+      _dragType = MOVE_MOVE;
+      setCursor();
+      event->accept();
+      return;
+    break;
+    
+    default:
+    break;
   }
-  _dragType = MOVE_MOVE;
-  setCursor();
+  
+  event->ignore();
+  View::keyReleaseEvent(event);
 }
     
 //---------------------------------------------------------
@@ -811,12 +837,15 @@ void CtrlCanvas::applyYOffset(MusECore::Event& e, int yoffset) const
   if(!curPart)
     return;
 
+  fprintf(stderr, "min: %d max: %d bias:%d yoffset: %d cur val: %d \n", _ctrlInfo.min, _ctrlInfo.max, _ctrlInfo.bias, yoffset, e.dataB());
   // Y offset is top to bottom. Reverse it.
   int new_v = e.dataB() - yoffset;
-  if(new_v < _ctrlInfo.min)
-    new_v = _ctrlInfo.min;
-  if(new_v > _ctrlInfo.max)
-    new_v = _ctrlInfo.max;
+  const int min = _ctrlInfo.min + _ctrlInfo.bias;
+  const int max = _ctrlInfo.max + _ctrlInfo.bias;
+  if(new_v < min)
+    new_v = min;
+  else if(new_v > max)
+    new_v = max;
   e.setB(new_v);
 }
 
@@ -1597,6 +1626,9 @@ void CtrlCanvas::startMoving(const QPoint& pos, int dir, bool rasterize)
 
 void CtrlCanvas::moveItems(const QPoint& pos, int dir, bool rasterize)
       {
+      if(!curPart)
+        return;
+      
       int dist_x = pos.x() - start.x();
       int dist_y = pos.y() - start.y();
       //int dx = pos.x() - _prevMouseDist.x();
@@ -1640,11 +1672,40 @@ void CtrlCanvas::moveItems(const QPoint& pos, int dir, bool rasterize)
         dx = tick - _dragFirstXPos;
       }
       
+      unsigned int first_pos_offset;
+      if(_dragFirstXPos > curPart->posValue())
+        first_pos_offset = _dragFirstXPos - curPart->posValue();
+      else
+        first_pos_offset = curPart->posValue();
+      
+      // Limit the left movement.
+      if(dx < 0 && (unsigned int)-dx > first_pos_offset)
+      {
+        dx = -first_pos_offset;
+        // Reset the accumulating mouse distance.
+        _mouseDist.setX(-first_pos_offset);
+      }
+        
+      // Limit the up/down movement.
+      if(start.y() + dy < 0)
+      {
+        dy = -start.y();
+        _mouseDist.setY(-start.y());
+      }
+      else if(/*start.y() +*/ dy  >= height())
+      {
+        dy = height() /*- start.y()*/ - 1;
+        _mouseDist.setY(height() /*- start.y()*/ - 1);
+      }
+      
       _curDragOffset = QPoint(dx, dy);
 
       // REMOVE Tim. citem. Added.
-      fprintf(stderr, "_mouseDist x:%d y:%d dist_x:%d dist_y:%d _curDragOffset x:%d y:%d\n",
-              _mouseDist.x(), _mouseDist.y(), dist_x, dist_y, _curDragOffset.x(), _curDragOffset.y());
+      fprintf(stderr, "_mouseDist x:%d y:%d dist_x:%d dist_y:%d _curDragOffset x:%d y:%d"
+        " _dragFirstXPos:%u first_pos_offset:%d\n",
+              _mouseDist.x(), _mouseDist.y(), dist_x, dist_y,
+              _curDragOffset.x(), _curDragOffset.y(), _dragFirstXPos,
+              first_pos_offset);
       
       //_rasterizeDrag = rasterize;
       redraw();
@@ -2096,8 +2157,15 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
   
       if (button == Qt::RightButton)
       {
-        PopupMenu* itemPopupMenu = new PopupMenu(this, true);
+        // No stay-open for now. 
+        // TODO How to write a click handler to support stay-open for
+        //       the 'options' items but not the 'actions' items ?
+        PopupMenu* itemPopupMenu = new PopupMenu(this, false);
         populateMergeOptions(itemPopupMenu);
+#if QT_VERSION >= 0x050100
+        // This is required after Qt 5.1
+        itemPopupMenu->setToolTipsVisible(true);
+#endif
         QAction *act = itemPopupMenu->exec(event->globalPos());
         int idx = -1;
         bool is_checked = false;
@@ -2114,11 +2182,29 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
           break;
           
           case contextIdMerge:
-            // TODO
+              if(!moving.empty())
+              {
+                // Force the drag type before merge.
+                _dragType = MOVE_MOVE;
+                // Merge the moving items...
+                endMoveItems();
+                setCursor();
+                // Return. The user must click again to select anything.
+                return;
+              }
           break;
           
           case contextIdMergeCopy:
-            // TODO
+              if(!moving.empty())
+              {
+                // Force the drag type before merge.
+                _dragType = MOVE_COPY;
+                // Merge the moving items...
+                endMoveItems();
+                setCursor();
+                // Return. The user must click again to select anything.
+                return;
+              }
           break;
           
           case contextIdErase:
@@ -5139,25 +5225,25 @@ void CtrlCanvas::populateMergeOptions(PopupMenu* menu)
 {
   menu->addAction(new MenuTitleItem(tr("Merge options"), menu));
   
-  QAction* act = menu->addAction(QIcon(*midiCtrlMergeEraseIcon), tr("Erase"));
+  QAction* act = menu->addAction(QIcon(*midiCtrlMergeEraseIcon), tr("Erase target"));
   act->setData(contextIdErase);
   act->setCheckable(true);
   act->setChecked(MusEGlobal::config.midiCtrlGraphMergeErase);
   act->setToolTip(tr("Erase target events between source events"));
   
-  act = menu->addAction(QIcon(*midiCtrlMergeEraseWysiwygIcon), tr("Erase WYSIWYG"));
+  act = menu->addAction(QIcon(*midiCtrlMergeEraseWysiwygIcon), tr("Erase target WYSIWYG"));
   act->setData(contextIdEraseWysiwyg);
   act->setCheckable(true);
   act->setChecked(MusEGlobal::config.midiCtrlGraphMergeEraseWysiwyg);
   act->setToolTip(tr("Include last source item width when erasing"));
   
-  act = menu->addAction(QIcon(*midiCtrlMergeEraseInclusiveIcon), tr("Erase inclusive"));
+  act = menu->addAction(QIcon(*midiCtrlMergeEraseInclusiveIcon), tr("Erase target inclusive"));
   act->setData(contextIdEraseInclusive);
   act->setCheckable(true);
   act->setChecked(MusEGlobal::config.midiCtrlGraphMergeEraseInclusive);
   act->setToolTip(tr("Include entire source range when erasing"));
   
-  menu->addSeparator();
+  menu->addAction(new MenuTitleItem(tr("Merge actions"), menu));
   
   const bool is_mv = !moving.empty();
   

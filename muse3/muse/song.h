@@ -321,7 +321,7 @@ class Song : public QObject {
       //-----------------------------------------
 
       // called from GUI thread, calls applyOperationGroup. FIXME TODO: better move that into functions.cpp or whatever.      
-      void cmdResizePart(Track* t, Part* p, unsigned int size, bool doMove, int newPos, bool doClones=false);
+      void cmdResizePart(Track* t, Part* p, unsigned int size, bool doMove, unsigned int newPos, bool doClones=false);
 
       void addPart(Part* part);
       void removePart(Part* part);

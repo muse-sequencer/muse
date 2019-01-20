@@ -640,6 +640,10 @@ bool modify_velocity(const set<const Part*>& parts, int range, int rate, int off
 		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
 			const Event& event=*(it->first);
+			// This operation can only apply to notes.
+			if(event.type() != Note)
+			  continue;
+      
 			const Part* part=it->second;
 			
 			int velo = event.velo();
@@ -676,6 +680,9 @@ bool modify_off_velocity(const set<const Part*>& parts, int range, int rate, int
 		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
 			const Event& event=*(it->first);
+			// This operation can only apply to notes.
+			if(event.type() != Note)
+			  continue;
 			const Part* part=it->second;
 			
 			int velo = event.veloOff();
@@ -713,6 +720,9 @@ bool modify_notelen(const set<const Part*>& parts, int range, int rate, int offs
 		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
 			const Event& event=*(it->first);
+			// This operation can only apply to notes.
+			if(event.type() != Note)
+			  continue;
 			const Part* part=it->second;
 
 			unsigned int len = event.lenTick(); //prevent compiler warning: comparison signed/unsigned
@@ -780,6 +790,9 @@ bool quantize_notes(const set<const Part*>& parts, int range, int raster, bool q
 		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
 			const Event& event=*(it->first);
+			// This operation can only apply to notes.
+			if(event.type() != Note)
+			  continue;
 			const Part* part=it->second;
 
 			unsigned begin_tick = event.tick() + part->tick();
@@ -825,6 +838,7 @@ bool erase_notes(const set<const Part*>& parts, int range, int velo_threshold, b
 	{
 		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
+			// This operation can apply to any event...
 			const Event& event=*(it->first);
 			const Part* part=it->second;
 
@@ -851,6 +865,9 @@ bool transpose_notes(const set<const Part*>& parts, int range, signed int halfto
 		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
 			const Event& event=*(it->first);
+			// This operation can only apply to notes.
+			if(event.type() != Note)
+			  continue;
 			const Part* part=it->second;
 
 			Event newEvent = event.clone();
@@ -880,6 +897,9 @@ bool crescendo(const set<const Part*>& parts, int range, int start_val, int end_
 		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
 			const Event& event=*(it->first);
+			// This operation can only apply to notes.
+			if(event.type() != Note)
+			  continue;
 			const Part* part=it->second;
 			
 			unsigned tick = event.tick() + part->tick();
@@ -916,6 +936,10 @@ bool move_notes(const set<const Part*>& parts, int range, signed int ticks)
 		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
 			const Event& event=*(it->first);
+			// This operation can only apply to notes.
+			if(event.type() != Note)
+			  continue;
+      
 			const Part* part=it->second;
 			bool del=false;
 
@@ -965,6 +989,9 @@ bool delete_overlaps(const set<const Part*>& parts, int range)
 		for (map<const Event*, const Part*>::iterator it1=events.begin(); it1!=events.end(); it1++)
 		{
 			const Event& event1=*(it1->first);
+			// This operation can only apply to notes.
+			if(event1.type() != Note)
+			  continue;
 			const Part* part1=it1->second;
 			
 			// we may NOT optimize by letting it2 start at (it1 +1); this optimisation
@@ -973,6 +1000,9 @@ bool delete_overlaps(const set<const Part*>& parts, int range)
 			for (map<const Event*, const Part*>::iterator it2=events.begin(); it2!=events.end(); it2++)
 			{
 				const Event& event2=*(it2->first);
+				// This operation can only apply to notes.
+				if(event2.type() != Note)
+				  continue;
 				const Part* part2=it2->second;
 				
 				if ( (part1->isCloneOf(part2)) &&          // part1 and part2 are the same or are duplicates
@@ -1023,6 +1053,9 @@ bool legato(const set<const Part*>& parts, int range, int min_len, bool dont_sho
 		for (map<const Event*, const Part*>::iterator it1=events.begin(); it1!=events.end(); it1++)
 		{
 			const Event& event1=*(it1->first);
+			// This operation can only apply to notes.
+			if(event1.type() != Note)
+			  continue;
 			const Part* part1=it1->second;
 			
 			unsigned len=INT_MAX;
@@ -1032,6 +1065,9 @@ bool legato(const set<const Part*>& parts, int range, int min_len, bool dont_sho
 			for (map<const Event*, const Part*>::iterator it2=events.begin(); it2!=events.end(); it2++)
 			{
 				const Event& event2=*(it2->first);
+				// This operation can only apply to notes.
+				if(event2.type() != Note)
+				  continue;
 				const Part* part2=it2->second;
 				
 				bool relevant = (event2.tick() >= event1.tick() + min_len);
@@ -2124,6 +2160,7 @@ bool erase_items(TagEventList* tag_list, int velo_threshold, bool velo_thres_use
     const EventList& el = itl->second.evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
+      // This operation can apply to any event.
       const Event& e = ie->second;
 
       // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
@@ -2375,6 +2412,9 @@ bool delete_overlaps_items(TagEventList* tag_list)
       for( ; ie2 != el.end(); ++ie2)
       {
         const Event& e2 = ie2->second;
+        // This operation can only apply to notes.
+        if(e2.type() != Note)
+          continue;
         
         // Do e2 and e point to the same event? Or has e2 already been scheduled for deletion? Ignore it.
         if(e == e2 || deleted_events.find(&e2) != deleted_events.end())
@@ -2635,6 +2675,9 @@ bool legato_items(TagEventList* tag_list, int min_len, bool dont_shorten)
       for( ; ie2 != el.end(); ++ie2)
       {
         const Event& e2 = ie2->second;
+        // This operation can only apply to notes.
+        if(e2.type() != Note)
+          continue;
 
         relevant = (e2.tick() >= e.tick() + min_len);
         if (dont_shorten)
@@ -2766,9 +2809,8 @@ bool move_items(TagEventList* tag_list, signed int ticks)
       del = false;
       
       // This operation can only apply to notes.
-      // Hm no, should be OK for all types.
-      //if(e.type() != Note)
-      //  continue;
+      if(e.type() != Note)
+        continue;
       
       newEvent = e.clone();
       if ((signed)e.tick() + ticks < 0) //don't allow moving before the part's begin
@@ -3757,7 +3799,6 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 	typedef map<int /*ctlnum*/, tmap_t> ctlmap_t;
 	typedef ctlmap_t::iterator i_ctlmap_t;
 	typedef ctlmap_t::const_iterator ci_ctlmap_t;
-	ctlmap_t ctl_map;
 	
 	int ctl_num;
 	unsigned int ctl_time, ctl_end_time, prev_ctl_time, prev_ctl_end_time;
@@ -3812,7 +3853,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 									ctrlsFound = ctrlList.size();
 								if(paste_to_ctrl_num >= 0 && ctrlsFound > 0)
 								{
-									
+									// TODO Dialog for choosing which controller to paste.
 								}
 
 								// Extract the suitable events from the list and the number of events extracted.
@@ -3842,6 +3883,9 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 											( ( (dest_part_end_value + max_distance < first_paste_pos_value) ||   // dest_part is too far away
 																					always_new_part ) && !never_new_part ) );    // respect function arguments
 									
+									// This will be filled as we go.
+									ctlmap_t ctl_map;
+
 									for (int i=0;i<amount;i++)
 									{
 // 										unsigned curr_pos = pos + i*raster;
@@ -4020,9 +4064,12 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 													
 													case Controller:
 													{
+														// HACK Grab the event length since we use it for indicating
+														//       the visual width when tagging controller items.
 														const unsigned int len_val = e.lenValue();
-														// HACK Be sure to reset this always as we use it for indicating the visual width.
+														// Be sure to reset this always since we use it for the above hack.
 														e.setLenValue(0);
+
 														// If this is a fresh new part, to avoid double DeleteMidiCtrlVal warnings when undoing
 														//  just add the event directly to the part instead of an operation.
 														if(create_new_part)
@@ -4366,17 +4413,19 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 	
 	out_of_paste_at_for:
 	
-	// Merge the delete operations into the add operations so that all of the 'deletes' come first.
-	//add_operations.splice(add_operations.begin(), delete_operations);
-	for(ciUndoOp iuo = add_operations.begin(); iuo != add_operations.end(); ++iuo)
-		operations.push_back(*iuo);
-	
+	// Push any part resizing operations onto the operations list now, before merging
+	//  the add operations.
 	for (map<const Part*, unsigned>::iterator it = expand_map.begin(); it!=expand_map.end(); it++)
 // 		if (it->second != it->first->lenTick())
 // 			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
 		if (it->second != it->first->lenValue())
 			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
 
+	// Now merge the add operations into the operations so that all of the 'deletes' come first.
+	//add_operations.splice(add_operations.begin(), delete_operations);
+	for(ciUndoOp iuo = add_operations.begin(); iuo != add_operations.end(); ++iuo)
+		operations.push_back(*iuo);
+	
 	MusEGlobal::song->informAboutNewParts(new_part_map); // must be called before apply. otherwise
 	                                                     // pointer changes (by resize) screw it up
 	
@@ -4423,7 +4472,6 @@ void paste_items_at(
     typedef map<int /*ctlnum*/, tmap_t> ctlmap_t;
     typedef ctlmap_t::iterator i_ctlmap_t;
     typedef ctlmap_t::const_iterator ci_ctlmap_t;
-    ctlmap_t ctl_map;
     
     int ctl_num;
     unsigned int ctl_time, ctl_end_time, prev_ctl_time, prev_ctl_end_time;
@@ -4522,6 +4570,9 @@ void paste_items_at(
                                     //(last_paste_tick >= dest_part_end_value) || // dest_part not long enough
                 ( ( (dest_part_end_value + max_distance < first_paste_pos_value) ||   // dest_part is too far away
                                     always_new_part ) && !never_new_part ) );    // respect function arguments
+
+            // This will be filled as we go.
+            ctlmap_t ctl_map;
             
             for (int i=0;i<amount;i++)
             {
@@ -4743,9 +4794,12 @@ void paste_items_at(
                     
                     case Controller:
                     {
+                      // HACK Grab the event length since we use it for indicating
+                      //       the visual width when tagging controller items.
                       const unsigned int len_val = e.lenValue();
-                      // HACK Be sure to reset this always as we use it for indicating the visual width.
+                      // Be sure to reset this always since we use it for the above hack.
                       e.setLenValue(0);
+                      
                       // If this is a fresh new part, to avoid double DeleteMidiCtrlVal warnings when undoing
                       //  just add the event directly to the part instead of an operation.
                       if(create_new_part)
@@ -5072,18 +5126,20 @@ void paste_items_at(
         }
       }
     }
-    
-    // Merge the delete operations into the add operations so that all of the 'deletes' come first.
-    //add_operations.splice(add_operations.begin(), delete_operations);
-    for(ciUndoOp iuo = add_operations.begin(); iuo != add_operations.end(); ++iuo)
-      operations.push_back(*iuo);
-    
+
+    // Push any part resizing operations onto the operations list now, before merging
+    //  the add operations.
     for (map<const Part*, unsigned>::iterator it = expand_map.begin(); it!=expand_map.end(); it++)
   // 		if (it->second != it->first->lenTick())
   // 			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
       if (it->second != it->first->lenValue())
         schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
 
+    // Now merge the add operations into the operations so that all of the 'deletes' come first.
+    //add_operations.splice(add_operations.begin(), delete_operations);
+    for(ciUndoOp iuo = add_operations.begin(); iuo != add_operations.end(); ++iuo)
+      operations.push_back(*iuo);
+    
     MusEGlobal::song->informAboutNewParts(new_part_map); // must be called before apply. otherwise
                                                         // pointer changes (by resize) screw it up
     

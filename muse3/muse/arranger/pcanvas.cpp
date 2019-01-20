@@ -726,7 +726,7 @@ void PartCanvas::resizeItem(CItem* i, bool noSnap, bool ctrl)
    MusECore::Track* t = ((NPart*)(i))->track();
    MusECore::Part*  p = ((NPart*)(i))->part();
 
-   int pos = p->tick() + i->width();
+   unsigned int pos = p->tick() + i->width();
    int snappedpos = pos;
    if (!noSnap) {
       snappedpos = MusEGlobal::sigmap.raster(pos, *_raster);
@@ -736,13 +736,14 @@ void PartCanvas::resizeItem(CItem* i, bool noSnap, bool ctrl)
       newwidth = MusEGlobal::sigmap.rasterStep(p->tick(), *_raster);
 
    bool doMove = false;
-   int newPos = 0;
+   unsigned int newPos = 0;
    if((i->mp() != i->pos()) && (resizeDirection == RESIZE_TO_THE_LEFT))
    {
       doMove = true;
-      newPos  = i->mp().x();
-      if (newPos < 0)
-         newPos = 0;
+      if(i->mp().x() < 0)
+        newPos = 0;
+      else
+        newPos  = i->mp().x();
    }
    MusEGlobal::song->cmdResizePart(t, p, newwidth, doMove, newPos, !ctrl);
 
@@ -3514,7 +3515,7 @@ void PartCanvas::cmd(int cmd)
                   break;
             }
             case CMD_INSERT_EMPTYMEAS:
-                  int startPos=MusEGlobal::song->vcpos();
+                  unsigned int startPos=MusEGlobal::song->vcpos();
                   int oneMeas=MusEGlobal::sigmap.ticksMeasure(startPos);
                   MusECore::Undo temp=MusECore::movePartsTotheRight(startPos,oneMeas);
                   MusEGlobal::song->applyOperationGroup(temp);
@@ -3642,7 +3643,8 @@ void PartCanvas::copy(MusECore::PartList* pl)
       }
 
 
-MusECore::Undo PartCanvas::pasteAt(const QString& pt, MusECore::Track* track, unsigned int pos, bool clone, bool toTrack, int* finalPosPtr, set<MusECore::Track*>* affected_tracks)
+MusECore::Undo PartCanvas::pasteAt(const QString& pt, MusECore::Track* track, unsigned int pos,
+                                   bool clone, bool toTrack, unsigned int* finalPosPtr, set<MusECore::Track*>* affected_tracks)
       {
       MusECore::Undo operations;
 
@@ -3650,7 +3652,8 @@ MusECore::Undo PartCanvas::pasteAt(const QString& pt, MusECore::Track* track, un
       const char* ptxt = ba.constData();
       MusECore::Xml xml(ptxt);
       bool firstPart=true;
-      int  posOffset=0;
+      unsigned int  posOffset=0;
+      bool fwdOffset = true;
       unsigned int  finalPos = pos;
       int  notDone = 0;
       int  done = 0;
@@ -3683,9 +3686,30 @@ MusECore::Undo PartCanvas::pasteAt(const QString& pt, MusECore::Track* track, un
 
                               if (firstPart) {
                                     firstPart=false;
-                                    posOffset=pos-p->tick();
+                                    if(pos >= p->tick())
+                                    {
+                                      posOffset = pos - p->tick();
+                                      fwdOffset = true;
                                     }
-                              p->setTick(p->tick()+posOffset);
+                                    else
+                                    {
+                                      posOffset = p->tick() - pos;
+                                      fwdOffset = false;
+                                    }
+                                      
+//                                     posOffset=pos-p->tick();
+                                    }
+                              if(fwdOffset)
+                              {
+                                p->setTick(p->tick()+posOffset);
+                              }
+                              else
+                              {
+                                if(p->tick() >= posOffset)
+                                  p->setTick(p->tick()-posOffset);
+                                else
+                                  p->setTick(0);
+                              }
                               if (p->tick()+p->lenTick()>finalPos) {
                                 finalPos=p->tick()+p->lenTick();
                               }
@@ -3803,7 +3827,7 @@ void PartCanvas::paste(bool clone, paste_mode_t paste_mode, bool to_single_track
 
       if (!txt.isEmpty())
       {
-        int endPos=0;
+        unsigned int endPos=0;
         unsigned int startPos=MusEGlobal::song->vcpos();
         set<MusECore::Track*> affected_tracks;
 
@@ -3821,7 +3845,7 @@ void PartCanvas::paste(bool clone, paste_mode_t paste_mode, bool to_single_track
 
         if (paste_mode != PASTEMODE_MIX)
         {
-          int offset;
+          unsigned int offset;
           if (amount==1) offset = endPos-startPos;
           else           offset = amount*raster;
 

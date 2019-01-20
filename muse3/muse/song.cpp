@@ -2583,7 +2583,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   bool isEvent = false, canSeekPrev = false, canSeekNext = false, canEraseRange = false;
   bool canAdd = false;
   double ctlval = 0.0;
-  int frame = 0;
+  unsigned int frame = 0;
   if(track)
   {
     ciCtrlList icl = track->controller()->find(acid);
@@ -2613,7 +2613,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
         s = cl->lower_bound(pos[1].frame());
 
         canEraseRange = s != cl->end()
-                        && (int)pos[2].frame() > s->second.frame;
+                        && pos[2].frame() > s->second.frame;
       }
     }
   }

@@ -779,7 +779,7 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           else if(uo.type == UndoOp::ModifyEvent && uo.part == n_op.part)  
           {
             // REMOVE Tim. citem. Added. For testing.
-            fprintf(stderr, "MusE: Undo::insert(): Double ModifyEvent...\n");
+            fprintf(stderr, "MusE: DIAGNOSTIC: Undo::insert(): Double ModifyEvent... checking for errors...\n");
               
             if(uo.oEvent == n_op.oEvent)
             {
@@ -1762,7 +1762,8 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, bool selected_, bool sel_old_,
     _noUndo = noUndo;
 }
 
-UndoOp::UndoOp(UndoType type_, const Part* part_, int old_len_or_pos, int new_len_or_pos, Pos::TType new_time_type_, const Track* oTrack, const Track* nTrack, bool noUndo)
+UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_len_or_pos, unsigned int new_len_or_pos,
+               Pos::TType new_time_type_, const Track* oTrack, const Track* nTrack, bool noUndo)
 {
     assert(type_== ModifyPartLength || type_== MovePart);
     assert(part_);
