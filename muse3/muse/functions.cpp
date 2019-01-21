@@ -49,8 +49,8 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <math.h>
-#include <map>
-#include <set>
+// #include <map>
+// #include <set>
 
 #include <QTemporaryFile>
 #include <QMimeData>
@@ -2048,7 +2048,133 @@ bool delete_selected_parts()
 	return partSelected;
 }
 
+
+
+
+
+
 //=============================================================================
+// BEGIN item-based funtions
+//=============================================================================
+
+
+
+
+void PasteEraseCtlMap::add(int ctl_num, unsigned int ctl_time,
+                           unsigned int len_val)
+{
+  unsigned long ctl_end_time;
+
+  if(len_val > 0)
+    ctl_end_time = ctl_time + len_val;
+  else
+    ctl_end_time = ctl_time + 1;
+
+  iPasteEraseCtlMap icm = find(ctl_num);
+  if(icm == end())
+  {
+    PasteEraseMap_t new_tmap;
+    new_tmap.insert(PasteEraseMapInsertPair_t(ctl_time, ctl_end_time));
+    insert(PasteEraseCtlMapPair_t(ctl_num, new_tmap));
+  }
+  else
+  {
+    PasteEraseMap_t& tmap = icm->second;
+    // The event times are sorted already, so this always returns end().
+    //iPasteEraseMap itm = tmap.upper_bound(ctl_time);
+    iPasteEraseMap itm = tmap.end();
+    if(itm != tmap.begin())
+    {
+      --itm;
+      unsigned long prev_ctl_time = itm->first;
+      unsigned long prev_ctl_end_time = itm->second;
+
+      iPasteEraseMap itm_2 = tmap.end();
+      if(itm != tmap.begin())
+      {
+        itm_2 = itm;
+        --itm_2;
+      }
+
+      if((prev_ctl_end_time >= ctl_time) || _erase_controllers_inclusive)
+      {
+        if(_erase_controllers_inclusive)
+          itm->second = ctl_time;
+        
+        if(itm_2 != tmap.end())
+        {
+          if((itm_2->second >= prev_ctl_time) || _erase_controllers_inclusive)
+          {
+            itm_2->second = itm->second;
+            tmap.erase(itm);
+          }
+        }
+
+        tmap.insert(PasteEraseMapInsertPair_t(ctl_time, ctl_end_time));
+      }
+      else
+      {
+        // If we want wysiwyg pasting, we erase existing events up to
+        //  the end-time of the last tmap item which ended a contiguous
+        //  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
+        //  the start-time of that last tmap item. So, that last item in the
+        //  cluster can be deleted since we already have the start-time and
+        //  end-time of the SECOND-LAST tmap item in the cluster.
+        //if(!erase_controllers_wysiwyg)
+        //	tmap.erase(itm);
+
+        if(!_erase_controllers_wysiwyg)
+          itm->second = itm->first + 1;
+
+        // If we want wysiwyg pasting, we erase existing events up to
+        //  the end-time of the last tmap item which ended a contiguous
+        //  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
+        //  the start-time of that last tmap item. So we 'truncate' that
+        //  last item in the cluster by setting the end-time to the start-time,
+        //  so that the gathering routine below knows to erase that last
+        //  single-time position.
+        if(itm_2 != tmap.end())
+        {
+          if(itm_2->second >= itm->first)
+          {
+            itm_2->second = itm->second;
+            tmap.erase(itm);
+          }
+        }
+
+        tmap.insert(PasteEraseMapInsertPair_t(ctl_time, ctl_end_time));
+      }
+    }
+  }
+}
+
+void PasteEraseCtlMap::tidy()
+{
+  // Tidy up the very last items in the list.
+  for(iPasteEraseCtlMap icm = begin(); icm != end(); ++icm)
+  {
+    PasteEraseMap_t& tmap = icm->second;
+    iPasteEraseMap itm = tmap.end();
+    if(itm != tmap.begin())
+    {
+      --itm;
+      
+      if(!_erase_controllers_wysiwyg)
+        itm->second = itm->first + 1;
+      
+      if(itm != tmap.begin())
+      {
+        iPasteEraseMap itm_2 = itm;
+        --itm_2;
+        if((itm_2->second >= itm->second) || _erase_controllers_inclusive)
+        {
+          itm_2->second = itm->second;
+          tmap.erase(itm);
+        }
+      }
+    }
+  }
+}
 
 // void untag_all_items()
 // {
@@ -3789,19 +3915,19 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 	map<const Part*, unsigned> expand_map;
 	map<const Part*, set<const Part*> > new_part_map;
 
-	// For erasing existing target controller events before pasting source controller events.
-	typedef pair<unsigned long /*t0*/, unsigned long /*t1*/ > tpair_t;
-	typedef pair<unsigned long /*t0*/, tpair_t > tmap_pair_t;
-	typedef map<unsigned long /*t0*/, tpair_t> tmap_t;
-	typedef tmap_t::iterator i_tmap_t;
-	typedef tmap_t::const_iterator ci_tmap_t;
-	typedef pair<int /*ctlnum*/, tmap_t > ctlmap_pair_t;
-	typedef map<int /*ctlnum*/, tmap_t> ctlmap_t;
-	typedef ctlmap_t::iterator i_ctlmap_t;
-	typedef ctlmap_t::const_iterator ci_ctlmap_t;
+// 	// For erasing existing target controller events before pasting source controller events.
+// 	typedef pair<unsigned long /*t0*/, unsigned long /*t1*/ > tpair_t;
+// 	typedef pair<unsigned long /*t0*/, tpair_t > tmap_pair_t;
+// 	typedef map<unsigned long /*t0*/, tpair_t> tmap_t;
+// 	typedef tmap_t::iterator i_tmap_t;
+// 	typedef tmap_t::const_iterator ci_tmap_t;
+// 	typedef pair<int /*ctlnum*/, tmap_t > ctlmap_pair_t;
+// 	typedef map<int /*ctlnum*/, tmap_t> ctlmap_t;
+// 	typedef ctlmap_t::iterator i_ctlmap_t;
+// 	typedef ctlmap_t::const_iterator ci_ctlmap_t;
 	
-	int ctl_num;
-	unsigned int ctl_time, ctl_end_time, prev_ctl_time, prev_ctl_end_time;
+// 	int ctl_num;
+// 	unsigned int ctl_time, ctl_end_time, prev_ctl_time, prev_ctl_end_time;
 	QByteArray pt_= pt.toLatin1();
 	Xml xml(pt_.constData());
 	for (;;) 
@@ -3884,7 +4010,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 																					always_new_part ) && !never_new_part ) );    // respect function arguments
 									
 									// This will be filled as we go.
-									ctlmap_t ctl_map;
+									PasteEraseCtlMap ctl_map(erase_controllers_wysiwyg, erase_controllers_inclusive);
 
 									for (int i=0;i<amount;i++)
 									{
@@ -4085,107 +4211,109 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 															//if(erase_controllers && (e.tag()._flags & EventTagWidthValid))
 															if(erase_controllers)
 															{
-																ctl_num = e.dataA();
-																ctl_time = e.posValue();
-// 																if(e.tag()._flags & EventTagWidthValid)
-// 																	ctl_end_time = ctl_time + e.tag()._width;
-																if(len_val > 0)
-																	ctl_end_time = ctl_time + len_val;
-																else
-																	ctl_end_time = ctl_time + 1;
-																i_ctlmap_t icm = ctl_map.find(ctl_num);
-																if(icm == ctl_map.end())
-																{
-																	tpair_t tpair(ctl_time, ctl_end_time);
-																	tmap_t new_tmap;
-																	new_tmap.insert(tmap_pair_t(ctl_time, tpair));
-																	ctl_map.insert(ctlmap_pair_t(ctl_num, new_tmap));
-																}
-																else
-																{
-																	tmap_t& tmap = icm->second;
-																	// The event times are sorted already, so this always returns end().
-																	//i_tmap_t itm = tmap.upper_bound(ctl_time);
-																	i_tmap_t itm = tmap.end();
-																	if(itm != tmap.begin())
-																	{
-																		--itm;
-																		tpair_t& tpair = itm->second;
-																		prev_ctl_time = tpair.first;
-																		prev_ctl_end_time = tpair.second;
-																		
-																		i_tmap_t itm_2 = tmap.end();
-																		if(itm != tmap.begin())
-																		{
-																			itm_2 = itm;
-																			--itm_2;
-																		}
-																		
-																		if((prev_ctl_end_time >= ctl_time) || erase_controllers_inclusive)
-																		{
-																			if(erase_controllers_inclusive)
-																			  tpair.second = ctl_time;
-																			
-																			if(itm_2 != tmap.end())
-																			{
-																				tpair_t& tpair_2 = itm_2->second;
-																				if((tpair_2.second >= prev_ctl_time) || erase_controllers_inclusive)
-																				{
-																					tpair_2.second = tpair.second;
-																					tmap.erase(itm);
-																				}
-																			}
-																			
-																			tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
-																		}
-																		else
-																		{
-																			// If we want wysiwyg pasting, we erase existing events up to
-																			//  the end-time of the last tmap item which ended a contiguous
-																			//  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
-																			//  the start-time of that last tmap item. So, that last item in the
-																			//  cluster can be deleted since we already have the start-time and
-																			//  end-time of the SECOND-LAST tmap item in the cluster.
-																			//if(!erase_controllers_wysiwyg)
-																			//	tmap.erase(itm);
-
-																			
-																			if(!erase_controllers_wysiwyg)
-																				tpair.second = tpair.first + 1;
-																			
-
-																			// If we want wysiwyg pasting, we erase existing events up to
-																			//  the end-time of the last tmap item which ended a contiguous
-																			//  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
-																			//  the start-time of that last tmap item. So we 'truncate' that
-																			//  last item in the cluster by setting the end-time to the start-time,
-																			//  so that the gathering routine below knows to erase that last
-																			//  single-time position.
-																			if(itm_2 != tmap.end())
-																			{
-																				tpair_t& tpair_2 = itm_2->second;
-																				if(tpair_2.second >= tpair.first)
-																				{
-// 																					if(erase_controllers_wysiwyg)
-// 																					{
-// 																						tpair_2.second = tpair.second;
-// 																						tmap.erase(itm);
-// 																					}
-// 																					else
-// 																					{
-// 																						// Nudge it forward by one.
-// 																						tpair_2.second = tpair.first + 1;
-// 																						tmap.erase(itm);
-// 																					}
-																					tpair_2.second = tpair.second;
-																					tmap.erase(itm);
-																				}
-																			}
-																			
-																			tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
-																		}
-																	}
-																}
+																ctl_map.add(e.dataA(), e.posValue(), len_val);
+                                
+// 																ctl_num = e.dataA();
+// 																ctl_time = e.posValue();
+// // 																if(e.tag()._flags & EventTagWidthValid)
+// // 																	ctl_end_time = ctl_time + e.tag()._width;
+// 																if(len_val > 0)
+// 																	ctl_end_time = ctl_time + len_val;
+// 																else
+// 																	ctl_end_time = ctl_time + 1;
+// 																                                        iPasteEraseCtlMap icm = ctl_map.find(ctl_num);
+// 																if(icm == ctl_map.end())
+// 																{
+// 																	tpair_t tpair(ctl_time, ctl_end_time);
+// 																	                                           PasteEraseMap_t new_tmap;
+// 																	new_tmap.insert(tmap_pair_t(ctl_time, tpair));
+// 																	ctl_map.insert(PasteEraseCtlMapPair_t(ctl_num, new_tmap));
+// 																}
+// 																else
+// 																{
+// 																	                                           PasteEraseMap_t& tmap = icm->second;
+// 																	// The event times are sorted already, so this always returns end().
+// 																	//i_tmap_t itm = tmap.upper_bound(ctl_time);
+// 																	                                           iPasteEraseMap itm = tmap.end();
+// 																	if(itm != tmap.begin())
+// 																	{
+// 																		--itm;
+// 																		tpair_t& tpair = itm->second;
+// 																		prev_ctl_time = tpair.first;
+// 																		prev_ctl_end_time = tpair.second;
+// 																		
+// 																		                                              iPasteEraseMap itm_2 = tmap.end();
+// 																		if(itm != tmap.begin())
+// 																		{
+// 																			itm_2 = itm;
+// 																			--itm_2;
+// 																		}
+// 																		
+// 																		if((prev_ctl_end_time >= ctl_time) || erase_controllers_inclusive)
+// 																		{
+// 																			if(erase_controllers_inclusive)
+// 																			  tpair.second = ctl_time;
+// 																			
+// 																			if(itm_2 != tmap.end())
+// 																			{
+// 																				tpair_t& tpair_2 = itm_2->second;
+// 																				if((tpair_2.second >= prev_ctl_time) || erase_controllers_inclusive)
+// 																				{
+// 																					tpair_2.second = tpair.second;
+// 																					tmap.erase(itm);
+// 																				}
+// 																			}
+// 																			
+// 																			tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
+// 																		}
+// 																		else
+// 																		{
+// 																			// If we want wysiwyg pasting, we erase existing events up to
+// 																			//  the end-time of the last tmap item which ended a contiguous
+// 																			//  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
+// 																			//  the start-time of that last tmap item. So, that last item in the
+// 																			//  cluster can be deleted since we already have the start-time and
+// 																			//  end-time of the SECOND-LAST tmap item in the cluster.
+// 																			//if(!erase_controllers_wysiwyg)
+// 																			//	tmap.erase(itm);
+// 
+// 																			
+// 																			if(!erase_controllers_wysiwyg)
+// 																				tpair.second = tpair.first + 1;
+// 																			
+// 
+// 																			// If we want wysiwyg pasting, we erase existing events up to
+// 																			//  the end-time of the last tmap item which ended a contiguous
+// 																			//  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
+// 																			//  the start-time of that last tmap item. So we 'truncate' that
+// 																			//  last item in the cluster by setting the end-time to the start-time,
+// 																			//  so that the gathering routine below knows to erase that last
+// 																			//  single-time position.
+// 																			if(itm_2 != tmap.end())
+// 																			{
+// 																				tpair_t& tpair_2 = itm_2->second;
+// 																				if(tpair_2.second >= tpair.first)
+// 																				{
+// // 																					if(erase_controllers_wysiwyg)
+// // 																					{
+// // 																						tpair_2.second = tpair.second;
+// // 																						tmap.erase(itm);
+// // 																					}
+// // 																					else
+// // 																					{
+// // 																						// Nudge it forward by one.
+// // 																						tpair_2.second = tpair.first + 1;
+// // 																						tmap.erase(itm);
+// // 																					}
+// 																					tpair_2.second = tpair.second;
+// 																					tmap.erase(itm);
+// 																				}
+// 																			}
+// 																			
+// 																			tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
+// 																		}
+// 																	}
+// 																}
 															}
 															else
 															// Here we are not specifically erasing first. But we still MUST erase any
@@ -4329,42 +4457,45 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 									if(erase_controllers && !create_new_part && dest_part && !ctl_map.empty())
 									{
 										// Tidy up the very last items in the list.
-										for(i_ctlmap_t icm = ctl_map.begin(); icm != ctl_map.end(); ++icm)
-										{
-											tmap_t& tmap = icm->second;
-											i_tmap_t itm = tmap.end();
-											if(itm != tmap.begin())
-											{
-												--itm;
-												tpair_t& tpair = itm->second;
-												
-												if(!erase_controllers_wysiwyg)
-													tpair.second = tpair.first + 1;
-												
-												if(itm != tmap.begin())
-												{
-													i_tmap_t itm_2 = itm;
-													--itm_2;
-													tpair_t& tpair_2 = itm_2->second;
-													if((tpair_2.second >= tpair.second) || erase_controllers_inclusive)
-													{
-// 														if(erase_controllers_wysiwyg)
-// 														{
-// 															tpair_2.second = tpair.second;
-// 															tmap.erase(itm);
-// 														}
-// 														else
-// 														{
-// 															// Nudge it forward by one.
-// 															tpair_2.second = tpair.first + 1;
-// 															tmap.erase(itm);
-// 														}
-														tpair_2.second = tpair.second;
-														tmap.erase(itm);
-													}
-												}
-											}
-										}
+										ctl_map.tidy();
+
+// 										// Tidy up the very last items in the list.
+// 										for(iPasteEraseCtlMap icm = ctl_map.begin(); icm != ctl_map.end(); ++icm)
+// 										{
+// 											                             PasteEraseMap_t& tmap = icm->second;
+// 											                             iPasteEraseMap itm = tmap.end();
+// 											if(itm != tmap.begin())
+// 											{
+// 												--itm;
+// 												tpair_t& tpair = itm->second;
+// 												
+// 												if(!erase_controllers_wysiwyg)
+// 													tpair.second = tpair.first + 1;
+// 												
+// 												if(itm != tmap.begin())
+// 												{
+// 													                                   iPasteEraseMap itm_2 = itm;
+// 													--itm_2;
+// 													tpair_t& tpair_2 = itm_2->second;
+// 													if((tpair_2.second >= tpair.second) || erase_controllers_inclusive)
+// 													{
+// // 														if(erase_controllers_wysiwyg)
+// // 														{
+// // 															tpair_2.second = tpair.second;
+// // 															tmap.erase(itm);
+// // 														}
+// // 														else
+// // 														{
+// // 															// Nudge it forward by one.
+// // 															tpair_2.second = tpair.first + 1;
+// // 															tmap.erase(itm);
+// // 														}
+// 														tpair_2.second = tpair.second;
+// 														tmap.erase(itm);
+// 													}
+// 												}
+// 											}
+// 										}
 										
 										unsigned e_pos;
 										const EventList& el = dest_part->events();
@@ -4374,20 +4505,21 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 											if(e.type() != Controller)
 												continue;
 											
-											ci_ctlmap_t icm = ctl_map.find(e.dataA());
+											ciPasteEraseCtlMap icm = ctl_map.find(e.dataA());
 											if(icm == ctl_map.end())
 												continue;
 											
-											const tmap_t& tmap = icm->second;
+											const PasteEraseMap_t& tmap = icm->second;
 											e_pos = e.posValue();
-											ci_tmap_t itm = tmap.upper_bound(e_pos);
+											ciPasteEraseMap itm = tmap.upper_bound(e_pos);
 											if(itm == tmap.begin())
 												continue;
 											
 											--itm;
-											const tpair_t& tpair = itm->second;
+// 											const tpair_t& tpair = itm->second;
 											
-											if(e_pos >= tpair.first && e_pos < tpair.second)
+// 											if(e_pos >= tpair.first && e_pos < tpair.second)
+											if(e_pos >= itm->first && e_pos < itm->second)
 												operations.push_back(UndoOp(UndoOp::DeleteEvent, e, dest_part, true, true));
 										}
 									}
@@ -4462,19 +4594,22 @@ void paste_items_at(
     map<const Part*, unsigned> expand_map;
     map<const Part*, set<const Part*> > new_part_map;
 
-    // For erasing existing target controller events before pasting source controller events.
-    typedef pair<unsigned long /*t0*/, unsigned long /*t1*/ > tpair_t;
-    typedef pair<unsigned long /*t0*/, tpair_t > tmap_pair_t;
-    typedef map<unsigned long /*t0*/, tpair_t> tmap_t;
-    typedef tmap_t::iterator i_tmap_t;
-    typedef tmap_t::const_iterator ci_tmap_t;
-    typedef pair<int /*ctlnum*/, tmap_t > ctlmap_pair_t;
-    typedef map<int /*ctlnum*/, tmap_t> ctlmap_t;
-    typedef ctlmap_t::iterator i_ctlmap_t;
-    typedef ctlmap_t::const_iterator ci_ctlmap_t;
+//     // For erasing existing target controller events before pasting source controller events.
+// //     typedef pair<unsigned long /*t0*/, unsigned long /*t1*/ > tpair_t;
+// //     typedef pair<unsigned long /*t0*/, tpair_t > tmap_pair_t;
+// //     typedef map<unsigned long /*t0*/, tpair_t> tmap_t;
+//     
+//     typedef pair<unsigned long /*t0*/, unsigned long /*t1*/ > tmap_pair_t;
+//     typedef map<unsigned long /*t0*/, unsigned long /*t1*/> tmap_t;
+//     typedef tmap_t::iterator i_tmap_t;
+//     typedef tmap_t::const_iterator ci_tmap_t;
+//     typedef pair<int /*ctlnum*/, tmap_t > ctlmap_pair_t;
+//     typedef map<int /*ctlnum*/, tmap_t> ctlmap_t;
+//     typedef ctlmap_t::iterator i_ctlmap_t;
+//     typedef ctlmap_t::const_iterator ci_ctlmap_t;
     
-    int ctl_num;
-    unsigned int ctl_time, ctl_end_time, prev_ctl_time, prev_ctl_end_time;
+//     int ctl_num;
+//     unsigned int ctl_time, ctl_end_time, prev_ctl_time, prev_ctl_end_time;
     
     // Find the lowest position of all the events - the 'start' position.
     const Pos start_pos = tag_list->globalStats().evrange(relevant);
@@ -4572,7 +4707,7 @@ void paste_items_at(
                                     always_new_part ) && !never_new_part ) );    // respect function arguments
 
             // This will be filled as we go.
-            ctlmap_t ctl_map;
+            PasteEraseCtlMap ctl_map(erase_controllers_wysiwyg, erase_controllers_inclusive);
             
             for (int i=0;i<amount;i++)
             {
@@ -4815,107 +4950,130 @@ void paste_items_at(
                         //if(erase_controllers && (e.tag()._flags & EventTagWidthValid))
                         if(erase_controllers)
                         {
-                          ctl_num = e.dataA();
-                          ctl_time = e.posValue();
-    // 																if(e.tag()._flags & EventTagWidthValid)
-    // 																	ctl_end_time = ctl_time + e.tag()._width;
-                          if(len_val > 0)
-                            ctl_end_time = ctl_time + len_val;
-                          else
-                            ctl_end_time = ctl_time + 1;
-                          i_ctlmap_t icm = ctl_map.find(ctl_num);
-                          if(icm == ctl_map.end())
-                          {
-                            tpair_t tpair(ctl_time, ctl_end_time);
-                            tmap_t new_tmap;
-                            new_tmap.insert(tmap_pair_t(ctl_time, tpair));
-                            ctl_map.insert(ctlmap_pair_t(ctl_num, new_tmap));
-                          }
-                          else
-                          {
-                            tmap_t& tmap = icm->second;
-                            // The event times are sorted already, so this always returns end().
-                            //i_tmap_t itm = tmap.upper_bound(ctl_time);
-                            i_tmap_t itm = tmap.end();
-                            if(itm != tmap.begin())
-                            {
-                              --itm;
-                              tpair_t& tpair = itm->second;
-                              prev_ctl_time = tpair.first;
-                              prev_ctl_end_time = tpair.second;
-                              
-                              i_tmap_t itm_2 = tmap.end();
-                              if(itm != tmap.begin())
-                              {
-                                itm_2 = itm;
-                                --itm_2;
-                              }
-                              
-                              if((prev_ctl_end_time >= ctl_time) || erase_controllers_inclusive)
-                              {
-                                if(erase_controllers_inclusive)
-                                  tpair.second = ctl_time;
-                                
-                                if(itm_2 != tmap.end())
-                                {
-                                  tpair_t& tpair_2 = itm_2->second;
-                                  if((tpair_2.second >= prev_ctl_time) || erase_controllers_inclusive)
-                                  {
-                                    tpair_2.second = tpair.second;
-                                    tmap.erase(itm);
-                                  }
-                                }
-                                
-                                tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
-                              }
-                              else
-                              {
-                                // If we want wysiwyg pasting, we erase existing events up to
-                                //  the end-time of the last tmap item which ended a contiguous
-                                //  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
-                                //  the start-time of that last tmap item. So, that last item in the
-                                //  cluster can be deleted since we already have the start-time and
-                                //  end-time of the SECOND-LAST tmap item in the cluster.
-                                //if(!erase_controllers_wysiwyg)
-                                //	tmap.erase(itm);
-
-                                
-                                if(!erase_controllers_wysiwyg)
-                                  tpair.second = tpair.first + 1;
-                                
-
-                                // If we want wysiwyg pasting, we erase existing events up to
-                                //  the end-time of the last tmap item which ended a contiguous
-                                //  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
-                                //  the start-time of that last tmap item. So we 'truncate' that
-                                //  last item in the cluster by setting the end-time to the start-time,
-                                //  so that the gathering routine below knows to erase that last
-                                //  single-time position.
-                                if(itm_2 != tmap.end())
-                                {
-                                  tpair_t& tpair_2 = itm_2->second;
-                                  if(tpair_2.second >= tpair.first)
-                                  {
-    // 																					if(erase_controllers_wysiwyg)
-    // 																					{
-    // 																						tpair_2.second = tpair.second;
-    // 																						tmap.erase(itm);
-    // 																					}
-    // 																					else
-    // 																					{
-    // 																						// Nudge it forward by one.
-    // 																						tpair_2.second = tpair.first + 1;
-    // 																						tmap.erase(itm);
-    // 																					}
-                                    tpair_2.second = tpair.second;
-                                    tmap.erase(itm);
-                                  }
-                                }
-                                
-                                tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
-                              }
-                            }
-                          }
+                          ctl_map.add(e.dataA(), e.posValue(), len_val);
+                          
+                          
+//                           ctl_num = e.dataA();
+//                           ctl_time = e.posValue();
+//     // 																if(e.tag()._flags & EventTagWidthValid)
+//     // 																	ctl_end_time = ctl_time + e.tag()._width;
+//                           if(len_val > 0)
+//                             ctl_end_time = ctl_time + len_val;
+//                           else
+//                             ctl_end_time = ctl_time + 1;
+//                           iPasteEraseCtlMap icm = ctl_map.find(ctl_num);
+//                           if(icm == ctl_map.end())
+//                           {
+// //                             tpair_t tpair(ctl_time, ctl_end_time);
+//                             PasteEraseMap_t new_tmap;
+// //                             new_tmap.insert(tmap_pair_t(ctl_time, tpair));
+//                             new_tmap.insert(PasteEraseMapInsertPair_t(ctl_time, ctl_end_time));
+//                             ctl_map.insert(PasteEraseCtlMapPair_t(ctl_num, new_tmap));
+//                           }
+//                           else
+//                           {
+//                             PasteEraseMap_t& tmap = icm->second;
+//                             // The event times are sorted already, so this always returns end().
+//                             //i_tmap_t itm = tmap.upper_bound(ctl_time);
+//                             iPasteEraseMap itm = tmap.end();
+//                             if(itm != tmap.begin())
+//                             {
+//                               --itm;
+// //                               tpair_t& tpair = itm->second;
+// //                               prev_ctl_time = tpair.first;
+// //                               prev_ctl_end_time = tpair.second;
+//                               prev_ctl_time = itm->first;
+//                               prev_ctl_end_time = itm->second;
+//                               
+//                               iPasteEraseMap itm_2 = tmap.end();
+//                               if(itm != tmap.begin())
+//                               {
+//                                 itm_2 = itm;
+//                                 --itm_2;
+//                               }
+//                               
+//                               if((prev_ctl_end_time >= ctl_time) || erase_controllers_inclusive)
+//                               {
+//                                 if(erase_controllers_inclusive)
+// //                                   tpair.second = ctl_time;
+//                                   itm->second = ctl_time;
+//                                 
+//                                 if(itm_2 != tmap.end())
+//                                 {
+// //                                   tpair_t& tpair_2 = itm_2->second;
+// //                                   if((tpair_2.second >= prev_ctl_time) || erase_controllers_inclusive)
+// //                                   {
+// //                                     tpair_2.second = tpair.second;
+// //                                     tmap.erase(itm);
+// //                                   }
+//                                   if((itm_2->second >= prev_ctl_time) || erase_controllers_inclusive)
+//                                   {
+//                                     itm_2->second = itm->second;
+//                                     tmap.erase(itm);
+//                                   }
+//                                 }
+//                                 
+// //                                 tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
+//                                 tmap.insert(PasteEraseMapInsertPair_t(ctl_time, ctl_end_time));
+//                               }
+//                               else
+//                               {
+// //                                 // If we want wysiwyg pasting, we erase existing events up to
+// //                                 //  the end-time of the last tmap item which ended a contiguous
+// //                                 //  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
+// //                                 //  the start-time of that last tmap item. So, that last item in the
+// //                                 //  cluster can be deleted since we already have the start-time and
+// //                                 //  end-time of the SECOND-LAST tmap item in the cluster.
+// //                                 //if(!erase_controllers_wysiwyg)
+// //                                 //	tmap.erase(itm);
+// 
+//                                 
+//                                 if(!erase_controllers_wysiwyg)
+// //                                   tpair.second = tpair.first + 1;
+//                                   itm->second = itm->first + 1;
+//                                 
+// 
+//                                 // If we want wysiwyg pasting, we erase existing events up to
+//                                 //  the end-time of the last tmap item which ended a contiguous
+//                                 //  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
+//                                 //  the start-time of that last tmap item. So we 'truncate' that
+//                                 //  last item in the cluster by setting the end-time to the start-time,
+//                                 //  so that the gathering routine below knows to erase that last
+//                                 //  single-time position.
+// //                                 if(itm_2 != tmap.end())
+// //                                 {
+// //                                   tpair_t& tpair_2 = itm_2->second;
+// //                                   if(tpair_2.second >= tpair.first)
+// //                                   {
+// //     // 																					if(erase_controllers_wysiwyg)
+// //     // 																					{
+// //     // 																						tpair_2.second = tpair.second;
+// //     // 																						tmap.erase(itm);
+// //     // 																					}
+// //     // 																					else
+// //     // 																					{
+// //     // 																						// Nudge it forward by one.
+// //     // 																						tpair_2.second = tpair.first + 1;
+// //     // 																						tmap.erase(itm);
+// //     // 																					}
+// //                                     tpair_2.second = tpair.second;
+// //                                     tmap.erase(itm);
+// //                                   }
+// //                                 }
+//                                 if(itm_2 != tmap.end())
+//                                 {
+//                                   if(itm_2->second >= itm->first)
+//                                   {
+//                                     itm_2->second = itm->second;
+//                                     tmap.erase(itm);
+//                                   }
+//                                 }
+//                                 
+// //                                 tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
+//                                 tmap.insert(PasteEraseMapInsertPair_t(ctl_time, ctl_end_time));
+//                               }
+//                             }
+//                           }
                         }
                         else
                         // Here we are not specifically erasing first. But we still MUST erase any
@@ -5060,42 +5218,51 @@ void paste_items_at(
             if(erase_controllers && !create_new_part && dest_part && !ctl_map.empty())
             {
               // Tidy up the very last items in the list.
-              for(i_ctlmap_t icm = ctl_map.begin(); icm != ctl_map.end(); ++icm)
-              {
-                tmap_t& tmap = icm->second;
-                i_tmap_t itm = tmap.end();
-                if(itm != tmap.begin())
-                {
-                  --itm;
-                  tpair_t& tpair = itm->second;
-                  
-                  if(!erase_controllers_wysiwyg)
-                    tpair.second = tpair.first + 1;
-                  
-                  if(itm != tmap.begin())
-                  {
-                    i_tmap_t itm_2 = itm;
-                    --itm_2;
-                    tpair_t& tpair_2 = itm_2->second;
-                    if((tpair_2.second >= tpair.second) || erase_controllers_inclusive)
-                    {
-    // 														if(erase_controllers_wysiwyg)
-    // 														{
-    // 															tpair_2.second = tpair.second;
-    // 															tmap.erase(itm);
-    // 														}
-    // 														else
-    // 														{
-    // 															// Nudge it forward by one.
-    // 															tpair_2.second = tpair.first + 1;
-    // 															tmap.erase(itm);
-    // 														}
-                      tpair_2.second = tpair.second;
-                      tmap.erase(itm);
-                    }
-                  }
-                }
-              }
+              ctl_map.tidy();
+              
+//               // Tidy up the very last items in the list.
+//               for(iPasteEraseCtlMap icm = ctl_map.begin(); icm != ctl_map.end(); ++icm)
+//               {
+//                 PasteEraseMap_t& tmap = icm->second;
+//                 iPasteEraseMap itm = tmap.end();
+//                 if(itm != tmap.begin())
+//                 {
+//                   --itm;
+// //                   tpair_t& tpair = itm->second;
+//                   
+//                   if(!erase_controllers_wysiwyg)
+// //                     tpair.second = tpair.first + 1;
+//                     itm->second = itm->first + 1;
+//                   
+//                   if(itm != tmap.begin())
+//                   {
+//                     iPasteEraseMap itm_2 = itm;
+//                     --itm_2;
+// //                     tpair_t& tpair_2 = itm_2->second;
+// //                     if((tpair_2.second >= tpair.second) || erase_controllers_inclusive)
+// //                     {
+// //     // 														if(erase_controllers_wysiwyg)
+// //     // 														{
+// //     // 															tpair_2.second = tpair.second;
+// //     // 															tmap.erase(itm);
+// //     // 														}
+// //     // 														else
+// //     // 														{
+// //     // 															// Nudge it forward by one.
+// //     // 															tpair_2.second = tpair.first + 1;
+// //     // 															tmap.erase(itm);
+// //     // 														}
+// //                       tpair_2.second = tpair.second;
+// //                       tmap.erase(itm);
+// //                     }
+//                     if((itm_2->second >= itm->second) || erase_controllers_inclusive)
+//                     {
+//                       itm_2->second = itm->second;
+//                       tmap.erase(itm);
+//                     }
+//                   }
+//                 }
+//               }
               
               unsigned e_pos;
               const EventList& el = dest_part->events();
@@ -5105,20 +5272,21 @@ void paste_items_at(
                 if(e.type() != Controller)
                   continue;
                 
-                ci_ctlmap_t icm = ctl_map.find(e.dataA());
+                ciPasteEraseCtlMap icm = ctl_map.find(e.dataA());
                 if(icm == ctl_map.end())
                   continue;
                 
-                const tmap_t& tmap = icm->second;
+                const PasteEraseMap_t& tmap = icm->second;
                 e_pos = e.posValue();
-                ci_tmap_t itm = tmap.upper_bound(e_pos);
+                ciPasteEraseMap itm = tmap.upper_bound(e_pos);
                 if(itm == tmap.begin())
                   continue;
                 
                 --itm;
-                const tpair_t& tpair = itm->second;
+//                 const tpair_t& tpair = itm->second;
                 
-                if(e_pos >= tpair.first && e_pos < tpair.second)
+//                 if(e_pos >= tpair.first && e_pos < tpair.second)
+                if(e_pos >= itm->first && e_pos < itm->second)
                   operations.push_back(UndoOp(UndoOp::DeleteEvent, e, dest_part, true, true));
               }
             }

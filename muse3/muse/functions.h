@@ -23,6 +23,7 @@
 #ifndef __FUNCTIONS_H__
 #define __FUNCTIONS_H__
 
+#include <map>
 #include <set>
 #include "part.h"
 #include "dialogs.h"
@@ -317,6 +318,36 @@ bool legato_items(TagEventList* tag_list, int min_len=1, bool dont_shorten=false
 //  part canvas (in the arranger). Use them for copying and pasting parts.
 // TODO TODO Unify those part copy/cut/paste routines into these routines !
 //------------------------------------------------------------------------
+
+// For erasing existing target controller events before pasting source controller events.
+typedef std::pair<unsigned long /*t0*/, unsigned long /*t1*/ > PasteEraseMapInsertPair_t;
+typedef std::map<unsigned long /*t0*/, unsigned long /*t1*/> PasteEraseMap_t;
+typedef PasteEraseMap_t::iterator iPasteEraseMap;
+typedef PasteEraseMap_t::const_iterator ciPasteEraseMap;
+typedef std::pair<int /*ctlnum*/, PasteEraseMap_t > PasteEraseCtlMapPair_t;
+typedef std::map<int /*ctlnum*/, PasteEraseMap_t> PasteEraseCtlMap_t;
+typedef PasteEraseCtlMap_t::iterator iPasteEraseCtlMap;
+typedef PasteEraseCtlMap_t::const_iterator ciPasteEraseCtlMap;
+
+class PasteEraseCtlMap : public PasteEraseCtlMap_t
+{
+  private:
+    bool _erase_controllers_wysiwyg;
+    bool _erase_controllers_inclusive;
+
+  public:
+    PasteEraseCtlMap(bool erase_controllers_wysiwyg,
+                     bool erase_controllers_inclusive) :
+                     _erase_controllers_wysiwyg(erase_controllers_wysiwyg),
+                     _erase_controllers_inclusive(erase_controllers_inclusive) { }
+    
+    // Add an item. Be sure to call tidy() after all item have been added.
+    void add(int ctl_num, unsigned int ctl_time,
+             unsigned int len_val);
+    // Tidy up the very last items in the list.
+    void tidy();
+};
+
 
 // void copy_items();
 void copy_items(TagEventList* tag_list);
