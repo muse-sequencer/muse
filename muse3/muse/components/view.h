@@ -33,7 +33,6 @@ class QPaintEvent;
 class QPainter;
 class QPixmap;
 class QResizeEvent;
-// REMOVE Tim. citem. Added.
 class QRegion;
 
 namespace MusEGui {
@@ -42,8 +41,6 @@ namespace MusEGui {
 //  ViewCoordinate
 //---------------------
 
-// class ViewWCoordinate;  
-// class ViewHCoordinate;  
 class ViewCoordinate
 {
   public:
@@ -51,11 +48,8 @@ class ViewCoordinate
     typedef int CoordinateFlags_t;
     
     int _value;
-//     bool _isMapped;
-//     bool _isRelative;
     CoordinateFlags_t _flags;
     
-//     ViewCoordinate(int value = 0, bool isMapped = false) : _value(value), _isMapped(isMapped), _isRelative(false) { } 
     ViewCoordinate(int value = 0, CoordinateFlags_t flags = NoFlags) : _value(value), _flags(flags) { } 
     
     bool isMapped() const { return _flags & IsMapped; }
@@ -67,37 +61,29 @@ class ViewCoordinate
 class ViewXCoordinate : public ViewCoordinate
 {
   public:
-//     ViewXCoordinate(int value = 0, bool isMapped = false) : ViewCoordinate(value, isMapped) { } 
     ViewXCoordinate(int value = 0, bool is_mapped = false) : 
       ViewCoordinate(value, NoFlags | (is_mapped ? IsMapped : NoFlags)) { } 
-//     ViewXCoordinate(const ViewWCoordinate& w);
 };
   
 class ViewYCoordinate : public ViewCoordinate
 {
   public:
-//     ViewYCoordinate(int value = 0, bool isMapped = false) : ViewCoordinate(value, isMapped) { } 
     ViewYCoordinate(int value = 0, bool is_mapped = false) : 
       ViewCoordinate(value, IsVertical | (is_mapped ? IsMapped : NoFlags)) { } 
-//     ViewYCoordinate(const ViewHCoordinate& h);
 };
 
 class ViewWCoordinate : public ViewXCoordinate
 {
   public:
-//     ViewWCoordinate(int value = 0, bool isMapped = false) : ViewCoordinate(value, isMapped) { } 
     ViewWCoordinate(int value = 0, bool is_mapped = false) : 
       ViewXCoordinate(value, is_mapped) { _flags |= IsRelative; } 
-//     ViewWCoordinate(const ViewXCoordinate& x);
 };
   
 class ViewHCoordinate : public ViewYCoordinate
 {
   public:
-//     ViewHCoordinate(int value = 0, bool isMapped = false) : ViewCoordinate(value, isMapped) { } 
     ViewHCoordinate(int value = 0, bool is_mapped = false) : 
       ViewYCoordinate(value, is_mapped) { _flags |= IsRelative; } 
-//     ViewHCoordinate(const ViewYCoordinate& y);
 };
 
 
@@ -174,16 +160,9 @@ class View : public QWidget {
       virtual void mouseReleaseEvent(QMouseEvent* event);
       virtual void dropEvent(QDropEvent* event);
 
-// REMOVE Tim. citem. Changed.
-//       virtual void draw(QPainter&, const QRect&) {}
       virtual void draw(QPainter&, const QRect&, const QRegion& = QRegion()) {}
-      
-// REMOVE Tim. citem. Changed.
-//       virtual void drawOverlay(QPainter&) {}
       virtual void drawOverlay(QPainter&, const QRect&, const QRegion& = QRegion()) {}
-      
       virtual QRect overlayRect() const { return QRect(0, 0, 0, 0); }
-//       virtual void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
       virtual void drawTickRaster(QPainter& p, const QRect&, const QRegion& = QRegion(), int raster = 0,
                                       bool waveMode = false,
                                       bool useGivenColors = false,
@@ -195,17 +174,12 @@ class View : public QWidget {
                                       const QFont& small_font = QFont()
                                      );
 
-// REMOVE Tim. citem. Changed.
-//       virtual void pdraw(QPainter&, const QRect&);
       virtual void pdraw(QPainter&, const QRect&, const QRegion& = QRegion());
 
       virtual void paintEvent(QPaintEvent* ev);
       void redraw(const QRect&);
-// REMOVE Tim. citem. Added.
       void redraw(const QRegion&);
 
-// REMOVE Tim. citem. Changed.
-//       void paint(const QRect& r);
       void paint(const QRect&, const QRegion& = QRegion());
 
       virtual void resizeEvent(QResizeEvent*);
@@ -273,7 +247,6 @@ class View : public QWidget {
       void setOrigin(int x, int y);
       void setVirt(bool flag)  { _virt = flag; }
       bool virt() const        { return _virt; }
-//       QRect rmap(const QRect&, bool round = false) const;
       QRect rmap(const QRect&) const;
       int rmapxDev(int x, bool round = false) const;
       int rmapx(int x, bool round = false) const;
@@ -384,21 +357,6 @@ class View : public QWidget {
       bool isXInRange(ViewXCoordinate x, ViewXCoordinate x1, ViewXCoordinate x2) const;
       // Returns true if y is >= y1 and y < y2.
       bool isYInRange(ViewYCoordinate y, ViewYCoordinate y1, ViewYCoordinate y2) const;
-      
-      
-//       // Returns true if the mapped value is less than the unmapped value.
-//       bool isXLess(int mapped_x, int unmapped_x) const;
-//       // Returns true if the mapped value is greater than or equal to the unmapped value.
-//       bool isXGreaterOrEqual(int mapped_x, int unmapped_x) const;
-//       // Returns true if the mapped value is equal to the unmapped value.
-//       bool isXEqual(int mapped_x, int unmapped_x) const;
-//       // Returns true if the mapped value is less than the unmapped value.
-//       bool isYLess(int mapped_y, int unmapped_y) const;
-//       // Returns true if the mapped value is greater than or equal to the unmapped value.
-//       bool isYGreaterOrEqual(int mapped_y, int unmapped_y) const;
-//       // Returns true if the mapped value is equal to the unmapped value.
-//       bool isYEqual(int mapped_y, int unmapped_y) const;
-      
       
       //--------------------------------------------
       // Conversions, utilities.

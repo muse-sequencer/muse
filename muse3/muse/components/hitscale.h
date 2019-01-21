@@ -40,12 +40,7 @@ class HitScale : public View {
       unsigned pos[3];
       int button;
 
-   signals:
-//      void posChanged(int, int);
-
    protected:
-// REMOVE Tim. citem. Changed.
-//       virtual void pdraw(QPainter&, const QRect&);
       virtual void pdraw(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void viewMousePressEvent(QMouseEvent* event);
       virtual void viewMouseMoveEvent(QMouseEvent* event);

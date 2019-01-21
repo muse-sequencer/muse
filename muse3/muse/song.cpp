@@ -155,8 +155,6 @@ void Song::setTempo(int newTempo)
 void Song::setSig(int z, int n)
       {
       if (_masterFlag) {
-// REMOVE Tim. citem. Changed.
-//             MusEGlobal::audio->msgAddSig(pos[0].tick(), z, n);
             // Add will replace if found. 
             MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
                             pos[0].tick(), z, n));
@@ -166,8 +164,6 @@ void Song::setSig(int z, int n)
 void Song::setSig(const MusECore::TimeSignature& sig)
       {
       if (_masterFlag) {
-// REMOVE Tim. citem. Changed.
-//             MusEGlobal::audio->msgAddSig(pos[0].tick(), sig.z, sig.n);
             // Add will replace if found. 
             MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
                             pos[0].tick(), sig.z, sig.n));
@@ -553,36 +549,6 @@ void Song::duplicateTracks()
   applyOperationGroup(operations);
 }          
       
-// REMOVE Tim. citem. ctl. Changed.
-// bool Song::addEventOperation(const Event& event, Part* part, bool do_port_ctrls, bool do_clone_port_ctrls)
-// {
-//   Event ev(event);
-//   bool added = false;
-//   Part* p = part;
-//   while(1)
-//   {
-//     // This will find the event even if it has been modified. As long as the IDs are the same, it's a match.
-//     // NOTE: Multiple events with the same event base pointer or the same id number, in one event list, are FORBIDDEN.
-//     //       This precludes using them for 'pattern groups' such as arpeggios or chords. Instead, create a new event type.
-//     iEvent ie = p->nonconst_events().findWithId(event);
-//     if(ie == p->nonconst_events().end()) 
-//     {
-//       added = true;
-//       pendingOperations.add(PendingOperationItem(p, ev, PendingOperationItem::AddEvent));
-//     }
-//     // Port controller values...
-//     if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
-//       addPortCtrlEvents(ev, p, p->tick(), p->lenTick(), p->track(), pendingOperations);
-//     
-//     p = p->nextClone();
-//     if(p == part)
-//       break;
-//     
-//     ev = event.clone(); // Makes a new copy with the same id.
-//   }
-//   return added;
-// }
-
 bool Song::addEventOperation(const Event& event, Part* part, bool do_port_ctrls, bool do_clone_port_ctrls)
 {
 //   Event ev(event);
@@ -596,7 +562,6 @@ bool Song::addEventOperation(const Event& event, Part* part, bool do_port_ctrls,
     ciEvent ie = p->events().findWithId(event);
     if(ie == p->events().cend()) 
     {
-//       pendingOperations.add(PendingOperationItem(p, ev, PendingOperationItem::AddEvent));
       if(pendingOperations.add(PendingOperationItem(p, event, PendingOperationItem::AddEvent)))
       {
         added = true;
@@ -618,35 +583,6 @@ bool Song::addEventOperation(const Event& event, Part* part, bool do_port_ctrls,
   }
   return added;
 }
-
-// REMOVE Tim. citem. ctl. Changed.
-// void Song::changeEventOperation(const Event& oldEvent, const Event& newEvent, Part* part, bool do_port_ctrls, bool do_clone_port_ctrls)
-// {
-//   // If position is changed we need to reinsert into the list, and all clone lists.
-//   Part* p = part;
-//   do
-//   {
-//     bool found = false;
-//     iEvent ie = p->nonconst_events().findWithId(oldEvent);
-//     if(ie != p->nonconst_events().end()) 
-//     {
-//       pendingOperations.add(PendingOperationItem(p, ie, PendingOperationItem::DeleteEvent));
-//       found = true;
-//     }
-//     
-//     pendingOperations.add(PendingOperationItem(p, newEvent, PendingOperationItem::AddEvent));
-//     if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
-//     {
-//       if(found)
-//         modifyPortCtrlEvents(oldEvent, newEvent, p, pendingOperations);  // Port controller values.
-//       else
-//         addPortCtrlEvents(newEvent, p, p->tick(), p->lenTick(), p->track(), pendingOperations);  // Port controller values.
-//     }
-//     
-//     p = p->nextClone();
-//   }
-//   while(p != part);
-// }
 
 void Song::changeEventOperation(const Event& oldEvent, const Event& newEvent, Part* part, bool do_port_ctrls, bool do_clone_port_ctrls)
 {
@@ -703,27 +639,6 @@ void Song::changeEventOperation(const Event& oldEvent, const Event& newEvent, Pa
   while(p != part);
 }
 
-// REMOVE Tim. citem. ctl. Changed.
-// //---------------------------------------------------------
-// //   deleteEvent
-// //---------------------------------------------------------
-// 
-// void Song::deleteEventOperation(const Event& event, Part* part, bool do_port_ctrls, bool do_clone_port_ctrls)
-// {
-//   Part* p = part;
-//   do
-//   {
-//    if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
-//      removePortCtrlEvents(event, p, p->track(), pendingOperations);  // Port controller values.
-//     iEvent ie = p->nonconst_events().findWithId(event);
-//     if(ie != p->nonconst_events().end()) 
-//       pendingOperations.add(PendingOperationItem(p, ie, PendingOperationItem::DeleteEvent));
-//     
-//     p = p->nextClone();
-//   }
-//   while(p != part);
-// }
-
 //---------------------------------------------------------
 //   deleteEvent
 //---------------------------------------------------------
@@ -746,21 +661,15 @@ Event Song::deleteEventOperation(const Event& event, Part* part, bool do_port_ct
      if(res.empty())
        res = e;
 
-     // Include removal of any corresponding cached controller value.
-     // By using the found existing event instead of the given one, this allows
-     //  us to pre-modify an event - EXCEPT the event's time and ID - before
-     //  passing it here. We will find it by ID and delete the event.
-     // Also these following cached controller values DEPEND on finding the
-     //  ORIGINAL event and cannot find a modified event.
-     // By default, here we MUST include all clones so that we find the event in
-     //  the correct corresponding part.
-//      if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
-//        removePortCtrlEvents(e, p, p->track(), pendingOperations);  // Port controller values.
      // Include removal of the event.
-//      pendingOperations.add(PendingOperationItem(p, ie, PendingOperationItem::DeleteEvent));
-     
      if(pendingOperations.add(PendingOperationItem(p, ie, PendingOperationItem::DeleteEvent)))
      {
+       // Include removal of any corresponding cached controller value.
+       // By using the found existing event instead of the given one, this allows
+       //  us to pre-modify an event - EXCEPT the event's time and ID - before
+       //  passing it here. We will find it by ID and delete the event.
+       // Also these following cached controller values DEPEND on finding the
+       //  ORIGINAL event and cannot find a modified event.
        if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
          removePortCtrlEvents(e, p, p->track(), pendingOperations);  // Port controller values.
      }
@@ -871,8 +780,6 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
             MidiPort* mp = &MusEGlobal::midiPorts[port];
             cntrl = (cntrl & ~0xff) | MusEGlobal::drumMap[note].anote;
             // Remove the port controller value.
-// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
-//             mp->deleteController(ch, tick, cntrl, part);
             mp->deleteController(ch, tick, cntrl, val, part);
 
             if(newnote != -1 && newnote != MusEGlobal::drumMap[note].anote)
@@ -952,8 +859,6 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
           mp->setControllerVal(ch, tick, cntrl, val, part);
         else  
           // Remove the port controller value.
-// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
-//           mp->deleteController(ch, tick, cntrl, part);
           mp->deleteController(ch, tick, cntrl, val, part);
       }
     }  
@@ -2541,8 +2446,6 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
             part->setName(mt->name());
             event.move(-startTick);
             part->addEvent(event);
-// REMOVE Tim. citem. Changed.
-//             MusEGlobal::audio->msgAddPart(part);
             MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddPart, part));
             return;
             }
@@ -2700,13 +2603,9 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   switch(sel)
   {
     case ADD_EVENT:
-// REMOVE Tim. citem. Changed.
-//           MusEGlobal::audio->msgAddACEvent(track, acid, frame, ctlval);
           MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddAudioCtrlVal, track, acid, frame, ctlval));
     break;
     case CLEAR_EVENT:
-// REMOVE Tim. citem. Changed.
-//           MusEGlobal::audio->msgEraseACEvent(track, acid, frame);
           MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteAudioCtrlVal, track, acid, frame));
     break;
 
@@ -2960,8 +2859,6 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
               
             e.setTick(tick - part->tick());
             // Indicate do undo, and do port controller values and clone parts. 
-// REMOVE Tim. citem. Changed.
-//             MusEGlobal::audio->msgChangeEvent(ev, e, part, true, true, true);
             MusEGlobal::song->applyOperation(UndoOp(UndoOp::ModifyEvent, e, ev, part, true, true));
           }
           else
@@ -2971,8 +2868,6 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
             {
               e.setTick(tick - part->tick());
               // Indicate do undo, and do port controller values and clone parts. 
-// REMOVE Tim. citem. Changed.
-//               MusEGlobal::audio->msgAddEvent(e, part, true, true, true);
               MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddEvent, 
                               e, part, true, true));
             }
@@ -2987,8 +2882,6 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
               part->setName(mt->name());
               e.setTick(tick - startTick);
               part->addEvent(e);
-// REMOVE Tim. citem. Changed.
-//               MusEGlobal::audio->msgAddPart(part);
               MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddPart, part));
             }
           }  
@@ -2996,8 +2889,6 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
     break;
     case CLEAR_EVENT:
           // Indicate do undo, and do port controller values and clone parts. 
-// REMOVE Tim. citem. Changed.
-//           MusEGlobal::audio->msgDeleteEvent(ev, part, true, true, true);
           MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteEvent,
                             ev, part, true, true));
     break;
@@ -3893,9 +3784,6 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
                 sprintf(tempStr,"NOTE %d %d %d %d\n", ev.tick(), ev.dataA(),  ev.lenTick(), ev.dataB());
                 writeStringToFile(fp,tempStr);
 
-// REMOVE Tim. citem. Changed.
-//                 // Indicate no undo, and do not do port controller values and clone parts.
-//                 MusEGlobal::audio->msgDeleteEvent(ev, part, false, false, false);
                 // Operation is undoable but do not start/end undo.
                 // Indicate do not do port controller values and clone parts.
                 MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteEvent,
@@ -3904,9 +3792,6 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
               } else if (ev.type()==Controller) {
                 sprintf(tempStr,"CONTROLLER %d %d %d %d\n", ev.tick(), ev.dataA(), ev.dataB(), ev.dataC());
                 writeStringToFile(fp,tempStr);
-// REMOVE Tim. citem. Changed.
-//                 // Indicate no undo, and do not do port controller values and clone parts.
-//                 MusEGlobal::audio->msgDeleteEvent(ev, part, false, false, false);
                 // Operation is undoable but do not start/end undo.
                 // Indicate do not do port controller values and clone parts.
                 MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
@@ -3963,9 +3848,6 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
                   e.setPitch(pitch);
                   e.setVelo(velo);
                   e.setLenTick(len);
-// REMOVE Tim. citem. Changed.
-//                   // Indicate no undo, and do not do port controller values and clone parts.
-//                   MusEGlobal::audio->msgAddEvent(e, part, false, false, false);
                   // Operation is undoable but do not start/end undo.
                   // Indicate do not do port controller values and clone parts.
                   MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddEvent, 
@@ -3982,9 +3864,6 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
                   e.setA(a);
                   e.setB(b);
                   e.setB(c);
-// REMOVE Tim. citem. Changed.
-//                   // Indicate no undo, and do not do port controller values and clone parts.
-//                   MusEGlobal::audio->msgAddEvent(e, part, false, false, false);
                   // Operation is undoable but do not start/end undo.
                   // Indicate do not do port controller values and clone parts.
                   MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddEvent, 

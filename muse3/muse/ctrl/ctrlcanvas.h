@@ -30,7 +30,6 @@
 #include "tools.h"
 #include "midictrl.h"
 #include "event.h"
-// REMOVE Tim. citem. Added.
 #include "citem.h"
 #include "undo.h"
 #include "event_tag_list.h"
@@ -58,84 +57,37 @@ class PopupMenu;
 //    ''visual'' Controller Event
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// class CEvent {
 class CEvent : public CItem {
    private:
-// REMOVE Tim. citem. Removed.
       MusECore::Event _event;
-      int       _val;
-// REMOVE Tim. citem. Removed.
-//       MusECore::MidiPart* _part;
+      int _val;
       MusECore::Part* _part;
       int ex;
-      //bool _isSelected;
 
    public:
-//       CEvent(MusECore::Event e, MusECore::MidiPart* part, int v);
       CEvent(const MusECore::Event&, MusECore::Part*, int v);
       CEvent();
-// REMOVE Tim. citem. Removed.
-//       MusECore::Event event() const          { return _event; }
-//       void setEvent(MusECore::Event& ev)     { _event = ev; }
-      
-// REMOVE Tim. citem. Changed.
-//       bool isSelected() const { return _event.selected(); }
-//       void setSelected(bool v);
-      //bool isSelected() const { return _isSelected; }
-      //void setSelected(bool f) { _isSelected = f; }
-//       bool isObjectTagged() const { return _event.tagged(); }
-//       void setObjectTagged(bool v);
       bool isObjectInRange(const MusECore::Pos&, const MusECore::Pos&) const;
       bool objectIsSelected() const { return _event.selected(); }
       
       int val() const              { return _val;   }
       void setVal(int v)           { _val = v; }
       void setEX(int v)            { ex = v; }
-// REMOVE Tim. citem. Removed.
-//       MusECore::MidiPart* part() const       { return _part;  }
       bool containsPoint(const MusECore::MidiController* mc, const QPoint& p, const int tickstep, const int wh) const;
       bool containsXRange(int x1, int x2) const;
       bool intersectsController(const MusECore::MidiController*, const QRect&, const int tickstep, const int windowHeight) const;
       int EX()                      { return ex; }
 
-// REMOVE Tim. citem. Added.
       MusECore::Event event() const         { return _event;  }
       // HACK This returns a clone of the event with the length set to the visual length.
       //      It should only be used for temporary things like copy/paste and the length
       //       value should be reset to zero after usage.
       //      Normally an event's length is ALWAYS zero for all controller events.
-//       //      For convenience for the tagging feature, it also accepts an offset vector
-//       //       which is added to each of the events so that only the first event position
-//       //       is needed to pass to any pasting routines later.
-//       MusECore::Event eventWithLength(const QPoint& offset = QPoint()) const;
       MusECore::Event eventWithLength() const;
       void setEvent(const MusECore::Event& e)     { _event = e;     }
       MusECore::Part* part() const  { return _part;  }
       void setPart(MusECore::Part* p)       { _part = p; }
       };
-
-// REMOVE Tim. citem. Removed.
-// typedef std::list<CEvent*>::iterator iCEvent;
-// typedef std::list<CEvent*>::const_iterator ciCEvent;
-
-//---------------------------------------------------------
-//   CEventList
-//    Controller Item List
-//---------------------------------------------------------
-
-// REMOVE Tim. citem. Changed.
-// class CEventList: public std::list<CEvent*> {
-//    public:
-//       void add(CEvent* item) { push_back(item); }
-//       
-//       void clearDelete();
-//       };
-      
-// class CEventList: public CItemList {
-//    public:
-//       void clearDelete();
-//       };
 
 //---------------------------------------------------------
 //   CtrlCanvas
@@ -192,7 +144,6 @@ class CtrlCanvas : public MusEGui::View {
 
       QPoint _curDragOffset;
       unsigned int _dragFirstXPos;
-      //bool _rasterizeDrag;
       //Qt::CursorShape _cursorShape;
 
       void applyYOffset(MusECore::Event& e, int yoffset) const;
@@ -202,14 +153,8 @@ class CtrlCanvas : public MusEGui::View {
       void viewMouseReleaseEvent(QMouseEvent*);
       virtual void wheelEvent(QWheelEvent*);
 
-// REMOVE Tim. citem. Changed.
-//       virtual void draw(QPainter& p, const QRect& rect);
       virtual void draw(QPainter&, const QRect& rect, const QRegion& = QRegion());
-// REMOVE Tim. citem. Changed.
-//       virtual void pdraw(QPainter&, const QRect&);
       virtual void pdraw(QPainter&, const QRect&, const QRegion& = QRegion());
-// REMOVE Tim. citem. Changed.
-//       virtual void drawOverlay(QPainter&)
       virtual void drawOverlay(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual QRect overlayRect() const;
 
@@ -221,7 +166,6 @@ class CtrlCanvas : public MusEGui::View {
       void deleteVal(int x1, int x2, int y);
 
       bool setCurTrackAndPart();
-//       void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
       void drawMoving(QPainter& p, const QRect& rect, const QRegion& region, const MusECore::MidiPart* part);
       void pdrawItems(QPainter& p, const QRect& rect, const MusECore::MidiPart* part, bool velo, bool fg);
       void pFillBackgrounds(QPainter& p, const QRect& rect, const MusECore::MidiPart* part);
@@ -266,9 +210,6 @@ class CtrlCanvas : public MusEGui::View {
       //  in the item list, these 'indexing' lists are used instead.
       CItemList selection;
       CItemList moving;
-      //CItemSet  adding;
-      //CItemSet  modifying;
-      //CItemSet  deleting;
       
       CEvent* curItem;
       CEvent* _movingItemUnderCursor;
@@ -282,7 +223,6 @@ class CtrlCanvas : public MusEGui::View {
       unsigned pos[3];
       int curDrumPitch;    //Used by the drum-editor to view velocity of only one key (one drum)
       bool _perNoteVeloMode;
-//       int button;
       
       // Accumulated operations during drawing etc.
       MusECore::Undo _operations;
@@ -293,7 +233,6 @@ class CtrlCanvas : public MusEGui::View {
       void enterEvent(QEvent*e);
       void leaveEvent(QEvent*e);
       QPoint raster(const QPoint&) const;
-//       void getCtrlInfo(const MusECore::MidiPart* part, const int ctrlNum, CtrlCanvasInfoStruct* infoOut) const;
 
       // selection
       bool isSingleSelection()  { return selection.size() == 1; }
@@ -304,13 +243,6 @@ class CtrlCanvas : public MusEGui::View {
 
       void setMidiController(int);
       void updateItems();
-// REMOVE Tim. citem. Added.
-//       // Checks the item indexing lists for events which should be created, deleted, or modified,
-//       //  and executes any necessary corresponding operations.
-//       void evaluateItems();
-// REMOVE Tim. citem. Removed.
-//       void updateSelections();
-      // REMOVE Tim. citem. Added.
       // Inform the app if local items have changed and their corresponding
       //  objects need to be updated synchronously in the audio thread.
       // Returns true if anything changed (or will change).
@@ -322,7 +254,6 @@ class CtrlCanvas : public MusEGui::View {
       // moving
       void startMoving(const QPoint&, int dir, bool rasterize = true);
       void moveItems(const QPoint&, int dir = 0, bool rasterize = true);
-      //void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true);
       void endMoveItems();
       MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true);
       bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true);
@@ -369,15 +300,7 @@ class CtrlCanvas : public MusEGui::View {
       int getCurDrumPitch() const { return curDrumPitch; }
       bool perNoteVeloMode() const { return _perNoteVeloMode; }
       void setPerNoteVeloMode(bool);
-      // REMOVE Tim. citem. Added.
       bool itemsAreSelected() const { return !selection.empty(); }
-      //const CEventList& selectedItems() const { return selection; }
-      // Adds all selected items to the given list. Does not clear the list first.
-      // Checks for duplicates, employing the 'tagged' features.
-      //void getAllSelectedItems(CItemSet&) const;
-      // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
-//       void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
-//         const MusECore::Pos& = MusECore::Pos(), const MusECore::Pos& = MusECore::Pos()) const;
       // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
       // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
       void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;

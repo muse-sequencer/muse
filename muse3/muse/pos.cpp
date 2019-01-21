@@ -338,9 +338,6 @@ void Pos::setTick(unsigned pos)
       {
       _tick = pos;
       sn    = -1;
-// REMOVE Tim. citem. Removed. Unneccesary. Calculate on demand!
-//       if (_type == FRAMES)
-//             _frame = MusEGlobal::tempomap.tick2frame(pos, &sn);
       }
 
 //---------------------------------------------------------
@@ -351,9 +348,6 @@ void Pos::setFrame(unsigned pos)
       {
       _frame = pos;
       sn     = -1;
-// REMOVE Tim. citem. Removed. Unneccesary. Calculate on demand!
-//       if (_type == TICKS)
-//             _tick = MusEGlobal::tempomap.frame2tick(pos, &sn);
       }
 
 //---------------------------------------------------------
@@ -366,12 +360,8 @@ void Pos::setPosValue(unsigned val)
   switch(type()) {
     case FRAMES:
           _frame = val;
-// REMOVE Tim. citem. Removed. Unneccesary. Calculate on demand!
-//           _tick = MusEGlobal::tempomap.frame2tick(_frame, &sn);
           break;
     case TICKS:
-// REMOVE Tim. citem. Removed. Unneccesary. Calculate on demand!
-//           _frame = MusEGlobal::tempomap.tick2frame(_tick, &sn);
           _tick = val;
           break;
   }
@@ -383,15 +373,9 @@ void Pos::setPosValue(unsigned val, TType time_type)
   switch(time_type) {
     case FRAMES:
           _frame = val;
-// REMOVE Tim. citem. Removed. Unneccesary. Calculate on demand!
-//           if (_type == TICKS)
-//                 _tick = MusEGlobal::tempomap.frame2tick(_frame, &sn);
           break;
     case TICKS:
           _tick = val;
-// REMOVE Tim. citem. Removed. Unneccesary. Calculate on demand!
-//           if (_type == FRAMES)
-//                 _frame = MusEGlobal::tempomap.tick2frame(_tick, &sn);
           break;
   }
 }
@@ -622,8 +606,6 @@ void PosLen::setLenTick(unsigned len)
       {
       _lenTick = len;
       sn       = -1;
-// REMOVE Tim. citem. Removed. Unneccesary. Calculate on demand!
-//       _lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + len, &sn);
       }
 
 //---------------------------------------------------------
@@ -634,8 +616,6 @@ void PosLen::setLenFrame(unsigned len)
       {
       _lenFrame = len;
       sn      = -1;
-// REMOVE Tim. citem. Removed. Unneccesary. Calculate on demand!
-//       _lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + len, &sn);
       }
 
 //---------------------------------------------------------
@@ -649,13 +629,9 @@ void PosLen::setLenValue(unsigned val)
   {
     case FRAMES:
         _lenFrame = val;
-// REMOVE Tim. citem. Removed. Unneccesary. Calculate on demand!
-//         _lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + _lenFrame, &sn);
       break;
     case TICKS:
         _lenTick = val;
-// REMOVE Tim. citem. Removed. Unneccesary. Calculate on demand!
-//         _lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + _lenTick, &sn);
       break;
   }
 }
@@ -667,15 +643,9 @@ void PosLen::setLenValue(unsigned val, TType time_type)
   {
     case FRAMES:
         _lenFrame = val;
-// REMOVE Tim. citem. Removed. Unneccesary. Calculate on demand!
-//         if (type() == TICKS)
-//           _lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + _lenFrame, &sn);
       break;
     case TICKS:
         _lenTick = val;
-// REMOVE Tim. citem. Removed. Unneccesary. Calculate on demand!
-//         if (type() == FRAMES)
-//           _lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + _lenTick, &sn);
       break;
   }
 }

@@ -25,7 +25,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 
-#include "sig.h"  // Tim.
+#include "sig.h"
 #include "globals.h"
 #include "midieditor.h"
 #include "sigscale.h"
@@ -130,8 +130,6 @@ void SigScale::leaveEvent(QEvent*)
 //   draw
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void SigScale::pdraw(QPainter& p, const QRect& r)
 void SigScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
       {
       int x = r.x();
@@ -141,9 +139,7 @@ void SigScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
       if (x < 0)
             x = 0;
       p.setFont(MusEGlobal::config.fonts[3]);
-      ///for (ciSigEvent si = MusEGlobal::sigmap.begin(); si != MusEGlobal::sigmap.end(); ++si) {
       for (MusECore::ciSigEvent si = MusEGlobal::sigmap.begin(); si != MusEGlobal::sigmap.end(); ++si) {
-            ///SigEvent* e = si->second;
             MusECore::SigEvent* e = si->second;
             int xp = mapx(e->tick);
             if (xp > x+w)

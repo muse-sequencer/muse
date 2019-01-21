@@ -34,53 +34,10 @@ namespace MusEGui {
 
 CItem::CItem()
       {
-// REMOVE Tim. citem. Removed.
-//       _part = NULL;
       _isSelected = false;
       _isMoving = false;
       }
 
-// REMOVE Tim. citem. Removed.
-// CItem::CItem(const QPoint&p, const QRect& r)
-//       {
-// // REMOVE Tim. citem. Removed.
-// //       _part = NULL;  
-//       _pos   = p;
-//       _bbox  = r;
-//       _isSelected = false;
-//       _isMoving = false;
-//       }
-
-// REMOVE Tim. citem. Removed.
-// CItem::CItem(const MusECore::Event& e, MusECore::Part* p)
-//       {
-//       _event = e;
-//       _part  = p;
-//       _isSelected = false;
-//       _isMoving = false;
-//       }
-
-// REMOVE Tim. citem. Changed.
-// //---------------------------------------------------------
-// //   isSelected
-// //---------------------------------------------------------
-// 
-// bool CItem::isSelected() const
-//       {
-//       return _event.empty() ? _part->selected() : _event.selected();
-//       }
-// 
-// //---------------------------------------------------------
-// //   setSelected
-// //---------------------------------------------------------
-// 
-// void CItem::setSelected(bool f)
-//       {
-//       _event.empty() ? _part->setSelected(f) : MusEGlobal::song->selectEvent(_event, _part, f);
-//       }
-
-
-// REMOVE Tim. citem. Added.
 //---------------------------------------------------------
 //   BItem
 //---------------------------------------------------------
@@ -91,7 +48,6 @@ BItem::BItem(const QPoint&p, const QRect& r) : CItem()
       _bbox  = r;
       }
 
-// REMOVE Tim. citem. Added.
 //---------------------------------------------------------
 //   PItem
 //---------------------------------------------------------
@@ -116,17 +72,6 @@ bool PItem::objectIsSelected() const
   return _part->selected();
 }
 
-// bool PItem::isObjectTagged() const
-// {
-//   return _part->tagged();
-// }
-// 
-// void PItem::setObjectTagged(bool v)
-// {
-//   _part->setTagged(v);
-// }
-
-// REMOVE Tim. citem. Added.
 //---------------------------------------------------------
 //   EItem
 //---------------------------------------------------------
@@ -140,16 +85,8 @@ EItem::EItem(const MusECore::Event& e, MusECore::Part* p) : PItem(p)
       _event = e;
       }
 
-// void EItem::setObjectTagged(bool v)
-// {
-//   _event.setTagged(v);
-//   if(_part)
-//     _part->setEventsTagged(true);
-// }
-
 bool EItem::isObjectInRange(const MusECore::Pos& p0, const MusECore::Pos& p1) const
 {
-//   return _event.pos() >= p0 && _event.pos() < p1;
   MusECore::Pos pos = _event.pos();
   if(_part)
     pos += (*_part);

@@ -170,8 +170,6 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
       if (x < 0)
             x = 0;
       if (waveMode)
-// REMOVE Tim. citem. Changed.
-//             x = MusEGlobal::tempomap.frame2tick(x);
             // Normally frame to tick methods round down. But here we need it to 'snap'
             //  the frame from either side of a tick to the tick. So round to nearest.
             x = MusEGlobal::tempomap.frame2tick(x, 0, MusECore::LargeIntRoundNearest);
@@ -252,42 +250,14 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
       int vy = vr.y();
       int vw = vr.width();
 
-//       const QRect mr = map(r);
-//       const int mx = mr.x();
-//       const int my = mr.y();
-//       const int mw = mr.width();
-//       const int mh = mr.height();
-      
-//       const QRect mvr = map(vr);
-//       const int mvx = mvr.x();
-//       const int mvy = mvr.y();
-//       const int mvw = mvr.width();
-//       const int mvh = mvr.height();
-
-//       const int vx2 = x + w;
-//       const int x2_right = mapxDev(r_orig.right());
-//       const int mx2 = mx + mw;
-//       const int vx2 = vx + vw;
-//       const int mvx2 = mvr.right();
-      
-//       const int my2 = mr.bottom();
-      
-
-      
       const int mx_2    = mx + mw;
       const int my12    = 12;
       const int my12_m1 = my12 - 1;
-      //const int my12_p1 = my12 + 1;
       const int my13    = 13;
       const int mh_m12  = height() - 12;
 
-      //const int vy12    = mapyDev(my12);
-      //const int vy12_m1 = mapyDev(my12_m1);
-      //const int vy12_p1 = mapyDev(my12_p1);
-
       const int vx_2    = vx + vw;
       const int vtop    = mapyDev(0);
-      //const int vheight = mapyDev(height());
       const int vw10    = rmapxDev(10);
       const int vw200   = rmapxDev(200);
       const int vh12    = rmapyDev(12);
@@ -297,112 +267,69 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
       QPen pen;
       pen.setCosmetic(true);
       
-      // REMOVE Tim. citem. Added.
+// For testing...
       //fprintf(stderr, "MTScale::pdraw x:%d w:%d\n", x, w);
       
-      // REMOVE Tim. citem. Removed.
-//       x -= 20;
-//       w += 40;    // wg. Text
-
       //---------------------------------------------------
       //    draw Marker
       //---------------------------------------------------
 
-//       int y = 12;
       pen.setColor(MusEGlobal::config.rulerFg);
       p.setPen(pen);
       p.setFont(MusEGlobal::config.fonts[5]);
-//       p.drawLine(x, y12 + 1, x2, y12 + 1);
-//       p.drawLine(vx, my12_p1, vx2, my12_p1);
       p.drawLine(mx, my13, mx_2, my13);
-//       // REMOVE Tim. citem. Removed. Unused.
-//       QRect tr(r);
-//       tr.setHeight(12);
       MusECore::MarkerList* marker = MusEGlobal::song->marker();
       for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
-            
             int xp;
-//             if(waveMode) 
-//               xp = mapx(m->second.frame());
-//             else  
-//               xp = mapx(m->second.tick());
             if(waveMode) 
               xp = m->second.frame();
             else  
               xp = m->second.tick();
             
-//             if (xp > x+w)
-//                   break;
             if (xp > vx_2)
                   break;
             
             int mxp = mapx(xp);
             
-//             int xe = r.x() + r.width();
             int xe = vx_2;
             MusECore::iMarker mm = m;
             ++mm;
             if (mm != marker->end()) {
                   
                   if(waveMode) 
-//                     xe = mapx(MusEGlobal::tempomap.tick2frame(mm->first));
                     xe = MusEGlobal::tempomap.tick2frame(mm->first);
                   else
-//                     xe = mapx(mm->first);
                     xe = mm->first;
                   }
             
-            //const int mxe = mapx(xe);
-            
-//             QRect tr(xp, 0, xe - xp, 13);
-//             const QRect tr(xp, 0, xe - xp, 13);
-            //const QRect tr(xp, y, xe - xp, rmapyDev(13));
-//             const QRect tr(xp, vtop, xe - xp, vh13);
             const QRect tr(xp, vy, xe - xp, vh13);
-//             const QRect mtr = map(tr);
             
-            //if (m->second.current()) 
-            //      p.fillRect(tr, white);
-                    
-//             QRect wr = mr.intersected(tr);
             QRect wr = vr.intersected(tr);
-//             QRect wr = r_orig.intersected(tr);
             
-            // REMOVE Tim. citem. Added.
+// For testing...
 //             fprintf(stderr, "MTScale::pdraw: marker fill: wr x:%d y:%d w:%d h:%d\n",
 //                     wr.x(), wr.y(), wr.width(), wr.height());
             
-            //if (r.intersects(tr)) 
             if(!wr.isEmpty()) 
             {        
               if (m->second.current()) 
               {
-                // REMOVE Tim. citem. Added.
-//                 fprintf(stderr, "...marker fill within range. Filling area at mx:%d my:%d mw:%d mh:%d\n",
-//                        map(tr).x(), map(tr).y(), map(tr).width(), map(tr).height());
+// For testing...
 //                 fprintf(stderr, "...marker fill within range. Filling area at mx:%d my:%d mw:%d mh:%d\n",
 //                        map(wr).x(), map(wr).y(), map(wr).width(), map(wr).height());
                 
-//                     p.fillRect(tr, MusEGlobal::config.rulerCurrent);
-//                     p.fillRect(map(tr), MusEGlobal::config.rulerCurrent);
                     p.fillRect(map(wr), MusEGlobal::config.rulerCurrent);
               }
               
               int x2_time;
-              //MusECore::iMarker mm = m;
-              //++mm;
               if (mm != marker->end())
               {
                     if(waveMode) 
-//                       x2_time = mapx(MusEGlobal::tempomap.tick2frame(mm->first));
                       x2_time = MusEGlobal::tempomap.tick2frame(mm->first);
                     else
-//                       x2_time = mapx(mm->first);
                       x2_time = mm->first;
               }      
               else
-//                     x2_time = xp+200;
-                    //x2_time = xp + rmapxDev(200);
                     x2_time = xp + vw200;
               
               //printf("MTScale::pdraw marker %s xp:%d y:%d h:%d r.x:%d r.w:%d\n", m->second.name().toLatin1(), xp, height(), y, r.x(), r.width());
@@ -418,69 +345,54 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
 
 
               QPixmap* pm = flagIconS;
-              //const int pmw_d2 = rmapxDev(pm->width() / 2);
-//               const int pmw_d2 = rmapxDev(pm->width()) / 2;
               const int pmw = rmapxDev(pm->width());
-//               const int pmx = xp - pmw_d2;
               const int pmx = xp;
-              //const int pmx2 = xp + pmw_d2 - 1;
-              //const int pmx2 = xp + pmw_d2 - rmapxDev(1);
               const int pmx2 = xp + pmw;
-                    
+
+// For testing...
 //               fprintf(stderr,
 //                   "MTScale::pdraw: Marker: x:%d y:%d w:%d h:%d mx:%d my:%d mw:%d mh:%d x2:%d x2_right:%d xp:%d pmw:%d pmx:%d pmx2:%d\n",
 //                   r.x(), r.y(), r.width(), r.height(), mx, my, mw, mh, x2, x2_right, xp, pm->width(), pmx, pmx2);
-                  
-//               if(xp >= -32)
+
               if ((pmx >= vx && pmx < vx_2) || (pmx2 > vx && pmx2 <= vx_2) ||
                   (vx >= pmx && vx < pmx2) || (vx_2 > pmx && vx_2 <= pmx2)) {
-//                     // REMOVE Tim. citem. Added.
+// For testing...
 //                     fprintf(stderr, "...marker within range. xorg:%d xmag:%d xpos:%d Drawing marker at:%d\n", xorg, xmag, xpos, mapx(pmx));
-//                 p.drawPixmap(xp, 0, *flagIconS);
-//                 p.drawPixmap(mxp, mtop, *flagIconS);
+
                 p.drawPixmap(mapx(pmx), 0, *pm);
               }
 
               const QString s = m->second.name();
               const int brw = rmapxDev(p.fontMetrics().boundingRect(s).width());
-              //const int brh = rmapyDev(br.width());
               int w_txt = x2_time - xp;
-              //const int h_txt = rmapyDev(12);
               if(brw < w_txt)
                 w_txt = brw;
-              //if(brh < h_txt)
-              //  h_txt = brh;
               const QRect br_txt = QRect(xp + vw10, vtop, w_txt, vh12);
 
+// For testing...
 //               fprintf(stderr,
 //                   "MTScale::pdraw: Marker text: x:%d y:%d w:%d h:%d x2:%d x2_right:%d xp:%d x2_time:%d br x:%d y:%d w:%d h:%d\n",
 //                   r.x(), r.y(), r.width(), r.height(), x2, x2_right, xp, x2_time, br_txt.x(), br_txt.y(), br_txt.width(), br_txt.height());
-                  
-//               if(xp >= -1023)
+
               if(br_txt.intersects(vr))
               {
-//                 QRect r = QRect(xp+10, 0, x2-xp, 12);
-//                 QRect r = QRect(xp + 10, 0, x2_time - xp, 12);
-                // REMOVE Tim. citem. Added.
+// For testing...
 //                 fprintf(stderr, "...marker text within range. xorg:%d xmag:%d xpos:%d Drawing marker text at x:%d y:%d w:%d h:%d\n",
 //                         xorg, xmag, xpos, map(br_txt).x(), map(br_txt).y(), map(br_txt).width(), map(br_txt).height());
+
                 pen.setColor(MusEGlobal::config.rulerFg);
                 p.setPen(pen);
-//                 p.drawText(r, Qt::AlignLeft|Qt::AlignVCenter, m->second.name());
-//                 p.drawText(map(r), Qt::AlignLeft|Qt::AlignVCenter, m->second.name());
                 p.drawText(map(br_txt), Qt::AlignLeft|Qt::AlignVCenter, s);
               }  
               
-//               if(xp >= 0)
               if(xp >= vx && xp < vx_2)
               {
-                // REMOVE Tim. citem. Added.
+// For testing...
 //                 fprintf(stderr, "...marker line within range. xorg:%d xmag:%d xpos:%d Drawing marker line at mxp:%d my12:%d mheight:%d\n",
 //                         xorg, xmag, xpos, mxp, my12, mheight);
+
                 pen.setColor(Qt::green);
                 p.setPen(pen);
-//                 p.drawLine(xp, y, xp, height());
-                //p.drawLine(mxp, y12, mxp, height());
                 p.drawLine(mxp, my12, mxp, mh);
               }  
             }  
@@ -490,113 +402,64 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
       //    draw location marker
       //---------------------------------------------------
 
-//       const int h_m12 = height() - 12;
-//       const int mh_m12 = mapyDev(h_m12);
-
       if (barLocator) {
-//             pen.setColor(Qt::red);
-//             p.setPen(pen);
-//             int xp = pos[0];
-//             int mxp = mapx(xp);
-// //             if (xp >= x && xp < x+w)
-//             if (xp >= x && xp < x2)
-// //                   p.drawLine(xp, y, xp, h);
-// //                   p.drawLine(xp, y12, xp, h_m12);
-//                   //p.drawLine(mxp, my12, mxp, mh_m12);
-//                   p.drawLine(mxp, my, mxp, mh_m12);
             pen.setColor(Qt::blue);
             p.setPen(pen);
-//             xp = mapx(pos[1]);
             int xp = pos[1];
             int mxp = mapx(xp);
-//             if (xp >= x && xp < x+w)
             if (xp >= vx && xp < vx_2)
-//                   p.drawLine(xp, y, xp, h);
-                  //p.drawLine(mxp, my12, mxp, mh_m12);
                   p.drawLine(mxp, my, mxp, mh_m12);
-//             xp = mapx(pos[2]);
             xp = pos[2];
             mxp = mapx(xp);
-//             if (xp >= x && xp < x+w)
             if (xp >= vx && xp < vx_2)
-//                   p.drawLine(xp, y, xp, h);
-                  //p.drawLine(mxp, my12, mxp, mh_m12);
                   p.drawLine(mxp, my, mxp, mh_m12);
             pen.setColor(Qt::red);
             p.setPen(pen);
             // Draw the red main position cursor last, on top of the others.
             xp = pos[0];
             mxp = mapx(xp);
-//             if (xp >= x && xp < x+w)
             if (xp >= vx && xp < vx_2)
-//                   p.drawLine(xp, y, xp, h);
-//                   p.drawLine(xp, y12, xp, h_m12);
-                  //p.drawLine(mxp, my12, mxp, mh_m12);
                   p.drawLine(mxp, my, mxp, mh_m12);
             }
       else {
             for (int i = 0; i < 3; ++i) {
-//                   int xp = mapx(xp);
                   const int xp = pos[i];
-                  //const int mxp = mapx(xp);
                   
                   QPixmap* pm = markIcon[i];
-                  //const int pmw_d2 = rmapxDev(pm->width() / 2);
                   const int pmw_d2 = rmapxDev(pm->width()) / 2;
                   const int pmx = xp - pmw_d2;
-                  //const int pmx2 = xp + pmw_d2 - 1;
-                  //const int pmx2 = xp + pmw_d2 - rmapxDev(1);
                   const int pmx2 = xp + pmw_d2;
 
+// For testing...
                   //fprintf(stderr,
                   //  "MTScale::pdraw: Pos mark: x:%d y:%d w:%d h:%d mx:%d my:%d mw:%d mh:%d x2:%d x2_right:%d h_m12:%d i:%d xp:%d pmw:%d pmw_d2:%d pmx:%d pmx2:%d\n",
                   //  r.x(), r.y(), r.width(), r.height(), mx, my, mw, mh, x2, x2_right, h_m12, i, xp, pm->width(), pmw_d2, pmx, pmx2);
 
-//                   if (xp >= x && xp < x+w) {
-                  //if (xp >= x && xp < x2) {
-                  //if ((pmx >= x && pmx <= x2_right) || (pmx2 >= x && pmx2 <= x2_right) ||
-                  //    (x >= pmx && x <= pmx2) || (x2_right >= pmx && x2_right <= pmx2)) {
                   if ((pmx >= vx && pmx < vx_2) || (pmx2 > vx && pmx2 <= vx_2) ||
                       (vx >= pmx && vx < pmx2) || (vx_2 > pmx && vx_2 <= pmx2)) {
-                        // REMOVE Tim. citem. Added.
+// For testing...
 //                         fprintf(stderr, "...position mark within range. xorg:%d xmag:%d xpos:%d Drawing mark at:%d\n", xorg, xmag, xpos, mapx(pmx));
                         
-                        //QPixmap* pm = markIcon[i];
-//                         p.drawPixmap(xp - pm->width()/2, y-1, *pm);
                         p.drawPixmap(mapx(pmx), my12_m1, *pm);
                         }
                   }
             }
             
-//       pen.setColor(MusEGlobal::config.rulerFg);
-//       p.setPen(pen);
       if (pos[3] != INT_MAX) {
-            // REMOVE Tim. citem. Changed.
-//             int xp = mapx(pos[3]);
             int xp = pos[3];
-            //int ruler_x = pos[3];
             int mxp = mapx(xp);
-            //int devx = mapxDev(x);
-            //int devx2 = mapxDev(x + w);
-            // REMOVE Tim. citem. Added.
-//             fprintf(stderr,
-//                 "MTScale::pdraw: x:%d y:%d w:%d h:%d  mx:%d my:%d mw:%d mh:%d h_m12:%d devx:%d devx2:%d pos[3]:%d ruler_x:%d xp:%d\n",
-//                 r.x(), r.y(), r.width(), r.height(), mx, my, mw, mh, h_m12, devx, devx2, ruler_x, pos[3], xp);
+// For testing...
 //             fprintf(stderr,
 //                 "MTScale::pdraw: Ruler: x:%d y:%d w:%d h:%d  mx:%d my:%d mw:%d mh:%d h_m12:%d pos[3]:%d xp:%d mxp:%d\n",
 //                 r.x(), r.y(), r.width(), r.height(), mx, my, mw, mh, h_m12, pos[3], xp, mxp);
-//             if (xp >= x && xp < x+w)
-            //if (ruler_x >= devx && ruler_x < devx2)
-            //if (xp >= x && xp < x2)
-            //if (mxp >= x && mxp < x2)
+
             if (xp >= vx && xp < vx_2)
             {
                   pen.setColor(MusEGlobal::config.rulerFg);
                   p.setPen(pen);
-                  // REMOVE Tim. citem. Added.
+// For testing...
 //                   fprintf(stderr, "...ruler line within range. Drawing line.\n");
-//                   p.drawLine(xp, 0, xp, height());
-//                   p.drawLine(mxp, mtop, mxp, mheight);
+
                   p.drawLine(mxp, my, mxp, mh);
             }
             }
@@ -606,12 +469,6 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
         p.setWorldMatrixEnabled(wmtxen);
         //p.restore();      
       
-        //drawTickRaster_new(p, rect.x(), rect.y(), rect.width(), rect.height(), noDivisors,
-        //drawTickRaster_new(p, devToVirt(QRect(r.x(), y + 1, r.width(), h)), rg, 0,
-//         drawTickRaster_new(p, devToVirt(QRect(x, y12 + 1, w, h)), rg, 0,
-//         QRegion vrg;
-//         devToVirt(mrg, vrg);
-//         drawTickRaster(p, devToVirt(QRect(mr.x(), my13, mr.width(), mh_m12)), vrg, 0,
         drawTickRaster(p, QRect(mr.x(), my13, mr.width(), mh_m12), mrg, 0,
                          waveMode, false, true,
                          MusEGlobal::config.rulerFg, 

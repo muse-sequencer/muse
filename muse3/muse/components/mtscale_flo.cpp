@@ -91,8 +91,6 @@ void MTScaleFlo::setPos(int idx, unsigned val, bool)
 
       pos[idx] = val;
       
-//      if (isVisible())
-//            redraw();
       if (isVisible()) {
 
             int tval   = parent->tick_to_x(val) + xoffset - xpos;
@@ -191,8 +189,6 @@ void MTScaleFlo::mouseMoveEvent(QMouseEvent* event)
 //   draw
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void MTScaleFlo::draw(QPainter& p, const QRect& r)
 void MTScaleFlo::draw(QPainter& p, const QRect& r, const QRegion&)
       {
       int x = r.x();
@@ -311,7 +307,6 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r, const QRegion&)
                   QString s;
                   s.setNum(bar + 1);
                   p.drawLine(x, y+1, x, y+1+h);
-//                  QRect r = QRect(x+2, y, 0, h);
                   QRect r = QRect(x+2, y, 1000, h);
                   p.drawText(r, Qt::AlignLeft|Qt::AlignVCenter|Qt::TextDontClip, s);
                   }

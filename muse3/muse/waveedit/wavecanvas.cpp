@@ -80,8 +80,6 @@ namespace MusEGui {
 //   WEvent
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-//WEvent::WEvent(const MusECore::Event& e, MusECore::Part* p, int height) : MusEGui::CItem(e, p)
 WEvent::WEvent(const MusECore::Event& e, MusECore::Part* p, int height) : EItem(e, p)
       {
       unsigned frame = e.frame() + p->frame();
@@ -146,7 +144,6 @@ WaveCanvas::~WaveCanvas()
   //delete steprec;
 }
 
-// REMOVE Tim. citem. Added.
 //---------------------------------------------------------
 //   updateItems
 //---------------------------------------------------------
@@ -201,38 +198,6 @@ void WaveCanvas::updateItems()
         }
 }
 
-// REMOVE Tim. citem. Added.
-// //---------------------------------------------------------
-// //   updateItemSelections
-// //---------------------------------------------------------
-// 
-// void WaveCanvas::updateItemSelections()
-//       {
-//       bool item_selected;
-//       bool part_selected;
-//       for (iCItem i = items.begin(); i != items.end(); ++i) {
-// //             NPart* npart = static_cast<NPart*>(i->second);
-//             CItem* item = i->second;
-// //             item_selected = i->second->isSelected();
-// //             part_selected = npart->part()->selected();
-//             item_selected = item->isSelected();
-//             part_selected = item->objectIsSelected();
-// //             if (item_selected != part_selected)
-//             if (item_selected != part_selected)
-//             {
-//               // REMOVE Tim. citem. Added. Shouldn't be required.
-//               // If the track is not visible, deselect all parts just to keep things tidy.
-//               //if(!npart->part()->track()->isVisible())
-//               //{
-//               //  i->second->setSelected(false);
-//               //  continue;
-//               //}
-//               i->second->setSelected(part_selected);
-//             }
-//       }
-//       redraw();
-// }
-
 //---------------------------------------------------------
 //   songChanged(type)
 //---------------------------------------------------------
@@ -242,53 +207,6 @@ void WaveCanvas::songChanged(MusECore::SongChangedStruct_t flags)
       if (flags._flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
             // TODO FIXME: don't we actually only want SC_PART_*, and maybe SC_TRACK_DELETED?
             //             (same in waveview.cpp)
-// REMOVE Tim. citem. Changed.
-//             bool curItemNeedsRestore=false;
-//             MusECore::Event storedEvent;
-//             int partSn = 0;
-//             if (curItem)
-//             {
-//               curItemNeedsRestore=true;
-//               storedEvent=curItem->event();
-//               partSn=curItem->part()->sn();
-//             }
-//             curItem=NULL;
-//             
-//             items.clearDelete();
-//             startSample  = INT_MAX;
-//             endSample    = 0;
-//             curPart = 0;
-//             for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
-//                   MusECore::WavePart* part = (MusECore::WavePart*)(p->second);
-//                   if (part->sn() == curPartId)
-//                         curPart = part;
-//                   unsigned ssample = part->frame();
-//                   unsigned len = part->lenFrame();
-//                   unsigned esample = ssample + len;
-//                   if (ssample < startSample)
-//                         startSample = ssample;
-//                   if (esample > endSample)
-//                         endSample = esample;
-// 
-//                   for (MusECore::ciEvent i = part->events().begin(); i != part->events().end(); ++i) {
-//                         const MusECore::Event& e = i->second;
-//                         // Do not add events which are past the end of the part.
-//                         if(e.frame() > len)      
-//                           break;
-//                         
-//                         if (e.type() == MusECore::Wave) {
-//                               CItem* temp = addItem(part, e);
-//                               
-//                               if (temp && curItemNeedsRestore && e==storedEvent && part->sn()==partSn)
-//                               {
-//                                   if (curItem!=NULL)
-//                                     printf("THIS SHOULD NEVER HAPPEN: curItemNeedsRestore=true, event fits, but there was already a fitting event!?\n");
-//                                   
-//                                   curItem=temp;
-//                                   }
-//                               }
-//                         }
-//                   }
             updateItems();
             }
 
@@ -328,7 +246,6 @@ void WaveCanvas::songChanged(MusECore::SongChangedStruct_t flags)
                   }
       }
       
-      // REMOVE Tim. citem. Added.
       if(flags._flags & (SC_SELECTION))
       {
         // Prevent race condition: Ignore if the change was ultimately sent by the canvas itself.
@@ -478,8 +395,6 @@ void WaveCanvas::keyPress(QKeyEvent* event)
                       deselectAll();
                 CItem* sel = i->second;
                 sel->setSelected(true);
-// REMOVE Tim. citem. Changed.
-//                 itemSelectionsChanged();
                 redraw();
                 if (sel->x() + sel->width() > mapxDev(width())) 
                 {  
@@ -510,8 +425,6 @@ void WaveCanvas::keyPress(QKeyEvent* event)
                       deselectAll();
                 CItem* sel = i->second;
                 sel->setSelected(true);
-// REMOVE Tim. citem. Changed.
-//                 itemSelectionsChanged();
                 redraw();
                 if (sel->x() <= mapxDev(0)) 
                   emit horizontalScroll(rmapx(sel->x() - xorg) - 10);  // Leave a bit of room.
@@ -545,7 +458,6 @@ void WaveCanvas::keyPress(QKeyEvent* event)
             event->ignore();
       }
 
-// REMOVE Tim. citem. Added.
 //---------------------------------------------------------
 //   keyRelease
 //---------------------------------------------------------
@@ -558,11 +470,6 @@ void WaveCanvas::keyRelease(QKeyEvent* event)
       // It does press and release repeatedly. Wait till the last release comes.
       if(!event->isAutoRepeat())
       {
-        // REMOVE Tim. citem. Added.
-        fprintf(stderr, "WaveCanvas::keyRelease not isAutoRepeat\n");
-      
-        //event->accept();
-      
         // Select part to the right
         if(key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key ||
         // Select part to the left
@@ -646,7 +553,6 @@ void WaveCanvas::setPos(int idx, unsigned val, bool adjustScrollbar)
             x = opos;
             }
       pos[idx] = val;
-      //redraw(QRect(x, 0, w, height()));
       redraw(QRect(x-1, 0, w+2, height()));    // From Canvas::draw (is otherwise identical). Fix for corruption. (TEST: New WaveCanvas: Still true?)
       }
 
@@ -670,7 +576,6 @@ void WaveCanvas::drawMarkers(QPainter& p, const QRect& mr, const QRegion&)
       const int my = mr.y();
       const int mw = mr.width();
       const int mh = mr.height();
-//       const int mx_2 = mx + mw;
       const int my_2 = my + mh;
       
       const ViewXCoordinate vx(mx, true);
@@ -684,195 +589,20 @@ void WaveCanvas::drawMarkers(QPainter& p, const QRect& mr, const QRegion&)
       pen.setColor(Qt::green);
       p.setPen(pen);
       for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
-//             int xp = m->second.tick();
-//             const ViewXCoordinate xp(m->second.tick(), false);
             const ViewXCoordinate xp(MusEGlobal::tempomap.tick2frame(m->second.tick()), false);
-//             if (xp >= mx && xp < mx+mw) {
             if (isXInRange(xp, vx, vx_2)) {
                   const int mxp = asMapped(xp)._value;
-//                   p.drawLine(mapx(xp), my, mapx(xp), my_2);
                   p.drawLine(mxp, my, mxp, my_2);
                   }
             }
 }
 
-// REMOVE Tim. citem. Removed.
-// 
-// // TODO: Overridden because markers need tick2frame. 
-// //       After BBT/frame mode is added to Canvas, remove this override and let Canvas::draw do it.
-// //       Also add the drawParts calls to Canvas::draw, and add a dummy Canvas::drawParts { }.
-// //---------------------------------------------------------
-// //   draw
-// //---------------------------------------------------------
-// 
-// // REMOVE Tim. citem. Changed.
-// void WaveCanvas::draw(QPainter& p, const QRect& r, const QRegion&)
-//       {
-// //       int x = r.x() < 0 ? 0 : r.x();
-// //       int y = r.y() < 0 ? 0 : r.y();
-//       int x = r.x();
-//       int y = r.y();
-//       int w = r.width();
-//       int h = r.height();
-//       int x2 = x + w;
-// 
-//       std::vector<CItem*> list1;
-//       std::vector<CItem*> list2;
-//       //std::vector<CItem*> list3;
-//       std::vector<CItem*> list4;
-// 
-//       QPen pen;
-//       pen.setCosmetic(true);
-//       
-//       drawCanvas(p, r);
-// 
-//       //---------------------------------------------------
-//       // draw Canvas Items
-//       //---------------------------------------------------
-// 
-//       iCItem to(items.lower_bound(x2));
-//       
-//       for(iCItem i = items.begin(); i != to; ++i)
-//       { 
-//         CItem* ci = i->second;
-//         // NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
-//         // Not required for now.
-//         //ci->part()->hasHiddenEvents();
-//         
-//         // Draw items from other parts behind all others. Only for items with events (not arranger parts).
-//         if(!ci->event().empty() && ci->part() != curPart)
-//           list1.push_back(ci);    
-//         else if(!ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
-//         {
-//           // Draw selected parts in front of all others.
-//           if(ci->isSelected()) 
-//             list4.push_back(ci);
-//           // Draw clone parts, and parts with hidden events, in front of others all except selected.
-//           //else if(ci->event().empty() && (ci->part()->hasClones() || ci->part()->cachedHasHiddenEvents()))
-//           // Draw clone parts in front of others all except selected.
-//           //else if(ci->event().empty() && ci->part()->hasClones())
-//           //  list3.push_back(ci);
-//           else  
-//             // Draw unselected parts.
-//             list2.push_back(ci);
-//         }  
-//       }
-// 
-//       // Draw non-current part backgrounds behind all others:
-//       drawParts(p, r, false);
-//       
-//       int i;
-//       int sz = list1.size();
-//       for(i = 0; i != sz; ++i) 
-//         drawItem(p, list1[i], r);
-//       
-//       // Draw current part background in front of all others:
-//       drawParts(p, r, true);
-//       
-//       sz = list2.size();
-//       for(i = 0; i != sz; ++i) 
-//         drawItem(p, list2[i], r);
-// 
-//       //sz = list3.size();
-//       //for(i = 0; i != sz; ++i) 
-//       //  drawItem(p, list3[i], rect);
-//       
-//       sz = list4.size();
-//       for(i = 0; i != sz; ++i) 
-//         drawItem(p, list4[i], r);
-//       
-//       to = moving.lower_bound(x2);
-//       for (iCItem i = moving.begin(); i != to; ++i) 
-//       {
-//             drawItem(p, i->second, r);
-//       }
-// 
-//       drawTopItem(p,r);
-// 
-// 
-//       //---------------------------------------------------
-//       //    draw marker
-//       //---------------------------------------------------
-// 
-//       bool wmtxen = p.worldMatrixEnabled();
-//       p.setWorldMatrixEnabled(false);
-//       
-//       int my = mapy(y);
-//       int my2 = mapy(y + h);
-//       
-//       pen.setColor(Qt::green);
-//       p.setPen(pen);
-//       MusECore::MarkerList* marker = MusEGlobal::song->marker();
-//       for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
-//             int xp = MusEGlobal::tempomap.tick2frame(m->second.tick());
-//             if (xp >= x && xp < x2) {
-//                   p.drawLine(mapx(xp), my, mapx(xp), my2);
-//                   }
-//             }
-// 
-//       //---------------------------------------------------
-//       //    draw location marker
-//       //---------------------------------------------------
-// 
-//       // Tip: These positions are already in units of frames.
-//       pen.setColor(Qt::blue);
-//       p.setPen(pen);
-//       int mx;
-//       if ((int)pos[1] >= x && (int)pos[1] < x2) {
-//             mx = mapx(pos[1]);
-//             p.drawLine(mx, my, mx, my2);
-//             }
-//       if ((int)pos[2] >= x && (int)pos[2] < x2) {
-//             mx = mapx(pos[2]);
-//             p.drawLine(mx, my, mx, my2);
-//             }
-//       // Draw the red main position cursor last, on top of the others.
-//       pen.setColor(Qt::red);
-//       p.setPen(pen);
-//       if ((int)pos[0] >= x && (int)pos[0] < x2) {
-//             mx = mapx(pos[0]);
-//             p.drawLine(mx, my, mx, my2);
-//             }
-//             
-//       if(drag == DRAG_ZOOM)
-//         p.drawPixmap(mapFromGlobal(global_start), *zoomAtIcon);
-//         
-//       //p.restore();
-//       //p.setWorldMatrixEnabled(true);
-//       p.setWorldMatrixEnabled(wmtxen);
-//       
-//       //---------------------------------------------------
-//       //    draw lasso
-//       //---------------------------------------------------
-// 
-//       if (drag == DRAG_LASSO) {
-//             pen.setColor(Qt::blue);
-//             p.setPen(pen);
-//             p.setBrush(Qt::NoBrush);
-//             p.drawRect(lasso);
-//             }
-//       
-//       //---------------------------------------------------
-//       //    draw moving items
-//       //---------------------------------------------------
-//       
-//       for(iCItem i = moving.begin(); i != moving.end(); ++i) 
-//         drawMoving(p, i->second, r);
-// 
-//       }
-
 //---------------------------------------------------------
 //   drawWaveParts
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void WaveCanvas::drawParts(QPainter& p, const QRect& mr, bool do_cur_part)
 void WaveCanvas::drawParts(QPainter& p, bool do_cur_part, const QRect& mr, const QRegion&)
 {
-      //QRect rr = p.transform().mapRect(r);  // Gives inconsistent positions. Source shows wrong operation for our needs.
-// // REMOVE Tim. citem. Removed.
-//       QRect mr = map(r);                      // Use our own map instead.        
-
       bool wmtxen = p.worldMatrixEnabled();
       p.setWorldMatrixEnabled(false);
 
@@ -915,8 +645,6 @@ void WaveCanvas::drawParts(QPainter& p, bool do_cur_part, const QRect& mr, const
               QRect mpbgr = mr & mwpr;
               if(!mpbgr.isNull())
               {
-                //int cidx = wp->colorIndex();
-                //QColor c(MusEGlobal::config.partColors[cidx]);
                 QColor c(MusEGlobal::config.waveNonselectedPart);
                 c.setAlpha(MusEGlobal::config.globalAlphaBlend);
                 QBrush part_bg_brush(MusECore::gGradientFromQColor(c, mwpr.topLeft(), mwpr.bottomLeft()));
@@ -927,102 +655,6 @@ void WaveCanvas::drawParts(QPainter& p, bool do_cur_part, const QRect& mr, const
       
       p.setWorldMatrixEnabled(wmtxen);
 }
-
-// REMOVE Tim. citem. Removed.
-// // TODO: Overridden because we're in units of frames. 
-// //       After BBT/frame mode is added to Canvas, remove this override and let View or Canvas do it.
-// //---------------------------------------------------------
-// //   drawTickRaster
-// //---------------------------------------------------------
-// 
-// void WaveCanvas::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
-//       {
-//       // Changed to draw in device coordinate space instead of virtual, transformed space. Tim. 
-//       
-//       //int mx = mapx(x);
-//       int my = mapy(y);
-//       //int mw = mapx(x + w) - mx;
-//       //int mw = mapx(x + w) - mx - 1;
-//       //int mh = mapy(y + h) - my;
-//       //int mh = mapy(y + h) - my - 1;
-//       
-//       //p.save();
-//       bool wmtxen = p.worldMatrixEnabled();
-//       p.setWorldMatrixEnabled(false);
-//       
-//       QPen pen;
-//       pen.setCosmetic(true);
-//       
-//       int xx,bar1, bar2, beat;
-//       int rast_mapx;
-//       unsigned tick;
-// //      MusEGlobal::sigmap.tickValues(x, &bar1, &beat, &tick);
-// //      MusEGlobal::sigmap.tickValues(x+w, &bar2, &beat, &tick);
-//       MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(x), &bar1, &beat, &tick);
-//       MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(x+w), &bar2, &beat, &tick);
-//       ++bar2;
-//       ///int y2 = y + h;
-//       //int y2 = my + mh;
-//       int y2 = mapy(y + h) - 1;
-//       //printf("View::drawTickRaster x:%d y:%d w:%d h:%d mx:%d my:%d mw:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, mx, my, mw, mh, y2, bar1, bar2);  
-//       //printf("View::drawTickRaster x:%d y:%d w:%d h:%d my:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, my, mh, y2, bar1, bar2);  
-//       for (int bar = bar1; bar < bar2; ++bar) {
-//         
-// //            unsigned xb = MusEGlobal::sigmap.bar2tick(bar, 0, 0);
-//             unsigned xb = MusEGlobal::sigmap.bar2tick(bar, 0, 0);
-//             int xt = mapx(MusEGlobal::tempomap.tick2frame(xb));
-// //             pen.setColor(Qt::black);
-//             pen.setColor(MusEGlobal::config.midiCanvasBarColor);
-//             p.setPen(pen);
-//             p.drawLine(xt, my, xt, y2);
-//             
-//             int z, n;
-//             MusEGlobal::sigmap.timesig(xb, z, n);
-//             int qq = raster;
-//             
-// // REMOVE Tim. citem. Changed.
-// //             if (rmapx(raster) < 8)        // grid too dense
-// //                   qq *= 2;
-//             
-//             rast_mapx = rmapx(raster);
-//             // grid too dense?
-//             if (rast_mapx <= 1)        
-//                   qq *= 16;
-//             else if (rast_mapx <= 2)
-//                   qq *= 8;
-//             else if (rast_mapx <= 4)
-//                   qq *= 4;
-//             else if (rast_mapx <= 8)
-//                   qq *= 2;
-//             
-// //             pen.setColor(Qt::lightGray);
-//             pen.setColor(MusEGlobal::config.midiCanvasBeatColor);
-//             p.setPen(pen);
-//             if (raster>=4) {
-//                         xx = xb + qq;
-//                         int xxx = MusEGlobal::tempomap.tick2frame(MusEGlobal::sigmap.bar2tick(bar, z, 0));
-//                         //while (MusEGlobal::tempomap.tick2frame(xx) <= xxx) {
-//                         while (1) {
-//                                int xxf = MusEGlobal::tempomap.tick2frame(xx);
-//                                if(xxf > xxx)
-//                                  break;
-//                                //int x = mapx(MusEGlobal::tempomap.tick2frame(xx));
-//                                int x = mapx(xxf);
-//                                p.drawLine(x, my, x, y2);
-//                                xx += qq;
-//                                }
-//                         }
-//             pen.setColor(Qt::gray);
-//             p.setPen(pen);
-//             for (int beat = 1; beat < z; beat++) {
-//                         xx = mapx(MusEGlobal::tempomap.tick2frame(MusEGlobal::sigmap.bar2tick(bar, beat, 0)));
-//                         //printf(" bar:%d z:%d beat:%d xx:%d\n", bar, z, beat, xx);  
-//                         p.drawLine(xx, my, xx, y2);
-//                         }
-// 
-//             }
-//       p.setWorldMatrixEnabled(wmtxen);
-//       }
 
 // TODO: Overridden because we're in units of frames. 
 //       After BBT/frame mode is added to Canvas, remove this override and let Canvas do it.
@@ -1035,9 +667,6 @@ QPoint WaveCanvas::raster(const QPoint& p) const
       int x = p.x();
       if (x < 0)
             x = 0;
-      //x = editor->rasterVal(x);
-// REMOVE Tim. citem. Changed.
-//       x = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x)));
       // Normally frame to tick methods round down. But here we need it to 'snap'
       //  the frame from either side of a tick to the tick. So round to nearest.
       x = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x, 0, MusECore::LargeIntRoundNearest)));
@@ -1087,7 +716,6 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
             }
       button = event->button();
       QPoint pt = event->pos();
-      //CItem* item = items.find(pt);
       unsigned x = event->x();
 
       switch (_tool) {
@@ -1144,8 +772,6 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
       if (x < 0)
             x = 0;
       emit timeChanged(x);
-      //emit timeChanged(editor->rasterVal(x));
-      //emit timeChanged(MusEGlobal::sigmap.raster(x, *_raster));
 
       switch (button) {
             case Qt::LeftButton:
@@ -1214,483 +840,11 @@ int WaveCanvas::y2pitch(int) const
       return 0;
       }
 
-// //---------------------------------------------------------
-// //   drawItem
-// //    draws a wave
-// //---------------------------------------------------------
-// 
-// // REMOVE Tim. citem. Changed.
-// // void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
-// void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect, const QRegion&)
-// {
-//       MusECore::WavePart* wp = (MusECore::WavePart*)(item->part());
-//       if(!wp || !wp->track())
-//         return;
-// 
-//       //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
-//       QRect rr = map(rect);                      // Use our own map instead.        
-// 
-//       QRect mwpr  = map(QRect(wp->frame(), 0, wp->lenFrame(), height()));
-//       
-//       QRect r = item->bbox();
-//       QRect mer = map(r);                              
-//       QRect mr = rr & mer & mwpr;
-//       if(mr.isNull())
-//         return;
-//       
-//       MusECore::Event event  = item->event();
-//       if(event.empty())
-//         return;
-//       
-//       QPen pen;
-//       pen.setCosmetic(true);
-//       
-//       int x1 = mr.x();
-//       int x2 = x1 + mr.width();
-//       if (x1 < 0)
-//             x1 = 0;
-//       if (x2 > width())
-//             x2 = width();
-//       int hh = height();
-//       int y1 = mr.y();
-//       int y2 = y1 + mr.height();
-// 
-//       int xScale = xmag;
-//       if (xScale < 0)
-//             xScale = -xScale;
-// 
-//       //int t_channels = wp->track()->channels();
-//       int px = wp->frame();
-// 
-//       bool wmtxen = p.worldMatrixEnabled();
-//       p.setWorldMatrixEnabled(false);
-// 
-//       int sx, ex;
-//       
-//       sx = event.frame() + px + xScale/2;
-//       ex = sx + event.lenFrame();
-//       sx = sx / xScale - xpos;
-//       ex = ex / xScale - xpos;
-// 
-//       if (sx < x1)
-//             sx = x1;
-//       if (ex > x2)
-//             ex = x2;
-// 
-//       int pos = (xpos + sx) * xScale + event.spos() - event.frame() - px;
-//       
-//       QBrush brush;
-//       if (item->isMoving()) 
-//       {
-//             QColor c(Qt::gray);
-//             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-//             QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-//             gradient.setColorAt(0, c);
-//             gradient.setColorAt(1, c.darker());
-//             brush = QBrush(gradient);
-//             p.fillRect(sx, y1, ex - sx + 1, y2, brush);
-//       }
-//       else 
-//       if (item->isSelected()) 
-//       {
-//           QColor c(Qt::black);
-//           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-//           QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-//           // Use a colour only about 20% lighter than black, rather than the 50% we use in MusECore::gGradientFromQColor
-//           //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
-//           gradient.setColorAt(0, QColor(51, 51, 51, MusEGlobal::config.globalAlphaBlend));
-//           gradient.setColorAt(1, c);
-//           brush = QBrush(gradient);
-//           p.fillRect(sx, y1, ex - sx + 1, y2, brush);
-//       }
-// 
-//       MusECore::SndFileR f = event.sndFile();
-//       if(!f.isNull())
-//       {
-//         int ev_channels = f.channels();
-//         if (ev_channels == 0) {
-//               p.setWorldMatrixEnabled(wmtxen);
-//               printf("WaveCnvas::drawItem: ev_channels==0! %s\n", f.name().toLatin1().constData());
-//               return;
-//               }
-// 
-//         int h   = hh / (ev_channels * 2);
-//         int cc  = hh % (ev_channels * 2) ? 0 : 1;
-// 
-//         unsigned peoffset = px + event.frame() - event.spos();
-// 
-//         for (int i = sx; i < ex; i++) {
-//               int y = h;
-//               MusECore::SampleV sa[f.channels()];
-//               f.read(sa, xScale, pos);
-//               pos += xScale;
-//               if (pos < event.spos())
-//                     continue;
-// 
-//               int selectionStartPos = selectionStart - peoffset; // Offset transformed to event coords
-//               int selectionStopPos  = selectionStop  - peoffset;
-// 
-//               for (int k = 0; k < ev_channels; ++k) {
-//                     int kk = k % f.channels();
-//                     int peak = (sa[kk].peak * (h - 1)) / yScale;
-//                     int rms  = (sa[kk].rms  * (h - 1)) / yScale;
-//                     if (peak > h)
-//                           peak = h;
-//                     if (rms > h)
-//                           rms = h;
-//                     QColor peak_color = MusEGlobal::config.wavePeakColor;
-//                     QColor rms_color  = MusEGlobal::config.waveRmsColor;
-// 
-// // REMOVE Tim. citem. Changed.
-// //                     if (pos > selectionStartPos && pos < selectionStopPos) {
-//                     if (pos > selectionStartPos && pos <= selectionStopPos) {
-//                           peak_color = MusEGlobal::config.wavePeakColorSelected;
-//                           rms_color  = MusEGlobal::config.waveRmsColorSelected;
-//                           QLine l_inv = clipQLine(i, y - h + cc, i, y + h - cc, mr);
-//                           if(!l_inv.isNull())
-//                           {
-//                             // Draw inverted
-//                             pen.setColor(QColor(Qt::black));
-//                             p.setPen(pen);
-//                             p.drawLine(l_inv);
-//                           }
-//                         }
-// 
-//                     QLine l_peak = clipQLine(i, y - peak - cc, i, y + peak, mr);
-//                     if(!l_peak.isNull())
-//                     {
-//                       pen.setColor(peak_color);
-//                       p.setPen(pen);
-//                       p.drawLine(l_peak);
-//                     }
-// 
-//                     QLine l_rms = clipQLine(i, y - rms - cc, i, y + rms, mr);
-//                     if(!l_rms.isNull())
-//                     {
-//                       pen.setColor(rms_color);
-//                       p.setPen(pen);
-//                       p.drawLine(l_rms);
-//                     }
-// 
-//                     y += 2 * h;
-//                   }
-//               }
-//             
-//         int hn = hh / ev_channels;
-//         int hhn = hn / 2;
-//         for (int i = 0; i < ev_channels; ++i) {
-//               int h2     = hn * i;
-//               int center = hhn + h2;
-//               if(center >= y1 && center < y2)
-//               {
-//                 pen.setColor(QColor(i & 1 ? Qt::red : Qt::blue));
-//                 p.setPen(pen);
-//                 p.drawLine(sx, center, ex, center);
-//               }
-//               if(i != 0 && h2 >= y1 && h2 < y2)
-//               {
-//                 pen.setColor(QColor(Qt::black));
-//                 p.setPen(pen);
-//                 p.drawLine(sx, h2, ex, h2);
-//               }
-//             }
-//       }
-// 
-//       //      
-//       // Draw custom dashed borders around the wave event
-//       //
-// 
-//       QColor color(item->isSelected() ? Qt::white : Qt::black);
-//       QPen penH(color);
-//       QPen penV(color);
-//       penH.setCosmetic(true);
-//       penV.setCosmetic(true);
-//       QVector<qreal> customDashPattern;
-//       customDashPattern << 4.0 << 6.0;
-//       penH.setDashPattern(customDashPattern);
-//       penV.setDashPattern(customDashPattern);
-//       penV.setDashOffset(2.0);
-//       // FIXME: Some shifting still going on. Values likely not quite right here.
-//       //int xdiff = sx - r.x();
-//       int xdiff = sx - mer.x();
-//       if(xdiff > 0)
-//       {
-//         int doff = xdiff % 10;
-//         penH.setDashOffset(doff);
-//       }
-//       // Tested OK. Each segment drawn only when necessary.
-//       if(y1 <= 0)
-//       {
-//         p.setPen(penH);
-//         p.drawLine(sx, 0, ex, 0);
-//       }
-//       if(y2 >= hh - 1)
-//       {
-//         p.setPen(penH);
-//         p.drawLine(sx, hh - 1, ex, hh - 1);
-//       }
-//       if(x1 <= mer.x())
-//       {
-//         p.setPen(penV);
-//         p.drawLine(mer.x(), y1, mer.x(), y2);
-//       }
-//       if(x2 >= mer.x() + mer.width())
-//       {
-//         p.setPen(penV);
-//         p.drawLine(mer.x() + mer.width(), y1, mer.x() + mer.width(), y2);
-//       }
-// 
-//       // Done. Restore and return.
-//       p.setWorldMatrixEnabled(wmtxen);
-// }
-
-// //---------------------------------------------------------
-// //   drawItem
-// //    draws a wave
-// //---------------------------------------------------------
-// 
-// // REMOVE Tim. citem. Changed.
-// // void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
-// void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const QRegion&)
-// {
-//       MusECore::WavePart* wp = (MusECore::WavePart*)(item->part());
-//       if(!wp || !wp->track())
-//         return;
-// 
-//       //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
-// //       QRect mr = map(rect);                      // Use our own map instead.        
-// 
-//       QRect mwpr  = map(QRect(wp->frame(), 0, wp->lenFrame(), height()));
-//       
-//       QRect ubbr = item->bbox();
-//       QRect mbbr = map(ubbr);                              
-//       QRect mbrwp = mr & mbbr & mwpr;
-//       if(mbrwp.isNull())
-//         return;
-//       
-//       MusECore::Event event  = item->event();
-//       if(event.empty())
-//         return;
-//       
-//       QPen pen;
-//       pen.setCosmetic(true);
-//       
-//       int x1 = mbrwp.x();
-//       int x2 = x1 + mbrwp.width();
-//       if (x1 < 0)
-//             x1 = 0;
-//       if (x2 > width())
-//             x2 = width();
-//       int hh = height();
-//       int y1 = mbrwp.y();
-//       int y2 = y1 + mbrwp.height();
-// 
-//       int xScale = xmag;
-//       if (xScale < 0)
-//             xScale = -xScale;
-// 
-//       //int t_channels = wp->track()->channels();
-//       int px = wp->frame();
-// 
-//       bool wmtxen = p.worldMatrixEnabled();
-//       p.setWorldMatrixEnabled(false);
-// 
-//       int sx, ex;
-//       
-//       sx = event.frame() + px + xScale/2;
-//       ex = sx + event.lenFrame();
-//       sx = sx / xScale - xpos;
-//       ex = ex / xScale - xpos;
-// 
-//       if (sx < x1)
-//             sx = x1;
-//       if (ex > x2)
-//             ex = x2;
-// 
-//       int pos = (xpos + sx) * xScale + event.spos() - event.frame() - px;
-//       
-//       // REMOVE Tim. citem. Added.
-//       fprintf(stderr, "\nWaveCanvas::drawItem:\nmr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
-//               mr.x(), mr.y(), mr.width(), mr.height());
-//       fprintf(stderr, "\nmbbr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
-//               mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height());
-// //       vbbr.dump("vbbr:");
-// //       vbbr_exp.dump("vbbr_exp:");
-// //       vr.dump("vr:");
-// //       vbr.dump("vbr:");
-//       
-//       QBrush brush;
-//       if (item->isMoving()) 
-//       {
-//             QColor c(Qt::gray);
-//             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-//             QLinearGradient gradient(ubbr.topLeft(), ubbr.bottomLeft());
-//             gradient.setColorAt(0, c);
-//             gradient.setColorAt(1, c.darker());
-//             brush = QBrush(gradient);
-//             p.fillRect(sx, y1, ex - sx + 1, y2, brush);
-//       }
-//       else 
-//       if (item->isSelected()) 
-//       {
-//           QColor c(Qt::black);
-//           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-//           QLinearGradient gradient(ubbr.topLeft(), ubbr.bottomLeft());
-//           // Use a colour only about 20% lighter than black, rather than the 50% we use in MusECore::gGradientFromQColor
-//           //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
-//           gradient.setColorAt(0, QColor(51, 51, 51, MusEGlobal::config.globalAlphaBlend));
-//           gradient.setColorAt(1, c);
-//           brush = QBrush(gradient);
-//           p.fillRect(sx, y1, ex - sx + 1, y2, brush);
-//       }
-// 
-//       MusECore::SndFileR f = event.sndFile();
-//       if(!f.isNull())
-//       {
-//         int ev_channels = f.channels();
-//         if (ev_channels == 0) {
-//               p.setWorldMatrixEnabled(wmtxen);
-//               printf("WaveCnvas::drawItem: ev_channels==0! %s\n", f.name().toLatin1().constData());
-//               return;
-//               }
-// 
-//         int h   = hh / (ev_channels * 2);
-//         int cc  = hh % (ev_channels * 2) ? 0 : 1;
-// 
-//         unsigned peoffset = px + event.frame() - event.spos();
-// 
-//         for (int i = sx; i < ex; i++) {
-//               int y = h;
-//               MusECore::SampleV sa[f.channels()];
-//               f.read(sa, xScale, pos);
-//               pos += xScale;
-//               if (pos < event.spos())
-//                     continue;
-// 
-//               int selectionStartPos = selectionStart - peoffset; // Offset transformed to event coords
-//               int selectionStopPos  = selectionStop  - peoffset;
-// 
-//               for (int k = 0; k < ev_channels; ++k) {
-//                     int kk = k % f.channels();
-//                     int peak = (sa[kk].peak * (h - 1)) / yScale;
-//                     int rms  = (sa[kk].rms  * (h - 1)) / yScale;
-//                     if (peak > h)
-//                           peak = h;
-//                     if (rms > h)
-//                           rms = h;
-//                     QColor peak_color = MusEGlobal::config.wavePeakColor;
-//                     QColor rms_color  = MusEGlobal::config.waveRmsColor;
-// 
-// // REMOVE Tim. citem. Changed.
-// //                     if (pos > selectionStartPos && pos < selectionStopPos) {
-//                     if (pos > selectionStartPos && pos <= selectionStopPos) {
-//                           peak_color = MusEGlobal::config.wavePeakColorSelected;
-//                           rms_color  = MusEGlobal::config.waveRmsColorSelected;
-//                           QLine l_inv = clipQLine(i, y - h + cc, i, y + h - cc, mbrwp);
-//                           if(!l_inv.isNull())
-//                           {
-//                             // Draw inverted
-//                             pen.setColor(QColor(Qt::black));
-//                             p.setPen(pen);
-//                             p.drawLine(l_inv);
-//                           }
-//                         }
-// 
-//                     QLine l_peak = clipQLine(i, y - peak - cc, i, y + peak, mbrwp);
-//                     if(!l_peak.isNull())
-//                     {
-//                       pen.setColor(peak_color);
-//                       p.setPen(pen);
-//                       p.drawLine(l_peak);
-//                     }
-// 
-//                     QLine l_rms = clipQLine(i, y - rms - cc, i, y + rms, mbrwp);
-//                     if(!l_rms.isNull())
-//                     {
-//                       pen.setColor(rms_color);
-//                       p.setPen(pen);
-//                       p.drawLine(l_rms);
-//                     }
-// 
-//                     y += 2 * h;
-//                   }
-//               }
-//             
-//         int hn = hh / ev_channels;
-//         int hhn = hn / 2;
-//         for (int i = 0; i < ev_channels; ++i) {
-//               int h2     = hn * i;
-//               int center = hhn + h2;
-//               if(center >= y1 && center < y2)
-//               {
-//                 pen.setColor(QColor(i & 1 ? Qt::red : Qt::blue));
-//                 p.setPen(pen);
-//                 p.drawLine(sx, center, ex, center);
-//               }
-//               if(i != 0 && h2 >= y1 && h2 < y2)
-//               {
-//                 pen.setColor(QColor(Qt::black));
-//                 p.setPen(pen);
-//                 p.drawLine(sx, h2, ex, h2);
-//               }
-//             }
-//       }
-// 
-//       //      
-//       // Draw custom dashed borders around the wave event
-//       //
-// 
-//       QColor color(item->isSelected() ? Qt::white : Qt::black);
-//       QPen penH(color);
-//       QPen penV(color);
-//       penH.setCosmetic(true);
-//       penV.setCosmetic(true);
-//       QVector<qreal> customDashPattern;
-//       customDashPattern << 4.0 << 6.0;
-//       penH.setDashPattern(customDashPattern);
-//       penV.setDashPattern(customDashPattern);
-//       penV.setDashOffset(2.0);
-//       // FIXME: Some shifting still going on. Values likely not quite right here.
-//       //int xdiff = sx - r.x();
-//       int xdiff = sx - mbbr.x();
-//       if(xdiff > 0)
-//       {
-//         int doff = xdiff % 10;
-//         penH.setDashOffset(doff);
-//       }
-//       // Tested OK. Each segment drawn only when necessary.
-//       if(y1 <= 0)
-//       {
-//         p.setPen(penH);
-//         p.drawLine(sx, 0, ex, 0);
-//       }
-//       if(y2 >= hh - 1)
-//       {
-//         p.setPen(penH);
-//         p.drawLine(sx, hh - 1, ex, hh - 1);
-//       }
-//       if(x1 <= mbbr.x())
-//       {
-//         p.setPen(penV);
-//         p.drawLine(mbbr.x(), y1, mbbr.x(), y2);
-//       }
-//       if(x2 >= mbbr.x() + mbbr.width())
-//       {
-//         p.setPen(penV);
-//         p.drawLine(mbbr.x() + mbbr.width(), y1, mbbr.x() + mbbr.width(), y2);
-//       }
-// 
-//       // Done. Restore and return.
-//       p.setWorldMatrixEnabled(wmtxen);
-// }
-
 //---------------------------------------------------------
 //   drawItem
 //    draws a wave
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
 void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const QRegion&)
 {
       MusECore::WavePart* wp = (MusECore::WavePart*)(item->part());
@@ -1702,102 +856,37 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
         return;
       
       //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
-//       QRect mr = map(rect);                      // Use our own map instead.
-      const QRect ur = mapDev(mr);                      // Use our own map instead.
-      // Extend the right by one since we need a one-pixel wide border on the outside.
-//       QRect ur = mapDev(mr.adjusted(0, 0, 1, 0));  // Use our own map instead.
-
-//       const int mx = mr.x();
-//       const int my = mr.y();
-//       const int mw = mr.width();
-//       const int mh = mr.height();
-//       const int mx_2 = mx + mw;
-//       const int my_2 = my + mh;
-      
+      const QRect ur = mapDev(mr);               // Use our own map instead.
       const int ux = ur.x();
-//       const int uy = ur.y();
       const int uw = ur.width();
-//       const int uh = ur.height();
       const int ux_2 = ux + uw;
-//       const int uy_2 = uy + uh;
-      
       QRect uwpr  = QRect(wp->frame(), 0, wp->lenFrame(), height());
-//       QRect mwpr  = map(QRect(wp->frame(), 0, wp->lenFrame(), height()));
-      
       const QRect ubbr = item->bbox();
       const QRect ubbr_exp = item->bbox().adjusted(0, 0, rmapxDev(1), 0);
-      
-      // Extend the right by one since we need a one-pixel wide border on the outside.
-//       const QRect ubbr_exp = item->bbox().adjusted(0, 0, 1, 0);
       const QRect mbbr = map(ubbr);
-      // Extend the right by one since we need a one-pixel wide border on the outside.
-//       const QRect mbbr_exp = mbbr.adjusted(0, 0, 1, 0);
-//       const QRect mbbr_exp = map(ubbr_exp);
-      
       const int ubbx = ubbr.x();
       const int ubbx_2 = ubbr.x() + ubbr.width();
-      
       const int mbbx = mbbr.x();
-//       const int mbby = mbbr.y();
-//       const int mbbw = mbbr.width();
-//       const int mbbh = mbbr.height();
       const int mbbx_2 = mapx(ubbr.x() + ubbr.width());
-//       const int mbby_2 = mapy(ubbr.y() + ubbr.height());
-//       const int mbbx_exp = mbbr_exp.x();
-//       const int mbbx_2exp = mbbr_exp.x() + mbbr_exp.width();
-      
       const QRect ubr = ur & ubbr;
       const QRect ubr_exp = ur & ubbr_exp;
-//       const int ubx = ubr.x();
-//       const int ubx_2 = ubr.x() + ubr.width();
-//       const int uby = ubr.y();
-//       const int uby_2 = ubr.y() + ubr.height();
-//       const int mby = mapy(uby);
-//       const int mby_2 = mapy(uby_2);
-      
       const int uby_exp = ubr_exp.y();
       const int uby_2exp = ubr_exp.y() + ubr_exp.height();
       const int mby_exp = mapy(uby_exp);
       const int mby_2exp = mapy(uby_2exp);
-      
-//       const QRect ubrwp = ur & ubbr & uwpr;
       const QRect ubrwp = ubr & uwpr;
-//       QRect mbrwp = mr & mbbr & mwpr;
-      
-//       if(mbrwp.isNull())
-//       {
-//         // REMOVE Tim. citem. Added.
-//         fprintf(stderr, "\nWaveCanvas::drawItem: mbrwp is NULL. Returning.\n");
-//         return;
-//       }
-      
-//       if(ubrwp.isNull())
-//       {
-//         // REMOVE Tim. citem. Added.
-//         fprintf(stderr, "\nWaveCanvas::drawItem: ubrwp is NULL. Returning.\n");
-//         return;
-//       }
-      
       const QRect mbrwp = map(ubrwp);
-      
-//       MusECore::Event event  = item->event();
-//       if(event.empty())
-//         return;
       
       QPen pen;
       pen.setCosmetic(true);
       
-//       int x1 = mbrwp.x();
       int x1 = mapx(ubrwp.x());
-//       int x2 = x1 + mbrwp.width();
       int x2 = mapx(ubrwp.x() + ubrwp.width());
       if (x1 < 0)
             x1 = 0;
       if (x2 > width())
             x2 = width();
       int hh = height();
-//       int y1 = mbrwp.y();
-//       int y2 = y1 + mbrwp.height();
       int y1 = mapy(ubrwp.y());
       int y2 = mapy(ubrwp.y() + ubrwp.height());
 
@@ -1805,7 +894,6 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       if (xScale < 0)
             xScale = -xScale;
 
-      //int t_channels = wp->track()->channels();
       int px = wp->frame();
 
       bool wmtxen = p.worldMatrixEnabled();
@@ -1825,19 +913,18 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 
       int pos = (xpos + sx) * xScale + event.spos() - event.frame() - px;
       
-      // REMOVE Tim. citem. Added.
-      fprintf(stderr, "\nWaveCanvas::drawItem:\nmr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
-              mr.x(), mr.y(), mr.width(), mr.height());
-      fprintf(stderr, "\nur:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
-              ur.x(), ur.y(), ur.width(), ur.height());
-      fprintf(stderr, "\nubbr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
-              ubbr.x(), ubbr.y(), ubbr.width(), ubbr.height());
-      fprintf(stderr, "\nmbbr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
-              mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height());
-//       vbbr.dump("vbbr:");
-//       vbbr_exp.dump("vbbr_exp:");
-//       vr.dump("vr:");
-//       vbr.dump("vbr:");
+//       fprintf(stderr, "\nWaveCanvas::drawItem:\nmr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+//               mr.x(), mr.y(), mr.width(), mr.height());
+//       fprintf(stderr, "\nur:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+//               ur.x(), ur.y(), ur.width(), ur.height());
+//       fprintf(stderr, "\nubbr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+//               ubbr.x(), ubbr.y(), ubbr.width(), ubbr.height());
+//       fprintf(stderr, "\nmbbr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+//               mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height());
+// //       vbbr.dump("vbbr:");
+// //       vbbr_exp.dump("vbbr_exp:");
+// //       vr.dump("vr:");
+// //       vbr.dump("vbr:");
       
       QBrush brush;
       if (item->isMoving()) 
@@ -1901,8 +988,6 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
                     QColor peak_color = MusEGlobal::config.wavePeakColor;
                     QColor rms_color  = MusEGlobal::config.waveRmsColor;
 
-// REMOVE Tim. citem. Changed.
-//                     if (pos > selectionStartPos && pos < selectionStopPos) {
                     if (pos > selectionStartPos && pos <= selectionStopPos) {
                           peak_color = MusEGlobal::config.wavePeakColorSelected;
                           rms_color  = MusEGlobal::config.waveRmsColorSelected;
@@ -1972,7 +1057,6 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       penV.setDashOffset(2.0);
       // FIXME: Some shifting still going on. Values likely not quite right here.
       //int xdiff = sx - r.x();
-//       int xdiff = sx - mbbr.x();
       int xdiff = sx - mbbx;
       if(xdiff > 0)
       {
@@ -1991,34 +1075,22 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
         p.drawLine(sx, hh - 1, ex, hh - 1);
       }
       
-      // REMOVE Tim. citem. Added.
-      fprintf(stderr, "...Checking left edge: ubbx:%d ux:%d ux_2:%d\n", ubbx, ux, ux_2);
-//       if(x1 <= mbbx)
-//       if(mbbx >= x1)
-//       if(ubbx >= ux)
+      //fprintf(stderr, "...Checking left edge: ubbx:%d ux:%d ux_2:%d\n", ubbx, ux, ux_2);
       if(ubbx >= ux && ubbx < ux_2)
       {
-        // REMOVE Tim. citem. Added.
-        fprintf(stderr, "...Drawing left edge at mbbx:%d mby_exp:%d mby_2exp:%d\n", mbbx, mby_exp, mby_2exp);
+        //fprintf(stderr, "...Drawing left edge at mbbx:%d mby_exp:%d mby_2exp:%d\n", mbbx, mby_exp, mby_2exp);
         
         p.setPen(penV);
-//         p.drawLine(mbbx, y1, mbbx, y2);
-//         p.drawLine(mbbx, y1, mbbx, y2);
         p.drawLine(mbbx, mby_exp, mbbx, mby_2exp);
       }
       
       
-      // REMOVE Tim. citem. Added.
-      fprintf(stderr, "...Checking right edge: ubbx_2:%d ux:%d ux_2:%d\n", ubbx_2, ux, ux_2);
-//       if(x2 >= mbbx_2)
-//       if(mbbx_2 <= x2)
+      //fprintf(stderr, "...Checking right edge: ubbx_2:%d ux:%d ux_2:%d\n", ubbx_2, ux, ux_2);
       if(ubbx_2 >= ux && ubbx_2 < ux_2)
       {
-        // REMOVE Tim. citem. Added.
-        fprintf(stderr, "...Drawing right edge at mbbx_2:%d mby_exp:%d mby_2exp:%d\n", mbbx_2, mby_exp, mby_2exp);
+        //fprintf(stderr, "...Drawing right edge at mbbx_2:%d mby_exp:%d mby_2exp:%d\n", mbbx_2, mby_exp, mby_2exp);
         
         p.setPen(penV);
-//         p.drawLine(mbbx_2, y1, mbbx_2, y2);
         p.drawLine(mbbx_2, mby_exp, mbbx_2, mby_2exp);
       }
 
@@ -2029,40 +1101,15 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 //---------------------------------------------------------
 //   drawTopItem
 //---------------------------------------------------------
-// REMOVE Tim. citem. Changed.
-// void WaveCanvas::drawTopItem(QPainter& , const QRect&)
+
 void WaveCanvas::drawTopItem(QPainter& , const QRect&, const QRegion&)
 {}
-
-// REMOVE Tim. citem. Changed.
-// //---------------------------------------------------------
-// //   drawMoving
-// //    draws moving items
-// //---------------------------------------------------------
-// 
-// // REMOVE Tim. citem. Changed.
-// // void WaveCanvas::drawMoving(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
-// void WaveCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect, const QRegion&)
-//     {
-//       QRect mr = QRect(item->mp().x(), item->mp().y(), item->width(), item->height());
-//       mr = mr.intersected(rect);
-//       if(!mr.isValid())
-//         return;
-//       QPen pen;
-//       pen.setCosmetic(true);
-//       pen.setColor(Qt::black);
-//       p.setPen(pen);
-//       p.setBrush(QColor(0, 128, 0, 128));  // TODO: Pick a better colour, or use part colours, or grey?
-//       p.drawRect(mr);
-//     }
 
 //---------------------------------------------------------
 //   drawMoving
 //    draws moving items
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void PianoCanvas::drawMoving(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
 void WaveCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& mr, const QRegion&)
     {
       const QRect ur = mapDev(mr);
@@ -2112,14 +1159,12 @@ MusECore::Undo WaveCanvas::moveCanvasItems(CItemMap& items, int /*dp*/, int dx, 
     for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
     {
       CItem* ci = ici->second;
-      // REMOVE Tim. citem. Added.
       ci->setMoving(false);
 
       if(ci->part() != part)
         continue;
       
       int x = ci->pos().x() + dx;
-      //int y = pitch2y(y2pitch(ci->pos().y()) + dp);
       int y = 0;
       QPoint newpos = QPoint(x, y);
       if(rasterize)
@@ -2131,8 +1176,6 @@ MusECore::Undo WaveCanvas::moveCanvasItems(CItemMap& items, int /*dp*/, int dx, 
       x              = newpos.x();
       if(x < 0)
         x = 0;
-// REMOVE Tim. citem. Changed.
-//       int nframe = (rasterize ? MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x))) : x) - part->frame();
       // Normally frame to tick methods round down. But here we need it to 'snap'
       //  the frame from either side of a tick to the tick. So round to nearest.
       int nframe = (rasterize ? MusEGlobal::tempomap.tick2frame(
@@ -2181,9 +1224,7 @@ MusECore::Undo WaveCanvas::moveCanvasItems(CItemMap& items, int /*dp*/, int dx, 
                         CItem* ci = ici->second;
                         
                         int x = ci->pos().x();
-                        //int y = ci->pos().y();
                         int nx = x + dx;
-                        //int ny = pitch2y(y2pitch(y) + dp);
                         int ny = 0;
                         QPoint newpos = QPoint(nx, ny);
                         if(rasterize)
@@ -2237,15 +1278,12 @@ bool WaveCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
       {
       WEvent* wevent = (WEvent*) item;
       MusECore::Event event    = wevent->event();
-      //int npitch     = y2pitch(pos.y());
       MusECore::Event newEvent = event.clone();
       int x          = pos.x();
       if (x < 0)
             x = 0;
       
       MusECore::Part* part = wevent->part();
-// REMOVE Tim. citem. Changed.
-//       int nframe = (rasterize ? MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x))) : x) - part->frame();
       // Normally frame to tick methods round down. But here we need it to 'snap'
       //  the frame from either side of a tick to the tick. So round to nearest.
       int nframe = 
@@ -2277,9 +1315,6 @@ CItem* WaveCanvas::newItem(const QPoint& p, int key_modifiers)
       int frame  = p.x();
       if(frame < 0)
         frame = 0;
-// REMOVE Tim. citem. Changed.
-//       if(!(key_modifiers & Qt::ShiftModifier))
-//         frame = MusEGlobal::tempomap.tick2frame(editor->rasterVal1(MusEGlobal::tempomap.frame2tick(frame)));
       // Normally frame to tick methods round down. But here we need it to 'snap'
       //  the frame from either side of a tick to the tick. So round to nearest.
       if(!(key_modifiers & Qt::ShiftModifier))
@@ -2308,20 +1343,13 @@ void WaveCanvas::newItem(CItem* item, bool noSnap)
       int w = item->width();
 
       if (!noSnap) {
-            //x = editor->rasterVal1(x); //round down
-            // Round down using rasterVal1().
-      // REMOVE Tim. citem. Changed.
-//             x = MusEGlobal::tempomap.tick2frame(editor->rasterVal1(MusEGlobal::tempomap.frame2tick(x))); //round down
             // Normally frame to tick methods round down. But here we need it to 'snap'
             //  the frame from either side of a tick to the tick. So round to nearest.
             x = MusEGlobal::tempomap.tick2frame(
               editor->rasterVal1(MusEGlobal::tempomap.frame2tick(x, 0, MusECore::LargeIntRoundNearest)));
-            //w = editor->rasterVal(x + w) - x;
-//             w = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x + w))) - x;
             w = MusEGlobal::tempomap.tick2frame(
               editor->rasterVal(MusEGlobal::tempomap.frame2tick(x + w, 0, MusECore::LargeIntRoundNearest))) - x;
             if (w == 0)
-                  //w = editor->raster();
                   w = MusEGlobal::tempomap.tick2frame(editor->raster());
             }
       if (x<pframe)
@@ -2367,26 +1395,20 @@ void WaveCanvas::resizeItem(CItem* item, bool noSnap, bool)         // experimen
             len = wevent->width();
       else {
             unsigned frame = event.frame() + part->frame();
-            //len = editor->rasterVal(tick + wevent->width()) - tick;
-// REMOVE Tim. citem. Changed.
-//             len = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(frame + wevent->width()))) - frame;
             // Normally frame to tick methods round down. But here we need it to 'snap'
             //  the frame from either side of a tick to the tick. So round to nearest.
             len = MusEGlobal::tempomap.tick2frame(
               editor->rasterVal(MusEGlobal::tempomap.frame2tick(
                 frame + wevent->width(), 0, MusECore::LargeIntRoundNearest))) - frame;
             if (len <= 0)
-                  //len = editor->raster();
                   len = MusEGlobal::tempomap.tick2frame(editor->raster());
       }
 
       MusECore::Undo operations;
-      //int diff = event.tick()+len-part->lenTick();
       int diff = event.frame() + len - part->lenFrame();
       
       if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
       {
-        //newEvent.setLenTick(len);
         newEvent.setLenFrame(len);
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,newEvent, event, wevent->part(), false, false));
         
@@ -2413,8 +1435,6 @@ bool WaveCanvas::deleteItem(CItem* item)
       if (wevent->part() == curPart) {
             MusECore::Event ev = wevent->event();
             // Indicate do undo, and do not do port controller values and clone parts. 
-// REMOVE Tim. citem. Changed.
-//             MusEGlobal::audio->msgDeleteEvent(ev, curPart, true, false, false);
             MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, ev, curPart, false, false));
             return true;
             }
@@ -2487,22 +1507,12 @@ void WaveCanvas::adjustWaveOffset()
 //   draw
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void WaveCanvas::drawCanvas(QPainter& p, const QRect& rect)
 void WaveCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
       {
-// REMOVE Tim. citem. Removed.
-//       int x = rect.x();
-//       int y = rect.y();
-//       int w = rect.width();
-//       int h = rect.height();
-
       //---------------------------------------------------
       // vertical lines
       //---------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-//       drawTickRaster(p, x, y, w, h, editor->raster());
       drawTickRaster(p, rect, rg, editor->raster(), true, false, false,
                          MusEGlobal::config.midiCanvasBarColor, 
                          MusEGlobal::config.midiCanvasBeatColor);
@@ -2893,7 +1903,8 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
                   unsigned event_startpos  = event.spos();
                   unsigned event_length = elen + event.spos();
                   unsigned event_end    = event_offset + event_length;
-                  //printf("startpos=%d stoppos=%d part_offset=%d event_offset=%d event_startpos=%d event_length=%d event_end=%d\n", startpos, stoppos, part_offset, event_offset, event_startpos, event_length, event_end);
+                  //printf("startpos=%d stoppos=%d part_offset=%d event_offset=%d event_startpos=%d event_length=%d event_end=%d\n",
+                  // startpos, stoppos, part_offset, event_offset, event_startpos, event_length, event_end);
 
                   if (!(event_end <= startpos || event_offset > stoppos)) {
                         int tmp_sx = startpos - event_offset + event_startpos;

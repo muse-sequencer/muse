@@ -84,11 +84,6 @@ class Event {
       int getRefCount() const;
       bool selected() const;
       void setSelected(bool val);
-// REMOVE Tim. citem. Added.
-//       EventTagStruct tag() const;
-//       void setTag(const EventTagStruct& tag);
-//       bool tagged() const;
-//       void setTagged(bool v);
       void move(int offset);
 
       void read(Xml& xml);
@@ -194,8 +189,6 @@ typedef std::pair <iEvent, iEvent> EventRange;
 //---------------------------------------------------------
 
 class EventList : public EL {
-// REMOVE Tim. citem. Removed. Unused.
-//       void deselect();
 
    public:
       // Looks for specific event (EventBase pointer).
@@ -213,9 +206,6 @@ class EventList : public EL {
                               bool compareTime = false,
                               bool compareA = false, bool compareB = false, bool compareC = false,
                               bool compareWavePath = false, bool compareWavePos = false, bool compareWaveStartPos = false) const;
-      //int findSimilarType(const Event&, EventList&,
-      //                        bool compareA = true, bool compareB = true, bool compareC = true,
-      //                        bool compareWavePath = true, bool compareWavePos = true, bool compareWaveStartPos = true);
       
       ciEvent findId(const Event&) const;             // Fast, index t is known.
       iEvent findId(const Event&);                    // Fast, index t is known.
@@ -228,16 +218,6 @@ class EventList : public EL {
 
       // Returns an iterator that points to the inserted event.
       // Returns end() if an error occurred.
-// REMOVE Tim. citem. Changed. It seems we must allow multiple controller events
-//  if they are to be moved, dragged, and dropped.
-//       // Special for controllers: There must be only ONE value per controller per position.
-//       // If there is already a controller value for the controller number at the given position,
-//       //  add just replaces it with the given value and returns that iterator.
-      // Accepts duplicate controller items at the same position, to accurately reflect
-      //  what is really in the event lists. Mostly for the purpose of dragging and dropping
-      //  controller events and allowing them to be on top of each other TEMPORARILY.
-      // But ultimately once dropping is finished there must be only ONE value per controller
-      //  per position per part.
       iEvent add(Event event);
       void move(Event& event, unsigned tick);
       void dump() const;

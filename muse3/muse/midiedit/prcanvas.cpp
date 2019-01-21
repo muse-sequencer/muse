@@ -60,8 +60,6 @@ namespace MusEGui {
 //   NEvent
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// NEvent::NEvent(const MusECore::Event& e, MusECore::Part* p, int y) : MusEGui::CItem(e, p)
 NEvent::NEvent(const MusECore::Event& e, MusECore::Part* p, int y) : EItem(e, p)
       {
       y = y - KH/4;
@@ -288,228 +286,6 @@ int PianoCanvas::y2pitch(int y) const
 //       }
 
 
-
-
-// REMOVE Tim. citem. Changed. First attempt.
-// //---------------------------------------------------------
-// //   drawEvent
-// //    draws a note
-// //---------------------------------------------------------
-// 
-// // REMOVE Tim. citem. Changed.
-// // void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
-// //    const QRect& rect)
-// void PianoCanvas::drawItem(QPainter& p, const CItem* item,
-//    const QRect& vr, const QRegion&)
-//       {
-//       QRect vbbr = item->bbox();
-//       if(!virt())
-//         vbbr.moveCenter(map(item->pos()));
-//       
-// //       const int vw1 = rmapxDev(1);
-// //       const int vh1 = rmapyDev(1);
-//       //const int vh2 = rmapyDev(2);
-//       
-//       //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
-//       QRect mr = map(vr);                      // Use our own map instead.        
-//       QRect mbbr = map(vbbr);                              
-//       
-//       // This is the update comparison rectangle. This would normally be the same as the item's bounding rectangle
-//       //  but in this case we have a one-pixel wide border. To accommodate for our border, expand the right edge right
-//       //  by one, and the bottom edge down by one. This way we catch the full
-//       //  necessary drawing rectangle when checking the requested update rectangle.
-//       // Note that this is units of ticks.
-// //       QRect vbbr_exp = item->bbox().adjusted(0, 0, vw1, vh1);
-//       QRect vbbr_exp = item->bbox().adjusted(0, 0, 1, 1);
-//       //QRect vbbr_exp = vbbr.adjusted(rmapxDev(-1), 0, vw1, vh2);
-//       
-//       QRect mbr = mr & mbbr;
-// //       if(mbr.isNull())
-// //         return;
-//       
-//       // REMOVE Tim. citem. Added.
-//       fprintf(stderr, "PianoCanvas::drawItem: xmag:%d ymag:%d vr x:%d y:%d w:%d h:%d vbbr_exp x:%d y:%d w:%d h:%d"
-//                        " mr x:%d y:%d w:%d h:%d mbbr x:%d y:%d w:%d h:%d\n",
-//               xmag, ymag, vr.x(), vr.y(), vr.width(), vr.height(),
-//               vbbr_exp.x(), vbbr_exp.y(), vbbr_exp.width(), vbbr_exp.height(),
-//               mr.x(), mr.y(), mr.width(), mr.height(),
-//               mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height());
-//       
-//       // Now check intersection of the expanded comparison rectangle and the requested update rectangle.
-//       // Item bounding box x is in tick coordinates, same as rectangle.
-//       if((vbbr_exp & vr).isEmpty())
-//       {
-//         // REMOVE Tim. citem. Added.
-//         fprintf(stderr, "...vbbr & vr is empty. Returning.\n");
-//         
-//         return;
-//       }
-// 
-//       QPen pen;
-//       pen.setCosmetic(true);
-//       pen.setColor(Qt::black);
-//       p.setPen(pen);
-//       
-//       struct Triple {
-//             int r, g, b;
-//             };
-// 
-//       static Triple myColors [12] = {  // ddskrjp
-//             { 0xff, 0x3d, 0x39 },
-//             { 0x39, 0xff, 0x39 },
-//             { 0x39, 0x3d, 0xff },
-//             { 0xff, 0xff, 0x39 },
-//             { 0xff, 0x3d, 0xff },
-//             { 0x39, 0xff, 0xff },
-//             { 0xff, 0x7e, 0x7a },
-//             { 0x7a, 0x7e, 0xff },
-//             { 0x7a, 0xff, 0x7a },
-//             { 0xff, 0x7e, 0xbf },
-//             { 0x7a, 0xbf, 0xff },
-//             { 0xff, 0xbf, 0x7a }
-//             };
-// 
-//       QColor color;
-//       NEvent* nevent   = (NEvent*) item;
-//       MusECore::Event event = nevent->event();
-//       if (nevent->part() != curPart){
-//             if(item->isMoving()) 
-//               color = Qt::gray;
-//             else if(item->isSelected()) 
-//               color = Qt::black;
-//             else  
-//               color = Qt::lightGray;
-//       }      
-//       else {
-//             if (item->isMoving()) {
-//                     color = Qt::gray;
-//                 }
-//             else if (item->isSelected()) {
-//                   color = Qt::black;
-//                   }
-//             else {
-//                   color.setRgb(0, 0, 255);
-//                   switch(colorMode) {
-//                         case 0:
-//                               break;
-//                         case 1:     // pitch
-//                               {
-//                               Triple* c = &myColors[event.pitch() % 12];
-//                               color.setRgb(c->r, c->g, c->b);
-//                               }
-//                               break;
-//                         case 2:     // velocity
-//                               {
-//                               int velo = event.velo();
-//                               if (velo < 64)
-//                                     color.setRgb(velo*4, 0, 0xff);
-//                               else
-//                                     color.setRgb(0xff, 0, (127-velo) * 4);
-//                               }
-//                               break;
-//                         }
-//                   }
-//             }
-//       
-//       bool wmtxen = p.worldMatrixEnabled();
-//       p.setWorldMatrixEnabled(false);
-//       int vx = vr.x();
-//       int vy = vr.y();
-//       int vw = vr.width();
-//       int vh = vr.height();
-//       int vx_2 = vx + vw;
-//       int vy_2 = vy + vh;
-//       
-// //       int mbrx = mbr.x();
-// //       int mbry = mbr.y();
-// //       int mbrw = mbr.width();
-// //       int mbrh = mbr.height();
-// //       int mbrx_2 = mbrx + mbrw;
-// //       int mbry_2 = mbry + mbrh;
-// 
-//       int mbbx = mbbr.x();
-//       int mbby = mbbr.y();
-//       int mbbw = mbbr.width();
-//       int mbbh = mbbr.height();
-//       int mbbx_2 = mbbx + mbbw;
-//       int mbby_2 = mbby + mbbh;
-// 
-//       int vbbx_exp = vbbr_exp.x();
-//       int vbby_exp = vbbr_exp.y();
-//       int vbbw_exp = vbbr_exp.width();
-//       int vbbh_exp = vbbr_exp.height();
-//       int vbbx_2exp = vbbx_exp + vbbw_exp;
-//       int vbby_2exp = vbby_exp + vbbh_exp;
-//       
-//       color.setAlpha(MusEGlobal::config.globalAlphaBlend);
-//       QBrush brush(color);
-//       p.fillRect(mbr, brush);
-// 
-// //       if(mex >= mx && mex <= mx + mw)
-// //         p.drawLine(mex, my, mex, my + mh - 1);                       // The left edge
-// //       if(mex + mew >= mx && mex + mew <= mx + mw)
-// //         p.drawLine(mex + mew, my, mex + mew, my + mh - 1);           // The right edge
-// //       if(mey >= my && mey <= my + mh)
-// //         p.drawLine(mx, mey, mx + mw - 1, mey);                       // The top edge
-// //       if(mey + meh >= my && mey + meh <= my + mh)
-// //         p.drawLine(mx, mey + meh - 1, mx + mw - 1, mey + meh - 1);   // The bottom edge
-//       
-//       if(vbbx_exp >= vx && vbbx_exp < vx_2)
-//         //p.drawLine(mbbx, mbry, mbbx, mbry_2);                       // The left edge
-//         p.drawLine(mbbx, mbby, mbbx, mbby_2);                       // The left edge
-// 
-//       // REMOVE Tim. citem. Added.
-//       fprintf(stderr, "...checking right edge: vx:%d vx_2:%d vbbx_2exp:%d\n", vx, vx_2, vbbx_2exp);
-//       
-//       if(vbbx_2exp >= vx && vbbx_2exp <= vx_2)
-//       {
-//         // REMOVE Tim. citem. Added.
-//         fprintf(stderr, "...right edge in range. Drawing right edge at mbbx_2:%d mbby:%d mbbx_2:%d mbby_2:%d\n", 
-//                 mbbx_2, mbby, mbbx_2, mbby_2);
-//         
-//         //p.drawLine(mbbx_2, mbry, mbbx_2, mbry_2);           // The right edge
-//         p.drawLine(mbbx_2, mbby, mbbx_2, mbby_2);           // The right edge
-//       }
-// 
-//       if(vbby_exp >= vy && vbby_exp < vy_2)
-//         //p.drawLine(mbrx, mbby, mbrx_2, mbby);                       // The top edge
-//         p.drawLine(mbbx, mbby, mbbx_2, mbby);                       // The top edge
-// 
-//       if(vbby_2exp >= vy && vbby_2exp <= vy_2)
-//         //p.drawLine(mbrx, mbby_2, mbrx_2, mbby_2);   // The bottom edge
-//         p.drawLine(mbbx, mbby_2, mbbx_2, mbby_2);   // The bottom edge
-// 
-//       // print note name on the drawn notes
-//       if (MusEGlobal::config.showNoteNamesInPianoRoll) {
-//         QFont f(MusEGlobal::config.fonts[1]);
-// 
-//         f.setPointSize(f.pointSize() * 0.85);
-//         p.setFont(f);
-// 
-//         if (color.lightnessF() > 0.6f) {
-// 
-//           pen.setColor(Qt::black);
-//           p.setPen(pen);
-// 
-//         } else {
-// 
-//           pen.setColor(Qt::white);
-//           p.setPen(pen);
-// 
-//         }
-//         QString noteStr = MusECore::pitch2string(event.pitch());
-// 
-//         p.drawText(mbbr,Qt::AlignHCenter|Qt::AlignCenter, noteStr.toUpper());
-//       }
-// 
-// 
-//       p.setWorldMatrixEnabled(wmtxen);
-//       }
-
-
-
-
-// REMOVE Tim. citem. Added. Remove or keep...
 #if 0
 
 // Unmapped version works OK. But let's use the mapped version below for now...
@@ -521,12 +297,8 @@ int PianoCanvas::y2pitch(int y) const
 void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
    const QRect& mr, const QRegion&)
       {
-//       QRect ur = mapDev(mr);
       QRect ur = mapDev(mr).adjusted(0, 0, 0, 1);
-//       QRect ur = mapDev(mr.adjusted(0, 0, 1, 1));
       
-//       QRect mr_exp = mr.adjusted(0, 0, 0, 0);
-//       QRect ubbr = item->bbox();
       // This is the update comparison rectangle. This would normally be the same as the item's bounding rectangle
       //  but in this case we have a one-pixel wide border. To accommodate for our border, expand the right edge right
       //  by one, and the bottom edge down by one. This way we catch the full
@@ -536,55 +308,14 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
       if(!virt())
         ubbr.moveCenter(map(item->pos()));
       
-      //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
-//       QRect mr = map(rect);                      // Use our own map instead.
-      const QRect mbbr = map(ubbr);
-
-//       const QRect mbr = mr & mbbr;
-//       QRect mbr = mr_exp & mbbr;
-//       if(mbr.isNull())
-//         return;
-      
+      const QRect mbbr = map(ubbr); // Use our own map instead.
       QRect ubr = ur & ubbr;
-//       if(ubr.isNull())
-//         return;
-//       const QRect mbr = map(ubr);
-
-//       const bool wmtxen = p.worldMatrixEnabled();
-//       p.setWorldMatrixEnabled(false);
-      
-//       const int mx = mr.x();
-//       const int my = mr.y();
-//       const int mw = mr.width();
-//       const int mh = mr.height();
-//       const int mx_2 = mx + mw;
-//       const int my_2 = my + mh;
-      
-//       int mbx = mbr.x();
-//       int mby = mbr.y();
-//       int mbw = mbr.width();
-//       int mbh = mbr.height();
-      
-//       const int mbbx = mbbr.x();
-//       const int mbby = mbbr.y();
-//       const int mbbw = mbbr.width();
-//       const int mbbh = mbbr.height();
-//       const int mbbx_2 = mbbx + mbbw;
-//       const int mbby_2 = mbby + mbbh;
-
       const int ux = ur.x();
       const int uy = ur.y();
       const int uw = ur.width();
       const int uh = ur.height();
       const int ux_2 = ux + uw;
       const int uy_2 = uy + uh;
-      
-//       const int ubx = ubr.x();
-//       const int uby = ubr.y();
-//       const int ubw = ubr.width();
-//       const int ubh = ubr.height();
-//       const int ubx_2 = ubx + ubw;
-//       const int uby_2 = uby + ubh;
       
       const int ubbx = ubbr.x();
       const int ubby = ubbr.y();
@@ -661,72 +392,8 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
       
       color.setAlpha(MusEGlobal::config.globalAlphaBlend);
       QBrush brush(color);
-//       if(!mbr.isEmpty())
-//         p.fillRect(mbr, brush);
       if(!ubr.isEmpty())
-//         p.fillRect(mbr, brush);
         p.fillRect(ubr, brush);
-
-//       if(mbbx >= mx && mbbx <= mx + mw)
-//         p.drawLine(mbbx, my, mbbx, my + mh - 1);                       // The left edge
-//       if(mbbx + mbbw >= mx && mbbx + mbbw <= mx + mw)
-//         p.drawLine(mbbx + mbbw, my, mbbx + mbbw, my + mh - 1);           // The right edge
-//       if(mbby >= my && mbby <= my + mh)
-//         p.drawLine(mx, mbby, mx + mw - 1, mbby);                       // The top edge
-//       if(mbby + mbbh >= my && mbby + mbbh <= my + mh)
-//         p.drawLine(mx, mbby + mbbh - 1, mx + mw - 1, mbby + mbbh - 1);   // The bottom edge
-
-//       if(mbbx >= mx && mbbx <= mx + mw)
-//         p.drawLine(mbbx, mbby, mbbx, mbby + mbbh - 1);                       // The left edge
-//       if(mbbx + mbbw >= mx && mbbx + mbbw <= mx + mw)
-//         p.drawLine(mbbx + mbbw, mbby, mbbx + mbbw, mbby + mbbh - 1);           // The right edge
-//       if(mbby >= my && mbby <= my + mh)
-//         p.drawLine(mbbx, mbby, mbbx + mbbw - 1, mbby);                       // The top edge
-//       if(mbby + mbbh >= my && mbby + mbbh <= my + mh)
-//         p.drawLine(mbbx, mbby + mbbh - 1, mbbx + mbbw - 1, mbby + mbbh - 1);   // The bottom edge
-
-
-      
-//       if(mbbx >= mx && mbbx < mx_2)
-//         p.drawLine(mbbx, mbby, mbbx, mbby_2);                       // The left edge
-//         
-//       if(mbbx_2 >= mx && mbbx_2 <= mx_2)
-//         p.drawLine(mbbx_2, mbby, mbbx_2, mbby_2);           // The right edge
-//         
-//       if(mbby >= my && mbby < my_2)
-//         p.drawLine(mbbx, mbby, mbbx_2, mbby);                       // The top edge
-//         
-//       if(mbby_2 >= my && mbby_2 <= my_2)
-//         p.drawLine(mbbx, mbby_2, mbbx_2, mbby_2);   // The bottom edge
-
-      
-      
-//       if(mbbx >= mx && mbbx < mx + mw)
-//         p.drawLine(mbbx, mby, mbbx, mby + mbh - 1);                       // The left edge
-//       if(mbbx + mbbw >= mx && mbbx + mbbw <= mx + mw)
-//         p.drawLine(mbbx + mbbw, mby, mbbx + mbbw, mby + mbh - 1);           // The right edge
-//       if(mbby >= my && mbby < my + mh)
-//         p.drawLine(mbx, mbby, mbx + mbw - 1, mbby);                       // The top edge
-//       if(mbby + mbbh >= my && mbby + mbbh <= my + mh)
-//         p.drawLine(mbx, mbby + mbbh - 1, mbx + mbw - 1, mbby + mbbh - 1);   // The bottom edge
-        
-//       if(ubbx >= ubx && ubbx <= ubx + ubw)
-//         p.drawLine(ubbx, uby, ubbx, uby + ubh);                       // The left edge
-//       if(ubbx + ubbw >= ubx && ubbx + ubbw <= ubx + ubw)
-//         p.drawLine(ubbx + ubbw, uby, ubbx + ubbw, uby + ubh);           // The right edge
-//       if(ubby >= uby && ubby <= uby + ubh)
-//         p.drawLine(ubx, ubby, ubx + ubw, ubby);                       // The top edge
-//       if(ubby + ubbh >= uby && ubby + ubbh <= uby + ubh)
-//         p.drawLine(ubx, ubby + ubbh, ubx + ubw, ubby + ubbh);   // The bottom edge
-      
-//       if(ubbx >= ux && ubbx < ux_2)
-//         p.drawLine(mbbx, mbby, mbbx, mbby_2);                       // The left edge
-//       if(ubbx_2 >= ux && ubbx_2 <= ux_2)
-//         p.drawLine(mbbx_2, mbby, mbbx_2, mbby_2);           // The right edge
-//       if(ubby >= uy && ubby < uy_2)
-//         p.drawLine(mbbx, mbby, mbbx_2, mbby);                       // The top edge
-//       if(ubby_2 >= uy && ubby_2 <= uy_2)
-//         p.drawLine(mbbx, mbby_2, mbbx_2, mbby_2);   // The bottom edge
 
       if(ubbx >= ux && ubbx < ux_2)
         p.drawLine(ubbx, ubby, ubbx, ubby_2);                       // The left edge
@@ -741,7 +408,6 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
         p.drawLine(ubbx, ubby_2, ubbx_2, ubby_2);   // The bottom edge
 
       // print note name on the drawn notes
-//       if (MusEGlobal::config.showNoteNamesInPianoRoll) {
       if (!ubr.isEmpty() && MusEGlobal::config.showNoteNamesInPianoRoll) {
         QFont f(MusEGlobal::config.fonts[1]);
 
@@ -758,17 +424,12 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
         }
         QString noteStr = MusECore::pitch2string(event.pitch());
 
-//         p.drawText(mbbr,Qt::AlignHCenter|Qt::AlignCenter, noteStr.toUpper());
-//         p.drawText(ubbr,Qt::AlignHCenter|Qt::AlignCenter, noteStr.toUpper());
-        
         const bool wmtxen = p.worldMatrixEnabled();
         p.setWorldMatrixEnabled(false);
         p.drawText(mbbr,Qt::AlignHCenter|Qt::AlignCenter, noteStr.toUpper());
         p.setWorldMatrixEnabled(wmtxen);
       }
 
-
-//       p.setWorldMatrixEnabled(wmtxen);
       }
 
 #endif      
@@ -784,73 +445,31 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
 void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
    const QRect& mr, const QRegion&)
       {
-//       QRect ur = mapDev(mr);
       QRect ur = mapDev(mr).adjusted(0, 0, 0, 1);
-//       QRect ur = mapDev(mr.adjusted(0, 0, 1, 1));
       
-//       QRect mr_exp = mr.adjusted(0, 0, 0, 0);
       QRect ubbr = item->bbox();
       // This is the update comparison rectangle. This would normally be the same as the item's bounding rectangle
       //  but in this case we have a one-pixel wide border. To accommodate for our border, expand the right edge right
       //  by one, and the bottom edge down by one. This way we catch the full
       //  necessary drawing rectangle when checking the requested update rectangle.
       // Note that this is units of ticks.
-//       QRect ubbr = item->bbox().adjusted(0, 0, 0, -1);
       if(!virt())
         ubbr.moveCenter(map(item->pos()));
       
       //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
-//       QRect mr = map(rect);                      // Use our own map instead.
-//       const QRect mbbr = map(ubbr);
       const QRect mbbr = map(ubbr).adjusted(0, 0, 0, -1);
 
       const QRect mbr = mr & mbbr;
-//       QRect mbr = mr_exp & mbbr;
-//       if(mbr.isNull())
-//         return;
       
-//       QRect ubr = ur & ubbr;
-// //       if(ubr.isNull())
-// //         return;
-//       const QRect mbr = map(ubr);
-
       const bool wmtxen = p.worldMatrixEnabled();
       p.setWorldMatrixEnabled(false);
       
-//       const int mx = mr.x();
-//       const int my = mr.y();
-//       const int mw = mr.width();
-//       const int mh = mr.height();
-//       const int mx_2 = mx + mw;
-//       const int my_2 = my + mh;
-      
-//       int mbx = mbr.x();
-//       int mby = mbr.y();
-//       int mbw = mbr.width();
-//       int mbh = mbr.height();
-      
-//       const int mbbx = mbbr.x();
-//       const int mbby = mbbr.y();
-//       const int mbbw = mbbr.width();
-//       const int mbbh = mbbr.height();
-//       const int mbbx_2 = mbbx + mbbw;
-//       const int mbby_2 = mbby + mbbh;
-//       const int mbbx_2 = mapx(ubbr.x() + ubbr.width());
-//       const int mbby_2 = mapy(ubbr.y() + ubbr.height());
-
       const int ux = ur.x();
       const int uy = ur.y();
       const int uw = ur.width();
       const int uh = ur.height();
       const int ux_2 = ux + uw;
       const int uy_2 = uy + uh;
-      
-//       const int ubx = ubr.x();
-//       const int uby = ubr.y();
-//       const int ubw = ubr.width();
-//       const int ubh = ubr.height();
-//       const int ubx_2 = ubx + ubw;
-//       const int uby_2 = uby + ubh;
       
       const int ubbx = ubbr.x();
       const int ubby = ubbr.y();
@@ -933,62 +552,7 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
       QBrush brush(color);
       if(!mbr.isEmpty())
         p.fillRect(mbr, brush);
-//       if(!ubr.isEmpty())
-//         p.fillRect(mbr, brush);
-//         p.fillRect(ubr, brush);
 
-//       if(mbbx >= mx && mbbx <= mx + mw)
-//         p.drawLine(mbbx, my, mbbx, my + mh - 1);                       // The left edge
-//       if(mbbx + mbbw >= mx && mbbx + mbbw <= mx + mw)
-//         p.drawLine(mbbx + mbbw, my, mbbx + mbbw, my + mh - 1);           // The right edge
-//       if(mbby >= my && mbby <= my + mh)
-//         p.drawLine(mx, mbby, mx + mw - 1, mbby);                       // The top edge
-//       if(mbby + mbbh >= my && mbby + mbbh <= my + mh)
-//         p.drawLine(mx, mbby + mbbh - 1, mx + mw - 1, mbby + mbbh - 1);   // The bottom edge
-
-//       if(mbbx >= mx && mbbx <= mx + mw)
-//         p.drawLine(mbbx, mbby, mbbx, mbby + mbbh - 1);                       // The left edge
-//       if(mbbx + mbbw >= mx && mbbx + mbbw <= mx + mw)
-//         p.drawLine(mbbx + mbbw, mbby, mbbx + mbbw, mbby + mbbh - 1);           // The right edge
-//       if(mbby >= my && mbby <= my + mh)
-//         p.drawLine(mbbx, mbby, mbbx + mbbw - 1, mbby);                       // The top edge
-//       if(mbby + mbbh >= my && mbby + mbbh <= my + mh)
-//         p.drawLine(mbbx, mbby + mbbh - 1, mbbx + mbbw - 1, mbby + mbbh - 1);   // The bottom edge
-
-
-      
-//       if(mbbx >= mx && mbbx < mx_2)
-//         p.drawLine(mbbx, mbby, mbbx, mbby_2);                       // The left edge
-//         
-//       if(mbbx_2 >= mx && mbbx_2 <= mx_2)
-//         p.drawLine(mbbx_2, mbby, mbbx_2, mbby_2);           // The right edge
-//         
-//       if(mbby >= my && mbby < my_2)
-//         p.drawLine(mbbx, mbby, mbbx_2, mbby);                       // The top edge
-//         
-//       if(mbby_2 >= my && mbby_2 <= my_2)
-//         p.drawLine(mbbx, mbby_2, mbbx_2, mbby_2);   // The bottom edge
-
-      
-      
-//       if(mbbx >= mx && mbbx < mx + mw)
-//         p.drawLine(mbbx, mby, mbbx, mby + mbh - 1);                       // The left edge
-//       if(mbbx + mbbw >= mx && mbbx + mbbw <= mx + mw)
-//         p.drawLine(mbbx + mbbw, mby, mbbx + mbbw, mby + mbh - 1);           // The right edge
-//       if(mbby >= my && mbby < my + mh)
-//         p.drawLine(mbx, mbby, mbx + mbw - 1, mbby);                       // The top edge
-//       if(mbby + mbbh >= my && mbby + mbbh <= my + mh)
-//         p.drawLine(mbx, mbby + mbbh - 1, mbx + mbw - 1, mbby + mbbh - 1);   // The bottom edge
-        
-//       if(ubbx >= ubx && ubbx <= ubx + ubw)
-//         p.drawLine(ubbx, uby, ubbx, uby + ubh);                       // The left edge
-//       if(ubbx + ubbw >= ubx && ubbx + ubbw <= ubx + ubw)
-//         p.drawLine(ubbx + ubbw, uby, ubbx + ubbw, uby + ubh);           // The right edge
-//       if(ubby >= uby && ubby <= uby + ubh)
-//         p.drawLine(ubx, ubby, ubx + ubw, ubby);                       // The top edge
-//       if(ubby + ubbh >= uby && ubby + ubbh <= uby + ubh)
-//         p.drawLine(ubx, ubby + ubbh, ubx + ubw, ubby + ubbh);   // The bottom edge
-      
       if(ubbx >= ux && ubbx < ux_2)
         p.drawLine(mbbx, mbby, mbbx, mbby_2 - 1);                       // The left edge
         
@@ -1001,21 +565,7 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
       if(ubby_2 >= uy && ubby_2 <= uy_2)
         p.drawLine(mbbx, mbby_2 - 1, mbbx_2, mbby_2 - 1);   // The bottom edge
 
-//       if(ubbx >= ux && ubbx < ux_2)
-//         p.drawLine(ubbx, ubby, ubbx, ubby_2);                       // The left edge
-// 
-//       if(ubbx_2 >= ux && ubbx_2 <= ux_2)
-//         p.drawLine(ubbx_2, ubby, ubbx_2, ubby_2);           // The right edge
-// 
-//       if(ubby >= uy && ubby < uy_2)
-//         p.drawLine(ubbx, ubby, ubbx_2, ubby);                       // The top edge
-// 
-//       if(ubby_2 >= uy && ubby_2 <= uy_2)
-//         p.drawLine(ubbx, ubby_2, ubbx_2, ubby_2);   // The bottom edge
-
       // print note name on the drawn notes
-//       if (MusEGlobal::config.showNoteNamesInPianoRoll) {
-//       if (!ubr.isEmpty() && MusEGlobal::config.showNoteNamesInPianoRoll) {
       if (!mbr.isEmpty() && MusEGlobal::config.showNoteNamesInPianoRoll) {
         QFont f(MusEGlobal::config.fonts[1]);
 
@@ -1033,33 +583,22 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
         QString noteStr = MusECore::pitch2string(event.pitch());
 
         p.drawText(mbbr,Qt::AlignHCenter|Qt::AlignVCenter, noteStr.toUpper());
-//         p.drawText(ubbr,Qt::AlignHCenter|Qt::AlignCenter, noteStr.toUpper());
-        
-//         const bool wmtxen = p.worldMatrixEnabled();
-//         p.setWorldMatrixEnabled(false);
-//         p.drawText(mbbr,Qt::AlignHCenter|Qt::AlignCenter, noteStr.toUpper());
-//         p.setWorldMatrixEnabled(wmtxen);
       }
-
 
       p.setWorldMatrixEnabled(wmtxen);
       }
      
 #endif
-      
-      
 
 
 // This version uses the ViewRect and ViewCoordinate classes for a more 'agnostic' technique.
 #if 1
+
 //---------------------------------------------------------
 //   drawEvent
 //    draws a note
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
-//    const QRect& rect)
 void PianoCanvas::drawItem(QPainter& p, const CItem* item,
    const QRect& mr, const QRegion&)
       {
@@ -1067,27 +606,15 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
       if(!virt())
         ubbr.moveCenter(map(item->pos()));
       
-//       const int vw1 = rmapxDev(1);
-//       const int vh1 = rmapyDev(1);
-      //const int vh2 = rmapyDev(2);
-      
       //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
-//       QRect mr = map(vr);                      // Use our own map instead.
       const ViewRect vr(mr, true);
-//       QRect mbbr = map(vbbr);
       const ViewRect vbbr(ubbr, false);
-//       const QRect mbbr = asQRectMapped(vbbr);
       
       // This is the update comparison rectangle. This would normally be the same as the item's bounding rectangle
       //  but in this case we have a one-pixel wide border. To accommodate for our border, expand the right edge right
       //  by one, and the bottom edge down by one. This way we catch the full
       //  necessary drawing rectangle when checking the requested update rectangle.
       // Note that this is units of ticks.
-//       QRect vbbr_exp = item->bbox().adjusted(0, 0, vw1, vh1);
-//       QRect ubbr_exp = item->bbox().adjusted(0, 0, 1, 1);
-      //QRect vbbr_exp = vbbr.adjusted(rmapxDev(-1), 0, vw1, vh2);
-      //const ViewRect vbbr_exp = item->bbox().adjusted(0, 0, 1, 1);
-//       const ViewRect vbbr_exp(ubbr_exp, false);
       ViewRect vbbr_exp(item->bbox(), false);
       adjustRect(vbbr_exp, 
                  ViewWCoordinate(0, true), 
@@ -1097,13 +624,9 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
                  //  use the bottom because of the uneven black/white key 6 - 7 - 6 height progressions.
                  ViewHCoordinate(-1, true));
       
-//       QRect mbr = mr & mbbr;
       const ViewRect vbr = intersected(vr, vbbr);
       const QRect mbr = asQRectMapped(vbr);
-      
       const ViewRect vbr_exp = intersected(vr, vbbr_exp);
-      //const QRect mbr_exp = asQRectMapped(vbr_exp);
-      
       const QRect mbbr_exp = asQRectMapped(vbbr_exp);
       
       const ViewXCoordinate vbx_exp = vbr_exp._x;
@@ -1118,24 +641,7 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
       const int mby_exp  = asIntMapped(vby_exp);
       const int mby_2exp = asIntMapped(vby_2exp);
 
-//       if(mbr.isNull())
-//         return;
-      
-      // REMOVE Tim. citem. Added.
-//       fprintf(stderr, "PianoCanvas::drawItem: xmag:%d ymag:%d vr x:%d y:%d w:%d h:%d vbbr_exp x:%d y:%d w:%d h:%d"
-//                        " mr x:%d y:%d w:%d h:%d mbbr x:%d y:%d w:%d h:%d\n",
-//               xmag, ymag, vr.x(), vr.y(), vr.width(), vr.height(),
-//               vbbr_exp.x(), vbbr_exp.y(), vbbr_exp.width(), vbbr_exp.height(),
-//               mr.x(), mr.y(), mr.width(), mr.height(),
-//               mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height());
-//       fprintf(stderr, "PianoCanvas::drawItem: xmag:%d ymag:%d vr x:%d y:%d w:%d h:%d vbbr_exp x:%d y:%d w:%d h:%d"
-//                        " mr x:%d y:%d w:%d h:%d mbbr x:%d y:%d w:%d h:%d\n",
-//               xmag, ymag, vr._x._value, vr._y._value, vr._width._value, vr._height._value,
-//               vbbr_exp._x._value, vbbr_exp._y._value, vbbr_exp._width._value, vbbr_exp._height._value,
-//               mr.x(), mr.y(), mr.width(), mr.height(),
-//               mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height());
-      
-      // REMOVE Tim. citem. Added.
+// For testing...
 //       fprintf(stderr, "\nPianoCanvas::drawItem:\nmr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
 //               mr.x(), mr.y(), mr.width(), mr.height());
 //       fprintf(stderr, "\nmbbr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
@@ -1144,18 +650,6 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
 //       vbbr_exp.dump("vbbr_exp:");
 //       vr.dump("vr:");
 //       vbr.dump("vbr:");
-
-      
-      // Now check intersection of the expanded comparison rectangle and the requested update rectangle.
-      // Item bounding box x is in tick coordinates, same as rectangle.
-//       if((vbbr_exp & vr).isEmpty())
-//       if(!intersects(vbbr_exp, vr))
-//       {
-//         // REMOVE Tim. citem. Added.
-//         fprintf(stderr, "...vbbr_exp & vr is empty. Returning.\n");
-//         
-//         return;
-//       }
 
       QPen pen;
       pen.setCosmetic(true);
@@ -1225,18 +719,6 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
       
       bool wmtxen = p.worldMatrixEnabled();
       p.setWorldMatrixEnabled(false);
-//       int vx = vr.x();
-//       int vy = vr.y();
-//       int vw = vr.width();
-//       int vh = vr.height();
-//       int vx_2 = vx + vw;
-//       int vy_2 = vy + vh;
-//       int vx = asIntUnmapped(vr._x);
-//       int vy = asIntUnmapped(vr._y);
-//       int vw = asIntUnmapped(vr._width);
-//       int vh = asIntUnmapped(vr._height);
-//       int vx_2 = vx + vw;
-//       int vy_2 = vy + vh;
       const ViewXCoordinate& vx = vr._x;
       const ViewYCoordinate& vy = vr._y;
       const ViewWCoordinate& vw = vr._width;
@@ -1244,159 +726,77 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
       const ViewXCoordinate vx_2(mathXCoordinates(vx, vw, MathAdd));
       const ViewYCoordinate vy_2(mathYCoordinates(vy, vh, MathAdd));
       
-//       int mbrx = mbr.x();
-//       int mbry = mbr.y();
-//       int mbrw = mbr.width();
-//       int mbrh = mbr.height();
-//       int mbrx_2 = mbrx + mbrw;
-//       int mbry_2 = mbry + mbrh;
-
-//       int mbbx = mbbr.x();
-//       int mbby = mbbr.y();
-//       int mbbw = mbbr.width();
-//       int mbbh = mbbr.height();
-//       int mbbx_2 = mbbx + mbbw;
-//       int mbby_2 = mbby + mbbh;
-
-//       int vbbx_exp = ubbr_exp.x();
-//       int vbby_exp = ubbr_exp.y();
-//       int vbbw_exp = ubbr_exp.width();
-//       int vbbh_exp = ubbr_exp.height();
-//       int vbbx_2exp = vbbx_exp + vbbw_exp;
-//       int vbby_2exp = vbby_exp + vbbh_exp;
-
       const ViewWCoordinate vw1m(1, true);
       const ViewHCoordinate vh1m(1, true);
       const ViewXCoordinate& vbbx_exp = vbbr_exp._x;
       const ViewYCoordinate& vbby_exp = vbbr_exp._y;
-//       const ViewWCoordinate& vbbw_exp = vbbr_exp._width;
-//       const ViewHCoordinate& vbbh_exp = vbbr_exp._height;
       // Ensure that the border RECTANGLE never shrinks below 2 pixels wide, so that users can at least see
       //  that there is SOMETHING there, when placed on top of a grid line for example.
       const ViewWCoordinate vbbw_exp = compareWCoordinates(vbbr_exp._width, vw1m, CompareLess) ? vw1m : vbbr_exp._width;
       const ViewHCoordinate vbbh_exp = compareHCoordinates(vbbr_exp._height, vh1m, CompareLess) ? vh1m : vbbr_exp._height;
       const ViewXCoordinate vbbx_2exp(mathXCoordinates(vbbx_exp, vbbw_exp, MathAdd));
       const ViewYCoordinate vbby_2exp(mathYCoordinates(vbby_exp, vbbh_exp, MathAdd));
-//       const ViewXCoordinate vbbx_2exp(mathXCoordinates(vbbr_exp._x, vbbr_exp._width, MathAdd));
-//       const ViewYCoordinate vbby_2exp(mathYCoordinates(vbbr_exp._y, vbbr_exp._height, MathAdd));
-      // Normally we would want the y + h for our border, but here we need to
-      //  use the bottom because of the uneven black/white key 6 - 7 - 6 height progressions.
-      //const ViewYCoordinate vbby_2exp(rectBottomUnmapped(vbbr_exp));
 
       const int mbbx_exp  = asIntMapped(vbbx_exp);
       const int mbby_exp  = asIntMapped(vbby_exp);
-//       const int mbbw_exp  = asIntMapped(vbbw_exp);
-//       const int mbbh_exp  = asIntMapped(vbbh_exp);
       const int mbbx_2exp = asIntMapped(vbbx_2exp);
       const int mbby_2exp = asIntMapped(vbby_2exp);
-      
       
       color.setAlpha(MusEGlobal::config.globalAlphaBlend);
       QBrush brush(color);
       p.fillRect(mbr, brush);
 
-//       if(mex >= mx && mex <= mx + mw)
-//         p.drawLine(mex, my, mex, my + mh - 1);                       // The left edge
-//       if(mex + mew >= mx && mex + mew <= mx + mw)
-//         p.drawLine(mex + mew, my, mex + mew, my + mh - 1);           // The right edge
-//       if(mey >= my && mey <= my + mh)
-//         p.drawLine(mx, mey, mx + mw - 1, mey);                       // The top edge
-//       if(mey + meh >= my && mey + meh <= my + mh)
-//         p.drawLine(mx, mey + meh - 1, mx + mw - 1, mey + meh - 1);   // The bottom edge
-      
-//       const ViewXCoordinate vbbx_is = 
-// //         compareXCoordinates(vx, vbbx_exp, CompareLess) ? vbbx_exp : vx;
-//         compareXCoordinates(vbbx_exp, vx, CompareGreaterEqual) ? vbbx_exp : vx;
-//       const int mbbx_is = asIntMapped(vbbx_is);
-//         
-//       const ViewXCoordinate vbbx_2is = 
-//         compareXCoordinates(vbbx_2exp, vx_2, CompareLess) ? vbbx_2exp : vx_2;
-//       const int mbbx_2is = asIntMapped(vbbx_2is);
-//       
-//       const ViewYCoordinate vbby_is = 
-// //         compareYCoordinates(vy, vbby_exp, CompareLess) ? vbby_exp : vy;
-//         compareYCoordinates(vbby_exp, vy, CompareGreaterEqual) ? vbby_exp : vy;
-//       const int mbby_is = asIntMapped(vbby_is);
-//         
-//       const ViewYCoordinate vbby_2is = 
-//         compareYCoordinates(vbby_2exp, vy_2, CompareLess) ? vbby_2exp : vy_2;
-//       const int mbby_2is = asIntMapped(vbby_2is);
-
-//       if(compareYCoordinates(vbby_2is, vbby_is, CompareGreaterEqual))
       if(compareYCoordinates(vby_2exp, vby_exp, CompareGreaterEqual))
       {
-        // REMOVE Tim. citem. Added.
+// For testing...
 //         fprintf(stderr, "...checking left edge: vx:%d vx_2:%d vbbx_exp:%d\n", vx._value, vx_2._value, vbbx_exp._value);
         
-  //       if(mex >= mx && mex <= mx + mw)
-        //if(mex >= mx && mex < mx + mw)
-  //       if(vx0 >= vx && vx0 < vx_2 &&
-  //       if(vbbx >= vx && vbbx < vx_2 &&
-        if(isXInRange(vbbx_exp, vx, vx_2)) // &&
-          //((vbby >= vy && vbby < vy_2) || (vbby_2 > vy && vbby_2 <= vy_2)))
-          //compareYCoordinates(vbby_2is, vbby_is, CompareGreaterEqual))
+        if(isXInRange(vbbx_exp, vx, vx_2))
         {
           
+// For testing...
 //           fprintf(stderr, "...left edge in range. Drawing left edge at mbbx:%d mbby_is:%d mbbx:%d mbby_2is:%d\n",
 //                   mbbx, mbby_is, mbbx, mbby_2is);
           
-  //       if(vbbx_exp >= vx && vbbx_exp < vx_2)
-          //p.drawLine(mbbx, mbry, mbbx, mbry_2);                       // The left edge
-  //         p.drawLine(mbbx, mbby, mbbx, mbby_2);                       // The left edge
           p.drawLine(mbbx_exp, mby_exp, mbbx_exp, mby_2exp); // The left edge
         }
 
-        // REMOVE Tim. citem. Added.
+// For testing...
 //         fprintf(stderr, "...checking right edge: vx:%d vx_2:%d vbbx_2exp:%d\n", vx._value, vx_2._value, vbbx_2exp._value);
         
-        if(isXInRange(vbbx_2exp, vx, vx_2)) // &&
-          //((vbby >= vy && vbby < vy_2) || (vbby_2 > vy && vbby_2 <= vy_2)))
-          //compareYCoordinates(vbby_2is, vbby_is, CompareGreaterEqual))
-  //       if(vbbx_2exp >= vx && vbbx_2exp <= vx_2)
+        if(isXInRange(vbbx_2exp, vx, vx_2))
         {
-          // REMOVE Tim. citem. Added.
+// For testing...
 //           fprintf(stderr, "...right edge in range. Drawing right edge at mbbx_2:%d mbby_is:%d mbbx_2:%d mbby_2is:%d\n", 
 //                   mbbx_2, mbby_is, mbbx_2, mbby_2is);
           
-          //p.drawLine(mbbx_2, mbry, mbbx_2, mbry_2);           // The right edge
-          p.drawLine(mbbx_2exp, mby_exp, mbbx_2exp, mby_2exp);           // The right edge
+          p.drawLine(mbbx_2exp, mby_exp, mbbx_2exp, mby_2exp);  // The right edge
         }
       }
 
-//       if(compareXCoordinates(vbbx_2is, vbbx_is, CompareGreaterEqual))
       if(compareXCoordinates(vbx_2exp, vbx_exp, CompareGreaterEqual))
       {
-        
-        // REMOVE Tim. citem. Added.
+// For testing...
 //         fprintf(stderr, "...checking top edge: vy:%d vy_2:%d vbby_exp:%d\n", vy._value, vy_2._value, vbby_exp._value);
 
-        //int mbbx = asMapped(vbbx)._value;
-  //       if(vbby >= vby && vbby < vby + vbh)
-        //if(vx0 >= vbrx && vx0 < vbrx + vbrw && vbby >= vbry && vbby < vbry + vbrh)
-        if(//vx0 >= vbrx &&
-//           vbby >= vy && vbby < vy_2)
-          isYInRange(vbby_exp, vy, vy_2))
+        if(isYInRange(vbby_exp, vy, vy_2))
         {
-          // REMOVE Tim. citem. Added.
+// For testing...
 //           fprintf(stderr, "...top edge in range. Drawing top edge at mbbx:%d mbby:%d mbbx_2:%d mbby:%d\n", 
 //                   mbbx, mbby, mbbx_2, mbby);
           
-          //p.drawLine(mbrx, mbby, mbrx_2, mbby);                       // The top edge
-          p.drawLine(mbx_exp, mbby_exp, mbx_2exp, mbby_exp);                       // The top edge
+          p.drawLine(mbx_exp, mbby_exp, mbx_2exp, mbby_exp);  // The top edge
         }
         
-        // REMOVE Tim. citem. Added.
+// For testing...
 //         fprintf(stderr, "...checking bottom edge: vy:%d vy_2:%d vbby_2exp:%d\n", vy._value, vy_2._value, vbby_2exp._value);
         
-        if(//compareXCoordinates(vbbx, vx_2, CompareLess) &&
-          isYInRange(vbby_2exp, vy, vy_2))
-  //       if(vbby_2exp >= vy && vbby_2exp <= vy_2)
+        if(isYInRange(vbby_2exp, vy, vy_2))
         {
-          // REMOVE Tim. citem. Added.
+// For testing...
 //           fprintf(stderr, "...bottom edge in range. Drawing bottom edge at mbbx:%d mbby_2:%d mbbx_2:%d mbby_2:%d\n", 
 //                   mbbx, mbby_2, mbbx_2, mbby_2);
           
-          //p.drawLine(mbrx, mbby_2, mbrx_2, mbby_2);   // The bottom edge
           p.drawLine(mbx_exp, mbby_2exp, mbx_2exp, mbby_2exp);   // The bottom edge
         }
       }
@@ -1433,44 +833,17 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
 //---------------------------------------------------------
 //   drawTopItem
 //---------------------------------------------------------
-// REMOVE Tim. citem. Changed.
-// void PianoCanvas::drawTopItem(QPainter& , const QRect&)
+
 void PianoCanvas::drawTopItem(QPainter& , const QRect&, const QRegion&)
 {}
-
-// REMOVE Tim. citem. Changed.
-// //---------------------------------------------------------
-// //   drawMoving
-// //    draws moving items
-// //---------------------------------------------------------
-// 
-// // REMOVE Tim. citem. Changed.
-// // void PianoCanvas::drawMoving(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
-// void PianoCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect, const QRegion&)
-//     {
-//       QRect mr = QRect(item->mp().x(), item->mp().y() - item->height()/2, item->width(), item->height());
-//       mr = mr.intersected(rect);
-//       if(!mr.isValid())
-//         return;
-//       QPen pen;
-//       pen.setCosmetic(true);
-//       pen.setColor(Qt::black);
-//       p.setPen(pen);
-//       p.setBrush(Qt::NoBrush);
-//       p.drawRect(mr);
-//     }
 
 //---------------------------------------------------------
 //   drawMoving
 //    draws moving items
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void PianoCanvas::drawMoving(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
 void PianoCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& mr, const QRegion&)
     {
-//       const ViewRect vr(mr, true);
-//       const QRect ur = asQRectUnmapped(vr);
       const QRect ur = mapDev(mr);
       QRect ur_item = QRect(item->mp().x(), item->mp().y() - item->height()/2, item->width(), item->height());
       ur_item = ur_item.intersected(ur);
@@ -1518,7 +891,6 @@ MusECore::Undo PianoCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, Dra
     for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
     {
       CItem* ci = ici->second;
-      // REMOVE Tim. citem. Added.
       ci->setMoving(false);
 
       if(ci->part() != part)
@@ -1798,8 +1170,6 @@ bool PianoCanvas::deleteItem(CItem* item)
       if (nevent->part() == curPart) {
             MusECore::Event ev = nevent->event();
             // Indicate do undo, and do not do port controller values and clone parts. 
-// REMOVE Tim. citem. Changed.
-//             MusEGlobal::audio->msgDeleteEvent(ev, curPart, true, false, false);
             MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
                             ev, curPart, false, false));
             return true;
@@ -1935,69 +1305,6 @@ void PianoCanvas::pianoReleased(int /*pitch*/, bool)
         stopPlayEvent();
       }
 
-// REMOVE Tim. citem. Changed.
-// //---------------------------------------------------------
-// //   draw
-// //---------------------------------------------------------
-// 
-// // REMOVE Tim. citem. Changed.
-// // void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect)
-// void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
-//       {
-//       int x = rect.x();
-//       int y = rect.y();
-//       int w = rect.width();
-//       int h = rect.height();
-// 
-//       QPen pen;
-//       pen.setCosmetic(true);
-//       pen.setColor(Qt::black);
-//       p.setPen(pen);
-//       
-//       // REMOVE Tim. citem. Added.
-//       bool wmtxen = p.worldMatrixEnabled();
-//       p.setWorldMatrixEnabled(false);
-//       
-//       //---------------------------------------------------
-//       //  horizontal lines
-//       //---------------------------------------------------
-// 
-//       int yy  = ((y-1) / KH) * KH + KH;
-//       int key = 75 - (yy / KH);
-//       
-//       for (; yy < y + h; yy += KH) {
-//             switch (key % 7) {
-//                   case 0:
-//                   case 3:
-//                         // REMOVE Tim. citem. Changed.
-//                         fprintf(stderr, "PianoCanvas::drawCanvas: Drawing horizontal line at x:%d yy:%d x + w:%d yy:%d\n", x, yy, x + w, yy);
-// 
-//                         p.drawLine(x, yy, x + w, yy);
-//                         break;
-//                   default:
-//                         // REMOVE Tim. citem. Changed.
-//                         fprintf(stderr, "PianoCanvas::drawCanvas: Filling rectangle at x:%d yy - 3:%d w:%d h:%d\n", x, yy - 3, w, 6);
-// 
-//                         p.fillRect(x, yy-3, w, 6, MusEGlobal::config.midiCanvasBg.darker(110));
-//                         break;
-//                   }
-//             --key;
-//             }
-//       
-//       p.setWorldMatrixEnabled(wmtxen);
-//       
-//       //---------------------------------------------------
-//       // vertical lines
-//       //---------------------------------------------------
-// 
-// // REMOVE Tim. citem. Changed.
-// //       drawTickRaster(p, x, y, w, h, editor->raster());
-//       drawTickRaster(p, rect, rg, editor->raster(), false, false, false,
-//                          MusEGlobal::config.midiCanvasBarColor, 
-//                          MusEGlobal::config.midiCanvasBeatColor);
-//       
-//       }
-
 // NOTE Keep this for now in case we can get it to work...
 #if 0
 
@@ -2005,8 +1312,6 @@ void PianoCanvas::pianoReleased(int /*pitch*/, bool)
 //   draw
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect)
 void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
       {
         
@@ -2039,7 +1344,6 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
       pen.setColor(Qt::black);
       p.setPen(pen);
       
-      // REMOVE Tim. citem. Added.
       bool wmtxen = p.worldMatrixEnabled();
       p.setWorldMatrixEnabled(false);
       
@@ -2049,7 +1353,7 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
 
 //       int yy  = ((y-1) / KH) * KH + KH;
       ViewYCoordinate vyy = mathYCoordinates(vy, vh1, MathSubtract);
-      // REMOVE Tim. citem. Added.
+// For testing...
       fprintf(stderr, "PianoCanvas::drawCanvas: A vkh:%d map:%d vyy:%d map:%d\n", vkh._value, vkh.isMapped(), vyy._value, vyy.isMapped());
       mathRefYCoordinates(vyy, vkh, MathDivide);
       fprintf(stderr, "PianoCanvas::drawCanvas: B vyy:%d map:%d\n", vyy._value, vyy.isMapped());
@@ -2067,13 +1371,13 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
 //             switch (key % 7) {
 //                   case 0:
 //                   case 3:
-//                         // REMOVE Tim. citem. Changed.
+// For testing...
 //                         fprintf(stderr, "PianoCanvas::drawCanvas: Drawing horizontal line at x:%d yy:%d x + w:%d yy:%d\n", x, yy, x + w, yy);
 // 
 //                         p.drawLine(x, yy, x + w, yy);
 //                         break;
 //                   default:
-//                         // REMOVE Tim. citem. Changed.
+// For testing...
 //                         fprintf(stderr, "PianoCanvas::drawCanvas: Filling rectangle at x:%d yy - 3:%d w:%d h:%d\n", x, yy - 3, w, 6);
 // 
 //                         p.fillRect(x, yy-3, w, 6, MusEGlobal::config.midiCanvasBg.darker(110));
@@ -2083,7 +1387,7 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
             
       const int myy = asIntMapped(vyy);
       
-      // REMOVE Tim. citem. Added.
+// For testing...
       fprintf(stderr, "PianoCanvas::drawCanvas: x:%d vy:%d map:%d vyy:%d map:%d mx + mw:%d vy_2:%d map:%d\n",
               mx,
               vy._value, vy.isMapped(),
@@ -2095,13 +1399,13 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
         
             ViewYCoordinate vkey_md7 = mathYCoordinates(vkey, vh7, MathModulo);
             
-            // REMOVE Tim. citem. Added.
+// For testing...
             fprintf(stderr, "...Comparing y coordinates vkey_md7:%d vy0:%d vy3:%d\n", vkey_md7._value, vy0._value, vy3._value);
             
             if(compareYCoordinates(vkey_md7, vy0, CompareEqual) ||
                compareYCoordinates(vkey_md7, vy3, CompareEqual))
             {
-              // REMOVE Tim. citem. Changed.
+// For testing...
               fprintf(stderr, "...Drawing horizontal line at x:%d myy:%d x + w:%d myy:%d\n", mx, myy, mx + mw, myy);
 
               p.drawLine(mx, myy, mx + mw, myy);
@@ -2109,7 +1413,7 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
             else
             {
               const ViewRect vfr(vx, mathYCoordinates(vyy, vh3, MathSubtract), vw, vh6);
-              // REMOVE Tim. citem. Changed.
+// For testing...
               fprintf(stderr, "...Filling rectangle at x:%d myy - 3:%d w:%d h:%d\n", mx, myy - 3, mw, 6);
 
               p.fillRect(asQRectMapped(vfr), MusEGlobal::config.midiCanvasBg.darker(110));
@@ -2124,8 +1428,6 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
       // vertical lines
       //---------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-//       drawTickRaster(p, x, y, w, h, editor->raster());
       drawTickRaster(p, mr, mrg, editor->raster(), false, false, false,
                          MusEGlobal::config.midiCanvasBarColor, 
                          MusEGlobal::config.midiCanvasBeatColor);
@@ -2138,8 +1440,6 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
 //   draw
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect)
 void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
       {
       // FIXME: For some reason need the expansion otherwise drawing
@@ -2167,19 +1467,20 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
       int uyy  = ((uy-1) / KH) * KH + KH;
       int key = 75 - (uyy / KH);
       
-      // REMOVE Tim. citem. Added.
+// For testing...
 //       fprintf(stderr, "PianoCanvas::drawCanvas: x:%d y:%d yy:%d x + w:%d y + h:%d\n", x, y, yy, x + w, y + h);
+      
       for (; uyy < uy_2; uyy += KH) {
             switch (key % 7) {
                   case 0:
                   case 3:
-                        // REMOVE Tim. citem. Changed.
+// For testing...
 //                         fprintf(stderr, "...Drawing horizontal line at x:%d yy:%d x + w:%d yy:%d\n", x, yy, x + w, yy);
 
                         p.drawLine(ux, uyy, ux_2, uyy);
                         break;
                   default:
-                        // REMOVE Tim. citem. Changed.
+// For testing...
 //                         fprintf(stderr, "...Filling rectangle at x:%d yy - 3:%d w:%d h:%d\n", x, yy - 3, w, 6);
 
                         p.fillRect(ux, uyy-3, uw, 6, MusEGlobal::config.midiCanvasBg.darker(110));

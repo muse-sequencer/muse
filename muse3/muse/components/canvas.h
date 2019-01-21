@@ -28,7 +28,6 @@
 #include "view.h"
 #include "tools.h"
 #include "undo.h"
-// REMOVE Tim. citem. Added.
 #include "event_tag_list.h"
 
 #include <QWheelEvent>
@@ -147,8 +146,6 @@ class Canvas : public View {
       virtual void viewMousePressEvent(QMouseEvent* event);
       virtual void viewMouseMoveEvent(QMouseEvent*);
       virtual void viewMouseReleaseEvent(QMouseEvent*);
-// REMOVE Tim. citem. Changed.
-//       virtual void draw(QPainter&, const QRect& rect);
       virtual void draw(QPainter& p, const QRect& mr, const QRegion& mrg = QRegion());
       virtual void wheelEvent(QWheelEvent* e);
 
@@ -160,23 +157,11 @@ class Canvas : public View {
       // Resets all mouse operations if detecting missed mouseRelease event (which DOES happen).
       // Returns true if reset was actually done.
       virtual bool cancelMouseOps();
-// REMOVE Tim. citem. Added.
       virtual void drawParts(QPainter&, bool /*do_cur_part*/, const QRect&, const QRegion& = QRegion()) { }
-// REMOVE Tim. citem. Changed.
-//       virtual void drawCanvas(QPainter&, const QRect&) = 0;
       virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion()) = 0;
-// REMOVE Tim. citem. Changed.
-//       virtual void drawTopItem(QPainter& p, const QRect& rect) = 0;
       virtual void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion()) = 0;
-
-// REMOVE Tim. citem. Added.
       virtual void drawMarkers(QPainter& p, const QRect& mr, const QRegion& mrg = QRegion());
-      
-// REMOVE Tim. citem. Changed.
-//       virtual void drawItem(QPainter&, const CItem*, const QRect&) = 0;
       virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion()) = 0;
-// REMOVE Tim. citem. Changed.
-//       virtual void drawMoving(QPainter&, const CItem*, const QRect&) = 0;
       virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion()) = 0;
       virtual bool itemSelectionsChanged(MusECore::Undo* operations = 0, bool deselectAll = false) = 0;
       virtual QPoint raster(const QPoint&) const = 0;
@@ -231,8 +216,6 @@ class Canvas : public View {
       void moveItems(const QPoint&, int dir = 0, bool rasterize = true);
       virtual void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true) = 0;
 
-// REMOVE Tim. citem. Changed.
-//       virtual void selectLasso(bool toggle);
       // Returns true if anything was selected.
       virtual bool selectLasso(bool toggle);
 
@@ -271,14 +254,6 @@ class Canvas : public View {
       bool isSingleSelection() const;
       int selectionSize() const;
       bool itemsAreSelected() const;
-// REMOVE Tim. citem. Added.
-//       // Adds all selected items to the given list. Does not clear the list first.
-//       // Checks for duplicates, employing the 'tagged' features.
-//       //void getAllSelectedItems(CItemSet&) const;
-//       // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
-//       virtual void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
-//         const MusECore::Pos& p0 = MusECore::Pos(),
-//         const MusECore::Pos& p1 = MusECore::Pos()) const;
       // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
       // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
       virtual void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
@@ -288,7 +263,6 @@ class Canvas : public View {
       void setCurrentPart(MusECore::Part*); 
       void setCanvasTools(int n) { canvasTools = n; }
       int getCurrentDrag();
-// REMOVE Tim. citem. Added.
       virtual void updateItems() = 0;
       virtual void updateItemSelections();
       };

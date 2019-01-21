@@ -190,9 +190,6 @@ class Song : public QObject {
       // Sender can be set to the caller object and used by it
       //  to ignore self-generated songChanged signals.
       // The songChanged structure will contain this pointer.
-// REMOVE Tim. citem. Changed.
-//       bool applyOperationGroup(Undo& group, bool doUndo=true, void* sender = 0);
-//       bool applyOperation(const UndoOp& op, bool doUndo=true, void* sender = 0);
       bool applyOperationGroup(Undo& group, OperationType type = OperationUndoMode, void* sender = 0);
       bool applyOperation(const UndoOp& op, OperationType type = OperationUndoMode, void* sender = 0);
       

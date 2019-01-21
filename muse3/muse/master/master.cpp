@@ -39,7 +39,6 @@
 #include "midieditor.h"
 #include "icons.h"
 #include "audio.h"
-// REMOVE Tim. citem. Changed.
 #include "gconfig.h"
 
 namespace MusEGui {
@@ -160,8 +159,6 @@ void Master::leaveEvent(QEvent*)
 //   pdraw
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void Master::pdraw(QPainter& p, const QRect& rect)
 void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
       {
       View::pdraw(p, rect);   // calls draw()
@@ -218,13 +215,8 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
 //   draw
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void Master::draw(QPainter& p, const QRect& rect)
 void Master::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       {
-// REMOVE Tim. citem. Changed.
-//       drawTickRaster(p, rect.x(), rect.y(),
-//          rect.width(), rect.height(), 0);
       drawTickRaster(p, rect, rg, 0,
                          false, false, false,
                          MusEGlobal::config.midiCanvasBarColor, 
@@ -414,8 +406,6 @@ bool Master::deleteVal1(unsigned int x1, unsigned int x2)
             }
       
       for (QList< QPair<int,int> >::iterator it=stuff_to_do.begin(); it!=stuff_to_do.end(); it++)
-// REMOVE Tim. citem. Changed.
-//         MusEGlobal::audio->msgDeleteTempo(it->first, it->second, false);
         // Operation is undoable but do not start/end undo.
         MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo,
                               it->first, it->second), MusECore::Song::OperationUndoable);
@@ -474,8 +464,6 @@ void Master::newVal(int x1, int x2, int y)
             xx1 = tmp;
             }
       deleteVal1(xx1, xx2);
-// REMOVE Tim. citem. Changed.
-//       MusEGlobal::audio->msgAddTempo(xx1, int(60000000000.0/(280000 - y)), false);
       // Operation is undoable but do not start/end undo.
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddTempo,
                     xx1, int(60000000000.0/(280000 - y))), MusECore::Song::OperationUndoable);

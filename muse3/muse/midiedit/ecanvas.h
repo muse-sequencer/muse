@@ -87,8 +87,6 @@ class EventCanvas : public Canvas {
       virtual MusECore::Undo moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true) = 0;
       virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true) = 0;
       virtual void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true);
-// REMOVE Tim. citem. Removed. Let Canvas::deselectAll() do it.
-//       virtual void deselectAll();
       virtual void startPlayEvent(int note, int velocity);
       virtual void startPlayEvent(int note, int velocity, int port, int channel);
       virtual void stopPlayEvent();
@@ -122,10 +120,8 @@ class EventCanvas : public Canvas {
       virtual void viewDropEvent(QDropEvent* event);
       virtual void modifySelected(NoteInfo::ValType, int /*val*/, bool /*delta_mode*/ = true) {}
       virtual void keyPress(QKeyEvent*);      
-// REMOVE Tim. citem. Added.
       virtual void keyRelease(QKeyEvent* event);
       virtual void updateItems();
-      //virtual void updateItemSelections();
       };
 
 } // namespace MusEGui

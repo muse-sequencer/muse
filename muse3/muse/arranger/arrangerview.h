@@ -54,7 +54,6 @@
 #include "cleftypes.h"
 #include "helper.h"
 #include "arranger.h"
-// REMOVE Tim. citem. Added.
 #include "event_tag_list.h"
 
 
@@ -130,8 +129,6 @@ class ArrangerView : public TopWin
                 void cmd(int);
                 void addNewTrack(QAction* action);
                 void configCustomColumns();
-// REMOVE Tim. citem. Removed. Moved contents into Arranger songChanged() and configChanged().
-//                 void songChanged(MusECore::SongChangedStruct_t);
 
 	signals:
 		void isDeleting(MusEGui::TopWin*);
@@ -162,10 +159,6 @@ class ArrangerView : public TopWin
 		static void readConfiguration(MusECore::Xml&);
 		void writeConfiguration(int, MusECore::Xml&);
 		
-//     // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
-//     void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
-//       const MusECore::Pos& = MusECore::Pos(),
-//       const MusECore::Pos& = MusECore::Pos()) const;
 		// Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
 		// Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
 		void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;

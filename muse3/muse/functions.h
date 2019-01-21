@@ -28,7 +28,6 @@
 #include "part.h"
 #include "dialogs.h"
 #include "type_defs.h"
-// REMOVE Tim. citem. Added.
 #include "event_tag_list.h"
 #include "pos.h"
 #include "function_dialog_consts.h"
@@ -282,22 +281,6 @@ bool transpose_notes(const std::set<const Part*>& parts, int range, signed int h
 bool crescendo(const std::set<const Part*>& parts, int range, int start_val, int end_val, bool absolute);
 bool legato(const std::set<const Part*>& parts, int range, int min_len=1, bool dont_shorten=false);
 
-
-
-
-// bool modify_velocity_items(int rate, int offset=0);
-// bool modify_off_velocity_items(int rate, int offset=0);
-// bool modify_notelen_items(int rate, int offset=0);
-// bool quantize_items(int raster, bool quant_len=false, int strength=100, int swing=0, int threshold=0);
-// bool erase_items(int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
-// bool delete_overlaps_items();
-// bool set_notelen_items(int len);
-// bool move_items(signed int ticks);
-// bool transpose_items(signed int halftonesteps);
-// bool crescendo_items(int start_val, int end_val, bool absolute);
-// bool legato_items(int min_len=1, bool dont_shorten=false);
-
-
 bool modify_velocity_items(TagEventList* tag_list, int rate, int offset=0);
 bool modify_off_velocity_items(TagEventList* tag_list, int rate, int offset=0);
 bool modify_notelen_items(TagEventList* tag_list, int rate, int offset=0);
@@ -323,7 +306,6 @@ bool legato_items(TagEventList* tag_list, int min_len=1, bool dont_shorten=false
 void copy_items(TagEventList* tag_list);
 // bool cut_items();
 bool cut_items(TagEventList* tag_list);
-// QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode = false /*, bool untag_when_done = true*/);
 QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* tag_list, bool cut_mode = false);
 
 bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part=NULL); // shows a dialog
@@ -343,7 +325,6 @@ void paste_items(const std::set<const Part*>& parts, int max_distance=3072,
                  int paste_to_ctrl_num = -1
                  );
 
-//void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int pos, int max_distance=3072,
 void paste_items_at(
   // List of parts from which to look for original part(s).
   const std::set<const Part*>& parts,
@@ -393,39 +374,6 @@ void paste_items_at(
   // If the source has multiple controllers, user will be asked which one to paste.
   int paste_to_ctrl_num = -1
   );
-
-// Ensures that all events are untagged. Useful for aborting dialog etc.
-// void untag_all_items();
-
-
-
-
-//the below functions automatically open the dialog
-//they return true if you click "ok" and false if "abort"
-// REMOVE Tim. citem. Removed.
-// bool modify_velocity(const std::set<const Part*>& parts);
-// bool modify_notelen(const std::set<const Part*>& parts);
-// bool quantize_notes(const std::set<const Part*>& parts);
-// bool set_notelen(const std::set<const Part*>& parts);
-// bool move_notes(const std::set<const Part*>& parts);
-// bool transpose_notes(const std::set<const Part*>& parts);
-// bool crescendo(const std::set<const Part*>& parts);
-// bool erase_notes(const std::set<const Part*>& parts);
-// bool delete_overlaps(const std::set<const Part*>& parts);
-// bool legato(const std::set<const Part*>& parts);
-// 
-// //the below functions operate on selected parts
-// bool modify_velocity();
-// bool modify_notelen();
-// bool quantize_notes();
-// bool set_notelen();
-// bool move_notes();
-// bool transpose_notes();
-// bool crescendo();
-// bool erase_notes();
-// bool delete_overlaps();
-// bool legato();
-
 
 //functions for copy'n'paste
 void copy_notes(const std::set<const Part*>& parts, int range);

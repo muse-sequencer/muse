@@ -278,26 +278,6 @@ void MidiEditor::addPart(MusECore::Part* p)
   _parts.insert(p->sn());
 }
 
-// REMOVE Tim. citem. Added.
-// void MidiEditor::getAllSelectedItems(CItemSet& list) const
-// {
-//   if(!canvas)
-//     return;
-//   
-//   // These two steps use the tagging features to mark the objects (events)
-//   //  as having been visited already, to avoid duplicates in the list.
-//   canvas->getAllSelectedItems(list);
-//   //
-//   for(ciCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i)
-//     (*i)->getAllSelectedItems(list);
-//   
-//   // Now that we have gathered all the selected items we need, and avoided
-//   //  duplicates by using the tagging features, reset all the tagged flags now!
-//   for(ciCItemSet i = list.begin(); i != list.end(); ++i)
-//     (*i)->setObjectTagged(false);
-// }
-
-// REMOVE Tim. citem. Added.
 //---------------------------------------------------------
 //   itemsAreSelected
 //---------------------------------------------------------
@@ -313,113 +293,12 @@ bool MidiEditor::itemsAreSelected() const
   return res;
 }
 
-// REMOVE Tim. citem. Added.
-// //---------------------------------------------------------
-// //   tagItems
-// //---------------------------------------------------------
-// 
-// void MidiEditor::tagItems(bool tagAllItems, bool tagAllParts, bool range,
-//         const MusECore::Pos& p0, const MusECore::Pos& p1) const
-// {
-//   // If tagging all items, don't bother with the controller editors below,
-//   //  since everything that they could tag will already be tagged.
-//   if(tagAllItems)
-//   {
-//     MusECore::Part* part;
-//     MusECore::Pos pos, part_pos, part_endpos;
-//     if(tagAllParts)
-//     {
-//       if(_pl)
-//       {
-//         for(MusECore::ciPart ip = _pl->begin(); ip != _pl->end(); ++ip)
-//         {
-//           part = ip->second;
-//           if(range)
-//           {
-//             part_pos = *part;
-//             part_endpos = part->end();
-//             // Optimize: Is the part within the range?
-//             // p1 should be considered outside (one past) the very last position in the range.
-//             if(part_endpos <= p0 || part_pos >= p1)
-//               continue;
-//           }
-//           MusECore::EventList& el = part->nonconst_events();
-//           for(MusECore::iEvent ie = el.begin(); ie != el.end(); ++ie)
-//           {
-//             MusECore::Event& e = ie->second;
-//             if(range)
-//             {
-//               // Don't forget to add the part's position.
-//               pos = e.pos() + part_pos;
-//               // If the event position is before p0, keep looking...
-//               if(pos < p0)
-//                 continue;
-//               // If the event position is at or after p1 then we are done.
-//               // p1 should be considered outside (one past) the very last position in the range.
-//               if(pos >= p1)
-//                 break;
-//             }
-//             e.setTagged(true);
-//             part->setEventsTagged(true);
-//           }
-//         }
-//       }
-//     }
-//     else
-//     {
-//       if(canvas && canvas->part())
-//       {
-//         part = canvas->part();
-//         if(range)
-//         {
-//           part_pos = *part;
-//           part_endpos = part->end();
-//           // Optimize: Is the part within the range?
-//           // p1 should be considered outside (one past) the very last position in the range.
-//           if(part_endpos <= p0 || part_pos >= p1)
-//             return;
-//         }
-//         MusECore::EventList& el = part->nonconst_events();
-//         for(MusECore::iEvent ie = el.begin(); ie != el.end(); ++ie)
-//         {
-//           MusECore::Event& e = ie->second;
-//           if(range)
-//           {
-//             // Don't forget to add the part's position.
-//             pos = e.pos() + part_pos;
-//             // If the event position is before p0, keep looking...
-//             if(pos < p0)
-//               continue;
-//             // If the event position is at or after p1 then we are done.
-//             // p1 should be considered outside (one past) the very last position in the range.
-//             if(pos >= p1)
-//               break;
-//           }
-//           e.setTagged(true);
-//           part->setEventsTagged(true);
-//         }
-//       }
-//     }
-//   }
-//   else
-//   {
-//     // These two steps use the tagging features to mark the objects (events)
-//     //  as having been visited already, to avoid duplicates in the list.
-//     if(canvas)
-//       canvas->tagItems(false, tagAllParts, range, p0, p1);
-//     for(ciCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i)
-//       (*i)->tagItems(false, tagAllParts, range, p0, p1);
-//   }
-// }
-
 //---------------------------------------------------------
 //   tagItems
 //---------------------------------------------------------
 
 void MidiEditor::tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const
 {
-  //const bool tagSelected = options._flags & MusECore::TagSelected;
-  //const bool tagMoving   = options._flags & MusECore::TagMoving;
   const bool tagAllItems = options._flags & MusECore::TagAllItems;
   const bool tagAllParts = options._flags & MusECore::TagAllParts;
   const bool range       = options._flags & MusECore::TagRange;
@@ -614,8 +493,6 @@ void MidiEditor::songChanged(MusECore::SongChangedStruct_t type)
                   }
             if (canvas)
                   canvas->songChanged(type);
-            //else if (wview)
-            //      wview->songChanged(type);
 
             if (type._flags & (SC_PART_REMOVED | SC_PART_MODIFIED
                | SC_PART_INSERTED | SC_TRACK_REMOVED)) {
@@ -624,8 +501,6 @@ void MidiEditor::songChanged(MusECore::SongChangedStruct_t type)
                   
                   if (canvas)
                         setWindowTitle(canvas->getCaption());
-                  //else if (wview)
-                  //      setWindowTitle(wview->getCaption());
                   if (type._flags & SC_SIG)
                         time->update();
                         

@@ -34,25 +34,16 @@ class Xml;
 
 namespace MusEGui {
 
-// REMOVE Tim. citem. Changed.
-// class Remove : public QDialog, public Ui::RemoveBase
 class Remove : public FunctionDialogBase, public Ui::RemoveBase
 {
   Q_OBJECT
 //   private:
     
-// REMOVE Tim. citem. Removed.
-//     QButtonGroup* range_group;
-//     QButtonGroup* parts_group;
-    
   protected slots:
-// REMOVE Tim. citem. Removed.
-//     void accept();
     void pull_values();
 
   public:
     Remove(QWidget* parent = 0);
-//     ~Remove();
 
     static int _range;
     static int _parts;
@@ -78,9 +69,6 @@ class Remove : public FunctionDialogBase, public Ui::RemoveBase
     void setCurParts(int parts) { _parts = parts; }
     void setReturnFlags(FunctionReturnDialogFlags_t f) { _ret_flags = f; }
     FunctionDialogElements_t elements() const { return _elements; }
-    
-//   public slots:
-//     int exec();
 };
 
 } // namespace MusEGui

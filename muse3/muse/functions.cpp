@@ -49,8 +49,6 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <math.h>
-// #include <map>
-// #include <set>
 
 #include <QTemporaryFile>
 #include <QMimeData>
@@ -338,300 +336,6 @@ map<const Event*, const Part*> get_events(const set<const Part*>& parts, int ran
 }
 
 
-
-// REMOVE Tim. citem. Removed.
-// bool modify_notelen(const set<const Part*>& parts)
-// {
-// 	if (!MusEGui::gatetime_dialog->exec())
-// 		return false;
-// 		
-// 	modify_notelen(parts,MusEGui::gatetime_dialog->range,MusEGui::gatetime_dialog->rateVal,MusEGui::gatetime_dialog->offsetVal);
-// 	
-// 	return true;
-// }
-// 
-// bool modify_velocity(const set<const Part*>& parts)
-// {
-// 	if (!MusEGui::velocity_dialog->exec())
-// 		return false;
-// 		
-// 	modify_velocity(parts,MusEGui::velocity_dialog->range,MusEGui::velocity_dialog->rateVal,MusEGui::velocity_dialog->offsetVal);
-// 	
-// 	return true;
-// }
-// 
-// bool quantize_notes(const set<const Part*>& parts)
-// {
-// 	if (!MusEGui::quantize_dialog->exec())
-// 		return false;
-// 
-//   int raster = MusEGui::functionQuantizeRasterVals[MusEGui::quantize_dialog->raster_index];
-//   quantize_notes(parts, MusEGui::quantize_dialog->range, (MusEGlobal::config.division*4)/raster,
-// 	               MusEGui::quantize_dialog->quant_len, MusEGui::quantize_dialog->strength, MusEGui::quantize_dialog->swing,
-// 	               MusEGui::quantize_dialog->threshold);
-// 	
-// 	return true;
-// }
-
-// REMOVE Tim. citem. Removed.
-// bool erase_notes(const set<const Part*>& parts)
-// {
-//   MusEGui::erase_dialog->setButtons();
-// 	if (!MusEGui::erase_dialog->exec())
-// 		return false;
-// 		
-// 	erase_notes(parts,MusEGui::erase_dialog->range, MusEGui::erase_dialog->velo_threshold, MusEGui::erase_dialog->velo_thres_used, 
-// 	                                       MusEGui::erase_dialog->len_threshold, MusEGui::erase_dialog->len_thres_used );
-// 	
-// 	return true;
-// }
-/*
-bool delete_overlaps(const set<const Part*>& parts)
-{
-	if (!MusEGui::del_overlaps_dialog->exec())
-		return false;
-		
-	delete_overlaps(parts,MusEGui::erase_dialog->_range);
-	
-	return true;
-}
-
-bool set_notelen(const set<const Part*>& parts)
-{
-	if (!MusEGui::set_notelen_dialog->exec())
-		return false;
-		
-	set_notelen(parts,MusEGui::set_notelen_dialog->range,MusEGui::set_notelen_dialog->len);
-	
-	return true;
-}
-
-bool move_notes(const set<const Part*>& parts)
-{
-	if (!MusEGui::move_notes_dialog->exec())
-		return false;
-		
-	move_notes(parts,MusEGui::move_notes_dialog->range,MusEGui::move_notes_dialog->amount);
-	
-	return true;
-}
-
-bool transpose_notes(const set<const Part*>& parts)
-{
-	if (!MusEGui::transpose_dialog->exec())
-		return false;
-		
-	transpose_notes(parts,MusEGui::transpose_dialog->range,MusEGui::transpose_dialog->amount);
-	
-	return true;
-}
-
-bool crescendo(const set<const Part*>& parts)
-{
-	if (MusEGlobal::song->rpos() <= MusEGlobal::song->lpos())
-	{
-		QMessageBox::warning(NULL, QObject::tr("Error"), QObject::tr("Please first select the range for crescendo with the loop markers."));
-		return false;
-	}
-	
-	if (!MusEGui::crescendo_dialog->exec())
-		return false;
-		
-	crescendo(parts,MusEGui::crescendo_dialog->range,MusEGui::crescendo_dialog->start_val,MusEGui::crescendo_dialog->end_val,MusEGui::crescendo_dialog->absolute);
-	
-	return true;
-}
-
-bool legato(const set<const Part*>& parts)
-{
-	if (!MusEGui::legato_dialog->exec())
-		return false;
-		
-	legato(parts,MusEGui::legato_dialog->range, MusEGui::legato_dialog->min_len, !MusEGui::legato_dialog->allow_shortening);
-	
-	return true;
-}
-
-
-
-bool modify_notelen()
-{
-	if (!MusEGui::gatetime_dialog->exec())
-		return false;
-		
-	set<const Part*> parts;
-	if (MusEGui::gatetime_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
-		parts=get_all_selected_parts();
-	else
-		parts=get_all_parts();
-		
-	modify_notelen(parts,MusEGui::gatetime_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::gatetime_dialog->rateVal,MusEGui::gatetime_dialog->offsetVal);
-	
-	return true;
-}
-
-bool modify_velocity()
-{
-	if (!MusEGui::velocity_dialog->exec())
-		return false;
-		
-	set<const Part*> parts;
-	if (MusEGui::velocity_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
-		parts=get_all_selected_parts();
-	else
-		parts=get_all_parts();
-		
-	modify_velocity(parts,MusEGui::velocity_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS,MusEGui::velocity_dialog->rateVal,MusEGui::velocity_dialog->offsetVal);
-	
-	return true;
-}
-
-bool quantize_notes()
-{
-	if (!MusEGui::quantize_dialog->exec())
-		return false;
-		
-	set<const Part*> parts;
-	if (MusEGui::quantize_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
-		parts=get_all_selected_parts();
-	else
-		parts=get_all_parts();
-
-  int raster = MusEGui::functionQuantizeRasterVals[MusEGui::quantize_dialog->raster_index];
-  quantize_notes(parts, MusEGui::quantize_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, (config.division*4)/raster,
-	               MusEGui::quantize_dialog->quant_len, MusEGui::quantize_dialog->strength, MusEGui::quantize_dialog->swing,
-	               MusEGui::quantize_dialog->threshold);
-	
-	return true;
-}*/
-
-// REMOVE Tim. citem. Removed.
-// bool erase_notes()
-// {
-//   MusEGui::erase_dialog->setButtons();
-// 	if (!MusEGui::erase_dialog->exec())
-// 		return false;
-// 		
-// 	set<const Part*> parts;
-// 	if (MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
-// 		parts=get_all_selected_parts();
-// 	else
-// 		parts=get_all_parts();
-// 		
-// 	erase_notes(parts,MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::erase_dialog->velo_threshold, MusEGui::erase_dialog->velo_thres_used, 
-// 	            MusEGui::erase_dialog->len_threshold, MusEGui::erase_dialog->len_thres_used );
-// 	
-// 	return true;
-// }
-
-// REMOVE Tim. citem. Removed.
-// bool delete_overlaps()
-// {
-// 	if (!MusEGui::del_overlaps_dialog->exec())
-// 		return false;
-// 		
-// 	set<const Part*> parts;
-// 	if (MusEGui::del_overlaps_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
-// 		parts=get_all_selected_parts();
-// 	else
-// 		parts=get_all_parts();
-// 		
-// 	delete_overlaps(parts,MusEGui::erase_dialog->_range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS);
-// 	
-// 	return true;
-// }
-// 
-// bool set_notelen()
-// {
-// 	if (!MusEGui::set_notelen_dialog->exec())
-// 		return false;
-// 		
-// 	set<const Part*> parts;
-// 	if (MusEGui::set_notelen_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
-// 		parts=get_all_selected_parts();
-// 	else
-// 		parts=get_all_parts();
-// 		
-// 	set_notelen(parts,MusEGui::set_notelen_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::set_notelen_dialog->len);
-// 	
-// 	return true;
-// }
-// 
-// bool move_notes()
-// {
-// 	if (!MusEGui::move_notes_dialog->exec())
-// 		return false;
-// 		
-// 	set<const Part*> parts;
-// 	if (MusEGui::move_notes_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
-// 		parts=get_all_selected_parts();
-// 	else
-// 		parts=get_all_parts();
-// 		
-// 	move_notes(parts,MusEGui::move_notes_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::move_notes_dialog->amount);
-// 	
-// 	return true;
-// }
-// 
-// bool transpose_notes()
-// {
-// 	if (!MusEGui::transpose_dialog->exec())
-// 		return false;
-// 		
-// 	set<const Part*> parts;
-// 	if (MusEGui::transpose_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
-// 		parts=get_all_selected_parts();
-// 	else
-// 		parts=get_all_parts();
-// 		
-// 	transpose_notes(parts,MusEGui::transpose_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::transpose_dialog->amount);
-// 	
-// 	return true;
-// }
-// 
-// bool crescendo()
-// {
-// 	if (MusEGlobal::song->rpos() <= MusEGlobal::song->lpos())
-// 	{
-// 		QMessageBox::warning(NULL, QObject::tr("Error"), QObject::tr("Please first select the range for crescendo with the loop markers."));
-// 		return false;
-// 	}
-// 	
-// 	if (!MusEGui::crescendo_dialog->exec())
-// 		return false;
-// 		
-// 	set<const Part*> parts;
-// 	if (MusEGui::crescendo_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
-// 		parts=get_all_selected_parts();
-// 	else
-// 		parts=get_all_parts();
-// 		
-// 	crescendo(parts,MusEGui::crescendo_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::crescendo_dialog->start_val,MusEGui::crescendo_dialog->end_val,MusEGui::crescendo_dialog->absolute);
-// 	
-// 	return true;
-// }
-// 
-// bool legato()
-// {
-// 	if (!MusEGui::legato_dialog->exec())
-// 		return false;
-// 		
-// 	set<const Part*> parts;
-// 	if (MusEGui::legato_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
-// 		parts=get_all_selected_parts();
-// 	else
-// 		parts=get_all_parts();
-// 		
-// 	legato(parts,MusEGui::legato_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::legato_dialog->min_len, !MusEGui::legato_dialog->allow_shortening);
-// 	
-// 	return true;
-// }
-// 
-// 
-// 
-
-
-
 bool modify_velocity(const set<const Part*>& parts, int range, int rate, int offset)
 {
 	map<const Event*, const Part*> events = get_events(parts, range);
@@ -856,7 +560,6 @@ bool erase_notes(const set<const Part*>& parts, int range, int velo_threshold, b
 		return false;
 }
 
-// REMOVE Tim. citem. Removed.
 bool transpose_notes(const set<const Part*>& parts, int range, signed int halftonesteps)
 {
 	map<const Event*, const Part*> events = get_events(parts, range);
@@ -1019,9 +722,6 @@ bool delete_overlaps(const set<const Part*>& parts, int range)
 
 						if (new_len==0)
 						{
-// REMOVE Tim. citem. Changed. Mistake by original author? Multiple deletion of event1 !
-// 							operations.push_back(UndoOp(UndoOp::DeleteEvent, event1, part1, false, false));
-// 							deleted_events.insert(&event1);
 							operations.push_back(UndoOp(UndoOp::DeleteEvent, event2, part2, false, false));
 							deleted_events.insert(&event2);
 						}
@@ -1193,7 +893,7 @@ unsigned get_groupedevents_len(const QString& pt)
 unsigned get_clipboard_len()
 {
 	QString tmp="x-muse-groupedeventlists"; // QClipboard::text() expects a QString&, not a QString :(
-	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);  // TODO CHECK Tim.
+	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);
 	
 	return get_groupedevents_len(s);
 }
@@ -1450,12 +1150,6 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 											}
 										}
 										
-	// REMOVE Tim. citem. Changed.
-	// 									if (e.lenTick() != 0) operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
-										// Don't add Note or Wave event types if they have no length.
-										// Otherwise, controllers, sysex, and meta should all be allowed.
-										//if ((e.type() != Note && e.type() != Wave) || e.lenTick() != 0)
-										//	operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
 										switch(e.type())
 										{
 											case Note:
@@ -1477,9 +1171,6 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 													// Don't event bother replacing it using DeletEvent or ModifyEvent.
 													if(el.empty())
 													{
-														// REMOVE Tim. citem. Added. Diagnostic.
-														fprintf(stderr, "paste_at: Adding new wave event: time:%u file:%s\n",
-																		e.posValue(), e.sndFile().name().toLatin1().constData());
 														operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
 													}
 													else
@@ -1494,15 +1185,8 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 															++nie;
 															if(nie == el.end())
 															{
-																// REMOVE Tim. citem. Added. Diagnostic.
-																fprintf(stderr, "paste_at: Leaving existing wave event intact: time:%u file:%s\n",
-																				ie->second.posValue(), ie->second.sndFile().name().toLatin1().constData());
 																break;
 															}
-															
-															// REMOVE Tim. citem. Added. Diagnostic.
-															fprintf(stderr, "paste_at: Deleting existing wave event: time:%u file:%s\n",
-																			ie->second.posValue(), ie->second.sndFile().name().toLatin1().constData());
 															
 															operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
 														}
@@ -1520,18 +1204,8 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 												//  at a time for a given controller number anyway.
 												for(iEvent ie = el.begin(); ie != el.end(); ++ie)
 												{
-													
-													// REMOVE Tim. citem. Added. Diagnostic.
-													fprintf(stderr, "paste_at: Deleting existing controller event: time:%u number:%d\n",
-																	ie->second.posValue(), ie->second.dataA());
-													
 													operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, true, true));
 												}
-												
-												// REMOVE Tim. citem. Added. Diagnostic.
-												if(!el.empty())
-													fprintf(stderr, "paste_at: Adding replacement controller event: time:%u number:%d\n",
-																	e.posValue(), e.dataA());
 												
 												// Do port controller values and clone parts. 
 												operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, true, true));
@@ -1547,9 +1221,6 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 												// Don't even bother replacing it using DeletEvent or ModifyEvent.
 												if(el.empty())
 												{
-													// REMOVE Tim. citem. Added. Diagnostic.
-													fprintf(stderr, "paste_at: Adding new sysex: time:%u len:%d\n",
-																	e.posValue(), e.dataLen());
 													operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
 												}
 												else
@@ -1564,15 +1235,8 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 														++nie;
 														if(nie == el.end())
 														{
-															// REMOVE Tim. citem. Added. Diagnostic.
-															fprintf(stderr, "paste_at: Leaving existing sysex intact: time:%u len:%d\n",
-																			ie->second.posValue(), ie->second.dataLen());
 															break;
 														}
-														
-														// REMOVE Tim. citem. Added. Diagnostic.
-														fprintf(stderr, "paste_at: Deleting existing sysex event: time:%u len:%d\n",
-																		ie->second.posValue(), ie->second.dataLen());
 														
 														operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
 													}
@@ -1589,9 +1253,6 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 												// Don't even bother replacing it using DeletEvent or ModifyEvent.
 												if(el.empty())
 												{
-													// REMOVE Tim. citem. Added. Diagnostic.
-													fprintf(stderr, "paste_at: Adding new meta: time:%u len:%d\n",
-																	e.posValue(), e.dataLen());
 													operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
 												}
 												else
@@ -1606,15 +1267,8 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 														++nie;
 														if(nie == el.end())
 														{
-															// REMOVE Tim. citem. Added. Diagnostic.
-															fprintf(stderr, "paste_at: Leaving existing meta intact: time:%u len:%d\n",
-																			ie->second.posValue(), ie->second.dataLen());
 															break;
 														}
-														
-														// REMOVE Tim. citem. Added. Diagnostic.
-														fprintf(stderr, "paste_at: Deleting existing meta event: time:%u len:%d\n",
-																		ie->second.posValue(), ie->second.dataLen());
 														
 														operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
 													}
@@ -1664,12 +1318,8 @@ void select_all(const set<const Part*>& parts)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
-// REMOVE Tim. citem. Changed.
 			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, true, event.selected()));
-// 			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, true, event.selected()));
 		}
-// REMOVE Tim. citem. Changed.
-// 	MusEGlobal::song->applyOperationGroup(operations);
 	MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate);
 }
 
@@ -1682,12 +1332,8 @@ void select_none(const set<const Part*>& parts)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
-// REMOVE Tim. citem. Changed.
 			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, false, event.selected()));
-			//operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, false, event.selected(), false));
 		}
-// REMOVE Tim. citem. Changed.
-// 	MusEGlobal::song->applyOperationGroup(operations);
 	MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate);
 }
 
@@ -1700,12 +1346,8 @@ void select_invert(const set<const Part*>& parts)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
-// REMOVE Tim. citem. Changed.
 			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, !event.selected(), event.selected()));
-			//operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, !event.selected(), event.selected(), false));
 		}
-// REMOVE Tim. citem. Changed.
-// 	MusEGlobal::song->applyOperationGroup(operations);
 	MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate);
 }
 
@@ -1719,14 +1361,9 @@ void select_in_loop(const set<const Part*>& parts)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
-// REMOVE Tim. citem. Changed.
 			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part,
          (event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected()));
-			//operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part,
-      //   (event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected(), false));
 		}
-// REMOVE Tim. citem. Changed.
-// 	MusEGlobal::song->applyOperationGroup(operations);
 	MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate);
 }
 
@@ -1740,14 +1377,9 @@ void select_not_in_loop(const set<const Part*>& parts)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
-// REMOVE Tim. citem. Changed.
 			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part,
         !(event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected()));
-			//operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part,
-      //           !(event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected(), false));
 		}
-// REMOVE Tim. citem. Changed.
-// 	MusEGlobal::song->applyOperationGroup(operations);
 	MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate);
 }
 
@@ -2051,10 +1683,6 @@ bool delete_selected_parts()
 }
 
 
-
-
-
-
 //=============================================================================
 // BEGIN item-based functions
 //=============================================================================
@@ -2089,95 +1717,6 @@ class PasteEraseCtlMap : public PasteEraseCtlMap_t
     // Tidy up the very last items in the list.
     void tidy();
 };
-
-
-// void PasteEraseCtlMap::add(int ctl_num, unsigned int ctl_time,
-//                            unsigned int len_val)
-// {
-//   unsigned long ctl_end_time;
-// 
-//   if(len_val > 0)
-//     ctl_end_time = ctl_time + len_val;
-//   else
-//     ctl_end_time = ctl_time + 1;
-// 
-//   iPasteEraseCtlMap icm = find(ctl_num);
-//   if(icm == end())
-//   {
-//     PasteEraseMap_t new_tmap;
-//     new_tmap.insert(PasteEraseMapInsertPair_t(ctl_time, ctl_end_time));
-//     insert(PasteEraseCtlMapPair_t(ctl_num, new_tmap));
-//   }
-//   else
-//   {
-//     PasteEraseMap_t& tmap = icm->second;
-//     // The event times are sorted already, so this always returns end().
-//     //iPasteEraseMap itm = tmap.upper_bound(ctl_time);
-//     iPasteEraseMap itm = tmap.end();
-//     if(itm != tmap.begin())
-//     {
-//       --itm;
-//       unsigned long prev_ctl_time = itm->first;
-//       unsigned long prev_ctl_end_time = itm->second;
-// 
-//       iPasteEraseMap itm_2 = tmap.end();
-//       if(itm != tmap.begin())
-//       {
-//         itm_2 = itm;
-//         --itm_2;
-//       }
-// 
-//       if((prev_ctl_end_time >= ctl_time) || _erase_controllers_inclusive)
-//       {
-//         if(_erase_controllers_inclusive)
-//           itm->second = ctl_time;
-//         
-//         if(itm_2 != tmap.end())
-//         {
-//           if((itm_2->second >= prev_ctl_time) || _erase_controllers_inclusive)
-//           {
-//             itm_2->second = itm->second;
-//             tmap.erase(itm);
-//           }
-//         }
-// 
-//         tmap.insert(PasteEraseMapInsertPair_t(ctl_time, ctl_end_time));
-//       }
-//       else
-//       {
-//         // If we want wysiwyg pasting, we erase existing events up to
-//         //  the end-time of the last tmap item which ended a contiguous
-//         //  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
-//         //  the start-time of that last tmap item. So, that last item in the
-//         //  cluster can be deleted since we already have the start-time and
-//         //  end-time of the SECOND-LAST tmap item in the cluster.
-//         //if(!erase_controllers_wysiwyg)
-//         //	tmap.erase(itm);
-// 
-//         if(!_erase_controllers_wysiwyg)
-//           itm->second = itm->first + 1;
-// 
-//         // If we want wysiwyg pasting, we erase existing events up to
-//         //  the end-time of the last tmap item which ended a contiguous
-//         //  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
-//         //  the start-time of that last tmap item. So we 'truncate' that
-//         //  last item in the cluster by setting the end-time to the start-time,
-//         //  so that the gathering routine below knows to erase that last
-//         //  single-time position.
-//         if(itm_2 != tmap.end())
-//         {
-//           if(itm_2->second >= itm->first)
-//           {
-//             itm_2->second = itm->second;
-//             tmap.erase(itm);
-//           }
-//         }
-// 
-//         tmap.insert(PasteEraseMapInsertPair_t(ctl_time, ctl_end_time));
-//       }
-//     }
-//   }
-// }
 
 void PasteEraseCtlMap::add(int ctl_num, unsigned int ctl_time,
                            unsigned int len_val)
@@ -2235,22 +1774,14 @@ void PasteEraseCtlMap::add(int ctl_num, unsigned int ctl_time,
         // If we want wysiwyg pasting, we erase existing events up to
         //  the end-time of the last tmap item which ended a contiguous
         //  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
-        //  the start-time of that last tmap item. So, that last item in the
-        //  cluster can be deleted since we already have the start-time and
-        //  end-time of the SECOND-LAST tmap item in the cluster.
-        //if(!erase_controllers_wysiwyg)
-        //	tmap.erase(itm);
-
-        if(!_erase_controllers_wysiwyg)
-                    itm->second = itm->first + 1;
-
-        // If we want wysiwyg pasting, we erase existing events up to
-        //  the end-time of the last tmap item which ended a contiguous
-        //  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
         //  the start-time of that last tmap item. So we 'truncate' that
         //  last item in the cluster by setting the end-time to the start-time,
         //  so that the gathering routine below knows to erase that last
         //  single-time position.
+        
+        if(!_erase_controllers_wysiwyg)
+          itm->second = itm->first + 1;
+
         if(prev_itm_2 != tmap.end())
         {
           if(prev_itm_2->second >= itm->first)
@@ -2294,104 +1825,6 @@ void PasteEraseCtlMap::tidy()
   }
 }
 
-// void untag_all_items()
-// {
-// 	Part* part;
-// 	PartList* pl;
-// 	TrackList* tl = MusEGlobal::song->tracks();
-// 	
-// 	// We must clear all the tagged flags...
-// 	for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-// 	{
-// 		pl = (*it)->parts();
-// 		for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-// 		{
-// 			part = ip->second;
-// 			part->setTagged(false);
-// 			if(part->eventsTagged())
-// 			{
-// 				part->setEventsTagged(false);
-// 				EventList& el = part->nonconst_events();
-// 				for(iEvent ie = el.begin(); ie != el.end(); ie++)
-// 					ie->second.setTagged(false);
-// 			}
-// 		}
-// 	}
-// }
-
-// //--------------------------------------------------------
-// // untag_clones
-// // Untags any clones of the given event in the given part.
-// // Does not untag the given event or the given part.
-// //--------------------------------------------------------
-// 
-// void untag_clones(Part* part, const Event& event)
-// {
-//   Part* p = part;
-//   do
-//   {
-//     // Only for other clones. Leave the given part and event alone.
-//     // Optimization: Only if the part says events are tagged.
-//     if(p != part && p->eventsTagged())
-//     {
-//       iEvent ie = p->nonconst_events().findWithId(event);
-//       if(ie != p->nonconst_events().end())
-//       {
-//         // Untag the event. Don't bother resetting the part's eventsTagged flag
-//         //  since there may be still be other tagged events.
-//         ie->second.setTagged(false);
-//       }
-//     }
-//     p = p->nextClone();
-//   }
-//   while(p != part);
-// }
-
-// bool erase_items(int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
-// {
-//   Undo operations;
-//   
-//   Part* part;
-//   PartList* pl;
-//   TrackList* tl = MusEGlobal::song->tracks();
-// 
-//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//   {
-//     pl = (*it)->parts();
-//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//     {
-//       part = ip->second;
-//       part->setTagged(false);
-//       if(part->eventsTagged())
-//       {
-//         part->setEventsTagged(false);
-//         EventList& el = part->nonconst_events();
-//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
-//         {
-//           Event& e = ie->second;
-//           if(e.tagged())
-//           {
-//             e.setTagged(false);
-//             
-//             // If there are clones of this event, untag all of them now except this one.
-//             untag_clones(part, e);
-//             
-//             // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
-//             if ( e.type() != Note || (!velo_thres_used && !len_thres_used) ||
-//                    (velo_thres_used && e.velo() < velo_threshold) ||
-//                   (len_thres_used && int(e.lenTick()) < len_threshold) )
-//             {
-//               operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
-//             }
-//           }
-//         }
-//       }
-//     }
-//   }
-//   
-//   return MusEGlobal::song->applyOperationGroup(operations);
-// }
-
 bool erase_items(TagEventList* tag_list, int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
 {
   Undo operations;
@@ -2419,75 +1852,6 @@ bool erase_items(TagEventList* tag_list, int velo_threshold, bool velo_thres_use
   
   return MusEGlobal::song->applyOperationGroup(operations);
 }
-
-// bool crescendo_items(int start_val, int end_val, bool absolute)
-// {
-//   const Pos& from = MusEGlobal::song->lPos();
-//   const Pos& to = MusEGlobal::song->rPos();
-//   if(to <= from)
-//   {
-//     // Must untag all items.
-//     untag_all_items();
-//     return false;
-//   }
-//   
-//   Undo operations;
-//   Pos pos;
-//   float curr_val;
-//   unsigned int pos_val = (to - from).posValue();
-//   Part* part;
-//   PartList* pl;
-//   TrackList* tl = MusEGlobal::song->tracks();
-// 
-//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//   {
-//     pl = (*it)->parts();
-//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//     {
-//       part = ip->second;
-//       part->setTagged(false);
-//       if(part->eventsTagged())
-//       {
-//         part->setEventsTagged(false);
-//         EventList& el = part->nonconst_events();
-//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
-//         {
-//           Event& e = ie->second;
-//           if(e.tagged())
-//           {
-//             e.setTagged(false);
-//             
-//             // If there are clones of this event, untag all of them now except this one.
-//             untag_clones(part, e);
-//             
-//             // This operation can only apply to notes.
-//             if(e.type() != Note)
-//               continue;
-// 
-//             pos = e.pos() + *part;
-//             curr_val = (float)start_val + (float)(end_val - start_val) * (pos - from).posValue() / pos_val;
-// 
-//             Event newEvent = e.clone();
-//             int velo = e.velo();
-// 
-//             if (absolute)
-//               velo=curr_val;
-//             else
-//               velo=curr_val*velo/100;
-// 
-//             if (velo > 127) velo=127;
-//             if (velo <= 0) velo=1;
-//             newEvent.setVelo(velo);
-//             
-//             operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
-//           }
-//         }
-//       }
-//     }
-//   }
-//   
-//   return MusEGlobal::song->applyOperationGroup(operations);
-// }
 
 bool crescendo_items(TagEventList* tag_list, int start_val, int end_val, bool absolute)
 {
@@ -2536,96 +1900,6 @@ bool crescendo_items(TagEventList* tag_list, int start_val, int end_val, bool ab
   return MusEGlobal::song->applyOperationGroup(operations);
 }
 
-// bool delete_overlaps_items()
-// {
-//   Undo operations;
-//   
-//   set<const Event*> deleted_events;
-//   int new_len;
-//   Event new_event1;
-//   Part* part;
-//   PartList* pl;
-//   TrackList* tl = MusEGlobal::song->tracks();
-// 
-//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//   {
-//     pl = (*it)->parts();
-//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//     {
-//       part = ip->second;
-//       part->setTagged(false);
-//       if(part->eventsTagged())
-//       {
-//         part->setEventsTagged(false);
-//         EventList& el = part->nonconst_events();
-//         for(iEvent ie = el.begin(); ie != el.end(); ++ie)
-//         {
-//           Event& e = ie->second;
-//           if(e.tagged())
-//           {
-//             e.setTagged(false);
-//             
-//             // If there are clones of this event, untag all of them now.
-//             untag_clones(part, e);
-//             
-//             // This operation can only apply to notes.
-//             if(e.type() != Note)
-//               continue;
-//             
-//             // Has this event already been scheduled for deletion? Ignore it.
-//             if(deleted_events.find(&e) != deleted_events.end())
-//               continue;
-//                   
-//             iEvent ie2 = ie;
-//             ++ie2;
-//             for( ; ie2 != el.end(); ++ie2)
-//             {
-//               Event& e2 = ie2->second;
-//               
-//               // Do e2 and e point to the same event? Or has e2 already been scheduled for deletion? Ignore it.
-//               if(e == e2 || deleted_events.find(&e2) != deleted_events.end())
-//                 continue;
-//               
-//               if ( (e.pitch() == e2.pitch()) &&
-//                   (e.tick() <= e2.tick()) &&
-//                   (e.endTick() > e2.tick()) ) //they overlap
-//               {
-//                 new_len = e2.tick() - e.tick();
-// 
-//                 if(new_len==0)
-//                 {
-//                   // Might as well untag e2 and any of its clones, since it has been processed now.
-//                   e2.setTagged(false);
-//                   untag_clones(part, e2);
-// // REMOVE Tim. citem. Changed. Mistake by original author? Multiple deletion of e !
-// //                     operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, false, false));
-// //                     deleted_events.insert(&e);
-//                   operations.push_back(UndoOp(UndoOp::DeleteEvent, e2, part, false, false));
-//                   deleted_events.insert(&e2);
-//                 }
-//                 else
-//                 {
-//                   new_event1 = e.clone();
-//                   new_event1.setLenTick(new_len);
-//                   
-//                   operations.push_back(UndoOp(UndoOp::ModifyEvent, new_event1, e, part, false, false));
-//                   
-//                   // After resizing the event, it should not be necessary to continue with any further
-//                   //  events in this loop since any more sorted events will come at or AFTER e2's position
-//                   //  which we have just resized the end of e to.
-//                   break;
-//                 }
-//               }
-//             }
-//           }
-//         }
-//       }
-//     }
-//   }
-//   
-//   return MusEGlobal::song->applyOperationGroup(operations);
-// }
-
 bool delete_overlaps_items(TagEventList* tag_list)
 {
   Undo operations;
@@ -2672,9 +1946,6 @@ bool delete_overlaps_items(TagEventList* tag_list)
 
           if(new_len==0)
           {
-  // REMOVE Tim. citem. Changed. Mistake by original author? Multiple deletion of e !
-  //                     operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, false, false));
-  //                     deleted_events.insert(&e);
             operations.push_back(UndoOp(UndoOp::DeleteEvent, e2, part, false, false));
             deleted_events.insert(&e2);
           }
@@ -2697,78 +1968,6 @@ bool delete_overlaps_items(TagEventList* tag_list)
   
   return MusEGlobal::song->applyOperationGroup(operations);
 }
-
-// bool modify_notelen_items(int rate, int offset)
-// {
-//   if(rate == 100 && offset == 0)
-//   {
-//     // Must untag all items.
-//     untag_all_items();
-//     return false;
-//   }
-//     
-//   Undo operations;
-//   
-//   unsigned int len;
-//   map<const Part*, int> partlen;
-//   Event newEvent;
-//   Part* part;
-//   PartList* pl;
-//   TrackList* tl = MusEGlobal::song->tracks();
-// 
-//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//   {
-//     pl = (*it)->parts();
-//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//     {
-//       part = ip->second;
-//       part->setTagged(false);
-//       if(part->eventsTagged())
-//       {
-//         part->setEventsTagged(false);
-//         EventList& el = part->nonconst_events();
-//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
-//         {
-//           Event& e = ie->second;
-//           if(e.tagged())
-//           {
-//             e.setTagged(false);
-//             
-//             // If there are clones of this event, untag all of them now.
-//             untag_clones(part, e);
-//             
-//             // This operation can only apply to notes.
-//             if(e.type() != Note)
-//               continue;
-//             
-//             len = e.lenTick(); //prevent compiler warning: comparison signed/unsigned
-// 
-//             len = (len * rate) / 100;
-//             len += offset;
-// 
-//             if (len <= 0)
-//               len = 1;
-//             
-//             if ((e.tick()+len > part->lenTick()) && (!part->hasHiddenEvents()))
-//               partlen[part] = e.tick() + len; // schedule auto-expanding
-//               
-//             if (e.lenTick() != len)
-//             {
-//               newEvent = e.clone();
-//               newEvent.setLenTick(len);
-//               operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
-//             }
-//           }
-//           
-//           for (map<const Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
-//             schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
-//         }
-//       }
-//     }
-//   }
-//   
-//   return MusEGlobal::song->applyOperationGroup(operations);
-// }
 
 bool modify_notelen_items(TagEventList* tag_list, int rate, int offset)
 {
@@ -2819,77 +2018,6 @@ bool modify_notelen_items(TagEventList* tag_list, int rate, int offset)
   
   return MusEGlobal::song->applyOperationGroup(operations);
 }
-
-// bool legato_items(int min_len, bool dont_shorten)
-// {
-//   Undo operations;
-//   
-//   if (min_len<=0) min_len=1;
-//   
-//   unsigned len = INT_MAX;
-//   bool relevant;
-//   Event new_event1;
-//   Part* part;
-//   PartList* pl;
-//   TrackList* tl = MusEGlobal::song->tracks();
-// 
-//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//   {
-//     pl = (*it)->parts();
-//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//     {
-//       part = ip->second;
-//       part->setTagged(false);
-//       if(part->eventsTagged())
-//       {
-//         part->setEventsTagged(false);
-//         EventList& el = part->nonconst_events();
-//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
-//         {
-//           Event& e = ie->second;
-//           if(e.tagged())
-//           {
-//             e.setTagged(false);
-//             
-//             // This operation can only apply to notes.
-//             if(e.type() != Note)
-//               continue;
-//             
-//             // If there are clones of this event, untag all of them now.
-//             untag_clones(part, e);
-//             
-//             iEvent ie2 = ie;
-//             ++ie2;
-//             for( ; ie2 != el.end(); ++ie2)
-//             {
-//               Event& e2 = ie2->second;
-// 
-//               relevant = (e2.tick() >= e.tick() + min_len);
-//               if (dont_shorten)
-//                 relevant = relevant && (e2.tick() >= e.endTick());
-//               
-//               if ( relevant &&                      // they're not too near (respect min_len and dont_shorten)
-//                    (e2.tick() - e.tick() < len ) )  // that's the nearest relevant following note
-//                 len = e2.tick() - e.tick();
-//             }            
-//             
-//             if (len==INT_MAX) len = e.lenTick(); // if no following note was found, keep the length
-//             
-//             if (e.lenTick() != len)
-//             {
-//               new_event1 = e.clone();
-//               new_event1.setLenTick(len);
-//               
-//               operations.push_back(UndoOp(UndoOp::ModifyEvent, new_event1, e, part, false, false));
-//             }
-//           }
-//         }
-//       }
-//     }
-//   }
-//   
-//   return MusEGlobal::song->applyOperationGroup(operations);
-// }
 
 bool legato_items(TagEventList* tag_list, int min_len, bool dont_shorten)
 {
@@ -2947,89 +2075,6 @@ bool legato_items(TagEventList* tag_list, int min_len, bool dont_shorten)
   return MusEGlobal::song->applyOperationGroup(operations);
 }
 
-// bool move_items(signed int ticks)
-// {
-//   if(ticks == 0)
-//   {
-//     // Must untag all items.
-//     untag_all_items();
-//     return false;
-//   }
-//   
-//   Undo operations;
-//   map<const Part*, int> partlen;
-//   
-//   bool del;
-//   Event newEvent;
-//   Part* part;
-//   PartList* pl;
-//   TrackList* tl = MusEGlobal::song->tracks();
-// 
-//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//   {
-//     pl = (*it)->parts();
-//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//     {
-//       part = ip->second;
-//       part->setTagged(false);
-//       if(part->eventsTagged())
-//       {
-//         part->setEventsTagged(false);
-//         EventList& el = part->nonconst_events();
-//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
-//         {
-//           Event& e = ie->second;
-//           if(e.tagged())
-//           {
-//             e.setTagged(false);
-//             
-//             // If there are clones of this event, untag all of them now.
-//             untag_clones(part, e);
-//             
-//             del = false;
-//             
-//             // This operation can only apply to notes.
-//             // Hm no, should be OK for all types.
-//             //if(e.type() != Note)
-//             //  continue;
-//             
-//             newEvent = e.clone();
-//             if ((signed)e.tick() + ticks < 0) //don't allow moving before the part's begin
-//               newEvent.setTick(0);
-//             else
-//               newEvent.setTick(e.tick() + ticks);
-//             
-//             if (newEvent.endTick() > part->lenTick()) //if exceeding the part's end:
-//             {
-//               if (part->hasHiddenEvents()) // auto-expanding is forbidden, clip
-//               {
-//                 if (part->lenTick() > newEvent.tick())
-//                   newEvent.setLenTick(part->lenTick() - newEvent.tick());
-//                 else
-//                   del = true; //if the new length would be <= 0, erase the note
-//               }
-//               else
-//                 partlen[part] = newEvent.endTick(); // schedule auto-expanding
-//             }
-//             
-//             if (del == false)
-//               //operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
-//               operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, true, true));
-//             else
-//               //operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, false, false));
-//               operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
-//           }
-//           
-//           for (map<const Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
-//             schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
-//         }
-//       }
-//     }
-//   }
-//   
-//   return MusEGlobal::song->applyOperationGroup(operations);
-// }
-
 bool move_items(TagEventList* tag_list, signed int ticks)
 {
   if(ticks == 0)
@@ -3076,11 +2121,9 @@ bool move_items(TagEventList* tag_list, signed int ticks)
       }
       
       if (del == false)
-        //operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
-        operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, true, true));
+        operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
       else
-        //operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, false, false));
-        operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
+        operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, false, false));
     }
     
     for (map<const Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
@@ -3089,89 +2132,6 @@ bool move_items(TagEventList* tag_list, signed int ticks)
   
   return MusEGlobal::song->applyOperationGroup(operations);
 }
-
-// bool quantize_items(int raster_idx, bool quant_len, int strength, int swing, int threshold)
-// {
-//   const int rv = MusEGui::functionQuantizeRasterVals[raster_idx];
-//   if(rv <= 0)
-//   {
-//     // Must untag all items.
-//     untag_all_items();
-//     return false;
-//   }
-//   
-//   const int raster = (MusEGlobal::config.division*4) / rv;
-//   
-//   Undo operations;
-//   
-//   unsigned begin_tick;
-//   int begin_diff;
-//   unsigned len;
-//   unsigned end_tick;
-//   int len_diff;
-//   Event newEvent;
-//   Part* part;
-//   PartList* pl;
-//   TrackList* tl = MusEGlobal::song->tracks();
-// 
-//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//   {
-//     pl = (*it)->parts();
-//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//     {
-//       part = ip->second;
-//       part->setTagged(false);
-//       if(part->eventsTagged())
-//       {
-//         part->setEventsTagged(false);
-//         EventList& el = part->nonconst_events();
-//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
-//         {
-//           Event& e = ie->second;
-//           if(e.tagged())
-//           {
-//             e.setTagged(false);
-//             
-//             // If there are clones of this event, untag all of them now.
-//             untag_clones(part, e);
-//             
-//             // This operation can only apply to notes.
-//             if(e.type() != Note)
-//               continue;
-//             
-//             begin_tick = e.tick() + part->tick();
-//             begin_diff = quantize_tick(begin_tick, raster, swing) - begin_tick;
-// 
-//             if (abs(begin_diff) > threshold)
-//               begin_tick = begin_tick + begin_diff*strength/100;
-// 
-//             len = e.lenTick();
-//             
-//             end_tick = begin_tick + len;
-//             len_diff = quantize_tick(end_tick, raster, swing) - end_tick;
-//               
-//             if ((abs(len_diff) > threshold) && quant_len)
-//               len = len + len_diff*strength/100;
-// 
-//             if (len <= 0)
-//               len = 1;
-// 
-//               
-//             if ( (e.lenTick() != len) || (e.tick() + part->tick() != begin_tick) )
-//             {
-//               newEvent = e.clone();
-//               newEvent.setTick(begin_tick - part->tick());
-//               newEvent.setLenTick(len);
-//               operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
-//             }
-//           }
-//         }
-//       }
-//     }
-//   }
-//   
-//   return MusEGlobal::song->applyOperationGroup(operations);
-// }
 
 bool quantize_items(TagEventList* tag_list, int raster_idx, bool quant_len, int strength, int swing, int threshold)
 {
@@ -3234,72 +2194,10 @@ bool quantize_items(TagEventList* tag_list, int raster_idx, bool quant_len, int 
   return MusEGlobal::song->applyOperationGroup(operations);
 }
 
-// bool set_notelen_items(int len)
-// {
-//   return modify_notelen_items(0, len);
-// }
-
 bool set_notelen_items(TagEventList* tag_list, int len)
 {
   return modify_notelen_items(tag_list, 0, len);
 }
-
-// bool transpose_items(signed int halftonesteps)
-// {
-//   if(halftonesteps == 0)
-//   {
-//     // Must untag all items.
-//     untag_all_items();
-//     return false;
-//   }
-//   
-//   Undo operations;
-//   
-//   Event newEvent;
-//   int pitch;
-//   Part* part;
-//   PartList* pl;
-//   TrackList* tl = MusEGlobal::song->tracks();
-// 
-//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//   {
-//     pl = (*it)->parts();
-//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//     {
-//       part = ip->second;
-//       part->setTagged(false);
-//       if(part->eventsTagged())
-//       {
-//         part->setEventsTagged(false);
-//         EventList& el = part->nonconst_events();
-//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
-//         {
-//           Event& e = ie->second;
-//           if(e.tagged())
-//           {
-//             e.setTagged(false);
-//             
-//             // If there are clones of this event, untag all of them now.
-//             untag_clones(part, e);
-//             
-//             // This operation can only apply to notes.
-//             if(e.type() != Note)
-//               continue;
-//             
-//             newEvent = e.clone();
-//             pitch = e.pitch() + halftonesteps;
-//             if (pitch > 127) pitch = 127;
-//             if (pitch < 0) pitch = 0;
-//             newEvent.setPitch(pitch);
-//             operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
-//           }
-//         }
-//       }
-//     }
-//   }
-//   
-//   return MusEGlobal::song->applyOperationGroup(operations);
-// }
 
 bool transpose_items(TagEventList* tag_list, signed int halftonesteps)
 {
@@ -3335,72 +2233,6 @@ bool transpose_items(TagEventList* tag_list, signed int halftonesteps)
   
   return MusEGlobal::song->applyOperationGroup(operations);
 }
-
-// bool modify_velocity_items(int rate, int offset)
-// {
-//   if(rate == 100 && offset == 0)
-//   {
-//     // Must untag all items.
-//     untag_all_items();
-//     return false;
-//   }
-//   
-//   Undo operations;
-//   int velo;
-//   Event newEvent;
-//   Part* part;
-//   PartList* pl;
-//   TrackList* tl = MusEGlobal::song->tracks();
-// 
-//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//   {
-//     pl = (*it)->parts();
-//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//     {
-//       part = ip->second;
-//       part->setTagged(false);
-//       if(part->eventsTagged())
-//       {
-//         part->setEventsTagged(false);
-//         EventList& el = part->nonconst_events();
-//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
-//         {
-//           Event& e = ie->second;
-//           if(e.tagged())
-//           {
-//             e.setTagged(false);
-//             
-//             // If there are clones of this event, untag all of them now.
-//             untag_clones(part, e);
-//             
-//             // This operation can only apply to notes.
-//             if(e.type() != Note)
-//               continue;
-//             
-//             velo = e.velo();
-// 
-//             velo = (velo * rate) / 100;
-//             velo += offset;
-// 
-//             if (velo <= 0)
-//               velo = 1;
-//             else if (velo > 127)
-//               velo = 127;
-//               
-//             if (e.velo() != velo)
-//             {
-//               newEvent = e.clone();
-//               newEvent.setVelo(velo);
-//               operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
-//             }
-//           }
-//         }
-//       }
-//     }
-//   }
-//   
-//   return MusEGlobal::song->applyOperationGroup(operations);
-// }
 
 bool modify_velocity_items(TagEventList* tag_list, int rate, int offset)
 {
@@ -3446,69 +2278,6 @@ bool modify_velocity_items(TagEventList* tag_list, int rate, int offset)
   return MusEGlobal::song->applyOperationGroup(operations);
 }
 
-// bool modify_off_velocity_items(int rate, int offset)
-// {
-//   if(rate == 100 && offset == 0)
-//   {
-//     // Must untag all items.
-//     untag_all_items();
-//     return false;
-//   }
-//   
-//   Undo operations;
-//   int velo;
-//   Event newEvent;
-//   Part* part;
-//   PartList* pl;
-//   TrackList* tl = MusEGlobal::song->tracks();
-// 
-//   for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//   {
-//     pl = (*it)->parts();
-//     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//     {
-//       part = ip->second;
-//       part->setTagged(false);
-//       if(part->eventsTagged())
-//       {
-//         part->setEventsTagged(false);
-//         EventList& el = part->nonconst_events();
-//         for(iEvent ie = el.begin(); ie != el.end(); ie++)
-//         {
-//           Event& e = ie->second;
-//           if(e.tagged())
-//           {
-//             e.setTagged(false);
-//             
-//             // This operation can only apply to notes.
-//             if(e.type() != Note)
-//               continue;
-//             
-//             velo = e.veloOff();
-// 
-//             velo = (velo * rate) / 100;
-//             velo += offset;
-// 
-//             if (velo <= 0)
-//               velo = 1;
-//             else if (velo > 127)
-//               velo = 127;
-//               
-//             if (e.veloOff() != velo)
-//             {
-//               newEvent = e.clone();
-//               newEvent.setVeloOff(velo);
-//               operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, part, false, false));
-//             }
-//           }
-//         }
-//       }
-//     }
-//   }
-//   
-//   return MusEGlobal::song->applyOperationGroup(operations);
-// }
-
 bool modify_off_velocity_items(TagEventList* tag_list, int rate, int offset)
 {
   if(rate == 100 && offset == 0)
@@ -3553,14 +2322,6 @@ bool modify_off_velocity_items(TagEventList* tag_list, int rate, int offset)
   return MusEGlobal::song->applyOperationGroup(operations);
 }
 
-// void copy_items()
-// {
-//  QMimeData* drag = cut_or_copy_tagged_items_to_mime();
-// 
-//  if (drag)
-//    QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
-// }
-
 void copy_items(TagEventList* tag_list)
 {
  QMimeData* drag = cut_or_copy_tagged_items_to_mime(tag_list);
@@ -3568,19 +2329,6 @@ void copy_items(TagEventList* tag_list)
  if (drag)
    QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
 }
-
-// bool cut_items()
-// {
-//   QMimeData* drag = cut_or_copy_tagged_items_to_mime(true);
-// 
-//   if(drag)
-//   {
-//     QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
-//     return true;
-//   }
-//   
-//   return false;
-// }
 
 bool cut_items(TagEventList* tag_list)
 {
@@ -3595,190 +2343,6 @@ bool cut_items(TagEventList* tag_list)
   return false;
 }
 
-// REMOVE Tim. citem. Added.
-// // if nothing is selected/relevant, this function returns NULL
-// QMimeData* cut_or_copy_tagged_items_to_mime(bool cut_mode /*, bool untag_when_done*/)
-// {
-// //     unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
-//   
-//     // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
-// //     unsigned start_tick = 0;
-//     //Event start_event;
-//     Pos start_pos;
-// 
-//     Undo operations;
-//   
-//     //bool do_cut = false;
-//     bool found = false;
-//     bool changed = false;
-//     Part* part;
-//     PartList* pl;
-//     TrackList* tl = MusEGlobal::song->tracks();
-//     for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//     {
-//       pl = (*it)->parts();
-//       for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//       {
-//         part = ip->second;
-//         // As an optimization, we only walk the events if the part says events are tagged.
-//         if(part->eventsTagged())
-//         {
-//           const EventList& el = part->events();
-//           for(ciEvent ie = el.begin(); ie != el.end(); ie++)
-//           {
-//             const Event& e = ie->second;
-//             //Event e = ie->second;
-//             
-// //             do_cut = false;
-// //             if(cut_mode)
-// //             {
-// //               // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
-// //               do_cut = (e.type() != Note) || (!cut_velo_thres_used && !cut_len_thres_used) ||
-// //                        (cut_velo_thres_used && e.velo() < cut_velo_threshold) ||
-// //                        (cut_len_thres_used && int(e.lenTick()) < cut_len_threshold);
-// //             }
-//             
-// //             if(e.tagged() && (!cut_mode || do_cut)) // && is_relevant(e, part, range, AllEventsRelevant))
-//             if(e.tagged()) // && is_relevant(e, part, range, AllEventsRelevant))
-//             {
-// //               if(e.tick() < start_tick)
-//               
-//               // Make sure the very first item is always processed.
-//               //if(!found || e.tick() < start_tick)
-//               if(!found || e.pos() < start_pos)
-//               {
-//                 found = true;
-// //                 start_tick = e.tick();
-//                 //start_event = e;
-//                 start_pos = e.pos();
-//               }
-//               
-//               // If there are clones of this event, untag all of them now except this one.
-//               // This prevents the operations system from warning of double operations.
-//               // The operations system will automatically take care of clones when performing
-//               //  an operation on any ONE of them. So make sure THIS is the only one tagged.
-//               // Since this is the first clone found, its position is the one considered
-//               //  for start_tick above, and this should be OK since the parts and events are
-//               //  sorted by position.
-// // //               // FIXME Oops. No this is flawed and can fail if clone part on Track 1 is
-// // //               //        AFTER clone part on Track 2. This will pick the position of that
-// // //               //        clone on the right in Track
-//               untag_clones(part, e);
-//             }
-//           }
-//         }
-//       }
-//     }
-//     
-// //     if (start_tick == INT_MAX)
-//     if(!found)
-//     {
-//       //if(untag_when_done)
-//       {
-//         // We must clear all the tagged flags...
-//         for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//         {
-//           pl = (*it)->parts();
-//           for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//           {
-//             part = ip->second;
-//             part->setTagged(false);
-//             // As an optimization, we only walk the events if the part says events are tagged.
-//             if(part->eventsTagged())
-//             {
-//               part->setEventsTagged(false);
-//               EventList& el = part->nonconst_events();
-//               for(iEvent ie = el.begin(); ie != el.end(); ie++)
-//                 ie->second.setTagged(false);
-//             }
-//           }
-//         }
-//       }
-//       return NULL;
-//     }
-// 
-//     //---------------------------------------------------
-//     //    write events as XML into tmp file
-//     //---------------------------------------------------
-// 
-//     FILE* tmp = tmpfile();
-//     if (tmp == 0)
-//     {
-//         fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
-//         return 0;
-//     }
-// 
-//     Xml xml(tmp);
-//     int level = 0;
-// 
-//     for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//     {
-//       pl = (*it)->parts();
-//       for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//       {
-//         part = ip->second;
-//         //if(untag_when_done)
-//           part->setTagged(false);
-//         // As an optimization, we only walk the events if the part says events are tagged.
-//         if(part->eventsTagged())
-//         {
-//           //if(untag_when_done)
-//             part->setEventsTagged(false);
-//           xml.tag(level++, "eventlist part_id=\"%d\"", part->sn());
-//           EventList& el = part->nonconst_events();
-//           for(iEvent ie = el.begin(); ie != el.end(); ie++)
-//           {
-//             Event& e = ie->second;
-//             if(e.tagged())
-//             {
-//               //if(untag_when_done)
-// //                 e.setTagged(false);
-// 
-// //               do_cut = false;
-// //               if(cut_mode)
-// //               {
-// //                 // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
-// //                 do_cut = (e.type() != Note) || (!cut_velo_thres_used && !cut_len_thres_used) ||
-// //                         (cut_velo_thres_used && e.velo() < cut_velo_threshold) ||
-// //                         (cut_len_thres_used && int(e.lenTick()) < cut_len_threshold);
-// //               }
-//                 
-//               
-// //               if(!cut_mode || do_cut)
-//                 //e.write(level, xml, -start_tick);
-//                 //Event ne(e);
-//                 Event ne = e.clone();
-//                 //ne.setPos(ne.pos() - start_event.pos());
-//                 ne.setPos(ne.pos() - start_pos);
-//                 ne.write(level, xml, Pos(0, e.pos().type() == Pos::TICKS));
-//                 //ne.write(level, xml, -start_pos);
-//    
-//                 // Reset the tag now, after the write. 
-//                 // Allow the tag info in the write, so that the paste routines can use the info.
-//                 e.setTagged(false);
-//                 
-// //               if(cut_mode && do_cut)
-//               if(cut_mode)
-//               {
-//                 changed = true;
-//                 operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, true, true));
-//               }
-//             }
-//           }
-//           xml.etag(--level, "eventlist");
-//         }
-//       }
-//     }
-//     
-//     QMimeData *mimeData =  file_to_mimedata(tmp, "text/x-muse-groupedeventlists" );
-//     fclose(tmp);
-//     
-//     if(changed)
-//       MusEGlobal::song->applyOperationGroup(operations);
-//     
-//     return mimeData;
-// }
-
 // if nothing is selected/relevant, this function returns NULL
 QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* tag_list, bool cut_mode)
 {
@@ -3792,126 +2356,20 @@ QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* tag_list, bool cut_mod
         return NULL;
     }
     
-//     unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
-  
-//     // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
-// //     unsigned start_tick = 0;
-//     //Event start_event;
-// //     Pos start_pos = tag_list->startPos();
     const Pos start_pos = tag_list->globalStats().evrange();
 
     Undo operations;
   
-//     //bool do_cut = false;
-// //     bool found = false;
     bool changed = false;
     const Part* part;
-// 
-//     for(ciTagEventList itl = list->begin(); itl != list->end(); ++itl)
-//     {
-//       part = itl->first;
-//       const EventList& el = itl->second;
-//       for(ciEvent ie = el.begin(); ie != el.end(); ie++)
-//       {
-//         const Event& e = ie->second;
-//       
-//             
-// //             do_cut = false;
-// //             if(cut_mode)
-// //             {
-// //               // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
-// //               do_cut = (e.type() != Note) || (!cut_velo_thres_used && !cut_len_thres_used) ||
-// //                        (cut_velo_thres_used && e.velo() < cut_velo_threshold) ||
-// //                        (cut_len_thres_used && int(e.lenTick()) < cut_len_threshold);
-// //             }
-//             
-// //             if(e.tagged() && (!cut_mode || do_cut)) // && is_relevant(e, part, range, AllEventsRelevant))
-//             if(e.tagged()) // && is_relevant(e, part, range, AllEventsRelevant))
-//             {
-// //               if(e.tick() < start_tick)
-//               
-//               // Make sure the very first item is always processed.
-//               //if(!found || e.tick() < start_tick)
-//               if(!found || e.pos() < start_pos)
-//               {
-//                 found = true;
-// //                 start_tick = e.tick();
-//                 //start_event = e;
-//                 start_pos = e.pos();
-//               }
-//               
-//               // If there are clones of this event, untag all of them now except this one.
-//               // This prevents the operations system from warning of double operations.
-//               // The operations system will automatically take care of clones when performing
-//               //  an operation on any ONE of them. So make sure THIS is the only one tagged.
-//               // Since this is the first clone found, its position is the one considered
-//               //  for start_tick above, and this should be OK since the parts and events are
-//               //  sorted by position.
-//               untag_clones(part, e);
-//             }
-//           }
-//         }
-//       }
-//     }
-//     
-// //     if (start_tick == INT_MAX)
-//     if(!found)
-//     {
-//       //if(untag_when_done)
-//       {
-//         // We must clear all the tagged flags...
-//         for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//         {
-//           pl = (*it)->parts();
-//           for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//           {
-//             part = ip->second;
-//             part->setTagged(false);
-//             // As an optimization, we only walk the events if the part says events are tagged.
-//             if(part->eventsTagged())
-//             {
-//               part->setEventsTagged(false);
-//               EventList& el = part->nonconst_events();
-//               for(iEvent ie = el.begin(); ie != el.end(); ie++)
-//                 ie->second.setTagged(false);
-//             }
-//           }
-//         }
-//       }
-//       return NULL;
-//     }
 
     //---------------------------------------------------
     //    write events as XML into tmp file
     //---------------------------------------------------
 
-//     FILE* tmp = tmpfile();
-//     if (tmp == 0)
-//     {
-//         fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
-//         return 0;
-//     }
-    
-//     Xml xml(tmp);
     Xml xml(&tmp);
     int level = 0;
 
-//     for(ciTrack it = tl->begin(); it != tl->end(); ++it)
-//     {
-//       pl = (*it)->parts();
-//       for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-//       {
-//         part = ip->second;
-//         //if(untag_when_done)
-//           part->setTagged(false);
-//         // As an optimization, we only walk the events if the part says events are tagged.
-//         if(part->eventsTagged())
-//         {
-//           //if(untag_when_done)
-//             part->setEventsTagged(false);
-            
-            
-            
     for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
     {
       part = itl->first;
@@ -3923,32 +2381,9 @@ QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* tag_list, bool cut_mod
       for(ciEvent ie = el.begin(); ie != el.end(); ie++)
       {
         const Event& e = ie->second;
-      
-            
-//               do_cut = false;
-//               if(cut_mode)
-//               {
-//                 // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
-//                 do_cut = (e.type() != Note) || (!cut_velo_thres_used && !cut_len_thres_used) ||
-//                         (cut_velo_thres_used && e.velo() < cut_velo_threshold) ||
-//                         (cut_len_thres_used && int(e.lenTick()) < cut_len_threshold);
-//               }
-                
-              
-//               if(!cut_mode || do_cut)
-          //e.write(level, xml, -start_tick);
-          //Event ne(e);
-          Event ne = e.clone();
-          //ne.setPos(ne.pos() - start_event.pos());
-          ne.setPos(ne.pos() - start_pos);
-          ne.write(level, xml, Pos(0, e.pos().type() == Pos::TICKS));
-          //ne.write(level, xml, -start_pos);
-
-          // Reset the tag now, after the write. 
-          // Allow the tag info in the write, so that the paste routines can use the info.
-//                 e.setTagged(false);
-          
-//               if(cut_mode && do_cut)
+        Event ne = e.clone();
+        ne.setPos(ne.pos() - start_pos);
+        ne.write(level, xml, Pos(0, e.pos().type() == Pos::TICKS));
         if(cut_mode)
         {
           changed = true;
@@ -4005,7 +2440,6 @@ void paste_items(const set<const Part*>& parts, int max_distance,
 {
 	QString tmp="x-muse-groupedeventlists"; // QClipboard::text() expects a QString&, not a QString :(
 	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);
-// 	paste_items_at(parts, s, MusEGlobal::song->cpos(), max_distance, always_new_part, never_new_part, paste_into_part, amount, raster);
 	paste_items_at(parts, s, MusEGlobal::song->cPos(), max_distance, options,
 								paste_into_part, amount, raster, relevant, paste_to_ctrl_num
 								);
@@ -4041,7 +2475,6 @@ void pasteEventList(
   if(num_events <= 0)
     return;
   
-  //const bool cut_mode                    = options._flags & FunctionCutItems;
   const bool always_new_part             = options._flags & FunctionPasteAlwaysNewPart;
   const bool never_new_part              = options._flags & FunctionPasteNeverNewPart;
   const bool erase_controllers           = options._flags & FunctionEraseItems;
@@ -4051,8 +2484,6 @@ void pasteEventList(
   const Pos::TType time_type = wave_mode ? Pos::FRAMES : Pos::TICKS;
   Track* dest_track = NULL;
   const Part* old_dest_part = NULL;
-  
-//       const PosLen el_range = el.evrange(wave_mode, relevant, &num_events) - start_pos;
   
   // Be sure to subtract the position of the very first event of interest.
   // This is exactly what the copy/cut functions do before they write the results
@@ -4065,30 +2496,14 @@ void pasteEventList(
   unsigned dest_part_end_value = dest_part->end().posValue(time_type);
   dest_track=dest_part->track();
   old_dest_part=dest_part;
-// 									unsigned first_paste_tick = el.begin()->first + pos;
-  //Pos first_paste_tick = el_range + pos;
-// 									Pos last_paste_tick = el_range.end() + pos;
   unsigned first_paste_pos_value = el_range.posValue() + pos_value;
-// 									unsigned last_paste_tick = el_range.endPosValue() + pos_value;
-// 									bool create_new_part = ( (dest_part->tick() > first_paste_tick) ||   // dest_part begins too late
-// 											( ( (dest_part->endTick() + max_distance < first_paste_tick) || // dest_part is too far away
-// 																					always_new_part ) && !never_new_part ) );    // respect function arguments
-  //bool create_new_part = ( (first_paste_tick < *dest_part) ||       // dest_part begins too late
-  //                         (last_paste_tick >= dest_part->end()) ||   // dest_part not long enough
-  //		( ( (dest_part->end() + max_distance < first_paste_tick) ||   // dest_part is too far away
-  //												always_new_part ) && !never_new_part ) ); // respect function arguments
   bool create_new_part = ( (first_paste_pos_value < dest_part_pos_value) || // dest_part begins too late
-                          //(last_paste_tick >= dest_part_end_value) || // dest_part not long enough
       ( ( (dest_part_end_value + max_distance < first_paste_pos_value) ||   // dest_part is too far away
                           always_new_part ) && !never_new_part ) );    // respect function arguments
 
   for (int i=0;i<amount;i++)
   {
-// 										unsigned curr_pos = pos + i*raster;
-    //Pos curr_pos = Pos(i*raster, el_range.type()) + pos;
     unsigned curr_pos = pos_value + i*raster;
-// 										first_paste_tick = el.begin()->first + curr_pos;
-    //first_paste_tick = el_range + curr_pos;
     first_paste_pos_value = el_range.posValue() + curr_pos;
     
     if (create_new_part)
@@ -4097,8 +2512,6 @@ void pasteEventList(
       Part* newpart = dest_track->newPart();
       if(newpart)
       {
-// 												newpart->setTick(MusEGlobal::sigmap.raster1(first_paste_tick, config.division));
-        //newpart->setTick(MusEGlobal::sigmap.raster1(first_paste_tick.tick(), config.division));
         // TODO: Shouldn't we snap to frames for wave parts? But snap to what exactly?
         const unsigned pos_tick = Pos(first_paste_pos_value, !wave_mode).tick();
         const unsigned rast_pos_tick = MusEGlobal::sigmap.raster1(pos_tick, config.division);
@@ -4122,16 +2535,8 @@ void pasteEventList(
     const unsigned dest_part_len_value = dest_part->lenValue(time_type);
     for (ciEvent i = el.cbegin(); i != el.cend(); ++i)
     {
-//                   const Event& old_e = i->second;
-      
       const Event& old_e = i->second;
 
-      // REMOVE Tim. citem Added. Diagnostics.
-      fprintf(stderr, "paste_items_at(): old_e.dataB: %d ", old_e.dataB());
-      
-//                   // Be sure to subtract the position of the very first event of interest.
-//                   e.setPos(e.pos() - start_pos);
-      
       // If the destination part is a midi part, any midi event is allowed.
       // If the destination part is a wave part, any wave event is allowed.
       switch(old_e.type())
@@ -4163,13 +2568,6 @@ void pasteEventList(
         break;
       }
       
-//                   if(cut_mode && src_part)
-//                     operations.push_back(UndoOp(UndoOp::DeleteEvent, old_e, src_part, true, true));
-      
-// 												int tick = e.tick() + curr_pos - dest_part->tick();
-// 												Pos tick = e.pos() + curr_pos - *dest_part;
-      //int tick = (e.pos() + curr_pos).posValue(el_range.type()) - dest_part->posValue(el_range.type());
-
       Event e = old_e.clone();
       unsigned tick = e.posValue(time_type) + curr_pos;
 
@@ -4192,48 +2590,26 @@ void pasteEventList(
       }
       tick -= dest_part_pos_value;
 
-// 												e.setTick(tick);
-      //e.setPos(tick);
       e.setPosValue(tick, time_type);
       e.setSelected(true);  // No need to select clones, AddEvent operation below will take care of that.
       
-// 												if (e.endTick() > dest_part->lenTick()) // event exceeds part?
-      //if (e.endPosValue() > dest_part_len_value) // event exceeds part?
-      // Don't bother with expansion if these are new parts.
-      //if (!create_new_part && e.end() > dest_part->lenTick()) // event exceeds part?
       // Don't bother with expansion if these are new parts.
       if (!create_new_part && e.endPosValue() > dest_part_len_value) // event exceeds part?
       {
         if (dest_part->hasHiddenEvents()) // auto-expanding is forbidden?
         {
-// 														if (e.tick() < dest_part->lenTick())
-// 															e.setLenTick(dest_part->lenTick() - e.tick()); // clip
-// 														else
-// 															e.setLenTick(0); // don't insert that note at all
           if (e.posValue(time_type) < dest_part_len_value)
             e.setLenValue(dest_part_len_value - e.posValue(time_type), time_type); // clip
           else
-// 															e.setLenTick(0); // don't insert that note at all
             e.setLenValue(0, time_type); // don't insert that note at all
         }
         else
         {
-// 														if (e.endTick() > expand_map[dest_part])
-// 															expand_map[dest_part]=e.endTick();
           if (e.endPosValue() > expand_map[dest_part])
             expand_map[dest_part]=e.endPosValue();
         }
       }
       
-      // REMOVE Tim. citem Added. Diagnostics.
-      fprintf(stderr, "e.dataB: %d\n", e.dataB());
-      
-// REMOVE Tim. citem. Changed.
-// 									if (e.lenTick() != 0) operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
-      // Don't add Note or Wave event types if they have no length.
-      // Otherwise, controllers, sysex, and meta should all be allowed.
-      //if ((e.type() != Note && e.type() != Wave) || e.lenTick() != 0)
-      //	operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
       switch(e.type())
       {
         case Note:
@@ -4270,9 +2646,6 @@ void pasteEventList(
               // Don't event bother replacing it using DeletEvent or ModifyEvent.
               if(el.empty())
               {
-                // REMOVE Tim. citem. Added. Diagnostic.
-                fprintf(stderr, "paste_items_at: Adding new wave event: time:%u file:%s\n",
-                        e.posValue(), e.sndFile().name().toLatin1().constData());
                 add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
               }
               else
@@ -4287,15 +2660,8 @@ void pasteEventList(
                   ++nie;
                   if(nie == el.end())
                   {
-                    // REMOVE Tim. citem. Added. Diagnostic.
-                    fprintf(stderr, "paste_items_at: Leaving existing wave event intact: time:%u file:%s\n",
-                            ie->second.posValue(), ie->second.sndFile().name().toLatin1().constData());
                     break;
                   }
-                  
-                  // REMOVE Tim. citem. Added. Diagnostic.
-                  fprintf(stderr, "paste_items_at: Deleting existing wave event: time:%u file:%s\n",
-                          ie->second.posValue(), ie->second.sndFile().name().toLatin1().constData());
                   
                   operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
                 }
@@ -4324,133 +2690,9 @@ void pasteEventList(
             //  take care of all of the erasures. But even if we are NOT specifically
             //  erasing first, we still MUST erase any existing controller values found
             //  at that exact time value. So that is done in the next block.
-            //if(erase_controllers && (e.tag()._flags & EventTagWidthValid))
             if(erase_controllers)
             {
               ctl_map.add(e.dataA(), e.posValue(), len_val);
-              
-              
-//                           ctl_num = e.dataA();
-//                           ctl_time = e.posValue();
-//     // 																if(e.tag()._flags & EventTagWidthValid)
-//     // 																	ctl_end_time = ctl_time + e.tag()._width;
-//                           if(len_val > 0)
-//                             ctl_end_time = ctl_time + len_val;
-//                           else
-//                             ctl_end_time = ctl_time + 1;
-//                           iPasteEraseCtlMap icm = ctl_map.find(ctl_num);
-//                           if(icm == ctl_map.end())
-//                           {
-// //                             tpair_t tpair(ctl_time, ctl_end_time);
-//                             PasteEraseMap_t new_tmap;
-// //                             new_tmap.insert(tmap_pair_t(ctl_time, tpair));
-//                             new_tmap.insert(PasteEraseMapInsertPair_t(ctl_time, ctl_end_time));
-//                             ctl_map.insert(PasteEraseCtlMapPair_t(ctl_num, new_tmap));
-//                           }
-//                           else
-//                           {
-//                             PasteEraseMap_t& tmap = icm->second;
-//                             // The event times are sorted already, so this always returns end().
-//                             //i_tmap_t itm = tmap.upper_bound(ctl_time);
-//                             iPasteEraseMap itm = tmap.end();
-//                             if(itm != tmap.begin())
-//                             {
-//                               --itm;
-// //                               tpair_t& tpair = itm->second;
-// //                               prev_ctl_time = tpair.first;
-// //                               prev_ctl_end_time = tpair.second;
-//                               prev_ctl_time = itm->first;
-//                               prev_ctl_end_time = itm->second;
-//                               
-//                               iPasteEraseMap itm_2 = tmap.end();
-//                               if(itm != tmap.begin())
-//                               {
-//                                 itm_2 = itm;
-//                                 --itm_2;
-//                               }
-//                               
-//                               if((prev_ctl_end_time >= ctl_time) || erase_controllers_inclusive)
-//                               {
-//                                 if(erase_controllers_inclusive)
-// //                                   tpair.second = ctl_time;
-//                                   itm->second = ctl_time;
-//                                 
-//                                 if(itm_2 != tmap.end())
-//                                 {
-// //                                   tpair_t& tpair_2 = itm_2->second;
-// //                                   if((tpair_2.second >= prev_ctl_time) || erase_controllers_inclusive)
-// //                                   {
-// //                                     tpair_2.second = tpair.second;
-// //                                     tmap.erase(itm);
-// //                                   }
-//                                   if((itm_2->second >= prev_ctl_time) || erase_controllers_inclusive)
-//                                   {
-//                                     itm_2->second = itm->second;
-//                                     tmap.erase(itm);
-//                                   }
-//                                 }
-//                                 
-// //                                 tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
-//                                 tmap.insert(PasteEraseMapInsertPair_t(ctl_time, ctl_end_time));
-//                               }
-//                               else
-//                               {
-// //                                 // If we want wysiwyg pasting, we erase existing events up to
-// //                                 //  the end-time of the last tmap item which ended a contiguous
-// //                                 //  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
-// //                                 //  the start-time of that last tmap item. So, that last item in the
-// //                                 //  cluster can be deleted since we already have the start-time and
-// //                                 //  end-time of the SECOND-LAST tmap item in the cluster.
-// //                                 //if(!erase_controllers_wysiwyg)
-// //                                 //	tmap.erase(itm);
-// 
-//                                 
-//                                 if(!erase_controllers_wysiwyg)
-// //                                   tpair.second = tpair.first + 1;
-//                                   itm->second = itm->first + 1;
-//                                 
-// 
-//                                 // If we want wysiwyg pasting, we erase existing events up to
-//                                 //  the end-time of the last tmap item which ended a contiguous
-//                                 //  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
-//                                 //  the start-time of that last tmap item. So we 'truncate' that
-//                                 //  last item in the cluster by setting the end-time to the start-time,
-//                                 //  so that the gathering routine below knows to erase that last
-//                                 //  single-time position.
-// //                                 if(itm_2 != tmap.end())
-// //                                 {
-// //                                   tpair_t& tpair_2 = itm_2->second;
-// //                                   if(tpair_2.second >= tpair.first)
-// //                                   {
-// //     // 																					if(erase_controllers_wysiwyg)
-// //     // 																					{
-// //     // 																						tpair_2.second = tpair.second;
-// //     // 																						tmap.erase(itm);
-// //     // 																					}
-// //     // 																					else
-// //     // 																					{
-// //     // 																						// Nudge it forward by one.
-// //     // 																						tpair_2.second = tpair.first + 1;
-// //     // 																						tmap.erase(itm);
-// //     // 																					}
-// //                                     tpair_2.second = tpair.second;
-// //                                     tmap.erase(itm);
-// //                                   }
-// //                                 }
-//                                 if(itm_2 != tmap.end())
-//                                 {
-//                                   if(itm_2->second >= itm->first)
-//                                   {
-//                                     itm_2->second = itm->second;
-//                                     tmap.erase(itm);
-//                                   }
-//                                 }
-//                                 
-// //                                 tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
-//                                 tmap.insert(PasteEraseMapInsertPair_t(ctl_time, ctl_end_time));
-//                               }
-//                             }
-//                           }
             }
             else
             // Here we are not specifically erasing first. But we still MUST erase any
@@ -4463,19 +2705,9 @@ void pasteEventList(
               //  at a time for a given controller number anyway.
               for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
               {
-                
-                // REMOVE Tim. citem. Added. Diagnostic.
-                fprintf(stderr, "paste_items_at: Deleting existing controller event: time:%u number:%d\n",
-                        ie->second.posValue(), ie->second.dataA());
-                
                 // Do port controller values and clone parts. 
                 operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, true, true));
               }
-              
-              // REMOVE Tim. citem. Added. Diagnostic.
-              if(!el.empty())
-                fprintf(stderr, "paste_items_at: Adding replacement controller event: time:%u number:%d\n",
-                        e.posValue(), e.dataA());
             }
             
             // Do port controller values and clone parts. 
@@ -4501,9 +2733,6 @@ void pasteEventList(
             // Don't event bother replacing it using DeletEvent or ModifyEvent.
             if(el.empty())
             {
-              // REMOVE Tim. citem. Added. Diagnostic.
-              fprintf(stderr, "paste_items_at: Adding new sysex: time:%u len:%d\n",
-                      e.posValue(), e.dataLen());
               add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
             }
             else
@@ -4518,15 +2747,8 @@ void pasteEventList(
                 ++nie;
                 if(nie == el.end())
                 {
-                  // REMOVE Tim. citem. Added. Diagnostic.
-                  fprintf(stderr, "paste_items_at: Leaving existing sysex intact: time:%u len:%d\n",
-                          ie->second.posValue(), ie->second.dataLen());
                   break;
                 }
-                
-                // REMOVE Tim. citem. Added. Diagnostic.
-                fprintf(stderr, "paste_items_at: Deleting existing sysex event: time:%u len:%d\n",
-                        ie->second.posValue(), ie->second.dataLen());
                 
                 operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
               }
@@ -4552,9 +2774,6 @@ void pasteEventList(
             // Don't event bother replacing it using DeletEvent or ModifyEvent.
             if(el.empty())
             {
-              // REMOVE Tim. citem. Added. Diagnostic.
-              fprintf(stderr, "paste_items_at: Adding new meta: time:%u len:%d\n",
-                      e.posValue(), e.dataLen());
               add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
             }
             else
@@ -4569,15 +2788,8 @@ void pasteEventList(
                 ++nie;
                 if(nie == el.end())
                 {
-                  // REMOVE Tim. citem. Added. Diagnostic.
-                  fprintf(stderr, "paste_items_at: Leaving existing meta intact: time:%u len:%d\n",
-                          ie->second.posValue(), ie->second.dataLen());
                   break;
                 }
-                
-                // REMOVE Tim. citem. Added. Diagnostic.
-                fprintf(stderr, "paste_items_at: Deleting existing meta event: time:%u len:%d\n",
-                        ie->second.posValue(), ie->second.dataLen());
                 
                 operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
               }
@@ -4614,9 +2826,6 @@ void pasteEventList(
           continue;
         
         --itm;
-//                 const tpair_t& tpair = itm->second;
-        
-//                 if(e_pos >= tpair.first && e_pos < tpair.second)
         if(e_pos >= itm->first && e_pos < itm->second)
           operations.push_back(UndoOp(UndoOp::DeleteEvent, e, dest_part, true, true));
       }
@@ -4624,19 +2833,12 @@ void pasteEventList(
   }
 }
 
-// void paste_items_at(const std::set<const Part*>& parts, const QString& pt, int pos, int max_distance,
 void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const Pos& pos, int max_distance,
                     const FunctionOptionsStruct& options,
                     const Part* paste_into_part, int amount, int raster,
                     RelevantSelectedEvents_t relevant,
                     int paste_to_ctrl_num)
 {
-//   const bool always_new_part             = options._flags & FunctionPasteAlwaysNewPart;
-//   const bool never_new_part              = options._flags & FunctionPasteNeverNewPart;
-//   const bool erase_controllers           = options._flags & FunctionEraseItems;
-//   const bool erase_controllers_wysiwyg   = options._flags & FunctionEraseItemsWysiwyg;
-//   const bool erase_controllers_inclusive = options._flags & FunctionEraseItemsInclusive;
-
   // To maximize speed and minimize memory use, the processing below 
   //  can only find any delete operations AFTER it has gathered
   //  add operations. So we keep two separate operations lists and
@@ -4646,19 +2848,6 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
   map<const Part*, unsigned> expand_map;
   map<const Part*, set<const Part*> > new_part_map;
 
-// 	// For erasing existing target controller events before pasting source controller events.
-// 	typedef pair<unsigned long /*t0*/, unsigned long /*t1*/ > tpair_t;
-// 	typedef pair<unsigned long /*t0*/, tpair_t > tmap_pair_t;
-// 	typedef map<unsigned long /*t0*/, tpair_t> tmap_t;
-// 	typedef tmap_t::iterator i_tmap_t;
-// 	typedef tmap_t::const_iterator ci_tmap_t;
-// 	typedef pair<int /*ctlnum*/, tmap_t > ctlmap_pair_t;
-// 	typedef map<int /*ctlnum*/, tmap_t> ctlmap_t;
-// 	typedef ctlmap_t::iterator i_ctlmap_t;
-// 	typedef ctlmap_t::const_iterator ci_ctlmap_t;
-  
-// 	int ctl_num;
-// 	unsigned int ctl_time, ctl_end_time, prev_ctl_time, prev_ctl_end_time;
   QByteArray pt_= pt.toLatin1();
   Xml xml(pt_.constData());
   for (;;) 
@@ -4716,566 +2905,6 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
           pasteEventList(
             el, pos, ((Part*)dest_part), operations, add_operations,
             expand_map, new_part_map, Pos(), max_distance, options, amount, raster, relevant, paste_to_ctrl_num);
-          
-          
-          
-          
-//           // Extract the suitable events from the list and the number of events extracted.
-//           int num_events;
-//           const PosLen el_range = el.evrange(wave_mode, relevant, &num_events);
-//           if(num_events <= 0)
-//             break;
-//           
-//           Track* dest_track;
-//           const Part* old_dest_part;
-//           
-//           const Pos::TType time_type = wave_mode ? Pos::FRAMES : Pos::TICKS;
-//           const unsigned pos_value = pos.posValue(time_type);
-//           unsigned dest_part_pos_value = dest_part->posValue(time_type);
-//           unsigned dest_part_end_value = dest_part->end().posValue(time_type);
-//           dest_track=dest_part->track();
-//           old_dest_part=dest_part;
-// // 									unsigned first_paste_tick = el.begin()->first + pos;
-//           //Pos first_paste_tick = el_range + pos;
-// // 									Pos last_paste_tick = el_range.end() + pos;
-//           unsigned first_paste_pos_value = el_range.posValue() + pos_value;
-// // 									unsigned last_paste_tick = el_range.endPosValue() + pos_value;
-// // 									bool create_new_part = ( (dest_part->tick() > first_paste_tick) ||   // dest_part begins too late
-// // 											( ( (dest_part->endTick() + max_distance < first_paste_tick) || // dest_part is too far away
-// // 																					always_new_part ) && !never_new_part ) );    // respect function arguments
-//           //bool create_new_part = ( (first_paste_tick < *dest_part) ||       // dest_part begins too late
-//           //                         (last_paste_tick >= dest_part->end()) ||   // dest_part not long enough
-//           //		( ( (dest_part->end() + max_distance < first_paste_tick) ||   // dest_part is too far away
-//           //												always_new_part ) && !never_new_part ) ); // respect function arguments
-//           bool create_new_part = ( (first_paste_pos_value < dest_part_pos_value) || // dest_part begins too late
-//                                   //(last_paste_tick >= dest_part_end_value) || // dest_part not long enough
-//               ( ( (dest_part_end_value + max_distance < first_paste_pos_value) ||   // dest_part is too far away
-//                                   always_new_part ) && !never_new_part ) );    // respect function arguments
-//           
-//           for (int i=0;i<amount;i++)
-//           {
-// // 										unsigned curr_pos = pos + i*raster;
-//             //Pos curr_pos = Pos(i*raster, el_range.type()) + pos;
-//             unsigned curr_pos = pos_value + i*raster;
-// // 										first_paste_tick = el.begin()->first + curr_pos;
-//             //first_paste_tick = el_range + curr_pos;
-//             first_paste_pos_value = el_range.posValue() + curr_pos;
-//             
-//             if (create_new_part)
-//             {
-//               dest_part = NULL;
-//               Part* newpart = dest_track->newPart();
-//               if(newpart)
-//               {
-// // 												newpart->setTick(MusEGlobal::sigmap.raster1(first_paste_tick, config.division));
-//                 //newpart->setTick(MusEGlobal::sigmap.raster1(first_paste_tick.tick(), config.division));
-//                 // TODO: Shouldn't we snap to frames for wave parts? But snap to what exactly?
-//                 const unsigned pos_tick = Pos(first_paste_pos_value, !wave_mode).tick();
-//                 const unsigned rast_pos_tick = MusEGlobal::sigmap.raster1(pos_tick, config.division);
-//                 newpart->setTick(rast_pos_tick);
-//                 const unsigned len_rast_off_value = pos_tick >= rast_pos_tick ? pos_tick - rast_pos_tick : 0;
-//                 newpart->setLenValue(el_range.lenValue() + len_rast_off_value, time_type);
-//                 dest_part = newpart;
-//                 dest_part_pos_value = dest_part->posValue(time_type);
-//                 dest_part_end_value = dest_part->end().posValue(time_type);
-//                 new_part_map[old_dest_part].insert(dest_part);
-//                 add_operations.push_back(UndoOp(UndoOp::AddPart, dest_part));
-//               }
-//             }
-//             
-//             if(!dest_part)
-//               continue;
-//             
-//             // This will be filled as we go.
-//             PasteEraseCtlMap ctl_map(erase_controllers_wysiwyg, erase_controllers_inclusive);
-// 
-//             const unsigned dest_part_len_value = dest_part->lenValue(time_type);
-//             for (ciEvent i = el.cbegin(); i != el.cend(); ++i)
-//             {
-//               // If the destination part is a midi part, any midi event is allowed.
-//               // If the destination part is a wave part, any wave event is allowed.
-//               switch(i->second.type())
-//               {
-//                 case Note:
-//                 case Controller:
-//                 case Sysex:
-//                 case Meta:
-//                   if(dest_part->type() == Pos::FRAMES)
-//                     continue;
-//                 break;
-//                 
-//                 case Wave:
-//                   if(dest_part->type() == Pos::TICKS)
-//                     continue;
-//                 break;
-//               }
-//               
-//               Event e = i->second.clone();
-// // 												int tick = e.tick() + curr_pos - dest_part->tick();
-// // 												Pos tick = e.pos() + curr_pos - *dest_part;
-//               //int tick = (e.pos() + curr_pos).posValue(el_range.type()) - dest_part->posValue(el_range.type());
-//               unsigned tick = e.posValue(time_type) + curr_pos;
-//               if (tick < dest_part_pos_value)
-//               //if (tick.posValue() < 0)
-//               {
-//                 printf("ERROR: trying to add event before current part! ignoring this event\n");
-//                 continue;
-//               }
-//               tick -= dest_part_pos_value;
-// 
-// // 												e.setTick(tick);
-//               //e.setPos(tick);
-//               e.setPosValue(tick, time_type);
-//               e.setSelected(true);  // No need to select clones, AddEvent operation below will take care of that.
-//               
-// // 												if (e.endTick() > dest_part->lenTick()) // event exceeds part?
-//               //if (e.endPosValue() > dest_part_len_value) // event exceeds part?
-//               // Don't bother with expansion if these are new parts.
-//               //if (!create_new_part && e.end() > dest_part->lenTick()) // event exceeds part?
-//               // Don't bother with expansion if these are new parts.
-//               if (!create_new_part && e.endPosValue() > dest_part_len_value) // event exceeds part?
-//               {
-//                 if (dest_part->hasHiddenEvents()) // auto-expanding is forbidden?
-//                 {
-// // 														if (e.tick() < dest_part->lenTick())
-// // 															e.setLenTick(dest_part->lenTick() - e.tick()); // clip
-// // 														else
-// // 															e.setLenTick(0); // don't insert that note at all
-//                   if (e.posValue(time_type) < dest_part_len_value)
-//                     e.setLenValue(dest_part_len_value - e.posValue(time_type), time_type); // clip
-//                   else
-// // 															e.setLenTick(0); // don't insert that note at all
-//                     e.setLenValue(0, time_type); // don't insert that note at all
-//                 }
-//                 else
-//                 {
-// // 														if (e.endTick() > expand_map[dest_part])
-// // 															expand_map[dest_part]=e.endTick();
-//                   if (e.endPosValue() > expand_map[dest_part])
-//                     expand_map[dest_part]=e.endPosValue();
-//                 }
-//               }
-//               
-// // REMOVE Tim. citem. Changed.
-// // 									if (e.lenTick() != 0) operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
-//               // Don't add Note or Wave event types if they have no length.
-//               // Otherwise, controllers, sysex, and meta should all be allowed.
-//               //if ((e.type() != Note && e.type() != Wave) || e.lenTick() != 0)
-//               //	operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
-//               switch(e.type())
-//               {
-//                 case Note:
-//                   // Don't add Note event types if they have no length.
-//                   // Notes are allowed to overlap. There is no DeleteEvent or ModifyEvent first.
-//                   //if(e.lenTick() != 0)
-//                   //{
-//                     // If this is a fresh new part, to avoid double operation warnings when undoing
-//                     //  just add the event directly to the part instead of an operation.
-//                     if(create_new_part)
-//                       ((Part*)dest_part)->addEvent(e);
-//                     else
-//                       add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
-//                   //}
-//                 break;
-//                 
-//                 case Wave:
-//                   // Don't add Wave event types if they have no length.
-//                   //if(e.lenFrame() != 0)
-//                   //{
-//                     // If this is a fresh new part, to avoid double operation warnings when undoing
-//                     //  just add the event directly to the part instead of an operation.
-//                     if(create_new_part)
-//                     {
-//                       ((Part*)dest_part)->addEvent(e);
-//                     }
-//                     else
-//                     {
-//                       EventList el;
-//                       // Compare time, and wave position, path, and start position.
-//                       dest_part->events().findSimilarType(e, el, true, false, false, false,
-//                                                           true, true, true);
-//                       // Do NOT add the new wave event if it already exists at the position.
-//                       // Don't event bother replacing it using DeletEvent or ModifyEvent.
-//                       if(el.empty())
-//                       {
-//                         // REMOVE Tim. citem. Added. Diagnostic.
-//                         fprintf(stderr, "paste_items_at: Adding new wave event: time:%u file:%s\n",
-//                                 e.posValue(), e.sndFile().name().toLatin1().constData());
-//                         add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
-//                       }
-//                       else
-//                       {
-//                         // Delete all but one of them. There shouldn't be more than one wave event
-//                         //  at a time for a given wave event anyway.
-//                         ciEvent nie;
-//                         for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
-//                         {
-//                           // Break on the second-last one, to leave one item intact.
-//                           nie = ie;
-//                           ++nie;
-//                           if(nie == el.end())
-//                           {
-//                             // REMOVE Tim. citem. Added. Diagnostic.
-//                             fprintf(stderr, "paste_items_at: Leaving existing wave event intact: time:%u file:%s\n",
-//                                     ie->second.posValue(), ie->second.sndFile().name().toLatin1().constData());
-//                             break;
-//                           }
-//                           
-//                           // REMOVE Tim. citem. Added. Diagnostic.
-//                           fprintf(stderr, "paste_items_at: Deleting existing wave event: time:%u file:%s\n",
-//                                   ie->second.posValue(), ie->second.sndFile().name().toLatin1().constData());
-//                           
-//                           operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
-//                         }
-//                       }
-//                     }
-//                   //}
-//                 break;
-//                 
-//                 case Controller:
-//                 {
-//                   // HACK Grab the event length since we use it for indicating
-//                   //       the visual width when tagging controller items.
-//                   const unsigned int len_val = e.lenValue();
-//                   // Be sure to reset this always since we use it for the above hack.
-//                   e.setLenValue(0);
-// 
-//                   // If this is a fresh new part, to avoid double DeleteMidiCtrlVal warnings when undoing
-//                   //  just add the event directly to the part instead of an operation.
-//                   if(create_new_part)
-//                   {
-//                     ((Part*)dest_part)->addEvent(e);
-//                   }
-//                   else
-//                   {
-//                     // If we are erasing existing controller values first, this block will
-//                     //  take care of all of the erasures. But even if we are NOT specifically
-//                     //  erasing first, we still MUST erase any existing controller values found
-//                     //  at that exact time value. So that is done in the next block.
-//                     //if(erase_controllers && (e.tag()._flags & EventTagWidthValid))
-//                     if(erase_controllers)
-//                     {
-//                       ctl_map.add(e.dataA(), e.posValue(), len_val);
-//                       
-// // 																ctl_num = e.dataA();
-// // 																ctl_time = e.posValue();
-// // // 																if(e.tag()._flags & EventTagWidthValid)
-// // // 																	ctl_end_time = ctl_time + e.tag()._width;
-// // 																if(len_val > 0)
-// // 																	ctl_end_time = ctl_time + len_val;
-// // 																else
-// // 																	ctl_end_time = ctl_time + 1;
-// // 																                                        iPasteEraseCtlMap icm = ctl_map.find(ctl_num);
-// // 																if(icm == ctl_map.end())
-// // 																{
-// // 																	tpair_t tpair(ctl_time, ctl_end_time);
-// // 																	                                           PasteEraseMap_t new_tmap;
-// // 																	new_tmap.insert(tmap_pair_t(ctl_time, tpair));
-// // 																	ctl_map.insert(PasteEraseCtlMapPair_t(ctl_num, new_tmap));
-// // 																}
-// // 																else
-// // 																{
-// // 																	                                           PasteEraseMap_t& tmap = icm->second;
-// // 																	// The event times are sorted already, so this always returns end().
-// // 																	//i_tmap_t itm = tmap.upper_bound(ctl_time);
-// // 																	                                           iPasteEraseMap itm = tmap.end();
-// // 																	if(itm != tmap.begin())
-// // 																	{
-// // 																		--itm;
-// // 																		tpair_t& tpair = itm->second;
-// // 																		prev_ctl_time = tpair.first;
-// // 																		prev_ctl_end_time = tpair.second;
-// // 																		
-// // 																		                                              iPasteEraseMap itm_2 = tmap.end();
-// // 																		if(itm != tmap.begin())
-// // 																		{
-// // 																			itm_2 = itm;
-// // 																			--itm_2;
-// // 																		}
-// // 																		
-// // 																		if((prev_ctl_end_time >= ctl_time) || erase_controllers_inclusive)
-// // 																		{
-// // 																			if(erase_controllers_inclusive)
-// // 																			  tpair.second = ctl_time;
-// // 																			
-// // 																			if(itm_2 != tmap.end())
-// // 																			{
-// // 																				tpair_t& tpair_2 = itm_2->second;
-// // 																				if((tpair_2.second >= prev_ctl_time) || erase_controllers_inclusive)
-// // 																				{
-// // 																					tpair_2.second = tpair.second;
-// // 																					tmap.erase(itm);
-// // 																				}
-// // 																			}
-// // 																			
-// // 																			tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
-// // 																		}
-// // 																		else
-// // 																		{
-// // 																			// If we want wysiwyg pasting, we erase existing events up to
-// // 																			//  the end-time of the last tmap item which ended a contiguous
-// // 																			//  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
-// // 																			//  the start-time of that last tmap item. So, that last item in the
-// // 																			//  cluster can be deleted since we already have the start-time and
-// // 																			//  end-time of the SECOND-LAST tmap item in the cluster.
-// // 																			//if(!erase_controllers_wysiwyg)
-// // 																			//	tmap.erase(itm);
-// // 
-// // 																			
-// // 																			if(!erase_controllers_wysiwyg)
-// // 																				tpair.second = tpair.first + 1;
-// // 																			
-// // 
-// // 																			// If we want wysiwyg pasting, we erase existing events up to
-// // 																			//  the end-time of the last tmap item which ended a contiguous
-// // 																			//  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
-// // 																			//  the start-time of that last tmap item. So we 'truncate' that
-// // 																			//  last item in the cluster by setting the end-time to the start-time,
-// // 																			//  so that the gathering routine below knows to erase that last
-// // 																			//  single-time position.
-// // 																			if(itm_2 != tmap.end())
-// // 																			{
-// // 																				tpair_t& tpair_2 = itm_2->second;
-// // 																				if(tpair_2.second >= tpair.first)
-// // 																				{
-// // // 																					if(erase_controllers_wysiwyg)
-// // // 																					{
-// // // 																						tpair_2.second = tpair.second;
-// // // 																						tmap.erase(itm);
-// // // 																					}
-// // // 																					else
-// // // 																					{
-// // // 																						// Nudge it forward by one.
-// // // 																						tpair_2.second = tpair.first + 1;
-// // // 																						tmap.erase(itm);
-// // // 																					}
-// // 																					tpair_2.second = tpair.second;
-// // 																					tmap.erase(itm);
-// // 																				}
-// // 																			}
-// // 																			
-// // 																			tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
-// // 																		}
-// // 																	}
-// // 																}
-//                     }
-//                     else
-//                     // Here we are not specifically erasing first. But we still MUST erase any
-//                     //  existing controller values found at that exact time value.
-//                     {
-//                       EventList el;
-//                       // Compare time and controller number (data A) only.
-//                       dest_part->events().findSimilarType(e, el, true, true);
-//                       // Delete them all. There shouldn't be more than one controller event
-//                       //  at a time for a given controller number anyway.
-//                       for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
-//                       {
-//                         
-//                         // REMOVE Tim. citem. Added. Diagnostic.
-//                         fprintf(stderr, "paste_items_at: Deleting existing controller event: time:%u number:%d\n",
-//                                 ie->second.posValue(), ie->second.dataA());
-//                         
-//                         operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, true, true));
-//                       }
-//                       
-//                       // REMOVE Tim. citem. Added. Diagnostic.
-//                       if(!el.empty())
-//                         fprintf(stderr, "paste_items_at: Adding replacement controller event: time:%u number:%d\n",
-//                                 e.posValue(), e.dataA());
-//                     }
-//                     
-//                     // Do port controller values and clone parts. 
-//                     add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, true, true));
-//                   }
-//                 }
-//                 break;
-//                 
-//                 case Sysex:
-//                 {
-//                   // If this is a fresh new part, to avoid double operation warnings when undoing
-//                   //  just add the event directly to the part instead of an operation.
-//                   if(create_new_part)
-//                   {
-//                     ((Part*)dest_part)->addEvent(e);
-//                   }
-//                   else
-//                   {
-//                     EventList el;
-//                     // Compare time and sysex data only.
-//                     dest_part->events().findSimilarType(e, el, true);
-//                     // Do NOT add the new sysex if it already exists at the position.
-//                     // Don't event bother replacing it using DeletEvent or ModifyEvent.
-//                     if(el.empty())
-//                     {
-//                       // REMOVE Tim. citem. Added. Diagnostic.
-//                       fprintf(stderr, "paste_items_at: Adding new sysex: time:%u len:%d\n",
-//                               e.posValue(), e.dataLen());
-//                       add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
-//                     }
-//                     else
-//                     {
-//                       // Delete all but one of them. There shouldn't be more than one sysex event
-//                       //  at a time for a given sysex anyway.
-//                       ciEvent nie;
-//                       for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
-//                       {
-//                         // Break on the second-last one, to leave one item intact.
-//                         nie = ie;
-//                         ++nie;
-//                         if(nie == el.end())
-//                         {
-//                           // REMOVE Tim. citem. Added. Diagnostic.
-//                           fprintf(stderr, "paste_items_at: Leaving existing sysex intact: time:%u len:%d\n",
-//                                   ie->second.posValue(), ie->second.dataLen());
-//                           break;
-//                         }
-//                         
-//                         // REMOVE Tim. citem. Added. Diagnostic.
-//                         fprintf(stderr, "paste_items_at: Deleting existing sysex event: time:%u len:%d\n",
-//                                 ie->second.posValue(), ie->second.dataLen());
-//                         
-//                         operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
-//                       }
-//                     }
-//                   }
-//                 }
-//                 break;
-//                 
-//                 case Meta:
-//                 {
-//                   // If this is a fresh new part, to avoid double operation warnings when undoing
-//                   //  just add the event directly to the part instead of an operation.
-//                   if(create_new_part)
-//                   {
-//                     ((Part*)dest_part)->addEvent(e);
-//                   }
-//                   else
-//                   {
-//                     EventList el;
-//                     // Compare time and meta data only.
-//                     dest_part->events().findSimilarType(e, el, true);
-//                     // Do NOT add the new meta if it already exists at the position.
-//                     // Don't event bother replacing it using DeletEvent or ModifyEvent.
-//                     if(el.empty())
-//                     {
-//                       // REMOVE Tim. citem. Added. Diagnostic.
-//                       fprintf(stderr, "paste_items_at: Adding new meta: time:%u len:%d\n",
-//                               e.posValue(), e.dataLen());
-//                       add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
-//                     }
-//                     else
-//                     {
-//                       // Delete all but one of them. There shouldn't be more than one meta event
-//                       //  at a time for a given meta anyway.
-//                       ciEvent nie;
-//                       for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
-//                       {
-//                         // Break on the second-last one, to leave one item intact.
-//                         nie = ie;
-//                         ++nie;
-//                         if(nie == el.end())
-//                         {
-//                           // REMOVE Tim. citem. Added. Diagnostic.
-//                           fprintf(stderr, "paste_items_at: Leaving existing meta intact: time:%u len:%d\n",
-//                                   ie->second.posValue(), ie->second.dataLen());
-//                           break;
-//                         }
-//                         
-//                         // REMOVE Tim. citem. Added. Diagnostic.
-//                         fprintf(stderr, "paste_items_at: Deleting existing meta event: time:%u len:%d\n",
-//                                 ie->second.posValue(), ie->second.dataLen());
-//                         
-//                         operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
-//                       }
-//                     }
-//                   }
-//                 }
-//                 break;
-//               }
-//             }
-//             
-//             // If this is not a fresh new part, gather the operations to
-//             //  erase existing controller events in the part.
-//             if(erase_controllers && !create_new_part && dest_part && !ctl_map.empty())
-//             {
-//               // Tidy up the very last items in the list.
-//               ctl_map.tidy();
-// 
-// // 										// Tidy up the very last items in the list.
-// // 										for(iPasteEraseCtlMap icm = ctl_map.begin(); icm != ctl_map.end(); ++icm)
-// // 										{
-// // 											                             PasteEraseMap_t& tmap = icm->second;
-// // 											                             iPasteEraseMap itm = tmap.end();
-// // 											if(itm != tmap.begin())
-// // 											{
-// // 												--itm;
-// // 												tpair_t& tpair = itm->second;
-// // 												
-// // 												if(!erase_controllers_wysiwyg)
-// // 													tpair.second = tpair.first + 1;
-// // 												
-// // 												if(itm != tmap.begin())
-// // 												{
-// // 													                                   iPasteEraseMap itm_2 = itm;
-// // 													--itm_2;
-// // 													tpair_t& tpair_2 = itm_2->second;
-// // 													if((tpair_2.second >= tpair.second) || erase_controllers_inclusive)
-// // 													{
-// // // 														if(erase_controllers_wysiwyg)
-// // // 														{
-// // // 															tpair_2.second = tpair.second;
-// // // 															tmap.erase(itm);
-// // // 														}
-// // // 														else
-// // // 														{
-// // // 															// Nudge it forward by one.
-// // // 															tpair_2.second = tpair.first + 1;
-// // // 															tmap.erase(itm);
-// // // 														}
-// // 														tpair_2.second = tpair.second;
-// // 														tmap.erase(itm);
-// // 													}
-// // 												}
-// // 											}
-// // 										}
-//               
-//               unsigned e_pos;
-//               const EventList& el = dest_part->events();
-//               for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
-//               {
-//                 const Event& e = ie->second;
-//                 if(e.type() != Controller)
-//                   continue;
-//                 
-//                 ciPasteEraseCtlMap icm = ctl_map.find(e.dataA());
-//                 if(icm == ctl_map.end())
-//                   continue;
-//                 
-//                 const PasteEraseMap_t& tmap = icm->second;
-//                 e_pos = e.posValue();
-//                 ciPasteEraseMap itm = tmap.upper_bound(e_pos);
-//                 if(itm == tmap.begin())
-//                   continue;
-//                 
-//                 --itm;
-// // 											const tpair_t& tpair = itm->second;
-//                 
-// // 											if(e_pos >= tpair.first && e_pos < tpair.second)
-//                 if(e_pos >= itm->first && e_pos < itm->second)
-//                   operations.push_back(UndoOp(UndoOp::DeleteEvent, e, dest_part, true, true));
-//               }
-//             }
-//           }
-          
-//             // Do we want to cut the items as well?
-//             if(cut_mode && src_part)
-//             {
-//               for (ciEvent i = el.cbegin(); i != el.cend(); ++i)
-//               {
-//                 const Event& old_e = i->second;
-//                 operations.push_back(UndoOp(UndoOp::DeleteEvent, old_e, src_part, true, true));
-//               }
-//             }
         }
         else
           xml.unknown("paste_items_at");
@@ -5293,8 +2922,6 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
   // Push any part resizing operations onto the operations list now, before merging
   //  the add operations.
   for (map<const Part*, unsigned>::iterator it = expand_map.begin(); it!=expand_map.end(); it++)
-// 		if (it->second != it->first->lenTick())
-// 			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
     if (it->second != it->first->lenValue())
       schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
 
@@ -5324,11 +2951,6 @@ void paste_items_at(
   )
   {
     const bool cut_mode                    = options._flags & FunctionCutItems;
-//     const bool always_new_part             = options._flags & FunctionPasteAlwaysNewPart;
-//     const bool never_new_part              = options._flags & FunctionPasteNeverNewPart;
-//     const bool erase_controllers           = options._flags & FunctionEraseItems;
-//     const bool erase_controllers_wysiwyg   = options._flags & FunctionEraseItemsWysiwyg;
-//     const bool erase_controllers_inclusive = options._flags & FunctionEraseItemsInclusive;
 
     // To maximize speed and minimize memory use, the processing below 
     //  can only find any delete operations AFTER it has gathered
@@ -5339,23 +2961,6 @@ void paste_items_at(
     expand_map_t expand_map;
     new_part_map_t new_part_map;
 
-//     // For erasing existing target controller events before pasting source controller events.
-// //     typedef pair<unsigned long /*t0*/, unsigned long /*t1*/ > tpair_t;
-// //     typedef pair<unsigned long /*t0*/, tpair_t > tmap_pair_t;
-// //     typedef map<unsigned long /*t0*/, tpair_t> tmap_t;
-//     
-//     typedef pair<unsigned long /*t0*/, unsigned long /*t1*/ > tmap_pair_t;
-//     typedef map<unsigned long /*t0*/, unsigned long /*t1*/> tmap_t;
-//     typedef tmap_t::iterator i_tmap_t;
-//     typedef tmap_t::const_iterator ci_tmap_t;
-//     typedef pair<int /*ctlnum*/, tmap_t > ctlmap_pair_t;
-//     typedef map<int /*ctlnum*/, tmap_t> ctlmap_t;
-//     typedef ctlmap_t::iterator i_ctlmap_t;
-//     typedef ctlmap_t::const_iterator ci_ctlmap_t;
-    
-//     int ctl_num;
-//     unsigned int ctl_time, ctl_end_time, prev_ctl_time, prev_ctl_end_time;
-    
     // Find the lowest position of all the events - the 'start' position.
     const Pos start_pos = tag_list->globalStats().evrange(relevant);
 
@@ -5402,611 +3007,13 @@ void paste_items_at(
       if(!paste_into_part && parts.find(dest_part) == parts.end())
         continue;
         
-//       const bool wave_mode = dest_part->partType() == Part::WavePartType;
-    
-//           FindMidiCtlsList_t ctrlList;
-//           el.findControllers(wave_mode, &ctrlList);
-//           int ctrlsFound = 0;
-//           if(!ctrlList.empty())
-//             ctrlsFound = ctrlList.size();
-//           if(paste_to_ctrl_num >= 0 && ctrlsFound > 0)
-//           {
-//             
-//           }
-
       // Grab the event list and find the number of relevant events.
       const EventList& el = itl->second.evlist();
 
-//       int num_events;
-//       PosLen el_range = el.evrange(wave_mode, relevant, &num_events, paste_to_ctrl_num);
-//       if(num_events <= 0)
-//         continue;
-      
-//       // Be sure to subtract the position of the very first event of interest.
-//       // This is exactly what the copy/cut functions do before they write the results
-//       //  to an output file. But here the events in the directly-passed source list
-//       //  cannot be time-modified beforehand. So here we subtract this start position:
-//       el_range -= start_pos;
-      
       pasteEventList(
         el, pos, ((Part*)dest_part), operations, add_operations,
         expand_map, new_part_map, start_pos, max_distance, options,
         amount, raster, relevant, paste_to_ctrl_num);
-      
-      
-      
-      
-      
-//       
-//       const Pos::TType time_type = wave_mode ? Pos::FRAMES : Pos::TICKS;
-//       Track* dest_track = NULL;
-//       const Part* old_dest_part = NULL;
-//       
-// //       const PosLen el_range = el.evrange(wave_mode, relevant, &num_events) - start_pos;
-//       
-//       
-//       const unsigned pos_value = pos.posValue(time_type);
-//       unsigned dest_part_pos_value = dest_part->posValue(time_type);
-//       unsigned dest_part_end_value = dest_part->end().posValue(time_type);
-//       dest_track=dest_part->track();
-//       old_dest_part=dest_part;
-// // 									unsigned first_paste_tick = el.begin()->first + pos;
-//       //Pos first_paste_tick = el_range + pos;
-// // 									Pos last_paste_tick = el_range.end() + pos;
-//       unsigned first_paste_pos_value = el_range.posValue() + pos_value;
-// // 									unsigned last_paste_tick = el_range.endPosValue() + pos_value;
-// // 									bool create_new_part = ( (dest_part->tick() > first_paste_tick) ||   // dest_part begins too late
-// // 											( ( (dest_part->endTick() + max_distance < first_paste_tick) || // dest_part is too far away
-// // 																					always_new_part ) && !never_new_part ) );    // respect function arguments
-//       //bool create_new_part = ( (first_paste_tick < *dest_part) ||       // dest_part begins too late
-//       //                         (last_paste_tick >= dest_part->end()) ||   // dest_part not long enough
-//       //		( ( (dest_part->end() + max_distance < first_paste_tick) ||   // dest_part is too far away
-//       //												always_new_part ) && !never_new_part ) ); // respect function arguments
-//       bool create_new_part = ( (first_paste_pos_value < dest_part_pos_value) || // dest_part begins too late
-//                               //(last_paste_tick >= dest_part_end_value) || // dest_part not long enough
-//           ( ( (dest_part_end_value + max_distance < first_paste_pos_value) ||   // dest_part is too far away
-//                               always_new_part ) && !never_new_part ) );    // respect function arguments
-// 
-//       for (int i=0;i<amount;i++)
-//       {
-// // 										unsigned curr_pos = pos + i*raster;
-//         //Pos curr_pos = Pos(i*raster, el_range.type()) + pos;
-//         unsigned curr_pos = pos_value + i*raster;
-// // 										first_paste_tick = el.begin()->first + curr_pos;
-//         //first_paste_tick = el_range + curr_pos;
-//         first_paste_pos_value = el_range.posValue() + curr_pos;
-//         
-//         if (create_new_part)
-//         {
-//           dest_part = NULL;
-//           Part* newpart = dest_track->newPart();
-//           if(newpart)
-//           {
-// // 												newpart->setTick(MusEGlobal::sigmap.raster1(first_paste_tick, config.division));
-//             //newpart->setTick(MusEGlobal::sigmap.raster1(first_paste_tick.tick(), config.division));
-//             // TODO: Shouldn't we snap to frames for wave parts? But snap to what exactly?
-//             const unsigned pos_tick = Pos(first_paste_pos_value, !wave_mode).tick();
-//             const unsigned rast_pos_tick = MusEGlobal::sigmap.raster1(pos_tick, config.division);
-//             newpart->setTick(rast_pos_tick);
-//             const unsigned len_rast_off_value = pos_tick >= rast_pos_tick ? pos_tick - rast_pos_tick : 0;
-//             newpart->setLenValue(el_range.lenValue() + len_rast_off_value, time_type);
-//             dest_part = newpart;
-//             dest_part_pos_value = dest_part->posValue(time_type);
-//             dest_part_end_value = dest_part->end().posValue(time_type);
-//             new_part_map[old_dest_part].insert(dest_part);
-//             add_operations.push_back(UndoOp(UndoOp::AddPart, dest_part));
-//           }
-//         }
-//         
-//         if(!dest_part)
-//           continue;
-//         
-//         // This will be filled as we go.
-//         PasteEraseCtlMap ctl_map(erase_controllers_wysiwyg, erase_controllers_inclusive);
-//       
-//         const unsigned dest_part_len_value = dest_part->lenValue(time_type);
-//         for (ciEvent i = el.cbegin(); i != el.cend(); ++i)
-//         {
-// //                   const Event& old_e = i->second;
-//           
-//           const Event& old_e = i->second;
-// 
-//           // REMOVE Tim. citem Added. Diagnostics.
-//           fprintf(stderr, "paste_items_at(): old_e.dataB: %d ", old_e.dataB());
-//           
-// //                   // Be sure to subtract the position of the very first event of interest.
-// //                   e.setPos(e.pos() - start_pos);
-//           
-//           // If the destination part is a midi part, any midi event is allowed.
-//           // If the destination part is a wave part, any wave event is allowed.
-//           switch(old_e.type())
-//           {
-//             case Note:
-//               if(!(relevant & NotesRelevant) || dest_part->type() == Pos::FRAMES)
-//                 continue;
-//             break;
-// 
-//             case Controller:
-//               if(!(relevant & ControllersRelevant) || dest_part->type() == Pos::FRAMES ||
-//                   (paste_to_ctrl_num >= 0 && paste_to_ctrl_num != old_e.dataA()))
-//                 continue;
-//             break;
-// 
-//             case Sysex:
-//               if(!(relevant & SysexRelevant) || dest_part->type() == Pos::FRAMES)
-//                 continue;
-//             break;
-// 
-//             case Meta:
-//               if(!(relevant & MetaRelevant) || dest_part->type() == Pos::FRAMES)
-//                 continue;
-//             break;
-//             
-//             case Wave:
-//               if(!(relevant & WaveRelevant) || dest_part->type() == Pos::TICKS)
-//                 continue;
-//             break;
-//           }
-//           
-// //                   if(cut_mode && src_part)
-// //                     operations.push_back(UndoOp(UndoOp::DeleteEvent, old_e, src_part, true, true));
-//           
-// // 												int tick = e.tick() + curr_pos - dest_part->tick();
-// // 												Pos tick = e.pos() + curr_pos - *dest_part;
-//           //int tick = (e.pos() + curr_pos).posValue(el_range.type()) - dest_part->posValue(el_range.type());
-// 
-//           Event e = old_e.clone();
-//           unsigned tick = e.posValue(time_type) + curr_pos;
-// 
-//           // Be sure to subtract the position of the very first event of interest.
-//           const unsigned sp_val = start_pos.posValue(time_type);
-//           if(tick > sp_val)
-//             tick -= sp_val;
-//           else
-//           {
-//             printf("WARNING: paste_items_at(): Should not happen: event pos value: %u less than start pos value: %u\n",
-//                     tick, sp_val);
-//             tick = 0;
-//           }
-// 
-//           if (tick < dest_part_pos_value)
-//           //if (tick.posValue() < 0)
-//           {
-//             printf("ERROR: paste_items_at(): trying to add event before current part! ignoring this event\n");
-//             continue;
-//           }
-//           tick -= dest_part_pos_value;
-// 
-// // 												e.setTick(tick);
-//           //e.setPos(tick);
-//           e.setPosValue(tick, time_type);
-//           e.setSelected(true);  // No need to select clones, AddEvent operation below will take care of that.
-//           
-// // 												if (e.endTick() > dest_part->lenTick()) // event exceeds part?
-//           //if (e.endPosValue() > dest_part_len_value) // event exceeds part?
-//           // Don't bother with expansion if these are new parts.
-//           //if (!create_new_part && e.end() > dest_part->lenTick()) // event exceeds part?
-//           // Don't bother with expansion if these are new parts.
-//           if (!create_new_part && e.endPosValue() > dest_part_len_value) // event exceeds part?
-//           {
-//             if (dest_part->hasHiddenEvents()) // auto-expanding is forbidden?
-//             {
-// // 														if (e.tick() < dest_part->lenTick())
-// // 															e.setLenTick(dest_part->lenTick() - e.tick()); // clip
-// // 														else
-// // 															e.setLenTick(0); // don't insert that note at all
-//               if (e.posValue(time_type) < dest_part_len_value)
-//                 e.setLenValue(dest_part_len_value - e.posValue(time_type), time_type); // clip
-//               else
-// // 															e.setLenTick(0); // don't insert that note at all
-//                 e.setLenValue(0, time_type); // don't insert that note at all
-//             }
-//             else
-//             {
-// // 														if (e.endTick() > expand_map[dest_part])
-// // 															expand_map[dest_part]=e.endTick();
-//               if (e.endPosValue() > expand_map[dest_part])
-//                 expand_map[dest_part]=e.endPosValue();
-//             }
-//           }
-//           
-//           // REMOVE Tim. citem Added. Diagnostics.
-//           fprintf(stderr, "e.dataB: %d\n", e.dataB());
-//           
-// // REMOVE Tim. citem. Changed.
-// // 									if (e.lenTick() != 0) operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
-//           // Don't add Note or Wave event types if they have no length.
-//           // Otherwise, controllers, sysex, and meta should all be allowed.
-//           //if ((e.type() != Note && e.type() != Wave) || e.lenTick() != 0)
-//           //	operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
-//           switch(e.type())
-//           {
-//             case Note:
-//               // Don't add Note event types if they have no length.
-//               // Notes are allowed to overlap. There is no DeleteEvent or ModifyEvent first.
-//               //if(e.lenTick() != 0)
-//               //{
-//                 // If this is a fresh new part, to avoid double operation warnings when undoing
-//                 //  just add the event directly to the part instead of an operation.
-//                 if(create_new_part)
-//                   ((Part*)dest_part)->addEvent(e);
-//                 else
-//                   add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
-//               //}
-//             break;
-//             
-//             case Wave:
-//               // Don't add Wave event types if they have no length.
-//               //if(e.lenFrame() != 0)
-//               //{
-//                 // If this is a fresh new part, to avoid double operation warnings when undoing
-//                 //  just add the event directly to the part instead of an operation.
-//                 if(create_new_part)
-//                 {
-//                   ((Part*)dest_part)->addEvent(e);
-//                 }
-//                 else
-//                 {
-//                   EventList el;
-//                   // Compare time, and wave position, path, and start position.
-//                   dest_part->events().findSimilarType(e, el, true, false, false, false,
-//                                                       true, true, true);
-//                   // Do NOT add the new wave event if it already exists at the position.
-//                   // Don't event bother replacing it using DeletEvent or ModifyEvent.
-//                   if(el.empty())
-//                   {
-//                     // REMOVE Tim. citem. Added. Diagnostic.
-//                     fprintf(stderr, "paste_items_at: Adding new wave event: time:%u file:%s\n",
-//                             e.posValue(), e.sndFile().name().toLatin1().constData());
-//                     add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
-//                   }
-//                   else
-//                   {
-//                     // Delete all but one of them. There shouldn't be more than one wave event
-//                     //  at a time for a given wave event anyway.
-//                     ciEvent nie;
-//                     for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
-//                     {
-//                       // Break on the second-last one, to leave one item intact.
-//                       nie = ie;
-//                       ++nie;
-//                       if(nie == el.end())
-//                       {
-//                         // REMOVE Tim. citem. Added. Diagnostic.
-//                         fprintf(stderr, "paste_items_at: Leaving existing wave event intact: time:%u file:%s\n",
-//                                 ie->second.posValue(), ie->second.sndFile().name().toLatin1().constData());
-//                         break;
-//                       }
-//                       
-//                       // REMOVE Tim. citem. Added. Diagnostic.
-//                       fprintf(stderr, "paste_items_at: Deleting existing wave event: time:%u file:%s\n",
-//                               ie->second.posValue(), ie->second.sndFile().name().toLatin1().constData());
-//                       
-//                       operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
-//                     }
-//                   }
-//                 }
-//               //}
-//             break;
-//             
-//             case Controller:
-//             {
-//               // HACK Grab the event length since we use it for indicating
-//               //       the visual width when tagging controller items.
-//               const unsigned int len_val = e.lenValue();
-//               // Be sure to reset this always since we use it for the above hack.
-//               e.setLenValue(0);
-//               
-//               // If this is a fresh new part, to avoid double DeleteMidiCtrlVal warnings when undoing
-//               //  just add the event directly to the part instead of an operation.
-//               if(create_new_part)
-//               {
-//                 ((Part*)dest_part)->addEvent(e);
-//               }
-//               else
-//               {
-//                 // If we are erasing existing controller values first, this block will
-//                 //  take care of all of the erasures. But even if we are NOT specifically
-//                 //  erasing first, we still MUST erase any existing controller values found
-//                 //  at that exact time value. So that is done in the next block.
-//                 //if(erase_controllers && (e.tag()._flags & EventTagWidthValid))
-//                 if(erase_controllers)
-//                 {
-//                   ctl_map.add(e.dataA(), e.posValue(), len_val);
-//                   
-//                   
-// //                           ctl_num = e.dataA();
-// //                           ctl_time = e.posValue();
-// //     // 																if(e.tag()._flags & EventTagWidthValid)
-// //     // 																	ctl_end_time = ctl_time + e.tag()._width;
-// //                           if(len_val > 0)
-// //                             ctl_end_time = ctl_time + len_val;
-// //                           else
-// //                             ctl_end_time = ctl_time + 1;
-// //                           iPasteEraseCtlMap icm = ctl_map.find(ctl_num);
-// //                           if(icm == ctl_map.end())
-// //                           {
-// // //                             tpair_t tpair(ctl_time, ctl_end_time);
-// //                             PasteEraseMap_t new_tmap;
-// // //                             new_tmap.insert(tmap_pair_t(ctl_time, tpair));
-// //                             new_tmap.insert(PasteEraseMapInsertPair_t(ctl_time, ctl_end_time));
-// //                             ctl_map.insert(PasteEraseCtlMapPair_t(ctl_num, new_tmap));
-// //                           }
-// //                           else
-// //                           {
-// //                             PasteEraseMap_t& tmap = icm->second;
-// //                             // The event times are sorted already, so this always returns end().
-// //                             //i_tmap_t itm = tmap.upper_bound(ctl_time);
-// //                             iPasteEraseMap itm = tmap.end();
-// //                             if(itm != tmap.begin())
-// //                             {
-// //                               --itm;
-// // //                               tpair_t& tpair = itm->second;
-// // //                               prev_ctl_time = tpair.first;
-// // //                               prev_ctl_end_time = tpair.second;
-// //                               prev_ctl_time = itm->first;
-// //                               prev_ctl_end_time = itm->second;
-// //                               
-// //                               iPasteEraseMap itm_2 = tmap.end();
-// //                               if(itm != tmap.begin())
-// //                               {
-// //                                 itm_2 = itm;
-// //                                 --itm_2;
-// //                               }
-// //                               
-// //                               if((prev_ctl_end_time >= ctl_time) || erase_controllers_inclusive)
-// //                               {
-// //                                 if(erase_controllers_inclusive)
-// // //                                   tpair.second = ctl_time;
-// //                                   itm->second = ctl_time;
-// //                                 
-// //                                 if(itm_2 != tmap.end())
-// //                                 {
-// // //                                   tpair_t& tpair_2 = itm_2->second;
-// // //                                   if((tpair_2.second >= prev_ctl_time) || erase_controllers_inclusive)
-// // //                                   {
-// // //                                     tpair_2.second = tpair.second;
-// // //                                     tmap.erase(itm);
-// // //                                   }
-// //                                   if((itm_2->second >= prev_ctl_time) || erase_controllers_inclusive)
-// //                                   {
-// //                                     itm_2->second = itm->second;
-// //                                     tmap.erase(itm);
-// //                                   }
-// //                                 }
-// //                                 
-// // //                                 tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
-// //                                 tmap.insert(PasteEraseMapInsertPair_t(ctl_time, ctl_end_time));
-// //                               }
-// //                               else
-// //                               {
-// // //                                 // If we want wysiwyg pasting, we erase existing events up to
-// // //                                 //  the end-time of the last tmap item which ended a contiguous
-// // //                                 //  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
-// // //                                 //  the start-time of that last tmap item. So, that last item in the
-// // //                                 //  cluster can be deleted since we already have the start-time and
-// // //                                 //  end-time of the SECOND-LAST tmap item in the cluster.
-// // //                                 //if(!erase_controllers_wysiwyg)
-// // //                                 //	tmap.erase(itm);
-// // 
-// //                                 
-// //                                 if(!erase_controllers_wysiwyg)
-// // //                                   tpair.second = tpair.first + 1;
-// //                                   itm->second = itm->first + 1;
-// //                                 
-// // 
-// //                                 // If we want wysiwyg pasting, we erase existing events up to
-// //                                 //  the end-time of the last tmap item which ended a contiguous
-// //                                 //  'cluster' of items. Otherwise we ONLY erase UP TO AND INCLUDING
-// //                                 //  the start-time of that last tmap item. So we 'truncate' that
-// //                                 //  last item in the cluster by setting the end-time to the start-time,
-// //                                 //  so that the gathering routine below knows to erase that last
-// //                                 //  single-time position.
-// // //                                 if(itm_2 != tmap.end())
-// // //                                 {
-// // //                                   tpair_t& tpair_2 = itm_2->second;
-// // //                                   if(tpair_2.second >= tpair.first)
-// // //                                   {
-// // //     // 																					if(erase_controllers_wysiwyg)
-// // //     // 																					{
-// // //     // 																						tpair_2.second = tpair.second;
-// // //     // 																						tmap.erase(itm);
-// // //     // 																					}
-// // //     // 																					else
-// // //     // 																					{
-// // //     // 																						// Nudge it forward by one.
-// // //     // 																						tpair_2.second = tpair.first + 1;
-// // //     // 																						tmap.erase(itm);
-// // //     // 																					}
-// // //                                     tpair_2.second = tpair.second;
-// // //                                     tmap.erase(itm);
-// // //                                   }
-// // //                                 }
-// //                                 if(itm_2 != tmap.end())
-// //                                 {
-// //                                   if(itm_2->second >= itm->first)
-// //                                   {
-// //                                     itm_2->second = itm->second;
-// //                                     tmap.erase(itm);
-// //                                   }
-// //                                 }
-// //                                 
-// // //                                 tmap.insert(tmap_pair_t(ctl_time, tpair_t(ctl_time, ctl_end_time)));
-// //                                 tmap.insert(PasteEraseMapInsertPair_t(ctl_time, ctl_end_time));
-// //                               }
-// //                             }
-// //                           }
-//                 }
-//                 else
-//                 // Here we are not specifically erasing first. But we still MUST erase any
-//                 //  existing controller values found at that exact time value.
-//                 {
-//                   EventList el;
-//                   // Compare time and controller number (data A) only.
-//                   dest_part->events().findSimilarType(e, el, true, true);
-//                   // Delete them all. There shouldn't be more than one controller event
-//                   //  at a time for a given controller number anyway.
-//                   for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
-//                   {
-//                     
-//                     // REMOVE Tim. citem. Added. Diagnostic.
-//                     fprintf(stderr, "paste_items_at: Deleting existing controller event: time:%u number:%d\n",
-//                             ie->second.posValue(), ie->second.dataA());
-//                     
-//                     // Do port controller values and clone parts. 
-//                     operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, true, true));
-//                   }
-//                   
-//                   // REMOVE Tim. citem. Added. Diagnostic.
-//                   if(!el.empty())
-//                     fprintf(stderr, "paste_items_at: Adding replacement controller event: time:%u number:%d\n",
-//                             e.posValue(), e.dataA());
-//                 }
-//                 
-//                 // Do port controller values and clone parts. 
-//                 add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, true, true));
-//               }
-//             }
-//             break;
-//             
-//             case Sysex:
-//             {
-//               // If this is a fresh new part, to avoid double operation warnings when undoing
-//               //  just add the event directly to the part instead of an operation.
-//               if(create_new_part)
-//               {
-//                 ((Part*)dest_part)->addEvent(e);
-//               }
-//               else
-//               {
-//                 EventList el;
-//                 // Compare time and sysex data only.
-//                 dest_part->events().findSimilarType(e, el, true);
-//                 // Do NOT add the new sysex if it already exists at the position.
-//                 // Don't event bother replacing it using DeletEvent or ModifyEvent.
-//                 if(el.empty())
-//                 {
-//                   // REMOVE Tim. citem. Added. Diagnostic.
-//                   fprintf(stderr, "paste_items_at: Adding new sysex: time:%u len:%d\n",
-//                           e.posValue(), e.dataLen());
-//                   add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
-//                 }
-//                 else
-//                 {
-//                   // Delete all but one of them. There shouldn't be more than one sysex event
-//                   //  at a time for a given sysex anyway.
-//                   ciEvent nie;
-//                   for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
-//                   {
-//                     // Break on the second-last one, to leave one item intact.
-//                     nie = ie;
-//                     ++nie;
-//                     if(nie == el.end())
-//                     {
-//                       // REMOVE Tim. citem. Added. Diagnostic.
-//                       fprintf(stderr, "paste_items_at: Leaving existing sysex intact: time:%u len:%d\n",
-//                               ie->second.posValue(), ie->second.dataLen());
-//                       break;
-//                     }
-//                     
-//                     // REMOVE Tim. citem. Added. Diagnostic.
-//                     fprintf(stderr, "paste_items_at: Deleting existing sysex event: time:%u len:%d\n",
-//                             ie->second.posValue(), ie->second.dataLen());
-//                     
-//                     operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
-//                   }
-//                 }
-//               }
-//             }
-//             break;
-//             
-//             case Meta:
-//             {
-//               // If this is a fresh new part, to avoid double operation warnings when undoing
-//               //  just add the event directly to the part instead of an operation.
-//               if(create_new_part)
-//               {
-//                 ((Part*)dest_part)->addEvent(e);
-//               }
-//               else
-//               {
-//                 EventList el;
-//                 // Compare time and meta data only.
-//                 dest_part->events().findSimilarType(e, el, true);
-//                 // Do NOT add the new meta if it already exists at the position.
-//                 // Don't event bother replacing it using DeletEvent or ModifyEvent.
-//                 if(el.empty())
-//                 {
-//                   // REMOVE Tim. citem. Added. Diagnostic.
-//                   fprintf(stderr, "paste_items_at: Adding new meta: time:%u len:%d\n",
-//                           e.posValue(), e.dataLen());
-//                   add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
-//                 }
-//                 else
-//                 {
-//                   // Delete all but one of them. There shouldn't be more than one meta event
-//                   //  at a time for a given meta anyway.
-//                   ciEvent nie;
-//                   for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
-//                   {
-//                     // Break on the second-last one, to leave one item intact.
-//                     nie = ie;
-//                     ++nie;
-//                     if(nie == el.end())
-//                     {
-//                       // REMOVE Tim. citem. Added. Diagnostic.
-//                       fprintf(stderr, "paste_items_at: Leaving existing meta intact: time:%u len:%d\n",
-//                               ie->second.posValue(), ie->second.dataLen());
-//                       break;
-//                     }
-//                     
-//                     // REMOVE Tim. citem. Added. Diagnostic.
-//                     fprintf(stderr, "paste_items_at: Deleting existing meta event: time:%u len:%d\n",
-//                             ie->second.posValue(), ie->second.dataLen());
-//                     
-//                     operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
-//                   }
-//                 }
-//               }
-//             }
-//             break;
-//           }
-//         }
-//         
-//         // If this is not a fresh new part, gather the operations to
-//         //  erase existing controller events in the destination part.
-//         if(erase_controllers && !create_new_part && dest_part && !ctl_map.empty())
-//         {
-//           // Tidy up the very last items in the list.
-//           ctl_map.tidy();
-//           
-//           unsigned e_pos;
-//           const EventList& el = dest_part->events();
-//           for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
-//           {
-//             const Event& e = ie->second;
-//             if(e.type() != Controller)
-//               continue;
-//             
-//             ciPasteEraseCtlMap icm = ctl_map.find(e.dataA());
-//             if(icm == ctl_map.end())
-//               continue;
-//             
-//             const PasteEraseMap_t& tmap = icm->second;
-//             e_pos = e.posValue();
-//             ciPasteEraseMap itm = tmap.upper_bound(e_pos);
-//             if(itm == tmap.begin())
-//               continue;
-//             
-//             --itm;
-// //                 const tpair_t& tpair = itm->second;
-//             
-// //                 if(e_pos >= tpair.first && e_pos < tpair.second)
-//             if(e_pos >= itm->first && e_pos < itm->second)
-//               operations.push_back(UndoOp(UndoOp::DeleteEvent, e, dest_part, true, true));
-//           }
-//         }
-//       }
       
       // Do we want to cut the items as well?
       if(cut_mode && src_part)
@@ -6022,8 +3029,6 @@ void paste_items_at(
     // Push any part resizing operations onto the operations list now, before merging
     //  the add operations.
     for (map<const Part*, unsigned>::iterator it = expand_map.begin(); it!=expand_map.end(); it++)
-  // 		if (it->second != it->first->lenTick())
-  // 			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
       if (it->second != it->first->lenValue())
         schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
 

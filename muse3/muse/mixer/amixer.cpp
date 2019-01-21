@@ -517,8 +517,6 @@ void AudioMixerApp::moveStrip(Strip *s)
         // found relevant pos.
         int sTrack = MusEGlobal::song->tracks()->index(s->getTrack());
         int dTrack = MusEGlobal::song->tracks()->index(s2->getTrack());
-// REMOVE Tim. citem. Changed.
-//         MusEGlobal::audio->msgMoveTrack(sTrack, dTrack);
         if (sTrack >= 0 && dTrack >= 0)   // sanity check
         {
           if (sTrack < tracks_sz && dTrack < tracks_sz)   // sanity check

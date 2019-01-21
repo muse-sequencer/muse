@@ -541,32 +541,6 @@ void PianoRoll::songChanged1(MusECore::SongChangedStruct_t bits)
         // We must catch this first and be sure to update the strips.
         if(bits._flags & SC_TRACK_REMOVED)
         {
-// REMOVE Tim. citem. Removed.
-// #ifdef _USE_TRACKINFO_ALT
-//           const int idx = midiTrackInfo ? 2 : 1;
-// #else
-//           const int idx = 1;
-// #endif
-//           {
-//             MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(idx));
-//             if(w)
-//             {
-//               MusECore::Track* t = w->getTrack();
-//               if(t)
-//               {
-//                 MusECore::MidiTrackList* tl = MusEGlobal::song->midis();
-//                 MusECore::iMidiTrack it = tl->find(t);
-//                 if(it == tl->end())
-//                 {
-//                   delete w;
-//                   trackInfoWidget->addWidget(0, idx);
-//                   selected = 0;
-//                   switchInfo(0);
-//                 } 
-//               }   
-//             } 
-//           }
-          
           checkTrackInfoTrack();
         }
         
@@ -580,8 +554,6 @@ void PianoRoll::songChanged1(MusECore::SongChangedStruct_t bits)
 
         // We'll receive SC_SELECTION if a different part is selected.
         // Addition - also need to respond here to moving part to another track. (Tim)
-// REMOVE Tim. citem. Changed.
-//         if (bits._flags & (SC_SELECTION | SC_PART_INSERTED | SC_PART_REMOVED))
         if (bits._flags & (SC_PART_INSERTED | SC_PART_REMOVED))
           updateTrackInfo();
 
@@ -610,150 +582,6 @@ void PianoRoll::configChanged()
       }
       initShortcuts();
       }
-
-// REMOVE Tim. citem. Removed.
-// //---------------------------------------------------------
-// //   genTrackInfo
-// //---------------------------------------------------------
-// 
-// void PianoRoll::genTrackInfo(TrackInfoWidget* trackInfo)
-//       {
-//       noTrackInfo          = new QWidget(trackInfo);
-//       noTrackInfo->setAutoFillBackground(true);
-//       QPixmap *noInfoPix   = new QPixmap(160, 1000);
-//       const QPixmap *logo  = new QPixmap(*museLeftSideLogo);
-//       noInfoPix->fill(noTrackInfo->palette().color(QPalette::Window) );
-//       QPainter p(noInfoPix);
-//       p.drawPixmap(10, 0, *logo, 0,0, logo->width(), logo->height());
-// 
-//       QPalette palette;
-//       palette.setBrush(noTrackInfo->backgroundRole(), QBrush(*noInfoPix));
-//       noTrackInfo->setPalette(palette);
-//       noTrackInfo->setGeometry(0, 0, 65, 200);
-//       noTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding));
-// 
-// //       midiTrackInfo = new MidiTrackInfo(trackInfo);
-//       
-//       trackInfo->addWidget(noTrackInfo,   0);
-// #ifdef _USE_TRACKINFO_ALT
-//       if(midiTrackInfo)
-//       {
-//         trackInfo->addWidget(midiTrackInfo, 1);
-//         trackInfo->addWidget(0, 2);
-//       }
-//       else
-// #endif
-//         trackInfo->addWidget(0, 1);
-//       }
-
-// REMOVE Tim. citem. Removed.
-// void PianoRoll::updateTrackInfo()
-// {
-//       MusECore::Part* part = curCanvasPart();
-//       if(part)
-//         selected = part->track();
-//       else
-//         selected = 0;
-//       
-//       if (selected == 0) {
-//             switchInfo(0);
-//             return;
-//             }
-//       if (selected->isMidiTrack()) 
-//       {
-//             switchInfo(1);
-// #ifdef _USE_TRACKINFO_ALT
-//             if(midiTrackInfo)
-//             {
-//               // If a different part was selected
-//               if(midiTrackInfo->track() != selected)
-//                 // Set a new track and do a complete update.
-//                 midiTrackInfo->setTrack(selected);
-//               else  
-//                 // Otherwise just regular update with specific flags.
-//                 midiTrackInfo->updateTrackInfo(flags);
-//             }
-// #endif
-//       }
-// }
-
-// REMOVE Tim. citem. Removed.
-// //---------------------------------------------------------
-// //   switchInfo
-// //---------------------------------------------------------
-// 
-// void PianoRoll::switchInfo(int n)
-//       {
-// #ifdef _USE_TRACKINFO_ALT
-//       const int idx = midiTrackInfo ? 2 : 1;
-// #else
-//       const int idx = 1;
-// #endif
-//       if(n == idx) {
-//             MidiStrip* w = (MidiStrip*)(trackInfoWidget->getWidget(idx));
-//             if (w == 0 || selected != w->getTrack()) {
-//                   if (w)
-//                   {
-//                         //fprintf(stderr, "PianoRoll::switchInfo deleting strip\n");
-//                         delete w;
-//                         //w->deleteLater();
-//                   }
-//                   w = new MidiStrip(trackInfoWidget, static_cast <MusECore::MidiTrack*>(selected));
-//                   // Leave broadcasting changes to other selected tracks off.
-//                   
-//                   // Set focus yielding to the canvas.
-//                   if(MusEGlobal::config.smartFocus)
-//                   {
-//                     w->setFocusYieldWidget(canvas);
-//                     //w->setFocusPolicy(Qt::WheelFocus);
-//                   }
-// 
-//                   // We must marshall song changed instead of connecting to the strip's song changed
-//                   //  otherwise it crashes when loading another song because track is no longer valid
-//                   //  and the strip's songChanged() seems to be called before Pianoroll songChanged()
-//                   //  gets called and has a chance to stop the crash.
-//                   //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), w, SLOT(songChanged(MusECore::SongChangedStruct_t)));
-//                   
-//                   connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
-//                   w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-//                   trackInfoWidget->addWidget(w, idx);
-//                   w->show();
-//                   //setTabOrder(midiTrackInfo, w);
-//                   }
-//             }
-//       if (trackInfoWidget->curIdx() == n)
-//             return;
-//       trackInfoWidget->raiseWidget(n);
-//       }
-
-// REMOVE Tim. citem. Removed.
-// //---------------------------------------------------------
-// //   trackInfoSongChange
-// //---------------------------------------------------------
-// 
-// void PianoRoll::trackInfoSongChange(MusECore::SongChangedStruct_t flags)
-// {
-//   if(!selected) // || !showTrackinfoFlag)
-//     return;
-//   
-//   if(selected->isMidiTrack()) 
-//   {
-// #ifdef _USE_TRACKINFO_ALT
-//     if(midiTrackInfo) // && showTrackinfoAltFlag)
-//     {
-//       MidiTrackInfo* w = static_cast<MidiTrackInfo*>(trackInfoWidget->getWidget(1));
-//       if(w)
-//         w->songChanged(flags);
-//     }
-//     else
-// #endif
-//     {
-//       MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(1));
-//       if(w)
-//         w->songChanged(flags);
-//     }
-//   }
-// }
 
 //---------------------------------------------------------
 //   horizontalZoom
@@ -866,31 +694,6 @@ void PianoRoll::cmd(int cmd)
       
       switch (cmd)
             {
-  // REMOVE Tim. citem. Changed.
-  //             case PianoCanvas::CMD_CUT:
-  //                   copy_notes(partlist_to_set(parts()), 1);
-  //                   erase_notes(partlist_to_set(parts()), 1);
-  //                   break;
-  //             case PianoCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
-  //             case PianoCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()),
-  //               MusECore::any_event_selected(partlist_to_set(parts()), MusECore::AllEventsRelevant) ?
-  //                   3 : 2); break;
-  //             case PianoCanvas::CMD_PASTE: 
-  //                               ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-  //                               MusECore::paste_notes(3072, false, true, canvas->part());
-  //                               break;
-  // 						case PianoCanvas::CMD_PASTE: 
-  // 															((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-  // 															MusECore::paste_notes(3072, false, true);
-  // 															break;
-  // 						case PianoCanvas::CMD_PASTE_TO_CUR_PART: 
-  // 															((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-  // 															MusECore::paste_notes(3072, false, true, canvas->part());
-  // 															break;
-  // 						case PianoCanvas::CMD_PASTE_DIALOG: 
-  // 															((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-  // 															MusECore::paste_notes((canvas->part()));
-  // 															break;
             case PianoCanvas::CMD_CUT:
                   tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
                   MusECore::cut_items(&tag_list);
@@ -920,7 +723,6 @@ void PianoRoll::cmd(int cmd)
                               MusECore::paste_items(partlist_to_set(parts()), (canvas->part()));
                               break;
                               
-//             case PianoCanvas::CMD_MODIFY_GATE_TIME: modify_notelen(partlist_to_set(parts())); break;
             case PianoCanvas::CMD_MODIFY_GATE_TIME:
                   {
                   FunctionDialogReturnGateTime ret =
@@ -933,7 +735,6 @@ void PianoRoll::cmd(int cmd)
                   }
                   break;
                   }
-//             case PianoCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
             case PianoCanvas::CMD_MODIFY_VELOCITY:
                   {
                   FunctionDialogReturnVelocity ret =
@@ -946,7 +747,6 @@ void PianoRoll::cmd(int cmd)
                   }
                   break;
                   }
-//             case PianoCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
             case PianoCanvas::CMD_CRESCENDO:
                   {
                   FunctionDialogReturnCrescendo ret =
@@ -963,7 +763,6 @@ void PianoRoll::cmd(int cmd)
                   }
                   break;
                   }
-//             case PianoCanvas::CMD_QUANTIZE: quantize_notes(partlist_to_set(parts())); break;
             case PianoCanvas::CMD_QUANTIZE:
                   {
                   FunctionDialogReturnQuantize ret =
@@ -981,7 +780,6 @@ void PianoRoll::cmd(int cmd)
                   break;
                   }
             
-//             case PianoCanvas::CMD_TRANSPOSE: transpose_notes(partlist_to_set(parts())); break;
             case PianoCanvas::CMD_TRANSPOSE:
                   {
                   FunctionDialogReturnTranspose ret =
@@ -994,7 +792,6 @@ void PianoRoll::cmd(int cmd)
                   }
                   break;
                   }
-  // 						case PianoCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
             case PianoCanvas::CMD_ERASE_EVENT:
             {
               FunctionDialogReturnErase ret =
@@ -1007,12 +804,10 @@ void PianoRoll::cmd(int cmd)
               }
             }
             break;
-  // 						case PianoCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break;
             case PianoCanvas::CMD_DEL:
               tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
               MusECore::erase_items(&tag_list);
               break;
-//             case PianoCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
             case PianoCanvas::CMD_NOTE_SHIFT:
                   {
                   FunctionDialogReturnMove ret =
@@ -1025,7 +820,6 @@ void PianoRoll::cmd(int cmd)
                   }
                   break;
                   }
-//             case PianoCanvas::CMD_FIXED_LEN: set_notelen(partlist_to_set(parts())); break;
             case PianoCanvas::CMD_FIXED_LEN:
                   {
                   FunctionDialogReturnSetLen ret =
@@ -1038,7 +832,6 @@ void PianoRoll::cmd(int cmd)
                   }
                   break;
                   }
-//             case PianoCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
             case PianoCanvas::CMD_DELETE_OVERLAPS:
                   {
                   FunctionDialogReturnDelOverlaps ret =
@@ -1051,7 +844,6 @@ void PianoRoll::cmd(int cmd)
                   }
                   break;
                   }
-//             case PianoCanvas::CMD_LEGATO: legato(partlist_to_set(parts())); break;
             case PianoCanvas::CMD_LEGATO:
                   {
                   FunctionDialogReturnLegato ret =
@@ -1763,15 +1555,12 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
           return;
       }
       else if (key == shortcuts[SHRT_INC_VELOCITY].key) {
-// REMOVE Tim. citem. Changed.
-//           modify_velocity(partlist_to_set(parts()), 1, 100, 1);
           MusECore::TagEventList tag_list;
           tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
           MusECore::modify_velocity_items(&tag_list, 100, 1);
           return;
       }
       else if (key == shortcuts[SHRT_DEC_VELOCITY].key) {
-//           modify_velocity(partlist_to_set(parts()), 1, 100, -1);
           MusECore::TagEventList tag_list;
           tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
           MusECore::modify_velocity_items(&tag_list, 100, -1);
@@ -1842,8 +1631,6 @@ void PianoRoll::clipboardChanged()
 
 void PianoRoll::selectionChanged()
       {
-// REMOVE Tim. citem. Changed.
-//       bool flag = canvas->selectionSize() > 0;
       bool flag = itemsAreSelected();
       editCutAction->setEnabled(flag);
       editCopyAction->setEnabled(flag);
@@ -1938,20 +1725,5 @@ void PianoRoll::newCanvasWidth(int /*w*/)
       updateHScrollRange();
 */      
       }
-
-// REMOVE Tim. citem. Removed.
-// //---------------------------------------------------------
-// //   toggleTrackInfo
-// //---------------------------------------------------------
-// 
-// void PianoRoll::toggleTrackInfo()
-// {
-// //   bool vis = (midiTrackInfo && midiTrackInfo->isVisible()) || (midiStrip && midiStrip->isVisible());
-// //   if(infoScroll)
-// //   {
-// //     infoScroll->setVisible(!vis);
-// //     infoScroll->setEnabled(!vis);
-// //   }
-// }
 
 } // namespace MusEGui

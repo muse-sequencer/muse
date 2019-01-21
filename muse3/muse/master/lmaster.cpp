@@ -527,8 +527,6 @@ void LMaster::cmd(int cmd)
                               case LMASTER_TEMPO:
                                     {
                                     LMasterTempoItem* t = (LMasterTempoItem*) l;
-// REMOVE Tim. citem. Changed.
-//                                     MusEGlobal::audio->msgDeleteTempo(t->tick(), t->tempo(), true);
                                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo,
                                          t->tick(), t->tempo()));
                                     break;
@@ -536,8 +534,6 @@ void LMaster::cmd(int cmd)
                               case LMASTER_SIGEVENT:
                                     {
                                     LMasterSigEventItem* s = (LMasterSigEventItem*) l;
-// REMOVE Tim. citem. Changed.
-//                                     MusEGlobal::audio->msgRemoveSig(s->tick(), s->z(), s->n());
                                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteSig,
                                                     s->tick(), s->z(), s->n()));
                                     break;
@@ -545,8 +541,6 @@ void LMaster::cmd(int cmd)
                               case LMASTER_KEYEVENT:
                                     {
                                     LMasterKeyEventItem* k = (LMasterKeyEventItem*) l;
-// REMOVE Tim. citem. Changed.
-//                                     MusEGlobal::audio->msgRemoveKey(k->tick(), k->key());
                                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteKey,
                                               k->tick(), k->key()));
                                     break;
@@ -699,13 +693,9 @@ void LMaster::returnPressed()
 
                   if (!editingNewItem) {
                         MusEGlobal::song->startUndo();
-// REMOVE Tim. citem. Changed.
-//                         MusEGlobal::audio->msgDeleteTempo(tick, e->tempo(), false);
                         // Operation is undoable but do not start/end undo.
                         MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo,
                                          tick, e->tempo()), MusECore::Song::OperationUndoable);
-// REMOVE Tim. citem. Changed.
-//                         MusEGlobal::audio->msgAddTempo(tick, tempo, false);
                         // Operation is undoable but do not start/end undo.
                         MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddTempo,
                                       tick, tempo), MusECore::Song::OperationUndoable);
@@ -715,8 +705,6 @@ void LMaster::returnPressed()
                   // New item edited:
                   //
                   else {
-// REMOVE Tim. citem. Changed.
-//                         MusEGlobal::audio->msgAddTempo(tick, tempo, true);
                         MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddTempo, tick, tempo));
                         }
                   }
@@ -744,13 +732,9 @@ void LMaster::returnPressed()
                         LMasterTempoItem* t = (LMasterTempoItem*) editedItem;
                         int tempo = t->tempo();
                         MusEGlobal::song->startUndo();
-// REMOVE Tim. citem. Changed.
-//                         MusEGlobal::audio->msgDeleteTempo(oldtick, tempo, false);
                         // Operation is undoable but do not start/end undo.
                         MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo,
                                               oldtick, tempo), MusECore::Song::OperationUndoable);
-// REMOVE Tim. citem. Changed.
-//                         MusEGlobal::audio->msgAddTempo(newtick, tempo, false);
                         // Operation is undoable but do not start/end undo.
                         MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddTempo,
                                       newtick, tempo), MusECore::Song::OperationUndoable);
@@ -769,14 +753,10 @@ void LMaster::returnPressed()
                         if (!editingNewItem) {
                               MusEGlobal::song->startUndo();
                               //Delete first, in order to get sane tick-value
-// REMOVE Tim. citem. Changed.
-//                               MusEGlobal::audio->msgRemoveSig(oldtick, z, n, false);
                               // Operation is undoable but do not start/end undo.
                               MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteSig,
                                               oldtick, z, n), MusECore::Song::OperationUndoable);
                               newtick = pos_editor->pos().tick();
-// REMOVE Tim. citem. Changed.
-//                               MusEGlobal::audio->msgAddSig(newtick, z, n, false);
                               // Add will replace if found. 
                               // Operation is undoable but do not start/end undo.
                               MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
@@ -784,8 +764,6 @@ void LMaster::returnPressed()
                               MusEGlobal::song->endUndo(SC_SIG);
                               }
                         else
-// REMOVE Tim. citem. Changed.
-//                               MusEGlobal::audio->msgAddSig(newtick, z, n, false);
                               // Add will replace if found. 
                               // Operation is undoable but do not start/end undo.
                               MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
@@ -802,14 +780,9 @@ void LMaster::returnPressed()
                         LMasterKeyEventItem* k = (LMasterKeyEventItem*) editedItem;
                         MusECore::key_enum key = k->key();
                         MusEGlobal::song->startUndo();
-// REMOVE Tim. citem. Changed.
-//                         MusEGlobal::audio->msgRemoveKey(oldtick, key, false);
                         // Operation is undoable but do not start/end undo.
                         MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteKey,
                                   oldtick, key),  MusECore::Song::OperationUndoable);
-// REMOVE Tim. citem. Changed.
-//                         MusEGlobal::audio->msgAddKey(newtick, key, false);
-//                       MusEGlobal::audio->msgAddKey(tick, key, false);
                       // Operation is undoable but do not start/end undo.
                       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddKey,
                                   newtick, key), MusECore::Song::OperationUndoable);
@@ -846,13 +819,9 @@ void LMaster::returnPressed()
               int tick = e->tick();
               if (!editingNewItem) {
                     MusEGlobal::song->startUndo();
-// REMOVE Tim. citem. Changed.
-//                     MusEGlobal::audio->msgRemoveSig(tick, e->z(), e->n(), false);
                     // Operation is undoable but do not start/end undo.
                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteSig,
                                     tick, e->z(), e->n()), MusECore::Song::OperationUndoable);
-// REMOVE Tim. citem. Changed.
-//                     MusEGlobal::audio->msgAddSig(tick, newSig.z, newSig.n, false);
                     // Add will replace if found. 
                     // Operation is undoable but do not start/end undo.
                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
@@ -860,8 +829,6 @@ void LMaster::returnPressed()
                     MusEGlobal::song->endUndo(SC_SIG);
                     }
               else
-// REMOVE Tim. citem. Changed.
-//                     MusEGlobal::audio->msgAddSig(tick, newSig.z, newSig.n, true);
                     // Add will replace if found. 
                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
                                     tick, newSig.z, newSig.n));
@@ -882,13 +849,9 @@ void LMaster::returnPressed()
 
           if (!editingNewItem) {
                       MusEGlobal::song->startUndo();
-// REMOVE Tim. citem. Changed.
-//                       MusEGlobal::audio->msgRemoveKey(tick, e->key(), false);
                       // Operation is undoable but do not start/end undo.
                       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteKey,
                                   tick, e->key()),  MusECore::Song::OperationUndoable);
-// REMOVE Tim. citem. Changed.
-//                       MusEGlobal::audio->msgAddKey(tick, key, false);
                       // Operation is undoable but do not start/end undo.
                       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddKey,
                                   tick, key), MusECore::Song::OperationUndoable);
@@ -898,8 +861,6 @@ void LMaster::returnPressed()
               // New item edited:
               //
               else {
-// REMOVE Tim. citem. Changed.
-//                     MusEGlobal::audio->msgAddKey(tick, key, true);
                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddKey, tick, key));
                     }
           }

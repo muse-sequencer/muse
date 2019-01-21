@@ -32,8 +32,6 @@
 #include "song.h"
 #include "canvas.h"
 #include "trackautomationview.h"
-// REMOVE Tim. citem. Added.
-//#include "event_tag_list.h"
 
 class QDropEvent;
 class QMouseEvent;
@@ -50,8 +48,6 @@ class Undo;
 class Part;
 }
 
-//#define beats     4
-
 namespace MusEGui {
 
 class MidiEditor;
@@ -63,13 +59,8 @@ class MidiEditor;
 //    for displaying
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// class NPart : public CItem {
 class NPart : public PItem {
    protected:
-// REMOVE Tim. citem. Added.
-//       MusECore::Part* _part;
-     
       int _serial;
    
    public:
@@ -79,18 +70,9 @@ class NPart : public PItem {
       void setName(const QString& s) { part()->setName(s); }
       MusECore::Track* track() const           { return part()->track(); }
       int serial() { return _serial; }
-      // REMOVE Tim. citem. Added.
-      //bool objectEquals(const NPart& p) const { return part() == p.part(); }
-//       bool objectIsSelected() const { return part()->selected(); }
-//       bool isObjectTagged() const   { return part()->tagged(); }
-//       void setObjectTagged(bool v)  { part()->setTagged(v); }
       
       bool leftBorderTouches;  // Whether the borders touch other part borders. 
       bool rightBorderTouches;
-    
-// REMOVE Tim. citem. Added.
-//       MusECore::Part* part() const          { return _part; }
-//       void setPart(MusECore::Part* p)       { _part = p; }
       };
 
 enum ControllerVals { doNothing, movingController, addNewController };
@@ -134,18 +116,13 @@ class PartCanvas : public Canvas {
       AutomationObject automation;
 
       virtual void keyPress(QKeyEvent*);
-// REMOVE Tim. citem. Added.
       virtual void keyRelease(QKeyEvent* event);
       virtual bool mousePress(QMouseEvent*);
       virtual void mouseMove(QMouseEvent* event);
       virtual void mouseRelease(const QPoint&);
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void leaveEvent(QEvent*e);
-// REMOVE Tim. citem. Changed.
-//       virtual void drawItem(QPainter&, const CItem*, const QRect&);
       virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
-// REMOVE Tim. citem. Changed.
-//       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
       virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
       virtual bool itemSelectionsChanged(MusECore::Undo* operations = 0, bool deselectAll = false);
       virtual QPoint raster(const QPoint&) const;
@@ -161,8 +138,6 @@ class PartCanvas : public Canvas {
       virtual void moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true);
       virtual bool moveItem(MusECore::Undo& operations, CItem*, const QPoint&, DragType);
 
-// REMOVE Tim. citem. Removed. Unused.
-//       virtual void updateSong(DragType, MusECore::SongChangedStruct_t);
       virtual void startDrag(CItem*, DragType);
       virtual void dragEnterEvent(QDragEnterEvent*);
       virtual void viewDropEvent(QDropEvent*);
@@ -184,25 +159,16 @@ class PartCanvas : public Canvas {
       void drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int samplePos, unsigned rootFrame,
                            unsigned startFrame, unsigned lengthFrames, int startY, int startX, int endX, int rectHeight);
       void drawWavePart(QPainter&, const QRect&, MusECore::WavePart*, const QRect&);
-// REMOVE Tim. citem. Changed.
-//       void drawMidiPart(QPainter&, const QRect& rect, const MusECore::EventList& events,
-//                         MusECore::MidiTrack* mt, MusECore::MidiPart* pt, const QRect& r, int pTick, int from, int to);
-// 	    void drawMidiPart(QPainter&, const QRect& rect, MusECore::MidiPart* midipart, const QRect& r, int from, int to);
       void drawMidiPart(QPainter&, const QRect& rect, const MusECore::EventList& events,
                         MusECore::MidiTrack* mt, MusECore::MidiPart* midipart,
                         const QRect& r, int pTick, int from, int to, bool selected);
 	    void drawMidiPart(QPainter&, const QRect& rect, MusECore::MidiPart* midipart,
                         const QRect& r, int from, int to, bool selected);
       MusECore::Track* y2Track(int) const;
-// REMOVE Tim. citem. Changed.
-//       void drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, MusECore::AudioTrack* track);
-//       void drawAudioTrack(QPainter& p, const QRect& vr, const QRegion& vrg, const QRect& vbbox, MusECore::AudioTrack* track);
       void drawAudioTrack(QPainter& p, const QRect& mr, const QRegion& vrg, const ViewRect& vbbox, MusECore::AudioTrack* track);
       void drawAutomation(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
       void drawAutomationPoints(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
       void drawAutomationText(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
-// REMOVE Tim. citem. Changed.
-//       void drawTopItem(QPainter& p, const QRect& rect);
       void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion());
 
       void checkAutomation(MusECore::Track * t, const QPoint& pointer, bool addNewCtrl);
@@ -212,8 +178,6 @@ class PartCanvas : public Canvas {
       void newAutomationVertex(QPoint inPos);
 
    protected:
-// REMOVE Tim. citem. Changed.
-//       virtual void drawCanvas(QPainter&, const QRect&);
       virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true);
 
@@ -221,8 +185,6 @@ class PartCanvas : public Canvas {
       void timeChanged(unsigned);
       void tracklistChanged();
       void dclickPart(MusECore::Track*);
-// REMOVE Tim. citem. Removed. Unused.
-//       void selectionChanged();
       void dropSongFile(const QString&);
       void dropMidiFile(const QString&);
       void setUsedTool(int);
@@ -245,16 +207,6 @@ class PartCanvas : public Canvas {
       PartCanvas(int* raster, QWidget* parent, int, int);
       virtual ~PartCanvas();
       void updateItems();
-// REMOVE Tim. citem. Added.
-      //void updateItemSelections();
-      // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
-      //void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
-      //  const MusECore::Pos& p0 = MusECore::Pos(),
-      //  const MusECore::Pos& p1 = MusECore::Pos()) const;
-//       // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
-//       // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
-//       void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
-
       void cmd(int);
       void songIsClearing();
       

@@ -44,14 +44,9 @@ namespace MusEGui {
 //    ''visual'' Note Event
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-//class NEvent : public CItem {
 class NEvent : public EItem {
    public:
       NEvent(const MusECore::Event& e, MusECore::Part* p, int y);
-      
-      // REMOVE Tim. citem. Added.
-      //bool objectIsSelected() const { return event().selected(); }
       };
 
 class ScrollScale;
@@ -72,14 +67,8 @@ class PianoCanvas : public EventCanvas {
 
       
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
-// REMOVE Tim. citem. Changed.
-//       virtual void drawItem(QPainter&, const CItem*, const QRect&);
       virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
-// REMOVE Tim. citem. Changed.
-//       void drawTopItem(QPainter& p, const QRect& rect);
       void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion());
-// REMOVE Tim. citem. Changed.
-//       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
       virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
       virtual MusECore::Undo moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true);
       virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true);
@@ -97,8 +86,6 @@ class PianoCanvas : public EventCanvas {
       int pitch2y(int) const;
       inline int y2height(int) const { return KH/2; }
       inline int yItemOffset() const { return KH/4; }
-// REMOVE Tim. citem. Changed.
-//       virtual void drawCanvas(QPainter&, const QRect&);
       virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void itemPressed(const CItem*);
       virtual void itemReleased(const CItem*, const QPoint&);

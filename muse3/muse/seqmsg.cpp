@@ -376,16 +376,6 @@ void Audio::msgSeekNextACEvent(AudioTrack* node, int acid)
       sendMsg(&msg);
 }
 
-// REMOVE Tim. citem. Removed. Unused.
-// //---------------------------------------------------------
-// //   msgEraseACEvent
-// //---------------------------------------------------------
-// 
-// void Audio::msgEraseACEvent(AudioTrack* node, int acid, int frame)
-// {
-//       MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteAudioCtrlVal, node, acid, frame));
-// }
-
 //---------------------------------------------------------
 //   msgEraseRangeACEvents
 //---------------------------------------------------------
@@ -428,16 +418,6 @@ void Audio::msgEraseRangeACEvents(AudioTrack* node, int acid, unsigned int frame
 
   MusEGlobal::song->applyOperation(UndoOp(UndoOp::ModifyAudioCtrlValList, node->controller(), erased_list_items, 0));
 }
-
-// REMOVE Tim. citem. Removed. Unused.
-// //---------------------------------------------------------
-// //   msgAddACEvent
-// //---------------------------------------------------------
-// 
-// void Audio::msgAddACEvent(AudioTrack* node, int acid, int frame, double val)
-// {
-//        MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddAudioCtrlVal, node, acid, frame, val));
-// }
 
 //---------------------------------------------------------
 //   msgChangeACEvent
@@ -587,16 +567,6 @@ void Audio::msgExternalPlay(bool val, bool doRewind)
 
 
 
-// REMOVE Tim. citem. Removed. Unused.
-// //---------------------------------------------------------
-// //   msgRemoveTrack
-// //---------------------------------------------------------
-// 
-// void Audio::msgRemoveTrack(Track* track, bool doUndoFlag)
-//       {
-//       MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(track), track), doUndoFlag);
-//       }
-
 //---------------------------------------------------------
 //   msgRemoveTracks
 //    remove all selected tracks
@@ -620,146 +590,6 @@ void Audio::msgRemoveTracks()
       
       MusEGlobal::song->applyOperationGroup(operations);
 }
-
-// REMOVE Tim. citem. Removed. Unused.
-// //---------------------------------------------------------
-// //   msgMoveTrack
-// //    move track idx1 to slot idx2
-// //---------------------------------------------------------
-// 
-// void Audio::msgMoveTrack(int idx1, int idx2, bool doUndoFlag)
-//       {
-//       if (idx1 < 0 || idx2 < 0)   // sanity check
-//             return;
-//       int n = MusEGlobal::song->tracks()->size();
-//       if (idx1 >= n || idx2 >= n)   // sanity check
-//             return;
-//       MusEGlobal::song->applyOperation(UndoOp(UndoOp::MoveTrack, idx1, idx2), doUndoFlag);
-//       }
-
-// REMOVE Tim. citem. Removed. Unused.
-// //---------------------------------------------------------
-// //   msgAddPart
-// //---------------------------------------------------------
-// 
-// void Audio::msgAddPart(Part* part, bool doUndoFlag)
-//       {
-//       MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddPart, part), doUndoFlag);
-//       }
-
-// REMOVE Tim. citem. Removed. Unused.
-// //---------------------------------------------------------
-// //   msgRemovePart
-// //---------------------------------------------------------
-// 
-// void Audio::msgRemovePart(Part* part, bool doUndoFlag)
-//       {
-//       MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeletePart, part), doUndoFlag);
-//       }
-
-
-// REMOVE Tim. citem. Removed. Unused.
-// //---------------------------------------------------------
-// //   msgAddEvent
-// //---------------------------------------------------------
-// 
-// void Audio::msgAddEvent(Event& event, Part* part, bool doUndoFlag, bool doCtrls, bool doClones)
-//       {
-//       MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddEvent, event,part, doCtrls, doClones), doUndoFlag);
-//       }
-
-// REMOVE Tim. citem. Removed. Unused.
-// //---------------------------------------------------------
-// //   msgDeleteEvent
-// //---------------------------------------------------------
-// 
-// void Audio::msgDeleteEvent(Event& event, Part* part, bool doUndoFlag, bool doCtrls, bool doClones)
-//       {
-//       MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteEvent, event,part, doCtrls, doClones), doUndoFlag);
-//       }
-
-// REMOVE Tim. citem. Removed. Unused.
-// //---------------------------------------------------------
-// //   msgChangeEvent
-// //---------------------------------------------------------
-// 
-// void Audio::msgChangeEvent(Event& oe, Event& ne, Part* part, bool doUndoFlag, bool doCtrls, bool doClones)
-//       {
-//       MusEGlobal::song->applyOperation(UndoOp(UndoOp::ModifyEvent, ne,oe, part, doCtrls, doClones), doUndoFlag);
-//       }
-
-// REMOVE Tim. citem. Removed. Unused.
-// //---------------------------------------------------------
-// //   msgAddTempo
-// //---------------------------------------------------------
-// 
-// void Audio::msgAddTempo(int tick, int tempo, bool doUndoFlag)
-//       {
-//       MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddTempo, tick, tempo), doUndoFlag);
-//       }
-
-// REMOVE Tim. citem. Removed. Unused.
-// //---------------------------------------------------------
-// //   msgSetGlobalTempo
-// //---------------------------------------------------------
-// 
-// void Audio::msgSetGlobalTempo(int val, bool doUndoFlag)
-//       {
-//       MusEGlobal::song->applyOperation(UndoOp(UndoOp::SetGlobalTempo, val, 0), doUndoFlag);
-//       }
-
-// REMOVE Tim. citem. Removed. Unused.
-// //---------------------------------------------------------
-// //   msgDeleteTempo
-// //---------------------------------------------------------
-// 
-// void Audio::msgDeleteTempo(int tick, int tempo, bool doUndoFlag)
-//       {
-//       MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTempo, tick, tempo), doUndoFlag);
-//       }
-
-// REMOVE Tim. citem. Removed. Unused.
-// //---------------------------------------------------------
-// //   msgAddSig
-// //---------------------------------------------------------
-// 
-// void Audio::msgAddSig(int tick, int z, int n, bool doUndoFlag)
-//       {
-//       MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddSig, tick, z, n), doUndoFlag);
-//       }
-
-// REMOVE Tim. citem. Removed. Unused.
-// //---------------------------------------------------------
-// //   msgRemoveSig
-// //! sends remove tempo signature message
-// //---------------------------------------------------------
-// 
-// void Audio::msgRemoveSig(int tick, int z, int n, bool doUndoFlag)
-//       {
-//       MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteSig, tick, z, n), doUndoFlag);
-//       }
-
-// REMOVE Tim. citem. Removed. Unused.
-// //---------------------------------------------------------
-// //   msgAddKey
-// //---------------------------------------------------------
-// 
-// void Audio::msgAddKey(int tick, int key, bool doUndoFlag)
-//       {
-//       MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddKey, tick, key), doUndoFlag);
-//       }
-
-// REMOVE Tim. citem. Removed. Unused.
-// //---------------------------------------------------------
-// //   msgRemoveKey
-// //! sends remove key message
-// //---------------------------------------------------------
-// 
-// void Audio::msgRemoveKey(int tick, int key, bool doUndoFlag)
-//       {
-//       MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteKey, tick, key), doUndoFlag);
-//       }
-
 
 //---------------------------------------------------------
 //   msgResetMidiDevices

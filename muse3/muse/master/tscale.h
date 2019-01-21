@@ -40,8 +40,6 @@ class TScale : public View {
       virtual void leaveEvent(QEvent*e);
 
    protected:
-// REMOVE Tim. citem. Changed.
-//       virtual void pdraw(QPainter&, const QRect&);
       virtual void pdraw(QPainter&, const QRect&, const QRegion& = QRegion());
 
    signals:

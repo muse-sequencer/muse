@@ -144,7 +144,6 @@ void MidiEventBase::write(int level, Xml& xml, const Pos& offset, bool /*forcePa
             case Note:
                   xml.nput(" len=\"%d\"", lenTick());
                   break;
-// REMOVE Tim. citem. Added.
             case Controller:
                   xml.nput(" type=\"%d\"", type());
                   // HACK We abuse the length member as a visual length for certain temporary
@@ -166,15 +165,6 @@ void MidiEventBase::write(int level, Xml& xml, const Pos& offset, bool /*forcePa
             xml.nput(" b=\"%d\"", b);
       if (c)
             xml.nput(" c=\"%d\"", c);
-
-// REMOVE Tim. citem. Added.
-//       if (tagged())
-//       {
-//             const EventTagStruct ts = tag();
-//             xml.nput(" tags=\"%d\"", ts._flags);
-//             if(ts._flags & EventTagWidthValid)
-//               xml.nput(" w=\"%u\"", ts._width);
-//       }
 
       if (edata.dataLen) {
             xml.nput(" datalen=\"%d\">\n", edata.dataLen);
@@ -199,8 +189,6 @@ void MidiEventBase::read(Xml& xml)
       a      = 0;
       b      = 0;
       c      = 0;
-// REMOVE Tim. citem. Added.
-//       EventTagStruct ts;
 
       int dataLen = 0;
       for (;;) {
@@ -241,21 +229,11 @@ void MidiEventBase::read(Xml& xml)
                               b = xml.s2().toInt();
                         else if (tag == "c")
                               c = xml.s2().toInt();
-// REMOVE Tim. citem. Added.
-//                         else if (tag == "tags")
-//                               ts._flags = xml.s2().toInt();
-//                         else if (tag == "w")
-//                               ts._width = xml.s2().toUInt();
                         else if (tag == "datalen")
                               dataLen = xml.s2().toInt();
                         break;
                   case Xml::TagEnd:
                         if (tag == "event") {
-// REMOVE Tim. citem. Added.
-//                               // Set any tagging features.
-//                               if(ts.isTagged())
-//                                 setTag(ts);
-
                               // Convert obsolete PAfter and CAfter events to newer controllers
                               if(ev_type == 3) // PAfter
                               {

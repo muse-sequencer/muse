@@ -72,17 +72,6 @@ class Part : public PosLen {
 
       QString _name;
       bool _selected;
-      // REMOVE Tim. citem. Added.
-//       // Temporary general purpose tag. Used for example when iterating canvases for
-//       //  selected canvas items to copy to the clipboard and needing to see if the
-//       //  event was already put into the selected item list.
-//       // This saves from having to check the selected item list for duplicates
-//       //  for every item encountered. Just make sure to reset the tag at some point!
-//       bool _tagged;
-      // REMOVE Tim. citem. Added.
-//       // Optimization: This saves from having to iterate the event list just to see if
-//       //  any event was tagged. It indicates that at least one event was tagged.
-//       bool _eventsTagged;
       bool _mute;
       int _colorIndex;
                    
@@ -114,11 +103,6 @@ class Part : public PosLen {
       void setName(const QString& s)   { _name = s; }
       bool selected() const            { return _selected; }
       void setSelected(bool f)         { _selected = f; }
-      // REMOVE Tim. citem. Added.
-//       bool tagged() const              { return _tagged; }
-//       void setTagged(bool v)           { _tagged = v; }
-//       bool eventsTagged() const        { return _eventsTagged; }
-//       void setEventsTagged(bool v)     { _eventsTagged = v; }
       // Select or unselect a range of events. If t0 == t1, ALL events will be affected.
       // The t0 and t1 can be ticks or frames depending on the type of events. Unused for now.
       // Returns true if anything changed.
@@ -248,13 +232,9 @@ extern void unchainTrackParts(Track* t);
 extern void chainTrackParts(Track* t);
 extern void addPortCtrlEvents(Part* part, bool doClones);
 extern void addPortCtrlEvents(const Event& event, Part* part, unsigned int tick, unsigned int len, Track* track, PendingOperationList& ops);
-// REMOVE Tim. citem. ctl. Removed.
-// extern void addPortCtrlEvents(Event& event, Part* part);
 extern void addPortCtrlEvents(Part* part, unsigned int tick, unsigned int len, Track* track, PendingOperationList& ops);
 extern void removePortCtrlEvents(Part* part, bool doClones);
 extern void removePortCtrlEvents(Part* part, Track* track, PendingOperationList& ops);
-// REMOVE Tim. citem. ctl. Removed.
-// extern void removePortCtrlEvents(Event& event, Part* part);
 extern bool removePortCtrlEvents(const Event& event, Part* part, Track* track, PendingOperationList& ops);
 extern void modifyPortCtrlEvents(const Event& old_event, const Event& event, Part* part, PendingOperationList& ops);
 

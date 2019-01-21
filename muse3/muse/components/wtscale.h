@@ -44,8 +44,6 @@ class WTScale : public View {
       void songChanged(MusECore::SongChangedStruct_t);
 
    protected:
-// REMOVE Tim. citem. Changed.
-//       virtual void pdraw(QPainter&, const QRect&);
       virtual void pdraw(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void viewMousePressEvent(QMouseEvent* event);
       virtual void viewMouseMoveEvent(QMouseEvent* event);

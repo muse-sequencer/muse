@@ -580,8 +580,6 @@ void WaveEdit::setTime(unsigned samplepos)
         return;
       }
      
-// REMOVE Tim. citem. Changed.
-//       unsigned tick = MusEGlobal::tempomap.frame2tick(samplepos);
       // Normally frame to tick methods round down. But here we need it to 'snap'
       //  the frame from either side of a tick to the tick. So round to nearest.
       unsigned tick = MusEGlobal::tempomap.frame2tick(samplepos, 0, MusECore::LargeIntRoundNearest);
@@ -747,8 +745,6 @@ void WaveEdit::songChanged1(MusECore::SongChangedStruct_t bits)
 
         // We'll receive SC_SELECTION if a different part is selected.
         // Addition - also need to respond here to moving part to another track. (Tim)
-// REMOVE Tim. citem. Changed.
-//         if (bits._flags & (SC_SELECTION | SC_PART_INSERTED | SC_PART_REMOVED))
         if (bits._flags & (SC_PART_INSERTED | SC_PART_REMOVED))
           updateTrackInfo();
 

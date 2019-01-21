@@ -253,18 +253,12 @@ bool DPitchEdit::event(QEvent* e)
 //   draw
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void DList::draw(QPainter& p, const QRect& rect)
 void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
       {
       using MusECore::WorkingDrumMapEntry;
 
       const QRect ur = mapDev(mr);
       
-//       int x = mr.x();
-//       int y = mr.y();
-//       int w = mr.width();
-//       int h = mr.height();
       int ux = ur.x();
       int uy = ur.y();
       int uw = ur.width();

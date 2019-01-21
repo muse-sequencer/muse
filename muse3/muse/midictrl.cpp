@@ -1288,28 +1288,12 @@ int MidiCtrlValList::visibleValue(unsigned int tick, Part* part, bool inclMutedP
 //---------------------------------------------------------
 //   add
 //    return true if new controller value added
-// REMOVE Tim. citem. ctl. Changed.
-// //    or replaced
 //   Accepts duplicate controller items at the same position, to accurately reflect
 //    what is really in the event lists.
 //---------------------------------------------------------
 
 bool MidiCtrlValList::addMCtlVal(unsigned int tick, int val, Part* part)
       {
-// REMOVE Tim. citem. ctl. Removed. To accurately reflect what is really in the event lists.
-// Mostly for the purpose of dragging and dropping controller events and allowing them to be
-//  on top of each other TEMPORARILY.
-//       iMidiCtrlVal e = findMCtlVal(tick, part, val);
-//       
-//       if (e != end()) {
-//             if(e->second.val != val)
-//             {
-//               e->second.val = val;
-//               return true;
-//             }  
-//             return false;
-//           }
-            
       insert(MidiCtrlValListInsertPair_t(tick, MidiCtrlVal(part, val)));
       return true;
       }
@@ -1320,8 +1304,6 @@ bool MidiCtrlValList::addMCtlVal(unsigned int tick, int val, Part* part)
 
 void MidiCtrlValList::delMCtlVal(unsigned int tick, Part* part, int val)
 {
-// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
-//       iMidiCtrlVal e = findMCtlVal(tick, part);
       iMidiCtrlVal e = findMCtlVal(tick, part, val);
       if (e == end()) {
 	if(MusEGlobal::debugMsg)
@@ -1340,8 +1322,6 @@ iMidiCtrlVal MidiCtrlValList::findMCtlVal(unsigned int tick, Part* part, int val
   MidiCtrlValRange range = equal_range(tick);
   for(iMidiCtrlVal i = range.first; i != range.second; ++i) 
   {
-// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
-//     if(i->second.part == part)
     if(i->second.part == part && (val == -1 || i->second.val == val))
       return i;
   }

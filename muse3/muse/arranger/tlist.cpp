@@ -2535,8 +2535,6 @@ void TList::mouseReleaseEvent(QMouseEvent* ev)
             MusECore::Track* t = y2Track(ev->y() + ypos);
             if (t) {
                   int dTrack = MusEGlobal::song->tracks()->index(t);
-// REMOVE Tim. citem. Changed.
-//                   MusEGlobal::audio->msgMoveTrack(sTrack, dTrack);
                   if (sTrack >= 0 && dTrack >= 0)   // sanity check
                   {
                     const int tracks_sz = MusEGlobal::song->tracks()->size();

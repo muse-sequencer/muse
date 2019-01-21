@@ -984,8 +984,6 @@ void MidiTransformerDialog::apply()
                               continue;
                         int flag = isSelected(event);
                         if (data->cmt->funcOp == MusECore::Select)
-// REMOVE Tim. citem. Changed.
-//                               operations.push_back(UndoOp(UndoOp::SelectEvent, event, part, flag, event.selected()));
                               // Here we have a choice of whether to allow undoing of selections.
                               // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
                               operations.push_back(UndoOp(UndoOp::SelectEvent, event, part, flag, event.selected(), false));

@@ -35,8 +35,6 @@ class QCloseEvent;
 class QToolBar;
 
 namespace MusEGui {
-// REMOVE Tim. citem. Removed. Unused.
-// class HitScale;
 class LabelCombo;
 class Master;
 class MTScale;
@@ -60,9 +58,6 @@ class MasterEdit : public MidiEditor {
       MusEGui::MTScale* time1;
       MusEGui::MTScale* time2;
       MusEGui::SigScale* sign;
-// REMOVE Tim. citem. Removed. Unused.
-//       MusEGui::HitScale* thits;
-//       MusEGui::HitScale* zhits;
       TScale* tscale;
 
       MusEGui::LabelCombo* rasterLabel;

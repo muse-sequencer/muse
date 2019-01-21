@@ -964,7 +964,6 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
           i->is_deleted = false;
       }
       flags |= SC_PART_INSERTED;
-      // REMOVE Tim. citem. Added.
       // If the part has events, then treat it as if they were inserted with separate AddEvent operations.
       // Even if some will be inserted later in this operations group with actual separate AddEvent operations,
       //  that's an SC_EVENT_INSERTED anyway, so hopefully no harm.
@@ -987,7 +986,6 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
           i->is_deleted = true;
       }
       flags |= SC_PART_REMOVED;
-      // REMOVE Tim. citem. Added.
       // If the part had events, then treat it as if they were removed with separate DeleteEvent operations.
       // Even if they will be deleted later in this operations group with actual separate DeleteEvent operations,
       //  that's an SC_EVENT_REMOVED anyway, so hopefully no harm. This fixes a problem with midi controller canvas
@@ -1097,7 +1095,6 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
 #ifdef _PENDING_OPS_DEBUG_
       fprintf(stderr, "PendingOperationItem::executeRTStage AddMidiCtrlVal: mcvl:%p part:%p tick:%u val:%d\n", _mcvl, _part, _posLenVal, _intB);
 #endif      
-      // REMOVE Tim. citem. ctl. Added.
       // Do not attempt to add cached events which are outside of the part.
       // Or to muted parts, or muted tracks, or 'off' tracks.
       if(_posLenVal >= _part->posValue() &&
@@ -1696,7 +1693,6 @@ bool PendingOperationList::add(PendingOperationItem op)
           // Delete followed by add is useless. Cancel out the delete + add by erasing the delete command.
           //erase(ipos->second);
           //_map.erase(ipos);
-          ////return true;
           // No operation will take place.
           //return false;
         }
@@ -1713,7 +1709,6 @@ bool PendingOperationList::add(PendingOperationItem op)
           // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
           //erase(ipos->second);
           //_map.erase(ipos);
-          ////return true;
           // No operation will take place.
           //return false;
         }
@@ -1751,7 +1746,6 @@ bool PendingOperationList::add(PendingOperationItem op)
             // On/off followed by off/on is useless. Cancel out the on/off + off/on by erasing the command.
             erase(ipos->second);
             _map.erase(ipos);
-            //return true;
             // No operation will take place.
             return false;
           }
@@ -1771,7 +1765,6 @@ bool PendingOperationList::add(PendingOperationItem op)
             // On/off followed by off/on is useless. Cancel out the on/off + off/on by erasing the command.
             erase(ipos->second);
             _map.erase(ipos);
-            //return true;  
             // No operation will take place.
             return false;
           }
@@ -1791,7 +1784,6 @@ bool PendingOperationList::add(PendingOperationItem op)
             // On/off followed by off/on is useless. Cancel out the on/off + off/on by erasing the command.
             erase(ipos->second);
             _map.erase(ipos);
-            //return true;  
             // No operation will take place.
             return false;
           }
@@ -1811,7 +1803,6 @@ bool PendingOperationList::add(PendingOperationItem op)
             // On/off followed by off/on is useless. Cancel out the on/off + off/on by erasing the command.
             erase(ipos->second);
             _map.erase(ipos);
-            //return true;  
             // No operation will take place.
             return false;
           }
@@ -1831,7 +1822,6 @@ bool PendingOperationList::add(PendingOperationItem op)
             // On/off followed by off/on is useless. Cancel out the on/off + off/on by erasing the command.
             erase(ipos->second);
             _map.erase(ipos);
-            //return true;  
             // No operation will take place.
             return false;
           }
@@ -1849,7 +1839,6 @@ bool PendingOperationList::add(PendingOperationItem op)
           // Delete followed by add is useless. Cancel out the delete + add by erasing the delete command.
           erase(ipos->second);
           _map.erase(ipos);
-          //return true;  
           // No operation will take place.
           return false;
         }
@@ -1866,7 +1855,6 @@ bool PendingOperationList::add(PendingOperationItem op)
           // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
           erase(ipos->second);
           _map.erase(ipos);
-          //return true;  
           // No operation will take place.
           return false;
         }
@@ -1915,7 +1903,6 @@ bool PendingOperationList::add(PendingOperationItem op)
           // Delete followed by add is useless. Cancel out the delete + add by erasing the delete command.
           erase(ipos->second);
           _map.erase(ipos);
-          //return true;  
           // No operation will take place.
           return false;
         }
@@ -1932,7 +1919,6 @@ bool PendingOperationList::add(PendingOperationItem op)
           // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
           erase(ipos->second);
           _map.erase(ipos);
-          //return true;  
           // No operation will take place.
           return false;
         }
@@ -1950,27 +1936,6 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
       
       case PendingOperationItem::AddMidiCtrlVal:
-// REMOVE Tim. citem. ctl. Changed.
-//         if(poi._type == PendingOperationItem::AddMidiCtrlVal && poi._mcvl == op._mcvl && poi._part == op._part)
-//         {
-//           // Simply replace the value.
-//           poi._intB = op._intB;
-//           return true;
-//         }
-//         else if(poi._type == PendingOperationItem::DeleteMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._part)
-//         {
-//           // Transform existing delete command into a modify command.
-//           poi._type = PendingOperationItem::ModifyMidiCtrlVal;
-//           poi._intA = op._intB; 
-//           return true;
-//         }
-//         else if(poi._type == PendingOperationItem::ModifyMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._part)
-//         {
-//           // Simply replace the value.
-//           poi._intA = op._intB;
-//           return true;
-//         }
-
         if(poi._type == PendingOperationItem::DeleteMidiCtrlVal && 
            poi._mcvl == op._mcvl && 
            poi._imcv->second.part == op._part &&
@@ -1979,36 +1944,13 @@ bool PendingOperationList::add(PendingOperationItem op)
           // Delete followed by add is useless. Cancel out the delete + add by erasing the delete command.
           erase(ipos->second);
           _map.erase(ipos);
-          //return true;
           // No operation will take place.
           return false;
         }
       break;
       
       case PendingOperationItem::DeleteMidiCtrlVal:
-// REMOVE Tim. citem. ctl. Changed.
-//         if(poi._type == PendingOperationItem::DeleteMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._imcv->second.part)
-//         {
-//           // Multiple delete commands not allowed! 
-//           fprintf(stderr, "MusE error: PendingOperationList::add(): Double DeleteMidiCtrlVal. Ignoring.\n");
-//           return false;
-//         }
-//         else if(poi._type == PendingOperationItem::AddMidiCtrlVal && poi._mcvl == op._mcvl && poi._part == op._imcv->second.part)
-//         {
-//           // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
-//           erase(ipos->second);
-//           _map.erase(ipos);
-//           return true;
-//         }
-//         else if(poi._type == PendingOperationItem::ModifyMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._imcv->second.part)
-//         {
-//           // Modify followed by delete is equivalent to just deleting.
-//           // Transform existing modify command into a delete command.
-//           poi._type = PendingOperationItem::DeleteMidiCtrlVal;
-//           return true;
-//         }
-
-// TODO FIXME Be sure _intB is set
+        // Be sure _intB is set.
         if(poi._type == PendingOperationItem::AddMidiCtrlVal && 
            poi._mcvl == op._mcvl && 
            poi._part == op._imcv->second.part &&
@@ -2017,46 +1959,15 @@ bool PendingOperationList::add(PendingOperationItem op)
           // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
           erase(ipos->second);
           _map.erase(ipos);
-          //return true;
           // No operation will take place.
           return false;
         }
-//         else if(poi._type == PendingOperationItem::ModifyMidiCtrlVal &&
-//                 poi._mcvl == op._mcvl && 
-//                 poi._imcv->second.part == op._imcv->second.part &&
-//                 poi._imcv->second.val == op._imcv->second.val)
-//         {
-//           // Modify followed by delete is equivalent to just deleting.
-//           // Transform existing modify command into a delete command.
-//           poi._type = PendingOperationItem::DeleteMidiCtrlVal;
-//           return true;
-//         }
       break;
       
       case PendingOperationItem::ModifyMidiCtrlVal:
-// REMOVE Tim. citem. ctl. Changed.
-//         if(poi._type == PendingOperationItem::ModifyMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._imcv->second.part)
-//         {
-//           // Simply replace the value.
-//           poi._intA = op._intA;
-//           return true;
-//         }
-//         else if(poi._type == PendingOperationItem::DeleteMidiCtrlVal && poi._mcvl == op._mcvl && poi._imcv->second.part == op._imcv->second.part)
-//         {
-//           // Transform existing delete command into a modify command.
-//           poi._type = PendingOperationItem::ModifyMidiCtrlVal;
-//           poi._intA = op._intA; 
-//           return true;
-//         }
-//         else if(poi._type == PendingOperationItem::AddMidiCtrlVal && poi._mcvl == op._mcvl && poi._part == op._imcv->second.part)
-//         {
-//           // Simply replace the add value with the modify value.
-//           poi._intB = op._intA; 
-//           return true;
-//         }
-
 // TODO FIXME Finish this
-// TODO FIXME Be sure _intB/A is set
+        
+           // Be sure _intB/A is set
 //         if(poi._type == PendingOperationItem::ModifyMidiCtrlVal &&
 //            poi._mcvl == op._mcvl && 
 //            poi._imcv->second.part == op._imcv->second.part &&
@@ -2131,7 +2042,6 @@ bool PendingOperationList::add(PendingOperationItem op)
           // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
           erase(ipos->second);
           _map.erase(ipos);
-          //return true;
           // No operation will take place.
           return false;
         }
@@ -2139,8 +2049,6 @@ bool PendingOperationList::add(PendingOperationItem op)
         {
           // Modify followed by delete is equivalent to just deleting.
           // Transform existing modify command into a delete command.
-// REMOVE Tim. citem. ctl. Changed. Oops! Left over from original code!
-//           poi._type = PendingOperationItem::DeleteMidiCtrlVal;
           poi._type = PendingOperationItem::DeleteAudioCtrlVal;
           // An operation will still take place.
           return true;
@@ -2414,7 +2322,6 @@ bool PendingOperationList::add(PendingOperationItem op)
           // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
           erase(ipos->second);
           _map.erase(ipos);
-          //return true;
           // No operation will take place.
           return false;
         }

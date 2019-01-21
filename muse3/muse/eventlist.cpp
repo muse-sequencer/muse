@@ -218,7 +218,6 @@ ciEvent EventList::findSimilar(const Event& event) const
       return end();
       }
 
-// REMOVE Tim. citem. Added.
 int EventList::findSimilarType(const Event& event, EventList& list,
                               bool compareTime,
                               bool compareA, bool compareB, bool compareC,
@@ -240,21 +239,6 @@ int EventList::findSimilarType(const Event& event, EventList& list,
   }
   return cnt;
 }
-
-// REMOVE Tim. citem. Added.
-// int EventList::findSimilarType(const Event& event, EventList& list,
-//                               bool compareA, bool compareB, bool compareC,
-//                               bool compareWavePath, bool compareWavePos, bool compareWaveStartPos) const
-//       {
-//       cEventRange range = equal_range(event.posValue());
-// 
-//       
-//       for (ciEvent i = range.first; i != range.second; ++i) {
-//             if (i->second.isSimilarTo(event))
-//                   return i;
-//             }
-//       return end();
-//       }
 
 iEvent EventList::findId(const Event& event)
 {
@@ -363,8 +347,6 @@ PosLen EventList::evrange(bool wave, RelevantSelectedEvents_t relevant, int* num
   {
     const Event& e = ie->second;
     // Only events of the given type are considered.
-    //if(e.pos().type() != type)
-    //  continue;
     const EventType et = e.type();
     switch(et)
     {
@@ -442,8 +424,6 @@ PosLen EventList::evrange(bool wave, RelevantSelectedEvents_t relevant, int* num
           first_found = true;
         }
         // For these events, minimum 1 unit time, to qualify as a valid 'range'.
-        //if(end_time == 0)
-        //  end_time = 1;
         if((e.posValue() + 1) > end_time)
           end_time = e.posValue() + 1;
         ++e_found;
@@ -451,10 +431,6 @@ PosLen EventList::evrange(bool wave, RelevantSelectedEvents_t relevant, int* num
     }
   }
 
-  // Protect, just in case. Using minimum 1 unit time.
-  //if(end_time <= start_time)
-  //  end_time = start_time + 1;
-  
   res.setPosValue(start_time);
   res.setLenValue(end_time - start_time);
   *numEvents = e_found;
@@ -489,11 +465,6 @@ void EventList::findControllers(bool wave, FindMidiCtlsList_t* outList, int find
         {
           const PosLen epl = e.posLen();
           FindMidiCtlsListInsResPair_t pres = outList->insert(FindMidiCtlsPair_t(e.dataA(), epl));
-//           if(pres.second)
-//           {
-//             
-//           }
-//           else
           if(!pres.second)
           {
             iFindMidiCtlsList ifml = pres.first;

@@ -634,8 +634,6 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* 
                           posOffset = tick - p->tick();
                         }
                         p->setTick(p->tick() + posOffset);
-// REMOVE Tim. citem. Changed.
-//                         MusEGlobal::audio->msgAddPart(p,false);
                         // Operation is undoable but do not start/end undo.
                         MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddPart, p),
                                                          MusECore::Song::OperationUndoable);

@@ -55,7 +55,6 @@
 #include "functions.h"
 #include "helper.h"
 #include "operations.h"
-// REMOVE Tim. citem. Added.
 #include "gconfig.h"
 
 #define CARET   10
@@ -73,8 +72,6 @@ namespace MusEGui {
 //---------------------------------------------------------
 
 DEvent::DEvent(MusECore::Event e, MusECore::Part* p, int instr)
-// REMOVE Tim. citem. Changed.
-//   : CItem(e, p)
   : EItem(e, p)
       {
       int y  = instr * TH + TH/2;
@@ -122,12 +119,6 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
       {
       drumEditor=static_cast<DrumEdit*>(pr);
       
-      // REMOVE Tim. citem. Removed. Not sure why this is false.
-      // It may have been relevant only for new vs. old style drum,
-      //  but old has been merged into new for some time now,
-      //  and only new style is available.
-//       _setCurPartIfOnlyOneEventIsSelected=false;
-      
       old_style_drummap_mode = drumEditor->old_style_drummap_mode();
 
       if (old_style_drummap_mode)
@@ -172,57 +163,6 @@ DrumCanvas::~DrumCanvas()
   
   delete steprec;
 }
-
-// //---------------------------------------------------------
-// //   moveCanvasItems
-// //   Return false if invalid index
-// //---------------------------------------------------------
-//
-// bool DrumCanvas::index2Note(int index, int* port, int* channel, int* note)
-// {
-//       if ((index<0) || (index>=getOurDrumMapSize()))
-//         return false;
-//
-//       int mport, ch;
-//       if(old_style_drummap_mode)
-//       {
-//         // Default to track port if -1 and track channel if -1.
-//         mport = ourDrumMap[index].port;
-//         if(mport == -1)
-//         {
-//           if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
-//             return false;
-//           MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(curPart->track());
-//           mport = mt->outPort();
-//         }
-//         ch = ourDrumMap[index].channel;
-//         if(ch == -1)
-//         {
-//           if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
-//             return false;
-//           MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(curPart->track());
-//           ch = mt->outChannel();
-//         }
-//       }
-//       else
-//       {
-//         MusECore::Track* track = *instrument_map[index].tracks.begin();
-//         if(!track->isMidiTrack())
-//           return false;
-//         MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(track);
-//         mport = mt->outPort();
-//         ch = mt->outChannel();
-//       }
-//
-//       if(port)
-//         *port = mport;
-//       if(channel)
-//         *channel = ch;
-//       if(note)
-//         *note = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
-//
-//       return true;
-// }
 
 //---------------------------------------------------------
 //   index2Note
@@ -320,7 +260,6 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, Drag
     for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
     {
       CItem* ci = ici->second;
-      // REMOVE Tim. citem. Added.
       ci->setMoving(false);
 
       if(ci->part() != part)
@@ -664,8 +603,6 @@ bool DrumCanvas::deleteItem(CItem* item)
       {
       MusECore::Event ev = ((DEvent*)item)->event();
       // Indicate do undo, and do not do port controller values and clone parts. 
-// REMOVE Tim. citem. Changed.
-//       MusEGlobal::audio->msgDeleteEvent(ev, ((DEvent*)item)->part(), true, false, false);
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
                       ev, ((DEvent*)item)->part(), false, false));
       return false;
@@ -740,85 +677,16 @@ void DrumCanvas::itemMoved(const CItem* item, const QPoint& pos)
       }
       }
 
-// REMOVE Tim. citem. Changed.
-// //---------------------------------------------------------
-// //   drawItem
-// //---------------------------------------------------------
-// 
-// // REMOVE Tim. citem. Changed.
-// // void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
-// void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect, const QRegion&)
-//       {
-//       DEvent* e   = (DEvent*) item;
-//       int x = 0, y = 0;
-//         x = mapx(item->pos().x());
-//         y = mapy(item->pos().y());
-//       QPolygon pa(4);
-//       pa.setPoint(0, x - CARET2, y);
-//       pa.setPoint(1, x,          y - CARET2);
-//       pa.setPoint(2, x + CARET2, y);
-//       pa.setPoint(3, x,          y + CARET2);
-//       QRect r(pa.boundingRect());
-//       r = r.intersected(rect);
-//       if(!r.isValid())
-//         return;
-//       
-//       QPen pen;
-//       pen.setCosmetic(true);
-//       pen.setColor(Qt::black);
-//       p.setPen(pen);
-//       
-//       if (e->part() != curPart)
-//       {
-//             if(item->isMoving()) 
-//               p.setBrush(Qt::gray);
-//             else if(item->isSelected()) 
-//               p.setBrush(Qt::black);
-//             else  
-//               p.setBrush(Qt::lightGray);
-//       }      
-//       else if (item->isMoving()) {
-//               p.setBrush(Qt::gray);
-//             }
-//       else if (item->isSelected())
-//       {
-//             p.setBrush(Qt::black);
-//       }
-//       else
-//       {
-//             int velo    = e->event().velo();
-//             MusECore::DrumMap* dm = &ourDrumMap[y2pitch(y)]; //Get the drum item
-//             QColor color;
-//             if (velo < dm->lv1)
-//                   color.setRgb(240, 240, 255);
-//             else if (velo < dm->lv2)
-//                   color.setRgb(200, 200, 255);
-//             else if (velo < dm->lv3)
-//                   color.setRgb(170, 170, 255);
-//             else
-//                   color.setRgb(0, 0, 255);
-//             p.setBrush(color);
-//       }
-//             
-//       p.drawPolygon(pa);
-//       }
-
 //---------------------------------------------------------
 //   drawItem
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
 void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& mr, const QRegion&)
       {
       DEvent* e   = (DEvent*) item;
       int mx = 0, my = 0;
       mx = mapx(item->pos().x());
       my = mapy(item->pos().y());
-//       mx = item->pos().x();
-//       my = item->pos().y();
-//       const ViewXCoordinate vx(item->pos().x(), false);
-//       const ViewYCoordinate vy(item->pos().y(), false);
       
       QPolygon pa(4);
       pa.setPoint(0, mx - CARET2, my);
@@ -875,8 +743,6 @@ void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& mr, const Q
 //    draws moving items
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
 void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect, const QRegion&)
     {
       QPolygon pa(4);
@@ -903,8 +769,6 @@ void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect, c
 //   drawCanvas
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect)
 void DrumCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
       {
       const QRect ur = mapDev(mr);
@@ -929,9 +793,8 @@ void DrumCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
 
       int uyy  = ((uy-1) / TH) * TH + TH;
       
-      // REMOVE Tim. citem. Added.
-      //fprintf(stderr, "DrumCanvas::drawCanvas x:%d y:%d w:%d h:%d yy:%d\n", x, y, w, h, yy);
-      fprintf(stderr, "DrumCanvas::drawCanvas ux:%d uy:%d uw:%d uh:%d uyy:%d\n", ux, uy, uw, uh, uyy);
+// For testing...
+//       fprintf(stderr, "DrumCanvas::drawCanvas ux:%d uy:%d uw:%d uh:%d uyy:%d\n", ux, uy, uw, uh, uyy);
       
       for (; uyy < uy_2; uyy += TH) {
             p.drawLine(ux, uyy, ux_2, uyy);
@@ -949,8 +812,7 @@ void DrumCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
 //---------------------------------------------------------
 //   drawTopItem
 //---------------------------------------------------------
-// REMOVE Tim. citem. Changed.
-// void DrumCanvas::drawTopItem(QPainter& p, const QRect&)
+
 void DrumCanvas::drawTopItem(QPainter& p, const QRect&, const QRegion&)
 {
   // draw cursor
@@ -1088,9 +950,6 @@ void DrumCanvas::cmd(int cmd)
                               MusECore::Event newEvent = event.clone();
                               // newEvent.setLenTick(drumMap[event.pitch()].len);
                               newEvent.setLenTick(ourDrumMap[y2pitch(devent->y())].len);
-// REMOVE Tim. citem. Changed.
-//                               // Indicate no undo, and do not do port controller values and clone parts. 
-//                               MusEGlobal::audio->msgChangeEvent(event, newEvent, devent->part(), false, false, false);
                               // Operation is undoable but do not start/end undo.
                               // Indicate do not do port controller values and clone parts.
                               MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
@@ -1328,8 +1187,6 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, theEvent, thePart, true, false));
             }
 
-// REMOVE Tim. citem. Changed.
-//       MusEGlobal::song->applyOperationGroup(operations, false); // do not indicate undo
       // Operation is undoable but do not start/end undo.
       MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationUndoable);
       // This update is necessary, as it's not handled by applyOperationGroup()

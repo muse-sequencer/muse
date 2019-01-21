@@ -1067,9 +1067,6 @@ bool Song::event(QEvent* _e)
 
                   bool muted = e->getP1() == 1;
                   // No undo.
-// REMOVE Tim. citem. Changed.
-//                   MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackMute, track, muted), false);
-//                   this->update(SC_MUTE | SC_TRACK_MODIFIED);
                   // Operation is undoable but do not start/end undo.
                   MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackMute, track, muted),
                                                    MusECore::Song::OperationUndoableUpdate);
@@ -1152,8 +1149,6 @@ bool Song::event(QEvent* _e)
                   if (t == NULL)
                         return false;
 
-// REMOVE Tim. citem. Changed.
-//                   MusEGlobal::audio->msgRemoveTrack(t);
                   MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(t), t));
                   break;
                   }

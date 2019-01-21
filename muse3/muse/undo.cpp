@@ -778,8 +778,8 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           }
           else if(uo.type == UndoOp::ModifyEvent && uo.part == n_op.part)  
           {
-            // REMOVE Tim. citem. Added. For testing.
-            fprintf(stderr, "MusE: DIAGNOSTIC: Undo::insert(): Double ModifyEvent... checking for errors...\n");
+            // For testing...
+            //fprintf(stderr, "MusE: DIAGNOSTIC: Undo::insert(): Double ModifyEvent... checking for errors...\n");
               
             if(uo.oEvent == n_op.oEvent)
             {
@@ -790,8 +790,8 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
               }
               else
               {
-                // REMOVE Tim. citem. Added. For testing.
-                fprintf(stderr, "MusE: Undo::insert(): Double ModifyEvent. Same old events. Merging.\n");
+                // For testing...
+                //fprintf(stderr, "MusE: Undo::insert(): Double ModifyEvent. Same old events. Merging.\n");
                 
                 // Two modify commands with old events the same is equivalent to just one modify command.
                 // Replace the existing ModifyEvent command's new event with the requested ModifyEvent command's new event.
@@ -819,17 +819,8 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
               }
               else
               {
-// REMOVE Tim. citem. Changed.
-//                 // Outer delete/add pair are not the same event... 
-//                 // Transform the existing ModifyEvent operation into a DeleteEvent.
-//                 uo.type = UndoOp::DeleteEvent;
-//                 uo.nEvent = uo.oEvent;
-//                 // Transform the requested ModifyEvent operation into an AddEvent.
-//                 n_op.type = UndoOp::AddEvent;
-//                 // Allow it to add...
-
-                // REMOVE Tim. citem. Added. For testing.
-                fprintf(stderr, "MusE: Undo::insert(): Double ModifyEvent. Inner new/old pair same, outer old/new pair not same. Merging to one ModifyEvent.\n");
+                // For testing...
+                //fprintf(stderr, "MusE: Undo::insert(): Double ModifyEvent. Inner new/old pair same, outer old/new pair not same. Merging to one ModifyEvent.\n");
             
                 // Inner new/old pair are the same event and outer old/new pair are not the same event.
                 // A modify command with new event followed by a modify command with old event the same
@@ -842,8 +833,9 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             // Inner new/old pair are not the same event. Are outer old/new pair the same event?
             else if(uo.oEvent == n_op.nEvent) 
             {
-                // REMOVE Tim. citem. Added. For testing.
-                fprintf(stderr, "MusE: Undo::insert(): Double ModifyEvent. Inner new/old pair not same, outer old/new pair same. Transforming to Add and Delete.\n");
+                // For testing...
+                //fprintf(stderr, "MusE: Undo::insert(): Double ModifyEvent. Inner new/old pair not same,"
+                // " outer old/new pair same. Transforming to Add and Delete.\n");
             
               // Transform the existing ModifyEvent operation into an AddEvent.
               uo.type = UndoOp::AddEvent;
@@ -855,13 +847,13 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           }
           else if(uo.type == UndoOp::AddEvent && uo.part == n_op.part)
           {
-            // REMOVE Tim. citem. Added. For testing.
-            fprintf(stderr, "MusE: Undo::insert(): AddEvent then ModifyEvent...\n");
+            // For testing...
+            //fprintf(stderr, "MusE: Undo::insert(): AddEvent then ModifyEvent...\n");
             
             if(uo.nEvent == n_op.oEvent)
             {
-              // REMOVE Tim. citem. Added. For testing.
-              fprintf(stderr, "MusE: Undo::insert(): AddEvent then ModifyEvent. Same event. Merging to AddEvent.\n");
+              // For testing...
+              //fprintf(stderr, "MusE: Undo::insert(): AddEvent then ModifyEvent. Same event. Merging to AddEvent.\n");
             
               // Add followed by modify with old event same as added event, is equivalent to just adding modify's new event.
               // Replace the existing AddEvent command's event with the requested ModifyEvent command's new event.
@@ -885,8 +877,8 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             }
             if(uo.nEvent == n_op.nEvent)
             {
-              // REMOVE Tim. citem. Added. For testing.
-              fprintf(stderr, "MusE: Undo::insert(): DeleteEvent then ModifyEvent. Same event. Merging to DeleteEvent.\n");
+              // For testing...
+              //fprintf(stderr, "MusE: Undo::insert(): DeleteEvent then ModifyEvent. Same event. Merging to DeleteEvent.\n");
             
               // Delete followed by modify with new event same as deleted event, is equivalent to just deleting modify's old event.
               // Replace the existing DeleteEvent command's event with the requested ModifyEvent command's old event.
@@ -1386,13 +1378,6 @@ bool Undo::merge_combo(const Undo& other)
   return mergeable;
 }
 
-// REMOVE Tim. citem. Changed.
-// bool Song::applyOperation(const UndoOp& op, bool doUndo, void* sender)
-// {
-// 	Undo operations;
-// 	operations.push_back(op);
-// 	return applyOperationGroup(operations, doUndo, sender);
-// }
 bool Song::applyOperation(const UndoOp& op, OperationType type, void* sender)
 {
 	Undo operations;
@@ -1401,33 +1386,6 @@ bool Song::applyOperation(const UndoOp& op, OperationType type, void* sender)
 }
 
 
-// REMOVE Tim. citem. Changed.
-// bool Song::applyOperationGroup(Undo& group, bool doUndo, void* sender)
-// {
-//       if (!group.empty())
-//       {
-//             if (doUndo)
-//                  startUndo(sender);
-// 
-//             MusEGlobal::audio->msgExecuteOperationGroup(group);
-//             
-//             // append all elements from "group" to the end of undoList->back().
-//             if(!undoList->empty())
-//             {
-//               Undo& curUndo = undoList->back();
-//               curUndo.insert(curUndo.end(), group.begin(), group.end());
-//               if (group.combobreaker)
-//                  curUndo.combobreaker=true;
-//             }
-//             
-//             if (doUndo)
-//                  endUndo(0);
-//             
-//             return doUndo;
-//       }
-//       else
-//             return false;
-// }
 bool Song::applyOperationGroup(Undo& group, OperationType type, void* sender)
 {
   if (!group.empty())
@@ -1887,32 +1845,24 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Part* part_, const QString& old_nam
 {
     assert(type_==ModifyPartName);
     assert(part_);
-//    assert(old_name);
-//    assert(new_name);
     
     type=type_;
     part=part_;
     _noUndo = noUndo;
     _oldName = new QString(old_name);
     _newName = new QString(new_name);
-    //strcpy(_oldName, old_name);
-    //strcpy(_newName, new_name);
 }
 
 UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, const QString& old_name, const QString& new_name, bool noUndo)
 {
   assert(type_==ModifyTrackName);
   assert(track_);
-//  assert(old_name);
-//  assert(new_name);
     
   type = type_;
   track = track_;
   _noUndo = noUndo;
   _oldName = new QString(old_name);
   _newName = new QString(new_name);
-//  strcpy(_oldName, old_name);
-//  strcpy(_newName, new_name);
 }
 
 UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, int oldChanOrCtrlID, int newChanOrCtrlFrame, bool noUndo)
@@ -2035,14 +1985,10 @@ void Song::revertOperationGroup1(Undo& operations)
             Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::SelectPart:
-// REMOVE Tim. citem. Changed.
-//                         editable_part->setSelected(i->selected_old);
                         pendingOperations.add(PendingOperationItem(editable_part, i->selected_old, PendingOperationItem::SelectPart));
                         updateFlags |= SC_PART_SELECTION;
                         break;
                   case UndoOp::SelectEvent:
-// REMOVE Tim. citem. Changed.
-// 			selectEvent(i->nEvent, editable_part, i->selected_old);
                         pendingOperations.add(PendingOperationItem(editable_part, i->nEvent, i->selected_old, PendingOperationItem::SelectEvent));
                         updateFlags |= SC_SELECTION;
                         break;
@@ -2327,7 +2273,6 @@ void Song::revertOperationGroup1(Undo& operations)
 #endif                        
                         editable_part->track()->parts()->delOperation(editable_part, pendingOperations);
                         updateFlags |= SC_PART_REMOVED;
-                        // REMOVE Tim. citem. Added.
                         // If the part had events, then treat it as if they were removed with separate DeleteEvent operations.
                         // Even if they will be deleted later in this operations group with actual separate DeleteEvent operations,
                         //  that's an SC_EVENT_REMOVED anyway, so hopefully no harm. This fixes a problem with midi controller canvas
@@ -2347,7 +2292,6 @@ void Song::revertOperationGroup1(Undo& operations)
                         
                         editable_part->track()->parts()->addOperation(editable_part, pendingOperations);
                         updateFlags |= SC_PART_INSERTED;
-                        // REMOVE Tim. citem. Added.
                         // If the part has events, then treat it as if they were inserted with separate AddEvent operations.
                         // Even if some will be inserted later in this operations group with actual separate AddEvent operations,
                         //  that's an SC_EVENT_INSERTED anyway, so should be no harm.
@@ -2775,14 +2719,10 @@ void Song::executeOperationGroup1(Undo& operations)
             Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::SelectPart:
-// REMOVE Tim. citem. Changed.
-//                         editable_part->setSelected(i->selected);
                         pendingOperations.add(PendingOperationItem(editable_part, i->selected, PendingOperationItem::SelectPart));
                         updateFlags |= SC_PART_SELECTION;
                         break;
                   case UndoOp::SelectEvent:
-// REMOVE Tim. citem. Changed.
-// 			selectEvent(i->nEvent, editable_part, i->selected);
                         pendingOperations.add(PendingOperationItem(editable_part, i->nEvent, i->selected, PendingOperationItem::SelectEvent));
                         updateFlags |= SC_SELECTION;
                         break;
@@ -3121,7 +3061,6 @@ void Song::executeOperationGroup1(Undo& operations)
                           
                           editable_part->track()->parts()->addOperation(editable_part, pendingOperations);
                           updateFlags |= SC_PART_INSERTED;
-                          // REMOVE Tim. citem. Added.
                           // If the part has events, then treat it as if they were inserted with separate AddEvent operations.
                           // Even if some will be inserted later in this operations group with actual separate AddEvent operations,
                           //  that's an SC_EVENT_INSERTED anyway, so should be no harm.
@@ -3136,7 +3075,6 @@ void Song::executeOperationGroup1(Undo& operations)
 #endif                        
                         editable_part->track()->parts()->delOperation(editable_part, pendingOperations);
                         updateFlags |= SC_PART_REMOVED;
-                        // REMOVE Tim. citem. Added.
                         // If the part had events, then treat it as if they were removed with separate DeleteEvent operations.
                         // Even if they will be deleted later in this operations group with actual separate DeleteEvent operations,
                         //  that's an SC_EVENT_REMOVED anyway, so hopefully no harm. This fixes a problem with midi controller canvas
@@ -3168,7 +3106,6 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:DeleteEvent ** calling deleteEvent\n");
 #endif                        
-                        // REMOVE Tim. citem. Added.
                         // Special: Replace the undo item's event with the real actual event found in the event lists.
                         // This way even a modified event can be passed in to the DeleteEvent operation constructor,
                         //  and as long as the ID AND position values match it will find and use the ORIGINAL event.

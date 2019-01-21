@@ -97,8 +97,6 @@ void WaveView::setYScale(int val)
 //   draw
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void WaveView::pdraw(QPainter& p, const QRect& rr)
 void WaveView::pdraw(QPainter& p, const QRect& rr, const QRegion&)
       {
       int x1 = rr.x();
@@ -198,8 +196,6 @@ void WaveView::pdraw(QPainter& p, const QRect& rr, const QRegion&)
 //   draw
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void WaveView::draw(QPainter& p, const QRect& r)
 void WaveView::draw(QPainter& p, const QRect& r, const QRegion&)
       {
       unsigned x = r.x() < 0 ? 0 : r.x();
@@ -259,7 +255,7 @@ QString WaveView::getCaption() const
 
 void WaveView::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if (flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
+      if (flags._flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
             // TODO FIXME: don't we actually only want SC_PART_*, and maybe SC_TRACK_DELETED?
             //             (same in ecanvas.cpp)
             startSample  = INT_MAX;
@@ -281,10 +277,10 @@ void WaveView::songChanged(MusECore::SongChangedStruct_t flags)
                         }
                   }
             }
-      if (flags & SC_CLIP_MODIFIED) {
+      if (flags._flags & SC_CLIP_MODIFIED) {
             redraw(); // Boring, but the only thing possible to do
             }
-      if (flags & SC_TEMPO) {
+      if (flags._flags & SC_TEMPO) {
             setPos(0, MusEGlobal::song->cpos(), false);
             setPos(1, MusEGlobal::song->lpos(), false);
             setPos(2, MusEGlobal::song->rpos(), false);

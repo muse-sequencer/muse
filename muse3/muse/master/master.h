@@ -63,16 +63,12 @@ class Master : public MusEGui::View {
       int line2y;
       bool drawLineMode;
       
-// REMOVE Tim. citem. Changed.
-//       virtual void pdraw(QPainter&, const QRect&);
       virtual void pdraw(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void viewMouseMoveEvent(QMouseEvent* event);
       virtual void leaveEvent(QEvent*e);
       virtual void viewMousePressEvent(QMouseEvent* event);
       virtual void viewMouseReleaseEvent(QMouseEvent*);
 
-// REMOVE Tim. citem. Changed.
-//       void draw(QPainter& p, const QRect&);
       void draw(QPainter&, const QRect&, const QRegion& = QRegion());
       void newVal(int x1, int x2, int y);
       bool deleteVal1(unsigned int x1, unsigned int x2);

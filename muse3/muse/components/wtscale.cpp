@@ -158,8 +158,6 @@ void WTScale::leaveEvent(QEvent*)
 //   draw
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void WTScale::pdraw(QPainter& p, const QRect& r)
 void WTScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
       {
       int x = r.x();

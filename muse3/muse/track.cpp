@@ -167,8 +167,6 @@ void removePortCtrlEvents(MidiTrack* t)
           }
         }
 
-// REMOVE Tim. citem. ctl. Removed. To allow multiple values at same position.
-//         mp->deleteController(ch, tick, cntrl, part);
         mp->deleteController(ch, tick, cntrl, val, part);
       }
     }

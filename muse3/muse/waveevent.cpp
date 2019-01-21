@@ -126,8 +126,6 @@ void WaveEventBase::dump(int n) const
 
 void WaveEventBase::read(Xml& xml)
       {
-// REMOVE Tim. citem. Added.
-//       EventTagStruct ts;
       for (;;) {
             Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
@@ -141,11 +139,6 @@ void WaveEventBase::read(Xml& xml)
                               PosLen::read(xml, "poslen");
                         else if (tag == "frame")
                               _spos = xml.parseInt();
-// REMOVE Tim. citem. Added.
-//                         else if (tag == "tags")
-//                               ts._flags = xml.parseInt();
-//                         else if (tag == "w")
-//                               ts._width = xml.parseUInt();
                         else if (tag == "file") {
                               SndFileR wf = getWave(xml.parse1(), true);
                               if (wf) f = wf;
@@ -156,10 +149,6 @@ void WaveEventBase::read(Xml& xml)
                   case Xml::TagEnd:
                         if (tag == "event") {
                               Pos::setType(FRAMES);   // DEBUG
-// REMOVE Tim. citem. Added.
-//                               // Set any tagging features.
-//                               if(ts.isTagged())
-//                                 setTag(ts);
                               return;
                               }
                   default:
@@ -172,7 +161,6 @@ void WaveEventBase::read(Xml& xml)
 //   write
 //---------------------------------------------------------
 
-//void WaveEventBase::write(int level, Xml& xml, const Pos& offset) const
 void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath) const
       {
       if (f.isNull())
@@ -182,13 +170,6 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
       wpos += offset;
       wpos.write(level, xml, "poslen");
       xml.intTag(level, "frame", _spos);  // offset in wave file
-// REMOVE Tim. citem. Added.
-//       if (tagged())
-//       {
-//         const EventTagStruct ts = tag();
-//         xml.intTag(level, "tags", ts._flags);
-//         xml.uintTag(level, "w", ts._width);
-//       }
 
       //
       // waves in the project directory are stored
@@ -208,7 +189,6 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
 
 void WaveEventBase::readAudio(WavePart* /*part*/, unsigned offset, float** buffer, int channel, int n, bool /*doSeek*/, bool overwrite)
 {
-  // Added by Tim. p3.3.17
   #ifdef WAVEEVENT_DEBUG_PRC
   printf("WaveEventBase::readAudio audConv:%p sfCurFrame:%ld offset:%u channel:%d n:%d\n", audConv, sfCurFrame, offset, channel, n);
   #endif

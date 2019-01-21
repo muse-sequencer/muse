@@ -168,16 +168,8 @@ bool TagEventListStruct::add(const Event& e)
 //  TagEventList
 //----------------------------------
 
-//bool TagEventList::add(const Part* part, const Event& event, bool resetStartPos)
 bool TagEventList::add(const Part* part, const Event& event)
 {
-//   if(resetStartPos)
-//   {
-//     // Reset these.
-//     _startPosValid = false;
-//     _startPos = Pos();
-//   }
-
   // If the event is given, do not allow clone events to be added.
   // We allow clone parts to be in the list here just in case by
   //  some mistake an event is included in one part but not another.
@@ -186,24 +178,11 @@ bool TagEventList::add(const Part* part, const Event& event)
   //  we'll check the event lists so we don't miss anything ...
   if(!event.empty())
   {
-    //iTagEventList found_part_itl = end();
-//     EventList* found_part_el = NULL;
     TagEventListStruct* found_part_el = NULL;
     iTagEventList itl = begin();
     for( ; itl != end(); ++itl)
     {
       const Part* p = itl->first;
-// REMOVE Tim. citem. Added.
-//       // Stop if we found the given part.
-//       if(p == part)
-//         break;
-//       // From here on we're looking for clone parts.
-//       if(!p->isCloneOf(part))
-//         continue;
-// 
-//       // Is the event already listed in this clone part?
-//       // FIXME TODO: Avoid duplicate events or clone events.
-
       // Is the event or a clone of the event already listed in this part?
       const EventList& el = itl->second.evlist();
       ciEvent ie = el.findWithId(event);
@@ -211,27 +190,8 @@ bool TagEventList::add(const Part* part, const Event& event)
         return false;
 
       if(p == part)
-        //found_part_itl = itl;
         found_part_el = &itl->second;
     }
-
-//     if(!_startPosValid || event.pos() < _startPos)
-//     {
-//       _startPosValid = true;
-//       _startPos = event.pos();
-//     }
-
-//     if(found_part_itl == end())
-//     {
-//       EventList el;
-//       el.add(*event);
-//       insert(TagEventListPair_t(part, el));
-//     }
-//     else
-//     {
-//       EventList& el = found_part_itl->second;
-//       el.add(*event);
-//     }
 
     if(!found_part_el)
     {
@@ -248,24 +208,7 @@ bool TagEventList::add(const Part* part, const Event& event)
   }
   else
   {
-// REMOVE Tim. citem. Added.
-// TODO Hm, clones or no clones?
-//     // No event was given. Do not add the part if a clone
-//     //  or the part itself already exists in the list.
-//     for(iTagEventList itl = begin(); itl != end(); ++itl)
-//     {
-//       const Part* p = itl->first;
-//       // Is the given part already listed?
-//       if(p == part)
-//         return false;
-//       // Is a clone part already listed?
-//       if(p->isCloneOf(part))
-//         return false;
-//     }
-    
-//     EventList el;
-//     insert(TagEventListPair_t(part, el));
-        TagEventListInsertResultPair_t ires = insert(TagEventListPair_t(part, TagEventListStruct()));
+    TagEventListInsertResultPair_t ires = insert(TagEventListPair_t(part, TagEventListStruct()));
     return ires.second;
   }
 
@@ -274,12 +217,6 @@ bool TagEventList::add(const Part* part, const Event& event)
   
 void TagEventList::globalCtlStats(FindMidiCtlsList_t* tclist, int findCtl) const
 {
-//   _evlist.
-//   for(ciEvent ie = _evlist.begin(); ie != _evlist.end() ++ie)
-//   {
-//     const Event& e = ie->second;
-//     
-//   }
   for(ciTagEventList itl = cbegin(); itl != cend(); ++itl)
   {
     const TagEventListStruct& tel = itl->second;
@@ -287,26 +224,4 @@ void TagEventList::globalCtlStats(FindMidiCtlsList_t* tclist, int findCtl) const
   }
 }
 
-// Pos TagEventList::getStartPos()
-// {
-//   // Reset these.
-//   _startPosValid = false;
-//   _startPos = Pos();
-//   for(ciTagEventList itl = begin(); itl != end(); ++itl)
-//   {
-//     const EventList& el = itl->second;
-//     for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
-//     {
-//       const Event& e = ie->second;
-//       if(!_startPosValid || e.pos() < _startPos)
-//       {
-//         _startPosValid = true;
-//         _startPos = e.pos();
-//       }
-//     }
-//   }
-//   return _startPos;
-// }
-  
-  
 } // namespace MusECore

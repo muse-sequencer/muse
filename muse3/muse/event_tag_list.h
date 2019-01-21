@@ -120,30 +120,8 @@ class TagEventList : public TagEventList_t
     TagEventList() { }
     
     // Adds a part and optionally an event.
-// //     // If no event is given, does not add the part if a clone
-// //     //  or the part itself already exists in the list.
-    // If no event is given, does not add the part if the part
-    //  already exists in the list.
-    // Adding a part alone with an empty event list means to add
-    //  ALL of its events, which is an optimization so that all events
-    //  do not have to added and the reader will know to use all of
-    //  the part's event list rather than this event list.
-// //     // If the event is given, does not allow clone events to be added,
-    // If the event is given, does not allow duplicate events to be added,
-    //  but does allow clone parts in order to catch 'rogue' events
-    //  that might be missing from other clone parts by mistake.
-    // The cached starting position is set to the 'soonest' event.
-    // If resetStartPos is true, resets the cached starting position,
-    //  and recomputes it from scratch, effectively the same as calling
-    //  getStartPos() but faster and more convenient.
     // Returns true if successfully added.
-//     bool add(const Part*, const Event& = Event(), bool resetStartPos = false);
     bool add(const Part*, const Event& = Event());
-    
-//     // Returns the cached position of the leftmost event.
-//     Pos startPos() const { return _startPosValid ? _startPos : Pos(); }
-//     // Recomputes cached position of the leftmost event and returns the position.
-//     Pos getStartPos();
     
     //--------------
     // Statistics:
@@ -155,8 +133,6 @@ class TagEventList : public TagEventList_t
     void globalCtlStats(FindMidiCtlsList_t* tclist, int findCtl = -1) const;
 };
 
-// typedef TagEvents_t::const_iterator ciTagEvents;
-// typedef TagEvents_t::iterator iTagEvents;
 typedef TagEventList::const_iterator ciTagEventList;
 typedef TagEventList::iterator iTagEventList;
 typedef std::pair<iTagEventList, bool> TagEventListInsertResultPair_t;
@@ -166,37 +142,6 @@ typedef std::pair<iTagEventList, bool> TagEventListInsertResultPair_t;
 // Event tagging flags and structure for the tagging and
 //  copying/pasting system.
 //--------------------------------------------------------------
-
-// REMOVE Tim. citem. Added.
-// enum EventTagFlags { NoEventTagFlags = 0x0,
-//   EventTagged = 0x01,
-//   // Whether the EventTagStruct 'width' member is valid.
-//   EventTagWidthValid = 0x02
-//   // REMOVE Tim. citem. Added.
-//   // This is the last event in a tagged series of events - controllers for example.
-//   // ie. a range was selected and then another range after it with a gap in between,
-//   //  and this is the last event in that first group before the gap.
-//   //EventTagLastInGroup = 0x04
-// };
-// typedef int EventTagFlags_t;
-// 
-// struct EventTagStruct
-// {
-//   EventTagFlags_t _flags;
-//   // A value intended for controller events which carries
-//   //  a width of a controller 'bar' and gives the position
-//   //  of the next controller event (the same as the 'ex' 
-//   //  value in CItem). The value is the width of a
-//   //  controller 'bar' as visualized on controller graphs.
-//   // It is valid only if the EventTagWidthValid flag is set.
-//   unsigned int _width;
-//   
-//   EventTagStruct(EventTagFlags_t flags = NoEventTagFlags, unsigned int width = 0) : _flags(flags), _width(width) { }
-//   void clear() { _flags = NoEventTagFlags; _width = 0; }
-//   void setTagged(bool v) { v ? _flags |= EventTagged : _flags &= ~EventTagged; }
-//   bool isTagged() const { return _flags & EventTagged; }
-//   void appendFlags(EventTagFlags_t flags) { _flags |= flags; }
-// };
 
 enum EventTagOptions {
   TagNoOptions = 0x00,
@@ -227,14 +172,6 @@ struct EventTagOptionsStruct
     
   EventTagOptionsStruct(const EventTagOptions_t& flags, Pos p0 = Pos(), Pos p1 = Pos()) :
     _flags(flags), _p0(p0), _p1(p1) { }
-//   EventTagOptionsStruct(bool tagAllItems, bool tagAllParts, bool tagRange, Pos p0 = Pos(), Pos p1 = Pos(),
-//                         bool tagSelected = true, bool tagMoving = false) :
-//     _flags((tagAllItems ? TagAllItems : TagNoOptions) |
-//            (tagAllParts ? TagAllParts : TagNoOptions) |
-//            (tagRange    ? TagRange    : TagNoOptions) |
-//            (tagSelected ? TagSelected : TagNoOptions) |
-//            (tagMoving   ? TagMoving   : TagNoOptions)),
-//     _p0(p0), _p1(p1) { }
 
   static EventTagOptionsStruct fromOptions(bool tagAllItems, bool tagAllParts, bool tagRange, Pos p0 = Pos(), Pos p1 = Pos(),
                         bool tagSelected = true, bool tagMoving = false)

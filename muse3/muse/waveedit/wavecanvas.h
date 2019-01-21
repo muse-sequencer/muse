@@ -62,14 +62,9 @@ namespace MusEGui {
 //    ''visual'' Wave Event
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// class WEvent : public CItem {
 class WEvent : public EItem {
    public:
       WEvent(const MusECore::Event& e, MusECore::Part* p, int height);
-      
-      // REMOVE Tim. citem. Added.
-      //bool objectIsSelected() const { return event().selected(); }
       };
 
 //---------------------------------------------------------
@@ -107,32 +102,17 @@ class WaveCanvas : public EventCanvas {
       
    protected:
       virtual QPoint raster(const QPoint&) const;
-// REMOVE Tim. citem. Removed.
-//       void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
-// REMOVE Tim. citem. Changed.
-//       void drawParts(QPainter&, const QRect&, bool do_cur_part);
       void drawParts(QPainter&, bool /*do_cur_part*/, const QRect&, const QRegion& = QRegion());
   
-// REMOVE Tim. citem. Changed.
-//       virtual void draw(QPainter&, const QRect& rect);
-// REMOVE Tim. citem. Removed.
-//       virtual void draw(QPainter&, const QRect& rect, const QRegion& = QRegion());
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void wheelEvent(QWheelEvent*);
       virtual bool mousePress(QMouseEvent*);
       virtual void mouseMove(QMouseEvent* event);
       virtual void mouseRelease(const QPoint&);
-// REMOVE Tim. citem. Changed.
-//       virtual void drawItem(QPainter&, const CItem*, const QRect&);
       virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
-// REMOVE Tim. citem. Changed.
-//       void drawTopItem(QPainter& p, const QRect& rect);
-// REMOVE Tim. citem. Added.
       void drawMarkers(QPainter& p, const QRect& mr, const QRegion& mrg = QRegion());
       
       void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion());
-// REMOVE Tim. citem. Changed.
-//       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
       virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
       virtual MusECore::Undo moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true);
       virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true);
@@ -150,8 +130,6 @@ class WaveCanvas : public EventCanvas {
       int pitch2y(int) const;
       inline int y2height(int) const { return height(); }
       inline int yItemOffset() const { return 0; }
-// REMOVE Tim. citem. Changed.
-//       virtual void drawCanvas(QPainter&, const QRect&);
       virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void itemPressed(const CItem*);
       virtual void itemReleased(const CItem*, const QPoint&);
@@ -202,10 +180,8 @@ class WaveCanvas : public EventCanvas {
       void selectAtFrame(unsigned int frame);
       void modifySelected(NoteInfo::ValType type, int val, bool delta_mode = true);
       void keyPress(QKeyEvent*);
-// REMOVE Tim. citem. Added.
       void keyRelease(QKeyEvent* event);
       void updateItems();
-      //void updateItemSelections();
       };
 
 } // namespace MusEGui

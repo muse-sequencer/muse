@@ -27,7 +27,6 @@
 
 #include "ctrlcanvas.h"
 #include "song.h"
-// REMOVE Tim. citem. Added.
 #include "event_tag_list.h"
 
 namespace MusECore {
@@ -76,15 +75,6 @@ class CtrlEdit : public QWidget {
       void writeStatus(int, MusECore::Xml&);
       void setController(const QString& name);
       bool itemsAreSelected() const { if(!canvas) return false; return canvas->itemsAreSelected(); }
-// REMOVE Tim. citem. Added.
-//       // Adds all selected items to the given list. Does not clear the list first.
-//       // Checks for duplicates, employing the 'tagged' features.
-//       //void getAllSelectedItems(CItemSet& list) const { if(!canvas) return; canvas->getAllSelectedItems(list); }
-//       // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
-//       void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
-//         const MusECore::Pos& p0 = MusECore::Pos(),
-//         const MusECore::Pos& p1 = MusECore::Pos()) const {
-//         if(canvas) canvas->tagItems (tagAllItems, tagAllParts, range, p0, p1); }
       // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
       // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
       void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const

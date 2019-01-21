@@ -127,15 +127,6 @@ static int computeY(const MusECore::MidiController* mc, int val, int height)
 //   CEvent
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// CEvent::CEvent(MusECore::Event e, MusECore::MidiPart* pt, int v)
-//       {
-//       _event = e;
-//       _part  = pt;
-//       _val   = v;
-//       _isSelected = false;
-//       ex     = !e.empty() ? e.tick() : 0;
-//       }
 CEvent::CEvent() : CItem()
 {
   _part = NULL;
@@ -151,28 +142,8 @@ CEvent::CEvent(const MusECore::Event& e, MusECore::Part* pt, int v) : CItem()
   ex     = !e.empty() ? e.tick() : 0;
 }
 
-// void CEvent::setObjectTagged(bool v)
-// {
-//   const unsigned int pos = _event.posValue();
-//   MusECore::EventTagStruct tag;
-//   tag.setTagged(v);
-//   // Special: Make sure to pass along the 'ex' part of the item, which holds the
-//   //  time of the next controller item (the difference is the 'width' of the visual
-//   //  controller item rectangle). Ex can be -1 meaning 'open-ended'.
-//   // This information is essential when pasting if we are to determine what to erase beforehand.
-//   //if(EX() > pos)
-//   if(EX() >= 0)
-//     tag.appendFlags(MusECore::EventTagWidthValid);
-//   tag._width = EX() - pos;
-//   
-//   _event.setTag(tag);
-//   if(_part)
-//     _part->setEventsTagged(true);
-// }
-
 bool CEvent::isObjectInRange(const MusECore::Pos& p0, const MusECore::Pos& p1) const
 {
-//   return _event.pos() >= p0 && _event.pos() < p1;
   MusECore::Pos pos = _event.pos();
   if(_part)
     pos += (*_part);
@@ -191,9 +162,7 @@ bool CEvent::intersectsController(const MusECore::MidiController* mc, const QRec
       
       int tick1 = _event.tick() + _part->tick();
       if(ex == -1)
-// REMOVE Tim. citem. Changed.
         return tick1 < (r.x() + r.width()) && y1 < (r.y() + r.height());
-        //return tick1 <= (r.x() + r.width()) && y1 <= (r.y() + r.height());
       
       int tick2 = ex + _part->tick();
       
@@ -218,9 +187,6 @@ bool CEvent::containsPoint(const MusECore::MidiController* mc, const QPoint& p, 
   
   const int tick1 = _event.tick() + _part->tick();
   if(ex == -1)
-// REMOVE Tim. citem. Changed.
-//     return tick1 < (r.x() + r.width()) && y1 < (r.y() + r.height());
-    //return tick1 <= (r.x() + r.width()) && y1 <= (r.y() + r.height());
     return tick1 <= p.x() && y1 <= p.y();
   
   int tick2 = ex + _part->tick();
@@ -232,9 +198,6 @@ bool CEvent::containsPoint(const MusECore::MidiController* mc, const QPoint& p, 
   // Hmm, actually, for better pin-point accuracy just use one tickstep for now.
   if(MusECore::midiControllerType(mc->num()) == MusECore::MidiController::Velo)
     tick2 += tickstep;
-  
-//   const QRect er(tick1, y1, tick2 - tick1, wh - y1);   
-//   return er.contains(p);
   
   return p.x() >= tick1 && p.x() < tick2 && y1 <= p.y();
 }
@@ -256,18 +219,13 @@ bool CEvent::containsXRange(int x1, int x2) const
          || (tick1 < x1 && tick2 >= x2));
       }
 
-// REMOVE Tim. citem. Added.
 //---------------------------------------------------------
 //   eventWithLength
 //   See header comments about this small Event hack...
 //---------------------------------------------------------
 
-// MusECore::Event CEvent::eventWithLength(const QPoint& offset) const
 MusECore::Event CEvent::eventWithLength() const
 { 
-  // REMOVE Tim. citem Added. Diagnostics.
-//   fprintf(stderr, "eventWithLength(): _event.dataB: %d offset.y(): %d", _event.dataB(), offset.y());
-  
   // Grab a clone of the event.
   MusECore::Event new_e = _event.clone();
   
@@ -286,67 +244,8 @@ MusECore::Event CEvent::eventWithLength() const
   }
   new_e.setLenValue(len);
   
-// REMOVE Tim. citem. Added.
-//   // Add in the given offset x value.
-//   unsigned int new_pos_val;
-//   if(offset.x() < 0)
-//   {
-//     const unsigned int uoff = (unsigned int)(-offset.x());
-//     if(new_e.posValue() > uoff)
-//       new_pos_val = new_e.posValue() - uoff;
-//     else
-//       new_pos_val = 0;
-//   }
-//   else
-//     new_pos_val = new_e.posValue() + offset.x();
-//   
-//   new_e.setPosValue(new_pos_val);
-  
-//   // Add in the given offset y value.
-//   // Note that offset is in screen orientation - top to bottom low to high value.
-//   // So subtract it.
-//   new_e.setB(new_e.dataB() - offset.y());
-  
-  // REMOVE Tim. citem Added. Diagnostics.
-//   fprintf(stderr, "... _event.dataB: %d new_e.dataB: %d\n", _event.dataB(), new_e.dataB());
-
   return new_e;
 }
-
-// REMOVE Tim. citem. Removed.
-// //---------------------------------------------------------
-// //   setSelected
-// //---------------------------------------------------------
-// void CEvent::setSelected(bool v) 
-// { 
-//   MusEGlobal::song->selectEvent(_event, _part, v);
-// }
-
-//---------------------------------------------------------
-//   clearDelete
-//---------------------------------------------------------
-
-// REMOVE Tim. citem. Changed.
-// void CEventList::clearDelete()
-// {
-//   for(ciCEvent i = begin(); i != end(); ++i) 
-//   {
-//     CEvent* ce = *i;
-//     if(ce)
-//       delete ce;
-//   }
-//   clear();
-// }
-// void CEventList::clearDelete()
-// {
-//   for(ciCItemSet i = begin(); i != end(); ++i) 
-//   {
-//     CItem* ce = *i;
-//     if(ce)
-//       delete ce;
-//   }
-//   clear();
-// }
 
 //---------------------------------------------------------
 //   CtrlCanvas
@@ -390,11 +289,7 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       if(_panel)
         _panel->setVeloPerNoteMode(_perNoteVeloMode);
       
-// REMOVE Tim. citem. Removed.
-//       if (dynamic_cast<DrumEdit*>(editor) && dynamic_cast<DrumEdit*>(editor)->old_style_drummap_mode()==false)
-//         filterTrack=true;
-//       else
-        filterTrack=false;
+      filterTrack=false;
 
       ctrl   = &veloList;
       _controller = &MusECore::veloCtrl;
@@ -604,66 +499,6 @@ void CtrlCanvas::leaveEvent(QEvent*)
       emit yposChanged(-1);
       }
 
-      
-// //---------------------------------------------------------
-// //   getCtrlInfo
-// //---------------------------------------------------------
-// 
-// void CtrlCanvas::getCtrlInfo(const MusECore::MidiPart* part, const int ctrlNum, CtrlCanvasInfoStruct* infoOut) const
-// {
-//     MusECore::MidiTrack* mt = part->track();
-//     MusECore::MidiPort* mp;
-//     int cnum = ctrlNum;
-//     bool is_drum_ctl = (mt->type() == MusECore::Track::DRUM) && (curDrumPitch >= 0) && ((ctrlNum & 0xff) == 0xff);
-//     bool is_newdrum_ctl = (mt->type() == MusECore::Track::NEW_DRUM) && (curDrumPitch >= 0) && ((ctrlNum & 0xff) == 0xff);
-// 
-//     if(is_drum_ctl)
-//     {
-//       // Default to track port if -1 and track channel if -1.
-//       int mport = MusEGlobal::drumMap[curDrumPitch].port;
-//       if(mport == -1)
-//         mport = mt->outPort();
-//       mp = &MusEGlobal::midiPorts[mport];
-//       cnum = (ctrlNum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
-//     }
-//     else if(is_newdrum_ctl)
-//     {
-//       // Default to track port if -1 and track channel if -1.
-//       int mport = mt->drummap()[curDrumPitch].port;
-//       if(mport == -1)
-//         mport = mt->outPort();
-//       mp = &MusEGlobal::midiPorts[mport];
-//       cnum = (ctrlNum & ~0xff) | mt->drummap()[curDrumPitch].anote;
-//     }
-//     else
-//       mp = &MusEGlobal::midiPorts[mt->outPort()];          
-//     
-//     MusECore::MidiController* mc = mp->midiController(cnum);
-//     
-//     int min;
-//     int max;
-//     int bias;
-//     if(cnum == MusECore::CTRL_PROGRAM)
-//     {
-//       min = 1;
-//       max = 128;
-//       bias = 0;
-//     }
-//     else
-//     {
-//       min  = mc->minVal();
-//       max  = mc->maxVal();
-//       bias  = mc->bias();
-//     }
-//     
-//     infoOut->fin_ctrl_num = cnum;
-//     infoOut->is_drum_ctl = is_drum_ctl;
-//     infoOut->is_newdrum_ctl = is_newdrum_ctl;
-//     infoOut->min = min;
-//     infoOut->max = max;
-//     infoOut->bias = bias;
-// }
-      
 //---------------------------------------------------------
 //   raster
 //---------------------------------------------------------
@@ -689,8 +524,8 @@ void CtrlCanvas::deselectAll()
         for(iCItemList i = selection.begin(); i != selection.end(); ++i)
             (*i)->setSelected(false);
 
-// REMOVE Tim. citem. Removed. Let itemSelectionsChanged() handle it later.
-//         selection.clear();
+        // Removed. Let itemSelectionsChanged() handle it later.
+        //selection.clear();
       }
 
 //---------------------------------------------------------
@@ -700,7 +535,6 @@ void CtrlCanvas::deselectAll()
 void CtrlCanvas::selectItem(CEvent* e)
       {
       e->setSelected(true);
-// REMOVE Tim. citem. Added.      
       for (iCItemList i = selection.begin(); i != selection.end(); ++i) {
             if (*i == e) {
                     // It was found in the list. Just return.
@@ -722,16 +556,8 @@ void CtrlCanvas::deselectItem(CEvent* e)
       e->setSelected(false);
       // The item cannot be removed yet from the selection list.
       // Only itemSelectionsChanged() does that.
-// REMOVE Tim. citem. Removed.
-//       for (iCEvent i = selection.begin(); i != selection.end(); ++i) {
-//             if (*i == e) {
-//                   selection.erase(i);
-//                   break;
-//                   }
-//             }
       }
 
-// REMOVE Tim. citem. Added.
 //---------------------------------------------------------
 //   deselectSelection
 //---------------------------------------------------------
@@ -746,98 +572,17 @@ void CtrlCanvas::removeSelection(CEvent* e)
             }
 }
 
-// REMOVE Tim. citem. Added.
-// //---------------------------------------------------------
-// //   getAllSelectedItems
-// //---------------------------------------------------------
-// 
-// void CtrlCanvas::getAllSelectedItems(CItemSet& list) const
-// { 
-//       CItem* item;
-//       for (ciCItemSet i = selection.begin(); i != selection.end(); ++i) {
-//             item = *i;
-//             if(!item->isObjectTagged())
-//             {
-//               item->setObjectTagged(true);
-//               list.add(item);
-//             }
-//             }
-// }
-
-// REMOVE Tim. citem. Added.
-// //---------------------------------------------------------
-// //   tagItems
-// //---------------------------------------------------------
-// 
-// void CtrlCanvas::tagItems(bool tagAllItems, bool tagAllParts, bool range,
-//      const MusECore::Pos& p0, const MusECore::Pos& p1) const
-// { 
-//   CItem* item;
-//   MusECore::Part* part;
-//   if(range)
-//   {
-//     if(tagAllItems || tagAllParts)
-//     {
-//       for(ciCItemList i = items.begin(); i != items.end(); ++i)
-//       {
-//         item = *i;
-//         part = item->part();
-//         if(!tagAllParts && (part != curPart || (part && part->track() != curTrack)))
-//           continue;
-//         if(!tagAllItems && !item->isSelected())
-//           continue;
-//         if(item->isObjectInRange(p0, p1))
-//           item->setObjectTagged(true);
-//       }
-//     }
-//     else
-//     {
-//       for(ciCItemList i = selection.begin(); i != selection.end(); ++i)
-//       {
-//         item = *i;
-//         part = item->part();
-//         if(part != curPart || (part && part->track() != curTrack))
-//           continue;
-//         if(item->isObjectInRange(p0, p1))
-//           item->setObjectTagged(true);
-//       }
-//     }
-//   }
-//   else
-//   {
-//     if(tagAllItems || tagAllParts)
-//     {
-//       for(ciCItemList i = items.begin(); i != items.end(); ++i)
-//       {
-//         item = *i;
-//         part = item->part();
-//         if(!tagAllParts && (part != curPart || (part && part->track() != curTrack)))
-//           continue;
-//         if(!tagAllItems && !item->isSelected())
-//           continue;
-//         item->setObjectTagged(true);
-//       }
-//     }
-//     else
-//     {
-//       for(ciCItemList i = selection.begin(); i != selection.end(); ++i)
-//       {
-//         item = *i;
-//         part = item->part();
-//         if(part != curPart || (part && part->track() != curTrack))
-//           continue;
-//         item->setObjectTagged(true);
-//       }
-//     }
-//   }
-// }
+//---------------------------------------------------------
+//   applyYOffset
+//---------------------------------------------------------
 
 void CtrlCanvas::applyYOffset(MusECore::Event& e, int yoffset) const
 {
   if(!curPart)
     return;
 
-  fprintf(stderr, "min: %d max: %d bias:%d yoffset: %d cur val: %d \n", _ctrlInfo.min, _ctrlInfo.max, _ctrlInfo.bias, yoffset, e.dataB());
+  //fprintf(stderr, "min: %d max: %d bias:%d yoffset: %d cur val: %d \n", _ctrlInfo.min, _ctrlInfo.max, _ctrlInfo.bias, yoffset, e.dataB());
+  
   // Y offset is top to bottom. Reverse it.
   int new_v = e.dataB() - yoffset;
   const int min = _ctrlInfo.min + _ctrlInfo.bias;
@@ -866,17 +611,6 @@ void CtrlCanvas::tagItems(MusECore::TagEventList* tag_list, const MusECore::Even
   const MusECore::Pos& p0 = options._p0;
   const MusECore::Pos& p1 = options._p1;
   
-//   CtrlCanvasInfoStruct info_out;
-//   getCtrlInfo(curPart, _cnum, &info_out);
-//   const int cnum = info_out.fin_ctrl_num;
-//   const bool is_drum_ctl = info_out.is_drum_ctl;
-//   const bool is_newdrum_ctl = info_out.is_newdrum_ctl;    
-//   const int min = info_out.min;
-//   const int max = info_out.max;
-//   const int bias = info_out.bias;
-
-  //lval = wh - ((pval - min) * wh / (max - min)) + mapy(_curDragOffset.y());
-
   // Protect against divide by zero.
   const int offset_y = rmapyDev(height() == 0 ? 0 : _curDragOffset.y() * (_ctrlInfo.max - _ctrlInfo.min) / height());
 
@@ -905,10 +639,6 @@ void CtrlCanvas::tagItems(MusECore::TagEventList* tag_list, const MusECore::Even
           // Normally the length is always zero for controllers.
           // The caller (xml copy/paste routines etc.) resets this back to zero
           //  upon reception of the event when it is done with the information.
-//           // For moving items, add in the current drag offset so that only
-//           //  the first event position is needed to pass to any pasting routines.
-//           // For moving items, add in the current drag offset y value (x is ignored).
-//           new_e = item->eventWithLength((tagMoving && item->isMoving()) ? offset : QPoint());
           new_e = item->eventWithLength();
           if(tagMoving && item->isMoving())
             applyYOffset(new_e, offset_y);
@@ -1111,8 +841,6 @@ void CtrlCanvas::songChanged(MusECore::SongChangedStruct_t type)
     updateItems();
   else if(type._flags & SC_SELECTION)
   {
-// REMOVE Tim. citem. Changed.
-//     updateSelections();
     // Prevent race condition: Ignore if the change was ultimately sent by the canvas itself.
     if(type._sender != this)
       updateItemSelections();
@@ -1263,13 +991,11 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
 //   itemSelectionsChanged
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Added.
 bool CtrlCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselectAll)
 {
       MusECore::Undo ops;
       MusECore::Undo* opsp = operations ? operations : &ops;
   
-      //MusECore::Undo operations;
       bool item_selected;
       bool obj_selected;
       bool changed=false;
@@ -1278,54 +1004,33 @@ bool CtrlCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselect
       //  and don't bother individually deselecting objects, below.
       if(deselectAll)
       {
-        //opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::GlobalSelectAllEvents, false, 0, 0, false));
         opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::GlobalSelectAllEvents, false, 0, 0));
         changed = true;
       }
       
-//       for (iCItem i = items.begin(); i != items.end(); ++i) {
-//       for(ciCEvent i = items.begin(); i != items.end(); ++i) {
-      
       // To save time searching the potentially large 'items' list, a selection list is used.
-      //for(ciCEvent i = selection.begin(); i != selection.end(); ++i) {
       for(ciCItemList i = selection.begin(); i != selection.end() ; ) {
-//             NPart* npart = (NPart*)(i->second);
-//             CItem* item = i->second;
             CItem* item = *i;
-//             operations.push_back(UndoOp(UndoOp::SelectPart, part->part(), i->second->isSelected(), part->part()->selected()));
             item_selected = item->isSelected();
             obj_selected = item->objectIsSelected();
-//             if (i->second->isSelected() != item->part()->selected())
-//             if (item->isSelected() != item->objectIsSelected())
-//             if((item_selected != obj_selected) ||
-//                // Need to force this because after the 'deselect all events' command executes,
-//                //  if the item is selected another select needs to be executed even though it
-//                //  appears nothing changed here.
-//                (item_selected && deselectAll))
-            //{
 
-            
-              // Don't bother deselecting objects if we have already deselected all, above.
-              if((item_selected || !deselectAll) &&
-                 ((item_selected != obj_selected) ||
-                  // Need to force this because after the 'deselect all events' command executes,
-                  //  if the item is selected another select needs to be executed even though it
-                  //  appears nothing changed here.
-                  (item_selected && deselectAll)))
-                
-                
-              //if(item_selected || !deselectAll)
-              {
-                // Here we have a choice of whether to allow undoing of selections.
-                // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
-                opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent,
+            // Don't bother deselecting objects if we have already deselected all, above.
+            if((item_selected || !deselectAll) &&
+                ((item_selected != obj_selected) ||
+                // Need to force this because after the 'deselect all events' command executes,
+                //  if the item is selected another select needs to be executed even though it
+                //  appears nothing changed here.
+                (item_selected && deselectAll)))
+              
+              
+            // Here we have a choice of whether to allow undoing of selections.
+            // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
+            opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent,
 //                                                   item->part(), i->second->isSelected(), item->part()->selected()));
-                                                  //item->event(), item->part(), item_selected, obj_selected, false));
-                                                  item->event(), item->part(), item_selected, obj_selected));
-                
-                changed=true;
-              }
-            //}
+                                              //item->event(), item->part(), item_selected, obj_selected, false));
+                                              item->event(), item->part(), item_selected, obj_selected));
+            changed=true;
+
             // Now it is OK to remove the item from the
             //  selection list if it is unselected.
             if(!item_selected)
@@ -1336,8 +1041,6 @@ bool CtrlCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselect
 
       if (!operations && changed)
       {
-//             MusEGlobal::song->applyOperationGroup(operations);
-
             // Set the 'sender' to this so that we can ignore self-generated songChanged signals.
             // Here we have a choice of whether to allow undoing of selections.
             if(MusEGlobal::config.selectionsUndoable)
@@ -1345,20 +1048,9 @@ bool CtrlCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselect
             else
               MusEGlobal::song->applyOperationGroup(ops, MusECore::Song::OperationExecuteUpdate, this);
             
-            //{
-              // REMOVE Tim. citem. Added.
-              fprintf(stderr, "CtrlCanvas::updateSelection: Applied SelectPart operations, redrawing\n");
-                
-//               redraw();
-            //}
+// For testing...
+//               fprintf(stderr, "CtrlCanvas::updateSelection: Applied SelectPart operations, redrawing\n");
       }
-
-// REMOVE Tim. citem. Removed. Unused.
-//       // TODO FIXME: this must be emitted always, because CItem is broken by design:
-//       //             CItems hold an Event smart-pointer which allows write access.
-//       //             This means, that items can (and will!) be selected bypassing the
-//       //             UndoOp::SelectEvent message! FIX THAT! (flo93)
-//       emit selectionChanged();
 
       return changed;
 }
@@ -1372,7 +1064,6 @@ void CtrlCanvas::updateItems()
       selection.clear();
       items.clearDelete();
       moving.clear();
-      //clearMoving();
       cancelMouseOps();
       
       if(!editor->parts()->empty())
@@ -1494,48 +1185,6 @@ void CtrlCanvas::updateItems()
       redraw();
     }
 
-// REMOVE Tim. citem. Added.
-// //---------------------------------------------------------
-// //   evaluateItems
-// //---------------------------------------------------------
-// 
-// void CtrlCanvas::evaluateItems()
-// {
-//   for(ciCItemSet i = items.begin(); i != items.end(); ++i)
-//   {
-//   // To save time searching the potentially large 'items' list, a selection list is used.
-//   //for(ciCEvent i = selection.begin(); i != selection.end(); ++i) {
-// //             NPart* npart = static_cast<NPart*>(i->second);
-// //             CItem* item = i->second;
-//         CItem* item = *i;
-// //             item_selected = i->second->isSelected();
-// //             part_selected = npart->part()->selected();
-//         
-//         //item_selected = item->isSelected();
-//         obj_selected = item->objectIsSelected();
-//   }
-// }
-    
-// REMOVE Tim. citem. Removed.
-// //---------------------------------------------------------
-// //   updateSelections
-// //---------------------------------------------------------
-// 
-// void CtrlCanvas::updateSelections()
-// {
-//   selection.clear();
-//   for(ciCEvent i = items.begin(); i != items.end(); ++i) 
-//   {
-//     CEvent* e = *i;
-//     //if(e->part() != part)
-//     //  continue;
-//     if(e->isSelected())
-//       selection.push_back(e);
-//   }  
-//   redraw();
-// }
-
-// REMOVE Tim. citem. Added.
 //---------------------------------------------------------
 //   updateItemSelections
 //---------------------------------------------------------
@@ -1543,38 +1192,16 @@ void CtrlCanvas::updateItems()
 void CtrlCanvas::updateItemSelections()
       {
       selection.clear();
-      //clearMoving();
       cancelMouseOps();
       
-      //bool item_selected;
       bool obj_selected;
-//       for (iCItem i = items.begin(); i != items.end(); ++i) {
       for(ciCItemList i = items.begin(); i != items.end(); ++i) {
-      // To save time searching the potentially large 'items' list, a selection list is used.
-      //for(ciCEvent i = selection.begin(); i != selection.end(); ++i) {
-//             NPart* npart = static_cast<NPart*>(i->second);
-//             CItem* item = i->second;
+            // To save time searching the potentially large 'items' list, a selection list is used.
             CItem* item = *i;
-//             item_selected = i->second->isSelected();
-//             part_selected = npart->part()->selected();
-            
-            //item_selected = item->isSelected();
             obj_selected = item->objectIsSelected();
-//             if (item_selected != part_selected)
-            //if (item_selected != obj_selected)
-            //{
-              // REMOVE Tim. citem. Added. Shouldn't be required.
-              // If the track is not visible, deselect all parts just to keep things tidy.
-              //if(!npart->part()->track()->isVisible())
-              //{
-              //  i->second->setSelected(false);
-              //  continue;
-              //}
-              item->setSelected(obj_selected);
-              
-              if(obj_selected)
-                selection.push_back(item);
-            //}
+            item->setSelected(obj_selected);
+            if(obj_selected)
+              selection.push_back(item);
       }
       redraw();
 }
@@ -1602,7 +1229,6 @@ void CtrlCanvas::startMoving(const QPoint& pos, int dir, bool rasterize)
                   }
             }
             
-      //_curDragOffset = QPoint(0, 0);
       _dragFirstXPos = 0;
       if(first_item)
       {
@@ -1631,32 +1257,11 @@ void CtrlCanvas::moveItems(const QPoint& pos, int dir, bool rasterize)
       
       int dist_x = pos.x() - start.x();
       int dist_y = pos.y() - start.y();
-      //int dx = pos.x() - _prevMouseDist.x();
-      //int dy = pos.y() - _prevMouseDist.y();
 
       if (dir == 1)
             dist_y = 0;
       else if (dir == 2)
             dist_x = 0;
-//       for (iCItemList i = moving.begin(); i != moving.end(); ++i) {
-//             CItem* item = *i;
-//             int x = item->pos().x();
-//             int y = item->pos().y();
-//             int nx = x + dx;
-//             int ny;
-//             QPoint mp;
-//             ny = y + dp;
-//             if(rasterize)
-//               mp = raster(QPoint(nx, ny));
-//             else
-//               mp = QPoint(nx, ny);
-//             
-//             if (item->mp() != mp) {
-//                   item->setMp(mp);
-//                   //itemMoved(item, mp);
-//                   }
-//             }
-//       redraw();
 
       int dx = _mouseDist.x() + dist_x;
       int dy = _mouseDist.y() + dist_y;
@@ -1664,7 +1269,6 @@ void CtrlCanvas::moveItems(const QPoint& pos, int dir, bool rasterize)
       if(dir != 2)
       {
         int tick = _dragFirstXPos + dx;
-        //int tick = _dragFirstXPos + dx + _curDragOffset.x();
         if(tick < 0)
           tick = 0;
         if(rasterize)
@@ -1700,14 +1304,13 @@ void CtrlCanvas::moveItems(const QPoint& pos, int dir, bool rasterize)
       
       _curDragOffset = QPoint(dx, dy);
 
-      // REMOVE Tim. citem. Added.
-      fprintf(stderr, "_mouseDist x:%d y:%d dist_x:%d dist_y:%d _curDragOffset x:%d y:%d"
-        " _dragFirstXPos:%u first_pos_offset:%d\n",
-              _mouseDist.x(), _mouseDist.y(), dist_x, dist_y,
-              _curDragOffset.x(), _curDragOffset.y(), _dragFirstXPos,
-              first_pos_offset);
+// For testing...
+//       fprintf(stderr, "_mouseDist x:%d y:%d dist_x:%d dist_y:%d _curDragOffset x:%d y:%d"
+//         " _dragFirstXPos:%u first_pos_offset:%d\n",
+//               _mouseDist.x(), _mouseDist.y(), dist_x, dist_y,
+//               _curDragOffset.x(), _curDragOffset.y(), _dragFirstXPos,
+//               first_pos_offset);
       
-      //_rasterizeDrag = rasterize;
       redraw();
       }
 
@@ -1734,15 +1337,10 @@ void CtrlCanvas::endMoveItems()
   // Whee ! Now paste the items directly from the list. No Xml conversion required.
   MusECore::paste_items_at(
     // Part list to search for given parts.
-//     part_to_set(curPart),
+    //part_to_set(curPart),
     std::set<const MusECore::Part*>(),
     // List of events to paste.
     &tag_list,
-//     // The paste position. The _curDragOffset vector component has already been added to the
-//     //  events in the tagItems() method. So here we need only pass the first event position.
-//     MusECore::Pos(_dragFirstXPos + _curDragOffset.x(), true),  // true = ticks.
-//     // Paste at 'zero' position. The positions are all contained in the event positions.
-//     MusECore::Pos(0, true),  // true = ticks.
     // The paste position.
     MusECore::Pos(pos, true),  // true = ticks.
     // Max distance before new part created.
@@ -1757,14 +1355,13 @@ void CtrlCanvas::endMoveItems()
       | (MusECore::FunctionPasteNeverNewPart)
       ),
     // Paste into this part instead of the original part(s).
-//     NULL,
+    //NULL,
     curPart,
     // Number of copies to paste.
     1,
     // Separation between copies.
     3072,
     // Choose which events to paste.
-//     MusECore::AllEventsRelevant,
     MusECore::ControllersRelevant,
     // If pasting controllers, paste into this controller number if not -1.
     // If the source has multiple controllers, user will be asked which one to paste.
@@ -1779,13 +1376,6 @@ void CtrlCanvas::endMoveItems()
     moving.clear();
   }
   
-  
-//   // Be sure to clear the operations list!
-//   if(!_operations.empty())
-//   {
-//     _operations.clear();
-//   }
-
   if(drag != DRAG_OFF)
     drag = DRAG_OFF;
  
@@ -1793,210 +1383,6 @@ void CtrlCanvas::endMoveItems()
   _mouseDist = QPoint(0, 0);
   
   redraw();
-}
-
-// //---------------------------------------------------------
-// //   endMoveItems
-// //    dir = 0     move in all directions
-// //          1     move only horizontal
-// //          2     move only vertical
-// //---------------------------------------------------------
-// 
-// void CtrlCanvas::endMoveItems(const QPoint& /*pos*/, DragType /*dragtype*/, int /*dir*/, bool /*rasterize*/)
-//       {
-// //       int dp = pos.y() - start.y();
-// //       int dx = pos.x() - start.x();
-// // 
-// //       if (dir == 1)
-// //             dp = 0;
-// //       else if (dir == 2)
-// //             dx = 0;
-//       
-// // TODO
-// //       MusECore::Undo operations = moveCanvasItems(moving, dp, dx, dragtype, rasterize);
-// 
-//       // TODO: Leftover from copying this method from Canvas. Required?
-// //       if (operations.empty())
-// //         songChanged(SC_EVENT_MODIFIED); //this is a hack to force the canvas to repopulate
-// //       	                                //itself. otherwise, if a moving operation was forbidden,
-// //       	                                //the canvas would still show the movement
-// //       else
-// // TODO
-// //         MusEGlobal::song->applyOperationGroup(operations);
-//       
-// //       moving.clear();
-// 
-//       // TODO: Leftover from copying this method from Canvas. Required?
-//       //itemSelectionsChanged();
-// 
-//       redraw();
-//       }
-
-//---------------------------------------------------------
-//   moveCanvasItems
-//---------------------------------------------------------
-
-MusECore::Undo CtrlCanvas::moveCanvasItems(CItemList& item_list, int dp, int dx, DragType dtype, bool rasterize)
-{      
-  if(editor->parts()->empty())
-    return MusECore::Undo(); //return empty list
-  
-  MusECore::PartsToChangeMap parts2change;
-  MusECore::Undo operations;  
-  
-  for(MusECore::iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip)
-  {
-    MusECore::Part* part = ip->second;
-    if(!part)
-      continue;
-    
-    int npartoffset = 0;
-    for(iCItemList ici = item_list.begin(); ici != item_list.end(); ++ici) 
-    {
-      CItem* ci = *ici;
-      if(ci->part() != part)
-        continue;
-      
-      int x = ci->pos().x() + dx;
-      int y = ci->pos().y() + dp;
-      QPoint newpos = QPoint(x, y);
-      if(rasterize)
-        newpos = raster(newpos);
-      
-      // Test moving the item...
-      CEvent* nevent = static_cast<CEvent*>(ci);
-      MusECore::Event event = nevent->event();
-      x = newpos.x();
-      if(x < 0)
-        x = 0;
-      int ntick = (rasterize ? editor->rasterVal(x) : x) - part->tick();
-      if(ntick < 0)
-        ntick = 0;
-      int diff = ntick + event.lenTick() - part->lenTick();
-      
-      // If moving the item would require a new part size...
-      if(diff > npartoffset)
-        npartoffset = diff;
-    }
-        
-    if(npartoffset > 0)
-    {    
-      MusECore::iPartToChange ip2c = parts2change.find(part);
-      if(ip2c == parts2change.end())
-      {
-        MusECore::PartToChange p2c = {0, npartoffset};
-        parts2change.insert(std::pair<MusECore::Part*, MusECore::PartToChange> (part, p2c));
-      }
-      else
-        ip2c->second.xdiff = npartoffset;
-    }
-  }
-  
-  bool forbidden=false;
-  for(MusECore::iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
-  {
-    MusECore::Part* opart = ip2c->first;
-    if (opart->hasHiddenEvents())
-    {
-			forbidden=true;
-			break;
-		}
-  }    
-
-	
-	if (!forbidden)
-	{
-		std::vector< CItem* > doneList;
-		typedef std::vector< CItem* >::iterator iDoneList;
-		
-		for(iCItemList ici = item_list.begin(); ici != item_list.end(); ++ici) 
-		{
-		  CItem* ci = *ici;
-      CEvent* cevent = static_cast<CEvent*>(ci);
-			
-			int x = ci->pos().x();
-			int y = ci->pos().y();
-			int nx = x + dx;
-			int ny = y + dp;
-			QPoint newpos = QPoint(nx, ny);
-			if(rasterize)
-			  newpos = raster(newpos);
-			selectItem(cevent);
-			
-			iDoneList idl;
-			for(idl = doneList.begin(); idl != doneList.end(); ++idl)
-				// This compares EventBase pointers to see if they're the same...
-				if((*idl)->event() == ci->event())
-					break;
-				
-			// Do not process if the event has already been processed (meaning it's an event in a clone part)...
-			if (idl == doneList.end())
-			{
-				moveItem(operations, ci, newpos, dtype, rasterize); // always returns true. if not, change is necessary here!
-				doneList.push_back(ci);
-			}
-			ci->move(newpos);
-						
-			if(dtype == MOVE_COPY)
-						deselectItem(cevent);
-		}  
-
-    for(MusECore::iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
-    {
-      MusECore::Part* opart = ip2c->first;
-      int diff = ip2c->second.xdiff;
-      
-      schedule_resize_all_same_len_clone_parts(opart, opart->lenTick() + diff, operations);
-    }    
-					
-  	return operations;
-  }
-  else
-  {
-		return MusECore::Undo(); //return empty list
-	}
-}
-      
-//---------------------------------------------------------
-//   moveItem
-//    called after moving an object
-//---------------------------------------------------------
-
-bool CtrlCanvas::moveItem(MusECore::Undo& /*operations*/, CItem* /*item*/, const QPoint& /*pos*/, DragType /*dtype*/, bool /*rasterize*/)
-      {
-
-      // TODO: Copied from prcanvas. Finish converting for the controller canvas.
-        
-
-//       CEvent* nevent = static_cast<CEvent*>(item);
-//       MusECore::Event event    = nevent->event();
-//       int npitch     = pos.y();
-//       MusECore::Event newEvent = (dtype == MOVE_COPY) ? event.duplicate() : event.clone();
-//       int x          = pos.x();
-//       if (x < 0)
-//             x = 0;
-//       MusECore::Part* part = nevent->part();
-//       
-//       newEvent.setPitch(npitch);
-//       int ntick = (rasterize ? editor->rasterVal(x) : x) - part->tick();
-//       if (ntick < 0)
-//             ntick = 0;
-//       newEvent.setTick(ntick);
-//       newEvent.setLenTick(event.lenTick());
-
-      // don't check, whether the new event is within the part
-      // at this place. with operation groups, the part isn't
-      // resized yet. (flo93)
-
-      
-      
-// TODO: Can cause multiple ModifyEvent and crash. Not the correct things to do for this canvas...
-//       if (dtype == MOVE_COPY)
-//             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, newEvent, part, true, true));
-//       else
-//             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, true, true));
-      
-      return true;
 }
 
 void CtrlCanvas::setCursor()
@@ -2103,8 +1489,8 @@ void CtrlCanvas::setCursor()
 
 void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
       {
-      // REMOVE Tim. citem. Added.
-      fprintf(stderr, "CtrlCanvas::viewMousePressEvent\n");
+// For testing...
+//       fprintf(stderr, "CtrlCanvas::viewMousePressEvent\n");
         
       if(!_controller || curDrumPitch==-2)
       {
@@ -2119,15 +1505,9 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
             return;
             }
 
-//       // Cancel all previous mouse ops. Right now there should be no moving list and drag should be off etc.
-//       // If there is, it's an error. It likely means we missed a mouseRelease event.
-//       cancelMouseOps();
-
-      //cancelMouseOps();
       setMouseGrab(false);
       
       start = event->pos();
-      //_mouseDist = start;
       MusEGui::Tool activeTool = tool;
       
       bool ctrlKey = event->modifiers() & Qt::ControlModifier;
@@ -2139,22 +1519,11 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
       MusECore::MidiController::ControllerType type = MusECore::midiControllerType(_controller->num());
       const bool velo = type == MusECore::MidiController::Velo;
       
-// REMOVE Tim. citem. Added.
       _operations.clear();
 
       const int tickstep = rmapxDev(1);
       curItem = findCurrentItem(start, tickstep, height());
       
-//       // Be sure to clear the operations list!
-//       if(!_operations.empty())
-//         _operations.clear();
-
-//       if(drag != DRAG_OFF)
-//         drag = DRAG_OFF;
-    
-      //_curDragOffset = QPoint(0, 0);
-
-  
       if (button == Qt::RightButton)
       {
         // No stay-open for now. 
@@ -2245,58 +1614,15 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
               case MusEGui::PointerTool:
                     if(curPart)      
                     {
-  // REMOVE Tim. Changed. Moved into viewMouseReleaseEvent().
-  //                     drag = DRAG_LASSO_START;
-  //                     bool do_redraw = false;
-  //                     if (!ctrlKey)
-  //                     {
-  //                       deselectAll();
-  //                       do_redraw = true;      
-  //                     }      
-  //                     int h = height();
-  //                     int tickstep = rmapxDev(1);
-  //                     QRect r(xpos, ypos, tickstep, rmapyDev(1));
-  //                     int endTick = xpos + tickstep;
-  //                     int partTick = curPart->tick();
-  //                     for (iCEvent i = items.begin(); i != items.end(); ++i) 
-  //                     {
-  //                       CEvent* ev = *i;
-  //                       if(ev->part() != curPart)
-  //                         continue;
-  //                       MusECore::Event event = ev->event();
-  //                       if(event.empty())
-  //                         continue;
-  //                       int ax = event.tick() + partTick;
-  //                       //if (ax < xpos)
-  //                       //      continue;
-  //                       if (ax >= endTick)
-  //                         break;
-  //                       if (ev->intersectsController(_controller, r, tickstep, h)) 
-  //                       {
-  //                         if (ctrlKey && ev->isSelected())
-  //                               deselectItem(ev);
-  //                         else
-  //                               selectItem(ev);
-  //                         do_redraw = true;      
-  //                         //break;
-  //                       }  
-  //                     }
-  //                     if(do_redraw)
-  //                       redraw();                 // Let songChanged handle the redraw upon SC_SELECTION.
-
                           if (!velo && curItem && (curItem->isMoving() || curItem->isSelected())) {
-                            
                                 // If the current item is not already moving, then this
                                 //  is the grand start of a move. Here we must reset
                                 //  these 'accumulating' variables!
                                 if(!curItem->isMoving())
                                 {
-                                  //_curDragOffset = QPoint(0, 0);
-                                  //_mouseDist = QPoint(0, 0);
                                   clearMoving();
                                 }
                             
-                                //itemPressed(curItem);
                                 // Alt alone is usually reserved for moving a window in X11. Ignore shift + alt.
                                 if (ctrlKey)
                                       drag = DRAG_COPY_START;
@@ -2314,38 +1640,26 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
                     break;
 
             case MusEGui::PencilTool:
-  // REMOVE Tim. citem. Added.
-  //                   _operations.clear();
                     if (!ctrlKey && !velo) {
                                 drag = DRAG_NEW;
-  // REMOVE Tim. citem. Removed.
-  //                               MusEGlobal::song->startUndo();
                                 newVal(xpos, ypos);
                           }
                     else {
                           drag = DRAG_RESIZE;
-  // REMOVE Tim. citem. Removed.
-  //                         MusEGlobal::song->startUndo();
                           changeVal(xpos, xpos, ypos);
                           }
                     setCursor();
                     break;
 
               case MusEGui::RubberTool:
-  // REMOVE Tim. citem. Added.
-  //                   _operations.clear();
                     if (!velo) {
                           drag = DRAG_DELETE;
-  // REMOVE Tim. citem. Removed.
-  //                         MusEGlobal::song->startUndo();
                           deleteVal(xpos, xpos, ypos);
                           }
                     setCursor();
                     break;
 
               case MusEGui::DrawTool:
-  // REMOVE Tim. citem. Added.
-  //                   _operations.clear();
                     if (drawLineMode) {
                           line2x = xpos;
                           line2y = ypos;
@@ -2375,7 +1689,6 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
 
 void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
       {
-
       _movingItemUnderCursor = NULL;
 
       if(!_controller || curDrumPitch==-2)
@@ -2389,27 +1702,21 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
       // Meaning likely mouseRelease was not called (which CAN happen).
       if(drag != DRAG_OFF && !(event->buttons() & Qt::LeftButton))
       {
-        // REMOVE Tim. citem. Added.
-        fprintf(stderr, "CtrlCanvas::viewMouseMoveEvent: calling cancelMouseOps()\n");
+// For testing...
+//         fprintf(stderr, "CtrlCanvas::viewMouseMoveEvent: calling cancelMouseOps()\n");
         
         // Be sure to cancel any relative stuff. Otherwise it's left in a bad state.
         cancelMouseOps();
       }
       
-//       const bool shift = event->modifiers() & Qt::ShiftModifier;
       Qt::KeyboardModifiers modifiers = event->modifiers();
-      //bool ctrl  = modifiers & Qt::ControlModifier;
       bool shift = modifiers & Qt::ShiftModifier;
-      //bool meta  = modifiers & Qt::MetaModifier;
-      //bool alt   = modifiers & Qt::AltModifier;
       
       QPoint pos  = event->pos();
       const QPoint dist = pos - start;
       const int ax = ABS(dist.x());
       const int ay = ABS(dist.y());
       const bool is_moving = (ax >= 2) || (ay > 2);
-//       const bool is_moving = dist.y() >= 3 || dist.y() <= -3
-//                    ||  dist.x() >= 3 || dist.x() <= -3;
 
       switch (drag) {
             case DRAG_LASSO_START:
@@ -2432,9 +1739,7 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
             {
                   if (!is_moving)
                         break;
-//                   if (keyState & Qt::ShiftModifier) {
 
-// TODO      
                   int dir = 0;
                   if (shift) {
                         if (ax > ay) {
@@ -2464,20 +1769,10 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
                         if (drag == DRAG_MOVE)
                               deselectAll();
                         selectItem(curItem);
-//                         itemSelectionsChanged();
                         itemSelectionsChanged(NULL, drag == DRAG_MOVE);
                         redraw();
                         }
                         
-// //                   DragType dt;
-//                   if (drag == DRAG_MOVE)
-// //                         dt = MOVE_MOVE;
-//                         _dragType = MOVE_MOVE;
-//                   else //if (drag == DRAG_COPY)
-// //                         dt = MOVE_COPY;
-//                         _dragType = MOVE_COPY;
-                  
-//                   startMoving(ev_pos, dt, !(keyState & Qt::ShiftModifier));
                   startMoving(pos, dir, !shift);
                   break;
             }
@@ -2506,9 +1801,7 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
                   break;
 
             case DRAG_NEW:
-// REMOVE Tim. citem. Changed.
                   newVal(start.x(), start.y(), pos.x(), pos.y());
-                  //newVal(pos.x(), pos.y());
                   start = pos;
                   break;
 
@@ -2565,10 +1858,9 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
 
 void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
       {
-      // REMOVE Tim. citem. Added.
-      fprintf(stderr, "CtrlCanvas::viewMouseReleaseEvent\n");
+// For testing...
+//       fprintf(stderr, "CtrlCanvas::viewMouseReleaseEvent\n");
       
-//       if (event->buttons() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(event->button())) 
       // We want only the left mouse release events. Ignore anything else.
       // Do nothing, even if the mouse is grabbed or we have a moving list.
       if(event->button() != Qt::LeftButton) 
@@ -2583,9 +1875,6 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
       const QPoint pos = event->pos();
       Qt::KeyboardModifiers modifiers = event->modifiers();
       bool ctrlKey = modifiers & Qt::ControlModifier;
-//       bool shift = modifiers & Qt::ShiftModifier;
-      //bool meta = modifiers & Qt::MetaModifier;
-      //bool alt = modifiers & Qt::AltModifier;
       const int xpos = start.x();
       const int ypos = start.y();
       const int tickstep = rmapxDev(1);
@@ -2595,31 +1884,8 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
       _mouseDist += (pos - start);
 
       switch (drag) {
-// REMOVE Tim. citem. Changed.
-//             case DRAG_RESIZE:
-//                   MusEGlobal::song->endUndo(SC_EVENT_MODIFIED);
-//                   break;
-//             case DRAG_NEW:
-//                   MusEGlobal::song->endUndo(SC_EVENT_MODIFIED | SC_EVENT_INSERTED | SC_EVENT_REMOVED);
-//                   break;
-//             case DRAG_DELETE:
-//                   MusEGlobal::song->endUndo(SC_EVENT_REMOVED);
-//                   break;
-//             case DRAG_RESIZE:
-//             case DRAG_NEW:
-//             case DRAG_DELETE:
-//                   // Set the 'sender' to this so that we can ignore self-generated songChanged signals.
-//                   // Here we have a choice of whether to allow undoing of selections.
-//                   MusEGlobal::song->applyOperationGroup(_operations, MusECore::Song::OperationUndoMode, this);
-//                   break;
             case DRAG_MOVE_START:
             case DRAG_COPY_START:
-//                   if (curItem && curItem->part() != curPart) {
-//                         curPart = static_cast<MusECore::MidiPart*>(curItem->part());
-//                         curPartId = curPart->sn();
-//                         curPartChanged();
-//                         }
-
                   // Don't change anything if the current item is moving.
                   if(!curItem || !curItem->isMoving())
                   {
@@ -2627,78 +1893,39 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
                           deselectAll();
                     if(curItem)
                     {
-  //                     if (!shift) { //Select or deselect only the clicked item
-  //                         selectItem(curItem, !(ctrlKey && curItem->isSelected()));
-                                  if (ctrlKey && curItem->isSelected())
-                                    deselectItem(curItem);
-                                  else
-                                    selectItem(curItem);
-                          
-                          
-  //                         }
-  //                     else { //Select or deselect all on the same pitch (e.g. same y-value)
-  //                         bool selectionFlag = !(ctrlKey && curItem->isSelected());
-  //                         for (iCItemList i = items.begin(); i != items.end(); ++i)
-  //                               if (i->second->y() == curItem->y() )
-  //                                     selectItem(i->second, selectionFlag);
-  //                         }
+                      if (ctrlKey && curItem->isSelected())
+                        deselectItem(curItem);
+                      else
+                        selectItem(curItem);
                     }
 
-  //                   itemSelectionsChanged();
                     itemSelectionsChanged(NULL, !ctrlKey);
-  //                   redrawFlag = true;
                     redraw();
-  //                   if(curItem)
-  //                     itemReleased(curItem, curItem->pos());
                   }
                   
                   break;
                   
             case DRAG_COPY:
-//                   endMoveItems(pos, MOVE_COPY, 0, !shift);
-                  break;
             case DRAGX_COPY:
-                  //endMoveItems(pos, MOVE_COPY, 1, false);
-//                   endMoveItems(pos, MOVE_COPY, 1, !shift);
-                  break;
             case DRAGY_COPY:
-                  //endMoveItems(pos, MOVE_COPY, 2, false);
-//                   endMoveItems(pos, MOVE_COPY, 2, !shift);
-                  break;
-
             case DRAG_MOVE:
-//                   endMoveItems(pos, MOVE_MOVE, 0, !shift);
-                  break;
             case DRAGX_MOVE:
-                  //endMoveItems(pos, MOVE_MOVE, 1, false);
-//                   endMoveItems(pos, MOVE_MOVE, 1, !shift);
-                  break;
             case DRAGY_MOVE:
-                  //endMoveItems(pos, MOVE_MOVE, 2, false);
-//                   endMoveItems(pos, MOVE_MOVE, 2, !shift);
                   break;
 
             case DRAG_LASSO_START:
             {
-// REMOVE Tim. citem. Changed.
-//                   lasso.setRect(-1, -1, -1, -1);
-                  //lasso.setRect(xpos, ypos, 0, 0);
                   lasso = QRect(xpos, ypos, tickstep, rmapyDev(1));
             }
             //fallthrough
             case DRAG_LASSO:
             {
-                  //MusECore::Undo operations;
-                  //bool changed = false;
-                  
-// REMOVE Tim. citem. Added.
                   // Don't change anything if the current item is moving.
                   if(!curItem || !curItem->isMoving())
                   {
                     if (!ctrlKey)
                     {
                       deselectAll();
-                      //operations.push_back(MusECore::UndoOp(MusECore::UndoOp::GlobalSelectAllEvents, false, 0, 0));
                     }
                     
                     if(_controller)  
@@ -2706,46 +1933,22 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
                       lasso = lasso.normalized();
                       int h = height();
                       CEvent* item;
-  //                     int tickstep = rmapxDev(1);
                       for (iCItemList i = items.begin(); i != items.end(); ++i) {
                             item = static_cast<CEvent*>(*i);
                             if(item->part() != curPart)
                               continue;
                             
-  // REMOVE Tim. citem. Changed.
                             if (item->intersectsController(_controller, lasso, tickstep, h)) {
                             // If the lasso is empty treat it as a single click.
-                            //if (lasso.isEmpty() || (*i)->intersectsController(_controller, lasso, tickstep, h)) {
                                   if (ctrlKey && item->isSelected())
-  // REMOVE Tim. citem. Changed.
-  //                                   (*i)->setSelected(false);
                                     deselectItem(item);
                                   else
-  // REMOVE Tim. citem. Changed.
-  //                                   (*i)->setSelected(true);
                                     selectItem(item);
                                 }  
                             }
                       drag = DRAG_OFF;
-  // REMOVE Tim. citem. Changed.
-  //                     // Let songChanged handle the redraw upon SC_SELECTION.
-  //                     MusEGlobal::song->update(SC_SELECTION);
-                      //if(itemSelectionsChanged(&operations))
-                      //  changed = true;
                       itemSelectionsChanged(NULL, !ctrlKey);
                     }
-                    
-                    //if(!operations.empty())
-                    //{
-                      // Set the 'sender' to this so that we can ignore self-generated songChanged signals.
-                      // Here we have a choice of whether to allow undoing of selections.
-                      // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
-                      //MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationUndoMode, this);
-  //                     if(MusEGlobal::config.selectionsUndoable)
-  //                       MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationUndoMode, this);
-  //                     else
-  //                       MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate, this);
-                    //}
                     
                     redraw();
                   }
@@ -2757,20 +1960,15 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
             case DRAG_DELETE:
             // Also in case ramp was drawn, check if any operations are required.
             default:
-// REMOVE Tim. citem. Added.
                   // Set the 'sender' to this so that we can ignore self-generated songChanged signals.
                   MusEGlobal::song->applyOperationGroup(_operations, MusECore::Song::OperationUndoMode, this);
                   break;
             }
 
-      // REMOVE Tim. citem. Added.
       // Done with any operations. Clear the list.
       _operations.clear();
 
       drag = DRAG_OFF;
-      
-//       // Cancel all previous mouse ops. Right now there should be no moving list and drag should be off etc.
-//       cancelMouseOps();
       }
 
 //---------------------------------------------------------
@@ -2823,9 +2021,6 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
         useRaster = true;
       }  
 
-// REMOVE Tim. citem. Removed.
-//       MusECore::Undo operations;
-
       // delete existing events
 
       unsigned curPartTick = curPart->tick();
@@ -2843,8 +2038,6 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
             if (x >= xx2)
                   break;
             // Do port controller values and clone parts. 
-// REMOVE Tim. citem. Changed.
-//             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, event, curPart, true, true));
             _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, event, curPart, true, true));
             }
 
@@ -2878,13 +2071,8 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
             else  
               event.setB(nval);
             // Do port controller values and clone parts. 
-// REMOVE Tim. citem. Changed.
-//             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, event, curPart, true, true));
             _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, event, curPart, true, true));
             }
-              
-// REMOVE Tim. citem. Removed.
-//       MusEGlobal::song->applyOperationGroup(operations);
       }
 
 //---------------------------------------------------------
@@ -2899,13 +2087,9 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
       int h   = height();
       int type = _controller->num();
 
-// REMOVE Tim. citem. Removed.
-//       MusECore::Undo operations;
-      
       for (ciCItemList i = items.begin(); i != items.end(); ++i) {
             CEvent* ev = static_cast<CEvent*>(*i);
             if (ev->containsXRange(x1, x2)) {
-                  //CItem* ev       = *i;
                   if (ev->part() != curPart)
                     continue;
 
@@ -2934,8 +2118,6 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
                               MusECore::Event newEvent = event.clone();
                               newEvent.setVelo(nval);
                               // Do not do port controller values and clone parts. 
-// REMOVE Tim. citem. Changed.
-//                               operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, curPart, false, false));
                               _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, curPart, false, false));
                               }
                         }
@@ -2945,17 +2127,12 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
                                     MusECore::Event newEvent = event.clone();
                                     newEvent.setB(nval);
                                     // Do port controller values and clone parts. 
-// REMOVE Tim. citem. Changed.
-//                                     operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, curPart, true, true));
                                     _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, curPart, true, true));
                                     }
                               }
                         }
                   }
             }
-
-// REMOVE Tim. citem. Removed.
-//       MusEGlobal::song->applyOperationGroup(operations);
       }
 
 //---------------------------------------------------------
@@ -2975,7 +2152,6 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
             CEvent* ev = static_cast<CEvent*>(*i);
             if (!ev->containsXRange(x1, x2))
                   continue;
-            //CEvent* ev       = *i;
             if(ev->part() != curPart)
               continue;
             MusECore::Event event      = ev->event();
@@ -2988,13 +2164,7 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
                         ev->setVal(newval);
                         MusECore::Event newEvent = event.clone();
                         newEvent.setVelo(newval);
-// REMOVE Tim. citem. Changed.
-//                         // Indicate no undo, and do not do port controller values and clone parts. 
-//                         MusEGlobal::audio->msgChangeEvent(event, newEvent, curPart, false, false, false);
-                        // Operation is undoable but do not start/end undo.
                         // Indicate do not do port controller values and clone parts.
-//                         MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
-//                                           newEvent, event, curPart, false, false), MusECore::Song::OperationUndoable);
                         _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
                                           newEvent, event, curPart, false, false));
                         changed = true;
@@ -3015,13 +2185,7 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
                         if ((event.dataB() != nval)) {
                               MusECore::Event newEvent = event.clone();
                               newEvent.setB(nval);
-// REMOVE Tim. citem. Changed.
-//                               // Indicate no undo, and do port controller values and clone parts. 
-//                               MusEGlobal::audio->msgChangeEvent(event, newEvent, curPart, false, true, true);
-                              // Operation is undoable but do not start/end undo.
                               // Indicate do port controller values and clone parts.
-//                               MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
-//                                                 newEvent, event, curPart, true, true), MusECore::Song::OperationUndoable);
                               _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
                                                 newEvent, event, curPart, true, true));
                               changed = true;
@@ -3128,18 +2292,10 @@ void CtrlCanvas::newVal(int x1, int y)
               {
                 MusECore::Event newEvent = event.clone();
                 newEvent.setB(nval);
-// REMOVE Tim. citem. Changed.
-//                 // Indicate no undo, and do port controller values and clone parts. 
-//                 MusEGlobal::audio->msgChangeEvent(event, newEvent, curPart, false, true, true);
-//                 // Operation is undoable but do not start/end undo.
-//                 // Indicate do port controller values and clone parts.
-//                 MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
-//                                   newEvent, event, curPart, true, true), MusECore::Song::OperationUndoable);
                 
-                // REMOVE Tim. citem. Added.
-                fprintf(stderr, "CtrlCanvas::newVal: Found. Pushing ModifyEvent\n");
+// For testing...
+//                 fprintf(stderr, "CtrlCanvas::newVal: Found. Pushing ModifyEvent\n");
                 
-                // Operation is undoable but do not start/end undo.
                 // Indicate do port controller values and clone parts.
                 _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
                                   newEvent, event, curPart, true, true));
@@ -3159,27 +2315,12 @@ void CtrlCanvas::newVal(int x1, int y)
             }
             else if (ax < xx2) 
             {
-                  // delete event
-                  
-// REMOVE Tim. citem. Changed.
-//                   deselectItem(ev);
-//                   // Indicate no undo, and do port controller values and clone parts. 
-//                   MusEGlobal::audio->msgDeleteEvent(event, curPart, false, true, true);
                   // We must remove the item from the selected list.
                   removeSelection(ev);
-                  // This deselect operation should never be undoable because when redo is clicked,
-                  //  it restores the event's selection, which is not the intention here, the intention
-                  //  is to restore as unselected no matter what, to avoid visual confusion.
-                  // No, let undo/redo handle that.
-//                   _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent,
-//                              event, curPart, false, false, false));
-                  // Operation is undoable but do not start/end undo.
                   // Indicate do port controller values and clone parts.
-//                   MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
-//                              event, curPart, true, true), MusECore::Song::OperationUndoable);
                   
-                  // REMOVE Tim. citem. Added.
-                  fprintf(stderr, "CtrlCanvas::newVal: Found. Pushing DeleteEvent\n");
+// For testing...
+//                   fprintf(stderr, "CtrlCanvas::newVal: Found. Pushing DeleteEvent\n");
                 
                   _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
                              event, curPart, true, true));
@@ -3228,16 +2369,10 @@ void CtrlCanvas::newVal(int x1, int y)
               else  
                 event.setB(newval);
               
-// REMOVE Tim. citem. Changed.
-//               // Indicate no undo, and do port controller values and clone parts. 
-//               MusEGlobal::audio->msgAddEvent(event, curPart, false, true, true);
-              // Operation is undoable but do not start/end undo.
               // Indicate do port controller values and clone parts. 
-//               MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
-//                                 event, curPart, true, true), MusECore::Song::OperationUndoable);
               
-              // REMOVE Tim. citem. Added.
-              fprintf(stderr, "CtrlCanvas::newVal: Not found. Pushing AddEvent\n");
+// For testing...
+//               fprintf(stderr, "CtrlCanvas::newVal: Not found. Pushing AddEvent\n");
                 
               _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
                                 event, curPart, true, true));
@@ -3363,25 +2498,12 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
               break;
             }
             
-// REMOVE Tim. citem. Changed.
-//             deselectItem(ev);
-//             // Indicate no undo, and do port controller values and clone parts. 
-//             MusEGlobal::audio->msgDeleteEvent(event, curPart, false, true, true);
             // We must remove the item from the selected list.
             removeSelection(ev);
-            // This deselect operation should never be undoable because when redo is clicked,
-            //  it restores the event's selection, which is not the intention here, the intention
-            //  is to restore as unselected no matter what, to avoid visual confusion.
-            // No, let undo/redo handle that.
-//             _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent,
-//                         event, curPart, false, false, false));
-            // Operation is undoable but do not start/end undo.
             // Indicate do port controller values and clone parts.
-//             MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
-//                              event, curPart, true, true), MusECore::Song::OperationUndoable);
             
-            // REMOVE Tim. citem. Added.
-            fprintf(stderr, "CtrlCanvas::newVal 2: Pushing DeleteEvent\n");
+// For testing...
+//             fprintf(stderr, "CtrlCanvas::newVal 2: Pushing DeleteEvent\n");
                 
             _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
                              event, curPart, true, true));
@@ -3431,16 +2553,10 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
             else  
               event.setB(nval);
             
-// REMOVE Tim. citem. Changed.
-//             // Indicate no undo, and do port controller values and clone parts. 
-//             MusEGlobal::audio->msgAddEvent(event, curPart, false, true, true);
-            // Operation is undoable but do not start/end undo.
             // Indicate do port controller values and clone parts. 
-//             MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
-//                               event, curPart, true, true), MusECore::Song::OperationUndoable);
             
-            // REMOVE Tim. citem. Added.
-            fprintf(stderr, "CtrlCanvas::newVal 2: Pushing AddEvent\n");
+// For testing...
+//             fprintf(stderr, "CtrlCanvas::newVal 2: Pushing AddEvent\n");
                 
             _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
                               event, curPart, true, true));
@@ -3534,22 +2650,9 @@ void CtrlCanvas::deleteVal(int x1, int x2, int)
             if (x >= xx2)
               break;
             
-// REMOVE Tim. citem. Changed.
-//             deselectItem(ev);
-//             // Indicate no undo, and do port controller values and clone parts. 
-//             MusEGlobal::audio->msgDeleteEvent(event, curPart, false, true, true);
             // We must remove the item from the selected list.
             removeSelection(ev);
-            // This deselect operation should never be undoable because when redo is clicked,
-            //  it restores the event's selection, which is not the intention here, the intention
-            //  is to restore as unselected no matter what, to avoid visual confusion.
-            // No, let undo/redo handle that.
-//             _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent,
-//                         event, curPart, false, false, false));
-            // Operation is undoable but do not start/end undo.
             // Indicate do port controller values and clone parts.
-//             MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
-//                              event, curPart, true, true), MusECore::Song::OperationUndoable);
             _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
                              event, curPart, true, true));
             
@@ -3583,18 +2686,13 @@ void CtrlCanvas::setTool(int t)
             return;
       tool = MusEGui::Tool(t);
       switch(tool) {
-//             case MusEGui::PencilTool:
-//                   setCursor(QCursor(*pencilIcon, 4, 15));
-//                   break;
             case MusEGui::DrawTool:
                   drawLineMode = false;
                   break;
             default:
-//                   setCursor(QCursor(Qt::ArrowCursor));
                   break;
             }
 
-      //setCursor();
       cancelMouseOps();
       }
 
@@ -3714,448 +2812,13 @@ void CtrlCanvas::pFillBackgrounds(QPainter& p, const QRect& rect, const MusECore
     p.fillRect(x1, 0, (x+w) - x1, wh, dark_gray_color);
 }
 
-// REMOVE Tim. citem. Changed.
-// //---------------------------------------------------------
-// //   pdrawItems
-// //---------------------------------------------------------
-// 
-// void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::MidiPart* part, bool velo, bool fg)
-// {
-//   int x = rect.x() - 1;   // compensate for 3 pixel line width
-//   int w = rect.width() + 2;
-//   int wh = height();
-// //   const QColor selection_base_color(Qt::blue);
-// //   const QColor selection_color(selection_base_color.lighter());
-//   const QColor selection_color(0, 160, 255, MusEGlobal::config.globalAlphaBlend);
-//   QColor graph_fg_color = MusEGlobal::config.ctrlGraphFg;
-//   graph_fg_color.setAlpha(MusEGlobal::config.globalAlphaBlend);
-//   QColor dark_gray_color = Qt::darkGray;
-//   dark_gray_color.setAlpha(MusEGlobal::config.globalAlphaBlend / 2);
-//   QColor gray_color = Qt::gray;
-//   gray_color.setAlpha(MusEGlobal::config.globalAlphaBlend);
-//   
-//   noEvents=true;
-// 
-//   if(velo) 
-//   {
-//     noEvents=false;
-//     for(iCItemList i = items.begin(); i != items.end(); ++i) 
-//     {
-//       CEvent* e = static_cast<CEvent*>(*i);
-//       // Draw selected part velocity events on top of unselected part events.
-//       if(e->part() != part)
-//         continue;
-//       MusECore::Event event = e->event();
-//       int tick = mapx(event.tick() + e->part()->tick());
-//       if (tick <= x)
-//             continue;
-//       if (tick > x+w)
-//             break;
-//       int y1 = wh - (e->val() * wh / 128);
-//       // fg means 'draw selected parts'.
-//       if(fg)
-//       {
-//         if(e->isSelected())
-//           //p.setPen(QPen(Qt::blue, 3));
-//           p.setPen(QPen(selection_color, 3));
-//         else
-//           p.setPen(QPen(MusEGlobal::config.ctrlGraphFg, 3));
-//       }  
-//       else  
-//         p.setPen(QPen(Qt::darkGray, 3));
-//       p.drawLine(tick, wh, tick, y1);
-//     }
-//   }
-//   else
-//   {
-//     if(!part)         
-//       return;
-//     
-//     QPen pen;
-//     pen.setCosmetic(true);
-//     
-//     MusECore::MidiTrack* mt = part->track();
-//     MusECore::MidiPort* mp;
-//     int cnum = _cnum;
-//     bool is_drum_ctl = (mt->type() == MusECore::Track::DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
-//     bool is_newdrum_ctl = (mt->type() == MusECore::Track::NEW_DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
-// 
-//     if(is_drum_ctl)
-//     {
-//       // Default to track port if -1 and track channel if -1.
-//       int mport = MusEGlobal::drumMap[curDrumPitch].port;
-//       if(mport == -1)
-//         mport = mt->outPort();
-//       mp = &MusEGlobal::midiPorts[mport];
-//       cnum = (_cnum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
-//     }
-//     else if(is_newdrum_ctl)
-//     {
-//       // Default to track port if -1 and track channel if -1.
-//       int mport = mt->drummap()[curDrumPitch].port;
-//       if(mport == -1)
-//         mport = mt->outPort();
-//       mp = &MusEGlobal::midiPorts[mport];
-//       cnum = (_cnum & ~0xff) | mt->drummap()[curDrumPitch].anote;
-//     }
-//     else
-//       mp = &MusEGlobal::midiPorts[mt->outPort()];          
-//     
-//     MusECore::MidiController* mc = mp->midiController(cnum);
-//     
-//     int min;
-//     int max;
-//     int bias;
-//     if(cnum == MusECore::CTRL_PROGRAM)
-//     {
-//       min = 1;
-//       max = 128;
-//       bias = 0;
-//     }
-//     else
-//     {
-//       min  = mc->minVal();
-//       max  = mc->maxVal();
-//       bias  = mc->bias();
-//     }
-//     int x1   = rect.x();
-//     int lval = MusECore::CTRL_VAL_UNKNOWN;
-//     bool selected = false;
-//     for (iCItemList i = items.begin(); i != items.end(); ++i) 
-//     {
-//       noEvents=false;
-//       CEvent* e = static_cast<CEvent*>(*i);
-//       // Draw unselected part controller events (lines) on top of selected part events (bars).
-//       if(e->part() != part)
-//         continue;
-//       MusECore::Event ev = e->event();
-//       // Draw drum controllers from another drum on top of ones from this drum.
-//       if((is_drum_ctl || is_newdrum_ctl) && ev.type() == MusECore::Controller && ev.dataA() != _didx)
-//         continue;
-//       int tick = mapx(!ev.empty() ? ev.tick() + e->part()->tick() : 0);
-//       int val = e->val();
-//       int pval = val;
-//       if(cnum == MusECore::CTRL_PROGRAM)
-//       {
-//         if((val & 0xff) == 0xff)
-//           // What to do here? prog = 0xff should not be allowed, but may still be encountered.
-//           pval = 1;
-//         else  
-//           pval = (val & 0x7f) + 1;
-//       }
-//       if (tick <= x) {
-//             if (val == MusECore::CTRL_VAL_UNKNOWN)
-//                   lval = MusECore::CTRL_VAL_UNKNOWN;
-//             else
-//             {
-//                   if(cnum == MusECore::CTRL_PROGRAM)
-//                     lval = wh - ((pval - min - bias) * wh / (max - min));
-//                   else  
-//                     lval = wh - ((val - min - bias) * wh / (max - min));
-//             }
-//             selected = e->isSelected();     
-//             continue;
-//             }
-//       if (tick > x+w)
-//             break;
-//       if (lval == MusECore::CTRL_VAL_UNKNOWN)
-//       {
-//         // fg means 'draw unselected parts'.
-//         if(!fg)
-//           p.fillRect(x1, 0, tick - x1, wh, dark_gray_color);
-//       }
-//       else
-//       {
-//         if(fg)
-//         {  
-//           pen.setColor(gray_color);
-//           p.setPen(pen);
-//           p.drawLine(x1, lval, tick, lval);
-//         }  
-//         else
-//           //p.fillRect(x1, lval, tick - x1, wh - lval, selected ? Qt::blue : MusEGlobal::config.ctrlGraphFg);
-//           p.fillRect(x1, lval, tick - x1, wh - lval, selected ? selection_color : graph_fg_color);
-//       }
-//       
-//       
-//       x1 = tick;
-//       if (val == MusECore::CTRL_VAL_UNKNOWN)
-//             lval = MusECore::CTRL_VAL_UNKNOWN;
-//       else
-//       {
-//             if(cnum == MusECore::CTRL_PROGRAM)
-//               lval = wh - ((pval - min - bias) * wh / (max - min));
-//             else  
-//               lval = wh - ((val - min - bias) * wh / (max - min));
-//       } 
-//       selected = e->isSelected();     
-//     }
-//     if (lval == MusECore::CTRL_VAL_UNKNOWN)
-//     {
-//       if(!fg) {
-//         p.fillRect(x1, 0, (x+w) - x1, wh, dark_gray_color);
-//       }
-//     }
-//     else
-//     {
-//       if(fg)
-//       {  
-//         pen.setColor(gray_color);
-//         p.setPen(pen);
-//         p.drawLine(x1, lval, x + w, lval);
-//       }  
-//       else
-//         //p.fillRect(x1, lval, (x+w) - x1, wh - lval, selected ? Qt::blue : MusEGlobal::config.ctrlGraphFg);
-//         p.fillRect(x1, lval, (x+w) - x1, wh - lval, selected ? selection_color : graph_fg_color);
-//     }
-//   }       
-// }
-
-// //---------------------------------------------------------
-// //   drawMoving
-// //    draws moving items
-// //---------------------------------------------------------
-// 
-// //void CtrlCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& mr, const QRegion&)
-// void CtrlCanvas::drawMoving(QPainter& p, const QRect& rect, const QRegion& /*region*/, const MusECore::MidiPart* part)
-// {
-// // //       const ViewRect vr(mr, true);
-// // //       const QRect ur = asQRectUnmapped(vr);
-// //   const QRect ur = mapDev(mr);
-// //   QRect ur_item = QRect(item->mp().x(), item->mp().y() - item->height()/2, item->width(), item->height());
-// //   ur_item = ur_item.intersected(ur);
-// //   if(!ur_item.isValid())
-// //     return;
-// //   QPen pen;
-// //   pen.setCosmetic(true);
-// //   pen.setColor(Qt::black);
-// //   p.setPen(pen);
-// //   p.setBrush(Qt::NoBrush);
-// //   p.drawRect(ur_item);
-//   
-//   
-//   
-// //   int x = rect.x() - 1;   // compensate for 3 pixel line width
-// //   int w = rect.width() + 2;
-//   int x = rect.x();   // compensate for 3 pixel line width
-//   int w = rect.width();
-//   int wh = height();
-//   const QColor selection_color(0, 160, 255, MusEGlobal::config.globalAlphaBlend);
-//   QColor graph_fg_color = MusEGlobal::config.ctrlGraphFg;
-//   graph_fg_color.setAlpha(MusEGlobal::config.globalAlphaBlend);
-//   QColor gray_color = Qt::gray;
-//   gray_color.setAlpha(MusEGlobal::config.globalAlphaBlend);
-//   
-//   //noEvents=true;
-// 
-// //   if(velo) 
-// //   {
-// //     noEvents=false;
-// //     for(iCItemList i = items.begin(); i != items.end(); ++i) 
-// //     {
-// //       CEvent* e = static_cast<CEvent*>(*i);
-// //       // Draw selected part velocity events on top of unselected part events.
-// //       if(e->part() != part)
-// //         continue;
-// //       MusECore::Event event = e->event();
-// //       int tick = mapx(event.tick() + e->part()->tick());
-// //       if (tick <= x)
-// //             continue;
-// //       if (tick > x+w)
-// //             break;
-// //       int y1 = wh - (e->val() * wh / 128);
-// //       // fg means 'draw selected parts'.
-// //       if(fg)
-// //       {
-// //         if(e->isSelected())
-// //           //p.setPen(QPen(Qt::blue, 3));
-// //           p.setPen(QPen(selection_color, 3));
-// //         else
-// //           p.setPen(QPen(MusEGlobal::config.ctrlGraphFg, 3));
-// //       }  
-// //       else  
-// //         p.setPen(QPen(Qt::darkGray, 3));
-// //       p.drawLine(tick, wh, tick, y1);
-// //     }
-// //   }
-// //   else
-//   {
-//     if(!part)         
-//       return;
-//     
-//     QPen pen;
-//     pen.setCosmetic(true);
-//     
-//     MusECore::MidiTrack* mt = part->track();
-//     MusECore::MidiPort* mp;
-//     int cnum = _cnum;
-//     bool is_drum_ctl = (mt->type() == MusECore::Track::DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
-//     bool is_newdrum_ctl = (mt->type() == MusECore::Track::NEW_DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
-// 
-//     if(is_drum_ctl)
-//     {
-//       // Default to track port if -1 and track channel if -1.
-//       int mport = MusEGlobal::drumMap[curDrumPitch].port;
-//       if(mport == -1)
-//         mport = mt->outPort();
-//       mp = &MusEGlobal::midiPorts[mport];
-//       cnum = (_cnum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
-//     }
-//     else if(is_newdrum_ctl)
-//     {
-//       // Default to track port if -1 and track channel if -1.
-//       int mport = mt->drummap()[curDrumPitch].port;
-//       if(mport == -1)
-//         mport = mt->outPort();
-//       mp = &MusEGlobal::midiPorts[mport];
-//       cnum = (_cnum & ~0xff) | mt->drummap()[curDrumPitch].anote;
-//     }
-//     else
-//       mp = &MusEGlobal::midiPorts[mt->outPort()];          
-//     
-//     MusECore::MidiController* mc = mp->midiController(cnum);
-//     
-//     int min;
-//     int max;
-//     int bias;
-//     if(cnum == MusECore::CTRL_PROGRAM)
-//     {
-//       min = 1;
-//       max = 128;
-//       bias = 0;
-//     }
-//     else
-//     {
-//       min  = mc->minVal();
-//       max  = mc->maxVal();
-//       bias  = mc->bias();
-//     }
-//     
-// //     int drag_offset = _curDragOffset.x();
-// //     if(curItem && curItem->part() == part)
-// //     {
-// //       MusECore::Event ev = curItem->event();
-// //       int ev_tick = !ev.empty() ? ev.tick() + curItem->part()->tick() : 0;
-// //       int tick = ev_tick + drag_offset;
-// //       if(tick < 0)
-// //         tick = 0;
-// //       int new_tick = _rasterizeDrag ? editor->rasterVal(tick) : tick;
-// //       drag_offset = new_tick - ev_tick;
-// //     }
-//     
-//     int x1   = rect.x();
-//     int lval = MusECore::CTRL_VAL_UNKNOWN;
-//     bool selected = false;
-//     for (iCItemList i = moving.begin(); i != moving.end(); ++i) 
-//     {
-//       //noEvents=false;
-//       CEvent* e = static_cast<CEvent*>(*i);
-//       // Draw unselected part controller events (lines) on top of selected part events (bars).
-//       if(e->part() != part)
-//         continue;
-//       MusECore::Event ev = e->event();
-//       // Draw drum controllers from another drum on top of ones from this drum.
-//       if((is_drum_ctl || is_newdrum_ctl) && ev.type() == MusECore::Controller && ev.dataA() != _didx)
-//         continue;
-// 
-//       int tick = (!ev.empty() ? ev.tick() + e->part()->tick() : 0) + _curDragOffset.x();
-//       if(tick < 0)
-//         tick = 0;
-//       tick = mapx(tick);
-// 
-//       const int val = e->val();
-//       int pval = val;
-//       if(cnum == MusECore::CTRL_PROGRAM)
-//       {
-//         if((val & 0xff) == 0xff)
-//           // What to do here? prog = 0xff should not be allowed, but may still be encountered.
-//           pval = 1;
-//         else  
-//           pval = (val & 0x7f) + 1;
-//       }
-//       if (tick <= x) {
-//             if (val == MusECore::CTRL_VAL_UNKNOWN)
-//                   lval = MusECore::CTRL_VAL_UNKNOWN;
-//             else
-//             {
-//                   if(cnum == MusECore::CTRL_PROGRAM)
-//                     lval = wh - ((pval - min - bias) * wh / (max - min));
-//                   else  
-//                     lval = wh - ((val - min - bias) * wh / (max - min));
-//             }
-//             selected = e->isSelected();     
-//             continue;
-//             }
-//       if (tick > x+w)
-//             break;
-// 
-//       if (lval != MusECore::CTRL_VAL_UNKNOWN)
-//       {
-// //         if(fg)
-// //         {  
-// //           pen.setColor(gray_color);
-// //           p.setPen(pen);
-// //           p.drawLine(x1, lval, tick, lval);
-// //         }  
-// //         else
-//           //p.fillRect(x1, lval, tick - x1, wh - lval, selected ? Qt::blue : MusEGlobal::config.ctrlGraphFg);
-//           p.fillRect(x1, lval, tick - x1, wh - lval, selected ? selection_color : graph_fg_color);
-//       }
-//       
-//       x1 = tick;
-//       if (val == MusECore::CTRL_VAL_UNKNOWN)
-//             lval = MusECore::CTRL_VAL_UNKNOWN;
-//       else
-//       {
-//             if(cnum == MusECore::CTRL_PROGRAM)
-//               lval = wh - ((pval - min - bias) * wh / (max - min));
-//             else  
-//               lval = wh - ((val - min - bias) * wh / (max - min));
-//       } 
-//       selected = e->isSelected();     
-//     }
-//     
-//     if (lval != MusECore::CTRL_VAL_UNKNOWN)
-//     {
-// //       if(fg)
-// //       {  
-// //         pen.setColor(gray_color);
-// //         p.setPen(pen);
-// //         p.drawLine(x1, lval, x + w, lval);
-// //       }  
-// //       else
-//         //p.fillRect(x1, lval, (x+w) - x1, wh - lval, selected ? Qt::blue : MusEGlobal::config.ctrlGraphFg);
-//         p.fillRect(x1, lval, (x+w) - x1, wh - lval, selected ? selection_color : graph_fg_color);
-//     }
-//   }       
-// }
-
 //---------------------------------------------------------
 //   drawMoving
 //    draws moving items
 //---------------------------------------------------------
 
-//void CtrlCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& mr, const QRegion&)
 void CtrlCanvas::drawMoving(QPainter& p, const QRect& rect, const QRegion& /*region*/, const MusECore::MidiPart* part)
 {
-// //       const ViewRect vr(mr, true);
-// //       const QRect ur = asQRectUnmapped(vr);
-//   const QRect ur = mapDev(mr);
-//   QRect ur_item = QRect(item->mp().x(), item->mp().y() - item->height()/2, item->width(), item->height());
-//   ur_item = ur_item.intersected(ur);
-//   if(!ur_item.isValid())
-//     return;
-//   QPen pen;
-//   pen.setCosmetic(true);
-//   pen.setColor(Qt::black);
-//   p.setPen(pen);
-//   p.setBrush(Qt::NoBrush);
-//   p.drawRect(ur_item);
-  
-  
-  
-//   int x = rect.x() - 1;   // compensate for 3 pixel line width
-//   int w = rect.width() + 2;
   int x = rect.x();   // compensate for 3 pixel line width
   int w = rect.width();
   int wh = height();
@@ -4165,250 +2828,100 @@ void CtrlCanvas::drawMoving(QPainter& p, const QRect& rect, const QRegion& /*reg
   QColor gray_color = Qt::gray;
   gray_color.setAlpha(MusEGlobal::config.globalAlphaBlend);
   
-  //noEvents=true;
-
-//   if(velo) 
-//   {
-//     noEvents=false;
-//     for(iCItemList i = items.begin(); i != items.end(); ++i) 
-//     {
-//       CEvent* e = static_cast<CEvent*>(*i);
-//       // Draw selected part velocity events on top of unselected part events.
-//       if(e->part() != part)
-//         continue;
-//       MusECore::Event event = e->event();
-//       int tick = mapx(event.tick() + e->part()->tick());
-//       if (tick <= x)
-//             continue;
-//       if (tick > x+w)
-//             break;
-//       int y1 = wh - (e->val() * wh / 128);
-//       // fg means 'draw selected parts'.
-//       if(fg)
-//       {
-//         if(e->isSelected())
-//           //p.setPen(QPen(Qt::blue, 3));
-//           p.setPen(QPen(selection_color, 3));
-//         else
-//           p.setPen(QPen(MusEGlobal::config.ctrlGraphFg, 3));
-//       }  
-//       else  
-//         p.setPen(QPen(Qt::darkGray, 3));
-//       p.drawLine(tick, wh, tick, y1);
-//     }
-//   }
-//   else
+  if(!part)         
+    return;
+  
+  QPen pen;
+  pen.setCosmetic(true);
+  
+  CtrlCanvasInfoStruct info_out;
+  partControllers(curPart, _cnum, 0, 0, 0, 0, &info_out);
+  const int cnum = info_out.fin_ctrl_num;
+  const bool is_drum_ctl = info_out.is_drum_ctl;
+  const bool is_newdrum_ctl = info_out.is_newdrum_ctl;    
+  const int min = info_out.min;
+  const int max = info_out.max;
+  const int bias = info_out.bias;
+  
+  int lval = MusECore::CTRL_VAL_UNKNOWN;
+  int item_x, item_endx;
+  int tick;
+  unsigned int part_tick;
+  QColor color;
+  for (iCItemList i = moving.begin(); i != moving.end(); ++i) 
   {
-    if(!part)         
-      return;
+    CEvent* e = static_cast<CEvent*>(*i);
+    // Draw unselected part controller events (lines) on top of selected part events (bars).
+    if(e->part() != part)
+      continue;
+    MusECore::Event ev = e->event();
+    if(ev.empty())
+      continue;
+    // Draw drum controllers from another drum on top of ones from this drum.
+    if((is_drum_ctl || is_newdrum_ctl) && ev.type() == MusECore::Controller && ev.dataA() != _didx)
+      continue;
+
+    part_tick = e->part()->tick();
     
-    QPen pen;
-    pen.setCosmetic(true);
+    tick = ev.tick() + part_tick + _curDragOffset.x();
+    if(tick < 0)
+      tick = 0;
+    item_x = mapx(tick);
     
-//     MusECore::MidiTrack* mt = part->track();
-//     MusECore::MidiPort* mp;
-//     int cnum = _cnum;
-//     bool is_drum_ctl = (mt->type() == MusECore::Track::DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
-//     bool is_newdrum_ctl = (mt->type() == MusECore::Track::NEW_DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
-// 
-//     if(is_drum_ctl)
-//     {
-//       // Default to track port if -1 and track channel if -1.
-//       int mport = MusEGlobal::drumMap[curDrumPitch].port;
-//       if(mport == -1)
-//         mport = mt->outPort();
-//       mp = &MusEGlobal::midiPorts[mport];
-//       cnum = (_cnum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
-//     }
-//     else if(is_newdrum_ctl)
-//     {
-//       // Default to track port if -1 and track channel if -1.
-//       int mport = mt->drummap()[curDrumPitch].port;
-//       if(mport == -1)
-//         mport = mt->outPort();
-//       mp = &MusEGlobal::midiPorts[mport];
-//       cnum = (_cnum & ~0xff) | mt->drummap()[curDrumPitch].anote;
-//     }
-//     else
-//       mp = &MusEGlobal::midiPorts[mt->outPort()];          
-//     
-//     MusECore::MidiController* mc = mp->midiController(cnum);
-//     
-//     int min;
-//     int max;
-//     int bias;
-//     if(cnum == MusECore::CTRL_PROGRAM)
-//     {
-//       min = 1;
-//       max = 128;
-//       bias = 0;
-//     }
-//     else
-//     {
-//       min  = mc->minVal();
-//       max  = mc->maxVal();
-//       bias  = mc->bias();
-//     }
-    
-    CtrlCanvasInfoStruct info_out;
-//     getCtrlInfo(part, _cnum, &info_out);
-    partControllers(curPart, _cnum, 0, 0, 0, 0, &info_out);
-    const int cnum = info_out.fin_ctrl_num;
-    const bool is_drum_ctl = info_out.is_drum_ctl;
-    const bool is_newdrum_ctl = info_out.is_newdrum_ctl;    
-    const int min = info_out.min;
-    const int max = info_out.max;
-    const int bias = info_out.bias;
-    
-//     int drag_offset = _curDragOffset.x();
-//     if(curItem && curItem->part() == part)
-//     {
-//       MusECore::Event ev = curItem->event();
-//       int ev_tick = !ev.empty() ? ev.tick() + curItem->part()->tick() : 0;
-//       int tick = ev_tick + drag_offset;
-//       if(tick < 0)
-//         tick = 0;
-//       int new_tick = _rasterizeDrag ? editor->rasterVal(tick) : tick;
-//       drag_offset = new_tick - ev_tick;
-//     }
-    
-//     int x1   = rect.x();
-    int lval = MusECore::CTRL_VAL_UNKNOWN;
-//     bool selected = false;
-    int item_x, item_endx;
-    int tick;
-    unsigned int part_tick;
-    QColor color;
-    for (iCItemList i = moving.begin(); i != moving.end(); ++i) 
+    item_endx = x + w;
+    if(e->EX() >= 0)
     {
-      //noEvents=false;
-      CEvent* e = static_cast<CEvent*>(*i);
-      // Draw unselected part controller events (lines) on top of selected part events (bars).
-      if(e->part() != part)
-        continue;
-      MusECore::Event ev = e->event();
-      if(ev.empty())
-        continue;
-      // Draw drum controllers from another drum on top of ones from this drum.
-      if((is_drum_ctl || is_newdrum_ctl) && ev.type() == MusECore::Controller && ev.dataA() != _didx)
-        continue;
+      int end_tick = e->EX() + part_tick + _curDragOffset.x();
+      if(end_tick < 0)
+        end_tick = 0;
+      item_endx = mapx(end_tick);
+    }
 
-      part_tick = e->part()->tick();
-      
-      tick = ev.tick() + part_tick + _curDragOffset.x();
-      if(tick < 0)
-        tick = 0;
-      item_x = mapx(tick);
-      
-      item_endx = x + w;
-      if(e->EX() >= 0)
-      {
-        int end_tick = e->EX() + part_tick + _curDragOffset.x();
-        if(end_tick < 0)
-          end_tick = 0;
-        item_endx = mapx(end_tick);
-      }
-
-      if(item_x >= (x + w) || item_endx <= x)
-        continue;
-      
-      const int val = e->val();
-      int pval = val;
-      if(cnum == MusECore::CTRL_PROGRAM)
-      {
-        if((val & 0xff) == 0xff)
-          // What to do here? prog = 0xff should not be allowed, but may still be encountered.
-          pval = 1;
-        else  
-          pval = (val & 0x7f) + 1;
-      }
-      
-      color = selection_color;
-      if(pval == MusECore::CTRL_VAL_UNKNOWN)
-      {
-        pval = max;
-        color = gray_color;
-      }
-      else
-      {
-        pval -= bias;
-        if(pval < min)
-          pval = min;
-        if(pval > max)
-          pval = max;
-      }
-      
-      lval = wh - ((pval - min) * wh / (max - min));
-
-      lval += mapy(_curDragOffset.y());
-      if(lval < 0)
-        lval = 0;
-      if(lval >= wh)
-        lval = wh - 1;
-
-      if(item_x < x)
-        item_x = x;
-      if(item_endx > (x + w))
-        item_endx = x + w;
-      
-      p.fillRect(item_x, lval, item_endx - item_x, wh - lval, color);
-      
-      
-//       if (tick <= x) {
-//             if (val == MusECore::CTRL_VAL_UNKNOWN)
-//                   lval = MusECore::CTRL_VAL_UNKNOWN;
-//             else
-//             {
-//                   if(cnum == MusECore::CTRL_PROGRAM)
-//                     lval = wh - ((pval - min - bias) * wh / (max - min));
-//                   else  
-//                     lval = wh - ((val - min - bias) * wh / (max - min));
-//             }
-//             selected = e->isSelected();     
-//             continue;
-//             }
-//       if (tick > x+w)
-//             break;
-
-//       if (lval != MusECore::CTRL_VAL_UNKNOWN)
-//       {
-// //         if(fg)
-// //         {  
-// //           pen.setColor(gray_color);
-// //           p.setPen(pen);
-// //           p.drawLine(x1, lval, tick, lval);
-// //         }  
-// //         else
-//           //p.fillRect(x1, lval, tick - x1, wh - lval, selected ? Qt::blue : MusEGlobal::config.ctrlGraphFg);
-//           p.fillRect(x1, lval, tick - x1, wh - lval, selected ? selection_color : graph_fg_color);
-//       }
-//       
-//       x1 = tick;
-//       if (val == MusECore::CTRL_VAL_UNKNOWN)
-//             lval = MusECore::CTRL_VAL_UNKNOWN;
-//       else
-//       {
-//             if(cnum == MusECore::CTRL_PROGRAM)
-//               lval = wh - ((pval - min - bias) * wh / (max - min));
-//             else  
-//               lval = wh - ((val - min - bias) * wh / (max - min));
-//       } 
-//       selected = e->isSelected();     
+    if(item_x >= (x + w) || item_endx <= x)
+      continue;
+    
+    const int val = e->val();
+    int pval = val;
+    if(cnum == MusECore::CTRL_PROGRAM)
+    {
+      if((val & 0xff) == 0xff)
+        // What to do here? prog = 0xff should not be allowed, but may still be encountered.
+        pval = 1;
+      else  
+        pval = (val & 0x7f) + 1;
     }
     
-//     if (lval != MusECore::CTRL_VAL_UNKNOWN)
-//     {
-// //       if(fg)
-// //       {  
-// //         pen.setColor(gray_color);
-// //         p.setPen(pen);
-// //         p.drawLine(x1, lval, x + w, lval);
-// //       }  
-// //       else
-//         //p.fillRect(x1, lval, (x+w) - x1, wh - lval, selected ? Qt::blue : MusEGlobal::config.ctrlGraphFg);
-//         p.fillRect(x1, lval, (x+w) - x1, wh - lval, selected ? selection_color : graph_fg_color);
-//     }
-  }       
+    color = selection_color;
+    if(pval == MusECore::CTRL_VAL_UNKNOWN)
+    {
+      pval = max;
+      color = gray_color;
+    }
+    else
+    {
+      pval -= bias;
+      if(pval < min)
+        pval = min;
+      if(pval > max)
+        pval = max;
+    }
+    
+    lval = wh - ((pval - min) * wh / (max - min));
+
+    lval += mapy(_curDragOffset.y());
+    if(lval < 0)
+      lval = 0;
+    if(lval >= wh)
+      lval = wh - 1;
+
+    if(item_x < x)
+      item_x = x;
+    if(item_endx > (x + w))
+      item_endx = x + w;
+    
+    p.fillRect(item_x, lval, item_endx - item_x, wh - lval, color);
+    
+  }
 }
 
 //---------------------------------------------------------
@@ -4567,7 +3080,6 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
         else
         {
           fill_color = is_moving ? light_gray_color : (selected ? selection_color : graph_fg_color);
-          //p.fillRect(x1, lval, tick - x1, wh - lval, selected ? Qt::blue : MusEGlobal::config.ctrlGraphFg);
           p.fillRect(x1, lval, tick - x1, wh - lval, fill_color);
         }
       }
@@ -4597,7 +3109,6 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
       else
       {
         fill_color = is_moving ? light_gray_color : (selected ? selection_color : graph_fg_color);
-        //p.fillRect(x1, lval, (x+w) - x1, wh - lval, selected ? Qt::blue : MusEGlobal::config.ctrlGraphFg);
         p.fillRect(x1, lval, (x+w) - x1, wh - lval, fill_color);
       }
     }
@@ -4669,7 +3180,6 @@ void CtrlCanvas::pdrawExtraDrumCtrlItems(QPainter& p, const QRect& rect, const M
     }
     int x1   = rect.x();
     int lval = MusECore::CTRL_VAL_UNKNOWN;
-    //bool selected = false;
     for (iCItemList i = items.begin(); i != items.end(); ++i) 
     {
       noEvents=false;
@@ -4705,7 +3215,6 @@ void CtrlCanvas::pdrawExtraDrumCtrlItems(QPainter& p, const QRect& rect, const M
                   else  
                     lval = wh - ((val - min - bias) * wh / (max - min));
             }
-            //selected = e->selected();     
             continue;
             }
       if (tick > x+w)
@@ -4728,7 +3237,6 @@ void CtrlCanvas::pdrawExtraDrumCtrlItems(QPainter& p, const QRect& rect, const M
             else  
               lval = wh - ((val - min - bias) * wh / (max - min));
       } 
-      //selected = e->selected();     
     }
 
     if (lval != MusECore::CTRL_VAL_UNKNOWN)
@@ -4744,8 +3252,6 @@ void CtrlCanvas::pdrawExtraDrumCtrlItems(QPainter& p, const QRect& rect, const M
 //   pdraw
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
 void CtrlCanvas::pdraw(QPainter& p, const QRect& rect, const QRegion& region)
       {
       if(!_controller)   
@@ -4765,41 +3271,35 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect, const QRegion& region)
 
       bool velo = (MusECore::midiControllerType(_controller->num()) == MusECore::MidiController::Velo);
       
-// REMOVE Tim. citem. Added.
       if(!velo)
         // Fill backgrounds of 'unknown' value areas.
         pFillBackgrounds(p, rect, curPart);
       
-// REMOVE Tim. citem. Removed.
-//       if(velo) 
-      {
-        //---------------------------------------------------
-        // draw the grid and markers now - before velocity items
-        //---------------------------------------------------
-        p.save();
-        View::pdraw(p, rect);
-        p.restore();
-        
-        pen.setColor(Qt::blue);
-        p.setPen(pen);
-        int xp = mapx(pos[1]);
-        if (xp >= x && xp < x+w) {
-              p.drawLine(xp, y, xp, y+h);
-              }
-        xp = mapx(pos[2]);
-        if (xp >= x && xp < x+w) {
-              p.drawLine(xp, y, xp, y+h);
-              }
-        // Draw the red main position cursor last, on top of the others.
-        xp = mapx(pos[0]);
-        if (xp >= x && xp < x+w) {
-              pen.setColor(Qt::red);
-              p.setPen(pen);
-              p.drawLine(xp, y, xp, y+h);
-              }
-      }  
-// REMOVE Tim. citem. Changed.
-//       else
+      //---------------------------------------------------
+      // draw the grid and markers now - before velocity items
+      //---------------------------------------------------
+      p.save();
+      View::pdraw(p, rect);
+      p.restore();
+      
+      pen.setColor(Qt::blue);
+      p.setPen(pen);
+      int xp = mapx(pos[1]);
+      if (xp >= x && xp < x+w) {
+            p.drawLine(xp, y, xp, y+h);
+            }
+      xp = mapx(pos[2]);
+      if (xp >= x && xp < x+w) {
+            p.drawLine(xp, y, xp, y+h);
+            }
+      // Draw the red main position cursor last, on top of the others.
+      xp = mapx(pos[0]);
+      if (xp >= x && xp < x+w) {
+            pen.setColor(Qt::red);
+            p.setPen(pen);
+            p.drawLine(xp, y, xp, y+h);
+            }
+
       if(!velo)
         // Draw non-fg non-velocity items for the current part
         pdrawItems(p, rect, curPart, false, false);
@@ -4855,45 +3355,13 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect, const QRegion& region)
         // Draw fg velocity items for the current part
         pdrawItems(p, rect, curPart, true, true);
       }
-// REMOVE Tim. citem. Removed.
-//       else
-//       {
-//         //---------------------------------------------------
-//         // draw the grid and markers now - after non-velocity items
-//         //---------------------------------------------------
-//         p.save();
-//         View::pdraw(p, rect);
-//         p.restore();
-//         
-//         pen.setColor(Qt::blue);
-//         p.setPen(pen);
-//         int xp = mapx(pos[1]);
-//         if (xp >= x && xp < x+w) {
-//               p.drawLine(xp, y, xp, y+h);
-//               }
-//         xp = mapx(pos[2]);
-//         if (xp >= x && xp < x+w) {
-//               p.drawLine(xp, y, xp, y+h);
-//               }
-//         // Draw the red main position cursor last, on top of the others.
-//         xp = mapx(pos[0]);
-//         if (xp >= x && xp < x+w) {
-//               pen.setColor(Qt::red);
-//               p.setPen(pen);
-//               p.drawLine(xp, y, xp, y+h);
-//               }
-//       }
-      
+
       //---------------------------------------------------
       //    draw outlines of potential drop places of moving items
       //---------------------------------------------------
-      
-      //p.restore();
-      //for(ciCItemList i = moving.begin(); i != moving.end(); ++i)
-      //  drawMoving(p, *i, rect, region);
+
       if(!velo)
         drawMoving(p, rect, region, curPart);
-      //setPainter(p);
 
       //---------------------------------------------------
       //    draw lasso
@@ -4912,8 +3380,6 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect, const QRegion& region)
 //   drawOverlay
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void CtrlCanvas::drawOverlay(QPainter& p)
 void CtrlCanvas::drawOverlay(QPainter& p, const QRect&, const QRegion&)
       {
       QString s(_controller ? _controller->name() : QString(""));
@@ -4970,13 +3436,8 @@ QRect CtrlCanvas::overlayRect() const
 //   draw
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void CtrlCanvas::draw(QPainter& p, const QRect& rect)
 void CtrlCanvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       {
-// REMOVE Tim. citem. Changed.
-//       drawTickRaster(p, rect.x(), rect.y(),
-//          rect.width(), rect.height(), editor->raster());
       drawTickRaster(p, rect, rg, editor->raster(),
                          false, false, false,
                          MusEGlobal::config.midiCanvasBarColor, 
@@ -5050,26 +3511,6 @@ CEvent* CtrlCanvas::findCurrentItem(const QPoint& p, const int tickstep, const i
         }
   return NULL;
 }
-
-// REMOVE Tim. citem. Added. Does not work.
-// //---------------------------------------------------------
-// //   findCurrentItem
-// //---------------------------------------------------------
-// 
-// CEvent* CtrlCanvas::findCurrentItem(const QPoint& p, const int tickstep, const int h)
-// {
-//   for (iCItemList i = items.begin(); i != items.end(); ++i) {
-//         CEvent* item = static_cast<CEvent*>(*i);
-//         if(item->part() != curPart)
-//           continue;
-//         
-//         // If the item is moving be sure to subtract the drag offset from the given point.
-//         if(item->containsPoint(_controller, item->isMoving() ? p - _curDragOffset : p, tickstep, h))
-//           return item;
-//         
-//         }
-//   return NULL;
-// }
 
 void CtrlCanvas::showCursor(bool show)
 { 
@@ -5264,243 +3705,6 @@ void CtrlCanvas::populateMergeOptions(PopupMenu* menu)
   act->setCheckable(false);
   act->setToolTip(tr("Cancel dragging the items"));
   act->setEnabled(is_mv);
-  
-//   //---------------------------------------------------
-//   // build list of midi controllers for current
-//   // MusECore::MidiPort/channel
-//   //---------------------------------------------------
-// 
-//   MusECore::MidiTrack* track = (MusECore::MidiTrack*)(cur_part->track());
-//   int channel      = track->outChannel();
-//   MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
-//   bool isDrum      = track->type() == MusECore::Track::DRUM;
-//   bool isNewDrum   = track->type() == MusECore::Track::NEW_DRUM;
-//   bool isMidi      = track->type() == MusECore::Track::MIDI;
-//   MusECore::MidiInstrument* instr = port->instrument();
-//   MusECore::MidiControllerList* mcl = instr->controller();
-//   MusECore::MidiCtrlValListList* cll = port->controller();
-//   const int min = channel << 24;
-//   const int max = min + 0x1000000;
-//   const int edit_ins = max + 3;
-//   const int velo = max + 0x101;
-//   int est_width = 0;  
-//   
-//   std::list<CI> sList;
-//   typedef std::list<CI>::iterator isList;
-//   std::set<int> already_added_nums;
-// 
-//   for (MusECore::iMidiCtrlValList it = cll->lower_bound(min); it != cll->lower_bound(max); ++it) {
-//         MusECore::MidiCtrlValList* cl = it->second;
-//         MusECore::MidiController* c   = port->midiController(cl->num());
-//         bool isDrumCtrl = (c->isPerNoteController());
-//         int show = c->showInTracks();
-//         int cnum = c->num();
-//         int num = cl->num();
-//         if (isDrumCtrl) {
-//               // Only show controller for current pitch:
-//               if (isDrum)
-//               {
-//                 if ((curDrumPitch < 0) || ((num & 0xff) != MusEGlobal::drumMap[curDrumPitch].anote))
-//                       continue;
-//               }
-//               else if (isNewDrum)
-//               {
-//                 if ((curDrumPitch < 0) || ((num & 0xff) != track->drummap()[curDrumPitch].anote))
-//                       continue;
-// 
-//               }
-//               else if (isMidi)
-//               {
-//                 if ((curDrumPitch < 0) || ((num & 0xff) != curDrumPitch)) // FINDMICH does this work?
-//                       continue;
-//               }
-//               else
-//                 continue;
-//               }
-//         isList i = sList.begin();
-//         for (; i != sList.end(); ++i) {
-//               if (i->num == num)
-//                     break;
-//               }
-//               
-//         if (i == sList.end()) {
-//               bool used = false;
-//               for (MusECore::iPart ip = part_list->begin(); ip != part_list->end(); ++ip) {
-//                     const MusECore::EventList& el = ip->second->events();
-//                     for (MusECore::ciEvent ie = el.begin(); ie != el.end(); ++ie) {
-//                           const MusECore::Event& e = ie->second;
-//                           if(e.type() != MusECore::Controller)
-//                             continue;
-//                           int ctl_num = e.dataA();
-//                           // Is it a drum controller event, according to the track port's instrument?
-//                           MusECore::MidiController *mc = port->drumController(ctl_num);
-//                           if(mc)
-//                           {
-//                             if((ctl_num & 0xff) != curDrumPitch)
-//                               continue;
-//                             if(isDrum)
-//                               ctl_num = (ctl_num & ~0xff) | MusEGlobal::drumMap[ctl_num & 0x7f].anote;
-//                           }
-//                           if(ctl_num == num)
-//                           {
-//                                 used = true;
-//                                 break;
-//                           }
-//                                 
-//                           }
-//                     if (used)
-//                           break;
-//                     }
-//               bool off = cl->hwVal() == MusECore::CTRL_VAL_UNKNOWN;  // Does it have a value or is it 'off'?
-//               // Filter if not used and off. But if there's something there, we must show it.
-//               if(!used && off &&
-//                   (((isDrumCtrl || isNewDrum) && !(show & MusECore::MidiController::ShowInDrum)) ||
-//                   (isMidi && !(show & MusECore::MidiController::ShowInMidi))))
-//                 continue;
-//               bool isinstr = mcl->find(cnum) != mcl->end();
-//               // Need to distinguish between global default controllers and 
-//               //  instrument defined controllers. Instrument takes priority over global
-//               //  ie they 'overtake' definition of a global controller such that the
-//               //  global def is no longer available.
-//               sList.push_back(CI(num, 
-//                               isinstr ? MusECore::midiCtrlNumString(cnum, true) + c->name() : MusECore::midiCtrlName(cnum, true), 
-//                               used, off, isinstr));
-//               already_added_nums.insert(num); 
-//               }
-//         }
-//   
-//   QString stext = QWidget::tr("Instrument-defined");
-//   int fmw = menu->fontMetrics().width(stext);
-//   if(fmw > est_width)
-//     est_width = fmw;
-//   menu->addAction(new MenuTitleItem(stext, menu));
-//   
-//   // Don't allow editing instrument if it's a synth
-//   if(!port->device() || port->device()->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)
-//   {
-//     stext = QWidget::tr("Edit instrument ...");
-//     fmw = menu->fontMetrics().width(stext);
-//     if(fmw > est_width)
-//       est_width = fmw;
-//     menu->addAction(QIcon(*midi_edit_instrumentIcon), QWidget::tr("Edit instrument ..."))->setData(edit_ins);
-//     menu->addSeparator();
-//   }
-//   
-//   //
-//   // populate popup with all controllers available for
-//   // current instrument
-//   //
-// 
-//   stext = QWidget::tr("Add");
-//   fmw = menu->fontMetrics().width(stext);
-//   if(fmw > est_width)
-//     est_width = fmw;
-//   PopupMenu * ctrlSubPop = new PopupMenu(stext, menu, true);  // true = enable stay open
-//   for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
-//   {
-//       int show = ci->second->showInTracks();
-//       if(((isDrum || isNewDrum) && !(show & MusECore::MidiController::ShowInDrum)) ||
-//           (isMidi && !(show & MusECore::MidiController::ShowInMidi)))
-//         continue;
-//       int cnum = ci->second->num();
-//       int num = cnum;
-//       if(ci->second->isPerNoteController())
-//       {
-//         if (isDrum && curDrumPitch >= 0)
-//           num = (cnum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
-//         else if (isNewDrum && curDrumPitch >= 0)
-//           num = (cnum & ~0xff) | track->drummap()[curDrumPitch].anote;
-//         else if (isMidi && curDrumPitch >= 0)
-//           num = (cnum & ~0xff) | curDrumPitch; //FINDMICH does this work?
-//         else
-//           continue;
-//       }
-// 
-//       // If it's not already in the parent menu...
-//       if(cll->find(channel, num) == cll->end())
-//       {
-//         ctrlSubPop->addAction(MusECore::midiCtrlNumString(cnum, true) + ci->second->name())->setData(num); 
-//         already_added_nums.insert(num); //cnum);
-//       }
-//   }
-//   
-//   menu->addMenu(ctrlSubPop);
-// 
-//   menu->addSeparator();
-//   
-//   // Add instrument-defined controllers:
-//   for (isList i = sList.begin(); i != sList.end(); ++i)
-//   {
-//     if(!i->instrument)
-//       continue;
-// 
-//     fmw = menu->fontMetrics().width(i->s);
-//     if(fmw > est_width)
-//       est_width = fmw;
-// 
-//     if (i->used && !i->off)
-//       menu->addAction(QIcon(*orangedotIcon), i->s)->setData(i->num);
-//     else if (i->used)
-//       menu->addAction(QIcon(*greendotIcon), i->s)->setData(i->num);
-//     else if(!i->off)
-//       menu->addAction(QIcon(*bluedotIcon), i->s)->setData(i->num);
-//     else
-//       menu->addAction(i->s)->setData(i->num);
-//   }
-// 
-//   stext = QWidget::tr("Others");
-//   fmw = menu->fontMetrics().width(stext);
-//   if(fmw > est_width)
-//     est_width = fmw;
-//   menu->addAction(new MenuTitleItem(stext, menu));
-// 
-//   // Add a.k.a. Common Controls not found in instrument:
-//   stext = QWidget::tr("Common Controls");
-//   fmw = menu->fontMetrics().width(stext);
-//   if(fmw > est_width)
-//     est_width = fmw;
-//   PopupMenu* ccSubPop = new PopupMenu(stext, menu, true);  // true = enable stay open
-//   for(int num = 0; num < 128; ++num)
-//     // If it's not already in the parent menu...
-//     if(already_added_nums.find(num) == already_added_nums.end())
-//       ccSubPop->addAction(MusECore::midiCtrlName(num, true))->setData(num);
-// 
-//   menu->addMenu(ccSubPop);
-// 
-//   menu->addSeparator();
-//   
-//   // Add the special case velocity:
-//   stext = QWidget::tr("Velocity");
-//   fmw = menu->fontMetrics().width(stext);
-//   if(fmw > est_width)
-//     est_width = fmw;
-//   menu->addAction(stext)->setData(velo);
-//   
-//   // Add global default controllers (all controllers not found in instrument).
-//   for (isList i = sList.begin(); i != sList.end(); ++i) 
-//   {
-//     if(i->instrument)
-//       continue;
-// 
-//     fmw = menu->fontMetrics().width(i->s);
-//     if(fmw > est_width)
-//       est_width = fmw;
-//     
-//     if (i->used && !i->off)
-//       menu->addAction(QIcon(*orangedotIcon), i->s)->setData(i->num);
-//     else if (i->used)
-//       menu->addAction(QIcon(*greendotIcon), i->s)->setData(i->num);
-//     else if(!i->off)
-//       menu->addAction(QIcon(*bluedotIcon), i->s)->setData(i->num);
-//     else
-//       menu->addAction(i->s)->setData(i->num);
-//   }
-//   
-//   est_width += 60; // Add about 60 for the coloured lights on the left.
-//   
-//   return est_width;
-  
-//   return 0;
 }
 
 //---------------------------------------------------

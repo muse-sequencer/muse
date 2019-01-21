@@ -23,14 +23,11 @@
 #ifndef __AWL_POSEDIT_H__
 #define __AWL_POSEDIT_H__
 
-///#include "al/pos.h"
 #include "pos.h"
 
 #include <QAbstractSpinBox>
 
 namespace Awl {
-
-      ///using AL::Pos;
 
 //---------------------------------------------------------
 //   PosEdit
