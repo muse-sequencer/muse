@@ -1,3 +1,21 @@
+21.01.2019
+      - Merge from selection_fixes branch: (Tim)
+      * NEW! Midi controller graphs copy/cut/paste and drag/drop:
+      - See README.usage for new info about how it works.
+      * Mixer strips added to Drum and Wave Editors:
+      * Massive graphics, canvases, cut/copy/paste/drag/drop workover:
+      - New: A few dozen lossless 'agnostic' (regardless of magnification)
+         graphic routines in class View.
+      - Entire graphics chain from class View all the way through to the
+         editor classes has been reworked. Many lines, dots were missing etc.
+      - Update regions as well as rectangles are now passed to most routines.
+      - Lasso fixes: Simply drawing a large lasso rectangle can take much CPU%!
+        So a new mechanism to draw a thin four-sided lasso REGION was added.
+        So far added to Arranger only. CPU% is much better now.
+      - Copy/cut/paste mechanism is now designed to be more WYSIWYG, to avoid
+         operating unknown to user on selected items in some other out-of-view window.
+      - Midi controller graphs no longer wait for sync with audio cycle upon each
+         item drawn by the user. This was painfully slow with large audio buffer sizes.
 19.01.2019
       - Merge pull 634 "Run properly on HiDPI screens" from hfiguiere. (Tim)
         Modified slightly, to check Qt version.
