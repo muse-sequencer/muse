@@ -60,7 +60,7 @@ class MidiControllerEditDialog : public MidiControllerEditDialogBase {
       void minChanged(int);
       void maxChanged(int);
       void portChanged(int);
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
 
    public:
       MidiControllerEditDialog(QWidget* parent = 0, const char* name = 0, bool modal = false, Qt::WindowFlags fl = 0);

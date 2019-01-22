@@ -276,7 +276,7 @@ class ComponentRack : public QFrame
     virtual void labelPropertyReturnPressed(QPoint /*p*/, int /*id*/, Qt::KeyboardModifiers /*keys*/) { }
 
    public slots:
-      virtual void songChanged(MusECore::SongChangedFlags_t) { }
+      virtual void songChanged(MusECore::SongChangedStruct_t) { }
       virtual void configChanged();
 
    signals:
@@ -689,7 +689,7 @@ class Strip : public QFrame {
       TrackNameLabel* label;
       QGridLayout* grid;
       int _curGridRow;
-      Meter* meter[MAX_CHANNELS];
+      Meter* meter[MusECore::MAX_CHANNELS];
       // Extra width applied to the sizeHint, from user expanding the strip.
       int _userWidth;
       ExpanderHandle* _handle;
@@ -733,7 +733,7 @@ class Strip : public QFrame {
 
    public slots:
       void resetPeaks();
-      virtual void songChanged(MusECore::SongChangedFlags_t) = 0;
+      virtual void songChanged(MusECore::SongChangedStruct_t) = 0;
       virtual void configChanged() = 0;
       virtual void changeUserWidth(int delta);
 

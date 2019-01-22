@@ -30,9 +30,18 @@
 #include "track.h"
 #include "song.h"
 
+#include "trackinfo_layout.h"
+#include "icons.h"
+#include "astrip.h"
+#include "mstrip.h"
+#include "gconfig.h"
+#include "app.h"
+
 #include <QRect>
 #include <QColor>
 #include <QGridLayout>
+#include <QPainter>
+#include <QPixmap>
 
 namespace MusEGui {
 
@@ -50,6 +59,10 @@ MidiEditor::MidiEditor(ToplevelType t, int r, MusECore::PartList* pl,
                   _parts.insert(i->second->sn());
       _raster  = r;
       canvas   = 0;
+      
+      trackInfoWidget = 0;
+      selected = 0;
+      
       //wview    = 0;
       _curDrumInstrument = -1;
       mainw    = new QWidget(this);
@@ -64,6 +77,11 @@ MidiEditor::MidiEditor(ToplevelType t, int r, MusECore::PartList* pl,
       
       connect(MusEGlobal::song, SIGNAL(newPartsCreated(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&)), SLOT(addNewParts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&)));
       }
+
+int MidiEditor::rasterStep(unsigned tick) const   { return MusEGlobal::sigmap.rasterStep(tick, _raster); }
+unsigned MidiEditor::rasterVal(unsigned v)  const { return MusEGlobal::sigmap.raster(v, _raster);  }
+unsigned MidiEditor::rasterVal1(unsigned v) const { return MusEGlobal::sigmap.raster1(v, _raster); }
+unsigned MidiEditor::rasterVal2(unsigned v) const { return MusEGlobal::sigmap.raster2(v, _raster); }
 
 //---------------------------------------------------------
 //   genPartlist
@@ -93,8 +111,143 @@ void MidiEditor::genPartlist()
       }
 
 //---------------------------------------------------------
-//   addPart
+//   genTrackInfo
 //---------------------------------------------------------
+
+void MidiEditor::genTrackInfo(TrackInfoWidget* trackInfo)
+      {
+      noTrackInfo          = new QWidget(trackInfo);
+      noTrackInfo->setAutoFillBackground(true);
+      QPixmap *noInfoPix   = new QPixmap(160, 1000);
+      const QPixmap *logo  = new QPixmap(*museLeftSideLogo);
+      noInfoPix->fill(noTrackInfo->palette().color(QPalette::Window) );
+      QPainter p(noInfoPix);
+      p.drawPixmap(10, 0, *logo, 0,0, logo->width(), logo->height());
+
+      QPalette palette;
+      palette.setBrush(noTrackInfo->backgroundRole(), QBrush(*noInfoPix));
+      noTrackInfo->setPalette(palette);
+      noTrackInfo->setGeometry(0, 0, 65, 200);
+      noTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding));
+
+      trackInfo->addWidget(noTrackInfo,   0);
+      trackInfo->addWidget(0, 1);
+      }
+
+//---------------------------------------------------------
+//   switchInfo
+//---------------------------------------------------------
+
+void MidiEditor::switchInfo(int n)
+      {
+      const int idx = 1;
+      if(n == idx) {
+//             MidiStrip* w = (MidiStrip*)(trackInfoWidget->getWidget(idx));
+            Strip* w = (Strip*)(trackInfoWidget->getWidget(idx));
+            if (w == 0 || selected != w->getTrack()) {
+                  if (w)
+                  {
+                        //fprintf(stderr, "MidiEditor::switchInfo deleting strip\n");
+                        delete w;
+                        //w->deleteLater();
+                  }
+                  if(selected->isMidiTrack())
+                    w = new MidiStrip(trackInfoWidget, static_cast <MusECore::MidiTrack*>(selected));
+                  else
+                    w = new AudioStrip(trackInfoWidget, static_cast <MusECore::AudioTrack*>(selected));
+                  // Leave broadcasting changes to other selected tracks off.
+                  
+                  // Set focus yielding to the canvas.
+                  if(MusEGlobal::config.smartFocus)
+                  {
+                    w->setFocusYieldWidget(canvas);
+                    //w->setFocusPolicy(Qt::WheelFocus);
+                  }
+
+                  // We must marshall song changed instead of connecting to the strip's song changed
+                  //  otherwise it crashes when loading another song because track is no longer valid
+                  //  and the strip's songChanged() seems to be called before Pianoroll songChanged()
+                  //  gets called and has a chance to stop the crash.
+                  //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), w, SLOT(songChanged(MusECore::SongChangedStruct_t)));
+                  
+                  connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
+                  w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+                  trackInfoWidget->addWidget(w, idx);
+                  w->show();
+                  //setTabOrder(midiTrackInfo, w);
+                  }
+            }
+      if (trackInfoWidget->curIdx() == n)
+            return;
+      trackInfoWidget->raiseWidget(n);
+      }
+
+//---------------------------------------------------------
+//   trackInfoSongChange
+//---------------------------------------------------------
+
+void MidiEditor::trackInfoSongChange(MusECore::SongChangedStruct_t flags)
+{
+  if(!selected)
+    return;
+  
+  Strip* w = static_cast<Strip*>(trackInfoWidget->getWidget(1));
+  if(w)
+    w->songChanged(flags);
+}
+
+//---------------------------------------------------------
+//   updateTrackInfo
+//---------------------------------------------------------
+
+void MidiEditor::updateTrackInfo()
+{
+      MusECore::Part* part = curCanvasPart();
+      if(part)
+        selected = part->track();
+      else
+        selected = 0;
+      
+      if (selected == 0) {
+            switchInfo(0);
+            return;
+            }
+//       if (selected->isMidiTrack()) 
+            switchInfo(1);
+}
+
+//---------------------------------------------------------
+//   checkTrackInfoTrack
+//---------------------------------------------------------
+
+void MidiEditor::checkTrackInfoTrack()
+{
+  const int idx = 1;
+  {
+    Strip* w = static_cast<Strip*>(trackInfoWidget->getWidget(idx));
+    if(w)
+    {
+      MusECore::Track* t = w->getTrack();
+      if(t)
+      {
+        MusECore::TrackList* tl = MusEGlobal::song->tracks();
+        MusECore::iTrack it = tl->find(t);
+        if(it == tl->end())
+        {
+          delete w;
+          trackInfoWidget->addWidget(0, idx);
+          selected = 0;
+          switchInfo(0);
+        } 
+      }   
+    } 
+  }
+}
+        
+//---------------------------------------------------------
+//   movePlayPointerToSelectedEvent
+//---------------------------------------------------------
+
 void MidiEditor::movePlayPointerToSelectedEvent()
 {
     const MusECore::EventList & evl = curCanvasPart()->events();
@@ -123,6 +276,124 @@ void MidiEditor::addPart(MusECore::Part* p)
     return;
   _pl->add(p);
   _parts.insert(p->sn());
+}
+
+//---------------------------------------------------------
+//   itemsAreSelected
+//---------------------------------------------------------
+
+bool MidiEditor::itemsAreSelected() const
+{
+  bool res = false;
+  if(canvas && canvas->itemsAreSelected())
+    res = true;
+  for(ciCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i)
+    if((*i)->itemsAreSelected())
+      res = true;
+  return res;
+}
+
+//---------------------------------------------------------
+//   tagItems
+//---------------------------------------------------------
+
+void MidiEditor::tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const
+{
+  const bool tagAllItems = options._flags & MusECore::TagAllItems;
+  const bool tagAllParts = options._flags & MusECore::TagAllParts;
+  const bool range       = options._flags & MusECore::TagRange;
+  const MusECore::Pos& p0 = options._p0;
+  const MusECore::Pos& p1 = options._p1;
+  
+  // If tagging all items, don't bother with the controller editors below,
+  //  since everything that they could tag will already be tagged.
+  if(tagAllItems)
+  {
+    const MusECore::Part* part;
+    MusECore::Pos pos, part_pos, part_endpos;
+    if(tagAllParts)
+    {
+      if(_pl)
+      {
+        for(MusECore::ciPart ip = _pl->begin(); ip != _pl->end(); ++ip)
+        {
+          part = ip->second;
+          if(range)
+          {
+            part_pos = *part;
+            part_endpos = part->end();
+            // Optimize: Is the part within the range?
+            // p1 should be considered outside (one past) the very last position in the range.
+            if(part_endpos <= p0 || part_pos >= p1)
+              continue;
+          }
+          const MusECore::EventList& el = part->events();
+          for(MusECore::ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
+          {
+            const MusECore::Event& e = ie->second;
+            if(range)
+            {
+              // Don't forget to add the part's position.
+              pos = e.pos() + part_pos;
+              // If the event position is before p0, keep looking...
+              if(pos < p0)
+                continue;
+              // If the event position is at or after p1 then we are done.
+              // p1 should be considered outside (one past) the very last position in the range.
+              if(pos >= p1)
+                break;
+            }
+            tag_list->add(part, e);
+          }
+        }
+      }
+    }
+    else
+    {
+      if(canvas && canvas->part())
+      {
+        part = canvas->part();
+        if(range)
+        {
+          part_pos = *part;
+          part_endpos = part->end();
+          // Optimize: Is the part within the range?
+          // p1 should be considered outside (one past) the very last position in the range.
+          if(part_endpos <= p0 || part_pos >= p1)
+            return;
+        }
+        const MusECore::EventList& el = part->events();
+        for(MusECore::ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
+        {
+          const MusECore::Event& e = ie->second;
+          if(range)
+          {
+            // Don't forget to add the part's position.
+            pos = e.pos() + part_pos;
+            // If the event position is before p0, keep looking...
+            if(pos < p0)
+              continue;
+            // If the event position is at or after p1 then we are done.
+            // p1 should be considered outside (one past) the very last position in the range.
+            if(pos >= p1)
+              break;
+          }
+          tag_list->add(part, e);
+        }
+      }
+    }
+  }
+  else
+  {
+    MusECore::EventTagOptionsStruct opts = options;
+    opts.removeFlags(MusECore::TagAllItems);
+    // These two steps use the tagging features to mark the objects (events)
+    //  as having been visited already, to avoid duplicates in the list.
+    if(canvas)
+      canvas->tagItems(tag_list, opts);
+    for(ciCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i)
+      (*i)->tagItems(tag_list, opts);
+  }
 }
 
 
@@ -207,11 +478,11 @@ void MidiEditor::writeStatus(int level, MusECore::Xml& xml) const
 //   songChanged
 //---------------------------------------------------------
 
-void MidiEditor::songChanged(MusECore::SongChangedFlags_t type)
+void MidiEditor::songChanged(MusECore::SongChangedStruct_t type)
       {
       
-      if (type) {
-            if (type & (SC_PART_REMOVED | SC_PART_MODIFIED
+      if (type._flags) {
+            if (type._flags & (SC_PART_REMOVED | SC_PART_MODIFIED
                | SC_PART_INSERTED | SC_TRACK_REMOVED)) {
                   genPartlist();
                   // close window if editor has no parts anymore
@@ -222,19 +493,15 @@ void MidiEditor::songChanged(MusECore::SongChangedFlags_t type)
                   }
             if (canvas)
                   canvas->songChanged(type);
-            //else if (wview)
-            //      wview->songChanged(type);
 
-            if (type & (SC_PART_REMOVED | SC_PART_MODIFIED
+            if (type._flags & (SC_PART_REMOVED | SC_PART_MODIFIED
                | SC_PART_INSERTED | SC_TRACK_REMOVED)) {
                   
                   updateHScrollRange();
                   
                   if (canvas)
                         setWindowTitle(canvas->getCaption());
-                  //else if (wview)
-                  //      setWindowTitle(wview->getCaption());
-                  if (type & SC_SIG)
+                  if (type._flags & SC_SIG)
                         time->update();
                         
               }        

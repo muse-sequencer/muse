@@ -1060,7 +1060,7 @@ sord_new_literal_counted(SordWorld*     world,
 	key.meta.lit.datatype = sord_node_copy(datatype);
 	memset(key.meta.lit.lang, 0, sizeof(key.meta.lit.lang));
 	if (lang) {
-		strncpy(key.meta.lit.lang, lang, sizeof(key.meta.lit.lang));
+		strncpy(key.meta.lit.lang, lang, sizeof(key.meta.lit.lang) - 1);
 	}
 
 	return sord_insert_node(world, &key, true);

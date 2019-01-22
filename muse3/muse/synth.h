@@ -29,6 +29,7 @@
 #include <map>
 
 #include "globals.h"
+#include "globaldefs.h"
 #include "node.h"
 #include "instruments/minstrument.h"
 #include "mididev.h"
@@ -67,19 +68,19 @@ class Synth {
       QString _description;
       QString _maker;
       QString _version;
-      Plugin::PluginFeatures _requiredFeatures;
+      PluginFeatures_t _requiredFeatures;
 
    public:
       enum Type { METRO_SYNTH=0, MESS_SYNTH, DSSI_SYNTH, VST_SYNTH, VST_NATIVE_SYNTH, VST_NATIVE_EFFECT, LV2_SYNTH, LV2_EFFECT, SYNTH_TYPE_END };
 
       Synth(const QFileInfo& fi, 
             QString label, QString descr, QString maker, QString ver, 
-            Plugin::PluginFeatures reqFeatures = Plugin::NoFeatures);
+            PluginFeatures_t reqFeatures = PluginNoFeatures);
 
       virtual ~Synth() {}
 
       virtual Type synthType() const = 0;
-      virtual Plugin::PluginFeatures requiredFeatures() const { return _requiredFeatures; }
+      virtual PluginFeatures_t requiredFeatures() const { return _requiredFeatures; }
       int instances() const                            { return _instances; }
       virtual void incInstances(int val)               { _instances += val; }
       QString completeBaseName()                       { return info.completeBaseName(); } // ddskrjo
@@ -167,7 +168,7 @@ class SynthIF : public PluginIBase {
       // Methods for PluginIBase:
       //-------------------------
 
-      virtual Plugin::PluginFeatures requiredFeatures() const;
+      virtual PluginFeatures_t requiredFeatures() const;
       virtual bool on() const;
       virtual void setOn(bool val);
       virtual unsigned long pluginID();
@@ -280,7 +281,7 @@ class SynthI : public AudioTrack, public MidiDevice,
       // Overridden here because input from synths may need to be treated specially.
       virtual void recordEvent(MidiRecordEvent&);
 
-      virtual Plugin::PluginFeatures pluginFeatures() const { return _sif->requiredFeatures(); }
+      virtual PluginFeatures_t pluginFeatures() const { return _sif->requiredFeatures(); }
       
       // Number of routable inputs/outputs for each Route::RouteType.
       virtual RouteCapabilitiesStruct routeCapabilities() const;
@@ -392,13 +393,23 @@ class MessSynthIF : public SynthIF {
       virtual void getMapItem(int /*channel*/, int /*patch*/, int /*index*/, DrumMap& /*dest_map*/, int /*overrideType*/ = WorkingDrumMapEntry::AllOverrides) const;
       };
 
+typedef std::vector<MusECore::Synth*>::iterator iSynthList;
+typedef std::vector<MusECore::Synth*>::const_iterator ciSynthList;
+class SynthList : public std::vector<MusECore::Synth*>
+{
+  public:
+    SynthList() { }
+    Synth* find(const QString& fileCompleteBaseName, const QString& pluginName) const;
+};
+
+
 extern QString synthType2String(Synth::Type);
 extern Synth::Type string2SynthType(const QString&);
 
 } // namespace MusECore
 
 namespace MusEGlobal {
-extern std::vector<MusECore::Synth*> synthis;  // array of available synthis
+extern MusECore::SynthList synthis;  // array of available synthis
 }
 
 #endif

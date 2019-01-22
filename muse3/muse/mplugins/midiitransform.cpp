@@ -953,18 +953,18 @@ MidiInputTransformDialog::MidiInputTransformDialog(QDialog* parent, Qt::WindowFl
       updatePresetList();
       presetList->setCurrentItem(presetList->item(0));
       presetChanged(presetList->item(0));
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       }
 
 //---------------------------------------------------------
 //   songChanged
 //---------------------------------------------------------
 
-void MidiInputTransformDialog::songChanged(MusECore::SongChangedFlags_t flags)
+void MidiInputTransformDialog::songChanged(MusECore::SongChangedStruct_t flags)
 {
   // Whenever a song is loaded, flags is -1. Since transforms are part of configuration, 
   //  use SC_CONFIG here, to filter unwanted song change events.
-  if(flags & SC_CONFIG)
+  if(flags._flags & SC_CONFIG)
     updatePresetList();
 }
 

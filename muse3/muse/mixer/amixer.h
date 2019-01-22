@@ -143,7 +143,7 @@ class AudioMixerApp : public QMainWindow {
       void closed();
 
    private slots:
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       void configChanged();
       void setSizing();
       void toggleRouteDialog();

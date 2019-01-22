@@ -46,6 +46,7 @@ GlobalConfigValues config = {
       QStringList(),              // pluginVstPathList
       QStringList(),              // pluginLinuxVstPathList
       QStringList(),              // pluginLv2PathList
+      false,                      // pluginCacheTriggerRescan Whether to trigger a plugin cache rescan.
       170,                        // globalAlphaBlend    
       {
         QColor(0xff, 0xff, 0xff),   // palette
@@ -183,6 +184,8 @@ GlobalConfigValues config = {
 
       MusEGlobal::WaveOutLine,      // waveDrawing
 
+      true,                         // useThemeIconsIfPossible Whether to try to see if various icons are available from the theme.
+      
       false,                        // fixFrozenMDISubWindows Turn on a fix for frozen MDIs in Breeze/Oxygen themes.
       
       // maxAliasedPointSize At what point size to switch from aliased text to non-aliased text. 
@@ -298,6 +301,9 @@ GlobalConfigValues config = {
       true,                         // monitorOnRecord  Whether to automatically monitor on record arm.
       true,                         // lineEditStyleHack Force line edit widgets to draw a frame at small sizes. Some styles refuse to draw the frame.
       false,                        // preferMidiVolumeDb Prefer midi volume as decibels instead of 0-127.
+      true,                         // midiCtrlGraphMergeErase Whether to erase underlying erase target items when dragging/dropping source items.
+      false,                        // midiCtrlGraphMergeEraseInclusive Whether to erase target items in-between source item groups.
+      true,                         // midiCtrlGraphMergeEraseWysiwyg Whether to erase past the last item in a group to include its original source width.
       QString("klick1.wav"),        // measSample
       QString("klick2.wav"),        // beatSample
       QString("klick3.wav"),        // accent1Sample
@@ -309,7 +315,7 @@ GlobalConfigValues config = {
       false,                        // correctUnterminatedInBranchLatency
       "",                           // mixdownPath
       true,                         // showNoteNamesInPianoRoll
-
+      false                         // selectionsUndoable Whether selecting parts or events is undoable.
     };
 
 } // namespace MusEGlobal

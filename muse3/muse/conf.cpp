@@ -55,7 +55,6 @@
 #include "driver/audiodev.h"
 #include "driver/jackmidi.h"
 #include "driver/alsamidi.h"
-#include "xml.h"
 #include "waveedit.h"
 #include "midi.h"
 #include "midisyncimpl.h"
@@ -73,6 +72,7 @@
 #include "track.h"
 #include "plugin.h"
 #include "filedialog.h"
+#include "al/al.h"
 
 namespace MusECore {
 
@@ -81,77 +81,6 @@ extern void readMidiTransform(Xml&);
 
 extern void writeMidiInputTransforms(int level, Xml& xml);
 extern void readMidiInputTransform(Xml&);
-
-//---------------------------------------------------------
-//   readGeometry
-//---------------------------------------------------------
-
-QRect readGeometry(Xml& xml, const QString& name)
-      {
-      QRect r(0, 0, 50, 50);
-      int val;
-
-      for (;;) {
-            Xml::Token token = xml.parse();
-            if (token == Xml::Error || token == Xml::End)
-                  break;
-            QString tag = xml.s1();
-            switch (token) {
-                  case Xml::TagStart:
-                        xml.parse1();
-                        break;
-                  case Xml::Attribut:
-                        val = xml.s2().toInt();
-                        if (tag == "x")
-                              r.setX(val);
-                        else if (tag == "y")
-                              r.setY(val);
-                        else if (tag == "w")
-                              r.setWidth(val);
-                        else if (tag == "h")
-                              r.setHeight(val);
-                        break;
-                  case Xml::TagEnd:
-                        if (tag == name)
-                              return r;
-                  default:
-                        break;
-                  }
-            }
-      return r;
-      }
-
-
-//---------------------------------------------------------
-//   readColor
-//---------------------------------------------------------
-
-QColor readColor(Xml& xml)
-       {
-       int val, r=0, g=0, b=0;
-
-      for (;;) {
-            Xml::Token token = xml.parse();
-            if (token != Xml::Attribut)
-                  break;
-            QString tag = xml.s1();
-            switch (token) {
-                  case Xml::Attribut:
-                        val = xml.s2().toInt();
-                        if (tag == "r")
-                              r = val;
-                        else if (tag == "g")
-                              g = val;
-                        else if (tag == "b")
-                              b = val;
-                        break;
-                  default:
-                        break;
-                  }
-            }
-
-      return QColor(r, g, b);
-      }
 
 //---------------------------------------------------------
 //   readController
@@ -392,9 +321,9 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                               if(onlyReadChannelState)      // p4.0.41
                                 return;
                               
-                              if (idx < 0 || idx >= MIDI_PORTS) {
+                              if (idx < 0 || idx >= MusECore::MIDI_PORTS) {
                                     fprintf(stderr, "bad midi port %d (>%d)\n",
-                                       idx, MIDI_PORTS);
+                                       idx, MusECore::MIDI_PORTS);
                                     idx = 0;
                                     }
                               
@@ -666,7 +595,11 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "midiFilterCtrl4")
                               MusEGlobal::midiFilterCtrl4 = xml.parseInt();
                         else if (tag == "mtctype")
+                        {
                               MusEGlobal::mtcType= xml.parseInt();
+                              // Make sure the AL namespace variables mirror our variables.
+                              AL::mtcType = MusEGlobal::mtcType;
+                        }
                         else if (tag == "sendClockDelay")
                               MusEGlobal::syncSendFirstClockDelay = xml.parseUInt();
                         else if (tag == "extSync")
@@ -732,6 +665,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.pluginLinuxVstPathList = xml.parse1().split(":", QString::SkipEmptyParts);
                         else if (tag == "pluginLv2PathList")
                               MusEGlobal::config.pluginLv2PathList = xml.parse1().split(":", QString::SkipEmptyParts);
+                        else if (tag == "pluginCacheTriggerRescan")
+                              MusEGlobal::config.pluginCacheTriggerRescan = xml.parseInt();
                         
                         else if (tag == "preferredRouteNameOrAlias")
                               MusEGlobal::config.preferredRouteNameOrAlias = static_cast<MusEGlobal::RouteNameAliasPreference>(xml.parseInt());
@@ -750,6 +685,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.fixFrozenMDISubWindows = xml.parseInt();
                         else if (tag == "theme")
                               MusEGlobal::config.style = xml.parse1();
+                        else if (tag == "useThemeIconsIfPossible")
+                              MusEGlobal::config.useThemeIconsIfPossible = xml.parseInt();
                         else if (tag == "autoSave")
                               MusEGlobal::config.autoSave = xml.parseInt();
                         else if (tag == "scrollableSubMenus")
@@ -766,6 +703,12 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.lineEditStyleHack = xml.parseInt();
                         else if (tag == "preferMidiVolumeDb")
                               MusEGlobal::config.preferMidiVolumeDb = xml.parseInt();
+                        else if (tag == "midiCtrlGraphMergeErase")
+                              MusEGlobal::config.midiCtrlGraphMergeErase = xml.parseInt();
+                        else if (tag == "midiCtrlGraphMergeEraseInclusive")
+                              MusEGlobal::config.midiCtrlGraphMergeEraseInclusive = xml.parseInt();
+                        else if (tag == "midiCtrlGraphMergeEraseWysiwyg")
+                              MusEGlobal::config.midiCtrlGraphMergeEraseWysiwyg = xml.parseInt();
                         else if (tag == "styleSheetFile")
                               MusEGlobal::config.styleSheetFile = xml.parse1();
                         else if (tag == "useOldStyleStopShortCut")
@@ -822,8 +765,6 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.palette[14] = readColor(xml);
                         else if (tag == "palette15")
                               MusEGlobal::config.palette[15] = readColor(xml);
-                        else if (tag == "palette16")
-                              MusEGlobal::config.palette[16] = readColor(xml);
 
                         else if (tag == "partColor0")
                               MusEGlobal::config.partColors[0] = readColor(xml);
@@ -1114,7 +1055,11 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "enableAlsaMidiDriver")
                               MusEGlobal::config.enableAlsaMidiDriver = xml.parseInt();
                         else if (tag == "division")
+                        {
                               MusEGlobal::config.division = xml.parseInt();
+                              // Make sure the AL namespace variable mirrors our variable.
+                              AL::division = MusEGlobal::config.division;
+                        }
                         else if (tag == "guiDivision")
                               MusEGlobal::config.guiDivision = xml.parseInt();
                         else if (tag == "rtcTicks")
@@ -1245,7 +1190,7 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               xml.unknown("configuration");
                         break;
                   case Xml::Text:
-                        printf("text <%s>\n", xml.s1().toLatin1().constData());
+                        fprintf(stderr, "text <%s>\n", xml.s1().toLatin1().constData());
                         break;
                   case Xml::Attribut:
                         if (doReadMidiPortConfig==false)
@@ -1285,7 +1230,7 @@ bool readConfiguration(const char *configFile)
         configFile = ba.constData();
       }
 
-      printf("Config File <%s>\n", configFile);
+      fprintf(stderr, "Config File <%s>\n", configFile);
       FILE* f = fopen(configFile, "r");
       if (f == 0) {
             if (MusEGlobal::debugMsg || MusEGlobal::debugMode)
@@ -1417,7 +1362,7 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
             // write information about all midi ports, their assigned
             // instruments and all managed midi controllers
             //
-            for (int i = 0; i < MIDI_PORTS; ++i) {
+            for (int i = 0; i < MusECore::MIDI_PORTS; ++i) {
                   bool used = false;
                   MidiPort* mport = &MusEGlobal::midiPorts[i];
                   MidiDevice* dev = mport->device();
@@ -1428,7 +1373,7 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                   // This prevents bogus routes from being saved and propagated in the med file.
                   // Hmm tough decision, should we save if no device? That would preserve routes in case user upgrades HW, 
                   //  or ALSA reorders or renames devices etc etc, then we have at least kept the track <-> port routes.
-                     mport->defaultInChannels() != (1<<MIDI_CHANNELS)-1 ||   // p4.0.17 Default is now to connect to all channels.
+                     mport->defaultInChannels() != (1<<MusECore::MUSE_MIDI_CHANNELS)-1 ||   // p4.0.17 Default is now to connect to all channels.
                      mport->defaultOutChannels() ||
                      (!mport->instrument()->iname().isEmpty() && mport->instrument()->midiType() != MT_GM) ||
                      !mport->syncInfo().isDefault()) 
@@ -1451,7 +1396,7 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                         continue;
                   xml.tag(level++, "midiport idx=\"%d\"", i);
                   
-                  if(mport->defaultInChannels() != (1<<MIDI_CHANNELS)-1)     // p4.0.17 Default is now to connect to all channels.
+                  if(mport->defaultInChannels() != (1<<MusECore::MUSE_MIDI_CHANNELS)-1)     // p4.0.17 Default is now to connect to all channels.
                     xml.intTag(level, "defaultInChans", mport->defaultInChannels());
                   if(mport->defaultOutChannels())
                     xml.intTag(level, "defaultOutChans", mport->defaultOutChannels());
@@ -1466,7 +1411,7 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                   mport->syncInfo().write(level, xml);
                   // write out registered controller for all channels
                   MidiCtrlValListList* vll = mport->controller();
-                  for (int k = 0; k < MIDI_CHANNELS; ++k) {
+                  for (int k = 0; k < MusECore::MUSE_MIDI_CHANNELS; ++k) {
                         int min = k << 24;
                         int max = min + 0x100000;
                         bool found = false;
@@ -1603,7 +1548,7 @@ void MusE::writeGlobalConfiguration() const
       {
       FILE* f = fopen(MusEGlobal::configName.toLatin1().constData(), "w");
       if (f == 0) {
-            printf("save configuration to <%s> failed: %s\n",
+            fprintf(stderr, "save configuration to <%s> failed: %s\n",
                MusEGlobal::configName.toLatin1().constData(), strerror(errno));
             return;
             }
@@ -1688,6 +1633,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.strTag(level, "pluginVstPathList", MusEGlobal::config.pluginVstPathList.join(":"));
       xml.strTag(level, "pluginLinuxVstPathList", MusEGlobal::config.pluginLinuxVstPathList.join(":"));
       xml.strTag(level, "pluginLv2PathList", MusEGlobal::config.pluginLv2PathList.join(":"));
+      xml.intTag(level, "pluginCacheTriggerRescan", MusEGlobal::config.pluginCacheTriggerRescan);
                         
       xml.intTag(level, "enableAlsaMidiDriver", MusEGlobal::config.enableAlsaMidiDriver);
       xml.intTag(level, "division", MusEGlobal::config.division);
@@ -1755,6 +1701,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       
       xml.intTag(level, "fixFrozenMDISubWindows", MusEGlobal::config.fixFrozenMDISubWindows);
       xml.strTag(level, "theme", MusEGlobal::config.style);
+      xml.intTag(level, "useThemeIconsIfPossible", MusEGlobal::config.useThemeIconsIfPossible);
       xml.intTag(level, "autoSave", MusEGlobal::config.autoSave);
       xml.strTag(level, "styleSheetFile", MusEGlobal::config.styleSheetFile);
       xml.strTag(level, "externalWavEditor", MusEGlobal::config.externalWavEditor);
@@ -1790,6 +1737,9 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "monitorOnRecord", MusEGlobal::config.monitorOnRecord);
       xml.intTag(level, "lineEditStyleHack", MusEGlobal::config.lineEditStyleHack);
       xml.intTag(level, "preferMidiVolumeDb", MusEGlobal::config.preferMidiVolumeDb);
+      xml.intTag(level, "midiCtrlGraphMergeErase", MusEGlobal::config.midiCtrlGraphMergeErase);
+      xml.intTag(level, "midiCtrlGraphMergeEraseInclusive", MusEGlobal::config.midiCtrlGraphMergeEraseInclusive);
+      xml.intTag(level, "midiCtrlGraphMergeEraseWysiwyg", MusEGlobal::config.midiCtrlGraphMergeEraseWysiwyg);
       xml.intTag(level, "lv2UiBehavior", static_cast<int>(MusEGlobal::config.lv2UiBehavior));
       xml.strTag(level, "mixdownPath", MusEGlobal::config.mixdownPath);
       xml.intTag(level, "showNoteNamesInPianoRoll", MusEGlobal::config.showNoteNamesInPianoRoll);

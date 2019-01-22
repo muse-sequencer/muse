@@ -25,16 +25,9 @@
 #define __TRANSPORT_H__
 
 #include "type_defs.h"
-#include "al/sig.h"
+#include "sig.h"
 
 #include <QWidget>
-
-namespace Awl {
-      class PosEdit;
-      class SigEdit;
-      };
-
-using Awl::PosEdit;
 
 class QComboBox;
 class QHBoxLayout;
@@ -48,10 +41,12 @@ class Pos;
 }
 
 namespace MusEGui {
+class PosEdit;
 class DoubleLabel;
 class SigLabel;
 class IconButton;
 class TempoEdit;
+class SigEdit;
 
 //---------------------------------------------------------
 //    TempoSig
@@ -62,7 +57,7 @@ class TempoSig : public QWidget {
     
       IconButton* _masterButton;
       TempoEdit* l1;
-      Awl::SigEdit* l2;
+      SigEdit* l2;
       QLabel* l3;
       
    private slots:
@@ -75,7 +70,7 @@ class TempoSig : public QWidget {
 
    signals:
       void tempoChanged(int);
-      void sigChanged(const AL::TimeSignature&);
+      void sigChanged(const MusECore::TimeSignature&);
       void masterTrackChanged(bool);
       void returnPressed();
       void escapePressed();
@@ -142,14 +137,14 @@ class Transport : public QWidget
       void rposChanged(const MusECore::Pos&);
       void setRecMode(int);
       void setCycleMode(int);
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       void syncChanged(bool);
       void jackSyncChanged(bool);
       void setRecord(bool flag);
       void stopToggled(bool);
       void playToggled(bool);
       void configChanged();
-      void sigChange(const AL::TimeSignature&);
+      void sigChange(const MusECore::TimeSignature&);
 
    public slots:
       void setTempo(int tempo);

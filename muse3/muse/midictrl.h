@@ -141,11 +141,10 @@ struct MidiCtrlVal
 //    list for easy retrieval
 //---------------------------------------------------------
 
-typedef std::multimap<int, MidiCtrlVal, std::less<int> >::iterator iMidiCtrlVal;
-typedef std::multimap<int, MidiCtrlVal, std::less<int> >::const_iterator ciMidiCtrlVal;
+typedef std::pair<unsigned int, MidiCtrlVal> MidiCtrlValListInsertPair_t;
+typedef std::multimap<unsigned int, MidiCtrlVal, std::less<unsigned int> > MidiCtrlValList_t;
 
-typedef std::pair <iMidiCtrlVal, iMidiCtrlVal> MidiCtrlValRange;
-class MidiCtrlValList : public std::multimap<int, MidiCtrlVal, std::less<int> > {
+class MidiCtrlValList : public MidiCtrlValList_t {
       
       // The controller number.
       int ctrlNum;
@@ -162,30 +161,37 @@ class MidiCtrlValList : public std::multimap<int, MidiCtrlVal, std::less<int> > 
       int _lastValidByte0;
 
       // Hide built-in finds.
-      iMidiCtrlVal find(const int&) { return end(); };
-      ciMidiCtrlVal find(const int&) const { return end(); };
+      iterator find(const unsigned int&) { return end(); };
+      const_iterator find(const unsigned int&) const { return end(); };
 
    public:
       MidiCtrlValList(int num);
       
-      Part* partAtTick(int tick) const;
+      Part* partAtTick(unsigned int tick) const;
       
       // Determine value at tick, using values stored by ANY part.
-      iMidiCtrlVal iValue(int tick);
+      iterator iValue(unsigned int tick);
       // Determine value at tick, using values stored by ANY part.
-      int value(int tick) const;
+      int value(unsigned int tick) const;
       // Determine value at tick, using values stored by the SPECIFIC part.
-      int value(int tick, Part* part) const;
+      int value(unsigned int tick, Part* part) const;
       // Determine value at tick, using values stored by ANY part,
       //  ignoring values that are OUTSIDE of their parts, or muted or off parts or tracks.
       int visibleValue(unsigned int tick, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const;
       // Determine value at tick, using values stored by the SPECIFIC part,
       //  ignoring values that are OUTSIDE of the part, or muted or off part or track.
       int visibleValue(unsigned int tick, Part* part, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const;
-      bool addMCtlVal(int tick, int value, Part* part);
-      void delMCtlVal(int tick, Part* part);
+      // Adds the new value. Accepts duplicate controller items at the same position, to accurately reflect
+      //  what is really in the event lists. Mostly for the purpose of dragging and dropping
+      //  controller events and allowing them to be on top of each other TEMPORARILY.
+      // But ultimately once dropping is finished there must be only ONE value per controller
+      //  per position per part.
+      bool addMCtlVal(unsigned int tick, int value, Part* part);
+      // If val is not -1 it will search for that value.
+      void delMCtlVal(unsigned int tick, Part* part, int val/* = -1*/);
       
-      iMidiCtrlVal findMCtlVal(int tick, Part* part);
+      // If val is not -1 it will search for that value.
+      iterator findMCtlVal(unsigned int tick, Part* part, int val/* = -1*/);
 
       // Current set value in midi hardware. Can be CTRL_VAL_UNKNOWN.
       inline int hwVal() const { return MidiController::dValToInt(_hwVal); }
@@ -221,6 +227,10 @@ class MidiCtrlValList : public std::multimap<int, MidiCtrlVal, std::less<int> > 
       int lastValidByte1() const          { return _lastValidByte1; }
       int lastValidByte0() const          { return _lastValidByte0; }
       };
+
+typedef MidiCtrlValList::iterator iMidiCtrlVal;
+typedef MidiCtrlValList::const_iterator ciMidiCtrlVal;
+typedef std::pair <iMidiCtrlVal, iMidiCtrlVal> MidiCtrlValRange;
 
 //---------------------------------------------------------
 //   MidiCtrlValListList
@@ -326,10 +336,9 @@ class MidiEncoder {
 //    - implicit during import of a midi file
 //---------------------------------------------------------
 
-typedef std::map<int, MidiController*, std::less<int> >::iterator iMidiController;
-typedef std::map<int, MidiController*, std::less<int> >::const_iterator ciMidiController;
+typedef std::map<int, MidiController*, std::less<int> > MidiControllerList_t;
 
-class MidiControllerList : public std::map<int, MidiController*, std::less<int> > 
+class MidiControllerList : public MidiControllerList_t
 {
       bool _RPN_Ctrls_Reserved; 
       
@@ -343,7 +352,7 @@ class MidiControllerList : public std::map<int, MidiController*, std::less<int> 
       // Note if given number is one of the eight reserved General Midi (N)RPN controllers,
       //  this will only return Controller7 or Controller14, not anything (N)RPN related.
       // That is, it will not 'encode' (N)RPNs. Use a MidiEncoder instance for that. 
-      iMidiController searchControllers(int ctl);
+      iterator searchControllers(int ctl);
       // Check if either a per-note controller, or else a regular controller already exists.
       bool ctrlAvailable(int find_num, MidiController* ignore_this = 0);
       // Returns true if any of the EIGHT reserved General Midi (N)RPN control numbers are  
@@ -356,24 +365,27 @@ class MidiControllerList : public std::map<int, MidiController*, std::less<int> 
       // NOTICE: If update is false or these are bypassed by using insert, erase, clear etc. for speed, 
       //          then BE SURE to call update_RPN_Ctrls_Reserved() later. 
       void add(MidiController* mc, bool update = true);
-      void del(iMidiController ictl, bool update = true);
+      void del(iterator ictl, bool update = true);
       size_type del(int num, bool update = true);
-      void del(iMidiController first, iMidiController last, bool update = true);
+      void del(iterator first, iterator last, bool update = true);
       void clr();
 
 #ifdef _MIDI_CTRL_METHODS_DEBUG_      
       // Need to catch all insert, erase, clear etc...
       void swap(MidiControllerList&);
-      std::pair<iMidiController, bool> insert(const std::pair<int, MidiController*>& p);
-      iMidiController insert(iMidiController ic, const std::pair<int, MidiController*>& p);
-      void erase(iMidiController ictl);
+      std::pair<iterator, bool> insert(const std::pair<int, MidiController*>& p);
+      iterator insert(iterator ic, const std::pair<int, MidiController*>& p);
+      void erase(iterator ictl);
       size_type erase(int num);
-      void erase(iMidiController first, iMidiController last);
+      void erase(iterator first, iterator last);
       void clear();
 #endif       
       // Some IDEs won't "Find uses" of operators. So, no choice but to trust always catching it here.
       MidiControllerList& operator=(const MidiControllerList&);
 };
+
+typedef MidiControllerList::iterator iMidiController;
+typedef MidiControllerList::const_iterator ciMidiController;
 
 extern MidiControllerList defaultMidiController;
 extern void initMidiController();

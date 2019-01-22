@@ -65,7 +65,6 @@ set_target_properties( cliplist
 ##
 target_link_libraries ( cliplist
       ${QT_LIBRARIES}
-      awl
       widgets
       )
 

@@ -71,11 +71,14 @@
 #include "popupmenu.h"
 #include "menutitleitem.h"
 #include "operations.h"
-#include "widgets/function_dialogs/quantize.h"
+// #include "function_dialogs/quantize.h"
+#include "trackinfo_layout.h"
 
 namespace MusEGui {
 
 int DrumEdit::_rasterInit = 96;
+int DrumEdit::_trackInfoWidthInit = 50;
+int DrumEdit::_canvasWidthInit = 300;
 int DrumEdit::_dlistWidthInit = 50;
 int DrumEdit::_dcanvasWidthInit = 300;
 bool DrumEdit::_ignore_hide_init = false;
@@ -143,9 +146,20 @@ void DrumEdit::closeEvent(QCloseEvent* e)
       //Store values of the horizontal splitter
       QList<int> sizes = split2->sizes();
       QList<int>::iterator it = sizes.begin();
-      _dlistWidthInit = *it; //There are only 2 values stored in the sizelist, size of dlist widget and dcanvas widget
+      //There are only 2 values stored in the sizelist, size of dlist widget and dcanvas widget      
+      _dlistWidthInit = *it;
       it++;
       _dcanvasWidthInit = *it;
+      
+      //Store values of the horizontal splitter
+      sizes.clear();
+      sizes = hsplitter->sizes();
+      it = sizes.begin();
+      //There are only 2 values stored in the sizelist, size of trackinfo widget and canvas widget
+      _trackInfoWidthInit = *it;
+      it++;
+      _canvasWidthInit = *it;
+    
       emit isDeleting(static_cast<TopWin*>(this));
       e->accept();
       }
@@ -190,6 +204,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       copyAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy"));
       copyRangeAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy events in range"));
       pasteAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste"));
+      pasteToCurPartAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste to current part"));
       pasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste (with Dialog)"));
       menuEdit->addSeparator();
       deleteAction = menuEdit->addAction(tr("Delete Events"));
@@ -198,6 +213,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(copyAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(copyRangeAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(pasteAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(pasteToCurPartAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(pasteDialogAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(deleteAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
 
@@ -205,6 +221,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       signalMapper->setMapping(copyAction, DrumCanvas::CMD_COPY);
       signalMapper->setMapping(copyRangeAction, DrumCanvas::CMD_COPY_RANGE);
       signalMapper->setMapping(pasteAction, DrumCanvas::CMD_PASTE);
+      signalMapper->setMapping(pasteToCurPartAction, DrumCanvas::CMD_PASTE_TO_CUR_PART);
       signalMapper->setMapping(pasteDialogAction, DrumCanvas::CMD_PASTE_DIALOG);
       signalMapper->setMapping(deleteAction, DrumCanvas::CMD_DEL);
 
@@ -484,6 +501,13 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       //    split
       //---------------------------------------------------
 
+      hsplitter = new MusEGui::Splitter(Qt::Horizontal, mainw, "hsplitter");
+      hsplitter->setChildrenCollapsible(true);
+      //hsplitter->setHandleWidth(4);
+      
+      trackInfoWidget = new TrackInfoWidget(hsplitter);
+      genTrackInfo(trackInfoWidget);
+      
       split1            = new MusEGui::Splitter(Qt::Vertical, mainw, "split1");
       ctrl = new QPushButton(tr("ctrl"), mainw);
       ctrl->setObjectName("Ctrl");
@@ -495,28 +519,75 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       ctrl->setToolTip(tr("Add Controller View"));
 
       QSizeGrip* corner = new QSizeGrip(mainw);
-      corner->setFixedHeight(hscroll->sizeHint().height());
+      //corner->setFixedHeight(hscroll->sizeHint().height());
+      
+      QWidget* gridSplit1_w = new QWidget();
+      gridSplit1_w->setObjectName("gridSplit1_w");
+      gridSplit1_w->setContentsMargins(0, 0, 0, 0);
+      QGridLayout* gridSplit1 = new QGridLayout(gridSplit1_w);
+      gridSplit1->setContentsMargins(0, 0, 0, 0);
+      gridSplit1->setSpacing(0);  
+      gridSplit1->setRowStretch(0, 100);
+      gridSplit1->setColumnStretch(1, 100);
+      gridSplit1->addWidget(ctrl,    0, 0);
+      gridSplit1->addWidget(hscroll, 0, 1);
+      gridSplit1->addWidget(corner,  0, 2, Qt::AlignBottom|Qt::AlignRight);
+      gridSplit1_w->setMaximumHeight(hscroll->sizeHint().height());
+      gridSplit1_w->setMinimumHeight(hscroll->sizeHint().height());
+      
+      QWidget* split1_w = new QWidget();
+      split1_w->setObjectName("split1_w");
+      split1_w->setContentsMargins(0, 0, 0, 0);
+      QVBoxLayout* split1_w_vbox = new QVBoxLayout(split1_w);
+      split1_w_vbox->setContentsMargins(0, 0, 0, 0);
+      split1_w_vbox->setSpacing(0);  
+      split1_w_vbox->addWidget(split1);
+      split1_w_vbox->addWidget(gridSplit1_w);
+      
+      hsplitter->addWidget(split1_w);
+          
+      QSizePolicy tipolicy, epolicy;
+      hsplitter->setStretchFactor(hsplitter->indexOf(trackInfoWidget), 0);
+      tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+      tipolicy.setHorizontalStretch(0);
+      tipolicy.setVerticalStretch(100);
+      trackInfoWidget->setSizePolicy(tipolicy);
 
-      mainGrid->setRowStretch(0, 100);
-      mainGrid->setColumnStretch(1, 100);
-
-      mainGrid->addWidget(split1, 0, 0,  1, 3);
-      mainGrid->addWidget(ctrl,    1, 0);
-      mainGrid->addWidget(hscroll, 1, 1);
-      mainGrid->addWidget(corner,  1, 2, Qt::AlignBottom|Qt::AlignRight);
+      hsplitter->setStretchFactor(hsplitter->indexOf(split1_w), 1);
+      epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+      epolicy.setHorizontalStretch(255);
+      epolicy.setVerticalStretch(100);
+      split1->setSizePolicy(epolicy);
+      
+      mainGrid->addWidget(hsplitter, 0, 0,  1, 1);
 
       split2              = new MusEGui::Splitter(Qt::Horizontal, split1, "split2");
+
       split1w1            = new QWidget(split2);
       QWidget* split1w2   = new QWidget(split2);
+
+      split1w1->setContentsMargins(0, 0, 0, 0);
+      split1w2->setContentsMargins(0, 0, 0, 0);
+      split1->setContentsMargins(0, 0, 0, 0);
+      split2->setContentsMargins(0, 0, 0, 0);
+      hsplitter->setContentsMargins(0, 0, 0, 0);
+      // NOTICE: For vertical splitter split1, we need to ignore the horizontal size
+      //          otherwise we get strange runaway resizing when split2 is moved towards
+      //          the left, which also depends oddly on the minimum size of the widget
+      //          in the left of hsplitter. For the other splitters, I guess we'll
+      //          do the same since it took a whole day to solve this problem. Tim.
+      split1->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+      split2->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
+      hsplitter->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
       
       split2->setStretchFactor(split2->indexOf(split1w1), 0);
-      QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+      tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
       tipolicy.setHorizontalStretch(0);
       tipolicy.setVerticalStretch(100);
       split1w1->setSizePolicy(tipolicy);
 
       split2->setStretchFactor(split2->indexOf(split1w2), 1);
-      QSizePolicy epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+      epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
       epolicy.setHorizontalStretch(255);
       epolicy.setVerticalStretch(100);
       split1w2->setSizePolicy(epolicy);
@@ -538,16 +609,19 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(canvas, SIGNAL(horizontalZoom(bool,const QPoint&)), SLOT(horizontalZoom(bool, const QPoint&)));
       connect(canvas, SIGNAL(horizontalZoom(int, const QPoint&)), SLOT(horizontalZoom(int, const QPoint&)));
       connect(canvas, SIGNAL(ourDrumMapChanged(bool)), SLOT(ourDrumMapChanged(bool)));
+      connect(canvas, SIGNAL(curPartHasChanged(MusECore::Part*)), SLOT(updateTrackInfo()));
       time->setOrigin(offset, 0);
 
       QList<int> mops;
       mops.append(_dlistWidthInit);
       mops.append(_dcanvasWidthInit);
       split2->setSizes(mops);
-      // By T356. Not much choice but to disable this for now, to stop runaway resize bug.
-      // Can't seem to get the splitter to readjust when manually setting sizes.
-      //split2->setResizeMode(split1w1, QSplitter::KeepSize); DELETETHIS or FIXME?
-
+      
+      mops.clear();
+      mops.append(_trackInfoWidthInit);
+      mops.append(_canvasWidthInit);
+      hsplitter->setSizes(mops);
+      
       gridS2->setRowStretch(1, 100);
       gridS2->setColumnStretch(0, 100);
       
@@ -597,13 +671,13 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       gridS1->setColumnStretch(0, 100);
       gridS1->addWidget(header, 0, 0);
       gridS1->addWidget(dlist, 1, 0);
-      
+
       connect(canvas, SIGNAL(newWidth(int)), SLOT(newCanvasWidth(int)));
       connect(canvas, SIGNAL(verticalScroll(unsigned)), vscroll, SLOT(setPos(unsigned)));
       connect(canvas,  SIGNAL(horizontalScroll(unsigned)),hscroll, SLOT(setPos(unsigned)));
       connect(canvas,  SIGNAL(horizontalScrollNoLimit(unsigned)),hscroll, SLOT(setPosNoLimit(unsigned))); 
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged1(MusECore::SongChangedFlags_t)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)),      dlist, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged1(MusECore::SongChangedStruct_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)),      dlist, SLOT(songChanged(MusECore::SongChangedStruct_t)));
       connect(vscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scaleChanged(int)),  canvas, SLOT(setYMag(int)));
       connect(vscroll, SIGNAL(scaleChanged(int)),   dlist, SLOT(setYMag(int)));
@@ -648,7 +722,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       clipboardChanged(); // enable/disable "Paste"
       selectionChanged(); // enable/disable "Copy" & "Paste"
-      initShortcuts();
+      configChanged();  // set configuration values, initialize shortcuts
 
       const MusECore::Pos cpos=MusEGlobal::song->cPos();
       canvas->setPos(0, cpos.tick(), true);
@@ -664,7 +738,10 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
         hscroll->setOffset((int)pos);
 
       if(canvas->track())
+      {
+        updateTrackInfo();
         toolbar->setSolo(canvas->track()->solo());
+      }
       
       initTopwinState();
       finalizeInit();
@@ -674,22 +751,40 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 //   songChanged1
 //---------------------------------------------------------
 
-void DrumEdit::songChanged1(MusECore::SongChangedFlags_t bits)
+void DrumEdit::songChanged1(MusECore::SongChangedStruct_t bits)
       {
         if(_isDeleting)  // Ignore while deleting to prevent crash.
           return;
         
-        if (bits & SC_SOLO)
+        // We must catch this first and be sure to update the strips.
+        if(bits._flags & SC_TRACK_REMOVED)
+          checkTrackInfoTrack();
+        
+        if (bits._flags & SC_SOLO)
         {
             if(canvas->track())
               toolbar->setSolo(canvas->track()->solo());
         }      
         if ( !old_style_drummap_mode() && 
-             ( bits & (SC_DRUMMAP | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
+             ( bits._flags & (SC_DRUMMAP | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
                        SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED) ) )
           ((DrumCanvas*)(canvas))->rebuildOurDrumMap();
         
         songChanged(bits);
+        
+        // We'll receive SC_SELECTION if a different part is selected.
+        // Addition - also need to respond here to moving part to another track. (Tim)
+        if (bits._flags & (SC_PART_INSERTED | SC_PART_REMOVED))
+          updateTrackInfo();
+        
+        // We must marshall song changed instead of connecting to the strip's song changed
+        //  otherwise it crashes when loading another song because track is no longer valid
+        //  and the strip's songChanged() seems to be called before Pianoroll songChanged()
+        //  gets called and has a chance to stop the crash.
+        // Also, calling updateTrackInfo() from here is too heavy, it destroys and recreates
+        //  the strips each time no matter what the flags are !
+        else  
+          trackInfoSongChange(bits);
       }
 
 //---------------------------------------------------------
@@ -767,9 +862,9 @@ void DrumEdit::updateHScrollRange()
       int s, e;
       canvas->range(&s, &e);
       // Show one more measure.
-      e += AL::sigmap.ticksMeasure(e);  
+      e += MusEGlobal::sigmap.ticksMeasure(e);  
       // Show another quarter measure due to imprecise drawing at canvas end point.
-      e += AL::sigmap.ticksMeasure(e) / 4;
+      e += MusEGlobal::sigmap.ticksMeasure(e) / 4;
       // Compensate for drum list, splitter handle, and vscroll widths. 
       e += canvas->rmapxDev(dlist->width() + split2->handleWidth() - vscroll->width()); 
       int s1, e1;
@@ -1147,6 +1242,10 @@ void DrumEdit::readConfiguration(MusECore::Xml& xml)
                   case MusECore::Xml::TagStart:
                         if (tag == "raster")
                               _rasterInit = xml.parseInt();
+                        else if (tag == "trackinfowidth")
+                              _trackInfoWidthInit = xml.parseInt();
+                        else if (tag == "canvaswidth")
+                              _canvasWidthInit = xml.parseInt();
                         else if (tag == "dcanvaswidth")
                               _dcanvasWidthInit = xml.parseInt();
                         else if (tag == "dlistwidth")
@@ -1176,6 +1275,8 @@ void DrumEdit::writeConfiguration(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "drumedit");
       xml.intTag(level, "raster", _rasterInit);
+      xml.intTag(level, "trackinfowidth", _trackInfoWidthInit);
+      xml.intTag(level, "canvaswidth", _canvasWidthInit);
       xml.intTag(level, "dlistwidth", _dlistWidthInit);
       xml.intTag(level, "dcanvaswidth", _dcanvasWidthInit);
       xml.intTag(level, "ignore_hide_init", _ignore_hide_init);
@@ -1288,41 +1389,137 @@ void DrumEdit::cmd(int cmd)
       // Causes crashes later in Canvas::viewMouseMoveEvent and viewMouseReleaseEvent.
       if(canvas->getCurrentDrag())
         return;
+
+      MusECore::TagEventList tag_list;
+
+      const FunctionDialogElements_t fn_element_dflt =
+        FunctionAllEventsButton |
+        FunctionSelectedEventsButton |
+        FunctionLoopedButton |
+        FunctionSelectedLoopedButton |
+        FunctionAllPartsButton |
+        FunctionSelectedPartsButton;
       
       switch(cmd) {
             case DrumCanvas::CMD_CUT:
-                  copy_notes(partlist_to_set(parts()), 1);
-                  erase_notes(partlist_to_set(parts()), 1);
+                  tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
+                  MusECore::cut_items(&tag_list);
                   break;
-            case DrumCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
-            case DrumCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()), MusECore::any_event_selected(partlist_to_set(parts())) ? 3 : 2); break;
-            case DrumCanvas::CMD_PASTE: 
-                  ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-                  MusECore::paste_notes(3072, false, true, canvas->part());
+            case DrumCanvas::CMD_COPY:
+                  tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
+                  MusECore::copy_items(&tag_list);
                   break;
-            case DrumCanvas::CMD_PASTE_DIALOG: 
-                  ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-                  MusECore::paste_notes((canvas->part()));
+            case DrumCanvas::CMD_COPY_RANGE:
+                  tagItems(&tag_list, 
+                           MusECore::EventTagOptionsStruct::fromOptions(!itemsAreSelected(),
+                           true, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos()));
+                  MusECore::copy_items(&tag_list);
                   break;
+            case DrumCanvas::CMD_PASTE:
+                              ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+                              MusECore::paste_items(partlist_to_set(parts()), 3072,
+                                MusECore::FunctionOptionsStruct(
+                                  MusECore::FunctionEraseItemsDefault | MusECore::FunctionPasteNeverNewPart));
+                              break;
+            case DrumCanvas::CMD_PASTE_TO_CUR_PART:
+                              ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+                              MusECore::paste_items(partlist_to_set(parts()), 3072,
+                                MusECore::FunctionOptionsStruct(
+                                  MusECore::FunctionEraseItemsDefault | MusECore::FunctionPasteNeverNewPart),
+                                canvas->part());
+                              break;
+            case DrumCanvas::CMD_PASTE_DIALOG:
+                              ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+                              MusECore::paste_items(partlist_to_set(parts()), (canvas->part()));
+                              break;
+                              
             case DrumCanvas::CMD_LOAD: load(); break;
             case DrumCanvas::CMD_SAVE: save(); break;
             case DrumCanvas::CMD_RESET: reset(); break;
-            case DrumCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
-            case DrumCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
-            case DrumCanvas::CMD_QUANTIZE:
+            case DrumCanvas::CMD_MODIFY_VELOCITY:
                   {
-                  int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
-                  if (quantize_dialog->exec())
-                        quantize_notes(partlist_to_set(parts()), quantize_dialog->range, 
-                                       (MusEGlobal::config.division*4)/raster,
-                                       /* quant_len= */false, quantize_dialog->strength,  // DELETETHIS
-                                       quantize_dialog->swing, quantize_dialog->threshold);
+                  FunctionDialogReturnVelocity ret =
+                    velocity_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                  {
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                    MusECore::modify_velocity_items(&tag_list, ret._rateVal, ret._offsetVal);
+                  }
                   break;
                   }
-            case DrumCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
-            case DrumCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break; //delete selected events
-            case DrumCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
-            case DrumCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
+            case DrumCanvas::CMD_CRESCENDO:
+                  {
+                  FunctionDialogReturnCrescendo ret =
+                    crescendo_items_dialog(FunctionDialogMode(
+                      FunctionLoopedButton |
+                      FunctionSelectedLoopedButton |
+                      FunctionAllPartsButton | 
+                      FunctionSelectedPartsButton));
+                  if(ret._valid)
+                  {
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                    MusECore::crescendo_items(&tag_list, ret._start_val, ret._end_val, ret._absolute);
+                  }
+                  break;
+                  }
+            case DrumCanvas::CMD_QUANTIZE:
+                  {
+                  FunctionDialogReturnQuantize ret =
+                    quantize_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                  {
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                    MusECore::quantize_items(&tag_list, ret._raster_index,
+                                           /*ret._quant_len*/ false,  // DELETETHIS
+                                           ret._strength,
+                                           ret._swing,
+                                           ret._threshold);
+                  }
+                  break;
+                  }
+            case DrumCanvas::CMD_ERASE_EVENT:
+            {
+              FunctionDialogReturnErase ret =
+                erase_items_dialog(FunctionDialogMode(fn_element_dflt));
+              if(ret._valid)
+              {
+                tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                MusECore::erase_items(&tag_list, ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
+              }
+            }
+            break;
+            case DrumCanvas::CMD_DEL:
+              tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
+              MusECore::erase_items(&tag_list);
+            break;
+            case DrumCanvas::CMD_DELETE_OVERLAPS:
+                  {
+                  FunctionDialogReturnDelOverlaps ret =
+                    deloverlaps_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                  {
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                    MusECore::delete_overlaps_items(&tag_list);
+                  }
+                  break;
+                  }
+            case DrumCanvas::CMD_NOTE_SHIFT:
+                  {
+                  FunctionDialogReturnMove ret =
+                    move_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                  {
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                    MusECore::move_items(&tag_list, ret._amount);
+                  }
+                  break;
+                  }
             case DrumCanvas::CMD_REORDER_LIST: ((DrumCanvas*)(canvas))->moveAwayUnused(); break;
             //case DrumCanvas::CMD_FIXED_LEN: // this must be handled by the drum canvas, due to its
                                               // special nature (each drum has its own length)
@@ -1341,8 +1538,10 @@ void DrumEdit::cmd(int cmd)
 
 void DrumEdit::clipboardChanged()
       {
-      pasteAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
-      pasteDialogAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
+      const bool has_gel = QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists"));
+      pasteAction->setEnabled(has_gel);
+      pasteToCurPartAction->setEnabled(has_gel);
+      pasteDialogAction->setEnabled(has_gel);
       }
 
 //---------------------------------------------------------
@@ -1351,7 +1550,7 @@ void DrumEdit::clipboardChanged()
 
 void DrumEdit::selectionChanged()
       {
-      bool flag = canvas->selectionSize() > 0;
+      bool flag = itemsAreSelected();
       cutAction->setEnabled(flag);
       copyAction->setEnabled(flag);
       deleteAction->setEnabled(flag);
@@ -1530,6 +1729,13 @@ void DrumEdit::newCanvasWidth(int w)
 
 void DrumEdit::configChanged()
       {
+      if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
+            canvas->setBg(MusEGlobal::config.midiCanvasBg);
+            canvas->setBg(QPixmap());
+      }
+      else {
+            canvas->setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
+      }
       initShortcuts();
       }
 
@@ -1737,11 +1943,17 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
           return;
       }
       else if (key == shortcuts[SHRT_INC_VELOCITY].key) {
-          modify_velocity(partlist_to_set(parts()), 1, 100, 1);
+//           modify_velocity(partlist_to_set(parts()), 1, 100, 1);
+          MusECore::TagEventList tag_list;
+          tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
+          MusECore::modify_velocity_items(&tag_list, 100, 1);
           return;
       }
       else if (key == shortcuts[SHRT_DEC_VELOCITY].key) {
-          modify_velocity(partlist_to_set(parts()), 1, 100, -1);
+//           modify_velocity(partlist_to_set(parts()), 1, 100, -1);
+          MusECore::TagEventList tag_list;
+          tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
+          MusECore::modify_velocity_items(&tag_list, 100, -1);
           return;
       }
       else { //Default:
@@ -1777,6 +1989,7 @@ void DrumEdit::initShortcuts()
       copyAction->setShortcut(shortcuts[SHRT_COPY].key);
       copyRangeAction->setShortcut(shortcuts[SHRT_COPY_RANGE].key);
       pasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
+      pasteToCurPartAction->setShortcut(shortcuts[SHRT_PASTE_TO_CUR_PART].key);
       pasteDialogAction->setShortcut(shortcuts[SHRT_PASTE_DIALOG].key);
       deleteAction->setShortcut(shortcuts[SHRT_DELETE].key);
 

@@ -66,15 +66,20 @@ class Pos {
 
       Pos& operator+=(Pos a);
       Pos& operator+=(int a);
+      Pos& operator-=(Pos a);
+      Pos& operator-=(int a);
 
       bool operator>=(const Pos& s) const;
       bool operator>(const Pos& s) const;
       bool operator<(const Pos& s) const;
       bool operator<=(const Pos& s) const;
       bool operator==(const Pos& s) const;
+      bool operator!=(const Pos& s) const;
 
       friend Pos operator+(Pos a, Pos b);
       friend Pos operator+(Pos a, int b);
+      friend Pos operator-(Pos a, Pos b);
+      friend Pos operator-(Pos a, int b);
 
       unsigned tick() const;
       unsigned frame() const;
@@ -103,7 +108,7 @@ class PosLen : public Pos {
       mutable int sn;
 
    public:
-      PosLen();
+      PosLen(bool ticks = true, unsigned pos = 0, unsigned len = 0);
       PosLen(const PosLen&);
       void dump(int n = 0) const;
 
@@ -118,8 +123,13 @@ class PosLen : public Pos {
       unsigned lenValue() const;
       unsigned lenValue(TType time_type) const;
       Pos end() const;
+      void setEnd(const Pos&);
+      void setEndValue(unsigned val);
+      void setEndValue(unsigned val, TType time_type);     
       unsigned endTick() const    { return end().tick(); }
       unsigned endFrame() const   { return end().frame(); }
+      unsigned endValue() const;
+      unsigned endValue(TType time_type) const;
       void setPos(const Pos&);
       static unsigned convertLen(unsigned val, unsigned len, TType from_type, TType to_type);
       };

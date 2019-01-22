@@ -55,18 +55,19 @@
 #include "midiseq.h"
 #include "midictrl.h"
 #include "popupmenu.h"
-#include "globaldefs.h"
 #include "midiitransform.h"
 #include "mitplugin.h"
 #include "helper.h"
 #include "gconfig.h"
 #include "globals.h"
+#include "plugin_list.h"
+#include "pluglist.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_SYNTH(dev, format, args...)  //fprintf(dev, format, ##args);
 
 namespace MusEGlobal {
-std::vector<MusECore::Synth*> synthis;  // array of available MusEGlobal::synthis
+  MusECore::SynthList synthis;  // array of available MusEGlobal::synthis
 }
 
 namespace MusECore {
@@ -86,6 +87,21 @@ Synth::Type string2SynthType(const QString& type)
   }
   return Synth::SYNTH_TYPE_END;
 }
+
+
+//---------------------------------------------------------
+//   find
+//---------------------------------------------------------
+
+Synth* SynthList::find(const QString& fileCompleteBaseName, const QString& pluginName) const
+      {
+      for (ciSynthList i = begin(); i != end(); ++i) {
+            if ((fileCompleteBaseName == (*i)->completeBaseName()) && (pluginName == (*i)->name()))
+                  return *i;
+            }
+
+      return 0;
+      }
 
 //--------------------------------
 //  SynthIF
@@ -125,11 +141,11 @@ void SynthIF::getMapItem(int channel, int patch, int index, DrumMap& dest_map, i
 // Methods for PluginIBase:
 //--------------------------------
 
-Plugin::PluginFeatures SynthIF::requiredFeatures() const { return Plugin::NoFeatures; }
+PluginFeatures_t SynthIF::requiredFeatures() const       { return PluginNoFeatures; }
 bool SynthIF::on() const                                 { return true; }  // Synth is not part of a rack plugin chain. Always on.
 void SynthIF::setOn(bool /*val*/)                        { }
 unsigned long SynthIF::pluginID()                        { return 0; }
-int SynthIF::id()                                        { return MAX_PLUGINS; } // Set for special block reserved for synth.
+int SynthIF::id()                                        { return MusECore::MAX_PLUGINS; } // Set for special block reserved for synth.
 QString SynthIF::pluginLabel() const                     { return QString(); }
 QString SynthIF::name() const                            { return synti->name(); }
 QString SynthIF::lib() const                             { return QString(); }
@@ -285,10 +301,9 @@ static SynthI* createSynthInstance(const QString& sclass, const QString& label, 
 //   Synth
 //---------------------------------------------------------
 
-Synth::Synth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver, Plugin::PluginFeatures reqFeatures)
+Synth::Synth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver, PluginFeatures_t reqFeatures)
    : info(fi), _name(label), _description(descr), _maker(maker), _version(ver), _requiredFeatures(reqFeatures)
       {
-      _requiredFeatures = Plugin::NoFeatures;
       _instances = 0;
       }
 
@@ -312,9 +327,8 @@ void* MessSynth::instantiate(const QString& instanceName)
             MusEGlobal::undoSetuid();
             return 0;
             }
-      typedef const MESS* (*MESS_Function)();
-      MESS_Function msynth = (MESS_Function)dlsym(handle, "mess_descriptor");
-
+            
+      MESS_Descriptor_Function msynth = (MESS_Descriptor_Function)dlsym(handle, "mess_descriptor");
       if (!msynth) {
             const char *txt = dlerror();
             if (txt) {
@@ -557,7 +571,7 @@ void SynthI::recordEvent(MidiRecordEvent& event)
         return;
 
       // Split the events up into channel fifos. Special 'channel' number 17 for sysex events.
-      unsigned int ch = (typ == ME_SYSEX)? MIDI_CHANNELS : event.channel();
+      unsigned int ch = (typ == ME_SYSEX)? MusECore::MUSE_MIDI_CHANNELS : event.channel();
       if(_recordFifo[ch].put(event))
         fprintf(stderr, "SynthI::recordEvent: fifo channel %d overflow\n", ch);
       }
@@ -858,65 +872,54 @@ void MessSynthIF::deactivate3()
 //---------------------------------------------------------
 
 void initMidiSynth()
+{
+  const MusEPlugin::PluginScanList& scan_list = MusEPlugin::pluginList;
+  for(MusEPlugin::ciPluginScanList isl = scan_list.begin(); isl != scan_list.end(); ++isl)
+  {
+    const MusEPlugin::PluginScanInfoRef inforef = *isl;
+    const MusEPlugin::PluginScanInfoStruct& info = inforef->info();
+    switch(info._type)
+    {
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
       {
-      QString s = MusEGlobal::museGlobalLib + "/synthi";
-
-      QDir pluginDir(s, QString("*.so")); // ddskrjo
-      if (MusEGlobal::debugMsg)
-            fprintf(stderr, "searching for software synthesizer in <%s>\n", s.toLatin1().constData());
-      if (pluginDir.exists()) {
-            QFileInfoList list = pluginDir.entryInfoList();
-	    QFileInfoList::iterator it=list.begin();
-            QFileInfo* fi;
-            while(it!=list.end()) {
-                  fi = &*it;
-
-                  QByteArray ba = fi->filePath().toLatin1();
-                  const char* path = ba.constData();
-
-                  // load Synti dll
-                  void* handle = dlopen(path, RTLD_NOW);
-                  if (handle == 0) {
-                        fprintf(stderr, "initMidiSynth: MESS dlopen(%s) failed: %s\n", path, dlerror());
-                        ++it;
-                        continue;
-                        }
-                  typedef const MESS* (*MESS_Function)();
-                  MESS_Function msynth = (MESS_Function)dlsym(handle, "mess_descriptor");
-
-                  if (!msynth) {
-                        #if 1
-                        const char *txt = dlerror();
-                        if (txt) {
-                              fprintf(stderr,
-                                "Unable to find msynth_descriptor() function in plugin "
-                                "library file \"%s\": %s.\n"
-                                "Are you sure this is a MESS plugin file?\n",
-                                path, txt);
-                              }
-                        #endif
-                          dlclose(handle);
-                          ++it;
-                          continue;
-                        }
-                  const MESS* descr = msynth();
-                  if (descr == 0) {
-                        fprintf(stderr, "initMidiSynth: no MESS descr found in %s\n", path);
-                        dlclose(handle);
-                        ++it;
-                        continue;
-                        }
-
-                  MusEGlobal::synthis.push_back(new MessSynth(*fi, QString(descr->name), QString(descr->description), QString(""), QString(descr->version)));
-
-                  dlclose(handle);
-                  ++it;
-                  }
-            if (MusEGlobal::debugMsg)
-                  fprintf(stderr, "%zd soft synth found\n", MusEGlobal::synthis.size());
-            }
+        if(MusEGlobal::loadMESS)
+        {
+          // Make sure it doesn't already exist.
+          if(const Synth* sy = MusEGlobal::synthis.find(PLUGIN_GET_QSTRING(info._completeBaseName),
+              PLUGIN_GET_QSTRING(info._name)))
+          {
+            fprintf(stderr, "Ignoring MESS synth name:%s path:%s duplicate of path:%s\n",
+                    PLUGIN_GET_CSTRING(info._name),
+                    PLUGIN_GET_CSTRING(info.filePath()),
+                    sy->filePath().toLatin1().constData());
+          }
+          else
+          {
+            MusEGlobal::synthis.push_back(
+              new MessSynth(PLUGIN_GET_QSTRING(info.filePath()),
+                            PLUGIN_GET_QSTRING(info._name),
+                            PLUGIN_GET_QSTRING(info._description),
+                            QString(""),
+                            PLUGIN_GET_QSTRING(info._version)));
+          }
+        }
       }
-
+      break;
+      
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
+      break;
+    }
+  }
+  if(MusEGlobal::debugMsg)
+    fprintf(stderr, "%zd soft synth found\n", MusEGlobal::synthis.size());
+}
 
 //---------------------------------------------------------
 //   createSynthI
@@ -1104,7 +1107,7 @@ void SynthI::read(Xml& xml)
                               
                               MusEGlobal::song->insertTrack0(this, -1);
 
-                              if (port != -1 && port < MIDI_PORTS)
+                              if (port != -1 && port < MusECore::MIDI_PORTS)
                                     MusEGlobal::midiPorts[port].setMidiDevice(this);
 
                               // DELETETHIS 5

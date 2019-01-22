@@ -22,9 +22,9 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include "dsp.h"
 #include "config.h"
-#include "../globals.h"
+#include "al.h"
+#include "dsp.h"
 
 namespace AL {
 
@@ -137,7 +137,7 @@ void initDsp()
             }
       // fall through to not hardware optimized routines
 #endif
-      if(MusEGlobal::debugMsg)
+      if(debugMsg)
         printf("Muse: using unoptimized non-SSE dsp routines\n");
       dsp = new Dsp();
       }
@@ -179,7 +179,7 @@ void Dsp::cpy(float* dst, float* src, unsigned n, bool addDenormal)
       if(addDenormal)
       {
         for(unsigned i = 0; i < n; ++i)
-          dst[i] = src[i] + MusEGlobal::denormalBias;
+          dst[i] = src[i] + denormalBias;
       }
       else
       {

@@ -763,7 +763,7 @@ PyObject* getTrackEffects(PyObject*, PyObject* args)
       AudioTrack* track = (AudioTrack*) t;
       PyObject* pyfxnames = Py_BuildValue("[]");
       const Pipeline* pipeline = track->efxPipe();
-      for (int i = 0; i < PipelineDepth; i++) {
+      for (int i = 0; i < MusECore::PipelineDepth; i++) {
             QString name = pipeline->name(i);
             printf("fx %d name: %s\n", i, name.toLatin1().constData());
             PyObject* pyname = Py_BuildValue("s", name.toLatin1().constData());
@@ -1067,9 +1067,9 @@ bool Song::event(QEvent* _e)
 
                   bool muted = e->getP1() == 1;
                   // No undo.
-                  MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackMute, track, muted), false);
-      
-                  this->update(SC_MUTE | SC_TRACK_MODIFIED);
+                  // Operation is undoable but do not start/end undo.
+                  MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackMute, track, muted),
+                                                   MusECore::Song::OperationUndoableUpdate);
                   break;
                   }
             case QPybridgeEvent::SONG_SETCTRL: {
@@ -1149,7 +1149,7 @@ bool Song::event(QEvent* _e)
                   if (t == NULL)
                         return false;
 
-                  MusEGlobal::audio->msgRemoveTrack(t);
+                  MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(t), t));
                   break;
                   }
             default:

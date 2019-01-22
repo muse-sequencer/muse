@@ -2,6 +2,7 @@
 Here is some updated info about general editing
  operations and keys/buttons in MusE as of
  the version 2.1.2 massive changes by Tim:
+Updated: 2019/01/21 before 3.0.3
 !! This info should be moved into the doc tex file. !!
 See also the README.shortcuts file.
 ===============================================
@@ -80,6 +81,33 @@ The pencil tool will not resize a drum note, it moves the note. Press:
 To delete a drum note, press:
          Middle-click/Delete: Delete note.
 
+Pianoroll and Drum Editors: Midi controller graph area:
+=======================================================
+On these areas you can draw and erase midi controller graphs.
+Lines can also be drawn.
+
+TBD: Operations and keys.
+
+The midi controller graphs offer full cut/copy/paste and drag/drop.
+Unlike the note or drum canvases, the controller graph canvases cannot allow more
+ than one item at a given position. Thus you cannot simply drag and drop some pieces
+ of the controller graph onto existing pieces and let them co-exist.
+Therefore, there is an additional step after dropping the items called MERGING.
+Click in a blank area or on a new graph item to 'merge' the dragged items.
+A right-click context menu is provided with a 'Merge', 'Merge a copy', and 'Cancel drag'.
+Also, at any time before the merge, you may press 'Control' to change the 'Merge'
+ mouse cursor into a 'Merge Copy' cursor.
+
+The reason behind it, is that you can drop the items somewhere, release the mouse,
+ and then continue dragging them further before you choose to merge them.
+It allows you to say, zoom or scroll and then continue moving the items before merging.
+(If we were to merge immediately after dropping each time, you would end up with a trail
+ of erased existing items underneath until there's nothing left of your graph.)
+There are options for merging, found in the right-click controller graph context menu,
+ and in the newly revamped 'paste with dialog' found in the edit menus.
+There you can choose exactly how existing items are erased when the dragged or pasted
+ items are merged. (Bitmap icons try to show what happens with each of the options.)
+
 Wave editor: Creating, moving, resizing, copying, deleting wave events:
 =======================================================================
 While drawing a new wave event, press:
@@ -127,4 +155,3 @@ An alternate, more standard method is available by un-checking "Borderless zoom/
  in Global Settings -> GUI Behaviour. This method does present border limitations
  on how far you can move before you must reposition the mouse. 
 
- 

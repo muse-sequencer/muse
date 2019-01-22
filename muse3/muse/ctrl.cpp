@@ -387,7 +387,7 @@ void CtrlList::assign(const CtrlList& l, int flags)
   
   if(flags & ASSIGN_VALUES)
   {
-    std::map<int, CtrlVal, std::less<int> >::operator=(l); // Let map copy the items.
+    CtrlList_t::operator=(l); // Let map copy the items.
     _guiUpdatePending = true;
   }
 }
@@ -396,17 +396,18 @@ void CtrlList::assign(const CtrlList& l, int flags)
 //   getInterpolation
 //   Fills CtrlInterpolate struct for given frame.
 //   cur_val_only means read the current 'manual' value, not from the list even if it is not empty.
-//   CtrlInterpolate member eFrame can be -1 meaning no next value (wide-open, endless).
+//   CtrlInterpolate member eFrameValid can be false meaning no next value (wide-open, endless).
 //---------------------------------------------------------
 
-void CtrlList::getInterpolation(int frame, bool cur_val_only, CtrlInterpolate* interp)
+void CtrlList::getInterpolation(unsigned int frame, bool cur_val_only, CtrlInterpolate* interp)
 {
   interp->eStop = false; // During processing, control FIFO ring buffers will set this true.
 
   if(cur_val_only || empty())
   {
     interp->sFrame = 0;
-    interp->eFrame = -1;
+    interp->eFrame = 0;
+    interp->eFrameValid = false;
     interp->sVal = _curVal;
     interp->eVal = _curVal;
     interp->doInterp = false;
@@ -417,7 +418,8 @@ void CtrlList::getInterpolation(int frame, bool cur_val_only, CtrlInterpolate* i
   { 
         --i;
         interp->sFrame = 0;
-        interp->eFrame = -1;
+        interp->eFrame = 0;
+        interp->eFrameValid = false;
         interp->sVal = i->second.val;
         interp->eVal = i->second.val;
         interp->doInterp = false;
@@ -429,6 +431,7 @@ void CtrlList::getInterpolation(int frame, bool cur_val_only, CtrlInterpolate* i
     {
       interp->sFrame = 0;
       interp->eFrame = i->second.frame;
+      interp->eFrameValid = true;
       interp->sVal = i->second.val;
       interp->eVal = i->second.val;
       interp->doInterp = false;
@@ -436,6 +439,7 @@ void CtrlList::getInterpolation(int frame, bool cur_val_only, CtrlInterpolate* i
     else
     {
       interp->eFrame = i->second.frame;
+      interp->eFrameValid = true;
       interp->eVal = i->second.val;
       --i;
       interp->sFrame = i->second.frame;
@@ -449,6 +453,7 @@ void CtrlList::getInterpolation(int frame, bool cur_val_only, CtrlInterpolate* i
     {
       interp->sFrame = 0;
       interp->eFrame = i->second.frame;
+      interp->eFrameValid = true;
       interp->sVal = i->second.val;
       interp->eVal = i->second.val;
       interp->doInterp = false;
@@ -456,6 +461,7 @@ void CtrlList::getInterpolation(int frame, bool cur_val_only, CtrlInterpolate* i
     else
     {
       interp->eFrame = i->second.frame;
+      interp->eFrameValid = true;
       interp->eVal = i->second.val;
       --i;
       interp->sFrame = i->second.frame;
@@ -472,13 +478,13 @@ void CtrlList::getInterpolation(int frame, bool cur_val_only, CtrlInterpolate* i
 //   Those are to be taken care of before calling this routine. See getInterpolation().
 //---------------------------------------------------------
 
-double CtrlList::interpolate(int frame, const CtrlInterpolate& interp)
+double CtrlList::interpolate(unsigned int frame, const CtrlInterpolate& interp)
 {
-  int frame1 = interp.sFrame;
-  int frame2 = interp.eFrame;
+  const unsigned int frame1 = interp.sFrame;
+  const unsigned int frame2 = interp.eFrame;
   double val1 = interp.sVal;
   double val2 = interp.eVal;
-  if(frame >= frame2)        // frame2 can also be -1
+  if(!interp.eFrameValid || frame >= frame2)
   {
     if(_valueType == VAL_LOG)
     {
@@ -519,27 +525,31 @@ double CtrlList::interpolate(int frame, const CtrlInterpolate& interp)
 //   value
 //   Returns value at frame.
 //   cur_val_only means read the current 'manual' value, not from the list even if it is not empty.
-//   If passed a nextFrame, sets nextFrame to the next event frame, or -1 if no next frame (wide-open), or, 
+//   If passed a nextFrame, sets nextFrame to the next event frame, or 0 and eFrameValid false if no next frame (wide-open), or, 
 //    since CtrlList is a map, ZERO if should be replaced with some other frame by the caller (interpolation). 
 //---------------------------------------------------------
 
-double CtrlList::value(int frame, bool cur_val_only, int* nextFrame) const
+double CtrlList::value(unsigned int frame, bool cur_val_only, unsigned int* nextFrame, bool* nextFrameValid) const
 {
       if(cur_val_only || empty()) 
       {
+        if(nextFrameValid)
+          *nextFrameValid = false;
         if(nextFrame)
-          *nextFrame = -1;
+          *nextFrame = 0;
         return _curVal;
       }
 
       double rv;
-      int nframe;
+      unsigned int nframe;
 
       ciCtrl i = upper_bound(frame); // get the index after current frame
       if (i == end()) { // if we are past all items just return the last value
             --i;
+            if(nextFrameValid)
+              *nextFrameValid = false;
             if(nextFrame)
-              *nextFrame = -1;
+              *nextFrame = 0;
             return i->second.val;
             }
       else if(_mode == DISCRETE)
@@ -562,10 +572,10 @@ double CtrlList::value(int frame, bool cur_val_only, int* nextFrame) const
             rv = i->second.val;
         }
         else {
-            int frame2 = i->second.frame;
+            const unsigned int frame2 = i->second.frame;
             double val2 = i->second.val;
             --i;
-            int frame1 = i->second.frame;
+            const unsigned int frame1 = i->second.frame;
             double val1   = i->second.val;
 
             
@@ -596,6 +606,8 @@ double CtrlList::value(int frame, bool cur_val_only, int* nextFrame) const
 
       if(nextFrame)
           *nextFrame = nframe;
+      if(nextFrameValid)
+          *nextFrameValid = true;
       
       return rv;
 }
@@ -651,7 +663,7 @@ CtrlList& CtrlList::operator=(const CtrlList& cl)
   _visible       = cl._visible;
   
   // Let map copy the items.
-  std::map<int, CtrlVal, std::less<int> >::operator=(cl);
+  CtrlList_t::operator=(cl);
   _guiUpdatePending = true;
   return *this;
 }
@@ -661,27 +673,27 @@ void CtrlList::swap(CtrlList& cl)
 #ifdef _CTRL_DEBUG_
   printf("CtrlList::swap id:%d\n", cl.id());  
 #endif
-  std::map<int, CtrlVal, std::less<int> >::swap(cl);
+  CtrlList_t::swap(cl);
   cl.setGuiUpdatePending(true);
   _guiUpdatePending = true;
 }
 
-std::pair<iCtrl, bool> CtrlList::insert(const std::pair<int, CtrlVal>& p)
+std::pair<iCtrl, bool> CtrlList::insert(const CtrlListInsertPair_t& p)
 {
 #ifdef _CTRL_DEBUG_
-  printf("CtrlList::insert frame:%d val:%f\n", p.first, p.second.val);  
+  printf("CtrlList::insert frame:%u val:%f\n", p.first, p.second.val);  
 #endif
-  std::pair<iCtrl, bool> res = std::map<int, CtrlVal, std::less<int> >::insert(p);
+  std::pair<iCtrl, bool> res = CtrlList_t::insert(p);
   _guiUpdatePending = true;
   return res;
 }
 
-iCtrl CtrlList::insert(iCtrl ic, const std::pair<int, CtrlVal>& p)
+iCtrl CtrlList::insert(iCtrl ic, const CtrlListInsertPair_t& p)
 {
 #ifdef _CTRL_DEBUG_
-  printf("CtrlList::insert2 frame:%d val:%f\n", p.first, p.second.val); 
+  printf("CtrlList::insert2 frame:%u val:%f\n", p.first, p.second.val); 
 #endif
-  iCtrl res = std::map<int, CtrlVal, std::less<int> >::insert(ic, p);
+  iCtrl res = CtrlList_t::insert(ic, p);
   _guiUpdatePending = true;
   return res;
 }
@@ -689,27 +701,27 @@ iCtrl CtrlList::insert(iCtrl ic, const std::pair<int, CtrlVal>& p)
 void CtrlList::insert(iCtrl first, iCtrl last)
 {
 #ifdef _CTRL_DEBUG_
-  printf("CtrlList::insert3 first frame:%d last frame:%d\n", first->first, last->first); 
+  printf("CtrlList::insert3 first frame:%u last frame:%d\n", first->first, last->first); 
 #endif
-  std::map<int, CtrlVal, std::less<int> >::insert(first, last);
+  CtrlList_t::insert(first, last);
   _guiUpdatePending = true;
 }
 
 void CtrlList::erase(iCtrl ictl)
 {
 #ifdef _CTRL_DEBUG_
-  printf("CtrlList::erase iCtrl frame:%d val:%f\n", ictl->second.frame, ictl->second.val);  
+  printf("CtrlList::erase iCtrl frame:%u val:%f\n", ictl->second.frame, ictl->second.val);  
 #endif
-  std::map<int, CtrlVal, std::less<int> >::erase(ictl);
+  CtrlList_t::erase(ictl);
   _guiUpdatePending = true;
 }
 
-std::map<int, CtrlVal, std::less<int> >::size_type CtrlList::erase(int frame)
+CtrlList_t::size_type CtrlList::erase(unsigned int frame)
 {
 #ifdef _CTRL_DEBUG_
-  printf("CtrlList::erase frame:%d\n", frame);  
+  printf("CtrlList::erase frame:%u\n", frame);  
 #endif
-  size_type res = std::map<int, CtrlVal, std::less<int> >::erase(frame);
+  size_type res = CtrlList_t::erase(frame);
   _guiUpdatePending = true;
   return res;
 }
@@ -717,11 +729,11 @@ std::map<int, CtrlVal, std::less<int> >::size_type CtrlList::erase(int frame)
 void CtrlList::erase(iCtrl first, iCtrl last)
 {
 #ifdef _CTRL_DEBUG_
-  printf("CtrlList::erase range first frame:%d val:%f second frame:%d val:%f\n", 
+  printf("CtrlList::erase range first frame:%u val:%f second frame:%u val:%f\n", 
          first->second.frame, first->second.val,
          last->second.frame, last->second.val);  
 #endif
-  std::map<int, CtrlVal, std::less<int> >::erase(first, last);
+  CtrlList_t::erase(first, last);
   _guiUpdatePending = true;
 }
 
@@ -730,7 +742,7 @@ void CtrlList::clear()
 #ifdef _CTRL_DEBUG_
   printf("CtrlList::clear\n");  
 #endif
-  std::map<int, CtrlVal, std::less<int> >::clear();
+  CtrlList_t::clear();
   _guiUpdatePending = true;
 }
 
@@ -739,7 +751,7 @@ void CtrlList::clear()
 //   Add, or replace, an event at time frame having value val. 
 //---------------------------------------------------------
 
-void CtrlList::add(int frame, double val)
+void CtrlList::add(unsigned int frame, double val)
       {
       iCtrl e = find(frame);
       if (e != end())
@@ -747,20 +759,20 @@ void CtrlList::add(int frame, double val)
             bool upd = (val != e->second.val);
             e->second.val = val;
 #ifdef _CTRL_DEBUG_
-            printf("CtrlList::add frame:%d val:%f\n", frame, val);  
+            printf("CtrlList::add frame:%u val:%f\n", frame, val);  
 #endif
             if(upd)
               _guiUpdatePending = true;
       }
       else
-            insert(std::pair<const int, CtrlVal> (frame, CtrlVal(frame, val)));
+            insert(CtrlListInsertPair_t(frame, CtrlVal(frame, val)));
       }
 
 //---------------------------------------------------------
 //   del
 //---------------------------------------------------------
 
-void CtrlList::del(int frame)
+void CtrlList::del(unsigned int frame)
       {
       iCtrl e = find(frame);
       if (e == end())
@@ -775,7 +787,7 @@ void CtrlList::del(int frame)
 //    from the automation value at the given time.
 //---------------------------------------------------------
 
-void CtrlList::updateCurValue(int frame)
+void CtrlList::updateCurValue(unsigned int frame)
 {
   double v = value(frame);
   bool upd = (v != _curVal);
@@ -837,7 +849,7 @@ void CtrlList::read(Xml& xml)
                   case Xml::Text:
                         {
                           int len = tag.length();
-                          int frame;
+                          unsigned int frame;
                           double val;
   
                           int i = 0;
@@ -857,7 +869,7 @@ void CtrlList::read(Xml& xml)
                                 if(i == len)
                                       break;
                                 
-                                frame = loc.toInt(fs, &ok);
+                                frame = loc.toUInt(fs, &ok);
                                 if(!ok)
                                 {
                                   printf("CtrlList::read failed reading frame string: %s\n", fs.toLatin1().constData());
@@ -912,21 +924,24 @@ void CtrlListList::add(CtrlList* vl)
 //   value
 //   Returns value at frame for controller with id ctrlId.
 //   cur_val_only means read the current 'manual' value, not from the list even if it is not empty.
-//   If passed a nextFrame, sets nextFrame to the next event frame, or -1 if no next frame (wide-open), or, 
+//   If passed a nextFrame, sets nextFrame to the next event frame, or 0 and eFrameValid false if no next frame (wide-open), or, 
 //    since CtrlList is a map, ZERO if should be replaced with some other frame by the caller (interpolation). 
 //---------------------------------------------------------
 
-double CtrlListList::value(int ctrlId, int frame, bool cur_val_only, int* nextFrame) const     
+double CtrlListList::value(int ctrlId, unsigned int frame, bool cur_val_only,
+                           unsigned int* nextFrame, bool* nextFrameValid) const
       {
       ciCtrlList cl = find(ctrlId);
       if (cl == end())
       {
+        if(nextFrameValid)
+          *nextFrameValid = false;
         if(nextFrame)
-          *nextFrame = -1;
+          *nextFrame = 0;
         return 0.0;
       }
       
-      return cl->second->value(frame, cur_val_only, nextFrame);  
+      return cl->second->value(frame, cur_val_only, nextFrame, nextFrameValid);
       }
 
 //---------------------------------------------------------
@@ -940,7 +955,7 @@ double CtrlListList::value(int ctrlId, int frame, bool cur_val_only, int* nextFr
 //    becomes disconcerting.
 //---------------------------------------------------------
 
-void CtrlListList::updateCurValues(int frame)
+void CtrlListList::updateCurValues(unsigned int frame)
 {
   for(ciCtrlList cl = begin(); cl != end(); ++cl)
     cl->second->updateCurValue(frame);

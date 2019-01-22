@@ -26,7 +26,7 @@
 #include <QString>
 #include <QMessageBox>
 
-#include "al/sig.h"  // Tim.
+#include "sig.h"  // Tim.
 #include "app.h"
 #include "midifile.h"
 #include "midi.h"
@@ -313,7 +313,7 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
 
 static void writeDeviceOrPortMeta(int port, MPEventList* mpel)
 {
-  if(port >= 0 && port < MIDI_PORTS)
+  if(port >= 0 && port < MusECore::MIDI_PORTS)
   {
     if(MusEGlobal::config.exportPortsDevices & MusEGlobal::PORT_NUM_META)
     {
@@ -468,6 +468,7 @@ void MusE::exportMidi()
             //          - copyright
             //          - time signature
             //          - tempo map
+            //          - cue points
             //---------------------------------------------------
 
             if (track_count == 0) {
@@ -534,9 +535,9 @@ void MusE::exportMidi()
                   //---------------------------------------------------
                   //    Write Signatures
                   //
-                  const AL::SigList* sl = &AL::sigmap;
-                  for (AL::ciSigEvent e = sl->begin(); e != sl->end(); ++e) {
-                        AL::SigEvent* event = e->second;
+                  const MusECore::SigList* sl = &MusEGlobal::sigmap;
+                  for (MusECore::ciSigEvent e = sl->begin(); e != sl->end(); ++e) {
+                        MusECore::SigEvent* event = e->second;
                         int sz = (MusEGlobal::config.exp2ByteTimeSigs ? 2 : 4); // export 2 byte timesigs instead of 4 ?
                         unsigned char data[sz];
                         data[0] = event->sig.z;
@@ -606,7 +607,7 @@ void MusE::exportMidi()
             std::set<int>::iterator iup = used_ports.find(port);
             if(iup == used_ports.end())
             {
-              if(port >= 0 && port < MIDI_PORTS)
+              if(port >= 0 && port < MusECore::MIDI_PORTS)
               {
                 if(track_count == 0 || MusEGlobal::config.smfFormat != 0)
                   MusECore::writeInitSeqOrInstrNameMeta(port, channel, l);

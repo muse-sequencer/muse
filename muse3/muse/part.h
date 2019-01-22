@@ -61,6 +61,7 @@ typedef CloneList::iterator iClone;
 class Part : public PosLen {
    public:
       enum HiddenEventsType { NoEventsHidden = 0, LeftEventsHidden, RightEventsHidden };
+      enum PartType { MidiPartType = 0x01, WavePartType = 0x02 };
       
       static Part* readFromXml(Xml&, Track*, bool doClone = false, bool toTrack = true);
    
@@ -85,10 +86,13 @@ class Part : public PosLen {
    public:
       Part(Track*);
       virtual ~Part();
+      
+      virtual PartType partType() const = 0;
+      
       virtual Part* duplicate() const;
       virtual Part* duplicateEmpty() const = 0;
       virtual Part* createNewClone() const; // this does NOT chain clones yet. Chain is updated only when the part is really added!
-      virtual void splitPart(int tickpos, Part*& p1, Part*& p2) const;
+      virtual void splitPart(unsigned int tickpos, Part*& p1, Part*& p2) const;
       
       void setSn(int n)                { _sn = n; }
       int clonemaster_sn() const       { return _clonemaster_sn; }
@@ -99,6 +103,10 @@ class Part : public PosLen {
       void setName(const QString& s)   { _name = s; }
       bool selected() const            { return _selected; }
       void setSelected(bool f)         { _selected = f; }
+      // Select or unselect a range of events. If t0 == t1, ALL events will be affected.
+      // The t0 and t1 can be ticks or frames depending on the type of events. Unused for now.
+      // Returns true if anything changed.
+      bool selectEvents(bool select, unsigned long t0 = 0, unsigned long t1 = 0);
       bool mute() const                { return _mute; }
       void setMute(bool b)             { _mute = b; }
       Track* track() const             { return _track; }
@@ -143,6 +151,9 @@ class MidiPart : public Part {
    public:
       MidiPart(MidiTrack* t) : Part((Track*)t) {}
       virtual ~MidiPart() {}
+      
+      virtual PartType partType() const { return MidiPartType; }
+      
       virtual MidiPart* duplicate() const;
       virtual MidiPart* duplicateEmpty() const;
       virtual MidiPart* createNewClone() const;
@@ -168,6 +179,9 @@ class WavePart : public Part {
    public:
       WavePart(WaveTrack* t);
       virtual ~WavePart() {}
+
+      virtual PartType partType() const { return WavePartType; }
+
       virtual WavePart* duplicate() const;
       virtual WavePart* duplicateEmpty() const;
       virtual WavePart* createNewClone() const;
@@ -188,39 +202,40 @@ class WavePart : public Part {
 //   PartList
 //---------------------------------------------------------
 
-typedef std::multimap<int, Part*, std::less<unsigned> >::iterator iPart;
-typedef std::multimap<int, Part*, std::less<unsigned> >::reverse_iterator riPart;
-typedef std::multimap<int, Part*, std::less<unsigned> >::const_iterator ciPart;
+typedef std::pair<unsigned int, Part*> PartListInsertPair_t;
+typedef std::multimap<unsigned int, Part*, std::less<unsigned int> > PartList_t;
 
-class PartList : public std::multimap<int, Part*, std::less<unsigned> > {
+class PartList : public PartList_t {
    public:
-      iPart findPart(unsigned tick);
-      iPart add(Part*);
+      iterator findPart(unsigned tick);
+      iterator add(Part*);
       void remove(Part* part);
       int index(const Part*) const;
       Part* find(int idx);
       void clearDelete() {
-            for (iPart i = begin(); i != end(); ++i)
+            for (iterator i = begin(); i != end(); ++i)
                   delete i->second;
             clear();
             }
             
       void addOperation(Part* part, PendingOperationList& ops); 
       void delOperation(Part* part, PendingOperationList& ops);
-      void movePartOperation(Part* part, int new_pos, PendingOperationList& ops, Track* track = 0);
+      void movePartOperation(Part* part, unsigned int new_pos, PendingOperationList& ops, Track* track = 0);
       };
+
+typedef PartList_t::iterator iPart;
+typedef PartList_t::reverse_iterator riPart;
+typedef PartList_t::const_iterator ciPart;
 
 extern void chainCheckErr(Part* p);
 extern void unchainTrackParts(Track* t);
 extern void chainTrackParts(Track* t);
 extern void addPortCtrlEvents(Part* part, bool doClones);
 extern void addPortCtrlEvents(const Event& event, Part* part, unsigned int tick, unsigned int len, Track* track, PendingOperationList& ops);
-extern void addPortCtrlEvents(Event& event, Part* part);
 extern void addPortCtrlEvents(Part* part, unsigned int tick, unsigned int len, Track* track, PendingOperationList& ops);
 extern void removePortCtrlEvents(Part* part, bool doClones);
 extern void removePortCtrlEvents(Part* part, Track* track, PendingOperationList& ops);
-extern void removePortCtrlEvents(Event& event, Part* part);
-extern void removePortCtrlEvents(const Event& event, Part* part, Track* track, PendingOperationList& ops);
+extern bool removePortCtrlEvents(const Event& event, Part* part, Track* track, PendingOperationList& ops);
 extern void modifyPortCtrlEvents(const Event& old_event, const Event& event, Part* part, PendingOperationList& ops);
 
 } // namespace MusECore

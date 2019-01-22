@@ -244,7 +244,7 @@ bool DPitchEdit::event(QEvent* e)
   }
 
   // Do not pass ANY events on to the parent.
-  Awl::PitchEdit::event(e);
+  PitchEdit::event(e);
   e->accept();
   return true;
 }
@@ -253,14 +253,16 @@ bool DPitchEdit::event(QEvent* e)
 //   draw
 //---------------------------------------------------------
 
-void DList::draw(QPainter& p, const QRect& rect)
+void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
       {
       using MusECore::WorkingDrumMapEntry;
 
-      int x = rect.x();
-      int y = rect.y();
-      int w = rect.width();
-      int h = rect.height();
+      const QRect ur = mapDev(mr);
+      
+      int ux = ur.x();
+      int uy = ur.y();
+      int uw = ur.width();
+      int uh = ur.height();
 
       //---------------------------------------------------
       //    Tracks
@@ -274,13 +276,13 @@ void DList::draw(QPainter& p, const QRect& rect)
 
       for (int instrument = 0; instrument < ourDrumMapSize; ++instrument) {
             int yy = instrument * TH;
-            if (yy+TH < y)
+            if (yy+TH < uy)
                   continue;
-            if (yy > y + h)
+            if (yy > uy + uh)
                   break;
             MusECore::DrumMap* dm = &ourDrumMap[instrument];
             if (dm == currentlySelected)
-                  p.fillRect(x, yy, w, TH, Qt::yellow);
+                  p.fillRect(ux, yy, uw, TH, Qt::yellow);
 //            else
 //                  p.eraseRect(x, yy, w, TH); DELETETHIS?
             QHeaderView *h = header;
@@ -693,9 +695,9 @@ void DList::draw(QPainter& p, const QRect& rect)
       //---------------------------------------------------
 
       p.setPen(Qt::gray);
-      int yy  = (y / TH) * TH;
-      for (; yy < y + h; yy += TH) {
-            p.drawLine(x, yy, x + w, yy);
+      int yy  = (uy / TH) * TH;
+      for (; yy < uy + uh; yy += TH) {
+            p.drawLine(ux, yy, ux + uw, yy);
             }
 
       if (drag == DRAG) {
@@ -703,8 +705,8 @@ void DList::draw(QPainter& p, const QRect& rect)
             int dy = startY - y;
             int yy = curY - dy;
             p.setPen(Qt::green);
-            p.drawLine(x, yy, x + w, yy);
-            p.drawLine(x, yy+TH, x + w, yy+TH);
+            p.drawLine(ux, yy, ux + uw, yy);
+            p.drawLine(ux, yy+TH, ux + uw, yy+TH);
             p.setPen(Qt::gray);
             }
 
@@ -714,10 +716,10 @@ void DList::draw(QPainter& p, const QRect& rect)
 
       p.setWorldMatrixEnabled(false);
       int n = header->count();
-      x = 0;
+      ux = 0;
       for (int i = 0; i < n; i++) {
-            x += header->sectionSize(header->visualIndex(i));
-            p.drawLine(x, 0, x, height());
+            ux += header->sectionSize(header->visualIndex(i));
+            p.drawLine(ux, 0, ux, height());
             }
       p.setWorldMatrixEnabled(true);
       }
@@ -741,8 +743,8 @@ bool DList::devicesPopupMenu(MusECore::DrumMap* t, int x, int y)
       int n = act->data().toInt();
       delete p;
 
-      const int openConfigId = MIDI_PORTS;
-      const int defaultId    = MIDI_PORTS + 1;
+      const int openConfigId = MusECore::MIDI_PORTS;
+      const int defaultId    = MusECore::MIDI_PORTS + 1;
 
       if(n < 0 || n > defaultId)     // Invalid item.
         return false;
@@ -1251,7 +1253,7 @@ void DList::valEdit(int line, int section)
                   break;
 
                   case COL_OUTCHANNEL:
-                  val_editor->setRange(0, MIDI_CHANNELS);
+                  val_editor->setRange(0, MusECore::MUSE_MIDI_CHANNELS);
                   // Default to track port if -1 and track channel if -1.
                   if(dm->channel != -1)
                     val_editor->setValue(dm->channel+1);
@@ -1281,6 +1283,7 @@ void DList::pitchEdit(int line, int section)
                      SLOT(pitchEdited()));
                   connect(pitch_editor, SIGNAL(escapePressed()),
                      SLOT(escapePressed()));
+                  connect(MusEGlobal::song, SIGNAL(midiNote(int, int)), pitch_editor, SLOT(midiNote(int,int)));
                   pitch_editor->setFrame(true);
                   }
             int colx = mapx(header->sectionPosition(section));
@@ -1582,8 +1585,8 @@ void DList::valEdited()
               val = -1;
             else
               val--;
-            if (val >= MIDI_CHANNELS)
-              val = MIDI_CHANNELS - 1;
+            if (val >= MusECore::MUSE_MIDI_CHANNELS)
+              val = MusECore::MUSE_MIDI_CHANNELS - 1;
             break;
 
         default: break;
@@ -1801,9 +1804,9 @@ void DList::tracklistChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void DList::songChanged(MusECore::SongChangedFlags_t flags)
+void DList::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if (flags & SC_DRUMMAP) {
+      if (flags._flags & SC_DRUMMAP) {
             redraw();
             }
       }

@@ -20,7 +20,7 @@
 //
 //=========================================================
 
-#include "al/sig.h"  // Tim.
+#include "sig.h"  // Tim.
 
 #include "marker.h"
 #include "markerview.h"
@@ -30,7 +30,7 @@
 #include "sync.h"
 #include "icons.h"
 #include "song.h"
-#include "awl/posedit.h"
+#include "posedit.h"
 
 #include <QCloseEvent>
 #include <QGroupBox>
@@ -120,7 +120,7 @@ void MarkerItem::setTick(unsigned v)
       QString s;
       int bar, beat;
       unsigned tick;
-      AL::sigmap.tickValues(v, &bar, &beat, &tick);
+      MusEGlobal::sigmap.tickValues(v, &bar, &beat, &tick);
       s = QString("%1.%2.%3")
           .arg(bar + 1,      4, 10, QLatin1Char('0'))
           .arg(beat + 1,     2, 10, QLatin1Char('0'))
@@ -241,11 +241,11 @@ MarkerView::MarkerView(QWidget* parent)
       QHBoxLayout *hbox = new QHBoxLayout;
 
       ///editTick = new PosEdit;
-      editTick = new Awl::PosEdit;
+      editTick = new PosEdit;
       editTick->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
          QSizePolicy::Fixed));
 
-      editSMPTE = new Awl::PosEdit;
+      editSMPTE = new PosEdit;
       editSMPTE->setSmpte(true);
       editSMPTE->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
          QSizePolicy::Fixed));
@@ -286,7 +286,7 @@ MarkerView::MarkerView(QWidget* parent)
       //    Rest
       //---------------------------------------------------
 
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       
       updateList();
 
@@ -428,7 +428,7 @@ void MarkerView::deleteMarker()
 //   songChanged
 //---------------------------------------------------------
 
-void MarkerView::songChanged(MusECore::SongChangedFlags_t /*flags*/)
+void MarkerView::songChanged(MusECore::SongChangedStruct_t /*flags*/)
 {
   updateList();
 }

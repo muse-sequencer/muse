@@ -32,7 +32,7 @@ namespace MusECore {
 // These are flags, usually passed by connecting to the songChanged() signal,
 //  which inform that various things have changed and appropriate action should 
 //  be taken (redraw, refill lists etc.) upon the signal's reception.
-// NOTE: Use the SongChangedFlags_t typedef to support all the bits.
+// NOTE: Use the SongChangedStruct_t typedef to support all the bits.
 
 #define SC_TRACK_INSERTED             1
 #define SC_TRACK_REMOVED              2
@@ -79,8 +79,107 @@ namespace MusECore {
 #define SC_EVERYTHING                 -1           // global update
   
 typedef int64_t SongChangedFlags_t;
+typedef int64_t SongChangedSubFlags_t;
+
+struct SongChangedStruct_t
+{
+  // Combination of SC_XX flags.
+  SongChangedFlags_t _flags;
+  // Additional optional flags.
+  SongChangedSubFlags_t _subFlags;
+  // An optional pointer to the object which initiated this song change.
+  // The object's own songChanged() slot (if present) can use this to
+  //  ignore self-generated songChanged signals. This is the only practical
+  //  mechanism available for objects needing to do so. There's really
+  //  no other easy way to ignore such signals.
+  void* _sender;
+  
+  SongChangedStruct_t(SongChangedFlags_t flags = 0, SongChangedSubFlags_t subFlags = 0, void* sender = 0) :
+    _flags(flags), _subFlags(subFlags), _sender(sender) { };
+    
+  SongChangedStruct_t& operator|=(const SongChangedStruct_t& f)
+  { _flags |= f._flags; _subFlags |= f._subFlags; return *this; }
+    
+  SongChangedStruct_t& operator|=(SongChangedFlags_t flags)
+  { _flags |= flags; return *this; }
+    
+  SongChangedStruct_t& operator&=(const SongChangedStruct_t& f)
+  { _flags &= f._flags; _subFlags &= f._subFlags; return *this; }
+    
+  SongChangedStruct_t& operator&=(SongChangedFlags_t flags)
+  { _flags &= flags; return *this; }
+    
+//   friend SongChangedStruct_t operator|(const SongChangedStruct_t& a, const SongChangedStruct_t& b)
+//   { SongChangedStruct_t c = a; return c |= b; }
+  friend SongChangedStruct_t operator|(SongChangedStruct_t a, const SongChangedStruct_t& b)
+  { return a |= b; }
+   
+//   friend SongChangedStruct_t operator|(const SongChangedStruct_t& a, SongChangedFlags_t b)
+//   { SongChangedStruct_t c = a; return c |= b; }
+//   friend SongChangedStruct_t operator|(SongChangedStruct_t a, SongChangedFlags_t b)
+//   { return a |= b; }
+  
+  friend SongChangedFlags_t operator|(const SongChangedStruct_t& a, SongChangedFlags_t b)
+  { return a._flags | b; }
+  
+//   friend SongChangedStruct_t operator&(const SongChangedStruct_t& a, const SongChangedStruct_t& b)
+//   { SongChangedStruct_t c = a; return c &= b; }
+  friend SongChangedStruct_t operator&(SongChangedStruct_t a, const SongChangedStruct_t& b)
+  { return a &= b; }
+   
+// //   friend SongChangedStruct_t operator&(const SongChangedStruct_t& a, SongChangedFlags_t b)
+// //   { SongChangedStruct_t c = a; return c &= b; }
+// //   friend SongChangedStruct_t operator&(SongChangedStruct_t a, SongChangedFlags_t b)
+// //   { return a &= b; }
+  
+//   friend SongChangedFlags_t operator&(const SongChangedStruct_t& a, SongChangedFlags_t b)
+//   { return a._flags & b; }
+};
+
 typedef int64_t EventID_t;
 #define MUSE_INVALID_EVENT_ID   -1
+
+enum RelevantSelectedEvents { NoEventsRelevant = 0x00, NotesRelevant = 0x01, ControllersRelevant = 0x02,
+                SysexRelevant = 0x04, MetaRelevant = 0x08, WaveRelevant = 0x10,
+                AllEventsRelevant = NotesRelevant | ControllersRelevant |
+                                    SysexRelevant | MetaRelevant | WaveRelevant};
+typedef int RelevantSelectedEvents_t;
+
+enum FunctionOptions {
+  FunctionNoOptions = 0x00,
+  // For pasting. Whether to cut the given items before pasting.
+  // Don't call cut_items() AND then set this flag on paste_at().
+  // Here, cutting is usually reserved for direct pasting
+  //  (calling paste_items_at() with an EventTagList*).
+  FunctionCutItems = 0x01,
+  // Always paste into a new part.
+  FunctionPasteAlwaysNewPart = 0x02,
+  // Never paste into a new part.
+  FunctionPasteNeverNewPart = 0x04,
+  // Erase existing target controller items first.
+  FunctionEraseItems = 0x08,
+  // If FunctionEraseItems is set: How to handle the last item in any 'cluster' of controller events.
+  FunctionEraseItemsWysiwyg = 0x10,
+  // If FunctionEraseItems is set: Erase existing target items in empty source space between 'clusters'.
+  FunctionEraseItemsInclusive = 0x20,
+  FunctionEraseItemsDefault =
+    FunctionEraseItems | FunctionEraseItemsWysiwyg,
+  FunctionAllOptions =
+    FunctionCutItems | FunctionPasteAlwaysNewPart | FunctionPasteNeverNewPart |
+    FunctionEraseItems | FunctionEraseItemsWysiwyg | FunctionEraseItemsInclusive
+};
+typedef int FunctionOptions_t;
+
+struct FunctionOptionsStruct
+{
+  FunctionOptions_t _flags;
+  
+  FunctionOptionsStruct(const FunctionOptions_t& flags = FunctionEraseItemsDefault) : _flags(flags) { }
+  void clear() { _flags = FunctionNoOptions; }
+  void appendFlags(const FunctionOptions_t& flags) { _flags |= flags; }
+  void removeFlags(const FunctionOptions_t& flags) { _flags &= ~flags; }
+};
+
 
 }   // namespace MusECore
 

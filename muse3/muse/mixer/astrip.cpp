@@ -553,7 +553,7 @@ void AudioComponentRack::controllerPressed(double v, int id)
 void AudioComponentRack::controllerReleased(double v, int id)
 {
   DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::controllerReleased id:%d\n", id);
-  AutomationType at = _track->automationType();
+  MusECore::AutomationType at = _track->automationType();
   double val = 0.0;
   iComponentWidget ic = _components.find(controllerComponent, -1, id);
   if(ic != _components.end())
@@ -564,7 +564,7 @@ void AudioComponentRack::controllerReleased(double v, int id)
     cw._pressed = false;
   }
   _track->stopAutoRecord(id, val);
-  if(at == AUTO_OFF || at == AUTO_TOUCH)
+  if(at == MusECore::AUTO_OFF || at == MusECore::AUTO_TOUCH)
   {
     DEBUG_AUDIO_STRIP(stderr, "    calling enableController(true)\n");
     _track->enableController(id, true);
@@ -653,21 +653,21 @@ void AudioComponentRack::auxRightClicked(QPoint, int)
 //   songChanged
 //---------------------------------------------------------
 
-void AudioComponentRack::songChanged(MusECore::SongChangedFlags_t flags)
+void AudioComponentRack::songChanged(MusECore::SongChangedStruct_t flags)
 {
   // Scan controllers.
-  if(flags & (SC_RACK | SC_AUDIO_CONTROLLER_LIST))
+  if(flags._flags & (SC_RACK | SC_AUDIO_CONTROLLER_LIST))
   {
     scanControllerComponents();
   }
   
   // Take care of scanning aux before setting aux enabled below.
-  if(flags & SC_AUX) 
+  if(flags._flags & SC_AUX) 
   {
     scanAuxComponents();
   }
   
-  if(flags & SC_ROUTE) {
+  if(flags._flags & SC_ROUTE) {
         // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
         // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
         setAuxEnabled(_track->auxRefCount() == 0);
@@ -922,45 +922,45 @@ void AudioStrip::configChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
+void AudioStrip::songChanged(MusECore::SongChangedStruct_t val)
       {
       MusECore::AudioTrack* src = static_cast<MusECore::AudioTrack*>(track);
 
       // Do channels before MusEGlobal::config...
-      if (val & SC_CHANNELS)
+      if (val._flags & SC_CHANNELS)
         updateChannels();
       
       // Catch when label font, or configuration min slider and meter values change.
-      if (val & SC_CONFIG)
+      if (val._flags & SC_CONFIG)
       {
         // So far only 1 instance of sending SC_CONFIG in the entire app, in instrument editor when a new instrument is saved.
       }
       
-      if (mute && (val & SC_MUTE)) {      // mute && off
+      if (mute && (val._flags & SC_MUTE)) {      // mute && off
             mute->blockSignals(true);
             mute->setChecked(src->mute());
             mute->blockSignals(false);
             updateMuteIcon();
             updateOffState();
             }
-      if (solo && (val & (SC_SOLO | SC_ROUTE))) {
+      if (solo && (val._flags & (SC_SOLO | SC_ROUTE))) {
             solo->blockSignals(true);
             solo->setChecked(track->solo());
             solo->blockSignals(false);
             solo->setIconSetB(track->internalSolo());
             updateMuteIcon();
             }
-      if (val & SC_RECFLAG)
+      if (val._flags & SC_RECFLAG)
       {
             setRecordFlag(track->recordFlag());
       }
-      if (val & SC_TRACK_MODIFIED)
+      if (val._flags & SC_TRACK_MODIFIED)
       {
             setLabelText();
       }      
       //if (val & SC_CHANNELS)
       //      updateChannels();
-      if (val & SC_ROUTE) {
+      if (val._flags & SC_ROUTE) {
             updateRouteButtons();
             if (pre) {
                   pre->blockSignals(true);
@@ -969,7 +969,7 @@ void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
                   }
           }
 
-      if(val & SC_TRACK_REC_MONITOR)
+      if(val._flags & SC_TRACK_REC_MONITOR)
       {
         // Set record monitor.
         if(_recMonitor) // && (_recMonitor->isChecked() != track->recMonitor()))
@@ -985,17 +985,17 @@ void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
       _infoRack->songChanged(val);
       _lowerRack->songChanged(val);
 
-      if (autoType && (val & SC_AUTOMATION)) {
+      if (autoType && (val._flags & SC_AUTOMATION)) {
             autoType->blockSignals(true);
             autoType->setCurrentItem(track->automationType());
             QPalette palette;
             //QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
-            if(track->automationType() == AUTO_TOUCH || track->automationType() == AUTO_WRITE)
+            if(track->automationType() == MusECore::AUTO_TOUCH || track->automationType() == MusECore::AUTO_WRITE)
                   {
                   palette.setColor(QPalette::Button, QColor(215, 76, 39)); // red
                   autoType->setPalette(palette);
                   }
-            else if(track->automationType() == AUTO_READ)
+            else if(track->automationType() == MusECore::AUTO_READ)
                   {
                   palette.setColor(QPalette::Button, QColor(100, 172, 49)); // green
                   autoType->setPalette(palette);
@@ -1219,10 +1219,10 @@ void AudioStrip::volumeReleased(double val, int id)
         return;
 
       MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(track);
-      AutomationType atype = at->automationType();
+      MusECore::AutomationType atype = at->automationType();
       DEBUG_AUDIO_STRIP(stderr, "    val:%.20f\n", volume);
       at->stopAutoRecord(id, volume);
-      if(atype == AUTO_OFF || atype == AUTO_TOUCH)
+      if(atype == MusECore::AUTO_OFF || atype == MusECore::AUTO_TOUCH)
       {
         DEBUG_AUDIO_STRIP(stderr, "    calling enableController(true)\n");
         at->enableController(id, true);
@@ -1443,7 +1443,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
             connect(_clipperLabel[ch], SIGNAL(clicked()), SLOT(resetClipper()));
             
       }
-      for (; ch < MAX_CHANNELS; ++ch)
+      for (; ch < MusECore::MAX_CHANNELS; ++ch)
       {
             meter[ch] = 0;
             _clipperLabel[ch] = 0;
@@ -1732,19 +1732,19 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       autoType->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       //autoType->setAutoFillBackground(true);
       
-      autoType->addAction(tr("Off"), AUTO_OFF);
-      autoType->addAction(tr("Read"), AUTO_READ);
-      autoType->addAction(tr("Touch"), AUTO_TOUCH);
-      autoType->addAction(tr("Write"), AUTO_WRITE);
+      autoType->addAction(tr("Off"), MusECore::AUTO_OFF);
+      autoType->addAction(tr("Read"), MusECore::AUTO_READ);
+      autoType->addAction(tr("Touch"), MusECore::AUTO_TOUCH);
+      autoType->addAction(tr("Write"), MusECore::AUTO_WRITE);
       autoType->setCurrentItem(at->automationType());
 
       QPalette palette;
-      if(at->automationType() == AUTO_TOUCH || at->automationType() == AUTO_WRITE)
+      if(at->automationType() == MusECore::AUTO_TOUCH || at->automationType() == MusECore::AUTO_WRITE)
             {
             palette.setColor(QPalette::Button, QColor(215, 76, 39));  // red
             autoType->setPalette(palette);
             }
-      else if(at->automationType() == AUTO_READ)
+      else if(at->automationType() == MusECore::AUTO_READ)
             {
             palette.setColor(QPalette::Button, QColor(100, 172, 49));  // green
             autoType->setPalette(palette);

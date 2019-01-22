@@ -23,7 +23,7 @@
 
 #include "assert.h"
 
-#include "al/sig.h"  
+#include "sig.h"  
 #include "keyevent.h"
 
 #include "undo.h"
@@ -72,7 +72,8 @@ const char* UndoOp::typeName()
             "MoveTrack",
             "ModifyClip", "ModifyMarker",
             "ModifySongLen", "DoNothing",
-            "EnableAllAudioControllers"
+            "EnableAllAudioControllers",
+            "GlobalSelectAllEvents"
             };
       return name[type];
       }
@@ -231,14 +232,14 @@ void UndoList::clearDelete()
 //    startUndo
 //---------------------------------------------------------
 
-void Song::startUndo()
+void Song::startUndo(void* sender)
       {
       redoList->clearDelete(); // redo must be invalidated when a new undo is started
       MusEGlobal::redoAction->setEnabled(false);
       setUndoRedoText();
       
       undoList->push_back(Undo());
-      updateFlags = 0;
+      updateFlags = SongChangedStruct_t(0, 0, sender);
       undoMode = true;
       }
 
@@ -246,7 +247,7 @@ void Song::startUndo()
 //   endUndo
 //---------------------------------------------------------
 
-void Song::endUndo(SongChangedFlags_t flags)
+void Song::endUndo(SongChangedStruct_t flags)
       {
       // It is possible the current list may be empty after our optimizations during appending 
       //  of given operations to the current list. (Or if no operations were pushed between startUndo and endUndo).
@@ -314,6 +315,11 @@ void Song::setUndoRedoText()
     }
     MusEGlobal::redoAction->setText(s);
   }
+}
+
+void Undo::push_front(const UndoOp& op)
+{
+  insert(begin(), op);
 }
 
 void Undo::push_back(const UndoOp& op)
@@ -493,6 +499,9 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
       fprintf(stderr, "Undo::insert: EnableAllAudioControllers\n");
     break;
     
+    case UndoOp::GlobalSelectAllEvents:
+      fprintf(stderr, "Undo::insert: GlobalSelectAllEvents\n");
+    break;
     
     default:
     break;
@@ -769,15 +778,38 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           }
           else if(uo.type == UndoOp::ModifyEvent && uo.part == n_op.part)  
           {
-            if(uo.oEvent == n_op.oEvent && uo.nEvent == n_op.nEvent)
+            // For testing...
+            //fprintf(stderr, "MusE: DIAGNOSTIC: Undo::insert(): Double ModifyEvent... checking for errors...\n");
+              
+            if(uo.oEvent == n_op.oEvent)
             {
-              fprintf(stderr, "MusE error: Undo::insert(): Double ModifyEvent. Ignoring.\n");
-              return;
+              if(uo.nEvent == n_op.nEvent)
+              {
+                fprintf(stderr, "MusE error: Undo::insert(): Double ModifyEvent. Ignoring.\n");
+                return;
+              }
+              else
+              {
+                // For testing...
+                //fprintf(stderr, "MusE: Undo::insert(): Double ModifyEvent. Same old events. Merging.\n");
+                
+                // Two modify commands with old events the same is equivalent to just one modify command.
+                // Replace the existing ModifyEvent command's new event with the requested ModifyEvent command's new event.
+                uo.nEvent = n_op.nEvent;
+                return;  
+              }
             }
-            // Are inner add/delete pair the same event?
+            // REMOVE Tim. citem. Added. Remove. I think we CAN replace two different events with the same event.
+            //else if(uo.nEvent == n_op.nEvent)
+            //{
+            //  // Cannot replace two different events with the same event.
+            //  fprintf(stderr, "MusE error: Undo::insert(): Double ModifyEvent: different old events but same new event. Ignoring.\n");
+            //  return;
+            //}
+            // Are inner new/old pair the same event?
             else if(uo.nEvent == n_op.oEvent) 
             {
-              // Are outer delete/add pair the same event?
+              // Are outer old/new pair the same event?
               if(uo.oEvent == n_op.nEvent)
               {
                 // First ModifyEvent old event and second ModifyEvent new event are both the same, equivalent to doing nothing.
@@ -787,18 +819,24 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
               }
               else
               {
-                // Outer delete/add pair are not the same event... 
-                // Transform the existing ModifyEvent operation into a DeleteEvent.
-                uo.type = UndoOp::DeleteEvent;
-                uo.nEvent = uo.oEvent;
-                // Transform the requested ModifyEvent operation into an AddEvent.
-                n_op.type = UndoOp::AddEvent;
-                // Allow it to add...
+                // For testing...
+                //fprintf(stderr, "MusE: Undo::insert(): Double ModifyEvent. Inner new/old pair same, outer old/new pair not same. Merging to one ModifyEvent.\n");
+            
+                // Inner new/old pair are the same event and outer old/new pair are not the same event.
+                // A modify command with new event followed by a modify command with old event the same
+                //  is equivalent to just one modify command. Replace the existing ModifyEvent command's
+                //  new event with the requested ModifyEvent command's new event.
+                uo.nEvent = n_op.nEvent;
+                return;  
               }
             }
-            // Inner add/delete pair are not the same event. Are outer delete/add pair the same event?
+            // Inner new/old pair are not the same event. Are outer old/new pair the same event?
             else if(uo.oEvent == n_op.nEvent) 
             {
+                // For testing...
+                //fprintf(stderr, "MusE: Undo::insert(): Double ModifyEvent. Inner new/old pair not same,"
+                // " outer old/new pair same. Transforming to Add and Delete.\n");
+            
               // Transform the existing ModifyEvent operation into an AddEvent.
               uo.type = UndoOp::AddEvent;
               // Transform the requested ModifyEvent operation into a DeleteEvent.
@@ -809,8 +847,14 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           }
           else if(uo.type == UndoOp::AddEvent && uo.part == n_op.part)
           {
+            // For testing...
+            //fprintf(stderr, "MusE: Undo::insert(): AddEvent then ModifyEvent...\n");
+            
             if(uo.nEvent == n_op.oEvent)
             {
+              // For testing...
+              //fprintf(stderr, "MusE: Undo::insert(): AddEvent then ModifyEvent. Same event. Merging to AddEvent.\n");
+            
               // Add followed by modify with old event same as added event, is equivalent to just adding modify's new event.
               // Replace the existing AddEvent command's event with the requested ModifyEvent command's new event.
               uo.nEvent = n_op.nEvent;
@@ -833,6 +877,9 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             }
             if(uo.nEvent == n_op.nEvent)
             {
+              // For testing...
+              //fprintf(stderr, "MusE: Undo::insert(): DeleteEvent then ModifyEvent. Same event. Merging to DeleteEvent.\n");
+            
               // Delete followed by modify with new event same as deleted event, is equivalent to just deleting modify's old event.
               // Replace the existing DeleteEvent command's event with the requested ModifyEvent command's old event.
               uo.nEvent = n_op.oEvent;
@@ -1263,6 +1310,24 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           }
         break;
         
+        case UndoOp::GlobalSelectAllEvents:
+          if(uo.type == UndoOp::GlobalSelectAllEvents)
+          {
+            if(uo.a == n_op.a)
+            {
+              fprintf(stderr, "MusE error: Undo::insert(): Double GlobalSelectAllEvents. Ignoring.\n");
+              return;
+            }
+            else
+            {
+              // Special: Do not 'cancel' out this one. The selecions may need to affect all events.
+              // Simply replace a with the new value.
+              uo.a = n_op.a;
+              return;  
+            }
+          }
+        break;
+        
         // NOTE Some other undo op types may need treatment as well !
         
         default:
@@ -1313,41 +1378,84 @@ bool Undo::merge_combo(const Undo& other)
   return mergeable;
 }
 
-bool Song::applyOperation(const UndoOp& op, bool doUndo)
+bool Song::applyOperation(const UndoOp& op, OperationType type, void* sender)
 {
 	Undo operations;
 	operations.push_back(op);
-	return applyOperationGroup(operations, doUndo);
+	return applyOperationGroup(operations, type, sender);
 }
 
-bool Song::applyOperationGroup(Undo& group, bool doUndo)
+
+bool Song::applyOperationGroup(Undo& group, OperationType type, void* sender)
 {
-      if (!group.empty())
-      {
-            if (doUndo)
-                 startUndo();
+  if (!group.empty())
+  {
+    switch(type)
+    {
+      case OperationExecute:
+      case OperationUndoable:
+        undoMode = false;
+      break;
+      
+      case OperationExecuteUpdate:
+      case OperationUndoableUpdate:
+        // Clear the updateFlags and set sender.
+        updateFlags = SongChangedStruct_t(0, 0, sender);
+        undoMode = false;
+      break;
+        
+      case OperationUndoMode:
+        undoMode = true;
+        // Also clears updateFlags and sets sender for us.
+        startUndo(sender);
+      break;
+    }
 
-            MusEGlobal::audio->msgExecuteOperationGroup(group);
-            
-            // append all elements from "group" to the end of undoList->back().
-            if(!undoList->empty())
-            {
-              Undo& curUndo = undoList->back();
-              curUndo.insert(curUndo.end(), group.begin(), group.end());
-              if (group.combobreaker)
-                 curUndo.combobreaker=true;
-            }
-            
-            if (doUndo)
-                 endUndo(0);
-            
-            return doUndo;
-      }
-      else
-            return false;
+    MusEGlobal::audio->msgExecuteOperationGroup(group);
+    
+    switch(type)
+    {
+      case OperationExecute:
+      case OperationExecuteUpdate:
+      break;
+      
+      case OperationUndoable:
+      case OperationUndoableUpdate:
+      case OperationUndoMode:
+        // append all elements from "group" to the end of undoList->back().
+        if(!undoList->empty())
+        {
+          Undo& curUndo = undoList->back();
+          curUndo.insert(curUndo.end(), group.begin(), group.end());
+          if (group.combobreaker)
+            curUndo.combobreaker=true;
+        }
+      break;
+    }
+
+    switch(type)
+    {
+      case OperationExecute:
+      case OperationUndoable:
+        return false;
+      break;
+      
+      case OperationExecuteUpdate:
+      case OperationUndoableUpdate:
+        emit songChanged(updateFlags);
+        return false;
+      break;
+      
+      case OperationUndoMode:
+        // Also emits songChanged and resets undoMode.
+        endUndo(0);
+        return true;
+      break;
+    }
+  }
+        
+  return false;
 }
-
-
 
 //---------------------------------------------------------
 //   revertOperationGroup2
@@ -1360,20 +1468,20 @@ void Song::revertOperationGroup2(Undo& /*operations*/)
 
         // Special for tempo: Need to normalize the tempo list, and resync audio. 
         // To save time this is done here, not item by item.
-        if(updateFlags & SC_TEMPO)
+        if(updateFlags._flags & SC_TEMPO)
         {
           MusEGlobal::tempomap.normalize();
           MusEGlobal::audio->reSyncAudio();
         }
         // Special for sig: Need to normalize the signature list. 
         // To save time this is done here, not item by item.
-        if(updateFlags & SC_SIG)
-          AL::sigmap.normalize();
+        if(updateFlags._flags & SC_SIG)
+          MusEGlobal::sigmap.normalize();
 
         // Special for track inserted: If it's an aux track, need to add missing aux sends to all tracks,
         //  else if it's another audio track need to add aux sends to it.
         // To save from complexity this is done here, after all the operations.
-        if(updateFlags & SC_TRACK_INSERTED)
+        if(updateFlags._flags & SC_TRACK_INSERTED)
         {
           int n = _auxs.size();
           for(iTrack i = _tracks.begin(); i != _tracks.end(); ++i) 
@@ -1397,20 +1505,20 @@ void Song::executeOperationGroup2(Undo& /*operations*/)
         
         // Special for tempo if altered: Need to normalize the tempo list, and resync audio. 
         // To save time this is done here, not item by item.
-        if(updateFlags & SC_TEMPO)
+        if(updateFlags._flags & SC_TEMPO)
         {
           MusEGlobal::tempomap.normalize();
           MusEGlobal::audio->reSyncAudio();
         }
         // Special for sig: Need to normalize the signature list. 
         // To save time this is done here, not item by item.
-        if(updateFlags & SC_SIG)
-          AL::sigmap.normalize();
+        if(updateFlags._flags & SC_SIG)
+          MusEGlobal::sigmap.normalize();
         
         // Special for track inserted: If it's an aux track, need to add missing aux sends to all tracks,
         //  else if it's another audio track need to add aux sends to it.
         // To save from complexity this is done here, after all the operations.
-        if(updateFlags & SC_TRACK_INSERTED)
+        if(updateFlags._flags & SC_TRACK_INSERTED)
         {
           int n = _auxs.size();
           for(iTrack i = _tracks.begin(); i != _tracks.end(); ++i) 
@@ -1436,7 +1544,8 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
              type_==AddTempo || type_==DeleteTempo || type_==ModifyTempo || 
              type_==SetTempo || type_==SetStaticTempo || type_==SetGlobalTempo ||  
              type_==AddSig || type_==DeleteSig ||
-             type_==ModifySongLen || type_==MoveTrack);
+             type_==ModifySongLen || type_==MoveTrack ||
+             type_==GlobalSelectAllEvents);
       
       type = type_;
       a  = a_;
@@ -1515,9 +1624,9 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
           
           // Must rasterize the tick value HERE instead of in SigMap::addOperation(),
           //  so that the rasterized value is recorded in the undo item.
-          a = AL::sigmap.raster1(a, 0);
+          a = MusEGlobal::sigmap.raster1(a, 0);
           
-          AL::iSigEvent ise = AL::sigmap.upper_bound(a);
+          MusECore::iSigEvent ise = MusEGlobal::sigmap.upper_bound(a);
           if((int)ise->second->tick == a)
           {
             // Transform the AddSig operation into a ModifySig.
@@ -1554,7 +1663,7 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
       
       }
 
-UndoOp::UndoOp(UndoType type_, int tick, const AL::TimeSignature old_sig, const AL::TimeSignature new_sig, bool noUndo)
+UndoOp::UndoOp(UndoType type_, int tick, const MusECore::TimeSignature old_sig, const MusECore::TimeSignature new_sig, bool noUndo)
 {
       assert(type_==ModifySig);
       type    = type_;
@@ -1611,7 +1720,8 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, bool selected_, bool sel_old_,
     _noUndo = noUndo;
 }
 
-UndoOp::UndoOp(UndoType type_, const Part* part_, int old_len_or_pos, int new_len_or_pos, Pos::TType new_time_type_, const Track* oTrack, const Track* nTrack, bool noUndo)
+UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_len_or_pos, unsigned int new_len_or_pos,
+               Pos::TType new_time_type_, const Track* oTrack, const Track* nTrack, bool noUndo)
 {
     assert(type_== ModifyPartLength || type_== MovePart);
     assert(part_);
@@ -1735,32 +1845,24 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Part* part_, const QString& old_nam
 {
     assert(type_==ModifyPartName);
     assert(part_);
-//    assert(old_name);
-//    assert(new_name);
     
     type=type_;
     part=part_;
     _noUndo = noUndo;
     _oldName = new QString(old_name);
     _newName = new QString(new_name);
-    //strcpy(_oldName, old_name);
-    //strcpy(_newName, new_name);
 }
 
 UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, const QString& old_name, const QString& new_name, bool noUndo)
 {
   assert(type_==ModifyTrackName);
   assert(track_);
-//  assert(old_name);
-//  assert(new_name);
     
   type = type_;
   track = track_;
   _noUndo = noUndo;
   _oldName = new QString(old_name);
   _newName = new QString(new_name);
-//  strcpy(_oldName, old_name);
-//  strcpy(_newName, new_name);
 }
 
 UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, int oldChanOrCtrlID, int newChanOrCtrlFrame, bool noUndo)
@@ -1883,11 +1985,11 @@ void Song::revertOperationGroup1(Undo& operations)
             Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::SelectPart:
-                        editable_part->setSelected(i->selected_old);
+                        pendingOperations.add(PendingOperationItem(editable_part, i->selected_old, PendingOperationItem::SelectPart));
                         updateFlags |= SC_PART_SELECTION;
                         break;
                   case UndoOp::SelectEvent:
-			selectEvent(i->nEvent, editable_part, i->selected_old);
+                        pendingOperations.add(PendingOperationItem(editable_part, i->nEvent, i->selected_old, PendingOperationItem::SelectEvent));
                         updateFlags |= SC_SELECTION;
                         break;
                         
@@ -2171,6 +2273,12 @@ void Song::revertOperationGroup1(Undo& operations)
 #endif                        
                         editable_part->track()->parts()->delOperation(editable_part, pendingOperations);
                         updateFlags |= SC_PART_REMOVED;
+                        // If the part had events, then treat it as if they were removed with separate DeleteEvent operations.
+                        // Even if they will be deleted later in this operations group with actual separate DeleteEvent operations,
+                        //  that's an SC_EVENT_REMOVED anyway, so hopefully no harm. This fixes a problem with midi controller canvas
+                        //  not updating after such a 'delete part with events, no separate AddEvents were used when creating the part'.
+                        if(!editable_part->events().empty())
+                          updateFlags |= SC_EVENT_REMOVED;
                         break;
                     
                   case UndoOp::DeletePart:
@@ -2184,6 +2292,11 @@ void Song::revertOperationGroup1(Undo& operations)
                         
                         editable_part->track()->parts()->addOperation(editable_part, pendingOperations);
                         updateFlags |= SC_PART_INSERTED;
+                        // If the part has events, then treat it as if they were inserted with separate AddEvent operations.
+                        // Even if some will be inserted later in this operations group with actual separate AddEvent operations,
+                        //  that's an SC_EVENT_INSERTED anyway, so should be no harm.
+                        if(!editable_part->events().empty())
+                          updateFlags |= SC_EVENT_INSERTED;
                         break;
 
                         
@@ -2342,7 +2455,7 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:DeleteTempo ** calling tempomap.addOperation tick:%d tempo:%d\n", i->a, i->b);
 #endif                        
-                        MusEGlobal::tempomap.addOperation(i->a, i->b, pendingOperations);
+                        pendingOperations.addTempoOperation(i->a, i->b, &MusEGlobal::tempomap);
                         updateFlags |= SC_TEMPO;
                         break;
                         
@@ -2350,7 +2463,7 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:AddTempo ** calling tempomap.delOperation tick:%d\n", i->a);
 #endif                        
-                        MusEGlobal::tempomap.delOperation(i->a, pendingOperations);
+                        pendingOperations.delTempoOperation(i->a, &MusEGlobal::tempomap);
                         updateFlags |= SC_TEMPO;
                         break;
                         
@@ -2358,7 +2471,7 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:ModifyTempo ** calling tempomap.addOperation tick:%d tempo:%d\n", i->a, i->b);
 #endif                        
-                        MusEGlobal::tempomap.addOperation(i->a, i->b, pendingOperations);
+                        pendingOperations.addTempoOperation(i->a, i->b, &MusEGlobal::tempomap);
                         updateFlags |= SC_TEMPO;
                         break;
                         
@@ -2394,25 +2507,26 @@ void Song::revertOperationGroup1(Undo& operations)
                         
                   case UndoOp::DeleteSig:
 #ifdef _UNDO_DEBUG_
-                        fprintf(stderr, "Song::revertOperationGroup1:DeleteSig ** calling sigmap.addOperation\n");
+                        fprintf(stderr, "Song::revertOperationGroup1:DeleteSig ** calling MusEGlobal::sigmap.addOperation\n");
 #endif                        
-                        AL::sigmap.addOperation(i->a, AL::TimeSignature(i->b, i->c), pendingOperations);
+                        pendingOperations.addTimeSigOperation(i->a, MusECore::TimeSignature(i->b, i->c), &MusEGlobal::sigmap);
                         updateFlags |= SC_SIG;
                         break;
                         
                   case UndoOp::AddSig:
 #ifdef _UNDO_DEBUG_
-                        fprintf(stderr, "Song::revertOperationGroup1:AddSig ** calling sigmap.delOperation\n");
+                        fprintf(stderr, "Song::revertOperationGroup1:AddSig ** calling MusEGlobal::sigmap.delOperation\n");
 #endif                        
-                        AL::sigmap.delOperation(i->a, pendingOperations);
+                        pendingOperations.delTimeSigOperation(i->a, &MusEGlobal::sigmap);
                         updateFlags |= SC_SIG;
                         break;
                         
                   case UndoOp::ModifySig:
 #ifdef _UNDO_DEBUG_
-                        fprintf(stderr, "Song::revertOperationGroup1:ModifySig ** calling sigmap.addOperation\n");
+                        fprintf(stderr, "Song::revertOperationGroup1:ModifySig ** calling MusEGlobal::sigmap.addOperation\n");
 #endif                        
-                        AL::sigmap.addOperation(i->a, AL::TimeSignature(i->b, i->c), pendingOperations);
+                        // TODO: Hm should that be ->d and ->e like in executeOperationGroup1?
+                        pendingOperations.addTimeSigOperation(i->a, MusECore::TimeSignature(i->b, i->c), &MusEGlobal::sigmap);
                         updateFlags |= SC_SIG;
                         break;
                         
@@ -2446,7 +2560,7 @@ void Song::revertOperationGroup1(Undo& operations)
                         fprintf(stderr, "Song::revertOperationGroup1:ModifySongLen ** adding ModifySongLen operation\n");
 #endif                        
                         pendingOperations.add(PendingOperationItem(i->b, PendingOperationItem::ModifySongLength));
-                        updateFlags |= -1;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
+                        updateFlags |= SC_EVERYTHING;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
                         //updateFlags |= SC_SONG_LEN;
                         break;
                         
@@ -2605,11 +2719,11 @@ void Song::executeOperationGroup1(Undo& operations)
             Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::SelectPart:
-                        editable_part->setSelected(i->selected);
+                        pendingOperations.add(PendingOperationItem(editable_part, i->selected, PendingOperationItem::SelectPart));
                         updateFlags |= SC_PART_SELECTION;
                         break;
                   case UndoOp::SelectEvent:
-			selectEvent(i->nEvent, editable_part, i->selected);
+                        pendingOperations.add(PendingOperationItem(editable_part, i->nEvent, i->selected, PendingOperationItem::SelectEvent));
                         updateFlags |= SC_SELECTION;
                         break;
                         
@@ -2848,7 +2962,7 @@ void Song::executeOperationGroup1(Undo& operations)
                         
                   case UndoOp::DeleteRoute:
 #ifdef _UNDO_DEBUG_
-                        fprintf(stderr, "Song::executeOperationGroup1:DeleteEvent\n");
+                        fprintf(stderr, "Song::executeOperationGroup1:DeleteRoute\n");
 #endif                        
                         pendingOperations.add(PendingOperationItem(i->routeFrom, i->routeTo, PendingOperationItem::DeleteRoute)); 
                         updateFlags |= SC_ROUTE;
@@ -2860,7 +2974,6 @@ void Song::executeOperationGroup1(Undo& operations)
                         // If it's an aux track, notify aux UI controls to reload, or change their names etc.
                         if(editable_track->type() == Track::AUDIO_AUX)
                           updateFlags |= SC_AUX;
-                        break;
                         break;
                         
                   case UndoOp::MoveTrack:
@@ -2886,7 +2999,7 @@ void Song::executeOperationGroup1(Undo& operations)
                             // Since the ModifySongLen above will not be iterated now, act like the operation had just been iterated. 
                             // The same REPLACEMENT rules apply here.
                             pendingOperations.add(PendingOperationItem(song_len, PendingOperationItem::ModifySongLength));
-                            updateFlags |= -1;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
+                            updateFlags |= SC_EVERYTHING;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
                             //updateFlags |= SC_SONG_LEN;
                           }
                           removePortCtrlEvents(editable_part, editable_part->track(), pendingOperations);
@@ -2909,7 +3022,7 @@ void Song::executeOperationGroup1(Undo& operations)
                             // Since the ModifySongLen above will not be iterated now, act like the operation had just been iterated. 
                             // The same REPLACEMENT rules apply here.
                             pendingOperations.add(PendingOperationItem(song_len, PendingOperationItem::ModifySongLength));
-                            updateFlags |= -1;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
+                            updateFlags |= SC_EVERYTHING;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
                             //updateFlags |= SC_SONG_LEN;
                           }
 #ifdef _UNDO_DEBUG_
@@ -2935,7 +3048,7 @@ void Song::executeOperationGroup1(Undo& operations)
                             // Since the ModifySongLen above will not be iterated now, act like the operation had just been iterated. 
                             // The same REPLACEMENT rules apply here.
                             pendingOperations.add(PendingOperationItem(song_len, PendingOperationItem::ModifySongLength));
-                            updateFlags |= -1;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
+                            updateFlags |= SC_EVERYTHING;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
                             //updateFlags |= SC_SONG_LEN;
                           }
 #ifdef _UNDO_DEBUG_
@@ -2948,6 +3061,11 @@ void Song::executeOperationGroup1(Undo& operations)
                           
                           editable_part->track()->parts()->addOperation(editable_part, pendingOperations);
                           updateFlags |= SC_PART_INSERTED;
+                          // If the part has events, then treat it as if they were inserted with separate AddEvent operations.
+                          // Even if some will be inserted later in this operations group with actual separate AddEvent operations,
+                          //  that's an SC_EVENT_INSERTED anyway, so should be no harm.
+                          if(!editable_part->events().empty())
+                            updateFlags |= SC_EVENT_INSERTED;
                         }
                         break;
                     
@@ -2957,6 +3075,12 @@ void Song::executeOperationGroup1(Undo& operations)
 #endif                        
                         editable_part->track()->parts()->delOperation(editable_part, pendingOperations);
                         updateFlags |= SC_PART_REMOVED;
+                        // If the part had events, then treat it as if they were removed with separate DeleteEvent operations.
+                        // Even if they will be deleted later in this operations group with actual separate DeleteEvent operations,
+                        //  that's an SC_EVENT_REMOVED anyway, so hopefully no harm. This fixes a problem with midi controller canvas
+                        //  not updating after such a 'delete part with events, no separate AddEvents were used when creating the part'.
+                        if(!editable_part->events().empty())
+                          updateFlags |= SC_EVENT_REMOVED;
                         break;
                     
                   case UndoOp::AddEvent: {
@@ -2978,12 +3102,17 @@ void Song::executeOperationGroup1(Undo& operations)
                         }
                         break;
                         
-                  case UndoOp::DeleteEvent:
+                  case UndoOp::DeleteEvent: {
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:DeleteEvent ** calling deleteEvent\n");
 #endif                        
-                        deleteEventOperation(i->nEvent, editable_part, i->doCtrls, i->doClones);
+                        // Special: Replace the undo item's event with the real actual event found in the event lists.
+                        // This way even a modified event can be passed in to the DeleteEvent operation constructor,
+                        //  and as long as the ID AND position values match it will find and use the ORIGINAL event.
+                        // (It's safe, the = operator quickly returns if the two events have the same base pointer.)
+                        i->nEvent = deleteEventOperation(i->nEvent, editable_part, i->doCtrls, i->doClones);
                         updateFlags |= SC_EVENT_REMOVED;
+                        }
                         break;
                         
                   case UndoOp::ModifyEvent:
@@ -3115,7 +3244,7 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:AddTempo ** calling tempomap.addOperation tick:%d tempo:%d\n", i->a, i->b);
 #endif                        
-                        MusEGlobal::tempomap.addOperation(i->a, i->b, pendingOperations);
+                        pendingOperations.addTempoOperation(i->a, i->b, &MusEGlobal::tempomap);
                         updateFlags |= SC_TEMPO;
                         break;
                         
@@ -3123,7 +3252,7 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:DeleteTempo ** calling tempomap.delOperation tick:%d\n", i->a);
 #endif                        
-                        MusEGlobal::tempomap.delOperation(i->a, pendingOperations);
+                        pendingOperations.delTempoOperation(i->a, &MusEGlobal::tempomap);
                         updateFlags |= SC_TEMPO;
                         break;
                         
@@ -3131,7 +3260,7 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:ModifyTempo ** calling tempomap.addOperation tick:%d tempo:%d\n", i->a, i->c);
 #endif                        
-                        MusEGlobal::tempomap.addOperation(i->a, i->c, pendingOperations);
+                        pendingOperations.addTempoOperation(i->a, i->c, &MusEGlobal::tempomap);
                         updateFlags |= SC_TEMPO;
                         break;
 
@@ -3167,25 +3296,25 @@ void Song::executeOperationGroup1(Undo& operations)
                         
                   case UndoOp::AddSig:
 #ifdef _UNDO_DEBUG_
-                        fprintf(stderr, "Song::executeOperationGroup1:AddSig ** calling sigmap.addOperation\n");
+                        fprintf(stderr, "Song::executeOperationGroup1:AddSig ** calling MusEGlobal::sigmap.addOperation\n");
 #endif                        
-                        AL::sigmap.addOperation(i->a, AL::TimeSignature(i->b, i->c), pendingOperations);
+                        pendingOperations.addTimeSigOperation(i->a, MusECore::TimeSignature(i->b, i->c), &MusEGlobal::sigmap);
                         updateFlags |= SC_SIG;
                         break;
                         
                   case UndoOp::DeleteSig:
 #ifdef _UNDO_DEBUG_
-                        fprintf(stderr, "Song::executeOperationGroup1:DeleteSig ** calling sigmap.delOperation\n");
+                        fprintf(stderr, "Song::executeOperationGroup1:DeleteSig ** calling MusEGlobal::sigmap.delOperation\n");
 #endif                        
-                        AL::sigmap.delOperation(i->a, pendingOperations);
+                        pendingOperations.delTimeSigOperation(i->a, &MusEGlobal::sigmap);
                         updateFlags |= SC_SIG;
                         break;
                         
                   case UndoOp::ModifySig:
 #ifdef _UNDO_DEBUG_
-                        fprintf(stderr, "Song::executeOperationGroup1:ModifySig ** calling sigmap.addOperation\n");
+                        fprintf(stderr, "Song::executeOperationGroup1:ModifySig ** calling MusEGlobal::sigmap.addOperation\n");
 #endif                        
-                        AL::sigmap.addOperation(i->a, AL::TimeSignature(i->d, i->e), pendingOperations);
+                        pendingOperations.addTimeSigOperation(i->a, MusECore::TimeSignature(i->d, i->e), &MusEGlobal::sigmap);
                         updateFlags |= SC_SIG;
                         break;
 
@@ -3219,7 +3348,7 @@ void Song::executeOperationGroup1(Undo& operations)
                         fprintf(stderr, "Song::executeOperationGroup1:ModifySongLen ** adding ModifySongLen operation\n");
 #endif                        
                         pendingOperations.add(PendingOperationItem(i->a, PendingOperationItem::ModifySongLength));
-                        updateFlags |= -1;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
+                        updateFlags |= SC_EVERYTHING;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
                         //updateFlags |= SC_SONG_LEN;
                         break;
                         
@@ -3229,6 +3358,14 @@ void Song::executeOperationGroup1(Undo& operations)
 #endif                        
                         pendingOperations.add(PendingOperationItem(PendingOperationItem::EnableAllAudioControllers));
                         updateFlags |= SC_AUDIO_CONTROLLER;
+                        break;
+                        
+                  case UndoOp::GlobalSelectAllEvents:
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:GlobalSelectAllEvents\n");
+#endif                        
+                        pendingOperations.add(PendingOperationItem(tracks(), i->a, 0, 0, PendingOperationItem::GlobalSelectAllEvents));
+                        updateFlags |= SC_SELECTION;
                         break;
                         
                   default:

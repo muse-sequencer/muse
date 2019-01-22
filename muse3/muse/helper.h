@@ -28,6 +28,7 @@
 #include <QStringList>
 
 #include "drummap.h"
+#include "type_defs.h"
 
 class QActionGroup;
 class QString;
@@ -48,7 +49,8 @@ void populateMidiPorts();
 QString pitch2string(int v);
 void dumpMPEvent(const MEvent* ev);
 Part* partFromSerialNumber(int serial);
-bool any_event_selected(const std::set<const Part*>&, bool in_range=false);
+bool any_event_selected(const std::set<const Part*>&, bool in_range=false,
+                        RelevantSelectedEvents_t relevant = NotesRelevant);
 
 bool drummaps_almost_equal(const DrumMap* one, const DrumMap* two, int drummap_size=128);
 
@@ -88,6 +90,10 @@ QString projectExtensionFromFilename(QString filename);
 QString getUniqueUntitledName();
 int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECore::Part* cur_part, int curDrumPitch);
 QLine clipQLine(int x1, int y1, int x2, int y2, const QRect& rect);
+// We need normalizeQRect() because Qt's own QRect normalize makes the rectangle larger,
+//  that is NOT what we want! For example Qt normalizes (50, 50, -40, -40) to (9, 9, 42, 42),
+//  but we want (10, 10, 40, 40).
+QRect normalizeQRect(const QRect& rect);
 void loadTheme(const QString&, bool force = false);
 void loadStyleSheetFile(const QString&);
 // Call when the theme or stylesheet part of the configuration has changed, to actually switch them.

@@ -53,6 +53,7 @@
 #include "cleftypes.h"
 #include "helper.h"
 #include "spinbox.h"
+#include "event_tag_list.h"
 
 #include <set>
 #include <map>
@@ -185,6 +186,7 @@ class ScoreEdit : public TopWin
 		void init_shortcuts();
 		void selection_changed();
 		void clipboard_changed();
+    void config_changed();
 		
 	signals:
 		void isDeleting(MusEGui::TopWin*);
@@ -197,7 +199,7 @@ class ScoreEdit : public TopWin
 		void viewport_width_changed(int);
 		void canvas_height_changed(int);
 		void viewport_height_changed(int);
-		void song_changed(MusECore::SongChangedFlags_t);
+		void song_changed(MusECore::SongChangedStruct_t);
 		void focusCanvas();
 		
 	public:
@@ -212,6 +214,11 @@ class ScoreEdit : public TopWin
 		void add_parts(MusECore::PartList* pl, bool all_in_one=false);
 		QString get_name() { return name; }
 		bool get_apply_velo() { return apply_velo; }
+		
+		bool itemsAreSelected() const;
+		// Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
+		// Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
+		void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
 	};
 
 
@@ -785,7 +792,6 @@ class ScoreCanvas : public MusEGui::View
 		void remove_staff_slot();
 		
 		void play_changed(bool);
-		void config_changed();
 		
 		void deselect_all();
 		void midi_note(int pitch, int velo);
@@ -795,11 +801,12 @@ class ScoreCanvas : public MusEGui::View
 	public slots:
 		void x_scroll_event(int);
 		void y_scroll_event(int);
-		void song_changed(MusECore::SongChangedFlags_t);
+		void song_changed(MusECore::SongChangedStruct_t);
 		void fully_recalculate();
 		void goto_tick(int,bool);
 		void pos_changed(int i, unsigned u, bool b);
 		void heartbeat_timer_event();
+		void config_changed();
 
 		void set_tool(int);
 		void set_quant(int);
@@ -826,7 +833,7 @@ class ScoreCanvas : public MusEGui::View
 		void pos_add_changed();
 			
 	protected:
-		virtual void draw(QPainter& p, const QRect& rect);
+		virtual void draw(QPainter& p, const QRect& rect, const QRegion& = QRegion());
 		ScoreEdit* parent;
 		
 		virtual void mousePressEvent (QMouseEvent* event);
@@ -870,6 +877,12 @@ class ScoreCanvas : public MusEGui::View
 		int delta_tick_to_delta_x(int t);
 		int x_to_tick(int x);
 		int calc_posadd(int t);
+    
+
+		bool itemsAreSelected() const;
+		// Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
+		// Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
+		void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
 };
 
 int calc_measure_len(const list<int>& nums, int denom);

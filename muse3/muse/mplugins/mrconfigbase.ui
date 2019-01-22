@@ -95,19 +95,19 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="Awl::PitchEdit" name="sb1"/>
+       <widget class="MusEGui::PitchEdit" name="sb1"/>
       </item>
       <item row="1" column="1">
-       <widget class="Awl::PitchEdit" name="sb2"/>
+       <widget class="MusEGui::PitchEdit" name="sb2"/>
       </item>
       <item row="2" column="1">
-       <widget class="Awl::PitchEdit" name="sb3"/>
+       <widget class="MusEGui::PitchEdit" name="sb3"/>
       </item>
       <item row="3" column="1">
-       <widget class="Awl::PitchEdit" name="sb4"/>
+       <widget class="MusEGui::PitchEdit" name="sb4"/>
       </item>
       <item row="4" column="1">
-       <widget class="Awl::PitchEdit" name="steprec_box"/>
+       <widget class="MusEGui::PitchEdit" name="steprec_box"/>
       </item>
       <item row="4" column="0">
        <widget class="QLabel" name="label">
@@ -188,9 +188,9 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>Awl::PitchEdit</class>
-   <extends>QSpinBox</extends>
-   <header>awl/pitchedit.h</header>
+   <class>MusEGui::PitchEdit</class>
+   <extends>MusEGui::SpinBox</extends>
+   <header>pitchedit.h</header>
   </customwidget>
  </customwidgets>
  <includes>

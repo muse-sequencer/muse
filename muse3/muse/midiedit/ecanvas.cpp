@@ -88,8 +88,8 @@ QString EventCanvas::getCaption() const
       {
       int bar1, bar2, xx;
       unsigned x;
-      AL::sigmap.tickValues(curPart->tick(), &bar1, &xx, &x);
-      AL::sigmap.tickValues(curPart->tick() + curPart->lenTick(), &bar2, &xx, &x);
+      MusEGlobal::sigmap.tickValues(curPart->tick(), &bar1, &xx, &x);
+      MusEGlobal::sigmap.tickValues(curPart->tick() + curPart->lenTick(), &bar2, &xx, &x);
 
       return QString("MusE: Part <") + curPart->name()
          + QString("> %1-%2").arg(bar1+1).arg(bar2+1);
@@ -137,17 +137,126 @@ void EventCanvas::mouseMove(QMouseEvent* event)
       {
       emit pitchChanged(y2pitch(event->pos().y()));
       int x = event->pos().x();
+      if(x < 0)
+        x = 0;
       emit timeChanged(editor->rasterVal(x));
       }
 
 //---------------------------------------------------------
-//   updateSelection
+//   updateItems
 //---------------------------------------------------------
 
-void EventCanvas::updateSelection()
+void EventCanvas::updateItems()
+{
+  bool curItemNeedsRestore=false;
+  MusECore::Event storedEvent;
+  int partSn = 0xDEADBEEF; // to prevent compiler warning; partSn is unused anyway if curItemNeedsRestore==false.
+  if (curItem)
+  {
+    curItemNeedsRestore=true;
+    storedEvent=curItem->event();
+    partSn=curItem->part()->sn();
+  }
+  curItem=NULL;
+  
+  items.clearDelete();
+  start_tick  = INT_MAX;
+  end_tick    = 0;
+  curPart = 0;
+  for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
+        MusECore::MidiPart* part = (MusECore::MidiPart*)(p->second);
+        if (part->sn() == curPartId)
+              curPart = part;
+        unsigned stick = part->tick();
+        unsigned len = part->lenTick();
+        unsigned etick = stick + len;
+        if (stick < start_tick)
+              start_tick = stick;
+        if (etick > end_tick)
+              end_tick = etick;
+
+        for (MusECore::ciEvent i = part->events().begin(); i != part->events().end(); ++i) {
+              MusECore::Event e = i->second;
+              // Do not add events which are past the end of the part.
+              if(e.tick() > len)      
+                break;
+              
+              if (e.isNote()) {
+                    CItem* temp = addItem(part, e);
+                    
+                    if(temp)
+                      temp->setSelected(e.selected());
+                    
+                    if (temp && curItemNeedsRestore && e==storedEvent && part->sn()==partSn)
+                    {
+                        if (curItem!=NULL)
+                          printf("THIS SHOULD NEVER HAPPEN: curItemNeedsRestore=true, event fits, but there was already a fitting event!?\n");
+                        
+                        curItem=temp;
+                        }
+                    }
+              }
+        }
+}
+
+//---------------------------------------------------------
+//   itemSelectionsChanged
+//---------------------------------------------------------
+
+bool EventCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselectAll)
+{
+      MusECore::Undo ops;
+      MusECore::Undo* opsp = operations ? operations : &ops;
+      
+      bool item_selected;
+      bool obj_selected;
+      bool changed=false;
+      
+      // If we are deselecting all, globally deselect all events,
+      //  and don't bother individually deselecting objects, below.
+      if(deselectAll)
       {
-      MusEGlobal::song->update(SC_SELECTION);
+        opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::GlobalSelectAllEvents, false, 0, 0));
+        changed = true;
       }
+      
+      
+      for (iCItem i = items.begin(); i != items.end(); ++i) {
+            CItem* item = i->second;
+            item_selected = item->isSelected();
+            obj_selected = item->objectIsSelected();
+            // Don't bother deselecting objects if we have already deselected all, above.
+            if((item_selected || !deselectAll) &&
+                ((item_selected != obj_selected) ||
+                // Need to force this because after the 'deselect all events' command executes,
+                //  if the item is selected another select needs to be executed even though it
+                //  appears nothing changed here.
+                (item_selected && deselectAll)))
+              
+            {
+              opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent,
+                  item->event(), item->part(), item_selected, obj_selected));
+
+              changed=true;
+            }
+      }
+
+      if (!operations && changed)
+      {
+            // Set the 'sender' to this so that we can ignore self-generated songChanged signals.
+            // Here we have a choice of whether to allow undoing of selections.
+            if(MusEGlobal::config.selectionsUndoable)
+              MusEGlobal::song->applyOperationGroup(ops, MusECore::Song::OperationUndoMode, this);
+            else
+              MusEGlobal::song->applyOperationGroup(ops, MusECore::Song::OperationExecuteUpdate, this);
+            
+// For testing...
+//               fprintf(stderr, "EventCanvas::updateSelection: Applied SelectPart operations, redrawing\n");
+      }
+
+      return changed;
+}
+
 
 bool EventCanvas::stuckNoteExists(int port, int channel, int pitch) const
 {
@@ -168,57 +277,12 @@ bool EventCanvas::stuckNoteExists(int port, int channel, int pitch) const
 //   songChanged(type)
 //---------------------------------------------------------
 
-void EventCanvas::songChanged(MusECore::SongChangedFlags_t flags)
+void EventCanvas::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if (flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
+      if (flags._flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
             // TODO FIXME: don't we actually only want SC_PART_*, and maybe SC_TRACK_DELETED?
             //             (same in waveview.cpp)
-            bool curItemNeedsRestore=false;
-            MusECore::Event storedEvent;
-            int partSn = 0xDEADBEEF; // to prevent compiler warning; partSn is unused anyway if curItemNeedsRestore==false.
-            if (curItem)
-            {
-              curItemNeedsRestore=true;
-              storedEvent=curItem->event();
-              partSn=curItem->part()->sn();
-            }
-            curItem=NULL;
-            
-            items.clearDelete();
-            start_tick  = INT_MAX;
-            end_tick    = 0;
-            curPart = 0;
-            for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
-                  MusECore::MidiPart* part = (MusECore::MidiPart*)(p->second);
-                  if (part->sn() == curPartId)
-                        curPart = part;
-                  unsigned stick = part->tick();
-                  unsigned len = part->lenTick();
-                  unsigned etick = stick + len;
-                  if (stick < start_tick)
-                        start_tick = stick;
-                  if (etick > end_tick)
-                        end_tick = etick;
-
-                  for (MusECore::ciEvent i = part->events().begin(); i != part->events().end(); ++i) {
-                        MusECore::Event e = i->second;
-                        // Do not add events which are past the end of the part.
-                        if(e.tick() > len)      
-                          break;
-                        
-                        if (e.isNote()) {
-                              CItem* temp = addItem(part, e);
-                              
-                              if (temp && curItemNeedsRestore && e==storedEvent && part->sn()==partSn)
-                              {
-                                  if (curItem!=NULL)
-                                    printf("THIS SHOULD NEVER HAPPEN: curItemNeedsRestore=true, event fits, but there was already a fitting event!?\n");
-                                  
-                                  curItem=temp;
-                                  }
-                              }
-                        }
-                  }
+            updateItems();
             }
 
       MusECore::Event event;
@@ -252,13 +316,22 @@ void EventCanvas::songChanged(MusECore::SongChangedFlags_t flags)
                   curPartChanged();
                   }
       }
+
+      if(flags._flags & (SC_SELECTION))
+      {
+        // Prevent race condition: Ignore if the change was ultimately sent by the canvas itself.
+        if(flags._sender != this)
+          updateItemSelections();
+      }
       
-      bool f1 = flags & (SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED | 
+      bool f1 = flags._flags & (SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED | 
                          SC_PART_INSERTED | SC_PART_MODIFIED | SC_PART_REMOVED |
                          SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
                          SC_SIG | SC_TEMPO | SC_KEY | SC_MASTER | SC_CONFIG | SC_DRUMMAP); 
-      bool f2 = flags & SC_SELECTION;
-      if(f1 || f2)   // Try to avoid all unnecessary emissions.
+      bool f2 = flags._flags & SC_SELECTION;
+      
+      // Try to avoid all unnecessary emissions.
+      if(f1 || f2)
         emit selectionChanged(x, event, part, !f1);
       
       if (curPart == 0)
@@ -370,7 +443,8 @@ void EventCanvas::keyPress(QKeyEvent* event)
                       deselectAll();
                 CItem* sel = i->second;
                 sel->setSelected(true);
-                updateSelection();
+                redraw();
+                
                 if (sel->x() + sel->width() > mapxDev(width())) 
                 {  
                   int mx = rmapx(sel->x());  
@@ -400,7 +474,7 @@ void EventCanvas::keyPress(QKeyEvent* event)
                       deselectAll();
                 CItem* sel = i->second;
                 sel->setSelected(true);
-                updateSelection();
+                redraw();
                 if (sel->x() <= mapxDev(0)) 
                   emit horizontalScroll(rmapx(sel->x() - xorg) - 10);  // Leave a bit of room.
               }
@@ -435,6 +509,36 @@ void EventCanvas::keyPress(QKeyEvent* event)
 
 
 //---------------------------------------------------------
+//   keyRelease
+//---------------------------------------------------------
+
+void EventCanvas::keyRelease(QKeyEvent* event)
+{
+      const int key = event->key();
+      
+      // We do not want auto-repeat events.
+      // It does press and release repeatedly. Wait till the last release comes.
+      if(!event->isAutoRepeat())
+      {
+// For testing...
+//         fprintf(stderr, "EventCanvas::keyRelease not isAutoRepeat\n");
+      
+        //event->accept();
+      
+        // Select part to the right
+        if(key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key ||
+        // Select part to the left
+          key == shortcuts[SHRT_SEL_LEFT].key || key == shortcuts[SHRT_SEL_LEFT_ADD].key)
+        {
+            itemSelectionsChanged();
+        }
+        return;
+      }
+      
+  Canvas::keyRelease(event);
+}
+
+//---------------------------------------------------------
 //   dropEvent
 //---------------------------------------------------------
 
@@ -450,7 +554,10 @@ void EventCanvas::viewDropEvent(QDropEvent* event)
       if (event->mimeData()->hasFormat("text/x-muse-groupedeventlists")) {
             text = QString(event->mimeData()->data("text/x-muse-groupedeventlists"));
       
-            int x = editor->rasterVal(event->pos().x());
+            int x = event->pos().x();
+            if(x < 0)
+              x = 0;
+            x = editor->rasterVal(x);
             if (x < 0)
                   x = 0;
             paste_at(text,x,3072,false,false,curPart);
@@ -492,27 +599,9 @@ void EventCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir, bo
         MusEGlobal::song->applyOperationGroup(operations);
       
       moving.clear();
-      updateSelection();
+      itemSelectionsChanged();
       redraw();
       }
-
-//---------------------------------------------------------
-//   deselectAll
-//---------------------------------------------------------
-
-void EventCanvas::deselectAll()
-{
-  QSet<MusECore::Part*> already_done;
-  MusECore::Part* p;
-  for(iCItem i = items.begin(); i != items.end(); ++i)
-  {
-    p = i->second->part();
-    if(already_done.contains(p) || !p)
-      continue;
-    MusEGlobal::song->selectAllEvents(p, false);
-    already_done.insert(p);
-  }
-}
 
 //---------------------------------------------------------
 //   startPlayEvent
@@ -573,7 +662,7 @@ void EventCanvas::stopPlayEvent()
       {
         MusECore::MidiPlayEvent ev(_stuckNotes.at(i));
         port = ev.port();
-        if(port < 0 || port >= MIDI_PORTS)
+        if(port < 0 || port >= MusECore::MIDI_PORTS)
           continue;
         ev.setType(MusECore::ME_NOTEOFF);
         ev.setTime(frame);

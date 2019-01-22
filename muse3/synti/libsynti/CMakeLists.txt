@@ -50,6 +50,7 @@ add_library(synti ${MODULES_BUILD}
       )
 
 target_link_libraries(synti
+      mpevent_module
       # TODO: Try to remove this dependency by splitting the gui out of synti.
       ${QT_LIBRARIES}
       )

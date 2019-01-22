@@ -1,4 +1,145 @@
-26.05.2018
+21.01.2019
+      - Merge from selection_fixes branch: (Tim)
+      * NEW! Midi controller graphs copy/cut/paste and drag/drop:
+      - See README.usage for new info about how it works.
+      * Mixer strips added to Drum and Wave Editors:
+      * Massive graphics, canvases, cut/copy/paste/drag/drop workover:
+      - New: A few dozen lossless 'agnostic' (regardless of magnification)
+         graphic routines in class View.
+      - Entire graphics chain from class View all the way through to the
+         editor classes has been reworked. Many lines, dots were missing etc.
+      - Update regions as well as rectangles are now passed to most routines.
+      - Lasso fixes: Simply drawing a large lasso rectangle can take much CPU%!
+        So a new mechanism to draw a thin four-sided lasso REGION was added.
+        So far added to Arranger only. CPU% is much better now.
+      - Copy/cut/paste mechanism is now designed to be more WYSIWYG, to avoid
+         operating unknown to user on selected items in some other out-of-view window.
+      - Midi controller graphs no longer wait for sync with audio cycle upon each
+         item drawn by the user. This was painfully slow with large audio buffer sizes.
+19.01.2019
+      - Merge pull 634 "Run properly on HiDPI screens" from hfiguiere. (Tim)
+        Modified slightly, to check Qt version.
+07.01.2019
+      - Xml class full makeover. (Tim)
+        Removed all QByteArray stuff. Now it works directly with _s1 or _s2,
+         which cures concerns about deep copying the b.a. back to _s1/_s2,
+         stuff which was hastily added at Qt4 to make it work.
+        Tightened up several of the routines.
+06.01.2019
+      - Scanner: Replaced silly stdout stuff with QTemporaryFile. (Tim)
+      - Class Xml now supports directly reading and writing a QIODevice
+         and writing to a QString, instead of requiring a FILE*.
+      - Using the above, eliminated two usages of fdopen().
+06.01.2019
+      - Fix plugin scanner bug reported by artofmusic in forum. (Tim)
+        Some plugins may output stuff on stdout. This was confusing
+         our xml scanner. So a method of separating our xml from the
+         rest of stdout was added. Tested OK with LinVst and sforzando.
+19.12.2018
+      - Fix fluidsynth fluid_synth_error() deprecated in 2.0.2 (Tim)
+      - For bug 632: Fix slight text error in Global Settings option:
+         Now reads "Ctrl + right click sets left range marker".
+07.11.2018
+      * NEW! Safe Plugin Scanner version 2: (Tim)
+      - The plugin scans are cached now, in ./config/MusE/scanner.
+        This means faster startup time since it no longer has to 
+         rescan each time.
+      - Deicsonze and SimpleDrums MESS synths load muuuch faster
+         now since each instance no longer has to scan plugins.
+      - New command line option -R forces rescan.
+        Also new 'Force rescan' checkbox under plugin paths tab
+         in Global Settings dialog.
+      - Automatically detects changes in any of the plugin paths
+         given in Global Settings dialog, and rescans.
+      - Added Ladspa RDF (lrdf) support. Initial support for now.
+      - More major rearrangements: Moved several module libraries
+         out of the muse tree into the libs tree, since they stand
+         on their own.
+        Created new libs folder 'plugin' containing all of the
+         plugin scanning and caching code.
+        Awl and AL libraries are now fully separated and isolated
+         from the main app. Awl is NO LONGER linked in with the
+         main app, only with the Deicsonze MESS synth. Yay.
+20.10.2018
+      - Oops, fix previous fix of 19.10.2018 (Tim)
+        Move function_dialogs folder out to muse folder.
+        Re-order the cmake subdirectory list so that things get built first.
+      - Fix freeze or crash in Xml::parse() under certain conditions
+         with corrupt files.
+19.10.2018
+      - Moved complex 'widgets' to new folder 'components'. (Tim)
+        New library 'components' separated from 'widgets'.
+      - Finished completely isolating libraries AL, AWL, and widgets
+         so that Deicsonze and SimpleDrums MESS synths load now.
+      - So things are even more modular now for less unresolved dependencies.
+17.10.2018
+      * NEW! Safe Plugin Scanner 'sandbox': (Tim)
+      - MusE should NEVER crash due to plugin scanning at startup now!
+      - All LADSPA, MESS, DSSI, and LinuxVST plugins are each scanned
+         in a separate QProcess program upon MusE startup.
+        Those that fail are NOT INCLUDED for further use.
+        Currently the QProcess communicates back to muse via 
+         an xml-encoded text on stdout.
+        But this could change to shared memory.
+        (Hint hint: Grow into an actual plugin run-time sandbox host!)
+      - All items in globaldefs.h that were in the global namespace
+         are now part of MusECore namespace, including MIDI_CHANNELS
+         which was a #define.
+      - Added command-line option -S (Don't load MESS plugins).
+      - Fixed crash in Deicsonze: Failure to initialize lfoDelayIndex.
+09.10.2018
+      - Fix bug 629 by mqnc: Meta events (lyrics) not imported. (Tim)
+        Lyrics + few other metas were ignored in buildMidiEventList().
+11.09.2018
+      - Fix compile bug 635 by Pablo Tassi: "invalid conversion from
+         ‘unsigned int’ to ‘Qt::WindowType’ in vst_native.cpp at lines
+         1520 and 3607. (Tim)
+11.08.2018
+      - New: SongChanged flags are now a structure with extra info. (Tim)
+        Introducing SongChangedStruct_t. SongChangedFlags_t is now a
+         member of that structure. New member 'subFlags' holds optional
+         extra bits (we're running out of SongChangedFlags_t bits) which
+         are intended to be a 'sub flags' NOT an extension of flags bits.
+        New member 'sender' should ease a long-time problem of how to
+         ignore self-generated SongChanged signals feeding back to an
+         object with no way to know if they were self-sent. Unused yet...
+      - Fix accidentally broken Arranger cut/paste on 07.08.2018
+09.08.2018
+      - Fixed compile error when using internal LV2 support. (Tim)
+        System LV2 include paths were being included, taking priority,
+         fixed in top CMakeLists.txt file.
+      - Fixed internal LV2 lilv state.c new_state_from_model() (Tim)
+        I found state->dir should be a file path, not a URI.
+        Symptom: With linuxsampler LV2 plugin for example,
+         the filename sent to it was wrong, it was a full URI.
+        Prepared a patch for submission to LV2, pending testing the fix.
+      - Fixed internal LV2 compiler warning "unneccessary parentheses"
+         treated as as error in LV2 util.h LV2_ATOM_OBJECT_FOREACH, 
+         LV2_ATOM_OBJECT_BODY_FOREACH, LV2_ATOM_SEQUENCE_FOREACH, 
+         LV2_ATOM_SEQUENCE_BODY_FOREACH, and in lilv.h LILV_FOREACH.
+07.08.2018
+      - Menu cleanups, rearrangement. (Tim)
+        Moved several Edit menu items to the Functions menu.
+        Moved Mastertrack menu items over to View menu since they
+         don't have much to do with editing tracks or parts.
+        Eliminated Automation menu. Moved all those items into Audio menu,
+         since they're all audio related.
+        As requested: Added a Close item in the File menu. Currently it
+         does NOT clear the midi devices and ports, they remain as last set.
+        Added File Save As and Application Exit icons.
+        Changed name of 'MusE Settings' menu to just 'Settings'.
+        Added new checkbox in Appearance Settings: "Use theme icons if available",
+         which activates a dormant feature of using theme icons if they are found.
+05.08.2018
+      - Further LV2 GUI fixes - see 29.11.2017. Fixed X11 GUI size. (Tim)
+        For example DrumGizmo should open OK and not be allowed
+         to shrink below its supplied size.
+01.07.2018
+      - Fix non-functional mouse wheel in Canvas::wheelEvent(). (Tim)
+        Broke with fixes of 15.12.2017. I tried to repect what that fix did,
+         hopefully works OK with either touch pad (I don't have one) or mouse wheel.
+        Increased step size slightly from 40 to 50.
+26.06.2018
       - More fixes for newer gcc warnings treated as errors. (Tim)
         Oops. Fixed some funny business with memcpy in DeicsOnze::initPluginDelay().
         Oops. Fixed missing switch/case breaks in Slider::setOrientation().

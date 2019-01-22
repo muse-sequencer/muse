@@ -87,11 +87,14 @@
 
 #include <assert.h>
 #include <algorithm>
+
+#include "globaldefs.h"
 #include "midictrl.h"
 #include "synth.h"
 #include "stringparam.h"
 
 #include "plugin.h"
+#include "plugin_list.h"
 
 #endif
 
@@ -282,7 +285,8 @@ private:
     double _sampleRate;
     float _fSampleRate;
     bool _isSynth;
-    int _uniqueID;
+// LV2 does not use unique id numbers and frowns upon using anything but the uri.
+//     int _uniqueID;
     uint32_t _midi_event_id;
     LilvUIs *_uis;
     std::map<uint32_t, uint32_t> _idxToControlMap;
@@ -332,7 +336,7 @@ public:
         return _isSynth ? LV2_SYNTH : LV2_EFFECT;
     }
     LV2Synth ( const QFileInfo &fi, QString label, QString name, QString author, 
-               const LilvPlugin *_plugin, Plugin::PluginFeatures reqFeatures = Plugin::NoFeatures );
+               const LilvPlugin *_plugin, PluginFeatures_t reqFeatures = PluginNoFeatures );
     virtual ~LV2Synth();
     virtual SynthIF *createSIF ( SynthI * );
     bool isSynth() {
@@ -483,7 +487,7 @@ public:
 
 
     int id() {
-        return MAX_PLUGINS;
+        return MusECore::MAX_PLUGINS;
     }
 
     static void lv2prg_Changed(LV2_Programs_Handle handle, int32_t index);
@@ -728,7 +732,7 @@ private:
     LADSPA_Descriptor _fakeLd;
     LADSPA_PortDescriptor *_fakePds;       
 public:
-    LV2PluginWrapper ( LV2Synth *s, PluginFeatures reqFeatures = NoFeatures );
+    LV2PluginWrapper ( LV2Synth *s, PluginFeatures_t reqFeatures = PluginNoFeatures );
     LV2Synth *synth() {
         return _synth;
     }    

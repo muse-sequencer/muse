@@ -25,6 +25,7 @@
 #define __EVENT_H__
 
 #include <map>
+#include <set>
 #include <sys/types.h>
 
 #include "type_defs.h"
@@ -75,6 +76,10 @@ class Event {
       
       bool operator==(const Event& e) const;
       bool isSimilarTo(const Event& other) const;
+      bool isSimilarType(const Event&,
+                              bool compareTime = false,
+                              bool compareA = false, bool compareB = false, bool compareC = false,
+                              bool compareWavePath = false, bool compareWavePos = false, bool compareWaveStartPos = false) const;
       
       int getRefCount() const;
       bool selected() const;
@@ -126,27 +131,57 @@ class Event {
       
       virtual void readAudio(MusECore::WavePart* part, unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite);
       
-      void setTick(unsigned val);
-      unsigned tick() const;
-      unsigned frame() const;
-      unsigned posValue() const;
-      void setFrame(unsigned val);
-      void setLenTick(unsigned val);
-      void setLenFrame(unsigned val);
-      unsigned lenTick() const;
-      unsigned lenFrame() const;
-      unsigned lenValue() const;
+      //--------------------------------------------------------
+      // 'Agnostic' position methods - can be TICKS and FRAMES.
+      //--------------------------------------------------------
+
+      Pos pos() const;
+      void setPos(const Pos& p);
       Pos end() const;
+      PosLen posLen() const;
+      
+      unsigned posValue() const;
+      unsigned posValue(Pos::TType time_type) const;
+      void setPosValue(unsigned val);
+      void setPosValue(unsigned val, Pos::TType time_type);
+      
+      unsigned lenValue() const;
+      unsigned lenValue(Pos::TType time_type) const;
+      void setLenValue(unsigned val);
+      void setLenValue(unsigned val, Pos::TType time_type);     
+      
+      unsigned endPosValue() const;
+      
+      //--------------------------------------------------------
+      // 'Resolving' position methods - must be TICKS or FRAMES.
+      //--------------------------------------------------------
+
+      unsigned tick() const;
+      void setTick(unsigned val);
+      unsigned frame() const;
+      void setFrame(unsigned val);
+      
+      unsigned lenTick() const;
+      void setLenTick(unsigned val);
+      unsigned lenFrame() const;
+      void setLenFrame(unsigned val);
+      
       unsigned endTick() const;
       unsigned endFrame() const;
-      void setPos(const Pos& p);
       };
+
+typedef std::pair<int /*ctl num*/, PosLen /*range*/> FindMidiCtlsPair_t;
+typedef std::map<int /*ctl num*/, PosLen /*range*/, std::less<int> > FindMidiCtlsList_t;
+typedef FindMidiCtlsList_t::iterator iFindMidiCtlsList;
+typedef FindMidiCtlsList_t::const_iterator ciFindMidiCtlsList;
+typedef std::pair <iFindMidiCtlsList, bool> FindMidiCtlsListInsResPair_t;
 
 typedef std::multimap <unsigned, Event, std::less<unsigned> > EL;
 typedef EL::iterator iEvent;
 typedef EL::reverse_iterator riEvent;
 typedef EL::const_iterator ciEvent;
-typedef std::pair <ciEvent, ciEvent> EventRange;
+typedef std::pair <ciEvent, ciEvent> cEventRange;
+typedef std::pair <iEvent, iEvent> EventRange;
 
 //---------------------------------------------------------
 //   EventList
@@ -154,13 +189,24 @@ typedef std::pair <ciEvent, ciEvent> EventRange;
 //---------------------------------------------------------
 
 class EventList : public EL {
-      void deselect();
 
    public:
+      // Looks for specific event (EventBase pointer).
       ciEvent find(const Event&) const;
       iEvent find(const Event&);
+      
+      // Looks for events with identical values, but not necessarily EventBase pointers.
       ciEvent findSimilar(const Event&) const;
       iEvent findSimilar(const Event&);
+      
+      // Looks for events with identical type, and identical note or controller number, or
+      //  sysex or meta length and identical data, or wave path and start postion and event position.
+      // Adds found items to the given list. Does not clear the list first. Returns the number of items added.
+      int findSimilarType(const Event&, EventList&,
+                              bool compareTime = false,
+                              bool compareA = false, bool compareB = false, bool compareC = false,
+                              bool compareWavePath = false, bool compareWavePos = false, bool compareWaveStartPos = false) const;
+      
       ciEvent findId(const Event&) const;             // Fast, index t is known.
       iEvent findId(const Event&);                    // Fast, index t is known.
       ciEvent findId(unsigned t, EventID_t id) const; // Fast, index t is known.
@@ -169,11 +215,26 @@ class EventList : public EL {
       iEvent findId(EventID_t id);                    // Slow, index t is not known
       ciEvent findWithId(const Event&) const; // Finds event base or event id. Fast, index t is known.
       iEvent findWithId(const Event&);        // Finds event base or event id. Fast, index t is known.
-      
+
+      // Returns an iterator that points to the inserted event.
+      // Returns end() if an error occurred.
       iEvent add(Event event);
       void move(Event& event, unsigned tick);
       void dump() const;
       void read(Xml& xml, const char* name, bool midi);
+      
+      // Returns the exents of the contents of the list, as a PosLen.
+      // If wave is true it only looks at wave events, otherwise it
+      //  only looks at midi events. It also looks only for relevant.
+      // If ctrlNum is not -1, it looks only for that controller number.
+      // The returned PosLen is in units of frames or ticks respective of wave.
+      // numEvents indicates the number of events found and whether PosLen is valid.
+      PosLen evrange(bool wave, RelevantSelectedEvents_t relevant, int* numEvents, int ctrlNum = -1) const;
+      // Fills set with the different controller numbers found in the event list.
+      // Looks for midi controller events, or wave controller events if wave is true (does nothing ATM).
+      // If findCtl is given it finds that specific controller.
+      // Otherwise if findCtl -1 it finds all controllers.
+      void findControllers(bool wave, FindMidiCtlsList_t* outList, int findCtl = -1) const;
       };
 
 } // namespace MusECore

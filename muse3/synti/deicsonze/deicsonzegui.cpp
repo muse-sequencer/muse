@@ -551,7 +551,7 @@ void DeicsOnzeGui::saveConfiguration() {
 // saveDefaultConfiguration
 //-----------------------------------------------------------
 void DeicsOnzeGui::saveDefaultConfiguration() {
-  QString filename = DEI_configPath + QString("/" DEICSONZESTR ".dco");
+  QString filename = DEI_hostConfigPath + QString("/" DEICSONZESTR ".dco");
   if(!filename.isEmpty()) {
     QFile f(filename);
     f.open(QIODevice::WriteOnly);

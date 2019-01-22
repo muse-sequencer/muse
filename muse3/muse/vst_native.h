@@ -39,6 +39,9 @@
 
 #ifdef VST_NATIVE_SUPPORT
 
+#include "plugin_list.h"
+#include "globaldefs.h"
+
 class VstNativeSynthIF;
 
 typedef class VstNativeSynthIF VSTPlugin;
@@ -113,24 +116,9 @@ struct VstNativeSynthOrPlugin
 
 class VstNativeSynth : public Synth {
    friend class VstNativePluginWrapper;
-      enum VstPluginFlags
-      {
-        canSendVstEvents          = 1 << 0,
-        canSendVstMidiEvents      = 1 << 1,
-        canSendVstTimeInfo        = 1 << 2,
-        canReceiveVstEvents       = 1 << 3,
-        canReceiveVstMidiEvents   = 1 << 4,
-        canReceiveVstTimeInfo     = 1 << 5,
-        canProcessOffline         = 1 << 6,
-        canUseAsInsert            = 1 << 7,
-        canUseAsSend              = 1 << 8,
-        canMixDryWet              = 1 << 9,
-        canMidiProgramNames       = 1 << 10
-      };
-
       void* _handle;
       int _vst_version;
-      unsigned int _flags;
+      VstPluginFlags_t _flags;
       VstIntPtr _id;
       bool _isSynth;
 
@@ -146,7 +134,8 @@ class VstNativeSynth : public Synth {
    public:
       VstNativeSynth(const QFileInfo& fi, AEffect* plugin,
                      const QString& label, const QString& desc, const QString& maker, const QString& ver,
-                     VstIntPtr id, void *dlHandle, bool isSynth, Plugin::PluginFeatures reqFeatures = Plugin::NoFeatures);
+                     VstIntPtr id, void *dlHandle, bool isSynth, PluginFeatures_t reqFeatures = PluginNoFeatures);
+      VstNativeSynth(const MusEPlugin::PluginScanInfoStruct& info);
 
       virtual ~VstNativeSynth() {}
       virtual Type synthType() const { return _isSynth ? VST_NATIVE_SYNTH : VST_NATIVE_EFFECT; }
@@ -344,7 +333,7 @@ private:
     std::vector<float> inControlDefaults;
     std::vector<std::string> portNames;
 public:
-    VstNativePluginWrapper ( VstNativeSynth *s, PluginFeatures reqFeatures = NoFeatures );
+    VstNativePluginWrapper ( VstNativeSynth *s, PluginFeatures_t reqFeatures = PluginNoFeatures );
     VstNativeSynth *synth() {
         return _synth;
     }

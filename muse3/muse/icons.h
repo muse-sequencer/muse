@@ -26,6 +26,7 @@
 
 class QPixmap;
 class QIcon;
+class QCursor;
 
 
 // NOTICE: Although it is tempting to use multi-icons (addPixmap, addFile etc.),
@@ -77,6 +78,14 @@ extern QPixmap* openHandIcon;
 extern QPixmap* zoomIcon;
 extern QPixmap* zoomAtIcon;
 extern QPixmap* sizeAllIcon;
+extern QPixmap* midiCtrlMergeIcon;
+extern QPixmap* midiCtrlMergeEraseIcon;
+extern QPixmap* midiCtrlMergeEraseInclusiveIcon;
+extern QPixmap* midiCtrlMergeEraseWysiwygIcon;
+extern QPixmap* midiCtrlMergeCopyIcon;
+extern QPixmap* midiCtrlMergeCopyEraseIcon;
+extern QPixmap* midiCtrlMergeCopyEraseInclusiveIcon;
+extern QPixmap* midiCtrlMergeCopyEraseWysiwygIcon;
 
 extern QPixmap* quantIcon;
 extern QPixmap* printIcon;
@@ -92,6 +101,8 @@ extern QPixmap* findIcon;
 extern QPixmap* masterIcon;
 extern QPixmap* filenewIcon;
 extern QPixmap* filenewIconS;
+extern QPixmap* filecloseIcon;
+extern QPixmap* appexitIcon;
 extern QPixmap* homeIcon;
 extern QPixmap* backIcon;
 extern QPixmap* forwardIcon;
@@ -132,8 +143,6 @@ extern QPixmap* editmuteSIcon;
 extern QPixmap* panicIcon;
 extern QPixmap* metronomeIcon;
 extern QPixmap* metronomeOffIcon;
-extern QIcon* metronomeQIcon;
-extern QIcon* metronomeOffQIcon;
 
 extern QIcon* pianoIconSet;
 extern QIcon* scoreIconSet;
@@ -154,6 +163,8 @@ extern QIcon* editpasteCloneIcon;
 extern QIcon* editpaste2TrackIcon;
 extern QIcon* editpasteClone2TrackIcon;
 */
+extern QPixmap* editpasteSIcon;
+extern QPixmap* editpasteCloneSIcon;
 
 extern QPixmap* exitIcon;
 extern QPixmap* exit1Icon;
@@ -420,6 +431,14 @@ extern QIcon* jackTransportOnSVGIcon;
 
 extern QIcon* metronomeOffSVGIcon;
 extern QIcon* metronomeOnSVGIcon;
+
+
+//----------------------------------
+// Cursors
+//----------------------------------
+
+extern QCursor* editpasteSCursor;
+extern QCursor* editpasteCloneSCursor;
 
 } // namespace MusEGui
 

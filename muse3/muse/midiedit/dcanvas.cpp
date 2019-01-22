@@ -55,6 +55,7 @@
 #include "functions.h"
 #include "helper.h"
 #include "operations.h"
+#include "gconfig.h"
 
 #define CARET   10
 #define CARET2   5
@@ -71,7 +72,7 @@ namespace MusEGui {
 //---------------------------------------------------------
 
 DEvent::DEvent(MusECore::Event e, MusECore::Part* p, int instr)
-  : CItem(e, p)
+  : EItem(e, p)
       {
       int y  = instr * TH + TH/2;
       int tick = e.tick() + p->tick();
@@ -118,8 +119,6 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
       {
       drumEditor=static_cast<DrumEdit*>(pr);
       
-      _setCurPartIfOnlyOneEventIsSelected=false;
-      
       old_style_drummap_mode = drumEditor->old_style_drummap_mode();
 
       if (old_style_drummap_mode)
@@ -164,57 +163,6 @@ DrumCanvas::~DrumCanvas()
   
   delete steprec;
 }
-
-// //---------------------------------------------------------
-// //   moveCanvasItems
-// //   Return false if invalid index
-// //---------------------------------------------------------
-//
-// bool DrumCanvas::index2Note(int index, int* port, int* channel, int* note)
-// {
-//       if ((index<0) || (index>=getOurDrumMapSize()))
-//         return false;
-//
-//       int mport, ch;
-//       if(old_style_drummap_mode)
-//       {
-//         // Default to track port if -1 and track channel if -1.
-//         mport = ourDrumMap[index].port;
-//         if(mport == -1)
-//         {
-//           if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
-//             return false;
-//           MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(curPart->track());
-//           mport = mt->outPort();
-//         }
-//         ch = ourDrumMap[index].channel;
-//         if(ch == -1)
-//         {
-//           if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
-//             return false;
-//           MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(curPart->track());
-//           ch = mt->outChannel();
-//         }
-//       }
-//       else
-//       {
-//         MusECore::Track* track = *instrument_map[index].tracks.begin();
-//         if(!track->isMidiTrack())
-//           return false;
-//         MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(track);
-//         mport = mt->outPort();
-//         ch = mt->outChannel();
-//       }
-//
-//       if(port)
-//         *port = mport;
-//       if(channel)
-//         *channel = ch;
-//       if(note)
-//         *note = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
-//
-//       return true;
-// }
 
 //---------------------------------------------------------
 //   index2Note
@@ -293,7 +241,7 @@ bool DrumCanvas::index2Note(int index, int* port, int* channel, int* note)
 //   moveCanvasItems
 //---------------------------------------------------------
 
-MusECore::Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype, bool rasterize)
+MusECore::Undo DrumCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, DragType dtype, bool rasterize)
 {      
 
   if(editor->parts()->empty())
@@ -312,6 +260,8 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, Dra
     for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
     {
       CItem* ci = ici->second;
+      ci->setMoving(false);
+
       if(ci->part() != part)
         continue;
       
@@ -508,6 +458,8 @@ CItem* DrumCanvas::newItem(const QPoint& p, int state)
       else if ((state & k1) == k1 && !(state & nk1))
             velo = ourDrumMap[instr].lv1;
       int tick = p.x();
+      if(tick < 0)
+        tick = 0;
       if(!(state & Qt::ShiftModifier))
         tick = editor->rasterVal(tick);
       return newItem(tick, instr, velo);
@@ -651,7 +603,8 @@ bool DrumCanvas::deleteItem(CItem* item)
       {
       MusECore::Event ev = ((DEvent*)item)->event();
       // Indicate do undo, and do not do port controller values and clone parts. 
-      MusEGlobal::audio->msgDeleteEvent(ev, ((DEvent*)item)->part(), true, false, false);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
+                      ev, ((DEvent*)item)->part(), false, false));
       return false;
       }
 
@@ -659,7 +612,7 @@ bool DrumCanvas::deleteItem(CItem* item)
 //   itemPressed
 //---------------------------------------------------------
 
-void DrumCanvas::itemPressed(const MusEGui::CItem* item)
+void DrumCanvas::itemPressed(const CItem* item)
       {
       if (!_playEvents)
             return;
@@ -684,7 +637,7 @@ void DrumCanvas::itemPressed(const MusEGui::CItem* item)
 //   itemReleased
 //---------------------------------------------------------
 
-void DrumCanvas::itemReleased(const MusEGui::CItem*, const QPoint&)
+void DrumCanvas::itemReleased(const CItem*, const QPoint&)
       {
       if (!_playEvents)
               return;
@@ -696,7 +649,7 @@ void DrumCanvas::itemReleased(const MusEGui::CItem*, const QPoint&)
 //   itemMoved
 //---------------------------------------------------------
 
-void DrumCanvas::itemMoved(const MusEGui::CItem* item, const QPoint& pos)
+void DrumCanvas::itemMoved(const CItem* item, const QPoint& pos)
       {
       int index = y2pitch(pos.y());
       int pitch, port, channel;
@@ -728,23 +681,27 @@ void DrumCanvas::itemMoved(const MusEGui::CItem* item, const QPoint& pos)
 //   drawItem
 //---------------------------------------------------------
 
-void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
+void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& mr, const QRegion&)
       {
       DEvent* e   = (DEvent*) item;
-      int x = 0, y = 0;
-        x = mapx(item->pos().x());
-        y = mapy(item->pos().y());
+      int mx = 0, my = 0;
+      mx = mapx(item->pos().x());
+      my = mapy(item->pos().y());
+      
       QPolygon pa(4);
-      pa.setPoint(0, x - CARET2, y);
-      pa.setPoint(1, x,          y - CARET2);
-      pa.setPoint(2, x + CARET2, y);
-      pa.setPoint(3, x,          y + CARET2);
+      pa.setPoint(0, mx - CARET2, my);
+      pa.setPoint(1, mx,          my - CARET2);
+      pa.setPoint(2, mx + CARET2, my);
+      pa.setPoint(3, mx,          my + CARET2);
       QRect r(pa.boundingRect());
-      r = r.intersected(rect);
+      r = r.intersected(mr);
       if(!r.isValid())
         return;
       
-      p.setPen(Qt::black);
+      QPen pen;
+      pen.setCosmetic(true);
+      pen.setColor(Qt::black);
+      p.setPen(pen);
       
       if (e->part() != curPart)
       {
@@ -765,7 +722,7 @@ void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
       else
       {
             int velo    = e->event().velo();
-            MusECore::DrumMap* dm = &ourDrumMap[y2pitch(y)]; //Get the drum item
+            MusECore::DrumMap* dm = &ourDrumMap[y2pitch(my)]; //Get the drum item
             QColor color;
             if (velo < dm->lv1)
                   color.setRgb(240, 240, 255);
@@ -780,13 +737,13 @@ void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
             
       p.drawPolygon(pa);
       }
-
+      
 //---------------------------------------------------------
 //   drawMoving
 //    draws moving items
 //---------------------------------------------------------
 
-void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
+void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect, const QRegion&)
     {
       QPolygon pa(4);
       QPoint pt = map(item->mp());
@@ -800,7 +757,10 @@ void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
       mr = mr.intersected(rect);
       if(!mr.isValid())
         return;
-      p.setPen(Qt::black);
+      QPen pen;
+      pen.setCosmetic(true);
+      pen.setColor(Qt::black);
+      p.setPen(pen);
       p.setBrush(Qt::black);
       p.drawPolygon(pa);
     }
@@ -809,38 +769,58 @@ void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
 //   drawCanvas
 //---------------------------------------------------------
 
-void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect)
+void DrumCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
       {
-      int x = rect.x();
-      int y = rect.y();
-      int w = rect.width();
-      int h = rect.height();
+      const QRect ur = mapDev(mr);
 
+      int ux = ur.x();
+      if(ux < 0)
+        ux = 0;
+      const int uy = ur.y();
+      const int uw = ur.width();
+      const int uh = ur.height();
+      const int ux_2 = ux + uw;
+      const int uy_2 = uy + uh;
+
+      QPen pen;
+      pen.setCosmetic(true);
+      pen.setColor(Qt::gray);
+      p.setPen(pen);
+      
       //---------------------------------------------------
       //  horizontal lines
       //---------------------------------------------------
 
-      int yy  = ((y-1) / TH) * TH + TH;
-      for (; yy < y + h; yy += TH) {
-            p.setPen(Qt::gray);
-            p.drawLine(x, yy, x + w, yy);
+      int uyy  = ((uy-1) / TH) * TH + TH;
+      
+// For testing...
+//       fprintf(stderr, "DrumCanvas::drawCanvas ux:%d uy:%d uw:%d uh:%d uyy:%d\n", ux, uy, uw, uh, uyy);
+      
+      for (; uyy < uy_2; uyy += TH) {
+            p.drawLine(ux, uyy, ux_2, uyy);
             }
 
       //---------------------------------------------------
       // vertical lines
       //---------------------------------------------------
 
-      drawTickRaster(p, x, y, w, h, editor->raster());
+      drawTickRaster(p, mr, rg, editor->raster(), false, false, false,
+                         MusEGlobal::config.midiCanvasBarColor, 
+                         MusEGlobal::config.midiCanvasBeatColor);
       }
 
 //---------------------------------------------------------
 //   drawTopItem
 //---------------------------------------------------------
-void DrumCanvas::drawTopItem(QPainter& p, const QRect&)
+
+void DrumCanvas::drawTopItem(QPainter& p, const QRect&, const QRegion&)
 {
   // draw cursor
   if (_tool == CursorTool) {
-    p.setPen(Qt::black);
+    QPen pen;
+    pen.setCosmetic(true);
+    pen.setColor(Qt::black);
+    p.setPen(pen);
 
     int y = mapy(TH * cursorPos.y());
 
@@ -970,8 +950,10 @@ void DrumCanvas::cmd(int cmd)
                               MusECore::Event newEvent = event.clone();
                               // newEvent.setLenTick(drumMap[event.pitch()].len);
                               newEvent.setLenTick(ourDrumMap[y2pitch(devent->y())].len);
-                              // Indicate no undo, and do not do port controller values and clone parts. 
-                              MusEGlobal::audio->msgChangeEvent(event, newEvent, devent->part(), false, false, false);
+                              // Operation is undoable but do not start/end undo.
+                              // Indicate do not do port controller values and clone parts.
+                              MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
+                                                newEvent, event, devent->part(), false, false), MusECore::Song::OperationUndoable);
                               }
                         }
                   MusEGlobal::song->endUndo(SC_EVENT_MODIFIED);
@@ -982,7 +964,7 @@ void DrumCanvas::cmd(int cmd)
                       if(spos > 0)
                       {
                         spos -= 1;     // Nudge by -1, then snap down with raster1.
-                        spos = AL::sigmap.raster1(spos, editor->rasterStep(pos[0]));
+                        spos = MusEGlobal::sigmap.raster1(spos, editor->rasterStep(pos[0]));
                       }
                       if(spos < 0)
                         spos = 0;
@@ -992,7 +974,7 @@ void DrumCanvas::cmd(int cmd)
                   break;
             case CMD_RIGHT:
                   {
-                      int spos = AL::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
+                      int spos = MusEGlobal::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
                       MusECore::Pos p(spos,true);
                       MusEGlobal::song->setPos(0, p, true, true, true);
                   }
@@ -1014,7 +996,7 @@ void DrumCanvas::cmd(int cmd)
                   }
                   break;
             }
-      updateSelection();
+      itemSelectionsChanged();
       redraw();
       }
 
@@ -1204,9 +1186,11 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
             MusECore::Event& theEvent = (*i).second;
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, theEvent, thePart, true, false));
             }
-      
-      MusEGlobal::song->applyOperationGroup(operations, false); // do not indicate undo
-      MusEGlobal::song->update(SC_DRUMMAP); //this update is necessary, as it's not handled by applyOperationGroup()
+
+      // Operation is undoable but do not start/end undo.
+      MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationUndoable);
+      // This update is necessary, as it's not handled by applyOperationGroup()
+      MusEGlobal::song->update(SC_DRUMMAP);
    }
    else // if (!old_style_drummap_mode)
    {
@@ -1334,7 +1318,7 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
             MusECore::Event newEvent = event.clone();
 
             switch (type) {
-                  case MusEGui::NoteInfo::VAL_TIME:
+                  case NoteInfo::VAL_TIME:
                         {
                         int newTime = val;
                         if(delta_mode)
@@ -1346,7 +1330,7 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
                         newEvent.setTick(newTime);
                         }
                         break;
-                  case MusEGui::NoteInfo::VAL_LEN:
+                  case NoteInfo::VAL_LEN:
                         {
                         int len = val;
                         if(delta_mode)
@@ -1356,7 +1340,7 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
                         newEvent.setLenTick(len);
                         }
                         break;
-                  case MusEGui::NoteInfo::VAL_VELON:
+                  case NoteInfo::VAL_VELON:
                         {
                         int velo = val;
                         if(delta_mode)
@@ -1370,7 +1354,7 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
                         newEvent.setVelo(velo);
                         }
                         break;
-                  case MusEGui::NoteInfo::VAL_VELOFF:
+                  case NoteInfo::VAL_VELOFF:
                         {
                         int velo = val;
                         if(delta_mode)
@@ -1435,14 +1419,14 @@ int DrumCanvas::getNextStep(unsigned int pos, int basicStep, int stepSize)
   int newPos = pos;
   for (int i =0; i<stepSize;i++) {
     if (basicStep > 0) { // moving right
-      newPos = AL::sigmap.raster2(newPos + basicStep, editor->rasterStep(newPos));    // Nudge by +1, then snap up with raster2.
+      newPos = MusEGlobal::sigmap.raster2(newPos + basicStep, editor->rasterStep(newPos));    // Nudge by +1, then snap up with raster2.
       if (unsigned(newPos) > curPart->endTick()- editor->rasterStep(curPart->endTick()))
         newPos = curPart->tick();
     }
     else { // moving left
-      newPos = AL::sigmap.raster1(newPos + basicStep, editor->rasterStep(newPos));    // Nudge by -1, then snap up with raster1.
+      newPos = MusEGlobal::sigmap.raster1(newPos + basicStep, editor->rasterStep(newPos));    // Nudge by -1, then snap up with raster1.
       if (unsigned(newPos) < curPart->tick() ) {
-        newPos = AL::sigmap.raster1(curPart->endTick()-1, editor->rasterStep(curPart->endTick()));
+        newPos = MusEGlobal::sigmap.raster1(curPart->endTick()-1, editor->rasterStep(curPart->endTick()));
       }
     }
   }
@@ -1617,7 +1601,7 @@ void DrumCanvas::selectCursorEvent(const MusECore::Event* ev)
           i->second->setSelected(false);
 
   }
-  updateSelection();
+  itemSelectionsChanged();
 }
 
 

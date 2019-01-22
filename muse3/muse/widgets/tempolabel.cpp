@@ -88,7 +88,7 @@ TempoEdit::TempoEdit(QWidget* parent)
       _extern = false;
       // Be consistent with other tempo boxes such as the one in transport.
       setDecimals(2);
-      setRange(MUSE_MIN_TEMPO_VAL, MUSE_MAX_TEMPO_VAL);
+      setRange(MusECore::MIN_TEMPO_VAL, MusECore::MAX_TEMPO_VAL);
       curVal = -1.0;
       
       connect(this, SIGNAL(valueChanged(double)), SLOT(newValue(double)));

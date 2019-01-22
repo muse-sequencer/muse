@@ -32,10 +32,6 @@
 #include <QString>
 #include <QStyleOption>
 
-namespace MusEGlobal {
-extern int mtcType;
-}
-
 namespace Awl {
 
       using AL::sigmap;
@@ -311,7 +307,7 @@ QAbstractSpinBox::StepEnabled PosEdit::stepEnabled() const
                         else
                         {
                           int nf = 23;    // 24 frames sec
-                          switch(MusEGlobal::mtcType) {
+                          switch(AL::mtcType) {
                                 //case 0:     // 24 frames sec
                                 //      nf = 23;
                                 //      break;
@@ -419,7 +415,7 @@ QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
           rv = state;
           
         int nf = 23;      // 24 frames sec
-        switch(MusEGlobal::mtcType) {
+        switch(AL::mtcType) {
               //case 0:     // 24 frames sec
               //      nf = 23;
               //      break;
@@ -562,7 +558,7 @@ void PosEdit::stepBy(int steps)
                   case 2:
                         {
                           int nf = 23;      // 24 frames sec
-                          switch(MusEGlobal::mtcType) {
+                          switch(AL::mtcType) {
                                 //case 0:     // 24 frames sec
                                 //      nf = 23;
                                 //      break;

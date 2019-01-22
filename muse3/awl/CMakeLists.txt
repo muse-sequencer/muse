@@ -42,7 +42,7 @@ QT5_WRAP_CPP (awl_mocs
       panknob.h
       pitchedit.h
       pitchlabel.h
-      posedit.h
+      # posedit.h
       # poslabel.h
       sigedit.h
       sigspinbox.h
@@ -78,7 +78,7 @@ file (GLOB awl_source_files
       panknob.cpp
       pitchedit.cpp
       pitchlabel.cpp
-      posedit.cpp
+      # posedit.cpp
       # poslabel.cpp
       sigedit.cpp
       sigspinbox.cpp
@@ -95,7 +95,10 @@ file (GLOB awl_source_files
 ##
 ## Define target
 ##
-add_library ( awl ${MODULES_BUILD}
+
+# Always build this shared now. It is no longer linked into the main app.
+# add_library ( awl ${MODULES_BUILD}
+add_library ( awl SHARED
       ${awl_source_files}
       ${awl_mocs}
       )
@@ -128,8 +131,13 @@ target_link_libraries ( awl
 ##
 ## Install location
 ##
-if ( ${MODULES_BUILD} STREQUAL SHARED )
-      install(TARGETS awl
-            DESTINATION ${MusE_MODULES_DIR}
-            )
-endif ( ${MODULES_BUILD} STREQUAL SHARED )
+
+# if ( ${MODULES_BUILD} STREQUAL SHARED )
+#       install(TARGETS awl
+#             DESTINATION ${MusE_MODULES_DIR}
+#             )
+# endif ( ${MODULES_BUILD} STREQUAL SHARED )
+
+install(TARGETS awl
+      DESTINATION ${MusE_MODULES_DIR}
+      )

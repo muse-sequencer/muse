@@ -72,6 +72,7 @@ CtrlEdit::CtrlEdit(QWidget* parent, MidiEditor* e, int xmag,
       hbox->addWidget(panel,  expand ? 100 : 0, Qt::AlignRight);
       hbox->addWidget(canvas, 100);
       hbox->addWidget(vscale, 0);
+      
       setLayout(hbox);
 
       connect(panel, SIGNAL(destroyPanel()), SLOT(destroy()));

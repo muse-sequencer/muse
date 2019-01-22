@@ -79,6 +79,48 @@ void EventBase::move(int tickOffset)
       setTick(tick() + tickOffset);
       }
 
+bool EventBase::isSimilarType(const EventBase& e,
+            bool compareTime,
+            bool compareA, bool compareB, bool compareC,
+            bool compareWavePath, bool compareWavePos, bool compareWaveStartPos) const
+{
+  // Types must be the same.
+  if((e.type() != type()) ||
+     // Compares base Pos positions.
+     (compareTime && *this != e))
+    return false;
+
+  switch(type())
+  {
+    case Note:
+      // Are the note, and on and off velocities the same?
+      return (!compareA || e.dataA() == dataA()) &&
+             (!compareB || e.dataB() == dataB()) &&
+             (!compareC || e.dataC() == dataC());
+    break;
+    
+    case Controller:
+      // Are the controller numbers and values the same?
+      return (!compareA || e.dataA() == dataA()) &&
+             (!compareB || e.dataB() == dataB());
+    break;
+    
+    case Sysex:
+    case Meta:
+      // Are the sysex or meta length and data the same?
+      return dataLen() == e.dataLen() && (dataLen() == 0 || (memcmp(data(), e.data(), dataLen()) == 0));
+    break;
+    
+    case Wave:
+      // Are the sound file path, wave starting position and event position and length the same?
+      return (!compareWavePos || this->PosLen::operator==(e)) &&
+             (!compareWaveStartPos || spos() == e.spos()) &&
+             (!compareWavePath || sndFile().dirPath() == e.sndFile().dirPath());
+    break;
+  }
+  return false;
+}
+
 //---------------------------------------------------------
 //   dump
 //---------------------------------------------------------
@@ -264,9 +306,22 @@ void Event::assign(const Event& e)
 bool Event::operator==(const Event& e) const {
             return ev == e.ev;
             }
+
 bool Event::isSimilarTo(const Event& other) const
 {
 		return ev ? ev->isSimilarTo(*other.ev) : (other.ev ? false : true);
+}
+
+bool Event::isSimilarType(const Event& e,
+            bool compareTime,
+            bool compareA, bool compareB, bool compareC,
+            bool compareWavePath, bool compareWavePos, bool compareWaveStartPos) const
+{
+  return ev ? ev->isSimilarType(*e.ev,
+         compareTime,
+         compareA, compareB, compareC,
+         compareWavePath, compareWavePos, compareWaveStartPos) :
+       (e.ev ? false : true);
 }
 
 int Event::getRefCount() const    { return ev ? ev->getRefCount() : 0; }
@@ -343,19 +398,41 @@ void Event::readAudio(MusECore::WavePart* part, unsigned offset, float** bpp, in
       {
         if(ev) ev->readAudio(part, offset, bpp, channels, nn, doSeek, overwrite);
       }
-void Event::setTick(unsigned val)       { if(ev) ev->setTick(val); }
-unsigned Event::tick() const            { return ev ? ev->tick() : 0; }
-unsigned Event::frame() const           { return ev ? ev->frame() : 0; }
-unsigned Event::posValue() const        { return ev ? ev->posValue() : 0; }
-void Event::setFrame(unsigned val)      { if(ev) ev->setFrame(val); }
-void Event::setLenTick(unsigned val)    { if(ev) ev->setLenTick(val); }
-void Event::setLenFrame(unsigned val)   { if(ev) ev->setLenFrame(val); }
-unsigned Event::lenTick() const         { return ev ? ev->lenTick() : 0; }
-unsigned Event::lenFrame() const        { return ev ? ev->lenFrame() : 0; }
-unsigned Event::lenValue() const        { return ev ? ev->lenValue() : 0; }
+
+//--------------------------------------------------------
+// 'Agnostic' position methods - can be TICKS and FRAMES.
+//--------------------------------------------------------
+
+Pos Event::pos() const                  { return ev ? *ev : Pos(); }
+void Event::setPos(const Pos& p)        { if(ev) ev->setPos(p); }
 Pos Event::end() const                  { return ev ? ev->end() : Pos(); }
+PosLen Event::posLen() const            { return ev ? *ev : PosLen(); }
+
+unsigned Event::posValue() const        { return ev ? ev->posValue() : 0; }
+unsigned Event::posValue(Pos::TType time_type) const { return ev ? ev->posValue(time_type) : 0; }
+void Event::setPosValue(unsigned val)   { if(ev) ev->setPosValue(val); }
+void Event::setPosValue(unsigned val, Pos::TType time_type) { if(ev) ev->setPosValue(val, time_type); }
+
+unsigned Event::lenValue() const        { return ev ? ev->lenValue() : 0; }
+unsigned Event::lenValue(Pos::TType time_type) const { return ev ? ev->lenValue(time_type) : 0; }
+void Event::setLenValue(unsigned val)   { if(ev) ev->setLenValue(val); }
+void Event::setLenValue(unsigned val, Pos::TType time_type) { if(ev) ev->setLenValue(val, time_type); }
+
+unsigned Event::endPosValue() const     { return ev ? ev->endValue() : 0; }
+
+//--------------------------------------------------------
+// 'Resolving' position methods - must be TICKS or FRAMES.
+//--------------------------------------------------------
+
+unsigned Event::tick() const            { return ev ? ev->tick() : 0; }
+void Event::setTick(unsigned val)       { if(ev) ev->setTick(val); }
+unsigned Event::frame() const           { return ev ? ev->frame() : 0; }
+void Event::setFrame(unsigned val)      { if(ev) ev->setFrame(val); }
+unsigned Event::lenTick() const         { return ev ? ev->lenTick() : 0; }
+void Event::setLenTick(unsigned val)    { if(ev) ev->setLenTick(val); }
+unsigned Event::lenFrame() const        { return ev ? ev->lenFrame() : 0; }
+void Event::setLenFrame(unsigned val)   { if(ev) ev->setLenFrame(val); }
 unsigned Event::endTick() const         { return ev ? ev->end().tick() : 0; }
 unsigned Event::endFrame() const        { return ev ? ev->end().frame() : 0; }
-void Event::setPos(const Pos& p)        { if(ev) ev->setPos(p); }
 
 } // namespace MusECore

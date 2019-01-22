@@ -29,8 +29,8 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
-#include "awl/posedit.h"
-#include "awl/sigedit.h"
+#include "posedit.h"
+#include "sigedit.h"
 
 #include "song.h"
 #include "transport.h"
@@ -145,7 +145,7 @@ TempoSig::TempoSig(QWidget* parent)
       _masterButton = new IconButton(masterTrackOnSVGIcon, masterTrackOffSVGIcon, 0, 0, false, true);
       _masterButton->setContentsMargins(0, 0, 0, 0);
       _masterButton->setCheckable(true);
-      _masterButton->setToolTip(tr("use tempo master track"));
+      _masterButton->setToolTip(tr("use mastertrack tempo"));
       _masterButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
       _masterButton->setFocusPolicy(Qt::NoFocus);
       connect(_masterButton, SIGNAL(toggled(bool)), SLOT(masterToggled(bool)));
@@ -157,11 +157,11 @@ TempoSig::TempoSig(QWidget* parent)
       l1 = new TempoEdit();
       l1->setContentsMargins(0, 0, 0, 0);
       l1->setFocusPolicy(Qt::StrongFocus);
-      l1->setToolTip(tr("master track tempo at current position, or fixed tempo"));
+      l1->setToolTip(tr("mastertrack tempo at current position, or fixed tempo"));
       hb1->addWidget(l1);
       vb2->addLayout(hb1);
       
-      l2 = new Awl::SigEdit(this);
+      l2 = new SigEdit(this);
       l2->setContentsMargins(0, 0, 0, 0);
       l2->setFocusPolicy(Qt::StrongFocus);
       l2->setToolTip(tr("time signature at current position"));
@@ -178,7 +178,7 @@ TempoSig::TempoSig(QWidget* parent)
       l3->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
 
       connect(l1, SIGNAL(tempoChanged(double)), SLOT(newTempo(double)));
-      connect(l2, SIGNAL(valueChanged(const AL::TimeSignature&)), SIGNAL(sigChanged(const AL::TimeSignature&)));
+      connect(l2, SIGNAL(valueChanged(const MusECore::TimeSignature&)), SIGNAL(sigChanged(const MusECore::TimeSignature&)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
       connect(l1, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
@@ -252,7 +252,7 @@ void TempoSig::setTempo(int tempo)
 
 void TempoSig::setTimesig(int a, int b)
       {
-      l2->setValue(AL::TimeSignature(a, b));
+      l2->setValue(MusECore::TimeSignature(a, b));
       }
 
 //---------------------------------------------------------
@@ -353,7 +353,7 @@ Transport::Transport(QWidget* parent, const char* name)
       marken->setSpacing(0);
       marken->setContentsMargins(0, 0, 0, 0);
 
-      tl1 = new Awl::PosEdit(0);
+      tl1 = new PosEdit(0);
       tl1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       tl1->setFocusPolicy(Qt::NoFocus);
 
@@ -364,7 +364,7 @@ Transport::Transport(QWidget* parent, const char* name)
       l5->setAlignment(Qt::AlignCenter);
       marken->addWidget(l5);
 
-      tl2 = new Awl::PosEdit(0);
+      tl2 = new PosEdit(0);
       tl2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       marken->addWidget(tl2);
       tl2->setFocusPolicy(Qt::NoFocus);
@@ -387,8 +387,8 @@ Transport::Transport(QWidget* parent, const char* name)
       QHBoxLayout *hbox1 = new QHBoxLayout;
       hbox1->setContentsMargins(0, 0, 0, 0);
       
-      time1 = new Awl::PosEdit(0);
-      time2 = new Awl::PosEdit(0);
+      time1 = new PosEdit(0);
+      time2 = new PosEdit(0);
       time2->setSmpte(true);
       time1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       time2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -527,12 +527,12 @@ Transport::Transport(QWidget* parent, const char* name)
       connect(slider,SIGNAL(valueChanged(int)),  SLOT(cposChanged(int)));
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
       connect(tempo, SIGNAL(tempoChanged(int)), MusEGlobal::song, SLOT(setTempo(int)));
-      connect(tempo, SIGNAL(sigChanged(const AL::TimeSignature&)), SLOT(sigChange(const AL::TimeSignature&)));
+      connect(tempo, SIGNAL(sigChanged(const MusECore::TimeSignature&)), SLOT(sigChange(const MusECore::TimeSignature&)));
       connect(tempo, SIGNAL(masterTrackChanged(bool)), MusEGlobal::song, SLOT(setMasterFlag(bool)));
       connect(tempo, SIGNAL(escapePressed()), SLOT(setFocus()));
       connect(tempo, SIGNAL(returnPressed()), SLOT(setFocus()));
       connect(MusEGlobal::song, SIGNAL(playChanged(bool)), SLOT(setPlay(bool)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(songChanged(MusECore::SongChangedStruct_t)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
 
@@ -629,7 +629,7 @@ void Transport::setPos(int idx, unsigned v, bool)
                   
                   {
                   int z, n;
-                  AL::sigmap.timesig(v, z, n);
+                  MusEGlobal::sigmap.timesig(v, z, n);
                   setTimesig(z, n);
                   }
                   break;
@@ -756,20 +756,20 @@ void Transport::setCycleMode(int id)
 //   songChanged
 //---------------------------------------------------------
 
-void Transport::songChanged(MusECore::SongChangedFlags_t flags)
+void Transport::songChanged(MusECore::SongChangedStruct_t flags)
       {
       slider->setRange(0, MusEGlobal::song->len());
       int cpos  = MusEGlobal::song->cpos();
-      if (flags & (SC_MASTER | SC_TEMPO)) {
+      if (flags._flags & (SC_MASTER | SC_TEMPO)) {
             if(!MusEGlobal::extSyncFlag.value())
               setTempo(MusEGlobal::tempomap.tempo(cpos));
             }
-      if (flags & SC_SIG) {
+      if (flags._flags & SC_SIG) {
             int z, n;
-            AL::sigmap.timesig(cpos, z, n);
+            MusEGlobal::sigmap.timesig(cpos, z, n);
             setTimesig(z, n);
             }
-      if (flags & SC_MASTER)
+      if (flags._flags & SC_MASTER)
       {
             tempo->setMasterTrack(MusEGlobal::song->masterFlag());
       }
@@ -838,9 +838,11 @@ void Transport::playToggled(bool val)
             }
       }
       
-void Transport::sigChange(const AL::TimeSignature& sig)
+void Transport::sigChange(const MusECore::TimeSignature& sig)
 {
-  MusEGlobal::audio->msgAddSig(MusEGlobal::song->cPos().tick(), sig.z, sig.n);  // Add will replace if found. 
+  // Add will replace if found. 
+  MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
+                            MusEGlobal::song->cPos().tick(), sig.z, sig.n));
 }
 
 void Transport::keyPressEvent(QKeyEvent* ev)

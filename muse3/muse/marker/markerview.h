@@ -34,10 +34,6 @@ class QToolBar;
 class QToolButton;
 class QTreeWidget;
 
-namespace Awl {
-      class PosEdit;
-      };
-
 namespace MusECore {
 class Marker;
 ///class PosEdit;
@@ -45,6 +41,8 @@ class Pos;
 }
 
 namespace MusEGui {
+
+class PosEdit;
 
 //---------------------------------------------------------
 //   MarkerItem
@@ -73,8 +71,8 @@ class MarkerView : public TopWin {
     
       QTreeWidget* table;
       QLineEdit* editName;
-      Awl::PosEdit* editSMPTE;
-      Awl::PosEdit* editTick;
+      PosEdit* editSMPTE;
+      PosEdit* editTick;
       QToolButton* lock;
       QToolBar* tools;
       
@@ -92,7 +90,7 @@ class MarkerView : public TopWin {
       void markerChanged(int);
       void clicked(QTreeWidgetItem*);
       void updateList();
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       
    signals:
       void isDeleting(MusEGui::TopWin*);

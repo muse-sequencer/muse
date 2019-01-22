@@ -195,18 +195,18 @@ void ListEdit::closeEvent(QCloseEvent* e)
 //   songChanged
 //---------------------------------------------------------
 
-void ListEdit::songChanged(MusECore::SongChangedFlags_t type)
+void ListEdit::songChanged(MusECore::SongChangedStruct_t type)
       {
       if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
        
-      if (type == 0)
+      if (type._flags == 0)
             return;
-      if (type & (// SC_MIDI_TRACK_PROP  FIXME Needed, but might make it slow!
+      if (type._flags & (// SC_MIDI_TRACK_PROP  FIXME Needed, but might make it slow!
            SC_PART_REMOVED | SC_PART_MODIFIED 
          | SC_PART_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED
          | SC_EVENT_INSERTED | SC_SELECTION)) {
-            if (type & (SC_PART_REMOVED | SC_PART_INSERTED | SC_PART_MODIFIED))
+            if (type._flags & (SC_PART_REMOVED | SC_PART_INSERTED | SC_PART_MODIFIED))
                   genPartlist();
             // close window if editor has no parts anymore
             if (parts()->empty()) {
@@ -214,7 +214,7 @@ void ListEdit::songChanged(MusECore::SongChangedFlags_t type)
                   return;
                   }
             liste->setSortingEnabled(false);
-            if (type == SC_SELECTION) {
+            if (type._flags == SC_SELECTION) {
                   // BUGFIX: I found the keyboard modifier states affect how QTreeWidget::setCurrentItem() operates.
                   //         So for example (not) holding shift while lassoo-ing notes in piano roll affected 
                   //          whether multiple items were selected in this event list editor! 
@@ -296,7 +296,7 @@ QString EventListItem::text(int col) const
                   int t = event.tick() + part->tick();
                   int bar, beat;
                   unsigned tick;
-                  AL::sigmap.tickValues(t, &bar, &beat, &tick);
+                  MusEGlobal::sigmap.tickValues(t, &bar, &beat, &tick);
                   s = QString("%1.%2.%3")
                       .arg(bar + 1,  4, 10, QLatin1Char('0'))
                       .arg(beat + 1, 2, 10, QLatin1Char('0'))
@@ -589,7 +589,7 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       mainGrid->setRowStretch(1, 100);
       mainGrid->setColumnStretch(0, 100);
       mainGrid->addWidget(liste, 1, 0, 2, 1);
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
 
       if(pl->empty())
       {
@@ -644,7 +644,8 @@ void ListEdit::editInsertNote()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do not handle port controller values. 
-            MusEGlobal::audio->msgAddEvent(event, curPart, true, false, false);
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
+                              event, curPart, false, false));
             }
       }
 
@@ -670,7 +671,8 @@ void ListEdit::editInsertSysEx()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do not handle port controller values. 
-            MusEGlobal::audio->msgAddEvent(event, curPart, true, false, false);
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
+                              event, curPart, false, false));
             }
       }
 
@@ -693,7 +695,8 @@ void ListEdit::editInsertCtrl()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do port controller values and clone parts. 
-            MusEGlobal::audio->msgAddEvent(event, curPart, true, true, true);
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
+                              event, curPart, true, true));
             }
       }
 
@@ -716,7 +719,8 @@ void ListEdit::editInsertMeta()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do not handle port controller values. 
-            MusEGlobal::audio->msgAddEvent(event, curPart, true, false, false);
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
+                              event, curPart, false, false));
             }
       }
 
@@ -760,10 +764,12 @@ void ListEdit::editEvent(MusECore::Event& event, MusECore::MidiPart* part)
             {
               if(event.type() == MusECore::Controller)
                 // Indicate do undo, and do port controller values and clone parts. 
-                MusEGlobal::audio->msgChangeEvent(event, nevent, part, true, true, true);
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
+                                  nevent, event, part, true, true));
               else  
                 // Indicate do undo, and do not do port controller values and clone parts. 
-                MusEGlobal::audio->msgChangeEvent(event, nevent, part, true, false, false);
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
+                                  nevent, event, part, false, false));
             }      
           }
       }

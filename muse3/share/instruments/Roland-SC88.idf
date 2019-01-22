@@ -1,0 +1,523 @@
+<?xml version="1.0"?>
+<muse version="1.0">
+  <MidiInstrument name="Roland SC-88">
+    <PatchGroup name="Piano">
+      <Patch name="Piano 1" hbank="0" prog="0" />
+      <Patch name="Piano 1w" hbank="8" prog="0" />
+      <Patch name="Piano 1d" hbank="16" prog="0" />
+      <Patch name="Piano 2" hbank="0" prog="1" />
+      <Patch name="Piano 2w" hbank="8" prog="1" />
+      <Patch name="Piano 3" hbank="0" prog="2" />
+      <Patch name="EG+Rhodes 1" hbank="1" prog="2" />
+      <Patch name="EG+Rhodes 2" hbank="2" prog="2" />
+      <Patch name="Piano 3w" hbank="8" prog="2" />
+      <Patch name="Honky-tonk" hbank="0" prog="3" />
+      <Patch name="Old Upright" hbank="8" prog="3" />
+      <Patch name="E.Piano 1" hbank="0" prog="4" />
+      <Patch name="St.Soft EP" hbank="8" prog="4" />
+      <Patch name="FM+SA EP" hbank="16" prog="4" />
+      <Patch name="60&apos;s E.Piano" hbank="24" prog="4" />
+      <Patch name="Hard Rhodes" hbank="25" prog="4" />
+      <Patch name="MellowRhodes" hbank="26" prog="4" />
+      <Patch name="E.Piano 2" hbank="0" prog="5" />
+      <Patch name="Detuned EP 2" hbank="8" prog="5" />
+      <Patch name="St.FM EP" hbank="16" prog="5" />
+      <Patch name="Hard FM EP" hbank="24" prog="5" />
+      <Patch name="Harpsichord" hbank="0" prog="6" />
+      <Patch name="Coupled Hps." hbank="8" prog="6" />
+      <Patch name="Harpsi. w" hbank="16" prog="6" />
+      <Patch name="Harpsi. o" hbank="24" prog="6" />
+      <Patch name="Clav." hbank="0" prog="7" />
+    </PatchGroup>
+    <PatchGroup name="Chromatic Perc">
+      <Patch name="Celesta" hbank="0" prog="8" />
+      <Patch name="Glockenspiel" hbank="0" prog="9" />
+      <Patch name="Music Box" hbank="0" prog="10" />
+      <Patch name="Vibraphone" hbank="0" prog="11" />
+      <Patch name="Hard Vibe" hbank="1" prog="11" />
+      <Patch name="Vib.w" hbank="8" prog="11" />
+      <Patch name="Marimba" hbank="0" prog="12" />
+      <Patch name="Marimba w" hbank="8" prog="12" />
+      <Patch name="Barafon" hbank="16" prog="12" />
+      <Patch name="Barafon 2" hbank="17" prog="12" />
+      <Patch name="Log Drum" hbank="24" prog="12" />
+      <Patch name="Xylophone" hbank="0" prog="13" />
+      <Patch name="Tubular Bells" hbank="0" prog="14" />
+      <Patch name="Church Bell" hbank="8" prog="14" />
+      <Patch name="Carillon" hbank="9" prog="14" />
+      <Patch name="Santur" hbank="0" prog="15" />
+      <Patch name="Santur 2 " hbank="1" prog="15" />
+      <Patch name="Cimbalom" hbank="8" prog="15" />
+    </PatchGroup>
+    <PatchGroup name="Organ">
+      <Patch name="Organ 1" hbank="0" prog="16" />
+      <Patch name="Organ 101" hbank="1" prog="16" />
+      <Patch name="Detuned organ 1" hbank="8" prog="16" />
+      <Patch name="Organ 109" hbank="9" prog="16" />
+      <Patch name="60&apos;s Organ 1" hbank="16" prog="16" />
+      <Patch name="60&apos;s Organ 2" hbank="17" prog="16" />
+      <Patch name="60&apos;s Organ 3" hbank="18" prog="16" />
+      <Patch name="Cheese Organ" hbank="24" prog="16" />
+      <Patch name="Organ 4" hbank="32" prog="16" />
+      <Patch name="Even Bar" hbank="33" prog="16" />
+      <Patch name="Organ Bass" hbank="40" prog="16" />
+      <Patch name="Organ 2" hbank="0" prog="17" />
+      <Patch name="Organ 201" hbank="1" prog="17" />
+      <Patch name="Detuned Or.2" hbank="8" prog="17" />
+      <Patch name="Organ 5" hbank="32" prog="17" />
+      <Patch name="Organ 3" hbank="0" prog="18" />
+      <Patch name="Rotary Org." hbank="8" prog="18" />
+      <Patch name="Rotary Org.S" hbank="16" prog="18" />
+      <Patch name="Rotary Org.F" hbank="24" prog="18" />
+      <Patch name="Church Org.1" hbank="0" prog="19" />
+      <Patch name="Church Org.2" hbank="8" prog="19" />
+      <Patch name="Church Org.3" hbank="16" prog="19" />
+      <Patch name="Organ Flute" hbank="24" prog="19" />
+      <Patch name="Team.Flute" hbank="32" prog="19" />
+      <Patch name="Reed Organ" hbank="0" prog="20" />
+      <Patch name="Accordian Fr" hbank="0" prog="21" />
+      <Patch name="Accordian It" hbank="8" prog="21" />
+      <Patch name="Harmonica" hbank="0" prog="22" />
+      <Patch name="Harmonica 2" hbank="1" prog="22" />
+      <Patch name="Bandoneon" hbank="0" prog="23" />
+    </PatchGroup>
+    <PatchGroup name="Guitar">
+      <Patch name="Nylon-str.Gt" hbank="0" prog="24" />
+      <Patch name="Ukulele" hbank="8" prog="24" />
+      <Patch name="Nylon Gt.o" hbank="16" prog="24" />
+      <Patch name="Velo Harmnix" hbank="24" prog="24" />
+      <Patch name="Nylon Gt 2" hbank="30" prog="24" />
+      <Patch name="Lequint Gt." hbank="42" prog="24" />
+      <Patch name="Steel-str Gtr" hbank="0" prog="25" />
+      <Patch name="12-str.Gt" hbank="8" prog="25" />
+      <Patch name="Nylong+Steel" hbank="9" prog="25" />
+      <Patch name="Mandolin" hbank="16" prog="25" />
+      <Patch name="Steel Gt.2" hbank="32" prog="25" />
+      <Patch name="Jazz Gt." hbank="0" prog="26" />
+      <Patch name="Mellow Gt." hbank="1" prog="26" />
+      <Patch name="Pedal Steel" hbank="8" prog="26" />
+      <Patch name="Clean Gt." hbank="0" prog="27" />
+      <Patch name="Chorus Gt." hbank="8" prog="27" />
+      <Patch name="Muted Gt." hbank="0" prog="28" />
+      <Patch name="Muted Dis.Gt" hbank="1" prog="28" />
+      <Patch name="Funk Pop" hbank="8" prog="28" />
+      <Patch name="Funk Gt.2" hbank="16" prog="28" />
+      <Patch name="Overdrive Gt" hbank="0" prog="29" />
+      <Patch name="DistortionGt" hbank="0" prog="30" />
+      <Patch name="Dist. Gt2" hbank="1" prog="31" />
+      <Patch name="Dazed Guitar" hbank="2" prog="31" />
+      <Patch name="Feedback Gt." hbank="8" prog="31" />
+      <Patch name="Feedback Gt2" hbank="9" prog="31" />
+      <Patch name="Power Guitar" hbank="16" prog="31" />
+      <Patch name="Power Gt.2" hbank="17" prog="31" />
+      <Patch name="5th Dist" hbank="18" prog="31" />
+      <Patch name="Rock Rhythm" hbank="24" prog="31" />
+      <Patch name="Rock Rhythm2" hbank="25" prog="31" />
+      <Patch name="Gt.Harmonics" hbank="0" prog="31" />
+      <Patch name="Gt. Feedback" hbank="8" prog="31" />
+      <Patch name="Ac.Gt.Harmnx" hbank="16" prog="31" />
+    </PatchGroup>
+    <PatchGroup name="Bass">
+      <Patch name="Acoustic Bs." hbank="0" prog="32" />
+      <Patch name="Fingered Bs." hbank="0" prog="33" />
+      <Patch name="Fingered Bs2" hbank="1" prog="33" />
+      <Patch name="Picked Bass" hbank="0" prog="34" />
+      <Patch name="Mute PackBs." hbank="8" prog="34" />
+      <Patch name="Fretless Bs." hbank="0" prog="35" />
+      <Patch name="Fretless Bs2" hbank="1" prog="35" />
+      <Patch name="Fretless Bs3" hbank="2" prog="35" />
+      <Patch name="Fretless Bs4" hbank="3" prog="35" />
+      <Patch name="Syn Fretless" hbank="4" prog="35" />
+      <Patch name="Mr.Smooth" hbank="5" prog="35" />
+      <Patch name="Slap Bass 1" hbank="0" prog="36" />
+      <Patch name="Reso Slap" hbank="8" prog="36" />
+      <Patch name="Slap Bass 2" hbank="0" prog="37" />
+      <Patch name="Synth Bass 1" hbank="0" prog="38" />
+      <Patch name="SynthBass101" hbank="1" prog="38" />
+      <Patch name="Acid Bass" hbank="8" prog="38" />
+      <Patch name="TB303 Bass" hbank="9" prog="38" />
+      <Patch name="Tekno Bass" hbank="10" prog="38" />
+      <Patch name="Reso SH Bass" hbank="16" prog="38" />
+      <Patch name="Synth Bass 2" hbank="0" prog="39" />
+      <Patch name="SynthBass201" hbank="1" prog="39" />
+      <Patch name="Modular Bass" hbank="2" prog="39" />
+      <Patch name="Seq Bass" hbank="3" prog="39" />
+      <Patch name="Beef FM Bass" hbank="8" prog="39" />
+      <Patch name="X Wire Bass" hbank="9" prog="39" />
+      <Patch name="Rubber Bass" hbank="16" prog="39" />
+      <Patch name="SH101 Bass 1" hbank="17" prog="39" />
+      <Patch name="SH101 Bass 2" hbank="18" prog="39" />
+      <Patch name="Smooth Bass" hbank="19" prog="39" />
+    </PatchGroup>
+    <PatchGroup name="Strings/Orchestra">
+      <Patch name="Violin" hbank="0" prog="40" />
+      <Patch name="Slow Violin" hbank="8" prog="40" />
+      <Patch name="Viola" hbank="0" prog="41" />
+      <Patch name="Cello" hbank="0" prog="42" />
+      <Patch name="Contrabass" hbank="0" prog="43" />
+      <Patch name="Tremolo Str" hbank="0" prog="44" />
+      <Patch name="Slow Tremolo" hbank="8" prog="44" />
+      <Patch name="Suspense Str" hbank="9" prog="44" />
+      <Patch name="PizzicatoStr" prog="45" />
+      <Patch name="Harp" hbank="0" prog="46" />
+      <Patch name="Timpani" hbank="0" prog="47" />
+    </PatchGroup>
+    <PatchGroup name="Ensemble">
+      <Patch name="Strings 1" hbank="0" prog="48" />
+      <Patch name="Strings 2" hbank="1" prog="48" />
+      <Patch name="Orchestra" hbank="8" prog="48" />
+      <Patch name="Orchestra 2" hbank="9" prog="48" />
+      <Patch name="Tremolo Orch" hbank="10" prog="48" />
+      <Patch name="Choir Str." hbank="11" prog="48" />
+      <Patch name="St.Strings" hbank="16" prog="48" />
+      <Patch name="Velo Strings" hbank="24" prog="48" />
+      <Patch name="Slow strings" hbank="0" prog="49" />
+      <Patch name="SlowStrings2" hbank="1" prog="49" />
+      <Patch name="Legalo Str" hbank="8" prog="49" />
+      <Patch name="Warm Strings" hbank="9" prog="49" />
+      <Patch name="St.Slow Str" hbank="10" prog="49" />
+      <Patch name="Syn.Strings1" hbank="0" prog="50" />
+      <Patch name="OB Strings" hbank="1" prog="50" />
+      <Patch name="St.Strings3" hbank="8" prog="50" />
+      <Patch name="Syn.Strings2" hbank="0" prog="51" />
+      <Patch name="Choir Aahs" hbank="0" prog="52" />
+      <Patch name="St.Choir" hbank="8" prog="52" />
+      <Patch name="Mello Choir" hbank="9" prog="52" />
+      <Patch name="Choir Aahs 2" hbank="32" prog="52" />
+      <Patch name="Voice Ooohs" prog="53" />
+      <Patch name="SynVox" hbank="0" prog="54" />
+      <Patch name="Syn.Voice" hbank="8" prog="54" />
+      <Patch name="OrchestraHit" hbank="0" prog="55" />
+      <Patch name="Impact Hit" hbank="8" prog="55" />
+      <Patch name="Phily Hit" hbank="9" prog="55" />
+      <Patch name="Double Hit" hbank="10" prog="55" />
+      <Patch name="Lo Fi Rave" hbank="16" prog="55" />
+    </PatchGroup>
+    <PatchGroup name="Brass">
+      <Patch name="Trumpet" hbank="0" prog="56" />
+      <Patch name="Trumpet 2" hbank="1" prog="56" />
+      <Patch name="Flugel Horn" hbank="8" prog="56" />
+      <Patch name="Bright Tp." hbank="24" prog="56" />
+      <Patch name="Warm Tp." hbank="25" prog="56" />
+      <Patch name="Trombone" hbank="0" prog="57" />
+      <Patch name="Trombone 2" hbank="1" prog="57" />
+      <Patch name="Tuba" hbank="0" prog="58" />
+      <Patch name="Tuba 2" hbank="1" prog="58" />
+      <Patch name="MutedTrumpet" hbank="0" prog="59" />
+      <Patch name="French Horns" hbank="0" prog="60" />
+      <Patch name="Fr.Horn 2" hbank="1" prog="60" />
+      <Patch name="Fr.Horn Solo" hbank="8" prog="60" />
+      <Patch name="Horn Orch" hbank="16" prog="60" />
+      <Patch name="Brass 1" hbank="0" prog="61" />
+      <Patch name="Brass 2" hbank="8" prog="61" />
+      <Patch name="Brass Fall" hbank="16" prog="61" />
+      <Patch name="Synth Brass1" hbank="0" prog="62" />
+      <Patch name="Poly Brass" hbank="1" prog="62" />
+      <Patch name="Synth Brass3" hbank="8" prog="62" />
+      <Patch name="Quack Brass" hbank="9" prog="62" />
+      <Patch name="Octave Brass" hbank="16" prog="62" />
+      <Patch name="Synth Brass2" hbank="0" prog="63" />
+      <Patch name="Soft Brass" hbank="1" prog="63" />
+      <Patch name="Synth Brass4" hbank="8" prog="63" />
+      <Patch name="Velo Brass 1" hbank="16" prog="63" />
+      <Patch name="Velo Brass 2" hbank="17" prog="63" />
+    </PatchGroup>
+    <PatchGroup name="Reed">
+      <Patch name="Soprano Sax" hbank="0" prog="64" />
+      <Patch name="Alto Sax" hbank="0" prog="65" />
+      <Patch name="Hyper Alto" hbank="8" prog="65" />
+      <Patch name="Tenor Sax" hbank="0" prog="66" />
+      <Patch name="BreathyTenor" hbank="8" prog="66" />
+      <Patch name="Baritone Sax" hbank="0" prog="67" />
+      <Patch name="Oboe" hbank="0" prog="68" />
+      <Patch name="English Horn" hbank="0" prog="69" />
+      <Patch name="Bassoon" hbank="0" prog="70" />
+      <Patch name="Clarinet" hbank="0" prog="71" />
+      <Patch name="Bs Clarinet" hbank="8" prog="71" />
+    </PatchGroup>
+    <PatchGroup name="Pipe">
+      <Patch name="Piccolo" hbank="0" prog="72" />
+      <Patch name="Flute" hbank="0" prog="73" />
+      <Patch name="Recorder" hbank="0" prog="74" />
+      <Patch name="Pan Flute" hbank="0" prog="75" />
+      <Patch name="Kawala" hbank="8" prog="75" />
+      <Patch name="Bottle Blow" hbank="0" prog="76" />
+      <Patch name="Shakuhachi" hbank="0" prog="77" />
+      <Patch name="Whistle" hbank="0" prog="78" />
+      <Patch name="Ocarina" hbank="0" prog="79" />
+    </PatchGroup>
+    <PatchGroup name="Synth Lead">
+      <Patch name="Square Wave" hbank="0" prog="80" />
+      <Patch name="Square" hbank="1" prog="80" />
+      <Patch name="Hollow Mini" hbank="2" prog="80" />
+      <Patch name="Mellow FM" hbank="3" prog="80" />
+      <Patch name="CC Solo" hbank="4" prog="80" />
+      <Patch name="Shmoog" hbank="5" prog="80" />
+      <Patch name="LM Square" hbank="6" prog="80" />
+      <Patch name="Sine Wave" hbank="8" prog="80" />
+      <Patch name="Saw Wave" hbank="0" prog="81" />
+      <Patch name="Saw" hbank="1" prog="81" />
+      <Patch name="Pulse Saw" hbank="2" prog="81" />
+      <Patch name="Feline GR" hbank="3" prog="81" />
+      <Patch name="Big Lead" hbank="4" prog="81" />
+      <Patch name="Velo Lead" hbank="5" prog="81" />
+      <Patch name="GR-300" hbank="6" prog="81" />
+      <Patch name="LA Saw" hbank="7" prog="81" />
+      <Patch name="Doctor Solo" hbank="8" prog="81" />
+      <Patch name="Waspy Synth" hbank="16" prog="81" />
+      <Patch name="Syn.Calliope" hbank="0" prog="82" />
+      <Patch name="Vent Synth" hbank="1" prog="82" />
+      <Patch name="Pure PanLead" hbank="2" prog="82" />
+      <Patch name="Chiffer Lead" hbank="0" prog="83" />
+      <Patch name="Charang" hbank="0" prog="84" />
+      <Patch name="Dist.Lead" hbank="8" prog="84" />
+      <Patch name="Solo Vox" hbank="0" prog="85" />
+      <Patch name="5th Saw Wave" hbank="0" prog="86" />
+      <Patch name="Big Fives" hbank="1" prog="86" />
+      <Patch name="Bass &amp; Lead" hbank="0" prog="87" />
+      <Patch name="Big &amp; Raw" hbank="1" prog="87" />
+      <Patch name="Fat &amp; Perky" hbank="2" prog="87" />
+    </PatchGroup>
+    <PatchGroup name="Synth Pad">
+      <Patch name="Fantasia" hbank="0" prog="88" />
+      <Patch name="Fantasia 2" hbank="1" prog="88" />
+      <Patch name="Warm Pad" hbank="0" prog="89" />
+      <Patch name="Thick Pad" hbank="1" prog="89" />
+      <Patch name="Horn Pad" hbank="2" prog="89" />
+      <Patch name="Rotary String" hbank="3" prog="89" />
+      <Patch name="Soft Pad" hbank="4" prog="89" />
+      <Patch name="Polysynth Pad" hbank="0" prog="90" />
+      <Patch name="80&apos;s PolySyn" hbank="1" prog="90" />
+      <Patch name="Space Voice" hbank="0" prog="91" />
+      <Patch name="Heaven II" hbank="1" prog="91" />
+      <Patch name="Bowed Glass" hbank="0" prog="92" />
+      <Patch name="Metal Pad" hbank="0" prog="93" />
+      <Patch name="Tine Pad" hbank="1" prog="93" />
+      <Patch name="Panner Pad" hbank="2" prog="93" />
+      <Patch name="Halo Pad" hbank="0" prog="94" />
+      <Patch name="Sweep Pad" hbank="0" prog="95" />
+      <Patch name="Polar Pad" hbank="1" prog="95" />
+      <Patch name="Converge" hbank="8" prog="95" />
+      <Patch name="Shwimmer" hbank="9" prog="95" />
+      <Patch name="Celestial Pd" hbank="10" prog="95" />
+    </PatchGroup>
+    <PatchGroup name="Synth SFX">
+      <Patch name="Ice Rain" hbank="0" prog="96" />
+      <Patch name="Harmo Rain" hbank="1" prog="96" />
+      <Patch name="African wood" hbank="2" prog="96" />
+      <Patch name="Clavi Pad" hbank="8" prog="96" />
+      <Patch name="Soundtrack" hbank="0" prog="97" />
+      <Patch name="Ancestral" hbank="1" prog="97" />
+      <Patch name="Prologue" hbank="2" prog="97" />
+      <Patch name="Rave" hbank="8" prog="97" />
+      <Patch name="Crystal" hbank="0" prog="98" />
+      <Patch name="Syn Mallet" hbank="1" prog="98" />
+      <Patch name="Soft Crystal" hbank="2" prog="98" />
+      <Patch name="Round Glock" hbank="3" prog="98" />
+      <Patch name="Loud Glock" hbank="4" prog="98" />
+      <Patch name="GlockenChime" hbank="5" prog="98" />
+      <Patch name="Clear Bells" hbank="6" prog="98" />
+      <Patch name="ChristmasBel" hbank="7" prog="98" />
+      <Patch name="Vibra Bells" hbank="8" prog="98" />
+      <Patch name="Digi Bells" hbank="9" prog="98" />
+      <Patch name="Choral Bells" hbank="16" prog="98" />
+      <Patch name="Air Bells" hbank="17" prog="98" />
+      <Patch name="Bell Harp" hbank="18" prog="98" />
+      <Patch name="Gamelimba" hbank="19" prog="98" />
+      <Patch name="Atmosphere" hbank="0" prog="99" />
+      <Patch name="Warm Atmos" hbank="1" prog="99" />
+      <Patch name="Nylon Harp" hbank="2" prog="99" />
+      <Patch name="Harpvox" hbank="3" prog="99" />
+      <Patch name="HollowReleas" hbank="4" prog="99" />
+      <Patch name="Nylon+Rhodes" hbank="5" prog="99" />
+      <Patch name="Ambient Pad" hbank="6" prog="99" />
+      <Patch name="Brightness" hbank="0" prog="100" />
+      <Patch name="Goblin" hbank="0" prog="101" />
+      <Patch name="Goblinson" hbank="1" prog="101" />
+      <Patch name="50&apos;s Sci-Fi" hbank="2" prog="101" />
+      <Patch name="Echo drops" hbank="0" prog="102" />
+      <Patch name="Echo Bell" hbank="1" prog="102" />
+      <Patch name="Echo Pan" hbank="2" prog="102" />
+      <Patch name="Echo Pan 2" hbank="3" prog="102" />
+      <Patch name="Big Panner" hbank="4" prog="102" />
+      <Patch name="Reso Panner" hbank="5" prog="102" />
+      <Patch name="Water Piano" hbank="6" prog="102" />
+      <Patch name="Star Theme" hbank="0" prog="103" />
+      <Patch name="Star Theme 2" hbank="1" prog="103" />
+    </PatchGroup>
+    <PatchGroup name="Ethnic">
+      <Patch name="Sitar" hbank="0" prog="104" />
+      <Patch name="Sitar 2" hbank="1" prog="104" />
+      <Patch name="Detune Sitar" hbank="2" prog="104" />
+      <Patch name="Tambra" hbank="8" prog="104" />
+      <Patch name="Tamboura" hbank="16" prog="104" />
+      <Patch name="Banjo" hbank="0" prog="105" />
+      <Patch name="Muted Banjo" hbank="1" prog="105" />
+      <Patch name="Rabab" hbank="8" prog="105" />
+      <Patch name="Gopichant" hbank="16" prog="105" />
+      <Patch name="Oud" hbank="24" prog="105" />
+      <Patch name="Shamisen" hbank="0" prog="106" />
+      <Patch name="Tsugaru" hbank="1" prog="106" />
+      <Patch name="Koto" hbank="0" prog="107" />
+      <Patch name="Taisho Koto" hbank="8" prog="107" />
+      <Patch name="Kanoon" hbank="16" prog="107" />
+      <Patch name="Kalimba" hbank="0" prog="108" />
+      <Patch name="Bagpipe" hbank="0" prog="109" />
+      <Patch name="Fiddle" hbank="0" prog="110" />
+      <Patch name="Shanai" hbank="0" prog="111" />
+      <Patch name="Shanai 2" hbank="1" prog="111" />
+      <Patch name="Pungi" hbank="8" prog="111" />
+      <Patch name="Hichiriki" hbank="16" prog="111" />
+    </PatchGroup>
+    <PatchGroup name="Percussive">
+      <Patch name="Tinkle Bell" hbank="0" prog="112" />
+      <Patch name="Bonang" hbank="8" prog="112" />
+      <Patch name="Gender" hbank="9" prog="112" />
+      <Patch name="Gamelan Gong" hbank="10" prog="112" />
+      <Patch name="St.Gamelan" hbank="11" prog="112" />
+      <Patch name="RAMA Cymbal" hbank="16" prog="112" />
+      <Patch name="Agogo" hbank="0" prog="113" />
+      <Patch name="Atarigane" hbank="8" prog="113" />
+      <Patch name="Steel Drums" hbank="0" prog="114" />
+      <Patch name="Woodblock" hbank="0" prog="115" />
+      <Patch name="Castanets" hbank="8" prog="115" />
+      <Patch name="Taiko" hbank="0" prog="116" />
+      <Patch name="Concert BD" hbank="8" prog="116" />
+      <Patch name="Melo. Tom 1" hbank="0" prog="117" />
+      <Patch name="Real Tom" hbank="1" prog="117" />
+      <Patch name="Melo. Tom 2" hbank="8" prog="117" />
+      <Patch name="Rock Tom" hbank="9" prog="117" />
+      <Patch name="Synth Drum" hbank="0" prog="118" />
+      <Patch name="808 Tom" hbank="8" prog="118" />
+      <Patch name="Elec Perc" hbank="9" prog="118" />
+      <Patch name="Reverse Cym" hbank="0" prog="119" />
+      <Patch name="Reverse Cym2" hbank="1" prog="119" />
+      <Patch name="Rev.Snare 1" hbank="8" prog="119" />
+      <Patch name="Rev.Snare 2" hbank="9" prog="119" />
+      <Patch name="Rev.Kick 1" hbank="16" prog="119" />
+      <Patch name="Rev.ConBD" hbank="17" prog="119" />
+      <Patch name="Rev.Tom 1" hbank="24" prog="119" />
+      <Patch name="Rev.Tom 2" hbank="25" prog="119" />
+    </PatchGroup>
+    <PatchGroup name="SFX">
+      <Patch name="Gt.Fret Noise" hbank="0" prog="120" />
+      <Patch name="Gt.Cut Noise" hbank="1" prog="120" />
+      <Patch name="String slap" hbank="2" prog="120" />
+      <Patch name="Gt.CutNoise2" hbank="3" prog="120" />
+      <Patch name="Dist.CutNoiz" hbank="4" prog="120" />
+      <Patch name="Bass Slide" hbank="5" prog="120" />
+      <Patch name="Pick Scrape" hbank="6" prog="120" />
+      <Patch name="Breath Noise" hbank="0" prog="121" />
+      <Patch name="Fl.Key click" hbank="1" prog="121" />
+      <Patch name="Seashore" hbank="0" prog="122" />
+      <Patch name="Rain" hbank="1" prog="122" />
+      <Patch name="Thunder" hbank="2" prog="122" />
+      <Patch name="Wind" hbank="3" prog="122" />
+      <Patch name="Stream" hbank="4" prog="122" />
+      <Patch name="Bubble" hbank="5" prog="122" />
+      <Patch name="Bird" hbank="0" prog="123" />
+      <Patch name="Dog" hbank="1" prog="123" />
+      <Patch name="Horse-Gallop" hbank="2" prog="123" />
+      <Patch name="Bird 2" hbank="3" prog="123" />
+      <Patch name="Kitty" hbank="4" prog="123" />
+      <Patch name="Growl" hbank="4" prog="123" />
+      <Patch name="Telephone 1" hbank="0" prog="124" />
+      <Patch name="Telephone 2" hbank="1" prog="124" />
+      <Patch name="DoorCreaking" hbank="2" prog="124" />
+      <Patch name="Door" hbank="3" prog="124" />
+      <Patch name="Scratch" hbank="4" prog="124" />
+      <Patch name="Wind Chimes" hbank="5" prog="124" />
+      <Patch name="Scratch 2" hbank="7" prog="124" />
+      <Patch name="Helicopter" hbank="0" prog="125" />
+      <Patch name="Car-Engine" hbank="1" prog="125" />
+      <Patch name="Car-Stop" hbank="2" prog="125" />
+      <Patch name="Car-Pass" hbank="3" prog="125" />
+      <Patch name="Car-Crash" hbank="4" prog="125" />
+      <Patch name="Siren" hbank="5" prog="125" />
+      <Patch name="Train" hbank="6" prog="125" />
+      <Patch name="Jet plane" hbank="7" prog="125" />
+      <Patch name="Starship" hbank="8" prog="125" />
+      <Patch name="Burst noise" hbank="9" prog="125" />
+      <Patch name="Applause" hbank="0" prog="126" />
+      <Patch name="Laughing" hbank="1" prog="126" />
+      <Patch name="Screaming" hbank="2" prog="126" />
+      <Patch name="Punch" hbank="3" prog="126" />
+      <Patch name="Heart Beat" hbank="4" prog="126" />
+      <Patch name="Footsteps" hbank="5" prog="126" />
+      <Patch name="Applause 2" hbank="6" prog="126" />
+      <Patch name="Gunshot" hbank="0" prog="127" />
+      <Patch name="Machine Gun" hbank="1" prog="127" />
+      <Patch name="Laser gun" hbank="2" prog="127" />
+      <Patch name="Explosion" hbank="3" prog="127" />
+    </PatchGroup>
+    <PatchGroup name="Drums">
+      <Patch name="Standard 1" hbank="0" lbank="0" prog="0" drum="1" />
+      <Patch name="Standard 2" hbank="0" lbank="0" prog="1" drum="1" />
+      <Patch name="Room" hbank="0" lbank="0" prog="8" drum="1" />
+      <Patch name="Power" hbank="0" lbank="0" prog="16" drum="1" />
+      <Patch name="Electronic" hbank="0" lbank="0" prog="24" drum="1" />
+      <Patch name="TR-808/909" hbank="0" lbank="0" prog="25" drum="1" />
+      <Patch name="Dance" hbank="0" lbank="0" prog="26" drum="1" />
+      <Patch name="Jazz" hbank="0" lbank="0" prog="32" drum="1" />
+      <Patch name="Brush" hbank="0" lbank="0" prog="40" drum="1" />
+      <Patch name="Orchestra" hbank="0" lbank="0" prog="48" drum="1" />
+      <Patch name="Ethnic" hbank="0" lbank="0" prog="49" drum="1" />
+      <Patch name="Kick &amp; Snare" hbank="0" lbank="0" prog="50" drum="1" />
+      <Patch name="SFX" hbank="0" lbank="0" prog="56" drum="1" />
+      <Patch name="Rhythm FX" hbank="0" lbank="0" prog="57" drum="1" />
+    </PatchGroup>
+    <Controller name="Modulation" l="1" />
+    <Controller name="Portamento Time" l="5" />
+    <Controller name="Main Volume" l="7" init="100" drumInit="100" />
+    <Controller name="Pan" l="10" min="-64" max="63" init="0" drumInit="0" />
+    <Controller name="Expression" l="11" />
+    <Controller name="Sustain" l="64" />
+    <Controller name="Portamento" l="65" />
+    <Controller name="Sostenuto" l="66" />
+    <Controller name="Soft" l="67" />
+    <Controller name="Portamento Control" l="84" />
+    <Controller name="Effect 1 (Reverb)" l="91" />
+    <Controller name="Effect 3 (Chorus)" l="93" />
+    <Controller name="Effect 4 (Delay)" l="94" />
+    <Controller name="All Sounds Off" l="120" max="0" />
+    <Controller name="Reset All Controller" l="121" max="0" />
+    <Controller name="All Notes Off" l="123" max="0" />
+    <Controller name="OMNI Off" l="124" max="0" />
+    <Controller name="OMNI On" l="125" max="0" />
+    <Controller name="MONO" l="126" max="0" />
+    <Controller name="POLY" l="127" max="0" />
+    <Controller name="Pitch Bend Sensitivity" type="RPN" h="0" l="0" max="24" init="2" drumInit="2" />
+    <Controller name="Master Fine Tuning" type="RPN" h="0" l="1" min="-64" max="64" init="0" drumInit="0" />
+    <Controller name="Master Coarse Tuning" type="RPN" h="0" l="2" min="-24" max="23" />
+    <Controller name="RPN null" type="RPN" h="127" l="127" max="0" />
+    <Controller name="Vibrato Rate" type="NRPN" h="1" l="8" />
+    <Controller name="Vibrato Depth" type="NRPN" h="1" l="9" />
+    <Controller name="Vibrato Delay" type="NRPN" h="1" l="10" />
+    <Controller name="TVF Cutoff Frequency" type="NRPN" h="1" l="32" />
+    <Controller name="TVF Resonance" type="NRPN" h="1" l="33" />
+    <Controller name="TVF&amp;TVA Envelope Attack Time" type="NRPN" h="1" l="99" />
+    <Controller name="TVF&amp;TVA Envelope Decay Time" type="NRPN" h="1" l="100" />
+    <Controller name="TVF&amp;TVA Envelope Release Time" type="NRPN" h="1" l="102" />
+    <Controller name="Drum Instrument Pitch Coarse" type="NRPN" h="24" l="pitch" min="-64" max="63" showType="1" />
+    <Controller name="Drum Instrument TVA Level" type="NRPN" h="26" l="pitch" showType="1" />
+    <Controller name="Drum Instrument Panpot" type="NRPN" h="28" l="pitch" min="-64" max="63" showType="1" />
+    <Controller name="Drum Instrument Reverb Send Level" type="NRPN" h="29" l="pitch" showType="1" />
+    <Controller name="Drum Instrument Chorus Send Level" type="NRPN" h="30" l="pitch" showType="1" />
+    <Controller name="Drum Instrument Delay Send Level" type="NRPN" h="31" l="pitch" showType="1" />
+    <Controller name="Pitch" type="Pitch" />
+    <Controller name="Program" type="Program" />
+    <Controller name="Aftertouch" type="Aftertouch" />
+    <Controller name="PolyAftertouch" type="PolyAftertouch" />
+    <SysEx name="Send GS Reset">
+      <data>41 10 42 12 40 00 7f 00
+41</data>
+      </SysEx>
+    <Init>
+      <event tick="250" type="2" datalen="9">
+        41 10 42 12 40 00 7f 00 41 
+        </event>
+    </Init>
+    <Drummaps>
+    </Drummaps>
+  </MidiInstrument>
+</muse>

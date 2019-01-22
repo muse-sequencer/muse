@@ -31,16 +31,10 @@
 #include "noteinfo.h"
 #include "cobject.h"
 
-namespace Awl {
-      class SigEdit;
-      };
-using Awl::SigEdit;
-
 class QCloseEvent;
 class QToolBar;
 
 namespace MusEGui {
-class HitScale;
 class LabelCombo;
 class Master;
 class MTScale;
@@ -64,8 +58,6 @@ class MasterEdit : public MidiEditor {
       MusEGui::MTScale* time1;
       MusEGui::MTScale* time2;
       MusEGui::SigScale* sign;
-      MusEGui::HitScale* thits;
-      MusEGui::HitScale* zhits;
       TScale* tscale;
 
       MusEGui::LabelCombo* rasterLabel;
@@ -83,7 +75,7 @@ class MasterEdit : public MidiEditor {
       void setTempo(int);
 
    public slots:
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       void focusCanvas();
 
    signals:

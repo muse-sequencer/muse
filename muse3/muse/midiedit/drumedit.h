@@ -109,6 +109,7 @@ class DrumEdit : public MidiEditor {
       bool _playEvents;
 
       MusEGui::Toolbar1* toolbar;
+      MusEGui::Splitter* hsplitter;
       MusEGui::Splitter* split1;
       MusEGui::Splitter* split2;
       QWidget* split1w1;
@@ -119,11 +120,14 @@ class DrumEdit : public MidiEditor {
       QPushButton* ctrl;
 
       static int _rasterInit;
+      static int _trackInfoWidthInit;
+      static int _canvasWidthInit;
       static int _dlistWidthInit, _dcanvasWidthInit;
       static bool _ignore_hide_init;
 
       QAction *loadAction, *saveAction, *resetAction;
-      QAction *cutAction, *copyAction, *copyRangeAction, *pasteAction, *pasteDialogAction, *deleteAction;
+      QAction *cutAction, *copyAction, *copyRangeAction, *pasteAction;
+      QAction *pasteToCurPartAction, *pasteDialogAction, *deleteAction;
       QAction *fixedAction, *veloAction, *crescAction, *quantizeAction;
       QAction *sallAction, *snoneAction, *invAction, *inAction , *outAction;
       QAction *prevAction, *nextAction;
@@ -153,7 +157,7 @@ class DrumEdit : public MidiEditor {
       void follow(int);
       void newCanvasWidth(int);
       void configChanged();
-      void songChanged1(MusECore::SongChangedFlags_t);
+      void songChanged1(MusECore::SongChangedStruct_t);
       void setStep(QString);
       void setSpeaker(bool);
       void addCtrlClicked();

@@ -47,7 +47,7 @@ TScale::TScale(QWidget* parent, int ymag)
 //   draw
 //---------------------------------------------------------
 
-void TScale::pdraw(QPainter& p, const QRect& r)
+void TScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
       {
       int y = r.y();
       int h = r.height();

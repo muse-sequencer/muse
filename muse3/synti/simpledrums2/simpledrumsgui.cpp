@@ -35,8 +35,8 @@
 
 #include "common_defs.h"
 #include "simpledrumsgui.h"
-#include "muse/mpevent.h"   
-#include "muse/midi_consts.h"
+#include "mpevent.h"   
+#include "midi_consts.h"
 #include "ssplugingui.h"
 #include "wavepreview.h"
 

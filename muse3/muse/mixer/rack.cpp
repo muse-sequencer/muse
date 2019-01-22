@@ -34,7 +34,7 @@
 #include <QPalette>
 #include <QStyledItemDelegate>
 #include <QUrl>
-#include "widgets/popupmenu.h"
+#include "popupmenu.h"
 
 #include <errno.h>
 
@@ -192,13 +192,13 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
       setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setSelectionMode(QAbstractItemView::SingleSelection);
 
-      for (int i = 0; i < PipelineDepth; ++i)
+      for (int i = 0; i < MusECore::PipelineDepth; ++i)
             new RackSlot(this, track, i, itemheight);
       updateContents();
 
       connect(this, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
          this, SLOT(doubleClicked(QListWidgetItem*)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
 
       EffectRackDelegate* er_delegate = new EffectRackDelegate(this, track);
       setItemDelegate(er_delegate);
@@ -211,7 +211,7 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
 
 void EffectRack::updateContents()
       {
-      for (int i = 0; i < PipelineDepth; ++i) {
+      for (int i = 0; i < MusECore::PipelineDepth; ++i) {
             QString name = track->efxPipe()->name(i);
             item(i)->setText(name);
             item(i)->setToolTip(name == QString("empty") ? tr("effect rack") : name );
@@ -238,9 +238,9 @@ EffectRack::~EffectRack()
 //   songChanged
 //---------------------------------------------------------
 
-void EffectRack::songChanged(MusECore::SongChangedFlags_t typ)
+void EffectRack::songChanged(MusECore::SongChangedStruct_t typ)
       {
-      if (typ & (SC_ROUTE | SC_RACK)) {
+      if (typ._flags & (SC_ROUTE | SC_RACK)) {
             updateContents();
        	    }
       }
@@ -254,7 +254,7 @@ QSize EffectRack::minimumSizeHint() const
       return QSize(10, 
         2 * frameWidth() + 
         (fontMetrics().height() + 2 * EffectRackDelegate::itemYMargin + 2 * EffectRackDelegate::itemTextYMargin) 
-        * PipelineDepth);
+        * MusECore::PipelineDepth);
       }
 
 //---------------------------------------------------------
@@ -353,7 +353,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
             menu->removeAction(newAction);
             if (idx == 0)
                   upAction->setEnabled(true);
-            if (idx == (PipelineDepth-1))
+            if (idx == (MusECore::PipelineDepth-1))
                   downAction->setEnabled(false);
             //if(!pipe->isDssiPlugin(idx))
             if(!pipe->has_dssi_ui(idx))     // p4.0.19 Tim.
@@ -445,7 +445,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
                         }
                   break;
             case DOWN:
-                  if (idx < (PipelineDepth-1)) {
+                  if (idx < (MusECore::PipelineDepth-1)) {
                         setCurrentItem(item(idx+1));
                         pipe->move(idx, false);
                         }

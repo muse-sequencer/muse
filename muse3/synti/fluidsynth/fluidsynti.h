@@ -42,8 +42,8 @@
 #include "fluidsynthgui.h"
 #include "libsynti/mess.h"
 #include "muse/debug.h"
-#include "muse/mpevent.h"   
-#include "muse/midictrl_consts.h"
+#include "mpevent.h"   
+#include "midictrl_consts.h"
 #include "common_defs.h"
 
 // TODO: Try to not include this. Standalone build of plugin?

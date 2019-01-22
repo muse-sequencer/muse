@@ -54,16 +54,16 @@
 #include "audio.h"
 #include "audiodev.h"
 #include "audioprefetch.h"
-#include "bigtime.h"
+#include "components/bigtime.h"
 #include "cliplist/cliplist.h"
 #include "conf.h"
 #include "config.h"
 #include "debug.h"
-#include "didyouknow.h"
+#include "components/didyouknow.h"
 #include "drumedit.h"
-#include "filedialog.h"
+#include "components/filedialog.h"
 #include "gconfig.h"
-#include "genset.h"
+#include "components/genset.h"
 #include "gui.h"
 #include "helper.h"
 #include "icons.h"
@@ -71,7 +71,7 @@
 #include "listedit.h"
 #include "marker/markerview.h"
 #include "master/masteredit.h"
-#include "metronome.h"
+#include "components/metronome.h"
 #include "midifilterimpl.h"
 #include "midiitransform.h"
 #include "midiseq.h"
@@ -79,7 +79,7 @@
 #include "miditransform.h"
 #include "mitplugin.h"
 #include "mittranspose.h"
-#include "mixdowndialog.h"
+#include "components/mixdowndialog.h"
 #include "mrconfig.h"
 #include "pianoroll.h"
 #include "scoreedit.h"
@@ -87,21 +87,21 @@
 #ifdef BUILD_EXPERIMENTAL
   #include "rhythm.h"
 #endif
-#include "routepopup.h"
-#include "shortcutconfig.h"
-#include "songinfo.h"
+#include "components/routepopup.h"
+#include "components/shortcutconfig.h"
+#include "components/songinfo.h"
 #include "ticksynth.h"
 #include "transport.h"
 #include "tlist.h"
 #include "waveedit.h"
-#include "widgets/projectcreateimpl.h"
+#include "components/projectcreateimpl.h"
 #include "widgets/menutitleitem.h"
-#include "tools.h"
-#include "widgets/unusedwavefiles.h"
+#include "components/tools.h"
+#include "components/unusedwavefiles.h"
 #include "functions.h"
-#include "songpos_toolbar.h"
-#include "sig_tempo_toolbar.h"
-#include "cpu_toolbar.h"
+#include "components/songpos_toolbar.h"
+#include "components/sig_tempo_toolbar.h"
+#include "widgets/cpu_toolbar.h"
 
 
 namespace MusECore {
@@ -512,8 +512,10 @@ MusE::MusE() : QMainWindow()
       "editing.  You will be prompted for a file name.\n"
       "You can also select the Save command from the File menu."));
 
-      fileSaveAsAction = new QAction(tr("Save &As"), this);
+      fileSaveAsAction = new QAction(QIcon(*MusEGui::saveasIcon), tr("Save &As"), this);
 
+      fileCloseAction = new QAction(QIcon(*MusEGui::filecloseIcon), tr("Close"), this);
+      
       fileImportMidiAction = new QAction(tr("Import Midifile"), this);
       fileExportMidiAction = new QAction(tr("Export Midifile"), this);
       fileImportPartAction = new QAction(tr("Import Part"), this);
@@ -521,7 +523,7 @@ MusE::MusE() : QMainWindow()
       fileImportWaveAction = new QAction(tr("Import Audio File"), this);
       fileMoveWaveFiles = new QAction(tr("Find unused wave files"), this);
 
-      quitAction = new QAction(tr("&Quit"), this);
+      quitAction = new QAction(QIcon(*MusEGui::appexitIcon), tr("&Quit"), this);
 
       editSongInfoAction = new QAction(QIcon(*MusEGui::edit_listIcon), tr("Song Info"), this);
 
@@ -543,6 +545,12 @@ MusE::MusE() : QMainWindow()
       fullscreenAction=new QAction(tr("Fullscreen"), this);
       fullscreenAction->setCheckable(true);
       fullscreenAction->setChecked(false);
+      QMenu* master = new QMenu(tr("Mastertrack"), this);
+      master->setIcon(QIcon(*edit_mastertrackIcon));
+      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Graphic"), this);
+      masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List"), this);
+      master->addAction(masterGraphicAction);
+      master->addAction(masterListAction);
 
       //-------- Midi Actions
       menuScriptPlugins = new QMenu(tr("&Plugins"), this);
@@ -616,6 +624,8 @@ MusE::MusE() : QMainWindow()
       connect(fileSaveAction, SIGNAL(triggered()), SLOT(save()));
       connect(fileSaveAsAction, SIGNAL(triggered()), SLOT(saveAs()));
 
+      connect(fileCloseAction, SIGNAL(triggered()), SLOT(fileClose()));
+      
       connect(fileImportMidiAction, SIGNAL(triggered()), SLOT(importMidi()));
       connect(fileExportMidiAction, SIGNAL(triggered()), SLOT(exportMidi()));
       connect(fileImportPartAction, SIGNAL(triggered()), SLOT(importPart()));
@@ -634,6 +644,8 @@ MusE::MusE() : QMainWindow()
       connect(viewCliplistAction, SIGNAL(toggled(bool)), SLOT(startClipList(bool)));
       connect(viewMarkerAction, SIGNAL(toggled(bool)), SLOT(toggleMarker(bool)));
       connect(viewArrangerAction, SIGNAL(toggled(bool)), SLOT(toggleArranger(bool)));
+      connect(masterGraphicAction, SIGNAL(triggered()), SLOT(startMasterEditor()));
+      connect(masterListAction, SIGNAL(triggered()), SLOT(startLMasterEditor()));
       connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
 
       //-------- Midi connections
@@ -795,6 +807,8 @@ MusE::MusE() : QMainWindow()
       menu_file->addAction(fileSaveAction);
       menu_file->addAction(fileSaveAsAction);
       menu_file->addSeparator();
+      menu_file->addAction(fileCloseAction);
+      menu_file->addSeparator();
       menu_file->addAction(editSongInfoAction);
       menu_file->addSeparator();
       menu_file->addAction(fileImportMidiAction);
@@ -825,6 +839,10 @@ MusE::MusE() : QMainWindow()
       menuView->addAction(viewCliplistAction);
       menuView->addAction(viewMarkerAction);
       menuView->addAction(viewArrangerAction);
+      menuView->addSeparator();
+      menuView->addMenu(master);
+//       menuView->addAction(masterGraphicAction);
+//       menuView->addAction(masterListAction);
       menuView->addSeparator();
       menuView->addAction(fullscreenAction);
 
@@ -870,20 +888,11 @@ MusE::MusE() : QMainWindow()
       menu_audio->addAction(audioBounce2FileAction);
       menu_audio->addSeparator();
       menu_audio->addAction(audioRestartAction);
-
-
-      //-------------------------------------------------------------
-      //    popup Automation
-      //-------------------------------------------------------------
-
-      menuAutomation = new QMenu(tr("A&utomation"), this);
-      menuBar()->addMenu(menuAutomation);
-      trailingMenus.push_back(menuAutomation);
-
-      menuAutomation->addAction(autoMixerAction);
-      menuAutomation->addSeparator();
-      menuAutomation->addAction(autoSnapshotAction);
-      menuAutomation->addAction(autoClearAction);
+      menu_audio->addSeparator();
+      menu_audio->addAction(autoMixerAction);
+      //menu_audio->addSeparator();
+      menu_audio->addAction(autoSnapshotAction);
+      menu_audio->addAction(autoClearAction);
 
       //-------------------------------------------------------------
       //    popup Windows
@@ -902,7 +911,7 @@ MusE::MusE() : QMainWindow()
       //    popup Settings
       //-------------------------------------------------------------
 
-      menuSettings = new QMenu(tr("MusE Se&ttings"), this);
+      menuSettings = new QMenu(tr("Se&ttings"), this);
       menuBar()->addMenu(menuSettings);
       trailingMenus.push_back(menuSettings);
 
@@ -1378,6 +1387,43 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       showMarker(MusEGlobal::config.markerVisible);
       }
 
+//---------------------------------------------------------
+//   fileClose
+//---------------------------------------------------------
+
+void MusE::fileClose()
+{
+  // For now we just don't read the ports, leaving the last setup intact.
+  const bool doReadMidiPorts = false;
+  
+//   if (mixer1)
+//         mixer1->clearAndDelete();
+//   if (mixer2)
+//         mixer2->clearAndDelete();
+//   _arranger->clear();      // clear track info
+  if(clearSong(doReadMidiPorts))  // Allow not touching things like midi ports.
+        return;
+  
+  //setConfigDefaults();
+  QString name(MusEGui::getUniqueUntitledName());
+  MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
+  //QDir::setCurrent(QDir::homePath());
+  QDir::setCurrent(MusEGlobal::museProject);
+  project.setFile(name);
+  setWindowTitle(projectTitle(name));
+  
+  //writeTopwinState=true;
+  
+  MusEGlobal::song->dirty = false;
+  
+  // Inform the rest of the app the song changed, with all flags.
+  MusEGlobal::song->update(SC_EVERYTHING);
+  MusEGlobal::song->updatePos();
+  arrangerView->clipboardChanged(); // enable/disable "Paste"
+  arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"
+  arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
+}
+      
 //---------------------------------------------------------
 //   setUntitledProject
 //---------------------------------------------------------
@@ -2316,7 +2362,7 @@ void MusE::kbAccel(int key)
             if(spos > 0)
             {
               spos -= 1;     // Nudge by -1, then snap down with raster1.
-              spos = AL::sigmap.raster1(spos, MusEGlobal::song->arrangerRaster());
+              spos = MusEGlobal::sigmap.raster1(spos, MusEGlobal::song->arrangerRaster());
             }
             if(spos < 0)
               spos = 0;
@@ -2325,13 +2371,13 @@ void MusE::kbAccel(int key)
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_INC].key) {
-            int spos = AL::sigmap.raster2(MusEGlobal::song->cpos() + 1, MusEGlobal::song->arrangerRaster());    // Nudge by +1, then snap up with raster2.
+            int spos = MusEGlobal::sigmap.raster2(MusEGlobal::song->cpos() + 1, MusEGlobal::song->arrangerRaster());    // Nudge by +1, then snap up with raster2.
             MusECore::Pos p(spos,true);
             MusEGlobal::song->setPos(0, p, true, true, true); //CDW
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_DEC_NOSNAP].key) {
-            int spos = MusEGlobal::song->cpos() - AL::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster());
+            int spos = MusEGlobal::song->cpos() - MusEGlobal::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster());
             if(spos < 0)
               spos = 0;
             MusECore::Pos p(spos,true);
@@ -2339,7 +2385,7 @@ void MusE::kbAccel(int key)
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_INC_NOSNAP].key) {
-            MusECore::Pos p(MusEGlobal::song->cpos() + AL::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster()), true);
+            MusECore::Pos p(MusEGlobal::song->cpos() + MusEGlobal::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster()), true);
             MusEGlobal::song->setPos(0, p, true, true, true);
             return;
             }
@@ -3004,7 +3050,7 @@ void MusE::switchMixerAutomation()
               if ((*i)->isMidiTrack())
                     continue;
               MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*i);
-              if(track->automationType() != AUTO_OFF) // && track->automationType() != AUTO_WRITE)
+              if(track->automationType() != MusECore::AUTO_OFF) // && track->automationType() != MusECore::AUTO_WRITE)
                 track->controller()->updateCurValues(MusEGlobal::audio->curFramePos());
               }
       }
@@ -3065,7 +3111,7 @@ void MusE::takeAutomationSnapshot()
      MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*i);
             MusECore::CtrlListList* cll = track->controller();
             // Need to update current 'manual' values from the automation values at this time.
-            if(track->automationType() != AUTO_OFF) // && track->automationType() != AUTO_WRITE)
+            if(track->automationType() != MusECore::AUTO_OFF) // && track->automationType() != MusECore::AUTO_WRITE)
               cll->updateCurValues(frame);
 
             for (MusECore::iCtrlList icl = cll->begin(); icl != cll->end(); ++icl) {
@@ -3111,6 +3157,8 @@ void MusE::updateConfiguration()
       viewMixerAAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_MIXER].key);
       viewMixerBAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_MIXER2].key);
       //viewCliplistAction has no acceleration
+      masterGraphicAction->setShortcut(shortcuts[MusEGui::SHRT_OPEN_GRAPHIC_MASTER].key);
+      masterListAction->setShortcut(shortcuts[MusEGui::SHRT_OPEN_LIST_MASTER].key);
       viewMarkerAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_MARKER].key);
 
 
@@ -3164,7 +3212,7 @@ void MusE::showBigtime(bool on)
             bigtime->setPos(0, MusEGlobal::song->cpos(), false);
             connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), bigtime, SLOT(setPos(int, unsigned, bool)));
             connect(MusEGlobal::muse, SIGNAL(configChanged()), bigtime, SLOT(configChanged()));
-            connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), bigtime, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+            connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), bigtime, SLOT(songChanged(MusECore::SongChangedStruct_t)));
             connect(bigtime, SIGNAL(closed()), SLOT(bigtimeClosed()));
             bigtime->resize(MusEGlobal::config.geometryBigTime.size());
             bigtime->move(MusEGlobal::config.geometryBigTime.topLeft());

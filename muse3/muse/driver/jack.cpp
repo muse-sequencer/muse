@@ -38,7 +38,7 @@
 
 #include <jack/thread.h>
 
-#include "libs/strntcpy.h"
+#include "strntcpy.h"
 #include "audio.h"
 #include "globals.h"
 #include "song.h"
@@ -57,6 +57,8 @@
 
 #include "jackmidi.h"
 #include "muse_atomic.h"
+
+#include "al/al.h"
 
 #define JACK_DEBUG 0 
 
@@ -334,7 +336,7 @@ static void timebase_callback(jack_transport_state_t /* state */,
       pos->beat++;
       
       int z, n;
-      AL::sigmap.timesig(p.tick(), z, n);
+      MusEGlobal::sigmap.timesig(p.tick(), z, n);
       pos->beats_per_bar = z;
       pos->beat_type = n;
       pos->ticks_per_beat = MusEGlobal::config.division;
@@ -595,6 +597,8 @@ bool initJackAudio()
       //jackAudio->registerClient(); 
 
       MusEGlobal::sampleRate  = jack_get_sample_rate(client);
+      // Make sure the AL namespace variables mirror our variables.
+      AL::sampleRate = MusEGlobal::sampleRate;
       MusEGlobal::segmentSize = jack_get_buffer_size(client);
       
       return false;

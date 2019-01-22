@@ -51,7 +51,7 @@ class PitchEdit : public QSpinBox {
       PitchEdit(QWidget* parent);
       void setDeltaMode(bool);
    
-   private slots:
+   public slots:
       void midiNote(int pitch, int velo);
       };
 }

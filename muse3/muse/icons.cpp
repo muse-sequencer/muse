@@ -26,6 +26,7 @@
 //         Therefore the separate icons must be manually set upon each state.
 
 #include <QIcon>
+#include <QCursor>
 
 #include "xpm/track_comment.xpm"
 #include "xpm/audio_bounce_to_file.xpm"
@@ -70,6 +71,14 @@
 #include "xpm/zoom.xpm"
 #include "xpm/zoom_at.xpm"
 #include "xpm/size_all.xpm"
+#include "xpm/midi_ctrl_graph_merge.xpm"
+#include "xpm/midi_ctrl_graph_merge_erase.xpm"
+#include "xpm/midi_ctrl_graph_merge_erase_inclusive.xpm"
+#include "xpm/midi_ctrl_graph_merge_erase_wysiwyg.xpm"
+#include "xpm/midi_ctrl_graph_merge_copy.xpm"
+#include "xpm/midi_ctrl_graph_merge_copy_erase.xpm"
+#include "xpm/midi_ctrl_graph_merge_copy_erase_inclusive.xpm"
+#include "xpm/midi_ctrl_graph_merge_copy_erase_wysiwyg.xpm"
 
 #include "xpm/record1.xpm"
 #include "xpm/record.xpm"
@@ -113,6 +122,8 @@
 #include "xpm/master.xpm"
 #include "xpm/filenew.xpm"
 #include "xpm/filenewS.xpm"
+#include "xpm/fileclose.xpm"
+#include "xpm/appexit.xpm"
 #include "xpm/home.xpm"
 #include "xpm/back.xpm"
 #include "xpm/forward.xpm"
@@ -283,17 +294,44 @@
 
 #include "icons.h"
 
-//#if QT_VERSION >= 0x040600
-//#define MPIXMAP(a,b) QPixmap(QIcon::fromTheme(b, QIcon(QPixmap(a))).pixmap(QPixmap(a).width(),QPixmap(a).height()))
-//#define MICON(a,b) QIcon(QIcon::fromTheme(b, QIcon(QPixmap(a))))
-//#else
-#define MPIXMAP(a,b) QPixmap(a)
 #define MPNGIMG(a) QPixmap(a)
-#define MICON(a,b) QIcon(QPixmap(a))
-//#endif
+#define MSVGIMG(a) QPixmap(a)
 
 namespace MusEGui {
+  bool use_theme_icons_if_possible = true;
+  
+  QPixmap* MPIXMAP(const char* const* fallback, const QString&
+#if QT_VERSION >= 0x040600
+  name
+#endif
+  )
+  {
+#if QT_VERSION >= 0x040600
+    const QPixmap& fallback_pm = QPixmap(fallback);
+    if(use_theme_icons_if_possible)
+      return new QPixmap(QIcon::fromTheme(name, QIcon(fallback_pm)).pixmap(fallback_pm.width(),fallback_pm.height()));
+    else 
+#endif
+      return new QPixmap(fallback);
+  }
+  
+  QIcon* MICON(const char* const* fallback, const QString&
+#if QT_VERSION >= 0x040600
+  name
+#endif
+  )
+  {
+#if QT_VERSION >= 0x040600
+    const QPixmap& fallback_pm = QPixmap(fallback);
+    if(use_theme_icons_if_possible)
+      return new QIcon(QIcon::fromTheme(name, QIcon(fallback_pm)));
+    else 
+#endif
+      return new QIcon(fallback_pm);
+  }
+  
 
+  
 /* Quick API reference:
    -------------------
 
@@ -352,6 +390,14 @@ QPixmap* openHandIcon;
 QPixmap* zoomIcon;
 QPixmap* zoomAtIcon;
 QPixmap* sizeAllIcon;
+QPixmap* midiCtrlMergeIcon;
+QPixmap* midiCtrlMergeEraseIcon;
+QPixmap* midiCtrlMergeEraseInclusiveIcon;
+QPixmap* midiCtrlMergeEraseWysiwygIcon;
+QPixmap* midiCtrlMergeCopyIcon;
+QPixmap* midiCtrlMergeCopyEraseIcon;
+QPixmap* midiCtrlMergeCopyEraseInclusiveIcon;
+QPixmap* midiCtrlMergeCopyEraseWysiwygIcon;
 
 QPixmap* record1_Icon;
 QPixmap* record_on_Icon;
@@ -387,6 +433,8 @@ QPixmap* saveasIconS;
 QPixmap* masterIcon;
 QPixmap* filenewIcon;
 QPixmap* filenewIconS;
+QPixmap* filecloseIcon;
+QPixmap* appexitIcon;
 QPixmap* homeIcon;
 QPixmap* backIcon;
 QPixmap* forwardIcon;
@@ -438,8 +486,6 @@ QPixmap* editmuteSIcon;
 QPixmap* panicIcon;
 QPixmap* metronomeIcon;
 QPixmap* metronomeOffIcon;
-QIcon* metronomeQIcon;
-QIcon* metronomeOffQIcon;
 
 QIcon* pianoIconSet;
 QIcon* scoreIconSet;
@@ -460,6 +506,8 @@ QIcon* editpasteCloneIcon;
 QIcon* editpaste2TrackIcon;
 QIcon* editpasteClone2TrackIcon;
 */
+QPixmap* editpasteSIcon;
+QPixmap* editpasteCloneSIcon;
 
 QPixmap* toggle_small_Icon;
 QPixmap* redLedIcon;
@@ -684,148 +732,169 @@ QIcon* jackTransportOnSVGIcon;
 QIcon* metronomeOffSVGIcon;
 QIcon* metronomeOnSVGIcon;
 
+//----------------------------------
+// Cursors
+//----------------------------------
+
+QCursor* editpasteSCursor;
+QCursor* editpasteCloneSCursor;
+
+
 //---------------------------------------------------------
 //   initIcons
 //---------------------------------------------------------
 
-void initIcons()
+void initIcons(bool useThemeIconsIfPossible)
       {
-      track_commentIcon = new MPIXMAP(track_comment_xpm, NULL);
-      pointerIcon  = new MPIXMAP(pointer_xpm, NULL);
-      pencilIcon   = new MPIXMAP(pencil_xpm, NULL);
-      deleteIcon   = new MPIXMAP(delete_xpm, "draw-eraser");
-      punchinIcon  = new MPIXMAP(punchin_xpm, NULL);
-      punchoutIcon = new MPIXMAP(punchout_xpm, NULL);
-      punchin1Icon = new MPIXMAP(punchin1_xpm, NULL);
-      punchout1Icon = new MPIXMAP(punchout1_xpm, NULL);
-      loopIcon     = new MPIXMAP(loop_xpm, NULL);
-      loop1Icon    = new MPIXMAP(loop1_xpm, NULL);
-      playIcon     = new MPIXMAP(play_xpm, "media-playback-start");
-      closedHandIcon = new MPIXMAP(closed_hand_xpm, NULL);
-      openHandIcon = new MPIXMAP(open_hand_xpm, NULL);
-      zoomIcon     = new MPIXMAP(zoom_xpm, NULL);
-      zoomAtIcon   = new MPIXMAP(zoom_at_xpm, NULL);
-      sizeAllIcon  = new MPIXMAP(size_all_xpm, NULL);
+      use_theme_icons_if_possible = useThemeIconsIfPossible;
+        
+      track_commentIcon = MPIXMAP(track_comment_xpm, NULL);
+      pointerIcon  = MPIXMAP(pointer_xpm, NULL);
+      pencilIcon   = MPIXMAP(pencil_xpm, NULL);
+      deleteIcon   = MPIXMAP(delete_xpm, "draw-eraser");
+      punchinIcon  = MPIXMAP(punchin_xpm, NULL);
+      punchoutIcon = MPIXMAP(punchout_xpm, NULL);
+      punchin1Icon = MPIXMAP(punchin1_xpm, NULL);
+      punchout1Icon = MPIXMAP(punchout1_xpm, NULL);
+      loopIcon     = MPIXMAP(loop_xpm, NULL);
+      loop1Icon    = MPIXMAP(loop1_xpm, NULL);
+      playIcon     = MPIXMAP(play_xpm, "media-playback-start");
+      closedHandIcon = MPIXMAP(closed_hand_xpm, NULL);
+      openHandIcon = MPIXMAP(open_hand_xpm, NULL);
+      zoomIcon     = MPIXMAP(zoom_xpm, NULL);
+      zoomAtIcon   = MPIXMAP(zoom_at_xpm, NULL);
+      sizeAllIcon  = MPIXMAP(size_all_xpm, NULL);
+      zoomIcon     = MPIXMAP(zoom_xpm, NULL);
+      midiCtrlMergeIcon                   = MPIXMAP(midi_ctrl_graph_merge_xpm, NULL);
+      midiCtrlMergeEraseIcon              = MPIXMAP(midi_ctrl_graph_merge_erase_xpm, NULL);
+      midiCtrlMergeEraseInclusiveIcon     = MPIXMAP(midi_ctrl_graph_merge_erase_inclusive_xpm, NULL);
+      midiCtrlMergeEraseWysiwygIcon       = MPIXMAP(midi_ctrl_graph_merge_erase_wysiwyg_xpm, NULL);
+      midiCtrlMergeCopyIcon               = MPIXMAP(midi_ctrl_graph_merge_copy_xpm, NULL);
+      midiCtrlMergeCopyEraseIcon          = MPIXMAP(midi_ctrl_graph_merge_copy_erase_xpm, NULL);
+      midiCtrlMergeCopyEraseInclusiveIcon = MPIXMAP(midi_ctrl_graph_merge_copy_erase_inclusive_xpm, NULL);
+      midiCtrlMergeCopyEraseWysiwygIcon   = MPIXMAP(midi_ctrl_graph_merge_copy_erase_wysiwyg_xpm, NULL);
 
-      record1_Icon  = new MPIXMAP(record1_xpm, NULL);
-      record_on_Icon = new MPIXMAP(record_on_xpm, NULL);
-      record_off_Icon = new MPIXMAP(record_off_xpm, NULL);
-      recordIcon   = new MPIXMAP(record_xpm, "media-record");
-      stopIcon     = new MPIXMAP(stop_xpm, "media-playback-stop");
-      startIcon    = new MPIXMAP(start_xpm, "media-skip-backward");
-      fforwardIcon = new MPIXMAP(fforward_xpm, "media-seek-forward");
-      frewindIcon  = new MPIXMAP(frewind_xpm, "media-seek-backward");
-      dotIcon      = new MPIXMAP(dot_xpm, "dialog-ok-apply");
-      dothIcon     = new MPIXMAP(doth_xpm, "draw-circle");
-      dot1Icon     = new MPIXMAP(dot1_xpm, NULL);
-      noteIcon     = new MPIXMAP(note_xpm, NULL);
-      note1Icon    = new MPIXMAP(note1_xpm, NULL);
-      stickIcon    = new MPIXMAP(stick_xpm, NULL);
-      waveIcon     = new MPIXMAP(wave_xpm, NULL);
-      synthIcon    = new MPIXMAP(synth_xpm, NULL);
-      markIcon[0]  = new MPIXMAP(cmark_xpm, NULL);
-      markIcon[1]  = new MPIXMAP(lmark_xpm, NULL);
-      markIcon[2]  = new MPIXMAP(rmark_xpm, NULL);
-      cutIcon      = new MPIXMAP(cut_xpm, "edit-cut");
-      steprecIcon  = new MPIXMAP(steprec_xpm, NULL);
-      glueIcon     = new MPIXMAP(glue_xpm, NULL);
-      drawIcon     = new MPIXMAP(draw_xpm, NULL);
-      cursorIcon   = new MPIXMAP(cursor_xpm, NULL);
-      quantIcon    = new MPIXMAP(quant_xpm, NULL);
-      saveIcon     = new MPIXMAP(filesave_xpm, "document-save");
-      saveasIcon     = new MPIXMAP(filesaveas_xpm, "document-save-as");
-      printIcon    = new MPIXMAP(fileprint_xpm, "document-print");
-      openIcon     = new MPIXMAP(fileopen_xpm, "document-open");
-      saveIconS     = new MPIXMAP(filesaveS_xpm, "document-save");
-      saveasIconS     = new MPIXMAP(filesaveasS_xpm, "document-save-as");
-      printIconS    = new MPIXMAP(fileprintS_xpm, "document-print");
-      openIconS     = new MPIXMAP(fileopenS_xpm, "document-open");
-      masterIcon   = new MPIXMAP(master_xpm, "mixer-master");
-      filenewIcon  = new MPIXMAP(filenew_xpm, "document-new");
-      filenewIconS  = new MPIXMAP(filenewS_xpm, "document-new");
-      homeIcon     = new MPIXMAP(home_xpm, "user-home");
-      backIcon     = new MPIXMAP(back_xpm, "go-previous");
-      forwardIcon  = new MPIXMAP(forward_xpm, "go-next");
-      muteIcon     = new MPIXMAP(editmuteS_xpm, "audio-volume-muted");
-      eyeIcon      = new MPIXMAP(eye_xpm, NULL);
-      eyeCrossedIcon  = new MPIXMAP(eye_crossed_xpm, NULL);
-      eyeGrayIcon  = new MPIXMAP(eye_gray_xpm, NULL);
-      upIcon       = new MPIXMAP(up_xpm, "go-up");
-      downIcon     = new MPIXMAP(down_xpm, "go-down");
-      boldIcon     = new MPIXMAP(bold_xpm, "format-text-bold");
-      italicIcon     = new MPIXMAP(italic_xpm, "format-text-italic");
-      underlinedIcon = new MPIXMAP(underlined_xpm, "format-text-underline");
-      gvIcon     = new MPIXMAP(gv_xpm, NULL);
-      midiinIcon = new MPIXMAP(midiin_xpm, NULL);
-      sysexIcon   = new MPIXMAP(sysex_xpm, NULL);
-      ctrlIcon    = new MPIXMAP(ctrl_xpm, NULL);
-      metaIcon    = new MPIXMAP(meta_xpm, NULL);
-      pitchIcon   = new MPIXMAP(pitch_xpm, NULL);
-      cafterIcon  = new MPIXMAP(cafter_xpm, NULL);
-      pafterIcon  = new MPIXMAP(pafter_xpm, NULL);
-      flagIcon    = new MPIXMAP(flag_xpm, NULL);
-      flagIconS   = new MPIXMAP(flagS_xpm, NULL);
-      lockIcon    = new MPIXMAP(lock_xpm, NULL);
-      tocIcon     = new MPIXMAP(toc_xpm, NULL);
-      exitIconS   = new MPIXMAP(exitS_xpm, "application-exit");
+      record1_Icon  = MPIXMAP(record1_xpm, NULL);
+      record_on_Icon = MPIXMAP(record_on_xpm, NULL);
+      record_off_Icon = MPIXMAP(record_off_xpm, NULL);
+      recordIcon   = MPIXMAP(record_xpm, "media-record");
+      stopIcon     = MPIXMAP(stop_xpm, "media-playback-stop");
+      startIcon    = MPIXMAP(start_xpm, "media-skip-backward");
+      fforwardIcon = MPIXMAP(fforward_xpm, "media-seek-forward");
+      frewindIcon  = MPIXMAP(frewind_xpm, "media-seek-backward");
+      dotIcon      = MPIXMAP(dot_xpm, "dialog-ok-apply");
+      dothIcon     = MPIXMAP(doth_xpm, "draw-circle");
+      dot1Icon     = MPIXMAP(dot1_xpm, NULL);
+      noteIcon     = MPIXMAP(note_xpm, NULL);
+      note1Icon    = MPIXMAP(note1_xpm, NULL);
+      stickIcon    = MPIXMAP(stick_xpm, NULL);
+      waveIcon     = MPIXMAP(wave_xpm, NULL);
+      synthIcon    = MPIXMAP(synth_xpm, NULL);
+      markIcon[0]  = MPIXMAP(cmark_xpm, NULL);
+      markIcon[1]  = MPIXMAP(lmark_xpm, NULL);
+      markIcon[2]  = MPIXMAP(rmark_xpm, NULL);
+      cutIcon      = MPIXMAP(cut_xpm, "edit-cut");
+      steprecIcon  = MPIXMAP(steprec_xpm, NULL);
+      glueIcon     = MPIXMAP(glue_xpm, NULL);
+      drawIcon     = MPIXMAP(draw_xpm, NULL);
+      cursorIcon   = MPIXMAP(cursor_xpm, NULL);
+      quantIcon    = MPIXMAP(quant_xpm, NULL);
+      saveIcon     = MPIXMAP(filesave_xpm, "document-save");
+      saveasIcon     = MPIXMAP(filesaveas_xpm, "document-save-as");
+      printIcon    = MPIXMAP(fileprint_xpm, "document-print");
+      openIcon     = MPIXMAP(fileopen_xpm, "document-open");
+      saveIconS     = MPIXMAP(filesaveS_xpm, "document-save");
+      saveasIconS     = MPIXMAP(filesaveasS_xpm, "document-save-as");
+      printIconS    = MPIXMAP(fileprintS_xpm, "document-print");
+      openIconS     = MPIXMAP(fileopenS_xpm, "document-open");
+      masterIcon   = MPIXMAP(master_xpm, "mixer-master");
+      filenewIcon  = MPIXMAP(filenew_xpm, "document-new");
+      filenewIconS  = MPIXMAP(filenewS_xpm, "document-new");
+      filecloseIcon  = MPIXMAP(fileclose_xpm, "document-close");
+      appexitIcon  = MPIXMAP(appexit_xpm, "application-exit");
+      homeIcon     = MPIXMAP(home_xpm, "user-home");
+      backIcon     = MPIXMAP(back_xpm, "go-previous");
+      forwardIcon  = MPIXMAP(forward_xpm, "go-next");
+      muteIcon     = MPIXMAP(editmuteS_xpm, "audio-volume-muted");
+      eyeIcon      = MPIXMAP(eye_xpm, NULL);
+      eyeCrossedIcon  = MPIXMAP(eye_crossed_xpm, NULL);
+      eyeGrayIcon  = MPIXMAP(eye_gray_xpm, NULL);
+      upIcon       = MPIXMAP(up_xpm, "go-up");
+      downIcon     = MPIXMAP(down_xpm, "go-down");
+      boldIcon     = MPIXMAP(bold_xpm, "format-text-bold");
+      italicIcon     = MPIXMAP(italic_xpm, "format-text-italic");
+      underlinedIcon = MPIXMAP(underlined_xpm, "format-text-underline");
+      gvIcon     = MPIXMAP(gv_xpm, NULL);
+      midiinIcon = MPIXMAP(midiin_xpm, NULL);
+      sysexIcon   = MPIXMAP(sysex_xpm, NULL);
+      ctrlIcon    = MPIXMAP(ctrl_xpm, NULL);
+      metaIcon    = MPIXMAP(meta_xpm, NULL);
+      pitchIcon   = MPIXMAP(pitch_xpm, NULL);
+      cafterIcon  = MPIXMAP(cafter_xpm, NULL);
+      pafterIcon  = MPIXMAP(pafter_xpm, NULL);
+      flagIcon    = MPIXMAP(flag_xpm, NULL);
+      flagIconS   = MPIXMAP(flagS_xpm, NULL);
+      lockIcon    = MPIXMAP(lock_xpm, NULL);
+      tocIcon     = MPIXMAP(toc_xpm, NULL);
+      exitIconS   = MPIXMAP(exitS_xpm, "application-exit");
 
-      undoIcon     = new MPIXMAP(undo_xpm, "edit-undo");
-      redoIcon     = new MPIXMAP(redo_xpm, "edit-redo");
-      undoIconS    = new MPIXMAP(undoS_xpm, "edit-undo");
-      redoIconS    = new MPIXMAP(redoS_xpm, "edit-redo");
+      undoIcon     = MPIXMAP(undo_xpm, "edit-undo");
+      redoIcon     = MPIXMAP(redo_xpm, "edit-redo");
+      undoIconS    = MPIXMAP(undoS_xpm, "edit-undo");
+      redoIconS    = MPIXMAP(redoS_xpm, "edit-redo");
 
-      speakerIcon    = new MPIXMAP(speaker_xpm, NULL);
-      buttondownIcon = new MPIXMAP(buttondown_xpm, "arrow-down");
-      configureIcon  = new MPIXMAP(configure_xpm, NULL);
+      speakerIcon    = MPIXMAP(speaker_xpm, NULL);
+      buttondownIcon = MPIXMAP(buttondown_xpm, "arrow-down");
+      configureIcon  = MPIXMAP(configure_xpm, NULL);
 
-      editmuteIcon  = new MPIXMAP(editmute_xpm, NULL);
-      editmuteSIcon = new MPIXMAP(editmuteS_xpm, NULL);
-      panicIcon  = new MPIXMAP(panic_xpm, NULL);
-      metronomeIcon      = new MPIXMAP(metronome_xpm, NULL);
-      metronomeOffIcon   = new MPIXMAP(metronome_off_xpm, NULL);
-      metronomeQIcon     = new MICON(*metronomeIcon, NULL);
-      metronomeOffQIcon  = new MICON(*metronomeOffIcon, NULL);
+      editmuteIcon  = MPIXMAP(editmute_xpm, NULL);
+      editmuteSIcon = MPIXMAP(editmuteS_xpm, NULL);
+      panicIcon  = MPIXMAP(panic_xpm, NULL);
+      metronomeIcon      = MPIXMAP(metronome_xpm, NULL);
+      metronomeOffIcon   = MPIXMAP(metronome_off_xpm, NULL);
 
-      editcutIconSet       = new MICON(editcutS_xpm, "edit-cut"); // ddskrjo
-      editcopyIconSet      = new MICON(editcopyS_xpm, "edit-copy");
-      editpasteIconSet     = new MICON(editpasteS_xpm, "edit-paste");
-      editmuteIconSet      = new MICON(editmuteS_xpm, "audio-volume-muted");
-      editpaste2TrackIconSet = new MICON(editpaste2trackS_xpm, NULL);
-      editpasteCloneIconSet  = new MICON(editpastecloneS_xpm, NULL);
-      editpasteClone2TrackIconSet = new MICON(editpasteclone2trackS_xpm, NULL); // ..
+      editcutIconSet       = MICON(editcutS_xpm, "edit-cut"); // ddskrjo
+      editcopyIconSet      = MICON(editcopyS_xpm, "edit-copy");
+      editpasteIconSet     = MICON(editpasteS_xpm, "edit-paste");
+      editmuteIconSet      = MICON(editmuteS_xpm, "audio-volume-muted");
+      editpaste2TrackIconSet = MICON(editpaste2trackS_xpm, NULL);
+      editpasteCloneIconSet  = MICON(editpastecloneS_xpm, NULL);
+      editpasteClone2TrackIconSet = MICON(editpasteclone2trackS_xpm, NULL); // ..
       /* Not used - Orcan
-      pianoIcon                 = new MICON(piano_xpm, NULL);
-      editcutIcon               = new MICON(editcut_xpm, "edit-cut");
-      editcopyIcon              = new MICON(editcopy_xpm, "edit-copy");
-      editpasteIcon             = new MICON(editpaste_xpm, "edit-paste");
-      editpasteCloneIcon        = new MICON(editpasteclone_xpm, NULL);
-      editpaste2TrackIcon       = new MICON(editpaste2track_xpm, NULL);
-      editpasteClone2TrackIcon  = new MICON(editpasteclone2track_xpm, NULL);
+      pianoIcon                 = MICON(piano_xpm, NULL);
+      editcutIcon               = MICON(editcut_xpm, "edit-cut");
+      editcopyIcon              = MICON(editcopy_xpm, "edit-copy");
+      editpasteIcon             = MICON(editpaste_xpm, "edit-paste");
+      editpasteCloneIcon        = MICON(editpasteclone_xpm, NULL);
+      editpaste2TrackIcon       = MICON(editpaste2track_xpm, NULL);
+      editpasteClone2TrackIcon  = MICON(editpasteclone2track_xpm, NULL);
       */
+      editpasteSIcon      = MPIXMAP(editpasteS_xpm, NULL);
+      editpasteCloneSIcon = MPIXMAP(editpastecloneS_xpm, NULL);
 
-      //exitIcon             = new MPIXMAP(exit_xpm, "application-exit");
-      //exit1Icon            = new MPIXMAP(exit1_xpm, "application-exit");
+      //exitIcon             = MPIXMAP(exit_xpm, "application-exit");
+      //exit1Icon            = MPIXMAP(exit1_xpm, "application-exit");
       // Changed by Tim. There are IMO no suitable theme substitutes for these two so far...
-      exitIcon             = new MPIXMAP(exit_xpm, NULL);
-      exit1Icon            = new MPIXMAP(exit1_xpm, NULL);
+      exitIcon             = MPIXMAP(exit_xpm, NULL);
+      exit1Icon            = MPIXMAP(exit1_xpm, NULL);
 
       // 2 lines odd code
-      newmuteIcon          = new MPIXMAP(newmutebutton_xpm, NULL);
-      soloIcon             = new MPIXMAP(solobutton_xpm, NULL);
+      newmuteIcon          = MPIXMAP(newmutebutton_xpm, NULL);
+      soloIcon             = MPIXMAP(solobutton_xpm, NULL);
 
-      routesInIcon         = new MPIXMAP(routing_input_button_slim_4_xpm, NULL);
-      routesOutIcon        = new MPIXMAP(routing_output_button_slim_4_xpm, NULL);
-      routesMidiInIcon     = new MPIXMAP(routing_midi_input_button_slim_xpm, NULL);
-      routesMidiOutIcon    = new MPIXMAP(routing_midi_output_button_slim_xpm, NULL);
+      routesInIcon         = MPIXMAP(routing_input_button_slim_4_xpm, NULL);
+      routesOutIcon        = MPIXMAP(routing_output_button_slim_4_xpm, NULL);
+      routesMidiInIcon     = MPIXMAP(routing_midi_input_button_slim_xpm, NULL);
+      routesMidiOutIcon    = MPIXMAP(routing_midi_output_button_slim_xpm, NULL);
 
-      recEchoIconOn        = new MPIXMAP(rec_echo_on_xpm, NULL);
-      recEchoIconOff       = new MPIXMAP(rec_echo_off_xpm, NULL);
-      muteIconOn           = new MPIXMAP(mutebutton_on_xpm, NULL);
-      muteIconOff          = new MPIXMAP(mutebutton_off_xpm, NULL);
-      soloIconOn           = new MPIXMAP(solobutton_on_xpm, NULL);
-      soloIconOff          = new MPIXMAP(solobutton_off_xpm, NULL);
-      soloblksqIconOn      = new MPIXMAP(solobutton_on_blksq_xpm, NULL);
-      soloblksqIconOff     = new MPIXMAP(solobutton_off_blksq_xpm, NULL);
+      recEchoIconOn        = MPIXMAP(rec_echo_on_xpm, NULL);
+      recEchoIconOff       = MPIXMAP(rec_echo_off_xpm, NULL);
+      muteIconOn           = MPIXMAP(mutebutton_on_xpm, NULL);
+      muteIconOff          = MPIXMAP(mutebutton_off_xpm, NULL);
+      soloIconOn           = MPIXMAP(solobutton_on_xpm, NULL);
+      soloIconOff          = MPIXMAP(solobutton_off_xpm, NULL);
+      soloblksqIconOn      = MPIXMAP(solobutton_on_blksq_xpm, NULL);
+      soloblksqIconOff     = MPIXMAP(solobutton_off_blksq_xpm, NULL);
       //soloIconSet1         = new QIcon(); 
       //soloIconSet2         = new QIcon();
       //soloIconSet1->addPixmap(*soloIconOn, QIcon::Normal, QIcon::On);
@@ -833,125 +902,125 @@ void initIcons()
       //soloIconSet2->addPixmap(*soloblksqIconOn, QIcon::Normal, QIcon::On);
       //soloIconSet2->addPixmap(*soloblksqIconOff, QIcon::Normal, QIcon::Off);
       
-      toggle_small_Icon    = new MPIXMAP(toggle_small_xpm, NULL);
-      redLedIcon           = new MPIXMAP(redled_xpm, NULL);
-      darkRedLedIcon       = new MPIXMAP(darkredled_xpm, NULL);
-      greendotIcon         = new MPIXMAP(greendot_xpm, NULL);
-      greendot12x12Icon    = new MPIXMAP(greendot12x12_xpm, NULL);
-      reddotIcon           = new MPIXMAP(reddot_xpm, NULL);
-      //darkgreendotIcon     = new MPIXMAP(darkgreendot_xpm, NULL);
-      bluedotIcon          = new MPIXMAP(bluedot_xpm, NULL);
-      bluedot12x12Icon     = new MPIXMAP(bluedot12x12_xpm, NULL);
-      graydotIcon          = new MPIXMAP(graydot_xpm, NULL);
-      graydot12x12Icon     = new MPIXMAP(graydot12x12_xpm, NULL);
-      orangedotIcon        = new MPIXMAP(orangedot_xpm, NULL);
-      orangedot12x12Icon   = new MPIXMAP(orangedot12x12_xpm, NULL);
-      offIcon              = new MPIXMAP(off_xpm, NULL);
-      blacksquareIcon      = new MPIXMAP(blacksquare_xpm, NULL);
-      blacksqcheckIcon     = new MPIXMAP(blacksqcheck_xpm, NULL);
-      checkSquareIcon      = new MPIXMAP(checksquare_xpm, NULL);
+      toggle_small_Icon    = MPIXMAP(toggle_small_xpm, NULL);
+      redLedIcon           = MPIXMAP(redled_xpm, NULL);
+      darkRedLedIcon       = MPIXMAP(darkredled_xpm, NULL);
+      greendotIcon         = MPIXMAP(greendot_xpm, NULL);
+      greendot12x12Icon    = MPIXMAP(greendot12x12_xpm, NULL);
+      reddotIcon           = MPIXMAP(reddot_xpm, NULL);
+      //darkgreendotIcon     = MPIXMAP(darkgreendot_xpm, NULL);
+      bluedotIcon          = MPIXMAP(bluedot_xpm, NULL);
+      bluedot12x12Icon     = MPIXMAP(bluedot12x12_xpm, NULL);
+      graydotIcon          = MPIXMAP(graydot_xpm, NULL);
+      graydot12x12Icon     = MPIXMAP(graydot12x12_xpm, NULL);
+      orangedotIcon        = MPIXMAP(orangedot_xpm, NULL);
+      orangedot12x12Icon   = MPIXMAP(orangedot12x12_xpm, NULL);
+      offIcon              = MPIXMAP(off_xpm, NULL);
+      blacksquareIcon      = MPIXMAP(blacksquare_xpm, NULL);
+      blacksqcheckIcon     = MPIXMAP(blacksqcheck_xpm, NULL);
+      checkSquareIcon      = MPIXMAP(checksquare_xpm, NULL);
 
-      mastertrackSIcon     = new MPIXMAP(mastertrackS_xpm, NULL);
-      localoffSIcon        = new MPIXMAP(localoffS_xpm, NULL);
-      miditransformSIcon   = new MPIXMAP(miditransformS_xpm, NULL);
-      midi_plugSIcon       = new MPIXMAP(midi_plugS_xpm, NULL);
-      miditransposeSIcon   = new MPIXMAP(miditransposeS_xpm, NULL);
-      midiThruOnIcon       = new MPIXMAP(midi_thru_on5_xpm, NULL);      
-      midiThruOffIcon      = new MPIXMAP(midi_thru_off5_xpm, NULL);      
+      mastertrackSIcon     = MPIXMAP(mastertrackS_xpm, NULL);
+      localoffSIcon        = MPIXMAP(localoffS_xpm, NULL);
+      miditransformSIcon   = MPIXMAP(miditransformS_xpm, NULL);
+      midi_plugSIcon       = MPIXMAP(midi_plugS_xpm, NULL);
+      miditransposeSIcon   = MPIXMAP(miditransposeS_xpm, NULL);
+      midiThruOnIcon       = MPIXMAP(midi_thru_on5_xpm, NULL);      
+      midiThruOffIcon      = MPIXMAP(midi_thru_off5_xpm, NULL);      
       
-      mixerSIcon           = new MPIXMAP(mixerS_xpm, NULL);
-      mustangSIcon         = new MPIXMAP(mustangS_xpm, NULL);
-      resetSIcon           = new MPIXMAP(resetS_xpm, NULL);
-      track_addIcon        = new MPIXMAP(track_add_xpm, NULL);
-      track_deleteIcon     = new MPIXMAP(track_delete_xpm, NULL);
-      listSIcon            = new MPIXMAP(listS_xpm, NULL);
-      inputpluginSIcon     = new MPIXMAP(inputpluginS_xpm, NULL);
-      cliplistSIcon        = new MPIXMAP(cliplistS_xpm, NULL);
-      mixerAudioSIcon      = new MPIXMAP(mixerAudioS_xpm, NULL);
-      initSIcon            = new MPIXMAP(initS_xpm, NULL);
-      deltaOnIcon          = new MPIXMAP(delta_on_xpm, NULL);
-      deltaOffIcon         = new MPIXMAP(delta_off_xpm, NULL);
-      veloPerNote_OnIcon   = new MPIXMAP(velo_per_note_xpm, NULL);
-      veloPerNote_OffIcon  = new MPIXMAP(velo_all_xpm, NULL);
+      mixerSIcon           = MPIXMAP(mixerS_xpm, NULL);
+      mustangSIcon         = MPIXMAP(mustangS_xpm, NULL);
+      resetSIcon           = MPIXMAP(resetS_xpm, NULL);
+      track_addIcon        = MPIXMAP(track_add_xpm, NULL);
+      track_deleteIcon     = MPIXMAP(track_delete_xpm, NULL);
+      listSIcon            = MPIXMAP(listS_xpm, NULL);
+      inputpluginSIcon     = MPIXMAP(inputpluginS_xpm, NULL);
+      cliplistSIcon        = MPIXMAP(cliplistS_xpm, NULL);
+      mixerAudioSIcon      = MPIXMAP(mixerAudioS_xpm, NULL);
+      initSIcon            = MPIXMAP(initS_xpm, NULL);
+      deltaOnIcon          = MPIXMAP(delta_on_xpm, NULL);
+      deltaOffIcon         = MPIXMAP(delta_off_xpm, NULL);
+      veloPerNote_OnIcon   = MPIXMAP(velo_per_note_xpm, NULL);
+      veloPerNote_OffIcon  = MPIXMAP(velo_all_xpm, NULL);
 
-      addtrack_addmiditrackIcon     = new MPIXMAP(addtrack_addmiditrack_2_xpm, NULL);
-      addtrack_audiogroupIcon       = new MPIXMAP(addtrack_audiogroup_xpm, NULL);
-      addtrack_audioinputIcon       = new MPIXMAP(addtrack_audioinput_xpm, NULL);
-      addtrack_audiooutputIcon      = new MPIXMAP(addtrack_audiooutput_xpm, NULL);
-      addtrack_auxsendIcon          = new MPIXMAP(addtrack_auxsend_2_xpm, NULL);
-      addtrack_drumtrackIcon        = new MPIXMAP(addtrack_old_drumtrack_xpm, NULL);
-      addtrack_newDrumtrackIcon     = new MPIXMAP(addtrack_drumtrack_2_xpm, NULL);
-      addtrack_wavetrackIcon        = new MPIXMAP(addtrack_wavetrack_xpm, NULL);
-      edit_drummsIcon               = new MPIXMAP(edit_drumms_xpm, NULL);
-      edit_listIcon                 = new MPIXMAP(edit_list_xpm, NULL);
-      edit_waveIcon                 = new MPIXMAP(edit_wave_xpm, NULL);
-      edit_mastertrackIcon          = new MPIXMAP(edit_mastertrack_xpm, NULL);
-      edit_pianorollIcon            = new MPIXMAP(edit_pianoroll_xpm, NULL);
-      edit_scoreIcon                = new MPIXMAP(edit_score_xpm, NULL);
-      edit_track_addIcon            = new MPIXMAP(edit_track_add_xpm, NULL);
-      edit_track_delIcon            = new MPIXMAP(edit_track_del_xpm, NULL);
-      mastertrack_graphicIcon       = new MPIXMAP(mastertrack_graphic_xpm, NULL);
-      mastertrack_listIcon          = new MPIXMAP(mastertrack_list_xpm, NULL);
-      midi_transformIcon            = new MPIXMAP(midi_transform_xpm, NULL);
-      midi_transposeIcon            = new MPIXMAP(midi_transpose_xpm, NULL);
-      selectIcon                    = new MPIXMAP(select_xpm, NULL);
-      select_allIcon                = new MPIXMAP(select_all_xpm, NULL);
-      select_all_parts_on_trackIcon = new MPIXMAP(select_all_parts_on_track_xpm, NULL);
-      select_deselect_allIcon       = new MPIXMAP(select_deselect_all, NULL);
-      select_inside_loopIcon        = new MPIXMAP(select_inside_loop_xpm, NULL);
-      select_invert_selectionIcon   = new MPIXMAP(select_invert_selection, NULL);
-      select_outside_loopIcon       = new MPIXMAP(select_outside_loop_xpm, NULL);
-      pianoIconSet                  = new MICON(edit_pianoroll_xpm, NULL);
-      scoreIconSet                  = new MICON(edit_score_xpm, NULL);
+      addtrack_addmiditrackIcon     = MPIXMAP(addtrack_addmiditrack_2_xpm, NULL);
+      addtrack_audiogroupIcon       = MPIXMAP(addtrack_audiogroup_xpm, NULL);
+      addtrack_audioinputIcon       = MPIXMAP(addtrack_audioinput_xpm, NULL);
+      addtrack_audiooutputIcon      = MPIXMAP(addtrack_audiooutput_xpm, NULL);
+      addtrack_auxsendIcon          = MPIXMAP(addtrack_auxsend_2_xpm, NULL);
+      addtrack_drumtrackIcon        = MPIXMAP(addtrack_old_drumtrack_xpm, NULL);
+      addtrack_newDrumtrackIcon     = MPIXMAP(addtrack_drumtrack_2_xpm, NULL);
+      addtrack_wavetrackIcon        = MPIXMAP(addtrack_wavetrack_xpm, NULL);
+      edit_drummsIcon               = MPIXMAP(edit_drumms_xpm, NULL);
+      edit_listIcon                 = MPIXMAP(edit_list_xpm, NULL);
+      edit_waveIcon                 = MPIXMAP(edit_wave_xpm, NULL);
+      edit_mastertrackIcon          = MPIXMAP(edit_mastertrack_xpm, NULL);
+      edit_pianorollIcon            = MPIXMAP(edit_pianoroll_xpm, NULL);
+      edit_scoreIcon                = MPIXMAP(edit_score_xpm, NULL);
+      edit_track_addIcon            = MPIXMAP(edit_track_add_xpm, NULL);
+      edit_track_delIcon            = MPIXMAP(edit_track_del_xpm, NULL);
+      mastertrack_graphicIcon       = MPIXMAP(mastertrack_graphic_xpm, NULL);
+      mastertrack_listIcon          = MPIXMAP(mastertrack_list_xpm, NULL);
+      midi_transformIcon            = MPIXMAP(midi_transform_xpm, NULL);
+      midi_transposeIcon            = MPIXMAP(midi_transpose_xpm, NULL);
+      selectIcon                    = MPIXMAP(select_xpm, NULL);
+      select_allIcon                = MPIXMAP(select_all_xpm, NULL);
+      select_all_parts_on_trackIcon = MPIXMAP(select_all_parts_on_track_xpm, NULL);
+      select_deselect_allIcon       = MPIXMAP(select_deselect_all, NULL);
+      select_inside_loopIcon        = MPIXMAP(select_inside_loop_xpm, NULL);
+      select_invert_selectionIcon   = MPIXMAP(select_invert_selection, NULL);
+      select_outside_loopIcon       = MPIXMAP(select_outside_loop_xpm, NULL);
+      pianoIconSet                  = MICON(edit_pianoroll_xpm, NULL);
+      scoreIconSet                  = MICON(edit_score_xpm, NULL);
 
-      audio_bounce_to_fileIcon                      = new MPIXMAP(audio_bounce_to_file_xpm, NULL);
-      audio_bounce_to_trackIcon                     = new MPIXMAP(audio_bounce_to_track_xpm, NULL);
-      audio_restartaudioIcon                        = new MPIXMAP(audio_restartaudio_xpm, NULL);
-      automation_clear_dataIcon                     = new MPIXMAP(automation_clear_data_xpm, NULL);
-      automation_mixerIcon                          = new MPIXMAP(automation_mixer_xpm, NULL);
-      automation_take_snapshotIcon                  = new MPIXMAP(automation_take_snapshot_xpm, NULL);
-      edit_midiIcon                                 = new MPIXMAP(edit_midi_xpm, NULL);
-      midi_edit_instrumentIcon                      = new MPIXMAP(midi_edit_instrument_xpm, NULL);
-      midi_init_instrIcon                           = new MPIXMAP(midi_init_instr_xpm, NULL);
-      midi_inputpluginsIcon                         = new MPIXMAP(midi_inputplugins_xpm, NULL);
-      midi_inputplugins_midi_input_filterIcon       = new MPIXMAP(midi_inputplugins_midi_input_filter_xpm, NULL);
-      midi_inputplugins_midi_input_transformIcon    = new MPIXMAP(midi_inputplugins_midi_input_transform_xpm, NULL);
-      midi_inputplugins_random_rhythm_generatorIcon = new MPIXMAP(midi_inputplugins_random_rhythm_generator_xpm, NULL);
-      midi_inputplugins_remote_controlIcon          = new MPIXMAP(midi_inputplugins_remote_control_xpm, NULL);
-      midi_inputplugins_transposeIcon               = new MPIXMAP(midi_inputplugins_transpose_xpm, NULL);
-      midi_local_offIcon                            = new MPIXMAP(midi_local_off_xpm, NULL);
-      midi_reset_instrIcon                          = new MPIXMAP(midi_reset_instr_xpm, NULL);
-      settings_appearance_settingsIcon              = new MPIXMAP(settings_appearance_settings_xpm, NULL);
-      settings_configureshortcutsIcon               = new MPIXMAP(settings_configureshortcuts_xpm, NULL);
-      settings_follow_songIcon                      = new MPIXMAP(settings_follow_song_xpm, NULL);
-      settings_globalsettingsIcon                   = new MPIXMAP(settings_globalsettings_xpm, NULL);
-      settings_metronomeIcon                        = new MPIXMAP(settings_metronome_xpm, NULL);
-      settings_midifileexportIcon                   = new MPIXMAP(settings_midifileexport_xpm, NULL);
-      settings_midiport_softsynthsIcon              = new MPIXMAP(settings_midiport_softsynths_xpm, NULL);
-      settings_midisyncIcon                         = new MPIXMAP(settings_midisync_xpm, NULL);
-      view_bigtime_windowIcon                       = new MPIXMAP(view_bigtime_window_xpm, NULL);
-      view_cliplistIcon                             = new MPIXMAP(view_cliplist_xpm, NULL);
-      view_markerIcon                               = new MPIXMAP(view_marker_xpm, NULL);
-      view_mixerIcon                                = new MPIXMAP(view_mixer_xpm, NULL);
-      view_transport_windowIcon                     = new MPIXMAP(view_transport_window_xpm, NULL);
+      audio_bounce_to_fileIcon                      = MPIXMAP(audio_bounce_to_file_xpm, NULL);
+      audio_bounce_to_trackIcon                     = MPIXMAP(audio_bounce_to_track_xpm, NULL);
+      audio_restartaudioIcon                        = MPIXMAP(audio_restartaudio_xpm, NULL);
+      automation_clear_dataIcon                     = MPIXMAP(automation_clear_data_xpm, NULL);
+      automation_mixerIcon                          = MPIXMAP(automation_mixer_xpm, NULL);
+      automation_take_snapshotIcon                  = MPIXMAP(automation_take_snapshot_xpm, NULL);
+      edit_midiIcon                                 = MPIXMAP(edit_midi_xpm, NULL);
+      midi_edit_instrumentIcon                      = MPIXMAP(midi_edit_instrument_xpm, NULL);
+      midi_init_instrIcon                           = MPIXMAP(midi_init_instr_xpm, NULL);
+      midi_inputpluginsIcon                         = MPIXMAP(midi_inputplugins_xpm, NULL);
+      midi_inputplugins_midi_input_filterIcon       = MPIXMAP(midi_inputplugins_midi_input_filter_xpm, NULL);
+      midi_inputplugins_midi_input_transformIcon    = MPIXMAP(midi_inputplugins_midi_input_transform_xpm, NULL);
+      midi_inputplugins_random_rhythm_generatorIcon = MPIXMAP(midi_inputplugins_random_rhythm_generator_xpm, NULL);
+      midi_inputplugins_remote_controlIcon          = MPIXMAP(midi_inputplugins_remote_control_xpm, NULL);
+      midi_inputplugins_transposeIcon               = MPIXMAP(midi_inputplugins_transpose_xpm, NULL);
+      midi_local_offIcon                            = MPIXMAP(midi_local_off_xpm, NULL);
+      midi_reset_instrIcon                          = MPIXMAP(midi_reset_instr_xpm, NULL);
+      settings_appearance_settingsIcon              = MPIXMAP(settings_appearance_settings_xpm, NULL);
+      settings_configureshortcutsIcon               = MPIXMAP(settings_configureshortcuts_xpm, NULL);
+      settings_follow_songIcon                      = MPIXMAP(settings_follow_song_xpm, NULL);
+      settings_globalsettingsIcon                   = MPIXMAP(settings_globalsettings_xpm, NULL);
+      settings_metronomeIcon                        = MPIXMAP(settings_metronome_xpm, NULL);
+      settings_midifileexportIcon                   = MPIXMAP(settings_midifileexport_xpm, NULL);
+      settings_midiport_softsynthsIcon              = MPIXMAP(settings_midiport_softsynths_xpm, NULL);
+      settings_midisyncIcon                         = MPIXMAP(settings_midisync_xpm, NULL);
+      view_bigtime_windowIcon                       = MPIXMAP(view_bigtime_window_xpm, NULL);
+      view_cliplistIcon                             = MPIXMAP(view_cliplist_xpm, NULL);
+      view_markerIcon                               = MPIXMAP(view_marker_xpm, NULL);
+      view_mixerIcon                                = MPIXMAP(view_mixer_xpm, NULL);
+      view_transport_windowIcon                     = MPIXMAP(view_transport_window_xpm, NULL);
 
-      monoIcon                                      = new MPIXMAP(mono_xpm, NULL);
-      stereoIcon                                    = new MPIXMAP(stereo_xpm, NULL);
+      monoIcon                                      = MPIXMAP(mono_xpm, NULL);
+      stereoIcon                                    = MPIXMAP(stereo_xpm, NULL);
 
-      museIcon                                      = new MPIXMAP(muse_icon_xpm, NULL);
-      aboutMuseImage                                = new MPIXMAP(about_muse_xpm, NULL);
-      museLeftSideLogo                              = new MPIXMAP(muse_leftside_logo_xpm, NULL);
-      globalIcon                                    = new MICON(global_xpm, "folder");
-      userIcon                                      = new MICON(user_xpm, "user-home");
-      projectIcon                                   = new MICON(project_xpm, "folder-sound");
+      museIcon                                      = MPIXMAP(muse_icon_xpm, NULL);
+      aboutMuseImage                                = MPIXMAP(about_muse_xpm, NULL);
+      museLeftSideLogo                              = MPIXMAP(muse_leftside_logo_xpm, NULL);
+      globalIcon                                    = MICON(global_xpm, "folder");
+      userIcon                                      = MICON(user_xpm, "user-home");
+      projectIcon                                   = MICON(project_xpm, "folder-sound");
 
-      sineIcon                                      = new MPIXMAP(sine_xpm, NULL);
-      sawIcon                                       = new MPIXMAP(saw_xpm, NULL);
+      sineIcon                                      = MPIXMAP(sine_xpm, NULL);
+      sawIcon                                       = MPIXMAP(saw_xpm, NULL);
 
-      pianoNewIcon                                       = new MICON(pianoNew_xpm, NULL);
-      presetsNewIcon                                       = new MICON(presetsNew_xpm, NULL);
+      pianoNewIcon                                       = MICON(pianoNew_xpm, NULL);
+      presetsNewIcon                                       = MICON(presetsNew_xpm, NULL);
 
-      cpuIcon                                       = new MICON(cpu_xpm, NULL);
+      cpuIcon                                       = MICON(cpu_xpm, NULL);
       sliderPngImage                                = new MPNGIMG(":/png/slider-vol.png");
 
       knobPngImage                                       = new MPNGIMG(":/png/knob.png");
@@ -959,68 +1028,68 @@ void initIcons()
       knobSmallPngImage                                  = new MPNGIMG(":/png/knob-small.png");
       rimBasePngImage                                    = new MPNGIMG(":/png/rim-base.png");
 
-      routerFilterSourceIcon                        = new MPIXMAP(router_filter_source_xpm, NULL);
-      routerFilterDestinationIcon                   = new MPIXMAP(router_filter_destination_xpm, NULL);
-      routerFilterSourceRoutesIcon                  = new MPIXMAP(router_filter_source_routes_xpm, NULL);
-      routerFilterDestinationRoutesIcon             = new MPIXMAP(router_filter_destination_routes_xpm, NULL);
-      routerViewSplitterIcon                        = new MPIXMAP(router_view_splitter_xpm, NULL);
+      routerFilterSourceIcon                        = MPIXMAP(router_filter_source_xpm, NULL);
+      routerFilterDestinationIcon                   = MPIXMAP(router_filter_destination_xpm, NULL);
+      routerFilterSourceRoutesIcon                  = MPIXMAP(router_filter_source_routes_xpm, NULL);
+      routerFilterDestinationRoutesIcon             = MPIXMAP(router_filter_destination_routes_xpm, NULL);
+      routerViewSplitterIcon                        = MPIXMAP(router_view_splitter_xpm, NULL);
       
 
       //----------------------------------
       //   SVG...
       //----------------------------------
 
-      routingInputSVGPixmap = new MPIXMAP(":/svg/routing_input.svg", NULL);
-      routingOutputSVGPixmap = new MPIXMAP(":/svg/routing_output.svg", NULL);
-      routingInputUnconnectedSVGPixmap = new MPIXMAP(":/svg/routing_input_unconnected.svg", NULL);
-      routingOutputUnconnectedSVGPixmap = new MPIXMAP(":/svg/routing_output_unconnected.svg", NULL);
+      routingInputSVGPixmap = new MSVGIMG(":/svg/routing_input.svg");
+      routingOutputSVGPixmap = new MSVGIMG(":/svg/routing_output.svg");
+      routingInputUnconnectedSVGPixmap = new MSVGIMG(":/svg/routing_input_unconnected.svg");
+      routingOutputUnconnectedSVGPixmap = new MSVGIMG(":/svg/routing_output_unconnected.svg");
 
-      headphonesOffSVGPixmap = new MPIXMAP(":/svg/headphones_off.svg", NULL);
-      headphonesOnSVGPixmap = new MPIXMAP(":/svg/headphones_on.svg", NULL);
+      headphonesOffSVGPixmap = new MSVGIMG(":/svg/headphones_off.svg");
+      headphonesOnSVGPixmap = new MSVGIMG(":/svg/headphones_on.svg");
 
-      muteOffSVGPixmap = new MPIXMAP(":/svg/mute_off.svg", NULL);
-      muteOnSVGPixmap = new MPIXMAP(":/svg/mute_on.svg", NULL);
-      muteOnXSVGPixmap = new MPIXMAP(":/svg/mute_on_X.svg", NULL);
-      muteProxyOnSVGPixmap = new MPIXMAP(":/svg/mute_proxy_on.svg", NULL);
-      muteAndProxyOnSVGPixmap = new MPIXMAP(":/svg/mute_and_proxy_on.svg", NULL);
+      muteOffSVGPixmap = new MSVGIMG(":/svg/mute_off.svg");
+      muteOnSVGPixmap = new MSVGIMG(":/svg/mute_on.svg");
+      muteOnXSVGPixmap = new MSVGIMG(":/svg/mute_on_X.svg");
+      muteProxyOnSVGPixmap = new MSVGIMG(":/svg/mute_proxy_on.svg");
+      muteAndProxyOnSVGPixmap = new MSVGIMG(":/svg/mute_and_proxy_on.svg");
 
-      soloOffSVGPixmap = new MPIXMAP(":/svg/solo_spotlight_off.svg", NULL);
-      soloOnSVGPixmap = new MPIXMAP(":/svg/solo_spotlight_on.svg", NULL);
-      soloOnAloneSVGPixmap = new MPIXMAP(":/svg/solo_spotlight_on_alone.svg", NULL);
-      soloProxyOnSVGPixmap = new MPIXMAP(":/svg/solo_proxy_spotlight_on.svg", NULL);
-      soloProxyOnAloneSVGPixmap = new MPIXMAP(":/svg/solo_proxy_spotlight_on_alone.svg", NULL);
-      soloAndProxyOnSVGPixmap = new MPIXMAP(":/svg/solo_and_proxy_spotlight_on.svg", NULL);
+      soloOffSVGPixmap = new MSVGIMG(":/svg/solo_spotlight_off.svg");
+      soloOnSVGPixmap = new MSVGIMG(":/svg/solo_spotlight_on.svg");
+      soloOnAloneSVGPixmap = new MSVGIMG(":/svg/solo_spotlight_on_alone.svg");
+      soloProxyOnSVGPixmap = new MSVGIMG(":/svg/solo_proxy_spotlight_on.svg");
+      soloProxyOnAloneSVGPixmap = new MSVGIMG(":/svg/solo_proxy_spotlight_on_alone.svg");
+      soloAndProxyOnSVGPixmap = new MSVGIMG(":/svg/solo_and_proxy_spotlight_on.svg");
 
-      trackOffSVGPixmap = new MPIXMAP(":/svg/track_off.svg", NULL);
-      trackOnSVGPixmap = new MPIXMAP(":/svg/track_on.svg", NULL);
+      trackOffSVGPixmap = new MSVGIMG(":/svg/track_off.svg");
+      trackOnSVGPixmap = new MSVGIMG(":/svg/track_on.svg");
 
-      stereoOffSVGPixmap = new MPIXMAP(":/svg/stereo_off.svg", NULL);
-      stereoOnSVGPixmap = new MPIXMAP(":/svg/stereo_on.svg", NULL);
+      stereoOffSVGPixmap = new MSVGIMG(":/svg/stereo_off.svg");
+      stereoOnSVGPixmap = new MSVGIMG(":/svg/stereo_on.svg");
 
-      preFaderOffSVGPixmap = new MPIXMAP(":/svg/pre_fader_off.svg", NULL);
-      preFaderOnSVGPixmap = new MPIXMAP(":/svg/pre_fader_on.svg", NULL);
+      preFaderOffSVGPixmap = new MSVGIMG(":/svg/pre_fader_off.svg");
+      preFaderOnSVGPixmap = new MSVGIMG(":/svg/pre_fader_on.svg");
 
-      //recArmOffSVGPixmap = new MPIXMAP(":/svg/rec_arm_off.svg", NULL);
-      recArmOffSVGPixmap = new MPIXMAP(":/svg/rec_arm_off_default_col.svg", NULL);
-      recArmOnSVGPixmap = new MPIXMAP(":/svg/rec_arm_on.svg", NULL);
+      //recArmOffSVGPixmap = new MSVGIMG(":/svg/rec_arm_off.svg");
+      recArmOffSVGPixmap = new MSVGIMG(":/svg/rec_arm_off_default_col.svg");
+      recArmOnSVGPixmap = new MSVGIMG(":/svg/rec_arm_on.svg");
 
-      //monitorOffSVGPixmap = new MPIXMAP(":/svg/monitor_off.svg", NULL);
-      monitorOffSVGPixmap = new MPIXMAP(":/svg/monitor_off_default_col.svg", NULL);
-      monitorOnSVGPixmap = new MPIXMAP(":/svg/monitor_on.svg", NULL);
-      //monitorOffSVGPixmap = new MPIXMAP(":/svg/headphones_off.svg", NULL);
-      //monitorOnSVGPixmap = new MPIXMAP(":/svg/headphones_on.svg", NULL);
+      //monitorOffSVGPixmap = new MSVGIMG(":/svg/monitor_off.svg");
+      monitorOffSVGPixmap = new MSVGIMG(":/svg/monitor_off_default_col.svg");
+      monitorOnSVGPixmap = new MSVGIMG(":/svg/monitor_on.svg");
+      //monitorOffSVGPixmap = new MSVGIMG(":/svg/headphones_off.svg");
+      //monitorOnSVGPixmap = new MSVGIMG(":/svg/headphones_on.svg");
 
-      externSyncOffSVGPixmap = new MPIXMAP(":/svg/extern_sync_off.svg", NULL);
-      externSyncOnSVGPixmap = new MPIXMAP(":/svg/extern_sync_on.svg", NULL);
+      externSyncOffSVGPixmap = new MSVGIMG(":/svg/extern_sync_off.svg");
+      externSyncOnSVGPixmap = new MSVGIMG(":/svg/extern_sync_on.svg");
 
-      masterTrackOffSVGPixmap = new MPIXMAP(":/svg/master_track_off.svg", NULL);
-      masterTrackOnSVGPixmap = new MPIXMAP(":/svg/master_track_on.svg", NULL);
+      masterTrackOffSVGPixmap = new MSVGIMG(":/svg/master_track_off.svg");
+      masterTrackOnSVGPixmap = new MSVGIMG(":/svg/master_track_on.svg");
 
-      jackTransportOffSVGPixmap = new MPIXMAP(":/svg/jack_transport_off.svg", NULL);
-      jackTransportOnSVGPixmap = new MPIXMAP(":/svg/jack_transport_on.svg", NULL);
+      jackTransportOffSVGPixmap = new MSVGIMG(":/svg/jack_transport_off.svg");
+      jackTransportOnSVGPixmap = new MSVGIMG(":/svg/jack_transport_on.svg");
 
-      metronomeOffSVGPixmap = new MPIXMAP(":/svg/metronome_off.svg", NULL);
-      metronomeOnSVGPixmap = new MPIXMAP(":/svg/metronome_on.svg", NULL);
+      metronomeOffSVGPixmap = new MSVGIMG(":/svg/metronome_off.svg");
+      metronomeOnSVGPixmap = new MSVGIMG(":/svg/metronome_on.svg");
 
       
       routingInputSVGIcon = new QIcon(*routingInputSVGPixmap);
@@ -1103,6 +1172,13 @@ void initIcons()
       
       metronomeOffSVGIcon = new QIcon(*metronomeOffSVGPixmap);
       metronomeOnSVGIcon = new QIcon(*metronomeOnSVGPixmap);
+      
+      //----------------------------------
+      // Cursors
+      //----------------------------------
+
+      editpasteSCursor = new QCursor(*editpasteSIcon, 8, 8);
+      editpasteCloneSCursor = new QCursor(*editpasteCloneSIcon, 8, 8);
       }
 
 //---------------------------------------------------------
@@ -1127,6 +1203,14 @@ void deleteIcons()
       delete zoomIcon;
       delete zoomAtIcon;
       delete sizeAllIcon;
+      delete midiCtrlMergeIcon;
+      delete midiCtrlMergeEraseIcon;
+      delete midiCtrlMergeEraseInclusiveIcon;
+      delete midiCtrlMergeEraseWysiwygIcon;
+      delete midiCtrlMergeCopyIcon;
+      delete midiCtrlMergeCopyEraseIcon;
+      delete midiCtrlMergeCopyEraseInclusiveIcon;
+      delete midiCtrlMergeCopyEraseWysiwygIcon;
 
       delete record1_Icon;
       delete record_on_Icon;
@@ -1164,6 +1248,8 @@ void deleteIcons()
       delete masterIcon;   
       delete filenewIcon;  
       delete filenewIconS; 
+      delete filecloseIcon;  
+      delete appexitIcon;  
       delete homeIcon;     
       delete backIcon;     
       delete forwardIcon;  
@@ -1201,8 +1287,6 @@ void deleteIcons()
       delete panicIcon;
       delete metronomeIcon;
       delete metronomeOffIcon;
-      delete metronomeQIcon;
-      delete metronomeOffQIcon;
 
       delete editcutIconSet;     
       delete editcopyIconSet;    
@@ -1221,6 +1305,8 @@ void deleteIcons()
       delete editpaste2TrackIcon;       
       delete editpasteClone2TrackIcon; 
       */
+      delete editpasteSIcon;
+      delete editpasteCloneSIcon;
 
       delete exitIcon;             
       delete exit1Icon;            
@@ -1484,6 +1570,13 @@ void deleteIcons()
       
       delete metronomeOffSVGIcon;
       delete metronomeOnSVGIcon;
+
+      //----------------------------------
+      // Cursors
+      //----------------------------------
+
+      delete editpasteSCursor;
+      delete editpasteCloneSCursor;
       }
 
 } // namespace MusEGui

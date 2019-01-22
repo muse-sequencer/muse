@@ -434,7 +434,7 @@ void populateMidiPorts()
         else
           mp->setDefaultInChannels(0);
 
-        if(++port_num == MIDI_PORTS)
+        if(++port_num == MusECore::MIDI_PORTS)
           return;
       }  
     }
@@ -476,7 +476,7 @@ void populateMidiPorts()
       else
         mp->setDefaultInChannels(0);
 
-      if(++port_num == MIDI_PORTS)
+      if(++port_num == MusECore::MIDI_PORTS)
         return;
     }
   }
@@ -498,9 +498,9 @@ Part* partFromSerialNumber(int serial)
 	return NULL;
 }
 
-bool any_event_selected(const set<const Part*>& parts, bool in_range)
+bool any_event_selected(const set<const Part*>& parts, bool in_range, RelevantSelectedEvents_t relevant)
 {
-  return !get_events(parts, in_range ? 3 : 1).empty();
+  return !get_events(parts, in_range ? 3 : 1, relevant).empty();
 }
 
 bool drummaps_almost_equal(const DrumMap* one, const DrumMap* two, int len)
@@ -827,18 +827,18 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
       QMenu* subp = 0;
       QAction *act = 0;
       QString name;
-      const int openConfigId = MIDI_PORTS;
-      const int defaultId    = MIDI_PORTS + 1;
+      const int openConfigId = MusECore::MIDI_PORTS;
+      const int defaultId    = MusECore::MIDI_PORTS + 1;
       
       // Warn if no devices available. Add an item to open midi config. 
       int pi = 0;
-      for( ; pi < MIDI_PORTS; ++pi)
+      for( ; pi < MusECore::MIDI_PORTS; ++pi)
       {
         MusECore::MidiDevice* md = MusEGlobal::midiPorts[pi].device();
         if(md && (md->rwFlags() & 1))   
           break;
       }
-      if(pi == MIDI_PORTS)
+      if(pi == MusECore::MIDI_PORTS)
       {
         act = p->addAction(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Warning: No output devices!")));
         act->setCheckable(false);
@@ -867,7 +867,7 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
       QVector<int> *cur_list;
       QVector<int> unused_list;
 
-      for (int i = 0; i < MIDI_PORTS; ++i)
+      for (int i = 0; i < MusECore::MIDI_PORTS; ++i)
       {
         MusECore::MidiPort* port = &MusEGlobal::midiPorts[i];
         MusECore::MidiDevice* md = port->device();
@@ -939,7 +939,7 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
         for (int i = 0; i < sz; ++i) 
         {
           const int port = cur_list->at(i);
-          if(port < 0 || port >= MIDI_PORTS)
+          if(port < 0 || port >= MusECore::MIDI_PORTS)
             continue;
           MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
           name = QString("%1:%2")
@@ -1019,7 +1019,7 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
             // do not permit numbers already used in other tracks!
             // except if it's only used in this track.
             int no;
-            for (no=0;no<MIDI_PORTS;no++)
+            for (no=0;no<MusECore::MIDI_PORTS;no++)
               if (MusEGlobal::midiPorts[no].device()==NULL)
               {
                 MusECore::ciMidiTrack it;
@@ -1035,10 +1035,10 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
                 // TODO Ports which are used by synths ??
               }
 
-            if (no==MIDI_PORTS)
+            if (no==MusECore::MIDI_PORTS)
             {
               delete p;
-              printf("THIS IS VERY UNLIKELY TO HAPPEN: no free midi ports! you have used all %i!\n",MIDI_PORTS);
+              printf("THIS IS VERY UNLIKELY TO HAPPEN: no free midi ports! you have used all %i!\n",MusECore::MIDI_PORTS);
               break;
             }
 
@@ -1060,7 +1060,7 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
               for(MusECore::iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i)
               {
                 // don't add devices which are used somewhere
-                if((*i)->midiPort() >= 0 && (*i)->midiPort() < MIDI_PORTS)
+                if((*i)->midiPort() >= 0 && (*i)->midiPort() < MusECore::MIDI_PORTS)
                   continue;
                   
                 switch((*i)->deviceType())
@@ -1163,7 +1163,7 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
             if(n < 0)              // Invalid item.
               break;
             
-            if(n == MIDI_PORTS)    // Show port config dialog.
+            if(n == MusECore::MIDI_PORTS)    // Show port config dialog.
             {
               MusEGlobal::muse->configMidiPorts();
               break;
@@ -1803,6 +1803,27 @@ QLine clipQLine(int x1, int y1, int x2, int y2, const QRect& rect)
     y2 = rect_bot;
 
   return QLine(x1, y1, x2, y2);
+}
+
+QRect normalizeQRect(const QRect& rect)
+{
+  int x = rect.x();
+  int y = rect.y();
+  int w = rect.width();
+  int h = rect.height();
+  if(w < 0)
+  {
+    x += w;
+    w = -w;
+  }
+  
+  if(h < 0)
+  {
+    y += h;
+    h = -h;
+  }
+  
+  return QRect(x, y, w, h);
 }
 
 //---------------------------------------------------------

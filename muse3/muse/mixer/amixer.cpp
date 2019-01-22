@@ -257,7 +257,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       
       connect(view, SIGNAL(layoutRequest()), SLOT(setSizing()));  
       
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
       
       initMixer();
@@ -504,6 +504,7 @@ void AudioMixerApp::moveStrip(Strip *s)
   DEBUG_MIXER(stderr, "Recreate stripList\n");
   if (cfg->displayOrder == MusEGlobal::MixerConfig::STRIPS_ARRANGER_VIEW) {
 
+    const int tracks_sz = MusEGlobal::song->tracks()->size();
     for (int i=0; i< stripList.size(); i++)
     {
       Strip *s2 = stripList.at(i);
@@ -516,7 +517,11 @@ void AudioMixerApp::moveStrip(Strip *s)
         // found relevant pos.
         int sTrack = MusEGlobal::song->tracks()->index(s->getTrack());
         int dTrack = MusEGlobal::song->tracks()->index(s2->getTrack());
-        MusEGlobal::audio->msgMoveTrack(sTrack, dTrack);
+        if (sTrack >= 0 && dTrack >= 0)   // sanity check
+        {
+          if (sTrack < tracks_sz && dTrack < tracks_sz)   // sanity check
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::MoveTrack, sTrack, dTrack));
+        }
       }
     }
 
@@ -868,21 +873,21 @@ QWidget* AudioMixerApp::setupComponentTabbing(QWidget* previousWidget)
 //   songChanged
 //---------------------------------------------------------
 
-void AudioMixerApp::songChanged(MusECore::SongChangedFlags_t flags)
+void AudioMixerApp::songChanged(MusECore::SongChangedStruct_t flags)
 {
-  DEBUG_MIXER(stderr, "AudioMixerApp::songChanged %llX\n", (long long)flags);
-  if (flags & SC_TRACK_REMOVED) {
+  DEBUG_MIXER(stderr, "AudioMixerApp::songChanged %llX\n", (long long)flags._flags);
+  if (flags._flags & SC_TRACK_REMOVED) {
         updateStripList();
   }
-  else if (flags & SC_TRACK_INSERTED) {
+  else if (flags._flags & SC_TRACK_INSERTED) {
         updateStripList();
   }
-  DEBUG_MIXER(stderr, "songChanged action = %ld\n", (long int)flags);
+  DEBUG_MIXER(stderr, "songChanged action = %ld\n", (long int)flags._flags);
     
   
   // This costly to do every time. Try to filter it according to required flags.
   // The only flags which would require a redraw, which is very costly, are the following:
-  if (flags & (SC_TRACK_REMOVED | SC_TRACK_INSERTED | SC_TRACK_MOVED
+  if (flags._flags & (SC_TRACK_REMOVED | SC_TRACK_INSERTED | SC_TRACK_MOVED
                //| SC_CHANNELS   // Channels due to one/two meters and peak labels can change the strip width.
                //| SC_AUX
               ))
@@ -893,7 +898,7 @@ void AudioMixerApp::songChanged(MusECore::SongChangedFlags_t flags)
         (*si)->songChanged(flags);
         }
 
-  if(flags & SC_TRACK_SELECTION)
+  if(flags._flags & SC_TRACK_SELECTION)
     updateSelectedStrips();
 }
 

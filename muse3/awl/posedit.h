@@ -20,17 +20,14 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //=============================================================================
 
-#ifndef __POSEDIT_H__
-#define __POSEDIT_H__
+#ifndef __AWL_POSEDIT_H__
+#define __AWL_POSEDIT_H__
 
-///#include "al/pos.h"
 #include "pos.h"
 
 #include <QAbstractSpinBox>
 
 namespace Awl {
-
-      ///using AL::Pos;
 
 //---------------------------------------------------------
 //   PosEdit
