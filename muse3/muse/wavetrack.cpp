@@ -263,7 +263,8 @@ bool WaveTrack::closeAllParts()
 //    return false if no data available
 //---------------------------------------------------------
 
-bool WaveTrack::getDataPrivate(unsigned pos, int channels, unsigned nframes, float** buffer)
+bool WaveTrack::getInputData(unsigned pos, int channels, unsigned nframes,
+                             bool* usedInChannelArray, float** buffer) //, bool peekOnly)
       {
 // TODO TODO TODO: Adjust compensation for when 'monitor' is on !!! It will change the latency.
         
@@ -276,94 +277,99 @@ bool WaveTrack::getDataPrivate(unsigned pos, int channels, unsigned nframes, flo
 // REMOVE Tim. latency. Changed.
 //       RouteList* rl = inRoutes();
       const RouteList* rl = inRoutes();
-      const int rl_sz = rl->size();
+      //const int rl_sz = rl->size();
 
       #ifdef NODE_DEBUG_PROCESS
       fprintf(stderr, "AudioTrack::getData name:%s channels:%d inRoutes:%d\n", name().toLatin1().constData(), channels, int(rl->size()));
       #endif
 
+      int dst_ch, dst_chs, src_ch, src_chs, fin_dst_chs, next_chan, i;
+//       unsigned int q;
+//       float fl;
+      unsigned long int l;
+      
       bool have_data = false;
-      bool used_in_chan_array[channels];
-      for(int i = 0; i < channels; ++i)
-        used_in_chan_array[i] = false;
+//       bool used_in_chan_array[channels];
+//       for(i = 0; i < channels; ++i)
+//         used_in_chan_array[i] = false;
 
-// REMOVE Tim. latency. Added.
-//       struct buf_pos_struct {
-//         int _channels;
-//         unsigned long _pos;
-//         buf_pos_struct(int channels, unsigned long pos) { _channels = channels; _pos = pos; }
-//       };
-//       int tot_chans = 0;
-//       for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+// // REMOVE Tim. latency. Added.
+// //       struct buf_pos_struct {
+// //         int _channels;
+// //         unsigned long _pos;
+// //         buf_pos_struct(int channels, unsigned long pos) { _channels = channels; _pos = pos; }
+// //       };
+// //       int tot_chans = 0;
+// //       for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+// //             if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+// //               continue;
+// //             AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+// //           ++tot_chans;
+// //       }
+// //       int idx = 0;
+//       unsigned long latency_array[rl_sz]; // REMOVE Tim. latency. Added.
+//       int latency_array_cnt = 0;
+//       unsigned long route_worst_case_latency = 0;
+//       for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir, ++latency_array_cnt) {
 //             if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
 //               continue;
 //             AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
-//           ++tot_chans;
-//       }
-//       int idx = 0;
-      unsigned long latency_array[rl_sz]; // REMOVE Tim. latency. Added.
-      int latency_array_cnt = 0;
-      unsigned long route_worst_case_latency = 0;
-      for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir, ++latency_array_cnt) {
-            if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
-              continue;
-            AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
-//             const int atrack_out_channels = atrack->totalOutChannels();
-//             const int src_ch = ir->remoteChannel <= -1 ? 0 : ir->remoteChannel;
-//             const int src_chs = ir->channels;
-//             int fin_src_chs = src_chs;
-//             if(src_ch + fin_src_chs >  atrack_out_channels)
-//               fin_src_chs = atrack_out_channels - src_ch;
-//             const int next_src_chan = src_ch + fin_src_chs;
-//             // The goal is to have equal latency output on all channels on this track.
-//             for(int i = src_ch; i < next_src_chan; ++i)
-//             {
-//               const float lat = atrack->trackLatency(i);
-//               if(lat > worst_case_latency)
-//                 worst_case_latency = lat;
+// //             const int atrack_out_channels = atrack->totalOutChannels();
+// //             const int src_ch = ir->remoteChannel <= -1 ? 0 : ir->remoteChannel;
+// //             const int src_chs = ir->channels;
+// //             int fin_src_chs = src_chs;
+// //             if(src_ch + fin_src_chs >  atrack_out_channels)
+// //               fin_src_chs = atrack_out_channels - src_ch;
+// //             const int next_src_chan = src_ch + fin_src_chs;
+// //             // The goal is to have equal latency output on all channels on this track.
+// //             for(int i = src_ch; i < next_src_chan; ++i)
+// //             {
+// //               const float lat = atrack->trackLatency(i);
+// //               if(lat > worst_case_latency)
+// //                 worst_case_latency = lat;
+// //             }
+//             //const unsigned long lat = atrack->outputLatency();
+//             //latency_array[latency_array_cnt] = lat;
+//             //if(lat > route_worst_case_latency)
+//             //  route_worst_case_latency = lat;
+//             const TrackLatencyInfo li = atrack->getLatencyInfo();
+//             latency_array[latency_array_cnt] = li._outputLatency;
+//             if(li._outputLatency > route_worst_case_latency)
+//               route_worst_case_latency = li._outputLatency;
 //             }
-            //const unsigned long lat = atrack->outputLatency();
-            //latency_array[latency_array_cnt] = lat;
-            //if(lat > route_worst_case_latency)
-            //  route_worst_case_latency = lat;
-            const TrackLatencyInfo li = atrack->getLatencyInfo();
-            latency_array[latency_array_cnt] = li._outputLatency;
-            if(li._outputLatency > route_worst_case_latency)
-              route_worst_case_latency = li._outputLatency;
-            }
-            
-      // Adjust for THIS track's contribution to latency.
-      // The goal is to have equal latency output on all channels on this track.
-      const int track_out_channels = totalOutChannels();
-      //const int track_out_channels = totalProcessBuffers();
-      unsigned long track_worst_case_chan_latency = 0;
-      for(int i = 0; i < track_out_channels; ++i)
-      {
-        const unsigned long lat = trackLatency(i);
-        if(lat > track_worst_case_chan_latency)
-          track_worst_case_chan_latency = lat;
-      }
-      
-      //return worst_case_latency;
-      //latency_array[0] = latency_array[0]; // REMOVE. Just to compile...
-      
-      const unsigned long total_latency = route_worst_case_latency + track_worst_case_chan_latency;
-      
-      
-      // Now prepare the latency array to be passed to the compensator's writer,
-      //  by adjusting each route latency value. ie. the route with the worst-case
-      //  latency will get ZERO delay, while routes having smaller latency will get
-      //  MORE delay, to match all the signals' timings together.
-      for(int i = 0; i < rl_sz; ++i)
-        latency_array[i] = total_latency - latency_array[i];
-      
-
-      // REMOVE Tim. latency. Added.
-      latency_array_cnt = 0;
+//             
+//       // Adjust for THIS track's contribution to latency.
+//       // The goal is to have equal latency output on all channels on this track.
+//       const int track_out_channels = totalOutChannels();
+//       //const int track_out_channels = totalProcessBuffers();
+//       unsigned long track_worst_case_chan_latency = 0;
+//       for(int i = 0; i < track_out_channels; ++i)
+//       {
+//         const unsigned long lat = trackLatency(i);
+//         if(lat > track_worst_case_chan_latency)
+//           track_worst_case_chan_latency = lat;
+//       }
+//       
+//       //return worst_case_latency;
+//       //latency_array[0] = latency_array[0]; // REMOVE. Just to compile...
+//       
+//       const unsigned long total_latency = route_worst_case_latency + track_worst_case_chan_latency;
+//       
+//       
+//       // Now prepare the latency array to be passed to the compensator's writer,
+//       //  by adjusting each route latency value. ie. the route with the worst-case
+//       //  latency will get ZERO delay, while routes having smaller latency will get
+//       //  MORE delay, to match all the signals' timings together.
+//       for(int i = 0; i < rl_sz; ++i)
+//         latency_array[i] = total_latency - latency_array[i];
+//       
+// 
+//       // REMOVE Tim. latency. Added.
+//       latency_array_cnt = 0;
       
 // REMOVE Tim. latency. Changed.
-//       for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
-      for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir, ++latency_array_cnt) {
+      for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+      //for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir, ++latency_array_cnt) {
 // REMOVE Tim. latency. Changed.
 //             if(ir->track->isMidiTrack())
             if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
@@ -372,14 +378,14 @@ bool WaveTrack::getDataPrivate(unsigned pos, int channels, unsigned nframes, flo
             // Only this track knows how many destination channels there are,
             //  while only the route track knows how many source channels there are.
             // So take care of the destination channels here, and let the route track handle the source channels.
-            const int dst_ch = ir->channel <= -1 ? 0 : ir->channel;
+            dst_ch = ir->channel <= -1 ? 0 : ir->channel;
             if(dst_ch >= channels)
               continue;
-            const int dst_chs = ir->channels <= -1 ? channels : ir->channels;
-            const int src_ch = ir->remoteChannel <= -1 ? 0 : ir->remoteChannel;
-            const int src_chs = ir->channels;
+            dst_chs = ir->channels <= -1 ? channels : ir->channels;
+            src_ch = ir->remoteChannel <= -1 ? 0 : ir->remoteChannel;
+            src_chs = ir->channels;
 
-            int fin_dst_chs = dst_chs;
+            fin_dst_chs = dst_chs;
             if(dst_ch + fin_dst_chs > channels)
               fin_dst_chs = channels - dst_ch;
 
@@ -403,37 +409,56 @@ bool WaveTrack::getDataPrivate(unsigned pos, int channels, unsigned nframes, flo
             // By now, each copied channel should have the same latency, 
             //  so we use this convenient common-latency version of write.
             // TODO: Make it per-channel.
-            if(_latencyComp)
-              _latencyComp->write(nframes, latency_array[latency_array_cnt], buffer);
+//             if(_latencyComp)
+//               _latencyComp->write(nframes, latency_array[latency_array_cnt], buffer);
             
-            const int next_chan = dst_ch + fin_dst_chs;
-            for(int i = dst_ch; i < next_chan; ++i)
-              used_in_chan_array[i] = true;
+            // Prepare the latency value to be passed to the compensator's writer,
+            //  by adjusting each route latency value. ie. the route with the worst-case
+            //  latency will get ZERO delay, while routes having smaller latency will get
+            //  MORE delay, to match all the signal timings together.
+            // The route's audioLatencyOut should have already been calculated and
+            //  conveniently stored in the route.
+            if((long int)ir->audioLatencyOut < 0)
+              l = 0;
+            else
+              l = ir->audioLatencyOut;
+            _latencyComp->write(nframes, l + latencyCompWriteOffset(), buffer);
+            
+            next_chan = dst_ch + fin_dst_chs;
+            for(i = dst_ch; i < next_chan; ++i)
+            // REMOVE Tim. latency. Changed.
+//               used_in_chan_array[i] = true;
+              usedInChannelArray[i] = true;
             have_data = true;
             }
 
-//       // Fill unused channels with silence.
-      for(int i = 0; i < channels; ++i)
-      {
-        if(used_in_chan_array[i])
-        {
-          // REMOVE Tim. latency. Added.
-          // Read back the latency compensated signals, using the buffers in-place.
-          if(_latencyComp)
-            _latencyComp->read(i, nframes, buffer[i]);
-        
-          continue;
-        }
-        // Fill unused channels with silence.
-        // Channel is unused. Zero the supplied buffer.
-        if(MusEGlobal::config.useDenormalBias)
-        {
-          for(unsigned int q = 0; q < nframes; ++q)
-            buffer[i][q] = MusEGlobal::denormalBias;
-        }
-        else
-          memset(buffer[i], 0, sizeof(float) * nframes);
-      }
+// REMOVE Tim. latency. Removed.
+//       for(i = 0; i < channels; ++i)
+//       {
+//         if(used_in_chan_array[i])
+//         {
+//           // REMOVE Tim. latency. Added.
+//           // Read back the latency compensated signals, using the buffers in-place.
+//           if(_latencyComp)
+//           {
+//             if(peekOnly)
+//               _latencyComp->peek(i, nframes, buffer[i]);
+//             else
+//               _latencyComp->read(i, nframes, buffer[i]);
+//           }
+//         
+//           continue;
+//         }
+//         // Fill unused channels with silence.
+//         // Channel is unused. Zero the supplied buffer.
+//         if(MusEGlobal::config.useDenormalBias)
+//         {
+//           for(q = 0; q < nframes; ++q)
+//             buffer[i][q] = MusEGlobal::denormalBias;
+//         }
+//         else
+//           memset(buffer[i], 0, sizeof(float) * nframes);
+//       }
 
       return have_data;
       }
@@ -448,7 +473,16 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
   
   const bool track_rec_flag = recordFlag();
   const bool track_rec_monitor = recMonitor();        // Separate monitor and record functions.
+  const bool is_playing = MusEGlobal::audio->isPlaying();
 
+  //---------------------------------------------
+  // Note that the supplied buffers (bp) are at first
+  //  used as temporary storage but are later written
+  //  with final data. The reading and writing of fifo
+  //  file data wants linear memory whereas the latency
+  //  compensator uses wrap-around memory.
+  //---------------------------------------------
+  
   //---------------------------------------------
   // Contributions to data from input sources:
   //---------------------------------------------
@@ -458,8 +492,13 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
   {
 // REMOVE Tim. latency. Changed.
 //     have_data = AudioTrack::getData(framePos, dstChannels, nframe, bp);
+    bool used_in_chan_array[dstChannels];
+    for(int i = 0; i < dstChannels; ++i)
+      used_in_chan_array[i] = false;
+    
     // The data retrieved by this will already be latency compensated.
-    have_data = getDataPrivate(framePos, dstChannels, nframe, bp);
+    //have_data = getInputData(framePos, dstChannels, nframe, bp, is_playing);
+    have_data = getInputData(framePos, dstChannels, nframe, used_in_chan_array, bp);
     
     // Do we want to record the incoming data?
 // REMOVE Tim. latency. Changed.
@@ -477,6 +516,39 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
 // REMOVE Tim. latency. Changed.
 //         if(fifo.put(dstChannels, nframe, bp, MusEGlobal::audio->pos().frame()))
 //           printf("WaveTrack::getData(%d, %d, %d): fifo overrun\n", framePos, dstChannels, nframe);
+        unsigned int q;
+        for(int i = 0; i < dstChannels; ++i)
+        {
+          if(used_in_chan_array[i])
+          {
+            // REMOVE Tim. latency. Added.
+            // Read back the latency compensated signals, using the buffers in-place.
+            if(_latencyComp)
+            {
+              //if(peekOnly)
+              if(is_playing)
+                _latencyComp->peek(i, nframe, bp[i]);
+              else
+                _latencyComp->read(i, nframe, bp[i]);
+            }
+          
+            //continue;
+          }
+          else
+          {
+            // Fill unused channels with silence.
+            // Channel is unused. Zero the supplied buffer.
+            if(MusEGlobal::config.useDenormalBias)
+            {
+              for(q = 0; q < nframe; ++q)
+                bp[i][q] = MusEGlobal::denormalBias;
+            }
+  // REMOVE Tim. latency. Removed. Not required. The latency compensator already automatically clears to zero.
+            else
+              memset(bp[i], 0, sizeof(float) * nframe);
+          }
+        }
+
         
         // REMOVE Tim. latency. Added.
         fprintf(stderr, "WaveTrack::getData: framePos:%d audio pos frame:%d\n", framePos, MusEGlobal::audio->pos().frame());
@@ -491,7 +563,7 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
   // Contributions to data from playback sources:
   //---------------------------------------------
 
- if(!MusEGlobal::audio->isPlaying())
+  if(!is_playing)
   {
     if(!have_data || (track_rec_monitor && have_data))
       return have_data;
@@ -518,6 +590,9 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
         pf_buf[i] = audioOutDummyBuf;
       // Indicate do not seek file before each read.
       fetchData(framePos, nframe, pf_buf, false, do_overwrite);
+      // Advance any peeked compensator channels now.
+      if(_latencyComp)
+        _latencyComp->advance(nframe);
       // Just return whether we have input sources data.
       return have_data;
     }
@@ -526,6 +601,9 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
       // Not muted. Fetch the data into the given buffers.
       // Indicate do not seek file before each read.
       fetchData(framePos, nframe, bp, false, do_overwrite);
+      // Advance any peeked compensator channels now.
+      if(_latencyComp)
+        _latencyComp->advance(nframe);
       // We have data.
       return true;
     }
@@ -536,6 +614,9 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
     if(_prefetchFifo.get(dstChannels, nframe, pf_buf, &pos))
     {
       fprintf(stderr, "WaveTrack::getData(%s) (A) fifo underrun\n", name().toLocal8Bit().constData());
+      // Advance any peeked compensator channels now.
+      if(_latencyComp)
+        _latencyComp->advance(nframe);
       return have_data;
     }
     if(pos != framePos)
@@ -548,6 +629,9 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
         {
           fprintf(stderr, "WaveTrack::getData(%s) (B) fifo underrun\n",
               name().toLocal8Bit().constData());
+          // Advance any peeked compensator channels now.
+          if(_latencyComp)
+            _latencyComp->advance(nframe);
           return have_data;
         }
       }
@@ -555,6 +639,9 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
 
     if(isMute())
     {
+      // Advance any peeked compensator channels now.
+      if(_latencyComp)
+        _latencyComp->advance(nframe);
       // We are muted. We need to let the fetching progress, but discard the data.
       // Just return whether we have input sources data.
       return have_data;
@@ -570,12 +657,179 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
       for(int i = 0; i < dstChannels; ++i)
         AL::dsp->mix(bp[i], pf_buf[i], nframe);
     }
+    // Advance any peeked compensator channels now.
+    if(_latencyComp)
+      _latencyComp->advance(nframe);
     // We have data.
     return true;
   }
 
+  // Advance any peeked compensator channels now.
+  //if(_latencyComp)
+  //  _latencyComp->advance(nframe);
   return have_data;
 }
+
+// //---------------------------------------------------------
+// //   getData
+// //---------------------------------------------------------
+// 
+// bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, float** bp)
+// {
+//   bool have_data = false;
+//   
+//   const bool track_rec_flag = recordFlag();
+//   const bool track_rec_monitor = recMonitor();        // Separate monitor and record functions.
+//   const bool is_playing = MusEGlobal::audio->isPlaying();
+// 
+//   //---------------------------------------------
+//   // Contributions to data from input sources:
+//   //---------------------------------------------
+// 
+//   // Gather input data from connected routes.
+//   if((MusEGlobal::song->bounceTrack != this) && !noInRoute())
+//   {
+// // REMOVE Tim. latency. Changed.
+// //     have_data = AudioTrack::getData(framePos, dstChannels, nframe, bp);
+//     // The data retrieved by this will already be latency compensated.
+//     have_data = getDataPrivate(framePos, dstChannels, nframe, bp, is_playing);
+//     
+//     // Do we want to record the incoming data?
+// // REMOVE Tim. latency. Changed.
+// //     if(have_data && track_rec_flag && MusEGlobal::audio->isRecording() && recFile())
+//     if(have_data && track_rec_flag && 
+//       (MusEGlobal::audio->isRecording() ||
+//        (MusEGlobal::song->record() && MusEGlobal::extSyncFlag.value() && MusEGlobal::midiSyncContainer.isPlaying())) && 
+//       recFile())
+//     {
+//       if(MusEGlobal::audio->freewheel())
+//       {
+//       }
+//       else
+//       {
+// // REMOVE Tim. latency. Changed.
+// //         if(fifo.put(dstChannels, nframe, bp, MusEGlobal::audio->pos().frame()))
+// //           printf("WaveTrack::getData(%d, %d, %d): fifo overrun\n", framePos, dstChannels, nframe);
+//         
+//         // REMOVE Tim. latency. Added.
+//         fprintf(stderr, "WaveTrack::getData: framePos:%d audio pos frame:%d\n", framePos, MusEGlobal::audio->pos().frame());
+//         
+//         // This will adjust for the latency before putting.
+//         putFifo(dstChannels, nframe, bp);
+//       }
+//     }
+//   }
+// 
+//   //---------------------------------------------
+//   // Contributions to data from playback sources:
+//   //---------------------------------------------
+// 
+//   if(!is_playing)
+//   {
+//     if(!have_data || (track_rec_monitor && have_data))
+//       return have_data;
+//     return false;
+//   }
+// 
+//   // If there is no input source data or we do not want to monitor it,
+//   //  overwrite the supplied buffers rather than mixing with them.
+//   const bool do_overwrite = !have_data || !track_rec_monitor;
+// 
+//   // Set the return value.
+//   have_data = !have_data || (track_rec_monitor && have_data);
+// 
+//   float* pf_buf[dstChannels];
+//   
+//   if(MusEGlobal::audio->freewheel())
+//   {
+//     // when freewheeling, read data direct from file:
+//     if(isMute())
+//     {
+//       // We are muted. We need to let the fetching progress, but discard the data.
+//       for(int i = 0; i < dstChannels; ++i)
+//         // Set to the audio dummy buffer.
+//         pf_buf[i] = audioOutDummyBuf;
+//       // Indicate do not seek file before each read.
+//       fetchData(framePos, nframe, pf_buf, false, do_overwrite);
+//       // Advance any peeked compensator channels now.
+//       if(_latencyComp)
+//         _latencyComp->advance(nframe);
+//       // Just return whether we have input sources data.
+//       return have_data;
+//     }
+//     else
+//     {
+//       // Not muted. Fetch the data into the given buffers.
+//       // Indicate do not seek file before each read.
+//       fetchData(framePos, nframe, bp, false, do_overwrite);
+//       // Advance any peeked compensator channels now.
+//       if(_latencyComp)
+//         _latencyComp->advance(nframe);
+//       // We have data.
+//       return true;
+//     }
+//   }
+//   else
+//   {
+//     unsigned pos;
+//     if(_prefetchFifo.get(dstChannels, nframe, pf_buf, &pos))
+//     {
+//       fprintf(stderr, "WaveTrack::getData(%s) (A) fifo underrun\n", name().toLocal8Bit().constData());
+//       // Advance any peeked compensator channels now.
+//       if(_latencyComp)
+//         _latencyComp->advance(nframe);
+//       return have_data;
+//     }
+//     if(pos != framePos)
+//     {
+//       if(MusEGlobal::debugMsg)
+//         fprintf(stderr, "fifo get error expected %d, got %d\n", framePos, pos);
+//       while (pos < framePos)
+//       {
+//         if(_prefetchFifo.get(dstChannels, nframe, pf_buf, &pos))
+//         {
+//           fprintf(stderr, "WaveTrack::getData(%s) (B) fifo underrun\n",
+//               name().toLocal8Bit().constData());
+//           // Advance any peeked compensator channels now.
+//           if(_latencyComp)
+//             _latencyComp->advance(nframe);
+//           return have_data;
+//         }
+//       }
+//     }
+// 
+//     if(isMute())
+//     {
+//       // Advance any peeked compensator channels now.
+//       if(_latencyComp)
+//         _latencyComp->advance(nframe);
+//       // We are muted. We need to let the fetching progress, but discard the data.
+//       // Just return whether we have input sources data.
+//       return have_data;
+//     }
+// 
+//     if(do_overwrite)
+//     {
+//       for(int i = 0; i < dstChannels; ++i)
+//         AL::dsp->cpy(bp[i], pf_buf[i], nframe, MusEGlobal::config.useDenormalBias);
+//     }
+//     else
+//     {
+//       for(int i = 0; i < dstChannels; ++i)
+//         AL::dsp->mix(bp[i], pf_buf[i], nframe);
+//     }
+//     // Advance any peeked compensator channels now.
+//     if(_latencyComp)
+//       _latencyComp->advance(nframe);
+//     // We have data.
+//     return true;
+//   }
+// 
+//   // Advance any peeked compensator channels now.
+//   //if(_latencyComp)
+//   //  _latencyComp->advance(nframe);
+//   return have_data;
+// }
 
 // REMOVE Tim. latency. Added.
 // //---------------------------------------------------------

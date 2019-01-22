@@ -1511,17 +1511,22 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
       // use supplied buffers
 
 // REMOVE Tim. latency. Changed.
-      RouteList* rl = inRoutes();
-      //const RouteList* rl = inRoutes();
+//       RouteList* rl = inRoutes();
+      const RouteList* rl = inRoutes();
       //const int rl_sz = rl->size();
 
       #ifdef NODE_DEBUG_PROCESS
       fprintf(stderr, "AudioTrack::getData name:%s channels:%d inRoutes:%d\n", name().toLatin1().constData(), channels, int(rl->size()));
       #endif
 
+      int dst_ch, dst_chs, src_ch, src_chs, fin_dst_chs, next_chan, i;
+      unsigned int q;
+//       float fl;
+      unsigned long int l;
+      
       bool have_data = false;
       bool used_in_chan_array[channels];
-      for(int i = 0; i < channels; ++i)
+      for(i = 0; i < channels; ++i)
         used_in_chan_array[i] = false;
 
 // // REMOVE Tim. latency. Added.
@@ -1618,10 +1623,6 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
       // The latency info should have already been calculated so that this returns the cached values.
 //       const TrackLatencyInfo li = getLatencyInfo();
       
-      int dst_ch, dst_chs, src_ch, src_chs, fin_dst_chs, next_chan, i;
-      unsigned int q;
-//       float fl;
-      unsigned long int l;
 // REMOVE Tim. latency. Changed.
 //       for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
       //for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir, ++latency_array_cnt) {
@@ -1695,7 +1696,6 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
             have_data = true;
             }
 
-//       // Fill unused channels with silence.
       for(i = 0; i < channels; ++i)
       {
         if(used_in_chan_array[i])

@@ -1006,7 +1006,10 @@ class WaveTrack : public AudioTrack {
       unsigned long int _waveLatencyOut;
 
       void internal_assign(const Track&, int flags);
-      bool getDataPrivate(unsigned, int, unsigned, float**);
+      // Writes data from connected input routes to the track's latency compensator.
+      // It uses buffer for temporary storage.
+      bool getInputData(unsigned pos, int channels, unsigned nframes,
+                        bool* usedInChannelArray, float** buffer);
       
    public:
 
