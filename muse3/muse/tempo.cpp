@@ -29,7 +29,6 @@
 #include "globals.h"
 #include "gconfig.h"
 #include "xml.h"
-#include "operations.h"
 
 #include <stdint.h>
 #include "large_int.h"
@@ -111,36 +110,6 @@ void TempoList::add(unsigned tick, TEvent* e, bool do_normalize)
 }
 
 //---------------------------------------------------------
-//   addOperation
-//---------------------------------------------------------
-
-void TempoList::addOperation(unsigned tick, int tempo, PendingOperationList& ops)
-{
-  if (tick > MAX_TICK)
-    tick = MAX_TICK;
-  iTEvent e = upper_bound(tick);
-
-  if(tick == e->second->tick)
-    ops.add(PendingOperationItem(this, e, tempo, PendingOperationItem::ModifyTempo));
-  else 
-  {
-    PendingOperationItem poi(this, 0, tick, PendingOperationItem::AddTempo);
-    iPendingOperation ipo = ops.findAllocationOp(poi);
-    if(ipo != ops.end())
-    {
-      PendingOperationItem& poi = *ipo;
-      // Simply replace the value.
-      poi._tempo_event->tempo = tempo;
-    }
-    else
-    {
-      poi._tempo_event = new TEvent(tempo, tick); // These are the desired tick and tempo but...
-      ops.add(poi);                               //  add will do the proper swapping with next event.
-    }
-  }
-}
-
-//---------------------------------------------------------
 //   TempoList::normalize
 //---------------------------------------------------------
 
@@ -157,7 +126,7 @@ void TempoList::normalize()
             frame += muse_multiply_64_div_64_to_64(
               numer * (uint64_t)e->second->tempo, 
               e->first - e->second->tick,
-              denom, true);
+              denom, LargeIntRoundUp);
             }
       }
 
@@ -280,22 +249,6 @@ void TempoList::del(iTEvent e, bool do_normalize)
       }
 
 //---------------------------------------------------------
-//   delOperation
-//---------------------------------------------------------
-
-void TempoList::delOperation(unsigned tick, PendingOperationList& ops)
-{
-  iTEvent e = find(tick);
-  if (e == end()) {
-        printf("TempoList::delOperation tick:%d not found\n", tick);
-        return;
-        }
-  PendingOperationItem poi(this, e, PendingOperationItem::DeleteTempo);
-  // NOTE: Deletion is done in post-RT stage 3.
-  ops.add(poi);
-}
-
-//---------------------------------------------------------
 //   setTempo
 //    called from transport window
 //    & slave mode tempo changes
@@ -375,7 +328,7 @@ unsigned TempoList::ticks2frames(unsigned ticks, unsigned tempoTick) const
   // Round up so that the reciprocal function (frame to tick) matches value for value.
   return muse_multiply_64_div_64_to_64(
     (uint64_t)MusEGlobal::sampleRate * (uint64_t)tempo(tempoTick), ticks,
-    (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL, true);
+    (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL, LargeIntRoundUp);
 }
 
 // TODO
@@ -417,12 +370,12 @@ unsigned TempoList::tick2frame(unsigned tick, int* sn) const
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
             f = i->second->frame + muse_multiply_64_div_64_to_64(
-              numer * (uint64_t)i->second->tempo, tick - i->second->tick, denom, true);
+              numer * (uint64_t)i->second->tempo, tick - i->second->tick, denom, LargeIntRoundUp);
             }
       else {
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
-            f = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick, denom, true);
+            f = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick, denom, LargeIntRoundUp);
             }
       if (sn)
             *sn = _tempoSN;
@@ -434,16 +387,16 @@ unsigned TempoList::tick2frame(unsigned tick, int* sn) const
 //    return cached value t if list did not change
 //---------------------------------------------------------
 
-unsigned TempoList::frame2tick(unsigned frame, unsigned t, int* sn) const
+unsigned TempoList::frame2tick(unsigned frame, unsigned t, int* sn, LargeIntRoundMode round_mode) const
       {
-      return (*sn == _tempoSN) ? t : frame2tick(frame, sn);
+      return (*sn == _tempoSN) ? t : frame2tick(frame, sn, round_mode);
       }
 
 //---------------------------------------------------------
 //   frame2tick
 //---------------------------------------------------------
 
-unsigned TempoList::frame2tick(unsigned frame, int* sn) const
+unsigned TempoList::frame2tick(unsigned frame, int* sn, LargeIntRoundMode round_mode) const
       {
       unsigned tick;
       const uint64_t numer = (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL;
@@ -459,11 +412,13 @@ unsigned TempoList::frame2tick(unsigned frame, int* sn) const
                         break;
                   e = ee;
                   }
+            // Normally do not round up here since (audio) frame resolution is higher than tick resolution.
             tick = e->second->tick + muse_multiply_64_div_64_to_64(
-              numer, frame - e->second->frame, denom * (uint64_t)e->second->tempo);
+              numer, frame - e->second->frame, denom * (uint64_t)e->second->tempo, round_mode);
             }
       else
-            tick = muse_multiply_64_div_64_to_64(numer, frame, denom * (uint64_t)_tempo);
+            // Normally do not round up here since (audio) frame resolution is higher than tick resolution.
+            tick = muse_multiply_64_div_64_to_64(numer, frame, denom * (uint64_t)_tempo, round_mode);
       if (sn)
             *sn = _tempoSN;
       return tick;
@@ -488,7 +443,7 @@ unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn) con
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
             f1 = i->second->frame + muse_multiply_64_div_64_to_64(
-              numer * (uint64_t)i->second->tempo, tick1 - i->second->tick, denom, true);
+              numer * (uint64_t)i->second->tempo, tick1 - i->second->tick, denom, LargeIntRoundUp);
 
             i = upper_bound(tick2);
             if (i == end()) {
@@ -497,15 +452,15 @@ unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn) con
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
             f2 = i->second->frame + muse_multiply_64_div_64_to_64(
-              numer * (uint64_t)i->second->tempo, tick2 - i->second->tick, denom, true);
+              numer * (uint64_t)i->second->tempo, tick2 - i->second->tick, denom, LargeIntRoundUp);
             }
       else {
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
-            f1 = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick1, denom, true);
+            f1 = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick1, denom, LargeIntRoundUp);
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
-            f2 = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick2, denom, true);
+            f2 = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick2, denom, LargeIntRoundUp);
             }
       if (sn)
             *sn = _tempoSN;
@@ -519,7 +474,7 @@ unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn) con
 //   deltaFrame2tick
 //---------------------------------------------------------
 
-unsigned TempoList::deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn) const
+unsigned TempoList::deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn, LargeIntRoundMode round_mode) const
       {
       unsigned tick1, tick2;
       const uint64_t numer = (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL;
@@ -535,8 +490,9 @@ unsigned TempoList::deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn) c
                         break;
                   e = ee;
                   }
+            // Normally do not round up here since (audio) frame resolution is higher than tick resolution.
             tick1 = e->second->tick + muse_multiply_64_div_64_to_64(
-              numer, frame1 - e->second->frame, denom * (uint64_t)e->second->tempo);
+              numer, frame1 - e->second->frame, denom * (uint64_t)e->second->tempo, round_mode);
             
             for (e = begin(); e != end();) {
                   ciTEvent ee = e;
@@ -547,13 +503,15 @@ unsigned TempoList::deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn) c
                         break;
                   e = ee;
                   }
+            // Normally do not round up here since (audio) frame resolution is higher than tick resolution.
             tick2 = e->second->tick + muse_multiply_64_div_64_to_64(
-              numer, frame2 - e->second->frame, denom * (uint64_t)e->second->tempo);
+              numer, frame2 - e->second->frame, denom * (uint64_t)e->second->tempo, round_mode);
             }
       else
       {
-            tick1 = muse_multiply_64_div_64_to_64(numer, frame1, denom * (uint64_t)_tempo);
-            tick2 = muse_multiply_64_div_64_to_64(numer, frame2, denom * (uint64_t)_tempo);
+            // Normally do not round up here since (audio) frame resolution is higher than tick resolution.
+            tick1 = muse_multiply_64_div_64_to_64(numer, frame1, denom * (uint64_t)_tempo, round_mode);
+            tick2 = muse_multiply_64_div_64_to_64(numer, frame2, denom * (uint64_t)_tempo, round_mode);
       }
       if (sn)
             *sn = _tempoSN;

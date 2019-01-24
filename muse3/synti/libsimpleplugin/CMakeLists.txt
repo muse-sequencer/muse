@@ -92,6 +92,7 @@ target_link_libraries(simpler_plugingui
       )
       
 target_link_libraries(simpler_plugin
+      plugin_cache_reader_module
       ${QT_LIBRARIES}
       dl
       )

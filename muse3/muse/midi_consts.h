@@ -62,7 +62,7 @@ enum {
       ME_META_TEXT_5_LYRIC = 0x05,
       ME_META_TEXT_6_MARKER = 0x06,
       ME_META_TEXT_7_CUE_POINT = 0x07,
-      ME_META_TEXT_8 = 0x08,
+      ME_META_TEXT_8_PROGRAM_NAME = 0x08,
       ME_META_TEXT_9_DEVICE_NAME = 0x09,
       ME_META_TEXT_A = 0x0a,
       ME_META_TEXT_B = 0x0b,

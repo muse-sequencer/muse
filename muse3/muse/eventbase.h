@@ -76,6 +76,10 @@ class EventBase : public PosLen {
       void move(int offset);
       
       virtual bool isSimilarTo(const EventBase& other) const = 0;
+      virtual bool isSimilarType(const EventBase& other,
+                              bool compareTime = false,
+                              bool compareA = false, bool compareB = false, bool compareC = false,
+                              bool compareWavePath = false, bool compareWavePos = false, bool compareWaveStartPos = false) const;
 
       virtual void read(Xml&) = 0;
       virtual void write(int, Xml&, const Pos& offset, bool forcePath = false) const = 0;

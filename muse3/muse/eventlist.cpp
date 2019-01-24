@@ -75,6 +75,12 @@ iEvent EventList::add(Event event)
       // There was a bug that all the wave events' tick values were not correct,
       // since they were computed BEFORE the tempo map was loaded.
       
+      // From cppreference.com about the insert hint parameter (we now use C++11):
+      // hint -
+      // iterator, used as a suggestion as to where to start the search (until C++11)
+      // iterator to the position before which the new element will be inserted (since C++11)
+      //                          ------
+
       if(event.type() == Wave)
         return insert(std::pair<const unsigned, Event> (event.frame(), event));          
 
@@ -86,11 +92,48 @@ iEvent EventList::add(Event event)
       }
       else
       {
-        iEvent i = lower_bound(key);
-        while(i != end() && i->first == key && i->second.type() != Note)
-          ++i;
-        return insert(i, std::pair<const unsigned, Event> (key, event));   
+// REMOVE Tim. citem. ctl. Added. It seems we must allow multiple controller events
+//  if they are to be moved, dragged, and dropped.
+//         if(event.type() == Controller)
+//         {
+//           EventRange er = equal_range(key);
+//           iEvent i = er.second;
+//           iEvent loc = i;
+//           const int data_a = event.dataA();
+//           while(i != er.first)
+//           {
+//             --i;
+//             // Special: There must be only ONE value per controller per position.
+//             // If there is already a controller value for this controller number
+//             //  at this position, just replace it and return.
+//             //
+//             // This is meant as a last line of defense against accidental multiple
+//             //  controller values at a given time. The rule of thumb when executing
+//             //  add event commands is you must check beforehand whether an event
+//             //  exists and tell the command system to delete it so that the undo
+//             //  system can remember what was replaced.
+//             // In some cases the command/undo system may do that for you.
+//             // But simply relying on this low-level catch-all is not good, the undo
+//             //  system won't remember what was deleted.
+//             if(i->second.type() == Controller && i->second.dataA() == data_a)
+//             {
+//               i->second.setB(event.dataB());
+//               return i;
+//             }
+//             if(i->second.type() == Note)
+//               loc = i;
+//           }
+//           return insert(loc, std::pair<const unsigned, Event> (key, event));   
+//         }
+//         else
+//         {        
+          iEvent i = lower_bound(key);
+          while(i != end() && i->first == key && i->second.type() != Note)
+            ++i;
+          return insert(i, std::pair<const unsigned, Event> (key, event));   
+//         }
       }
+      return end();
       }
 
 //---------------------------------------------------------
@@ -100,7 +143,8 @@ iEvent EventList::add(Event event)
 void EventList::move(Event& event, unsigned tick)
       {
       iEvent i = find(event);
-      erase(i);
+      if(i != end())
+        erase(i);
       
       if(event.type() == Wave)
       {
@@ -130,7 +174,7 @@ void EventList::move(Event& event, unsigned tick)
 
 iEvent EventList::find(const Event& event)
 {
-      std::pair<iEvent,iEvent> range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+      EventRange range = equal_range(event.posValue());
 
       for (iEvent i = range.first; i != range.second; ++i) {
             if (i->second == event)
@@ -141,7 +185,7 @@ iEvent EventList::find(const Event& event)
 
 ciEvent EventList::find(const Event& event) const
       {
-      EventRange range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+      cEventRange range = equal_range(event.posValue());
 
       
       for (ciEvent i = range.first; i != range.second; ++i) {
@@ -153,7 +197,7 @@ ciEvent EventList::find(const Event& event) const
 
 iEvent EventList::findSimilar(const Event& event)
 {
-      std::pair<iEvent,iEvent> range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+      EventRange range = equal_range(event.posValue());
 
       for (iEvent i = range.first; i != range.second; ++i) {
             if (i->second.isSimilarTo(event))
@@ -164,7 +208,7 @@ iEvent EventList::findSimilar(const Event& event)
 
 ciEvent EventList::findSimilar(const Event& event) const
       {
-      EventRange range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+      cEventRange range = equal_range(event.posValue());
 
       
       for (ciEvent i = range.first; i != range.second; ++i) {
@@ -174,9 +218,31 @@ ciEvent EventList::findSimilar(const Event& event) const
       return end();
       }
 
+int EventList::findSimilarType(const Event& event, EventList& list,
+                              bool compareTime,
+                              bool compareA, bool compareB, bool compareC,
+                              bool compareWavePath, bool compareWavePos, bool compareWaveStartPos) const
+{
+  int cnt = 0;
+  cEventRange range = compareTime ? equal_range(event.posValue()) : cEventRange(begin(), end());
+  for(ciEvent i = range.first; i != range.second; ++i)
+  {
+    const Event& e = i->second;
+    if(e.isSimilarType(event,
+          false, // Do not compare time, that's handled above.
+          compareA, compareB, compareC,
+          compareWavePath, compareWavePos, compareWaveStartPos))
+    {
+      ++cnt;
+      list.add(e);
+    }
+  }
+  return cnt;
+}
+
 iEvent EventList::findId(const Event& event)
 {
-      std::pair<iEvent,iEvent> range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+      EventRange range = equal_range(event.posValue());
 
       for (iEvent i = range.first; i != range.second; ++i) {
             if (i->second.id() == event.id())
@@ -187,7 +253,7 @@ iEvent EventList::findId(const Event& event)
 
 ciEvent EventList::findId(const Event& event) const
       {
-      EventRange range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+      cEventRange range = equal_range(event.posValue());
 
       
       for (ciEvent i = range.first; i != range.second; ++i) {
@@ -199,7 +265,7 @@ ciEvent EventList::findId(const Event& event) const
 
 iEvent EventList::findId(unsigned t, EventID_t id)
 {
-      std::pair<iEvent,iEvent> range = equal_range(t);
+      EventRange range = equal_range(t);
       for (iEvent i = range.first; i != range.second; ++i) {
             if (i->second.id() == id)
                   return i;
@@ -209,7 +275,7 @@ iEvent EventList::findId(unsigned t, EventID_t id)
 
 ciEvent EventList::findId(unsigned t, EventID_t id) const
       {
-      EventRange range = equal_range(t);
+      cEventRange range = equal_range(t);
       for (ciEvent i = range.first; i != range.second; ++i) {
             if (i->second.id() == id)
                   return i;
@@ -237,7 +303,7 @@ ciEvent EventList::findId(EventID_t id) const
 
 iEvent EventList::findWithId(const Event& event)
 {
-      std::pair<iEvent,iEvent> range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+      EventRange range = equal_range(event.posValue());
 
       for (iEvent i = range.first; i != range.second; ++i) {
             if (i->second == event || i->second.id() == event.id())
@@ -248,7 +314,7 @@ iEvent EventList::findWithId(const Event& event)
 
 ciEvent EventList::findWithId(const Event& event) const
       {
-      EventRange range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+      cEventRange range = equal_range(event.posValue());
 
       
       for (ciEvent i = range.first; i != range.second; ++i) {
@@ -267,5 +333,149 @@ void EventList::dump() const
       for (ciEvent i = begin(); i != end(); ++i)
             i->second.dump();
       }
+
+PosLen EventList::evrange(bool wave, RelevantSelectedEvents_t relevant, int* numEvents, int ctrlNum) const
+{
+  PosLen res;
+  res.setType(wave ? Pos::FRAMES : Pos::TICKS);
+
+  int e_found = 0;
+  bool first_found = false;
+  unsigned start_time = 0;
+  unsigned end_time = 0;
+  for(ciEvent ie = begin(); ie != end(); ++ie)
+  {
+    const Event& e = ie->second;
+    // Only events of the given type are considered.
+    const EventType et = e.type();
+    switch(et)
+    {
+      case Note:
+        if(wave || (relevant & NotesRelevant) == NoEventsRelevant)
+          continue;
+        // Don't add Note event types if they have no length.
+        // Hm, it is possible for zero-length events to be
+        //  accidentally present in the list. So the user should
+        //  at least be allowed to cut and paste them. The EventList
+        //  class will probably be correcting this condition anyway
+        //  when adding the event to the list.
+        //if(e.lenValue() == 0)
+        //  continue;
+        if(!first_found)
+        {
+          start_time = e.posValue();
+          first_found = true;
+        }
+        if(e.endPosValue() > end_time)
+          end_time = e.endPosValue();
+        ++e_found;
+      break;
+      
+      case Wave:
+        if(!wave || (relevant & WaveRelevant) == NoEventsRelevant)
+          continue;
+        // Don't add Wave event types if they have no length.
+        //if(e.lenValue() == 0)
+        //  continue;
+        if(!first_found)
+        {
+          start_time = e.posValue();
+          first_found = true;
+        }
+        if(e.endPosValue() > end_time)
+          end_time = e.endPosValue();
+        ++e_found;
+      break;
+      
+      case Controller:
+      case Meta:
+      case Sysex:
+        if(wave)
+          continue;
+        switch(et)
+        {
+          case Controller:
+            if((relevant & ControllersRelevant) == NoEventsRelevant)
+              continue;
+            if(ctrlNum >= 0 && e.dataA() != ctrlNum) 
+              continue;
+          break;
+
+          case Meta:
+            if((relevant & MetaRelevant) == NoEventsRelevant)
+              continue;
+          break;
+
+          case Sysex:
+            if((relevant & SysexRelevant) == NoEventsRelevant)
+              continue;
+          break;
+
+          default:
+            continue;
+          break;
+        }
+        // For these events, even if duplicates are already found at this position,
+        //  the range is still the same, which simplifies this code - go ahead and count it...
+        
+        if(!first_found)
+        {
+          start_time = e.posValue();
+          first_found = true;
+        }
+        // For these events, minimum 1 unit time, to qualify as a valid 'range'.
+        if((e.posValue() + 1) > end_time)
+          end_time = e.posValue() + 1;
+        ++e_found;
+      break;
+    }
+  }
+
+  res.setPosValue(start_time);
+  res.setLenValue(end_time - start_time);
+  *numEvents = e_found;
+  return res;
+}
+
+void EventList::findControllers(bool wave, FindMidiCtlsList_t* outList, int findCtl) const
+{
+  for(ciEvent ie = cbegin(); ie != cend(); ++ie)
+  {
+    const Event& e = ie->second;
+    const EventType et = e.type();
+    switch(et)
+    {
+      case Note:
+      case Meta:
+      case Sysex:
+          continue;
+      break;
+      
+      case Wave:
+        if(!wave)
+          continue;
+        // TODO Audio controllers.
+        //list->insert( ? );
+      break;
+      
+      case Controller:
+        if(wave)
+          continue;
+        if(findCtl < 0 || findCtl == e.dataA())
+        {
+          const PosLen epl = e.posLen();
+          FindMidiCtlsListInsResPair_t pres = outList->insert(FindMidiCtlsPair_t(e.dataA(), epl));
+          if(!pres.second)
+          {
+            iFindMidiCtlsList ifml = pres.first;
+            PosLen& fml = ifml->second;
+            if(fml > epl)
+              fml = epl;
+          }
+        }
+      break;
+    }
+  }
+}
 
 } // namespace MusECore

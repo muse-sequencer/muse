@@ -27,6 +27,8 @@
 #include "canvas.h"
 #include "noteinfo.h"
 #include "mpevent.h"
+#include "midieditor.h"
+
 #include <QEvent>
 #include <QKeyEvent>
 #include <QVector>
@@ -42,6 +44,7 @@ namespace MusECore {
 class MidiPart;
 class MidiTrack;
 class Part;
+class Undo;
 
 struct PartToChange
 {
@@ -56,7 +59,6 @@ typedef std::map<Part*, PartToChange>::iterator iPartToChange;
 namespace MusEGui {
 
 
-class MidiEditor;
 //---------------------------------------------------------
 //   EventCanvas
 //---------------------------------------------------------
@@ -80,13 +82,12 @@ class EventCanvas : public Canvas {
       QVector<MusECore::MidiPlayEvent> _stuckNotes;
       bool stuckNoteExists(int port, int channel, int pitch) const;
 
-      void updateSelection();
+      bool itemSelectionsChanged(MusECore::Undo* operations = 0, bool deselectAll = false);
       virtual CItem* addItem(MusECore::Part*, const MusECore::Event&) = 0;
       virtual QPoint raster(const QPoint&) const;
-      virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true) = 0;
+      virtual MusECore::Undo moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true) = 0;
       virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true) = 0;
       virtual void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true);
-      virtual void deselectAll();
       virtual void startPlayEvent(int note, int velocity);
       virtual void startPlayEvent(int note, int velocity, int port, int channel);
       virtual void stopPlayEvent();
@@ -113,13 +114,15 @@ class EventCanvas : public Canvas {
       bool midiin() const     { return _midiin; }
       bool steprec() const    { return _steprec; }
       virtual QString getCaption() const;
-      virtual void songChanged(MusECore::SongChangedFlags_t);
+      virtual void songChanged(MusECore::SongChangedStruct_t);
       virtual void range(int* s, int* e) const { *s = start_tick; *e = end_tick; }
       void playEvents(bool flag) { _playEvents = flag; }
       virtual void selectAtTick(unsigned int tick);
       virtual void viewDropEvent(QDropEvent* event);
       virtual void modifySelected(NoteInfo::ValType, int /*val*/, bool /*delta_mode*/ = true) {}
       virtual void keyPress(QKeyEvent*);      
+      virtual void keyRelease(QKeyEvent* event);
+      virtual void updateItems();
       };
 
 } // namespace MusEGui

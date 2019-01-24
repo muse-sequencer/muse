@@ -27,6 +27,8 @@
 #include <map>
 #include <vector>
 
+#include "large_int.h"
+
 #ifndef MAX_TICK
 #define MAX_TICK (0x7fffffff/100)
 #endif
@@ -38,8 +40,6 @@
 namespace MusECore {
 
 class Xml;
-class PendingOperationList;
-struct PendingOperationItem;
 
 //---------------------------------------------------------
 //   Tempo Event
@@ -100,6 +100,12 @@ class TempoList : public TEMPOLIST {
       int tempo(unsigned tick) const;
       // Returns a tempo value from the list if master is on, or else the static tempo value.
       int tempoAt(unsigned tick) const;
+      
+      
+      //-------------------------------------------------------------------------------------------------------
+      // These tick to frame methods always round up (ceiling), so that they provide a good
+      //  one-to-one relation with the tick to frame methods.
+      //-------------------------------------------------------------------------------------------------------
       // Returns the number of frames contained in the given ticks,
       //  at the tempo at the tick given by tempoTick. Honours useList.
       unsigned ticks2frames(unsigned ticks, unsigned tempoTick) const;
@@ -109,10 +115,20 @@ class TempoList : public TEMPOLIST {
 //       unsigned frames2ticks(unsigned frames, unsigned tempoTick) const;
       unsigned tick2frame(unsigned tick, unsigned frame, int* sn) const;
       unsigned tick2frame(unsigned tick, int* sn = 0) const;
-      unsigned frame2tick(unsigned frame, int* sn = 0) const;
-      unsigned frame2tick(unsigned frame, unsigned tick, int* sn) const;
       unsigned deltaTick2frame(unsigned tick1, unsigned tick2, int* sn = 0) const;
-      unsigned deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn = 0) const;
+      
+      //-------------------------------------------------------------------------------------------------------
+      // Normally do not round these frame to tick methods up since (audio) frame resolution is higher than tick
+      //  resolution. Other rounding methods are provided for convenience, since frame to tick is a 'broad' question.
+      // Only round up or to nearest if you know what you are doing. It is OK to do that for example
+      //  to VISUALLY 'snap' the frame to a tick from either side of the tick (the MTScale time scale widgets).
+      // But for most other uses especially timing, leave it alone at rounding down. Timing ticks need to change
+      //  to the next value ONLY when there are enough frames to count as one whole tick. Otherwise tick-based
+      //  events such as midi notes might be processed slightly too soon (or too late in some circumstances).
+      //-------------------------------------------------------------------------------------------------------
+      unsigned frame2tick(unsigned frame, int* sn = 0, LargeIntRoundMode round_mode = LargeIntRoundDown) const;
+      unsigned frame2tick(unsigned frame, unsigned tick, int* sn, LargeIntRoundMode round_mode = LargeIntRoundDown) const;
+      unsigned deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn = 0, LargeIntRoundMode round_mode = LargeIntRoundDown) const;
       
       int tempoSN() const { return _tempoSN; }
       // Sets the tempo value in the list if master is on, or else the static tempo value.
@@ -127,9 +143,6 @@ class TempoList : public TEMPOLIST {
       bool setMasterFlag(unsigned tick, bool val);
       int globalTempo() const           { return _globalTempo; }
       void setGlobalTempo(int val);
-      
-      void addOperation(unsigned tick, int tempo, PendingOperationList& ops); 
-      void delOperation(unsigned tick, PendingOperationList& ops);
       };
 
 //---------------------------------------------------------

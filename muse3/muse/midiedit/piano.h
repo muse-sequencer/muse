@@ -74,7 +74,7 @@ class Piano : public View
       virtual void wheelEvent(QWheelEvent* e);
 
    protected:
-      virtual void draw(QPainter&, const QRect&);
+      virtual void draw(QPainter&, const QRect&, const QRegion& = QRegion());
 
    signals:
       void pitchChanged(int);

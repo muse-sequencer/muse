@@ -516,10 +516,14 @@ Piano::Piano(QWidget* parent, int ymag, MidiEditor* editor)
 //   draw
 //---------------------------------------------------------
 
-void Piano::draw(QPainter& p, const QRect& r)
+void Piano::draw(QPainter& p, const QRect& mr, const QRegion&)
       {
+      // FIXME: For some reason need the expansion otherwise drawing
+      //        artifacts (incomplete drawing). Can't figure out why.
+      const QRect ur = mapDev(mr).adjusted(0, -4, 0, 4);
+      
       QPoint offset(0, KH*2);
-      p.drawTiledPixmap(r, *octave, r.topLeft()+offset);
+      p.drawTiledPixmap(ur, *octave, ur.topLeft()+offset);
 
       if (_curSelectedPitch != -1 && _curSelectedPitch != curPitch)
       {
@@ -576,7 +580,7 @@ void Piano::draw(QPainter& p, const QRect& r)
         int octaveSize=91;
 
         int drawY = octaveSize * drawKey + 82 - KH*2;
-        if (drawY > r.y() && drawY < r.y() + r.height()) {
+        if (drawY > ur.y() && drawY < ur.y() + ur.height()) {
           p.drawPixmap(0,drawY,*c_keys[drawKey]);
         }
       }
@@ -639,7 +643,7 @@ void Piano::draw(QPainter& p, const QRect& r)
       }
       
       }
-
+      
 //---------------------------------------------------------
 //   pitch2y
 //---------------------------------------------------------

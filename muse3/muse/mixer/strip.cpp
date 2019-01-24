@@ -2353,9 +2353,9 @@ void Strip::componentReleased(int type, double val, int id)
         const double a_range = a_max - a_min;
         const double a_val = (m_fact * a_range) + a_min;
 
-        AutomationType atype = at->automationType();
+        MusECore::AutomationType atype = at->automationType();
         at->stopAutoRecord(a_ctlnum, a_val);
-        if(atype == AUTO_OFF || atype == AUTO_TOUCH)
+        if(atype == MusECore::AUTO_OFF || atype == MusECore::AUTO_TOUCH)
           at->enableController(a_ctlnum, true);
       }
     }
@@ -2409,9 +2409,9 @@ void Strip::componentReleased(int type, double val, int id)
         doneAudioTracks.append(t);
 
         MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(t);
-        AutomationType atype = at->automationType();
+        MusECore::AutomationType atype = at->automationType();
         at->stopAutoRecord(id, a_val);
-        if(atype == AUTO_OFF || atype == AUTO_TOUCH)
+        if(atype == MusECore::AUTO_OFF || atype == MusECore::AUTO_TOUCH)
           at->enableController(id, true);
       }
     }

@@ -67,7 +67,7 @@ class ClipListEdit : public TopWin {
       void updateList();
 
    private slots:
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       void startChanged(const MusECore::Pos&);
       void lenChanged(const MusECore::Pos&);
       void clipSelectionChanged();

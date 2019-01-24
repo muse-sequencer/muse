@@ -138,7 +138,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       setController();
       configChanged();
 
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       inHeartBeat = false;
@@ -548,7 +548,7 @@ void CtrlPanel::configChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void CtrlPanel::songChanged(MusECore::SongChangedFlags_t /*flags*/)
+void CtrlPanel::songChanged(MusECore::SongChangedStruct_t /*flags*/)
 {
   if(editor && editor->deleting())  // Ignore while while deleting to prevent crash.
     return; 
@@ -573,7 +573,7 @@ void CtrlPanel::ctrlChanged(double val, bool off, int /*id*/, int /*scrollMode*/
       int ival = lrint(val);
       int outport = _track->outPort();
       int chan = _track->outChannel();
-      if(chan < 0 || chan >= MIDI_CHANNELS || outport < 0 || outport >= MIDI_PORTS)
+      if(chan < 0 || chan >= MusECore::MUSE_MIDI_CHANNELS || outport < 0 || outport >= MusECore::MIDI_PORTS)
           return;
       int cdp = ctrlcanvas->getCurDrumPitch();
       if(_ctrl->isPerNoteController() && cdp >= 0)

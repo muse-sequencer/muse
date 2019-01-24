@@ -62,8 +62,8 @@ void DeicsOnze::initPluginReverb(MusESimplePlugin::Plugin* pluginReverb) {
 // From DSSI host. Maybe use this to add automation controllers. Problems with this method.
 //     // Support a special block for dssi synth ladspa controllers.
 //     // Put the ID at a special block after plugins (far after).
-//     //int id = MusECore::genACnum(MAX_PLUGINS, cip);
-//     int id = MusECore::genACnum(MAX_PLUGINS, i);
+//     //int id = MusECore::genACnum(MusECore::MAX_PLUGINS, cip);
+//     int id = MusECore::genACnum(MusECore::MAX_PLUGINS, i);
 
 // FIXME FIXME Tim
 /*    Ctrl* c = new Ctrl();

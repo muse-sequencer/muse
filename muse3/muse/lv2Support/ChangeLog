@@ -1,3 +1,7 @@
+19.01.2019:
+         - Applied pull request from hfiguiere. (Tim)
+           In sord.c:sord_new_literal_counted(): fixes warning (error)
+            about "‘strncpy’ specified bound 16 equals destination size".
 09.08.2018:
          - Fixed lilv state.c new_state_from_model() (Tim)
            I found state->dir should be a file path, not a URI.

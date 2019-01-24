@@ -29,22 +29,22 @@
 #include "cobject.h"
 #include "tempo.h"
 #include "keyevent.h"
-#include "al/sig.h"
+#include "sig.h"
 
 #include <QTreeWidgetItem>
-
-namespace Awl {
-      class PosEdit;
-      class SigEdit;
-      };
-using Awl::PosEdit;
-using Awl::SigEdit;
 
 class QLineEdit;
 class QComboBox;
 
+namespace MusECore {
+class SigEvent;
+};
+
 namespace MusEGui {
 
+class PosEdit;
+class SigEdit;
+  
 enum LMASTER_LVTYPE
    {
       LMASTER_TEMPO = 0,
@@ -109,12 +109,12 @@ class LMasterKeyEventItem : public LMasterLViewItem {
 class LMasterSigEventItem : public LMasterLViewItem {
 
    private:
-      const AL::SigEvent* sigEvent;
+      const MusECore::SigEvent* sigEvent;
 
    public:
-      LMasterSigEventItem(QTreeWidget* parent, const AL::SigEvent* s);
+      LMasterSigEventItem(QTreeWidget* parent, const MusECore::SigEvent* s);
       virtual LMASTER_LVTYPE getType() { return LMASTER_SIGEVENT; }
-      const AL::SigEvent* getEvent() { return sigEvent; }
+      const MusECore::SigEvent* getEvent() { return sigEvent; }
       virtual unsigned tick() { return sigEvent->tick; }
       int z() { return sigEvent->sig.z; }
       int n() { return sigEvent->sig.n; }
@@ -139,7 +139,7 @@ class LMaster : public MidiEditor {
       virtual void closeEvent(QCloseEvent*);
       void updateList();
       void insertTempo(const MusECore::TEvent*);
-      void insertSig(const AL::SigEvent*);
+      void insertSig(const MusECore::SigEvent*);
       void insertKey(const MusECore::KeyEvent&);
       LMasterLViewItem* getItemAtPos(unsigned tick, LMASTER_LVTYPE t);
       void initShortcuts();
@@ -166,7 +166,7 @@ class LMaster : public MidiEditor {
       void comboboxTimerSlot();
 
    public slots:
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       void configChanged();
       void focusCanvas();
 

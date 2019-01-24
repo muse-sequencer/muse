@@ -35,7 +35,7 @@
 
 //#include "src_converter.h"
 #include "wave.h"
-#include "globals.h"
+// #include "globals.h"
 #include "time_stretch.h"
 #include "xml.h"
 
@@ -57,12 +57,13 @@
   
 // Create a new instance of the plugin.  
 // Mode is an AudioConverterSettings::ModeType selecting which of the settings to use.
-MusECore::AudioConverter* instantiate(const MusECore::AudioConverterDescriptor* /*Descriptor*/,
+MusECore::AudioConverter* instantiate(int systemSampleRate,
+                                      const MusECore::AudioConverterDescriptor* /*Descriptor*/,
                                       int channels, 
                                       MusECore::AudioConverterSettings* settings, 
                                       int mode)
 {
-  return new MusECore::SRCAudioConverter(channels, settings, mode);
+  return new MusECore::SRCAudioConverter(systemSampleRate, channels, settings, mode);
 }
 
 // Destroy the instance after usage.
@@ -127,8 +128,8 @@ namespace MusECore {
 //   SRCAudioConverter
 //---------------------------------------------------------
 
-SRCAudioConverter::SRCAudioConverter(int channels, AudioConverterSettings* settings, int mode) 
-  : AudioConverter()
+SRCAudioConverter::SRCAudioConverter(int systemSampleRate, int channels, AudioConverterSettings* settings, int mode) 
+  : AudioConverter(systemSampleRate)
 {
   DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::SRCAudioConverter this:%p channels:%d mode:%d\n", 
                      this, channels, mode);
@@ -506,9 +507,10 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
 //  bool resample   = isValid() && ((unsigned)MusEGlobal::sampleRate != fsrate);  
   
 //   if((MusEGlobal::sampleRate == 0) || (fsrate == 0))
-  if((MusEGlobal::sampleRate == 0) || (sf->samplerate() == 0))
+//   if((MusEGlobal::sampleRate == 0) || (sf->samplerate() == 0))
+  if((_systemSampleRate <= 0) || (sf->samplerate() <= 0))
   {  
-    DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process Error: MusEGlobal::sampleRate or file samplerate is zero!\n");
+    DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process Error: systemSampleRate or file samplerate <= 0!\n");
 //     return _sfCurFrame;
     return 0;
   }  

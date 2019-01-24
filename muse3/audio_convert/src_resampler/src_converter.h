@@ -188,7 +188,7 @@ class SRCAudioConverter : public AudioConverter
 
    public:   
       // Mode is an AudioConverterSettings::ModeType selecting which of the settings to use.
-      SRCAudioConverter(int channels, AudioConverterSettings* settings, int mode);
+      SRCAudioConverter(int systemSampleRate, int channels, AudioConverterSettings* settings, int mode);
       ~SRCAudioConverter();
       
       //static SRCAudioConverterSettings defaultSettings;

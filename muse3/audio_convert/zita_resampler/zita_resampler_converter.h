@@ -188,7 +188,8 @@ class ZitaResamplerAudioConverter : public AudioConverter
    
    public:   
       // Mode is an AudioConverterSettings::ModeType selecting which of the settings to use.
-      ZitaResamplerAudioConverter(SndFile* sf, 
+      ZitaResamplerAudioConverter(int systemSampleRate,
+                                  SndFile* sf, 
                                   int channels, 
                                   AudioConverterSettings* settings, 
                                   int mode);

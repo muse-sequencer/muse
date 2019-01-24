@@ -29,15 +29,15 @@
 
 #include "time_stretch.h"
 #include "xml.h"
-#include "operations.h"
+// #include "operations.h"
 
 
-#ifndef USE_ALTERNATE_STRETCH_LIST
-  #ifndef MAX_FRAME
-  #define MAX_FRAME (0x7ffffffffffffffeL)
-  //#define MAX_FRAME ((1 << (sizeof(MuseFrame_t) - 1)) - 1)
-  #endif
-#endif // USE_ALTERNATE_STRETCH_LIST
+// #ifndef USE_ALTERNATE_STRETCH_LIST
+//   #ifndef MUSE_TIME_STRETCH_MAX_FRAME
+//   #define MUSE_TIME_STRETCH_MAX_FRAME (0x7ffffffffffffffeL)
+//   //#define MUSE_TIME_STRETCH_MAX_FRAME ((1 << (sizeof(MuseFrame_t) - 1)) - 1)
+//   #endif
+// #endif // USE_ALTERNATE_STRETCH_LIST
 
 #define ERROR_TIMESTRETCH(dev, format, args...)  fprintf(dev, format, ##args)
 #define INFO_TIMESTRETCH(dev, format, args...) // fprintf(dev, format, ##args)
@@ -59,7 +59,7 @@ StretchList::StretchList()
       _isStretched = false;
 //       _tempo   = 500000;
 //       insert(std::pair<const unsigned, TEvent*> (MAX_TICK+1, new TEvent(_tempo, 0)));
-      insert(std::pair<const MuseFrame_t, StretchEvent*> (MAX_FRAME+1, new StretchEvent(1.0, 0)));
+      insert(std::pair<const MuseFrame_t, StretchEvent*> (MUSE_TIME_STRETCH_MAX_FRAME+1, new StretchEvent(1.0, 0)));
 //       _tempoSN     = 1;
 //       _globalTempo = 100;
 //       useList      = true;
@@ -77,8 +77,8 @@ StretchList::~StretchList()
 
 void StretchList::add(MuseFrame_t frame, double stretch, bool do_normalize)
       {
-      if (frame > MAX_FRAME)
-            frame = MAX_FRAME;
+      if (frame > MUSE_TIME_STRETCH_MAX_FRAME)
+            frame = MUSE_TIME_STRETCH_MAX_FRAME;
       iStretchEvent e = upper_bound(frame);
 
       if (frame == e->second->_frame)
@@ -107,7 +107,7 @@ void StretchList::add(MuseFrame_t frame, StretchEvent* e, bool do_normalize)
   else
   {
     iStretchEvent ine = res.first;
-    ++ine; // There is always a 'next' stretch event - there is always one at index MAX_FRAME + 1.
+    ++ine; // There is always a 'next' stretch event - there is always one at index MUSE_TIME_STRETCH_MAX_FRAME + 1.
     StretchEvent* ne = ine->second;
     
     // Swap the values. (This is how the stretch list works.)
@@ -121,35 +121,35 @@ void StretchList::add(MuseFrame_t frame, StretchEvent* e, bool do_normalize)
   }
 }
 
-//---------------------------------------------------------
-//   addOperation
-//---------------------------------------------------------
-
-void StretchList::addOperation(MuseFrame_t frame, double stretch, PendingOperationList& ops)
-{
-  if (frame > MAX_FRAME)
-    frame = MAX_FRAME;
-  iStretchEvent e = upper_bound(frame);
-
-  if(frame == e->second->_frame)
-    ops.add(PendingOperationItem(this, e, stretch, PendingOperationItem::ModifyStretch));
-  else 
-  {
-    PendingOperationItem poi(this, 0, frame, PendingOperationItem::AddStretch);
-    iPendingOperation ipo = ops.findAllocationOp(poi);
-    if(ipo != ops.end())
-    {
-      PendingOperationItem& poi = *ipo;
-      // Simply replace the value.
-      poi._stretch_event->_stretch = stretch;
-    }
-    else
-    {
-      poi._stretch_event = new StretchEvent(stretch, frame); // These are the desired frame and stretch but...
-      ops.add(poi);                               //  add will do the proper swapping with next event.
-    }
-  }
-}
+// //---------------------------------------------------------
+// //   addOperation
+// //---------------------------------------------------------
+// 
+// void StretchList::addOperation(MuseFrame_t frame, double stretch, PendingOperationList& ops)
+// {
+//   if (frame > MUSE_TIME_STRETCH_MAX_FRAME)
+//     frame = MUSE_TIME_STRETCH_MAX_FRAME;
+//   iStretchEvent e = upper_bound(frame);
+// 
+//   if(frame == e->second->_frame)
+//     ops.add(PendingOperationItem(this, e, stretch, PendingOperationItem::ModifyStretch));
+//   else 
+//   {
+//     PendingOperationItem poi(this, 0, frame, PendingOperationItem::AddStretch);
+//     iPendingOperation ipo = ops.findAllocationOp(poi);
+//     if(ipo != ops.end())
+//     {
+//       PendingOperationItem& poi = *ipo;
+//       // Simply replace the value.
+//       poi._stretch_event->_stretch = stretch;
+//     }
+//     else
+//     {
+//       poi._stretch_event = new StretchEvent(stretch, frame); // These are the desired frame and stretch but...
+//       ops.add(poi);                               //  add will do the proper swapping with next event.
+//     }
+//   }
+// }
 
 //---------------------------------------------------------
 //   normalize
@@ -199,7 +199,7 @@ void StretchList::clear()
       for (iStretchEvent i = begin(); i != end(); ++i)
             delete i->second;
       STRETCHLIST::clear();
-      insert(std::pair<const MuseFrame_t, StretchEvent*> (MAX_FRAME+1, new StretchEvent(1.0, 0)));
+      insert(std::pair<const MuseFrame_t, StretchEvent*> (MUSE_TIME_STRETCH_MAX_FRAME+1, new StretchEvent(1.0, 0)));
       //++_tempoSN;
       }
 
@@ -209,14 +209,14 @@ void StretchList::clear()
 
 void StretchList::eraseRange(MuseFrame_t sframe, MuseFrame_t eframe)
 {
-    if(sframe >= eframe || sframe > MAX_FRAME)
+    if(sframe >= eframe || sframe > MUSE_TIME_STRETCH_MAX_FRAME)
       return;
-    if(eframe > MAX_FRAME)
-      eframe = MAX_FRAME;
+    if(eframe > MUSE_TIME_STRETCH_MAX_FRAME)
+      eframe = MUSE_TIME_STRETCH_MAX_FRAME;
     
     //iStretchEvent se = MusEGlobal::tempomap.upper_bound(stick); // TODO FIXME Hm, suspicious - fix this in tempo.cpp as well...
     iStretchEvent se = upper_bound(sframe);
-    if(se == end() || (se->first == MAX_FRAME+1))
+    if(se == end() || (se->first == MUSE_TIME_STRETCH_MAX_FRAME+1))
       return;
 
     //iStretchEvent ee = MusEGlobal::tempomap.upper_bound(etick); // FIXME
@@ -295,21 +295,21 @@ void StretchList::del(iStretchEvent e, bool do_normalize)
       //++_tempoSN;
       }
 
-//---------------------------------------------------------
-//   delOperation
-//---------------------------------------------------------
-
-void StretchList::delOperation(MuseFrame_t frame, PendingOperationList& ops)
-{
-  iStretchEvent e = find(frame);
-  if (e == end()) {
-        printf("StretchList::delOperation frame:%ld not found\n", frame);
-        return;
-        }
-  PendingOperationItem poi(this, e, PendingOperationItem::DeleteStretch);
-  // NOTE: Deletion is done in post-RT stage 3.
-  ops.add(poi);
-}
+// //---------------------------------------------------------
+// //   delOperation
+// //---------------------------------------------------------
+// 
+// void StretchList::delOperation(MuseFrame_t frame, PendingOperationList& ops)
+// {
+//   iStretchEvent e = find(frame);
+//   if (e == end()) {
+//         printf("StretchList::delOperation frame:%ld not found\n", frame);
+//         return;
+//         }
+//   PendingOperationItem poi(this, e, PendingOperationItem::DeleteStretch);
+//   // NOTE: Deletion is done in post-RT stage 3.
+//   ops.add(poi);
+// }
 
 //---------------------------------------------------------
 //   setStretch
@@ -692,7 +692,10 @@ MuseFrame_t StretchEvent::read(Xml& xml)
             }
       return 0;
       }
-  
+
+
+
+
 #else  // USE_ALTERNATE_STRETCH_LIST
 
 
@@ -1478,10 +1481,10 @@ void StretchList::setRatio(StretchListItem::StretchEventType type, double ratio,
     normalizeListFrames();
 }
 
-void StretchList::modifyOperation(StretchListItem::StretchEventType type, double value, PendingOperationList& ops)
-{
-  ops.add(PendingOperationItem(type, this, value, PendingOperationItem::ModifyStretchListRatio));
-}
+// void StretchList::modifyOperation(StretchListItem::StretchEventType type, double value, PendingOperationList& ops)
+// {
+//   ops.add(PendingOperationItem(type, this, value, PendingOperationItem::ModifyStretchListRatio));
+// }
 
 
 // ------------------------------------------
@@ -2003,40 +2006,40 @@ MuseFrame_t StretchList::unSquish(double frame, int type) const
   return prevFrame + lrint((frame - prevNewUnFrame) * factor);
 }
 
-void StretchList::addListOperation(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops)
-{
-  iStretchListItem ie = find(frame);
-  if(ie != end())
-    ops.add(PendingOperationItem(type, this, ie, frame, value, PendingOperationItem::ModifyStretchListRatioAt));
-  else
-    ops.add(PendingOperationItem(type, this, frame, value, PendingOperationItem::AddStretchListRatioAt));
-}
-
-void StretchList::delListOperation(int types, MuseFrame_t frame, PendingOperationList& ops)
-{
-  // Do not delete the item at zeroth frame.
-  if(frame == 0)
-    return;
-  
-  iStretchListItem e = find(frame);
-  if (e == end()) {
-        ERROR_TIMESTRETCH(stderr, "StretchList::delOperation frame:%ld not found\n", frame);
-        return;
-        }
-  PendingOperationItem poi(types, this, e, PendingOperationItem::DeleteStretchListRatioAt);
-  // NOTE: Deletion is done in post-RT stage 3.
-  ops.add(poi);
-}
-
-void StretchList::modifyListOperation(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops)
-{
-  iStretchListItem ie = find(frame);
-  if(ie == end()) {
-        ERROR_TIMESTRETCH(stderr, "StretchList::modifyListOperation frame:%ld not found\n", frame);
-        return;
-        }
-  ops.add(PendingOperationItem(type, this, ie, frame, value, PendingOperationItem::ModifyStretchListRatioAt));
-}
+// void StretchList::addListOperation(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops)
+// {
+//   iStretchListItem ie = find(frame);
+//   if(ie != end())
+//     ops.add(PendingOperationItem(type, this, ie, frame, value, PendingOperationItem::ModifyStretchListRatioAt));
+//   else
+//     ops.add(PendingOperationItem(type, this, frame, value, PendingOperationItem::AddStretchListRatioAt));
+// }
+// 
+// void StretchList::delListOperation(int types, MuseFrame_t frame, PendingOperationList& ops)
+// {
+//   // Do not delete the item at zeroth frame.
+//   if(frame == 0)
+//     return;
+//   
+//   iStretchListItem e = find(frame);
+//   if (e == end()) {
+//         ERROR_TIMESTRETCH(stderr, "StretchList::delOperation frame:%ld not found\n", frame);
+//         return;
+//         }
+//   PendingOperationItem poi(types, this, e, PendingOperationItem::DeleteStretchListRatioAt);
+//   // NOTE: Deletion is done in post-RT stage 3.
+//   ops.add(poi);
+// }
+// 
+// void StretchList::modifyListOperation(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops)
+// {
+//   iStretchListItem ie = find(frame);
+//   if(ie == end()) {
+//         ERROR_TIMESTRETCH(stderr, "StretchList::modifyListOperation frame:%ld not found\n", frame);
+//         return;
+//         }
+//   ops.add(PendingOperationItem(type, this, ie, frame, value, PendingOperationItem::ModifyStretchListRatioAt));
+// }
 
 StretchListInfo StretchList::testDelListOperation(int types, MuseFrame_t frame) const
 {
@@ -2919,7 +2922,7 @@ StretchListInfo StretchList::testDelListOperation(int types, MuseFrame_t frame) 
 // //   else
 // //   {
 // //     iStretchEvent ine = res.first;
-// //     ++ine; // There is always a 'next' stretch event - there is always one at index MAX_FRAME + 1.
+// //     ++ine; // There is always a 'next' stretch event - there is always one at index MUSE_TIME_STRETCH_MAX_FRAME + 1.
 // //     StretchEvent* ne = ine->second;
 // //     
 // //     // Swap the values. (This is how the stretch list works.)
@@ -3897,7 +3900,7 @@ StretchListInfo StretchList::testDelListOperation(int types, MuseFrame_t frame) 
 // //       _tempo   = 500000;
 // //       insert(std::pair<const unsigned, TEvent*> (MAX_TICK+1, new TEvent(_tempo, 0)));
 //       
-//       //insert(std::pair<const MuseFrame_t, StretchEvent*> (MAX_FRAME+1, new StretchEvent(1.0, 0)));
+//       //insert(std::pair<const MuseFrame_t, StretchEvent*> (MUSE_TIME_STRETCH_MAX_FRAME+1, new StretchEvent(1.0, 0)));
 //       //insert(std::pair<const MuseFrame_t, StretchEvent*> (0, new StretchEvent(1.0, 0)));
 //       
 // //       _tempoSN     = 1;
@@ -3917,8 +3920,8 @@ StretchListInfo StretchList::testDelListOperation(int types, MuseFrame_t frame) 
 // 
 // void StretchList::add(MuseFrame_t frame, double stretch, bool do_normalize)
 //       {
-// //       if (frame > MAX_FRAME)
-// //             frame = MAX_FRAME;
+// //       if (frame > MUSE_TIME_STRETCH_MAX_FRAME)
+// //             frame = MUSE_TIME_STRETCH_MAX_FRAME;
 // //       iStretchEvent e = upper_bound(frame);
 // // 
 // //       if (frame == e->second->_frame)
@@ -3961,7 +3964,7 @@ StretchListInfo StretchList::testDelListOperation(int types, MuseFrame_t frame) 
 //   else
 //   {
 // //     iStretchEvent ine = res.first;
-// //     ++ine; // There is always a 'next' stretch event - there is always one at index MAX_FRAME + 1.
+// //     ++ine; // There is always a 'next' stretch event - there is always one at index MUSE_TIME_STRETCH_MAX_FRAME + 1.
 // //     StretchEvent* ne = ine->second;
 // //     
 // //     // Swap the values. (This is how the stretch list works.)
@@ -3981,8 +3984,8 @@ StretchListInfo StretchList::testDelListOperation(int types, MuseFrame_t frame) 
 // 
 // void StretchList::addOperation(MuseFrame_t frame, double stretch, PendingOperationList& ops)
 // {
-// //   if (frame > MAX_FRAME)
-// //     frame = MAX_FRAME;
+// //   if (frame > MUSE_TIME_STRETCH_MAX_FRAME)
+// //     frame = MUSE_TIME_STRETCH_MAX_FRAME;
 // //   iStretchEvent e = upper_bound(frame);
 // // 
 // //   if(frame == e->second->_frame)
@@ -4086,7 +4089,7 @@ StretchListInfo StretchList::testDelListOperation(int types, MuseFrame_t frame) 
 //       //for (iStretchEvent i = begin(); i != end(); ++i)
 //       //      delete i->second;
 //       STRETCHLIST::clear();
-//       //insert(std::pair<const MuseFrame_t, StretchEvent*> (MAX_FRAME+1, new StretchEvent(1.0, 0)));
+//       //insert(std::pair<const MuseFrame_t, StretchEvent*> (MUSE_TIME_STRETCH_MAX_FRAME+1, new StretchEvent(1.0, 0)));
 //       
 //       //++_tempoSN;
 //       }
@@ -4097,14 +4100,14 @@ StretchListInfo StretchList::testDelListOperation(int types, MuseFrame_t frame) 
 // 
 // void StretchList::eraseRange(MuseFrame_t sframe, MuseFrame_t eframe)
 // {
-// //     if(sframe >= eframe || sframe > MAX_FRAME)
+// //     if(sframe >= eframe || sframe > MUSE_TIME_STRETCH_MAX_FRAME)
 // //       return;
-// //     if(eframe > MAX_FRAME)
-// //       eframe = MAX_FRAME;
+// //     if(eframe > MUSE_TIME_STRETCH_MAX_FRAME)
+// //       eframe = MUSE_TIME_STRETCH_MAX_FRAME;
 // //     
 // //     //iStretchEvent se = MusEGlobal::tempomap.upper_bound(stick); // TODO FIXME Hm, suspicious - fix this in tempo.cpp as well...
 // //     iStretchEvent se = upper_bound(sframe);
-// //     if(se == end() || (se->first == MAX_FRAME+1))
+// //     if(se == end() || (se->first == MUSE_TIME_STRETCH_MAX_FRAME+1))
 // //       return;
 // // 
 // //     //iStretchEvent ee = MusEGlobal::tempomap.upper_bound(etick); // FIXME
@@ -4785,7 +4788,7 @@ StretchListInfo StretchList::testDelListOperation(int types, MuseFrame_t frame) 
 // //       _tempo   = 500000;
 // //       insert(std::pair<const unsigned, TEvent*> (MAX_TICK+1, new TEvent(_tempo, 0)));
 //       
-//       //insert(std::pair<const MuseFrame_t, StretchEvent*> (MAX_FRAME+1, new StretchEvent(1.0, 0)));
+//       //insert(std::pair<const MuseFrame_t, StretchEvent*> (MUSE_TIME_STRETCH_MAX_FRAME+1, new StretchEvent(1.0, 0)));
 //       //insert(std::pair<const MuseFrame_t, StretchEvent*> (0, new StretchEvent(1.0, 0)));
 //       
 // //       _tempoSN     = 1;
@@ -4843,8 +4846,8 @@ StretchListInfo StretchList::testDelListOperation(int types, MuseFrame_t frame) 
 // 
 // void StretchList::addOperation(MuseFrame_t frame, double stretch, PendingOperationList& ops)
 // {
-// //   if (frame > MAX_FRAME)
-// //     frame = MAX_FRAME;
+// //   if (frame > MUSE_TIME_STRETCH_MAX_FRAME)
+// //     frame = MUSE_TIME_STRETCH_MAX_FRAME;
 // //   iStretchEvent e = upper_bound(frame);
 // // 
 // //   if(frame == e->second->_frame)
@@ -4956,7 +4959,7 @@ StretchListInfo StretchList::testDelListOperation(int types, MuseFrame_t frame) 
 //       //for (iStretchEvent i = begin(); i != end(); ++i)
 //       //      delete i->second;
 //       STRETCHLIST::clear();
-//       //insert(std::pair<const MuseFrame_t, StretchEvent*> (MAX_FRAME+1, new StretchEvent(1.0, 0)));
+//       //insert(std::pair<const MuseFrame_t, StretchEvent*> (MUSE_TIME_STRETCH_MAX_FRAME+1, new StretchEvent(1.0, 0)));
 //       
 //       //++_tempoSN;
 //       }
@@ -5994,7 +5997,7 @@ StretchListInfo StretchList::testDelListOperation(int types, MuseFrame_t frame) 
 //       //for (iStretchEvent i = begin(); i != end(); ++i)
 //       //      delete i->second;
 //       FRAME_STRETCH_MAP::clear();
-//       //insert(std::pair<const MuseFrame_t, StretchEvent*> (MAX_FRAME+1, new StretchEvent(1.0, 0)));
+//       //insert(std::pair<const MuseFrame_t, StretchEvent*> (MUSE_TIME_STRETCH_MAX_FRAME+1, new StretchEvent(1.0, 0)));
 //       
 //       //++_tempoSN;
 //       }

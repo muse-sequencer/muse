@@ -106,7 +106,7 @@ void StepRec::record(const Part* part, int pitch, int len, int step, int velo, b
 			// if we would find a note after part->lenTick(), the above "if"
 			// avoids this. this has to be avoided because then part->hasHiddenEvents() is true
 			// which results in forbidding any action beyond its end
-			EventRange range = events.equal_range(tick - part->tick());
+			         cEventRange range = events.equal_range(tick - part->tick());
 			for (ciEvent i = range.first; i != range.second; ++i)
 			{
 				const Event& ev = i->second;

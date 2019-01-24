@@ -238,7 +238,8 @@ class RubberBandAudioConverter : public AudioConverter
    
    public:   
       // Mode is an AudioConverterSettings::ModeType selecting which of the settings to use.
-      RubberBandAudioConverter(int channels, 
+      RubberBandAudioConverter(int systemSampleRate,
+                               int channels, 
                                AudioConverterSettings* settings, 
                                int mode);
       ~RubberBandAudioConverter();

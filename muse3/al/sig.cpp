@@ -21,9 +21,8 @@
 //=============================================================================
 
 
-#include "gconfig.h"
+#include "al.h"
 #include "sig.h"
-#include "operations.h"
 
 namespace AL {
 
@@ -79,14 +78,14 @@ SigList::~SigList()
 void SigList::add(unsigned tick, const TimeSignature& s)
       {
       if (s.z == 0 || s.n == 0) {
-            printf("illegal signature %d/%d\n", s.z, s.n);
+            fprintf(stderr, "illegal signature %d/%d\n", s.z, s.n);
             return;
             }
       tick = raster1(tick, 0);
       iSigEvent e = upper_bound(tick);
       if(e == end())
       {
-        printf("SigList::add Signal not found tick:%d\n", tick);
+        fprintf(stderr, "SigList::add Signal not found tick:%d\n", tick);
         return;
       }
       
@@ -130,40 +129,6 @@ void SigList::add(unsigned tick, SigEvent* e, bool do_normalize)
 }
 
 //---------------------------------------------------------
-//   addOperation
-//---------------------------------------------------------
-
-void SigList::addOperation(unsigned tick, const TimeSignature& s, MusECore::PendingOperationList& ops)
-{
-  //if (tick > MAX_TICK)
-  //  tick = MAX_TICK;
-  
-  if (s.z == 0 || s.n == 0) {
-        fprintf(stderr, "SigList::addOperation illegal signature %d/%d\n", s.z, s.n);
-        return;
-        }
-  iSigEvent e = upper_bound(tick);
-  if(tick == e->second->tick)
-    ops.add(MusECore::PendingOperationItem(this, e, s, MusECore::PendingOperationItem::ModifySig));
-  else 
-  {
-    MusECore::PendingOperationItem poi(this, 0, tick, MusECore::PendingOperationItem::AddSig);
-    MusECore::iPendingOperation ipo = ops.findAllocationOp(poi);
-    if(ipo != ops.end())
-    {
-      MusECore::PendingOperationItem& poi = *ipo;
-      // Simply replace the value.
-      poi._sig_event->sig = s;
-    }
-    else
-    {
-      poi._sig_event = new SigEvent(s, tick); // These are the desired tick and sig but...
-      ops.add(poi);                           //  add will do the proper swapping with next event.
-    }
-  }
-}
-
-//---------------------------------------------------------
 //   del
 //---------------------------------------------------------
 
@@ -172,13 +137,13 @@ void SigList::del(unsigned tick)
 // printf("SigList::del(%d)\n", tick);
       iSigEvent e = find(tick);
       if (e == end()) {
-            printf("SigList::del(%d): not found\n", tick);
+            fprintf(stderr, "SigList::del(%d): not found\n", tick);
             return;
             }
       iSigEvent ne = e;
       ++ne;
       if (ne == end()) {
-            printf("SigList::del() next event not found!\n");
+            fprintf(stderr, "SigList::del() next event not found!\n");
             return;
             }
       ne->second->sig = e->second->sig;
@@ -192,7 +157,7 @@ void SigList::del(iSigEvent e, bool do_normalize)
       iSigEvent ne = e;
       ++ne;
       if (ne == end()) {
-            printf("SigList::del() HALLO\n");
+            fprintf(stderr, "SigList::del() HALLO\n");
             return;
             }
       ne->second->sig = e->second->sig;
@@ -201,21 +166,6 @@ void SigList::del(iSigEvent e, bool do_normalize)
       if(do_normalize)
         normalize();
       }
-
-//---------------------------------------------------------
-//   delOperation
-//---------------------------------------------------------
-
-void SigList::delOperation(unsigned tick, MusECore::PendingOperationList& ops)
-{
-  iSigEvent e = find(tick);
-  if (e == end()) {
-        printf("SigList::delOperation tick:%d not found\n", tick);
-        return;
-        }
-  MusECore::PendingOperationItem poi(this, e, MusECore::PendingOperationItem::DeleteSig);
-  ops.add(poi);
-}
 
 //---------------------------------------------------------
 //   SigList::normalize
@@ -257,9 +207,9 @@ void SigList::normalize()
 
 void SigList::dump() const
       {
-      printf("\nSigList:\n");
+      fprintf(stderr, "\nSigList:\n");
       for (ciSigEvent i = begin(); i != end(); ++i) {
-            printf("%6d %06d Bar %3d %02d/%d\n",
+            fprintf(stderr, "%6d %06d Bar %3d %02d/%d\n",
                i->first, i->second->tick,
                i->second->bar, i->second->sig.z, i->second->sig.n);
             }
@@ -291,7 +241,7 @@ int SigList::ticksMeasure(unsigned tick) const
       {
       ciSigEvent i = upper_bound(tick);
       if (i == end()) {
-            printf("ticksMeasure: not found %d\n", tick);
+            fprintf(stderr, "ticksMeasure: not found %d\n", tick);
             return 0;
             }
       return ticksMeasure(i->second->sig);
@@ -306,7 +256,7 @@ int SigList::ticksBeat(unsigned tick) const
       ciSigEvent i = upper_bound(tick);
       if(i == end())
       {
-        printf("SigList::ticksBeat event not found! tick:%d\n", tick);
+        fprintf(stderr, "SigList::ticksBeat event not found! tick:%d\n", tick);
         return 0;
       }
       return ticks_beat(i->second->sig.n);
@@ -314,7 +264,7 @@ int SigList::ticksBeat(unsigned tick) const
 
 int SigList::ticks_beat(int n) const
       {
-      int m = MusEGlobal::config.division;
+      int m = division;
       
       switch (n) {
             case  1:  m <<= 2; break;           // 1536
@@ -339,7 +289,7 @@ TimeSignature SigList::timesig(unsigned tick) const
       {
       ciSigEvent i = upper_bound(tick);
       if (i == end()) {
-            printf("timesig(%d): not found\n", tick);
+            fprintf(stderr, "timesig(%d): not found\n", tick);
             return TimeSignature(4,4);
             }
       return i->second->sig;
@@ -349,7 +299,7 @@ void SigList::timesig(unsigned tick, int& z, int& n) const
       {
       ciSigEvent i = upper_bound(tick);
       if (i == end()) {
-            printf("timesig(%d): not found\n", tick);
+            fprintf(stderr, "timesig(%d): not found\n", tick);
             z = 4;
             n = 4;
             }
@@ -417,7 +367,7 @@ unsigned SigList::raster(unsigned t, int raster) const
             return t;
       ciSigEvent e = upper_bound(t);
       if (e == end()) {
-            printf("SigList::raster(%x,)\n", t);
+            fprintf(stderr, "SigList::raster(%x,)\n", t);
             return t;
             }
       int delta  = t - e->second->tick;
@@ -441,7 +391,7 @@ unsigned SigList::raster1(unsigned t, int raster) const
       ciSigEvent e = upper_bound(t);
       if(e == end())
       {
-        printf("SigList::raster1 event not found tick:%d\n", t);
+        fprintf(stderr, "SigList::raster1 event not found tick:%d\n", t);
         return t;
       }
 
@@ -466,7 +416,7 @@ unsigned SigList::raster2(unsigned t, int raster) const
       ciSigEvent e = upper_bound(t);
       if(e == end())
       {
-        printf("SigList::raster2 event not found tick:%d\n", t);
+        fprintf(stderr, "SigList::raster2 event not found tick:%d\n", t);
         //return 0;
         return t;
       }
@@ -490,7 +440,7 @@ int SigList::rasterStep(unsigned t, int raster) const
             ciSigEvent e = upper_bound(t);
             if(e == end())
             {
-              printf("SigList::rasterStep event not found tick:%d\n", t);
+              fprintf(stderr, "SigList::rasterStep event not found tick:%d\n", t);
               //return 0;
               return raster;
             }
@@ -499,92 +449,6 @@ int SigList::rasterStep(unsigned t, int raster) const
             }
       return raster;
       }
-
-void SigList::write(int level, MusECore::Xml& xml) const
-      {
-      xml.tag(level++, "siglist");
-      for (ciSigEvent i = begin(); i != end(); ++i)
-            i->second->write(level, xml, i->first);
-      xml.tag(level, "/siglist");
-      }
-
-void SigList::read(MusECore::Xml& xml)
-      {
-      for (;;) {
-            MusECore::Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case MusECore::Xml::Error:
-                  case MusECore::Xml::End:
-                        return;
-                  case MusECore::Xml::TagStart:
-                        if (tag == "sig") {
-                              SigEvent* t = new SigEvent();
-                              unsigned tick = t->read(xml);
-                              iSigEvent pos = find(tick);
-                              if (pos != end())
-                                    erase(pos);
-                              insert(std::pair<const unsigned, SigEvent*> (tick, t));
-                              }
-                        else
-                              xml.unknown("SigList");
-                        break;
-                  case MusECore::Xml::Attribut:
-                        break;
-                  case MusECore::Xml::TagEnd:
-                        if (tag == "siglist") {
-                              normalize();
-                              return;
-                              }
-                  default:
-                        break;
-                  }
-            }
-      }
-
-void SigEvent::write(int level, MusECore::Xml& xml, int at) const
-      {
-      xml.tag(level++, "sig at=\"%d\"", at);
-      xml.intTag(level, "tick", tick);
-      xml.intTag(level, "nom", sig.z);
-      xml.intTag(level, "denom", sig.n);
-      xml.tag(level, "/sig");
-      }
-
-int SigEvent::read(MusECore::Xml& xml)
-      {
-      int at = 0;
-      for (;;) {
-            MusECore::Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case MusECore::Xml::Error:
-                  case MusECore::Xml::End:
-                        return 0;
-                  case MusECore::Xml::TagStart:
-                        if (tag == "tick")
-                              tick = xml.parseInt();
-                        else if (tag == "nom")
-                              sig.z = xml.parseInt();
-                        else if (tag == "denom")
-                              sig.n = xml.parseInt();
-                        else
-                              xml.unknown("SigEvent");
-                        break;
-                  case MusECore::Xml::Attribut:
-                        if (tag == "at")
-                              at = xml.s2().toInt();
-                        break;
-                  case MusECore::Xml::TagEnd:
-                        if (tag == "sig")
-                              return at;
-                  default:
-                        break;
-                  }
-            }
-      return 0;
-      }
-
 
 } // namespace AL
 

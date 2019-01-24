@@ -33,7 +33,7 @@
 // #include "rubberband_converter.h"
 
 #include "wave.h"
-#include "globals.h"
+// #include "globals.h"
 #include "audioconvert.h"
 #include "time_stretch.h"
 #include "xml.h"
@@ -55,16 +55,11 @@ namespace MusECore {
 //   AudioConverter
 //---------------------------------------------------------
 
-AudioConverter::AudioConverter()
+AudioConverter::AudioConverter(int systemSampleRate) :
+  _systemSampleRate(systemSampleRate), _channels(0), _refCount(1), _sfCurFrame(0)
+  //, _sampleRateRatio(1.0), _stretchRatio(1.0), _pitchRatio(1.0)
 {
   DEBUG_AUDIOCONVERT(stderr, "AudioConverter::AudioConverter this:%p\n", this);
-
-  _refCount = 1;
-  _channels = 0;
-//   _sampleRateRatio = 1.0;
-//   _stretchRatio = 1.0;
-//   _pitchRatio = 1.0;
-  _sfCurFrame = 0;
 }
 
 AudioConverter::~AudioConverter()

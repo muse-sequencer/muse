@@ -40,7 +40,7 @@ class AudioConverterSettingsI;
 //class AudioConverterSettingsGroup;
 class AudioConverterPluginList;
 class Xml;
-class PendingOperationList;
+//class PendingOperationList;
 
 // namespace MusEGui {
 //   
@@ -291,7 +291,7 @@ typedef AudioConverterSettingsGroup::const_iterator ciAudioConverterSettingsI;
 
 namespace MusEGlobal {
 extern MusECore::AudioConverterSettingsGroup* defaultAudioConverterSettings;
-extern void modifyDefaultAudioConverterSettingsOperation(MusECore::AudioConverterSettingsGroup* settings, MusECore::PendingOperationList& ops);
+// extern void modifyDefaultAudioConverterSettingsOperation(MusECore::AudioConverterSettingsGroup* settings, MusECore::PendingOperationList& ops);
 }
 
 #endif

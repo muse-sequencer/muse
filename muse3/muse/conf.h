@@ -26,16 +26,16 @@
 
 #include "ui_configmidifilebase.h"
 
+#include <QDialog>
+
+#include "xml.h"
+
 // REMOVE Tim. newdrums. Added.
 // Adds the ability to override at instrument level.
 // But it just makes things too complex for the user.
 // And in a way is unnecessary and overkill, since we
 //  already allow modifying an instrument.
 //#define _USE_INSTRUMENT_OVERRIDES_
-
-class QDialog;
-class QLineEdit;
-
 
 namespace MusEGui {
 
@@ -59,10 +59,9 @@ class MidiFileConfig : public QDialog, public Ui::ConfigMidiFileBase {
 } // namespace MusEGui
 
 namespace MusECore {
-class Xml;
 extern bool readConfiguration();
 extern bool readConfiguration(const char *configFile);
-extern void readConfiguration(Xml&, bool doReadMidiPorts, bool doReadGlobalConfig);
+extern void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalConfig);
 }
 
 #endif

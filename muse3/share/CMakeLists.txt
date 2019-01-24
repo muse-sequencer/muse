@@ -35,6 +35,7 @@ subdirs(
       locale
       themes
       metronome
+      rdf
       )
 
 install (FILES didyouknow.txt splash.png DESTINATION ${MusE_SHARE_DIR} )

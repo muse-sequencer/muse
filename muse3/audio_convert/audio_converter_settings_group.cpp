@@ -35,11 +35,11 @@
 
 #include "xml.h"
 
-#include "operations.h"
-#include "song.h"
-#include "track.h"
-#include "part.h"
-#include "event.h"
+//#include "operations.h"
+// #include "song.h"
+// #include "track.h"
+//#include "part.h"
+//#include "event.h"
 
 #define ERROR_AUDIOCONVERT(dev, format, args...)  fprintf(dev, format, ##args)
 
@@ -52,43 +52,43 @@ namespace MusEGlobal {
 // This global variable is a pointer so that we can replace it quickly with a new one in RT operations.
 MusECore::AudioConverterSettingsGroup* defaultAudioConverterSettings;
 
-void modifyDefaultAudioConverterSettingsOperation(MusECore::AudioConverterSettingsGroup* settings, 
-                                                        MusECore::PendingOperationList& ops)
-{
-  // First, schedule the change to the actual default settings pointer variable.
-  ops.add(MusECore::PendingOperationItem(settings, MusECore::PendingOperationItem::ModifyDefaultAudioConverterSettings));
-  
-  // Now, schedule changes to each wave event if necessary.
-  // Note that at this point the above default change has not occurred yet, 
-  //  so we must tell it to use what the settings WILL BE, not what they are now.
-  for(MusECore::iWaveTrack it = MusEGlobal::song->waves()->begin(); it != MusEGlobal::song->waves()->end(); ++it)
-  {
-    MusECore::WaveTrack* wtrack = *it;
-    for(MusECore::iPart ip = wtrack->parts()->begin(); ip != wtrack->parts()->end(); ++ip)
-    {
-      MusECore::Part* part = ip->second;
-      for(MusECore::iEvent ie = part->nonconst_events().begin(); ie != part->nonconst_events().end(); ++ie)
-      {
-        MusECore::Event e = ie->second;
-        if(e.type() != MusECore::Wave)
-          continue;
-        if(MusECore::AudioConverterSettingsGroup* cur_ev_settings = e.sndFile().audioConverterSettings())
-        {
-          // Is the event using its own local settings? Ignore.
-          if(cur_ev_settings->useSettings())
-            continue;
-          //MusECore::StretchList* sl = e.sndFile().stretchList();
-          //if(sl)
-            e.sndFile().modifyAudioConverterSettingsOperation(defaultAudioConverterSettings, 
-                                                      false,  // false = Default, non-local settings.
-                                                      ops); //, 
-                                                      //sl->isResampled(), 
-                                                      //sl->isStretched());
-        }
-      }
-    }
-  }
-}
+// void modifyDefaultAudioConverterSettingsOperation(MusECore::AudioConverterSettingsGroup* settings, 
+//                                                         MusECore::PendingOperationList& ops)
+// {
+//   // First, schedule the change to the actual default settings pointer variable.
+//   ops.add(MusECore::PendingOperationItem(settings, MusECore::PendingOperationItem::ModifyDefaultAudioConverterSettings));
+//   
+//   // Now, schedule changes to each wave event if necessary.
+//   // Note that at this point the above default change has not occurred yet, 
+//   //  so we must tell it to use what the settings WILL BE, not what they are now.
+//   for(MusECore::iWaveTrack it = MusEGlobal::song->waves()->begin(); it != MusEGlobal::song->waves()->end(); ++it)
+//   {
+//     MusECore::WaveTrack* wtrack = *it;
+//     for(MusECore::iPart ip = wtrack->parts()->begin(); ip != wtrack->parts()->end(); ++ip)
+//     {
+//       MusECore::Part* part = ip->second;
+//       for(MusECore::iEvent ie = part->nonconst_events().begin(); ie != part->nonconst_events().end(); ++ie)
+//       {
+//         MusECore::Event e = ie->second;
+//         if(e.type() != MusECore::Wave)
+//           continue;
+//         if(MusECore::AudioConverterSettingsGroup* cur_ev_settings = e.sndFile().audioConverterSettings())
+//         {
+//           // Is the event using its own local settings? Ignore.
+//           if(cur_ev_settings->useSettings())
+//             continue;
+//           //MusECore::StretchList* sl = e.sndFile().stretchList();
+//           //if(sl)
+//             e.sndFile().modifyAudioConverterSettingsOperation(defaultAudioConverterSettings, 
+//                                                       false,  // false = Default, non-local settings.
+//                                                       ops); //, 
+//                                                       //sl->isResampled(), 
+//                                                       //sl->isStretched());
+//         }
+//       }
+//     }
+//   }
+// }
 
 } // namespace MusEGlobal
 

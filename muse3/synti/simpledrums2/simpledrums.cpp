@@ -23,9 +23,9 @@
 //
 //
 
-#include "muse/midictrl_consts.h"
-#include "muse/midi_consts.h"
-#include "muse/mpevent.h"   
+#include "midictrl_consts.h"
+#include "midi_consts.h"
+#include "mpevent.h"   
 //#include "common_defs.h"
 #include "simpledrums.h"
 
@@ -68,6 +68,7 @@ bool SS_useDenormalBias;
 float SS_denormalBias;
 QString SS_globalLibPath;
 QString SS_projectPath;
+QString SS_hostConfigPath;
 
 
 double rangeToPitch(int value)
@@ -122,7 +123,7 @@ SimpleSynth::SimpleSynth(int sr)
          
    synth_state = SS_INITIALIZING;
    
-   MusESimplePlugin::SS_initPlugins(SS_globalLibPath);
+   MusESimplePlugin::SS_initPlugins(SS_hostConfigPath);
 
    initBuffer  = 0;
    initLen     = 0;
@@ -2123,6 +2124,7 @@ static Mess* instantiate(unsigned long long /*parentWinId*/, const char* name, c
    SS_denormalBias      = config->_denormalBias;
    SS_globalLibPath     = QString(config->_globalLibPath);
    SS_projectPath       = QString(config->_projectPath);
+    SS_hostConfigPath        = QString(config->_configPath);
    SimpleSynth* synth = new SimpleSynth(config->_sampleRate);
    if (!synth->init(name)) {
       delete synth;

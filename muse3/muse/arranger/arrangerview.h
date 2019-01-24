@@ -54,6 +54,7 @@
 #include "cleftypes.h"
 #include "helper.h"
 #include "arranger.h"
+#include "event_tag_list.h"
 
 
 namespace MusEGui {
@@ -128,7 +129,6 @@ class ArrangerView : public TopWin
                 void cmd(int);
                 void addNewTrack(QAction* action);
                 void configCustomColumns();
-                void songChanged(MusECore::SongChangedFlags_t);
 
 	signals:
 		void isDeleting(MusEGui::TopWin*);
@@ -158,6 +158,10 @@ class ArrangerView : public TopWin
 		void readStatus(MusECore::Xml& xml);
 		static void readConfiguration(MusECore::Xml&);
 		void writeConfiguration(int, MusECore::Xml&);
+		
+		// Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
+		// Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
+		void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
 };
 
 }  // namespace MusEGui

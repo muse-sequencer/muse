@@ -36,7 +36,7 @@
 
 //#include "rubberband_converter.h"
 #include "wave.h"
-#include "globals.h"
+// #include "globals.h"
 #include "time_stretch.h"
 #include "xml.h"
 
@@ -51,12 +51,13 @@
 
 // Create a new instance of the plugin.  
 // Mode is an AudioConverterSettings::ModeType selecting which of the settings to use.
-MusECore::AudioConverter* instantiate(const MusECore::AudioConverterDescriptor* /*Descriptor*/,
+MusECore::AudioConverter* instantiate(int systemSampleRate,
+                            const MusECore::AudioConverterDescriptor* /*Descriptor*/,
                             int channels, 
                             MusECore::AudioConverterSettings* settings, 
                             int mode)
 {
-  return new MusECore::RubberBandAudioConverter(channels, settings, mode);
+  return new MusECore::RubberBandAudioConverter(systemSampleRate, channels, settings, mode);
 }
 
 // Destroy the instance after usage.
@@ -118,9 +119,10 @@ namespace MusECore {
 //   RubberBandAudioConverter
 //---------------------------------------------------------
 
-RubberBandAudioConverter::RubberBandAudioConverter(int channels, 
+RubberBandAudioConverter::RubberBandAudioConverter(int systemSampleRate,
+                                                   int channels, 
                                                    AudioConverterSettings* settings, 
-                                                   int mode) : AudioConverter()
+                                                   int mode) : AudioConverter(systemSampleRate)
 {
   DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::RubberBandAudioConverter this:%p channels:%d mode:%d\n", 
                      this, channels, mode);
@@ -163,7 +165,9 @@ RubberBandAudioConverter::RubberBandAudioConverter(int channels,
   _latencyCompPending = true; // Set to compensate at the first process.
   
 #ifdef RUBBERBAND_SUPPORT
-  _rbs = new RubberBand::RubberBandStretcher(MusEGlobal::sampleRate, _channels, _options);  // , initialTimeRatio = 1.0, initialPitchScale = 1.0 DELETETHIS
+//   _rbs = new RubberBand::RubberBandStretcher(MusEGlobal::sampleRate, _channels, _options);
+  _rbs = new RubberBand::RubberBandStretcher(_systemSampleRate, _channels, _options);
+  // , initialTimeRatio = 1.0, initialPitchScale = 1.0 DELETETHIS
 #endif
 }
 
@@ -184,7 +188,9 @@ void RubberBandAudioConverter::setChannels(int ch)
 #ifdef RUBBERBAND_SUPPORT
   if(_rbs)
     delete _rbs;
-  _rbs = new RubberBand::RubberBandStretcher(MusEGlobal::sampleRate, _channels, _options);  // , initialTimeRatio = 1.0, initialPitchScale = 1.0
+//   _rbs = new RubberBand::RubberBandStretcher(MusEGlobal::sampleRate, _channels, _options);
+  _rbs = new RubberBand::RubberBandStretcher(_systemSampleRate, _channels, _options);
+  // , initialTimeRatio = 1.0, initialPitchScale = 1.0
 #endif
 }
 
@@ -227,9 +233,10 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
   
 //   if((MusEGlobal::sampleRate == 0) || (fsrate == 0))
 //   if((MusEGlobal::sampleRate == 0) || (f.samplerate() == 0))
-  if((MusEGlobal::sampleRate == 0) || (sf->samplerate() == 0))
+//   if((MusEGlobal::sampleRate == 0) || (sf->samplerate() == 0))
+  if((_systemSampleRate <= 0) || (sf->samplerate() <= 0))
   {  
-    DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process Error: MusEGlobal::sampleRate or file samplerate is zero!\n");
+    DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process Error: _systemSampleRate or file samplerate <= 0!\n");
 //     return _sfCurFrame;
     return 0;
   }  

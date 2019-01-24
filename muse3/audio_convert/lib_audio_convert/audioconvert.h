@@ -63,7 +63,7 @@ struct AudioConverterDescriptor
 
   // Create an instance of the plugin.
   // Mode is an AudioConverterSettings::ModeType selecting which of the settings to use.
-  AudioConverterHandle (*instantiate)(const struct AudioConverterDescriptor* Descriptor,
+  AudioConverterHandle (*instantiate)(int systemSampleRate, const struct AudioConverterDescriptor* Descriptor,
                                  int channels, AudioConverterSettings* settings, int mode);
   
   // Destroy the instance after usage.
@@ -133,7 +133,8 @@ class AudioConverter
      // Or'd together.
      enum Capabilities { SampleRate=0x01, Stretch=0x02, Pitch=0x04 };
      
-   protected:   
+   protected:
+      int _systemSampleRate;
       int _channels;
       int _refCount;
       sf_count_t _sfCurFrame;
@@ -143,7 +144,7 @@ class AudioConverter
 //       double _pitchRatio;
       
    public:   
-      AudioConverter();
+      AudioConverter(int systemSampleRate);
       virtual ~AudioConverter();
       
       // Returns combination of available ConverterID values.

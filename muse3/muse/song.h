@@ -35,11 +35,14 @@
 #include "pos.h"
 #include "globaldefs.h"
 #include "tempo.h"
-#include "al/sig.h"
+#include "sig.h"
 #include "undo.h"
 #include "track.h"
 #include "synth.h"
 #include "operations.h"
+// REMOVE Tim. samplerate. Added.
+#include "time_stretch.h"
+#include "audio_convert/audio_converter_settings_group.h"
 
 class QAction;
 class QFont;
@@ -86,6 +89,21 @@ class Song : public QObject {
       enum            { CYCLE_NORMAL, CYCLE_MIX, CYCLE_REPLACE };
       enum { MARKER_CUR, MARKER_ADD, MARKER_REMOVE, MARKER_NAME,
          MARKER_TICK, MARKER_LOCK };
+      enum OperationType {
+        // Execute the operation only, the operation is not un-doable. No song update.
+        OperationExecute,
+        // Execute the operation only, the operation is not un-doable. Song is updated.
+        OperationExecuteUpdate,
+        // Execute the operation, the operation is un-doable,
+        //  and do not 'start' and 'end' the undo mode. No song update.
+        OperationUndoable,
+        // Execute the operation, the operation is un-doable,
+        //  and do not 'start' and 'end' the undo mode. Song is updated.
+        OperationUndoableUpdate,
+        // Execute the operation, the operation is un-doable,
+        //  and 'start' and 'end' the undo mode. Song is updated.
+        OperationUndoMode
+      };
 
    private:
       // fifo for note-on events
@@ -99,7 +117,7 @@ class Song : public QObject {
 
       TempoFifo _tempoFifo; // External tempo changes, processed in heartbeat.
       
-      MusECore::SongChangedFlags_t updateFlags;
+      MusECore::SongChangedStruct_t updateFlags;
 
       TrackList _tracks;      // tracklist as seen by arranger
       MidiTrackList  _midis;
@@ -156,9 +174,17 @@ class Song : public QObject {
       void insertTrackOperation(Track* track, int idx, PendingOperationList& ops);
       void removeTrackOperation(Track* track, PendingOperationList& ops);
       bool addEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
-      void changeEventOperation(const Event&, const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
-      void deleteEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
-      
+      void changeEventOperation(const Event& oldEvent, const Event& newEvent,
+                                Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
+      // Special: Returns the real actual event found in the event lists.
+      // This way even a modified event can be passed in, and as long as
+      //  the ID AND position values match it will find and return the ORIGINAL event.
+      // Useful for example for passing a pre-modified event to a DeleteEvent operation
+      //  in the Undo system, and it will automatically replace the Undo item's event with
+      //  the real one returned here. (Otherwise when the user hits 'undo' it would restore
+      //  that modified passed-in event sitting in the Undo item. That's not the right event!)
+      Event deleteEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
+
       // REMOVE Tim. samplerate. Added.
       void checkSongSampleRate();
       
@@ -170,8 +196,12 @@ class Song : public QObject {
        *  to AddEvent/DeleteEvent/ModifyEvent/SelectEvent events which
        *  would need to be replicated to the newly added clone part!
        */
-      bool applyOperationGroup(Undo& group, bool doUndo=true); // group may be changed! prepareOperationGroup is called on group!
-      bool applyOperation(const UndoOp& op, bool doUndo=true);
+      // group may be changed! prepareOperationGroup is called on group!
+      // Sender can be set to the caller object and used by it
+      //  to ignore self-generated songChanged signals.
+      // The songChanged structure will contain this pointer.
+      bool applyOperationGroup(Undo& group, OperationType type = OperationUndoMode, void* sender = 0);
+      bool applyOperation(const UndoOp& op, OperationType type = OperationUndoMode, void* sender = 0);
       
       /** this sends emits a signal to each MidiEditor or whoever is interested.
        *  For each part which is 1) opened in this MidiEditor and 2) which is
@@ -278,7 +308,7 @@ class Song : public QObject {
       long xRunsCount() const { return _xRunsCount; }
 
       //-----------------------------------------
-      //    access tempomap/sigmap  (Mastertrack)
+      //    access tempomap/MusEGlobal::sigmap  (Mastertrack)
       //-----------------------------------------
 
       unsigned len() const { return _len; }
@@ -305,12 +335,55 @@ class Song : public QObject {
       void changeAllPortDrumCtrlEvents(bool add, bool drumonly = false); // called from GUI thread
       
       void addExternalTempo(const TempoRecEvent& e) { _tempoFifo.put(e); }
+
+
+      // REMOVE Tim. samplerate. Added.
+#ifdef USE_ALTERNATE_STRETCH_LIST
+      void stretchModifyOperation(
+         StretchList* stretch_list, StretchListItem::StretchEventType type, double value, PendingOperationList& ops) const;
+      void stretchListAddOperation(
+        StretchList* stretch_list, StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops) const;
+      void stretchListDelOperation(
+        StretchList* stretch_list, int types, MuseFrame_t frame, PendingOperationList& ops) const;
+      void stretchListModifyOperation(
+        StretchList* stretch_list, StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops) const;
+
+#else
+      void stretchListAddOperation(
+        StretchList* stretch_list, MuseFrame_t frame, double stretch, PendingOperationList& ops) const;
+      void stretchListDelOperation(
+        StretchList* stretch_list, MuseFrame_t frame, PendingOperationList& ops) const;
+#endif
       
+      void modifyAudioConverterSettingsOperation(
+        SndFileR sndfile,
+        AudioConverterSettingsGroup* settings,
+        bool isLocalSettings,
+        PendingOperationList& ops //,
+        //bool doResample,
+        //bool doStretch)
+        ) const;
+
+      void modifyAudioConverterOperation(
+        SndFileR sndfile,
+        //AudioConverterSettingsGroup* settings, 
+        //bool isLocalSettings, 
+        PendingOperationList& ops,
+        bool doResample,
+        bool doStretch) const;
+
+      void modifyStretchListOperation(SndFileR sndfile, int type, double value, PendingOperationList& ops) const;
+      void addAtStretchListOperation(SndFileR sndfile, int type, MuseFrame_t frame, double value, PendingOperationList& ops) const;
+      void delAtStretchListOperation(SndFileR sndfile, int types, MuseFrame_t frame, PendingOperationList& ops) const;
+      void modifyAtStretchListOperation(SndFileR sndfile, int type, MuseFrame_t frame, double value, PendingOperationList& ops) const;
+      void modifyDefaultAudioConverterSettingsOperation(AudioConverterSettingsGroup* settings, PendingOperationList& ops);
+
       //-----------------------------------------
       //   part manipulations
       //-----------------------------------------
 
-      void cmdResizePart(Track* t, Part* p, unsigned int size, bool doMove, int newPos, bool doClones=false); // called from GUI thread, calls applyOperationGroup. FIXME TODO: better move that into functions.cpp or whatever.
+      // called from GUI thread, calls applyOperationGroup. FIXME TODO: better move that into functions.cpp or whatever.      
+      void cmdResizePart(Track* t, Part* p, unsigned int size, bool doMove, unsigned int newPos, bool doClones=false);
 
       void addPart(Part* part);
       void removePart(Part* part);
@@ -391,8 +464,11 @@ public:
       //   undo, redo, operation groups
       //-----------------------------------------
 
-      void startUndo();
-      void endUndo(MusECore::SongChangedFlags_t);
+      // Sender can be set to the caller object and used by it
+      //  to ignore self-generated songChanged signals.
+      // The songChanged structure will contain this pointer.
+      void startUndo(void* sender = 0);
+      void endUndo(MusECore::SongChangedStruct_t);
 
       void undoOp(UndoOp::UndoType type, const Event& changedEvent, const QString& changeData, int startframe, int endframe); // FIXME FINDMICHJETZT what's that?! remove it!
 
@@ -417,7 +493,7 @@ public:
       //-----------------------------------------
 
       void dumpMaster();
-      void addUpdateFlags(MusECore::SongChangedFlags_t f)  { updateFlags |= f; }
+      void addUpdateFlags(MusECore::SongChangedStruct_t f)  { updateFlags |= f; }
 
       //-----------------------------------------
       //   Python bridge related
@@ -431,7 +507,8 @@ public:
       void seekTo(int tick);
       // use allowRecursion with care! this could lock up muse if you 
       //  aren't sure that your recursion will be finite!
-      void update(MusECore::SongChangedFlags_t flags = -1, bool allowRecursion=false); 
+      void update(SongChangedStruct_t flags = SongChangedStruct_t(SC_EVERYTHING),
+                  bool allowRecursion=false); 
       void beat();
 
       void undo();
@@ -439,7 +516,7 @@ public:
 
       void setTempo(int t);
       void setSig(int a, int b);
-      void setSig(const AL::TimeSignature&);
+      void setSig(const MusECore::TimeSignature&);
       void setTempo(double tempo)  { setTempo(int(60000000.0/tempo)); }
 
       void setMasterFlag(bool flag);
@@ -474,7 +551,7 @@ public:
       void restartRecording(bool discard = true);
 
    signals:
-      void songChanged(MusECore::SongChangedFlags_t); 
+      void songChanged(MusECore::SongChangedStruct_t); 
       void posChanged(int, unsigned, bool);
       void loopChanged(bool);
       void recordChanged(bool);

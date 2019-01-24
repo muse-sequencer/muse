@@ -69,7 +69,7 @@
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
 
 namespace MusEGlobal {
-extern std::vector<MusECore::Synth*> synthis;
+extern MusECore::SynthList synthis;
 }
 
 namespace MusEGui {
@@ -115,14 +115,14 @@ void MPConfig::changeDefInputRoutes(QAction* act)
     return;
   QString id = mdevView->item(item->row(), DEVCOL_NO)->text();
   int no = atoi(id.toLatin1().constData()) - 1;
-  if(no < 0 || no >= MIDI_PORTS)
+  if(no < 0 || no >= MusECore::MIDI_PORTS)
     return;
   int actid = act->data().toInt();
-  int allch = (1 << MIDI_CHANNELS) - 1;  
+  int allch = (1 << MusECore::MUSE_MIDI_CHANNELS) - 1;  
   int defch = MusEGlobal::midiPorts[no].defaultInChannels();  
   MusECore::PendingOperationList operations;
   
-  if(actid == MIDI_CHANNELS + 1)  // Apply to all tracks now.
+  if(actid == MusECore::MUSE_MIDI_CHANNELS + 1)  // Apply to all tracks now.
   {
     // Are there tracks, and is there a port device? 
     // Tested: Hmm, allow ports with no device since that is a valid situation.
@@ -161,7 +161,7 @@ void MPConfig::changeDefInputRoutes(QAction* act)
                                                             MusECore::PendingOperationItem::AddRoute));
             else
             // Add individual channels:  
-            for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+            for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)
             {
               const int chbit = 1 << ch;
               if(defch & chbit)
@@ -183,7 +183,7 @@ void MPConfig::changeDefInputRoutes(QAction* act)
   else
   {
     int chbits;
-    if(actid == MIDI_CHANNELS)              // Toggle all.
+    if(actid == MusECore::MUSE_MIDI_CHANNELS)              // Toggle all.
     {
       chbits = (defch == -1 || defch == allch) ? 0 : allch;
       if(act->actionGroup())
@@ -221,17 +221,17 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
     return;
   QString id = mdevView->item(item->row(), DEVCOL_NO)->text();
   int no = atoi(id.toLatin1().constData()) - 1;
-  if(no < 0 || no >= MIDI_PORTS)
+  if(no < 0 || no >= MusECore::MIDI_PORTS)
     return;
   int actid = act->data().toInt();
   int defch = MusEGlobal::midiPorts[no].defaultOutChannels();  
   
 #ifndef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-  int allch = (1 << MIDI_CHANNELS) - 1;
+  int allch = (1 << MusECore::MUSE_MIDI_CHANNELS) - 1;
   MusECore::PendingOperationList operations;
 #endif
   
-  if(actid == MIDI_CHANNELS + 1)  // Apply to all tracks now.
+  if(actid == MusECore::MUSE_MIDI_CHANNELS + 1)  // Apply to all tracks now.
   {
     // Are there tracks, and is there a port device? 
     // Tested: Hmm, allow ports with no device since that is a valid situation.
@@ -252,7 +252,7 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
         MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
         
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-        for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+        for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)
           if(defch & (1 << ch))
           { 
             MusECore::MidiTrack::ChangedType_t changed = MusECore::MidiTrack::NothingChanged;
@@ -299,7 +299,7 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
                                                             MusECore::PendingOperationItem::AddRoute));
             else
             // Add individual channels:  
-            for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+            for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)
             {
               const int chbit = 1 << ch;
               if(defch & chbit)
@@ -323,7 +323,7 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
   else
   {
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-    if(actid < MIDI_CHANNELS)
+    if(actid < MusECore::MUSE_MIDI_CHANNELS)
     {
       int chbits = 1 << actid;
       // Are we toggling off?
@@ -357,7 +357,7 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
     }    
 #else
     int chbits;
-    if(actid == MIDI_CHANNELS)              // Toggle all.
+    if(actid == MusECore::MUSE_MIDI_CHANNELS)              // Toggle all.
     {
       chbits = (defch == -1 || defch == allch) ? 0 : allch;
       if(act->actionGroup())
@@ -458,7 +458,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
             return;
       QString id = item->tableWidget()->item(item->row(), DEVCOL_NO)->text();
       int no = atoi(id.toLatin1().constData()) - 1;
-      if (no < 0 || no >= MIDI_PORTS)
+      if (no < 0 || no >= MusECore::MIDI_PORTS)
             return;
 
       int n;
@@ -573,7 +573,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     int chbits = MusEGlobal::midiPorts[no].defaultInChannels();
                     QActionGroup* ag = new QActionGroup(pup);
                     ag->setExclusive(false);
-                    for(int i = 0; i < MIDI_CHANNELS; ++i) 
+                    for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i) 
                     {
                       act = ag->addAction(QString().setNum(i + 1));
                       act->setData(i);
@@ -583,11 +583,11 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     pup->addActions(ag->actions());
                     
                     act = pup->addAction(tr("Toggle all"));
-                    act->setData(MIDI_CHANNELS);
+                    act->setData(MusECore::MUSE_MIDI_CHANNELS);
                     
                     pup->addSeparator();
                     act = pup->addAction(tr("Change all tracks now"));
-                    act->setData(MIDI_CHANNELS + 1);
+                    act->setData(MusECore::MUSE_MIDI_CHANNELS + 1);
                     // Enable only if there are tracks, and port has a device.
                     // Allow ports with no device since that is a valid situation.
                     act->setEnabled(!MusEGlobal::song->midis()->empty());
@@ -613,7 +613,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     act->setCheckable(true);
                     act->setChecked(chbits == 0);
 
-                    for(int i = 0; i < MIDI_CHANNELS; ++i)
+                    for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
                     {
                       act = ag->addAction(QString().setNum(i + 1));
                       act->setData(i);
@@ -625,12 +625,12 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     // Turn on if and when multiple output routes are supported.
 #ifndef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
                     act = pup->addAction(tr("Toggle all"));
-                    act->setData(MIDI_CHANNELS);
+                    act->setData(MusECore::MUSE_MIDI_CHANNELS);
 #endif
                     
                     pup->addSeparator();
                     act = pup->addAction(tr("Change all tracks now"));
-                    act->setData(MIDI_CHANNELS + 1);
+                    act->setData(MusECore::MUSE_MIDI_CHANNELS + 1);
                     // Enable only if there are tracks, and port has a device.
                     // Allow ports with no device since that is a valid situation.
                     act->setEnabled(!MusEGlobal::song->midis()->empty());
@@ -862,7 +862,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     // Add all track routes to/from this port...
                     if(sdev)
                     {  
-                      const int allch = (1 << MIDI_CHANNELS) - 1;  
+                      const int allch = (1 << MusECore::MUSE_MIDI_CHANNELS) - 1;  
                       const int i_chbits = MusEGlobal::midiPorts[no].defaultInChannels();
                       const int o_chbits = MusEGlobal::midiPorts[no].defaultOutChannels();
                       // Connect all the specified routes. Do not add input routes to synths.
@@ -877,7 +877,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                                                                           MusECore::PendingOperationItem::AddRoute));
                           else
                           // Add individual channels:  
-                          for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+                          for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)
                           {
                             const int chbit = 1 << ch;
                             if(i_chbits & chbit)
@@ -892,7 +892,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                                                                           MusECore::PendingOperationItem::AddRoute));
                           else
                           // Add individual channels:  
-                          for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+                          for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)
                           {
                             const int chbit = 1 << ch;
                             if(o_chbits & chbit)
@@ -1118,7 +1118,7 @@ MPConfig::MPConfig(QWidget* parent)
       QSettings settings("MusE", "MusE-qt");
       restoreGeometry(settings.value("MPConfig/geometry").toByteArray());
 
-      mdevView->setRowCount(MIDI_PORTS);
+      mdevView->setRowCount(MusECore::MIDI_PORTS);
       mdevView->verticalHeader()->hide();
       mdevView->setShowGrid(false);
 
@@ -1182,7 +1182,7 @@ MPConfig::MPConfig(QWidget* parent)
       connect(addJACKDevice, SIGNAL(clicked(bool)), SLOT(addJackDeviceClicked()));
       connect(addALSADevice, SIGNAL(clicked(bool)), SLOT(addAlsaDeviceClicked(bool)));
       connect(mdevView, SIGNAL(itemPressed(QTableWidgetItem*)), this, SLOT(rbClicked(QTableWidgetItem*)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       connect(synthList, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));
       connect(addSynthDevice, SIGNAL(clicked()), SLOT(addInstanceClicked()));
       connect(synthList, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), SLOT(addInstanceClicked())); 
@@ -1265,9 +1265,9 @@ void MPConfig::deviceSelectionChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
+void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if(!(flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_INSTRUMENT)))
+      if(!(flags._flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_INSTRUMENT)))
         return;
     
       addALSADevice->blockSignals(true);
@@ -1282,7 +1282,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
       {
         QString id = sitem->tableWidget()->item(sitem->row(), DEVCOL_NO)->text();
         no = atoi(id.toLatin1().constData()) - 1;
-        if(no < 0 || no >= MIDI_PORTS)
+        if(no < 0 || no >= MusECore::MIDI_PORTS)
           no = -1;
       }
       
@@ -1290,7 +1290,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
       mdevView->blockSignals(true);
       mdevView->clearContents();
       int defochs = 0;
-      for (int i = MIDI_PORTS-1; i >= 0; --i) 
+      for (int i = MusECore::MIDI_PORTS-1; i >= 0; --i) 
       {
             mdevView->blockSignals(true); // otherwise itemChanged() is triggered and bad things happen.
             MusECore::MidiPort* port  = &MusEGlobal::midiPorts[i];
@@ -1361,7 +1361,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             defochs = port->defaultOutChannels();
             if(defochs)
             {
-              for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+              for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)
               {
                 if(defochs & (1 << ch))
                 {
@@ -1608,7 +1608,7 @@ void MPConfig::addInstanceClicked()
         return;
 
       // add instance last in midi device list
-      for (int i = 0; i < MIDI_PORTS; ++i) {
+      for (int i = 0; i < MusECore::MIDI_PORTS; ++i) {
             MusECore::MidiPort* port  = &MusEGlobal::midiPorts[i];
             MusECore::MidiDevice* dev = port->device();
             if (dev==0) {
@@ -1709,7 +1709,7 @@ void MPConfig::removeInstanceClicked()
     }
   }
   if(!operations.empty())
-    MusEGlobal::song->applyOperationGroup(operations, true);
+    MusEGlobal::song->applyOperationGroup(operations);
 
   if(doupd)
     MusEGlobal::song->update(SC_CONFIG);

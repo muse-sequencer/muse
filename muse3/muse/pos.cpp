@@ -28,8 +28,8 @@
 #include "xml.h"
 #include "tempo.h"
 #include "globals.h"
-///#include "sig.h"
-#include "al/sig.h"
+#include "sync.h"
+#include "sig.h"
 
 namespace MusEGlobal {
 extern int mtcType;
@@ -95,14 +95,14 @@ Pos::Pos(const QString& s)
       {
       int m, b, t;
       sscanf(s.toLatin1(), "%04d.%02d.%03d", &m, &b, &t);
-      _tick = AL::sigmap.bar2tick(m, b, t);
+      _tick = MusEGlobal::sigmap.bar2tick(m, b, t);
       _type = TICKS;
       sn    = -1;
       }
 
 Pos::Pos(int measure, int beat, int tick)
       {
-      _tick = AL::sigmap.bar2tick(measure, beat, tick);
+      _tick = MusEGlobal::sigmap.bar2tick(measure, beat, tick);
       _type = TICKS;
       sn    = -1;
       }
@@ -196,6 +196,42 @@ Pos& Pos::operator+=(int a)
       return *this;
       }
 
+//---------------------------------------------------------
+//   operator-=
+//---------------------------------------------------------
+
+Pos& Pos::operator-=(Pos a)
+      {
+      switch(_type) {
+            case FRAMES:
+                  _frame -= a.frame();
+                  break;
+            case TICKS:
+                  _tick -= a.tick();
+                  break;
+            }
+      sn = -1;          // invalidate cached values
+      return *this;
+      }
+
+//---------------------------------------------------------
+//   operator-=
+//---------------------------------------------------------
+
+Pos& Pos::operator-=(int a)
+      {
+      switch(_type) {
+            case FRAMES:
+                  _frame -= a;
+                  break;
+            case TICKS:
+                  _tick -= a;
+                  break;
+            }
+      sn = -1;          // invalidate cached values
+      return *this;
+      }
+
 Pos operator+(Pos a, int b)
       {
       Pos c = a;
@@ -207,6 +243,19 @@ Pos operator+(Pos a, Pos b)
       {
       Pos c = a;
       return c += b;
+      }
+
+Pos operator-(Pos a, int b)
+      {
+      Pos c = a;
+      c.setType(a.type());
+      return c -= b;
+      }
+
+Pos operator-(Pos a, Pos b)
+      {
+      Pos c = a;
+      return c -= b;
       }
 
 bool Pos::operator>=(const Pos& s) const
@@ -247,6 +296,14 @@ bool Pos::operator==(const Pos& s) const
             return _frame == s.frame();
       else
             return _tick == s.tick();
+      }
+
+bool Pos::operator!=(const Pos& s) const
+      {
+      if (_type == FRAMES)
+            return _frame != s.frame();
+      else
+            return _tick != s.tick();
       }
 
 // REMOVE Tim. samplerate. Changed.
@@ -307,7 +364,7 @@ unsigned Pos::posValue() const
     case TICKS:
       return _tick;
   }
-  return _tick;
+  return tick();
 }
       
 unsigned Pos::posValue(TType time_type) const
@@ -323,7 +380,7 @@ unsigned Pos::posValue(TType time_type) const
             _tick = MusEGlobal::tempomap.frame2tick(_frame, _tick, &sn);
       return _tick;
   }
-  return _tick;
+  return tick();
 }
       
 //---------------------------------------------------------
@@ -485,10 +542,17 @@ void Pos::read(Xml& xml, const char* name)
 //   PosLen
 //---------------------------------------------------------
 
-PosLen::PosLen()
+PosLen::PosLen(bool ticks, unsigned pos, unsigned len)
+  : Pos(pos, ticks)
       {
-      _lenTick  = 0;
-      _lenFrame = 0;
+      if (ticks) {
+            _lenTick  = len;
+            _lenFrame = 0;
+            }
+      else {
+            _lenTick  = 0;
+            _lenFrame = len;
+            }
       sn        = -1;
       }
 
@@ -730,7 +794,7 @@ unsigned PosLen::lenValue() const
           case TICKS:
               return _lenTick;
         }
-        return _lenTick;
+        return lenTick();
       }
 
 unsigned PosLen::lenValue(TType time_type) const
@@ -746,7 +810,7 @@ unsigned PosLen::lenValue(TType time_type) const
                       _lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + _lenFrame, &sn);
                 return _lenTick;
         }
-        return _lenTick;
+        return lenTick();
       }
 
 //---------------------------------------------------------
@@ -767,6 +831,90 @@ Pos PosLen::end() const
             }
       return pos;
       }
+
+void PosLen::setEnd(const Pos& pos)
+{
+      switch(pos.type()) {
+            case FRAMES:
+                  if(pos.frame() > frame())
+                    setLenFrame(pos.frame() - frame());
+                  else
+                    setLenFrame(0);
+                  break;
+            case TICKS:
+                  if(pos.tick() > tick())
+                    setLenTick(pos.tick() - tick());
+                  else
+                    setLenTick(0);
+                  break;
+            }
+}
+
+//---------------------------------------------------------
+//   endValue
+//---------------------------------------------------------
+
+unsigned PosLen::endValue() const
+      {
+      switch(type()) {
+            case FRAMES:
+                  return frame() + lenFrame();
+                  break;
+            case TICKS:
+                  return tick() + lenTick();
+                  break;
+            }
+      return 0;
+      }
+
+unsigned PosLen::endValue(TType time_type) const
+{
+      switch(time_type) {
+            case FRAMES:
+                  return frame() + lenFrame();
+                  break;
+            case TICKS:
+                  return tick() + lenTick();
+                  break;
+            }
+      return 0;
+}
+
+void PosLen::setEndValue(unsigned val)
+{
+      switch(type()) {
+            case FRAMES:
+                  if(val > frame())
+                    setLenFrame(val - frame());
+                  else
+                    setLenFrame(0);
+                  break;
+            case TICKS:
+                  if(val > tick())
+                    setLenTick(val - tick());
+                  else
+                    setLenTick(0);
+                  break;
+            }
+}
+
+void PosLen::setEndValue(unsigned val, TType time_type)
+{
+      switch(time_type) {
+            case FRAMES:
+                  if(val > frame())
+                    setLenFrame(val - frame());
+                  else
+                    setLenFrame(0);
+                  break;
+            case TICKS:
+                  if(val > tick())
+                    setLenTick(val - tick());
+                  else
+                    setLenTick(0);
+                  break;
+            }
+}
 
 //---------------------------------------------------------
 //   setPos
@@ -790,7 +938,7 @@ void PosLen::setPos(const Pos& pos)
 
 void Pos::mbt(int* bar, int* beat, int* tk) const
       {
-      AL::sigmap.tickValues(tick(), bar, beat, (unsigned*)tk);
+      MusEGlobal::sigmap.tickValues(tick(), bar, beat, (unsigned*)tk);
       }
 
 //---------------------------------------------------------

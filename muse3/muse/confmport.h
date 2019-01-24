@@ -81,7 +81,7 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
    private slots:
       void rbClicked(QTableWidgetItem*);
       void DeviceItemRenamed(QTableWidgetItem*);
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       void selectionChanged();
       void deviceSelectionChanged();
       void addJackDeviceClicked();

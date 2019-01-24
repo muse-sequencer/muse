@@ -44,9 +44,9 @@ class QMenu;
 namespace MusECore {
 struct CtrlVal;
 class Xml;
+class Undo;
+class Part;
 }
-
-//#define beats     4
 
 namespace MusEGui {
 
@@ -59,12 +59,13 @@ class MidiEditor;
 //    for displaying
 //---------------------------------------------------------
 
-class NPart : public CItem {
+class NPart : public PItem {
    protected:
       int _serial;
    
    public:
-      NPart(MusECore::Part* e);
+      NPart(MusECore::Part*);
+      NPart() { }
       const QString name() const     { return part()->name(); }
       void setName(const QString& s) { part()->setName(s); }
       MusECore::Track* track() const           { return part()->track(); }
@@ -72,7 +73,6 @@ class NPart : public CItem {
       
       bool leftBorderTouches;  // Whether the borders touch other part borders. 
       bool rightBorderTouches;
-    
       };
 
 enum ControllerVals { doNothing, movingController, addNewController };
@@ -116,14 +116,15 @@ class PartCanvas : public Canvas {
       AutomationObject automation;
 
       virtual void keyPress(QKeyEvent*);
+      virtual void keyRelease(QKeyEvent* event);
       virtual bool mousePress(QMouseEvent*);
       virtual void mouseMove(QMouseEvent* event);
       virtual void mouseRelease(QMouseEvent*);
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void leaveEvent(QEvent*e);
-      virtual void drawItem(QPainter&, const CItem*, const QRect&);
-      virtual void drawMoving(QPainter&, const CItem*, const QRect&);
-      virtual void updateSelection();
+      virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
+      virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
+      virtual bool itemSelectionsChanged(MusECore::Undo* operations = 0, bool deselectAll = false);
       virtual QPoint raster(const QPoint&) const;
       virtual int y2pitch(int y) const;
       virtual int pitch2y(int p) const;
@@ -134,10 +135,9 @@ class PartCanvas : public Canvas {
       virtual void resizeItem(CItem*,bool, bool ctrl);
       virtual void newItem(CItem*,bool);
       virtual bool deleteItem(CItem*);
-      virtual void moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true);
+      virtual void moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true);
       virtual bool moveItem(MusECore::Undo& operations, CItem*, const QPoint&, DragType);
 
-      virtual void updateSong(DragType, MusECore::SongChangedFlags_t);
       virtual void startDrag(CItem*, DragType);
       virtual void dragEnterEvent(QDragEnterEvent*);
       virtual void viewDropEvent(QDropEvent*);
@@ -151,18 +151,25 @@ class PartCanvas : public Canvas {
       void copy(MusECore::PartList*);
       void copy_in_range(MusECore::PartList*);
       enum paste_mode_t { PASTEMODE_MIX, PASTEMODE_MOVEALL, PASTEMODE_MOVESOME };
-      void paste(bool clone = false, paste_mode_t paste_mode = PASTEMODE_MIX, bool to_single_track=false, int amount=1, int raster=1536);
-      MusECore::Undo pasteAt(const QString&, MusECore::Track*, unsigned int, bool clone = false, bool toTrack = true, int* finalPosPtr = NULL, std::set<MusECore::Track*>* affected_tracks = NULL);
-      void drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int samplePos, unsigned rootFrame, unsigned startFrame, unsigned lengthFrames, int startY, int startX, int endX, int rectHeight);
+      void paste(bool clone = false, paste_mode_t paste_mode = PASTEMODE_MIX,
+                 bool to_single_track=false, int amount=1, int raster=1536);
+      MusECore::Undo pasteAt(const QString&, MusECore::Track*, unsigned int, bool clone = false,
+                             bool toTrack = true, unsigned int* finalPosPtr = NULL,
+                             std::set<MusECore::Track*>* affected_tracks = NULL);
+      void drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int samplePos, unsigned rootFrame,
+                           unsigned startFrame, unsigned lengthFrames, int startY, int startX, int endX, int rectHeight);
       void drawWavePart(QPainter&, const QRect&, MusECore::WavePart*, const QRect&);
-      void drawMidiPart(QPainter&, const QRect& rect, const MusECore::EventList& events, MusECore::MidiTrack* mt, MusECore::MidiPart* pt, const QRect& r, int pTick, int from, int to);
-	  void drawMidiPart(QPainter&, const QRect& rect, MusECore::MidiPart* midipart, const QRect& r, int from, int to);
+      void drawMidiPart(QPainter&, const QRect& rect, const MusECore::EventList& events,
+                        MusECore::MidiTrack* mt, MusECore::MidiPart* midipart,
+                        const QRect& r, int pTick, int from, int to, bool selected);
+	    void drawMidiPart(QPainter&, const QRect& rect, MusECore::MidiPart* midipart,
+                        const QRect& r, int from, int to, bool selected);
       MusECore::Track* y2Track(int) const;
-      void drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, MusECore::AudioTrack* track);
+      void drawAudioTrack(QPainter& p, const QRect& mr, const QRegion& vrg, const ViewRect& vbbox, MusECore::AudioTrack* track);
       void drawAutomation(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
       void drawAutomationPoints(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
       void drawAutomationText(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
-      void drawTopItem(QPainter& p, const QRect& rect);
+      void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion());
 
       void checkAutomation(MusECore::Track * t, const QPoint& pointer, bool addNewCtrl);
       void processAutomationMovements(QPoint pos, bool slowMotion);
@@ -171,14 +178,13 @@ class PartCanvas : public Canvas {
       void newAutomationVertex(QPoint inPos);
 
    protected:
-      virtual void drawCanvas(QPainter&, const QRect&);
+      virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true);
 
    signals:
       void timeChanged(unsigned);
       void tracklistChanged();
       void dclickPart(MusECore::Track*);
-      void selectionChanged();
       void dropSongFile(const QString&);
       void dropMidiFile(const QString&);
       void setUsedTool(int);
@@ -200,7 +206,7 @@ class PartCanvas : public Canvas {
 
       PartCanvas(int* raster, QWidget* parent, int, int);
       virtual ~PartCanvas();
-      void partsChanged();
+      void updateItems();
       void cmd(int);
       void songIsClearing();
       

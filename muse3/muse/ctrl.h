@@ -63,18 +63,21 @@ enum CtrlRecValueType { ARVT_VAL, ARVT_START, ARVT_STOP };
 //---------------------------------------------------------
 
 struct CtrlInterpolate {
-      int    sFrame;     // Starting frame. Always valid. Can be less than any first CtrlList item's frame, or zero !
+      unsigned int sFrame; // Starting frame. Always valid. Can be less than any first CtrlList item's frame, or zero !
       double sVal;       // Value at starting frame.
-      int    eFrame;     // Ending frame. Can be -1 meaning endless.
-      double eVal;       // Value at ending frame, or sVal if eFrame is -1.
+      unsigned int eFrame; // Ending frame if eFrameValid is true.
+      bool   eFrameValid; // True if eFrame is valid. False if endless, eFrame is invalid.
+      double eVal;       // Value at ending frame, or sVal if eFrameValid is false.
       bool   eStop;      // Whether to stop refreshing this struct from CtrlList upon eFrame. Control FIFO ring buffers
                          //  set this true and replace eFrame and eVal. Upon the next run slice, if eStop is set, eval
-                         //  should be copied to sVal, eFrame to sFrame, doInterp cleared, and eFrame set to some frame or -1.
+                         //  should be copied to sVal, eFrame to sFrame, doInterp cleared, and eFrame set to some frame or eFrameValid false.
       bool   doInterp;   // Whether to actually interpolate whenever this struct is passed to CtrlList::interpolate().
-      CtrlInterpolate(int sframe = 0, int eframe = -1, double sval = 0.0, double eval = 0.0, bool end_stop = false, bool do_interpolate = false) {
+      CtrlInterpolate(unsigned int sframe = 0, unsigned int eframe = 0, bool eframevalid = false, double sval = 0.0, double eval = 0.0,
+                      bool end_stop = false, bool do_interpolate = false) {
             sFrame = sframe;
             sVal   = sval;
             eFrame = eframe;
+            eFrameValid = eframevalid;
             eVal   = eval;
             eStop = end_stop;
             doInterp = do_interpolate;
@@ -87,9 +90,9 @@ struct CtrlInterpolate {
 //---------------------------------------------------------
 
 struct CtrlVal {
-      int frame;
+      unsigned int frame;
       double val;
-      CtrlVal(int f, double v) { 
+      CtrlVal(unsigned int f, double v) { 
             frame = f;
             val   = v;
             }
@@ -103,8 +106,8 @@ struct CtrlVal {
 struct CtrlRecVal : public CtrlVal {
       int id;
       CtrlRecValueType type;   // 0 - ctrlVal, 1 - start, 2 - end
-      CtrlRecVal(int f, int n, double v) : CtrlVal(f, v), id(n), type(ARVT_VAL) {}
-      CtrlRecVal(int f, int n, double v, CtrlRecValueType t) : CtrlVal(f, v), id(n), type(t) {}
+      CtrlRecVal(unsigned int f, int n, double v) : CtrlVal(f, v), id(n), type(ARVT_VAL) {}
+      CtrlRecVal(unsigned int f, int n, double v, CtrlRecValueType t) : CtrlVal(f, v), id(n), type(t) {}
       };
 
 //---------------------------------------------------------
@@ -165,10 +168,10 @@ class MidiAudioCtrlMap : public std::multimap<MidiAudioCtrlMap_idx_t, MidiAudioC
 //    list for easy retrieval
 //---------------------------------------------------------
 
-typedef std::map<int, CtrlVal, std::less<int> >::iterator iCtrl;
-typedef std::map<int, CtrlVal, std::less<int> >::const_iterator ciCtrl;
+typedef std::map<unsigned int, CtrlVal, std::less<unsigned int> > CtrlList_t;
+typedef std::pair<unsigned int, CtrlVal> CtrlListInsertPair_t;
 
-class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
+class CtrlList : public CtrlList_t {
    public:
       enum Mode { INTERPOLATE, DISCRETE};
       enum AssignFlags { ASSIGN_PROPERTIES=1, ASSIGN_VALUES=2 };  // Can be or'd together.
@@ -195,12 +198,12 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       void assign(const CtrlList& l, int flags); 
 
       void swap(CtrlList&);
-      std::pair<iCtrl, bool> insert(const std::pair<int, CtrlVal>& p);
-      iCtrl insert(iCtrl ic, const std::pair<int, CtrlVal>& p);
-      void insert(iCtrl first, iCtrl last);
-      void erase(iCtrl ictl);
-      size_type erase(int frame);
-      void erase(iCtrl first, iCtrl last);
+      std::pair<iterator, bool> insert(const CtrlListInsertPair_t& p);
+      iterator insert(iterator ic, const CtrlListInsertPair_t& p);
+      void insert(iterator first, iterator last);
+      void erase(iterator ictl);
+      size_type erase(unsigned int frame);
+      void erase(iterator first, iterator last);
       void clear();
       CtrlList& operator=(const CtrlList&);
 
@@ -209,7 +212,7 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       double getDefault() const   { return _default; }
       void setDefault(double val) { _default = val; }
       double curVal() const;
-      void updateCurValue(int frame);
+      void updateCurValue(unsigned int frame);
       void setCurVal(double val);
       int id() const             { return _id; }
       QString name() const       { return _name; }
@@ -226,12 +229,13 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
             }
       CtrlValueType valueType() const { return _valueType; }
       void setValueType(CtrlValueType t) { _valueType = t; }
-      void getInterpolation(int frame, bool cur_val_only, CtrlInterpolate* interp);
-      double interpolate(int frame, const CtrlInterpolate& interp);
+      void getInterpolation(unsigned int frame, bool cur_val_only, CtrlInterpolate* interp);
+      double interpolate(unsigned int frame, const CtrlInterpolate& interp);
       
-      double value(int frame, bool cur_val_only = false, int* nextFrame = NULL) const;  
-      void add(int frame, double value);
-      void del(int frame);
+      double value(unsigned int frame, bool cur_val_only = false,
+                   unsigned int* nextFrame = NULL, bool* nextFrameValid = NULL) const;  
+      void add(unsigned int frame, double value);
+      void del(unsigned int frame);
       void read(Xml& xml);
 
       void setColor( QColor c ) { _displayColor = c;}
@@ -242,6 +246,9 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       bool guiUpdatePending() const { return _guiUpdatePending; }
       void setGuiUpdatePending(bool v) { _guiUpdatePending = v; }
       };
+
+typedef CtrlList::iterator iCtrl;
+typedef CtrlList::const_iterator ciCtrl;
 
 //---------------------------------------------------------
 //   CtrlListList
@@ -273,8 +280,9 @@ class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
             
       MidiAudioCtrlMap* midiControls() { return &_midi_controls; }  
       
-      double value(int ctrlId, int frame, bool cur_val_only = false, int* nextFrame = NULL) const;   
-      void updateCurValues(int frame);
+      double value(int ctrlId, unsigned int frame, bool cur_val_only = false,
+                   unsigned int* nextFrame = NULL, bool* nextFrameValid = NULL) const;   
+      void updateCurValues(unsigned int frame);
       void clearAllAutomation() {
             for(iCtrlList i = begin(); i != end(); ++i)
               i->second->clear();

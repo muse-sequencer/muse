@@ -27,6 +27,7 @@
 
 #include "ctrlcanvas.h"
 #include "song.h"
+#include "event_tag_list.h"
 
 namespace MusECore {
 class Xml;
@@ -48,8 +49,6 @@ class CtrlEdit : public QWidget {
       Q_OBJECT
       CtrlCanvas* canvas;
       CtrlPanel* panel;
-
-      
 
    private slots:
       void destroy();
@@ -75,8 +74,18 @@ class CtrlEdit : public QWidget {
       void readStatus(MusECore::Xml&);
       void writeStatus(int, MusECore::Xml&);
       void setController(const QString& name);
+      bool itemsAreSelected() const { if(!canvas) return false; return canvas->itemsAreSelected(); }
+      // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
+      // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
+      void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const
+      { if(canvas) canvas->tagItems(tag_list, options); }
       };
 
+      
+typedef std::list<CtrlEdit*> CtrlEditList;
+typedef CtrlEditList::iterator iCtrlEdit;
+typedef CtrlEditList::const_iterator ciCtrlEdit;
+      
 } // namespace MusEGui
 
 #endif

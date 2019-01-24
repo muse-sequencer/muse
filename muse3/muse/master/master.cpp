@@ -39,6 +39,7 @@
 #include "midieditor.h"
 #include "icons.h"
 #include "audio.h"
+#include "gconfig.h"
 
 namespace MusEGui {
 
@@ -52,26 +53,26 @@ Master::Master(MidiEditor* e, QWidget* parent, int xmag, int ymag)
       editor = e;
       setBg(Qt::white);
       vscroll = 0;
-      pos[0]  = 0;
-      pos[1]  = 0;
-      pos[2]  = 0;
+      pos[0]  = MusEGlobal::song->cpos();
+      pos[1]  = MusEGlobal::song->lpos();
+      pos[2]  = MusEGlobal::song->rpos();
       drag = DRAG_OFF;
       tool = MusEGui::PointerTool; // should be overridden soon anyway, but to be sure...
       setFocusPolicy(Qt::StrongFocus);  
       setMouseTracking(true);
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(songChanged(MusECore::SongChangedStruct_t)));
       }
 
 //---------------------------------------------------------
 //   songChanged
 //---------------------------------------------------------
 
-void Master::songChanged(MusECore::SongChangedFlags_t type)
+void Master::songChanged(MusECore::SongChangedStruct_t type)
 {
   //if(_isDeleting) return; // todo: If things get complicated don't forget some mechanism to ignore while while deleting to prevent possible crash.
   
-  if (type & (SC_SIG | SC_TEMPO | SC_KEY ))  // TEST: Reasonable to start with, may need more.
+  if (type._flags & (SC_SIG | SC_TEMPO | SC_KEY ))  // TEST: Reasonable to start with, may need more.
     redraw();
 }
 
@@ -158,7 +159,7 @@ void Master::leaveEvent(QEvent*)
 //   pdraw
 //---------------------------------------------------------
 
-void Master::pdraw(QPainter& p, const QRect& rect)
+void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
       {
       View::pdraw(p, rect);   // calls draw()
       p.resetTransform();
@@ -191,12 +192,7 @@ void Master::pdraw(QPainter& p, const QRect& rect)
       //    draw marker
       //---------------------------------------------------
 
-      int xp = mapx(pos[0]);
-      if (xp >= x && xp < x+w) {
-            p.setPen(Qt::red);
-            p.drawLine(xp, y, xp, y+h);
-            }
-      xp = mapx(pos[1]);
+      int xp = mapx(pos[1]);
       if (xp >= x && xp < x+w) {
             p.setPen(Qt::blue);
             p.drawLine(xp, y, xp, y+h);
@@ -206,6 +202,12 @@ void Master::pdraw(QPainter& p, const QRect& rect)
             p.setPen(Qt::blue);
             p.drawLine(xp, y, xp, y+h);
             }
+      // Draw the red main position cursor last, on top of the others.
+      xp = mapx(pos[0]);
+      if (xp >= x && xp < x+w) {
+            p.setPen(Qt::red);
+            p.drawLine(xp, y, xp, y+h);
+            }
 
       }
 
@@ -213,11 +215,13 @@ void Master::pdraw(QPainter& p, const QRect& rect)
 //   draw
 //---------------------------------------------------------
 
-void Master::draw(QPainter& p, const QRect& rect)
+void Master::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       {
-      drawTickRaster(p, rect.x(), rect.y(),
-         rect.width(), rect.height(), 0);
-
+      drawTickRaster(p, rect, rg, 0,
+                         false, false, false,
+                         MusEGlobal::config.midiCanvasBarColor, 
+                         MusEGlobal::config.midiCanvasBeatColor);
+      
       if ((tool == MusEGui::DrawTool) && drawLineMode) {
             p.setPen(Qt::black);
             p.drawLine(line1x, line1y, line2x, line2y);
@@ -236,6 +240,11 @@ void Master::newValRamp(int x1, int y1, int x2, int y2)
 // loop through all tick positions between x1 and x2
 // remove all tempo changes and add new ones for changed
 
+  if(x1 < 0)
+    x1 = 0;
+  if(x2 < 0)
+    x2 = 0;
+  
   int tickStart = editor->rasterVal1(x1);
   int tickEnd = editor->rasterVal2(x2);
 
@@ -397,13 +406,19 @@ bool Master::deleteVal1(unsigned int x1, unsigned int x2)
             }
       
       for (QList< QPair<int,int> >::iterator it=stuff_to_do.begin(); it!=stuff_to_do.end(); it++)
-        MusEGlobal::audio->msgDeleteTempo(it->first, it->second, false);
+        // Operation is undoable but do not start/end undo.
+        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo,
+                              it->first, it->second), MusECore::Song::OperationUndoable);
       
       return !stuff_to_do.empty();
       }
 
 void Master::deleteVal(int x1, int x2)
       {
+      if(x1 < 0)
+        x1 = 0;
+      if(x2 < 0)
+        x2 = 0;
       if (deleteVal1(editor->rasterVal1(x1), x2))
             redraw();
       }
@@ -436,6 +451,10 @@ void Master::setTool(int t)
 
 void Master::newVal(int x1, int x2, int y)
       {
+      if(x1 < 0)
+        x1 = 0;
+      if(x2 < 0)
+        x2 = 0;
       int xx1 = editor->rasterVal1(x1);
       int xx2 = editor->rasterVal2(x2);
 
@@ -445,7 +464,9 @@ void Master::newVal(int x1, int x2, int y)
             xx1 = tmp;
             }
       deleteVal1(xx1, xx2);
-      MusEGlobal::audio->msgAddTempo(xx1, int(60000000000.0/(280000 - y)), false);
+      // Operation is undoable but do not start/end undo.
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddTempo,
+                    xx1, int(60000000000.0/(280000 - y))), MusECore::Song::OperationUndoable);
       redraw();
       }
 } // namespace MusEGui

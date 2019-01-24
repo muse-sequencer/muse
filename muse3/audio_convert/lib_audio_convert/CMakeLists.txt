@@ -56,6 +56,13 @@ set_target_properties( audio_convert
       )
 
 ##
+## Linkage
+##
+target_link_libraries(audio_convert
+      xml_module
+      )
+
+##
 ## Install location
 ##
 if ( ${MODULES_BUILD} STREQUAL SHARED )

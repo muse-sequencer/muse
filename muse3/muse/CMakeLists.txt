@@ -28,10 +28,13 @@ include_directories(
       )
 
 set (SubDirs
+      widgets
+      components
       arranger
       cliplist
       ctrl
       driver
+      function_dialogs
       instruments
       liste
       marker
@@ -40,7 +43,6 @@ set (SubDirs
       mixer
       mplugins
       waveedit
-      widgets
       )
 if(LV2_SUPPORT)
   if(LV2_USE_SUPPLIED_VERSION)
@@ -106,6 +108,7 @@ file (GLOB core_source_files
       dssihost.cpp
       event.cpp
       eventlist.cpp
+      event_tag_list.cpp
       exportmidi.cpp
       functions.cpp
       gconfig.cpp
@@ -130,6 +133,7 @@ file (GLOB core_source_files
       osc.cpp
       part.cpp
       plugin.cpp
+      pluglist.cpp
       pos.cpp
       route.cpp
       seqmsg.cpp
@@ -162,50 +166,17 @@ file (GLOB icons_source_files
       icons.cpp
       )
 
-file (GLOB sysex_helper_source_files
-      sysex_helper.cpp
-      )
-file (GLOB memory_source_files
-      memory.cpp
-      )
-file (GLOB evdata_source_files
-      evdata.cpp
-      )
-file (GLOB mpevent_source_files
-      mpevent.cpp
-      )
-file (GLOB event_source_files
-      event.cpp
-      )
 file (GLOB wavepreview_source_files
       wavepreview.cpp
-      )
-file (GLOB xml_source_files
-      xml.cpp
       )
 
 ##
 ## Define target
 ##
 
-add_library ( sysex_helper_module SHARED
-      ${sysex_helper_source_files}
-      )
-add_library ( memory_module SHARED
-      ${memory_source_files}
-      )
-add_library ( evdata_module SHARED
-      ${evdata_source_files}
-      )
-add_library ( mpevent_module SHARED
-      ${mpevent_source_files}
-      )
 add_library ( wavepreview_module SHARED
       ${wavepreview_moc_headers}
       ${wavepreview_source_files}
-      )
-add_library ( xml_module SHARED
-      ${xml_source_files}
       )
 
 add_library ( core ${MODULES_BUILD}
@@ -232,7 +203,9 @@ set (FILES_TO_TRANSLATE
 ##
 include_directories (
       arranger
+      components
       driver
+      function_dialogs
       instruments
       liste
       midiedit
@@ -257,16 +230,14 @@ include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}/remote
       ${CMAKE_CURRENT_BINARY_DIR}/waveedit
       ${CMAKE_CURRENT_BINARY_DIR}/widgets
-      ${CMAKE_CURRENT_BINARY_DIR}/widgets/function_dialogs
+      ${CMAKE_CURRENT_BINARY_DIR}/components
+      ${CMAKE_CURRENT_BINARY_DIR}/function_dialogs
       )
 
 ##
 ## Compilation flags and target name
 ##
 set_target_properties( core
-      # PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      # PROPERTIES COMPILE_FLAGS "-Imidiedit -Iarranger -Iliste -Iwidgets -Imixer -Idriver -Iwaveedit -Implugins -Iinstruments -Iremote ${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h "
-      # PROPERTIES COMPILE_FLAGS "${REM_CPP_FLAGS} -DINSTPREFIX='\"${CMAKE_INSTALL_PREFIX}\"' -DINSTLIBDIR='\"${LIBRARY_OUTPUT_DIRECTORY}\"' -include ${PROJECT_BINARY_DIR}/all.h "
       PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK} ${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h"
       
       OUTPUT_NAME muse_core
@@ -278,57 +249,26 @@ set_target_properties( icons
       PROPERTIES OUTPUT_NAME muse_icons
       )
 
-set_target_properties( sysex_helper_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_sysex_helper_module
-      )
-set_target_properties( memory_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_memory_module
-      )
-set_target_properties( evdata_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_evdata_module
-      )
-set_target_properties( mpevent_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_mpevent_module
-      )
 set_target_properties( wavepreview_module
       PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_wavepreview_module
-      )
-set_target_properties( xml_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_xml_module
       )
       
 ##
 ## Linkage
 ##
 
-target_link_libraries(evdata_module
-      memory_module
-      sysex_helper_module
-      )
-target_link_libraries(mpevent_module
-      evdata_module
-      sysex_helper_module
-      )
 target_link_libraries(wavepreview_module
       ${QT_LIBRARIES}
       ${SNDFILE_LIBRARIES}
       ${SAMPLERATE_LIBRARIES}
       )
-target_link_libraries(xml_module
-      ${QT_LIBRARIES}
-      )
 
+      
 target_link_libraries(core
       al
       arranger
       audio_converter_plugin
-      awl
       cliplist
       ctrl
       driver
@@ -344,11 +284,14 @@ target_link_libraries(core
       mpevent_module
       mplugins
       muse_string
+      plugin_scan_module
+      plugin_cache_writer_module
       synti
       sysex_helper_module
       waveedit
       wavepreview_module
       widgets
+      components
       widgets_functiondialogs
       xml_module
 
@@ -417,7 +360,7 @@ if(LV2_SUPPORT)
             target_link_libraries(lv2host_module lv2_gtk2_support)
       endif(HAVE_GTK2)
 
-#       target_link_libraries(lv2host_module ${QT_LIBRARIES})
+      target_link_libraries(lv2host_module ${QT_LIBRARIES})
       
       target_link_libraries(core lv2host_module)
 endif(LV2_SUPPORT)
@@ -441,24 +384,13 @@ install( TARGETS muse
       )
       
 install(TARGETS
-        sysex_helper_module 
-        memory_module 
-        evdata_module 
-        mpevent_module 
         wavepreview_module
-        xml_module
       DESTINATION ${MusE_MODULES_DIR}
       )
       
 if ( ${MODULES_BUILD} STREQUAL SHARED )
       install(TARGETS core icons 
-              # sysex_helper_module 
-              # memory_module 
-              # evdata_module 
               lv2host_module 
-              # mpevent_module 
-              # wavepreview_module
-              # xml_module
             DESTINATION ${MusE_MODULES_DIR}
             )
 endif ( ${MODULES_BUILD} STREQUAL SHARED )

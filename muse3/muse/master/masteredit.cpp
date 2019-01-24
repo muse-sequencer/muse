@@ -20,8 +20,6 @@
 //
 //=========================================================
 
-#include "awl/sigedit.h"
-
 #include "masteredit.h"
 #include "mtscale.h"
 #include "hitscale.h"
@@ -71,12 +69,12 @@ void MasterEdit::closeEvent(QCloseEvent* e)
 //   songChanged
 //---------------------------------------------------------
 
-void MasterEdit::songChanged(MusECore::SongChangedFlags_t type)
+void MasterEdit::songChanged(MusECore::SongChangedStruct_t type)
       {
       if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
         
-      if (type & SC_SIG) {
+      if (type._flags & SC_SIG) {
             sign->redraw();
             }
       }
@@ -202,7 +200,7 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
 
       connect(tscale, SIGNAL(tempoChanged(int)), SLOT(setTempo(int)));
       connect(canvas, SIGNAL(tempoChanged(int)), SLOT(setTempo(int)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
 
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
       connect(canvas, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));

@@ -114,7 +114,7 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
       const int midiCtrlNum = desc->_index;
       const int chan  = _track->outChannel();
       const int port  = _track->outPort();
-      if(chan < 0 || chan >= MIDI_CHANNELS || port < 0 || port >= MIDI_PORTS)
+      if(chan < 0 || chan >= MusECore::MUSE_MIDI_CHANNELS || port < 0 || port >= MusECore::MIDI_PORTS)
         return;
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
       MusECore::MidiController* mc = mp->midiController(midiCtrlNum); // Auto-create the controller if necessary.
@@ -261,7 +261,7 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
         case mStripInstrumentProperty:
         {
           const int port = _track->outPort();
-          if(port >= 0 && port < MIDI_PORTS)
+          if(port >= 0 && port < MusECore::MIDI_PORTS)
           {
             if(MusECore::MidiInstrument* minstr = MusEGlobal::midiPorts[_track->outPort()].instrument())
             {
@@ -485,7 +485,7 @@ void MidiComponentRack::scanControllerComponents()
 {
   const int chan  = _track->outChannel();
   const int port  = _track->outPort();
-  if(chan < 0 || chan >= MIDI_CHANNELS || port < 0 || port >= MIDI_PORTS)
+  if(chan < 0 || chan >= MusECore::MUSE_MIDI_CHANNELS || port < 0 || port >= MusECore::MIDI_PORTS)
     return;
   
   QString namestr;
@@ -555,7 +555,7 @@ void MidiComponentRack::updateComponents()
         
         const int channel  = _track->outChannel();
         const int port  = _track->outPort();
-        if(channel < 0 || channel >= MIDI_CHANNELS || port < 0 || port >= MIDI_PORTS)
+        if(channel < 0 || channel >= MusECore::MUSE_MIDI_CHANNELS || port < 0 || port >= MusECore::MIDI_PORTS)
           continue;
         
         MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
@@ -792,7 +792,7 @@ void MidiComponentRack::updateComponents()
           case mStripInstrumentProperty:
           {
             const int port = _track->outPort();
-            if(port >= 0 && port < MIDI_PORTS)
+            if(port >= 0 && port < MusECore::MIDI_PORTS)
             {
               if(MusECore::MidiInstrument* minstr = MusEGlobal::midiPorts[_track->outPort()].instrument())
               {
@@ -841,7 +841,7 @@ void MidiComponentRack::updateComponents()
 void MidiComponentRack::instrPopup(QPoint p)
 {
   const int port = _track->outPort();
-  if(port < 0 || port >= MIDI_PORTS)
+  if(port < 0 || port >= MusECore::MIDI_PORTS)
     return;
 
   MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
@@ -887,7 +887,7 @@ void MidiComponentRack::patchPopup(QPoint p)
 {
   const int channel = _track->outChannel();
   const int port    = _track->outPort();
-  if(channel < 0 || channel >= MIDI_CHANNELS || port < 0 || port >= MIDI_PORTS)
+  if(channel < 0 || channel >= MusECore::MUSE_MIDI_CHANNELS || port < 0 || port >= MusECore::MIDI_PORTS)
     return;
 
   MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
@@ -918,7 +918,7 @@ void MidiComponentRack::patchPopupActivated(QAction* act)
   
   const int channel = _track->outChannel();
   const int port    = _track->outPort();
-  if(channel < 0 || channel >= MIDI_CHANNELS || port < 0 || port >= MIDI_PORTS)
+  if(channel < 0 || channel >= MusECore::MUSE_MIDI_CHANNELS || port < 0 || port >= MusECore::MIDI_PORTS)
     return;
 
   MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
@@ -977,7 +977,7 @@ void MidiComponentRack::controllerChanged(int v, int id)
   int val = v;
   int port     = _track->outPort();
   int channel  = _track->outChannel();
-  if(channel < 0 || channel >= MIDI_CHANNELS || port < 0 || port >= MIDI_PORTS)
+  if(channel < 0 || channel >= MusECore::MUSE_MIDI_CHANNELS || port < 0 || port >= MusECore::MIDI_PORTS)
   {
     emit componentChanged(controllerComponent, val, false, id, 0);
     return;
@@ -1024,7 +1024,7 @@ void MidiComponentRack::controllerChanged(double val, bool off, int id, int scro
 
   int port     = _track->outPort();
   int channel  = _track->outChannel();
-  if(channel < 0 || channel >= MIDI_CHANNELS || port < 0 || port >= MIDI_PORTS)
+  if(channel < 0 || channel >= MusECore::MUSE_MIDI_CHANNELS || port < 0 || port >= MusECore::MIDI_PORTS)
   {
     emit componentChanged(controllerComponent, val, off, id, scrollMode);
     return;
@@ -1192,10 +1192,10 @@ void MidiComponentRack::patchEditNameClicked(QPoint /*p*/, int id)
 //   songChanged
 //---------------------------------------------------------
 
-void MidiComponentRack::songChanged(MusECore::SongChangedFlags_t flags)
+void MidiComponentRack::songChanged(MusECore::SongChangedStruct_t flags)
 {
   // Scan controllers.
-  if(flags & (SC_RACK | SC_MIDI_CONTROLLER_ADD | SC_MIDI_INSTRUMENT))
+  if(flags._flags & (SC_RACK | SC_MIDI_CONTROLLER_ADD | SC_MIDI_INSTRUMENT))
   {
     scanControllerComponents();
   }
@@ -1743,8 +1743,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       //autoType->setCurrentItem(t->automationType());
       //autoType->setToolTip(tr("automation type"));      
       //connect(autoType, SIGNAL(activated(int)), SLOT(setAutomationType(int)));
-      autoType->addAction(" ", AUTO_OFF);  // Just a dummy text to fix sizing problems. REMOVE later if full automation added.
-      autoType->setCurrentItem(AUTO_OFF);    //
+      autoType->addAction(" ", MusECore::AUTO_OFF);  // Just a dummy text to fix sizing problems. REMOVE later if full automation added.
+      autoType->setCurrentItem(MusECore::AUTO_OFF);    //
 
       addGridWidget(autoType, _automationPos);
 
@@ -1766,7 +1766,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
         setupComponentTabbing();
 
       // TODO: Activate this. But owners want to marshall this signal and send it themselves. Change that.
-      //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
 
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
 
@@ -2212,16 +2212,16 @@ void MidiStrip::configChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void MidiStrip::songChanged(MusECore::SongChangedFlags_t val)
+void MidiStrip::songChanged(MusECore::SongChangedStruct_t val)
       {
-      if (mute && (val & SC_MUTE)) {      // mute && off
+      if (mute && (val._flags & SC_MUTE)) {      // mute && off
             mute->blockSignals(true);
             mute->setChecked(track->mute());
             mute->blockSignals(false);
             updateMuteIcon();
             updateOffState();
             }
-      if (solo && (val & (SC_SOLO | SC_ROUTE))) 
+      if (solo && (val._flags & (SC_SOLO | SC_ROUTE))) 
       {
             solo->blockSignals(true);
             solo->setChecked(track->solo());
@@ -2230,17 +2230,17 @@ void MidiStrip::songChanged(MusECore::SongChangedFlags_t val)
             updateMuteIcon();
       }
       
-      if (val & SC_RECFLAG)
+      if (val._flags & SC_RECFLAG)
       {
             setRecordFlag(track->recordFlag());
       }
-      if (val & SC_TRACK_MODIFIED)
+      if (val._flags & SC_TRACK_MODIFIED)
       {
             setLabelText();
       }      
       
       // Catch when label font changes. 
-      if (val & SC_CONFIG)
+      if (val._flags & SC_CONFIG)
       {
         // So far only 1 instance of sending SC_CONFIG in the entire app, in instrument editor when a new instrument is saved. 
       }  
@@ -2249,11 +2249,11 @@ void MidiStrip::songChanged(MusECore::SongChangedFlags_t val)
       _infoRack->songChanged(val);
       _lowerRack->songChanged(val);
       
-      if (val & SC_ROUTE) {
+      if (val._flags & SC_ROUTE) {
         updateRouteButtons();
       }
       
-      if(val & SC_TRACK_REC_MONITOR)
+      if(val._flags & SC_TRACK_REC_MONITOR)
       {
         // Set record monitor.
         if(_recMonitor)
@@ -2436,7 +2436,7 @@ void MidiStrip::updateControls()
   MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(track);
   const int channel  = mt->outChannel();
   const int port  = mt->outPort();
-  if(channel < 0 || channel >= MIDI_CHANNELS || port < 0 || port >= MIDI_PORTS)
+  if(channel < 0 || channel >= MusECore::MUSE_MIDI_CHANNELS || port < 0 || port >= MusECore::MIDI_PORTS)
     return;
 
   MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];

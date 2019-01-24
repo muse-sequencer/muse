@@ -155,7 +155,7 @@ class Route {
             return ((type == TRACK_ROUTE) && (track != 0)) || 
                    (type == JACK_ROUTE) ||  // For persistent Jack routes: A NULL jackPort is actually valid.
                    ((type == MIDI_DEVICE_ROUTE) && (device != 0)) ||
-                   ((type == MIDI_PORT_ROUTE) && (midiPort >= 0) && (midiPort < MIDI_PORTS));   
+                   ((type == MIDI_PORT_ROUTE) && (midiPort >= 0) && (midiPort < MusECore::MIDI_PORTS));   
             }
       void read(Xml& xml);
       void dump() const;

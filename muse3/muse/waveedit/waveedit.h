@@ -35,6 +35,7 @@
 #include "type_defs.h"
 #include "midieditor.h"
 #include "tools.h"
+//#include "event.h"
 
 class QAction;
 class QResizeEvent;
@@ -43,11 +44,12 @@ class QToolButton;
 class QPoint;
 
 namespace MusECore {
+class Part;
 class PartList;
 }
 
 namespace MusEGui {
-
+class Splitter;
 class PosLabel;
 class ScrollScale;
 class SNode;
@@ -81,7 +83,12 @@ class WaveEdit : public MidiEditor {
       MusEGui::EditToolBar* tools2;
       QMenu* menuFunctions, *select, *menuGain, *eventColor;
       int colorMode;
+      
+      MusEGui::Splitter* hsplitter;
+      
       static int _rasterInit;
+      static int _trackInfoWidthInit;
+      static int _canvasWidthInit;
       static int colorModeInit;
 
       virtual void closeEvent(QCloseEvent*);
@@ -94,7 +101,7 @@ class WaveEdit : public MidiEditor {
       void cmd(int);
       void timeChanged(unsigned t);
       void setTime(unsigned t);
-      void songChanged1(MusECore::SongChangedFlags_t);
+      void songChanged1(MusECore::SongChangedStruct_t);
       void soloChanged(bool flag);
       void moveVerticalSlider(int val);
       void eventColorModeChanged(int);

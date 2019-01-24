@@ -49,7 +49,7 @@
 #include "sysex_helper.h"
 
 namespace MusEGlobal {
-MusECore::MidiPort midiPorts[MIDI_PORTS];
+MusECore::MidiPort midiPorts[MusECore::MIDI_PORTS];
 }
 
 namespace MusECore {
@@ -73,7 +73,7 @@ void initMidiPorts()
       defaultManagedMidiController.add(&chorusSendCtrl);
       defaultManagedMidiController.add(&variationSendCtrl);
         
-      for (int i = 0; i < MIDI_PORTS; ++i) {
+      for (int i = 0; i < MusECore::MIDI_PORTS; ++i) {
             MidiPort* port = &MusEGlobal::midiPorts[i];
             
             //
@@ -236,7 +236,7 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
             MusEGlobal::audio->msgAudioWait();
             }
       if (dev) {
-            for (int i = 0; i < MIDI_PORTS; ++i) {
+            for (int i = 0; i < MusECore::MIDI_PORTS; ++i) {
                   MidiPort* mp = &MusEGlobal::midiPorts[i];
                   if (mp->device() == dev) {
                         if(dev->isSynti())
@@ -318,9 +318,9 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
   int port = portno();
   
   // Find all channels of this port used in the song...
-  bool usedChans[MIDI_CHANNELS];
+  bool usedChans[MusECore::MUSE_MIDI_CHANNELS];
   int usedChanCount = 0;
-  for(int i = 0; i < MIDI_CHANNELS; ++i)
+  for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
     usedChans[i] = false;
   if(MusEGlobal::song->click() && MusEGlobal::clickPort == port)
   {
@@ -348,7 +348,7 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
             continue;
           usedChans[mchan] = true;
           ++usedChanCount;
-          if(usedChanCount >= MIDI_CHANNELS)
+          if(usedChanCount >= MusECore::MUSE_MIDI_CHANNELS)
             break;  // All are used, done searching.
         }
       }
@@ -368,7 +368,7 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
           continue;
         usedChans[mchan] = true;
         ++usedChanCount;
-        if(usedChanCount >= MIDI_CHANNELS)
+        if(usedChanCount >= MusECore::MUSE_MIDI_CHANNELS)
           break;  // All are used, done searching.
       }
     }
@@ -380,7 +380,7 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
       ++usedChanCount;
     }
     
-    if(usedChanCount >= MIDI_CHANNELS)
+    if(usedChanCount >= MusECore::MUSE_MIDI_CHANNELS)
       break;  // All are used, done searching.
   }
 
@@ -392,7 +392,7 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
     for(ciMidiController imc = cl->begin(); imc != cl->end(); ++imc) 
     {
       mc = imc->second;
-      for(int chan = 0; chan < MIDI_CHANNELS; ++chan)
+      for(int chan = 0; chan < MusECore::MUSE_MIDI_CHANNELS; ++chan)
       {
         if(!usedChans[chan])
           continue;  // This channel on this port is not used in the song.
@@ -476,7 +476,7 @@ void MidiPort::clearDevice()
 
 int MidiPort::portno() const
       {
-      for (int i = 0; i < MIDI_PORTS; ++i) {
+      for (int i = 0; i < MusECore::MIDI_PORTS; ++i) {
             if (&MusEGlobal::midiPorts[i] == this)
                   return i;
             }
@@ -560,7 +560,7 @@ void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
 
 void MidiPort::sendGmInitValues()
 {
-  for (int i = 0; i < MIDI_CHANNELS; ++i) {
+  for (int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i) {
         // By T356. Initialize from instrument controller if it has an initial value, otherwise use the specified value.
         // Tested: Ultimately, a track's controller stored values take priority by sending any 'zero time' value 
         //  AFTER these GM/GS/XG init routines are called via initDevices().
@@ -588,7 +588,7 @@ void MidiPort::sendGsInitValues()
 
 void MidiPort::sendXgInitValues()
 {
-  for (int i = 0; i < MIDI_CHANNELS; ++i) {
+  for (int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i) {
         // By T356. Initialize from instrument controller if it has an initial value, otherwise use the specified value.
         tryCtrlInitVal(i, CTRL_PROGRAM, 0);
         tryCtrlInitVal(i, CTRL_MODULATION, 0);
@@ -789,7 +789,7 @@ MidiCtrlValList* MidiPort::addManagedController(int channel, int ctrl)
 
 void MidiPort::addDefaultControllers()
 {
-  for (int i = 0; i < MIDI_CHANNELS; ++i) {
+  for (int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i) {
         for(ciMidiController imc = defaultManagedMidiController.begin(); imc != defaultManagedMidiController.end(); ++imc)
           addManagedController(i, imc->second->num());   
         _automationType[i] = AUTO_READ;
@@ -912,7 +912,7 @@ double MidiPort::limitValToInstrCtlRange(int ctl, double val)
 
 bool MidiPort::createController(int chan, int ctrl)
 {
-  if(ctrl < 0 || chan < 0 || chan >= MIDI_CHANNELS)
+  if(ctrl < 0 || chan < 0 || chan >= MusECore::MUSE_MIDI_CHANNELS)
     return false;
     
   PendingOperationList operations;
@@ -1316,7 +1316,7 @@ bool MidiPort::processGui2AudioEvents()
     if(!eventBuffers()->get(ev))
       continue;
     const int port = ev.port();
-    if(port < 0 || port >= MIDI_PORTS)
+    if(port < 0 || port >= MusECore::MIDI_PORTS)
       continue;
     // Handle the event. Tell the gui NOT to create controllers as needed,
     //  that should be done before it ever gets here.
@@ -1548,7 +1548,7 @@ double MidiPort::hwDCtrlState(int ch, int ctrl) const
 bool MidiPort::setHwCtrlState(const MidiPlayEvent& ev)
 {
   const int port = ev.port();
-  if(port < 0 || port >= MIDI_PORTS)
+  if(port < 0 || port >= MusECore::MIDI_PORTS)
     return false;
   
   // Handle the event. Tell the gui to create controllers as needed.
@@ -1622,10 +1622,10 @@ bool MidiPort::setHwCtrlStates(int ch, int ctrl, double val, double lastval)
 //   setControllerVal
 //   This function sets a controller value, 
 //   creating the controller if necessary.
-//   Returns true if a value was actually added or replaced.
+//   Returns true if a value was actually added.
 //---------------------------------------------------------
 
-bool MidiPort::setControllerVal(int ch, int tick, int ctrl, int val, Part* part)
+bool MidiPort::setControllerVal(int ch, unsigned int tick, int ctrl, int val, Part* part)
 {
       MidiCtrlValList* pvl;
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
@@ -1659,7 +1659,7 @@ bool MidiPort::updateDrumMaps(int chan, int patch)
     if(mt->type() != Track::NEW_DRUM)
       continue;
     port = mt->outPort();
-    if(port < 0 || port >= MIDI_PORTS || &MusEGlobal::midiPorts[port] != this)
+    if(port < 0 || port >= MusECore::MIDI_PORTS || &MusEGlobal::midiPorts[port] != this)
       continue;
     tchan = mt->outChannel();
     if(tchan != chan)
@@ -1706,7 +1706,7 @@ bool MidiPort::updateDrumMaps()
     if(mt->type() != Track::NEW_DRUM)
       continue;
     port = mt->outPort();
-    if(port < 0 || port >= MIDI_PORTS || &MusEGlobal::midiPorts[port] != this)
+    if(port < 0 || port >= MusECore::MIDI_PORTS || &MusEGlobal::midiPorts[port] != this)
       continue;
     if(mt->updateDrummap(false)) // false = don't signal gui thread, we'll do that here.
       map_changed = true;
@@ -1736,7 +1736,7 @@ bool MidiPort::updateDrumMaps()
 //   getCtrl
 //---------------------------------------------------------
 
-int MidiPort::getCtrl(int ch, int tick, int ctrl) const
+int MidiPort::getCtrl(int ch, unsigned int tick, int ctrl) const
       {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end())
@@ -1745,7 +1745,7 @@ int MidiPort::getCtrl(int ch, int tick, int ctrl) const
       return cl->second->value(tick);
       }
 
-int MidiPort::getCtrl(int ch, int tick, int ctrl, Part* part) const
+int MidiPort::getCtrl(int ch, unsigned int tick, int ctrl, Part* part) const
       {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end())
@@ -1754,7 +1754,7 @@ int MidiPort::getCtrl(int ch, int tick, int ctrl, Part* part) const
       return cl->second->value(tick, part);
       }
 
-int MidiPort::getVisibleCtrl(int ch, int tick, int ctrl, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const
+int MidiPort::getVisibleCtrl(int ch, unsigned int tick, int ctrl, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const
       {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end())
@@ -1763,7 +1763,7 @@ int MidiPort::getVisibleCtrl(int ch, int tick, int ctrl, bool inclMutedParts, bo
       return cl->second->visibleValue(tick, inclMutedParts, inclMutedTracks, inclOffTracks);
       }
 
-int MidiPort::getVisibleCtrl(int ch, int tick, int ctrl, Part* part, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const
+int MidiPort::getVisibleCtrl(int ch, unsigned int tick, int ctrl, Part* part, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const
       {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end())
@@ -1776,7 +1776,7 @@ int MidiPort::getVisibleCtrl(int ch, int tick, int ctrl, Part* part, bool inclMu
 //   deleteController
 //---------------------------------------------------------
 
-void MidiPort::deleteController(int ch, int tick, int ctrl, Part* part)
+void MidiPort::deleteController(int ch, unsigned int tick, int ctrl, int val, Part* part)
     {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end()) {
@@ -1786,7 +1786,7 @@ void MidiPort::deleteController(int ch, int tick, int ctrl, Part* part)
             return;
             }
       
-      cl->second->delMCtlVal(tick, part);
+      cl->second->delMCtlVal(tick, part, val);
       }
 
 //---------------------------------------------------------
@@ -1928,10 +1928,10 @@ void MidiPort::writeRouting(int level, Xml& xml) const
 
 void setPortExclusiveDefOutChan(int port, int c) 
 { 
-  if(port < 0 || port >= MIDI_PORTS)
+  if(port < 0 || port >= MusECore::MIDI_PORTS)
     return;
   MusEGlobal::midiPorts[port].setDefaultOutChannels(c);
-  for(int i = 0; i < MIDI_PORTS; ++i)
+  for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
     if(i != port)
       MusEGlobal::midiPorts[i].setDefaultOutChannels(0);
 }

@@ -50,7 +50,7 @@ class DrumEdit;
 //    ''visual'' Drum Event
 //---------------------------------------------------------
 
-class DEvent : public CItem {
+class DEvent : public EItem {
    public:
       DEvent(MusECore::Event e, MusECore::Part* p, int instr);
       };
@@ -105,11 +105,11 @@ class DrumCanvas : public EventCanvas {
       int _stepSize;
 
       
-      virtual void drawCanvas(QPainter&, const QRect&);
-      virtual void drawItem(QPainter&, const CItem*, const QRect&);
-      void drawTopItem(QPainter& p, const QRect& rect);
-      virtual void drawMoving(QPainter&, const CItem*, const QRect&);
-      virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true);
+      virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion());
+      virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
+      void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion());
+      virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
+      virtual MusECore::Undo moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true);
       virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true);
       virtual CItem* newItem(const QPoint&, int);
       virtual void resizeItem(CItem*, bool, bool) { } // Non-virt width is meaningless, such as drums.
@@ -154,7 +154,7 @@ class DrumCanvas : public EventCanvas {
 
    public:
       enum {
-         CMD_CUT, CMD_COPY, CMD_COPY_RANGE, CMD_PASTE, CMD_PASTE_DIALOG, CMD_SAVE, CMD_LOAD, CMD_RESET,
+         CMD_CUT, CMD_COPY, CMD_COPY_RANGE, CMD_PASTE, CMD_PASTE_TO_CUR_PART, CMD_PASTE_DIALOG, CMD_SAVE, CMD_LOAD, CMD_RESET,
          CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
          CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PREV_PART, CMD_SELECT_NEXT_PART, 
          CMD_DEL, CMD_FIXED_LEN, CMD_RIGHT, CMD_LEFT, CMD_RIGHT_NOSNAP, CMD_LEFT_NOSNAP, CMD_MODIFY_VELOCITY, CMD_CRESCENDO,

@@ -29,12 +29,9 @@
 #include "event.h"
 #include "marker/marker.h"
 #include "route.h"
+#include "sig.h"
 
 class QString;
-
-namespace AL {
-struct TimeSignature;
-}
 
 namespace MusECore {
 
@@ -70,7 +67,8 @@ struct UndoOp {
             DoNothing,
             
             // These operation cannot be undone. They are 'one time' operations, removed after execution.
-            EnableAllAudioControllers
+            EnableAllAudioControllers,
+            GlobalSelectAllEvents
             };
       UndoType type;
 
@@ -151,7 +149,8 @@ struct UndoOp {
       UndoOp(UndoType type, const Part* part, bool noUndo = false);
       UndoOp(UndoType type, const Part* part, const QString& old_name, const QString& new_name, bool noUndo = false);
       UndoOp(UndoType type, const Part* part, bool selected, bool selected_old, bool noUndo = false);
-      UndoOp(UndoType type, const Part* part, int old_len_or_pos, int new_len_or_pos, Pos::TType new_time_type = Pos::TICKS, const Track* oTrack = 0, const Track* nTrack = 0, bool noUndo = false);
+      UndoOp(UndoType type, const Part* part, unsigned int old_len_or_pos, unsigned int new_len_or_pos, Pos::TType new_time_type = Pos::TICKS,
+             const Track* oTrack = 0, const Track* nTrack = 0, bool noUndo = false);
       UndoOp(UndoType type, const Event& nev, const Event& oev, const Part* part, bool doCtrls, bool doClones, bool noUndo = false);
       UndoOp(UndoType type, const Event& nev, const Part* part, bool, bool, bool noUndo = false);
       UndoOp(UndoType type, const Event& changedEvent, const QString& changeData, int startframe, int endframe, bool noUndo = false);
@@ -163,7 +162,7 @@ struct UndoOp {
       UndoOp(UndoType type, const Track* track, int ctrlID, int frame, double value, bool noUndo = false);
       UndoOp(UndoType type, const Track* track, bool value, bool noUndo = false);
       UndoOp(UndoType type, CtrlListList* ctrl_ll, CtrlList* eraseCtrlList, CtrlList* addCtrlList, bool noUndo = false);
-      UndoOp(UndoType type, int tick, const AL::TimeSignature old_sig, const AL::TimeSignature new_sig, bool noUndo = false);
+      UndoOp(UndoType type, int tick, const MusECore::TimeSignature old_sig, const MusECore::TimeSignature new_sig, bool noUndo = false);
       UndoOp(UndoType type, const Route& route_from, const Route& route_to, bool noUndo = false);
       UndoOp(UndoType type);
 };
@@ -188,6 +187,7 @@ class Undo : public std::list<UndoOp> {
        *  other is deleted from the UndoList. */
       bool merge_combo(const Undo& other);
       
+      void push_front(const UndoOp& op);
       void push_back(const UndoOp& op);
       void insert(iterator position, const_iterator first, const_iterator last);
       void insert(iterator position, const UndoOp& op);

@@ -285,7 +285,6 @@ void WaveEventBase::read(Xml& xml)
 //   write
 //---------------------------------------------------------
 
-//void WaveEventBase::write(int level, Xml& xml, const Pos& offset) const
 void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath) const
       {
       if (f.isNull())
@@ -426,7 +425,6 @@ void WaveEventBase::seekAudio(sf_count_t frame)
 //void WaveEventBase::readAudio(WavePart* /*part*/, unsigned /*offset*/, float** buffer, int channel, int n, bool /*doSeek*/, bool overwrite)
 void WaveEventBase::readAudio(unsigned frame, float** buffer, int channel, int n, bool /*doSeek*/, bool overwrite)
 {
-  // Added by Tim. p3.3.17
   #ifdef WAVEEVENT_DEBUG_PRC
 // REMOVE Tim. samplerate. Changed.
 //   printf("WaveEventBase::readAudio audConv:%p sfCurFrame:%ld offset:%u channel:%d n:%d\n", audConv, sfCurFrame, offset, channel, n);

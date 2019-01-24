@@ -56,7 +56,7 @@ using namespace std;
 #include "app.h"
 #include "xml.h"
 #include "mtscale.h"
-#include "al/sig.h"
+#include "sig.h"
 #include "scoreedit.h"
 #include "tools.h"
 #include "ttoolbar.h"
@@ -214,7 +214,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     connect(score_canvas, SIGNAL(canvas_height_changed(int)), SLOT(canvas_height_changed(int)));
     connect(score_canvas, SIGNAL(viewport_height_changed(int)), SLOT(viewport_height_changed(int)));
 
-    connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), score_canvas, SLOT(song_changed(MusECore::SongChangedFlags_t)));
+    connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), score_canvas, SLOT(song_changed(MusECore::SongChangedStruct_t)));
 
     connect(xscroll, SIGNAL(valueChanged(int)), time_bar, SLOT(set_xpos(int)));
     connect(score_canvas, SIGNAL(pos_add_changed()), time_bar, SLOT(pos_add_changed()));
@@ -517,10 +517,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     settings_menu->addAction(shareAction);
     settings_menu->addAction(fullscreenAction);
 
-
-    init_shortcuts();
-
-    connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(init_shortcuts()));
+    config_changed();  // set configuration values, initialize shortcuts
+    connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(config_changed()));
 
     QClipboard* cb = QApplication::clipboard();
     connect(cb, SIGNAL(dataChanged()), SLOT(clipboard_changed()));
@@ -528,7 +526,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     clipboard_changed();
     selection_changed();
 
-    connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(song_changed(MusECore::SongChangedFlags_t)));
+    connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(song_changed(MusECore::SongChangedStruct_t)));
     connect(MusEGlobal::song, SIGNAL(newPartsCreated(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&)), score_canvas, SLOT(add_new_parts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&)));
 
     score_canvas->fully_recalculate();
@@ -544,6 +542,14 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
     initTopwinState();
     finalizeInit();
+}
+
+void ScoreEdit::config_changed()
+{
+    if(score_canvas)
+      score_canvas->config_changed();
+    
+    init_shortcuts();
 }
 
 void ScoreEdit::init_shortcuts()
@@ -577,6 +583,27 @@ void ScoreEdit::init_shortcuts()
 void ScoreEdit::add_parts(MusECore::PartList* pl, bool all_in_one)
 {
     score_canvas->add_staves(pl, all_in_one);
+}
+
+//---------------------------------------------------------
+//   itemsAreSelected
+//---------------------------------------------------------
+
+bool ScoreEdit::itemsAreSelected() const
+{
+  if(score_canvas)
+    return score_canvas->itemsAreSelected();
+  return false;
+}
+
+//---------------------------------------------------------
+//   tagItems
+//---------------------------------------------------------
+
+void ScoreEdit::tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const
+{
+  if(score_canvas)
+    score_canvas->tagItems(tag_list, options);
 }
 
 void ScoreEdit::init_name()
@@ -656,14 +683,15 @@ void ScoreEdit::quant_combobox_changed(int idx)
     focusCanvas();
 }
 
-void ScoreEdit::song_changed(MusECore::SongChangedFlags_t flags)
+void ScoreEdit::song_changed(MusECore::SongChangedStruct_t flags)
 {
     if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
 
-    if (flags & (SC_SELECTION | SC_EVENT_MODIFIED | SC_EVENT_REMOVED))
+    if (flags._flags & (SC_SELECTION | SC_EVENT_MODIFIED | SC_EVENT_REMOVED))
     {
-        map<const MusECore::Event*, const MusECore::Part*> selection=get_events(score_canvas->get_all_parts(),1);
+        map<const MusECore::Event*,
+          const MusECore::Part*> selection=get_events(score_canvas->get_all_parts(),1, MusECore::AllEventsRelevant);
         if (selection.empty())
         {
             apply_velo_to_label->setText(tr("Apply to new notes:"));
@@ -743,6 +771,16 @@ void ScoreEdit::closeEvent(QCloseEvent* e)
 
 void ScoreEdit::menu_command(int cmd)
 {
+    MusECore::TagEventList tag_list;
+    
+    const FunctionDialogElements_t fn_element_dflt =
+      FunctionAllEventsButton |
+      FunctionSelectedEventsButton |
+      FunctionLoopedButton |
+      FunctionSelectedLoopedButton;
+      // | FunctionAllPartsButton |
+      // FunctionSelectedPartsButton
+      
     switch (cmd)
     {
         case CMD_SET_NAME:
@@ -766,30 +804,166 @@ void ScoreEdit::menu_command(int cmd)
         case CMD_SELECT_OLOOP: select_not_in_loop(score_canvas->get_all_parts()); break;
 
         case CMD_CUT:
-            copy_notes(score_canvas->get_all_parts(), 1);
-            erase_notes(score_canvas->get_all_parts(), 1);
+              tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
+              MusECore::cut_items(&tag_list);
             break;
-        case CMD_COPY: copy_notes(score_canvas->get_all_parts(), 1); break;
-        case CMD_COPY_RANGE: copy_notes(score_canvas->get_all_parts(), MusECore::any_event_selected(score_canvas->get_all_parts()) ? 3 : 2); break;
+            
+        case CMD_COPY:
+              tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
+              MusECore::copy_items(&tag_list);
+              break;
+        case CMD_COPY_RANGE:
+              //tagItems(!itemsAreSelected(), false, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
+              // For now, unlike the other editors, just tag all parts.
+              tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      !itemsAreSelected(), true, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos()));
+              MusECore::copy_items(&tag_list);
+              break;
         case CMD_PASTE:
             menu_command(CMD_SELECT_NONE);
-            MusECore::paste_notes(3072, false, true, score_canvas->get_selected_part());
+            MusECore::paste_items(score_canvas->get_all_parts(), 3072, MusECore::FunctionOptionsStruct(
+                                  MusECore::FunctionEraseItemsDefault | MusECore::FunctionPasteNeverNewPart));
             break;
         case CMD_PASTE_DIALOG:
             menu_command(CMD_SELECT_NONE);
-            MusECore::paste_notes(score_canvas->get_selected_part());
+            MusECore::paste_items(score_canvas->get_all_parts(), score_canvas->get_selected_part());
             break;
-        case CMD_QUANTIZE: quantize_notes(score_canvas->get_all_parts()); break;
-        case CMD_VELOCITY: modify_velocity(score_canvas->get_all_parts()); break;
-        case CMD_CRESCENDO: crescendo(score_canvas->get_all_parts()); break;
-        case CMD_NOTELEN: modify_notelen(score_canvas->get_all_parts()); break;
-        case CMD_TRANSPOSE: transpose_notes(score_canvas->get_all_parts()); break;
-        case CMD_ERASE: erase_notes(score_canvas->get_all_parts()); break;
-        case CMD_DEL: erase_notes(score_canvas->get_all_parts(),1); break;
-        case CMD_MOVE: move_notes(score_canvas->get_all_parts()); break;
-        case CMD_FIXED_LEN: set_notelen(score_canvas->get_all_parts()); break;
-        case CMD_DELETE_OVERLAPS: delete_overlaps(score_canvas->get_all_parts()); break;
-        case CMD_LEGATO: legato(score_canvas->get_all_parts()); break;
+        case CMD_QUANTIZE:
+        {
+          FunctionDialogReturnQuantize ret =
+            quantize_items_dialog(FunctionDialogMode(fn_element_dflt));
+          if(ret._valid)
+          {
+            tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+            MusECore::quantize_items(&tag_list, ret._raster_index,
+                                    /*ret._quant_len*/ false,  // DELETETHIS
+                                    ret._strength,
+                                    ret._swing,
+                                    ret._threshold);
+          }
+        break;
+        }
+
+        case CMD_VELOCITY:
+              {
+              FunctionDialogReturnVelocity ret =
+                velocity_items_dialog(FunctionDialogMode(fn_element_dflt));
+              if(ret._valid)
+              {
+                tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                MusECore::modify_velocity_items(&tag_list, ret._rateVal, ret._offsetVal);
+              }
+              break;
+              }
+        case CMD_CRESCENDO:
+              {
+              FunctionDialogReturnCrescendo ret =
+                crescendo_items_dialog(FunctionDialogMode(
+                  FunctionLoopedButton |
+                  FunctionSelectedLoopedButton
+                  // | FunctionAllPartsButton | 
+                  // FunctionSelectedPartsButton
+                ));
+              if(ret._valid)
+              {
+                tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                MusECore::crescendo_items(&tag_list, ret._start_val, ret._end_val, ret._absolute);
+              }
+              break;
+              }
+        case CMD_NOTELEN:
+              {
+              FunctionDialogReturnGateTime ret =
+                gatetime_items_dialog(FunctionDialogMode(fn_element_dflt));
+              if(ret._valid)
+              {
+                tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                MusECore::modify_notelen_items(&tag_list, ret._rateVal, ret._offsetVal);
+              }
+              break;
+              }
+        case CMD_TRANSPOSE:
+              {
+              FunctionDialogReturnTranspose ret =
+                transpose_items_dialog(FunctionDialogMode(fn_element_dflt));
+              if(ret._valid)
+              {
+                tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                MusECore::transpose_items(&tag_list, ret._amount);
+              }
+              break;
+              }
+        case CMD_ERASE:
+            {
+              FunctionDialogReturnErase ret =
+                erase_items_dialog(FunctionDialogMode(fn_element_dflt));
+              if(ret._valid)
+              {
+                tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                MusECore::erase_items(&tag_list, ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
+              }
+            }
+            break;
+        
+        case CMD_DEL:
+              tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
+              MusECore::erase_items(&tag_list);
+            break;
+
+        case CMD_MOVE:
+              {
+              FunctionDialogReturnMove ret =
+                move_items_dialog(FunctionDialogMode(fn_element_dflt));
+              if(ret._valid)
+              {
+                tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                MusECore::move_items(&tag_list, ret._amount);
+              }
+              break;
+              }
+        case CMD_FIXED_LEN:
+              {
+              FunctionDialogReturnSetLen ret =
+                setlen_items_dialog(FunctionDialogMode(fn_element_dflt));
+              if(ret._valid)
+              {
+                tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                MusECore::set_notelen_items(&tag_list, ret._len);
+              }
+              break;
+              }
+        case CMD_DELETE_OVERLAPS:
+              {
+              FunctionDialogReturnDelOverlaps ret =
+                deloverlaps_items_dialog(FunctionDialogMode(fn_element_dflt));
+              if(ret._valid)
+              {
+                tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                MusECore::delete_overlaps_items(&tag_list);
+              }
+              break;
+              }
+        case CMD_LEGATO:
+              {
+              FunctionDialogReturnLegato ret =
+                legato_items_dialog(FunctionDialogMode(fn_element_dflt));
+              if(ret._valid)
+              {
+                tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                MusECore::legato_items(&tag_list, ret._min_len, !ret._allow_shortening);
+              }
+              break;
+              }
 
         default:
             score_canvas->menu_command(cmd);
@@ -1176,6 +1350,104 @@ void ScoreEdit::write_configuration(int level, MusECore::Xml& xml)
 
 
 
+//---------------------------------------------------------
+//   itemsAreSelected
+//---------------------------------------------------------
+
+bool ScoreCanvas::itemsAreSelected() const
+{
+  FloItem fi;
+  for(list<staff_t>::const_iterator is = staves.begin(); is != staves.end(); ++is)
+  {
+    const staff_t& staff = *is;
+    const ScoreItemList& sil = staff.itemlist;
+    for(ScoreItemList::const_iterator isi = sil.begin(); isi != sil.end(); ++isi)
+    {
+      const set<FloItem, floComp>& si = isi->second;
+      for(set<FloItem, floComp>::const_iterator efi = si.begin(); efi != si.end(); ++efi)
+      {
+        fi = *efi;
+        if(fi.source_event && (*fi.source_event).selected())
+          return true;
+      }
+    }
+  }   
+  return false;
+}
+
+//---------------------------------------------------------
+//   tagItems
+//---------------------------------------------------------
+
+void ScoreCanvas::tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const
+{
+  const bool tagSelected = options._flags & MusECore::TagSelected;
+  //const bool tagMoving   = options._flags & MusECore::TagMoving;
+  const bool tagAllItems = options._flags & MusECore::TagAllItems;
+  const bool tagAllParts = options._flags & MusECore::TagAllParts;
+  const bool range       = options._flags & MusECore::TagRange;
+  const MusECore::Pos& p0 = options._p0;
+  const MusECore::Pos& p1 = options._p1;
+  
+  // Here we can choose between using tagAllParts for parts or staves.
+  // If we choose parts, it's kind of difficult for the user to tell which part is selected.
+  // Whereas, if we choose staves, it's much easier to see that a staff is currently selected.
+  // TODO: Possibly add 'staves' radio buttons to the function dialogs instead.
+  const bool use_staves_for_tag_all_parts = true;
+  // For now we don't use the tagAllParts flag.
+  const bool use_tag_all_parts = false;
+  
+  MusECore::Part* part;
+  MusECore::Pos pos;
+  FloItem fi;
+  for(list<staff_t>::const_iterator is = staves.begin(); is != staves.end(); ++is)
+  {
+    const staff_t& staff = *is;
+
+    if(use_tag_all_parts && use_staves_for_tag_all_parts && !tagAllParts && (&staff != &(*current_staff)))
+      continue;
+    
+    const ScoreItemList& sil = staff.itemlist;
+    for(ScoreItemList::const_iterator isi = sil.begin(); isi != sil.end(); ++isi)
+    {
+      const set<FloItem, floComp>& si = isi->second;
+      for(set<FloItem, floComp>::const_iterator efi = si.begin(); efi != si.end(); ++efi)
+      {
+        fi = *efi;
+        
+        // Make sure the event and part pointers are valid.
+        if(!fi.source_event || !fi.source_part)
+          continue;
+        
+        const MusECore::Event& e = *fi.source_event;
+        
+        // HACK Source part is const pointer.
+        part = ((MusECore::Part*)&fi.source_part);
+        
+        if(use_tag_all_parts && !use_staves_for_tag_all_parts && !tagAllParts && part != selected_part)
+          continue;
+        
+        if(range)
+        {
+          // Don't forget to add the part's position.
+          pos = e.pos() + *part;
+          // p1 should be considered outside (one past) the very last position in the range.
+          if(pos < p0 || pos >= p1)
+            continue;
+        }
+        
+        if(tagAllItems
+           || (tagSelected && e.selected())
+           //|| (tagMoving && e.isMoving()) //TODO
+          )
+        {
+          tag_list->add(part, e);
+        }
+      }
+    }
+  }
+}
+
 
 void ScoreCanvas::add_staves(MusECore::PartList* pl, bool all_in_one)
 {
@@ -1331,8 +1603,6 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 
     connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(pos_changed(int,unsigned,bool)));
     connect(MusEGlobal::song, SIGNAL(playChanged(bool)), SLOT(play_changed(bool)));
-    connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(config_changed()));
-
 
     staff_menu=new QMenu(this);
 
@@ -1545,16 +1815,16 @@ void ScoreCanvas::fully_recalculate()
     song_changed(SC_EVENT_MODIFIED);
 }
 
-void ScoreCanvas::song_changed(MusECore::SongChangedFlags_t flags)
+void ScoreCanvas::song_changed(MusECore::SongChangedStruct_t flags)
 {
     if(parent && parent->deleting())  // Ignore while while deleting to prevent crash.
         return;
 
-    if (flags & (SC_PART_MODIFIED | SC_PART_REMOVED | SC_PART_INSERTED | SC_TRACK_REMOVED))
+    if (flags._flags & (SC_PART_MODIFIED | SC_PART_REMOVED | SC_PART_INSERTED | SC_TRACK_REMOVED))
     {
         update_parts();
 
-        if (flags & (SC_PART_REMOVED | SC_TRACK_REMOVED))
+        if (flags._flags & (SC_PART_REMOVED | SC_TRACK_REMOVED))
         {
             for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
                 it->cleanup_parts();
@@ -1570,7 +1840,7 @@ void ScoreCanvas::song_changed(MusECore::SongChangedFlags_t flags)
         }
     }
 
-    if (flags & (SC_PART_MODIFIED |
+    if (flags._flags & (SC_PART_MODIFIED |
                  SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED |
                  SC_SIG  | SC_KEY) )
     {
@@ -1585,7 +1855,7 @@ void ScoreCanvas::song_changed(MusECore::SongChangedFlags_t flags)
         emit canvas_width_changed(canvas_width());
     }
 
-    if (flags & SC_SELECTION)
+    if (flags._flags & SC_SELECTION)
     {
         redraw();
     }
@@ -1763,12 +2033,12 @@ bool operator< (const note_pos_t& a, const note_pos_t& b)
 
 int flo_quantize(int tick, int quant_ticks)
 {
-    return AL::sigmap.raster(tick, quant_ticks);
+    return MusEGlobal::sigmap.raster(tick, quant_ticks);
 }
 
 int flo_quantize_floor(int tick, int quant_ticks)
 {
-    return AL::sigmap.raster1(tick, quant_ticks);
+    return MusEGlobal::sigmap.raster1(tick, quant_ticks);
 }
 
 
@@ -1786,8 +2056,8 @@ int flo_quantize_floor(int tick, int quant_ticks)
  */
 void staff_t::create_appropriate_eventlist()
 {
-    using AL::sigmap;
-    using AL::iSigEvent;
+    using MusEGlobal::sigmap;
+    using MusECore::iSigEvent;
 
     eventlist.clear();
 
@@ -1826,11 +2096,11 @@ void staff_t::create_appropriate_eventlist()
     }
 
     //insert bars and time signatures
-    for (iSigEvent it=sigmap.begin(); it!=sigmap.end(); it++)
+    for (iSigEvent it=MusEGlobal::sigmap.begin(); it!=MusEGlobal::sigmap.end(); it++)
     {
         unsigned from=it->second->tick;
         unsigned to=it->first;
-        unsigned ticks_per_measure=sigmap.ticksMeasure(it->second->tick);
+        unsigned ticks_per_measure=MusEGlobal::sigmap.ticksMeasure(it->second->tick);
 
         if (to > unsigned(SONG_LENGTH))
             to=SONG_LENGTH;
@@ -3012,14 +3282,14 @@ void staff_t::calc_item_pos()
 
 void ScoreCanvas::calc_pos_add_list()
 {
-    using AL::sigmap;
-    using AL::iSigEvent;
+    using MusEGlobal::sigmap;
+    using MusECore::iSigEvent;
 
 
     pos_add_list.clear();
 
     //process time signatures
-    for (iSigEvent it=sigmap.begin(); it!=sigmap.end(); it++)
+    for (iSigEvent it=MusEGlobal::sigmap.begin(); it!=MusEGlobal::sigmap.end(); it++)
         pos_add_list[it->second->tick]+=calc_timesig_width(it->second->sig.z, it->second->sig.n);
 
 
@@ -3528,7 +3798,7 @@ void ScoreCanvas::draw_number(QPainter& p, int x, int y, int n)
 }
 
 
-void ScoreCanvas::draw(QPainter& p, const QRect&)
+void ScoreCanvas::draw(QPainter& p, const QRect&, const QRegion&)
 {
     if (debugMsg) cout <<"now in ScoreCanvas::draw"<<endl;
 
@@ -3655,7 +3925,7 @@ timesig_t ScoreCanvas::timesig_at_tick(int t_)
     timesig_t tmp;
     unsigned int t= (t_>=0) ? t_ : 0;
 
-    AL::sigmap.timesig(t, tmp.num, tmp.denom);
+    MusEGlobal::sigmap.timesig(t, tmp.num, tmp.denom);
 
     return tmp;
 }
@@ -3940,7 +4210,10 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
                 if (!ctrl)
                     deselect_all();
 
-            MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent, *clicked_event_ptr, selected_part, !clicked_event_ptr->selected(), clicked_event_ptr->selected()));
+            MusEGlobal::song->applyOperation(
+                UndoOp(UndoOp::SelectEvent, *clicked_event_ptr, selected_part,
+                       !clicked_event_ptr->selected(), clicked_event_ptr->selected()),
+              MusECore::Song::OperationExecuteUpdate);
         }
 
         setMouseTracking(false);
@@ -4039,7 +4312,10 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
                     if (!ctrl)
                         deselect_all();
 
-                    MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent, *clicked_event_ptr, selected_part, true, clicked_event_ptr->selected()));
+                    MusEGlobal::song->applyOperation(
+                        UndoOp(UndoOp::SelectEvent, *clicked_event_ptr, selected_part,
+                               true, clicked_event_ptr->selected()),
+                      MusECore::Song::OperationExecuteUpdate);
                 }
 
                 old_pitch=-1;
@@ -4052,7 +4328,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 
         switch (mouse_operation)
         {
-            case NONE:
+            case NO_OP:
                 break;
 
             case PITCH:
@@ -4372,6 +4648,13 @@ void ScoreCanvas::play_changed(bool)
 
 void ScoreCanvas::config_changed()
 {
+    if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
+          setBg(MusEGlobal::config.midiCanvasBg);
+          setBg(QPixmap());
+    }
+    else {
+          setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
+    }
     redraw();
 }
 
@@ -4499,7 +4782,11 @@ void ScoreCanvas::set_velo(int velo)
     note_velo_init=velo;
 
     if (parent->get_apply_velo())
-        modify_velocity(get_all_parts(),1, 0,velo);
+    {
+        MusECore::TagEventList tag_list;
+        tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
+        MusECore::modify_velocity_items(&tag_list, 0, velo);
+    }
 }
 
 void ScoreCanvas::set_velo_off(int velo)
@@ -4508,7 +4795,11 @@ void ScoreCanvas::set_velo_off(int velo)
     note_velo_off_init=velo;
 
     if (parent->get_apply_velo())
-        modify_off_velocity(get_all_parts(),1, 0,velo);
+    {
+        MusECore::TagEventList tag_list;
+        tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
+        MusECore::modify_off_velocity_items(&tag_list, 0, velo);
+    }
 }
 
 void ScoreCanvas::deselect_all()
@@ -4522,7 +4813,7 @@ void ScoreCanvas::deselect_all()
         for (MusECore::ciEvent event=(*part)->events().begin(); event!=(*part)->events().end(); event++)
             operations.push_back(UndoOp(UndoOp::SelectEvent, event->second, *part, false, event->second.selected()));
 
-    MusEGlobal::song->applyOperationGroup(operations);
+    MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate);
 }
 
 bool staff_t::cleanup_parts()
@@ -4581,11 +4872,16 @@ void staff_t::apply_lasso(QRect rect, set<const MusECore::Event*>& already_proce
                 if (rect.contains(it2->x, it2->y))
                     if (already_processed.find(it2->source_event)==already_processed.end())
                     {
-                        operations.push_back(UndoOp(UndoOp::SelectEvent,*it2->source_event,it2->source_part,!it2->source_event->selected(),it2->source_event->selected()));
+                        operations.push_back(UndoOp(UndoOp::SelectEvent,*it2->source_event,it2->source_part,
+                                                       !it2->source_event->selected(),it2->source_event->selected()));
+                        // Here we have a choice of whether to allow undoing of selections.
+                        // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
+//                         operations.push_back(UndoOp(UndoOp::SelectEvent,*it2->source_event,it2->source_part,
+//                                                     !it2->source_event->selected(),it2->source_event->selected(), false));
                         already_processed.insert(it2->source_event);
                     }
             }
-    MusEGlobal::song->applyOperationGroup(operations);
+    MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate);
 }
 
 void ScoreCanvas::set_steprec(bool flag)

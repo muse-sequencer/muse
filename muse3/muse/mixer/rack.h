@@ -66,7 +66,7 @@ class EffectRack : public QListWidget {
    private slots:
       void menuRequested(QListWidgetItem*);
       void doubleClicked(QListWidgetItem*);
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       void updateContents();
 
    protected:

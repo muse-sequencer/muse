@@ -126,7 +126,7 @@ class Arranger : public QWidget {
       void genMidiTrackInfo();
       void genWaveTrackInfo();
       void switchInfo(int);
-      void trackInfoSongChange(MusECore::SongChangedFlags_t flags);
+      void trackInfoSongChange(MusECore::SongChangedStruct_t flags);
       void setHeaderToolTips();
       void setHeaderWhatsThis();
       void setHeaderSizes();
@@ -139,7 +139,7 @@ class Arranger : public QWidget {
       void showTrackInfoAlt(bool);
 #endif
       void trackSelectionChanged();
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       void setTime(unsigned);
       void globalPitchChanged(int);
       void globalTempoChanged(int);
@@ -165,7 +165,7 @@ class Arranger : public QWidget {
    public slots:
       void dclickPart(MusECore::Track*);
       void setTool(int);
-      void updateTrackInfo(MusECore::SongChangedFlags_t flags);
+      void updateTrackInfo(MusECore::SongChangedStruct_t flags);
       void configChanged();
       void controllerChanged(MusECore::Track *t, int ctrlId);
       void focusCanvas();

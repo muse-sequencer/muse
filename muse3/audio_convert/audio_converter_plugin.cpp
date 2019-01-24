@@ -391,7 +391,7 @@ AudioConverterHandle AudioConverterPlugin::instantiate(AudioConverterPluginI* /*
                                                        int mode)
 {
   DEBUG_AUDIOCONVERT(stderr, "AudioConverterPlugin::instantiate\n");
-  AudioConverterHandle h = plugin->instantiate(plugin, channels, settings, mode);
+  AudioConverterHandle h = plugin->instantiate(MusEGlobal::sampleRate, plugin, channels, settings, mode);
   if(!h)
   {
     ERROR_AUDIOCONVERT(stderr, "AudioConverterPlugin::instantiate() Error: plugin:%s instantiate failed!\n", plugin->_name);

@@ -71,6 +71,7 @@ void initShortCuts()
       defShrt(SHRT_REDO,          Qt::CTRL + Qt::SHIFT + Qt::Key_Z, QT_TRANSLATE_NOOP("shortcuts", "Edit: Redo"), INVIS_SHRT, "redo");
       defShrt(SHRT_CUT,           Qt::CTRL + Qt::Key_X, QT_TRANSLATE_NOOP("shortcuts", "Edit: Cut"), INVIS_SHRT, "cut");
       defShrt(SHRT_PASTE,         Qt::CTRL + Qt::Key_V, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste"), INVIS_SHRT, "paste");
+      defShrt(SHRT_PASTE_TO_CUR_PART, Qt::CTRL + Qt::SHIFT + Qt::Key_V, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste to current part"), PROLL_SHRT + DEDIT_SHRT, "paste_to_current_part");
       defShrt(SHRT_PASTE_TO_TRACK, Qt::CTRL + Qt::SHIFT + Qt::Key_V, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste to selected track"), ARRANG_SHRT, "paste_to_track");
       defShrt(SHRT_PASTE_CLONE,   Qt::CTRL + Qt::Key_B, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste clone"), ARRANG_SHRT, "paste_clones");
       defShrt(SHRT_PASTE_CLONE_TO_TRACK,  Qt::CTRL + Qt::SHIFT + Qt::Key_B, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste clone to selected track"), ARRANG_SHRT, "paste_clones_to_track");

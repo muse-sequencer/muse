@@ -24,6 +24,7 @@
 #cmakedefine HAVE_RTAUDIO
 #cmakedefine DSSI_ALSA_COMPAT_SUPPORT
 #cmakedefine HAVE_LASH
+#cmakedefine HAVE_LRDF
 #cmakedefine OSC_SUPPORT
 #cmakedefine DSSI_SUPPORT
 #cmakedefine LV2_SUPPORT
@@ -42,3 +43,4 @@
 #define DOCDIR           "${MusE_DOC_DIR}"
 #define SHAREDIR         "${MusE_SHARE_DIR}"
 #define LIBDIR           "${MusE_LIB_DIR}"
+#define BINDIR           "${MusE_BIN_DIR}"

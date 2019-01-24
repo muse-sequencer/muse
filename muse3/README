@@ -222,6 +222,24 @@ details.
 
           Or there is also a desktop GUI for cmake called cmake-gui.
 
+          Normally MusE builds its many internal modules as SHARED libraries and the
+           executable file is small but it links to all those libraries.
+          There is a special flag for building MusE as a more or less 'monolithic'
+           application (one big executable) which forces MusE to build most modules
+           as STATIC libraries and join them all in the final executable:
+           -DMODULES_BUILD_STATIC
+
+          --------------------------------
+            *** NOTICE TO PACKAGERS: ***
+          --------------------------------
+          
+          Some packagers of software like to ensure that there are no unresolved symbols
+           in ANY shared libraries in the software, for example by using:
+           -DCMAKE_SHARED_LINKER_FLAGS=-Wl,--no-undefined
+
+          When using such flags, the -DMODULES_BUILD_STATIC flag 
+           MUST BE ALSO BE SUPPLIED otherwise there will be many unresolved symbol errors.
+
         Compiling:
         ----------  
           After configuration, while still in the build directory,type:

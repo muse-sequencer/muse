@@ -24,9 +24,9 @@
 #define __MIDIEDITOR_H__
 
 #include "type_defs.h"
-#include "al/sig.h"
 #include "cobject.h"
-
+#include "ctrl/ctrledit.h"
+#include "event_tag_list.h"
 
 #include <set>
 
@@ -35,6 +35,7 @@ class QWidget;
 class QPoint;
 
 namespace MusECore {
+class Track;
 class Part;
 class PartList;
 class WavePart;
@@ -42,10 +43,10 @@ class Xml;
 }
 
 namespace MusEGui {
-class CtrlEdit;
 class EventCanvas;
 class MTScale;
 class ScrollScale;
+class TrackInfoWidget;
 //class WaveView;
 
 //---------------------------------------------------------
@@ -65,9 +66,12 @@ class MidiEditor : public TopWin  {
       MusEGui::ScrollScale* vscroll;
       MusEGui::MTScale* time;
       EventCanvas* canvas;
-      //WaveView* wview;
+      
+      TrackInfoWidget* trackInfoWidget;
+      QWidget* noTrackInfo;
+      MusECore::Track* selected;
 
-      std::list<CtrlEdit*> ctrlEditList;
+      CtrlEditList ctrlEditList;
       int _raster;
       QGridLayout* mainGrid;
       QWidget* mainw;
@@ -76,12 +80,21 @@ class MidiEditor : public TopWin  {
       void writePartList(int, MusECore::Xml&) const;
       void genPartlist();
       void movePlayPointerToSelectedEvent();
+      
+      void genTrackInfo(TrackInfoWidget* trackInfo);
+      void switchInfo(int);
+      void trackInfoSongChange(MusECore::SongChangedStruct_t flags);
+      // Checks if track info track is valid and deletes the strip if the track is not found.
+      void checkTrackInfoTrack();
 
+   protected slots:
+      void updateTrackInfo();
+      
    private slots:
       void addNewParts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&);
 
    public slots:
-      void songChanged(MusECore::SongChangedFlags_t type);
+      void songChanged(MusECore::SongChangedStruct_t type);
       void setCurDrumInstrument(int instr);
 
       virtual void updateHScrollRange() { };
@@ -93,10 +106,10 @@ class MidiEditor : public TopWin  {
          QWidget* parent = 0, const char* name = 0);
       virtual ~MidiEditor();
 
-      int rasterStep(unsigned tick) const   { return AL::sigmap.rasterStep(tick, _raster); }
-      unsigned rasterVal(unsigned v)  const { return AL::sigmap.raster(v, _raster);  }
-      unsigned rasterVal1(unsigned v) const { return AL::sigmap.raster1(v, _raster); }
-      unsigned rasterVal2(unsigned v) const { return AL::sigmap.raster2(v, _raster); }
+      int rasterStep(unsigned tick) const;
+      unsigned rasterVal(unsigned v)  const;
+      unsigned rasterVal1(unsigned v) const;
+      unsigned rasterVal2(unsigned v) const;
       int raster() const           { return _raster; }
       void setRaster(int val)      { _raster = val; }
       MusECore::PartList* parts()            { return _pl;  }
@@ -104,6 +117,10 @@ class MidiEditor : public TopWin  {
       MusECore::Part* curCanvasPart();
       void setCurCanvasPart(MusECore::Part*); 
       void addPart(MusECore::Part*);
+      bool itemsAreSelected() const;
+      // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
+      // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
+      void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
       };
 
 } // namespace MusEGui

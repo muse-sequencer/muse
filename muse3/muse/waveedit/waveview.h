@@ -75,8 +75,8 @@ class WaveView : public View {
 
       unsigned selectionStart, selectionStop, dragstartx;
 
-      virtual void pdraw(QPainter&, const QRect&);
-      virtual void draw(QPainter&, const QRect&);
+      virtual void pdraw(QPainter&, const QRect&, const QRegion& = QRegion());
+      virtual void draw(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void viewMousePressEvent(QMouseEvent*);
       virtual void viewMouseMoveEvent(QMouseEvent*);
       virtual void viewMouseReleaseEvent(QMouseEvent*);
@@ -91,7 +91,7 @@ class WaveView : public View {
 
    public slots:
       void setYScale(int);
-      void songChanged(MusECore::SongChangedFlags_t type);
+      void songChanged(MusECore::SongChangedStruct_t type);
 
    signals:
       void followEvent(int);

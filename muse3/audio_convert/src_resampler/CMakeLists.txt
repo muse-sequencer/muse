@@ -83,6 +83,7 @@ set_target_properties ( src_converter
 target_link_libraries(src_converter
       audio_convert
       # Note that this also appears in the core.
+      ${SNDFILE_LIBRARIES}
       ${SAMPLERATE_LIBRARIES}
       ${QT_LIBRARIES}
       )

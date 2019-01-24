@@ -79,7 +79,7 @@ WaveView::WaveView(MidiEditor* pr, QWidget* parent, int xscale, int yscale)
 
 
       connect(MusEGlobal::song, SIGNAL(posChanged(int,unsigned,bool)), SLOT(setPos(int,unsigned,bool)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       songChanged(SC_SELECTION);
       }
 
@@ -97,7 +97,7 @@ void WaveView::setYScale(int val)
 //   draw
 //---------------------------------------------------------
 
-void WaveView::pdraw(QPainter& p, const QRect& rr)
+void WaveView::pdraw(QPainter& p, const QRect& rr, const QRegion&)
       {
       int x1 = rr.x();
       int x2 = rr.right() + 1;
@@ -196,7 +196,7 @@ void WaveView::pdraw(QPainter& p, const QRect& rr)
 //   draw
 //---------------------------------------------------------
 
-void WaveView::draw(QPainter& p, const QRect& r)
+void WaveView::draw(QPainter& p, const QRect& r, const QRegion&)
       {
       unsigned x = r.x() < 0 ? 0 : r.x();
       unsigned y = r.y() < 0 ? 0 : r.y();
@@ -209,16 +209,16 @@ void WaveView::draw(QPainter& p, const QRect& r)
       //
       //    draw marker & centerline
       //
-      p.setPen(Qt::red);
-      if (pos[0] >= x && pos[0] < x2) {
-            p.drawLine(pos[0], y, pos[0], y2);
-            }
       p.setPen(Qt::blue);
       if (pos[1] >= x && pos[1] < x2) {
             p.drawLine(pos[1], y, pos[1], y2);
             }
       if (pos[2] >= x && pos[2] < x2)
             p.drawLine(pos[2], y, pos[2], y2);
+      p.setPen(Qt::red);
+      if (pos[0] >= x && pos[0] < x2) {
+            p.drawLine(pos[0], y, pos[0], y2);
+            }
 
       int n = 1;
       if(curPart)
@@ -253,9 +253,9 @@ QString WaveView::getCaption() const
 //   songChanged
 //---------------------------------------------------------
 
-void WaveView::songChanged(MusECore::SongChangedFlags_t flags)
+void WaveView::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if (flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
+      if (flags._flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
             // TODO FIXME: don't we actually only want SC_PART_*, and maybe SC_TRACK_DELETED?
             //             (same in ecanvas.cpp)
             startSample  = INT_MAX;
@@ -277,10 +277,10 @@ void WaveView::songChanged(MusECore::SongChangedFlags_t flags)
                         }
                   }
             }
-      if (flags & SC_CLIP_MODIFIED) {
+      if (flags._flags & SC_CLIP_MODIFIED) {
             redraw(); // Boring, but the only thing possible to do
             }
-      if (flags & SC_TEMPO) {
+      if (flags._flags & SC_TEMPO) {
             setPos(0, MusEGlobal::song->cpos(), false);
             setPos(1, MusEGlobal::song->lpos(), false);
             setPos(2, MusEGlobal::song->rpos(), false);

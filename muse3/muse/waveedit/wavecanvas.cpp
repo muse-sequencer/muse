@@ -77,6 +77,10 @@
 #include "tools.h"
 #include "copy_on_write.h"
 #include "helper.h"
+#include "sig.h"
+
+
+
 // REMOVE Tim. samplerate. Added.
 #include "menutitleitem.h"
 #include "audio_converter_settings.h"
@@ -84,18 +88,16 @@
 #include "audio_convert/audio_converter_settings_group.h"
 #include "sndfile.h"
 #include "operations.h"
-
 #define ABS(x) (abs(x))
-
 #define FABS(x) (fabs(x))
-
 #define ERROR_WAVECANVAS(dev, format, args...)  fprintf(dev, format, ##args)
-
 #define INFO_WAVECANVAS(dev, format, args...) // fprintf(dev, format, ##args)
-
 // REMOVE Tim. samplerate. Enabled.
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_WAVECANVAS(dev, format, args...) // fprintf(dev, format, ##args)
+
+
+
 
 namespace MusEGui {
 
@@ -107,7 +109,7 @@ const int WaveCanvas::_stretchAutomationPointWidthSel = 3;
 //   WEvent
 //---------------------------------------------------------
 
-WEvent::WEvent(const MusECore::Event& e, MusECore::Part* p, int height) : MusEGui::CItem(e, p)
+WEvent::WEvent(const MusECore::Event& e, MusECore::Part* p, int height) : EItem(e, p)
       {
       unsigned frame = e.frame() + p->frame();
       setPos(QPoint(frame, 0));
@@ -172,60 +174,69 @@ WaveCanvas::~WaveCanvas()
 }
 
 //---------------------------------------------------------
+//   updateItems
+//---------------------------------------------------------
+
+void WaveCanvas::updateItems()
+{
+  bool curItemNeedsRestore=false;
+  MusECore::Event storedEvent;
+  int partSn = 0;
+  if (curItem)
+  {
+    curItemNeedsRestore=true;
+    storedEvent=curItem->event();
+    partSn=curItem->part()->sn();
+  }
+  curItem=NULL;
+  
+  items.clearDelete();
+  startSample  = INT_MAX;
+  endSample    = 0;
+  curPart = 0;
+  for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
+        MusECore::WavePart* part = (MusECore::WavePart*)(p->second);
+        if (part->sn() == curPartId)
+              curPart = part;
+        unsigned ssample = part->frame();
+        unsigned len = part->lenFrame();
+        unsigned esample = ssample + len;
+        if (ssample < startSample)
+              startSample = ssample;
+        if (esample > endSample)
+              endSample = esample;
+
+        for (MusECore::ciEvent i = part->events().begin(); i != part->events().end(); ++i) {
+              const MusECore::Event& e = i->second;
+              // Do not add events which are past the end of the part.
+              if(e.frame() > len)      
+                break;
+              
+              if (e.type() == MusECore::Wave) {
+                    CItem* temp = addItem(part, e);
+                    
+                    if (temp && curItemNeedsRestore && e==storedEvent && part->sn()==partSn)
+                    {
+                        if (curItem!=NULL)
+                          printf("THIS SHOULD NEVER HAPPEN: curItemNeedsRestore=true, event fits, but there was already a fitting event!?\n");
+                        
+                        curItem=temp;
+                        }
+                    }
+              }
+        }
+}
+
+//---------------------------------------------------------
 //   songChanged(type)
 //---------------------------------------------------------
 
-void WaveCanvas::songChanged(MusECore::SongChangedFlags_t flags)
+void WaveCanvas::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if (flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
+      if (flags._flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
             // TODO FIXME: don't we actually only want SC_PART_*, and maybe SC_TRACK_DELETED?
             //             (same in waveview.cpp)
-            bool curItemNeedsRestore=false;
-            MusECore::Event storedEvent;
-            int partSn = 0;
-            if (curItem)
-            {
-              curItemNeedsRestore=true;
-              storedEvent=curItem->event();
-              partSn=curItem->part()->sn();
-            }
-            curItem=NULL;
-            
-            items.clearDelete();
-            startSample  = INT_MAX;
-            endSample    = 0;
-            curPart = 0;
-            for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
-                  MusECore::WavePart* part = (MusECore::WavePart*)(p->second);
-                  if (part->sn() == curPartId)
-                        curPart = part;
-                  unsigned ssample = part->frame();
-                  unsigned len = part->lenFrame();
-                  unsigned esample = ssample + len;
-                  if (ssample < startSample)
-                        startSample = ssample;
-                  if (esample > endSample)
-                        endSample = esample;
-
-                  for (MusECore::ciEvent i = part->events().begin(); i != part->events().end(); ++i) {
-                        const MusECore::Event& e = i->second;
-                        // Do not add events which are past the end of the part.
-                        if(e.frame() > len)      
-                          break;
-                        
-                        if (e.type() == MusECore::Wave) {
-                              CItem* temp = addItem(part, e);
-                              
-                              if (temp && curItemNeedsRestore && e==storedEvent && part->sn()==partSn)
-                              {
-                                  if (curItem!=NULL)
-                                    printf("THIS SHOULD NEVER HAPPEN: curItemNeedsRestore=true, event fits, but there was already a fitting event!?\n");
-                                  
-                                  curItem=temp;
-                                  }
-                              }
-                        }
-                  }
+            updateItems();
             }
 
       MusECore::Event event;
@@ -243,7 +254,8 @@ void WaveCanvas::songChanged(MusECore::SongChangedFlags_t flags)
                   }
             }
             
-      if (flags & SC_STRETCH) {
+// REMOVE Tim. samplerate. Added.
+      if (flags._flags & SC_AUDIO_STRETCH) {
         for(iStretchSelectedItem is = _stretchAutomation._stretchSelectedList.begin(); 
             is != _stretchAutomation._stretchSelectedList.end(); )
         {
@@ -277,10 +289,10 @@ void WaveCanvas::songChanged(MusECore::SongChangedFlags_t flags)
       }
             
       
-      if (flags & SC_CLIP_MODIFIED) {
+      if (flags._flags & SC_CLIP_MODIFIED) {
             redraw(); // Boring, but the only thing possible to do
             }
-      if (flags & SC_TEMPO) {
+      if (flags._flags & SC_TEMPO) {
             setPos(0, MusEGlobal::song->cpos(), false);
             setPos(1, MusEGlobal::song->lpos(), false);
             setPos(2, MusEGlobal::song->rpos(), false);
@@ -298,11 +310,18 @@ void WaveCanvas::songChanged(MusECore::SongChangedFlags_t flags)
                   }
       }
       
-      bool f1 = flags & (SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED | 
+      if(flags._flags & (SC_SELECTION))
+      {
+        // Prevent race condition: Ignore if the change was ultimately sent by the canvas itself.
+        if(flags._sender != this)
+          updateItemSelections();
+      }
+      
+      bool f1 = flags._flags & (SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED | 
                          SC_PART_INSERTED | SC_PART_MODIFIED | SC_PART_REMOVED |
                          SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
                          SC_SIG | SC_TEMPO | SC_KEY | SC_MASTER | SC_CONFIG | SC_DRUMMAP); 
-      bool f2 = flags & SC_SELECTION;
+      bool f2 = flags._flags & SC_SELECTION;
       if(f1 || f2)   // Try to avoid all unnecessary emissions.
         emit selectionChanged(x, event, part, !f1);
       
@@ -358,8 +377,8 @@ QString WaveCanvas::getCaption() const
       {
       int bar1, bar2, xx;
       unsigned x;
-      AL::sigmap.tickValues(curPart->tick(), &bar1, &xx, &x);
-      AL::sigmap.tickValues(curPart->tick() + curPart->lenTick(), &bar2, &xx, &x);
+      MusEGlobal::sigmap.tickValues(curPart->tick(), &bar1, &xx, &x);
+      MusEGlobal::sigmap.tickValues(curPart->tick() + curPart->lenTick(), &bar2, &xx, &x);
 
       return QString("MusE: Part <") + curPart->name()
          + QString("> %1-%2").arg(bar1+1).arg(bar2+1);
@@ -401,7 +420,8 @@ void WaveCanvas::keyPress(QKeyEvent* event)
             for(iStretchSelectedItem isi = ssl.begin(); isi != ssl.end(); ++isi)
             {
               StretchSelectedItem& ssi = isi->second;
-              ssi._sndFile.delAtStretchListOperation(ssi._type, isi->first, operations);
+//               ssi._sndFile.delAtStretchListOperation(ssi._type, isi->first, operations);
+              MusEGlobal::song->delAtStretchListOperation(ssi._sndFile, ssi._type, isi->first, operations);
             }
             ssl.clear();
             MusEGlobal::audio->msgExecutePendingOperations(operations, true);
@@ -466,7 +486,7 @@ void WaveCanvas::keyPress(QKeyEvent* event)
                       deselectAll();
                 CItem* sel = i->second;
                 sel->setSelected(true);
-                updateSelection();
+                redraw();
                 if (sel->x() + sel->width() > mapxDev(width())) 
                 {  
                   int mx = rmapx(sel->x());  
@@ -496,7 +516,7 @@ void WaveCanvas::keyPress(QKeyEvent* event)
                       deselectAll();
                 CItem* sel = i->second;
                 sel->setSelected(true);
-                updateSelection();
+                redraw();
                 if (sel->x() <= mapxDev(0)) 
                   emit horizontalScroll(rmapx(sel->x() - xorg) - 10);  // Leave a bit of room.
               }
@@ -528,6 +548,31 @@ void WaveCanvas::keyPress(QKeyEvent* event)
       else
             event->ignore();
       }
+
+//---------------------------------------------------------
+//   keyRelease
+//---------------------------------------------------------
+
+void WaveCanvas::keyRelease(QKeyEvent* event)
+{
+      const int key = event->key();
+      
+      // We do not want auto-repeat events.
+      // It does press and release repeatedly. Wait till the last release comes.
+      if(!event->isAutoRepeat())
+      {
+        // Select part to the right
+        if(key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key ||
+        // Select part to the left
+          key == shortcuts[SHRT_SEL_LEFT].key || key == shortcuts[SHRT_SEL_LEFT_ADD].key)
+        {
+          itemSelectionsChanged();
+        }
+        return;
+      }
+      
+  EventCanvas::keyRelease(event);
+}
 
 
 //---------------------------------------------------------
@@ -599,7 +644,6 @@ void WaveCanvas::setPos(int idx, unsigned val, bool adjustScrollbar)
             x = opos;
             }
       pos[idx] = val;
-      //redraw(QRect(x, 0, w, height()));
       redraw(QRect(x-1, 0, w+2, height()));    // From Canvas::draw (is otherwise identical). Fix for corruption. (TEST: New WaveCanvas: Still true?)
       }
 
@@ -613,167 +657,43 @@ void WaveCanvas::setYScale(int val)
       redraw();
       }
 
-// TODO: Overridden because markers need tick2frame. 
-//       After BBT/frame mode is added to Canvas, remove this override and let Canvas::draw do it.
-//       Also add the drawParts calls to Canvas::draw, and add a dummy Canvas::drawParts { }.
 //---------------------------------------------------------
-//   draw
+//   drawMarkers
 //---------------------------------------------------------
 
-void WaveCanvas::draw(QPainter& p, const QRect& r)
-      {
-      int x = r.x() < 0 ? 0 : r.x();
-      int y = r.y() < 0 ? 0 : r.y();
-      int w = r.width();
-      int h = r.height();
-      int x2 = x + w;
-
-      std::vector<CItem*> list1;
-      std::vector<CItem*> list2;
-      //std::vector<CItem*> list3;
-      std::vector<CItem*> list4;
-
-      drawCanvas(p, r);
-
-      //---------------------------------------------------
-      // draw Canvas Items
-      //---------------------------------------------------
-
-      iCItem to(items.lower_bound(x2));
+void WaveCanvas::drawMarkers(QPainter& p, const QRect& mr, const QRegion&)
+{
+      const int mx = mr.x();
+      const int my = mr.y();
+      const int mw = mr.width();
+      const int mh = mr.height();
+      const int my_2 = my + mh;
       
-      for(iCItem i = items.begin(); i != to; ++i)
-      { 
-        CItem* ci = i->second;
-        // NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
-        // Not required for now.
-        //ci->part()->hasHiddenEvents();
-        
-        // Draw items from other parts behind all others. Only for items with events (not arranger parts).
-        if(!ci->event().empty() && ci->part() != curPart)
-          list1.push_back(ci);    
-        else if(!ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
-        {
-          // Draw selected parts in front of all others.
-          if(ci->isSelected()) 
-            list4.push_back(ci);
-          // Draw clone parts, and parts with hidden events, in front of others all except selected.
-          //else if(ci->event().empty() && (ci->part()->hasClones() || ci->part()->cachedHasHiddenEvents()))
-          // Draw clone parts in front of others all except selected.
-          //else if(ci->event().empty() && ci->part()->hasClones())
-          //  list3.push_back(ci);
-          else  
-            // Draw unselected parts.
-            list2.push_back(ci);
-        }  
-      }
-
-      // Draw non-current part backgrounds behind all others:
-      drawParts(p, r, false);
+      const ViewXCoordinate vx(mx, true);
+      const ViewWCoordinate vw(mw, true);
+      const ViewXCoordinate vx_2(mx + mw, true);
       
-      int i;
-      int sz = list1.size();
-      for(i = 0; i != sz; ++i) 
-        drawItem(p, list1[i], r);
-      
-      // Draw current part background in front of all others:
-      drawParts(p, r, true);
-      
-      sz = list2.size();
-      for(i = 0; i != sz; ++i) 
-        drawItem(p, list2[i], r);
-
-      //sz = list3.size();
-      //for(i = 0; i != sz; ++i) 
-      //  drawItem(p, list3[i], rect);
-      
-      sz = list4.size();
-      for(i = 0; i != sz; ++i) 
-        drawItem(p, list4[i], r);
-      
-      to = moving.lower_bound(x2);
-      for (iCItem i = moving.begin(); i != to; ++i) 
-      {
-            drawItem(p, i->second, r);
-      }
-
-      drawTopItem(p,r);
-
-
-      //---------------------------------------------------
-      //    draw marker
-      //---------------------------------------------------
-
-      bool wmtxen = p.worldMatrixEnabled();
-      p.setWorldMatrixEnabled(false);
-      
-      int my = mapy(y);
-      int my2 = mapy(y + h);
+      QPen pen;
+      pen.setCosmetic(true);
       
       MusECore::MarkerList* marker = MusEGlobal::song->marker();
+      pen.setColor(Qt::green);
+      p.setPen(pen);
       for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
-            int xp = MusEGlobal::tempomap.tick2frame(m->second.tick());
-            if (xp >= x && xp < x2) {
-                  p.setPen(Qt::green);
-                  p.drawLine(mapx(xp), my, mapx(xp), my2);
+            const ViewXCoordinate xp(MusEGlobal::tempomap.tick2frame(m->second.tick()), false);
+            if (isXInRange(xp, vx, vx_2)) {
+                  const int mxp = asMapped(xp)._value;
+                  p.drawLine(mxp, my, mxp, my_2);
                   }
             }
-
-      //---------------------------------------------------
-      //    draw location marker
-      //---------------------------------------------------
-
-      // Tip: These positions are already in units of frames.
-      p.setPen(Qt::blue);
-      int mx;
-      if (pos[1] >= unsigned(x) && pos[1] < unsigned(x2)) {
-            mx = mapx(pos[1]);
-            p.drawLine(mx, my, mx, my2);
-            }
-      if (pos[2] >= unsigned(x) && pos[2] < unsigned(x2)) {
-            mx = mapx(pos[2]);
-            p.drawLine(mx, my, mx, my2);
-            }
-      p.setPen(Qt::red);
-      if (pos[0] >= unsigned(x) && pos[0] < unsigned(x2)) {
-            mx = mapx(pos[0]);
-            p.drawLine(mx, my, mx, my2);
-            }
-            
-      if(drag == DRAG_ZOOM)
-        p.drawPixmap(mapFromGlobal(global_start), *zoomAtIcon);
-        
-      //p.restore();
-      //p.setWorldMatrixEnabled(true);
-      p.setWorldMatrixEnabled(wmtxen);
-      
-      //---------------------------------------------------
-      //    draw lasso
-      //---------------------------------------------------
-
-      if (drag == DRAG_LASSO) {
-            p.setPen(Qt::blue);
-            p.setBrush(Qt::NoBrush);
-            p.drawRect(lasso);
-            }
-      
-      //---------------------------------------------------
-      //    draw moving items
-      //---------------------------------------------------
-      
-      for(iCItem i = moving.begin(); i != moving.end(); ++i) 
-        drawMoving(p, i->second, r);
-
-      }
+}
 
 //---------------------------------------------------------
 //   drawWaveParts
 //---------------------------------------------------------
 
-void WaveCanvas::drawParts(QPainter& p, const QRect& r, bool do_cur_part)
+void WaveCanvas::drawParts(QPainter& p, bool do_cur_part, const QRect& mr, const QRegion&)
 {
-      //QRect rr = p.transform().mapRect(r);  // Gives inconsistent positions. Source shows wrong operation for our needs.
-      QRect rr = map(r);                      // Use our own map instead.        
-
       bool wmtxen = p.worldMatrixEnabled();
       p.setWorldMatrixEnabled(false);
 
@@ -783,7 +703,7 @@ void WaveCanvas::drawParts(QPainter& p, const QRect& r, bool do_cur_part)
         if(curPart)
         {
               QRect mwpr  = map(QRect(curPart->frame(), 0, curPart->lenFrame(), height()));
-              QRect mpbgr = rr & mwpr;
+              QRect mpbgr = mr & mwpr;
               if(!mpbgr.isNull())
               {
                 QColor c;
@@ -813,11 +733,9 @@ void WaveCanvas::drawParts(QPainter& p, const QRect& r, bool do_cur_part)
                 continue;
               
               QRect mwpr  = map(QRect(wp->frame(), 0, wp->lenFrame(), height()));
-              QRect mpbgr = rr & mwpr;
+              QRect mpbgr = mr & mwpr;
               if(!mpbgr.isNull())
               {
-                //int cidx = wp->colorIndex();
-                //QColor c(MusEGlobal::config.partColors[cidx]);
                 QColor c(MusEGlobal::config.waveNonselectedPart);
                 c.setAlpha(MusEGlobal::config.globalAlphaBlend);
                 QBrush part_bg_brush(MusECore::gGradientFromQColor(c, mwpr.topLeft(), mwpr.bottomLeft()));
@@ -828,78 +746,6 @@ void WaveCanvas::drawParts(QPainter& p, const QRect& r, bool do_cur_part)
       
       p.setWorldMatrixEnabled(wmtxen);
 }
-      
-// TODO: Overridden because we're in units of frames. 
-//       After BBT/frame mode is added to Canvas, remove this override and let View or Canvas do it.
-//---------------------------------------------------------
-//   drawTickRaster
-//---------------------------------------------------------
-
-void WaveCanvas::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
-      {
-      // Changed to draw in device coordinate space instead of virtual, transformed space. Tim. 
-      
-      //int mx = mapx(x);
-      int my = mapy(y);
-      //int mw = mapx(x + w) - mx;
-      //int mw = mapx(x + w) - mx - 1;
-      //int mh = mapy(y + h) - my;
-      //int mh = mapy(y + h) - my - 1;
-      
-      //p.save();
-      bool wmtxen = p.worldMatrixEnabled();
-      p.setWorldMatrixEnabled(false);
-      
-      int xx,bar1, bar2, beat;
-      unsigned tick;
-//      AL::sigmap.tickValues(x, &bar1, &beat, &tick);
-//      AL::sigmap.tickValues(x+w, &bar2, &beat, &tick);
-      AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(x), &bar1, &beat, &tick);
-      AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(x+w), &bar2, &beat, &tick);
-      ++bar2;
-      ///int y2 = y + h;
-      //int y2 = my + mh;
-      int y2 = mapy(y + h) - 1;
-      //printf("View::drawTickRaster x:%d y:%d w:%d h:%d mx:%d my:%d mw:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, mx, my, mw, mh, y2, bar1, bar2);  
-      //printf("View::drawTickRaster x:%d y:%d w:%d h:%d my:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, my, mh, y2, bar1, bar2);  
-      for (int bar = bar1; bar < bar2; ++bar) {
-        
-//            unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
-            unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
-            int xt = mapx(MusEGlobal::tempomap.tick2frame(xb));
-            p.setPen(Qt::black);
-            p.drawLine(xt, my, xt, y2);
-            
-            int z, n;
-            AL::sigmap.timesig(xb, z, n);
-            int qq = raster;
-            if (rmapx(raster) < 8)        // grid too dense
-                  qq *= 2;
-            p.setPen(Qt::lightGray);
-            if (raster>=4) {
-                        xx = xb + qq;
-                        int xxx = MusEGlobal::tempomap.tick2frame(AL::sigmap.bar2tick(bar, z, 0));
-                        //while (MusEGlobal::tempomap.tick2frame(xx) <= xxx) {
-                        while (1) {
-                               int xxf = MusEGlobal::tempomap.tick2frame(xx);
-                               if(xxf > xxx)
-                                 break;
-                               //int x = mapx(MusEGlobal::tempomap.tick2frame(xx));
-                               int x = mapx(xxf);
-                               p.drawLine(x, my, x, y2);
-                               xx += qq;
-                               }
-                        }
-            p.setPen(Qt::gray);
-            for (int beat = 1; beat < z; beat++) {
-                        xx = mapx(MusEGlobal::tempomap.tick2frame(AL::sigmap.bar2tick(bar, beat, 0)));
-                        //printf(" bar:%d z:%d beat:%d xx:%d\n", bar, z, beat, xx);  
-                        p.drawLine(xx, my, xx, y2);
-                        }
-
-            }
-      p.setWorldMatrixEnabled(wmtxen);
-      }
 
 // TODO: Overridden because we're in units of frames. 
 //       After BBT/frame mode is added to Canvas, remove this override and let Canvas do it.
@@ -912,8 +758,9 @@ QPoint WaveCanvas::raster(const QPoint& p) const
       int x = p.x();
       if (x < 0)
             x = 0;
-      //x = editor->rasterVal(x);
-      x = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x)));
+      // Normally frame to tick methods round down. But here we need it to 'snap'
+      //  the frame from either side of a tick to the tick. So round to nearest.
+      x = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x, 0, MusECore::LargeIntRoundNearest)));
       int pitch = y2pitch(p.y());
       int y = pitch2y(pitch);
       return QPoint(x, y);
@@ -961,7 +808,6 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
       const bool ctl = event->modifiers() & Qt::ControlModifier;
       button = event->button();
       QPoint pt = event->pos();
-      //CItem* item = items.find(pt);
       unsigned x = event->x();
 
 // REMOVE Tim. samplerate. Changed.
@@ -1037,7 +883,7 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
               MusECore::StretchListItem::StretchEventType type;
               if(_tool == StretchTool)
                 type = MusECore::StretchListItem::StretchEvent;
-              else if(_tool == SamplerateTool)
+              else //if(_tool == SamplerateTool)
                 type = MusECore::StretchListItem::SamplerateEvent;
               
               MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent, sl);
@@ -1051,7 +897,8 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
                 double newframe = sl->unSquish(MusECore::MuseFrame_t(x - wevent->x()));
                 MusECore::PendingOperationList operations;
                 //sl->addListOperation(type, newframe, sl->ratioAt(type, newframe), operations);
-                sf.addAtStretchListOperation(type, newframe, sl->ratioAt(type, newframe), operations);
+//                 sf.addAtStretchListOperation(type, newframe, sl->ratioAt(type, newframe), operations);
+                MusEGlobal::song->addAtStretchListOperation(sf, type, newframe, sl->ratioAt(type, newframe), operations);
                 MusEGlobal::audio->msgExecutePendingOperations(operations, true);
                 ssl.insert(StretchSelectedItemInsertPair_t(newframe, StretchSelectedItem(type, sf)));
                 _stretchAutomation._startMovePoint = pt;
@@ -1226,7 +1073,7 @@ void WaveCanvas::mouseRelease(QMouseEvent* ev)
           MusECore::StretchListItem::StretchEventType type;
           if(_tool == StretchTool)
             type = MusECore::StretchListItem::StretchEvent;
-          else if(_tool == SamplerateTool)
+          else // if(_tool == SamplerateTool)
             type = MusECore::StretchListItem::SamplerateEvent;
 
           MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent, sl);
@@ -1279,6 +1126,7 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
       
       emit timeChanged(x);
 
+// <<<<<<< HEAD
       //const bool ctl = event->modifiers() & Qt::ControlModifier;
       
       switch(_tool)
@@ -1434,6 +1282,16 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
 //                           else if(sf.maxStretchRatio() > 0.0 && prevNewVal > sf.maxStretchRatio())
 //                             prevNewVal = sf.maxStretchRatio();
 //                         }
+// =======
+//       switch (button) {
+//             case Qt::LeftButton:
+//                   if (mode == DRAG) {
+//                         int mx      = mapx(x);
+//                         int mstart  = mapx(selectionStart);
+//                         int mstop   = mapx(selectionStop);
+//                         //int mdstart = mapx(dragstartx);
+//                         QRect r(0, 0, 0, height());
+// >>>>>>> origin/master
                         
 //                         {
 //                           const int right_this_smpx = sli_typed._samplerateSquishedFrame;
@@ -1536,8 +1394,10 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                       break;
                     }
                     
-                    sf.modifyAtStretchListOperation(ssi._type, prevFrame, prevNewVal, operations);
-                    sf.modifyAtStretchListOperation(ssi._type, thisFrame, thisNewVal, operations);
+//                     sf.modifyAtStretchListOperation(ssi._type, prevFrame, prevNewVal, operations);
+//                     sf.modifyAtStretchListOperation(ssi._type, thisFrame, thisNewVal, operations);
+                    MusEGlobal::song->modifyAtStretchListOperation(sf, ssi._type, prevFrame, prevNewVal, operations);
+                    MusEGlobal::song->modifyAtStretchListOperation(sf, ssi._type, thisFrame, thisNewVal, operations);
                   }
                   MusEGlobal::audio->msgExecutePendingOperations(operations, true);
                   _stretchAutomation._startMovePoint = pt;
@@ -1757,42 +1617,75 @@ int WaveCanvas::y2pitch(int) const
 //    draws a wave
 //---------------------------------------------------------
 
-void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
+void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const QRegion&)
 {
       MusECore::WavePart* wp = (MusECore::WavePart*)(item->part());
       if(!wp || !wp->track())
         return;
 
-      //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
-      QRect rr = map(rect);                      // Use our own map instead.
-
-      QRect mwpr  = map(QRect(wp->frame(), 0, wp->lenFrame(), height()));
-
-      QRect r = item->bbox();
-      QRect mer = map(r);
-      QRect mr = rr & mer & mwpr;
-      if(mr.isNull())
-        return;
-
+// <<<<<<< HEAD
+//       //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
+//       QRect rr = map(rect);                      // Use our own map instead.
+// 
+//       QRect mwpr  = map(QRect(wp->frame(), 0, wp->lenFrame(), height()));
+// 
+//       QRect r = item->bbox();
+//       QRect mer = map(r);
+//       QRect mr = rr & mer & mwpr;
+//       if(mr.isNull())
+//         return;
+// 
+//       MusECore::Event event  = item->event();
+//       if(event.empty())
+//         return;
+// 
+//       int x1 = mr.x();
+//       int x2 = x1 + mr.width();
+// =======
       MusECore::Event event  = item->event();
       if(event.empty())
         return;
-
-      int x1 = mr.x();
-      int x2 = x1 + mr.width();
+      
+      //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
+      const QRect ur = mapDev(mr);               // Use our own map instead.
+      const int ux = ur.x();
+      const int uw = ur.width();
+      const int ux_2 = ux + uw;
+      QRect uwpr  = QRect(wp->frame(), 0, wp->lenFrame(), height());
+      const QRect ubbr = item->bbox();
+      const QRect ubbr_exp = item->bbox().adjusted(0, 0, rmapxDev(1), 0);
+      const QRect mbbr = map(ubbr);
+      const int ubbx = ubbr.x();
+      const int ubbx_2 = ubbr.x() + ubbr.width();
+      const int mbbx = mbbr.x();
+      const int mbbx_2 = mapx(ubbr.x() + ubbr.width());
+      const QRect ubr = ur & ubbr;
+      const QRect ubr_exp = ur & ubbr_exp;
+      const int uby_exp = ubr_exp.y();
+      const int uby_2exp = ubr_exp.y() + ubr_exp.height();
+      const int mby_exp = mapy(uby_exp);
+      const int mby_2exp = mapy(uby_2exp);
+      const QRect ubrwp = ubr & uwpr;
+      const QRect mbrwp = map(ubrwp);
+      
+      QPen pen;
+      pen.setCosmetic(true);
+      
+      int x1 = mapx(ubrwp.x());
+      int x2 = mapx(ubrwp.x() + ubrwp.width());
+// >>>>>>> origin/master
       if (x1 < 0)
             x1 = 0;
       if (x2 > width())
             x2 = width();
       int hh = height();
-      int y1 = mr.y();
-      int y2 = y1 + mr.height();
+      int y1 = mapy(ubrwp.y());
+      int y2 = mapy(ubrwp.y() + ubrwp.height());
 
       int xScale = xmag;
       if (xScale < 0)
             xScale = -xScale;
 
-      //int t_channels = wp->track()->channels();
       int px = wp->frame();
 
       bool wmtxen = p.worldMatrixEnabled();
@@ -1811,13 +1704,26 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
             ex = x2;
 
       int pos = (xpos + sx) * xScale + event.spos() - event.frame() - px;
-
+      
+//       fprintf(stderr, "\nWaveCanvas::drawItem:\nmr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+//               mr.x(), mr.y(), mr.width(), mr.height());
+//       fprintf(stderr, "\nur:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+//               ur.x(), ur.y(), ur.width(), ur.height());
+//       fprintf(stderr, "\nubbr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+//               ubbr.x(), ubbr.y(), ubbr.width(), ubbr.height());
+//       fprintf(stderr, "\nmbbr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+//               mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height());
+// //       vbbr.dump("vbbr:");
+// //       vbbr_exp.dump("vbbr_exp:");
+// //       vr.dump("vr:");
+// //       vbr.dump("vbr:");
+      
       QBrush brush;
       if (item->isMoving())
       {
             QColor c(Qt::gray);
             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-            QLinearGradient gradient(r.topLeft(), r.bottomLeft());
+            QLinearGradient gradient(ubbr.topLeft(), ubbr.bottomLeft());
             gradient.setColorAt(0, c);
             gradient.setColorAt(1, c.darker());
             brush = QBrush(gradient);
@@ -1828,7 +1734,7 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
       {
           QColor c(Qt::black);
           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-          QLinearGradient gradient(r.topLeft(), r.bottomLeft());
+          QLinearGradient gradient(ubbr.topLeft(), ubbr.bottomLeft());
           // Use a colour only about 20% lighter than black, rather than the 50% we use in MusECore::gGradientFromQColor
           //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
           gradient.setColorAt(0, QColor(51, 51, 51, MusEGlobal::config.globalAlphaBlend));
@@ -1852,19 +1758,22 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
 
         unsigned peoffset = px + event.frame() - event.spos();
 
+// REMOVE Tim. samplerate. Added.
         const sf_count_t smps = f.convertPosition(f.samples());
 
-        // REMOVE Tim. samplerate. Added.
-        fprintf(stderr, "WaveCanvas::drawItem: rect x:%d w:%d rr x:%d w:%d mr x:%d w:%d pos:%d sx:%d ex:%d\n",
-                rect.x(), rect.width(),
-                rr.x(), rr.width(),
-                mr.x(), mr.width(),
-                pos,
-                sx, ex);
+//         // REMOVE Tim. samplerate. Added.
+//         fprintf(stderr, "WaveCanvas::drawItem: rect x:%d w:%d rr x:%d w:%d mr x:%d w:%d pos:%d sx:%d ex:%d\n",
+//                 rect.x(), rect.width(),
+//                 rr.x(), rr.width(),
+//                 mr.x(), mr.width(),
+//                 pos,
+//                 sx, ex);
 
         for (int i = sx; i < ex; i++) {
               int y = h;
               MusECore::SampleV sa[f.channels()];
+
+
 // REMOVE Tim. samplerate. Changed.
 //               f.read(sa, xScale, pos);
               if(f.convertPosition(pos) > smps)
@@ -1876,6 +1785,8 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
                   break;
               }
               f.readConverted(sa, xScale, pos);
+
+
 
               pos += xScale;
               if (pos < event.spos())
@@ -1895,29 +1806,32 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
                     QColor peak_color = MusEGlobal::config.wavePeakColor;
                     QColor rms_color  = MusEGlobal::config.waveRmsColor;
 
-                    if (pos > selectionStartPos && pos < selectionStopPos) {
+                    if (pos > selectionStartPos && pos <= selectionStopPos) {
                           peak_color = MusEGlobal::config.wavePeakColorSelected;
                           rms_color  = MusEGlobal::config.waveRmsColorSelected;
-                          QLine l_inv = clipQLine(i, y - h + cc, i, y + h - cc, mr);
+                          QLine l_inv = clipQLine(i, y - h + cc, i, y + h - cc, mbrwp);
                           if(!l_inv.isNull())
                           {
                             // Draw inverted
-                            p.setPen(QColor(Qt::black));
+                            pen.setColor(QColor(Qt::black));
+                            p.setPen(pen);
                             p.drawLine(l_inv);
                           }
                         }
 
-                    QLine l_peak = clipQLine(i, y - peak - cc, i, y + peak, mr);
+                    QLine l_peak = clipQLine(i, y - peak - cc, i, y + peak, mbrwp);
                     if(!l_peak.isNull())
                     {
-                      p.setPen(peak_color);
+                      pen.setColor(peak_color);
+                      p.setPen(pen);
                       p.drawLine(l_peak);
                     }
 
-                    QLine l_rms = clipQLine(i, y - rms - cc, i, y + rms, mr);
+                    QLine l_rms = clipQLine(i, y - rms - cc, i, y + rms, mbrwp);
                     if(!l_rms.isNull())
                     {
-                      p.setPen(rms_color);
+                      pen.setColor(rms_color);
+                      p.setPen(pen);
                       p.drawLine(l_rms);
                     }
 
@@ -1932,12 +1846,14 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
               int center = hhn + h2;
               if(center >= y1 && center < y2)
               {
-                p.setPen(QColor(i & 1 ? Qt::red : Qt::blue));
+                pen.setColor(QColor(i & 1 ? Qt::red : Qt::blue));
+                p.setPen(pen);
                 p.drawLine(sx, center, ex, center);
               }
               if(i != 0 && h2 >= y1 && h2 < y2)
               {
-                p.setPen(QColor(Qt::black));
+                pen.setColor(QColor(Qt::black));
+                p.setPen(pen);
                 p.drawLine(sx, h2, ex, h2);
               }
             }
@@ -1959,7 +1875,7 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
       penV.setDashOffset(2.0);
       // FIXME: Some shifting still going on. Values likely not quite right here.
       //int xdiff = sx - r.x();
-      int xdiff = sx - mer.x();
+      int xdiff = sx - mbbx;
       if(xdiff > 0)
       {
         int doff = xdiff % 10;
@@ -1976,15 +1892,24 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
         p.setPen(penH);
         p.drawLine(sx, hh - 1, ex, hh - 1);
       }
-      if(x1 <= mer.x())
+      
+      //fprintf(stderr, "...Checking left edge: ubbx:%d ux:%d ux_2:%d\n", ubbx, ux, ux_2);
+      if(ubbx >= ux && ubbx < ux_2)
       {
+        //fprintf(stderr, "...Drawing left edge at mbbx:%d mby_exp:%d mby_2exp:%d\n", mbbx, mby_exp, mby_2exp);
+        
         p.setPen(penV);
-        p.drawLine(mer.x(), y1, mer.x(), y2);
+        p.drawLine(mbbx, mby_exp, mbbx, mby_2exp);
       }
-      if(x2 >= mer.x() + mer.width())
+      
+      
+      //fprintf(stderr, "...Checking right edge: ubbx_2:%d ux:%d ux_2:%d\n", ubbx_2, ux, ux_2);
+      if(ubbx_2 >= ux && ubbx_2 < ux_2)
       {
+        //fprintf(stderr, "...Drawing right edge at mbbx_2:%d mby_exp:%d mby_2exp:%d\n", mbbx_2, mby_exp, mby_2exp);
+        
         p.setPen(penV);
-        p.drawLine(mer.x() + mer.width(), y1, mer.x() + mer.width(), y2);
+        p.drawLine(mbbx_2, mby_exp, mbbx_2, mby_2exp);
       }
 
       // Done. Restore and return.
@@ -2248,8 +2173,12 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
 //---------------------------------------------------------
 //   drawTopItem
 //---------------------------------------------------------
-void WaveCanvas::drawTopItem(QPainter& p, const QRect& rect)
+
+void WaveCanvas::drawTopItem(QPainter& p, const QRect& rect, const QRegion&)
 {
+  
+  // TODO TODO: Convert this routine to new drawing system pulled from master. 20190121
+  
     // REMOVE Tim samplerate. Added.
   
   
@@ -3288,6 +3217,9 @@ MusECore::iStretchListItem WaveCanvas::stretchListHitTest(int types, QPoint pt, 
 
 void WaveCanvas::setStretchAutomationCursor(QPoint pt)
 {
+  if(_tool != StretchTool && _tool != SamplerateTool)
+    return;
+  
   CItem* item = items.find(pt);
   if(!item)
   {
@@ -3320,7 +3252,7 @@ void WaveCanvas::setStretchAutomationCursor(QPoint pt)
   MusECore::StretchListItem::StretchEventType type;
   if(_tool == StretchTool)
     type = MusECore::StretchListItem::StretchEvent;
-  else if(_tool == SamplerateTool)
+  else // if(_tool == SamplerateTool)
     type = MusECore::StretchListItem::SamplerateEvent;
 
   MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent, sl);
@@ -3330,21 +3262,24 @@ void WaveCanvas::setStretchAutomationCursor(QPoint pt)
     QWidget::setCursor(Qt::SizeHorCursor);
 }
 
-
 //---------------------------------------------------------
 //   drawMoving
 //    draws moving items
 //---------------------------------------------------------
 
-void WaveCanvas::drawMoving(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
+void WaveCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& mr, const QRegion&)
     {
-      QRect mr = QRect(item->mp().x(), item->mp().y(), item->width(), item->height());
-      mr = mr.intersected(rect);
-      if(!mr.isValid())
+      const QRect ur = mapDev(mr);
+      QRect ur_item = QRect(item->mp().x(), item->mp().y(), item->width(), item->height());
+      ur_item = ur_item.intersected(ur);
+      if(!ur_item.isValid())
         return;
-      p.setPen(Qt::black);
+      QPen pen;
+      pen.setCosmetic(true);
+      pen.setColor(Qt::black);
+      p.setPen(pen);
       p.setBrush(QColor(0, 128, 0, 128));  // TODO: Pick a better colour, or use part colours, or grey?
-      p.drawRect(mr);
+      p.drawRect(ur_item);
     }
 
 //---------------------------------------------------------
@@ -3353,7 +3288,7 @@ void WaveCanvas::drawMoving(QPainter& p, const MusEGui::CItem* item, const QRect
 
 void WaveCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
       {
-      if ((_tool != MusEGui::PointerTool) && (event->button() != Qt::LeftButton)) {
+      if ((_tool != PointerTool) && (event->button() != Qt::LeftButton)) {
             mousePress(event);
             return;
             }
@@ -3363,7 +3298,7 @@ void WaveCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
 //   moveCanvasItems
 //---------------------------------------------------------
 
-MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/, int dx, DragType dtype, bool rasterize)
+MusECore::Undo WaveCanvas::moveCanvasItems(CItemMap& items, int /*dp*/, int dx, DragType dtype, bool rasterize)
 {      
   if(editor->parts()->empty())
     return MusECore::Undo(); //return empty list
@@ -3378,14 +3313,15 @@ MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/
       continue;
     
     int npartoffset = 0;
-    for(MusEGui::iCItem ici = items.begin(); ici != items.end(); ++ici) 
+    for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
     {
-      MusEGui::CItem* ci = ici->second;
+      CItem* ci = ici->second;
+      ci->setMoving(false);
+
       if(ci->part() != part)
         continue;
       
       int x = ci->pos().x() + dx;
-      //int y = pitch2y(y2pitch(ci->pos().y()) + dp);
       int y = 0;
       QPoint newpos = QPoint(x, y);
       if(rasterize)
@@ -3397,7 +3333,10 @@ MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/
       x              = newpos.x();
       if(x < 0)
         x = 0;
-      int nframe = (rasterize ? MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x))) : x) - part->frame();
+      // Normally frame to tick methods round down. But here we need it to 'snap'
+      //  the frame from either side of a tick to the tick. So round to nearest.
+      int nframe = (rasterize ? MusEGlobal::tempomap.tick2frame(
+        editor->rasterVal(MusEGlobal::tempomap.frame2tick(x, 0, MusECore::LargeIntRoundNearest))) : x) - part->frame();
       if(nframe < 0)
         nframe = 0;
       int diff = nframe + event.lenFrame() - part->lenFrame();
@@ -3434,17 +3373,15 @@ MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/
         
         if (!forbidden)
         {
-                std::vector< MusEGui::CItem* > doneList;
-                typedef std::vector< MusEGui::CItem* >::iterator iDoneList;
+                std::vector< CItem* > doneList;
+                typedef std::vector< CItem* >::iterator iDoneList;
                 
-                for(MusEGui::iCItem ici = items.begin(); ici != items.end(); ++ici) 
+                for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
                 {
-                        MusEGui::CItem* ci = ici->second;
+                        CItem* ci = ici->second;
                         
                         int x = ci->pos().x();
-                        //int y = ci->pos().y();
                         int nx = x + dx;
-                        //int ny = pitch2y(y2pitch(y) + dp);
                         int ny = 0;
                         QPoint newpos = QPoint(nx, ny);
                         if(rasterize)
@@ -3494,18 +3431,21 @@ MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/
 //    called after moving an object
 //---------------------------------------------------------
 
-bool WaveCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, const QPoint& pos, DragType dtype, bool rasterize)
+bool WaveCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint& pos, DragType dtype, bool rasterize)
       {
       WEvent* wevent = (WEvent*) item;
       MusECore::Event event    = wevent->event();
-      //int npitch     = y2pitch(pos.y());
       MusECore::Event newEvent = event.clone();
       int x          = pos.x();
       if (x < 0)
             x = 0;
       
       MusECore::Part* part = wevent->part();
-      int nframe = (rasterize ? MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x))) : x) - part->frame();
+      // Normally frame to tick methods round down. But here we need it to 'snap'
+      //  the frame from either side of a tick to the tick. So round to nearest.
+      int nframe = 
+        (rasterize ? MusEGlobal::tempomap.tick2frame(
+                     editor->rasterVal(MusEGlobal::tempomap.frame2tick(x, 0, MusECore::LargeIntRoundNearest))) : x) - part->frame();
       if (nframe < 0)
             nframe = 0;
       newEvent.setFrame(nframe);
@@ -3527,11 +3467,16 @@ bool WaveCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, cons
 //   newItem(p, state)
 //---------------------------------------------------------
 
-MusEGui::CItem* WaveCanvas::newItem(const QPoint& p, int key_modifiers)
+CItem* WaveCanvas::newItem(const QPoint& p, int key_modifiers)
       {
       int frame  = p.x();
+      if(frame < 0)
+        frame = 0;
+      // Normally frame to tick methods round down. But here we need it to 'snap'
+      //  the frame from either side of a tick to the tick. So round to nearest.
       if(!(key_modifiers & Qt::ShiftModifier))
-        frame = MusEGlobal::tempomap.tick2frame(editor->rasterVal1(MusEGlobal::tempomap.frame2tick(frame)));
+        frame = MusEGlobal::tempomap.tick2frame(
+          editor->rasterVal1(MusEGlobal::tempomap.frame2tick(frame, 0, MusECore::LargeIntRoundNearest)));
       int len   = p.x() - frame;
       frame     -= curPart->frame();
       if (frame < 0)
@@ -3543,7 +3488,7 @@ MusEGui::CItem* WaveCanvas::newItem(const QPoint& p, int key_modifiers)
       return we;
       }
 
-void WaveCanvas::newItem(MusEGui::CItem* item, bool noSnap)
+void WaveCanvas::newItem(CItem* item, bool noSnap)
       {
       WEvent* wevent = (WEvent*) item;
       MusECore::Event event    = wevent->event();
@@ -3555,12 +3500,13 @@ void WaveCanvas::newItem(MusEGui::CItem* item, bool noSnap)
       int w = item->width();
 
       if (!noSnap) {
-            //x = editor->rasterVal1(x); //round down
-            x = MusEGlobal::tempomap.tick2frame(editor->rasterVal1(MusEGlobal::tempomap.frame2tick(x))); //round down
-            //w = editor->rasterVal(x + w) - x;
-            w = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x + w))) - x;
+            // Normally frame to tick methods round down. But here we need it to 'snap'
+            //  the frame from either side of a tick to the tick. So round to nearest.
+            x = MusEGlobal::tempomap.tick2frame(
+              editor->rasterVal1(MusEGlobal::tempomap.frame2tick(x, 0, MusECore::LargeIntRoundNearest)));
+            w = MusEGlobal::tempomap.tick2frame(
+              editor->rasterVal(MusEGlobal::tempomap.frame2tick(x + w, 0, MusECore::LargeIntRoundNearest))) - x;
             if (w == 0)
-                  //w = editor->raster();
                   w = MusEGlobal::tempomap.tick2frame(editor->raster());
             }
       if (x<pframe)
@@ -3593,7 +3539,7 @@ void WaveCanvas::newItem(MusEGui::CItem* item, bool noSnap)
 //   resizeItem
 //---------------------------------------------------------
 
-void WaveCanvas::resizeItem(MusEGui::CItem* item, bool noSnap, bool)         // experimental changes to try dynamically extending parts
+void WaveCanvas::resizeItem(CItem* item, bool noSnap, bool)         // experimental changes to try dynamically extending parts
       {
       WEvent* wevent = (WEvent*) item;
       MusECore::Event event    = wevent->event();
@@ -3606,20 +3552,20 @@ void WaveCanvas::resizeItem(MusEGui::CItem* item, bool noSnap, bool)         // 
             len = wevent->width();
       else {
             unsigned frame = event.frame() + part->frame();
-            //len = editor->rasterVal(tick + wevent->width()) - tick;
-            len = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(frame + wevent->width()))) - frame;
+            // Normally frame to tick methods round down. But here we need it to 'snap'
+            //  the frame from either side of a tick to the tick. So round to nearest.
+            len = MusEGlobal::tempomap.tick2frame(
+              editor->rasterVal(MusEGlobal::tempomap.frame2tick(
+                frame + wevent->width(), 0, MusECore::LargeIntRoundNearest))) - frame;
             if (len <= 0)
-                  //len = editor->raster();
                   len = MusEGlobal::tempomap.tick2frame(editor->raster());
       }
 
       MusECore::Undo operations;
-      //int diff = event.tick()+len-part->lenTick();
       int diff = event.frame() + len - part->lenFrame();
       
       if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
       {
-        //newEvent.setLenTick(len);
         newEvent.setLenFrame(len);
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,newEvent, event, wevent->part(), false, false));
         
@@ -3640,13 +3586,13 @@ void WaveCanvas::resizeItem(MusEGui::CItem* item, bool noSnap, bool)         // 
 //   deleteItem
 //---------------------------------------------------------
 
-bool WaveCanvas::deleteItem(MusEGui::CItem* item)
+bool WaveCanvas::deleteItem(CItem* item)
       {
       WEvent* wevent = (WEvent*) item;
       if (wevent->part() == curPart) {
             MusECore::Event ev = wevent->event();
             // Indicate do undo, and do not do port controller values and clone parts. 
-            MusEGlobal::audio->msgDeleteEvent(ev, curPart, true, false, false);
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, ev, curPart, false, false));
             return true;
             }
       return false;
@@ -3661,7 +3607,7 @@ void WaveCanvas::adjustWaveOffset()
   bool have_selected = false;
   int init_offset = 0;
   
-  for (MusEGui::iCItem k = items.begin(); k != items.end(); ++k) 
+  for (iCItem k = items.begin(); k != items.end(); ++k) 
   {
     if (k->second->isSelected())
     {
@@ -3693,7 +3639,7 @@ void WaveCanvas::adjustWaveOffset()
 
   // FIXME: Respect clones! If operating on two selected clones of the same part, an extra event is created!
   //        Check - Is it really this code's problem? Seems so, other operations like moving an event seem OK.
-  for(MusEGui::iCItem ici = items.begin(); ici != items.end(); ++ici) 
+  for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
   {
     if(ici->second->isSelected())
     {
@@ -3718,18 +3664,15 @@ void WaveCanvas::adjustWaveOffset()
 //   draw
 //---------------------------------------------------------
 
-void WaveCanvas::drawCanvas(QPainter& p, const QRect& rect)
+void WaveCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
       {
-      int x = rect.x();
-      int y = rect.y();
-      int w = rect.width();
-      int h = rect.height();
-
       //---------------------------------------------------
       // vertical lines
       //---------------------------------------------------
 
-      drawTickRaster(p, x, y, w, h, editor->raster());
+      drawTickRaster(p, rect, rg, editor->raster(), true, false, false,
+                         MusEGlobal::config.midiCanvasBarColor, 
+                         MusEGlobal::config.midiCanvasBeatColor);
       }
 
 //---------------------------------------------------------
@@ -3746,7 +3689,7 @@ void WaveCanvas::waveCmd(int cmd)
                   if(spos > 0) 
                   {
                     spos -= 1;     // Nudge by -1, then snap down with raster1.
-                    spos = AL::sigmap.raster1(spos, editor->rasterStep(pos[0]));
+                    spos = MusEGlobal::sigmap.raster1(spos, editor->rasterStep(pos[0]));
                   }  
                   if(spos < 0)
                     spos = 0;
@@ -3756,7 +3699,7 @@ void WaveCanvas::waveCmd(int cmd)
                   break;
             case CMD_RIGHT:
                   {
-                  int spos = AL::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
+                  int spos = MusEGlobal::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
                   MusECore::Pos p(spos,true);
                   MusEGlobal::song->setPos(0, p, true, true, true); 
                   }
@@ -3844,7 +3787,7 @@ void WaveCanvas::cmd(int cmd)
       double paramA = 0.0;
       switch (cmd) {
             case CMD_SELECT_ALL:     // select all
-                  if (tool() == MusEGui::RangeTool) 
+                  if (tool() == RangeTool) 
                   {
                     if (!editor->parts()->empty()) {
                           MusECore::iPart iBeg = editor->parts()->begin();
@@ -3857,7 +3800,7 @@ void WaveCanvas::cmd(int cmd)
                           redraw();
                           }
                   }
-                  for (MusEGui::iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (iCItem k = items.begin(); k != items.end(); ++k) {
                         if (!k->second->isSelected())
                               selectItem(k->second, true);
                         }
@@ -3867,12 +3810,12 @@ void WaveCanvas::cmd(int cmd)
                   deselectAll();
                   break;
             case CMD_SELECT_INVERT:     // invert selection
-                  for (MusEGui::iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (iCItem k = items.begin(); k != items.end(); ++k) {
                         selectItem(k->second, !k->second->isSelected());
                         }
                   break;
             case CMD_SELECT_ILOOP:     // select inside loop
-                  for (MusEGui::iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (iCItem k = items.begin(); k != items.end(); ++k) {
                         WEvent* wevent = (WEvent*)(k->second);
                         MusECore::Part* part     = wevent->part();
                         MusECore::Event event    = wevent->event();
@@ -3884,7 +3827,7 @@ void WaveCanvas::cmd(int cmd)
                         }
                   break;
             case CMD_SELECT_OLOOP:     // select outside loop
-                  for (MusEGui::iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (iCItem k = items.begin(); k != items.end(); ++k) {
                         WEvent* wevent = (WEvent*)(k->second);
                         MusECore::Part* part     = wevent->part();
                         MusECore::Event event    = wevent->event();
@@ -4077,7 +4020,7 @@ void WaveCanvas::cmd(int cmd)
             modifySelection(modifyoperation, selectionStart, selectionStop, paramA);
             }
             
-      updateSelection();
+      itemSelectionsChanged();
       redraw();
       }
 
@@ -4117,7 +4060,8 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
                   unsigned event_startpos  = event.spos();
                   unsigned event_length = elen + event.spos();
                   unsigned event_end    = event_offset + event_length;
-                  //printf("startpos=%d stoppos=%d part_offset=%d event_offset=%d event_startpos=%d event_length=%d event_end=%d\n", startpos, stoppos, part_offset, event_offset, event_startpos, event_length, event_end);
+                  //printf("startpos=%d stoppos=%d part_offset=%d event_offset=%d event_startpos=%d event_length=%d event_end=%d\n",
+                  // startpos, stoppos, part_offset, event_offset, event_startpos, event_length, event_end);
 
                   if (!(event_end <= startpos || event_offset > stoppos)) {
                         int tmp_sx = startpos - event_offset + event_startpos;
@@ -4606,7 +4550,7 @@ void WaveCanvas::editExternal(unsigned file_format, unsigned file_samplerate, un
 //   startDrag
 //---------------------------------------------------------
 
-void WaveCanvas::startDrag(MusEGui::CItem* /* item*/, DragType t)
+void WaveCanvas::startDrag(CItem* /* item*/, DragType t)
 {
    QMimeData* md = MusECore::selected_events_to_mime(MusECore::partlist_to_set(editor->parts()), 1);
 
@@ -4658,7 +4602,7 @@ void WaveCanvas::dragLeaveEvent(QDragLeaveEvent*)
 //   itemPressed
 //---------------------------------------------------------
 
-void WaveCanvas::itemPressed(const MusEGui::CItem*)
+void WaveCanvas::itemPressed(const CItem*)
       {
       }
 
@@ -4666,7 +4610,7 @@ void WaveCanvas::itemPressed(const MusEGui::CItem*)
 //   itemReleased
 //---------------------------------------------------------
 
-void WaveCanvas::itemReleased(const MusEGui::CItem*, const QPoint&)
+void WaveCanvas::itemReleased(const CItem*, const QPoint&)
       {
       }
 
@@ -4674,7 +4618,7 @@ void WaveCanvas::itemReleased(const MusEGui::CItem*, const QPoint&)
 //   itemMoved
 //---------------------------------------------------------
 
-void WaveCanvas::itemMoved(const MusEGui::CItem*, const QPoint&)
+void WaveCanvas::itemMoved(const CItem*, const QPoint&)
       {
       }
 
@@ -4692,12 +4636,12 @@ void WaveCanvas::curPartChanged()
 //   modifySelected
 //---------------------------------------------------------
 
-void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool delta_mode)
+void WaveCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode)
       {
       // TODO: New WaveCanvas: Convert this routine to frames and remove unneeded operations. 
       QList< QPair<int,MusECore::Event> > already_done;
       MusECore::Undo operations;
-      for (MusEGui::iCItem i = items.begin(); i != items.end(); ++i) {
+      for (iCItem i = items.begin(); i != items.end(); ++i) {
             if (!(i->second->isSelected()))
                   continue;
             WEvent* e   = (WEvent*)(i->second);
@@ -4713,7 +4657,7 @@ void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool d
             MusECore::Event newEvent = event.clone();
 
             switch (type) {
-                  case MusEGui::NoteInfo::VAL_TIME:
+                  case NoteInfo::VAL_TIME:
                         {
                         int newTime = val;
                         if(delta_mode)
@@ -4725,7 +4669,7 @@ void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool d
                         newEvent.setTick(newTime);
                         }
                         break;
-                  case MusEGui::NoteInfo::VAL_LEN:
+                  case NoteInfo::VAL_LEN:
                         {
                         int len = val;
                         if(delta_mode)
@@ -4735,7 +4679,7 @@ void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool d
                         newEvent.setLenTick(len);
                         }
                         break;
-                  case MusEGui::NoteInfo::VAL_VELON:
+                  case NoteInfo::VAL_VELON:
                         {
                         int velo = val;
                         if(delta_mode)
@@ -4749,7 +4693,7 @@ void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool d
                         newEvent.setVelo(velo);
                         }
                         break;
-                  case MusEGui::NoteInfo::VAL_VELOFF:
+                  case NoteInfo::VAL_VELOFF:
                         {
                         int velo = val;
                         if(delta_mode)
@@ -4761,7 +4705,7 @@ void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool d
                         newEvent.setVeloOff(velo);
                         }
                         break;
-                  case MusEGui::NoteInfo::VAL_PITCH:
+                  case NoteInfo::VAL_PITCH:
                         {
                         int pitch = val;
                         if(delta_mode)
@@ -4901,7 +4845,8 @@ void WaveCanvas::itemPopup(CItem* /*item*/, int n, const QPoint& /*pt*/)
           MusECore::PendingOperationList operations;
           //if(MusECore::StretchList* sl = curItem->event().sndFile().stretchList())
           //{
-            curItem->event().sndFile().modifyAudioConverterSettingsOperation(wrk_set, 
+            MusEGlobal::song->modifyAudioConverterSettingsOperation(curItem->event().sndFile(),
+                                                                    wrk_set, 
                                                                      true,  // Local settings.
                                                                      operations); //, 
                                                                      //sl->isResampled(), 

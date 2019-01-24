@@ -39,7 +39,7 @@
 #include "icons.h"
 #include "driver/jackmidi.h"
 #include "driver/alsamidi.h"
-#include "libs/strntcpy.h"
+#include "strntcpy.h"
 
 //#define ROUTE_DEBUG 
 
@@ -364,7 +364,7 @@ bool addRoute(Route src, Route dst)
               fprintf(stderr, "addRoute: source is midi port:%d, but destination is not midi track\n", src.midiPort);
               return false;
             }
-            if(dst.channel < -1 || dst.channel >= MIDI_CHANNELS)
+            if(dst.channel < -1 || dst.channel >= MusECore::MUSE_MIDI_CHANNELS)
             {
               fprintf(stderr, "addRoute: source is midi port:%d, but destination track channel:%d out of range\n", src.midiPort, dst.channel);
               return false;
@@ -409,7 +409,7 @@ bool addRoute(Route src, Route dst)
               fprintf(stderr, "addRoute: destination is midi port:%d, but source is not midi track\n", dst.midiPort);
               return false;
             }
-            if(src.channel < -1 || src.channel >= MIDI_CHANNELS)
+            if(src.channel < -1 || src.channel >= MusECore::MUSE_MIDI_CHANNELS)
             {
               fprintf(stderr, "addRoute: destination is midi port:%d, but source track channel:%d out of range\n", dst.midiPort, src.channel);
               return false;
@@ -1020,7 +1020,7 @@ bool routeCanConnect(const Route& src, const Route& dst)
       }
       else if(src.type == Route::MIDI_PORT_ROUTE)  
       {
-            if(dst.type != Route::TRACK_ROUTE || !dst.track->isMidiTrack() || dst.channel < -1 || dst.channel >= MIDI_CHANNELS)
+            if(dst.type != Route::TRACK_ROUTE || !dst.track->isMidiTrack() || dst.channel < -1 || dst.channel >= MusECore::MUSE_MIDI_CHANNELS)
               return false;
             
             //MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
@@ -1044,7 +1044,7 @@ bool routeCanConnect(const Route& src, const Route& dst)
             return false;
 #endif  
         
-            if(src.type != Route::TRACK_ROUTE || !src.track->isMidiTrack() || src.channel < -1 || src.channel >= MIDI_CHANNELS)
+            if(src.type != Route::TRACK_ROUTE || !src.track->isMidiTrack() || src.channel < -1 || src.channel >= MusECore::MUSE_MIDI_CHANNELS)
               return false;
             const Route v_dst(dst.type, dst.midiPort, dst.voidPointer, src.channel, dst.channels, dst.channel, dst.persistentJackPortName);
             
@@ -1289,8 +1289,8 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
       }
       else if(src.type == Route::MIDI_PORT_ROUTE)  
       {
-        if(!src.isValid() || src.channel < -1 || src.channel >= MIDI_CHANNELS ||
-           dst.type != Route::TRACK_ROUTE || !dst.exists() || !dst.track->isMidiTrack() || dst.channel < -1 || dst.channel >= MIDI_CHANNELS)
+        if(!src.isValid() || src.channel < -1 || src.channel >= MusECore::MUSE_MIDI_CHANNELS ||
+           dst.type != Route::TRACK_ROUTE || !dst.exists() || !dst.track->isMidiTrack() || dst.channel < -1 || dst.channel >= MusECore::MUSE_MIDI_CHANNELS)
           return false;
         
         // Allow it to disconnect a partial route.
@@ -1306,8 +1306,8 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
         return false;
 #endif        
         
-        if(!dst.isValid() || dst.channel < -1 || dst.channel >= MIDI_CHANNELS ||
-           src.type != Route::TRACK_ROUTE || !src.exists() || !src.track->isMidiTrack() || src.channel < -1 || src.channel >= MIDI_CHANNELS)
+        if(!dst.isValid() || dst.channel < -1 || dst.channel >= MusECore::MUSE_MIDI_CHANNELS ||
+           src.type != Route::TRACK_ROUTE || !src.exists() || !src.track->isMidiTrack() || src.channel < -1 || src.channel >= MusECore::MUSE_MIDI_CHANNELS)
           return false;
 
         // Allow it to disconnect a partial route.
@@ -1422,7 +1422,7 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
             if(check_types_only)
               return true;
             
-            if(dst.channel < -1 || dst.channel >= MIDI_CHANNELS)
+            if(dst.channel < -1 || dst.channel >= MusECore::MUSE_MIDI_CHANNELS)
               return false;
                         
             // If one route node exists and one is missing, it's OK to reconnect, addRoute will take care of it.
@@ -1441,7 +1441,7 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
             if(check_types_only)
               return true;
 
-            if(src.channel < -1 || src.channel >= MIDI_CHANNELS)
+            if(src.channel < -1 || src.channel >= MusECore::MUSE_MIDI_CHANNELS)
               return false;
             
             // If one route node exists and one is missing, it's OK to reconnect, addRoute will take care of it.
@@ -1662,7 +1662,7 @@ void Route::read(Xml& xml)
                         #endif
                         if(rtype == MIDI_PORT_ROUTE)  
                         {
-                          if(port >= 0 && port < MIDI_PORTS)
+                          if(port >= 0 && port < MusECore::MIDI_PORTS)
                           {
                             type = rtype;
                             midiPort = port;
@@ -1833,8 +1833,8 @@ void Song::readRoute(Xml& xml)
                             // Support pre- 1.1-RC2 midi device to track routes. Obsolete. Replaced with midi port routes.
                             if(sroute.type == Route::MIDI_DEVICE_ROUTE && droute.type == Route::TRACK_ROUTE) 
                             {
-                              if(sroute.device->midiPort() >= 0 && sroute.device->midiPort() < MIDI_PORTS
-                                 && ch >= 0 && ch < MIDI_CHANNELS)         
+                              if(sroute.device->midiPort() >= 0 && sroute.device->midiPort() < MusECore::MIDI_PORTS
+                                 && ch >= 0 && ch < MusECore::MUSE_MIDI_CHANNELS)         
                               {
                                 sroute.midiPort = sroute.device->midiPort();
                                 sroute.device = 0;
@@ -1854,8 +1854,8 @@ void Song::readRoute(Xml& xml)
                             {
                               // Device and track already validated in ::read().
                               const int port = droute.device->midiPort();
-                              if(port >= 0 && port < MIDI_PORTS
-                                 && ch >= 0 && ch < MIDI_CHANNELS &&
+                              if(port >= 0 && port < MusECore::MIDI_PORTS
+                                 && ch >= 0 && ch < MusECore::MUSE_MIDI_CHANNELS &&
                                  sroute.track->isMidiTrack())
                               {
                                 MidiTrack* mt = static_cast<MidiTrack*>(sroute.track);
@@ -1894,7 +1894,7 @@ void Song::readRoute(Xml& xml)
                                 if(droute.track->isMidiTrack())
                                 {
                                   // All channels set? Convert to new Omni route.
-                                  if(chmask == ((1 << MIDI_CHANNELS) - 1))
+                                  if(chmask == ((1 << MusECore::MUSE_MIDI_CHANNELS) - 1))
                                   {
                                     sroute.channel = -1;
                                     droute.channel = -1;
@@ -1903,7 +1903,7 @@ void Song::readRoute(Xml& xml)
                                   else
                                   {
                                     // Check each channel bit:
-                                    for(int i = 0; i < MIDI_CHANNELS; ++i)
+                                    for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
                                     {
                                       const int chbit = 1 << i;
                                       // Is channel bit set?
@@ -1922,7 +1922,7 @@ void Song::readRoute(Xml& xml)
                                 {
                                   const int port = sroute.midiPort;
                                   // Check each channel bit:
-                                  for(int i = 0; i < MIDI_CHANNELS; ++i)
+                                  for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
                                   {
                                     const int chbit = 1 << i;
                                     // Is channel bit set?

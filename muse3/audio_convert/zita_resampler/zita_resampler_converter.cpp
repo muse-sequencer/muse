@@ -35,7 +35,7 @@
 
 //#include "zita_resampler_converter.h"
 #include "wave.h"
-#include "globals.h"
+// #include "globals.h"
 #include "time_stretch.h"
 #include "xml.h"
 
@@ -51,12 +51,13 @@
 
 // Create a new instance of the plugin.  
 // Mode is an AudioConverterSettings::ModeType selecting which of the settings to use.
-MusECore::AudioConverter* instantiate(const MusECore::AudioConverterDescriptor* /*Descriptor*/,
+MusECore::AudioConverter* instantiate(int systemSampleRate,
+                                      const MusECore::AudioConverterDescriptor* /*Descriptor*/,
                                       int channels, 
                                       MusECore::AudioConverterSettings* settings, 
                                       int mode)
 {
-  return new MusECore::ZitaResamplerAudioConverter(NULL, channels, settings, mode);  // TODO Pass SF
+  return new MusECore::ZitaResamplerAudioConverter(systemSampleRate, NULL, channels, settings, mode);  // TODO Pass SF
 }
 
 // Destroy the instance after usage.
@@ -120,10 +121,11 @@ namespace MusECore {
 //   ZitaResamplerAudioConverter
 //---------------------------------------------------------
 
-ZitaResamplerAudioConverter::ZitaResamplerAudioConverter(SndFile* sf, 
+ZitaResamplerAudioConverter::ZitaResamplerAudioConverter(int systemSampleRate,
+                                                         SndFile* sf, 
                                                          int channels, 
                                                          AudioConverterSettings* /*settings*/, 
-                                                         int mode) : AudioConverter()
+                                                         int mode) : AudioConverter(systemSampleRate)
 {
   DEBUG_AUDIOCONVERT(stderr, "ZitaResamplerAudioConverter::ZitaResamplerAudioConverter this:%p channels:%d mode:%d\n", 
                      this, channels, mode);
@@ -208,9 +210,10 @@ int ZitaResamplerAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_
   if(!_rbs || !sf)
     return 0;
   
-  if((MusEGlobal::sampleRate == 0) || (sf->samplerate() == 0))
+//   if((MusEGlobal::sampleRate == 0) || (sf->samplerate() == 0))
+  if((_systemSampleRate <= 0) || (sf->samplerate() <= 0))
   {  
-    DEBUG_AUDIOCONVERT(stderr, "ZitaResamplerAudioConverter::process Error: MusEGlobal::sampleRate or file samplerate is zero!\n");
+    DEBUG_AUDIOCONVERT(stderr, "ZitaResamplerAudioConverter::process Error: _systemSampleRate or file samplerate <= 0!\n");
     return 0;
   }  
   

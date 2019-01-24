@@ -273,25 +273,11 @@ class Audio {
       void msgRevertOperationGroup(Undo&); // similar.
       // Bypass the Undo system and directly execute the pending operations.
       // Do a song update with accumulated flags and extra_flags, if doUpdate is true.
-      void msgExecutePendingOperations(PendingOperationList& operations, bool doUpdate = false, SongChangedFlags_t extraFlags = 0);
+      void msgExecutePendingOperations(PendingOperationList& operations, bool doUpdate = false, SongChangedStruct_t extraFlags = 0);
 
       void msgRemoveTracks();
-      void msgRemoveTrack(Track*, bool u = true); // only does applyOperation
-      void msgMoveTrack(int idx1, int dx2, bool u = true); // only does applyOperation
-      void msgAddPart(Part*, bool u = true); // only does applyOperation
-      void msgRemovePart(Part*, bool u = true); // only does applyOperation
-      void msgAddEvent(Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false); // only does applyOperation
-      void msgDeleteEvent(Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false); // only does applyOperation
-      void msgChangeEvent(Event&, Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false); // only does applyOperation
-      void msgAddTempo(int tick, int tempo, bool doUndoFlag = true); // only does applyOperation
-      void msgDeleteTempo(int tick, int tempo, bool doUndoFlag = true); // only does applyOperation
-      void msgUpdateSoloStates(); // TODO and below
+      void msgUpdateSoloStates();
       void msgSetAux(AudioTrack*, int, double);
-      void msgSetGlobalTempo(int val, bool doUndoFlag = true);
-      void msgAddSig(int tick, int z, int n, bool doUndoFlag = true);
-      void msgRemoveSig(int tick, int z, int n, bool doUndoFlag = true);
-      void msgAddKey(int tick, int key, bool doUndoFlag = true);
-      void msgRemoveKey(int tick, int key, bool doUndoFlag = true);
       void msgPanic();
       void sendMsg(AudioMsg*);
       bool sendMessage(AudioMsg* m, bool doUndo);
@@ -312,9 +298,7 @@ class Audio {
       void msgClearControllerEvents(AudioTrack*, int);
       void msgSeekPrevACEvent(AudioTrack*, int);
       void msgSeekNextACEvent(AudioTrack*, int);
-      void msgEraseACEvent(AudioTrack*, int, int);
-      void msgEraseRangeACEvents(AudioTrack*, int, int, int);
-      void msgAddACEvent(AudioTrack*, int, int, double);
+      void msgEraseRangeACEvents(AudioTrack* node, int acid, unsigned int frame1, unsigned int frame2);
       void msgChangeACEvent(AudioTrack* node, int acid, int frame, int newFrame, double val);
       void msgSetHwCtrlState(MidiPort*, int, int, int);
       void msgSetHwCtrlStates(MidiPort*, int, int, int, int);

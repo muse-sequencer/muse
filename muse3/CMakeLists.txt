@@ -103,6 +103,8 @@ SET(MusE_VERSION_FULL  "3.0.2")
 SET(MusE_INSTALL_NAME  "muse-3.0")
 SET(MusE_EXEC_NAME     "muse3")
 
+SET(MusE_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
+
 ## The directory where we will install the shared components:
 SET(MusE_MODULES_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/modules)
 
@@ -151,6 +153,7 @@ endif (GIT_FOUND)
 option ( ENABLE_RTAUDIO     "Multi platform rtaudio audio compatibility fallback" ON)
 option ( ENABLE_ALSA         "Enable Advanced Linux Sound Architecture (ALSA)" ON)
 option ( ENABLE_LASH         "Enable LASH Audio Session Handler (or LADISH compatibility layer)"     ON)
+option ( ENABLE_LRDF         "Enable LADSPA RDF (lrdf) Provides extra info for LADSPA plugins"  ON)
 option ( ENABLE_OSC          "Enable Lightweight Open Sound Control (liblo) (DSSI also recommended)"  ON)
 option ( ENABLE_DSSI         "Enable Disposable Soft Synth Interface (dssi) (OSC also needed)" ON)
 option ( ENABLE_VST          "Enable VST/win support (deprecated)"                                OFF)
@@ -333,6 +336,16 @@ else (ENABLE_LASH)
       message("LASH disabled")
 endif (ENABLE_LASH)
 
+if (ENABLE_LRDF)
+      PKG_CHECK_MODULES(LRDF lrdf>=0.5)
+      if (LRDF_FOUND)
+            include_directories(${LRDF_INCLUDE_DIRS})
+            set(HAVE_LRDF ON)
+      endif (LRDF_FOUND)
+else (ENABLE_LRDF)
+      message("LRDF disabled")
+endif (ENABLE_LRDF)
+
 if (ENABLE_RTAUDIO)
       PKG_CHECK_MODULES(RTAUDIO rtaudio>=5.0)
       if (RTAUDIO_FOUND)
@@ -465,11 +478,11 @@ if (ENABLE_LV2)
     else (ENABLE_LV2_SUPPLIED)
         set (LV2_USE_SUPPLIED_VERSION FALSE)
     endif (ENABLE_LV2_SUPPLIED)
-    
+
     if (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
         set (LV2_USE_SUPPLIED_VERSION TRUE)
     endif (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
-    
+
     if (LV2_USE_SUPPLIED_VERSION)
         PKG_CHECK_MODULES(PCRE libpcre)
         set (muse_lv2_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/lv2-${muse_lv2_ver}")
@@ -484,6 +497,7 @@ if (ENABLE_LV2)
             ${muse_serd_dir}
             ${muse_lilv_dir}
         )
+
     else (LV2_USE_SUPPLIED_VERSION)
         if (LILV_FOUND)
             include_directories(${LILV_INCLUDE_DIRS})
@@ -496,6 +510,7 @@ if (ENABLE_LV2)
         endif (LV2_FOUND)
     endif (LV2_USE_SUPPLIED_VERSION)
     
+    include_directories(${PROJECT_SOURCE_DIR}/muse/lv2Support)
 else (ENABLE_LV2)
       message("LV2 disabled")
 endif (ENABLE_LV2)
@@ -597,11 +612,22 @@ file (COPY ${PROJECT_SOURCE_DIR}/all.h DESTINATION ${PROJECT_BINARY_DIR})
 include_directories(
    .
    ${PROJECT_SOURCE_DIR}
+   ${PROJECT_SOURCE_DIR}/libs/evdata
+   ${PROJECT_SOURCE_DIR}/libs/memory
+   ${PROJECT_SOURCE_DIR}/libs/mpevent
+   ${PROJECT_SOURCE_DIR}/libs/plugin
+   ${PROJECT_SOURCE_DIR}/libs/string
+   ${PROJECT_SOURCE_DIR}/libs/sysex_helper
+   ${PROJECT_SOURCE_DIR}/libs/xml
    ${PROJECT_SOURCE_DIR}/muse
+   ${PROJECT_SOURCE_DIR}/muse/function_dialogs
    ${PROJECT_SOURCE_DIR}/muse/widgets
+   ${PROJECT_SOURCE_DIR}/muse/components
    ${PROJECT_BINARY_DIR}
    ${PROJECT_BINARY_DIR}/muse
+   ${PROJECT_BINARY_DIR}/muse/function_dialogs
    ${PROJECT_BINARY_DIR}/muse/widgets
+   ${PROJECT_BINARY_DIR}/muse/components
    ${PROJECT_BINARY_DIR}/muse/instruments
    ${PROJECT_BINARY_DIR}/muse/ctrl
    )
@@ -634,8 +660,8 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
   SET(CPACK_SYSTEM_NAME ${CMAKE_SYSTEM_NAME})
 
   SET(CPACK_PACKAGE_FILE_NAME "${CPACK_SOURCE_PACKAGE_FILE_NAME}-${CPACK_SYSTEM_NAME}")
-  SET(CPACK_STRIP_FILES "bin/muse;bin/grepmidi")
-  SET(CPACK_PACKAGE_EXECUTABLES "muse" "MusE" "grepmidi" "grepmidi")
+  SET(CPACK_STRIP_FILES "bin/muse;bin/grepmidi;bin/muse_plugin_scan")
+  SET(CPACK_PACKAGE_EXECUTABLES "muse" "MusE" "grepmidi" "grepmidi" "muse_plugin_scan" "muse_plugin_scan")
   INCLUDE(CPack)
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
@@ -649,7 +675,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -g -O0 -DQT_DEBUG -Werror -Wall -Wextra -f
 
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale
-subdirs(doc libs al awl grepmidi man plugins audio_convert muse synti packaging utils demos share)
+subdirs(doc libs al awl grepmidi sandbox man plugins audio_convert muse synti packaging utils demos share)
 
 ## Install doc files
 file (GLOB doc_files
@@ -713,6 +739,10 @@ if (ENABLE_LASH AND (NOT LASH_FOUND))
         message("** WARNING: lash (>= 0.2) was enabled, but development files were not found. ")
         message("** HINT: Don't have LASH? Try installing the LADISH LASH compatibility package instead.")
 endif (ENABLE_LASH AND (NOT LASH_FOUND))
+
+if (ENABLE_LRDF AND (NOT LRDF_FOUND))
+        message("** WARNING: lrdf (>= 0.5) was enabled, but development files were not found. ")
+endif (ENABLE_LRDF AND (NOT LRDF_FOUND))
 
 if (ENABLE_PYTHON AND (NOT PYTHONLIBS_FOUND))
         message("** WARNING: python was enabled, but development files were not found.")
@@ -806,6 +836,7 @@ summary_add("ALSA support" ALSA_SUPPORT)
 # summary_add("DSSI ALSA Compatibility support" DSSI_ALSA_COMPAT_SUPPORT)
 summary_add("RTAudio support" HAVE_RTAUDIO)
 summary_add("Lash support" HAVE_LASH)
+summary_add("Lrdf support" HAVE_LRDF)
 summary_add("OSC (Liblo) support" OSC_SUPPORT)
 summary_add("Python support" PYTHON_SUPPORT)
 summary_add("DSSI support" DSSI_SUPPORT)

@@ -382,7 +382,7 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
         // Always refresh the interpolate struct at first, since things may have changed.
         // Or if the frame is outside of the interpolate range - and eStop is not true.  // FIXME TODO: Be sure these comparisons are correct.
         if(cur_slice == 0 || (!ci.eStop && MusEGlobal::audio->isPlaying() &&
-            (slice_frame < (unsigned long)ci.sFrame || (ci.eFrame != -1 && slice_frame >= (unsigned long)ci.eFrame)) ) )
+            (slice_frame < (unsigned long)ci.sFrame || (ci.eFrameValid && slice_frame >= (unsigned long)ci.eFrame)) ) )
         {
           if(cl && (unsigned long)cl->id() == k)
           {
@@ -396,7 +396,8 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
             // Keep the current icl iterator, because since they are sorted by frames,
             //  if the IDs didn't match it means we can just let k catch up with icl.
             ci.sFrame   = 0;
-            ci.eFrame   = -1;
+            ci.eFrame   = 0;
+            ci.eFrameValid = false;
             ci.sVal     = _controls[k].dval;
             ci.eVal     = ci.sVal;
             ci.doInterp = false;
@@ -405,11 +406,12 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
         }
         else
         {
-          if(ci.eStop && ci.eFrame != -1 && slice_frame >= (unsigned long)ci.eFrame)  // FIXME TODO: Get that comparison right.
+          if(ci.eStop && ci.eFrameValid && slice_frame >= (unsigned long)ci.eFrame)  // FIXME TODO: Get that comparison right.
           {
             // Clear the stop condition and set up the interp struct appropriately as an endless value.
             ci.sFrame   = 0; //ci->eFrame;
-            ci.eFrame   = -1;
+            ci.eFrame   = 0;
+            ci.eFrameValid = false;
             ci.sVal     = ci.eVal;
             ci.doInterp = false;
             ci.eStop    = false;
@@ -421,7 +423,7 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
         if(MusEGlobal::audio->isPlaying())
         {
           unsigned long samps = nsamp;
-          if(ci.eFrame != -1)
+          if(ci.eFrameValid)
             samps = (unsigned long)ci.eFrame - slice_frame;
           if(samps < nsamp)
             nsamp = samps;
@@ -481,6 +483,7 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
       {
         CtrlInterpolate* ci = &_controls[v.idx].interp;
         ci->eFrame = frame;
+        ci->eFrameValid = true;
         ci->eVal   = v.value;
         ci->eStop  = true;
       }
@@ -1291,8 +1294,8 @@ void AudioTrack::readVolume(Xml& xml)
 
 void Track::setChannels(int n)
       {
-      if(n > MAX_CHANNELS)
-        _channels = MAX_CHANNELS;
+      if(n > MusECore::MAX_CHANNELS)
+        _channels = MusECore::MAX_CHANNELS;
       else
         _channels = n;
       for (int i = 0; i < _channels; ++i) {
@@ -2136,10 +2139,10 @@ void AudioTrack::setTotalOutChannels(int num)
         _totalOutChannels = num;
         int new_chans = num;
         // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less.
-        if(new_chans < MAX_CHANNELS)
-          new_chans = MAX_CHANNELS;
-        if(chans < MAX_CHANNELS)
-          chans = MAX_CHANNELS;
+        if(new_chans < MusECore::MAX_CHANNELS)
+          new_chans = MusECore::MAX_CHANNELS;
+        if(chans < MusECore::MAX_CHANNELS)
+          chans = MusECore::MAX_CHANNELS;
         if(new_chans != chans)
         {
           if(outBuffers)
@@ -2161,8 +2164,8 @@ void AudioTrack::setTotalOutChannels(int num)
       }
       chans = num;
       // Limit the actual track (meters, copying etc, all 'normal' operation) to two-channel stereo.
-      if(chans > MAX_CHANNELS)
-        chans = MAX_CHANNELS;
+      if(chans > MusECore::MAX_CHANNELS)
+        chans = MusECore::MAX_CHANNELS;
       setChannels(chans);
 }
 

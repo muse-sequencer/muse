@@ -39,6 +39,7 @@
 #include "pos.h"
 #include "gconfig.h"
 #include "large_int.h"
+#include "al/al.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_DUMMY(dev, format, args...) // fprintf(dev, format, ##args);
@@ -187,6 +188,8 @@ DummyAudioDevice::DummyAudioDevice() : AudioDevice()
 //       MusEGlobal::segmentSize = MusEGlobal::config.dummyAudioBufSize;
         
       MusEGlobal::sampleRate = MusEGlobal::config.deviceAudioSampleRate;
+      // Make sure the AL namespace variables mirror our variables.
+      AL::sampleRate = MusEGlobal::sampleRate;
       MusEGlobal::segmentSize = MusEGlobal::config.deviceAudioBufSize;
       // REMOVE Tim. samplerate. Added.
       MusEGlobal::projectSampleRate = MusEGlobal::sampleRate;

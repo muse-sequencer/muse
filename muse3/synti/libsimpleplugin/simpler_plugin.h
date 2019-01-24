@@ -34,6 +34,9 @@
 #include <ladspa.h>
 #include <math.h>
 
+#include "globaldefs.h"
+#include "plugin_cache_reader.h"
+
 #define SS_PLUGIN_PARAM_MIN                  0
 #define SS_PLUGIN_PARAM_MAX                127
 
@@ -55,11 +58,6 @@ class PluginI;
 
 class Plugin
    {
-   public:
-     // Can be Or'd together.
-     enum PluginFeature { NoFeatures=0x00, FixedBlockSize=0x01, PowerOf2BlockSize=0x02, NoInPlaceProcessing=0x04 };
-     typedef int PluginFeaturesType;
-     
    protected:
       QFileInfo _fi;
       void* _libHandle;
@@ -78,7 +76,7 @@ class Plugin
       unsigned long _controlInPorts;
       unsigned long _controlOutPorts;
 
-      PluginFeaturesType _requiredFeatures;
+      MusECore::PluginFeatures_t _requiredFeatures;
       
       std::vector<unsigned long> _pIdx; //control port numbers
       std::vector<unsigned long> _poIdx; //control out port numbers
@@ -90,7 +88,8 @@ class Plugin
         : _fi(*f), _libHandle(0), _references(0), _instNo(0), _uniqueID(0),
           _portCount(0),_inports(0), _outports(0),
           _controlInPorts(0),_controlOutPorts(0),
-          _requiredFeatures(NoFeatures) { }
+          _requiredFeatures(MusECore::PluginNoFeatures) { }
+      Plugin(const MusEPlugin::PluginScanInfoStruct& info);
       virtual ~Plugin() {}
       
       //----------------------------------------------------
@@ -100,7 +99,7 @@ class Plugin
       //----------------------------------------------------
       
       // Returns features required by the plugin.
-      PluginFeaturesType requiredFeatures() const { return _requiredFeatures; }
+      MusECore::PluginFeatures_t requiredFeatures() const { return _requiredFeatures; }
         
       // Create and initialize a plugin instance. Returns null if failure.
       // Equivalent to calling (new ***PlugI())->initPluginInstance(this, ...).
@@ -130,7 +129,7 @@ class Plugin
       unsigned long parameterOut() const    { return _controlOutPorts; }
       unsigned long inports() const         { return _inports;     }
       unsigned long outports() const        { return _outports;     }
-      bool inPlaceCapable() const           { return _requiredFeatures & NoInPlaceProcessing; }
+      bool inPlaceCapable() const           { return !(_requiredFeatures & MusECore::PluginNoInPlaceProcessing); }
 
       
       //----------------------------------------------------
@@ -183,6 +182,7 @@ class LadspaPlugin : public Plugin
       
    public:
       LadspaPlugin(const QFileInfo* f, const LADSPA_Descriptor_Function, const LADSPA_Descriptor* d);
+      LadspaPlugin(const MusEPlugin::PluginScanInfoStruct& info);
       virtual ~LadspaPlugin() { }
 
       // Create and initialize a LADSPA plugin instance. Returns null if failure.
@@ -328,8 +328,8 @@ class PluginI {
 
       Plugin* plugin() const { return _plugin; }
 
-      Plugin::PluginFeaturesType requiredFeatures() const {
-        if(!_plugin) return Plugin::NoFeatures; 
+      MusECore::PluginFeatures_t requiredFeatures() const {
+        if(!_plugin) return MusECore::PluginNoFeatures; 
         return _plugin->requiredFeatures(); }
       
       bool on() const        { return _on; }
@@ -530,7 +530,7 @@ class PluginList : public std::list<Plugin*> {
       ~PluginList();
       };
 
-extern void SS_initPlugins(const QString& globalLibPath);
+extern void SS_initPlugins(const QString& hostConfigPath);
 extern PluginList plugins;
 
 } // namespace MusESimplePlugin

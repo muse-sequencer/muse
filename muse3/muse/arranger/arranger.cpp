@@ -475,7 +475,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       //    Editor
       //---------------------------------------------------
 
-      int offset = AL::sigmap.ticksMeasure(0);
+      int offset = MusEGlobal::sigmap.ticksMeasure(0);
       hscroll = new ScrollScale(-2000, -5, xscale, MusEGlobal::song->len(), Qt::Horizontal, this, -offset);
       hscroll->setFocusPolicy(Qt::NoFocus);
       hscroll->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -519,7 +519,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
       connect(canvas, SIGNAL(setUsedTool(int)), this, SIGNAL(setUsedTool(int)));
       connect(canvas, SIGNAL(trackChanged(MusECore::Track*)), list, SLOT(selectTrack(MusECore::Track*)));
-      connect(canvas, SIGNAL(selectionChanged()), parent, SLOT(selectionChanged()));
       connect(list, SIGNAL(keyPressExt(QKeyEvent*)), canvas, SLOT(redirKeypress(QKeyEvent*)));
       connect(canvas, SIGNAL(selectTrackAbove()), list, SLOT(selectTrackAbove()));
       connect(canvas, SIGNAL(selectTrackBelow()), list, SLOT(selectTrackBelow()));
@@ -571,7 +570,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(canvas, SIGNAL(dclickPart(MusECore::Track*)), SIGNAL(editPart(MusECore::Track*)));
       connect(canvas, SIGNAL(startEditor(MusECore::PartList*,int)),   SIGNAL(startEditor(MusECore::PartList*, int)));
 
-      connect(MusEGlobal::song,   SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song,   SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
 
       connect(canvas, SIGNAL(dropSongFile(const QString&)), SIGNAL(dropSongFile(const QString&)));
@@ -590,12 +589,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       setDefaultSplitterSizes();
       
       // Take care of some tabbies!
-//       setTabOrder(tempo200, trackInfo);
-//       setTabOrder(trackInfo, infoScroll);
-//       setTabOrder(infoScroll, list);
       setTabOrder(list, canvas);
-      //setTabOrder(canvas, ib);
-      //setTabOrder(ib, hscroll);
       }
 
 //---------------------------------------------------------
@@ -678,6 +672,7 @@ void Arranger::configChanged()
             canvas->setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
       }
       setHeaderSizes();
+      _parentWin->updateVisibleTracksButtons();
       }
 
 //---------------------------------------------------------
@@ -699,7 +694,7 @@ void Arranger::focusCanvas()
 
 void Arranger::songlenChanged(int n)
       {
-      int newLen = AL::sigmap.bar2tick(n, 0, 0);
+      int newLen = MusEGlobal::sigmap.bar2tick(n, 0, 0);
       MusEGlobal::song->setLen(newLen);
       }
       
@@ -707,11 +702,11 @@ void Arranger::songlenChanged(int n)
 //   songChanged
 //---------------------------------------------------------
 
-void Arranger::songChanged(MusECore::SongChangedFlags_t type)
+void Arranger::songChanged(MusECore::SongChangedStruct_t type)
       {
 #ifdef _USE_TRACKINFO_ALT
         // We must catch this first and be sure to update the strips.
-        if(type & SC_TRACK_REMOVED)
+        if(type._flags & SC_TRACK_REMOVED)
         {
           {
             AudioStrip* w = static_cast<AudioStrip*>(trackInfoWidget->getWidget(2));
@@ -751,7 +746,7 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
         }
 #else
         // We must catch this first and be sure to update the strips.
-        if(type & SC_TRACK_REMOVED)
+        if(type._flags & SC_TRACK_REMOVED)
         {
           {
             AudioStrip* w = static_cast<AudioStrip*>(trackInfoWidget->getWidget(1));
@@ -792,19 +787,19 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
 #endif
         
         // Try these, may need more/less. 
-        if(type & ( SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
+        if(type._flags & ( SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
            SC_TRACK_MOVED |
            SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))  
         {
           unsigned endTick = MusEGlobal::song->len();
-          int offset  = AL::sigmap.ticksMeasure(endTick);
+          int offset  = MusEGlobal::sigmap.ticksMeasure(endTick);
           hscroll->setRange(-offset, endTick + offset);  //DEBUG
           canvas->setOrigin(-offset, 0);
           time->setOrigin(-offset, 0);
     
           int bar, beat;
           unsigned tick;
-          AL::sigmap.tickValues(endTick, &bar, &beat, &tick);
+          MusEGlobal::sigmap.tickValues(endTick, &bar, &beat, &tick);
           if (tick || beat)
                 ++bar;
           lenEntry->blockSignals(true);
@@ -812,25 +807,32 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
           lenEntry->blockSignals(false);
         }
         
-        if(type & (SC_TRACK_SELECTION | SC_TRACK_INSERTED | SC_TRACK_REMOVED |
+        if(type._flags & (SC_TRACK_SELECTION | SC_TRACK_INSERTED | SC_TRACK_REMOVED |
           SC_TRACK_MOVED |
           SC_TRACK_MODIFIED | SC_TRACK_RESIZED))
           trackSelectionChanged();
         
         // Keep this light, partsChanged is a heavy move! Try these, may need more. Maybe sig. Requires tempo.
-        if(type & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
+        if(type._flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
                    SC_TRACK_MOVED | SC_TRACK_RESIZED |
                    SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
                    SC_SIG | SC_TEMPO | SC_MASTER)) 
-          canvas->partsChanged();
+          canvas->updateItems();
         
-        if (type & SC_SIG)
+        if(type._flags & (SC_PART_SELECTION))
+        {
+          // Prevent race condition: Ignore if the change was ultimately sent by the canvas itself.
+          if(type._sender != canvas)
+            canvas->updateItemSelections();
+        }
+        
+        if (type._flags & SC_SIG)
               time->redraw();
-        if (type & SC_TEMPO)
+        if (type._flags & SC_TEMPO)
               setGlobalTempo(MusEGlobal::tempomap.globalTempo());
 
         // Try these:
-        if(type & (SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED |
+        if(type._flags & (SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED |
                    SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED |
                    SC_CLIP_MODIFIED))
         canvas->redraw();
@@ -843,6 +845,14 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
         //  the strips each time no matter what the flags are !
         //updateTrackInfo(type);
         trackInfoSongChange(type);
+
+        // Update the arrangerview's actions.
+        // This needs to come after the canvas->selectionChanged() above so that in
+        //  selectionChanged(), itemsAreSelected() has the latest citems' selected flags.
+        if(type._flags & (SC_TRACK_SELECTION | SC_PART_SELECTION | 
+                  SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
+                  SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))
+          _parentWin->selectionChanged();
     }
 
 //---------------------------------------------------------
@@ -1071,7 +1081,7 @@ void Arranger::globalPitchChanged(int val)
 
 void Arranger::globalTempoChanged(int val)
       {
-      MusEGlobal::audio->msgSetGlobalTempo(val);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetGlobalTempo, val, 0));
       }
 
 //---------------------------------------------------------
@@ -1080,7 +1090,7 @@ void Arranger::globalTempoChanged(int val)
 
 void Arranger::setTempo50()
       {
-      MusEGlobal::audio->msgSetGlobalTempo(50);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetGlobalTempo, 50, 0));
       }
 
 //---------------------------------------------------------
@@ -1089,7 +1099,7 @@ void Arranger::setTempo50()
 
 void Arranger::setTempo100()
       {
-      MusEGlobal::audio->msgSetGlobalTempo(100);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetGlobalTempo, 100, 0));
       }
 
 //---------------------------------------------------------
@@ -1098,7 +1108,7 @@ void Arranger::setTempo100()
 
 void Arranger::setTempo200()
       {
-      MusEGlobal::audio->msgSetGlobalTempo(200);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetGlobalTempo, 200, 0));
       }
 
 //---------------------------------------------------------
@@ -1236,7 +1246,7 @@ void Arranger::genTrackInfo(TrackInfoWidget* trackInfo)
 //   updateTrackInfo
 //---------------------------------------------------------
 
-void Arranger::updateTrackInfo(MusECore::SongChangedFlags_t /*flags*/)
+void Arranger::updateTrackInfo(MusECore::SongChangedStruct_t /*flags*/)
       {
       if (!showTrackinfoFlag) {
             switchInfo(-1);
@@ -1316,7 +1326,7 @@ void Arranger::switchInfo(int n)
                     //  otherwise it crashes when loading another song because track is no longer valid
                     //  and the strip's songChanged() seems to be called before Arranger songChanged()
                     //  gets called and has a chance to stop the crash.
-                    //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+                    //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), w, SLOT(songChanged(MusECore::SongChangedStruct_t)));
                     
                     connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
                     w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -1358,7 +1368,7 @@ void Arranger::switchInfo(int n)
                   }
 
                   // No. See above.
-                  //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+                  //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), w, SLOT(songChanged(MusECore::SongChangedStruct_t)));
                   
                   connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
                   w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -1411,7 +1421,7 @@ void Arranger::switchInfo(int n)
                     //  otherwise it crashes when loading another song because track is no longer valid
                     //  and the strip's songChanged() seems to be called before Arranger songChanged()
                     //  gets called and has a chance to stop the crash.
-                    //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+                    //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), w, SLOT(songChanged(MusECore::SongChangedStruct_t)));
                     
                     connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
                     w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -1453,7 +1463,7 @@ void Arranger::switchInfo(int n)
                   }
 
                   // No. See above.
-                  //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+                  //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), w, SLOT(songChanged(MusECore::SongChangedStruct_t)));
                   
                   connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
                   w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -1475,7 +1485,7 @@ void Arranger::switchInfo(int n)
 //---------------------------------------------------------
 
 #ifdef _USE_TRACKINFO_ALT
-void Arranger::trackInfoSongChange(MusECore::SongChangedFlags_t flags)
+void Arranger::trackInfoSongChange(MusECore::SongChangedStruct_t flags)
 {
   if(!selected || !showTrackinfoFlag)
     return;
@@ -1504,7 +1514,7 @@ void Arranger::trackInfoSongChange(MusECore::SongChangedFlags_t flags)
   }
 }
 #else
-void Arranger::trackInfoSongChange(MusECore::SongChangedFlags_t flags)
+void Arranger::trackInfoSongChange(MusECore::SongChangedStruct_t flags)
 {
   if(!selected || !showTrackinfoFlag)
     return;

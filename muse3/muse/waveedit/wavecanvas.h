@@ -73,7 +73,7 @@ namespace MusEGui {
 //    ''visual'' Wave Event
 //---------------------------------------------------------
 
-class WEvent : public CItem {
+class WEvent : public EItem {
    public:
       WEvent(const MusECore::Event& e, MusECore::Part* p, int height);
       };
@@ -191,19 +191,20 @@ class WaveCanvas : public EventCanvas {
 
    protected:
       virtual QPoint raster(const QPoint&) const;
-      void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
-      void drawParts(QPainter&, const QRect&, bool do_cur_part);
+      void drawParts(QPainter&, bool /*do_cur_part*/, const QRect&, const QRegion& = QRegion());
   
-      virtual void draw(QPainter&, const QRect&);
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void wheelEvent(QWheelEvent*);
       virtual bool mousePress(QMouseEvent*);
       virtual void mouseMove(QMouseEvent* event);
+//       virtual void mouseRelease(const QPoint&);
       virtual void mouseRelease(QMouseEvent*);
-      virtual void drawItem(QPainter&, const CItem*, const QRect&);
-      void drawTopItem(QPainter &p, const QRect &rect);
-      virtual void drawMoving(QPainter&, const CItem*, const QRect&);
-      virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true);
+      virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
+      void drawMarkers(QPainter& p, const QRect& mr, const QRegion& mrg = QRegion());
+      
+      void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion());
+      virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
+      virtual MusECore::Undo moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true);
       virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true);
       virtual CItem* newItem(const QPoint&, int);
       virtual void resizeItem(CItem*, bool noSnap, bool);
@@ -219,7 +220,7 @@ class WaveCanvas : public EventCanvas {
       int pitch2y(int) const;
       inline int y2height(int) const { return height(); }
       inline int yItemOffset() const { return 0; }
-      virtual void drawCanvas(QPainter&, const QRect&);
+      virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void itemPressed(const CItem*);
       virtual void itemReleased(const CItem*, const QPoint&);
       virtual void itemMoved(const CItem*, const QPoint&);
@@ -270,12 +271,14 @@ class WaveCanvas : public EventCanvas {
             redraw();
             }
       QString getCaption() const;
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       void range(int* s, int* e) const { *s = startSample; *e = endSample; }
       void selectAtTick(unsigned int tick);
       void selectAtFrame(unsigned int frame);
       void modifySelected(NoteInfo::ValType type, int val, bool delta_mode = true);
       void keyPress(QKeyEvent*);
+      void keyRelease(QKeyEvent* event);
+      void updateItems();
       };
 
 } // namespace MusEGui

@@ -35,9 +35,9 @@
 // #define MAX_TICK (0x7fffffff/100)
 // #endif
 
-// #ifndef MAX_FRAME
-// //#define MAX_FRAME (0x7ffffffffffffffeL)
-// #define MAX_FRAME ((1 << (sizeof(MuseFrame_t) - 1)) - 1)
+// #ifndef MUSE_TIME_STRETCH_MAX_FRAME
+// //#define MUSE_TIME_STRETCH_MAX_FRAME (0x7ffffffffffffffeL)
+// #define MUSE_TIME_STRETCH_MAX_FRAME ((1 << (sizeof(MuseFrame_t) - 1)) - 1)
 // #endif
 
 // Tempo ring buffer size
@@ -48,8 +48,8 @@
 namespace MusECore {
 
 class Xml;
-class PendingOperationList;
-struct PendingOperationItem;
+// class PendingOperationList;
+// struct PendingOperationItem;
 
 
 
@@ -137,11 +137,21 @@ class StretchList : public STRETCHLIST {
 //       int globalTempo() const           { return _globalTempo; }
 //       void setGlobalTempo(int val);
       
-      void addOperation(MuseFrame_t frame, double stretch, PendingOperationList& ops); 
-      void delOperation(MuseFrame_t frame, PendingOperationList& ops);
+//       void addOperation(MuseFrame_t frame, double stretch, PendingOperationList& ops); 
+//       void delOperation(MuseFrame_t frame, PendingOperationList& ops);
       };
 
+
+
 #else // USE_ALTERNATE_STRETCH_LIST
+
+      
+
+
+#ifndef MUSE_TIME_STRETCH_MAX_FRAME
+#define MUSE_TIME_STRETCH_MAX_FRAME (0x7ffffffffffffffeL)
+//#define MUSE_TIME_STRETCH_MAX_FRAME ((1 << (sizeof(MuseFrame_t) - 1)) - 1)
+#endif
 
 //---------------------------------------------------------
 //   StretchListItem
@@ -539,7 +549,7 @@ class StretchList : public StretchList_t {
       double ratio(StretchListItem::StretchEventType type) const;
       void setRatio(StretchListItem::StretchEventType type, double ratio, bool do_normalize = true);
       
-      void modifyOperation(StretchListItem::StretchEventType type, double value, PendingOperationList& ops);
+//       void modifyOperation(StretchListItem::StretchEventType type, double value, PendingOperationList& ops);
 
       // ------------------------------------------
       //  List functions:
@@ -571,9 +581,9 @@ class StretchList : public StretchList_t {
 //       void delStretchOperation(MuseFrame_t frame, PendingOperationList& ops);
 //       void delSamplerateOperation(MuseFrame_t frame, PendingOperationList& ops);
       
-      void addListOperation(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops);
-      void delListOperation(int types, MuseFrame_t frame, PendingOperationList& ops);
-      void modifyListOperation(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops);
+//       void addListOperation(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops);
+//       void delListOperation(int types, MuseFrame_t frame, PendingOperationList& ops);
+//       void modifyListOperation(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops);
       // Whether deleting the item would cause isStretched, isResampled, or isPitchShifted
       //  to become false.
       StretchListInfo testDelListOperation(int types, MuseFrame_t frame) const;

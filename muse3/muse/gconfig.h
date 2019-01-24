@@ -116,6 +116,7 @@ struct GlobalConfigValues {
       QStringList pluginVstPathList;
       QStringList pluginLinuxVstPathList;
       QStringList pluginLv2PathList;
+      bool pluginCacheTriggerRescan; // Whether to trigger a plugin cache rescan.
 
       int globalAlphaBlend;
       QColor palette[16];
@@ -303,6 +304,10 @@ struct GlobalConfigValues {
       bool monitorOnRecord;  // Whether to automatically monitor on record arm.
       bool lineEditStyleHack; // Force line edit widgets to draw a frame at small sizes. Some styles refuse to draw the frame.
       bool preferMidiVolumeDb; // Prefer midi volume as decibels instead of 0-127.
+      // NOTE: The following are similar to the paste dialog function options, stored separately.
+      bool midiCtrlGraphMergeErase; // Whether to erase underlying erase target items when dragging/dropping source items.
+      bool midiCtrlGraphMergeEraseInclusive; // Whether to erase target items in-between source item groups.
+      bool midiCtrlGraphMergeEraseWysiwyg; // Whether to erase past the last item in a group to include its original source width.
 
       QString measSample;
       QString beatSample;
@@ -314,6 +319,9 @@ struct GlobalConfigValues {
       int routerGroupingChannels;
       QString mixdownPath;
       bool showNoteNamesInPianoRoll;
+      // Whether selecting parts or events is undoable.
+      // If set, it can be somewhat tedious for the user to step through all the undo/redo items.
+      bool selectionsUndoable;
       };
 
 

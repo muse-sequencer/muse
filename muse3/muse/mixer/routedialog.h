@@ -442,7 +442,7 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       void connectClicked();
       void srcSelectionChanged();
       void dstSelectionChanged();
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
 
       void srcTreeScrollValueChanged(int value);
       void dstTreeScrollValueChanged(int value);

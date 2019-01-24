@@ -44,7 +44,7 @@ namespace MusEGui {
 //    ''visual'' Note Event
 //---------------------------------------------------------
 
-class NEvent : public CItem {
+class NEvent : public EItem {
    public:
       NEvent(const MusECore::Event& e, MusECore::Part* p, int y);
       };
@@ -67,10 +67,10 @@ class PianoCanvas : public EventCanvas {
 
       
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
-      virtual void drawItem(QPainter&, const CItem*, const QRect&);
-      void drawTopItem(QPainter &p, const QRect &rect);
-      virtual void drawMoving(QPainter&, const CItem*, const QRect&);
-      virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true);
+      virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
+      void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion());
+      virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
+      virtual MusECore::Undo moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true);
       virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true);
       virtual CItem* newItem(const QPoint&, int);
       virtual void resizeItem(CItem*, bool noSnap, bool);
@@ -86,7 +86,7 @@ class PianoCanvas : public EventCanvas {
       int pitch2y(int) const;
       inline int y2height(int) const { return KH/2; }
       inline int yItemOffset() const { return KH/4; }
-      virtual void drawCanvas(QPainter&, const QRect&);
+      virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void itemPressed(const CItem*);
       virtual void itemReleased(const CItem*, const QPoint&);
       virtual void itemMoved(const CItem*, const QPoint&);
@@ -108,7 +108,7 @@ class PianoCanvas : public EventCanvas {
 
    public:
       enum {
-         CMD_CUT, CMD_COPY, CMD_COPY_RANGE, CMD_PASTE, CMD_PASTE_DIALOG, CMD_DEL,
+         CMD_CUT, CMD_COPY, CMD_COPY_RANGE, CMD_PASTE, CMD_PASTE_TO_CUR_PART, CMD_PASTE_DIALOG, CMD_DEL,
          CMD_QUANTIZE,
          CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
          CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PREV_PART, CMD_SELECT_NEXT_PART, 

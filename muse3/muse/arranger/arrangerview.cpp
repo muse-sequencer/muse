@@ -47,7 +47,7 @@
 #include <QToolButton>
 #include <QToolTip>
 
-#include "al/sig.h"
+#include "sig.h"
 #include "app.h"
 #include "arrangerview.h"
 #include "audio.h"
@@ -81,6 +81,9 @@ ArrangerView::ArrangerView(QWidget* parent)
   setWindowTitle(tr("MusE: Arranger"));
   setFocusPolicy(Qt::NoFocus);  
 
+  // Already has an object name.
+  visTracks = new VisibleTracks(this);
+  
   arranger = new Arranger(this, "arranger");
   setCentralWidget(arranger);
   //setFocusProxy(arranger);
@@ -106,8 +109,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   // Make sure name doesn't conflict with other TopWin edit toolbar object names.
   editTools->setObjectName("arrangerTools");
 
-  // Already has an object name.
-  visTracks = new VisibleTracks(this);
   addToolBar(visTracks);
 
   connect(editTools, SIGNAL(toolChanged(int)), arranger, SLOT(setTool(int)));
@@ -119,10 +120,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(arranger, SIGNAL(toolChanged(int)), editTools, SLOT(set(int)));
   connect(MusEGlobal::muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
   connect(arranger, SIGNAL(setUsedTool(int)), editTools, SLOT(set(int)));
-  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(songChanged(MusECore::SongChangedFlags_t)));
-
-
-
 
 
 
@@ -228,7 +225,6 @@ ArrangerView::ArrangerView(QWidget* parent)
 
   menuEdit->addAction(startPianoEditAction);
   menuEdit->addMenu(scoreSubmenu);
-//   menuEdit->addAction(startScoreEditAction);
   menuEdit->addAction(startDrumEditAction);
   menuEdit->addAction(startListEditAction);
   menuEdit->addAction(startWaveEditAction);
@@ -371,30 +367,6 @@ void ArrangerView::closeEvent(QCloseEvent* e)
   e->accept();
 }
 
-//---------------------------------------------------------
-//   songChanged
-//---------------------------------------------------------
-
-void ArrangerView::songChanged(MusECore::SongChangedFlags_t type)
-{
-  // TEST Try these, may need more/less. Esp more: Originally songChanged was directly connected to updateVisibleTracksButtons, so... 
-  if(type & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
-             SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
-             //SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED |
-             //SC_SIG | SC_TEMPO | SC_MASTER |
-             //SC_MIDI_TRACK_PROP |
-             SC_CONFIG | 
-             SC_DRUMMAP)) 
-    visTracks->updateVisibleTracksButtons();
-  
-  if(type & (SC_TRACK_SELECTION | SC_PART_SELECTION | 
-             SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
-             SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))
-    selectionChanged();
-}
-      
-
-
 void ArrangerView::writeStatus(int level, MusECore::Xml& xml) const
 {
   xml.tag(level++, "arrangerview");
@@ -478,6 +450,91 @@ void ArrangerView::writeConfiguration(int level, MusECore::Xml& xml)
       xml.tag(level, "/arrangerview");
       }
 
+//---------------------------------------------------------
+//   tagItems
+//---------------------------------------------------------
+
+void ArrangerView::tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const
+{
+  const bool tagSelected = options._flags & MusECore::TagSelected;
+  const bool tagAllItems = options._flags & MusECore::TagAllItems;
+  const bool tagAllParts = options._flags & MusECore::TagAllParts;
+  const bool range       = options._flags & MusECore::TagRange;
+  const MusECore::Pos& p0 = options._p0;
+  const MusECore::Pos& p1 = options._p1;
+  
+  if(tagAllParts || tagAllItems)
+  {
+    MusECore::Track* track;
+    MusECore::PartList* pl;
+    MusECore::Part* part;
+    MusECore::Pos pos, part_pos, part_endpos;
+    MusECore::TrackList* tl = MusEGlobal::song->tracks();
+    
+    for(MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it)
+    {
+      track = *it;
+      pl = track->parts();
+      for(MusECore::ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+      {
+        part = ip->second;
+        if(!tagAllParts && !track->isVisible())
+          continue;
+        if(tagAllParts 
+           || (tagSelected && part->selected())
+           // || (tagMoving && part->isMoving()) // TODO
+          )
+        {
+          if(tagAllItems)
+          {
+            if(range)
+            {
+              part_pos = *part;
+              part_endpos = part->end();
+              // Optimize: Is the part within the range?
+              // p1 should be considered outside (one past) the very last position in the range.
+              if(part_endpos <= p0 || part_pos >= p1)
+                continue;
+            }
+            MusECore::EventList& el = part->nonconst_events();
+            for(MusECore::iEvent ie = el.begin(); ie != el.end(); ++ie)
+            {
+              const MusECore::Event& e = ie->second;
+              if(range)
+              {
+                // Don't forget to add the part's position.
+                pos = e.pos() + part_pos;
+                // If the event position is before p0, keep looking...
+                if(pos < p0)
+                  continue;
+                // If the event position is at or after p1 then we are done.
+                // p1 should be considered outside (one past) the very last position in the range.
+                if(pos >= p1)
+                  break;
+              }
+              tag_list->add(part, e);
+            }
+          }
+          else
+          {
+            tag_list->add(part);
+          }
+        }
+      }
+    }
+  }
+  else
+  {
+    // This step uses the tagging features to mark the objects (events)
+    //  as having been visited already, to avoid duplicates in the list.
+    if(arranger && arranger->getCanvas())
+    {
+      MusECore::EventTagOptionsStruct opts = options;
+      opts.removeFlags(MusECore::TagAllItems | MusECore::TagAllParts);
+      arranger->getCanvas()->tagItems(tag_list, opts);
+    }
+  }
+}
 
 void ArrangerView::cmd(int cmd)
       {
@@ -489,6 +546,14 @@ void ArrangerView::cmd(int cmd)
       MusECore::TrackList* tracks = MusEGlobal::song->tracks();
       int l = MusEGlobal::song->lpos();
       int r = MusEGlobal::song->rpos();
+
+      MusECore::TagEventList tag_list;
+      
+      const FunctionDialogElements_t fn_element_dflt =
+        FunctionAllEventsButton |
+        FunctionLoopedButton |
+        FunctionAllPartsButton | 
+        FunctionSelectedPartsButton;
 
       switch(cmd) {
             case CMD_CUT:
@@ -594,16 +659,137 @@ void ArrangerView::cmd(int cmd)
             case CMD_EXPAND_PART: MusECore::expand_parts(); break;
             case CMD_CLEAN_PART: MusECore::clean_parts(); break;      
 
-            case CMD_QUANTIZE: MusECore::quantize_notes(); break;
-            case CMD_VELOCITY: MusECore::modify_velocity(); break;
-            case CMD_CRESCENDO: MusECore::crescendo(); break;
-            case CMD_NOTELEN: MusECore::modify_notelen(); break;
-            case CMD_TRANSPOSE: MusECore::transpose_notes(); break;
-            case CMD_ERASE: MusECore::erase_notes(); break;
-            case CMD_MOVE: MusECore::move_notes(); break;
-            case CMD_FIXED_LEN: MusECore::set_notelen(); break;
-            case CMD_DELETE_OVERLAPS: MusECore::delete_overlaps(); break;
-            case CMD_LEGATO: MusECore::legato(); break;
+            case CMD_QUANTIZE:
+                  {
+                  FunctionDialogReturnQuantize ret =
+                    quantize_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                  {
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                    MusECore::quantize_items(&tag_list, ret._raster_index,
+                                            /*ret._quant_len*/ false,  // DELETETHIS
+                                            ret._strength,
+                                            ret._swing,
+                                            ret._threshold);
+                  }
+                  break;
+                  }
+            
+            case CMD_VELOCITY:
+                  {
+                  FunctionDialogReturnVelocity ret =
+                    velocity_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                  {
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                    MusECore::modify_velocity_items(&tag_list, ret._rateVal, ret._offsetVal);
+                  }
+                  break;
+                  }
+            case CMD_CRESCENDO:
+                  {
+                  FunctionDialogReturnCrescendo ret =
+                    crescendo_items_dialog(FunctionDialogMode(
+                      FunctionLoopedButton |
+                      FunctionSelectedLoopedButton |
+                      FunctionAllPartsButton | 
+                      FunctionSelectedPartsButton));
+                  if(ret._valid)
+                  {
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                    MusECore::crescendo_items(&tag_list, ret._start_val, ret._end_val, ret._absolute);
+                  }
+                  break;
+                  }
+            case CMD_NOTELEN:
+                  {
+                  FunctionDialogReturnGateTime ret =
+                    gatetime_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                  {
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                    MusECore::modify_notelen_items(&tag_list, ret._rateVal, ret._offsetVal);
+                  }
+                  break;
+                  }
+            case CMD_TRANSPOSE:
+                  {
+                  FunctionDialogReturnTranspose ret =
+                    transpose_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                  {
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                    MusECore::transpose_items(&tag_list, ret._amount);
+                  }
+                  break;
+                  }
+            
+            case CMD_ERASE:
+            {
+              FunctionDialogReturnErase ret =
+                erase_items_dialog(FunctionDialogMode(fn_element_dflt));
+              if(ret._valid)
+              {
+                tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                MusECore::erase_items(&tag_list, ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
+              }
+            }
+            break;
+            
+            case CMD_MOVE:
+                  {
+                  FunctionDialogReturnMove ret =
+                    move_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                  {
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                    MusECore::move_items(&tag_list, ret._amount);
+                  }
+                  break;
+                  }
+            case CMD_FIXED_LEN:
+                  {
+                  FunctionDialogReturnSetLen ret =
+                    setlen_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                  {
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                    MusECore::set_notelen_items(&tag_list, ret._len);
+                  }
+                  break;
+                  }
+            case CMD_DELETE_OVERLAPS:
+                  {
+                  FunctionDialogReturnDelOverlaps ret =
+                    deloverlaps_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                  {
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                    MusECore::delete_overlaps_items(&tag_list);
+                  }
+                  break;
+                  }
+            case CMD_LEGATO:
+                  {
+                  FunctionDialogReturnLegato ret =
+                    legato_items_dialog(FunctionDialogMode(fn_element_dflt));
+                  if(ret._valid)
+                  {
+                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+                    MusECore::legato_items(&tag_list, ret._min_len, !ret._allow_shortening);
+                  }
+                  break;
+                  }
 
             }
       }

@@ -403,8 +403,16 @@ out_of_WaveTrackRead_forloop:
 
 Part* WaveTrack::newPart(Part*p, bool clone)
       {
-      WavePart* part = clone ? (WavePart*)p->createNewClone() : (WavePart*)p->duplicate();
-      part->setTrack(this);
+      WavePart* part;
+      if(!p)
+      {
+        part = new WavePart(this);
+      }
+      else
+      {
+        part = clone ? (WavePart*)p->createNewClone() : (WavePart*)p->duplicate();
+        part->setTrack(this);
+      }
       return part;
       }
 

@@ -44,6 +44,10 @@
 #include "fluidsynti.h"
 #include "muse/midi_consts.h"
 
+// fluid_synth_error() is deprecated in 2.0.2 and will cause a compile error.
+#if !(FLUIDSYNTH_VERSION_MAJOR >= 2 && FLUIDSYNTH_VERSION_MINOR >= 0 && FLUIDSYNTH_VERSION_MICRO >= 2)
+#define FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR 1
+#endif
 
 #ifdef HAVE_INSTPATCH
 #include <libinstpatch/libinstpatch.h>
@@ -152,19 +156,29 @@ FluidSynth::~FluidSynth()
         //Try to unload soundfont
         int err = fluid_synth_sfunload(fluidsynth, it->intid, 0);
         if(err == -1)  
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
           std::cerr << DEBUG_ARGS << "Error unloading soundfont!" << fluid_synth_error(fluidsynth) << std::endl;
+#else
+          std::cerr << DEBUG_ARGS << "Error unloading soundfont! id: " << it->intid << std::endl;
+#endif
       }
         
+#if FLUIDSYNTH_VERSION_MAJOR < 2
       int err = delete_fluid_synth (fluidsynth);
+#else
+      delete_fluid_synth (fluidsynth);
+#endif
       if(gui)
         delete gui;
 
       if (initBuffer)
             delete [] initBuffer;
+#if FLUIDSYNTH_VERSION_MAJOR < 2
       if (err == -1) {
             std::cerr << DEBUG_ARGS << "error while destroying synth: " << fluid_synth_error(fluidsynth) << std::endl;
             return;
-            }            
+            }
+#endif
       }
 
 bool FluidSynth::init(const char* name)
@@ -819,13 +833,23 @@ bool FluidSynth::playNote(int channel, int pitch, int velo)
       if (velo) {
             if (fluid_synth_noteon(fluidsynth, channel, pitch, velo)) {
                   if (FS_DEBUG)
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
                         std::cerr << DEBUG_ARGS << "error processing noteon event: " << fluid_synth_error(fluidsynth);
+#else                    
+                        std::cerr << DEBUG_ARGS << "error processing noteon event: channel: "
+                          << channel << " pitch: " << pitch << " velo: " << velo << std::endl;
+#endif
                   }
             }
       else {
             if (fluid_synth_noteoff(fluidsynth, channel, pitch))
                   if (FS_DEBUG)
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
                         std::cerr << DEBUG_ARGS << "error processing noteoff event: " << fluid_synth_error(fluidsynth) << std::endl;
+#else                    
+                        std::cerr << DEBUG_ARGS << "error processing noteoff event: channel: "
+                        << channel << " pitch: " << pitch << std::endl;
+#endif
             }
       return false;
       }
@@ -1120,7 +1144,12 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                   
                   err = fluid_synth_program_select(fluidsynth, channel, font_intid , banknum, patch);
                   if (err)
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
                         printf("FluidSynth::setController() - Error changing program on soundfont %s, channel: %d\n", fluid_synth_error(fluidsynth), channel);
+#else
+                        printf("FluidSynth::setController() - Error changing program on soundfont, channel: %d id: %d banknum: %d patch:%d\n",
+                               channel, font_intid, banknum, patch);
+#endif
                   else {
                         channels[channel].preset = val;//setChannelPreset(val, channel);
                         channels[channel].banknum = banknum;
@@ -1135,7 +1164,11 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
             }
 
       if (err)
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
             printf ("FluidSynth::setController() - error processing controller event: %s\n", fluid_synth_error(fluidsynth));
+#else
+            printf ("FluidSynth::setController() - error processing controller event, channel: %d, ctrl: %d val: %d\n", channel, id, val);
+#endif
       }
 
 //---------------------------------------------------------
@@ -1351,7 +1384,12 @@ void FluidSynth::rewriteChannelSettings()
                   || int_id == FS_UNSPECIFIED_ID)) {
                   int rv = fluid_synth_program_select(fluidsynth, i, int_id, banknum, preset);
                   if (rv)
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
                         std::cerr << DEBUG_ARGS << "Error changing preset! " << fluid_synth_error(fluidsynth) << std::endl;
+#else
+                        std::cerr << DEBUG_ARGS << "Error changing preset! id: "
+                          << int_id << " banknum: " << banknum << " preset: " << preset << std::endl;
+#endif
                   }
             }
       }
@@ -1368,7 +1406,11 @@ const char* FluidSynth::getPatchName(int i, int, bool /*drum*/) const
       else {
             fluid_preset_t *preset = fluid_synth_get_channel_preset(fluidsynth, i);
             if (!preset) return "<unknown>";
+#if FLUIDSYNTH_VERSION_MAJOR < 2
             return preset->get_name(preset);
+#else
+            return fluid_preset_get_name(preset);
+#endif
             }
       }
 //---------------------------------------------------------
@@ -1414,12 +1456,20 @@ const MidiPatch* FluidSynth::getFirstPatch (int channel) const
       if (!channels[channel].drumchannel) {
             for (unsigned bank = 0; bank < 128; ++bank) {
                   for (unsigned patch = 0; patch < 128; ++patch) {
+#if FLUIDSYNTH_VERSION_MAJOR < 2
                         preset = sfont->get_preset (sfont, bank, patch);
+#else
+                        preset = fluid_sfont_get_preset (sfont, bank, patch);
+#endif
                         if (preset) {
                               midiPatch.hbank = bank;
                               midiPatch.lbank = 0xff;  // Off
                               midiPatch.prog = patch;
+#if FLUIDSYNTH_VERSION_MAJOR < 2
                               midiPatch.name = preset->get_name (preset);
+#else
+                              midiPatch.name = fluid_preset_get_name (preset);
+#endif
                               return &midiPatch;
                               }
                         }
@@ -1429,12 +1479,20 @@ const MidiPatch* FluidSynth::getFirstPatch (int channel) const
       else { //This is a drumchannel
             int bank = 128;
             for (unsigned patch = 0; patch < 128; ++patch) {
+#if FLUIDSYNTH_VERSION_MAJOR < 2
                   preset = sfont->get_preset (sfont, bank, patch);
+#else
+                  preset = fluid_sfont_get_preset (sfont, bank, patch);
+#endif
                   if (preset) {
                         midiPatch.hbank = 0xff;  // Off
                         midiPatch.lbank = 0xff;  // Off
                         midiPatch.prog = patch;
+#if FLUIDSYNTH_VERSION_MAJOR < 2
                         midiPatch.name = preset->get_name(preset);
+#else
+                        midiPatch.name = fluid_preset_get_name (preset);
+#endif
                         return &midiPatch;
                         }
                   }
@@ -1466,13 +1524,21 @@ const MidiPatch* FluidSynth::getNextPatch (int channel, const MidiPatch* patch) 
 
             for (unsigned bank = patch->hbank; bank < 128; ++bank) {
                   for ( ; prog < 128; ++prog) {
+#if FLUIDSYNTH_VERSION_MAJOR < 2
                         preset = sfont->get_preset (sfont, bank, prog);
+#else
+                        preset = fluid_sfont_get_preset (sfont, bank, prog);
+#endif
                         if (preset) {
                               //printf("Preset info: bank: %d prog: %d name: %s\n", bank, prog, preset->get_name(preset));
                               midiPatch.hbank = bank;
                               midiPatch.lbank = 0xff;  // Off
                               midiPatch.prog = prog;
+#if FLUIDSYNTH_VERSION_MAJOR < 2
                               midiPatch.name = preset->get_name (preset);
+#else
+                              midiPatch.name = fluid_preset_get_name (preset);
+#endif
                               return &midiPatch;
                               }
                         }
@@ -1483,13 +1549,21 @@ const MidiPatch* FluidSynth::getNextPatch (int channel, const MidiPatch* patch) 
             unsigned bank = 128;
             unsigned prog = patch->prog;
             for (prog = patch->prog + 1; prog < 128; ++prog) {
+#if FLUIDSYNTH_VERSION_MAJOR < 2
                   preset = sfont->get_preset (sfont, bank, prog);
+#else
+                  preset = fluid_sfont_get_preset (sfont, bank, prog);
+#endif
                   if (preset) {
                         //printf("Preset info: bank: %d prog: %d name: %s\n",bank, prog, preset->get_name(preset));
                         midiPatch.hbank = 0xff;  // Off
                         midiPatch.lbank = 0xff;  // Off
                         midiPatch.prog = prog;
+#if FLUIDSYNTH_VERSION_MAJOR < 2
                         midiPatch.name = preset->get_name (preset);
+#else
+                        midiPatch.name = fluid_preset_get_name (preset);
+#endif
                         return &midiPatch;
                         }
                   }
@@ -1539,7 +1613,11 @@ bool FluidSynth::popSoundfont (int ext_id)
                currentlyLoadedFonts--;
             }
          else //OK, there was trouble
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
                std::cerr << DEBUG_ARGS << "Error unloading soundfont!" << fluid_synth_error(fluidsynth) << std::endl;
+#else
+               std::cerr << DEBUG_ARGS << "Error unloading soundfont! id: " << int_id << std::endl;
+#endif
       }
       if (FS_DEBUG)
             printf("Removed soundfont with ext it: %d\n",ext_id);
@@ -1573,10 +1651,15 @@ void LoadFontWorker::execLoadFont(void * t)
       int rv = fluid_synth_sfload(fptr->fluidsynth, filename, 1);
 
       if (rv ==-1) {
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
             fptr->sendError(fluid_synth_error(fptr->fluidsynth));
+#endif
             if (FS_DEBUG)
+#ifdef FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR
                   std::cerr << DEBUG_ARGS << "error loading soundfont: " << fluid_synth_error(fptr->fluidsynth) << std::endl;
-
+#else
+                  std::cerr << DEBUG_ARGS << "error loading soundfont: " << filename << std::endl;
+#endif
             delete h;
             return;
       }

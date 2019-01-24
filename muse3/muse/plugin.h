@@ -39,10 +39,12 @@
 #include <QUiLoader>
 
 #include <ladspa.h>
-#include "globals.h"
+
 #include "globaldefs.h"
+#include "globals.h"
 #include "ctrl.h"
 #include "controlfifo.h"
+#include "plugin_list.h"
 
 #include "config.h"
 
@@ -93,11 +95,6 @@ class PluginI;
 
 class Plugin {
 
-   public:
-     // Can be Or'd together.
-     enum PluginFeature { NoFeatures=0x00, FixedBlockSize=0x01, PowerOf2BlockSize=0x02, NoInPlaceProcessing=0x04 };
-     typedef int PluginFeatures;
-     
    protected:
    friend class PluginI;
 
@@ -133,15 +130,16 @@ class Plugin {
       unsigned long _controlOutPorts;
       std::vector<unsigned long> rpIdx; // Port number to control input index. Item is -1 if it's not a control input.
 
-      PluginFeatures _requiredFeatures;
+      PluginFeatures_t _requiredFeatures;
 
    public:
       Plugin() {} //empty constructor for LV2PluginWrapper
       Plugin(QFileInfo* f, const LADSPA_Descriptor* d, 
              bool isDssi = false, bool isDssiSynth = false, bool isDssiVst = false,
-             PluginFeatures reqFeatures = NoFeatures);
+             PluginFeatures_t reqFeatures = PluginNoFeatures);
+      Plugin(const MusEPlugin::PluginScanInfoStruct&);
       virtual ~Plugin();
-      virtual Plugin::PluginFeatures requiredFeatures() const { return _requiredFeatures; }
+      virtual PluginFeatures_t requiredFeatures() const { return _requiredFeatures; }
       virtual QString label() const                        { return _label; }
       QString name() const                         { return _name; }
       unsigned long id() const                     { return _uniqueID; }
@@ -219,6 +217,7 @@ class Plugin {
       };
 
 typedef std::list<Plugin *>::iterator iPlugin;
+typedef std::list<Plugin *>::const_iterator ciPlugin;
 
 
 class PluginGroups : public QMap< QPair<QString, QString>, QSet<int> >
@@ -244,12 +243,15 @@ class PluginList : public std::list<Plugin *> {
    public:
       void add(QFileInfo* fi, const LADSPA_Descriptor* d, 
                bool isDssi = false, bool isDssiSynth = false, bool isDssiVst = false,
-               Plugin::PluginFeatures reqFeatures = Plugin::NoFeatures)
+               PluginFeatures_t reqFeatures = PluginNoFeatures)
       {
         push_back(new Plugin(fi, d, isDssi, isDssiSynth, isDssiVst, reqFeatures));
       }
 
-      Plugin* find(const QString&, const QString&);
+      void add(const MusEPlugin::PluginScanInfoStruct& scan_info)
+      { push_back(new Plugin(scan_info)); }
+
+      Plugin* find(const QString& file, const QString& label) const;
       PluginList() {}
       };
 
@@ -298,7 +300,7 @@ class PluginIBase
    public:
       PluginIBase();
       virtual ~PluginIBase();
-      virtual Plugin::PluginFeatures requiredFeatures() const = 0;
+      virtual PluginFeatures_t requiredFeatures() const = 0;
       virtual bool on() const = 0;
       virtual void setOn(bool val) = 0;
       virtual unsigned long pluginID() = 0;
@@ -427,7 +429,7 @@ class PluginI : public PluginIBase {
 
       Plugin* plugin() const { return _plugin; }
 
-      virtual Plugin::PluginFeatures requiredFeatures() const { return _plugin->requiredFeatures(); }
+      virtual PluginFeatures_t requiredFeatures() const { return _plugin->requiredFeatures(); }
       
       bool on() const        { return _on; }
       void setOn(bool val)   { _on = val; }
@@ -508,7 +510,7 @@ class PluginI : public PluginIBase {
 
 class Pipeline : public std::vector<PluginI*> {
    private:
-      float* buffer[MAX_CHANNELS];
+      float* buffer[MusECore::MAX_CHANNELS];
       void initBuffers();
    public:
       Pipeline();
