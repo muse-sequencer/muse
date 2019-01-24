@@ -203,7 +203,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
         return 0;
         
       if (MusEGlobal::debugMsg)
-        printf("Song::addNewTrack synth: type:%d idx:%d class:%s label:%s\n", ntype, n, MusEGlobal::synthis[n]->baseName().toLatin1().constData(), MusEGlobal::synthis[n]->name().toLatin1().constData());  
+        fprintf(stderr, "Song::addNewTrack synth: type:%d idx:%d class:%s label:%s\n", ntype, n, MusEGlobal::synthis[n]->baseName().toLatin1().constData(), MusEGlobal::synthis[n]->name().toLatin1().constData());  
         
       SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->name(), (Synth::Type)ntype, insertAt);
       if(!si)
@@ -307,11 +307,11 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
                   if (MusEGlobal::config.unhideTracks) AudioInput::setVisible(true);
                   break;
             case Track::AUDIO_SOFTSYNTH:
-                  printf("not implemented: Song::addTrack(SOFTSYNTH)\n");
+                  fprintf(stderr, "not implemented: Song::addTrack(SOFTSYNTH)\n");
                   // ((AudioTrack*)track)->addAuxSend(lastAuxIdx);
                   break;
             default:
-                  printf("THIS SHOULD NEVER HAPPEN: Song::addTrack() illegal type %d. returning NULL.\n"
+                  fprintf(stderr, "THIS SHOULD NEVER HAPPEN: Song::addTrack() illegal type %d. returning NULL.\n"
                          "save your work if you can and expect soon crashes!\n", type);
                   return NULL;
             }
@@ -700,7 +700,7 @@ void Song::selectEvent(Event& event, Part* part, bool select)
     {
       // This can be normal for some (redundant) operations.
       if(MusEGlobal::debugMsg)
-	printf("Song::selectEvent event not found in part:%s size:%zd\n", p->name().toLatin1().constData(), p->nonconst_events().size());
+	fprintf(stderr, "Song::selectEvent event not found in part:%s size:%zd\n", p->name().toLatin1().constData(), p->nonconst_events().size());
     }
     else
       ie->second.setSelected(select);
@@ -874,7 +874,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
       {
       if (events.empty()) {
             if (MusEGlobal::debugMsg)
-                  printf("no events recorded\n");
+                  fprintf(stderr, "no events recorded\n");
             return;
             }
       ciEvent s;
@@ -910,7 +910,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
 
       if (startTick > endTick) {
             if (MusEGlobal::debugMsg)
-                  printf("no events in record area\n");
+                  fprintf(stderr, "no events in record area\n");
             return;
             }
 
@@ -933,7 +933,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
             }
       if (ip == pl->end()) {
             if (MusEGlobal::debugMsg)
-                  printf("create new part for recorded events\n");
+                  fprintf(stderr, "create new part for recorded events\n");
             // create new part
             MidiPart* newpart;
             newpart      = new MidiPart(mt);
@@ -1067,7 +1067,7 @@ void Song::clearTrackRec()
 void Song::setRecord(bool f, bool autoRecEnable)
       {
       if(MusEGlobal::debugMsg)
-        printf("setRecord recordflag =%d f(record state)=%d autoRecEnable=%d\n", recordFlag, f, autoRecEnable);
+        fprintf(stderr, "setRecord recordflag =%d f(record state)=%d autoRecEnable=%d\n", recordFlag, f, autoRecEnable);
 
       if (f && MusEGlobal::config.useProjectSaveDialog && MusEGlobal::museProject == MusEGlobal::museProjectInitPath ) { // check that there is a project stored before commencing
         // no project, we need to create one.
@@ -1120,7 +1120,7 @@ void Song::setRecord(bool f, bool autoRecEnable)
                 else  {
                       // if there are no tracks, do not enable record
                       if (!waves()->size() && !midis()->size()) {
-                            printf("No track to select, won't enable record\n");
+                            fprintf(stderr, "No track to select, won't enable record\n");
                             f = false;
                             }
                       }
@@ -1234,7 +1234,7 @@ void Song::setPlay(bool f)
       {
       if (MusEGlobal::extSyncFlag.value()) {
           if (MusEGlobal::debugMsg)
-            printf("not allowed while using external sync");
+            fprintf(stderr, "not allowed while using external sync");
           return;
       }
       // only allow the user to set the button "on"
@@ -1248,7 +1248,7 @@ void Song::setStop(bool f)
       {
       if (MusEGlobal::extSyncFlag.value()) {
           if (MusEGlobal::debugMsg)
-            printf("not allowed while using external sync");
+            fprintf(stderr, "not allowed while using external sync");
           return;
       }
       // only allow the user to set the button "on"
@@ -1293,11 +1293,11 @@ void Song::setPos(int idx, const Pos& val, bool sig,
       {
       if (MusEGlobal::heavyDebugMsg)
       {
-        printf("setPos %d sig=%d,seek=%d,scroll=%d  ",
+        fprintf(stderr, "setPos %d sig=%d,seek=%d,scroll=%d  ",
            idx, sig, isSeek, adjustScrollbar);
         val.dump(0);
-        printf("\n");
-        printf("Song::setPos before MusEGlobal::audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
+        fprintf(stderr, "\n");
+        fprintf(stderr, "Song::setPos before MusEGlobal::audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
       }
       
       if (idx == CPOS) {
@@ -1305,17 +1305,20 @@ void Song::setPos(int idx, const Pos& val, bool sig,
             if (isSeek && !MusEGlobal::extSyncFlag.value()) {  
                   if (val == MusEGlobal::audio->pos())  
                   {
-                      if (MusEGlobal::heavyDebugMsg) printf("Song::setPos seek MusEGlobal::audio->pos already == val tick:%d frame:%d\n", val.tick(), val.frame());   
+                      if (MusEGlobal::heavyDebugMsg) fprintf(stderr,
+                        "Song::setPos seek MusEGlobal::audio->pos already == val tick:%d frame:%d\n", val.tick(), val.frame());   
                       return;
                   }     
                   MusEGlobal::audio->msgSeek(val);
-                  if (MusEGlobal::heavyDebugMsg) printf("Song::setPos after MusEGlobal::audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
+                  if (MusEGlobal::heavyDebugMsg) fprintf(stderr,
+                    "Song::setPos after MusEGlobal::audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
                   return;
                   }
             }
       if (val == pos[idx])
       {
-           if (MusEGlobal::heavyDebugMsg) printf("Song::setPos MusEGlobal::song->pos already == val tick:%d frame:%d\n", val.tick(), val.frame());   
+           if (MusEGlobal::heavyDebugMsg) fprintf(stderr,
+             "Song::setPos MusEGlobal::song->pos already == val tick:%d frame:%d\n", val.tick(), val.frame());   
            return;
       }     
       pos[idx] = val;
@@ -1411,7 +1414,7 @@ void Song::update(MusECore::SongChangedStruct_t flags, bool allowRecursion)
       {
       static int level = 0;         // DEBUG
       if (level && !allowRecursion) {
-            printf("THIS SHOULD NEVER HAPPEN: unallowed recursion in Song::update(%08lx), level %d!\n"
+            fprintf(stderr, "THIS SHOULD NEVER HAPPEN: unallowed recursion in Song::update(%08lx), level %d!\n"
                    "                          the songChanged() signal is NOT emitted. this will\n"
                    "                          probably cause windows being not up-to-date.\n", (unsigned long)flags._flags, level);
             return;
@@ -1609,7 +1612,7 @@ void Song::normalizePart(MusECore::Part *part)
       if (tmpFile.openWrite())
       {
          MusEGlobal::audio->msgIdle(false);
-         printf("Could not open temporary file...\n");
+         fprintf(stderr, "Could not open temporary file...\n");
          return;
       }
       float*   tmpdata[file_channels];
@@ -1993,7 +1996,7 @@ void Song::processMsg(AudioMsg* msg)
                   revertOperationGroup2(*msg->operations);
                   break;
             default:
-                  printf("unknown seq message %d\n", msg->id);
+                  fprintf(stderr, "unknown seq message %d\n", msg->id);
                   break;
             }
       }
@@ -2018,7 +2021,7 @@ void Song::panic()
 void Song::clear(bool signal, bool clear_all)
       {
       if(MusEGlobal::debugMsg)
-        printf("Song::clear\n");
+        fprintf(stderr, "Song::clear\n");
       
       bounceTrack    = 0;
       
@@ -2149,36 +2152,36 @@ void Song::cleanupForQuit()
       bounceTrack    = 0;
 
       if(MusEGlobal::debugMsg)
-        printf("MusE: Song::cleanupForQuit...\n");
+        fprintf(stderr, "MusE: Song::cleanupForQuit...\n");
       
       _tracks.clear();
       
       if(MusEGlobal::debugMsg)
-        printf("deleting _midis\n");
+        fprintf(stderr, "deleting _midis\n");
       _midis.clearDelete();
       
       if(MusEGlobal::debugMsg)
-        printf("deleting _waves\n");
+        fprintf(stderr, "deleting _waves\n");
       _waves.clearDelete();
       
       if(MusEGlobal::debugMsg)
-        printf("deleting _inputs\n");
+        fprintf(stderr, "deleting _inputs\n");
       _inputs.clearDelete();     // audio input ports
       
       if(MusEGlobal::debugMsg)
-        printf("deleting _outputs\n");
+        fprintf(stderr, "deleting _outputs\n");
       _outputs.clearDelete();    // audio output ports
       
       if(MusEGlobal::debugMsg)
-        printf("deleting _groups\n");
+        fprintf(stderr, "deleting _groups\n");
       _groups.clearDelete();     // mixer groups
       
       if(MusEGlobal::debugMsg)
-        printf("deleting _auxs\n");
+        fprintf(stderr, "deleting _auxs\n");
       _auxs.clearDelete();       // aux sends
       
       if(MusEGlobal::debugMsg)
-        printf("deleting _synthIs\n");
+        fprintf(stderr, "deleting _synthIs\n");
       _synthIs.clearDelete();    // each ~SynthI() -> deactivate3() -> ~SynthIF()
 
       MusEGlobal::tempomap.clear();
@@ -2186,19 +2189,19 @@ void Song::cleanupForQuit()
       MusEGlobal::keymap.clear();
       
       if(MusEGlobal::debugMsg)
-        printf("deleting undoList and redoList\n");
+        fprintf(stderr, "deleting undoList and redoList\n");
       undoList->clearDelete();
       redoList->clearDelete();
       
       _markerList->clear();
       
       if(MusEGlobal::debugMsg)
-        printf("deleting transforms\n");
+        fprintf(stderr, "deleting transforms\n");
       clearMidiTransforms(); // Deletes stuff.
       clearMidiInputTransforms(); // Deletes stuff.
 
       if(MusEGlobal::debugMsg)
-        printf("deleting midiport controllers\n");
+        fprintf(stderr, "deleting midiport controllers\n");
       
       // Clear all midi port controllers and values.
       for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
@@ -2210,7 +2213,7 @@ void Song::cleanupForQuit()
       // Can't do this here. Jack isn't running. Fixed. Test OK so far. DELETETHIS (the comment and #if/#endif)
       #if 1
       if(MusEGlobal::debugMsg)
-        printf("deleting midi devices except synths\n");
+        fprintf(stderr, "deleting midi devices except synths\n");
       for(iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd)
       {
         // Close the device. Handy to do all devices here, including synths.
@@ -2224,7 +2227,7 @@ void Song::cleanupForQuit()
       #endif
       
       if(MusEGlobal::debugMsg)
-        printf("deleting global available synths\n");
+        fprintf(stderr, "deleting global available synths\n");
 
       // Delete all synths.
       std::vector<Synth*>::iterator is;
@@ -2238,7 +2241,7 @@ void Song::cleanupForQuit()
       MusEGlobal::synthis.clear();
       
       if(MusEGlobal::debugMsg)
-        printf("deleting midi instruments\n");
+        fprintf(stderr, "deleting midi instruments\n");
       for(iMidiInstrument imi = midiInstruments.begin(); imi != midiInstruments.end(); ++imi)
       {
         // Since Syntis are midi instruments, there's no need to delete them below.
@@ -2254,7 +2257,7 @@ void Song::cleanupForQuit()
       //  are handled by ~AudioTrack.
       
       if(MusEGlobal::debugMsg)
-        printf("...finished cleaning up.\n");
+        fprintf(stderr, "...finished cleaning up.\n");
 }
 
 void Song::seqSignal(int fd)
@@ -3750,12 +3753,12 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
             char tempStr[200];
             int fd = mkstemp(tmp);
             if (MusEGlobal::debugMsg)
-              printf("executeScript: script input filename=%s\n",tmp);
+              fprintf(stderr, "executeScript: script input filename=%s\n",tmp);
 
             FILE *fp = fdopen(fd , "w");
             MidiPart *part = (MidiPart*)(i->second);
             if (MusEGlobal::debugMsg)
-              printf("SENDING TO SCRIPT, part start: %d\n", part->tick());
+              fprintf(stderr, "SENDING TO SCRIPT, part start: %d\n", part->tick());
 
             int z, n;
             MusEGlobal::sigmap.timesig(part->tick(), z, n);
@@ -3815,7 +3818,7 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
               return;
             }
             if (errStr.size()> 0) {
-              printf("script execution produced the following error:\n%s\n", QString(errStr).toLatin1().data());
+              fprintf(stderr, "script execution produced the following error:\n%s\n", QString(errStr).toLatin1().data());
             }
             QFile file(tmp);
             if (MusEGlobal::debugMsg)
@@ -3826,7 +3829,7 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
               QTextStream stream( &file );
               QString line;
               if (MusEGlobal::debugMsg)
-                printf("RECEIVED FROM SCRIPT:\n");
+                fprintf(stderr, "RECEIVED FROM SCRIPT:\n");
               while ( !stream.atEnd() )
               {
                 line = stream.readLine(); // line of text excluding '\n'
@@ -3843,7 +3846,7 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
                   int pitch = sl[2].toInt();
                   int len = sl[3].toInt();
                   int velo = sl[4].toInt();
-                  printf ("extraced %d %d %d %d\n", tick, pitch, len, velo);
+                  fprintf(stderr, "extraced %d %d %d %d\n", tick, pitch, len, velo);
                   e.setTick(tick);
                   e.setPitch(pitch);
                   e.setVelo(velo);

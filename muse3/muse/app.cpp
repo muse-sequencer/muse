@@ -372,9 +372,9 @@ MusE::MusE() : QMainWindow()
       //---------------------------------------------------
       // Uncomment in order to enable MusE Python bridge:
       if (MusEGlobal::usePythonBridge) {
-            printf("Initializing python bridge!\n");
+            fprintf(stderr, "Initializing python bridge!\n");
             if (MusECore::initPythonBridge() == false) {
-                  printf("Could not initialize Python bridge\n");
+                  fprintf(stderr, "Could not initialize Python bridge\n");
                   exit(1);
                   }
             }
@@ -1018,8 +1018,17 @@ MusE::MusE() : QMainWindow()
 
 void MusE::setHeartBeat()
       {
+      if(MusEGlobal::debugMsg)
+        fprintf(stderr, "MusE: STARTING Heartbeat timer\n");
       MusEGlobal::heartBeatTimer->start(1000/MusEGlobal::config.guiRefresh);
       }
+
+void MusE::stopHeartBeat()
+{
+  if(MusEGlobal::debugMsg)
+    fprintf(stderr, "MusE: STOPPING Heartbeat timer\n");
+  MusEGlobal::heartBeatTimer->stop();
+}
 
 void MusE::heartBeat()
 {
@@ -1076,7 +1085,7 @@ void MusE::loadDefaultSong(int argc, char** argv)
               name = !projectRecentList.isEmpty() ? projectRecentList.first() : MusEGui::getUniqueUntitledName();
         else
               name = argv[0];
-        printf("starting with selected song %s\n", MusEGlobal::config.startSong.toLatin1().constData());
+        fprintf(stderr, "starting with selected song %s\n", MusEGlobal::config.startSong.toLatin1().constData());
         }
   else if (MusEGlobal::config.startMode == 1) {
         if(MusEGlobal::config.startSong.isEmpty()) // Sanity check to avoid some errors later
@@ -1092,7 +1101,7 @@ void MusE::loadDefaultSong(int argc, char** argv)
           loadConfig = MusEGlobal::config.startSongLoadConfig;
         }
         useTemplate = true;
-        printf("starting with template %s\n", name.toLatin1().constData());
+        fprintf(stderr, "starting with template %s\n", name.toLatin1().constData());
         }
   else if (MusEGlobal::config.startMode == 2) {
         if(MusEGlobal::config.startSong.isEmpty()) // Sanity check to avoid some errors later
@@ -1106,7 +1115,7 @@ void MusE::loadDefaultSong(int argc, char** argv)
           name = MusEGlobal::config.startSong;
           loadConfig = MusEGlobal::config.startSongLoadConfig;
         }
-        printf("starting with pre configured song %s\n", MusEGlobal::config.startSong.toLatin1().constData());
+        fprintf(stderr, "starting with pre configured song %s\n", MusEGlobal::config.startSong.toLatin1().constData());
   }
   loadProjectFile(name, useTemplate, loadConfig);
 }
@@ -1259,7 +1268,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
             QDir::setCurrent(QDir::homePath());
             }
       else {
-            printf("Setting project path to %s\n", fi.absolutePath().toLocal8Bit().constData());
+            fprintf(stderr, "Setting project path to %s\n", fi.absolutePath().toLocal8Bit().constData());
             MusEGlobal::museProject = fi.absolutePath();
             project.setFile(name);
             QDir::setCurrent(MusEGlobal::museProject);
@@ -1623,29 +1632,29 @@ void MusE::closeEvent(QCloseEvent* event)
         }
       }
       if(MusEGlobal::debugMsg)
-        printf("MusE: Exiting JackAudio\n");
+        fprintf(stderr, "MusE: Exiting JackAudio\n");
       MusECore::exitJackAudio();
       if(MusEGlobal::debugMsg)
-        printf("MusE: Exiting DummyAudio\n");
+        fprintf(stderr, "MusE: Exiting DummyAudio\n");
       MusECore::exitDummyAudio();
 #ifdef HAVE_RTAUDIO
       if(MusEGlobal::debugMsg)
-        printf("MusE: Exiting RtAudio\n");
+        fprintf(stderr, "MusE: Exiting RtAudio\n");
       MusECore::exitRtAudio();
 #endif
       if(MusEGlobal::debugMsg)
-        printf("MusE: Exiting Metronome\n");
+        fprintf(stderr, "MusE: Exiting Metronome\n");
       MusECore::exitMetronome();
 
       MusEGlobal::song->cleanupForQuit();
 
       // Give midi devices a chance to close first, above in cleanupForQuit.
       if(MusEGlobal::debugMsg)
-        printf("Muse: Exiting ALSA midi\n");
+        fprintf(stderr, "Muse: Exiting ALSA midi\n");
       MusECore::exitMidiAlsa();
 
       if(MusEGlobal::debugMsg)
-        printf("Muse: Cleaning up temporary wavefiles + peakfiles\n");
+        fprintf(stderr, "Muse: Cleaning up temporary wavefiles + peakfiles\n");
       // Cleanup temporary wavefiles + peakfiles used for undo
       for (std::list<QString>::iterator i = MusECore::temporaryWavFiles.begin(); i != MusECore::temporaryWavFiles.end(); i++) {
             QString filename = *i;
@@ -1660,18 +1669,18 @@ void MusE::closeEvent(QCloseEvent* event)
       if(lash_client)
       {
         if(MusEGlobal::debugMsg)
-          printf("MusE: Disconnecting from LASH\n");
+          fprintf(stderr, "MusE: Disconnecting from LASH\n");
         lash_event_t* lashev = lash_event_new_with_type (LASH_Quit);
         lash_send_event(lash_client, lashev);
       }
 #endif
 
       if(MusEGlobal::debugMsg)
-        printf("MusE: Exiting Dsp\n");
+        fprintf(stderr, "MusE: Exiting Dsp\n");
       AL::exitDsp();
 
       if(MusEGlobal::debugMsg)
-        printf("MusE: Exiting OSC\n");
+        fprintf(stderr, "MusE: Exiting OSC\n");
       MusECore::exitOSC();
 
       delete MusEGlobal::audioPrefetch;
@@ -1683,11 +1692,11 @@ void MusE::closeEvent(QCloseEvent* event)
       delete MusEGlobal::song;
 
       if(MusEGlobal::debugMsg)
-        printf("MusE: Deleting icons\n");
+        fprintf(stderr, "MusE: Deleting icons\n");
       deleteIcons();
 
       if(MusEGlobal::debugMsg)
-        printf("MusE: Deleting all parentless dialogs and widgets\n");
+        fprintf(stderr, "MusE: Deleting all parentless dialogs and widgets\n");
       deleteParentlessDialogs();
 
       qApp->quit();
@@ -1744,7 +1753,7 @@ void MusE::markerClosed()
         if ((*lit)->isVisible() && (*lit)->widget() != markerView)
         {
           if (MusEGlobal::debugMsg)
-            printf("bringing '%s' to front instead of closed marker window\n",(*lit)->widget()->windowTitle().toLatin1().data());
+            fprintf(stderr, "bringing '%s' to front instead of closed marker window\n",(*lit)->widget()->windowTitle().toLatin1().data());
 
           bringToFront((*lit)->widget());
 
@@ -1794,7 +1803,7 @@ void MusE::arrangerClosed()
         if ((*lit)->isVisible() && (*lit)->widget() != arrangerView)
         {
           if (MusEGlobal::debugMsg)
-            printf("bringing '%s' to front instead of closed arranger window\n",(*lit)->widget()->windowTitle().toLatin1().data());
+            fprintf(stderr, "bringing '%s' to front instead of closed arranger window\n",(*lit)->widget()->windowTitle().toLatin1().data());
 
           bringToFront((*lit)->widget());
 
@@ -2152,7 +2161,7 @@ void MusE::showDidYouKnowDialog()
 
         QFile file(MusEGlobal::museGlobalShare + "/didyouknow.txt");
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-          printf("could not open didyouknow.txt!\n");
+          fprintf(stderr, "could not open didyouknow.txt!\n");
           return;
         }
 
@@ -2235,7 +2244,7 @@ void MusE::selectProject(QAction* act)
       int id = act->data().toInt();
       if (id > projectRecentList.size()-1)
       {
-        printf("THIS SHOULD NEVER HAPPEN: id(%i) < PROJECT_LIST_LEN(%i) in MusE::selectProject!\n",id, PROJECT_LIST_LEN);
+        fprintf(stderr, "THIS SHOULD NEVER HAPPEN: id(%i) < PROJECT_LIST_LEN(%i) in MusE::selectProject!\n",id, PROJECT_LIST_LEN);
         return;
       }
       QString name = projectRecentList[id];
@@ -2266,7 +2275,7 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
                       if ((*lit)->isVisible() && (*lit)->widget() != tl)
                       {
                         if (MusEGlobal::debugMsg)
-                          printf("bringing '%s' to front instead of closed window\n",(*lit)->widget()->windowTitle().toLatin1().data());
+                          fprintf(stderr, "bringing '%s' to front instead of closed window\n",(*lit)->widget()->windowTitle().toLatin1().data());
 
                         bringToFront((*lit)->widget());
 
@@ -2312,7 +2321,7 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
                   return;
                   }
             }
-      printf("topLevelDeleting: top level %p not found\n", tl);
+      fprintf(stderr, "topLevelDeleting: top level %p not found\n", tl);
       }
 
 //---------------------------------------------------------
@@ -2439,7 +2448,7 @@ void MusE::kbAccel(int key)
             }
       else {
             if (MusEGlobal::debugMsg)
-                  printf("unknown kbAccel 0x%x\n", key);
+                  fprintf(stderr, "unknown kbAccel 0x%x\n", key);
             }
       }
 
@@ -2841,7 +2850,7 @@ void MusE::bounceToFile(MusECore::AudioOutput* ao)
       MusEGlobal::song->bounceOutput = ao;
       ao->setRecFile(sf);
       if(MusEGlobal::debugMsg)
-        printf("ao->setRecFile %p\n", sf);
+        fprintf(stderr, "ao->setRecFile %p\n", sf);
       MusEGlobal::song->setRecord(true, false);
       MusEGlobal::song->setRecordFlag(ao, true);
       ao->prepareRecording();
@@ -2959,7 +2968,7 @@ bool MusE::clearSong(bool clear_all)
                   case 2:
                         return true;
                   default:
-                        printf("InternalError: gibt %d\n", n);
+                        fprintf(stderr, "InternalError: gibt %d\n", n);
                   }
             }
       if (MusEGlobal::audio->isPlaying()) {
@@ -2988,7 +2997,7 @@ again:
                         if(tl->isVisible())   // Don't keep trying to close, only if visible.
                         {
                           if(!tl->close())
-                            printf("MusE::clearSong TopWin did not close!\n");
+                            fprintf(stderr, "MusE::clearSong TopWin did not close!\n");
                           goto again;
                         }
                   }
@@ -3347,26 +3356,26 @@ void MusE::focusChanged(QWidget* old, QWidget* now)
 {
   if(MusEGlobal::heavyDebugMsg)
   {
-    printf("\n");
-    printf("focusChanged: old:%p now:%p activeWindow:%p\n", old, now, qApp->activeWindow());
+    fprintf(stderr, "\n");
+    fprintf(stderr, "focusChanged: old:%p now:%p activeWindow:%p\n", old, now, qApp->activeWindow());
     if(old)
-      printf(" old type: %s\n", typeid(*old).name());
+      fprintf(stderr, " old type: %s\n", typeid(*old).name());
     if(now)
-      printf(" now type: %s\n", typeid(*now).name());
+      fprintf(stderr, " now type: %s\n", typeid(*now).name());
     if (dynamic_cast<QMdiSubWindow*>(now)!=0)
     {
       QWidget* tmp=dynamic_cast<QMdiSubWindow*>(now)->widget();
       if (tmp)
-        printf("  subwin contains %p which is a %s\n", tmp, typeid(*tmp).name());
+        fprintf(stderr, "  subwin contains %p which is a %s\n", tmp, typeid(*tmp).name());
       else
-        printf("  subwin contains NULL\n");
+        fprintf(stderr, "  subwin contains NULL\n");
     }
     if(qApp->activeWindow())
     {
        const char *strTid = typeid(qApp->activeWindow()).name();
-       printf(" activeWindow type: %s\n", strTid);
+       fprintf(stderr, " activeWindow type: %s\n", strTid);
     }
-    printf("\n");
+    fprintf(stderr, "\n");
   }
 
   // NOTE: FYI: This is what is required if, for 'Smart Focus', we try simply calling clearFocus from each relevant control
@@ -3422,14 +3431,14 @@ void MusE::focusChanged(QWidget* old, QWidget* now)
   if (activeTopWin)
   {
     if(MusEGlobal::heavyDebugMsg)
-      printf(" activeTopWin: %s\n", typeid(*activeTopWin).name());
+      fprintf(stderr, " activeTopWin: %s\n", typeid(*activeTopWin).name());
     activeTopWin->storeInitialState();
   }
 
   if (currentMenuSharingTopwin && (currentMenuSharingTopwin!=activeTopWin))
   {
     if(MusEGlobal::heavyDebugMsg)
-      printf(" currentMenuSharingTopwin: %s\n", typeid(*currentMenuSharingTopwin).name());
+      fprintf(stderr, " currentMenuSharingTopwin: %s\n", typeid(*currentMenuSharingTopwin).name());
     currentMenuSharingTopwin->storeInitialState();
   }
 
@@ -3453,7 +3462,7 @@ void MusE::focusChanged(QWidget* old, QWidget* now)
   while (ptr)
   {
     if (MusEGlobal::heavyDebugMsg)
-      printf("focusChanged: at widget %p with type %s\n",ptr, typeid(*ptr).name());
+      fprintf(stderr, "focusChanged: at widget %p with type %s\n",ptr, typeid(*ptr).name());
 
     if ( (dynamic_cast<MusEGui::TopWin*>(ptr)!=0) || // *ptr is a TopWin or a derived class
          (ptr==this) )                               // the main window is selected
@@ -3480,12 +3489,12 @@ void MusE::focusChanged(QWidget* old, QWidget* now)
 
 void MusE::activeTopWinChangedSlot(MusEGui::TopWin* win)
 {
-  if (MusEGlobal::debugMsg) printf("ACTIVE TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toLatin1().data() : "<None>", win);
+  if (MusEGlobal::debugMsg) fprintf(stderr, "ACTIVE TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toLatin1().data() : "<None>", win);
 
   if ( (win && (win->isMdiWin()==false) && win->sharesToolsAndMenu()) &&
        ( (mdiArea->currentSubWindow() != NULL) && (mdiArea->currentSubWindow()->isVisible()==true) ) )
   {
-    if (MusEGlobal::debugMsg) printf("  that's a menu sharing muse window which isn't inside the MDI area.\n");
+    if (MusEGlobal::debugMsg) fprintf(stderr, "  that's a menu sharing muse window which isn't inside the MDI area.\n");
     // if a window gets active which a) is a muse window, b) is not a mdi subwin and c) shares menu- and toolbar,
     // then unfocus the MDI area and/or the currently active MDI subwin. otherwise you'll be unable to use win's
     // tools or menu entries, as whenever you click at them, they're replaced by the currently active MDI subwin's
@@ -3505,7 +3514,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
 {
   if (win && (win->sharesToolsAndMenu()==false))
   {
-    printf("WARNING: THIS SHOULD NEVER HAPPEN: MusE::setCurrentMenuSharingTopwin() called with a win which does not share (%s)! ignoring...\n", win->windowTitle().toLatin1().data());
+    fprintf(stderr, "WARNING: THIS SHOULD NEVER HAPPEN: MusE::setCurrentMenuSharingTopwin() called with a win which does not share (%s)! ignoring...\n", win->windowTitle().toLatin1().data());
     return;
   }
 
@@ -3514,7 +3523,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
     MusEGui::TopWin* previousMenuSharingTopwin = currentMenuSharingTopwin;
     currentMenuSharingTopwin = NULL;
 
-    if (MusEGlobal::debugMsg) printf("MENU SHARING TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toLatin1().data() : "<None>", win);
+    if (MusEGlobal::debugMsg) fprintf(stderr, "MENU SHARING TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toLatin1().data() : "<None>", win);
 
     
     list<QToolBar*> add_toolbars;
@@ -3542,7 +3551,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
                 //tb->hide();
                 
                 if(MusEGlobal::heavyDebugMsg) 
-                  printf("  inserting toolbar '%s'\n", atb->windowTitle().toLatin1().data());
+                  fprintf(stderr, "  inserting toolbar '%s'\n", atb->windowTitle().toLatin1().data());
 
                 found = true;
                 insertToolBar(tb, atb);
@@ -3565,7 +3574,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
           
           
           if(MusEGlobal::heavyDebugMsg) 
-            printf("  removing sharer's toolbar '%s'\n", tb->windowTitle().toLatin1().data());
+            fprintf(stderr, "  removing sharer's toolbar '%s'\n", tb->windowTitle().toLatin1().data());
           removeToolBar(tb); // this does not delete *it, which is good
           tb->setParent(NULL);
         }
@@ -3592,7 +3601,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
                 //tb->hide();
                 
                 if(MusEGlobal::heavyDebugMsg) 
-                  printf("  inserting toolbar '%s'\n", atb->windowTitle().toLatin1().data());
+                  fprintf(stderr, "  inserting toolbar '%s'\n", atb->windowTitle().toLatin1().data());
 
                 insertToolBar(tb, atb);
                 foreignToolbars.push_back(atb);
@@ -3604,7 +3613,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
           }
           
           if (MusEGlobal::heavyDebugMsg) 
-            printf("  removing optional toolbar '%s'\n", tb->windowTitle().toLatin1().data());
+            fprintf(stderr, "  removing optional toolbar '%s'\n", tb->windowTitle().toLatin1().data());
           removeToolBar(tb); // this does not delete *it, which is good
           tb->setParent(NULL);
         }
@@ -3622,7 +3631,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
       const QList<QAction*>& actions=win->menuBar()->actions();
       for (QList<QAction*>::const_iterator it=actions.begin(); it!=actions.end(); it++)
       {
-        if (MusEGlobal::heavyDebugMsg) printf("  adding menu entry '%s'\n", (*it)->text().toLatin1().data());
+        if (MusEGlobal::heavyDebugMsg) fprintf(stderr, "  adding menu entry '%s'\n", (*it)->text().toLatin1().data());
 
         menuBar()->addAction(*it);
       }
@@ -3630,7 +3639,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
       for (list<QToolBar*>::const_iterator it=add_toolbars.begin(); it!=add_toolbars.end(); ++it)
         if (*it)
         {
-          if (MusEGlobal::heavyDebugMsg) printf("  adding toolbar '%s'\n", (*it)->windowTitle().toLatin1().data());
+          if (MusEGlobal::heavyDebugMsg) fprintf(stderr, "  adding toolbar '%s'\n", (*it)->windowTitle().toLatin1().data());
 
           addToolBar(*it);
           foreignToolbars.push_back(*it);
@@ -3638,7 +3647,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
         }
         else
         {
-          if (MusEGlobal::heavyDebugMsg) printf("  adding toolbar break\n");
+          if (MusEGlobal::heavyDebugMsg) fprintf(stderr, "  adding toolbar break\n");
 
           addToolBarBreak();
           foreignToolbars.push_back(NULL);
@@ -3700,8 +3709,8 @@ void MusE::topwinMenuInited(MusEGui::TopWin* topwin)
   }
   else if (topwin == currentMenuSharingTopwin)
   {
-    printf("====== DEBUG ======: topwin's menu got inited AFTER being shared!\n");
-    if (!topwin->sharesToolsAndMenu()) printf("======       ======: WTF, now it doesn't share any more?!?\n");
+    fprintf(stderr, "====== DEBUG ======: topwin's menu got inited AFTER being shared!\n");
+    if (!topwin->sharesToolsAndMenu()) fprintf(stderr, "======       ======: WTF, now it doesn't share any more?!?\n");
     setCurrentMenuSharingTopwin(NULL);
     setCurrentMenuSharingTopwin(topwin);
   }
@@ -3831,7 +3840,7 @@ void MusE::arrangeSubWindowsColumns()
 
     if (x_add >= width_per_win)
     {
-      printf("ERROR: tried to arrange subwins in columns, but there's too few space.\n");
+      fprintf(stderr, "ERROR: tried to arrange subwins in columns, but there's too few space.\n");
       return;
     }
 
@@ -3866,7 +3875,7 @@ void MusE::arrangeSubWindowsRows()
 
     if (y_add >= height_per_win)
     {
-      printf("ERROR: tried to arrange subwins in rows, but there's too few space.\n");
+      fprintf(stderr, "ERROR: tried to arrange subwins in rows, but there's too few space.\n");
       return;
     }
 
@@ -3906,7 +3915,7 @@ void MusE::tileSubWindows()
 
     if ((x_add >= width_per_win) || (y_add >= height_per_win))
     {
-      printf("ERROR: tried to tile subwins, but there's too few space.\n");
+      fprintf(stderr, "ERROR: tried to tile subwins, but there's too few space.\n");
       return;
     }
 
@@ -3964,7 +3973,7 @@ void MusE::saveTimerSlot()
         // printf("five minutes passed %d %d\n", MusEGlobal::config.autoSave, MusEGlobal::song->dirty);
         // time to see if we are allowed to save, if so. Do
         if (MusEGlobal::audio->isPlaying() == false) {
-            printf("Performing autosave\n");
+            fprintf(stderr, "Performing autosave\n");
             save(project.filePath(), false, writeTopwinState);
         } else
         {

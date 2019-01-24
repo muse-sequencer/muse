@@ -1,3 +1,9 @@
+24.01.2019
+      - Stop heartbeat timer in Audio::stop(). (Tim)
+        Possible random crashes closing a song and loading another song. 
+        Observed a few times in mixer strip timer handlers. Not sure how
+         (it's graphics thread), but in case something during loading
+         runs the event loop or something, this should at least not hurt.
 21.01.2019
       - Merge from selection_fixes branch: (Tim)
       * NEW! Midi controller graphs copy/cut/paste and drag/drop:

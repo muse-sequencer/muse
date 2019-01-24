@@ -217,7 +217,7 @@ bool Audio::start()
       state = STOP;
       _loopCount = 0;
       
-      MusEGlobal::muse->setHeartBeat();  
+      //MusEGlobal::muse->setHeartBeat();  // Moved below
       
       if (!MusEGlobal::audioDevice) {
           if(initJackAudio() == false) {
@@ -259,6 +259,10 @@ bool Audio::start()
       
       MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->cPos());   
       
+      // Should be OK to start this 'leisurely' timer only after everything
+      //  else has been started.
+      MusEGlobal::muse->setHeartBeat();
+      
       return true;
       }
 
@@ -269,6 +273,12 @@ bool Audio::start()
 
 void Audio::stop(bool)
       {
+      // Stop timer. Possible random crashes closing a song and loading another song - 
+      //  observed a few times in mixer strip timer handlers (updatexxx). Not sure how
+      //  (we're in the graphics thread), but in case something during loading runs
+      //  the event loop or something, this should at least not hurt. 2019/01/24 Tim.
+      MusEGlobal::muse->stopHeartBeat();
+
       if (MusEGlobal::audioDevice)
             MusEGlobal::audioDevice->stop();
       _running = false;
