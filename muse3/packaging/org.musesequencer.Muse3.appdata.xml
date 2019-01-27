@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright (C) 1999-2018 MusE development team -->
 <component type="desktop">
-  <id>muse.desktop</id>
+  <id>org.musesequencer.Muse3</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-2.0+</project_license>
   <name>MusE</name>
