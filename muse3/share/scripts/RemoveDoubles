@@ -45,6 +45,8 @@ for line in inputEvents:
             if not found:
               newline = tag + " " + str(int(tick)) + " " + pitch + " " + length + " " + velocity
               outputEvents.append(newline)
+      else:
+        outputEvents.append(line)
 
 testFile = open(sys.argv[1],"w")
 testFile.writelines(outputEvents)

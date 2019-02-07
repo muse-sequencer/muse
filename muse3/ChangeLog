@@ -1,3 +1,5 @@
+07.02.2019
+      - Updated all PyQt4 based midi scripts to use PyQt5 (rj)
 24.01.2019
       - Stop heartbeat timer in Audio::stop(). (Tim)
         Possible random crashes closing a song and loading another song. 

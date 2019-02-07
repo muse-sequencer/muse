@@ -34,13 +34,14 @@ testFile.close()
 outputEvents=[]
 #loop through events
 for line in inputEvents:
-
       if line.startswith('NOTE'):
             tag,tick,pitch,length,velocity = line.split(' ')
             print (line)
             newline = tag + " " + str(int(int(tick)/2)) + " " + pitch + " " + length + " " + velocity
             print (newline)
             outputEvents.append(newline)
+      else:
+        outputEvents.append(line)
 
 testFile = open(sys.argv[1],"w")
 testFile.writelines(outputEvents)
