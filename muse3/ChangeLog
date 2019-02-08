@@ -1,3 +1,5 @@
+08.02.2019
+      - Revert usage of QRegion stl features (too new at Qt 5.8). (Tim)
 07.02.2019
       - Updated all PyQt4 based midi scripts to use PyQt5 (rj)
 24.01.2019

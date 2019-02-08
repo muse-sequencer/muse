@@ -142,15 +142,16 @@ void Canvas::lassoToRegion(const QRect& r_in, QRegion& rg_out) const
   rg_out += QRect(x - x_line_off, y, line_w, h + line_h);
   
 // For testing...
-//   const int rg_sz = rg_out.rectCount();
-//   int rg_r_cnt = 0;
-//   fprintf(stderr, "Region rect count:%d\n", rg_sz);
-//   for(QRegion::const_iterator i = rg_out.begin(); i != rg_out.end(); ++i, ++rg_r_cnt)
-//   {
-//     const QRect& rg_r = *i;
-//     fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
-//   }
-  
+//       const QVector<QRect> rects = rg_out.rects();
+//       const int rg_sz = rects.size();
+//       fprintf(stderr, "Region rect count:%d\n", rg_sz);
+//       int rg_r_cnt = 0;
+//       fprintf(stderr, "Region rect count:%d\n", rg_sz);
+//       for(int i = 0; i < rg_sz; ++i, ++rg_r_cnt)
+//       {
+//         const QRect& rg_r = rects.at(i);
+//         fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
+//       }   
 }
 
 void Canvas::showCursor(bool show) 
@@ -299,16 +300,17 @@ void Canvas::draw(QPainter& p, const QRect& mr, const QRegion& mrg)
 //      printf("draw canvas %x virt %d\n", this, virt());
 
 // For testing...
-//       const int rg_sz = mrg.rectCount();
-//       int rg_r_cnt = 0;
+//       const QVector<QRect> rects = mrg.rects();
+//       const int rg_sz = rects.size();
 //       fprintf(stderr, "Canvas::draw: virt:%d rect: x:%d y:%d w:%d h:%d region rect count:%d\n",
 //               virt(), mr.x(), mr.y(), mr.width(), mr.height(), rg_sz);
-//       for(QRegion::const_iterator i = mrg.begin(); i != mrg.end(); ++i, ++rg_r_cnt)
+//       int rg_r_cnt = 0;
+//       for(int i = 0; i < rg_sz; ++i, ++rg_r_cnt)
 //       {
-//         const QRect& rg_r = *i;
+//         const QRect& rg_r = rects.at(i);
 //         fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
-//       }
-      
+//       }   
+
       const int mx = mr.x();
       const int my = mr.y();
       const int mw = mr.width();
