@@ -102,7 +102,7 @@ Organ::Organ(int sr)
 
       // centibels to amplitude conversion
       for (int i = 0; i < MAX_ATTENUATION; i++)
-            cb2amp_tab[i] = exp10(double(i) / -200.0);
+            cb2amp_tab[i] = pow(10, double(i) / -200.0);
 
       for (int i = 0; i < 128; ++i) {
             double freq = 8.176 * exp(double(i)*log(2.0)/12.0);

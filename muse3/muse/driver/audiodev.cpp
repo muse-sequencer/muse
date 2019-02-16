@@ -23,6 +23,9 @@
 #include "audiodev.h"
 #include "globals.h"
 #include "large_int.h"
+#ifdef _WIN32
+#include <sys/time.h>
+#endif
 
 namespace MusECore {
   

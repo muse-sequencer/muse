@@ -85,7 +85,11 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
       void selectionChanged();
       void deviceSelectionChanged();
       void addJackDeviceClicked();
+#ifndef _WIN32
+#ifdef ALSA_SUPPORT
       void addAlsaDeviceClicked(bool);
+#endif
+#endif
       void addInstanceClicked();
       void renameInstanceClicked();
       void removeInstanceClicked();

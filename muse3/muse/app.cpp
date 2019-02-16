@@ -103,12 +103,17 @@
 #include "components/sig_tempo_toolbar.h"
 #include "widgets/cpu_toolbar.h"
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 
 namespace MusECore {
 extern void exitJackAudio();
 extern void exitDummyAudio();
 extern void exitOSC();
+#ifndef _WIN32
 extern void exitMidiAlsa();
+#endif
 
 #ifdef HAVE_RTAUDIO
 extern void exitRtAudio();
@@ -1171,7 +1176,11 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
         progress = new QProgressDialog();
       QString label = "loading project "+QFileInfo(name).fileName();
         if (!songTemplate) {
+#ifdef _WIN32
+          switch (rand()%10) {
+#else
           switch (random()%10) {
+#endif
         case 0:
             label.append("\nThe best song in the world?");
           break;
@@ -1648,10 +1657,12 @@ void MusE::closeEvent(QCloseEvent* event)
 
       MusEGlobal::song->cleanupForQuit();
 
+#ifndef _WIN32
       // Give midi devices a chance to close first, above in cleanupForQuit.
       if(MusEGlobal::debugMsg)
         fprintf(stderr, "Muse: Exiting ALSA midi\n");
       MusECore::exitMidiAlsa();
+#endif
 
       if(MusEGlobal::debugMsg)
         fprintf(stderr, "Muse: Cleaning up temporary wavefiles + peakfiles\n");
@@ -1833,8 +1844,34 @@ void MusE::showTransport(bool flag)
          viewTransportAction->setChecked(flag);
 }
 
+#ifdef _WIN32
+static float CalculateCPULoad(unsigned long long idleTicks, unsigned long long totalTicks)
+{
+   static unsigned long long _previousTotalTicks = 0;
+   static unsigned long long _previousIdleTicks = 0;
+
+   unsigned long long totalTicksSinceLastTime = totalTicks-_previousTotalTicks;
+   unsigned long long idleTicksSinceLastTime  = idleTicks-_previousIdleTicks;
+
+   float ret = 1.0f-((totalTicksSinceLastTime > 0) ? ((float)idleTicksSinceLastTime)/totalTicksSinceLastTime : 0);
+
+   _previousTotalTicks = totalTicks;
+   _previousIdleTicks  = idleTicks;
+   return ret;
+}
+
+static unsigned long long FileTimeToInt64(const FILETIME & ft)
+{
+   return (((unsigned long long)(ft.dwHighDateTime))<<32)|((unsigned long long)ft.dwLowDateTime);
+}
+#endif
+
 float MusE::getCPULoad()
 {
+#ifdef _WIN32
+   FILETIME idleTime, kernelTime, userTime;
+   return GetSystemTimes(&idleTime, &kernelTime, &userTime) ? CalculateCPULoad(FileTimeToInt64(idleTime), FileTimeToInt64(kernelTime)+FileTimeToInt64(userTime)) : -1.0f;
+#else
     struct rusage ru;
     struct timespec curSysTime;
     if(clock_gettime(CLOCK_REALTIME, &curSysTime) != 0)
@@ -1865,6 +1902,7 @@ float MusE::getCPULoad()
     }
 
     return fCurCpuLoad;
+#endif
 }
 
 //---------------------------------------------------------
