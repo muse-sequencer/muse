@@ -1,3 +1,5 @@
+16.02.2019
+      - Fix Issue 640: wavecanvas.cpp use QProcess not fork() et al. (Tim)
 08.02.2019
       - Revert usage of QRegion stl features (too new at Qt 5.8). (Tim)
 07.02.2019
