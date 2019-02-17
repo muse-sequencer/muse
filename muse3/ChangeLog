@@ -1,3 +1,11 @@
+17.02.2019
+      - Fix all uses of exp10(). (Tim)
+        exp10 is now detected in the main cmake file, and defined as pow(10,x) in muse_math.h
+         if it is NOT found. All relevant places using exp10 now have the muse_math.h
+         header instead of <cmath> or "math.h".
+      - Fix compile breakage if DSSI support not enabled.
+        Oops, fixed scanDssiPlugins() in plugin_cache_writer.cpp and oops, removed
+         duplicate "void initDSSI() {}" from alsamidi.cpp (how'd that get there?)
 16.02.2019
       - Fix Issue 640: wavecanvas.cpp use QProcess not fork() et al. (Tim)
 08.02.2019

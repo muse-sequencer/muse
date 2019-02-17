@@ -26,10 +26,10 @@
 // 02111-1301, USA or point your web browser to http://www.gnu.org.
 //=========================================================
 
-#include <cmath>
 #include <stdio.h>
 #include <list>
 
+#include "muse_math.h"
 #include "libsynti/mess.h"
 #include "muse/midi_consts.h"
 #include "muse/midictrl_consts.h"
