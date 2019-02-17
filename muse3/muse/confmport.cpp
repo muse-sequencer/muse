@@ -39,6 +39,7 @@
 #include <QHeaderView>
 #include <QSettings>
 
+#include "config.h"
 #include "confmport.h"
 #include "app.h"
 #include "icons.h"
@@ -1186,10 +1187,14 @@ MPConfig::MPConfig(QWidget* parent)
 #endif                  
       ;
 
-// REMOVE Tim. win. Removed.
+// REMOVE Tim. win. Changed.
 // #ifndef _WIN32
+#ifdef ALSA_SUPPORT
       addALSADevice->setChecked(MusEGlobal::midiSeq != NULL);
 // #endif
+#else
+      addALSADevice->setVisible(false);
+#endif
 
       instanceList->setColumnCount(columnnames.size());
       instanceList->setHorizontalHeaderLabels(columnnames);
@@ -1297,12 +1302,13 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
       if(!(flags._flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_INSTRUMENT)))
         return;
     
-// REMOVE Tim. win. Removed.
+// REMOVE Tim. win. Changed.
 // #ifndef _WIN32
+#ifdef ALSA_SUPPORT
       addALSADevice->blockSignals(true);
       addALSADevice->setChecked(MusEGlobal::midiSeq != NULL);
       addALSADevice->blockSignals(false);
-// #endif
+#endif
 
       // Get currently selected index...
       int no = -1;
