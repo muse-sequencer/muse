@@ -27,6 +27,7 @@ include(CheckIncludeFile)
 include(CheckIncludeFiles)
 include (CheckCSourceCompiles)
 include(cmake/Summary.cmake)
+include(CheckCXXSymbolExists)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4.1)
 if (COMMAND cmake_policy)
@@ -291,6 +292,11 @@ include_directories(${JACK_INCLUDE_DIRS})
 ##
 ##   Begin OPTIONAL packages...
 ##
+
+# Check for GNU-specific math support:
+check_cxx_symbol_exists(exp10 cmath HAVE_EXP10)
+check_cxx_symbol_exists(exp10f cmath HAVE_EXP10F)
+check_cxx_symbol_exists(exp10l cmath HAVE_EXP10L)
 
 ##
 ## alsa >= 0.9.0

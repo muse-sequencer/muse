@@ -2186,7 +2186,6 @@ void MidiAlsaDevice::dump(const snd_seq_event_t* ev)
 
 namespace MusECore {
 
-void initDSSI() {}
 bool initMidiAlsa() { return false; }
 void exitMidiAlsa() {}
 int alsaSelectRfd() { return -1; }

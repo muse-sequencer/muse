@@ -25,9 +25,9 @@
 //
 //=========================================================
 
-#include <cmath>
 #include <stdio.h>
 
+#include "muse_math.h"
 #include "midi_consts.h"
 #include "mpevent.h"
 

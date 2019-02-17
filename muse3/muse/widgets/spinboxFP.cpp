@@ -21,12 +21,12 @@
 //=========================================================
 
 #include <stdio.h>
-#include <cmath>
 
 //#include <QtWidgets>
 //#include <QDoubleValidator>
 //#include <QLineEdit>
 
+#include "muse_math.h"
 #include "spinboxFP.h"
 
 namespace MusEGui {
