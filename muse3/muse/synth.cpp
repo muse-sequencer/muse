@@ -24,12 +24,14 @@
 #include <QMessageBox>
 
 #include "config.h"
+#ifndef _WIN32
 #include <sys/wait.h>
+#include <sys/mman.h>
+#endif
 #include <signal.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <errno.h>
-#include <sys/mman.h>
 #include <vector>
 #include <fcntl.h>
 #include <dlfcn.h>

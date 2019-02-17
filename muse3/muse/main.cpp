@@ -41,7 +41,9 @@
 
 #include <unistd.h>
 #include <time.h>
+#ifndef _WIN32
 #include <sys/mman.h>
+#endif
 
 #include "config.h"
 
@@ -400,13 +402,29 @@ int main(int argc, char* argv[])
             QString("/usr/local/lib/ladspa") <<
             QString("/usr/lib64/ladspa") <<
             QString("/usr/lib/ladspa");
+#ifdef _WIN32
+            char* buffer = (char*) malloc(strlen("LADSPA_PATH=") + 1 + strlen(MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData()) + 1);
+            strcpy(buffer, "LADSPA_PATH=");
+            strcat(buffer, MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData());
+            _putenv(buffer);
+#else
             setenv("LADSPA_PATH", MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData(), true);
+#endif
         }
         else
           MusEGlobal::config.pluginLadspaPathList = pth.split(":", QString::SkipEmptyParts);
       }
       else
+#ifdef _WIN32
+      {
+        char* buffer = (char*) malloc(strlen("LADSPA_PATH=") + 1 + strlen(MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData()) + 1);
+        strcpy(buffer, "LADSPA_PATH=");
+        strcat(buffer, MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData());
+        _putenv(buffer);
+      }
+#else
         setenv("LADSPA_PATH", MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData(), true);
+#endif
       
       if(MusEGlobal::config.pluginDssiPathList.isEmpty())
       {
@@ -419,13 +437,29 @@ int main(int argc, char* argv[])
             QString("/usr/local/lib/dssi") <<
             QString("/usr/lib64/dssi") <<
             QString("/usr/lib/dssi");
+#ifdef _WIN32
+            char* buffer = (char*) malloc(strlen("DSSI_PATH=") + 1 + strlen(MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData()) + 1);
+            strcpy(buffer, "DSSI_PATH=");
+            strcat(buffer, MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData());
+            _putenv(buffer);
+#else
             setenv("DSSI_PATH", MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData(), true);
+#endif
         }
         else
           MusEGlobal::config.pluginDssiPathList = pth.split(":", QString::SkipEmptyParts);
       }
       else
+#ifdef _WIN32
+      {
+        char* buffer = (char*) malloc(strlen("DSSI_PATH=") + 1 + strlen(MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData()) + 1);
+        strcpy(buffer, "DSSI_PATH=");
+        strcat(buffer, MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData());
+        _putenv(buffer);
+      }
+#else
         setenv("DSSI_PATH", MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData(), true);
+#endif
       
       if(MusEGlobal::config.pluginVstPathList.isEmpty())
       {
@@ -440,11 +474,27 @@ int main(int argc, char* argv[])
             QString("/usr/local/lib/vst") <<
             QString("/usr/lib64/vst") <<
             QString("/usr/lib/vst");
+#ifdef _WIN32
+            char* buffer = (char*) malloc(strlen("VST_PATH=") + 1 + strlen(MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData()) + 1);
+            strcpy(buffer, "VST_PATH=");
+            strcat(buffer, MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData());
+            _putenv(buffer);
+#else
             setenv("VST_PATH", MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData(), true);
+#endif
         }
       }
       else
+#ifdef _WIN32
+      {
+        char* buffer = (char*) malloc(strlen("VST_PATH=") + 1 + strlen(MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData()) + 1);
+        strcpy(buffer, "VST_PATH=");
+        strcat(buffer, MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData());
+        _putenv(buffer);
+      }
+#else
         setenv("VST_PATH", MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData(), true);
+#endif
       
       if(MusEGlobal::config.pluginLinuxVstPathList.isEmpty())
       {
@@ -464,12 +514,28 @@ int main(int argc, char* argv[])
               QString("/usr/local/lib/vst") <<
               QString("/usr/lib64/vst") <<
               QString("/usr/lib/vst");
+#ifdef _WIN32
+              char* buffer = (char*) malloc(strlen("LINUX_VST_PATH=") + 1 + strlen(MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData()) + 1);
+              strcpy(buffer, "LINUX_VST_PATH=");
+              strcat(buffer, MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData());
+              _putenv(buffer);
+#else
               setenv("LINUX_VST_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
+#endif
           }
         }
       }
       else
+#ifdef _WIN32
+      {
+        char* buffer = (char*) malloc(strlen("LINUX_VST_PATH=") + 1 + strlen(MusEGlobal::config.pluginLinuxVstPathList.join(":").toLatin1().constData()) + 1);
+        strcpy(buffer, "LINUX_VST_PATH=");
+        strcat(buffer, MusEGlobal::config.pluginLinuxVstPathList.join(":").toLatin1().constData());
+        _putenv(buffer);
+      }
+#else
         setenv("LINUX_VST_PATH", MusEGlobal::config.pluginLinuxVstPathList.join(":").toLatin1().constData(), true);
+#endif
       
       // Special for LV2: Since we use the recommended lilv_world_load_all() 
       //  not lilv_world_load_bundle(), LV2_PATH seems to be the only way to set paths. 
@@ -484,13 +550,29 @@ int main(int argc, char* argv[])
             QString("/usr/local/lib/lv2") <<
             QString("/usr/lib64/lv2") <<
             QString("/usr/lib/lv2");
+#ifdef _WIN32
+            char* buffer = (char*) malloc(strlen("LV2_PATH=") + 1 + strlen(MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData()) + 1);
+            strcpy(buffer, "LV2_PATH=");
+            strcat(buffer, MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData());
+            _putenv(buffer);
+#else
             setenv("LV2_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
+#endif
         }
         else
           MusEGlobal::config.pluginLv2PathList = pth.split(":", QString::SkipEmptyParts);
       }
       else
+#ifdef _WIN32
+      {
+        char* buffer = (char*) malloc(strlen("LV2_PATH=") + 1 + strlen(MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData()) + 1);
+        strcpy(buffer, "LV2_PATH=");
+        strcat(buffer, MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData());
+        _putenv(buffer);
+      }
+#else
         setenv("LV2_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
+#endif
 
       bool plugin_rescan_already_done = false;
       int rv = 0;
@@ -1074,10 +1156,12 @@ int main(int argc, char* argv[])
         }
   #endif /* HAVE_LASH */
 
+#ifndef _WIN32
         if (!MusEGlobal::debugMode) {
               if (mlockall(MCL_CURRENT | MCL_FUTURE))
                     perror("WARNING: Cannot lock memory:");
               }
+#endif
 
         if(muse_splash)
         {

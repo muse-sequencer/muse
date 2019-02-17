@@ -23,7 +23,11 @@
 
 #include <stdio.h>
 #include <sys/stat.h>
+#ifdef _WIN32
+#include "mman.h"
+#else
 #include <sys/mman.h>
+#endif
 #include <errno.h>
 #include <limits.h>
 #include <map>
@@ -4204,6 +4208,8 @@ double PartCanvas::valToLog(double inV, double min, double max)
     double linMax = 20.0*MusECore::fast_log10(max);
 
     double linVal = (inV * (linMax - linMin)) + linMin;
+// REMOVE Tim. win. Changed.
+//     double outVal = pow(10, (linVal)/20.0);
     double outVal = exp10((linVal)/20.0);
 
     //printf("::valToLog inV %f outVal %f linVal %f min %f max %f\n", inV, outVal, linVal, min, max);

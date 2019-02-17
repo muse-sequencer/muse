@@ -47,7 +47,12 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#ifdef _WIN32
+#include "mman.h"
+#include "mman.c"
+#else
 #include <sys/mman.h>
+#endif
 #include "muse_math.h"
 
 #include <QTemporaryFile>

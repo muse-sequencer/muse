@@ -1830,13 +1830,21 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
               free(b->buffer);
               b->buffer = 0;
             }
+#ifdef _WIN32
+            b->buffer = (float *) _aligned_malloc(16, sizeof(float *) * n);
+            if(b->buffer == NULL)
+            {
+               fprintf(stderr, "Fifo::put could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+               return true;
+            }
+#else
             int rv = posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
             if(rv != 0 || !b->buffer)
             {
               fprintf(stderr, "Fifo::put could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
               return true;
             }
-
+#endif
             b->maxSize = n;
             }
       if(!b->buffer)
