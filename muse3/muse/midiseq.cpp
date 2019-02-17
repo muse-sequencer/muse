@@ -31,7 +31,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <poll.h>
-#include <math.h>
+#include "muse_math.h"
 #include <errno.h>
 
 #include "config.h"

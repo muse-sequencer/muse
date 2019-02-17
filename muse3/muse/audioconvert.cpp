@@ -25,7 +25,7 @@
 //
 //=========================================================
 
-#include <math.h>
+#include "muse_math.h"
 
 #include "wave.h"
 #include "globals.h"

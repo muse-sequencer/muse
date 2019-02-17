@@ -40,7 +40,7 @@
 #include <QTreeWidgetItem>
 #include <QHeaderView>
 
-#include <math.h>
+#include "muse_math.h"
 
 #include "muse/midi_consts.h"
 #include "icons.h"

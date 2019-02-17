@@ -26,7 +26,7 @@
 #include <QWidget>
 #include <QPaintEvent>
 #include <QPainter>
-#include <cmath>
+#include "muse_math.h"
 
 #include "type_defs.h"
 

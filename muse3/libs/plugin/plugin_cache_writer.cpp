@@ -39,7 +39,7 @@
   
 #include <cstdio>
 #include <cstring>
-#include <cmath>
+#include "muse_math.h"
 
 #include "plugin_rdf.h"
 #include "plugin_cache_writer.h"

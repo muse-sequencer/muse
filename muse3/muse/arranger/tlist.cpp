@@ -21,7 +21,7 @@
 //
 //=========================================================
 
-#include <cmath>
+#include "muse_math.h"
 
 #include <QAction>
 #include <QActionGroup>

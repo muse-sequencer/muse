@@ -71,7 +71,7 @@
 #include "icons.h"
 #include <ladspa.h>
 
-#include <cmath>
+#include "muse_math.h"
 #include <assert.h>
 #include <stdarg.h>
 

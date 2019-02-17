@@ -22,7 +22,7 @@
 //
 //=========================================================
 
-#include <cmath>
+#include "muse_math.h"
 #include <set>
 #include <errno.h>
 #include <fcntl.h>

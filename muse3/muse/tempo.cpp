@@ -23,7 +23,7 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include <cmath>
+#include "muse_math.h"
 
 #include "tempo.h"
 #include "globals.h"

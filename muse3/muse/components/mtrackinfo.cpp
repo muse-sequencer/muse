@@ -26,7 +26,7 @@
 #include <QPalette>
 #include <QColor>
 
-#include <math.h>
+#include "muse_math.h"
 #include <string.h>
 
 #include "mtrackinfo.h"

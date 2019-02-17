@@ -22,7 +22,7 @@
 //=========================================================
 //#include <stdio.h>
 #include <limits.h>
-#include <cmath>
+#include "muse_math.h"
 
 #include <QCheckBox>
 #include <QLabel>
