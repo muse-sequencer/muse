@@ -61,9 +61,10 @@ namespace MusECore {
 #ifdef MIDI_DRIVER_MIDI_SERIAL
 extern void initMidiSerial();
 #endif
-#ifndef _WIN32
+// REMOVE Tim. win. Removed.
+// #ifndef _WIN32
 extern bool initMidiAlsa();
-#endif
+// #endif
 extern bool initMidiJack();
 
 extern void processMidiInputTransformPlugins(MEvent&);
@@ -81,7 +82,9 @@ void initMidiDevices()
 #ifdef MIDI_DRIVER_MIDI_SERIAL
       initMidiSerial();
 #endif
-#ifndef _WIN32
+// REMOVE Tim. win. Changed.
+// #ifndef _WIN32
+#ifdef ALSA_SUPPORT
       if(MusEGlobal::config.enableAlsaMidiDriver ||                         // User setting
          MusEGlobal::useAlsaWithJack ||                                     // Command line override
          MusEGlobal::audioDevice->deviceType() != AudioDevice::JACK_AUDIO)  // Jack not running
@@ -172,10 +175,11 @@ QString MidiDevice::deviceTypeString() const
 {
   switch(deviceType())
   {
-#ifndef _WIN32
+// REMOVE Tim. win. Removed.
+// #ifndef _WIN32
     case ALSA_MIDI:
         return "ALSA";
-#endif
+// #endif
     case JACK_MIDI:
         return "JACK";
     case SYNTH_MIDI:

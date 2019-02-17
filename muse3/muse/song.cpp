@@ -41,9 +41,10 @@
 
 #include "app.h"
 #include "driver/jackmidi.h"
-#ifndef _WIN32
+// REMOVE Tim. win. Removed.
+// #ifndef _WIN32
 #include "driver/alsamidi.h"
-#endif
+// #endif
 #include "song.h"
 #include "track.h"
 #include "undo.h"
@@ -2293,11 +2294,12 @@ void Song::seqSignal(int fd)
                         do_set_sync_timeout = true;
                         abortRolling();
                         break;
-#ifndef _WIN32
+// REMOVE Tim. win. Removed.
+// #ifndef _WIN32
                   case 'P':   // alsa ports changed
                         alsaScanMidiPorts();
                         break;
-#endif
+// #endif
                   case 'G':   // Seek
                         // Hm, careful here, will multiple seeks cause this
                         //  to interfere with Jack's transport timeout countdown?
