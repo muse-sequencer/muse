@@ -51,7 +51,9 @@
 #include "mididev.h"
 #include "audio.h"
 #include "audiodev.h"
-#ifdef _WIN32
+// REMOVE Tim. win. Changed.
+// #ifdef _WIN32
+#ifndef _WIN32
 #include "driver/alsamidi.h"
 #endif
 #include "sync.h"

@@ -73,7 +73,9 @@ SpinBoxFP::SpinBoxFP(int minValue, int maxValue, int step, QWidget* parent)
 
 void SpinBoxFP::valueChange(double)
 {
-        double div = pow(10, decimals());
+// REMOVE Tim. win. Changed.
+//         double div = pow(10, decimals());
+        double div = exp10(decimals());
         emit valueChanged(int(value() * div));
 }
 
@@ -83,7 +85,9 @@ void SpinBoxFP::valueChange(double)
 
 void SpinBoxFP::setValue(int val)
       {
-        double div = pow(10, decimals());
+// REMOVE Tim. win. Changed.
+//         double div = pow(10, decimals());
+        double div = exp10(decimals());
         QDoubleSpinBox::setValue(double(val) /  div );
       }
 
@@ -93,7 +97,9 @@ void SpinBoxFP::setValue(int val)
 
 int SpinBoxFP::intValue()
       {
-        double div = pow(10, decimals());
+// REMOVE Tim. win. Changed.
+//         double div = pow(10, decimals());
+        double div = exp10(decimals());
         return int(value() * div);
       }
 
@@ -110,7 +116,9 @@ void SpinBoxFP::setDecimals(int val)
       //setValue(value());    // Try this. "setValue() will emit valueChanged() if the new value is different from the old one."
       
       QDoubleSpinBox::setDecimals(val);
-      double step = 1.0 / pow(10, val);
+// REMOVE Tim. win. Changed.
+//       double step = 1.0 / pow(10, val);
+      double step = 1.0 / exp10(val);
       setSingleStep(step);
       }
 
@@ -136,7 +144,9 @@ QString SpinBoxFP::textFromValue(int value) const
       {
       if (_decimals) {
             QString s;
-            int div = int(pow(10, _decimals));
+// REMOVE Tim. win. Changed.
+//             int div = int(pow(10, _decimals));
+            int div = int(exp10(_decimals));
 //            printf("val %d, prec %d, div %d\n", value, _precision, div);
             
             s.sprintf("%d.%0*d", value/div, _decimals, value%div);
@@ -176,8 +186,11 @@ int SpinBoxFP::valueFromText(const QString& text) const
                   return value();
                   }
             
-            //int div = int(pow(10, _decimals));
-            double div = int(pow(10, _decimals));
+// REMOVE Tim. win. Changed.
+//             //int div = int(pow(10, _decimals));
+//             double div = int(pow(10, _decimals));
+            //int div = int(exp10(_decimals));
+            double div = int(exp10(_decimals));
             
             //return a * div + b;
             return (f * div);

@@ -453,8 +453,11 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
    lFirst = ceil((log10(d_lBound) - step_eps * d_majStep) / d_majStep) * d_majStep;
    lLast = floor((log10(d_hBound) + step_eps * d_majStep) / d_majStep) * d_majStep;
 
-   firstTick = pow(10, lFirst);
-   lastTick = pow(10, lLast);
+// REMOVE Tim. win. Changed.
+//    firstTick = pow(10, lFirst);
+//    lastTick = pow(10, lLast);
+   firstTick = exp10(lFirst);
+   lastTick = exp10(lLast);
 
    nMaj = MusECore::qwtMin(10000, int(rint(MusECore::qwtAbs(lLast - lFirst) / d_majStep)) + 1);
 
@@ -514,7 +517,9 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
          if (i >= 0)
             val = d_majMarks[i];
          else
-            val = d_majMarks[0] / pow(10, d_majStep);
+// REMOVE Tim. win. Changed.
+//             val = d_majMarks[0] / pow(10, d_majStep);
+            val = d_majMarks[0] / exp10(d_majStep);
 
          for (k=k0; k<= kmax; k+=kstep)
          {
@@ -555,7 +560,9 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
       buffer.resize((d_majMarks.size() + 1) * nMin );
 
       // substep factor = 10^substeps
-      minFactor = MusECore::qwtMax(pow(10, minStep), 10.0);
+// REMOVE Tim. win. Changed.
+//       minFactor = MusECore::qwtMax(pow(10, minStep), 10.0);
+      minFactor = MusECore::qwtMax(exp10(minStep), 10.0);
 
       // Are there minor ticks below the first major tick?
       if ( d_lBound < firstTick )
@@ -569,7 +576,9 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
          if (i >= 0)
             val = d_majMarks[i];
          else
-            val = firstTick / pow(10, d_majStep);
+// REMOVE Tim. win. Changed.
+//             val = firstTick / pow(10, d_majStep);
+            val = firstTick / exp10(d_majStep);
 
          for (k=0; k< nMin; k++)
          {
