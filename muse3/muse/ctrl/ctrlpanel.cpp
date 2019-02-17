@@ -35,7 +35,7 @@
 #include <QVBoxLayout>
 #include <QColor>
 
-#include <math.h>
+#include "muse_math.h"
 
 #include "globaldefs.h"
 #include "app.h"

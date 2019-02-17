@@ -22,7 +22,7 @@
 //=========================================================
 
 #include <stdio.h>
-#include <math.h>
+#include "muse_math.h"
 
 #include "canvas.h"
 

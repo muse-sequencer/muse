@@ -4,7 +4,7 @@
 #ifndef __FASTLOG_H__
 #define __FASTLOG_H__
 
-#include <math.h> /* for HUGE_VAL */
+#include "muse_math.h" /* Get math.h for HUGE_VAL */
 
 static inline float fast_log2 (float val)
       {

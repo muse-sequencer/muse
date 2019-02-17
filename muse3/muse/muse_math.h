@@ -27,6 +27,10 @@
 #include <cmath>
 #include "config.h"
 
+#ifndef HAVE_M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #ifndef HAVE_EXP10
 #define exp10(x) (pow(10.0, x))
 #endif

@@ -30,7 +30,7 @@
 #include "compact_knob.h"
 
 #include <stdio.h>
-#include <cmath>
+#include "muse_math.h"
 #include "mmath.h"
 
 #include <QPainter>

@@ -6,6 +6,9 @@
       - Fix compile breakage if DSSI support not enabled.
         Oops, fixed scanDssiPlugins() in plugin_cache_writer.cpp and oops, removed
          duplicate "void initDSSI() {}" from alsamidi.cpp (how'd that get there?)
+      - M_PI support now detected in main cmake file.
+      - All inclusions of math.h and cmath have been replaced with muse_math.h
+         to make muse_math.h a 'central hub' for special defines.
 16.02.2019
       - Fix Issue 640: wavecanvas.cpp use QProcess not fork() et al. (Tim)
 08.02.2019

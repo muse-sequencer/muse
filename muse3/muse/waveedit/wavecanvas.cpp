@@ -48,7 +48,7 @@
 
 #include <limits.h>
 #include <stdio.h>
-#include <math.h>
+#include "muse_math.h"
 #include <set>
 
 #include "app.h"

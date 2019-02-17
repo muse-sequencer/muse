@@ -22,7 +22,7 @@
 //
 //=========================================================
 
-#include <cmath>
+#include "muse_math.h"
 #include <errno.h>
 
 #include "song.h"

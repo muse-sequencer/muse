@@ -22,7 +22,7 @@
 //=========================================================
 
 #include <list>
-#include <cmath>
+#include "muse_math.h"
 
 #include <QApplication>
 #include <QMenuBar>

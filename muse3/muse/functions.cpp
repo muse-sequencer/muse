@@ -53,7 +53,7 @@
 #else
 #include <sys/mman.h>
 #endif
-#include <math.h>
+#include "muse_math.h"
 
 #include <QTemporaryFile>
 #include <QMimeData>

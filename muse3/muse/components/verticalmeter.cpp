@@ -22,7 +22,7 @@
 //
 //=========================================================
 
-#include <cmath>
+#include "muse_math.h"
 
 #include <QMouseEvent>
 #include <QPainter>
@@ -33,7 +33,6 @@
 #include "fastlog.h"
 #include "mmath.h"
 #include "utils.h"
-#include "muse_math.h"
 
 namespace MusEGui {
 

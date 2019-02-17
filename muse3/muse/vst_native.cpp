@@ -32,7 +32,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <dlfcn.h>
-#include <cmath>
+#include "muse_math.h"
 #include <set>
 #include <string>
 #include <jack/jack.h>

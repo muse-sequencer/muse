@@ -23,7 +23,6 @@
 
 #include "view.h"
 #include "gconfig.h"
-#include <cmath>
 #include <stdio.h>
 #include <QPainter>
 #include <QPixmap>
@@ -36,7 +35,7 @@
 #include <QVector>
 #include "tempo.h"
 
-#include "math.h"
+#include "muse_math.h"
 
 #include "sig.h"  
 

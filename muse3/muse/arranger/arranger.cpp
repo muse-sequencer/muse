@@ -25,7 +25,7 @@
 
 #include <stdio.h>
 #include <limits.h>
-#include <math.h>
+#include "muse_math.h"
 
 #include <QComboBox>
 #include <QGridLayout>

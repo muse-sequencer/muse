@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
+#include "muse_math.h"
 #include <errno.h>
 #include <stdarg.h>
 #include <pthread.h>

@@ -32,7 +32,7 @@
 #include <QString>
 
 #include <ladspa.h>
-#include <math.h>
+#include "muse_math.h"
 
 #include "globaldefs.h"
 #include "plugin_cache_reader.h"

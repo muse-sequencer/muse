@@ -29,7 +29,7 @@
 //#include "common_defs.h"
 #include "simpledrums.h"
 
-#include <cmath>
+#include "muse_math.h"
 #include <string.h>
 
 #include <samplerate.h>

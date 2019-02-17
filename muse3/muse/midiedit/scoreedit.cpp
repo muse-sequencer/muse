@@ -47,7 +47,7 @@
 #include <QMessageBox>
 
 #include <stdio.h>
-#include <math.h>
+#include "muse_math.h"
 
 #include <iostream>
 #include <sstream>

@@ -24,7 +24,7 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include <cmath>
+#include "muse_math.h"
 
 #include "song.h"
 #include "part.h"

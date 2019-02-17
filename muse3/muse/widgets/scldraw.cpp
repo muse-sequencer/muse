@@ -23,8 +23,6 @@
 //
 //=========================================================
 
-#include <cmath>
-
 #include <QPainter>
 #include <QRect>
 #include <QFontMetrics>
@@ -32,6 +30,7 @@
 #include <QPalette>
 #include <QApplication>
 
+#include "muse_math.h"
 #include "mmath.h"
 #include "scldraw.h"
 
