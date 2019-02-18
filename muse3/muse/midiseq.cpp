@@ -51,11 +51,7 @@
 #include "mididev.h"
 #include "audio.h"
 #include "audiodev.h"
-// REMOVE Tim. win. Changed.
-// #ifdef _WIN32
-#ifndef _WIN32
 #include "driver/alsamidi.h"
-#endif
 #include "sync.h"
 #include "song.h"
 #include "gconfig.h"
@@ -147,11 +143,9 @@ void MidiSeq::processStop()
     // Only for ALSA devices.
     switch(type)
     {
-#ifndef _WIN32
       case MidiDevice::ALSA_MIDI:
         md->handleStop();
       break;
-#endif
 
       case MidiDevice::JACK_MIDI:
       case MidiDevice::SYNTH_MIDI:
@@ -177,11 +171,9 @@ void MidiSeq::processSeek()
     // Only for ALSA devices.
     switch(type)
     {
-#ifndef _WIN32
       case MidiDevice::ALSA_MIDI:
         md->handleSeek();
       break;
-#endif
 
       case MidiDevice::JACK_MIDI:
       case MidiDevice::SYNTH_MIDI:
@@ -292,7 +284,6 @@ void MidiSeq::threadStart(void*)
       updatePollFd();
       }
 
-#ifndef _WIN32
 //---------------------------------------------------------
 //   alsaMidiRead
 //---------------------------------------------------------
@@ -302,7 +293,6 @@ static void alsaMidiRead(void*, void*)
       // calls itself midiDevice->recordEvent(MidiRecordEvent):
       alsaProcessMidiInput();
       }
-#endif
 
 //---------------------------------------------------------
 //   midiRead
@@ -324,7 +314,6 @@ static void midiWrite(void*, void* d)
       dev->flush();
       }
 
-#ifndef _WIN32
 void MidiSeq::addAlsaPollFd()
 {
   // special handling for alsa midi:
@@ -338,7 +327,6 @@ void MidiSeq::removeAlsaPollFd()
 {
   removePollFd(alsaSelectRfd(), POLLIN);
 }
-#endif
 
 //---------------------------------------------------------
 //   updatePollFd
@@ -379,9 +367,7 @@ void MidiSeq::updatePollFd()
       // (one fd for all devices)
       //    this allows for processing of some alsa events
       //    even if no alsa driver is active (assigned to a port)
-#ifndef _WIN32
       addAlsaPollFd();
-#endif
       }
 
 //---------------------------------------------------------
@@ -607,11 +593,9 @@ void MidiSeq::processTimerTick()
         // Only for ALSA devices.
         switch(type)
         {
-#ifndef _WIN32
           case MidiDevice::ALSA_MIDI:
               md->processMidi(curFrame);
           break;
-#endif
 
           case MidiDevice::JACK_MIDI:
           case MidiDevice::SYNTH_MIDI:
