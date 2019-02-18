@@ -335,8 +335,6 @@ bool VAM::init(const char* name)
           int i;
           float tmp;
           for(i = 0; i < CB_AMP_SIZE; i++) {
-// REMOVE Tim. win. Changed.
-//               cb2amp_tab[i] = pow(10, double(i) / -300.0);
               cb2amp_tab[i] = exp10(double(i) / -300.0);
               //cb2amp_tab[i] = 1.0 - i/(float)CB_AMP_SIZE;
               }

@@ -27,11 +27,6 @@
 // 02111-1301, USA or point your web browser to http://www.gnu.org.
 //===========================================================================
 
-// REMOVE Tim. win. Removed.
-// #ifdef _WIN32
-// #define M_PI 3.14159265358979323846
-// #endif
-
 #ifndef __SIMPLECHORUSMODEL_H
 #define __SIMPLECHORUSMODEL_H
 

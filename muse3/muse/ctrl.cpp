@@ -114,8 +114,6 @@ double midi2AudioCtrlValue(const CtrlList* audio_ctrl_list, const MidiAudioCtrlS
     fmin = 20.0*log10(fmin);
     fmax = 20.0*log10(fmax);
     frng = fmax - fmin;
-// REMOVE Tim. win. Changed.
-//     double ret = pow(10, (normval * frng + fmin) / 20.0);
     double ret = exp10((normval * frng + fmin) / 20.0);
     #ifdef _CTRL_DEBUG_
     printf("midi2AudioCtrlValue: is VAL_LOG normval:%f frng:%f returning:%f\n", normval, frng, ret);          
@@ -489,8 +487,6 @@ double CtrlList::interpolate(unsigned int frame, const CtrlInterpolate& interp)
   {
     if(_valueType == VAL_LOG)
     {
-// REMOVE Tim. win. Changed.
-//       const double min = pow(10, MusEGlobal::config.minSlider / 20.0);  // TODO Try fastexp10
       const double min = exp10(MusEGlobal::config.minSlider / 20.0);  // TODO Try fastexp10
       if(val2 < min)
         val2 = min;
@@ -501,8 +497,6 @@ double CtrlList::interpolate(unsigned int frame, const CtrlInterpolate& interp)
   {
     if(_valueType == VAL_LOG)
     {
-// REMOVE Tim. win. Changed.
-//       const double min = pow(10, MusEGlobal::config.minSlider / 20.0);  // TODO Try fastexp10
       const double min = exp10(MusEGlobal::config.minSlider / 20.0);  // TODO Try fastexp10
       if(val1 < min)
         val1 = min;
@@ -522,8 +516,6 @@ double CtrlList::interpolate(unsigned int frame, const CtrlInterpolate& interp)
   val2 -= val1;
   val1 += (double(frame - frame1) * val2) / double(frame2 - frame1);
   if (_valueType == VAL_LOG)
-// REMOVE Tim. win. Changed.
-//     val1 = pow(10, val1/20.0);
     val1 = exp10(val1/20.0);
   return val1;
 }
@@ -604,8 +596,6 @@ double CtrlList::value(unsigned int frame, bool cur_val_only, unsigned int* next
             val1 += (double(frame - frame1) * val2)/double(frame2 - frame1);
     
             if (_valueType == VAL_LOG) {
-// REMOVE Tim. win. Changed.
-//               val1 = pow(10, val1/20.0);
               val1 = exp10(val1/20.0);
             }
 

@@ -111,10 +111,7 @@ namespace MusECore {
 extern void exitJackAudio();
 extern void exitDummyAudio();
 extern void exitOSC();
-// REMOVE Tim. win. Removed.
-// #ifndef _WIN32
 extern void exitMidiAlsa();
-// #endif
 
 #ifdef HAVE_RTAUDIO
 extern void exitRtAudio();
@@ -1658,13 +1655,10 @@ void MusE::closeEvent(QCloseEvent* event)
 
       MusEGlobal::song->cleanupForQuit();
 
-// REMOVE Tim. win. Removed.
-// #ifndef _WIN32
       // Give midi devices a chance to close first, above in cleanupForQuit.
       if(MusEGlobal::debugMsg)
         fprintf(stderr, "Muse: Exiting ALSA midi\n");
       MusECore::exitMidiAlsa();
-// #endif
 
       if(MusEGlobal::debugMsg)
         fprintf(stderr, "Muse: Cleaning up temporary wavefiles + peakfiles\n");

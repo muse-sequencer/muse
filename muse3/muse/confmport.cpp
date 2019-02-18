@@ -55,10 +55,7 @@
 #include "synth.h"
 #include "audio.h"
 #include "midiseq.h"
-// REMOVE Tim. win. Removed.
-// #ifndef _WIN32
 #include "driver/alsamidi.h"
-// #endif
 #include "driver/jackmidi.h"
 #include "audiodev.h"
 #include "menutitleitem.h"
@@ -671,10 +668,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     typedef std::map<std::string, int > asmap;
                     typedef std::map<std::string, int >::iterator imap;
                     
-// REMOVE Tim. win. Removed.
-// #ifndef _WIN32
                     asmap mapALSA;
-// #endif
                     asmap mapJACK;
                     asmap mapSYNTH;
                     
@@ -683,15 +677,12 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     int six = 0x30000000;
                     for(MusECore::iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
                     {
-// REMOVE Tim. win. Removed.
-// #ifndef _WIN32
                       if((*i)->deviceType() == MusECore::MidiDevice::ALSA_MIDI)
                       {
                         mapALSA.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), aix) );
                         ++aix;
                       }
                       else
-// #endif
                       if((*i)->deviceType() == MusECore::MidiDevice::JACK_MIDI)
                       {  
                         mapJACK.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), jix) );
@@ -707,8 +698,6 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         fprintf(stderr, "MPConfig::rbClicked unknown midi device: %s\n", (*i)->name().toLatin1().constData());
                     }
                     
-// REMOVE Tim. win. Removed.
-// #ifndef _WIN32
                     if(!mapALSA.empty())
                     {
                       pup->addSeparator();
@@ -730,7 +719,6 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         }  
                       }  
                     }
-// #endif
                     
                     if(!mapJACK.empty())
                     {
@@ -810,12 +798,9 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     else
                     {
                       int typ;
-// REMOVE Tim. win. Removed.
-// #ifndef _WIN32
                       if(n < 0x20000000)
                         typ = MusECore::MidiDevice::ALSA_MIDI;
                       else
-// #endif
                       if(n < 0x30000000)
                         typ = MusECore::MidiDevice::JACK_MIDI;
                       else //if(n < 0x40000000)
@@ -1187,11 +1172,8 @@ MPConfig::MPConfig(QWidget* parent)
 #endif                  
       ;
 
-// REMOVE Tim. win. Changed.
-// #ifndef _WIN32
 #ifdef ALSA_SUPPORT
       addALSADevice->setChecked(MusEGlobal::midiSeq != NULL);
-// #endif
 #else
       addALSADevice->setVisible(false);
 #endif
@@ -1206,10 +1188,7 @@ MPConfig::MPConfig(QWidget* parent)
       connect(instanceList, SIGNAL(itemSelectionChanged()),         SLOT(deviceSelectionChanged()));
       connect(instanceList, SIGNAL(itemChanged(QTableWidgetItem*)), SLOT(DeviceItemRenamed(QTableWidgetItem*)));
       connect(addJACKDevice, SIGNAL(clicked(bool)), SLOT(addJackDeviceClicked()));
-// REMOVE Tim. win. Removed.
-// #ifndef _WIN32
       connect(addALSADevice, SIGNAL(clicked(bool)), SLOT(addAlsaDeviceClicked(bool)));
-// #endif
       connect(mdevView, SIGNAL(itemPressed(QTableWidgetItem*)), this, SLOT(rbClicked(QTableWidgetItem*)));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       connect(synthList, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));
@@ -1264,14 +1243,11 @@ void MPConfig::deviceSelectionChanged()
     switch(md->deviceType())
     {
       // TODO: For now, don't allow creating/removing/renaming them until we decide on addressing strategy.
-// REMOVE Tim. win. Removed.
-// #ifndef _WIN32
       case MusECore::MidiDevice::ALSA_MIDI:
         // Allow removing ('purging') an unavailable ALSA device.
         if(md->isAddressUnknown())
           can_remove = true;
       break;
-// #endif
 
       case MusECore::MidiDevice::JACK_MIDI:
         can_remove = true;
@@ -1302,8 +1278,6 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
       if(!(flags._flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_INSTRUMENT)))
         return;
     
-// REMOVE Tim. win. Changed.
-// #ifndef _WIN32
 #ifdef ALSA_SUPPORT
       addALSADevice->blockSignals(true);
       addALSADevice->setChecked(MusEGlobal::midiSeq != NULL);
@@ -1686,13 +1660,10 @@ void MPConfig::removeInstanceClicked()
     switch(md->deviceType())
     {
       // TODO: For now, don't allow creating/removing/renaming them until we decide on addressing strategy.
-// REMOVE Tim. win. Removed.
-// #ifndef _WIN32
       case MusECore::MidiDevice::ALSA_MIDI:
         // Allow removing ('purging') an unavailable ALSA device.
         if(!md->isAddressUnknown())
           break;
-// #endif
       // Fall through.
       case MusECore::MidiDevice::JACK_MIDI:
         if(!isIdle)
@@ -1733,10 +1704,7 @@ void MPConfig::removeInstanceClicked()
 
     switch(md->deviceType())
     {
-// REMOVE Tim. win. Removed.
-// #ifndef _WIN32
       case MusECore::MidiDevice::ALSA_MIDI:
-// #endif
       case MusECore::MidiDevice::JACK_MIDI:
       break;
 
@@ -1875,8 +1843,6 @@ void MPConfig::addJackDeviceClicked()
     MusEGlobal::song->update(SC_CONFIG);
 }
 
-// REMOVE Tim. win. Removed.
-// #ifndef _WIN32
 //---------------------------------------------------------
 //   addAlsaDeviceClicked
 //---------------------------------------------------------
@@ -1935,7 +1901,6 @@ void MPConfig::addAlsaDeviceClicked(bool v)
     MusEGlobal::song->update(SC_CONFIG);
   }
 }
-// #endif
 
 //---------------------------------------------------------
 //   beforeDeviceContextShow
