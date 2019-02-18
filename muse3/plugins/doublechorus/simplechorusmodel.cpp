@@ -28,7 +28,7 @@
 //===========================================================================
 
 #include "simplechorusmodel.h"
-#include <math.h>
+#include "muse_math.h"
 #include <stdio.h>
 
 #define ABS(x) (x>=0?x:-x)

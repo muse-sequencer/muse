@@ -21,7 +21,7 @@
 //
 //=========================================================
 #include "trackautomationview.h"
-#include "math.h"
+#include "muse_math.h"
 
 #include <QPainter>
 #include <QPaintEvent>

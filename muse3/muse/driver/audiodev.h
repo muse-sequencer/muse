@@ -25,8 +25,12 @@
 #define __AUDIODEV_H__
 
 #include <list>
+#ifdef _WIN32
+#include <stdlib.h>
+#else
 #include <sys/resource.h>
 #include <sys/time.h>
+#endif
 #include <stdint.h>
 
 class QString;

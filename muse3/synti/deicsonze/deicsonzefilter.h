@@ -30,7 +30,7 @@
 #ifndef __DEICSONZEFILTER_H
 #define __DEICSONZEFILTER_H
 
-#include <math.h>
+#include "muse_math.h"
 
 class LowFilter {
  private:

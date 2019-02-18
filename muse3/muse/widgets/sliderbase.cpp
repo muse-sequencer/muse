@@ -24,7 +24,7 @@
 //=========================================================
 
 #include <stdio.h>
-#include <cmath>
+#include "muse_math.h"
 #include "sliderbase.h"
 #include "mmath.h"
 #include <QWheelEvent>

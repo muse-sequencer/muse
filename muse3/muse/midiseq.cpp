@@ -29,16 +29,22 @@
 
 #include <stdio.h>
 #include <fcntl.h>
+#ifndef _WIN32
 #include <sys/ioctl.h>
 #include <poll.h>
-#include <math.h>
+#endif
+#include "muse_math.h"
 #include <errno.h>
 
 #include "config.h"
 #include "app.h"
 #include "globals.h"
+#ifdef _WIN32
+#include "driver/qttimer.h"
+#else
 #include "driver/alsatimer.h"
 #include "driver/rtctimer.h"
+#endif
 #include "midi.h"
 #include "midiseq.h"
 #include "midiport.h"
@@ -214,7 +220,11 @@ signed int MidiSeq::selectTimer()
     int tmrFd;
 
     printf("Trying RTC timer...\n");
+#ifdef _WIN32
+    timer = new QtTimer();
+#else
     timer = new RtcTimer();
+#endif
     tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
     if (tmrFd != -1) { // ok!
         printf("got timer = %d\n", tmrFd);
@@ -357,7 +367,7 @@ void MidiSeq::updatePollFd()
       // (one fd for all devices)
       //    this allows for processing of some alsa events
       //    even if no alsa driver is active (assigned to a port)
-      addAlsaPollFd(); 
+      addAlsaPollFd();
       }
 
 //---------------------------------------------------------

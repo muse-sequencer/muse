@@ -22,7 +22,7 @@
 //
 //=========================================================
 
-#include <cmath>
+#include "muse_math.h"
 #include <set>
 #include <errno.h>
 #include <fcntl.h>
@@ -51,6 +51,10 @@
 #include "undo.h"
 #include "globals.h"
 #include "large_int.h"
+
+#ifdef _WIN32
+#define pipe(fds) _pipe(fds, 4096, _O_BINARY)
+#endif
 
 // Experimental for now - allow other Jack timebase masters to control our midi engine.
 // TODO: Be friendly to other apps and ask them to be kind to us by using jack_transport_reposition. 
@@ -187,10 +191,11 @@ Audio::Audio()
             }
       fromThreadFdw = filedes[1];
       fromThreadFdr = filedes[0];
+#ifndef _WIN32
       int rv = fcntl(fromThreadFdw, F_SETFL, O_NONBLOCK);
       if (rv == -1)
             perror("set pipe O_NONBLOCK");
-
+#endif
       if (pipe(filedes) == -1) {
             perror("creating pipe1");
             exit(-1);

@@ -22,7 +22,7 @@
 //
 //=========================================================
 
-#include <cmath>
+#include "muse_math.h"
 #include "scldiv.h"
 #include "mmath.h"
 

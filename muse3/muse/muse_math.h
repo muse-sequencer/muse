@@ -24,14 +24,31 @@
 #ifndef __MUSE_MATH_H__
 #define __MUSE_MATH_H__
 
-#include <math.h>
+#include <cmath>
+#include "config.h"
+
+#ifndef HAVE_M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+#ifndef HAVE_EXP10
+#define exp10(x) (pow(10.0, x))
+#endif
+
+#ifndef HAVE_EXP10F
+#define exp10f(x) (powf(10.0f, x))
+#endif
+
+#ifndef HAVE_EXP10L
+#define exp10l(x) (powl(10.0l, x))
+#endif
 
 // Convert value to log10, rounding to nearest .000001 due to inaccuracy with log.
 #define muse_log10r(x) (round(log10(x) * 1000000.0) * 0.000001)
 // Convert value to dB, rounding to nearest .000001 due to inaccuracy with log.
 #define muse_val2dbr(x) (round(log10(x) * 20000000.0) * 0.000001)
 // Convert dB to val.
-#define muse_db2val(x) exp10(x * 0.05)
+#define muse_db2val(x) pow(10, (x * 0.05))
 // Round to the nearest .000001
 #define muse_round2micro(x) (round(x * 1000000.0) * 0.000001)
 

@@ -39,7 +39,7 @@
   
 #include <cstdio>
 #include <cstring>
-#include <cmath>
+#include "muse_math.h"
 
 #include "plugin_rdf.h"
 #include "plugin_cache_writer.h"
@@ -1691,14 +1691,18 @@ void scanMessPlugins(const QString& museGlobalLib, PluginScanList* list, bool sc
 //   scanDssiPlugins
 //---------------------------------------------------------
 
+#ifdef DSSI_SUPPORT
 void scanDssiPlugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
 {
-  #ifdef DSSI_SUPPORT
   QStringList sl = pluginGetDssiDirectories();
   for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
     scanPluginDir(*it, PluginScanInfoStruct::PluginTypeAll, list, scanPorts, debugStdErr);
-  #endif
 }
+#else // No DSSI_SUPPORT
+void scanDssiPlugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*debugStdErr*/)
+{
+}
+#endif // DSSI_SUPPORT
 
 //---------------------------------------------------------
 //   scanLinuxVSTPlugins

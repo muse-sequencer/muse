@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 #include "knob_and_meter.h"
-#include <cmath>
+#include "muse_math.h"
 #include "mmath.h"
 
 #include <QPainter>

@@ -162,7 +162,7 @@ bool MarkerList::rebuild()
 // updateCurrent
 //  Sets which item is the current based on the given tick.
 //---------------------------------------------------------
-void MarkerList::updateCurrent(unsigned int tick)
+void MarkerList::updateCurrent(unsigned int /*tick*/)
 {
   
 }

@@ -22,7 +22,7 @@
 //
 //=========================================================
 
-#include <math.h>
+#include "muse_math.h"
 
 #include <QLayout>
 #include <QPalette>

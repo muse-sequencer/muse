@@ -1,3 +1,20 @@
+17.02.2019
+      - Fix all uses of exp10(). (Tim)
+        exp10 is now detected in the main cmake file, and defined as pow(10,x) in muse_math.h
+         if it is NOT found. All relevant places using exp10 now have the muse_math.h
+         header instead of <cmath> or "math.h".
+      - Fix compile breakage if DSSI support not enabled.
+        Oops, fixed scanDssiPlugins() in plugin_cache_writer.cpp and oops, removed
+         duplicate "void initDSSI() {}" from alsamidi.cpp (how'd that get there?)
+      - M_PI support now detected in main cmake file.
+      - All inclusions of math.h and cmath have been replaced with muse_math.h
+         to make muse_math.h a 'central hub' for special defines.
+16.02.2019
+      - Fix Issue 640: wavecanvas.cpp use QProcess not fork() et al. (Tim)
+08.02.2019
+      - Revert usage of QRegion stl features (too new at Qt 5.8). (Tim)
+07.02.2019
+      - Updated all PyQt4 based midi scripts to use PyQt5 (rj)
 24.01.2019
       - Stop heartbeat timer in Audio::stop(). (Tim)
         Possible random crashes closing a song and loading another song. 

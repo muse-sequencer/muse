@@ -469,7 +469,7 @@ int JackAudioDevice::realtimePriority() const
    if(!_client)
       return 0;
 
-   pthread_t t = jack_client_thread_id(_client);
+   pthread_t t = (pthread_t) jack_client_thread_id(_client);
    if(t == 0)
       return jack_client_real_time_priority(_client);
 

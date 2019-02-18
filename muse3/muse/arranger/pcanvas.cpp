@@ -23,10 +23,13 @@
 
 #include <stdio.h>
 #include <sys/stat.h>
+#ifdef _WIN32
+#include "mman.h"
+#else
 #include <sys/mman.h>
+#endif
 #include <errno.h>
 #include <limits.h>
-#include <math.h>
 #include <map>
 #include <assert.h>
 
@@ -40,6 +43,7 @@
 #include <QMimeData>
 #include <QDrag>
 
+#include "muse_math.h"
 #include "fastlog.h"
 #include "components/tools.h"
 #include "arranger.h"
@@ -67,7 +71,6 @@
 #include "dialogs.h"
 #include "components/pastedialog.h"
 #include "undo.h"
-#include "muse_math.h"
 
 using MusECore::Undo;
 using MusECore::UndoOp;

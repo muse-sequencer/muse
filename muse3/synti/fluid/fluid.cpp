@@ -36,7 +36,7 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <pthread.h>
-#include <cmath>
+#include "muse_math.h"
 #include <sys/mman.h>
 #include <sys/time.h>
 #include <sched.h>

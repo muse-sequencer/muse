@@ -21,7 +21,7 @@
 //
 //=========================================================
 
-#include <math.h>
+#include "muse_math.h"
 
 #include "track.h"
 #include "event.h"

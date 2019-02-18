@@ -31,7 +31,7 @@ testFile.close()
 outputEvents=[]
 #loop through events
 for line in inputEvents:
-  print (line.strip())
+  #print (line.strip())
   if line.startswith("CONTROLLER")==True and int(line.split()[2]) == 262148:
     print ("skipping ",line)
     pass

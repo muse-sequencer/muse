@@ -24,7 +24,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
-#include <cmath>
+#include "muse_math.h"
 // REMOVE Tim. wave. Removed.
 // #include <samplerate.h>
 

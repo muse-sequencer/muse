@@ -34,6 +34,10 @@
 #cmakedefine VST_NATIVE_SUPPORT
 #cmakedefine VST_VESTIGE_SUPPORT
 #cmakedefine USE_SSE
+#cmakedefine HAVE_EXP10
+#cmakedefine HAVE_EXP10F
+#cmakedefine HAVE_EXP10L
+#cmakedefine HAVE_M_PI
 
 #define VERSION          "${MusE_VERSION_FULL}"
 #define GITSTRING        "${MusE_GITSTRING}"

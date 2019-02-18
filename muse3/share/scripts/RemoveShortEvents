@@ -28,16 +28,16 @@
 
 
 import sys,time
-from PyQt4 import QtGui, QtCore
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QComboBox, QPushButton, QGridLayout
 
-class RemoveShortEvents(QtGui.QWidget):
+class RemoveShortEvents(QWidget):
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QWidget.__init__(self, parent)
 
         self.setWindowTitle('RemoveShortEvents')
 
-        title = QtGui.QLabel('Remove events shorter than:')
-        self.timeEdit = QtGui.QComboBox()
+        title = QLabel('Remove events shorter than:')
+        self.timeEdit = QComboBox()
         self.timeEdit.addItem('1/1',1)
         self.timeEdit.addItem('1/2',2)
         self.timeEdit.addItem('1/4',4)
@@ -46,10 +46,10 @@ class RemoveShortEvents(QtGui.QWidget):
         self.timeEdit.addItem('1/32',32)
         self.timeEdit.setCurrentIndex(3)
         
-        button = QtGui.QPushButton("Execute")
-        self.connect(button,  QtCore.SIGNAL('clicked()'), self.execute) 
+        button = QPushButton("Execute")
+        button.clicked.connect(self.execute)
 
-        grid = QtGui.QGridLayout()
+        grid = QGridLayout()
         grid.setSpacing(3)
 
         grid.addWidget(title, 1, 0)
@@ -98,7 +98,7 @@ class RemoveShortEvents(QtGui.QWidget):
 
 
 
-app = QtGui.QApplication(sys.argv)
+app = QApplication(sys.argv)
 qb = RemoveShortEvents()
 qb.show()
 sys.exit(app.exec_())

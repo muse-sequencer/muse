@@ -28,25 +28,26 @@
 
 
 import sys,time
-from PyQt4 import QtGui, QtCore
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QGridLayout, QLabel
+
 import random
 
-class Quantize(QtGui.QWidget):
+class Quantize(QWidget):
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QWidget.__init__(self, parent)
 
         self.setWindowTitle('Randomize note velocity relative to it\'s current velocity')
 
-        self.spreadEdit = QtGui.QLineEdit()
+        self.spreadEdit = QLineEdit()
         self.spreadEdit.setText('3')
         
-        button = QtGui.QPushButton("Execute")
-        self.connect(button,  QtCore.SIGNAL('clicked()'), self.execute) 
+        button = QPushButton("Execute")
+        button.clicked.connect(self.execute)
 
-        grid = QtGui.QGridLayout()
+        grid = QGridLayout()
         grid.setSpacing(3)
 
-        grid.addWidget(QtGui.QLabel('Spread'), 2, 0)
+        grid.addWidget(QLabel('Spread'), 2, 0)
         grid.addWidget(self.spreadEdit, 2, 1)
         grid.addWidget(button, 3, 1)
 
@@ -94,7 +95,7 @@ class Quantize(QtGui.QWidget):
         quit()
 
 
-app = QtGui.QApplication(sys.argv)
+app = QApplication(sys.argv)
 qb = Quantize()
 qb.show()
 sys.exit(app.exec_())

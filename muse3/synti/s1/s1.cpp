@@ -28,11 +28,11 @@
 //
 //=========================================================
 
-#include <cmath>
 #include <list>
 
 #include <QMessageBox>
 
+#include "muse_math.h"
 #include "libsynti/mono.h"
 
 #define RESOLUTION   16384

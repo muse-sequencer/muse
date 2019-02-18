@@ -79,6 +79,7 @@ void initMidiDevices()
 #ifdef MIDI_DRIVER_MIDI_SERIAL
       initMidiSerial();
 #endif
+#ifdef ALSA_SUPPORT
       if(MusEGlobal::config.enableAlsaMidiDriver ||                         // User setting
          MusEGlobal::useAlsaWithJack ||                                     // Command line override
          MusEGlobal::audioDevice->deviceType() != AudioDevice::JACK_AUDIO)  // Jack not running
@@ -91,6 +92,7 @@ void initMidiDevices()
           exit(-1);
           }
       }
+#endif
       
       if(initMidiJack())
           {

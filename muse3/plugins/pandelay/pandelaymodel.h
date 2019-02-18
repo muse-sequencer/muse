@@ -30,7 +30,7 @@
 #ifndef __PANDELAYMODEL_H
 #define __PANDELAYMODEL_H
 
-#include <math.h>
+#include "muse_math.h"
 
 #define MAXBUFFERLENGTH 192000
 #define MINFREQ 0.1 //in Hz

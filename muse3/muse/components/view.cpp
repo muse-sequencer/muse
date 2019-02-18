@@ -23,7 +23,6 @@
 
 #include "view.h"
 #include "gconfig.h"
-#include <cmath>
 #include <stdio.h>
 #include <QPainter>
 #include <QPixmap>
@@ -33,9 +32,10 @@
 #include <QKeyEvent>
 #include <QPaintEvent>
 #include <QRegion>
+#include <QVector>
 #include "tempo.h"
 
-#include "math.h"
+#include "muse_math.h"
 
 #include "sig.h"  
 
@@ -408,16 +408,17 @@ void View::paint(const QRect& r, const QRegion& rg)
       #endif
 
 // For testing...
-//       const int rg_sz = rg.rectCount();
+//       const QVector<QRect> rects = rg.rects();
+//       const int rg_sz = rects.size();
 //       int rg_r_cnt = 0;
 //       fprintf(stderr, "View::paint: virt:%d rect: x:%d y:%d w:%d h:%d region rect count:%d\n",
 //               virt(), r.x(), r.y(), r.width(), r.height(), rg_sz);
-//       for(QRegion::const_iterator i = rg.begin(); i != rg.end(); ++i, ++rg_r_cnt)
+//       for(int i = 0; i < rg_sz; ++i, ++rg_r_cnt)
 //       {
-//         const QRect& rg_r = *i;
+//         const QRect& rg_r = rects.at(i);
 //         fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
-//       }
-      
+//       }   
+
       p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::HighQualityAntialiasing, false);
       
       if (bgPixmap.isNull())
@@ -1092,8 +1093,15 @@ QPoint View::mapDev(const QPoint& r) const
 
 void View::mapDev(const QRegion& rg_in, QRegion& rg_out) const
 {
+#if QT_VERSION >= 0x050800
   for(QRegion::const_iterator i = rg_in.begin(); i != rg_in.end(); ++i)
     rg_out += mapDev(*i);
+#else  
+  const QVector<QRect> rects = rg_in.rects();
+  const int sz = rects.size();
+  for(int i = 0; i < sz; ++i)
+    rg_out += mapDev(rects.at(i));
+#endif
 }
 
 #if 0
@@ -1230,8 +1238,15 @@ QPoint View::map(const QPoint& p) const
 
 void View::map(const QRegion& rg_in, QRegion& rg_out) const
 {
+#if QT_VERSION >= 0x050800
   for(QRegion::const_iterator i = rg_in.begin(); i != rg_in.end(); ++i)
     rg_out += map(*i);
+#else  
+  const QVector<QRect> rects = rg_in.rects();
+  const int sz = rects.size();
+  for(int i = 0; i < sz; ++i)
+    rg_out += map(rects.at(i));
+#endif
 }
       
 int View::mapx(int x) const
