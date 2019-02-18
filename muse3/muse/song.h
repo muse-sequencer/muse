@@ -163,8 +163,12 @@ class Song : public QObject {
       QStringList deliveredScriptNames;
       QStringList userScriptNames;
 
+      // Private: Update the audio device's real transport position after a tempo or master change for ex.
+      void updateTransportPos(const SongChangedStruct_t& flags);
+      
       // These are called from non-RT thread operations execution stage 1.
       void insertTrackOperation(Track* track, int idx, PendingOperationList& ops);
+      bool adjustMarkerListOperation(MarkerList* markerlist, unsigned int startPos, int diff, PendingOperationList& ops);
       void removeTrackOperation(Track* track, PendingOperationList& ops);
       bool addEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
       void changeEventOperation(const Event& oldEvent, const Event& newEvent,
@@ -241,20 +245,30 @@ class Song : public QObject {
       //-----------------------------------------
 
       MarkerList* marker() const { return _markerList; }
-      Marker* addMarker(const QString& s, int t, bool lck);
-      Marker* getMarkerAt(int t);
-      void removeMarker(Marker*);
-      Marker* setMarkerName(Marker*, const QString&);
-      Marker* setMarkerTick(Marker*, int);
-      Marker* setMarkerLock(Marker*, bool);
-      void setMarkerCurrent(Marker* m, bool f);
+      // For wholesale swapping of a new list. Takes ownership of the given list.
+      void setMarkerList(MarkerList* ml) { _markerList = ml; }
+// REMOVE Tim. clip. Changed.
+//       Marker* addMarker(const QString& s, int t, bool lck);
+//       Marker* getMarkerAt(int t);
+//       void removeMarker(Marker*);
+//       Marker* setMarkerName(Marker*, const QString&);
+//       Marker* setMarkerTick(Marker*, int);
+//       Marker* setMarkerLock(Marker*, bool);
+//       void setMarkerCurrent(Marker* m, bool f);
+      void addMarker(const QString& s, int t, bool lck);
+      iMarker getMarkerAt(int t);
+      void removeMarker(const Marker&);
+      void setMarkerName(const Marker&, const QString&);
+      void setMarkerTick(const Marker&, int);
+      void setMarkerLock(const Marker&, bool);
+      void setMarkerCurrent(const Marker& m, bool f);
 
       //-----------------------------------------
       //   transport
       //-----------------------------------------
 
       void setPos(int, const Pos&, bool sig = true, bool isSeek = true,
-         bool adjustScrollbar = false);
+         bool adjustScrollbar = false, bool force = false);
       const Pos& cPos() const       { return pos[0]; }
       const Pos& lPos() const       { return pos[1]; }
       const Pos& rPos() const       { return pos[2]; }
@@ -307,7 +321,7 @@ class Song : public QObject {
       void selectEvent(Event&, Part*, bool select);   
       void selectAllEvents(Part*, bool select); // See selectEvent().  
 
-      void cmdChangeWave(const Event& original, QString tmpfile, unsigned sx, unsigned ex);
+      void cmdChangeWave(const Event& original, const QString& tmpfile, unsigned sx, unsigned ex);
       void remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int newport); // called from GUI thread
       void changeAllPortDrumCtrlEvents(bool add, bool drumonly = false); // called from GUI thread
       
@@ -405,7 +419,8 @@ public:
       void startUndo(void* sender = 0);
       void endUndo(MusECore::SongChangedStruct_t);
 
-      void undoOp(UndoOp::UndoType type, const Event& changedEvent, const QString& changeData, int startframe, int endframe); // FIXME FINDMICHJETZT what's that?! remove it!
+// REMOVE Tim. wave. Removed.
+//       void undoOp(UndoOp::UndoType type, const Event& changedEvent, const QString& changeData, int startframe, int endframe); // FIXME FINDMICHJETZT what's that?! remove it!
 
       void executeOperationGroup1(Undo& operations);
       void executeOperationGroup2(Undo& operations);
@@ -488,6 +503,8 @@ public:
    signals:
       void songChanged(MusECore::SongChangedStruct_t); 
       void posChanged(int, unsigned, bool);
+      // REMOVE Tim. clip. Added.
+      void posChanged(int, const MusECore::Pos, bool);
       void loopChanged(bool);
       void recordChanged(bool);
       void playChanged(bool);

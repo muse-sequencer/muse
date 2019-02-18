@@ -545,7 +545,9 @@ bool Audio::startPreCount()
 
 void Audio::reSyncAudio()
 {
+// REMOVE Tim. clip. Removed.
   if (isPlaying()) 
+  
   {
     if (!MusEGlobal::checkAudioDevice()) return;
 #ifdef _AUDIO_USE_TRUE_FRAME_
@@ -572,6 +574,18 @@ void Audio::reSyncAudio()
     syncFrame     = MusEGlobal::audioDevice->framesAtCycleStart();
     syncTimeUS    = curTimeUS();
   }
+// REMOVE Tim. clip. Added.
+//   else
+//   {
+//     // In stop mode we will just go ahead and seek the transport
+//     //  in order to make the current frame match the current tick.
+//     // Make sure to keep the old serial number here so that p.frame()
+//     //  below does the conversion:
+//     //Pos p(_pos);
+//     //p.setTick(curTickPos);
+//     Pos p(curTickPos);
+//     MusEGlobal::audioDevice->seekTransport(p.frame());
+//   }
 }  
       
 //---------------------------------------------------------
@@ -1392,6 +1406,26 @@ unsigned int Audio::curFrame() const
       // Can't use this since for the Jack driver, jack_frames_since_cycle_start is designed to be called ONLY from inside process.
       //return framesAtCycleStart() + framesSinceCycleStart(); 
       }
+
+//---------------------------------------------------------
+//   tickAndFramePos
+// This is a convenience function that returns both curTickPos and pos.frame() at once.
+// It allows reading independent tick and frame at once.
+// They will both be valid until the next tempomap serial number change
+//  ie. whenever tempo changes. Certain situations benefit from this,
+//  for example passing around audio transport tick and frame which may
+//  need to be separate especially during external sync.
+// The important thing is that calling tick() or frame() will NOT cause it
+//  to try and recalculate using the tempomap, until the next tempo change.
+// The returned pos has type FRAMES, but tick() or frame() can be called safely.
+//---------------------------------------------------------
+
+Pos Audio::tickAndFramePos() const
+{
+  Pos p(0, Pos::FRAMES);
+  p.setTickAndFrame(curTickPos, _pos.frame());
+  return p;
+}
 
 //---------------------------------------------------------
 //   updateMidiClick

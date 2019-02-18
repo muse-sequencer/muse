@@ -26,6 +26,8 @@
 
 #include "type_defs.h"
 #include "sig.h"
+// REMOVE Tim. clip. Added.
+#include "pos.h"
 
 #include <QWidget>
 
@@ -36,9 +38,10 @@ class QSlider;
 class QToolButton;
 class QKeyEvent;
 
-namespace MusECore {
-class Pos;
-}
+// REMOVE Tim. clip. Removed.
+// namespace MusECore {
+// class Pos;
+// }
 
 namespace MusEGui {
 class PosEdit;
@@ -131,10 +134,10 @@ class Transport : public QWidget
       virtual void keyPressEvent(QKeyEvent *);
 
  private slots:
-      void cposChanged(const MusECore::Pos&);
+      void cposChanged(const MusECore::Pos);
       void cposChanged(int);
-      void lposChanged(const MusECore::Pos&);
-      void rposChanged(const MusECore::Pos&);
+      void lposChanged(const MusECore::Pos);
+      void rposChanged(const MusECore::Pos);
       void setRecMode(int);
       void setCycleMode(int);
       void songChanged(MusECore::SongChangedStruct_t);
@@ -149,7 +152,9 @@ class Transport : public QWidget
    public slots:
       void setTempo(int tempo);
       void setTimesig(int a, int b);
-      void setPos(int,unsigned, bool);
+// REMOVE Tim. clip. Changed.
+//       void setPos(int,unsigned, bool);
+      void setPos(int,const MusECore::Pos, bool);
       void setMasterFlag(bool);
       void setClickFlag(bool);
       void setSyncFlag(bool);

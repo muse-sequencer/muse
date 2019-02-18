@@ -53,6 +53,9 @@ class AudioDevice {
       unsigned int _dummyPos;
       volatile int _dummyStatePending;
       volatile unsigned int _dummyPosPending;
+
+   protected:
+      bool _isTimebaseMaster;
   
    public:
       enum { DUMMY_AUDIO=0, JACK_AUDIO=1, RTAUDIO_AUDIO=2 };
@@ -94,7 +97,9 @@ class AudioDevice {
       virtual void* registerOutPort(const char* /*name*/, bool /*midi*/) = 0;
       virtual void* registerInPort(const char* /*name*/, bool /*midi*/) = 0;
 
-      virtual float getDSP_Load() = 0;
+// REMOVE Tim. clip. Changed.
+//       virtual float getDSP_Load() = 0;
+      virtual float getDSP_Load() { return 0.0f; }
 
       virtual PortType portType(void*) const = 0;
       virtual PortDirection portDirection(void*) const = 0;

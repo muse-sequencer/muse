@@ -24,6 +24,7 @@
 #define __MARKER_H__
 
 #include <map>
+#include <cstdint>
 
 #include "xml.h"
 #include "pos.h"
@@ -37,14 +38,19 @@ namespace MusECore {
 //---------------------------------------------------------
 
 class Marker : public Pos {
+      static std::uint64_t _idGen;
+      std::uint64_t newId() { return _idGen++; }
+
+      std::uint64_t _id;
       QString _name;
       bool _current;
 
    public:
-      Marker() : _name(""),_current(false) {}
+      Marker() : _id(newId()), _name(""), _current(false) {}
       Marker(const QString& s, bool cur = false)
-         : _name(s), _current(cur) {}
+         : _id(newId()), _name(s), _current(cur) {}
       void read(Xml&);
+      std::uint64_t id() const { return _id; }
       const QString name() const     { return _name; }
       void setName(const QString& s) { _name = s;    }
       bool current() const           { return _current; }
@@ -61,10 +67,22 @@ class MarkerList : public std::multimap<unsigned, Marker, std::less<unsigned> > 
       Marker* add(const QString& s, int t, bool lck);
       void write(int, Xml&) const;
       void remove(Marker*);
+      // REMOVE Tim. clip. Added.
+      void remove(const Marker&);
+      // REMOVE Tim. clip. Added.
+      // After any tempo changes, it is essential to rebuild the list
+      //  so that any 'locked' items are re-sorted properly by tick.
+      // Returns true if any items were rebuilt.
+      bool rebuild();
+      // Sets which item is the current based on the given tick.
+      void updateCurrent(unsigned int tick);
       };
 
-typedef std::multimap<unsigned, Marker, std::less<unsigned> >::iterator iMarker;
-typedef std::multimap<unsigned, Marker, std::less<unsigned> >::const_iterator ciMarker;
+// REMOVE Tim. clip. Changed.
+// typedef std::multimap<unsigned, Marker, std::less<unsigned> >::iterator iMarker;
+// typedef std::multimap<unsigned, Marker, std::less<unsigned> >::const_iterator ciMarker;
+typedef MarkerList::iterator iMarker;
+typedef MarkerList::const_iterator ciMarker;
 
 } // namespace MusECore
 

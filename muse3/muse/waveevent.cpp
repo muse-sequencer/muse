@@ -21,6 +21,9 @@
 //
 //=========================================================
 
+// REMOVE Tim. wave. Added.
+#include "helper.h"
+
 #include "audioconvert.h"
 #include "globals.h"
 #include "event.h"

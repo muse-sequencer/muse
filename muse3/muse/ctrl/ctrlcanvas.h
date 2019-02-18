@@ -198,13 +198,23 @@ class CtrlCanvas : public MusEGui::View {
             MOVE_MOVE, MOVE_COPY
             };
 
-      static const int contextIdCancelDrag;
-      static const int contextIdMerge;
-      static const int contextIdMergeCopy;
-      static const int contextIdErase;
-      static const int contextIdEraseWysiwyg;
-      static const int contextIdEraseInclusive;
+// REMOVE Tim. clip. Changed.
+//       static const int contextIdCancelDrag;
+//       static const int contextIdMerge;
+//       static const int contextIdMergeCopy;
+//       static const int contextIdErase;
+//       static const int contextIdEraseWysiwyg;
+//       static const int contextIdEraseInclusive;
 
+      enum ContextIds {
+        ContextIdCancelDrag = 0x01,
+        ContextIdMerge = 0x02,
+        ContextIdMergeCopy = 0x04,
+        ContextIdErase = 0x08,
+        ContextIdEraseWysiwyg = 0x10,
+        ContextIdEraseInclusive = 0x20
+      };
+      
       CItemList items;
       // To avoid working directly with a potentially huge number of items
       //  in the item list, these 'indexing' lists are used instead.

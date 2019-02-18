@@ -128,6 +128,11 @@ void TempoList::normalize()
               e->first - e->second->tick,
               denom, LargeIntRoundUp);
             }
+      // Invalidate all cached frame or tick values used in the program, such as in class Pos.
+      // On the very next call of tick2frame() or frame2tick(), serial numbers are compared
+      //  and if they are the same a cached value is returned.
+      // Otherwise if the serial numbers are not the same the value is recalculated.
+      ++_tempoSN;
       }
 
 //---------------------------------------------------------
@@ -181,7 +186,6 @@ void TempoList::eraseRange(unsigned stick, unsigned etick)
       delete ite->second;
     erase(se, ee); // Erase range does NOT include the last element.
     normalize();
-    ++_tempoSN;
 }
       
 //---------------------------------------------------------
@@ -229,7 +233,6 @@ void TempoList::del(unsigned tick, bool do_normalize)
             return;
             }
       del(e, do_normalize);
-      ++_tempoSN;
       }
 
 void TempoList::del(iTEvent e, bool do_normalize)
@@ -245,7 +248,6 @@ void TempoList::del(iTEvent e, bool do_normalize)
       erase(e);
       if(do_normalize)
         normalize();
-      ++_tempoSN;
       }
 
 //---------------------------------------------------------
@@ -257,10 +259,11 @@ void TempoList::del(iTEvent e, bool do_normalize)
 void TempoList::setTempo(unsigned tick, int newTempo)
       {
       if (useList)
-            add(tick, newTempo);
+            add(tick, newTempo, true);
       else
-            _tempo = newTempo;
-      ++_tempoSN;
+      {
+        setStaticTempo(newTempo);
+      }
       }
 
 //---------------------------------------------------------
@@ -270,7 +273,6 @@ void TempoList::setTempo(unsigned tick, int newTempo)
 void TempoList::setGlobalTempo(int val)
       {
       _globalTempo = val;
-      ++_tempoSN;
       normalize();
       }
 
@@ -281,7 +283,6 @@ void TempoList::setGlobalTempo(int val)
 void TempoList::addTempo(unsigned t, int tempo, bool do_normalize)
       {
       add(t, tempo, do_normalize);
-      ++_tempoSN;
       }
 
 //---------------------------------------------------------
@@ -291,7 +292,6 @@ void TempoList::addTempo(unsigned t, int tempo, bool do_normalize)
 void TempoList::delTempo(unsigned tick, bool do_normalize)
       {
       del(tick, do_normalize);
-      ++_tempoSN;
       }
 
 //---------------------------------------------------------
@@ -568,7 +568,6 @@ void TempoList::read(Xml& xml)
                   case Xml::TagEnd:
                         if (tag == "tempolist") {
                               normalize();
-                              ++_tempoSN;
                               return;
                               }
                   default:

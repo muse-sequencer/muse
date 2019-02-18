@@ -124,21 +124,26 @@ void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
   MarkerList *markerlist = MusEGlobal::song->marker();
   for(iMarker i = markerlist->begin(); i != markerlist->end(); ++i)
   {
-      Marker* m = &i->second;
-      unsigned int tick = m->tick();
+// REMOVE Tim. global cut. Changed.
+//       Marker* m = &i->second;
+//       unsigned int tick = m->tick();
+      const Marker& m = i->second;
+      unsigned int tick = m.tick();
       if (tick >= startPos)
       {
 // REMOVE Tim. global cut. Changed.
 //        if (tick + diff < startPos ) { // these ticks should be removed
         if (tick < startPos + diff) { // these ticks should be removed
-          operations.push_back(UndoOp(UndoOp::ModifyMarker, 0, m));
+          //operations.push_back(UndoOp(UndoOp::ModifyMarker, 0, m));
+          operations.push_back(UndoOp(UndoOp::DeleteMarker, m));
         } else {
-          Marker *newMarker = new Marker();
-          *newMarker = *m;
 // REMOVE Tim. global cut. Changed.
+//           Marker *newMarker = new Marker();
+//           *newMarker = *m;
 //          newMarker->setTick(tick + diff);
-          newMarker->setTick(tick - diff);
-          operations.push_back(UndoOp(UndoOp::ModifyMarker, newMarker, m));
+          Marker newMarker(m);
+          newMarker.setTick(tick - diff);
+          operations.push_back(UndoOp(UndoOp::ModifyMarker, m, newMarker));
         }
       }
   }

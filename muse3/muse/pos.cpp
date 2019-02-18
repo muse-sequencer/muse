@@ -30,6 +30,7 @@
 #include "globals.h"
 #include "sync.h"
 #include "sig.h"
+#include "large_int.h"
 
 namespace MusEGlobal {
 extern int mtcType;
@@ -91,20 +92,33 @@ Pos::Pos(int min, int sec, int frame, int subframe)
       {
       uint64_t time = (uint64_t)MusEGlobal::sampleRate * (min * 60UL + sec);
       const uint64_t f = (uint64_t)MusEGlobal::sampleRate * (frame * 100UL + subframe);
+      uint64_t divisor = 2400UL;
       switch(MusEGlobal::mtcType) {
             case 0:     // 24 frames sec
-                  time += f / 2400UL;
+// REMOVE Tim. clip. Changed.
+//                   time += f / 2400UL;
+                  divisor = 2400UL;
                   break;
             case 1:     // 25
-                  time += f / 2500UL;
+//                   time += f / 2500UL;
+                  divisor = 2500UL;
                   break;
             case 2:     // 30 drop frame
-                  time += f / 3000UL;
+//                   time += f / 3000UL;
+                  divisor = 3000UL;
                   break;
             case 3:     // 30 non drop frame
-                  time += f / 3000UL;
+//                   time += f / 3000UL;
+                  divisor = 3000UL;
                   break;
             }
+            
+      time += f / divisor;
+      // MSF resolution is less than frame resolution. 
+      // Round up so that the reciprocal function (frame to MSF) matches value for value.
+      if(f % divisor)
+        time += 1;
+      
       _type  = FRAMES;
       _frame = time;
       sn     = -1;
@@ -129,6 +143,15 @@ void Pos::setType(TType t)
             }
       _type = t;
       }
+
+//---------------------------------------------------------
+//   snValid
+//---------------------------------------------------------
+
+bool Pos::snValid() const
+{
+  return sn == MusEGlobal::tempomap.tempoSN();
+}
 
 //---------------------------------------------------------
 //   operator+=
@@ -386,6 +409,49 @@ void Pos::setPosValue(unsigned val, TType time_type)
                 _frame = MusEGlobal::tempomap.tick2frame(_tick, &sn);
           break;
   }
+}
+
+void Pos::setPos(const Pos& s)
+{
+  sn = -1;
+  switch(s.type()) {
+    case FRAMES:
+          _frame = s.posValue();
+          if (_type == TICKS)
+                _tick = MusEGlobal::tempomap.frame2tick(_frame, &sn);
+          break;
+    case TICKS:
+          _tick = s.posValue();
+          if (_type == FRAMES)
+                _frame = MusEGlobal::tempomap.tick2frame(_tick, &sn);
+          break;
+  }
+}
+
+//---------------------------------------------------------
+//   setTickAndFrame
+// This is a convenience function that sets both tick and frame at once.
+// It allows setting independent tick and frame at once.
+// They will both be valid until the next tempomap serial number change
+//  ie. whenever tempo changes. Certain situations benefit from this,
+//  for example passing around audio transport tick and frame which may
+//  need to be separate especially during external sync.
+// The important thing is that calling tick() or frame() will NOT cause it
+//  to try and recalculate using the tempomap, until the next tempo change.
+//---------------------------------------------------------
+
+void Pos::setTickAndFrame(unsigned tick, unsigned frame)
+{
+  sn = MusEGlobal::tempomap.tempoSN();
+  _tick = tick;
+  _frame = frame;
+}
+
+void Pos::setTickAndFrame(const Pos p)
+{
+  sn = MusEGlobal::tempomap.tempoSN();
+  _tick = p.tick();
+  _frame = p.frame();
 }
 
 //---------------------------------------------------------
@@ -664,6 +730,24 @@ void PosLen::setLenValue(unsigned val, TType time_type)
   }
 }
 
+void PosLen::setLen(const PosLen& s)
+{
+  sn      = -1;
+  switch(s.type())
+  {
+    case FRAMES:
+        _lenFrame = s.lenValue();
+        if (type() == TICKS)
+          _lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + _lenFrame, &sn);
+      break;
+    case TICKS:
+        _lenTick = s.lenValue();
+        if (type() == FRAMES)
+          _lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + _lenTick, &sn);
+      break;
+  }
+}
+
 //---------------------------------------------------------
 //   convertLen (static)
 //---------------------------------------------------------
@@ -873,32 +957,73 @@ void Pos::mbt(int* bar, int* beat, int* tk) const
       MusEGlobal::sigmap.tickValues(tick(), bar, beat, (unsigned*)tk);
       }
 
+// REMOVE Tim. clip. Changed.
+// //---------------------------------------------------------
+// //   msf
+// //---------------------------------------------------------
+// 
+// void Pos::msf(int* min, int* sec, int* fr, int* subFrame) const
+//       {
+//       double time = double(frame()) / double(MusEGlobal::sampleRate);
+//       *min  = int(time) / 60;
+//       *sec  = int(time) % 60;
+//       double rest = time - (*min * 60 + *sec);
+//       switch(MusEGlobal::mtcType) {
+//             case 0:     // 24 frames sec
+//                   rest *= 24;
+//                   break;
+//             case 1:     // 25
+//                   rest *= 25;
+//                   break;
+//             case 2:     // 30 drop frame
+//                   rest *= 30;
+//                   break;
+//             case 3:     // 30 non drop frame
+//                   rest *= 30;
+//                   break;
+//             }
+//       *fr = int(rest);
+//       *subFrame = int((rest- *fr)*100);
+//       }
+
 //---------------------------------------------------------
 //   msf
 //---------------------------------------------------------
 
 void Pos::msf(int* min, int* sec, int* fr, int* subFrame) const
       {
-      double time = double(frame()) / double(MusEGlobal::sampleRate);
-      *min  = int(time) / 60;
-      *sec  = int(time) % 60;
-      double rest = time - (*min * 60 + *sec);
+      const unsigned int time = frame() / MusEGlobal::sampleRate;
+      *min  = (int)(time / 60);
+      *sec  = (int)(time % 60);
+
+      unsigned int rest_fact = 24;
       switch(MusEGlobal::mtcType) {
             case 0:     // 24 frames sec
-                  rest *= 24;
+                  rest_fact = 24;
                   break;
             case 1:     // 25
-                  rest *= 25;
+                  rest_fact = 25;
                   break;
             case 2:     // 30 drop frame
-                  rest *= 30;
+                  rest_fact = 30;
                   break;
             case 3:     // 30 non drop frame
-                  rest *= 30;
+                  rest_fact = 30;
                   break;
             }
-      *fr = int(rest);
-      *subFrame = int((rest- *fr)*100);
+
+//       uint64_t rest = muse_multiply_64_div_64_to_64(frame(), rest_fact, MusEGlobal::sampleRate, LargeIntRoundDown) - 
+//                       rest_fact * (*min * 60 + *sec);
+// 
+//       *fr = int(rest);
+//       *subFrame = int((rest - *fr) * 100);
+
+      uint64_t rest = muse_multiply_64_div_64_to_64(frame(), 100 * rest_fact, MusEGlobal::sampleRate, LargeIntRoundDown) - 
+                      100 * rest_fact * (*min * 60 + *sec);
+
+      *fr = int(rest / 100);
+      
+      *subFrame = int(rest % 100);
       }
 
 //---------------------------------------------------------

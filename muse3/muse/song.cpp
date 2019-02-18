@@ -1218,11 +1218,20 @@ void Song::setQuantize(bool val)
 
 void Song::setMasterFlag(bool val)
     {
-      _masterFlag = val;
-      if (MusEGlobal::tempomap.setMasterFlag(cpos(), val))
-      {
-        emit songChanged(SC_MASTER);
-      }      
+// REMOVE Tim. clip. Changed.
+//       _masterFlag = val;
+//       if (MusEGlobal::tempomap.setMasterFlag(cpos(), val))
+//       {
+//         emit songChanged(SC_MASTER);
+//       }      
+      
+      // Here we have a choice of whether to allow undoing of setting the master.
+      // TODO: Add a separate config flag just for this ?
+      //if(MusEGlobal::config.selectionsUndoable)
+      //  MusEGlobal::song->applyOperation(UndoOp(UndoOp::EnableMasterTrack, val, 0), MusECore::Song::OperationUndoMode);
+      //else
+        MusEGlobal::song->applyOperation(UndoOp(UndoOp::EnableMasterTrack, val, 0), MusECore::Song::OperationExecuteUpdate);
+      
     }
 
 //---------------------------------------------------------
@@ -1289,7 +1298,7 @@ void Song::seekTo(int tick)
 //---------------------------------------------------------
 
 void Song::setPos(int idx, const Pos& val, bool sig,
-   bool isSeek, bool adjustScrollbar)
+   bool isSeek, bool adjustScrollbar, bool force)
       {
       if (MusEGlobal::heavyDebugMsg)
       {
@@ -1299,9 +1308,11 @@ void Song::setPos(int idx, const Pos& val, bool sig,
         fprintf(stderr, "\n");
         fprintf(stderr, "Song::setPos before MusEGlobal::audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
       }
+
       
       if (idx == CPOS) {
-            _vcpos = val;
+//             _vcpos = val;
+            _vcpos.setPos(val);
             if (isSeek && !MusEGlobal::extSyncFlag.value()) {  
                   if (val == MusEGlobal::audio->pos())  
                   {
@@ -1315,13 +1326,36 @@ void Song::setPos(int idx, const Pos& val, bool sig,
                   return;
                   }
             }
-      if (val == pos[idx])
+      // The comparison is done in the frames domain if val is in frames. Good.
+// REMOVE Tim. clip. Changed.
+//       if (val == pos[idx])
+
+
+      // Optimize: Compare the requested position with the existing position and ignore if same.
+      // The comparison is done in the frames domain if val is in frames.
+      // NOTE: Here we must be careful. After a tempo change the app wants to set a new 
+      //  position (val) complete with (the same) tick AND a new frame and current serial number.
+      // We want to allow that new frame to be passed down - even when the tick is the same.
+      // But if val is in FRAMES, the comparison will cause the existing position to be converted
+      //  to frames for comparison with val.frame(), and replace its serial number with the current.
+      // That will cause the comparison to always be TRUE (the frames end up being the same).
+      // (And of course if val is in TICKS, the comparison will always be true.)
+      // In other words, when a tempo changes we LOSE the ability to compare an OLD existing
+      //  frame since it will be converted immediately. This is EFFECTIVELY the same as if
+      //  the change in tempo reached out and updated all relevant frames itself, so deal
+      //  with it - the comparison is technically correct in that they ARE currently equal.
+      // Solution: Check first whether the existing position's serial number is valid.
+//       if (pos[idx].snValid() && val == pos[idx])
+      if (!force && val == pos[idx])
       {
            if (MusEGlobal::heavyDebugMsg) fprintf(stderr,
              "Song::setPos MusEGlobal::song->pos already == val tick:%d frame:%d\n", val.tick(), val.frame());   
            return;
       }     
-      pos[idx] = val;
+// REMOVE Tim. clip. Changed.
+//       pos[idx] = val;
+      pos[idx].setPos(val);
+
       bool swap = pos[LPOS] > pos[RPOS];
       if (swap) {        // swap lpos/rpos if lpos > rpos
             Pos tmp   = pos[LPOS];
@@ -1330,22 +1364,59 @@ void Song::setPos(int idx, const Pos& val, bool sig,
             }
       if (sig) {
             if (swap) {
+                  // REMOVE Tim. clip. Added.
+                  // Emit versions of posChanged that pass the full position for whoever wants
+                  //  to use either ticks or frames such as the BigTime display or PosEdit widget.
+                  emit posChanged(LPOS, pos[LPOS], adjustScrollbar);
+                  emit posChanged(RPOS, pos[RPOS], adjustScrollbar);
+                  // REMOVE Tim. clip. Added.
+                  // Now enforce ticks only. Currently the 3 cursors are fixed in the ticks domain.
+                  // That is, nothing attempts to purposely set them as frames.
+                  // INFO: In dead branch 'infrastruct_2_poc', frames were allowed.
+                  // But that was because the canvases and timescales were being prepared
+                  //  for optional frames display, where frame cursors make sense.
+                  // But here we are not ready for frame cursors because in our timescale's tick
+                  //  context they would jump when tempo changes.
+                  //pos[LPOS].setType(Pos::TICKS);
+                  //pos[RPOS].setType(Pos::TICKS);
+
                   emit posChanged(LPOS, pos[LPOS].tick(), adjustScrollbar);
                   emit posChanged(RPOS, pos[RPOS].tick(), adjustScrollbar);
                   if (idx != LPOS && idx != RPOS)
+                  {
+                        // REMOVE Tim. clip. Added.
+                        //emit posChanged(idx, pos[idx], adjustScrollbar);
+                        emit posChanged(idx, val, adjustScrollbar);
+                        // Now enforce ticks only for the cursors ATM.
+                        //pos[RPOS].setType(Pos::TICKS);
+
+// REMOVE Tim. clip. Changed.
                         emit posChanged(idx, pos[idx].tick(), adjustScrollbar);
+                        //emit posChanged(idx, val.tick(), adjustScrollbar);
+                  }
                   }
             else
+            {
+                  // REMOVE Tim. clip. Added.
+                  //emit posChanged(idx, pos[idx], adjustScrollbar);
+                  emit posChanged(idx, val, adjustScrollbar);
+                  // Now enforce ticks only for the cursors ATM.
+                  //pos[idx].setType(Pos::TICKS);
+
+// REMOVE Tim. clip. Changed.
                   emit posChanged(idx, pos[idx].tick(), adjustScrollbar);
+                  //emit posChanged(idx, val.tick(), adjustScrollbar);
+            }
             }
 
       if (idx == CPOS) {
+            const unsigned int vtick = val.tick();
             iMarker i1 = _markerList->begin();
             iMarker i2 = i1;
             bool currentChanged = false;
             for (; i1 != _markerList->end(); ++i1) {
                   ++i2;
-                  if (val.tick() >= i1->first && (i2==_markerList->end() || val.tick() < i2->first)) {
+                  if (vtick >= i1->first && (i2==_markerList->end() || vtick < i2->first)) {
                         if (i1->second.current())
                               return;
                         i1->second.setCurrent(true);
@@ -1430,6 +1501,11 @@ void Song::update(MusECore::SongChangedStruct_t flags, bool allowRecursion)
 
 void Song::updatePos()
       {
+      // REMOVE Tim. clip. Added.
+      emit posChanged(0, pos[0], false);
+      emit posChanged(1, pos[1], false);
+      emit posChanged(2, pos[2], false);
+
       emit posChanged(0, pos[0].tick(), false);
       emit posChanged(1, pos[1].tick(), false);
       emit posChanged(2, pos[2].tick(), false);
@@ -1743,8 +1819,16 @@ void Song::beat()
           MusEGlobal::midiPorts[port].syncInfo().setTime();
       
       
+      // REMOVE Tim. clip. Changed. To get frame resolution inside Song::setPos().
+//       if (MusEGlobal::audio->isPlaying())
+//         setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
+        // TODO Hm, not sure if this would be OK during external sync.
+        // It was done in Song::seqSignal() in response to Audio::seek() but here I'm not sure.
+        // So far, keeping the original shouldn't be a problem as we're only interested in the seek part.
+        //setPos(0, MusEGlobal::audio->pos(), true, false, true);
+      // Set separate tick and frame, crucial for example during external sync.
       if (MusEGlobal::audio->isPlaying())
-        setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
+       setPos(0, MusEGlobal::audio->tickAndFramePos(), true, false, true);
 
       // Process external tempo changes:
       while(!_tempoFifo.isEmpty())
@@ -1806,63 +1890,120 @@ void Song::setLen(unsigned l, bool do_update)
         update();
       }
 
+// REMOVE Tim. clip. Changed.
+// //---------------------------------------------------------
+// //   addMarker
+// //---------------------------------------------------------
+// 
+// Marker* Song::addMarker(const QString& s, int t, bool lck)
+//       {
+//       Marker* marker = _markerList->add(s, t, lck);
+//       emit markerChanged(MARKER_ADD);
+//       return marker;
+//       }
+// 
+// //---------------------------------------------------------
+// //   addMarker
+// //---------------------------------------------------------
+// 
+// Marker* Song::getMarkerAt(int t)
+//       {
+//       iMarker markerI;
+//       for (markerI=_markerList->begin(); markerI != _markerList->end(); ++markerI) {
+//           if (unsigned(t) == markerI->second.tick()) //prevent of compiler warning: comparison signed/unsigned
+//             return &markerI->second;
+//           }
+//       return NULL;
+//       }
+// 
+// //---------------------------------------------------------
+// //   removeMarker
+// //---------------------------------------------------------
+// 
+// void Song::removeMarker(Marker* marker)
+//       {
+//       _markerList->remove(marker);
+//       emit markerChanged(MARKER_REMOVE);
+//       }
+// 
+// Marker* Song::setMarkerName(Marker* m, const QString& s)
+//       {
+//       m->setName(s);
+//       emit markerChanged(MARKER_NAME);
+//       return m;
+//       }
+// 
+// Marker* Song::setMarkerTick(Marker* m, int t)
+//       {
+//       Marker mm(*m);
+//       _markerList->remove(m);
+//       mm.setTick(t);
+//       m = _markerList->add(mm);
+//       emit markerChanged(MARKER_TICK);
+//       return m;
+//       }
+// 
+// Marker* Song::setMarkerLock(Marker* m, bool f)
+//       {
+//       m->setType(f ? Pos::FRAMES : Pos::TICKS);
+//       emit markerChanged(MARKER_LOCK);
+//       return m;
+//       }
+
 //---------------------------------------------------------
 //   addMarker
 //---------------------------------------------------------
 
-Marker* Song::addMarker(const QString& s, int t, bool lck)
+void Song::addMarker(const QString& s, int t, bool lck)
       {
-      Marker* marker = _markerList->add(s, t, lck);
+      Marker m(s);
+      m.setType(lck ? Pos::FRAMES : Pos::TICKS);
+      m.setTick(t);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddMarker, m));
       emit markerChanged(MARKER_ADD);
-      return marker;
       }
 
 //---------------------------------------------------------
 //   addMarker
 //---------------------------------------------------------
 
-Marker* Song::getMarkerAt(int t)
+iMarker Song::getMarkerAt(int t)
       {
-      iMarker markerI;
-      for (markerI=_markerList->begin(); markerI != _markerList->end(); ++markerI) {
-          if (unsigned(t) == markerI->second.tick()) //prevent of compiler warning: comparison signed/unsigned
-            return &markerI->second;
-          }
-      return NULL;
+      return _markerList->find(t);
       }
 
 //---------------------------------------------------------
 //   removeMarker
 //---------------------------------------------------------
 
-void Song::removeMarker(Marker* marker)
+void Song::removeMarker(const Marker& marker)
       {
-      _markerList->remove(marker);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteMarker, marker));
       emit markerChanged(MARKER_REMOVE);
       }
 
-Marker* Song::setMarkerName(Marker* m, const QString& s)
+void Song::setMarkerName(const Marker& marker, const QString& s)
       {
-      m->setName(s);
+      Marker m(marker);
+      m.setName(s);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
       emit markerChanged(MARKER_NAME);
-      return m;
       }
 
-Marker* Song::setMarkerTick(Marker* m, int t)
+void Song::setMarkerTick(const Marker& marker, int t)
       {
-      Marker mm(*m);
-      _markerList->remove(m);
-      mm.setTick(t);
-      m = _markerList->add(mm);
+      Marker m(marker);
+      m.setTick(t);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
       emit markerChanged(MARKER_TICK);
-      return m;
       }
 
-Marker* Song::setMarkerLock(Marker* m, bool f)
+void Song::setMarkerLock(const Marker& marker, bool f)
       {
-      m->setType(f ? Pos::FRAMES : Pos::TICKS);
+      Marker m(marker);
+      m.setType(f ? Pos::FRAMES : Pos::TICKS);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
       emit markerChanged(MARKER_LOCK);
-      return m;
       }
 
 
@@ -1908,6 +2049,25 @@ void Song::endMsgCmd()
               MusEGlobal::redoAction->setEnabled(false);
             setUndoRedoText();
             emit songChanged(updateFlags);
+
+            // REMOVE Tim. clip. Added.
+            // SPECIAL for tempo or master changes: In stop mode we want
+            //  the transport to locate to the correct frame. In play mode
+            //  we simply let the transport progress naturally but we 'fake'
+            //  a new representation of transport position (_pos) in Audio::reSyncAudio()
+            //  as part of the realtime part of the tempo change operation.
+            // By now, our audio transport position (_pos) has the new tick and frame.
+            // We need to seek AFTER any song changed slots are called in case widgets
+            //  are removed etc. etc. before the posChanged signal is emitted when setPos()
+            //  is called from the seek recognition.
+//             if(!MusEGlobal::audio->isPlaying() && (updateFlags._flags & (SC_TEMPO | SC_MASTER)))
+//             {
+//               //const MusECore::Pos ap = MusEGlobal::audio->tickAndFramePos();
+//               // Don't touch Audio::_pos, make a copy.
+//               const MusECore::Pos ap = MusEGlobal::audio->pos();
+//               MusEGlobal::audioDevice->seekTransport(ap);
+//             }
+            updateTransportPos(updateFlags);
             }
       }
 
@@ -1941,6 +2101,25 @@ void Song::undo()
 
       emit songChanged(updateFlags);
       emit sigDirty();
+
+      // REMOVE Tim. clip. Added.
+      // SPECIAL for tempo or master changes: In stop mode we want
+      //  the transport to locate to the correct frame. In play mode
+      //  we simply let the transport progress naturally but we 'fake'
+      //  a new representation of transport position (_pos) in Audio::reSyncAudio()
+      //  as part of the realtime part of the tempo change operation.
+      // By now, our audio transport position (_pos) has the new tick and frame.
+      // We need to seek AFTER any song changed slots are called in case widgets
+      //  are removed etc. etc. before the posChanged signal is emitted when setPos()
+      //  is called from the seek recognition.
+//       if(!MusEGlobal::audio->isPlaying() && (updateFlags._flags & (SC_TEMPO | SC_MASTER)))
+//       {
+//         //const MusECore::Pos ap = MusEGlobal::audio->tickAndFramePos();
+//         // Don't touch Audio::_pos, make a copy.
+//         const MusECore::Pos ap = MusEGlobal::audio->pos();
+//         MusEGlobal::audioDevice->seekTransport(ap);
+//       }
+      updateTransportPos(updateFlags);
 }
 
 //---------------------------------------------------------
@@ -1973,6 +2152,25 @@ void Song::redo()
 
       emit songChanged(updateFlags);
       emit sigDirty();
+      
+      // REMOVE Tim. clip. Added.
+      // SPECIAL for tempo or master changes: In stop mode we want
+      //  the transport to locate to the correct frame. In play mode
+      //  we simply let the transport progress naturally but we 'fake'
+      //  a new representation of transport position (_pos) in Audio::reSyncAudio()
+      //  as part of the realtime part of the tempo change operation.
+      // By now, our audio transport position (_pos) has the new tick and frame.
+      // We need to seek AFTER any song changed slots are called in case widgets
+      //  are removed etc. etc. before the posChanged signal is emitted when setPos()
+      //  is called from the seek recognition.
+//       if(!MusEGlobal::audio->isPlaying() && (updateFlags._flags & (SC_TEMPO | SC_MASTER)))
+//       {
+//         //const MusECore::Pos ap = MusEGlobal::audio->tickAndFramePos();
+//         // Don't touch Audio::_pos, make a copy.
+//         const MusECore::Pos ap = MusEGlobal::audio->pos();
+//         MusEGlobal::audioDevice->seekTransport(ap);
+//       }
+      updateTransportPos(updateFlags);
 }
 
 //---------------------------------------------------------
@@ -2293,12 +2491,30 @@ void Song::seqSignal(int fd)
                         alsaScanMidiPorts();
                         break;
                   case 'G':   // Seek
+                  {
                         // Hm, careful here, will multiple seeks cause this
                         //  to interfere with Jack's transport timeout countdown?
                         do_set_sync_timeout = true;
                         clearRecAutomation(true);
-                        setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
+// REMOVE Tim. clip. Changed.  To get frame resolution inside Song::setPos(). TEST Hopefully should be OK.
+// tickPos() returns Audio::curTickPos, and the line "curTickPos = _pos.tick();" appears before
+//  the signal to gui. So hopefully during external sync it will still be OK.
+// See also the counterpart to this during playback, Song::beat(). There we may have trouble
+//  changing that code for external sync to work...
+//                         setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
+                        //const Pos p(MusEGlobal::audio->pos());
+                        //Pos p(0, false);
+                        //p.setType(Pos::FRAMES);
+                        //// Set separate tick and frame, crucial for example during external sync.
+                        //p.setTickAndFrame(MusEGlobal::audio->tickPos(), MusEGlobal::audio->pos().frame());
+
+                        // Set separate tick and frame, crucial for example during external sync.
+                        // Force it as well, since it would ignore seeks caused by tempo changes,
+                        //  and we need it to allow that.
+                        setPos(CPOS, MusEGlobal::audio->tickAndFramePos(), true, false, true, true);
+                        //setPos(CPOS, MusEGlobal::audio->tickPos(), true, false, true, true);
                         break;
+                  }
                   case 'S':   // shutdown audio
                         MusEGlobal::muse->seqStop();
 
@@ -4073,6 +4289,210 @@ void Song::informAboutNewParts(const Part* orig, const Part* p1, const Part* p2,
   temp[orig].erase(orig);
   
   informAboutNewParts(temp);
+}
+
+// REMOVE Tim. wave. Added. Moved here from wave.cpp
+//---------------------------------------------------------
+//   cmdAddRecordedWave
+//---------------------------------------------------------
+
+void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusECore::Pos e, Undo& operations)
+      {
+      if (MusEGlobal::debugMsg)
+          printf("cmdAddRecordedWave - loopCount = %d, punchin = %d", MusEGlobal::audio->loopCount(), punchin());
+
+      // Driver should now be in transport 'stop' mode and no longer pummping the recording wave fifo,
+      //  but the fifo may not be empty yet, it's in the prefetch thread.
+      // Wait a few seconds for the fifo to be empty, until it has been fully transferred to the
+      //  track's recFile sndfile, which is done via Audio::process() sending periodic 'tick' messages
+      //  to the prefetch thread to write its fifo to the sndfile, always UNLESS in stop or idle mode.
+      // It now sends one final tick message at stop, so we /should/ have all our buffers available here.
+      // This GUI thread is notified of the stop condition via the audio thread sending a message
+      //  as soon as the state change is read from the driver.
+      // NOTE: The fifo scheme is used only if NOT in transport freewheel mode where the data is directly
+      //  written to the sndfile and therefore stops immediately when the transport stops and thus is
+      //  safe to read here regardless of waiting.
+      int tout = 100; // Ten seconds. Otherwise we gotta move on.
+      while(track->recordFifoCount() != 0)
+      {
+        usleep(100000);
+        --tout;
+        if(tout == 0)
+        {
+          fprintf(stderr, "Song::cmdAddRecordedWave: Error: Timeout waiting for _tempoFifo to empty! Count:%d\n", track->prefetchFifo()->getCount());
+          break;
+        }
+      }
+
+      // It should now be safe to work with the resultant sndfile here in the GUI thread.
+      // No other thread should be touching it right now.
+      MusECore::SndFileR f = track->recFile();
+      if (f.isNull()) {
+            printf("cmdAddRecordedWave: no snd file for track <%s>\n",
+               track->name().toLocal8Bit().constData());
+            return;
+            }
+
+      // If externally clocking (and therefore master was forced off),
+      //  tempos may have been recorded. We really should temporarily force
+      //  the master tempo map on in order to properly determine the ticks below.
+      // Else internal clocking, the user decided to record either with or without
+      //  master on, so let it be.
+      // FIXME: We really should allow the master flag to be on at the same time as
+      //  the external sync flag! AFAIR when external sync is on, no part of the app shall
+      //  depend on the tempo map anyway, so it should not matter whether it's on or off.
+      // If we do that, then we may be able to remove this section and user simply decides
+      //  whether master is on/off, because we may be able to use the flag to determine
+      //  whether to record external tempos at all, because we may want a switch for it!
+      bool master_was_on = MusEGlobal::tempomap.masterFlag();
+      if(MusEGlobal::extSyncFlag.value() && !master_was_on)
+        MusEGlobal::tempomap.setMasterFlag(0, true);
+
+      if((MusEGlobal::audio->loopCount() > 0 && s.tick() > lPos().tick()) || (punchin() && s.tick() < lPos().tick()))
+        s.setTick(lPos().tick());
+      // If we are looping, just set the end to the right marker, since we don't know how many loops have occurred.
+      // (Fixed: Added Audio::loopCount)
+      // Otherwise if punchout is on, limit the end to the right marker.
+      if((MusEGlobal::audio->loopCount() > 0) || (punchout() && e.tick() > rPos().tick()) )
+        e.setTick(rPos().tick());
+
+      // No part to be created? Delete the rec sound file.
+      if(s.frame() >= e.frame())
+      {
+        QString st = f->path();
+        // The function which calls this function already does this immediately after. But do it here anyway.
+        track->setRecFile(NULL); // upon "return", f is removed from the stack, the WaveTrack::_recFile's
+                                 // counter has dropped by 2 and _recFile will probably deleted then
+        remove(st.toLocal8Bit().constData());
+        if(MusEGlobal::debugMsg)
+          printf("Song::cmdAddRecordedWave: remove file %s - startframe=%d endframe=%d\n", st.toLocal8Bit().constData(), s.frame(), e.frame());
+
+        // Restore master flag.
+        if(MusEGlobal::extSyncFlag.value() && !master_was_on)
+          MusEGlobal::tempomap.setMasterFlag(0, false);
+
+        return;
+      }
+// REMOVE Tim. Wave. Removed. Probably I should never have done this. It's more annoying than helpful. Look at it another way: Importing a wave DOES NOT do this.
+//       // Round the start down using the Arranger part snap raster value.
+//       int a_rast = MusEGlobal::song->arrangerRaster();
+//       unsigned sframe = (a_rast == 1) ? s.frame() : Pos(MusEGlobal::sigmap.raster1(s.tick(), MusEGlobal::song->arrangerRaster())).frame();
+//       // Round the end up using the Arranger part snap raster value.
+//       unsigned eframe = (a_rast == 1) ? e.frame() : Pos(MusEGlobal::sigmap.raster2(e.tick(), MusEGlobal::song->arrangerRaster())).frame();
+// //       unsigned etick = Pos(eframe, false).tick();
+      unsigned sframe = s.frame();
+      unsigned eframe = e.frame();
+
+      // Done using master tempo map. Restore master flag.
+      if(MusEGlobal::extSyncFlag.value() && !master_was_on)
+        MusEGlobal::tempomap.setMasterFlag(0, false);
+
+      f->update();
+
+      MusECore::WavePart* part = new MusECore::WavePart(track);
+      part->setFrame(sframe);
+      part->setLenFrame(eframe - sframe);
+      part->setName(track->name());
+
+      // create Event
+      MusECore::Event event(MusECore::Wave);
+      event.setSndFile(f);
+      // We are done with the _recFile member. Set to zero.
+      track->setRecFile(0);
+
+      event.setSpos(0);
+      // Since the part start was snapped down, we must apply the difference so that the
+      //  wave event tick lines up with when the user actually started recording.
+      event.setFrame(s.frame() - sframe);
+      // NO Can't use this. SF reports too long samples at first part recorded in sequence. See samples() - funny business with SEEK ?
+      //event.setLenFrame(f.samples());
+      event.setLenFrame(e.frame() - s.frame());
+      part->addEvent(event);
+
+      operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, part));
+      }
+
+// REMOVE Tim. wave. Added. Moved here from wave.cpp
+//---------------------------------------------------------
+//   cmdChangeWave
+//   called from GUI context
+//---------------------------------------------------------
+void Song::cmdChangeWave(const Event& original, const QString& tmpfile, unsigned sx, unsigned ex)
+      {
+      addUndo(UndoOp(UndoOp::ModifyClip,original,tmpfile,sx,ex));
+      temporaryWavFiles.push_back(tmpfile);
+      }
+
+//---------------------------------------------------------
+//   updateTransportPos
+//   called from GUI context
+// REMOVE Tim. clip. Added.
+// SPECIAL for tempo or master changes: In stop mode we want
+//  the transport to locate to the correct frame. In play mode
+//  we simply let the transport progress naturally but we 'fake'
+//  a new representation of transport position (_pos) in Audio::reSyncAudio()
+//  as part of the realtime part of the tempo change operation.
+////// By now, our audio transport position (_pos) has the new tick and frame.
+// We need to seek AFTER any song changed slots are called in case widgets
+//  are removed etc. etc. before the posChanged signal is emitted when setPos()
+//  is called from the seek recognition.
+//---------------------------------------------------------
+
+void Song::updateTransportPos(const SongChangedStruct_t& flags)
+{
+  if(!MusEGlobal::audio->isPlaying() && (flags._flags & (SC_TEMPO | SC_MASTER)))
+  {
+    //const MusECore::Pos ap = MusEGlobal::audio->tickAndFramePos();
+    // Don't touch Audio::_pos, make a copy.
+    //const MusECore::Pos ap = MusEGlobal::audio->pos();
+    
+    // Don't touch Audio::_pos, make a copy or take the tick.
+    // Note that this is only tick accurate, not frame accurate,
+    //  ie. it can only recalculate a new frame from the given tick. 
+    const MusECore::Pos p(MusEGlobal::audio->tickPos());
+
+//     // Don't touch the original, make a copy.
+//     const MusECore::Pos p(cPos());
+    
+    MusEGlobal::audioDevice->seekTransport(p.frame());
+  }
+}
+
+//---------------------------------------------------------
+//   adjustMarkerListOperation
+//   Items between startPos and startPos + diff are removed.
+//   Items after startPos + diff are adjusted 'diff' number of ticks.
+//---------------------------------------------------------
+
+bool Song::adjustMarkerListOperation(MarkerList* markerlist, unsigned int startPos, int diff, PendingOperationList& ops)
+{
+  if(!markerlist || markerlist->empty() || diff == 0)
+    return false;
+  
+  MarkerList* new_markerlist = new MarkerList();
+  for(ciMarker i = markerlist->begin(); i != markerlist->end(); ++i)
+  {
+    const Marker& m = i->second;
+    unsigned int tick = m.tick();
+    if(tick >= startPos)
+    {
+      if(tick >= startPos + diff)
+      {
+        Marker newMarker(m);
+        newMarker.setTick(tick - diff);
+        new_markerlist->add(newMarker);
+      }
+    }
+    else
+    {
+      new_markerlist->add(m);
+    }
+  }
+
+  PendingOperationItem poi(markerlist, new_markerlist, PendingOperationItem::ModifyMarkerList);
+  ops.add(poi);
+
+  return true;
 }
 
 } // namespace MusECore

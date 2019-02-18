@@ -27,6 +27,9 @@
 #include <QSet>
 #include <QStringList>
 
+// REMOVE Tim. wave. Added.
+#include "wave.h"
+
 #include "drummap.h"
 #include "type_defs.h"
 
@@ -42,6 +45,7 @@ class Part;
 class Track;
 class PartList;
 class MEvent;
+class Event;
 
 void enumerateJackMidiDevices();
 void populateMidiPorts();
@@ -69,6 +73,11 @@ QSet<Part*> parts_at_tick(unsigned tick, const QSet<Track*>& tracks);
 bool parse_range(const QString& str, int* from, int* to); // returns true if successful, false on error
 
 void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int val, MidiTrack* mt);
+
+// REMOVE Tim. wave. Added. Moved here from wave.cpp
+SndFileR getWave(const QString& name, bool readOnlyFlag, bool openFlag = true, bool showErrorBox = true);
+bool checkCopyOnWrite(const SndFileR& sndfile);  //!< check if the file should be copied before writing to it
+void waveApplyUndoFile(const Event& original, const QString* tmpfile, unsigned startframe, unsigned endframe);
 }
 
 namespace MusEGui {

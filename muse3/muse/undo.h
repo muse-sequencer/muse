@@ -55,14 +55,14 @@ struct UndoOp {
             AddAudioCtrlVal, DeleteAudioCtrlVal, ModifyAudioCtrlVal, ModifyAudioCtrlValList,
             // Add, delete and modify operate directly on the list.
             // setTempo does only if master is set, otherwise it operates on the static tempo value.
-            AddTempo, DeleteTempo, ModifyTempo, SetTempo, SetStaticTempo, SetGlobalTempo, 
+            AddTempo, DeleteTempo, ModifyTempo, SetTempo, SetStaticTempo, SetGlobalTempo, EnableMasterTrack,
             AddSig,   DeleteSig,   ModifySig,
             AddKey,   DeleteKey,   ModifyKey,
             ModifyTrackName, ModifyTrackChannel,
             SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff,
             MoveTrack,
             ModifyClip,
-            ModifyMarker,
+            AddMarker, DeleteMarker, ModifyMarker,
             ModifySongLen, // a = new len, b = old len
             DoNothing,
             
@@ -98,8 +98,11 @@ struct UndoOp {
                   QString* tmpwavfile; //!< The file with the changed data
                   };
             struct {
-                  Marker* realMarker; 
-                  Marker* copyMarker;
+// REMOVE Tim. clip. Changed.
+//                   Marker* realMarker; 
+//                   Marker* copyMarker;
+                  Marker* oldMarker; 
+                  Marker* newMarker;
                 };
             struct {
                   const Track* _propertyTrack;
@@ -154,7 +157,13 @@ struct UndoOp {
       UndoOp(UndoType type, const Event& nev, const Event& oev, const Part* part, bool doCtrls, bool doClones, bool noUndo = false);
       UndoOp(UndoType type, const Event& nev, const Part* part, bool, bool, bool noUndo = false);
       UndoOp(UndoType type, const Event& changedEvent, const QString& changeData, int startframe, int endframe, bool noUndo = false);
-      UndoOp(UndoType type, Marker* copyMarker, Marker* realMarker, bool noUndo = false);
+// REMOVE Tim. clip. Changed.
+//       UndoOp(UndoType type, Marker* copyMarker, Marker* realMarker, bool noUndo = false);
+      //// newMarker does not have to be created by caller. Just a pointer to a marker - we make copies of both oldMarker and newMarker.
+      //UndoOp(UndoType type, const Marker& oldMarker, Marker* newMarker = nullptr, bool noUndo = false);
+      UndoOp(UndoType type, const Marker& oldMarker, const Marker& newMarker, bool noUndo = false);
+      UndoOp(UndoType type, const Marker& marker, bool noUndo = false);
+
       UndoOp(UndoType type, const Track* track, const QString& old_name, const QString& new_name, bool noUndo = false);
       UndoOp(UndoType type, const Track* track, int old_chan, int new_chan, bool noUndo = false);
       //UndoOp(UndoType type, const Track* track, int ctrlID, int frame, bool noUndo = false); // Same as above.

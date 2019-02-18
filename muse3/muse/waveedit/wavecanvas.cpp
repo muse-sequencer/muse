@@ -1961,7 +1961,9 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
           MusECore::SndFileR file = w.event.sndFile();
           if(file.isNull())
             continue;
-          if(file.checkCopyOnWrite())
+// REMOVE Tim. wave. Changed.
+//           if(file.checkCopyOnWrite())
+          if(checkCopyOnWrite(file))
           {
             std::vector<MusECore::SndFileR>::iterator i = copy_files_proj_dir.begin();
             for( ; i != copy_files_proj_dir.end(); ++i)
@@ -2008,7 +2010,9 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
             if(w.event.empty())
               continue;
             MusECore::SndFileR file = w.event.sndFile();
-            if(file.isNull() || !file.checkCopyOnWrite()) // Make sure to re-check
+// REMOVE Tim. wave. Changed.
+//             if(file.isNull() || !file.checkCopyOnWrite()) // Make sure to re-check
+            if(file.isNull() || !checkCopyOnWrite(file)) // Make sure to re-check
               continue;
             QString filePath = MusEGlobal::museProject + QString("/") + file.name();
             QString newFilePath;

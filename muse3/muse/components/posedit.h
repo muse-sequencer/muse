@@ -24,6 +24,7 @@
 #define __POSEDIT_H__
 
 #include "pos.h"
+#include "type_defs.h"
 
 #include <QAbstractSpinBox>
 
@@ -37,16 +38,25 @@ class PosEdit : public QAbstractSpinBox
       {
       Q_OBJECT
       Q_PROPERTY(bool smpte READ smpte WRITE setSmpte)
+      Q_PROPERTY(bool formatted READ formatted WRITE setFormatted)
+      Q_PROPERTY(bool framesDisplay READ framesDisplay WRITE setFramesDisplay)
 
-      bool _smpte;
+// REMOVE Tim. clip. Changed.
+      // The time type and format, and whether the user can change them.
+//       bool _formatted;
+//       bool _smpte;
+      MusECore::TimeFormatOptionsStruct _timeFormatOptions;
+//       bool _enableUserFormat;
+//       bool _enableUserType;
+
       MusECore::Pos _pos;
       bool initialized;
       bool _returnMode;
       int cur_minute, cur_sec, cur_frame, cur_subframe;
       int cur_bar, cur_beat, cur_tick;
-      
+
       QIntValidator* validator;
-      
+
       virtual void paintEvent(QPaintEvent* event);
       virtual void stepBy(int steps);
       virtual StepEnabled stepEnabled() const;
@@ -58,7 +68,7 @@ class PosEdit : public QAbstractSpinBox
 
    signals:
       void valueChanged(const MusECore::Pos&);
-      
+
       // Choose these carefully, watch out for focusing recursion. 
       void returnPressed();
       void escapePressed();
@@ -66,18 +76,50 @@ class PosEdit : public QAbstractSpinBox
       // This is emitted when focus lost or return pressed (same as QAbstractSpinBox). 
       void editingFinished();
 
+//    private slots:
+//       void customMenuRequested(QPoint pos);
+
+   protected:
+      enum ContextIds {
+        ContextIdStepUp = 0x01,
+        ContextIdStepDown = 0x02,
+        ContextIdMode = 0x04,
+        ContextIdDisplayMode = 0x08,
+        ContextIdFormat = 0x10
+      };
+
+      void contextMenuEvent(QContextMenuEvent *event);
+      void updateInputMask();
+
    public slots:
       void setValue(const MusECore::Pos& time);
       void setValue(int t);
       void setValue(const QString& s);
 
    public:
-      PosEdit(QWidget* parent = 0);
+      PosEdit(QWidget* parent = 0,
+        const MusECore::TimeFormatOptionsStruct& options = MusECore::TimeFormatOptionsStruct(
+          MusECore::TimeFormatTicksFormatted | MusECore::TimeFormatUserAll));
       QSize sizeHint() const;
 
+//       // Whether the user can change the format or time type.
+//       bool isUserFormatEnabled() const { return _enableUserFormat; }
+//       bool isUserTypeEnabled() const { return _enableUserType; }
+
+      MusECore::TimeFormatOptionsStruct timeFormatOptions() const { return _timeFormatOptions; }
+      void toggleTimeFormatOptions(const MusECore::TimeFormatOptionsStruct& options, bool set = true);
+      void setTimeFormatOptions(const MusECore::TimeFormatOptionsStruct& options);
+
       MusECore::Pos pos() const { return _pos; }
+
+      // Convenience and property methods.
+      bool framesDisplay() const { return _timeFormatOptions.flagsSet(MusECore::TimeDisplayFrames); }
+      void setFramesDisplay(bool f);
+      bool formatted() const { return _timeFormatOptions.flagsSet(MusECore::TimeFormatFormatted); }
+      void setFormatted(bool f);
       void setSmpte(bool);
-      bool smpte() const { return _smpte; }
+      bool smpte() const { return _timeFormatOptions.flagsSet(MusECore::TimeModeFrames); }
+
       void setReturnMode(bool v) { _returnMode = v; } 
       bool returnMode() const    { return _returnMode; }
       void updateValue();

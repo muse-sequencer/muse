@@ -53,7 +53,9 @@ enum { COL_TICK = 0, COL_SMPTE, COL_LOCK, COL_NAME };
 
 unsigned MarkerItem::tick() const
       {
-      return _marker->tick();
+// REMOVE Tim. clip. Changed.
+//       return _marker->tick();
+      return _marker.tick();
       }
 
 //---------------------------------------------------------
@@ -62,7 +64,9 @@ unsigned MarkerItem::tick() const
 
 const QString MarkerItem::name() const
       {
-      return _marker->name();
+// REMOVE Tim. clip. Changed.
+//       return _marker->name();
+      return _marker.name();
       }
 
 //---------------------------------------------------------
@@ -71,22 +75,35 @@ const QString MarkerItem::name() const
 
 bool MarkerItem::lock() const
       {
-      return _marker->type() == MusECore::Pos::FRAMES;
+// REMOVE Tim. clip. Changed.
+//       return _marker->type() == MusECore::Pos::FRAMES;
+      return _marker.type() == MusECore::Pos::FRAMES;
       }
 
 //---------------------------------------------------------
 //   MarkerItem
 //---------------------------------------------------------
 
-MarkerItem::MarkerItem(QTreeWidget* parent, MusECore::Marker* m)
+// REMOVE Tim. clip. Changed.
+// MarkerItem::MarkerItem(QTreeWidget* parent, MusECore::Marker* m)
+//   : QTreeWidgetItem(parent)
+//       {
+//       _marker = m;
+//       setText(COL_NAME, m->name());
+//       setTick(m->tick());
+//       if (m->type() == MusECore::Pos::FRAMES)
+//             setIcon(COL_LOCK, QIcon(*lockIcon));
+//       setLock(m->type() == MusECore::Pos::FRAMES);
+//       }
+MarkerItem::MarkerItem(QTreeWidget* parent, const MusECore::Marker& m)
   : QTreeWidgetItem(parent)
       {
       _marker = m;
-      setText(COL_NAME, m->name());
-      setTick(m->tick());
-      if (m->type() == MusECore::Pos::FRAMES)
+      setText(COL_NAME, m.name());
+      setTick(m.tick());
+      if (m.type() == MusECore::Pos::FRAMES)
             setIcon(COL_LOCK, QIcon(*lockIcon));
-      setLock(m->type() == MusECore::Pos::FRAMES);
+      setLock(m.type() == MusECore::Pos::FRAMES);
       }
 
 //---------------------------------------------------------
@@ -242,11 +259,12 @@ MarkerView::MarkerView(QWidget* parent)
 
       ///editTick = new PosEdit;
       editTick = new PosEdit;
+      editTick->setTimeFormatOptions(MusECore::TimeFormatTicksFormatted | MusECore::TimeFormatUserAll);
       editTick->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
          QSizePolicy::Fixed));
 
       editSMPTE = new PosEdit;
-      editSMPTE->setSmpte(true);
+      editSMPTE->setTimeFormatOptions(MusECore::TimeFormatFramesFormatted | MusECore::TimeFormatUserAll);
       editSMPTE->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
          QSizePolicy::Fixed));
 
@@ -428,9 +446,12 @@ void MarkerView::deleteMarker()
 //   songChanged
 //---------------------------------------------------------
 
-void MarkerView::songChanged(MusECore::SongChangedStruct_t /*flags*/)
+void MarkerView::songChanged(MusECore::SongChangedStruct_t flags)
 {
-  updateList();
+  // REMOVE Tim. clip. Added.
+  if(flags._flags & (SC_MARKERS_REBUILT | SC_TEMPO | SC_MASTER))
+
+    updateList();
 }
 
 //---------------------------------------------------------

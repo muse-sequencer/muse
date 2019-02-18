@@ -35,6 +35,8 @@ AudioDevice::AudioDevice()
   _syncTimeoutCounter = 0.0;
   _dummyStatePending = 0;
   _dummyPosPending = 0;
+  
+  _isTimebaseMaster = false;
 }
 
 

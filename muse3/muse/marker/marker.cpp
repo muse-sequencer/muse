@@ -20,10 +20,16 @@
 //
 //=========================================================
 
+// REMOVE Tim. clip. Added.
+#include <list>
+
 #include "marker.h"
 #include "xml.h"
 
 namespace MusECore {
+
+// Static.
+std::uint64_t Marker::_idGen = 0;
 
 Marker* MarkerList::add(const Marker& marker)
       {
@@ -103,5 +109,62 @@ void MarkerList::remove(Marker* m)
             }
       printf("MarkerList::remove(): marker not found\n");
       }
+
+// REMOVE Tim. clip. Added.
+void MarkerList::remove(const Marker& m)
+      {
+      const QString& s = m.name();
+      const std::uint64_t id = m.id();
+      std::pair<iMarker, iMarker> rng = equal_range(m.tick());
+      for(iMarker i = rng.first; i != rng.second; ++i) {
+            const Marker& mm = i->second;
+            if(mm.id() == id && mm.name() == s) {
+                  erase(i);
+                  return;
+                  }
+            }
+      printf("MarkerList::remove(): marker not found\n");
+      }
+
+// REMOVE Tim. clip. Added.
+//---------------------------------------------------------
+//   rebuild
+//    After any tempo changes, it is essential to rebuild the list
+//     so that any 'locked' items are re-sorted properly by tick.
+//    Returns true if any items were rebuilt.
+//---------------------------------------------------------
+
+bool MarkerList::rebuild()
+{
+  std::list<Marker> to_be_added;
+  for(iMarker i = begin(); i != end(); )
+  {
+    const Marker& m = i->second;
+    if(m.type() == Pos::FRAMES)
+    {
+      to_be_added.push_back(m);
+      i = erase(i);
+    }
+    else
+    {
+      ++i;
+    }
+  }
+  for(std::list<Marker>::iterator ai = to_be_added.begin(); ai != to_be_added.end(); ++ai)
+  {
+    const Marker& m = *ai;
+    insert(std::pair<const int, Marker> (m.tick(), Marker(m)));
+  }
+  return !to_be_added.empty();
+}
+
+//---------------------------------------------------------
+// updateCurrent
+//  Sets which item is the current based on the given tick.
+//---------------------------------------------------------
+void MarkerList::updateCurrent(unsigned int tick)
+{
+  
+}
 
 } // namespace MusECore

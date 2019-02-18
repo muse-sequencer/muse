@@ -24,7 +24,7 @@
 #ifndef __TYPE_DEFS_H__
 #define __TYPE_DEFS_H__
 
-#include "stdint.h"
+#include <stdint.h>
 
 namespace MusECore {
 
@@ -76,6 +76,11 @@ namespace MusECore {
 #define SC_TRACK_REC_MONITOR          0x1000000000 // Audio or midi track's record monitor changed.
 #define SC_TRACK_MOVED                0x2000000000 // Audio or midi track's position in track list or mixer changed.
 #define SC_TRACK_RESIZED              0x4000000000 // Audio or midi track was resized in the arranger.
+#define SC_MARKER_INSERTED            0x8000000000
+#define SC_MARKER_REMOVED             0x10000000000
+#define SC_MARKER_MODIFIED            0x20000000000
+// The marker list was rebuilt as a result of tempo changes. NOTE: Currently signals/slots are used for add/remove/modify etc.
+#define SC_MARKERS_REBUILT            0x40000000000
 #define SC_EVERYTHING                 -1           // global update
   
 typedef int64_t SongChangedFlags_t;
@@ -138,12 +143,15 @@ struct SongChangedStruct_t
 
 typedef int64_t EventID_t;
 #define MUSE_INVALID_EVENT_ID   -1
+#define MUSE_INVALID_POSITION   INT_MAX
+
 
 enum RelevantSelectedEvents { NoEventsRelevant = 0x00, NotesRelevant = 0x01, ControllersRelevant = 0x02,
                 SysexRelevant = 0x04, MetaRelevant = 0x08, WaveRelevant = 0x10,
                 AllEventsRelevant = NotesRelevant | ControllersRelevant |
                                     SysexRelevant | MetaRelevant | WaveRelevant};
 typedef int RelevantSelectedEvents_t;
+
 
 enum FunctionOptions {
   FunctionNoOptions = 0x00,
@@ -176,10 +184,90 @@ struct FunctionOptionsStruct
   
   FunctionOptionsStruct(const FunctionOptions_t& flags = FunctionEraseItemsDefault) : _flags(flags) { }
   void clear() { _flags = FunctionNoOptions; }
+  void setFlags(const FunctionOptions_t& flags) { _flags = flags; }
   void appendFlags(const FunctionOptions_t& flags) { _flags |= flags; }
   void removeFlags(const FunctionOptions_t& flags) { _flags &= ~flags; }
 };
 
+// Typically used for displaying and editing time values in positional widgets (PosEdit etc).
+enum TimeFormatOptions { TimeFormatNoOptions = 0x0,
+  // The mode of operation.
+  TimeModeFrames = 0x01,
+  // The displayed mode.
+  TimeDisplayFrames = 0x02,
+  // Whether to format the display.
+  TimeFormatFormatted = 0x04,
+
+  TimeFormatTicksFormatted = TimeFormatFormatted,
+  TimeFormatFramesFormatted = TimeDisplayFrames | TimeModeFrames | TimeFormatFormatted,
+  TimeFormatTicksUnFormatted = TimeFormatNoOptions,
+  TimeFormatFramesUnFormatted = TimeDisplayFrames | TimeModeFrames,
+
+  // Whether the user can change the type or format (from a popup menu etc).
+  TimeFormatUserMode = 0x08, TimeFormatUserDisplayMode = 0x10, TimeFormatUserFormat = 0x20,
+  TimeFormatUserAll = TimeFormatUserMode | TimeFormatUserDisplayMode | TimeFormatUserFormat,
+
+  TimeFormatAllOptions = TimeDisplayFrames | TimeModeFrames | TimeFormatFormatted | 
+    TimeFormatUserMode | TimeFormatUserDisplayMode | TimeFormatUserFormat
+  };
+typedef int TimeFormatOptions_t;
+  
+class TimeFormatOptionsStruct
+{
+  public:
+    TimeFormatOptions_t _flags;
+
+    TimeFormatOptionsStruct(const TimeFormatOptions_t& flags =
+      TimeFormatTicksFormatted | TimeFormatUserAll) : _flags(flags) { }
+
+    bool operator==(const TimeFormatOptionsStruct& a)
+    { return _flags == a._flags; }
+
+    bool operator!=(const TimeFormatOptionsStruct& a)
+    { return _flags != a._flags; }
+
+    TimeFormatOptionsStruct& operator=(const TimeFormatOptionsStruct& a)
+    { _flags = a._flags; return *this; }
+
+    TimeFormatOptionsStruct& operator|=(const TimeFormatOptionsStruct& a)
+    { _flags |= a._flags; return *this; }
+
+    TimeFormatOptionsStruct& operator&=(const TimeFormatOptionsStruct& a)
+    { _flags &= a._flags; return *this; }
+
+    // Adds (ORs) flags.
+    TimeFormatOptionsStruct& operator+=(const TimeFormatOptionsStruct& a)
+    { _flags |= a._flags; return *this; } // Yes, that's 'or'.
+
+    // Removes flags.
+    TimeFormatOptionsStruct& operator-=(const TimeFormatOptionsStruct& a)
+    { _flags &= ~a._flags; return *this; } // Yes, that's 'and neg'.
+
+    friend TimeFormatOptionsStruct operator|(const TimeFormatOptionsStruct& a, const TimeFormatOptionsStruct& b)
+    { TimeFormatOptionsStruct s = a;  return s |= b; }
+
+    friend TimeFormatOptionsStruct operator&(const TimeFormatOptionsStruct& a, const TimeFormatOptionsStruct& b)
+    { TimeFormatOptionsStruct s = a;  return s &= b; }
+
+    // Adds (ORs) flags.
+    friend TimeFormatOptionsStruct operator+(const TimeFormatOptionsStruct& a, const TimeFormatOptionsStruct& b)
+    { TimeFormatOptionsStruct s = a;  return s += b; }
+
+    // Removes flags.
+    friend TimeFormatOptionsStruct operator-(const TimeFormatOptionsStruct& a, const TimeFormatOptionsStruct& b)
+    { TimeFormatOptionsStruct s = a;  return s -= b; }
+
+    void clear() { _flags = TimeFormatNoOptions; }
+    void setOptions(const TimeFormatOptionsStruct& options, bool set = true)
+    { if(set) _flags |= options._flags; else _flags &= ~options._flags; }
+    void setFlags(const TimeFormatOptions_t& flags, bool set = true)
+    { if(set) _flags |= flags; else _flags &= ~flags; }
+    bool optionsSet(const TimeFormatOptionsStruct& options) const
+    { return _flags & options._flags; }
+    bool flagsSet(const TimeFormatOptions_t& flags) const
+    { return _flags & flags; }
+    
+};
 
 }   // namespace MusECore
 

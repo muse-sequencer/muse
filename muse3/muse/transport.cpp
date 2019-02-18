@@ -355,7 +355,9 @@ Transport::Transport(QWidget* parent, const char* name)
 
       tl1 = new PosEdit(0);
       tl1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-      tl1->setFocusPolicy(Qt::NoFocus);
+// REMOVE Tim. clip. Changed.
+//       tl1->setFocusPolicy(Qt::NoFocus);
+      tl1->setFocusPolicy(Qt::StrongFocus);
 
       marken->addWidget(tl1);
 
@@ -367,7 +369,9 @@ Transport::Transport(QWidget* parent, const char* name)
       tl2 = new PosEdit(0);
       tl2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       marken->addWidget(tl2);
-      tl2->setFocusPolicy(Qt::NoFocus);
+// REMOVE Tim. clip. Changed.
+//       tl2->setFocusPolicy(Qt::NoFocus);
+      tl2->setFocusPolicy(Qt::StrongFocus);
 
       l6 = new QLabel(tr("Right Mark"));
       l6->setFont(MusEGlobal::config.fonts[2]);
@@ -390,10 +394,14 @@ Transport::Transport(QWidget* parent, const char* name)
       time1 = new PosEdit(0);
       time2 = new PosEdit(0);
       time2->setSmpte(true);
+      time2->setFramesDisplay(true); // REMOVE Tim. clip. Added.
       time1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       time2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-      time1->setFocusPolicy(Qt::NoFocus);
-      time2->setFocusPolicy(Qt::NoFocus);
+// REMOVE Tim. clip. Changed.
+//       time1->setFocusPolicy(Qt::NoFocus);
+//       time2->setFocusPolicy(Qt::NoFocus);
+      time1->setFocusPolicy(Qt::StrongFocus);
+      time2->setFocusPolicy(Qt::StrongFocus);
 
       hbox1->addWidget(time1);
       hbox1->addWidget(time2);
@@ -519,13 +527,15 @@ Transport::Transport(QWidget* parent, const char* name)
       
       //-----------------------------------------------------
 
-      connect(tl1,   SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(lposChanged(const MusECore::Pos&)));
-      connect(tl2,   SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(rposChanged(const MusECore::Pos&)));
-      connect(time1, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(cposChanged(const MusECore::Pos&)));
-      connect(time2, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(cposChanged(const MusECore::Pos&)));
+      connect(tl1,   SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(lposChanged(const MusECore::Pos)));
+      connect(tl2,   SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(rposChanged(const MusECore::Pos)));
+      connect(time1, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(cposChanged(const MusECore::Pos)));
+      connect(time2, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(cposChanged(const MusECore::Pos)));
 
       connect(slider,SIGNAL(valueChanged(int)),  SLOT(cposChanged(int)));
-      connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
+// REMOVE Tim. clip. Changed.
+//       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
+      connect(MusEGlobal::song, SIGNAL(posChanged(int, const MusECore::Pos, bool)), SLOT(setPos(int, const MusECore::Pos, bool)));
       connect(tempo, SIGNAL(tempoChanged(int)), MusEGlobal::song, SLOT(setTempo(int)));
       connect(tempo, SIGNAL(sigChanged(const MusECore::TimeSignature&)), SLOT(sigChange(const MusECore::TimeSignature&)));
       connect(tempo, SIGNAL(masterTrackChanged(bool)), MusEGlobal::song, SLOT(setMasterFlag(bool)));
@@ -567,11 +577,19 @@ void Transport::configChanged()
 
 void Transport::setTempo(int t)
       {
-      tempo->setTempo(t);
       blockSignals(true);
+      tempo->setTempo(t);
+// REMOVE Tim. clip. Changed.
+//       // Make sure positional controls are updated
+//       unsigned v = MusEGlobal::song->cpos();
+//       time2->setValue(v); // time2 is SMPTE, it only need tempo updates.
       // Make sure positional controls are updated
-      unsigned v = MusEGlobal::song->cpos();
-      time2->setValue(v); // time2 is SMPTE, it only need tempo updates.
+      //const MusECore::Pos& p = MusEGlobal::audio->pos();
+      const MusECore::Pos p = MusEGlobal::song->cPos();
+      time1->setValue(p);
+      time2->setValue(p);
+      //time1->updateValue();
+      //time2->updateValue();
       blockSignals(false);
       }
 
@@ -596,48 +614,105 @@ void Transport::setTimesig(int z, int n)
       blockSignals(true);
       tempo->setTimesig(z, n);
       
+// REMOVE Tim. clip. Changed.
+//       // Make sure positional controls are updated
+//       unsigned v = MusEGlobal::song->cpos();
+//       time1->setValue(v); // time2 is SMPTE. It only need tempo updates.
+//       
+//       v = MusEGlobal::song->lpos();      
+//       tl1->setValue(v);
+//       v = MusEGlobal::song->rpos();      
+//       tl2->setValue(v);
       // Make sure positional controls are updated
-      unsigned v = MusEGlobal::song->cpos();
-      time1->setValue(v); // time2 is SMPTE. It only need tempo updates.
-      
-      v = MusEGlobal::song->lpos();      
-      tl1->setValue(v);
-      v = MusEGlobal::song->rpos();      
-      tl2->setValue(v);
+      //const MusECore::Pos& p = MusEGlobal::audio->pos();
+      const MusECore::Pos p = MusEGlobal::song->cPos();
+      time1->setValue(p);
+      time2->setValue(p);
+      tl1->setValue(MusEGlobal::song->lPos());
+      tl2->setValue(MusEGlobal::song->rPos());
+      //time1->updateValue();
+      //time2->updateValue();
+      //tl1->updateValue();
+      //tl2->updateValue();
       
       blockSignals(false);
       }
+
+// REMOVE Tim. clip. Changed.
+// //---------------------------------------------------------
+// //   setPos
+// //---------------------------------------------------------
+// 
+// void Transport::setPos(int idx, unsigned v, bool)
+//       {
+//       switch (idx) {
+//             case 0:
+//                   time1->setValue(v);
+//                   time2->setValue(v);
+//                   if((unsigned) slider->value() != v)
+//                   {
+//                     slider->blockSignals(true);
+//                     slider->setValue(v);
+//                     slider->blockSignals(false);
+//                   }  
+//                   if (!MusEGlobal::extSyncFlag.value())
+//                     setTempo(MusEGlobal::tempomap.tempo(v));
+//                   
+//                   {
+//                   int z, n;
+//                   MusEGlobal::sigmap.timesig(v, z, n);
+//                   setTimesig(z, n);
+//                   }
+//                   break;
+//             case 1:
+//                   tl1->setValue(v);
+//                   break;
+//             case 2:
+//                   tl2->setValue(v);
+//                   break;
+//             }
+//       }
 
 //---------------------------------------------------------
 //   setPos
 //---------------------------------------------------------
 
-void Transport::setPos(int idx, unsigned v, bool)
+void Transport::setPos(int idx, const MusECore::Pos pos, bool)
       {
       switch (idx) {
             case 0:
-                  time1->setValue(v);
-                  time2->setValue(v);
-                  if((unsigned) slider->value() != v)
+                  time1->setValue(pos);
+                  time2->setValue(pos);
+                  if((unsigned) slider->value() != pos.tick())
                   {
                     slider->blockSignals(true);
-                    slider->setValue(v);
+                    slider->setValue(pos.tick());
                     slider->blockSignals(false);
                   }  
                   if (!MusEGlobal::extSyncFlag.value())
-                    setTempo(MusEGlobal::tempomap.tempo(v));
+                  {
+// REMOVE Tim. clip. Changed.
+//                     setTempo(MusEGlobal::tempomap.tempo(pos.tick()));
+                    blockSignals(true);
+                    tempo->setTempo(MusEGlobal::tempomap.tempo(pos.tick()));
+                    blockSignals(false);
+                  }
                   
                   {
                   int z, n;
-                  MusEGlobal::sigmap.timesig(v, z, n);
-                  setTimesig(z, n);
+                  MusEGlobal::sigmap.timesig(pos.tick(), z, n);
+// REMOVE Tim. clip. Changed.
+//                   setTimesig(z, n);
+                  blockSignals(true);
+                  tempo->setTimesig(z, n);
+                  blockSignals(false);
                   }
                   break;
             case 1:
-                  tl1->setValue(v);
+                  tl1->setValue(pos);
                   break;
             case 2:
-                  tl2->setValue(v);
+                  tl2->setValue(pos);
                   break;
             }
       }
@@ -648,34 +723,38 @@ void Transport::setPos(int idx, unsigned v, bool)
 
 void Transport::cposChanged(int tick)
       {
-      MusEGlobal::song->setPos(0, tick);
+      MusEGlobal::song->setPos(0, MusECore::Pos(tick, true));
       }
 
 //---------------------------------------------------------
 //   cposChanged
 //---------------------------------------------------------
 
-void Transport::cposChanged(const MusECore::Pos& pos)
+void Transport::cposChanged(const MusECore::Pos pos)
       {
-      MusEGlobal::song->setPos(0, pos.tick());
+// REMOVE Tim. clip. Changed.
+//       MusEGlobal::song->setPos(0, pos.tick());
+      MusEGlobal::song->setPos(0, pos);
       }
 
 //---------------------------------------------------------
 //   lposChanged
 //---------------------------------------------------------
 
-void Transport::lposChanged(const MusECore::Pos& pos)
+void Transport::lposChanged(const MusECore::Pos pos)
       {
-      MusEGlobal::song->setPos(1, pos.tick());
+// REMOVE Tim. clip. Changed.
+      MusEGlobal::song->setPos(1, pos);
       }
 
 //---------------------------------------------------------
 //   rposChanged
 //---------------------------------------------------------
 
-void Transport::rposChanged(const MusECore::Pos& pos)
+void Transport::rposChanged(const MusECore::Pos pos)
       {
-      MusEGlobal::song->setPos(2, pos.tick());
+// REMOVE Tim. clip. Changed.
+      MusEGlobal::song->setPos(2, pos);
       }
 
 //---------------------------------------------------------
@@ -759,7 +838,7 @@ void Transport::setCycleMode(int id)
 void Transport::songChanged(MusECore::SongChangedStruct_t flags)
       {
       slider->setRange(0, MusEGlobal::song->len());
-      int cpos  = MusEGlobal::song->cpos();
+      const unsigned int cpos  = MusEGlobal::song->cpos();
       if (flags._flags & (SC_MASTER | SC_TEMPO)) {
             if(!MusEGlobal::extSyncFlag.value())
               setTempo(MusEGlobal::tempomap.tempo(cpos));

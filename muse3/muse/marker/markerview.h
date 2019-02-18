@@ -49,11 +49,15 @@ class PosEdit;
 //---------------------------------------------------------
 
 class MarkerItem : public QTreeWidgetItem {
-      MusECore::Marker* _marker;
+// REMOVE Tim. clip. Changed.
+//       MusECore::Marker* _marker;
+      MusECore::Marker _marker;
 
    public:
-      MarkerItem(QTreeWidget* parent, MusECore::Marker* m);
-      MusECore::Marker* marker() const { return _marker; }
+//       MarkerItem(QTreeWidget* parent, MusECore::Marker* m);
+      MarkerItem(QTreeWidget* parent, const MusECore::Marker& m);
+//       MusECore::Marker* marker() const { return _marker; }
+      MusECore::Marker marker() const { return _marker; }
       unsigned tick() const;
       const QString name() const;
       bool lock() const;

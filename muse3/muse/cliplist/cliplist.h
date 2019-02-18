@@ -59,10 +59,12 @@ class ClipListEditorBaseWidget : public QWidget, public Ui::ClipListEditorBase
 //   ClipListEdit
 //---------------------------------------------------------
 
+class ClipItem;
 class ClipListEdit : public TopWin {
       Q_OBJECT
       ClipListEditorBaseWidget* editor;
-
+      ClipItem* _curItem;
+      
       virtual void closeEvent(QCloseEvent*);
       void updateList();
 
@@ -72,17 +74,25 @@ class ClipListEdit : public TopWin {
       void lenChanged(const MusECore::Pos&);
       void clipSelectionChanged();
       void clicked(QTreeWidgetItem*, int);
+      void addClipClicked();
+      void deleteClipClicked();
+      void closeClicked();
 
    signals:
       void isDeleting(MusEGui::TopWin*);
 
    public:
+// REMOVE Tim. wave. Added.
+      static MusECore::EventList waveClipEvents;
+     
       ClipListEdit(QWidget* parent);
       ~ClipListEdit();
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;
       static void readConfiguration(MusECore::Xml&);
       static void writeConfiguration(int, MusECore::Xml&);
+
+      MusECore::SndFileR importWave();
       };
 
 } // namespace MusEGui

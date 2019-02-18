@@ -60,6 +60,8 @@ class JackAudioDevice : public AudioDevice {
       char jackRegisteredName[16];
       // Free-running frame counter incremented always in process.
       jack_nframes_t _frameCounter; 
+      // REMOVE Tim. clip. Added.
+      bool _timebaseAck;
 
       PendingOperationList operations;
       // Temporary, for processing callback event FIFO.
@@ -162,6 +164,9 @@ class JackAudioDevice : public AudioDevice {
       virtual int setMaster(bool f);
       jack_transport_state_t transportQuery(jack_position_t* pos);
       bool timebaseQuery(unsigned frames, unsigned* bar, unsigned* beat, unsigned* tick, unsigned* curr_abs_tick, unsigned* next_ticks);
+      // REMOVE Tim. clip. Added.
+      // This is called by the timebase callback.
+      void timebaseAck();
 
       void graphChanged();
       };

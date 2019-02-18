@@ -34,9 +34,11 @@ class QFileInfo;
 
 namespace MusECore {
 
-class Event;
+// REMOVE Tim. wave. Removed.
+//class Event;
 
-class Xml;
+// REMOVE Tim. wave. Removed.
+// class Xml;
 
 //---------------------------------------------------------
 //   SampleV
@@ -83,7 +85,8 @@ class SndFile {
       int getRefCount() { return refCount; }
 
       static SndFileList sndFiles;
-      static void applyUndoFile(const Event& original, const QString* tmpfile, unsigned sx, unsigned ex);
+// REMOVE Tim. wave. Removed. Moved into helper.cpp
+//       static void applyUndoFile(const Event& original, const QString* tmpfile, unsigned sx, unsigned ex);
 
       void createCache(const QString& path, bool showProgress, bool bWrite, sf_count_t cstart = 0);
       void readCache(const QString& path, bool progress);
@@ -96,7 +99,8 @@ class SndFile {
       bool isOpen() const     { return openFlag; }
       bool isWritable() const { return writeFlag; }
       void update(bool showProgress = true);
-      bool checkCopyOnWrite();      //!< check if the file should be copied before writing to it
+// REMOVE Tim. wave. Removed. Moved into helper.cpp
+//       bool checkCopyOnWrite();      //!< check if the file should be copied before writing to it
 
       QString basename() const;     //!< filename without extension
       QString dirPath() const;      //!< path
@@ -158,7 +162,8 @@ class SndFileR {
       bool isOpen() const     { return sf ? sf->isOpen() : false; }
       bool isWritable() const { return sf ? sf->isWritable() : false; }
       void update()           { if(sf) sf->update(); }
-      bool checkCopyOnWrite() { return sf ? sf->checkCopyOnWrite() : false; }
+// REMOVE Tim. wave. Removed. Moved into helper.cpp
+//       bool checkCopyOnWrite() { return sf ? sf->checkCopyOnWrite() : false; }
 
       QString basename() const { return sf ? sf->basename() : QString(); }
       QString dirPath() const  { return sf ? sf->dirPath() : QString(); }
@@ -301,7 +306,8 @@ typedef ClipList::const_iterator ciClip;
 extern ClipBase* readClip(Xml& xml);
 #endif
 
-extern SndFileR getWave(const QString& name, bool readOnlyFlag, bool openFlag = true, bool showErrorBox = true);
+// REMOVE Tim. wave. Removed. Moved into helper.cpp
+// extern SndFileR getWave(const QString& name, bool readOnlyFlag, bool openFlag = true, bool showErrorBox = true);
 
 } // namespace MusECore
 

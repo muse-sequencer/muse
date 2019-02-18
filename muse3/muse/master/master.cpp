@@ -72,7 +72,9 @@ void Master::songChanged(MusECore::SongChangedStruct_t type)
 {
   //if(_isDeleting) return; // todo: If things get complicated don't forget some mechanism to ignore while while deleting to prevent possible crash.
   
+// REMOVE Tim. clip. Changed.
   if (type._flags & (SC_SIG | SC_TEMPO | SC_KEY ))  // TEST: Reasonable to start with, may need more.
+  //if (type._flags & SC_SIG)  // TEST: Reasonable to start with, may need more.
     redraw();
 }
 
@@ -170,6 +172,12 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
       int h = rect.height();
 
       int wh = height();
+
+      QColor graph_fg_color = MusEGlobal::config.ctrlGraphFg;
+      graph_fg_color.setAlpha(MusEGlobal::config.globalAlphaBlend);
+      QPen pen;
+      pen.setCosmetic(true);
+
       //---------------------------------------------------
       // draw Canvas Items
       //---------------------------------------------------
@@ -184,7 +192,7 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
             if (tempo < 0)
                   tempo = 0;
             if (tempo < wh) {
-                p.fillRect(stick, tempo, etick-stick, wh, Qt::blue);
+                p.fillRect(stick, tempo, etick-stick, wh, graph_fg_color);
                   }
             }
 
@@ -192,20 +200,21 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
       //    draw marker
       //---------------------------------------------------
 
+      pen.setColor(Qt::blue);
+      p.setPen(pen);
       int xp = mapx(pos[1]);
       if (xp >= x && xp < x+w) {
-            p.setPen(Qt::blue);
             p.drawLine(xp, y, xp, y+h);
             }
       xp = mapx(pos[2]);
       if (xp >= x && xp < x+w) {
-            p.setPen(Qt::blue);
             p.drawLine(xp, y, xp, y+h);
             }
+      pen.setColor(Qt::red);
+      p.setPen(pen);
       // Draw the red main position cursor last, on top of the others.
       xp = mapx(pos[0]);
       if (xp >= x && xp < x+w) {
-            p.setPen(Qt::red);
             p.drawLine(xp, y, xp, y+h);
             }
 
@@ -223,7 +232,10 @@ void Master::draw(QPainter& p, const QRect& rect, const QRegion& rg)
                          MusEGlobal::config.midiCanvasBeatColor);
       
       if ((tool == MusEGui::DrawTool) && drawLineMode) {
-            p.setPen(Qt::black);
+            QPen pen;
+            pen.setCosmetic(true);
+            pen.setColor(Qt::black);
+            p.setPen(pen);
             p.drawLine(line1x, line1y, line2x, line2y);
             p.drawLine(line1x, line1y+1, line2x, line2y+1);
             }
@@ -233,9 +245,9 @@ void Master::draw(QPainter& p, const QRect& rect, const QRegion& rg)
 //   newValRamp
 //---------------------------------------------------------
 
-void Master::newValRamp(int x1, int y1, int x2, int y2)
+void Master::newValRamp(int x1, int y1, int x2, int y2, MusECore::Undo& operations)
 {
-  MusECore::Undo operations;
+  //MusECore::Undo operations;
 
 // loop through all tick positions between x1 and x2
 // remove all tempo changes and add new ones for changed
@@ -276,7 +288,7 @@ void Master::newValRamp(int x1, int y1, int x2, int y2)
     }
   }
 
-  MusEGlobal::song->applyOperationGroup(operations);
+  //MusEGlobal::song->applyOperationGroup(operations);
 }
 
 
@@ -290,6 +302,9 @@ void Master::viewMousePressEvent(QMouseEvent* event)
       int xpos = start.x();
       int ypos = start.y();
 
+      _operations.clear();
+      bool do_redraw = false;
+
       MusEGui::Tool activeTool = tool;
 
       switch (activeTool) {
@@ -300,20 +315,20 @@ void Master::viewMousePressEvent(QMouseEvent* event)
             case MusEGui::PencilTool:
                   drag = DRAG_NEW;
                   MusEGlobal::song->startUndo();
-                  newVal(start.x(), start.x(), start.y());
+                  newVal(start.x(), start.x(), start.y(), _operations);
                   break;
 
             case MusEGui::RubberTool:
                   drag = DRAG_DELETE;
                   MusEGlobal::song->startUndo();
-                  deleteVal(start.x(), start.x());
+                  deleteVal(start.x(), start.x(), _operations);
                   break;
 
             case MusEGui::DrawTool:
                   if (drawLineMode) {
                         line2x = xpos;
                         line2y = ypos;
-                        newValRamp(line1x, line1y, line2x, line2y);
+                        newValRamp(line1x, line1y, line2x, line2y, _operations);
                         drawLineMode = false;
                         }
                   else {
@@ -321,11 +336,16 @@ void Master::viewMousePressEvent(QMouseEvent* event)
                         line2y = line1y = ypos;
                         drawLineMode = true;
                         }
-                  redraw();
+                  do_redraw = true;
                   break;
             default:
                   break;
             }
+
+      // Operation is undoable but do not start/end undo.
+      MusEGlobal::song->applyOperationGroup(_operations, MusECore::Song::OperationUndoable);
+      if(do_redraw)
+        redraw();
       }
 
 //---------------------------------------------------------
@@ -341,20 +361,27 @@ void Master::viewMouseMoveEvent(QMouseEvent* event)
             redraw();
             return;
             }
+
+      _operations.clear();
+
       switch (drag) {
             case DRAG_NEW:
-                  newVal(start.x(), pos.x(), pos.y());
+                  newVal(start.x(), pos.x(), pos.y(), _operations);
                   start = pos;
                   break;
 
             case DRAG_DELETE:
-                  deleteVal(start.x(), pos.x());
+                  deleteVal(start.x(), pos.x(), _operations);
                   start = pos;
                   break;
 
             default:
                   break;
             }
+
+      // Operation is undoable but do not start/end undo.
+      MusEGlobal::song->applyOperationGroup(_operations, MusECore::Song::OperationUndoable);
+
       emit tempoChanged(280000 - event->y());
       int x = pos.x();
       if (x < 0)
@@ -368,6 +395,8 @@ void Master::viewMouseMoveEvent(QMouseEvent* event)
 
 void Master::viewMouseReleaseEvent(QMouseEvent*)
       {
+      _operations.clear();
+
       switch (drag) {
             case DRAG_RESIZE:
             case DRAG_NEW:
@@ -384,7 +413,7 @@ void Master::viewMouseReleaseEvent(QMouseEvent*)
 //   deleteVal
 //---------------------------------------------------------
 
-bool Master::deleteVal1(unsigned int x1, unsigned int x2)
+bool Master::deleteVal1(unsigned int x1, unsigned int x2, MusECore::Undo& operations)
       {
       QList< QPair<int,int> > stuff_to_do;
       
@@ -406,20 +435,22 @@ bool Master::deleteVal1(unsigned int x1, unsigned int x2)
             }
       
       for (QList< QPair<int,int> >::iterator it=stuff_to_do.begin(); it!=stuff_to_do.end(); it++)
+        // REMOVE Tim. clip. Changed.
         // Operation is undoable but do not start/end undo.
-        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo,
-                              it->first, it->second), MusECore::Song::OperationUndoable);
+        //MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo,
+        //                      it->first, it->second), MusECore::Song::OperationUndoable);
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo, it->first, it->second));
       
       return !stuff_to_do.empty();
       }
 
-void Master::deleteVal(int x1, int x2)
+void Master::deleteVal(int x1, int x2, MusECore::Undo& operations)
       {
       if(x1 < 0)
         x1 = 0;
       if(x2 < 0)
         x2 = 0;
-      if (deleteVal1(editor->rasterVal1(x1), x2))
+      if (deleteVal1(editor->rasterVal1(x1), x2, operations))
             redraw();
       }
 
@@ -449,7 +480,7 @@ void Master::setTool(int t)
 //   newVal
 //---------------------------------------------------------
 
-void Master::newVal(int x1, int x2, int y)
+void Master::newVal(int x1, int x2, int y, MusECore::Undo& operations)
       {
       if(x1 < 0)
         x1 = 0;
@@ -463,10 +494,13 @@ void Master::newVal(int x1, int x2, int y)
             xx2 = xx1;
             xx1 = tmp;
             }
-      deleteVal1(xx1, xx2);
+      deleteVal1(xx1, xx2, operations);
+      // REMOVE Tim. clip. Changed.
       // Operation is undoable but do not start/end undo.
-      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddTempo,
-                    xx1, int(60000000000.0/(280000 - y))), MusECore::Song::OperationUndoable);
+      //MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddTempo,
+      //              xx1, int(60000000000.0/(280000 - y))), MusECore::Song::OperationUndoable);
+      operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTempo,
+                    xx1, int(60000000000.0/(280000 - y))));
       redraw();
       }
 } // namespace MusEGui

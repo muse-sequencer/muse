@@ -81,7 +81,7 @@ void MTScale::configChanged()
 
 void MTScale::songChanged(MusECore::SongChangedStruct_t type)
       {
-      if (type._flags & (SC_SIG|SC_TEMPO)) {
+      if (type._flags & (SC_SIG|SC_TEMPO|SC_MARKERS_REBUILT)) {
            if ((type._flags & SC_TEMPO) && waveMode) {
                   pos[0] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->cpos());
                   pos[1] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->lpos());
@@ -296,10 +296,14 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
             ++mm;
             if (mm != marker->end()) {
                   
-                  if(waveMode) 
-                    xe = MusEGlobal::tempomap.tick2frame(mm->first);
+                  if(waveMode)
+// REMOVE Tim. clip. Changed.
+//                     xe = MusEGlobal::tempomap.tick2frame(mm->first);
+                    xe = MusEGlobal::tempomap.tick2frame(mm->second.frame());
                   else
-                    xe = mm->first;
+// REMOVE Tim. clip. Changed.
+//                     xe = mm->first;
+                    xe = mm->second.tick();
                   }
             
             const QRect tr(xp, vy, xe - xp, vh13);

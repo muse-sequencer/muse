@@ -53,13 +53,14 @@ static MusECore::MidiCtrlValList veloList(MusECore::CTRL_VELOCITY);    // dummy
 
 namespace MusEGui {
 
-// Static.
-const int CtrlCanvas::contextIdCancelDrag = 0x01;
-const int CtrlCanvas::contextIdMerge = 0x02;
-const int CtrlCanvas::contextIdMergeCopy = 0x04;
-const int CtrlCanvas::contextIdErase = 0x8;
-const int CtrlCanvas::contextIdEraseWysiwyg = 0x10;
-const int CtrlCanvas::contextIdEraseInclusive = 0x20;
+// REMOVE Tim. clip. Removed.
+// // Static.
+// const int CtrlCanvas::contextIdCancelDrag = 0x01;
+// const int CtrlCanvas::contextIdMerge = 0x02;
+// const int CtrlCanvas::contextIdMergeCopy = 0x04;
+// const int CtrlCanvas::contextIdErase = 0x8;
+// const int CtrlCanvas::contextIdEraseWysiwyg = 0x10;
+// const int CtrlCanvas::contextIdEraseInclusive = 0x20;
   
 //---------------------------------------------------------
 //   computeVal
@@ -1546,11 +1547,11 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
         delete itemPopupMenu;
         switch(idx)
         {
-          case contextIdCancelDrag:
+          case ContextIdCancelDrag:
             cancelMouseOps();
           break;
           
-          case contextIdMerge:
+          case ContextIdMerge:
               if(!moving.empty())
               {
                 // Force the drag type before merge.
@@ -1563,7 +1564,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
               }
           break;
           
-          case contextIdMergeCopy:
+          case ContextIdMergeCopy:
               if(!moving.empty())
               {
                 // Force the drag type before merge.
@@ -1576,15 +1577,15 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
               }
           break;
           
-          case contextIdErase:
+          case ContextIdErase:
             MusEGlobal::config.midiCtrlGraphMergeErase = is_checked;
           break;
           
-          case contextIdEraseWysiwyg:
+          case ContextIdEraseWysiwyg:
             MusEGlobal::config.midiCtrlGraphMergeEraseWysiwyg = is_checked;
           break;
           
-          case contextIdEraseInclusive:
+          case ContextIdEraseInclusive:
             MusEGlobal::config.midiCtrlGraphMergeEraseInclusive = is_checked;
           break;
           
@@ -3667,19 +3668,19 @@ void CtrlCanvas::populateMergeOptions(PopupMenu* menu)
   menu->addAction(new MenuTitleItem(tr("Merge options"), menu));
   
   QAction* act = menu->addAction(QIcon(*midiCtrlMergeEraseIcon), tr("Erase target"));
-  act->setData(contextIdErase);
+  act->setData(ContextIdErase);
   act->setCheckable(true);
   act->setChecked(MusEGlobal::config.midiCtrlGraphMergeErase);
   act->setToolTip(tr("Erase target events between source events"));
   
   act = menu->addAction(QIcon(*midiCtrlMergeEraseWysiwygIcon), tr("Erase target WYSIWYG"));
-  act->setData(contextIdEraseWysiwyg);
+  act->setData(ContextIdEraseWysiwyg);
   act->setCheckable(true);
   act->setChecked(MusEGlobal::config.midiCtrlGraphMergeEraseWysiwyg);
   act->setToolTip(tr("Include last source item width when erasing"));
   
   act = menu->addAction(QIcon(*midiCtrlMergeEraseInclusiveIcon), tr("Erase target inclusive"));
-  act->setData(contextIdEraseInclusive);
+  act->setData(ContextIdEraseInclusive);
   act->setCheckable(true);
   act->setChecked(MusEGlobal::config.midiCtrlGraphMergeEraseInclusive);
   act->setToolTip(tr("Include entire source range when erasing"));
@@ -3689,19 +3690,19 @@ void CtrlCanvas::populateMergeOptions(PopupMenu* menu)
   const bool is_mv = !moving.empty();
   
   act = menu->addAction(QIcon(*editpasteSIcon), tr("Merge"));
-  act->setData(contextIdMerge);
+  act->setData(ContextIdMerge);
   act->setCheckable(false);
   act->setToolTip(tr("Merge the dragged items"));
   act->setEnabled(is_mv);
   
   act = menu->addAction(QIcon(*editpasteCloneSIcon), tr("Merge a copy"));
-  act->setData(contextIdMergeCopy);
+  act->setData(ContextIdMergeCopy);
   act->setCheckable(false);
   act->setToolTip(tr("Merge a copy of the dragged items"));
   act->setEnabled(is_mv);
   
   act = menu->addAction(QIcon(*filecloseIcon), tr("Cancel drag"));
-  act->setData(contextIdCancelDrag);
+  act->setData(ContextIdCancelDrag);
   act->setCheckable(false);
   act->setToolTip(tr("Cancel dragging the items"));
   act->setEnabled(is_mv);

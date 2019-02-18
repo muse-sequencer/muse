@@ -29,6 +29,8 @@
 #include <cmath>
 
 #include "type_defs.h"
+// REMOVE Tim. clip. Added.
+#include "pos.h"
 
 class QCheckBox;
 class QLabel;
@@ -79,12 +81,16 @@ public:
 class BigTime : public QWidget {
       Q_OBJECT
     
-      bool tickmode;
+      bool _formatted;
       MusE* seq;
       
-      unsigned _curPos;
+// REMOVE Tim. clip. Changed.
+//       unsigned _curPos;
+      MusECore::Pos _curPos;
       
-      bool setString(unsigned);
+// REMOVE Tim. clip. Changed.
+//       bool setString(unsigned);
+      bool setString(const MusECore::Pos);
       void updateValue();
 
       VerticalMetronomeWidget *metronome;
@@ -110,10 +116,13 @@ class BigTime : public QWidget {
       //void paintEvent (QPaintEvent  *event );
 
    public slots:
-      void setPos(int, unsigned, bool);
+// REMOVE Tim. clip. Changed.
+//       void setPos(int, unsigned, bool);
+      void setPos(int, const MusECore::Pos, bool);
       void configChanged();
       void songChanged(MusECore::SongChangedStruct_t);
       void fmtButtonToggled(bool);
+      //void heartBeat();
    signals:
       void closed();
 

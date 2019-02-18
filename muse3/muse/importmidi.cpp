@@ -86,7 +86,23 @@ void MusE::importMidi(const QString &file)
 
       switch (n) {
             case 0:
+                  // FIXME FIXME FIXME TODO REMOVE Tim. clip. Added. Comment.
+                  // Hm, this doesn't even stop the audio or idle or anything! Unsafe?
+                  // Do like in loadProjectFile() ... Hm, don't think we can stop the audio
+                  //  because it needs to process commands below.
+                  //
+                  // Try this as a minimum...
+
+                  // REMOVE Tim. clip. Added.
+                  stopHeartBeat();
+                  MusEGlobal::audio->msgIdle(true);
+
                   importMidi(fn, true);
+
+                  // REMOVE Tim. clip. Added.
+                  MusEGlobal::audio->msgIdle(false);
+                  setHeartBeat();
+
                   MusEGlobal::song->update();
                   break;
             case 1:

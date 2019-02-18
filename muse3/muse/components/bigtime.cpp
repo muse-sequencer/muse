@@ -36,6 +36,7 @@
 #include "app.h"
 #include "gconfig.h"
 #include "audio.h"
+#include "song.h"
 
 namespace MusEGlobal {
 extern int mtcType;
@@ -55,8 +56,10 @@ namespace MusEGui {
 BigTime::BigTime(QWidget* parent)
    : QWidget(parent, Qt::Window | Qt::WindowStaysOnTopHint)  // Possibly also Qt::X11BypassWindowManagerHint
 {
-  _curPos = 0;
-  tickmode = true;
+// REMOVE Tim. clip. Removed.
+//   _curPos = 0;
+  //_curPos.setType(MusECore::Pos::FRAMES);
+  _formatted = true;
   dwin = new QWidget(this, Qt::WindowStaysOnTopHint);  // Possibly also Qt::X11BypassWindowManagerHint
   dwin->setObjectName("bigtime-dwin");
   dwin->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -113,7 +116,7 @@ void BigTime::fmtButtonToggled(bool v)
 {
     if(v)
     {
-      tickmode = true;
+      _formatted = true;
       
       barLabel->setEnabled(true);   
       beatLabel->setEnabled(true);  
@@ -149,7 +152,7 @@ void BigTime::fmtButtonToggled(bool v)
     }
     else
     {
-      tickmode = false;
+      _formatted = false;
       
       barLabel->setEnabled(false);   
       beatLabel->setEnabled(false);  
@@ -201,8 +204,33 @@ void BigTime::configChanged()
 
 void BigTime::songChanged(MusECore::SongChangedStruct_t flags)
       {
+// REMOVE Tim. clip. Changed.
       if (flags._flags & (SC_MASTER | SC_TEMPO | SC_SIG))
+
+      // Catch SC_SIG in case BBT needs to update.
+      // Note tempo and master changes are handled by the setPos() slot.
+      //if (flags._flags & (SC_SIG))
+      {
+        // REMOVE Tim. clip. Added.
+//         // If the cached position is in frames, the value is invalid.
+//         // We must use the current tick and update the frame in order
+//         //  to keep the current tick the same, ie. we must respect the current
+//         //  visual tick-based cursor positions.
+//         // If we did it the other way round ie. try to keep the current frame
+//         //  and calculate the new tick from it, then the tick-based cursors
+//         //  would jump around upon every tempo adjustment.
+//         // So we must update the tick value of the cached position.
+//         // Note that it will quantize the frame to whatever the tick is,
+//         //  ie. it is not possible to end up on an in-between frame
+//         //  after a tempo adjustment.
+//         // TODO Note that we should tell the transport to relocate whenever
+//         //  tempo changes so that the resulting frame matches the tick.
+//         // Or else the other way around - keep the frame and relocate
+//         //  the tick-based cursors - but that would make them jump.
+//         _curPos.setTick(MusEGlobal::song->cPos().tick());
+        
         updateValue();
+      }
       }
 
 //---------------------------------------------------------
@@ -215,13 +243,131 @@ void BigTime::closeEvent(QCloseEvent *ev)
       QWidget::closeEvent(ev);
       }
 
+// REMOVE Tim. clip. Changed.
+// //---------------------------------------------------------
+// //   setString
+// //---------------------------------------------------------
+// 
+// bool BigTime::setString(unsigned v)
+//       {
+//       if (v == INT_MAX) {
+//         barLabel->setText(QString("----"));
+//         beatLabel->setText(QString("--"));
+//         tickLabel->setText(QString("---"));
+//         //hourLabel->setText(QString("--"));
+//         //minLabel->setText(QString("--"));
+//         minLabel->setText(QString("---"));
+//         secLabel->setText(QString("--"));
+//         frameLabel->setText(QString("--"));
+//         subFrameLabel->setText(QString("--"));
+// 
+//         absTickLabel->setText(QString("----------"));
+//         absFrameLabel->setText(QString("----------"));
+//         oldAbsTick = oldAbsFrame = -1;
+//         //oldbar = oldbeat = oldtick = oldhour = oldmin = oldsec = oldframe = -1;
+//         oldbar = oldbeat = oldtick = oldmin = oldsec = oldframe = oldsubframe = -1;
+//         return true;
+//       }
+// 
+//       // Quick fix: Not much to do but ignore the supplied tick: We need the exact frame here.
+//       unsigned absFrame = MusEGlobal::audio->pos().frame();
+//       
+//       int bar, beat;
+//       unsigned tick;
+//       MusEGlobal::sigmap.tickValues(v, &bar, &beat, &tick);
+//       double time = double(absFrame)/double(MusEGlobal::sampleRate);
+//       //int hour    = int(time) / 3600;
+//       //int min     = (int(time) / 60) % 60;
+//       int min     = int(time) / 60;
+//       int sec     = int(time) % 60;
+//       double rest = time - (min * 60 + sec);
+//       switch(MusEGlobal::mtcType) {
+//           case 0:     // 24 frames sec
+//                 rest *= 24;
+//                 break;
+//           case 1:     // 25
+//                 rest *= 25;
+//                 break;
+//           case 2:     // 30 drop frame
+//                 rest *= 30;
+//                 break;
+//           case 3:     // 30 non drop frame
+//                 rest *= 30;
+//                 break;
+//       }
+//       int frame = int(rest);
+//       int subframe = int((rest-frame)*100);
+// 
+//       QString s;
+// 
+//       if(oldAbsTick != v) {
+//         s = QString("%1").arg(v, 10, 10, QLatin1Char('0'));
+//         absTickLabel->setText(s);
+//         oldAbsTick = v;
+//       }
+//       if(oldAbsFrame != absFrame) {
+//         s = QString("%1").arg(absFrame, 10, 10, QLatin1Char('0'));
+//         absFrameLabel->setText(s);
+//         oldAbsFrame = absFrame;
+//       }
+//       if(oldbar != bar) {
+//         s = QString("%1").arg(bar + 1, 4, 10, QLatin1Char('0'));
+// 	      barLabel->setText(s);
+// 	      oldbar = bar;
+//       }
+//       if(oldbeat != beat) {
+//         s = QString("%1").arg(beat + 1, 2, 10, QLatin1Char('0'));
+// 	      beatLabel->setText(s);
+// 	      oldbeat = beat;
+//       }
+// 
+//       if(oldtick != tick) {
+//         s = QString("%1").arg(tick, 3, 10, QLatin1Char('0'));
+// 	      tickLabel->setText(s);
+// 	      oldtick = tick;
+//       }
+// 
+//       //if(oldhour != hour) {
+//       //  s = QString("%1").arg(hour, 2, 10, QLatin1Char('0'));
+// 	    //  hourLabel->setText(s);
+// 	    //  oldhour = hour;
+//       //}
+// 
+//       if(oldmin != min) {
+//         s = QString("%1").arg(min, 3, 10, QLatin1Char('0'));
+// 	      minLabel->setText(s);
+// 	      oldmin = min;
+//       }
+// 
+//       if(oldsec != sec) {
+//         s = QString("%1").arg(sec, 2, 10, QLatin1Char('0'));
+// 	      secLabel->setText(s);
+// 	      oldsec = sec;
+//       }
+// 
+//       if(oldframe != frame) {
+//         s = QString("%1").arg(frame, 2, 10, QLatin1Char('0'));
+// 	      frameLabel->setText(s);
+// 	      oldframe = frame;
+//       }
+// 
+//       if(oldsubframe != subframe) {
+//         s = QString("%1").arg(subframe, 2, 10, QLatin1Char('0'));
+//         subFrameLabel->setText(s);
+//         oldsubframe = subframe;
+//       }
+// 
+//       return false;
+//       }
+
 //---------------------------------------------------------
 //   setString
 //---------------------------------------------------------
 
-bool BigTime::setString(unsigned v)
+bool BigTime::setString(const MusECore::Pos v)
       {
-      if (v == INT_MAX) {
+      if ((v.type() == MusECore::Pos::TICKS && v.tick() >= MUSE_INVALID_POSITION) || 
+          (v.type() == MusECore::Pos::FRAMES && v.frame() >= MUSE_INVALID_POSITION)) {
         barLabel->setText(QString("----"));
         beatLabel->setText(QString("--"));
         tickLabel->setText(QString("---"));
@@ -240,46 +386,29 @@ bool BigTime::setString(unsigned v)
         return true;
       }
 
-      // Quick fix: Not much to do but ignore the supplied tick: We need the exact frame here.
-      unsigned absFrame = MusEGlobal::audio->pos().frame();
+      const unsigned int pos_frame = v.frame();
+      const unsigned int pos_tick = v.tick();
       
       int bar, beat;
       unsigned tick;
-      MusEGlobal::sigmap.tickValues(v, &bar, &beat, &tick);
-      double time = double(absFrame)/double(MusEGlobal::sampleRate);
-      //int hour    = int(time) / 3600;
-      //int min     = (int(time) / 60) % 60;
-      int min     = int(time) / 60;
-      int sec     = int(time) % 60;
-      double rest = time - (min * 60 + sec);
-      switch(MusEGlobal::mtcType) {
-          case 0:     // 24 frames sec
-                rest *= 24;
-                break;
-          case 1:     // 25
-                rest *= 25;
-                break;
-          case 2:     // 30 drop frame
-                rest *= 30;
-                break;
-          case 3:     // 30 non drop frame
-                rest *= 30;
-                break;
-      }
-      int frame = int(rest);
-      int subframe = int((rest-frame)*100);
-
+      MusEGlobal::sigmap.tickValues(pos_tick, &bar, &beat, &tick);
+      
+      
+      int min, sec, frame, subframe;
+      
+      v.msf(&min, &sec, &frame, &subframe);
+      
       QString s;
 
-      if(oldAbsTick != v) {
-        s = QString("%1").arg(v, 10, 10, QLatin1Char('0'));
+      if(oldAbsTick != pos_tick) {
+        s = QString("%1").arg(pos_tick, 10, 10, QLatin1Char('0'));
         absTickLabel->setText(s);
-        oldAbsTick = v;
+        oldAbsTick = pos_tick;
       }
-      if(oldAbsFrame != absFrame) {
-        s = QString("%1").arg(absFrame, 10, 10, QLatin1Char('0'));
+      if(oldAbsFrame != pos_frame) {
+        s = QString("%1").arg(pos_frame, 10, 10, QLatin1Char('0'));
         absFrameLabel->setText(s);
-        oldAbsFrame = absFrame;
+        oldAbsFrame = pos_frame;
       }
       if(oldbar != bar) {
         s = QString("%1").arg(bar + 1, 4, 10, QLatin1Char('0'));
@@ -331,16 +460,38 @@ bool BigTime::setString(unsigned v)
       return false;
       }
 
+// REMOVE Tim. clip. Changed.
+// //---------------------------------------------------------
+// //   setPos
+// //---------------------------------------------------------
+// #define PI 3.14159265
+// void BigTime::setPos(int idx, unsigned v, bool)
+// {
+//   if (idx == 0)
+//   {
+//     _curPos = v;
+//     int calcV = v%(MusEGlobal::config.midiDivision*2);
+//     double rangeAdjuster = PI/double(MusEGlobal::config.midiDivision);
+//     metronome->setMetronome(sin(double(calcV)*rangeAdjuster));
+//     //printf("calcV=%d rangeAdjuster %f metronomePosition=%f midiDivision=%d\n",v,rangeAdjuster, metronomePosition, MusEGlobal::config.midiDivision);
+//     setString(v);
+//   }
+//   metronome->update();
+// }
+
 //---------------------------------------------------------
 //   setPos
 //---------------------------------------------------------
 #define PI 3.14159265
-void BigTime::setPos(int idx, unsigned v, bool)
+void BigTime::setPos(int idx, const MusECore::Pos v, bool)
 {
   if (idx == 0)
   {
     _curPos = v;
-    int calcV = v%(MusEGlobal::config.midiDivision*2);
+    //_curPos.setTickAndFrame(v);
+    //_curPos.setPos(v);
+//     int calcV = v.tick()%(MusEGlobal::config.midiDivision*2);
+    int calcV = _curPos.tick()%(MusEGlobal::config.midiDivision*2);
     double rangeAdjuster = PI/double(MusEGlobal::config.midiDivision);
     metronome->setMetronome(sin(double(calcV)*rangeAdjuster));
     //printf("calcV=%d rangeAdjuster %f metronomePosition=%f midiDivision=%d\n",v,rangeAdjuster, metronomePosition, MusEGlobal::config.midiDivision);
@@ -349,13 +500,29 @@ void BigTime::setPos(int idx, unsigned v, bool)
   metronome->update();
 }
 
+// REMOVE Tim. clip. Changed.
+// //---------------------------------------------------------
+// //   updateValue
+// //---------------------------------------------------------
+// 
+// void BigTime::updateValue()
+// {
+//   int calcV = _curPos%(MusEGlobal::config.midiDivision*2);
+//   double rangeAdjuster = PI/double(MusEGlobal::config.midiDivision);
+//   metronome->setMetronome(sin(double(calcV)*rangeAdjuster));
+//   //printf("calcV=%d rangeAdjuster %f metronomePosition=%f midiDivision=%d\n",_curPos,rangeAdjuster, metronomePosition, MusEGlobal::config.midiDivision);
+//   setString(_curPos);
+//   update();
+//   metronome->update();
+// }
+
 //---------------------------------------------------------
 //   updateValue
 //---------------------------------------------------------
 
 void BigTime::updateValue()
 {
-  int calcV = _curPos%(MusEGlobal::config.midiDivision*2);
+  int calcV = _curPos.tick()%(MusEGlobal::config.midiDivision*2);
   double rangeAdjuster = PI/double(MusEGlobal::config.midiDivision);
   metronome->setMetronome(sin(double(calcV)*rangeAdjuster));
   //printf("calcV=%d rangeAdjuster %f metronomePosition=%f midiDivision=%d\n",_curPos,rangeAdjuster, metronomePosition, MusEGlobal::config.midiDivision);

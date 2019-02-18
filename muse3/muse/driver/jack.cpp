@@ -306,8 +306,12 @@ static void timebase_callback(jack_transport_state_t /* state */,
    jack_nframes_t nframes,
    jack_position_t* pos,
    int new_pos,
-   void*)
+   void* arg)
   {
+    // REMOVE Tim. clip. Added.
+    JackAudioDevice* jad = (JackAudioDevice*)arg;
+    if(jad)
+      jad->timebaseAck();
 
     if (JACK_DEBUG)
     {
@@ -330,7 +334,14 @@ static void timebase_callback(jack_transport_state_t /* state */,
       //Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::song->cpos() : pos->frame, MusEGlobal::extSyncFlag.value() ? true : false);
       
       pos->valid = JackPositionBBT;
-      p.mbt(&pos->bar, &pos->beat, &pos->tick);
+// REMOVE Tim. clip. Changed. Compiler warns of danger of incompatible packing...
+//       p.mbt(&pos->bar, &pos->beat, &pos->tick);
+      int bar, beat, tick;
+      p.mbt(&bar, &beat, &tick);
+      pos->bar = bar;
+      pos->beat = beat;
+      pos->tick = tick;
+
       pos->bar_start_tick = Pos(pos->bar, 0, 0).tick();
       pos->bar++;
       pos->beat++;
@@ -425,6 +436,8 @@ JackAudioDevice::JackAudioDevice(jack_client_t* cl, char* name)
       //JackAudioDevice::jackStarted=false;
       strcpy(jackRegisteredName, name);
       _client = cl;
+      // REMOVE Tim. clip. Added.
+      _timebaseAck = false;
 }
 
 //---------------------------------------------------------
@@ -1573,6 +1586,17 @@ bool JackAudioDevice::timebaseQuery(unsigned frames, unsigned* bar, unsigned* be
   return false;
 }                
 
+// REMOVE Tim. clip. Added.
+//---------------------------------------------------------
+//   timebaseAck
+//   This is called by the timebase callback.
+//---------------------------------------------------------
+
+void JackAudioDevice::timebaseAck()
+{
+  _timebaseAck = true;
+}
+
 //---------------------------------------------------------
 //   systemTimeUS
 //   Return system time in microseconds as a 64-bit integer.
@@ -1946,10 +1970,11 @@ void JackAudioDevice::unregisterPort(void* p)
       jack_port_unregister(_client, (jack_port_t*)p);
       }
 
-float AudioDevice::getDSP_Load()
-{
-  return 0.0f;
-}
+// REMOVE Tim. clip. Removed. WTF?
+// float AudioDevice::getDSP_Load()
+// {
+//   return 0.0f;
+// }
 
 float JackAudioDevice::getDSP_Load()
 {
@@ -2214,7 +2239,9 @@ int JackAudioDevice::setMaster(bool f)
     if(MusEGlobal::useJackTransport.value())
     {
       // Make Muse the Jack timebase master. Do it unconditionally (second param = 0).
-      r = jack_set_timebase_callback(_client, 0, (JackTimebaseCallback) timebase_callback, 0);
+// REMOVE Tim. clip. Changed.
+//       r = jack_set_timebase_callback(_client, 0, (JackTimebaseCallback) timebase_callback, 0);
+      r = jack_set_timebase_callback(_client, 0, (JackTimebaseCallback) timebase_callback, this);
       if(MusEGlobal::debugMsg || JACK_DEBUG)
       {
         if(r)

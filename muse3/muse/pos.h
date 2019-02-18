@@ -60,6 +60,8 @@ class Pos {
       void msf(int*, int*, int*, int*) const;
 
       void invalidSn()  { sn = -1; }
+      // Returns whether the serial number is the same as the tempomap serial number.
+      bool snValid() const;
 
       TType  type() const     { return _type; }
       void   setType(TType t);
@@ -87,8 +89,21 @@ class Pos {
       unsigned posValue(TType time_type) const;
       void setTick(unsigned);
       void setFrame(unsigned);
-      void setPosValue(unsigned val);     
-      void setPosValue(unsigned val, TType time_type);     
+      void setPosValue(unsigned val);
+      void setPosValue(unsigned val, TType time_type);
+      // This is not the same as assigning or =.
+      // The type is kept and the value converted if required.
+      void setPos(const Pos&);
+      // This is a convenience function that sets both tick and frame at once.
+      // It allows setting independent tick and frame at once.
+      // They will both be valid until the next tempomap serial number change
+      //  ie. whenever tempo changes. Certain situations benefit from this,
+      //  for example passing around audio transport tick and frame which may
+      //  need to be separate especially during external sync.
+      // The important thing is that calling tick() or frame() will NOT cause it
+      //  to try and recalculate using the tempomap, until the next tempo change.
+      void setTickAndFrame(unsigned tick, unsigned frame);
+      void setTickAndFrame(const Pos);
       static unsigned convert(unsigned val, TType from_type, TType to_type);
 
       void write(int level, Xml&, const char*) const;
@@ -118,6 +133,9 @@ class PosLen : public Pos {
       void setLenFrame(unsigned);
       void setLenValue(unsigned val);
       void setLenValue(unsigned val, TType time_type);     
+      // This is not the same as assigning or =.
+      // The type is kept and the value converted if required.
+      void setLen(const PosLen&);
       unsigned lenTick() const;
       unsigned lenFrame() const;
       unsigned lenValue() const;

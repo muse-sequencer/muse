@@ -22,6 +22,9 @@
 
 #include "operations.h"
 #include "song.h"
+// REMOVE Tim. clip. Added.
+#include "audio.h"
+#include "audiodev.h"
 
 // Enable for debugging:
 //#define _PENDING_OPS_DEBUG_
@@ -100,6 +103,7 @@ unsigned int PendingOperationItem::getIndex() const
     case AddMidiCtrlValList:
     case ModifyAudioCtrlValList:
     case SetGlobalTempo:
+    case EnableMasterTrack:
     case AddRoute:
     case DeleteRoute:
     case AddRouteNode:
@@ -110,6 +114,7 @@ unsigned int PendingOperationItem::getIndex() const
     case GlobalSelectAllEvents:
     case ModifyAudioSamples:
     case SetStaticTempo:
+    case ModifyMarkerList:
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
     
@@ -1215,6 +1220,15 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       flags |= SC_TEMPO;
     break;
 
+    case EnableMasterTrack:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage EnableMasterTrack: tempolist:%p enable:%d\n", _tempo_list, _boolA);
+#endif      
+      // Tick paramter is unused.
+      _tempo_list->setMasterFlag(0, _boolA);
+      flags |= SC_MASTER;
+    break;
+
     
     case AddSig:
 #ifdef _PENDING_OPS_DEBUG_
@@ -1342,6 +1356,24 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     }
     break;
     
+    case ModifyMarkerList:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyMarkerList: "
+                      "orig list:%p new list:%p\n", _orig_marker_list, _marker_list);
+#endif      
+      if(_orig_marker_list && _marker_list)
+      {
+        MarkerList* orig = *_orig_marker_list;
+        *_orig_marker_list = _marker_list;
+        // Transfer the original pointer back to _marker_list so it can be deleted in the non-RT stage.
+        _marker_list = orig;
+      }
+      // Currently no flags for this.
+      //flags |= SC_MARKERS_REBUILT;
+    }
+    break;
+    
     case Uninitialized:
     break;
     
@@ -1442,6 +1474,12 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
       // At this point _newAudioSamples points to the original memory that was replaced. Delete it now.
       if(_newAudioSamples)
         delete _newAudioSamples;
+    break;
+
+    case ModifyMarkerList:
+      // At this point _marker_list points to the original memory that was replaced. Delete it now.
+      if(_marker_list)
+        delete _marker_list;
     break;
 
     default:
@@ -2192,6 +2230,29 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
 
+      case PendingOperationItem::EnableMasterTrack:
+#ifdef _PENDING_OPS_DEBUG_
+        fprintf(stderr, "PendingOperationList::add() EnableMasterTrack\n");
+#endif      
+        if(poi._type == PendingOperationItem::EnableMasterTrack &&
+          poi._tempo_list == op._tempo_list)
+        {
+          if(poi._boolA == op._boolA)
+          {
+            fprintf(stderr, "MusE error: PendingOperationList::add(): Double EnableMasterTrack. Ignoring.\n");
+            return false;
+          }
+          else
+          {
+            // Toggling is useless. Cancel out the enable or disable + disable or enable by erasing the disable or enable command.
+            erase(ipos->second);
+            _map.erase(ipos);
+            // No operation will take place.
+            return false;
+          }
+        }
+      break;
+
       
       case PendingOperationItem::AddSig:
 #ifdef _PENDING_OPS_DEBUG_
@@ -2433,6 +2494,20 @@ bool PendingOperationList::add(PendingOperationItem op)
 //         }
       break;
       
+      case PendingOperationItem::ModifyMarkerList:
+// TODO Not quite right yet.
+//         if(poi._type == PendingOperationItem::ModifyMarkerList && 
+//           // If attempting to repeatedly modify the same list, or, if progressively modifying (list to list to list etc).
+//           poi._orig_marker_list && op._orig_marker_list &&
+//           (*poi._orig_marker_list == *op._orig_marker_list || poi._marker_list == op._marker_list))
+//         {
+//           // Simply replace the list.
+//           poi._newAudioSamples = op._newAudioSamples; 
+//           poi._newAudioSamplesLen = op._newAudioSamplesLen; 
+//           return true;
+//         }
+      break;
+      
       case PendingOperationItem::Uninitialized:
         fprintf(stderr, "MusE error: PendingOperationList::add(): Uninitialized item. Ignoring.\n");
         return false;  
@@ -2626,6 +2701,44 @@ bool PendingOperationList::delTempoOperation(unsigned tick, TempoList* tl)
   add(poi);
   return true;
 }
+
+// REMOVE Tim. clip. Added.
+// //---------------------------------------------------------
+// //   adjustMarkerListOperation
+// //   Items between startPos and startPos + diff are removed.
+// //   Items after startPos + diff are adjusted 'diff' number of ticks.
+// //---------------------------------------------------------
+// 
+// bool PendingOperationList::adjustMarkerListOperation(MarkerList* markerlist, unsigned int startPos, int diff)
+// {
+//   if(!markerlist || markerlist->empty() || diff == 0)
+//     return false;
+//   
+//   MarkerList* new_markerlist = new MarkerList();
+//   for(ciMarker i = markerlist->begin(); i != markerlist->end(); ++i)
+//   {
+//     const Marker& m = i->second;
+//     unsigned int tick = m.tick();
+//     if(tick >= startPos)
+//     {
+//       if(tick >= startPos + diff)
+//       {
+//         Marker newMarker(m);
+//         newMarker.setTick(tick - diff);
+//         new_markerlist->add(newMarker);
+//       }
+//     }
+//     else
+//     {
+//       new_markerlist->add(m);
+//     }
+//   }
+// 
+//   PendingOperationItem poi(markerlist, new_markerlist, PendingOperationItem::ModifyMarkerList);
+//   add(poi);
+// 
+//   return true;
+// }
 
 
 } // namespace MusECore
