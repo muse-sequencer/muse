@@ -27,7 +27,10 @@
 #include <cmath>
 #include "config.h"
 
-#ifndef HAVE_M_PI
+// FIXME See top level cmake. On MingW it said M_PI exists but here M_PI was not found!
+// So just look for the define for now...
+// #ifndef HAVE_M_PI
+#ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 

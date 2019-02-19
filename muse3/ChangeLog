@@ -1,5 +1,6 @@
 19.02.2019
       - Issue 639: Make 'midi remote' dialog box more clear. (Tim)
+      - Fix M_PI from last commit. Don't detect in cmake, hard-code #ifdef M_PI for now.
 17.02.2019
       - Fix all uses of exp10(). (Tim)
         exp10 is now detected in the main cmake file, and defined as pow(10,x) in muse_math.h
