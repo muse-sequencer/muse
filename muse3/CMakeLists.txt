@@ -297,7 +297,8 @@ include_directories(${JACK_INCLUDE_DIRS})
 check_cxx_symbol_exists(exp10 cmath HAVE_EXP10)
 check_cxx_symbol_exists(exp10f cmath HAVE_EXP10F)
 check_cxx_symbol_exists(exp10l cmath HAVE_EXP10L)
-check_cxx_symbol_exists(M_PI cmath HAVE_M_PI)
+# FIXME On MingW this is saying yes but later M_PI is not found!
+# check_cxx_symbol_exists(M_PI cmath HAVE_M_PI)
 
 ##
 ## alsa >= 0.9.0
