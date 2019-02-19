@@ -1962,7 +1962,7 @@ void Song::addMarker(const QString& s, int t, bool lck)
       m.setType(lck ? Pos::FRAMES : Pos::TICKS);
       m.setTick(t);
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddMarker, m));
-      emit markerChanged(MARKER_ADD);
+//       emit markerChanged(MARKER_ADD);
       }
 
 //---------------------------------------------------------
@@ -1981,7 +1981,7 @@ iMarker Song::getMarkerAt(int t)
 void Song::removeMarker(const Marker& marker)
       {
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteMarker, marker));
-      emit markerChanged(MARKER_REMOVE);
+//       emit markerChanged(MARKER_REMOVE);
       }
 
 void Song::setMarkerName(const Marker& marker, const QString& s)
@@ -1989,7 +1989,7 @@ void Song::setMarkerName(const Marker& marker, const QString& s)
       Marker m(marker);
       m.setName(s);
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
-      emit markerChanged(MARKER_NAME);
+//       emit markerChanged(MARKER_NAME);
       }
 
 void Song::setMarkerTick(const Marker& marker, int t)
@@ -1997,7 +1997,7 @@ void Song::setMarkerTick(const Marker& marker, int t)
       Marker m(marker);
       m.setTick(t);
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
-      emit markerChanged(MARKER_TICK);
+//       emit markerChanged(MARKER_TICK);
       }
 
 void Song::setMarkerLock(const Marker& marker, bool f)
@@ -2005,7 +2005,7 @@ void Song::setMarkerLock(const Marker& marker, bool f)
       Marker m(marker);
       m.setType(f ? Pos::FRAMES : Pos::TICKS);
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
-      emit markerChanged(MARKER_LOCK);
+//       emit markerChanged(MARKER_LOCK);
       }
 
 

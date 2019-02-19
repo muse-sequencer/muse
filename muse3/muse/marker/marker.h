@@ -62,20 +62,34 @@ class Marker : public Pos {
 //---------------------------------------------------------
 
 class MarkerList : public std::multimap<unsigned, Marker, std::less<unsigned> > {
+   private:
+     const_iterator _iCurrent;
+
    public:
+      MarkerList() : _iCurrent(cend()) { }
+
+      // Normally to be called from the audio thread only.
       Marker* add(const Marker& m);
       Marker* add(const QString& s, int t, bool lck);
-      void write(int, Xml&) const;
       void remove(Marker*);
       // REMOVE Tim. clip. Added.
       void remove(const Marker&);
+
       // REMOVE Tim. clip. Added.
       // After any tempo changes, it is essential to rebuild the list
       //  so that any 'locked' items are re-sorted properly by tick.
       // Returns true if any items were rebuilt.
+      // Normally to be called from the audio thread only.
       bool rebuild();
-      // Sets which item is the current based on the given tick.
-      void updateCurrent(unsigned int tick);
+
+      // Returns an iterator to the current marker, or end() if none is current.
+      const_iterator current() const { return _iCurrent; }
+      // Sets which marker is the current based on the given tick.
+      // Returns true if anything changed.
+      // Normally to be called from the audio thread only.
+      bool updateCurrent(unsigned int tick);
+
+      void write(int, Xml&) const;
       };
 
 // REMOVE Tim. clip. Changed.

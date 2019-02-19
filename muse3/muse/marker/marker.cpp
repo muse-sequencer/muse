@@ -119,6 +119,30 @@ void MarkerList::remove(const Marker& m)
       for(iMarker i = rng.first; i != rng.second; ++i) {
             const Marker& mm = i->second;
             if(mm.id() == id && mm.name() == s) {
+                  if(mm.current())
+                  {
+                    iMarker iif = i;
+                    ++iif;
+                    if(iif != rng.second)
+                    {
+                      iif->second.setCurrent(true);
+                      _iCurrent = iif;
+                    }
+                    else
+                    {
+                      if(i == begin())
+                      {
+                        _iCurrent = cend();
+                      }
+                      else
+                      {
+                        iMarker iib = i;
+                        --iib;
+                        iib->second.setCurrent(true);
+                        _iCurrent = iib;
+                      }
+                    }
+                  }
                   erase(i);
                   return;
                   }
@@ -158,13 +182,95 @@ bool MarkerList::rebuild()
   return !to_be_added.empty();
 }
 
+// REMOVE Tim. clip. Added.
 //---------------------------------------------------------
 // updateCurrent
 //  Sets which item is the current based on the given tick.
+//  Returns true if anything changed.
+//  Normally to be called from the audio thread only.
 //---------------------------------------------------------
-void MarkerList::updateCurrent(unsigned int /*tick*/)
+bool MarkerList::updateCurrent(unsigned int tick)
 {
+  bool currentChanged = false;
+  bool found = false;
+  iMarker i_end = end();
+  for(iMarker im = begin(); im != i_end; ++im)
+  {
+    Marker& m = im->second;
+    const unsigned int t = m.tick();
+    if(tick >= t)
+    {
+      if(found)
+      {
+        if(m.current())
+        {
+          currentChanged = true;
+          m.setCurrent(false);
+        }
+      }
+      else
+      {
+        found = true;
+        if(_iCurrent != im || !m.current())
+          currentChanged = true;
+        _iCurrent = im;
+        m.setCurrent(true);
+      }
+    }
+    else
+    {
+      if(m.current())
+        currentChanged = true;
+      m.setCurrent(false);
+    }
+  }
   
+  if(!found && _iCurrent != cend())
+  {
+    currentChanged = true;
+    _iCurrent = cend();
+  }
+
+  return currentChanged;
+  
+//   iMarker i1 = begin();
+//   iMarker i2 = i1;
+//   bool currentChanged = false;
+// 
+//   for (; i1 != end(); ++i1)
+//   {
+//     ++i2;
+//     if (tick >= i1->first && (i2==end() || tick < i2->first))
+//     {
+//       if(i1->second.current())
+//       {
+//         _iCurrent = i1;
+//         return;
+//       }
+// 
+//       i1->second.setCurrent(true);
+//       if(currentChanged)
+//       {
+//         _iCurrent = i1;
+//         return;
+//       }
+//       ++i1;
+//       for(; i1 != end(); ++i1)
+//       {
+//         if(i1->second.current())
+//           i1->second.setCurrent(false);
+//       }
+//       return;
+//     }
+//     else
+//     {
+//       if(i1->second.current())
+//       {
+//         currentChanged = true;
+//         i1->second.setCurrent(false);
+//       }
+//     }
+//   }
 }
 
 } // namespace MusECore

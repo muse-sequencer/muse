@@ -84,8 +84,10 @@ class Song : public QObject {
       enum FollowMode { NO, JUMP, CONTINUOUS };
       enum            { REC_OVERDUP, REC_REPLACE };
       enum            { CYCLE_NORMAL, CYCLE_MIX, CYCLE_REPLACE };
-      enum { MARKER_CUR, MARKER_ADD, MARKER_REMOVE, MARKER_NAME,
-         MARKER_TICK, MARKER_LOCK };
+// REMOVE Tim. clip. Changed.
+//       enum { MARKER_CUR, MARKER_ADD, MARKER_REMOVE, MARKER_NAME,
+//          MARKER_TICK, MARKER_LOCK };
+      enum { MARKER_CUR };
       enum OperationType {
         // Execute the operation only, the operation is not un-doable. No song update.
         OperationExecute,
@@ -261,7 +263,8 @@ class Song : public QObject {
       void setMarkerName(const Marker&, const QString&);
       void setMarkerTick(const Marker&, int);
       void setMarkerLock(const Marker&, bool);
-      void setMarkerCurrent(const Marker& m, bool f);
+      // Unused?
+//       void setMarkerCurrent(const Marker& m, bool f);
 
       //-----------------------------------------
       //   transport

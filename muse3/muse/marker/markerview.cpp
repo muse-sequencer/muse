@@ -106,6 +106,75 @@ MarkerItem::MarkerItem(QTreeWidget* parent, const MusECore::Marker& m)
       setLock(m.type() == MusECore::Pos::FRAMES);
       }
 
+// REMOVE Tim. clip. Changed.
+// //---------------------------------------------------------
+// //   setName
+// //---------------------------------------------------------
+// 
+// void MarkerItem::setName(const QString& s)
+//       {
+//       setText(COL_NAME, s);
+//       _marker = MusEGlobal::song->setMarkerName(_marker, s);
+//       }
+// 
+// //---------------------------------------------------------
+// //   setLock
+// //---------------------------------------------------------
+// 
+// void MarkerItem::setLock(bool lck)
+//       {
+//       setIcon(COL_LOCK, lck ? QIcon(*lockIcon) : QIcon());
+//       _marker = MusEGlobal::song->setMarkerLock(_marker, lck);
+//       }
+// 
+// //---------------------------------------------------------
+// //   setTick
+// //---------------------------------------------------------
+// 
+// void MarkerItem::setTick(unsigned v)
+//       {
+//       if (_marker->tick() != v)
+//             _marker = MusEGlobal::song->setMarkerTick(_marker, v);
+//       QString s;
+//       int bar, beat;
+//       unsigned tick;
+//       MusEGlobal::sigmap.tickValues(v, &bar, &beat, &tick);
+//       s = QString("%1.%2.%3")
+//           .arg(bar + 1,      4, 10, QLatin1Char('0'))
+//           .arg(beat + 1,     2, 10, QLatin1Char('0'))
+//           .arg(tick,         3, 10, QLatin1Char('0'));
+//       setText(COL_TICK, s);
+// 
+//       double time = double(MusEGlobal::tempomap.tick2frame(v))/double(MusEGlobal::sampleRate);
+//       int hour = int(time) / 3600;
+//       int min  = (int(time) % 3600)/60;
+//       int sec  = int(time) % 60;
+//       double rest = time - (hour*3600 + min * 60 + sec);
+//       switch(MusEGlobal::mtcType) {
+//             case 0:     // 24 frames sec
+//                   rest *= 24;
+//                   break;
+//             case 1:     // 25
+//                   rest *= 25;
+//                   break;
+//             case 2:     // 30 drop frame
+//                   rest *= 30;
+//                   break;
+//             case 3:     // 30 non drop frame
+//                   rest *= 30;
+//                   break;
+//             }
+//       int frame = int(rest);
+//       int subframe = int((rest-frame)*100);
+//       s = QString("%1:%2:%3:%4:%5")
+//           .arg(hour,     2, 10, QLatin1Char('0'))
+//           .arg(min,      2, 10, QLatin1Char('0'))
+//           .arg(sec,      2, 10, QLatin1Char('0'))
+//           .arg(frame,    2, 10, QLatin1Char('0'))
+//           .arg(subframe, 2, 10, QLatin1Char('0'));
+//       setText(COL_SMPTE, s);
+//       }
+
 //---------------------------------------------------------
 //   setName
 //---------------------------------------------------------
@@ -113,7 +182,6 @@ MarkerItem::MarkerItem(QTreeWidget* parent, const MusECore::Marker& m)
 void MarkerItem::setName(const QString& s)
       {
       setText(COL_NAME, s);
-      _marker = MusEGlobal::song->setMarkerName(_marker, s);
       }
 
 //---------------------------------------------------------
@@ -123,7 +191,6 @@ void MarkerItem::setName(const QString& s)
 void MarkerItem::setLock(bool lck)
       {
       setIcon(COL_LOCK, lck ? QIcon(*lockIcon) : QIcon());
-      _marker = MusEGlobal::song->setMarkerLock(_marker, lck);
       }
 
 //---------------------------------------------------------
@@ -132,8 +199,6 @@ void MarkerItem::setLock(bool lck)
 
 void MarkerItem::setTick(unsigned v)
       {
-      if (_marker->tick() != v)
-            _marker = MusEGlobal::song->setMarkerTick(_marker, v);
       QString s;
       int bar, beat;
       unsigned tick;
@@ -449,10 +514,100 @@ void MarkerView::deleteMarker()
 void MarkerView::songChanged(MusECore::SongChangedStruct_t flags)
 {
   // REMOVE Tim. clip. Added.
-  if(flags._flags & (SC_MARKERS_REBUILT | SC_TEMPO | SC_MASTER))
+  if(flags._flags &
+    (SC_MARKERS_REBUILT | SC_TEMPO | SC_MASTER |
+     SC_MARKER_INSERTED | SC_MARKER_REMOVED | SC_MARKER_MODIFIED))
 
     updateList();
 }
+
+// REMOVE Tim. clip. Added.
+// //---------------------------------------------------------
+// //   updateList
+// //---------------------------------------------------------
+// 
+// void MarkerView::updateList()
+// {
+//       // Added p3.3.43 Manage selected item, due to clearing of table...
+//       MusECore::MarkerList* marker = MusEGlobal::song->marker();
+//       MarkerItem* selitem     = (MarkerItem*)table->currentItem();
+//       MusECore::Marker* selm     = selitem ? selitem->marker() : 0;
+//       // p3.3.44 Look for removed markers before added markers...
+//       if(selitem)
+//       {
+//         MarkerItem* mitem = (MarkerItem*)table->topLevelItem(0);
+//         while(mitem) 
+//         {
+//           bool found = false;
+//           for(MusECore::iMarker i = marker->begin(); i != marker->end(); ++i) 
+//           {
+//             MusECore::Marker* m = &i->second;
+//             if(m == mitem->marker()) 
+//             {
+//               found = true;
+//               break;
+//             }
+//           }
+//           // Anything removed from the marker list?
+//           if(!found)
+//           {
+//             // If it is the current selected item, it no longer exists. Make the next item be selected.
+//             if(mitem == selitem)
+//             {
+//               MarkerItem* mi = (MarkerItem*)table->itemBelow(selitem);
+//               if(mi)
+//               {
+//                 selitem = mi;
+//                 selm    = selitem->marker();
+//               }  
+//             }  
+//           }  
+//           mitem = (MarkerItem*)table->itemBelow(mitem);
+//         }
+//       }  
+//       // Look for added markers...
+//       for(MusECore::iMarker i = marker->begin(); i != marker->end(); ++i) 
+//       {
+//         MusECore::Marker* m = &i->second;
+//         bool found = false;
+//         MarkerItem* item = (MarkerItem*)table->topLevelItem(0);
+//         while(item) 
+//         {
+//           if(item->marker() == m) 
+//           {
+//             found = true;
+//             break;
+//           }
+//           item = (MarkerItem*)table->itemBelow(item);
+//         }
+//         // Anything new found in the marker list?
+//         if(!found)
+//           selm = m;
+//       }
+//             
+//       // Block signals added. Triggers itemSelectionChanged() causing crash. Tim. 
+//       table->blockSignals(true);
+//       table->clear();
+//       table->blockSignals(false);
+//       
+//       //MusECore::MarkerList* marker = MusEGlobal::song->marker();
+//       for (MusECore::iMarker i = marker->begin(); i != marker->end(); ++i) 
+//       {
+//             MusECore::Marker* m = &i->second;
+//             
+//             // Changed p3.3.43 
+//             MarkerItem* item = new MarkerItem(table, m);
+//             if(m == selm)
+//             {
+//               m->setCurrent(true);
+//               table->setCurrentItem(item);
+//             }
+//             else  
+//             {
+//               m->setCurrent(false);
+//             }
+//       }
+// }
 
 //---------------------------------------------------------
 //   updateList
@@ -460,11 +615,15 @@ void MarkerView::songChanged(MusECore::SongChangedStruct_t flags)
 
 void MarkerView::updateList()
 {
-      // Added p3.3.43 Manage selected item, due to clearing of table...
+      // Manage selected item, due to clearing of table...
       MusECore::MarkerList* marker = MusEGlobal::song->marker();
       MarkerItem* selitem     = (MarkerItem*)table->currentItem();
-      MusECore::Marker* selm     = selitem ? selitem->marker() : 0;
-      // p3.3.44 Look for removed markers before added markers...
+//       MusECore::Marker* selm     = selitem ? selitem->marker() : 0;
+      MusECore::Marker selm;
+      if(selitem)
+        selm = selitem->marker();
+
+      // Look for removed markers before added markers...
       if(selitem)
       {
         MarkerItem* mitem = (MarkerItem*)table->topLevelItem(0);
@@ -473,8 +632,11 @@ void MarkerView::updateList()
           bool found = false;
           for(MusECore::iMarker i = marker->begin(); i != marker->end(); ++i) 
           {
-            MusECore::Marker* m = &i->second;
-            if(m == mitem->marker()) 
+//             MusECore::Marker* m = &i->second;
+//             if(m == mitem->marker()) 
+            const MusECore::Marker& m = i->second;
+//             if(m == mitem->marker()) 
+            if(m.id() == mitem->marker().id()) 
             {
               found = true;
               break;
@@ -500,12 +662,14 @@ void MarkerView::updateList()
       // Look for added markers...
       for(MusECore::iMarker i = marker->begin(); i != marker->end(); ++i) 
       {
-        MusECore::Marker* m = &i->second;
+//         MusECore::Marker* m = &i->second;
+        const MusECore::Marker& m = i->second;
         bool found = false;
         MarkerItem* item = (MarkerItem*)table->topLevelItem(0);
         while(item) 
         {
-          if(item->marker() == m) 
+//           if(item->marker() == m) 
+          if(item->marker().id() == m.id())
           {
             found = true;
             break;
@@ -525,18 +689,23 @@ void MarkerView::updateList()
       //MusECore::MarkerList* marker = MusEGlobal::song->marker();
       for (MusECore::iMarker i = marker->begin(); i != marker->end(); ++i) 
       {
-            MusECore::Marker* m = &i->second;
+//             MusECore::Marker* m = &i->second;
+//             const MusECore::Marker& m = i->second;
+            MusECore::Marker& m = i->second;
             
             // Changed p3.3.43 
             MarkerItem* item = new MarkerItem(table, m);
-            if(m == selm)
+//             if(m == selm)
+            if(m.id() == selm.id())
             {
-              m->setCurrent(true);
+//               m->setCurrent(true);
+              m.setCurrent(true);
               table->setCurrentItem(item);
             }
             else  
             {
-              m->setCurrent(false);
+//               m->setCurrent(false);
+              m.setCurrent(false);
             }
       }
 }
@@ -582,6 +751,47 @@ void MarkerView::clicked(QTreeWidgetItem* i)
       MusEGlobal::song->setPos(0, p, true, true, false);
       }
 
+// REMOVE Tim. clip. Changed.
+// //---------------------------------------------------------
+// //   nameChanged
+// //---------------------------------------------------------
+// 
+// void MarkerView::nameChanged(const QString& s)
+//       {
+//       MarkerItem* item = (MarkerItem*)table->currentItem();
+//       if (item)
+//             item->setName(s);
+//       }
+// 
+// //---------------------------------------------------------
+// //   tickChanged
+// //---------------------------------------------------------
+// 
+// void MarkerView::tickChanged(const MusECore::Pos& pos)
+//       {
+//       MarkerItem* item = (MarkerItem*)table->currentItem();
+//       if (item) {
+//             item->setTick(pos.tick());
+//             MusECore::Pos p(pos.tick(), true);
+//             MusEGlobal::song->setPos(0, p, true, true, false);
+//             table->sortByColumn(COL_TICK, Qt::AscendingOrder);
+//             }
+//       }
+// 
+// //---------------------------------------------------------
+// //   lockChanged
+// //---------------------------------------------------------
+// 
+// void MarkerView::lockChanged(bool lck)
+//       {
+//       MarkerItem* item = (MarkerItem*)table->currentItem();
+//       if (item) {
+//             item->setLock(lck);
+//             editSMPTE->setEnabled(item->lock());
+//             editTick->setEnabled(!item->lock());
+//             }
+//       }
+
 //---------------------------------------------------------
 //   nameChanged
 //---------------------------------------------------------
@@ -590,7 +800,10 @@ void MarkerView::nameChanged(const QString& s)
       {
       MarkerItem* item = (MarkerItem*)table->currentItem();
       if (item)
-            item->setName(s);
+      {
+        item->setName(s);
+        MusEGlobal::song->setMarkerName(item->marker(), s);
+      }
       }
 
 //---------------------------------------------------------
@@ -601,6 +814,8 @@ void MarkerView::tickChanged(const MusECore::Pos& pos)
       {
       MarkerItem* item = (MarkerItem*)table->currentItem();
       if (item) {
+            if (item->marker().tick() != pos.tick())
+                  MusEGlobal::song->setMarkerTick(item->marker(), pos.tick());
             item->setTick(pos.tick());
             MusECore::Pos p(pos.tick(), true);
             MusEGlobal::song->setPos(0, p, true, true, false);
@@ -617,6 +832,7 @@ void MarkerView::lockChanged(bool lck)
       MarkerItem* item = (MarkerItem*)table->currentItem();
       if (item) {
             item->setLock(lck);
+            MusEGlobal::song->setMarkerLock(item->marker(), lck);
             editSMPTE->setEnabled(item->lock());
             editTick->setEnabled(!item->lock());
             }
@@ -633,10 +849,11 @@ void MarkerView::markerChanged(int val)
       {
          // MARKER_CUR, MARKER_ADD, MARKER_REMOVE, MARKER_NAME,
          // MARKER_TICK, MARKER_LOCK
-        case MusECore::Song::MARKER_ADD:
-        case MusECore::Song::MARKER_REMOVE:
-          updateList();      
-        break; // Try falling through and let it try to select something. No, let updateList() do it...
+// REMOVE Tim. clip. Changed.
+//         case MusECore::Song::MARKER_ADD:
+//         case MusECore::Song::MARKER_REMOVE:
+//           updateList();      
+//         break; // Try falling through and let it try to select something. No, let updateList() do it...
         
         case MusECore::Song::MARKER_CUR:
         {
@@ -646,7 +863,9 @@ void MarkerView::markerChanged(int val)
                 if (i->second.current()) {
                       MarkerItem* item = (MarkerItem*)table->topLevelItem(0);
                       while (item) {
-                            if (item->marker() == &i->second) {
+// REMOVE Tim. clip. Changed.
+//                             if (item->marker() == &i->second) {
+                            if (item->marker().id() == i->second.id()) {
                                   table->setCurrentItem(item);
                                   return;
                                   }
