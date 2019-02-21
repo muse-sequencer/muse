@@ -4777,9 +4777,25 @@ void LV2PluginWrapper_Window::updateGui()
    }
    LV2Synth::lv2ui_SendChangedControls(_state);
 
+// REMOVE Tim. lv2. Changed. 2019/02/21 TESTING.
+// It was a bit of a hack for one particular synth if I recall. Removed, seems OK now.
+//
+//    //send program change if any
+//    // Force send if re-opening.
+//    if(_state->uiIsOpening || _state->uiDoSelectPrg)
+//    {
+//       _state->uiDoSelectPrg = false;
+//       if(_state->uiPrgIface != NULL && (_state->uiPrgIface->select_program != NULL || _state->uiPrgIface->select_program_for_channel != NULL))
+//       {
+//          if(_state->newPrgIface)
+//             _state->uiPrgIface->select_program_for_channel(lilv_instance_get_handle(_state->handle), _state->uiChannel, (uint32_t)_state->uiBank, (uint32_t)_state->uiProg);
+//          else
+//             _state->uiPrgIface->select_program(lilv_instance_get_handle(_state->handle), (uint32_t)_state->uiBank, (uint32_t)_state->uiProg);
+//       }
+//    }
    //send program change if any
    // Force send if re-opening.
-   if(_state->uiIsOpening || _state->uiDoSelectPrg)
+   if(_state->uiDoSelectPrg)
    {
       _state->uiDoSelectPrg = false;
       if(_state->uiPrgIface != NULL && (_state->uiPrgIface->select_program != NULL || _state->uiPrgIface->select_program_for_channel != NULL))
