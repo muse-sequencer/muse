@@ -1083,13 +1083,19 @@ int main(int argc, char* argv[])
           qApp->processEvents();
         }
 
-        // WARNING Must do it this way. Call registerClient long AFTER Jack client is created and MusE ALSA client is
-        // created (in initMidiDevices), otherwise random crashes can occur within Jack <= 1.9.8. Fixed in Jack 1.9.9.  Tim.
-        // This initMidiDevices will automatically initialize the midiSeq sequencer thread, but not start it - that's a bit later on.
+// REMOVE Tim. startup. Removed 2019/02/21. It's been six years since 1.9.9.5 release.
+//        Remove this waiting part at some point if we're all good...
+//
+//         // WARNING Must do it this way. Call registerClient long AFTER Jack client
+//         //  is created and MusE ALSA client is created (in initMidiDevices),
+//         //  otherwise random crashes can occur within Jack <= 1.9.8.
+//         // Fixed in Jack 1.9.9.  Tim.
+        // This initMidiDevices will automatically initialize the midiSeq sequencer thread,
+        //  but not start it - that's a bit later on.
         MusECore::initMidiDevices();
-        // Wait until things have settled. One second seems OK so far.
-        for(int t = 0; t < 100; ++t)
-          usleep(10000);
+//         // Wait until things have settled. One second seems OK so far.
+//         for(int t = 0; t < 100; ++t)
+//           usleep(10000);
         // Now it is safe to call registerClient.
         MusEGlobal::audioDevice->registerClient();
 
