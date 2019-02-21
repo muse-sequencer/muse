@@ -72,7 +72,7 @@ const char* UndoOp::typeName()
             "ModifyTrackName", "ModifyTrackChannel",
             "SetTrackRecord", "SetTrackMute", "SetTrackSolo", "SetTrackRecMonitor", "SetTrackOff",
             "MoveTrack",
-            "ModifyClip", "AddMarker", "DeleteMarker", "ModifyMarker",
+            "ModifyClip", "AddMarker", "DeleteMarker", "ModifyMarker", "SetMarkerPos",
             "ModifySongLen", "DoNothing",
             "EnableAllAudioControllers",
             "GlobalSelectAllEvents"
@@ -158,6 +158,7 @@ void UndoList::clearDelete()
 // REMOVE Tim. clip. Changed.
 //                   if (i->copyMarker)
 //                     delete i->copyMarker;
+            case UndoOp::SetMarkerPos:
             case UndoOp::AddMarker:
             case UndoOp::DeleteMarker:
                   if (i->oldMarker)
@@ -209,6 +210,7 @@ void UndoList::clearDelete()
 // REMOVE Tim. clip. Changed.
 //                   if (i->realMarker)
 //                     delete i->realMarker;
+            case UndoOp::SetMarkerPos:
             case UndoOp::AddMarker:
             case UndoOp::DeleteMarker:
                   if (i->oldMarker)
@@ -510,6 +512,10 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
 
     case UndoOp::ModifyMarker:
       fprintf(stderr, "Undo::insert: ModifyMarker\n");
+    break;
+
+    case UndoOp::SetMarkerPos:
+      fprintf(stderr, "Undo::insert: SetMarkerPos\n");
     break;
 
     
@@ -1374,6 +1380,72 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           }
         break;
         
+        case UndoOp::AddMarker:
+          if(uo.type == UndoOp::AddMarker && uo.newMarker->id() == n_op.newMarker->id())
+          {
+            // Done with older operation marker. Be sure to delete it.
+            delete uo.newMarker;
+            // Simply replace the existing new marker with the newer marker.
+            uo.newMarker = n_op.newMarker;
+            return;  
+          }
+          else if(uo.type == UndoOp::DeleteMarker && uo.newMarker->id() == n_op.oldMarker->id())
+          {
+            // Done with operation markers. Be sure to delete them.
+            delete uo.newMarker;
+            delete n_op.oldMarker;
+            // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
+            erase(iuo);
+            return;  
+          }
+        break;
+        
+        case UndoOp::DeleteMarker:
+          if(uo.type == UndoOp::DeleteMarker && uo.oldMarker->id() == n_op.oldMarker->id())
+          {
+            // Done with older operation marker. Be sure to delete it.
+            delete uo.oldMarker;
+            // Simply replace the existing new marker with the newer marker.
+            uo.oldMarker = n_op.oldMarker;
+            return;  
+          }
+          else if(uo.type == UndoOp::AddMarker && uo.oldMarker->id() == n_op.newMarker->id())
+          {
+            // Done with operation markers. Be sure to delete them.
+            delete uo.oldMarker;
+            delete n_op.newMarker;
+            // Delete followed by add is useless. Cancel out the delete + add by erasing the delete command.
+            erase(iuo);
+            return;  
+          }
+        break;
+        
+        case UndoOp::ModifyMarker:
+          if(uo.type == UndoOp::ModifyMarker && uo.oldMarker->id() == n_op.oldMarker->id())
+          {
+            // Done with older operation markers. Be sure to delete them.
+            delete uo.oldMarker;
+            delete uo.newMarker;
+            // Simply replace the older operation markers with the newer ones.
+            uo.oldMarker = n_op.oldMarker;
+            uo.newMarker = n_op.newMarker;
+            return;  
+          }
+        break;
+        
+        case UndoOp::SetMarkerPos:
+          if(uo.type == UndoOp::SetMarkerPos && uo.oldMarker->id() == n_op.oldMarker->id())
+          {
+            // Done with older operation markers. Be sure to delete them.
+            delete uo.oldMarker;
+            delete uo.newMarker;
+            // Simply replace the older operation markers with the newer ones.
+            uo.oldMarker = n_op.oldMarker;
+            uo.newMarker = n_op.newMarker;
+            return;  
+          }
+        break;
+        
         // NOTE Some other undo op types may need treatment as well !
         
         default:
@@ -1394,6 +1466,8 @@ bool Undo::merge_combo(const Undo& other)
   int has_select_event=0x02;
   int has_select_part=0x04;
   int has_modify_aud_ctrl_val=0x08;
+  // REMOVE Tim. clip. Added.
+  int has_set_marker_pos=0x10;
 
   int has = 0;
   for (ciUndoOp op=this->begin(); op!=this->end(); op++)
@@ -1403,6 +1477,7 @@ bool Undo::merge_combo(const Undo& other)
                   case UndoOp::SelectEvent: has |= has_select_event; break;
                   case UndoOp::SelectPart: has |= has_select_part; break;
                   case UndoOp::ModifyAudioCtrlVal: has |= has_modify_aud_ctrl_val; break;
+                  case UndoOp::SetMarkerPos: has |= has_set_marker_pos; break;
                   default: has |= has_other; break;
           }
   
@@ -1413,10 +1488,13 @@ bool Undo::merge_combo(const Undo& other)
                   case UndoOp::SelectEvent: has |= has_select_event; break;
                   case UndoOp::SelectPart: has |= has_select_part; break;
                   case UndoOp::ModifyAudioCtrlVal: has |= has_modify_aud_ctrl_val; break;
+                  case UndoOp::SetMarkerPos: has |= has_set_marker_pos; break;
                   default: has |= has_other; break;
           }
   
-  bool mergeable = (has == has_select_event || has == has_select_part || has == has_modify_aud_ctrl_val);
+  bool mergeable =
+    (has == has_select_event || has == has_select_part ||
+     has == has_modify_aud_ctrl_val || has == has_set_marker_pos);
   
   if (mergeable)
           this->insert(this->end(), other.begin(), other.end());
@@ -1924,7 +2002,16 @@ UndoOp::UndoOp(UndoType type_, const Marker& oldMarker_, const Marker& newMarker
       assert(type_==ModifyMarker);
       type    = type_;
       oldMarker  = new Marker(oldMarker_);
-      newMarker = new Marker(newMarker_);
+      // Enforce a new ID in case caller did not use assign.
+      if(newMarker_.id() == oldMarker_.id())
+      {
+        newMarker = new Marker();
+        newMarker->assign(newMarker_);
+      }
+      else
+      {
+        newMarker = new Marker(newMarker_);
+      }
       _noUndo = noUndo;
       }
 
@@ -1932,6 +2019,7 @@ UndoOp::UndoOp(UndoType type_, const Marker& marker_, bool noUndo)
       {
       assert(type_==AddMarker || type_==DeleteMarker);
       type    = type_;
+      oldMarker = newMarker = nullptr;
       Marker** mp = nullptr;
       if(type_== AddMarker)
         mp = &newMarker;
@@ -1941,6 +2029,31 @@ UndoOp::UndoOp(UndoType type_, const Marker& marker_, bool noUndo)
       _noUndo = noUndo;
       }
 
+UndoOp::UndoOp(UndoType type_, const Marker& marker_, unsigned int new_pos, Pos::TType new_time_type, bool noUndo)
+      {
+      assert(type_==SetMarkerPos);
+      type    = type_;
+      oldMarker = new Marker(marker_);
+      // Enforce a new ID in case caller did not use assign.
+      newMarker = new Marker();
+      newMarker->assign(marker_);
+      newMarker->setPosValue(new_pos, new_time_type);
+      _noUndo = noUndo;
+      }
+
+// REMOVE Tim. clip. Added.
+// UndoOp::UndoOp(UndoType type_, MarkerList** oldMarkerList_, MarkerList* newMarkerList_, bool noUndo)
+//       {
+//       assert(type_==ModifyMarkerList);
+//       assert(oldMarkerList);
+//       assert(newMarkerList);
+//       type    = type_;
+//       oldMarkerList = oldMarkerList_;
+//       newMarkerList = newMarkerList_;
+//       _noUndo = noUndo;
+//       }
+      
+      
 UndoOp::UndoOp(UndoType type_, const Event& changedEvent, const QString& changeData, int startframe_, int endframe_, bool noUndo)
       {
       assert(type_==ModifyClip);
@@ -2712,6 +2825,7 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                   
                   case UndoOp::ModifyMarker:
+                  case UndoOp::SetMarkerPos:
                           // Create the new list if it doesn't already exist.
                           // Make a copy of the original list.
                           if(!new_marker_list)
@@ -3599,6 +3713,7 @@ void Song::executeOperationGroup1(Undo& operations)
                         break;
                   
                   case UndoOp::ModifyMarker:
+                  case UndoOp::SetMarkerPos:
                           // Create the new list if it doesn't already exist.
                           // Make a copy of the original list.
                           if(!new_marker_list)

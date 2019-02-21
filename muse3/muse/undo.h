@@ -63,6 +63,10 @@ struct UndoOp {
             MoveTrack,
             ModifyClip,
             AddMarker, DeleteMarker, ModifyMarker,
+            // This one is provided separately for optimizing repeated adjustments. It is 'combo breaker' -aware.
+            SetMarkerPos,
+            //// For wholesale changes to the list. Preferred if multiple additions or deletions are required.
+            //ModifyMarkerList,
             ModifySongLen, // a = new len, b = old len
             DoNothing,
             
@@ -103,6 +107,8 @@ struct UndoOp {
 //                   Marker* copyMarker;
                   Marker* oldMarker; 
                   Marker* newMarker;
+//                   MarkerList** oldMarkerList; 
+//                   MarkerList* newMarkerList; 
                 };
             struct {
                   const Track* _propertyTrack;
@@ -163,6 +169,9 @@ struct UndoOp {
       //UndoOp(UndoType type, const Marker& oldMarker, Marker* newMarker = nullptr, bool noUndo = false);
       UndoOp(UndoType type, const Marker& oldMarker, const Marker& newMarker, bool noUndo = false);
       UndoOp(UndoType type, const Marker& marker, bool noUndo = false);
+      UndoOp(UndoType type, const Marker& marker, unsigned int new_pos, Pos::TType new_time_type, bool noUndo = false);
+      // Takes ownership of the old list (deletes it).
+      //UndoOp(UndoType type, MarkerList** oldMarkerList, MarkerList* newMarkerList, bool noUndo = false);
 
       UndoOp(UndoType type, const Track* track, const QString& old_name, const QString& new_name, bool noUndo = false);
       UndoOp(UndoType type, const Track* track, int old_chan, int new_chan, bool noUndo = false);

@@ -22,7 +22,6 @@
 
 #include "sig.h"  // Tim.
 
-#include "marker.h"
 #include "markerview.h"
 #include "xml.h"
 #include "globals.h"
@@ -347,8 +346,11 @@ MarkerView::MarkerView(QWidget* parent)
       hbox->addWidget(editName);
       props->setLayout(hbox);
 
-      connect(editName, SIGNAL(textChanged(const QString&)),
-         SLOT(nameChanged(const QString&)));
+// REMOVE Tim. clip. Changed.
+//       connect(editName, SIGNAL(textChanged(const QString&)),
+//          SLOT(nameChanged(const QString&)));
+      connect(editName, SIGNAL(editingFinished()),
+         SLOT(nameChanged()));
       connect(editTick, SIGNAL(valueChanged(const MusECore::Pos&)),
          SLOT(tickChanged(const MusECore::Pos&)));
       connect(editSMPTE, SIGNAL(valueChanged(const MusECore::Pos&)),
@@ -717,6 +719,10 @@ void MarkerView::updateList()
 void MarkerView::markerSelectionChanged()
       {
       MarkerItem* item = (MarkerItem*)table->currentItem();
+      editTick->blockSignals(true);
+      editSMPTE->blockSignals(true);
+      editName->blockSignals(true);
+      lock->blockSignals(true);
       if (item == 0) {  // never triggered
             editTick->setValue(0);
             editSMPTE->setValue(0);
@@ -738,6 +744,10 @@ void MarkerView::markerSelectionChanged()
             editSMPTE->setEnabled(item->lock());
             editTick->setEnabled(!item->lock());
             }
+      editTick->blockSignals(false);
+      editSMPTE->blockSignals(false);
+      editName->blockSignals(false);
+      lock->blockSignals(false);
       }
 
 void MarkerView::clicked(QTreeWidgetItem* i)
@@ -796,13 +806,13 @@ void MarkerView::clicked(QTreeWidgetItem* i)
 //   nameChanged
 //---------------------------------------------------------
 
-void MarkerView::nameChanged(const QString& s)
+void MarkerView::nameChanged()
       {
       MarkerItem* item = (MarkerItem*)table->currentItem();
       if (item)
       {
-        item->setName(s);
-        MusEGlobal::song->setMarkerName(item->marker(), s);
+//         item->setName(s);
+        MusEGlobal::song->setMarkerName(item->marker(), editName->text());
       }
       }
 
@@ -815,11 +825,13 @@ void MarkerView::tickChanged(const MusECore::Pos& pos)
       MarkerItem* item = (MarkerItem*)table->currentItem();
       if (item) {
             if (item->marker().tick() != pos.tick())
-                  MusEGlobal::song->setMarkerTick(item->marker(), pos.tick());
-            item->setTick(pos.tick());
-            MusECore::Pos p(pos.tick(), true);
-            MusEGlobal::song->setPos(0, p, true, true, false);
-            table->sortByColumn(COL_TICK, Qt::AscendingOrder);
+            {
+//               item->setTick(pos.tick());
+              MusEGlobal::song->setMarkerTick(item->marker(), pos.tick());
+            }
+//             MusECore::Pos p(pos.tick(), true);
+//             MusEGlobal::song->setPos(0, p, true, true, false);
+//             table->sortByColumn(COL_TICK, Qt::AscendingOrder);
             }
       }
 
@@ -831,10 +843,10 @@ void MarkerView::lockChanged(bool lck)
       {
       MarkerItem* item = (MarkerItem*)table->currentItem();
       if (item) {
-            item->setLock(lck);
+//             item->setLock(lck);
             MusEGlobal::song->setMarkerLock(item->marker(), lck);
-            editSMPTE->setEnabled(item->lock());
-            editTick->setEnabled(!item->lock());
+//             editSMPTE->setEnabled(item->lock());
+//             editTick->setEnabled(!item->lock());
             }
       }
 

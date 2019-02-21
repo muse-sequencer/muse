@@ -31,21 +31,6 @@ namespace MusECore {
 // Static.
 std::uint64_t Marker::_idGen = 0;
 
-Marker* MarkerList::add(const Marker& marker)
-      {
-      iMarker i = insert(std::pair<const int, Marker> (marker.tick(), Marker(marker)));
-      return &i->second;
-      }
-
-Marker* MarkerList::add(const QString& s, int t, bool lck)
-      {
-      Marker marker(s);
-      marker.setType(lck ? Pos::FRAMES : Pos::TICKS);
-      marker.setTick(t);
-      iMarker i = insert(std::pair<const int, Marker> (t, marker));
-      return &i->second;
-      }
-
 //---------------------------------------------------------
 //   read
 //---------------------------------------------------------
@@ -79,6 +64,46 @@ void Marker::read(Xml& xml)
                         break;
                   }
             }
+      }
+
+//---------------------------------------------------------
+//  assign
+//   Assigns the members of the given marker to this one, EXCEPT for the ID.
+//   Returns this marker.
+//---------------------------------------------------------
+
+Marker& Marker::assign(const Marker& m)
+{
+  setCurrent(m.current());
+  setName(m.name());
+  setTick(m.tick());
+  setType(m.type());
+  return *this;
+}
+
+//---------------------------------------------------------
+//  copy
+//   Creates a copy of this marker but with a new ID.
+//---------------------------------------------------------
+
+Marker Marker::copy() const
+{
+  return Marker().assign(*this);
+}
+
+Marker* MarkerList::add(const Marker& marker)
+      {
+      iMarker i = insert(std::pair<const int, Marker> (marker.tick(), Marker(marker)));
+      return &i->second;
+      }
+
+Marker* MarkerList::add(const QString& s, int t, bool lck)
+      {
+      Marker marker(s);
+      marker.setType(lck ? Pos::FRAMES : Pos::TICKS);
+      marker.setTick(t);
+      iMarker i = insert(std::pair<const int, Marker> (t, marker));
+      return &i->second;
       }
 
 //---------------------------------------------------------
@@ -119,30 +144,30 @@ void MarkerList::remove(const Marker& m)
       for(iMarker i = rng.first; i != rng.second; ++i) {
             const Marker& mm = i->second;
             if(mm.id() == id && mm.name() == s) {
-                  if(mm.current())
-                  {
-                    iMarker iif = i;
-                    ++iif;
-                    if(iif != rng.second)
-                    {
-                      iif->second.setCurrent(true);
-                      _iCurrent = iif;
-                    }
-                    else
-                    {
-                      if(i == begin())
-                      {
-                        _iCurrent = cend();
-                      }
-                      else
-                      {
-                        iMarker iib = i;
-                        --iib;
-                        iib->second.setCurrent(true);
-                        _iCurrent = iib;
-                      }
-                    }
-                  }
+//                   if(mm.current())
+//                   {
+//                     iMarker iif = i;
+//                     ++iif;
+//                     if(iif != rng.second)
+//                     {
+//                       iif->second.setCurrent(true);
+//                       _iCurrent = iif;
+//                     }
+//                     else
+//                     {
+//                       if(i == begin())
+//                       {
+//                         _iCurrent = cend();
+//                       }
+//                       else
+//                       {
+//                         iMarker iib = i;
+//                         --iib;
+//                         iib->second.setCurrent(true);
+//                         _iCurrent = iib;
+//                       }
+//                     }
+//                   }
                   erase(i);
                   return;
                   }

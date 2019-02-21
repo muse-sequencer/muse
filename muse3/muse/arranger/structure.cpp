@@ -121,6 +121,7 @@ void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
     }
   }
 
+// REMOVE Tim. global cut. Changed.
   MarkerList *markerlist = MusEGlobal::song->marker();
   for(iMarker i = markerlist->begin(); i != markerlist->end(); ++i)
   {
@@ -141,12 +142,14 @@ void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
 //           Marker *newMarker = new Marker();
 //           *newMarker = *m;
 //          newMarker->setTick(tick + diff);
-          Marker newMarker(m);
+          // Grab a copy but with a new ID.
+          Marker newMarker = m.copy();
           newMarker.setTick(tick - diff);
           operations.push_back(UndoOp(UndoOp::ModifyMarker, m, newMarker));
         }
       }
   }
+  //MusEGlobal::song->adjustMarkerListOperation(MusEGlobal::song->marker(), startPos, diff, operations);
 
 }
 

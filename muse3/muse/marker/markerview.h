@@ -25,6 +25,7 @@
 
 #include "type_defs.h"
 #include "cobject.h"
+#include "marker.h"
 
 #include <QTreeWidgetItem>
 
@@ -35,7 +36,6 @@ class QToolButton;
 class QTreeWidget;
 
 namespace MusECore {
-class Marker;
 ///class PosEdit;
 class Pos;
 }
@@ -88,7 +88,9 @@ class MarkerView : public TopWin {
       void addMarker(int);
       void deleteMarker();
       void markerSelectionChanged();
-      void nameChanged(const QString&);
+// REMOVE Tim. clip. Changed.
+//       void nameChanged(const QString&);
+      void nameChanged();
       void tickChanged(const MusECore::Pos&);
       void lockChanged(bool);
       void markerChanged(int);

@@ -1986,7 +1986,8 @@ void Song::removeMarker(const Marker& marker)
 
 void Song::setMarkerName(const Marker& marker, const QString& s)
       {
-      Marker m(marker);
+      // Grab a copy but with a new ID.
+      Marker m = marker.copy();
       m.setName(s);
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
 //       emit markerChanged(MARKER_NAME);
@@ -1994,15 +1995,18 @@ void Song::setMarkerName(const Marker& marker, const QString& s)
 
 void Song::setMarkerTick(const Marker& marker, int t)
       {
-      Marker m(marker);
-      m.setTick(t);
-      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
+      //Marker m(marker);
+      //m.setTick(t);
+      //MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
 //       emit markerChanged(MARKER_TICK);
+      // Here we use the separate SetMarkerPos operation, which is 'combo-breaker' aware, to optimize repeated adjustments.
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetMarkerPos, marker, t, Pos::TICKS));
       }
 
 void Song::setMarkerLock(const Marker& marker, bool f)
       {
-      Marker m(marker);
+      // Grab a copy but with a new ID.
+      Marker m = marker.copy();
       m.setType(f ? Pos::FRAMES : Pos::TICKS);
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
 //       emit markerChanged(MARKER_LOCK);
@@ -4480,14 +4484,16 @@ bool Song::adjustMarkerListOperation(MarkerList* markerlist, unsigned int startP
     {
       if(tick >= startPos + diff)
       {
-        Marker newMarker(m);
+        // Grab a copy but with a new ID.
+        Marker newMarker = m.copy();
         newMarker.setTick(tick - diff);
         new_markerlist->add(newMarker);
       }
     }
     else
     {
-      new_markerlist->add(m);
+      // Grab a copy but with a new ID.
+      new_markerlist->add(m.copy());
     }
   }
 

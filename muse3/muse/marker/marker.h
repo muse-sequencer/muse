@@ -49,6 +49,11 @@ class Marker : public Pos {
       Marker() : _id(newId()), _name(""), _current(false) {}
       Marker(const QString& s, bool cur = false)
          : _id(newId()), _name(s), _current(cur) {}
+      // Assigns the members of the given marker to this one, EXCEPT for the ID.
+      // Returns this marker.
+      Marker& assign(const Marker&);
+      // Creates a copy of this marker but with a new ID.
+      Marker copy() const;
       void read(Xml&);
       std::uint64_t id() const { return _id; }
       const QString name() const     { return _name; }
@@ -67,7 +72,9 @@ class MarkerList : public std::multimap<unsigned, Marker, std::less<unsigned> > 
 
    public:
       MarkerList() : _iCurrent(cend()) { }
-
+      
+      int mappedTypeSize() const { return sizeof(mapped_type); }
+      
       // Normally to be called from the audio thread only.
       Marker* add(const Marker& m);
       Marker* add(const QString& s, int t, bool lck);

@@ -81,7 +81,9 @@ void MTScale::configChanged()
 
 void MTScale::songChanged(MusECore::SongChangedStruct_t type)
       {
-      if (type._flags & (SC_SIG|SC_TEMPO|SC_MARKERS_REBUILT)) {
+// REMOVE Tim. clip. Changed.
+//       if (type._flags & (SC_SIG|SC_TEMPO)) {
+      if (type._flags & (SC_SIG|SC_TEMPO|SC_MARKERS_REBUILT|SC_MARKER_INSERTED|SC_MARKER_REMOVED|SC_MARKER_MODIFIED)) {
            if ((type._flags & SC_TEMPO) && waveMode) {
                   pos[0] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->cpos());
                   pos[1] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->lpos());
@@ -196,17 +198,24 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
       MusECore::Pos p(x, true);
       
       if(i== 0 && (event->modifiers() & Qt::ShiftModifier )) {        // If shift +LMB we add a marker 
-            MusECore::Marker *alreadyExists = MusEGlobal::song->getMarkerAt(x);
-            if (!alreadyExists) {
+// REMOVE Tim. clip. Changed.
+//             MusECore::Marker *alreadyExists = MusEGlobal::song->getMarkerAt(x);
+//             if (!alreadyExists) {
+            const MusECore::iMarker alreadyExists = MusEGlobal::song->getMarkerAt(x);
+            if (alreadyExists == MusEGlobal::song->marker()->end()) {
                   MusEGlobal::song->addMarker(QString(""), x, false);         
                   // Note: Song::addMarker() already emits a 'markerChanged'.
                   //emit addMarker(x);
                   }
             }
       else if (i== 2 && (event->modifiers() & Qt::ShiftModifier )) {  // If shift +RMB we remove a marker 
-            MusECore::Marker *toRemove = MusEGlobal::song->getMarkerAt(x);
-            if (toRemove)
-              MusEGlobal::song->removeMarker(toRemove);
+//             MusECore::Marker *toRemove = MusEGlobal::song->getMarkerAt(x);
+//             if (toRemove)
+//               MusEGlobal::song->removeMarker(toRemove);
+// REMOVE Tim. clip. Changed.
+            const MusECore::iMarker toRemove = MusEGlobal::song->getMarkerAt(x);
+            if (toRemove != MusEGlobal::song->marker()->end())
+              MusEGlobal::song->removeMarker(toRemove->second);
             else
               printf("No marker to remove\n");
             }
