@@ -95,6 +95,8 @@ void initShortCuts()
       defShrt(SHRT_IMPORT_AUDIO,          0 , QT_TRANSLATE_NOOP("shortcuts", "File: Import audio file"), ARRANG_SHRT, "import_audio");
       defShrt(SHRT_QUIT,                  0, QT_TRANSLATE_NOOP("shortcuts", "File: Quit MusE"), ARRANG_SHRT, "quit");
 //      defShrt(SHRT_DESEL_PARTS,           Qt::CTRL + Qt::Key_B, QT_TRANSLATE_NOOP("shortcuts", "Deselect all parts"), ARRANG_SHRT, "deselect_parts");
+
+      defShrt(SHRT_RENAME_PART,           0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Rename part"), ARRANG_SHRT, "rename_part_on_track");
       defShrt(SHRT_SELECT_PRTSTRACK,      Qt::CTRL+ Qt::ALT + Qt::Key_P, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select parts on track"), ARRANG_SHRT, "select_parts_on_track");
       defShrt(SHRT_OPEN_PIANO,            Qt::CTRL + Qt::Key_E, QT_TRANSLATE_NOOP("shortcuts", "Open pianoroll"), ARRANG_SHRT, "open_pianoroll");
       defShrt(SHRT_OPEN_DRUMS,            Qt::CTRL + Qt::Key_D, QT_TRANSLATE_NOOP("shortcuts", "Open drumeditor"), ARRANG_SHRT, "open_drumedit");

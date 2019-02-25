@@ -934,10 +934,20 @@ void View::drawTickRaster(
                   const ViewXCoordinate x_sm(tick_sm, false);
                   const int mx_sm = asMapped(x_sm)._value;
                   
-                  if(drawText)
+                  if(drawText) {
                     pen.setColor(text_color);
-                  else
-                    pen.setColor(bar_color);
+                  } else {
+
+                    ScaleRetStruct scale_info_text_lines = scale(true, bar, tpix);
+                    if (scale_info_text_lines._drawBar) {
+                      // highlight lines drawn with text
+                      pen.setColor(bar_color.darker(130));
+                    } else {
+                      pen.setColor(bar_color);
+                    }
+
+                    //>pen.setColor(bar_color);
+                  }
                   p.setPen(pen);
                   
                   if(scale_info._drawBar)

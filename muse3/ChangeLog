@@ -1,3 +1,8 @@
+25.02.2019
+      - Added cosmetic highlight lines in arranger for every numbered line (rj)
+      - Added shortcut for renaming a part (rj)
+      - Added a text filter to the shortcut dialog (rj)
+      - finally start preparing for 3.1 (rj)
 19.02.2019
       - Issue 639: Make 'midi remote' dialog box more clear. (Tim)
       - Fix M_PI from last commit. Don't detect in cmake, hard-code #ifdef M_PI for now.
