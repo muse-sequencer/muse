@@ -1548,7 +1548,7 @@ static bool pluginScan(
 //     return false;
 //   }
 
-  if(!process.waitForFinished(4000))
+  if(!process.waitForFinished(9000))
   {
     std::fprintf(stderr, "\npluginScan FAILED: waitForFinished: file: %s\n\n", filename_ba.constData());
     return false;

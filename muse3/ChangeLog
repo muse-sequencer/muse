@@ -1,3 +1,6 @@
+01.03.2019
+      - Added README.editor-shortcuts with keyboard shortcuts for midi and drum editor (rj)
+      - Extended plugin scan wait time to 9 seconds, needed by Addictive Drums 2 atleast (rj)
 25.02.2019
       *** MusE 3.1.0pre1 ***
       - Added cosmetic highlight lines in arranger for every numbered line (rj)
