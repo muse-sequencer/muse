@@ -724,6 +724,7 @@ Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
     case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
     case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
     case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
+    case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
     case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
     case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
     break;
@@ -1070,6 +1071,7 @@ void initPlugins()
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
       break;
@@ -1493,9 +1495,10 @@ void Pipeline::showGui(int idx, bool flag)
 //   showNativeGui
 //---------------------------------------------------------
 
+#if defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
 void Pipeline::showNativeGui(int idx, bool flag)
       {
-      PluginI* p = (*this)[idx];
+         PluginI* p = (*this)[idx];
 #ifdef LV2_SUPPORT
          if(p && p->plugin()->isLV2Plugin())
          {
@@ -1514,11 +1517,15 @@ void Pipeline::showNativeGui(int idx, bool flag)
 
 #endif
       #ifdef OSC_SUPPORT
-
-      if (p)
+         if (p)
             p->oscIF().oscShowGui(flag);
       #endif
       }
+#else // defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
+void Pipeline::showNativeGui(int /*idx*/, bool /*flag*/)
+      {
+      }
+#endif // defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
 
 //---------------------------------------------------------
 //   deleteGui
@@ -2153,7 +2160,11 @@ double PluginI::defaultValue(unsigned long param) const
   return _plugin->defaultValue(controls[param].idx);
 }
 
-void PluginI::setCustomData(const std::vector<QString> &customParams)
+void PluginI::setCustomData(const std::vector<QString>&
+#if defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT)
+  customParams
+#endif
+)
 {
    if(_plugin == NULL)
       return;
@@ -2766,7 +2777,12 @@ void PluginI::showNativeGui()
   _showNativeGuiPending = false;
 }
 
-void PluginI::showNativeGui(bool flag)
+void PluginI::showNativeGui(
+  bool
+#if defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
+  flag
+#endif
+)
 {
 #ifdef LV2_SUPPORT
   if(plugin() && plugin()->isLV2Plugin())

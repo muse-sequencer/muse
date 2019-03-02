@@ -855,7 +855,7 @@ int main(int argc, char* argv[])
           muse_splash->showMessage(splash_prefix + QString(" Creating plugin cache files..."));
           qApp->processEvents();
         }
-        
+
         bool do_rescan = false;
         if(force_plugin_rescan)
         {
@@ -891,6 +891,8 @@ int main(int argc, char* argv[])
         if(MusEGlobal::loadLV2)
           types |= MusEPlugin::PluginScanInfoStruct::PluginTypeLV2;
 
+        types |= MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown;
+        
         MusEPlugin::checkPluginCacheFiles(MusEGlobal::configPath + "/scanner",
                                         // List of plugins to scan into and write to cache files from.
                                         &MusEPlugin::pluginList,

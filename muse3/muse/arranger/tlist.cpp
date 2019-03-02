@@ -1044,7 +1044,6 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
       {
         MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(t);
-        PopupMenu *mSubPresets = new PopupMenu(tr("Presets"));
         PopupMenu* p = new PopupMenu;
         QAction* gact = p->addAction(tr("show gui"));
         gact->setCheckable(true);
@@ -1057,16 +1056,13 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
         nact->setChecked(synth->nativeGuiVisible());
 
 #ifdef LV2_SUPPORT
+        PopupMenu *mSubPresets = NULL;
         //show presets submenu for lv2 synths        
         if(synth->synth() && synth->synth()->synthType() == MusECore::Synth::LV2_SYNTH)
         {
+           mSubPresets = new PopupMenu(tr("Presets"));
            p->addMenu(mSubPresets);
            static_cast<MusECore::LV2SynthIF *>(synth->sif())->populatePresetsMenu(mSubPresets);
-        }
-        else
-        {
-           delete mSubPresets;
-           mSubPresets = NULL;
         }
 #endif
   
@@ -1112,7 +1108,6 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       MusECore::MidiPort* port = &MusEGlobal::midiPorts[oPort];
 
       PopupMenu* p = new PopupMenu;
-      PopupMenu *mSubPresets = new PopupMenu(tr("Presets"));
       QAction* gact = p->addAction(tr("show gui"));
       gact->setCheckable(true);
       gact->setEnabled(port->hasGui());
@@ -1124,12 +1119,11 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       nact->setChecked(port->nativeGuiVisible());
         
       // If it has a gui but we don't have OSC, disable the action.
-      MusECore::MidiDevice* dev = port->device();
       #ifndef OSC_SUPPORT
       #ifdef DSSI_SUPPORT      
-      if(dev && dev->isSynti()) 
+      if(port->device() && port->device()->isSynti()) 
       {
-        MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(dev);
+        MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(port->device());
         if(synth->synth() && synth->synth()->synthType() == MusECore::Synth::DSSI_SYNTH)
         {
           nact->setChecked(false);
@@ -1140,19 +1134,16 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       #endif
       
 #ifdef LV2_SUPPORT
-      if(dev && dev->isSynti())
+      PopupMenu *mSubPresets = NULL;
+      if(port->device() && port->device()->isSynti())
       {
-        MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(dev);
+        MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(port->device());
         //show presets submenu for lv2 synths
         if(synth->synth() && synth->synth()->synthType() == MusECore::Synth::LV2_SYNTH)
         {
+           mSubPresets = new PopupMenu(tr("Presets"));
            p->addMenu(mSubPresets);
            static_cast<MusECore::LV2SynthIF *>(synth->sif())->populatePresetsMenu(mSubPresets);
-        }
-        else
-        {
-           delete mSubPresets;
-           mSubPresets = NULL;
         }
       }
 #endif
@@ -1166,13 +1157,12 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
 #ifdef LV2_SUPPORT
         else if (mSubPresets != NULL && ract != NULL) {
            QWidget *mwidget = ract->parentWidget();
-           if (mwidget != NULL && dev && dev->isSynti()) {
-               MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(dev);
+           if (mwidget != NULL && port->device() && port->device()->isSynti()) {
+               MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(port->device());
                if(mSubPresets == dynamic_cast<PopupMenu*>(mwidget)) {
                   static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
                }
            }
-
         }
 #endif
       delete p;

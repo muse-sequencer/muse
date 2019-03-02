@@ -398,6 +398,7 @@ void initVST_Native()
       case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
       break;

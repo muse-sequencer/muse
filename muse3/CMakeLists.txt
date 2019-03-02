@@ -195,6 +195,13 @@ else (APPLE)
 endif (APPLE)
 
 ##
+##  look for thread support
+##
+
+set(CMAKE_THREAD_PREFER_PTHREAD On)
+find_package(Threads REQUIRED)
+
+##
 ##  look for Qt5
 ##
 

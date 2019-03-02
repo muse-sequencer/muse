@@ -284,6 +284,7 @@ target_link_libraries(core
       muse_string
       plugin_scan_module
       plugin_cache_writer_module
+      Threads::Threads
       synti
       sysex_helper_module
       waveedit

@@ -1,3 +1,16 @@
+02.03.2019
+      - Plugin scanner: Redesign fixes problems with 'auto-rescan' trigger. (Tim)
+        Significant changes: Previously folders were scanned for date/time differences
+         compared to the cache file's date/time. This caused unwanted rescans if ANY
+         file or folder inside changed. Now it is all *.so file centric. Now, ALL *.so
+         files found are registered in our caches, and a new 'file timestamp' member
+         was added, and a new "unknown_plugins.scan" cache file added. Then on next start
+         it compares date/time of what exists in our cache with what is actually on the system.
+      - Fixed remaining compile issues with various options disabled.
+        Tested by turning off ALL cmake options. Revealed an error: We never linked
+         pthreads into the core! With cross-platform in mind, this was followed:
+        https://stackoverflow.com/questions/49768454/whats-the-differences-between
+         -pthread-and-pthread-options-in-cmake (the 'modern' answer at bottom).
 01.03.2019
       - Added README.editor-shortcuts with keyboard shortcuts for midi and drum editor (rj)
       - Extended plugin scan wait time to 9 seconds, needed by Addictive Drums 2 atleast (rj)

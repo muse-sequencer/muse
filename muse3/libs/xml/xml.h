@@ -103,6 +103,8 @@ class Xml {
       QString parse1();
       int parseInt();
       unsigned int parseUInt();
+      long long parseLongLong();
+      unsigned long long parseULongLong();
       float parseFloat();
       double parseDouble();
       void unknown(const char*);
@@ -123,6 +125,8 @@ class Xml {
       void etag(int level, const char* format, ...);
       void intTag(int level, const char* const name, int val);
       void uintTag(int level, const char* const name, unsigned int val);
+      void longLongTag(int level, const char* const name, long long val);
+      void uLongLongTag(int level, const char* const name, unsigned long long val);
       void doubleTag(int level, const char* const name, double val);
       void floatTag(int level, const char* const name, float val);
       void strTag(int level, const char* const name, const char* val);

@@ -914,6 +914,7 @@ void initMidiSynth()
       case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
       break;

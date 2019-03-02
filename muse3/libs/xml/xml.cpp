@@ -519,6 +519,40 @@ int Xml::parseInt()
       }
 
 //---------------------------------------------------------
+//   parseLongLong
+//---------------------------------------------------------
+
+long long Xml::parseLongLong()
+      {
+      QString s(parse1().simplified());
+      bool ok;
+      int base = 10;
+      if (s.startsWith("0x") || s.startsWith("0X")) {
+            base = 16;
+            s = s.mid(2);
+            }
+      long long n = s.toLongLong(&ok, base);
+      return n;
+      }
+
+//---------------------------------------------------------
+//   parseULongLong
+//---------------------------------------------------------
+
+unsigned long long Xml::parseULongLong()
+      {
+      QString s(parse1().simplified());
+      bool ok;
+      int base = 10;
+      if (s.startsWith("0x") || s.startsWith("0X")) {
+            base = 16;
+            s = s.mid(2);
+            }
+      unsigned long long n = s.toULongLong(&ok, base);
+      return n;
+      }
+
+//---------------------------------------------------------
 //   parseUInt
 //---------------------------------------------------------
 
@@ -929,6 +963,40 @@ void Xml::uintTag(int level, const char* name, unsigned int val)
       if(f)
       {
         fprintf(f, "<%s>%u</%s>\n", name, val, name);
+      }
+      else
+      {
+        const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
+        if(_destIODev)
+        _destIODev->write(s.toLatin1());
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
+void Xml::longLongTag(int level, const char* name, long long val)
+      {
+      putLevel(level);
+      if(f)
+      {
+        fprintf(f, "<%s>%lld</%s>\n", name, val, name);
+      }
+      else
+      {
+        const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
+        if(_destIODev)
+        _destIODev->write(s.toLatin1());
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
+void Xml::uLongLongTag(int level, const char* name, unsigned long long val)
+      {
+      putLevel(level);
+      if(f)
+      {
+        fprintf(f, "<%s>%llu</%s>\n", name, val, name);
       }
       else
       {
