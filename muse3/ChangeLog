@@ -1,3 +1,5 @@
+03.03.2019
+      - Fix LinuxVST duplicates in plugin list if duplicate plugins exist. (Tim)
 02.03.2019
       - Plugin scanner: Redesign fixes problems with 'auto-rescan' trigger. (Tim)
         Significant changes: Previously folders were scanned for date/time differences

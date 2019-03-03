@@ -501,6 +501,7 @@ bool scanMessDescriptor(const char* filename, const MESS* mess_descr, PluginScan
   info->_uniqueID = 0;
 
   //info->_label = MusEPlugin::setString(mess_descr->Label);
+  info->_label = PLUGIN_SET_CSTRING(mess_descr->name);
   info->_name = PLUGIN_SET_CSTRING(mess_descr->name);
   //info->_maker = MusEPlugin::setString(mess_descr->Maker);
   //info->_copyright = MusEPlugin::setString(mess_descr->Copyright);
@@ -1100,6 +1101,8 @@ bool scanLinuxVstDescriptor(const char* filename, AEffect *plugin, long int id, 
     //info->_description = info._completeBaseName;
     info->_description = info->_label;
 
+  info->_name = info->_label;
+  
   // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
   vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
   
