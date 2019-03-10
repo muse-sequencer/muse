@@ -1013,7 +1013,11 @@ void Xml::floatTag(int level, const char* name, float val)
       putLevel(level);
       if(f)
       {
-        fprintf(f, "<%s>%g</%s>\n", name, val, name);
+        // using QString to format decimal values since we know that
+        // toLatin1 will make a string with decimal point instead of
+        // decimal comma that some locales use
+        QString s("<%1>%2</%3>\n");
+        fprintf(f, "%s", s.arg(name).arg(val).arg(name).toLatin1().constData());
       }
       else
       {
@@ -1030,7 +1034,11 @@ void Xml::doubleTag(int level, const char* name, double val)
       putLevel(level);
       if(f)
       {
-        fprintf(f, "<%s>%g</%s>\n", name, val, name);
+        // using QString to format decimal values since we know that
+        // toLatin1 will make a string with decimal point instead of
+        // decimal comma that some locales use
+        QString s("<%1>%2</%3>\n");
+        fprintf(f, "%s", s.arg(name).arg(val).arg(name).toLatin1().constData());
       }
       else
       {
