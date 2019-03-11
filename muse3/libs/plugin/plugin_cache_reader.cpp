@@ -53,7 +53,7 @@ void setPluginScanFileInfo(const QString& filename, PluginScanInfoStruct* info)
   info->_completeSuffix   = PLUGIN_SET_QSTRING(fi.completeSuffix());
   info->_absolutePath     = PLUGIN_SET_QSTRING(fi.absolutePath());
   info->_path             = PLUGIN_SET_QSTRING(fi.path());
-  info->_fileTime         = fi.lastModified().toSecsSinceEpoch();
+  info->_fileTime         = fi.lastModified().toMSecsSinceEpoch();
 }
 
 //---------------------------------------------------------

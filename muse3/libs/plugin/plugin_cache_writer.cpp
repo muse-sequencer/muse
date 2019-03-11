@@ -2525,7 +2525,7 @@ static QString findPluginFilesDir(
       }
       else
       {
-        fplist.insert(filepath_set_pair(fi.filePath(), fi.lastModified().toSecsSinceEpoch()));
+        fplist.insert(filepath_set_pair(fi.filePath(), fi.lastModified().toMSecsSinceEpoch()));
       }
       
       ++it;
@@ -2642,7 +2642,7 @@ static void findLv2PluginFile(const LilvPlugin *plugin,
   {
     QFileInfo fi(lfp);
     if(fi.exists())
-      fplist.insert(filepath_set_pair(fi.filePath(), fi.lastModified().toSecsSinceEpoch()));
+      fplist.insert(filepath_set_pair(fi.filePath(), fi.lastModified().toMSecsSinceEpoch()));
   }
 
   lilv_free((void*)lfp); // Must free.
