@@ -206,7 +206,7 @@ class PluginScanInfoStruct
     // Like "http://zynaddsubfx.sourceforge.net/fx#Phaser".
     PluginInfoString_t _uri;
 
-    // The file's time stamp in seconds since epoch.
+    // The file's time stamp in milliseconds since epoch.
     int64_t _fileTime;
     // Whether the file failed scanning.
     bool _fileIsBad;
