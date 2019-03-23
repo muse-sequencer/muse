@@ -44,6 +44,8 @@
 #include "gconfig.h"
 #include "operations.h"
 #include "ctrl.h"
+#include "globals.h"
+#include "metronome_class.h"
 
 namespace MusECore {
 
@@ -608,6 +610,9 @@ void Audio::msgResetMidiDevices()
 
 void Audio::msgInitMidiDevices(bool force)
       {
+      MusECore::MetronomeSettings* metro_settings = 
+        MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
       //
       // test for explicit instrument initialization
       //
@@ -617,7 +622,7 @@ void Audio::msgInitMidiDevices(bool force)
         bool found = false;
         if(MusEGlobal::song->click())
         {
-          MidiPort* mp = &MusEGlobal::midiPorts[MusEGlobal::clickPort];
+          MidiPort* mp = &MusEGlobal::midiPorts[metro_settings->clickPort];
           if(mp->device() && 
              (mp->device()->openFlags() & 1) && 
              mp->instrument() && !mp->instrument()->midiInit()->empty() &&

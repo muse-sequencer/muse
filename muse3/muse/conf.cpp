@@ -375,7 +375,7 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
 //   loadConfigMetronom
 //---------------------------------------------------------
 
-static void loadConfigMetronom(Xml& xml)
+static void loadConfigMetronom(Xml& xml, MetronomeSettings* metro_settings)
       {
       for (;;) {
             Xml::Token token = xml.parse();
@@ -385,59 +385,76 @@ static void loadConfigMetronom(Xml& xml)
             switch (token) {
                   case Xml::TagStart:
                         if (tag == "premeasures")
-                              MusEGlobal::preMeasures = xml.parseInt();
+                              metro_settings->preMeasures = xml.parseInt();
                         else if (tag == "measurepitch")
-                              MusEGlobal::measureClickNote = xml.parseInt();
+                              metro_settings->measureClickNote = xml.parseInt();
                         else if (tag == "measurevelo")
-                              MusEGlobal::measureClickVelo = xml.parseInt();
+                              metro_settings->measureClickVelo = xml.parseInt();
                         else if (tag == "beatpitch")
-                              MusEGlobal::beatClickNote = xml.parseInt();
+                              metro_settings->beatClickNote = xml.parseInt();
                         else if (tag == "beatvelo")
-                              MusEGlobal::beatClickVelo = xml.parseInt();
+                              metro_settings->beatClickVelo = xml.parseInt();
+                        else if (tag == "accentpitch1")
+                              metro_settings->accentClick1 = xml.parseInt();
+                        else if (tag == "accentpitch2")
+                              metro_settings->accentClick2 = xml.parseInt();
+                        else if (tag == "accentvelo1")
+                              metro_settings->accentClick1Velo = xml.parseInt();
+                        else if (tag == "accentvelo2")
+                              metro_settings->accentClick2Velo = xml.parseInt();
                         else if (tag == "channel")
-                              MusEGlobal::clickChan = xml.parseInt();
+                              metro_settings->clickChan = xml.parseInt();
                         else if (tag == "port")
-                              MusEGlobal::clickPort = xml.parseInt();
+                              metro_settings->clickPort = xml.parseInt();
                         else if (tag == "precountEnable")
-                              MusEGlobal::precountEnableFlag = xml.parseInt();
+                              metro_settings->precountEnableFlag = xml.parseInt();
                         else if (tag == "fromMastertrack")
-                              MusEGlobal::precountFromMastertrackFlag = xml.parseInt();
+                              metro_settings->precountFromMastertrackFlag = xml.parseInt();
                         else if (tag == "signatureZ")
-                              MusEGlobal::precountSigZ = xml.parseInt();
+                              metro_settings->precountSigZ = xml.parseInt();
                         else if (tag == "signatureN")
-                              MusEGlobal::precountSigN = xml.parseInt();
+                              metro_settings->precountSigN = xml.parseInt();
                         else if (tag == "precountOnPlay")
-                              MusEGlobal::precountOnPlay = xml.parseInt();
+                              metro_settings->precountOnPlay = xml.parseInt();
                         else if (tag == "precountMuteMetronome")
-                              MusEGlobal::precountMuteMetronome = xml.parseInt();
+                              metro_settings->precountMuteMetronome = xml.parseInt();
                         else if (tag == "prerecord")
-                              MusEGlobal::precountPrerecord = xml.parseInt();
+                              metro_settings->precountPrerecord = xml.parseInt();
                         else if (tag == "preroll")
-                              MusEGlobal::precountPreroll = xml.parseInt();
+                              metro_settings->precountPreroll = xml.parseInt();
                         else if (tag == "midiClickEnable")
-                              MusEGlobal::midiClickFlag = xml.parseInt();
+                              metro_settings->midiClickFlag = xml.parseInt();
                         else if (tag == "audioClickEnable")
-                              MusEGlobal::audioClickFlag = xml.parseInt();
+                              metro_settings->audioClickFlag = xml.parseInt();
                         else if (tag == "audioClickVolume")
-                              MusEGlobal::audioClickVolume = xml.parseFloat();
+                              metro_settings->audioClickVolume = xml.parseFloat();
                         else if (tag == "measClickVolume")
-                              MusEGlobal::measClickVolume = xml.parseFloat();
+                              metro_settings->measClickVolume = xml.parseFloat();
                         else if (tag == "beatClickVolume")
-                              MusEGlobal::beatClickVolume = xml.parseFloat();
+                              metro_settings->beatClickVolume = xml.parseFloat();
                         else if (tag == "accent1ClickVolume")
-                              MusEGlobal::accent1ClickVolume = xml.parseFloat();
+                              metro_settings->accent1ClickVolume = xml.parseFloat();
                         else if (tag == "accent2ClickVolume")
-                              MusEGlobal::accent2ClickVolume = xml.parseFloat();
+                              metro_settings->accent2ClickVolume = xml.parseFloat();
                         else if (tag == "clickSamples")
-                              MusEGlobal::clickSamples = (MusEGlobal::ClickSamples)xml.parseInt();
+                              metro_settings->clickSamples = (MetronomeSettings::ClickSamples)xml.parseInt();
                         else if (tag == "beatSample")
-                              MusEGlobal::config.beatSample = xml.parse1();
+                              metro_settings->beatSample = xml.parse1();
                         else if (tag == "measSample")
-                              MusEGlobal::config.measSample = xml.parse1();
+                              metro_settings->measSample = xml.parse1();
                         else if (tag == "accent1Sample")
-                              MusEGlobal::config.accent1Sample = xml.parse1();
+                              metro_settings->accent1Sample = xml.parse1();
                         else if (tag == "accent2Sample")
-                              MusEGlobal::config.accent2Sample = xml.parse1();
+                              metro_settings->accent2Sample = xml.parse1();
+                        else if (tag == "metroUseSongSettings")
+                              MusEGlobal::metroUseSongSettings = xml.parseInt();
+                        else if (tag == "metroAccPresets")
+                              MusEGlobal::metroAccentPresets.read(xml);
+                        else if (tag == "metroAccMap")
+                        {
+                              if(metro_settings->metroAccentsMap)
+                                metro_settings->metroAccentsMap->read(xml);
+                        }
                         else
                               xml.unknown("Metronome");
                         break;
@@ -454,7 +471,7 @@ static void loadConfigMetronom(Xml& xml)
 //   readSeqConfiguration
 //---------------------------------------------------------
 
-static void readSeqConfiguration(Xml& xml, bool skipMidiPorts)
+static void readSeqConfiguration(Xml& xml, MetronomeSettings* metro_settings, bool skipMidiPorts)
       {
       for (;;) {
             Xml::Token token = xml.parse();
@@ -464,7 +481,7 @@ static void readSeqConfiguration(Xml& xml, bool skipMidiPorts)
             switch (token) {
                   case Xml::TagStart:
                         if (tag == "metronom")
-                              loadConfigMetronom(xml);
+                              loadConfigMetronom(xml, metro_settings);
                         else if (tag == "mididevice")
                               readConfigMidiDevice(xml);
                         else if (tag == "midiport")
@@ -520,7 +537,9 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                            midiport configuration and VOLUME.
                         */
                         if (tag == "sequencer") {
-                              readSeqConfiguration(xml, !doReadMidiPortConfig);
+                              readSeqConfiguration(xml,
+                                doReadGlobalConfig ? &MusEGlobal::metroGlobalSettings : &MusEGlobal::metroSongSettings,
+                                !doReadMidiPortConfig);
                               break;
                               }
                         else if (tag == "waveTracksVisible")
@@ -1288,6 +1307,61 @@ bool readConfiguration(const char *configFile)
       }
 
 //---------------------------------------------------------
+//   writeMetronomeConfiguration
+//---------------------------------------------------------
+
+static void writeMetronomeConfiguration(int level, Xml& xml, bool is_global)
+      {
+      MusECore::MetronomeSettings* metro_settings = 
+        is_global ? &MusEGlobal::metroGlobalSettings : &MusEGlobal::metroSongSettings;
+
+      xml.tag(level++, "metronom");
+      xml.intTag(level, "premeasures", metro_settings->preMeasures);
+      xml.intTag(level, "measurepitch", metro_settings->measureClickNote);
+      xml.intTag(level, "measurevelo", metro_settings->measureClickVelo);
+      xml.intTag(level, "beatpitch", metro_settings->beatClickNote);
+      xml.intTag(level, "beatvelo", metro_settings->beatClickVelo);
+      xml.intTag(level, "accentpitch1", metro_settings->accentClick1);
+      xml.intTag(level, "accentpitch2", metro_settings->accentClick2);
+      xml.intTag(level, "accentvelo1", metro_settings->accentClick1Velo);
+      xml.intTag(level, "accentvelo2", metro_settings->accentClick2Velo);
+      xml.intTag(level, "channel", metro_settings->clickChan);
+      xml.intTag(level, "port", metro_settings->clickPort);
+
+      // Write the global metroUseSongSettings - ONLY if saving song configuration.
+      if(!is_global)
+        xml.intTag(level, "metroUseSongSettings", MusEGlobal::metroUseSongSettings);
+      // Write either the global or song accents map.
+      if(metro_settings->metroAccentsMap)
+        metro_settings->metroAccentsMap->write(level, xml);
+      // Write the global user accent presets - ONLY if saving global configuration.
+      if(is_global)
+        MusEGlobal::metroAccentPresets.write(level, xml, MusECore::MetroAccentsStruct::UserPreset);
+
+      xml.intTag(level, "precountEnable", metro_settings->precountEnableFlag);
+      xml.intTag(level, "fromMastertrack", metro_settings->precountFromMastertrackFlag);
+      xml.intTag(level, "signatureZ", metro_settings->precountSigZ);
+      xml.intTag(level, "signatureN", metro_settings->precountSigN);
+      xml.intTag(level, "precountOnPlay", metro_settings->precountOnPlay);
+      xml.intTag(level, "precountMuteMetronome", metro_settings->precountMuteMetronome);
+      xml.intTag(level, "prerecord", metro_settings->precountPrerecord);
+      xml.intTag(level, "preroll", metro_settings->precountPreroll);
+      xml.intTag(level, "midiClickEnable", metro_settings->midiClickFlag);
+      xml.intTag(level, "audioClickEnable", metro_settings->audioClickFlag);
+      xml.floatTag(level, "audioClickVolume", metro_settings->audioClickVolume);
+      xml.floatTag(level, "measClickVolume", metro_settings->measClickVolume);
+      xml.floatTag(level, "beatClickVolume", metro_settings->beatClickVolume);
+      xml.floatTag(level, "accent1ClickVolume", metro_settings->accent1ClickVolume);
+      xml.floatTag(level, "accent2ClickVolume", metro_settings->accent2ClickVolume);
+      xml.intTag(level, "clickSamples", metro_settings->clickSamples);
+      xml.strTag(level, "beatSample", metro_settings->beatSample);
+      xml.strTag(level, "measSample", metro_settings->measSample);
+      xml.strTag(level, "accent1Sample", metro_settings->accent1Sample);
+      xml.strTag(level, "accent2Sample", metro_settings->accent2Sample);
+      xml.tag(level--, "/metronom");
+      }
+      
+//---------------------------------------------------------
 //   writeSeqConfiguration
 //---------------------------------------------------------
 
@@ -1295,36 +1369,10 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       {
       xml.tag(level++, "sequencer");
 
-      xml.tag(level++, "metronom");
-      xml.intTag(level, "premeasures", MusEGlobal::preMeasures);
-      xml.intTag(level, "measurepitch", MusEGlobal::measureClickNote);
-      xml.intTag(level, "measurevelo", MusEGlobal::measureClickVelo);
-      xml.intTag(level, "beatpitch", MusEGlobal::beatClickNote);
-      xml.intTag(level, "beatvelo", MusEGlobal::beatClickVelo);
-      xml.intTag(level, "channel", MusEGlobal::clickChan);
-      xml.intTag(level, "port", MusEGlobal::clickPort);
-
-      xml.intTag(level, "precountEnable", MusEGlobal::precountEnableFlag);
-      xml.intTag(level, "fromMastertrack", MusEGlobal::precountFromMastertrackFlag);
-      xml.intTag(level, "signatureZ", MusEGlobal::precountSigZ);
-      xml.intTag(level, "signatureN", MusEGlobal::precountSigN);
-      xml.intTag(level, "precountOnPlay", MusEGlobal::precountOnPlay);
-      xml.intTag(level, "precountMuteMetronome", MusEGlobal::precountMuteMetronome);
-      xml.intTag(level, "prerecord", MusEGlobal::precountPrerecord);
-      xml.intTag(level, "preroll", MusEGlobal::precountPreroll);
-      xml.intTag(level, "midiClickEnable", MusEGlobal::midiClickFlag);
-      xml.intTag(level, "audioClickEnable", MusEGlobal::audioClickFlag);
-      xml.floatTag(level, "audioClickVolume", MusEGlobal::audioClickVolume);
-      xml.floatTag(level, "measClickVolume", MusEGlobal::measClickVolume);
-      xml.floatTag(level, "beatClickVolume", MusEGlobal::beatClickVolume);
-      xml.floatTag(level, "accent1ClickVolume", MusEGlobal::accent1ClickVolume);
-      xml.floatTag(level, "accent2ClickVolume", MusEGlobal::accent2ClickVolume);
-      xml.intTag(level, "clickSamples", MusEGlobal::clickSamples);
-      xml.strTag(level, "beatSample", MusEGlobal::config.beatSample);
-      xml.strTag(level, "measSample", MusEGlobal::config.measSample);
-      xml.strTag(level, "accent1Sample", MusEGlobal::config.accent1Sample);
-      xml.strTag(level, "accent2Sample", MusEGlobal::config.accent2Sample);
-      xml.tag(level--, "/metronom");
+      // If writePortInfo is true we are writing SONG configuration,
+      //  and if writePortInfo is NOT true we are writing GLOBAL configuration.
+      // Write the global user accent presets - ONLY if saving global configuration.
+      writeMetronomeConfiguration(level, xml, !writePortInfo);
 
       xml.intTag(level, "rcEnable",   MusEGlobal::rcEnable);
       xml.intTag(level, "rcStop",     MusEGlobal::rcStopNote);

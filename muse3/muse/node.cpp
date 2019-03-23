@@ -1722,6 +1722,9 @@ void AudioOutput::silence(unsigned n)
 
 void AudioOutput::processWrite()
       {
+      MusECore::MetronomeSettings* metro_settings = 
+        MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
       if (MusEGlobal::audio->isRecording() && MusEGlobal::song->bounceOutput == this) {
             if (MusEGlobal::audio->freewheel()) {
                   MusECore::WaveTrack* track = MusEGlobal::song->bounceTrack;
@@ -1738,10 +1741,11 @@ void AudioOutput::processWrite()
                         putFifo(_channels, _nframes, buffer);
                   }
             }
-      if (sendMetronome() && MusEGlobal::audioClickFlag && MusEGlobal::song->click()) {
+      if (sendMetronome() && metro_settings->audioClickFlag && MusEGlobal::song->click()) {
 
             #ifdef METRONOME_DEBUG
-            fprintf(stderr, "MusE: AudioOutput::processWrite Calling metronome->addData frame:%u channels:%d frames:%lu\n", MusEGlobal::audio->pos().frame(), _channels, _nframes);
+            fprintf(stderr, "MusE: AudioOutput::processWrite Calling metronome->addData frame:%u channels:%d frames:%lu\n",
+                    MusEGlobal::audio->pos().frame(), _channels, _nframes);
             #endif
             metronome->copyData(MusEGlobal::audio->pos().frame(), -1, _channels, _channels, -1, -1, _nframes, buffer, true);
             }

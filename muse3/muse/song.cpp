@@ -2093,7 +2093,13 @@ void Song::clear(bool signal, bool clear_all)
       MusEGlobal::tempo_rec_list.clear();
       MusEGlobal::sigmap.clear();
       MusEGlobal::keymap.clear();
-      
+
+      // Clear these metronome settings.
+      // A loaded song can override these if it chooses.
+      MusEGlobal::metroUseSongSettings = false;
+      if(MusEGlobal::metroSongSettings.metroAccentsMap)
+        MusEGlobal::metroSongSettings.metroAccentsMap->clear();
+
       undoList->clearDelete();
       redoList->clearDelete();
       if(MusEGlobal::undoAction)

@@ -70,6 +70,7 @@
 #include "wavepreview.h"
 #include "plugin_cache_writer.h"
 #include "pluglist.h"
+#include "metronome_class.h"
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
@@ -1130,6 +1131,20 @@ int main(int argc, char* argv[])
         MusECore::initOSC();
 
         MusECore::initMetronome();
+
+        const QString metro_presets = MusEGlobal::museGlobalShare + QString("/metronome");
+        MusECore::initMetronomePresets(metro_presets, &MusEGlobal::metroAccentPresets, MusEGlobal::debugMsg);
+        // If the global metronome accent settings are empty, it is unlikely the user did that, or wants that.
+        // More likely it indicates this is a first-time init of the global settings.
+        // In any case, if empty fill the global metronome accent settings with factory presets.
+        if(MusEGlobal::metroGlobalSettings.metroAccentsMap &&
+           MusEGlobal::metroGlobalSettings.metroAccentsMap->empty())
+        {
+          // Fill with defaults.
+          MusEGlobal::metroAccentPresets.defaultAccents(
+            MusEGlobal::metroGlobalSettings.metroAccentsMap,
+            MusECore::MetroAccentsStruct::FactoryPreset);
+        }
 
         MusECore::initWavePreview(MusEGlobal::segmentSize);
 

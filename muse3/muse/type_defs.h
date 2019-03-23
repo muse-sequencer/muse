@@ -76,6 +76,7 @@ namespace MusECore {
 #define SC_TRACK_REC_MONITOR          0x1000000000 // Audio or midi track's record monitor changed.
 #define SC_TRACK_MOVED                0x2000000000 // Audio or midi track's position in track list or mixer changed.
 #define SC_TRACK_RESIZED              0x4000000000 // Audio or midi track was resized in the arranger.
+#define SC_METRONOME                  0x8000000000 // Metronome lists settings such as accents changed.
 #define SC_EVERYTHING                 -1           // global update
   
 typedef int64_t SongChangedFlags_t;

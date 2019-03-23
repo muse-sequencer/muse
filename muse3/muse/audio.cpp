@@ -438,6 +438,9 @@ bool Audio::sync(int jackState, unsigned frame)
 
 bool Audio::startPreCount()
 {
+  MusECore::MetronomeSettings* metro_settings = 
+    MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
   // Since other Jack clients might also set the sync timeout at any time,
   //  we need to be constantly enforcing our desired limit!
   // Since setSyncTimeout() may not be realtime friendly (Jack driver),
@@ -446,10 +449,10 @@ bool Audio::startPreCount()
   // So whenever stop, start or seek occurs, we'll try to casually enforce the timeout in Song::seqSignal().
   // It's casual, unfortunately we can't set the EXACT timeout amount here when we really need to.
   
-  if (MusEGlobal::precountEnableFlag
+  if (metro_settings->precountEnableFlag
     && MusEGlobal::song->click()
     && !MusEGlobal::extSyncFlag.value()
-    && ((!MusEGlobal::song->record() && MusEGlobal::precountOnPlay) || MusEGlobal::song->record()))
+    && ((!MusEGlobal::song->record() && metro_settings->precountOnPlay) || MusEGlobal::song->record()))
   {
         DEBUG_MIDI_METRONOME(stderr, "state = PRECOUNT!\n");
         state = PRECOUNT;
@@ -459,14 +462,14 @@ bool Audio::startPreCount()
         MusEGlobal::sigmap.tickValues(curTickPos, &bar, &beat, &tick);
 
         int z, n;
-        if (MusEGlobal::precountFromMastertrackFlag)
+        if (metro_settings->precountFromMastertrackFlag)
               MusEGlobal::sigmap.timesig(curTickPos, z, n);
         else {
-              z = MusEGlobal::precountSigZ;
-              n = MusEGlobal::precountSigN;
+              z = metro_settings->precountSigZ;
+              n = metro_settings->precountSigN;
               }
         clickno       = 0;
-        int clicks_total = z * MusEGlobal::preMeasures;
+        int clicks_total = z * metro_settings->preMeasures;
         clicksMeasure = z;
         int ticks_beat     = (MusEGlobal::config.division * 4)/n;
         // The number of frames per beat in precount state.

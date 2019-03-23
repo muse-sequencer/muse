@@ -208,7 +208,7 @@
 #include "xpm/greendot.xpm"
 #include "xpm/greendot12x12.xpm"
 #include "xpm/reddot.xpm"
-//#include "xpm/darkgreendot.xpm"
+#include "xpm/darkgreendot.xpm"
 #include "xpm/bluedot.xpm"
 #include "xpm/bluedot12x12.xpm"
 #include "xpm/graydot.xpm"
@@ -515,7 +515,7 @@ QPixmap* darkRedLedIcon;
 QPixmap* greendotIcon;
 QPixmap* greendot12x12Icon;
 QPixmap* reddotIcon;
-//QPixmap* darkgreendotIcon;
+QPixmap* darkgreendotIcon;
 QPixmap* graydotIcon;
 QPixmap* graydot12x12Icon;
 QPixmap* bluedotIcon;
@@ -526,6 +526,11 @@ QPixmap* offIcon;
 QPixmap* blacksquareIcon;
 QPixmap* blacksqcheckIcon;
 QPixmap* checkSquareIcon;
+
+QIcon* ledRedIcon;
+QIcon* ledDarkRedIcon;
+QIcon* ledGreenIcon;
+QIcon* ledDarkGreenIcon;
 
 QPixmap* addtrack_addmiditrackIcon;
 QPixmap* addtrack_audiogroupIcon;
@@ -548,9 +553,11 @@ QPixmap* mastertrack_listIcon;
 QPixmap* midi_transformIcon;
 QPixmap* midi_transposeIcon;
 QPixmap* selectIcon;
+QIcon*   icon_select;
 QPixmap* select_allIcon;
 QPixmap* select_all_parts_on_trackIcon;
 QPixmap* select_deselect_allIcon;
+QIcon*   icon_select_deselect_all;
 QPixmap* select_inside_loopIcon;
 QPixmap* select_invert_selectionIcon;
 QPixmap* select_outside_loopIcon;
@@ -905,10 +912,18 @@ void initIcons(bool useThemeIconsIfPossible)
       toggle_small_Icon    = MPIXMAP(toggle_small_xpm, NULL);
       redLedIcon           = MPIXMAP(redled_xpm, NULL);
       darkRedLedIcon       = MPIXMAP(darkredled_xpm, NULL);
+      
+      ledRedIcon           = new QIcon(*redLedIcon);
+      ledDarkRedIcon       = new QIcon(*darkRedLedIcon);
+      
       greendotIcon         = MPIXMAP(greendot_xpm, NULL);
       greendot12x12Icon    = MPIXMAP(greendot12x12_xpm, NULL);
       reddotIcon           = MPIXMAP(reddot_xpm, NULL);
-      //darkgreendotIcon     = MPIXMAP(darkgreendot_xpm, NULL);
+      darkgreendotIcon     = MPIXMAP(darkgreendot_xpm, NULL);
+      
+      ledGreenIcon         = new QIcon(*greendotIcon);
+      ledDarkGreenIcon     = new QIcon(*darkgreendotIcon);
+      
       bluedotIcon          = MPIXMAP(bluedot_xpm, NULL);
       bluedot12x12Icon     = MPIXMAP(bluedot12x12_xpm, NULL);
       graydotIcon          = MPIXMAP(graydot_xpm, NULL);
@@ -964,9 +979,11 @@ void initIcons(bool useThemeIconsIfPossible)
       midi_transformIcon            = MPIXMAP(midi_transform_xpm, NULL);
       midi_transposeIcon            = MPIXMAP(midi_transpose_xpm, NULL);
       selectIcon                    = MPIXMAP(select_xpm, NULL);
+      icon_select                   = new QIcon(*selectIcon);
       select_allIcon                = MPIXMAP(select_all_xpm, NULL);
       select_all_parts_on_trackIcon = MPIXMAP(select_all_parts_on_track_xpm, NULL);
       select_deselect_allIcon       = MPIXMAP(select_deselect_all, NULL);
+      icon_select_deselect_all      = new QIcon(*select_deselect_allIcon);
       select_inside_loopIcon        = MPIXMAP(select_inside_loop_xpm, NULL);
       select_invert_selectionIcon   = MPIXMAP(select_invert_selection, NULL);
       select_outside_loopIcon       = MPIXMAP(select_outside_loop_xpm, NULL);
@@ -1331,12 +1348,18 @@ void deleteIcons()
       //delete soloIconSet1       
       //delete soloIconSet2       
 
-      delete toggle_small_Icon;    
+      delete toggle_small_Icon;
+
+      delete ledRedIcon;
+      delete ledDarkRedIcon;
+      delete ledGreenIcon;
+      delete ledDarkGreenIcon;
+
       delete redLedIcon;           
-      delete darkRedLedIcon;       
+      delete darkRedLedIcon;
       delete greendotIcon;         
       delete reddotIcon;
-      //delete darkgreendotIcon;   
+      delete darkgreendotIcon;   
       delete bluedotIcon;          
       delete graydotIcon;          
       delete orangedotIcon;          
@@ -1389,9 +1412,11 @@ void deleteIcons()
       delete midi_transformIcon;            
       delete midi_transposeIcon;            
       delete selectIcon;                    
+      delete icon_select;                    
       delete select_allIcon;                
       delete select_all_parts_on_trackIcon; 
       delete select_deselect_allIcon;       
+      delete icon_select_deselect_all;       
       delete select_inside_loopIcon;        
       delete select_invert_selectionIcon;   
       delete select_outside_loopIcon;       

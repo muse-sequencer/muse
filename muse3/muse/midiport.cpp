@@ -314,6 +314,9 @@ bool MidiPort::sendPendingInitializations(bool force)
 
 bool MidiPort::sendInitialControllers(unsigned start_time)
 {
+  MusECore::MetronomeSettings* metro_settings = 
+    MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
   bool rv = true;
   int port = portno();
   
@@ -322,9 +325,9 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
   int usedChanCount = 0;
   for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
     usedChans[i] = false;
-  if(MusEGlobal::song->click() && MusEGlobal::clickPort == port)
+  if(MusEGlobal::song->click() && metro_settings->clickPort == port)
   {
-    usedChans[MusEGlobal::clickChan] = true;
+    usedChans[metro_settings->clickChan] = true;
     ++usedChanCount;
   }
   bool drum_found = false;

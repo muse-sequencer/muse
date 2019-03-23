@@ -119,6 +119,7 @@ file (GLOB core_source_files
       importmidi.cpp
       key.cpp
       keyevent.cpp
+      metronome_class.cpp
       midi.cpp
       midictrl.cpp
       mididev.cpp

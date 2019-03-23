@@ -1,3 +1,11 @@
+23.03.2019
+      * Metronome super-makeover: (Tim)
+      * New metronome accents editor with factory and user presets:
+      - Choice of global vs. song metronome settings.
+      - Re-design metronome dialog, separating into tabs.
+      - NOTE: Qt signal/slots macros are OBSOLETE!
+        Implemented first usage of Qt 'connect' functors and C++11 lambdas, in metronome dialog.
+        Strange, some Qt classes don't seem to have functors? (QCheckBox, QComboBox.)
 11.03.2019
       - Fixed build issues for vanilla Debian 9 (rj)
 10.03.2019
