@@ -59,7 +59,7 @@
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_MIDI(dev, format, args...) // fprintf(dev, format, ##args);
 // For debugging metronome and precount output: Uncomment the fprintf section.
-#define DEBUG_MIDI_METRONOME(dev, format, args...) fprintf(dev, format, ##args);
+#define DEBUG_MIDI_METRONOME(dev, format, args...) // fprintf(dev, format, ##args);
 // For debugging midi timing: Uncomment the fprintf section.
 #define DEBUG_MIDI_TIMING(dev, format, args...) // fprintf(dev, format, ##args);
 // For debugging midi event time differences.
