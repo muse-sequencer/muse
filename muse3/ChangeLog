@@ -1,3 +1,6 @@
+24.03.2019
+      - Fix Time Signature boxes on toolbars: Could not adjust if 'use mastertrack tempo' was off. (Tim)
+        Oops, regression from 22.04.2018
 23.03.2019
       * Metronome super-makeover: (Tim)
       * New metronome accents editor with factory and user presets:

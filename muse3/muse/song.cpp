@@ -156,20 +156,16 @@ void Song::setTempo(int newTempo)
 
 void Song::setSig(int z, int n)
       {
-      if (_masterFlag) {
             // Add will replace if found. 
             MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
                             pos[0].tick(), z, n));
-            }
       }
 
 void Song::setSig(const MusECore::TimeSignature& sig)
       {
-      if (_masterFlag) {
             // Add will replace if found. 
             MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
                             pos[0].tick(), sig.z, sig.n));
-            }
       }
 
 //---------------------------------------------------------
