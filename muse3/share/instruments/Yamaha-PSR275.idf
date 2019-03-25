@@ -47,8 +47,8 @@
       <Patch name="Jazz Organ 2" hbank="0" lbank="113" prog="16" />
       <Patch name="Theater Organ" hbank="0" lbank="114" prog="16" />
       <Patch name="Bright Organ" hbank="0" lbank="116" prog="16" />
-      <Patch name="16;+2; Organ" hbank="0" lbank="118" prog="16" />
-      <Patch name="16;+4; Organ" hbank="0" lbank="119" prog="16" />
+      <Patch name="16&apos;+2&apos; Organ" hbank="0" lbank="118" prog="16" />
+      <Patch name="16&apos;+4&apos; Organ" hbank="0" lbank="119" prog="16" />
       <Patch name="Click Organ" hbank="0" lbank="112" prog="17" />
       <Patch name="Rock Organ" hbank="0" lbank="112" prog="18" />
       <Patch name="Purple Organ" hbank="0" lbank="114" prog="18" />
@@ -65,17 +65,17 @@
     <PatchGroup name="Organ (XG)">
       <Patch name="DrawOrg" mode="5" hbank="0" lbank="0" prog="16" />
       <Patch name="Detuned DrawOrg" mode="4" hbank="0" lbank="32" prog="16" />
-      <Patch name="60;s DrawOrg 1" mode="4" hbank="0" lbank="33" prog="16" />
-      <Patch name="60;s DrawOrg 2" mode="4" hbank="0" lbank="34" prog="16" />
-      <Patch name="70;s DrawOrg 1" mode="4" hbank="0" lbank="35" prog="16" />
-      <Patch name="60;s DrawOrg 3" mode="4" hbank="0" lbank="37" prog="16" />
-      <Patch name="16+2&quot;2/3" mode="4" hbank="0" lbank="40" prog="16" />
+      <Patch name="60&apos;s DrawOrg 1" mode="4" hbank="0" lbank="33" prog="16" />
+      <Patch name="60&apos;s DrawOrg 2" mode="4" hbank="0" lbank="34" prog="16" />
+      <Patch name="70&apos;s DrawOrg 1" mode="4" hbank="0" lbank="35" prog="16" />
+      <Patch name="60&apos;s DrawOrg 3" mode="4" hbank="0" lbank="37" prog="16" />
+      <Patch name="16&apos;+2&amp;2/3" mode="4" hbank="0" lbank="40" prog="16" />
       <Patch name="Organ Bass" mode="4" hbank="0" lbank="64" prog="16" />
-      <Patch name="70;s DrawOrg 2" mode="4" hbank="0" lbank="65" prog="16" />
+      <Patch name="70&apos;s DrawOrg 2" mode="4" hbank="0" lbank="65" prog="16" />
       <Patch name="Cheezy Organ" mode="4" hbank="0" lbank="66" prog="16" />
       <Patch name="DrawOrg 3" mode="4" hbank="0" lbank="67" prog="16" />
       <Patch name="Percussive Organ" mode="5" hbank="0" lbank="0" prog="17" />
-      <Patch name="70;s Percussive Organ" mode="4" hbank="0" lbank="24" prog="17" />
+      <Patch name="70&apos;s Percussive Organ" mode="4" hbank="0" lbank="24" prog="17" />
       <Patch name="Detuned Percussive Organ" mode="4" hbank="0" lbank="32" prog="17" />
       <Patch name="Light Organ" mode="4" hbank="0" lbank="33" prog="17" />
       <Patch name="Percussive Organ 2" mode="4" hbank="0" lbank="37" prog="17" />
@@ -104,7 +104,7 @@
       <Patch name="Jazz Guitar" hbank="0" lbank="112" prog="26" />
       <Patch name="Octave Guitar" hbank="0" lbank="113" prog="26" />
       <Patch name="Clean Guitar" hbank="0" lbank="112" prog="27" />
-      <Patch name="60;s Clean Guitar" hbank="0" lbank="117" prog="27" />
+      <Patch name="60&apos;s Clean Guitar" hbank="0" lbank="117" prog="27" />
       <Patch name="Muted Guitar" hbank="0" lbank="112" prog="28" />
       <Patch name="Overdriven Guitar" hbank="0" lbank="112" prog="29" />
       <Patch name="Distortion Guitar" hbank="0" lbank="112" prog="30" />
@@ -212,7 +212,7 @@
       <Patch name="Strings 1" mode="5" hbank="0" lbank="0" prog="48" />
       <Patch name="Stereo Strings" mode="4" hbank="0" lbank="3" prog="48" />
       <Patch name="Slow Strings" mode="4" hbank="0" lbank="8" prog="48" />
-      <Patch name="60;s Strings" mode="4" hbank="0" lbank="35" prog="48" />
+      <Patch name="60&apos;s Strings" mode="4" hbank="0" lbank="35" prog="48" />
       <Patch name="Orchestra" mode="4" hbank="0" lbank="40" prog="48" />
       <Patch name="Orchestra 2" mode="4" hbank="0" lbank="41" prog="48" />
       <Patch name="Tremolo Orchestra" mode="4" hbank="0" lbank="42" prog="48" />

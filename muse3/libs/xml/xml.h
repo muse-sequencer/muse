@@ -63,7 +63,7 @@ class Xml {
       int _minorVersion;                      // Currently loaded songfile minor version
       int _majorVersion;                      // Currently loaded songfile major version
 
-      int c;            // current char
+      char c;            // current char
       char lbuffer[512];
       // When constructed with a const char* parameter, this will be valid.
       const char* bufptr;

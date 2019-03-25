@@ -23,6 +23,7 @@
 //=========================================================
 
 #include <stdarg.h>
+#include <QByteArray>
 
 #include "xml.h"
 
@@ -157,15 +158,16 @@ void Xml::nextc()
 
 void Xml::token(int cc)
       {
-      _s2.clear();  
+      QByteArray buffer;
       int i = 0;
       for (; i < 9999999;) {   // Stop at a reasonably large amount 10 million.
             if (c == ' ' || c == '\t' || c == cc || c == '\n' || c == EOF)
                   break;
-            _s2.append(c);
-            i++;
+            buffer[i++] = c;
             next();
             }
+      buffer[i] = 0;
+      _s2 = buffer;     // deep copy !?
       }
 
 //---------------------------------------------------------
@@ -175,16 +177,14 @@ void Xml::token(int cc)
 
 void Xml::stoken()
       {
-      _s2.clear();  
+      QByteArray buffer;
       int i = 0;
-      _s2.append(c);
-      ++i;
+      buffer[i++] = c;
       next();
 
       for (;i < 10000000*4-1;) {  // Stop at a reasonably large amount 10 million.
             if (c == '"') {
-                  _s2.append(c);
-                  i++;
+                  buffer[i++] = c;
                   next();
                   break;
                   }
@@ -217,25 +217,24 @@ void Xml::stoken()
                   if (c == EOF || k == 6) {
                         // dump entity
                         int n = 0;
-                        _s2.append('&');
-                        i++;
+                        buffer[i++] = '&';
                         for (;(i < 511) && (n < k); ++i, ++n)
-                             _s2.append(entity[n]);
+                              buffer[i] = entity[n];
                         }
                   else {
-                        _s2.append(c);
-                        i++;
-                        }
+                        buffer[i++] = c;
+                     }
                   }
             else if(c != EOF)
             {
-              _s2.append(c);
-              i++;
+              buffer[i++] = c;
             }
             if (c == EOF)
                   break;
             next();
             }
+      buffer[i] = 0;
+      _s2 = buffer;
       }
 
 //---------------------------------------------------------
@@ -257,6 +256,9 @@ QString Xml::strip(const QString& s)
 
 Xml::Token Xml::parse()
       {
+      QByteArray buffer;
+      int idx = 0;
+
  again:
       bool endFlag = false;
       nextc();
@@ -318,16 +320,20 @@ Xml::Token Xml::parse()
                   }
             if (c == '?') {
                   next();
+                  idx = 0;
                   for (;;) {
                         if (c == '?' || c == EOF || c == '>')
                               break;
                         
-                        _s1.append(c);
+                        buffer[idx++] = c;
                         
                         // TODO: check overflow
                         next();
                         }
                   
+                  buffer[idx] = 0;
+                  _s1 = QString(buffer);
+
                   if (c == EOF) {
                         fprintf(stderr, "XML: unexpected EOF\n");
                         goto error;
@@ -354,17 +360,20 @@ Xml::Token Xml::parse()
                         }
                   goto again;
                   }
-
+            idx = 0;
             for (;;) {
                   if (c == '/' || c == ' ' || c == '\t' || c == '>' || c == '\n' || c == EOF)
                         break;
                   // TODO: check overflow
                   
-                  _s1.append(c);
+                  buffer[idx++] = c;
                   
                   next();
                   }
             
+            buffer[idx] = 0;
+            _s1 = QString(buffer);
+
             // skip white space:
             while (c == ' ' || c == '\t' || c == '\n')
                   next();
@@ -412,48 +421,53 @@ Xml::Token Xml::parse()
                   fprintf(stderr, "XML: level = 0\n");
                   goto error;
                   }
+            idx = 0;
             for (;;) {
                   if (c == EOF || c == '<')
                         break;
                   if (c == '&') {
                         next();
                         if (c == '<') {         // be tolerant with old muse files
-                              _s1.append('&');
+                              buffer[idx++] = '&';
                               continue;
                               }
                               
-                        QString name;
+                        QByteArray name;
                         int name_idx = 0;
-                        name.append(c);
-                        name_idx++;
-                        
+                        name[name_idx++] = c;
+                     
                         for (; name_idx < 9999999;) {   // Stop at a reasonably large amount 10 million.
                               next();
                               if (c == ';')
                                     break;
-                              name.append(c);
-                              name_idx++;
+                              name[name_idx++] = c;
                               }
                               
-                        if (name == "lt")
+                        name[name_idx] = 0;
+
+                        if (strcmp(name, "lt") == 0)
                               c = '<';
-                        else if (name == "gt")
+                        else if (strcmp(name, "gt") == 0)
                               c = '>';
-                        else if (name == "apos")
+                        else if (strcmp(name, "apos") == 0)
                               c = '\'';
-                        else if (name == "quot")
+                        else if (strcmp(name, "quot") == 0)
                               c = '"';
-                        else if (name == "amp")
+                        else if (strcmp(name, "amp") == 0)
                               c = '&';
                         else
                               c = '?';
+                        
                         }
 
-                  _s1.append(c);
+                  buffer[idx++] = c;
                   
                   next();
                   }
                   
+            buffer[idx] = 0;
+            _s1 = QString(buffer);
+
             if (c == '<')
                   --bufptr;
             return Text;

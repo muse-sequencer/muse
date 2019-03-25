@@ -45,8 +45,8 @@
       <Patch name="Pf:Wrltza B"       hbank="63"  lbank="9"   prog="0"  />
       <Patch name="Pf:Radio  A"       hbank="63"  lbank="8"   prog="1"  />
       <Patch name="Pf:DncePn A"       hbank="63"  lbank="8"   prog="2"  />
-      <Patch name="Pf:70'sClvA"       hbank="63"  lbank="4"   prog="64" />
-      <Patch name="Pf:70'sClvB"       hbank="63"  lbank="5"   prog="64" />
+      <Patch name="Pf:70&apos;sClvA"       hbank="63"  lbank="4"   prog="64" />
+      <Patch name="Pf:70&apos;sClvB"       hbank="63"  lbank="5"   prog="64" />
       <Patch name="Pf:Woltz2 A"       hbank="63"  lbank="4"   prog="65" />
       <Patch name="Pf:Woltz2 B"       hbank="63"  lbank="5"   prog="65" />
       <Patch name="Pf:DynaRseA"       hbank="63"  lbank="4"   prog="66" />
@@ -685,10 +685,10 @@
       <Patch name="Ld:Sync   A"       hbank="63"  lbank="0"   prog="71" />
       <Patch name="Ld:Croma  A"       hbank="63"  lbank="0"   prog="72" />
       <Patch name="Ld:Croma  B"       hbank="63"  lbank="1"   prog="72" />
-      <Patch name="Ld:Bg'mUp A"       hbank="63"  lbank="0"   prog="73" />
-      <Patch name="Ld:Bg'mUp B"       hbank="63"  lbank="1"   prog="73" />
-      <Patch name="Ld:Bg'mUp C"       hbank="63"  lbank="2"   prog="73" />
-      <Patch name="Ld:Bg'mUp D"       hbank="63"  lbank="3"   prog="73" />
+      <Patch name="Ld:Bg&apos;mUp A"       hbank="63"  lbank="0"   prog="73" />
+      <Patch name="Ld:Bg&apos;mUp B"       hbank="63"  lbank="1"   prog="73" />
+      <Patch name="Ld:Bg&apos;mUp C"       hbank="63"  lbank="2"   prog="73" />
+      <Patch name="Ld:Bg&apos;mUp D"       hbank="63"  lbank="3"   prog="73" />
       <Patch name="Ld:Human  A"       hbank="63"  lbank="0"   prog="74" />
       <Patch name="Ld:Human  B"       hbank="63"  lbank="1"   prog="74" />
       <Patch name="Ld:BigBob A"       hbank="63"  lbank="0"   prog="75" />
@@ -969,10 +969,10 @@
       <Patch name="Fx:Ryza   A"       hbank="63"  lbank="4"   prog="102"/>
       <Patch name="Fx:Ryza   B"       hbank="63"  lbank="5"   prog="102"/>
       <Patch name="Fx:Ryza   C"       hbank="63"  lbank="6"   prog="102"/>
-      <Patch name="Fx:Gaa'99 A"       hbank="63"  lbank="4"   prog="103"/>
-      <Patch name="Fx:Gaa'99 B"       hbank="63"  lbank="5"   prog="103"/>
-      <Patch name="Fx:Gaa'99 C"       hbank="63"  lbank="6"   prog="103"/>
-      <Patch name="Fx:Gaa'99 D"       hbank="63"  lbank="7"   prog="103"/>
+      <Patch name="Fx:Gaa&apos;99 A"       hbank="63"  lbank="4"   prog="103"/>
+      <Patch name="Fx:Gaa&apos;99 B"       hbank="63"  lbank="5"   prog="103"/>
+      <Patch name="Fx:Gaa&apos;99 C"       hbank="63"  lbank="6"   prog="103"/>
+      <Patch name="Fx:Gaa&apos;99 D"       hbank="63"  lbank="7"   prog="103"/>
       <Patch name="Fx:Lights A"       hbank="63"  lbank="4"   prog="104"/>
       <Patch name="Fx:Lights B"       hbank="63"  lbank="5"   prog="104"/>
       <Patch name="Fx:Lights C"       hbank="63"  lbank="6"   prog="104"/>
@@ -1256,9 +1256,9 @@
       <Patch name="Sc:TranCS B"       hbank="63"  lbank="5"   prog="23" />
       <Patch name="Sc:TranCS C"       hbank="63"  lbank="6"   prog="23" />
       <Patch name="Sc:TranCS D"       hbank="63"  lbank="7"   prog="23" />
-      <Patch name="Sc:Nble'Q A"       hbank="63"  lbank="0"   prog="24" />
-      <Patch name="Sc:Nble'Q B"       hbank="63"  lbank="1"   prog="24" />
-      <Patch name="Sc:Nble'Q C"       hbank="63"  lbank="2"   prog="24" />
+      <Patch name="Sc:Nble&apos;Q A"       hbank="63"  lbank="0"   prog="24" />
+      <Patch name="Sc:Nble&apos;Q B"       hbank="63"  lbank="1"   prog="24" />
+      <Patch name="Sc:Nble&apos;Q C"       hbank="63"  lbank="2"   prog="24" />
       <Patch name="Sc:Source A"       hbank="63"  lbank="4"   prog="24" />
       <Patch name="Sc:Source B"       hbank="63"  lbank="5"   prog="24" />
       <Patch name="Sc:Source C"       hbank="63"  lbank="6"   prog="24" />

@@ -1,3 +1,10 @@
+25.03.2019
+      - Fix issue 645 "Naming a track with acentuated letter". (Tim)
+        Oops, regression from 07.01.2019: utf8 chars were corrupted.
+        Reverted by re-adding QByteArray stuff, required for proper parsing.
+      - Also fixed many double &amp; in *.idf files and a few other things.
+      - Fixed bug in storing sysex comment xml section of midi instruments.
+        It was doing escape replacements twice, corrupting the text.
 24.03.2019
       - Fix Time Signature boxes on toolbars: Could not adjust if 'use mastertrack tempo' was off. (Tim)
         Oops, regression from 22.04.2018

@@ -64,7 +64,7 @@
             <Patch name="Mellow Draw" hbank="0" lbank="115" prog=""/>
             <Patch name="Jazz Organ2" hbank="0" lbank="113" prog=""/>
             <Patch name="Bright Draw" hbank="0" lbank="116" prog=""/>
-            <Patch name="60's Organ" hbank="0" lbank="116" prog=""/>
+            <Patch name="60&apos;s Organ" hbank="0" lbank="116" prog=""/>
             <Patch name="Jazz Organ3" hbank="0" lbank="120" prog=""/>
             <Patch name="ChapelOrgn1" hbank="0" lbank="113" prog=""/>
             <Patch name="ChapelOrgn2" hbank="0" lbank="114" prog=""/>
@@ -99,7 +99,7 @@
             <Patch name="Aloha Gtr" hbank="0" lbank="118" prog="26"/>
             <Patch name="Crunch Gtr" hbank="0" lbank="113" prog="30"/>
             <Patch name="Carlos Gtr" hbank="0" lbank="119" prog="26"/>
-            <Patch name="60's Clean" hbank="0" lbank="117" prog="27"/>
+            <Patch name="60&apos;s Clean" hbank="0" lbank="117" prog="27"/>
             <Patch name="Live! Class" hbank="0" lbank="115" prog="24"/>
             <Patch name="Coll! JSolo" hbank="0" lbank="116" prog="26"/>
             <Patch name="VintageOpen" hbank="0" lbank="123" prog="27"/>
@@ -148,7 +148,7 @@
             <Patch name="Funk Bass" hbank="0" lbank="112" prog="37"/>
             <Patch name="Aco.Bass" hbank="0" lbank="112" prog="32"/>
             <Patch name="Fretless" hbank="0" lbank="112" prog="35"/>
-            <Patch name="Bass&amp;&amp;Cymbal" hbank="0" lbank="114" prog="32"/>
+            <Patch name="Bass &amp; Cymbal" hbank="0" lbank="114" prog="32"/>
             <Patch name="Fusion Bass" hbank="0" lbank="113" prog="36"/>
             <Patch name="Rave Bass" hbank="0" lbank="114" prog="38"/>
             <Patch name="Dance Bass" hbank="0" lbank="113" prog="39"/>
@@ -288,7 +288,7 @@
             <Patch name="Bagpipe" hbank="0" lbank="112" prog="109"/>
         </PatchGroup>
 
-        <PatchGroup name="Choir &amp;&amp; Pad">
+        <PatchGroup name="Choir &amp; Pad">
             <Patch name="Live!Gospel" hbank="0" lbank="116" prog="52"/>
             <Patch name="Live! Humm" hbank="0" lbank="118" prog="52"/>
             <Patch name="Hah Choir" hbank="0" lbank="114" prog="52"/>
@@ -1127,7 +1127,7 @@
             <Patch name="VL! Slapper" hbank="33" lbank="0" prog="9"/>
         </PatchGroup>
 
-        <PatchGroup name="PLG150-VL: 08 Ethnic &amp;&amp; Strings">
+        <PatchGroup name="PLG150-VL: 08 Ethnic &amp; Strings">
             <Patch name="Stone Henge" hbank="33" lbank="0" prog="4"/>
             <Patch name="Sitar!" hbank="33" lbank="0" prog="58"/>
             <Patch name="Rock Harp" hbank="33" lbank="1" prog="121"/>
@@ -1466,9 +1466,9 @@
             <Patch name="GndPnoMn" hbank="80" lbank="64" prog="0"/>
             <Patch name="FlngGrnd" hbank="80" lbank="80" prog="0"/>
             <Patch name="BrghtGnd" hbank="80" lbank="65" prog="0"/>
-            <Patch name="60'sGrnd" hbank="80" lbank="66" prog="0"/>
+            <Patch name="60&apos;sGrnd" hbank="80" lbank="66" prog="0"/>
             <Patch name="RchGndSt" hbank="80" lbank="67" prog="0"/>
-            <Patch name="60'sJazz" hbank="80" lbank="69" prog="0"/>
+            <Patch name="60&apos;sJazz" hbank="80" lbank="69" prog="0"/>
             <Patch name="PowerGnd" hbank="80" lbank="72" prog="0"/>
             <Patch name="MildGrnd" hbank="80" lbank="73" prog="0"/>
             <Patch name="ChorusMn" hbank="80" lbank="75" prog="0"/>
@@ -1517,14 +1517,14 @@
         <PatchGroup name="PLG150-PF: 06 E.Piano 2">
             <Patch name="Tea" hbank="80" lbank="0" prog="4"/>
             <Patch name="Deodar" hbank="80" lbank="64" prog="4"/>
-            <Patch name="70's EP" hbank="80" lbank="65" prog="4"/>
-            <Patch name="80's EP" hbank="80" lbank="66" prog="4"/>
+            <Patch name="70&apos;s EP" hbank="80" lbank="65" prog="4"/>
+            <Patch name="80&apos;s EP" hbank="80" lbank="66" prog="4"/>
             <Patch name="Crisp EP" hbank="80" lbank="67" prog="4"/>
             <Patch name="Sweetnes" hbank="80" lbank="68" prog="4"/>
             <Patch name="Freeway" hbank="80" lbank="69" prog="4"/>
             <Patch name="Trem 70" hbank="80" lbank="70" prog="4"/>
             <Patch name="Remark" hbank="80" lbank="71" prog="4"/>
-            <Patch name="Mid 70's" hbank="80" lbank="73" prog="4"/>
+            <Patch name="Mid 70&apos;s" hbank="80" lbank="73" prog="4"/>
         </PatchGroup>
 
         <PatchGroup name="PLG150-PF: 07 E.Piano 3">
@@ -1544,7 +1544,7 @@
             <Patch name="Choir EP" hbank="80" lbank="87" prog="4"/>
             <Patch name="Paddy EP" hbank="80" lbank="88" prog="4"/>
             <Patch name="VcePd EP" hbank="80" lbank="89" prog="4"/>
-            <Patch name="60's EP" hbank="80" lbank="91" prog="4"/>
+            <Patch name="60&apos;s EP" hbank="80" lbank="91" prog="4"/>
             <Patch name="Trump" hbank="80" lbank="92" prog="4"/>
             <Patch name="DonnyWrl" hbank="80" lbank="93" prog="4"/>
             <Patch name="WurliAmp" hbank="80" lbank="94" prog="4"/>
@@ -1577,7 +1577,7 @@
             <Patch name="Chrs FMP" hbank="80" lbank="843" prog="5"/>
         </PatchGroup>
 
-        <PatchGroup name="PLG150-PF: 11 Harpsicord &amp;&amp; Clavinet">
+        <PatchGroup name="PLG150-PF: 11 Harpsicord &amp; Clavinet">
             <Patch name="Harpsi 1" hbank="80" lbank="0" prog="6"/>
             <Patch name="Harpsi 2" hbank="80" lbank="64" prog="6"/>
             <Patch name="RichHpsi" hbank="80" lbank="67" prog="6"/>
@@ -1716,7 +1716,7 @@
             <Patch name="Soft Bow" hbank="83" lbank="74" prog="50"/>
             <Patch name="DX-AnSt3" hbank="83" lbank="65" prog="51"/>
             <Patch name="Aftrnoon" hbank="83" lbank="73" prog="51"/>
-            <Patch name="Str&amp;&amp;Brs" hbank="35" lbank="1" prog="85"/>
+            <Patch name="Str &amp; Brs" hbank="35" lbank="1" prog="85"/>
             <Patch name="SyBr Pd6" hbank="83" lbank="69" prog="90"/>
             <Patch name="ORCHESTR" hbank="35" lbank="0" prog="6"/>
             <Patch name="GrngePad" hbank="83" lbank="0" prog="94"/>
