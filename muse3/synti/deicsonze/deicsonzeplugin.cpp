@@ -219,8 +219,8 @@ float DeicsOnze::getReverbParam(int index) const {
   ///if(_pluginIReverb) return _pluginIReverb->controller(index)->curVal().f; 
   if(_pluginIReverb) return _pluginIReverb->param(index); 
   else {
+    fprintf(stderr, "Warning : no DeicsOnze reverb loaded\n");  
     return 0.0;
-    printf("Warning : no DeicsOnze reverb loaded\n");  
   }
 }
 
@@ -228,8 +228,8 @@ float DeicsOnze::getChorusParam(int index) const {
   ///if(_pluginIChorus) return _pluginIChorus->controller(index)->curVal().f;
   if(_pluginIChorus) return _pluginIChorus->param(index);
   else {
+    fprintf(stderr, "Warning : no DeicsOnze chorus loaded\n");  
     return 0.0;
-    printf("Warning : no DeicsOnze chorus loaded\n");  
   }    
 }
 
@@ -237,8 +237,8 @@ float DeicsOnze::getDelayParam(int index) const {
   ///if(_pluginIDelay) return _pluginIDelay->controller(index)->curVal().f;
   if(_pluginIDelay) return _pluginIDelay->param(index);
   else {
+    fprintf(stderr, "Warning : no DeicsOnze delay loaded\n");
     return 0.0;
-    printf("Warning : no DeicsOnze delay loaded\n");
   }
 }
 

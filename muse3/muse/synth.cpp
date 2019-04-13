@@ -1053,7 +1053,7 @@ void SynthI::read(Xml& xml)
             switch (token) {
                   case Xml::Error:
                   case Xml::End:
-                        return;
+                        goto synth_read_end;
                   case Xml::TagStart:
                         if (tag == "synthType")
                               type = string2SynthType(xml.parse1());
@@ -1137,6 +1137,8 @@ void SynthI::read(Xml& xml)
                         break;
                   }
             }
+
+synth_read_end:
       AudioTrack::mapRackPluginsToControllers();
       }
 

@@ -41,7 +41,7 @@ class SimpleTimer : public Timer, public QThread {
        SimpleTimer();
        virtual ~SimpleTimer();
        
-       virtual signed long initTimer(long int init);
+       virtual signed int initTimer(unsigned long init);
        virtual unsigned long setTimerResolution(unsigned long resolution);
        virtual unsigned long getTimerResolution();
        virtual unsigned long setTimerFreq(unsigned long freq);

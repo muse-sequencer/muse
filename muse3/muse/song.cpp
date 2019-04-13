@@ -4007,7 +4007,7 @@ void Song::restartRecording(bool discard)
 
         new_track_names.push_back(nTrk->name());
         
-        const unsigned int idx = _tracks.index(cTrk) + idx_cnt++;
+        const int idx = _tracks.index(cTrk) + idx_cnt++;
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx + 1, nTrk));
         operations.push_back(UndoOp(UndoOp::SetTrackMute, cTrk, true));
         operations.push_back(UndoOp(UndoOp::SetTrackRecord, cTrk, false));

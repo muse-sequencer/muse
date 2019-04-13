@@ -1,3 +1,6 @@
+#ifndef __KLICK_3_H__
+#define __KLICK_3_H__
+
 static const float defaultKlick3[] = {
 -0.00576782 ,-0.00253296 ,0.00070190 ,0.00479126 ,0.03662109 ,
 0.12130737 ,0.18511963 ,0.14517212 ,0.05474854 ,-0.01477051 ,
@@ -2895,3 +2898,5 @@ static const float defaultKlick3[] = {
 };
 
 static const unsigned defaultKlick3Length = sizeof(defaultKlick3) / sizeof(*defaultKlick3);
+
+#endif

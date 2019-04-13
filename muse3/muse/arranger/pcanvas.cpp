@@ -350,12 +350,12 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
     MusECore::Track* track    = npart->track();
     MusECore::Track* dtrack=NULL;
     unsigned dtick  = newpos.x(); // FIXME TODO make subtick-compatible!
-    unsigned ntrack = y2pitch(item->mp().y());
+    int ntrack = y2pitch(item->mp().y());
     MusECore::Track::TrackType type = track->type();
     if (tracks->index(track) == ntrack && (dtick == spart->tick())) {
         return false;
     }
-    if (ntrack >= tracks->size()) {
+    if (ntrack >= (int)tracks->size()) {
         ntrack = tracks->size();
         if (MusEGlobal::debugMsg)
             printf("PartCanvas::moveItem - add new track\n");

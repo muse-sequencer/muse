@@ -63,130 +63,134 @@ TrackInfoLayout::~TrackInfoLayout()
 void TrackInfoLayout::setGeometry(const QRect &rect)
       {
       QHBoxLayout::setGeometry(rect);
-      return;
-        
-      if(_inSetGeometry)
-        return;
+//       return;
 
-      int w = rect.width();
-      int h = rect.height();
-
-      QSize s0;
-      QWidget* widget = _stack->visibleWidget();
-      if(widget) {
-          s0 = widget->minimumSizeHint();
-          if (!s0.isValid())   // widget has no geometry management
-                s0 = widget->size();
-          }
-      else
-          s0 = _stack->minimumSizeHint();
-      
-      int range = s0.height() - h;
-      if (range < 0)
-            range = 0;
-//       fprintf(stderr, "TrackInfoLayout::setGeometry sb w:%d visible:%d split count:%d w:%d h:%d s0 height:%d range:%d\n",
-//                      _sb->width(), _sb->isVisible(), _splitter->count(), w, h, s0.height(), range);
-      
-      if (range)
-      {
-        _sb->blockSignals(true);
-        _sb->setMaximum(range);
-        _sb->blockSignals(false);
-      }
-
-      const bool vis = range != 0;
-      
-      // Was a show pending and the scrollbar is now visible? Reset the pending flag.
-      if(_sbShowPending && _sb->isVisible())
-        _sbShowPending = false;
-      
-      if(_sb->isVisible() != vis)
-      {
-        if(_sb->isVisible())
-        {
-          int sw = w - _sb->width();
-          if(sw < 0)
-            sw = 0;
-          _sb->setVisible(false);
-          if(_splitter)
-          {
-            //fprintf(stderr, "TrackInfoLayout::setGeometry hide sb: split pos:%d\n", sw);
-            _inSetGeometry = true; 
-            _splitter->setPosition(1, sw);   // FIXME: Causes too wide on first startup, also when maximizing.
-            _inSetGeometry = false; 
-          }
-          _stackLi->setGeometry(QRect(0,  0,  sw, h));
-          //fprintf(stderr, "TrackInfoLayout::setGeometry hide sb: widget:%p w:%d\n", widget, sw);
-          if(widget) 
-          {
-//             QSize r(sw, y2 < s0.height() ? s0.height() : y2);
-//             //fprintf(stderr, "TrackInfoLayout::setGeometry hide sb: widget w:%d\n",
-//             //                r.width());
-//             //widget->setGeometry(0, -_sb->value(), r.width(), r.height()); 
-//             widget->setGeometry(0, 0, r.width(), r.height()); 
-            widget->move(0, 0);
-          }
-        }
-        else
-        {
-          // If an ancestor is NOT visible this will not happen until the ancestor becomes visible.
-          // Simply reading isVisible() immediately afterwards (below) would return FALSE.
-          _sb->setVisible(true);
-          _sbShowPending = true;
-          
-          const int sbw = _sb->isVisible() ? _sb->width() : _sbLi->sizeHint().width();
-          
-          if(_splitter)
-          {
-            //fprintf(stderr, "TrackInfoLayout::setGeometry show sb: split pos:%d\n",
-            //               w + sbw);
-            _inSetGeometry = true; 
-            _splitter->setPosition(1, w + sbw); // FIXME: Causes too wide on first startup, also when maximizing.
-            _inSetGeometry = false; 
-          }
-          _stackLi->setGeometry(QRect(0,  0,  w, h));  
-            //fprintf(stderr, "TrackInfoLayout::setGeometry show sb: widget:%p w:%d\n", widget, w);
-//           _stackLi->setGeometry(QRect(0,  0,  w, y2 < s0.height() ? s0.height() : y2));  
-          if(widget) 
-          {
-//             QSize r(w, y2 < s0.height() ? s0.height() : y2);
-//             widget->setGeometry(0, -_sb->value(), r.width(), r.height());
-            widget->move(0, -_sb->value());
-          }
-        }
-      }
-      else
-      {
-        int ww = w; 
-        if(_sb->isVisible() || _sbShowPending)
-          ww -= _sb->isVisible() ? _sb->width() : _sbLi->sizeHint().width();
-          
-        //fprintf(stderr, "TrackInfoLayout::setGeometry not show/hide sb: widget:%p w:%d\n", widget, ww);
-        _stackLi->setGeometry(QRect(0,  0,  ww, h));  
-//         _stackLi->setGeometry(QRect(0,  0,  ww, h < s0.height() ? s0.height() : h));
-        if(widget) 
-        {
-//           QSize r(ww, y2 < s0.height() ? s0.height() : y2);
-//           widget->setGeometry(0, -_sb->value(), r.width(), r.height()); 
-          if(_sb->isVisible() || _sbShowPending)
-            widget->move(0, -_sb->value());
-        }
-      }
-      
-      if(_sb->isVisible() || _sbShowPending)
-      {
-        const int sbw = _sb->isVisible() ? _sb->width() : _sbLi->sizeHint().width();
-        int sbx = w + (_sb->isVisible() ? -sbw : sbw); 
-        if(sbx < 0)
-          sbx = 0;
-        //fprintf(stderr, "TrackInfoLayout::setGeometry: sb visible or pending: setting _sbLi: x:%d w:%d\n", sbx, sbw);
-        _sbLi->setGeometry(QRect(sbx, 0,  sbw, h));
-      }
-      else
-      {
-        //fprintf(stderr, "TrackInfoLayout::setGeometry: sb not visible nor pending: setting _sbLi: x:%d w:%d\n", w, 0);
-        _sbLi->setGeometry(QRect(w, 0,  0, h));
-      }
+// TODO REMOVE Tim. Was experiment? Or not needed now?
+// 
+// 
+//
+//       if(_inSetGeometry)
+//         return;
+// 
+//       int w = rect.width();
+//       int h = rect.height();
+// 
+//       QSize s0;
+//       QWidget* widget = _stack->visibleWidget();
+//       if(widget) {
+//           s0 = widget->minimumSizeHint();
+//           if (!s0.isValid())   // widget has no geometry management
+//                 s0 = widget->size();
+//           }
+//       else
+//           s0 = _stack->minimumSizeHint();
+//       
+//       int range = s0.height() - h;
+//       if (range < 0)
+//             range = 0;
+// //       fprintf(stderr, "TrackInfoLayout::setGeometry sb w:%d visible:%d split count:%d w:%d h:%d s0 height:%d range:%d\n",
+// //                      _sb->width(), _sb->isVisible(), _splitter->count(), w, h, s0.height(), range);
+//       
+//       if (range)
+//       {
+//         _sb->blockSignals(true);
+//         _sb->setMaximum(range);
+//         _sb->blockSignals(false);
+//       }
+// 
+//       const bool vis = range != 0;
+//       
+//       // Was a show pending and the scrollbar is now visible? Reset the pending flag.
+//       if(_sbShowPending && _sb->isVisible())
+//         _sbShowPending = false;
+//       
+//       if(_sb->isVisible() != vis)
+//       {
+//         if(_sb->isVisible())
+//         {
+//           int sw = w - _sb->width();
+//           if(sw < 0)
+//             sw = 0;
+//           _sb->setVisible(false);
+//           if(_splitter)
+//           {
+//             //fprintf(stderr, "TrackInfoLayout::setGeometry hide sb: split pos:%d\n", sw);
+//             _inSetGeometry = true; 
+//             _splitter->setPosition(1, sw);   // FIXME: Causes too wide on first startup, also when maximizing.
+//             _inSetGeometry = false; 
+//           }
+//           _stackLi->setGeometry(QRect(0,  0,  sw, h));
+//           //fprintf(stderr, "TrackInfoLayout::setGeometry hide sb: widget:%p w:%d\n", widget, sw);
+//           if(widget) 
+//           {
+// //             QSize r(sw, y2 < s0.height() ? s0.height() : y2);
+// //             //fprintf(stderr, "TrackInfoLayout::setGeometry hide sb: widget w:%d\n",
+// //             //                r.width());
+// //             //widget->setGeometry(0, -_sb->value(), r.width(), r.height()); 
+// //             widget->setGeometry(0, 0, r.width(), r.height()); 
+//             widget->move(0, 0);
+//           }
+//         }
+//         else
+//         {
+//           // If an ancestor is NOT visible this will not happen until the ancestor becomes visible.
+//           // Simply reading isVisible() immediately afterwards (below) would return FALSE.
+//           _sb->setVisible(true);
+//           _sbShowPending = true;
+//           
+//           const int sbw = _sb->isVisible() ? _sb->width() : _sbLi->sizeHint().width();
+//           
+//           if(_splitter)
+//           {
+//             //fprintf(stderr, "TrackInfoLayout::setGeometry show sb: split pos:%d\n",
+//             //               w + sbw);
+//             _inSetGeometry = true; 
+//             _splitter->setPosition(1, w + sbw); // FIXME: Causes too wide on first startup, also when maximizing.
+//             _inSetGeometry = false; 
+//           }
+//           _stackLi->setGeometry(QRect(0,  0,  w, h));  
+//             //fprintf(stderr, "TrackInfoLayout::setGeometry show sb: widget:%p w:%d\n", widget, w);
+// //           _stackLi->setGeometry(QRect(0,  0,  w, y2 < s0.height() ? s0.height() : y2));  
+//           if(widget) 
+//           {
+// //             QSize r(w, y2 < s0.height() ? s0.height() : y2);
+// //             widget->setGeometry(0, -_sb->value(), r.width(), r.height());
+//             widget->move(0, -_sb->value());
+//           }
+//         }
+//       }
+//       else
+//       {
+//         int ww = w; 
+//         if(_sb->isVisible() || _sbShowPending)
+//           ww -= _sb->isVisible() ? _sb->width() : _sbLi->sizeHint().width();
+//           
+//         //fprintf(stderr, "TrackInfoLayout::setGeometry not show/hide sb: widget:%p w:%d\n", widget, ww);
+//         _stackLi->setGeometry(QRect(0,  0,  ww, h));  
+// //         _stackLi->setGeometry(QRect(0,  0,  ww, h < s0.height() ? s0.height() : h));
+//         if(widget) 
+//         {
+// //           QSize r(ww, y2 < s0.height() ? s0.height() : y2);
+// //           widget->setGeometry(0, -_sb->value(), r.width(), r.height()); 
+//           if(_sb->isVisible() || _sbShowPending)
+//             widget->move(0, -_sb->value());
+//         }
+//       }
+//       
+//       if(_sb->isVisible() || _sbShowPending)
+//       {
+//         const int sbw = _sb->isVisible() ? _sb->width() : _sbLi->sizeHint().width();
+//         int sbx = w + (_sb->isVisible() ? -sbw : sbw); 
+//         if(sbx < 0)
+//           sbx = 0;
+//         //fprintf(stderr, "TrackInfoLayout::setGeometry: sb visible or pending: setting _sbLi: x:%d w:%d\n", sbx, sbw);
+//         _sbLi->setGeometry(QRect(sbx, 0,  sbw, h));
+//       }
+//       else
+//       {
+//         //fprintf(stderr, "TrackInfoLayout::setGeometry: sb not visible nor pending: setting _sbLi: x:%d w:%d\n", w, 0);
+//         _sbLi->setGeometry(QRect(w, 0,  0, h));
+//       }
 }
 
 //---------------------------------------------------------

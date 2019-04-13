@@ -353,6 +353,9 @@ void TList::paint(const QRect& r)
                   if(!header->isSectionHidden(section))
                   {
                     switch (section) {
+                          case COL_TRACK_IDX:
+                                p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, QString::number(MusEGlobal::song->tracks()->index(track) + 1));
+                                break;
                           case COL_INPUT_MONITOR:
                                 if (track->canRecordMonitor()) {
                                       (track->recMonitor() ? monitorOnSVGIcon : monitorOffSVGIcon)->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
@@ -1731,6 +1734,26 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   }
                   break;
                 }
+
+            case COL_TRACK_IDX:
+                  mode = START_DRAG;  // Allow a track drag to start.
+                  if (button == Qt::LeftButton) {
+                        if (!ctrl) {
+                              MusEGlobal::song->selectAllTracks(false);
+                              t->setSelected(true);
+
+                              // rec enable track if expected
+                              MusECore::TrackList recd = getRecEnabledTracks();
+                              if (recd.size() == 1 && MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+                                MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
+                                MusEGlobal::song->setRecordFlag(t,true);
+                              }
+                              }
+                        else
+                              t->setSelected(!t->selected());
+                        MusEGlobal::song->update(SC_TRACK_SELECTION);
+                    }
+                  break;
 
             case COL_INPUT_MONITOR:
                   {

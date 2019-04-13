@@ -94,8 +94,7 @@ static void loadMDF(const QString& filepath, MetroAccentsPresetsMap* presetMap, 
         switch (token) {
               case Xml::Error:
               case Xml::End:
-                    f.close();
-                    return;
+                    goto loadMDF_end;
               case Xml::TagStart:
                     if (skipmode && tag == "muse")
                           skipmode = false;
@@ -110,14 +109,14 @@ static void loadMDF(const QString& filepath, MetroAccentsPresetsMap* presetMap, 
               case Xml::Attribut:
                     break;
               case Xml::TagEnd:
-                    if (!skipmode && tag == "muse") {
-                          f.close();
-                          return;
-                          }
+                    if (!skipmode && tag == "muse")
+                      goto loadMDF_end;
               default:
                     break;
               }
         }
+
+loadMDF_end:
   f.close();
 }
 

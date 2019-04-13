@@ -145,6 +145,11 @@ class Route {
       // Fill and return str char name representation.
       // preferred_name_or_alias (mainly for Jack routes): -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
       char* name(char* str, int str_size, int preferred_name_or_alias = -1) const;
+      // Returns a name suitable for display like "1:Track 5" where the number is the track's index in the track list.
+      // This is useful because in the case of importing a midi file we allow duplicate, often blank, names.
+      // This display string will help identify them. Like "1:", "2:" etc.
+      // preferred_name_or_alias (mainly for Jack routes): -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
+      QString displayName(int preferred_name_or_alias = -1) const;
       bool operator==(const Route&) const;
       // If the routes support channels, if the given route's channel is -1 meaning all channels, compare matches ONLY if this channel == -1, 
       //  and if the given route's channel is >= 0, compare matches on ANY channel. Useful for example finding router treeview items.

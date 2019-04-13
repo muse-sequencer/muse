@@ -145,7 +145,7 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
   // Is it an omnibus route?
   if(channel == -1)
   {
-    QAction* act = lb->addAction(route_track->name());
+    QAction* act = lb->addAction(route_track->displayName());
     act->setCheckable(true);
     MusECore::Route r(route_track, -1);
     act->setData(QVariant::fromValue(r));   
@@ -170,7 +170,7 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
     
 #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
     
-    QAction* act = lb->addAction(route_track->name());
+    QAction* act = lb->addAction(route_track->displayName());
     act->setCheckable(true);
     MusECore::Route r(route_track, -1);
     act->setData(QVariant::fromValue(r));   
@@ -223,7 +223,7 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
     
     // It's not an omnibus route. Add the individual channels...
     PopupMenu* subp = new PopupMenu(this, true);
-    subp->setTitle(route_track->name());
+    subp->setTitle(route_track->displayName());
     subp->addAction(new MenuTitleItem(tr("Channels"), this));
     QActionGroup* act_group = new QActionGroup(this);
     act_group->setExclusive(false);
@@ -346,7 +346,7 @@ void RoutePopupMenu::addMidiTracks(MusECore::Track* t, PopupMenu* pup, bool isOu
   for(MusECore::ciMidiTrack imt = mtracks->begin(); imt != mtracks->end(); ++imt)
   {
     MusECore::MidiTrack* const mt = *imt;
-    QAction* act = pup->addAction(mt->name());
+    QAction* act = pup->addAction(mt->displayName());
     act->setCheckable(true);
     const MusECore::Route r(mt, -1);
     act->setData(QVariant::fromValue(r));   
@@ -2208,7 +2208,7 @@ bool RoutePopupMenu::updateItemTexts(PopupMenu* menu)
       switch(r.type)
       {
         case MusECore::Route::JACK_ROUTE:
-          act->setText(r.name(MusEGlobal::config.preferredRouteNameOrAlias));
+          act->setText(r.displayName(MusEGlobal::config.preferredRouteNameOrAlias));
         break;
         
         case MusECore::Route::TRACK_ROUTE:
@@ -2328,7 +2328,7 @@ bool RoutePopupMenu::preferredPortAliasChanged()
       {
         case MusECore::Route::JACK_ROUTE:
         {
-          const QString rname = r.name(MusEGlobal::config.preferredRouteNameOrAlias);
+          const QString rname = r.displayName(MusEGlobal::config.preferredRouteNameOrAlias);
           if(act->text() != rname)
           {
             act->setText(rname);
@@ -3512,7 +3512,7 @@ void RoutePopupMenu::prepare()
             {
               // Add omni route:
               MusECore::Track* t = *ai;
-              act = subp->addAction(t->name());
+              act = subp->addAction(t->displayName());
               act->setCheckable(true);
               const MusECore::Route r(t, -1);
               act->setData(QVariant::fromValue(r));
@@ -3553,7 +3553,7 @@ void RoutePopupMenu::prepare()
               {
                 // Add omni route:
                 MusECore::Track* t = *ai;
-                act = subp->addAction(t->name());
+                act = subp->addAction(t->displayName());
                 act->setCheckable(true);
                 const MusECore::Route r(t, -1);
                 act->setData(QVariant::fromValue(r));   
@@ -3603,7 +3603,7 @@ void RoutePopupMenu::prepare()
               for (MusECore::ciAudioInput i = al->begin(); i != al->end(); ++i) 
               {
                 MusECore::Track* t = *i;
-                QString s(t->name());
+                QString s(t->displayName());
                 act = subp->addAction(s);
                 act->setCheckable(true);
                 MusECore::Route r(t, chbits);

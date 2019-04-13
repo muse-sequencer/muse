@@ -330,7 +330,12 @@ static void timebase_callback(jack_transport_state_t /* state */,
       //Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::song->cpos() : pos->frame, MusEGlobal::extSyncFlag.value() ? true : false);
       
       pos->valid = JackPositionBBT;
-      p.mbt(&pos->bar, &pos->beat, &pos->tick);
+      int bar, beat, tick;
+      p.mbt(&bar, &beat, &tick);
+      pos->bar = bar;
+      pos->beat = beat;
+      pos->tick = tick;
+
       pos->bar_start_tick = Pos(pos->bar, 0, 0).tick();
       pos->bar++;
       pos->beat++;

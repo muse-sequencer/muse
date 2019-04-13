@@ -1267,8 +1267,7 @@ bool readConfiguration(const char *configFile)
             switch (token) {
                   case Xml::Error:
                   case Xml::End:
-                        fclose(f);
-                        return true;
+                        goto read_conf_end;
                   case Xml::TagStart:
                         if (skipmode && tag == "muse")
                               skipmode = false;
@@ -1302,6 +1301,8 @@ bool readConfiguration(const char *configFile)
                         break;
                   }
             }
+
+read_conf_end:
       fclose(f);
       return true;
       }

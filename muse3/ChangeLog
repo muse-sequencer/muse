@@ -1,3 +1,19 @@
+12.04.2019
+      - Fixed midi import problem as reported in forums: (Tim)
+        Importing tracks with duplicate (often blank) names caused problems with
+         'drum_ordering' and 'route' song file sections since they refer to track names.
+        Re-wrote to use track indexes instead of track names.
+        Optimized and compacted the 'drum_ordering' section.
+      - Added new Arranger column 'Track Index'. Helps identify blank or duplicate track names.
+      - **Bumped up** song file version to 3.2, necessary for the new track header column.
+      - Added Track::displayName() and Route::displayName(). They return strings such as
+         "1:Track 5" and "2:" "3:" to help identify tracks.
+        All places displaying a track name, such as routing popup and dialog, now show
+         this 'augmented' display name to help identify blank or duplicate track names.
+      - Fixed many semantic, code-will-never-run, allocation, header-not-guarded,
+         and other problems as displayed by KDevelop Problems Reporter.
+      - Fixed Midi Input Transformator and Midi Transformator problems.
+        Problems creating/deleting presets. Tested all functions OK.
 25.03.2019
       - Fix issue 645 "Naming a track with acentuated letter". (Tim)
         Oops, regression from 07.01.2019: utf8 chars were corrupted.
