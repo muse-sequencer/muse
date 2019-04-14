@@ -22,7 +22,7 @@
 //
 //=========================================================
 
-#include <cmath>
+#include "muse_math.h"
 #include <set>
 #include <errno.h>
 #include <fcntl.h>
@@ -51,6 +51,10 @@
 #include "undo.h"
 #include "globals.h"
 #include "large_int.h"
+
+#ifdef _WIN32
+#define pipe(fds) _pipe(fds, 4096, _O_BINARY)
+#endif
 
 // Experimental for now - allow other Jack timebase masters to control our midi engine.
 // TODO: Be friendly to other apps and ask them to be kind to us by using jack_transport_reposition. 
@@ -187,10 +191,11 @@ Audio::Audio()
             }
       fromThreadFdw = filedes[1];
       fromThreadFdr = filedes[0];
+#ifndef _WIN32
       int rv = fcntl(fromThreadFdw, F_SETFL, O_NONBLOCK);
       if (rv == -1)
             perror("set pipe O_NONBLOCK");
-
+#endif
       if (pipe(filedes) == -1) {
             perror("creating pipe1");
             exit(-1);
@@ -217,7 +222,7 @@ bool Audio::start()
       state = STOP;
       _loopCount = 0;
       
-      MusEGlobal::muse->setHeartBeat();  
+      //MusEGlobal::muse->setHeartBeat();  // Moved below
       
       if (!MusEGlobal::audioDevice) {
           if(initJackAudio() == false) {
@@ -259,6 +264,10 @@ bool Audio::start()
       
       MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->cPos());   
       
+      // Should be OK to start this 'leisurely' timer only after everything
+      //  else has been started.
+      MusEGlobal::muse->setHeartBeat();
+      
       return true;
       }
 
@@ -269,6 +278,12 @@ bool Audio::start()
 
 void Audio::stop(bool)
       {
+      // Stop timer. Possible random crashes closing a song and loading another song - 
+      //  observed a few times in mixer strip timer handlers (updatexxx). Not sure how
+      //  (we're in the graphics thread), but in case something during loading runs
+      //  the event loop or something, this should at least not hurt. 2019/01/24 Tim.
+      MusEGlobal::muse->stopHeartBeat();
+
       if (MusEGlobal::audioDevice)
             MusEGlobal::audioDevice->stop();
       _running = false;
@@ -423,6 +438,9 @@ bool Audio::sync(int jackState, unsigned frame)
 
 bool Audio::startPreCount()
 {
+  MusECore::MetronomeSettings* metro_settings = 
+    MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
   // Since other Jack clients might also set the sync timeout at any time,
   //  we need to be constantly enforcing our desired limit!
   // Since setSyncTimeout() may not be realtime friendly (Jack driver),
@@ -431,10 +449,10 @@ bool Audio::startPreCount()
   // So whenever stop, start or seek occurs, we'll try to casually enforce the timeout in Song::seqSignal().
   // It's casual, unfortunately we can't set the EXACT timeout amount here when we really need to.
   
-  if (MusEGlobal::precountEnableFlag
+  if (metro_settings->precountEnableFlag
     && MusEGlobal::song->click()
     && !MusEGlobal::extSyncFlag.value()
-    && ((!MusEGlobal::song->record() && MusEGlobal::precountOnPlay) || MusEGlobal::song->record()))
+    && ((!MusEGlobal::song->record() && metro_settings->precountOnPlay) || MusEGlobal::song->record()))
   {
         DEBUG_MIDI_METRONOME(stderr, "state = PRECOUNT!\n");
         state = PRECOUNT;
@@ -444,14 +462,14 @@ bool Audio::startPreCount()
         MusEGlobal::sigmap.tickValues(curTickPos, &bar, &beat, &tick);
 
         int z, n;
-        if (MusEGlobal::precountFromMastertrackFlag)
+        if (metro_settings->precountFromMastertrackFlag)
               MusEGlobal::sigmap.timesig(curTickPos, z, n);
         else {
-              z = MusEGlobal::precountSigZ;
-              n = MusEGlobal::precountSigN;
+              z = metro_settings->precountSigZ;
+              n = metro_settings->precountSigN;
               }
         clickno       = 0;
-        int clicks_total = z * MusEGlobal::preMeasures;
+        int clicks_total = z * metro_settings->preMeasures;
         clicksMeasure = z;
         int ticks_beat     = (MusEGlobal::config.division * 4)/n;
         // The number of frames per beat in precount state.

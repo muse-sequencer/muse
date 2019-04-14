@@ -46,7 +46,7 @@
       <Patch name="Screamer" hbank="0" lbank="1" prog="41" />
       <Patch name="Paradise" hbank="0" lbank="1" prog="42" />
       <Patch name="Digital Touch" hbank="0" lbank="1" prog="43" />
-      <Patch name="Voice &amp;&amp; Bell" hbank="0" lbank="1" prog="44" />
+      <Patch name="Voice &amp; Bell" hbank="0" lbank="1" prog="44" />
       <Patch name="Resonant Synth" hbank="0" lbank="1" prog="45" />
       <Patch name="RhythmOfTheWave" hbank="0" lbank="1" prog="46" />
       <Patch name="Introspective" hbank="0" lbank="1" prog="47" />
@@ -77,7 +77,7 @@
       <Patch name="Midnight Run" hbank="0" lbank="0" prog="20" />
       <Patch name="African Sunset" hbank="0" lbank="0" prog="21" />
       <Patch name="Harmonic Motion" hbank="0" lbank="0" prog="22" />
-      <Patch name="Air Chorus&amp;&amp;Bell" hbank="0" lbank="0" prog="23" />
+      <Patch name="Air Chorus&amp;Bell" hbank="0" lbank="0" prog="23" />
       <Patch name="SunGlasses Kid" hbank="0" lbank="0" prog="24" />
       <Patch name="Stabby Horns" hbank="0" lbank="0" prog="25" />
       <Patch name="Soft EP w/Tine" hbank="0" lbank="0" prog="26" />
@@ -89,7 +89,7 @@
       <Patch name="Pressure Glass" hbank="0" lbank="0" prog="32" />
       <Patch name="Vox Arpeggios" hbank="0" lbank="0" prog="33" />
       <Patch name="Struck Bell" hbank="0" lbank="0" prog="34" />
-      <Patch name="Upright &amp;&amp; Oboe" hbank="0" lbank="0" prog="35" />
+      <Patch name="Upright &amp; Oboe" hbank="0" lbank="0" prog="35" />
       <Patch name="Refinery" hbank="0" lbank="0" prog="36" />
       <Patch name="Kick up da Bass" hbank="0" lbank="0" prog="37" />
       <Patch name="Syn Vox" hbank="0" lbank="0" prog="38" />
@@ -123,7 +123,7 @@
       <Patch name="Alpine Bells" hbank="0" lbank="0" prog="64" />
       <Patch name="The Big Brass" hbank="0" lbank="0" prog="65" />
       <Patch name="Gentle Winds" hbank="0" lbank="0" prog="66" />
-      <Patch name="String&amp;&amp;Woodwind" hbank="0" lbank="0" prog="67" />
+      <Patch name="String&amp;Woodwind" hbank="0" lbank="0" prog="67" />
       <Patch name="Rain Chiffs" hbank="0" lbank="0" prog="68" />
       <Patch name="Guitar Rez" hbank="0" lbank="0" prog="69" />
       <Patch name="ScrittiFunk" hbank="0" lbank="0" prog="70" />
@@ -132,7 +132,7 @@
       <Patch name="Sunday Morning" hbank="0" lbank="0" prog="73" />
       <Patch name="Split on Sunset" hbank="0" lbank="0" prog="74" />
       <Patch name="Brass Orchestra" hbank="0" lbank="0" prog="75" />
-      <Patch name="Digipno&amp;&amp;Breath" hbank="0" lbank="0" prog="76" />
+      <Patch name="Digipno&amp;Breath" hbank="0" lbank="0" prog="76" />
       <Patch name="LassieComeHome" hbank="0" lbank="0" prog="77" />
       <Patch name="MellowSquarePad" hbank="0" lbank="0" prog="78" />
       <Patch name="Antarctica" hbank="0" lbank="0" prog="79" />
@@ -169,7 +169,7 @@
       <Patch name="Snap Synth" hbank="1" lbank="0" prog="8" />
       <Patch name="The Wave Police" hbank="1" lbank="0" prog="9" />
       <Patch name="Piano Layers" hbank="1" lbank="0" prog="10" />
-      <Patch name="Harp &amp;&amp; Strings" hbank="1" lbank="0" prog="11" />
+      <Patch name="Harp &amp; Strings" hbank="1" lbank="0" prog="11" />
       <Patch name="CuCu Flute" hbank="1" lbank="0" prog="12" />
       <Patch name="Nylon Guitar" hbank="1" lbank="0" prog="13" />
       <Patch name="Sweet Fretless" hbank="1" lbank="0" prog="14" />
@@ -186,10 +186,10 @@
       <Patch name="Accordion" hbank="1" lbank="0" prog="25" />
       <Patch name="Soft Kalimba" hbank="1" lbank="0" prog="26" />
       <Patch name="Vel.DrumVocoder" hbank="1" lbank="0" prog="27" />
-      <Patch name="Fire &amp;&amp; Ice" hbank="1" lbank="0" prog="28" />
+      <Patch name="Fire &amp; Ice" hbank="1" lbank="0" prog="28" />
       <Patch name="Dr.Wave" hbank="1" lbank="0" prog="29" />
       <Patch name="The Piano Pad" hbank="1" lbank="0" prog="30" />
-      <Patch name="Fr.Horn&amp;&amp;Strings" hbank="1" lbank="0" prog="31" />
+      <Patch name="Fr.Horn&amp;Strings" hbank="1" lbank="0" prog="31" />
       <Patch name="Pan Flute" hbank="1" lbank="0" prog="32" />
       <Patch name="Solo Harp" hbank="1" lbank="0" prog="33" />
       <Patch name="Maxi Synth Bass" hbank="1" lbank="0" prog="34" />
@@ -198,8 +198,8 @@
       <Patch name="Tropical Forest" hbank="1" lbank="0" prog="37" />
       <Patch name="Brass Stabs" hbank="1" lbank="0" prog="38" />
       <Patch name="Rain Dance" hbank="1" lbank="0" prog="39" />
-      <Patch name="Bass&amp;&amp;PianoSplit" hbank="1" lbank="0" prog="40" />
-      <Patch name="Piano&amp;&amp;Strings8&apos;" hbank="1" lbank="0" prog="41" />
+      <Patch name="Bass&amp;PianoSplit" hbank="1" lbank="0" prog="40" />
+      <Patch name="Piano&amp;Strings8&apos;" hbank="1" lbank="0" prog="41" />
       <Patch name="OrchestralSplit" hbank="1" lbank="0" prog="42" />
       <Patch name="Catalina Island" hbank="1" lbank="0" prog="43" />
       <Patch name="Resonant Waves" hbank="1" lbank="0" prog="44" />

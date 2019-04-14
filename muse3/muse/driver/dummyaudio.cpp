@@ -22,11 +22,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
+#include "muse_math.h"
 #include <errno.h>
 #include <stdarg.h>
 #include <pthread.h>
+#ifndef _WIN32
 #include <sys/poll.h>
+#endif
 #include <sys/time.h>
 #include <unistd.h>
 
@@ -188,12 +190,21 @@ DummyAudioDevice::DummyAudioDevice() : AudioDevice()
       // Make sure the AL namespace variables mirror our variables.
       AL::sampleRate = MusEGlobal::sampleRate;
       MusEGlobal::segmentSize = MusEGlobal::config.deviceAudioBufSize;
+#ifdef _WIN32
+  buffer = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
+  if(buffer == NULL)
+  {
+      fprintf(stderr, "ERROR: DummyAudioDevice ctor: _aligned_malloc returned error: NULL. Aborting!\n");
+      abort();
+  }
+#else
       int rv = posix_memalign((void**)&buffer, 16, sizeof(float) * MusEGlobal::segmentSize);
       if(rv != 0)
       {
         fprintf(stderr, "ERROR: DummyAudioDevice ctor: posix_memalign returned error:%d. Aborting!\n", rv);
         abort();
       }
+#endif
       if(MusEGlobal::config.useDenormalBias)
       {
         for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)

@@ -111,7 +111,7 @@
             <Patch name="PickBass" hbank="63" lbank="0" prog="60"/>
             <Patch name="Fretless" hbank="63" lbank="0" prog="61"/>
             <Patch name="Slap" hbank="63" lbank="0" prog="62"/>
-            <Patch name="Fngr &amp;&amp; RW" hbank="63" lbank="0" prog="63"/>
+            <Patch name="Fngr &amp; RW" hbank="63" lbank="0" prog="63"/>
             <Patch name="1001 Sub" hbank="63" lbank="1" prog="0"/>
             <Patch name="Trancy" hbank="63" lbank="1" prog="1"/>
             <Patch name="Velo" hbank="63" lbank="1" prog="2"/>
@@ -162,7 +162,7 @@
             <Patch name="Fanfare" hbank="63" lbank="0" prog="78"/>
             <Patch name="MediumBrss" hbank="63" lbank="0" prog="79"/>
             <Patch name="Two Brass" hbank="63" lbank="0" prog="80"/>
-            <Patch name="Brass&amp;&amp;Sax" hbank="63" lbank="0" prog="81"/>
+            <Patch name="Brass&amp;Sax" hbank="63" lbank="0" prog="81"/>
             <Patch name="Dark Class" hbank="63" lbank="0" prog="82"/>
             <Patch name="Stereo Brs" hbank="63" lbank="0" prog="83"/>
             <Patch name="Trumpet" hbank="63" lbank="0" prog="84"/>
@@ -384,7 +384,7 @@
             <Patch name="[060/D12] Ba:Prec Bass" hbank="63" lbank="8" prog="59"/>
             <Patch name="[061/D13] Ba:Fing Sting" hbank="63" lbank="8" prog="60"/>
             <Patch name="[062/D14] Ba:FretlesAmp" hbank="63" lbank="8" prog="61"/>
-            <Patch name="[063/D15] Ba:Slap&amp;&amp;Pull" hbank="63" lbank="8" prog="62"/>
+            <Patch name="[063/D15] Ba:Slap&amp;Pull" hbank="63" lbank="8" prog="62"/>
             <Patch name="[064/D16] Co:Bs+Cmbal" hbank="63" lbank="8" prog="63"/>
             <Patch name="[065/E01] St:Big Sction" hbank="63" lbank="8" prog="64"/>
             <Patch name="[066/E02] St:EnsemblMix" hbank="63" lbank="8" prog="65"/>
@@ -721,10 +721,10 @@
             <Patch name="[039/C07] Co:Club Blues" hbank="63" lbank="64" prog="38"/>
             <Patch name="[040/C08] Dr:Drumantics" hbank="63" lbank="64" prog="39"/>
             <Patch name="[041/C09] Co:Fairy Dust" hbank="63" lbank="64" prog="40"/>
-            <Patch name="[042/C10] Co:Piano&amp;&amp;Str." hbank="63" lbank="64" prog="41"/>
+            <Patch name="[042/C10] Co:Piano&amp;Str." hbank="63" lbank="64" prog="41"/>
             <Patch name="[043/C11] Co:Bavarian" hbank="63" lbank="64" prog="42"/>
             <Patch name="[044/C12] Co:SlowGroove" hbank="63" lbank="64" prog="43"/>
-            <Patch name="[045/C13] Co:Bell&amp;&amp;Str" hbank="63" lbank="64" prog="44"/>
+            <Patch name="[045/C13] Co:Bell&amp;Str" hbank="63" lbank="64" prog="44"/>
             <Patch name="[046/C14] Co:Rezzies" hbank="63" lbank="64" prog="45"/>
             <Patch name="[047/C15] Co:Classical2" hbank="63" lbank="64" prog="46"/>
             <Patch name="[048/C16] Se:911 Call" hbank="63" lbank="64" prog="47"/>
@@ -800,7 +800,7 @@
             <Patch name="[118/H06] --:Drum’nBass" hbank="63" lbank="64" prog="117"/>
             <Patch name="[119/H07] --:HipHop" hbank="63" lbank="64" prog="118"/>
             <Patch name="[120/H08] --:Reggae" hbank="63" lbank="64" prog="119"/>
-            <Patch name="[121/H09] --:R&amp;&amp;B" hbank="63" lbank="64" prog="120"/>
+            <Patch name="[121/H09] --:R&amp;B" hbank="63" lbank="64" prog="120"/>
             <Patch name="[122/H10] --:India" hbank="63" lbank="64" prog="121"/>
             <Patch name="[123/H11] --:Salsa" hbank="63" lbank="64" prog="122"/>
             <Patch name="[124/H12] --:Gamelan" hbank="63" lbank="64" prog="123"/>

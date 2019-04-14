@@ -26,7 +26,7 @@
 
 #include <stdio.h>
 #include "knob.h"
-#include <cmath>
+#include "muse_math.h"
 #include "mmath.h"
 
 #include <QPainter>

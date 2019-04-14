@@ -25,7 +25,7 @@
 
 #include <stdio.h>
 #include <limits.h>
-#include <math.h>
+#include "muse_math.h"
 
 #include <QComboBox>
 #include <QGridLayout>
@@ -174,6 +174,7 @@ Arranger::custom_col_t Arranger::readOneCustomColumn(MusECore::Xml& xml)
 
 void Arranger::setHeaderToolTips()
       {
+      header->setToolTip(COL_TRACK_IDX,  tr("Track index"));
       header->setToolTip(COL_INPUT_MONITOR, tr("Enable input monitor"));
       header->setToolTip(COL_RECORD,     tr("Enable Recording"));
       header->setToolTip(COL_MUTE,       tr("Mute/Off Indicator"));
@@ -195,6 +196,7 @@ void Arranger::setHeaderToolTips()
 
 void Arranger::setHeaderWhatsThis()
       {
+      header->setWhatsThis(COL_TRACK_IDX, tr("Track index"));
       header->setWhatsThis(COL_INPUT_MONITOR, tr("Enable input monitor. Click to toggle.\nPasses input through to output for monitoring.\n"
                                                  "See also Settings: Automatically Monitor On Record Arm."));
       header->setWhatsThis(COL_RECORD,   tr("Enable recording. Click to toggle.\n"
@@ -402,6 +404,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       QFontMetrics fm1 = header->fontMetrics();
       int fw = 11;
 
+      header->setColumnLabel(tr("#"), COL_TRACK_IDX, 10);
+      //header->setColumnLabel(QString(), COL_TRACK_IDX);
       header->setColumnLabel(tr("I"), COL_INPUT_MONITOR);
       header->setColumnLabel(tr("R"), COL_RECORD);
       header->setColumnLabel(tr("M"), COL_MUTE);
@@ -416,6 +420,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       for (unsigned i=0;i<custom_columns.size();i++)
         header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET+i, MAX(fm1.width(custom_columns[i].name)+fw, 30));
 
+      //header->resizeSection(COL_TRACK_IDX, fm1.width(header->columnLabel(COL_TRACK_IDX)) + fw);
       header->resizeSection(COL_INPUT_MONITOR, fm1.width(header->columnLabel(COL_INPUT_MONITOR)) + fw);
       header->resizeSection(COL_RECORD, fm1.width(header->columnLabel(COL_RECORD)) + fw);
       header->resizeSection(COL_MUTE, fm1.width(header->columnLabel(COL_MUTE)) + fw);
@@ -424,6 +429,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       header->resizeSection(COL_OCHANNEL, fm1.width(header->columnLabel(COL_OCHANNEL)) + fw);
       header->resizeSection(COL_TIMELOCK, fm1.width(header->columnLabel(COL_TIMELOCK)) + fw);
 
+      header->setSectionResizeMode(COL_TRACK_IDX, QHeaderView::Interactive);
       header->setSectionResizeMode(COL_INPUT_MONITOR, QHeaderView::Fixed);
       header->setSectionResizeMode(COL_RECORD, QHeaderView::Fixed);
       header->setSectionResizeMode(COL_MUTE, QHeaderView::Fixed);
@@ -647,6 +653,7 @@ void Arranger::setHeaderSizes()
 {
   QFontMetrics fm1(header->font());
   int fw = 11;
+  //header->resizeSection(COL_TRACK_IDX, fm1.width(header->columnLabel(COL_TRACK_IDX)) + fw);
   header->resizeSection(COL_INPUT_MONITOR, fm1.width(header->columnLabel(COL_INPUT_MONITOR)) + fw);
   header->resizeSection(COL_RECORD, fm1.width(header->columnLabel(COL_RECORD)) + fw);
   header->resizeSection(COL_MUTE, fm1.width(header->columnLabel(COL_MUTE)) + fw);

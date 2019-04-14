@@ -25,12 +25,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#ifdef _WIN32
+#include "poll.h"
+#include "poll_win.c"
+#else
 #include <sys/mman.h>
 #include <sys/poll.h>
+#endif
 #include <fcntl.h>
 
 #include "globals.h"
 #include "errno.h"
+
+#ifdef _WIN32
+#define pipe(fds) _pipe(fds, 4096, _O_BINARY)
+#endif
 
 namespace MusECore {
 
@@ -250,11 +259,12 @@ void Thread::removePollFd(int fd, int action)
 
 void Thread::loop()
       {
+#ifndef _WIN32
       if (!MusEGlobal::debugMode) {
             if (mlockall(MCL_CURRENT | MCL_FUTURE))
                   perror("WARNING: Cannot lock memory:");
             }
-      
+#endif
 #ifdef __APPLE__
 #define BIG_ENOUGH_STACK (1024*256*1)
 #else

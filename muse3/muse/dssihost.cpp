@@ -134,6 +134,7 @@ void initDSSI()
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
       break;

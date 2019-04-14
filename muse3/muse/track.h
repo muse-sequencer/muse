@@ -262,6 +262,10 @@ class Track {
       virtual void setName(const QString& s)  { _name = s; }
       // setNameText just sets the text, while setName can be overloaded to do other things like setting port names.
       void setNameText(const QString& s)  { _name = s; }
+      // Returns a name suitable for display like "1:Track 5" where the number is the track's index in the track list.
+      // This is useful because in the case of importing a midi file we allow duplicate, often blank, names.
+      // This display string will help identify them. Like "1:", "2:" etc.
+      QString displayName() const;
 
       TrackType type() const          { return _type; }
       void setType(TrackType t)       { _type = t; }
@@ -1138,17 +1142,21 @@ template<class T> class tracklist : public std::vector<Track*> {
       bool contains(const Track* t) const {
             return std::find(begin(), end(), t) != end();
             }
-      unsigned index(const Track* t) const {
-            unsigned n = 0;
+      int index(const Track* t) const {
+            int n = 0;
             for (vlist::const_iterator i = begin(); i != end(); ++i, ++n) {
                   if (*i == t)
                         return n;
                   }
             return -1;
             }
-      T index(int k) const           { return (*this)[k]; }
+      T index(int k) const {
+            if (k < 0 || k >= (int)size())
+                  return nullptr;
+            return (*this)[k];
+            }
       iterator index2iterator(int k) {
-            if ((unsigned)k >= size())
+            if (k < 0 || k >= (int)size())
                   return end();
             return begin() + k;
             }

@@ -28,7 +28,7 @@
 #include "xml.h"
 #include "wave.h"
 #include <iostream>
-#include <math.h>
+#include "muse_math.h"
 
 // Added by Tim. p3.3.18
 //#define USE_SAMPLERATE

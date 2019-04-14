@@ -23,10 +23,13 @@
 
 #include <stdio.h>
 #include <sys/stat.h>
+#ifdef _WIN32
+#include "mman.h"
+#else
 #include <sys/mman.h>
+#endif
 #include <errno.h>
 #include <limits.h>
-#include <math.h>
 #include <map>
 #include <assert.h>
 
@@ -40,6 +43,7 @@
 #include <QMimeData>
 #include <QDrag>
 
+#include "muse_math.h"
 #include "fastlog.h"
 #include "components/tools.h"
 #include "arranger.h"
@@ -67,7 +71,6 @@
 #include "dialogs.h"
 #include "components/pastedialog.h"
 #include "undo.h"
-#include "muse_math.h"
 
 using MusECore::Undo;
 using MusECore::UndoOp;
@@ -347,12 +350,12 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
     MusECore::Track* track    = npart->track();
     MusECore::Track* dtrack=NULL;
     unsigned dtick  = newpos.x(); // FIXME TODO make subtick-compatible!
-    unsigned ntrack = y2pitch(item->mp().y());
+    int ntrack = y2pitch(item->mp().y());
     MusECore::Track::TrackType type = track->type();
     if (tracks->index(track) == ntrack && (dtick == spart->tick())) {
         return false;
     }
-    if (ntrack >= tracks->size()) {
+    if (ntrack >= (int)tracks->size()) {
         ntrack = tracks->size();
         if (MusEGlobal::debugMsg)
             printf("PartCanvas::moveItem - add new track\n");
@@ -747,11 +750,11 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       partPopup->addAction(new MenuTitleItem(tr("Part:"), partPopup));
 
       QAction *act_cut = partPopup->addAction(*editcutIconSet, tr("C&ut"));
-      act_cut->setData(4);
+      act_cut->setData(OP_CUT);
       act_cut->setShortcut(Qt::CTRL+Qt::Key_X);
 
       QAction *act_copy = partPopup->addAction(*editcopyIconSet, tr("&Copy"));
-      act_copy->setData(5);
+      act_copy->setData(OP_COPY);
       act_copy->setShortcut(Qt::CTRL+Qt::Key_C);
 
       partPopup->addSeparator();
@@ -761,30 +764,30 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
         st += (QString().setNum(rc) + QString(" "));
       st += QString(tr("clones"));
       QAction *act_select = partPopup->addAction(st);
-      act_select->setData(18);
+      act_select->setData(OP_SELECT_CLONES);
 
       partPopup->addSeparator();
       QAction *act_rename = partPopup->addAction(tr("rename"));
-      act_rename->setData(0);
+      act_rename->setData(OP_RENAME);
 
       QMenu* colorPopup = partPopup->addMenu(tr("color"));
 
       // part color selection
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
             QAction *act_color = colorPopup->addAction(MusECore::colorRect(MusEGlobal::config.partColors[i], 80, 80), MusEGlobal::config.partColorNames[i]);
-            act_color->setData(20+i);
+            act_color->setData(OP_PARTCOLORBASE+i);
             }
 
-      QAction *act_delete = partPopup->addAction(QIcon(*deleteIcon), tr("delete")); // ddskrjo added QIcon to all
-      act_delete->setData(1);
+      QAction *act_delete = partPopup->addAction(QIcon(*deleteIcon), tr("delete"));
+      act_delete->setData(OP_DELETE);
       QAction *act_split = partPopup->addAction(QIcon(*cutIcon), tr("split"));
-      act_split->setData(2);
+      act_split->setData(OP_SPLIT);
       QAction *act_glue = partPopup->addAction(QIcon(*glueIcon), tr("glue"));
-      act_glue->setData(3);
+      act_glue->setData(OP_GLUE);
       QAction *act_superglue = partPopup->addAction(QIcon(*glueIcon), tr("super glue (merge selection)"));
-      act_superglue->setData(6);
+      act_superglue->setData(OP_GLUESELECTION);
       QAction *act_declone = partPopup->addAction(tr("de-clone"));
-      act_declone->setData(15);
+      act_declone->setData(OP_DECLONE);
 
       partPopup->addSeparator();
       switch(trackType) {
@@ -794,7 +797,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
 //                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startScoreEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
                   QAction *act_mexport = partPopup->addAction(tr("save part to disk"));
-                  act_mexport->setData(16);
+                  act_mexport->setData(OP_SAVEPARTTODISK);
                   }
                   break;
             case MusECore::Track::NEW_DRUM:
@@ -802,18 +805,18 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startDrumEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
                   QAction *act_dexport = partPopup->addAction(tr("save part to disk"));
-                  act_dexport->setData(16);
+                  act_dexport->setData(OP_SAVEPARTTODISK);
                   }
                   break;
             case MusECore::Track::WAVE: {
                   QAction *act_wedit = partPopup->addAction(QIcon(*edit_waveIcon), tr("wave edit"));
-                  act_wedit->setData(14);
+                  act_wedit->setData(OP_WAVEEDIT);
                   QAction *act_wexport = partPopup->addAction(tr("save part to disk"));
-                  act_wexport->setData(16);
+                  act_wexport->setData(OP_SAVEPARTTODISK);
                   QAction *act_wfinfo = partPopup->addAction(tr("file info"));
-                  act_wfinfo->setData(17);
+                  act_wfinfo->setData(OP_FILEINFO);
                   QAction *act_wfnorm = partPopup->addAction(tr("Normalize"));
-                  act_wfnorm->setData(19);
+                  act_wfnorm->setData(OP_NORMALIZE);
                   act_wfnorm->setShortcut(Qt::CTRL+Qt::Key_N);
                   }
                   break;
@@ -834,10 +837,24 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       return partPopup;
       }
 
+void PartCanvas::renameItem(CItem *item)
+{
+  editPart = (NPart*)(item);
+  QRect r = map(curItem->bbox());
+  if (lineEditor == 0) {
+    lineEditor = new QLineEdit(this);
+    lineEditor->setFrame(true);
+    connect(lineEditor, SIGNAL(editingFinished()),SLOT(returnPressed()));
+  }
+  lineEditor->setText(editPart->name());
+  lineEditor->setFocus();
+  lineEditor->show();
+  lineEditor->setGeometry(r);
+  editMode = true;
+}
 //---------------------------------------------------------
 //   itemPopup
 //---------------------------------------------------------
-
 void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
 {
    if(n >= TOOLS_ID_BASE)
@@ -850,46 +867,33 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
    NPart* npart = (NPart*)(item);
    pl->add(npart->part());
    switch(n) {
-   case 0:     // rename
-   {
-      editPart = npart;
-      QRect r = map(curItem->bbox());
-      if (lineEditor == 0) {
-         lineEditor = new QLineEdit(this);
-         lineEditor->setFrame(true);
-         connect(lineEditor, SIGNAL(editingFinished()),SLOT(returnPressed()));
-      }
-      lineEditor->setText(editPart->name());
-      lineEditor->setFocus();
-      lineEditor->show();
-      lineEditor->setGeometry(r);
-      editMode = true;
-   }
+   case OP_RENAME:     // rename
+     renameItem(item);
       break;
-   case 1:     // delete
+   case OP_DELETE:     // delete
       deleteItem(item);
       break;
-   case 2:     // split
+   case OP_SPLIT:     // split
       splitItem(item, pt);
       break;
-   case 3:     // glue
+   case OP_GLUE:     // glue
       glueItem(item);
       break;
-   case 4:
+   case OP_CUT:
       copy(pl);
       MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeletePart, npart->part()));
       break;
-   case 5:
+   case OP_COPY:
       copy(pl);
       break;
-   case 6:
+   case OP_GLUESELECTION:
       MusECore::merge_selected_parts();
       break;
 
-   case 14:    // wave edit
+   case OP_WAVEEDIT:    // wave edit
       emit startEditor(pl, 4);
       return;
-   case 15:    // declone
+   case OP_DECLONE:    // declone
    {
       MusECore::Part* spart  = npart->part();
       MusECore::Part* dpart  = spart->duplicate(); // dpart will not be member of any clone chain!
@@ -900,7 +904,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
       MusEGlobal::song->applyOperationGroup(operations);
       break;
    }
-   case 16: // Export to file
+   case OP_SAVEPARTTODISK: // Export to file
    {
       const MusECore::Part* part = item->part();
       bool popenFlag = false;
@@ -918,7 +922,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
       break;
    }
 
-   case 17: // File info
+   case OP_FILEINFO: // File info
    {
       MusECore::Part* p = item->part();
       QString str = tr("Part name: %1\nFiles:").arg(p->name());
@@ -936,7 +940,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
       QMessageBox::information(this, "File info", str, "Ok", 0);
       break;
    }
-   case 18: // Select clones
+   case OP_SELECT_CLONES: // Select clones
    {
       MusECore::Part* part = item->part();
 
@@ -959,12 +963,12 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
 
       break;
    }
-   case 19: // Normalize
+   case OP_NORMALIZE: // Normalize
    {
       MusEGlobal::song->normalizeWaveParts(item->part());
       break;
    }
-   case 20 ... NUM_PARTCOLORS+20:
+   case OP_PARTCOLORBASE ... NUM_PARTCOLORS+20:
    {
       curColorIndex = n - 20;
       bool selfound = false;
@@ -1473,6 +1477,11 @@ void PartCanvas::keyPress(QKeyEvent* event)
                   }
                   emit trackChanged(track);
             }
+      else if (key == shortcuts[SHRT_RENAME_PART].key && curItem) {
+        if (singleSelection) {
+          renameItem(curItem);
+        }
+      }
       else if (key == shortcuts[SHRT_EDIT_PART].key && curItem) { //This should be the other way around - singleSelection first.
             if (!singleSelection) {
                   event->ignore();

@@ -27,6 +27,7 @@ include(CheckIncludeFile)
 include(CheckIncludeFiles)
 include (CheckCSourceCompiles)
 include(cmake/Summary.cmake)
+include(CheckCXXSymbolExists)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4.1)
 if (COMMAND cmake_policy)
@@ -95,11 +96,11 @@ set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # The MusE version number.
 SET(MusE_VERSION_MAJOR 3)
-SET(MusE_VERSION_MINOR 0)
-SET(MusE_VERSION_PATCH 1)
-SET(MusE_VERSION       "3.0.2")
-SET(MusE_VERSION_FULL  "3.0.2")
-SET(MusE_INSTALL_NAME  "muse-3.0")
+SET(MusE_VERSION_MINOR 1)
+SET(MusE_VERSION_PATCH 0)
+SET(MusE_VERSION       "3.1.0pre1")
+SET(MusE_VERSION_FULL  "3.1.0pre1")
+SET(MusE_INSTALL_NAME  "muse-3.1")
 SET(MusE_EXEC_NAME     "muse3")
 
 SET(MusE_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
@@ -192,6 +193,13 @@ else (APPLE)
 	endif(UNIX)
 
 endif (APPLE)
+
+##
+##  look for thread support
+##
+
+set(CMAKE_THREAD_PREFER_PTHREAD On)
+find_package(Threads REQUIRED)
 
 ##
 ##  look for Qt5
@@ -292,6 +300,13 @@ include_directories(${JACK_INCLUDE_DIRS})
 ##   Begin OPTIONAL packages...
 ##
 
+# Check for GNU-specific math support:
+check_cxx_symbol_exists(exp10 cmath HAVE_EXP10)
+check_cxx_symbol_exists(exp10f cmath HAVE_EXP10F)
+check_cxx_symbol_exists(exp10l cmath HAVE_EXP10L)
+# FIXME On MingW this is saying yes but later M_PI is not found!
+# check_cxx_symbol_exists(M_PI cmath HAVE_M_PI)
+
 ##
 ## alsa >= 0.9.0
 ##
@@ -344,7 +359,7 @@ else (ENABLE_LRDF)
 endif (ENABLE_LRDF)
 
 if (ENABLE_RTAUDIO)
-      PKG_CHECK_MODULES(RTAUDIO rtaudio>=5.0)
+      PKG_CHECK_MODULES(RTAUDIO rtaudio>=4.0)
       if (RTAUDIO_FOUND)
             include_directories(${RTAUDIO_INCLUDE_DIRS})
             set(HAVE_RTAUDIO ON)

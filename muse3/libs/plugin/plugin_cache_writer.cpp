@@ -23,9 +23,11 @@
 
 #include <QDir>
 #include <QTemporaryFile>
+#include <QDateTime>
 #include <QFile>
 #include <QFileInfo>
 #include <QFileInfoList>
+#include <QFileDevice>
 #include <QProcess>
 #include <QByteArray>
 #include <QByteArrayList>
@@ -34,12 +36,12 @@
 #include <QStringListIterator>
 #include <sys/stat.h>
 
-// For sorting port enum values.
 #include <map>
   
 #include <cstdio>
 #include <cstring>
-#include <cmath>
+#include <cstdint>
+#include "muse_math.h"
 
 #include "plugin_rdf.h"
 #include "plugin_cache_writer.h"
@@ -107,19 +109,6 @@
 //#define PORTS_ARE_SINGLE_LINE_TAGS 1
 
 namespace MusEPlugin {
-
-static void setPluginScanFileInfo(const char* filename, PluginScanInfoStruct* info)
-{
-  if(!filename || !filename[0])
-    return;
-  const QFileInfo fi(filename);
-  info->_completeBaseName = PLUGIN_SET_QSTRING(fi.completeBaseName());
-  info->_baseName         = PLUGIN_SET_QSTRING(fi.baseName());
-  info->_suffix           = PLUGIN_SET_QSTRING(fi.suffix());
-  info->_completeSuffix   = PLUGIN_SET_QSTRING(fi.completeSuffix());
-  info->_absolutePath     = PLUGIN_SET_QSTRING(fi.absolutePath());
-  info->_path             = PLUGIN_SET_QSTRING(fi.path());
-}
 
 bool scanLadspaPorts(
   const LADSPA_Descriptor* ladspa_descr,
@@ -512,6 +501,7 @@ bool scanMessDescriptor(const char* filename, const MESS* mess_descr, PluginScan
   info->_uniqueID = 0;
 
   //info->_label = MusEPlugin::setString(mess_descr->Label);
+  info->_label = PLUGIN_SET_CSTRING(mess_descr->name);
   info->_name = PLUGIN_SET_CSTRING(mess_descr->name);
   //info->_maker = MusEPlugin::setString(mess_descr->Maker);
   //info->_copyright = MusEPlugin::setString(mess_descr->Copyright);
@@ -1111,6 +1101,8 @@ bool scanLinuxVstDescriptor(const char* filename, AEffect *plugin, long int id, 
     //info->_description = info._completeBaseName;
     info->_description = info->_label;
 
+  info->_name = info->_label;
+  
   // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
   vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
   
@@ -1296,6 +1288,24 @@ bool writeLinuxVstInfo(
 #endif // VST_NATIVE_SUPPORT
 
 //---------------------------------------------------------
+//   writeUnknownPluginInfo
+//---------------------------------------------------------
+
+bool writeUnknownPluginInfo (
+  const char* filename,
+  int level,
+  MusECore::Xml& xml)
+{
+  PluginScanInfoStruct info;
+  setPluginScanFileInfo(filename, &info);
+  info._type = PluginScanInfoStruct::PluginTypeUnknown;
+  //info._fileIsBad = true;
+  writePluginScanInfo(level, xml, info, false);
+  
+  return true;
+}
+
+//---------------------------------------------------------
 //   writePluginScanInfo
 //---------------------------------------------------------
 
@@ -1308,6 +1318,11 @@ void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStru
       if(!PLUGIN_STRING_EMPTY(info._uri))
         xml.strTag(level, "uri", PLUGIN_GET_CSTRING(info._uri));
 
+      if(info._fileTime != 0)
+        xml.longLongTag(level, "filetime", info._fileTime);
+      if(info._fileIsBad)
+        xml.intTag(level, "fileIsBad", info._fileIsBad);
+      
       xml.intTag(level, "type", info._type);
       xml.intTag(level, "class", info._class);
       if(info._uniqueID != 0)
@@ -1536,25 +1551,29 @@ static bool pluginScan(
 
   process.start(prog, args);
 
+  bool fail = false;
+  
 //   if(!process.waitForStarted(4000))
 //   {
 //     std::fprintf(stderr, "pluginScan: waitForStarted failed\n");
-//     return false;
+// //     return false;
+//     fail = true;
 //   }
 
 //   if(!process.waitForReadyRead(4000))
 //   {
 //     std::fprintf(stderr, "pluginScan: waitForReadyRead failed\n");
-//     return false;
+// //     return false;
+//     fail = true;
 //   }
 
-  if(!process.waitForFinished(4000))
+  if(!process.waitForFinished(9000))
   {
     std::fprintf(stderr, "\npluginScan FAILED: waitForFinished: file: %s\n\n", filename_ba.constData());
-    return false;
+    fail = true;
   }
 
-  if(debugStdErr)
+  if(!fail && debugStdErr)
   {
     QByteArray out_array = process.readAllStandardOutput();
     if(!out_array.isEmpty() && out_array.at(0) != 0)
@@ -1575,45 +1594,65 @@ static bool pluginScan(
   if(process.exitStatus() != QProcess::NormalExit)
   {
     std::fprintf(stderr, "\npluginScan FAILED: Scan not exited normally: file: %s\n\n", filename_ba.constData());
-    return false;
+    fail = true;
   }
 
   if(process.exitCode() != 0)
   {
     std::fprintf(stderr, "\npluginScan FAILED: Scan exit code not 0: file: %s\n\n", filename_ba.constData());
-    return false;
+    fail = true;
   }
   
-  // Open the temp file again...
-  QFile infile(tmpfilename);
-  if(!infile.exists())
+  if(!fail)
   {
-    std::fprintf(stderr, "\npluginScan FAILED: Temporary file does not exist: %s\n\n", tmpfilename_ba.constData());
-    return false;
-  }
-  if(!infile.open(QIODevice::ReadOnly /*| QIODevice::Text*/))
-  {
-    std::fprintf(stderr, "\npluginScan FAILED: Could not re-open temporary output file: %s\n\n",
-                 tmpfilename_ba.constData());
-    return false;
-  }
-  
-  // Create an xml object based on the file.
-  MusECore::Xml xml(&infile);
-  
-  // Read the list of plugins found in the xml.
-  // For now we don't supply a separate scanEnums flag in pluginScan(), so just use scanPorts instead.
-  if(readPluginScan(xml, list, scanPorts, scanPorts))
-  {
-    std::fprintf(stderr, "\npluginScan FAILED: On readPluginScan(): file: %s\n\n", filename_ba.constData());
-  }
+    // Open the temp file again...
+    QFile infile(tmpfilename);
+    if(!infile.exists())
+    {
+      std::fprintf(stderr, "\npluginScan FAILED: Temporary file does not exist: %s\n\n", tmpfilename_ba.constData());
+      fail = true;
+    }
+    if(!fail && !infile.open(QIODevice::ReadOnly /*| QIODevice::Text*/))
+    {
+      std::fprintf(stderr, "\npluginScan FAILED: Could not re-open temporary output file: %s\n\n",
+                  tmpfilename_ba.constData());
+      fail = true;
+    }
+    
+    if(!fail)
+    {
+      // Create an xml object based on the file.
+      MusECore::Xml xml(&infile);
+      
+      // Read the list of plugins found in the xml.
+      // For now we don't supply a separate scanEnums flag in pluginScan(), so just use scanPorts instead.
+      if(readPluginScan(xml, list, scanPorts, scanPorts))
+      {
+        std::fprintf(stderr, "\npluginScan FAILED: On readPluginScan(): file: %s\n\n", filename_ba.constData());
+        fail = true;
+      }
 
-  // Close the temp file.
-  infile.close();
+      // Close the temp file.
+      infile.close();
+      
+      // Now going out of scope destroys the temporary file...
+      if(!fail)
+        return true;
+    }
+  }
   
-  // Now going out of scope destroys the temporary file...
-  
-  return true;
+  //---------------------------------------------------------------
+  // Plugin failed scanning. Add it to the list but mark it as bad!
+  //---------------------------------------------------------------
+
+  PluginScanInfoStruct info;
+  setPluginScanFileInfo(filename, &info);
+  info._type = PluginScanInfoStruct::PluginTypeUnknown;
+  info._fileIsBad = true;
+  // We must include all plugins.
+  list->add(new PluginScanInfo(info));
+
+  return false;
 }
 
 //---------------------------------------------------------
@@ -1691,22 +1730,26 @@ void scanMessPlugins(const QString& museGlobalLib, PluginScanList* list, bool sc
 //   scanDssiPlugins
 //---------------------------------------------------------
 
+#ifdef DSSI_SUPPORT
 void scanDssiPlugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
 {
-  #ifdef DSSI_SUPPORT
   QStringList sl = pluginGetDssiDirectories();
   for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
     scanPluginDir(*it, PluginScanInfoStruct::PluginTypeAll, list, scanPorts, debugStdErr);
-  #endif
 }
+#else // No DSSI_SUPPORT
+void scanDssiPlugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*debugStdErr*/)
+{
+}
+#endif // DSSI_SUPPORT
 
 //---------------------------------------------------------
 //   scanLinuxVSTPlugins
 //---------------------------------------------------------
 
+#ifdef VST_NATIVE_SUPPORT
 void scanLinuxVSTPlugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
 {
-#ifdef VST_NATIVE_SUPPORT
   #ifdef VST_VESTIGE_SUPPORT
     std::fprintf(stderr, "Initializing Native VST support. Using VESTIGE compatibility implementation.\n");
   #else
@@ -1718,8 +1761,12 @@ void scanLinuxVSTPlugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
   QStringList sl = pluginGetLinuxVstDirectories();
   for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
     scanPluginDir(*it, PluginScanInfoStruct::PluginTypeAll, list, scanPorts, debugStdErr);
-  #endif
 }
+#else
+void scanLinuxVSTPlugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*debugStdErr*/)
+{
+}
+#endif // VST_NATIVE_SUPPORT
 
 #ifdef LV2_SUPPORT
 
@@ -2293,16 +2340,24 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
 //   scanLv2Plugins
 //---------------------------------------------------------
 
+#ifdef LV2_SUPPORT
 void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
 {
-  #ifdef LV2_SUPPORT
-  
   std::set<std::string> supportedFeatures;
   
-  for(unsigned long int i = 0; i < SIZEOF_ARRAY(lv2Features); i++)
+  // REMOVE Tim. lv2. Added.
+  //LV2_Feature* feats[SIZEOF_ARRAY(lv2Features) + 1];
+ 
+  unsigned long int feat = 0;
+  for(; feat < SIZEOF_ARRAY(lv2Features); feat++)
   {
-    supportedFeatures.insert(lv2Features [i].URI);
+    // REMOVE Tim. lv2. Added.
+    //feats[feat] = &lv2Features[feat];
+
+    supportedFeatures.insert(lv2Features [feat].URI);
   }
+  // REMOVE Tim. lv2. Added.
+  //feats[feat] = nullptr;
   
   LilvWorld *lilvWorld = 0;
   lilvWorld = lilv_world_new();
@@ -2358,6 +2413,21 @@ void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
         continue;
     }
 
+    // REMOVE Tim. lv2. Added.
+//     // Test instantiating the plugin. TODO: Maybe try to pass the correct sample rate.
+//     LilvInstance* handle = lilv_plugin_instantiate(plugin, 44100, feats);
+//     if(!handle)
+//     {
+//         pit = lilv_plugins_next(plugins, pit);
+//         continue;
+//     }
+//     //
+//     // TODO: Maybe do some stuff with the plugin.
+//     //
+//     // No crash so far. Done with instance. Close it - free it.
+//     lilv_instance_free(handle);
+    
+    // Now go ahead and scan the textual descriptions of the plugin.
     scanLv2Plugin(plugin, list, supportedFeatures, scanPorts, debugStdErr);
     
     pit = lilv_plugins_next(plugins, pit);
@@ -2369,10 +2439,12 @@ void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
     
   lilv_world_free(lilvWorld);
   lilvWorld = NULL;
-
-  
-  #endif // LV2_SUPPORT
 }
+#else
+void scanLv2Plugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*debugStdErr*/)
+{
+}
+#endif // LV2_SUPPORT
 
 //---------------------------------------------------------
 //   scanAllPlugins
@@ -2404,6 +2476,268 @@ void scanAllPlugins(
   if(types & (PluginScanInfoStruct::PluginTypeLV2))
     // Now do LV2 plugins...
     scanLv2Plugins(list, scanPorts, debugStdErr);
+}
+
+typedef std::map<QString, std::int64_t, std::less<QString> > filepath_set;
+typedef std::pair<QString, std::int64_t> filepath_set_pair;
+
+//---------------------------------------------------------
+//   findPluginFilesDir
+//   This might be called recursively!
+//---------------------------------------------------------
+
+static QString findPluginFilesDir(
+  const QString& dirname,
+  PluginScanInfoStruct::PluginType_t types,
+  filepath_set& fplist,
+  bool debugStdErr,
+  // Only for recursions, original top caller should not touch!
+  int recurseLevel = 0
+)
+{
+  const int max_levels = 10;
+  if(recurseLevel >= max_levels)
+  {
+    std::fprintf(stderr, "findPluginFilesDir: Ignoring too-deep directory level (max:%d) at:%s\n",
+                 max_levels, dirname.toLocal8Bit().constData());
+    return QString();
+  }
+
+  DEBUG_PLUGIN_SCAN(stderr, "find plugin dir <%s>\n", dirname.toLatin1().constData());
+
+  QDir pluginDir(
+    dirname,
+    QString("*.so"),
+    QDir::Name | QDir::IgnoreCase,
+    QDir::Drives | QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
+
+  if(pluginDir.exists())
+  {
+    QFileInfoList fi_list = pluginDir.entryInfoList();
+    QFileInfoList::iterator it=fi_list.begin();
+    while(it != fi_list.end())
+    {
+      const QFileInfo& fi = *it;
+      if(fi.isDir())
+      {
+        // RECURSIVE!
+        findPluginFilesDir(fi.filePath(), types, fplist, debugStdErr, recurseLevel + 1);
+      }
+      else
+      {
+        fplist.insert(filepath_set_pair(fi.filePath(), fi.lastModified().toMSecsSinceEpoch()));
+      }
+      
+      ++it;
+    }
+  }
+  return QString();
+}
+
+//---------------------------------------------------------
+//   findLadspaPluginFiles
+//---------------------------------------------------------
+
+static void findLadspaPluginFiles(const QString& museGlobalLib, filepath_set& fplist, bool debugStdErr)
+{
+  const QStringList sl = pluginGetLadspaDirectories(museGlobalLib);
+  for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
+    findPluginFilesDir(*it, PluginScanInfoStruct::PluginTypeAll, fplist, debugStdErr);
+}
+
+//---------------------------------------------------------
+//   findMessPluginFiles
+//---------------------------------------------------------
+
+static void findMessPluginFiles(const QString& museGlobalLib, filepath_set& fplist, bool debugStdErr)
+{
+  const QStringList sl = pluginGetMessDirectories(museGlobalLib);
+  for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
+    findPluginFilesDir(*it, PluginScanInfoStruct::PluginTypeAll, fplist, debugStdErr);
+}
+
+//---------------------------------------------------------
+//   findDssiPluginFiles
+//---------------------------------------------------------
+
+#ifdef DSSI_SUPPORT
+static void findDssiPluginFiles(filepath_set& fplist, bool debugStdErr)
+{
+  const QStringList sl = pluginGetDssiDirectories();
+  for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
+    findPluginFilesDir(*it, PluginScanInfoStruct::PluginTypeAll, fplist, debugStdErr);
+}
+#else // No DSSI_SUPPORT
+static void findDssiPluginFiles(filepath_set& /*fplist*/, bool /*debugStdErr*/)
+{
+}
+#endif // DSSI_SUPPORT
+
+//---------------------------------------------------------
+//   findLinuxVSTPluginFiles
+//---------------------------------------------------------
+
+#ifdef VST_NATIVE_SUPPORT
+static void findLinuxVSTPluginFiles(filepath_set& fplist, bool debugStdErr)
+{
+  const QStringList sl = pluginGetLinuxVstDirectories();
+  for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
+    findPluginFilesDir(*it, PluginScanInfoStruct::PluginTypeAll, fplist, debugStdErr);
+}
+#else // Not VST_NATIVE_SUPPORT
+static void findLinuxVSTPluginFiles(filepath_set& /*fplist*/, bool /*debugStdErr*/)
+{
+}
+#endif // VST_NATIVE_SUPPORT
+
+//---------------------------------------------------------
+//   findLv2PluginFile
+//---------------------------------------------------------
+
+#ifdef LV2_SUPPORT
+static void findLv2PluginFile(const LilvPlugin *plugin,
+                          filepath_set& fplist,
+                          const std::set<std::string>& supportedFeatures,
+                          bool /*debugStdErr*/)
+{
+// LV2 does not use unique id numbers and frowns upon using anything but the uri.
+//   static unsigned long FakeLv2UniqueID = 1;
+
+  LilvNode *nameNode = lilv_plugin_get_name(plugin);
+  if(!nameNode)
+    return;
+
+  if(!lilv_node_is_string(nameNode))
+  {
+    lilv_node_free(nameNode);
+    return;
+  }
+
+  const char *lfp = lilv_file_uri_parse(lilv_node_as_string(lilv_plugin_get_library_uri(plugin)), NULL);
+  LilvNodes *fts = lilv_plugin_get_required_features(plugin);
+  LilvIter *nit = lilv_nodes_begin(fts);
+  bool shouldLoad = true;
+  while(true)
+  {
+    if(lilv_nodes_is_end(fts, nit))
+      break;
+    const LilvNode *fnode = lilv_nodes_get(fts, nit);
+    const char *uri = lilv_node_as_uri(fnode);
+    const bool isSupported = (supportedFeatures.find(uri) != supportedFeatures.end());
+    if(!isSupported)
+      shouldLoad = false;
+    nit = lilv_nodes_next(fts, nit);
+  }
+  lilv_nodes_free(fts);
+
+  //if (!shouldLoad || !isSynth)
+  if(!shouldLoad)   //load all plugins for now, not only synths
+  {
+    lilv_free((void*)lfp); // Must free.
+    lilv_node_free(nameNode);
+    return;
+  }
+
+  if(lfp && lfp[0])
+  {
+    QFileInfo fi(lfp);
+    if(fi.exists())
+      fplist.insert(filepath_set_pair(fi.filePath(), fi.lastModified().toMSecsSinceEpoch()));
+  }
+
+  lilv_free((void*)lfp); // Must free.
+  lilv_node_free(nameNode);
+}
+#endif
+
+//---------------------------------------------------------
+//   findLv2PluginFiles
+//---------------------------------------------------------
+
+#ifdef LV2_SUPPORT
+static void findLv2PluginFiles(filepath_set& fplist, bool debugStdErr)
+{
+  std::set<std::string> supportedFeatures;
+  
+  unsigned long int feat = 0;
+  for(; feat < SIZEOF_ARRAY(lv2Features); feat++)
+  {
+    supportedFeatures.insert(lv2Features [feat].URI);
+  }
+  
+  LilvWorld *lilvWorld = 0;
+  lilvWorld = lilv_world_new();
+  if(!lilvWorld)
+    return;
+
+  lilv_world_load_all(lilvWorld);
+  const LilvPlugins *plugins = lilv_world_get_all_plugins(lilvWorld);
+  LilvIter *pit = lilv_plugins_begin(plugins);
+
+  while(true)
+  {
+    if(lilv_plugins_is_end(plugins, pit))
+      break;
+
+    const LilvPlugin *plugin = lilv_plugins_get(plugins, pit);
+    if(lilv_plugin_is_replaced(plugin))
+    {
+      pit = lilv_plugins_next(plugins, pit);
+      continue;
+    }
+
+    findLv2PluginFile(plugin, fplist, supportedFeatures, debugStdErr);
+
+    pit = lilv_plugins_next(plugins, pit);
+  }
+
+  lilv_world_free(lilvWorld);
+  lilvWorld = NULL;
+}
+#else
+static void findLv2PluginFiles(filepath_set& /*fplist*/, bool /*debugStdErr*/)
+{
+}
+#endif
+
+//---------------------------------------------------------
+//  findPluginFiles
+//---------------------------------------------------------
+
+static void findPluginFiles(const QString& museGlobalLib,
+                    filepath_set& fplist,
+                    bool debugStdErr,
+                    PluginScanInfoStruct::PluginType_t types)
+{
+  if(types & (PluginScanInfoStruct::PluginTypeDSSI | PluginScanInfoStruct::PluginTypeDSSIVST))
+  {
+    // Take care of DSSI plugins first...
+    findDssiPluginFiles(fplist, debugStdErr);
+  }
+
+  if(types & (PluginScanInfoStruct::PluginTypeLADSPA))
+  {
+    // Now do LADSPA plugins...
+    findLadspaPluginFiles(museGlobalLib, fplist, debugStdErr);
+  }
+
+  if(types & (PluginScanInfoStruct::PluginTypeMESS))
+  {
+    // Now do MESS plugins...
+    findMessPluginFiles(museGlobalLib, fplist, debugStdErr);
+  }
+
+  if(types & (PluginScanInfoStruct::PluginTypeLinuxVST))
+  {
+    // Now do LinuxVST plugins...
+    findLinuxVSTPluginFiles(fplist, debugStdErr);
+  }
+
+  if(types & (PluginScanInfoStruct::PluginTypeLV2))
+  {
+    // Now do LV2 plugins...
+    findLv2PluginFiles(fplist, debugStdErr);
+  }
 }
 
 //---------------------------------------------------------
@@ -2525,6 +2859,10 @@ bool createPluginCacheFiles(
     createPluginCacheFile(path, PluginScanInfoStruct::PluginTypeVST, list, writePorts,
       museGlobalLib, PluginScanInfoStruct::PluginTypeVST, debugStdErr);
     
+  if(types & PluginScanInfoStruct::PluginTypeUnknown)
+    createPluginCacheFile(path, PluginScanInfoStruct::PluginTypeUnknown, list, writePorts,
+      museGlobalLib, PluginScanInfoStruct::PluginTypeUnknown, debugStdErr);
+    
   return true;
 }
 
@@ -2542,7 +2880,64 @@ bool checkPluginCacheFiles(
   bool debugStdErr
 )
 {
-  bool res = false;
+  filepath_set fpset;
+  filepath_set cache_fpset;
+  bool res = true;
+  bool cache_dirty = false;
+
+  //-----------------------------------------------------
+  // Gather the current plugin files.
+  //-----------------------------------------------------
+  
+  findPluginFiles(museGlobalLib, fpset, debugStdErr, types);
+
+  //-----------------------------------------------------
+  // Read whatever we've got in our current cache files.
+  //-----------------------------------------------------
+
+  if(!readPluginCacheFiles(path, list, false, false, types))
+  {
+    cache_dirty = true;
+    std::fprintf(stderr, "checkPluginCacheFiles: readAllPluginCacheFiles() failed\n");
+  }
+
+  //-------------------------------------------------------------------------
+  // Gather the unique (non-duplicate) plugin file paths found in our cache.
+  //-------------------------------------------------------------------------
+  
+  if(!cache_dirty)
+  {
+    for(iPluginScanList ips = list->begin(); ips != list->end(); ++ips)
+    {
+      PluginScanInfoRef inforef = *ips;
+      const PluginScanInfoStruct& infos = inforef->info();
+      cache_fpset.insert(filepath_set_pair(PLUGIN_GET_QSTRING(infos.filePath()), infos._fileTime));
+    }
+  
+    //---------------------------------------
+    // Check for missing or altered plugins.
+    //---------------------------------------
+
+    for(filepath_set::iterator icfps = cache_fpset.begin(); icfps != cache_fpset.end(); ++icfps)
+    {
+      filepath_set::iterator ifpset = fpset.find(icfps->first);
+      if(ifpset == fpset.end() || ifpset->second != icfps->second)
+      {
+        cache_dirty = true;
+        break;
+      }
+      // Done with the current plugin file path. Erase it.
+      fpset.erase(ifpset);
+    }
+
+    //-------------------------
+    // Check for new plugins.
+    //-------------------------
+
+    // Any remaining items in fpset must be 'new' plugins.
+    if(!cache_dirty && !fpset.empty())
+      cache_dirty = true;
+  }
 
   // If ANY of the cache files do not exist we will recreate all of them.
   // The reason is that it might be good to show the user plugins found
@@ -2550,28 +2945,17 @@ bool checkPluginCacheFiles(
   //  perhaps by accident, like mixing your vst and linux vst plugins.
   // For that we must rescan everything even if only one cache file is missing.
   // If ANY of the caches are dirty or we are forcing recreation, create them now.
-  // Dirty checks whether any of the directories' date/time stamps are
-  //  GREATER than the cache file's.
-  if(alwaysRecreate || 
-    (pluginCacheFilesExist(path, types) != types) ||
-    (pluginCachesAreDirty(path, museGlobalLib, types, debugStdErr) != PluginScanInfoStruct::PluginTypeNone))
+  if(alwaysRecreate || cache_dirty)
   {
     if(debugStdErr)
       std::fprintf(stderr, "Re-scanning and creating plugin cache files...\n");
 
+    list->clear();
     if(!createPluginCacheFiles(path, list, writePorts, museGlobalLib, types, debugStdErr))
+    {
+      res = false;
       std::fprintf(stderr, "checkPluginCacheFiles: createPluginCacheFiles() failed\n");
-    else
-      res = true;
-
-    // The list has been filled now. No need to call readPluginCacheFiles() on the cache files - we're done.
-  }
-  else
-  {
-    if(!readPluginCacheFiles(path, list, false, false, types))
-      std::fprintf(stderr, "checkPluginCacheFiles: readAllPluginCacheFiles() failed\n");
-    else
-      res = true;
+    }
   }
 
   return res;

@@ -1,3 +1,92 @@
+12.04.2019
+      - Fixed midi import problem as reported in forums: (Tim)
+        Importing tracks with duplicate (often blank) names caused problems with
+         'drum_ordering' and 'route' song file sections since they refer to track names.
+        Re-wrote to use track indexes instead of track names.
+        Optimized and compacted the 'drum_ordering' section.
+      - Added new Arranger column 'Track Index'. Helps identify blank or duplicate track names.
+      - **Bumped up** song file version to 3.2, necessary for the new track header column.
+      - Added Track::displayName() and Route::displayName(). They return strings such as
+         "1:Track 5" and "2:" "3:" to help identify tracks.
+        All places displaying a track name, such as routing popup and dialog, now show
+         this 'augmented' display name to help identify blank or duplicate track names.
+      - Fixed many semantic, code-will-never-run, allocation, header-not-guarded,
+         and other problems as displayed by KDevelop Problems Reporter.
+      - Fixed Midi Input Transformator and Midi Transformator problems.
+        Problems creating/deleting presets. Tested all functions OK.
+25.03.2019
+      - Fix issue 645 "Naming a track with acentuated letter". (Tim)
+        Oops, regression from 07.01.2019: utf8 chars were corrupted.
+        Reverted by re-adding QByteArray stuff, required for proper parsing.
+      - Also fixed many double &amp; in *.idf files and a few other things.
+      - Fixed bug in storing sysex comment xml section of midi instruments.
+        It was doing escape replacements twice, corrupting the text.
+24.03.2019
+      - Fix Time Signature boxes on toolbars: Could not adjust if 'use mastertrack tempo' was off. (Tim)
+        Oops, regression from 22.04.2018
+23.03.2019
+      * Metronome super-makeover: (Tim)
+      * New metronome accents editor with factory and user presets:
+      - Choice of global vs. song metronome settings.
+      - Re-design metronome dialog, separating into tabs.
+      - NOTE: Qt signal/slots macros are OBSOLETE!
+        Implemented first usage of Qt 'connect' functors and C++11 lambdas, in metronome dialog.
+        Strange, some Qt classes don't seem to have functors? (QCheckBox, QComboBox.)
+11.03.2019
+      - Fixed build issues for vanilla Debian 9 (rj)
+10.03.2019
+      - Fixed regression with storing decimal values in song file, they
+        were using locale's decimal type, now stores with decimal point (rj)
+03.03.2019
+      - Fix LinuxVST duplicates in plugin list if duplicate plugins exist. (Tim)
+02.03.2019
+      - Plugin scanner: Redesign fixes problems with 'auto-rescan' trigger. (Tim)
+        Significant changes: Previously folders were scanned for date/time differences
+         compared to the cache file's date/time. This caused unwanted rescans if ANY
+         file or folder inside changed. Now it is all *.so file centric. Now, ALL *.so
+         files found are registered in our caches, and a new 'file timestamp' member
+         was added, and a new "unknown_plugins.scan" cache file added. Then on next start
+         it compares date/time of what exists in our cache with what is actually on the system.
+      - Fixed remaining compile issues with various options disabled.
+        Tested by turning off ALL cmake options. Revealed an error: We never linked
+         pthreads into the core! With cross-platform in mind, this was followed:
+        https://stackoverflow.com/questions/49768454/whats-the-differences-between
+         -pthread-and-pthread-options-in-cmake (the 'modern' answer at bottom).
+01.03.2019
+      - Added README.editor-shortcuts with keyboard shortcuts for midi and drum editor (rj)
+      - Extended plugin scan wait time to 9 seconds, needed by Addictive Drums 2 atleast (rj)
+25.02.2019
+      *** MusE 3.1.0pre1 ***
+      - Added cosmetic highlight lines in arranger for every numbered line (rj)
+      - Added shortcut for renaming a part (rj)
+      - Added a text filter to the shortcut dialog (rj)
+      - finally start preparing for 3.1 (rj)
+19.02.2019
+      - Issue 639: Make 'midi remote' dialog box more clear. (Tim)
+      - Fix M_PI from last commit. Don't detect in cmake, hard-code #ifdef M_PI for now.
+17.02.2019
+      - Fix all uses of exp10(). (Tim)
+        exp10 is now detected in the main cmake file, and defined as pow(10,x) in muse_math.h
+         if it is NOT found. All relevant places using exp10 now have the muse_math.h
+         header instead of <cmath> or "math.h".
+      - Fix compile breakage if DSSI support not enabled.
+        Oops, fixed scanDssiPlugins() in plugin_cache_writer.cpp and oops, removed
+         duplicate "void initDSSI() {}" from alsamidi.cpp (how'd that get there?)
+      - M_PI support now detected in main cmake file.
+      - All inclusions of math.h and cmath have been replaced with muse_math.h
+         to make muse_math.h a 'central hub' for special defines.
+16.02.2019
+      - Fix Issue 640: wavecanvas.cpp use QProcess not fork() et al. (Tim)
+08.02.2019
+      - Revert usage of QRegion stl features (too new at Qt 5.8). (Tim)
+07.02.2019
+      - Updated all PyQt4 based midi scripts to use PyQt5 (rj)
+24.01.2019
+      - Stop heartbeat timer in Audio::stop(). (Tim)
+        Possible random crashes closing a song and loading another song. 
+        Observed a few times in mixer strip timer handlers. Not sure how
+         (it's graphics thread), but in case something during loading
+         runs the event loop or something, this should at least not hurt.
 21.01.2019
       - Merge from selection_fixes branch: (Tim)
       * NEW! Midi controller graphs copy/cut/paste and drag/drop:

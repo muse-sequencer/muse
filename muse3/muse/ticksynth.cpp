@@ -30,6 +30,8 @@
 #include "gconfig.h"
 #include "wave.h"
 #include "operations.h"
+#include "metronome_class.h"
+#include "globals.h"
 
 // If sysex support is ever added, make sure this number is unique among all the
 //  MESS synths (including ticksynth) and DSSI, VST, LV2 and other host synths.
@@ -367,8 +369,12 @@ bool MetronomeSynthIF::processEvent(const MidiPlayEvent& ev)
 {
     if(ev.type() != MusECore::ME_NOTEON)
       return false;
+
+    MusECore::MetronomeSettings* metro_settings = 
+      MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
     if (ev.dataA() == MusECore::measureSound) {
-        if (MusEGlobal::clickSamples == MusEGlobal::origSamples) {
+        if (metro_settings->clickSamples == MetronomeSettings::origSamples) {
             data = defaultClickEmphasis;
             len  = defaultClickEmphasisLength;
         }
@@ -376,31 +382,31 @@ bool MetronomeSynthIF::processEvent(const MidiPlayEvent& ev)
               data = measSamples;
               len  = measLen;
         }
-        volume = MusEGlobal::measClickVolume;
+        volume = metro_settings->measClickVolume;
     }
     else if (ev.dataA() == MusECore::beatSound) {
-        if (MusEGlobal::clickSamples == MusEGlobal::origSamples) {
+        if (metro_settings->clickSamples == MetronomeSettings::origSamples) {
             data = defaultClick;
             len  = defaultClickLength;
         } else {
             data = beatSamples;
             len  = beatLen;
         }
-        volume = MusEGlobal::beatClickVolume;
+        volume = metro_settings->beatClickVolume;
     }
     else if (ev.dataA() == MusECore::accent1Sound) {
              data = accent1Samples;
              len  = accent1Len;
-             volume = MusEGlobal::accent1ClickVolume;
-             if (MusEGlobal::clickSamples == MusEGlobal::origSamples) {
+             volume = metro_settings->accent1ClickVolume;
+             if (metro_settings->clickSamples == MetronomeSettings::origSamples) {
                  volume=0.0;
              }
     }
     else if (ev.dataA() == MusECore::accent2Sound) {
              data = accent2Samples;
              len  = accent2Len;
-             volume = MusEGlobal::accent2ClickVolume;
-             if (MusEGlobal::clickSamples == MusEGlobal::origSamples) {
+             volume = metro_settings->accent2ClickVolume;
+             if (metro_settings->clickSamples == MetronomeSettings::origSamples) {
                  volume=0.0;
              }
     }
@@ -434,12 +440,15 @@ void MetronomeSynthIF::process(float** buffer, int offset, int n)
       if (data == 0)
         return;
 
+      MusECore::MetronomeSettings* metro_settings = 
+        MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
       const float* s = data + pos;
       float* d       = *buffer + offset;
       int l          = std::min(n, len);
 
       for (int i = 0; i < l; ++i)
-            *d++ += *s++ * MusEGlobal::audioClickVolume * volume;
+            *d++ += *s++ * metro_settings->audioClickVolume * volume;
       pos += l;
       len -= l;
       if (len <= 0)

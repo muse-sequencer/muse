@@ -49,7 +49,11 @@ const char* errString[] = {
       "bad midi fileformat",
       };
 
+#ifdef _WIN32
+enum ERROR2 { // ERROR is already used in Windows.h
+#else
 enum ERROR {
+#endif
       MF_NO_ERROR,
       MF_EOF,
       MF_READ,

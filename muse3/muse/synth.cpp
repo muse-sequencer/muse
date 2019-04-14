@@ -24,12 +24,14 @@
 #include <QMessageBox>
 
 #include "config.h"
+#ifndef _WIN32
 #include <sys/wait.h>
+#include <sys/mman.h>
+#endif
 #include <signal.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <errno.h>
-#include <sys/mman.h>
 #include <vector>
 #include <fcntl.h>
 #include <dlfcn.h>
@@ -912,6 +914,7 @@ void initMidiSynth()
       case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
       break;
@@ -1050,7 +1053,7 @@ void SynthI::read(Xml& xml)
             switch (token) {
                   case Xml::Error:
                   case Xml::End:
-                        return;
+                        goto synth_read_end;
                   case Xml::TagStart:
                         if (tag == "synthType")
                               type = string2SynthType(xml.parse1());
@@ -1134,6 +1137,8 @@ void SynthI::read(Xml& xml)
                         break;
                   }
             }
+
+synth_read_end:
       AudioTrack::mapRackPluginsToControllers();
       }
 

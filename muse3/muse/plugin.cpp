@@ -25,9 +25,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <dlfcn.h>
-#include <cmath>
 #include <string>
-#include <math.h>
+#include "muse_math.h"
 #include <sys/stat.h>
 
 #include <QGridLayout>
@@ -73,6 +72,10 @@
 #include "al/dsp.h"
 
 #include "muse_math.h"
+
+#ifdef _WIN32
+#define S_ISLNK(X) 0
+#endif
 
 // Turn on debugging messages.
 //#define PLUGIN_DEBUGIN
@@ -721,6 +724,7 @@ Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
     case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
     case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
     case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
+    case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
     case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
     case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
     break;
@@ -1067,6 +1071,7 @@ void initPlugins()
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
       break;
@@ -1159,12 +1164,21 @@ void Pipeline::initBuffers()
   {
     if(!buffer[i])
     {
+#ifdef _WIN32
+      buffer[i] = (float *) _aligned_malloc(16, sizeof(float *) * MusEGlobal::segmentSize);
+      if(buffer[i] == NULL)
+      {
+         fprintf(stderr, "ERROR: Pipeline ctor: _aligned_malloc returned error: NULL. Aborting!\n");
+         abort();
+      }
+#else
       int rv = posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
       if(rv != 0)
       {
         fprintf(stderr, "ERROR: Pipeline ctor: posix_memalign returned error:%d. Aborting!\n", rv);
         abort();
       }
+#endif
     }
   }
 
@@ -1481,9 +1495,10 @@ void Pipeline::showGui(int idx, bool flag)
 //   showNativeGui
 //---------------------------------------------------------
 
+#if defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
 void Pipeline::showNativeGui(int idx, bool flag)
       {
-      PluginI* p = (*this)[idx];
+         PluginI* p = (*this)[idx];
 #ifdef LV2_SUPPORT
          if(p && p->plugin()->isLV2Plugin())
          {
@@ -1502,11 +1517,15 @@ void Pipeline::showNativeGui(int idx, bool flag)
 
 #endif
       #ifdef OSC_SUPPORT
-
-      if (p)
+         if (p)
             p->oscIF().oscShowGui(flag);
       #endif
       }
+#else // defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
+void Pipeline::showNativeGui(int /*idx*/, bool /*flag*/)
+      {
+      }
+#endif // defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
 
 //---------------------------------------------------------
 //   deleteGui
@@ -2141,7 +2160,11 @@ double PluginI::defaultValue(unsigned long param) const
   return _plugin->defaultValue(controls[param].idx);
 }
 
-void PluginI::setCustomData(const std::vector<QString> &customParams)
+void PluginI::setCustomData(const std::vector<QString>&
+#if defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT)
+  customParams
+#endif
+)
 {
    if(_plugin == NULL)
       return;
@@ -2308,14 +2331,21 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
         }
       }
 
+#ifdef _WIN32
+      _audioInSilenceBuf = (float *) _aligned_malloc(16, sizeof(float *) * MusEGlobal::segmentSize);
+      if(_audioInSilenceBuf == NULL)
+      {
+         fprintf(stderr, "ERROR: PluginI::initPluginInstance: _audioInSilenceBuf _aligned_malloc returned error: NULL. Aborting!\n");
+         abort();
+      }
+#else
       int rv = posix_memalign((void **)&_audioInSilenceBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
-
       if(rv != 0)
       {
           fprintf(stderr, "ERROR: PluginI::initPluginInstance: _audioInSilenceBuf posix_memalign returned error:%d. Aborting!\n", rv);
           abort();
       }
-
+#endif
       if(MusEGlobal::config.useDenormalBias)
       {
           for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
@@ -2327,15 +2357,21 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
       {
           memset(_audioInSilenceBuf, 0, sizeof(float) * MusEGlobal::segmentSize);
       }
-
+#ifdef _WIN32
+      _audioOutDummyBuf = (float *) _aligned_malloc(16, sizeof(float *) * MusEGlobal::segmentSize);
+      if(_audioOutDummyBuf == NULL)
+      {
+         fprintf(stderr, "ERROR: PluginI::initPluginInstance: _audioOutDummyBuf _aligned_malloc returned error: NULL. Aborting!\n");
+         abort();
+      }
+#else
       rv = posix_memalign((void **)&_audioOutDummyBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
-
       if(rv != 0)
       {
           fprintf(stderr, "ERROR: PluginI::initPluginInstance: _audioOutDummyBuf posix_memalign returned error:%d. Aborting!\n", rv);
           abort();
       }
-
+#endif
       activate();
       return false;
       }
@@ -2741,7 +2777,12 @@ void PluginI::showNativeGui()
   _showNativeGuiPending = false;
 }
 
-void PluginI::showNativeGui(bool flag)
+void PluginI::showNativeGui(
+  bool
+#if defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
+  flag
+#endif
+)
 {
 #ifdef LV2_SUPPORT
   if(plugin() && plugin()->isLV2Plugin())

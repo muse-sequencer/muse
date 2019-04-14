@@ -24,7 +24,7 @@
 #define __DSP_H__
 
 #include <string.h>
-#include <math.h>
+#include "muse_math.h"
 
 namespace AL {
 

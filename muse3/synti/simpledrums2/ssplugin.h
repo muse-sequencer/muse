@@ -30,7 +30,7 @@
 #include <QFileInfo>
 
 #include <ladspa.h>
-#include <math.h>
+#include "muse_math.h"
 
 //---------------------------------------------------------
 //   Port

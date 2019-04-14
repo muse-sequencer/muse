@@ -20,7 +20,7 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
 //=========================================================
-#include <cmath>
+#include "muse_math.h"
 #include "mmath.h"
 
 //	QwtMath - a set of mathematical routines
@@ -140,7 +140,7 @@ double qwtCeil125( double x)
        fr = 5.0;
     else
        fr = 10.0;
-    rv = fr * exp10(p10);
+	rv = fr * exp10(p10);
     return sign * rv;
 }
 

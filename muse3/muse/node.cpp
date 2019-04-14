@@ -22,7 +22,7 @@
 //
 //=========================================================
 
-#include <cmath>
+#include "muse_math.h"
 #include <sndfile.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -2110,6 +2110,9 @@ void AudioOutput::silence(unsigned n)
 
 void AudioOutput::processWrite()
       {
+      MusECore::MetronomeSettings* metro_settings = 
+        MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
       if (MusEGlobal::audio->isRecording() && MusEGlobal::song->bounceOutput == this) {
             if (MusEGlobal::audio->freewheel()) {
                   MusECore::WaveTrack* track = MusEGlobal::song->bounceTrack;
@@ -2126,10 +2129,11 @@ void AudioOutput::processWrite()
                         putFifo(_channels, _nframes, buffer);
                   }
             }
-      if (sendMetronome() && MusEGlobal::audioClickFlag && MusEGlobal::song->click()) {
+      if (sendMetronome() && metro_settings->audioClickFlag && MusEGlobal::song->click()) {
 
             #ifdef METRONOME_DEBUG
-            fprintf(stderr, "MusE: AudioOutput::processWrite Calling metronome->addData frame:%u channels:%d frames:%lu\n", MusEGlobal::audio->pos().frame(), _channels, _nframes);
+            fprintf(stderr, "MusE: AudioOutput::processWrite Calling metronome->addData frame:%u channels:%d frames:%lu\n",
+                    MusEGlobal::audio->pos().frame(), _channels, _nframes);
             #endif
             metronome->copyData(MusEGlobal::audio->pos().frame(), -1, _channels, _channels, -1, -1, _nframes, buffer, true);
             }
@@ -2220,13 +2224,21 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos, unsig
               free(b->buffer);
               b->buffer = 0;
             }
+#ifdef _WIN32
+            b->buffer = (float *) _aligned_malloc(16, sizeof(float *) * n);
+            if(b->buffer == NULL)
+            {
+               fprintf(stderr, "Fifo::put could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+               return true;
+            }
+#else
             int rv = posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
             if(rv != 0 || !b->buffer)
             {
               fprintf(stderr, "Fifo::put could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
               return true;
             }
-
+#endif
             b->maxSize = n;
             }
       if(!b->buffer)

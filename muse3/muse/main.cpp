@@ -41,7 +41,9 @@
 
 #include <unistd.h>
 #include <time.h>
+#ifndef _WIN32
 #include <sys/mman.h>
+#endif
 
 #include "config.h"
 
@@ -68,6 +70,7 @@
 #include "wavepreview.h"
 #include "plugin_cache_writer.h"
 #include "pluglist.h"
+#include "metronome_class.h"
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
@@ -400,13 +403,29 @@ int main(int argc, char* argv[])
             QString("/usr/local/lib/ladspa") <<
             QString("/usr/lib64/ladspa") <<
             QString("/usr/lib/ladspa");
+#ifdef _WIN32
+            char* buffer = (char*) malloc(strlen("LADSPA_PATH=") + 1 + strlen(MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData()) + 1);
+            strcpy(buffer, "LADSPA_PATH=");
+            strcat(buffer, MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData());
+            _putenv(buffer);
+#else
             setenv("LADSPA_PATH", MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData(), true);
+#endif
         }
         else
           MusEGlobal::config.pluginLadspaPathList = pth.split(":", QString::SkipEmptyParts);
       }
       else
+#ifdef _WIN32
+      {
+        char* buffer = (char*) malloc(strlen("LADSPA_PATH=") + 1 + strlen(MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData()) + 1);
+        strcpy(buffer, "LADSPA_PATH=");
+        strcat(buffer, MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData());
+        _putenv(buffer);
+      }
+#else
         setenv("LADSPA_PATH", MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData(), true);
+#endif
       
       if(MusEGlobal::config.pluginDssiPathList.isEmpty())
       {
@@ -419,13 +438,29 @@ int main(int argc, char* argv[])
             QString("/usr/local/lib/dssi") <<
             QString("/usr/lib64/dssi") <<
             QString("/usr/lib/dssi");
+#ifdef _WIN32
+            char* buffer = (char*) malloc(strlen("DSSI_PATH=") + 1 + strlen(MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData()) + 1);
+            strcpy(buffer, "DSSI_PATH=");
+            strcat(buffer, MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData());
+            _putenv(buffer);
+#else
             setenv("DSSI_PATH", MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData(), true);
+#endif
         }
         else
           MusEGlobal::config.pluginDssiPathList = pth.split(":", QString::SkipEmptyParts);
       }
       else
+#ifdef _WIN32
+      {
+        char* buffer = (char*) malloc(strlen("DSSI_PATH=") + 1 + strlen(MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData()) + 1);
+        strcpy(buffer, "DSSI_PATH=");
+        strcat(buffer, MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData());
+        _putenv(buffer);
+      }
+#else
         setenv("DSSI_PATH", MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData(), true);
+#endif
       
       if(MusEGlobal::config.pluginVstPathList.isEmpty())
       {
@@ -440,11 +475,27 @@ int main(int argc, char* argv[])
             QString("/usr/local/lib/vst") <<
             QString("/usr/lib64/vst") <<
             QString("/usr/lib/vst");
+#ifdef _WIN32
+            char* buffer = (char*) malloc(strlen("VST_PATH=") + 1 + strlen(MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData()) + 1);
+            strcpy(buffer, "VST_PATH=");
+            strcat(buffer, MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData());
+            _putenv(buffer);
+#else
             setenv("VST_PATH", MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData(), true);
+#endif
         }
       }
       else
+#ifdef _WIN32
+      {
+        char* buffer = (char*) malloc(strlen("VST_PATH=") + 1 + strlen(MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData()) + 1);
+        strcpy(buffer, "VST_PATH=");
+        strcat(buffer, MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData());
+        _putenv(buffer);
+      }
+#else
         setenv("VST_PATH", MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData(), true);
+#endif
       
       if(MusEGlobal::config.pluginLinuxVstPathList.isEmpty())
       {
@@ -464,12 +515,28 @@ int main(int argc, char* argv[])
               QString("/usr/local/lib/vst") <<
               QString("/usr/lib64/vst") <<
               QString("/usr/lib/vst");
+#ifdef _WIN32
+              char* buffer = (char*) malloc(strlen("LINUX_VST_PATH=") + 1 + strlen(MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData()) + 1);
+              strcpy(buffer, "LINUX_VST_PATH=");
+              strcat(buffer, MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData());
+              _putenv(buffer);
+#else
               setenv("LINUX_VST_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
+#endif
           }
         }
       }
       else
+#ifdef _WIN32
+      {
+        char* buffer = (char*) malloc(strlen("LINUX_VST_PATH=") + 1 + strlen(MusEGlobal::config.pluginLinuxVstPathList.join(":").toLatin1().constData()) + 1);
+        strcpy(buffer, "LINUX_VST_PATH=");
+        strcat(buffer, MusEGlobal::config.pluginLinuxVstPathList.join(":").toLatin1().constData());
+        _putenv(buffer);
+      }
+#else
         setenv("LINUX_VST_PATH", MusEGlobal::config.pluginLinuxVstPathList.join(":").toLatin1().constData(), true);
+#endif
       
       // Special for LV2: Since we use the recommended lilv_world_load_all() 
       //  not lilv_world_load_bundle(), LV2_PATH seems to be the only way to set paths. 
@@ -484,13 +551,29 @@ int main(int argc, char* argv[])
             QString("/usr/local/lib/lv2") <<
             QString("/usr/lib64/lv2") <<
             QString("/usr/lib/lv2");
+#ifdef _WIN32
+            char* buffer = (char*) malloc(strlen("LV2_PATH=") + 1 + strlen(MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData()) + 1);
+            strcpy(buffer, "LV2_PATH=");
+            strcat(buffer, MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData());
+            _putenv(buffer);
+#else
             setenv("LV2_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
+#endif
         }
         else
           MusEGlobal::config.pluginLv2PathList = pth.split(":", QString::SkipEmptyParts);
       }
       else
+#ifdef _WIN32
+      {
+        char* buffer = (char*) malloc(strlen("LV2_PATH=") + 1 + strlen(MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData()) + 1);
+        strcpy(buffer, "LV2_PATH=");
+        strcat(buffer, MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData());
+        _putenv(buffer);
+      }
+#else
         setenv("LV2_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
+#endif
 
       bool plugin_rescan_already_done = false;
       int rv = 0;
@@ -773,7 +856,7 @@ int main(int argc, char* argv[])
           muse_splash->showMessage(splash_prefix + QString(" Creating plugin cache files..."));
           qApp->processEvents();
         }
-        
+
         bool do_rescan = false;
         if(force_plugin_rescan)
         {
@@ -809,6 +892,8 @@ int main(int argc, char* argv[])
         if(MusEGlobal::loadLV2)
           types |= MusEPlugin::PluginScanInfoStruct::PluginTypeLV2;
 
+        types |= MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown;
+        
         MusEPlugin::checkPluginCacheFiles(MusEGlobal::configPath + "/scanner",
                                         // List of plugins to scan into and write to cache files from.
                                         &MusEPlugin::pluginList,
@@ -1001,13 +1086,19 @@ int main(int argc, char* argv[])
           qApp->processEvents();
         }
 
-        // WARNING Must do it this way. Call registerClient long AFTER Jack client is created and MusE ALSA client is
-        // created (in initMidiDevices), otherwise random crashes can occur within Jack <= 1.9.8. Fixed in Jack 1.9.9.  Tim.
-        // This initMidiDevices will automatically initialize the midiSeq sequencer thread, but not start it - that's a bit later on.
+// REMOVE Tim. startup. Removed 2019/02/21. It's been six years since 1.9.9.5 release.
+//        Remove this waiting part at some point if we're all good...
+//
+//         // WARNING Must do it this way. Call registerClient long AFTER Jack client
+//         //  is created and MusE ALSA client is created (in initMidiDevices),
+//         //  otherwise random crashes can occur within Jack <= 1.9.8.
+//         // Fixed in Jack 1.9.9.  Tim.
+        // This initMidiDevices will automatically initialize the midiSeq sequencer thread,
+        //  but not start it - that's a bit later on.
         MusECore::initMidiDevices();
-        // Wait until things have settled. One second seems OK so far.
-        for(int t = 0; t < 100; ++t)
-          usleep(10000);
+//         // Wait until things have settled. One second seems OK so far.
+//         for(int t = 0; t < 100; ++t)
+//           usleep(10000);
         // Now it is safe to call registerClient.
         MusEGlobal::audioDevice->registerClient();
 
@@ -1040,6 +1131,20 @@ int main(int argc, char* argv[])
         MusECore::initOSC();
 
         MusECore::initMetronome();
+
+        const QString metro_presets = MusEGlobal::museGlobalShare + QString("/metronome");
+        MusECore::initMetronomePresets(metro_presets, &MusEGlobal::metroAccentPresets, MusEGlobal::debugMsg);
+        // If the global metronome accent settings are empty, it is unlikely the user did that, or wants that.
+        // More likely it indicates this is a first-time init of the global settings.
+        // In any case, if empty fill the global metronome accent settings with factory presets.
+        if(MusEGlobal::metroGlobalSettings.metroAccentsMap &&
+           MusEGlobal::metroGlobalSettings.metroAccentsMap->empty())
+        {
+          // Fill with defaults.
+          MusEGlobal::metroAccentPresets.defaultAccents(
+            MusEGlobal::metroGlobalSettings.metroAccentsMap,
+            MusECore::MetroAccentsStruct::FactoryPreset);
+        }
 
         MusECore::initWavePreview(MusEGlobal::segmentSize);
 
@@ -1074,10 +1179,12 @@ int main(int argc, char* argv[])
         }
   #endif /* HAVE_LASH */
 
+#ifndef _WIN32
         if (!MusEGlobal::debugMode) {
               if (mlockall(MCL_CURRENT | MCL_FUTURE))
                     perror("WARNING: Cannot lock memory:");
               }
+#endif
 
         if(muse_splash)
         {

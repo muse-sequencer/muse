@@ -36,7 +36,7 @@
 
 #include <limits.h>
 #include <stdio.h>
-#include <math.h>
+#include "muse_math.h"
 #include <errno.h>
 
 #include "xml.h"

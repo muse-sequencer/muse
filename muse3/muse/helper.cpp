@@ -766,7 +766,7 @@ int readDrummapsEntryPatchCollection(Xml& xml)
     {
       case Xml::Error:
       case Xml::End:
-        return CTRL_VAL_UNKNOWN; // an invalid collection
+        goto read_end;
 
       case Xml::TagStart:
         xml.unknown("readDrummapsEntryPatchCollection");
@@ -791,8 +791,8 @@ int readDrummapsEntryPatchCollection(Xml& xml)
     }
   }
 
-  fprintf(stderr, "ERROR: THIS CANNOT HAPPEN: exited infinite loop in readDrummapsEntryPatchCollection()!\n"
-         "                           not returning anything. expect undefined behaviour or even crashes.\n");
+read_end:
+  fprintf(stderr, "ERROR: End or Error in readDrummapsEntryPatchCollection()!\n");
   return CTRL_VAL_UNKNOWN; // an invalid collection
 }
 

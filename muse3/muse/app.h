@@ -422,6 +422,7 @@ class MusE : public QMainWindow
       // Returns true if successful or already running.
 //       bool seqStartMidi();
       void setHeartBeat();
+      void stopHeartBeat();
       void importController(int, MusECore::MidiPort*, int);
       QString projectName() { return project.fileName(); }
       QString projectTitle() const;

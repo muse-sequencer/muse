@@ -21,7 +21,7 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-file (GLOB metronome_files *.wav)
+file (GLOB metronome_files *.wav *.mdf)
 
 install( FILES ${metronome_files}
       DESTINATION ${MusE_SHARE_DIR}/metronome

@@ -54,7 +54,7 @@ details.
       - CMake >= 2.4 
           http:/www.cmake.org/HTML/Download.html
 
-      - Qt: Qt >= 5.1.0 (development files)
+      - Qt: Qt >= 5.7.0 (development files)
           http://qt-project.org/
           MusE does _not_ compile with older versions
           For ubuntu packages can be installed via:
@@ -70,7 +70,8 @@ details.
       - libsamplerate >= 0.1.0 (development files)
           http://www.mega-nerd.com/SRC/
 
-      - JACK >= 0.103 (development files)
+      - JACK version 1 >= 0.103 (development files) or
+        JACK version 2 >= 1.9.9.5 (development files)
           http://jackaudio.org/
 
       - LADSPA (development file ladspa.h)

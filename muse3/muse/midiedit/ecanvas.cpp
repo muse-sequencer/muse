@@ -26,7 +26,9 @@
 #include <limits.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#ifndef _WIN32
 #include <sys/mman.h>
+#endif
 
 #include <QKeyEvent>
 #include <QDropEvent>
@@ -190,7 +192,7 @@ void EventCanvas::updateItems()
                     if (temp && curItemNeedsRestore && e==storedEvent && part->sn()==partSn)
                     {
                         if (curItem!=NULL)
-                          printf("THIS SHOULD NEVER HAPPEN: curItemNeedsRestore=true, event fits, but there was already a fitting event!?\n");
+                          fprintf(stderr, "THIS SHOULD NEVER HAPPEN: curItemNeedsRestore=true, event fits, but there was already a fitting event!?\n");
                         
                         curItem=temp;
                         }
@@ -546,7 +548,7 @@ void EventCanvas::viewDropEvent(QDropEvent* event)
       {
       QString text;
       if (event->source() == this) {
-            printf("local DROP\n");      
+            fprintf(stderr, "local DROP\n");      
             //event->acceptProposedAction();     
             //event->ignore();                     // TODO CHECK Tim.
             return;
@@ -564,7 +566,7 @@ void EventCanvas::viewDropEvent(QDropEvent* event)
             //event->accept();  // TODO
             }
       else {
-            printf("cannot decode drop\n");
+            fprintf(stderr, "cannot decode drop\n");
             //event->acceptProposedAction();     
             //event->ignore();                     // TODO CHECK Tim.
             }
@@ -617,7 +619,7 @@ void EventCanvas::startPlayEvent(int note, int velocity, int port, int channel)
       }
       
       if (MusEGlobal::debugMsg)
-        printf("EventCanvas::startPlayEvent %d %d %d %d\n", note, velocity, port, channel);
+        fprintf(stderr, "EventCanvas::startPlayEvent %d %d %d %d\n", note, velocity, port, channel);
 
       // Release any current note.
       stopPlayEvent();

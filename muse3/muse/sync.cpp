@@ -23,7 +23,7 @@
 //=========================================================
 
 #include <stdlib.h>
-#include <cmath>
+#include "muse_math.h"
 
 #include "sync.h"
 #include "song.h"

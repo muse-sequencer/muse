@@ -34,7 +34,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <math.h>
+#include "muse_math.h"
 
 #include <QFileInfo>
 #include <QString>

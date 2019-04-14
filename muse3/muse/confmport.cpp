@@ -23,7 +23,9 @@
 //=========================================================
 
 #include <list>
+#ifndef _WIN32
 #include <termios.h>
+#endif
 #include <iostream>
 #include <stdio.h>
 
@@ -37,6 +39,7 @@
 #include <QHeaderView>
 #include <QSettings>
 
+#include "config.h"
 #include "confmport.h"
 #include "app.h"
 #include "icons.h"
@@ -678,7 +681,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       {
                         mapALSA.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), aix) );
                         ++aix;
-                      }  
+                      }
                       else
                       if((*i)->deviceType() == MusECore::MidiDevice::JACK_MIDI)
                       {  
@@ -797,7 +800,8 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       int typ;
                       if(n < 0x20000000)
                         typ = MusECore::MidiDevice::ALSA_MIDI;
-                      else if(n < 0x30000000)
+                      else
+                      if(n < 0x30000000)
                         typ = MusECore::MidiDevice::JACK_MIDI;
                       else //if(n < 0x40000000)
                         typ = MusECore::MidiDevice::SYNTH_MIDI;
@@ -1168,7 +1172,11 @@ MPConfig::MPConfig(QWidget* parent)
 #endif                  
       ;
 
+#ifdef ALSA_SUPPORT
       addALSADevice->setChecked(MusEGlobal::midiSeq != NULL);
+#else
+      addALSADevice->setVisible(false);
+#endif
 
       instanceList->setColumnCount(columnnames.size());
       instanceList->setHorizontalHeaderLabels(columnnames);
@@ -1270,10 +1278,11 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
       if(!(flags._flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_INSTRUMENT)))
         return;
     
+#ifdef ALSA_SUPPORT
       addALSADevice->blockSignals(true);
       addALSADevice->setChecked(MusEGlobal::midiSeq != NULL);
       addALSADevice->blockSignals(false);
-
+#endif
 
       // Get currently selected index...
       int no = -1;
@@ -1892,7 +1901,7 @@ void MPConfig::addAlsaDeviceClicked(bool v)
     MusEGlobal::song->update(SC_CONFIG);
   }
 }
-      
+
 //---------------------------------------------------------
 //   beforeDeviceContextShow
 //---------------------------------------------------------

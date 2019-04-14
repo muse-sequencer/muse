@@ -32,7 +32,7 @@
 #include <QDir>
 #include <QMenu>
 
-#include <cmath>
+#include "muse_math.h"
 #include <fst.h>
 #include <vst/aeffectx.h>
 #include <jack/jack.h>

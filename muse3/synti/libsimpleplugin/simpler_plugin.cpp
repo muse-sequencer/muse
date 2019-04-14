@@ -128,6 +128,7 @@ void SS_initPlugins(const QString& hostConfigPath)
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
       break;
@@ -1119,14 +1120,23 @@ bool LadspaPluginI::initPluginInstance(Plugin* plug, int chans,
     }
   }
 
+#ifdef _WIN32
+  _audioInSilenceBuf = (float *) _aligned_malloc(16, sizeof(float) * _segmentSize);
+  if(_audioInSilenceBuf == NULL)
+  {
+      fprintf(stderr, 
+        "ERROR: LadspaPluginI::initPluginInstance: _audioInSilenceBuf _aligned_malloc returned error: NULL. Aborting!\n");
+      abort();
+  }
+#else
   int rv = posix_memalign((void **)&_audioInSilenceBuf, 16, sizeof(float) * _segmentSize);
-
   if(rv != 0)
   {
       fprintf(stderr, 
         "ERROR: LadspaPluginI::initPluginInstance: _audioInSilenceBuf posix_memalign returned error:%d. Aborting!\n", rv);
       abort();
   }
+#endif
 
   if(useDenormalBias)
   {
@@ -1140,13 +1150,22 @@ bool LadspaPluginI::initPluginInstance(Plugin* plug, int chans,
       memset(_audioInSilenceBuf, 0, sizeof(float) * _segmentSize);
   }
 
+#ifdef _WIN32
+  _audioOutDummyBuf = (float *) _aligned_malloc(16, sizeof(float) * _segmentSize);
+  if(_audioOutDummyBuf == NULL)
+  {
+      fprintf(stderr, 
+        "ERROR: LadspaPluginI::initPluginInstance: _audioInSilenceBuf _aligned_malloc returned error: NULL. Aborting!\n");
+      abort();
+  }
+#else
   rv = posix_memalign((void **)&_audioOutDummyBuf, 16, sizeof(float) * _segmentSize);
-
   if(rv != 0)
   {
       fprintf(stderr, "ERROR: LadspaPluginI::initPluginInstance: _audioOutDummyBuf posix_memalign returned error:%d. Aborting!\n", rv);
       abort();
   }
+#endif
 
   // Don't activate yet.
   //activate();

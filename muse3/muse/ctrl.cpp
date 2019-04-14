@@ -31,8 +31,7 @@
 #include <QColor>
 #include <map>
 
-#include <math.h>
-
+#include "muse_math.h"
 #include "gconfig.h"
 #include "fastlog.h"
 #include "globals.h"

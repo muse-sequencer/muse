@@ -28,6 +28,7 @@
 
 #include "value.h"
 #include "mtc.h"
+#include "metronome_class.h"
 
 #include <unistd.h>
 
@@ -43,11 +44,6 @@ class MusE;
 }
 
 namespace MusEGlobal {
-
-enum ClickSamples {
-    origSamples,
-    newSamples
-};
 
 extern const float denormalBias;
 
@@ -175,34 +171,11 @@ extern QAction* cpuLoadAction;
 
 extern MusEGui::MusE* muse;
 
-extern int preMeasures;
-extern unsigned char measureClickNote;
-extern unsigned char measureClickVelo;
-extern unsigned char beatClickNote;
-extern unsigned char beatClickVelo;
-extern unsigned char accentClick1;
-extern unsigned char accentClick1Velo;
-extern unsigned char accentClick2;
-extern unsigned char accentClick2Velo;
-
-extern unsigned char clickChan;
-extern unsigned char clickPort;
-extern bool precountEnableFlag;
-extern bool precountFromMastertrackFlag;
-extern int precountSigZ;
-extern int precountSigN;
-extern bool precountOnPlay;
-extern bool precountMuteMetronome;
-extern bool precountPrerecord;
-extern bool precountPreroll;
-extern bool midiClickFlag;
-extern bool audioClickFlag;
-extern float audioClickVolume;
-extern float measClickVolume;
-extern float beatClickVolume;
-extern float accent1ClickVolume;
-extern float accent2ClickVolume;
-extern ClickSamples clickSamples;
+extern MusECore::MetroAccentsPresetsMap metroAccentPresets;
+extern MusECore::MetronomeSettings metroGlobalSettings;
+extern MusECore::MetronomeSettings metroSongSettings;
+// Whether to use the global or song metronome settings.
+extern bool metroUseSongSettings;
 
 extern bool rcEnable;
 extern unsigned char rcStopNote;

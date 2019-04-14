@@ -26,10 +26,48 @@
 
 #include "ui_metronomebase.h"
 
+#include "type_defs.h"
+#include "metronome_class.h"
+
+#include <QFrame>
+
 class QDialog;
+class QPaintEvent;
+class QIcon;
 
 namespace MusEGui {
 
+class MetronomePresetItemWidget : public QFrame {
+  protected:
+    QIcon* _onIcon;
+    QIcon* _offIcon;
+    bool _hasFixedIconSize;
+    int _margin;
+    QSize _iconSize;
+    MusECore::MetroAccentsStruct _accents;
+
+    virtual void paintEvent(QPaintEvent* );
+
+  public:
+    MetronomePresetItemWidget(
+      QIcon* on_icon, QIcon* off_icon, const MusECore::MetroAccentsStruct& mas,
+      bool hasFixedIconSize = true, int margin = 4, QWidget* parent = 0, const char* name = 0);
+
+    virtual QSize minimumSizeHint () const;
+    virtual QSize sizeHint() const;
+
+    bool margin() const { return _margin; }
+    void setMargin(int v);
+
+    QIcon* offIcon() const { return _offIcon; }
+    void setOffIcon(QIcon*);
+    QIcon* onIcon() const { return _onIcon; }
+    void setOnIcon(QIcon*);
+
+    QSize iconSize() const { return _iconSize; }
+    void setIconSize(const QSize sz);
+};
+  
 //---------------------------------------------------------
 //   MetronomeConfig
 //---------------------------------------------------------
@@ -38,12 +76,14 @@ class MetronomeConfig : public QDialog, public Ui::MetronomeConfigBase {
       Q_OBJECT
 
    private:
-      void fillSoundFiles();
-   private slots:
-      virtual void accept();
+      enum AccentPresetsDataRole { BeatsRole = Qt::UserRole, PresetIdRole, PresetTypeRole };
+      enum AccentPresetTypeIndex { FactoryPresetType = 0, UserPresetType = 1 };
+
+      //-----------------------
+      // BEGIN Lambda 'slots'.
+      //-----------------------
       void apply();
-      virtual void reject();
-      virtual void audioBeepRoutesClicked();
+      void audioBeepRoutesClicked();
       void midiClickChanged(bool);
       void precountEnableChanged(bool);
       void precountFromMastertrackChanged(bool);
@@ -53,10 +93,44 @@ class MetronomeConfig : public QDialog, public Ui::MetronomeConfigBase {
       void accent1VolumeChanged(int);
       void accent2VolumeChanged(int);
       void switchSamples();
+      void changeAccents();
+      void clearAccents(MusECore::MetroAccent::AccentType row);
+      void songChanged(MusECore::SongChangedStruct_t type);
+      void accentPresetsItemActivated(QListWidgetItem*);
+      void switchSettings();
+      void addAccentsPresetClicked();
+      void delAccentsPresetClicked();
+      void useAccentsPresetClicked();
+      void accentsResetDefaultClicked();
+      // FIXME These replacements don't work in the code.
+      //void accentBeatsChanged(int);
+      //void accentPresetsTypeItemActivated(int);
+
+      //-----------------------
+      // END Lambda 'slots'.
+      //-----------------------
+
+      void fillSoundFiles();
+      bool addAccentPreset(int beats, const MusECore::MetroAccentsStruct& mas);
+      void fillAccentPresets(int beats);
+      void configureAccentButtons(int beats);
+      void updateAccentButtons(int beats);
+      void updateAccentPresetAddButton();
+      void updateAccentPresetDelButton();
+      // Safely and synchronously changes the accent settings.
+      void setAccentsSettings(int beats, const MusECore::MetroAccentsStruct& mas);
+      // Fills the given MetroAccentsStruct from the state of the visual buttons.
+      void getAccents(int beats, MusECore::MetroAccentsStruct* mas) const;
+
+   private slots:
+      void accept();
+      void reject();
+      void accentBeatsChanged(int); // See above
+      void accentPresetsTypeItemActivated(int); // See above
 
    public:
       MetronomeConfig(QWidget* parent=0);
-      
+
       void updateValues();
       };
 

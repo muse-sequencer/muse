@@ -407,13 +407,14 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
       {
         for (ciRoute r = _inRoutes.begin(); r != _inRoutes.end(); ++r) 
         {
-          if(!r->name().isEmpty())
+          if((r->type == Route::TRACK_ROUTE && r->track) || (r->type != Route::TRACK_ROUTE && !r->name().isEmpty()))
           {
             xml.tag(level++, "Route");
             s = "source";
-            if(r->type != Route::TRACK_ROUTE)
-              s += QString(" type=\"%1\"").arg(r->type);
-            s += QString(" name=\"%1\"/").arg(Xml::xmlString(r->name()));
+            if(r->type == Route::TRACK_ROUTE)
+              s += QString(" track=\"%1\"/").arg(MusEGlobal::song->tracks()->index(r->track));
+            else
+              s += QString(" type=\"%1\" name=\"%2\"/").arg(r->type).arg(Xml::xmlString(r->name()));
             xml.tag(level, s.toLatin1().constData());
             xml.tag(level, "dest devtype=\"%d\" name=\"%s\"/", MidiDevice::JACK_MIDI, Xml::xmlString(name()).toLatin1().constData());
             xml.etag(level--, "Route");
@@ -423,7 +424,7 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
       
       for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) 
       {
-        if(!r->name().isEmpty())
+        if((r->type == Route::TRACK_ROUTE && r->track) || (r->type != Route::TRACK_ROUTE && !r->name().isEmpty()))
         {
           s = "Route";
           if(r->channel != -1)
@@ -432,14 +433,12 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
           xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::JACK_MIDI, Xml::xmlString(name()).toLatin1().constData());
           s = "dest";
           if(r->type == Route::MIDI_DEVICE_ROUTE)
-            s += QString(" devtype=\"%1\"").arg(r->device->deviceType());
+            s += QString(" devtype=\"%1\" name=\"%2\"/").arg(r->device->deviceType()).arg(Xml::xmlString(r->name()));
+          else if(r->type == Route::TRACK_ROUTE)
+            s += QString(" track=\"%1\"/").arg(MusEGlobal::song->tracks()->index(r->track));
           else
-          if(r->type != Route::TRACK_ROUTE)
-            s += QString(" type=\"%1\"").arg(r->type);
-          s += QString(" name=\"%1\"/").arg(Xml::xmlString(r->name()));
+            s += QString(" type=\"%1\" name=\"%2\"/").arg(r->type).arg(Xml::xmlString(r->name()));
           xml.tag(level, s.toLatin1().constData());
-          
-          
           xml.etag(level--, "Route");
         }
       }

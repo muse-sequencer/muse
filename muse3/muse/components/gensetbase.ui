@@ -656,10 +656,7 @@
  a new plugin. Click this button to
  force the cache to recreate upon
   next restart. 
-Do not store frequently changing
- files such as plugin configuration
- data in these directories as it may
- trigger frequent rescans.</string>
+</string>
              </property>
              <property name="text">
               <string>&amp;Force plugin rescan and cache recreation on next restart</string>

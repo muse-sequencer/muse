@@ -69,48 +69,49 @@ namespace MusEPluginScan {
 //    Returns true on success
 //---------------------------------------------------------
 
-static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
+static bool loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
                           const char* filename, const char* outfilename, bool do_ports)
 {
-      DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: filename:%s\n", filename);
-      
+  DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: filename:%s\n", filename);
+  
 //#ifdef VST_NATIVE_SUPPORT
-      
+  
 // TODO: Copied from vst_native.cpp shell support code (below).
 //       Since it would be executed all the time if VST_NATIVE_SUPPORT was enabled -
 //        we don't yet know what type the lib is! - we'll just try this for all plugins...
 //       Tested with QSemaphore (not sem_wait): This caused it to freeze. Conflicts with QProcess?
 //       sem_wait(&_vstIdLock);
-      //_vstIdLock.acquire();
+  //_vstIdLock.acquire();
 //#endif // VST_NATIVE_SUPPORT
 
-      int ret = -1;
+  bool found = false;
 
-      void* handle = dlopen(filename, RTLD_NOW);
-      if (handle == 0)
-      {
-        std::fprintf(stderr, "muse_plugin_scan: dlopen(%s) failed: %s\n",
-          filename, dlerror());
-        return ret;
-      }
+  // Open the output file...
+  QFile outfile(outfilename);
+  if(!outfile.exists())
+  {
+    std::fprintf(stderr, "muse_plugin_scan: the output file does not exist: %s for filename: %s\n", outfilename, filename);
+    return false;
+  }
+  if(!outfile.open(QIODevice::WriteOnly /*| QIODevice::Text*/))
+  {
+    std::fprintf(stderr, "muse_plugin_scan: failed to open outfilename: %s for filename: %s\n", outfilename, filename);
+    return false;
+  }
 
-      // Open the output file...
-      QFile outfile(outfilename);
-      if(!outfile.exists())
-      {
-        std::fprintf(stderr, "muse_plugin_scan: the output file does not exist: %s for filename: %s\n", outfilename, filename);
-        dlclose(handle);
-        return ret;
-      }
-      if(!outfile.open(QIODevice::WriteOnly /*| QIODevice::Text*/))
-      {
-        std::fprintf(stderr, "muse_plugin_scan: failed to open outfilename: %s for filename: %s\n", outfilename, filename);
-        dlclose(handle);
-        return ret;
-      }
-      
-      // Check if it's a DSSI plugin first...
+  // Open the library...
+  void* handle = dlopen(filename, RTLD_NOW);
+  if (handle == 0)
+  {
+    std::fprintf(stderr, "muse_plugin_scan: dlopen(%s) failed: %s\n",
+      filename, dlerror());
+  }
+  else
+  {
+    // Check if it's a DSSI plugin first...
 #ifdef DSSI_SUPPORT
+    if(!found)
+    {
       DSSI_Descriptor_Function dssi = NULL;
       if(types & MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI)
       {
@@ -127,144 +128,153 @@ static int loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
           MusEPlugin::writeDssiInfo(filename, dssi, do_ports, level, xml);
 
           xml.tag(1, "/muse");
-          ret = 0;
+          found = true;
         }
         else
         {
           DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Not a DSSI library...\n");
         }
       }
+    }
 
-      if(!dssi)
 #endif
 
-      // Check if it's a MESS plugin...
+    // Check if it's a MESS plugin...
+    if(!found)
+    {
+      MESS_Descriptor_Function msynth = NULL;
+      if(types & MusEPlugin::PluginScanInfoStruct::PluginTypeMESS)
       {
-        MESS_Descriptor_Function msynth = NULL;
-        if(types & MusEPlugin::PluginScanInfoStruct::PluginTypeMESS)
+        msynth = (MESS_Descriptor_Function)dlsym(handle, "mess_descriptor");
+        if(msynth)
         {
-          msynth = (MESS_Descriptor_Function)dlsym(handle, "mess_descriptor");
-          if(msynth)
-          {
-            DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Is a MESS library\n");
-            MusECore::Xml xml(&outfile);
-            xml.header();
-            int level = 0;
-            level = xml.putFileVersion(level);
+          DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Is a MESS library\n");
+          MusECore::Xml xml(&outfile);
+          xml.header();
+          int level = 0;
+          level = xml.putFileVersion(level);
 
-            MusEPlugin::writeMessInfo(filename, msynth, do_ports, level, xml);
+          MusEPlugin::writeMessInfo(filename, msynth, do_ports, level, xml);
 
-            xml.tag(1, "/muse");
-            ret = 0;
-          }
-          else
-          {
-            DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Not a MESS library...\n");
-          }
+          xml.tag(1, "/muse");
+          found = true;
         }
-
-        if(!msynth)
-        // Check if it's a LADSPA plugin...
+        else
         {
-          LADSPA_Descriptor_Function ladspa = NULL;
-          if(types & MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA)
-          {
-            ladspa = (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
-            if(ladspa)
-            {
-              DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Is a LADSPA library\n");
-              MusECore::Xml xml(&outfile);
-              xml.header();
-              int level = 0;
-              level = xml.putFileVersion(level);
-
-              MusEPlugin::writeLadspaInfo(filename, ladspa, do_ports, level, xml);
-
-              xml.tag(1, "/muse");
-              ret = 0;
-            }
-            else
-            {
-              DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Not a LADSPA library...\n");
-            }
-          }
-
-          if(!ladspa)
-          {
-            // Check if it's a LinuxVST plugin...
-#ifdef VST_NATIVE_SUPPORT
-            LinuxVST_Instance_Function getInstance = NULL;
-            if(types & MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST)
-            {
-              getInstance = (LinuxVST_Instance_Function)dlsym(handle, MusEPlugin::VST_NEW_PLUGIN_ENTRY_POINT);
-              if(getInstance)
-              {
-                DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Is a LinuxVST library: New entrypoint found:%s\n",
-                                  MusEPlugin::VST_NEW_PLUGIN_ENTRY_POINT);
-              }
-              else  
-              {
-                getInstance = (LinuxVST_Instance_Function)dlsym(handle, MusEPlugin::VST_OLD_PLUGIN_ENTRY_POINT);
-                
-                if(getInstance)
-                {
-                  DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Is a LinuxVST library: Old entrypoint found:%s\n",
-                                    MusEPlugin::VST_OLD_PLUGIN_ENTRY_POINT);
-                }
-              }
-              
-              if(getInstance)
-              {
-  //               sem_wait(&_vstIdLock);
-  //               _vstIdLock.acquire();
-  //               currentPluginId = 0;
-  //               bool bDontDlCLose = false;
-
-                MusECore::Xml xml(&outfile);
-                xml.header();
-                int level = 0;
-                level = xml.putFileVersion(level);
-
-                MusEPlugin::writeLinuxVstInfo(filename, getInstance, do_ports, level, xml);
-
-                xml.tag(1, "/muse");
-                ret = 0;
-              }
-              else
-              {
-                DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Not a LinuxVST library: Entrypoints \"%s\" or \"%s\" not found...\n",
-                                  MusEPlugin::VST_NEW_PLUGIN_ENTRY_POINT, MusEPlugin::VST_OLD_PLUGIN_ENTRY_POINT);
-              }
-            }
-            
-            if(!getInstance)
-#endif // VST_NATIVE_SUPPORT
-              
-            {
-              DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Unknown library:%s\n", filename);
-              ret = 1;
-            }
-          }
+          DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Not a MESS library...\n");
         }
       }
-       
-//       _end:
+    }
 
-      // Flush and close the output file.
-      outfile.close();
+    // Check if it's a LADSPA plugin...
+    if(!found)
+    {
+      LADSPA_Descriptor_Function ladspa = NULL;
+      if(types & MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA)
+      {
+        ladspa = (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
+        if(ladspa)
+        {
+          DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Is a LADSPA library\n");
+          MusECore::Xml xml(&outfile);
+          xml.header();
+          int level = 0;
+          level = xml.putFileVersion(level);
+
+          MusEPlugin::writeLadspaInfo(filename, ladspa, do_ports, level, xml);
+
+          xml.tag(1, "/muse");
+          found = true;
+        }
+        else
+        {
+          DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Not a LADSPA library...\n");
+        }
+      }
+    }
+
+    // Check if it's a LinuxVST plugin...
+#ifdef VST_NATIVE_SUPPORT
+    if(!found)
+    {
+      LinuxVST_Instance_Function getInstance = NULL;
+      if(types & MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST)
+      {
+        getInstance = (LinuxVST_Instance_Function)dlsym(handle, MusEPlugin::VST_NEW_PLUGIN_ENTRY_POINT);
+        if(getInstance)
+        {
+          DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Is a LinuxVST library: New entrypoint found:%s\n",
+                            MusEPlugin::VST_NEW_PLUGIN_ENTRY_POINT);
+        }
+        else  
+        {
+          getInstance = (LinuxVST_Instance_Function)dlsym(handle, MusEPlugin::VST_OLD_PLUGIN_ENTRY_POINT);
+          
+          if(getInstance)
+          {
+            DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Is a LinuxVST library: Old entrypoint found:%s\n",
+                              MusEPlugin::VST_OLD_PLUGIN_ENTRY_POINT);
+          }
+        }
+        
+        if(getInstance)
+        {
+//               sem_wait(&_vstIdLock);
+//               _vstIdLock.acquire();
+//               currentPluginId = 0;
+//               bool bDontDlCLose = false;
+
+          MusECore::Xml xml(&outfile);
+          xml.header();
+          int level = 0;
+          level = xml.putFileVersion(level);
+
+          MusEPlugin::writeLinuxVstInfo(filename, getInstance, do_ports, level, xml);
+
+          xml.tag(1, "/muse");
+          found = true;
+        }
+        else
+        {
+          DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Not a LinuxVST library: Entrypoints \"%s\" or \"%s\" not found...\n",
+                            MusEPlugin::VST_NEW_PLUGIN_ENTRY_POINT, MusEPlugin::VST_OLD_PLUGIN_ENTRY_POINT);
+        }
+      }
+    }
+#endif // VST_NATIVE_SUPPORT
       
-      // Close the library for now. It will be opened 
-      //  again when an instance is created.
-      if(handle)
-        dlclose(handle);
-      
+  }
+  
+  if(!found)
+  {
+    MusECore::Xml xml(&outfile);
+    xml.header();
+    int level = 0;
+    level = xml.putFileVersion(level);
+
+    MusEPlugin::writeUnknownPluginInfo(filename, level, xml);
+
+    xml.tag(1, "/muse");
+    found = true;
+  }
+
+  //_end:
+
+  // Flush and close the output file.
+  outfile.close();
+    
+  // Close the library for now. It will be opened 
+  //  again when an instance is created.
+  if(handle)
+    dlclose(handle);
+  
 //#ifdef VST_NATIVE_SUPPORT
 //       sem_post(&_vstIdLock);
-      //_vstIdLock.release();
+  //_vstIdLock.release();
 //#endif // VST_NATIVE_SUPPORT
-      
-      
-      return ret;
+  
+  
+  return found;
 }
 
 } // namespace MusEPluginScan
@@ -303,11 +313,10 @@ int main(int argc, char* argv[])
         std::fprintf(stderr, "Error: No output filename given\n");
         return -1;
       }
+   
+      const bool res = MusEPluginScan::loadPluginLib(types, filename, outfilename, do_ports);
       
-      const int res = MusEPluginScan::loadPluginLib(types, filename, outfilename, do_ports);
-      
-      // -1 = error, 0 = OK, 1 = unknown library.
-      if(res == -1)
+      if(!res)
       {
         std::fprintf(stderr, "Error loading plugin: <%s>\n", filename);
         return 1;

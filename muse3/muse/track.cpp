@@ -471,6 +471,16 @@ void Track::setDefaultName(QString base)
       }
 
 //---------------------------------------------------------
+//   displayName
+//---------------------------------------------------------
+
+QString Track::displayName() const
+{
+  const int idx = MusEGlobal::song->tracks()->index(this);
+  return QString("%1:%2").arg(idx + 1).arg(_name);
+}
+
+//---------------------------------------------------------
 //   clearRecAutomation
 //---------------------------------------------------------
 
@@ -1833,7 +1843,7 @@ void Track::writeRouting(int level, Xml& xml) const
         const RouteList* rl = &_inRoutes;
         for (ciRoute r = rl->begin(); r != rl->end(); ++r) 
         {
-          if(!r->name().isEmpty())
+          if((r->type == Route::TRACK_ROUTE && r->track) || (r->type != Route::TRACK_ROUTE && !r->name().isEmpty()))
           {
             s = "Route";
             if(r->channel != -1)
@@ -1843,12 +1853,13 @@ void Track::writeRouting(int level, Xml& xml) const
             
             // New routing scheme.
             s = "source";
-            if(r->type != Route::TRACK_ROUTE)
-              s += QString(" type=\"%1\"").arg(r->type);
-            s += QString(" name=\"%1\"/").arg(Xml::xmlString(r->name()));
+            if(r->type == Route::TRACK_ROUTE)
+              s += QString(" track=\"%1\"/").arg(MusEGlobal::song->tracks()->index(r->track));
+            else
+              s += QString(" type=\"%1\" name=\"%2\"/").arg(r->type).arg(Xml::xmlString(r->name()));
             xml.tag(level, s.toLatin1().constData());
-            
-            xml.tag(level, "dest name=\"%s\"/", Xml::xmlString(name()).toLatin1().constData());
+
+            xml.tag(level, "dest track=\"%d\"/", MusEGlobal::song->tracks()->index(this));
             
             xml.etag(level--, "Route");
           }
@@ -1860,10 +1871,8 @@ void Track::writeRouting(int level, Xml& xml) const
       {
         // Ignore Audio Output to Audio Input routes.
         // They are taken care of by Audio Input in the section above.
-        if(r->type == Route::TRACK_ROUTE && r->track && r->track->type() == Track::AUDIO_INPUT) 
-          continue;
-            
-        if(r->midiPort != -1 || !r->name().isEmpty()) 
+        if((r->type == Route::TRACK_ROUTE && r->track && r->track->type() != Track::AUDIO_INPUT) ||
+           (r->type != Route::TRACK_ROUTE && (!r->name().isEmpty() || r->midiPort != -1)))
         {
           s = "Route";
           if(r->channel != -1)
@@ -1876,15 +1885,17 @@ void Track::writeRouting(int level, Xml& xml) const
           xml.tag(level++, s.toLatin1().constData());
           
           // Allow for a regular mono or stereo track to feed a multi-channel synti. 
-          xml.tag(level, "source name=\"%s\"/", Xml::xmlString(name()).toLocal8Bit().constData());
+          xml.tag(level, "source track=\"%d\"/", MusEGlobal::song->tracks()->index(this));
           
           s = "dest";
           
           if(r->type != Route::TRACK_ROUTE && r->type != Route::MIDI_PORT_ROUTE)
             s += QString(" type=\"%1\"").arg(r->type);
 
-          if(r->type == Route::MIDI_PORT_ROUTE)                                          
+          if(r->type == Route::MIDI_PORT_ROUTE)
             s += QString(" mport=\"%1\"/").arg(r->midiPort);
+          else if(r->type == Route::TRACK_ROUTE)
+            s += QString(" track=\"%1\"/").arg(MusEGlobal::song->tracks()->index(r->track));
           else  
             s += QString(" name=\"%1\"/").arg(Xml::xmlString(r->name()));
             
