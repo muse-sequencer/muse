@@ -31,6 +31,7 @@ file (GLOB driver_source_files
        dummyaudio.cpp
        jack.cpp
        jackmidi.cpp
+       posixtimer.cpp
        rtctimer.cpp
        )
 if (HAVE_RTAUDIO)
