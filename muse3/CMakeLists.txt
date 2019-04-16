@@ -308,6 +308,14 @@ check_cxx_symbol_exists(exp10l cmath HAVE_EXP10L)
 # check_cxx_symbol_exists(M_PI cmath HAVE_M_PI)
 
 ##
+## POSIX Timers
+##
+
+## TODO Detection
+## set(POSIX_TIMER_SUPPORT ON)
+
+
+##
 ## alsa >= 0.9.0
 ##
 

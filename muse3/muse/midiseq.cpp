@@ -44,6 +44,7 @@
 #else
 #include "driver/alsatimer.h"
 #include "driver/rtctimer.h"
+#include "driver/posixtimer.h"
 #endif
 #include "midi.h"
 #include "midiseq.h"
@@ -231,7 +232,18 @@ signed int MidiSeq::selectTimer()
         return tmrFd;
     }
     delete timer;
-    
+  
+#ifdef POSIX_TIMER_SUPPORT
+    fprintf(stderr, "Trying POSIX timer...\n");
+    timer = new PosixTimer();
+    tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
+    if ( tmrFd!= -1) { // ok!
+        fprintf(stderr, "got timer = %d\n", tmrFd);
+        return tmrFd;
+    }
+    delete timer;
+#endif
+
 #ifdef ALSA_SUPPORT
     fprintf(stderr, "Trying ALSA timer...\n");
     timer = new AlsaTimer();
