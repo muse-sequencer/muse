@@ -43,9 +43,11 @@ namespace MusECore {
 //   WaveTrack
 //---------------------------------------------------------
 
-WaveTrack::WaveTrack() : AudioTrack(Track::WAVE)
+// Default 1 channel for wave tracks.
+WaveTrack::WaveTrack() : AudioTrack(Track::WAVE, 1)
 {
-  setChannels(1);
+// REMOVE Tim. latency. Removed.
+//   setChannels(1);
 }
 
 WaveTrack::WaveTrack(const WaveTrack& wt, int flags) : AudioTrack(wt, flags)
@@ -109,6 +111,13 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
       // Process only if track is not off.
       if(!off())
       {
+        
+        // REMOVE Tim. latency. Added.
+        const TrackLatencyInfo& li = getLatencyInfo();
+        const float correction = li._sourceCorrectionValue;
+        const int i_correction = correction;
+        
+        
         bool do_overwrite = overwrite;
         PartList* pl = parts();
         unsigned n = samples;
@@ -151,6 +160,18 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
                           if (nn > n)
                                 nn = n;
                           }
+
+                    // REMOVE Tim. latency. Added.
+                    // Don't bother trying to read anything that comes before sample zero,
+                    //  or limiting to zero which would just repeat the same beginning section over.
+                    // TODO This may need refinement. TESTING
+                    //if(i_correction < 0 && (unsigned int)-i_correction > srcOffset)
+                    if(i_correction > 0 && (unsigned int)i_correction > srcOffset)
+                      continue;
+                    // Move the source FORWARD by an amount necessary for latency correction.
+                    // i_correction will be negative for correction.
+                    srcOffset -= i_correction;
+
                     float* bpp[channels()];
                     for (int i = 0; i < channels(); ++i)
                           bpp[i] = bp[i] + dstOffset;
@@ -430,6 +451,33 @@ bool WaveTrack::getInputData(unsigned pos, int channels, unsigned nframes,
               l = 0;
             else
               l = ir->audioLatencyOut;
+            
+            
+            // REMOVE Tim. latency. Added.
+//             if(MusEGlobal::audio->isPlaying())
+//             {
+//               fprintf(stderr, "WaveTrack::getInputData() name:%s ir->latency:%lu latencyCompWriteOffset:%lu total:%lu\n",
+//                       name().toLatin1().constData(), l, latencyCompWriteOffset(), l + latencyCompWriteOffset());
+//               for(int ch = 0; ch < channels; ++ch)
+//               {
+//                 fprintf(stderr, "channel:%d peak:", ch);
+//                 float val;
+//                 float peak = 0.0f;
+//                 const float* buf = buffer[ch];
+//                 for(unsigned int smp = 0; smp < nframes; ++smp)
+//                 {
+//                   val = buf[smp];
+//                   if(val > peak)
+//                     peak = val;
+//                 }
+//                 const int dots = peak * 20;
+//                 for(int d = 0; d < dots; ++d)
+//                   fprintf(stderr, "*");
+//                 fprintf(stderr, "\n");
+//               }
+//             }
+            
+            
             _latencyComp->write(nframes, l + latencyCompWriteOffset(), buffer);
             
             next_chan = dst_ch + fin_dst_chs;
@@ -559,7 +607,9 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
 
         
         // REMOVE Tim. latency. Added.
-        fprintf(stderr, "WaveTrack::getData: framePos:%d audio pos frame:%d\n", framePos, MusEGlobal::audio->pos().frame());
+//         fprintf(stderr, "WaveTrack::getData: name:%s RECORD: Putting to fifo: framePos:%d audio pos frame:%d\n",
+//                 name().toLatin1().constData(),
+//                 framePos, MusEGlobal::audio->pos().frame());
         
         // This will adjust for the latency before putting.
         putFifo(dstChannels, nframe, bp);
@@ -655,6 +705,28 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
       return have_data;
     }
 
+    // REMOVE Tim. latency. Added.
+//     fprintf(stderr, "WaveTrack::getData() name:%s PLAYBACK:\n",
+//             //name().toLatin1().constData(), l, latencyCompWriteOffset(), l + latencyCompWriteOffset());
+//             name().toLatin1().constData());
+//     for(int ch = 0; ch < dstChannels; ++ch)
+//     {
+//       fprintf(stderr, "channel:%d peak:", ch);
+//       float val;
+//       float peak = 0.0f;
+//       const float* buf = pf_buf[ch];
+//       for(unsigned int smp = 0; smp < nframe; ++smp)
+//       {
+//         val = buf[smp];
+//         if(val > peak)
+//           peak = val;
+//       }
+//       const int dots = peak * 20;
+//       for(int d = 0; d < dots; ++d)
+//         fprintf(stderr, "*");
+//       fprintf(stderr, "\n");
+//     }
+    
     if(do_overwrite)
     {
       for(int i = 0; i < dstChannels; ++i)
@@ -1093,7 +1165,8 @@ void WaveTrack::setCorrectionLatencyInfo(float finalWorstLatency, float callerBr
     // The _trackLatency should already be calculated in the dominance scan.
     const float branch_lat = callerBranchLatency + _latencyInfo._trackLatency;
     // Only if monitoring is not available, or it is and in fact is monitored.
-    if(!canRecordMonitor() || (canRecordMonitor() && isRecMonitored()))
+    // REMOVE Tim. latency. Added. FLAG latency rec.
+    if(MusEGlobal::config.monitoringAffectsLatency && isRecMonitored())
     {
       const RouteList* rl = inRoutes();
       for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
@@ -1103,7 +1176,10 @@ void WaveTrack::setCorrectionLatencyInfo(float finalWorstLatency, float callerBr
             atrack->setCorrectionLatencyInfo(finalWorstLatency, branch_lat);
       }
     }
-    float corr = finalWorstLatency - branch_lat;
+    float corr = 0.0f;
+    if(MusEGlobal::config.commonProjectLatency)
+      corr += finalWorstLatency;
+    corr -= branch_lat;
     // The _sourceCorrectionValue is initialized to zero during the dominance scan.
     // Whichever calling branch needs the most correction gets it.
     if(corr < _latencyInfo._sourceCorrectionValue)
@@ -1135,7 +1211,11 @@ TrackLatencyInfo& WaveTrack::getLatencyInfo()
       if(!off())
       {
         bool item_found = false;
-        if(isRecMonitored())
+        // REMOVE Tim. latency. Added. FLAG latency rec.
+        const bool passthru = MusEGlobal::config.monitoringAffectsLatency && isRecMonitored(); // || recordFlag();
+          
+          
+//         if(isRecMonitored() || recordFlag())
         {
           for (iRoute ir = rl->begin(); ir != rl->end(); ++ir) {
                 if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
@@ -1161,7 +1241,10 @@ TrackLatencyInfo& WaveTrack::getLatencyInfo()
                 // They will be used by the latency compensator in the audio process pass.
 //                 ir->canDominateLatency = li._canDominateOutputLatency;
                 //ir->canCorrectOutputLatency = li._canCorrectOutputLatency;
-                ir->audioLatencyOut = li._outputLatency;
+                if(passthru)
+                  ir->audioLatencyOut = li._outputLatency;
+                else
+                  ir->audioLatencyOut = li._trackLatency;
                 
     //             // Override the current worst value if the latency is greater,
     //             //  but ONLY if the branch can dominate.
@@ -1171,34 +1254,39 @@ TrackLatencyInfo& WaveTrack::getLatencyInfo()
     //             if(li._outputLatency > route_worst_latency)
     //               route_worst_latency = li._outputLatency;
                 
-                // Is it the first found item?
-                if(item_found)
+                if(passthru)
                 {
-                  // Override the current values with this item's values ONLY if required.
-                  
-                  //if(li._outputAvailableCorrection < route_worst_out_corr)
-                  //  route_worst_out_corr = li._outputAvailableCorrection;
-                  
-                  // If any one of the branches can dominate the latency,
-                  //  that overrides any which cannot.
-//                   if(li._canDominateOutputLatency)
-//                   {
-//                     can_dominate_out_lat = true;
-                    // Override the current worst value if the latency is greater,
-                    //  but ONLY if the branch can dominate.
-                    if(li._outputLatency > route_worst_latency)
+                  // Is it the first found item?
+                  if(item_found)
+                  {
+                    // Override the current values with this item's values ONLY if required.
+                    
+                    //if(li._outputAvailableCorrection < route_worst_out_corr)
+                    //  route_worst_out_corr = li._outputAvailableCorrection;
+                    
+                    // If any one of the branches can dominate the latency,
+                    //  that overrides any which cannot.
+  //                   if(li._canDominateOutputLatency)
+  //                   {
+  //                     can_dominate_out_lat = true;
+                      // Override the current worst value if the latency is greater,
+                      //  but ONLY if the branch can dominate.
+                      if(li._outputLatency > route_worst_latency)
+                      //if(passthru && li._outputLatency > route_worst_latency)
+                        route_worst_latency = li._outputLatency;
+  //                   }
+                  }
+                  else
+                  {
+                    item_found = true;
+                    // Override the defaults with this first item's values.
+                    //route_worst_out_corr = li._outputAvailableCorrection;
+  //                   can_dominate_out_lat = li._canDominateOutputLatency;
+                    // Override the default worst value, but ONLY if the branch can dominate.
+  //                   if(can_dominate_out_lat)
+                    //if(passthru)
                       route_worst_latency = li._outputLatency;
-//                   }
-                }
-                else
-                {
-                  item_found = true;
-                  // Override the defaults with this first item's values.
-                  //route_worst_out_corr = li._outputAvailableCorrection;
-//                   can_dominate_out_lat = li._canDominateOutputLatency;
-                  // Override the default worst value, but ONLY if the branch can dominate.
-//                   if(can_dominate_out_lat)
-                    route_worst_latency = li._outputLatency;
+                  }
                 }
           }
         }
@@ -1225,27 +1313,29 @@ TrackLatencyInfo& WaveTrack::getLatencyInfo()
         //   to be its 'latency' which is NEGATIVE.
         //-------------------------------------------------------
         
-        // Temporarily store the track's own correction value conveniently
-        //  in a temporary variable member. It will be used by the
-        //  latency compensator in the audio process pass.
-        _waveLatencyOut = _latencyInfo._sourceCorrectionValue;
-        // Override the current worst value if the track's own correction value is greater.
-        // Note that the correction value is always NEGATIVE.
-        if(item_found)
-        {
-          if(_waveLatencyOut > route_worst_latency)
-            route_worst_latency = _waveLatencyOut;
-        }
-        else
-        {
-          item_found = true;
-          route_worst_latency = _waveLatencyOut;
-        }
+//         // Temporarily store the track's own correction value conveniently
+//         //  in a temporary variable member. It will be used by the
+//         //  latency compensator in the audio process pass.
+//         _waveLatencyOut = _latencyInfo._sourceCorrectionValue;
+//         // Override the current worst value if the track's own correction value is greater.
+//         // Note that the correction value is always NEGATIVE.
+//         if(item_found)
+//         {
+//           if(_waveLatencyOut > route_worst_latency)
+//             route_worst_latency = _waveLatencyOut;
+//         }
+//         else
+//         {
+//           item_found = true;
+//           route_worst_latency = _waveLatencyOut;
+//         }
         
         // Now that we know the worst-case latency of the connected branches,
         //  adjust each of the conveniently stored temporary latency values
         //  in the routes according to whether they can dominate...
-        if(isRecMonitored())
+        // REMOVE Tim. latency. Added. FLAG latency rec.
+        //if(isRecMonitored())
+//         if(isRecMonitored() || recordFlag())
         {
           for (iRoute ir = rl->begin(); ir != rl->end(); ++ir) {
                 if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
@@ -1273,10 +1363,10 @@ TrackLatencyInfo& WaveTrack::getLatencyInfo()
           }
         }
 
-        _waveLatencyOut = route_worst_latency - _waveLatencyOut;
-        // Should not happen, but just in case.
-        if((long int)_waveLatencyOut < 0)
-          _waveLatencyOut = 0.0f;
+//         _waveLatencyOut = route_worst_latency - _waveLatencyOut;
+//         // Should not happen, but just in case.
+//         if((long int)_waveLatencyOut < 0)
+//           _waveLatencyOut = 0.0f;
         
       }
       
@@ -1397,7 +1487,9 @@ void WaveTrack::setChannels(int n)
       if (sf) {
             if (sf->samples() == 0) {
                   sf->remove();
-                  sf->setFormat(sf->format(), _channels,
+// REMOVE Tim. latency. Changed.
+//                   sf->setFormat(sf->format(), _channels,
+                  sf->setFormat(sf->format(), channels(),
                      sf->samplerate());
                   sf->openWrite();
                   }

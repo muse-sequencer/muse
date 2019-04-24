@@ -312,7 +312,7 @@ check_cxx_symbol_exists(exp10l cmath HAVE_EXP10L)
 ##
 
 ## TODO Detection
-## set(POSIX_TIMER_SUPPORT ON)
+set(POSIX_TIMER_SUPPORT ON)
 
 
 ##

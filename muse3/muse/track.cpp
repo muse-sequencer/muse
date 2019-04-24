@@ -239,7 +239,7 @@ int Track::y() const
 //   Track::init
 //---------------------------------------------------------
 
-void Track::init()
+void Track::init(int channels)
       {
       _auxRouteCount = 0;  
       _nodeTraversed = false;
@@ -250,7 +250,7 @@ void Track::init()
       _solo          = false;
       _internalSolo  = 0;
       _off           = false;
-      _channels      = 0;           // 1 - mono, 2 - stereo
+      _channels      = channels;           // 1 - mono, 2 - stereo
       _selected      = false;
       _selectionOrder = 0;
       _height        = MusEGlobal::config.trackHeight;
@@ -263,9 +263,9 @@ void Track::init()
             }
       }
 
-Track::Track(Track::TrackType t)
+Track::Track(Track::TrackType t, int channels)
 {
-      init();
+      init(channels);
       _type = t;
 }
 
@@ -1814,9 +1814,11 @@ bool Track::readProperties(Xml& xml, const QString& tag)
             _height = xml.parseInt();
       else if (tag == "channels")
       {
-        _channels = xml.parseInt();
-        if(_channels > MusECore::MAX_CHANNELS)
-          _channels = MusECore::MAX_CHANNELS;
+// REMOVE Tim. latency. Changed.
+//         _channels = xml.parseInt();
+//         if(_channels > MusECore::MAX_CHANNELS)
+//           _channels = MusECore::MAX_CHANNELS;
+        setChannels(xml.parseInt());
       }      
       else if (tag == "locked")
             _locked = xml.parseInt();

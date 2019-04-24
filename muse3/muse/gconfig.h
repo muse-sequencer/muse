@@ -321,6 +321,10 @@ struct GlobalConfigValues {
       bool correctUnterminatedOutBranchLatency;
       // Whether to include unterminated input branches in latency correction calculations.
       bool correctUnterminatedInBranchLatency;
+      // Whether a track's monitoring feature affects latency.
+      bool monitoringAffectsLatency;
+      // Whether completely independent branches share a common latency.
+      bool commonProjectLatency;
       QString mixdownPath;
       bool showNoteNamesInPianoRoll;
       // Whether selecting parts or events is undoable.

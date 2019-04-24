@@ -874,6 +874,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       TrackList* tl = MusEGlobal::song->tracks();
       AudioTrack* track; 
       int channels;
+      bool want_record_side;
       for(ciTrack it = tl->begin(); it != tl->end(); ++it) 
       {
         if((*it)->isMidiTrack())
@@ -905,13 +906,18 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       //---------------------------------------------
       // PASS 1: Find any dominant branches:
       //---------------------------------------------
-      float route_worst_latency = 0.0f;
+      float song_worst_latency = 0.0f;
       for(ciTrack it = tl->begin(); it != tl->end(); ++it) 
       {
         if((*it)->isMidiTrack())
           continue;
         track = static_cast<AudioTrack*>(*it);
         
+        // If the track is for example a Wave Track, we must consider up to two contributing paths,
+        //  the output (playback) side and the input (record) side which can pass through via monitoring.
+        want_record_side = track->type() == Track::WAVE;
+        
+        //---------------------------------------------
         // We are looking for the end points of branches.
         // This includes Audio Outputs, and open-ended branches
         //  that go nowhere or are effectively disconnected from
@@ -919,15 +925,45 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         // This caches its result in the track's _latencyInfo structure
         //  in the _isLatencyOutputTerminal member so it can be used
         //  faster in the correction pass or final pass.
-        if(!track->isLatencyOutputTerminal())
-          continue;
+        //---------------------------------------------
         
-        // Gather the branch's dominance latency info.
-        const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
-        // If the branch can dominate and its latency value is greater
-        //  than the current worst, overwrite the worst.
-        if(li._canDominateOutputLatency && li._outputLatency > route_worst_latency)
-          route_worst_latency = li._outputLatency;
+        // Examine any recording path, if desired.
+        if(want_record_side && track->isLatencyInputTerminal())
+        {
+          // Gather the branch's dominance latency info.
+          const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
+          // If the branch can dominate, and this end-point allows it, and its latency value
+          //  is greater than the current worst, overwrite the worst.
+          if(track->canDominateEndPointLatency() &&
+            li._canDominateOutputLatency &&
+            li._outputLatency > song_worst_latency)
+              song_worst_latency = li._outputLatency;
+        }
+        
+        // Examine any playback path.
+        if(track->isLatencyOutputTerminal())
+        {
+          // Gather the branch's dominance latency info.
+          const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
+          // If the branch can dominate, and this end-point allows it, and its latency value
+          //  is greater than the current worst, overwrite the worst.
+          if(track->canDominateEndPointLatency() &&
+            li._canDominateOutputLatency &&
+            li._outputLatency > song_worst_latency)
+              song_worst_latency = li._outputLatency;
+        }
+        
+//         if(!track->isLatencyOutputTerminal())
+//           continue;
+        
+//         // Gather the branch's dominance latency info.
+//         const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
+//         // If the branch can dominate, and this end-point allows it, and its latency value
+//         //  is greater than the current worst, overwrite the worst.
+//         if(track->canDominateEndPointLatency() &&
+//            li._canDominateOutputLatency &&
+//            li._outputLatency > route_worst_latency)
+//           route_worst_latency = li._outputLatency;
       }      
       
       //---------------------------------------------
@@ -945,11 +981,11 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         // This should already be cached from the dominance pass.
         const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
         // We are looking for the end points of branches.
-        if(!li._isLatencyOuputTerminal)
+        if(!li._isLatencyOutputTerminal)
           continue;
         
         // Set branch correction values, for any tracks which support it.
-        track->setCorrectionLatencyInfo(route_worst_latency);
+        track->setCorrectionLatencyInfo(song_worst_latency);
       }      
       
       //----------------------------------------------------------
@@ -967,7 +1003,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         // This should already be cached from the dominance pass.
         const TrackLatencyInfo& dli = track->getDominanceLatencyInfo();
         // We are looking for the end points of branches.
-        if(!dli._isLatencyOuputTerminal)
+        if(!dli._isLatencyOutputTerminal)
           continue;
         
         // Gather the branch's final latency info, which also sets the
@@ -976,7 +1012,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         track->getLatencyInfo();
         
         // Set this end point's latency compensator write offset.
-        track->setLatencyCompWriteOffset(route_worst_latency);
+        track->setLatencyCompWriteOffset(song_worst_latency);
       }      
       
       

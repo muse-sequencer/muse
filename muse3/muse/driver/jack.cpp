@@ -746,6 +746,27 @@ static int graph_callback(void*)
       return 0;
       }
 
+// static void latency_callback(jack_latency_callback_mode_t /*mode*/, void* /*arg*/)
+// {
+//   //JackAudioDevice* jad = (JackAudioDevice*)arg;
+// 
+//   // TODO: Do all of our Input Track and Output Track ports.
+// 
+// //   jack_latency_range_t range;
+// //   if (mode == JackCaptureLatency) {
+// //     jack_port_get_latency_range (input_port, mode, &range);
+// //     range.min += latency;
+// //     range.max += latency;
+// //     jack_port_set_latency_range (output_port, mode, &range);
+// //   } else {
+// //     jack_port_get_latency_range (output_port, mode, &range);
+// //     range.min += latency;
+// //     range.max += latency;
+// //     jack_port_set_latency_range (input_port, mode, &range);
+// //   }
+// }
+
+
 void JackAudioDevice::processJackCallbackEvents(const Route& our_node, jack_port_t* our_port, 
                                                 RouteList* route_list, bool is_input)
 {
@@ -1212,6 +1233,10 @@ void JackAudioDevice::registerClient()
       jack_set_graph_order_callback(_client, graph_callback, this);
 //      jack_set_xrun_callback(client, xrun_callback, 0);
       jack_set_freewheel_callback (_client, freewheel_callback, 0);
+      // Tell the JACK server to call `latency()' whenever the latency needs to be recalculated.
+//       if(jack_set_latency_callback)
+//         jack_set_latency_callback(_client, latency_callback, this);
+
 
       jack_set_xrun_callback(_client, static_JackXRunCallback, this);
       }
@@ -1901,7 +1926,8 @@ unsigned int JackAudioDevice::portLatency(void* port, bool capture) const
 
   //QString s(jack_port_name((jack_port_t*)port));
   //fprintf(stderr, "Jack::portName %p %s\n", port, s.toLatin1().constData());  
-  
+
+  // Hm, for 2048 period, this one returns 4096 regardless of whether port is in or out...
   jack_latency_range_t p_range;
   jack_port_get_latency_range((jack_port_t*)port, JackPlaybackLatency, &p_range);
   //fprintf(stderr, "JackAudioDevice::portLatency playback min:%u max:%u\n", p_range.min, p_range.max);
@@ -1911,6 +1937,7 @@ unsigned int JackAudioDevice::portLatency(void* port, bool capture) const
     //return (p_range.max - p_range.min) / 2;
   //}
 
+  // For 2048 period, this one returns 2048 regardless of whether port is in or out...
   jack_latency_range_t c_range;
   jack_port_get_latency_range((jack_port_t*)port, JackCaptureLatency, &c_range);
   //fprintf(stderr, "JackAudioDevice::portLatency capture min:%u max:%u\n", c_range.min, c_range.max);

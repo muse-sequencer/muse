@@ -313,6 +313,8 @@ GlobalConfigValues config = {
       2,                            // routerGroupingChannels
       false,                        // correctUnterminatedOutBranchLatency
       false,                        // correctUnterminatedInBranchLatency
+      false,                        // monitoringAffectsLatency
+      false,                        // commonProjectLatency
       "",                           // mixdownPath
       true,                         // showNoteNamesInPianoRoll
       false                         // selectionsUndoable Whether selecting parts or events is undoable.

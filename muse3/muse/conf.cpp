@@ -1122,6 +1122,15 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "deviceAudioBackend")
                               MusEGlobal::config.deviceAudioBackend = xml.parseInt();
 
+                        else if (tag == "correctUnterminatedInBranchLatency")
+                              MusEGlobal::config.correctUnterminatedInBranchLatency = xml.parseInt();
+                        else if (tag == "correctUnterminatedOutBranchLatency")
+                              MusEGlobal::config.correctUnterminatedOutBranchLatency = xml.parseInt();
+                        else if (tag == "monitoringAffectsLatency")
+                              MusEGlobal::config.monitoringAffectsLatency = xml.parseInt();
+                        else if (tag == "commonProjectLatency")
+                              MusEGlobal::config.commonProjectLatency = xml.parseInt();
+                        
                         else if (tag == "minControlProcessPeriod")
                               MusEGlobal::config.minControlProcessPeriod = xml.parseUInt();
                         else if (tag == "guiRefresh")
@@ -1706,6 +1715,11 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "deviceAudioBufSize", MusEGlobal::config.deviceAudioBufSize);
       xml.intTag(level, "deviceAudioSampleRate", MusEGlobal::config.deviceAudioSampleRate);
       xml.intTag(level, "deviceAudioBackend", MusEGlobal::config.deviceAudioBackend);
+
+      xml.intTag(level, "correctUnterminatedInBranchLatency", MusEGlobal::config.correctUnterminatedInBranchLatency);
+      xml.intTag(level, "correctUnterminatedOutBranchLatency", MusEGlobal::config.correctUnterminatedOutBranchLatency);
+      xml.intTag(level, "monitoringAffectsLatency", MusEGlobal::config.monitoringAffectsLatency);
+      xml.intTag(level, "commonProjectLatency", MusEGlobal::config.commonProjectLatency);
 
 
       xml.uintTag(level, "minControlProcessPeriod", MusEGlobal::config.minControlProcessPeriod);

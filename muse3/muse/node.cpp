@@ -1306,83 +1306,167 @@ void Track::setChannels(int n)
       }
 
 
-void AudioInput::setChannels(int n)
-      {
-      if (n == _channels)
-            return;
-      AudioTrack::setChannels(n);
-      }
+// REMOVE Tim. latency. Removed.
+// void AudioInput::setChannels(int n)
+//       {
+//       if (n == _channels)
+//             return;
+//       AudioTrack::setChannels(n);
+//       }
 
-void AudioOutput::setChannels(int n)
-      {
-      if (n == _channels)
-            return;
-      AudioTrack::setChannels(n);
-      }
+// REMOVE Tim. latency. Removed.
+// void AudioOutput::setChannels(int n)
+//       {
+//       if (n == _channels)
+//             return;
+//       AudioTrack::setChannels(n);
+//       }
 
-// bool AudioTrack::isLatencyInputTerminal() const
-// {
+bool AudioTrack::isLatencyInputTerminal()
+{
 //   bool res = true;
-//   const RouteList* rl = inRoutes();
-//   for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
-//     switch(ir->type)
-//     {
-//       case Route::TRACK_ROUTE:
-//         if(!ir->track)
-//           continue;
-//         if(ir->track->isMidiTrack())
-//         {
-//           // TODO
-//         }
-//         else
-//         {
-//           AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
-//           if(!atrack->off())
-//           {
-//             res = false;
-//             break;
-//           }
-//         }
-//       break;
-// 
-//       default:
-//       break;
-//     }
+  
+  // REMOVE Tim. latency. Added. FLAG latency rec.
+  // TODO Refine this with a case or something, specific for say Aux tracks, Group tracks etc.
+//   if(!off() && ((!canRecordMonitor() || (canRecordMonitor() && isRecMonitored()))
+//      //|| (canRecord() && recordFlag())
+//      ))
+
+  // If we're asking for the view from the record side, check if we're
+  //  passing the signal through the track via monitoring.
+  if(off() || (canRecordMonitor() && (!MusEGlobal::config.monitoringAffectsLatency || !isRecMonitored())))
+     //&& canRecord() && !recordFlag())
+  {
+    _latencyInfo._isLatencyInputTerminal = true;
+    return true;
+  }
+  
+//   if(!off() && 
+//     (!record || ((!canRecordMonitor() || (canRecordMonitor() && isRecMonitored()))
+//      //|| (canRecord() && recordFlag())
+//      )))
+//   {
+    const RouteList* rl = outRoutes();
+    for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+      switch(ir->type)
+      {
+        case Route::TRACK_ROUTE:
+          if(!ir->track)
+            continue;
+          if(ir->track->isMidiTrack())
+          {
+            // TODO
+          }
+          else
+          {
+            AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+//             if(!atrack->off() && 
+              // REMOVE Tim. latency. Added. FLAG latency rec.
+              // TODO Refine this with a case or something, specific for say Aux tracks, Group tracks etc.
+//               ((!atrack->canRecordMonitor() || (atrack->canRecordMonitor() && atrack->isRecMonitored()))
+//                 || (atrack->canRecord() && atrack->recordFlag()))
+//               )
+//             {
+// //               res = false;
+//               _latencyInfo._isLatencyInputTerminal = false;
+//               return false;
+// //               break;
+//             }
+            
+            
+            if(atrack->off()) // || 
+              //(atrack->canRecordMonitor() && (MusEGlobal::config.monitoringAffectsLatency || !atrack->isRecMonitored())))
+               //&& atrack->canRecord() && !atrack->recordFlag()))
+              continue;
+            
+            _latencyInfo._isLatencyInputTerminal = false;
+            return false;
+          }
+        break;
+
+        default:
+        break;
+      }
+    }
 //   }
+
+//   _latencyInfo._isLatencyInputTerminal = res;
 //   return res;
-// }
+  _latencyInfo._isLatencyInputTerminal = true;
+  return true;
+}
 
 bool AudioTrack::isLatencyOutputTerminal()
 {
-  bool res = true;
-  const RouteList* rl = outRoutes();
-  for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
-    switch(ir->type)
-    {
-      case Route::TRACK_ROUTE:
-        if(!ir->track)
-          continue;
-        if(ir->track->isMidiTrack())
-        {
-          // TODO
-        }
-        else
-        {
-          AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
-          if(!atrack->off() && (!atrack->canRecordMonitor() || (atrack->canRecordMonitor() && atrack->isRecMonitored())))
-          {
-            res = false;
-            break;
-          }
-        }
-      break;
+//   bool res = true;
+  
+  // REMOVE Tim. latency. Added. FLAG latency rec.
+  // TODO Refine this with a case or something, specific for say Aux tracks, Group tracks etc.
+//   if(!off() && ((!canRecordMonitor() || (canRecordMonitor() && isRecMonitored()))
+//      //|| (canRecord() && recordFlag())
+//      ))
 
-      default:
-      break;
+//   // If we're asking for the view from the record side, check if we're
+//   //  passing the signal through the track via monitoring.
+//   if(off() || (record && canRecordMonitor() && !isRecMonitored()))
+//      //&& canRecord() && !recordFlag())
+//   {
+//     _latencyInfo._isLatencyOuputTerminal = true;
+//     return true;
+//   }
+  
+//   if(!off() && 
+//     (!record || ((!canRecordMonitor() || (canRecordMonitor() && isRecMonitored()))
+//      //|| (canRecord() && recordFlag())
+//      )))
+//   {
+    const RouteList* rl = outRoutes();
+    for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+      switch(ir->type)
+      {
+        case Route::TRACK_ROUTE:
+          if(!ir->track)
+            continue;
+          if(ir->track->isMidiTrack())
+          {
+            // TODO
+          }
+          else
+          {
+            AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+//             if(!atrack->off() && 
+              // REMOVE Tim. latency. Added. FLAG latency rec.
+              // TODO Refine this with a case or something, specific for say Aux tracks, Group tracks etc.
+//               ((!atrack->canRecordMonitor() || (atrack->canRecordMonitor() && atrack->isRecMonitored()))
+//                 || (atrack->canRecord() && atrack->recordFlag()))
+//               )
+//             {
+// //               res = false;
+//               _latencyInfo._isLatencyOutputTerminal = false;
+//               return false;
+// //               break;
+//             }
+            
+            if(atrack->off()) // || 
+              //(atrack->canRecordMonitor() && (MusEGlobal::config.monitoringAffectsLatency || !atrack->isRecMonitored())))
+               //&& atrack->canRecord() && !atrack->recordFlag()))
+              continue;
+            
+            _latencyInfo._isLatencyInputTerminal = false;
+            return false;
+          }
+        break;
+
+        default:
+        break;
+      }
     }
-  }
-  _latencyInfo._isLatencyOuputTerminal = res;
-  return res;
+//   }
+
+//   _latencyInfo._isLatencyOutputTerminal = res;
+//   return res;
+  _latencyInfo._isLatencyOutputTerminal = true;
+  return true;
 }
 
 //---------------------------------------------------------
@@ -1488,7 +1572,7 @@ bool AudioTrack::putFifo(int channels, unsigned long n, float** bp)
         
         
   // REMOVE Tim. latency. Added.
-  fprintf(stderr, "AudioTrack::putFifo: latency:%f\n", route_worst_case_latency);
+//   fprintf(stderr, "AudioTrack::putFifo: latency:%f\n", route_worst_case_latency);
         
         
 // REMOVE Tim. latency. Changed.
@@ -1813,6 +1897,32 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
             }
       }
       
+      
+      // REMOVE Tim. latency. Added.
+//       if(MusEGlobal::audio->isPlaying())
+//       {
+//         fprintf(stderr, "AudioInput::getData() name:%s\n",
+//                 name().toLatin1().constData());
+//         for(int ch = 0; ch < _channels; ++ch)
+//         {
+//           fprintf(stderr, "channel:%d peak:", ch);
+//           float val;
+//           float peak = 0.0f;
+//           const float* buf = buffer[ch];
+//           for(unsigned int smp = 0; smp < nframes; ++smp)
+//           {
+//             val = buf[smp];
+//             if(val > peak)
+//               peak = val;
+//           }
+//           const int dots = peak * 20;
+//           for(int d = 0; d < dots; ++d)
+//             fprintf(stderr, "*");
+//           fprintf(stderr, "\n");
+//         }
+//       }
+      
+      
       // REMOVE Tim. latency. Added.
       if(_latencyComp)
       {
@@ -2034,6 +2144,27 @@ void AudioTrack::record()
 // REMOVE Tim. basic latency. Added.
                       if(pos >= latency)
                       {
+//                         // REMOVE Tim. latency. Added.
+//                         fprintf(stderr, "AudioNode::record(): pos:%u latency:%u\n", pos, latency);
+//                         for(int ch = 0; ch < _channels; ++ch)
+//                         {
+//                           fprintf(stderr, "channel:%d peak:", ch);
+//                           float val;
+//                           float peak = 0.0f;
+//                           const float* buf = buffer[ch];
+//                           for(unsigned int smp = 0; smp < MusEGlobal::segmentSize; ++smp)
+//                           {
+//                             val = buf[smp];
+//                             if(val > peak)
+//                               peak = val;
+//                           }
+//                           const int dots = peak * 20;
+//                           for(int d = 0; d < dots; ++d)
+//                             fprintf(stderr, "*");
+//                           fprintf(stderr, "\n");
+//                         }
+
+
                         pos -= latency;
                       
                         // FIXME If we are to support writing compressed file types, we probably shouldn't be seeking here. REMOVE Tim. Wave.
@@ -2086,6 +2217,32 @@ void AudioOutput::process(unsigned pos, unsigned offset, unsigned n)
             buffer1[i] = buffer[i] + offset;
       }
       copyData(pos, -1, _channels, _channels, -1, -1, n, buffer1);
+      
+      
+      // REMOVE Tim. latency. Added.
+//       if(MusEGlobal::audio->isPlaying())
+//       {
+//         fprintf(stderr, "AudioOutput::process() name:%s pos:%u offset:%u\n",
+//                 name().toLatin1().constData(), pos, offset);
+//         for(int ch = 0; ch < _channels; ++ch)
+//         {
+//           fprintf(stderr, "channel:%d peak:", ch);
+//           float val;
+//           float peak = 0.0f;
+//           const float* buf = buffer1[ch];
+//           for(unsigned int smp = 0; smp < n; ++smp)
+//           {
+//             val = buf[smp];
+//             if(val > peak)
+//               peak = val;
+//           }
+//           const int dots = peak * 20;
+//           for(int d = 0; d < dots; ++d)
+//             fprintf(stderr, "*");
+//           fprintf(stderr, "\n");
+//         }
+//       }
+            
 }
 
 //---------------------------------------------------------
@@ -2403,7 +2560,7 @@ void AudioTrack::setChannels(int n)
       {
       Track::setChannels(n);
       if (_efxPipe)
-            _efxPipe->setChannels(n);
+            _efxPipe->setChannels(_channels);
       
       // REMOVE Tim. latency. Added.
       if(_latencyComp)

@@ -103,7 +103,8 @@ struct TrackLatencyInfo
   // Whether any of the connected output routes are effectively connected.
   // That means track is not off, track is monitored where applicable, etc,
   //   ie. signal can actually flow.
-  bool _isLatencyOuputTerminal;
+  bool _isLatencyInputTerminal;
+  bool _isLatencyOutputTerminal;
   // Whether this track (and the branch it is in) can force other parallel branches to
   //  increase their latency compensation to match this one.
   // If false, this branch will NOT disturb other parallel branches' compensation,
@@ -129,6 +130,14 @@ struct TrackLatencyInfo
 //     _forwardProcessed = false;
     _correctionProcessed = false;
     _processed = false;
+    _trackLatency = 0.0f;
+    _outputLatency = 0.0f;
+    _isLatencyInputTerminal = false;
+    _isLatencyOutputTerminal = false;
+    _canDominateOutputLatency = false;
+    _requiresInputCorrection = false;
+    _canCorrectOutputLatency = false;
+    _sourceCorrectionValue = 0.0f;
     _compensatorWriteOffset = 0;
   }
 };
@@ -171,7 +180,7 @@ class Track {
 
       PartList _parts;
 
-      void init();
+      void init(int channels = 0);
       void internal_assign(const Track&, int flags);
 
    protected:
@@ -221,7 +230,7 @@ class Track {
       void writeProperties(int level, Xml& xml) const;
 
    public:
-      Track(TrackType);
+      Track(TrackType, int channels = 0);
       Track(const Track&, int flags);
       virtual ~Track();
       virtual void assign(const Track&, int flags);
@@ -365,18 +374,25 @@ class Track {
       // If false, this branch will NOT disturb other parallel branches' compensation,
       //  intead only allowing compensation UP TO the worst case in other branches.
       virtual bool canDominateOutputLatency() const;
+      // Whether this track (and the branch it is in) can force other parallel branches to
+      //  increase their latency compensation to match this one - IF this track is an end-point
+      //  and the branch allows domination.
+      // If false, this branch will NOT disturb other parallel branches' compensation,
+      //  intead only allowing compensation UP TO the worst case in other branches.
+      virtual bool canDominateEndPointLatency() const { return false; }
 //       virtual bool canDominateInputLatency() const;
       // Whether this track and its branch require latency correction, not just compensation.
       virtual bool requiresInputLatencyCorrection() const;
       // Whether this track and its branch can correct for latency, not just compensate.
       virtual bool canCorrectOutputLatency() const { return false; }
-      // Whether any of the connected input routes are effectively connected.
-      // That means track is not off, etc. ie. signal can actually flow.
-      //virtual bool isLatencyInputTerminal() const { return true; }
       // Whether any of the connected output routes are effectively connected.
       // That means track is not off, track is monitored where applicable, etc,
       //   ie. signal can actually flow.
-      virtual bool isLatencyOutputTerminal() { _latencyInfo._isLatencyOuputTerminal = true; return true; }
+      // Parameter 'record', used for Wave Tracks for example, if true means to ask
+      //  whether the track is an end-point from the view of the input side and
+      //  if false means whther the track is an end-point from the playback side.
+      virtual bool isLatencyInputTerminal() { _latencyInfo._isLatencyInputTerminal = true; return true; }
+      virtual bool isLatencyOutputTerminal() { _latencyInfo._isLatencyOutputTerminal = true; return true; }
       
       // Internal use...
       static void clearSoloRefCounts();
@@ -648,7 +664,7 @@ class AudioTrack : public Track {
       bool _processed;
       
    public:
-      AudioTrack(TrackType t);
+      AudioTrack(TrackType t, int channels = 2);
       
       AudioTrack(const AudioTrack&, int flags);
       virtual ~AudioTrack();
@@ -823,7 +839,7 @@ class AudioTrack : public Track {
       // It is applied as a direct offset in the latency delay compensator in getData().
       virtual unsigned long latencyCompWriteOffset() const { return _latencyInfo._compensatorWriteOffset; }
       virtual void setLatencyCompWriteOffset(float worstCase);
-      //virtual bool isLatencyInputTerminal() const;
+      virtual bool isLatencyInputTerminal();
       virtual bool isLatencyOutputTerminal();
       
       // automation
@@ -888,7 +904,8 @@ class AudioInput : public AudioTrack {
       void setName(const QString& s);
       void* jackPort(int channel) { return jackPorts[channel]; }
       void setJackPort(int channel, void*p) { jackPorts[channel] = p; }
-      void setChannels(int n);
+// REMOVE Tim. latency. Removed.
+//       void setChannels(int n);
       bool hasAuxSend() const { return true; }
       // Number of routable inputs/outputs for each Route::RouteType.
       RouteCapabilitiesStruct routeCapabilities() const;
@@ -924,8 +941,11 @@ class AudioOutput : public AudioTrack {
 //       float outputLatencyCorrection() const { return 0.0f; }
 //       // Audio Output tracks have no correction available. They ALWAYS dominate any parallel branches.
 //       bool canDominateInputLatency() const { return true; }
+      // Audio output tracks can allow a branch to dominate if they are an end-point and the branch can dominate.
+      bool canDominateEndPointLatency() const { return true; }
       // Audio Output is considered a termination point.
-      bool isLatencyOutputTerminal() { _latencyInfo._isLatencyOuputTerminal = true; return true; }
+      bool isLatencyInputTerminal() { _latencyInfo._isLatencyInputTerminal = true; return true; }
+      bool isLatencyOutputTerminal() { _latencyInfo._isLatencyOutputTerminal = true; return true; }
       
       virtual void assign(const Track&, int flags);
       AudioOutput* clone(int flags) const { return new AudioOutput(*this, flags); }
@@ -935,7 +955,8 @@ class AudioOutput : public AudioTrack {
       virtual void setName(const QString& s);
       void* jackPort(int channel) { return jackPorts[channel]; }
       void setJackPort(int channel, void*p) { jackPorts[channel] = p; }
-      virtual void setChannels(int n);
+// REMOVE Tim. latency. Removed.
+//       virtual void setChannels(int n);
       // Number of routable inputs/outputs for each Route::RouteType.
       virtual RouteCapabilitiesStruct routeCapabilities() const;
       void processInit(unsigned);
@@ -1010,9 +1031,9 @@ class AudioAux : public AudioTrack {
 class WaveTrack : public AudioTrack {
       Fifo _prefetchFifo;  // prefetch Fifo
       static bool _isVisible;
-      // Temporary variables used during latency calculations:
-      // Holds the output latency of the wave file playback contribution to latency.
-      unsigned long int _waveLatencyOut;
+//       // Temporary variables used during latency calculations:
+//       // Holds the output latency of the wave file playback contribution to latency.
+//       unsigned long int _waveLatencyOut;
 
       void internal_assign(const Track&, int flags);
       // Writes data from connected input routes to the track's latency compensator.

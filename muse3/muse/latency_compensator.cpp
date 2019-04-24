@@ -30,16 +30,22 @@ namespace MusECore {
 LatencyCompensator::LatencyCompensator(int channels, unsigned long bufferSize)
   : _channels(channels), _bufferSize(bufferSize), _bufferSizeMask(bufferSize - 1)
 {
-  _buffer = new float*[_channels];
-  _readPointers = new unsigned long[_channels];
-  _peekedChannels = new bool[_channels];
-
-  for(int i = 0; i < _channels; ++i)
+  _buffer =  nullptr;
+  _readPointers =  nullptr;
+  _peekedChannels = nullptr;
+  if(_channels > 0)
   {
-    _buffer[i] = new float[_bufferSize];
-    std::memset(_buffer[i],  0, sizeof(float) * _bufferSize);
-    _readPointers[i] = 0;
-    _peekedChannels[i] = false;
+    _buffer = new float*[_channels];
+    _readPointers = new unsigned long[_channels];
+    _peekedChannels = new bool[_channels];
+
+    for(int i = 0; i < _channels; ++i)
+    {
+      _buffer[i] = new float[_bufferSize];
+      std::memset(_buffer[i],  0, sizeof(float) * _bufferSize);
+      _readPointers[i] = 0;
+      _peekedChannels[i] = false;
+    }
   }
 }
 
@@ -87,17 +93,17 @@ void LatencyCompensator::setChannels(int channels)
     for(int i = 0; i < _channels; ++i)
       delete [] _buffer[i];
     delete [] _buffer;
-    _buffer = 0;
+    _buffer = nullptr;
   }
   if(_readPointers)
   {
     delete [] _readPointers;
-    _readPointers = 0;
+    _readPointers = nullptr;
   }
   if(_peekedChannels)
   {
     delete [] _peekedChannels;
-    _peekedChannels = 0;
+    _peekedChannels = nullptr;
   }
   _bufferSizeMask = 0;
 
