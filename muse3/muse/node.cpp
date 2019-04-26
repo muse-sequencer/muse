@@ -1452,7 +1452,7 @@ bool AudioTrack::isLatencyOutputTerminal()
                //&& atrack->canRecord() && !atrack->recordFlag()))
               continue;
             
-            _latencyInfo._isLatencyInputTerminal = false;
+            _latencyInfo._isLatencyOutputTerminal = false;
             return false;
           }
         break;
@@ -1572,7 +1572,7 @@ bool AudioTrack::putFifo(int channels, unsigned long n, float** bp)
         
         
   // REMOVE Tim. latency. Added.
-//   fprintf(stderr, "AudioTrack::putFifo: latency:%f\n", route_worst_case_latency);
+  fprintf(stderr, "AudioTrack::putFifo: latency:%f\n", route_worst_case_latency);
         
         
 // REMOVE Tim. latency. Changed.

@@ -931,7 +931,8 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         if(want_record_side && track->isLatencyInputTerminal())
         {
           // Gather the branch's dominance latency info.
-          const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
+//           const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
+          const TrackLatencyInfo& li = track->getInputDominanceLatencyInfo();
           // If the branch can dominate, and this end-point allows it, and its latency value
           //  is greater than the current worst, overwrite the worst.
           if(track->canDominateEndPointLatency() &&
@@ -999,20 +1000,48 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           continue;
         track = static_cast<AudioTrack*>(*it);
         
+        // If the track is for example a Wave Track, we must consider up to two contributing paths,
+        //  the output (playback) side and the input (record) side which can pass through via monitoring.
+        want_record_side = track->type() == Track::WAVE;
+
+        // Examine any recording path, if desired.
+        if(want_record_side)
+        {
+          const TrackLatencyInfo& dli = track->getInputDominanceLatencyInfo();
+          // We are looking for the end points of branches.
+          //if(dli._isLatencyOutputTerminal)
+          if(dli._isLatencyInputTerminal)
+          {
+            // Gather the branch's final latency info, which also sets the
+            //  latency compensators.
+            //const TrackLatencyInfo& li = track->getLatencyInfo();
+            track->getInputLatencyInfo();
+
+            // Set this end point's latency compensator write offset.
+            track->setLatencyCompWriteOffset(song_worst_latency);
+          }
+        }
+
+        // Examine any playback path.
         // Grab the branch's dominance latency info.
         // This should already be cached from the dominance pass.
-        const TrackLatencyInfo& dli = track->getDominanceLatencyInfo();
+        const TrackLatencyInfo& dlo = track->getDominanceLatencyInfo();
+
+//         // We are looking for the end points of branches.
+//         if(!dlo._isLatencyOutputTerminal)
+//           continue;
+        
         // We are looking for the end points of branches.
-        if(!dli._isLatencyOutputTerminal)
-          continue;
-        
-        // Gather the branch's final latency info, which also sets the
-        //  latency compensators.
-        //const TrackLatencyInfo& li = track->getLatencyInfo();
-        track->getLatencyInfo();
-        
-        // Set this end point's latency compensator write offset.
-        track->setLatencyCompWriteOffset(song_worst_latency);
+        if(dlo._isLatencyOutputTerminal)
+        {
+          // Gather the branch's final latency info, which also sets the
+          //  latency compensators.
+          //const TrackLatencyInfo& li = track->getLatencyInfo();
+          track->getLatencyInfo();
+          
+          // Set this end point's latency compensator write offset.
+          track->setLatencyCompWriteOffset(song_worst_latency);
+        }
       }      
       
       

@@ -820,6 +820,7 @@ class AudioTrack : public Track {
 // REMOVE Tim. latency. Added.
       // Returns latency computations during each cycle. If the computations have already been done 
       //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
+      virtual TrackLatencyInfo& getInputDominanceLatencyInfo();
       virtual TrackLatencyInfo& getDominanceLatencyInfo();
       // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
       //  determined in the complete getDominanceLatencyInfo() scan.
@@ -828,6 +829,7 @@ class AudioTrack : public Track {
       // The callerBranchLatency is accumulated as setCorrectionLatencyInfo() is called on each track
       //  in a branch of the graph.
       virtual void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
+      virtual TrackLatencyInfo& getInputLatencyInfo();
       virtual TrackLatencyInfo& getLatencyInfo();
 //       // Returns forward latency computations (from wavetracks outward) during each cycle.
 //       // If the computations have already been done this cycle, cached values are returned,
@@ -1069,6 +1071,7 @@ class WaveTrack : public AudioTrack {
       //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
       //TrackLatencyInfo& getDominanceLatencyInfo();
       void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
+      TrackLatencyInfo& getInputLatencyInfo();
       TrackLatencyInfo& getLatencyInfo();
 //       // Returns forward latency computations (from wavetracks outward) during each cycle.
 //       // If the computations have already been done this cycle, cached values are returned,
