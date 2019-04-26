@@ -1178,22 +1178,10 @@ void WaveTrack::setCorrectionLatencyInfo(float finalWorstLatency, float callerBr
     }
     float corr = 0.0f;
     if(MusEGlobal::config.commonProjectLatency)
-      corr += finalWorstLatency;
+//       corr += finalWorstLatency;
+      corr -= finalWorstLatency;
 
-    // If this branch can dominate latency, ie. is fed from an Audio Input Track,
-    //  then we cannot apply correction to the branch.
-    // For example:
-    //
-    //  Input(512) -> Wave1(monitor on) -> Output(3072)
-    //                                  -> Wave2
-    //
-    // Wave1 wants to set a correction of -3072 but it cannot because
-    //  the input has 512 latency. Any wave1 playback material would be
-    //  misaligned with the monitored input material.
-    //
-    if(!_latencyInfo._canDominateOutputLatency)
-      corr -= branch_lat;
-
+    corr -= branch_lat;
     // The _sourceCorrectionValue is initialized to zero during the dominance scan.
     // Whichever calling branch needs the most correction gets it.
     if(corr < _latencyInfo._sourceCorrectionValue)

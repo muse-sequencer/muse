@@ -986,7 +986,19 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           continue;
         
         // Set branch correction values, for any tracks which support it.
-        track->setCorrectionLatencyInfo(song_worst_latency);
+        // If this branch can dominate latency, ie. is fed from an Audio Input Track,
+        //  then we cannot apply correction to the branch.
+        // For example:
+        //
+        //  Input(512) -> Wave1(monitor on) -> Output(3072)
+        //                                  -> Wave2
+        //
+        // Wave1 wants to set a correction of -3072 but it cannot because
+        //  the input has 512 latency. Any wave1 playback material would be
+        //  misaligned with the monitored input material.
+        //
+        if(!li._canDominateOutputLatency)
+          track->setCorrectionLatencyInfo(song_worst_latency);
       }      
       
       //----------------------------------------------------------
