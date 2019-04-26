@@ -893,8 +893,8 @@ class AudioInput : public AudioTrack {
 //       // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
 //       // Audio Input tracks always return 0 even if its inputs are unterminated.
 //       float outputLatencyCorrection() const { return 0.0f; }
-      // Audio Input tracks have no correction available. They ALWAYS dominate any parallel branches.
-      bool canDominateOutputLatency() const { return true; }
+      // Audio Input tracks have no correction available. They ALWAYS dominate any parallel branches, if they are not 'off'.
+      bool canDominateOutputLatency() const;
       // Audio Input is considered a termination point.
       //bool isLatencyInputTerminal() const { return true; }
       

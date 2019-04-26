@@ -2852,6 +2852,11 @@ float AudioInput::trackLatency(int channel) const
 //       return worst_case_latency;
 // }
 
+bool AudioInput::canDominateOutputLatency() const
+{
+  return !off();
+}
+
 //---------------------------------------------------------
 //   write
 //---------------------------------------------------------
