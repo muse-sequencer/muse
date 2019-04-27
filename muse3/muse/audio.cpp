@@ -865,7 +865,8 @@ void Audio::process(unsigned frames)
 
 void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       {
-      processMidi(frames);
+// REMOVE Tim. latency. Removed. Moved below.
+//       processMidi(frames);
 
       //
       // process not connected tracks
@@ -1086,6 +1087,12 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
 //       //  MORE delay, to match all the signals' timings together.
 //       for(int i = 0; i < rl_sz; ++i)
 //         latency_array[i] = route_worst_latency - latency_array[i];
+      
+      //---------------------------------------------
+      // Midi processing
+      //---------------------------------------------
+      
+      processMidi(frames);
       
       //---------------------------------------------
       // Audio processing

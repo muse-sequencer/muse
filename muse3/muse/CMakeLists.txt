@@ -168,6 +168,7 @@ file (GLOB icons_source_files
       )
 
 file (GLOB latency_compensator_source_files
+      latency_info.cpp
       latency_compensator.cpp
       )
 file (GLOB wavepreview_source_files

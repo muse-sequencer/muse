@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //
 //  latency_compensator.cpp
-//  (C) Copyright 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2016, 2019 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License

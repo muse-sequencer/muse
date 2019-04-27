@@ -1254,6 +1254,56 @@ bool SynthI::getData(unsigned pos, int ports, unsigned n, float** buffer)
       return true;
       }
 
+// REMOVE Tim. latency. Added.
+//---------------------------------------------------------
+//   setCorrectionLatencyInfo
+//---------------------------------------------------------
+
+void SynthI::setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency)
+{
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._correctionProcessed)
+    return;
+  
+  // Set the correction of all connected input branches,
+  //  but ONLY if the track is not off.
+  if(!off())
+  {
+    // The _trackLatency should already be calculated in the dominance scan.
+    const float branch_lat = callerBranchLatency + _latencyInfo._trackLatency;
+    // Only if monitoring is not available, or it is and in fact is monitored.
+    // REMOVE Tim. latency. Added. FLAG latency rec.
+    if(MusEGlobal::config.monitoringAffectsLatency && isRecMonitored())
+    {
+      // We want the AudioTrack in routes, not the MidiDevice in routes.
+      const RouteList* rl = AudioTrack::inRoutes();
+      for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+            if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+              continue;
+            AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+            atrack->setCorrectionLatencyInfo(finalWorstLatency, branch_lat);
+      }
+    }
+    float corr = 0.0f;
+    if(MusEGlobal::config.commonProjectLatency)
+//       corr += finalWorstLatency;
+      corr -= finalWorstLatency;
+
+    corr -= branch_lat;
+    // The _sourceCorrectionValue is initialized to zero during the dominance scan.
+    // Whichever calling branch needs the most correction gets it.
+    if(corr < _latencyInfo._sourceCorrectionValue)
+      _latencyInfo._sourceCorrectionValue = corr;
+    
+    // REMOVE Tim. latency. Added.
+//     fprintf(stderr, "WaveTrack::setCorrectionLatencyInfo() name:%s finalWorstLatency:%f branch_lat:%f corr:%f _sourceCorrectionValue:%f\n",
+//             name().toLatin1().constData(), finalWorstLatency, branch_lat, corr, _latencyInfo._sourceCorrectionValue);
+  }
+
+  _latencyInfo._correctionProcessed = true;
+}
+
 bool MessSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int /*ports*/, unsigned n, float** buffer)
 {
       const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();

@@ -238,6 +238,8 @@ class SynthI : public AudioTrack, public MidiDevice,
 // REMOVE Tim. latency. Removed. Moved into public.
 //       void preProcessAlways();
       bool getData(unsigned a, int b, unsigned c, float** data);
+      // REMOVE Tim. latency. Added.
+      void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
       // Returns the number of frames to shift forward output event scheduling times when putting events
       //  into the eventFifos.
       virtual unsigned int pbForwardShiftFrames() const;

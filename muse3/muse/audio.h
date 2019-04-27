@@ -212,7 +212,8 @@ class Audio {
       void processMsg(AudioMsg* msg);
       void process1(unsigned samplePos, unsigned offset, unsigned samples);
 
-      void collectEvents(MidiTrack*, unsigned int startTick, unsigned int endTick, unsigned int frames);
+      void collectEvents(MidiTrack*, unsigned int startTick, unsigned int endTick,
+                         unsigned int frames, unsigned int latency_offset);
       
       void seekMidi();
 

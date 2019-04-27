@@ -1270,7 +1270,8 @@ unsigned int Audio::extClockHistoryFrame2Tick(unsigned int frame) const
 //    collect events for next audio segment
 //---------------------------------------------------------
 
-void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned int nts, unsigned int frames)
+void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
+                          unsigned int nts, unsigned int frames, unsigned int latency_offset)
       {
       DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: cts:%u nts:%u\n", cts, nts);
       const bool extsync = MusEGlobal::extSyncFlag.value();
@@ -1285,14 +1286,36 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
       int port    = track->outPort();
       int channel = track->outChannel();
       int defaultPort = port;
-      const unsigned int pos_fr = _pos.frame();
-      const unsigned int next_pos_fr = pos_fr + frames;
-
-      DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: pos_fr:%u next_pos_fr:%u\n", pos_fr, next_pos_fr);
-      
       MidiPort* mp = &MusEGlobal::midiPorts[port];
       MidiDevice* md = mp->device();
+//       const unsigned int pos_fr = _pos.frame();
+//       const unsigned int next_pos_fr = pos_fr + frames;
 
+//       DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: pos_fr:%u next_pos_fr:%u\n", pos_fr, next_pos_fr);
+      
+//       MidiPort* mp = &MusEGlobal::midiPorts[port];
+//       MidiDevice* md = mp->device();
+      
+      // REMOVE Tim. latency. Added.
+//       unsigned int lat_offset = 0;
+//       if(md && md->isSynti())
+//       {
+//         SynthI* si = static_cast<SynthI*>(md);
+//         const TrackLatencyInfo& li = si->getLatencyInfo();
+//         // This value is negative for correction.
+//         float lat = li._sourceCorrectionValue;
+//         if((int)lat >= 0)
+//           lat_offset = 0;
+//         else
+//           // Convert to a positive offset.
+//           lat_offset = (unsigned int)-lat;
+//       }
+
+      const unsigned int pos_fr = _pos.frame() + latency_offset;
+      const unsigned int next_pos_fr = pos_fr + frames;
+      
+      DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: pos_fr:%u next_pos_fr:%u\n", pos_fr, next_pos_fr);
+      
       PartList* pl = track->parts();
       for (iPart p = pl->begin(); p != pl->end(); ++p) {
             MusECore::MidiPart* part = (MusECore::MidiPart*)(p->second);
@@ -1780,7 +1803,32 @@ void Audio::processMidi(unsigned int frames)
             if(!track->isMute() && !track->off())
             {
               if(playing)
-                collectEvents(track, curTickPos, nextTickPos, frames);
+              {
+                // REMOVE Tim. latency. Changed.
+                //collectEvents(track, curTickPos, nextTickPos, frames);
+
+                unsigned int lat_offset = 0;
+                // TODO How to handle when external sync is on. For now, don't try to correct.
+                if(!extsync && md && md->isSynti())
+                {
+                  SynthI* si = static_cast<SynthI*>(md);
+                  const TrackLatencyInfo& li = si->getLatencyInfo();
+                  // This value is negative for correction.
+                  float lat = li._sourceCorrectionValue;
+                  if((int)lat >= 0)
+                    lat_offset = 0;
+                  else
+                    // Convert to a positive offset.
+                    lat_offset = (unsigned int)-lat;
+                }
+
+                Pos ppp(_pos.frame() + lat_offset, false);
+                const unsigned int cur_tick = ppp.tick();
+                ppp += frames;
+                const unsigned int next_tick = ppp.tick();
+
+                collectEvents(track, cur_tick, next_tick, frames, lat_offset);
+              }
             }
 
             //
