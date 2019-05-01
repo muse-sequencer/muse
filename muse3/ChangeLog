@@ -1,3 +1,5 @@
+01.05.2019
+      - Fix quantize dialogs in pianoroll, arrangerview, scoreedit. Regression at 21.01.2019 (Tim)
 12.04.2019
       - Fixed midi import problem as reported in forums: (Tim)
         Importing tracks with duplicate (often blank) names caused problems with
