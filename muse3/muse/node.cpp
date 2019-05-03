@@ -335,6 +335,12 @@ void AudioTrack::updateSoloStates(bool noDec)
   _nodeTraversed = false; // Reset.
 }
 
+void AudioTrack::preProcessAlways()
+{ 
+  _processed = false;
+  Track::preProcessAlways();
+}
+
 //---------------------------------------------------------
 //   processTrackCtrls
 //   If trackChans is 0, just process controllers only, not audio (do not 'run').

@@ -1243,6 +1243,14 @@ TrackLatencyInfo& WaveTrack::getInputLatencyInfo()
     //             }
                 const TrackLatencyInfo& li = atrack->getInputLatencyInfo();
                 
+//                 // Whether the branch can dominate or correct latency or if we
+//                 //  want to allow unterminated input branches to
+//                 //  participate in worst branch latency calculations.
+//                 const bool participate =
+//                   li._canCorrectOutputLatency ||
+//                   li._canDominateOutputLatency ||
+//                   MusEGlobal::config.correctUnterminatedInBranchLatency;
+
                 // REMOVE Tim. latency. Added. FLAG latency rec.
                 const bool passthru =
                   !atrack->canRecordMonitor() ||
@@ -1267,7 +1275,7 @@ TrackLatencyInfo& WaveTrack::getInputLatencyInfo()
     //             if(li._outputLatency > route_worst_latency)
     //               route_worst_latency = li._outputLatency;
                 
-//                 if(passthru)
+                if(!atrack->off() /*&& (passthru ||*/ /*participate)*/)
                 {
                   // Is it the first found item?
                   if(item_found)
@@ -1364,7 +1372,7 @@ TrackLatencyInfo& WaveTrack::getInputLatencyInfo()
           for (iRoute ir = rl->begin(); ir != rl->end(); ++ir) {
                 if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
                   continue;
-                
+
                 // If the branch cannot dominate the latency, force it to be
                 //  equal to the worst-case value.
                 //if(!ir->canDominateLatency)
@@ -1372,18 +1380,37 @@ TrackLatencyInfo& WaveTrack::getInputLatencyInfo()
                 //  equal to the worst-case value.
 //                 if(!ir->canCorrectOutputLatency)
 //                   ir->audioLatencyOut = route_worst_latency;
-                
-                
-                // Prepare the latency value to be passed to the compensator's writer,
-                //  by adjusting each route latency value. ie. the route with the worst-case
-                //  latency will get ZERO delay, while routes having smaller latency will get
-                //  MORE delay, to match all the signal timings together.
-                // The route's audioLatencyOut should have already been calculated and
-                //  conveniently stored in the route.
-                ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
-                // Should not happen, but just in case.
-                if((long int)ir->audioLatencyOut < 0)
-                  ir->audioLatencyOut = 0.0f;
+
+
+                 AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+//                 const TrackLatencyInfo& li = atrack->getInputLatencyInfo();
+//                 
+//                 // Whether the branch can dominate or correct latency or if we
+//                 //  want to allow unterminated input branches to
+//                 //  participate in worst branch latency calculations.
+//                 const bool participate =
+//                   li._canCorrectOutputLatency ||
+//                   li._canDominateOutputLatency ||
+//                   MusEGlobal::config.correctUnterminatedInBranchLatency;
+
+                // REMOVE Tim. latency. Added. FLAG latency rec.
+                //const bool passthru =
+                //  !atrack->canRecordMonitor() ||
+                //  (MusEGlobal::config.monitoringAffectsLatency && atrack->isRecMonitored()); // || atrack->recordFlag();
+        
+                if(!atrack->off() /*passthru ||*/ /*participate*/)
+                {
+                  // Prepare the latency value to be passed to the compensator's writer,
+                  //  by adjusting each route latency value. ie. the route with the worst-case
+                  //  latency will get ZERO delay, while routes having smaller latency will get
+                  //  MORE delay, to match all the signal timings together.
+                  // The route's audioLatencyOut should have already been calculated and
+                  //  conveniently stored in the route.
+                  ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
+                  // Should not happen, but just in case.
+                  if((long int)ir->audioLatencyOut < 0)
+                    ir->audioLatencyOut = 0.0f;
+                }
           }
         }
 
@@ -1463,6 +1490,14 @@ TrackLatencyInfo& WaveTrack::getLatencyInfo()
     //             }
                 const TrackLatencyInfo& li = atrack->getLatencyInfo();
                 
+//                 // Whether the branch can dominate or correct latency or if we
+//                 //  want to allow unterminated input branches to
+//                 //  participate in worst branch latency calculations.
+//                 const bool participate =
+//                   li._canCorrectOutputLatency ||
+//                   li._canDominateOutputLatency ||
+//                   MusEGlobal::config.correctUnterminatedInBranchLatency;
+
                 // Temporarily store these values conveniently in the actual route.
                 // They will be used by the latency compensator in the audio process pass.
 //                 ir->canDominateLatency = li._canDominateOutputLatency;
@@ -1482,7 +1517,7 @@ TrackLatencyInfo& WaveTrack::getLatencyInfo()
     //             if(li._outputLatency > route_worst_latency)
     //               route_worst_latency = li._outputLatency;
                 
-                if(passthru)
+                if(!atrack->off() && passthru)
                 {
                   // Is it the first found item?
                   if(item_found)
@@ -1588,17 +1623,20 @@ TrackLatencyInfo& WaveTrack::getLatencyInfo()
 //                 if(!ir->canCorrectOutputLatency)
 //                   ir->audioLatencyOut = route_worst_latency;
                 
-                
-                // Prepare the latency value to be passed to the compensator's writer,
-                //  by adjusting each route latency value. ie. the route with the worst-case
-                //  latency will get ZERO delay, while routes having smaller latency will get
-                //  MORE delay, to match all the signal timings together.
-                // The route's audioLatencyOut should have already been calculated and
-                //  conveniently stored in the route.
-                ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
-                // Should not happen, but just in case.
-                if((long int)ir->audioLatencyOut < 0)
-                  ir->audioLatencyOut = 0.0f;
+                AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+                if(!atrack->off() /*&& passthru*/)
+                {
+                  // Prepare the latency value to be passed to the compensator's writer,
+                  //  by adjusting each route latency value. ie. the route with the worst-case
+                  //  latency will get ZERO delay, while routes having smaller latency will get
+                  //  MORE delay, to match all the signal timings together.
+                  // The route's audioLatencyOut should have already been calculated and
+                  //  conveniently stored in the route.
+                  ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
+                  // Should not happen, but just in case.
+                  if((long int)ir->audioLatencyOut < 0)
+                    ir->audioLatencyOut = 0.0f;
+                }
           }
         }
 
@@ -1708,11 +1746,11 @@ bool WaveTrack::canDominateOutputLatency() const
 //   return false;
 // }
 
-bool WaveTrack::requiresInputLatencyCorrection() const
-{
-  // TODO Account for monitor. It depends on what this track feeds.
-  return false;
-}
+// bool WaveTrack::requiresInputLatencyCorrection() const
+// {
+//   // TODO Account for monitor. It depends on what this track feeds.
+//   return false;
+// }
 
 bool WaveTrack::canCorrectOutputLatency() const
 {

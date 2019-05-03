@@ -1607,6 +1607,14 @@ TrackLatencyInfo& AudioTrack::getInputLatencyInfo()
   //             }
               const TrackLatencyInfo& li = atrack->getInputLatencyInfo();
               
+              // Whether the branch can dominate or correct latency or if we
+              //  want to allow unterminated input branches to
+              //  participate in worst branch latency calculations.
+              const bool participate = !atrack->off() &&
+                (li._canCorrectOutputLatency ||
+                 li._canDominateOutputLatency ||
+                 MusEGlobal::config.correctUnterminatedInBranchLatency);
+
               // Temporarily store these values conveniently in the actual route.
               // They will be used by the latency compensator in the audio process pass.
 //               ir->canDominateLatency = li._canDominateOutputLatency;
@@ -1621,44 +1629,47 @@ TrackLatencyInfo& AudioTrack::getInputLatencyInfo()
   //             if(li._outputLatency > route_worst_latency)
   //               route_worst_latency = li._outputLatency;
               
-              // Is it the first found item?
-              if(item_found)
+              if(participate)
               {
-                // Override the current values with this item's values ONLY if required.
-                
-                //if(li._outputAvailableCorrection < route_worst_out_corr)
-                //  route_worst_out_corr = li._outputAvailableCorrection;
-                
-                // If any one of the branches can dominate the latency,
-                //  that overrides any which cannot.
-//                 if(li._canDominateOutputLatency)
-//                 {
-//                   can_dominate_out_lat = true;
+                // Is it the first found item?
+                if(item_found)
+                {
+                  // Override the current values with this item's values ONLY if required.
+                  
+                  //if(li._outputAvailableCorrection < route_worst_out_corr)
+                  //  route_worst_out_corr = li._outputAvailableCorrection;
+                  
+                  // If any one of the branches can dominate the latency,
+                  //  that overrides any which cannot.
+  //                 if(li._canDominateOutputLatency)
+  //                 {
+  //                   can_dominate_out_lat = true;
 
-//                   // Override the current worst value if the latency is greater,
-//                   //  but ONLY if the branch can dominate.
-//                   if(li._outputLatency > route_worst_latency)
-//                     route_worst_latency = li._outputLatency;
-// //                 }
+  //                   // Override the current worst value if the latency is greater,
+  //                   //  but ONLY if the branch can dominate.
+  //                   if(li._outputLatency > route_worst_latency)
+  //                     route_worst_latency = li._outputLatency;
+  // //                 }
 
-                  // Override the current worst value if the latency is greater,
-                  //  but ONLY if the branch can dominate.
-                  if(ir->audioLatencyOut > route_worst_latency)
-                  //if(passthru && li._outputLatency > route_worst_latency)
-                    route_worst_latency = ir->audioLatencyOut;
-              }
-              else
-              {
-                item_found = true;
-                // Override the defaults with this first item's values.
-                //route_worst_out_corr = li._outputAvailableCorrection;
-//                 can_dominate_out_lat = li._canDominateOutputLatency;
-                // Override the default worst value, but ONLY if the branch can dominate.
-//                 if(can_dominate_out_lat)
-//                   route_worst_latency = li._outputLatency;
+                    // Override the current worst value if the latency is greater,
+                    //  but ONLY if the branch can dominate.
+                    if(ir->audioLatencyOut > route_worst_latency)
+                    //if(passthru && li._outputLatency > route_worst_latency)
+                      route_worst_latency = ir->audioLatencyOut;
+                }
+                else
+                {
+                  item_found = true;
+                  // Override the defaults with this first item's values.
+                  //route_worst_out_corr = li._outputAvailableCorrection;
+  //                 can_dominate_out_lat = li._canDominateOutputLatency;
+                  // Override the default worst value, but ONLY if the branch can dominate.
+  //                 if(can_dominate_out_lat)
+  //                   route_worst_latency = li._outputLatency;
 
-                // Override the defaults with this first item's values.
-                route_worst_latency = ir->audioLatencyOut;
+                  // Override the defaults with this first item's values.
+                  route_worst_latency = ir->audioLatencyOut;
+                }
               }
         }
         
@@ -1697,17 +1708,26 @@ TrackLatencyInfo& AudioTrack::getInputLatencyInfo()
 //               if(!ir->canCorrectOutputLatency)
 //                 ir->audioLatencyOut = route_worst_latency;
               
+              AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+              const TrackLatencyInfo& li = atrack->getInputLatencyInfo();
+              const bool participate =
+                li._canCorrectOutputLatency ||
+                li._canDominateOutputLatency ||
+                MusEGlobal::config.correctUnterminatedInBranchLatency;
               
-              // Prepare the latency value to be passed to the compensator's writer,
-              //  by adjusting each route latency value. ie. the route with the worst-case
-              //  latency will get ZERO delay, while routes having smaller latency will get
-              //  MORE delay, to match all the signal timings together.
-              // The route's audioLatencyOut should have already been calculated and
-              //  conveniently stored in the route.
-              ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
-              // Should not happen, but just in case.
-              if((long int)ir->audioLatencyOut < 0)
-                ir->audioLatencyOut = 0.0f;
+              if(participate)
+              {
+                // Prepare the latency value to be passed to the compensator's writer,
+                //  by adjusting each route latency value. ie. the route with the worst-case
+                //  latency will get ZERO delay, while routes having smaller latency will get
+                //  MORE delay, to match all the signal timings together.
+                // The route's audioLatencyOut should have already been calculated and
+                //  conveniently stored in the route.
+                ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
+                // Should not happen, but just in case.
+                if((long int)ir->audioLatencyOut < 0)
+                  ir->audioLatencyOut = 0.0f;
+              }
         }
             
       }
@@ -1770,7 +1790,15 @@ TrackLatencyInfo& AudioTrack::getLatencyInfo()
   //                 worst_case_latency = lat;
   //             }
               const TrackLatencyInfo& li = atrack->getLatencyInfo();
-              
+
+              // Whether the branch can dominate or correct latency or if we
+              //  want to allow unterminated input branches to
+              //  participate in worst branch latency calculations.
+              const bool participate = !atrack->off() &&
+                (li._canCorrectOutputLatency ||
+                 li._canDominateOutputLatency ||
+                 MusEGlobal::config.correctUnterminatedInBranchLatency);
+
               // Temporarily store these values conveniently in the actual route.
               // They will be used by the latency compensator in the audio process pass.
 //               ir->canDominateLatency = li._canDominateOutputLatency;
@@ -1785,45 +1813,48 @@ TrackLatencyInfo& AudioTrack::getLatencyInfo()
   //             if(li._outputLatency > route_worst_latency)
   //               route_worst_latency = li._outputLatency;
               
-              // Is it the first found item?
-              if(item_found)
+              if(participate)
               {
-                // Override the current values with this item's values ONLY if required.
-                
-                //if(li._outputAvailableCorrection < route_worst_out_corr)
-                //  route_worst_out_corr = li._outputAvailableCorrection;
-                
-                // If any one of the branches can dominate the latency,
-                //  that overrides any which cannot.
-//                 if(li._canDominateOutputLatency)
-//                 {
-
-//                   can_dominate_out_lat = true;
-//                   // Override the current worst value if the latency is greater,
-//                   //  but ONLY if the branch can dominate.
-//                   if(li._outputLatency > route_worst_latency)
-//                     route_worst_latency = li._outputLatency;
-// //                 }
+                // Is it the first found item?
+                if(item_found)
+                {
+                  // Override the current values with this item's values ONLY if required.
                   
-                  // Override the current worst value if the latency is greater,
-                  //  but ONLY if the branch can dominate.
-                  if(ir->audioLatencyOut > route_worst_latency)
-                  //if(passthru && li._outputLatency > route_worst_latency)
-                    route_worst_latency = ir->audioLatencyOut;
-//                   }
-              }
-              else
-              {
-                item_found = true;
-                // Override the defaults with this first item's values.
-                //route_worst_out_corr = li._outputAvailableCorrection;
-//                 can_dominate_out_lat = li._canDominateOutputLatency;
-                // Override the default worst value, but ONLY if the branch can dominate.
-//                 if(can_dominate_out_lat)
-//                   route_worst_latency = li._outputLatency;
+                  //if(li._outputAvailableCorrection < route_worst_out_corr)
+                  //  route_worst_out_corr = li._outputAvailableCorrection;
+                  
+                  // If any one of the branches can dominate the latency,
+                  //  that overrides any which cannot.
+  //                 if(li._canDominateOutputLatency)
+  //                 {
 
-                // Override the defaults with this first item's values.
-                route_worst_latency = ir->audioLatencyOut;
+  //                   can_dominate_out_lat = true;
+  //                   // Override the current worst value if the latency is greater,
+  //                   //  but ONLY if the branch can dominate.
+  //                   if(li._outputLatency > route_worst_latency)
+  //                     route_worst_latency = li._outputLatency;
+  // //                 }
+                    
+                    // Override the current worst value if the latency is greater,
+                    //  but ONLY if the branch can dominate.
+                    if(ir->audioLatencyOut > route_worst_latency)
+                    //if(passthru && li._outputLatency > route_worst_latency)
+                      route_worst_latency = ir->audioLatencyOut;
+  //                   }
+                }
+                else
+                {
+                  item_found = true;
+                  // Override the defaults with this first item's values.
+                  //route_worst_out_corr = li._outputAvailableCorrection;
+  //                 can_dominate_out_lat = li._canDominateOutputLatency;
+                  // Override the default worst value, but ONLY if the branch can dominate.
+  //                 if(can_dominate_out_lat)
+  //                   route_worst_latency = li._outputLatency;
+
+                  // Override the defaults with this first item's values.
+                  route_worst_latency = ir->audioLatencyOut;
+                }
               }
         }
         
@@ -1853,7 +1884,7 @@ TrackLatencyInfo& AudioTrack::getLatencyInfo()
         for (iRoute ir = rl->begin(); ir != rl->end(); ++ir) {
               if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
                 continue;
-              
+
               // If the branch cannot dominate the latency, force it to be
               //  equal to the worst-case value.
               //if(!ir->canDominateLatency)
@@ -1861,18 +1892,27 @@ TrackLatencyInfo& AudioTrack::getLatencyInfo()
               //  equal to the worst-case value.
 //               if(!ir->canCorrectOutputLatency)
 //                 ir->audioLatencyOut = route_worst_latency;
+
+              AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+              const TrackLatencyInfo& li = atrack->getLatencyInfo();
+              const bool participate = !atrack->off() &&
+                (li._canCorrectOutputLatency ||
+                 li._canDominateOutputLatency ||
+                 MusEGlobal::config.correctUnterminatedInBranchLatency);
               
-              
-              // Prepare the latency value to be passed to the compensator's writer,
-              //  by adjusting each route latency value. ie. the route with the worst-case
-              //  latency will get ZERO delay, while routes having smaller latency will get
-              //  MORE delay, to match all the signal timings together.
-              // The route's audioLatencyOut should have already been calculated and
-              //  conveniently stored in the route.
-              ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
-              // Should not happen, but just in case.
-              if((long int)ir->audioLatencyOut < 0)
-                ir->audioLatencyOut = 0.0f;
+              if(participate)
+              {
+                // Prepare the latency value to be passed to the compensator's writer,
+                //  by adjusting each route latency value. ie. the route with the worst-case
+                //  latency will get ZERO delay, while routes having smaller latency will get
+                //  MORE delay, to match all the signal timings together.
+                // The route's audioLatencyOut should have already been calculated and
+                //  conveniently stored in the route.
+                ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
+                // Should not happen, but just in case.
+                if((long int)ir->audioLatencyOut < 0)
+                  ir->audioLatencyOut = 0.0f;
+              }
         }
             
       }
@@ -2797,7 +2837,7 @@ AudioInput::~AudioInput()
       }
 
 //---------------------------------------------------------
-//   latency
+//   trackLatency
 //---------------------------------------------------------
 
 float AudioInput::trackLatency(int channel) const

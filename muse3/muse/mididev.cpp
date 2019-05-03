@@ -725,5 +725,1285 @@ void MidiDevice::handleSeek()
   }
 }
 
+// REMOVE Tim. latency. Added.
+//================================================
+// BEGIN Latency correction/compensation routines.
+//================================================
+
+void MidiDevice::prepareLatencyScan() { 
+  // Reset some latency info to prepare for (re)computation.
+  // TODO: Instead of doing this blindly every cycle, do it only when
+  //        a latency controller changes or a connection is made etc,
+  //        ie only when something changes.
+  _captureLatencyInfo.initialize();
+  _playbackLatencyInfo.initialize();
+}
+
+bool MidiDevice::isLatencyInputTerminal(bool capture)
+{
+  TrackLatencyInfo* tli = capture ? &_captureLatencyInfo : &_playbackLatencyInfo;
+
+  const int port = midiPort();
+
+  // Playback devices are considered a termination point.
+  if(!capture || port < 0 || port >= MusECore::MIDI_PORTS)
+  {
+    tli->_isLatencyInputTerminal = true;
+    return true;
+  }
+
+  MidiPort* mp = &MusEGlobal::midiPorts[port];
+
+//   bool res = true;
+  
+  // REMOVE Tim. latency. Added. FLAG latency rec.
+  // TODO Refine this with a case or something, specific for say Aux tracks, Group tracks etc.
+//   if(!off() && ((!canRecordMonitor() || (canRecordMonitor() && isRecMonitored()))
+//      //|| (canRecord() && recordFlag())
+//      ))
+
+  // If we're asking for the view from the record side, check if we're
+  //  passing the signal through the track via monitoring.
+//   if(off() || (canRecordMonitor() && (!MusEGlobal::config.monitoringAffectsLatency || !isRecMonitored())))
+//      //&& canRecord() && !recordFlag())
+    
+    
+//   if(!(openFlags() & 2 /*read*/))
+//   {
+// //     _latencyInfo._isLatencyInputTerminal = true;
+//     tli->_isLatencyInputTerminal = true;
+//     return true;
+//   }
+  
+//     const RouteList* rl = outRoutes();
+    const RouteList* rl = mp->outRoutes();
+    for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+      switch(ir->type)
+      {
+        case Route::TRACK_ROUTE:
+          if(!ir->track)
+            continue;
+          if(ir->track->isMidiTrack())
+          {
+            Track* track = ir->track;
+            if(track->off()) // || 
+              //(atrack->canRecordMonitor() && (MusEGlobal::config.monitoringAffectsLatency || !atrack->isRecMonitored())))
+               //&& atrack->canRecord() && !atrack->recordFlag()))
+              continue;
+            
+//             _latencyInfo._isLatencyInputTerminal = false;
+            tli->_isLatencyInputTerminal = false;
+            return false;
+          }
+        break;
+
+        default:
+        break;
+      }
+    }
+//   }
+
+//   _latencyInfo._isLatencyInputTerminal = res;
+//   return res;
+  tli->_isLatencyInputTerminal = true;
+  return true;
+}
+
+bool MidiDevice::isLatencyOutputTerminal(bool capture)
+{
+  TrackLatencyInfo* tli = capture ? &_captureLatencyInfo : &_playbackLatencyInfo;
+
+  const int port = midiPort();
+
+  // Playback devices are considered a termination point.
+  if(!capture || port < 0 || port >= MusECore::MIDI_PORTS)
+  {
+    tli->_isLatencyInputTerminal = true;
+    return true;
+  }
+
+  MidiPort* mp = &MusEGlobal::midiPorts[port];
+
+//   bool res = true;
+  
+  // REMOVE Tim. latency. Added. FLAG latency rec.
+  // TODO Refine this with a case or something, specific for say Aux tracks, Group tracks etc.
+//   if(!off() && ((!canRecordMonitor() || (canRecordMonitor() && isRecMonitored()))
+//      //|| (canRecord() && recordFlag())
+//      ))
+
+//   // If we're asking for the view from the record side, check if we're
+//   //  passing the signal through the track via monitoring.
+//   if(off() || (record && canRecordMonitor() && !isRecMonitored()))
+//      //&& canRecord() && !recordFlag())
+//   {
+//     _latencyInfo._isLatencyOuputTerminal = true;
+//     return true;
+//   }
+  
+//   if(!off() && 
+//     (!record || ((!canRecordMonitor() || (canRecordMonitor() && isRecMonitored()))
+//      //|| (canRecord() && recordFlag())
+//      )))
+//   {
+
+//     const RouteList* rl = outRoutes();
+    const RouteList* rl = mp->outRoutes();
+    for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+      switch(ir->type)
+      {
+        case Route::TRACK_ROUTE:
+          if(!ir->track)
+            continue;
+          if(ir->track->isMidiTrack())
+          {
+            Track* track = ir->track;
+            if(track->off()) // || 
+              //(atrack->canRecordMonitor() && (MusEGlobal::config.monitoringAffectsLatency || !atrack->isRecMonitored())))
+               //&& atrack->canRecord() && !atrack->recordFlag()))
+              continue;
+            
+//             _latencyInfo._isLatencyInputTerminal = false;
+            tli->_isLatencyInputTerminal = false;
+            return false;
+          }
+        break;
+
+        default:
+        break;
+      }
+    }
+//   }
+
+//   _latencyInfo._isLatencyOutputTerminal = res;
+//   return res;
+//   _latencyInfo._isLatencyOutputTerminal = true;
+  tli->_isLatencyOutputTerminal = true;
+  return true;
+}
+
+bool MidiDevice::canDominateOutputLatency(bool capture) const
+{
+  if(capture)
+    return true;
+  return false;
+}
+
+bool MidiDevice::canDominateEndPointLatency(bool capture) const
+{
+  if(capture)
+    return false;
+  return true;
+}
+
+//---------------------------------------------------------
+//   getInputDominanceLatencyInfo
+//---------------------------------------------------------
+
+TrackLatencyInfo& MidiDevice::getInputDominanceLatencyInfo(bool capture)
+{
+      TrackLatencyInfo* tli = capture ? &_captureLatencyInfo : &_playbackLatencyInfo;
+      
+      // Have we been here before during this scan?
+      // Just return the cached value.
+    //       if(_latencyInfo._dominanceProcessed)
+    //         return _latencyInfo;
+      if(tli->_dominanceProcessed)
+        return *tli;
+
+      const int port = midiPort();
+
+// //       // Playback devices are considered a termination point.
+//       if(/*!capture ||*/ port < 0 || port >= MusECore::MIDI_PORTS)
+//       {
+//         tli->_dominanceProcessed = true;
+//         return *tli;
+//       }
+
+//       MidiPort* mp = &MusEGlobal::midiPorts[port];
+
+      
+      
+      
+      
+      
+//       RouteList* rl = inRoutes();
+      //const RouteList* rl = inRoutes();
+      float route_worst_latency = 0.0f;
+      float track_worst_chan_latency = 0.0f;
+      
+      // This value has a range from 0 (worst) to positive inf (best) or close to it.
+//       float route_worst_out_corr = outputLatencyCorrection();
+      // Get the default domination for this track type.
+      bool can_dominate_out_lat = canDominateOutputLatency(capture);
+      // Get the default correction ability for this track type.
+      //bool can_correct_out_lat = canCorrectOutputLatency();
+
+      // Gather latency info from all connected input branches,
+      //  but ONLY if the track is not off.
+//       if(!off())
+      if((openFlags() & (capture ? 2 : 1)) && port >= 0 && port < MusECore::MIDI_PORTS)
+      {
+//         bool used_chans[MUSE_MIDI_CHANNELS];
+//         for(int i = 0; i < MUSE_MIDI_CHANNELS; ++i)
+//           used_chans[i] = false;
+//         bool all_chans = false;
+
+        MidiPort* mp = &MusEGlobal::midiPorts[port];
+//         RouteList* rl = inRoutes();
+        RouteList* rl = mp->inRoutes();
+
+        bool item_found = false;
+        // Only if monitoring is not available, or it is and in fact is monitored.
+//         if(!canRecordMonitor() || (canRecordMonitor() && isRecMonitored()))
+        // TODO Refine this with a case or something, specific for say Aux tracks, Group tracks etc.
+        // REMOVE Tim. latency. Added. FLAG latency rec.
+//         if((!canRecordMonitor() || (canRecordMonitor() && isRecMonitored()))
+//             //|| (canRecord() && recordFlag())
+//           )
+//         const bool passthru =
+//           !canRecordMonitor() || 
+//           (MusEGlobal::config.monitoringAffectsLatency && isRecMonitored());
+//           //|| (canRecord() && recordFlag());
+        
+        
+        {
+          for (iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+          {
+            switch(ir->type)
+            {
+                case Route::TRACK_ROUTE:
+                  if(!ir->track)
+                    continue;
+                  
+                  if(ir->track->isMidiTrack())
+                  {
+                    if(ir->channel < -1 || ir->channel >= MUSE_MIDI_CHANNELS)
+                      continue;
+
+                    Track* track = ir->track;
+//                     if(track->off()) // || 
+//                       //(atrack->canRecordMonitor() && (MusEGlobal::config.monitoringAffectsLatency || !atrack->isRecMonitored())))
+//                       //&& atrack->canRecord() && !atrack->recordFlag()))
+//                       continue;
+                   
+//                     if(ir->channel < 0)
+//                       all_chans = true;
+//                     else
+//                       used_chans[ir->channel] = true;
+                      
+                    const TrackLatencyInfo& li = track->getInputDominanceLatencyInfo();
+                    const bool passthru =
+                      !track->canRecordMonitor() || 
+                      (MusEGlobal::config.monitoringAffectsLatency && track->isRecMonitored());
+
+                    // Temporarily store these values conveniently in the actual route.
+                    // They will be used by the latency compensator in the audio process pass.
+                    ir->canDominateLatency = li._canDominateOutputLatency;
+                    ir->canCorrectOutputLatency = li._canCorrectOutputLatency;
+                    if(passthru)
+                    {
+                      // Is it the first found item?
+                      if(item_found)
+                      {
+                        // If any one of the branches can dominate the latency,
+                        //  that overrides any which cannot.
+                        if(li._canDominateOutputLatency)
+                        {
+                          can_dominate_out_lat = true;
+                          // Override the current worst value if the latency is greater,
+                          //  but ONLY if the branch can dominate.
+                          if(li._outputLatency > route_worst_latency)
+                            route_worst_latency = li._outputLatency;
+                        }
+                      }
+                      else
+                      {
+                        item_found = true;
+                        // Override the defaults with this first item's values.
+                        can_dominate_out_lat = li._canDominateOutputLatency;
+                        // Override the default worst value, but ONLY if the branch can dominate.
+                        if(can_dominate_out_lat)
+                          route_worst_latency = li._outputLatency;
+                      }
+                    }
+                  }
+                break;
+
+                default:
+                break;
+            }            
+            
+            
+            
+//                 if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+//                   continue;
+//                 AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+//     //             const int atrack_out_channels = atrack->totalOutChannels();
+//     //             const int src_ch = ir->remoteChannel <= -1 ? 0 : ir->remoteChannel;
+//     //             const int src_chs = ir->channels;
+//     //             int fin_src_chs = src_chs;
+//     //             if(src_ch + fin_src_chs >  atrack_out_channels)
+//     //               fin_src_chs = atrack_out_channels - src_ch;
+//     //             const int next_src_chan = src_ch + fin_src_chs;
+//     //             // The goal is to have equal latency output on all channels on this track.
+//     //             for(int i = src_ch; i < next_src_chan; ++i)
+//     //             {
+//     //               const float lat = atrack->trackLatency(i);
+//     //               if(lat > worst_case_latency)
+//     //                 worst_case_latency = lat;
+//     //             }
+// //                 const TrackLatencyInfo& li = atrack->getDominanceLatencyInfo();
+//                 const TrackLatencyInfo& li = atrack->getInputDominanceLatencyInfo();
+// 
+//                 // REMOVE Tim. latency. Added. FLAG latency rec.
+//                 //const bool passthru = (!atrack->canRecordMonitor() || (atrack->canRecordMonitor() && atrack->isRecMonitored()));
+//                 //const bool passthru = (!canRecordMonitor() || (canRecordMonitor() && isRecMonitored()));
+//                     //|| (canRecord() && recordFlag());
+//                 
+//                 const bool passthru =
+//                   !atrack->canRecordMonitor() || 
+//                   (MusEGlobal::config.monitoringAffectsLatency && atrack->isRecMonitored());
+//                 
+//                 // Temporarily store these values conveniently in the actual route.
+//                 // They will be used by the latency compensator in the audio process pass.
+//                 //ir->canDominateLatency = li._canDominateOutputLatency;
+// //                 if(passthru)
+//                   ir->canDominateLatency = li._canDominateOutputLatency;
+// //                 else
+// //                   ir->canDominateLatency = false;
+//                 
+//     //             ir->audioLatencyOut = li._outputLatency;
+//                 ir->canCorrectOutputLatency = li._canCorrectOutputLatency;
+//                 
+//     //             // Override the current worst value if the latency is greater,
+//     //             //  but ONLY if the branch can dominate.
+//     //             if(li._canDominateOutputLatency && li._outputLatency > route_worst_latency)
+//     //               route_worst_latency = li._outputLatency;
+//                 
+//                 if(passthru)
+//                 {
+//                   // Is it the first found item?
+//                   if(item_found)
+//                   {
+//                     // Override the current values with this item's values ONLY if required.
+//                     
+//                     //if(li._outputAvailableCorrection < route_worst_out_corr)
+//                     //  route_worst_out_corr = li._outputAvailableCorrection;
+//                     
+//                     // If any one of the branches can dominate the latency,
+//                     //  that overrides any which cannot.
+//                     if(li._canDominateOutputLatency)
+//                     //if(passthru && li._canDominateOutputLatency)
+//                     {
+//                       can_dominate_out_lat = true;
+//                       // Override the current worst value if the latency is greater,
+//                       //  but ONLY if the branch can dominate.
+//                       if(li._outputLatency > route_worst_latency)
+//                         route_worst_latency = li._outputLatency;
+//                     }
+//                   }
+//                   else
+//                   {
+//                     item_found = true;
+//                     // Override the defaults with this first item's values.
+//                     //route_worst_out_corr = li._outputAvailableCorrection;
+//                     can_dominate_out_lat = li._canDominateOutputLatency;
+//                     // Override the default worst value, but ONLY if the branch can dominate.
+//                     if(can_dominate_out_lat)
+//                       route_worst_latency = li._outputLatency;
+//                   }
+//                 }
+          }
+        }
+        
+  //       // Now that we know the worst-case latency of the connected branches,
+  //       //  adjust each of the conveniently stored temporary latency values
+  //       //  in the routes according to whether they can dominate...
+  //       item_found = false;
+  //       for (iRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+  //             if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+  //               continue;
+  //             
+  //             // If the branch cannot dominate the latency, force it to be
+  //             //  equal to the worst-case value.
+  //             if(!ir->canDominateLatency)
+  //               ir->audioLatencyOut = route_worst_latency;
+  //       }
+              
+//         // Adjust for THIS track's contribution to latency.
+//         // The goal is to have equal latency output on all channels on this track.
+//         const int track_out_channels = totalProcessBuffers(); // totalOutChannels();
+//         for(int i = 0; i < track_out_channels; ++i)
+//         {
+//           const float lat = trackLatency(i);
+//           if(lat > track_worst_chan_latency)
+//               track_worst_chan_latency = lat;
+//         }
+
+        // Adjust for THIS device's contribution to latency.
+        // The goal is to have equal latency output on all channels on this track.
+//         const int track_out_channels = totalProcessBuffers(); // totalOutChannels();
+//         for(int i = 0; i < track_out_channels; ++i)
+        //for(int i = 0; i < MUSE_MIDI_CHANNELS; ++i)
+        {
+//           if(!used_chans[i])
+//             continue;
+//           const float lat = trackLatency(i);
+          // TODO Revert. TESTING
+          //const float lat = selfLatency(i, capture);
+          const float lat = selfLatency(0, capture);
+          if(lat > track_worst_chan_latency)
+              track_worst_chan_latency = lat;
+        }
+      }
+      
+      // The absolute latency of signals leaving this track is the sum of
+      //  any connected route latencies and this track's latency.
+      tli->_trackLatency  = track_worst_chan_latency;
+      tli->_outputLatency = track_worst_chan_latency + route_worst_latency;
+      //tli->_outputAvailableCorrection = route_worst_out_corr;
+      tli->_canDominateOutputLatency = can_dominate_out_lat;
+      //tli->_canCorrectOutputLatency = can_correct_out_lat;
+      tli->_canCorrectOutputLatency = canCorrectOutputLatency();
+      // Take advantage of this first stage to initialize the track's
+      //  correction value to zero.
+      tli->_sourceCorrectionValue = 0.0f;
+      // Take advantage of this first stage to initialize the track's
+      //  write offset to zero.
+      tli->_compensatorWriteOffset = 0;
+      // Set whether this track is a branch end point.
+      //_latencyInfo._isLatencyOuputTerminal = isLatencyOutputTerminal();
+
+      tli->_dominanceProcessed = true;
+      return *tli;
+}
+
+// REMOVE Tim. latency. Added.
+//---------------------------------------------------------
+//   getDominanceLatencyInfo
+//---------------------------------------------------------
+
+TrackLatencyInfo& MidiDevice::getDominanceLatencyInfo(bool capture)
+{
+  TrackLatencyInfo* tli = capture ? &_captureLatencyInfo : &_playbackLatencyInfo;
+  
+      // Have we been here before during this scan?
+      // Just return the cached value.
+//       if(_latencyInfo._dominanceProcessed)
+//         return _latencyInfo;
+      if(tli->_dominanceProcessed)
+        return *tli;
+      
+      const int port = midiPort();
+      
+//       RouteList* rl = inRoutes();
+      //const RouteList* rl = inRoutes();
+      float route_worst_latency = 0.0f;
+      float track_worst_chan_latency = 0.0f;
+      
+      // This value has a range from 0 (worst) to positive inf (best) or close to it.
+//       float route_worst_out_corr = outputLatencyCorrection();
+      // Get the default domination for this track type.
+//       bool can_dominate_out_lat = canDominateOutputLatency();
+      bool can_dominate_out_lat = canDominateOutputLatency(capture);
+      // Get the default correction ability for this track type.
+      //bool can_correct_out_lat = canCorrectOutputLatency();
+
+      // Gather latency info from all connected input branches,
+      //  but ONLY if the track is not off.
+//       if(!off())
+      if((openFlags() & (capture ? 2 : 1)) && port >= 0 && port < MusECore::MIDI_PORTS)
+      {
+//         bool used_chans[MUSE_MIDI_CHANNELS];
+//         for(int i = 0; i < MUSE_MIDI_CHANNELS; ++i)
+//           used_chans[i] = false;
+//         bool all_chans = false;
+
+        MidiPort* mp = &MusEGlobal::midiPorts[port];
+//         RouteList* rl = inRoutes();
+        RouteList* rl = mp->inRoutes();
+
+        bool item_found = false;
+        // Only if monitoring is not available, or it is and in fact is monitored.
+//         if(!canRecordMonitor() || (canRecordMonitor() && isRecMonitored()))
+        // TODO Refine this with a case or something, specific for say Aux tracks, Group tracks etc.
+        // REMOVE Tim. latency. Added. FLAG latency rec.
+//         if((!canRecordMonitor() || (canRecordMonitor() && isRecMonitored()))
+//             //|| (canRecord() && recordFlag())
+//           )
+
+//         const bool passthru =
+//           !canRecordMonitor() || 
+//           (MusEGlobal::config.monitoringAffectsLatency && isRecMonitored());
+//           //|| (canRecord() && recordFlag());
+        
+        
+        {
+          for (iRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+            switch(ir->type)
+            {
+                case Route::TRACK_ROUTE:
+                  if(!ir->track)
+                    continue;
+                  
+                  if(ir->track->isMidiTrack())
+                  {
+                    if(ir->channel < -1 || ir->channel >= MUSE_MIDI_CHANNELS)
+                      continue;
+
+                    Track* track = ir->track;
+//                     if(track->off()) // || 
+//                       //(atrack->canRecordMonitor() && (MusEGlobal::config.monitoringAffectsLatency || !atrack->isRecMonitored())))
+//                       //&& atrack->canRecord() && !atrack->recordFlag()))
+//                       continue;
+                   
+//                     if(ir->channel < 0)
+//                       all_chans = true;
+//                     else
+//                       used_chans[ir->channel] = true;
+                      
+                    const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
+
+                    // Temporarily store these values conveniently in the actual route.
+                    // They will be used by the latency compensator in the audio process pass.
+                    ir->canDominateLatency = li._canDominateOutputLatency;
+                    ir->canCorrectOutputLatency = li._canCorrectOutputLatency;
+                    
+                    
+//                     if(passthru)
+                    {
+                      // Is it the first found item?
+                      if(item_found)
+                      {
+                        // If any one of the branches can dominate the latency,
+                        //  that overrides any which cannot.
+                        if(li._canDominateOutputLatency)
+                        {
+                          can_dominate_out_lat = true;
+                          // Override the current worst value if the latency is greater,
+                          //  but ONLY if the branch can dominate.
+                          if(li._outputLatency > route_worst_latency)
+                            route_worst_latency = li._outputLatency;
+                        }
+                      }
+                      else
+                      {
+                        item_found = true;
+                        // Override the defaults with this first item's values.
+                        can_dominate_out_lat = li._canDominateOutputLatency;
+                        // Override the default worst value, but ONLY if the branch can dominate.
+                        if(can_dominate_out_lat)
+                          route_worst_latency = li._outputLatency;
+                      }
+                    }
+                  }
+                break;
+
+                default:
+                break;
+            }            
+
+
+
+
+
+
+
+
+            
+            
+//                 if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+//                   continue;
+//                 AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+//     //             const int atrack_out_channels = atrack->totalOutChannels();
+//     //             const int src_ch = ir->remoteChannel <= -1 ? 0 : ir->remoteChannel;
+//     //             const int src_chs = ir->channels;
+//     //             int fin_src_chs = src_chs;
+//     //             if(src_ch + fin_src_chs >  atrack_out_channels)
+//     //               fin_src_chs = atrack_out_channels - src_ch;
+//     //             const int next_src_chan = src_ch + fin_src_chs;
+//     //             // The goal is to have equal latency output on all channels on this track.
+//     //             for(int i = src_ch; i < next_src_chan; ++i)
+//     //             {
+//     //               const float lat = atrack->trackLatency(i);
+//     //               if(lat > worst_case_latency)
+//     //                 worst_case_latency = lat;
+//     //             }
+//                 const TrackLatencyInfo& li = atrack->getDominanceLatencyInfo();
+// 
+//                 // REMOVE Tim. latency. Added. FLAG latency rec.
+//                 //const bool passthru = (!atrack->canRecordMonitor() || (atrack->canRecordMonitor() && atrack->isRecMonitored()));
+//                 //const bool passthru = (!canRecordMonitor() || (canRecordMonitor() && isRecMonitored()));
+//                     //|| (canRecord() && recordFlag());
+//                 
+//                 // Temporarily store these values conveniently in the actual route.
+//                 // They will be used by the latency compensator in the audio process pass.
+//                 //ir->canDominateLatency = li._canDominateOutputLatency;
+// //                 if(passthru)
+//                   ir->canDominateLatency = li._canDominateOutputLatency;
+// //                 else
+// //                   ir->canDominateLatency = false;
+//                 
+//     //             ir->audioLatencyOut = li._outputLatency;
+//                 ir->canCorrectOutputLatency = li._canCorrectOutputLatency;
+//                 
+//     //             // Override the current worst value if the latency is greater,
+//     //             //  but ONLY if the branch can dominate.
+//     //             if(li._canDominateOutputLatency && li._outputLatency > route_worst_latency)
+//     //               route_worst_latency = li._outputLatency;
+//                 
+//                 if(passthru)
+//                 {
+//                   // Is it the first found item?
+//                   if(item_found)
+//                   {
+//                     // Override the current values with this item's values ONLY if required.
+//                     
+//                     //if(li._outputAvailableCorrection < route_worst_out_corr)
+//                     //  route_worst_out_corr = li._outputAvailableCorrection;
+//                     
+//                     // If any one of the branches can dominate the latency,
+//                     //  that overrides any which cannot.
+//                     if(li._canDominateOutputLatency)
+//                     //if(passthru && li._canDominateOutputLatency)
+//                     {
+//                       can_dominate_out_lat = true;
+//                       // Override the current worst value if the latency is greater,
+//                       //  but ONLY if the branch can dominate.
+//                       if(li._outputLatency > route_worst_latency)
+//                         route_worst_latency = li._outputLatency;
+//                     }
+//                   }
+//                   else
+//                   {
+//                     item_found = true;
+//                     // Override the defaults with this first item's values.
+//                     //route_worst_out_corr = li._outputAvailableCorrection;
+//                     can_dominate_out_lat = li._canDominateOutputLatency;
+//                     // Override the default worst value, but ONLY if the branch can dominate.
+//                     if(can_dominate_out_lat)
+//                       route_worst_latency = li._outputLatency;
+//                   }
+//                 }
+          }
+        }
+        
+  //       // Now that we know the worst-case latency of the connected branches,
+  //       //  adjust each of the conveniently stored temporary latency values
+  //       //  in the routes according to whether they can dominate...
+  //       item_found = false;
+  //       for (iRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+  //             if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+  //               continue;
+  //             
+  //             // If the branch cannot dominate the latency, force it to be
+  //             //  equal to the worst-case value.
+  //             if(!ir->canDominateLatency)
+  //               ir->audioLatencyOut = route_worst_latency;
+  //       }
+              
+        // Adjust for THIS track's contribution to latency.
+        // The goal is to have equal latency output on all channels on this track.
+//         const int track_out_channels = totalProcessBuffers(); // totalOutChannels();
+//         for(int i = 0; i < track_out_channels; ++i)
+        //for(int i = 0; i < MUSE_MIDI_CHANNELS; ++i)
+        {
+//           if(!used_chans[i])
+//             continue;
+//           const float lat = trackLatency(i);
+          // TODO Revert. TESTING
+          //const float lat = selfLatency(i, capture);
+          const float lat = selfLatency(0, capture);
+          if(lat > track_worst_chan_latency)
+              track_worst_chan_latency = lat;
+        }
+      }
+      
+      // The absolute latency of signals leaving this track is the sum of
+      //  any connected route latencies and this track's latency.
+      tli->_trackLatency  = track_worst_chan_latency;
+      tli->_outputLatency = track_worst_chan_latency + route_worst_latency;
+      //tli->_outputAvailableCorrection = route_worst_out_corr;
+      tli->_canDominateOutputLatency = can_dominate_out_lat;
+      //tli->_canCorrectOutputLatency = can_correct_out_lat;
+      tli->_canCorrectOutputLatency = canCorrectOutputLatency();
+      // Take advantage of this first stage to initialize the track's
+      //  correction value to zero.
+      tli->_sourceCorrectionValue = 0.0f;
+      // Take advantage of this first stage to initialize the track's
+      //  write offset to zero.
+      tli->_compensatorWriteOffset = 0;
+      // Set whether this track is a branch end point.
+      //tli->_isLatencyOuputTerminal = isLatencyOutputTerminal();
+
+      tli->_dominanceProcessed = true;
+      return *tli;
+}
+
+//---------------------------------------------------------
+//   getInputLatencyInfo
+//---------------------------------------------------------
+
+TrackLatencyInfo& MidiDevice::getInputLatencyInfo(bool capture)
+{
+      TrackLatencyInfo* tli = capture ? &_captureLatencyInfo : &_playbackLatencyInfo;
+      
+      // Have we been here before during this scan?
+      // Just return the cached value.
+//       if(_latencyInfo._processed)
+//         return _latencyInfo;
+      if(tli->_processed)
+        return *tli;
+      
+      const int port = midiPort();
+
+//       RouteList* rl = inRoutes();
+      //const RouteList* rl = inRoutes();
+      float route_worst_latency = 0.0f;
+      //float track_worst_chan_latency = 0.0f;
+      
+      // This value has a range from 0 (worst) to positive inf (best) or close to it.
+      //float route_worst_out_corr = outputLatencyCorrection();
+      // Get the default domination for this track type.
+//       bool can_dominate_out_lat = canDominateOutputLatency();
+      
+      // Gather latency info from all connected input branches,
+      //  but ONLY if the track is not off.
+//       if(!off())
+      if((openFlags() & (capture ? 2 : 1)) && port >= 0 && port < MusECore::MIDI_PORTS)
+      {
+        MidiPort* mp = &MusEGlobal::midiPorts[port];
+        RouteList* rl = mp->inRoutes();
+        
+        bool item_found = false;
+        for (iRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+              switch(ir->type)
+              {
+                  case Route::TRACK_ROUTE:
+                    if(!ir->track)
+                      continue;
+                    
+                    if(ir->track->isMidiTrack())
+                    {
+                      if(ir->channel < -1 || ir->channel >= MUSE_MIDI_CHANNELS)
+                        continue;
+
+                      Track* track = ir->track;
+  //                     if(track->off()) // || 
+  //                       //(atrack->canRecordMonitor() && (MusEGlobal::config.monitoringAffectsLatency || !atrack->isRecMonitored())))
+  //                       //&& atrack->canRecord() && !atrack->recordFlag()))
+  //                       continue;
+                    
+  //                     if(ir->channel < 0)
+  //                       all_chans = true;
+  //                     else
+  //                       used_chans[ir->channel] = true;
+                        
+//                       const TrackLatencyInfo& li = track->getInputDominanceLatencyInfo();
+                      const TrackLatencyInfo& li = track->getInputLatencyInfo();
+                      // Temporarily store these values conveniently in the actual route.
+                      // They will be used by the latency compensator in the audio process pass.
+        //               ir->canDominateLatency = li._canDominateOutputLatency;
+                      //ir->canCorrectOutputLatency = li._canCorrectOutputLatency;
+                      ir->audioLatencyOut = li._outputLatency;
+
+                      // Is it the first found item?
+                      if(item_found)
+                      {
+                          // Override the current worst value if the latency is greater,
+                          //  but ONLY if the branch can dominate.
+                          if(ir->audioLatencyOut > route_worst_latency)
+                          //if(passthru && li._outputLatency > route_worst_latency)
+                            route_worst_latency = ir->audioLatencyOut;
+                      }
+                      else
+                      {
+                        item_found = true;
+                        // Override the defaults with this first item's values.
+                        route_worst_latency = ir->audioLatencyOut;
+                      }
+                    }
+                  break;
+                  
+                  default:
+                  break;
+              }
+          
+          
+          
+//               if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+//                 continue;
+//               AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+//   //             const int atrack_out_channels = atrack->totalOutChannels();
+//   //             const int src_ch = ir->remoteChannel <= -1 ? 0 : ir->remoteChannel;
+//   //             const int src_chs = ir->channels;
+//   //             int fin_src_chs = src_chs;
+//   //             if(src_ch + fin_src_chs >  atrack_out_channels)
+//   //               fin_src_chs = atrack_out_channels - src_ch;
+//   //             const int next_src_chan = src_ch + fin_src_chs;
+//   //             // The goal is to have equal latency output on all channels on this track.
+//   //             for(int i = src_ch; i < next_src_chan; ++i)
+//   //             {
+//   //               const float lat = atrack->trackLatency(i);
+//   //               if(lat > worst_case_latency)
+//   //                 worst_case_latency = lat;
+//   //             }
+//               const TrackLatencyInfo& li = atrack->getInputLatencyInfo();
+//               
+//               // Temporarily store these values conveniently in the actual route.
+//               // They will be used by the latency compensator in the audio process pass.
+// //               ir->canDominateLatency = li._canDominateOutputLatency;
+//               //ir->canCorrectOutputLatency = li._canCorrectOutputLatency;
+//               ir->audioLatencyOut = li._outputLatency;
+//               
+//   //             // Override the current worst value if the latency is greater,
+//   //             //  but ONLY if the branch can dominate.
+//   //             if(li._canDominateOutputLatency && li._outputLatency > route_worst_latency)
+//   //               route_worst_latency = li._outputLatency;
+//   //             // Override the current worst value if the latency is greater.
+//   //             if(li._outputLatency > route_worst_latency)
+//   //               route_worst_latency = li._outputLatency;
+//               
+//               // Is it the first found item?
+//               if(item_found)
+//               {
+//                 // Override the current values with this item's values ONLY if required.
+//                 
+//                 //if(li._outputAvailableCorrection < route_worst_out_corr)
+//                 //  route_worst_out_corr = li._outputAvailableCorrection;
+//                 
+//                 // If any one of the branches can dominate the latency,
+//                 //  that overrides any which cannot.
+// //                 if(li._canDominateOutputLatency)
+// //                 {
+// //                   can_dominate_out_lat = true;
+// 
+// //                   // Override the current worst value if the latency is greater,
+// //                   //  but ONLY if the branch can dominate.
+// //                   if(li._outputLatency > route_worst_latency)
+// //                     route_worst_latency = li._outputLatency;
+// // //                 }
+// 
+//                   // Override the current worst value if the latency is greater,
+//                   //  but ONLY if the branch can dominate.
+//                   if(ir->audioLatencyOut > route_worst_latency)
+//                   //if(passthru && li._outputLatency > route_worst_latency)
+//                     route_worst_latency = ir->audioLatencyOut;
+//               }
+//               else
+//               {
+//                 item_found = true;
+//                 // Override the defaults with this first item's values.
+//                 //route_worst_out_corr = li._outputAvailableCorrection;
+// //                 can_dominate_out_lat = li._canDominateOutputLatency;
+//                 // Override the default worst value, but ONLY if the branch can dominate.
+// //                 if(can_dominate_out_lat)
+// //                   route_worst_latency = li._outputLatency;
+// 
+//                 // Override the defaults with this first item's values.
+//                 route_worst_latency = ir->audioLatencyOut;
+//               }
+
+        }
+        
+//         // Adjust for THIS track's contribution to latency.
+//         // The goal is to have equal latency output on all channels on this track.
+//         const int track_out_channels = totalProcessBuffers(); // totalOutChannels();
+//         for(int i = 0; i < track_out_channels; ++i)
+//         {
+//           const float lat = trackLatency(i);
+//           if(lat > track_worst_chan_latency)
+//               track_worst_chan_latency = lat;
+//         }
+        
+      
+  //       // Now add the track's own correction value, if any.
+  //       // The correction value is NEGATIVE, so simple summation is used.
+  //       route_worst_latency += _latencyInfo._sourceCorrectionValue;
+
+  //       // Override the current worst value if the track's own correction value is greater.
+  //       // Note that the correction value is always NEGATIVE.
+  //       if(_latencyInfo._sourceCorrectionValue > route_worst_latency)
+  //         route_worst_latency = _latencyInfo._sourceCorrectionValue;
+        
+        // Now that we know the worst-case latency of the connected branches,
+        //  adjust each of the conveniently stored temporary latency values
+        //  in the routes according to whether they can dominate...
+        for (iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+        {
+              switch(ir->type)
+              {
+                  case Route::TRACK_ROUTE:
+                    if(!ir->track)
+                      continue;
+                    
+                    if(ir->track->isMidiTrack())
+                    {
+                      if(ir->channel < -1 || ir->channel >= MUSE_MIDI_CHANNELS)
+                        continue;
+
+                      // Prepare the latency value to be passed to the compensator's writer,
+                      //  by adjusting each route latency value. ie. the route with the worst-case
+                      //  latency will get ZERO delay, while routes having smaller latency will get
+                      //  MORE delay, to match all the signal timings together.
+                      // The route's audioLatencyOut should have already been calculated and
+                      //  conveniently stored in the route.
+                      ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
+                      // Should not happen, but just in case.
+                      if((long int)ir->audioLatencyOut < 0)
+                        ir->audioLatencyOut = 0.0f;
+                    }
+                  break;
+                  
+                  default:
+                  break;
+              }
+          
+
+          
+          
+          
+//               if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+//                 continue;
+//               
+//               // If the branch cannot dominate the latency, force it to be
+//               //  equal to the worst-case value.
+//               //if(!ir->canDominateLatency)
+//               // If the branch cannot correct the latency, force it to be
+//               //  equal to the worst-case value.
+// //               if(!ir->canCorrectOutputLatency)
+// //                 ir->audioLatencyOut = route_worst_latency;
+//               
+//               
+//               // Prepare the latency value to be passed to the compensator's writer,
+//               //  by adjusting each route latency value. ie. the route with the worst-case
+//               //  latency will get ZERO delay, while routes having smaller latency will get
+//               //  MORE delay, to match all the signal timings together.
+//               // The route's audioLatencyOut should have already been calculated and
+//               //  conveniently stored in the route.
+//               ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
+//               // Should not happen, but just in case.
+//               if((long int)ir->audioLatencyOut < 0)
+//                 ir->audioLatencyOut = 0.0f;
+        }
+            
+      }
+      
+      // The absolute latency of signals leaving this track is the sum of
+      //  any connected route latencies and this track's latency.
+//       _latencyInfo._trackLatency  = track_worst_chan_latency;
+//       _latencyInfo._outputLatency = track_worst_chan_latency + route_worst_latency;
+      // The _trackLatency should have been already calculated from the dominance scan.
+//       _latencyInfo._outputLatency = _latencyInfo._trackLatency + route_worst_latency;
+      tli->_outputLatency = tli->_trackLatency + route_worst_latency;
+      //_latencyInfo._outputAvailableCorrection = route_worst_out_corr;
+//       _latencyInfo._canDominateOutputLatency = can_dominate_out_lat;
+
+      tli->_processed = true;
+      return *tli;
+}
+
+//---------------------------------------------------------
+//   getLatencyInfo
+//---------------------------------------------------------
+
+TrackLatencyInfo& MidiDevice::getLatencyInfo(bool capture)
+{
+      TrackLatencyInfo* tli = capture ? &_captureLatencyInfo : &_playbackLatencyInfo;
+
+      // Have we been here before during this scan?
+      // Just return the cached value.
+//       if(_latencyInfo._processed)
+//         return _latencyInfo;
+      if(tli->_processed)
+        return *tli;
+
+      const int port = midiPort();
+
+//       RouteList* rl = inRoutes();
+      //const RouteList* rl = inRoutes();
+      float route_worst_latency = 0.0f;
+      //float track_worst_chan_latency = 0.0f;
+      
+      // This value has a range from 0 (worst) to positive inf (best) or close to it.
+      //float route_worst_out_corr = outputLatencyCorrection();
+      // Get the default domination for this track type.
+//       bool can_dominate_out_lat = canDominateOutputLatency();
+      
+      // Gather latency info from all connected input branches,
+      //  but ONLY if the track is not off.
+//       if(!off())
+      if((openFlags() & (capture ? 2 : 1)) && port >= 0 && port < MusECore::MIDI_PORTS)
+      {
+        MidiPort* mp = &MusEGlobal::midiPorts[port];
+        RouteList* rl = mp->inRoutes();
+        
+        bool item_found = false;
+        for (iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+        {
+              switch(ir->type)
+              {
+                  case Route::TRACK_ROUTE:
+                    if(!ir->track)
+                      continue;
+                    
+                    if(ir->track->isMidiTrack())
+                    {
+                      if(ir->channel < -1 || ir->channel >= MUSE_MIDI_CHANNELS)
+                        continue;
+
+                      Track* track = ir->track;
+                      const TrackLatencyInfo& li = track->getLatencyInfo();
+                      
+                      // Temporarily store these values conveniently in the actual route.
+                      // They will be used by the latency compensator in the audio process pass.
+                      ir->audioLatencyOut = li._outputLatency;
+
+                      // Is it the first found item?
+                      if(item_found)
+                      {
+                          // Override the current worst value if the latency is greater,
+                          //  but ONLY if the branch can dominate.
+                          if(ir->audioLatencyOut > route_worst_latency)
+                          //if(passthru && li._outputLatency > route_worst_latency)
+                            route_worst_latency = ir->audioLatencyOut;
+                      }
+                      else
+                      {
+                        item_found = true;
+                        // Override the defaults with this first item's values.
+                        route_worst_latency = ir->audioLatencyOut;
+                      }
+                    }
+                  break;
+                  
+                  default:
+                  break;
+              }          
+
+              
+              
+//               if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+//                 continue;
+//               AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+//   //             const int atrack_out_channels = atrack->totalOutChannels();
+//   //             const int src_ch = ir->remoteChannel <= -1 ? 0 : ir->remoteChannel;
+//   //             const int src_chs = ir->channels;
+//   //             int fin_src_chs = src_chs;
+//   //             if(src_ch + fin_src_chs >  atrack_out_channels)
+//   //               fin_src_chs = atrack_out_channels - src_ch;
+//   //             const int next_src_chan = src_ch + fin_src_chs;
+//   //             // The goal is to have equal latency output on all channels on this track.
+//   //             for(int i = src_ch; i < next_src_chan; ++i)
+//   //             {
+//   //               const float lat = atrack->trackLatency(i);
+//   //               if(lat > worst_case_latency)
+//   //                 worst_case_latency = lat;
+//   //             }
+//               const TrackLatencyInfo& li = atrack->getLatencyInfo();
+//               
+//               // Temporarily store these values conveniently in the actual route.
+//               // They will be used by the latency compensator in the audio process pass.
+// //               ir->canDominateLatency = li._canDominateOutputLatency;
+//               //ir->canCorrectOutputLatency = li._canCorrectOutputLatency;
+//               ir->audioLatencyOut = li._outputLatency;
+//               
+//   //             // Override the current worst value if the latency is greater,
+//   //             //  but ONLY if the branch can dominate.
+//   //             if(li._canDominateOutputLatency && li._outputLatency > route_worst_latency)
+//   //               route_worst_latency = li._outputLatency;
+//   //             // Override the current worst value if the latency is greater.
+//   //             if(li._outputLatency > route_worst_latency)
+//   //               route_worst_latency = li._outputLatency;
+//               
+//               // Is it the first found item?
+//               if(item_found)
+//               {
+//                 // Override the current values with this item's values ONLY if required.
+//                 
+//                 //if(li._outputAvailableCorrection < route_worst_out_corr)
+//                 //  route_worst_out_corr = li._outputAvailableCorrection;
+//                 
+//                 // If any one of the branches can dominate the latency,
+//                 //  that overrides any which cannot.
+// //                 if(li._canDominateOutputLatency)
+// //                 {
+// 
+// //                   can_dominate_out_lat = true;
+// //                   // Override the current worst value if the latency is greater,
+// //                   //  but ONLY if the branch can dominate.
+// //                   if(li._outputLatency > route_worst_latency)
+// //                     route_worst_latency = li._outputLatency;
+// // //                 }
+//                   
+//                   // Override the current worst value if the latency is greater,
+//                   //  but ONLY if the branch can dominate.
+//                   if(ir->audioLatencyOut > route_worst_latency)
+//                   //if(passthru && li._outputLatency > route_worst_latency)
+//                     route_worst_latency = ir->audioLatencyOut;
+// //                   }
+//               }
+//               else
+//               {
+//                 item_found = true;
+//                 // Override the defaults with this first item's values.
+//                 //route_worst_out_corr = li._outputAvailableCorrection;
+// //                 can_dominate_out_lat = li._canDominateOutputLatency;
+//                 // Override the default worst value, but ONLY if the branch can dominate.
+// //                 if(can_dominate_out_lat)
+// //                   route_worst_latency = li._outputLatency;
+// 
+//                 // Override the defaults with this first item's values.
+//                 route_worst_latency = ir->audioLatencyOut;
+//               }
+        }
+        
+//         // Adjust for THIS track's contribution to latency.
+//         // The goal is to have equal latency output on all channels on this track.
+//         const int track_out_channels = totalProcessBuffers(); // totalOutChannels();
+//         for(int i = 0; i < track_out_channels; ++i)
+//         {
+//           const float lat = trackLatency(i);
+//           if(lat > track_worst_chan_latency)
+//               track_worst_chan_latency = lat;
+//         }
+        
+      
+  //       // Now add the track's own correction value, if any.
+  //       // The correction value is NEGATIVE, so simple summation is used.
+  //       route_worst_latency += _latencyInfo._sourceCorrectionValue;
+
+  //       // Override the current worst value if the track's own correction value is greater.
+  //       // Note that the correction value is always NEGATIVE.
+  //       if(_latencyInfo._sourceCorrectionValue > route_worst_latency)
+  //         route_worst_latency = _latencyInfo._sourceCorrectionValue;
+        
+        // Now that we know the worst-case latency of the connected branches,
+        //  adjust each of the conveniently stored temporary latency values
+        //  in the routes according to whether they can dominate...
+        for (iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+        {
+              switch(ir->type)
+              {
+                  case Route::TRACK_ROUTE:
+                    if(!ir->track)
+                      continue;
+                    
+                    if(ir->track->isMidiTrack())
+                    {
+                      if(ir->channel < -1 || ir->channel >= MUSE_MIDI_CHANNELS)
+                        continue;
+
+                      // Prepare the latency value to be passed to the compensator's writer,
+                      //  by adjusting each route latency value. ie. the route with the worst-case
+                      //  latency will get ZERO delay, while routes having smaller latency will get
+                      //  MORE delay, to match all the signal timings together.
+                      // The route's audioLatencyOut should have already been calculated and
+                      //  conveniently stored in the route.
+                      ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
+                      // Should not happen, but just in case.
+                      if((long int)ir->audioLatencyOut < 0)
+                        ir->audioLatencyOut = 0.0f;
+                    }
+                  break;
+                  
+                  default:
+                  break;
+              }
+
+              
+              
+//               if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+//                 continue;
+//               
+//               // If the branch cannot dominate the latency, force it to be
+//               //  equal to the worst-case value.
+//               //if(!ir->canDominateLatency)
+//               // If the branch cannot correct the latency, force it to be
+//               //  equal to the worst-case value.
+// //               if(!ir->canCorrectOutputLatency)
+// //                 ir->audioLatencyOut = route_worst_latency;
+//               
+//               
+//               // Prepare the latency value to be passed to the compensator's writer,
+//               //  by adjusting each route latency value. ie. the route with the worst-case
+//               //  latency will get ZERO delay, while routes having smaller latency will get
+//               //  MORE delay, to match all the signal timings together.
+//               // The route's audioLatencyOut should have already been calculated and
+//               //  conveniently stored in the route.
+//               ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
+//               // Should not happen, but just in case.
+//               if((long int)ir->audioLatencyOut < 0)
+//                 ir->audioLatencyOut = 0.0f;
+        }
+            
+      }
+      
+      // The absolute latency of signals leaving this track is the sum of
+      //  any connected route latencies and this track's latency.
+//       _latencyInfo._trackLatency  = track_worst_chan_latency;
+//       _latencyInfo._outputLatency = track_worst_chan_latency + route_worst_latency;
+      // The _trackLatency should have been already calculated from the dominance scan.
+//       _latencyInfo._outputLatency = _latencyInfo._trackLatency + route_worst_latency;
+      tli->_outputLatency = tli->_trackLatency + route_worst_latency;
+      //_latencyInfo._outputAvailableCorrection = route_worst_out_corr;
+//       _latencyInfo._canDominateOutputLatency = can_dominate_out_lat;
+
+      tli->_processed = true;
+      return *tli;
+}
+
+//---------------------------------------------------------
+//   latencyCompWriteOffset
+//---------------------------------------------------------
+
+unsigned long MidiDevice::latencyCompWriteOffset(bool capture) const
+{
+  return capture ? _captureLatencyInfo._compensatorWriteOffset : _playbackLatencyInfo._compensatorWriteOffset;
+}
+
+void MidiDevice::setLatencyCompWriteOffset(float worstCase, bool capture)
+{
+  TrackLatencyInfo* tli = capture ? &_captureLatencyInfo : &_playbackLatencyInfo;
+  
+  // If independent branches are NOT to affect project latency,
+  //  then there should be no need for any extra delay in the branch.
+  if(!MusEGlobal::config.commonProjectLatency)
+  {
+    tli->_compensatorWriteOffset = 0;
+    // REMOVE Tim. latency. Added.
+//     fprintf(stderr, "AudioTrack::setLatencyCompWriteOffset() name:%s capture:%d worstCase:%f _outputLatency:%f _compensatorWriteOffset:%lu\n",
+//             name().toLatin1().constData(), capture, worstCase, tli->_outputLatency, tli->_compensatorWriteOffset);
+    return;
+  }
+    
+  if(tli->_canDominateOutputLatency)
+  {
+    const long unsigned int wc = worstCase;
+    const long unsigned int ol = tli->_outputLatency;
+    if(ol > wc)
+      tli->_compensatorWriteOffset = 0;
+    else
+      tli->_compensatorWriteOffset = wc - ol;
+  }
+  else
+  {
+//     if(tli->_outputLatency < 0)
+      tli->_compensatorWriteOffset = 0;
+//     else
+//       tli->_compensatorWriteOffset = tli->_outputLatency;
+  }
+
+  // REMOVE Tim. latency. Added.
+//   fprintf(stderr, "AudioTrack::setLatencyCompWriteOffset() name:%s capture:%d worstCase:%f _outputLatency:%f _canDominateOutputLatency:%d _compensatorWriteOffset:%lu\n",
+//           name().toLatin1().constData(), capture, worstCase, tli->_outputLatency, tli->_canDominateOutputLatency, tli->_compensatorWriteOffset);
+}
+
+//================================================
+// END Latency correction/compensation routines.
+//================================================
+
+
 } // namespace MusECore
 

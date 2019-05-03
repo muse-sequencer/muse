@@ -35,6 +35,8 @@
 #include "lock_free_buffer.h"
 #include "sync.h"
 #include "evdata.h"
+// REMOVE Tim. latency. Added.
+#include "latency_info.h"
 
 #include <QString>
 
@@ -170,6 +172,11 @@ class MidiDevice {
       // The audio thread processes this fifo and clears it.
       LockFreeBuffer<ExtMidiClock> *_extClockHistoryFifo;
       
+// REMOVE Tim. latency. Added.
+      // Holds latency computations each cycle.
+      TrackLatencyInfo _captureLatencyInfo;
+      TrackLatencyInfo _playbackLatencyInfo;
+      
       // Returns the number of frames to shift forward output event scheduling times when putting events
       //  into the eventFifos. This is not quite the same as latency (requiring a backwards shift)
       //  although its requirement is a result of the latency.
@@ -293,6 +300,67 @@ class MidiDevice {
       static const int extClockHistoryCapacity;
       LockFreeBuffer<ExtMidiClock> *extClockHistory() { return _extClockHistoryFifo; }
       void midiClockInput(unsigned int frame);
+
+
+
+// REMOVE Tim. latency. Added.
+      // Initializes this track's latency information in preparation for a latency scan.
+      virtual void prepareLatencyScan();
+      // Returns the latency of a given capture or playback port of the device.
+      virtual unsigned int portLatency(void* /*port*/, bool /*capture*/) const { return 0; }
+      // The contribution to latency by the device's own members (midi effect rack, Jack ports etc).
+      // A midi device can contain both an input and an output. The 'capture' parameter determines which one.
+      virtual float selfLatency(int /*channel*/, bool /*capture*/) const { return 0.0f; }
+      // Whether this track (and the branch it is in) can force other parallel branches to
+      //  increase their latency compensation to match this one.
+      // If false, this branch will NOT disturb other parallel branches' compensation,
+      //  intead only allowing compensation UP TO the worst case in other branches.
+      virtual bool canDominateOutputLatency(bool capture) const;
+      // Whether this track (and the branch it is in) can force other parallel branches to
+      //  increase their latency compensation to match this one - IF this track is an end-point
+      //  and the branch allows domination.
+      // If false, this branch will NOT disturb other parallel branches' compensation,
+      //  intead only allowing compensation UP TO the worst case in other branches.
+      virtual bool canDominateEndPointLatency(bool capture) const;
+//       virtual bool canDominateInputLatency() const;
+      // Whether this track and its branch require latency correction, not just compensation.
+//       virtual bool requiresInputLatencyCorrection() const;
+      // Whether this track and its branch can correct for latency, not just compensate.
+      virtual bool canCorrectOutputLatency() const { return false; }
+      // Whether any of the connected output routes are effectively connected.
+      // That means track is not off, track is monitored where applicable, etc,
+      //   ie. signal can actually flow.
+      // For Wave Tracks for example, asks whether the track is an end-point from the view of the input side.
+      virtual bool isLatencyInputTerminal(bool capture);
+      // Whether any of the connected output routes are effectively connected.
+      // That means track is not off, track is monitored where applicable, etc,
+      //   ie. signal can actually flow.
+      // For Wave Tracks for example, asks whether the track is an end-point from the view of the playback side.
+      virtual bool isLatencyOutputTerminal(bool capture);
+
+      // Returns latency computations during each cycle. If the computations have already been done 
+      //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
+      virtual TrackLatencyInfo& getInputDominanceLatencyInfo(bool capture);
+      virtual TrackLatencyInfo& getDominanceLatencyInfo(bool capture);
+      // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
+      //  determined in the complete getDominanceLatencyInfo() scan.
+      // The callerBranchLatency is the inherent branch latency of the calling track, or zero if calling from
+      //  the very top outside of the branch heads (outside of output tracks or open branches).
+      // The callerBranchLatency is accumulated as setCorrectionLatencyInfo() is called on each track
+      //  in a branch of the graph.
+      virtual void setCorrectionLatencyInfo(float /*finalWorstLatency*/, float /*callerBranchLatency*/ = 0.0f) { }
+      virtual TrackLatencyInfo& getInputLatencyInfo(bool capture);
+      virtual TrackLatencyInfo& getLatencyInfo(bool capture);
+//       // Returns forward latency computations (from wavetracks outward) during each cycle.
+//       // If the computations have already been done this cycle, cached values are returned,
+//       //  otherwise they are computed, cached, then returned.
+//       virtual TrackLatencyInfo& getForwardLatencyInfo();
+      //
+      // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
+      //  needed only to equalize the timing of all the AudioOutput tracks.
+      // It is applied as a direct offset in the latency delay compensator in getData().
+      virtual unsigned long latencyCompWriteOffset(bool capture) const;
+      virtual void setLatencyCompWriteOffset(float worstCase, bool capture);
       };
 
 //---------------------------------------------------------

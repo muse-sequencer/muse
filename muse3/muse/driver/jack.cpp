@@ -108,6 +108,8 @@ jack_get_version_type             jack_get_version_fp = NULL;
 jack_port_set_name_type           jack_port_set_name_fp = NULL;
 jack_port_rename_type             jack_port_rename_fp = NULL;
 
+// REMOVE Tim. latency. Added. TESTING.
+bool jackStarted = false;
 
 //---------------------------------------------------------
 //  JackCallbackFifo
@@ -1488,12 +1490,21 @@ bool JackAudioDevice::start(int /*priority*/)
 
       DEBUG_PRST_ROUTES (stderr, "JackAudioDevice::start(): calling jack_activate()\n");
 
+      // REMOVE Tim. latency. Added. TESTING.
+      if(!jackStarted)
+      {
+
       if (jack_activate(_client)) {
             MusEGlobal::undoSetuid();   
             fprintf (stderr, "JACK: cannot activate client\n");
             exit(-1);
             }
-            
+
+      }
+      
+      // REMOVE Tim. latency. Added. TESTING.
+      jackStarted = true;
+
       MusEGlobal::undoSetuid();
       
       /* connect the ports. Note: you can't do this before
@@ -1520,9 +1531,17 @@ void JackAudioDevice::stop()
       if(!checkJackClient(_client)) return;
       DEBUG_PRST_ROUTES (stderr, "JackAudioDevice::stop(): calling jack_deactivate()\n");
       
-      if (jack_deactivate(_client)) {
-            fprintf (stderr, "cannot deactivate client\n");
-            }
+      // REMOVE Tim. latency. Added. TESTING.
+      //if(jackStarted)
+      {
+
+      // REMOVE Tim. latency. Removed. TESTING. Reinstate.
+//       if (jack_deactivate(_client)) {
+//             fprintf (stderr, "cannot deactivate client\n");
+//             }
+
+      }
+
       //JackAudioDevice::jackStarted=false;
       }
 
@@ -1949,6 +1968,10 @@ unsigned int JackAudioDevice::portLatency(void* port, bool capture) const
     //return (c_range.max - c_range.min) / 2;
     //return c_range.max;
   //}
+
+  // REMOVE Tim. latency. Added.
+//   fprintf(stderr, "JackAudioDevice::portLatency port:%p capture:%d c_range.min:%d c_range.max:%d p_range.min:%d p_range.max:%d\n",
+//           port, capture, c_range.min, c_range.max, p_range.min, p_range.max);
 
   if(capture)
     //return (c_range.max - c_range.min) / 2;

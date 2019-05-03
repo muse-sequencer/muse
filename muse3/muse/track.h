@@ -283,6 +283,12 @@ class Track {
       // Returns true if monitored.
       virtual bool recMonitor() const    { return _recMonitor; }
 
+      virtual void preProcessAlways()    { }
+
+      // Initializes this track's latency information in preparation for a latency scan.
+      virtual void prepareLatencyScan();
+      // The contribution to latency by the track's own members (audio effect rack, etc).
+      virtual float trackLatency(int /*channel*/) const { return 0.0; }
 //       // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
 //       virtual float inputLatencyCorrection() const;
 //       // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
@@ -300,17 +306,44 @@ class Track {
       virtual bool canDominateEndPointLatency() const { return false; }
 //       virtual bool canDominateInputLatency() const;
       // Whether this track and its branch require latency correction, not just compensation.
-      virtual bool requiresInputLatencyCorrection() const;
+//       virtual bool requiresInputLatencyCorrection() const;
       // Whether this track and its branch can correct for latency, not just compensate.
       virtual bool canCorrectOutputLatency() const { return false; }
       // Whether any of the connected output routes are effectively connected.
       // That means track is not off, track is monitored where applicable, etc,
       //   ie. signal can actually flow.
-      // Parameter 'record', used for Wave Tracks for example, if true means to ask
-      //  whether the track is an end-point from the view of the input side and
-      //  if false means whther the track is an end-point from the playback side.
+      // For Wave Tracks for example, asks whether the track is an end-point from the view of the input side.
       virtual bool isLatencyInputTerminal() { _latencyInfo._isLatencyInputTerminal = true; return true; }
+      // Whether any of the connected output routes are effectively connected.
+      // That means track is not off, track is monitored where applicable, etc,
+      //   ie. signal can actually flow.
+      // For Wave Tracks for example, asks whether the track is an end-point from the view of the playback side.
       virtual bool isLatencyOutputTerminal() { _latencyInfo._isLatencyOutputTerminal = true; return true; }
+
+// REMOVE Tim. latency. Added.
+      // Returns latency computations during each cycle. If the computations have already been done 
+      //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
+      virtual TrackLatencyInfo& getInputDominanceLatencyInfo() = 0;
+      virtual TrackLatencyInfo& getDominanceLatencyInfo() = 0;
+      // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
+      //  determined in the complete getDominanceLatencyInfo() scan.
+      // The callerBranchLatency is the inherent branch latency of the calling track, or zero if calling from
+      //  the very top outside of the branch heads (outside of output tracks or open branches).
+      // The callerBranchLatency is accumulated as setCorrectionLatencyInfo() is called on each track
+      //  in a branch of the graph.
+      virtual void setCorrectionLatencyInfo(float /*finalWorstLatency*/, float /*callerBranchLatency*/ = 0.0f) { }
+      virtual TrackLatencyInfo& getInputLatencyInfo() = 0;
+      virtual TrackLatencyInfo& getLatencyInfo() = 0;
+//       // Returns forward latency computations (from wavetracks outward) during each cycle.
+//       // If the computations have already been done this cycle, cached values are returned,
+//       //  otherwise they are computed, cached, then returned.
+//       virtual TrackLatencyInfo& getForwardLatencyInfo();
+      //
+      // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
+      //  needed only to equalize the timing of all the AudioOutput tracks.
+      // It is applied as a direct offset in the latency delay compensator in getData().
+      virtual unsigned long latencyCompWriteOffset() const { return _latencyInfo._compensatorWriteOffset; }
+      virtual void setLatencyCompWriteOffset(float /*worstCase*/) { }
       
       // Internal use...
       static void clearSoloRefCounts();
@@ -418,6 +451,36 @@ class MidiTrack : public Track {
 
       // Number of routable inputs/outputs for each Route::RouteType.
       virtual RouteCapabilitiesStruct routeCapabilities() const;
+
+      virtual bool canDominateOutputLatency() const;
+      virtual bool canCorrectOutputLatency() const;
+      virtual bool isLatencyInputTerminal();
+      virtual bool isLatencyOutputTerminal();
+
+// REMOVE Tim. latency. Added.
+      // Returns latency computations during each cycle. If the computations have already been done 
+      //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
+      virtual TrackLatencyInfo& getInputDominanceLatencyInfo();
+      virtual TrackLatencyInfo& getDominanceLatencyInfo();
+      // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
+      //  determined in the complete getDominanceLatencyInfo() scan.
+      // The callerBranchLatency is the inherent branch latency of the calling track, or zero if calling from
+      //  the very top outside of the branch heads (outside of output tracks or open branches).
+      // The callerBranchLatency is accumulated as setCorrectionLatencyInfo() is called on each track
+      //  in a branch of the graph.
+      virtual void setCorrectionLatencyInfo(float /*finalWorstLatency*/, float /*callerBranchLatency*/ = 0.0f) { }
+      virtual TrackLatencyInfo& getInputLatencyInfo();
+      virtual TrackLatencyInfo& getLatencyInfo();
+//       // Returns forward latency computations (from wavetracks outward) during each cycle.
+//       // If the computations have already been done this cycle, cached values are returned,
+//       //  otherwise they are computed, cached, then returned.
+//       virtual TrackLatencyInfo& getForwardLatencyInfo();
+      //
+      // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
+      //  needed only to equalize the timing of all the AudioOutput tracks.
+      // It is applied as a direct offset in the latency delay compensator in getData().
+      virtual unsigned long latencyCompWriteOffset() const { return _latencyInfo._compensatorWriteOffset; }
+      virtual void setLatencyCompWriteOffset(float worstCase);
       
       // This enum describes what has changed in the following port/channel methods.
       enum ChangedType { NothingChanged = 0x0, PortChanged = 0x1, ChannelChanged = 0x2, DrumMapChanged = 0x4 };
@@ -682,26 +745,29 @@ class AudioTrack : public Track {
       
       void readVolume(Xml& xml);
 
-// REMOVE Tim. latency. Changed.
-//       virtual void preProcessAlways() { _processed = false; }
-      virtual void preProcessAlways() { 
-        _processed = false;
-//         _latencyInfo._dominanceProcessed = false;
-// //         _latencyInfo._forwardProcessed = false;
-//         _latencyInfo._correctionProcessed = false;
-//         _latencyInfo._processed = false;
-        
-        // Reset some latency info to prepare for (re)computation.
-        // TODO: Instead of doing this blindly every cycle, do it only when
-        //        a latency controller changes or a connection is made etc,
-        //        ie only when something changes.
-        _latencyInfo.initialize();
-        //_latCompWriteOffset = 0;
-        
-        //_latencyInfo._canDominateOutputLatency = false;
-        //_latencyInfo._canDominateInputLatency = false;
-        //_latencyInfo._requiresInputCorrection = false;
-      }
+// REMOVE Tim. latency. Removed. Moved into Track.
+// // REMOVE Tim. latency. Changed.
+// //       virtual void preProcessAlways() { _processed = false; }
+//       virtual void preProcessAlways() { 
+//         _processed = false;
+// //         _latencyInfo._dominanceProcessed = false;
+// // //         _latencyInfo._forwardProcessed = false;
+// //         _latencyInfo._correctionProcessed = false;
+// //         _latencyInfo._processed = false;
+//         
+//         // Reset some latency info to prepare for (re)computation.
+//         // TODO: Instead of doing this blindly every cycle, do it only when
+//         //        a latency controller changes or a connection is made etc,
+//         //        ie only when something changes.
+//         _latencyInfo.initialize();
+//         //_latCompWriteOffset = 0;
+//         
+//         //_latencyInfo._canDominateOutputLatency = false;
+//         //_latencyInfo._canDominateInputLatency = false;
+//         //_latencyInfo._requiresInputCorrection = false;
+//       }
+      virtual void preProcessAlways();
+
       // Gathers this track's audio data and either copies or adds it to a supplied destination buffer.
       // If the per-channel 'addArray' is supplied, whether to copy or add each channel is given in the array,
       //  otherwise it is given by the bulk 'add' flag.
@@ -1003,7 +1069,7 @@ class WaveTrack : public AudioTrack {
       // If unmonitored, they will never dominate parallel branches.
       bool canDominateOutputLatency() const;
 //       bool canDominateInputLatency() const;
-      bool requiresInputLatencyCorrection() const;
+//       bool requiresInputLatencyCorrection() const;
       bool canCorrectOutputLatency() const;
       
       void clearPrefetchFifo()      { _prefetchFifo.clear(); }

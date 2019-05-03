@@ -1361,6 +1361,62 @@ void MidiJackDevice::processMidi(unsigned int curFrame)
   }
 }
 
+// REMOVE Tim. latency. Added.
+//---------------------------------------------------------
+//   portLatency
+//   If capture is true get the capture latency,
+//    otherwise get the playback latency.
+//---------------------------------------------------------
+
+unsigned int MidiJackDevice::portLatency(void* port, bool capture) const
+{
+  jack_latency_range_t c_range;
+  jack_port_get_latency_range((jack_port_t*)port, JackCaptureLatency, &c_range);
+  jack_latency_range_t p_range;
+  jack_port_get_latency_range((jack_port_t*)port, JackPlaybackLatency, &p_range);
+
+  // REMOVE Tim. latency. Added.
+  fprintf(stderr, "MidiJackDevice::portLatency port:%p capture:%d c_range.min:%d c_range.max:%d p_range.min:%d p_range.max:%d\n",
+          port, capture, c_range.min, c_range.max, p_range.min, p_range.max);
+
+  if(capture)
+  {
+//     jack_latency_range_t c_range;
+//     jack_port_get_latency_range((jack_port_t*)port, JackCaptureLatency, &c_range);
+    return c_range.max;
+  }
+  else
+  {
+//     jack_latency_range_t p_range;
+//     jack_port_get_latency_range((jack_port_t*)port, JackPlaybackLatency, &p_range);
+    return p_range.max;
+  }
+}
+
+//---------------------------------------------------------
+//   selfLatency
+//---------------------------------------------------------
+
+float MidiJackDevice::selfLatency(int channel, bool capture) const
+{
+  float l = MidiDevice::selfLatency(channel, capture);
+
+  //if(!MusEGlobal::checkAudioDevice())
+  //  return l;
+
+  if(capture)
+  {
+    if(_in_client_jackport)
+      l += portLatency(_in_client_jackport, capture);
+  }
+  else
+  {
+    if(_out_client_jackport)
+      l += portLatency(_out_client_jackport, capture);
+  }
+  return l;
+}
+
 //---------------------------------------------------------
 //   initMidiJack
 //    return true on error
