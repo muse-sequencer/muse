@@ -1251,7 +1251,7 @@ TrackLatencyInfo& MidiTrack::getInputDominanceLatencyInfo()
                 {
 //                   const TrackLatencyInfo& li = atrack->getInputDominanceLatencyInfo();
 //                   const TrackLatencyInfo& li = md->getInputDominanceLatencyInfo(false /*playback*/);
-                  const TrackLatencyInfo& li = md->getInputDominanceLatencyInfo(true /*capture*/);
+                  const TrackLatencyInfo& li = md->getInputDominanceLatencyInfoMidi(true /*capture*/);
 
                   // REMOVE Tim. latency. Added. FLAG latency rec.
                   //const bool passthru = (!atrack->canRecordMonitor() || (atrack->canRecordMonitor() && atrack->isRecMonitored()));
@@ -1515,7 +1515,7 @@ TrackLatencyInfo& MidiTrack::getDominanceLatencyInfo()
 
                 if(md->openFlags() & 2 /*read*/)
                 {
-                  const TrackLatencyInfo& li = md->getDominanceLatencyInfo(true /*capture*/);
+                  const TrackLatencyInfo& li = md->getDominanceLatencyInfoMidi(true /*capture*/);
 
                   // Temporarily store these values conveniently in the actual route.
                   // They will be used by the latency compensator in the audio process pass.
@@ -1742,7 +1742,7 @@ TrackLatencyInfo& MidiTrack::getInputLatencyInfo()
 
                 if(md->openFlags() & 2 /*read*/)
                 {
-                  const TrackLatencyInfo& li = md->getInputLatencyInfo(true /*capture*/);
+                  const TrackLatencyInfo& li = md->getInputLatencyInfoMidi(true /*capture*/);
 
 //                   // Whether the branch can dominate or correct latency or if we
 //                   //  want to allow unterminated input branches to
@@ -2030,7 +2030,7 @@ TrackLatencyInfo& MidiTrack::getLatencyInfo()
 
                 if(md->openFlags() & 2 /*read*/)
                 {
-                  const TrackLatencyInfo& li = md->getLatencyInfo(true /*capture*/);
+                  const TrackLatencyInfo& li = md->getLatencyInfoMidi(true /*capture*/);
 
 //                   // Whether the branch can dominate or correct latency or if we
 //                   //  want to allow unterminated input branches to

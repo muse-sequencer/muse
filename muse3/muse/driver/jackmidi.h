@@ -111,7 +111,7 @@ class MidiJackDevice : public MidiDevice {
       virtual unsigned int portLatency(void* port, bool capture) const;
       // The contribution to latency by the device's own members (midi effect rack, Jack ports etc).
       // A midi device can contain both an input and an output. The 'capture' parameter determines which one.
-      virtual float selfLatency(int /*channel*/, bool /*capture*/) const;
+      virtual float selfLatencyMidi(int /*channel*/, bool /*capture*/) const;
       };
 
 extern bool initMidiJack();

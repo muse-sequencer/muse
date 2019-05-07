@@ -1375,9 +1375,15 @@ unsigned int MidiJackDevice::portLatency(void* port, bool capture) const
   jack_latency_range_t p_range;
   jack_port_get_latency_range((jack_port_t*)port, JackPlaybackLatency, &p_range);
 
+  // TODO FIXME: Tests on both Jack-1 Midi and Jack-2 Midi show the returned values are always zero.
+  //             Spent a few days trying to diagnose, it appears Jack does not initialize any ALSA
+  //              midi port latency values as it does with the audio ports. Thus right from the start,
+  //              right from the backend physical port, the values passed throughout the system and
+  //              to the app are always zero!
+  
   // REMOVE Tim. latency. Added.
-  fprintf(stderr, "MidiJackDevice::portLatency port:%p capture:%d c_range.min:%d c_range.max:%d p_range.min:%d p_range.max:%d\n",
-          port, capture, c_range.min, c_range.max, p_range.min, p_range.max);
+  //fprintf(stderr, "MidiJackDevice::portLatency port:%p capture:%d c_range.min:%d c_range.max:%d p_range.min:%d p_range.max:%d\n",
+  //        port, capture, c_range.min, c_range.max, p_range.min, p_range.max);
 
   if(capture)
   {
@@ -1397,9 +1403,9 @@ unsigned int MidiJackDevice::portLatency(void* port, bool capture) const
 //   selfLatency
 //---------------------------------------------------------
 
-float MidiJackDevice::selfLatency(int channel, bool capture) const
+float MidiJackDevice::selfLatencyMidi(int channel, bool capture) const
 {
-  float l = MidiDevice::selfLatency(channel, capture);
+  float l = MidiDevice::selfLatencyMidi(channel, capture);
 
   //if(!MusEGlobal::checkAudioDevice())
   //  return l;

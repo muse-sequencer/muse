@@ -40,6 +40,9 @@ void TrackLatencyInfo::initialize()
   _canCorrectOutputLatency = false;
   _sourceCorrectionValue = 0.0f;
   _compensatorWriteOffset = 0;
+  
+  // Special for Midi Tracks:
+  _latencyOutMidiTrack = 0.0f;
 }
 
 } // namespace MusECore

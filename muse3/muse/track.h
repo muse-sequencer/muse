@@ -479,7 +479,7 @@ class MidiTrack : public Track {
       // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
       //  needed only to equalize the timing of all the AudioOutput tracks.
       // It is applied as a direct offset in the latency delay compensator in getData().
-      virtual unsigned long latencyCompWriteOffset() const { return _latencyInfo._compensatorWriteOffset; }
+//       virtual unsigned long latencyCompWriteOffset() const { return _latencyInfo._compensatorWriteOffset; }
       virtual void setLatencyCompWriteOffset(float worstCase);
       
       // This enum describes what has changed in the following port/channel methods.
@@ -823,7 +823,7 @@ class AudioTrack : public Track {
       // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
       //  needed only to equalize the timing of all the AudioOutput tracks.
       // It is applied as a direct offset in the latency delay compensator in getData().
-      virtual unsigned long latencyCompWriteOffset() const { return _latencyInfo._compensatorWriteOffset; }
+//       virtual unsigned long latencyCompWriteOffset() const { return _latencyInfo._compensatorWriteOffset; }
       virtual void setLatencyCompWriteOffset(float worstCase);
       virtual bool isLatencyInputTerminal();
       virtual bool isLatencyOutputTerminal();

@@ -238,8 +238,39 @@ class SynthI : public AudioTrack, public MidiDevice,
 // REMOVE Tim. latency. Removed. Moved into public.
 //       void preProcessAlways();
       bool getData(unsigned a, int b, unsigned c, float** data);
+
+
       // REMOVE Tim. latency. Added.
-      void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
+      virtual float selfLatencyMidi(int /*channel*/, bool /*capture*/) const { return 0.0f; }
+      // Synth devices can never dominate latency, only physical/hardware midi devices can.
+      virtual bool canDominateOutputLatencyMidi(bool /*capture*/) const { return false; }
+      virtual bool canDominateEndPointLatencyMidi(bool /*capture*/) const { return false; }
+      virtual bool canCorrectOutputLatencyMidi() const { return false; }
+      virtual bool isLatencyInputTerminalMidi(bool capture);
+      virtual bool isLatencyOutputTerminalMidi(bool capture);
+      virtual TrackLatencyInfo& getInputDominanceLatencyInfoMidi(bool capture);
+      virtual TrackLatencyInfo& getDominanceLatencyInfoMidi(bool capture);
+      virtual void setCorrectionLatencyInfoMidi(bool capture, float finalWorstLatency, float callerBranchLatency = 0.0f);
+      virtual TrackLatencyInfo& getInputLatencyInfoMidi(bool capture);
+      virtual TrackLatencyInfo& getLatencyInfoMidi(bool capture);
+      virtual unsigned long latencyCompWriteOffsetMidi(bool capture) const;
+      virtual void setLatencyCompWriteOffsetMidi(float worstCase, bool capture);
+
+      // Synth devices can never dominate latency, only physical/hardware midi devices can.
+      virtual bool canDominateOutputLatency() const { return false; }
+      virtual bool canDominateEndPointLatency() const { return false; }
+      virtual bool canCorrectOutputLatency() const { return false; }
+      virtual bool isLatencyInputTerminal();
+      virtual bool isLatencyOutputTerminal();
+      virtual TrackLatencyInfo& getInputDominanceLatencyInfo();
+      virtual TrackLatencyInfo& getDominanceLatencyInfo();
+      virtual void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
+      virtual TrackLatencyInfo& getInputLatencyInfo();
+      virtual TrackLatencyInfo& getLatencyInfo();
+//       virtual unsigned long latencyCompWriteOffset() const { return _latencyInfo._compensatorWriteOffset; }
+//       virtual void setLatencyCompWriteOffset(float /*worstCase*/) { }
+      
+
       // Returns the number of frames to shift forward output event scheduling times when putting events
       //  into the eventFifos.
       virtual unsigned int pbForwardShiftFrames() const;

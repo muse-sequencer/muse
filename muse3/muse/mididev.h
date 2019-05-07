@@ -310,47 +310,47 @@ class MidiDevice {
       virtual unsigned int portLatency(void* /*port*/, bool /*capture*/) const { return 0; }
       // The contribution to latency by the device's own members (midi effect rack, Jack ports etc).
       // A midi device can contain both an input and an output. The 'capture' parameter determines which one.
-      virtual float selfLatency(int /*channel*/, bool /*capture*/) const { return 0.0f; }
+      virtual float selfLatencyMidi(int /*channel*/, bool /*capture*/) const { return 0.0f; }
       // Whether this track (and the branch it is in) can force other parallel branches to
       //  increase their latency compensation to match this one.
       // If false, this branch will NOT disturb other parallel branches' compensation,
       //  intead only allowing compensation UP TO the worst case in other branches.
-      virtual bool canDominateOutputLatency(bool capture) const;
+      virtual bool canDominateOutputLatencyMidi(bool capture) const;
       // Whether this track (and the branch it is in) can force other parallel branches to
       //  increase their latency compensation to match this one - IF this track is an end-point
       //  and the branch allows domination.
       // If false, this branch will NOT disturb other parallel branches' compensation,
       //  intead only allowing compensation UP TO the worst case in other branches.
-      virtual bool canDominateEndPointLatency(bool capture) const;
+      virtual bool canDominateEndPointLatencyMidi(bool capture) const;
 //       virtual bool canDominateInputLatency() const;
       // Whether this track and its branch require latency correction, not just compensation.
 //       virtual bool requiresInputLatencyCorrection() const;
       // Whether this track and its branch can correct for latency, not just compensate.
-      virtual bool canCorrectOutputLatency() const { return false; }
+      virtual bool canCorrectOutputLatencyMidi() const { return false; }
       // Whether any of the connected output routes are effectively connected.
       // That means track is not off, track is monitored where applicable, etc,
       //   ie. signal can actually flow.
       // For Wave Tracks for example, asks whether the track is an end-point from the view of the input side.
-      virtual bool isLatencyInputTerminal(bool capture);
+      virtual bool isLatencyInputTerminalMidi(bool capture);
       // Whether any of the connected output routes are effectively connected.
       // That means track is not off, track is monitored where applicable, etc,
       //   ie. signal can actually flow.
       // For Wave Tracks for example, asks whether the track is an end-point from the view of the playback side.
-      virtual bool isLatencyOutputTerminal(bool capture);
+      virtual bool isLatencyOutputTerminalMidi(bool capture);
 
       // Returns latency computations during each cycle. If the computations have already been done 
       //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
-      virtual TrackLatencyInfo& getInputDominanceLatencyInfo(bool capture);
-      virtual TrackLatencyInfo& getDominanceLatencyInfo(bool capture);
+      virtual TrackLatencyInfo& getInputDominanceLatencyInfoMidi(bool capture);
+      virtual TrackLatencyInfo& getDominanceLatencyInfoMidi(bool capture);
       // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
       //  determined in the complete getDominanceLatencyInfo() scan.
       // The callerBranchLatency is the inherent branch latency of the calling track, or zero if calling from
       //  the very top outside of the branch heads (outside of output tracks or open branches).
       // The callerBranchLatency is accumulated as setCorrectionLatencyInfo() is called on each track
       //  in a branch of the graph.
-      virtual void setCorrectionLatencyInfo(float /*finalWorstLatency*/, float /*callerBranchLatency*/ = 0.0f) { }
-      virtual TrackLatencyInfo& getInputLatencyInfo(bool capture);
-      virtual TrackLatencyInfo& getLatencyInfo(bool capture);
+      virtual void setCorrectionLatencyInfoMidi(bool /*capture*/, float /*finalWorstLatency*/, float /*callerBranchLatency*/ = 0.0f) { }
+      virtual TrackLatencyInfo& getInputLatencyInfoMidi(bool capture);
+      virtual TrackLatencyInfo& getLatencyInfoMidi(bool capture);
 //       // Returns forward latency computations (from wavetracks outward) during each cycle.
 //       // If the computations have already been done this cycle, cached values are returned,
 //       //  otherwise they are computed, cached, then returned.
@@ -359,8 +359,8 @@ class MidiDevice {
       // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
       //  needed only to equalize the timing of all the AudioOutput tracks.
       // It is applied as a direct offset in the latency delay compensator in getData().
-      virtual unsigned long latencyCompWriteOffset(bool capture) const;
-      virtual void setLatencyCompWriteOffset(float worstCase, bool capture);
+      virtual unsigned long latencyCompWriteOffsetMidi(bool capture) const;
+      virtual void setLatencyCompWriteOffsetMidi(float worstCase, bool capture);
       };
 
 //---------------------------------------------------------

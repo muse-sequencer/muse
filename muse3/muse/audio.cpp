@@ -1023,7 +1023,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
 //           route_worst_latency = li._outputLatency;
       }      
 
-#if 0
+#if 1
       // This includes synthesizers.
       for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
       {
@@ -1043,26 +1043,26 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         //---------------------------------------------
         
         // Examine any playback path on capture devices.
-        if(md->isLatencyOutputTerminal(true /*capture*/))
+        if(md->isLatencyOutputTerminalMidi(true /*capture*/))
         {
           // Gather the branch's dominance latency info.
-          const TrackLatencyInfo& li = md->getDominanceLatencyInfo(true /*capture*/);
+          const TrackLatencyInfo& li = md->getDominanceLatencyInfoMidi(true /*capture*/);
           // If the branch can dominate, and this end-point allows it, and its latency value
           //  is greater than the current worst, overwrite the worst.
-          if(md->canDominateEndPointLatency(true /*capture*/) &&
+          if(md->canDominateEndPointLatencyMidi(true /*capture*/) &&
             li._canDominateOutputLatency &&
             li._outputLatency > song_worst_latency)
               song_worst_latency = li._outputLatency;
         }
 
         // Examine any playback path on playback devices.
-        if(md->isLatencyOutputTerminal(false /*playback*/))
+        if(md->isLatencyOutputTerminalMidi(false /*playback*/))
         {
           // Gather the branch's dominance latency info.
-          const TrackLatencyInfo& li = md->getDominanceLatencyInfo(false /*playback*/);
+          const TrackLatencyInfo& li = md->getDominanceLatencyInfoMidi(false /*playback*/);
           // If the branch can dominate, and this end-point allows it, and its latency value
           //  is greater than the current worst, overwrite the worst.
-          if(md->canDominateEndPointLatency(false /*playback*/) &&
+          if(md->canDominateEndPointLatencyMidi(false /*playback*/) &&
             li._canDominateOutputLatency &&
             li._outputLatency > song_worst_latency)
               song_worst_latency = li._outputLatency;
@@ -1105,7 +1105,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
             track->setCorrectionLatencyInfo(song_worst_latency);
       }      
       
-#if 0
+#if 1
       // This includes synthesizers.
       for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
       {
@@ -1116,7 +1116,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
 
         // Grab the capture device's branch's dominance latency info.
         // This should already be cached from the dominance pass.
-        const TrackLatencyInfo& cli = md->getDominanceLatencyInfo(true /*capture*/);
+        const TrackLatencyInfo& cli = md->getDominanceLatencyInfoMidi(true /*capture*/);
         // We are looking for the end points of branches.
         if(!cli._isLatencyOutputTerminal)
           continue;
@@ -1134,17 +1134,17 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         //  misaligned with the monitored input material.
         //
         if(!cli._canDominateOutputLatency)
-            md->setCorrectionLatencyInfo(song_worst_latency);
+            md->setCorrectionLatencyInfoMidi(true /*capture*/, song_worst_latency);
 
         // Grab the playback device's branch's dominance latency info.
         // This should already be cached from the dominance pass.
-        const TrackLatencyInfo& pli = md->getDominanceLatencyInfo(false /*playback*/);
+        const TrackLatencyInfo& pli = md->getDominanceLatencyInfoMidi(false /*playback*/);
         // We are looking for the end points of branches.
         if(!pli._isLatencyOutputTerminal)
           continue;
         
         if(!pli._canDominateOutputLatency)
-            md->setCorrectionLatencyInfo(song_worst_latency);
+            md->setCorrectionLatencyInfoMidi(false /*playback*/, song_worst_latency);
       }
 #endif      
 
@@ -1204,7 +1204,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         }
       }      
       
-#if 0
+#if 1
       // This includes synthesizers.
       for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
       {
@@ -1216,29 +1216,29 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         // Examine any playback path of the capture device.
         // Grab the branch's dominance latency info.
         // This should already be cached from the dominance pass.
-        const TrackLatencyInfo& cdlo = md->getDominanceLatencyInfo(true /*capture*/);
+        const TrackLatencyInfo& cdlo = md->getDominanceLatencyInfoMidi(true /*capture*/);
         // We are looking for the end points of branches.
         if(cdlo._isLatencyOutputTerminal)
         {
           // Gather the branch's final latency info, which also sets the
           //  latency compensators.
-          md->getLatencyInfo(true /*capture*/);
+          md->getLatencyInfoMidi(true /*capture*/);
           // Set this end point's latency compensator write offset.
-          md->setLatencyCompWriteOffset(song_worst_latency, true /*capture*/);
+          md->setLatencyCompWriteOffsetMidi(song_worst_latency, true /*capture*/);
         }
 
         // Examine any playback path of the playback device.
         // Grab the branch's dominance latency info.
         // This should already be cached from the dominance pass.
-        const TrackLatencyInfo& pdlo = md->getDominanceLatencyInfo(false /*playback*/);
+        const TrackLatencyInfo& pdlo = md->getDominanceLatencyInfoMidi(false /*playback*/);
         // We are looking for the end points of branches.
         if(pdlo._isLatencyOutputTerminal)
         {
           // Gather the branch's final latency info, which also sets the
           //  latency compensators.
-          md->getLatencyInfo(false /*playback*/);
+          md->getLatencyInfoMidi(false /*playback*/);
           // Set this end point's latency compensator write offset.
-          md->setLatencyCompWriteOffset(song_worst_latency, false /*playback*/);
+          md->setLatencyCompWriteOffsetMidi(song_worst_latency, false /*playback*/);
         }
       }
 #endif      

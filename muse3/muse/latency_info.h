@@ -90,6 +90,20 @@ struct TrackLatencyInfo
   float _sourceCorrectionValue;
   // Balances end points (Audio Outputs or open branches) of parallel branches.
   unsigned long int _compensatorWriteOffset;
+  
+  //--------------------------------------------------------
+  // Special for Midi Tracks: We don't have Midi Track to Midi Port routes yet
+  //  because we don't have multiple Midi Track outputs yet, only a single output port.
+  // So we must store this information here just for Midi Tracks.
+  //
+  // All other tracks store this information in the route itself.
+  //
+  // Temporary variables used during latency calculations:
+  // Holds the output latency of this node, so that it can be compared with others.
+  float _latencyOutMidiTrack;
+  //--------------------------------------------------------
+  
+  
 
   // Initializes (resets) the structure to prepare for (re)computation.
   void initialize();

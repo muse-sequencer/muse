@@ -1831,7 +1831,7 @@ void Audio::processMidi(unsigned int frames)
                   //----------------------------------------
                   // Account for the midi device's latency.
                   //----------------------------------------
-                  const TrackLatencyInfo& mli = md->getLatencyInfo(false /*playback*/);
+                  const TrackLatencyInfo& mli = md->getLatencyInfoMidi(false /*playback*/);
                   // This value is negative for correction.
                   float mlat = mli._sourceCorrectionValue;
                   //if((int)mlat >= 0)
