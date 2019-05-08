@@ -1532,33 +1532,33 @@ TrackLatencyInfo& AudioTrack::getDominanceLatencyInfo()
 
 void AudioTrack::setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency)
 {
-      // Have we been here before during this scan?
-      // Just return the cached value.
-      if(_latencyInfo._correctionProcessed)
-        return;
-      
-      // The _trackLatency should already be calculated in the dominance scan.
-      const float track_lat = callerBranchLatency + _latencyInfo._trackLatency;
-      // Set the correction of all connected input branches,
-      //  but ONLY if the track is not off.
-      if(!off())
-      {
-        // Only if monitoring is not available, or it is and in fact is monitored.
-        // REMOVE Tim. latency. Added. FLAG latency rec.
-        if(!canRecordMonitor() ||
-           (MusEGlobal::config.monitoringAffectsLatency && isRecMonitored()))
-        {
-          const RouteList* rl = inRoutes();
-          for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
-                if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
-                  continue;
-                AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
-                atrack->setCorrectionLatencyInfo(finalWorstLatency, track_lat);
-          }
-        }
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._correctionProcessed)
+    return;
+  
+  // Set the correction of all connected input branches,
+  //  but ONLY if the track is not off.
+  if(!off())
+  {
+    // The _trackLatency should already be calculated in the dominance scan.
+    const float branch_lat = callerBranchLatency + _latencyInfo._trackLatency;
+    // Only if monitoring is not available, or it is and in fact is monitored.
+    // REMOVE Tim. latency. Added. FLAG latency rec.
+    if(!canRecordMonitor() ||
+        (MusEGlobal::config.monitoringAffectsLatency && isRecMonitored()))
+    {
+      const RouteList* rl = inRoutes();
+      for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+            if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+              continue;
+            AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+            atrack->setCorrectionLatencyInfo(finalWorstLatency, branch_lat);
       }
-      
-      _latencyInfo._correctionProcessed = true;
+    }
+  }
+  
+  _latencyInfo._correctionProcessed = true;
 }
 
 //---------------------------------------------------------

@@ -468,7 +468,7 @@ class MidiTrack : public Track {
       //  the very top outside of the branch heads (outside of output tracks or open branches).
       // The callerBranchLatency is accumulated as setCorrectionLatencyInfo() is called on each track
       //  in a branch of the graph.
-      virtual void setCorrectionLatencyInfo(float /*finalWorstLatency*/, float /*callerBranchLatency*/ = 0.0f) { }
+      virtual void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
       virtual TrackLatencyInfo& getInputLatencyInfo();
       virtual TrackLatencyInfo& getLatencyInfo();
 //       // Returns forward latency computations (from wavetracks outward) during each cycle.

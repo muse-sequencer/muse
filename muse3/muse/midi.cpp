@@ -1807,33 +1807,55 @@ void Audio::processMidi(unsigned int frames)
                 // REMOVE Tim. latency. Changed.
                 //collectEvents(track, curTickPos, nextTickPos, frames);
 
+//                 unsigned int lat_offset = 0;
+//                 // TODO How to handle when external sync is on. For now, don't try to correct.
+//                 if(!extsync && md)
+//                 {
+//                   //---------------------------------------------------------------------
+//                   // If the midi device is a synthesizer, account for its audio latency.
+//                   //---------------------------------------------------------------------
+//                   if(md->isSynti())
+//                   {
+//                     SynthI* si = static_cast<SynthI*>(md);
+//                     AudioTrack* atrack = static_cast<AudioTrack*>(si);
+//                     const TrackLatencyInfo& ali = atrack->getLatencyInfo();
+//                     // This value is negative for correction.
+//                     float alat = ali._sourceCorrectionValue;
+//                     if((int)alat >= 0)
+//                       lat_offset = 0;
+//                     else
+//                       // Convert to a positive offset.
+//                       lat_offset = (unsigned int)(-alat);
+//                   }
+// 
+//                   //----------------------------------------
+//                   // Account for the midi device's latency.
+//                   //----------------------------------------
+//                   const TrackLatencyInfo& mli = md->getLatencyInfoMidi(false /*playback*/);
+//                   // This value is negative for correction.
+//                   float mlat = mli._sourceCorrectionValue;
+//                   //if((int)mlat >= 0)
+//                   //  lat_offset = 0;
+//                   //else
+//                   if((int)mlat < 0)
+//                   {
+//                     // Convert to a positive offset.
+//                     const unsigned int l = (unsigned int)(-mlat);
+//                     if(l > lat_offset)
+//                       lat_offset = l;
+//                   }
+//                 }
+
                 unsigned int lat_offset = 0;
                 // TODO How to handle when external sync is on. For now, don't try to correct.
-                if(!extsync && md)
+                if(!extsync)
                 {
-                  //---------------------------------------------------------------------
-                  // If the midi device is a synthesizer, account for its audio latency.
-                  //---------------------------------------------------------------------
-                  if(md->isSynti())
-                  {
-                    SynthI* si = static_cast<SynthI*>(md);
-                    AudioTrack* atrack = static_cast<AudioTrack*>(si);
-                    const TrackLatencyInfo& ali = atrack->getLatencyInfo();
-                    // This value is negative for correction.
-                    float alat = ali._sourceCorrectionValue;
-                    if((int)alat >= 0)
-                      lat_offset = 0;
-                    else
-                      // Convert to a positive offset.
-                      lat_offset = (unsigned int)(-alat);
-                  }
-
-                  //----------------------------------------
-                  // Account for the midi device's latency.
-                  //----------------------------------------
-                  const TrackLatencyInfo& mli = md->getLatencyInfoMidi(false /*playback*/);
+                  //--------------------------------------------------------------------
+                  // Account for the midi track's latency correction and/or compensation.
+                  //--------------------------------------------------------------------
+                  const TrackLatencyInfo& li = track->getLatencyInfo();
                   // This value is negative for correction.
-                  float mlat = mli._sourceCorrectionValue;
+                  float mlat = li._sourceCorrectionValue;
                   //if((int)mlat >= 0)
                   //  lat_offset = 0;
                   //else
