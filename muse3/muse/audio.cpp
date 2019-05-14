@@ -899,6 +899,9 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
 //         track->preProcessAlways();
 //       }
 
+      MusECore::MetronomeSettings* metro_settings = 
+        MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
       // This includes synthesizers.
       for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
       {
@@ -988,7 +991,8 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         {
           // Gather the branch's dominance latency info.
 //           const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
-          const TrackLatencyInfo& li = track->getInputDominanceLatencyInfo();
+//           const TrackLatencyInfo& li = track->getInputDominanceLatencyInfo();
+          const TrackLatencyInfo& li = track->getDominanceLatencyInfo(true);
           // If the branch can dominate, and this end-point allows it, and its latency value
           //  is greater than the current worst, overwrite the worst.
           if(track->canDominateEndPointLatency() &&
@@ -1001,7 +1005,8 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         if(track->isLatencyOutputTerminal())
         {
           // Gather the branch's dominance latency info.
-          const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
+//           const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
+          const TrackLatencyInfo& li = track->getDominanceLatencyInfo(false);
           // If the branch can dominate, and this end-point allows it, and its latency value
           //  is greater than the current worst, overwrite the worst.
           if(track->canDominateEndPointLatency() &&
@@ -1070,6 +1075,38 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       }
 #endif      
       
+      //if(MusEGlobal::song->click())
+      if(metro_settings->audioClickFlag)
+      {
+//         // Examine any recording path, if desired.
+//         if(metronome->isLatencyInputTerminal())
+//         {
+//           // Gather the branch's dominance latency info.
+//           const TrackLatencyInfo& li = metronome->getInputDominanceLatencyInfo();
+//           // If the branch can dominate, and this end-point allows it, and its latency value
+//           //  is greater than the current worst, overwrite the worst.
+//           if(metronome->canDominateEndPointLatency() &&
+//             li._canDominateOutputLatency &&
+//             li._outputLatency > song_worst_latency)
+//               song_worst_latency = li._outputLatency;
+//         }
+
+        // Examine any playback path.
+        if(metronome->isLatencyOutputTerminal())
+        {
+          // Gather the branch's dominance latency info.
+//           const TrackLatencyInfo& li = metronome->getDominanceLatencyInfo();
+          const TrackLatencyInfo& li = metronome->getDominanceLatencyInfo(false);
+          // If the branch can dominate, and this end-point allows it, and its latency value
+          //  is greater than the current worst, overwrite the worst.
+          if(metronome->canDominateEndPointLatency() &&
+            li._canDominateOutputLatency &&
+            li._outputLatency > song_worst_latency)
+              song_worst_latency = li._outputLatency;
+        }
+      }
+      
+      
       //---------------------------------------------
       // PASS 2: Set correction values:
       //---------------------------------------------
@@ -1084,7 +1121,8 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         
         // Grab the branch's dominance latency info.
         // This should already be cached from the dominance pass.
-        const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
+//         const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
+        const TrackLatencyInfo& li = track->getDominanceLatencyInfo(false);
         // We are looking for the end points of branches.
         if(!li._isLatencyOutputTerminal)
           continue;
@@ -1148,6 +1186,21 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       }
 #endif      
 
+      //if(MusEGlobal::song->click())
+      if(metro_settings->audioClickFlag)
+      {
+        // Grab the branch's dominance latency info.
+        // This should already be cached from the dominance pass.
+//         const TrackLatencyInfo& li = metronome->getDominanceLatencyInfo();
+        const TrackLatencyInfo& li = metronome->getDominanceLatencyInfo(false);
+        if(li._isLatencyOutputTerminal)
+        {
+          if(!li._canDominateOutputLatency)
+            metronome->setCorrectionLatencyInfo(song_worst_latency);
+        }
+      }
+
+
       //----------------------------------------------------------
       // PASS 3: Gather final latency values and set compensators:
       //----------------------------------------------------------
@@ -1167,7 +1220,8 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         // Examine any recording path, if desired.
         if(want_record_side)
         {
-          const TrackLatencyInfo& dli = track->getInputDominanceLatencyInfo();
+//           const TrackLatencyInfo& dli = track->getInputDominanceLatencyInfo();
+          const TrackLatencyInfo& dli = track->getDominanceLatencyInfo(true);
           // We are looking for the end points of branches.
           //if(dli._isLatencyOutputTerminal)
           if(dli._isLatencyInputTerminal)
@@ -1175,7 +1229,8 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
             // Gather the branch's final latency info, which also sets the
             //  latency compensators.
             //const TrackLatencyInfo& li = track->getLatencyInfo();
-                track->getInputLatencyInfo();
+//                 track->getInputLatencyInfo();
+                track->getLatencyInfo(true);
 
             // Set this end point's latency compensator write offset.
                 track->setLatencyCompWriteOffset(song_worst_latency);
@@ -1185,7 +1240,8 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         // Examine any playback path.
         // Grab the branch's dominance latency info.
         // This should already be cached from the dominance pass.
-        const TrackLatencyInfo& dlo = track->getDominanceLatencyInfo();
+//         const TrackLatencyInfo& dlo = track->getDominanceLatencyInfo();
+        const TrackLatencyInfo& dlo = track->getDominanceLatencyInfo(false);
 
 //         // We are looking for the end points of branches.
 //         if(!dlo._isLatencyOutputTerminal)
@@ -1197,7 +1253,8 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           // Gather the branch's final latency info, which also sets the
           //  latency compensators.
           //const TrackLatencyInfo& li = track->getLatencyInfo();
-            track->getLatencyInfo();
+//             track->getLatencyInfo();
+            track->getLatencyInfo(false);
           
           // Set this end point's latency compensator write offset.
             track->setLatencyCompWriteOffset(song_worst_latency);
@@ -1242,7 +1299,28 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         }
       }
 #endif      
-      
+
+      //if(MusEGlobal::song->click())
+      if(metro_settings->audioClickFlag)
+      {
+        // Grab the branch's dominance latency info.
+        // This should already be cached from the dominance pass.
+//         const TrackLatencyInfo& dlo = metronome->getDominanceLatencyInfo();
+        const TrackLatencyInfo& dlo = metronome->getDominanceLatencyInfo(false);
+        if(dlo._isLatencyOutputTerminal)
+        {
+          // Gather the branch's final latency info, which also sets the
+          //  latency compensators.
+          //const TrackLatencyInfo& li = track->getLatencyInfo();
+//           metronome->getLatencyInfo();
+          metronome->getLatencyInfo(false);
+          
+          // Set this end point's latency compensator write offset.
+          metronome->setLatencyCompWriteOffset(song_worst_latency);
+        }
+      }
+
+
 //       OutputList* ol = MusEGlobal::song->outputs();
 //       const int rl_sz = ol->size();
 //       unsigned long latency_array[rl_sz];

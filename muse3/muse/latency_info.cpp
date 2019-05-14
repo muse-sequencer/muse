@@ -33,6 +33,7 @@ void TrackLatencyInfo::initialize()
   _processed = false;
   _trackLatency = 0.0f;
   _outputLatency = 0.0f;
+  _inputLatency = 0.0f;
   _isLatencyInputTerminal = false;
   _isLatencyOutputTerminal = false;
   _canDominateOutputLatency = false;
@@ -43,6 +44,8 @@ void TrackLatencyInfo::initialize()
   
   // Special for Midi Tracks:
   _latencyOutMidiTrack = 0.0f;
+  // Special for Metronome:
+  _latencyOutMetronome = 0.0f;
 }
 
 } // namespace MusECore

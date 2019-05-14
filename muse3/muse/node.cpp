@@ -1340,8 +1340,9 @@ bool AudioTrack::isLatencyInputTerminal()
 
   // If we're asking for the view from the record side, check if we're
   //  passing the signal through the track via monitoring.
-  if(off() || (canRecordMonitor() && (!MusEGlobal::config.monitoringAffectsLatency || !isRecMonitored())))
+//   if(off() || (canRecordMonitor() && (!MusEGlobal::config.monitoringAffectsLatency || !isRecMonitored())))
      //&& canRecord() && !recordFlag())
+  if(!canPassThruLatency())
   {
     _latencyInfo._isLatencyInputTerminal = true;
     return true;
@@ -1365,7 +1366,7 @@ bool AudioTrack::isLatencyInputTerminal()
           }
           else
           {
-            AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+            Track* track = ir->track;
 //             if(!atrack->off() && 
               // REMOVE Tim. latency. Added. FLAG latency rec.
               // TODO Refine this with a case or something, specific for say Aux tracks, Group tracks etc.
@@ -1380,7 +1381,7 @@ bool AudioTrack::isLatencyInputTerminal()
 //             }
             
             
-            if(atrack->off()) // || 
+            if(track->off()) // || 
               //(atrack->canRecordMonitor() && (MusEGlobal::config.monitoringAffectsLatency || !atrack->isRecMonitored())))
                //&& atrack->canRecord() && !atrack->recordFlag()))
               continue;
@@ -1414,8 +1415,9 @@ bool AudioTrack::isLatencyOutputTerminal()
 
 //   // If we're asking for the view from the record side, check if we're
 //   //  passing the signal through the track via monitoring.
-//   if(off() || (record && canRecordMonitor() && !isRecMonitored()))
+// //   if(off() || (record && canRecordMonitor() && !isRecMonitored()))
 //      //&& canRecord() && !recordFlag())
+//   if(!canPassThruLatency())
 //   {
 //     _latencyInfo._isLatencyOuputTerminal = true;
 //     return true;
@@ -1439,7 +1441,7 @@ bool AudioTrack::isLatencyOutputTerminal()
           }
           else
           {
-            AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+            Track* track = ir->track;
 //             if(!atrack->off() && 
               // REMOVE Tim. latency. Added. FLAG latency rec.
               // TODO Refine this with a case or something, specific for say Aux tracks, Group tracks etc.
@@ -1453,7 +1455,7 @@ bool AudioTrack::isLatencyOutputTerminal()
 // //               break;
 //             }
             
-            if(atrack->off()) // || 
+            if(track->off()) // || 
               //(atrack->canRecordMonitor() && (MusEGlobal::config.monitoringAffectsLatency || !atrack->isRecMonitored())))
                //&& atrack->canRecord() && !atrack->recordFlag()))
               continue;
@@ -1492,7 +1494,8 @@ bool AudioTrack::putFifo(int channels, unsigned long n, float** bp)
         //const float lat = atrack->outputLatency();
         //if(lat > route_worst_case_latency)
         //  route_worst_case_latency = lat;
-        const TrackLatencyInfo& li = atrack->getLatencyInfo();
+//         const TrackLatencyInfo& li = atrack->getLatencyInfo();
+        const TrackLatencyInfo& li = atrack->getLatencyInfo(false);
         if(li._outputLatency > route_worst_case_latency)
           route_worst_case_latency = li._outputLatency;
         }

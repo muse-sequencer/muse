@@ -1853,7 +1853,8 @@ void Audio::processMidi(unsigned int frames)
                   //--------------------------------------------------------------------
                   // Account for the midi track's latency correction and/or compensation.
                   //--------------------------------------------------------------------
-                  const TrackLatencyInfo& li = track->getLatencyInfo();
+//                   const TrackLatencyInfo& li = track->getLatencyInfo();
+                  const TrackLatencyInfo& li = track->getLatencyInfo(false);
                   // This value is negative for correction.
                   float mlat = li._sourceCorrectionValue;
                   //if((int)mlat >= 0)

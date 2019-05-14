@@ -309,6 +309,12 @@ class Track {
 //       virtual bool requiresInputLatencyCorrection() const;
       // Whether this track and its branch can correct for latency, not just compensate.
       virtual bool canCorrectOutputLatency() const { return false; }
+      // Whether the track can pass latency values through, the SAME as if record monitor is
+      //  supported and on BUT does not require record monitor support.
+      // This is for example in the metronome MetronomeSynthI, since it is unique in that it
+      //  can correct its own latency unlike other synths, but it does not 'pass through'
+      //  the latency values to what drives it like other synths.
+      virtual bool canPassThruLatency() const;
       // Whether any of the connected output routes are effectively connected.
       // That means track is not off, track is monitored where applicable, etc,
       //   ie. signal can actually flow.
@@ -324,7 +330,7 @@ class Track {
       // Returns latency computations during each cycle. If the computations have already been done 
       //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
       virtual TrackLatencyInfo& getInputDominanceLatencyInfo() = 0;
-      virtual TrackLatencyInfo& getDominanceLatencyInfo() = 0;
+      virtual TrackLatencyInfo& getDominanceLatencyInfo(bool input) = 0;
       // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
       //  determined in the complete getDominanceLatencyInfo() scan.
       // The callerBranchLatency is the inherent branch latency of the calling track, or zero if calling from
@@ -333,7 +339,9 @@ class Track {
       //  in a branch of the graph.
       virtual void setCorrectionLatencyInfo(float /*finalWorstLatency*/, float /*callerBranchLatency*/ = 0.0f) { }
       virtual TrackLatencyInfo& getInputLatencyInfo() = 0;
-      virtual TrackLatencyInfo& getLatencyInfo() = 0;
+      // Argument 'input': Whether we want the input side of the track. For example un-monitored wave tracks
+      //  are considered two separate paths with a recording input side and a playback output side.
+      virtual TrackLatencyInfo& getLatencyInfo(bool input) = 0;
 //       // Returns forward latency computations (from wavetracks outward) during each cycle.
 //       // If the computations have already been done this cycle, cached values are returned,
 //       //  otherwise they are computed, cached, then returned.
@@ -461,7 +469,7 @@ class MidiTrack : public Track {
       // Returns latency computations during each cycle. If the computations have already been done 
       //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
       virtual TrackLatencyInfo& getInputDominanceLatencyInfo();
-      virtual TrackLatencyInfo& getDominanceLatencyInfo();
+      virtual TrackLatencyInfo& getDominanceLatencyInfo(bool input);
       // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
       //  determined in the complete getDominanceLatencyInfo() scan.
       // The callerBranchLatency is the inherent branch latency of the calling track, or zero if calling from
@@ -470,7 +478,7 @@ class MidiTrack : public Track {
       //  in a branch of the graph.
       virtual void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
       virtual TrackLatencyInfo& getInputLatencyInfo();
-      virtual TrackLatencyInfo& getLatencyInfo();
+      virtual TrackLatencyInfo& getLatencyInfo(bool input);
 //       // Returns forward latency computations (from wavetracks outward) during each cycle.
 //       // If the computations have already been done this cycle, cached values are returned,
 //       //  otherwise they are computed, cached, then returned.
@@ -805,7 +813,7 @@ class AudioTrack : public Track {
       // Returns latency computations during each cycle. If the computations have already been done 
       //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
       virtual TrackLatencyInfo& getInputDominanceLatencyInfo();
-      virtual TrackLatencyInfo& getDominanceLatencyInfo();
+      virtual TrackLatencyInfo& getDominanceLatencyInfo(bool input);
       // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
       //  determined in the complete getDominanceLatencyInfo() scan.
       // The callerBranchLatency is the inherent branch latency of the calling track, or zero if calling from
@@ -814,7 +822,7 @@ class AudioTrack : public Track {
       //  in a branch of the graph.
       virtual void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
       virtual TrackLatencyInfo& getInputLatencyInfo();
-      virtual TrackLatencyInfo& getLatencyInfo();
+      virtual TrackLatencyInfo& getLatencyInfo(bool input);
 //       // Returns forward latency computations (from wavetracks outward) during each cycle.
 //       // If the computations have already been done this cycle, cached values are returned,
 //       //  otherwise they are computed, cached, then returned.
@@ -1056,7 +1064,7 @@ class WaveTrack : public AudioTrack {
       //TrackLatencyInfo& getDominanceLatencyInfo();
       void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
       TrackLatencyInfo& getInputLatencyInfo();
-      TrackLatencyInfo& getLatencyInfo();
+//       TrackLatencyInfo& getLatencyInfo(bool input);
 //       // Returns forward latency computations (from wavetracks outward) during each cycle.
 //       // If the computations have already been done this cycle, cached values are returned,
 //       //  otherwise they are computed, cached, then returned.

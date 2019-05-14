@@ -59,6 +59,7 @@ struct TrackLatencyInfo
   // For example, a Wave Track can use this total value to appropriately shift recordings of the signals
   //  arriving at its inputs.
   float _outputLatency;
+  float _inputLatency;
 //   float _forwardOutputLatency;
 //   // Maximum amount of latency that this track's input can CORRECT (not just COMPENSATE).
 //   float _inputAvailableCorrection;
@@ -103,6 +104,13 @@ struct TrackLatencyInfo
   float _latencyOutMidiTrack;
   //--------------------------------------------------------
   
+  //--------------------------------------------------------
+  // Special for Metronome: We don't have Metronome routes.
+  // So we must store this information here just for Midi Tracks.
+  // Temporary variables used during latency calculations:
+  // Holds the output latency of this node, so that it can be compared with others.
+  float _latencyOutMetronome;
+  //--------------------------------------------------------
   
 
   // Initializes (resets) the structure to prepare for (re)computation.
