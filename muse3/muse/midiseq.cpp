@@ -218,28 +218,35 @@ MidiSeq::~MidiSeq()
 
 signed int MidiSeq::selectTimer()
     {
-    int tmrFd;
-
-    printf("Trying RTC timer...\n");
 #ifdef _WIN32
+    fprintf(stderr, "Trying Qt timer...\n");
     timer = new QtTimer();
-#else
-    timer = new RtcTimer();
-#endif
-    tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
-    if (tmrFd != -1) { // ok!
-        printf("got timer = %d\n", tmrFd);
-        return tmrFd;
+    int qt_tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
+    if (qt_tmrFd != -1) { // ok!
+        fprintf(stderr, "got timer = %d\n", qt_tmrFd);
+        return qt_tmrFd;
     }
     delete timer;
+#else
+  #ifdef ALSA_SUPPORT
+    fprintf(stderr, "Trying RTC timer...\n");
+    timer = new RtcTimer();
+    int rtc_tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
+    if (rtc_tmrFd != -1) { // ok!
+        fprintf(stderr, "got timer = %d\n", rtc_tmrFd);
+        return rtc_tmrFd;
+    }
+    delete timer;
+  #endif
+#endif
   
 #ifdef POSIX_TIMER_SUPPORT
     fprintf(stderr, "Trying POSIX timer...\n");
     timer = new PosixTimer();
-    tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
-    if ( tmrFd!= -1) { // ok!
-        fprintf(stderr, "got timer = %d\n", tmrFd);
-        return tmrFd;
+    int posix_tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
+    if (posix_tmrFd!= -1) { // ok!
+        fprintf(stderr, "got timer = %d\n", posix_tmrFd);
+        return posix_tmrFd;
     }
     delete timer;
 #endif
@@ -247,10 +254,10 @@ signed int MidiSeq::selectTimer()
 #ifdef ALSA_SUPPORT
     fprintf(stderr, "Trying ALSA timer...\n");
     timer = new AlsaTimer();
-    tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
-    if ( tmrFd!= -1) { // ok!
-        fprintf(stderr, "got timer = %d\n", tmrFd);
-        return tmrFd;
+    int alsa_tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
+    if (alsa_tmrFd!= -1) { // ok!
+        fprintf(stderr, "got timer = %d\n", alsa_tmrFd);
+        return alsa_tmrFd;
     }
     delete timer;
 #endif

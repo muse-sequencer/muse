@@ -27,6 +27,10 @@
 #ifndef __RTCTIMER_H__
 #define __RTCTIMER_H__
 
+#include "config.h"
+
+#ifdef ALSA_SUPPORT
+
 #include "timerdev.h"
 
 namespace MusECore {
@@ -58,5 +62,7 @@ class RtcTimer : public Timer{
 };
 
 } // namespace MusECore
+
+#endif // ALSA_SUPPORT
 
 #endif //__RTCTIMER_H__
