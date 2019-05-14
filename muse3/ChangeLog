@@ -3,6 +3,7 @@
       - Fix for github issue 646 "Select Directory" dialogs freezes MusE. (Tim)
         For a known Qt bug: QFileDialog freezes with a Gnome environment.
         In the bug report, a user said he fixed it by NOT supplying a parent. That is what I did.
+      - Fix problem with loading lv2 presets on '<More...>' popup menu pages. Reported in forums.
 01.05.2019
       - Fix quantize dialogs in pianoroll, arrangerview, scoreedit. Regression at 21.01.2019 (Tim)
 12.04.2019
