@@ -31,6 +31,7 @@
 
 #include "muse_math.h"
 #include <string.h>
+#include <pthread.h>
 
 #include <samplerate.h>
 #include <QString>
