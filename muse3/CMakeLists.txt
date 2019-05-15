@@ -160,7 +160,7 @@ option ( ENABLE_VST          "Enable VST/win support (deprecated)"              
 option ( ENABLE_VST_NATIVE   "Enable Native VST support (see ENABLE_VST_VESTIGE and VST_HEADER_PATH)" ON)
 option ( ENABLE_VST_VESTIGE  "Set VST header type is Vestige"                                         ON)
 option ( ENABLE_LV2          "Enable LV2 plugins and synths support" ON)
-option ( ENABLE_LV2_SUPPLIED "Use supplied or system LV2 libraries (lv2, lilv, sord)" OFF)
+option ( ENABLE_LV2_SUPPLIED "Use supplied LV2 libraries instead of system versions (lv2, lilv, sord)" OFF)
 option ( ENABLE_LV2_GTK2     "Enable LV2 user interface GTK2 support" ON)
 option ( ENABLE_LV2_DEBUG    "Enable LV2 debugging messages" OFF)
 option ( ENABLE_FLUID        "Enable fluidsynth softsynth plugins."                                ON)
@@ -470,19 +470,6 @@ endif (ENABLE_VST_VESTIGE)
 ##
 
 if (ENABLE_LV2)
-    set(LV2_SUPPORT ON)
-    
-    ##
-    ## find Gtk2
-    ##
-    
-    if(ENABLE_LV2_GTK2)
-      find_package(GTK2 COMPONENTS gtk gtkmm)
-      if(GTK2_FOUND)
-          set(HAVE_GTK2 ON)
-      endif(GTK2_FOUND)
-    endif(ENABLE_LV2_GTK2)
-    
     set (muse_lilv_ver "0.22.0" )
     set (muse_lv2_ver "1.12.0")
     set (muse_sratom_ver "0.4.6")
@@ -499,11 +486,9 @@ if (ENABLE_LV2)
         set (LV2_USE_SUPPLIED_VERSION FALSE)
     endif (ENABLE_LV2_SUPPLIED)
 
-    if (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
-        set (LV2_USE_SUPPLIED_VERSION TRUE)
-    endif (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
-
     if (LV2_USE_SUPPLIED_VERSION)
+        set(LV2_SUPPORT ON)
+        
         PKG_CHECK_MODULES(PCRE libpcre)
         set (muse_lv2_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/lv2-${muse_lv2_ver}")
         set (muse_sratom_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/sratom-${muse_sratom_ver}")
@@ -519,18 +504,29 @@ if (ENABLE_LV2)
         )
 
     else (LV2_USE_SUPPLIED_VERSION)
-        if (LILV_FOUND)
+    
+        if (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)
+            set(LV2_SUPPORT ON)
+            
             include_directories(${LILV_INCLUDE_DIRS})
-        endif (LILV_FOUND)
-        if (SORD_FOUND)
             include_directories(${SORD_INCLUDE_DIRS})
-        endif (SORD_FOUND)
-        if (LV2_FOUND)
             include_directories(${LV2_INCLUDE_DIRS})
-        endif (LV2_FOUND)
+        endif (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)
+
     endif (LV2_USE_SUPPLIED_VERSION)
     
-    include_directories(${PROJECT_SOURCE_DIR}/muse/lv2Support)
+    if (LV2_USE_SUPPLIED_VERSION OR (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
+        ## find Gtk2
+        if(ENABLE_LV2_GTK2)
+          find_package(GTK2 COMPONENTS gtk gtkmm)
+          if(GTK2_FOUND)
+              set(HAVE_GTK2 ON)
+          endif(GTK2_FOUND)
+        endif(ENABLE_LV2_GTK2)
+        
+        include_directories(${PROJECT_SOURCE_DIR}/muse/lv2Support)
+    endif (LV2_USE_SUPPLIED_VERSION OR (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
+
 else (ENABLE_LV2)
       message("LV2 disabled")
 endif (ENABLE_LV2)
@@ -799,15 +795,15 @@ if (ENABLE_INSTPATCH AND (NOT INSTPATCH_FOUND))
 endif (ENABLE_INSTPATCH AND (NOT INSTPATCH_FOUND))
 
 if (ENABLE_LV2)
-    if (ENABLE_LV2_GTK2 AND (NOT GTK2_FOUND))
-        message("** WARNING: LV2 GTK2 support is enabled, but Gtk2 (gtkmm-2, gtk+-2) development files were not found. LV2 Gtk2 UI support is disabled.")
-    endif (ENABLE_LV2_GTK2 AND (NOT GTK2_FOUND))
-    
-    if (LV2_USE_SUPPLIED_VERSION AND (NOT ENABLE_LV2_SUPPLIED))
-        message("** WARNING: System LV2 support libraries were chosen, but development files were not found or too old:")
+    if ((NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)) AND (NOT ENABLE_LV2_SUPPLIED))
+        message("** WARNING: LV2 support was chosen, but development files were not found or too old:")
         message("   Requires lv2 >= " ${muse_lv2_ver} ", lilv-0 >= " ${muse_lilv_ver} ", sord-0 >= " ${muse_sord_ver})
-        message("   Building supplied internal versions instead.")
-    endif (LV2_USE_SUPPLIED_VERSION AND (NOT ENABLE_LV2_SUPPLIED))
+        message("   Hint: Last resort: Try cmake option ENABLE_LV2_SUPPLIED to build supplied internal versions instead.")
+    else ((NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)) AND (NOT ENABLE_LV2_SUPPLIED))
+        if (ENABLE_LV2_GTK2 AND (NOT GTK2_FOUND))
+            message("** WARNING: LV2 GTK2 support is enabled, but Gtk2 (gtkmm-2, gtk+-2) development files were not found. LV2 Gtk2 UI support is disabled.")
+        endif (ENABLE_LV2_GTK2 AND (NOT GTK2_FOUND))
+    endif ((NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)) AND (NOT ENABLE_LV2_SUPPLIED))
 endif (ENABLE_LV2)
 
 message("")

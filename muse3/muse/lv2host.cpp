@@ -1302,15 +1302,11 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 
       // lilv_uri_to_path is deprecated. Use lilv_file_uri_parse instead. Return value must be freed with lilv_free.
       const  char *uiPath = lilv_file_uri_parse(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi)), NULL);
-// REMOVE Tim. LV2. Changed. TESTING. RESTORE. Qt4 versions of synthv1,drumk,? crashes on Qt5.
-// TESTED: On my system it gets much farther into the call now, dozens of Qt4 calls into it, 
-//          but ultimately still ends up crashing on a call to dlopen libkdecore.5 for some reason.
-//       state->uiDlHandle = dlopen(uiPath, RTLD_NOW);
-      //state->uiDlHandle = dlmopen(LM_ID_NEWLM, uiPath, RTLD_LAZY | RTLD_DEEPBIND); // Just a test
+
 #ifdef _WIN32
       state->uiDlHandle = dlopen(uiPath, RTLD_NOW | RTLD_DEFAULT);
 #else
-      state->uiDlHandle = dlopen(uiPath, RTLD_NOW | RTLD_DEEPBIND);
+      state->uiDlHandle = dlopen(uiPath, RTLD_NOW);
 #endif
       
       lilv_free((void*)uiPath); // Must free.

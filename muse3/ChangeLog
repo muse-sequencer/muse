@@ -4,6 +4,10 @@
         For a known Qt bug: QFileDialog freezes with a Gnome environment.
         In the bug report, a user said he fixed it by NOT supplying a parent. That is what I did.
       - Fix problem with loading lv2 presets on '<More...>' popup menu pages. Reported in forums.
+      - Some fixes submitted for BSD support:
+        Remove all dlopen() RTLD_DEEPBIND usage. Add some missing headers.
+      - Users must now specifically set cmake option ENABLE_LV2_SUPPLIED to use built-in
+         LV2 libraries, we will NOT automatically fall back to them now, to avoid problems.
 01.05.2019
       - Fix quantize dialogs in pianoroll, arrangerview, scoreedit. Regression at 21.01.2019 (Tim)
 12.04.2019

@@ -1,3 +1,6 @@
+15.05.2019:
+         - Removed patch of 24.03.2016 (the RTLD_DEEPBIND) (Tim)
+           Not required anymore, Qt5 is firmly established now.
 19.01.2019:
          - Applied pull request from hfiguiere. (Tim)
            In sord.c:sord_new_literal_counted(): fixes warning (error)

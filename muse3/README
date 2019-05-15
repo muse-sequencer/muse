@@ -95,18 +95,20 @@ details.
           https://www.music.mcgill.ca/~gary/rtaudio/
         
       - LV2 (LADSPA Version 2) plugin support:
-      
+
+        lilv >= 0.22.0 (development files)
+        sord >= 0.14.0 (development files)
+          http://drobilla.net/software
+
+        lv2 >= 1.12.0 (development files)
+          http://lv2plug.in
+        
+        The cmake option ENABLE_LV2_SUPPLIED (default off) 
+         forces built-in versions to be used. Not recommended.
         MusE contains built-in versions of these LV2 support libraries:
          lv2, lilv, serd, sord and sratom, from:
+          http://lv2plug.in
           http://drobilla.net/software
-          
-        But if it finds system-installed versions (development files) 
-         greater than or equal to all of the built-in versions, 
-         the system-installed versions will be used.
-
-        The cmake option ENABLE_LV2_SUPPLIED (default off) 
-         forces built-in versions to be used.
-         
         (The built-in versions may be slightly modified from their 
          corresponding official versions. See muse/lv2Support/ChangeLog.)
 
