@@ -992,13 +992,24 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           // Gather the branch's dominance latency info.
 //           const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
 //           const TrackLatencyInfo& li = track->getInputDominanceLatencyInfo();
-          const TrackLatencyInfo& li = track->getDominanceLatencyInfo(true);
+          
+//           const TrackLatencyInfo& li = track->getDominanceLatencyInfo(true);
+          
+          // Gather the branch's dominance latency info.
+          const TrackLatencyInfo& li = track->setCorrectionLatencyInfo(true, 0.0f);
+
+//           // If the branch can dominate, and this end-point allows it, and its latency value
+//           //  is greater than the current worst, overwrite the worst.
+//           if(track->canDominateEndPointLatency() &&
+//             li._canDominateOutputLatency &&
+//             li._outputLatency > song_worst_latency)
+//               song_worst_latency = li._outputLatency;
           // If the branch can dominate, and this end-point allows it, and its latency value
           //  is greater than the current worst, overwrite the worst.
           if(track->canDominateEndPointLatency() &&
-            li._canDominateOutputLatency &&
-            li._outputLatency > song_worst_latency)
-              song_worst_latency = li._outputLatency;
+            li._canDominateInputLatency &&
+            li._inputLatency > song_worst_latency)
+              song_worst_latency = li._inputLatency;
         }
         
         // Examine any playback path.
@@ -1006,7 +1017,9 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         {
           // Gather the branch's dominance latency info.
 //           const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
-          const TrackLatencyInfo& li = track->getDominanceLatencyInfo(false);
+//           const TrackLatencyInfo& li = track->getDominanceLatencyInfo(false);
+          const TrackLatencyInfo& li = track->setCorrectionLatencyInfo(false, 0.0f);
+
           // If the branch can dominate, and this end-point allows it, and its latency value
           //  is greater than the current worst, overwrite the worst.
           if(track->canDominateEndPointLatency() &&
@@ -1028,7 +1041,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
 //           route_worst_latency = li._outputLatency;
       }      
 
-#if 1
+#if 0
       // This includes synthesizers.
       for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
       {
@@ -1096,7 +1109,9 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         {
           // Gather the branch's dominance latency info.
 //           const TrackLatencyInfo& li = metronome->getDominanceLatencyInfo();
-          const TrackLatencyInfo& li = metronome->getDominanceLatencyInfo(false);
+//           const TrackLatencyInfo& li = metronome->getDominanceLatencyInfo(false);
+          const TrackLatencyInfo& li = metronome->setCorrectionLatencyInfo(false, 0.0f);
+
           // If the branch can dominate, and this end-point allows it, and its latency value
           //  is greater than the current worst, overwrite the worst.
           if(metronome->canDominateEndPointLatency() &&
@@ -1107,98 +1122,98 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       }
       
       
-      //---------------------------------------------
-      // PASS 2: Set correction values:
-      //---------------------------------------------
-      // Now that we know the worst case latency,
-      //  set all the branch correction values.
-      for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
-      {
-//         if((*it)->isMidiTrack())
+//       //---------------------------------------------
+//       // PASS 2: Set correction values:
+//       //---------------------------------------------
+//       // Now that we know the worst case latency,
+//       //  set all the branch correction values.
+//       for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
+//       {
+// //         if((*it)->isMidiTrack())
+// //           continue;
+// //         atrack = static_cast<AudioTrack*>(*it);
+//         track = *it;
+//         
+//         // Grab the branch's dominance latency info.
+//         // This should already be cached from the dominance pass.
+// //         const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
+//         const TrackLatencyInfo& li = track->getDominanceLatencyInfo(false);
+//         // We are looking for the end points of branches.
+//         if(!li._isLatencyOutputTerminal)
 //           continue;
-//         atrack = static_cast<AudioTrack*>(*it);
-        track = *it;
-        
-        // Grab the branch's dominance latency info.
-        // This should already be cached from the dominance pass.
-//         const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
-        const TrackLatencyInfo& li = track->getDominanceLatencyInfo(false);
-        // We are looking for the end points of branches.
-        if(!li._isLatencyOutputTerminal)
-          continue;
-        
-        // Set branch correction values, for any tracks which support it.
-        // If this branch can dominate latency, ie. is fed from an Audio Input Track,
-        //  then we cannot apply correction to the branch.
-        // For example:
-        //
-        //  Input(512) -> Wave1(monitor on) -> Output(3072)
-        //                                  -> Wave2
-        //
-        // Wave1 wants to set a correction of -3072 but it cannot because
-        //  the input has 512 latency. Any wave1 playback material would be
-        //  misaligned with the monitored input material.
-        //
-        if(!li._canDominateOutputLatency)
-            track->setCorrectionLatencyInfo(song_worst_latency);
-      }      
-      
-#if 1
-      // This includes synthesizers.
-      for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
-      {
-        MidiDevice* md = *imd;
-        // Device not in use?
-        if(md->midiPort() < 0 || md->midiPort() >= MusECore::MIDI_PORTS)
-          continue;
-
-        // Grab the capture device's branch's dominance latency info.
-        // This should already be cached from the dominance pass.
-        const TrackLatencyInfo& cli = md->getDominanceLatencyInfoMidi(true /*capture*/);
-        // We are looking for the end points of branches.
-        if(!cli._isLatencyOutputTerminal)
-          continue;
-        
-        // Set branch correction values, for any tracks which support it.
-        // If this branch can dominate latency, ie. is fed from an Audio Input Track,
-        //  then we cannot apply correction to the branch.
-        // For example:
-        //
-        //  Input(512) -> Wave1(monitor on) -> Output(3072)
-        //                                  -> Wave2
-        //
-        // Wave1 wants to set a correction of -3072 but it cannot because
-        //  the input has 512 latency. Any wave1 playback material would be
-        //  misaligned with the monitored input material.
-        //
-        if(!cli._canDominateOutputLatency)
-            md->setCorrectionLatencyInfoMidi(true /*capture*/, song_worst_latency);
-
-        // Grab the playback device's branch's dominance latency info.
-        // This should already be cached from the dominance pass.
-        const TrackLatencyInfo& pli = md->getDominanceLatencyInfoMidi(false /*playback*/);
-        // We are looking for the end points of branches.
-        if(!pli._isLatencyOutputTerminal)
-          continue;
-        
-        if(!pli._canDominateOutputLatency)
-            md->setCorrectionLatencyInfoMidi(false /*playback*/, song_worst_latency);
-      }
-#endif      
-
-      //if(MusEGlobal::song->click())
-      if(metro_settings->audioClickFlag)
-      {
-        // Grab the branch's dominance latency info.
-        // This should already be cached from the dominance pass.
-//         const TrackLatencyInfo& li = metronome->getDominanceLatencyInfo();
-        const TrackLatencyInfo& li = metronome->getDominanceLatencyInfo(false);
-        if(li._isLatencyOutputTerminal)
-        {
-          if(!li._canDominateOutputLatency)
-            metronome->setCorrectionLatencyInfo(song_worst_latency);
-        }
-      }
+//         
+//         // Set branch correction values, for any tracks which support it.
+//         // If this branch can dominate latency, ie. is fed from an Audio Input Track,
+//         //  then we cannot apply correction to the branch.
+//         // For example:
+//         //
+//         //  Input(512) -> Wave1(monitor on) -> Output(3072)
+//         //                                  -> Wave2
+//         //
+//         // Wave1 wants to set a correction of -3072 but it cannot because
+//         //  the input has 512 latency. Any wave1 playback material would be
+//         //  misaligned with the monitored input material.
+//         //
+//         if(!li._canDominateOutputLatency)
+//             track->setCorrectionLatencyInfo(song_worst_latency);
+//       }      
+//       
+// #if 1
+//       // This includes synthesizers.
+//       for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
+//       {
+//         MidiDevice* md = *imd;
+//         // Device not in use?
+//         if(md->midiPort() < 0 || md->midiPort() >= MusECore::MIDI_PORTS)
+//           continue;
+// 
+//         // Grab the capture device's branch's dominance latency info.
+//         // This should already be cached from the dominance pass.
+//         const TrackLatencyInfo& cli = md->getDominanceLatencyInfoMidi(true /*capture*/);
+//         // We are looking for the end points of branches.
+//         if(!cli._isLatencyOutputTerminal)
+//           continue;
+//         
+//         // Set branch correction values, for any tracks which support it.
+//         // If this branch can dominate latency, ie. is fed from an Audio Input Track,
+//         //  then we cannot apply correction to the branch.
+//         // For example:
+//         //
+//         //  Input(512) -> Wave1(monitor on) -> Output(3072)
+//         //                                  -> Wave2
+//         //
+//         // Wave1 wants to set a correction of -3072 but it cannot because
+//         //  the input has 512 latency. Any wave1 playback material would be
+//         //  misaligned with the monitored input material.
+//         //
+//         if(!cli._canDominateOutputLatency)
+//             md->setCorrectionLatencyInfoMidi(true /*capture*/, song_worst_latency);
+// 
+//         // Grab the playback device's branch's dominance latency info.
+//         // This should already be cached from the dominance pass.
+//         const TrackLatencyInfo& pli = md->getDominanceLatencyInfoMidi(false /*playback*/);
+//         // We are looking for the end points of branches.
+//         if(!pli._isLatencyOutputTerminal)
+//           continue;
+//         
+//         if(!pli._canDominateOutputLatency)
+//             md->setCorrectionLatencyInfoMidi(false /*playback*/, song_worst_latency);
+//       }
+// #endif      
+// 
+//       //if(MusEGlobal::song->click())
+//       if(metro_settings->audioClickFlag)
+//       {
+//         // Grab the branch's dominance latency info.
+//         // This should already be cached from the dominance pass.
+// //         const TrackLatencyInfo& li = metronome->getDominanceLatencyInfo();
+//         const TrackLatencyInfo& li = metronome->getDominanceLatencyInfo(false);
+//         if(li._isLatencyOutputTerminal)
+//         {
+//           if(!li._canDominateOutputLatency)
+//             metronome->setCorrectionLatencyInfo(song_worst_latency);
+//         }
+//       }
 
 
       //----------------------------------------------------------
@@ -1221,7 +1236,9 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         if(want_record_side)
         {
 //           const TrackLatencyInfo& dli = track->getInputDominanceLatencyInfo();
-          const TrackLatencyInfo& dli = track->getDominanceLatencyInfo(true);
+//           const TrackLatencyInfo& dli = track->getDominanceLatencyInfo(true);
+          const TrackLatencyInfo& dli = track->setCorrectionLatencyInfo(true, 0.0f);
+
           // We are looking for the end points of branches.
           //if(dli._isLatencyOutputTerminal)
           if(dli._isLatencyInputTerminal)
@@ -1241,7 +1258,8 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         // Grab the branch's dominance latency info.
         // This should already be cached from the dominance pass.
 //         const TrackLatencyInfo& dlo = track->getDominanceLatencyInfo();
-        const TrackLatencyInfo& dlo = track->getDominanceLatencyInfo(false);
+//         const TrackLatencyInfo& dlo = track->getDominanceLatencyInfo(false);
+        const TrackLatencyInfo& dlo = track->setCorrectionLatencyInfo(false, 0.0f);
 
 //         // We are looking for the end points of branches.
 //         if(!dlo._isLatencyOutputTerminal)
@@ -1261,7 +1279,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         }
       }      
       
-#if 1
+#if 0
       // This includes synthesizers.
       for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
       {

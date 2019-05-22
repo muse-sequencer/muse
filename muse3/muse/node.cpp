@@ -1485,20 +1485,25 @@ bool AudioTrack::isLatencyOutputTerminal()
 // void AudioTrack::putFifo(int channels, unsigned long n, float** bp)
 bool AudioTrack::putFifo(int channels, unsigned long n, float** bp)
 {
-  const RouteList* rl = inRoutes();
-  float route_worst_case_latency = 0.0f;
-  for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
-        if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
-          continue;
-        AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
-        //const float lat = atrack->outputLatency();
-        //if(lat > route_worst_case_latency)
-        //  route_worst_case_latency = lat;
-//         const TrackLatencyInfo& li = atrack->getLatencyInfo();
-        const TrackLatencyInfo& li = atrack->getLatencyInfo(false);
-        if(li._outputLatency > route_worst_case_latency)
-          route_worst_case_latency = li._outputLatency;
-        }
+//   const RouteList* rl = inRoutes();
+//   float route_worst_case_latency = 0.0f;
+//   for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+//         if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+//           continue;
+//         AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+//         //const float lat = atrack->outputLatency();
+//         //if(lat > route_worst_case_latency)
+//         //  route_worst_case_latency = lat;
+// //         const TrackLatencyInfo& li = atrack->getLatencyInfo();
+//         const TrackLatencyInfo& li = atrack->getLatencyInfo(false);
+//         if(li._outputLatency > route_worst_case_latency)
+//           route_worst_case_latency = li._outputLatency;
+//         }
+
+        
+  float route_worst_case_latency = _latencyInfo._inputLatency;
+        
+        
         
   // REMOVE Tim. latency. Added. No, this would only be for playback.
   // Adjust for THIS track's contribution to latency.
@@ -1838,7 +1843,7 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
         //  can do about it since the data has already been mixed.
         // (Therefore always best for user to use separate ports or channels or 
         //  input tracks for each input connection.)
-        const float f = trackLatency(i);
+        const float f = selfLatencyAudio(i);
         latency_array[i] = f;
         if(f > worst_case_latency)
           worst_case_latency = f;
@@ -2092,7 +2097,7 @@ bool WaveTrack::canEnableRecord() const
 void AudioTrack::record()
       {
       unsigned pos = 0;
-      unsigned latency = 0;
+      float latency = 0.0f;
       float* buffer[_channels];
       while(fifo.getCount()) {
 // REMOVE Tim. latency. Changed.
@@ -2151,6 +2156,19 @@ void AudioTrack::record()
                       pos -= fr;
                       
 // REMOVE Tim. basic latency. Added.
+                      // Let's try to avoid accidental very large files by very large latency values?
+                      if(latency < -1000000 || latency > 1000000)
+                      {
+                        // Try not to flood, normally.
+                        if(MusEGlobal::debugMsg)
+                          fprintf(stderr,
+                            "AudioNode::record(): Error: Latency seems excessively high:%f Trimming to +/-1000000\n",
+                            latency);
+                        if(latency < -1000000)
+                          latency = -1000000;
+                        else if(latency > 1000000)
+                          latency = 1000000;
+                      }
                       if(pos >= latency)
                       {
 //                         // REMOVE Tim. latency. Added.
@@ -2372,7 +2390,7 @@ void Fifo::clear()
 
 // REMOVE Tim. latency. Changed.
 // bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
-bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos, unsigned latency)
+bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos, float latency)
       {
       #ifdef FIFO_DEBUG
       fprintf(stderr, "FIFO::put segs:%d samples:%lu pos:%u count:%d\n", segs, samples, pos, muse_atomic_read(&count));
@@ -2430,7 +2448,7 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos, unsig
 
 // REMOVE Tim. latency. Changed.
 // bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos)
-bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos, unsigned* latency)
+bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos, float* latency)
       {
       #ifdef FIFO_DEBUG
       fprintf(stderr, "FIFO::get segs:%d samples:%lu count:%d\n", segs, samples, muse_atomic_read(&count));

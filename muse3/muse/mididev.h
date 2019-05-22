@@ -311,11 +311,16 @@ class MidiDevice {
       // The contribution to latency by the device's own members (midi effect rack, Jack ports etc).
       // A midi device can contain both an input and an output. The 'capture' parameter determines which one.
       virtual float selfLatencyMidi(int /*channel*/, bool /*capture*/) const { return 0.0f; }
+      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc).
+      virtual float getWorstSelfLatencyMidi(bool capture);
+      // The worst latency of all the contributions from the track's own audio and midi members (audio effect rack, etc).
+//       virtual float getWorstSelfLatency(bool capture);
       // Whether this track (and the branch it is in) can force other parallel branches to
       //  increase their latency compensation to match this one.
       // If false, this branch will NOT disturb other parallel branches' compensation,
       //  intead only allowing compensation UP TO the worst case in other branches.
       virtual bool canDominateOutputLatencyMidi(bool capture) const;
+      virtual bool canDominateInputLatencyMidi(bool capture) const;
       // Whether this track (and the branch it is in) can force other parallel branches to
       //  increase their latency compensation to match this one - IF this track is an end-point
       //  and the branch allows domination.
@@ -327,6 +332,12 @@ class MidiDevice {
 //       virtual bool requiresInputLatencyCorrection() const;
       // Whether this track and its branch can correct for latency, not just compensate.
       virtual bool canCorrectOutputLatencyMidi() const { return false; }
+      // Whether the track can pass latency values through, the SAME as if record monitor is
+      //  supported and on BUT does not require record monitor support.
+      // This is for example in the metronome MetronomeSynthI, since it is unique in that it
+      //  can correct its own latency unlike other synths, but it does not 'pass through'
+      //  the latency values to what drives it like other synths.
+      virtual bool canPassThruLatencyMidi(bool capture) const;
       // Whether any of the connected output routes are effectively connected.
       // That means track is not off, track is monitored where applicable, etc,
       //   ie. signal can actually flow.
@@ -340,17 +351,17 @@ class MidiDevice {
 
       // Returns latency computations during each cycle. If the computations have already been done 
       //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
-      virtual TrackLatencyInfo& getInputDominanceLatencyInfoMidi(bool capture);
-      virtual TrackLatencyInfo& getDominanceLatencyInfoMidi(bool capture);
+//       virtual TrackLatencyInfo& getInputDominanceLatencyInfoMidi(bool capture);
+      virtual TrackLatencyInfo& getDominanceLatencyInfoMidi(bool capture, bool input);
       // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
       //  determined in the complete getDominanceLatencyInfo() scan.
       // The callerBranchLatency is the inherent branch latency of the calling track, or zero if calling from
       //  the very top outside of the branch heads (outside of output tracks or open branches).
       // The callerBranchLatency is accumulated as setCorrectionLatencyInfo() is called on each track
       //  in a branch of the graph.
-      virtual void setCorrectionLatencyInfoMidi(bool capture, float finalWorstLatency, float callerBranchLatency = 0.0f);
-      virtual TrackLatencyInfo& getInputLatencyInfoMidi(bool capture);
-      virtual TrackLatencyInfo& getLatencyInfoMidi(bool capture);
+      virtual TrackLatencyInfo& setCorrectionLatencyInfoMidi(bool capture, bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
+//       virtual TrackLatencyInfo& getInputLatencyInfoMidi(bool capture);
+      virtual TrackLatencyInfo& getLatencyInfoMidi(bool capture, bool input);
 //       // Returns forward latency computations (from wavetracks outward) during each cycle.
 //       // If the computations have already been done this cycle, cached values are returned,
 //       //  otherwise they are computed, cached, then returned.

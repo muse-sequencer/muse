@@ -38,7 +38,7 @@ struct FifoBuffer {
       int maxSize;
       unsigned pos;
       int segs;
-      unsigned latency;
+      float latency;
 
       FifoBuffer() {
             buffer  = 0;
@@ -46,7 +46,7 @@ struct FifoBuffer {
             maxSize = 0;
             pos     = 0;
             segs    = 0;
-            latency = 0;
+            latency = 0.0f;
             }
       };
 
@@ -63,12 +63,12 @@ class Fifo {
       void clear();
 // REMOVE Tim. latency. Changed.
 //       bool put(int, unsigned long, float** buffer, unsigned pos);
-      bool put(int segs, unsigned long samples, float** buffer, unsigned pos, unsigned latency);
+      bool put(int segs, unsigned long samples, float** buffer, unsigned pos, float latency);
       bool getWriteBuffer(int, unsigned long, float** buffer, unsigned pos);
       void add();
 // REMOVE Tim. latency. Changed.
 //       bool get(int, unsigned long, float** buffer, unsigned* pos);
-      bool get(int segs, unsigned long samples, float** buffer, unsigned* pos = 0, unsigned* latency = 0);
+      bool get(int segs, unsigned long samples, float** buffer, unsigned* pos = 0, float* latency = 0);
       void remove();
       int getCount();
       bool isEmpty();

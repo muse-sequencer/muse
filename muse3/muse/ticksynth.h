@@ -67,7 +67,7 @@ public:
       bool isLatencyOutputTerminal();
 //       TrackLatencyInfo& getInputDominanceLatencyInfo();
 //       TrackLatencyInfo& getDominanceLatencyInfo();
-      void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
+//       TrackLatencyInfo& setCorrectionLatencyInfo(bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
 //       TrackLatencyInfo& getInputLatencyInfo();
 //       TrackLatencyInfo& getLatencyInfo();
 //       unsigned long latencyCompWriteOffset() const { return _latencyInfo._compensatorWriteOffset; }

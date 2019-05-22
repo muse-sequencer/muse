@@ -1400,7 +1400,7 @@ unsigned int MidiJackDevice::portLatency(void* port, bool capture) const
 }
 
 //---------------------------------------------------------
-//   selfLatency
+//   selfLatencyMidi
 //---------------------------------------------------------
 
 float MidiJackDevice::selfLatencyMidi(int channel, bool capture) const

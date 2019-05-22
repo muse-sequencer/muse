@@ -287,8 +287,12 @@ class Track {
 
       // Initializes this track's latency information in preparation for a latency scan.
       virtual void prepareLatencyScan();
-      // The contribution to latency by the track's own members (audio effect rack, etc).
-      virtual float trackLatency(int /*channel*/) const { return 0.0; }
+      // The contribution to latency from the track's own members (audio effect rack, etc).
+      virtual float selfLatencyAudio(int /*channel*/) const { return 0.0f; }
+      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc).
+      virtual float getWorstSelfLatencyAudio() { return 0.0f; }
+      // The worst latency of all the contributions from the track's own audio and midi members (audio effect rack, etc).
+//       virtual float getWorstSelfLatency() = 0;
 //       // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
 //       virtual float inputLatencyCorrection() const;
 //       // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
@@ -298,6 +302,7 @@ class Track {
       // If false, this branch will NOT disturb other parallel branches' compensation,
       //  intead only allowing compensation UP TO the worst case in other branches.
       virtual bool canDominateOutputLatency() const;
+      virtual bool canDominateInputLatency() const;
       // Whether this track (and the branch it is in) can force other parallel branches to
       //  increase their latency compensation to match this one - IF this track is an end-point
       //  and the branch allows domination.
@@ -329,7 +334,7 @@ class Track {
 // REMOVE Tim. latency. Added.
       // Returns latency computations during each cycle. If the computations have already been done 
       //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
-      virtual TrackLatencyInfo& getInputDominanceLatencyInfo() = 0;
+//       virtual TrackLatencyInfo& getInputDominanceLatencyInfo() = 0;
       virtual TrackLatencyInfo& getDominanceLatencyInfo(bool input) = 0;
       // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
       //  determined in the complete getDominanceLatencyInfo() scan.
@@ -337,8 +342,8 @@ class Track {
       //  the very top outside of the branch heads (outside of output tracks or open branches).
       // The callerBranchLatency is accumulated as setCorrectionLatencyInfo() is called on each track
       //  in a branch of the graph.
-      virtual void setCorrectionLatencyInfo(float /*finalWorstLatency*/, float /*callerBranchLatency*/ = 0.0f) { }
-      virtual TrackLatencyInfo& getInputLatencyInfo() = 0;
+      virtual TrackLatencyInfo& setCorrectionLatencyInfo(bool input, float finalWorstLatency, float callerBranchLatency = 0.0f) = 0;
+//       virtual TrackLatencyInfo& getInputLatencyInfo() = 0;
       // Argument 'input': Whether we want the input side of the track. For example un-monitored wave tracks
       //  are considered two separate paths with a recording input side and a playback output side.
       virtual TrackLatencyInfo& getLatencyInfo(bool input) = 0;
@@ -460,6 +465,10 @@ class MidiTrack : public Track {
       // Number of routable inputs/outputs for each Route::RouteType.
       virtual RouteCapabilitiesStruct routeCapabilities() const;
 
+      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc).
+      virtual float getWorstSelfLatencyAudio();
+      // The worst latency of all the contributions from the track's own audio and midi members (audio effect rack, etc).
+//       virtual float getWorstSelfLatency();
       virtual bool canDominateOutputLatency() const;
       virtual bool canCorrectOutputLatency() const;
       virtual bool isLatencyInputTerminal();
@@ -468,7 +477,7 @@ class MidiTrack : public Track {
 // REMOVE Tim. latency. Added.
       // Returns latency computations during each cycle. If the computations have already been done 
       //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
-      virtual TrackLatencyInfo& getInputDominanceLatencyInfo();
+//       virtual TrackLatencyInfo& getInputDominanceLatencyInfo();
       virtual TrackLatencyInfo& getDominanceLatencyInfo(bool input);
       // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
       //  determined in the complete getDominanceLatencyInfo() scan.
@@ -476,8 +485,8 @@ class MidiTrack : public Track {
       //  the very top outside of the branch heads (outside of output tracks or open branches).
       // The callerBranchLatency is accumulated as setCorrectionLatencyInfo() is called on each track
       //  in a branch of the graph.
-      virtual void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
-      virtual TrackLatencyInfo& getInputLatencyInfo();
+      virtual TrackLatencyInfo& setCorrectionLatencyInfo(bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
+//       virtual TrackLatencyInfo& getInputLatencyInfo();
       virtual TrackLatencyInfo& getLatencyInfo(bool input);
 //       // Returns forward latency computations (from wavetracks outward) during each cycle.
 //       // If the computations have already been done this cycle, cached values are returned,
@@ -798,8 +807,12 @@ class AudioTrack : public Track {
       virtual bool hasAuxSend() const { return false; }
 
       // The contribution to latency by the track's own members (audio effect rack, etc).
-      virtual float trackLatency(int channel) const;
+      virtual float selfLatencyAudio(int channel) const;
 // REMOVE Tim. latency. Added.
+      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc).
+      virtual float getWorstSelfLatencyAudio();
+      // The worst latency of all the contributions from the track's own audio and midi members (audio effect rack, etc).
+//       virtual float getWorstSelfLatency();
       // The absolute latency of all signals leaving this track, relative to audio driver frame (transport, etc).
       // This value is the cumulative value of all series routes connected to this track, plus some
       //  adjustment for the track's own members' latency.
@@ -812,7 +825,7 @@ class AudioTrack : public Track {
 // REMOVE Tim. latency. Added.
       // Returns latency computations during each cycle. If the computations have already been done 
       //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
-      virtual TrackLatencyInfo& getInputDominanceLatencyInfo();
+//       virtual TrackLatencyInfo& getInputDominanceLatencyInfo();
       virtual TrackLatencyInfo& getDominanceLatencyInfo(bool input);
       // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
       //  determined in the complete getDominanceLatencyInfo() scan.
@@ -820,8 +833,8 @@ class AudioTrack : public Track {
       //  the very top outside of the branch heads (outside of output tracks or open branches).
       // The callerBranchLatency is accumulated as setCorrectionLatencyInfo() is called on each track
       //  in a branch of the graph.
-      virtual void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
-      virtual TrackLatencyInfo& getInputLatencyInfo();
+      virtual TrackLatencyInfo& setCorrectionLatencyInfo(bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
+//       virtual TrackLatencyInfo& getInputLatencyInfo();
       virtual TrackLatencyInfo& getLatencyInfo(bool input);
 //       // Returns forward latency computations (from wavetracks outward) during each cycle.
 //       // If the computations have already been done this cycle, cached values are returned,
@@ -876,7 +889,7 @@ class AudioInput : public AudioTrack {
       AudioInput(const AudioInput&, int flags);
       virtual ~AudioInput();
 
-      float trackLatency(int channel) const; 
+      float selfLatencyAudio(int channel) const; 
 // REMOVE Tim. latency. Added.
 //       float outputLatency() const; 
 //       // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
@@ -925,7 +938,7 @@ class AudioOutput : public AudioTrack {
       AudioOutput(const AudioOutput&, int flags);
       virtual ~AudioOutput();
 
-      virtual float trackLatency(int channel) const;
+      virtual float selfLatencyAudio(int channel) const;
 // REMOVE Tim. latency. Added.
 //       // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
 //       // Audio Output tracks always return 0 even if its outputs are unterminated.
@@ -1062,8 +1075,8 @@ class WaveTrack : public AudioTrack {
       // Returns latency computations during each cycle. If the computations have already been done 
       //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
       //TrackLatencyInfo& getDominanceLatencyInfo();
-      void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
-      TrackLatencyInfo& getInputLatencyInfo();
+//       TrackLatencyInfo& setCorrectionLatencyInfo(bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
+//       TrackLatencyInfo& getInputLatencyInfo();
 //       TrackLatencyInfo& getLatencyInfo(bool input);
 //       // Returns forward latency computations (from wavetracks outward) during each cycle.
 //       // If the computations have already been done this cycle, cached values are returned,

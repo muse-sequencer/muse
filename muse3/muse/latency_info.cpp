@@ -28,17 +28,24 @@ namespace MusECore {
 void TrackLatencyInfo::initialize()
 {
   _dominanceProcessed = false;
+  _dominanceInputProcessed = false;
 //     _forwardProcessed = false;
   _correctionProcessed = false;
+  _correctionInputProcessed = false;
   _processed = false;
-  _trackLatency = 0.0f;
+  _worstSelfLatency = 0.0f;
+  _worstSelfLatencyMidi = 0.0f;
+  _worstSelfLatencyProcessed = false;
+  _worstSelfLatencyMidiProcessed = false;
   _outputLatency = 0.0f;
   _inputLatency = 0.0f;
   _isLatencyInputTerminal = false;
   _isLatencyOutputTerminal = false;
   _canDominateOutputLatency = false;
-  _requiresInputCorrection = false;
+  _canDominateInputLatency = false;
+//   _requiresInputCorrection = false;
   _canCorrectOutputLatency = false;
+//   _canCorrectInputLatency = false;
   _sourceCorrectionValue = 0.0f;
   _compensatorWriteOffset = 0;
   

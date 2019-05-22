@@ -40,8 +40,8 @@
 // 127 is reserved for special MusE system messages.
 //#define METRONOME_UNIQUE_ID      7
 
-// Undefine if and when multiple output routes are added to midi tracks.
-#define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+// // Undefine if and when multiple output routes are added to midi tracks.
+// #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
 
 //#define METRONOME_DEBUG
 
@@ -581,103 +581,105 @@ bool MetronomeSynthI::isLatencyOutputTerminal()
   return true;
 }
 
-//---------------------------------------------------------
-//   setCorrectionLatencyInfo
-//---------------------------------------------------------
-
-void MetronomeSynthI::setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency)
-{
-  // Have we been here before during this scan?
-  // Just return the cached value.
-  if(_latencyInfo._correctionProcessed)
-    return;
-  
-  // Set the correction of all connected input branches,
-  //  but ONLY if the track is not off.
-  if(!off())
-  {
-    // The _trackLatency should already be calculated in the dominance scan.
-    const float branch_lat = callerBranchLatency + _latencyInfo._trackLatency;
-    // Only if monitoring is not available, or it is and in fact is monitored.
-    // REMOVE Tim. latency. Added. FLAG latency rec.
-    if(!canRecordMonitor() || (MusEGlobal::config.monitoringAffectsLatency && isRecMonitored()))
-    {
-      // We want the AudioTrack in routes, not the MidiDevice in routes.
-      const RouteList* rl = AudioTrack::inRoutes();
-      for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
-            if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
-              continue;
-            Track* track = ir->track;
-            track->setCorrectionLatencyInfo(finalWorstLatency, branch_lat);
-      }
-    }
-
-    const int port = midiPort();
-    //if((openFlags() & (capture ? 2 : 1)) && port >= 0 && port < MusECore::MIDI_PORTS)
-    if((openFlags() & 1 /*write*/) && port >= 0 && port < MusECore::MIDI_PORTS)
-    {
-#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-      const ciMidiTrack tl_end = MusEGlobal::song->midis()->cend();
-      for(ciMidiTrack it = MusEGlobal::song->midis()->cbegin(); it != tl_end; ++it)
-      {
-        MidiTrack* track = *it;
-        if(track->outPort() != port)
-          continue;
-        track->setCorrectionLatencyInfo(finalWorstLatency, branch_lat);
-      }
-
-#else
-
-      MidiPort* mp = &MusEGlobal::midiPorts[port];
-      RouteList* mrl = mp->inRoutes();
-      for (iRoute ir = mrl->begin(); ir != mrl->end(); ++ir)
-      {
-        switch(ir->type)
-        {
-            case Route::TRACK_ROUTE:
-              if(!ir->track)
-                continue;
-              
-              if(ir->track->isMidiTrack())
-              {
-                if(ir->channel < -1 || ir->channel >= MusECore::MUSE_MIDI_CHANNELS)
-                  continue;
-                Track* track = ir->track;
-                track->setCorrectionLatencyInfo(finalWorstLatency, branch_lat);
-              }
-            break;
-
-            default:
-            break;
-        }            
-      }
-
-#endif
-
-    }
-
-    float corr = 0.0f;
-    if(MusEGlobal::config.commonProjectLatency)
-//       corr += finalWorstLatency;
-      corr -= finalWorstLatency;
-
-    corr -= branch_lat;
-    // The _sourceCorrectionValue is initialized to zero during the dominance scan.
-    // Whichever calling branch needs the most correction gets it.
-    if(corr < _latencyInfo._sourceCorrectionValue)
-      _latencyInfo._sourceCorrectionValue = corr;
-
-    // REMOVE Tim. latency. Added. FLAG latency cor.
-    if(!canPassThruLatency())
-      _latencyInfo._outputLatency = _latencyInfo._trackLatency + _latencyInfo._sourceCorrectionValue;
-
-    // REMOVE Tim. latency. Added.
-//     fprintf(stderr, "WaveTrack::setCorrectionLatencyInfo() name:%s finalWorstLatency:%f branch_lat:%f corr:%f _sourceCorrectionValue:%f\n",
-//             name().toLatin1().constData(), finalWorstLatency, branch_lat, corr, _latencyInfo._sourceCorrectionValue);
-  }
-
-  _latencyInfo._correctionProcessed = true;
-}
+// REMOVE Tim. latency. Added.
+// //---------------------------------------------------------
+// //   setCorrectionLatencyInfo
+// //---------------------------------------------------------
+// 
+// TrackLatencyInfo& MetronomeSynthI::setCorrectionLatencyInfo(bool /*input*/, float finalWorstLatency, float callerBranchLatency)
+// {
+//   // Have we been here before during this scan?
+//   // Just return the cached value.
+//   if(_latencyInfo._correctionProcessed)
+//     return _latencyInfo;
+//   
+//   // Set the correction of all connected input branches,
+//   //  but ONLY if the track is not off.
+//   if(!off())
+//   {
+//     // The _trackLatency should already be calculated in the dominance scan.
+//     const float branch_lat = callerBranchLatency + _latencyInfo._trackLatency;
+//     // Only if monitoring is not available, or it is and in fact is monitored.
+//     // REMOVE Tim. latency. Added. FLAG latency rec.
+//     if(!canRecordMonitor() || (MusEGlobal::config.monitoringAffectsLatency && isRecMonitored()))
+//     {
+//       // We want the AudioTrack in routes, not the MidiDevice in routes.
+//       const RouteList* rl = AudioTrack::inRoutes();
+//       for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+//             if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+//               continue;
+//             Track* track = ir->track;
+//             track->setCorrectionLatencyInfo(false, finalWorstLatency, branch_lat);
+//       }
+//     }
+// 
+//     const int port = midiPort();
+//     //if((openFlags() & (capture ? 2 : 1)) && port >= 0 && port < MusECore::MIDI_PORTS)
+//     if((openFlags() & 1 /*write*/) && port >= 0 && port < MusECore::MIDI_PORTS)
+//     {
+// #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+//       const ciMidiTrack tl_end = MusEGlobal::song->midis()->cend();
+//       for(ciMidiTrack it = MusEGlobal::song->midis()->cbegin(); it != tl_end; ++it)
+//       {
+//         MidiTrack* track = *it;
+//         if(track->outPort() != port)
+//           continue;
+//         track->setCorrectionLatencyInfo(false, finalWorstLatency, branch_lat);
+//       }
+// 
+// #else
+// 
+//       MidiPort* mp = &MusEGlobal::midiPorts[port];
+//       RouteList* mrl = mp->inRoutes();
+//       for (iRoute ir = mrl->begin(); ir != mrl->end(); ++ir)
+//       {
+//         switch(ir->type)
+//         {
+//             case Route::TRACK_ROUTE:
+//               if(!ir->track)
+//                 continue;
+//               
+//               if(ir->track->isMidiTrack())
+//               {
+//                 if(ir->channel < -1 || ir->channel >= MusECore::MUSE_MIDI_CHANNELS)
+//                   continue;
+//                 Track* track = ir->track;
+//                 track->setCorrectionLatencyInfo(false, finalWorstLatency, branch_lat);
+//               }
+//             break;
+// 
+//             default:
+//             break;
+//         }            
+//       }
+// 
+// #endif
+// 
+//     }
+// 
+//     float corr = 0.0f;
+//     if(MusEGlobal::config.commonProjectLatency)
+// //       corr += finalWorstLatency;
+//       corr -= finalWorstLatency;
+// 
+//     corr -= branch_lat;
+//     // The _sourceCorrectionValue is initialized to zero during the dominance scan.
+//     // Whichever calling branch needs the most correction gets it.
+//     if(corr < _latencyInfo._sourceCorrectionValue)
+//       _latencyInfo._sourceCorrectionValue = corr;
+// 
+//     // REMOVE Tim. latency. Added. FLAG latency cor.
+//     if(!canPassThruLatency())
+//       _latencyInfo._outputLatency = _latencyInfo._trackLatency + _latencyInfo._sourceCorrectionValue;
+// 
+//     // REMOVE Tim. latency. Added.
+// //     fprintf(stderr, "WaveTrack::setCorrectionLatencyInfo() name:%s finalWorstLatency:%f branch_lat:%f corr:%f _sourceCorrectionValue:%f\n",
+// //             name().toLatin1().constData(), finalWorstLatency, branch_lat, corr, _latencyInfo._sourceCorrectionValue);
+//   }
+// 
+//   _latencyInfo._correctionProcessed = true;
+//   return _latencyInfo;
+// }
 
 // //---------------------------------------------------------
 // //   getLatencyInfo

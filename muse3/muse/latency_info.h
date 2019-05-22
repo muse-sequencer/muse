@@ -34,6 +34,7 @@ struct TrackLatencyInfo
   //  gathered in the in the dominance latency scan).
   // This is reset near the beginning of the process handler.
   bool _dominanceProcessed;
+  bool _dominanceInputProcessed;
   // Whether the 'forward' information is valid (has already been gathered
   //  in the forward latency scan).
 //   // This is reset near the beginning of the process handler.
@@ -42,14 +43,18 @@ struct TrackLatencyInfo
   //  in the correction latency scan).
   // This is reset near the beginning of the process handler.
   bool _correctionProcessed;
+  bool _correctionInputProcessed;
   // Whether the final latency information is valid (has already been gathered
   //  in the in the final latency scan).
   // This is reset near the beginning of the process handler.
   bool _processed;
+  bool _worstSelfLatencyProcessed;
+  bool _worstSelfLatencyMidiProcessed;
   // Contributions to latency from rack plugins and/or Jack ports etc.
   // This value is the worst-case latency of all the channels in a track.
   // See AudioTrack::trackLatency().
-  float _trackLatency;
+  float _worstSelfLatency;
+  float _worstSelfLatencyMidi;
 //   float _forwardTrackLatency;
   // The absolute latency of all signals leaving a track, relative to audio driver frame (transport, etc).
   // This value is the cumulative value of all series routes connected to this track, plus some
@@ -78,11 +83,12 @@ struct TrackLatencyInfo
   // If false, this branch will NOT disturb other parallel branches' compensation,
   //  intead only allowing compensation UP TO the worst case in other branches.
   bool _canDominateOutputLatency;
-//   bool _canDominateInputLatency;
+  bool _canDominateInputLatency;
   // Whether this track and its branch require latency correction, not just compensation.
-  bool _requiresInputCorrection;
+//   bool _requiresInputCorrection;
   // Whether this track and its branch can correct for latency, not just compensate.
   bool _canCorrectOutputLatency;
+//   bool _canCorrectInputLatency;
   // For tracks which can correct for latency, this is the value that the track
   //  must shift (ahead) to correct. It is essentially the programmed latency value
   //  of the track's ultimate source (wave file etc.). Therefore it will be NEGATIVE

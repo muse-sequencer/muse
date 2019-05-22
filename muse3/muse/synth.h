@@ -267,7 +267,7 @@ class SynthI : public AudioTrack, public MidiDevice,
 
       SynthIF* sif() const { return _sif; }
       bool initInstance(Synth* s, const QString& instanceName);
-      virtual float trackLatency(int channel) const { return _sif->latency() + AudioTrack::trackLatency(channel); }
+      virtual float selfLatencyAudio(int channel) const { return _sif->latency() + AudioTrack::selfLatencyAudio(channel); }
 
       void read(Xml&);
       virtual void write(int, Xml&) const;
@@ -332,31 +332,35 @@ class SynthI : public AudioTrack, public MidiDevice,
       void preProcessAlways();
 
       // REMOVE Tim. latency. Added.
-      virtual float selfLatencyMidi(int /*channel*/, bool /*capture*/) const { return 0.0f; }
+//       virtual float selfLatencyMidi(int /*channel*/, bool /*capture*/) const { return 0.0f; }
+      // The worst latency of all the contributions from the track's own audio and midi members (audio effect rack, etc).
+//       virtual float getWorstSelfLatency();
       // Synth devices can never dominate latency, only physical/hardware midi devices can.
       virtual bool canDominateOutputLatencyMidi(bool /*capture*/) const { return false; }
       virtual bool canDominateEndPointLatencyMidi(bool /*capture*/) const { return false; }
       virtual bool canCorrectOutputLatencyMidi() const { return false; }
       virtual bool isLatencyInputTerminalMidi(bool capture);
       virtual bool isLatencyOutputTerminalMidi(bool capture);
-      virtual TrackLatencyInfo& getInputDominanceLatencyInfoMidi(bool capture);
-      virtual TrackLatencyInfo& getDominanceLatencyInfoMidi(bool capture);
-      virtual void setCorrectionLatencyInfoMidi(bool capture, float finalWorstLatency, float callerBranchLatency = 0.0f);
-      virtual TrackLatencyInfo& getInputLatencyInfoMidi(bool capture);
-      virtual TrackLatencyInfo& getLatencyInfoMidi(bool capture);
+//       virtual TrackLatencyInfo& getInputDominanceLatencyInfoMidi(bool capture);
+      virtual TrackLatencyInfo& getDominanceLatencyInfoMidi(bool capture, bool input);
+      virtual TrackLatencyInfo& setCorrectionLatencyInfoMidi(bool capture, bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
+//       virtual TrackLatencyInfo& getInputLatencyInfoMidi(bool capture);
+      virtual TrackLatencyInfo& getLatencyInfoMidi(bool capture, bool input);
       virtual unsigned long latencyCompWriteOffsetMidi(bool capture) const;
       virtual void setLatencyCompWriteOffsetMidi(float worstCase, bool capture);
 
+      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc).
+//       virtual float getWorstSelfLatency();
       // Synth devices can never dominate latency, only physical/hardware midi devices can.
       virtual bool canDominateOutputLatency() const { return false; }
       virtual bool canDominateEndPointLatency() const { return false; }
       virtual bool canCorrectOutputLatency() const { return false; }
       virtual bool isLatencyInputTerminal();
       virtual bool isLatencyOutputTerminal();
-      virtual TrackLatencyInfo& getInputDominanceLatencyInfo();
+//       virtual TrackLatencyInfo& getInputDominanceLatencyInfo();
       virtual TrackLatencyInfo& getDominanceLatencyInfo(bool input);
-      virtual void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
-      virtual TrackLatencyInfo& getInputLatencyInfo();
+      virtual TrackLatencyInfo& setCorrectionLatencyInfo(bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
+//       virtual TrackLatencyInfo& getInputLatencyInfo();
       virtual TrackLatencyInfo& getLatencyInfo(bool input);
 //       virtual unsigned long latencyCompWriteOffset() const { return _latencyInfo._compensatorWriteOffset; }
 //       virtual void setLatencyCompWriteOffset(float /*worstCase*/) { }
