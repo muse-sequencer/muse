@@ -29,6 +29,8 @@ void TrackLatencyInfo::initialize()
 {
   _dominanceProcessed = false;
   _dominanceInputProcessed = false;
+  _canDominateProcessed = false;
+  _canDominateInputProcessed = false;
 //     _forwardProcessed = false;
   _correctionProcessed = false;
   _correctionInputProcessed = false;
@@ -41,6 +43,8 @@ void TrackLatencyInfo::initialize()
   _inputLatency = 0.0f;
   _isLatencyInputTerminal = false;
   _isLatencyOutputTerminal = false;
+  _isLatencyInputTerminalProcessed = false;
+  _isLatencyOutputTerminalProcessed = false;
   _canDominateOutputLatency = false;
   _canDominateInputLatency = false;
 //   _requiresInputCorrection = false;

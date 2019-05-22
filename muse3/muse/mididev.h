@@ -349,6 +349,7 @@ class MidiDevice {
       // For Wave Tracks for example, asks whether the track is an end-point from the view of the playback side.
       virtual bool isLatencyOutputTerminalMidi(bool capture);
 
+      virtual TrackLatencyInfo& getDominanceInfoMidi(bool capture, bool input);
       // Returns latency computations during each cycle. If the computations have already been done 
       //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
 //       virtual TrackLatencyInfo& getInputDominanceLatencyInfoMidi(bool capture);

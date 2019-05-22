@@ -481,6 +481,11 @@ void MetronomeSynthI::initSamplesOperation(PendingOperationList& operations)
 
 bool MetronomeSynthI::isLatencyInputTerminal()
 {
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._isLatencyInputTerminalProcessed)
+    return _latencyInfo._isLatencyInputTerminal;
+
   // Ultimately if the track is off there is no audio or midi processing, so it's a terminal.
   if(off() /*|| !MusEGlobal::song->click()*/)
   {
@@ -534,6 +539,11 @@ bool MetronomeSynthI::isLatencyInputTerminal()
 
 bool MetronomeSynthI::isLatencyOutputTerminal()
 {
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._isLatencyOutputTerminalProcessed)
+    return _latencyInfo._isLatencyOutputTerminal;
+
   // Ultimately if the track is off there is no audio or midi processing, so it's a terminal.
 //   if(off() /*|| !MusEGlobal::song->click()*/)
 //   {
@@ -1165,6 +1175,11 @@ bool MetronomeSynthI::isLatencyInputTerminalMidi(bool capture)
 {
   TrackLatencyInfo* tli = capture ? &_captureLatencyInfo : &_playbackLatencyInfo;
 
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(tli->_isLatencyInputTerminalProcessed)
+    return tli->_isLatencyInputTerminal;
+
   // Ultimately if the track is off there is no audio or midi processing, so it's a terminal.
   if(off() /*|| !MusEGlobal::song->click()*/)
   {
@@ -1221,6 +1236,11 @@ bool MetronomeSynthI::isLatencyInputTerminalMidi(bool capture)
 bool MetronomeSynthI::isLatencyOutputTerminalMidi(bool capture)
 {
   TrackLatencyInfo* tli = capture ? &_captureLatencyInfo : &_playbackLatencyInfo;
+
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(tli->_isLatencyOutputTerminalProcessed)
+    return tli->_isLatencyOutputTerminal;
 
   // Ultimately if the track is off there is no audio or midi processing, so it's a terminal.
 //   if(off() /*|| !MusEGlobal::song->click()*/)

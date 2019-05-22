@@ -1330,6 +1330,11 @@ void Track::setChannels(int n)
 
 bool AudioTrack::isLatencyInputTerminal()
 {
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._isLatencyInputTerminalProcessed)
+    return _latencyInfo._isLatencyInputTerminal;
+
 //   bool res = true;
   
   // REMOVE Tim. latency. Added. FLAG latency rec.
@@ -1405,6 +1410,11 @@ bool AudioTrack::isLatencyInputTerminal()
 
 bool AudioTrack::isLatencyOutputTerminal()
 {
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._isLatencyOutputTerminalProcessed)
+    return _latencyInfo._isLatencyOutputTerminal;
+
 //   bool res = true;
   
   // REMOVE Tim. latency. Added. FLAG latency rec.

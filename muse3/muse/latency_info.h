@@ -35,6 +35,8 @@ struct TrackLatencyInfo
   // This is reset near the beginning of the process handler.
   bool _dominanceProcessed;
   bool _dominanceInputProcessed;
+  bool _canDominateProcessed;
+  bool _canDominateInputProcessed;
   // Whether the 'forward' information is valid (has already been gathered
   //  in the forward latency scan).
 //   // This is reset near the beginning of the process handler.
@@ -78,6 +80,8 @@ struct TrackLatencyInfo
   //   ie. signal can actually flow.
   bool _isLatencyInputTerminal;
   bool _isLatencyOutputTerminal;
+  bool _isLatencyInputTerminalProcessed;
+  bool _isLatencyOutputTerminalProcessed;
   // Whether this track (and the branch it is in) can force other parallel branches to
   //  increase their latency compensation to match this one.
   // If false, this branch will NOT disturb other parallel branches' compensation,

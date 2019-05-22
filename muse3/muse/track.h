@@ -324,14 +324,15 @@ class Track {
       // That means track is not off, track is monitored where applicable, etc,
       //   ie. signal can actually flow.
       // For Wave Tracks for example, asks whether the track is an end-point from the view of the input side.
-      virtual bool isLatencyInputTerminal() { _latencyInfo._isLatencyInputTerminal = true; return true; }
+      virtual bool isLatencyInputTerminal() = 0;
       // Whether any of the connected output routes are effectively connected.
       // That means track is not off, track is monitored where applicable, etc,
       //   ie. signal can actually flow.
       // For Wave Tracks for example, asks whether the track is an end-point from the view of the playback side.
-      virtual bool isLatencyOutputTerminal() { _latencyInfo._isLatencyOutputTerminal = true; return true; }
+      virtual bool isLatencyOutputTerminal() = 0;
 
 // REMOVE Tim. latency. Added.
+      virtual TrackLatencyInfo& getDominanceInfo(bool input) = 0;
       // Returns latency computations during each cycle. If the computations have already been done 
       //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
 //       virtual TrackLatencyInfo& getInputDominanceLatencyInfo() = 0;
@@ -479,6 +480,7 @@ class MidiTrack : public Track {
       //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
 //       virtual TrackLatencyInfo& getInputDominanceLatencyInfo();
       virtual TrackLatencyInfo& getDominanceLatencyInfo(bool input);
+      virtual TrackLatencyInfo& getDominanceInfo(bool input);
       // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
       //  determined in the complete getDominanceLatencyInfo() scan.
       // The callerBranchLatency is the inherent branch latency of the calling track, or zero if calling from
@@ -823,6 +825,7 @@ class AudioTrack : public Track {
       //virtual float outputLatency(); // const; 
       
 // REMOVE Tim. latency. Added.
+      virtual TrackLatencyInfo& getDominanceInfo(bool input);
       // Returns latency computations during each cycle. If the computations have already been done 
       //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
 //       virtual TrackLatencyInfo& getInputDominanceLatencyInfo();
@@ -951,8 +954,8 @@ class AudioOutput : public AudioTrack {
       // Audio output tracks can allow a branch to dominate if they are an end-point and the branch can dominate.
       bool canDominateEndPointLatency() const { return true; }
       // Audio Output is considered a termination point.
-      bool isLatencyInputTerminal() { _latencyInfo._isLatencyInputTerminal = true; return true; }
-      bool isLatencyOutputTerminal() { _latencyInfo._isLatencyOutputTerminal = true; return true; }
+      bool isLatencyInputTerminal();
+      bool isLatencyOutputTerminal();
       
       virtual void assign(const Track&, int flags);
       AudioOutput* clone(int flags) const { return new AudioOutput(*this, flags); }

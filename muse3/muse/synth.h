@@ -342,6 +342,7 @@ class SynthI : public AudioTrack, public MidiDevice,
       virtual bool isLatencyInputTerminalMidi(bool capture);
       virtual bool isLatencyOutputTerminalMidi(bool capture);
 //       virtual TrackLatencyInfo& getInputDominanceLatencyInfoMidi(bool capture);
+      virtual TrackLatencyInfo& getDominanceInfoMidi(bool capture, bool input);
       virtual TrackLatencyInfo& getDominanceLatencyInfoMidi(bool capture, bool input);
       virtual TrackLatencyInfo& setCorrectionLatencyInfoMidi(bool capture, bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
 //       virtual TrackLatencyInfo& getInputLatencyInfoMidi(bool capture);
@@ -358,6 +359,7 @@ class SynthI : public AudioTrack, public MidiDevice,
       virtual bool isLatencyInputTerminal();
       virtual bool isLatencyOutputTerminal();
 //       virtual TrackLatencyInfo& getInputDominanceLatencyInfo();
+      virtual TrackLatencyInfo& getDominanceInfo(bool input);
       virtual TrackLatencyInfo& getDominanceLatencyInfo(bool input);
       virtual TrackLatencyInfo& setCorrectionLatencyInfo(bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
 //       virtual TrackLatencyInfo& getInputLatencyInfo();
