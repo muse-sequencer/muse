@@ -35,6 +35,7 @@ void TrackLatencyInfo::initialize()
   _correctionProcessed = false;
   _correctionInputProcessed = false;
   _processed = false;
+  _inputProcessed = false;
   _worstSelfLatency = 0.0f;
   _worstSelfLatencyMidi = 0.0f;
   _worstSelfLatencyProcessed = false;

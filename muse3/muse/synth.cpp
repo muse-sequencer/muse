@@ -5735,301 +5735,243 @@ TrackLatencyInfo& SynthI::getDominanceLatencyInfo(bool input)
 
 TrackLatencyInfo& SynthI::getLatencyInfo(bool input)
 {
-      // Have we been here before during this scan?
-      // Just return the cached value.
-      if(_latencyInfo._processed)
-        return _latencyInfo;
-      
-//       float route_worst_latency = 0.0f;
-      float route_worst_latency = _latencyInfo._inputLatency;
-      
-      // This value has a range from 0 (worst) to positive inf (best) or close to it.
-      //float route_worst_out_corr = outputLatencyCorrection();
-      // Get the default domination for this track type.
-//       bool can_dominate_out_lat = canDominateOutputLatency();
-      
-      // Gather latency info from all connected input branches,
-      //  but ONLY if the track is not off.
-//       if(!off())
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if((input && _latencyInfo._inputProcessed) ||
+    (!input && _latencyInfo._processed))
+    return _latencyInfo;
+
+  float route_worst_latency = _latencyInfo._inputLatency;
+
+  const bool passthru = canPassThruLatency();
+
+  // We want the AudioTrack in routes, not the MidiDevice in routes.
+  RouteList* rl = AudioTrack::inRoutes();
+
+  // Now that we know the worst-case latency of the connected branches,
+  //  adjust each of the conveniently stored temporary latency values
+  //  in the routes according to whether they can dominate...
+  for (iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+  {
+    if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+      continue;
+
+    Track* track = ir->track;
+
+    if(passthru || input)
+    {
+      // Default to zero.
+      ir->audioLatencyOut = 0.0f;
+
+      if(!off() && !track->off())
       {
-//         bool item_found = false;
-        // REMOVE Tim. latency. Added. FLAG latency rec.
-        const bool passthru = /*!input &&*/ canPassThruLatency();
-        
-        // We want the AudioTrack in routes, not the MidiDevice in routes.
-        RouteList* rl = AudioTrack::inRoutes();
-        
-        // Now that we know the worst-case latency of the connected branches,
-        //  adjust each of the conveniently stored temporary latency values
-        //  in the routes according to whether they can dominate...
-        for (iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+        const TrackLatencyInfo& li = track->getLatencyInfo(false);
+        const bool participate =
+          (li._canCorrectOutputLatency ||
+          li._canDominateOutputLatency ||
+          MusEGlobal::config.correctUnterminatedInBranchLatency);
+
+        if(participate)
         {
-          if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
-            continue;
-
-          Track* track = ir->track;
-
-          // If the branch cannot dominate the latency, force it to be
-          //  equal to the worst-case value.
-          //if(!ir->canDominateLatency)
-          // If the branch cannot correct the latency, force it to be
-          //  equal to the worst-case value.
-//               if(!ir->canCorrectOutputLatency)
-//                 ir->audioLatencyOut = route_worst_latency;
-
-          if(!input)
-          {
-            // Default to zero.
+          // Prepare the latency value to be passed to the compensator's writer,
+          //  by adjusting each route latency value. ie. the route with the worst-case
+          //  latency will get ZERO delay, while routes having smaller latency will get
+          //  MORE delay, to match all the signal timings together.
+          // The route's audioLatencyOut should have already been calculated and
+          //  conveniently stored in the route.
+          ir->audioLatencyOut = route_worst_latency - li._outputLatency;
+          // Should not happen, but just in case.
+          if((long int)ir->audioLatencyOut < 0)
             ir->audioLatencyOut = 0.0f;
-          }
+        }
+      }
+    }
+  }
 
-          if(!off() && !track->off() && (passthru || input))
+  const int port = midiPort();
+  //if((openFlags() & (capture ? 2 : 1)) && port >= 0 && port < MusECore::MIDI_PORTS)
+  //if((openFlags() & 1 /*write*/) && port >= 0 && port < MusECore::MIDI_PORTS)
+  if(port >= 0 && port < MusECore::MIDI_PORTS)
+  {
+#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+    const ciMidiTrack tl_end = MusEGlobal::song->midis()->cend();
+    for(ciMidiTrack it = MusEGlobal::song->midis()->cbegin(); it != tl_end; ++it)
+    {
+      MidiTrack* track = *it;
+      if(track->outPort() != port)
+        continue;
+
+      if(passthru || input)
+      {
+        // Default to zero.
+        // TODO: FIXME: Where to store? We have no route to store it in.
+        //ir->audioLatencyOut = 0.0f;
+        //li._latencyOutMidiTrack = 0.0f;
+
+        if(!off() && !track->off() && (openFlags() & 1 /*write*/))
+        {
+          TrackLatencyInfo& li = track->getLatencyInfo(false);
+          // Whether the branch can dominate or correct latency or if we
+          //  want to allow unterminated input branches to
+          //  participate in worst branch latency calculations.
+          const bool participate =
+            li._canCorrectOutputLatency ||
+            li._canDominateOutputLatency ||
+            MusEGlobal::config.correctUnterminatedInBranchLatency;
+
+          if(participate)
           {
-            const TrackLatencyInfo& li = track->getLatencyInfo(false);
-            const bool participate =
-              (li._canCorrectOutputLatency ||
-              li._canDominateOutputLatency ||
-              MusEGlobal::config.correctUnterminatedInBranchLatency);
-            
-            if(participate)
-            {
-              if(!input)
-              {
-                // Prepare the latency value to be passed to the compensator's writer,
-                //  by adjusting each route latency value. ie. the route with the worst-case
-                //  latency will get ZERO delay, while routes having smaller latency will get
-                //  MORE delay, to match all the signal timings together.
-                // The route's audioLatencyOut should have already been calculated and
-                //  conveniently stored in the route.
-  //                   ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
-                ir->audioLatencyOut = route_worst_latency - li._outputLatency;
-                // Should not happen, but just in case.
-                if((long int)ir->audioLatencyOut < 0)
-                  ir->audioLatencyOut = 0.0f;
-              }
-            }
+            // TODO: FIXME: Where to store? We have no route to store it in.
+            // Prepare the latency value to be passed to the compensator's writer,
+            //  by adjusting each route latency value. ie. the route with the worst-case
+            //  latency will get ZERO delay, while routes having smaller latency will get
+            //  MORE delay, to match all the signal timings together.
+            // The route's audioLatencyOut should have already been calculated and
+            //  conveniently stored in the route.
+//               ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
+//               // Should not happen, but just in case.
+//               if((long int)ir->audioLatencyOut < 0)
+//                 ir->audioLatencyOut = 0.0f;
+
+//               // TODO FIXME This probably won't work.
+//               li._outputLatency = route_worst_latency - li._outputLatency;
+//               // Should not happen, but just in case.
+//               if((long int)li._outputLatency < 0)
+//                 li._outputLatency = 0.0f;
+
+            // Special for Midi Tracks: We don't have Midi Track to Midi Port routes yet
+            //  because we don't have multiple Midi Track outputs yet, only a single output port.
+            // So we must store this information here just for Midi Tracks.
+            li._latencyOutMidiTrack = route_worst_latency - li._outputLatency;
+            // Should not happen, but just in case.
+            if((long int)li._latencyOutMidiTrack < 0)
+              li._latencyOutMidiTrack = 0.0f;
           }
         }
-            
-        const int port = midiPort();
-        //if((openFlags() & (capture ? 2 : 1)) && port >= 0 && port < MusECore::MIDI_PORTS)
-        //if((openFlags() & 1 /*write*/) && port >= 0 && port < MusECore::MIDI_PORTS)
-        if(port >= 0 && port < MusECore::MIDI_PORTS)
-        {
-#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-          const ciMidiTrack tl_end = MusEGlobal::song->midis()->cend();
-          for(ciMidiTrack it = MusEGlobal::song->midis()->cbegin(); it != tl_end; ++it)
-          {
-            MidiTrack* track = *it;
-            if(track->outPort() != port)
-              continue;
-
-            if(!input)
-            {
-              // Default to zero.
-              // TODO: FIXME: Where to store? We have no route to store it in.
-              //ir->audioLatencyOut = 0.0f;
-              //li._latencyOutMidiTrack = 0.0f;
-            }
-
-            if(!off() && !track->off() && (openFlags() & 1 /*write*/) && (passthru || input))
-            {
-              TrackLatencyInfo& li = track->getLatencyInfo(false);
-              // Whether the branch can dominate or correct latency or if we
-              //  want to allow unterminated input branches to
-              //  participate in worst branch latency calculations.
-              const bool participate =
-                li._canCorrectOutputLatency ||
-                li._canDominateOutputLatency ||
-                MusEGlobal::config.correctUnterminatedInBranchLatency;
-
-              if(participate)
-              {
-                if(!input)
-                {
-                  // TODO: FIXME: Where to store? We have no route to store it in.
-                  // Prepare the latency value to be passed to the compensator's writer,
-                  //  by adjusting each route latency value. ie. the route with the worst-case
-                  //  latency will get ZERO delay, while routes having smaller latency will get
-                  //  MORE delay, to match all the signal timings together.
-                  // The route's audioLatencyOut should have already been calculated and
-                  //  conveniently stored in the route.
-    //               ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
-    //               // Should not happen, but just in case.
-    //               if((long int)ir->audioLatencyOut < 0)
-    //                 ir->audioLatencyOut = 0.0f;
-                  
-    //               // TODO FIXME This probably won't work.
-    //               li._outputLatency = route_worst_latency - li._outputLatency;
-    //               // Should not happen, but just in case.
-    //               if((long int)li._outputLatency < 0)
-    //                 li._outputLatency = 0.0f;
-
-                  // Special for Midi Tracks: We don't have Midi Track to Midi Port routes yet
-                  //  because we don't have multiple Midi Track outputs yet, only a single output port.
-                  // So we must store this information here just for Midi Tracks.
-                  li._latencyOutMidiTrack = route_worst_latency - li._outputLatency;
-                  // Should not happen, but just in case.
-                  if((long int)li._latencyOutMidiTrack < 0)
-                    li._latencyOutMidiTrack = 0.0f;
-                }
-              }
-            }
-          }
+      }
+    }
 
 #else
 
-          MidiPort* mp = &MusEGlobal::midiPorts[port];
-          RouteList* mrl = mp->inRoutes();
-          for (iRoute ir = mrl->begin(); ir != mrl->end(); ++ir)
-          {
-            switch(ir->type)
+    MidiPort* mp = &MusEGlobal::midiPorts[port];
+    RouteList* mrl = mp->inRoutes();
+    for (iRoute ir = mrl->begin(); ir != mrl->end(); ++ir)
+    {
+      switch(ir->type)
+      {
+          case Route::TRACK_ROUTE:
+            if(!ir->track)
+              continue;
+
+            if(ir->track->isMidiTrack())
             {
-                case Route::TRACK_ROUTE:
-                  if(!ir->track)
-                    continue;
+              if(ir->channel < -1 || ir->channel >= MusECore::MUSE_MIDI_CHANNELS)
+                continue;
 
-                  if(ir->track->isMidiTrack())
-                  {
-                    if(ir->channel < -1 || ir->channel >= MusECore::MUSE_MIDI_CHANNELS)
-                      continue;
+              Track* track = ir->track;
 
-                    Track* track = ir->track;
-//                     if(track->off()) // || 
-//                       //(atrack->canRecordMonitor() && (MusEGlobal::config.monitoringAffectsLatency || !atrack->isRecMonitored())))
-//                       //&& atrack->canRecord() && !atrack->recordFlag()))
-//                       continue;
-                  
 //                     if(ir->channel < 0)
 //                       all_chans = true;
 //                     else
 //                       used_chans[ir->channel] = true;
 
-                    TrackLatencyInfo& li = track->getLatencyInfo(false);
+              if(passthru || input)
+              {
+                // Default to zero.
+                ir->audioLatencyOut = 0.0f;
 
-                    if(!input)
-                    {
-                      // Default to zero.
+                if(!off() && !track->off() && (openFlags() & 1 /*write*/)
+                {
+                  TrackLatencyInfo& li = track->getLatencyInfo(false);
+                  // Whether the branch can dominate or correct latency or if we
+                  //  want to allow unterminated input branches to
+                  //  participate in worst branch latency calculations.
+                  const bool participate =
+                    li._canCorrectOutputLatency ||
+                    li._canDominateOutputLatency ||
+                    MusEGlobal::config.correctUnterminatedInBranchLatency;
+
+                  if(participate)
+                  {
+                    // Prepare the latency value to be passed to the compensator's writer,
+                    //  by adjusting each route latency value. ie. the route with the worst-case
+                    //  latency will get ZERO delay, while routes having smaller latency will get
+                    //  MORE delay, to match all the signal timings together.
+                    // The route's audioLatencyOut should have already been calculated and
+                    //  conveniently stored in the route.
+                    ir->audioLatencyOut = route_worst_latency - li._outputLatency;
+                    // Should not happen, but just in case.
+                    if((long int)ir->audioLatencyOut < 0)
                       ir->audioLatencyOut = 0.0f;
-                    }
-
-                    if(!off() && !track->off() && (openFlags() & 1 /*write*/) && (passthru || input))
-                    {
-                      // Whether the branch can dominate or correct latency or if we
-                      //  want to allow unterminated input branches to
-                      //  participate in worst branch latency calculations.
-                      const bool participate =
-                        li._canCorrectOutputLatency ||
-                        li._canDominateOutputLatency ||
-                        MusEGlobal::config.correctUnterminatedInBranchLatency;
-
-                      if(participate)
-                      {
-                        if(!input)
-                        {
-                          // TODO: FIXME: Where to store? We have no route to store it in.
-                          // Prepare the latency value to be passed to the compensator's writer,
-                          //  by adjusting each route latency value. ie. the route with the worst-case
-                          //  latency will get ZERO delay, while routes having smaller latency will get
-                          //  MORE delay, to match all the signal timings together.
-                          // The route's audioLatencyOut should have already been calculated and
-                          //  conveniently stored in the route.
-                          //ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
-                          ir->audioLatencyOut = route_worst_latency - li._outputLatency;
-                          // Should not happen, but just in case.
-                          if((long int)ir->audioLatencyOut < 0)
-                            ir->audioLatencyOut = 0.0f;
-
-    //                       // TODO FIXME This probably won't work.
-    //                       li._outputLatency = route_worst_latency - li._outputLatency;
-    //                       // Should not happen, but just in case.
-    //                       if((long int)li._outputLatency < 0)
-    //                         li._outputLatency = 0.0f;
-
-    //                       // Special for Midi Tracks: We don't have Midi Track to Midi Port routes yet
-    //                       //  because we don't have multiple Midi Track outputs yet, only a single output port.
-    //                       // So we must store this information here just for Midi Tracks.
-    //                       li._latencyOutMidiTrack = route_worst_latency - li._outputLatency;
-    //                       // Should not happen, but just in case.
-    //                       if((long int)li._latencyOutMidiTrack < 0)
-    //                         li._latencyOutMidiTrack = 0.0f;
-                        }
-                      }
-                    }
                   }
-                break;
+                }
+              }
+            }
+          break;
 
-                default:
-                break;
-            }            
-          }
+          default:
+          break;
+      }            
+    }
 
 #endif
 
-        }
+  }
 
-        // Default to zero.
-        if(!input)
-          _latencyInfo._latencyOutMetronome = 0.0f;
+  // Special for the built-in metronome.
+  if(passthru || input)
+  {
+    // Default to zero.
+    _latencyInfo._latencyOutMetronome = 0.0f;
 
-        // Special for the built-in metronome.
-        if(!off() && !MusECore::metronome->off() && (passthru || input) && sendMetronome())
-        {
-          TrackLatencyInfo& li = MusECore::metronome->getLatencyInfo(false);
+    if(!off() && !MusECore::metronome->off() && sendMetronome())
+    {
+      TrackLatencyInfo& li = MusECore::metronome->getLatencyInfo(false);
 
-          const bool participate =
-            li._canCorrectOutputLatency ||
-            li._canDominateOutputLatency ||
-            MusEGlobal::config.correctUnterminatedInBranchLatency;
-          
-          if(participate)
-          {
-            if(!input)
-            {
-              // TODO: FIXME: Where to store? We have no route to store it in.
-              // Prepare the latency value to be passed to the compensator's writer,
-              //  by adjusting each route latency value. ie. the route with the worst-case
-              //  latency will get ZERO delay, while routes having smaller latency will get
-              //  MORE delay, to match all the signal timings together.
-              // The route's audioLatencyOut should have already been calculated and
-              //  conveniently stored in the route.
+      const bool participate =
+        li._canCorrectOutputLatency ||
+        li._canDominateOutputLatency ||
+        MusEGlobal::config.correctUnterminatedInBranchLatency;
 
-  //             ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
-  //             // Should not happen, but just in case.
-  //             if((long int)ir->audioLatencyOut < 0)
-  //               ir->audioLatencyOut = 0.0f;
-              
-              
-              // TODO FIXME This probably won't work.
-    //           TrackLatencyInfo& li = track->getInputLatencyInfo();
-    //           li._outputLatency = route_worst_latency - li._outputLatency;
-    //           // Should not happen, but just in case.
-    //           if((long int)li._outputLatency < 0)
-    //             li._outputLatency = 0.0f;
+      if(participate)
+      {
+        // TODO: FIXME: Where to store? We have no route to store it in.
+        // Prepare the latency value to be passed to the compensator's writer,
+        //  by adjusting each route latency value. ie. the route with the worst-case
+        //  latency will get ZERO delay, while routes having smaller latency will get
+        //  MORE delay, to match all the signal timings together.
+        // The route's audioLatencyOut should have already been calculated and
+        //  conveniently stored in the route.
 
-              // Special for Midi Tracks: We don't have Midi Track to Midi Port routes yet
-              //  because we don't have multiple Midi Track outputs yet, only a single output port.
-              // So we must store this information here just for Midi Tracks.
-              li._latencyOutMetronome = route_worst_latency - li._latencyOutMetronome;
-              // Should not happen, but just in case.
-              if((long int)li._latencyOutMetronome < 0)
-                li._latencyOutMetronome = 0.0f;
-            }
-          }
-        }
+//             ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
+//             // Should not happen, but just in case.
+//             if((long int)ir->audioLatencyOut < 0)
+//               ir->audioLatencyOut = 0.0f;
+
+        // TODO FIXME This probably won't work.
+//           TrackLatencyInfo& li = track->getInputLatencyInfo();
+//           li._outputLatency = route_worst_latency - li._outputLatency;
+//           // Should not happen, but just in case.
+//           if((long int)li._outputLatency < 0)
+//             li._outputLatency = 0.0f;
+
+        // Special for Midi Tracks: We don't have Midi Track to Midi Port routes yet
+        //  because we don't have multiple Midi Track outputs yet, only a single output port.
+        // So we must store this information here just for Midi Tracks.
+        li._latencyOutMetronome = route_worst_latency - li._latencyOutMetronome;
+        // Should not happen, but just in case.
+        if((long int)li._latencyOutMetronome < 0)
+          li._latencyOutMetronome = 0.0f;
       }
-      
-      // The absolute latency of signals leaving this track is the sum of
-      //  any connected route latencies and this track's latency.
-//       _latencyInfo._trackLatency  = track_worst_chan_latency;
-//       _latencyInfo._outputLatency = track_worst_chan_latency + route_worst_latency;
-      // The _trackLatency should have been already calculated from the dominance scan.
-//       _latencyInfo._outputLatency = _latencyInfo._trackLatency + route_worst_latency;
-      //_latencyInfo._outputAvailableCorrection = route_worst_out_corr;
-//       _latencyInfo._canDominateOutputLatency = can_dominate_out_lat;
+    }
+  }
 
-      _latencyInfo._processed = true;
-      return _latencyInfo;
+  if(input)
+    _latencyInfo._inputProcessed = true;
+  else
+    _latencyInfo._processed = true;
+
+  return _latencyInfo;
 }
 
 bool SynthI::isLatencyInputTerminalMidi(bool capture)
@@ -9026,269 +8968,235 @@ TrackLatencyInfo& SynthI::setCorrectionLatencyInfoMidi(bool capture, bool input,
 
 TrackLatencyInfo& SynthI::getLatencyInfoMidi(bool capture, bool input)
 {
-      TrackLatencyInfo* tli = capture ? &_captureLatencyInfo : &_playbackLatencyInfo;
-      
-      // Have we been here before during this scan?
-      // Just return the cached value.
-      if(tli->_processed)
-        return *tli;
-      
-//       float route_worst_latency = 0.0f;
-      float route_worst_latency = tli->_inputLatency;
-      
-      MusECore::MetronomeSettings* metro_settings = 
-        MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+  TrackLatencyInfo* tli = capture ? &_captureLatencyInfo : &_playbackLatencyInfo;
 
-      const bool passthru = /*!input &&*/ canPassThruLatencyMidi(capture);
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if((input && tli->_inputProcessed) ||
+    (!input && tli->_processed))
+    return *tli;
 
-//       bool item_found = false;
+  float route_worst_latency = tli->_inputLatency;
 
-      // Gather latency info from all connected input branches,
-      //  but ONLY if the track is not off.
-//       if(!off())
+  MusECore::MetronomeSettings* metro_settings = 
+    MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
+  const bool passthru = canPassThruLatencyMidi(capture);
+
+  // Now that we know the worst-case latency of the connected branches,
+  //  adjust each of the conveniently stored temporary latency values
+  //  in the routes according to whether they can dominate...
+  RouteList* rl = AudioTrack::inRoutes();
+  for (iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+  {
+    if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+      continue;
+
+    Track* track = ir->track;
+
+    if(passthru || input)
+    {
+      // Default to zero.
+      ir->audioLatencyOut = 0.0f;
+
+      if(!off() && !track->off())
       {
-        // Now that we know the worst-case latency of the connected branches,
-        //  adjust each of the conveniently stored temporary latency values
-        //  in the routes according to whether they can dominate...
-        
-        RouteList* rl = AudioTrack::inRoutes();
-        for (iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+        const TrackLatencyInfo& li = track->getLatencyInfo(false);
+        const bool participate =
+          li._canCorrectOutputLatency ||
+          li._canDominateOutputLatency ||
+          MusEGlobal::config.correctUnterminatedInBranchLatency;
+
+        if(participate)
         {
-          if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
-            continue;
-          
-          // If the branch cannot dominate the latency, force it to be
-          //  equal to the worst-case value.
-          //if(!ir->canDominateLatency)
-          // If the branch cannot correct the latency, force it to be
-          //  equal to the worst-case value.
-          //    if(!ir->canCorrectOutputLatency)
-          //      ir->audioLatencyOut = route_worst_latency;
-          
-          Track* track = ir->track;
-
-          if(!input)
-          {
-            // Default to zero.
+          // Prepare the latency value to be passed to the compensator's writer,
+          //  by adjusting each route latency value. ie. the route with the worst-case
+          //  latency will get ZERO delay, while routes having smaller latency will get
+          //  MORE delay, to match all the signal timings together.
+          // The route's audioLatencyOut should have already been calculated and
+          //  conveniently stored in the route.
+          ir->audioLatencyOut = route_worst_latency - li._outputLatency;
+          // Should not happen, but just in case.
+          if((long int)ir->audioLatencyOut < 0)
             ir->audioLatencyOut = 0.0f;
-          }
+        }
+      }
+    }
+  }
 
-          if(!off() && !track->off() && (passthru || input))
+  const int port = midiPort();
+
+//   if((openFlags() & (capture ? 2 : 1)) && port >= 0 && port < MusECore::MIDI_PORTS)
+  if(port >= 0 && port < MusECore::MIDI_PORTS)
+  {
+#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+    const ciMidiTrack tl_end = MusEGlobal::song->midis()->cend();
+    for(ciMidiTrack it = MusEGlobal::song->midis()->cbegin(); it != tl_end; ++it)
+    {
+      MidiTrack* track = *it;
+      if(track->outPort() != port)
+        continue;
+
+      if(passthru || input)
+      {
+        // TODO: FIXME: Where to store? We have no route to store it in.
+        // Default to zero.
+        //ir->audioLatencyOut = 0.0f;
+
+        if(!off() && (openFlags() & (capture ? 2 : 1)) && !track->off())
+        {
+          TrackLatencyInfo& li = track->getLatencyInfo(false);
+          const bool participate =
+            li._canCorrectOutputLatency ||
+            li._canDominateOutputLatency ||
+            MusEGlobal::config.correctUnterminatedInBranchLatency;
+
+          if(participate)
           {
-            const TrackLatencyInfo& li = track->getLatencyInfo(false);
-            const bool participate =
-              li._canCorrectOutputLatency ||
-              li._canDominateOutputLatency ||
-              MusEGlobal::config.correctUnterminatedInBranchLatency;
-            
-            if(participate)
-            {
-              if(!input)
-              {
-                // Prepare the latency value to be passed to the compensator's writer,
-                //  by adjusting each route latency value. ie. the route with the worst-case
-                //  latency will get ZERO delay, while routes having smaller latency will get
-                //  MORE delay, to match all the signal timings together.
-                // The route's audioLatencyOut should have already been calculated and
-                //  conveniently stored in the route.
-//                 ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
-                ir->audioLatencyOut = route_worst_latency - li._outputLatency;
-                // Should not happen, but just in case.
-                if((long int)ir->audioLatencyOut < 0)
-                  ir->audioLatencyOut = 0.0f;
-              }
-            }
+            // TODO: FIXME: Where to store? We have no route to store it in.
+            // Prepare the latency value to be passed to the compensator's writer,
+            //  by adjusting each route latency value. ie. the route with the worst-case
+            //  latency will get ZERO delay, while routes having smaller latency will get
+            //  MORE delay, to match all the signal timings together.
+            // The route's audioLatencyOut should have already been calculated and
+            //  conveniently stored in the route.
+  //           ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
+  //           // Should not happen, but just in case.
+  //           if((long int)ir->audioLatencyOut < 0)
+  //             ir->audioLatencyOut = 0.0f;
+
+//             // TODO FIXME This probably won't work.
+//             li._outputLatency = route_worst_latency - li._outputLatency;
+//             // Should not happen, but just in case.
+//             if((long int)li._outputLatency < 0)
+//               li._outputLatency = 0.0f;
+
+            // Special for Midi Tracks: We don't have Midi Track to Midi Port routes yet
+            //  because we don't have multiple Midi Track outputs yet, only a single output port.
+            // So we must store this information here just for Midi Tracks.
+            li._latencyOutMidiTrack = route_worst_latency - li._outputLatency;
+            // Should not happen, but just in case.
+            if((long int)li._latencyOutMidiTrack < 0)
+              li._latencyOutMidiTrack = 0.0f;
           }
         }
+      }
+    }
 
-        const int port = midiPort();
+#else
 
-//         if((openFlags() & (capture ? 2 : 1)) && port >= 0 && port < MusECore::MIDI_PORTS)
-        if(port >= 0 && port < MusECore::MIDI_PORTS)
-        {
-  #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-          const ciMidiTrack tl_end = MusEGlobal::song->midis()->cend();
-          for(ciMidiTrack it = MusEGlobal::song->midis()->cbegin(); it != tl_end; ++it)
+    for (iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+    {
+      switch(ir->type)
+      {
+        case Route::TRACK_ROUTE:
+          if(!ir->track)
+            continue;
+
+          if(ir->track->isMidiTrack())
           {
-            MidiTrack* track = *it;
-            if(track->outPort() != port)
+            if(ir->channel < -1 || ir->channel >= MusECore::MUSE_MIDI_CHANNELS)
               continue;
 
-            if(!input)
-            {
-              // TODO: FIXME: Where to store? We have no route to store it in.
-              // Default to zero.
-              //ir->audioLatencyOut = 0.0f;
-            }
+            Track* track = ir->track;
 
-            if(!off() && (openFlags() & (capture ? 2 : 1)) && !track->off() && (passthru || input))
+            if(passthru || input)
             {
-              TrackLatencyInfo& li = track->getLatencyInfo(false);
-              const bool participate =
-                li._canCorrectOutputLatency ||
-                li._canDominateOutputLatency ||
-                MusEGlobal::config.correctUnterminatedInBranchLatency;
-              
-              if(participate)
+              // Default to zero.
+              ir->audioLatencyOut = 0.0f;
+
+              if(!off() && (openFlags() & (capture ? 2 : 1)) && !track->off())
               {
-                if(!input)
+                TrackLatencyInfo& li = track->getLatencyInfo(false);
+                const bool participate =
+                  li._canCorrectOutputLatency ||
+                  li._canDominateOutputLatency ||
+                  MusEGlobal::config.correctUnterminatedInBranchLatency;
+
+                if(participate)
                 {
-                  // TODO: FIXME: Where to store? We have no route to store it in.
                   // Prepare the latency value to be passed to the compensator's writer,
                   //  by adjusting each route latency value. ie. the route with the worst-case
                   //  latency will get ZERO delay, while routes having smaller latency will get
                   //  MORE delay, to match all the signal timings together.
                   // The route's audioLatencyOut should have already been calculated and
                   //  conveniently stored in the route.
-        //           ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
-        //           // Should not happen, but just in case.
-        //           if((long int)ir->audioLatencyOut < 0)
-        //             ir->audioLatencyOut = 0.0f;
-
-      //             // TODO FIXME This probably won't work.
-      //             li._outputLatency = route_worst_latency - li._outputLatency;
-      //             // Should not happen, but just in case.
-      //             if((long int)li._outputLatency < 0)
-      //               li._outputLatency = 0.0f;
-
-                  // Special for Midi Tracks: We don't have Midi Track to Midi Port routes yet
-                  //  because we don't have multiple Midi Track outputs yet, only a single output port.
-                  // So we must store this information here just for Midi Tracks.
-                  li._latencyOutMidiTrack = route_worst_latency - li._outputLatency;
+                  ir->audioLatencyOut = route_worst_latency - li._outputLatency;
                   // Should not happen, but just in case.
-                  if((long int)li._latencyOutMidiTrack < 0)
-                    li._latencyOutMidiTrack = 0.0f;
-                }
-              }
-            }
-          }
-
-  #else
-
-          for (iRoute ir = rl->begin(); ir != rl->end(); ++ir)
-          {
-            switch(ir->type)
-            {
-              case Route::TRACK_ROUTE:
-                if(!ir->track)
-                  continue;
-                
-                if(ir->track->isMidiTrack())
-                {
-                  if(ir->channel < -1 || ir->channel >= MusECore::MUSE_MIDI_CHANNELS)
-                    continue;
-
-                  Track* track = ir->track;
-
-                  if(!input)
-                  {
-                    // Default to zero.
+                  if((long int)ir->audioLatencyOut < 0)
                     ir->audioLatencyOut = 0.0f;
-                  }
-
-                  if(!off() && (openFlags() & (capture ? 2 : 1)) && !track->off() && (passthru || input))
-                  {
-                    TrackLatencyInfo& li = track->getLatencyInfo(false);
-                    const bool participate =
-                      li._canCorrectOutputLatency ||
-                      li._canDominateOutputLatency ||
-                      MusEGlobal::config.correctUnterminatedInBranchLatency;
-
-                    if(participate)
-                    {
-                      if(!input)
-                      {
-                        // Prepare the latency value to be passed to the compensator's writer,
-                        //  by adjusting each route latency value. ie. the route with the worst-case
-                        //  latency will get ZERO delay, while routes having smaller latency will get
-                        //  MORE delay, to match all the signal timings together.
-                        // The route's audioLatencyOut should have already been calculated and
-                        //  conveniently stored in the route.
-                        //ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
-                        ir->audioLatencyOut = route_worst_latency - li._outputLatency;
-                        // Should not happen, but just in case.
-                        if((long int)ir->audioLatencyOut < 0)
-                          ir->audioLatencyOut = 0.0f;
-                      }
-                    }
-                  }
                 }
-              break;
-              
-              default:
-              break;
+              }
             }
           }
+        break;
 
-  #endif
-                
-          // Special for the built-in metronome.
-          if(!capture)
+        default:
+        break;
+      }
+    }
+
+#endif
+
+    // Special for the built-in metronome.
+    if(!capture)
+    {
+      if(passthru || input)
+      {
+        // TODO: FIXME: Where to store? We have no route to store it in.
+        // Default to zero.
+        //ir->audioLatencyOut = 0.0f;
+
+        if((openFlags() & 1 /*write*/) && !MusECore::metronome->off() &&  // sendMetronome() &&
+            metro_settings->midiClickFlag && metro_settings->clickPort == port)
+        {
+          TrackLatencyInfo& li = MusECore::metronome->getLatencyInfoMidi(capture, false);
+          const bool participate =
+            (li._canCorrectOutputLatency ||
+            li._canDominateOutputLatency ||
+            MusEGlobal::config.correctUnterminatedInBranchLatency);
+
+          if(participate)
           {
-            //if(sendMetronome())
-            if(metro_settings->midiClickFlag && metro_settings->clickPort == port)
-            {
-              if(!input)
-              {
-                // TODO: FIXME: Where to store? We have no route to store it in.
-                // Default to zero.
-                //ir->audioLatencyOut = 0.0f;
-              }
+            // TODO: FIXME: Where to store? We have no route to store it in.
+            // Prepare the latency value to be passed to the compensator's writer,
+            //  by adjusting each route latency value. ie. the route with the worst-case
+            //  latency will get ZERO delay, while routes having smaller latency will get
+            //  MORE delay, to match all the signal timings together.
+            // The route's audioLatencyOut should have already been calculated and
+            //  conveniently stored in the route.
 
-              if((openFlags() & (capture ? 2 : 1)) && !MusECore::metronome->off() && (passthru || input))
-              {
-                //TrackLatencyInfo& li = MusECore::metronome->getLatencyInfo();
-                TrackLatencyInfo& li = MusECore::metronome->getLatencyInfoMidi(capture, false);
+//             ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
+//             // Should not happen, but just in case.
+//             if((long int)ir->audioLatencyOut < 0)
+//               ir->audioLatencyOut = 0.0f;
 
-                const bool participate =
-                  (li._canCorrectOutputLatency ||
-                  li._canDominateOutputLatency ||
-                  MusEGlobal::config.correctUnterminatedInBranchLatency);
+//                 // Special for Midi Tracks: We don't have Midi Track to Midi Port routes yet
+//                 //  because we don't have multiple Midi Track outputs yet, only a single output port.
+//                 // So we must store this information here just for Midi Tracks.
+//                 li._latencyOutMidiTrack = route_worst_latency - li._outputLatency;
+//                 // Should not happen, but just in case.
+//                 if((long int)li._latencyOutMidiTrack < 0)
+//                   li._latencyOutMidiTrack = 0.0f;
 
-                if(participate)
-                {
-                  if(!input)
-                  {
-                    // TODO: FIXME: Where to store? We have no route to store it in.
-                    // Prepare the latency value to be passed to the compensator's writer,
-                    //  by adjusting each route latency value. ie. the route with the worst-case
-                    //  latency will get ZERO delay, while routes having smaller latency will get
-                    //  MORE delay, to match all the signal timings together.
-                    // The route's audioLatencyOut should have already been calculated and
-                    //  conveniently stored in the route.
-
-    //             ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
-    //             // Should not happen, but just in case.
-    //             if((long int)ir->audioLatencyOut < 0)
-    //               ir->audioLatencyOut = 0.0f;
-                    
-                    // Special for Midi Tracks: We don't have Midi Track to Midi Port routes yet
-                    //  because we don't have multiple Midi Track outputs yet, only a single output port.
-                    // So we must store this information here just for Midi Tracks.
-                    li._latencyOutMidiTrack = route_worst_latency - li._outputLatency;
-                    // Should not happen, but just in case.
-                    if((long int)li._latencyOutMidiTrack < 0)
-                      li._latencyOutMidiTrack = 0.0f;
-                  }
-                }
-              }
-            }
+            // Special for metronome: We don't have metronome routes yet.
+            // So we must store this information here just for the metronome.
+            li._latencyOutMetronome = route_worst_latency - li._outputLatency;
+            // Should not happen, but just in case.
+            if((long int)li._latencyOutMetronome < 0)
+              li._latencyOutMetronome = 0.0f;
           }
         }
       }
-      
-      // The absolute latency of signals leaving this track is the sum of
-      //  any connected route latencies and this track's latency.
-//       tli->_trackLatency  = track_worst_chan_latency;
-//       tli->_outputLatency = track_worst_chan_latency + route_worst_latency;
-      // The _trackLatency should have been already calculated from the dominance scan.
-//       tli->_outputLatency = _latencyInfo._trackLatency + route_worst_latency;
-//       tli->_outputLatency = tli->_worstSelfLatency + route_worst_latency;
-      //tli->_outputAvailableCorrection = route_worst_out_corr;
-//       tli->_canDominateOutputLatency = can_dominate_out_lat;
+    }
+  }
 
-      tli->_processed = true;
-      return *tli;
+  if(input)
+    tli->_inputProcessed = true;
+  else
+    tli->_processed = true;
+
+  return *tli;
 }
 
 unsigned long SynthI::latencyCompWriteOffsetMidi(bool capture) const

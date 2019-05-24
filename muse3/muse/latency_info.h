@@ -50,6 +50,7 @@ struct TrackLatencyInfo
   //  in the in the final latency scan).
   // This is reset near the beginning of the process handler.
   bool _processed;
+  bool _inputProcessed;
   bool _worstSelfLatencyProcessed;
   bool _worstSelfLatencyMidiProcessed;
   // Contributions to latency from rack plugins and/or Jack ports etc.
