@@ -1558,6 +1558,7 @@ TrackLatencyInfo& MidiDevice::getDominanceInfoMidi(bool capture, bool input)
 
       // Get the default domination for this track type.
       bool can_dominate_lat = input ? canDominateInputLatencyMidi(capture) : canDominateOutputLatencyMidi(capture);
+      bool can_correct_lat = canCorrectOutputLatencyMidi();
 
       const bool passthru = canPassThruLatencyMidi(capture);
 
@@ -1583,14 +1584,6 @@ TrackLatencyInfo& MidiDevice::getDominanceInfoMidi(bool capture, bool input)
           if(track->outPort() != port)
             continue;
           
-          if(!input)
-          {
-            // TODO: FIXME: Where to store? We have no route to store it in.
-            // Default to zero.
-            //ir->canDominateLatency = false;
-            //ir->canCorrectOutputLatency = false;
-          }
-
           if((openFlags() & (capture ? 2 : 1)) && !track->off() && (passthru || input))
           {
             const TrackLatencyInfo& li = track->getDominanceInfo(false);
@@ -1605,15 +1598,6 @@ TrackLatencyInfo& MidiDevice::getDominanceInfoMidi(bool capture, bool input)
 
             if(participate)
             {
-              if(!input)
-              {
-                // TODO: FIXME: Where to store? We have no route to store it in.
-                // Temporarily store these values conveniently in the actual route.
-                // They will be used by the latency compensator in the audio process pass.
-                //ir->canDominateLatency = li._canDominateOutputLatency;
-                //ir->canCorrectOutputLatency = li._canCorrectOutputLatency;
-              }
-
               // Is it the first found item?
               if(item_found)
               {
@@ -1621,12 +1605,15 @@ TrackLatencyInfo& MidiDevice::getDominanceInfoMidi(bool capture, bool input)
                 //  that overrides any which cannot.
                 if(li._canDominateOutputLatency)
                   can_dominate_lat = true;
+                if(li._canCorrectOutputLatency)
+                  can_correct_lat = true;
               }
               else
               {
                 item_found = true;
                 // Override the defaults with this first item's values.
                 can_dominate_lat = li._canDominateOutputLatency;
+                can_correct_lat = li._canCorrectOutputLatency;
               }
             }
           }
@@ -1660,13 +1647,6 @@ TrackLatencyInfo& MidiDevice::getDominanceInfoMidi(bool capture, bool input)
 //                     else
 //                       used_chans[ir->channel] = true;
                     
-                  if(!input)
-                  {
-                    // Default to zero.
-                    ir->canDominateLatency = false;
-                    ir->canCorrectOutputLatency = false;
-                  }
-
                   if((openFlags() & (capture ? 2 : 1)) && !track->off() && (passthru || input))
                   {
                     const TrackLatencyInfo& li = track->getDominanceInfo(false);
@@ -1681,14 +1661,6 @@ TrackLatencyInfo& MidiDevice::getDominanceInfoMidi(bool capture, bool input)
 
                     if(participate)
                     {
-                      if(!input)
-                      {
-                        // Temporarily store these values conveniently in the actual route.
-                        // They will be used by the latency compensator in the audio process pass.
-                        ir->canDominateLatency = li._canDominateOutputLatency;
-                        ir->canCorrectOutputLatency = li._canCorrectOutputLatency;
-                      }
-
                       // Is it the first found item?
                       if(item_found)
                       {
@@ -1696,12 +1668,15 @@ TrackLatencyInfo& MidiDevice::getDominanceInfoMidi(bool capture, bool input)
                         //  that overrides any which cannot.
                         if(li._canDominateOutputLatency)
                           can_dominate_lat = true;
+                        if(li._canCorrectOutputLatency)
+                          can_correct_lat = true;
                       }
                       else
                       {
                         item_found = true;
                         // Override the defaults with this first item's values.
                         can_dominate_lat = li._canDominateOutputLatency;
+                        can_correct_lat = li._canCorrectOutputLatency;
                       }
                     }
                   }
@@ -1723,14 +1698,6 @@ TrackLatencyInfo& MidiDevice::getDominanceInfoMidi(bool capture, bool input)
 
           if(metro_settings->midiClickFlag && metro_settings->clickPort == port)
           {
-            if(!input)
-            {
-              // TODO: FIXME: Where to store? We have no route to store it in.
-              // Default to zero.
-              //ir->canDominateLatency = false;
-              //ir->canCorrectOutputLatency = false;
-            }
-
             if((openFlags() & (capture ? 2 : 1)) && !MusECore::metronome->off() && (passthru || input))
             {
               const TrackLatencyInfo& li = MusECore::metronome->getDominanceInfoMidi(capture, false);
@@ -1745,15 +1712,6 @@ TrackLatencyInfo& MidiDevice::getDominanceInfoMidi(bool capture, bool input)
 
               if(participate)
               {
-                if(!input)
-                {
-                  // TODO: FIXME: Where to store? We have no route to store it in.
-                  // Temporarily store these values conveniently in the actual route.
-                  // They will be used by the latency compensator in the audio process pass.
-                  //ir->canDominateLatency = li._canDominateOutputLatency;
-                  //ir->canCorrectOutputLatency = li._canCorrectOutputLatency;
-                }
-
                 // Is it the first found item?
                 if(item_found)
                 {
@@ -1761,6 +1719,8 @@ TrackLatencyInfo& MidiDevice::getDominanceInfoMidi(bool capture, bool input)
                   //  that overrides any which cannot.
                   if(li._canDominateOutputLatency)
                     can_dominate_lat = true;
+                  if(li._canCorrectOutputLatency)
+                    can_correct_lat = true;
                 }
                 else
                 {
@@ -1768,6 +1728,7 @@ TrackLatencyInfo& MidiDevice::getDominanceInfoMidi(bool capture, bool input)
                   // Override the defaults with this first item's values.
                   //route_worst_out_corr = li._outputAvailableCorrection;
                   can_dominate_lat = li._canDominateOutputLatency;
+                  can_correct_lat = li._canCorrectOutputLatency;
                 }
               }
             }
@@ -1786,7 +1747,8 @@ TrackLatencyInfo& MidiDevice::getDominanceInfoMidi(bool capture, bool input)
         else
         {
           tli->_canDominateOutputLatency = can_dominate_lat;
-          tli->_canCorrectOutputLatency = canCorrectOutputLatencyMidi();
+          // If any of the branches can dominate, then this node cannot correct.
+          tli->_canCorrectOutputLatency = can_correct_lat && !can_dominate_lat;
         }
       }
 
@@ -2573,7 +2535,7 @@ TrackLatencyInfo& MidiDevice::setCorrectionLatencyInfoMidi(bool capture, bool in
 //       _latencyInfo._canDominateOutputLatency = can_dominate_lat;
 //       tli->_canCorrectOutputLatency = canCorrectOutputLatencyMidi();
 
-      if(tli->_canCorrectOutputLatency)
+      if(canCorrectOutputLatencyMidi() && tli->_canCorrectOutputLatency)
       {
         float corr = 0.0f;
         if(MusEGlobal::config.commonProjectLatency)

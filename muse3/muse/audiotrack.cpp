@@ -3192,7 +3192,7 @@ TrackLatencyInfo& AudioTrack::setCorrectionLatencyInfo(bool input, float finalWo
 //       _latencyInfo._canDominateOutputLatency = can_dominate_lat;
 //       _latencyInfo._canCorrectOutputLatency = canCorrectOutputLatency();
 
-      if(_latencyInfo._canCorrectOutputLatency)
+      if(canCorrectOutputLatency() && _latencyInfo._canCorrectOutputLatency)
       {
         float corr = 0.0f;
         if(MusEGlobal::config.commonProjectLatency)
