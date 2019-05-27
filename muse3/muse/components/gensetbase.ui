@@ -23,7 +23,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="TabPage">
       <attribute name="title">
@@ -1711,15 +1711,15 @@ Certain operations will also force them to be resent,
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_20">
        <item>
-        <widget class="QGroupBox" name="groupBox_7">
+        <widget class="QGroupBox" name="groupBox_10">
          <property name="title">
-          <string>Project latency</string>
+          <string>Latency</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_17">
+         <layout class="QVBoxLayout" name="verticalLayout_22">
           <item>
-           <widget class="QLabel" name="label_20">
+           <widget class="QLabel" name="label_24">
             <property name="text">
-             <string>Whether completely independent branches share a common project-wide latency:</string>
+             <string>Whether to enable latency correction/compensation:</string>
             </property>
             <property name="wordWrap">
              <bool>true</bool>
@@ -1727,69 +1727,95 @@ Certain operations will also force them to be resent,
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="latencyProjectCommonButton">
+           <widget class="QCheckBox" name="enableLatencyCorrectionButton">
             <property name="text">
-             <string>Project-wide latency</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_8">
-         <property name="title">
-          <string>Unterminated branches</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_18">
-          <item>
-           <widget class="QLabel" name="label_21">
-            <property name="text">
-             <string>Whether unterminated branches participate in latency correction/compensation:</string>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
+             <string>Enable latency correction/compensation</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="latencyInBranchUntermButton">
-            <property name="text">
-             <string>Unterminated input branches</string>
+           <widget class="QGroupBox" name="groupBox_7">
+            <property name="title">
+             <string>Project latency</string>
             </property>
+            <layout class="QVBoxLayout" name="verticalLayout_17">
+             <item>
+              <widget class="QLabel" name="label_20">
+               <property name="text">
+                <string>Whether completely independent branches share a common project-wide latency:</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="latencyProjectCommonButton">
+               <property name="text">
+                <string>Project-wide latency</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="latencyOutBranchUntermButton">
-            <property name="text">
-             <string>Unterminated output branches</string>
+           <widget class="QGroupBox" name="groupBox_8">
+            <property name="title">
+             <string>Unterminated branches</string>
             </property>
+            <layout class="QVBoxLayout" name="verticalLayout_18">
+             <item>
+              <widget class="QLabel" name="label_21">
+               <property name="text">
+                <string>Whether unterminated branches participate in latency correction/compensation:</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="latencyInBranchUntermButton">
+               <property name="text">
+                <string>Unterminated input branches</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="latencyOutBranchUntermButton">
+               <property name="text">
+                <string>Unterminated output branches</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_9">
-         <property name="title">
-          <string>Track monitoring</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_19">
           <item>
-           <widget class="QLabel" name="label_22">
-            <property name="text">
-             <string>Whether track monitor buttons affect latency correction/compensation:</string>
+           <widget class="QGroupBox" name="groupBox_9">
+            <property name="title">
+             <string>Track monitoring</string>
             </property>
-            <property name="wordWrap">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="latencyMonitorAffectingButton">
-            <property name="text">
-             <string>Monitoring affects latency</string>
-            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_19">
+             <item>
+              <widget class="QLabel" name="label_22">
+               <property name="text">
+                <string>Whether track monitor buttons affect latency correction/compensation:</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="latencyMonitorAffectingButton">
+               <property name="text">
+                <string>Monitoring affects latency</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </item>
          </layout>

@@ -300,7 +300,7 @@ AudioTrack::AudioTrack(TrackType t, int channels)
        // REMOVE Tim. latency. Added.
       _totalOutChannels = MAX_CHANNELS;
       _latencyComp = new LatencyCompensator();
-      
+
       _processed = false;
       _haveData = false;
       _sendMetronome = false;
@@ -345,7 +345,7 @@ AudioTrack::AudioTrack(const AudioTrack& t, int flags)
       {
        // REMOVE Tim. latency. Added.
       _latencyComp = new LatencyCompensator();
-      
+
       _processed      = false;
       _haveData       = false;
       _efxPipe        = new Pipeline();                 // Start off with a new pipeline.
@@ -1177,6 +1177,15 @@ void AudioTrack::changeACEvent(int id, int frame, int newframe, double newval)
   if(ic != cl->end())
     cl->erase(ic);
   cl->insert(CtrlListInsertPair_t(newframe, CtrlVal(newframe, newval)));
+}
+
+//---------------------------------------------------------
+//   useLatencyCorrection
+//---------------------------------------------------------
+
+bool AudioTrack::useLatencyCorrection() const
+{
+  return _latencyComp && MusEGlobal::config.enableLatencyCorrection;
 }
 
 //---------------------------------------------------------

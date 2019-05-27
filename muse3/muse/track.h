@@ -808,6 +808,9 @@ class AudioTrack : public Track {
       
       virtual bool hasAuxSend() const { return false; }
 
+      // Whether to use latency correction/compensation at all.
+      // Simply depends on _latencyComp existence AND global configuration enableLatencyCorrection flag.
+      bool useLatencyCorrection() const;
       // The contribution to latency by the track's own members (audio effect rack, etc).
       virtual float selfLatencyAudio(int channel) const;
 // REMOVE Tim. latency. Added.

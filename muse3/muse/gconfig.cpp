@@ -311,6 +311,7 @@ GlobalConfigValues config = {
       MusEGlobal::RoutePreferCanonicalName,  // preferredRouteNameOrAlias
       true,                         // routerExpandVertically
       2,                            // routerGroupingChannels
+      false,                        // enableLatencyCorrection.
       false,                        // correctUnterminatedOutBranchLatency
       false,                        // correctUnterminatedInBranchLatency
       false,                        // monitoringAffectsLatency

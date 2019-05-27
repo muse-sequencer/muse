@@ -207,6 +207,7 @@ void GlobalSettingsConfig::updateSettings()
 
       deviceAudioBackendComboBox->setCurrentIndex(MusEGlobal::config.deviceAudioBackend);
 
+      enableLatencyCorrectionButton->setChecked(MusEGlobal::config.enableLatencyCorrection);
       latencyInBranchUntermButton->setChecked(MusEGlobal::config.correctUnterminatedInBranchLatency);
       latencyOutBranchUntermButton->setChecked(MusEGlobal::config.correctUnterminatedOutBranchLatency);
       latencyProjectCommonButton->setChecked(MusEGlobal::config.commonProjectLatency);
@@ -348,6 +349,7 @@ void GlobalSettingsConfig::apply()
       
       MusEGlobal::config.projectBaseFolder = projDirEntry->text();
       
+      MusEGlobal::config.enableLatencyCorrection = enableLatencyCorrectionButton->isChecked();
       MusEGlobal::config.correctUnterminatedInBranchLatency = latencyInBranchUntermButton->isChecked();
       MusEGlobal::config.correctUnterminatedOutBranchLatency = latencyOutBranchUntermButton->isChecked();
       MusEGlobal::config.commonProjectLatency = latencyProjectCommonButton->isChecked();

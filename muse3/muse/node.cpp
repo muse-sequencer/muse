@@ -1511,7 +1511,8 @@ bool AudioTrack::putFifo(int channels, unsigned long n, float** bp)
 //         }
 
         
-  float route_worst_case_latency = _latencyInfo._inputLatency;
+  const bool use_latency_corr = useLatencyCorrection();
+  float route_worst_case_latency = use_latency_corr ? _latencyInfo._inputLatency : 0.0f;
         
         
         
@@ -1625,6 +1626,7 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
 //       RouteList* rl = inRoutes();
       const RouteList* rl = inRoutes();
       //const int rl_sz = rl->size();
+      const bool use_latency_corr = useLatencyCorrection();
 
       #ifdef NODE_DEBUG_PROCESS
       fprintf(stderr, "AudioTrack::getData name:%s channels:%d inRoutes:%d\n", name().toLatin1().constData(), channels, int(rl->size()));
@@ -1770,7 +1772,7 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
                                                           nframes, buffer,
 // REMOVE Tim. latency. Changed.
 //                                                           false, used_in_chan_array);
-                                                          false);
+                                                          false, use_latency_corr ? nullptr : used_in_chan_array);
             
             // REMOVE Tim. latency. Added.
             // Write the buffers to the latency compensator.
@@ -1778,7 +1780,7 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
             //  so we use this convenient common-latency version of write.
             // Also factor in the write offset required by AudioOutput tracks.
             // TODO: Make this per-channel.
-            if(_latencyComp)
+            if(use_latency_corr)
             {
               //_latencyComp->write(nframes, latency_array[latency_array_cnt], buffer);
               //_latencyComp->write(nframes, latency_array[latency_array_cnt] + latencyCompWriteOffset(), buffer);
@@ -1813,7 +1815,7 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
         {
           // REMOVE Tim. latency. Added.
           // Read back the latency compensated signals, using the buffers in-place.
-          if(_latencyComp)
+          if(use_latency_corr)
             _latencyComp->read(i, nframes, buffer[i]);
         
           continue;
@@ -1843,6 +1845,7 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
       
       
 // REMOVE Tim. latency. Added.
+      const bool use_latency_corr = useLatencyCorrection();
       unsigned long latency_array[channels]; // REMOVE Tim. latency. Added.
       unsigned long worst_case_latency = 0;
       for(int i = 0; i < channels; ++i) {
@@ -1887,7 +1890,7 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
 // REMOVE Tim. latency. Changed.
 //                   if (MusEGlobal::config.useDenormalBias)
                   // Take care of the denormals now if there's no latency compensator.
-                  if (!_latencyComp && MusEGlobal::config.useDenormalBias)
+                  if (!use_latency_corr && MusEGlobal::config.useDenormalBias)
                   {
                       for (unsigned int i=0; i < nframes; i++)
                               buffer[ch][i] += MusEGlobal::denormalBias;
@@ -1896,14 +1899,14 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
                   // REMOVE Tim. latency. Added.
                   // Write the buffers to the latency compensator.
                   // They will be read back later, in-place.
-                  if(_latencyComp)
+                  if(use_latency_corr)
                     _latencyComp->write(ch, nframes, latency_array[ch], buffer[ch]);
             }
             else
             {
                 // REMOVE Tim. latency. Added.
                 // Don't bother setting the denormal data here if using the latency compensator.
-                if(!_latencyComp)
+                if(!use_latency_corr)
                 {
                     
                   if (MusEGlobal::config.useDenormalBias)
@@ -1948,7 +1951,7 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
       
       
       // REMOVE Tim. latency. Added.
-      if(_latencyComp)
+      if(use_latency_corr)
       {
         // Read back the latency compensated signals, using the buffers in-place.
         _latencyComp->read(nframes, buffer);
@@ -2108,6 +2111,7 @@ void AudioTrack::record()
       {
       unsigned pos = 0;
       float latency = 0.0f;
+      const bool use_latency_corr = useLatencyCorrection();
       float* buffer[_channels];
       while(fifo.getCount()) {
 // REMOVE Tim. latency. Changed.
@@ -2167,7 +2171,7 @@ void AudioTrack::record()
                       
 // REMOVE Tim. basic latency. Added.
                       // Let's try to avoid accidental very large files by very large latency values?
-                      if(latency < -1000000 || latency > 1000000)
+                      if(use_latency_corr && (latency < -1000000 || latency > 1000000))
                       {
                         // Try not to flood, normally.
                         if(MusEGlobal::debugMsg)
@@ -2179,10 +2183,10 @@ void AudioTrack::record()
                         else if(latency > 1000000)
                           latency = 1000000;
                       }
-                      if(pos >= latency)
+                      if(!use_latency_corr || (pos >= latency))
                       {
 //                         // REMOVE Tim. latency. Added.
-//                         fprintf(stderr, "AudioNode::record(): pos:%u latency:%u\n", pos, latency);
+//                         fprintf(stderr, "AudioNode::record(): pos:%u latency:%f\n", pos, latency);
 //                         for(int ch = 0; ch < _channels; ++ch)
 //                         {
 //                           fprintf(stderr, "channel:%d peak:", ch);
@@ -2202,7 +2206,8 @@ void AudioTrack::record()
 //                         }
 
 
-                        pos -= latency;
+                        if(use_latency_corr)
+                          pos -= latency;
                       
                         // FIXME If we are to support writing compressed file types, we probably shouldn't be seeking here. REMOVE Tim. Wave.
                         _recFile->seek(pos, 0);
@@ -2600,7 +2605,7 @@ void AudioTrack::setChannels(int n)
             _efxPipe->setChannels(_channels);
       
       // REMOVE Tim. latency. Added.
-      if(_latencyComp)
+      if(useLatencyCorrection())
         _latencyComp->setChannels(totalProcessBuffers());
       }
 

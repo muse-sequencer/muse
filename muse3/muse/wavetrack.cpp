@@ -308,6 +308,7 @@ bool WaveTrack::getInputData(unsigned pos, int channels, unsigned nframes,
 //       RouteList* rl = inRoutes();
       const RouteList* rl = inRoutes();
       //const int rl_sz = rl->size();
+      const bool use_latency_corr = useLatencyCorrection();
 
       #ifdef NODE_DEBUG_PROCESS
       fprintf(stderr, "AudioTrack::getData name:%s channels:%d inRoutes:%d\n", name().toLatin1().constData(), channels, int(rl->size()));
@@ -432,29 +433,10 @@ bool WaveTrack::getInputData(unsigned pos, int channels, unsigned nframes,
                                                           nframes, buffer,
 // REMOVE Tim. latency. Changed.
 //                                                           false, used_in_chan_array);
-                                                          false);
+                                                          false, use_latency_corr ? nullptr : usedInChannelArray);
+
             
-            // REMOVE Tim. latency. Added.
-            // Write the buffers to the latency compensator.
-            // By now, each copied channel should have the same latency, 
-            //  so we use this convenient common-latency version of write.
-            // TODO: Make it per-channel.
-//             if(_latencyComp)
-//               _latencyComp->write(nframes, latency_array[latency_array_cnt], buffer);
-            
-            // Prepare the latency value to be passed to the compensator's writer,
-            //  by adjusting each route latency value. ie. the route with the worst-case
-            //  latency will get ZERO delay, while routes having smaller latency will get
-            //  MORE delay, to match all the signal timings together.
-            // The route's audioLatencyOut should have already been calculated and
-            //  conveniently stored in the route.
-            if((long int)ir->audioLatencyOut < 0)
-              l = 0;
-            else
-              l = ir->audioLatencyOut;
-            
-            
-            // REMOVE Tim. latency. Added.
+//             // REMOVE Tim. latency. Added.
 //             if(MusEGlobal::audio->isPlaying())
 //             {
 //               fprintf(stderr, "WaveTrack::getInputData() name:%s ir->latency:%lu latencyCompWriteOffset:%lu total:%lu\n",
@@ -478,8 +460,29 @@ bool WaveTrack::getInputData(unsigned pos, int channels, unsigned nframes,
 //               }
 //             }
             
-            
-            _latencyComp->write(nframes, l + latencyCompWriteOffset(), buffer);
+            if(use_latency_corr)
+            {
+              // REMOVE Tim. latency. Added.
+              // Write the buffers to the latency compensator.
+              // By now, each copied channel should have the same latency, 
+              //  so we use this convenient common-latency version of write.
+              // TODO: Make it per-channel.
+  //             if(_latencyComp)
+  //               _latencyComp->write(nframes, latency_array[latency_array_cnt], buffer);
+              
+              // Prepare the latency value to be passed to the compensator's writer,
+              //  by adjusting each route latency value. ie. the route with the worst-case
+              //  latency will get ZERO delay, while routes having smaller latency will get
+              //  MORE delay, to match all the signal timings together.
+              // The route's audioLatencyOut should have already been calculated and
+              //  conveniently stored in the route.
+              if((long int)ir->audioLatencyOut < 0)
+                l = 0;
+              else
+                l = ir->audioLatencyOut;
+              
+              _latencyComp->write(nframes, l + latencyCompWriteOffset(), buffer);
+            }
             
             next_chan = dst_ch + fin_dst_chs;
             for(i = dst_ch; i < next_chan; ++i)
@@ -531,6 +534,7 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
   const bool track_rec_flag = recordFlag();
   const bool track_rec_monitor = recMonitor();        // Separate monitor and record functions.
   const bool is_playing = MusEGlobal::audio->isPlaying();
+  const bool use_latency_corr = useLatencyCorrection();
 
   //---------------------------------------------
   // Note that the supplied buffers (bp) are at first
@@ -580,7 +584,7 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
           {
             // REMOVE Tim. latency. Added.
             // Read back the latency compensated signals, using the buffers in-place.
-            if(_latencyComp)
+            if(use_latency_corr)
             {
               //if(peekOnly)
               if(is_playing)
@@ -650,7 +654,7 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
       // Indicate do not seek file before each read.
       fetchData(framePos, nframe, pf_buf, false, do_overwrite);
       // Advance any peeked compensator channels now.
-      if(_latencyComp)
+      if(use_latency_corr)
         _latencyComp->advance(nframe);
       // Just return whether we have input sources data.
       return have_data;
@@ -661,7 +665,7 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
       // Indicate do not seek file before each read.
       fetchData(framePos, nframe, bp, false, do_overwrite);
       // Advance any peeked compensator channels now.
-      if(_latencyComp)
+      if(use_latency_corr)
         _latencyComp->advance(nframe);
       // We have data.
       return true;
@@ -674,7 +678,7 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
     {
       fprintf(stderr, "WaveTrack::getData(%s) (A) fifo underrun\n", name().toLocal8Bit().constData());
       // Advance any peeked compensator channels now.
-      if(_latencyComp)
+      if(use_latency_corr)
         _latencyComp->advance(nframe);
       return have_data;
     }
@@ -689,7 +693,7 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
           fprintf(stderr, "WaveTrack::getData(%s) (B) fifo underrun\n",
               name().toLocal8Bit().constData());
           // Advance any peeked compensator channels now.
-          if(_latencyComp)
+          if(use_latency_corr)
             _latencyComp->advance(nframe);
           return have_data;
         }
@@ -699,7 +703,7 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
     if(isMute())
     {
       // Advance any peeked compensator channels now.
-      if(_latencyComp)
+      if(use_latency_corr)
         _latencyComp->advance(nframe);
       // We are muted. We need to let the fetching progress, but discard the data.
       // Just return whether we have input sources data.
@@ -739,7 +743,7 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
         AL::dsp->mix(bp[i], pf_buf[i], nframe);
     }
     // Advance any peeked compensator channels now.
-    if(_latencyComp)
+    if(use_latency_corr)
       _latencyComp->advance(nframe);
     // We have data.
     return true;

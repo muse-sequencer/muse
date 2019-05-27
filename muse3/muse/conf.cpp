@@ -1122,6 +1122,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "deviceAudioBackend")
                               MusEGlobal::config.deviceAudioBackend = xml.parseInt();
 
+                        else if (tag == "enableLatencyCorrection")
+                              MusEGlobal::config.enableLatencyCorrection = xml.parseInt();
                         else if (tag == "correctUnterminatedInBranchLatency")
                               MusEGlobal::config.correctUnterminatedInBranchLatency = xml.parseInt();
                         else if (tag == "correctUnterminatedOutBranchLatency")
@@ -1716,6 +1718,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "deviceAudioSampleRate", MusEGlobal::config.deviceAudioSampleRate);
       xml.intTag(level, "deviceAudioBackend", MusEGlobal::config.deviceAudioBackend);
 
+      xml.intTag(level, "enableLatencyCorrection", MusEGlobal::config.enableLatencyCorrection);
       xml.intTag(level, "correctUnterminatedInBranchLatency", MusEGlobal::config.correctUnterminatedInBranchLatency);
       xml.intTag(level, "correctUnterminatedOutBranchLatency", MusEGlobal::config.correctUnterminatedOutBranchLatency);
       xml.intTag(level, "monitoringAffectsLatency", MusEGlobal::config.monitoringAffectsLatency);
