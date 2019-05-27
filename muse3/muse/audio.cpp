@@ -995,7 +995,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
             track->getDominanceInfo(false);
         }      
 
-  #if 0
+  #if 1
         // This includes synthesizers.
         for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
         {
@@ -1066,7 +1066,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           }
         }      
         
-  #if 0
+  #if 1
         // This includes synthesizers.
         for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
         {
@@ -1186,7 +1186,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
   //           route_worst_latency = li._outputLatency;
         }      
 
-  #if 0
+  #if 1
         // This includes synthesizers.
         for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
         {
@@ -1422,7 +1422,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           }
         }      
         
-  #if 0
+  #if 1
         // This includes synthesizers.
         for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
         {

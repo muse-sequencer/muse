@@ -1391,8 +1391,8 @@ unsigned int MidiJackDevice::portLatency(void* port, bool capture) const
 //     jack_port_get_latency_range((jack_port_t*)port, JackCaptureLatency, &c_range);
 
 // TESTING Reinstate. For simulating non-functional jack midi latency
-    return c_range.max;
-//     return MusEGlobal::segmentSize;
+//     return c_range.max;
+    return MusEGlobal::segmentSize;
   }
   else
   {
@@ -1400,8 +1400,8 @@ unsigned int MidiJackDevice::portLatency(void* port, bool capture) const
 //     jack_port_get_latency_range((jack_port_t*)port, JackPlaybackLatency, &p_range);
 
 // TESTING Reinstate. For simulating non-functional jack midi latency
-    return p_range.max;
-//     return MusEGlobal::segmentSize * 6;
+//     return p_range.max;
+    return MusEGlobal::segmentSize * 2;
   }
 }
 
