@@ -50,8 +50,13 @@
 
 // Turn on debugging messages
 //#define NODE_DEBUG
+
 // Turn on constant flow of process debugging messages
 //#define NODE_DEBUG_PROCESS
+
+// Turn on some cool terminal 'peak' meters for debugging
+//  presence of actual audio at various places
+//#define NODE_DEBUG_TERMINAL_PEAK_METERS
 
 //#define FIFO_DEBUG
 //#define METRONOME_DEBUG
@@ -1926,29 +1931,31 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
       
       
       // REMOVE Tim. latency. Added.
-//       if(MusEGlobal::audio->isPlaying())
-//       {
-//         fprintf(stderr, "AudioInput::getData() name:%s\n",
-//                 name().toLatin1().constData());
-//         for(int ch = 0; ch < _channels; ++ch)
-//         {
-//           fprintf(stderr, "channel:%d peak:", ch);
-//           float val;
-//           float peak = 0.0f;
-//           const float* buf = buffer[ch];
-//           for(unsigned int smp = 0; smp < nframes; ++smp)
-//           {
-//             val = buf[smp];
-//             if(val > peak)
-//               peak = val;
-//           }
-//           const int dots = peak * 20;
-//           for(int d = 0; d < dots; ++d)
-//             fprintf(stderr, "*");
-//           fprintf(stderr, "\n");
-//         }
-//       }
-      
+//#ifdef NODE_DEBUG_TERMINAL_PEAK_METERS
+#if 0
+      if(MusEGlobal::audio->isPlaying())
+      {
+        fprintf(stderr, "AudioInput::getData() name:%s\n",
+                name().toLatin1().constData());
+        for(int ch = 0; ch < _channels; ++ch)
+        {
+          fprintf(stderr, "channel:%d peak:", ch);
+          float val;
+          float peak = 0.0f;
+          const float* buf = buffer[ch];
+          for(unsigned int smp = 0; smp < nframes; ++smp)
+          {
+            val = buf[smp];
+            if(val > peak)
+              peak = val;
+          }
+          const int dots = peak * 20;
+          for(int d = 0; d < dots; ++d)
+            fprintf(stderr, "*");
+          fprintf(stderr, "\n");
+        }
+      }
+#endif      
       
       // REMOVE Tim. latency. Added.
       if(use_latency_corr)
@@ -2185,25 +2192,28 @@ void AudioTrack::record()
                       }
                       if(!use_latency_corr || (pos >= latency))
                       {
-//                         // REMOVE Tim. latency. Added.
-//                         fprintf(stderr, "AudioNode::record(): pos:%u latency:%f\n", pos, latency);
-//                         for(int ch = 0; ch < _channels; ++ch)
-//                         {
-//                           fprintf(stderr, "channel:%d peak:", ch);
-//                           float val;
-//                           float peak = 0.0f;
-//                           const float* buf = buffer[ch];
-//                           for(unsigned int smp = 0; smp < MusEGlobal::segmentSize; ++smp)
-//                           {
-//                             val = buf[smp];
-//                             if(val > peak)
-//                               peak = val;
-//                           }
-//                           const int dots = peak * 20;
-//                           for(int d = 0; d < dots; ++d)
-//                             fprintf(stderr, "*");
-//                           fprintf(stderr, "\n");
-//                         }
+
+                        // REMOVE Tim. latency. Added.
+#ifdef NODE_DEBUG_TERMINAL_PEAK_METERS
+                        fprintf(stderr, "AudioNode::record(): pos:%u latency:%f\n", pos, latency);
+                        for(int ch = 0; ch < _channels; ++ch)
+                        {
+                          fprintf(stderr, "channel:%d peak:", ch);
+                          float val;
+                          float peak = 0.0f;
+                          const float* buf = buffer[ch];
+                          for(unsigned int smp = 0; smp < MusEGlobal::segmentSize; ++smp)
+                          {
+                            val = buf[smp];
+                            if(val > peak)
+                              peak = val;
+                          }
+                          const int dots = peak * 20;
+                          for(int d = 0; d < dots; ++d)
+                            fprintf(stderr, "*");
+                          fprintf(stderr, "\n");
+                        }
+#endif
 
 
                         if(use_latency_corr)
@@ -2262,28 +2272,31 @@ void AudioOutput::process(unsigned pos, unsigned offset, unsigned n)
       
       
       // REMOVE Tim. latency. Added.
-//       if(MusEGlobal::audio->isPlaying())
-//       {
-//         fprintf(stderr, "AudioOutput::process() name:%s pos:%u offset:%u\n",
-//                 name().toLatin1().constData(), pos, offset);
-//         for(int ch = 0; ch < _channels; ++ch)
-//         {
-//           fprintf(stderr, "channel:%d peak:", ch);
-//           float val;
-//           float peak = 0.0f;
-//           const float* buf = buffer1[ch];
-//           for(unsigned int smp = 0; smp < n; ++smp)
-//           {
-//             val = buf[smp];
-//             if(val > peak)
-//               peak = val;
-//           }
-//           const int dots = peak * 20;
-//           for(int d = 0; d < dots; ++d)
-//             fprintf(stderr, "*");
-//           fprintf(stderr, "\n");
-//         }
-//       }
+//#ifdef NODE_DEBUG_TERMINAL_PEAK_METERS
+#if 0
+      if(MusEGlobal::audio->isPlaying())
+      {
+        fprintf(stderr, "AudioOutput::process() name:%s pos:%u offset:%u\n",
+                name().toLatin1().constData(), pos, offset);
+        for(int ch = 0; ch < _channels; ++ch)
+        {
+          fprintf(stderr, "channel:%d peak:", ch);
+          float val;
+          float peak = 0.0f;
+          const float* buf = buffer1[ch];
+          for(unsigned int smp = 0; smp < n; ++smp)
+          {
+            val = buf[smp];
+            if(val > peak)
+              peak = val;
+          }
+          const int dots = peak * 20;
+          for(int d = 0; d < dots; ++d)
+            fprintf(stderr, "*");
+          fprintf(stderr, "\n");
+        }
+      }
+#endif
             
 }
 

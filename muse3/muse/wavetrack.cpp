@@ -36,6 +36,9 @@
 #include "latency_compensator.h"
 
 //#define WAVETRACK_DEBUG
+// Turn on some cool terminal 'peak' meters for debugging
+//  presence of actual audio at various places
+// #define NODE_DEBUG_TERMINAL_PEAK_METERS
 
 namespace MusECore {
 
@@ -436,29 +439,31 @@ bool WaveTrack::getInputData(unsigned pos, int channels, unsigned nframes,
                                                           false, use_latency_corr ? nullptr : usedInChannelArray);
 
             
-//             // REMOVE Tim. latency. Added.
-//             if(MusEGlobal::audio->isPlaying())
-//             {
-//               fprintf(stderr, "WaveTrack::getInputData() name:%s ir->latency:%lu latencyCompWriteOffset:%lu total:%lu\n",
-//                       name().toLatin1().constData(), l, latencyCompWriteOffset(), l + latencyCompWriteOffset());
-//               for(int ch = 0; ch < channels; ++ch)
-//               {
-//                 fprintf(stderr, "channel:%d peak:", ch);
-//                 float val;
-//                 float peak = 0.0f;
-//                 const float* buf = buffer[ch];
-//                 for(unsigned int smp = 0; smp < nframes; ++smp)
-//                 {
-//                   val = buf[smp];
-//                   if(val > peak)
-//                     peak = val;
-//                 }
-//                 const int dots = peak * 20;
-//                 for(int d = 0; d < dots; ++d)
-//                   fprintf(stderr, "*");
-//                 fprintf(stderr, "\n");
-//               }
-//             }
+            // REMOVE Tim. latency. Added.
+#ifdef NODE_DEBUG_TERMINAL_PEAK_METERS
+            if(MusEGlobal::audio->isPlaying())
+            {
+              fprintf(stderr, "WaveTrack::getInputData() name:%s ir->latency:%lu latencyCompWriteOffset:%lu total:%lu\n",
+                      name().toLatin1().constData(), l, latencyCompWriteOffset(), l + latencyCompWriteOffset());
+              for(int ch = 0; ch < channels; ++ch)
+              {
+                fprintf(stderr, "channel:%d peak:", ch);
+                float val;
+                float peak = 0.0f;
+                const float* buf = buffer[ch];
+                for(unsigned int smp = 0; smp < nframes; ++smp)
+                {
+                  val = buf[smp];
+                  if(val > peak)
+                    peak = val;
+                }
+                const int dots = peak * 20;
+                for(int d = 0; d < dots; ++d)
+                  fprintf(stderr, "*");
+                fprintf(stderr, "\n");
+              }
+            }
+#endif
             
             if(use_latency_corr)
             {
@@ -711,26 +716,29 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
     }
 
     // REMOVE Tim. latency. Added.
-//     fprintf(stderr, "WaveTrack::getData() name:%s PLAYBACK:\n",
-//             //name().toLatin1().constData(), l, latencyCompWriteOffset(), l + latencyCompWriteOffset());
-//             name().toLatin1().constData());
-//     for(int ch = 0; ch < dstChannels; ++ch)
-//     {
-//       fprintf(stderr, "channel:%d peak:", ch);
-//       float val;
-//       float peak = 0.0f;
-//       const float* buf = pf_buf[ch];
-//       for(unsigned int smp = 0; smp < nframe; ++smp)
-//       {
-//         val = buf[smp];
-//         if(val > peak)
-//           peak = val;
-//       }
-//       const int dots = peak * 20;
-//       for(int d = 0; d < dots; ++d)
-//         fprintf(stderr, "*");
-//       fprintf(stderr, "\n");
-//     }
+//#ifdef NODE_DEBUG_TERMINAL_PEAK_METERS
+#if 0
+    fprintf(stderr, "WaveTrack::getData() name:%s PLAYBACK:\n",
+            //name().toLatin1().constData(), l, latencyCompWriteOffset(), l + latencyCompWriteOffset());
+            name().toLatin1().constData());
+    for(int ch = 0; ch < dstChannels; ++ch)
+    {
+      fprintf(stderr, "channel:%d peak:", ch);
+      float val;
+      float peak = 0.0f;
+      const float* buf = pf_buf[ch];
+      for(unsigned int smp = 0; smp < nframe; ++smp)
+      {
+        val = buf[smp];
+        if(val > peak)
+          peak = val;
+      }
+      const int dots = peak * 20;
+      for(int d = 0; d < dots; ++d)
+        fprintf(stderr, "*");
+      fprintf(stderr, "\n");
+    }
+#endif
     
     if(do_overwrite)
     {
