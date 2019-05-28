@@ -2338,18 +2338,41 @@ void Audio::processMidi(unsigned int frames)
                                     }
                                     else
                                     {
-                                      // All recorded events arrived in the previous period. Shift into this period for record.
+                                      // REMOVE Tim. latency. Removed. Oops, with ALSA this adds undesired shift forward!
+//                                       // All recorded events arrived in the previous period. Shift into this period for record.
       #ifdef _AUDIO_USE_TRUE_FRAME_
                                       unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
       #else
-                                      unsigned int t = et + MusEGlobal::segmentSize;
+
+                                      // REMOVE Tim. latency. Changed. Oops, with ALSA this adds undesired shift forward!
+                                      // And with Jack midi we currently already shift forward, in the input routine!
+                                      // But I'm debating where to add the correction factor - I really need to add it here
+                                      //  (exactly like the WaveTrack recording correction) but a very simple fix would be
+                                      //  in the Jack midi input routine to replace the current fixed segSize correction
+                                      //  factor with the MidiDevice::_latencyInfo._outputLatency,
+                                      //  but that is wrong although it would work.
+                                      // To add the correction here may be more complicated than the WaveTrack,
+                                      //  some things in the ALSA and Jack midi input routines depend on the event time
+                                      //  (like midi clock, other rt events).
+                                      //
+                                      //
+//                                       unsigned int t = et + MusEGlobal::segmentSize;
+//                                       // Protection from slight errors in estimated frame time.
+//                                       if(t >= (syncFrame + MusEGlobal::segmentSize))
+//                                       {
+//                                         DEBUG_MIDI(stderr, "Error: Audio::processMidi(): record event: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
+//                                                 t, syncFrame, MusEGlobal::segmentSize, syncFrame + MusEGlobal::segmentSize);
+//                                         
+//                                         t = syncFrame + (MusEGlobal::segmentSize - 1);
+//                                       }
+                                      unsigned int t = et;
                                       // Protection from slight errors in estimated frame time.
-                                      if(t >= (syncFrame + MusEGlobal::segmentSize))
+                                      if(t >= syncFrame)
                                       {
-                                        DEBUG_MIDI(stderr, "Error: Audio::processMidi(): record event: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
-                                                t, syncFrame, MusEGlobal::segmentSize, syncFrame + MusEGlobal::segmentSize);
+                                        DEBUG_MIDI(stderr, "Error: Audio::processMidi(): record event: t:%u >= syncFrame:%u\n", 
+                                                t, syncFrame);
                                         
-                                        t = syncFrame + (MusEGlobal::segmentSize - 1);
+                                        t = syncFrame - 1;
                                       }
       #endif
                                       // Be sure to allow for some (very) late events, such as
