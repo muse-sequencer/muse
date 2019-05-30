@@ -164,6 +164,7 @@ Audio::Audio()
       _antiSeekFloodCounter = 100000.0;
       
       midiClick     = 0;
+      audioClick    = 0;
       clickno       = 0;
       clicksMeasure = 0;
       _extClockHistory = new ExtMidiClock[_extClockHistoryCapacity];
@@ -1013,7 +1014,16 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
             md->getDominanceInfoMidi(false /*playback*/, false);
         }
   #endif      
-        
+
+        //---------------------------------------------
+        // Throughout this latency code, we will examine the metronome
+        //  enable/disable settings rather than the metronome on/off button(s),
+        //  so that the metronome button(s) can be 'ready for action' when clicked,
+        //  without affecting the sound.
+        // Otherwise a glitch would occur every time the metronome is simply
+        //  turned on or off via the gui toolbars, while latency is recomputed.
+        //---------------------------------------------
+
         //if(MusEGlobal::song->click())
         if(metro_settings->audioClickFlag)
         {
@@ -1021,7 +1031,14 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           if(metronome->isLatencyOutputTerminal())
             metronome->getDominanceInfo(false);
         }
-        
+        if(metro_settings->midiClickFlag)
+        {
+          // Examine any playback path.
+          if(metronome->isLatencyOutputTerminalMidi(false /*playback*/))
+            metronome->getDominanceInfoMidi(false /*playback*/, false);
+        }
+
+
         //---------------------------------------------
         // PASS 2: Set correction values:
         //---------------------------------------------
@@ -1105,6 +1122,17 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
             const TrackLatencyInfo& li = metronome->getDominanceInfo(false);
             if(!li._canDominateOutputLatency)
               metronome->setCorrectionLatencyInfo(false, song_worst_latency);
+          }
+        }
+        if(metro_settings->midiClickFlag)
+        {
+          if(metronome->isLatencyOutputTerminalMidi(false /*playback*/))
+          {
+            // Grab the branch's dominance latency info.
+            // This should already be cached from the dominance pass.
+            const TrackLatencyInfo& li = metronome->getDominanceInfoMidi(false /*playback*/, false);
+            if(!li._canDominateOutputLatency)
+              metronome->setCorrectionLatencyInfoMidi(false /*playback*/, false, song_worst_latency);
           }
         }
 
@@ -1260,6 +1288,24 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
             // If the branch can dominate, and this end-point allows it, and its latency value
             //  is greater than the current worst, overwrite the worst.
             if(metronome->canDominateEndPointLatency() &&
+              li._canDominateOutputLatency &&
+              li._outputLatency > song_worst_latency)
+                song_worst_latency = li._outputLatency;
+          }
+        }
+        if(metro_settings->midiClickFlag)
+        {
+          // Examine any playback path.
+          if(metronome->isLatencyOutputTerminalMidi(false /*playback*/))
+          {
+            // Gather the branch's dominance latency info.
+  //           const TrackLatencyInfo& li = metronome->getDominanceLatencyInfo();
+            const TrackLatencyInfo& li = metronome->getDominanceLatencyInfoMidi(false /*playback*/, false);
+  //           const TrackLatencyInfo& li = metronome->setCorrectionLatencyInfo(false, 0.0f);
+
+            // If the branch can dominate, and this end-point allows it, and its latency value
+            //  is greater than the current worst, overwrite the worst.
+            if(metronome->canDominateEndPointLatencyMidi(false /*playback*/) &&
               li._canDominateOutputLatency &&
               li._outputLatency > song_worst_latency)
                 song_worst_latency = li._outputLatency;
@@ -1466,6 +1512,18 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
             metronome->getLatencyInfo(false);
             // Set this end point's latency compensator write offset.
             metronome->setLatencyCompWriteOffset(song_worst_latency);
+          }
+        }
+        if(metro_settings->midiClickFlag)
+        {
+          // We are looking for the end points of branches.
+          if(metronome->isLatencyOutputTerminalMidi(false /*playback*/))
+          {
+            // Gather the branch's final latency info, which also sets the
+            //  latency compensators.
+            metronome->getLatencyInfoMidi(false /*playback*/, false);
+            // Set this end point's latency compensator write offset.
+            metronome->setLatencyCompWriteOffsetMidi(song_worst_latency, false /*playback*/);
           }
         }
       }
@@ -2044,6 +2102,8 @@ void Audio::updateMidiClick()
   if(tick)
     beat += 1;
   midiClick = MusEGlobal::sigmap.bar2tick(bar, beat, 0);
+  // REMOVE Tim. latency. Added. TODO: Account for latency, in both the midiClick above and audioClick below !
+  audioClick = midiClick;
 }
 
 //---------------------------------------------------------
