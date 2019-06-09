@@ -46,6 +46,10 @@ struct TrackLatencyInfo
   // This is reset near the beginning of the process handler.
   bool _correctionProcessed;
   bool _correctionInputProcessed;
+  // Whether the _worstEffRackLatency has been processed.
+  bool _worstPluginLatencyProcessed;
+  // The worst contribution to latency by the channels in the track's effect rack.
+  float _worstPluginLatency;
   // Whether the final latency information is valid (has already been gathered
   //  in the in the final latency scan).
   // This is reset near the beginning of the process handler.

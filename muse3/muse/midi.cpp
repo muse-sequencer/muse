@@ -2952,21 +2952,12 @@ void Audio::processMidiMetronome(unsigned int frames)
 
       if (playing)
       {
-// REMOVE Tim. latency. Removed. Moved below.
-//             // What is the current transport frame?
-//             const unsigned int pos_fr = _pos.frame();
-//             // What is the (theoretical) next transport frame?
-//             const unsigned int next_pos_fr = pos_fr + frames;
             int bar, beat, z, n;
             unsigned tick;
             AudioTickSound audioTickSound = MusECore::beatSound;
             const MusECore::MetroAccents* accents;
             int accents_sz;
             
-            // REMOVE Tim. latency. Added.
-//             unsigned int lat_offset = 0;
-//             unsigned int cur_tick = curTickPos;
-//             unsigned int next_tick = nextTickPos;
             unsigned int lat_offset_midi = 0;
             unsigned int cur_tick_midi = curTickPos;
             unsigned int next_tick_midi = nextTickPos;
@@ -2999,16 +2990,14 @@ void Audio::processMidiMetronome(unsigned int frames)
               }
             }
 
-            // For midi, what is the current transport frame, adjusted?
+            // What is the current transport frame, adjusted?
             const unsigned int pos_fr_midi = _pos.frame() + lat_offset_midi;
-            // For midi, what is the (theoretical) next transport frame?
+            // What is the (theoretical) next transport frame?
             const unsigned int next_pos_fr_midi = pos_fr_midi + frames;
 
             // If external sync is not on, we can take advantage of frame accuracy but
             //  first we must allow the next tick position to be included in the search
             //  even if it is equal to the current tick position.
-// REMOVE Tim. latency. Changed.
-//             while (extsync ? (midiClick < nextTickPos) : (midiClick <= nextTickPos))
             while (extsync ? (midiClick < next_tick_midi) : (midiClick <= next_tick_midi))
             {
               bool do_play = true;
@@ -3027,8 +3016,6 @@ void Audio::processMidiMetronome(unsigned int frames)
                 if(fr < pos_fr_midi || fr >= next_pos_fr_midi)
                 {
                   // Break out of the loop if midiClick equals nextTickPos.
-// REMOVE Tim. latency. Changed.
-//                   if(midiClick == nextTickPos)
                   if(midiClick == next_tick_midi)
                     break;
                   // Continue on, but do not play any notes.
@@ -3048,7 +3035,7 @@ void Audio::processMidiMetronome(unsigned int frames)
               const int ticks_beat = MusEGlobal::sigmap.ticks_beat(n);
 
               if (do_play && MusEGlobal::song->click() 
-                  && (/*metro_settings->audioClickFlag ||*/ metro_settings->midiClickFlag)
+                  && (metro_settings->midiClickFlag)
                   && !precount_mute_metronome) {
                 
                   if (tick == 0 && beat == 0) {
@@ -3188,30 +3175,17 @@ void Audio::processAudioMetronome(unsigned int frames)
         && ((!MusEGlobal::song->record() && metro_settings->precountOnPlay) || MusEGlobal::song->record())
         && metro_settings->precountMuteMetronome;
       
-//       MidiDevice* md = 0;
-//       if (metro_settings->midiClickFlag && !precount_mute_metronome)
-//             md = MusEGlobal::midiPorts[metro_settings->clickPort].device();
-
       if (playing)
       {
-// REMOVE Tim. latency. Removed. Moved below.
-//             // What is the current transport frame?
-//             const unsigned int pos_fr = _pos.frame();
-//             // What is the (theoretical) next transport frame?
-//             const unsigned int next_pos_fr = pos_fr + frames;
             int bar, beat, z, n;
             unsigned tick;
             AudioTickSound audioTickSound = MusECore::beatSound;
             const MusECore::MetroAccents* accents;
             int accents_sz;
             
-            // REMOVE Tim. latency. Added.
             unsigned int lat_offset = 0;
             unsigned int cur_tick = curTickPos;
             unsigned int next_tick = nextTickPos;
-//             unsigned int lat_offset_midi = 0;
-//             unsigned int cur_tick_midi = curTickPos;
-//             unsigned int next_tick_midi = nextTickPos;
 
             //--------------------------------------------------------------------
             // Account for the metronome's latency correction and/or compensation.
@@ -3241,17 +3215,14 @@ void Audio::processAudioMetronome(unsigned int frames)
               }
             }
 
-            // For audio, what is the current transport frame, adjusted?
+            // What is the current transport frame, adjusted?
             const unsigned int pos_fr = _pos.frame() + lat_offset;
-            // For audio, what is the (theoretical) next transport frame?
+            // What is the (theoretical) next transport frame?
             const unsigned int next_pos_fr = pos_fr + frames;
 
             // If external sync is not on, we can take advantage of frame accuracy but
             //  first we must allow the next tick position to be included in the search
             //  even if it is equal to the current tick position.
-// REMOVE Tim. latency. Changed.
-//             while (extsync ? (midiClick < nextTickPos) : (midiClick <= nextTickPos))
-//             while (extsync ? (midiClick < next_tick) : (midiClick <= next_tick))
             while (extsync ? (audioClick < next_tick) : (audioClick <= next_tick))
             {
               bool do_play = true;
@@ -3264,14 +3235,12 @@ void Audio::processAudioMetronome(unsigned int frames)
               }
               else
               {
-                // What is the exact transport frame that the midiClick should be played at?
+                // What is the exact transport frame that the click should be played at?
                 const unsigned int fr = MusEGlobal::tempomap.tick2frame(audioClick);
                 // Is the click frame outside of the current transport frame range?
                 if(fr < pos_fr || fr >= next_pos_fr)
                 {
                   // Break out of the loop if midiClick equals nextTickPos.
-// REMOVE Tim. latency. Changed.
-//                   if(midiClick == nextTickPos)
                   if(audioClick == next_tick)
                     break;
                   // Continue on, but do not play any notes.
@@ -3291,7 +3260,7 @@ void Audio::processAudioMetronome(unsigned int frames)
               const int ticks_beat = MusEGlobal::sigmap.ticks_beat(n);
 
               if (do_play && MusEGlobal::song->click() 
-                  && (metro_settings->audioClickFlag) // || metro_settings->midiClickFlag)
+                  && (metro_settings->audioClickFlag)
                   && !precount_mute_metronome) {
                 
                   if (tick == 0 && beat == 0) {

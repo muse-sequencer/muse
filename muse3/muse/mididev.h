@@ -311,7 +311,8 @@ class MidiDevice {
       // The contribution to latency by the device's own members (midi effect rack, Jack ports etc).
       // A midi device can contain both an input and an output. The 'capture' parameter determines which one.
       virtual float selfLatencyMidi(int /*channel*/, bool /*capture*/) const { return 0.0f; }
-      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc).
+      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc)
+      //  plus any port latency if applicable.
       virtual float getWorstSelfLatencyMidi(bool capture);
       // The worst latency of all the contributions from the track's own audio and midi members (audio effect rack, etc).
 //       virtual float getWorstSelfLatency(bool capture);

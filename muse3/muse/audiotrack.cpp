@@ -297,9 +297,11 @@ void AudioTrack::initBuffers()
 AudioTrack::AudioTrack(TrackType t, int channels)
    : Track(t)
       {
-       // REMOVE Tim. latency. Added.
+      // REMOVE Tim. latency. Added.
       _totalOutChannels = MAX_CHANNELS;
       _latencyComp = new LatencyCompensator();
+      _recFilePos = 0;
+      _previousLatency = 0.0f;
 
       _processed = false;
       _haveData = false;
@@ -345,6 +347,8 @@ AudioTrack::AudioTrack(const AudioTrack& t, int flags)
       {
        // REMOVE Tim. latency. Added.
       _latencyComp = new LatencyCompensator();
+      _recFilePos = 0;
+      _previousLatency = 0.0f;
 
       _processed      = false;
       _haveData       = false;
@@ -3105,6 +3109,27 @@ TrackLatencyInfo& AudioTrack::getDominanceLatencyInfo(bool input)
 // }
 
 //---------------------------------------------------------
+//   getWorstPluginLatencyAudio
+//---------------------------------------------------------
+
+float AudioTrack::getWorstPluginLatencyAudio()
+{
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._worstPluginLatencyProcessed)
+    return _latencyInfo._worstPluginLatency;
+
+  float worst_lat = 0.0f;
+  // Include the effects rack latency.
+  if(_efxPipe)
+    worst_lat = _efxPipe->latency();
+  
+  _latencyInfo._worstPluginLatency = worst_lat;
+  _latencyInfo._worstPluginLatencyProcessed = true;
+  return _latencyInfo._worstPluginLatency;
+}
+
+//---------------------------------------------------------
 //   getWorstSelfLatencyAudio
 //---------------------------------------------------------
 
@@ -3115,15 +3140,18 @@ float AudioTrack::getWorstSelfLatencyAudio()
   if(_latencyInfo._worstSelfLatencyProcessed)
     return _latencyInfo._worstSelfLatency;
 
-  // Adjust for THIS track's contribution to latency.
-  // The goal is to have equal latency output on all channels on this track.
-  const int track_out_channels = totalProcessBuffers(); // totalOutChannels();
-  for(int i = 0; i < track_out_channels; ++i)
-  {
-    const float lat = selfLatencyAudio(i);
-    if(lat > _latencyInfo._worstSelfLatency)
-        _latencyInfo._worstSelfLatency = lat;
-  }
+//   // Adjust for THIS track's contribution to latency.
+//   // The goal is to have equal latency output on all channels on this track.
+//   const int track_out_channels = totalProcessBuffers(); // totalOutChannels();
+//   for(int i = 0; i < track_out_channels; ++i)
+//   {
+//     const float lat = selfLatencyAudio(i);
+//     if(lat > _latencyInfo._worstSelfLatency)
+//         _latencyInfo._worstSelfLatency = lat;
+//   }
+
+  // Include the effects rack latency.
+  _latencyInfo._worstSelfLatency = getWorstPluginLatencyAudio();
   // The absolute latency of signals leaving this track is the sum of
   //  any connected route latencies and this track's latency.
   _latencyInfo._worstSelfLatencyProcessed = true;
@@ -5125,6 +5153,40 @@ float AudioInput::selfLatencyAudio(int channel) const
 }
 
 // REMOVE Tim. latency. Added.
+//---------------------------------------------------------
+//   getWorstSelfLatencyAudio
+//---------------------------------------------------------
+
+float AudioInput::getWorstSelfLatencyAudio()
+{
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._worstSelfLatencyProcessed)
+    return _latencyInfo._worstSelfLatency;
+
+  // Include the effects rack latency.
+  float worst_lat = getWorstPluginLatencyAudio();
+  // Include any port latencies.
+  if(MusEGlobal::checkAudioDevice())
+  {
+    const int track_out_channels = totalProcessBuffers(); // totalOutChannels();
+    for(int i = 0; i < track_out_channels; ++i)
+    {
+      void* jackPort = jackPorts[i];
+      if(jackPort)
+      {
+        const float lat = MusEGlobal::audioDevice->portLatency(jackPort, true);
+        if(lat > worst_lat)
+          worst_lat = lat;
+      }
+    }
+  }
+  
+  _latencyInfo._worstSelfLatency = worst_lat;
+  _latencyInfo._worstSelfLatencyProcessed = true;
+  return _latencyInfo._worstSelfLatency;
+}
+
 // //---------------------------------------------------------
 // //   outputLatency
 // //---------------------------------------------------------
@@ -5230,6 +5292,9 @@ RouteCapabilitiesStruct AudioInput::routeCapabilities() const
 AudioOutput::AudioOutput()
    : AudioTrack(AUDIO_OUTPUT)
       {
+      // REMOVE Tim. latency. Added.
+      _latencyCompBounce = new LatencyCompensator();
+
       _nframes = 0;
       for (int i = 0; i < MAX_CHANNELS; ++i)
             jackPorts[i] = 0;
@@ -5238,6 +5303,9 @@ AudioOutput::AudioOutput()
 AudioOutput::AudioOutput(const AudioOutput& t, int flags)
   : AudioTrack(t, flags)
 {
+  // REMOVE Tim. latency. Added.
+  _latencyCompBounce = new LatencyCompensator();
+
   for (int i = 0; i < MusECore::MAX_CHANNELS; ++i)
         jackPorts[i] = 0;
   _nframes = 0;
@@ -5292,6 +5360,22 @@ AudioOutput::~AudioOutput()
       for (int i = 0; i < _channels; ++i)
           if(jackPorts[i])
             MusEGlobal::audioDevice->unregisterPort(jackPorts[i]);
+
+      // REMOVE Tim. latency. Added.
+      if(_latencyCompBounce)
+        delete _latencyCompBounce;
+      }
+
+//---------------------------------------------------------
+//   setChannels
+//---------------------------------------------------------
+
+void AudioOutput::setChannels(int n)
+      {
+      AudioTrack::setChannels(n);
+      // REMOVE Tim. latency. Added.
+      if(useLatencyCorrection() && _latencyCompBounce)
+        _latencyCompBounce->setChannels(totalProcessBuffers());
       }
 
 //---------------------------------------------------------
@@ -5309,6 +5393,40 @@ float AudioOutput::selfLatencyAudio(int channel) const
   if(jackPort)
     l += MusEGlobal::audioDevice->portLatency(jackPort, false);
   return l;
+}
+
+//---------------------------------------------------------
+//   getWorstSelfLatencyAudio
+//---------------------------------------------------------
+
+float AudioOutput::getWorstSelfLatencyAudio()
+{
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._worstSelfLatencyProcessed)
+    return _latencyInfo._worstSelfLatency;
+
+  // Include the effects rack latency.
+  float worst_lat = getWorstPluginLatencyAudio();
+  // Include any port latencies.
+  if(MusEGlobal::checkAudioDevice())
+  {
+    const int track_out_channels = totalProcessBuffers(); // totalOutChannels();
+    for(int i = 0; i < track_out_channels; ++i)
+    {
+      void* jackPort = jackPorts[i];
+      if(jackPort)
+      {
+        const float lat = MusEGlobal::audioDevice->portLatency(jackPort, false);
+        if(lat > worst_lat)
+          worst_lat = lat;
+      }
+    }
+  }
+  
+  _latencyInfo._worstSelfLatency = worst_lat;
+  _latencyInfo._worstSelfLatencyProcessed = true;
+  return _latencyInfo._worstSelfLatency;
 }
 
 bool AudioOutput::isLatencyInputTerminal()
@@ -5760,6 +5878,11 @@ bool AudioTrack::prepareRecording()
             return false;
 
             }
+
+      // For bounce operations: Reset these.
+      _recFilePos = 0;
+      _previousLatency = 0.0f;
+
       return true;
 }
 double AudioTrack::auxSend(int idx) const

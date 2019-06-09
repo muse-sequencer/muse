@@ -1261,6 +1261,29 @@ bool SynthI::getData(unsigned pos, int ports, unsigned n, float** buffer)
 
 
 // REMOVE Tim. latency. Added.
+
+//---------------------------------------------------------
+//   getWorstPluginLatencyAudio
+//---------------------------------------------------------
+
+float SynthI::getWorstPluginLatencyAudio()
+{ 
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._worstPluginLatencyProcessed)
+    return _latencyInfo._worstPluginLatency;
+
+  // Include the synth's own latency.
+  float worst_lat = _sif->latency();
+  // Include the effects rack latency.
+  if(_efxPipe)
+    worst_lat = _efxPipe->latency();
+  
+  _latencyInfo._worstPluginLatency = worst_lat;
+  _latencyInfo._worstPluginLatencyProcessed = true;
+  return _latencyInfo._worstPluginLatency;
+}
+
 // //---------------------------------------------------------
 // //   getWorstSelfLatency
 // //---------------------------------------------------------

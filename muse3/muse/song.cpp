@@ -2331,14 +2331,16 @@ void Song::seqSignal(int fd)
                         }
 
                         break;
-                  case 'f':   // start freewheel
-                        if(MusEGlobal::debugMsg)
-                          fprintf(stderr, "Song: seqSignal: case f: setFreewheel start\n");
-                        
-                        if(MusEGlobal::config.freewheelMode)
-                          MusEGlobal::audioDevice->setFreewheel(true);
-                        
-                        break;
+// REMOVE Tim. latency. Removed.
+// We now do this in MusE::bounceToFile() and MusE::bounceToTrack(), BEFORE the transport is started.
+//                   case 'f':   // start freewheel
+//                         if(MusEGlobal::debugMsg)
+//                           fprintf(stderr, "Song: seqSignal: case f: setFreewheel start\n");
+//                         
+//                         if(MusEGlobal::config.freewheelMode)
+//                           MusEGlobal::audioDevice->setFreewheel(true);
+//                         
+//                         break;
 
                   case 'F':   // stop freewheel
                         if(MusEGlobal::debugMsg)
@@ -3176,6 +3178,22 @@ void Song::abortRolling()
 
 void Song::stopRolling(Undo* operations)
       {
+// // REMOVE Tim. latency. Added. Moved here from audio thread process code (via Song::seqSignal()).
+//       if(MusEGlobal::audio->freewheel())
+//         MusEGlobal::audioDevice->setFreewheel(false);
+//       // Wait a few cycles for the freewheel stop to take effect.
+//       for(int i = 0; i < 4; ++i)
+//       {
+//         if(!MusEGlobal::audio->freewheel())
+//           break;
+//         MusEGlobal::audio->msgAudioWait();
+//       }
+//       // Check if freewheel was really unset.
+//       if(MusEGlobal::audio->freewheel())
+//       {
+//         fprintf(stderr, "ERROR: Song::stopRolling(): Freewheel mode did not stop yet!\n");
+//       }
+        
       Undo ops;
       Undo* opsp = operations ? operations : &ops;
       

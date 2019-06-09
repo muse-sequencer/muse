@@ -1970,8 +1970,9 @@ unsigned int JackAudioDevice::portLatency(void* port, bool capture) const
   //}
 
   // REMOVE Tim. latency. Added.
-//   fprintf(stderr, "JackAudioDevice::portLatency port:%p capture:%d c_range.min:%d c_range.max:%d p_range.min:%d p_range.max:%d\n",
-//           port, capture, c_range.min, c_range.max, p_range.min, p_range.max);
+  if(MusEGlobal::audio->isPlaying())
+    fprintf(stderr, "JackAudioDevice::portLatency port:%p capture:%d c_range.min:%d c_range.max:%d p_range.min:%d p_range.max:%d\n",
+            port, capture, c_range.min, c_range.max, p_range.min, p_range.max);
 
   if(capture)
     //return (c_range.max - c_range.min) / 2;
@@ -2124,6 +2125,8 @@ void JackAudioDevice::setFreewheel(bool f)
       {
       if (JACK_DEBUG)
             fprintf(stderr, "JackAudioDevice::setFreewheel(\n");
+      // REMOVE Tim. latency. Added. Diagnostics.
+            fprintf(stderr, "JackAudioDevice::setFreewheel() f:%d\n", f);
       if(!checkJackClient(_client)) return;
 //      fprintf(stderr, "JACK: setFreewheel %d\n", f);
       jack_set_freewheel(_client, f);

@@ -289,7 +289,10 @@ class Track {
       virtual void prepareLatencyScan();
       // The contribution to latency from the track's own members (audio effect rack, etc).
       virtual float selfLatencyAudio(int /*channel*/) const { return 0.0f; }
-      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc).
+      // The cached worst latency of all the channels in the track's effect rack plus any synthesizer latency if applicable.
+      virtual float getWorstPluginLatencyAudio() { return 0.0f; }
+      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc)
+      //  plus any port latency if applicable.
       virtual float getWorstSelfLatencyAudio() { return 0.0f; }
       // The worst latency of all the contributions from the track's own audio and midi members (audio effect rack, etc).
 //       virtual float getWorstSelfLatency() = 0;
@@ -466,8 +469,9 @@ class MidiTrack : public Track {
       // Number of routable inputs/outputs for each Route::RouteType.
       virtual RouteCapabilitiesStruct routeCapabilities() const;
 
-      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc).
-      virtual float getWorstSelfLatencyAudio();
+      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc)
+      //  plus any port latency if applicable.
+//       virtual float getWorstSelfLatencyAudio();
       // The worst latency of all the contributions from the track's own audio and midi members (audio effect rack, etc).
 //       virtual float getWorstSelfLatency();
       virtual bool canDominateOutputLatency() const;
@@ -660,6 +664,10 @@ class AudioTrack : public Track {
       virtual bool getData(unsigned, int, unsigned, float**);
 
       SndFileR _recFile;
+      // Exclusively for the recFile during bounce operations.
+      long int _recFilePos;
+      float _previousLatency;
+
       Fifo fifo;                    // fifo -> _recFile
       bool _processed;
       
@@ -814,7 +822,10 @@ class AudioTrack : public Track {
       // The contribution to latency by the track's own members (audio effect rack, etc).
       virtual float selfLatencyAudio(int channel) const;
 // REMOVE Tim. latency. Added.
-      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc).
+      // The cached worst latency of all the channels in the track's effect rack.
+      virtual float getWorstPluginLatencyAudio();
+      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc)
+      //  plus any port latency if applicable.
       virtual float getWorstSelfLatencyAudio();
       // The worst latency of all the contributions from the track's own audio and midi members (audio effect rack, etc).
 //       virtual float getWorstSelfLatency();
@@ -897,6 +908,9 @@ class AudioInput : public AudioTrack {
 
       float selfLatencyAudio(int channel) const; 
 // REMOVE Tim. latency. Added.
+      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc)
+      //  plus any port latency if applicable.
+      float getWorstSelfLatencyAudio();
 //       float outputLatency() const; 
 //       // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
 //       // Audio Input tracks always return 0 even if its inputs are unterminated.
@@ -936,6 +950,10 @@ class AudioOutput : public AudioTrack {
       float* buffer[MusECore::MAX_CHANNELS];
       float* buffer1[MusECore::MAX_CHANNELS];
       unsigned long _nframes;
+      // REMOVE Tim. latency. Added.
+      // Audio latency compensator, for bounce-to-file and bounce-to-track operations.
+      LatencyCompensator* _latencyCompBounce;
+
       static bool _isVisible;
       void internal_assign(const Track& t, int flags);
 
@@ -946,6 +964,10 @@ class AudioOutput : public AudioTrack {
 
       virtual float selfLatencyAudio(int channel) const;
 // REMOVE Tim. latency. Added.
+      void setChannels(int n);
+      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc)
+      //  plus any port latency if applicable.
+      float getWorstSelfLatencyAudio();
 //       // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
 //       // Audio Output tracks always return 0 even if its outputs are unterminated.
 //       float inputLatencyCorrection() const { return 0.0f; }

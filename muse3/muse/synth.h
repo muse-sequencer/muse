@@ -350,8 +350,11 @@ class SynthI : public AudioTrack, public MidiDevice,
       virtual unsigned long latencyCompWriteOffsetMidi(bool capture) const;
       virtual void setLatencyCompWriteOffsetMidi(float worstCase, bool capture);
 
-      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc).
+      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc)
+      //  plus any port latency if applicable.
 //       virtual float getWorstSelfLatency();
+      // The cached worst latency of all the channels in the track's effect rack plus any synthesizer latency if applicable.
+      virtual float getWorstPluginLatencyAudio();
       // Synth devices can never dominate latency, only physical/hardware midi devices can.
       virtual bool canDominateOutputLatency() const { return false; }
       virtual bool canDominateEndPointLatency() const { return false; }

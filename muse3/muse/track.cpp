@@ -2031,32 +2031,32 @@ TrackLatencyInfo& MidiTrack::getDominanceLatencyInfo(bool input)
 //   return _latencyInfo;
 // }
 
-//---------------------------------------------------------
-//   getWorstSelfLatencyAudio
-//---------------------------------------------------------
-
-float MidiTrack::getWorstSelfLatencyAudio()
-{
-  // Have we been here before during this scan?
-  // Just return the cached value.
-  if(_latencyInfo._worstSelfLatencyProcessed)
-    return _latencyInfo._worstSelfLatency;
-
-  float track_worst_chan_latency = 0.0f;
-  // Adjust for THIS track's contribution to latency.
-  // The goal is to have equal latency output on all channels on this track.
-  for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
-  {
-    const float lat = selfLatencyAudio(i);
-    if(lat > track_worst_chan_latency)
-        track_worst_chan_latency = lat;
-  }
-
-  // The absolute latency of signals leaving this track is the sum of
-  //  any connected route latencies and this track's latency.
-  _latencyInfo._worstSelfLatency = track_worst_chan_latency;
-  return _latencyInfo._worstSelfLatency;
-}
+// //---------------------------------------------------------
+// //   getWorstSelfLatencyAudio
+// //---------------------------------------------------------
+// 
+// float MidiTrack::getWorstSelfLatencyAudio()
+// {
+//   // Have we been here before during this scan?
+//   // Just return the cached value.
+//   if(_latencyInfo._worstSelfLatencyProcessed)
+//     return _latencyInfo._worstSelfLatency;
+// 
+//   float track_worst_chan_latency = 0.0f;
+//   // Adjust for THIS track's contribution to latency.
+//   // The goal is to have equal latency output on all channels on this track.
+//   for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
+//   {
+//     const float lat = selfLatencyAudio(i);
+//     if(lat > track_worst_chan_latency)
+//         track_worst_chan_latency = lat;
+//   }
+// 
+//   // The absolute latency of signals leaving this track is the sum of
+//   //  any connected route latencies and this track's latency.
+//   _latencyInfo._worstSelfLatency = track_worst_chan_latency;
+//   return _latencyInfo._worstSelfLatency;
+// }
 
 // //---------------------------------------------------------
 // //   getWorstSelfLatency

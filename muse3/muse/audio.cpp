@@ -647,8 +647,13 @@ void Audio::process(unsigned frames)
             _loopCount = 0;
             MusEGlobal::song->reenableTouchedControllers();
             startRolling();
-            if (_bounce)
-                  write(sigFd, "f", 1);
+
+// REMOVE Tim. latency. Removed. This is way too late to start freewheel mode.
+// It will be a cycle or two before it even takes effect.
+// So we do this in MusE::bounceToFile() and MusE::bounceToTrack(), BEFORE the transport is started.
+//             if (_bounce)
+//                   write(sigFd, "f", 1);
+
             }
       else if (state == LOOP2 && jackState == PLAY) {
             ++_loopCount;                  // Number of times we have looped so far
@@ -2016,6 +2021,7 @@ void Audio::recordStop(bool restart, Undo* ops)
           operations.push_back(UndoOp(UndoOp::SetTrackRecord, ao, false, true));  // True = non-undoable.
         }
       }  
+      MusEGlobal::song->bounceTrack = nullptr;
 
       // Operate on a local list if none was given.
       if(!ops)

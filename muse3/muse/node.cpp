@@ -1516,9 +1516,33 @@ bool AudioTrack::putFifo(int channels, unsigned long n, float** bp)
 //         }
 
         
+  float route_worst_case_latency = 0.0f;
   const bool use_latency_corr = useLatencyCorrection();
-  float route_worst_case_latency = use_latency_corr ? _latencyInfo._inputLatency : 0.0f;
-        
+  if(use_latency_corr)
+  {
+    // Are we bouncing to this (wave) track?
+    if(MusEGlobal::song->bounceOutput && MusEGlobal::song->bounceTrack == this)
+    {
+      // We want the bounce audio output track's output latency - without the port latency.
+      const TrackLatencyInfo& li = MusEGlobal::song->bounceOutput->getLatencyInfo(false /*output*/);
+      route_worst_case_latency = li._inputLatency + li._worstPluginLatency;
+    }
+    else
+    {
+      // We want this (wave) track's input latency.
+      const TrackLatencyInfo& li = getLatencyInfo(true /*input*/);
+      route_worst_case_latency = li._inputLatency;
+    }
+      
+      
+    // If this track is an audio output involved in a bounce operation,
+    //  we want the audio output track's output latency.
+    // Otherwise we want the track's input latency.
+//     if(MusEGlobal::song->bounceOutput == this)
+//       route_worst_case_latency = _latencyInfo._outputLatency;
+//     else
+//       route_worst_case_latency = _latencyInfo._inputLatency;
+  }
         
         
   // REMOVE Tim. latency. Added. No, this would only be for playback.
@@ -2271,7 +2295,38 @@ void AudioOutput::process(unsigned pos, unsigned offset, unsigned n)
       copyData(pos, -1, _channels, _channels, -1, -1, n, buffer1);
       
       
-      // REMOVE Tim. latency. Added.
+//       // REMOVE Tim. latency. Added.
+//       const bool use_latency_corr = useLatencyCorrection() && _latencyCompBounce;
+//       // Write the buffers to the latency compensator.
+//       // By now, each copied channel should have the same latency, 
+//       //  so we use this convenient common-latency version of write.
+//       // Also factor in the write offset required by AudioOutput tracks.
+//       // TODO: Make this per-channel.
+//       if(use_latency_corr)
+//       {
+//         //_latencyComp->write(nframes, latency_array[latency_array_cnt], buffer);
+//         //_latencyComp->write(nframes, latency_array[latency_array_cnt] + latencyCompWriteOffset(), buffer);
+//         
+//         // Prepare the latency value to be passed to the compensator's writer,
+//         //  by adjusting each route latency value. ie. the route with the worst-case
+//         //  latency will get ZERO delay, while routes having smaller latency will get
+//         //  MORE delay, to match all the signal timings together.
+//         // The route's audioLatencyOut should have already been calculated and
+//         //  conveniently stored in the route.
+// //               fl = li._outputLatency - ir->audioLatencyOut;
+// //               l = fl;
+// //               // Should not happen, but just in case.
+// //               if(l < 0)
+// //                 l = 0;
+//         if((long int)ir->audioLatencyOut < 0)
+//           l = 0;
+//         else
+//           l = ir->audioLatencyOut;
+//         _latencyCompBounce->write(n, l + latencyCompWriteOffset(), buffer);
+//       }
+
+      
+// REMOVE Tim. latency. Added.
 //#ifdef NODE_DEBUG_TERMINAL_PEAK_METERS
 #if 0
       if(MusEGlobal::audio->isPlaying())
@@ -2326,13 +2381,95 @@ void AudioOutput::processWrite()
         MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
       if (MusEGlobal::audio->isRecording() && MusEGlobal::song->bounceOutput == this) {
+
             if (MusEGlobal::audio->freewheel()) {
+
+                  // REMOVE Tim. latency. Added.
+
+                  // NOTE: Tests showed that during freewheel, Jack reports zero latency on all ports.
+                  //       But let's go through the motions here anyway.
+                  float latency = 0.0f;
+                  const bool use_latency_corr = useLatencyCorrection();
+                  if(use_latency_corr)
+                  {
+                    // We want this audio output track's output latency - without the port latency.
+                    const TrackLatencyInfo& li = getLatencyInfo(false /*output*/);
+                    latency = li._inputLatency + li._worstPluginLatency;
+                    // Let's try to avoid accidental very large files by very large latency values?
+                    if(latency < -1000000 || latency > 1000000)
+                    {
+                      // Try not to flood, normally.
+                      if(MusEGlobal::debugMsg)
+                        fprintf(stderr,
+                          "AudioOutput::processWrite(): Error: Latency seems excessively high:%f Trimming to +/-1000000\n",
+                          latency);
+                      if(latency < -1000000)
+                        latency = -1000000;
+                      else if(latency > 1000000)
+                        latency = 1000000;
+                    }
+                  }
+              
+                  // REMOVE Tim. latency. Added.
+                  fprintf(stderr, "AudioOutput::processWrite(): Freewheel: _previousLatency:%f latency:%f _recFilePos:%ld audio pos frame:%u\n",
+                          _previousLatency, latency, _recFilePos, MusEGlobal::audio->pos().frame());
+
                   MusECore::WaveTrack* track = MusEGlobal::song->bounceTrack;
                   if (track && track->recordFlag() && track->recFile())
-                        track->recFile()->write(_channels, buffer, _nframes);
-                  if (recordFlag() && recFile())
-                        _recFile->write(_channels, buffer, _nframes);
+                  {
+
+                    // REMOVE Tim. latency. Added.
+                    //if(use_latency_corr && _recFilePos >= latency)
+                    if(!use_latency_corr || _recFilePos >= latency)
+                    {
+                      // Has the latency changed?
+                      if(use_latency_corr && latency != _previousLatency)
+                      {
+                        long int pos = _recFilePos;
+                        pos -= latency;
+
+                        // REMOVE Tim. latency. Added.
+                        fprintf(stderr, "AudioOutput::processWrite(): latency:%f Seeking track _recFile to:%ld\n", latency, pos);
+
+                        track->recFile()->seek(pos, 0);
+                        _previousLatency = latency;
+                      }
+
+                      // REMOVE Tim. latency. Added.
+                      fprintf(stderr, "AudioOutput::processWrite(): Writing track _recFile\n");
+
+                      track->recFile()->write(_channels, buffer, _nframes);
+                    }
+                    _recFilePos += _nframes;
                   }
+
+                  if (recordFlag() && recFile())
+                  {
+
+                    // REMOVE Tim. latency. Added.
+                    if(!use_latency_corr || _recFilePos >= latency)
+                    {
+                      // Has the latency changed?
+                      if(use_latency_corr && latency != _previousLatency)
+                      {
+                        long int pos = _recFilePos;
+                        pos -= latency;
+
+                        // REMOVE Tim. latency. Added.
+                        fprintf(stderr, "AudioOutput::processWrite(): latency:%f Seeking _recFile to:%ld\n", latency, pos);
+
+                        _recFile->seek(pos, 0);
+                        _previousLatency = latency;
+                      }
+
+                      // REMOVE Tim. latency. Added.
+                      fprintf(stderr, "AudioOutput::processWrite(): Writing _recFile\n");
+
+                      _recFile->write(_channels, buffer, _nframes);
+                    }
+                    _recFilePos += _nframes;
+                  }
+                }
             else {
                   MusECore::WaveTrack* track = MusEGlobal::song->bounceTrack;
                   if (track && track->recordFlag() && track->recFile())
