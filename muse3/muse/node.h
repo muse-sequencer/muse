@@ -61,13 +61,9 @@ class Fifo {
       Fifo();
       ~Fifo();
       void clear();
-// REMOVE Tim. latency. Changed.
-//       bool put(int, unsigned long, float** buffer, unsigned pos);
       bool put(int segs, unsigned long samples, float** buffer, unsigned pos, float latency);
       bool getWriteBuffer(int, unsigned long, float** buffer, unsigned pos);
       void add();
-// REMOVE Tim. latency. Changed.
-//       bool get(int, unsigned long, float** buffer, unsigned* pos);
       bool get(int segs, unsigned long samples, float** buffer, unsigned* pos = 0, float* latency = 0);
       void remove();
       int getCount();

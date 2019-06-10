@@ -439,8 +439,6 @@ public:
     virtual bool hasNativeGui() const;
     virtual void getNativeGeometry ( int *, int *, int *, int * ) const;
     virtual void setNativeGeometry (int x, int y, int w, int h);
-// REMOVE Tim. latency. Removed.
-//     virtual void preProcessAlways();
     virtual bool getData ( MidiPort *, unsigned pos, int ports, unsigned n, float **buffer );
     virtual MidiPlayEvent receiveEvent();
     virtual int eventsPending() const;

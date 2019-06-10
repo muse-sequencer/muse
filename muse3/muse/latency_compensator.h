@@ -46,7 +46,6 @@ class LatencyCompensator
     void clear();
     void setBufferSize(unsigned long size);
     void setChannels(int channels);
-//     void run(unsigned long sampleCount, float** data);
     
     // Write a block of data on each channel at the given write offsets (from the read position).
     // All writes are additive. Read will clear the blocks.

@@ -4321,12 +4321,6 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
    LV2Synth::lv2state_populatePresetsMenu(_state, subMenuPresets);
 }
 
-// REMOVE Tim. latency. Removed.
-// void LV2SynthIF::preProcessAlways()
-// {
-// 
-// }
-
 MidiPlayEvent LV2SynthIF::receiveEvent()
 {
    return MidiPlayEvent();

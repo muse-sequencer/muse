@@ -37,10 +37,6 @@ struct TrackLatencyInfo
   bool _dominanceInputProcessed;
   bool _canDominateProcessed;
   bool _canDominateInputProcessed;
-  // Whether the 'forward' information is valid (has already been gathered
-  //  in the forward latency scan).
-//   // This is reset near the beginning of the process handler.
-//   bool _forwardProcessed;
   // Whether the correction information is valid (has already been gathered
   //  in the correction latency scan).
   // This is reset near the beginning of the process handler.
@@ -62,7 +58,6 @@ struct TrackLatencyInfo
   // See AudioTrack::trackLatency().
   float _worstSelfLatency;
   float _worstSelfLatencyMidi;
-//   float _forwardTrackLatency;
   // The absolute latency of all signals leaving a track, relative to audio driver frame (transport, etc).
   // This value is the cumulative value of all series routes connected to this track, plus some
   //  adjustment for the track's own members' latency.
@@ -72,13 +67,6 @@ struct TrackLatencyInfo
   //  arriving at its inputs.
   float _outputLatency;
   float _inputLatency;
-//   float _forwardOutputLatency;
-//   // Maximum amount of latency that this track's input can CORRECT (not just COMPENSATE).
-//   float _inputAvailableCorrection;
-//   float _forwardInputAvailableCorrection;
-//   // Maximum amount of latency that this track's output can CORRECT (not just COMPENSATE).
-//   float _outputAvailableCorrection;
-//   float _forwardOutputAvailableCorrection;
   
   // Whether any of the connected output routes are effectively connected.
   // That means track is not off, track is monitored where applicable, etc,
@@ -93,15 +81,12 @@ struct TrackLatencyInfo
   //  intead only allowing compensation UP TO the worst case in other branches.
   bool _canDominateOutputLatency;
   bool _canDominateInputLatency;
-  // Whether this track and its branch require latency correction, not just compensation.
-//   bool _requiresInputCorrection;
   // Whether this track and its branch can correct for latency, not just compensate.
   bool _canCorrectOutputLatency;
-//   bool _canCorrectInputLatency;
   // For tracks which can correct for latency, this is the value that the track
   //  must shift (ahead) to correct. It is essentially the programmed latency value
   //  of the track's ultimate source (wave file etc.). Therefore it will be NEGATIVE
-  //  when requiring correction, but never POSITIVE (that would be unneccessary,
+  //  when requiring correction, but never POSITIVE (that would be unnecessary,
   //  a subsequent compensator delay can do that).
   float _sourceCorrectionValue;
   // Balances end points (Audio Outputs or open branches) of parallel branches.

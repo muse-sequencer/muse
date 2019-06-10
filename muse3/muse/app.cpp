@@ -2816,22 +2816,6 @@ void MusE::bounceToTrack()
           }
       }
 
-// // REMOVE Tim. latency. Added. Moved here from audio thread process code (via Song::seqSignal()).
-//       if(MusEGlobal::config.freewheelMode)
-//         MusEGlobal::audioDevice->setFreewheel(true);
-//       // Wait a few cycles for the freewheel to take effect.
-//       for(int i = 0; i < 4; ++i)
-//       {
-//         if(MusEGlobal::audio->freewheel())
-//           break;
-//         MusEGlobal::audio->msgAudioWait();
-//       }
-//       // Check if freewheel was really set.
-//       if(!MusEGlobal::audio->freewheel())
-//       {
-//         fprintf(stderr, "ERROR: MusE::bounceToTrack(): Freewheel mode did not start yet!\n");
-//       }
-      
       MusEGlobal::song->setPos(0,MusEGlobal::song->lPos(),0,true,true);
       MusEGlobal::song->bounceOutput = out;
       MusEGlobal::song->bounceTrack = track;
@@ -2898,22 +2882,6 @@ void MusE::bounceToFile(MusECore::AudioOutput* ao)
       if (sf == 0)
             return;
 
-// // REMOVE Tim. latency. Added. Moved here from audio thread process code (via Song::seqSignal()).
-//       if(MusEGlobal::config.freewheelMode)
-//         MusEGlobal::audioDevice->setFreewheel(true);
-//       // Wait a few cycles for the freewheel to take effect.
-//       for(int i = 0; i < 4; ++i)
-//       {
-//         if(MusEGlobal::audio->freewheel())
-//           break;
-//         MusEGlobal::audio->msgAudioWait();
-//       }
-//       // Check if freewheel was really set.
-//       if(!MusEGlobal::audio->freewheel())
-//       {
-//         fprintf(stderr, "ERROR: MusE::bounceToFile(): Freewheel mode did not start yet!\n");
-//       }
-      
       MusEGlobal::song->setPos(0,MusEGlobal::song->lPos(),0,true,true);
       MusEGlobal::song->bounceOutput = ao;
       ao->setRecFile(sf);

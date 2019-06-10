@@ -125,46 +125,6 @@ void LatencyCompensator::setChannels(int channels)
   }
 }
 
-// void LatencyCompensator::run(unsigned long SampleCount, float** data)
-// {
-//   float inputSample;
-//   unsigned long readOffset;
-//   unsigned long bufsz_mask;
-//   unsigned long writeOffset;
-//   unsigned long i;
-// 
-//   bufsz_mask = _bufferSize - 1;
-//   
-//   float* input;
-//   float* output;
-//   float* buf;
-//   
-//   for(int ch = 0; ch < _channels; ++ch)
-//   {
-//     input = data[ch];
-//     output = data[ch];
-//     buf = _buffer[ch];
-// 
-//     writeOffset = _writePointers[ch];
-//     readOffset = writeOffset + _bufferSize - _delays[ch];
-//     //readOffset = writeOffset + _bufferSize - (_delays[ch] & bufsz_mask);
-//     
-//     for(i = 0; i < SampleCount; i++) 
-//     {
-//       inputSample = *(input++);
-// 
-//       *(output++) = (buf[((i + readOffset) & bufsz_mask)]);
-//       //*(output++) = (buf[((i + readOffset) % _bufferSize)]);
-// 
-//       buf[((i + writeOffset) & bufsz_mask)] = inputSample;
-//       //buf[((i + writeOffset) % _bufferSize)] = inputSample;
-//     }
-//     
-//     _writePointers[ch] = (_writePointers[ch] + SampleCount) & bufsz_mask;
-//     //_writePointers[ch] = (_writePointers[ch] + SampleCount) % _bufferSize;
-//   }
-// }
-  
 void LatencyCompensator::read(unsigned long sampleCount, float** data)
 {
   unsigned long read_position, i, idx;
@@ -269,12 +229,10 @@ void LatencyCompensator::advance(int channel, unsigned long sampleCount)
   if(channel >= _channels || !_peekedChannels[channel])
     return;
   
-  //unsigned long read_position, i, idx, rp1, rp2, sz1, sz2;
   unsigned long i, rp, sz2, sz1;
   float *buf1, *buf2;
   
   buf1 = _buffer[channel];
-  //read_position = _readPointers[channel];
   
   rp = _readPointers[channel];
   sz2 = sampleCount;
@@ -287,15 +245,6 @@ void LatencyCompensator::advance(int channel, unsigned long sampleCount)
   }
   buf2 = &buf1[rp];
   std::memset(buf2, 0, sizeof(float) * sz2);
-  
-//   for(i = 0; i < sampleCount; i++) 
-//   {
-//     idx = (i + read_position) & _bufferSizeMask;
-//     // Clear the data so that the next time around, simple addition of data can be used.
-//     // Like the erase head of a (imaginary) multi-record-head latency-correction tape loop
-//     //  mechanism, where in this simulation the erase head is just after the read head.
-//     buf[idx] = 0.0f;
-//   }
   
   _readPointers[channel] = (_readPointers[channel] + sampleCount) & _bufferSizeMask;
   // The channel's read pointer has been advanced. Reset the peeked flag.

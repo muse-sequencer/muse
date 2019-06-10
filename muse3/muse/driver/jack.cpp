@@ -1938,54 +1938,35 @@ char* JackAudioDevice::portName(void* port, char* str, int str_size, int preferr
 
 unsigned int JackAudioDevice::portLatency(void* port, bool capture) const
 {
-  // TODO: Experimental code... Finish it...
-  
   if(!checkJackClient(_client) || !port)
     return 0;
 
   //QString s(jack_port_name((jack_port_t*)port));
   //fprintf(stderr, "Jack::portName %p %s\n", port, s.toLatin1().constData());  
 
-  // Hm, for 2048 period, this one returns 4096 regardless of whether port is in or out...
+  
+  // NOTICE: For at least the ALSA driver (tested), the input latency is
+  //          always 1 period while the output latency is always n periods
+  //          (or n-1 periods for Jack1 or Jack2 Sync mode).
+  //         (Also there is the user latency from command line or QJackCtl.)
+  //         In other words, the Jack command line -p (number of periods) ONLY applies to audio output ports.
+  
   jack_latency_range_t p_range;
   jack_port_get_latency_range((jack_port_t*)port, JackPlaybackLatency, &p_range);
-  //fprintf(stderr, "JackAudioDevice::portLatency playback min:%u max:%u\n", p_range.min, p_range.max);
-  //if(p_range.max != p_range.min)
-  //{
-  //  fprintf(stderr, "JackAudioDevice::portLatency min:%u != max:%u\n", p_range.min, p_range.max);
-    //return (p_range.max - p_range.min) / 2;
-  //}
 
-  // For 2048 period, this one returns 2048 regardless of whether port is in or out...
   jack_latency_range_t c_range;
   jack_port_get_latency_range((jack_port_t*)port, JackCaptureLatency, &c_range);
-  //fprintf(stderr, "JackAudioDevice::portLatency capture min:%u max:%u\n", c_range.min, c_range.max);
-  //if(c_range.max != c_range.min)
-  //{
-    //fprintf(stderr, "JackAudioDevice::portLatency capture min:%u != max:%u\n", c_range.min, c_range.max);
 
-    // TODO TEST Decide which method to use. Although, it is arbitrary.
-    //return (c_range.max - c_range.min) / 2;
-    //return c_range.max;
-  //}
-
-  // REMOVE Tim. latency. Added.
-  if(MusEGlobal::audio->isPlaying())
-    fprintf(stderr, "JackAudioDevice::portLatency port:%p capture:%d c_range.min:%d c_range.max:%d p_range.min:%d p_range.max:%d\n",
-            port, capture, c_range.min, c_range.max, p_range.min, p_range.max);
+  //if(MusEGlobal::audio->isPlaying())
+  //  fprintf(stderr, "JackAudioDevice::portLatency port:%p capture:%d c_range.min:%d c_range.max:%d p_range.min:%d p_range.max:%d\n",
+  //          port, capture, c_range.min, c_range.max, p_range.min, p_range.max);
 
   if(capture)
-    //return (c_range.max - c_range.min) / 2;
     return c_range.max;
 
-  //return (p_range.max - p_range.min) / 2;
   return p_range.max;
 
-
-//   // Hm... for speed, maybe cache the values?
-//   jack_latency_range_t l_range;
-//   jack_port_get_latency_range((jack_port_t*)port, capture ? JackCaptureLatency : JackPlaybackLatency, &l_range);
-//   return l_range.max;
+  // Hm... for speed, maybe cache the values?
 }
 
 //---------------------------------------------------------

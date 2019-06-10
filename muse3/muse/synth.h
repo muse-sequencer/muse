@@ -142,8 +142,6 @@ class SynthIF : public PluginIBase {
       virtual void showGui(bool v) { if(synti && hasGui()) PluginIBase::showGui(v); } 
       virtual bool hasGui() const = 0;
       virtual bool hasNativeGui() const = 0;
-// REMOVE Tim. latency. Changed.
-//       virtual void preProcessAlways() = 0;
       virtual void preProcessAlways() { }
       virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned n, float** buffer) = 0;
       virtual MidiPlayEvent receiveEvent() = 0;
@@ -235,8 +233,6 @@ class SynthI : public AudioTrack, public MidiDevice,
       // Initial, and running, string parameters for synths which use them, like dssi.
       StringParamMap _stringParamMap;
 
-// REMOVE Tim. latency. Removed. Moved into public.
-//       void preProcessAlways();
       bool getData(unsigned a, int b, unsigned c, float** data);
 
       // Returns the number of frames to shift forward output event scheduling times when putting events
@@ -328,31 +324,21 @@ class SynthI : public AudioTrack, public MidiDevice,
             }
 
       virtual void processMidi(unsigned int /*curFrame*/ = 0);
-// REMOVE Tim. latency. Added. Moved here from protected.
       void preProcessAlways();
 
-      // REMOVE Tim. latency. Added.
-//       virtual float selfLatencyMidi(int /*channel*/, bool /*capture*/) const { return 0.0f; }
-      // The worst latency of all the contributions from the track's own audio and midi members (audio effect rack, etc).
-//       virtual float getWorstSelfLatency();
       // Synth devices can never dominate latency, only physical/hardware midi devices can.
       virtual bool canDominateOutputLatencyMidi(bool /*capture*/) const { return false; }
       virtual bool canDominateEndPointLatencyMidi(bool /*capture*/) const { return false; }
       virtual bool canCorrectOutputLatencyMidi() const { return false; }
       virtual bool isLatencyInputTerminalMidi(bool capture);
       virtual bool isLatencyOutputTerminalMidi(bool capture);
-//       virtual TrackLatencyInfo& getInputDominanceLatencyInfoMidi(bool capture);
       virtual TrackLatencyInfo& getDominanceInfoMidi(bool capture, bool input);
       virtual TrackLatencyInfo& getDominanceLatencyInfoMidi(bool capture, bool input);
       virtual TrackLatencyInfo& setCorrectionLatencyInfoMidi(bool capture, bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
-//       virtual TrackLatencyInfo& getInputLatencyInfoMidi(bool capture);
       virtual TrackLatencyInfo& getLatencyInfoMidi(bool capture, bool input);
       virtual unsigned long latencyCompWriteOffsetMidi(bool capture) const;
       virtual void setLatencyCompWriteOffsetMidi(float worstCase, bool capture);
 
-      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc)
-      //  plus any port latency if applicable.
-//       virtual float getWorstSelfLatency();
       // The cached worst latency of all the channels in the track's effect rack plus any synthesizer latency if applicable.
       virtual float getWorstPluginLatencyAudio();
       // Synth devices can never dominate latency, only physical/hardware midi devices can.
@@ -361,14 +347,10 @@ class SynthI : public AudioTrack, public MidiDevice,
       virtual bool canCorrectOutputLatency() const { return false; }
       virtual bool isLatencyInputTerminal();
       virtual bool isLatencyOutputTerminal();
-//       virtual TrackLatencyInfo& getInputDominanceLatencyInfo();
       virtual TrackLatencyInfo& getDominanceInfo(bool input);
       virtual TrackLatencyInfo& getDominanceLatencyInfo(bool input);
       virtual TrackLatencyInfo& setCorrectionLatencyInfo(bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
-//       virtual TrackLatencyInfo& getInputLatencyInfo();
       virtual TrackLatencyInfo& getLatencyInfo(bool input);
-//       virtual unsigned long latencyCompWriteOffset() const { return _latencyInfo._compensatorWriteOffset; }
-//       virtual void setLatencyCompWriteOffset(float /*worstCase*/) { }
       
       MidiPlayEvent receiveEvent() { return _sif->receiveEvent(); }
       int eventsPending() const    { return _sif->eventsPending(); }

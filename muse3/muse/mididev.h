@@ -35,7 +35,6 @@
 #include "lock_free_buffer.h"
 #include "sync.h"
 #include "evdata.h"
-// REMOVE Tim. latency. Added.
 #include "latency_info.h"
 
 #include <QString>
@@ -172,7 +171,6 @@ class MidiDevice {
       // The audio thread processes this fifo and clears it.
       LockFreeBuffer<ExtMidiClock> *_extClockHistoryFifo;
       
-// REMOVE Tim. latency. Added.
       // Holds latency computations each cycle.
       TrackLatencyInfo _captureLatencyInfo;
       TrackLatencyInfo _playbackLatencyInfo;
@@ -302,8 +300,6 @@ class MidiDevice {
       void midiClockInput(unsigned int frame);
 
 
-
-// REMOVE Tim. latency. Added.
       // Initializes this track's latency information in preparation for a latency scan.
       virtual void prepareLatencyScan();
       // Returns the latency of a given capture or playback port of the device.
@@ -351,9 +347,6 @@ class MidiDevice {
       virtual bool isLatencyOutputTerminalMidi(bool capture);
 
       virtual TrackLatencyInfo& getDominanceInfoMidi(bool capture, bool input);
-      // Returns latency computations during each cycle. If the computations have already been done 
-      //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
-//       virtual TrackLatencyInfo& getInputDominanceLatencyInfoMidi(bool capture);
       virtual TrackLatencyInfo& getDominanceLatencyInfoMidi(bool capture, bool input);
       // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
       //  determined in the complete getDominanceLatencyInfo() scan.
@@ -362,13 +355,7 @@ class MidiDevice {
       // The callerBranchLatency is accumulated as setCorrectionLatencyInfo() is called on each track
       //  in a branch of the graph.
       virtual TrackLatencyInfo& setCorrectionLatencyInfoMidi(bool capture, bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
-//       virtual TrackLatencyInfo& getInputLatencyInfoMidi(bool capture);
       virtual TrackLatencyInfo& getLatencyInfoMidi(bool capture, bool input);
-//       // Returns forward latency computations (from wavetracks outward) during each cycle.
-//       // If the computations have already been done this cycle, cached values are returned,
-//       //  otherwise they are computed, cached, then returned.
-//       virtual TrackLatencyInfo& getForwardLatencyInfo();
-      //
       // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
       //  needed only to equalize the timing of all the AudioOutput tracks.
       // It is applied as a direct offset in the latency delay compensator in getData().

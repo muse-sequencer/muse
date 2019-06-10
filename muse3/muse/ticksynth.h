@@ -37,41 +37,19 @@ class MetronomeSynthI : public SynthI
 public:
   void initSamplesOperation(PendingOperationList& operations);
   
-      // REMOVE Tim. latency. Added.
-//       float selfLatencyMidi(int /*channel*/, bool /*capture*/) const { return 0.0f; }
-//       // Synth devices can never dominate latency, only physical/hardware midi devices can.
-//       bool canDominateOutputLatencyMidi(bool /*capture*/) const { return false; }
-//       bool canDominateEndPointLatencyMidi(bool /*capture*/) const { return false; }
-      // The built-in metronome synth is special: It can correct latency by itself, and is
-      //  not driven by a midi track which can correct latency.
-      bool canCorrectOutputLatencyMidi() const { return true; }
-      bool isLatencyInputTerminalMidi(bool capture);
-      bool isLatencyOutputTerminalMidi(bool capture);
-//       TrackLatencyInfo& getInputDominanceLatencyInfoMidi(bool capture);
-//       TrackLatencyInfo& getDominanceLatencyInfoMidi(bool capture);
-//       void setCorrectionLatencyInfoMidi(bool capture, float finalWorstLatency, float callerBranchLatency = 0.0f);
-//       TrackLatencyInfo& getInputLatencyInfoMidi(bool capture);
-//       TrackLatencyInfo& getLatencyInfoMidi(bool capture);
-//       unsigned long latencyCompWriteOffsetMidi(bool capture) const;
-//       void setLatencyCompWriteOffsetMidi(float worstCase, bool capture);
+  // The built-in metronome synth is special: It can correct latency by itself, and is
+  //  not driven by a midi track which can correct latency.
+  bool canCorrectOutputLatencyMidi() const { return true; }
+  bool isLatencyInputTerminalMidi(bool capture);
+  bool isLatencyOutputTerminalMidi(bool capture);
 
-//       // Synth devices can never dominate latency, only physical/hardware midi devices can.
-//       bool canDominateOutputLatency() const { return false; }
-//       bool canDominateEndPointLatency() const { return false; }
-      // The built-in metronome synth is special: It can correct latency by itself, and is
-      //  not driven by a midi track which can correct latency.
-      bool canCorrectOutputLatency() const { return true; }
-      // The built-in metronome synth is special: It cannot pass thru latency.
-      bool canPassThruLatency() const { return false; }
-      bool isLatencyInputTerminal();
-      bool isLatencyOutputTerminal();
-//       TrackLatencyInfo& getInputDominanceLatencyInfo();
-//       TrackLatencyInfo& getDominanceLatencyInfo();
-//       TrackLatencyInfo& setCorrectionLatencyInfo(bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
-//       TrackLatencyInfo& getInputLatencyInfo();
-//       TrackLatencyInfo& getLatencyInfo();
-//       unsigned long latencyCompWriteOffset() const { return _latencyInfo._compensatorWriteOffset; }
-//       void setLatencyCompWriteOffset(float /*worstCase*/) { }
+  // The built-in metronome synth is special: It can correct latency by itself, and is
+  //  not driven by a midi track which can correct latency.
+  bool canCorrectOutputLatency() const { return true; }
+  // The built-in metronome synth is special: It cannot pass thru latency.
+  bool canPassThruLatency() const { return false; }
+  bool isLatencyInputTerminal();
+  bool isLatencyOutputTerminal();
 
   //------------------------------------------------------------------------
   // The metronome synth is special - it cannot be routed like other tracks, 

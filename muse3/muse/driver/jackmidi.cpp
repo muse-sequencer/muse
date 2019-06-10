@@ -1361,7 +1361,6 @@ void MidiJackDevice::processMidi(unsigned int curFrame)
   }
 }
 
-// REMOVE Tim. latency. Added.
 //---------------------------------------------------------
 //   portLatency
 //   If capture is true get the capture latency,
@@ -1381,7 +1380,12 @@ unsigned int MidiJackDevice::portLatency(void* port, bool capture) const
   //              right from the backend physical port, the values passed throughout the system and
   //              to the app are always zero!
   
-  // REMOVE Tim. latency. Added.
+  // NOTICE: For at least the ALSA seq driver (tested), the input latency is
+  //          always 1 period while the output latency is always 2 periods
+  //          regardless of Jack command line -p (period size).
+  //         (Also there is the user latency from command line or QJackCtl.)
+  //         In other words, the Jack command line -p (number of periods) ONLY applies to audio output ports.
+  
   //fprintf(stderr, "MidiJackDevice::portLatency port:%p capture:%d c_range.min:%d c_range.max:%d p_range.min:%d p_range.max:%d\n",
   //        port, capture, c_range.min, c_range.max, p_range.min, p_range.max);
 
@@ -1390,7 +1394,7 @@ unsigned int MidiJackDevice::portLatency(void* port, bool capture) const
 //     jack_latency_range_t c_range;
 //     jack_port_get_latency_range((jack_port_t*)port, JackCaptureLatency, &c_range);
 
-// TESTING Reinstate. For simulating non-functional jack midi latency
+// REMOVE Tim. latency. TESTING Reinstate. For simulating non-functional jack midi latency. This seems to work well.
 //     return c_range.max;
     return MusEGlobal::segmentSize;
   }
@@ -1399,7 +1403,7 @@ unsigned int MidiJackDevice::portLatency(void* port, bool capture) const
 //     jack_latency_range_t p_range;
 //     jack_port_get_latency_range((jack_port_t*)port, JackPlaybackLatency, &p_range);
 
-// TESTING Reinstate. For simulating non-functional jack midi latency
+// REMOVE Tim. latency. TESTING Reinstate. For simulating non-functional jack midi latency. This seems to work well.
 //     return p_range.max;
     return MusEGlobal::segmentSize * 2;
   }

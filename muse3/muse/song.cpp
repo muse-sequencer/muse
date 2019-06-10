@@ -2331,8 +2331,7 @@ void Song::seqSignal(int fd)
                         }
 
                         break;
-// REMOVE Tim. latency. Removed.
-// We now do this in MusE::bounceToFile() and MusE::bounceToTrack(), BEFORE the transport is started.
+// REMOVE Tim. latency. Removed. We now do this in MusE::bounceToFile() and MusE::bounceToTrack(), BEFORE the transport is started.
 //                   case 'f':   // start freewheel
 //                         if(MusEGlobal::debugMsg)
 //                           fprintf(stderr, "Song: seqSignal: case f: setFreewheel start\n");

@@ -31,11 +31,10 @@ void TrackLatencyInfo::initialize()
   _dominanceInputProcessed = false;
   _canDominateProcessed = false;
   _canDominateInputProcessed = false;
-//     _forwardProcessed = false;
   _correctionProcessed = false;
   _correctionInputProcessed = false;
-    _worstPluginLatencyProcessed = false;
-    _worstPluginLatency = 0.0f;
+  _worstPluginLatencyProcessed = false;
+  _worstPluginLatency = 0.0f;
   _processed = false;
   _inputProcessed = false;
   _worstSelfLatency = 0.0f;
@@ -50,9 +49,7 @@ void TrackLatencyInfo::initialize()
   _isLatencyOutputTerminalProcessed = false;
   _canDominateOutputLatency = false;
   _canDominateInputLatency = false;
-//   _requiresInputCorrection = false;
   _canCorrectOutputLatency = false;
-//   _canCorrectInputLatency = false;
   _sourceCorrectionValue = 0.0f;
   _compensatorWriteOffset = 0;
   

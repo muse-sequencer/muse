@@ -163,7 +163,6 @@ class Audio {
 
       //metronome values
       unsigned midiClick;
-      // REMOVE Tim. latency. Added.
       unsigned audioClick;
       int clickno;      // precount values
       int clicksMeasure;
@@ -231,7 +230,6 @@ class Audio {
       // Process midi for a number of frames. Call from audio thread only.
       // Note that nextTickPos (and friends) will already be set before calling.
       void processMidi(unsigned int frames);
-      // REMOVE Tim. latency. Added.
       void processMidiMetronome(unsigned int frames);
       void processAudioMetronome(unsigned int frames);
       

@@ -24,8 +24,6 @@
 #ifndef __JACKMIDI_H__
 #define __JACKMIDI_H__
 
-//#include <config.h>
-
 #include <map>
 
 #include <jack/jack.h>
@@ -36,8 +34,6 @@
 #include "mpevent.h"
 
 class QString;
-//class MidiFifo;
-//class RouteList;
 
 namespace MusECore {
 class MidiRecordEvent;
@@ -107,7 +103,6 @@ class MidiJackDevice : public MidiDevice {
       
       virtual void writeRouting(int, Xml&) const;
 
-// REMOVE Tim. latency. Added.
       virtual unsigned int portLatency(void* port, bool capture) const;
       // The contribution to latency by the device's own members (midi effect rack, Jack ports etc).
       // A midi device can contain both an input and an output. The 'capture' parameter determines which one.
