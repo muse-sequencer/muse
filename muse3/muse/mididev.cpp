@@ -757,6 +757,7 @@ bool MidiDevice::isLatencyInputTerminalMidi(bool capture)
   if(!capture || port < 0 || port >= MusECore::MIDI_PORTS)
   {
     tli->_isLatencyInputTerminal = true;
+    tli->_isLatencyInputTerminalProcessed = true;
     return true;
   }
 
@@ -777,6 +778,7 @@ bool MidiDevice::isLatencyInputTerminalMidi(bool capture)
             continue;
           
           tli->_isLatencyInputTerminal = false;
+          tli->_isLatencyInputTerminalProcessed = true;
           return false;
         }
       break;
@@ -787,6 +789,7 @@ bool MidiDevice::isLatencyInputTerminalMidi(bool capture)
   }
 
   tli->_isLatencyInputTerminal = true;
+  tli->_isLatencyInputTerminalProcessed = true;
   return true;
 }
 
@@ -805,6 +808,7 @@ bool MidiDevice::isLatencyOutputTerminalMidi(bool capture)
   if(!capture || port < 0 || port >= MusECore::MIDI_PORTS)
   {
     tli->_isLatencyOutputTerminal = true;
+    tli->_isLatencyOutputTerminalProcessed = true;
     return true;
   }
 
@@ -825,6 +829,7 @@ bool MidiDevice::isLatencyOutputTerminalMidi(bool capture)
             continue;
           
           tli->_isLatencyOutputTerminal = false;
+          tli->_isLatencyOutputTerminalProcessed = true;
           return false;
         }
       break;
@@ -835,6 +840,7 @@ bool MidiDevice::isLatencyOutputTerminalMidi(bool capture)
   }
 
   tli->_isLatencyOutputTerminal = true;
+  tli->_isLatencyOutputTerminalProcessed = true;
   return true;
 }
 

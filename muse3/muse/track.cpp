@@ -1038,6 +1038,7 @@ bool MidiTrack::isLatencyInputTerminal()
   if(!canPassThruLatency())
   {
     _latencyInfo._isLatencyInputTerminal = true;
+    _latencyInfo._isLatencyInputTerminalProcessed = true;
     return true;
   }
   
@@ -1053,6 +1054,7 @@ bool MidiTrack::isLatencyInputTerminal()
       if(!md->isSynti() || !static_cast<SynthI*>(md)->off())
       {
         _latencyInfo._isLatencyInputTerminal = false;
+        _latencyInfo._isLatencyInputTerminalProcessed = true;
         return false;
       }
     }
@@ -1079,6 +1081,7 @@ bool MidiTrack::isLatencyInputTerminal()
         if(md->openFlags() & 1 /*write*/)
         {
           _latencyInfo._isLatencyInputTerminal = false;
+          _latencyInfo._isLatencyInputTerminalProcessed = true;
           return false;
         }
       }
@@ -1101,6 +1104,7 @@ bool MidiTrack::isLatencyInputTerminal()
 #endif
 
   _latencyInfo._isLatencyInputTerminal = true;
+  _latencyInfo._isLatencyInputTerminalProcessed = true;
   return true;
 }
 
@@ -1125,6 +1129,7 @@ bool MidiTrack::isLatencyOutputTerminal()
       if(!md->isSynti() || !static_cast<SynthI*>(md)->off())
       {
         _latencyInfo._isLatencyOutputTerminal = false;
+        _latencyInfo._isLatencyOutputTerminalProcessed = true;
         return false;
       }
     }
@@ -1151,6 +1156,7 @@ bool MidiTrack::isLatencyOutputTerminal()
         if(md->openFlags() & 1 /*write*/)
         {
           _latencyInfo._isLatencyOutputTerminal = false;
+          _latencyInfo._isLatencyOutputTerminalProcessed = true;
           return false;
         }
       }
@@ -1173,6 +1179,7 @@ bool MidiTrack::isLatencyOutputTerminal()
 #endif
 
   _latencyInfo._isLatencyOutputTerminal = true;
+  _latencyInfo._isLatencyOutputTerminalProcessed = true;
   return true;
 }
 

@@ -2596,7 +2596,7 @@ AudioOutput::AudioOutput()
    : AudioTrack(AUDIO_OUTPUT)
       {
       // REMOVE Tim. latency. Added.
-      _latencyCompBounce = new LatencyCompensator();
+      _outputLatencyComp = new LatencyCompensator();
 
       _nframes = 0;
       for (int i = 0; i < MAX_CHANNELS; ++i)
@@ -2607,7 +2607,7 @@ AudioOutput::AudioOutput(const AudioOutput& t, int flags)
   : AudioTrack(t, flags)
 {
   // REMOVE Tim. latency. Added.
-  _latencyCompBounce = new LatencyCompensator();
+  _outputLatencyComp = new LatencyCompensator();
 
   for (int i = 0; i < MusECore::MAX_CHANNELS; ++i)
         jackPorts[i] = 0;
@@ -2665,8 +2665,8 @@ AudioOutput::~AudioOutput()
             MusEGlobal::audioDevice->unregisterPort(jackPorts[i]);
 
       // REMOVE Tim. latency. Added.
-      if(_latencyCompBounce)
-        delete _latencyCompBounce;
+      if(_outputLatencyComp)
+        delete _outputLatencyComp;
       }
 
 //---------------------------------------------------------
@@ -2677,8 +2677,8 @@ void AudioOutput::setChannels(int n)
       {
       AudioTrack::setChannels(n);
       // REMOVE Tim. latency. Added.
-      if(useLatencyCorrection() && _latencyCompBounce)
-        _latencyCompBounce->setChannels(totalProcessBuffers());
+      if(useLatencyCorrection() && _outputLatencyComp)
+        _outputLatencyComp->setChannels(totalProcessBuffers());
       }
 
 //---------------------------------------------------------
@@ -2740,6 +2740,7 @@ bool AudioOutput::isLatencyInputTerminal()
     return _latencyInfo._isLatencyInputTerminal;
 
   _latencyInfo._isLatencyInputTerminal = true;
+  _latencyInfo._isLatencyInputTerminalProcessed = true;
   return true;
 }
 bool AudioOutput::isLatencyOutputTerminal()
@@ -2750,6 +2751,7 @@ bool AudioOutput::isLatencyOutputTerminal()
     return _latencyInfo._isLatencyOutputTerminal;
 
   _latencyInfo._isLatencyOutputTerminal = true;
+  _latencyInfo._isLatencyOutputTerminalProcessed = true;
   return true;
 }
 

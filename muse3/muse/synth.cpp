@@ -1349,6 +1349,7 @@ bool SynthI::isLatencyInputTerminal()
   if(off())
   {
     _latencyInfo._isLatencyInputTerminal = true;
+    _latencyInfo._isLatencyInputTerminalProcessed = true;
     return true;
   }
   
@@ -1374,6 +1375,7 @@ bool SynthI::isLatencyInputTerminal()
               continue;
             
             _latencyInfo._isLatencyInputTerminal = false;
+            _latencyInfo._isLatencyInputTerminalProcessed = true;
             return false;
           }
         break;
@@ -1404,6 +1406,7 @@ bool SynthI::isLatencyInputTerminal()
               continue;
             
             _latencyInfo._isLatencyInputTerminal = false;
+            _latencyInfo._isLatencyInputTerminalProcessed = true;
             return false;
           }
           //else
@@ -1419,6 +1422,7 @@ bool SynthI::isLatencyInputTerminal()
   }
 
   _latencyInfo._isLatencyInputTerminal = true;
+  _latencyInfo._isLatencyInputTerminalProcessed = true;
   return true;
 }
 
@@ -1449,6 +1453,7 @@ bool SynthI::isLatencyOutputTerminal()
             continue;
           
           _latencyInfo._isLatencyOutputTerminal = false;
+          _latencyInfo._isLatencyOutputTerminalProcessed = true;
           return false;
         }
       break;
@@ -1478,6 +1483,7 @@ bool SynthI::isLatencyOutputTerminal()
               continue;
             
             _latencyInfo._isLatencyOutputTerminal = false;
+            _latencyInfo._isLatencyOutputTerminalProcessed = true;
             return false;
           }
           //else
@@ -1493,6 +1499,7 @@ bool SynthI::isLatencyOutputTerminal()
   }
     
   _latencyInfo._isLatencyOutputTerminal = true;
+  _latencyInfo._isLatencyOutputTerminalProcessed = true;
   return true;
 }
 
@@ -2280,6 +2287,7 @@ bool SynthI::isLatencyInputTerminalMidi(bool capture)
   if(off())
   {
     tli->_isLatencyInputTerminal = true;
+    tli->_isLatencyInputTerminalProcessed = true;
     return true;
   }
   
@@ -2305,6 +2313,7 @@ bool SynthI::isLatencyInputTerminalMidi(bool capture)
               continue;
             
             tli->_isLatencyInputTerminal = false;
+            tli->_isLatencyInputTerminalProcessed = true;
             return false;
           }
         break;
@@ -2335,6 +2344,7 @@ bool SynthI::isLatencyInputTerminalMidi(bool capture)
               continue;
             
             tli->_isLatencyInputTerminal = false;
+            tli->_isLatencyInputTerminalProcessed = true;
             return false;
           }
         break;
@@ -2346,6 +2356,7 @@ bool SynthI::isLatencyInputTerminalMidi(bool capture)
   }
 
   tli->_isLatencyInputTerminal = true;
+  tli->_isLatencyInputTerminalProcessed = true;
   return true;
 }
 
@@ -2380,6 +2391,7 @@ bool SynthI::isLatencyOutputTerminalMidi(bool capture)
               continue;
             
             tli->_isLatencyOutputTerminal = false;
+            tli->_isLatencyOutputTerminalProcessed = true;
             return false;
           }
         break;
@@ -2410,6 +2422,7 @@ bool SynthI::isLatencyOutputTerminalMidi(bool capture)
               continue;
             
             tli->_isLatencyOutputTerminal = false;
+            tli->_isLatencyOutputTerminalProcessed = true;
             return false;
           }
         break;
@@ -2421,6 +2434,7 @@ bool SynthI::isLatencyOutputTerminalMidi(bool capture)
   }
 
   tli->_isLatencyOutputTerminal = true;
+  tli->_isLatencyOutputTerminalProcessed = true;
   return true;
 }
 

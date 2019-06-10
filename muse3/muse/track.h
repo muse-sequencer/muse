@@ -847,9 +847,9 @@ class AudioOutput : public AudioTrack {
       float* buffer[MusECore::MAX_CHANNELS];
       float* buffer1[MusECore::MAX_CHANNELS];
       unsigned long _nframes;
-      // REMOVE Tim. latency. Added.
-      // Audio latency compensator, for bounce-to-file and bounce-to-track operations.
-      LatencyCompensator* _latencyCompBounce;
+      // Audio latency compensator, for compensating output signals
+      //  according to any differing channel port latencies.
+      LatencyCompensator* _outputLatencyComp;
 
       static bool _isVisible;
       void internal_assign(const Track& t, int flags);
@@ -869,6 +869,7 @@ class AudioOutput : public AudioTrack {
       // Audio Output is considered a termination point.
       bool isLatencyInputTerminal();
       bool isLatencyOutputTerminal();
+      void applyOutputLatencyComp();
       
       virtual void assign(const Track&, int flags);
       AudioOutput* clone(int flags) const { return new AudioOutput(*this, flags); }

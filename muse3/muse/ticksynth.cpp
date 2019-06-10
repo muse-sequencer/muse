@@ -486,6 +486,7 @@ bool MetronomeSynthI::isLatencyInputTerminal()
   if(off() /*|| !MusEGlobal::song->click()*/)
   {
     _latencyInfo._isLatencyInputTerminal = true;
+    _latencyInfo._isLatencyInputTerminalProcessed = true;
     return true;
   }
   
@@ -503,6 +504,7 @@ bool MetronomeSynthI::isLatencyInputTerminal()
       if(ao->sendMetronome())
       {
         _latencyInfo._isLatencyInputTerminal = false;
+        _latencyInfo._isLatencyInputTerminalProcessed = true;
         return false;
       }
     }
@@ -520,12 +522,14 @@ bool MetronomeSynthI::isLatencyInputTerminal()
         if(md && ((md->openFlags() & 1 /*write*/) && (!md->isSynti() || !static_cast<const SynthI*>(md)->off())))
         {
           _latencyInfo._isLatencyInputTerminal = false;
+          _latencyInfo._isLatencyInputTerminalProcessed = true;
           return false;
         }
       }
   }
 
   _latencyInfo._isLatencyInputTerminal = true;
+  _latencyInfo._isLatencyInputTerminalProcessed = true;
   return true;
 }
 
@@ -554,6 +558,7 @@ bool MetronomeSynthI::isLatencyOutputTerminal()
       if(ao->sendMetronome())
       {
         _latencyInfo._isLatencyOutputTerminal = false;
+        _latencyInfo._isLatencyOutputTerminalProcessed = true;
         return false;
       }
     }
@@ -571,12 +576,14 @@ bool MetronomeSynthI::isLatencyOutputTerminal()
         if(md && ((md->openFlags() & 1 /*write*/) && (!md->isSynti() || !static_cast<const SynthI*>(md)->off())))
         {
           _latencyInfo._isLatencyOutputTerminal = false;
+          _latencyInfo._isLatencyOutputTerminalProcessed = true;
           return false;
         }
       }
   }
     
   _latencyInfo._isLatencyOutputTerminal = true;
+  _latencyInfo._isLatencyOutputTerminalProcessed = true;
   return true;
 }
 
@@ -593,6 +600,7 @@ bool MetronomeSynthI::isLatencyInputTerminalMidi(bool capture)
   if(off() /*|| !MusEGlobal::song->click()*/)
   {
     tli->_isLatencyInputTerminal = true;
+    tli->_isLatencyInputTerminalProcessed = true;
     return true;
   }
   
@@ -610,6 +618,7 @@ bool MetronomeSynthI::isLatencyInputTerminalMidi(bool capture)
       if(ao->sendMetronome())
       {
         tli->_isLatencyInputTerminal = false;
+        tli->_isLatencyInputTerminalProcessed = true;
         return false;
       }
     }
@@ -627,12 +636,14 @@ bool MetronomeSynthI::isLatencyInputTerminalMidi(bool capture)
         if(md && ((md->openFlags() & 1 /*write*/) && (!md->isSynti() || !static_cast<const SynthI*>(md)->off())))
         {
           tli->_isLatencyInputTerminal = false;
+          tli->_isLatencyInputTerminalProcessed = true;
           return false;
         }
       }
   }
 
   tli->_isLatencyInputTerminal = true;
+  tli->_isLatencyInputTerminalProcessed = true;
   return true;
 }
 
@@ -659,6 +670,7 @@ bool MetronomeSynthI::isLatencyOutputTerminalMidi(bool capture)
       if(ao->sendMetronome())
       {
         tli->_isLatencyOutputTerminal = false;
+        tli->_isLatencyOutputTerminalProcessed = true;
         return false;
       }
     }
@@ -676,12 +688,14 @@ bool MetronomeSynthI::isLatencyOutputTerminalMidi(bool capture)
         if(md && ((md->openFlags() & 1 /*write*/) && (!md->isSynti() || !static_cast<const SynthI*>(md)->off())))
         {
           tli->_isLatencyOutputTerminal = false;
+          tli->_isLatencyOutputTerminalProcessed = true;
           return false;
         }
       }
   }
 
   tli->_isLatencyOutputTerminal = true;
+  tli->_isLatencyOutputTerminalProcessed = true;
   return true;
 }
 
