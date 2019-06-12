@@ -46,6 +46,10 @@ struct TrackLatencyInfo
   bool _worstPluginLatencyProcessed;
   // The worst contribution to latency by the channels in the track's effect rack.
   float _worstPluginLatency;
+  // Whether the _worstPortLatency has been processed.
+  bool _worstPortLatencyProcessed;
+  // The worst contribution to latency by any ports (for ex. audio input/output tracks).
+  float _worstPortLatency;
   // Whether the final latency information is valid (has already been gathered
   //  in the in the final latency scan).
   // This is reset near the beginning of the process handler.

@@ -326,6 +326,8 @@ private:
     LV2_URID _uAtom_Object;
     bool _hasFreeWheelPort;
     uint32_t _freeWheelPortIndex;
+    bool _hasLatencyPort;
+    uint32_t _latencyPortIndex;
     bool _isConstructed;
     float *_pluginControlsDefault;
     float *_pluginControlsMin;
@@ -474,6 +476,9 @@ public:
     virtual CtrlList::Mode ctrlMode ( unsigned long ) const;
     virtual LADSPA_PortRangeHint range(unsigned long i);
     virtual LADSPA_PortRangeHint rangeOut(unsigned long i);
+    bool hasLatencyOutPort() const;
+    unsigned long latencyOutPortIndex() const;
+    float latency() const;
 
     virtual void enableController(unsigned long i, bool v = true);
     virtual bool controllerEnabled(unsigned long i) const;

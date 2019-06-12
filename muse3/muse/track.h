@@ -282,6 +282,8 @@ class Track {
       virtual float selfLatencyAudio(int /*channel*/) const { return 0.0f; }
       // The cached worst latency of all the channels in the track's effect rack plus any synthesizer latency if applicable.
       virtual float getWorstPluginLatencyAudio() { return 0.0f; }
+      // The cached worst contribution to latency by any ports (for ex. Jack ports of audio input/output tracks).
+      virtual float getWorstPortLatencyAudio() { return 0.0f; }
       // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc)
       //  plus any port latency if applicable.
       virtual float getWorstSelfLatencyAudio() { return 0.0f; }
@@ -816,9 +818,8 @@ class AudioInput : public AudioTrack {
       virtual ~AudioInput();
 
       float selfLatencyAudio(int channel) const; 
-      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc)
-      //  plus any port latency if applicable.
-      float getWorstSelfLatencyAudio();
+      // The cached worst contribution to latency by any ports (for ex. Jack ports of audio input/output tracks).
+      float getWorstPortLatencyAudio();
       // Audio Input tracks have no correction available. They ALWAYS dominate any parallel branches, if they are not 'off'.
       bool canDominateOutputLatency() const;
       
@@ -861,15 +862,14 @@ class AudioOutput : public AudioTrack {
 
       virtual float selfLatencyAudio(int channel) const;
       void setChannels(int n);
-      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc)
-      //  plus any port latency if applicable.
-      float getWorstSelfLatencyAudio();
+      // The cached worst contribution to latency by any ports (for ex. Jack ports of audio input/output tracks).
+      float getWorstPortLatencyAudio();
       // Audio output tracks can allow a branch to dominate if they are an end-point and the branch can dominate.
       bool canDominateEndPointLatency() const { return true; }
       // Audio Output is considered a termination point.
       bool isLatencyInputTerminal();
       bool isLatencyOutputTerminal();
-      void applyOutputLatencyComp();
+      void applyOutputLatencyComp(unsigned nframes);
       
       virtual void assign(const Track&, int flags);
       AudioOutput* clone(int flags) const { return new AudioOutput(*this, flags); }

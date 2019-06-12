@@ -769,15 +769,26 @@ int DssiSynthIF::oldMidiStateHeader(const unsigned char** data) const
   return 2; 
 }
         
+bool DssiSynthIF::hasLatencyOutPort() const
+{
+  return _hasLatencyOutPort;
+}
+
+unsigned long DssiSynthIF::latencyOutPortIndex() const
+{
+  return _latencyOutPort;
+}
+
 //---------------------------------------------------------
 //   latency
 //---------------------------------------------------------
 
 float DssiSynthIF::latency() const
 {
-  if(!_hasLatencyOutPort)
+  // Do not report any latency if the plugin is not on.
+  if(!hasLatencyOutPort() || !on())
     return 0.0;
-  return _controlsOut[_latencyOutPort].val;
+  return _controlsOut[latencyOutPortIndex()].val;
 }
 
 

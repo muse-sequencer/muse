@@ -190,6 +190,8 @@ LADSPA_PortRangeHint SynthIF::rangeOut(unsigned long)
   h.UpperBound = 1.0;
   return h;
 }
+bool SynthIF::hasLatencyOutPort() const { return false; }
+unsigned long SynthIF::latencyOutPortIndex() const { return 0; }
 float SynthIF::latency() const { return 0.0; }
 CtrlValueType SynthIF::ctrlValueType(unsigned long) const { return VAL_LINEAR; }
 CtrlList::Mode SynthIF::ctrlMode(unsigned long) const     { return CtrlList::INTERPOLATE; };
@@ -1217,7 +1219,7 @@ float SynthI::getWorstPluginLatencyAudio()
   float worst_lat = _sif->latency();
   // Include the effects rack latency.
   if(_efxPipe)
-    worst_lat = _efxPipe->latency();
+    worst_lat += _efxPipe->latency();
   
   _latencyInfo._worstPluginLatency = worst_lat;
   _latencyInfo._worstPluginLatencyProcessed = true;

@@ -2218,6 +2218,9 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
      _isSynth(false),
      _uis(NULL),
      _hasFreeWheelPort(false),
+     _freeWheelPortIndex(0),
+     _hasLatencyPort(false),
+     _latencyPortIndex(0),
      _isConstructed(false),
      _pluginControlsDefault(NULL),
      _pluginControlsMin(NULL),
@@ -2358,6 +2361,11 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
 
    const LilvPort *lilvFreeWheelPort = lilv_plugin_get_port_by_designation(_handle, lv2CacheNodes.lv2_InputPort, lv2CacheNodes.lv2_FreeWheelPort);
 
+   uint32_t latency_port = 0;
+   const bool has_latency_port = lilv_plugin_has_latency(_handle);
+   if(has_latency_port)
+     latency_port = lilv_plugin_get_latency_port_index(_handle);
+
    _pluginControlsDefault = new float [numPorts];
    _pluginControlsMin = new float [numPorts];
    _pluginControlsMax = new float [numPorts];
@@ -2479,7 +2487,8 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
         lilv_node_free(_nPname);
    }
 
-   for(uint32_t i = 0; i < _controlInPorts.size(); ++i)
+   const uint32_t ci_sz = _controlInPorts.size();
+   for(uint32_t i = 0; i < ci_sz; ++i)
    {
       _idxToControlMap.insert(std::pair<uint32_t, uint32_t>(_controlInPorts [i].index, i));
       if(lilvFreeWheelPort != NULL)
@@ -2488,6 +2497,19 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
          {
             _hasFreeWheelPort = true;
             _freeWheelPortIndex = i;
+         }
+      }
+   }
+
+   if(has_latency_port)
+   {
+      const uint32_t co_sz = _controlOutPorts.size();
+      for(uint32_t i = 0; i < co_sz; ++i)
+      {
+         if(_controlOutPorts [i].index == latency_port)
+         {
+            _hasLatencyPort = true;
+            _latencyPortIndex = i;
          }
       }
    }
@@ -4541,6 +4563,27 @@ LADSPA_PortRangeHint LV2SynthIF::rangeOut(unsigned long i)
 
 }
 
+bool LV2SynthIF::hasLatencyOutPort() const
+{
+  return _synth->_hasLatencyPort;
+}
+
+unsigned long LV2SynthIF::latencyOutPortIndex() const
+{
+  return _synth->_latencyPortIndex;
+}
+
+//---------------------------------------------------------
+//   latency
+//---------------------------------------------------------
+
+float LV2SynthIF::latency() const
+{
+  // Do not report any latency if the plugin is not on.
+  if(!hasLatencyOutPort() || !on())
+    return 0.0;
+  return _controlsOut[latencyOutPortIndex()].val;
+}
 
 
 double LV2SynthIF::paramOut(long unsigned int i) const

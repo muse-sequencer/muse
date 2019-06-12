@@ -198,6 +198,8 @@ class SynthIF : public PluginIBase {
       // FIXME TODO: Either find a way to agnosticize these two ranges, or change them from ladspa ranges to a new MusE range class.
       virtual LADSPA_PortRangeHint range(unsigned long i);
       virtual LADSPA_PortRangeHint rangeOut(unsigned long i);
+      virtual bool hasLatencyOutPort() const;
+      virtual unsigned long latencyOutPortIndex() const;
       virtual float latency() const;
       virtual CtrlValueType ctrlValueType(unsigned long i) const;
       virtual CtrlList::Mode ctrlMode(unsigned long i) const;

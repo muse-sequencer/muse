@@ -218,6 +218,8 @@ class DssiSynthIF : public SynthIF
       const char* paramOutName(unsigned long i);
       LADSPA_PortRangeHint range(unsigned long i);
       LADSPA_PortRangeHint rangeOut(unsigned long i);
+      bool hasLatencyOutPort() const;
+      unsigned long latencyOutPortIndex() const;
       float latency() const;
       CtrlValueType ctrlValueType(unsigned long i) const; 
       CtrlList::Mode ctrlMode(unsigned long i) const; 

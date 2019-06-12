@@ -1419,8 +1419,10 @@ bool AudioTrack::putFifo(int channels, unsigned long n, float** bp)
   const bool use_latency_corr = useLatencyCorrection();
   if(use_latency_corr)
   {
-    // Are we bouncing to this (wave) track?
-    if(MusEGlobal::song->bounceOutput && MusEGlobal::song->bounceTrack == this)
+    // Are we bouncing this (audio output) track to a file,
+    //  or bouncing an audio output track to this (wave) track?
+    if(MusEGlobal::song->bounceOutput == this ||
+      (MusEGlobal::song->bounceOutput && MusEGlobal::song->bounceTrack == this))
     {
       // We want the bounce audio output track's output latency - without the port latency.
       const TrackLatencyInfo& li = MusEGlobal::song->bounceOutput->getLatencyInfo(false /*output*/);
@@ -1505,7 +1507,6 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
             // Write the buffers to the latency compensator.
             // By now, each copied channel should have the same latency, 
             //  so we use this convenient common-latency version of write.
-            // Also factor in the write offset required by AudioOutput tracks.
             // TODO: Make this per-channel.
             if(use_latency_corr)
             {
@@ -1519,6 +1520,8 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
                 l = 0;
               else
                 l = ir->audioLatencyOut;
+              // Write the buffers to the latency compensator.
+              // They will be read back later, in-place.
               _latencyComp->write(nframes, l + latencyCompWriteOffset(), buffer);
             }
             

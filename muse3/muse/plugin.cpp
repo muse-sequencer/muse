@@ -2449,9 +2449,10 @@ void PluginI::activate()
 
 float PluginI::latency() const
 {
-  if(!_hasLatencyOutPort)
+  // Do not report any latency if the plugin is not on.
+  if(!hasLatencyOutPort() || !on())
     return 0.0;
-  return controlsOut[_latencyOutPort].val;
+  return controlsOut[latencyOutPortIndex()].val;
 }
 
 

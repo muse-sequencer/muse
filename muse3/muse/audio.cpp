@@ -843,7 +843,15 @@ void Audio::process(unsigned frames)
 
       process1(samplePos, offset, frames);
       for (iAudioOutput i = ol->begin(); i != ol->end(); ++i)
+      {
             (*i)->processWrite();
+            // REMOVE Tim. latency. Added.
+            // Special for audio outputs tracks: Now that processWrite() is
+            //  finished using 'buffer', apply output channel latency compensation
+            //  to the buffer so that the correct signals appear at the final destination.
+            // Note that 'buffer' should be in phase by now.
+            (*i)->applyOutputLatencyComp(frames);
+      }
       
 #ifdef _AUDIO_USE_TRUE_FRAME_
       _previousPos = _pos;
@@ -926,7 +934,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       static_cast<MidiDevice*>(metronome)->prepareLatencyScan();
 
       //---------------------------------------------
-      // Latency correction/compensation processing
+      // BEGIN Latency correction/compensation processing
       // TODO: Instead of doing this blindly every cycle, do it only when
       //        a latency controller changes or a connection is made etc,
       //        ie only when something changes.
@@ -1335,7 +1343,10 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           }
         }
       }
-
+      //---------------------------------------------
+      // END Latency correction/compensation processing
+      //---------------------------------------------
+      
       //---------------------------------------------
       // Midi processing
       //---------------------------------------------

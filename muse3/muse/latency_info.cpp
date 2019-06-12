@@ -35,6 +35,8 @@ void TrackLatencyInfo::initialize()
   _correctionInputProcessed = false;
   _worstPluginLatencyProcessed = false;
   _worstPluginLatency = 0.0f;
+  _worstPortLatencyProcessed = false;
+  _worstPortLatency = 0.0f;
   _processed = false;
   _inputProcessed = false;
   _worstSelfLatency = 0.0f;

@@ -1497,7 +1497,7 @@ float AudioTrack::getWorstPluginLatencyAudio()
   float worst_lat = 0.0f;
   // Include the effects rack latency.
   if(_efxPipe)
-    worst_lat = _efxPipe->latency();
+    worst_lat += _efxPipe->latency();
   
   _latencyInfo._worstPluginLatency = worst_lat;
   _latencyInfo._worstPluginLatencyProcessed = true;
@@ -1515,8 +1515,9 @@ float AudioTrack::getWorstSelfLatencyAudio()
   if(_latencyInfo._worstSelfLatencyProcessed)
     return _latencyInfo._worstSelfLatency;
 
-  // Include the effects rack latency.
-  _latencyInfo._worstSelfLatency = getWorstPluginLatencyAudio();
+  // Include the effects rack latency and any synth latency and any port latency.
+  _latencyInfo._worstSelfLatency = getWorstPluginLatencyAudio() + getWorstPortLatencyAudio();
+  
   // The absolute latency of signals leaving this track is the sum of
   //  any connected route latencies and this track's latency.
   _latencyInfo._worstSelfLatencyProcessed = true;
@@ -2495,18 +2496,17 @@ float AudioInput::selfLatencyAudio(int channel) const
 }
 
 //---------------------------------------------------------
-//   getWorstSelfLatencyAudio
+//   getWorstPortLatencyAudio
 //---------------------------------------------------------
 
-float AudioInput::getWorstSelfLatencyAudio()
+float AudioInput::getWorstPortLatencyAudio()
 {
   // Have we been here before during this scan?
   // Just return the cached value.
-  if(_latencyInfo._worstSelfLatencyProcessed)
-    return _latencyInfo._worstSelfLatency;
+  if(_latencyInfo._worstPortLatencyProcessed)
+    return _latencyInfo._worstPortLatency;
 
-  // Include the effects rack latency.
-  float worst_lat = getWorstPluginLatencyAudio();
+  float worst_lat = 0.0f;
   // Include any port latencies.
   if(MusEGlobal::checkAudioDevice())
   {
@@ -2516,6 +2516,7 @@ float AudioInput::getWorstSelfLatencyAudio()
       void* jackPort = jackPorts[i];
       if(jackPort)
       {
+        // true = we want the capture latency.
         const float lat = MusEGlobal::audioDevice->portLatency(jackPort, true);
         if(lat > worst_lat)
           worst_lat = lat;
@@ -2523,9 +2524,9 @@ float AudioInput::getWorstSelfLatencyAudio()
     }
   }
   
-  _latencyInfo._worstSelfLatency = worst_lat;
-  _latencyInfo._worstSelfLatencyProcessed = true;
-  return _latencyInfo._worstSelfLatency;
+  _latencyInfo._worstPortLatency = worst_lat;
+  _latencyInfo._worstPortLatencyProcessed = true;
+  return _latencyInfo._worstPortLatency;
 }
 
 bool AudioInput::canDominateOutputLatency() const
@@ -2699,18 +2700,17 @@ float AudioOutput::selfLatencyAudio(int channel) const
 }
 
 //---------------------------------------------------------
-//   getWorstSelfLatencyAudio
+//   getWorstPortLatencyAudio
 //---------------------------------------------------------
 
-float AudioOutput::getWorstSelfLatencyAudio()
+float AudioOutput::getWorstPortLatencyAudio()
 {
   // Have we been here before during this scan?
   // Just return the cached value.
-  if(_latencyInfo._worstSelfLatencyProcessed)
-    return _latencyInfo._worstSelfLatency;
+  if(_latencyInfo._worstPortLatencyProcessed)
+    return _latencyInfo._worstPortLatency;
 
-  // Include the effects rack latency.
-  float worst_lat = getWorstPluginLatencyAudio();
+  float worst_lat = 0.0f;
   // Include any port latencies.
   if(MusEGlobal::checkAudioDevice())
   {
@@ -2720,6 +2720,7 @@ float AudioOutput::getWorstSelfLatencyAudio()
       void* jackPort = jackPorts[i];
       if(jackPort)
       {
+        // false = we want the playback latency.
         const float lat = MusEGlobal::audioDevice->portLatency(jackPort, false);
         if(lat > worst_lat)
           worst_lat = lat;
@@ -2727,9 +2728,9 @@ float AudioOutput::getWorstSelfLatencyAudio()
     }
   }
   
-  _latencyInfo._worstSelfLatency = worst_lat;
-  _latencyInfo._worstSelfLatencyProcessed = true;
-  return _latencyInfo._worstSelfLatency;
+  _latencyInfo._worstPortLatency = worst_lat;
+  _latencyInfo._worstPortLatencyProcessed = true;
+  return _latencyInfo._worstPortLatency;
 }
 
 bool AudioOutput::isLatencyInputTerminal()
@@ -2753,6 +2754,50 @@ bool AudioOutput::isLatencyOutputTerminal()
   _latencyInfo._isLatencyOutputTerminal = true;
   _latencyInfo._isLatencyOutputTerminalProcessed = true;
   return true;
+}
+
+//---------------------------------------------------------
+//   applyOutputLatencyComp
+//---------------------------------------------------------
+
+void AudioOutput::applyOutputLatencyComp(unsigned nframes)
+{
+  if(!useLatencyCorrection() || !_outputLatencyComp)
+    return;
+
+  // Include any port latencies.
+  if(MusEGlobal::checkAudioDevice())
+  {
+    // We want the audio output track's worst port latency.
+    //const TrackLatencyInfo& li = getLatencyInfo(false /*output*/);
+    //const float route_worst_case_latency = li._worstPortLatency;
+    const float port_worst_case_latency = getWorstPortLatencyAudio();
+
+    // 'buffer' is only MAX_CHANNELS deep, unlike some of our allocated audio buffers.
+    const int track_out_channels = MusECore::MAX_CHANNELS; //totalProcessBuffers(); // totalOutChannels();
+    for(int i = 0; i < track_out_channels; ++i)
+    {
+      // Prepare the latency value to be passed to the compensator's writer,
+      //  by adjusting each channel latency value. ie. the channel with the worst-case
+      //  latency will get ZERO delay, while channels having smaller latency will get
+      //  MORE delay, to match all the signal timings together.
+      void* jackPort = jackPorts[i];
+      if(jackPort)
+      {
+        // false = we want the playback latency.
+        const float lat = port_worst_case_latency - MusEGlobal::audioDevice->portLatency(jackPort, false);
+        unsigned long offset = 0;
+        if((long int)lat > 0)
+          offset = lat;
+
+        // Write the channel buffer to the latency compensator.
+        // It will be read back later, in-place.
+        _outputLatencyComp->write(i, nframes, offset /* + latencyCompWriteOffset() */, buffer[i]);
+        // Read back the latency compensated signal, using the channel buffer in-place.
+        _outputLatencyComp->read(i, nframes, buffer[i]);
+      }
+    }
+  }
 }
 
 //---------------------------------------------------------
