@@ -621,10 +621,21 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
             }
 
             const unsigned long next_smp = sample + nsamp;
-            for(unsigned long smp = sample + k; smp < next_smp; ++smp)
+            // REMOVE Tim. latency. Changed.
+//             for(unsigned long smp = sample + k; smp < next_smp; ++smp)
+//             {
+//               for(int ch = start_ch; ch < trackChans; ++ch)
+//                 *(outBuffers[ch] + smp) = *(buffer[ch] + smp) * _curVolume;
+//             }
+            float* o_buf_p;
+            const float* buf_p;
+            for(int ch = start_ch; ch < trackChans; ++ch)
             {
-              for(int ch = start_ch; ch < trackChans; ++ch)
-                *(outBuffers[ch] + smp) = *(buffer[ch] + smp) * _curVolume;
+              o_buf_p = outBuffers[ch];
+              buf_p = buffer[ch];
+              for(unsigned long smp = sample + k; smp < next_smp; ++smp)
+                //*(o_buf_p + smp) = *(buf_p + smp) * _curVolume;
+                o_buf_p[smp] = buf_p[smp] * _curVolume;
             }
           }
         }
@@ -1029,13 +1040,17 @@ void AudioTrack::copyData(unsigned pos,
       unsigned int q;
       for(i = 0; i < srcTotalOutChans; ++i)
       {
+        float* buf_p = buffer[i];
         if(MusEGlobal::config.useDenormalBias)
         {
-          for(q = 0; q < nframes; ++q)
-            buffer[i][q] = MusEGlobal::denormalBias;
+          // REMOVE Tim. latency. Changed.
+//           for(q = 0; q < nframes; ++q)
+//             buffer[i][q] = MusEGlobal::denormalBias;
+          for(q = 0; q < nframes; /*++q*/)
+            buf_p[q++] = MusEGlobal::denormalBias;
         }
         else
-          memset(buffer[i], 0, sizeof(float) * nframes);
+          memset(buf_p, 0, sizeof(float) * nframes);
       }
     }
 
@@ -2056,8 +2071,8 @@ void AudioOutput::processWrite()
                   }
               
                   // REMOVE Tim. latency. Added. Diagnostics.
-                  fprintf(stderr, "AudioOutput::processWrite(): Freewheel: _previousLatency:%f latency:%f _recFilePos:%ld audio pos frame:%u\n",
-                          _previousLatency, latency, _recFilePos, MusEGlobal::audio->pos().frame());
+                  //fprintf(stderr, "AudioOutput::processWrite(): Freewheel: _previousLatency:%f latency:%f _recFilePos:%ld audio pos frame:%u\n",
+                  //        _previousLatency, latency, _recFilePos, MusEGlobal::audio->pos().frame());
 
                   MusECore::WaveTrack* track = MusEGlobal::song->bounceTrack;
                   if (track && track->recordFlag() && track->recFile())
@@ -2072,14 +2087,14 @@ void AudioOutput::processWrite()
                         pos -= latency;
 
                         // REMOVE Tim. latency. Added. Diagnostics.
-                        fprintf(stderr, "AudioOutput::processWrite(): latency:%f Seeking track _recFile to:%ld\n", latency, pos);
+                        //fprintf(stderr, "AudioOutput::processWrite(): latency:%f Seeking track _recFile to:%ld\n", latency, pos);
 
                         track->recFile()->seek(pos, 0);
                         _previousLatency = latency;
                       }
 
                       // REMOVE Tim. latency. Added. Diagnostics.
-                      fprintf(stderr, "AudioOutput::processWrite(): Writing track _recFile\n");
+                      //fprintf(stderr, "AudioOutput::processWrite(): Writing track _recFile\n");
 
                       track->recFile()->write(_channels, buffer, _nframes);
                     }
@@ -2097,14 +2112,14 @@ void AudioOutput::processWrite()
                         pos -= latency;
 
                         // REMOVE Tim. latency. Added. Diagnostics.
-                        fprintf(stderr, "AudioOutput::processWrite(): latency:%f Seeking _recFile to:%ld\n", latency, pos);
+                        //fprintf(stderr, "AudioOutput::processWrite(): latency:%f Seeking _recFile to:%ld\n", latency, pos);
 
                         _recFile->seek(pos, 0);
                         _previousLatency = latency;
                       }
 
                       // REMOVE Tim. latency. Added. Diagnostics.
-                      fprintf(stderr, "AudioOutput::processWrite(): Writing _recFile\n");
+                      //fprintf(stderr, "AudioOutput::processWrite(): Writing _recFile\n");
 
                       _recFile->write(_channels, buffer, _nframes);
                     }
@@ -2246,16 +2261,17 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos, float
       }
 
 //---------------------------------------------------------
-//   get
+//   peek
 //    return true if fifo empty
 //---------------------------------------------------------
 
-bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos, float* latency)
+bool Fifo::peek(int segs, unsigned long samples, float** dst, unsigned* pos, float* latency) //const
       {
       #ifdef FIFO_DEBUG
-      fprintf(stderr, "FIFO::get segs:%d samples:%lu count:%d\n", segs, samples, muse_atomic_read(&count));
+      fprintf(stderr, "FIFO::peek/get segs:%d samples:%lu count:%d\n", segs, samples, muse_atomic_read(&count));
       #endif
 
+      // Non-const peek required because of this.
       if (muse_atomic_read(&count) == 0) {
             fprintf(stderr, "FIFO %p underrun\n", this);
             return true;
@@ -2263,7 +2279,7 @@ bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos, floa
       FifoBuffer* b = buffer[ridx];
       if(!b->buffer)
       {
-        fprintf(stderr, "Fifo::get no buffer! segs:%d samples:%lu b->pos:%u\n", segs, samples, b->pos);
+        fprintf(stderr, "Fifo::peek/get no buffer! segs:%d samples:%lu b->pos:%u\n", segs, samples, b->pos);
         return true;
       }
 
@@ -2274,6 +2290,18 @@ bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos, floa
 
       for (int i = 0; i < segs; ++i)
             dst[i] = b->buffer + samples * (i % b->segs);
+      return false;
+      }
+
+//---------------------------------------------------------
+//   get
+//    return true if fifo empty
+//---------------------------------------------------------
+
+bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos, float* latency)
+      {
+      if(peek(segs, samples, dst, pos, latency))
+        return true;
       remove();
       return false;
       }
@@ -2282,6 +2310,11 @@ int Fifo::getCount()
       {
       return muse_atomic_read(&count);
       }
+
+int Fifo::getEmptyCount()
+{
+  return nbuffer - muse_atomic_read(&count);
+}
 
 bool Fifo::isEmpty()
       {

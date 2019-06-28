@@ -80,19 +80,19 @@ class Synth {
       virtual ~Synth() {}
 
       virtual Type synthType() const = 0;
-      virtual PluginFeatures_t requiredFeatures() const { return _requiredFeatures; }
-      int instances() const                            { return _instances; }
-      virtual void incInstances(int val)               { _instances += val; }
-      QString completeBaseName()                       { return info.completeBaseName(); } // ddskrjo
-      QString baseName()                               { return info.baseName(); } // ddskrjo
-      QString name() const                             { return _name; }
-      QString absolutePath() const                     { return info.absolutePath(); }
-      QString path() const                             { return info.path(); }
-      QString filePath() const                         { return info.filePath(); }
-      QString fileName() const                         { return info.fileName(); }
-      QString description() const                      { return _description; }
-      QString version() const                          { return _version; }
-      QString maker() const                            { return _maker; }
+      inline virtual PluginFeatures_t requiredFeatures() const { return _requiredFeatures; }
+      inline int instances() const                            { return _instances; }
+      inline virtual void incInstances(int val)               { _instances += val; }
+      inline QString completeBaseName()                       { return info.completeBaseName(); } // ddskrjo
+      inline QString baseName()                               { return info.baseName(); } // ddskrjo
+      inline QString name() const                             { return _name; }
+      inline QString absolutePath() const                     { return info.absolutePath(); }
+      inline QString path() const                             { return info.path(); }
+      inline QString filePath() const                         { return info.filePath(); }
+      inline QString fileName() const                         { return info.fileName(); }
+      inline QString description() const                      { return _description; }
+      inline QString version() const                          { return _version; }
+      inline QString maker() const                            { return _maker; }
 
       virtual SynthIF* createSIF(SynthI*) = 0;
       };
@@ -109,7 +109,7 @@ class MessSynth : public Synth {
                Synth(fi, label, descr, maker, ver) { _descr = 0; }
 
       virtual ~MessSynth() {}
-      virtual Type synthType() const { return MESS_SYNTH; }
+      inline virtual Type synthType() const { return MESS_SYNTH; }
 
       virtual void* instantiate(const QString&);
 
@@ -136,7 +136,7 @@ class SynthIF : public PluginIBase {
       virtual ~SynthIF() {}
 
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
-      virtual int oldMidiStateHeader(const unsigned char** /*data*/) const { return 0; }
+      inline virtual int oldMidiStateHeader(const unsigned char** /*data*/) const { return 0; }
 
       virtual void guiHeartBeat() = 0;
       virtual void showGui(bool v) { if(synti && hasGui()) PluginIBase::showGui(v); } 
@@ -265,22 +265,22 @@ class SynthI : public AudioTrack, public MidiDevice,
 
       SynthIF* sif() const { return _sif; }
       bool initInstance(Synth* s, const QString& instanceName);
-      virtual float selfLatencyAudio(int channel) const { return _sif->latency() + AudioTrack::selfLatencyAudio(channel); }
+      inline virtual float selfLatencyAudio(int channel) const { return _sif->latency() + AudioTrack::selfLatencyAudio(channel); }
 
       void read(Xml&);
       virtual void write(int, Xml&) const;
 
       void setName(const QString& s);
-      QString name() const          { return AudioTrack::name(); }
+      inline QString name() const          { return AudioTrack::name(); }
 
-      Synth* synth() const          { return synthesizer; }
-      virtual bool isSynti() const  { return true; }
+      inline Synth* synth() const          { return synthesizer; }
+      inline virtual bool isSynti() const  { return true; }
 
       // Event time and tick must be set by caller beforehand.
       // Overridden here because input from synths may need to be treated specially.
       virtual void recordEvent(MidiRecordEvent&);
 
-      virtual PluginFeatures_t pluginFeatures() const { return _sif->requiredFeatures(); }
+      inline virtual PluginFeatures_t pluginFeatures() const { return _sif->requiredFeatures(); }
       
       // Number of routable inputs/outputs for each Route::RouteType.
       virtual RouteCapabilitiesStruct routeCapabilities() const;
@@ -329,9 +329,9 @@ class SynthI : public AudioTrack, public MidiDevice,
       void preProcessAlways();
 
       // Synth devices can never dominate latency, only physical/hardware midi devices can.
-      virtual bool canDominateOutputLatencyMidi(bool /*capture*/) const { return false; }
-      virtual bool canDominateEndPointLatencyMidi(bool /*capture*/) const { return false; }
-      virtual bool canCorrectOutputLatencyMidi() const { return false; }
+      inline virtual bool canDominateOutputLatencyMidi(bool /*capture*/) const { return false; }
+      inline virtual bool canDominateEndPointLatencyMidi(bool /*capture*/) const { return false; }
+      inline virtual bool canCorrectOutputLatencyMidi() const { return false; }
       virtual bool isLatencyInputTerminalMidi(bool capture);
       virtual bool isLatencyOutputTerminalMidi(bool capture);
       virtual TrackLatencyInfo& getDominanceInfoMidi(bool capture, bool input);
@@ -344,9 +344,9 @@ class SynthI : public AudioTrack, public MidiDevice,
       // The cached worst latency of all the channels in the track's effect rack plus any synthesizer latency if applicable.
       virtual float getWorstPluginLatencyAudio();
       // Synth devices can never dominate latency, only physical/hardware midi devices can.
-      virtual bool canDominateOutputLatency() const { return false; }
-      virtual bool canDominateEndPointLatency() const { return false; }
-      virtual bool canCorrectOutputLatency() const { return false; }
+      inline virtual bool canDominateOutputLatency() const { return false; }
+      inline virtual bool canDominateEndPointLatency() const { return false; }
+      inline virtual bool canCorrectOutputLatency() const { return false; }
       virtual bool isLatencyInputTerminal();
       virtual bool isLatencyOutputTerminal();
       virtual TrackLatencyInfo& getDominanceInfo(bool input);
@@ -354,12 +354,12 @@ class SynthI : public AudioTrack, public MidiDevice,
       virtual TrackLatencyInfo& setCorrectionLatencyInfo(bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
       virtual TrackLatencyInfo& getLatencyInfo(bool input);
       
-      MidiPlayEvent receiveEvent() { return _sif->receiveEvent(); }
-      int eventsPending() const    { return _sif->eventsPending(); }
+      inline MidiPlayEvent receiveEvent() { return _sif->receiveEvent(); }
+      inline int eventsPending() const    { return _sif->eventsPending(); }
       void deactivate2();
       void deactivate3();
-      bool isActivated() const         { return synthesizer && _sif; }
-      virtual bool hasAuxSend() const  { return true; }
+      inline bool isActivated() const         { return synthesizer && _sif; }
+      inline virtual bool hasAuxSend() const  { return true; }
       static void setVisible(bool t) { _isVisible = t; }
       virtual int height() const;
       static bool visible() { return _isVisible; }
@@ -388,8 +388,8 @@ class MessSynthIF : public SynthIF {
       virtual int oldMidiStateHeader(const unsigned char** data) const;
 
       virtual void guiHeartBeat();
-      virtual bool guiVisible() const { return false; }
-      virtual bool hasGui() const     { return false; }
+      inline virtual bool guiVisible() const { return false; }
+      inline virtual bool hasGui() const     { return false; }
       virtual bool nativeGuiVisible() const;
       virtual void showNativeGui(bool v);
       virtual bool hasNativeGui() const;
@@ -408,7 +408,7 @@ class MessSynthIF : public SynthIF {
       virtual QString getPatchName(int, int, bool) const;
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool);
       virtual void write(int level, Xml& xml) const;
-      virtual double getParameter(unsigned long) const { return 0.0; }
+      inline virtual double getParameter(unsigned long) const { return 0.0; }
       virtual void setParameter(unsigned long, double) {}
       virtual int getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval);
       // Returns a map item with members filled from either the original or working map item,

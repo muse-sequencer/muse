@@ -612,13 +612,13 @@ RouteCapabilitiesStruct Track::routeCapabilities() const
   return s;
 }
 
-bool Track::canDominateOutputLatency() const
+inline bool Track::canDominateOutputLatency() const
 {
   // Return true only if the track is on and the user wants unterminated branches counted.
   return !off() && MusEGlobal::config.correctUnterminatedOutBranchLatency;
 }
 
-bool Track::canDominateInputLatency() const
+inline bool Track::canDominateInputLatency() const
 {
   return false;
 }
@@ -633,6 +633,42 @@ bool Track::canPassThruLatency() const
 
 void Track::prepareLatencyScan() { 
   _latencyInfo.initialize();
+}
+
+float Track::getWorstPluginLatencyAudio()
+{
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._worstPluginLatencyProcessed)
+    return _latencyInfo._worstPluginLatency;
+
+  _latencyInfo._worstPluginLatency = 0.0f;
+  _latencyInfo._worstPluginLatencyProcessed = true;
+  return _latencyInfo._worstPluginLatency;
+}
+
+float Track::getWorstPortLatencyAudio()
+{
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._worstPortLatencyProcessed)
+    return _latencyInfo._worstPortLatency;
+
+  _latencyInfo._worstPortLatency = 0.0f;
+  _latencyInfo._worstPortLatencyProcessed = true;
+  return _latencyInfo._worstPortLatency;
+}
+
+float Track::getWorstSelfLatencyAudio()
+{
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._worstSelfLatencyProcessed)
+    return _latencyInfo._worstSelfLatency;
+
+  _latencyInfo._worstSelfLatency = 0.0f;
+  _latencyInfo._worstSelfLatencyProcessed = true;
+  return _latencyInfo._worstSelfLatency;
 }
 
 //---------------------------------------------------------
@@ -1015,13 +1051,13 @@ RouteCapabilitiesStruct MidiTrack::routeCapabilities() const
 //   canDominateOutputLatency
 //---------------------------------------------------------
 
-bool MidiTrack::canDominateOutputLatency() const
+inline bool MidiTrack::canDominateOutputLatency() const
 {
   // The midi track's own midi file contributions can never dominate latency.
   return false;
 }
 
-bool MidiTrack::canCorrectOutputLatency() const
+inline bool MidiTrack::canCorrectOutputLatency() const
 {
   return true;
 }

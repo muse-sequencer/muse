@@ -182,10 +182,10 @@ class MidiDevice {
       //  will equal one segment size.
       // For drivers running in their own thread (ALSA, OSC input) this will typically be near zero:
       //  1 ms for ALSA given a standard sequencer timer f = 1000Hz, or near zero for OSC input.
-      virtual unsigned int pbForwardShiftFrames() const { return 0; }
+      inline virtual unsigned int pbForwardShiftFrames() const { return 0; }
 
       // Various IPC buffers. Any thread can use this.
-      LockFreeMPSCRingBuffer<MidiPlayEvent> *eventBuffers(EventBufferType bufferType) 
+      inline LockFreeMPSCRingBuffer<MidiPlayEvent> *eventBuffers(EventBufferType bufferType) 
       { 
         switch(bufferType)
         {
@@ -212,23 +212,23 @@ class MidiDevice {
       MidiDevice(const QString& name);
       virtual ~MidiDevice();
 
-      SysExInputProcessor* sysExInProcessor() { return &_sysExInProcessor; }
-      SysExOutputProcessor* sysExOutProcessor() { return &_sysExOutProcessor; }
+      inline SysExInputProcessor* sysExInProcessor() { return &_sysExInProcessor; }
+      inline SysExOutputProcessor* sysExOutProcessor() { return &_sysExOutProcessor; }
       
       virtual MidiDeviceType deviceType() const = 0;
       virtual QString deviceTypeString() const;
       
       // The meaning of the returned pointer depends on the driver.
       // For Jack it returns the address of a Jack port, for ALSA it return the address of a snd_seq_addr_t.
-      virtual void* inClientPort() { return 0; }
-      virtual void* outClientPort() { return 0; }
+      inline virtual void* inClientPort() { return 0; }
+      inline virtual void* outClientPort() { return 0; }
 
       // These three are generally for ALSA.
-      virtual void setAddressClient(int) { }
-      virtual void setAddressPort(int) { }
+      inline virtual void setAddressClient(int) { }
+      inline virtual void setAddressPort(int) { }
       // We (ab)use the ALSA value SND_SEQ_ADDRESS_UNKNOWN to
       //  mean 'unavailable' if either client and port equal it.
-      virtual bool isAddressUnknown() const { return true; }
+      inline virtual bool isAddressUnknown() const { return true; }
 
       virtual QString open() = 0;
       virtual void close() = 0;
@@ -239,29 +239,29 @@ class MidiDevice {
       bool noInRoute() const   { return _inRoutes.empty();  }
       bool noOutRoute() const  { return _outRoutes.empty(); }
       
-      const QString& name() const      { return _name; }
+      inline const QString& name() const      { return _name; }
       // setName can be overloaded to do other things like setting port names, while setNameText just sets the text.
-      virtual void setName(const QString& s)   { _name = s; }
+      inline virtual void setName(const QString& s)   { _name = s; }
       // setNameText just sets the text, while setName can be overloaded to do other things like setting port names.
-      void setNameText(const QString& s)  { _name = s; }
+      inline void setNameText(const QString& s)  { _name = s; }
       
-      int midiPort() const             { return _port; }
+      inline int midiPort() const             { return _port; }
       void setPort(int p);              
 
-      int rwFlags() const              { return _rwFlags; }
-      int openFlags() const            { return _openFlags; }
-      void setOpenFlags(int val)       { _openFlags = val; }
-      void setrwFlags(int val)         { _rwFlags = val; }
-      const QString& state() const     { return _state; }
-      void setState(const QString& s)  { _state = s; }
+      inline int rwFlags() const              { return _rwFlags; }
+      inline int openFlags() const            { return _openFlags; }
+      inline void setOpenFlags(int val)       { _openFlags = val; }
+      inline void setrwFlags(int val)         { _rwFlags = val; }
+      inline const QString& state() const     { return _state; }
+      inline void setState(const QString& s)  { _state = s; }
 
-      virtual bool isSynti() const     { return false; }
-      virtual int selectRfd()          { return -1; }
-      virtual int selectWfd()          { return -1; }
-      virtual int bytesToWrite()       { return 0; }
-      virtual void flush()             {}
-      virtual void processInput()      {}
-      virtual void discardInput()      {}
+      inline virtual bool isSynti() const     { return false; }
+      inline virtual int selectRfd()          { return -1; }
+      inline virtual int selectWfd()          { return -1; }
+      inline virtual int bytesToWrite()       { return 0; }
+      inline virtual void flush()             {}
+      inline virtual void processInput()      {}
+      inline virtual void discardInput()      {}
 
       // Event time and tick must be set by caller beforehand.
       virtual void recordEvent(MidiRecordEvent&);
@@ -303,10 +303,10 @@ class MidiDevice {
       // Initializes this track's latency information in preparation for a latency scan.
       virtual void prepareLatencyScan();
       // Returns the latency of a given capture or playback port of the device.
-      virtual unsigned int portLatency(void* /*port*/, bool /*capture*/) const { return 0; }
+      inline virtual unsigned int portLatency(void* /*port*/, bool /*capture*/) const { return 0; }
       // The contribution to latency by the device's own members (midi effect rack, Jack ports etc).
       // A midi device can contain both an input and an output. The 'capture' parameter determines which one.
-      virtual float selfLatencyMidi(int /*channel*/, bool /*capture*/) const { return 0.0f; }
+      inline virtual float selfLatencyMidi(int /*channel*/, bool /*capture*/) const { return 0.0f; }
       // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc)
       //  plus any port latency if applicable.
       virtual float getWorstSelfLatencyMidi(bool capture);
@@ -328,7 +328,7 @@ class MidiDevice {
       // Whether this track and its branch require latency correction, not just compensation.
 //       virtual bool requiresInputLatencyCorrection() const;
       // Whether this track and its branch can correct for latency, not just compensate.
-      virtual bool canCorrectOutputLatencyMidi() const { return false; }
+      inline virtual bool canCorrectOutputLatencyMidi() const { return false; }
       // Whether the track can pass latency values through, the SAME as if record monitor is
       //  supported and on BUT does not require record monitor support.
       // This is for example in the metronome MetronomeSynthI, since it is unique in that it

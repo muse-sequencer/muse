@@ -64,9 +64,11 @@ class Fifo {
       bool put(int segs, unsigned long samples, float** buffer, unsigned pos, float latency);
       bool getWriteBuffer(int, unsigned long, float** buffer, unsigned pos);
       void add();
+      bool peek(int segs, unsigned long samples, float** buffer, unsigned* pos = 0, float* latency = 0); // const;
       bool get(int segs, unsigned long samples, float** buffer, unsigned* pos = 0, float* latency = 0);
       void remove();
       int getCount();
+      int getEmptyCount();
       bool isEmpty();
       };
 

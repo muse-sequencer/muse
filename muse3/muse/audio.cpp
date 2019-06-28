@@ -883,8 +883,11 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       // process not connected tracks
       // to animate meter display
       //
-      TrackList* tl = MusEGlobal::song->tracks();
-      MidiDeviceList& mdl = MusEGlobal::midiDevices;
+// REMOVE Tim. latency. Changed.
+//       TrackList* tl = MusEGlobal::song->tracks();
+      const TrackList& tl = *MusEGlobal::song->tracks();
+      const TrackList::size_type tl_sz = tl.size();
+      const MidiDeviceList& mdl = MusEGlobal::midiDevices;
       Track* track; 
       AudioTrack* atrack; 
       int channels;
@@ -894,9 +897,11 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
       // This includes synthesizers.
-      for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
+//       for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
+      for(TrackList::size_type it = 0; it < tl_sz; ++it) 
       {
-        track = *it;
+        track = tl[it];
+//         track = *it;
         
         // For track types, synths etc. which need some kind of non-audio 
         //  (but possibly audio-affecting) processing always, even if their output path
@@ -948,9 +953,11 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         // PASS 1: Find any dominant branches:
         //---------------------------------------------
 
-        for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
+//         for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
+        for(TrackList::size_type it = 0; it < tl_sz; ++it) 
         {
-          track = *it;
+          track = tl[it];
+//           track = *it;
           
           // If the track is for example a Wave Track, we must consider up to two contributing paths,
           //  the output (playback) side and the input (record) side which can pass through via monitoring.
@@ -1023,9 +1030,11 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
 
         // Now that we know the worst case latency,
         //  set all the branch correction values.
-        for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
+//         for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
+        for(TrackList::size_type it = 0; it < tl_sz; ++it) 
         {
-          track = *it;
+          track = tl[it];
+//           track = *it;
           
           // If the track is for example a Wave Track, we must consider up to two contributing paths,
           //  the output (playback) side and the input (record) side which can pass through via monitoring.
@@ -1119,9 +1128,11 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         // PASS 3: Set initial output latencies:
         //---------------------------------------------
 
-        for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
+//         for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
+        for(TrackList::size_type it = 0; it < tl_sz; ++it) 
         {
-          track = *it;
+          track = tl[it];
+//           track = *it;
           
           // If the track is for example a Wave Track, we must consider up to two contributing paths,
           //  the output (playback) side and the input (record) side which can pass through via monitoring.
@@ -1253,9 +1264,11 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
 
         // Now that all branch correction values have been set,
         //  gather all final latency info.
-        for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
+//         for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
+        for(TrackList::size_type it = 0; it < tl_sz; ++it) 
         {
-          track = *it;
+          track = tl[it];
+//           track = *it;
           
           // If the track is for example a Wave Track, we must consider up to two contributing paths,
           //  the output (playback) side and the input (record) side which can pass through via monitoring.
@@ -1358,11 +1371,16 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       //---------------------------------------------
       
       // Process Aux tracks first.
-      for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it)
+//       for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it)
+//       {
+//         if((*it)->isMidiTrack())
+//           continue;
+//         atrack = static_cast<AudioTrack*>(*it);
+      for(TrackList::size_type it = 0; it < tl_sz; ++it) 
       {
-        if((*it)->isMidiTrack())
+        atrack = static_cast<AudioTrack*>(tl[it]);
+        if(atrack->isMidiTrack())
           continue;
-        atrack = static_cast<AudioTrack*>(*it);
         if(!atrack->processed() && atrack->type() == Track::AUDIO_AUX)
         {
           //fprintf(stderr, "Audio::process1 Do aux: track:%s\n", track->name().toLatin1().constData());   DELETETHIS
@@ -1387,11 +1405,16 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       // Do them now. This will animate meters, and 'quietly' process some audio which needs to be done -
       //  for example synths really need to be processed, 'quietly' or not, otherwise the next time processing 
       //  is 'turned on', if there was a backlog of events while it was off, then they all happen at once.  Tim.
-      for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
+//       for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
+//       {
+//         if((*it)->isMidiTrack())
+//           continue;
+//         atrack = static_cast<AudioTrack*>(*it);
+      for(TrackList::size_type it = 0; it < tl_sz; ++it) 
       {
-        if((*it)->isMidiTrack())
+        atrack = static_cast<AudioTrack*>(tl[it]);
+        if(atrack->isMidiTrack())
           continue;
-        atrack = static_cast<AudioTrack*>(*it);
         if(!atrack->processed() && (atrack->type() != Track::AUDIO_OUTPUT))
         {
           //fprintf(stderr, "Audio::process1 track:%s\n", track->name().toLatin1().constData());  DELETETHIS

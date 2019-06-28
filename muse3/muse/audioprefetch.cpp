@@ -69,7 +69,8 @@ AudioPrefetch::AudioPrefetch(const char* name)
    : Thread(name)
       {
       seekPos  = ~0;
-      writePos = ~0;
+// REMOVE Tim. latency. Removed.
+//       writePos = ~0;
       seekCount = 0;
       }
 
@@ -184,44 +185,117 @@ void AudioPrefetch::msgSeek(unsigned samplePos, bool force)
             }
       }
 
+// REMOVE Tim. latency. Changed.
+// //---------------------------------------------------------
+// //   prefetch
+// //---------------------------------------------------------
+// 
+// void AudioPrefetch::prefetch(bool doSeek)
+//       {
+//       if (writePos == ~0U) {
+//             fprintf(stderr, "AudioPrefetch::prefetch: invalid write position\n");
+//             return;
+//             }
+//       if (MusEGlobal::song->loop() && !MusEGlobal::audio->bounce() && !MusEGlobal::extSyncFlag.value()) {
+//             const Pos& loop = MusEGlobal::song->rPos();
+//             unsigned n = loop.frame() - writePos;
+//             if (n < MusEGlobal::segmentSize) {
+//                   unsigned lpos = MusEGlobal::song->lPos().frame();
+//                   // adjust loop start so we get exact loop len
+//                   if (n > lpos)
+//                         n = 0;
+//                   writePos = lpos - n;
+//                   }
+//             }
+//       WaveTrackList* tl = MusEGlobal::song->waves();
+//       for (iWaveTrack it = tl->begin(); it != tl->end(); ++it) {
+//             WaveTrack* track = *it;
+//             // Save time. Don't bother if track is off. Track On/Off not designed for rapid repeated response (but mute is). (p3.3.29)
+//             if(track->off())
+//               continue;
+//             
+//             int ch           = track->channels();
+//             float* bp[ch];
+//             if (track->prefetchFifo()->getWriteBuffer(ch, MusEGlobal::segmentSize, bp, writePos))
+//                   continue;
+// 
+//             // True = do overwrite.
+//             track->fetchData(writePos, MusEGlobal::segmentSize, bp, doSeek, true);
+//             
+//             }
+//       writePos += MusEGlobal::segmentSize;
+//       }
+
 //---------------------------------------------------------
 //   prefetch
 //---------------------------------------------------------
 
 void AudioPrefetch::prefetch(bool doSeek)
       {
-      if (writePos == ~0U) {
-            fprintf(stderr, "AudioPrefetch::prefetch: invalid write position\n");
-            return;
-            }
-      if (MusEGlobal::song->loop() && !MusEGlobal::audio->bounce() && !MusEGlobal::extSyncFlag.value()) {
-            const Pos& loop = MusEGlobal::song->rPos();
-            unsigned n = loop.frame() - writePos;
-            if (n < MusEGlobal::segmentSize) {
-                  unsigned lpos = MusEGlobal::song->lPos().frame();
-                  // adjust loop start so we get exact loop len
-                  if (n > lpos)
-                        n = 0;
-                  writePos = lpos - n;
-                  }
-            }
+      unsigned lpos_frame = 0;
+      unsigned rpos_frame = 0;
+      const bool do_loops = MusEGlobal::song->loop() && !MusEGlobal::audio->bounce() && !MusEGlobal::extSyncFlag.value();
+      if(do_loops)
+      {
+        lpos_frame = MusEGlobal::song->lPos().frame();
+        rpos_frame = MusEGlobal::song->rPos().frame();
+      }
+
       WaveTrackList* tl = MusEGlobal::song->waves();
       for (iWaveTrack it = tl->begin(); it != tl->end(); ++it) {
             WaveTrack* track = *it;
             // Save time. Don't bother if track is off. Track On/Off not designed for rapid repeated response (but mute is). (p3.3.29)
             if(track->off())
               continue;
-            
+
+            Fifo* fifo = track->prefetchFifo();
+            const int empty_count = fifo->getEmptyCount();
+
+            // Nothing to fill?
+            if(empty_count <= 0)
+              continue;
+
+            unsigned int write_pos = track->prefetchWritePos();
+            if (write_pos == ~0U) {
+                  fprintf(stderr, "AudioPrefetch::prefetch: invalid track write position\n");
+                  continue;
+                  }
+
             int ch           = track->channels();
             float* bp[ch];
-            if (track->prefetchFifo()->getWriteBuffer(ch, MusEGlobal::segmentSize, bp, writePos))
-                  continue;
 
-            // True = do overwrite.
-            track->fetchData(writePos, MusEGlobal::segmentSize, bp, doSeek, true);
-            
+            // Fill up the empty buffers.
+            for(int i = 0; i < empty_count; ++i)
+            {
+              if(do_loops)
+              {
+                unsigned n = rpos_frame - write_pos;
+                if (n < MusEGlobal::segmentSize)
+                {
+                  // adjust loop start so we get exact loop len
+                  if (n > lpos_frame)
+                        n = 0;
+                  write_pos = lpos_frame - n;
+                  track->setPrefetchWritePos(write_pos);
+                }
+              }
+
+              if (fifo->getWriteBuffer(ch, MusEGlobal::segmentSize, bp, write_pos))
+              {
+                fprintf(stderr, "AudioPrefetch::prefetch: No write buffer!\n");
+                break;
+              }
+
+              // True = do overwrite.
+              track->fetchData(write_pos, MusEGlobal::segmentSize, bp, doSeek, true);
+              
+              // Only the first fetch should seek if required. Reset the flag now.
+              doSeek = false;
+              
+              write_pos += MusEGlobal::segmentSize;
+              track->setPrefetchWritePos(write_pos);
             }
-      writePos += MusEGlobal::segmentSize;
+          }
       }
 
 //---------------------------------------------------------
@@ -250,28 +324,42 @@ void AudioPrefetch::seek(unsigned seekTo)
         return;
       }
       
-      writePos = seekTo;
+// REMOVE Tim. latency. Removed.
+//       writePos = seekTo;
       WaveTrackList* tl = MusEGlobal::song->waves();
       for (iWaveTrack it = tl->begin(); it != tl->end(); ++it) {
             WaveTrack* track = *it;
             track->clearPrefetchFifo();
+            // REMOVE Tim. latency. Added.
+            track->setPrefetchWritePos(seekTo);
             }
       
-      bool isFirstPrefetch = true;
-      for (unsigned int i = 0; i < (MusEGlobal::fifoLength)-1; ++i)//prevent compiler warning: comparison of signed/unsigned
-      {      
-            // Indicate do a seek command before read, but only on the first pass. 
-            prefetch(isFirstPrefetch);
+// REMOVE Tim. latency. Changed.
+//       bool isFirstPrefetch = true;
+//       for (unsigned int i = 0; i < (MusEGlobal::fifoLength)-1; ++i)//prevent compiler warning: comparison of signed/unsigned
+//       {      
+//             // Indicate do a seek command before read, but only on the first pass. 
+//             prefetch(isFirstPrefetch);
+//             
+//             isFirstPrefetch = false;
+//             
+//             // To help speed things up even more, check the count again. Return if more seek messages are pending. (p3.3.20)
+//             if(seekCount > 1)
+//             {
+//               --seekCount;
+//               return;
+//             }  
+//       }
             
-            isFirstPrefetch = false;
-            
-            // To help speed things up even more, check the count again. Return if more seek messages are pending. (p3.3.20)
-            if(seekCount > 1)
-            {
-              --seekCount;
-              return;
-            }  
-      }
+      // Indicate do a seek command before read (only on the first fetch).
+      prefetch(true);
+      
+      // To help speed things up even more, check the count again. Return if more seek messages are pending. (p3.3.20)
+      if(seekCount > 1)
+      {
+        --seekCount;
+        return;
+      }  
             
       seekPos  = seekTo;
       --seekCount;

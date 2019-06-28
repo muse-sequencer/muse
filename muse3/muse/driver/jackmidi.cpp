@@ -1367,12 +1367,12 @@ void MidiJackDevice::processMidi(unsigned int curFrame)
 //    otherwise get the playback latency.
 //---------------------------------------------------------
 
-unsigned int MidiJackDevice::portLatency(void* port, bool capture) const
+unsigned int MidiJackDevice::portLatency(void* /*port*/, bool capture) const
 {
-  jack_latency_range_t c_range;
-  jack_port_get_latency_range((jack_port_t*)port, JackCaptureLatency, &c_range);
-  jack_latency_range_t p_range;
-  jack_port_get_latency_range((jack_port_t*)port, JackPlaybackLatency, &p_range);
+//   jack_latency_range_t c_range;
+//   jack_port_get_latency_range((jack_port_t*)port, JackCaptureLatency, &c_range);
+//   jack_latency_range_t p_range;
+//   jack_port_get_latency_range((jack_port_t*)port, JackPlaybackLatency, &p_range);
 
   // TODO FIXME: Tests on both Jack-1 Midi and Jack-2 Midi show the returned values are always zero.
   //             Spent a few days trying to diagnose, it appears Jack does not initialize any ALSA

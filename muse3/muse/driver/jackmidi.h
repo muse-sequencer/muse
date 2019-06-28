@@ -98,8 +98,8 @@ class MidiJackDevice : public MidiDevice {
       
       // The meaning of the returned pointer depends on the driver.
       // For Jack it returns the address of a Jack port, for ALSA it return the address of a snd_seq_addr_t.
-      virtual void* inClientPort()  { return (void*)  _in_client_jackport; }
-      virtual void* outClientPort() { return (void*) _out_client_jackport; }
+      inline virtual void* inClientPort()  { return (void*)  _in_client_jackport; }
+      inline virtual void* outClientPort() { return (void*) _out_client_jackport; }
       
       virtual void writeRouting(int, Xml&) const;
 

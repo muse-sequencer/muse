@@ -279,14 +279,14 @@ class Track {
       // Initializes this track's latency information in preparation for a latency scan.
       virtual void prepareLatencyScan();
       // The contribution to latency from the track's own members (audio effect rack, etc).
-      virtual float selfLatencyAudio(int /*channel*/) const { return 0.0f; }
+      inline virtual float selfLatencyAudio(int /*channel*/) const { return 0.0f; }
       // The cached worst latency of all the channels in the track's effect rack plus any synthesizer latency if applicable.
-      virtual float getWorstPluginLatencyAudio() { return 0.0f; }
+      virtual float getWorstPluginLatencyAudio();
       // The cached worst contribution to latency by any ports (for ex. Jack ports of audio input/output tracks).
-      virtual float getWorstPortLatencyAudio() { return 0.0f; }
+      virtual float getWorstPortLatencyAudio();
       // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc)
       //  plus any port latency if applicable.
-      virtual float getWorstSelfLatencyAudio() { return 0.0f; }
+      virtual float getWorstSelfLatencyAudio();
       // Whether this track (and the branch it is in) can force other parallel branches to
       //  increase their latency compensation to match this one.
       // If false, this branch will NOT disturb other parallel branches' compensation,
@@ -298,9 +298,9 @@ class Track {
       //  and the branch allows domination.
       // If false, this branch will NOT disturb other parallel branches' compensation,
       //  intead only allowing compensation UP TO the worst case in other branches.
-      virtual bool canDominateEndPointLatency() const { return false; }
+      inline virtual bool canDominateEndPointLatency() const { return false; }
       // Whether this track and its branch can correct for latency, not just compensate.
-      virtual bool canCorrectOutputLatency() const { return false; }
+      inline virtual bool canCorrectOutputLatency() const { return false; }
       // Whether the track can pass latency values through, the SAME as if record monitor is
       //  supported and on BUT does not require record monitor support.
       // This is for example in the metronome MetronomeSynthI, since it is unique in that it
@@ -865,7 +865,7 @@ class AudioOutput : public AudioTrack {
       // The cached worst contribution to latency by any ports (for ex. Jack ports of audio input/output tracks).
       float getWorstPortLatencyAudio();
       // Audio output tracks can allow a branch to dominate if they are an end-point and the branch can dominate.
-      bool canDominateEndPointLatency() const { return true; }
+      inline bool canDominateEndPointLatency() const { return true; }
       // Audio Output is considered a termination point.
       bool isLatencyInputTerminal();
       bool isLatencyOutputTerminal();
@@ -952,6 +952,12 @@ class AudioAux : public AudioTrack {
 
 class WaveTrack : public AudioTrack {
       Fifo _prefetchFifo;  // prefetch Fifo
+      // REMOVE Tim. latency. Added.
+      // Each wavetrack has a separate prefetch position stamp
+      //  so that consumers can retard or advance the stream and
+      //  the prefetch can pump as much buffers as required while
+      //  keeping track of the last buffer position stamp.
+      unsigned _prefetchWritePos;
       static bool _isVisible;
 
       void internal_assign(const Track&, int flags);
@@ -979,7 +985,7 @@ class WaveTrack : public AudioTrack {
       virtual void write(int, Xml&) const;
 
       // If overwrite is true, copies the data. If false, adds the data.
-      virtual void fetchData(unsigned pos, unsigned frames, float** bp, bool doSeek, bool overwrite);
+      virtual void fetchData(unsigned pos, unsigned frames, float** bp, bool doSeek, bool overwrite, int latency_correction = 0);
       
       virtual bool getData(unsigned, int ch, unsigned, float** bp);
 
@@ -990,6 +996,11 @@ class WaveTrack : public AudioTrack {
       
       void clearPrefetchFifo()      { _prefetchFifo.clear(); }
       Fifo* prefetchFifo()          { return &_prefetchFifo; }
+      // REMOVE Tim. latency. Added.
+      // For prefetch thread use only.
+      inline unsigned prefetchWritePos() const { return _prefetchWritePos; }
+      inline void setPrefetchWritePos(unsigned p) { _prefetchWritePos = p; }
+
       virtual void setChannels(int n);
       virtual bool hasAuxSend() const { return true; }
       bool canEnableRecord() const;
