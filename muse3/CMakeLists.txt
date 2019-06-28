@@ -311,8 +311,8 @@ check_cxx_symbol_exists(exp10l cmath HAVE_EXP10L)
 ## POSIX Timers
 ##
 
-## TODO Detection
-set(POSIX_TIMER_SUPPORT ON)
+## Tested OK. TODO Detection. TODO Resolution queries.
+# set(POSIX_TIMER_SUPPORT ON)
 
 
 ##
