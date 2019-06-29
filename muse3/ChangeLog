@@ -1,3 +1,18 @@
+29.06.2019
+      * New! Comprehensive full midi and audio latency correction / compensation: (Tim)
+      - This was a very tough problem to solve.
+      - Currently DISABLED by default until certain it is OK.
+        You must enable it. See the new Global Settings > Latency tab.
+      - Features: 'Corrects' (looks ahead) or 'compensates' (delays) ALL audio and midi
+         signals throughout. Recorded or played audio files should be TRUSTWORTHY now,
+          regardless of audio driver period size.
+      - Tested extensively with many configurations. Should be OK for usage trials.
+      - Works OK with Audio Output track sends or Midi output sends and Audio Input returns.
+      - Works OK with 'Bounce to file/track' function, with or without Jack Freewheel enabled.
+      - TODO: Support Aux(illiary) tracks. Not handled at all ATM.
+              Fix small snippet of missing sound at start of all playback material. Should be
+               played BEFORE transport rolls. Use 'slow-sync' feature to hold up the transport.
+              Add user-adjustment boxes on hardware ports. (Enter results from jack_iodelay for ex.)
 14.05.2019
       - Include RTC support only if ALSA support enabled. See issue 584 (BSD support).  (Tim)
       - Fix for github issue 646 "Select Directory" dialogs freezes MusE. (Tim)
