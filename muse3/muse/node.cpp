@@ -571,6 +571,10 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
                   _curVolume = v;
               }
               const unsigned long smp = sample + k;
+              // REMOVE Tim. latency. Added. Comment.
+              // FIXME: The conversion here and below is: (float)((double)float * double),
+              //         which is a penalty esp. with a lot of tracks, according to valgrind profiling.
+              //        The solution is to cast _curVolume as float beforehand, but accuarcy will suffer...
               for(int ch = start_ch; ch < trackChans; ++ch)
                 *(outBuffers[ch] + smp) = *(buffer[ch] + smp) * _curVolume;
             }
@@ -621,12 +625,6 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
             }
 
             const unsigned long next_smp = sample + nsamp;
-            // REMOVE Tim. latency. Changed.
-//             for(unsigned long smp = sample + k; smp < next_smp; ++smp)
-//             {
-//               for(int ch = start_ch; ch < trackChans; ++ch)
-//                 *(outBuffers[ch] + smp) = *(buffer[ch] + smp) * _curVolume;
-//             }
             float* o_buf_p;
             const float* buf_p;
             for(int ch = start_ch; ch < trackChans; ++ch)
@@ -634,7 +632,6 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
               o_buf_p = outBuffers[ch];
               buf_p = buffer[ch];
               for(unsigned long smp = sample + k; smp < next_smp; ++smp)
-                //*(o_buf_p + smp) = *(buf_p + smp) * _curVolume;
                 o_buf_p[smp] = buf_p[smp] * _curVolume;
             }
           }
@@ -1043,9 +1040,6 @@ void AudioTrack::copyData(unsigned pos,
         float* buf_p = buffer[i];
         if(MusEGlobal::config.useDenormalBias)
         {
-          // REMOVE Tim. latency. Changed.
-//           for(q = 0; q < nframes; ++q)
-//             buffer[i][q] = MusEGlobal::denormalBias;
           for(q = 0; q < nframes; /*++q*/)
             buf_p[q++] = MusEGlobal::denormalBias;
         }
@@ -2070,7 +2064,6 @@ void AudioOutput::processWrite()
                     }
                   }
               
-                  // REMOVE Tim. latency. Added. Diagnostics.
                   //fprintf(stderr, "AudioOutput::processWrite(): Freewheel: _previousLatency:%f latency:%f _recFilePos:%ld audio pos frame:%u\n",
                   //        _previousLatency, latency, _recFilePos, MusEGlobal::audio->pos().frame());
 
@@ -2086,14 +2079,12 @@ void AudioOutput::processWrite()
                         long int pos = _recFilePos;
                         pos -= latency;
 
-                        // REMOVE Tim. latency. Added. Diagnostics.
                         //fprintf(stderr, "AudioOutput::processWrite(): latency:%f Seeking track _recFile to:%ld\n", latency, pos);
 
                         track->recFile()->seek(pos, 0);
                         _previousLatency = latency;
                       }
 
-                      // REMOVE Tim. latency. Added. Diagnostics.
                       //fprintf(stderr, "AudioOutput::processWrite(): Writing track _recFile\n");
 
                       track->recFile()->write(_channels, buffer, _nframes);
@@ -2111,14 +2102,12 @@ void AudioOutput::processWrite()
                         long int pos = _recFilePos;
                         pos -= latency;
 
-                        // REMOVE Tim. latency. Added. Diagnostics.
                         //fprintf(stderr, "AudioOutput::processWrite(): latency:%f Seeking _recFile to:%ld\n", latency, pos);
 
                         _recFile->seek(pos, 0);
                         _previousLatency = latency;
                       }
 
-                      // REMOVE Tim. latency. Added. Diagnostics.
                       //fprintf(stderr, "AudioOutput::processWrite(): Writing _recFile\n");
 
                       _recFile->write(_channels, buffer, _nframes);

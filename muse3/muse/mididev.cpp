@@ -934,15 +934,11 @@ TrackLatencyInfo& MidiDevice::getDominanceInfoMidi(bool capture, bool input)
 //         bool all_chans = false;
 
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-// REMOVE Tim. latency. Changed.
-//         const ciMidiTrack tl_end = MusEGlobal::song->midis()->cend();
-//         for(ciMidiTrack it = MusEGlobal::song->midis()->cbegin(); it != tl_end; ++it)
         const MidiTrackList& tl = *MusEGlobal::song->midis();
         const MidiTrackList::size_type tl_sz = tl.size();
         for(MidiTrackList::size_type it = 0; it < tl_sz; ++it)
         {
           MidiTrack* track = static_cast<MidiTrack*>(tl[it]);
-//           MidiTrack* track = *it;
           if(track->outPort() != port)
             continue;
           
@@ -1155,15 +1151,11 @@ TrackLatencyInfo& MidiDevice::getDominanceLatencyInfoMidi(bool capture, bool inp
 //         bool all_chans = false;
 
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-// REMOVE Tim. latency. Changed.
-//         const ciMidiTrack tl_end = MusEGlobal::song->midis()->cend();
-//         for(ciMidiTrack it = MusEGlobal::song->midis()->cbegin(); it != tl_end; ++it)
         const MidiTrackList& tl = *MusEGlobal::song->midis();
         const MidiTrackList::size_type tl_sz = tl.size();
         for(MidiTrackList::size_type it = 0; it < tl_sz; ++it)
         {
           MidiTrack* track = static_cast<MidiTrack*>(tl[it]);
-//           MidiTrack* track = *it;
           if(track->outPort() != port)
             continue;
           
@@ -1391,15 +1383,11 @@ TrackLatencyInfo& MidiDevice::setCorrectionLatencyInfoMidi(bool capture, bool in
     // The _trackLatency should already be calculated in the dominance scan.
 
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-// REMOVE Tim. latency. Changed.
-//     const ciMidiTrack tl_end = MusEGlobal::song->midis()->cend();
-//     for(ciMidiTrack it = MusEGlobal::song->midis()->cbegin(); it != tl_end; ++it)
     const MidiTrackList& tl = *MusEGlobal::song->midis();
     const MidiTrackList::size_type tl_sz = tl.size();
     for(MidiTrackList::size_type it = 0; it < tl_sz; ++it)
     {
       MidiTrack* track = static_cast<MidiTrack*>(tl[it]);
-//       MidiTrack* track = *it;
       if(track->outPort() != port)
         continue;
       if((open_flags & 1 /*write*/) && !track->off() && (passthru || input))
@@ -1504,15 +1492,11 @@ TrackLatencyInfo& MidiDevice::getLatencyInfoMidi(bool capture, bool input)
   if(port >= 0 && port < MusECore::MIDI_PORTS)
   {
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-// REMOVE Tim. latency. Changed.
-//     const ciMidiTrack tl_end = MusEGlobal::song->midis()->cend();
-//     for(ciMidiTrack it = MusEGlobal::song->midis()->cbegin(); it != tl_end; ++it)
     const MidiTrackList& tl = *MusEGlobal::song->midis();
     const MidiTrackList::size_type tl_sz = tl.size();
     for(MidiTrackList::size_type it = 0; it < tl_sz; ++it)
     {
       MidiTrack* track = static_cast<MidiTrack*>(tl[it]);
-//       MidiTrack* track = *it;
       if(track->outPort() != port)
         continue;
 

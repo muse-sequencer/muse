@@ -3177,22 +3177,6 @@ void Song::abortRolling()
 
 void Song::stopRolling(Undo* operations)
       {
-// // REMOVE Tim. latency. Added. Moved here from audio thread process code (via Song::seqSignal()).
-//       if(MusEGlobal::audio->freewheel())
-//         MusEGlobal::audioDevice->setFreewheel(false);
-//       // Wait a few cycles for the freewheel stop to take effect.
-//       for(int i = 0; i < 4; ++i)
-//       {
-//         if(!MusEGlobal::audio->freewheel())
-//           break;
-//         MusEGlobal::audio->msgAudioWait();
-//       }
-//       // Check if freewheel was really unset.
-//       if(MusEGlobal::audio->freewheel())
-//       {
-//         fprintf(stderr, "ERROR: Song::stopRolling(): Freewheel mode did not stop yet!\n");
-//       }
-        
       Undo ops;
       Undo* opsp = operations ? operations : &ops;
       

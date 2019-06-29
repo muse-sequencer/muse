@@ -51,13 +51,11 @@ namespace MusECore {
 // Default 1 channel for wave tracks.
 WaveTrack::WaveTrack() : AudioTrack(Track::WAVE, 1)
 {
-  // REMOVE Tim. latency. Added.
   _prefetchWritePos = ~0;
 }
 
 WaveTrack::WaveTrack(const WaveTrack& wt, int flags) : AudioTrack(wt, flags)
 {
-  // REMOVE Tim. latency. Added.
   _prefetchWritePos = ~0;
 
   internal_assign(wt, flags | Track::ASSIGN_PROPERTIES);
@@ -119,17 +117,7 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
       // Process only if track is not off.
       if(!off())
       {
-// REMOVE Tim. latency. Removed.
-//         int i_correction = 0;
         const bool use_latency_corr = useLatencyCorrection();
-//         if(use_latency_corr)
-//         {
-// //           const TrackLatencyInfo& li = getLatencyInfo(false);
-// //           const float correction = li._sourceCorrectionValue;
-// //           i_correction = correction;
-//           i_correction = latency_correction;
-//         }
-        
         bool do_overwrite = overwrite;
         PartList* pl = parts();
         unsigned n = samples;
@@ -178,17 +166,13 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
                       // Don't bother trying to read anything that comes before sample zero,
                       //  or limiting to zero which would just repeat the same beginning section over.
                       
-                      // REMOVE Tim. latency. Added.
+                      // REMOVE Tim. latency. Added. Comment.
                       // TODO: Change this: Insert blanks and use what we can from the buffer!
                       
-// REMOVE Tim. latency. Changed.
-//                       if(i_correction > 0 && (unsigned int)i_correction > srcOffset)
                       if(latency_correction > 0 && (unsigned int)latency_correction > srcOffset)
                         continue;
                       // Move the source FORWARD by an amount necessary for latency correction.
                       // i_correction will be negative for correction.
-// REMOVE Tim. latency. Changed.
-//                       srcOffset -= i_correction;
                       srcOffset -= latency_correction;
                     }
 
@@ -448,7 +432,6 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
       used_in_chan_array[i] = false;
     
     // The data retrieved by this will already be latency compensated.
-    //have_data = getInputData(framePos, dstChannels, nframe, bp, is_playing);
     have_data = getInputData(framePos, dstChannels, nframe, used_in_chan_array, bp);
     
     // Do we want to record the incoming data?
@@ -462,34 +445,19 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
       }
       else
       {
-//         unsigned int q;
         for(int i = 0; i < dstChannels; ++i)
         {
           if(used_in_chan_array[i])
           {
             // Read back the latency compensated signals, using the buffers in-place.
             if(use_latency_corr)
-            {
-//               if(is_playing)
-                _latencyComp->peek(i, nframe, bp[i]);
-//               else
-//                 _latencyComp->read(i, nframe, bp[i]);
-            }
-          
-            //continue;
+              _latencyComp->peek(i, nframe, bp[i]);
           }
           else
           {
             // Fill unused channels with silence.
             // Channel is unused. Zero the supplied buffer.
-//             if(MusEGlobal::config.useDenormalBias)
-//             {
-//               for(q = 0; q < nframe; ++q)
-//                 bp[i][q] = MusEGlobal::denormalBias;
-//             }
-            // REMOVE Tim. latency. Removed. Not required. The latency compensator already automatically clears to zero.
-//             else
-//               memset(bp[i], 0, sizeof(float) * nframe);
+            // REMOVE Tim. latency. Added. Maybe not required. The latency compensator already automatically clears to zero.
             AL::dsp->clear(bp[i], nframe, MusEGlobal::denormalBias);
           }
         }
@@ -536,13 +504,6 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
     i_correction = correction;
   }
 
-//   // Whether a prefetch buffer has been removed yet.
-//   // The system is designed so that the prefetch 'write' side can pump
-//   //  one buffer per cycle, so it can sustain one removal per cycle.
-//   // But any further removals should be accompanied by extra prefetch ticks
-//   //  to tell the prefetch to load up more than one buffer next time around.
-//   bool buf_removed = false;
-  
   if(MusEGlobal::audio->freewheel())
   {
     // when freewheeling, read data direct from file:
@@ -554,9 +515,6 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
         pf_buf[i] = audioOutDummyBuf;
       // Indicate do not seek file before each read.
       fetchData(framePos, nframe, pf_buf, false, do_overwrite, i_correction);
-//       // Advance any peeked compensator channels now.
-//       if(use_latency_corr)
-//         _latencyComp->advance(nframe);
       // Just return whether we have input sources data.
       return have_data;
     }
@@ -565,9 +523,6 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
       // Not muted. Fetch the data into the given buffers.
       // Indicate do not seek file before each read.
       fetchData(framePos, nframe, bp, false, do_overwrite, i_correction);
-//       // Advance any peeked compensator channels now.
-//       if(use_latency_corr)
-//         _latencyComp->advance(nframe);
       // We have data.
       return true;
     }
@@ -579,262 +534,137 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
     if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &pos))
     {
       fprintf(stderr, "WaveTrack::getData(%s) (prefetch peek A) fifo underrun\n", name().toLocal8Bit().constData());
-//       // Advance any peeked compensator channels now.
-//       if(use_latency_corr)
-//         _latencyComp->advance(nframe);
       return have_data;
     }
 
-    // REMOVE Tim. latency. Added. Diagnostics.
     //fprintf(stderr, "WaveTrack::getData(%s) (prefetch peek A) pos:%d\n", name().toLocal8Bit().constData(), pos);
 
     const int64_t frame_pos          = framePos;
     const int64_t corr_frame_pos     = framePos - i_correction;
     const int64_t corr_frame_end_pos = framePos - i_correction + nframe;
 
-    //if(use_latency_corr)
-    //{
-      //if( //(i_correction > 0 && (unsigned int)i_correction >= frame_endpos) ||
-      //   (/*i_correction <= 0 &&*/ frame_endpos - i_correction <= pos ))
-
-      // Do we need to RETARD, or ADVANCE, the stream?
-      if(corr_frame_end_pos <= pos)
+    // Do we need to RETARD, or ADVANCE, the stream?
+    if(corr_frame_end_pos <= pos)
+    {
+      // Allow the stream to RETARD. (That is, let our requested frame catch up to the stream.)
+      return have_data;
+    }
+    else
+    {
+      // Allow the stream to ADVANCE if necessary. (That is, let the stream catch up to our requested frame.)
+      while(corr_frame_pos >= pos + nframe)
       {
-//         // Advance any peeked compensator channels now.
-//         if(use_latency_corr)
-//           _latencyComp->advance(nframe);
-
-        // Allow the stream to RETARD. (That is, let our requested frame catch up to the stream.)
-        return have_data;
-      }
-      else
-      {
-        // Allow the stream to ADVANCE if necessary. (That is, let the stream catch up to our requested frame.)
-        while(corr_frame_pos >= pos + nframe)
-        {
-          // Done with buffer, remove it.
-          _prefetchFifo.remove();
-//           if(buf_removed)
-//             // Provide extra 'play' ticks to the prefetch. Do not indicate they are 'rec' ticks.
-//             MusEGlobal::audioPrefetch->msgTick(false, true);
-//           else
-//             buf_removed = true;
-
-          if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &pos))
-          {
-            fprintf(stderr, "WaveTrack::getData(%s) (prefetch peek B) fifo underrun\n", name().toLocal8Bit().constData());
-//             // Advance any peeked compensator channels now.
-//             if(use_latency_corr)
-//               _latencyComp->advance(nframe);
-            return have_data;
-          }
-
-          if(corr_frame_end_pos <= pos)
-          {
-            if(MusEGlobal::debugMsg)
-              fprintf(stderr, "fifo get(%s) (A) error expected %ld, got %d\n", name().toLocal8Bit().constData(), frame_pos, pos);
-//             // Advance any peeked compensator channels now.
-//             if(use_latency_corr)
-//               _latencyComp->advance(nframe);
-            return have_data;
-          }
-        }
-      }
-
-      if(corr_frame_pos <= pos)
-      {
-        if(!isMute())
-        {
-          const unsigned blanks = pos - corr_frame_pos;
-          const unsigned buf2_frames = nframe - blanks;
-          if(do_overwrite)
-          {
-            if(blanks != 0)
-            {
-              for(int i = 0; i < dstChannels; ++i)
-                AL::dsp->clear(bp[i], blanks, MusEGlobal::config.useDenormalBias);
-            }
-            for(int i = 0; i < dstChannels; ++i)
-              AL::dsp->cpy(bp[i] + blanks, pf_buf[i], buf2_frames, MusEGlobal::config.useDenormalBias);
-          }
-          else
-          {
-            for(int i = 0; i < dstChannels; ++i)
-              AL::dsp->mix(bp[i] + blanks, pf_buf[i], buf2_frames);
-          }
-          // We have data.
-          ret_val = true;
-        }
-        // If the entire buffer was used, we are done with it.
-        if(corr_frame_pos == pos)
-        {
-          // Done with buffer, remove it.
-          _prefetchFifo.remove();
-//           if(buf_removed)
-//             // Provide extra 'play' ticks to the prefetch. Do not indicate they are 'rec' ticks.
-//             MusEGlobal::audioPrefetch->msgTick(false, true);
-//           else
-//             buf_removed = true;
-        }
-      }
-      else
-      {
-        // This will always be at least 1, ie. corr_frame_pos > pos.
-        const unsigned buf1_pos = corr_frame_pos - pos;
-        const unsigned buf1_frames = nframe - buf1_pos;
-        const unsigned buf2_pos = buf1_frames;
-        const unsigned buf2_frames = buf1_pos;
-        if(!isMute())
-        {
-          if(do_overwrite)
-          {
-            for(int i = 0; i < dstChannels; ++i)
-              AL::dsp->cpy(bp[i], pf_buf[i] + buf1_pos, buf1_frames, MusEGlobal::config.useDenormalBias);
-          }
-          else
-          {
-            for(int i = 0; i < dstChannels; ++i)
-              AL::dsp->mix(bp[i], pf_buf[i] + buf1_pos, buf1_frames);
-          }
-        }
-
         // Done with buffer, remove it.
         _prefetchFifo.remove();
-//         if(buf_removed)
-//           // Provide extra 'play' ticks to the prefetch. Do not indicate they are 'rec' ticks.
-//           MusEGlobal::audioPrefetch->msgTick(false, true);
-//         else
-//           buf_removed = true;
 
-        // We are expecting the next buffer.
-        const unsigned expect_nextpos = pos + nframe;
-
-        // Peek the next buffer but do not remove it,
-        //  since the rest of it will be required next cycle.
         if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &pos))
         {
-          fprintf(stderr, "WaveTrack::getData(%s) (prefetch peek C) fifo underrun\n", name().toLocal8Bit().constData());
-//           // Advance any peeked compensator channels now.
-//           if(use_latency_corr)
-//             _latencyComp->advance(nframe);
+          fprintf(stderr, "WaveTrack::getData(%s) (prefetch peek B) fifo underrun\n", name().toLocal8Bit().constData());
           return have_data;
         }
-        
-        if(pos != expect_nextpos)
+
+        if(corr_frame_end_pos <= pos)
         {
           if(MusEGlobal::debugMsg)
-            fprintf(stderr, "fifo get(%s) (B) error expected %u, got %u\n", name().toLocal8Bit().constData(), expect_nextpos, pos);
-//           // Advance any peeked compensator channels now.
-//           if(use_latency_corr)
-//             _latencyComp->advance(nframe);
+            fprintf(stderr, "fifo get(%s) (A) error expected %ld, got %d\n", name().toLocal8Bit().constData(), frame_pos, pos);
           return have_data;
         }
-
-        if(!isMute())
-        {
-          if(do_overwrite)
-          {
-            for(int i = 0; i < dstChannels; ++i)
-              AL::dsp->cpy(bp[i] + buf2_pos, pf_buf[i], buf2_frames, MusEGlobal::config.useDenormalBias);
-          }
-          else
-          {
-            for(int i = 0; i < dstChannels; ++i)
-              AL::dsp->mix(bp[i] + buf2_pos, pf_buf[i], buf2_frames);
-          }
-          // We have data.
-          ret_val = true;
-        }        
       }
-    //}
+    }
 
-    
-    
-    
-    
-//     unsigned pos;
-//     if(_prefetchFifo.get(dstChannels, nframe, pf_buf, &pos))
-//     {
-//       fprintf(stderr, "WaveTrack::getData(%s) (A) fifo underrun\n", name().toLocal8Bit().constData());
-//       // Advance any peeked compensator channels now.
-//       if(use_latency_corr)
-//         _latencyComp->advance(nframe);
-//       return have_data;
-//     }
-//     if(pos != framePos)
-//     {
-//       if(MusEGlobal::debugMsg)
-//         fprintf(stderr, "fifo get error expected %d, got %d\n", framePos, pos);
-//       while (pos < framePos)
-//       {
-//         if(_prefetchFifo.get(dstChannels, nframe, pf_buf, &pos))
-//         {
-//           fprintf(stderr, "WaveTrack::getData(%s) (B) fifo underrun\n",
-//               name().toLocal8Bit().constData());
-//           // Advance any peeked compensator channels now.
-//           if(use_latency_corr)
-//             _latencyComp->advance(nframe);
-//           return have_data;
-//         }
-//       }
-//     }
-// 
-//     if(isMute())
-//     {
-//       // Advance any peeked compensator channels now.
-//       if(use_latency_corr)
-//         _latencyComp->advance(nframe);
-//       // We are muted. We need to let the fetching progress, but discard the data.
-//       // Just return whether we have input sources data.
-//       return have_data;
-//     }
-// 
-// //#ifdef NODE_DEBUG_TERMINAL_PEAK_METERS
-// #if 0
-//     fprintf(stderr, "WaveTrack::getData() name:%s PLAYBACK:\n",
-//             //name().toLatin1().constData(), l, latencyCompWriteOffset(), l + latencyCompWriteOffset());
-//             name().toLatin1().constData());
-//     for(int ch = 0; ch < dstChannels; ++ch)
-//     {
-//       fprintf(stderr, "channel:%d peak:", ch);
-//       float val;
-//       float peak = 0.0f;
-//       const float* buf = pf_buf[ch];
-//       for(unsigned int smp = 0; smp < nframe; ++smp)
-//       {
-//         val = buf[smp];
-//         if(val > peak)
-//           peak = val;
-//       }
-//       const int dots = peak * 20;
-//       for(int d = 0; d < dots; ++d)
-//         fprintf(stderr, "*");
-//       fprintf(stderr, "\n");
-//     }
-// #endif
-//     
-//     if(do_overwrite)
-//     {
-//       for(int i = 0; i < dstChannels; ++i)
-//         AL::dsp->cpy(bp[i], pf_buf[i], nframe, MusEGlobal::config.useDenormalBias);
-//     }
-//     else
-//     {
-//       for(int i = 0; i < dstChannels; ++i)
-//         AL::dsp->mix(bp[i], pf_buf[i], nframe);
-//     }
+    if(corr_frame_pos <= pos)
+    {
+      if(!isMute())
+      {
+        const unsigned blanks = pos - corr_frame_pos;
+        const unsigned buf2_frames = nframe - blanks;
+        if(do_overwrite)
+        {
+          if(blanks != 0)
+          {
+            for(int i = 0; i < dstChannels; ++i)
+              AL::dsp->clear(bp[i], blanks, MusEGlobal::config.useDenormalBias);
+          }
+          for(int i = 0; i < dstChannels; ++i)
+            AL::dsp->cpy(bp[i] + blanks, pf_buf[i], buf2_frames, MusEGlobal::config.useDenormalBias);
+        }
+        else
+        {
+          for(int i = 0; i < dstChannels; ++i)
+            AL::dsp->mix(bp[i] + blanks, pf_buf[i], buf2_frames);
+        }
+        // We have data.
+        ret_val = true;
+      }
+      // If the entire buffer was used, we are done with it.
+      if(corr_frame_pos == pos)
+      {
+        // Done with buffer, remove it.
+        _prefetchFifo.remove();
+      }
+    }
+    else
+    {
+      // This will always be at least 1, ie. corr_frame_pos > pos.
+      const unsigned buf1_pos = corr_frame_pos - pos;
+      const unsigned buf1_frames = nframe - buf1_pos;
+      const unsigned buf2_pos = buf1_frames;
+      const unsigned buf2_frames = buf1_pos;
+      if(!isMute())
+      {
+        if(do_overwrite)
+        {
+          for(int i = 0; i < dstChannels; ++i)
+            AL::dsp->cpy(bp[i], pf_buf[i] + buf1_pos, buf1_frames, MusEGlobal::config.useDenormalBias);
+        }
+        else
+        {
+          for(int i = 0; i < dstChannels; ++i)
+            AL::dsp->mix(bp[i], pf_buf[i] + buf1_pos, buf1_frames);
+        }
+      }
 
-//     // Advance any peeked compensator channels now.
-//     if(use_latency_corr)
-//       _latencyComp->advance(nframe);
-//     // We have data.
-//     return true;
+      // Done with buffer, remove it.
+      _prefetchFifo.remove();
+
+      // We are expecting the next buffer.
+      const unsigned expect_nextpos = pos + nframe;
+
+      // Peek the next buffer but do not remove it,
+      //  since the rest of it will be required next cycle.
+      if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &pos))
+      {
+        fprintf(stderr, "WaveTrack::getData(%s) (prefetch peek C) fifo underrun\n", name().toLocal8Bit().constData());
+        return have_data;
+      }
+      
+      if(pos != expect_nextpos)
+      {
+        if(MusEGlobal::debugMsg)
+          fprintf(stderr, "fifo get(%s) (B) error expected %u, got %u\n", name().toLocal8Bit().constData(), expect_nextpos, pos);
+        return have_data;
+      }
+
+      if(!isMute())
+      {
+        if(do_overwrite)
+        {
+          for(int i = 0; i < dstChannels; ++i)
+            AL::dsp->cpy(bp[i] + buf2_pos, pf_buf[i], buf2_frames, MusEGlobal::config.useDenormalBias);
+        }
+        else
+        {
+          for(int i = 0; i < dstChannels; ++i)
+            AL::dsp->mix(bp[i] + buf2_pos, pf_buf[i], buf2_frames);
+        }
+        // We have data.
+        ret_val = true;
+      }        
+    }
+
     return ret_val;
   }
 
-  // Advance any peeked compensator channels now.
-  //if(_latencyComp)
-  //  _latencyComp->advance(nframe);
   return have_data;
 }
 

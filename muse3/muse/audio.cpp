@@ -845,7 +845,6 @@ void Audio::process(unsigned frames)
       for (iAudioOutput i = ol->begin(); i != ol->end(); ++i)
       {
             (*i)->processWrite();
-            // REMOVE Tim. latency. Added.
             // Special for audio outputs tracks: Now that processWrite() is
             //  finished using 'buffer', apply output channel latency compensation
             //  to the buffer so that the correct signals appear at the final destination.
@@ -883,10 +882,12 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       // process not connected tracks
       // to animate meter display
       //
-// REMOVE Tim. latency. Changed.
-//       TrackList* tl = MusEGlobal::song->tracks();
       const TrackList& tl = *MusEGlobal::song->tracks();
       const TrackList::size_type tl_sz = tl.size();
+      const AuxList& aux_tl = *MusEGlobal::song->auxs();
+      const AuxList::size_type aux_tl_sz = aux_tl.size();
+      const OutputList& out_tl = *MusEGlobal::song->outputs();
+      const OutputList::size_type out_tl_sz = out_tl.size();
       const MidiDeviceList& mdl = MusEGlobal::midiDevices;
       Track* track; 
       AudioTrack* atrack; 
@@ -897,11 +898,9 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
       // This includes synthesizers.
-//       for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
       for(TrackList::size_type it = 0; it < tl_sz; ++it) 
       {
         track = tl[it];
-//         track = *it;
         
         // For track types, synths etc. which need some kind of non-audio 
         //  (but possibly audio-affecting) processing always, even if their output path
@@ -953,11 +952,9 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         // PASS 1: Find any dominant branches:
         //---------------------------------------------
 
-//         for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
         for(TrackList::size_type it = 0; it < tl_sz; ++it) 
         {
           track = tl[it];
-//           track = *it;
           
           // If the track is for example a Wave Track, we must consider up to two contributing paths,
           //  the output (playback) side and the input (record) side which can pass through via monitoring.
@@ -1030,11 +1027,9 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
 
         // Now that we know the worst case latency,
         //  set all the branch correction values.
-//         for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
         for(TrackList::size_type it = 0; it < tl_sz; ++it) 
         {
           track = tl[it];
-//           track = *it;
           
           // If the track is for example a Wave Track, we must consider up to two contributing paths,
           //  the output (playback) side and the input (record) side which can pass through via monitoring.
@@ -1128,11 +1123,9 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         // PASS 3: Set initial output latencies:
         //---------------------------------------------
 
-//         for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
         for(TrackList::size_type it = 0; it < tl_sz; ++it) 
         {
           track = tl[it];
-//           track = *it;
           
           // If the track is for example a Wave Track, we must consider up to two contributing paths,
           //  the output (playback) side and the input (record) side which can pass through via monitoring.
@@ -1264,11 +1257,9 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
 
         // Now that all branch correction values have been set,
         //  gather all final latency info.
-//         for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
         for(TrackList::size_type it = 0; it < tl_sz; ++it) 
         {
           track = tl[it];
-//           track = *it;
           
           // If the track is for example a Wave Track, we must consider up to two contributing paths,
           //  the output (playback) side and the input (record) side which can pass through via monitoring.
@@ -1371,33 +1362,24 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       //---------------------------------------------
       
       // Process Aux tracks first.
-//       for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it)
-//       {
-//         if((*it)->isMidiTrack())
-//           continue;
-//         atrack = static_cast<AudioTrack*>(*it);
-      for(TrackList::size_type it = 0; it < tl_sz; ++it) 
+      for(AuxList::size_type it = 0; it < aux_tl_sz; ++it) 
       {
-        atrack = static_cast<AudioTrack*>(tl[it]);
-        if(atrack->isMidiTrack())
-          continue;
-        if(!atrack->processed() && atrack->type() == Track::AUDIO_AUX)
+        atrack = static_cast<AudioTrack*>(aux_tl[it]);
+        if(!atrack->processed())
         {
-          //fprintf(stderr, "Audio::process1 Do aux: track:%s\n", track->name().toLatin1().constData());   DELETETHIS
           channels = atrack->channels();
           // Just a dummy buffer.
           float* buffer[channels];
           float data[frames * channels];
           for (int i = 0; i < channels; ++i)
                 buffer[i] = data + i * frames;
-          //fprintf(stderr, "Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1()); DELETETHIS
-            atrack->copyData(samplePos, -1, channels, channels, -1, -1, frames, buffer);
+
+          atrack->copyData(samplePos, -1, channels, channels, -1, -1, frames, buffer);
         }
       }
       
-      OutputList* ol = MusEGlobal::song->outputs();
-      for (ciAudioOutput i = ol->cbegin(); i != ol->cend(); ++i)
-        (*i)->process(samplePos, offset, frames);
+      for(OutputList::size_type it = 0; it < out_tl_sz; ++it) 
+        static_cast<AudioOutput*>(out_tl[it])->process(samplePos, offset, frames);
             
       // Were ANY tracks unprocessed as a result of processing all the AudioOutputs, above? 
       // Not just unconnected ones, as previously done, but ones whose output path ultimately leads nowhere.
@@ -1405,11 +1387,6 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       // Do them now. This will animate meters, and 'quietly' process some audio which needs to be done -
       //  for example synths really need to be processed, 'quietly' or not, otherwise the next time processing 
       //  is 'turned on', if there was a backlog of events while it was off, then they all happen at once.  Tim.
-//       for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it) 
-//       {
-//         if((*it)->isMidiTrack())
-//           continue;
-//         atrack = static_cast<AudioTrack*>(*it);
       for(TrackList::size_type it = 0; it < tl_sz; ++it) 
       {
         atrack = static_cast<AudioTrack*>(tl[it]);
@@ -1417,7 +1394,6 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           continue;
         if(!atrack->processed() && (atrack->type() != Track::AUDIO_OUTPUT))
         {
-          //fprintf(stderr, "Audio::process1 track:%s\n", track->name().toLatin1().constData());  DELETETHIS
           channels = atrack->channels();
           // Just a dummy buffer.
           float* buffer[channels];
@@ -1425,8 +1401,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           for (int i = 0; i < channels; ++i)
                 buffer[i] = data + i * frames;
           
-          //fprintf(stderr, "Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1()); DELETETHIS
-            atrack->copyData(samplePos, -1, channels, channels, -1, -1, frames, buffer);
+          atrack->copyData(samplePos, -1, channels, channels, -1, -1, frames, buffer);
         }
       }      
     }

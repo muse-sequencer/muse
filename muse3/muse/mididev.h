@@ -310,8 +310,6 @@ class MidiDevice {
       // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc)
       //  plus any port latency if applicable.
       virtual float getWorstSelfLatencyMidi(bool capture);
-      // The worst latency of all the contributions from the track's own audio and midi members (audio effect rack, etc).
-//       virtual float getWorstSelfLatency(bool capture);
       // Whether this track (and the branch it is in) can force other parallel branches to
       //  increase their latency compensation to match this one.
       // If false, this branch will NOT disturb other parallel branches' compensation,
@@ -324,9 +322,6 @@ class MidiDevice {
       // If false, this branch will NOT disturb other parallel branches' compensation,
       //  intead only allowing compensation UP TO the worst case in other branches.
       virtual bool canDominateEndPointLatencyMidi(bool capture) const;
-//       virtual bool canDominateInputLatency() const;
-      // Whether this track and its branch require latency correction, not just compensation.
-//       virtual bool requiresInputLatencyCorrection() const;
       // Whether this track and its branch can correct for latency, not just compensate.
       inline virtual bool canCorrectOutputLatencyMidi() const { return false; }
       // Whether the track can pass latency values through, the SAME as if record monitor is

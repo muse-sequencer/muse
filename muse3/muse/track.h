@@ -952,7 +952,6 @@ class AudioAux : public AudioTrack {
 
 class WaveTrack : public AudioTrack {
       Fifo _prefetchFifo;  // prefetch Fifo
-      // REMOVE Tim. latency. Added.
       // Each wavetrack has a separate prefetch position stamp
       //  so that consumers can retard or advance the stream and
       //  the prefetch can pump as much buffers as required while
@@ -996,7 +995,6 @@ class WaveTrack : public AudioTrack {
       
       void clearPrefetchFifo()      { _prefetchFifo.clear(); }
       Fifo* prefetchFifo()          { return &_prefetchFifo; }
-      // REMOVE Tim. latency. Added.
       // For prefetch thread use only.
       inline unsigned prefetchWritePos() const { return _prefetchWritePos; }
       inline void setPrefetchWritePos(unsigned p) { _prefetchWritePos = p; }

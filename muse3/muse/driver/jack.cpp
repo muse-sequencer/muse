@@ -109,6 +109,11 @@ jack_port_set_name_type           jack_port_set_name_fp = NULL;
 jack_port_rename_type             jack_port_rename_fp = NULL;
 
 // REMOVE Tim. latency. Added. TESTING.
+// Jack BUG ? :
+// Before latency compensation was added, we would deactivate and reactivate the Jack server
+//  when loading a song. But tests revealed Jack does not like that, and ALL reported
+//  port latencies are ZERO after reactivation. So we have no choice but to leave the
+//  Jack server running all the time until program close.
 bool jackStarted = false;
 
 //---------------------------------------------------------
@@ -429,7 +434,6 @@ JackAudioDevice::JackAudioDevice(jack_client_t* cl, char* name)
    : AudioDevice()
 {
       _frameCounter = 0;
-      //JackAudioDevice::jackStarted=false;
       strcpy(jackRegisteredName, name);
       _client = cl;
 }
@@ -1490,19 +1494,20 @@ bool JackAudioDevice::start(int /*priority*/)
 
       DEBUG_PRST_ROUTES (stderr, "JackAudioDevice::start(): calling jack_activate()\n");
 
-      // REMOVE Tim. latency. Added. TESTING.
+      // REMOVE Tim. latency. Changed. TESTING.
+//       if (jack_activate(_client)) {
+//             MusEGlobal::undoSetuid();   
+//             fprintf (stderr, "JACK: cannot activate client\n");
+//             exit(-1);
+//             }
       if(!jackStarted)
       {
-
-      if (jack_activate(_client)) {
-            MusEGlobal::undoSetuid();   
-            fprintf (stderr, "JACK: cannot activate client\n");
-            exit(-1);
-            }
-
+        if (jack_activate(_client)) {
+              MusEGlobal::undoSetuid();   
+              fprintf (stderr, "JACK: cannot activate client\n");
+              exit(-1);
+              }
       }
-      
-      // REMOVE Tim. latency. Added. TESTING.
       jackStarted = true;
 
       MusEGlobal::undoSetuid();
@@ -1515,7 +1520,6 @@ bool JackAudioDevice::start(int /*priority*/)
       MusEGlobal::song->connectAllPorts();
 
       fflush(stdin);
-      //JackAudioDevice::jackStarted=true;
       
       return true;
       }
@@ -1531,18 +1535,20 @@ void JackAudioDevice::stop()
       if(!checkJackClient(_client)) return;
       DEBUG_PRST_ROUTES (stderr, "JackAudioDevice::stop(): calling jack_deactivate()\n");
       
-      // REMOVE Tim. latency. Added. TESTING.
-      //if(jackStarted)
-      {
-
-      // REMOVE Tim. latency. Removed. TESTING. Reinstate.
+// REMOVE Tim. latency. Changed. TESTING.
 //       if (jack_deactivate(_client)) {
 //             fprintf (stderr, "cannot deactivate client\n");
 //             }
 
-      }
-
-      //JackAudioDevice::jackStarted=false;
+//       //if(jackStarted)
+//       {
+// 
+//         if (jack_deactivate(_client)) {
+//               fprintf (stderr, "cannot deactivate client\n");
+//               }
+// 
+//       }
+//       jackStarted = false;
       }
 
 //---------------------------------------------------------
@@ -2106,10 +2112,7 @@ void JackAudioDevice::setFreewheel(bool f)
       {
       if (JACK_DEBUG)
             fprintf(stderr, "JackAudioDevice::setFreewheel(\n");
-      // REMOVE Tim. latency. Added. Diagnostics.
-            fprintf(stderr, "JackAudioDevice::setFreewheel() f:%d\n", f);
       if(!checkJackClient(_client)) return;
-//      fprintf(stderr, "JACK: setFreewheel %d\n", f);
       jack_set_freewheel(_client, f);
       }
 

@@ -2596,7 +2596,6 @@ RouteCapabilitiesStruct AudioInput::routeCapabilities() const
 AudioOutput::AudioOutput()
    : AudioTrack(AUDIO_OUTPUT)
       {
-      // REMOVE Tim. latency. Added.
       _outputLatencyComp = new LatencyCompensator();
 
       _nframes = 0;
@@ -2607,7 +2606,6 @@ AudioOutput::AudioOutput()
 AudioOutput::AudioOutput(const AudioOutput& t, int flags)
   : AudioTrack(t, flags)
 {
-  // REMOVE Tim. latency. Added.
   _outputLatencyComp = new LatencyCompensator();
 
   for (int i = 0; i < MusECore::MAX_CHANNELS; ++i)
@@ -2665,7 +2663,6 @@ AudioOutput::~AudioOutput()
           if(jackPorts[i])
             MusEGlobal::audioDevice->unregisterPort(jackPorts[i]);
 
-      // REMOVE Tim. latency. Added.
       if(_outputLatencyComp)
         delete _outputLatencyComp;
       }
@@ -2677,7 +2674,6 @@ AudioOutput::~AudioOutput()
 void AudioOutput::setChannels(int n)
       {
       AudioTrack::setChannels(n);
-      // REMOVE Tim. latency. Added.
       if(useLatencyCorrection() && _outputLatencyComp)
         _outputLatencyComp->setChannels(totalProcessBuffers());
       }
