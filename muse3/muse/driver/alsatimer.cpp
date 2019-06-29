@@ -25,14 +25,14 @@
 //
 //=========================================================
         
-
 #include "alsatimer.h"
-#include "globals.h"
 
 #ifdef ALSA_SUPPORT
 
 #include <climits>
 #include <stdio.h>
+
+#include "globals.h"
 
 #define ALSA_TIMER_DEBUG 0
 

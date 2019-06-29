@@ -1090,14 +1090,8 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
               synth->showNativeGui(show);
               }
 #ifdef LV2_SUPPORT
-        else if (mSubPresets != NULL && ract != NULL) {
-           QWidget *mwidget = ract->parentWidget();
-           if (mwidget != NULL) {
-               if(mSubPresets == dynamic_cast<PopupMenu*>(mwidget)) {
-                  static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
-               }
-           }
-
+        else if (mSubPresets != NULL && ract != NULL && ract->data().canConvert<void *>()) {
+          static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
         }
 #endif
         delete p;
@@ -1158,13 +1152,12 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
             port->showNativeGui(!port->nativeGuiVisible());
             }
 #ifdef LV2_SUPPORT
-        else if (mSubPresets != NULL && ract != NULL) {
-           QWidget *mwidget = ract->parentWidget();
-           if (mwidget != NULL && port->device() && port->device()->isSynti()) {
+        else if (mSubPresets != NULL && ract != NULL && ract->data().canConvert<void *>())
+        {
+           if (port->device() && port->device()->isSynti())
+           {
                MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(port->device());
-               if(mSubPresets == dynamic_cast<PopupMenu*>(mwidget)) {
-                  static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
-               }
+               static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
            }
         }
 #endif

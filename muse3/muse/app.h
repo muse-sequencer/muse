@@ -32,6 +32,10 @@
 #include <QFileInfo>
 #include <list>
 #include <time.h>
+#include <sys/time.h>
+#if defined(__FreeBSD__)
+#include <unistd.h>
+#endif
 
 class QCloseEvent;
 class QMainWindow;

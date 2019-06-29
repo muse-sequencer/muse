@@ -837,7 +837,7 @@ void ScoreEdit::menu_command(int cmd)
             tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
             MusECore::quantize_items(&tag_list, ret._raster_index,
-                                    /*ret._quant_len*/ false,  // DELETETHIS
+                                    ret._quant_len,
                                     ret._strength,
                                     ret._swing,
                                     ret._threshold);
