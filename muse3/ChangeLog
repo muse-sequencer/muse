@@ -1,5 +1,5 @@
 14.05.2019
-      - Include RTC support only if ALSA support enabled. See issue 584 (BSD support). (Tim)
+      - Include RTC support only if ALSA support enabled. See issue 584 (BSD support).  (Tim)
       - Fix for github issue 646 "Select Directory" dialogs freezes MusE. (Tim)
         For a known Qt bug: QFileDialog freezes with a Gnome environment.
         In the bug report, a user said he fixed it by NOT supplying a parent. That is what I did.
