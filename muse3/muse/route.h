@@ -129,13 +129,6 @@ class Route {
       // Temporary variables used during latency calculations:
       // Holds the output latency of this node, so that it can be compared with others.
       float audioLatencyOut;
-//       // Whether this node (and the branch it is in) can force other parallel branches to
-//       //  increase their latency compensation to match this one.
-//       // If false, this branch will NOT disturb other parallel branches' compensation,
-//       //  intead only allowing compensation UP TO the worst case in other branches.
-//       bool canDominateLatency;
-//       // Whether this node and its branch can correct for latency, not just compensate.
-//       bool canCorrectOutputLatency;
       //--------------------------------------------------------
       
       Route(void* t, int ch=-1);
