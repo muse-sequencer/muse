@@ -1494,7 +1494,7 @@ bool JackAudioDevice::start(int /*priority*/)
 
       DEBUG_PRST_ROUTES (stderr, "JackAudioDevice::start(): calling jack_activate()\n");
 
-      // REMOVE Tim. latency. Changed. TESTING.
+// REMOVE Tim. latency. Changed. TESTING.
 //       if (jack_activate(_client)) {
 //             MusEGlobal::undoSetuid();   
 //             fprintf (stderr, "JACK: cannot activate client\n");

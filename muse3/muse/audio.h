@@ -181,6 +181,8 @@ class Audio {
       bool _syncPlayStarting;
       // Prevents flood of events during seek.
       float _antiSeekFloodCounter;
+      // Whether the last call to the sync callback was ready to roll.
+      bool _syncReady;
       
       uint64_t syncTimeUS;  // Wall clock at last sync point in microseconds.
       unsigned syncFrame;    // corresponding frame no. to syncTime

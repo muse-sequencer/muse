@@ -162,6 +162,7 @@ Audio::Audio()
       _syncPlayStarting = false;
       // Set for way beyond the end of the expected count.
       _antiSeekFloodCounter = 100000.0;
+      _syncReady = true;
       
       midiClick     = 0;
       audioClick    = 0;
@@ -311,7 +312,7 @@ bool Audio::sync(int jackState, unsigned frame)
     {
       DEBUG_TRANSPORT_SYNC(stderr, "   state == PRECOUNT, pos frame:%u req frame:%u calling seek...\n", _pos.frame(), frame);
       seek(Pos(frame, false));
-      
+
       done = MusEGlobal::audioPrefetch->seekDone();
     
       // We're in precount state, so it must have started from stop state. Set to true.
@@ -325,14 +326,19 @@ bool Audio::sync(int jackState, unsigned frame)
         // Does the precount start over again? Return false if so, to continue holding up the transport.
         // This will start the precount if necessary and set the state to PRECOUNT.
         if(startPreCount())
-          return false;
+        {
+          _syncReady = false;
+          return _syncReady;
+        }
       }
       
       state = START_PLAY;
-      return done;
+      _syncReady = done;
+      return _syncReady;
     }
     
-    return _precountFramePos >= precountTotalFrames;
+    _syncReady = _precountFramePos >= precountTotalFrames;
+    return _syncReady;
   }
           
   if (state == LOOP1)
@@ -349,9 +355,14 @@ bool Audio::sync(int jackState, unsigned frame)
 
     if (state != START_PLAY)
     {
-      Pos p(frame, false);
-      DEBUG_TRANSPORT_SYNC(stderr, "   state != START_PLAY, req frame:%u calling seek...\n", frame);
-      seek(p);
+      // Is this the first of possibly multiple sync calls?
+      if(_syncReady)
+      {
+        Pos p(frame, false);
+        DEBUG_TRANSPORT_SYNC(stderr, "   state != START_PLAY, req frame:%u calling seek...\n", frame);
+        seek(p);
+      }
+
       if (!_freewheel)
         done = MusEGlobal::audioPrefetch->seekDone();
       
@@ -375,7 +386,10 @@ bool Audio::sync(int jackState, unsigned frame)
             // Does the precount start? Return false if so, to begin holding up the transport.
             // This will start the precount if necessary and set the state to PRECOUNT.
             if(startPreCount())
-              return false;
+            {
+              _syncReady = false;
+              return _syncReady;
+            }
           }
         }
         else
@@ -421,14 +435,18 @@ bool Audio::sync(int jackState, unsigned frame)
           // Does the precount start? Return false if so, to continue (or begin) holding up the transport.
           // This will start the precount if necessary and set the state to PRECOUNT.
           if(startPreCount())
-            return false;
+          {
+            _syncReady = false;
+            return _syncReady;
+          }
         }
       }
     }
   }
   
   //fprintf(stderr, "Audio::sync() end: state:%d pos frame:%u\n", state, _pos.frame());
-  return done;
+  _syncReady = done;
+  return _syncReady;
 }
 
 //---------------------------------------------------------
@@ -1543,11 +1561,14 @@ void Audio::processMsg(AudioMsg* msg)
 
 void Audio::seek(const Pos& p)
       {
+      // This is expected and required sometimes, for example to
+      //  sync the prefetch system to a position we are ALREADY at.
+      // But being fairly costly, not too frequently. So we warn just in case.
       if (_pos == p) {
             if(MusEGlobal::debugMsg)
               fprintf(stderr, "Audio::seek already at frame:%u\n", p.frame());
-            return;        
             }
+
       if (MusEGlobal::heavyDebugMsg)
         fprintf(stderr, "Audio::seek frame:%d\n", p.frame());
         

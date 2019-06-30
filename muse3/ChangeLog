@@ -1,3 +1,9 @@
+30.06.2019
+      - Audio: Fixed old bug hopefully, yay! Symptom: Load a song, press play, and get like this:
+         "FIFO 0xda8d600 underrun" "WaveTrack::getData(Playback track) (A) fifo underrun"
+        Cures: In Audio::seek() do not return if we are already at the requested position -
+         let it update the prefetch fifo. Modified Audio::sync() to NOT repeatedly call seek()
+         if waiting for sync. Tested OK with precount, seek-while-precount, seek-while-seek etc.
 29.06.2019
       * New! Comprehensive full midi and audio latency correction / compensation: (Tim)
       - This was a very tough problem to solve.
@@ -7,6 +13,7 @@
          signals throughout. Recorded or played audio files should be TRUSTWORTHY now,
           regardless of audio driver period size.
       - Tested extensively with many configurations. Should be OK for usage trials.
+      - Works OK with plugins that report latency (properly). It accounts for their latency.
       - Works OK with Audio Output track sends or Midi output sends and Audio Input returns.
       - Works OK with 'Bounce to file/track' function, with or without Jack Freewheel enabled.
       - TODO: Support Aux(illiary) tracks. Not handled at all ATM.
