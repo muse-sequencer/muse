@@ -560,15 +560,28 @@ else ( ENABLE_FLUID )
       message("Fluidsynth disabled")
 endif ( ENABLE_FLUID )
 
+##
+## check for libinstpatch
+##
+
 if ( ENABLE_INSTPATCH )
-  PKG_CHECK_MODULES(INSTPATCH libinstpatch-1.0)
+  # Check recent version:
+  PKG_CHECK_MODULES(INSTPATCH libinstpatch)
   if (INSTPATCH_FOUND)
         include_directories(${INSTPATCH_INCLUDE_DIRS})
         set(HAVE_INSTPATCH ON)
+  else (INSTPATCH_FOUND)
+        # Check older version:
+        PKG_CHECK_MODULES(INSTPATCH libinstpatch-1.0)
+        if (INSTPATCH_FOUND)
+              include_directories(${INSTPATCH_INCLUDE_DIRS})
+              set(HAVE_INSTPATCH ON)
+        endif (INSTPATCH_FOUND)
   endif (INSTPATCH_FOUND)
 else ( ENABLE_INSTPATCH )
       message("Inst(rument) Patch support disabled")
 endif ( ENABLE_INSTPATCH )
+
 
 ##
 ##   End OPTIONAL packages.

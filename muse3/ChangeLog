@@ -1,3 +1,5 @@
+01.07.2019
+      - libinstpatch fix: Newer libinstpatch.pc replaces old libinstpatch-1.0.pc (Tim)
 30.06.2019
       - Audio: Fixed old bug hopefully, yay! Symptom: Load a song, press play, and get like this:
          "FIFO 0xda8d600 underrun" "WaveTrack::getData(Playback track) (A) fifo underrun"
