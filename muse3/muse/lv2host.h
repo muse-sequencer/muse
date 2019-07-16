@@ -284,6 +284,8 @@ private:
     LV2_Log_Log _lv2_log_log;    
     double _sampleRate;
     float _fSampleRate;
+    // Just so we can point to a zero.
+    static const unsigned minBlockSize;
     bool _isSynth;
 // LV2 does not use unique id numbers and frowns upon using anything but the uri.
 //     int _uniqueID;
@@ -340,10 +342,9 @@ public:
     LV2Synth ( const QFileInfo &fi, QString label, QString name, QString author, 
                const LilvPlugin *_plugin, PluginFeatures_t reqFeatures = PluginNoFeatures );
     virtual ~LV2Synth();
+
     virtual SynthIF *createSIF ( SynthI * );
-    bool isSynth() {
-        return _isSynth;
-    }
+    bool isSynth() { return _isSynth; }
 
     //own public functions
     LV2_URID mapUrid ( const char *uri );

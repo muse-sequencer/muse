@@ -1,3 +1,10 @@
+15.07.2019
+      - LV2: Removed ALL internal LV2 support. Too hard to maintain. (Tim)
+        And to get important changes sooner, we would need risky git versions of the libs.
+      - Support nominalBlockLength feature and coarseBlockLength property.
+      - Changed LV2_P_MIN_BLKLEN value from 'segmentSize' to 0, since we might vary the run.
+      - For plugin sub-runs, treat PluginPowerOf2BlockSize like fixed size for now.
+        TODO: Better support by quantizing the control period to power of 2.
 01.07.2019
       - libinstpatch fix: Newer libinstpatch.pc replaces old libinstpatch-1.0.pc (Tim)
 30.06.2019

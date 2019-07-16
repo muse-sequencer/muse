@@ -108,9 +108,13 @@ namespace MusECore
 #define LV2_F_BOUNDED_BLOCK_LENGTH LV2_BUF_SIZE__boundedBlockLength
 #define LV2_F_FIXED_BLOCK_LENGTH LV2_BUF_SIZE__fixedBlockLength
 #define LV2_F_POWER_OF_2_BLOCK_LENGTH LV2_BUF_SIZE__powerOf2BlockLength
+// BUG FIXME: 'coarseBlockLength' is NOT in the lv2 buf-size.h header file!
+// #define LV2_F_COARSE_BLOCK_LENGTH LV2_BUF_SIZE__coarseBlockLength
+#define LV2_F_COARSE_BLOCK_LENGTH LV2_BUF_SIZE_PREFIX "coarseBlockLength"
 #define LV2_P_SEQ_SIZE LV2_BUF_SIZE__sequenceSize
 #define LV2_P_MAX_BLKLEN LV2_BUF_SIZE__maxBlockLength
 #define LV2_P_MIN_BLKLEN LV2_BUF_SIZE__minBlockLength
+#define LV2_P_NOM_BLKLEN LV2_BUF_SIZE__nominalBlockLength
 #define LV2_P_SAMPLE_RATE LV2_PARAMETERS__sampleRate
 #define LV2_F_OPTIONS LV2_OPTIONS__options
 #define LV2_F_URID_MAP LV2_URID__map
@@ -212,6 +216,7 @@ LV2_Feature lv2Features [] =
    {LV2_F_BOUNDED_BLOCK_LENGTH, NULL},
    {LV2_F_FIXED_BLOCK_LENGTH, NULL},
    {LV2_F_POWER_OF_2_BLOCK_LENGTH, NULL},
+   {LV2_F_COARSE_BLOCK_LENGTH, NULL},
    {LV2_F_UI_PARENT, NULL},
    {LV2_F_INSTANCE_ACCESS, NULL},
    {LV2_F_UI_EXTERNAL_HOST, NULL},
@@ -231,6 +236,11 @@ LV2_Feature lv2Features [] =
 std::vector<LV2Synth *> synthsToFree;
 
 #define SIZEOF_ARRAY(x) sizeof(x)/sizeof(x[0])
+
+// static
+// Pointer to this required for LV2_P_MIN_BLKLEN option when
+//  composing LV2_Options_Option array in LV2Synth::LV2Synth().
+const unsigned LV2Synth::minBlockSize = 0U;
 
 void initLV2()
 {
@@ -2248,8 +2258,10 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    LV2_Options_Option _tmpl_options [] =
    {
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SAMPLE_RATE), sizeof(float), uridBiMap.map(LV2_ATOM__Float), &_fSampleRate},
-      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MIN_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MIN_BLKLEN), sizeof(int32_t),
+        uridBiMap.map(LV2_ATOM__Int), &LV2Synth::minBlockSize}, // &MusEGlobal::segmentSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MAX_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_NOM_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SEQ_SIZE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_CORE__sampleRate), sizeof(double), uridBiMap.map(LV2_ATOM__Double), &_sampleRate},
       {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, NULL}
@@ -3726,7 +3738,9 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
    const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
    // All ports must be connected to something!
    const unsigned long nop = ((unsigned long) ports) > _outports ? _outports : ((unsigned long) ports);
-   const bool usefixedrate = (requiredFeatures() & PluginFixedBlockSize);;
+   // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
+   //       For now we treat it like fixed size.
+   const bool usefixedrate = (requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize));
    const unsigned long min_per = (usefixedrate || MusEGlobal::config.minControlProcessPeriod > nframes) ? nframes : MusEGlobal::config.minControlProcessPeriod;
    const unsigned long min_per_mask = min_per - 1; // min_per must be power of 2
 

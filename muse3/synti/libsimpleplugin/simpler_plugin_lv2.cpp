@@ -134,9 +134,13 @@ namespace MusESimplePlugin {
 #define LV2_F_BOUNDED_BLOCK_LENGTH LV2_BUF_SIZE__boundedBlockLength
 #define LV2_F_FIXED_BLOCK_LENGTH LV2_BUF_SIZE__fixedBlockLength
 #define LV2_F_POWER_OF_2_BLOCK_LENGTH LV2_BUF_SIZE__powerOf2BlockLength
+// BUG FIXME: 'coarseBlockLength' is NOT in the lv2 buf-size.h header file!
+// #define LV2_F_COARSE_BLOCK_LENGTH LV2_BUF_SIZE__coarseBlockLength
+#define LV2_F_COARSE_BLOCK_LENGTH LV2_BUF_SIZE_PREFIX "coarseBlockLength"
 #define LV2_P_SEQ_SIZE LV2_BUF_SIZE__sequenceSize
 #define LV2_P_MAX_BLKLEN LV2_BUF_SIZE__maxBlockLength
 #define LV2_P_MIN_BLKLEN LV2_BUF_SIZE__minBlockLength
+#define LV2_P_NOM_BLKLEN LV2_BUF_SIZE__nominalBlockLength
 #define LV2_P_SAMPLE_RATE LV2_PARAMETERS__sampleRate
 #define LV2_F_OPTIONS LV2_OPTIONS__options
 #define LV2_F_URID_MAP LV2_URID__map
@@ -240,6 +244,7 @@ LV2_Feature lv2Features [] =
    {LV2_F_BOUNDED_BLOCK_LENGTH, NULL},
    {LV2_F_FIXED_BLOCK_LENGTH, NULL},
    {LV2_F_POWER_OF_2_BLOCK_LENGTH, NULL},
+   {LV2_F_COARSE_BLOCK_LENGTH, NULL},
    {LV2_F_UI_PARENT, NULL},
    {LV2_F_INSTANCE_ACCESS, NULL},
    {LV2_F_UI_EXTERNAL_HOST, NULL},
@@ -262,6 +267,11 @@ std::set<std::string> supportedFeatures;
 std::vector<Lv2Plugin *> synthsToFree;
 
 #define SIZEOF_ARRAY(x) sizeof(x)/sizeof(x[0])
+
+// static
+// Pointer to this required for LV2_P_MIN_BLKLEN option when
+//  composing LV2_Options_Option array in Lv2Plugin::Lv2Plugin().
+const unsigned Lv2Plugin::minBlockSize = 0U;
 
 void initLV2()
 {
@@ -391,6 +401,8 @@ void initLV2()
                 reqfeat |= Plugin::FixedBlockSize;
               else if(strcmp(uri, LV2_F_POWER_OF_2_BLOCK_LENGTH) == 0)
                 reqfeat |= Plugin::PowerOf2BlockSize;
+              else if(strcmp(uri, LV2_F_COARSE_BLOCK_LENGTH) == 0)
+                reqfeat |= Plugin::CoarseBlockLength;
             }
             else
             {
@@ -2347,8 +2359,9 @@ Lv2Plugin::Lv2Plugin(const QFileInfo *fi, QString label, QString name, QString a
    LV2_Options_Option _tmpl_options [] =
    {
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SAMPLE_RATE), sizeof(float), uridBiMap.map(LV2_ATOM__Float), &_fSampleRate},
-      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MIN_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &_segSize},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MIN_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &Lv2Plugin::minBlockSize}, //&_segSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MAX_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &_segSize},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_NOM_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &_segSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SEQ_SIZE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &_segSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_CORE__sampleRate), sizeof(double), uridBiMap.map(LV2_ATOM__Double), &_sampleRate},
       {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, NULL}
@@ -6113,8 +6126,9 @@ void Lv2PluginI::init()
    LV2_Options_Option _tmpl_options [] =
    {
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SAMPLE_RATE), sizeof(float), uridBiMap.map(LV2_ATOM__Float), &_fSampleRate},
-      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MIN_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &_segSize},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MIN_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &Lv2Plugin::minBlockSize}, //&_segSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MAX_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &_segSize},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_NOM_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &_segSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SEQ_SIZE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &_segSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_CORE__sampleRate), sizeof(double), uridBiMap.map(LV2_ATOM__Double), &_sampleRate},
       {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, NULL}
@@ -6372,8 +6386,9 @@ bool Lv2PluginI::initPluginInstance(Plugin* plug, int chans,
    LV2_Options_Option _tmpl_options [] =
    {
       {LV2_OPTIONS_INSTANCE, 0, lv2plug->mapUrid(LV2_P_SAMPLE_RATE), sizeof(float), lv2plug->mapUrid(LV2_ATOM__Float), &_sampleRate},
-      {LV2_OPTIONS_INSTANCE, 0, lv2plug->mapUrid(LV2_P_MIN_BLKLEN), sizeof(int32_t), lv2plug->mapUrid(LV2_ATOM__Int), &_segSize},
+      {LV2_OPTIONS_INSTANCE, 0, lv2plug->mapUrid(LV2_P_MIN_BLKLEN), sizeof(int32_t), lv2plug->mapUrid(LV2_ATOM__Int), &Lv2Plugin::minBlockSize}, //&_segSize},
       {LV2_OPTIONS_INSTANCE, 0, lv2plug->mapUrid(LV2_P_MAX_BLKLEN), sizeof(int32_t), lv2plug->mapUrid(LV2_ATOM__Int), &_segSize},
+      {LV2_OPTIONS_INSTANCE, 0, lv2plug->mapUrid(LV2_P_NOM_BLKLEN), sizeof(int32_t), lv2plug->mapUrid(LV2_ATOM__Int), &_segSize},
       {LV2_OPTIONS_INSTANCE, 0, lv2plug->mapUrid(LV2_P_SEQ_SIZE), sizeof(int32_t), lv2plug->mapUrid(LV2_ATOM__Int), &_segSize},
       {LV2_OPTIONS_INSTANCE, 0, lv2plug->mapUrid(LV2_CORE__sampleRate), sizeof(double), lv2plug->mapUrid(LV2_ATOM__Double), &_dSampleRate},
       {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, NULL}
