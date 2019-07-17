@@ -1,3 +1,8 @@
+17.07.2019
+      - LV2: Fix plugins using worker extension, such as *v1 suite (drumkv1 etc.) (Tim)
+        When plugins pass us worker message data, don't just copy the pointer, copy the data.
+        The data is usually local in the plugin and goes out of scope by the time a worker
+         thread gets it, causing corruption (TM). Installed a std::vector for this purpose.
 15.07.2019
       - LV2: Removed ALL internal LV2 support. Too hard to maintain. (Tim)
         And to get important changes sooner, we would need risky git versions of the libs.

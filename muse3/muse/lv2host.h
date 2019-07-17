@@ -554,8 +554,6 @@ struct LV2PluginWrapper_State {
       iState(NULL),
       tmpValues(NULL),
       numStateValues(0),
-      wrkDataSize(0),
-      wrkDataBuffer(0),
       wrkThread(NULL),
       wrkEndWork(false),
       controlTimers(NULL),
@@ -567,7 +565,6 @@ struct LV2PluginWrapper_State {
       uiX11Size(0, 0),
       pluginWindow(NULL),
       pluginQWindow(NULL),
-      
       prgIface(NULL),
       uiPrgIface(NULL),
       uiDoSelectPrg(false),
@@ -626,8 +623,7 @@ struct LV2PluginWrapper_State {
     QMap<QString, QPair<QString, QVariant> > iStateValues;
     char **tmpValues;
     size_t numStateValues;
-    uint32_t wrkDataSize;
-    const void *wrkDataBuffer;
+    std::vector<uint8_t> wrkDataBuffer;
     LV2PluginWrapper_Worker *wrkThread;
     LV2_Worker_Interface *wrkIface;
     bool wrkEndWork;

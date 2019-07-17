@@ -528,7 +528,6 @@ void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
          if(state->controlsMask [i])
          {
             state->controlsMask [i] = false;
-
             // Force send if re-opening.
             if(state->uiIsOpening || state->lastControls [i] != controls [i].val)
             {
@@ -1573,8 +1572,9 @@ LV2_Worker_Status LV2Synth::lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handl
    if(state->wrkEndWork != false)
       return LV2_WORKER_ERR_UNKNOWN;
 
-   state->wrkDataSize = size;
-   state->wrkDataBuffer = data;
+   state->wrkDataBuffer.resize(size);
+   memcpy(state->wrkDataBuffer.data(), data, size);
+   
    if(MusEGlobal::audio->freewheel()) //don't wait for a thread. Do it now
       state->wrkThread->makeWork();
    else
@@ -1587,8 +1587,9 @@ LV2_Worker_Status LV2Synth::lv2wrk_respond(LV2_Worker_Respond_Handle handle, uin
 {
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
 
-   state->wrkDataSize = size;
-   state->wrkDataBuffer = data;
+   state->wrkDataBuffer.resize(size);
+   memcpy(state->wrkDataBuffer.data(), data, size);
+
    state->wrkEndWork = true;
 
    return LV2_WORKER_SUCCESS;
@@ -4171,15 +4172,11 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
             //notify worker about processed data (if any)
             if(_state->wrkIface && _state->wrkIface->work_response && _state->wrkEndWork)
             {
-               _state->wrkIface->work_response(lilv_instance_get_handle(_handle), _state->wrkDataSize, _state->wrkDataBuffer);
-               _state->wrkDataSize = 0;
-               _state->wrkDataBuffer = NULL;
+               _state->wrkIface->work_response(lilv_instance_get_handle(_handle), _state->wrkDataBuffer.size(), _state->wrkDataBuffer.data());
+               _state->wrkDataBuffer.clear();
                _state->wrkEndWork = false;
             }
-
             LV2Synth::lv2audio_postProcessMidiPorts(_state, nsamp);
-
-
          }
 
          sample += nsamp;
@@ -5122,9 +5119,8 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n)
    if(state->wrkIface && state->wrkIface->work_response && state->wrkEndWork)
    {
       state->wrkEndWork = false;
-      state->wrkIface->work_response(lilv_instance_get_handle(state->handle), state->wrkDataSize, state->wrkDataBuffer);
-      state->wrkDataSize = 0;
-      state->wrkDataBuffer = NULL;
+      state->wrkIface->work_response(lilv_instance_get_handle(state->handle), state->wrkDataBuffer.size(), state->wrkDataBuffer.data());
+      state->wrkDataBuffer.clear();
    }
 
    LV2Synth::lv2audio_postProcessMidiPorts(state, n);
@@ -5318,19 +5314,14 @@ void LV2PluginWrapper_Worker::makeWork()
 #endif
    if(_state->wrkIface && _state->wrkIface->work)
    {
-      const void *dataBuffer = _state->wrkDataBuffer;
-      uint32_t dataSize = _state->wrkDataSize;
-      _state->wrkDataBuffer = NULL;
-      _state->wrkDataSize = 0;
       if(_state->wrkIface->work(lilv_instance_get_handle(_state->handle),
                                 LV2Synth::lv2wrk_respond,
                                 _state,
-                                dataSize,
-                                dataBuffer) != LV2_WORKER_SUCCESS)
+                                _state->wrkDataBuffer.size(),
+                                _state->wrkDataBuffer.data()) != LV2_WORKER_SUCCESS)
       {
          _state->wrkEndWork = false;
-         _state->wrkDataBuffer = NULL;
-         _state->wrkDataSize = 0;
+         _state->wrkDataBuffer.clear();
       }
    }
 

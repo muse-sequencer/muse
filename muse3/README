@@ -103,15 +103,6 @@ details.
         lv2 >= 1.12.0 (development files)
           http://lv2plug.in
         
-        The cmake option ENABLE_LV2_SUPPLIED (default off) 
-         forces built-in versions to be used. Not recommended.
-        MusE contains built-in versions of these LV2 support libraries:
-         lv2, lilv, serd, sord and sratom, from:
-          http://lv2plug.in
-          http://drobilla.net/software
-        (The built-in versions may be slightly modified from their 
-         corresponding official versions. See muse/lv2Support/ChangeLog.)
-
       - LV2 Gtk2 User Interface support:
       
         Some LV2 plugins may provide a Gtk2 based graphical User Interface.
