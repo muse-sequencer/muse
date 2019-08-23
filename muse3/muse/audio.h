@@ -161,6 +161,17 @@ class Audio {
       // Holds the current size of the temporary clock history array.
       int _extClockHistorySize;
 
+      // Holds a brief temporary array of sorted FRAMES of clock queue, to be output to midi devices.
+      unsigned int* _clockOutputQueue;
+      // Holds the total capacity of the clock output array.
+      static const unsigned int _clockOutputQueueCapacity;
+      // Holds the current size of the temporary clock output array.
+      unsigned int _clockOutputQueueSize;
+      // Holds a central counter, in ticks, for generating midi clock out events for all device types.
+      unsigned int _clockOutputCounter;
+      // Fractional accumulator for _clockOutputCounter.
+      uint64_t _clockOutputCounterRemainder;
+
       //metronome values
       unsigned midiClick;
       unsigned audioClick;

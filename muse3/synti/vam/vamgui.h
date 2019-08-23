@@ -31,7 +31,6 @@
 class QListWidgetItem;
 struct Preset;
 class QString;
-class QSignalMapper;
 
 //---------------------------------------------------------
 //   VAMGui
@@ -40,7 +39,6 @@ class QSignalMapper;
 class VAMGui : public QWidget, public Ui::VAMGuiBase, public MessGui {
       Q_OBJECT
     
-      QSignalMapper* map;
       int ctrlHi;
       int ctrlLo;
       int dataHi;

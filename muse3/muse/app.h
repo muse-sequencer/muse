@@ -28,6 +28,7 @@
 #include "config.h"
 #include "globaldefs.h"
 #include "cobject.h"
+#include "script_delivery.h"
 
 #include <QFileInfo>
 #include <list>
@@ -43,7 +44,6 @@ class QMenu;
 class QPoint;
 class QRect;
 class QScrollArea;
-class QSignalMapper;
 class QString;
 class QToolBar;
 class QToolButton;
@@ -221,7 +221,9 @@ class MusE : public QMainWindow
       ArrangerView* arrangerView;
       MidiTransformerDialog* midiTransformerDialog;
       QMenu* openRecent;
-      
+
+      MusECore::ScriptReceiver _scriptReceiver;
+
       bool writeTopwinState;
       // Set to restart MusE (almost) from scratch before calling close().
       bool _isRestartingApp;
@@ -252,9 +254,6 @@ class MusE : public QMainWindow
       void updateConfiguration();
       QString projectTitle(QString name);
 
-      QSignalMapper *midiPluginSignalMapper;
-      QSignalMapper *followSignalMapper;
-      QSignalMapper *windowsMapper;
       QTimer *saveTimer;
       QTimer *blinkTimer;
       QTimer *messagePollTimer;
@@ -452,6 +451,7 @@ class MusE : public QMainWindow
       };
 
 extern void addProject(const QString& name);
-#endif
 
 } // namespace MusEGui
+
+#endif // __APP_H__

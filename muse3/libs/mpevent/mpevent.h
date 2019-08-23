@@ -58,6 +58,8 @@ class MEvent {
 
    public:
       MEvent() : _time(0), _port(0), _channel(0), _type(0), _a(0), _b(0), _loopNum(0) { }
+      MEvent(const MEvent& e) : _time(e._time), edata(e.edata), _port(e._port), _channel(e._channel),
+             _type(e._type), _a(e._a), _b(e._b), _loopNum(e._loopNum) { }
       MEvent(unsigned tm, int p, int c, int t, int a, int b)
         : _time(tm), _port(p), _channel(c & 0xf), _type(t), _a(a), _b(b), _loopNum(0) { }
       MEvent(unsigned t, int p, int type, const unsigned char* data, int len);
@@ -129,7 +131,8 @@ class MidiRecordEvent : public MEvent {
       unsigned int _tick; // To store tick when external sync is on, required besides frame.
    public:
       MidiRecordEvent() : MEvent() {}
-      MidiRecordEvent(const MEvent& e) : MEvent(e) {}
+      MidiRecordEvent(const MidiRecordEvent& e) : MEvent(e), _tick(e._tick) {}
+      MidiRecordEvent(const MEvent& e) : MEvent(e), _tick(0) {}
       MidiRecordEvent(unsigned tm, int p, int c, int t, int a, int b)
         : MEvent(tm, p, c, t, a, b) {}
       MidiRecordEvent(unsigned t, int p, int tpe, const unsigned char* data, int len)
@@ -137,7 +140,9 @@ class MidiRecordEvent : public MEvent {
       MidiRecordEvent(unsigned t, int p, int type, EvData data)
         : MEvent(t, p, type, data) {}
       virtual ~MidiRecordEvent() {}
-      
+
+      MidiRecordEvent& operator=(const MidiRecordEvent& e) { MEvent::operator=(e); _tick = e._tick; return *this; }
+
       unsigned int tick() {return _tick;}
       void setTick(unsigned int tick) {_tick = tick;}
       };
@@ -150,6 +155,7 @@ class MidiRecordEvent : public MEvent {
 class MidiPlayEvent : public MEvent {
    public:
       MidiPlayEvent() : MEvent() {}
+      MidiPlayEvent(const MidiPlayEvent& e) : MEvent(e) {}
       MidiPlayEvent(const MEvent& e) : MEvent(e) {}
       MidiPlayEvent(unsigned tm, int p, int c, int t, int a, int b)
         : MEvent(tm, p, c, t, a, b) {}
@@ -158,6 +164,8 @@ class MidiPlayEvent : public MEvent {
       MidiPlayEvent(unsigned t, int p, int type, EvData data)
         : MEvent(t, p, type, data) {}
       virtual ~MidiPlayEvent() {}
+
+      MidiPlayEvent& operator=(const MidiPlayEvent& e) { MEvent::operator=(e); return *this; }
       };
 
 //---------------------------------------------------------

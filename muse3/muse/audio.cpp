@@ -132,6 +132,7 @@ const char* audioStates[] = {
 //---------------------------------------------------------
 
 const int Audio::_extClockHistoryCapacity = 8192;
+const unsigned int Audio::_clockOutputQueueCapacity = 8192;
       
 Audio::Audio()
       {
@@ -168,8 +169,14 @@ Audio::Audio()
       audioClick    = 0;
       clickno       = 0;
       clicksMeasure = 0;
+
       _extClockHistory = new ExtMidiClock[_extClockHistoryCapacity];
       _extClockHistorySize = 0;
+
+      _clockOutputQueue = new unsigned int[_clockOutputQueueCapacity];
+      _clockOutputQueueSize = 0;
+      _clockOutputCounter = 0;
+      _clockOutputCounterRemainder = 0;
 
       syncTimeUS    = 0;
       syncFrame     = 0;
@@ -208,6 +215,8 @@ Audio::Audio()
 
 Audio::~Audio() 
 {
+  if(_clockOutputQueue)
+    delete[] _clockOutputQueue;
   if(_extClockHistory)
     delete[] _extClockHistory;
 } 

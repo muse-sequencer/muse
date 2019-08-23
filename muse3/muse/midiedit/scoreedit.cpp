@@ -29,7 +29,6 @@
 #include <QToolButton>
 #include <QToolTip>
 #include <QMenu>
-#include <QSignalMapper>
 #include <QMenuBar>
 #include <QApplication>
 #include <QClipboard>
@@ -230,10 +229,6 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     xscroll->setValue(0);
     yscroll->setValue(0);
 
-    menu_mapper=new QSignalMapper(this);
-    connect(menu_mapper, SIGNAL(mapped(int)), SLOT(menu_command(int)));
-
-
 
     // Toolbars ---------------------------------------------------------
 
@@ -301,20 +296,20 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     note_settings_toolbar->setObjectName("New note settings");
     note_settings_toolbar->addWidget(new QLabel(tr("Note length:"), note_settings_toolbar));
     len_actions=new QActionGroup(this);
-    n1_action = note_settings_toolbar->addAction("1", menu_mapper, SLOT(map()));
-    n2_action = note_settings_toolbar->addAction("2", menu_mapper, SLOT(map()));
-    n4_action = note_settings_toolbar->addAction("4", menu_mapper, SLOT(map()));
-    n8_action = note_settings_toolbar->addAction("8", menu_mapper, SLOT(map()));
-    n16_action = note_settings_toolbar->addAction("16", menu_mapper, SLOT(map()));
-    n32_action = note_settings_toolbar->addAction("32", menu_mapper, SLOT(map()));
-    nlast_action = note_settings_toolbar->addAction(tr("last"), menu_mapper, SLOT(map()));
-    menu_mapper->setMapping(n1_action, CMD_NOTELEN_1);
-    menu_mapper->setMapping(n2_action, CMD_NOTELEN_2);
-    menu_mapper->setMapping(n4_action, CMD_NOTELEN_4);
-    menu_mapper->setMapping(n8_action, CMD_NOTELEN_8);
-    menu_mapper->setMapping(n16_action, CMD_NOTELEN_16);
-    menu_mapper->setMapping(n32_action, CMD_NOTELEN_32);
-    menu_mapper->setMapping(nlast_action, CMD_NOTELEN_LAST);
+    n1_action = note_settings_toolbar->addAction("1");
+    n2_action = note_settings_toolbar->addAction("2");
+    n4_action = note_settings_toolbar->addAction("4");
+    n8_action = note_settings_toolbar->addAction("8");
+    n16_action = note_settings_toolbar->addAction("16");
+    n32_action = note_settings_toolbar->addAction("32");
+    nlast_action = note_settings_toolbar->addAction(tr("last"));
+    connect(n1_action,    &QAction::triggered, [this]() { menu_command(CMD_NOTELEN_1); } );
+    connect(n2_action,    &QAction::triggered, [this]() { menu_command(CMD_NOTELEN_2); } );
+    connect(n4_action,    &QAction::triggered, [this]() { menu_command(CMD_NOTELEN_4); } );
+    connect(n8_action,    &QAction::triggered, [this]() { menu_command(CMD_NOTELEN_8); } );
+    connect(n16_action,   &QAction::triggered, [this]() { menu_command(CMD_NOTELEN_16); } );
+    connect(n32_action,   &QAction::triggered, [this]() { menu_command(CMD_NOTELEN_32); } );
+    connect(nlast_action, &QAction::triggered, [this]() { menu_command(CMD_NOTELEN_LAST); } );
     n1_action->setCheckable(true);
     n2_action->setCheckable(true);
     n4_action->setCheckable(true);
@@ -350,8 +345,14 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     note_settings_toolbar->addSeparator();
 
     apply_velo_to_label = new QLabel(tr("Apply to new notes:"), note_settings_toolbar);
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+        int w1 = apply_velo_to_label->fontMetrics().horizontalAdvance(tr("Apply to new notes:"));
+        int w2 = apply_velo_to_label->fontMetrics().horizontalAdvance(tr("Apply to selected notes:"));
+#else
         int w1 = apply_velo_to_label->fontMetrics().width(tr("Apply to new notes:"));
         int w2 = apply_velo_to_label->fontMetrics().width(tr("Apply to selected notes:"));
+#endif
         if (w1>w2)
             apply_velo_to_label->setFixedWidth(w1+5);
         else
@@ -391,98 +392,87 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
         edit_menu->addSeparator();
 
         cut_action = edit_menu->addAction(QIcon(*editcutIconSet), tr("C&ut"));
-        menu_mapper->setMapping(cut_action, CMD_CUT);
-        connect(cut_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+        connect(cut_action, &QAction::triggered, [this]() { menu_command(CMD_CUT); } );
 
         copy_action = edit_menu->addAction(QIcon(*editcopyIconSet), tr("&Copy"));
-        menu_mapper->setMapping(copy_action, CMD_COPY);
-        connect(copy_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+        connect(copy_action, &QAction::triggered, [this]() { menu_command(CMD_COPY); } );
 
         copy_range_action = edit_menu->addAction(QIcon(*editcopyIconSet), tr("Copy events in range"));
-        menu_mapper->setMapping(copy_range_action, CMD_COPY_RANGE);
-        connect(copy_range_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+        connect(copy_range_action, &QAction::triggered, [this]() { menu_command(CMD_COPY_RANGE); } );
 
         paste_action = edit_menu->addAction(QIcon(*editpasteIconSet), tr("&Paste"));
-        menu_mapper->setMapping(paste_action, CMD_PASTE);
-        connect(paste_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+        connect(paste_action, &QAction::triggered, [this]() { menu_command(CMD_PASTE); } );
 
         paste_dialog_action = edit_menu->addAction(QIcon(*editpasteIconSet), tr("Paste (with dialog)"));
-        menu_mapper->setMapping(paste_dialog_action, CMD_PASTE_DIALOG);
-        connect(paste_dialog_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+        connect(paste_dialog_action, &QAction::triggered, [this]() { menu_command(CMD_PASTE_DIALOG); } );
 
         edit_menu->addSeparator();
 
         del_action = edit_menu->addAction(tr("Delete &Events"));
-        menu_mapper->setMapping(del_action, CMD_DEL);
-        connect(del_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+        connect(del_action, &QAction::triggered, [this]() { menu_command(CMD_DEL); } );
 
         edit_menu->addSeparator();
 
         QMenu* select_menu = edit_menu->addMenu(QIcon(*selectIcon), tr("&Select"));
 
             select_all_action = select_menu->addAction(QIcon(*select_allIcon), tr("Select &All"));
-            menu_mapper->setMapping(select_all_action, CMD_SELECT_ALL);
-            connect(select_all_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+            connect(select_all_action, &QAction::triggered, [this]() { menu_command(CMD_SELECT_ALL); } );
 
             select_none_action = select_menu->addAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"));
-            menu_mapper->setMapping(select_none_action, CMD_SELECT_NONE);
-            connect(select_none_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+            connect(select_none_action, &QAction::triggered, [this]() { menu_command(CMD_SELECT_NONE); } );
 
             select_invert_action = select_menu->addAction(QIcon(*select_invert_selectionIcon), tr("Invert &Selection"));
-            menu_mapper->setMapping(select_invert_action, CMD_SELECT_INVERT);
-            connect(select_invert_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+            connect(select_invert_action, &QAction::triggered, [this]() { menu_command(CMD_SELECT_INVERT); } );
 
             select_menu->addSeparator();
 
             select_iloop_action = select_menu->addAction(QIcon(*select_inside_loopIcon), tr("&Inside Loop"));
-            menu_mapper->setMapping(select_iloop_action, CMD_SELECT_ILOOP);
-            connect(select_iloop_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+            connect(select_iloop_action, &QAction::triggered, [this]() { menu_command(CMD_SELECT_ILOOP); } );
 
             select_oloop_action = select_menu->addAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"));
-            menu_mapper->setMapping(select_oloop_action, CMD_SELECT_OLOOP);
-            connect(select_oloop_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+            connect(select_oloop_action, &QAction::triggered, [this]() { menu_command(CMD_SELECT_OLOOP); } );
 
 
     QMenu* functions_menu = menuBar()->addMenu(tr("Fu&nctions"));
 
-        func_quantize_action = functions_menu->addAction(tr("&Quantize"), menu_mapper, SLOT(map()));
-        func_notelen_action = functions_menu->addAction(tr("Change note &length"), menu_mapper, SLOT(map()));
-        func_velocity_action = functions_menu->addAction(tr("Change note &velocity"), menu_mapper, SLOT(map()));
-        func_cresc_action = functions_menu->addAction(tr("Crescendo/Decrescendo"), menu_mapper, SLOT(map()));
-        func_transpose_action = functions_menu->addAction(tr("Transpose"), menu_mapper, SLOT(map()));
-        func_erase_action = functions_menu->addAction(tr("Erase Events"), menu_mapper, SLOT(map()));
-        func_move_action = functions_menu->addAction(tr("Move Notes"), menu_mapper, SLOT(map()));
-        func_fixed_len_action = functions_menu->addAction(tr("Set Fixed Length"), menu_mapper, SLOT(map()));
-        func_del_overlaps_action = functions_menu->addAction(tr("Delete Overlaps"), menu_mapper, SLOT(map()));
-        func_legato_action = functions_menu->addAction(tr("Legato"), menu_mapper, SLOT(map()));
-        menu_mapper->setMapping(func_quantize_action, CMD_QUANTIZE);
-        menu_mapper->setMapping(func_notelen_action, CMD_NOTELEN);
-        menu_mapper->setMapping(func_velocity_action, CMD_VELOCITY);
-        menu_mapper->setMapping(func_cresc_action, CMD_CRESCENDO);
-        menu_mapper->setMapping(func_transpose_action, CMD_TRANSPOSE);
-        menu_mapper->setMapping(func_erase_action, CMD_ERASE);
-        menu_mapper->setMapping(func_move_action, CMD_MOVE);
-        menu_mapper->setMapping(func_fixed_len_action, CMD_FIXED_LEN);
-        menu_mapper->setMapping(func_del_overlaps_action, CMD_DELETE_OVERLAPS);
-        menu_mapper->setMapping(func_legato_action, CMD_LEGATO);
+        func_quantize_action = functions_menu->addAction(tr("&Quantize"));
+        func_notelen_action = functions_menu->addAction(tr("Change note &length"));
+        func_velocity_action = functions_menu->addAction(tr("Change note &velocity"));
+        func_cresc_action = functions_menu->addAction(tr("Crescendo/Decrescendo"));
+        func_transpose_action = functions_menu->addAction(tr("Transpose"));
+        func_erase_action = functions_menu->addAction(tr("Erase Events"));
+        func_move_action = functions_menu->addAction(tr("Move Notes"));
+        func_fixed_len_action = functions_menu->addAction(tr("Set Fixed Length"));
+        func_del_overlaps_action = functions_menu->addAction(tr("Delete Overlaps"));
+        func_legato_action = functions_menu->addAction(tr("Legato"));
 
+        connect(func_quantize_action,     &QAction::triggered, [this]() { menu_command(CMD_QUANTIZE); } );
+        connect(func_notelen_action,      &QAction::triggered, [this]() { menu_command(CMD_NOTELEN); } );
+        connect(func_velocity_action,     &QAction::triggered, [this]() { menu_command(CMD_VELOCITY); } );
+        connect(func_cresc_action,        &QAction::triggered, [this]() { menu_command(CMD_CRESCENDO); } );
+        connect(func_transpose_action,    &QAction::triggered, [this]() { menu_command(CMD_TRANSPOSE); } );
+        connect(func_erase_action,        &QAction::triggered, [this]() { menu_command(CMD_ERASE); } );
+        connect(func_move_action,         &QAction::triggered, [this]() { menu_command(CMD_MOVE); } );
+        connect(func_fixed_len_action,    &QAction::triggered, [this]() { menu_command(CMD_FIXED_LEN); } );
+        connect(func_del_overlaps_action, &QAction::triggered, [this]() { menu_command(CMD_DELETE_OVERLAPS); } );
+        connect(func_legato_action,       &QAction::triggered, [this]() { menu_command(CMD_LEGATO); } );
 
     QMenu* settings_menu = menuBar()->addMenu(tr("Window &Config"));
 
         color_menu = settings_menu->addMenu(tr("Note head &colors"));
             color_actions = new QActionGroup(this);
-            color_black_action = color_menu->addAction(tr("&Black"), menu_mapper, SLOT(map()));
-            color_velo_action =  color_menu->addAction(tr("&Velocity"), menu_mapper, SLOT(map()));
-            color_part_action =  color_menu->addAction(tr("&Part"), menu_mapper, SLOT(map()));
+            color_black_action = color_menu->addAction(tr("&Black"));
+            color_velo_action =  color_menu->addAction(tr("&Velocity"));
+            color_part_action =  color_menu->addAction(tr("&Part"));
             color_black_action->setCheckable(true);
             color_velo_action->setCheckable(true);
             color_part_action->setCheckable(true);
             color_actions->addAction(color_black_action);
             color_actions->addAction(color_velo_action);
             color_actions->addAction(color_part_action);
-            menu_mapper->setMapping(color_black_action, CMD_COLOR_BLACK);
-            menu_mapper->setMapping(color_velo_action, CMD_COLOR_VELO);
-            menu_mapper->setMapping(color_part_action, CMD_COLOR_PART);
+            connect(color_black_action, &QAction::triggered, [this]() { menu_command(CMD_COLOR_BLACK); } );
+            connect(color_velo_action,  &QAction::triggered, [this]() { menu_command(CMD_COLOR_VELO); } );
+            connect(color_part_action,  &QAction::triggered, [this]() { menu_command(CMD_COLOR_PART); } );
 
             switch (ScoreCanvas::coloring_mode_init)
             {
@@ -509,8 +499,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
             preamble_keysig_action->setChecked(ScoreCanvas::preamble_contains_keysig_init);
             preamble_timesig_action->setChecked(ScoreCanvas::preamble_contains_timesig_init);
 
-        QAction* set_name_action = settings_menu->addAction(tr("Set Score &name"), menu_mapper, SLOT(map()));
-        menu_mapper->setMapping(set_name_action, CMD_SET_NAME);
+        QAction* set_name_action = settings_menu->addAction(tr("Set Score &name"));
+        connect(set_name_action, &QAction::triggered, [this]() { menu_command(CMD_SET_NAME); } );
 
     settings_menu->addSeparator();
     settings_menu->addAction(subwinAction);
@@ -1397,7 +1387,7 @@ void ScoreCanvas::tagItems(MusECore::TagEventList* tag_list, const MusECore::Eve
   // For now we don't use the tagAllParts flag.
   const bool use_tag_all_parts = false;
   
-  MusECore::Part* part;
+  const MusECore::Part* part;
   MusECore::Pos pos;
   FloItem fi;
   for(list<staff_t>::const_iterator is = staves.begin(); is != staves.end(); ++is)
@@ -1421,8 +1411,7 @@ void ScoreCanvas::tagItems(MusECore::TagEventList* tag_list, const MusECore::Eve
         
         const MusECore::Event& e = *fi.source_event;
         
-        // HACK Source part is const pointer.
-        part = ((MusECore::Part*)&fi.source_part);
+        part = fi.source_part;
         
         if(use_tag_all_parts && !use_staves_for_tag_all_parts && !tagAllParts && part != selected_part)
           continue;

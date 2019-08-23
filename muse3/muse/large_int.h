@@ -54,11 +54,19 @@
 
 namespace MusECore {
 
-enum LargeIntRoundMode { LargeIntRoundDown, LargeIntRoundUp, LargeIntRoundNearest };
+enum LargeIntRoundMode {
+  // Round down and remainder zero.
+  LargeIntRoundDown,
+  // Round up and remainder zero.
+  LargeIntRoundUp,
+  // Round to nearest and remainder zero.
+  LargeIntRoundNearest,
+  // No rounding and remainder is valid.
+  LargeIntRoundNone };
   
   
 static inline uint64_t muse_multiply_64_div_64_to_64(
-  uint64_t a, uint64_t b, uint64_t c, LargeIntRoundMode round_mode = LargeIntRoundDown)
+  uint64_t a, uint64_t b, uint64_t c, LargeIntRoundMode round_mode = LargeIntRoundDown, uint64_t* remainder = nullptr)
 { 
 #if defined(LARGE_INT_VC) && defined(LARGE_INT_IS_X86_64)
     uint64_t t_hi;
@@ -68,14 +76,24 @@ static inline uint64_t muse_multiply_64_div_64_to_64(
     switch(round_mode)
     {
       case LargeIntRoundDown:
+        if(remainder)
+          *remainder = 0;
       break;
       case LargeIntRoundUp:
         if(r)
           q++;
+        if(remainder)
+          *remainder = 0;
       break;
       case LargeIntRoundNearest:
         if(r >= (c / 2))
           q++;
+        if(remainder)
+          *remainder = 0;
+      break;
+      case LargeIntRoundNone:
+        if(remainder)
+          *remainder = r;
       break;
     }
     return q;
@@ -84,26 +102,42 @@ static inline uint64_t muse_multiply_64_div_64_to_64(
     {
       case LargeIntRoundDown:
       break;
-      
+
       case LargeIntRoundUp:
       {
         const __uint128_t dividend = (__uint128_t)a * (__uint128_t)b;
         const __uint128_t cc = (__uint128_t)c;
+        if(remainder)
+          *remainder = 0;
         // FIXME Too bad this is slowed by divide and mod. No 128-bit support for div() in stdlib. Go asm ?
         return dividend / cc + (dividend % cc ? 1 : 0);
       }
       break;
-      
+
       case LargeIntRoundNearest:
       {
         const __uint128_t dividend = (__uint128_t)a * (__uint128_t)b;
         const __uint128_t cc = (__uint128_t)c;
+        if(remainder)
+          *remainder = 0;
         // FIXME Too bad this is slowed by divide and mod. No 128-bit support for div() in stdlib. Go asm ?
         return dividend / cc + ((dividend % cc >= (cc / 2)) ? 1 : 0);
       }
       break;
+
+      case LargeIntRoundNone:
+        const __uint128_t dividend = (__uint128_t)a * (__uint128_t)b;
+        const __uint128_t cc = (__uint128_t)c;
+        const __uint128_t q = dividend / cc;
+        const __uint128_t r = dividend % cc;
+        if(remainder)
+          *remainder = r;
+        return q;
+      break;
     }
     
+    if(remainder)
+      *remainder = 0;
     return ((__uint128_t)a * (__uint128_t)b / (__uint128_t)c);
 #else
   
@@ -130,14 +164,24 @@ static inline uint64_t muse_multiply_64_div_64_to_64(
   switch(round_mode)
   {
     case LargeIntRoundDown:
+      if(remainder)
+        *remainder = 0;
     break;
     case LargeIntRoundUp:
       if(r)
         q++;
+      if(remainder)
+        *remainder = 0;
     break;
     case LargeIntRoundNearest:
       if(r >= (c / 2))
         q++;
+      if(remainder)
+        *remainder = 0;
+    break;
+    case LargeIntRoundNone:
+      if(remainder)
+        *remainder = r;
     break;
   }
   return q;

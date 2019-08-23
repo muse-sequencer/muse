@@ -26,6 +26,7 @@
 
 #include <QObject>
 #include <QStringList>
+#include "script_delivery.h"
 
 #include <map>
 #include <set>
@@ -474,7 +475,7 @@ public:
       Track* addNewTrack(QAction* action, Track* insertAt = 0);
       void duplicateTracks();
       QString getScriptPath(int id, bool delivered);
-      void populateScriptMenu(QMenu* menuPlugins, QObject* receiver);
+      void populateScriptMenu(QMenu* menuPlugins, ScriptReceiver* receiver);
       void setDirty() { emit sigDirty(); }
 
       /* restarts recording from last start position

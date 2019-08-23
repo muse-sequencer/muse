@@ -564,6 +564,7 @@ void MidiSeq::processTimerTick()
 
       unsigned curFrame = MusEGlobal::audio->curFrame();
       
+// REMOVE Tim. clock. Removed. Done with scheduling now in audio thread process.
       if (!MusEGlobal::extSyncFlag.value()) {
             // Do not round up here since (audio) frame resolution is higher than tick resolution.
             const unsigned int curTick = muse_multiply_64_div_64_to_64(

@@ -1855,7 +1855,7 @@ void DeicsOnzeGui::categoryPopupMenu(const QPoint&) {
 			  this, SLOT(loadCategoryDialog()));
   QAction* saveItem = categoryMenu->addAction(tr("Save category"), this,
 					      SLOT(saveCategoryDialog()));
-  if(!cat || !categoryListView->isItemSelected(cat)) {
+  if(!cat || !cat->isSelected()) {
     deleteItem->setEnabled(false);
     saveItem->setEnabled(false);	
   }
@@ -1884,12 +1884,12 @@ void DeicsOnzeGui::subcategoryPopupMenu(const QPoint&) {
   QAction* saveItem =
     subcategoryMenu->addAction(tr("Save subcategory"), this,
 			       SLOT(saveSubcategoryDialog()));
-  if(!sub || !subcategoryListView->isItemSelected(sub)) {
+  if(!sub || !sub->isSelected()) {
     deleteItem->setEnabled(false);
     saveItem->setEnabled(false);	
   }
   if(!categoryListView->currentItem()
-     || !categoryListView->isItemSelected(categoryListView->currentItem())) {
+     || !categoryListView->currentItem()->isSelected()) {
     newItem->setEnabled(false);
     loadItem->setEnabled(false);	
   }	
@@ -1907,12 +1907,12 @@ void DeicsOnzeGui::presetPopupMenu(const QPoint&) {
 					    SLOT(loadPresetDialog()));
   QAction* saveItem = presetMenu->addAction(tr("Save preset"), this,
 					    SLOT(savePresetDialog()));
-  if(!pre || !presetListView->isItemSelected(pre)) {
+  if(!pre || !pre->isSelected()) {
     deleteItem->setEnabled(false);
     saveItem->setEnabled(false);
   }
   if(!subcategoryListView->currentItem() ||
-     !subcategoryListView->isItemSelected(subcategoryListView->currentItem())){
+     !subcategoryListView->currentItem()->isSelected()){
     newItem->setEnabled(false);
     loadItem->setEnabled(false);	
   }	
@@ -1935,7 +1935,7 @@ void DeicsOnzeGui::newCategoryDialog() {
 	setSet();
 	QTreeWidgetItem* ci=
 	    categoryListView->findItems(num3Digits(nhbank+1), Qt::MatchExactly).at(0);
-	categoryListView->setItemSelected(ci, true);
+	ci->setSelected(true);
 	categoryListView->setCurrentItem(ci);
 	setCategory(ci);
 	categoryListView->scrollToItem(ci);
@@ -1947,14 +1947,14 @@ void DeicsOnzeGui::newCategoryDialog() {
 //-----------------------------------------------------------
 void DeicsOnzeGui::deleteCategoryDialog() {
   QTreeCategory* cat = (QTreeCategory*) categoryListView->currentItem();
-  if(cat && categoryListView->isItemSelected(cat)) {
+  if(cat && cat->isSelected()) {
     if(!QMessageBox::question(
 			      this,
 			      tr("Delete category"),
 			      tr("Do you really want to delete %1 ?")
 			      .arg(cat->_category->_categoryName.c_str()),
 			      tr("&Yes"), tr("&No"),
-			      QString::null, 0, 1 ))
+			      QString(), 0, 1 ))
       {
 	for(int c = 0; c < NBRCHANNELS; c++)
 	  _deicsOnze->_preset[c]=_deicsOnze->_initialPreset;
@@ -2025,7 +2025,7 @@ void DeicsOnzeGui::loadCategoryDialog() {
 				      .arg((lCategory->_categoryName).c_str())
 				      .arg(buffstr.setNum(lCategory->_hbank+1)),
 				      tr("&Replace"), tr("&Add"),
-				      QString::null, 0, 1 )) {
+				      QString(), 0, 1 )) {
 	      delete(_deicsOnze->_set
 		     ->findCategory(lCategory->_hbank));
 	      lCategory->linkSet(_deicsOnze->_set);
@@ -2089,7 +2089,7 @@ void DeicsOnzeGui::saveCategoryDialog() {
 //-----------------------------------------------------------
 void DeicsOnzeGui::newSubcategoryDialog() {
   QTreeCategory* cat = (QTreeCategory*) categoryListView->currentItem();
-  if(cat && categoryListView->isItemSelected(cat)) {
+  if(cat && cat->isSelected()) {
     int nlbank=cat->_category->firstFreeLBank();
     if(nlbank==-1)
       QMessageBox::information(this,
@@ -2102,7 +2102,7 @@ void DeicsOnzeGui::newSubcategoryDialog() {
       QTreeWidgetItem* si=
 	subcategoryListView->findItems(num3Digits(nlbank+1),
 				       Qt::MatchExactly).at(0);
-      subcategoryListView->setItemSelected(si, true);
+      si->setSelected(true);
       subcategoryListView->setCurrentItem(si);
       setSubcategory(si);
       subcategoryListView->scrollToItem(si);
@@ -2116,7 +2116,7 @@ void DeicsOnzeGui::newSubcategoryDialog() {
 void DeicsOnzeGui::deleteSubcategoryDialog() {
   QTreeSubcategory* sub =
     (QTreeSubcategory*) subcategoryListView->currentItem();
-  if(sub && subcategoryListView->isItemSelected(sub)) {
+  if(sub && sub->isSelected()) {
     if(!QMessageBox::question(
 			      this,
 			      tr("Delete subcategory"),
@@ -2124,7 +2124,7 @@ void DeicsOnzeGui::deleteSubcategoryDialog() {
 			      .arg(sub->_subcategory
 				   ->_subcategoryName.c_str()),
 			      tr("&Yes"), tr("&No"),
-			      QString::null, 0, 1 )) {
+			      QString(), 0, 1 )) {
       	for(int c = 0; c < NBRCHANNELS; c++)
 	  _deicsOnze->_preset[c]=_deicsOnze->_initialPreset;
       delete(sub->_subcategory);
@@ -2193,7 +2193,7 @@ void DeicsOnzeGui::loadSubcategoryDialog() {
 					   .c_str())
 				      .arg(buffstr.setNum(lSubcategory->_lbank+1)),
 				      tr("&Replace"), tr("&Add"),
-				      QString::null, 0, 1 )) {
+				      QString(), 0, 1 )) {
 	      delete(cat->_category->findSubcategory(lSubcategory->_lbank));
 	      lSubcategory->linkCategory(cat->_category);
 	    }
@@ -2260,7 +2260,7 @@ void DeicsOnzeGui::saveSubcategoryDialog() {
 void DeicsOnzeGui::newPresetDialog() {
   QTreeSubcategory* sub =
     (QTreeSubcategory*) subcategoryListView->currentItem();
-  if(sub && subcategoryListView->isItemSelected(sub)) {
+  if(sub && sub->isSelected()) {
     int nprog=sub->_subcategory->firstFreeProg();
     if(nprog==-1)
       QMessageBox::information(this,
@@ -2273,7 +2273,7 @@ void DeicsOnzeGui::newPresetDialog() {
       QTreeWidgetItem* pi=
 	presetListView->findItems(num3Digits(nprog+1),
 				  Qt::MatchExactly).at(0);
-      presetListView->setItemSelected(pi, true);
+      pi->setSelected(true);
       presetListView->setCurrentItem(pi);
       setPreset(pi);
       presetListView->scrollToItem(pi);
@@ -2287,14 +2287,14 @@ void DeicsOnzeGui::newPresetDialog() {
 void DeicsOnzeGui::deletePresetDialog() {
   QTreePreset* pre = (QTreePreset*) presetListView->currentItem();
   if(pre) {
-    if(presetListView->isItemSelected(pre)) {
+    if(pre->isSelected()) {
       if(!QMessageBox::question(
 				this,
 				tr("Delete preset"),
 				tr("Do you really want to delete %1 ?")
 				.arg(pre->_preset->name.c_str()),
 				tr("&Yes"), tr("&No"),
-				QString::null, 0, 1 )) {
+				QString(), 0, 1 )) {
 	for(int c = 0; c < NBRCHANNELS; c++)
 	  _deicsOnze->_preset[c]=_deicsOnze->_initialPreset;
 	delete(pre->_preset);
@@ -2364,7 +2364,7 @@ void DeicsOnzeGui::loadPresetDialog() {
 				      .arg((lPreset->name).c_str())
 				      .arg(buffstr.setNum(lPreset->prog+1)),
 				      tr("&Replace"), tr("&Add"),
-				      QString::null, 0, 1 )) {
+				      QString(), 0, 1 )) {
 	      delete(sub->_subcategory->findPreset(lPreset->prog));
 	      lPreset->linkSubcategory(sub->_subcategory);
 	    }
@@ -4527,7 +4527,7 @@ void DeicsOnzeGui::updateSelectPreset(int hbank, int lbank, int prog) {
   //if the category is different than the last one then select the new one
   //if(!cat || !qcat || qcat!= cat) {
   if(qcat) {
-    categoryListView->setItemSelected(qcat, true);
+    qcat->setSelected(true);
     categoryListView->setCurrentItem(qcat);
     categoryListView->scrollToItem(qcat);
     setEnabledPreset(true);
@@ -4547,7 +4547,7 @@ void DeicsOnzeGui::updateSelectPreset(int hbank, int lbank, int prog) {
   QTreeWidgetItem* qsub = qlsub.empty()? NULL:qlsub.at(0);
   //  if(!sub || qsub!=sub) {
   if(qsub) {
-    subcategoryListView->setItemSelected(qsub, true);
+    qsub->setSelected(true);
     subcategoryListView->setCurrentItem(qsub);
     subcategoryListView->scrollToItem(qsub);
     setEnabledPreset(true);
@@ -4575,7 +4575,7 @@ void DeicsOnzeGui::updateSelectPreset(int hbank, int lbank, int prog) {
   QTreeWidgetItem* qpre = qlpre.empty()? NULL:qlpre.at(0);
   if(qpre) {
     presetListView->blockSignals(true);
-    presetListView->setItemSelected(qpre, true);
+    qpre->setSelected(true);
     presetListView->setCurrentItem(qpre);
     presetListView->blockSignals(false);
     presetListView->scrollToItem(qpre);

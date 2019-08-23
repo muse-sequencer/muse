@@ -221,6 +221,7 @@ class ExtMidiClock
 
 class MidiSyncContainer {
   private:
+// REMOVE Tim. clock. Removed.  
       unsigned int _midiClock; // Accumulator for clock output.
 
 /* Testing */
@@ -251,6 +252,7 @@ class MidiSyncContainer {
       MidiSyncContainer();
       virtual ~MidiSyncContainer();
 
+// REMOVE Tim. clock. Removed.  
       unsigned int midiClock() const { return _midiClock; }
       void setMidiClock(unsigned int val) { _midiClock = val; }
       ExtMidiClock::ExternState externalPlayState() const { return playStateExt; }

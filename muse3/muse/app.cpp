@@ -27,7 +27,6 @@
 #include <QClipboard>
 #include <QMessageBox>
 #include <QShortcut>
-#include <QSignalMapper>
 #include <QTimer>
 #include <QWhatsThis>
 #include <QSettings>
@@ -331,10 +330,6 @@ MusE::MusE() : QMainWindow()
       appName               = QString("MusE");
       setWindowTitle(appName);
       setWindowIcon(*MusEGui::museIcon);
-      midiPluginSignalMapper = new QSignalMapper(this);
-      followSignalMapper = new QSignalMapper(this);
-      windowsMapper = new QSignalMapper(this);
-      connect(windowsMapper, SIGNAL(mapped(QWidget*)), SLOT(bringToFront(QWidget*)));
 
       MusEGlobal::song = new MusECore::Song("song");
       MusEGlobal::song->blockSignals(true);
@@ -657,22 +652,14 @@ MusE::MusE() : QMainWindow()
       connect(midiInitInstActions, SIGNAL(triggered()), SLOT(initMidiDevices()));
       connect(midiLocalOffAction, SIGNAL(triggered()), SLOT(localOff()));
 
-      connect(midiTrpAction, SIGNAL(triggered()), midiPluginSignalMapper, SLOT(map()));
-      connect(midiInputTrfAction, SIGNAL(triggered()), midiPluginSignalMapper, SLOT(map()));
-      connect(midiInputFilterAction, SIGNAL(triggered()), midiPluginSignalMapper, SLOT(map()));
-      connect(midiRemoteAction, SIGNAL(triggered()), midiPluginSignalMapper, SLOT(map()));
-
-      midiPluginSignalMapper->setMapping(midiTrpAction, 0);
-      midiPluginSignalMapper->setMapping(midiInputTrfAction, 1);
-      midiPluginSignalMapper->setMapping(midiInputFilterAction, 2);
-      midiPluginSignalMapper->setMapping(midiRemoteAction, 3);
+      connect(midiTrpAction,         &QAction::triggered, [this]() { startMidiInputPlugin(0); } );
+      connect(midiInputTrfAction,    &QAction::triggered, [this]() { startMidiInputPlugin(1); } );
+      connect(midiInputFilterAction, &QAction::triggered, [this]() { startMidiInputPlugin(2); } );
+      connect(midiRemoteAction,      &QAction::triggered, [this]() { startMidiInputPlugin(3); } );
 
 #ifdef BUILD_EXPERIMENTAL
-      connect(midiRhythmAction, SIGNAL(triggered()), midiPluginSignalMapper, SLOT(map()));
-      midiPluginSignalMapper->setMapping(midiRhythmAction, 4);
+      connect(midiRhythmAction,      &QAction::triggered, [this]() { startMidiInputPlugin(4); } );
 #endif
-
-      connect(midiPluginSignalMapper, SIGNAL(mapped(int)), this, SLOT(startMidiInputPlugin(int)));
 
       //-------- Audio connections
       connect(audioBounce2TrackAction, SIGNAL(triggered()), SLOT(bounceToTrack()));
@@ -693,15 +680,9 @@ MusE::MusE() : QMainWindow()
       connect(settingsAppearanceAction, SIGNAL(triggered()), SLOT(configAppearance()));
       connect(settingsMidiPortAction, SIGNAL(triggered()), SLOT(configMidiPorts()));
 
-      connect(dontFollowAction, SIGNAL(triggered()), followSignalMapper, SLOT(map()));
-      connect(followPageAction, SIGNAL(triggered()), followSignalMapper, SLOT(map()));
-      connect(followCtsAction, SIGNAL(triggered()), followSignalMapper, SLOT(map()));
-
-      followSignalMapper->setMapping(dontFollowAction, CMD_FOLLOW_NO);
-      followSignalMapper->setMapping(followPageAction, CMD_FOLLOW_JUMP);
-      followSignalMapper->setMapping(followCtsAction, CMD_FOLLOW_CONTINUOUS);
-
-      connect(followSignalMapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
+      connect(dontFollowAction, &QAction::triggered, [this]() { cmd(CMD_FOLLOW_NO); } );
+      connect(followPageAction, &QAction::triggered, [this]() { cmd(CMD_FOLLOW_JUMP); } );
+      connect(followCtsAction,  &QAction::triggered, [this]() { cmd(CMD_FOLLOW_CONTINUOUS); } );
 
       //-------- Help connections
       connect(helpManualAction, SIGNAL(triggered()), SLOT(startHelpBrowser()));
@@ -850,6 +831,17 @@ MusE::MusE() : QMainWindow()
       menuView->addAction(fullscreenAction);
 
 
+      //---------------------------------------------------
+      //  Connect script receiver
+      //---------------------------------------------------
+
+      connect(&_scriptReceiver,
+              &MusECore::ScriptReceiver::execDeliveredScriptReceived,
+              [this](int id) { execDeliveredScript(id); } );
+      connect(&_scriptReceiver,
+              &MusECore::ScriptReceiver::execUserScriptReceived,
+              [this](int id) { execUserScript(id); } );
+      
       //-------------------------------------------------------------
       //    popup Midi
       //-------------------------------------------------------------
@@ -858,7 +850,7 @@ MusE::MusE() : QMainWindow()
       menuBar()->addMenu(menu_functions);
       trailingMenus.push_back(menu_functions);
 
-      MusEGlobal::song->populateScriptMenu(menuScriptPlugins, this);
+      MusEGlobal::song->populateScriptMenu(menuScriptPlugins, &_scriptReceiver);
       menu_functions->addMenu(menuScriptPlugins);
       menu_functions->addAction(midiEditInstAction);
       menu_functions->addMenu(midiInputPlugins);
@@ -3776,8 +3768,8 @@ void MusE::updateWindowMenu()
         sep=true;
       }
       QAction* temp=menuWindows->addAction((*it)->windowTitle());
-      connect(temp, SIGNAL(triggered()), windowsMapper, SLOT(map()));
-      windowsMapper->setMapping(temp, static_cast<QWidget*>(*it));
+      QWidget* tlw = static_cast<QWidget*>(*it);
+      connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
 
       there_are_subwins=true;
     }
@@ -3792,8 +3784,8 @@ void MusE::updateWindowMenu()
         sep=true;
       }
       QAction* temp=menuWindows->addAction((*it)->windowTitle());
-      connect(temp, SIGNAL(triggered()), windowsMapper, SLOT(map()));
-      windowsMapper->setMapping(temp, static_cast<QWidget*>(*it));
+      QWidget* tlw = static_cast<QWidget*>(*it);
+      connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
     }
 
   windowsCascadeAction->setEnabled(there_are_subwins);

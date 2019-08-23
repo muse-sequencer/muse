@@ -1,5 +1,4 @@
 #include <QMenu>
-#include <QSignalMapper>
 #include <QInputDialog>
 
 #include "globaldefs.h"
@@ -183,7 +182,6 @@ void PluginDialog::plistContextMenu(const QPoint& point)
   {
     group_info = &MusEGlobal::plugin_groups.get(item->text(1), item->text(2));
     QMenu* menu = new MusEGui::PopupMenu(this, true);
-    QSignalMapper* mapper = new QSignalMapper(this);
     menu->addAction(new MusEGui::MenuTitleItem(tr("Associated categories"), menu));
 
     if (ui.tabBar->count()==1)
@@ -198,15 +196,12 @@ void PluginDialog::plistContextMenu(const QPoint& point)
         QAction* act=menu->addAction(ui.tabBar->tabText(i));
         act->setCheckable(true);
         act->setChecked(group_info->contains(i));
-        connect(act,SIGNAL(toggled(bool)), mapper, SLOT(map()));
-        mapper->setMapping(act, i);
+        connect(act, &QAction::toggled, [this, i]() { groupMenuEntryToggled(i); } );
       }
-      connect(mapper, SIGNAL(mapped(int)), this, SLOT(groupMenuEntryToggled(int)));
     }
 
     menu->exec(mapToGlobal(point));
 
-    delete mapper;
     delete menu;
 
     if (selectedGroup!=0 && !group_info->contains(selectedGroup)) // we removed the entry from the currently visible group

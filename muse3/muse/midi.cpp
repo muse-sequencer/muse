@@ -2495,16 +2495,145 @@ void Audio::processMidi(unsigned int frames)
       processAudioMetronome(frames);
       processMidiMetronome(frames);
 
+      // REMOVE Tim. clock. Added.
+//       //---------------------------------------------------
+//       //    send midi clock output events
+//       //---------------------------------------------------
+// 
+//       _clockOutputQueueSize = 0;
+//       if(!extsync)
+//       {
+//         const unsigned curr_audio_frame = syncFrame;
+//         const unsigned next_audio_frame = curr_audio_frame + frames;
+// //         const uint64_t numer = (uint64_t)MusEGlobal::config.division * (uint64_t)MusEGlobal::tempomap.globalTempo() * 10000UL;
+//         const uint64_t denom = (uint64_t)MusEGlobal::config.division * (uint64_t)MusEGlobal::tempomap.globalTempo() * 10000UL;
+//         const unsigned int div = MusEGlobal::config.division/24;
+// 
+// //         // Do not round up here since (audio) frame resolution is higher than tick resolution.
+// //         const unsigned int clock_tick = muse_multiply_64_div_64_to_64(numer, curr_audio_frame,
+// //           (uint64_t)MusEGlobal::sampleRate * (uint64_t)MusEGlobal::tempomap.tempo(curTickPos));
+// 
+// //         unsigned int clock_tick_end;
+//         // Is the transport moving?
+//         if(playing)
+//         {
+// //           unsigned int delta_tick;
+// //           // Did tick position wrap around?
+// //           if(curTickPos > nextTickPos)
+// //             delta_tick = curTickPos - nextTickPos;
+// //           else
+// //             delta_tick = nextTickPos - curTickPos;
+// //           clock_tick_end = clock_tick + delta_tick;
+//         }
+//         else
+//         {
+// //           // Do not round up here since (audio) frame resolution is higher than tick resolution.
+// //           clock_tick_end = muse_multiply_64_div_64_to_64(numer, next_audio_frame,
+// //             (uint64_t)MusEGlobal::sampleRate * (uint64_t)MusEGlobal::tempomap.tempo(curTickPos));
+// 
+//           uint64_t div_remainder;
+//           const uint64_t div_frames = muse_multiply_64_div_64_to_64(
+//             (uint64_t)MusEGlobal::sampleRate * (uint64_t)MusEGlobal::tempomap.tempo(curTickPos), div,
+//             denom, LargeIntRoundNone, &div_remainder);
+// 
+//           // Counter too far in future? Reset.
+//           if(_clockOutputCounter >= curr_audio_frame && _clockOutputCounter - curr_audio_frame >= div_frames)
+//           {
+//             _clockOutputCounter = curr_audio_frame;
+//             _clockOutputCounterRemainder = 0;
+//           }
+//           // Counter too far in past? Reset.
+//           else if(_clockOutputCounter < curr_audio_frame)
+//           {
+//             _clockOutputCounter = curr_audio_frame;
+//             _clockOutputCounterRemainder = 0;
+//           }
+// 
+//           //const uint64_t curr_clock_out_count = _clockOutputCounter + div_frames + (_clockOutputCounterRemainder + div_remainder) / denom;
+//           //uint64_t next_clock_out_frame = _clockOutputCounter + div_frames + (_clockOutputCounterRemainder + div_remainder) / denom;
+//           uint64_t raccum;
+//           //while(next_clock_out_frame <= next_audio_frame)
+//           while(_clockOutputCounter < next_audio_frame)
+//           {
+//             if(_clockOutputQueueSize >= _clockOutputQueueCapacity)
+//               break;
+//             
+//             //_clockOutputQueue[_clockOutputQueueSize] = _clockOutputCounter - curr_audio_frame;
+//             _clockOutputQueue[_clockOutputQueueSize] = _clockOutputCounter;
+//             ++_clockOutputQueueSize;
+//             raccum = _clockOutputCounterRemainder + div_remainder;
+//             _clockOutputCounter += div_frames + (raccum / denom);
+//             _clockOutputCounterRemainder = raccum % denom;
+//           }
+//           //const uint64_t next_clock_out_count = _clockOutputCounter + div_frames + (_clockOutputCounterRemainder + div_remainder) / denom;
+// 
+//           //if(next_audio_frame >= next_clock_out_count)
+//           //{
+//             
+//           //}
+//         }
+// 
+// //         // Did clock_tick wrap around?
+// //         if(_clockOutputCounter > clock_tick)
+// //           _clockOutputCounter = clock_tick;
+// // 
+// //         //const unsigned int div = MusEGlobal::config.division/24;
+// //         if(clock_tick_end >= _clockOutputCounter + div)
+// //         {
+// //           // This will always be at least 1.
+// //           const unsigned int num_clocks = (clock_tick_end - _clockOutputCounter) / div;
+// //           const unsigned int clk_frame_step = frames / num_clocks;
+// //           const unsigned int clk_frame_step_rem = frames % num_clocks;
+// //           unsigned int clk_frame_off;
+// //           for(unsigned int c = 0; c < num_clocks; ++c)
+// //           {
+// //             if(c >= _clockOutputQueueCapacity)
+// //               break;
+// //             clk_frame_off = c * clk_frame_step + (c * clk_frame_step_rem) / num_clocks;
+// //           }
+// // 
+// //           _clockOutputCounter = clock_tick_end;
+// //         }
+// // 
+// // 
+// //         unsigned cc, f;
+// //         while(1)
+// //         {
+// //           cc = _clockOutputCounter + div;
+// //           f = Pos(cc, true).frame();
+// //           //if(f
+// //         }
+//       }
+      
       //
       // Play all midi events up to curFrame.
       //
       for(iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id)
       {
         MidiDevice* pl_md = *id;
+//         const int pl_port = pl_md->midiPort();
+
         // We are done with the 'frozen' recording fifos, remove the events.
         pl_md->afterProcess();
 
         pl_md->processStuckNotes();
+        
+      // REMOVE Tim. clock. Added.
+//         // While we are at it, to avoid the overhead of yet another device loop,
+//         //  handle midi clock output here, for all device types.
+//         if(!extsync && pl_port >= 0 && pl_port < MIDI_PORTS)
+//         {
+//           MidiPort* clk_mp = &MusEGlobal::midiPorts[pl_port];
+//           // Clock out turned on?
+//           if(clk_mp->syncInfo().MCOut())
+//           {
+//             for(unsigned int i = 0; i < _clockOutputQueueSize; ++i)
+//             {
+//               const MidiPlayEvent clk_ev(_clockOutputQueue[i], pl_port, 0, MusECore::ME_CLOCK, 0, 0);
+//               pl_md->putEvent(clk_ev, MidiDevice::NotLate /*,MidiDevice::PlaybackBuffer*/);
+//             }
+//           }
+//         }
         
         // ALSA devices handled by another thread.
         const MidiDevice::MidiDeviceType typ = pl_md->deviceType();

@@ -21,6 +21,9 @@
 //
 //=========================================================
 
+#ifndef __FILEDIALOG_H__
+#define __FILEDIALOG_H__
+
 #include <QFileDialog>
 
 #include "ui_fdialogbuttons.h"
@@ -68,7 +71,7 @@ class MFileDialog : public QFileDialog {
       enum ViewType { GLOBAL_VIEW, PROJECT_VIEW, USER_VIEW, HOME_VIEW };
       static ViewType lastViewUsed;
       FileDialogButtonsWidget buttons;
-      MFileDialog(const QString& dir, const QString& filter = QString::null,
+      MFileDialog(const QString& dir, const QString& filter = QString(),
          QWidget* parent = 0, bool writeFlag = false);
       };
 
@@ -103,3 +106,5 @@ class MFile {
       };
 
 } // namespace MusEGui
+
+#endif // __FILEDIALOG_H__

@@ -477,6 +477,7 @@ void MidiSyncInfo::write(int level, Xml& xml)
 
 MidiSyncContainer::MidiSyncContainer()
 {
+// REMOVE Tim. clock. Removed.  
   _midiClock = 0;
   mclock1 = 0.0;
   mclock2 = 0.0;

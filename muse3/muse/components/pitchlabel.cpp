@@ -68,8 +68,14 @@ QSize PitchLabel::sizeHint() const
       //int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, this); // ddskrjo 0
       int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
       int h  = fm.height() + fw * 2;
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+//      int w = 2 + fm.horizontalAdvance(QString("A#8")) +  fw * 4;
+      int w = fm.horizontalAdvance(QString("-9999")) + fw * 2;     // must display 14Bit controller values
+#else
 //      int w = 2 + fm.width(QString("A#8")) +  fw * 4;
       int w = fm.width(QString("-9999")) + fw * 2;     // must display 14Bit controller values
+#endif
       return QSize(w, h).expandedTo(QApplication::globalStrut());
       }
 

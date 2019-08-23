@@ -351,7 +351,7 @@ QString getOpenFileName(const QString &startWith, const char** filters_chararray
       {
       QStringList filters = localizedStringListFromCharArray(filters_chararray, "file_patterns");
 
-      MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, false);
+      MFileDialog *dlg = new MFileDialog(startWith, QString(), parent, false);
 
       dlg->setNameFilters(filters);
       dlg->setWindowTitle(name);
@@ -389,7 +389,7 @@ QString getSaveFileName(const QString &startWith,
       {
       QStringList filters = localizedStringListFromCharArray(filters_chararray, "file_patterns");
 
-      MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, true);
+      MFileDialog *dlg = new MFileDialog(startWith, QString(), parent, true);
 
       dlg->setNameFilters(filters);
       dlg->setWindowTitle(name);
@@ -475,7 +475,7 @@ QString getImageFileName(const QString& startWith,
                   initialSelection = fi.absoluteFilePath();
                   }
             }
-      MFileDialog *dlg = new MFileDialog(*workingDirectory, QString::null, parent);
+      MFileDialog *dlg = new MFileDialog(*workingDirectory, QString(), parent);
 
       /* ORCAN - disable preview for now. It is not available in qt4. We will
                  need to implement it ourselves.

@@ -1633,7 +1633,7 @@ bool MusE::loadConfigurationColors(QWidget* parent)
   
   if(QMessageBox::question(parent, QString("MusE"),
       tr("Color settings will immediately be replaced with any found in the file.\nAre you sure you want to proceed?"), tr("&Ok"), tr("&Cancel"),
-      QString::null, 0, 1 ) == 1)
+      QString(), 0, 1 ) == 1)
     return false;
   
   // Read, and return if error.
@@ -1663,7 +1663,7 @@ bool MusE::saveConfigurationColors(QWidget* parent)
   {
     if(QMessageBox::question(parent, QString("MusE"),
         tr("File exists.\nDo you want to overwrite it?"), tr("&Ok"), tr("&Cancel"),
-        QString::null, 0, 1 ) == 1)
+        QString(), 0, 1 ) == 1)
       return false;
   }
   FILE* f = fopen(file.toLatin1().constData(), "w");

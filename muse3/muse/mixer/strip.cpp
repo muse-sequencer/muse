@@ -30,7 +30,6 @@
 #include <QFrame>
 #include <QMouseEvent>
 #include <QMenu>
-#include <QSignalMapper>
 #include <QString>
 #include <QPainter>
 #include <QList>

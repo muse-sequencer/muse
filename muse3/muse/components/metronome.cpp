@@ -170,11 +170,9 @@ MetronomeConfig::MetronomeConfig(QWidget* parent)
       //       so for now any user-additional files in our metronome waves directory will need a restart...
       fillSoundFiles();
 
-      connect(accentBeats, SIGNAL(valueChanged(int)), SLOT(accentBeatsChanged(int)));
-      connect(accentPresetTypeList, SIGNAL(activated(int)), SLOT(accentPresetsTypeItemActivated(int)));
-      // FIXME FIXME   Weird, these replacements don't work ???
-      //connect(accentBeats, &QSpinBox::valueChanged, [this](int v) { accentBeatsChanged(v); } );
-      //connect(accentPresetTypeList, &QComboBox::activated, [this](int idx) { accentPresetsTypeItemActivated(idx); } );
+      // Special for these two: Need qt helper overload for these lambdas.
+      connect(accentBeats, QOverload<int>::of(&QSpinBox::valueChanged), [=](int v) { accentBeatsChanged(v); } );
+      connect(accentPresetTypeList, QOverload<int>::of(&QComboBox::activated), [=](int index) { accentPresetsTypeItemActivated(index); } );
 
       connect(buttonApply, &QPushButton::clicked, [this]() { apply(); } );
       connect(midiClick, &QCheckBox::toggled, [this](bool v) { midiClickChanged(v); } );

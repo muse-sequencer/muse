@@ -70,6 +70,7 @@ QT5_WRAP_CPP ( muse_moc_headers
       midieditor.h
       miditransform.h
       plugin.h
+      script_delivery.h
       song.h
       transport.h
       value.h
@@ -134,6 +135,7 @@ file (GLOB core_source_files
       pluglist.cpp
       pos.cpp
       route.cpp
+      script_delivery.cpp
       seqmsg.cpp
       shortcuts.cpp
       sig.cpp

@@ -73,7 +73,12 @@ QSize TempoLabel::sizeHint() const
       QFontMetrics fm(font());
       int fw = 4;
       int h  = fm.height() + fw * 2;
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      int w  = 6 + fm.horizontalAdvance(QString("000.00")) +  fw * 2;  // 6=indent
+#else
       int w  = 6 + fm.width(QString("000.00")) +  fw * 2;  // 6=indent
+#endif
       return QSize(w, h).expandedTo(QApplication::globalStrut());
       }
 
@@ -113,7 +118,12 @@ QSize TempoEdit::sizeHint() const
         QFontMetrics fm(font());
         const int fw = st->pixelMetric(QStyle::PM_SpinBoxFrameWidth);
         int h  = fm.height() + fw * 2;
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+        int w  = fw * 2 + b_rect.width() + fm.horizontalAdvance(QString("000.00"));
+#else
         int w  = fw * 2 + b_rect.width() + fm.width(QString("000.00"));
+#endif
         return QSize(w, h).expandedTo(QApplication::globalStrut());
       }
       return QSize(20, 20).expandedTo(QApplication::globalStrut());

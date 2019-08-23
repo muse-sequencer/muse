@@ -432,8 +432,8 @@ void View::paint(const QRect& r, const QRegion& rg)
       //printf("View::paint r.x:%d w:%d\n", rr.x(), rr.width());
       pdraw(p, rr, rg);       // draw into pixmap
 
-      p.resetMatrix();      // Q3 support says use resetMatrix instead, but resetMatrix advises resetTransform instead...
-      //p.resetTransform();
+      //p.resetMatrix();      // Q3 support says use resetMatrix instead, but resetMatrix advises resetTransform instead...
+      p.resetTransform();     // resetMatrix() is deprecated in Qt 5.13
       
       drawOverlay(p, r, rg);
       }
@@ -581,8 +581,8 @@ void View::pdraw(QPainter& p, const QRect& r, const QRegion& rg)
 
 void View::setPainter(QPainter& p)
       {
-      p.resetMatrix();      // Q3 support says use resetMatrix instead, but resetMatrix advises resetTransform instead...
-      //p.resetTransform();
+      //p.resetMatrix();      // Q3 support says use resetMatrix instead, but resetMatrix advises resetTransform instead...
+      p.resetTransform();     // resetMatrix() is deprecated in Qt 5.13
       
       p.translate( -(double(xpos) + rmapx_f(xorg)) , -(double(ypos) + rmapy(yorg)));
       double xMag = (xmag < 0) ? 1.0/double(-xmag) : double(xmag);

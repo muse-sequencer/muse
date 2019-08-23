@@ -1373,7 +1373,7 @@ void TList::changeAutomationColor(QAction* act)
   {
       if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
           tr("Clear all controller events?"), tr("&Ok"), tr("&Cancel"),
-          QString::null, 0, 1 ) == 0)
+          QString(), 0, 1 ) == 0)
       {
         MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
         MusEGlobal::audio->msgClearControllerEvents(track, id);

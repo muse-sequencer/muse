@@ -32,7 +32,6 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QResizeEvent>
-#include <QSignalMapper>
 #include <QSizeGrip>
 #include <QToolButton>
 #include <QWhatsThis>
@@ -190,7 +189,6 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       split1w1 = 0;
       //selPart  = 0;
       _playEvents    = true;
-      QSignalMapper *signalMapper = new QSignalMapper(this);
       
       _group_mode = GROUP_SAME_CHANNEL;
       _ignore_hide = _ignore_hide_init;
@@ -209,22 +207,14 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       menuEdit->addSeparator();
       deleteAction = menuEdit->addAction(tr("Delete Events"));
 
-      connect(cutAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(copyAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(copyRangeAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(pasteAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(pasteToCurPartAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(pasteDialogAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(deleteAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-
-      signalMapper->setMapping(cutAction, DrumCanvas::CMD_CUT);
-      signalMapper->setMapping(copyAction, DrumCanvas::CMD_COPY);
-      signalMapper->setMapping(copyRangeAction, DrumCanvas::CMD_COPY_RANGE);
-      signalMapper->setMapping(pasteAction, DrumCanvas::CMD_PASTE);
-      signalMapper->setMapping(pasteToCurPartAction, DrumCanvas::CMD_PASTE_TO_CUR_PART);
-      signalMapper->setMapping(pasteDialogAction, DrumCanvas::CMD_PASTE_DIALOG);
-      signalMapper->setMapping(deleteAction, DrumCanvas::CMD_DEL);
-
+      connect(cutAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_CUT); } );
+      connect(copyAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_COPY); } );
+      connect(copyRangeAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_COPY_RANGE); } );
+      connect(pasteAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_PASTE); } );
+      connect(pasteToCurPartAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_PASTE_TO_CUR_PART); } );
+      connect(pasteDialogAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_PASTE_DIALOG); } );
+      connect(deleteAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_DEL); } );
+      
       menuSelect = menuEdit->addMenu(QIcon(*selectIcon), tr("&Select"));
 
       sallAction = menuSelect->addAction(QIcon(*select_allIcon), tr("Select All"));
@@ -239,21 +229,13 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       prevAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("Previous Part"));
       nextAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("Next Part"));
 
-      connect(sallAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(snoneAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(invAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(inAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(outAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(prevAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(nextAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-
-      signalMapper->setMapping(sallAction, DrumCanvas::CMD_SELECT_ALL);
-      signalMapper->setMapping(snoneAction, DrumCanvas::CMD_SELECT_NONE);
-      signalMapper->setMapping(invAction, DrumCanvas::CMD_SELECT_INVERT);
-      signalMapper->setMapping(inAction, DrumCanvas::CMD_SELECT_ILOOP);
-      signalMapper->setMapping(outAction, DrumCanvas::CMD_SELECT_OLOOP);
-      signalMapper->setMapping(prevAction, DrumCanvas::CMD_SELECT_PREV_PART);
-      signalMapper->setMapping(nextAction, DrumCanvas::CMD_SELECT_NEXT_PART);
+      connect(sallAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_ALL); } );
+      connect(snoneAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_NONE); } );
+      connect(invAction,   &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_INVERT); } );
+      connect(inAction,    &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_ILOOP); } );
+      connect(outAction,   &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_OLOOP); } );
+      connect(prevAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_PREV_PART); } );
+      connect(nextAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_NEXT_PART); } );
 
       // Functions
       menuFunctions = menuBar()->addMenu(tr("Fu&nctions"));
@@ -308,17 +290,12 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
         saveAction = menuFunctions->addAction(QIcon(*saveIcon), tr("Save Map"));
         resetAction = menuFunctions->addAction(tr("Reset GM Map"));
 
-        connect(loadAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-        connect(saveAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-        connect(resetAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-
-        signalMapper->setMapping(loadAction, DrumCanvas::CMD_LOAD);
-        signalMapper->setMapping(saveAction, DrumCanvas::CMD_SAVE);
-        signalMapper->setMapping(resetAction, DrumCanvas::CMD_RESET);
+        connect(loadAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_LOAD); } );
+        connect(saveAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SAVE); } );
+        connect(resetAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_RESET); } );
 
         QAction* reorderListAction = menuFunctions->addAction(tr("Re-order map"));
-        connect(reorderListAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-        signalMapper->setMapping(reorderListAction, DrumCanvas::CMD_REORDER_LIST);
+        connect(reorderListAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_REORDER_LIST); } );
         menuFunctions->addSeparator();
       }
       else
@@ -332,27 +309,29 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       QAction* noteShiftAction = menuFunctions->addAction(tr("Move Notes"));
       QAction* delOverlapsAction = menuFunctions->addAction(tr("Delete Overlaps"));
 
-      connect(fixedAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(veloAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(crescAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(quantizeAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(eraseEventAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(noteShiftAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(delOverlapsAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-
-      signalMapper->setMapping(fixedAction, DrumCanvas::CMD_FIXED_LEN);
-      signalMapper->setMapping(veloAction, DrumCanvas::CMD_MODIFY_VELOCITY);
-      signalMapper->setMapping(crescAction, DrumCanvas::CMD_CRESCENDO);
-      signalMapper->setMapping(quantizeAction, DrumCanvas::CMD_QUANTIZE);
-      signalMapper->setMapping(eraseEventAction, DrumCanvas::CMD_ERASE_EVENT);
-      signalMapper->setMapping(noteShiftAction, DrumCanvas::CMD_NOTE_SHIFT);
-      signalMapper->setMapping(delOverlapsAction, DrumCanvas::CMD_DELETE_OVERLAPS);
+      connect(fixedAction,       &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_FIXED_LEN); } );
+      connect(veloAction,        &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_MODIFY_VELOCITY); } );
+      connect(crescAction,       &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_CRESCENDO); } );
+      connect(quantizeAction,    &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_QUANTIZE); } );
+      connect(eraseEventAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_ERASE_EVENT); } );
+      connect(noteShiftAction,   &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_NOTE_SHIFT); } );
+      connect(delOverlapsAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_DELETE_OVERLAPS); } );
 
 
+      //----------------------
+      // Scripts:
+      //----------------------
 
       QMenu* menuScriptPlugins = menuBar()->addMenu(tr("&Plugins"));
-      MusEGlobal::song->populateScriptMenu(menuScriptPlugins, this);
-      
+      connect(&_scriptReceiver,
+              &MusECore::ScriptReceiver::execDeliveredScriptReceived,
+              [this](int id) { execDeliveredScript(id); } );
+      connect(&_scriptReceiver,
+              &MusECore::ScriptReceiver::execUserScriptReceived,
+              [this](int id) { execUserScript(id); } );
+      MusEGlobal::song->populateScriptMenu(menuScriptPlugins, &_scriptReceiver);
+
+
       QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
       if (!old_style_drummap_mode())
       {
@@ -375,19 +354,16 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
         ignoreHideAction->setCheckable(true);
         ignoreHideAction->setChecked(_ignore_hide);
         
-        connect(groupNoneAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-        connect(groupChanAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-        connect(groupMaxAction,  SIGNAL(triggered()), signalMapper, SLOT(map()));
         connect(ignoreHideAction,  SIGNAL(toggled(bool)), SLOT(set_ignore_hide(bool)));
         connect(showAllAction,  SIGNAL(triggered()), this, SLOT(showAllInstruments()));
         connect(hideAllAction,  SIGNAL(triggered()), this, SLOT(hideAllInstruments()));
         connect(hideUnusedAction,  SIGNAL(triggered()), this, SLOT(hideUnusedInstruments()));
         connect(hideEmptyAction,  SIGNAL(triggered()), this, SLOT(hideEmptyInstruments()));
 
-        signalMapper->setMapping(groupNoneAction, DrumCanvas::CMD_GROUP_NONE);
-        signalMapper->setMapping(groupChanAction, DrumCanvas::CMD_GROUP_CHAN);
-        signalMapper->setMapping(groupMaxAction,  DrumCanvas::CMD_GROUP_MAX);
-        
+        connect(groupNoneAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_GROUP_NONE); } );
+        connect(groupChanAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_GROUP_CHAN); } );
+        connect(groupMaxAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_GROUP_MAX); } );
+
         updateGroupingActions();
       }
       else
@@ -399,8 +375,6 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
-
-      connect(signalMapper, SIGNAL(mapped(int)), SLOT(cmd(int)));
 
       //---------------------------------------------------
       //    Toolbars

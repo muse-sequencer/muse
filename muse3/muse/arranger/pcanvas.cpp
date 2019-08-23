@@ -3063,7 +3063,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
       // GRID //
       //////////
 
-      QColor baseColor(MusEGlobal::config.partCanvasBg.light(104));
+      QColor baseColor(MusEGlobal::config.partCanvasBg.lighter(104));
       QPen pen;
       pen.setCosmetic(true);
 
@@ -3079,7 +3079,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
         
         drawTickRaster(p, mr, mrg, rast,
                          false, false, false,
-                         baseColor.dark(115), 
+                         baseColor.darker(115), 
                          baseColor);
       }
 
@@ -3118,7 +3118,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
 //                 fprintf(stderr, "... bottom edge in range. Drawing bottom edge at mx0_lim:%d myy_2:%d mx_2:%d myy_2:%d\n",
 //                         mx0_lim, myy_2, mx_2, myy_2);
                 
-                pen.setColor(baseColor.dark(130));
+                pen.setColor(baseColor.darker(130));
                 p.setPen(pen);
                 p.drawLine(mx0_lim, myy_2, mx_2, myy_2);
               }
