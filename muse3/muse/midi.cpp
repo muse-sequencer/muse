@@ -2618,9 +2618,9 @@ void Audio::processMidi(unsigned int frames)
 
         pl_md->processStuckNotes();
         
-      // REMOVE Tim. clock. Added.
-//         // While we are at it, to avoid the overhead of yet another device loop,
-//         //  handle midi clock output here, for all device types.
+        // REMOVE Tim. clock. Added.
+        // While we are at it, to avoid the overhead of yet another device loop,
+        //  handle midi clock output here, for all device types.
 //         if(!extsync && pl_port >= 0 && pl_port < MIDI_PORTS)
 //         {
 //           MidiPort* clk_mp = &MusEGlobal::midiPorts[pl_port];

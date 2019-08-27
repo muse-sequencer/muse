@@ -21,9 +21,9 @@
 //=========================================================
 """
 
-import Pyro.core
+import Pyro4.core
 import time
-muse=Pyro.core.getProxyForURI('PYRONAME://:Default.muse')
+muse=Pyro4.core.Proxy('PYRONAME:muse')
 parts = muse.getParts("Track 1")
 
 ptick = parts[0]['tick']
@@ -44,7 +44,7 @@ muse.createPart("Track 1", songlen + 1, parts[0]['len'], parts[0])
 time.sleep(1)
 
 lastpart = muse.getParts("Track 1").pop()
-print lastpart['id']
+print (lastpart['id'])
 muse.deletePart(lastpart['id'])
-print muse.getDivision()
+print (muse.getDivision())
 

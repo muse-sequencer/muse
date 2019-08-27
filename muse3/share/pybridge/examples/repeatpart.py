@@ -21,14 +21,14 @@
 //=========================================================
 """
 
-import Pyro.core
+import Pyro4.core
 import sys
 import time
 
 SLEEPIVAL=0.3
 
 def advanceToNextSection(muse, newlpos, newrpos):
-      print "Advancing..."
+      print ("Advancing...")
       currpos = muse.getRPos()
       curlpos = muse.getLPos()
       curpos = muse.getCPos()
@@ -37,19 +37,19 @@ def advanceToNextSection(muse, newlpos, newrpos):
       while curpos < currpos:
             time.sleep(SLEEPIVAL)
             curpos = muse.getCPos()
-      print "Leaving current section..."
+      print ("Leaving current section...")
       muse.setRPos(newrpos)
       curpos = muse.getCPos()
 
       while curpos < newlpos:
             time.sleep(SLEEPIVAL)
             curpos = muse.getCPos()
-      print "Entered new section"
+      print ("Entered new section")
       muse.setLPos(newlpos)
       muse.setLoop(True)
       return
 
-muse=Pyro.core.getProxyForURI('PYRONAME://:Default.muse')
+muse=Pyro4.core.Proxy('PYRONAME:muse')
 muse.stopPlay()
 parts = muse.getParts("Track 1")
 muse.setLPos(parts[0]['tick'])
@@ -63,14 +63,14 @@ for i in range(1, len(parts)):
       part = parts[i]
       tick = part['tick']
       len = part['len']
-      print "Press enter to advance to next section/part!"
+      print ("Press enter to advance to next section/part!")
       sys.stdin.read(1)
       advanceToNextSection(muse, tick, tick + len)
 
-print "This is the final section. Disabling loop and leaving..."
+print ("This is the final section. Disabling loop and leaving...")
 muse.setLoop(False)
 
-#print "Press enter to leave final section"
+#print ("Press enter to leave final section")
 #sys.stdin.read(1)
 #muse.setLoop(False)
 
