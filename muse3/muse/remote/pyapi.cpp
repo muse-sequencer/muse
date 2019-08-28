@@ -318,25 +318,37 @@ bool addPyPartEventsToMusePart(MidiPart* npart, PyObject* part)
 
             int etick = PyLong_AsLong (p_etick);
             int elen =  PyLong_AsLong (p_len);
-            string type = string(PyBytes_AsString(p_type));
-            int data[3];
+            
+// For Python 3.3 and above:
+#if (PY_MAJOR_VERSION >= 4) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION >= 3)
+            const char* bytes = PyUnicode_AsUTF8(p_type);
+#else
+            PyObject* p_bytes = PyUnicode_AsUTF8String(p_type);
+            const char* bytes = PyBytes_AsString(p_bytes);
+#endif
+            if(bytes && bytes[0] != 0)
+            {
+              string type = string(bytes);
+              int data[3];
 
-            // Traverse data list:
-            for (int j=0; j<3; j++) {
-                  PyObject* plItem = PyList_GetItem(p_data, j);
-                  data[j] = PyLong_AsLong (plItem);
-                  }
-            if (type == "note" || type == "ctrl") {
-                  Event event(Note);
-                  event.setA(data[0]);
-                  event.setB(data[1]);
-                  event.setC(data[2]);
-                  event.setTick(etick);
-                  event.setLenTick(elen);
-                  npart->addEvent(event);
-                  }
-            else
-                  printf("Unhandled event type from python: %s\n", type.c_str());
+              // Traverse data list:
+              for (int j=0; j<3; j++) {
+                    PyObject* plItem = PyList_GetItem(p_data, j);
+                    data[j] = PyLong_AsLong (plItem);
+
+                    }
+              if (type == "note" || type == "ctrl") {
+                    Event event(Note);
+                    event.setA(data[0]);
+                    event.setB(data[1]);
+                    event.setC(data[2]);
+                    event.setTick(etick);
+                    event.setLenTick(elen);
+                    npart->addEvent(event);
+                    }
+              else
+                    printf("Unhandled event type from python: %s\n", type.c_str());
+            }
             }
 
       return true;
@@ -989,114 +1001,48 @@ PyMethodDef g_methodDefinitions[] =
       {NULL, NULL, 0, NULL}
 };
 
-
-
-// REMOVE Tim. py. Added.
-
-//-------------------------------
-// Python 3 initialization:
-//-------------------------------
-
-#if PY_MAJOR_VERSION >= 3
-
-// struct module_state {
-//     PyObject *error;
-// };
-// 
-// #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
-
-// #else
-// #define GETSTATE(m) (&_state)
-
-// static struct module_state _state;
-
-#endif
-
-// static PyObject *
-//  error_out(PyObject *m, PyObject *) {
-//     struct module_state *st = GETSTATE(m);
-//     PyErr_SetString(st->error, "something bad happened");
-//     return NULL;
-// 
-// };
-
-// static PyMethodDef myextension_methods[] = {
-//     {"error_out", (PyCFunction)error_out, METH_NOARGS, NULL},
-//     {NULL, NULL, 0, NULL}
-// };
-
-#if PY_MAJOR_VERSION >= 3
-
-// static int myextension_traverse(PyObject *m, visitproc visit, void *arg) {
-//     Py_VISIT(GETSTATE(m)->error);
-//     return 0;
-// }
-// 
-// static int myextension_clear(PyObject *m) {
-//     Py_CLEAR(GETSTATE(m)->error);
-//     return 0;
-// }
-
-
-// static struct PyModuleDef moduledef = {
-//   PyModuleDef_HEAD_INIT,
-//   "muse",
-//   NULL,
-//   sizeof(struct module_state),
-//   g_methodDefinitions, //myextension_methods,
-//   NULL,
-//   myextension_traverse,
-//   myextension_clear,
-//   NULL
-// };
-
-static struct PyModuleDef moduledef = {
-  PyModuleDef_HEAD_INIT,
-  "muse",
-  NULL,
-  -1,
-  g_methodDefinitions,
-  NULL,
-  NULL,
-  NULL,
-  NULL
-};
-
-#endif
-
 /**
  * This function launches the Pyro name service, which blocks execution
  * Thus it needs its own thread
  **/
 static void* pyapithreadfunc(void*)
 {
+      const char* mod_name = "muse";
+
       Py_Initialize();
-      PyImport_AddModule("muse");
-      
-// REMOVE Tim. py. Changed.
-//       Py_InitModule( "muse", g_methodDefinitions );
-      
-#if PY_MAJOR_VERSION >= 3
-      PyObject *m = PyModule_Create(&moduledef);
-      if(m == NULL)
+
+
+// For Python 3.5 and above:
+#if (PY_MAJOR_VERSION >= 4) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION >= 5)
+
+      PyObject *pMuseModule = PyImport_AddModule(mod_name);
+      PyModule_AddFunctions(pMuseModule, g_methodDefinitions);
+
+// For Python 3.0 to 3.4:
+#elif PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION < 5
+
+      PyObject *m = PyImport_AddModule(mod_name);
+
+      // Stupid HACK required. Tested OK. Borrowed from and based on these:
+      // http://code.activestate.com/recipes/579110-add-function-to-pythons-__builtin__-module-through/
+      // https://stackoverflow.com/questions/6565175/adding-new-command-to-module-through-c-api
+      PyObject *po_mod_dict = PyModule_GetDict(m);
+      PyObject *po_mod_name = PyUnicode_FromString(mod_name);
+      PyObject *po_new_func;
+      int i = 0;
+      while(g_methodDefinitions[i].ml_name && g_methodDefinitions[i].ml_meth)
       {
-          printf("pyapithreadfunc: PyModule_Create failed\n");
-          return NULL;
+        po_new_func = PyCFunction_NewEx(&g_methodDefinitions[i], (PyObject*)NULL, po_mod_name);
+        PyDict_SetItemString(po_mod_dict, g_methodDefinitions[i].ml_name, po_new_func);
+        ++i;
       }
-//       struct module_state *st = GETSTATE(m);
-//       st->error = PyErr_NewException("muse.Error", NULL, NULL);
-//       if (st->error == NULL)
-//       {
-//           Py_DECREF(m);
-//           return NULL;
-//       }
-#else      
-      PyObject* m = Py_InitModule( "muse", g_methodDefinitions );
-      if(m == NULL)
-      {
-          printf("pyapithreadfunc: Py_InitModule failed\n");
-          return NULL;
-      }
+
+// For Python below 3.0:
+#else
+
+      // Life was simple, eh?
+      Py_InitModule( mod_name, g_methodDefinitions );
+
 #endif
 
       //
@@ -1105,47 +1051,6 @@ static void* pyapithreadfunc(void*)
 
       PyObject *pMainModule     = PyImport_AddModule( "__main__" );
       PyObject *pMainDictionary = PyModule_GetDict( pMainModule );
-      
-
-
-      
-      PyObject *key, *value;
-      Py_ssize_t pos = 0;
-      while (PyDict_Next(pMainDictionary, &pos, &key, &value))
-      {
-
-//         long i = PyLong_AsLong(value);
-//         if (i == -1 && PyErr_Occurred())
-//         {
-//           printf("Main dictionary error\n");
-//           PyErr_Print();
-//           break;
-//         }
-
-//         printf("Main dictionary val %ld\n", i);
-
-#if PY_MAJOR_VERSION >= 3
-        const char* k = PyUnicode_AsUTF8(key);
-        const char* v = PyUnicode_AsUTF8(value);
-        printf("Main dictionary key:%s val:%s\n", k, v);
-#else
-//         long v = PyLong_AsLong(value);
-//         if (v == -1 && PyErr_Occurred())
-//         {
-//           printf("Main dictionary error\n");
-//           PyErr_Print();
-//           break;
-//         }
-        const char* k = PyString_AsString(key);
-//         printf("Main dictionary key:%s val:%ld\n", k, v);
-        printf("Main dictionary key:%s\n", k);
-#endif
-      }
-
-      
-      
-      
-      
       string launcherfilename = string(SHAREDIR) + string("/pybridge/museplauncher.py");
       printf("Initiating MusE Pybridge launcher from %s\n", launcherfilename.c_str());
       FILE* fp = fopen(launcherfilename.c_str(),"r");

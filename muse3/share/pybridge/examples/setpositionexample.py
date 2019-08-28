@@ -27,10 +27,13 @@ muse=Pyro4.core.Proxy('PYRONAME:muse')
 parts = muse.getParts("Track 1")
 
 ptick = parts[0]['tick']
-len = parts[0]['len']
+plen = parts[0]['len']
 muse.setLPos(ptick)
-muse.setRPos(ptick + len)
-muse.setCPos(ptick + len / 2)
+muse.setRPos(ptick + plen)
+# Using '/' here causes error in Python 3 which
+#  treats it as float division. We want integer division '//'
+#  which was introduced in Python 2.2.
+muse.setCPos(ptick + plen // 2)
 
 songlen = muse.getSongLen()
 #print "Song length: " + str(songlen)

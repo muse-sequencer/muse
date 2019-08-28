@@ -128,12 +128,16 @@ details.
           Recently LADISH has been emulating it instead:         
           http://ladish.org/
       
-      - Python		The python scripting language
+      - Python    The python scripting language
           http://www.python.org
-          Python support is required for some experimental features.
-          Currently it's NOT recommended to build with python support.
+          The remote control supports Python 2 or 3. See README.python.
+          The bundled midi scripts ('Functions') require Python 3.
+           
+      - Pyro 4    Python Remote Objects
+          https://pythonhosted.org/Pyro4/
+          The remote control supports Pyro 4. See README.python.
 
-      - PyQt4 is used by some of the bundled midi scripts
+      - PyQt5 is used by some of the bundled midi scripts ('Functions').
 
   Quick instructions for Ubuntu and similar distributions:
   
