@@ -270,32 +270,30 @@ def main():
       print ("Inside museplauncher.py...")
       
       hostname = socket.gethostname()
-      print("Hostname is:" + hostname)
-      
       ns_running = True
 
-      print("Attempting to locate a Pyro nameserver...")
+      print("Hostname:" + hostname + " Attempting to locate a Pyro nameserver...")
       
       try:
           ns = Pyro4.locateNS(hostname)
       except Pyro4.errors.NamingError:
           ns_running = False
 
-      if ns_running:
-          print("...Found nameserver")
+      if ns_running:
+          print("...Found Pyro nameserver")
       else:
-          print("...Nameserver not found. Starting a new one...")
+          print("...Pyro nameserver not found. Starting a new one...")
           nameserverUri, nameserverDaemon, broadcastServer = Pyro4.naming.startNS(host=hostname)
-          assert broadcastServer is not None, "expect a broadcast server to be created"
+          assert broadcastServer is not None, "Expected a Pyro broadcast server to be created"
           ns = nameserverDaemon.nameserver
-          print("Got a nameserver, uri=%s" % nameserverUri)
-          print("Nameserver daemon location string=%s" % nameserverDaemon.locationStr)
-          print("Nameserver daemon sockets=%s" % nameserverDaemon.sockets)
-          print("Broadcast server socket=%s (fileno %d)" % (broadcastServer.sock, broadcastServer.fileno()))
+          print("Got a Pyro nameserver, uri=%s" % nameserverUri)
+          print("Pyro nameserver daemon location string=%s" % nameserverDaemon.locationStr)
+          print("Pyro nameserver daemon sockets=%s" % nameserverDaemon.sockets)
+          print("Pyro broadcast server socket=%s (fileno %d)" % (broadcastServer.sock, broadcastServer.fileno()))
 
       pyrodaemon = Pyro4.core.Daemon(host=hostname)
-      print("Daemon location string=%s" % pyrodaemon.locationStr)
-      print("Daemon sockets=%s" % pyrodaemon.sockets)
+      print("Pyro daemon location string=%s" % pyrodaemon.locationStr)
+      print("Pyro daemon sockets=%s" % pyrodaemon.sockets)
 
       # connect a new object implementation (first unregister previous one)
       try:
@@ -305,13 +303,14 @@ def main():
           
       # register a server object with the daemon
       serveruri = pyrodaemon.register(MusE, "muse")
-      print("Object registered with the daemon. uri=%s" % serveruri)
+      print("Object registered with Pyro daemon. uri=%s" % serveruri)
 
       # register it with the embedded nameserver directly
       ns.register("muse", serveruri)
-      print("Object registered with the server")
+      print("Object registered with the Pyro nameserver")
 
-      if not ns_running:
+
+      if not ns_running:
 
           # An existing nameserver was not found.
           # Enter a custom event loop to handle BOTH nameserver events AND daemon events...
@@ -330,17 +329,17 @@ def main():
               eventsForDaemon=[]
               for s in rs:
                   if s is broadcastServer:
-                      print("Broadcast server received a request")
+                      print("Pyro broadcast server received a request")
                       broadcastServer.processRequest()
                   elif s in nameserverSockets:
                       eventsForNameserver.append(s)
                   elif s in pyroSockets:
                       eventsForDaemon.append(s)
               if eventsForNameserver:
-                  print("Nameserver received a request")
+                  print("Pyro nameserver received a request")
                   nameserverDaemon.events(eventsForNameserver)
               if eventsForDaemon:
-                  print("Daemon received a request")
+                  print("Pyro daemon received a request")
                   pyrodaemon.events(eventsForDaemon)
 
           nameserverDaemon.close()
