@@ -760,7 +760,9 @@ void ScoreEdit::closeEvent(QCloseEvent* e)
     _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
     names.erase(name);
 
-    QSettings settings("MusE", "MusE-qt");
+// REMOVE Tim. path. Changed.
+//     QSettings settings("MusE", "MusE-qt");
+    QSettings settings;
     //settings.setValue("ScoreEdit/geometry", saveGeometry());
     settings.setValue("ScoreEdit/windowState", saveState());
 

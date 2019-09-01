@@ -140,7 +140,9 @@ void DrumEdit::closeEvent(QCloseEvent* e)
       {
       _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
 
-      QSettings settings("MusE", "MusE-qt");
+// REMOVE Tim. path. Changed.
+//       QSettings settings("MusE", "MusE-qt");
+      QSettings settings;
       settings.setValue("Drumedit/windowState", saveState());
 
       //Store values of the horizontal splitter

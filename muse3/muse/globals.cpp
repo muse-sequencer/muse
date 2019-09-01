@@ -30,6 +30,8 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QToolButton>
+// REMOVE Tim. path. Added.
+#include <QStandardPaths> 
 
 #include "globals.h"
 #include "config.h"
@@ -106,8 +108,33 @@ QString museGlobalShare;
 QString museUser;
 QString museProject;
 QString museProjectInitPath("./");
-QString configName = QString(getenv("HOME")) + QString("/.config/MusE/MusE.cfg");
-QString configPath = QFileInfo(configName).absoluteDir().absolutePath();
+
+// REMOVE Tim. path. Changed.
+
+//QString configName = QString(getenv("HOME")) + QString("/.config/MusE/MusE.cfg");
+//QString configPath = QFileInfo(configName).absoluteDir().absolutePath();
+
+// "Returns a directory location where user-specific configuration files should be written.
+//  This is an application-specific directory, and the returned path is never empty.
+//  This enum value was added in Qt 5.5."
+//#if QT_VERSION >= 0x050500
+//QString configPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+//#else
+// "Returns a directory location where user-specific configuration files should be written.
+//  This may be either a generic value or application-specific, and the returned path is never empty."
+// QString configPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + QString("/") + appDisplayName;
+//#endif
+
+QString configName;
+QString configPath;
+
+// REMOVE Tim. path. Added.
+//QString appDisplayName;
+// // "Returns a directory location where user-specific non-essential (cached) data should be written.
+// //  This is an application-specific directory. The returned path is never empty."
+// QString cachePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+QString cachePath;
+
 QString museInstruments;
 QString museUserInstruments;
 

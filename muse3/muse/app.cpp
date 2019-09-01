@@ -63,6 +63,7 @@
 #include "drumedit.h"
 #include "components/filedialog.h"
 #include "gconfig.h"
+#include "globals.h"
 #include "components/genset.h"
 #include "gui.h"
 #include "helper.h"
@@ -328,7 +329,10 @@ MusE::MusE() : QMainWindow()
       currentMenuSharingTopwin = NULL;
       waitingForTopwin      = NULL;
 
-      appName               = QString("MusE");
+      // REMOVE Tim. path. Changed.
+      //appName               = QString("MusE");
+      //appName               = MusEGlobal::appDisplayName;
+      appName               = PACKAGE_NAME;
       setWindowTitle(appName);
       setWindowIcon(*MusEGui::museIcon);
       midiPluginSignalMapper = new QSignalMapper(this);
@@ -1008,7 +1012,9 @@ MusE::MusE() : QMainWindow()
 
       MusEGlobal::song->blockSignals(false);
 
-      QSettings settings("MusE", "MusE-qt");
+// REMOVE Tim. path. Changed.
+//       QSettings settings("MusE", "MusE-qt");
+      QSettings settings;
       restoreGeometry(settings.value("MusE/geometry").toByteArray());
 
       MusEGlobal::song->update();
@@ -1622,7 +1628,9 @@ void MusE::closeEvent(QCloseEvent* event)
                   }
             }
 
-      QSettings settings("MusE", "MusE-qt");
+// REMOVE Tim. path. Changed.
+//       QSettings settings("MusE", "MusE-qt");
+      QSettings settings;
       settings.setValue("MusE/geometry", saveGeometry());
 
       writeGlobalConfiguration();

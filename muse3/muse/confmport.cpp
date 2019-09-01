@@ -84,7 +84,9 @@ namespace MusEGui {
 void MPConfig::closeEvent(QCloseEvent *event)
 {
     apply();
-    QSettings settings("MusE", "MusE-qt");
+// REMOVE Tim. path. Changed.
+//     QSettings settings("MusE", "MusE-qt");
+    QSettings settings;
     settings.setValue("MPConfig/geometry", saveGeometry());
     QWidget::closeEvent(event);
 }
@@ -1119,7 +1121,9 @@ MPConfig::MPConfig(QWidget* parent)
    : QDialog(parent)
       {
       setupUi(this);
-      QSettings settings("MusE", "MusE-qt");
+// REMOVE Tim. path. Changed.
+//       QSettings settings("MusE", "MusE-qt");
+      QSettings settings;
       restoreGeometry(settings.value("MPConfig/geometry").toByteArray());
 
       mdevView->setRowCount(MusECore::MIDI_PORTS);

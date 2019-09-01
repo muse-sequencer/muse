@@ -39,10 +39,14 @@
 #cmakedefine HAVE_EXP10L
 // #cmakedefine HAVE_M_PI
 
-#define VERSION          "${MusE_VERSION_FULL}"
-#define GITSTRING        "${MusE_GITSTRING}"
-#define PACKAGE_NAME     "MusE"
-#define DOCDIR           "${MusE_DOC_DIR}"
-#define SHAREDIR         "${MusE_SHARE_DIR}"
-#define LIBDIR           "${MusE_LIB_DIR}"
-#define BINDIR           "${MusE_BIN_DIR}"
+#define VERSION             "${MusE_VERSION_FULL}"
+#define GITSTRING           "${MusE_GITSTRING}"
+#define ORGANIZATION_NAME   "MusE"
+#define ORGANIZATION_DOMAIN "muse-sequencer.org"
+#define PACKAGE_NAME        "MusE"
+#define APP_DISPLAY_NAME    "MusE"
+#define APP_SETTINGS_NAME   "MusE-qt"
+#define DOCDIR              "${MusE_DOC_DIR}"
+#define SHAREDIR            "${MusE_SHARE_DIR}"
+#define LIBDIR              "${MusE_LIB_DIR}"
+#define BINDIR              "${MusE_BIN_DIR}"

@@ -85,6 +85,9 @@ extern QString configName;
 extern QString configPath;
 extern QString museInstruments;
 extern QString museUserInstruments;
+// REMOVE Tim. path. Added.
+//extern QString appDisplayName;
+extern QString cachePath;
 
 extern QString lastWavePath;
 extern QString lastMidiPath;

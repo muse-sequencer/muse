@@ -37,6 +37,9 @@
 #include <QStringList>
 #include <QStyle>
 #include <QStyleFactory>
+// REMOVE Tim. path. Added.
+#include <QStandardPaths> 
+
 #include <iostream>
 
 #include <unistd.h>
@@ -167,7 +170,7 @@ class MuseApplication : public QApplication {
       bool notify(QObject* receiver, QEvent* event) {
          bool flag = QApplication::notify(receiver, event);
          if (event->type() == QEvent::KeyPress) {
-#if QT_VERSION >= 0x050000
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
             const QMetaObject * mo = receiver->metaObject();
             bool forQWidgetWindow = false;
             if (mo){
@@ -342,241 +345,1063 @@ void fallbackDummy() {
   MusECore::initDummyAudio();
 }
 
+// REMOVE Tim. path. Changed.
+// //---------------------------------------------------------
+// //   main
+// //---------------------------------------------------------
+// 
+// int main(int argc, char* argv[])
+//       {
+//       MusEGlobal::museUser = QString(getenv("HOME"));
+//       MusEGlobal::museGlobalLib   = QString(LIBDIR);
+//       MusEGlobal::museGlobalShare = QString(SHAREDIR);
+//       MusEGlobal::museProject = MusEGlobal::museProjectInitPath; //getcwd(0, 0);
+//       MusEGlobal::museInstruments = MusEGlobal::museGlobalShare + QString("/instruments");
+// 
+//       // Create config dir if it doesn't exist
+//       QDir cPath = QDir(MusEGlobal::configPath);
+//       if (! cPath.exists())
+//             cPath.mkpath(".");
+//       
+//       QFile cConf (MusEGlobal::configName);
+//       QFile cConfTempl (MusEGlobal::museGlobalShare + QString("/templates/MusE.cfg"));
+//       bool cConfExists = cConf.exists();
+//       if (!cConfExists)
+//       {
+//         fprintf(stderr, "creating new config...\n");
+//         if (cConfTempl.copy(MusEGlobal::configName))
+//           fprintf(stderr, "  success.\n");
+//         else
+//           fprintf(stderr, "  FAILED!\n");
+//       }
+// 
+//       QFile cConfQt (MusEGlobal::configPath + QString("/MusE-qt.conf"));
+//       QFile cConfTemplQt (MusEGlobal::museGlobalShare + QString("/templates/MusE-qt.conf"));
+//       if (! cConfQt.exists())
+//       {
+//         fprintf(stderr, "creating new qt config...\n");
+//         if (cConfTemplQt.copy(cConfQt.fileName()))
+//           fprintf(stderr, "  success.\n");
+//         else
+//           fprintf(stderr, "  FAILED!\n");
+//       }
+// 
+//       MusEGui::initShortCuts();
+//       MusECore::readConfiguration();
+//       
+//       // Need to put a sane defaults here because we can't use '~' in the file name strings.
+//       if(!cConfExists)
+//       {
+//         MusEGlobal::config.projectBaseFolder = MusEGlobal::museUser + QString("/MusE");
+//         MusEGlobal::config.startSong = "";
+//       }
+// 
+//       if(MusEGlobal::config.pluginLadspaPathList.isEmpty())
+//       {
+//         QString pth(getenv("LADSPA_PATH"));
+//         if(pth.isEmpty())
+//         {
+//           MusEGlobal::config.pluginLadspaPathList << 
+//             (MusEGlobal::museUser + QString("/ladspa")) <<
+//             QString("/usr/local/lib64/ladspa") <<
+//             QString("/usr/local/lib/ladspa") <<
+//             QString("/usr/lib64/ladspa") <<
+//             QString("/usr/lib/ladspa");
+// #ifdef _WIN32
+//             char* buffer = (char*) malloc(strlen("LADSPA_PATH=") + 1 + strlen(MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData()) + 1);
+//             strcpy(buffer, "LADSPA_PATH=");
+//             strcat(buffer, MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData());
+//             _putenv(buffer);
+// #else
+//             setenv("LADSPA_PATH", MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData(), true);
+// #endif
+//         }
+//         else
+//           MusEGlobal::config.pluginLadspaPathList = pth.split(":", QString::SkipEmptyParts);
+//       }
+//       else
+// #ifdef _WIN32
+//       {
+//         char* buffer = (char*) malloc(strlen("LADSPA_PATH=") + 1 + strlen(MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData()) + 1);
+//         strcpy(buffer, "LADSPA_PATH=");
+//         strcat(buffer, MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData());
+//         _putenv(buffer);
+//       }
+// #else
+//         setenv("LADSPA_PATH", MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData(), true);
+// #endif
+//       
+//       if(MusEGlobal::config.pluginDssiPathList.isEmpty())
+//       {
+//         QString pth(getenv("DSSI_PATH"));
+//         if(pth.isEmpty())
+//         {
+//           MusEGlobal::config.pluginDssiPathList << 
+//             (MusEGlobal::museUser + QString("/dssi")) <<
+//             QString("/usr/local/lib64/dssi") <<
+//             QString("/usr/local/lib/dssi") <<
+//             QString("/usr/lib64/dssi") <<
+//             QString("/usr/lib/dssi");
+// #ifdef _WIN32
+//             char* buffer = (char*) malloc(strlen("DSSI_PATH=") + 1 + strlen(MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData()) + 1);
+//             strcpy(buffer, "DSSI_PATH=");
+//             strcat(buffer, MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData());
+//             _putenv(buffer);
+// #else
+//             setenv("DSSI_PATH", MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData(), true);
+// #endif
+//         }
+//         else
+//           MusEGlobal::config.pluginDssiPathList = pth.split(":", QString::SkipEmptyParts);
+//       }
+//       else
+// #ifdef _WIN32
+//       {
+//         char* buffer = (char*) malloc(strlen("DSSI_PATH=") + 1 + strlen(MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData()) + 1);
+//         strcpy(buffer, "DSSI_PATH=");
+//         strcat(buffer, MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData());
+//         _putenv(buffer);
+//       }
+// #else
+//         setenv("DSSI_PATH", MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData(), true);
+// #endif
+//       
+//       if(MusEGlobal::config.pluginVstPathList.isEmpty())
+//       {
+//         QString pth(getenv("VST_PATH"));
+//         if(!pth.isEmpty())
+//           MusEGlobal::config.pluginVstPathList = pth.split(":", QString::SkipEmptyParts);
+//         else
+//         {
+//           MusEGlobal::config.pluginVstPathList << 
+//             (MusEGlobal::museUser + QString("/.vst")) <<
+//             QString("/usr/local/lib64/vst") <<
+//             QString("/usr/local/lib/vst") <<
+//             QString("/usr/lib64/vst") <<
+//             QString("/usr/lib/vst");
+// #ifdef _WIN32
+//             char* buffer = (char*) malloc(strlen("VST_PATH=") + 1 + strlen(MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData()) + 1);
+//             strcpy(buffer, "VST_PATH=");
+//             strcat(buffer, MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData());
+//             _putenv(buffer);
+// #else
+//             setenv("VST_PATH", MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData(), true);
+// #endif
+//         }
+//       }
+//       else
+// #ifdef _WIN32
+//       {
+//         char* buffer = (char*) malloc(strlen("VST_PATH=") + 1 + strlen(MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData()) + 1);
+//         strcpy(buffer, "VST_PATH=");
+//         strcat(buffer, MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData());
+//         _putenv(buffer);
+//       }
+// #else
+//         setenv("VST_PATH", MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData(), true);
+// #endif
+//       
+//       if(MusEGlobal::config.pluginLinuxVstPathList.isEmpty())
+//       {
+//         QString pth(getenv("LINUX_VST_PATH"));
+//         if(!pth.isEmpty())
+//           MusEGlobal::config.pluginLinuxVstPathList = pth.split(":", QString::SkipEmptyParts);
+//         else
+//         {
+//           pth = QString(getenv("VST_PATH"));
+//           if(!pth.isEmpty())
+//             MusEGlobal::config.pluginLinuxVstPathList = pth.split(":", QString::SkipEmptyParts);
+//           else
+//           {
+//             MusEGlobal::config.pluginLinuxVstPathList << 
+//               (MusEGlobal::museUser + QString("/.vst")) <<
+//               QString("/usr/local/lib64/vst") <<
+//               QString("/usr/local/lib/vst") <<
+//               QString("/usr/lib64/vst") <<
+//               QString("/usr/lib/vst");
+// #ifdef _WIN32
+//               char* buffer = (char*) malloc(strlen("LINUX_VST_PATH=") + 1 + strlen(MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData()) + 1);
+//               strcpy(buffer, "LINUX_VST_PATH=");
+//               strcat(buffer, MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData());
+//               _putenv(buffer);
+// #else
+//               setenv("LINUX_VST_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
+// #endif
+//           }
+//         }
+//       }
+//       else
+// #ifdef _WIN32
+//       {
+//         char* buffer = (char*) malloc(strlen("LINUX_VST_PATH=") + 1 + strlen(MusEGlobal::config.pluginLinuxVstPathList.join(":").toLatin1().constData()) + 1);
+//         strcpy(buffer, "LINUX_VST_PATH=");
+//         strcat(buffer, MusEGlobal::config.pluginLinuxVstPathList.join(":").toLatin1().constData());
+//         _putenv(buffer);
+//       }
+// #else
+//         setenv("LINUX_VST_PATH", MusEGlobal::config.pluginLinuxVstPathList.join(":").toLatin1().constData(), true);
+// #endif
+//       
+//       // Special for LV2: Since we use the recommended lilv_world_load_all() 
+//       //  not lilv_world_load_bundle(), LV2_PATH seems to be the only way to set paths. 
+//       if(MusEGlobal::config.pluginLv2PathList.isEmpty())
+//       {
+//         QString pth(getenv("LV2_PATH"));
+//         if(pth.isEmpty())
+//         {
+//           MusEGlobal::config.pluginLv2PathList <<
+//             (MusEGlobal::museUser + QString("/.lv2")) <<
+//             QString("/usr/local/lib64/lv2") <<
+//             QString("/usr/local/lib/lv2") <<
+//             QString("/usr/lib64/lv2") <<
+//             QString("/usr/lib/lv2");
+// #ifdef _WIN32
+//             char* buffer = (char*) malloc(strlen("LV2_PATH=") + 1 + strlen(MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData()) + 1);
+//             strcpy(buffer, "LV2_PATH=");
+//             strcat(buffer, MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData());
+//             _putenv(buffer);
+// #else
+//             setenv("LV2_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
+// #endif
+//         }
+//         else
+//           MusEGlobal::config.pluginLv2PathList = pth.split(":", QString::SkipEmptyParts);
+//       }
+//       else
+// #ifdef _WIN32
+//       {
+//         char* buffer = (char*) malloc(strlen("LV2_PATH=") + 1 + strlen(MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData()) + 1);
+//         strcpy(buffer, "LV2_PATH=");
+//         strcat(buffer, MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData());
+//         _putenv(buffer);
+//       }
+// #else
+//         setenv("LV2_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
+// #endif
+// 
+//       bool plugin_rescan_already_done = false;
+//       int rv = 0;
+//       bool is_restarting = true; // First-time init true.
+//       while(is_restarting)
+//       {
+//         is_restarting = false;
+// 
+//         // Make working copies of the arguments.
+//         const int argument_count = argc;
+//         int argc_copy = argc;
+//         char** argv_copy = 0;
+//         if(argument_count > 0)
+//         {
+//           argv_copy = (char**)malloc(argument_count * sizeof(char*));
+//           int len = 0;
+//           for(int i = 0; i < argument_count; ++i)
+//           {
+//             argv_copy[i] = 0;
+//             if(argv[i])
+//             {
+//               len = strlen(argv[i]);
+//               argv_copy[i] = (char*)malloc(len + 2);
+//               strcpy(argv_copy[i], argv[i]);
+//             }
+//           }
+//         }
+// 
+//         // Let LASH remove its recognized arguments first (generally longer than Qt's).
+//         // Tip: LADISH's LASH emulation (current 1.0) does not take any arguments.
+//   #ifdef HAVE_LASH
+//         lash_args_t * lash_args = 0;
+//         lash_args = lash_extract_args (&argc_copy, &argv_copy);
+//   #endif
+// 
+//         // Now create the application, and let Qt remove recognized arguments.
+// #if QT_VERSION >= 0x050600
+//         QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+// #endif
+// 
+//         MuseApplication app(argc_copy, argv_copy);
+//         if(QStyle* def_style = app.style())
+//         {
+//           const QString appStyleObjName = def_style->objectName();
+//           MusEGui::Appearance::getSetDefaultStyle(&appStyleObjName);
+//         }
+//         
+//         // NOTE: Set the stylesheet and style as early as possible!
+//         // Any later invites trouble - typically the colours may be off, 
+//         //  but currently with Breeze or Oxygen, MDI sub windows  may be frozen!
+//         // Working with Breeze maintainer to fix problem... 2017/06/06 Tim.
+//         MusEGui::updateThemeAndStyle();
+// 
+//         QString optstr("aJjFAhvdDumMsP:Y:l:pRSy");
+//   #ifdef VST_SUPPORT
+//         optstr += QString("V");
+//   #endif
+//   #ifdef VST_NATIVE_SUPPORT
+//         optstr += QString("N");
+//   #endif
+//   #ifdef DSSI_SUPPORT
+//         optstr += QString("I");
+//   #endif
+//   #ifdef HAVE_LASH
+//         optstr += QString("L");
+//   #endif
+//   #ifdef LV2_SUPPORT
+//         optstr += QString("2");
+//   #endif
+//   #ifdef HAVE_RTAUDIO
+//         optstr += QString("t");
+//   #endif
+// 
+//         AudioDriverSelect audioType = DriverConfigSetting;
+//         bool force_plugin_rescan = false;
+//         int i;
+// 
+//         // Now read the remaining arguments as our own...
+//         while ((i = getopt(argc_copy, argv_copy, optstr.toLatin1().constData())) != EOF) {
+//         char c = (char)i;
+//               switch (c) {
+//                     case 'v': printVersion(argv_copy[0]);
+//   #ifdef HAVE_LASH
+//                           if(lash_args) lash_args_destroy(lash_args);
+//   #endif
+//                           return 0;
+//                     case 'a':
+//                           audioType = DummyAudioOverride;
+//                           break;
+//                     case 't':
+//                           audioType = RtAudioOverride;
+//                           break;
+//                     case 'J':
+//                           MusEGlobal::noAutoStartJack = true;
+//                           break;
+//                     case 'j':
+//                           audioType = JackAudioOverride;
+//                           break;
+//                     case 'F':
+//                           MusEGlobal::populateMidiPortsOnStart = false;
+//                           break;
+//                     case 'A':
+//                           MusEGlobal::useAlsaWithJack = true;
+//                           break;
+//                     case 'd':
+//                           MusEGlobal::debugMode = true;
+//                           MusEGlobal::realTimeScheduling = false;
+//                           break;
+//                     case 'D':
+//                           if (!MusEGlobal::debugMsg)
+//                                 MusEGlobal::debugMsg=true;
+//                           else
+//                                 MusEGlobal::heavyDebugMsg=true;
+//                           break;
+//                     case 'm': MusEGlobal::midiInputTrace = true; break;
+//                     case 'M': MusEGlobal::midiOutputTrace = true; break;
+//                     case 's': MusEGlobal::debugSync = true; break;
+//                     case 'u': MusEGlobal::unityWorkaround = true; break;
+//                     case 'P': MusEGlobal::realTimePriority = atoi(optarg); break;
+//                     case 'Y': MusEGlobal::midiRTPrioOverride = atoi(optarg); break;
+//                     case 'p': MusEGlobal::loadPlugins = false; break;
+//                     case 'R': force_plugin_rescan = true; break;
+//                     case 'S': MusEGlobal::loadMESS = false; break;
+//                     case 'V': MusEGlobal::loadVST = false; break;
+//                     case 'N': MusEGlobal::loadNativeVST = false; break;
+//                     case 'I': MusEGlobal::loadDSSI = false; break;
+//                     case 'L': MusEGlobal::useLASH = false; break;
+//                     case '2': MusEGlobal::loadLV2 = false; break;
+//                     case 'y': MusEGlobal::usePythonBridge = true; break;
+//                     case 'l': locale_override = QString(optarg); break;
+//                     case 'h': usage(argv_copy[0], argv_copy[1]);
+//   #ifdef HAVE_LASH
+//                           if(lash_args) lash_args_destroy(lash_args);
+//   #endif
+//                           return -1;
+//                     default:  usage(argv_copy[0], "bad argument");
+//   #ifdef HAVE_LASH
+//                           if(lash_args) lash_args_destroy(lash_args);
+//   #endif
+//                           return -1;
+//                     }
+//               }
+// 
+//         // Set some AL library namespace debug flags as well.
+//         // Make sure the AL namespace variables mirror our variables.
+//         AL::debugMsg = MusEGlobal::debugMsg;
+//         AL::denormalBias = MusEGlobal::denormalBias;
+//         AL::division = MusEGlobal::config.division;
+//         AL::sampleRate = MusEGlobal::sampleRate;
+//         AL::mtcType = MusEGlobal::mtcType;
+// 
+//         argc_copy -= optind;
+//         ++argc_copy;
+// 
+//         srand(time(0));   // initialize random number generator
+//         //signal(SIGCHLD, catchSignal);  // interferes with initVST(). see also app.cpp, function catchSignal()
+// 
+//         static QTranslator translator(0);
+//         QString locale(QLocale::system().name());
+//         if (locale_override.length() >0 )
+//             locale = locale_override;
+//         if (locale != "C") {
+//             QString loc("muse_");
+//             loc += locale;
+//             if (translator.load(loc, QString(".")) == false) {
+//                   QString lp(MusEGlobal::museGlobalShare);
+//                   lp += QString("/locale");
+//                   if (translator.load(loc, lp) == false) {
+//                         fprintf(stderr, "no locale <%s>/<%s>\n", loc.toLatin1().constData(), lp.toLatin1().constData());
+//                   }
+//             }
+//             app.installTranslator(&translator);
+//         }
+// 
+//         QLocale def_loc(locale);
+//         QLocale::setDefault(def_loc);
+// 
+//         fprintf(stderr, "LOCALE %s\n",QLocale().name().toLatin1().data());
+// 
+//         if (QLocale().name() == "de" || locale_override == "de") {
+//           fprintf(stderr, "locale de - setting 'note h is B' override parameter.\n");
+//           MusEGlobal::hIsB = false;
+//         }
+// 
+//         QApplication::addLibraryPath(MusEGlobal::museGlobalLib + "/qtplugins");
+//         if (MusEGlobal::debugMsg) {
+//               QStringList list = app.libraryPaths();
+//               QStringList::Iterator it = list.begin();
+//               fprintf(stderr, "QtLibraryPath:\n");
+//               while(it != list.end()) {
+//                     fprintf(stderr, "  <%s>\n", (*it).toLatin1().constData());
+//                     ++it;
+//                     }
+//               }
+// 
+//         // Create user templates dir if it doesn't exist
+//         QDir utemplDir = QDir(MusEGlobal::configPath + QString("/templates"));
+//         if(!utemplDir.exists())
+//         {
+//           utemplDir.mkpath(".");
+//           // Support old versions: Copy existing templates over.
+//           QDir old_utemplDir = QDir(QString(getenv("HOME")) + QString("/templates"));
+//           if(old_utemplDir.exists())
+//           {
+//             // We really just want these, even though it's possible other filenames were saved.
+//             // Another application might have used that directory.
+//             QStringList flt;
+//             flt << "*.med" << "*.med.gz" << "*.med.bz2" << "*.mid" << "*.midi" << "*.kar";
+//             old_utemplDir.setNameFilters(flt);
+// 
+//             QFileInfoList fil = old_utemplDir.entryInfoList();
+//             QFileInfo fi;
+//             foreach(fi, fil)
+//             {
+//               QString fn = fi.fileName();
+//               QFile f(fi.absoluteFilePath());
+//               f.copy(utemplDir.absolutePath() + "/" + fn);
+//             }
+//           }
+//         }
+// 
+//         // Create user instruments dir if it doesn't exist
+//         QString uinstrPath = MusEGlobal::configPath + QString("/instruments");
+//         QDir uinstrDir = QDir(uinstrPath);
+//         if(!uinstrDir.exists())
+//           uinstrDir.mkpath(".");
+//         if(!MusEGlobal::config.userInstrumentsDir.isEmpty() && MusEGlobal::config.userInstrumentsDir != uinstrPath)  // Only if it is different.
+//         {
+//           // Support old versions: Copy existing instruments over.
+//           QDir old_uinstrDir(MusEGlobal::config.userInstrumentsDir);
+//           if(old_uinstrDir.exists())
+//           {
+//             QStringList flt; flt << "*.idf";
+//             old_uinstrDir.setNameFilters(flt);
+// 
+//             QFileInfoList fil = old_uinstrDir.entryInfoList();
+//             QFileInfo fi;
+//             foreach(fi, fil)
+//             {
+//               QString fn = fi.fileName();
+//               QFile f(fi.absoluteFilePath());
+//               QFile newf(uinstrDir.absolutePath() + "/" + fn);
+//               if(!newf.exists())
+//               {
+//                 f.copy(newf.fileName());
+//               }
+//             }
+//           }
+//         }
+//         MusEGlobal::museUserInstruments = uinstrPath;
+// 
+//         // REMOVE Tim. path. Added.
+//         // Create plugin scanner dir if it doesn't exist
+//         // "Returns a directory location where user-specific non-essential (cached) data should be written.
+//         //  This is an application-specific directory. The returned path is never empty."
+//         const QString cachePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+//         const QString plugin_cache_path(cachePath + QString("/scanner"));
+//         {
+//           QDir cacheDir(plugin_cache_path);
+//           if(!cacheDir.exists())
+//           {
+//             cacheDir.mkpath(".");
+//             // Support old versions: Copy existing cache files over.
+//             const QString old_cache_path = MusEGlobal::configPath + QString("/scanner");
+//             QDir old_cacheDir(
+//               old_cache_path,
+//               QString("*.scan"),
+//               QDir::Name,
+//               QDir::Files | QDir::NoDotAndDotDot);
+//             if(old_cacheDir.exists())
+//             {
+//               QFileInfoList fil = old_cacheDir.entryInfoList();
+//               QFileInfo fi;
+//               foreach(fi, fil)
+//               {
+//                 QString fn = fi.fileName();
+//                 QFile f(fi.absoluteFilePath());
+//                 f.copy(cacheDir.absolutePath() + "/" + fn);
+//               }
+//               old_cacheDir.removeRecursively();
+//             }
+//           }
+//         }
+//         
+//         //-------------------------------------------------------
+//         //    BEGIN SHOW MUSE SPLASH SCREEN
+//         //-------------------------------------------------------
+// 
+//         QString splash_prefix;
+//         QSplashScreen* muse_splash = NULL;
+//         if (MusEGlobal::config.showSplashScreen) {
+//             QPixmap splsh(MusEGlobal::museGlobalShare + "/splash.png");
+// 
+//             if (!splsh.isNull()) {
+//                 muse_splash = new QSplashScreen(splsh,
+//                   Qt::WindowStaysOnTopHint);
+//                 muse_splash->setAttribute(Qt::WA_DeleteOnClose);  // Possibly also Qt::X11BypassWindowManagerHint
+//                 muse_splash->show();
+//                 splash_prefix = QString("MusE ") + QString(VERSION);
+//                 muse_splash->showMessage(splash_prefix);
+//             }
+//         }
+//         
+//         //-------------------------------------------------------
+//         //    END SHOW MUSE SPLASH SCREEN
+//         //-------------------------------------------------------
+// 
+//         //-------------------------------------------------------
+//         //    BEGIN Plugin scanning
+//         //-------------------------------------------------------
+// 
+//         if(muse_splash)
+//         {
+//           muse_splash->showMessage(splash_prefix + QString(" Creating plugin cache files..."));
+//           qApp->processEvents();
+//         }
+// 
+//         bool do_rescan = false;
+//         if(force_plugin_rescan)
+//         {
+//           force_plugin_rescan = false;
+//           if(!plugin_rescan_already_done)
+//           {
+//             do_rescan = true;
+//             plugin_rescan_already_done = true;
+//           }
+//         }
+//         
+//         if(MusEGlobal::config.pluginCacheTriggerRescan)
+//         {
+//           do_rescan = true;
+//           // Done with rescan trigger. Reset it now.
+//           MusEGlobal::config.pluginCacheTriggerRescan = false;
+//         }
+//         
+//         // Scan all known plugins from the cache file, or if it does not exist
+//         //  create the cache file by reading plugins in a safe 'sandbox'.
+//         MusEPlugin::PluginScanInfoStruct::PluginType_t types = MusEPlugin::PluginScanInfoStruct::PluginTypeNone;
+//         if(MusEGlobal::loadPlugins)
+//           types |= MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA;
+//         if(MusEGlobal::loadMESS)
+//           types |= MusEPlugin::PluginScanInfoStruct::PluginTypeMESS;
+//         if(MusEGlobal::loadVST)
+//           types |= MusEPlugin::PluginScanInfoStruct::PluginTypeVST;
+//         if(MusEGlobal::loadNativeVST)
+//           types |= MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST;
+//         if(MusEGlobal::loadDSSI)
+//           types |= (MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI |
+//                     MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST);
+//         if(MusEGlobal::loadLV2)
+//           types |= MusEPlugin::PluginScanInfoStruct::PluginTypeLV2;
+// 
+//         types |= MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown;
+//         
+//         MusEPlugin::checkPluginCacheFiles(plugin_cache_path,
+//                                         // List of plugins to scan into and write to cache files from.
+//                                         &MusEPlugin::pluginList,
+//                                         // Don't bother reading any port information that might exist in the cache.
+//                                         false,
+//                                         // Whether to force recreation.
+//                                         do_rescan,
+//                                         // When creating, where to find the application's own plugins.
+//                                         MusEGlobal::museGlobalLib,
+//                                         // Plugin types to check.
+//                                         types,
+//                                         // Debug messages.
+//                                         MusEGlobal::debugMsg);
+// 
+//         // Done with rescan trigger. Reset it now.
+//         if(do_rescan)
+//           MusEGlobal::config.pluginCacheTriggerRescan = false;
+// 
+//         //-------------------------------------------------------
+//         //   END Plugin scanning
+//         //-------------------------------------------------------
+// 
+// 
+//         AL::initDsp();
+//         
+//         if(muse_splash)
+//         {
+//           muse_splash->showMessage(splash_prefix + QString(" Initializing audio system..."));
+//           qApp->processEvents();
+//         }
+//         
+//         MusECore::initAudio();
+// 
+//         MusEGui::initIcons(MusEGlobal::config.useThemeIconsIfPossible);
+// 
+//         if (MusEGlobal::loadMESS)
+//           MusECore::initMidiSynth(); // Need to do this now so that Add Track -> Synth menu is populated when MusE is created.
+// 
+//         MusEGlobal::muse = new MusEGui::MusE();
+//         app.setMuse(MusEGlobal::muse);
+//         
+//         MusEGui::init_function_dialogs();
+//         MusEGui::retranslate_function_dialogs();
+// 
+//         if(muse_splash)
+//         {
+//           muse_splash->showMessage(splash_prefix + QString(" Initializing audio driver..."));
+//           qApp->processEvents();
+//         }
+// 
+//         if (MusEGlobal::config.useDenormalBias) {
+//             fprintf(stderr, "Denormal protection enabled.\n");
+//         }
+//         if (MusEGlobal::debugMsg) {
+//             fprintf(stderr, "global lib:       <%s>\n", MusEGlobal::museGlobalLib.toLatin1().constData());
+//             fprintf(stderr, "global share:     <%s>\n", MusEGlobal::museGlobalShare.toLatin1().constData());
+//             fprintf(stderr, "muse home:        <%s>\n", MusEGlobal::museUser.toLatin1().constData());
+//             fprintf(stderr, "project dir:      <%s>\n", MusEGlobal::museProject.toLatin1().constData());
+//             fprintf(stderr, "user instruments: <%s>\n", MusEGlobal::museUserInstruments.toLatin1().constData());
+//         }
+// 
+//         //rlimit lim; getrlimit(RLIMIT_RTPRIO, &lim);
+//         //fprintf(stderr, "RLIMIT_RTPRIO soft:%d hard:%d\n", lim.rlim_cur, lim.rlim_max);    // Reported 80, 80 even with non-RT kernel.
+//         if (MusEGlobal::realTimePriority < sched_get_priority_min(SCHED_FIFO))
+//               MusEGlobal::realTimePriority = sched_get_priority_min(SCHED_FIFO);
+//         else if (MusEGlobal::realTimePriority > sched_get_priority_max(SCHED_FIFO))
+//               MusEGlobal::realTimePriority = sched_get_priority_max(SCHED_FIFO);
+//         // If we requested to force the midi thread priority...
+//         if(MusEGlobal::midiRTPrioOverride > 0)
+//         {
+//           if (MusEGlobal::midiRTPrioOverride < sched_get_priority_min(SCHED_FIFO))
+//               MusEGlobal::midiRTPrioOverride = sched_get_priority_min(SCHED_FIFO);
+//           else if (MusEGlobal::midiRTPrioOverride > sched_get_priority_max(SCHED_FIFO))
+//               MusEGlobal::midiRTPrioOverride = sched_get_priority_max(SCHED_FIFO);
+//         }
+// 
+// #ifdef HAVE_LASH
+//         bool using_jack = false;
+// #endif
+//         if (MusEGlobal::debugMode) {
+//             MusEGlobal::realTimeScheduling = false;
+//             MusECore::initDummyAudio();
+//         }
+//         else if (audioType == DummyAudioOverride) {
+//             fprintf(stderr, "Force Dummy Audio driver\n");
+//             MusEGlobal::realTimeScheduling = true;
+//             MusECore::initDummyAudio();
+//         }
+// #ifdef HAVE_RTAUDIO
+//         else if (audioType == RtAudioOverride) {
+//             fprintf(stderr, "Force RtAudio with Pulse Backend\n");
+//             MusEGlobal::realTimeScheduling = true;
+//             if(MusECore::initRtAudio(true))
+//               fallbackDummy();
+//             else
+//               fprintf(stderr, "Using rtAudio\n");
+//         }
+// #endif
+//         else if (audioType == JackAudioOverride) {
+//           if(MusECore::initJackAudio()) 
+//             fallbackDummy();
+//           else
+//           {
+// #ifdef HAVE_LASH
+//             using_jack = true;
+// #endif
+//             fprintf(stderr, "...Using Jack\n");
+//           }
+//         }
+//         else if (audioType == DriverConfigSetting) {
+//           fprintf(stderr, "Select audio device from configuration : %d\n", MusEGlobal::config.deviceAudioBackend);
+//           switch (MusEGlobal::config.deviceAudioBackend) {
+//             case MusEGlobal::DummyAudio:
+//               {
+//                 fprintf(stderr, "User DummyAudio backend - selected through configuration\n");
+//                 MusEGlobal::realTimeScheduling = true;
+//                 MusECore::initDummyAudio();
+//                 break;
+//               }
+//             case MusEGlobal::RtAudioAlsa:
+//             case MusEGlobal::RtAudioOss:
+// //            case MusEGlobal::RtAudioJack:
+//             case MusEGlobal::RtAudioChoice:
+//             case MusEGlobal::RtAudioPulse:
+//               {
+//                 fprintf(stderr, "User RtAudio backend - backend selected through configuration: ");
+//                 if(MusEGlobal::config.deviceAudioBackend >= MusEGlobal::numRtAudioDevices)
+//                   fprintf(stderr, "Unknown");
+//                 else
+//                   fprintf(stderr, "%s",
+//                     MusEGlobal::selectableAudioBackendDevices[MusEGlobal::config.deviceAudioBackend].
+//                       toLatin1().constData());
+//                 fprintf(stderr, "\n");
+// 
+//                 MusEGlobal::realTimeScheduling = true;
+// #ifdef HAVE_RTAUDIO
+//                 if(MusECore::initRtAudio())
+//                   fallbackDummy();
+//                 else
+//                   fprintf(stderr, "Using rtAudio\n");
+// #else
+//                 fallbackDummy();
+// #endif
+//                 break;
+//               }
+//             case MusEGlobal::JackAudio:
+//               {
+//                 fprintf(stderr, "User JackAudio backend - backend selected through configuration\n");
+//                 if (MusECore::initJackAudio()) 
+//                 {
+//                   MusEGlobal::realTimeScheduling = true;
+//                   // Force default Pulse.
+// #ifdef HAVE_RTAUDIO
+//                   if(MusECore::initRtAudio(true))
+//                     fallbackDummy();
+//                   else
+//                     fprintf(stderr, "Using rtAudio Pulse\n");
+// #else
+//                   fallbackDummy();
+// #endif
+//                 }
+//                 else
+//                 {
+// #ifdef HAVE_LASH
+//                   using_jack = true;
+// #endif
+//                   fprintf(stderr, "Using Jack\n");
+//                 }
+//                 
+//                 break;
+//               }
+//           }
+//         }
+// 
+//         MusEGlobal::realTimeScheduling = MusEGlobal::audioDevice->isRealtime();
+// 
+//         // ??? With Jack2 this reports true even if it is not running realtime.
+//         // Jack says: "Cannot use real-time scheduling (RR/10)(1: Operation not permitted)". The kernel is non-RT.
+//         // I cannot seem to find a reliable answer to the question, even with dummy audio and system calls.
+// 
+//         MusEGlobal::useJackTransport.setValue(true);
+// 
+//         // setup the prefetch fifo length now that the segmentSize is known
+//         MusEGlobal::fifoLength = 131072 / MusEGlobal::segmentSize;
+//         MusECore::initAudioPrefetch();
+// 
+//         if(muse_splash)
+//         {
+//           muse_splash->showMessage(splash_prefix + QString(" Initializing midi devices..."));
+//           qApp->processEvents();
+//         }
+// 
+// // REMOVE Tim. startup. Removed 2019/02/21. It's been six years since 1.9.9.5 release.
+// //        Remove this waiting part at some point if we're all good...
+// //
+// //         // WARNING Must do it this way. Call registerClient long AFTER Jack client
+// //         //  is created and MusE ALSA client is created (in initMidiDevices),
+// //         //  otherwise random crashes can occur within Jack <= 1.9.8.
+// //         // Fixed in Jack 1.9.9.  Tim.
+//         // This initMidiDevices will automatically initialize the midiSeq sequencer thread,
+//         //  but not start it - that's a bit later on.
+//         MusECore::initMidiDevices();
+// //         // Wait until things have settled. One second seems OK so far.
+// //         for(int t = 0; t < 100; ++t)
+// //           usleep(10000);
+//         // Now it is safe to call registerClient.
+//         MusEGlobal::audioDevice->registerClient();
+// 
+//         MusECore::initMidiController();
+//         MusECore::initMidiInstruments();
+//         MusECore::initMidiPorts();
+// 
+//         if(muse_splash)
+//         {
+//           muse_splash->showMessage(splash_prefix + QString(" Initializing plugins..."));
+//           qApp->processEvents();
+//         }
+// 
+//         if (MusEGlobal::loadPlugins)
+//               MusECore::initPlugins();
+// 
+//         if (MusEGlobal::loadVST)
+//               MusECore::initVST();
+// 
+//         if (MusEGlobal::loadNativeVST)
+//               MusECore::initVST_Native();
+// 
+//         if(MusEGlobal::loadDSSI)
+//               MusECore::initDSSI();
+//   #ifdef LV2_SUPPORT
+//         if(MusEGlobal::loadLV2)
+//               MusECore::initLV2();
+//   #endif
+// 
+//         MusECore::initOSC();
+// 
+//         MusECore::initMetronome();
+// 
+//         const QString metro_presets = MusEGlobal::museGlobalShare + QString("/metronome");
+//         MusECore::initMetronomePresets(metro_presets, &MusEGlobal::metroAccentPresets, MusEGlobal::debugMsg);
+//         // If the global metronome accent settings are empty, it is unlikely the user did that, or wants that.
+//         // More likely it indicates this is a first-time init of the global settings.
+//         // In any case, if empty fill the global metronome accent settings with factory presets.
+//         if(MusEGlobal::metroGlobalSettings.metroAccentsMap &&
+//            MusEGlobal::metroGlobalSettings.metroAccentsMap->empty())
+//         {
+//           // Fill with defaults.
+//           MusEGlobal::metroAccentPresets.defaultAccents(
+//             MusEGlobal::metroGlobalSettings.metroAccentsMap,
+//             MusECore::MetroAccentsStruct::FactoryPreset);
+//         }
+// 
+//         MusECore::initWavePreview(MusEGlobal::segmentSize);
+// 
+//         MusECore::enumerateJackMidiDevices();
+// 
+//   #ifdef HAVE_LASH
+//         {
+//           MusEGui::lash_client = 0;
+//           if(MusEGlobal::useLASH)
+//           {
+//             if(muse_splash)
+//             {
+//               muse_splash->showMessage(splash_prefix + QString(" Initializing LASH support..."));
+//               qApp->processEvents();
+//             }
+// 
+//             int lash_flags = LASH_Config_File;
+//             const char *muse_name = PACKAGE_NAME;
+//             MusEGui::lash_client = lash_init (lash_args, muse_name, lash_flags, LASH_PROTOCOL(2,0));
+//   #ifdef ALSA_SUPPORT
+//             if(MusECore::alsaSeq)
+//               lash_alsa_client_id (MusEGui::lash_client, snd_seq_client_id (MusECore::alsaSeq));
+//   #endif
+//             //if (audioType != DummyAudio) {
+//             if (using_jack) {
+//                   const char *jack_name = MusEGlobal::audioDevice->clientName();
+//                   lash_jack_client_name (MusEGui::lash_client, jack_name);
+//             }
+//           }
+//           if(lash_args)
+//             lash_args_destroy(lash_args);
+//         }
+//   #endif /* HAVE_LASH */
+// 
+// #ifndef _WIN32
+//         if (!MusEGlobal::debugMode) {
+//               if (mlockall(MCL_CURRENT | MCL_FUTURE))
+//                     perror("WARNING: Cannot lock memory:");
+//               }
+// #endif
+// 
+//         if(muse_splash)
+//         {
+//           muse_splash->showMessage(splash_prefix + QString(" populating track types..."));
+//           qApp->processEvents();
+//         }
+// 
+//         MusEGlobal::muse->populateAddTrack(); // could possibly be done in a thread.
+// 
+//         MusEGlobal::muse->show();
+// 
+//         // Let the configuration settings take effect. Do not save.
+//         MusEGlobal::muse->changeConfig(false);
+//         // Set style and stylesheet, and do not force the style
+//         //MusEGui::updateThemeAndStyle(); // Works better if called just after app created, above.
+// 
+//         MusEGlobal::muse->seqStart();
+//         
+//         // If the sequencer object was created, report timing.
+//         if(MusEGlobal::midiSeq)
+//           MusEGlobal::midiSeq->checkAndReportTimingResolution();
+// 
+//         //--------------------------------------------------
+//         // Set the audio device sync timeout value.
+//         //--------------------------------------------------
+//         // Enforce a 30 second timeout.
+//         // TODO: Split this up and have user adjustable normal (2 or 10 second default) value,
+//         //        plus a contribution from the total required precount time.
+//         //       Too bad we likely can't set it dynamically in the audio sync callback.
+//         // NOTE: This is also enforced casually in Song:seqSignal after a stop, start, or seek.
+//         MusEGlobal::audioDevice->setSyncTimeout(30000000);
+//               
+//         //--------------------------------------------------
+//         // Auto-fill the midi ports, if appropriate.
+//         //--------------------------------------------------
+//         if(MusEGlobal::populateMidiPortsOnStart &&
+//           argc_copy < 2 &&
+//           (MusEGlobal::config.startMode == 1 || MusEGlobal::config.startMode == 2) &&
+//           !MusEGlobal::config.startSongLoadConfig)
+//           MusECore::populateMidiPorts();
+// 
+//         if(muse_splash)
+//         {
+//           // From this point on, slap a timer on it so that it stays up for few seconds,
+//           //  since closing it now might be too short display time.
+//           // It will auto-destory itself.
+//           QTimer* stimer = new QTimer(muse_splash);
+//           muse_splash->connect(stimer, SIGNAL(timeout()), muse_splash, SLOT(close()));
+//           stimer->setSingleShot(true);
+//           stimer->start(3000);
+//         }
+// 
+//         //--------------------------------------------------
+//         // Load the default song.
+//         //--------------------------------------------------
+//         MusEGlobal::muse->loadDefaultSong(argc_copy, &argv_copy[optind]);
+// 
+//         QTimer::singleShot(100, MusEGlobal::muse, SLOT(showDidYouKnowDialog()));
+// 
+//         //--------------------------------------------------
+//         // Start the application...
+//         //--------------------------------------------------
+// 
+//         rv = app.exec();
+// 
+//         //--------------------------------------------------
+//         // ... Application finished.
+//         //--------------------------------------------------
+// 
+//         if(MusEGlobal::debugMsg)
+//           fprintf(stderr, "app.exec() returned:%d\nDeleting main MusE object\n", rv);
+// 
+//         if (MusEGlobal::loadPlugins)
+//         {
+//           for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i)
+//               delete (*i);
+//           MusEGlobal::plugins.clear();
+//         }
+// 
+//         MusECore::exitWavePreview();
+// 
+//   #ifdef LV2_SUPPORT
+//         if(MusEGlobal::loadLV2)
+//               MusECore::deinitLV2();
+//   #endif
+// 
+//         // In case the sequencer object is still alive, make sure to destroy it now.
+//         MusECore::exitMidiSequencer();
+// 
+//         // Grab the restart flag before deleting muse.
+//         is_restarting = MusEGlobal::muse->restartingApp();
+// 
+//         // Now delete the application.
+//         delete MusEGlobal::muse;
+// 
+//         // These are owned by muse and deleted above. Reset to zero now.
+//         MusEGlobal::undoRedo = 0;
+//         MusEGlobal::undoAction = 0;
+//         MusEGlobal::redoAction = 0;
+// 
+//         // Reset the option index.
+//         // NOTE: See optind manual for special resetting values.
+//         //       Traditionally 1 is set, but here we may need GNU specific 0.
+//         optind = 0;
+// 
+//         // Free the working copies of the arguments.
+//         if(argv_copy)
+//         {
+//           for(int i = 0; i < argument_count; ++i)
+//           {
+//             if(argv_copy[i])
+//               free(argv_copy[i]);
+//           }
+//           free(argv_copy);
+//         }
+// 
+//         // Reset these before restarting, seems to work better, 
+//         //  makes a difference with the MDI freezing problem, above.
+//         app.setStyleSheet("");
+//         app.setStyle(MusEGlobal::config.style);
+//         
+//         // Reset the recently opened list.
+//         MusEGui::projectRecentList.clear();
+//       }
+// 
+//       if(MusEGlobal::debugMsg) 
+//         fprintf(stderr, "Finished! Exiting main, return value:%d\n", rv);
+//       return rv;
+//       
+//       }
+
 //---------------------------------------------------------
 //   main
 //---------------------------------------------------------
 
 int main(int argc, char* argv[])
-      {
-      MusEGlobal::museUser = QString(getenv("HOME"));
-      MusEGlobal::museGlobalLib   = QString(LIBDIR);
-      MusEGlobal::museGlobalShare = QString(SHAREDIR);
-      MusEGlobal::museProject = MusEGlobal::museProjectInitPath; //getcwd(0, 0);
-      MusEGlobal::museInstruments = MusEGlobal::museGlobalShare + QString("/instruments");
+{
+      // Get the separator used for file paths.
+      #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+          const QChar list_separator = QDir::listSeparator();
+      #else
+          // Ugly solution. No c/c++ solution except in c++17, which is a bit too new ATM.
+          // Hopefully everyone's got Qt 5.6 or higher.
+          #if defined(WIN32) || defined(_WIN32)
+              const QChar list_separator = QChar(';');
+          #else
+              const QChar list_separator = QChar(':');
+          #endif
+      #endif
 
-      // Create config dir if it doesn't exist
-      QDir cPath = QDir(MusEGlobal::configPath);
-      if (! cPath.exists())
-            cPath.mkpath(".");
-      
-      QFile cConf (MusEGlobal::configName);
-      QFile cConfTempl (MusEGlobal::museGlobalShare + QString("/templates/MusE.cfg"));
-      bool cConfExists = cConf.exists();
-      if (!cConfExists)
-      {
-        fprintf(stderr, "creating new config...\n");
-        if (cConfTempl.copy(MusEGlobal::configName))
-          fprintf(stderr, "  success.\n");
-        else
-          fprintf(stderr, "  FAILED!\n");
-      }
+      // Get environment variables for various paths.
+      // "The Qt environment manipulation functions are thread-safe, but this requires that
+      //   the C library equivalent functions like getenv and putenv are not directly called."
+      // "Note: on desktop Windows, qgetenv() may produce data loss if the original string
+      //   contains Unicode characters not representable in the ANSI encoding.
+      //  Use qEnvironmentVariable() instead. On Unix systems, this function is lossless."
+      #if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+        const QString ladspa_path = qEnvironmentVariable("LADSPA_PATH");
+        const QString dssi_path = qEnvironmentVariable("DSSI_PATH");
+        const QString vst_path = qEnvironmentVariable("VST_PATH");
+        const QString nvst_path = qEnvironmentVariable("LINUX_VST_PATH");
+        const QString lv2_path = qEnvironmentVariable("LV2_PATH");
+      #else
+        // "To convert the data to a QString use QString::fromLocal8Bit()."
+        const QString ladspa_path = QString::fromLocal8Bit(qgetenv("LADSPA_PATH"));
+        const QString dssi_path = QString::fromLocal8Bit(qgetenv("DSSI_PATH"));
+        const QString vst_path = QString::fromLocal8Bit(qgetenv("VST_PATH"));
+        const QString nvst_path = QString::fromLocal8Bit(qgetenv("LINUX_VST_PATH"));
+        const QString lv2_path = QString::fromLocal8Bit(qgetenv("LV2_PATH"));
+      #endif
 
-      QFile cConfQt (MusEGlobal::configPath + QString("/MusE-qt.conf"));
-      QFile cConfTemplQt (MusEGlobal::museGlobalShare + QString("/templates/MusE-qt.conf"));
-      if (! cConfQt.exists())
-      {
-        fprintf(stderr, "creating new qt config...\n");
-        if (cConfTemplQt.copy(cConfQt.fileName()))
-          fprintf(stderr, "  success.\n");
-        else
-          fprintf(stderr, "  FAILED!\n");
-      }
-
-      MusEGui::initShortCuts();
-      MusECore::readConfiguration();
-      
-      // Need to put a sane defaults here because we can't use '~' in the file name strings.
-      if(!cConfExists)
-      {
-        MusEGlobal::config.projectBaseFolder = MusEGlobal::museUser + QString("/MusE");
-        MusEGlobal::config.startSong = "";
-      }
-      
-      if(MusEGlobal::config.pluginLadspaPathList.isEmpty())
-      {
-        QString pth(getenv("LADSPA_PATH"));
-        if(pth.isEmpty())
-        {
-          MusEGlobal::config.pluginLadspaPathList << 
-            (MusEGlobal::museUser + QString("/ladspa")) <<
-            QString("/usr/local/lib64/ladspa") <<
-            QString("/usr/local/lib/ladspa") <<
-            QString("/usr/lib64/ladspa") <<
-            QString("/usr/lib/ladspa");
-#ifdef _WIN32
-            char* buffer = (char*) malloc(strlen("LADSPA_PATH=") + 1 + strlen(MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData()) + 1);
-            strcpy(buffer, "LADSPA_PATH=");
-            strcat(buffer, MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData());
-            _putenv(buffer);
-#else
-            setenv("LADSPA_PATH", MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData(), true);
-#endif
-        }
-        else
-          MusEGlobal::config.pluginLadspaPathList = pth.split(":", QString::SkipEmptyParts);
-      }
-      else
-#ifdef _WIN32
-      {
-        char* buffer = (char*) malloc(strlen("LADSPA_PATH=") + 1 + strlen(MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData()) + 1);
-        strcpy(buffer, "LADSPA_PATH=");
-        strcat(buffer, MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData());
-        _putenv(buffer);
-      }
-#else
-        setenv("LADSPA_PATH", MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData(), true);
-#endif
-      
-      if(MusEGlobal::config.pluginDssiPathList.isEmpty())
-      {
-        QString pth(getenv("DSSI_PATH"));
-        if(pth.isEmpty())
-        {
-          MusEGlobal::config.pluginDssiPathList << 
-            (MusEGlobal::museUser + QString("/dssi")) <<
-            QString("/usr/local/lib64/dssi") <<
-            QString("/usr/local/lib/dssi") <<
-            QString("/usr/lib64/dssi") <<
-            QString("/usr/lib/dssi");
-#ifdef _WIN32
-            char* buffer = (char*) malloc(strlen("DSSI_PATH=") + 1 + strlen(MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData()) + 1);
-            strcpy(buffer, "DSSI_PATH=");
-            strcat(buffer, MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData());
-            _putenv(buffer);
-#else
-            setenv("DSSI_PATH", MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData(), true);
-#endif
-        }
-        else
-          MusEGlobal::config.pluginDssiPathList = pth.split(":", QString::SkipEmptyParts);
-      }
-      else
-#ifdef _WIN32
-      {
-        char* buffer = (char*) malloc(strlen("DSSI_PATH=") + 1 + strlen(MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData()) + 1);
-        strcpy(buffer, "DSSI_PATH=");
-        strcat(buffer, MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData());
-        _putenv(buffer);
-      }
-#else
-        setenv("DSSI_PATH", MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData(), true);
-#endif
-      
-      if(MusEGlobal::config.pluginVstPathList.isEmpty())
-      {
-        QString pth(getenv("VST_PATH"));
-        if(!pth.isEmpty())
-          MusEGlobal::config.pluginVstPathList = pth.split(":", QString::SkipEmptyParts);
-        else
-        {
-          MusEGlobal::config.pluginVstPathList << 
-            (MusEGlobal::museUser + QString("/.vst")) <<
-            QString("/usr/local/lib64/vst") <<
-            QString("/usr/local/lib/vst") <<
-            QString("/usr/lib64/vst") <<
-            QString("/usr/lib/vst");
-#ifdef _WIN32
-            char* buffer = (char*) malloc(strlen("VST_PATH=") + 1 + strlen(MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData()) + 1);
-            strcpy(buffer, "VST_PATH=");
-            strcat(buffer, MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData());
-            _putenv(buffer);
-#else
-            setenv("VST_PATH", MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData(), true);
-#endif
-        }
-      }
-      else
-#ifdef _WIN32
-      {
-        char* buffer = (char*) malloc(strlen("VST_PATH=") + 1 + strlen(MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData()) + 1);
-        strcpy(buffer, "VST_PATH=");
-        strcat(buffer, MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData());
-        _putenv(buffer);
-      }
-#else
-        setenv("VST_PATH", MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData(), true);
-#endif
-      
-      if(MusEGlobal::config.pluginLinuxVstPathList.isEmpty())
-      {
-        QString pth(getenv("LINUX_VST_PATH"));
-        if(!pth.isEmpty())
-          MusEGlobal::config.pluginLinuxVstPathList = pth.split(":", QString::SkipEmptyParts);
-        else
-        {
-          pth = QString(getenv("VST_PATH"));
-          if(!pth.isEmpty())
-            MusEGlobal::config.pluginLinuxVstPathList = pth.split(":", QString::SkipEmptyParts);
-          else
-          {
-            MusEGlobal::config.pluginLinuxVstPathList << 
-              (MusEGlobal::museUser + QString("/.vst")) <<
-              QString("/usr/local/lib64/vst") <<
-              QString("/usr/local/lib/vst") <<
-              QString("/usr/lib64/vst") <<
-              QString("/usr/lib/vst");
-#ifdef _WIN32
-              char* buffer = (char*) malloc(strlen("LINUX_VST_PATH=") + 1 + strlen(MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData()) + 1);
-              strcpy(buffer, "LINUX_VST_PATH=");
-              strcat(buffer, MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData());
-              _putenv(buffer);
-#else
-              setenv("LINUX_VST_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
-#endif
-          }
-        }
-      }
-      else
-#ifdef _WIN32
-      {
-        char* buffer = (char*) malloc(strlen("LINUX_VST_PATH=") + 1 + strlen(MusEGlobal::config.pluginLinuxVstPathList.join(":").toLatin1().constData()) + 1);
-        strcpy(buffer, "LINUX_VST_PATH=");
-        strcat(buffer, MusEGlobal::config.pluginLinuxVstPathList.join(":").toLatin1().constData());
-        _putenv(buffer);
-      }
-#else
-        setenv("LINUX_VST_PATH", MusEGlobal::config.pluginLinuxVstPathList.join(":").toLatin1().constData(), true);
-#endif
-      
-      // Special for LV2: Since we use the recommended lilv_world_load_all() 
-      //  not lilv_world_load_bundle(), LV2_PATH seems to be the only way to set paths. 
-      if(MusEGlobal::config.pluginLv2PathList.isEmpty())
-      {
-        QString pth(getenv("LV2_PATH"));
-        if(pth.isEmpty())
-        {
-          MusEGlobal::config.pluginLv2PathList <<
-            (MusEGlobal::museUser + QString("/.lv2")) <<
-            QString("/usr/local/lib64/lv2") <<
-            QString("/usr/local/lib/lv2") <<
-            QString("/usr/lib64/lv2") <<
-            QString("/usr/lib/lv2");
-#ifdef _WIN32
-            char* buffer = (char*) malloc(strlen("LV2_PATH=") + 1 + strlen(MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData()) + 1);
-            strcpy(buffer, "LV2_PATH=");
-            strcat(buffer, MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData());
-            _putenv(buffer);
-#else
-            setenv("LV2_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
-#endif
-        }
-        else
-          MusEGlobal::config.pluginLv2PathList = pth.split(":", QString::SkipEmptyParts);
-      }
-      else
-#ifdef _WIN32
-      {
-        char* buffer = (char*) malloc(strlen("LV2_PATH=") + 1 + strlen(MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData()) + 1);
-        strcpy(buffer, "LV2_PATH=");
-        strcat(buffer, MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData());
-        _putenv(buffer);
-      }
-#else
-        setenv("LV2_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
-#endif
 
       bool plugin_rescan_already_done = false;
       int rv = 0;
+      
+      //==============================================
+      // BEGIN Restart loop. For (re)starting the app.
+      //==============================================
+      
       bool is_restarting = true; // First-time init true.
       while(is_restarting)
       {
@@ -604,47 +1429,272 @@ int main(int argc, char* argv[])
 
         // Let LASH remove its recognized arguments first (generally longer than Qt's).
         // Tip: LADISH's LASH emulation (current 1.0) does not take any arguments.
-  #ifdef HAVE_LASH
-        lash_args_t * lash_args = 0;
-        lash_args = lash_extract_args (&argc_copy, &argv_copy);
-  #endif
+        #ifdef HAVE_LASH
+          lash_args_t * lash_args = 0;
+          lash_args = lash_extract_args (&argc_copy, &argv_copy);
+        #endif
 
         // Now create the application, and let Qt remove recognized arguments.
-#if QT_VERSION >= 0x050600
-        QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
+        #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+          QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+        #endif
+
+        //========================
+        //  Application instance:
+        //========================
+
         MuseApplication app(argc_copy, argv_copy);
         if(QStyle* def_style = app.style())
         {
           const QString appStyleObjName = def_style->objectName();
           MusEGui::Appearance::getSetDefaultStyle(&appStyleObjName);
         }
-        
+
         // NOTE: Set the stylesheet and style as early as possible!
         // Any later invites trouble - typically the colours may be off, 
         //  but currently with Breeze or Oxygen, MDI sub windows  may be frozen!
         // Working with Breeze maintainer to fix problem... 2017/06/06 Tim.
         MusEGui::updateThemeAndStyle();
 
+        app.setOrganizationName(ORGANIZATION_NAME);
+        app.setOrganizationDomain(ORGANIZATION_DOMAIN);
+        // We'd like to set app name to something different than the organization name because we
+        //  already have a file named "MusE.cfg", so "MusE-qt.conf" (or "MusE-qt.ini") will avoid confusion.
+        app.setApplicationName(APP_SETTINGS_NAME);
+        app.setApplicationDisplayName(APP_DISPLAY_NAME);
+
+        //MusEGlobal::appDisplayName = app.applicationDisplayName();
+
+        // NOTE: 'GenericConfigLocation' returned config dir (ie. ~./config).
+        //       'ConfigLocation' also returned config dir (ie. ~./config).
+        //       'AppConfigLocation' (Qt 5.5) returned config + organization name + application name dirs
+        //        (ie. ~./config/MusE/MusE-qt).
+        //       Beware, setting application name and organization name influence these locations.
+        //       Organization part not discussed in QStandardPaths docs, example chart does not show it.
+        
+        #if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
+          // "Returns a directory location where user-specific configuration files should be written.
+          //  This is an application-specific directory, and the returned path is never empty.
+          //  This enum value was added in Qt 5.5."
+          MusEGlobal::configPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+        #else
+          // "Returns a directory location where user-specific configuration files should be written.
+          //  This may be either a generic value or application-specific, and the returned path is never empty."
+//           MusEGlobal::configPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
+//               + QString("/") + QString(ORGANIZATION_NAME) + QString("/") + QString(PACKAGE_NAME);
+          // "Returns a directory location where user-specific configuration files shared between multiple
+          //   applications should be written. This is a generic value and the returned path is never empty."
+          // According to the chart in the docs, here we should be able to rely on this  since
+          //  'ConfigLocation' acts a bit different on some OS (it might already include the app name).
+          // Also, according to the docs and observation this should equal (resemble?) what is returned by
+          //  the newer 'AppConfigLocation' in Qt 5.5.
+          MusEGlobal::configPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
+              + QString("/") + QString(ORGANIZATION_NAME) + QString("/") + QString(PACKAGE_NAME);
+        #endif
+
+        MusEGlobal::configName      = MusEGlobal::configPath + QString("/MusE.cfg");
+
+        // "Returns a directory location where user-specific non-essential (cached) data should be written.
+        //  This is an application-specific directory. The returned path is never empty."
+        // NOTE: This returned cache + organization name + application name dirs (ie. ~./cache/MusE/MusE-qt).
+        MusEGlobal::cachePath       = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+
+        MusEGlobal::museUser        = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+        MusEGlobal::museGlobalLib   = QString(LIBDIR);
+        MusEGlobal::museGlobalShare = QString(SHAREDIR);
+
+        MusEGlobal::museProject = MusEGlobal::museProjectInitPath; //getcwd(0, 0);
+        MusEGlobal::museInstruments = MusEGlobal::museGlobalShare + QString("/instruments");
+
+        // Create config dir if it doesn't exist
+        QDir cPath = QDir(MusEGlobal::configPath);
+        if (! cPath.exists())
+              cPath.mkpath(".");
+
+        QFile cConf (MusEGlobal::configName);
+        QFile cConfTempl (MusEGlobal::museGlobalShare + QString("/templates/MusE.cfg"));
+        bool cConfExists = cConf.exists();
+        if (!cConfExists)
+        {
+          fprintf(stderr, "creating new config...\n");
+          if (cConfTempl.copy(MusEGlobal::configName))
+            fprintf(stderr, "  success.\n");
+          else
+            fprintf(stderr, "  FAILED!\n");
+        }
+
+        QFile cConfQt (MusEGlobal::configPath + QString("/MusE-qt.conf"));
+        QFile cConfTemplQt (MusEGlobal::museGlobalShare + QString("/templates/MusE-qt.conf"));
+        if (! cConfQt.exists())
+        {
+          fprintf(stderr, "creating new qt config...\n");
+          if (cConfTemplQt.copy(cConfQt.fileName()))
+            fprintf(stderr, "  success.\n");
+          else
+            fprintf(stderr, "  FAILED!\n");
+        }
+
+        MusEGui::initShortCuts();
+        MusECore::readConfiguration();
+
+        // Need to put a sane defaults here because we can't use '~' in the file name strings.
+        if(!cConfExists)
+        {
+          MusEGlobal::config.projectBaseFolder = MusEGlobal::museUser + QString("/MusE");
+          MusEGlobal::config.startSong = "";
+        }
+
+        //=================
+        //  LADSPA paths:
+        //=================
+        bool found = false;
+        if(MusEGlobal::config.pluginLadspaPathList.isEmpty())
+        {
+          if(ladspa_path.isEmpty())
+          {
+            MusEGlobal::config.pluginLadspaPathList << 
+              (MusEGlobal::museUser + QString("/ladspa")) <<
+              QString("/usr/local/lib64/ladspa") <<
+              QString("/usr/local/lib/ladspa") <<
+              QString("/usr/lib64/ladspa") <<
+              QString("/usr/lib/ladspa");
+          }
+          else
+          {
+            MusEGlobal::config.pluginLadspaPathList = ladspa_path.split(list_separator, QString::SkipEmptyParts);
+            found = true;
+          }
+        }
+        if(!found && qputenv("LADSPA_PATH", MusEGlobal::config.pluginLadspaPathList.join(list_separator).toLocal8Bit()) == 0)
+          fprintf(stderr, "Error setting LADSPA_PATH\n");
+
+        //===============
+        //  DSSI paths:
+        //===============
+        found = false;
+        if(MusEGlobal::config.pluginDssiPathList.isEmpty())
+        {
+          if(dssi_path.isEmpty())
+          {
+            MusEGlobal::config.pluginDssiPathList << 
+              (MusEGlobal::museUser + QString("/dssi")) <<
+              QString("/usr/local/lib64/dssi") <<
+              QString("/usr/local/lib/dssi") <<
+              QString("/usr/lib64/dssi") <<
+              QString("/usr/lib/dssi");
+          }
+          else
+          {
+            MusEGlobal::config.pluginDssiPathList = dssi_path.split(list_separator, QString::SkipEmptyParts);
+            found = true;
+          }
+        }
+        if(!found && qputenv("DSSI_PATH", MusEGlobal::config.pluginDssiPathList.join(list_separator).toLocal8Bit()) == 0)
+          fprintf(stderr, "Error setting DSSI_PATH\n");
+
+        //==============
+        //  VST paths:
+        //==============
+        found = false;
+        if(MusEGlobal::config.pluginVstPathList.isEmpty())
+        {
+          if(vst_path.isEmpty())
+          {
+            MusEGlobal::config.pluginVstPathList << 
+              (MusEGlobal::museUser + QString("/.vst")) <<
+              QString("/usr/local/lib64/vst") <<
+              QString("/usr/local/lib/vst") <<
+              QString("/usr/lib64/vst") <<
+              QString("/usr/lib/vst");
+          }
+          else
+          {
+            MusEGlobal::config.pluginVstPathList = vst_path.split(list_separator, QString::SkipEmptyParts);
+            found = true;
+          }
+        }
+        if(!found && qputenv("VST_PATH", MusEGlobal::config.pluginVstPathList.join(list_separator).toLocal8Bit()) == 0)
+          fprintf(stderr, "Error setting VST_PATH\n");
+
+        //==================
+        //  LinuxVST paths:
+        //==================
+        found = false;
+        if(MusEGlobal::config.pluginLinuxVstPathList.isEmpty())
+        {
+          if(nvst_path.isEmpty())
+          {
+            if(vst_path.isEmpty())
+            {
+              MusEGlobal::config.pluginLinuxVstPathList << 
+                (MusEGlobal::museUser + QString("/.vst")) <<
+                QString("/usr/local/lib64/vst") <<
+                QString("/usr/local/lib/vst") <<
+                QString("/usr/lib64/vst") <<
+                QString("/usr/lib/vst");
+            }
+            else
+            {
+              MusEGlobal::config.pluginLinuxVstPathList = vst_path.split(list_separator, QString::SkipEmptyParts);
+              found = true;
+            }
+          }
+          else
+          {
+            MusEGlobal::config.pluginLinuxVstPathList = nvst_path.split(list_separator, QString::SkipEmptyParts);
+            found = true;
+          }
+        }
+        if(!found && qputenv("LINUX_VST_PATH", MusEGlobal::config.pluginLinuxVstPathList.join(list_separator).toLocal8Bit()) == 0)
+          fprintf(stderr, "Error setting LINUX_VST_PATH\n");
+
+        //==============
+        //  LV2 paths:
+        //==============
+        // Special for LV2: Since we use the recommended lilv_world_load_all() 
+        //  not lilv_world_load_bundle(), LV2_PATH seems to be the only way to set paths. 
+        found = false;
+        if(MusEGlobal::config.pluginLv2PathList.isEmpty())
+        {
+          if(lv2_path.isEmpty())
+          {
+            MusEGlobal::config.pluginLv2PathList <<
+              (MusEGlobal::museUser + QString("/.lv2")) <<
+              QString("/usr/local/lib64/lv2") <<
+              QString("/usr/local/lib/lv2") <<
+              QString("/usr/lib64/lv2") <<
+              QString("/usr/lib/lv2");
+          }
+          else
+          {
+            MusEGlobal::config.pluginLv2PathList = lv2_path.split(list_separator, QString::SkipEmptyParts);
+            found = true;
+          }
+        }
+        if(!found && qputenv("LV2_PATH", MusEGlobal::config.pluginLv2PathList.join(list_separator).toLocal8Bit()) == 0)
+          fprintf(stderr, "Error setting LV2_PATH\n");
+
+
+
         QString optstr("aJjFAhvdDumMsP:Y:l:pRSy");
-  #ifdef VST_SUPPORT
-        optstr += QString("V");
-  #endif
-  #ifdef VST_NATIVE_SUPPORT
-        optstr += QString("N");
-  #endif
-  #ifdef DSSI_SUPPORT
-        optstr += QString("I");
-  #endif
-  #ifdef HAVE_LASH
-        optstr += QString("L");
-  #endif
-  #ifdef LV2_SUPPORT
-        optstr += QString("2");
-  #endif
-  #ifdef HAVE_RTAUDIO
-        optstr += QString("t");
-  #endif
+        #ifdef VST_SUPPORT
+          optstr += QString("V");
+        #endif
+        #ifdef VST_NATIVE_SUPPORT
+          optstr += QString("N");
+        #endif
+        #ifdef DSSI_SUPPORT
+          optstr += QString("I");
+        #endif
+        #ifdef HAVE_LASH
+          optstr += QString("L");
+        #endif
+        #ifdef LV2_SUPPORT
+          optstr += QString("2");
+        #endif
+        #ifdef HAVE_RTAUDIO
+          optstr += QString("t");
+        #endif
 
         AudioDriverSelect audioType = DriverConfigSetting;
         bool force_plugin_rescan = false;
@@ -655,9 +1705,9 @@ int main(int argc, char* argv[])
         char c = (char)i;
               switch (c) {
                     case 'v': printVersion(argv_copy[0]);
-  #ifdef HAVE_LASH
-                          if(lash_args) lash_args_destroy(lash_args);
-  #endif
+                          #ifdef HAVE_LASH
+                            if(lash_args) lash_args_destroy(lash_args);
+                          #endif
                           return 0;
                     case 'a':
                           audioType = DummyAudioOverride;
@@ -704,17 +1754,27 @@ int main(int argc, char* argv[])
                     case 'y': MusEGlobal::usePythonBridge = true; break;
                     case 'l': locale_override = QString(optarg); break;
                     case 'h': usage(argv_copy[0], argv_copy[1]);
-  #ifdef HAVE_LASH
-                          if(lash_args) lash_args_destroy(lash_args);
-  #endif
+                          #ifdef HAVE_LASH
+                            if(lash_args) lash_args_destroy(lash_args);
+                           #endif
                           return -1;
                     default:  usage(argv_copy[0], "bad argument");
-  #ifdef HAVE_LASH
-                          if(lash_args) lash_args_destroy(lash_args);
-  #endif
+                          #ifdef HAVE_LASH
+                            if(lash_args) lash_args_destroy(lash_args);
+                          #endif
                           return -1;
                     }
               }
+
+
+
+
+
+
+
+        
+        
+      //}  
 
         // Set some AL library namespace debug flags as well.
         // Make sure the AL namespace variables mirror our variables.
@@ -824,6 +1884,40 @@ int main(int argc, char* argv[])
         }
         MusEGlobal::museUserInstruments = uinstrPath;
 
+        // REMOVE Tim. path. Added.
+        // Create plugin scanner dir if it doesn't exist
+        // "Returns a directory location where user-specific non-essential (cached) data should be written.
+        //  This is an application-specific directory. The returned path is never empty."
+        //const QString cachePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+        //const QString plugin_cache_path(cachePath + QString("/scanner"));
+        const QString plugin_cache_path(MusEGlobal::cachePath + QString("/scanner"));
+        {
+          QDir cacheDir(plugin_cache_path);
+          if(!cacheDir.exists())
+          {
+            cacheDir.mkpath(".");
+            // Support old versions: Copy existing cache files over.
+            const QString old_cache_path = MusEGlobal::configPath + QString("/scanner");
+            QDir old_cacheDir(
+              old_cache_path,
+              QString("*.scan"),
+              QDir::Name,
+              QDir::Files | QDir::NoDotAndDotDot);
+            if(old_cacheDir.exists())
+            {
+              QFileInfoList fil = old_cacheDir.entryInfoList();
+              QFileInfo fi;
+              foreach(fi, fil)
+              {
+                QString fn = fi.fileName();
+                QFile f(fi.absoluteFilePath());
+                f.copy(cacheDir.absolutePath() + "/" + fn);
+              }
+              old_cacheDir.removeRecursively();
+            }
+          }
+        }
+        
         //-------------------------------------------------------
         //    BEGIN SHOW MUSE SPLASH SCREEN
         //-------------------------------------------------------
@@ -894,7 +1988,7 @@ int main(int argc, char* argv[])
 
         types |= MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown;
         
-        MusEPlugin::checkPluginCacheFiles(MusEGlobal::configPath + "/scanner",
+        MusEPlugin::checkPluginCacheFiles(plugin_cache_path,
                                         // List of plugins to scan into and write to cache files from.
                                         &MusEPlugin::pluginList,
                                         // Don't bother reading any port information that might exist in the cache.
@@ -1310,8 +2404,13 @@ int main(int argc, char* argv[])
         MusEGui::projectRecentList.clear();
       }
 
+      //============================================
+      // END Restart loop. For (re)starting the app.
+      //============================================
+
       if(MusEGlobal::debugMsg) 
         fprintf(stderr, "Finished! Exiting main, return value:%d\n", rv);
       return rv;
       
       }
+

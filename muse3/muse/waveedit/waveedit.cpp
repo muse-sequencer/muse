@@ -83,8 +83,10 @@ int WaveEdit::colorModeInit = 0;
 void WaveEdit::closeEvent(QCloseEvent* e)
       {
       _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
-      
-      QSettings settings("MusE", "MusE-qt");
+
+// REMOVE Tim. path. Changed.
+//       QSettings settings("MusE", "MusE-qt");
+      QSettings settings;
       //settings.setValue("Waveedit/geometry", saveGeometry());
       settings.setValue("Waveedit/windowState", saveState());
       
