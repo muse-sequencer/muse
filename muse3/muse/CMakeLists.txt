@@ -51,7 +51,6 @@ if(LV2_SUPPORT)
 endif(LV2_SUPPORT)
 
 if (PYTHON_SUPPORT)
-      set ( REM_CPP_FLAGS "-DENABLE_PYTHON" )
       set ( REM_LIB remote )
       set ( SubDirs ${SubDirs} remote )
 endif (PYTHON_SUPPORT)
@@ -243,7 +242,7 @@ include_directories(
 ## Compilation flags and target name
 ##
 set_target_properties( core
-      PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK} ${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h"
+      PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK} -include ${PROJECT_BINARY_DIR}/all.h"
       
       OUTPUT_NAME muse_core
       )

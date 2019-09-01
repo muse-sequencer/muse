@@ -24,9 +24,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <pthread.h>
 
 #include <QApplication>
+#include <QEvent>
 
 #include "pyapi.h"
 #include "globaldefs.h"
@@ -46,7 +46,36 @@ using namespace std;
 
 namespace MusECore {
 
-static pthread_t pyapiThread;
+PyroServerThread g_pyroServerThread;
+PyObject* g_pMainModule = nullptr;
+PyObject* g_pMainDictionary = nullptr;
+
+class QPybridgeEvent : public QEvent
+{
+public:
+      enum EventType { SONG_UPDATE=0, SONGLEN_CHANGE, SONG_POSCHANGE, SONG_SETPLAY, SONG_SETSTOP, SONG_REWIND, SONG_SETMUTE,
+             SONG_SETCTRL, SONG_SETAUDIOVOL, SONG_IMPORT_PART, SONG_TOGGLE_EFFECT, SONG_ADD_TRACK, SONG_CHANGE_TRACKNAME,
+             SONG_DELETE_TRACK };
+      QPybridgeEvent( QPybridgeEvent::EventType _type, int _p1=0, int _p2=0);
+      EventType getType() { return type; }
+      int getP1() { return p1; }
+      int getP2() { return p2; }
+      void setS1(QString in) { s1 = in; }
+      void setS2(QString in) { s2 = in; }
+      const QString& getS1() { return s1; }
+      const QString& getS2() { return s2; }
+      double getD1() { return d1; }
+      void setD1(double _d1) { d1 = _d1; }
+
+private:
+      EventType type;
+      int p1, p2;
+      double d1;
+      QString s1;
+      QString s2;
+
+};
+
 //------------------------------------------------------------
 QPybridgeEvent::QPybridgeEvent(QPybridgeEvent::EventType _type, int _p1, int _p2)
       :QEvent(QEvent::User),
@@ -947,6 +976,56 @@ PyObject* getOutputRoute(PyObject*, PyObject* args)
       return routes;
 }
 */
+
+//------------------------------------------------------------
+// Get user supplied Pyro nameserver host name
+//------------------------------------------------------------
+PyObject* getConfigPyroNSHostname(PyObject*, PyObject*)
+{
+      return Py_BuildValue("s", MusEGlobal::pythonBridgePyroNSHostname.toLatin1().constData());
+}
+
+//------------------------------------------------------------
+// Get user supplied Pyro nameserver host port
+//------------------------------------------------------------
+PyObject* getConfigPyroNSPort(PyObject*, PyObject*)
+{
+      return Py_BuildValue("s", MusEGlobal::pythonBridgePyroNSPort.toLatin1().constData());
+}
+
+//------------------------------------------------------------
+// Get user supplied Pyro daemon host name
+//------------------------------------------------------------
+PyObject* getConfigPyroDaemonHostname(PyObject*, PyObject*)
+{
+      return Py_BuildValue("s", MusEGlobal::pythonBridgePyroDaemonHostname.toLatin1().constData());
+}
+
+//------------------------------------------------------------
+// Get user supplied Pyro daemon host port
+//------------------------------------------------------------
+PyObject* getConfigPyroDaemonPort(PyObject*, PyObject*)
+{
+      return Py_BuildValue("s", MusEGlobal::pythonBridgePyroDaemonPort.toLatin1().constData());
+}
+
+//------------------------------------------------------------
+// Get user supplied Pyro communication timeout
+//------------------------------------------------------------
+PyObject* getConfigPyroCommTimeout(PyObject*, PyObject*)
+{
+      return Py_BuildValue("f", MusEGlobal::pythonBridgePyroCommTimeout);
+}
+
+//------------------------------------------------------------
+// Check whether the server should run (True) or stop
+//------------------------------------------------------------
+PyObject* serverRunFlag(PyObject*, PyObject*)
+{
+      return Py_BuildValue("b", g_pyroServerThread.serverRunFlag());
+}
+
+
 //------------------------------------------------------------
 // Global method definitions for MusE:s Python API
 //
@@ -954,6 +1033,13 @@ PyObject* getOutputRoute(PyObject*, PyObject* args)
 //------------------------------------------------------------
 PyMethodDef g_methodDefinitions[] =
 {
+      { "getConfigPyroNSHostname", getConfigPyroNSHostname, METH_NOARGS, "Get configured Pyro nameserver host name" },
+      { "getConfigPyroNSPort", getConfigPyroNSPort, METH_NOARGS, "Get configured Pyro nameserver host port" },
+      { "getConfigPyroDaemonHostname", getConfigPyroDaemonHostname, METH_NOARGS, "Get configured Pyro daemon host name" },
+      { "getConfigPyroDaemonPort", getConfigPyroDaemonPort, METH_NOARGS, "Get configured Pyro daemon host port" },
+      { "getConfigPyroCommTimeout", getConfigPyroCommTimeout, METH_NOARGS, "Get configured Pyro communication timeout" },
+      { "serverRunFlag", serverRunFlag, METH_NOARGS, "Check whether the server should run (True) or stop" },
+
       { "startPlay", startPlay, METH_VARARGS, "Starts playing the song from current position" },
       { "stopPlay", stopPlay, METH_VARARGS, "Stops playback if currently playing" },
       { "rewindStart", rewindStart, METH_VARARGS, "Set current position to beginning of song" },
@@ -1001,16 +1087,12 @@ PyMethodDef g_methodDefinitions[] =
       {NULL, NULL, 0, NULL}
 };
 
-/**
- * This function launches the Pyro name service, which blocks execution
- * Thus it needs its own thread
- **/
-static void* pyapithreadfunc(void*)
+bool PyroServerThread::initServer()
 {
+      _runServer = false;
       const char* mod_name = "muse";
 
       Py_Initialize();
-
 
 // For Python 3.5 and above:
 #if (PY_MAJOR_VERSION >= 4) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION >= 5)
@@ -1049,34 +1131,68 @@ static void* pyapithreadfunc(void*)
       // Access the "__main__" module and its name-space dictionary.
       //
 
-      PyObject *pMainModule     = PyImport_AddModule( "__main__" );
-      PyObject *pMainDictionary = PyModule_GetDict( pMainModule );
+      g_pMainModule     = PyImport_AddModule( "__main__" );
+      g_pMainDictionary = PyModule_GetDict( g_pMainModule );
+
+      return true;
+}
+
+/**
+ * This function launches the Pyro name service, which blocks execution
+ * Thus it needs its own thread
+ **/
+void PyroServerThread::run()
+{
+      if(!g_pMainDictionary)
+        return;
+  
+      _runServer = true;
+
       string launcherfilename = string(SHAREDIR) + string("/pybridge/museplauncher.py");
       printf("Initiating MusE Pybridge launcher from %s\n", launcherfilename.c_str());
       FILE* fp = fopen(launcherfilename.c_str(),"r");
-      PyObject* p_res = PyRun_File(fp, launcherfilename.c_str(), Py_file_input, pMainDictionary, pMainDictionary);
-      if(p_res == NULL)
+      if(!fp)
       {
-          printf("pyapithreadfunc: PyRun_File failed\n");
-          PyErr_Print();
-          return NULL;
+        printf("MusE Pybridge open launcher file failed\n");
       }
-      fclose(fp);
+      else
+      {
+        PyObject* p_res = PyRun_File(fp, launcherfilename.c_str(), Py_file_input, g_pMainDictionary, g_pMainDictionary);
+        if(p_res == NULL)
+        {
+            printf("MusE Pybridge initialization failed\n");
+            PyErr_Print();
+        }
+        fclose(fp);
 
-      printf("pyapithreadfunc: PyRun_File finished\n");
-      return NULL;
+        printf("MusE Pybridge finished\n");
+      }
+}
+
+void PyroServerThread::stop()
+{
+  // Flag the server to stop, when it eventually gets around to reading this...
+  _runServer = false;
 }
 
 /**
  * This function currently only launches the thread. There should be some kind of check that
  * things are up and running as they are supposed to
  */
-bool initPythonBridge()
+bool startPythonBridge()
 {
-      if (pthread_create(&pyapiThread, NULL, MusECore::pyapithreadfunc, 0)) {
-            return false;
-            }
-      return true; // TODO: Verify that things are up and running!
+  g_pyroServerThread.initServer();
+  g_pyroServerThread.start();
+  return true;
+}
+
+bool stopPythonBridge()
+{
+  g_pyroServerThread.stop();
+  // Be sure to set this to something higher than what the daemon will use,
+  //  so that the thread does not timeout before the daemon does. Say, * 1.5.
+  // In units of ms.
+  return g_pyroServerThread.wait(1500.0 * MusEGlobal::pythonBridgePyroCommTimeout);
 }
 
 //---------------------------------------------------------

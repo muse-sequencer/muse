@@ -13,23 +13,40 @@ Once Python and Pyro have been installed, support them by
 
 Then build and install MusE.
 
-To enable the feature, include the command line option '-y'
- when starting MusE.
+To enable the feature, include the command line option
+ '-y' when starting MusE.
 
 The feature uses Pyro to talk on the network.
-Ensure that the network host name resolves to a valid address.
-Pyro won't work correctly if the host name resolves to 127.0.0.1
+If you want to talk to other machines, ensure that the
+ network host name resolves to a valid address.
+Pyro won't broadcast if the host name resolves to 127.0.0.1,
+ but it'll work fine locally.
 
 If desired, the Pyro nameserver can be started manually
- before starting MusE:
-python -m Pyro4.naming -n <hostname>
+ before starting MusE, for example like this:
+python -m Pyro4.naming [-n <hostname>] [-p <port>]
  or
-python3 -m Pyro4.naming -n <hostname>
+python3 -m Pyro4.naming [-n <hostname>] [-p <port>]
 
 If a Pyro nameserver is NOT already running when MusE
  is started, MusE will automatically start it for you,
- using the network's nost name.
+ with default settings.
 
+The Pyro nameserver host name and port can be set with
+ these MusE command line options:
+--pyro-ns-host<host>  --pyro-ns-port<port>
+
+The Pyro daemon host name and port can be set with
+ these MusE command line options:
+--pyro-daemon-host=<host> --pyro-daemon-port<port>
+
+The Pyro communication timeout can be set with
+ this MusE command line option:
+ --pyro-comm-timeout<time (s)>
+It is set to about five seconds by default.
+When closing MusE, there may be noticable delay of
+ up to the given amount of time.
+ 
 When launched with -y MusE will initialize a Python bridge.
 This means you can access MusE internals via Python
  through Pyro. An example of how to initialize the connection
@@ -42,7 +59,8 @@ List of commands:
   # Get current position
   getCPos(self):
 
-  # Start playback  
+  # Start playback
+  
   startPlay(self):
 
   # Stop playback

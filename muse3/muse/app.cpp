@@ -82,7 +82,9 @@
 #include "mrconfig.h"
 #include "pianoroll.h"
 #include "scoreedit.h"
+#ifdef PYTHON_SUPPORT
 #include "remote/pyapi.h"
+#endif
 #ifdef BUILD_EXPERIMENTAL
   #include "rhythm.h"
 #endif
@@ -364,14 +366,14 @@ MusE::MusE() : QMainWindow()
       avrCpuLoadCounter = 0;
       fCurCpuLoad = 0.0f;
 
-#ifdef ENABLE_PYTHON
+#ifdef PYTHON_SUPPORT
       //---------------------------------------------------
       //    Python bridge
       //---------------------------------------------------
       // Uncomment in order to enable MusE Python bridge:
       if (MusEGlobal::usePythonBridge) {
             fprintf(stderr, "Initializing python bridge!\n");
-            if (MusECore::initPythonBridge() == false) {
+            if (startPythonBridge() == false) {
                   fprintf(stderr, "Could not initialize Python bridge\n");
                   exit(1);
                   }
@@ -1068,19 +1070,16 @@ void MusE::setDirty()
 //               2  - load configured start song
 //---------------------------------------------------
 
-void MusE::loadDefaultSong(int argc, char** argv)
+void MusE::loadDefaultSong(const QString& filename_override)
 {
   QString name;
   bool useTemplate = false;
   bool loadConfig = true;
-  if (argc >= 2)
-        name = argv[0];
+  if (!filename_override.isEmpty())
+        name = filename_override;
   else if (MusEGlobal::config.startMode == 0) {
-        if (argc < 2)
               name = !projectRecentList.isEmpty() ? projectRecentList.first() : MusEGui::getUniqueUntitledName();
-        else
-              name = argv[0];
-        fprintf(stderr, "starting with selected song %s\n", MusEGlobal::config.startSong.toLatin1().constData());
+        fprintf(stderr, "starting with last song %s\n", name.toLatin1().constData());
         }
   else if (MusEGlobal::config.startMode == 1) {
         if(MusEGlobal::config.startSong.isEmpty()) // Sanity check to avoid some errors later
@@ -1110,7 +1109,7 @@ void MusE::loadDefaultSong(int argc, char** argv)
           name = MusEGlobal::config.startSong;
           loadConfig = MusEGlobal::config.startSongLoadConfig;
         }
-        fprintf(stderr, "starting with pre configured song %s\n", MusEGlobal::config.startSong.toLatin1().constData());
+        fprintf(stderr, "starting with pre configured song %s\n", name.toLatin1().constData());
   }
   loadProjectFile(name, useTemplate, loadConfig);
 }
@@ -1255,13 +1254,14 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       progress->setValue(20);
 
       QFileInfo fi(name);
-      if (songTemplate) {
-            if (!fi.isReadable()) {
-                  QMessageBox::critical(this, QString("MusE"),
-                     tr("Cannot read template"));
-                  QApplication::restoreOverrideCursor();
-                  return;
-                  }
+      if (songTemplate)
+      {
+            if(!fi.isReadable()) {
+                QMessageBox::critical(this, QString("MusE"),
+                    tr("Cannot read template"));
+                QApplication::restoreOverrideCursor();
+                return;
+                }
             project.setFile(MusEGui::getUniqueUntitledName());
             MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
             QDir::setCurrent(QDir::homePath());
@@ -1662,6 +1662,15 @@ void MusE::closeEvent(QCloseEvent* event)
             d.remove(filename);
             d.remove(f.completeBaseName() + ".wca");
             }
+
+      if(MusEGlobal::usePythonBridge)
+      {
+        fprintf(stderr, "Stopping MusE Pybridge...\n");
+        if(stopPythonBridge() == false)
+          fprintf(stderr, "MusE: Could not stop Python bridge\n");
+        else
+          fprintf(stderr, "MusE: Pybridge stopped\n");
+      }
 
 #ifdef HAVE_LASH
       // Disconnect gracefully from LASH.
@@ -3797,6 +3806,24 @@ void MusE::updateWindowMenu()
 void MusE::resetXrunsCounter()
 {
    MusEGlobal::audio->resetXruns();
+}
+
+bool MusE::startPythonBridge()
+{
+#ifdef PYTHON_SUPPORT
+  printf("Starting MusE Pybridge...\n");
+  return MusECore::startPythonBridge();
+#endif
+  return false;
+}
+
+bool MusE::stopPythonBridge()
+{ 
+#ifdef PYTHON_SUPPORT
+  printf("Stopping MusE Pybridge...\n");
+  return MusECore::stopPythonBridge();
+#endif
+  return true;
 }
 
 void MusE::bringToFront(QWidget* widget)

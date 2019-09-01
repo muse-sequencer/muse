@@ -25,12 +25,13 @@ This file is used by MusE for launching a Pyro name service and connecting a rem
 """
 
 from __future__ import print_function
-import socket
-import select
-import sys, time
 import Pyro4.core
 import Pyro4.naming
 from Pyro4.errors import PyroError,NamingError
+import socket
+import select
+import time
+import threading
 
 #
 # Note: this module, 'muse' is activated from within MusE - thus it is not possible to execute the scripts without a running
@@ -49,6 +50,24 @@ import muse
 # Pyro >= 4.46, requires exposing now
 
 class MusE:
+      def __init__(self, daemon):
+            self.daemon = daemon
+
+      # This method is to support a technique of shutting down the server
+      #  by calling this 'shutdown' from another thread or process.
+      # From another process obviously tested OK. But it would be more desirable
+      #  from another thread. But the code to do so from another thread in the SAME
+      #  process can be complex (using sub-interpreters).
+      # So our simpler loopCondition technique is the one used at this time of writing.
+      # Still, we keep this around for possible usage since it does work.
+      #
+      # oneway in case call returns much later than daemon.shutdown
+      @Pyro4.oneway
+      @Pyro4.expose
+      def shutdown(self):
+            print('Shutting down Pyro daemon...')
+            self.daemon.shutdown()
+
       #@staticmethod
       #@classmethod
       @Pyro4.expose
@@ -261,37 +280,110 @@ class MusE:
 #      def getOutputRoute(self, trackname):
 #            return muse.getOutputRoute(trackname)
 
+class NameServiceThread(threading.Thread):
+      def __init__(self, host, port):
+            threading.Thread.__init__(self)
+            self.host = host
+            self.port = port
 
+      def run(self):
+            hostname = socket.gethostname()
+            print ("Starting Pyro nameserver")
+            try:
+                if self.port is None:
+                    Pyro4.naming.startNSloop(host=self.host)
+                else:
+                    Pyro4.naming.startNSloop(host=self.host, port=self.port)
+            except:
+                print ("Unable to start Pyro nameserver at host=" + str(self.host) + " port=" + str(self.port))
+
+            print ("Pyro nameserver finished")
 
 #
 # main server program
 #
 def main():
       print ("Inside museplauncher.py...")
-      
-      hostname = socket.gethostname()
-      ns_running = True
 
-      print("Hostname:" + hostname + " Attempting to locate a Pyro nameserver...")
-      
+      # TESTED: When running example scripts, too low a value caused problems with
+      #  'not enough data' errors unless set to higher, around at least 3. But if set too high
+      #  it takes longer for it to check loopCondition for our shutdown flag (tested 50 seconds,
+      #  average shutdown wait was long). Be sure this value is LESS THAN the timeout value of
+      #  the parent QThread's wait(value) so that the thread does not timeout before the daemon does.
+      # This is done automatically in our c++ code by setting the QThread wait time to a higher
+      #  value than our global MusEGlobal::pythonBridgePyroCommTimeout.
+      #
+      # We need to set either a socket communication timeout,
+      #   or use the select based server. Otherwise the daemon requestLoop
+      #   will block indefinitely and is never able to evaluate the loopCondition.
+      # This is a floating point value.
+      Pyro4.config.COMMTIMEOUT = muse.getConfigPyroCommTimeout()
+
+      config_pyro_ns_hostname = muse.getConfigPyroNSHostname()
+      config_pyro_ns_port = muse.getConfigPyroNSPort()
+      config_pyro_daemon_hostname = muse.getConfigPyroDaemonHostname()
+      config_pyro_daemon_port = muse.getConfigPyroDaemonPort()
+
+      if config_pyro_ns_hostname:
+          ns_hostname = config_pyro_ns_hostname
+      else:
+          #ns_hostname = socket.gethostname()
+          ns_hostname = None
+
+      if config_pyro_ns_port:
+          ns_port = int(config_pyro_ns_port)
+      else:
+          ns_port = None
+
+      if config_pyro_daemon_hostname:
+          daemon_hostname = config_pyro_daemon_hostname
+      else:
+          #daemon_hostname = socket.gethostname()
+          daemon_hostname = None
+
+      if config_pyro_daemon_port:
+          daemon_port = int(config_pyro_daemon_port)
+      else:
+          daemon_port = None
+
+      print("Nameserver hostname:" + str(ns_hostname) + " Port:" + str(ns_port) + " Attempting to locate a Pyro nameserver...")
+
       try:
-          ns = Pyro4.locateNS(hostname)
+          ns = Pyro4.locateNS(host=ns_hostname, port=ns_port)
       except Pyro4.errors.NamingError:
           ns_running = False
+      else:
+          ns_running = True
 
       if ns_running:
           print("...Found Pyro nameserver")
       else:
           print("...Pyro nameserver not found. Starting a new one...")
-          nameserverUri, nameserverDaemon, broadcastServer = Pyro4.naming.startNS(host=hostname)
-          assert broadcastServer is not None, "Expected a Pyro broadcast server to be created"
-          ns = nameserverDaemon.nameserver
-          print("Got a Pyro nameserver, uri=%s" % nameserverUri)
-          print("Pyro nameserver daemon location string=%s" % nameserverDaemon.locationStr)
-          print("Pyro nameserver daemon sockets=%s" % nameserverDaemon.sockets)
-          print("Pyro broadcast server socket=%s (fileno %d)" % (broadcastServer.sock, broadcastServer.fileno()))
+          # Note: See the Pyro4 eventloop example for a cool custom loop that works,
+          #  but it requires the broadcast server to be running. This does not.
+          nsthread = NameServiceThread(host=ns_hostname, port=ns_port)
+          nsthread.start()
+          for i in range(0,5):
+              try:
+                  ns = Pyro4.locateNS(host=ns_hostname, port=ns_port)
+              except Pyro4.errors.NamingError:
+                  if i is 4:
+                      print("...Pyro nameserver did not respond")
+                      return 
+                  time.sleep(1)
+              else:
+                break
 
-      pyrodaemon = Pyro4.core.Daemon(host=hostname)
+      print("Daemon hostname:" + str(daemon_hostname) + " Port:" + str(daemon_port))
+      try:
+          if daemon_port is None:
+              pyrodaemon = Pyro4.core.Daemon(host=daemon_hostname)
+          else:
+              pyrodaemon = Pyro4.core.Daemon(host=daemon_hostname, port=daemon_port)
+      except:
+          print("Could not start Pyro daemon")
+          return
+        
       print("Pyro daemon location string=%s" % pyrodaemon.locationStr)
       print("Pyro daemon sockets=%s" % pyrodaemon.sockets)
 
@@ -300,62 +392,29 @@ def main():
           ns.remove('muse')
       except Pyro4.errors.NamingError:
           pass
-          
+
+      muse_inst = MusE(pyrodaemon)
+
       # register a server object with the daemon
-      serveruri = pyrodaemon.register(MusE, "muse")
+      serveruri = pyrodaemon.register(muse_inst, objectId="muse")
       print("Object registered with Pyro daemon. uri=%s" % serveruri)
 
       # register it with the embedded nameserver directly
       ns.register("muse", serveruri)
       print("Object registered with the Pyro nameserver")
 
+      # Tested OK.
+      pyrodaemon.requestLoop(lambda : muse.serverRunFlag())
 
-      if not ns_running:
+      print("Pyro daemon loop finished")
 
-          # An existing nameserver was not found.
-          # Enter a custom event loop to handle BOTH nameserver events AND daemon events...
-          while True:
-              print("Waiting for Pyro events...")
-
-              # create sets of the socket objects we will be waiting on
-              # (a set provides fast lookup compared to a list)
-              nameserverSockets = set(nameserverDaemon.sockets)
-              pyroSockets = set(pyrodaemon.sockets)
-              rs=[broadcastServer]  # only the broadcast server is directly usable as a select() object
-              rs.extend(nameserverSockets)
-              rs.extend(pyroSockets)
-              rs,_,_ = select.select(rs,[],[],3)
-              eventsForNameserver=[]
-              eventsForDaemon=[]
-              for s in rs:
-                  if s is broadcastServer:
-                      print("Pyro broadcast server received a request")
-                      broadcastServer.processRequest()
-                  elif s in nameserverSockets:
-                      eventsForNameserver.append(s)
-                  elif s in pyroSockets:
-                      eventsForDaemon.append(s)
-              if eventsForNameserver:
-                  print("Pyro nameserver received a request")
-                  nameserverDaemon.events(eventsForNameserver)
-              if eventsForDaemon:
-                  print("Pyro daemon received a request")
-                  pyrodaemon.events(eventsForDaemon)
-
-          nameserverDaemon.close()
-          broadcastServer.close()
-          pyrodaemon.close()
-          print("Custom Pyro event loop done")
-
-      else: # not ns_running
-
-          # An existing nameserver was found.
-          # Simply enter the daemon's event loop...
-          pyrodaemon.requestLoop()
-
+# We only want execution if running the script. The value is set to __main__.
+# Otherwise if being imported by another module __name__ contains the name of the script.
 if __name__=="__main__":
         main()
 
-main()
+# FIXME What was this for? It caused double execution in cases
+#        where the server didn't start (which makes sense)
+#main()
 
 

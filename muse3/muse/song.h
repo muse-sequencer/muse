@@ -434,7 +434,7 @@ public:
       //-----------------------------------------
       //   Python bridge related
       //-----------------------------------------
-#ifdef ENABLE_PYTHON
+#ifdef PYTHON_SUPPORT
       virtual bool event (QEvent* e );
 #endif
       void executeScript(QWidget *parent, const char* scriptfile, PartList* parts, int quant, bool onlyIfSelected);

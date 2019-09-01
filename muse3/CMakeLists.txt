@@ -395,7 +395,6 @@ if (ENABLE_PYTHON)
                   set(PYTHON_SUPPORT ON)
             endif (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 2.4)
       endif (PYTHONLIBS_FOUND)
-
 #  TODO Check for Pyro4?
 endif (ENABLE_PYTHON)
 
@@ -711,9 +710,9 @@ if (ENABLE_LRDF AND (NOT LRDF_FOUND))
         message("** WARNING: lrdf (>= 0.5) was enabled, but development files were not found. ")
 endif (ENABLE_LRDF AND (NOT LRDF_FOUND))
 
-if (ENABLE_PYTHON AND (NOT PYTHONLIBS_FOUND))
-        message("** WARNING: python was enabled, but development files were not found.")
-endif (ENABLE_PYTHON AND (NOT PYTHONLIBS_FOUND))
+if (ENABLE_PYTHON AND (NOT PYTHON_SUPPORT))
+        message("** WARNING: python (>= 2.4) was enabled, but development files were not found or too old.")
+endif (ENABLE_PYTHON AND (NOT PYTHON_SUPPORT))
 
 if (ENABLE_ALSA AND (NOT ALSA_FOUND))
       message("** WARNING: ALSA >= 0.9.0 was enabled, but development files were not found.")

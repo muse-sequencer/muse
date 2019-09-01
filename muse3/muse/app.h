@@ -392,6 +392,9 @@ class MusE : public QMainWindow
 
       void resetXrunsCounter();
 
+      bool startPythonBridge();
+      bool stopPythonBridge();
+
    private:
       timeval lastCpuTime;
       timespec lastSysTime;
@@ -400,9 +403,10 @@ class MusE : public QMainWindow
       float fCurCpuLoad;
    public:
       MusE();
+
       void populateAddTrack();
 
-      void loadDefaultSong(int argc, char** argv);
+      void loadDefaultSong(const QString& filename_override);
       bool loadConfigurationColors(QWidget* parent = 0);
       bool saveConfigurationColors(QWidget* parent = 0);
       // Whether to restart MusE (almost) from scratch when calling close().
