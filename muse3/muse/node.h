@@ -38,11 +38,15 @@ struct FifoBuffer {
       int maxSize;
       unsigned pos;
       int segs;
+      float latency;
 
       FifoBuffer() {
             buffer  = 0;
             size    = 0;
             maxSize = 0;
+            pos     = 0;
+            segs    = 0;
+            latency = 0.0f;
             }
       };
 
@@ -57,12 +61,14 @@ class Fifo {
       Fifo();
       ~Fifo();
       void clear();
-      bool put(int, unsigned long, float** buffer, unsigned pos);
+      bool put(int segs, unsigned long samples, float** buffer, unsigned pos, float latency);
       bool getWriteBuffer(int, unsigned long, float** buffer, unsigned pos);
       void add();
-      bool get(int, unsigned long, float** buffer, unsigned* pos);
+      bool peek(int segs, unsigned long samples, float** buffer, unsigned* pos = 0, float* latency = 0); // const;
+      bool get(int segs, unsigned long samples, float** buffer, unsigned* pos = 0, float* latency = 0);
       void remove();
       int getCount();
+      int getEmptyCount();
       bool isEmpty();
       };
 

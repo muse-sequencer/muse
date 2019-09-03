@@ -54,8 +54,6 @@ ShortcutConfig::ShortcutConfig(QWidget* parent)
    : QDialog(parent)
    {
    setupUi(this);
-// REMOVE Tim. path. Changed.
-//    QSettings settings("MusE", "MusE-qt");
    QSettings settings;
    restoreGeometry(settings.value("ShortcutConfig/geometry").toByteArray());
 
@@ -177,8 +175,6 @@ void ShortcutConfig::reject()
 
 void ShortcutConfig::closing()
 {
-// REMOVE Tim. path. Changed.
-//       QSettings settings("MusE", "MusE-qt");
       QSettings settings;
       settings.setValue("ShortcutConfig/geometry", saveGeometry());
       if(_config_changed)

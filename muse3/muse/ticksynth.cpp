@@ -32,11 +32,16 @@
 #include "operations.h"
 #include "metronome_class.h"
 #include "globals.h"
+#include "song.h"
+#include "track.h"
 
 // If sysex support is ever added, make sure this number is unique among all the
 //  MESS synths (including ticksynth) and DSSI, VST, LV2 and other host synths.
 // 127 is reserved for special MusE system messages.
 //#define METRONOME_UNIQUE_ID      7
+
+// // Undefine if and when multiple output routes are added to midi tracks.
+// #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
 
 //#define METRONOME_DEBUG
 
@@ -58,8 +63,8 @@ class MetronomeSynth : public Synth {
    public:
       MetronomeSynth(const QFileInfo& fi) : Synth(fi, QString("Metronome"), QString("Metronome"), QString(), QString()) {}
       virtual ~MetronomeSynth() {}
-      virtual Type synthType() const { return METRO_SYNTH; }
-      virtual void incInstances(int) {}
+      inline virtual Type synthType() const { return METRO_SYNTH; }
+      inline virtual void incInstances(int) {}
       virtual void* instantiate();
       
       virtual SynthIF* createSIF(SynthI*);
@@ -107,30 +112,29 @@ class MetronomeSynthIF : public SynthIF
             accent2Len = 0;
             initSamples();
             }
-      virtual void guiHeartBeat()  {  }
-      virtual bool guiVisible() const { return false; }
-      virtual bool hasGui() const { return false; }
-      virtual bool nativeGuiVisible() const { return false; }
-      virtual void showNativeGui(bool) { }
-      virtual bool hasNativeGui() const { return false; }
+      inline virtual void guiHeartBeat()  {  }
+      inline virtual bool guiVisible() const { return false; }
+      inline virtual bool hasGui() const { return false; }
+      inline virtual bool nativeGuiVisible() const { return false; }
+      inline virtual void showNativeGui(bool) { }
+      inline virtual bool hasNativeGui() const { return false; }
       
-      virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
-      virtual void setNativeGeometry(int, int, int, int) {}
-      virtual void preProcessAlways() { }
+      inline virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
+      inline virtual void setNativeGeometry(int, int, int, int) {}
       virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned n, float** buffer);
       virtual MidiPlayEvent receiveEvent() { return MidiPlayEvent(); }
       virtual int eventsPending() const { return 0; }
       
-      virtual int channels() const { return 1; }
-      virtual int totalOutChannels() const { return 1; }
-      virtual int totalInChannels() const { return 0; }
-      virtual void deactivate3() {}
-      virtual QString getPatchName(int, int, bool) const { return ""; }
-      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool) {}
-      virtual void write(int, Xml&) const {}
-      virtual double getParameter(unsigned long) const  { return 0.0; }
-      virtual void setParameter(unsigned long, double) {}
-      virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) { return 0; }
+      inline virtual int channels() const { return 1; }
+      inline virtual int totalOutChannels() const { return 1; }
+      inline virtual int totalInChannels() const { return 0; }
+      inline virtual void deactivate3() {}
+      inline virtual QString getPatchName(int, int, bool) const { return ""; }
+      inline virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool) {}
+      inline virtual void write(int, Xml&) const {}
+      inline virtual double getParameter(unsigned long) const  { return 0.0; }
+      inline virtual void setParameter(unsigned long, double) {}
+      inline virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) { return 0; }
 
       void initSamplesOperation(MusECore::PendingOperationList&);
        
@@ -431,7 +435,6 @@ SynthIF* MetronomeSynth::createSIF(SynthI* s)
 
 void MetronomeSynthIF::process(float** buffer, int offset, int n)
       {
-      // Added by Tim. p3.3.18
       #ifdef METRONOME_DEBUG
       printf("MusE: MetronomeSynthIF::process data:%p offset:%d n:%d\n", data, offset, n);
       #endif
@@ -464,6 +467,243 @@ void MetronomeSynthI::initSamplesOperation(PendingOperationList& operations)
     dynamic_cast<MetronomeSynthIF*>(sif())->initSamplesOperation(operations);
 }
    
+//================================================
+// BEGIN Latency correction/compensation routines.
+//================================================
+
+//---------------------------------------------------------
+//   isLatencyInputTerminal
+//---------------------------------------------------------
+
+bool MetronomeSynthI::isLatencyInputTerminal()
+{
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._isLatencyInputTerminalProcessed)
+    return _latencyInfo._isLatencyInputTerminal;
+
+  // Ultimately if the track is off there is no audio or midi processing, so it's a terminal.
+  if(off() /*|| !MusEGlobal::song->click()*/)
+  {
+    _latencyInfo._isLatencyInputTerminal = true;
+    _latencyInfo._isLatencyInputTerminalProcessed = true;
+    return true;
+  }
+  
+  MusECore::MetronomeSettings* metro_settings = 
+    MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
+  if(metro_settings->audioClickFlag)
+  {
+    const ciAudioOutput tl_end = MusEGlobal::song->outputs()->cend();
+    for(ciAudioOutput it = MusEGlobal::song->outputs()->cbegin(); it != tl_end; ++it)
+    {
+      const AudioOutput* ao = *it;
+      if(ao->off())
+        continue;
+      if(ao->sendMetronome())
+      {
+        _latencyInfo._isLatencyInputTerminal = false;
+        _latencyInfo._isLatencyInputTerminalProcessed = true;
+        return false;
+      }
+    }
+  }    
+
+  if(metro_settings->midiClickFlag /*&& !precount_mute_metronome*/)
+  {
+      const int port = metro_settings->clickPort;
+      if((openFlags() & 2 /*read*/) && port >= 0 && port < MusECore::MIDI_PORTS)
+      {
+        const MidiPort* mp = &MusEGlobal::midiPorts[port];
+        const MidiDevice* md = mp->device();
+        // TODO Make a new SynthI::isReadable and isWritable to replace this and MANY others in the app, and add to some places
+        //       where it's not even used. Prevent sending to the synth, maybe finally get rid of the flushing in SynthI::preProcessAlways()
+        if(md && ((md->openFlags() & 1 /*write*/) && (!md->isSynti() || !static_cast<const SynthI*>(md)->off())))
+        {
+          _latencyInfo._isLatencyInputTerminal = false;
+          _latencyInfo._isLatencyInputTerminalProcessed = true;
+          return false;
+        }
+      }
+  }
+
+  _latencyInfo._isLatencyInputTerminal = true;
+  _latencyInfo._isLatencyInputTerminalProcessed = true;
+  return true;
+}
+
+//---------------------------------------------------------
+//   isLatencyOutputTerminal
+//---------------------------------------------------------
+
+bool MetronomeSynthI::isLatencyOutputTerminal()
+{
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._isLatencyOutputTerminalProcessed)
+    return _latencyInfo._isLatencyOutputTerminal;
+
+  MusECore::MetronomeSettings* metro_settings = 
+    MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
+  if(metro_settings->audioClickFlag)
+  {
+    const ciAudioOutput tl_end = MusEGlobal::song->outputs()->cend();
+    for(ciAudioOutput it = MusEGlobal::song->outputs()->cbegin(); it != tl_end; ++it)
+    {
+      const AudioOutput* ao = *it;
+      if(ao->off())
+        continue;
+      if(ao->sendMetronome())
+      {
+        _latencyInfo._isLatencyOutputTerminal = false;
+        _latencyInfo._isLatencyOutputTerminalProcessed = true;
+        return false;
+      }
+    }
+  }    
+
+  if(metro_settings->midiClickFlag /*&& !precount_mute_metronome*/)
+  {
+      const int port = metro_settings->clickPort;
+      if((openFlags() & 2 /*read*/) && port >= 0 && port < MusECore::MIDI_PORTS)
+      {
+        const MidiPort* mp = &MusEGlobal::midiPorts[port];
+        const MidiDevice* md = mp->device();
+        // TODO Make a new SynthI::isReadable and isWritable to replace this and MANY others in the app, and add to some places
+        //       where it's not even used. Prevent sending to the synth, maybe finally get rid of the flushing in SynthI::preProcessAlways()
+        if(md && ((md->openFlags() & 1 /*write*/) && (!md->isSynti() || !static_cast<const SynthI*>(md)->off())))
+        {
+          _latencyInfo._isLatencyOutputTerminal = false;
+          _latencyInfo._isLatencyOutputTerminalProcessed = true;
+          return false;
+        }
+      }
+  }
+    
+  _latencyInfo._isLatencyOutputTerminal = true;
+  _latencyInfo._isLatencyOutputTerminalProcessed = true;
+  return true;
+}
+
+bool MetronomeSynthI::isLatencyInputTerminalMidi(bool capture)
+{
+  TrackLatencyInfo* tli = capture ? &_captureLatencyInfo : &_playbackLatencyInfo;
+
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(tli->_isLatencyInputTerminalProcessed)
+    return tli->_isLatencyInputTerminal;
+
+  // Ultimately if the track is off there is no audio or midi processing, so it's a terminal.
+  if(off() /*|| !MusEGlobal::song->click()*/)
+  {
+    tli->_isLatencyInputTerminal = true;
+    tli->_isLatencyInputTerminalProcessed = true;
+    return true;
+  }
+  
+  MusECore::MetronomeSettings* metro_settings = 
+    MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
+  if(metro_settings->audioClickFlag)
+  {
+    const ciAudioOutput tl_end = MusEGlobal::song->outputs()->cend();
+    for(ciAudioOutput it = MusEGlobal::song->outputs()->cbegin(); it != tl_end; ++it)
+    {
+      const AudioOutput* ao = *it;
+      if(ao->off())
+        continue;
+      if(ao->sendMetronome())
+      {
+        tli->_isLatencyInputTerminal = false;
+        tli->_isLatencyInputTerminalProcessed = true;
+        return false;
+      }
+    }
+  }    
+
+  if(metro_settings->midiClickFlag /*&& !precount_mute_metronome*/)
+  {
+      const int port = metro_settings->clickPort;
+      if((openFlags() & 2 /*read*/) && port >= 0 && port < MusECore::MIDI_PORTS)
+      {
+        const MidiPort* mp = &MusEGlobal::midiPorts[port];
+        const MidiDevice* md = mp->device();
+        // TODO Make a new SynthI::isReadable and isWritable to replace this and MANY others in the app, and add to some places
+        //       where it's not even used. Prevent sending to the synth, maybe finally get rid of the flushing in SynthI::preProcessAlways()
+        if(md && ((md->openFlags() & 1 /*write*/) && (!md->isSynti() || !static_cast<const SynthI*>(md)->off())))
+        {
+          tli->_isLatencyInputTerminal = false;
+          tli->_isLatencyInputTerminalProcessed = true;
+          return false;
+        }
+      }
+  }
+
+  tli->_isLatencyInputTerminal = true;
+  tli->_isLatencyInputTerminalProcessed = true;
+  return true;
+}
+
+bool MetronomeSynthI::isLatencyOutputTerminalMidi(bool capture)
+{
+  TrackLatencyInfo* tli = capture ? &_captureLatencyInfo : &_playbackLatencyInfo;
+
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(tli->_isLatencyOutputTerminalProcessed)
+    return tli->_isLatencyOutputTerminal;
+
+  MusECore::MetronomeSettings* metro_settings = 
+    MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
+  if(metro_settings->audioClickFlag)
+  {
+    const ciAudioOutput tl_end = MusEGlobal::song->outputs()->cend();
+    for(ciAudioOutput it = MusEGlobal::song->outputs()->cbegin(); it != tl_end; ++it)
+    {
+      const AudioOutput* ao = *it;
+      if(ao->off())
+        continue;
+      if(ao->sendMetronome())
+      {
+        tli->_isLatencyOutputTerminal = false;
+        tli->_isLatencyOutputTerminalProcessed = true;
+        return false;
+      }
+    }
+  }    
+
+  if(metro_settings->midiClickFlag /*&& !precount_mute_metronome*/)
+  {
+      const int port = metro_settings->clickPort;
+      if((openFlags() & 2 /*read*/) && port >= 0 && port < MusECore::MIDI_PORTS)
+      {
+        const MidiPort* mp = &MusEGlobal::midiPorts[port];
+        const MidiDevice* md = mp->device();
+        // TODO Make a new SynthI::isReadable and isWritable to replace this and MANY others in the app, and add to some places
+        //       where it's not even used. Prevent sending to the synth, maybe finally get rid of the flushing in SynthI::preProcessAlways()
+        if(md && ((md->openFlags() & 1 /*write*/) && (!md->isSynti() || !static_cast<const SynthI*>(md)->off())))
+        {
+          tli->_isLatencyOutputTerminal = false;
+          tli->_isLatencyOutputTerminalProcessed = true;
+          return false;
+        }
+      }
+  }
+
+  tli->_isLatencyOutputTerminal = true;
+  tli->_isLatencyOutputTerminalProcessed = true;
+  return true;
+}
+
+//================================================
+// END Latency correction/compensation routines.
+//================================================
+
+
 //---------------------------------------------------------
 //   initMetronome
 //---------------------------------------------------------

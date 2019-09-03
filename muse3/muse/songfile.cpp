@@ -524,7 +524,7 @@ void Song::read(Xml& xml, bool isTemplate)
             switch (token) {
                   case Xml::Error:
                   case Xml::End:
-                        return;
+                        goto song_read_end;
                   case Xml::TagStart:
                         if (tag == "master")
                               setMasterFlag(xml.parseInt());
@@ -677,12 +677,14 @@ void Song::read(Xml& xml, bool isTemplate)
                         break;
                   case Xml::TagEnd:
                         if (tag == "song") {
-                              return;
+                              goto song_read_end;
                               }
                   default:
                         break;
                   }
             }
+            
+song_read_end:
       dirty = false;
 
       // Since cloneList is also used for copy/paste operations,

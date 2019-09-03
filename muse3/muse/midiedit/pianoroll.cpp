@@ -28,7 +28,6 @@
 #include <QToolButton>
 #include <QToolTip>
 #include <QMenu>
-#include <QSignalMapper>
 #include <QMenuBar>
 #include <QWhatsThis>
 #include <QApplication>
@@ -118,9 +117,6 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       _playEvents    = true;
       colorMode      = colorModeInit;
       
-      QSignalMapper* mapper = new QSignalMapper(this);
-      QSignalMapper* colorMapper = new QSignalMapper(this);
-      
       //---------Menu----------------------------------
       
       menuEdit = menuBar()->addMenu(tr("&Edit"));      
@@ -130,73 +126,56 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       menuEdit->addSeparator();
       
       editCutAction = menuEdit->addAction(QIcon(*editcutIconSet), tr("C&ut"));
-      mapper->setMapping(editCutAction, PianoCanvas::CMD_CUT);
-      connect(editCutAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(editCutAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_CUT); } );
       
       editCopyAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("&Copy"));
-      mapper->setMapping(editCopyAction, PianoCanvas::CMD_COPY);
-      connect(editCopyAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(editCopyAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_COPY); } );
       
       editCopyRangeAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy events in range"));
-      mapper->setMapping(editCopyRangeAction, PianoCanvas::CMD_COPY_RANGE);
-      connect(editCopyRangeAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(editCopyRangeAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_COPY_RANGE); } );
       
       editPasteAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("&Paste"));
-      mapper->setMapping(editPasteAction, PianoCanvas::CMD_PASTE);
-      connect(editPasteAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(editPasteAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_PASTE); } );
       
       editPasteToCurPartAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste to current part"));
-      mapper->setMapping(editPasteToCurPartAction, PianoCanvas::CMD_PASTE_TO_CUR_PART);
-      connect(editPasteToCurPartAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(editPasteToCurPartAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_PASTE_TO_CUR_PART); } );
 
       editPasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste (with dialog)"));
-      mapper->setMapping(editPasteDialogAction, PianoCanvas::CMD_PASTE_DIALOG);
-      connect(editPasteDialogAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(editPasteDialogAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_PASTE_DIALOG); } );
       
       menuEdit->addSeparator();
       
       editDelEventsAction = menuEdit->addAction(tr("Delete &Events"));
-      mapper->setMapping(editDelEventsAction, PianoCanvas::CMD_DEL);
-      connect(editDelEventsAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(editDelEventsAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_DEL); } );
       
       menuEdit->addSeparator();
 
       menuSelect = menuEdit->addMenu(QIcon(*selectIcon), tr("&Select"));
 
       selectAllAction = menuSelect->addAction(QIcon(*select_allIcon), tr("Select &All"));
-      mapper->setMapping(selectAllAction, PianoCanvas::CMD_SELECT_ALL);
-      connect(selectAllAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(selectAllAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_ALL); } );
       
       selectNoneAction = menuSelect->addAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"));
-      mapper->setMapping(selectNoneAction, PianoCanvas::CMD_SELECT_NONE);
-      connect(selectNoneAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(selectNoneAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_NONE); } );
       
       selectInvertAction = menuSelect->addAction(QIcon(*select_invert_selectionIcon), tr("Invert &Selection"));
-      mapper->setMapping(selectInvertAction, PianoCanvas::CMD_SELECT_INVERT);
-      connect(selectInvertAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(selectInvertAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_INVERT); } );
       
       menuSelect->addSeparator();
       
       selectInsideLoopAction = menuSelect->addAction(QIcon(*select_inside_loopIcon), tr("&Inside Loop"));
-      mapper->setMapping(selectInsideLoopAction, PianoCanvas::CMD_SELECT_ILOOP);
-      connect(selectInsideLoopAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(selectInsideLoopAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_ILOOP); } );
       
       selectOutsideLoopAction = menuSelect->addAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"));
-      mapper->setMapping(selectOutsideLoopAction, PianoCanvas::CMD_SELECT_OLOOP);
-      connect(selectOutsideLoopAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(selectOutsideLoopAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_OLOOP); } );
       
       menuSelect->addSeparator();
       
       selectPrevPartAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Previous Part"));
-      mapper->setMapping(selectPrevPartAction, PianoCanvas::CMD_SELECT_PREV_PART);
-      connect(selectPrevPartAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(selectPrevPartAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_PREV_PART); } );
       
       selectNextPartAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Next Part"));
-      mapper->setMapping(selectNextPartAction, PianoCanvas::CMD_SELECT_NEXT_PART);
-      connect(selectNextPartAction, SIGNAL(triggered()), mapper, SLOT(map()));
-
-
-
+      connect(selectNextPartAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_NEXT_PART); } );
 
 
       menuFunctions = menuBar()->addMenu(tr("Fu&nctions"));
@@ -204,55 +183,50 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       menuFunctions->setTearOffEnabled(true);
       
       funcQuantizeAction = menuFunctions->addAction(tr("Quantize"));
-      mapper->setMapping(funcQuantizeAction, PianoCanvas::CMD_QUANTIZE);
-      connect(funcQuantizeAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(funcQuantizeAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_QUANTIZE); } );
       
       funcGateTimeAction = menuFunctions->addAction(tr("Modify Note Length"));
-      mapper->setMapping(funcGateTimeAction, PianoCanvas::CMD_MODIFY_GATE_TIME);
-      connect(funcGateTimeAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(funcGateTimeAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_MODIFY_GATE_TIME); } );
       
       funcModVelAction = menuFunctions->addAction(tr("Modify Velocity"));
-      mapper->setMapping(funcModVelAction, PianoCanvas::CMD_MODIFY_VELOCITY);
-      connect(funcModVelAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(funcModVelAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_MODIFY_VELOCITY); } );
       
       funcCrescAction = menuFunctions->addAction(tr("Crescendo/Decrescendo"));
-      mapper->setMapping(funcCrescAction, PianoCanvas::CMD_CRESCENDO);
-      connect(funcCrescAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(funcCrescAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_CRESCENDO); } );
       
       funcTransposeAction = menuFunctions->addAction(tr("Transpose"));
-      mapper->setMapping(funcTransposeAction, PianoCanvas::CMD_TRANSPOSE);
-      connect(funcTransposeAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(funcTransposeAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_TRANSPOSE); } );
             
       funcEraseEventAction = menuFunctions->addAction(tr("Erase Events"));
-      mapper->setMapping(funcEraseEventAction, PianoCanvas::CMD_ERASE_EVENT);
-      connect(funcEraseEventAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(funcEraseEventAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_ERASE_EVENT); } );
       
       funcNoteShiftAction = menuFunctions->addAction(tr("Move Notes"));
-      mapper->setMapping(funcNoteShiftAction, PianoCanvas::CMD_NOTE_SHIFT);
-      connect(funcNoteShiftAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(funcNoteShiftAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_NOTE_SHIFT); } );
             
       funcSetFixedLenAction = menuFunctions->addAction(tr("Set Fixed Length"));
-      mapper->setMapping(funcSetFixedLenAction, PianoCanvas::CMD_FIXED_LEN);
-      connect(funcSetFixedLenAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(funcSetFixedLenAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_FIXED_LEN); } );
       
       funcDelOverlapsAction = menuFunctions->addAction(tr("Delete Overlaps"));
-      mapper->setMapping(funcDelOverlapsAction, PianoCanvas::CMD_DELETE_OVERLAPS);
-      connect(funcDelOverlapsAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(funcDelOverlapsAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_DELETE_OVERLAPS); } );
 
       QAction* funcLegatoAction = menuFunctions->addAction(tr("Legato"));
-      mapper->setMapping(funcLegatoAction, PianoCanvas::CMD_LEGATO);
-      connect(funcLegatoAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(funcLegatoAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_LEGATO); } );
             
-                  
+
+      //----------------------
+      // Scripts:
+      //----------------------
+
       menuPlugins = menuBar()->addMenu(tr("&Plugins"));
-      MusEGlobal::song->populateScriptMenu(menuPlugins, this);
+      connect(&_scriptReceiver,
+              &MusECore::ScriptReceiver::execDeliveredScriptReceived,
+              [this](int id) { execDeliveredScript(id); } );
+      connect(&_scriptReceiver,
+              &MusECore::ScriptReceiver::execUserScriptReceived,
+              [this](int id) { execUserScript(id); } );
+      MusEGlobal::song->populateScriptMenu(menuPlugins, &_scriptReceiver);
 
-      connect(mapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
-      
 
-      
-      
-      
       menuConfig = menuBar()->addMenu(tr("Window &Config"));      
       
       eventColor = menuConfig->addMenu(tr("&Event Color"));      
@@ -262,23 +236,17 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       evColorBlueAction = actgrp->addAction(tr("&Blue"));
       evColorBlueAction->setCheckable(true);
-      colorMapper->setMapping(evColorBlueAction, 0);
+      connect(evColorBlueAction, &QAction::triggered, [this]() { eventColorModeChanged(0); } );
       
       evColorPitchAction = actgrp->addAction(tr("&Pitch colors"));
       evColorPitchAction->setCheckable(true);
-      colorMapper->setMapping(evColorPitchAction, 1);
+      connect(evColorPitchAction, &QAction::triggered, [this]() { eventColorModeChanged(1); } );
       
       evColorVelAction = actgrp->addAction(tr("&Velocity colors"));
       evColorVelAction->setCheckable(true);
-      colorMapper->setMapping(evColorVelAction, 2);
-      
-      connect(evColorBlueAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
-      connect(evColorPitchAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
-      connect(evColorVelAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
+      connect(evColorVelAction, &QAction::triggered, [this]() { eventColorModeChanged(2); } );
       
       eventColor->addActions(actgrp->actions());
-      
-      connect(colorMapper, SIGNAL(mapped(int)), this, SLOT(eventColorModeChanged(int)));
       
       menuConfig->addSeparator();
       menuConfig->addAction(subwinAction);
@@ -772,7 +740,7 @@ void PianoRoll::cmd(int cmd)
                     tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
                       ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
                     MusECore::quantize_items(&tag_list, ret._raster_index,
-                                           /*ret._quant_len*/ false,  // DELETETHIS
+                                           ret._quant_len,
                                            ret._strength,
                                            ret._swing,
                                            ret._threshold);
@@ -1176,8 +1144,6 @@ void PianoRoll::closeEvent(QCloseEvent* e)
       {
       _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
 
-// REMOVE Tim. path. Changed.
-//       QSettings settings("MusE", "MusE-qt");
       QSettings settings;
       settings.setValue("Pianoroll/windowState", saveState());
 

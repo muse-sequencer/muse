@@ -353,6 +353,9 @@ void TList::paint(const QRect& r)
                   if(!header->isSectionHidden(section))
                   {
                     switch (section) {
+                          case COL_TRACK_IDX:
+                                p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, QString::number(MusEGlobal::song->tracks()->index(track) + 1));
+                                break;
                           case COL_INPUT_MONITOR:
                                 if (track->canRecordMonitor()) {
                                       (track->recMonitor() ? monitorOnSVGIcon : monitorOffSVGIcon)->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
@@ -1087,14 +1090,8 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
               synth->showNativeGui(show);
               }
 #ifdef LV2_SUPPORT
-        else if (mSubPresets != NULL && ract != NULL) {
-           QWidget *mwidget = ract->parentWidget();
-           if (mwidget != NULL) {
-               if(mSubPresets == dynamic_cast<PopupMenu*>(mwidget)) {
-                  static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
-               }
-           }
-
+        else if (mSubPresets != NULL && ract != NULL && ract->data().canConvert<void *>()) {
+          static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
         }
 #endif
         delete p;
@@ -1155,13 +1152,12 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
             port->showNativeGui(!port->nativeGuiVisible());
             }
 #ifdef LV2_SUPPORT
-        else if (mSubPresets != NULL && ract != NULL) {
-           QWidget *mwidget = ract->parentWidget();
-           if (mwidget != NULL && port->device() && port->device()->isSynti()) {
+        else if (mSubPresets != NULL && ract != NULL && ract->data().canConvert<void *>())
+        {
+           if (port->device() && port->device()->isSynti())
+           {
                MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(port->device());
-               if(mSubPresets == dynamic_cast<PopupMenu*>(mwidget)) {
-                  static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
-               }
+               static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
            }
         }
 #endif
@@ -1377,7 +1373,7 @@ void TList::changeAutomationColor(QAction* act)
   {
       if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
           tr("Clear all controller events?"), tr("&Ok"), tr("&Cancel"),
-          QString::null, 0, 1 ) == 0)
+          QString(), 0, 1 ) == 0)
       {
         MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
         MusEGlobal::audio->msgClearControllerEvents(track, id);
@@ -1731,6 +1727,26 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   }
                   break;
                 }
+
+            case COL_TRACK_IDX:
+                  mode = START_DRAG;  // Allow a track drag to start.
+                  if (button == Qt::LeftButton) {
+                        if (!ctrl) {
+                              MusEGlobal::song->selectAllTracks(false);
+                              t->setSelected(true);
+
+                              // rec enable track if expected
+                              MusECore::TrackList recd = getRecEnabledTracks();
+                              if (recd.size() == 1 && MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+                                MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
+                                MusEGlobal::song->setRecordFlag(t,true);
+                              }
+                              }
+                        else
+                              t->setSelected(!t->selected());
+                        MusEGlobal::song->update(SC_TRACK_SELECTION);
+                    }
+                  break;
 
             case COL_INPUT_MONITOR:
                   {

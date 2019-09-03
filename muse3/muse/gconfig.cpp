@@ -38,6 +38,17 @@ namespace MusEGlobal {
  *    of these values.
  *    In a perfect world it would overwrite all values and
  *    these would be removed.
+ * 
+ * SE 3 2019: In a perfect world ALL configuration values are stored here.
+ *    And most are. But some are not, they are scattered throughout the app.
+ *    But they are not THAT difficult to find by reverse looking up an xml tag
+ *     in an existing config file to find out what uses it.
+ *    We should strive to keep ALL config values here, where each item is
+ *     guaranteed to have a value. Some devs (me included) are neglecting
+ *     to put new values in the template. So it becomes ineffective.
+ * 
+ *    Therefore item 2) is no longer true. It has been disabled in main.cpp.
+ *    Tim.
  */
 
 GlobalConfigValues config = {
@@ -230,7 +241,7 @@ GlobalConfigValues config = {
       QString(""),                  // start song path
       false,                        // startSongLoadConfig
       384,                          // gui division
-      QRect(0, 0, 400, 300),        // GeometryMain;
+      QRect(0, 0, 700, 550),        // GeometryMain;
       QRect(0, 0, 200, 100),        // GeometryTransport;
       QRect(0, 0, 600, 200),        // GeometryBigTime;
       {
@@ -311,6 +322,11 @@ GlobalConfigValues config = {
       MusEGlobal::RoutePreferCanonicalName,  // preferredRouteNameOrAlias
       true,                         // routerExpandVertically
       2,                            // routerGroupingChannels
+      false,                        // enableLatencyCorrection.
+      false,                        // correctUnterminatedOutBranchLatency
+      false,                        // correctUnterminatedInBranchLatency
+      false,                        // monitoringAffectsLatency
+      false,                        // commonProjectLatency
       "",                           // mixdownPath
       true,                         // showNoteNamesInPianoRoll
       false                         // selectionsUndoable Whether selecting parts or events is undoable.

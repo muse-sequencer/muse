@@ -163,7 +163,7 @@ void FluidSynthGui::loadClicked()
                                                       //QString("Soundfonts (*.[Ss][Ff]2);;All files (*)"));
                                                       QString("Soundfonts (*.sf2);;All files (*)"));
 
-      if (filename != QString::null) {
+      if (!filename.isEmpty()) {
             int lastslash = filename.lastIndexOf('/');
             lastdir = filename.left(lastslash);
 

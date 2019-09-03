@@ -45,17 +45,12 @@ set (SubDirs
       waveedit
       )
 if(LV2_SUPPORT)
-  if(LV2_USE_SUPPLIED_VERSION)
-    set ( SubDirs ${SubDirs} lv2Support )
-  endif(LV2_USE_SUPPLIED_VERSION)
-  
   if(HAVE_GTK2)
     set ( SubDirs ${SubDirs} lv2Gtk2Support )
   endif(HAVE_GTK2)
 endif(LV2_SUPPORT)
 
 if (PYTHON_SUPPORT)
-      set ( REM_CPP_FLAGS "-DENABLE_PYTHON" )
       set ( REM_LIB remote )
       set ( SubDirs ${SubDirs} remote )
 endif (PYTHON_SUPPORT)
@@ -74,6 +69,7 @@ QT5_WRAP_CPP ( muse_moc_headers
       midieditor.h
       miditransform.h
       plugin.h
+      script_delivery.h
       song.h
       transport.h
       value.h
@@ -138,6 +134,7 @@ file (GLOB core_source_files
       pluglist.cpp
       pos.cpp
       route.cpp
+      script_delivery.cpp
       seqmsg.cpp
       shortcuts.cpp
       sig.cpp
@@ -167,6 +164,10 @@ file (GLOB icons_source_files
       icons.cpp
       )
 
+file (GLOB latency_compensator_source_files
+      latency_info.cpp
+      latency_compensator.cpp
+      )
 file (GLOB wavepreview_source_files
       wavepreview.cpp
       )
@@ -175,6 +176,9 @@ file (GLOB wavepreview_source_files
 ## Define target
 ##
 
+add_library ( latency_compensator_module SHARED
+      ${latency_compensator_source_files}
+      )
 add_library ( wavepreview_module SHARED
       ${wavepreview_moc_headers}
       ${wavepreview_source_files}
@@ -238,7 +242,7 @@ include_directories(
 ## Compilation flags and target name
 ##
 set_target_properties( core
-      PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK} ${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h"
+      PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK} -include ${PROJECT_BINARY_DIR}/all.h"
       
       OUTPUT_NAME muse_core
       )
@@ -249,6 +253,10 @@ set_target_properties( icons
       PROPERTIES OUTPUT_NAME muse_icons
       )
 
+set_target_properties( latency_compensator_module
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+      OUTPUT_NAME muse_latency_compensator_module
+      )
 set_target_properties( wavepreview_module
       PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_wavepreview_module
@@ -274,6 +282,7 @@ target_link_libraries(core
       evdata_module
       icons
       instruments
+      latency_compensator_module
       liste
       marker
       master
@@ -340,20 +349,9 @@ if(LV2_SUPPORT)
             OUTPUT_NAME muse_lv2host_module
             )
             
-      if(LV2_USE_SUPPLIED_VERSION)
-            message("Building and linking internal LV2 support libraries (lv2, lilv, sord etc.)")
-            message("")
-            target_link_libraries(lv2host_module lv2_support)
-            if (PCRE_FOUND)
-                    target_link_libraries(lv2host_module ${PCRE_LIBRARIES})
-            endif (PCRE_FOUND)
-      else(LV2_USE_SUPPLIED_VERSION)
-            message("Linking system LV2 support libraries (lv2, lilv, sord etc.)")
-            message("")
-            target_link_libraries(lv2host_module ${LILV_LIBRARIES})
-            target_link_libraries(lv2host_module ${SORD_LIBRARIES})
-            target_link_libraries(lv2host_module ${LV2_LIBRARIES})
-      endif(LV2_USE_SUPPLIED_VERSION)
+      target_link_libraries(lv2host_module ${LILV_LIBRARIES})
+      target_link_libraries(lv2host_module ${SORD_LIBRARIES})
+      target_link_libraries(lv2host_module ${LV2_LIBRARIES})
       
       if(HAVE_GTK2)
             target_link_libraries(lv2host_module lv2_gtk2_support)
@@ -383,12 +381,14 @@ install( TARGETS muse
       )
       
 install(TARGETS
+        latency_compensator_module
         wavepreview_module
       DESTINATION ${MusE_MODULES_DIR}
       )
       
 if ( ${MODULES_BUILD} STREQUAL SHARED )
       install(TARGETS core icons 
+              # latency_compensator_module
               lv2host_module 
             DESTINATION ${MusE_MODULES_DIR}
             )

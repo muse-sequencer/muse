@@ -147,7 +147,12 @@ ClipListEdit::ClipListEdit(QWidget* parent)
 
       QFontMetrics fm(editor->view->font());
       int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth,0, this); // ddskrjo 0
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      int w  = 2 + fm.horizontalAdvance('9') * 9 + fm.horizontalAdvance(':') * 3 + fw * 4;
+#else
       int w  = 2 + fm.width('9') * 9 + fm.width(':') * 3 + fw * 4;
+#endif
       editor->view->setColumnWidth(COL_SAMPLERATE, w);
       editor->view->setColumnWidth(COL_LEN, w);
 

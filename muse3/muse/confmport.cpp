@@ -84,8 +84,6 @@ namespace MusEGui {
 void MPConfig::closeEvent(QCloseEvent *event)
 {
     apply();
-// REMOVE Tim. path. Changed.
-//     QSettings settings("MusE", "MusE-qt");
     QSettings settings;
     settings.setValue("MPConfig/geometry", saveGeometry());
     QWidget::closeEvent(event);
@@ -1121,8 +1119,6 @@ MPConfig::MPConfig(QWidget* parent)
    : QDialog(parent)
       {
       setupUi(this);
-// REMOVE Tim. path. Changed.
-//       QSettings settings("MusE", "MusE-qt");
       QSettings settings;
       restoreGeometry(settings.value("MPConfig/geometry").toByteArray());
 

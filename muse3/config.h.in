@@ -20,6 +20,10 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
+#ifndef _MUSE_CONFIG_H_
+#define _MUSE_CONFIG_H_
+
+#cmakedefine POSIX_TIMER_SUPPORT
 #cmakedefine ALSA_SUPPORT
 #cmakedefine HAVE_RTAUDIO
 #cmakedefine DSSI_ALSA_COMPAT_SUPPORT
@@ -28,6 +32,7 @@
 #cmakedefine OSC_SUPPORT
 #cmakedefine DSSI_SUPPORT
 #cmakedefine LV2_SUPPORT
+#cmakedefine PYTHON_SUPPORT
 #cmakedefine HAVE_INSTPATCH
 #cmakedefine HAVE_GTK2
 #cmakedefine VST_SUPPORT
@@ -45,8 +50,10 @@
 #define ORGANIZATION_DOMAIN "muse-sequencer.org"
 #define PACKAGE_NAME        "MusE"
 #define APP_DISPLAY_NAME    "MusE"
-#define APP_SETTINGS_NAME   "MusE-qt"
+#define APP_DESCRIPTION     "MusE: Linux Music Editor"
 #define DOCDIR              "${MusE_DOC_DIR}"
 #define SHAREDIR            "${MusE_SHARE_DIR}"
 #define LIBDIR              "${MusE_LIB_DIR}"
 #define BINDIR              "${MusE_BIN_DIR}"
+
+#endif // _MUSE_CONFIG_H_

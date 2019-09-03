@@ -826,6 +826,26 @@ void Audio::msgStartMidiLearn()
 void Audio::msgBounce()
       {
       _bounce = true;
+      
+// REMOVE Tim. latency. Added. Moved here from audio thread process code (via Song::seqSignal()).
+      if(MusEGlobal::config.freewheelMode)
+      {
+        MusEGlobal::audioDevice->setFreewheel(true);
+        // Wait a few cycles for the freewheel to take effect.
+        for(int i = 0; i < 4; ++i)
+        {
+          if(freewheel())
+            break;
+          msgAudioWait();
+        }
+        // Check if freewheel was really set.
+        if(!freewheel())
+        {
+          fprintf(stderr, "ERROR: Audio::msgBounce(): Freewheel mode did not start yet!\n");
+        }
+      }
+      
+      
       if (!MusEGlobal::checkAudioDevice()) return;
       MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->lPos());
       }

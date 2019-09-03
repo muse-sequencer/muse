@@ -33,26 +33,40 @@ extern void exitMetronome();
 class MetronomeSynthI : public SynthI
 {
   virtual bool hasAuxSend() const  { return false; }
-   
+
 public:
   void initSamplesOperation(PendingOperationList& operations);
   
+  // The built-in metronome synth is special: It can correct latency by itself, and is
+  //  not driven by a midi track which can correct latency.
+  inline bool canCorrectOutputLatencyMidi() const { return true; }
+  bool isLatencyInputTerminalMidi(bool capture);
+  bool isLatencyOutputTerminalMidi(bool capture);
+
+  // The built-in metronome synth is special: It can correct latency by itself, and is
+  //  not driven by a midi track which can correct latency.
+  inline bool canCorrectOutputLatency() const { return true; }
+  // The built-in metronome synth is special: It cannot pass thru latency.
+  inline bool canPassThruLatency() const { return false; }
+  bool isLatencyInputTerminal();
+  bool isLatencyOutputTerminal();
+
   //------------------------------------------------------------------------
   // The metronome synth is special - it cannot be routed like other tracks, 
   //  and thus cannot be muted, soloed, recorded, or monitored.
   //------------------------------------------------------------------------
-  virtual void setMute(bool)         { }
-  virtual void setOff(bool)          { }
-  virtual void setSolo(bool)         { }
-  virtual bool isMute() const        { return false; }
-  virtual unsigned int internalSolo() const { return 0; }
-  virtual bool soloMode() const      { return false; }
-  virtual bool solo() const          { return false; }
-  virtual bool mute() const          { return false; }
-  virtual bool off() const           { return false; }
-  virtual bool recordFlag() const    { return false; }
-  virtual void setRecMonitor(bool)   { }
-  virtual bool recMonitor() const    { return false; }
+  inline virtual void setMute(bool)         { }
+  inline virtual void setOff(bool)          { }
+  inline virtual void setSolo(bool)         { }
+  inline virtual bool isMute() const        { return false; }
+  inline virtual unsigned int internalSolo() const { return 0; }
+  inline virtual bool soloMode() const      { return false; }
+  inline virtual bool solo() const          { return false; }
+  inline virtual bool mute() const          { return false; }
+  inline virtual bool off() const           { return false; }
+  inline virtual bool recordFlag() const    { return false; }
+  inline virtual void setRecMonitor(bool)   { }
+  inline virtual bool recMonitor() const    { return false; }
 };
 extern MetronomeSynthI* metronome;
 

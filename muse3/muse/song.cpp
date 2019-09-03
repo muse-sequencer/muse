@@ -31,7 +31,6 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QPoint>
-#include <QSignalMapper>
 #include <QString>
 #include <QTextStream>
 #include <QProcess>
@@ -1597,7 +1596,7 @@ void Song::normalizePart(MusECore::Part *part)
       if(file.isNull())
         continue;
 
-      QString tmpWavFile = QString::null;
+      QString tmpWavFile;
       if (!MusEGlobal::getUniqueTmpfileName("tmp_musewav",".wav", tmpWavFile))
       {
          return;
@@ -2331,14 +2330,15 @@ void Song::seqSignal(int fd)
                         }
 
                         break;
-                  case 'f':   // start freewheel
-                        if(MusEGlobal::debugMsg)
-                          fprintf(stderr, "Song: seqSignal: case f: setFreewheel start\n");
-                        
-                        if(MusEGlobal::config.freewheelMode)
-                          MusEGlobal::audioDevice->setFreewheel(true);
-                        
-                        break;
+// REMOVE Tim. latency. Removed. We now do this in MusE::bounceToFile() and MusE::bounceToTrack(), BEFORE the transport is started.
+//                   case 'f':   // start freewheel
+//                         if(MusEGlobal::debugMsg)
+//                           fprintf(stderr, "Song: seqSignal: case f: setFreewheel start\n");
+//                         
+//                         if(MusEGlobal::config.freewheelMode)
+//                           MusEGlobal::audioDevice->setFreewheel(true);
+//                         
+//                         break;
 
                   case 'F':   // stop freewheel
                         if(MusEGlobal::debugMsg)
@@ -2623,7 +2623,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
     case CLEAR_ALL_EVENTS:
           if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
               tr("Clear all controller events?"), tr("&Ok"), tr("&Cancel"),
-              QString::null, 0, 1 ) == 0)
+              QString(), 0, 1 ) == 0)
             MusEGlobal::audio->msgClearControllerEvents(track, acid);
     break;
 
@@ -3740,7 +3740,7 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
       {
         if(QMessageBox::question(parent, QString("Process events"),
             tr("Do you want to process ALL or only selected events?"), tr("&Selected"), tr("&All"),
-            QString::null, 0, 1 ) == 1)
+            QString(), 0, 1 ) == 1)
         {
             onlyIfSelected = false;
         }
@@ -3889,7 +3889,7 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
 }
 
 
-void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
+void Song::populateScriptMenu(QMenu* menuPlugins, ScriptReceiver* receiver)
 {
       // List scripts
       QString distScripts = MusEGlobal::museGlobalShare + "/scripts";
@@ -3908,29 +3908,22 @@ void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
             userScriptNames = dir.entryList();
             }
 
-      QSignalMapper* distSignalMapper = new QSignalMapper(this);
-      QSignalMapper* userSignalMapper = new QSignalMapper(this);
-
       if (deliveredScriptNames.size() > 0 || userScriptNames.size() > 0) {
             int id = 0;
             if (deliveredScriptNames.size() > 0) {
                   for (QStringList::Iterator it = deliveredScriptNames.begin(); it != deliveredScriptNames.end(); it++, id++) {
                         QAction* act = menuPlugins->addAction(*it);
-                        connect(act, SIGNAL(triggered()), distSignalMapper, SLOT(map()));
-                        distSignalMapper->setMapping(act, id);
+                        connect(act, &QAction::triggered, [receiver, id]() { receiver->receiveExecDeliveredScript(id); } );
                         }
                   menuPlugins->addSeparator();
                   }
             if (userScriptNames.size() > 0) {
                   for (QStringList::Iterator it = userScriptNames.begin(); it != userScriptNames.end(); it++, id++) {
                         QAction* act = menuPlugins->addAction(*it);
-                        connect(act, SIGNAL(triggered()), userSignalMapper, SLOT(map()));
-                        userSignalMapper->setMapping(act, id);
+                        connect(act, &QAction::triggered, [receiver, id]() { receiver->receiveExecUserScript(id); } );
                         }
                   menuPlugins->addSeparator();
                   }
-            connect(distSignalMapper, SIGNAL(mapped(int)), receiver, SLOT(execDeliveredScript(int)));
-            connect(userSignalMapper, SIGNAL(mapped(int)), receiver, SLOT(execUserScript(int)));
             }
       return;
 }
@@ -4007,7 +4000,7 @@ void Song::restartRecording(bool discard)
 
         new_track_names.push_back(nTrk->name());
         
-        const unsigned int idx = _tracks.index(cTrk) + idx_cnt++;
+        const int idx = _tracks.index(cTrk) + idx_cnt++;
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx + 1, nTrk));
         operations.push_back(UndoOp(UndoOp::SetTrackMute, cTrk, true));
         operations.push_back(UndoOp(UndoOp::SetTrackRecord, cTrk, false));

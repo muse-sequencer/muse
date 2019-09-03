@@ -85,8 +85,6 @@ extern QString configName;
 extern QString configPath;
 extern QString museInstruments;
 extern QString museUserInstruments;
-// REMOVE Tim. path. Added.
-//extern QString appDisplayName;
 extern QString cachePath;
 
 extern QString lastWavePath;
@@ -105,6 +103,11 @@ extern bool loadVST;
 extern bool loadNativeVST;
 extern bool loadDSSI;
 extern bool usePythonBridge;
+extern QString pythonBridgePyroNSHostname;
+extern QString pythonBridgePyroNSPort;
+extern QString pythonBridgePyroDaemonHostname;
+extern QString pythonBridgePyroDaemonPort;
+extern float pythonBridgePyroCommTimeout;
 extern bool useLASH;
 extern bool loadLV2;
 extern bool useAlsaWithJack;

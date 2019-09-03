@@ -365,7 +365,7 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
       QString s;
       for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) 
       {
-        if(!r->name().isEmpty())
+        if((r->type == Route::TRACK_ROUTE && r->track) || (r->type != Route::TRACK_ROUTE && !r->name().isEmpty()))
         {
           s = "Route";
           if(r->channel != -1)
@@ -374,18 +374,17 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
           xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, Xml::xmlString(name()).toLatin1().constData());
           s = "dest";
           if(r->type == Route::MIDI_DEVICE_ROUTE)
-            s += QString(" devtype=\"%1\"").arg(r->device->deviceType());
+            s += QString(" devtype=\"%1\" name=\"%2\"/").arg(r->device->deviceType()).arg(Xml::xmlString(r->name()));
+          else if(r->type == Route::TRACK_ROUTE)
+            s += QString(" track=\"%1\"").arg(MusEGlobal::song->tracks()->index(r->track));
           else
-          if(r->type != Route::TRACK_ROUTE)
-            s += QString(" type=\"%1\"").arg(r->type);
-          s += QString(" name=\"%1\"/").arg(Xml::xmlString(r->name()));
+            s += QString(" type=\"%1\" name=\"%2\"/").arg(r->type).arg(Xml::xmlString(r->name()));
           xml.tag(level, s.toLatin1().constData());
-          
           xml.etag(level--, "Route");
         }
       }
 }
-    
+
 //---------------------------------------------------------
 //   putAlsaEvent
 //    return false if event is delivered

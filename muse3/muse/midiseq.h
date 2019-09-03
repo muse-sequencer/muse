@@ -26,6 +26,7 @@
 #define __MIDISEQ_H__
 
 #include "thread.h"
+#include "timerdev.h"
 
 namespace MusECore {
 
@@ -34,7 +35,6 @@ class MidiPort;
 class MPEventList;
 class MTC;
 class SynthI;
-class Timer;
 
 //---------------------------------------------------------
 //   MidiSeq

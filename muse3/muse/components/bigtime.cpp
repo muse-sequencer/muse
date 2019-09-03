@@ -376,7 +376,12 @@ void BigTime::resizeEvent(QResizeEvent *ev)
   QFontMetrics fm(f);
   int fs     = f.pixelSize();
   int hspace = 20;
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+  int tw     = fm.horizontalAdvance(QString("000:00:00:00"));
+#else
   int tw     = fm.width(QString("000:00:00:00"));
+#endif
   
   fs         = ((ev->size().width() - hspace*2)*fs) / tw;
  
@@ -391,7 +396,12 @@ void BigTime::resizeEvent(QResizeEvent *ev)
   setBgColor(MusEGlobal::config.bigTimeBackgroundColor);
   setFgColor(MusEGlobal::config.bigTimeForegroundColor);
   
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+  int digitWidth = dwin->fontMetrics().horizontalAdvance(QString("0"));
+#else
   int digitWidth = dwin->fontMetrics().width(QString("0"));
+#endif
   int vspace = (ev->size().height() - (fs*2)) / 3;
   int tickY = vspace;
   

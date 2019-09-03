@@ -337,7 +337,9 @@ class PluginIBase
       virtual LADSPA_PortRangeHint range(unsigned long i) = 0;
       virtual LADSPA_PortRangeHint rangeOut(unsigned long i) = 0;
 
-      virtual float latency() = 0;
+      virtual bool hasLatencyOutPort() const = 0;
+      virtual unsigned long latencyOutPortIndex() const = 0;
+      virtual float latency() const = 0;
       
       virtual void setCustomData(const std::vector<QString> &) {/* Do nothing by default */}
       virtual CtrlValueType ctrlValueType(unsigned long i) const = 0;
@@ -497,7 +499,9 @@ class PluginI : public PluginIBase {
       bool isAudioOut(unsigned long k) { return (_plugin->portd(k) & IS_AUDIO_OUT) == IS_AUDIO_OUT; }
       LADSPA_PortRangeHint range(unsigned long i) { return _plugin->range(controls[i].idx); }
       LADSPA_PortRangeHint rangeOut(unsigned long i) { return _plugin->range(controlsOut[i].idx); }
-      float latency();
+      bool hasLatencyOutPort() const { return _hasLatencyOutPort; }
+      unsigned long latencyOutPortIndex() const { return _latencyOutPort; }
+      float latency() const;
       CtrlValueType ctrlValueType(unsigned long i) const { return _plugin->ctrlValueType(controls[i].idx); }
       CtrlList::Mode ctrlMode(unsigned long i) const { return _plugin->ctrlMode(controls[i].idx); }
       virtual void setCustomData(const std::vector<QString> &customParams);
@@ -540,7 +544,7 @@ class Pipeline : public std::vector<PluginI*> {
       bool addScheduledControlEvent(int track_ctrl_id, double val, unsigned frame); // returns true if event cannot be delivered
       void enableController(int track_ctrl_id, bool en);
       bool controllerEnabled(int track_ctrl_id);
-      float latency();
+      float latency() const;
       };
 
 typedef Pipeline::iterator iPluginI;
@@ -633,18 +637,18 @@ class PluginGui : public QMainWindow {
       void bypassToggled(bool);
       void sliderChanged(double value, int id, int scrollMode);
       void labelChanged(double, int);
-      void guiParamChanged(int);
+      void guiParamChanged(unsigned long int);
       void ctrlPressed(double, int);
       void ctrlReleased(double, int);
       void switchPressed(int);
       void switchReleased(int);
-      void guiParamPressed(int);
-      void guiParamReleased(int);
-      void guiSliderPressed(double, int);
-      void guiSliderReleased(double, int);
+      void guiParamPressed(unsigned long int);
+      void guiParamReleased(unsigned long int);
+      void guiSliderPressed(double, unsigned long int);
+      void guiSliderReleased(double, unsigned long int);
       void ctrlRightClicked(const QPoint &, int);
-      void guiSliderRightClicked(const QPoint &, int);
-      void guiContextMenuReq(int idx);
+      void guiSliderRightClicked(const QPoint &, unsigned long int);
+      void guiContextMenuReq(unsigned long int idx);
 
    protected slots:
       virtual void heartBeat();

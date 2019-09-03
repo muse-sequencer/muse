@@ -60,8 +60,8 @@ class MidiAlsaDevice : public MidiDevice {
       // Return false if event is delivered.
       bool processEvent(const MidiPlayEvent& ev);
       
-      virtual void processInput()  {}
-      virtual int selectRfd()      { return -1; }
+      inline virtual void processInput()  {}
+      inline virtual int selectRfd()      { return -1; }
       virtual int selectWfd();
 
       bool putAlsaEvent(snd_seq_event_t*);
@@ -79,8 +79,8 @@ class MidiAlsaDevice : public MidiDevice {
       // The meaning of the returned pointer depends on the driver.
       // For Jack it returns the address of a Jack port, for ALSA it return the address of a snd_seq_addr_t.
       // For ALSA midi, in/out client ports are the same. That is, ALSA midi client ports can be both r/w.
-      virtual void* inClientPort() { return (void*)&adr; }
-      virtual void* outClientPort() { return (void*)&adr; }
+      inline virtual void* inClientPort() { return (void*)&adr; }
+      inline virtual void* outClientPort() { return (void*)&adr; }
       
       virtual void writeRouting(int, Xml&) const;
       virtual inline MidiDeviceType deviceType() const { return ALSA_MIDI; } 

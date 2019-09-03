@@ -108,6 +108,8 @@ class global_drum_ordering_t : public QList< std::pair<MusECore::MidiTrack*,int>
     typedef std::pair<MusECore::MidiTrack*,int> entry_t;
     
     void write_single(int level, MusECore::Xml& xml, const entry_t& entry);
+    entry_t read_item(MusECore::Xml& xml);
+    // OBSOLETE. Keep for backwards compatibility.
     entry_t read_single(MusECore::Xml& xml);
 };
 

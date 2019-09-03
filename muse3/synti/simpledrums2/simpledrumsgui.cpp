@@ -848,7 +848,7 @@ void SimpleSynthGui::loadSampleDialogue(int channel)
             lastDir,
             QString("Samples *.wav *.ogg *.flac (*.wav *.WAV *.ogg *.flac);;All files (*)"));
 */
-   if (filename != QString::null) {
+   if (!filename.isEmpty()) {
       QFileInfo fi(filename);
       lastDir = fi.path();
 
@@ -1019,7 +1019,7 @@ void SimpleSynthGui::loadSetup()
          QFileDialog::getOpenFileName(this, "Load setup dialog", lastProjectDir,
                                       QString("*.sds *.SDS"));
 
-   if (filename != QString::null) {
+   if (!filename.isEmpty()) {
       QFile theFile(filename);
       if (theFile.open(QIODevice::ReadOnly)) {
          unsigned initdata_len = 0;
@@ -1061,7 +1061,7 @@ void SimpleSynthGui::saveSetup()
          QFileDialog::getSaveFileName(this, "Save setup dialog", lastProjectDir,
                                       QString("*.sds *.SDS"));
 
-   if (filename != QString::null) {
+   if (!filename.isEmpty()) {
       lastSavedProject = filename;
       //byte d[1];
       byte d[3];

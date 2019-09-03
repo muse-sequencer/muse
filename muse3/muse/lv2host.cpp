@@ -108,9 +108,13 @@ namespace MusECore
 #define LV2_F_BOUNDED_BLOCK_LENGTH LV2_BUF_SIZE__boundedBlockLength
 #define LV2_F_FIXED_BLOCK_LENGTH LV2_BUF_SIZE__fixedBlockLength
 #define LV2_F_POWER_OF_2_BLOCK_LENGTH LV2_BUF_SIZE__powerOf2BlockLength
+// BUG FIXME: 'coarseBlockLength' is NOT in the lv2 buf-size.h header file!
+// #define LV2_F_COARSE_BLOCK_LENGTH LV2_BUF_SIZE__coarseBlockLength
+#define LV2_F_COARSE_BLOCK_LENGTH LV2_BUF_SIZE_PREFIX "coarseBlockLength"
 #define LV2_P_SEQ_SIZE LV2_BUF_SIZE__sequenceSize
 #define LV2_P_MAX_BLKLEN LV2_BUF_SIZE__maxBlockLength
 #define LV2_P_MIN_BLKLEN LV2_BUF_SIZE__minBlockLength
+#define LV2_P_NOM_BLKLEN LV2_BUF_SIZE__nominalBlockLength
 #define LV2_P_SAMPLE_RATE LV2_PARAMETERS__sampleRate
 #define LV2_F_OPTIONS LV2_OPTIONS__options
 #define LV2_F_URID_MAP LV2_URID__map
@@ -212,6 +216,7 @@ LV2_Feature lv2Features [] =
    {LV2_F_BOUNDED_BLOCK_LENGTH, NULL},
    {LV2_F_FIXED_BLOCK_LENGTH, NULL},
    {LV2_F_POWER_OF_2_BLOCK_LENGTH, NULL},
+   {LV2_F_COARSE_BLOCK_LENGTH, NULL},
    {LV2_F_UI_PARENT, NULL},
    {LV2_F_INSTANCE_ACCESS, NULL},
    {LV2_F_UI_EXTERNAL_HOST, NULL},
@@ -231,6 +236,11 @@ LV2_Feature lv2Features [] =
 std::vector<LV2Synth *> synthsToFree;
 
 #define SIZEOF_ARRAY(x) sizeof(x)/sizeof(x[0])
+
+// static
+// Pointer to this required for LV2_P_MIN_BLKLEN option when
+//  composing LV2_Options_Option array in LV2Synth::LV2Synth().
+const unsigned LV2Synth::minBlockSize = 0U;
 
 void initLV2()
 {
@@ -518,7 +528,6 @@ void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
          if(state->controlsMask [i])
          {
             state->controlsMask [i] = false;
-
             // Force send if re-opening.
             if(state->uiIsOpening || state->lastControls [i] != controls [i].val)
             {
@@ -1302,15 +1311,11 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 
       // lilv_uri_to_path is deprecated. Use lilv_file_uri_parse instead. Return value must be freed with lilv_free.
       const  char *uiPath = lilv_file_uri_parse(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi)), NULL);
-// REMOVE Tim. LV2. Changed. TESTING. RESTORE. Qt4 versions of synthv1,drumk,? crashes on Qt5.
-// TESTED: On my system it gets much farther into the call now, dozens of Qt4 calls into it, 
-//          but ultimately still ends up crashing on a call to dlopen libkdecore.5 for some reason.
-//       state->uiDlHandle = dlopen(uiPath, RTLD_NOW);
-      //state->uiDlHandle = dlmopen(LM_ID_NEWLM, uiPath, RTLD_LAZY | RTLD_DEEPBIND); // Just a test
+
 #ifdef _WIN32
       state->uiDlHandle = dlopen(uiPath, RTLD_NOW | RTLD_DEFAULT);
 #else
-      state->uiDlHandle = dlopen(uiPath, RTLD_NOW | RTLD_DEEPBIND);
+      state->uiDlHandle = dlopen(uiPath, RTLD_NOW);
 #endif
       
       lilv_free((void*)uiPath); // Must free.
@@ -1567,8 +1572,9 @@ LV2_Worker_Status LV2Synth::lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handl
    if(state->wrkEndWork != false)
       return LV2_WORKER_ERR_UNKNOWN;
 
-   state->wrkDataSize = size;
-   state->wrkDataBuffer = data;
+   state->wrkDataBuffer.resize(size);
+   memcpy(state->wrkDataBuffer.data(), data, size);
+   
    if(MusEGlobal::audio->freewheel()) //don't wait for a thread. Do it now
       state->wrkThread->makeWork();
    else
@@ -1581,8 +1587,9 @@ LV2_Worker_Status LV2Synth::lv2wrk_respond(LV2_Worker_Respond_Handle handle, uin
 {
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
 
-   state->wrkDataSize = size;
-   state->wrkDataBuffer = data;
+   state->wrkDataBuffer.resize(size);
+   memcpy(state->wrkDataBuffer.data(), data, size);
+
    state->wrkEndWork = true;
 
    return LV2_WORKER_SUCCESS;
@@ -2218,6 +2225,9 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
      _isSynth(false),
      _uis(NULL),
      _hasFreeWheelPort(false),
+     _freeWheelPortIndex(0),
+     _hasLatencyPort(false),
+     _latencyPortIndex(0),
      _isConstructed(false),
      _pluginControlsDefault(NULL),
      _pluginControlsMin(NULL),
@@ -2249,8 +2259,10 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    LV2_Options_Option _tmpl_options [] =
    {
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SAMPLE_RATE), sizeof(float), uridBiMap.map(LV2_ATOM__Float), &_fSampleRate},
-      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MIN_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MIN_BLKLEN), sizeof(int32_t),
+        uridBiMap.map(LV2_ATOM__Int), &LV2Synth::minBlockSize}, // &MusEGlobal::segmentSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MAX_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_NOM_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SEQ_SIZE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_CORE__sampleRate), sizeof(double), uridBiMap.map(LV2_ATOM__Double), &_sampleRate},
       {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, NULL}
@@ -2357,6 +2369,11 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    uint32_t numPorts = lilv_plugin_get_num_ports(_handle);
 
    const LilvPort *lilvFreeWheelPort = lilv_plugin_get_port_by_designation(_handle, lv2CacheNodes.lv2_InputPort, lv2CacheNodes.lv2_FreeWheelPort);
+
+   uint32_t latency_port = 0;
+   const bool has_latency_port = lilv_plugin_has_latency(_handle);
+   if(has_latency_port)
+     latency_port = lilv_plugin_get_latency_port_index(_handle);
 
    _pluginControlsDefault = new float [numPorts];
    _pluginControlsMin = new float [numPorts];
@@ -2479,7 +2496,8 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
         lilv_node_free(_nPname);
    }
 
-   for(uint32_t i = 0; i < _controlInPorts.size(); ++i)
+   const uint32_t ci_sz = _controlInPorts.size();
+   for(uint32_t i = 0; i < ci_sz; ++i)
    {
       _idxToControlMap.insert(std::pair<uint32_t, uint32_t>(_controlInPorts [i].index, i));
       if(lilvFreeWheelPort != NULL)
@@ -2488,6 +2506,19 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
          {
             _hasFreeWheelPort = true;
             _freeWheelPortIndex = i;
+         }
+      }
+   }
+
+   if(has_latency_port)
+   {
+      const uint32_t co_sz = _controlOutPorts.size();
+      for(uint32_t i = 0; i < co_sz; ++i)
+      {
+         if(_controlOutPorts [i].index == latency_port)
+         {
+            _hasLatencyPort = true;
+            _latencyPortIndex = i;
          }
       }
    }
@@ -3708,7 +3739,9 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
    const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
    // All ports must be connected to something!
    const unsigned long nop = ((unsigned long) ports) > _outports ? _outports : ((unsigned long) ports);
-   const bool usefixedrate = (requiredFeatures() & PluginFixedBlockSize);;
+   // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
+   //       For now we treat it like fixed size.
+   const bool usefixedrate = (requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize));
    const unsigned long min_per = (usefixedrate || MusEGlobal::config.minControlProcessPeriod > nframes) ? nframes : MusEGlobal::config.minControlProcessPeriod;
    const unsigned long min_per_mask = min_per - 1; // min_per must be power of 2
 
@@ -4139,15 +4172,11 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
             //notify worker about processed data (if any)
             if(_state->wrkIface && _state->wrkIface->work_response && _state->wrkEndWork)
             {
-               _state->wrkIface->work_response(lilv_instance_get_handle(_handle), _state->wrkDataSize, _state->wrkDataBuffer);
-               _state->wrkDataSize = 0;
-               _state->wrkDataBuffer = NULL;
+               _state->wrkIface->work_response(lilv_instance_get_handle(_handle), _state->wrkDataBuffer.size(), _state->wrkDataBuffer.data());
+               _state->wrkDataBuffer.clear();
                _state->wrkEndWork = false;
             }
-
             LV2Synth::lv2audio_postProcessMidiPorts(_state, nsamp);
-
-
          }
 
          sample += nsamp;
@@ -4319,11 +4348,6 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
 
    //Second:: Fill presets submenu
    LV2Synth::lv2state_populatePresetsMenu(_state, subMenuPresets);
-}
-
-void LV2SynthIF::preProcessAlways()
-{
-
 }
 
 MidiPlayEvent LV2SynthIF::receiveEvent()
@@ -4546,6 +4570,27 @@ LADSPA_PortRangeHint LV2SynthIF::rangeOut(unsigned long i)
 
 }
 
+bool LV2SynthIF::hasLatencyOutPort() const
+{
+  return _synth->_hasLatencyPort;
+}
+
+unsigned long LV2SynthIF::latencyOutPortIndex() const
+{
+  return _synth->_latencyPortIndex;
+}
+
+//---------------------------------------------------------
+//   latency
+//---------------------------------------------------------
+
+float LV2SynthIF::latency() const
+{
+  // Do not report any latency if the plugin is not on.
+  if(!hasLatencyOutPort() || !on())
+    return 0.0;
+  return _controlsOut[latencyOutPortIndex()].val;
+}
 
 
 double LV2SynthIF::paramOut(long unsigned int i) const
@@ -5074,9 +5119,8 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n)
    if(state->wrkIface && state->wrkIface->work_response && state->wrkEndWork)
    {
       state->wrkEndWork = false;
-      state->wrkIface->work_response(lilv_instance_get_handle(state->handle), state->wrkDataSize, state->wrkDataBuffer);
-      state->wrkDataSize = 0;
-      state->wrkDataBuffer = NULL;
+      state->wrkIface->work_response(lilv_instance_get_handle(state->handle), state->wrkDataBuffer.size(), state->wrkDataBuffer.data());
+      state->wrkDataBuffer.clear();
    }
 
    LV2Synth::lv2audio_postProcessMidiPorts(state, n);
@@ -5270,19 +5314,14 @@ void LV2PluginWrapper_Worker::makeWork()
 #endif
    if(_state->wrkIface && _state->wrkIface->work)
    {
-      const void *dataBuffer = _state->wrkDataBuffer;
-      uint32_t dataSize = _state->wrkDataSize;
-      _state->wrkDataBuffer = NULL;
-      _state->wrkDataSize = 0;
       if(_state->wrkIface->work(lilv_instance_get_handle(_state->handle),
                                 LV2Synth::lv2wrk_respond,
                                 _state,
-                                dataSize,
-                                dataBuffer) != LV2_WORKER_SUCCESS)
+                                _state->wrkDataBuffer.size(),
+                                _state->wrkDataBuffer.data()) != LV2_WORKER_SUCCESS)
       {
          _state->wrkEndWork = false;
-         _state->wrkDataBuffer = NULL;
-         _state->wrkDataSize = 0;
+         _state->wrkDataBuffer.clear();
       }
    }
 

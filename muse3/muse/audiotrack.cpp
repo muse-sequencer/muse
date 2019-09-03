@@ -45,6 +45,8 @@
 #include "controlfifo.h"
 #include "fastlog.h"
 #include "gconfig.h"
+#include "latency_compensator.h"
+#include "ticksynth.h"
 
 namespace MusECore {
 
@@ -283,9 +285,14 @@ void AudioTrack::initBuffers()
 //   AudioTrack
 //---------------------------------------------------------
 
-AudioTrack::AudioTrack(TrackType t)
+AudioTrack::AudioTrack(TrackType t, int channels)
    : Track(t)
       {
+      _totalOutChannels = MAX_CHANNELS;
+      _latencyComp = new LatencyCompensator();
+      _recFilePos = 0;
+      _previousLatency = 0.0f;
+
       _processed = false;
       _haveData = false;
       _sendMetronome = false;
@@ -294,7 +301,7 @@ AudioTrack::AudioTrack(TrackType t)
       recFileNumber = 1;
       _channels = 0;
       _automationType = AUTO_OFF;
-      setChannels(2);
+      setChannels(channels);
 
       addController(new CtrlList(AC_VOLUME,"Volume",0.001,3.163 /* roughly 10 db */, VAL_LOG));
       addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0, VAL_LINEAR));
@@ -312,8 +319,6 @@ AudioTrack::AudioTrack(TrackType t)
       audioOutDummyBuf = 0;
       _dataBuffers = 0;
 
-      _totalOutChannels = MusECore::MAX_CHANNELS;
-
       // This is only set by multi-channel syntis...
       _totalInChannels = 0;
 
@@ -326,6 +331,10 @@ AudioTrack::AudioTrack(TrackType t)
 AudioTrack::AudioTrack(const AudioTrack& t, int flags)
   :  Track(t, flags)
       {
+      _latencyComp = new LatencyCompensator();
+      _recFilePos = 0;
+      _previousLatency = 0.0f;
+
       _processed      = false;
       _haveData       = false;
       _efxPipe        = new Pipeline();                 // Start off with a new pipeline.
@@ -600,6 +609,9 @@ AudioTrack::~AudioTrack()
       if(audioOutDummyBuf)
         free(audioOutDummyBuf);
 
+      if(_latencyComp)
+        delete _latencyComp;
+      
       if(_dataBuffers)
       {
         for(int i = 0; i < _totalOutChannels; ++i)
@@ -1156,14 +1168,563 @@ void AudioTrack::changeACEvent(int id, int frame, int newframe, double newval)
 }
 
 //---------------------------------------------------------
-//   latency
+//   useLatencyCorrection
 //---------------------------------------------------------
 
-float AudioTrack::latency(int /*channel*/)
+bool AudioTrack::useLatencyCorrection() const
+{
+  return _latencyComp && MusEGlobal::config.enableLatencyCorrection;
+}
+
+//---------------------------------------------------------
+//   selfLatencyAudio
+//---------------------------------------------------------
+
+float AudioTrack::selfLatencyAudio(int /*channel*/) const
 {
   if(!_efxPipe)
     return 0.0;
   return _efxPipe->latency();
+}
+
+//---------------------------------------------------------
+//   getDominanceInfo
+//---------------------------------------------------------
+
+TrackLatencyInfo& AudioTrack::getDominanceInfo(bool input)
+{
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if((input && _latencyInfo._canDominateInputProcessed) ||
+     (!input && _latencyInfo._canDominateProcessed))
+    return _latencyInfo;
+
+  // Get the default domination for this track type.
+  bool can_dominate_lat = input ? canDominateInputLatency() : canDominateOutputLatency();
+  bool can_correct_lat = canCorrectOutputLatency();
+
+  const bool passthru = canPassThruLatency();
+
+  bool item_found = false;
+
+  RouteList* rl = inRoutes();
+  for (iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+  {
+    switch(ir->type)
+    {
+      case Route::TRACK_ROUTE:
+        if(!ir->track)
+          continue;
+        if(ir->track->isMidiTrack())
+        {
+          // TODO ?
+        }
+        else
+        {
+          Track* track = ir->track;
+
+          if(passthru || input)
+          {
+            if(!off() && !track->off())
+            {
+              const TrackLatencyInfo& li = track->getDominanceInfo(false);
+
+              // Whether the branch can dominate or correct latency or if we
+              //  want to allow unterminated input branches to
+              //  participate in worst branch latency calculations.
+              const bool participate = 
+                (li._canCorrectOutputLatency ||
+                li._canDominateOutputLatency ||
+                MusEGlobal::config.correctUnterminatedInBranchLatency);
+
+              if(participate)
+              {
+                // Is it the first found item?
+                if(item_found)
+                {
+                  // If any one of the branches can dominate the latency,
+                  //  that overrides any which cannot.
+                  if(li._canDominateOutputLatency)
+                    can_dominate_lat = true;
+                  if(li._canCorrectOutputLatency)
+                    can_correct_lat = true;
+                }
+                else
+                {
+                  item_found = true;
+                  // Override the defaults with this first item's values.
+                  can_dominate_lat = li._canDominateOutputLatency;
+                  can_correct_lat = li._canCorrectOutputLatency;
+                }
+              }
+            }
+          }
+        }
+      break;
+
+      default:
+      break;
+    }
+  }
+
+  // Special for the built-in metronome.
+  if(!off() && !MusECore::metronome->off() && (passthru || input) && sendMetronome())
+  {
+    const TrackLatencyInfo& li = MusECore::metronome->getDominanceInfo(false);
+        
+    // Whether the branch can dominate or correct latency or if we
+    //  want to allow unterminated input branches to
+    //  participate in worst branch latency calculations.
+    const bool participate = 
+      (li._canCorrectOutputLatency ||
+      li._canDominateOutputLatency ||
+      MusEGlobal::config.correctUnterminatedInBranchLatency);
+
+    if(participate)
+    {
+      // Is it the first found item?
+      if(item_found)
+      {
+        // If any one of the branches can dominate the latency,
+        //  that overrides any which cannot.
+        if(li._canDominateOutputLatency)
+          can_dominate_lat = true;
+        if(li._canCorrectOutputLatency)
+          can_correct_lat = true;
+      }
+      else
+      {
+        item_found = true;
+        can_dominate_lat = li._canDominateOutputLatency;
+        can_correct_lat = li._canCorrectOutputLatency;
+      }
+    }
+  }
+
+  // Set the correction of all connected input branches,
+  //  but ONLY if the track is not off.
+  if(!off())
+  {
+    if(input)
+    {
+      _latencyInfo._canDominateInputLatency = can_dominate_lat;
+    }
+    else
+    {
+      _latencyInfo._canDominateOutputLatency = can_dominate_lat;
+      // If any of the branches can dominate, then this node cannot correct.
+      _latencyInfo._canCorrectOutputLatency = can_correct_lat && !can_dominate_lat;
+    }
+  }
+
+  if(input)
+    _latencyInfo._canDominateInputProcessed = true;
+  else
+    _latencyInfo._canDominateProcessed = true;
+
+  return _latencyInfo;
+}
+
+//---------------------------------------------------------
+//   getDominanceLatencyInfo
+//---------------------------------------------------------
+
+TrackLatencyInfo& AudioTrack::getDominanceLatencyInfo(bool input)
+{
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if((input && _latencyInfo._dominanceInputProcessed) ||
+     (!input && _latencyInfo._dominanceProcessed))
+    return _latencyInfo;
+
+  float route_worst_latency = 0.0f;
+
+  const bool passthru = canPassThruLatency();
+
+  bool item_found = false;
+
+  float worst_self_latency = 0.0f;
+  if(!input && !off())
+    worst_self_latency = getWorstSelfLatencyAudio();
+      
+  RouteList* rl = inRoutes();
+  for (iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+  {
+    switch(ir->type)
+    {
+      case Route::TRACK_ROUTE:
+        if(!ir->track)
+          continue;
+        if(ir->track->isMidiTrack())
+        {
+          // TODO ?
+        }
+        else
+        {
+          Track* track = ir->track;
+
+          if(!off() && !track->off() && (passthru || input))
+          {
+            const TrackLatencyInfo& li = track->getDominanceLatencyInfo(false);
+
+            // Whether the branch can dominate or correct latency or if we
+            //  want to allow unterminated input branches to
+            //  participate in worst branch latency calculations.
+            const bool participate = 
+              (li._canCorrectOutputLatency ||
+              li._canDominateOutputLatency ||
+              MusEGlobal::config.correctUnterminatedInBranchLatency);
+
+            if(participate)
+            {
+              // Is it the first found item?
+              if(item_found)
+              {
+                // If any one of the branches can dominate the latency,
+                //  that overrides any which cannot.
+                if(li._canDominateOutputLatency)
+                {
+                  // Override the current worst value if the latency is greater,
+                  //  but ONLY if the branch can dominate.
+                  //if(li._outputLatency > route_worst_latency)
+                  //  route_worst_latency = li._outputLatency;
+                }
+                // Override the current worst value if the latency is greater,
+                //  but ONLY if the branch can dominate.
+                if(li._outputLatency > route_worst_latency)
+                  route_worst_latency = li._outputLatency;
+              }
+              else
+              {
+                item_found = true;
+                // Override the default worst value, but ONLY if the branch can dominate.
+                //if(li._canDominateOutputLatency)
+                  route_worst_latency = li._outputLatency;
+              }
+            }
+          }
+        }
+      break;
+
+      default:
+      break;
+    }
+  }
+
+  // Special for the built-in metronome.
+  if(!off() && !MusECore::metronome->off() && (passthru || input) && sendMetronome())
+  {
+    const TrackLatencyInfo& li = MusECore::metronome->getDominanceLatencyInfo(false);
+        
+    // Whether the branch can dominate or correct latency or if we
+    //  want to allow unterminated input branches to
+    //  participate in worst branch latency calculations.
+    const bool participate = 
+      (li._canCorrectOutputLatency ||
+      li._canDominateOutputLatency ||
+      MusEGlobal::config.correctUnterminatedInBranchLatency);
+
+    if(participate)
+    {
+      // Is it the first found item?
+      if(item_found)
+      {
+        // If any one of the branches can dominate the latency,
+        //  that overrides any which cannot.
+        if(li._canDominateOutputLatency)
+        {
+          // Override the current worst value if the latency is greater,
+          //  but ONLY if the branch can dominate.
+          //if(li._outputLatency > route_worst_latency)
+          //  route_worst_latency = li._outputLatency;
+        }
+        // Override the current worst value if the latency is greater,
+        //  but ONLY if the branch can dominate.
+        if(li._outputLatency > route_worst_latency)
+          route_worst_latency = li._outputLatency;
+      }
+      else
+      {
+        item_found = true;
+        // Override the default worst value, but ONLY if the branch can dominate.
+        //if(li._canDominateOutputLatency)
+          route_worst_latency = li._outputLatency;
+      }
+    }
+  }
+
+  // Set the correction of all connected input branches,
+  //  but ONLY if the track is not off.
+  if(!off())
+  {
+    if(input)
+    {
+      _latencyInfo._inputLatency = route_worst_latency;
+    }
+    else
+    {
+      if(passthru)
+      {
+        _latencyInfo._outputLatency = worst_self_latency + route_worst_latency;
+        _latencyInfo._inputLatency = route_worst_latency;
+      }
+      else
+      {
+        _latencyInfo._outputLatency = worst_self_latency + _latencyInfo._sourceCorrectionValue;
+      }
+    }
+  }
+
+  if(input)
+    _latencyInfo._dominanceInputProcessed = true;
+  else
+    _latencyInfo._dominanceProcessed = true;
+
+  return _latencyInfo;
+}
+
+//---------------------------------------------------------
+//   getWorstPluginLatencyAudio
+//---------------------------------------------------------
+
+float AudioTrack::getWorstPluginLatencyAudio()
+{
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._worstPluginLatencyProcessed)
+    return _latencyInfo._worstPluginLatency;
+
+  float worst_lat = 0.0f;
+  // Include the effects rack latency.
+  if(_efxPipe)
+    worst_lat += _efxPipe->latency();
+  
+  _latencyInfo._worstPluginLatency = worst_lat;
+  _latencyInfo._worstPluginLatencyProcessed = true;
+  return _latencyInfo._worstPluginLatency;
+}
+
+//---------------------------------------------------------
+//   getWorstSelfLatencyAudio
+//---------------------------------------------------------
+
+float AudioTrack::getWorstSelfLatencyAudio()
+{
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._worstSelfLatencyProcessed)
+    return _latencyInfo._worstSelfLatency;
+
+  // Include the effects rack latency and any synth latency and any port latency.
+  _latencyInfo._worstSelfLatency = getWorstPluginLatencyAudio() + getWorstPortLatencyAudio();
+  
+  // The absolute latency of signals leaving this track is the sum of
+  //  any connected route latencies and this track's latency.
+  _latencyInfo._worstSelfLatencyProcessed = true;
+  return _latencyInfo._worstSelfLatency;
+}
+
+//---------------------------------------------------------
+//   setCorrectionLatencyInfo
+//---------------------------------------------------------
+
+TrackLatencyInfo& AudioTrack::setCorrectionLatencyInfo(bool input, float finalWorstLatency, float callerBranchLatency)
+{
+  const bool passthru = canPassThruLatency();
+
+  float worst_self_latency = 0.0f;
+  if(!input && !off())
+    worst_self_latency = getWorstSelfLatencyAudio();
+      
+  // The _trackLatency should already be calculated in the dominance scan.
+  const float branch_lat = callerBranchLatency + worst_self_latency;
+
+  RouteList* rl = inRoutes();
+  for (iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+  {
+    if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+      continue;
+    Track* track = ir->track;
+    if(!off() && !track->off() && (passthru || input))
+      track->setCorrectionLatencyInfo(false, finalWorstLatency, branch_lat);
+  }
+
+  // Special for the built-in metronome.
+  if(!off() && !MusECore::metronome->off() && (passthru || input) && sendMetronome())
+  {
+    MusECore::metronome->setCorrectionLatencyInfo(false, finalWorstLatency, branch_lat);
+  }
+
+  // Set the correction of all connected input branches,
+  //  but ONLY if the track is not off.
+  if(!off())
+  {
+    if(input)
+    {
+    }
+    else
+    {
+      if(canCorrectOutputLatency() && _latencyInfo._canCorrectOutputLatency)
+      {
+        float corr = 0.0f;
+        if(MusEGlobal::config.commonProjectLatency)
+          corr -= finalWorstLatency;
+
+        corr -= branch_lat;
+        // The _sourceCorrectionValue is initialized to zero.
+        // Whichever calling branch needs the most correction gets it.
+        if(corr < _latencyInfo._sourceCorrectionValue)
+          _latencyInfo._sourceCorrectionValue = corr;
+      }
+    }
+
+    //fprintf(stderr, "AudioTrack::setCorrectionLatencyInfo() name:%s finalWorstLatency:%f branch_lat:%f corr:%f _sourceCorrectionValue:%f\n",
+    //        name().toLatin1().constData(), finalWorstLatency, branch_lat, corr, _latencyInfo._sourceCorrectionValue);
+  }
+
+  return _latencyInfo;
+}
+
+//---------------------------------------------------------
+//   getLatencyInfo
+//---------------------------------------------------------
+
+TrackLatencyInfo& AudioTrack::getLatencyInfo(bool input)
+{
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if((input && _latencyInfo._inputProcessed) ||
+    (!input && _latencyInfo._processed))
+    return _latencyInfo;
+
+  float route_worst_latency = _latencyInfo._inputLatency;
+
+  const bool passthru = canPassThruLatency();
+
+  RouteList* rl = inRoutes();
+
+  // Now that we know the worst-case latency of the connected branches,
+  //  adjust each of the conveniently stored temporary latency values
+  //  in the routes according to whether they can dominate...
+  for (iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+  {
+    if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+      continue;
+
+    Track* track = ir->track;
+
+    if(passthru || input)
+    {
+      // Default to zero.
+      ir->audioLatencyOut = 0.0f;
+
+      if(!off() && !track->off())
+      {
+        const TrackLatencyInfo& li = track->getLatencyInfo(false);
+        const bool participate =
+          (li._canCorrectOutputLatency ||
+          li._canDominateOutputLatency ||
+          MusEGlobal::config.correctUnterminatedInBranchLatency);
+
+        if(participate)
+        {
+          // Prepare the latency value to be passed to the compensator's writer,
+          //  by adjusting each route latency value. ie. the route with the worst-case
+          //  latency will get ZERO delay, while routes having smaller latency will get
+          //  MORE delay, to match all the signal timings together.
+          // The route's audioLatencyOut should have already been calculated and
+          //  conveniently stored in the route.
+          ir->audioLatencyOut = route_worst_latency - li._outputLatency;
+          // Should not happen, but just in case.
+          if((long int)ir->audioLatencyOut < 0)
+            ir->audioLatencyOut = 0.0f;
+        }
+      }
+    }
+  }
+
+  // Special for the built-in metronome.
+  if(passthru || input)
+  {
+    // Default to zero.
+    _latencyInfo._latencyOutMetronome = 0.0f;
+
+    if(!off() && !MusECore::metronome->off() && sendMetronome())
+    {
+      TrackLatencyInfo& li = MusECore::metronome->getLatencyInfo(false);
+
+      const bool participate =
+        li._canCorrectOutputLatency ||
+        li._canDominateOutputLatency ||
+        MusEGlobal::config.correctUnterminatedInBranchLatency;
+
+      if(participate)
+      {
+        // TODO: FIXME: Where to store? We have no route to store it in.
+        // Prepare the latency value to be passed to the compensator's writer,
+        //  by adjusting each route latency value. ie. the route with the worst-case
+        //  latency will get ZERO delay, while routes having smaller latency will get
+        //  MORE delay, to match all the signal timings together.
+        // The route's audioLatencyOut should have already been calculated and
+        //  conveniently stored in the route.
+
+//             ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
+//             // Should not happen, but just in case.
+//             if((long int)ir->audioLatencyOut < 0)
+//               ir->audioLatencyOut = 0.0f;
+
+        // Special for metronome: We don't have metronome routes yet.
+        // So we must store this information here just for the metronome.
+        li._latencyOutMetronome = route_worst_latency - li._latencyOutMetronome;
+        // Should not happen, but just in case.
+        if((long int)li._latencyOutMetronome < 0)
+          li._latencyOutMetronome = 0.0f;
+      }
+    }
+  }
+
+  if(input)
+    _latencyInfo._inputProcessed = true;
+  else
+    _latencyInfo._processed = true;
+
+  return _latencyInfo;
+}
+
+void AudioTrack::setLatencyCompWriteOffset(float worstCase)
+{
+  // If independent branches are NOT to affect project latency,
+  //  then there should be no need for any extra delay in the branch.
+  if(!MusEGlobal::config.commonProjectLatency)
+  {
+    _latencyInfo._compensatorWriteOffset = 0;
+    //fprintf(stderr, "AudioTrack::setLatencyCompWriteOffset() name:%s worstCase:%f _outputLatency:%f _compensatorWriteOffset:%lu\n",
+    //        name().toLatin1().constData(), worstCase, _latencyInfo._outputLatency, _latencyInfo._compensatorWriteOffset);
+    return;
+  }
+    
+  if(_latencyInfo._canDominateOutputLatency)
+  {
+    const long unsigned int wc = worstCase;
+    const long unsigned int ol = _latencyInfo._outputLatency;
+    if(ol > wc)
+      _latencyInfo._compensatorWriteOffset = 0;
+    else
+      _latencyInfo._compensatorWriteOffset = wc - ol;
+  }
+  else
+  {
+//     if(_latencyInfo._outputLatency < 0)
+      _latencyInfo._compensatorWriteOffset = 0;
+//     else
+//       _latencyInfo._compensatorWriteOffset = _latencyInfo._outputLatency;
+  }
+
+  //fprintf(stderr,
+  //  "AudioTrack::setLatencyCompWriteOffset() name:%s worstCase:%f"
+  //  " _outputLatency:%f _canDominateOutputLatency:%d _compensatorWriteOffset:%lu\n",
+  //      name().toLatin1().constData(), worstCase, _latencyInfo._outputLatency,
+  //      _latencyInfo._canDominateOutputLatency, _latencyInfo._compensatorWriteOffset);
 }
 
 //---------------------------------------------------------
@@ -1852,10 +2413,9 @@ RouteCapabilitiesStruct AudioTrack::routeCapabilities() const
 //---------------------------------------------------------
 
 AudioInput::AudioInput()
-   : AudioTrack(AUDIO_INPUT)
+   // Default 1 channel for audio inputs.
+   : AudioTrack(AUDIO_INPUT, 1)
       {
-      // set Default for Input Ports:
-      setChannels(1);
       for (int i = 0; i < MusECore::MAX_CHANNELS; ++i)
             jackPorts[i] = 0;
       }
@@ -1919,12 +2479,12 @@ AudioInput::~AudioInput()
       }
 
 //---------------------------------------------------------
-//   latency
+//   selfLatencyAudio
 //---------------------------------------------------------
 
-float AudioInput::latency(int channel)
+float AudioInput::selfLatencyAudio(int channel) const
 {
-  float l = AudioTrack::latency(channel);
+  float l = AudioTrack::selfLatencyAudio(channel);
 
   if(!MusEGlobal::checkAudioDevice())
     return l;
@@ -1933,6 +2493,45 @@ float AudioInput::latency(int channel)
   if(jackPort)
     l += MusEGlobal::audioDevice->portLatency(jackPort, true);
   return l;
+}
+
+//---------------------------------------------------------
+//   getWorstPortLatencyAudio
+//---------------------------------------------------------
+
+float AudioInput::getWorstPortLatencyAudio()
+{
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._worstPortLatencyProcessed)
+    return _latencyInfo._worstPortLatency;
+
+  float worst_lat = 0.0f;
+  // Include any port latencies.
+  if(MusEGlobal::checkAudioDevice())
+  {
+    const int track_out_channels = totalProcessBuffers(); // totalOutChannels();
+    for(int i = 0; i < track_out_channels; ++i)
+    {
+      void* jackPort = jackPorts[i];
+      if(jackPort)
+      {
+        // true = we want the capture latency.
+        const float lat = MusEGlobal::audioDevice->portLatency(jackPort, true);
+        if(lat > worst_lat)
+          worst_lat = lat;
+      }
+    }
+  }
+  
+  _latencyInfo._worstPortLatency = worst_lat;
+  _latencyInfo._worstPortLatencyProcessed = true;
+  return _latencyInfo._worstPortLatency;
+}
+
+bool AudioInput::canDominateOutputLatency() const
+{
+  return !off();
 }
 
 //---------------------------------------------------------
@@ -1997,13 +2596,18 @@ RouteCapabilitiesStruct AudioInput::routeCapabilities() const
 AudioOutput::AudioOutput()
    : AudioTrack(AUDIO_OUTPUT)
       {
-      for (int i = 0; i < MusECore::MAX_CHANNELS; ++i)
+      _outputLatencyComp = new LatencyCompensator();
+
+      _nframes = 0;
+      for (int i = 0; i < MAX_CHANNELS; ++i)
             jackPorts[i] = 0;
       }
 
 AudioOutput::AudioOutput(const AudioOutput& t, int flags)
   : AudioTrack(t, flags)
 {
+  _outputLatencyComp = new LatencyCompensator();
+
   for (int i = 0; i < MusECore::MAX_CHANNELS; ++i)
         jackPorts[i] = 0;
   _nframes = 0;
@@ -2058,7 +2662,139 @@ AudioOutput::~AudioOutput()
       for (int i = 0; i < _channels; ++i)
           if(jackPorts[i])
             MusEGlobal::audioDevice->unregisterPort(jackPorts[i]);
+
+      if(_outputLatencyComp)
+        delete _outputLatencyComp;
       }
+
+//---------------------------------------------------------
+//   setChannels
+//---------------------------------------------------------
+
+void AudioOutput::setChannels(int n)
+      {
+      AudioTrack::setChannels(n);
+      if(useLatencyCorrection() && _outputLatencyComp)
+        _outputLatencyComp->setChannels(totalProcessBuffers());
+      }
+
+//---------------------------------------------------------
+//   selfLatencyAudio
+//---------------------------------------------------------
+
+float AudioOutput::selfLatencyAudio(int channel) const
+{
+  float l = AudioTrack::selfLatencyAudio(channel);
+
+  if(!MusEGlobal::checkAudioDevice())
+    return l;
+
+  void* jackPort = jackPorts[channel];
+  if(jackPort)
+    l += MusEGlobal::audioDevice->portLatency(jackPort, false);
+  return l;
+}
+
+//---------------------------------------------------------
+//   getWorstPortLatencyAudio
+//---------------------------------------------------------
+
+float AudioOutput::getWorstPortLatencyAudio()
+{
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._worstPortLatencyProcessed)
+    return _latencyInfo._worstPortLatency;
+
+  float worst_lat = 0.0f;
+  // Include any port latencies.
+  if(MusEGlobal::checkAudioDevice())
+  {
+    const int track_out_channels = totalProcessBuffers(); // totalOutChannels();
+    for(int i = 0; i < track_out_channels; ++i)
+    {
+      void* jackPort = jackPorts[i];
+      if(jackPort)
+      {
+        // false = we want the playback latency.
+        const float lat = MusEGlobal::audioDevice->portLatency(jackPort, false);
+        if(lat > worst_lat)
+          worst_lat = lat;
+      }
+    }
+  }
+  
+  _latencyInfo._worstPortLatency = worst_lat;
+  _latencyInfo._worstPortLatencyProcessed = true;
+  return _latencyInfo._worstPortLatency;
+}
+
+bool AudioOutput::isLatencyInputTerminal()
+{
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._isLatencyInputTerminalProcessed)
+    return _latencyInfo._isLatencyInputTerminal;
+
+  _latencyInfo._isLatencyInputTerminal = true;
+  _latencyInfo._isLatencyInputTerminalProcessed = true;
+  return true;
+}
+bool AudioOutput::isLatencyOutputTerminal()
+{ 
+  // Have we been here before during this scan?
+  // Just return the cached value.
+  if(_latencyInfo._isLatencyOutputTerminalProcessed)
+    return _latencyInfo._isLatencyOutputTerminal;
+
+  _latencyInfo._isLatencyOutputTerminal = true;
+  _latencyInfo._isLatencyOutputTerminalProcessed = true;
+  return true;
+}
+
+//---------------------------------------------------------
+//   applyOutputLatencyComp
+//---------------------------------------------------------
+
+void AudioOutput::applyOutputLatencyComp(unsigned nframes)
+{
+  if(!useLatencyCorrection() || !_outputLatencyComp)
+    return;
+
+  // Include any port latencies.
+  if(MusEGlobal::checkAudioDevice())
+  {
+    // We want the audio output track's worst port latency.
+    //const TrackLatencyInfo& li = getLatencyInfo(false /*output*/);
+    //const float route_worst_case_latency = li._worstPortLatency;
+    const float port_worst_case_latency = getWorstPortLatencyAudio();
+
+    // 'buffer' is only MAX_CHANNELS deep, unlike some of our allocated audio buffers.
+    const int track_out_channels = MusECore::MAX_CHANNELS; //totalProcessBuffers(); // totalOutChannels();
+    for(int i = 0; i < track_out_channels; ++i)
+    {
+      // Prepare the latency value to be passed to the compensator's writer,
+      //  by adjusting each channel latency value. ie. the channel with the worst-case
+      //  latency will get ZERO delay, while channels having smaller latency will get
+      //  MORE delay, to match all the signal timings together.
+      void* jackPort = jackPorts[i];
+      if(jackPort)
+      {
+        // false = we want the playback latency.
+        const float lat = port_worst_case_latency - MusEGlobal::audioDevice->portLatency(jackPort, false);
+        unsigned long offset = 0;
+        if((long int)lat > 0)
+          offset = lat;
+
+        // Write the channel buffer to the latency compensator.
+        // It will be read back later, in-place.
+        _outputLatencyComp->write(i, nframes, offset /* + latencyCompWriteOffset() */, buffer[i]);
+        // Read back the latency compensated signal, using the channel buffer in-place.
+        _outputLatencyComp->read(i, nframes, buffer[i]);
+      }
+    }
+  }
+}
 
 //---------------------------------------------------------
 //   write
@@ -2349,9 +3085,12 @@ bool AudioAux::getData(unsigned pos, int ch, unsigned samples, float** data)
 
 void AudioAux::setChannels(int n)
 {
-  if(n > channels())
+  const int old_chans = channels();
+  AudioTrack::setChannels(n);
+  const int new_chans = channels();
+  if(new_chans > old_chans)
   {
-    for(int i = channels(); i < n; ++i)
+    for(int i = old_chans; i < new_chans; ++i)
     {
 #ifdef _WIN32
       buffer[i] = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
@@ -2377,15 +3116,14 @@ void AudioAux::setChannels(int n)
         memset(buffer[i], 0, sizeof(float) * MusEGlobal::segmentSize);
     }
   }
-  else if(n < channels())
+  else if(new_chans < old_chans)
   {
-    for(int i = n; i < channels(); ++i)
+    for(int i = new_chans; i < old_chans; ++i)
     {
       if(buffer[i])
         free(buffer[i]);
     }
   }
-  AudioTrack::setChannels(n);
 }
 
 //---------------------------------------------------------
@@ -2479,6 +3217,11 @@ bool AudioTrack::prepareRecording()
             return false;
 
             }
+
+      // For bounce operations: Reset these.
+      _recFilePos = 0;
+      _previousLatency = 0.0f;
+
       return true;
 }
 double AudioTrack::auxSend(int idx) const

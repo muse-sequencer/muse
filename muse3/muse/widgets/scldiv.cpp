@@ -22,6 +22,11 @@
 //
 //=========================================================
 
+// As of Qt 5.13 or so, qCopy() is obsolete. use std::copy().
+#if QT_VERSION >= 0x050000
+#include <algorithm>
+#endif
+
 #include "muse_math.h"
 #include "scldiv.h"
 #include "mmath.h"
@@ -373,7 +378,12 @@ bool ScaleDiv::buildLinDiv(int maxMajSteps, int maxMinSteps, double step)
       }
       //d_minMarks.duplicate(buffer.data(), minSize);
       d_minMarks.resize(minSize);
+// As of Qt 5.13 or so, qCopy() is obsolete. use std::copy().
+#if QT_VERSION >= 0x050000
+      std::copy(buffer.data(), buffer.data() + minSize, d_minMarks.begin());
+#else
       qCopy(buffer.data(), buffer.data() + minSize, d_minMarks.begin());
+#endif
    }
 
    return rv;
@@ -530,8 +540,12 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
       // copy values into the minMarks array
       //d_minMarks.duplicate(buffer.data(), minSize);
       d_minMarks.resize(minSize);
+// As of Qt 5.13 or so, qCopy() is obsolete. use std::copy().
+#if QT_VERSION >= 0x050000
+      std::copy(buffer.data(), buffer.data() + minSize, d_minMarks.begin());
+#else
       qCopy(buffer.data(), buffer.data() + minSize, d_minMarks.begin());
-
+#endif
 
    }
    else				// major step > one decade
@@ -583,7 +597,12 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
       }
       //d_minMarks.duplicate(buffer.data(), minSize);
       d_minMarks.resize(minSize);
+// As of Qt 5.13 or so, qCopy() is obsolete. use std::copy().
+#if QT_VERSION >= 0x050000
+      std::copy(buffer.data(), buffer.data() + minSize, d_minMarks.begin());
+#else
       qCopy(buffer.data(), buffer.data() + minSize, d_minMarks.begin());
+#endif
 
    }
 

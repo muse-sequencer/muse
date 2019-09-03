@@ -1206,7 +1206,8 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage AddAudioCtrlVal: ctrl_l:%p frame:%u val:%f\n", 
               _aud_ctrl_list, _posLenVal, _ctl_dbl_val);
 #endif      
-      _aud_ctrl_list->insert(CtrlListInsertPair_t(_posLenVal, CtrlVal(_posLenVal, _ctl_dbl_val)));
+      // Add will replace if found.
+      _aud_ctrl_list->add(_posLenVal, _ctl_dbl_val);
       flags |= SC_AUDIO_CONTROLLER;
     break;
     case DeleteAudioCtrlVal:

@@ -64,7 +64,12 @@ QSize CompactToolButton::sizeHint() const
 {
   // TODO Ask style for margins.
   const QSize isz = iconSize();
-   const int fmw = fontMetrics().width(text());
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+  const int fmw = fontMetrics().horizontalAdvance(text());
+#else
+  const int fmw = fontMetrics().width(text());
+#endif
   const int fmh = fontMetrics().lineSpacing() + 5;
 
   const int iw = isz.width() + 2;

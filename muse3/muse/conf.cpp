@@ -1122,6 +1122,17 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "deviceAudioBackend")
                               MusEGlobal::config.deviceAudioBackend = xml.parseInt();
 
+                        else if (tag == "enableLatencyCorrection")
+                              MusEGlobal::config.enableLatencyCorrection = xml.parseInt();
+                        else if (tag == "correctUnterminatedInBranchLatency")
+                              MusEGlobal::config.correctUnterminatedInBranchLatency = xml.parseInt();
+                        else if (tag == "correctUnterminatedOutBranchLatency")
+                              MusEGlobal::config.correctUnterminatedOutBranchLatency = xml.parseInt();
+                        else if (tag == "monitoringAffectsLatency")
+                              MusEGlobal::config.monitoringAffectsLatency = xml.parseInt();
+                        else if (tag == "commonProjectLatency")
+                              MusEGlobal::config.commonProjectLatency = xml.parseInt();
+                        
                         else if (tag == "minControlProcessPeriod")
                               MusEGlobal::config.minControlProcessPeriod = xml.parseUInt();
                         else if (tag == "guiRefresh")
@@ -1267,8 +1278,7 @@ bool readConfiguration(const char *configFile)
             switch (token) {
                   case Xml::Error:
                   case Xml::End:
-                        fclose(f);
-                        return true;
+                        goto read_conf_end;
                   case Xml::TagStart:
                         if (skipmode && tag == "muse")
                               skipmode = false;
@@ -1302,6 +1312,8 @@ bool readConfiguration(const char *configFile)
                         break;
                   }
             }
+
+read_conf_end:
       fclose(f);
       return true;
       }
@@ -1621,7 +1633,7 @@ bool MusE::loadConfigurationColors(QWidget* parent)
   
   if(QMessageBox::question(parent, QString("MusE"),
       tr("Color settings will immediately be replaced with any found in the file.\nAre you sure you want to proceed?"), tr("&Ok"), tr("&Cancel"),
-      QString::null, 0, 1 ) == 1)
+      QString(), 0, 1 ) == 1)
     return false;
   
   // Read, and return if error.
@@ -1651,7 +1663,7 @@ bool MusE::saveConfigurationColors(QWidget* parent)
   {
     if(QMessageBox::question(parent, QString("MusE"),
         tr("File exists.\nDo you want to overwrite it?"), tr("&Ok"), tr("&Cancel"),
-        QString::null, 0, 1 ) == 1)
+        QString(), 0, 1 ) == 1)
       return false;
   }
   FILE* f = fopen(file.toLatin1().constData(), "w");
@@ -1705,6 +1717,12 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "deviceAudioBufSize", MusEGlobal::config.deviceAudioBufSize);
       xml.intTag(level, "deviceAudioSampleRate", MusEGlobal::config.deviceAudioSampleRate);
       xml.intTag(level, "deviceAudioBackend", MusEGlobal::config.deviceAudioBackend);
+
+      xml.intTag(level, "enableLatencyCorrection", MusEGlobal::config.enableLatencyCorrection);
+      xml.intTag(level, "correctUnterminatedInBranchLatency", MusEGlobal::config.correctUnterminatedInBranchLatency);
+      xml.intTag(level, "correctUnterminatedOutBranchLatency", MusEGlobal::config.correctUnterminatedOutBranchLatency);
+      xml.intTag(level, "monitoringAffectsLatency", MusEGlobal::config.monitoringAffectsLatency);
+      xml.intTag(level, "commonProjectLatency", MusEGlobal::config.commonProjectLatency);
 
 
       xml.uintTag(level, "minControlProcessPeriod", MusEGlobal::config.minControlProcessPeriod);
