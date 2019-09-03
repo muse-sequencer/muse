@@ -322,13 +322,13 @@ bool TempoList::setMasterFlag(unsigned /*tick*/, bool val)
 //   ticks2frames
 //---------------------------------------------------------
 
-unsigned TempoList::ticks2frames(unsigned ticks, unsigned tempoTick) const
+unsigned TempoList::ticks2frames(unsigned ticks, unsigned tempoTick, LargeIntRoundMode round_mode) const
 {
   // Tick resolution is less than frame resolution. 
   // Round up so that the reciprocal function (frame to tick) matches value for value.
   return muse_multiply_64_div_64_to_64(
     (uint64_t)MusEGlobal::sampleRate * (uint64_t)tempo(tempoTick), ticks,
-    (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL, LargeIntRoundUp);
+    (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL, round_mode);
 }
 
 // TODO
@@ -347,16 +347,16 @@ unsigned TempoList::ticks2frames(unsigned ticks, unsigned tempoTick) const
 //   tick2frame
 //---------------------------------------------------------
 
-unsigned TempoList::tick2frame(unsigned tick, unsigned frame, int* sn) const
+unsigned TempoList::tick2frame(unsigned tick, unsigned frame, int* sn, LargeIntRoundMode round_mode) const
       {
-      return (*sn == _tempoSN) ? frame : tick2frame(tick, sn);
+      return (*sn == _tempoSN) ? frame : tick2frame(tick, sn, round_mode);
       }
 
 //---------------------------------------------------------
 //   tick2frame
 //---------------------------------------------------------
 
-unsigned TempoList::tick2frame(unsigned tick, int* sn) const
+unsigned TempoList::tick2frame(unsigned tick, int* sn, LargeIntRoundMode round_mode) const
       {
       unsigned f;
       const uint64_t numer = (uint64_t)MusEGlobal::sampleRate;
@@ -370,12 +370,12 @@ unsigned TempoList::tick2frame(unsigned tick, int* sn) const
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
             f = i->second->frame + muse_multiply_64_div_64_to_64(
-              numer * (uint64_t)i->second->tempo, tick - i->second->tick, denom, LargeIntRoundUp);
+              numer * (uint64_t)i->second->tempo, tick - i->second->tick, denom, round_mode);
             }
       else {
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
-            f = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick, denom, LargeIntRoundUp);
+            f = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick, denom, round_mode);
             }
       if (sn)
             *sn = _tempoSN;
@@ -428,7 +428,7 @@ unsigned TempoList::frame2tick(unsigned frame, int* sn, LargeIntRoundMode round_
 //   deltaTick2frame
 //---------------------------------------------------------
 
-unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn) const
+unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn, LargeIntRoundMode round_mode) const
       {
       unsigned int f1, f2;
       const uint64_t numer = (uint64_t)MusEGlobal::sampleRate;
@@ -443,7 +443,7 @@ unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn) con
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
             f1 = i->second->frame + muse_multiply_64_div_64_to_64(
-              numer * (uint64_t)i->second->tempo, tick1 - i->second->tick, denom, LargeIntRoundUp);
+              numer * (uint64_t)i->second->tempo, tick1 - i->second->tick, denom, round_mode);
 
             i = upper_bound(tick2);
             if (i == end()) {
@@ -452,15 +452,15 @@ unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn) con
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
             f2 = i->second->frame + muse_multiply_64_div_64_to_64(
-              numer * (uint64_t)i->second->tempo, tick2 - i->second->tick, denom, LargeIntRoundUp);
+              numer * (uint64_t)i->second->tempo, tick2 - i->second->tick, denom, round_mode);
             }
       else {
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
-            f1 = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick1, denom, LargeIntRoundUp);
+            f1 = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick1, denom, round_mode);
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
-            f2 = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick2, denom, LargeIntRoundUp);
+            f2 = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick2, denom, round_mode);
             }
       if (sn)
             *sn = _tempoSN;

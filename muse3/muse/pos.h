@@ -24,6 +24,8 @@
 #ifndef __POS_H__
 #define __POS_H__
 
+#include "large_int.h"
+
 class QString;
 
 namespace MusECore {
@@ -51,13 +53,24 @@ class Pos {
    public:
       Pos();
       Pos(const Pos&);
-      Pos(int,int,int);
-      Pos(int,int,int,int);
+      Pos(int measure, int beat, int tick);
+      // Construct a position from a minute-second-frame-subframe value. If round_mode is up or nearest, any
+      //  fractional frame in the result is either rounded up or to the nearest frame.
+      // round_mode should normally be left as up. If ticks is true, the resulting frame is further
+      //  rounded up or to the nearest tick, and the type is set to TICKS.
+      Pos(int min, int sec, int frame, int subframe, bool ticks = false, LargeIntRoundMode round_mode = LargeIntRoundUp);
+      // Construct a position from a time value. If round_mode is up or nearest, any fractional frame in the result
+      //  is either rounded up or to the nearest frame. round_mode should normally be left as down. If ticks
+      //  is true, the resulting frame is further rounded up or to the nearest tick, and the type
+      //  is set to TICKS.
+      Pos(int hour, int min, int sec, int msec, int usec, bool ticks = false, LargeIntRoundMode round_mode = LargeIntRoundDown);
       Pos(unsigned, bool ticks=true);
       Pos(const QString&);
       void dump(int n = 0) const;
-      void mbt(int*, int*, int*) const;
-      void msf(int*, int*, int*, int*) const;
+      void mbt(int* bar, int* beat, int* tk) const;
+      void msf(int* min, int* sec, int* fr, int* subFrame) const;
+// REMOVE Tim. clip. Added.
+      void msmu(/*int* hour,*/ int* min, int* sec, int* msec, int* usec) const;
 
       void invalidSn()  { sn = -1; }
       // Returns whether the serial number is the same as the tempomap serial number.
@@ -70,6 +83,8 @@ class Pos {
       Pos& operator+=(int a);
       Pos& operator-=(Pos a);
       Pos& operator-=(int a);
+      Pos& operator++();
+      Pos& operator--();
 
       bool operator>=(const Pos& s) const;
       bool operator>(const Pos& s) const;
@@ -83,12 +98,12 @@ class Pos {
       friend Pos operator-(Pos a, Pos b);
       friend Pos operator-(Pos a, int b);
 
-      unsigned tick() const;
-      unsigned frame() const;
+      unsigned tick(LargeIntRoundMode round_mode = LargeIntRoundDown) const;
+      unsigned frame(LargeIntRoundMode round_mode = LargeIntRoundUp) const;
       unsigned posValue() const;
       unsigned posValue(TType time_type) const;
-      void setTick(unsigned);
-      void setFrame(unsigned);
+      void setTick(unsigned, LargeIntRoundMode round_mode = LargeIntRoundUp);
+      void setFrame(unsigned, LargeIntRoundMode round_mode = LargeIntRoundDown);
       void setPosValue(unsigned val);
       void setPosValue(unsigned val, TType time_type);
       // This is not the same as assigning or =.

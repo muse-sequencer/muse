@@ -164,7 +164,7 @@
  <customwidgets>
   <customwidget>
    <class>MusEGui::PosEdit</class>
-   <extends>QWidget</extends>
+   <extends>QAbstractSpinBox</extends>
    <header>posedit.h</header>
    <container>0</container>
   </customwidget>

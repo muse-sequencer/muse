@@ -350,7 +350,6 @@ EditMetaDialog::EditMetaDialog(int tick, const MusECore::Event& ev,
       setWindowTitle(tr("MusE: Enter Meta Event"));
 
       QLabel* l1 = new QLabel(tr("Time Position"));
-      ///epos = new PosEdit;
       epos = new PosEdit;
 
       QLabel* l2 = new QLabel(tr("Meta Type"));

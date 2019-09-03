@@ -353,7 +353,7 @@ Transport::Transport(QWidget* parent, const char* name)
       marken->setSpacing(0);
       marken->setContentsMargins(0, 0, 0, 0);
 
-      tl1 = new PosEdit(0);
+      tl1 = new PosEdit(0, MusECore::Pos::TICKS, false, MusECore::TimeFormatBBT, MusECore::TimeFormatAll);
       tl1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
 // REMOVE Tim. clip. Changed.
 //       tl1->setFocusPolicy(Qt::NoFocus);
@@ -366,7 +366,7 @@ Transport::Transport(QWidget* parent, const char* name)
       l5->setAlignment(Qt::AlignCenter);
       marken->addWidget(l5);
 
-      tl2 = new PosEdit(0);
+      tl2 = new PosEdit(0, MusECore::Pos::TICKS, false, MusECore::TimeFormatBBT, MusECore::TimeFormatAll);
       tl2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       marken->addWidget(tl2);
 // REMOVE Tim. clip. Changed.
@@ -391,10 +391,17 @@ Transport::Transport(QWidget* parent, const char* name)
       QHBoxLayout *hbox1 = new QHBoxLayout;
       hbox1->setContentsMargins(0, 0, 0, 0);
       
-      time1 = new PosEdit(0);
-      time2 = new PosEdit(0);
-      time2->setSmpte(true);
-      time2->setFramesDisplay(true); // REMOVE Tim. clip. Added.
+// REMOVE Tim. clip. Changed.
+//       time1 = new PosEdit(0);
+//       time2 = new PosEdit(0);
+//       time2->setSmpte(true);
+//       //time2->setFramesDisplay(true); // REMOVE Tim. clip. Added.
+//       time2->setSmpte(true);
+
+      // false = user is allowed to change mode (FRAMES or TICKS).
+      time1 = new PosEdit(0, MusECore::Pos::TICKS, false, MusECore::TimeFormatBBT, MusECore::TimeFormatAll);
+      time2 = new PosEdit(0, MusECore::Pos::FRAMES, false, MusECore::TimeFormatMSFS, MusECore::TimeFormatAll);
+
       time1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       time2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
 // REMOVE Tim. clip. Changed.

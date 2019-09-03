@@ -321,16 +321,17 @@ MarkerView::MarkerView(QWidget* parent)
       QGroupBox* props = new QGroupBox(tr("Marker Properties"));
       QHBoxLayout *hbox = new QHBoxLayout;
 
-      ///editTick = new PosEdit;
-      editTick = new PosEdit;
-      editTick->setTimeFormatOptions(MusECore::TimeFormatTicksFormatted | MusECore::TimeFormatUserAll);
-      editTick->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
-         QSizePolicy::Fixed));
+// REMOVE Tim. clip. Changed.
+      //editTick = new PosEdit;
+      editTick = new PosEdit(nullptr, MusECore::Pos::TICKS, false, MusECore::TimeFormatBBT, MusECore::TimeFormatAll);
+//       editTick->setTimeFormatOptions(MusECore::TimeFormatTicksFormatted | MusECore::TimeFormatUserAll);
+      editTick->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
 
-      editSMPTE = new PosEdit;
-      editSMPTE->setTimeFormatOptions(MusECore::TimeFormatFramesFormatted | MusECore::TimeFormatUserAll);
-      editSMPTE->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
-         QSizePolicy::Fixed));
+// REMOVE Tim. clip. Changed.
+//       editSMPTE = new PosEdit;
+      editSMPTE = new PosEdit(nullptr, MusECore::Pos::FRAMES, false, MusECore::TimeFormatMSFS, MusECore::TimeFormatAll);
+//       editSMPTE->setTimeFormatOptions(MusECore::TimeFormatFramesFormatted | MusECore::TimeFormatUserAll);
+      editSMPTE->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
 
       lock = new QToolButton;
       lock->setIcon(*lockIcon);
