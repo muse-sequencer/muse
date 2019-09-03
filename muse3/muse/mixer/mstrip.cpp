@@ -943,9 +943,9 @@ void MidiComponentRack::patchPopupActivated(QAction* act)
   }
   else if(instr->isSynti() && act->data().canConvert<void *>())
   {
+#ifdef LV2_SUPPORT
     MusECore::SynthI *si = static_cast<MusECore::SynthI *>(instr);
     MusECore::Synth *s = si->synth();
-#ifdef LV2_SUPPORT
     //only for lv2 synths call applyPreset function.
     if(s && s->synthType() == MusECore::Synth::LV2_SYNTH)
     {

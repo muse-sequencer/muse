@@ -76,11 +76,12 @@ namespace MusECore {
 #define SC_TRACK_REC_MONITOR          0x1000000000 // Audio or midi track's record monitor changed.
 #define SC_TRACK_MOVED                0x2000000000 // Audio or midi track's position in track list or mixer changed.
 #define SC_TRACK_RESIZED              0x4000000000 // Audio or midi track was resized in the arranger.
-#define SC_MARKER_INSERTED            0x8000000000
-#define SC_MARKER_REMOVED             0x10000000000
-#define SC_MARKER_MODIFIED            0x20000000000
+#define SC_METRONOME                  0x8000000000 // Metronome lists settings such as accents changed.
+#define SC_MARKER_INSERTED            0x10000000000
+#define SC_MARKER_REMOVED             0x20000000000
+#define SC_MARKER_MODIFIED            0x40000000000
 // The marker list was rebuilt as a result of tempo changes. NOTE: Currently signals/slots are used for add/remove/modify etc.
-#define SC_MARKERS_REBUILT            0x40000000000
+#define SC_MARKERS_REBUILT            0x80000000000
 #define SC_EVERYTHING                 -1           // global update
   
 typedef int64_t SongChangedFlags_t;
@@ -290,8 +291,11 @@ class TimeFormatOptionsStruct
   public:
     TimeFormatOptions_t _flags;
 
-    TimeFormatOptionsStruct(const TimeFormatOptions_t& flags =
-      TimeFormatTicks) : _flags(flags) { }
+    TimeFormatOptionsStruct(const TimeFormatOptions_t& flags = TimeFormatTicks)
+      : _flags(flags) { }
+
+    TimeFormatOptionsStruct(const TimeFormatOptionsStruct& a)
+     : _flags(a._flags) { }
 
     bool operator==(const TimeFormatOptionsStruct& a)
     { return _flags == a._flags; }

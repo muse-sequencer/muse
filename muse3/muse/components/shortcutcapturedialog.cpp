@@ -97,7 +97,7 @@ void ShortcutCaptureDialog::keyPressEvent(QKeyEvent* e)
             QKeySequence q = QKeySequence(key);
             //QKeySequence q = QKeySequence(k, mods);
             QString keyString = q.toString();
-            if (keyString != QString::null)
+            if (!keyString.isEmpty())
                   nshrtLabel->setText(keyString);
 
             // Check against conflicting shortcuts

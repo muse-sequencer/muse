@@ -112,19 +112,39 @@ QSize PosEdit::sizeHint() const
       {
         case MusECore::TimeFormatFrames:
         case MusECore::TimeFormatTicks:
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+          w  += fm.horizontalAdvance(QString("0000000000A")); // Ten digits plus unit indicator.
+#else
           w  += fm.width(QString("0000000000A")); // Ten digits plus unit indicator.
+#endif
         break;
 
         case MusECore::TimeFormatBBT:
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+          w  += fm.horizontalAdvance(QString("0000.00.000"));
+#else
           w  += fm.width(QString("0000.00.000"));
+#endif
         break;
 
         case MusECore::TimeFormatMSFS:
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+          w  += fm.horizontalAdvance(QString("000:00:00:00"));
+#else
           w  += fm.width(QString("000:00:00:00"));
+#endif
         break;
 
         case MusECore::TimeFormatMSMU:
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+          w  += fm.horizontalAdvance(QString("000:00:000:000"));
+#else
           w  += fm.width(QString("000:00:000:000"));
+#endif
         break;
 
         case MusECore::TimeFormatNoOptions:
@@ -2566,7 +2586,7 @@ void PosEdit::contextMenuEvent(QContextMenuEvent* event)
   
   if(_allowedTimeFormats & MusECore::TimeFormatBBT)
   {
-    act = menu->addAction(tr("Bar beat tick"));
+    act = menu->addAction(tr("Bar.Beat.Tick"));
     act->setData(ContextIdBBTMode);
     act->setCheckable(true);
     act->setChecked(_timeFormatOptions == MusECore::TimeFormatBBT);
@@ -2574,7 +2594,7 @@ void PosEdit::contextMenuEvent(QContextMenuEvent* event)
   
   if(_allowedTimeFormats & MusECore::TimeFormatMSFS)
   {
-    act = menu->addAction(tr("Minute second frame subframe"));
+    act = menu->addAction(tr("Min:Sec:Fr:SubFr"));
     act->setData(ContextIdMSFSMode);
     act->setCheckable(true);
     act->setChecked(_timeFormatOptions == MusECore::TimeFormatMSFS);
@@ -2582,7 +2602,7 @@ void PosEdit::contextMenuEvent(QContextMenuEvent* event)
   
   if(_allowedTimeFormats & MusECore::TimeFormatMSMU)
   {
-    act = menu->addAction(tr("Minute second millisecond microsecond"));
+    act = menu->addAction(tr("Min:Sec:MSec:USec"));
     act->setData(ContextIdMSMUMode);
     act->setCheckable(true);
     act->setChecked(_timeFormatOptions == MusECore::TimeFormatMSMU);

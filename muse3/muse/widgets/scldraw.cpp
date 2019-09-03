@@ -365,16 +365,31 @@ void ScaleDraw::drawLabel(QPainter *p, const QPalette& palette, double curValue,
 	break;
     case Left:
     case InsideVertical:
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+        x0 = d_xorg - d_majLen - d_hpad - fm.horizontalAdvance(label);
+#else
         x0 = d_xorg - d_majLen - d_hpad - fm.width(label);
+#endif
         y0 = tval + (fm.ascent() -1) / 2;
 	break;
     case Bottom:
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+        x0 = tval - (fm.horizontalAdvance(label)-1) / 2;
+#else
         x0 = tval - (fm.width(label)-1) / 2;
+#endif
         y0 = d_yorg + d_majLen + d_vpad + fm.ascent();
 	break;
         
     case InsideHorizontal:
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+        x0 = tval - (fm.horizontalAdvance(label)-1) / 2;
+#else
         x0 = tval - (fm.width(label)-1) / 2;
+#endif
         //y0 = d_yorg + d_majLen + d_vpad + fm.ascent();
         y0 = d_majLen + d_vpad + fm.ascent();
         break;
@@ -396,19 +411,34 @@ void ScaleDraw::drawLabel(QPainter *p, const QPalette& palette, double curValue,
 	
 	if (arc < -pi_75)
 	{
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+         x0 = xpos - MusECore::qwtInt(double(fm.horizontalAdvance(label))
+#else
          x0 = xpos - MusECore::qwtInt(double(fm.width(label))
+#endif
                                    * (1.0 + (arc + pi_75) * M_2_PI));
          y0 = ypos + fm.ascent() - 1;
 	}
 	else if (arc < -M_PI_4)
 	{
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+            x0 = xpos - fm.horizontalAdvance(label);
+#else
             x0 = xpos - fm.width(label);
+#endif
             y0 = ypos - MusECore::qwtInt(double(fm.ascent() - 1)
                                       * (arc + M_PI_4) * M_2_PI);
 	}
 	else if (arc < pi_4)
 	{
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+            x0 = xpos + MusECore::qwtInt(double(fm.horizontalAdvance(label))
+#else
             x0 = xpos + MusECore::qwtInt(double(fm.width(label))
+#endif
                                       * ( arc - M_PI_4 ) * M_2_PI );
             y0 = ypos;
 	}
@@ -420,14 +450,24 @@ void ScaleDraw::drawLabel(QPainter *p, const QPalette& palette, double curValue,
 	}
 	else
 	{
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+            x0 = xpos - MusECore::qwtInt(double(fm.horizontalAdvance(label))
+#else
             x0 = xpos - MusECore::qwtInt(double(fm.width(label))
+#endif
                                       * ( arc - pi_75) * M_2_PI );
             y0 = ypos + fm.ascent() - 1;
 	}
 	break;
     case Top:
     default:
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+        x0 = tval - (fm.horizontalAdvance(label)-1) / 2;
+#else
         x0 = tval - (fm.width(label)-1) / 2;
+#endif
         y0 = d_yorg - d_majLen - d_vpad;
 	break;
     }
@@ -895,7 +935,12 @@ int ScaleDraw::maxLabelWidth(const QFontMetrics& fm, bool worst) const
     if (worst)                  // worst case
     {
         s = composeLabelText(WorstCase, d_fmt, d_prec);
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+        rv = fm.horizontalAdvance(s);
+#else
         rv = fm.width(s);
+#endif
     }
     else                                // actual width
     {
@@ -906,7 +951,12 @@ int ScaleDraw::maxLabelWidth(const QFontMetrics& fm, bool worst) const
             if ((!d_scldiv.logScale()) && (MusECore::qwtAbs(val) < step_eps * MusECore::qwtAbs(d_scldiv.majStep())))
                val = 0.0;
             s = composeLabelText(val, d_fmt, d_prec);
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+            rv = MusECore::qwtMax(rv,fm.horizontalAdvance(s));
+#else
             rv = MusECore::qwtMax(rv,fm.width(s));
+#endif
         }
     }
     return rv;

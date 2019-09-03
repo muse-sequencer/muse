@@ -134,6 +134,7 @@ void initDSSI()
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
       break;
@@ -768,15 +769,26 @@ int DssiSynthIF::oldMidiStateHeader(const unsigned char** data) const
   return 2; 
 }
         
+bool DssiSynthIF::hasLatencyOutPort() const
+{
+  return _hasLatencyOutPort;
+}
+
+unsigned long DssiSynthIF::latencyOutPortIndex() const
+{
+  return _latencyOutPort;
+}
+
 //---------------------------------------------------------
 //   latency
 //---------------------------------------------------------
 
-float DssiSynthIF::latency()
+float DssiSynthIF::latency() const
 {
-  if(!_hasLatencyOutPort)
+  // Do not report any latency if the plugin is not on.
+  if(!hasLatencyOutPort() || !on())
     return 0.0;
-  return _controlsOut[_latencyOutPort].val;
+  return _controlsOut[latencyOutPortIndex()].val;
 }
 
 
@@ -970,15 +982,6 @@ void DssiSynthIF::write(int level, Xml& xml) const
       // Store controls as parameters...
       for(unsigned long c = 0; c < _synth->_controlInPorts; ++c)
         xml.doubleTag(level, "param", _controls[c].val);
-}
-
-//---------------------------------------------------------
-//   preProcessAlways
-//---------------------------------------------------------
-
-void DssiSynthIF::preProcessAlways()
-{
-
 }
 
 //---------------------------------------------------------
@@ -1444,7 +1447,9 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
   // But this 'packet' method sure seems to work nicely so far, so we'll throw it in...
   //
   // Must make this detectable for dssi vst synths, just like the plugins' in-place blacklist.
-  const bool usefixedrate = (requiredFeatures() & PluginFixedBlockSize);
+  // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
+  //       For now we treat it like fixed size.
+  const bool usefixedrate = (requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize));
 
   // Note for dssi-vst this MUST equal MusEGlobal::audio period. It doesn't like broken-up runs (it stutters),
   //  even with fixed sizes. Could be a Wine + Jack thing, wanting a full Jack buffer's length.

@@ -123,11 +123,7 @@ target_link_libraries(plugin_cache_writer_module
       )
 
 if(LV2_SUPPORT)
-      if(LV2_USE_SUPPLIED_VERSION)
-            target_link_libraries(plugin_cache_writer_module lv2_support)
-      else(LV2_USE_SUPPLIED_VERSION)
-            target_link_libraries(plugin_cache_writer_module ${LILV_LIBRARIES})
-      endif(LV2_USE_SUPPLIED_VERSION)
+      target_link_libraries(plugin_cache_writer_module ${LILV_LIBRARIES})
 endif(LV2_SUPPORT)
 
 ##

@@ -38,7 +38,12 @@ TScale::TScale(QWidget* parent, int ymag)
    : View(parent, 1, ymag)
       {
       setFont(MusEGlobal::config.fonts[5]);
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      int w = 4 * fontMetrics().horizontalAdvance('0');
+#else
       int w = 4 * fontMetrics().width('0');
+#endif
       setFixedWidth(w);
       setMouseTracking(true);
       }
@@ -60,7 +65,12 @@ void TScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
                   continue;
             p.drawLine(0, yy, width(), yy);
             s.setNum(i/1000);
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+            p.drawText(width() - fontMetrics().horizontalAdvance(s) - 1, yy-2, s);  // Use the window font. Tim p4.0.31
+#else
             p.drawText(width() - fontMetrics().width(s) - 1, yy-2, s);  // Use the window font. Tim p4.0.31
+#endif
             }
       }
 

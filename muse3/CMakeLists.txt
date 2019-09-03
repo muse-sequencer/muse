@@ -96,11 +96,11 @@ set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # The MusE version number.
 SET(MusE_VERSION_MAJOR 3)
-SET(MusE_VERSION_MINOR 0)
-SET(MusE_VERSION_PATCH 1)
-SET(MusE_VERSION       "3.0.2")
-SET(MusE_VERSION_FULL  "3.0.2")
-SET(MusE_INSTALL_NAME  "muse-3.0")
+SET(MusE_VERSION_MINOR 1)
+SET(MusE_VERSION_PATCH 0)
+SET(MusE_VERSION       "3.1.0pre1")
+SET(MusE_VERSION_FULL  "3.1.0pre1")
+SET(MusE_INSTALL_NAME  "muse-3.1")
 SET(MusE_EXEC_NAME     "muse3")
 
 SET(MusE_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
@@ -160,7 +160,6 @@ option ( ENABLE_VST          "Enable VST/win support (deprecated)"              
 option ( ENABLE_VST_NATIVE   "Enable Native VST support (see ENABLE_VST_VESTIGE and VST_HEADER_PATH)" ON)
 option ( ENABLE_VST_VESTIGE  "Set VST header type is Vestige"                                         ON)
 option ( ENABLE_LV2          "Enable LV2 plugins and synths support" ON)
-option ( ENABLE_LV2_SUPPLIED "Use supplied or system LV2 libraries (lv2, lilv, sord)" OFF)
 option ( ENABLE_LV2_GTK2     "Enable LV2 user interface GTK2 support" ON)
 option ( ENABLE_LV2_DEBUG    "Enable LV2 debugging messages" OFF)
 option ( ENABLE_FLUID        "Enable fluidsynth softsynth plugins."                                ON)
@@ -193,6 +192,13 @@ else (APPLE)
 	endif(UNIX)
 
 endif (APPLE)
+
+##
+##  look for thread support
+##
+
+set(CMAKE_THREAD_PREFER_PTHREAD On)
+find_package(Threads REQUIRED)
 
 ##
 ##  look for Qt5
@@ -301,6 +307,14 @@ check_cxx_symbol_exists(exp10l cmath HAVE_EXP10L)
 # check_cxx_symbol_exists(M_PI cmath HAVE_M_PI)
 
 ##
+## POSIX Timers
+##
+
+## Tested OK. TODO Detection. TODO Resolution queries.
+# set(POSIX_TIMER_SUPPORT ON)
+
+
+##
 ## alsa >= 0.9.0
 ##
 
@@ -352,7 +366,7 @@ else (ENABLE_LRDF)
 endif (ENABLE_LRDF)
 
 if (ENABLE_RTAUDIO)
-      PKG_CHECK_MODULES(RTAUDIO rtaudio>=5.0)
+      PKG_CHECK_MODULES(RTAUDIO rtaudio>=4.0)
       if (RTAUDIO_FOUND)
             include_directories(${RTAUDIO_INCLUDE_DIRS})
             set(HAVE_RTAUDIO ON)
@@ -381,6 +395,7 @@ if (ENABLE_PYTHON)
                   set(PYTHON_SUPPORT ON)
             endif (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 2.4)
       endif (PYTHONLIBS_FOUND)
+#  TODO Check for Pyro4?
 endif (ENABLE_PYTHON)
 
 ##
@@ -455,67 +470,33 @@ endif (ENABLE_VST_VESTIGE)
 ##
 
 if (ENABLE_LV2)
-    set(LV2_SUPPORT ON)
-    
-    ##
-    ## find Gtk2
-    ##
-    
-    if(ENABLE_LV2_GTK2)
-      find_package(GTK2 COMPONENTS gtk gtkmm)
-      if(GTK2_FOUND)
-          set(HAVE_GTK2 ON)
-      endif(GTK2_FOUND)
-    endif(ENABLE_LV2_GTK2)
-    
     set (muse_lilv_ver "0.22.0" )
-    set (muse_lv2_ver "1.12.0")
-    set (muse_sratom_ver "0.4.6")
+    set (muse_lv2_ver "1.14.0")
     set (muse_sord_ver "0.14.0")
-    set (muse_serd_ver "0.22.0")
 
     PKG_CHECK_MODULES(LILV lilv-0>=${muse_lilv_ver})
     PKG_CHECK_MODULES(SORD sord-0>=${muse_sord_ver})
     PKG_CHECK_MODULES(LV2 lv2>=${muse_lv2_ver})
-
-    if (ENABLE_LV2_SUPPLIED)
-        set (LV2_USE_SUPPLIED_VERSION TRUE)
-    else (ENABLE_LV2_SUPPLIED)
-        set (LV2_USE_SUPPLIED_VERSION FALSE)
-    endif (ENABLE_LV2_SUPPLIED)
-
-    if (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
-        set (LV2_USE_SUPPLIED_VERSION TRUE)
-    endif (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
-
-    if (LV2_USE_SUPPLIED_VERSION)
-        PKG_CHECK_MODULES(PCRE libpcre)
-        set (muse_lv2_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/lv2-${muse_lv2_ver}")
-        set (muse_sratom_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/sratom-${muse_sratom_ver}")
-        set (muse_sord_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/sord-${muse_sord_ver}")
-        set (muse_serd_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/serd-${muse_serd_ver}")
-        set (muse_lilv_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/lilv-${muse_lilv_ver}" )
-        include_directories(
-            ${muse_lv2_dir}
-            ${muse_sord_dir}
-            ${muse_sratom_dir}
-            ${muse_serd_dir}
-            ${muse_lilv_dir}
-        )
-
-    else (LV2_USE_SUPPLIED_VERSION)
-        if (LILV_FOUND)
-            include_directories(${LILV_INCLUDE_DIRS})
-        endif (LILV_FOUND)
-        if (SORD_FOUND)
-            include_directories(${SORD_INCLUDE_DIRS})
-        endif (SORD_FOUND)
-        if (LV2_FOUND)
-            include_directories(${LV2_INCLUDE_DIRS})
-        endif (LV2_FOUND)
-    endif (LV2_USE_SUPPLIED_VERSION)
     
-    include_directories(${PROJECT_SOURCE_DIR}/muse/lv2Support)
+    if (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)
+        set(LV2_SUPPORT ON)
+        include_directories(${LILV_INCLUDE_DIRS})
+        include_directories(${SORD_INCLUDE_DIRS})
+        include_directories(${LV2_INCLUDE_DIRS})
+    endif (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)
+
+    if (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)
+        ## find Gtk2
+        if(ENABLE_LV2_GTK2)
+          find_package(GTK2 COMPONENTS gtk gtkmm)
+          if(GTK2_FOUND)
+              set(HAVE_GTK2 ON)
+          endif(GTK2_FOUND)
+        endif(ENABLE_LV2_GTK2)
+        
+        include_directories(${PROJECT_SOURCE_DIR}/muse/lv2Support)
+    endif (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)
+
 else (ENABLE_LV2)
       message("LV2 disabled")
 endif (ENABLE_LV2)
@@ -549,15 +530,28 @@ else ( ENABLE_FLUID )
       message("Fluidsynth disabled")
 endif ( ENABLE_FLUID )
 
+##
+## check for libinstpatch
+##
+
 if ( ENABLE_INSTPATCH )
-  PKG_CHECK_MODULES(INSTPATCH libinstpatch-1.0)
+  # Check recent version:
+  PKG_CHECK_MODULES(INSTPATCH libinstpatch)
   if (INSTPATCH_FOUND)
         include_directories(${INSTPATCH_INCLUDE_DIRS})
         set(HAVE_INSTPATCH ON)
+  else (INSTPATCH_FOUND)
+        # Check older version:
+        PKG_CHECK_MODULES(INSTPATCH libinstpatch-1.0)
+        if (INSTPATCH_FOUND)
+              include_directories(${INSTPATCH_INCLUDE_DIRS})
+              set(HAVE_INSTPATCH ON)
+        endif (INSTPATCH_FOUND)
   endif (INSTPATCH_FOUND)
 else ( ENABLE_INSTPATCH )
       message("Inst(rument) Patch support disabled")
 endif ( ENABLE_INSTPATCH )
+
 
 ##
 ##   End OPTIONAL packages.
@@ -644,9 +638,6 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -Werror=format-security -Wextra -Winvalid-pch -f
 set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "Release CXX flags" FORCE)
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-std=c++11 -O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "Release w/deb info CXX flags" FORCE)
 set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "Debug CXX flags" FORCE)
-##  Use this instead of the above if trying to debug our internal LV2 support
-##   and getting an error about unneccesary brackets.
-# set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -g -O0 -DQT_DEBUG -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG} -Wno-error " CACHE STRING "Debug CXX flags" FORCE)
 
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale
@@ -719,9 +710,9 @@ if (ENABLE_LRDF AND (NOT LRDF_FOUND))
         message("** WARNING: lrdf (>= 0.5) was enabled, but development files were not found. ")
 endif (ENABLE_LRDF AND (NOT LRDF_FOUND))
 
-if (ENABLE_PYTHON AND (NOT PYTHONLIBS_FOUND))
-        message("** WARNING: python was enabled, but development files were not found.")
-endif (ENABLE_PYTHON AND (NOT PYTHONLIBS_FOUND))
+if (ENABLE_PYTHON AND (NOT PYTHON_SUPPORT))
+        message("** WARNING: python (>= 2.4) was enabled, but development files were not found or too old.")
+endif (ENABLE_PYTHON AND (NOT PYTHON_SUPPORT))
 
 if (ENABLE_ALSA AND (NOT ALSA_FOUND))
       message("** WARNING: ALSA >= 0.9.0 was enabled, but development files were not found.")
@@ -731,43 +722,53 @@ if (DSSI_ALSA_COMPAT_FOUND)
       message("** WARNING: Using smaller DSSI ALSA Compatibility package instead of full ALSA. ")
 endif (DSSI_ALSA_COMPAT_FOUND)
 
-if (ENABLE_DSSI AND (NOT DSSI_FOUND))
-        if (NOT (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
-#                 message("** WARNING: DSSI was enabled, but ALSA was not enabled or DSSI")
-#                 message("             ALSA Compatibility development files were not found.")
-                message("** WARNING: DSSI (>= 0.9.0) was enabled, but ALSA development files were not found.")
-        else (NOT (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
-                message("** WARNING: DSSI (>= 0.9.0) was enabled, but development files were not found.")
-        endif (NOT (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
-else (ENABLE_DSSI AND (NOT DSSI_FOUND))
-        if (NOT (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
-# TODO:
-#                 message("** WARNING: DSSI was enabled, but ALSA was not enabled or DSSI")
-#                 message("             ALSA Compatibility development files were not found.")
-#                 message("   HINT: DSSI needs either full ALSA or the smaller DSSI ALSA Compatibility packages.")
+
+if (ENABLE_DSSI)
+    if( (NOT DSSI_FOUND))
+        message("** WARNING: DSSI (>= 0.9.0) was enabled, but development files were not found.")
+    else( (NOT DSSI_FOUND))
+    
+        if (ENABLE_ALSA)
+            if (NOT (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
+                    message("** WARNING: DSSI and ALSA were enabled, but ALSA development files were not found.")
+            endif (NOT (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
+
+            if (ENABLE_OSC)
+                if (NOT LIBLO_FOUND)
+                    message("** WARNING: DSSI and OSC were enabled, but OSC liblo (Lightweight Open Sound Control) development files were not found.")
+                    message("   DSSI support will be built without OSC support.")
+                endif (NOT LIBLO_FOUND)
+            else (ENABLE_OSC)
+                    message("** WARNING: DSSI is enabled, but OSC liblo (Lightweight Open Sound Control) is not enabled.")
+                    message("   DSSI support will be built without OSC support.")
+                    message("   HINT: Enable OSC support.")
+            endif (ENABLE_OSC)
+            
+        else (ENABLE_ALSA)
                 message("** WARNING: DSSI was enabled, but ALSA was not enabled.")
-                message("   HINT: MusE DSSI support needs full ALSA development files package.")
-        endif (NOT (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
+                message("   HINT: MusE DSSI support needs ALSA enabled and full ALSA development files.")
+        endif (ENABLE_ALSA)
 
-        if (ENABLE_DSSI AND (NOT LIBLO_FOUND))
-                message("** WARNING: DSSI is enabled, but liblo (Lightweight Open Sound Control) development files were not found.")
-                message("   DSSI support will be built but will NOT have OSC support.")
-        endif (ENABLE_DSSI AND (NOT LIBLO_FOUND))
-endif (ENABLE_DSSI AND (NOT DSSI_FOUND))
+    endif( (NOT DSSI_FOUND))
+endif (ENABLE_DSSI)
 
-if (ENABLE_OSC AND (NOT LIBLO_FOUND))
+if (ENABLE_OSC)
+    if (NOT LIBLO_FOUND)
         message("** WARNING: liblo (>= 0.23) (Lightweight Open Sound Control) was enabled, but development files were not found.")
-else (ENABLE_OSC AND (NOT LIBLO_FOUND))
-        if (ENABLE_OSC AND (NOT ENABLE_DSSI))
-                message("** WARNING: OSC is enabled, but DSSI was not enabled.")
-                message("   Currently OSC is only used for DSSI support - you likely want to enable DSSI as well.")
-        else (ENABLE_OSC AND (NOT ENABLE_DSSI))
+    else (NOT LIBLO_FOUND)
+
+        if (ENABLE_DSSI)
                 if (NOT DSSI_FOUND)
                       message("** WARNING: OSC is enabled and DSSI is enabled, but DSSI development files were not found.")
                       message("   OSC support will be built, but not currently used by anything until future features do.")
                 endif (NOT DSSI_FOUND)
-        endif (ENABLE_OSC AND (NOT ENABLE_DSSI))
-endif (ENABLE_OSC AND (NOT LIBLO_FOUND))
+        else (ENABLE_DSSI)
+                message("** WARNING: OSC is enabled, but DSSI was not enabled.")
+                message("   Currently OSC is only used for DSSI support - you likely want to enable DSSI as well.")
+        endif (ENABLE_DSSI)
+
+    endif (NOT LIBLO_FOUND)
+endif (ENABLE_OSC)
 
 if (ENABLE_VST_NATIVE AND (NOT AEFFECT_H_FOUND))
         message("** WARNING: Native VST was enabled, but development files were not found.")
@@ -784,15 +785,14 @@ if (ENABLE_INSTPATCH AND (NOT INSTPATCH_FOUND))
 endif (ENABLE_INSTPATCH AND (NOT INSTPATCH_FOUND))
 
 if (ENABLE_LV2)
-    if (ENABLE_LV2_GTK2 AND (NOT GTK2_FOUND))
-        message("** WARNING: LV2 GTK2 support is enabled, but Gtk2 (gtkmm-2, gtk+-2) development files were not found. LV2 Gtk2 UI support is disabled.")
-    endif (ENABLE_LV2_GTK2 AND (NOT GTK2_FOUND))
-    
-    if (LV2_USE_SUPPLIED_VERSION AND (NOT ENABLE_LV2_SUPPLIED))
-        message("** WARNING: System LV2 support libraries were chosen, but development files were not found or too old:")
+    if (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
+        message("** WARNING: LV2 support was chosen, but development files were not found or too old:")
         message("   Requires lv2 >= " ${muse_lv2_ver} ", lilv-0 >= " ${muse_lilv_ver} ", sord-0 >= " ${muse_sord_ver})
-        message("   Building supplied internal versions instead.")
-    endif (LV2_USE_SUPPLIED_VERSION AND (NOT ENABLE_LV2_SUPPLIED))
+    else (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
+        if (ENABLE_LV2_GTK2 AND (NOT GTK2_FOUND))
+            message("** WARNING: LV2 GTK2 support is enabled, but Gtk2 (gtkmm-2, gtk+-2) development files were not found. LV2 Gtk2 UI support is disabled.")
+        endif (ENABLE_LV2_GTK2 AND (NOT GTK2_FOUND))
+    endif (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
 endif (ENABLE_LV2)
 
 message("")

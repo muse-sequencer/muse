@@ -1,3 +1,163 @@
+03.09.2019
+      - Replaced all hard-coded paths in main.cpp with QStandardPaths. (Tim)
+        *** NOTE: This means the location of MusE config files and names have changed!
+        Everything has been moved to ~/.config/MusE/MusE EXCEPT the qt config file
+         which remains in ~/.config/MusE. The MusE config file 'MusE.cfg' has been
+         renamed 'MusE-seq.cfg'. The MusE qt config file 'MusE-qt.conf' has been
+         renamed 'MusE.conf'. The QApplication now has an organization name,
+         application name, and organization domain. All QSettings usages now defer
+         to these values instead of hard-coding QSettings("MusE", "MusE-qt").
+        These changes comply with QStandardPaths policies and QSettings behaviour.
+      - Replaced getenv with qEnvironmentVariable or qgetenv in main.cpp
+      - Disabled loading of default template files 'MusE-seq.cfg' and 'MusE.conf'
+         when either was not found. They should not be required. All default values
+         housed in the global config struct or other classes are now honoured.
+01.09.2019
+      * Command line complete redesign using QCommandLineParser: (Tim)
+        Supports long options. Qt text translations enabled.
+        Cross-platform, no getopt used.
+      * Python remote control redesign:
+        Uses QThread instead of pthreads to start/stop the Pyro server.
+        Launcher python code simplified. No custom event loop.
+        Uses daemon loopCondition to cleanly shutdown.
+        New MusE command line options for the python bridge:
+        --pyro-ns-host<host>  --pyro-ns-port<port>
+        --pyro-daemon-host=<host> --pyro-daemon-port<port>
+        --pyro-comm-timeout<time (s)>
+27.08.2019
+      * New! Restored Python remote control: (Tim)
+      - Completely updated to Pyro4.
+      - Compiles with Python 2 or 3.
+      - The API, the launcher, and ALL examples have been updated.
+      - Enabled with a cmake option and -y command line option, as before.
+      - BONUS: Either works with an ALREADY running Pyro NS, or else starts it.
+      - See new README.python for details.
+      - TODO: Some operations in pyapi.cpp:Song::event() are not realtime safe,
+         and do not allow undo (maybe that's a good thing - too many operations?).
+23.08.2019
+      - MASSIVE tedious fixes: gcc9 and Qt obsoletes/deprecates causing compile failure. (Tim)
+        Replaced implicit copy constructors or assignment operators with explicit:
+         MPEvent, MidiRecordEvent, MidiPlayEvent, Pos.
+        Replaced ALL obsolete QSignalMapper uses, and some more (but certainly not all yet)
+         SIGNAL/SLOTs with Qt5 lambdas. (Very tedious, but at least mappers are all lambdas now!)
+        Replaced ALL (tons!) obsolete QFontMetrics::width() calls with ::horizontalAdvance().
+        Replace ALL obsolete qCopy() calls with std::copy().
+      - Fix 'ConstantLength' Python plugin: Error: PyQt4 not installed. Converted to Qt5. Test OK.
+      - Fix audio controls right-click automation 'set event': Failed unless 'touch' or 'write' on.
+        Call _aud_ctrl_list->add not insert in PendingOperationItem::executeRTStage() (AddAudioCtrlVal).
+      - Fix Score Editor: Delete notes crashes. Corrupt non-const Part* cast in ScoreCanvas::tagItems().
+17.07.2019
+      - LV2: Fix plugins using worker extension, such as *v1 suite (drumkv1 etc.) (Tim)
+        When plugins pass us worker message data, don't just copy the pointer, copy the data.
+        The data is usually local in the plugin and goes out of scope by the time a worker
+         thread gets it, causing corruption (TM). Installed a std::vector for this purpose.
+15.07.2019
+      - LV2: Removed ALL internal LV2 support. Too hard to maintain. (Tim)
+        And to get important changes sooner, we would need risky git versions of the libs.
+      - Support nominalBlockLength feature and coarseBlockLength property.
+      - Changed LV2_P_MIN_BLKLEN value from 'segmentSize' to 0, since we might vary the run.
+      - For plugin sub-runs, treat PluginPowerOf2BlockSize like fixed size for now.
+        TODO: Better support by quantizing the control period to power of 2.
+01.07.2019
+      - libinstpatch fix: Newer libinstpatch.pc replaces old libinstpatch-1.0.pc (Tim)
+30.06.2019
+      - Audio: Fixed old bug hopefully, yay! Symptom: Load a song, press play, and get like this:
+         "FIFO 0xda8d600 underrun" "WaveTrack::getData(Playback track) (A) fifo underrun"
+        Cures: In Audio::seek() do not return if we are already at the requested position -
+         let it update the prefetch fifo. Modified Audio::sync() to NOT repeatedly call seek()
+         if waiting for sync. Tested OK with precount, seek-while-precount, seek-while-seek etc.
+29.06.2019
+      * New! Comprehensive full midi and audio latency correction / compensation: (Tim)
+      - This was a very tough problem to solve.
+      - Currently DISABLED by default until certain it is OK.
+        You must enable it. See the new Global Settings > Latency tab.
+      - Features: 'Corrects' (looks ahead) or 'compensates' (delays) ALL audio and midi
+         signals throughout. Recorded or played audio files should be TRUSTWORTHY now,
+          regardless of audio driver period size.
+      - Tested extensively with many configurations. Should be OK for usage trials.
+      - Works OK with plugins that report latency (properly). It accounts for their latency.
+      - Works OK with Audio Output track sends or Midi output sends and Audio Input returns.
+      - Works OK with 'Bounce to file/track' function, with or without Jack Freewheel enabled.
+      - TODO: Support Aux(illiary) tracks. Not handled at all ATM.
+              Fix small snippet of missing sound at start of all playback material. Should be
+               played BEFORE transport rolls. Use 'slow-sync' feature to hold up the transport.
+              Add user-adjustment boxes on hardware ports. (Enter results from jack_iodelay for ex.)
+14.05.2019
+      - Include RTC support only if ALSA support enabled. See issue 584 (BSD support).  (Tim)
+      - Fix for github issue 646 "Select Directory" dialogs freezes MusE. (Tim)
+        For a known Qt bug: QFileDialog freezes with a Gnome environment.
+        In the bug report, a user said he fixed it by NOT supplying a parent. That is what I did.
+      - Fix problem with loading lv2 presets on '<More...>' popup menu pages. Reported in forums.
+      - Some fixes submitted for BSD support:
+        Remove all dlopen() RTLD_DEEPBIND usage. Add some missing headers.
+      - Users must now specifically set cmake option ENABLE_LV2_SUPPLIED to use built-in
+         LV2 libraries, we will NOT automatically fall back to them now, to avoid problems.
+      - Fix confusing DSSI and OSC cmake warning messages, per issue 655.
+01.05.2019
+      - Fix quantize dialogs in pianoroll, arrangerview, scoreedit. Regression at 21.01.2019 (Tim)
+12.04.2019
+      - Fixed midi import problem as reported in forums: (Tim)
+        Importing tracks with duplicate (often blank) names caused problems with
+         'drum_ordering' and 'route' song file sections since they refer to track names.
+        Re-wrote to use track indexes instead of track names.
+        Optimized and compacted the 'drum_ordering' section.
+      - Added new Arranger column 'Track Index'. Helps identify blank or duplicate track names.
+      - **Bumped up** song file version to 3.2, necessary for the new track header column.
+      - Added Track::displayName() and Route::displayName(). They return strings such as
+         "1:Track 5" and "2:" "3:" to help identify tracks.
+        All places displaying a track name, such as routing popup and dialog, now show
+         this 'augmented' display name to help identify blank or duplicate track names.
+      - Fixed many semantic, code-will-never-run, allocation, header-not-guarded,
+         and other problems as displayed by KDevelop Problems Reporter.
+      - Fixed Midi Input Transformator and Midi Transformator problems.
+        Problems creating/deleting presets. Tested all functions OK.
+25.03.2019
+      - Fix issue 645 "Naming a track with acentuated letter". (Tim)
+        Oops, regression from 07.01.2019: utf8 chars were corrupted.
+        Reverted by re-adding QByteArray stuff, required for proper parsing.
+      - Also fixed many double &amp; in *.idf files and a few other things.
+      - Fixed bug in storing sysex comment xml section of midi instruments.
+        It was doing escape replacements twice, corrupting the text.
+24.03.2019
+      - Fix Time Signature boxes on toolbars: Could not adjust if 'use mastertrack tempo' was off. (Tim)
+        Oops, regression from 22.04.2018
+23.03.2019
+      * Metronome super-makeover: (Tim)
+      * New metronome accents editor with factory and user presets:
+      - Choice of global vs. song metronome settings.
+      - Re-design metronome dialog, separating into tabs.
+      - NOTE: Qt signal/slots macros are OBSOLETE!
+        Implemented first usage of Qt 'connect' functors and C++11 lambdas, in metronome dialog.
+        Strange, some Qt classes don't seem to have functors? (QCheckBox, QComboBox.)
+11.03.2019
+      - Fixed build issues for vanilla Debian 9 (rj)
+10.03.2019
+      - Fixed regression with storing decimal values in song file, they
+        were using locale's decimal type, now stores with decimal point (rj)
+03.03.2019
+      - Fix LinuxVST duplicates in plugin list if duplicate plugins exist. (Tim)
+02.03.2019
+      - Plugin scanner: Redesign fixes problems with 'auto-rescan' trigger. (Tim)
+        Significant changes: Previously folders were scanned for date/time differences
+         compared to the cache file's date/time. This caused unwanted rescans if ANY
+         file or folder inside changed. Now it is all *.so file centric. Now, ALL *.so
+         files found are registered in our caches, and a new 'file timestamp' member
+         was added, and a new "unknown_plugins.scan" cache file added. Then on next start
+         it compares date/time of what exists in our cache with what is actually on the system.
+      - Fixed remaining compile issues with various options disabled.
+        Tested by turning off ALL cmake options. Revealed an error: We never linked
+         pthreads into the core! With cross-platform in mind, this was followed:
+        https://stackoverflow.com/questions/49768454/whats-the-differences-between
+         -pthread-and-pthread-options-in-cmake (the 'modern' answer at bottom).
+01.03.2019
+      - Added README.editor-shortcuts with keyboard shortcuts for midi and drum editor (rj)
+      - Extended plugin scan wait time to 9 seconds, needed by Addictive Drums 2 atleast (rj)
+25.02.2019
+      *** MusE 3.1.0pre1 ***
+      - Added cosmetic highlight lines in arranger for every numbered line (rj)
+      - Added shortcut for renaming a part (rj)
+      - Added a text filter to the shortcut dialog (rj)
+      - finally start preparing for 3.1 (rj)
 19.02.2019
       - Issue 639: Make 'midi remote' dialog box more clear. (Tim)
       - Fix M_PI from last commit. Don't detect in cmake, hard-code #ifdef M_PI for now.

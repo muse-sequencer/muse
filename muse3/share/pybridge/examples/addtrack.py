@@ -21,10 +21,10 @@
 //=========================================================
 """
 
-import Pyro.core
+import Pyro4.core
 import time
 
-muse=Pyro.core.getProxyForURI('PYRONAME://:Default.muse')
+muse=Pyro4.core.Proxy("PYRONAME:muse")
 
 for j in range(0,5):
       for i in range(0,30):
@@ -33,7 +33,7 @@ for j in range(0,5):
             muse.deleteTrack("amiditrack" + str(i))
 
 for i in range(0, 10):
-      print i
+      print (i)
       muse.addMidiTrack("amiditrack")
       muse.addWaveTrack("awavetrack")
       muse.addOutput("anoutput")
@@ -45,4 +45,3 @@ for i in range(0, 10):
       muse.deleteTrack("anoutput")
       muse.deleteTrack("aninput")
       time.sleep(1)
-

@@ -317,6 +317,16 @@ struct GlobalConfigValues {
       bool routerExpandVertically; // Whether to expand the router items vertically. (Good use of space but slow!)
       // How to group the router channels together for easier multi-channel manipulation.
       int routerGroupingChannels;
+      // Whether to enable latency correction/compensation.
+      bool enableLatencyCorrection;
+      // Whether to include unterminated output branches in latency correction calculations.
+      bool correctUnterminatedOutBranchLatency;
+      // Whether to include unterminated input branches in latency correction calculations.
+      bool correctUnterminatedInBranchLatency;
+      // Whether a track's monitoring feature affects latency.
+      bool monitoringAffectsLatency;
+      // Whether completely independent branches share a common latency.
+      bool commonProjectLatency;
       QString mixdownPath;
       bool showNoteNamesInPianoRoll;
       // Whether selecting parts or events is undoable.

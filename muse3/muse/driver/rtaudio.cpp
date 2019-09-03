@@ -35,7 +35,7 @@
 #include "audiodev.h"
 #include "globals.h"
 #include "song.h"
-#include "driver/alsatimer.h"
+// #include "driver/alsatimer.h"
 #include "pos.h"
 #include "gconfig.h"
 //#include "utils.h"

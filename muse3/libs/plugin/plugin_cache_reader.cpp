@@ -42,7 +42,7 @@
 
 namespace MusEPlugin {
 
-static void setPluginScanFileInfo(const QString& filename, PluginScanInfoStruct* info)
+void setPluginScanFileInfo(const QString& filename, PluginScanInfoStruct* info)
 {
   if(filename.isEmpty())
     return;
@@ -53,6 +53,7 @@ static void setPluginScanFileInfo(const QString& filename, PluginScanInfoStruct*
   info->_completeSuffix   = PLUGIN_SET_QSTRING(fi.completeSuffix());
   info->_absolutePath     = PLUGIN_SET_QSTRING(fi.absolutePath());
   info->_path             = PLUGIN_SET_QSTRING(fi.path());
+  info->_fileTime         = fi.lastModified().toMSecsSinceEpoch();
 }
 
 //---------------------------------------------------------
@@ -258,6 +259,10 @@ bool readPluginScanInfo(MusECore::Xml& xml, PluginScanInfoStruct* info, bool rea
                   case MusECore::Xml::TagStart:
                         if (tag == "uri")
                               info->_uri = PLUGIN_SET_QSTRING(xml.parse1());
+                        else if (tag == "filetime")
+                              info->_fileTime = xml.parseLongLong();
+                        else if (tag == "fileIsBad")
+                              info->_fileIsBad = xml.parseInt();
                         else if (tag == "type")
                               info->_type = PluginScanInfoStruct::PluginType(xml.parseInt());
                         else if (tag == "class")
@@ -366,24 +371,8 @@ bool readPluginScan(MusECore::Xml& xml, PluginScanList* list, bool readPorts, bo
                               // read returns true on error.
                               if(!readPluginScanInfo(xml, &info, readPorts, readEnums))
                               {
-                                // Make sure it doesn't already exist.
-                                // Here we have a chance to include all plugins.
-                                // There is nothing stopping us from doing that,
-                                //  but for now let's just skip duplicates.
-                                const MusEPlugin::PluginScanInfoRef found_inforef = list->find(info);
-                                if(found_inforef)
-                                {
-                                  const MusEPlugin::PluginScanInfoStruct& found_infos = found_inforef->info();
-                                  fprintf(stderr, "Ignoring plugin label:%s\n  path:%s duplicate of\n  path:%s\n",
-                                          PLUGIN_GET_CSTRING(info._label),
-                                          PLUGIN_GET_CSTRING(info.filePath()),
-                                          PLUGIN_GET_CSTRING(found_infos.filePath())
-                                        );
-                                }
-                                else
-                                {
-                                  list->add(new PluginScanInfo(info));
-                                }
+                                // We must include all plugins.
+                                list->add(new PluginScanInfo(info));
                               }
                               break;
                         }
@@ -575,6 +564,7 @@ QStringList pluginGetDirectories(const QString& museGlobalLib, PluginScanInfoStr
       return pluginGetVstDirectories();
     break;
 
+    case PluginScanInfoStruct::PluginTypeUnknown:
     case PluginScanInfoStruct::PluginTypeNone:
     case PluginScanInfoStruct::PluginTypeAll:
     break;
@@ -615,6 +605,10 @@ const char* pluginCacheFilename(PluginScanInfoStruct::PluginType type)
 
     case PluginScanInfoStruct::PluginTypeVST:
       return "vst_plugins.scan";
+    break;
+    
+    case PluginScanInfoStruct::PluginTypeUnknown:
+      return "unknown_plugins.scan";
     break;
     
     case PluginScanInfoStruct::PluginTypeNone:
@@ -671,149 +665,8 @@ PluginScanInfoStruct::PluginType_t pluginCacheFilesExist(
   if(types & PluginScanInfoStruct::PluginTypeVST)
     res |= pluginCacheFileExists(path, PluginScanInfoStruct::PluginTypeVST);
 
-  return res;
-}
-
-//---------------------------------------------------------
-//   pluginGetCacheModified
-//---------------------------------------------------------
-
-static QDateTime pluginGetCacheModified(
-  // Path to the cache files.
-  const QString& path,
-  PluginScanInfoStruct::PluginType type)
-{
-  const QString fn = pluginCacheFilename(type);
-  if(fn.isEmpty())
-    return QDateTime();
-  const QFileInfo fi(path + "/" + fn);
-  if(!fi.exists())
-    return QDateTime();
-  return fi.lastModified();
-}
-
-//---------------------------------------------------------
-//   pluginGetDirectoryModified
-//---------------------------------------------------------
-
-static QDateTime pluginGetDirectoryModified(const QString& dirname, QDateTime date = QDateTime(), int recurseLevel = 0)
-{
-  const int max_levels = 10;
-  if(recurseLevel >= max_levels)
-  {
-    std::fprintf(stderr, "pluginGetDirectoryModified: Ignoring too-deep directory level (max:%d) at:%s\n",
-                 max_levels, dirname.toLocal8Bit().constData());
-    return date;
-  }
-
-  DEBUG_PLUGIN_SCAN(stderr, "pluginGetDirectoryModified: <%s>\n", dirname.toLatin1().constData());
-
-  QDir pluginDir(
-    dirname,
-    QString(),
-    QDir::Name | QDir::IgnoreCase,
-    QDir::Drives | QDir::AllDirs | QDir::NoDotAndDotDot);
-
-  if(pluginDir.exists())
-  {
-    const QFileInfo dir_fi(dirname);
-    const QDateTime dir_time = dir_fi.lastModified();
-    
-    if(!date.isValid() || dir_time > date)
-      date = dir_time;
-    
-    QFileInfoList fi_list = pluginDir.entryInfoList();
-    QFileInfoList::iterator it=fi_list.begin();
-    while(it != fi_list.end())
-    {
-      const QFileInfo& fi = *it;
-      if(fi.isDir())
-      {
-        // RECURSIVE!
-        const QDateTime dt = pluginGetDirectoryModified(fi.filePath(), date, recurseLevel + 1);
-        if(dt.isValid() && dt > date)
-          date = dt;
-      }
-      
-      ++it;
-    }
-  }
-
-  return date;
-}
-
-//---------------------------------------------------------
-//   pluginCacheIsDirty
-//---------------------------------------------------------
-
-bool pluginCacheIsDirty(
-  const QString& path,
-  const QString& museGlobalLib,
-  PluginScanInfoStruct::PluginType type,
-  bool debugStdErr)
-{
-  const QStringList sl = pluginGetDirectories(museGlobalLib, type);
-  if(sl.isEmpty())
-    return false;
-  const QDateTime cm = pluginGetCacheModified(path, type);
-  if(!cm.isValid())
-    return true;
-  const int sl_sz = sl.size();
-  for(int i = 0; i < sl_sz; ++i)
-  {
-    const QString dn = sl.at(i);
-    const QDateTime dm = pluginGetDirectoryModified(dn);
-    if(!dm.isValid())
-      continue;
-    if(dm > cm)
-    {
-      if(debugStdErr)
-        std::fprintf(stderr, "Plugin type: <%s> directory is dirty: <%s>\n",
-                     pluginCacheFilename(type), dn.toLatin1().constData());
-      return true;
-    }
-  }
-  return false;
-}
-
-//---------------------------------------------------------
-//   pluginCachesAreDirty
-//---------------------------------------------------------
-
-PluginScanInfoStruct::PluginType_t pluginCachesAreDirty(
-  const QString& path, 
-  const QString& museGlobalLib,
-  PluginScanInfoStruct::PluginType_t types,
-  bool debugStdErr
-)
-{
-  PluginScanInfoStruct::PluginType_t res = PluginScanInfoStruct::PluginTypeNone;
-  
-  if((types & (PluginScanInfoStruct::PluginTypeDSSI | PluginScanInfoStruct::PluginTypeDSSIVST)))
-  {
-    if(pluginCacheIsDirty(path, museGlobalLib, PluginScanInfoStruct::PluginTypeDSSI, debugStdErr))
-      res |= (PluginScanInfoStruct::PluginTypeDSSI | PluginScanInfoStruct::PluginTypeDSSIVST);
-  }
-
-  if((types & PluginScanInfoStruct::PluginTypeMESS) &&
-     pluginCacheIsDirty(path, museGlobalLib, PluginScanInfoStruct::PluginTypeMESS, debugStdErr))
-    res |= PluginScanInfoStruct::PluginTypeMESS;
-
-  if((types & PluginScanInfoStruct::PluginTypeLADSPA) &&
-     pluginCacheIsDirty(path, museGlobalLib, PluginScanInfoStruct::PluginTypeLADSPA, debugStdErr))
-    res |= PluginScanInfoStruct::PluginTypeLADSPA;
-
-  if((types & PluginScanInfoStruct::PluginTypeLinuxVST) &&
-     pluginCacheIsDirty(path, museGlobalLib, PluginScanInfoStruct::PluginTypeLinuxVST, debugStdErr))
-    res |= PluginScanInfoStruct::PluginTypeLinuxVST;
-
-  if((types & PluginScanInfoStruct::PluginTypeLV2) &&
-     pluginCacheIsDirty(path, museGlobalLib, PluginScanInfoStruct::PluginTypeLV2, debugStdErr))
-    res |= PluginScanInfoStruct::PluginTypeLV2;
-
-  if((types & PluginScanInfoStruct::PluginTypeVST) &&
-     pluginCacheIsDirty(path, museGlobalLib, PluginScanInfoStruct::PluginTypeVST, debugStdErr))
-    res |= PluginScanInfoStruct::PluginTypeVST;
+  if(types & PluginScanInfoStruct::PluginTypeUnknown)
+    res |= pluginCacheFileExists(path, PluginScanInfoStruct::PluginTypeUnknown);
 
   return res;
 }
@@ -911,6 +764,12 @@ bool readPluginCacheFiles(
   if(types & PluginScanInfoStruct::PluginTypeVST)
   {
     if(!readPluginCacheFile(path, list, readPorts, readEnums, PluginScanInfoStruct::PluginTypeVST))
+      res = false;
+  }
+
+  if(types & PluginScanInfoStruct::PluginTypeUnknown)
+  {
+    if(!readPluginCacheFile(path, list, readPorts, readEnums, PluginScanInfoStruct::PluginTypeUnknown))
       res = false;
   }
 

@@ -560,8 +560,7 @@ void MidiController::read(Xml& xml)
             switch (token) {
                   case Xml::Error:
                   case Xml::End:
-                        _drumInitVal = _initVal;
-                        return;
+                        goto mc_read_end;
                   case Xml::Attribut:
                         {
                         QString s = xml.s2();
@@ -671,6 +670,8 @@ void MidiController::read(Xml& xml)
                         break;
                   }
             }
+
+mc_read_end:
       _drumInitVal = _initVal;
       }
 

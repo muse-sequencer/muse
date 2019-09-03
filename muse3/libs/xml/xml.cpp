@@ -23,13 +23,14 @@
 //=========================================================
 
 #include <stdarg.h>
+#include <QByteArray>
 
 #include "xml.h"
 
 namespace MusECore {
 
 const int Xml::_latestMajorVersion = 3;   // Latest known songfile major version (as of this release)
-const int Xml::_latestMinorVersion = 1;   // Latest known songfile minor version (as of this release)
+const int Xml::_latestMinorVersion = 2;   // Latest known songfile minor version (as of this release)
   
 //---------------------------------------------------------
 //  Note:
@@ -157,15 +158,16 @@ void Xml::nextc()
 
 void Xml::token(int cc)
       {
-      _s2.clear();  
+      QByteArray buffer;
       int i = 0;
       for (; i < 9999999;) {   // Stop at a reasonably large amount 10 million.
             if (c == ' ' || c == '\t' || c == cc || c == '\n' || c == EOF)
                   break;
-            _s2.append(c);
-            i++;
+            buffer[i++] = c;
             next();
             }
+      buffer[i] = 0;
+      _s2 = buffer;     // deep copy !?
       }
 
 //---------------------------------------------------------
@@ -175,16 +177,14 @@ void Xml::token(int cc)
 
 void Xml::stoken()
       {
-      _s2.clear();  
+      QByteArray buffer;
       int i = 0;
-      _s2.append(c);
-      ++i;
+      buffer[i++] = c;
       next();
 
       for (;i < 10000000*4-1;) {  // Stop at a reasonably large amount 10 million.
             if (c == '"') {
-                  _s2.append(c);
-                  i++;
+                  buffer[i++] = c;
                   next();
                   break;
                   }
@@ -217,25 +217,24 @@ void Xml::stoken()
                   if (c == EOF || k == 6) {
                         // dump entity
                         int n = 0;
-                        _s2.append('&');
-                        i++;
+                        buffer[i++] = '&';
                         for (;(i < 511) && (n < k); ++i, ++n)
-                             _s2.append(entity[n]);
+                              buffer[i] = entity[n];
                         }
                   else {
-                        _s2.append(c);
-                        i++;
-                        }
+                        buffer[i++] = c;
+                     }
                   }
             else if(c != EOF)
             {
-              _s2.append(c);
-              i++;
+              buffer[i++] = c;
             }
             if (c == EOF)
                   break;
             next();
             }
+      buffer[i] = 0;
+      _s2 = buffer;
       }
 
 //---------------------------------------------------------
@@ -257,6 +256,9 @@ QString Xml::strip(const QString& s)
 
 Xml::Token Xml::parse()
       {
+      QByteArray buffer;
+      int idx = 0;
+
  again:
       bool endFlag = false;
       nextc();
@@ -318,16 +320,20 @@ Xml::Token Xml::parse()
                   }
             if (c == '?') {
                   next();
+                  idx = 0;
                   for (;;) {
                         if (c == '?' || c == EOF || c == '>')
                               break;
                         
-                        _s1.append(c);
+                        buffer[idx++] = c;
                         
                         // TODO: check overflow
                         next();
                         }
                   
+                  buffer[idx] = 0;
+                  _s1 = QString(buffer);
+
                   if (c == EOF) {
                         fprintf(stderr, "XML: unexpected EOF\n");
                         goto error;
@@ -354,17 +360,20 @@ Xml::Token Xml::parse()
                         }
                   goto again;
                   }
-
+            idx = 0;
             for (;;) {
                   if (c == '/' || c == ' ' || c == '\t' || c == '>' || c == '\n' || c == EOF)
                         break;
                   // TODO: check overflow
                   
-                  _s1.append(c);
+                  buffer[idx++] = c;
                   
                   next();
                   }
             
+            buffer[idx] = 0;
+            _s1 = QString(buffer);
+
             // skip white space:
             while (c == ' ' || c == '\t' || c == '\n')
                   next();
@@ -412,48 +421,53 @@ Xml::Token Xml::parse()
                   fprintf(stderr, "XML: level = 0\n");
                   goto error;
                   }
+            idx = 0;
             for (;;) {
                   if (c == EOF || c == '<')
                         break;
                   if (c == '&') {
                         next();
                         if (c == '<') {         // be tolerant with old muse files
-                              _s1.append('&');
+                              buffer[idx++] = '&';
                               continue;
                               }
                               
-                        QString name;
+                        QByteArray name;
                         int name_idx = 0;
-                        name.append(c);
-                        name_idx++;
-                        
+                        name[name_idx++] = c;
+                     
                         for (; name_idx < 9999999;) {   // Stop at a reasonably large amount 10 million.
                               next();
                               if (c == ';')
                                     break;
-                              name.append(c);
-                              name_idx++;
+                              name[name_idx++] = c;
                               }
                               
-                        if (name == "lt")
+                        name[name_idx] = 0;
+
+                        if (strcmp(name, "lt") == 0)
                               c = '<';
-                        else if (name == "gt")
+                        else if (strcmp(name, "gt") == 0)
                               c = '>';
-                        else if (name == "apos")
+                        else if (strcmp(name, "apos") == 0)
                               c = '\'';
-                        else if (name == "quot")
+                        else if (strcmp(name, "quot") == 0)
                               c = '"';
-                        else if (name == "amp")
+                        else if (strcmp(name, "amp") == 0)
                               c = '&';
                         else
                               c = '?';
+                        
                         }
 
-                  _s1.append(c);
+                  buffer[idx++] = c;
                   
                   next();
                   }
                   
+            buffer[idx] = 0;
+            _s1 = QString(buffer);
+
             if (c == '<')
                   --bufptr;
             return Text;
@@ -515,6 +529,40 @@ int Xml::parseInt()
             s = s.mid(2);
             }
       int n = s.toInt(&ok, base);
+      return n;
+      }
+
+//---------------------------------------------------------
+//   parseLongLong
+//---------------------------------------------------------
+
+long long Xml::parseLongLong()
+      {
+      QString s(parse1().simplified());
+      bool ok;
+      int base = 10;
+      if (s.startsWith("0x") || s.startsWith("0X")) {
+            base = 16;
+            s = s.mid(2);
+            }
+      long long n = s.toLongLong(&ok, base);
+      return n;
+      }
+
+//---------------------------------------------------------
+//   parseULongLong
+//---------------------------------------------------------
+
+unsigned long long Xml::parseULongLong()
+      {
+      QString s(parse1().simplified());
+      bool ok;
+      int base = 10;
+      if (s.startsWith("0x") || s.startsWith("0X")) {
+            base = 16;
+            s = s.mid(2);
+            }
+      unsigned long long n = s.toULongLong(&ok, base);
       return n;
       }
 
@@ -940,12 +988,50 @@ void Xml::uintTag(int level, const char* name, unsigned int val)
       }
       }
 
+void Xml::longLongTag(int level, const char* name, long long val)
+      {
+      putLevel(level);
+      if(f)
+      {
+        fprintf(f, "<%s>%lld</%s>\n", name, val, name);
+      }
+      else
+      {
+        const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
+        if(_destIODev)
+        _destIODev->write(s.toLatin1());
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
+void Xml::uLongLongTag(int level, const char* name, unsigned long long val)
+      {
+      putLevel(level);
+      if(f)
+      {
+        fprintf(f, "<%s>%llu</%s>\n", name, val, name);
+      }
+      else
+      {
+        const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
+        if(_destIODev)
+        _destIODev->write(s.toLatin1());
+        else if(_destStr)
+          _destStr->append(s);
+      }
+      }
+
 void Xml::floatTag(int level, const char* name, float val)
       {
       putLevel(level);
       if(f)
       {
-        fprintf(f, "<%s>%g</%s>\n", name, val, name);
+        // using QString to format decimal values since we know that
+        // toLatin1 will make a string with decimal point instead of
+        // decimal comma that some locales use
+        QString s("<%1>%2</%3>\n");
+        fprintf(f, "%s", s.arg(name).arg(val).arg(name).toLatin1().constData());
       }
       else
       {
@@ -962,7 +1048,11 @@ void Xml::doubleTag(int level, const char* name, double val)
       putLevel(level);
       if(f)
       {
-        fprintf(f, "<%s>%g</%s>\n", name, val, name);
+        // using QString to format decimal values since we know that
+        // toLatin1 will make a string with decimal point instead of
+        // decimal comma that some locales use
+        QString s("<%1>%2</%3>\n");
+        fprintf(f, "%s", s.arg(name).arg(val).arg(name).toLatin1().constData());
       }
       else
       {

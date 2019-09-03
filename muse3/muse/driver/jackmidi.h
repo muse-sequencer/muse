@@ -24,8 +24,6 @@
 #ifndef __JACKMIDI_H__
 #define __JACKMIDI_H__
 
-//#include <config.h>
-
 #include <map>
 
 #include <jack/jack.h>
@@ -36,8 +34,6 @@
 #include "mpevent.h"
 
 class QString;
-//class MidiFifo;
-//class RouteList;
 
 namespace MusECore {
 class MidiRecordEvent;
@@ -102,10 +98,15 @@ class MidiJackDevice : public MidiDevice {
       
       // The meaning of the returned pointer depends on the driver.
       // For Jack it returns the address of a Jack port, for ALSA it return the address of a snd_seq_addr_t.
-      virtual void* inClientPort()  { return (void*)  _in_client_jackport; }
-      virtual void* outClientPort() { return (void*) _out_client_jackport; }
+      inline virtual void* inClientPort()  { return (void*)  _in_client_jackport; }
+      inline virtual void* outClientPort() { return (void*) _out_client_jackport; }
       
       virtual void writeRouting(int, Xml&) const;
+
+      virtual unsigned int portLatency(void* port, bool capture) const;
+      // The contribution to latency by the device's own members (midi effect rack, Jack ports etc).
+      // A midi device can contain both an input and an output. The 'capture' parameter determines which one.
+      virtual float selfLatencyMidi(int /*channel*/, bool /*capture*/) const;
       };
 
 extern bool initMidiJack();

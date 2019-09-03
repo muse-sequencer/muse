@@ -40,7 +40,6 @@
 #include <QComboBox>
 #include <QFileDialog>
 #include <QLCDNumber>
-#include <QSignalMapper>
 #include <QSlider>
 
 #include "xml.h"
@@ -220,17 +219,17 @@ VAMGui::VAMGui()
 	dctrl[DCO2_PW - VAM_FIRST_CTRL] = SynthGuiCtrl(PWS2, LCDNumber1_2_4, SynthGuiCtrl::SLIDER);
 
 
-	map = new QSignalMapper(this);
 	for (int i = 0; i < NUM_CONTROLLER; ++i) {
-		map->setMapping(dctrl[i].editor, i);
 		if (dctrl[i].type == SynthGuiCtrl::SLIDER)
-			connect((QSlider*)(dctrl[i].editor), SIGNAL(valueChanged(int)), map, SLOT(map()));
+			connect((QSlider*)(dctrl[i].editor), &QSlider::valueChanged, [this, i]() { ctrlChanged(i); } );
 		else if (dctrl[i].type == SynthGuiCtrl::COMBOBOX)
-			connect((QComboBox*)(dctrl[i].editor), SIGNAL(activated(int)), map, SLOT(map()));
+			// Special for these two: Need qt helper overload for these lambdas.
+			//connect((QComboBox*)(dctrl[i].editor), (void (QComboBox::*)(const QString &))&QComboBox::activated, [this, i] { ctrlChanged(i); } );
+			//connect((QComboBox*)(dctrl[i].editor), QOverload<int>::of(&QComboBox::activated), [=](int index) { ctrlChanged(index); } );    
+			connect((QComboBox*)(dctrl[i].editor), QOverload<int>::of(&QComboBox::activated), [=](int) { ctrlChanged(i); } );    
 		else if (dctrl[i].type == SynthGuiCtrl::SWITCH)
-			connect((QCheckBox*)(dctrl[i].editor), SIGNAL(toggled(bool)), map, SLOT(map()));
+			connect((QCheckBox*)(dctrl[i].editor), &QCheckBox::toggled, [this, i]() { ctrlChanged(i); } );
 	}
-	connect(map, SIGNAL(mapped(int)), this, SLOT(ctrlChanged(int)));
 
 	connect(presetList, SIGNAL(itemClicked(QListWidgetItem*)),
 		this, SLOT(presetClicked(QListWidgetItem*)));

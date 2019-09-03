@@ -407,13 +407,14 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
       {
         for (ciRoute r = _inRoutes.begin(); r != _inRoutes.end(); ++r) 
         {
-          if(!r->name().isEmpty())
+          if((r->type == Route::TRACK_ROUTE && r->track) || (r->type != Route::TRACK_ROUTE && !r->name().isEmpty()))
           {
             xml.tag(level++, "Route");
             s = "source";
-            if(r->type != Route::TRACK_ROUTE)
-              s += QString(" type=\"%1\"").arg(r->type);
-            s += QString(" name=\"%1\"/").arg(Xml::xmlString(r->name()));
+            if(r->type == Route::TRACK_ROUTE)
+              s += QString(" track=\"%1\"/").arg(MusEGlobal::song->tracks()->index(r->track));
+            else
+              s += QString(" type=\"%1\" name=\"%2\"/").arg(r->type).arg(Xml::xmlString(r->name()));
             xml.tag(level, s.toLatin1().constData());
             xml.tag(level, "dest devtype=\"%d\" name=\"%s\"/", MidiDevice::JACK_MIDI, Xml::xmlString(name()).toLatin1().constData());
             xml.etag(level--, "Route");
@@ -423,7 +424,7 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
       
       for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) 
       {
-        if(!r->name().isEmpty())
+        if((r->type == Route::TRACK_ROUTE && r->track) || (r->type != Route::TRACK_ROUTE && !r->name().isEmpty()))
         {
           s = "Route";
           if(r->channel != -1)
@@ -432,14 +433,12 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
           xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::JACK_MIDI, Xml::xmlString(name()).toLatin1().constData());
           s = "dest";
           if(r->type == Route::MIDI_DEVICE_ROUTE)
-            s += QString(" devtype=\"%1\"").arg(r->device->deviceType());
+            s += QString(" devtype=\"%1\" name=\"%2\"/").arg(r->device->deviceType()).arg(Xml::xmlString(r->name()));
+          else if(r->type == Route::TRACK_ROUTE)
+            s += QString(" track=\"%1\"/").arg(MusEGlobal::song->tracks()->index(r->track));
           else
-          if(r->type != Route::TRACK_ROUTE)
-            s += QString(" type=\"%1\"").arg(r->type);
-          s += QString(" name=\"%1\"/").arg(Xml::xmlString(r->name()));
+            s += QString(" type=\"%1\" name=\"%2\"/").arg(r->type).arg(Xml::xmlString(r->name()));
           xml.tag(level, s.toLatin1().constData());
-          
-          
           xml.etag(level--, "Route");
         }
       }
@@ -1360,6 +1359,78 @@ void MidiJackDevice::processMidi(unsigned int curFrame)
     else
       impe_us = _outUserEvents.erase(impe_us);
   }
+}
+
+//---------------------------------------------------------
+//   portLatency
+//   If capture is true get the capture latency,
+//    otherwise get the playback latency.
+//---------------------------------------------------------
+
+unsigned int MidiJackDevice::portLatency(void* /*port*/, bool capture) const
+{
+//   jack_latency_range_t c_range;
+//   jack_port_get_latency_range((jack_port_t*)port, JackCaptureLatency, &c_range);
+//   jack_latency_range_t p_range;
+//   jack_port_get_latency_range((jack_port_t*)port, JackPlaybackLatency, &p_range);
+
+  // TODO FIXME: Tests on both Jack-1 Midi and Jack-2 Midi show the returned values are always zero.
+  //             Spent a few days trying to diagnose, it appears Jack does not initialize any ALSA
+  //              midi port latency values as it does with the audio ports. Thus right from the start,
+  //              right from the backend physical port, the values passed throughout the system and
+  //              to the app are always zero!
+  
+  // NOTICE: For at least the ALSA seq driver (tested), the input latency is
+  //          always 1 period while the output latency is always 2 periods
+  //          regardless of Jack command line -p (period size).
+  //         (Also there is the user latency from command line or QJackCtl.)
+  //         In other words, the Jack command line -p (number of periods) ONLY applies to audio output ports.
+  
+  //fprintf(stderr, "MidiJackDevice::portLatency port:%p capture:%d c_range.min:%d c_range.max:%d p_range.min:%d p_range.max:%d\n",
+  //        port, capture, c_range.min, c_range.max, p_range.min, p_range.max);
+
+  if(capture)
+  {
+//     jack_latency_range_t c_range;
+//     jack_port_get_latency_range((jack_port_t*)port, JackCaptureLatency, &c_range);
+
+// REMOVE Tim. latency. TESTING Reinstate. For simulating non-functional jack midi latency. This seems to work well.
+//     return c_range.max;
+    return MusEGlobal::segmentSize;
+  }
+  else
+  {
+//     jack_latency_range_t p_range;
+//     jack_port_get_latency_range((jack_port_t*)port, JackPlaybackLatency, &p_range);
+
+// REMOVE Tim. latency. TESTING Reinstate. For simulating non-functional jack midi latency. This seems to work well.
+//     return p_range.max;
+    return MusEGlobal::segmentSize * 2;
+  }
+}
+
+//---------------------------------------------------------
+//   selfLatencyMidi
+//---------------------------------------------------------
+
+float MidiJackDevice::selfLatencyMidi(int channel, bool capture) const
+{
+  float l = MidiDevice::selfLatencyMidi(channel, capture);
+
+  //if(!MusEGlobal::checkAudioDevice())
+  //  return l;
+
+  if(capture)
+  {
+    if(_in_client_jackport)
+      l += portLatency(_in_client_jackport, capture);
+  }
+  else
+  {
+    if(_out_client_jackport)
+      l += portLatency(_out_client_jackport, capture);
+  }
+  return l;
 }
 
 //---------------------------------------------------------

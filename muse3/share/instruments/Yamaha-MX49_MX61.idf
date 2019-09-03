@@ -18,8 +18,8 @@
             <Patch name="80s Layer" hbank="63" lbank="0" prog="10"/>
             <Patch name="BalladStck" hbank="63" lbank="0" prog="11"/>
             <Patch name="Piano Back" hbank="63" lbank="0" prog="12"/>
-            <Patch name="P.&amp;&amp;Strings" hbank="63" lbank="0" prog="13"/>
-            <Patch name="P.&amp;&amp;Choir" hbank="63" lbank="0" prog="14"/>
+            <Patch name="Piano &amp; Strings" hbank="63" lbank="0" prog="13"/>
+            <Patch name="Piano &amp; Choir" hbank="63" lbank="0" prog="14"/>
         </PatchGroup>
 
         <PatchGroup name="Piano/Modern">
@@ -40,9 +40,9 @@
         </PatchGroup>
 
         <PatchGroup name="Keyboards/Electric Piano">
-            <Patch name="Vintage'74" hbank="63" lbank="0" prog="21"/>
-            <Patch name="R&amp;&amp;B Soft" hbank="63" lbank="0" prog="22"/>
-            <Patch name="Early 70's" hbank="63" lbank="0" prog="23"/>
+            <Patch name="Vintage&apos;74" hbank="63" lbank="0" prog="21"/>
+            <Patch name="R&amp;B Soft" hbank="63" lbank="0" prog="22"/>
+            <Patch name="Early 70&apos;s" hbank="63" lbank="0" prog="23"/>
             <Patch name="Soft Case" hbank="63" lbank="0" prog="24"/>
             <Patch name="Multi Comp" hbank="63" lbank="0" prog="25"/>
             <Patch name="Vintg Case" hbank="63" lbank="0" prog="26"/>
@@ -116,7 +116,7 @@
         </PatchGroup>
 
         <PatchGroup name="Organ/Tonewheel">
-            <Patch name="16+8+5&amp;&amp;1/3" hbank="63" lbank="0" prog="81"/>
+            <Patch name="16+8+5&amp;1/3" hbank="63" lbank="0" prog="81"/>
             <Patch name="Jz2Perc+C3" hbank="63" lbank="0" prog="82"/>
             <Patch name="1st3w/Perc" hbank="63" lbank="0" prog="83"/>
             <Patch name="Slow Jam" hbank="63" lbank="0" prog="84"/>
@@ -145,7 +145,7 @@
             <Patch name="DrawCntrl" hbank="63" lbank="0" prog="108"/>
             <Patch name="Stop Rotar" hbank="63" lbank="0" prog="109"/>
             <Patch name="CleanNoise" hbank="63" lbank="0" prog="110"/>
-            <Patch name="Walk'nBass" hbank="63" lbank="0" prog="111"/>
+            <Patch name="Walk&apos;nBass" hbank="63" lbank="0" prog="111"/>
             <Patch name="Greasy" hbank="63" lbank="0" prog="112"/>
             <Patch name="Swishie" hbank="63" lbank="0" prog="113"/>
             <Patch name="Solo Perc" hbank="63" lbank="0" prog="114"/>
@@ -169,7 +169,7 @@
             <Patch name="YD-45C" hbank="63" lbank="0" prog="120"/>
         </PatchGroup>
 
-        <PatchGroup name="Organ/Pipe &amp;&amp; Accordion">
+        <PatchGroup name="Organ/Pipe &amp; Accordion">
             <Patch name="Fluty Pipe" hbank="63" lbank="1" prog="4"/>
             <Patch name="St. Peter" hbank="63" lbank="1" prog="5"/>
             <Patch name="St. Paul" hbank="63" lbank="1" prog="6"/>
@@ -227,9 +227,9 @@
         </PatchGroup>
 
         <PatchGroup name="Guitar/Clean Electric">
-            <Patch name="ClnElc&amp;&amp;Ac1" hbank="63" lbank="1" prog="70"/>
-            <Patch name="ClnElc&amp;&amp;Ac2" hbank="63" lbank="1" prog="71"/>
-            <Patch name="ClnElc&amp;&amp;Ac3" hbank="63" lbank="1" prog="72"/>
+            <Patch name="ClnElc&amp;Ac1" hbank="63" lbank="1" prog="70"/>
+            <Patch name="ClnElc&amp;Ac2" hbank="63" lbank="1" prog="71"/>
+            <Patch name="ClnElc&amp;Ac3" hbank="63" lbank="1" prog="72"/>
             <Patch name="Strange 12" hbank="63" lbank="1" prog="73"/>
             <Patch name="Jazzy Pick" hbank="63" lbank="1" prog="74"/>
             <Patch name="MelodicJaz" hbank="63" lbank="1" prog="75"/>
@@ -265,7 +265,7 @@
 
         <PatchGroup name="Guitar/Distorted Electric">
             <Patch name="Some Hair" hbank="63" lbank="1" prog="83"/>
-            <Patch name="2 Coil '65" hbank="63" lbank="1" prog="88"/>
+            <Patch name="2 Coil &apos;65" hbank="63" lbank="1" prog="88"/>
             <Patch name="Rotator" hbank="63" lbank="1" prog="96"/>
             <Patch name="MiddyTrem" hbank="63" lbank="1" prog="97"/>
             <Patch name="Spanky" hbank="63" lbank="1" prog="100"/>
@@ -275,14 +275,14 @@
             <Patch name="Tex Boogie" hbank="63" lbank="1" prog="106"/>
             <Patch name="59 Combo" hbank="63" lbank="1" prog="107"/>
             <Patch name="Alt Rocker" hbank="63" lbank="1" prog="108"/>
-            <Patch name="OD M&amp;&amp;H" hbank="63" lbank="1" prog="109"/>
+            <Patch name="OD M&amp;H" hbank="63" lbank="1" prog="109"/>
             <Patch name="Crnchd 376" hbank="63" lbank="1" prog="110"/>
             <Patch name="DynamicAmp" hbank="63" lbank="1" prog="111"/>
             <Patch name="ChugGuitar" hbank="63" lbank="1" prog="112"/>
             <Patch name="Chugga" hbank="63" lbank="1" prog="113"/>
             <Patch name="Small Amp" hbank="63" lbank="1" prog="114"/>
             <Patch name="Metal Mute" hbank="63" lbank="1" prog="115"/>
-            <Patch name="Dist M&amp;&amp;H" hbank="63" lbank="1" prog="116"/>
+            <Patch name="Dist M&amp;H" hbank="63" lbank="1" prog="116"/>
             <Patch name="Cool Drive" hbank="63" lbank="1" prog="117"/>
             <Patch name="Hard Drive" hbank="63" lbank="1" prog="118"/>
             <Patch name="Hard Ramp" hbank="63" lbank="1" prog="119"/>
@@ -376,7 +376,7 @@
             <Patch name="Unison" hbank="63" lbank="2" prog="65"/>
             <Patch name="Long Spit" hbank="63" lbank="2" prog="66"/>
             <Patch name="Big Bass" hbank="63" lbank="2" prog="67"/>
-            <Patch name="Bass&amp;&amp;EQ" hbank="63" lbank="2" prog="68"/>
+            <Patch name="Bass&amp;EQ" hbank="63" lbank="2" prog="68"/>
             <Patch name="Rave Blade" hbank="63" lbank="2" prog="69"/>
             <Patch name="PlsticBass" hbank="63" lbank="2" prog="70"/>
             <Patch name="Funky Rez" hbank="63" lbank="2" prog="71"/>
@@ -393,7 +393,7 @@
             <Patch name="Wide SynBs" hbank="63" lbank="2" prog="82"/>
             <Patch name="Dry SynBs" hbank="63" lbank="2" prog="83"/>
             <Patch name="KickBass" hbank="63" lbank="2" prog="84"/>
-            <Patch name="KeepDanc'n" hbank="63" lbank="2" prog="85"/>
+            <Patch name="KeepDanc&apos;n" hbank="63" lbank="2" prog="85"/>
             <Patch name="VeloMastr" hbank="63" lbank="2" prog="86"/>
             <Patch name="Wah Bass" hbank="63" lbank="2" prog="87"/>
             <Patch name="Pulse Step" hbank="63" lbank="2" prog="88"/>
@@ -570,7 +570,7 @@
             <Patch name="ShinyBrass" hbank="63" lbank="3" prog="101"/>
             <Patch name="Big Brass" hbank="63" lbank="3" prog="102"/>
             <Patch name="Sforzando" hbank="63" lbank="3" prog="103"/>
-            <Patch name="SoftBrs&amp;&amp;Sx" hbank="63" lbank="3" prog="104"/>
+            <Patch name="SoftBrs&amp;Sx" hbank="63" lbank="3" prog="104"/>
             <Patch name="Big Band" hbank="63" lbank="3" prog="105"/>
             <Patch name="SaxBigBand" hbank="63" lbank="3" prog="106"/>
             <Patch name="Velo Falls" hbank="63" lbank="3" prog="107"/>
@@ -654,7 +654,7 @@
 
         <PatchGroup name="Woodwind/Woodwind">
             <Patch name="Clarinet 1" hbank="63" lbank="4" prog="20"/>
-            <Patch name="2Ob &amp;&amp; Bsn" hbank="63" lbank="4" prog="26"/>
+            <Patch name="2Ob &amp; Bsn" hbank="63" lbank="4" prog="26"/>
             <Patch name="WW Quintet" hbank="63" lbank="4" prog="27"/>
             <Patch name="Recorder" hbank="0" lbank="0" prog="74"/>
             <Patch name="Whistle" hbank="0" lbank="0" prog="78"/>
@@ -716,7 +716,7 @@
             <Patch name="Chiff Lead" hbank="0" lbank="0" prog="83"/>
             <Patch name="Voice Lead" hbank="0" lbank="0" prog="85"/>
             <Patch name="Fifth Lead" hbank="0" lbank="0" prog="86"/>
-            <Patch name="Bass&amp;&amp;Lead" hbank="0" lbank="0" prog="87"/>
+            <Patch name="Bass&amp;Lead" hbank="0" lbank="0" prog="87"/>
         </PatchGroup>
 
         <PatchGroup name="Lead/Digital">
@@ -840,7 +840,7 @@
             <Patch name="FeatherPad" hbank="63" lbank="5" prog="27"/>
             <Patch name="SlwAttckPd" hbank="63" lbank="5" prog="28"/>
             <Patch name="Hi Brite" hbank="63" lbank="5" prog="29"/>
-            <Patch name="Pad &amp;&amp; Syn" hbank="63" lbank="5" prog="30"/>
+            <Patch name="Pad &amp; Syn" hbank="63" lbank="5" prog="30"/>
             <Patch name="CsmcSwlPad" hbank="63" lbank="5" prog="31"/>
             <Patch name="SweeetFlng" hbank="63" lbank="5" prog="32"/>
             <Patch name="Waterfall" hbank="63" lbank="5" prog="33"/>
@@ -1221,8 +1221,8 @@
             <Patch name="BollogPuls" hbank="63" lbank="7" prog="11"/>
             <Patch name="Octopus" hbank="63" lbank="7" prog="12"/>
             <Patch name="E. Beatz" hbank="63" lbank="7" prog="13"/>
-            <Patch name="Dream'nOfU" hbank="63" lbank="7" prog="14"/>
-            <Patch name="Bros &amp;&amp; Sis" hbank="63" lbank="7" prog="15"/>
+            <Patch name="Dream&apos;nOfU" hbank="63" lbank="7" prog="14"/>
+            <Patch name="Bros &amp; Sis" hbank="63" lbank="7" prog="15"/>
             <Patch name="Pizza No.1" hbank="63" lbank="7" prog="16"/>
             <Patch name="Electronix" hbank="63" lbank="7" prog="17"/>
             <Patch name="TekkNow" hbank="63" lbank="7" prog="18"/>
@@ -1461,9 +1461,9 @@
             <Patch name="HipHopKit4" hbank="63" lbank="32" prog="12" drum="1"/>
             <Patch name="Stick Kit1" hbank="63" lbank="32" prog="13" drum="1"/>
             <Patch name="Stick Kit2" hbank="63" lbank="32" prog="14" drum="1"/>
-            <Patch name="R&amp;&amp;B Kit 1" hbank="63" lbank="32" prog="15" drum="1"/>
-            <Patch name="R&amp;&amp;B Kit 2" hbank="63" lbank="32" prog="16" drum="1"/>
-            <Patch name="R&amp;&amp;B Kit 3" hbank="63" lbank="32" prog="17" drum="1"/>
+            <Patch name="R&amp;B Kit 1" hbank="63" lbank="32" prog="15" drum="1"/>
+            <Patch name="R&amp;B Kit 2" hbank="63" lbank="32" prog="16" drum="1"/>
+            <Patch name="R&amp;B Kit 3" hbank="63" lbank="32" prog="17" drum="1"/>
             <Patch name="Trance Kit" hbank="63" lbank="32" prog="18" drum="1"/>
             <Patch name="Psych Kit" hbank="63" lbank="32" prog="19" drum="1"/>
             <Patch name="ChllOutKit" hbank="63" lbank="32" prog="20" drum="1"/>
@@ -1536,7 +1536,7 @@
             <Patch name="[9] Rip Bell" hbank="63" lbank="80" prog="8"/>
             <Patch name="[10] BellyDance" hbank="63" lbank="80" prog="9"/>
             <Patch name="[11] Jam Hood" hbank="63" lbank="80" prog="10"/>
-            <Patch name="[12] Rock'n Syn" hbank="63" lbank="80" prog="11"/>
+            <Patch name="[12] Rock&apos;n Syn" hbank="63" lbank="80" prog="11"/>
             <Patch name="[13] DP Show" hbank="63" lbank="80" prog="12"/>
             <Patch name="[14] @ Night" hbank="63" lbank="80" prog="13"/>
             <Patch name="[15] PsyTrncMW" hbank="63" lbank="80" prog="14"/>
@@ -1563,7 +1563,7 @@
             <Patch name="[36] Dirty Subs" hbank="63" lbank="80" prog="35"/>
             <Patch name="[37] US Rock" hbank="63" lbank="80" prog="36"/>
             <Patch name="[38] Remainder" hbank="63" lbank="80" prog="37"/>
-            <Patch name="[39] Jack'sBack" hbank="63" lbank="80" prog="38"/>
+            <Patch name="[39] Jack&apos;sBack" hbank="63" lbank="80" prog="38"/>
             <Patch name="[40] LectroBeat" hbank="63" lbank="80" prog="39"/>
             <Patch name="[41] Slow Roll" hbank="63" lbank="80" prog="40"/>
             <Patch name="[42] EthnoDance" hbank="63" lbank="80" prog="41"/>
@@ -1579,7 +1579,7 @@
             <Patch name="[52] Psy Step" hbank="63" lbank="80" prog="51"/>
             <Patch name="[53] Under Rule" hbank="63" lbank="80" prog="52"/>
             <Patch name="[54] Cyclone" hbank="63" lbank="80" prog="53"/>
-            <Patch name="[55] Mo'Flute-S" hbank="63" lbank="80" prog="54"/>
+            <Patch name="[55] Mo&apos;Flute-S" hbank="63" lbank="80" prog="54"/>
             <Patch name="[56] FloorPumpr" hbank="63" lbank="80" prog="55"/>
             <Patch name="[57] Tronology" hbank="63" lbank="80" prog="56"/>
             <Patch name="[58] Cultural" hbank="63" lbank="80" prog="57"/>
@@ -1619,7 +1619,7 @@
             <Patch name="[92] Temptation" hbank="63" lbank="80" prog="91"/>
             <Patch name="[93] Irie Flex" hbank="63" lbank="80" prog="92"/>
             <Patch name="[94] Amazon" hbank="63" lbank="80" prog="93"/>
-            <Patch name="[95] Drivin'" hbank="63" lbank="80" prog="94"/>
+            <Patch name="[95] Drivin&apos;" hbank="63" lbank="80" prog="94"/>
             <Patch name="[96] Bangerang" hbank="63" lbank="80" prog="95"/>
             <Patch name="[97] Big Drop" hbank="63" lbank="80" prog="96"/>
             <Patch name="[98] SeaFactory" hbank="63" lbank="80" prog="97"/>
@@ -1632,7 +1632,7 @@
             <Patch name="[105] Cosmetic" hbank="63" lbank="80" prog="104"/>
             <Patch name="[106] 9o9Swinger" hbank="63" lbank="80" prog="105"/>
             <Patch name="[107] Tony Time" hbank="63" lbank="80" prog="106"/>
-            <Patch name="[108] Piano&amp;&amp;Pad" hbank="63" lbank="80" prog="107"/>
+            <Patch name="[108] Piano&amp;Pad" hbank="63" lbank="80" prog="107"/>
             <Patch name="[109] Naybahood" hbank="63" lbank="80" prog="108"/>
             <Patch name="[110] Rising Sun" hbank="63" lbank="80" prog="109"/>
             <Patch name="[111] Ripper" hbank="63" lbank="80" prog="110"/>
@@ -1643,7 +1643,7 @@
             <Patch name="[116] Rezo Dance" hbank="63" lbank="80" prog="115"/>
             <Patch name="[117] Mural" hbank="63" lbank="80" prog="116"/>
             <Patch name="[118] Twinkle" hbank="63" lbank="80" prog="117"/>
-            <Patch name="[119] Fallin'Luv" hbank="63" lbank="80" prog="118"/>
+            <Patch name="[119] Fallin&apos;Luv" hbank="63" lbank="80" prog="118"/>
             <Patch name="[120] Onesy" hbank="63" lbank="80" prog="119"/>
             <Patch name="[121] 80s stuf" hbank="63" lbank="80" prog="120"/>
             <Patch name="[122] Rag Machin" hbank="63" lbank="80" prog="121"/>
@@ -2048,7 +2048,7 @@
                     <entry pitch="88"><name>Sd Tight 4R</name></entry>
                     <entry pitch="89"><name>Bd Low L</name></entry>
                     <entry pitch="90"><name>Sd PowerC 4St</name></entry>
-                    <entry pitch="91"><name>Bd R&amp;&amp;B1</name></entry>
+                    <entry pitch="91"><name>Bd R&amp;B1</name></entry>
                     <entry pitch="92"><name>Sd PowerB 1-5St</name></entry>
                     <entry pitch="93"><name>Bd Room1</name></entry>
                     <entry pitch="94"><name>Sd PowerA 1-5St</name></entry>
@@ -2471,7 +2471,7 @@
                     <entry pitch="31"><name>Sd HipHop2</name></entry>
                     <entry pitch="32"><name>Sd HipHop Rim6</name></entry>
                     <entry pitch="33"><name>Bd Hip Deep</name></entry>
-                    <entry pitch="34"><name>Sd R&amp;&amp;B1 Rim</name></entry>
+                    <entry pitch="34"><name>Sd R&amp;B1 Rim</name></entry>
                     <entry pitch="35"><name>Bd Break Heavy</name></entry>
                     <entry pitch="36"><name>Bd Hip Deep</name></entry>
                     <entry pitch="37"><name>Sd HipHop Rim2</name></entry>
@@ -2632,12 +2632,12 @@
                     <entry pitch="32"><name>Sd Rock Stick1 R</name></entry>
                     <entry pitch="33"><name>Bd T9-2</name></entry>
                     <entry pitch="34"><name>Sd Hip Rim1</name></entry>
-                    <entry pitch="35"><name>Bd R&amp;&amp;B2</name></entry>
+                    <entry pitch="35"><name>Bd R&amp;B2</name></entry>
                     <entry pitch="36"><name>Bd Break Deep</name></entry>
                     <entry pitch="37"><name>Sd Closed Rim3</name></entry>
                     <entry pitch="38"><name>Sd Hip Rim2</name></entry>
                     <entry pitch="39"><name>HipHop clap4</name></entry>
-                    <entry pitch="40"><name>Sd R&amp;&amp;B1</name></entry>
+                    <entry pitch="40"><name>Sd R&amp;B1</name></entry>
                     <entry pitch="41"><name>Conga T8</name></entry>
                     <entry pitch="42"><name>HH Closed T8-1</name></entry>
                     <entry pitch="43"><name>Conga T8</name></entry>
@@ -2858,7 +2858,7 @@
             </entry>
 
             <entry>
-                <!-- R&amp;&amp;B Kit 1 -->
+                <!-- R&amp;B Kit 1 -->
                 <patch_collection hbank="63" prog="15"/>
                 <drummap>
                     <entry pitch="24"><name>Bd T9 Hd3</name></entry>
@@ -2877,7 +2877,7 @@
                     <entry pitch="37"><name>Sd T8 Rim</name></entry>
                     <entry pitch="38"><name>Sd Lo-Fi</name></entry>
                     <entry pitch="39"><name>HipHop clap2</name></entry>
-                    <entry pitch="40"><name>Sd R&amp;&amp;B1</name></entry>
+                    <entry pitch="40"><name>Sd R&amp;B1</name></entry>
                     <entry pitch="41"><name>Bd T8-3</name></entry>
                     <entry pitch="42"><name>HH Closed T9</name></entry>
                     <entry pitch="43"><name>Bd T8-3</name></entry>
@@ -2925,20 +2925,20 @@
                     <entry pitch="85"><name>Sd Break Roll</name></entry>
                     <entry pitch="86"><name>Noise Burst</name></entry>
                     <entry pitch="87"><name>Vox Bell</name></entry>
-                    <entry pitch="88"><name>Sd R&amp;&amp;B1</name></entry>
+                    <entry pitch="88"><name>Sd R&amp;B1</name></entry>
                     <entry pitch="89"><name>VoxAlk</name></entry>
                     <entry pitch="90"><name>Udu High</name></entry>
                     <entry pitch="91"><name>Trance Choir</name></entry>
                     <entry pitch="92"><name>Swarm</name></entry>
                     <entry pitch="93"><name>Bd Pop</name></entry>
-                    <entry pitch="94"><name>Sd R&amp;&amp;B1 Rim</name></entry>
-                    <entry pitch="95"><name>Bd R&amp;&amp;B2</name></entry>
+                    <entry pitch="94"><name>Sd R&amp;B1 Rim</name></entry>
+                    <entry pitch="95"><name>Bd R&amp;B2</name></entry>
                     <entry pitch="96"><name>Crash3</name></entry>
                 </drummap>
             </entry>
 
             <entry>
-                <!-- R&amp;&amp;B Kit 2 -->
+                <!-- R&amp;B Kit 2 -->
                 <patch_collection hbank="63" prog="16"/>
                 <drummap>
                     <entry pitch="24"><name>Bd T9-1</name></entry>
@@ -3005,20 +3005,20 @@
                     <entry pitch="85"><name>Sd Break Roll</name></entry>
                     <entry pitch="86"><name>Noise Burst</name></entry>
                     <entry pitch="87"><name>Vox Bell</name></entry>
-                    <entry pitch="88"><name>Sd R&amp;&amp;B1</name></entry>
+                    <entry pitch="88"><name>Sd R&amp;B1</name></entry>
                     <entry pitch="89"><name>VoxAlk</name></entry>
                     <entry pitch="90"><name>Udu High</name></entry>
                     <entry pitch="91"><name>Trance Choir</name></entry>
                     <entry pitch="92"><name>Swarm</name></entry>
                     <entry pitch="93"><name>Bd Pop</name></entry>
-                    <entry pitch="94"><name>Sd R&amp;&amp;B1 Rim</name></entry>
-                    <entry pitch="95"><name>Bd R&amp;&amp;B2</name></entry>
+                    <entry pitch="94"><name>Sd R&amp;B1 Rim</name></entry>
+                    <entry pitch="95"><name>Bd R&amp;B2</name></entry>
                     <entry pitch="96"><name>Crash3</name></entry>
                 </drummap>
             </entry>
 
             <entry>
-                <!-- R&amp;&amp;B Kit 3 -->
+                <!-- R&amp;B Kit 3 -->
                 <patch_collection hbank="63" prog="17"/>
                 <drummap>
                     <entry pitch="24"><name>Bd T9 Hd2</name></entry>
@@ -3035,7 +3035,7 @@
                     <entry pitch="35"><name>Bd T9-1</name></entry>
                     <entry pitch="36"><name>Bd T8-2</name></entry>
                     <entry pitch="37"><name>Sd HipHop Rim3</name></entry>
-                    <entry pitch="38"><name>Sd R&amp;&amp;B1</name></entry>
+                    <entry pitch="38"><name>Sd R&amp;B1</name></entry>
                     <entry pitch="39"><name>HipHop clap6</name></entry>
                     <entry pitch="40"><name>Sd Hip Gate</name></entry>
                     <entry pitch="41"><name>Tom T9 Lo</name></entry>
@@ -3085,14 +3085,14 @@
                     <entry pitch="85"><name>Sd Break Roll</name></entry>
                     <entry pitch="86"><name>Noise Burst</name></entry>
                     <entry pitch="87"><name>Vox Bell</name></entry>
-                    <entry pitch="88"><name>Sd R&amp;&amp;B1</name></entry>
+                    <entry pitch="88"><name>Sd R&amp;B1</name></entry>
                     <entry pitch="89"><name>VoxAlk</name></entry>
                     <entry pitch="90"><name>Udu High</name></entry>
                     <entry pitch="91"><name>Trance Choir</name></entry>
                     <entry pitch="92"><name>Swarm</name></entry>
                     <entry pitch="93"><name>Bd Pop</name></entry>
-                    <entry pitch="94"><name>Sd R&amp;&amp;B1 Rim</name></entry>
-                    <entry pitch="95"><name>Bd R&amp;&amp;B2</name></entry>
+                    <entry pitch="94"><name>Sd R&amp;B1 Rim</name></entry>
+                    <entry pitch="95"><name>Bd R&amp;B2</name></entry>
                     <entry pitch="96"><name>Crash3</name></entry>
                 </drummap>
             </entry>
@@ -3252,7 +3252,7 @@
                     <entry pitch="92"><name>Sd Ambience</name></entry>
                     <entry pitch="93"><name>Sd Rock Mute1 R</name></entry>
                     <entry pitch="94"><name>Sd Cut</name></entry>
-                    <entry pitch="95"><name>Sd D&amp;&amp;B3</name></entry>
+                    <entry pitch="95"><name>Sd D&amp;B3</name></entry>
                     <entry pitch="96"><name>Sd FX1</name></entry>
                 </drummap>
             </entry>
@@ -3333,7 +3333,7 @@
                     <entry pitch="93"><name>Bd Break Heavy</name></entry>
                     <entry pitch="94"><name>HH Open T8-2</name></entry>
                     <entry pitch="95"><name>Bd Break Deep</name></entry>
-                    <entry pitch="96"><name>Bd R&amp;&amp;B2</name></entry>
+                    <entry pitch="96"><name>Bd R&amp;B2</name></entry>
                 </drummap>
             </entry>
 
@@ -3569,7 +3569,7 @@
                     <entry pitch="89"><name>Bd BlpHd</name></entry>
                     <entry pitch="90"><name>Sd Jungle1</name></entry>
                     <entry pitch="91"><name>Bd Sustain</name></entry>
-                    <entry pitch="92"><name>Sd D&amp;&amp;B1</name></entry>
+                    <entry pitch="92"><name>Sd D&amp;B1</name></entry>
                     <entry pitch="93"><name>Bd Break2</name></entry>
                     <entry pitch="94"><name>Sd Dist</name></entry>
                     <entry pitch="95"><name>Bd TekPower</name></entry>
@@ -3805,14 +3805,14 @@
                     <entry pitch="85"><name>Sd Break Roll</name></entry>
                     <entry pitch="86"><name>Noise Burst</name></entry>
                     <entry pitch="87"><name>Vox Bell</name></entry>
-                    <entry pitch="88"><name>Sd R&amp;&amp;B1</name></entry>
+                    <entry pitch="88"><name>Sd R&amp;B1</name></entry>
                     <entry pitch="89"><name>VoxAlk</name></entry>
                     <entry pitch="90"><name>Udu High</name></entry>
                     <entry pitch="91"><name>Trance Choir</name></entry>
                     <entry pitch="92"><name>Swarm</name></entry>
                     <entry pitch="93"><name>Bd Pop</name></entry>
-                    <entry pitch="94"><name>Sd R&amp;&amp;B1 Rim</name></entry>
-                    <entry pitch="95"><name>Bd R&amp;&amp;B2</name></entry>
+                    <entry pitch="94"><name>Sd R&amp;B1 Rim</name></entry>
+                    <entry pitch="95"><name>Bd R&amp;B2</name></entry>
                     <entry pitch="96"><name>Crash3</name></entry>
                 </drummap>
             </entry>
@@ -3965,14 +3965,14 @@
                     <entry pitch="85"><name>Sd Break Roll</name></entry>
                     <entry pitch="86"><name>Noise Burst</name></entry>
                     <entry pitch="87"><name>Vox Bell</name></entry>
-                    <entry pitch="88"><name>Sd R&amp;&amp;B1</name></entry>
+                    <entry pitch="88"><name>Sd R&amp;B1</name></entry>
                     <entry pitch="89"><name>VoxAlk</name></entry>
                     <entry pitch="90"><name>Udu High</name></entry>
                     <entry pitch="91"><name>Trance Choir</name></entry>
                     <entry pitch="92"><name>Swarm</name></entry>
                     <entry pitch="93"><name>Bd Pop</name></entry>
-                    <entry pitch="94"><name>Sd R&amp;&amp;B1 Rim</name></entry>
-                    <entry pitch="95"><name>Bd R&amp;&amp;B2</name></entry>
+                    <entry pitch="94"><name>Sd R&amp;B1 Rim</name></entry>
+                    <entry pitch="95"><name>Bd R&amp;B2</name></entry>
                     <entry pitch="96"><name>Crash3</name></entry>
                 </drummap>
             </entry>
@@ -3999,11 +3999,11 @@
                     <entry pitch="39"><name>Clap AnSm</name></entry>
                     <entry pitch="40"><name>Sd Ambience</name></entry>
                     <entry pitch="41"><name>Tom Ambience Lo</name></entry>
-                    <entry pitch="42"><name>HH Closed D&amp;&amp;B</name></entry>
+                    <entry pitch="42"><name>HH Closed D&amp;B</name></entry>
                     <entry pitch="43"><name>Tom Ambience Lo</name></entry>
-                    <entry pitch="44"><name>HH Pedal D&amp;&amp;B</name></entry>
+                    <entry pitch="44"><name>HH Pedal D&amp;B</name></entry>
                     <entry pitch="45"><name>Tom Ambience Lo</name></entry>
-                    <entry pitch="46"><name>HH Open D&amp;&amp;B</name></entry>
+                    <entry pitch="46"><name>HH Open D&amp;B</name></entry>
                     <entry pitch="47"><name>Tom Ambience Hi</name></entry>
                     <entry pitch="48"><name>Tom Ambience Hi</name></entry>
                     <entry pitch="49"><name>Crash2 L</name></entry>
@@ -4052,7 +4052,7 @@
                     <entry pitch="92"><name>Sd Rim SE</name></entry>
                     <entry pitch="93"><name>Bd Rock2 L</name></entry>
                     <entry pitch="94"><name>Sd Break Roll</name></entry>
-                    <entry pitch="95"><name>Bd D&amp;&amp;B1</name></entry>
+                    <entry pitch="95"><name>Bd D&amp;B1</name></entry>
                     <entry pitch="96"><name>Bd Room2</name></entry>
                 </drummap>
             </entry>
@@ -4143,27 +4143,27 @@
                 <drummap>
                     <entry pitch="24"><name>Bd Hip Deep</name></entry>
                     <entry pitch="25"><name>Bongo Lo 3Finger 1-2</name></entry>
-                    <entry pitch="26"><name>Sd R&amp;&amp;B2</name></entry>
+                    <entry pitch="26"><name>Sd R&amp;B2</name></entry>
                     <entry pitch="27"><name>Sd Timbr</name></entry>
-                    <entry pitch="28"><name>Sd D&amp;&amp;B3</name></entry>
+                    <entry pitch="28"><name>Sd D&amp;B3</name></entry>
                     <entry pitch="29"><name>Sd Hammer</name></entry>
                     <entry pitch="30"><name>Glass</name></entry>
-                    <entry pitch="31"><name>Bd D&amp;&amp;B2</name></entry>
+                    <entry pitch="31"><name>Bd D&amp;B2</name></entry>
                     <entry pitch="32"><name>HH Pedal 3 R</name></entry>
                     <entry pitch="33"><name>Bd Hip Deep</name></entry>
                     <entry pitch="34"><name>HH Open2 R</name></entry>
                     <entry pitch="35"><name>Bd Break Hard</name></entry>
-                    <entry pitch="36"><name>Bd D&amp;&amp;B1</name></entry>
+                    <entry pitch="36"><name>Bd D&amp;B1</name></entry>
                     <entry pitch="37"><name>Sd Mid Rim</name></entry>
-                    <entry pitch="38"><name>Sd D&amp;&amp;B1</name></entry>
+                    <entry pitch="38"><name>Sd D&amp;B1</name></entry>
                     <entry pitch="39"><name>Noise Burst</name></entry>
-                    <entry pitch="40"><name>Sd D&amp;&amp;B2</name></entry>
+                    <entry pitch="40"><name>Sd D&amp;B2</name></entry>
                     <entry pitch="41"><name>Tom Ambience Lo</name></entry>
-                    <entry pitch="42"><name>HH Closed D&amp;&amp;B</name></entry>
+                    <entry pitch="42"><name>HH Closed D&amp;B</name></entry>
                     <entry pitch="43"><name>Tom Ambience Lo</name></entry>
-                    <entry pitch="44"><name>HH Pedal D&amp;&amp;B</name></entry>
+                    <entry pitch="44"><name>HH Pedal D&amp;B</name></entry>
                     <entry pitch="45"><name>Tom Ambience Lo</name></entry>
-                    <entry pitch="46"><name>HH Open D&amp;&amp;B</name></entry>
+                    <entry pitch="46"><name>HH Open D&amp;B</name></entry>
                     <entry pitch="47"><name>Tom Ambience Hi</name></entry>
                     <entry pitch="48"><name>Tom Ambience Hi</name></entry>
                     <entry pitch="49"><name>Crash2 L</name></entry>
@@ -4182,8 +4182,8 @@
                     <entry pitch="62"><name>Conga Hi Tip</name></entry>
                     <entry pitch="63"><name>Conga Hi Slp Open</name></entry>
                     <entry pitch="64"><name>Conga Hi Open 2</name></entry>
-                    <entry pitch="65"><name>Sd D&amp;&amp;B4</name></entry>
-                    <entry pitch="66"><name>HH Reverse D&amp;&amp;B</name></entry>
+                    <entry pitch="65"><name>Sd D&amp;B4</name></entry>
+                    <entry pitch="66"><name>HH Reverse D&amp;B</name></entry>
                     <entry pitch="67"><name>Agogo Lo</name></entry>
                     <entry pitch="68"><name>Agogo Lo</name></entry>
                     <entry pitch="69"><name>Cabasa1</name></entry>
@@ -4206,7 +4206,7 @@
                     <entry pitch="86"><name>Sd FM</name></entry>
                     <entry pitch="87"><name>Sd FM Rim</name></entry>
                     <entry pitch="88"><name>Sd Clappy</name></entry>
-                    <entry pitch="89"><name>Bd D&amp;&amp;B1</name></entry>
+                    <entry pitch="89"><name>Bd D&amp;B1</name></entry>
                     <entry pitch="90"><name>Sd Timbr</name></entry>
                     <entry pitch="91"><name>Bd Distortion5</name></entry>
                     <entry pitch="92"><name>Sd Rim SE</name></entry>
@@ -4287,7 +4287,7 @@
                     <entry pitch="87"><name>Sd T9-5</name></entry>
                     <entry pitch="88"><name>Sd T9-5</name></entry>
                     <entry pitch="89"><name>Bd Human1</name></entry>
-                    <entry pitch="90"><name>Sd D&amp;&amp;B1</name></entry>
+                    <entry pitch="90"><name>Sd D&amp;B1</name></entry>
                     <entry pitch="91"><name>Acoustic Bass FX03</name></entry>
                     <entry pitch="92"><name>DigiOsc4</name></entry>
                     <entry pitch="93"><name>DigiOsc3</name></entry>
@@ -4308,8 +4308,8 @@
                     <entry pitch="28"><name>Sd Piccolo Rim1</name></entry>
                     <entry pitch="29"><name>Sd Roll Mono</name></entry>
                     <entry pitch="30"><name>Sd Wood</name></entry>
-                    <entry pitch="31"><name>Sd R&amp;&amp;B2</name></entry>
-                    <entry pitch="32"><name>Sd D&amp;&amp;B2</name></entry>
+                    <entry pitch="31"><name>Sd R&amp;B2</name></entry>
+                    <entry pitch="32"><name>Sd D&amp;B2</name></entry>
                     <entry pitch="33"><name>Bd Jungle2</name></entry>
                     <entry pitch="34"><name>Sd JungleFX</name></entry>
                     <entry pitch="35"><name>Bd T8-1</name></entry>
@@ -4362,7 +4362,7 @@
                     <entry pitch="82"><name>Shaker 2</name></entry>
                     <entry pitch="83"><name>Sleigh Bell</name></entry>
                     <entry pitch="84"><name>Wind Chime</name></entry>
-                    <entry pitch="85"><name>HH Reverse D&amp;&amp;B</name></entry>
+                    <entry pitch="85"><name>HH Reverse D&amp;B</name></entry>
                     <entry pitch="86"><name>RainLoop</name></entry>
                     <entry pitch="87"><name>Scratch H</name></entry>
                     <entry pitch="88"><name>Scratch L</name></entry>
@@ -4608,7 +4608,7 @@
                     <entry pitch="88"><name>Sd Clappy</name></entry>
                     <entry pitch="89"><name>Bd FxHammer</name></entry>
                     <entry pitch="90"><name>IndusTom</name></entry>
-                    <entry pitch="91"><name>Bd D&amp;&amp;B1</name></entry>
+                    <entry pitch="91"><name>Bd D&amp;B1</name></entry>
                     <entry pitch="92"><name>IndusTom</name></entry>
                     <entry pitch="93"><name>Bd Room3</name></entry>
                     <entry pitch="94"><name>IndusTom</name></entry>
@@ -4693,7 +4693,7 @@
                     <entry pitch="93"><name>Bd Gate</name></entry>
                     <entry pitch="94"><name>Sd Gate1</name></entry>
                     <entry pitch="95"><name>Bd FX Gate</name></entry>
-                    <entry pitch="96"><name>Bd D&amp;&amp;B1</name></entry>
+                    <entry pitch="96"><name>Bd D&amp;B1</name></entry>
                 </drummap>
             </entry>
 
@@ -4792,7 +4792,7 @@
                     <entry pitch="32"><name>Bd T9-3</name></entry>
                     <entry pitch="33"><name>Bd T8-3</name></entry>
                     <entry pitch="34"><name>Bd Sustain</name></entry>
-                    <entry pitch="35"><name>Bd R&amp;&amp;B2</name></entry>
+                    <entry pitch="35"><name>Bd R&amp;B2</name></entry>
                     <entry pitch="36"><name>Bd T9 Hd1</name></entry>
                     <entry pitch="37"><name>Bd Slimy</name></entry>
                     <entry pitch="38"><name>Sd T8-1</name></entry>
@@ -4905,7 +4905,7 @@
                     <entry pitch="65"><name>Bell FX1</name></entry>
                     <entry pitch="66"><name>Bell FX2</name></entry>
                     <entry pitch="67"><name>Scratch Attack</name></entry>
-                    <entry pitch="68"><name>Scratch R&amp;&amp;B</name></entry>
+                    <entry pitch="68"><name>Scratch R&amp;B</name></entry>
                     <entry pitch="69"><name>Cabasa1-2</name></entry>
                     <entry pitch="70"><name>Maracas Slur</name></entry>
                     <entry pitch="71"><name>Electric Perc14</name></entry>
@@ -5026,7 +5026,7 @@
                     <entry pitch="26"><name>Bd Distortion5</name></entry>
                     <entry pitch="27"><name>Bd Distortion3</name></entry>
                     <entry pitch="28"><name>Bd Distortion1</name></entry>
-                    <entry pitch="29"><name>Bd D&amp;&amp;B1</name></entry>
+                    <entry pitch="29"><name>Bd D&amp;B1</name></entry>
                     <entry pitch="30"><name>Bd Blip</name></entry>
                     <entry pitch="31"><name>Bd AnSm</name></entry>
                     <entry pitch="32"><name>Bd T8-2</name></entry>
@@ -5062,10 +5062,10 @@
                     <entry pitch="62"><name>Sd T8-3</name></entry>
                     <entry pitch="63"><name>Sd AnCR</name></entry>
                     <entry pitch="64"><name>Sd Jungle1</name></entry>
-                    <entry pitch="65"><name>Sd D&amp;&amp;B1</name></entry>
+                    <entry pitch="65"><name>Sd D&amp;B1</name></entry>
                     <entry pitch="66"><name>Sd Hip1</name></entry>
-                    <entry pitch="67"><name>Sd R&amp;&amp;B1</name></entry>
-                    <entry pitch="68"><name>Sd R&amp;&amp;B2</name></entry>
+                    <entry pitch="67"><name>Sd R&amp;B1</name></entry>
+                    <entry pitch="68"><name>Sd R&amp;B2</name></entry>
                     <entry pitch="69"><name>Sd Hip1</name></entry>
                     <entry pitch="70"><name>Sd Wood</name></entry>
                     <entry pitch="71"><name>Sd Timbr</name></entry>
@@ -5295,7 +5295,7 @@
                     <entry pitch="55"><name>Bd ElecGate</name></entry>
                     <entry pitch="56"><name>Bd ElecClick</name></entry>
                     <entry pitch="57"><name>Bd ElecPower1</name></entry>
-                    <entry pitch="58"><name>Bd R&amp;&amp;B2</name></entry>
+                    <entry pitch="58"><name>Bd R&amp;B2</name></entry>
                     <entry pitch="59"><name>Bd Hip Deep</name></entry>
                     <entry pitch="60"><name>Bd Break Deep</name></entry>
                     <entry pitch="61"><name>Bd Break1</name></entry>
@@ -5447,7 +5447,7 @@
                     <entry pitch="47"><name>Tom Syn2</name></entry>
                     <entry pitch="48"><name>Sd Hip1</name></entry>
                     <entry pitch="49"><name>Crash4</name></entry>
-                    <entry pitch="50"><name>Sd D&amp;&amp;B4</name></entry>
+                    <entry pitch="50"><name>Sd D&amp;B4</name></entry>
                     <entry pitch="51"><name>HH Closed Break</name></entry>
                     <entry pitch="52"><name>Reverse Cymbal</name></entry>
                     <entry pitch="53"><name>Timbale Lo1-2</name></entry>
@@ -5531,13 +5531,13 @@
                     <entry pitch="51"><name>Sd Jungle2</name></entry>
                     <entry pitch="52"><name>Sd Jungle3</name></entry>
                     <entry pitch="53"><name>Sd JungleFX</name></entry>
-                    <entry pitch="54"><name>Sd D&amp;&amp;B1</name></entry>
-                    <entry pitch="55"><name>Sd D&amp;&amp;B2</name></entry>
-                    <entry pitch="56"><name>Sd D&amp;&amp;B3</name></entry>
-                    <entry pitch="57"><name>Sd D&amp;&amp;B4</name></entry>
-                    <entry pitch="58"><name>Sd R&amp;&amp;B1</name></entry>
-                    <entry pitch="59"><name>Sd R&amp;&amp;B1 Rim</name></entry>
-                    <entry pitch="60"><name>Sd R&amp;&amp;B2</name></entry>
+                    <entry pitch="54"><name>Sd D&amp;B1</name></entry>
+                    <entry pitch="55"><name>Sd D&amp;B2</name></entry>
+                    <entry pitch="56"><name>Sd D&amp;B3</name></entry>
+                    <entry pitch="57"><name>Sd D&amp;B4</name></entry>
+                    <entry pitch="58"><name>Sd R&amp;B1</name></entry>
+                    <entry pitch="59"><name>Sd R&amp;B1 Rim</name></entry>
+                    <entry pitch="60"><name>Sd R&amp;B2</name></entry>
                     <entry pitch="61"><name>Sd Hip1</name></entry>
                     <entry pitch="62"><name>Sd Hip2</name></entry>
                     <entry pitch="63"><name>Sd Hip3</name></entry>
@@ -5647,7 +5647,7 @@
                     <entry pitch="87"><name>Spectrum2</name></entry>
                     <entry pitch="88"><name>Mini Blip5</name></entry>
                     <entry pitch="89"><name>Noise</name></entry>
-                    <entry pitch="90"><name>Bd D&amp;&amp;B1</name></entry>
+                    <entry pitch="90"><name>Bd D&amp;B1</name></entry>
                     <entry pitch="91"><name>Spectrum2</name></entry>
                     <entry pitch="92"><name>SabreTone</name></entry>
                     <entry pitch="93"><name>Electric Perc14</name></entry>
@@ -5728,7 +5728,7 @@
                     <entry pitch="88"><name>Sd Hip St1-2</name></entry>
                     <entry pitch="89"><name>Bd Low L</name></entry>
                     <entry pitch="90"><name>Sd LdwHMono</name></entry>
-                    <entry pitch="91"><name>Bd R&amp;&amp;B1</name></entry>
+                    <entry pitch="91"><name>Bd R&amp;B1</name></entry>
                     <entry pitch="92"><name>Sd Heavy</name></entry>
                     <entry pitch="93"><name>Bd Room1</name></entry>
                     <entry pitch="94"><name>Sd Ambience</name></entry>
@@ -5983,7 +5983,7 @@
                 <drummap>
                     <entry pitch="24"><name>Electric Bass FX 01</name></entry>
                     <entry pitch="25"><name>Zap2</name></entry>
-                    <entry pitch="26"><name>HH Pedal D&amp;&amp;B</name></entry>
+                    <entry pitch="26"><name>HH Pedal D&amp;B</name></entry>
                     <entry pitch="27"><name>HandClap L</name></entry>
                     <entry pitch="28"><name>Scratch Vo F</name></entry>
                     <entry pitch="29"><name>IndusTom</name></entry>

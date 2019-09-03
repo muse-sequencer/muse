@@ -172,7 +172,7 @@ void SndFile::createCache(const QString& path, bool showProgress, bool bWrite, s
       QString label(QWidget::tr("create peakfile for "));
       label += basename();
       progress = new QProgressDialog(label,
-                                     QString::null, 0, csize, 0);
+                                     QString(), 0, csize, 0);
       progress->setMinimumDuration(0);
       progress->show();
    }
@@ -1369,6 +1369,8 @@ SndFileR::~SndFileR()
 
 } // namespace MusECore
 
+
+// REMOVE Tim. wave. Removed. Moved into song.cpp
 // namespace MusEGui {
 // 
 // // //---------------------------------------------------------
@@ -1449,7 +1451,7 @@ SndFileR::~SndFileR()
 // //                                   "File will be resampled from %1 to %2 Hz.\n"
 // //                                   "Do you still want to import it?").arg(f->samplerate()).arg(MusEGlobal::sampleRate),
 // //                                tr("&Yes"), tr("&No"),
-// //                                QString::null, 0, 1 ))
+// //                                QString(), 0, 1 ))
 // //       {
 // //          return true; // this removed f from the stack, dropping refcount maybe to zero and maybe deleting the thing
 // //       }
@@ -1689,4 +1691,3 @@ SndFileR::~SndFileR()
 // // }
 // 
 // } // namespace MusEGui
-

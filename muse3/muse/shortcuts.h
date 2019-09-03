@@ -127,6 +127,7 @@ enum {
       SHRT_QUIT, //Default: Ctrl+Q
 
       SHRT_DESEL_PARTS, //Ctrl+B
+      SHRT_RENAME_PART, // Default: undefined
       SHRT_SELECT_PRTSTRACK, //Default: undefined
       SHRT_OPEN_PIANO, //Ctrl+E
       SHRT_OPEN_SCORE, //Ctrl+R

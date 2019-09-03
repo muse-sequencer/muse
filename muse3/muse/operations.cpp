@@ -32,6 +32,71 @@
 namespace MusECore {
 
 //-----------------------------------
+//  MidiCtrlValListIterators
+//-----------------------------------
+  
+MidiCtrlValListIterators::iterator MidiCtrlValListIterators::findList(const MidiCtrlValList* valList)
+{
+  for(iterator i = begin(); i != end(); ++i)
+    if((*i)->second == valList)
+      return i;
+  return end();
+}
+  
+MidiCtrlValListIterators::const_iterator MidiCtrlValListIterators::findList(const MidiCtrlValList* valList) const
+{
+  for(const_iterator i = begin(); i != end(); ++i)
+    if((*i)->second == valList)
+      return i;
+  return end();
+}
+  
+//-----------------------------------
+//  MidiCtrlValLists2bErased
+//-----------------------------------
+  
+void MidiCtrlValLists2bErased::add(int port, const iMidiCtrlValList& item)
+{
+  iterator i = find(port);
+  if(i == end())
+  {
+    MidiCtrlValListIterators mcvli;
+    mcvli.push_back(item);
+    insert(MidiCtrlValLists2bErasedInsertPair_t(port, mcvli));
+    return;
+  }
+  MidiCtrlValListIterators& mcvli = i->second;
+  for(iMidiCtrlValListIterators_t imcvli = mcvli.begin(); imcvli != mcvli.end(); ++imcvli)
+  {
+    iMidiCtrlValList imcvl = *imcvli;
+    // Compare list pointers.
+    if(imcvl->second == item->second)
+      return; // Already exists.
+  }
+  mcvli.push_back(item);
+}
+
+MidiCtrlValLists2bErased::iterator MidiCtrlValLists2bErased::findList(int port, const MidiCtrlValList* valList)
+{
+  iterator i = find(port);
+  if(i == end())
+    return end();
+  if(i->second.findList(valList) != i->second.end())
+    return i;
+  return end();
+}
+
+MidiCtrlValLists2bErased::const_iterator MidiCtrlValLists2bErased::findList(int port, const MidiCtrlValList* valList) const
+{
+  const_iterator i = find(port);
+  if(i == end())
+    return end();
+  if(i->second.findList(valList) != i->second.end())
+    return i;
+  return end();
+}
+  
+//-----------------------------------
 //  PendingOperationItem
 //-----------------------------------
 
@@ -112,6 +177,8 @@ unsigned int PendingOperationItem::getIndex() const
     case UpdateSoloStates:
     case EnableAllAudioControllers:
     case GlobalSelectAllEvents:
+    case SwitchMetronomeSettings:
+    case ModifyMetronomeAccentMap:
     case ModifyAudioSamples:
     case SetStaticTempo:
     case ModifyMarkerList:
@@ -1144,7 +1211,8 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage AddAudioCtrlVal: ctrl_l:%p frame:%u val:%f\n", 
               _aud_ctrl_list, _posLenVal, _ctl_dbl_val);
 #endif      
-      _aud_ctrl_list->insert(CtrlListInsertPair_t(_posLenVal, CtrlVal(_posLenVal, _ctl_dbl_val)));
+      // Add will replace if found.
+      _aud_ctrl_list->add(_posLenVal, _ctl_dbl_val);
       flags |= SC_AUDIO_CONTROLLER;
     break;
     case DeleteAudioCtrlVal:
@@ -1374,6 +1442,29 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     }
     break;
     
+    case SwitchMetronomeSettings:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage SwitchMetronomeSettings: settings:%p val:%d\n", _metroUseSongSettings, _select);
+#endif      
+      *_metroUseSongSettings = _select;
+      flags |= SC_METRONOME;
+    }
+    break;
+
+    case ModifyMetronomeAccentMap:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyMetronomeAccentMap: old map:%p new map:%p\n", _metroAccentsMap, _newMetroAccentsMap);
+#endif      
+      MetroAccentsMap* orig = *_metroAccentsMap;
+      *_metroAccentsMap = _newMetroAccentsMap;
+      // Transfer the original pointer back to _newMetroAccentsMap so it can be deleted in the non-RT stage.
+      _newMetroAccentsMap = orig;
+      flags |= SC_METRONOME;
+    }
+    break;
+
     case Uninitialized:
     break;
     
@@ -1480,6 +1571,12 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
       // At this point _marker_list points to the original memory that was replaced. Delete it now.
       if(_marker_list)
         delete _marker_list;
+    break;
+
+    case ModifyMetronomeAccentMap:
+      // At this point _newMetroAccentsMap is the original list that was replaced. Delete it now.
+      if(_newMetroAccentsMap)
+        delete _newMetroAccentsMap;
     break;
 
     default:
@@ -2504,6 +2601,38 @@ bool PendingOperationList::add(PendingOperationItem op)
 //           // Simply replace the list.
 //           poi._newAudioSamples = op._newAudioSamples; 
 //           poi._newAudioSamplesLen = op._newAudioSamplesLen; 
+
+      case PendingOperationItem::SwitchMetronomeSettings:
+        if(poi._type == PendingOperationItem::SwitchMetronomeSettings && 
+          (poi._metroUseSongSettings == op._metroUseSongSettings))
+        {
+          if(poi._select == op._select)
+          {
+            fprintf(stderr, "MusE error: PendingOperationList::add(): Double SwitchMetronomeSettings. Ignoring.\n");
+            // No operation will take place.
+            return false;  
+          }
+          else
+          {
+            // Enable or disable followed by disable or enable is useless. Cancel out both by erasing the command.
+            erase(ipos->second);
+            _map.erase(ipos);
+            // No operation will take place.
+            return false;
+          }
+        }
+      break;
+      
+      case PendingOperationItem::ModifyMetronomeAccentMap:
+// TODO Not quite right yet.
+//         if(poi._type == PendingOperationItem::ModifyMetronomeAccentMap && 
+//           // If attempting to repeatedly modify the same list, or, if progressively modifying (list to list to list etc).
+//           (poi._metroAccentsMap == op._metroAccentsMap || poi._newMetroAccentsMap == op._newMetroAccentsMap))
+//         {
+//           // Simply replace the list.
+//           poi._newMetroAccentsMap = op._newMetroAccentsMap;
+//           // An operation will still take place.
+
 //           return true;
 //         }
       break;

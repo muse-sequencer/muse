@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>606</width>
+    <width>612</width>
     <height>562</height>
    </rect>
   </property>
@@ -23,7 +23,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="TabPage">
       <attribute name="title">
@@ -656,10 +656,7 @@
  a new plugin. Click this button to
  force the cache to recreate upon
   next restart. 
-Do not store frequently changing
- files such as plugin configuration
- data in these directories as it may
- trigger frequent rescans.</string>
+</string>
              </property>
              <property name="text">
               <string>&amp;Force plugin rescan and cache recreation on next restart</string>
@@ -1319,7 +1316,7 @@ Adjusts responsiveness of audio controls and
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>554</width>
+            <width>560</width>
             <height>517</height>
            </rect>
           </property>
@@ -1708,6 +1705,137 @@ Certain operations will also force them to be resent,
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="latencyTab">
+      <attribute name="title">
+       <string>Latency</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_20">
+       <item>
+        <widget class="QGroupBox" name="groupBox_10">
+         <property name="title">
+          <string>Latency</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_22">
+          <item>
+           <widget class="QLabel" name="label_24">
+            <property name="text">
+             <string>Whether to enable latency correction/compensation:</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="enableLatencyCorrectionButton">
+            <property name="text">
+             <string>Enable latency correction/compensation</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_7">
+            <property name="title">
+             <string>Project latency</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_17">
+             <item>
+              <widget class="QLabel" name="label_20">
+               <property name="text">
+                <string>Whether completely independent branches share a common project-wide latency:</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="latencyProjectCommonButton">
+               <property name="text">
+                <string>Project-wide latency</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_8">
+            <property name="title">
+             <string>Unterminated branches</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_18">
+             <item>
+              <widget class="QLabel" name="label_21">
+               <property name="text">
+                <string>Whether unterminated branches participate in latency correction/compensation:</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="latencyInBranchUntermButton">
+               <property name="text">
+                <string>Unterminated input branches</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="latencyOutBranchUntermButton">
+               <property name="text">
+                <string>Unterminated output branches</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_9">
+            <property name="title">
+             <string>Track monitoring</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_19">
+             <item>
+              <widget class="QLabel" name="label_22">
+               <property name="text">
+                <string>Whether track monitor buttons affect latency correction/compensation:</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="latencyMonitorAffectingButton">
+               <property name="text">
+                <string>Monitoring affects latency</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_6">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="tab3">
       <attribute name="title">
        <string>GUI Behaviour</string>
@@ -1759,7 +1887,7 @@ Certain operations will also force them to be resent,
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>528</width>
+               <width>534</width>
                <height>700</height>
               </rect>
              </property>
@@ -2355,7 +2483,7 @@ Benign XCB connection errors may still
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>554</width>
+               <width>560</width>
                <height>368</height>
               </rect>
              </property>

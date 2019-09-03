@@ -21,6 +21,8 @@
 //
 //=========================================================
 
+#include <stdint.h>
+
 #include "muse_math.h"
 
 #include "track.h"
@@ -32,8 +34,13 @@
 #include "globals.h"
 #include "gconfig.h"
 #include "al/dsp.h"
+#include "audioprefetch.h"
+#include "latency_compensator.h"
 
 //#define WAVETRACK_DEBUG
+// Turn on some cool terminal 'peak' meters for debugging
+//  presence of actual audio at various places
+// #define NODE_DEBUG_TERMINAL_PEAK_METERS
 
 namespace MusECore {
 
@@ -41,13 +48,16 @@ namespace MusECore {
 //   WaveTrack
 //---------------------------------------------------------
 
-WaveTrack::WaveTrack() : AudioTrack(Track::WAVE)
+// Default 1 channel for wave tracks.
+WaveTrack::WaveTrack() : AudioTrack(Track::WAVE, 1)
 {
-  setChannels(1);
+  _prefetchWritePos = ~0;
 }
 
 WaveTrack::WaveTrack(const WaveTrack& wt, int flags) : AudioTrack(wt, flags)
 {
+  _prefetchWritePos = ~0;
+
   internal_assign(wt, flags | Track::ASSIGN_PROPERTIES);
 }
 
@@ -93,7 +103,7 @@ void WaveTrack::assign(const Track& t, int flags)
 //    called from prefetch thread
 //---------------------------------------------------------
 
-void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSeek, bool overwrite)
+void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSeek, bool overwrite, int latency_correction)
       {
       #ifdef WAVETRACK_DEBUG
       fprintf(stderr, "WaveTrack::fetchData %s samples:%u pos:%u overwrite:%d\n", name().toLatin1().constData(), samples, pos, overwrite);
@@ -107,6 +117,7 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
       // Process only if track is not off.
       if(!off())
       {
+        const bool use_latency_corr = useLatencyCorrection();
         bool do_overwrite = overwrite;
         PartList* pl = parts();
         unsigned n = samples;
@@ -149,6 +160,22 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
                           if (nn > n)
                                 nn = n;
                           }
+
+                    if(use_latency_corr)
+                    {
+                      // Don't bother trying to read anything that comes before sample zero,
+                      //  or limiting to zero which would just repeat the same beginning section over.
+                      
+                      // REMOVE Tim. latency. Added. Comment.
+                      // TODO: Change this: Insert blanks and use what we can from the buffer!
+                      
+                      if(latency_correction > 0 && (unsigned int)latency_correction > srcOffset)
+                        continue;
+                      // Move the source FORWARD by an amount necessary for latency correction.
+                      // i_correction will be negative for correction.
+                      srcOffset -= latency_correction;
+                    }
+
                     float* bpp[channels()];
                     for (int i = 0; i < channels(); ++i)
                           bpp[i] = bp[i] + dstOffset;
@@ -265,6 +292,114 @@ bool WaveTrack::closeAllParts()
 }
 
 //---------------------------------------------------------
+//   getDataPrivate
+//    return false if no data available
+//---------------------------------------------------------
+
+bool WaveTrack::getInputData(unsigned pos, int channels, unsigned nframes,
+                             bool* usedInChannelArray, float** buffer)
+      {
+      // use supplied buffers
+      const RouteList* rl = inRoutes();
+      const bool use_latency_corr = useLatencyCorrection();
+
+      #ifdef NODE_DEBUG_PROCESS
+      fprintf(stderr, "AudioTrack::getData name:%s channels:%d inRoutes:%d\n", name().toLatin1().constData(), channels, int(rl->size()));
+      #endif
+
+      int dst_ch, dst_chs, src_ch, src_chs, fin_dst_chs, next_chan, i;
+      unsigned long int l;
+      
+      bool have_data = false;
+      
+      for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+            if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+              continue;
+
+            // Only this track knows how many destination channels there are,
+            //  while only the route track knows how many source channels there are.
+            // So take care of the destination channels here, and let the route track handle the source channels.
+            dst_ch = ir->channel <= -1 ? 0 : ir->channel;
+            if(dst_ch >= channels)
+              continue;
+            dst_chs = ir->channels <= -1 ? channels : ir->channels;
+            src_ch = ir->remoteChannel <= -1 ? 0 : ir->remoteChannel;
+            src_chs = ir->channels;
+
+            fin_dst_chs = dst_chs;
+            if(dst_ch + fin_dst_chs > channels)
+              fin_dst_chs = channels - dst_ch;
+
+            #ifdef NODE_DEBUG_PROCESS
+            fprintf(stderr, "    calling copy/addData on %s dst_ch:%d dst_chs:%d fin_dst_chs:%d src_ch:%d src_chs:%d ...\n",
+                    ir->track->name().toLatin1().constData(),
+                    dst_ch, dst_chs, fin_dst_chs,
+                    src_ch, src_chs);
+            #endif
+
+            static_cast<AudioTrack*>(ir->track)->copyData(pos,
+                                                          dst_ch, dst_chs, fin_dst_chs,
+                                                          src_ch, src_chs,
+                                                          nframes, buffer,
+                                                          false, use_latency_corr ? nullptr : usedInChannelArray);
+
+            
+#ifdef NODE_DEBUG_TERMINAL_PEAK_METERS
+            if(MusEGlobal::audio->isPlaying())
+            {
+              fprintf(stderr, "WaveTrack::getInputData() name:%s ir->latency:%lu latencyCompWriteOffset:%lu total:%lu\n",
+                      name().toLatin1().constData(), l, latencyCompWriteOffset(), l + latencyCompWriteOffset());
+              for(int ch = 0; ch < channels; ++ch)
+              {
+                fprintf(stderr, "channel:%d peak:", ch);
+                float val;
+                float peak = 0.0f;
+                const float* buf = buffer[ch];
+                for(unsigned int smp = 0; smp < nframes; ++smp)
+                {
+                  val = buf[smp];
+                  if(val > peak)
+                    peak = val;
+                }
+                const int dots = peak * 20;
+                for(int d = 0; d < dots; ++d)
+                  fprintf(stderr, "*");
+                fprintf(stderr, "\n");
+              }
+            }
+#endif
+            
+            if(use_latency_corr)
+            {
+              // Write the buffers to the latency compensator.
+              // By now, each copied channel should have the same latency, 
+              //  so we use this convenient common-latency version of write.
+              // TODO: Make it per-channel.
+              
+              // Prepare the latency value to be passed to the compensator's writer,
+              //  by adjusting each route latency value. ie. the route with the worst-case
+              //  latency will get ZERO delay, while routes having smaller latency will get
+              //  MORE delay, to match all the signal timings together.
+              // The route's audioLatencyOut should have already been calculated and
+              //  conveniently stored in the route.
+              if((long int)ir->audioLatencyOut < 0)
+                l = 0;
+              else
+                l = ir->audioLatencyOut;
+              
+              _latencyComp->write(nframes, l + latencyCompWriteOffset(), buffer);
+            }
+            
+            next_chan = dst_ch + fin_dst_chs;
+            for(i = dst_ch; i < next_chan; ++i)
+              usedInChannelArray[i] = true;
+            have_data = true;
+            }
+
+      return have_data;
+      }
+
+//---------------------------------------------------------
 //   getData
 //---------------------------------------------------------
 
@@ -274,7 +409,17 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
   
   const bool track_rec_flag = recordFlag();
   const bool track_rec_monitor = recMonitor();        // Separate monitor and record functions.
+  const bool is_playing = MusEGlobal::audio->isPlaying();
+  const bool use_latency_corr = useLatencyCorrection();
 
+  //---------------------------------------------
+  // Note that the supplied buffers (bp) are at first
+  //  used as temporary storage but are later written
+  //  with final data. The reading and writing of fifo
+  //  file data wants linear memory whereas the latency
+  //  compensator uses wrap-around memory.
+  //---------------------------------------------
+  
   //---------------------------------------------
   // Contributions to data from input sources:
   //---------------------------------------------
@@ -282,26 +427,60 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
   // Gather input data from connected routes.
   if((MusEGlobal::song->bounceTrack != this) && !noInRoute())
   {
-    have_data = AudioTrack::getData(framePos, dstChannels, nframe, bp);
+    bool used_in_chan_array[dstChannels];
+    for(int i = 0; i < dstChannels; ++i)
+      used_in_chan_array[i] = false;
+    
+    // The data retrieved by this will already be latency compensated.
+    have_data = getInputData(framePos, dstChannels, nframe, used_in_chan_array, bp);
+    
     // Do we want to record the incoming data?
-    if(have_data && track_rec_flag && MusEGlobal::audio->isRecording() && recFile())
+    if(have_data && track_rec_flag && 
+      (MusEGlobal::audio->isRecording() ||
+       (MusEGlobal::song->record() && MusEGlobal::extSyncFlag.value() && MusEGlobal::midiSyncContainer.isPlaying())) && 
+      recFile())
     {
       if(MusEGlobal::audio->freewheel())
       {
       }
       else
       {
-        if(fifo.put(dstChannels, nframe, bp, MusEGlobal::audio->pos().frame()))
-          printf("WaveTrack::getData(%d, %d, %d): fifo overrun\n", framePos, dstChannels, nframe);
+        for(int i = 0; i < dstChannels; ++i)
+        {
+          if(used_in_chan_array[i])
+          {
+            // Read back the latency compensated signals, using the buffers in-place.
+            if(use_latency_corr)
+              _latencyComp->peek(i, nframe, bp[i]);
+          }
+          else
+          {
+            // Fill unused channels with silence.
+            // Channel is unused. Zero the supplied buffer.
+            // REMOVE Tim. latency. Added. Maybe not required. The latency compensator already automatically clears to zero.
+            AL::dsp->clear(bp[i], nframe, MusEGlobal::denormalBias);
+          }
+        }
+
+        //fprintf(stderr, "WaveTrack::getData: name:%s RECORD: Putting to fifo: framePos:%d audio pos frame:%d\n",
+        //        name().toLatin1().constData(),
+        //        framePos, MusEGlobal::audio->pos().frame());
+
+        // This will adjust for the latency before putting.
+        putFifo(dstChannels, nframe, bp);
       }
     }
+
+    // Advance any peeked compensator channels now.
+    if(use_latency_corr)
+      _latencyComp->advance(nframe);
   }
 
   //---------------------------------------------
   // Contributions to data from playback sources:
   //---------------------------------------------
 
- if(!MusEGlobal::audio->isPlaying())
+  if(!is_playing)
   {
     if(!have_data || (track_rec_monitor && have_data))
       return have_data;
@@ -316,7 +495,15 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
   have_data = !have_data || (track_rec_monitor && have_data);
 
   float* pf_buf[dstChannels];
-  
+
+  int i_correction = 0;
+  if(use_latency_corr)
+  {
+    const TrackLatencyInfo& li = getLatencyInfo(false);
+    const float correction = li._sourceCorrectionValue;
+    i_correction = correction;
+  }
+
   if(MusEGlobal::audio->freewheel())
   {
     // when freewheeling, read data direct from file:
@@ -327,7 +514,7 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
         // Set to the audio dummy buffer.
         pf_buf[i] = audioOutDummyBuf;
       // Indicate do not seek file before each read.
-      fetchData(framePos, nframe, pf_buf, false, do_overwrite);
+      fetchData(framePos, nframe, pf_buf, false, do_overwrite, i_correction);
       // Just return whether we have input sources data.
       return have_data;
     }
@@ -335,56 +522,161 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
     {
       // Not muted. Fetch the data into the given buffers.
       // Indicate do not seek file before each read.
-      fetchData(framePos, nframe, bp, false, do_overwrite);
+      fetchData(framePos, nframe, bp, false, do_overwrite, i_correction);
       // We have data.
       return true;
     }
   }
   else
   {
+    bool ret_val = have_data;
     unsigned pos;
-    if(_prefetchFifo.get(dstChannels, nframe, pf_buf, &pos))
+    if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &pos))
     {
-      fprintf(stderr, "WaveTrack::getData(%s) (A) fifo underrun\n", name().toLocal8Bit().constData());
+      fprintf(stderr, "WaveTrack::getData(%s) (prefetch peek A) fifo underrun\n", name().toLocal8Bit().constData());
       return have_data;
     }
-    if(pos != framePos)
+
+    //fprintf(stderr, "WaveTrack::getData(%s) (prefetch peek A) pos:%d\n", name().toLocal8Bit().constData(), pos);
+
+    const int64_t frame_pos          = framePos;
+    const int64_t corr_frame_pos     = framePos - i_correction;
+    const int64_t corr_frame_end_pos = framePos - i_correction + nframe;
+
+    // Do we need to RETARD, or ADVANCE, the stream?
+    if(corr_frame_end_pos <= pos)
     {
-      if(MusEGlobal::debugMsg)
-        fprintf(stderr, "fifo get error expected %d, got %d\n", framePos, pos);
-      while (pos < framePos)
+      // Allow the stream to RETARD. (That is, let our requested frame catch up to the stream.)
+      return have_data;
+    }
+    else
+    {
+      // Allow the stream to ADVANCE if necessary. (That is, let the stream catch up to our requested frame.)
+      while(corr_frame_pos >= pos + nframe)
       {
-        if(_prefetchFifo.get(dstChannels, nframe, pf_buf, &pos))
+        // Done with buffer, remove it.
+        _prefetchFifo.remove();
+
+        if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &pos))
         {
-          fprintf(stderr, "WaveTrack::getData(%s) (B) fifo underrun\n",
-              name().toLocal8Bit().constData());
+          fprintf(stderr, "WaveTrack::getData(%s) (prefetch peek B) fifo underrun\n", name().toLocal8Bit().constData());
+          return have_data;
+        }
+
+        if(corr_frame_end_pos <= pos)
+        {
+          if(MusEGlobal::debugMsg)
+            fprintf(stderr, "fifo get(%s) (A) error expected %ld, got %d\n", name().toLocal8Bit().constData(), frame_pos, pos);
           return have_data;
         }
       }
     }
 
-    if(isMute())
+    if(corr_frame_pos <= pos)
     {
-      // We are muted. We need to let the fetching progress, but discard the data.
-      // Just return whether we have input sources data.
-      return have_data;
-    }
-
-    if(do_overwrite)
-    {
-      for(int i = 0; i < dstChannels; ++i)
-        AL::dsp->cpy(bp[i], pf_buf[i], nframe, MusEGlobal::config.useDenormalBias);
+      if(!isMute())
+      {
+        const unsigned blanks = pos - corr_frame_pos;
+        const unsigned buf2_frames = nframe - blanks;
+        if(do_overwrite)
+        {
+          if(blanks != 0)
+          {
+            for(int i = 0; i < dstChannels; ++i)
+              AL::dsp->clear(bp[i], blanks, MusEGlobal::config.useDenormalBias);
+          }
+          for(int i = 0; i < dstChannels; ++i)
+            AL::dsp->cpy(bp[i] + blanks, pf_buf[i], buf2_frames, MusEGlobal::config.useDenormalBias);
+        }
+        else
+        {
+          for(int i = 0; i < dstChannels; ++i)
+            AL::dsp->mix(bp[i] + blanks, pf_buf[i], buf2_frames);
+        }
+        // We have data.
+        ret_val = true;
+      }
+      // If the entire buffer was used, we are done with it.
+      if(corr_frame_pos == pos)
+      {
+        // Done with buffer, remove it.
+        _prefetchFifo.remove();
+      }
     }
     else
     {
-      for(int i = 0; i < dstChannels; ++i)
-        AL::dsp->mix(bp[i], pf_buf[i], nframe);
+      // This will always be at least 1, ie. corr_frame_pos > pos.
+      const unsigned buf1_pos = corr_frame_pos - pos;
+      const unsigned buf1_frames = nframe - buf1_pos;
+      const unsigned buf2_pos = buf1_frames;
+      const unsigned buf2_frames = buf1_pos;
+      if(!isMute())
+      {
+        if(do_overwrite)
+        {
+          for(int i = 0; i < dstChannels; ++i)
+            AL::dsp->cpy(bp[i], pf_buf[i] + buf1_pos, buf1_frames, MusEGlobal::config.useDenormalBias);
+        }
+        else
+        {
+          for(int i = 0; i < dstChannels; ++i)
+            AL::dsp->mix(bp[i], pf_buf[i] + buf1_pos, buf1_frames);
+        }
+      }
+
+      // Done with buffer, remove it.
+      _prefetchFifo.remove();
+
+      // We are expecting the next buffer.
+      const unsigned expect_nextpos = pos + nframe;
+
+      // Peek the next buffer but do not remove it,
+      //  since the rest of it will be required next cycle.
+      if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &pos))
+      {
+        fprintf(stderr, "WaveTrack::getData(%s) (prefetch peek C) fifo underrun\n", name().toLocal8Bit().constData());
+        return have_data;
+      }
+      
+      if(pos != expect_nextpos)
+      {
+        if(MusEGlobal::debugMsg)
+          fprintf(stderr, "fifo get(%s) (B) error expected %u, got %u\n", name().toLocal8Bit().constData(), expect_nextpos, pos);
+        return have_data;
+      }
+
+      if(!isMute())
+      {
+        if(do_overwrite)
+        {
+          for(int i = 0; i < dstChannels; ++i)
+            AL::dsp->cpy(bp[i] + buf2_pos, pf_buf[i], buf2_frames, MusEGlobal::config.useDenormalBias);
+        }
+        else
+        {
+          for(int i = 0; i < dstChannels; ++i)
+            AL::dsp->mix(bp[i] + buf2_pos, pf_buf[i], buf2_frames);
+        }
+        // We have data.
+        ret_val = true;
+      }        
     }
-    // We have data.
-    return true;
+
+    return ret_val;
   }
 
   return have_data;
+}
+
+inline bool WaveTrack::canDominateOutputLatency() const
+{
+  // The wave track's own wave file contributions can never dominate latency.
+  return false;
+}
+
+inline bool WaveTrack::canCorrectOutputLatency() const
+{
+  return true;
 }
 
 //---------------------------------------------------------
@@ -398,8 +690,8 @@ void WaveTrack::setChannels(int n)
       if (sf) {
             if (sf->samples() == 0) {
                   sf->remove();
-                  sf->setFormat(sf->format(), _channels,
-                     sf->samplerate());
+                  sf->setFormat(sf->format(), channels(),
+                  sf->samplerate());
                   sf->openWrite();
                   }
             }

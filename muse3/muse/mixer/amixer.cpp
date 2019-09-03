@@ -33,7 +33,6 @@
 #include <QMenu>
 #include <QActionGroup>
 #include <QAction>
-#include <QThread>
 
 #include "app.h"
 #include "helper.h"

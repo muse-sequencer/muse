@@ -21,8 +21,9 @@
 //=========================================================
 """
 
-import Pyro.core
-muse=Pyro.core.getProxyForURI('PYRONAME://:Default.muse')
+import Pyro4.core
+
+muse=Pyro4.core.Proxy('PYRONAME:muse')
 
 #
 # Example on how to insert a new note, outcommented since I run the script several times and it inserts so many notes :-)

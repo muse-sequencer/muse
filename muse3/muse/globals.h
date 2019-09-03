@@ -28,6 +28,7 @@
 
 #include "value.h"
 #include "mtc.h"
+#include "metronome_class.h"
 
 #include <unistd.h>
 
@@ -43,11 +44,6 @@ class MusE;
 }
 
 namespace MusEGlobal {
-
-enum ClickSamples {
-    origSamples,
-    newSamples
-};
 
 extern const float denormalBias;
 
@@ -89,6 +85,7 @@ extern QString configName;
 extern QString configPath;
 extern QString museInstruments;
 extern QString museUserInstruments;
+extern QString cachePath;
 
 extern QString lastWavePath;
 extern QString lastMidiPath;
@@ -106,6 +103,11 @@ extern bool loadVST;
 extern bool loadNativeVST;
 extern bool loadDSSI;
 extern bool usePythonBridge;
+extern QString pythonBridgePyroNSHostname;
+extern QString pythonBridgePyroNSPort;
+extern QString pythonBridgePyroDaemonHostname;
+extern QString pythonBridgePyroDaemonPort;
+extern float pythonBridgePyroCommTimeout;
 extern bool useLASH;
 extern bool loadLV2;
 extern bool useAlsaWithJack;
@@ -175,34 +177,11 @@ extern QAction* cpuLoadAction;
 
 extern MusEGui::MusE* muse;
 
-extern int preMeasures;
-extern unsigned char measureClickNote;
-extern unsigned char measureClickVelo;
-extern unsigned char beatClickNote;
-extern unsigned char beatClickVelo;
-extern unsigned char accentClick1;
-extern unsigned char accentClick1Velo;
-extern unsigned char accentClick2;
-extern unsigned char accentClick2Velo;
-
-extern unsigned char clickChan;
-extern unsigned char clickPort;
-extern bool precountEnableFlag;
-extern bool precountFromMastertrackFlag;
-extern int precountSigZ;
-extern int precountSigN;
-extern bool precountOnPlay;
-extern bool precountMuteMetronome;
-extern bool precountPrerecord;
-extern bool precountPreroll;
-extern bool midiClickFlag;
-extern bool audioClickFlag;
-extern float audioClickVolume;
-extern float measClickVolume;
-extern float beatClickVolume;
-extern float accent1ClickVolume;
-extern float accent2ClickVolume;
-extern ClickSamples clickSamples;
+extern MusECore::MetroAccentsPresetsMap metroAccentPresets;
+extern MusECore::MetronomeSettings metroGlobalSettings;
+extern MusECore::MetronomeSettings metroSongSettings;
+// Whether to use the global or song metronome settings.
+extern bool metroUseSongSettings;
 
 extern bool rcEnable;
 extern unsigned char rcStopNote;

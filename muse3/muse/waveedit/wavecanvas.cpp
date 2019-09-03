@@ -2100,7 +2100,7 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
                unsigned ex            = w.endframe;
                unsigned file_channels = file.channels();
 
-               QString tmpWavFile = QString::null;
+               QString tmpWavFile;
                if (!MusEGlobal::getUniqueTmpfileName("tmp_musewav",".wav", tmpWavFile)) {
                      break;
                      }

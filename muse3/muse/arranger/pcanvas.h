@@ -96,6 +96,24 @@ struct AutomationObject {
 //   PartCanvas
 //---------------------------------------------------------
 
+enum PartOperations {
+  OP_RENAME = 0,
+  OP_DELETE = 1,
+  OP_SPLIT = 2,
+  OP_GLUE = 3,
+  OP_CUT = 4,
+  OP_COPY = 5,
+  OP_GLUESELECTION = 6,
+
+  OP_WAVEEDIT = 14,
+  OP_DECLONE = 15,
+  OP_SAVEPARTTODISK = 16,
+  OP_FILEINFO = 17,
+  OP_SELECT_CLONES = 18,
+  OP_NORMALIZE = 19,
+  OP_PARTCOLORBASE = 20,
+};
+
 class PartCanvas : public Canvas {
       Q_OBJECT
       int* _raster;
@@ -135,6 +153,7 @@ class PartCanvas : public Canvas {
       virtual void resizeItem(CItem*,bool, bool ctrl);
       virtual void newItem(CItem*,bool);
       virtual bool deleteItem(CItem*);
+      virtual void renameItem(CItem*);
       virtual void moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true);
       virtual bool moveItem(MusECore::Undo& operations, CItem*, const QPoint&, DragType);
 

@@ -32,7 +32,6 @@
 #include <QTimer>
 #include <QScrollBar>
 #include <QComboBox>
-#include <QSignalMapper>
 #include <QAction>
 #include <QActionGroup>
 #include <QGridLayout>
@@ -172,8 +171,6 @@ class ScoreEdit : public TopWin
 		
 		QString name;
 		
-		QSignalMapper* menu_mapper;
-				
 		bool set_name(QString newname, bool emit_signal=true, bool emergency_name=false);
 
 		virtual void keyPressEvent(QKeyEvent*);

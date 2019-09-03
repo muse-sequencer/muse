@@ -772,7 +772,7 @@ int readDrummapsEntryPatchCollection(Xml& xml)
     {
       case Xml::Error:
       case Xml::End:
-        return CTRL_VAL_UNKNOWN; // an invalid collection
+        goto read_end;
 
       case Xml::TagStart:
         xml.unknown("readDrummapsEntryPatchCollection");
@@ -797,8 +797,8 @@ int readDrummapsEntryPatchCollection(Xml& xml)
     }
   }
 
-  fprintf(stderr, "ERROR: THIS CANNOT HAPPEN: exited infinite loop in readDrummapsEntryPatchCollection()!\n"
-         "                           not returning anything. expect undefined behaviour or even crashes.\n");
+read_end:
+  fprintf(stderr, "ERROR: End or Error in readDrummapsEntryPatchCollection()!\n");
   return CTRL_VAL_UNKNOWN; // an invalid collection
 }
 
@@ -1897,7 +1897,12 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
             }
       
       QString stext = QWidget::tr("Instrument-defined");
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      int fmw = menu->fontMetrics().horizontalAdvance(stext);
+#else
       int fmw = menu->fontMetrics().width(stext);
+#endif
       if(fmw > est_width)
         est_width = fmw;
       menu->addAction(new MenuTitleItem(stext, menu));
@@ -1906,7 +1911,12 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       if(!port->device() || port->device()->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)
       {
         stext = QWidget::tr("Edit instrument ...");
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+        fmw = menu->fontMetrics().horizontalAdvance(stext);
+#else
         fmw = menu->fontMetrics().width(stext);
+#endif
         if(fmw > est_width)
           est_width = fmw;
         menu->addAction(QIcon(*midi_edit_instrumentIcon), QWidget::tr("Edit instrument ..."))->setData(edit_ins);
@@ -1919,7 +1929,12 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       //
 
       stext = QWidget::tr("Add");
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      fmw = menu->fontMetrics().horizontalAdvance(stext);
+#else
       fmw = menu->fontMetrics().width(stext);
+#endif
       if(fmw > est_width)
         est_width = fmw;
       PopupMenu * ctrlSubPop = new PopupMenu(stext, menu, true);  // true = enable stay open
@@ -1961,7 +1976,12 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
         if(!i->instrument)
           continue;
 
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+        fmw = menu->fontMetrics().horizontalAdvance(i->s);
+#else
         fmw = menu->fontMetrics().width(i->s);
+#endif
         if(fmw > est_width)
           est_width = fmw;
 
@@ -1976,14 +1996,24 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       }
 
       stext = QWidget::tr("Others");
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      fmw = menu->fontMetrics().horizontalAdvance(stext);
+#else
       fmw = menu->fontMetrics().width(stext);
+#endif
       if(fmw > est_width)
         est_width = fmw;
       menu->addAction(new MenuTitleItem(stext, menu));
 
       // Add a.k.a. Common Controls not found in instrument:
       stext = QWidget::tr("Common Controls");
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      fmw = menu->fontMetrics().horizontalAdvance(stext);
+#else
       fmw = menu->fontMetrics().width(stext);
+#endif
       if(fmw > est_width)
         est_width = fmw;
       PopupMenu* ccSubPop = new PopupMenu(stext, menu, true);  // true = enable stay open
@@ -1998,7 +2028,12 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       
       // Add the special case velocity:
       stext = QWidget::tr("Velocity");
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      fmw = menu->fontMetrics().horizontalAdvance(stext);
+#else
       fmw = menu->fontMetrics().width(stext);
+#endif
       if(fmw > est_width)
         est_width = fmw;
       menu->addAction(stext)->setData(velo);
@@ -2009,7 +2044,12 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
         if(i->instrument)
           continue;
 
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+        fmw = menu->fontMetrics().horizontalAdvance(i->s);
+#else
         fmw = menu->fontMetrics().width(i->s);
+#endif
         if(fmw > est_width)
           est_width = fmw;
         

@@ -29,12 +29,12 @@
             <Patch name="La-La Land: Compressor, Vocal Hall, Routing 2" hbank="0" lbank="0" prog="24"/>
             <Patch name="Smooth vocals: Compressor, Small Hall, Routing 2" hbank="0" lbank="0" prog="25"/>
             <Patch name="Compressed Vox: Compressor, Vocal Hall, Routing 2" hbank="0" lbank="0" prog="26"/>
-            <Patch name="No 'S' Vocals: De-Esser, Vocal Plate, Routing 2" hbank="0" lbank="0" prog="27"/>
+            <Patch name="No &apos;S&apos; Vocals: De-Esser, Vocal Plate, Routing 2" hbank="0" lbank="0" prog="27"/>
             <Patch name="De-Esser+Compr: De-Esser, Compressor, Routing 2" hbank="0" lbank="0" prog="28"/>
             <Patch name="Compressor: Compressor, Compressor, Routing 4" hbank="0" lbank="0" prog="29"/>
             <Patch name="De-Esser: De-Esser, De-Esser, Routing 4" hbank="0" lbank="0" prog="30"/>
             <Patch name="Studio Delay: Studio Delay, Vocal Hall, Routing 2" hbank="0" lbank="0" prog="31"/>
-            <Patch name="60's Delay: Tape Delay, Spring, Routing 2" hbank="0" lbank="0" prog="32"/>
+            <Patch name="60&apos;s Delay: Tape Delay, Spring, Routing 2" hbank="0" lbank="0" prog="32"/>
             <Patch name="Slapback: Detune, Tape Delay, Routing 2" hbank="0" lbank="0" prog="33"/>
             <Patch name="Delay + Verb: Studio Delay, Vocal Hall, Routing 1" hbank="0" lbank="0" prog="34"/>
             <Patch name="Vocal Chorus: Chorus, Vocal Hall, Routing 2" hbank="0" lbank="0" prog="35"/>
@@ -49,7 +49,7 @@
             <Patch name="Vocal + Inst 2: Vocal Plate, Detune, Routing 4" hbank="0" lbank="0" prog="44"/>
             <Patch name="Vocal + Inst 3: Vocal Hall, Small Hall, Routing 4" hbank="0" lbank="0" prog="45"/>
             <Patch name="Get Small: Small Hall, Small Plate, Routing 4" hbank="0" lbank="0" prog="46"/>
-            <Patch name="Alive n' Kicking: Small Hall, Studio Delay, Routing 4" hbank="0" lbank="0" prog="47"/>
+            <Patch name="Alive n&apos; Kicking: Small Hall, Studio Delay, Routing 4" hbank="0" lbank="0" prog="47"/>
             <Patch name="Muy Grande: Drum Hall, Digital Delay, Routing 4" hbank="0" lbank="0" prog="48"/>
             <Patch name="Bigger Band: Chorus, Studio Delay, Routing 2" hbank="0" lbank="0" prog="49"/>
             <Patch name="Taps: Chorus, Tape Delay, Routing 2" hbank="0" lbank="0" prog="50"/>
@@ -67,7 +67,7 @@
             <Patch name="Mod-U-Verb: Vocal Plate, Chorus, Routing 2" hbank="0" lbank="0" prog="62"/>
             <Patch name="Roto-Verb: Drum Hall, Rotary Speaker, Routing 2" hbank="0" lbank="0" prog="63"/>
             <Patch name="Rotary: Rotary Speaker, Small Room, Routing 4" hbank="0" lbank="0" prog="64"/>
-            <Patch name="Ham'n Eggs: Tape Delay, Rotary Speaker, Routing 2" hbank="0" lbank="0" prog="65"/>
+            <Patch name="Ham&apos;n Eggs: Tape Delay, Rotary Speaker, Routing 2" hbank="0" lbank="0" prog="65"/>
             <Patch name="Vibrolux: Rotary Speaker, Spring, Routing 1" hbank="0" lbank="0" prog="66"/>
             <Patch name="Side By Side: Tremolo, Panner, Routing 4" hbank="0" lbank="0" prog="67"/>
             <Patch name="Wobblers: Chorus, Small Plate, Routing 4" hbank="0" lbank="0" prog="68"/>

@@ -42,6 +42,7 @@
 #include "midiport.h"
 #include "marker/marker.h"
 #include "instruments/minstrument.h"
+#include "metronome_class.h"
 
 namespace MusECore {
 
@@ -52,21 +53,8 @@ typedef MidiCtrlValListIterators_t::const_iterator ciMidiCtrlValListIterators_t;
 class MidiCtrlValListIterators : public MidiCtrlValListIterators_t
 {
    public:
-     iterator findList(const MidiCtrlValList* valList)
-     {
-       for(iterator i = begin(); i != end(); ++i)
-         if((*i)->second == valList)
-           return i;
-       return end();
-     }
-
-     const_iterator findList(const MidiCtrlValList* valList) const
-     {
-       for(const_iterator i = begin(); i != end(); ++i)
-         if((*i)->second == valList)
-           return i;
-       return end();
-     }
+     iterator findList(const MidiCtrlValList* valList);
+     const_iterator findList(const MidiCtrlValList* valList) const;
 };
 
 typedef std::map < int /*port*/, MidiCtrlValListIterators, std::less<int> > MidiCtrlValLists2bErased_t;
@@ -79,46 +67,9 @@ typedef std::pair<iMidiCtrlValLists2bErased_t, iMidiCtrlValLists2bErased_t> Midi
 class MidiCtrlValLists2bErased : public MidiCtrlValLists2bErased_t
 {
    public:
-     void add(int port, const iMidiCtrlValList& item)
-     {
-       iterator i = find(port);
-       if(i == end())
-       {
-         MidiCtrlValListIterators mcvli;
-         mcvli.push_back(item);
-         insert(MidiCtrlValLists2bErasedInsertPair_t(port, mcvli));
-         return;
-       }
-       MidiCtrlValListIterators& mcvli = i->second;
-       for(iMidiCtrlValListIterators_t imcvli = mcvli.begin(); imcvli != mcvli.end(); ++imcvli)
-       {
-         iMidiCtrlValList imcvl = *imcvli;
-         // Compare list pointers.
-         if(imcvl->second == item->second)
-           return; // Already exists.
-       }
-       mcvli.push_back(item);
-     }
-
-     iterator findList(int port, const MidiCtrlValList* valList)
-     {
-       iterator i = find(port);
-       if(i == end())
-         return end();
-       if(i->second.findList(valList) != i->second.end())
-         return i;
-       return end();
-     }
-
-     const_iterator findList(int port, const MidiCtrlValList* valList) const
-     {
-       const_iterator i = find(port);
-       if(i == end())
-         return end();
-       if(i->second.findList(valList) != i->second.end())
-         return i;
-       return end();
-     }
+     void add(int port, const iMidiCtrlValList& item);
+     iterator findList(int port, const MidiCtrlValList* valList);
+     const_iterator findList(int port, const MidiCtrlValList* valList) const;
 };
 
 
@@ -192,33 +143,35 @@ struct DrumMapTrackPatchReplaceOperation
 // New items created in GUI thread awaiting addition in audio thread.
 struct PendingOperationItem
 {
-  enum PendingOperationType { Uninitialized = 0,
-                              ModifySongLength,
-                              AddMidiInstrument, DeleteMidiInstrument, ReplaceMidiInstrument,
-                              AddMidiDevice,     DeleteMidiDevice,       
-                              ModifyMidiDeviceAddress,         ModifyMidiDeviceFlags,       ModifyMidiDeviceName,
-                              AddTrack,          DeleteTrack,  MoveTrack,                   ModifyTrackName,
-                              SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff,
-                              ModifyTrackDrumMapItem, ReplaceTrackDrumMapPatchList,         UpdateDrumMaps,
-                              AddPart,           DeletePart,   MovePart, SelectPart, ModifyPartLength,  ModifyPartName,
-                              AddEvent,          DeleteEvent,  SelectEvent,
-                              AddMidiCtrlVal,    DeleteMidiCtrlVal,     ModifyMidiCtrlVal,  AddMidiCtrlValList,
-                              RemapDrumControllers,
-                              AddAudioCtrlVal,   DeleteAudioCtrlVal,    ModifyAudioCtrlVal, ModifyAudioCtrlValList,
-                              AddTempo,          DeleteTempo,           ModifyTempo,        SetStaticTempo,
-                              SetGlobalTempo,    EnableMasterTrack,
-                              AddSig,            DeleteSig,             ModifySig,
-                              AddKey,            DeleteKey,             ModifyKey,
-                              AddAuxSendValue,   
-                              AddRoute,          DeleteRoute, 
-                              AddRouteNode,      DeleteRouteNode,       ModifyRouteNode,
-                              UpdateSoloStates,
-                              EnableAllAudioControllers,
-                              GlobalSelectAllEvents,
-                              ModifyAudioSamples,
-                              // REMOVE Tim. clip. Added.
-                              /*AddMarker, DeleteMarker, ModifyMarker,*/ ModifyMarkerList
-                              }; 
+  enum PendingOperationType {
+    Uninitialized = 0,
+    ModifySongLength,
+    AddMidiInstrument, DeleteMidiInstrument, ReplaceMidiInstrument,
+    AddMidiDevice,     DeleteMidiDevice,       
+    ModifyMidiDeviceAddress,         ModifyMidiDeviceFlags,       ModifyMidiDeviceName,
+    AddTrack,          DeleteTrack,  MoveTrack,                   ModifyTrackName,
+    SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff,
+    ModifyTrackDrumMapItem, ReplaceTrackDrumMapPatchList,         UpdateDrumMaps,
+    AddPart,           DeletePart,   MovePart, SelectPart, ModifyPartLength,  ModifyPartName,
+    AddEvent,          DeleteEvent,  SelectEvent,
+    AddMidiCtrlVal,    DeleteMidiCtrlVal,     ModifyMidiCtrlVal,  AddMidiCtrlValList,
+    RemapDrumControllers,
+    AddAudioCtrlVal,   DeleteAudioCtrlVal,    ModifyAudioCtrlVal, ModifyAudioCtrlValList,
+    AddTempo,          DeleteTempo,           ModifyTempo,        SetStaticTempo,
+    SetGlobalTempo,    EnableMasterTrack,
+    AddSig,            DeleteSig,             ModifySig,
+    AddKey,            DeleteKey,             ModifyKey,
+    AddAuxSendValue,   
+    AddRoute,          DeleteRoute, 
+    AddRouteNode,      DeleteRouteNode,       ModifyRouteNode,
+    UpdateSoloStates,
+    EnableAllAudioControllers,
+    GlobalSelectAllEvents,
+    ModifyAudioSamples,
+    SwitchMetronomeSettings, ModifyMetronomeAccentMap,
+    // REMOVE Tim. clip. Added.
+    /*AddMarker, DeleteMarker, ModifyMarker,*/ ModifyMarkerList
+    }; 
                               
   PendingOperationType _type;
 
@@ -243,6 +196,7 @@ struct PendingOperationItem
     RouteList* _route_list;
     MarkerList** _orig_marker_list;
     float** _audioSamplesPointer;
+    MetroAccentsMap** _metroAccentsMap;
   };
             
   union {
@@ -256,6 +210,8 @@ struct PendingOperationItem
     MusECore::SigEvent* _sig_event; 
     Route* _dst_route_pointer;
     float* _newAudioSamples;
+    bool* _metroUseSongSettings;
+    MetroAccentsMap* _newMetroAccentsMap;
   };
 
   iPart _iPart; 
@@ -508,6 +464,12 @@ struct PendingOperationItem
     
   PendingOperationItem(unsigned int len, PendingOperationType type = ModifySongLength)
     { _type = type; _posLenVal = len; }
+
+  PendingOperationItem(bool* settings_switch, bool v, PendingOperationType type = SwitchMetronomeSettings)
+    { _type = type; _metroUseSongSettings = settings_switch; _select = v; }
+
+  PendingOperationItem(MetroAccentsMap** old_map, MetroAccentsMap* new_map, PendingOperationType type = ModifyMetronomeAccentMap)
+    { _type = type; _metroAccentsMap = old_map; _newMetroAccentsMap = new_map; }
 
   PendingOperationItem(PendingOperationType type) // type is EnableAllAudioControllers.
     { _type = type; }

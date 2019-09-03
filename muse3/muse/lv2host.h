@@ -284,6 +284,8 @@ private:
     LV2_Log_Log _lv2_log_log;    
     double _sampleRate;
     float _fSampleRate;
+    // Just so we can point to a zero.
+    static const unsigned minBlockSize;
     bool _isSynth;
 // LV2 does not use unique id numbers and frowns upon using anything but the uri.
 //     int _uniqueID;
@@ -326,6 +328,8 @@ private:
     LV2_URID _uAtom_Object;
     bool _hasFreeWheelPort;
     uint32_t _freeWheelPortIndex;
+    bool _hasLatencyPort;
+    uint32_t _latencyPortIndex;
     bool _isConstructed;
     float *_pluginControlsDefault;
     float *_pluginControlsMin;
@@ -338,10 +342,9 @@ public:
     LV2Synth ( const QFileInfo &fi, QString label, QString name, QString author, 
                const LilvPlugin *_plugin, PluginFeatures_t reqFeatures = PluginNoFeatures );
     virtual ~LV2Synth();
+
     virtual SynthIF *createSIF ( SynthI * );
-    bool isSynth() {
-        return _isSynth;
-    }
+    bool isSynth() { return _isSynth; }
 
     //own public functions
     LV2_URID mapUrid ( const char *uri );
@@ -439,7 +442,6 @@ public:
     virtual bool hasNativeGui() const;
     virtual void getNativeGeometry ( int *, int *, int *, int * ) const;
     virtual void setNativeGeometry (int x, int y, int w, int h);
-    virtual void preProcessAlways();
     virtual bool getData ( MidiPort *, unsigned pos, int ports, unsigned n, float **buffer );
     virtual MidiPlayEvent receiveEvent();
     virtual int eventsPending() const;
@@ -475,6 +477,9 @@ public:
     virtual CtrlList::Mode ctrlMode ( unsigned long ) const;
     virtual LADSPA_PortRangeHint range(unsigned long i);
     virtual LADSPA_PortRangeHint rangeOut(unsigned long i);
+    bool hasLatencyOutPort() const;
+    unsigned long latencyOutPortIndex() const;
+    float latency() const;
 
     virtual void enableController(unsigned long i, bool v = true);
     virtual bool controllerEnabled(unsigned long i) const;
@@ -549,8 +554,6 @@ struct LV2PluginWrapper_State {
       iState(NULL),
       tmpValues(NULL),
       numStateValues(0),
-      wrkDataSize(0),
-      wrkDataBuffer(0),
       wrkThread(NULL),
       wrkEndWork(false),
       controlTimers(NULL),
@@ -562,7 +565,6 @@ struct LV2PluginWrapper_State {
       uiX11Size(0, 0),
       pluginWindow(NULL),
       pluginQWindow(NULL),
-      
       prgIface(NULL),
       uiPrgIface(NULL),
       uiDoSelectPrg(false),
@@ -621,8 +623,7 @@ struct LV2PluginWrapper_State {
     QMap<QString, QPair<QString, QVariant> > iStateValues;
     char **tmpValues;
     size_t numStateValues;
-    uint32_t wrkDataSize;
-    const void *wrkDataBuffer;
+    std::vector<uint8_t> wrkDataBuffer;
     LV2PluginWrapper_Worker *wrkThread;
     LV2_Worker_Interface *wrkIface;
     bool wrkEndWork;

@@ -22,15 +22,15 @@
 #=============================================================================
 
 import sys,time
-from PyQt4 import QtGui
+from PyQt5.QtWidgets import QApplication
 
 from parter import ParterMainwidget
 import sys, os
-import Pyro.core
+import Pyro4.core
 
 #import musemock
 #muse = musemock.MusEMock()
-muse=Pyro.core.getProxyForURI('PYRONAME://:Default.muse')
+muse=Pyro4.core.Proxy('PYRONAME:muse')
 """
 strack = muse.getSelectedTrack()
 cpos = muse.getCPos()
@@ -40,7 +40,7 @@ sys.exit(0)
 
 
 if __name__ == '__main__':
-      app = QtGui.QApplication(sys.argv)
+      app = QApplication(sys.argv)
       partsdir = os.getenv("HOME") + "/.muse/parts"
       mainw = ParterMainwidget(None, muse, partsdir)
       mainw.show()

@@ -27,7 +27,6 @@
 #include <QClipboard>
 #include <QMessageBox>
 #include <QShortcut>
-#include <QSignalMapper>
 #include <QTimer>
 #include <QWhatsThis>
 #include <QSettings>
@@ -63,6 +62,7 @@
 #include "drumedit.h"
 #include "components/filedialog.h"
 #include "gconfig.h"
+#include "globals.h"
 #include "components/genset.h"
 #include "gui.h"
 #include "helper.h"
@@ -83,7 +83,9 @@
 #include "mrconfig.h"
 #include "pianoroll.h"
 #include "scoreedit.h"
+#ifdef PYTHON_SUPPORT
 #include "remote/pyapi.h"
+#endif
 #ifdef BUILD_EXPERIMENTAL
   #include "rhythm.h"
 #endif
@@ -331,13 +333,9 @@ MusE::MusE() : QMainWindow()
       currentMenuSharingTopwin = NULL;
       waitingForTopwin      = NULL;
 
-      appName               = QString("MusE");
+      appName               = PACKAGE_NAME;
       setWindowTitle(appName);
       setWindowIcon(*MusEGui::museIcon);
-      midiPluginSignalMapper = new QSignalMapper(this);
-      followSignalMapper = new QSignalMapper(this);
-      windowsMapper = new QSignalMapper(this);
-      connect(windowsMapper, SIGNAL(mapped(QWidget*)), SLOT(bringToFront(QWidget*)));
 
       MusEGlobal::song = new MusECore::Song("song");
       MusEGlobal::song->blockSignals(true);
@@ -372,14 +370,14 @@ MusE::MusE() : QMainWindow()
       avrCpuLoadCounter = 0;
       fCurCpuLoad = 0.0f;
 
-#ifdef ENABLE_PYTHON
+#ifdef PYTHON_SUPPORT
       //---------------------------------------------------
       //    Python bridge
       //---------------------------------------------------
       // Uncomment in order to enable MusE Python bridge:
       if (MusEGlobal::usePythonBridge) {
             fprintf(stderr, "Initializing python bridge!\n");
-            if (MusECore::initPythonBridge() == false) {
+            if (startPythonBridge() == false) {
                   fprintf(stderr, "Could not initialize Python bridge\n");
                   exit(1);
                   }
@@ -660,22 +658,14 @@ MusE::MusE() : QMainWindow()
       connect(midiInitInstActions, SIGNAL(triggered()), SLOT(initMidiDevices()));
       connect(midiLocalOffAction, SIGNAL(triggered()), SLOT(localOff()));
 
-      connect(midiTrpAction, SIGNAL(triggered()), midiPluginSignalMapper, SLOT(map()));
-      connect(midiInputTrfAction, SIGNAL(triggered()), midiPluginSignalMapper, SLOT(map()));
-      connect(midiInputFilterAction, SIGNAL(triggered()), midiPluginSignalMapper, SLOT(map()));
-      connect(midiRemoteAction, SIGNAL(triggered()), midiPluginSignalMapper, SLOT(map()));
-
-      midiPluginSignalMapper->setMapping(midiTrpAction, 0);
-      midiPluginSignalMapper->setMapping(midiInputTrfAction, 1);
-      midiPluginSignalMapper->setMapping(midiInputFilterAction, 2);
-      midiPluginSignalMapper->setMapping(midiRemoteAction, 3);
+      connect(midiTrpAction,         &QAction::triggered, [this]() { startMidiInputPlugin(0); } );
+      connect(midiInputTrfAction,    &QAction::triggered, [this]() { startMidiInputPlugin(1); } );
+      connect(midiInputFilterAction, &QAction::triggered, [this]() { startMidiInputPlugin(2); } );
+      connect(midiRemoteAction,      &QAction::triggered, [this]() { startMidiInputPlugin(3); } );
 
 #ifdef BUILD_EXPERIMENTAL
-      connect(midiRhythmAction, SIGNAL(triggered()), midiPluginSignalMapper, SLOT(map()));
-      midiPluginSignalMapper->setMapping(midiRhythmAction, 4);
+      connect(midiRhythmAction,      &QAction::triggered, [this]() { startMidiInputPlugin(4); } );
 #endif
-
-      connect(midiPluginSignalMapper, SIGNAL(mapped(int)), this, SLOT(startMidiInputPlugin(int)));
 
       //-------- Audio connections
       connect(audioBounce2TrackAction, SIGNAL(triggered()), SLOT(bounceToTrack()));
@@ -696,15 +686,9 @@ MusE::MusE() : QMainWindow()
       connect(settingsAppearanceAction, SIGNAL(triggered()), SLOT(configAppearance()));
       connect(settingsMidiPortAction, SIGNAL(triggered()), SLOT(configMidiPorts()));
 
-      connect(dontFollowAction, SIGNAL(triggered()), followSignalMapper, SLOT(map()));
-      connect(followPageAction, SIGNAL(triggered()), followSignalMapper, SLOT(map()));
-      connect(followCtsAction, SIGNAL(triggered()), followSignalMapper, SLOT(map()));
-
-      followSignalMapper->setMapping(dontFollowAction, CMD_FOLLOW_NO);
-      followSignalMapper->setMapping(followPageAction, CMD_FOLLOW_JUMP);
-      followSignalMapper->setMapping(followCtsAction, CMD_FOLLOW_CONTINUOUS);
-
-      connect(followSignalMapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
+      connect(dontFollowAction, &QAction::triggered, [this]() { cmd(CMD_FOLLOW_NO); } );
+      connect(followPageAction, &QAction::triggered, [this]() { cmd(CMD_FOLLOW_JUMP); } );
+      connect(followCtsAction,  &QAction::triggered, [this]() { cmd(CMD_FOLLOW_CONTINUOUS); } );
 
       //-------- Help connections
       connect(helpManualAction, SIGNAL(triggered()), SLOT(startHelpBrowser()));
@@ -853,6 +837,17 @@ MusE::MusE() : QMainWindow()
       menuView->addAction(fullscreenAction);
 
 
+      //---------------------------------------------------
+      //  Connect script receiver
+      //---------------------------------------------------
+
+      connect(&_scriptReceiver,
+              &MusECore::ScriptReceiver::execDeliveredScriptReceived,
+              [this](int id) { execDeliveredScript(id); } );
+      connect(&_scriptReceiver,
+              &MusECore::ScriptReceiver::execUserScriptReceived,
+              [this](int id) { execUserScript(id); } );
+      
       //-------------------------------------------------------------
       //    popup Midi
       //-------------------------------------------------------------
@@ -861,7 +856,7 @@ MusE::MusE() : QMainWindow()
       menuBar()->addMenu(menu_functions);
       trailingMenus.push_back(menu_functions);
 
-      MusEGlobal::song->populateScriptMenu(menuScriptPlugins, this);
+      MusEGlobal::song->populateScriptMenu(menuScriptPlugins, &_scriptReceiver);
       menu_functions->addMenu(menuScriptPlugins);
       menu_functions->addAction(midiEditInstAction);
       menu_functions->addMenu(midiInputPlugins);
@@ -1011,7 +1006,7 @@ MusE::MusE() : QMainWindow()
 
       MusEGlobal::song->blockSignals(false);
 
-      QSettings settings("MusE", "MusE-qt");
+      QSettings settings;
       restoreGeometry(settings.value("MusE/geometry").toByteArray());
 
       MusEGlobal::song->update();
@@ -1079,19 +1074,16 @@ void MusE::setDirty()
 //               2  - load configured start song
 //---------------------------------------------------
 
-void MusE::loadDefaultSong(int argc, char** argv)
+void MusE::loadDefaultSong(const QString& filename_override)
 {
   QString name;
   bool useTemplate = false;
   bool loadConfig = true;
-  if (argc >= 2)
-        name = argv[0];
+  if (!filename_override.isEmpty())
+        name = filename_override;
   else if (MusEGlobal::config.startMode == 0) {
-        if (argc < 2)
               name = !projectRecentList.isEmpty() ? projectRecentList.first() : MusEGui::getUniqueUntitledName();
-        else
-              name = argv[0];
-        fprintf(stderr, "starting with selected song %s\n", MusEGlobal::config.startSong.toLatin1().constData());
+        fprintf(stderr, "starting with last song %s\n", name.toLatin1().constData());
         }
   else if (MusEGlobal::config.startMode == 1) {
         if(MusEGlobal::config.startSong.isEmpty()) // Sanity check to avoid some errors later
@@ -1121,7 +1113,7 @@ void MusE::loadDefaultSong(int argc, char** argv)
           name = MusEGlobal::config.startSong;
           loadConfig = MusEGlobal::config.startSongLoadConfig;
         }
-        fprintf(stderr, "starting with pre configured song %s\n", MusEGlobal::config.startSong.toLatin1().constData());
+        fprintf(stderr, "starting with pre configured song %s\n", name.toLatin1().constData());
   }
   loadProjectFile(name, useTemplate, loadConfig);
 }
@@ -1266,13 +1258,14 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       progress->setValue(20);
 
       QFileInfo fi(name);
-      if (songTemplate) {
-            if (!fi.isReadable()) {
-                  QMessageBox::critical(this, QString("MusE"),
-                     tr("Cannot read template"));
-                  QApplication::restoreOverrideCursor();
-                  return;
-                  }
+      if (songTemplate)
+      {
+            if(!fi.isReadable()) {
+                QMessageBox::critical(this, QString("MusE"),
+                    tr("Cannot read template"));
+                QApplication::restoreOverrideCursor();
+                return;
+                }
             project.setFile(MusEGui::getUniqueUntitledName());
             MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
             QDir::setCurrent(QDir::homePath());
@@ -1625,7 +1618,7 @@ void MusE::closeEvent(QCloseEvent* event)
                   }
             }
 
-      QSettings settings("MusE", "MusE-qt");
+      QSettings settings;
       settings.setValue("MusE/geometry", saveGeometry());
 
       writeGlobalConfiguration();
@@ -1673,6 +1666,15 @@ void MusE::closeEvent(QCloseEvent* event)
             d.remove(filename);
             d.remove(f.completeBaseName() + ".wca");
             }
+
+      if(MusEGlobal::usePythonBridge)
+      {
+        fprintf(stderr, "Stopping MusE Pybridge...\n");
+        if(stopPythonBridge() == false)
+          fprintf(stderr, "MusE: Could not stop Python bridge\n");
+        else
+          fprintf(stderr, "MusE: Pybridge stopped\n");
+      }
 
 #ifdef HAVE_LASH
       // Disconnect gracefully from LASH.
@@ -2724,6 +2726,7 @@ void MusE::bounceToTrack()
         return;
 
       MusEGlobal::song->bounceOutput = 0;
+      MusEGlobal::song->bounceTrack = nullptr;
 
       if(MusEGlobal::song->waves()->empty())
       {
@@ -2837,6 +2840,7 @@ void MusE::bounceToFile(MusECore::AudioOutput* ao)
       if(MusEGlobal::audio->bounce())
         return;
       MusEGlobal::song->bounceOutput = 0;
+      MusEGlobal::song->bounceTrack = nullptr;
       if(!ao)
       {
  MusECore::OutputList* ol = MusEGlobal::song->outputs();
@@ -3780,8 +3784,8 @@ void MusE::updateWindowMenu()
         sep=true;
       }
       QAction* temp=menuWindows->addAction((*it)->windowTitle());
-      connect(temp, SIGNAL(triggered()), windowsMapper, SLOT(map()));
-      windowsMapper->setMapping(temp, static_cast<QWidget*>(*it));
+      QWidget* tlw = static_cast<QWidget*>(*it);
+      connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
 
       there_are_subwins=true;
     }
@@ -3796,8 +3800,8 @@ void MusE::updateWindowMenu()
         sep=true;
       }
       QAction* temp=menuWindows->addAction((*it)->windowTitle());
-      connect(temp, SIGNAL(triggered()), windowsMapper, SLOT(map()));
-      windowsMapper->setMapping(temp, static_cast<QWidget*>(*it));
+      QWidget* tlw = static_cast<QWidget*>(*it);
+      connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
     }
 
   windowsCascadeAction->setEnabled(there_are_subwins);
@@ -3809,6 +3813,24 @@ void MusE::updateWindowMenu()
 void MusE::resetXrunsCounter()
 {
    MusEGlobal::audio->resetXruns();
+}
+
+bool MusE::startPythonBridge()
+{
+#ifdef PYTHON_SUPPORT
+  printf("Starting MusE Pybridge...\n");
+  return MusECore::startPythonBridge();
+#endif
+  return false;
+}
+
+bool MusE::stopPythonBridge()
+{ 
+#ifdef PYTHON_SUPPORT
+  printf("Stopping MusE Pybridge...\n");
+  return MusECore::stopPythonBridge();
+#endif
+  return true;
 }
 
 void MusE::bringToFront(QWidget* widget)
@@ -4102,7 +4124,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
                                   "File will be resampled from %1 to %2 Hz.\n"
                                   "Do you still want to import it?").arg(f->samplerate()).arg(MusEGlobal::sampleRate),
                                tr("&Yes"), tr("&No"),
-                               QString::null, 0, 1 ))
+                               QString(), 0, 1 ))
       {
          return true; // this removed f from the stack, dropping refcount maybe to zero and maybe deleting the thing
       }

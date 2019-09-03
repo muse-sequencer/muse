@@ -29,7 +29,6 @@
 #include <list>
 
 #include <QCheckBox>
-#include <QSignalMapper>
 #include <QSlider>
 #include <QSpinBox>
 
@@ -69,15 +68,12 @@ OrganGui::OrganGui()
       dctrl[16] = SynthGuiCtrl(sw2,    0,  SynthGuiCtrl::SWITCH);
       dctrl[17] = SynthGuiCtrl(sw4,    0,  SynthGuiCtrl::SWITCH);
 
-      map = new QSignalMapper(this);
       for (int i = 0; i < NUM_GUI_CONTROLLER; ++i) {
-            map->setMapping(dctrl[i].editor, i);
             if (dctrl[i].type == SynthGuiCtrl::SLIDER)
-                  connect((QSlider*)(dctrl[i].editor), SIGNAL(valueChanged(int)), map, SLOT(map()));
+                  connect((QSlider*)(dctrl[i].editor), &QSlider::valueChanged, [this, i]() { ctrlChanged(i); } );
             else if (dctrl[i].type == SynthGuiCtrl::SWITCH)
-                  connect((QCheckBox*)(dctrl[i].editor), SIGNAL(toggled(bool)), map, SLOT(map()));
+                  connect((QCheckBox*)(dctrl[i].editor), &QCheckBox::toggled, [this, i]() { ctrlChanged(i); } );
             }
-      connect(map, SIGNAL(mapped(int)), this, SLOT(ctrlChanged(int)));
       }
 
 //---------------------------------------------------------

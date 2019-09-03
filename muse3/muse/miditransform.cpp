@@ -394,8 +394,8 @@ MidiTransformerDialog::MidiTransformerDialog(QDialog* parent, Qt::WindowFlags fl
       connect(procPosOp,    SIGNAL(activated(int)), SLOT(procPosOpSel(int)));
       connect(funcOp,       SIGNAL(activated(int)), SLOT(funcOpSel(int)));
       connect(funcQuantVal, SIGNAL(valueChanged(int)), SLOT(funcQuantValSel(int)));
-      connect(presetList,   SIGNAL(itemClicked(QListWidgetItem*)),
-         SLOT(presetChanged(QListWidgetItem*)));
+      connect(presetList,   SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
+         SLOT(presetChanged(QListWidgetItem*, QListWidgetItem*)));
       connect(nameEntry,    SIGNAL(textChanged(const QString&)),
          SLOT(nameChanged(const QString&)));
       connect(commentEntry,    SIGNAL(textChanged()), SLOT(commentChanged()));
@@ -449,13 +449,29 @@ void MidiTransformerDialog::songChanged(MusECore::SongChangedStruct_t flags)
 }
 
 //---------------------------------------------------------
+//   createDefaultPreset
+//---------------------------------------------------------
+
+MusECore::MidiTransformation* MidiTransformerDialog::createDefaultPreset()
+{
+  // create default "New" preset
+  MusECore::MidiTransformation* pre = new MusECore::MidiTransformation(tr("New"));
+  MusECore::mtlist.push_back(pre);
+  presetList->blockSignals(true);
+  presetList->addItem(tr("New"));
+  presetList->setCurrentRow(0);
+  presetList->blockSignals(false);
+  return pre;
+}
+
+//---------------------------------------------------------
 //   updatePresetList
 //---------------------------------------------------------
 
 void MidiTransformerDialog::updatePresetList()
 {
       data->cmt = 0;
-      data->cindex = 0;
+      data->cindex = -1;
       presetList->clear();
       for (MusECore::iMidiTransformation i = MusECore::mtlist.begin(); i != MusECore::mtlist.end(); ++i) {
             presetList->addItem((*i)->name);
@@ -463,12 +479,11 @@ void MidiTransformerDialog::updatePresetList()
                   data->cmt = *i;
             }
       if (data->cmt == 0) {
-            data->cmt = new MusECore::MidiTransformation(tr("New"));
-            MusECore::mtlist.push_back(data->cmt);
-            presetList->addItem(tr("New"));
-            presetList->setCurrentItem(0);
+            // create default "New" preset
+            data->cmt = createDefaultPreset();
             }
-      
+      // Force it! Don't rely on a signal.
+      presetChanged(presetList->item(0), 0);
 }
 
 //---------------------------------------------------------
@@ -1332,11 +1347,14 @@ void MidiTransformerDialog::presetNew()
                   break;
             }
       MusECore::MidiTransformation* mt = new MusECore::MidiTransformation(name);
-      QListWidgetItem* lbi      = new QListWidgetItem(name);
-      presetList->addItem(lbi);
       MusECore::mtlist.push_back(mt);
+      QListWidgetItem* lbi      = new QListWidgetItem(name);
+      presetList->blockSignals(true);
+      presetList->addItem(lbi);
       presetList->setCurrentItem(lbi);
-      presetChanged(lbi);
+      presetList->blockSignals(false);
+      // Force it! Don't rely on a signal.
+      presetChanged(lbi, 0);
       }
 
 //---------------------------------------------------------
@@ -1345,25 +1363,45 @@ void MidiTransformerDialog::presetNew()
 
 void MidiTransformerDialog::presetDelete()
       {
-      if (data->cindex != -1) {
-            MusECore::iMidiTransformation mt = MusECore::mtlist.begin();
-            for (int i = 0; i < data->cindex; ++i, ++mt) {
-                  MusECore::mtlist.erase(mt);
-                  presetList->setCurrentItem(presetList->item(data->cindex - 1));
-                  presetList->takeItem(data->cindex);
-                  presetChanged(presetList->item(data->cindex - 1));
-                  break;
-                  }
-            }
+      if (presetList->count() == 0 || data->cindex < 0)
+        return;
+      MusECore::iMidiTransformation mt = MusECore::mtlist.begin();
+      for (int i = 0; i < data->cindex && mt != MusECore::mtlist.end(); ++i, ++mt) { }
+      
+      if(mt == MusECore::mtlist.end())
+        return;
+      
+      MusECore::mtlist.erase(mt);
+      presetList->blockSignals(true);
+      QListWidgetItem* take_item = presetList->takeItem(data->cindex);
+      presetList->blockSignals(false);
+      if(take_item)
+        delete take_item;
+      // Make sure there's a default item.
+      if(presetList->count() == 0)
+        data->cmt = createDefaultPreset();
+      // Force it! Don't rely on a signal.
+      presetChanged(presetList->currentItem(), 0);
       }
 
 //---------------------------------------------------------
 //   presetChanged
 //---------------------------------------------------------
 
-void MidiTransformerDialog::presetChanged(QListWidgetItem* item)
+void MidiTransformerDialog::presetChanged(QListWidgetItem* item, QListWidgetItem*)
       {
+      if(!item)
+      {
+        data->cindex = -1;
+        return;
+      }
       data->cindex = presetList->row(item);
+
+      //---------------------------------------------------
+      //   search transformation in list and set
+      //   cmt
+      //---------------------------------------------------
+
       MusECore::iMidiTransformation i;
       for (i = MusECore::mtlist.begin(); i != MusECore::mtlist.end(); ++i) {
             if (item->text() == (*i)->name) {
@@ -1451,16 +1489,12 @@ void MidiTransformerDialog::presetChanged(QListWidgetItem* item)
 
 void MidiTransformerDialog::nameChanged(const QString& s)
       {
+      if(data->cindex < 0)
+        return;
       data->cmt->name = s;
       QListWidgetItem* item = presetList->item(data->cindex);
-      if (s != item->text()) {
-            disconnect(presetList, SIGNAL(highlighted(QListWidgetItem*)),
-               this, SLOT(presetChanged(QListWidgetItem*)));
-	    presetList->insertItem(data->cindex, s);
-	    presetList->takeItem(data->cindex);
-            presetList->setCurrentItem(presetList->item(data->cindex));
-            connect(presetList,   SIGNAL(highlighted(QListWidgetItem*)),
-               SLOT(presetChanged(QListWidgetItem*)));
+      if (item && s != item->text()) {
+            item->setText(s);
             }
       }
 

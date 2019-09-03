@@ -314,6 +314,9 @@ bool MidiPort::sendPendingInitializations(bool force)
 
 bool MidiPort::sendInitialControllers(unsigned start_time)
 {
+  MusECore::MetronomeSettings* metro_settings = 
+    MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
   bool rv = true;
   int port = portno();
   
@@ -322,9 +325,9 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
   int usedChanCount = 0;
   for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
     usedChans[i] = false;
-  if(MusEGlobal::song->click() && MusEGlobal::clickPort == port)
+  if(MusEGlobal::song->click() && metro_settings->clickPort == port)
   {
-    usedChans[MusEGlobal::clickChan] = true;
+    usedChans[metro_settings->clickChan] = true;
     ++usedChanCount;
   }
   bool drum_found = false;
@@ -1898,28 +1901,28 @@ void MidiPort::writeRouting(int level, Xml& xml) const
       
       for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) 
       {
-        if(r->type == Route::TRACK_ROUTE && !r->name().isEmpty())
+        if(r->type == Route::TRACK_ROUTE && r->track)
         {
           // Ignore Midi Port to Audio Input routes. Handled by Track route writer. p4.0.14 Tim.
-          if(r->track && r->track->type() == Track::AUDIO_INPUT)
+          if(r->track->type() == Track::AUDIO_INPUT)
             continue;
             
-          s = QT_TRANSLATE_NOOP("@default", "Route");
+          s = "Route";
           if(r->channel != -1)
-            s += QString(QT_TRANSLATE_NOOP("@default", " channel=\"%1\"")).arg(r->channel);
+            s += QString(" channel=\"%1\"").arg(r->channel);
           xml.tag(level++, s.toLatin1().constData());
           
           xml.tag(level, "source mport=\"%d\"/", portno());
           
-          s = QT_TRANSLATE_NOOP("@default", "dest");
-          s += QString(QT_TRANSLATE_NOOP("@default", " name=\"%1\"/")).arg(Xml::xmlString(r->name()));
+          s = "dest";
+          s += QString(" track=\"%1\"/").arg(MusEGlobal::song->tracks()->index(r->track));
           xml.tag(level, s.toLatin1().constData());
           
           xml.etag(level--, "Route");
         }
       }
 }
-    
+
 // p4.0.17 Turn off if and when multiple output routes supported.
 #if 1
 //---------------------------------------------------------

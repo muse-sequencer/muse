@@ -910,7 +910,12 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
                                 ((val <= minV && !d_specialValueText.isEmpty()) ? 
                                 d_specialValueText : (d_valPrefix + locale().toString(val, 'f', _valueDecimals) + d_valSuffix));
   //const int val_width = fm.width(comp_val_text);
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+  const int val_width = aliased_fm.horizontalAdvance(comp_val_text);
+#else
   const int val_width = aliased_fm.width(comp_val_text);
+#endif
   int vx = text_area.width() - val_width;
   if(vx < 0)
     vx = 0;
