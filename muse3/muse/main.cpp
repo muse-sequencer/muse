@@ -750,14 +750,19 @@ int main(int argc, char* argv[])
           }
         }
 
-        const QString old_config_name(MusEGlobal::configPath + "/MusE.cfg");
-        // Rename existing config file to new name.
-        QFile oldConfigFile(old_config_name);
-        if(oldConfigFile.exists())
-          oldConfigFile.rename(MusEGlobal::configName);
+        {
+          const QString old_config_name(MusEGlobal::configPath + "/MusE.cfg");
+          // Rename existing config file to new name.
+          QFile oldConfigFile(old_config_name);
+          if(oldConfigFile.exists())
+            oldConfigFile.rename(MusEGlobal::configName);
+        }
 
-        QFile cConf (MusEGlobal::configName);
-        bool cConfExists = cConf.exists();
+        bool cConfExists = false;
+        {
+          QFile cConf (MusEGlobal::configName);
+          cConfExists = cConf.exists();
+        }
 
 // NOTE: This section was meant to provide a sane way for devs to easily
 //        change default settings of all kinds.
@@ -775,9 +780,11 @@ int main(int argc, char* argv[])
         }
 #endif
 
-        QFile oldQtConfigFile(old_qtconfig_name);
-        if(oldQtConfigFile.exists())
-          oldQtConfigFile.rename(new_qtconfig_name);
+        {
+          QFile oldQtConfigFile(old_qtconfig_name);
+          if(oldQtConfigFile.exists())
+            oldQtConfigFile.rename(new_qtconfig_name);
+        }
 
 // NOTE: This section was meant to provide some sane defaults for
 //        some of the window sizes and visibility.
@@ -1001,24 +1008,26 @@ int main(int argc, char* argv[])
         //signal(SIGCHLD, catchSignal);  // interferes with initVST(). see also app.cpp, function catchSignal()
 
         static QTranslator translator(0);
-        QString locale(QLocale::system().name());
-        if (locale_override.length() >0 )
-            locale = locale_override;
-        if (locale != "C") {
-            QString loc("muse_");
-            loc += locale;
-            if (translator.load(loc, QString(".")) == false) {
-                  QString lp(MusEGlobal::museGlobalShare);
-                  lp += QString("/locale");
-                  if (translator.load(loc, lp) == false) {
-                        fprintf(stderr, "no locale <%s>/<%s>\n", loc.toLatin1().constData(), lp.toLatin1().constData());
-                  }
-            }
-            app.installTranslator(&translator);
-        }
+        {
+          QString locale(QLocale::system().name());
+          if (locale_override.length() >0 )
+              locale = locale_override;
+          if (locale != "C") {
+              QString loc("muse_");
+              loc += locale;
+              if (translator.load(loc, QString(".")) == false) {
+                    QString lp(MusEGlobal::museGlobalShare);
+                    lp += QString("/locale");
+                    if (translator.load(loc, lp) == false) {
+                          fprintf(stderr, "no locale <%s>/<%s>\n", loc.toLatin1().constData(), lp.toLatin1().constData());
+                    }
+              }
+              app.installTranslator(&translator);
+          }
 
-        QLocale def_loc(locale);
-        QLocale::setDefault(def_loc);
+          QLocale def_loc(locale);
+          QLocale::setDefault(def_loc);
+        }
 
         fprintf(stderr, "LOCALE %s\n",QLocale().name().toLatin1().data());
 
@@ -1039,8 +1048,7 @@ int main(int argc, char* argv[])
               }
 
         // User instruments dir:
-        const QString uinstrPath = MusEGlobal::configPath + QString("/instruments");
-        MusEGlobal::museUserInstruments = uinstrPath;
+        MusEGlobal::museUserInstruments = MusEGlobal::configPath + "/instruments";
 
         // NOTE: Set the stylesheet and style as early as possible!
         // Any later invites trouble - typically the colours may be off, 
