@@ -41,11 +41,12 @@ namespace MusECore {
 //      from/to ticks to/from frames.
 //---------------------------------------------------------
 
-template<class key, class T> class MixedPosList_t : 
-  public std::multimap<key, T, std::less<key> >
+template<class Key, class T, class Compare = std::less<Key>,
+         class Alloc = std::allocator<std::pair<const Key,T> > >
+  class MixedPosList_t : public std::multimap<Key, T, Compare, Alloc >
 {
   private:
-    typedef std::multimap<key, T, std::less<key>> vlist;
+    typedef std::multimap<Key, T, Compare, Alloc> vlist;
     typedef typename std::list<T>::const_iterator cil_t;
 
   protected:
@@ -55,52 +56,30 @@ template<class key, class T> class MixedPosList_t :
     typedef typename vlist::iterator iMixedPosList_t;
     typedef typename vlist::const_iterator ciMixedPosList_t;
     typedef std::pair <ciMixedPosList_t, ciMixedPosList_t> cMixedPosListRange_t;
-    typedef std::pair <key, T> MixedPosListInsertPair_t;
+    typedef std::pair <Key, T> MixedPosListInsertPair_t;
 
     MixedPosList_t(Pos::TType type = Pos::TICKS) : vlist(), _type(type) {}
     virtual ~MixedPosList_t() {}
 
     inline Pos::TType type() const { return _type; }
+    inline void setType(Pos::TType t) { _type = t; rebuild(); }
 
+    // Note that the pair's key part is IGNORED.
+    // All information is gathered from the pair's value type T.
     iMixedPosList_t insert (MixedPosListInsertPair_t v)
     {
-      const unsigned v_frame = v.second.frame();
-      const unsigned v_tick = v.second.tick();
-      ciMixedPosList_t pos = vlist::end();
-      cMixedPosListRange_t r;
-
-      // If list type is ticks, compare frame. If list type is frames, compare tick.
-      switch(type())
-      {
-        case Pos::TICKS:
-          r = vlist::equal_range(v_tick);
-          for(pos = r.first; pos != r.second; ++pos)
-            if(v_frame <= pos->second.frame())
-              break;
-          return vlist::insert(pos, MixedPosListInsertPair_t(v_tick, v.second));
-        break;
-
-        case Pos::FRAMES:
-          r = vlist::equal_range(v_frame);
-          for(pos = r.first; pos != r.second; ++pos)
-            if(v_tick <= pos->second.tick())
-              break;
-          return vlist::insert(pos, MixedPosListInsertPair_t(v_frame, v.second));
-        break;
-      }
-      // return vlist::end();
+      return add(v.second);
     }
 
-// TODO
-//     template <class P> iMixedPosList insert (P&& v)  { return vlist::insert(v); }
-//     iMixedPosList insert (ciMixedPosList pos, const T& v) { return vlist::insert(pos, v); }
-//     template <class P> iMixedPosList insert (ciMixedPosList pos, P&& v) { return vlist::insert(pos, v); }
-//     template <class InputIterator>
-//     void insert (InputIterator first, InputIterator last) { return vlist::insert(first, last); }
-//     void insert (std::initializer_list<T> il) { return vlist::insert(il); }
+    // TODO:
+    // template <class P> iMixedPosList insert (P&& v)  { return vlist::insert(v); }
+    // iMixedPosList insert (ciMixedPosList pos, const T& v) { return vlist::insert(pos, v); }
+    // template <class P> iMixedPosList insert (ciMixedPosList pos, P&& v) { return vlist::insert(pos, v); }
+    // template <class InputIterator>
+    // void insert (InputIterator first, InputIterator last) { return vlist::insert(first, last); }
+    // void insert (std::initializer_list<T> il) { return vlist::insert(il); }
 
     // Returns an iterator that points to the inserted event.
-    // Returns end() if an error occurred.
     iMixedPosList_t add(T v)
     {
       const unsigned v_frame = v.frame();
@@ -149,24 +128,9 @@ template<class key, class T> class MixedPosList_t :
           ++i;
       }
 
-      switch(type())
-      {
-        case Pos::TICKS:
-          for(cil_t ai = to_be_added.begin(); ai != to_be_added.end(); ++ai)
-          {
-            const T& m = *ai;
-            insert(MixedPosListInsertPair_t(m.tick(), m));
-          }
-        break;
+      for(cil_t ai = to_be_added.begin(); ai != to_be_added.end(); ++ai)
+        add(*ai);
 
-        case Pos::FRAMES:
-          for(cil_t ai = to_be_added.begin(); ai != to_be_added.end(); ++ai)
-          {
-            const T& m = *ai;
-            insert(MixedPosListInsertPair_t(m.frame(), m));
-          }
-        break;
-      }
       return !to_be_added.empty();
     }
 
