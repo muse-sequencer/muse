@@ -125,7 +125,7 @@ template<class Key, class T, class Compare = std::less<Key>,
            (type() == Pos::FRAMES && m.type() == Pos::TICKS))
         {
           to_be_added.push_back(m);
-          i = erase(i);
+          i = vlist::erase(i);
         }
         else
           ++i;
