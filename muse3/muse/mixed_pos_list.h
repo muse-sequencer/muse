@@ -64,8 +64,10 @@ template<class Key, class T, class Compare = std::less<Key>,
     inline Pos::TType type() const { return _type; }
     inline void setType(Pos::TType t) { _type = t; rebuild(); }
 
+    // Returns an iterator that points to the inserted event.
     // Note that the pair's key part is IGNORED.
     // All information is gathered from the pair's value type T.
+    // Returns end() if an error occurred.
     iMixedPosList_t insert (MixedPosListInsertPair_t v)
     {
       return add(v.second);
@@ -79,7 +81,8 @@ template<class Key, class T, class Compare = std::less<Key>,
     // void insert (InputIterator first, InputIterator last) { return vlist::insert(first, last); }
     // void insert (std::initializer_list<T> il) { return vlist::insert(il); }
 
-    // Returns an iterator that points to the inserted event.
+    // Returns an iterator that points to the added event.
+    // Returns end() if an error occurred.
     iMixedPosList_t add(T v)
     {
       const unsigned v_frame = v.frame();
@@ -106,7 +109,7 @@ template<class Key, class T, class Compare = std::less<Key>,
           return vlist::insert(pos, MixedPosListInsertPair_t(v_frame, v));
         break;
       }
-      //return vlist::end();
+      return vlist::end();
     }
     
     // After any tempo changes, it is essential to rebuild the list
