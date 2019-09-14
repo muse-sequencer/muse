@@ -53,16 +53,21 @@ class MarkerItem : public QTreeWidgetItem {
 //       MusECore::Marker* _marker;
       MusECore::Marker _marker;
 
+//       void init(const MusECore::Marker& m);
+
    public:
 //       MarkerItem(QTreeWidget* parent, MusECore::Marker* m);
       MarkerItem(QTreeWidget* parent, const MusECore::Marker& m);
+      MarkerItem(const MusECore::Marker& m);
 //       MusECore::Marker* marker() const { return _marker; }
       MusECore::Marker marker() const { return _marker; }
+      void setMarker(const MusECore::Marker& m); // { _marker = m; }
       unsigned tick() const;
       const QString name() const;
       bool lock() const;
       void setName(const QString& s);
-      void setTick(unsigned t);
+      //void setTick(unsigned t);
+      void setPos(const MusECore::Pos& v);
       void setLock(bool lck);
       };
 
@@ -111,6 +116,14 @@ class MarkerView : public TopWin {
       static void writeConfiguration(int, MusECore::Xml&);
       void nextMarker();
       void prevMarker();
+
+      // REMOVE Tim. clip. Added.
+      MarkerItem* findId(MusECore::EventID_t id) const;
+//       // Returns true if m2 position is less than or equal to m1 position.
+//       // Agnostic. If either m1 or m2 is in FRAMES, the comparison is in FRAMES,
+//       //  otherwise the comparison is in TICKS.
+//       // * This should be removed if and when class Pos becomes agnostic.
+//       bool compareMarkers(const MusECore::Marker& m1, const MusECore::Marker& m2) const;
       };
 
 }

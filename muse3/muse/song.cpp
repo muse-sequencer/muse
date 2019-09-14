@@ -1342,12 +1342,17 @@ void Song::setPos(int idx, const Pos& val, bool sig,
       //  the change in tempo reached out and updated all relevant frames itself, so deal
       //  with it - the comparison is technically correct in that they ARE currently equal.
       // Solution: Check first whether the existing position's serial number is valid.
-//       if (pos[idx].snValid() && val == pos[idx])
+      //if (pos[idx].snValid() && val == pos[idx])
       if (!force && val == pos[idx])
+//       if (!force)
       {
+//         if((((val.type() == Pos::FRAMES && pos[idx].type() == Pos::FRAMES) || (val.type() == Pos::TICKS && pos[idx].type() == Pos::TICKS)) &&
+//             val.posValue() == pos[idx].posValue()))
+//         {
            if (MusEGlobal::heavyDebugMsg) fprintf(stderr,
              "Song::setPos MusEGlobal::song->pos already == val tick:%d frame:%d\n", val.tick(), val.frame());   
            return;
+//         }
       }     
 // REMOVE Tim. clip. Changed.
 //       pos[idx] = val;
@@ -1960,6 +1965,15 @@ void Song::addMarker(const QString& s, int t, bool lck)
 //       emit markerChanged(MARKER_ADD);
       }
 
+void Song::addMarker(const QString& s, const Pos& p)
+{
+      Marker m(s);
+      m.setType(p.type());
+      m.setPos(p);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddMarker, m));
+//       emit markerChanged(MARKER_ADD);
+}
+
 //---------------------------------------------------------
 //   addMarker
 //---------------------------------------------------------
@@ -1981,27 +1995,32 @@ void Song::removeMarker(const Marker& marker)
 
 void Song::setMarkerName(const Marker& marker, const QString& s)
       {
-      // Grab a copy but with a new ID.
-      Marker m = marker.copy();
+//       // Grab a copy but with a new ID.
+//       Marker m = marker.copy();
+      Marker m(marker);
       m.setName(s);
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
 //       emit markerChanged(MARKER_NAME);
       }
 
-void Song::setMarkerTick(const Marker& marker, int t)
+// void Song::setMarkerTick(const Marker& marker, const Pos& pos)
+void Song::setMarkerPos(const Marker& marker, const Pos& pos)
       {
       //Marker m(marker);
       //m.setTick(t);
       //MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
 //       emit markerChanged(MARKER_TICK);
+
       // Here we use the separate SetMarkerPos operation, which is 'combo-breaker' aware, to optimize repeated adjustments.
-      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetMarkerPos, marker, t, Pos::TICKS));
+      //MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetMarkerPos, marker, t, Pos::TICKS));
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetMarkerPos, marker, pos.posValue(), pos.type()));
       }
 
 void Song::setMarkerLock(const Marker& marker, bool f)
       {
-      // Grab a copy but with a new ID.
-      Marker m = marker.copy();
+//       // Grab a copy but with a new ID.
+//       Marker m = marker.copy();
+      Marker m(marker);
       m.setType(f ? Pos::FRAMES : Pos::TICKS);
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
 //       emit markerChanged(MARKER_LOCK);

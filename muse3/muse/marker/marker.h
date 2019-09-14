@@ -28,6 +28,7 @@
 
 #include "xml.h"
 #include "pos.h"
+#include "type_defs.h"
 #include "mixed_pos_list.h"
 
 class QString;
@@ -39,10 +40,10 @@ namespace MusECore {
 //---------------------------------------------------------
 
 class Marker : public Pos {
-      static std::uint64_t _idGen;
-      std::uint64_t newId() { return _idGen++; }
+      static std::int64_t _idGen;
+      std::int64_t newId() { return _idGen++; }
 
-      std::uint64_t _id;
+      std::int64_t _id;
       QString _name;
       bool _current;
 
@@ -56,7 +57,7 @@ class Marker : public Pos {
       // Creates a copy of this marker but with a new ID.
       Marker copy() const;
       void read(Xml&);
-      std::uint64_t id() const { return _id; }
+      std::int64_t id() const { return _id; }
       const QString name() const     { return _name; }
       void setName(const QString& s) { _name = s;    }
       bool current() const           { return _current; }
@@ -67,14 +68,18 @@ class Marker : public Pos {
 //   MarkerList
 //---------------------------------------------------------
 
-class MarkerList : public std::multimap<unsigned, Marker, std::less<unsigned> > {
+// REMOVE Tim. clip. Changed.
+// class MarkerList : public std::multimap<unsigned, Marker, std::less<unsigned> >
+class MarkerList : public MixedPosList_t<unsigned, Marker, std::less<unsigned> >
+{
    private:
      const_iterator _iCurrent;
 
    public:
-      MarkerList() : _iCurrent(cend()) { }
+      MarkerList() : MixedPosList_t(Pos::TICKS), _iCurrent(cend()) { }
       
-      int mappedTypeSize() const { return sizeof(mapped_type); }
+      // REMOVE Tim. clip. Removed. Did I add this ???
+      //int mappedTypeSize() const { return sizeof(mapped_type); }
       
       // Normally to be called from the audio thread only.
       Marker* add(const Marker& m);
@@ -83,12 +88,16 @@ class MarkerList : public std::multimap<unsigned, Marker, std::less<unsigned> > 
       // REMOVE Tim. clip. Added.
       void remove(const Marker&);
 
+//       // REMOVE Tim. clip. Added.
+//       // After any tempo changes, it is essential to rebuild the list
+//       //  so that any 'locked' items are re-sorted properly by tick.
+//       // Returns true if any items were rebuilt.
+//       // Normally to be called from the audio thread only.
+//       bool rebuild();
+
       // REMOVE Tim. clip. Added.
-      // After any tempo changes, it is essential to rebuild the list
-      //  so that any 'locked' items are re-sorted properly by tick.
-      // Returns true if any items were rebuilt.
-      // Normally to be called from the audio thread only.
-      bool rebuild();
+      MarkerList::const_iterator findId(EventID_t id) const; // Slow, index t is not known
+      MarkerList::iterator findId(EventID_t id);             // Slow, index t is not known
 
       // Returns an iterator to the current marker, or end() if none is current.
       const_iterator current() const { return _iCurrent; }

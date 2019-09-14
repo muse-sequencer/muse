@@ -53,6 +53,14 @@ class PosEdit : public QAbstractSpinBox
 //       bool _enableUserFormat;
 //       bool _enableUserType;
 
+      // Whether to quantize the adjusted value to the underlying type.
+      // For example, if the current display format is 'frames' and if this
+      //  control drives the transport position cursor (ticks), the ultimate
+      //  receiver is the transport (frames), so this would be false to allow
+      //  frame adjustments even though the actual cursor is in ticks.
+      // But if it drives a marker position (ticks), the ultimate receiver is a
+      //  marker list item position (ticks) so this would need to be true.
+      bool _quantizeValue;
       bool _fixed_type;
       MusECore::Pos _pos;
       bool initialized;
@@ -116,6 +124,7 @@ class PosEdit : public QAbstractSpinBox
 //           MusECore::TimeFormatTicksFormatted | MusECore::TimeFormatUserAll));
         const MusECore::Pos::TType& type = MusECore::Pos::TICKS,
         bool fixed_type = true,
+        //bool quantize_value = true,
 //         const MusECore::TimeFormatOptionsStruct& options = MusECore::TimeFormatOptionsStruct(MusECore::TimeFormatTicks));
         const MusECore::TimeFormatOptions& options = MusECore::TimeFormatTicks,
         const MusECore::TimeFormatOptions_t& allowed_time_formats = MusECore::TimeFormatAll);

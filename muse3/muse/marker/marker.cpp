@@ -29,7 +29,7 @@
 namespace MusECore {
 
 // Static.
-std::uint64_t Marker::_idGen = 0;
+std::int64_t Marker::_idGen = 0;
 
 //---------------------------------------------------------
 //   read
@@ -49,9 +49,22 @@ void Marker::read(Xml& xml)
                         break;
                   case Xml::Attribut:
                         if (tag == "tick")
+                        {
                               setTick(xml.s2().toInt());
-                        else if (tag == "lock")
+                              // REMOVE Tim. clip. Added.
+                              setType(TICKS);
+                        }
+                        // REMOVE Tim. clip. Added.
+                        else if (tag == "frame")
+                        {
+                              setFrame(xml.s2().toInt());
+                              setType(FRAMES);
+                        }
+
+                        else if (tag == "lock")  // Obsolete.
+                        {
                               setType(xml.s2().toInt() ? FRAMES:TICKS);
+                        }
                         else if (tag == "name")
                         {
                               _name = xml.s2();
@@ -93,7 +106,10 @@ Marker Marker::copy() const
 
 Marker* MarkerList::add(const Marker& marker)
       {
-      iMarker i = insert(std::pair<const int, Marker> (marker.tick(), Marker(marker)));
+// REMOVE Tim. clip. Changed.
+//       iMarker i = insert(std::pair<const int, Marker> (marker.tick(), Marker(marker)));
+      iMarker i = MixedPosList_t::add(Marker(marker));
+//       iMarker i = MixedPosList_t::add(marker);
       return &i->second;
       }
 
@@ -102,7 +118,9 @@ Marker* MarkerList::add(const QString& s, int t, bool lck)
       Marker marker(s);
       marker.setType(lck ? Pos::FRAMES : Pos::TICKS);
       marker.setTick(t);
-      iMarker i = insert(std::pair<const int, Marker> (t, marker));
+// REMOVE Tim. clip. Changed.
+//       iMarker i = insert(std::pair<const int, Marker> (t, marker));
+      iMarker i = MixedPosList_t::add(marker);
       return &i->second;
       }
 
@@ -114,8 +132,15 @@ void MarkerList::write(int level, Xml& xml) const
       {
       for (ciMarker i = begin(); i != end(); ++i) {
             const Marker& m = i->second;
-            xml.put(level, "<marker tick=\"%d\" lock=\"%d\" name=\"%s\" />",
-               m.tick(), m.type()==Pos::FRAMES, Xml::xmlString(m.name()).toLatin1().constData());
+// REMOVE Tim. clip. Changed.
+//             xml.put(level, "<marker tick=\"%d\" lock=\"%d\" name=\"%s\" />",
+//                m.tick(), m.type()==Pos::FRAMES, Xml::xmlString(m.name()).toLatin1().constData());
+            if(m.type()==Pos::TICKS)
+              xml.put(level, "<marker tick=\"%d\" name=\"%s\" />",
+                 m.tick(), Xml::xmlString(m.name()).toLatin1().constData());
+            else if(m.type()==Pos::FRAMES)
+              xml.put(level, "<marker frame=\"%d\" name=\"%s\" />",
+                 m.frame(), Xml::xmlString(m.name()).toLatin1().constData());
             }
       }
 
@@ -139,7 +164,7 @@ void MarkerList::remove(Marker* m)
 void MarkerList::remove(const Marker& m)
       {
       const QString& s = m.name();
-      const std::uint64_t id = m.id();
+      const std::int64_t id = m.id();
       std::pair<iMarker, iMarker> rng = equal_range(m.tick());
       for(iMarker i = rng.first; i != rng.second; ++i) {
             const Marker& mm = i->second;
@@ -175,37 +200,56 @@ void MarkerList::remove(const Marker& m)
       printf("MarkerList::remove(): marker not found\n");
       }
 
-// REMOVE Tim. clip. Added.
-//---------------------------------------------------------
-//   rebuild
-//    After any tempo changes, it is essential to rebuild the list
-//     so that any 'locked' items are re-sorted properly by tick.
-//    Returns true if any items were rebuilt.
-//---------------------------------------------------------
+// // REMOVE Tim. clip. Added.
+// //---------------------------------------------------------
+// //   rebuild
+// //    After any tempo changes, it is essential to rebuild the list
+// //     so that any 'locked' items are re-sorted properly by tick.
+// //    Returns true if any items were rebuilt.
+// //---------------------------------------------------------
+// 
+// bool MarkerList::rebuild()
+// {
+//   std::list<Marker> to_be_added;
+//   for(iMarker i = begin(); i != end(); )
+//   {
+//     const Marker& m = i->second;
+//     if(m.type() == Pos::FRAMES)
+//     {
+//       to_be_added.push_back(m);
+//       i = erase(i);
+//     }
+//     else
+//     {
+//       ++i;
+//     }
+//   }
+//   for(std::list<Marker>::iterator ai = to_be_added.begin(); ai != to_be_added.end(); ++ai)
+//   {
+//     const Marker& m = *ai;
+// //     insert(std::pair<const int, Marker> (m.tick(), Marker(m)));
+//     add(Marker(m));
+//   }
+//   return !to_be_added.empty();
+// }
 
-bool MarkerList::rebuild()
+// REMOVE Tim. clip. Added.
+iMarker MarkerList::findId(EventID_t id)
 {
-  std::list<Marker> to_be_added;
-  for(iMarker i = begin(); i != end(); )
-  {
-    const Marker& m = i->second;
-    if(m.type() == Pos::FRAMES)
-    {
-      to_be_added.push_back(m);
-      i = erase(i);
-    }
-    else
-    {
-      ++i;
-    }
-  }
-  for(std::list<Marker>::iterator ai = to_be_added.begin(); ai != to_be_added.end(); ++ai)
-  {
-    const Marker& m = *ai;
-    insert(std::pair<const int, Marker> (m.tick(), Marker(m)));
-  }
-  return !to_be_added.empty();
+  for(iMarker i = begin(); i != end(); ++i)
+    if(i->second.id() == id)
+      return i;
+  return end();
 }
+
+ciMarker MarkerList::findId(EventID_t id) const
+{
+  for(ciMarker i = begin(); i != end(); ++i)
+    if(i->second.id() == id)
+      return i;
+  return end();
+}
+
 
 // REMOVE Tim. clip. Added.
 //---------------------------------------------------------

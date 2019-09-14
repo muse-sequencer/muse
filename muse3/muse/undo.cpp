@@ -2002,16 +2002,16 @@ UndoOp::UndoOp(UndoType type_, const Marker& oldMarker_, const Marker& newMarker
       assert(type_==ModifyMarker);
       type    = type_;
       oldMarker  = new Marker(oldMarker_);
-      // Enforce a new ID in case caller did not use assign.
-      if(newMarker_.id() == oldMarker_.id())
-      {
-        newMarker = new Marker();
-        newMarker->assign(newMarker_);
-      }
-      else
-      {
+//       // Enforce a new ID in case caller did not use assign.
+//       if(newMarker_.id() == oldMarker_.id())
+//       {
+//         newMarker = new Marker();
+//         newMarker->assign(newMarker_);
+//       }
+//       else
+//       {
         newMarker = new Marker(newMarker_);
-      }
+//       }
       _noUndo = noUndo;
       }
 
@@ -2034,9 +2034,10 @@ UndoOp::UndoOp(UndoType type_, const Marker& marker_, unsigned int new_pos, Pos:
       assert(type_==SetMarkerPos);
       type    = type_;
       oldMarker = new Marker(marker_);
-      // Enforce a new ID in case caller did not use assign.
-      newMarker = new Marker();
-      newMarker->assign(marker_);
+//       // Enforce a new ID in case caller did not use assign.
+//       newMarker = new Marker();
+//       newMarker->assign(marker_);
+      newMarker = new Marker(marker_);
       newMarker->setPosValue(new_pos, new_time_type);
       _noUndo = noUndo;
       }

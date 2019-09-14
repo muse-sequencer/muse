@@ -46,12 +46,16 @@ namespace MusEGui {
 PosEdit::PosEdit(QWidget* parent,
   const MusECore::Pos::TType& type,
   bool fixed_type,
+//   bool quantize_value,
 //   const MusECore::TimeFormatOptionsStruct& options
   const MusECore::TimeFormatOptions& options,
   const MusECore::TimeFormatOptions_t& allowed_time_formats
 )
    : QAbstractSpinBox(parent)
       {
+// REMOVE Tim. clip. Added.
+      setKeyboardTracking(false);
+
       //_formatted = options & MusECore::TimeFormatFormatted;
       //_smpte = options & MusECore::TimeFormatFrames;
       _returnMode = false; 
@@ -70,6 +74,7 @@ PosEdit::PosEdit(QWidget* parent,
 //       setSmpte(false);
       _allowedTimeFormats = allowed_time_formats;
       _fixed_type = fixed_type;
+//       _quantizeValue = quantize_value;
       setType(type);
       setTimeFormatOptions(options);
       
@@ -933,7 +938,9 @@ void PosEdit::updateValue()
 //       lineEdit()->clear();
 //       lineEdit()->end(false);
 //       lineEdit()->setModified(false);
+      blockSignals(true);
       lineEdit()->setText(s);
+      blockSignals(false);
       }
 
 //---------------------------------------------------------
