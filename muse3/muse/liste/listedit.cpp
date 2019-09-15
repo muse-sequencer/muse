@@ -204,8 +204,9 @@ void ListEdit::songChanged(MusECore::SongChangedStruct_t type)
       if (type._flags & (// SC_MIDI_TRACK_PROP  FIXME Needed, but might make it slow!
            SC_PART_REMOVED | SC_PART_MODIFIED 
          | SC_PART_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED
+         | SC_SIG  // Required so that bar/beat/tick of listed items are shown correctly.
          | SC_EVENT_INSERTED | SC_SELECTION)) {
-            if (type._flags & (SC_PART_REMOVED | SC_PART_INSERTED | SC_PART_MODIFIED))
+            if (type._flags & (SC_PART_REMOVED | SC_PART_INSERTED | SC_PART_MODIFIED | SC_SIG))
                   genPartlist();
             // close window if editor has no parts anymore
             if (parts()->empty()) {
