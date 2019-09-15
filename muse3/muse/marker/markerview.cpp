@@ -590,20 +590,39 @@ void MarkerView::songChanged(MusECore::SongChangedStruct_t flags)
 {
   // REMOVE Tim. clip. Added.
   // Prevent race condition: Ignore if the change was ultimately self-sent.
-  if(//flags._sender != this &&
-     flags._flags & (SC_MARKERS_REBUILT | SC_TEMPO | SC_MASTER |
-       SC_MARKER_INSERTED | SC_MARKER_REMOVED | SC_MARKER_MODIFIED))
+//   if(//flags._sender != this &&
+//      flags._flags & (SC_MARKERS_REBUILT | SC_TEMPO | SC_MASTER |
+//        SC_MARKER_INSERTED | SC_MARKER_REMOVED | SC_MARKER_MODIFIED))
+//     updateList();
 
+  // Try to minimize the work. Rebuild the list only if required.
+  // The simpler updateList() just cannot handle this complex situation,
+  //  due to position comparisons ALREADY being equal etc.
+  if(flags._flags &
+    (SC_MARKERS_REBUILT | SC_TEMPO | SC_MASTER
+     | SC_SIG // Required so that bar/beat/tick of listed items are shown correctly.
+    ))
+    rebuildList();
+  // Can we get away with just an update?
+  else if(flags._flags & (SC_MARKER_INSERTED | SC_MARKER_REMOVED | SC_MARKER_MODIFIED))
     updateList();
 }
 
 // REMOVE Tim. clip. Added.
-// //---------------------------------------------------------
-// //   updateList
-// //---------------------------------------------------------
-// 
-// void MarkerView::updateList()
-// {
+//---------------------------------------------------------
+//   updateList
+//---------------------------------------------------------
+
+void MarkerView::rebuildList()
+{
+      MusECore::MarkerList* marker = MusEGlobal::song->marker();
+      const MarkerItem* selitem = (MarkerItem*)table->currentItem();
+      std::int64_t selitem_id = -1;
+      if(selitem)
+        selitem_id = selitem->marker().id();
+      int m_id;
+
+
 //       // Added p3.3.43 Manage selected item, due to clearing of table...
 //       MusECore::MarkerList* marker = MusEGlobal::song->marker();
 //       MarkerItem* selitem     = (MarkerItem*)table->currentItem();
@@ -660,30 +679,33 @@ void MarkerView::songChanged(MusECore::SongChangedStruct_t flags)
 //         if(!found)
 //           selm = m;
 //       }
-//             
-//       // Block signals added. Triggers itemSelectionChanged() causing crash. Tim. 
-//       table->blockSignals(true);
-//       table->clear();
-//       table->blockSignals(false);
-//       
-//       //MusECore::MarkerList* marker = MusEGlobal::song->marker();
-//       for (MusECore::iMarker i = marker->begin(); i != marker->end(); ++i) 
-//       {
-//             MusECore::Marker* m = &i->second;
-//             
-//             // Changed p3.3.43 
-//             MarkerItem* item = new MarkerItem(table, m);
-//             if(m == selm)
-//             {
-//               m->setCurrent(true);
-//               table->setCurrentItem(item);
-//             }
-//             else  
-//             {
-//               m->setCurrent(false);
-//             }
-//       }
-// }
+
+      // Block signals added. Triggers itemSelectionChanged() causing crash. Tim. 
+      table->blockSignals(true);
+      table->clear();
+      table->blockSignals(false);
+
+      for (MusECore::iMarker i = marker->begin(); i != marker->end(); ++i) 
+      {
+        const MusECore::Marker& m = i->second;
+        m_id = m.id();
+        MarkerItem* new_item = new MarkerItem(m);
+        table->blockSignals(true);
+        table->addTopLevelItem(new_item);
+        if(m_id == selitem_id)
+        {
+          //m->setCurrent(true);
+          table->setCurrentItem(new_item);
+        }
+        //else  
+        //{
+        //  m->setCurrent(false);
+        //}
+        table->blockSignals(false);
+      }
+
+      markerSelectionChanged();
+}
 
 //---------------------------------------------------------
 //   updateList
@@ -696,7 +718,7 @@ void MarkerView::updateList()
       const MarkerItem* selitem = (MarkerItem*)table->currentItem();
 // //       int selitem_idx = -1;
       std::int64_t selitem_id = -1;
-//       MarkerItem* new_selitem = nullptr;
+      MarkerItem* new_selitem = nullptr;
 // //       int new_selitem_idx = -1;
 //       std::int64_t new_selitem_id = -1;
 //       // = table->indexOfTopLevelItem(selitem);
@@ -884,6 +906,8 @@ void MarkerView::updateList()
              (m_frame > found_f && (!next_frame_found || m_frame <= next_frame)))
           {
             found_item->setMarker(m);
+            if(m_id == selitem_id)
+              new_selitem = found_item;
             continue;
           }
 
@@ -939,22 +963,29 @@ void MarkerView::updateList()
           table->addTopLevelItem(new_item);
         table->blockSignals(false);
 
-        if(m_id == selitem_id) // && new_selitem_id != selitem_id)
-//         if(m.current()) // && new_selitem_id != selitem_id)
-        {
-          table->blockSignals(true);
-//           //m.setCurrent(true); // TODO Need this, but make it realtime safe.
-          table->setCurrentItem(new_item);
-          table->blockSignals(false);
-//           current_changed = true;
-        }
-//         else if(new_selitem && new_selitem_id != selitem_id)
-//           table->setCurrentItem(new_selitem);
+        if(m_id == selitem_id)
+          new_selitem = new_item;
+//         {
+//           table->blockSignals(true);
+//           table->setCurrentItem(new_item);
+//           table->blockSignals(false);
+// //           current_changed = true;
+//         }
+// //         else if(new_selitem && new_selitem_id != selitem_id)
+// //           table->setCurrentItem(new_selitem);
           
 //         // Anything new found in the marker list?
 //         if(!found)
 //           selm = m;
 
+      }
+
+      if(new_selitem)
+      {
+        table->blockSignals(true);
+        table->setCurrentItem(new_selitem);
+        table->blockSignals(false);
+        //current_changed = true;
       }
 
 //       if(current_changed)

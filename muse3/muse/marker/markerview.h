@@ -100,6 +100,7 @@ class MarkerView : public TopWin {
       void lockChanged(bool);
       void markerChanged(int);
       void clicked(QTreeWidgetItem*);
+      void rebuildList();
       void updateList();
       void songChanged(MusECore::SongChangedStruct_t);
       
