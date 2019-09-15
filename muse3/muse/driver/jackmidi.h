@@ -53,7 +53,12 @@ class MidiJackDevice : public MidiDevice {
       
       jack_port_t* _in_client_jackport;
       jack_port_t* _out_client_jackport;
-      
+
+      // The buffers associated with the ports.
+      // These must be retrieved each cycle, as per docs.
+      void* _in_port_buf;
+      void* _out_port_buf;
+
       MPEventList _outPlaybackEvents;
       MPEventList _outUserEvents;
       
@@ -87,6 +92,9 @@ class MidiJackDevice : public MidiDevice {
       static MidiDevice* createJackMidiDevice(QString name = "", int rwflags = 3); // 1:Writable 2: Readable 3: Writable + Readable
       virtual inline MidiDeviceType deviceType() const { return JACK_MIDI; } 
       virtual void setName(const QString&);
+      
+      // Initializes port buffers, if any.
+      void processInit(unsigned frames);
       
       //virtual void handleStop();  
       //virtual void handleSeek();

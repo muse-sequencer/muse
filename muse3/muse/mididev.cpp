@@ -551,20 +551,25 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev, LatencyType latencyType, Even
 //   To be called by audio thread only.
 //---------------------------------------------------------
 
-void MidiDevice::processStuckNotes() 
+void MidiDevice::processStuckNotes(const bool extsync, const unsigned sync_frame,
+                                   const unsigned cur_tick_pos, const unsigned next_tick_pos,
+                                   const unsigned frame_pos, const unsigned frames)
 {
   // Must be playing for valid nextTickPos, right? But wasn't checked in Audio::processMidi().
   // MusEGlobal::audio->isPlaying() might not be true during seek right now.
   //if(MusEGlobal::audio->isPlaying())  
   {
-    const bool extsync = MusEGlobal::extSyncFlag.value();
-    const unsigned syncFrame = MusEGlobal::audio->curSyncFrame();
-    const unsigned curTickPos = MusEGlobal::audio->tickPos();
-    const unsigned nextTick = MusEGlobal::audio->nextTick();
-    // What is the current transport frame?
-    const unsigned int pos_fr = MusEGlobal::audio->pos().frame();
+    // REMOVE Tim. latency. Changed.
+//     const bool extsync = MusEGlobal::extSyncFlag.value();
+//     const unsigned syncFrame = MusEGlobal::audio->curSyncFrame();
+//     const unsigned curTickPos = MusEGlobal::audio->tickPos();
+//     const unsigned nextTick = MusEGlobal::audio->nextTick();
+//     // What is the current transport frame?
+//     const unsigned int pos_fr = MusEGlobal::audio->pos().frame();
+//     // What is the (theoretical) next transport frame?
+//     const unsigned int next_pos_fr = pos_fr + MusEGlobal::audio->curCycleFrames();
     // What is the (theoretical) next transport frame?
-    const unsigned int next_pos_fr = pos_fr + MusEGlobal::audio->curCycleFrames();
+    const unsigned int next_pos_fr = frame_pos + frames;
     ciMPEvent k;
 
     //---------------------------------------------------
@@ -577,14 +582,14 @@ void MidiDevice::processStuckNotes()
           // If external sync is not on, we can take advantage of frame accuracy but
           //  first we must allow the next tick position to be included in the search
           //  even if it is equal to the current tick position.
-          if (extsync ? (off_tick >= nextTick) : (off_tick > nextTick))  
+          if (extsync ? (off_tick >= next_tick_pos) : (off_tick > next_tick_pos))  
                 break;
           unsigned int off_frame = 0;
           if(extsync)
           {
-            if(off_tick < curTickPos)
-              off_tick = curTickPos;
-            off_frame = MusEGlobal::audio->extClockHistoryTick2Frame(off_tick - curTickPos) + MusEGlobal::segmentSize;
+            if(off_tick < cur_tick_pos)
+              off_tick = cur_tick_pos;
+            off_frame = MusEGlobal::audio->extClockHistoryTick2Frame(off_tick - cur_tick_pos) + MusEGlobal::segmentSize;
           }
           else
           {
@@ -593,8 +598,8 @@ void MidiDevice::processStuckNotes()
             // Is the event frame outside of the current transport frame range?
             if(fr >= next_pos_fr)
               break;
-            off_frame = (fr < pos_fr) ? 0 : fr - pos_fr;
-            off_frame += syncFrame;
+            off_frame = (fr < frame_pos) ? 0 : fr - frame_pos;
+            off_frame += sync_frame;
           }
           ev.setTime(off_frame);
 

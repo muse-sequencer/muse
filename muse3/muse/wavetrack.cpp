@@ -52,11 +52,13 @@ namespace MusECore {
 WaveTrack::WaveTrack() : AudioTrack(Track::WAVE, 1)
 {
   _prefetchWritePos = ~0;
+  _loop_count = 0;
 }
 
 WaveTrack::WaveTrack(const WaveTrack& wt, int flags) : AudioTrack(wt, flags)
 {
   _prefetchWritePos = ~0;
+  _loop_count = 0;
 
   internal_assign(wt, flags | Track::ASSIGN_PROPERTIES);
 }
@@ -530,21 +532,122 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
   else
   {
     bool ret_val = have_data;
-    unsigned pos;
-    if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &pos))
+    unsigned buf_pos;
+    unsigned buf_size;
+    unsigned buf_split_size;
+    unsigned buf_loop_pos;
+    unsigned buf_loop_count;
+    unsigned buf_jump_loop_count;
+//     if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &buf_pos, &buf_split_size, &buf_loop_pos, &buf_loop_count, &buf_jump_loop_count))
+    if(_prefetchFifo.peek(dstChannels, pf_buf, &buf_pos, &buf_size, &buf_split_size, &buf_loop_pos, &buf_loop_count, &buf_jump_loop_count))
     {
-      fprintf(stderr, "WaveTrack::getData(%s) (prefetch peek A) fifo underrun\n", name().toLocal8Bit().constData());
+      fprintf(stderr, "WaveTrack::getData(%s) framePos:%u (prefetch peek A) fifo underrun\n", name().toLocal8Bit().constData(), framePos);
       return have_data;
     }
 
     //fprintf(stderr, "WaveTrack::getData(%s) (prefetch peek A) pos:%d\n", name().toLocal8Bit().constData(), pos);
 
-    const int64_t frame_pos          = framePos;
-    const int64_t corr_frame_pos     = framePos - i_correction;
-    const int64_t corr_frame_end_pos = framePos - i_correction + nframe;
+    const bool do_loops = MusEGlobal::song->loop() && !MusEGlobal::audio->bounce() && !MusEGlobal::extSyncFlag.value();
+    const unsigned loop_count = MusEGlobal::audio->loopCount();
+    // Grab the real data frame and loop count.
+    const unsigned data_frame = MusEGlobal::audio->dataFrame();
+    const unsigned data_loop_count = MusEGlobal::audio->dataLoopCount();
 
-    // Do we need to RETARD, or ADVANCE, the stream?
-    if(corr_frame_end_pos <= pos)
+    unsigned lin_data_frame = data_frame;
+    unsigned corr_data_frame = data_frame;
+    int64_t i_corr_data_frame = data_frame;
+    unsigned corr_data_loop_count = data_loop_count;
+    unsigned lpos_frame = 0;
+    unsigned rpos_frame = 0;
+    unsigned loop_width = 0;
+    if(do_loops)
+    {
+      // Rpos is always greater than or equal to Lpos.
+      const unsigned lp = MusEGlobal::song->lPos().frame();
+      const unsigned rp = MusEGlobal::song->rPos().frame();
+      loop_width = rp - lp;
+      // It is not possible to have more than one transport relocation per cycle,
+      //  and the relocation notification (sync callback) will take effect in two cycles.
+      // Therefore loops must have a minimum two cycle width.
+      // Limit the loop width. This is good, it relieves us from needing multiple jump points in a buffer.
+      if(loop_width < 2 * MusEGlobal::segmentSize)
+        loop_width = 2 * MusEGlobal::segmentSize;
+
+      lpos_frame = lp;
+      rpos_frame = lpos_frame + loop_width;
+      
+      // 'Unroll' the loop and frame into a linear frame.
+      //MusEGlobal::audio->loop2LinearFrame(data_loop_count, data_frame, lpos_frame, rpos_frame, &corr_data_frame);
+      MusEGlobal::audio->loop2LinearFrame(data_loop_count, data_frame, lpos_frame, rpos_frame, &lin_data_frame);
+      i_corr_data_frame = lin_data_frame;
+    }
+
+//     // Apply latency correction.
+//     if(i_correction > 0 && lin_data_frame > (unsigned)i_correction)
+//       lin_data_frame -= i_correction;
+      
+    i_corr_data_frame -= i_correction;
+
+    // Apply latency correction. If looping, re-roll the new linear frame into a loop count and frame.
+    if(i_corr_data_frame < 0)
+    {
+      corr_data_loop_count = 0;
+    }
+    else if(do_loops)
+    {
+      MusEGlobal::audio->linear2LoopFrame(i_corr_data_frame, lpos_frame, rpos_frame, &corr_data_loop_count, &lin_data_frame);
+      i_corr_data_frame = lin_data_frame;
+    }
+    
+    
+//     // Apply latency correction. If looping, re-roll the new linear frame into a loop count and frame.
+//     if(do_loops && i_correction > 0 && corr_data_frame > (unsigned)i_correction)
+//       MusEGlobal::audio->linear2LoopFrame(corr_data_frame - i_correction, lpos_frame, rpos_frame, &corr_data_loop_count, &corr_data_frame);
+//     else
+//       corr_data_frame = corr_data_frame - i_correction;
+    
+    //const unsigned corr_data_frame_end = corr_data_frame + nframe;
+    const int64_t i_corr_data_frame_end = i_corr_data_frame + nframe;
+    
+    
+    
+//     // Apply latency correction. Easy way out: Use an integer.
+//     int64_t i_corr_data_frame = lin_data_frame - i_correction;
+// 
+//     // If looping, re-roll the new linear frame into a loop count and frame.
+//     if(do_loops && i_corr_data_frame >= 0)
+//       MusEGlobal::audio->linear2LoopFrame(i_corr_data_frame, lpos_frame, rpos_frame, &corr_data_loop_count, &corr_data_frame);
+
+
+    
+//     // Would the result of applying latency correction be less than zero?
+//     if(i_correction >= 0 && (unsigned)i_correction > corr_data_frame)
+//     {
+//       // Allow the stream to RETARD. (That is, let our requested frame catch up to the stream.)
+//       return have_data;
+//     }
+// 
+//     Apply latency correction.
+//     corr_data_frame -= i_correction;
+
+//     // If looping, re-roll the new linear frame into a loop count and frame.
+//     if(do_loops)
+//       MusEGlobal::audio->linear2LoopFrame(corr_data_frame, lpos_frame, rpos_frame, &corr_data_loop_count, &corr_data_frame);
+
+
+    unsigned buf_pos_end = buf_pos + buf_split_size;
+//     unsigned buf_loop_pos_end = buf_loop_pos + MusEGlobal::segmentSize - buf_split_size;
+    unsigned buf_loop_pos_end = buf_loop_pos + buf_size - buf_split_size;
+
+//     if((buf_split_size != 0 && (loop_count < buf_loop_count || corr_data_frame < buf_pos)) ||
+//        (loop_count < buf_jump_loop_count || corr_data_frame < buf_loop_pos))
+//     if((buf_split_size != 0 && (corr_data_loop_count < buf_loop_count || corr_data_frame_end < buf_pos)) ||
+//        (corr_data_loop_count < buf_jump_loop_count || corr_data_frame_end < buf_loop_pos))
+    if((buf_split_size != 0
+         && (corr_data_loop_count < buf_loop_count
+             || (corr_data_loop_count == buf_loop_count && i_corr_data_frame_end <= buf_pos)))
+       && (corr_data_loop_count < buf_jump_loop_count
+           || (corr_data_loop_count == buf_jump_loop_count && i_corr_data_frame_end <= buf_loop_pos)))
     {
       // Allow the stream to RETARD. (That is, let our requested frame catch up to the stream.)
       return have_data;
@@ -552,31 +655,205 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
     else
     {
       // Allow the stream to ADVANCE if necessary. (That is, let the stream catch up to our requested frame.)
-      while(corr_frame_pos >= pos + nframe)
+//       while((buf_split_size != 0 && (loop_count > buf_loop_count || corr_data_frame >= buf_pos_end)) ||
+//             (loop_count > buf_jump_loop_count || corr_data_frame >= buf_loop_pos_end))
+      while((buf_split_size != 0 
+              && (corr_data_loop_count > buf_loop_count
+                  || (corr_data_loop_count > buf_loop_count && i_corr_data_frame >= buf_pos_end)))
+            && (corr_data_loop_count > buf_jump_loop_count
+                || (corr_data_loop_count > buf_jump_loop_count && i_corr_data_frame >= buf_loop_pos_end)))
       {
         // Done with buffer, remove it.
         _prefetchFifo.remove();
 
-        if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &pos))
+//         if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &buf_pos, &buf_split_size, &buf_loop_pos, &buf_loop_count, &buf_jump_loop_count))
+        if(_prefetchFifo.peek(dstChannels, pf_buf, &buf_pos, &buf_size, &buf_split_size, &buf_loop_pos, &buf_loop_count, &buf_jump_loop_count))
         {
-          fprintf(stderr, "WaveTrack::getData(%s) (prefetch peek B) fifo underrun\n", name().toLocal8Bit().constData());
+          fprintf(stderr, "WaveTrack::getData(%s) framePos:%d (prefetch peek B) fifo underrun\n", name().toLocal8Bit().constData(), framePos);
           return have_data;
         }
 
-        if(corr_frame_end_pos <= pos)
+        buf_pos_end = buf_pos + buf_split_size;
+        //buf_loop_pos_end = buf_loop_pos + MusEGlobal::segmentSize - buf_split_size;
+        buf_loop_pos_end = buf_loop_pos + buf_size - buf_split_size;
+
+        // Check again whether to RETARD (which is an error - we were expecting a forward sequence).
+        if((buf_split_size != 0
+             && (corr_data_loop_count < buf_loop_count
+                 || (corr_data_loop_count == buf_loop_count && i_corr_data_frame_end <= buf_pos)))
+           && (corr_data_loop_count < buf_jump_loop_count
+               || (corr_data_loop_count == buf_jump_loop_count && i_corr_data_frame_end <= buf_loop_pos)))
         {
           if(MusEGlobal::debugMsg)
-            fprintf(stderr, "fifo get(%s) (A) error expected %ld, got %d\n", name().toLocal8Bit().constData(), frame_pos, pos);
+            fprintf(stderr, "fifo get(%s) (A) error expected %d, got %u\n", name().toLocal8Bit().constData(), framePos, buf_pos);
           return have_data;
         }
       }
     }
+    
+    unsigned buf1_pos;
+    //if(buf_split_size != 0 && loop_count == buf_loop_count && corr_data_frame >= buf_pos && corr_data_frame < buf_pos_end)
+    if(buf_split_size != 0 && corr_data_loop_count == buf_loop_count
+      && i_corr_data_frame_end > buf_pos && i_corr_data_frame_end <= buf_pos_end)
+    {
+      //buf1_pos = corr_data_frame - buf_pos;
+      buf1_pos = i_corr_data_frame - buf_pos;
+    }
+    else //if(loop_count == buf_jump_loop_count && corr_data_frame >= buf_loop_pos && corr_data_frame < buf_loop_pos_end)
+    {
+      //buf1_pos = corr_data_frame - buf_loop_pos + buf_split_size;
+      buf1_pos = i_corr_data_frame - buf_loop_pos + buf_split_size;
+    }
 
-    if(corr_frame_pos <= pos)
+    
+    // This will always be at least 1, ie. corr_frame_pos > pos.
+    //const unsigned buf1_pos = corr_frame_pos - buf_pos;
+    const unsigned buf1_frames = nframe - buf1_pos;
+    const unsigned buf2_pos = buf1_frames;
+    const unsigned buf2_frames = buf1_pos;
+    if(!isMute())
+    {
+      if(do_overwrite)
+      {
+        for(int i = 0; i < dstChannels; ++i)
+          AL::dsp->cpy(bp[i], pf_buf[i] + buf1_pos, buf1_frames, MusEGlobal::config.useDenormalBias);
+      }
+      else
+      {
+        for(int i = 0; i < dstChannels; ++i)
+          AL::dsp->mix(bp[i], pf_buf[i] + buf1_pos, buf1_frames);
+      }
+    }
+
+    // Done with buffer, remove it.
+    _prefetchFifo.remove();
+
+    // We are expecting the next buffer.
+//       const unsigned expect_nextpos = pos + nframe;
+    unsigned expect_nextpos = buf_pos + nframe;
+
+    // Check if at or beyond loop end.
+    if(do_loops && expect_nextpos >= rpos_frame)
+    {
+      // Rpos is always greater than or equal to Lpos.
+      const unsigned loop_width = rpos_frame - lpos_frame;
+      const unsigned cf_width = expect_nextpos - lpos_frame;
+      // Wrap around using modulo.
+      const unsigned fin_width = cf_width % loop_width;
+      // Adjust requested frame to left position plus remainder.
+      expect_nextpos = lpos_frame + fin_width;
+    }
+  
+    // Peek the next buffer but do not remove it,
+    //  since the rest of it will be required next cycle.
+    if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &buf_pos))
+    {
+      fprintf(stderr, "WaveTrack::getData(%s) frame_pos:%ld (prefetch peek C) fifo underrun\n",
+              name().toLocal8Bit().constData(), frame_pos);
+      return have_data;
+    }
+    
+    if(buf_pos != expect_nextpos)
+    {
+      if(MusEGlobal::debugMsg)
+        fprintf(stderr, "fifo get(%s) frame_pos:%ld (B) error expected %u, got %u\n",
+                name().toLocal8Bit().constData(), frame_pos, expect_nextpos, buf_pos);
+      return have_data;
+    }
+
+    if(!isMute())
+    {
+      if(do_overwrite)
+      {
+        for(int i = 0; i < dstChannels; ++i)
+          AL::dsp->cpy(bp[i] + buf2_pos, pf_buf[i], buf2_frames, MusEGlobal::config.useDenormalBias);
+      }
+      else
+      {
+        for(int i = 0; i < dstChannels; ++i)
+          AL::dsp->mix(bp[i] + buf2_pos, pf_buf[i], buf2_frames);
+      }
+      // We have data.
+      ret_val = true;
+    }        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    //const unsigned n = rpos_frame - corr_data_frame;
+
+//     const int64_t frame_pos = framePos;
+//     // REMOVE Tim. latency. Changed.
+//     // const int64_t corr_frame_pos = framePos - i_correction;
+//     // const int64_t corr_frame_end_pos = framePos - i_correction + nframe;
+//     int64_t corr_frame_pos = framePos - i_correction;
+
+    
+    
+    
+    
+//     // Check if at or beyond loop end.
+//     if(do_loops && corr_frame_pos >= rpos_frame)
+//     {
+// //       // Rpos is always greater than or equal to Lpos.
+// //       const unsigned loop_width = rpos_frame - lpos_frame;
+//       const unsigned cf_width = corr_frame_pos - lpos_frame;
+//       // Wrap around using modulo.
+//       const unsigned fin_width = cf_width % loop_width;
+//       // Adjust requested frame to left position plus remainder.
+//       corr_frame_pos = lpos_frame + fin_width;
+//     }
+
+//     const int64_t corr_frame_end_pos = corr_frame_pos + nframe;
+
+//     //----------------------------------------------
+//     // Do we need to RETARD, or ADVANCE, the stream?
+//     //----------------------------------------------
+// 
+//     if(corr_frame_end_pos <= buf_pos)
+//     {
+//       // Allow the stream to RETARD. (That is, let our requested frame catch up to the stream.)
+//       return have_data;
+//     }
+//     else
+//     {
+//       // Allow the stream to ADVANCE if necessary. (That is, let the stream catch up to our requested frame.)
+//       while(corr_frame_pos >= buf_pos + nframe)
+//       {
+//         // Done with buffer, remove it.
+//         _prefetchFifo.remove();
+// 
+//         if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &buf_pos))
+//         {
+//           fprintf(stderr, "WaveTrack::getData(%s) frame_pos:%ld (prefetch peek B) fifo underrun\n", name().toLocal8Bit().constData(), frame_pos);
+//           return have_data;
+//         }
+// 
+//         if(corr_frame_end_pos <= buf_pos)
+//         {
+//           if(MusEGlobal::debugMsg)
+//             fprintf(stderr, "fifo get(%s) (A) error expected %ld, got %u\n", name().toLocal8Bit().constData(), frame_pos, buf_pos);
+//           return have_data;
+//         }
+//       }
+//     }
+
+    //----------------------------------------------
+    // Mix the signals
+    //----------------------------------------------
+
+    if(corr_frame_pos <= buf_pos)
     {
       if(!isMute())
       {
-        const unsigned blanks = pos - corr_frame_pos;
+        const unsigned blanks = buf_pos - corr_frame_pos;
         const unsigned buf2_frames = nframe - blanks;
         if(do_overwrite)
         {
@@ -597,7 +874,7 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
         ret_val = true;
       }
       // If the entire buffer was used, we are done with it.
-      if(corr_frame_pos == pos)
+      if(corr_frame_pos == buf_pos)
       {
         // Done with buffer, remove it.
         _prefetchFifo.remove();
@@ -606,7 +883,7 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
     else
     {
       // This will always be at least 1, ie. corr_frame_pos > pos.
-      const unsigned buf1_pos = corr_frame_pos - pos;
+      const unsigned buf1_pos = corr_frame_pos - buf_pos;
       const unsigned buf1_frames = nframe - buf1_pos;
       const unsigned buf2_pos = buf1_frames;
       const unsigned buf2_frames = buf1_pos;
@@ -628,20 +905,35 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
       _prefetchFifo.remove();
 
       // We are expecting the next buffer.
-      const unsigned expect_nextpos = pos + nframe;
+//       const unsigned expect_nextpos = pos + nframe;
+      unsigned expect_nextpos = buf_pos + nframe;
 
+      // Check if at or beyond loop end.
+      if(do_loops && expect_nextpos >= rpos_frame)
+      {
+        // Rpos is always greater than or equal to Lpos.
+        const unsigned loop_width = rpos_frame - lpos_frame;
+        const unsigned cf_width = expect_nextpos - lpos_frame;
+        // Wrap around using modulo.
+        const unsigned fin_width = cf_width % loop_width;
+        // Adjust requested frame to left position plus remainder.
+        expect_nextpos = lpos_frame + fin_width;
+      }
+    
       // Peek the next buffer but do not remove it,
       //  since the rest of it will be required next cycle.
-      if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &pos))
+      if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &buf_pos))
       {
-        fprintf(stderr, "WaveTrack::getData(%s) (prefetch peek C) fifo underrun\n", name().toLocal8Bit().constData());
+        fprintf(stderr, "WaveTrack::getData(%s) frame_pos:%ld (prefetch peek C) fifo underrun\n",
+                name().toLocal8Bit().constData(), frame_pos);
         return have_data;
       }
       
-      if(pos != expect_nextpos)
+      if(buf_pos != expect_nextpos)
       {
         if(MusEGlobal::debugMsg)
-          fprintf(stderr, "fifo get(%s) (B) error expected %u, got %u\n", name().toLocal8Bit().constData(), expect_nextpos, pos);
+          fprintf(stderr, "fifo get(%s) frame_pos:%ld (B) error expected %u, got %u\n",
+                  name().toLocal8Bit().constData(), frame_pos, expect_nextpos, buf_pos);
         return have_data;
       }
 

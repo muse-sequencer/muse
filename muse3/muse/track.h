@@ -957,6 +957,8 @@ class WaveTrack : public AudioTrack {
       //  the prefetch can pump as much buffers as required while
       //  keeping track of the last buffer position stamp.
       unsigned _prefetchWritePos;
+      // If we are looping, this holds how many loops have occured so far.
+      unsigned _loop_count;
       static bool _isVisible;
 
       void internal_assign(const Track&, int flags);
@@ -998,6 +1000,8 @@ class WaveTrack : public AudioTrack {
       // For prefetch thread use only.
       inline unsigned prefetchWritePos() const { return _prefetchWritePos; }
       inline void setPrefetchWritePos(unsigned p) { _prefetchWritePos = p; }
+      inline unsigned loopCount() const { return _loop_count; }
+      inline void setLoopCount(unsigned p) { _loop_count = p; }
 
       virtual void setChannels(int n);
       virtual bool hasAuxSend() const { return true; }

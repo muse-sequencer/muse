@@ -1838,7 +1838,7 @@ void AudioTrack::record()
       const bool use_latency_corr = useLatencyCorrection();
       float* buffer[_channels];
       while(fifo.getCount()) {
-            if (fifo.get(_channels, MusEGlobal::segmentSize, buffer, &pos, &latency)) {
+            if (fifo.get(_channels, MusEGlobal::segmentSize, buffer, &pos, nullptr, nullptr, &latency)) {
                   fprintf(stderr, "AudioTrack::record(): empty fifo\n");
                   return;
                   }
@@ -2242,6 +2242,10 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos, float
       b->size = samples;
       b->segs = segs;
       b->pos  = pos;
+      b->split_size = 0;
+      b->jump_pos = pos;
+      b->loop_count = 0;
+      b->jump_loop_count = 0;
       b->latency = latency;
       for (int i = 0; i < segs; ++i)
             AL::dsp->cpy(b->buffer + i * samples, src[i], samples);
@@ -2254,10 +2258,18 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos, float
 //    return true if fifo empty
 //---------------------------------------------------------
 
-bool Fifo::peek(int segs, unsigned long samples, float** dst, unsigned* pos, float* latency) //const
+// REMOVE Tim. latency. Changed.
+// bool Fifo::peek(int segs, unsigned long samples, float** dst,
+//                 unsigned* pos, unsigned* split_size, unsigned* jump_pos,
+//                 unsigned* loop_count, unsigned* jump_loop_count, float* latency) //const
+bool Fifo::peek(int segs, float** dst, unsigned* pos, unsigned* samples,
+                unsigned* split_size, unsigned* jump_pos,
+                unsigned* loop_count, unsigned* jump_loop_count, float* latency) //const
       {
       #ifdef FIFO_DEBUG
-      fprintf(stderr, "FIFO::peek/get segs:%d samples:%lu count:%d\n", segs, samples, muse_atomic_read(&count));
+// REMOVE Tim. latency. Changed.
+//       fprintf(stderr, "FIFO::peek/get segs:%d samples:%lu count:%d\n", segs, samples, muse_atomic_read(&count));
+      fprintf(stderr, "FIFO::peek/get segs:%d count:%d\n", segs, muse_atomic_read(&count));
       #endif
 
       // Non-const peek required because of this.
@@ -2268,17 +2280,29 @@ bool Fifo::peek(int segs, unsigned long samples, float** dst, unsigned* pos, flo
       FifoBuffer* b = buffer[ridx];
       if(!b->buffer)
       {
-        fprintf(stderr, "Fifo::peek/get no buffer! segs:%d samples:%lu b->pos:%u\n", segs, samples, b->pos);
+//         fprintf(stderr, "Fifo::peek/get no buffer! segs:%d samples:%lu b->pos:%u\n", segs, samples, b->pos);
+        fprintf(stderr, "Fifo::peek/get no buffer! segs:%d b->pos:%u\n", segs, b->pos);
         return true;
       }
 
       if (pos)
             *pos = b->pos;
+      if (samples)
+            *samples = b->size;
+      if (split_size)
+            *pos = b->split_size;
+      if (jump_pos)
+            *jump_pos = b->jump_pos;
+      if (loop_count)
+            *loop_count = b->loop_count;
+      if (jump_loop_count)
+            *pos = b->jump_loop_count;
       if (latency)
             *latency = b->latency;
 
       for (int i = 0; i < segs; ++i)
-            dst[i] = b->buffer + samples * (i % b->segs);
+//             dst[i] = b->buffer + samples * (i % b->segs);
+            dst[i] = b->buffer + b->size * (i % b->segs);
       return false;
       }
 
@@ -2287,9 +2311,16 @@ bool Fifo::peek(int segs, unsigned long samples, float** dst, unsigned* pos, flo
 //    return true if fifo empty
 //---------------------------------------------------------
 
-bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos, float* latency)
+// REMOVE Tim. latency. Changed.
+// bool Fifo::get(int segs, unsigned long samples, float** dst,
+//                unsigned* pos, unsigned* split_size, unsigned* jump_pos,
+//                unsigned* loop_count, unsigned* jump_loop_count, float* latency)
+bool Fifo::get(int segs, float** dst, unsigned* pos, unsigned* samples,
+               unsigned* split_size, unsigned* jump_pos,
+               unsigned* loop_count, unsigned* jump_loop_count, float* latency)
       {
-      if(peek(segs, samples, dst, pos, latency))
+//       if(peek(segs, samples, dst, pos, split_size, jump_pos, loop_count, jump_loop_count, latency))
+      if(peek(segs, dst, pos, samples, split_size, jump_pos, loop_count, jump_loop_count, latency))
         return true;
       remove();
       return false;
@@ -2330,7 +2361,8 @@ void Fifo::remove()
 //   getWriteBuffer
 //---------------------------------------------------------
 
-bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned pos)
+bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned pos,
+                          unsigned split_size, unsigned jump_pos, unsigned loop_count, unsigned jump_loop_count)
       {
       #ifdef FIFO_DEBUG
       fprintf(stderr, "Fifo::getWriteBuffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
@@ -2368,6 +2400,11 @@ bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned
       b->size = samples;
       b->segs = segs;
       b->pos  = pos;
+      b->split_size = split_size;
+      b->jump_pos = jump_pos;
+      b->loop_count = loop_count;
+      b->jump_loop_count = jump_loop_count;
+      b->latency = 0.0f;
       return false;
       }
 

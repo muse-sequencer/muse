@@ -24,6 +24,7 @@
 
 #include "muse_math.h"
 #include <errno.h>
+#include <cstdint>
 
 #include "song.h"
 #include "midi.h"
@@ -1270,8 +1271,9 @@ unsigned int Audio::extClockHistoryFrame2Tick(unsigned int frame) const
 //    collect events for next audio segment
 //---------------------------------------------------------
 
-void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
-                          unsigned int nts, unsigned int frames, unsigned int latency_offset)
+void Audio::collectEvents(MusECore::MidiTrack* track, const unsigned int sync_frame,
+                          const unsigned int start_tick, const unsigned int end_tick,
+                          const unsigned int frame_pos, const unsigned int frames, const unsigned int latency_offset)
       {
       DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: cts:%u nts:%u\n", cts, nts);
       const bool extsync = MusEGlobal::extSyncFlag.value();
@@ -1279,8 +1281,8 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
       // If external sync is not on, we can take advantage of frame accuracy but
       //  first we must allow the next tick position to be included in the search
       //  even if it is equal to the current tick position.
-      if((extsync && cts >= nts) ||
-         (!extsync && cts > nts))
+      if((extsync && start_tick >= end_tick) ||
+         (!extsync && start_tick > end_tick))
         return;
         
       int port    = track->outPort();
@@ -1289,8 +1291,11 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
       MidiPort* mp = &MusEGlobal::midiPorts[port];
       MidiDevice* md = mp->device();
 
-      const unsigned int pos_fr = _pos.frame() + latency_offset;
+      const unsigned int pos_fr = frame_pos + latency_offset;
       const unsigned int next_pos_fr = pos_fr + frames;
+// REMOVE Tim. latency. Added.
+//       const unsigned int jump_pos_fr = jump_pos + latency_offset;
+//       const unsigned int jump_next_pos_fr = jump_pos_fr + jump_frames;
       
       DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: pos_fr:%u next_pos_fr:%u\n", pos_fr, next_pos_fr);
       
@@ -1304,10 +1309,10 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
             unsigned partTick = part->tick();
             unsigned partLen  = part->lenTick();
             unsigned offset = delay + partTick;
-            if (offset > nts)
+            if (offset > end_tick)
                   continue;
-            unsigned stick = (offset > cts) ? 0 : cts - offset;
-            unsigned etick = nts - offset;
+            unsigned stick = (offset > start_tick) ? 0 : start_tick - offset;
+            unsigned etick = end_tick - offset;
             // Do not play events which are past the end of this part.
             if(etick > partLen)
               continue;
@@ -1379,7 +1384,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
                     }
                     
                     frame = fr - pos_fr;
-                    frame += syncFrame;
+                    frame += sync_frame;
                   }
                   
                   DEBUG_MIDI(stderr, "Audio::collectEvents: event: tick:%u final frame:%u\n", tick, frame);
@@ -1577,8 +1582,20 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
 //      executed in audio thread
 //---------------------------------------------------------
 
-void Audio::processMidi(unsigned int frames)
+void Audio::processMidi(const unsigned int sync_frame,
+                        const unsigned int cur_tick_pos, const unsigned int next_tick_pos,
+                        const unsigned int frame_pos, const unsigned int frames,
+                        const unsigned int jump_cur_tick_pos, const unsigned int jump_next_tick_pos,
+                        const unsigned int jump_pos, const unsigned int jump_frames)
       {
+      const bool do_jump = jump_frames > 0;
+      const std::int64_t frames_64 = frames;
+      std::int64_t jump_pos_64 = jump_pos;
+      const unsigned int total_frames = frames + jump_frames;
+//       const std::int64_t total_frames_64 = frames + jump_frames;
+      const unsigned int next_frame_pos = frame_pos + frames;
+      //const unsigned int next_jump_pos = next_frame_pos + jump_frames;
+//       const unsigned int next_jump_pos = jump_pos + jump_frames;
       const bool extsync = MusEGlobal::extSyncFlag.value();
       const bool playing = isPlaying();
 
@@ -1587,65 +1604,67 @@ void Audio::processMidi(unsigned int frames)
         MidiDevice* md = *id;
         int port = md->midiPort(); // Port should be same as event.port() from this device. Same idea event.channel().
 
-        // Process events sent by synthesizers (which in turn may have been passed by their GUI -> synth FIFOs).
-        // Receive events sent from a synth's gui thread (which might be different than our gui thread) to the audio thread.
-        if(md->isSynti())
-        {
-          SynthI* s = (SynthI*)md;
-          while (s->eventsPending())
-          {
-            MidiRecordEvent ev = s->receiveEvent();
-            // FIXME: This is for recording the events sent by GUI.
-            //        It never gets a chance to be processed since reading of
-            //         record FIFOs is done only by connected input ROUTES, below.
-            //        To be useful, the synth itself must be allowed to be chosen
-            //         as an input route, which is simple enough, but we currently don't
-            //         list synths as inputs for fear of too many INCOMPATIBLE messages
-            //         from DIFFERING synths. However, we could allow ONLY THIS synth
-            //         to be listed and therefore be automatically connected too, if desired.
-            //md->recordEvent(ev);
-            //
-            // For now, instead of recording, here is the minimum that we must do:
+// REMOVE Tim. latency. Removed. Moved into process0().
+//         // Process events sent by synthesizers (which in turn may have been passed by their GUI -> synth FIFOs).
+//         // Receive events sent from a synth's gui thread (which might be different than our gui thread) to the audio thread.
+//         if(md->isSynti())
+//         {
+//           SynthI* s = (SynthI*)md;
+//           while (s->eventsPending())
+//           {
+//             MidiRecordEvent ev = s->receiveEvent();
+//             // FIXME: This is for recording the events sent by GUI.
+//             //        It never gets a chance to be processed since reading of
+//             //         record FIFOs is done only by connected input ROUTES, below.
+//             //        To be useful, the synth itself must be allowed to be chosen
+//             //         as an input route, which is simple enough, but we currently don't
+//             //         list synths as inputs for fear of too many INCOMPATIBLE messages
+//             //         from DIFFERING synths. However, we could allow ONLY THIS synth
+//             //         to be listed and therefore be automatically connected too, if desired.
+//             //md->recordEvent(ev);
+//             //
+//             // For now, instead of recording, here is the minimum that we must do:
+// 
+//             // Intercept any special MusE system sysex messages. (This IS the system right here.)
+//             bool intercepted = false;
+//             const int type = ev.type();
+//             switch(type)
+//             {
+//               case ME_SYSEX:
+//               {
+//                 const unsigned char* p = ev.data();
+//                 int n = ev.len();
+//                 if(n >= 3)
+//                 {
+//                   if(p[0] == MUSE_SYNTH_SYSEX_MFG_ID)
+//                   {
+//                     if(p[1] == MUSE_SYSEX_SYSTEM_ID && p[2] == MUSE_SYSEX_SYSTEM_UPDATE_DRUM_MAPS_ID)
+//                     {
+//                       intercepted = true;
+//                       if(port >= 0 && port < MusECore::MIDI_PORTS)
+//                         MusEGlobal::midiPorts[port].updateDrumMaps();
+//                     }
+//                   }
+//                 }
+//               }
+//               break;
+// 
+//               default:
+//               break;
+//             }
+// 
+//             // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
+//             // Same code as in MidiPort::sendEvent()
+//             if(!intercepted && port != -1)
+//               // This is the audio thread. Just set directly.
+//               MusEGlobal::midiPorts[port].setHwCtrlState(MidiPlayEvent(ev));
+//           }
+//         }
 
-            // Intercept any special MusE system sysex messages. (This IS the system right here.)
-            bool intercepted = false;
-            const int type = ev.type();
-            switch(type)
-            {
-              case ME_SYSEX:
-              {
-                const unsigned char* p = ev.data();
-                int n = ev.len();
-                if(n >= 3)
-                {
-                  if(p[0] == MUSE_SYNTH_SYSEX_MFG_ID)
-                  {
-                    if(p[1] == MUSE_SYSEX_SYSTEM_ID && p[2] == MUSE_SYSEX_SYSTEM_UPDATE_DRUM_MAPS_ID)
-                    {
-                      intercepted = true;
-                      if(port >= 0 && port < MusECore::MIDI_PORTS)
-                        MusEGlobal::midiPorts[port].updateDrumMaps();
-                    }
-                  }
-                }
-              }
-              break;
-
-              default:
-              break;
-            }
-
-            // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
-            // Same code as in MidiPort::sendEvent()
-            if(!intercepted && port != -1)
-              // This is the audio thread. Just set directly.
-              MusEGlobal::midiPorts[port].setHwCtrlState(MidiPlayEvent(ev));
-          }
-        }
-
-        // Take snapshots of the current sizes of the recording fifos,
-        //  because they may change while here in process, asynchronously.
-        md->beforeProcess();
+// REMOVE Tim. latency. Removed. Moved into Audio::process().
+//         // Take snapshots of the current sizes of the recording fifos,
+//         //  because they may change while here in process, asynchronously.
+//         md->beforeProcess();
 
         //
         // --------- Handle midi events for audio tracks -----------
@@ -1661,7 +1680,6 @@ void Audio::processMidi(unsigned int frames)
           for(int i = 0; i < count; ++i)
           {
             const MusECore::MidiRecordEvent& event(rf.peek(i));
-
             int etype = event.type();
             if(etype == MusECore::ME_CONTROLLER || etype == MusECore::ME_PITCHBEND || etype == MusECore::ME_PROGRAM)
             {
@@ -1687,12 +1705,55 @@ void Audio::processMidi(unsigned int frames)
               MusEGlobal::midiLearnChan = chan;
               MusEGlobal::midiLearnCtrl = ctl;
 
-              // Send to audio tracks...
-              for (MusECore::iTrack t = MusEGlobal::song->tracks()->begin(); t != MusEGlobal::song->tracks()->end(); ++t)
+// REMOVE Tim. latency. Changed.
+//               // Time here needs to be frames always.
+//               const unsigned int ev_t = event.time();
+//               unsigned int t = ev_t;
+//               if(frame_pos > t)  // Technically that's an error, shouldn't happen
+//                 t = 0;
+//               else
+//                 // Subtract the current audio position frame
+//                 t -= frame_pos;
+// 
+//               // Add the current running sync frame to make the control processing happy
+//               t += sync_frame;
+
+              // Time here needs to be frames always.
+              const unsigned int ev_t = event.time();
+
+              // For the automation record time, if stopped we don't want the circular running position,
+              //  just the static one.
+              // FIXME: Don't think 'ev_t' is right. How can it be? TEST TEST. 
+              unsigned int rec_t = playing ? ev_t : frame_pos;
+
+              std::int64_t t = ev_t - sync_frame;
+              if(!do_jump || t < frames_64)
               {
-                if((*t)->isMidiTrack())
+                // Subtract the current audio position frame
+                t -= frame_pos;
+              }
+              else
+              {
+                t = t - frames_64 - jump_pos_64;
+                rec_t = playing ? ev_t : jump_pos;
+              }
+
+              if(t < 0)
+                t = 0;
+              
+              // Add the current running sync frame to make the control processing happy
+              t += sync_frame;
+
+//               // For the automation record time, if stopped we don't want the circular running position,
+//               //  just the static one.
+//               const unsigned int rec_t = playing ? ev_t : frame_pos;
+
+              // Send to audio tracks...
+              for (MusECore::iTrack it = MusEGlobal::song->tracks()->begin(); it != MusEGlobal::song->tracks()->end(); ++it)
+              {
+                if((*it)->isMidiTrack())
                   continue;
-                MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*t);
+                MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*it);
                 MidiAudioCtrlMap* macm = track->controller()->midiControls();
                 int h = macm->index_hash(port, chan, ctl);
                 std::pair<ciMidiAudioCtrlMap, ciMidiAudioCtrlMap> range = macm->equal_range(h);
@@ -1707,30 +1768,36 @@ void Audio::processMidi(unsigned int frames)
                   CtrlList* cl = icl->second;
                   double dval = midi2AudioCtrlValue(cl, macs, ctl, val);
 
-                  // Time here needs to be frames always.
-                  unsigned int ev_t = event.time();
-                  unsigned int t = ev_t;
+// REMOVE Tim. latency. Removed.
+//                   // Time here needs to be frames always.
+//                   unsigned int ev_t = event.time();
+//                   unsigned int t = ev_t;
 
-#ifdef _AUDIO_USE_TRUE_FRAME_
-                  unsigned int pframe = _previousPos.frame();
-#else
-                  unsigned int pframe = _pos.frame();
-#endif
-                  if(pframe > t)  // Technically that's an error, shouldn't happen
-                    t = 0;
-                  else
-                    // Subtract the current audio position frame
-                    t -= pframe;
-
-                  // Add the current running sync frame to make the control processing happy
-                  t += syncFrame;
+// REMOVE Tim. latency. Removed.
+// // REMOVE Tim. latency. Removed.
+// // #ifdef _AUDIO_USE_TRUE_FRAME_
+// //                   unsigned int pframe = _previousPos.frame();
+// // #else
+// // REMOVE Tim. latency. Changed.
+// //                   unsigned int pframe = _pos.frame();
+//                   unsigned int pframe = frame_pos;
+// // #endif
+//                   if(pframe > t)  // Technically that's an error, shouldn't happen
+//                     t = 0;
+//                   else
+//                     // Subtract the current audio position frame
+//                     t -= pframe;
+// 
+//                   // Add the current running sync frame to make the control processing happy
+//                   t += sync_frame;
                   track->addScheduledControlEvent(actrl, dval, t);
 
                   // Rec automation...
 
-                  // For the record time, if stopped we don't want the circular running position,
-                  //  just the static one.
-                  unsigned int rec_t = playing ? ev_t : pframe;
+// REMOVE Tim. latency. Removed.
+//                   // For the record time, if stopped we don't want the circular running position,
+//                   //  just the static one.
+//                   const unsigned int rec_t = playing ? ev_t : frame_pos;
 
                   if(!MusEGlobal::automation)
                     continue;
@@ -1780,8 +1847,10 @@ void Audio::processMidi(unsigned int frames)
               if(playing)
               {
                 unsigned int lat_offset = 0;
-                unsigned int cur_tick = curTickPos;
-                unsigned int next_tick = nextTickPos;
+                unsigned int cur_tick = cur_tick_pos;
+                unsigned int next_tick = next_tick_pos;
+                unsigned int jump_cur_tick = jump_cur_tick_pos;
+                unsigned int jump_next_tick = jump_next_tick_pos;
 
                 //--------------------------------------------------------------------
                 // Account for the midi track's latency correction and/or compensation.
@@ -1801,14 +1870,29 @@ void Audio::processMidi(unsigned int frames)
                   }
                   if(lat_offset != 0)
                   {
-                    Pos ppp(_pos.frame() + lat_offset, false);
+// REMOVE Tim. latency. Changed.
+//                     Pos ppp(_pos.frame() + lat_offset, false);
+                    Pos ppp(frame_pos + lat_offset, false);
                     cur_tick = ppp.tick();
+//                     ppp += total_frames;
                     ppp += frames;
                     next_tick = ppp.tick();
+
+                    if(do_jump)
+                    {
+                      // FIXME: lat_offset does not change at frame rate, only cycle rate.
+                      //        ie. lat_offset can only change at cycle boundaries.
+                      Pos jppp(jump_pos + lat_offset, false);
+                      jppp += jump_frames;
+                      jump_next_tick = jppp.tick();
+                    }
                   }
                 }
 
-                collectEvents(track, cur_tick, next_tick, frames, lat_offset);
+                collectEvents(track, sync_frame, cur_tick, next_tick, frame_pos, frames, lat_offset);
+
+                if(do_jump && !extsync)
+                  collectEvents(track, sync_frame, jump_cur_tick, jump_next_tick, jump_pos, jump_frames, lat_offset);
               }
             }
 
@@ -1877,21 +1961,22 @@ void Audio::processMidi(unsigned int frames)
                                 {
                                   // All recorded events arrived in the previous period. Shift into this period for playback.
                                   unsigned int et = event.time();
-  #ifdef _AUDIO_USE_TRUE_FRAME_
-                                  unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
-  #else
+// REMOVE Tim. latency. Removed.
+//   #ifdef _AUDIO_USE_TRUE_FRAME_
+//                                   unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
+//   #else
                                   // The events arrived in the previous period. Shift into this period for playback.
                                   // The events are already biased with the last frame time.
                                   unsigned int t = et + MusEGlobal::segmentSize;
                                   // Protection from slight errors in estimated frame time.
-                                  if(t >= (syncFrame + MusEGlobal::segmentSize))
+                                  if(t >= (sync_frame + MusEGlobal::segmentSize))
                                   {
-                                    DEBUG_MIDI(stderr, "Error: Audio::processMidi(): sysex: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
-                                            t, syncFrame, MusEGlobal::segmentSize, syncFrame + MusEGlobal::segmentSize);
+                                    DEBUG_MIDI(stderr, "Error: Audio::processMidi(): sysex: t:%u >= sync_frame:%u + segmentSize:%u (==%u)\n", 
+                                            t, sync_frame, MusEGlobal::segmentSize, sync_frame + MusEGlobal::segmentSize);
                                     
-                                    t = syncFrame + (MusEGlobal::segmentSize - 1);
+                                    t = sync_frame + (MusEGlobal::segmentSize - 1);
                                   }
-  #endif
+//   #endif
                                   event.setTime(t);
                                   md->putEvent(event, MidiDevice::NotLate);
                                   event.setTime(et);  // Restore for recording.
@@ -1911,24 +1996,38 @@ void Audio::processMidi(unsigned int frames)
                               else
                               {
                                 // All recorded events arrived in the previous period. Shift into this period for record.
-#ifdef _AUDIO_USE_TRUE_FRAME_
-                                unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
-#else
+// REMOVE Tim. latency. Removed.
+// #ifdef _AUDIO_USE_TRUE_FRAME_
+//                                 unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
+// #else
                                 unsigned int t = et + MusEGlobal::segmentSize;
                                 // Protection from slight errors in estimated frame time.
-                                if(t >= (syncFrame + MusEGlobal::segmentSize))
+                                if(t >= (sync_frame + MusEGlobal::segmentSize))
                                 {
-                                  DEBUG_MIDI(stderr, "Error: Audio::processMidi(): record sysex: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
-                                          t, syncFrame, MusEGlobal::segmentSize, syncFrame + MusEGlobal::segmentSize);
+                                  DEBUG_MIDI(stderr, "Error: Audio::processMidi(): record sysex: t:%u >= sync_frame:%u + segmentSize:%u (==%u)\n", 
+                                          t, sync_frame, MusEGlobal::segmentSize, sync_frame + MusEGlobal::segmentSize);
                                   
-                                  t = syncFrame + (MusEGlobal::segmentSize - 1);
+                                  t = sync_frame + (MusEGlobal::segmentSize - 1);
                                 }
-#endif
+// #endif
                                 // Be sure to allow for some (very) late events, such as
                                 //  the first chunk's time in a multi-chunk sysex.
-                                const unsigned int a_fr = pos().frame() + t;
-                                const unsigned int fin_fr = syncFrame > a_fr ? 0 : a_fr - syncFrame;
-                                event.setTime(MusEGlobal::tempomap.frame2tick(fin_fr));
+// REMOVE Tim. latency. Changed.
+//                                 const unsigned int a_fr = pos().frame() + t;
+//                                 // The same as saying fin_fr = (lim->0) ((t - sync_frame) + frame_pos).
+//                                 const unsigned int a_fr = frame_pos + t;
+//                                 const unsigned int fin_fr = sync_frame > a_fr ? 0 : a_fr - sync_frame;
+//                                 event.setTime(MusEGlobal::tempomap.frame2tick(fin_fr));
+                                
+                                std::int64_t a_fr = t - sync_frame;
+                                if(!do_jump || a_fr < frames_64)
+                                  a_fr += frame_pos;
+                                else
+                                  a_fr = a_fr - frames_64 + jump_pos_64;
+
+                                if(a_fr < 0)
+                                  a_fr = 0;
+                                event.setTime(MusEGlobal::tempomap.frame2tick(a_fr));
                               }
 
                               // Is the transport recording, or, is it about to be from external sync?
@@ -2105,21 +2204,22 @@ void Audio::processMidi(unsigned int frames)
                                   // All recorded events arrived in previous period. Shift into this period for playback.
                                   //  frameoffset needed to make process happy.
                                   unsigned int et = event.time();
-#ifdef _AUDIO_USE_TRUE_FRAME_
-                                  unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
-#else
+// REMOVE Tim. latency. Removed.
+// #ifdef _AUDIO_USE_TRUE_FRAME_
+//                                   unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
+// #else
                                   // The events arrived in the previous period. Shift into this period for playback.
                                   // The events are already biased with the last frame time.
                                   unsigned int t = et + MusEGlobal::segmentSize;
                                   // Protection from slight errors in estimated frame time.
-                                  if(t >= (syncFrame + MusEGlobal::segmentSize))
+                                  if(t >= (sync_frame + MusEGlobal::segmentSize))
                                   {
-                                    DEBUG_MIDI(stderr, "Error: Audio::processMidi(): event: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
-                                            t, syncFrame, MusEGlobal::segmentSize, syncFrame + MusEGlobal::segmentSize);
+                                    DEBUG_MIDI(stderr, "Error: Audio::processMidi(): event: t:%u >= sync_frame:%u + segmentSize:%u (==%u)\n", 
+                                            t, sync_frame, MusEGlobal::segmentSize, sync_frame + MusEGlobal::segmentSize);
                                     
-                                    t = syncFrame + (MusEGlobal::segmentSize - 1);
+                                    t = sync_frame + (MusEGlobal::segmentSize - 1);
                                   }
-#endif
+// #endif
                                   event.setTime(t);
                                   // Check if we're outputting to another port than default:
                                   if (devport == defaultPort) {
@@ -2267,9 +2367,10 @@ void Audio::processMidi(unsigned int frames)
                                     {
                                       // REMOVE Tim. latency. Removed. Oops, with ALSA this adds undesired shift forward!
 //                                       // All recorded events arrived in the previous period. Shift into this period for record.
-      #ifdef _AUDIO_USE_TRUE_FRAME_
-                                      unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
-      #else
+// REMOVE Tim. latency. Removed.
+//       #ifdef _AUDIO_USE_TRUE_FRAME_
+//                                       unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
+//       #else
 
                                       // REMOVE Tim. latency. Changed. Oops, with ALSA this adds undesired shift forward!
                                       // And with Jack midi we currently already shift forward, in the input routine!
@@ -2285,28 +2386,41 @@ void Audio::processMidi(unsigned int frames)
                                       //
 //                                       unsigned int t = et + MusEGlobal::segmentSize;
 //                                       // Protection from slight errors in estimated frame time.
-//                                       if(t >= (syncFrame + MusEGlobal::segmentSize))
+//                                       if(t >= (sync_frame + MusEGlobal::segmentSize))
 //                                       {
-//                                         DEBUG_MIDI(stderr, "Error: Audio::processMidi(): record event: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
-//                                                 t, syncFrame, MusEGlobal::segmentSize, syncFrame + MusEGlobal::segmentSize);
+//                                         DEBUG_MIDI(stderr, "Error: Audio::processMidi(): record event: t:%u >= sync_frame:%u + segmentSize:%u (==%u)\n", 
+//                                                 t, sync_frame, MusEGlobal::segmentSize, sync_frame + MusEGlobal::segmentSize);
 //                                         
-//                                         t = syncFrame + (MusEGlobal::segmentSize - 1);
+//                                         t = sync_frame + (MusEGlobal::segmentSize - 1);
 //                                       }
                                       unsigned int t = et;
                                       // Protection from slight errors in estimated frame time.
-                                      if(t >= syncFrame)
+                                      if(t >= sync_frame)
                                       {
-                                        DEBUG_MIDI(stderr, "Error: Audio::processMidi(): record event: t:%u >= syncFrame:%u\n", 
-                                                t, syncFrame);
+                                        DEBUG_MIDI(stderr, "Error: Audio::processMidi(): record event: t:%u >= sync_frame:%u\n", 
+                                                t, sync_frame);
                                         
-                                        t = syncFrame - 1;
+                                        t = sync_frame - 1;
                                       }
-      #endif
+//       #endif
                                       // Be sure to allow for some (very) late events, such as
                                       //  the first chunk's time in a multi-chunk sysex.
-                                      const unsigned int a_fr = pos().frame() + t;
-                                      const unsigned int fin_fr = syncFrame > a_fr ? 0 : a_fr - syncFrame;
-                                      event.setTime(MusEGlobal::tempomap.frame2tick(fin_fr));
+// REMOVE Tim. latency. Changed.
+//                                       const unsigned int a_fr = pos().frame() + t;
+//                                       // The same as saying fin_fr = (lim->0) ((t - sync_frame) + frame_pos).
+//                                       const unsigned int a_fr = frame_pos + t;
+//                                       const unsigned int fin_fr = sync_frame > a_fr ? 0 : a_fr - sync_frame;
+//                                       event.setTime(MusEGlobal::tempomap.frame2tick(fin_fr));
+
+                                      std::int64_t a_fr = t - sync_frame;
+                                      if(!do_jump || a_fr < frames_64)
+                                        a_fr += frame_pos;
+                                      else
+                                        a_fr = a_fr - frames_64 + jump_pos_64;
+
+                                      if(a_fr < 0)
+                                        a_fr = 0;
+                                      event.setTime(MusEGlobal::tempomap.frame2tick(a_fr));
                                     }
 
                                     // In these next steps, it is essential to set the recorded event's port
@@ -2368,9 +2482,10 @@ void Audio::processMidi(unsigned int frames)
           MidiDevice* mdev;
           int mport;
           // What is the current transport frame?
-          const unsigned int pos_fr = _pos.frame();
+// REMOVE Tim. latency. Removed.
+//           const unsigned int pos_fr = _pos.frame();
           // What is the (theoretical) next transport frame?
-          const unsigned int next_pos_fr = pos_fr + frames;
+//           const unsigned int next_pos_fr = pos_fr + frames;
 
           // If muted or off we want to send all playback note-offs immediately.
           if(track->isMute() || track->off())
@@ -2416,7 +2531,7 @@ void Audio::processMidi(unsigned int frames)
                 // If external sync is not on, we can take advantage of frame accuracy but
                 //  first we must allow the next tick position to be included in the search
                 //  even if it is equal to the current tick position.
-                if(extsync ? (off_tick >= nextTickPos) : (off_tick > nextTickPos))
+                if(extsync ? (off_tick >= next_tick_pos) : (off_tick > next_tick_pos))
                       break;
                 mport = ev.port();
                 if(mport < 0)
@@ -2428,19 +2543,23 @@ void Audio::processMidi(unsigned int frames)
                 unsigned int off_frame = 0;
                 if(extsync)
                 {
-                  if(off_tick < curTickPos)
-                    off_tick = curTickPos;
-                  off_frame = extClockHistoryTick2Frame(off_tick - curTickPos) + MusEGlobal::segmentSize;
+                  if(off_tick < cur_tick_pos)
+                    off_tick = cur_tick_pos;
+                  off_frame = extClockHistoryTick2Frame(off_tick - cur_tick_pos) + MusEGlobal::segmentSize;
                 }
                 else
                 {
                   // What is the exact transport frame that the event should be played at?
                   const unsigned int fr = MusEGlobal::tempomap.tick2frame(off_tick);
                   // Is the event frame outside of the current transport frame range?
-                  if(fr >= next_pos_fr)
+// REMOVE Tim. latency. Changed.
+//                   if(fr >= next_pos_fr)
+                  if(fr >= next_frame_pos)
                     break;
-                  off_frame = (fr < pos_fr) ? 0 : fr - pos_fr;
-                  off_frame += syncFrame;
+// REMOVE Tim. latency. Changed.
+//                   off_frame = (fr < pos_fr) ? 0 : fr - pos_fr;
+                  off_frame = (fr < frame_pos) ? 0 : fr - frame_pos;
+                  off_frame += sync_frame;
                 }
                 ev.setTime(off_frame);
                 
@@ -2488,12 +2607,12 @@ void Audio::processMidi(unsigned int frames)
       //---------------------------------------------------
 
       // If in PRECOUNT state, process the precount events.
-      processPrecount(frames);
+      processPrecount(total_frames);
 
       // Since the latency for audio and midi may be different,
       //  process the audio and midi metronomes separately.
-      processAudioMetronome(frames);
-      processMidiMetronome(frames);
+      processAudioMetronome(total_frames);
+      processMidiMetronome(total_frames);
 
       //
       // Play all midi events up to curFrame.
@@ -2504,7 +2623,7 @@ void Audio::processMidi(unsigned int frames)
         // We are done with the 'frozen' recording fifos, remove the events.
         pl_md->afterProcess();
 
-        pl_md->processStuckNotes();
+        pl_md->processStuckNotes(extsync, sync_frame, cur_tick_pos, next_tick_pos, frame_pos, total_frames);
         
         // ALSA devices handled by another thread.
         const MidiDevice::MidiDeviceType typ = pl_md->deviceType();
@@ -2517,7 +2636,7 @@ void Audio::processMidi(unsigned int frames)
           case MidiDevice::SYNTH_MIDI:
             // The frame is not used by these devices but we pass it along anyway.
             // Only ALSA devices need the frame.
-            pl_md->processMidi(syncFrame);
+            pl_md->processMidi(sync_frame);
           break;
         }
       }

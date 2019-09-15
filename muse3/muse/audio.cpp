@@ -76,7 +76,7 @@
 // For debugging metronome and precount output: Uncomment the fprintf section.
 #define DEBUG_MIDI_METRONOME(dev, format, args...) // fprintf(dev, format, ##args);
 // For debugging midi timing: Uncomment the fprintf section.
-#define DEBUG_TRANSPORT_SYNC(dev, format, args...) // fprintf(dev, format, ##args);
+#define DEBUG_TRANSPORT_SYNC(dev, format, args...) fprintf(dev, format, ##args);
 
 namespace MusEGlobal {
 MusECore::Audio* audio = NULL;
@@ -142,14 +142,17 @@ Audio::Audio()
       _bounce       = false;
       _loopFrame    = 0;
       _loopCount    = 0;
+      _dataFrame    = 0;
+      _dataLoopCount = 0;
       m_Xruns       = 0;
 
       _pos.setType(Pos::FRAMES);
       _pos.setFrame(0);
-#ifdef _AUDIO_USE_TRUE_FRAME_
-      _previousPos.setType(Pos::FRAMES);
-      _previousPos.setFrame(0);
-#endif
+// REMOVE Tim. latency. Removed.
+// #ifdef _AUDIO_USE_TRUE_FRAME_
+//       _previousPos.setType(Pos::FRAMES);
+//       _previousPos.setFrame(0);
+// #endif
       _curCycleFrames = 0;
       nextTickPos = curTickPos = 0;
       _precountFramePos = 0;
@@ -575,9 +578,10 @@ void Audio::reSyncAudio()
   if (isPlaying()) 
   {
     if (!MusEGlobal::checkAudioDevice()) return;
-#ifdef _AUDIO_USE_TRUE_FRAME_
-    _previousPos = _pos;
-#endif
+// REMOVE Tim. latency. Removed.
+// #ifdef _AUDIO_USE_TRUE_FRAME_
+//     _previousPos = _pos;
+// #endif
     // NOTE: Comment added by Tim: This line is crucial if the tempo is changed during playback,
     //  either via changes to tempo map or the static tempo value. The actual transport frame is allowed
     //  to continue progressing naturally but our representation of it (_pos) jumps to a new value
@@ -630,7 +634,11 @@ void Audio::shutdown()
 void Audio::process(unsigned frames)
       {
       _curCycleFrames = frames;
+      _dataFrame = _pos.frame();
+      _dataLoopCount = loopCount();
+
       if (!MusEGlobal::checkAudioDevice()) return;
+
       if (msg) {
             processMsg(msg);
             int sn = msg->serialNo;
@@ -656,7 +664,14 @@ void Audio::process(unsigned frames)
       syncFrame   = MusEGlobal::audioDevice->framesAtCycleStart();
       syncTimeUS  = curTimeUS();
       
-      int jackState = MusEGlobal::audioDevice->getState();
+      const int jackState = MusEGlobal::audioDevice->getState();
+      //const unsigned int data_pos = _pos.frame();
+      const bool is_bounce = MusEGlobal::audio->bounce();
+      const bool ext_sync = MusEGlobal::extSyncFlag.value();
+      const bool song_loop = MusEGlobal::song->loop();
+      bool is_loop2_state = false;
+      //unsigned int loop2_pos = 0;
+      const bool do_loops = song_loop && !is_bounce && !ext_sync;
 
       //DEBUG_MIDI_TIMING(stderr, "Audio::process Current state:%s jackState:%s sync frame:%u pos frame:%u current transport frame:%u\n", 
       //        audioStates[state], audioStates[jackState], syncFrame, _pos.frame(), MusEGlobal::audioDevice->curTransportFrame());
@@ -675,7 +690,11 @@ void Audio::process(unsigned frames)
             }
       else if (state == LOOP2 && jackState == PLAY) {
             ++_loopCount;                  // Number of times we have looped so far
+            is_loop2_state = true;
+            //loop2_pos = _pos.frame();
             Pos newPos(_loopFrame, false);
+            // REMOVE Tim. latency. Added. Diagnostics.
+            fprintf(stderr, "Audio::process state == LOOP2 Calling seek(%u)\n", _loopFrame);
             seek(newPos);
             startRolling();
             }
@@ -709,64 +728,102 @@ void Audio::process(unsigned frames)
 
       // fprintf(stderr, "p %s %s %d\n", audioStates[jackState], audioStates[state], _pos.frame());
 
-      //
-      // clear aux send buffers
-      //
-      AuxList* al = MusEGlobal::song->auxs();
-      for (unsigned i = 0; i < al->size(); ++i) {
-            AudioAux* a = (AudioAux*)((*al)[i]);
-            float** dst = a->sendBuffer();
-            for (int ch = 0; ch < a->channels(); ++ch)
-                  memset(dst[ch], 0, sizeof(float) * MusEGlobal::segmentSize);
-            }
+// REMOVE Tim. latency. Removed.
+//       //
+//       // clear aux send buffers
+//       //
+//       AuxList* al = MusEGlobal::song->auxs();
+//       for (unsigned i = 0; i < al->size(); ++i) {
+//             AudioAux* a = (AudioAux*)((*al)[i]);
+//             float** dst = a->sendBuffer();
+//             for (int ch = 0; ch < a->channels(); ++ch)
+//                   memset(dst[ch], 0, sizeof(float) * MusEGlobal::segmentSize);
+//             }
+// 
+//       for (iAudioOutput i = ol->begin(); i != ol->end(); ++i)
+//             (*i)->processInit(frames);
 
-      for (iAudioOutput i = ol->begin(); i != ol->end(); ++i)
-            (*i)->processInit(frames);
-      int samplePos = _pos.frame();
+// REMOVE Tim. latency. Changed.
+//       int samplePos = _pos.frame();
+      const unsigned int samplePos = _pos.frame();
       int offset    = 0;      // buffer offset in audio buffers
+
 #ifdef _JACK_TIMEBASE_DRIVES_MIDI_              
       bool use_jack_timebase = false;
 #endif
 
-      for(iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id)
-      {
-        MidiDevice* md = (*id);
-        const int port = md->midiPort();
-        
-        // Gather midi input from devices that need collecting, such as Jack midi.
-        md->collectMidiEvents();
-        
-        // Process the selected device's external clock history fifo ring buffer.
-        // Quickly transfer the items to a list for easier processing later.
-        // It is possible for the timestamps to be out of order. Deal with it.
-        // Sort all the timestamps. Do not miss a clock, better that it is at least
-        //  included in the count.
-        if(port >= 0 && port < MusECore::MIDI_PORTS && port == MusEGlobal::config.curMidiSyncInPort)
-        {
-          // False = don't use the size snapshot.
-          const int clk_fifo_sz = md->extClockHistory()->getSize(false);
-          if(clk_fifo_sz != 0)
-          {
-            for(int i = 0; i < clk_fifo_sz; ++i)
-            {
-              if(_extClockHistorySize >= _extClockHistoryCapacity)
-              {
-                fprintf(stderr, "Audio::process: _extClockHistory overrun!\n");
-                break;
-              }
-              _extClockHistory[_extClockHistorySize] = md->extClockHistory()->get();
-              ++_extClockHistorySize;
-            }
-          }
-        }
-        else
-          // Otherwise flush and discard the device's unused ring buffer data.
-          md->extClockHistory()->clearRead();
-      }
+// REMOVE Tim. latency. Removed.
+//       for(iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id)
+//       {
+//         MidiDevice* md = (*id);
+//         const int port = md->midiPort();
+//         
+//         // REMOVE Tim. latency. Added.
+//         // Initialize any port buffers.
+//         md->processInit(frames);
+// 
+//         // Gather midi input from devices that need collecting, such as Jack midi.
+//         md->collectMidiEvents();
+//         
+//         // REMOVE Tim. latency. Added.
+//         // Take snapshots of the current sizes of the recording fifos,
+//         //  because they may change while here in process, asynchronously.
+//         md->beforeProcess();
+// 
+//         // Process the selected device's external clock history fifo ring buffer.
+//         // Quickly transfer the items to a list for easier processing later.
+//         // It is possible for the timestamps to be out of order. Deal with it.
+//         // Sort all the timestamps. Do not miss a clock, better that it is at least
+//         //  included in the count.
+//         if(port >= 0 && port < MusECore::MIDI_PORTS && port == MusEGlobal::config.curMidiSyncInPort)
+//         {
+//           // False = don't use the size snapshot.
+//           const int clk_fifo_sz = md->extClockHistory()->getSize(false);
+//           if(clk_fifo_sz != 0)
+//           {
+//             for(int i = 0; i < clk_fifo_sz; ++i)
+//             {
+//               if(_extClockHistorySize >= _extClockHistoryCapacity)
+//               {
+//                 fprintf(stderr, "Audio::process: _extClockHistory overrun!\n");
+//                 break;
+//               }
+//               _extClockHistory[_extClockHistorySize] = md->extClockHistory()->get();
+//               ++_extClockHistorySize;
+//             }
+//           }
+//         }
+//         else
+//           // Otherwise flush and discard the device's unused ring buffer data.
+//           md->extClockHistory()->clearRead();
+//       }
       
-      //if(MusEGlobal::extSyncFlag.value() && (MusEGlobal::midiSyncContainer.isRunning() || isPlaying()))
+// REMOVE Tim. latency. Added.
+      process0(frames);
+      
+      //if(ext_sync && (MusEGlobal::midiSyncContainer.isRunning() || isPlaying()))
       //  fprintf(stderr, "extSyncFlag:%d  externalPlayState:%d isPlaying:%d\n",
-      //    MusEGlobal::extSyncFlag.value(), MusEGlobal::midiSyncContainer.externalPlayState(), isPlaying());
+      //    ext_sync, MusEGlobal::midiSyncContainer.externalPlayState(), isPlaying());
+      
+      const unsigned lpos_frame = MusEGlobal::song->lPos().frame();
+      unsigned loop_width = MusEGlobal::song->rPos().frame() - lpos_frame;
+      // It is not possible to have more than one transport relocation per cycle,
+      //  and the relocation notification (sync callback) will take effect in two cycles.
+      // Therefore loops must have a minimum two cycle width.
+      if(loop_width < 2 * MusEGlobal::segmentSize)
+        loop_width = 2 * MusEGlobal::segmentSize;
+      const unsigned rpos_frame = lpos_frame + loop_width;
+
+      unsigned int sample_pos = 0;
+      unsigned int sample_frames = 0;
+      unsigned int cur_tick_pos = 0;
+      unsigned int next_tick_pos = 0;
+
+      unsigned int jump_pos = 0;
+      unsigned int jump_frames = 0;
+//       unsigned int jump_next_pos = 0;
+      unsigned int jump_cur_tick_pos = 0;
+      unsigned int jump_next_tick_pos = 0;
       
       if (isPlaying()) {
             if (!freewheel())
@@ -784,7 +841,7 @@ void Audio::process(unsigned frames)
                 MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO && 
                 !MusEGlobal::jackTransportMaster && 
                 !MusEGlobal::song->masterFlag() &&
-                !MusEGlobal::extSyncFlag.value() &&
+                !ext_sync &&
                 static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice)->timebaseQuery(
                   frames, NULL, NULL, NULL, &curr_jt_tick, &next_jt_ticks);
             // NOTE: I would rather trust the reported current tick than rely solely on the stream of 
@@ -799,7 +856,7 @@ void Audio::process(unsigned frames)
             if ((curTickPos >= MusEGlobal::song->len())
                && !(MusEGlobal::song->record()
                 || _bounce
-                || MusEGlobal::song->loop())) {
+                || song_loop)) {
 
                   if(MusEGlobal::debugMsg)
                     fprintf(stderr, "Audio::process curTickPos >= MusEGlobal::song->len\n");
@@ -808,28 +865,101 @@ void Audio::process(unsigned frames)
                   return;
                   }
 
+// REMOVE Tim. latency. Changed.
+//             //
+//             //  check for loop end
+//             //
+//             if (state == PLAY && song_loop && !_bounce && !ext_sync) {
+//                   const Pos& loop = MusEGlobal::song->rPos();
+//                   unsigned n = loop.frame() - samplePos - (3 * frames);
+//                   if (n < frames) {
+//                         // loop end in current cycle
+//                         // adjust loop start so we get exact loop len
+//                         if (n > lpos_frame)
+//                               n = 0;
+//                         state = LOOP1;
+//                         _loopFrame = lpos_frame - n;
+//                         Pos lp(_loopFrame, false);
+//                         // Seek the transport. Note that temporary clearing of sustain
+//                         //  controllers is done by the seek handlers and then startRolling().
+//                         MusEGlobal::audioDevice->seekTransport(lp);
+//                         }
+//                   }
+            
+//             //
+//             //  check for loop end
+//             //
+//             if (state == PLAY && song_loop && !_bounce && !ext_sync)
+//             {
+//               const unsigned sample_pos_end = samplePos + frames;
+//               const unsigned lpos_frame = MusEGlobal::song->lPos().frame();
+//               unsigned loop_width = MusEGlobal::song->rPos().frame() - lpos_frame;
+//               // It is not possible to have more than one transport relocation per cycle,
+//               //  and the relocation notification (sync callback) will take effect in two cycles.
+//               // Therefore loops must have a minimum two cycle width.
+//               if(loop_width < 2 * MusEGlobal::segmentSize)
+//                 loop_width = 2 * MusEGlobal::segmentSize;
+//               const unsigned rpos_frame = lpos_frame + loop_width;
+//               
+//               if((samplePos + MusEGlobal::segmentSize) < rpos_frame &&
+//                   rpos_frame <= sample_pos_end + MusEGlobal::segmentSize) // TODO should be <= ? TESTING
+//               {
+//                 // This will always be at least 1.
+//                 const unsigned sec_width = sample_pos_end + MusEGlobal::segmentSize - rpos_frame;
+//                 state = LOOP1;
+//                 _loopFrame = lpos_frame + sec_width;
+//                 Pos lp(_loopFrame, false);
+//                 // REMOVE Tim. latency. Added. Diagnostics.
+//                 fprintf(stderr, "Audio::process Loop: Calling audioDevice->seekTransport(%u)\n", _loopFrame);
+//                 // Seek the transport. Note that temporary clearing of sustain
+//                 //  controllers is done by the seek handlers and then startRolling().
+//                 MusEGlobal::audioDevice->seekTransport(lp);
+//               }
+//             }
+
             //
             //  check for loop end
             //
-            if (state == PLAY && MusEGlobal::song->loop() && !_bounce && !MusEGlobal::extSyncFlag.value()) {
-                  const Pos& loop = MusEGlobal::song->rPos();
-                  unsigned n = loop.frame() - samplePos - (3 * frames);
-                  if (n < frames) {
-                        // loop end in current cycle
-                        unsigned lpos = MusEGlobal::song->lPos().frame();
-                        // adjust loop start so we get exact loop len
-                        if (n > lpos)
-                              n = 0;
-                        state = LOOP1;
-                        _loopFrame = lpos - n;
-                        Pos lp(_loopFrame, false);
-                        // Seek the transport. Note that temporary clearing of sustain
-                        //  controllers is done by the seek handlers and then startRolling().
-                        MusEGlobal::audioDevice->seekTransport(lp);
-                        }
-                  }
-            
-            if(MusEGlobal::extSyncFlag.value())        // p3.3.25
+            if (state == PLAY && song_loop && !_bounce && !ext_sync)
+            {
+              // REMOVE Tim. latency Changed. On paper a factor of 3 doesn't work. Should be 2.
+              //unsigned n = rpos_frame - samplePos - (3 * frames);
+              unsigned n = rpos_frame - samplePos - (2 * MusEGlobal::segmentSize);
+              // This code switches between two different schemes depending on
+              //  whether the left loop marker is too close to the left edge to
+              //  provide the ideal alignment for other clients.
+              // The LAST buffer before a loop may need to be split. 
+              // One scheme puts the new transport position slightly BEFORE the
+              //  left loop marker, and the transport relocation notification
+              //  (sync callback) at the start of the LAST buffer.
+              // The other scheme puts the new transport position slightly AFTER
+              //  the left loop marker, and the relocation notification at the
+              //  start of the NEXT buffer.
+              if (n < MusEGlobal::segmentSize && n <= lpos_frame)
+              {
+                state = LOOP1;
+                _loopFrame = lpos_frame - n;
+                // REMOVE Tim. latency. Added. Diagnostics.
+                fprintf(stderr, "Audio::process Loop A: Calling audioDevice->seekTransport(%u)\n", _loopFrame);
+                // Seek the transport. Note that temporary clearing of sustain
+                //  controllers is done by the seek handlers and then startRolling().
+                MusEGlobal::audioDevice->seekTransport(_loopFrame);
+              }
+              else
+              {
+                n += MusEGlobal::segmentSize;
+                if (n < MusEGlobal::segmentSize && n > lpos_frame)
+                {
+                  state = LOOP1;
+                  _loopFrame = lpos_frame + MusEGlobal::segmentSize - n;
+                  // REMOVE Tim. latency. Added. Diagnostics.
+                  fprintf(stderr, "Audio::process Loop B: Calling audioDevice->seekTransport(%u)\n", _loopFrame);
+                  MusEGlobal::audioDevice->seekTransport(_loopFrame);
+                }
+              }
+            }
+
+            if(ext_sync)        // p3.3.25
             {
               // Advance the tick position by the number of clock events times the division.
               const int div = MusEGlobal::config.division / 24;
@@ -859,7 +989,37 @@ void Audio::process(unsigned frames)
             }
           }
 
-      process1(samplePos, offset, frames);
+      sample_pos = samplePos;
+      sample_frames = frames;
+      cur_tick_pos = curTickPos;
+      next_tick_pos = nextTickPos;
+
+//       if(is_loop2_state && isPlaying() && state == PLAY && song_loop && !_bounce && !ext_sync)
+//       {
+//         sample_pos = loop2_pos;
+//         unsigned n = rpos_frame - sample_pos;
+//         if (n < frames)
+//         {
+//           // TODO
+// //           // loop end in current cycle
+// //           // adjust loop start so we get exact loop len
+// //           if (n > lpos_frame)
+// //             n = 0;
+// //           state = LOOP1;
+// //           _loopFrame = lpos_frame - n;
+// //           //Pos lp(_loopFrame, false);
+// //           // REMOVE Tim. latency. Added. Diagnostics.
+// //           fprintf(stderr, "Audio::process Loop: Calling audioDevice->seekTransport(%u)\n", _loopFrame);
+// //           // Seek the transport. Note that temporary clearing of sustain
+// //           //  controllers is done by the seek handlers and then startRolling().
+// //           //MusEGlobal::audioDevice->seekTransport(lp);
+// //           MusEGlobal::audioDevice->seekTransport(_loopFrame);
+//         }
+//       }
+
+      process1(syncFrame, cur_tick_pos, next_tick_pos, sample_pos, offset, sample_frames,
+               jump_cur_tick_pos, jump_next_tick_pos, jump_pos, jump_frames);
+
       for (iAudioOutput i = ol->begin(); i != ol->end(); ++i)
       {
             (*i)->processWrite();
@@ -870,12 +1030,13 @@ void Audio::process(unsigned frames)
             (*i)->applyOutputLatencyComp(frames);
       }
       
-#ifdef _AUDIO_USE_TRUE_FRAME_
-      _previousPos = _pos;
-#endif
+// REMOVE Tim. latency. Removed.
+// #ifdef _AUDIO_USE_TRUE_FRAME_
+//       _previousPos = _pos;
+// #endif
 // REMOVE Tim. latency. Changed. Hm, doesn't work. Position takes a long time to start moving.
       if (isPlaying()) {
-      //if(isPlaying() || (MusEGlobal::extSyncFlag.value() && MusEGlobal::midiSyncContainer.isPlaying())) {
+      //if(isPlaying() || (ext_sync && MusEGlobal::midiSyncContainer.isPlaying())) {
             _pos += frames;
             // With jack timebase this might not be accurate if we 
             //  set curTickPos (above) from the reported current tick.
@@ -886,20 +1047,16 @@ void Audio::process(unsigned frames)
       //  don't reset the clock history yet, just let it pile up until the transport starts.
       // It's because curTickPos does not advance yet until transport is running, so we
       //  can't rely on curTickPos as a base just yet...
-      if(!MusEGlobal::extSyncFlag.value() || !MusEGlobal::midiSyncContainer.isPlaying() || isPlaying())
+      if(!ext_sync || !MusEGlobal::midiSyncContainer.isPlaying() || isPlaying())
         _extClockHistorySize = 0;
       }
 
 //---------------------------------------------------------
-//   process1
+//   process0
 //---------------------------------------------------------
 
-void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
+void Audio::process0(const unsigned frames)
       {
-      //
-      // process not connected tracks
-      // to animate meter display
-      //
       const TrackList& tl = *MusEGlobal::song->tracks();
       const TrackList::size_type tl_sz = tl.size();
       const AuxList& aux_tl = *MusEGlobal::song->auxs();
@@ -908,12 +1065,28 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       const OutputList::size_type out_tl_sz = out_tl.size();
       const MidiDeviceList& mdl = MusEGlobal::midiDevices;
       Track* track; 
-      AudioTrack* atrack; 
-      int channels;
+      AudioAux* aux_track;
+      MidiDevice* md;
+      int port;
+      bool port_used;
       bool want_record_side;
 
       MusECore::MetronomeSettings* metro_settings = 
         MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
+      //
+      // clear aux send buffers
+      //
+      for(AuxList::size_type i = 0; i < aux_tl_sz; ++i) {
+            aux_track = static_cast<AudioAux*>(aux_tl[i]);
+            float** dst = aux_track->sendBuffer();
+            for (int ch = 0; ch < aux_track->channels(); ++ch)
+                  memset(dst[ch], 0, sizeof(float) * frames);
+            }
+
+      // Initialize any output port buffers.
+      for(OutputList::size_type i = 0; i < out_tl_sz; ++i)
+            static_cast<AudioOutput*>(out_tl[i])->processInit(frames);
 
       // This includes synthesizers.
       for(TrackList::size_type it = 0; it < tl_sz; ++it) 
@@ -940,13 +1113,110 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       // This includes synthesizers.
       for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
       {
-        MidiDevice* md = *imd;
-        // Device not in use?
-        if(md->midiPort() < 0 || md->midiPort() >= MusECore::MIDI_PORTS)
-          continue;
+        md = *imd;
+        port = md->midiPort();
+        // Device in use?
+        port_used = port >= 0 && port < MusECore::MIDI_PORTS;
+
+        if(port_used)
+        {
+          // Initialize any port buffers.
+          md->processInit(frames);
+
+          // Gather midi input from devices that need collecting, such as Jack midi.
+          md->collectMidiEvents();
+          
+          // Take snapshots of the current sizes of the recording fifos,
+          //  because they may change while here in process, asynchronously.
+          md->beforeProcess();
+        }
+        
+        // Process the selected device's external clock history fifo ring buffer.
+        // Quickly transfer the items to a list for easier processing later.
+        // It is possible for the timestamps to be out of order. Deal with it.
+        // Sort all the timestamps. Do not miss a clock, better that it is at least
+        //  included in the count.
+        if(port_used && port == MusEGlobal::config.curMidiSyncInPort)
+        {
+          // False = don't use the size snapshot.
+          const int clk_fifo_sz = md->extClockHistory()->getSize(false);
+          if(clk_fifo_sz != 0)
+          {
+            for(int i = 0; i < clk_fifo_sz; ++i)
+            {
+              if(_extClockHistorySize >= _extClockHistoryCapacity)
+              {
+                fprintf(stderr, "Audio::process0: _extClockHistory overrun!\n");
+                break;
+              }
+              _extClockHistory[_extClockHistorySize] = md->extClockHistory()->get();
+              ++_extClockHistorySize;
+            }
+          }
+        }
+        else
+          // Otherwise flush and discard the device's unused ring buffer data.
+          md->extClockHistory()->clearRead();
 
         // Reset some latency info to prepare for (re)computation.
-        md->prepareLatencyScan();
+        if(port_used)
+          md->prepareLatencyScan();
+
+        // Process events sent by synthesizers (which in turn may have been passed by their GUI -> synth FIFOs).
+        // Receive events sent from a synth's gui thread (which might be different than our gui thread) to the audio thread.
+        if(md->isSynti())
+        {
+          SynthI* s = static_cast<SynthI*>(md);
+          while (s->eventsPending())
+          {
+            MidiRecordEvent ev = s->receiveEvent();
+            // FIXME: This is for recording the events sent by GUI.
+            //        It never gets a chance to be processed since reading of
+            //         record FIFOs is done only by connected input ROUTES.
+            //        To be useful, the synth itself must be allowed to be chosen
+            //         as an input route, which is simple enough, but we currently don't
+            //         list synths as inputs for fear of too many INCOMPATIBLE messages
+            //         from DIFFERING synths. However, we could allow ONLY THIS synth
+            //         to be listed and therefore be automatically connected too, if desired.
+            //md->recordEvent(ev);
+            //
+            // For now, instead of recording, here is the minimum that we must do:
+
+            // Intercept any special MusE system sysex messages. (This IS the system right here.)
+            bool intercepted = false;
+            const int type = ev.type();
+            switch(type)
+            {
+              case ME_SYSEX:
+              {
+                const unsigned char* p = ev.data();
+                int n = ev.len();
+                if(n >= 3)
+                {
+                  if(p[0] == MUSE_SYNTH_SYSEX_MFG_ID)
+                  {
+                    if(p[1] == MUSE_SYSEX_SYSTEM_ID && p[2] == MUSE_SYSEX_SYSTEM_UPDATE_DRUM_MAPS_ID)
+                    {
+                      intercepted = true;
+                      if(port_used)
+                        MusEGlobal::midiPorts[port].updateDrumMaps();
+                    }
+                  }
+                }
+              }
+              break;
+
+              default:
+              break;
+            }
+
+            // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
+            // Same code as in MidiPort::sendEvent()
+            if(!intercepted && port_used)
+              // This is the audio thread. Just set directly.
+              MusEGlobal::midiPorts[port].setHwCtrlState(MidiPlayEvent(ev));
+          }
+        }
       }
       
       // Pre-process the metronome.
@@ -996,7 +1266,6 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
             track->getDominanceInfo(false);
         }      
 
-  #if 1
         // This includes synthesizers.
         for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
         {
@@ -1013,7 +1282,6 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           if(md->isLatencyOutputTerminalMidi(false /*playback*/))
             md->getDominanceInfoMidi(false /*playback*/, false);
         }
-  #endif      
 
         //---------------------------------------------
         // Throughout this latency code, we will examine the metronome
@@ -1083,7 +1351,6 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           }
         }      
         
-  #if 1
         // This includes synthesizers.
         for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
         {
@@ -1110,7 +1377,6 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
               md->setCorrectionLatencyInfoMidi(false /*playback*/, false, song_worst_latency);
           }
         }
-  #endif      
 
         //if(MusEGlobal::song->click())
         if(metro_settings->audioClickFlag)
@@ -1188,7 +1454,6 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           }
         }      
 
-  #if 1
         // This includes synthesizers.
         for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
         {
@@ -1233,7 +1498,6 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
                 song_worst_latency = li._outputLatency;
           }
         }
-  #endif      
         
         //if(MusEGlobal::song->click())
         if(metro_settings->audioClickFlag)
@@ -1306,7 +1570,6 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           }
         }      
         
-  #if 1
         // This includes synthesizers.
         for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
         {
@@ -1337,7 +1600,6 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
             md->setLatencyCompWriteOffsetMidi(song_worst_latency, false /*playback*/);
           }
         }
-  #endif      
 
         //if(MusEGlobal::song->click())
         if(metro_settings->audioClickFlag)
@@ -1369,11 +1631,501 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       // END Latency correction/compensation processing
       //---------------------------------------------
       
+    }
+
+//---------------------------------------------------------
+//   process1
+//---------------------------------------------------------
+
+void Audio::process1(const unsigned int sync_frame, const unsigned int cur_tick_pos, const unsigned int next_tick_pos,
+                     const unsigned int frame_pos, const unsigned int offset, const unsigned int frames,
+                     const unsigned int jump_cur_tick_pos, const unsigned int jump_next_tick_pos,
+                     const unsigned int jump_pos, const unsigned int jump_frames)
+      {
+      //
+      // process not connected tracks
+      // to animate meter display
+      //
+      const TrackList& tl = *MusEGlobal::song->tracks();
+      const TrackList::size_type tl_sz = tl.size();
+      const AuxList& aux_tl = *MusEGlobal::song->auxs();
+      const AuxList::size_type aux_tl_sz = aux_tl.size();
+      const OutputList& out_tl = *MusEGlobal::song->outputs();
+      const OutputList::size_type out_tl_sz = out_tl.size();
+//       const MidiDeviceList& mdl = MusEGlobal::midiDevices;
+//       Track* track; 
+      AudioTrack* atrack; 
+      AudioAux* aux_track; 
+      int channels;
+//       bool want_record_side;
+
+//       MusECore::MetronomeSettings* metro_settings = 
+//         MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
+// REMOVE Tim. latency. Removed. Moved into separate method.
+
+//       // This includes synthesizers.
+//       for(TrackList::size_type it = 0; it < tl_sz; ++it) 
+//       {
+//         track = tl[it];
+//         
+//         // For track types, synths etc. which need some kind of non-audio 
+//         //  (but possibly audio-affecting) processing always, even if their output path
+//         //  is ultimately unconnected.
+//         // Example: A fluidsynth instance whose output path ultimately led to nowhere 
+//         //  would not allow us to load a font. Since process() was driven by audio output,
+//         //  in this case there was nothing driving the process() function which responds to
+//         //  such gui commands. So I separated the events processing from process(), into this.
+//         // It should be used for things like midi events, gui events etc. - things which need to
+//         //  be done BEFORE all the AudioOutput::process() are called below. That does NOT include 
+//         //  audio processing, because THAT is done at the very end of this routine.
+//         // This will also reset the track's processed flag.         Tim.
+//         track->preProcessAlways();
+// 
+//         // Reset some latency info to prepare for (re)computation.
+//         track->prepareLatencyScan();
+//       }
+// 
+//       // This includes synthesizers.
+//       for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
+//       {
+//         MidiDevice* md = *imd;
+//         // Device not in use?
+//         if(md->midiPort() < 0 || md->midiPort() >= MusECore::MIDI_PORTS)
+//           continue;
+// 
+//         // Reset some latency info to prepare for (re)computation.
+//         md->prepareLatencyScan();
+//       }
+//       
+//       // Pre-process the metronome.
+//       metronome->preProcessAlways();
+//       // Reset some latency info to prepare for (re)computation.
+//       static_cast<AudioTrack*>(metronome)->prepareLatencyScan();
+//       static_cast<MidiDevice*>(metronome)->prepareLatencyScan();
+// 
+//       //---------------------------------------------
+//       // BEGIN Latency correction/compensation processing
+//       // TODO: Instead of doing this blindly every cycle, do it only when
+//       //        a latency controller changes or a connection is made etc,
+//       //        ie only when something changes.
+//       //---------------------------------------------
+// 
+//       if(MusEGlobal::config.enableLatencyCorrection)
+//       {
+//         float song_worst_latency = 0.0f;
+//         
+//         //---------------------------------------------
+//         // PASS 1: Find any dominant branches:
+//         //---------------------------------------------
+// 
+//         for(TrackList::size_type it = 0; it < tl_sz; ++it) 
+//         {
+//           track = tl[it];
+//           
+//           // If the track is for example a Wave Track, we must consider up to two contributing paths,
+//           //  the output (playback) side and the input (record) side which can pass through via monitoring.
+//           want_record_side = track->isMidiTrack() || track->type() == Track::WAVE;
+//           
+//           //---------------------------------------------
+//           // We are looking for the end points of branches.
+//           // This includes Audio Outputs, and open-ended branches
+//           //  that go nowhere or are effectively disconnected from
+//           //  their destination(s).
+//           // This caches its result in the track's _latencyInfo structure
+//           //  so it can be used faster in the correction pass or final pass.
+//           //---------------------------------------------
+//           
+//           // Examine any recording path, if desired.
+//           if(want_record_side && track->isLatencyInputTerminal())
+//             track->getDominanceInfo(true);
+//           
+//           // Examine any playback path.
+//           if(track->isLatencyOutputTerminal())
+//             track->getDominanceInfo(false);
+//         }      
+// 
+//   #if 1
+//         // This includes synthesizers.
+//         for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
+//         {
+//           MidiDevice* md = *imd;
+//           // Device not in use?
+//           if(md->midiPort() < 0 || md->midiPort() >= MusECore::MIDI_PORTS)
+//             continue;
+// 
+//           // Examine any playback path on capture devices.
+//           if(md->isLatencyOutputTerminalMidi(true /*capture*/))
+//             md->getDominanceInfoMidi(true /*capture*/, false);
+// 
+//           // Examine any playback path on playback devices.
+//           if(md->isLatencyOutputTerminalMidi(false /*playback*/))
+//             md->getDominanceInfoMidi(false /*playback*/, false);
+//         }
+//   #endif      
+// 
+//         //---------------------------------------------
+//         // Throughout this latency code, we will examine the metronome
+//         //  enable/disable settings rather than the metronome on/off button(s),
+//         //  so that the metronome button(s) can be 'ready for action' when clicked,
+//         //  without affecting the sound.
+//         // Otherwise a glitch would occur every time the metronome is simply
+//         //  turned on or off via the gui toolbars, while latency is recomputed.
+//         //---------------------------------------------
+// 
+//         //if(MusEGlobal::song->click())
+//         if(metro_settings->audioClickFlag)
+//         {
+//           // Examine any playback path.
+//           if(metronome->isLatencyOutputTerminal())
+//             metronome->getDominanceInfo(false);
+//         }
+//         if(metro_settings->midiClickFlag)
+//         {
+//           // Examine any playback path.
+//           if(metronome->isLatencyOutputTerminalMidi(false /*playback*/))
+//             metronome->getDominanceInfoMidi(false /*playback*/, false);
+//         }
+// 
+// 
+//         //---------------------------------------------
+//         // PASS 2: Set correction values:
+//         //---------------------------------------------
+// 
+//         // Now that we know the worst case latency,
+//         //  set all the branch correction values.
+//         for(TrackList::size_type it = 0; it < tl_sz; ++it) 
+//         {
+//           track = tl[it];
+//           
+//           // If the track is for example a Wave Track, we must consider up to two contributing paths,
+//           //  the output (playback) side and the input (record) side which can pass through via monitoring.
+//           want_record_side = track->isMidiTrack() || track->type() == Track::WAVE;
+// 
+//           // Set branch correction values, for any tracks which support it.
+//           // If this branch can dominate latency, ie. is fed from an Audio Input Track,
+//           //  then we cannot apply correction to the branch.
+//           // For example:
+//           //
+//           //  Input(512) -> Wave1(monitor on) -> Output(3072)
+//           //                                  -> Wave2
+//           //
+//           // Wave1 wants to set a correction of -3072 but it cannot because
+//           //  the input has 512 latency. Any wave1 playback material would be
+//           //  misaligned with the monitored input material.
+//           //
+// 
+//           // Examine any recording path, if desired.
+//           if(want_record_side && track->isLatencyInputTerminal())
+//           {
+//             const TrackLatencyInfo& li = track->getDominanceInfo(true);
+//             if(!li._canDominateOutputLatency)
+//               track->setCorrectionLatencyInfo(true, song_worst_latency);
+//           }
+//           
+//           // Examine any playback path.
+//           if(track->isLatencyOutputTerminal())
+//           {
+//             const TrackLatencyInfo& li = track->getDominanceInfo(false);
+//             if(!li._canDominateOutputLatency)
+//               track->setCorrectionLatencyInfo(false, song_worst_latency);
+//           }
+//         }      
+//         
+//   #if 1
+//         // This includes synthesizers.
+//         for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
+//         {
+//           MidiDevice* md = *imd;
+//           // Device not in use?
+//           if(md->midiPort() < 0 || md->midiPort() >= MusECore::MIDI_PORTS)
+//             continue;
+// 
+//           if(md->isLatencyOutputTerminalMidi(true /*capture*/))
+//           {
+//             // Grab the capture device's branch's dominance latency info.
+//             // This should already be cached from the dominance pass.
+//             const TrackLatencyInfo& li = md->getDominanceInfoMidi(true /*capture*/, false);
+//             if(!li._canDominateOutputLatency)
+//               md->setCorrectionLatencyInfoMidi(true /*capture*/, false, song_worst_latency);
+//           }
+// 
+//           if(md->isLatencyOutputTerminalMidi(false /*playback*/))
+//           {
+//             // Grab the playback device's branch's dominance latency info.
+//             // This should already be cached from the dominance pass.
+//             const TrackLatencyInfo& li = md->getDominanceInfoMidi(false /*playback*/, false);
+//             if(!li._canDominateOutputLatency)
+//               md->setCorrectionLatencyInfoMidi(false /*playback*/, false, song_worst_latency);
+//           }
+//         }
+//   #endif      
+// 
+//         //if(MusEGlobal::song->click())
+//         if(metro_settings->audioClickFlag)
+//         {
+//           if(metronome->isLatencyOutputTerminal())
+//           {
+//             // Grab the branch's dominance latency info.
+//             // This should already be cached from the dominance pass.
+//             const TrackLatencyInfo& li = metronome->getDominanceInfo(false);
+//             if(!li._canDominateOutputLatency)
+//               metronome->setCorrectionLatencyInfo(false, song_worst_latency);
+//           }
+//         }
+//         if(metro_settings->midiClickFlag)
+//         {
+//           if(metronome->isLatencyOutputTerminalMidi(false /*playback*/))
+//           {
+//             // Grab the branch's dominance latency info.
+//             // This should already be cached from the dominance pass.
+//             const TrackLatencyInfo& li = metronome->getDominanceInfoMidi(false /*playback*/, false);
+//             if(!li._canDominateOutputLatency)
+//               metronome->setCorrectionLatencyInfoMidi(false /*playback*/, false, song_worst_latency);
+//           }
+//         }
+// 
+// 
+//         //---------------------------------------------
+//         // PASS 3: Set initial output latencies:
+//         //---------------------------------------------
+// 
+//         for(TrackList::size_type it = 0; it < tl_sz; ++it) 
+//         {
+//           track = tl[it];
+//           
+//           // If the track is for example a Wave Track, we must consider up to two contributing paths,
+//           //  the output (playback) side and the input (record) side which can pass through via monitoring.
+//           want_record_side = track->isMidiTrack() || track->type() == Track::WAVE;
+//           
+//           //---------------------------------------------
+//           // We are looking for the end points of branches.
+//           // This includes Audio Outputs, and open-ended branches
+//           //  that go nowhere or are effectively disconnected from
+//           //  their destination(s).
+//           // This caches its result in the track's _latencyInfo structure
+//           //  in the _isLatencyOutputTerminal member so it can be used
+//           //  faster in the correction pass or final pass.
+//           //---------------------------------------------
+//           
+//           // Examine any recording path, if desired.
+//           if(want_record_side && track->isLatencyInputTerminal())
+//           {
+//             // Gather the branch's dominance latency info.
+//             const TrackLatencyInfo& li = track->getDominanceLatencyInfo(true);
+//             
+//             // If the branch can dominate, and this end-point allows it, and its latency value
+//             //  is greater than the current worst, overwrite the worst.
+//             if(track->canDominateEndPointLatency() &&
+//               li._canDominateInputLatency &&
+//               li._inputLatency > song_worst_latency)
+//                 song_worst_latency = li._inputLatency;
+//           }
+//           
+//           // Examine any playback path.
+//           if(track->isLatencyOutputTerminal())
+//           {
+//             // Gather the branch's dominance latency info.
+//             const TrackLatencyInfo& li = track->getDominanceLatencyInfo(false);
+// 
+//             // If the branch can dominate, and this end-point allows it, and its latency value
+//             //  is greater than the current worst, overwrite the worst.
+//             if(track->canDominateEndPointLatency() &&
+//               li._canDominateOutputLatency &&
+//               li._outputLatency > song_worst_latency)
+//                 song_worst_latency = li._outputLatency;
+//           }
+//         }      
+// 
+//   #if 1
+//         // This includes synthesizers.
+//         for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
+//         {
+//           MidiDevice* md = *imd;
+//           // Device not in use?
+//           if(md->midiPort() < 0 || md->midiPort() >= MusECore::MIDI_PORTS)
+//             continue;
+// 
+//           //---------------------------------------------
+//           // We are looking for the end points of branches.
+//           // This includes Audio Outputs, and open-ended branches
+//           //  that go nowhere or are effectively disconnected from
+//           //  their destination(s).
+//           // This caches its result in the track's _latencyInfo structure
+//           //  in the _isLatencyOutputTerminal member so it can be used
+//           //  faster in the correction pass or final pass.
+//           //---------------------------------------------
+//           
+//           // Examine any playback path on capture devices.
+//           if(md->isLatencyOutputTerminalMidi(true /*capture*/))
+//           {
+//             // Gather the branch's dominance latency info.
+//             const TrackLatencyInfo& li = md->getDominanceLatencyInfoMidi(true /*capture*/, false);
+//             // If the branch can dominate, and this end-point allows it, and its latency value
+//             //  is greater than the current worst, overwrite the worst.
+//             if(md->canDominateEndPointLatencyMidi(true /*capture*/) &&
+//               li._canDominateOutputLatency &&
+//               li._outputLatency > song_worst_latency)
+//                 song_worst_latency = li._outputLatency;
+//           }
+// 
+//           // Examine any playback path on playback devices.
+//           if(md->isLatencyOutputTerminalMidi(false /*playback*/))
+//           {
+//             // Gather the branch's dominance latency info.
+//             const TrackLatencyInfo& li = md->getDominanceLatencyInfoMidi(false /*playback*/, false);
+//             // If the branch can dominate, and this end-point allows it, and its latency value
+//             //  is greater than the current worst, overwrite the worst.
+//             if(md->canDominateEndPointLatencyMidi(false /*playback*/) &&
+//               li._canDominateOutputLatency &&
+//               li._outputLatency > song_worst_latency)
+//                 song_worst_latency = li._outputLatency;
+//           }
+//         }
+//   #endif      
+//         
+//         //if(MusEGlobal::song->click())
+//         if(metro_settings->audioClickFlag)
+//         {
+//           // Examine any playback path.
+//           if(metronome->isLatencyOutputTerminal())
+//           {
+//             // Gather the branch's dominance latency info.
+//             const TrackLatencyInfo& li = metronome->getDominanceLatencyInfo(false);
+// 
+//             // If the branch can dominate, and this end-point allows it, and its latency value
+//             //  is greater than the current worst, overwrite the worst.
+//             if(metronome->canDominateEndPointLatency() &&
+//               li._canDominateOutputLatency &&
+//               li._outputLatency > song_worst_latency)
+//                 song_worst_latency = li._outputLatency;
+//           }
+//         }
+//         if(metro_settings->midiClickFlag)
+//         {
+//           // Examine any playback path.
+//           if(metronome->isLatencyOutputTerminalMidi(false /*playback*/))
+//           {
+//             // Gather the branch's dominance latency info.
+//             const TrackLatencyInfo& li = metronome->getDominanceLatencyInfoMidi(false /*playback*/, false);
+// 
+//             // If the branch can dominate, and this end-point allows it, and its latency value
+//             //  is greater than the current worst, overwrite the worst.
+//             if(metronome->canDominateEndPointLatencyMidi(false /*playback*/) &&
+//               li._canDominateOutputLatency &&
+//               li._outputLatency > song_worst_latency)
+//                 song_worst_latency = li._outputLatency;
+//           }
+//         }
+//         
+//         //----------------------------------------------------------
+//         // PASS 4: Gather final latency values and set compensators:
+//         //----------------------------------------------------------
+// 
+//         // Now that all branch correction values have been set,
+//         //  gather all final latency info.
+//         for(TrackList::size_type it = 0; it < tl_sz; ++it) 
+//         {
+//           track = tl[it];
+//           
+//           // If the track is for example a Wave Track, we must consider up to two contributing paths,
+//           //  the output (playback) side and the input (record) side which can pass through via monitoring.
+//           want_record_side = track->isMidiTrack() || track->type() == Track::WAVE;
+// 
+//           // Examine any recording path, if desired.
+//           // We are looking for the end points of branches.
+//           if(want_record_side && track->isLatencyInputTerminal())
+//           {
+//             // Gather the branch's final latency info, which also sets the
+//             //  latency compensators.
+//             track->getLatencyInfo(true);
+//             // Set this end point's latency compensator write offset.
+//             track->setLatencyCompWriteOffset(song_worst_latency);
+//           }
+// 
+//           // Examine any playback path.
+//           // We are looking for the end points of branches.
+//           if(track->isLatencyOutputTerminal())
+//           {
+//             // Gather the branch's final latency info, which also sets the
+//             //  latency compensators.
+//             track->getLatencyInfo(false);
+//             // Set this end point's latency compensator write offset.
+//             track->setLatencyCompWriteOffset(song_worst_latency);
+//           }
+//         }      
+//         
+//   #if 1
+//         // This includes synthesizers.
+//         for(ciMidiDevice imd = mdl.cbegin(); imd != mdl.cend(); ++imd) 
+//         {
+//           MidiDevice* md = *imd;
+//           // Device not in use?
+//           if(md->midiPort() < 0 || md->midiPort() >= MusECore::MIDI_PORTS)
+//             continue;
+//           
+//           // We are looking for the end points of branches.
+//           if(md->isLatencyOutputTerminalMidi(true /*capture*/))
+//           {
+//             // Examine any playback path of the capture device.
+//             // Gather the branch's final latency info, which also sets the
+//             //  latency compensators.
+//             md->getLatencyInfoMidi(true /*capture*/, false);
+//             // Set this end point's latency compensator write offset.
+//             md->setLatencyCompWriteOffsetMidi(song_worst_latency, true /*capture*/);
+//           }
+// 
+//           // We are looking for the end points of branches.
+//           if(md->isLatencyOutputTerminalMidi(false /*playback*/))
+//           {
+//             // Examine any playback path of the playback device.
+//             // Gather the branch's final latency info, which also sets the
+//             //  latency compensators.
+//             md->getLatencyInfoMidi(false /*playback*/, false);
+//             // Set this end point's latency compensator write offset.
+//             md->setLatencyCompWriteOffsetMidi(song_worst_latency, false /*playback*/);
+//           }
+//         }
+//   #endif      
+// 
+//         //if(MusEGlobal::song->click())
+//         if(metro_settings->audioClickFlag)
+//         {
+//           // We are looking for the end points of branches.
+//           if(metronome->isLatencyOutputTerminal())
+//           {
+//             // Gather the branch's final latency info, which also sets the
+//             //  latency compensators.
+//             metronome->getLatencyInfo(false);
+//             // Set this end point's latency compensator write offset.
+//             metronome->setLatencyCompWriteOffset(song_worst_latency);
+//           }
+//         }
+//         if(metro_settings->midiClickFlag)
+//         {
+//           // We are looking for the end points of branches.
+//           if(metronome->isLatencyOutputTerminalMidi(false /*playback*/))
+//           {
+//             // Gather the branch's final latency info, which also sets the
+//             //  latency compensators.
+//             metronome->getLatencyInfoMidi(false /*playback*/, false);
+//             // Set this end point's latency compensator write offset.
+//             metronome->setLatencyCompWriteOffsetMidi(song_worst_latency, false /*playback*/);
+//           }
+//         }
+//       }
+//       //---------------------------------------------
+//       // END Latency correction/compensation processing
+//       //---------------------------------------------
+      
       //---------------------------------------------
       // Midi processing
       //---------------------------------------------
-      
-      processMidi(frames);
+
+// REMOVE Tim. latency. Changed.
+//       processMidi(frames);
+      processMidi(sync_frame, cur_tick_pos, next_tick_pos, frame_pos, frames,
+                  jump_cur_tick_pos, jump_next_tick_pos, jump_pos, jump_frames);
       
       //---------------------------------------------
       // Audio processing
@@ -1382,22 +2134,22 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       // Process Aux tracks first.
       for(AuxList::size_type it = 0; it < aux_tl_sz; ++it) 
       {
-        atrack = static_cast<AudioTrack*>(aux_tl[it]);
-        if(!atrack->processed())
+        aux_track = static_cast<AudioAux*>(aux_tl[it]);
+        if(!aux_track->processed())
         {
-          channels = atrack->channels();
+          channels = aux_track->channels();
           // Just a dummy buffer.
           float* buffer[channels];
           float data[frames * channels];
           for (int i = 0; i < channels; ++i)
                 buffer[i] = data + i * frames;
 
-          atrack->copyData(samplePos, -1, channels, channels, -1, -1, frames, buffer);
+          aux_track->copyData(frame_pos, -1, channels, channels, -1, -1, frames, buffer);
         }
       }
       
       for(OutputList::size_type it = 0; it < out_tl_sz; ++it) 
-        static_cast<AudioOutput*>(out_tl[it])->process(samplePos, offset, frames);
+        static_cast<AudioOutput*>(out_tl[it])->process(frame_pos, offset, frames);
             
       // Were ANY tracks unprocessed as a result of processing all the AudioOutputs, above? 
       // Not just unconnected ones, as previously done, but ones whose output path ultimately leads nowhere.
@@ -1419,7 +2171,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           for (int i = 0; i < channels; ++i)
                 buffer[i] = data + i * frames;
           
-          atrack->copyData(samplePos, -1, channels, channels, -1, -1, frames, buffer);
+          atrack->copyData(frame_pos, -1, channels, channels, -1, -1, frames, buffer);
         }
       }      
     }
@@ -1572,9 +2324,10 @@ void Audio::seek(const Pos& p)
       if (MusEGlobal::heavyDebugMsg)
         fprintf(stderr, "Audio::seek frame:%d\n", p.frame());
         
-#ifdef _AUDIO_USE_TRUE_FRAME_
-      _previousPos = _pos;
-#endif
+// REMOVE Tim. latency. Removed.
+// #ifdef _AUDIO_USE_TRUE_FRAME_
+//       _previousPos = _pos;
+// #endif
       _pos        = p;
       if (!MusEGlobal::checkAudioDevice()) return;
       syncFrame   = MusEGlobal::audioDevice->framesAtCycleStart();
@@ -1584,7 +2337,7 @@ void Audio::seek(const Pos& p)
       if(MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO && 
          !MusEGlobal::jackTransportMaster && 
          !MusEGlobal::song->masterFlag() &&
-         !MusEGlobal::extSyncFlag.value() &&
+         !ext_syncSyncFlag.value() &&
          static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice)->timebaseQuery(
              MusEGlobal::segmentSize, NULL, NULL, NULL, &curr_jt_tick, NULL))
         curTickPos = curr_jt_tick;
@@ -1603,6 +2356,8 @@ void Audio::seek(const Pos& p)
       
       if (state != LOOP2 && !freewheel())
       {
+        // REMOVE Tim. latency. Added. Diagnostics.
+        fprintf(stderr, "Audio::seek state != LOOP2 Calling audioPrefetch->msgSeek(%u)\n", _pos.frame());
             // We need to force prefetch to update, to ensure the most recent data. 
             // Things can happen to a part before play is pressed - such as part muting, 
             //  part moving etc. Without a force, the wrong data was being played.  Tim 08/17/08
@@ -1883,6 +2638,45 @@ unsigned int Audio::curFrame() const
       // Can't use this since for the Jack driver, jack_frames_since_cycle_start is designed to be called ONLY from inside process.
       //return framesAtCycleStart() + framesSinceCycleStart(); 
       }
+
+//---------------------------------------------------------
+//   linear2LoopFrame
+//---------------------------------------------------------
+
+void Audio::linear2LoopFrame(
+  const unsigned lin_frame, const unsigned loop_start, const unsigned loop_end,
+  unsigned* loop_count, unsigned* loop_frame) const
+{
+  if(lin_frame < loop_start)
+  {
+    *loop_count = 0;
+    *loop_frame = lin_frame;
+    return;
+  }
+  
+  const unsigned from_left = lin_frame - loop_start;
+  const unsigned loop_width = loop_end - loop_start;
+  *loop_count = from_left / loop_width;
+  *loop_frame = loop_start + (from_left % loop_width);
+}
+
+//---------------------------------------------------------
+//   loop2LinearFrame
+//---------------------------------------------------------
+
+void Audio::loop2LinearFrame(
+  const unsigned loop_count, const unsigned loop_frame,
+  const unsigned loop_start, const unsigned loop_end,
+  unsigned* lin_frame) const
+{
+  if(loop_frame < loop_start || loop_frame >= loop_end)
+  {
+    *lin_frame = loop_frame;
+    return;
+  }
+
+  *lin_frame = loop_count * (loop_end - loop_start) + loop_frame;
+}
 
 //---------------------------------------------------------
 //   updateMidiClick

@@ -68,8 +68,10 @@ namespace MusECore {
 MidiJackDevice::MidiJackDevice(const QString& n)
    : MidiDevice(n)
 {
-  _in_client_jackport  = NULL;
-  _out_client_jackport = NULL;
+  _in_client_jackport  = nullptr;
+  _out_client_jackport = nullptr;
+  _in_port_buf = nullptr;
+  _out_port_buf = nullptr;
   init();
 }
 
@@ -582,14 +584,15 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
       // So, technically this is correct. What MATTERS is how we adjust the times for storage, and/or simultaneous playback in THIS period,
       //  and TEST: we'll need to make sure any non-contiguous previous period is handled correctly by process - will it work OK as is?
       // If ALSA works OK than this should too...
-#ifdef _AUDIO_USE_TRUE_FRAME_
-      abs_ft = MusEGlobal::audio->previousPos().frame() + ev->time;
-#else
+// REMOVE Tim. latency. Removed.
+// #ifdef _AUDIO_USE_TRUE_FRAME_
+//       abs_ft = MusEGlobal::audio->previousPos().frame() + ev->time;
+// #else
       // The events arrived in the previous cycle, not this one. Adjust.
       abs_ft = MusEGlobal::audio->curSyncFrame() + ev->time;
       if(abs_ft >= MusEGlobal::segmentSize)
         abs_ft -= MusEGlobal::segmentSize;
-#endif
+// #endif
       event.setTime(abs_ft);
       event.setTick(MusEGlobal::lastExtMidiSyncTick);    
 
@@ -724,18 +727,14 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
 
 void MidiJackDevice::collectMidiEvents()
 {
-  if(!_readEnable)
+  if(!_in_port_buf)
     return;
-  
-  if(!_in_client_jackport)  
-    return;
-  
-  void* port_buf = jack_port_get_buffer(_in_client_jackport, MusEGlobal::segmentSize);   
+
   jack_midi_event_t event;
-  jack_nframes_t eventCount = jack_midi_get_event_count(port_buf);
+  jack_nframes_t eventCount = jack_midi_get_event_count(_in_port_buf);
   for (jack_nframes_t i = 0; i < eventCount; ++i) 
   {
-    jack_midi_event_get(&event, port_buf, i);
+    jack_midi_event_get(&event, _in_port_buf, i);
     
     #ifdef JACK_MIDI_DEBUG
     printf("MidiJackDevice::collectMidiEvents number:%d time:%d\n", i, event.time);
@@ -1279,15 +1278,27 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event, void* evBuffer)
 //    Called from audio thread only.
 //---------------------------------------------------------
 
+void MidiJackDevice::processInit(unsigned frames)
+{
+  _in_port_buf = nullptr;
+  if(_readEnable && _in_client_jackport)
+    _in_port_buf = jack_port_get_buffer(_in_client_jackport, frames);
+
+  _out_port_buf = nullptr;
+  if(_writeEnable && _out_client_jackport)
+  {
+    _out_port_buf = jack_port_get_buffer(_out_client_jackport, frames);
+    jack_midi_clear_buffer(_out_port_buf);
+  }  
+}
+
+//---------------------------------------------------------
+//    processMidi 
+//    Called from audio thread only.
+//---------------------------------------------------------
+
 void MidiJackDevice::processMidi(unsigned int curFrame)
 {
-  void* port_buf = 0;
-  if(_out_client_jackport && _writeEnable)  
-  {
-    port_buf = jack_port_get_buffer(_out_client_jackport, MusEGlobal::segmentSize);
-    jack_midi_clear_buffer(port_buf);
-  }  
-  
   // Get the state of the stop flag.
   const bool do_stop = stopFlag();
 
@@ -1350,7 +1361,7 @@ void MidiJackDevice::processMidi(unsigned int curFrame)
     // If processEvent fails, although we would like to not miss events by keeping them
     //  until next cycle and trying again, that can lead to a large backup of events
     //  over a long time. So we'll just... miss them.
-    processEvent(ev, port_buf);
+    processEvent(ev, _out_port_buf);
     
     // Successfully processed event. Remove it from FIFO.
     // C++11.

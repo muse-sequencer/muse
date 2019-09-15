@@ -37,16 +37,32 @@ struct FifoBuffer {
       int size;
       int maxSize;
       unsigned pos;
+      // It is possible a loop (jump) may need to occur in the middle of a buffer.
+      // This holds the new write position of that jump.
+      // If it is equal to 'pos', there is NO jump.
+      unsigned jump_pos;
+      // If the buffer is split, this holds the size of the first section.
+      // The size of the second section is 'size - split_size'.
+      // The second section's data position is jump_pos.
+      unsigned split_size;
       int segs;
       float latency;
+      // If we are looping, this holds how many loops have occured so far.
+      unsigned loop_count;
+      // If the buffer is split, this holds the loop count at the second section.
+      unsigned jump_loop_count;
 
       FifoBuffer() {
-            buffer  = 0;
-            size    = 0;
-            maxSize = 0;
-            pos     = 0;
-            segs    = 0;
-            latency = 0.0f;
+            buffer     = 0;
+            size       = 0;
+            maxSize    = 0;
+            pos        = 0;
+            jump_pos   = 0;
+            split_size = 0;
+            segs       = 0;
+            latency    = 0.0f;
+            loop_count = 0;
+            jump_loop_count = 0;
             }
       };
 
@@ -62,10 +78,22 @@ class Fifo {
       ~Fifo();
       void clear();
       bool put(int segs, unsigned long samples, float** buffer, unsigned pos, float latency);
-      bool getWriteBuffer(int, unsigned long, float** buffer, unsigned pos);
+      bool getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned pos,
+                          unsigned split_size, unsigned jump_pos, unsigned loop_count, unsigned jump_loop_count);
       void add();
-      bool peek(int segs, unsigned long samples, float** buffer, unsigned* pos = 0, float* latency = 0); // const;
-      bool get(int segs, unsigned long samples, float** buffer, unsigned* pos = 0, float* latency = 0);
+// REMOVE Tim. latency. Changed.
+//       bool peek(int segs, unsigned long samples, float** dst,
+//                 unsigned* pos = nullptr, unsigned* split_size = nullptr, unsigned* jump_pos = nullptr,
+//                 unsigned* loop_count = nullptr, unsigned* jump_loop_count = nullptr, float* latency = nullptr); // const;
+      bool peek(int segs, float** dst, unsigned* pos = nullptr, unsigned* samples = nullptr,
+                unsigned* split_size = nullptr, unsigned* jump_pos = nullptr,
+                unsigned* loop_count = nullptr, unsigned* jump_loop_count = nullptr, float* latency = nullptr); // const;
+//       bool get(int segs, unsigned long samples, float** dst,
+//                unsigned* pos = nullptr, unsigned* split_size = nullptr, unsigned* jump_pos = nullptr,
+//                unsigned* loop_count = nullptr, unsigned* jump_loop_count = nullptr, float* latency = nullptr); // const;
+      bool get(int segs, float** dst, unsigned* pos = nullptr, unsigned* samples = nullptr,
+               unsigned* split_size = nullptr, unsigned* jump_pos = nullptr,
+               unsigned* loop_count = nullptr, unsigned* jump_loop_count = nullptr, float* latency = nullptr); // const;
       void remove();
       int getCount();
       int getEmptyCount();

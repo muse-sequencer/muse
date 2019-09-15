@@ -34,11 +34,12 @@
 #include "route.h"
 #include "event.h"
 
-// An experiment to use true frames for time-stamping all recorded input. 
-// (All recorded data actually arrived in the previous period.)
-// TODO: Some more work needs to be done in WaveTrack::getData() in order to
-//  make everything line up and sync correctly. Cannot use this yet!
-//#define _AUDIO_USE_TRUE_FRAME_
+// REMOVE Tim. latency. Removed.
+// // An experiment to use true frames for time-stamping all recorded input. 
+// // (All recorded data actually arrived in the previous period.)
+// // TODO: Some more work needs to be done in WaveTrack::getData() in order to
+// //  make everything line up and sync correctly. Cannot use this yet!
+// //#define _AUDIO_USE_TRUE_FRAME_
 
 namespace MusECore {
 class AudioDevice;
@@ -141,15 +142,23 @@ class Audio {
       bool _bounce;
       unsigned _loopFrame;     // Startframe of loop if in LOOP mode. Not quite the same as left marker !
       int _loopCount;         // Number of times we have looped so far
+      // During process, this holds the current transport position BEFORE it is updated
+      //  by any transport relocation caused by a loop. This is crucial for looping since
+      //  the last buffer may need to be split and there may be need to be remaining data written.
+      unsigned _dataFrame;
+      // During process, this holds the current loop count BEFORE it is updated
+      //  by any transport relocation caused by a loop.
+      unsigned _dataLoopCount;
 
       Pos _pos;               // current play position
       unsigned int _curCycleFrames;   // Number of frames in the current process cycle.
       // Simulated current frame during precount.
       unsigned int _precountFramePos;
       
-#ifdef _AUDIO_USE_TRUE_FRAME_
-      Pos _previousPos;       // previous play position
-#endif
+// REMOVE Tim. latency. Removed.
+// #ifdef _AUDIO_USE_TRUE_FRAME_
+//       Pos _previousPos;       // previous play position
+// #endif
 
       unsigned curTickPos;   // pos at start of frame during play/record
       unsigned nextTickPos;  // pos at start of next frame during play/record
@@ -213,10 +222,15 @@ class Audio {
 
       void panic();
       void processMsg(AudioMsg* msg);
-      void process1(unsigned samplePos, unsigned offset, unsigned samples);
+      void process0(const unsigned frames);
+      void process1(const unsigned int sync_frame, const unsigned int cur_tick_pos, const unsigned int next_tick_pos,
+                    const unsigned int frame_pos, const unsigned int offset, const unsigned int frames,
+                    const unsigned int jump_cur_tick_pos = 0, const unsigned int jump_next_tick_pos = 0,
+                    const unsigned int jump_pos = 0, const unsigned int jump_frames = 0);
 
-      void collectEvents(MidiTrack*, unsigned int startTick, unsigned int endTick,
-                         unsigned int frames, unsigned int latency_offset);
+      void collectEvents(MidiTrack* track, const unsigned int sync_frame,
+                         const unsigned int start_tick, const unsigned int end_tick,
+                         const unsigned int frame_pos, const unsigned int frames, const unsigned int latency_offset);
       
       void seekMidi();
 
@@ -229,9 +243,19 @@ class Audio {
       // Updates the metronome tick. Useful for after seek(), even startRolling() etc.
       // Call from audio thread only.
       void updateMidiClick();
-      // Process midi for a number of frames. Call from audio thread only.
-      // Note that nextTickPos (and friends) will already be set before calling.
-      void processMidi(unsigned int frames);
+      // Process midi for a number of frames at transport position frame_pos. Call from audio thread only.
+      // incl_pre_events:  Include FIFO events that are time-stamped before the given frame_pos. They will
+      //  be played at time 'zero', meaning ASAP.
+      // incl_post_events: Include FIFO events that are time-stamped equal or after frame_pos + frames.
+      // Those arguments are for use with splitting the total processing run cycle into sections.
+      // For example, when working with the first portion of a run split into two, set incl_pre_events = true
+      //  and incl_post_events = false.
+      // Then for the second portion of the run, set incl_pre_events = false and incl_post_events = true.
+      // For a normal non-split full run, leave incl_pre_events = true and incl_post_events = true.
+      void processMidi(const unsigned int sync_frame, const unsigned int cur_tick_pos, const unsigned int next_tick_pos,
+                       const unsigned int frame_pos, const unsigned int frames,
+                       const unsigned int jump_cur_tick_pos = 0, const unsigned int jump_next_tick_pos = 0,
+                       const unsigned int jump_pos = 0, const unsigned int jump_frames = 0);
       void processMidiMetronome(unsigned int frames);
       void processAudioMetronome(unsigned int frames);
       
@@ -317,20 +341,38 @@ class Audio {
       void midiPortsChanged();
 
       const Pos& pos() const { return _pos; }
-#ifdef _AUDIO_USE_TRUE_FRAME_
-      const Pos& previousPos() const { return _previousPos; }
-#endif
+// REMOVE Tim. latency. Removed.
+// #ifdef _AUDIO_USE_TRUE_FRAME_
+//       const Pos& previousPos() const { return _previousPos; }
+// #endif
       // Number of frames in the current process cycle.
       unsigned curCycleFrames() const { return _curCycleFrames; }
       const Pos& getStartRecordPos() const { return startRecordPos; }
       const Pos& getEndRecordPos() const { return endRecordPos; }
       unsigned getStartExternalRecTick() const { return startExternalRecTick; }
       unsigned getEndExternalRecTick() const { return endExternalRecTick; }
-      int loopCount() { return _loopCount; }         // Number of times we have looped so far
-      unsigned loopFrame() { return _loopFrame; }          
+      inline int loopCount() const { return _loopCount; }         // Number of times we have looped so far
+      inline unsigned loopFrame() const { return _loopFrame; }
+      inline unsigned dataFrame() const { return _dataFrame; }
+      inline unsigned dataLoopCount() const { return _dataLoopCount; }
 
-      unsigned tickPos() const    { return curTickPos; }
-      unsigned nextTick() const   { return nextTickPos; }
+      // 'Rolls up' a linear (non-looping) frame into a loop count and frame.
+      // Be sure loop range is not zero, minimum 2 * segsize.
+      inline void linear2LoopFrame(
+        const unsigned lin_frame,
+        const unsigned loop_start, const unsigned loop_end,
+        unsigned* loop_count, unsigned* loop_frame) const;
+      // 'Unrolls' a loop count and frame into a linear frame.
+      // Be sure loop range is not zero, minimum 2 * segsize.
+      // If loop_frame is outside of the loop range, the linear frame is simply loop_frame
+      //  regardless of loop_count.
+      inline void loop2LinearFrame(
+        const unsigned loop_count, const unsigned loop_frame,
+        const unsigned loop_start, const unsigned loop_end,
+        unsigned* lin_frame) const;
+
+      unsigned tickPos() const { return curTickPos; }
+      unsigned nextTick() const { return nextTickPos; }
       // Extrapolates current play frame on syncTime/syncFrame
       // Estimated to single-frame resolution.
       // This is an always-increasing number. Good for timestamps, and 

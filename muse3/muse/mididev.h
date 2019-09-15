@@ -278,7 +278,12 @@ class MidiDevice {
       virtual void handleStop();  
       virtual void handleSeek();
       
-      virtual void processStuckNotes();
+      // Initializes port buffers, if any.
+      inline virtual void processInit(unsigned /*frames*/) { }
+
+      virtual void processStuckNotes(const bool extsync, const unsigned sync_frame,
+                                     const unsigned cur_tick_pos, const unsigned next_tick_pos,
+                                     const unsigned frame_pos, const unsigned frames);
       
       virtual void collectMidiEvents() {}   
       // Process midi events. The frame is used by devices such as ALSA 
