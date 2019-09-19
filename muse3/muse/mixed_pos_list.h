@@ -96,7 +96,7 @@ template<class Key, class T, class Compare = std::less<Key>,
         case Pos::TICKS:
           r = vlist::equal_range(v_tick);
           for(pos = r.first; pos != r.second; ++pos)
-            if(v_frame <= pos->second.frame())
+            if(v_frame < pos->second.frame())
               break;
           return vlist::insert(pos, MixedPosListInsertPair_t(v_tick, v));
         break;
@@ -104,7 +104,7 @@ template<class Key, class T, class Compare = std::less<Key>,
         case Pos::FRAMES:
           r = vlist::equal_range(v_frame);
           for(pos = r.first; pos != r.second; ++pos)
-            if(v_tick <= pos->second.tick())
+            if(v_tick < pos->second.tick())
               break;
           return vlist::insert(pos, MixedPosListInsertPair_t(v_frame, v));
         break;
