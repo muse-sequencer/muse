@@ -1,3 +1,5 @@
+15.09.2019
+      - Event List Editor: Rebuild upon time signature changes, shows correct BBTs. (Tim)
 03.09.2019
       - Replaced all hard-coded paths in main.cpp with QStandardPaths. (Tim)
         *** NOTE: This means the location of MusE config files and names have changed!
