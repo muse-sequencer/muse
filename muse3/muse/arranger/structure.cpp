@@ -121,24 +121,44 @@ void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
     }
   }
 
+// REMOVE Tim. marker. Changed.
+//   MarkerList *markerlist = MusEGlobal::song->marker();
+//   for(iMarker i = markerlist->begin(); i != markerlist->end(); ++i)
+//   {
+//       Marker* m = &i->second;
+//       unsigned int tick = m->tick();
+//       if (tick >= startPos)
+//       {
+// // REMOVE Tim. global cut. Changed.
+// //        if (tick + diff < startPos ) { // these ticks should be removed
+//         if (tick < startPos + diff) { // these ticks should be removed
+//           operations.push_back(UndoOp(UndoOp::ModifyMarker, 0, m));
+//         } else {
+//           Marker *newMarker = new Marker();
+//           *newMarker = *m;
+// // REMOVE Tim. global cut. Changed.
+// //          newMarker->setTick(tick + diff);
+//           newMarker->setTick(tick - diff);
+//           operations.push_back(UndoOp(UndoOp::ModifyMarker, newMarker, m));
+//         }
+//       }
+//   }
+
   MarkerList *markerlist = MusEGlobal::song->marker();
   for(iMarker i = markerlist->begin(); i != markerlist->end(); ++i)
   {
-      Marker* m = &i->second;
-      unsigned int tick = m->tick();
+      const Marker& m = i->second;
+      unsigned int tick = m.tick();
       if (tick >= startPos)
       {
-// REMOVE Tim. global cut. Changed.
-//        if (tick + diff < startPos ) { // these ticks should be removed
         if (tick < startPos + diff) { // these ticks should be removed
-          operations.push_back(UndoOp(UndoOp::ModifyMarker, 0, m));
+          operations.push_back(UndoOp(UndoOp::DeleteMarker, m));
         } else {
-          Marker *newMarker = new Marker();
-          *newMarker = *m;
-// REMOVE Tim. global cut. Changed.
-//          newMarker->setTick(tick + diff);
-          newMarker->setTick(tick - diff);
-          operations.push_back(UndoOp(UndoOp::ModifyMarker, newMarker, m));
+//           // Grab a copy but with a new ID.
+//           Marker newMarker = m.copy();
+          Marker newMarker(m);
+          newMarker.setTick(tick - diff);
+          operations.push_back(UndoOp(UndoOp::ModifyMarker, m, newMarker));
         }
       }
   }

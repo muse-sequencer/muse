@@ -87,28 +87,106 @@ Pos::Pos(int measure, int beat, int tick)
       sn    = -1;
       }
 
-Pos::Pos(int min, int sec, int frame, int subframe)
+// REMOVE Tim. marker. Changed.
+// Pos::Pos(int min, int sec, int frame, int subframe)
+//       {
+//       uint64_t time = (uint64_t)MusEGlobal::sampleRate * (min * 60UL + sec);
+//       const uint64_t f = (uint64_t)MusEGlobal::sampleRate * (frame * 100UL + subframe);
+//       switch(MusEGlobal::mtcType) {
+//             case 0:     // 24 frames sec
+//                   time += f / 2400UL;
+//                   break;
+//             case 1:     // 25
+//                   time += f / 2500UL;
+//                   break;
+//             case 2:     // 30 drop frame
+//                   time += f / 3000UL;
+//                   break;
+//             case 3:     // 30 non drop frame
+//                   time += f / 3000UL;
+//                   break;
+//             }
+//       _type  = FRAMES;
+//       _frame = time;
+//       sn     = -1;
+//       }
+
+Pos::Pos(int min, int sec, int frame, int subframe, bool ticks, LargeIntRoundMode round_mode)
       {
-      uint64_t time = (uint64_t)MusEGlobal::sampleRate * (min * 60UL + sec);
-      const uint64_t f = (uint64_t)MusEGlobal::sampleRate * (frame * 100UL + subframe);
+      const int64_t sr = (int64_t)MusEGlobal::sampleRate;
+      int64_t time = sr * (min * 60L + sec);
+      const int64_t f = sr * (frame * 100L + subframe);
+      int64_t divisor = 2400L;
       switch(MusEGlobal::mtcType) {
             case 0:     // 24 frames sec
-                  time += f / 2400UL;
+                  divisor = 2400L;
                   break;
             case 1:     // 25
-                  time += f / 2500UL;
+                  divisor = 2500L;
                   break;
             case 2:     // 30 drop frame
-                  time += f / 3000UL;
+                  divisor = 3000L;
                   break;
             case 3:     // 30 non drop frame
-                  time += f / 3000UL;
+                  divisor = 3000L;
                   break;
             }
-      _type  = FRAMES;
+            
+      time += f / divisor;
+
+      if(time < 0)
+        time = 0;
+      else if(time > INT_MAX)
+        time = INT_MAX;
+
+      if(round_mode == LargeIntRoundUp && (f % divisor) != 0)
+        time += 1;
+      else if(round_mode == LargeIntRoundNearest && (f % divisor) >= divisor / 2)
+        time += 1;
+      
       _frame = time;
-      sn     = -1;
+      if (ticks) {
+            _type   = TICKS;
+            // Convert from frames to ticks
+            _tick = MusEGlobal::tempomap.frame2tick(_frame, &sn, round_mode);
+            }
+      else {
+            _type  = FRAMES;
+            sn = -1;
       }
+
+      }
+
+Pos::Pos(int hour, int min, int sec, int msec, int usec, bool ticks, LargeIntRoundMode round_mode)
+{
+      const int64_t sr = (int64_t)MusEGlobal::sampleRate;
+      const int64_t uf = sr * (1000L * msec + usec);
+      const int64_t mf =  uf / 1000000L;
+      
+      int64_t f = sr * (hour * 3600L + min * 60L + sec) + mf;
+
+      if(f < 0)
+        f = 0;
+      else if(f > INT_MAX)
+        f = INT_MAX;
+
+      if(round_mode == LargeIntRoundUp && (uf % 1000000L) != 0)
+        ++f;
+      else if(round_mode == LargeIntRoundNearest && (uf % 1000000L) >= 500000L)
+        ++f;
+      
+      _frame = f;
+      if (ticks) {
+            _type   = TICKS;
+            // Convert from frames to ticks
+            _tick = MusEGlobal::tempomap.frame2tick(_frame, &sn, round_mode);
+            }
+      else {
+            _type  = FRAMES;
+            sn = -1;
+      }
+
+}
 
 //---------------------------------------------------------
 //   setType
@@ -129,6 +207,15 @@ void Pos::setType(TType t)
             }
       _type = t;
       }
+
+//---------------------------------------------------------
+//   snValid
+//---------------------------------------------------------
+
+bool Pos::snValid() const
+{
+  return sn == MusEGlobal::tempomap.tempoSN();
+}
 
 //---------------------------------------------------------
 //   operator=
@@ -215,6 +302,34 @@ Pos& Pos::operator-=(int a)
       return *this;
       }
 
+Pos& Pos::operator++()
+{
+      switch(_type) {
+            case FRAMES:
+                  ++_frame;
+                  break;
+            case TICKS:
+                  ++_tick;
+                  break;
+            }
+      sn = -1;          // invalidate cached values
+      return *this;
+}
+
+Pos& Pos::operator--()
+{
+      switch(_type) {
+            case FRAMES:
+                  --_frame;
+                  break;
+            case TICKS:
+                  --_tick;
+                  break;
+            }
+      sn = -1;          // invalidate cached values
+      return *this;
+}
+
 Pos operator+(Pos a, int b)
       {
       Pos c = a;
@@ -293,10 +408,10 @@ bool Pos::operator!=(const Pos& s) const
 //   tick
 //---------------------------------------------------------
 
-unsigned Pos::tick() const
+unsigned Pos::tick(LargeIntRoundMode round_mode) const
       {
       if (_type == FRAMES)
-            _tick = MusEGlobal::tempomap.frame2tick(_frame, _tick, &sn);
+            _tick = MusEGlobal::tempomap.frame2tick(_frame, _tick, &sn, round_mode);
       return _tick;
       }
 
@@ -304,10 +419,10 @@ unsigned Pos::tick() const
 //   frame
 //---------------------------------------------------------
 
-unsigned Pos::frame() const
+unsigned Pos::frame(LargeIntRoundMode round_mode) const
       {
       if (_type == TICKS)
-            _frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn);
+            _frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn, round_mode);
       return _frame;
       }
 
@@ -347,24 +462,24 @@ unsigned Pos::posValue(TType time_type) const
 //   setTick
 //---------------------------------------------------------
 
-void Pos::setTick(unsigned pos)
+void Pos::setTick(unsigned pos, LargeIntRoundMode round_mode)
       {
       _tick = pos;
       sn    = -1;
       if (_type == FRAMES)
-            _frame = MusEGlobal::tempomap.tick2frame(pos, &sn);
+            _frame = MusEGlobal::tempomap.tick2frame(pos, &sn, round_mode);
       }
 
 //---------------------------------------------------------
 //   setFrame
 //---------------------------------------------------------
 
-void Pos::setFrame(unsigned pos)
+void Pos::setFrame(unsigned pos, LargeIntRoundMode round_mode)
       {
       _frame = pos;
       sn     = -1;
       if (_type == TICKS)
-            _tick = MusEGlobal::tempomap.frame2tick(pos, &sn);
+            _tick = MusEGlobal::tempomap.frame2tick(pos, &sn, round_mode);
       }
 
 //---------------------------------------------------------
@@ -395,6 +510,23 @@ void Pos::setPosValue(unsigned val, TType time_type)
           break;
     case TICKS:
           _tick = val;
+          if (_type == FRAMES)
+                _frame = MusEGlobal::tempomap.tick2frame(_tick, &sn);
+          break;
+  }
+}
+
+void Pos::setPos(const Pos& s)
+{
+  sn = -1;
+  switch(s.type()) {
+    case FRAMES:
+          _frame = s.posValue();
+          if (_type == TICKS)
+                _tick = MusEGlobal::tempomap.frame2tick(_frame, &sn);
+          break;
+    case TICKS:
+          _tick = s.posValue();
           if (_type == FRAMES)
                 _frame = MusEGlobal::tempomap.tick2frame(_tick, &sn);
           break;
@@ -686,6 +818,24 @@ void PosLen::setLenValue(unsigned val, TType time_type)
   }
 }
 
+void PosLen::setLen(const PosLen& s)
+{
+  sn      = -1;
+  switch(s.type())
+  {
+    case FRAMES:
+        _lenFrame = s.lenValue();
+        if (type() == TICKS)
+          _lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + _lenFrame, &sn);
+      break;
+    case TICKS:
+        _lenTick = s.lenValue();
+        if (type() == FRAMES)
+          _lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + _lenTick, &sn);
+      break;
+  }
+}
+
 //---------------------------------------------------------
 //   convertLen (static)
 //---------------------------------------------------------
@@ -895,32 +1045,130 @@ void Pos::mbt(int* bar, int* beat, int* tk) const
       MusEGlobal::sigmap.tickValues(tick(), bar, beat, (unsigned*)tk);
       }
 
+// REMOVE Tim. marker. Changed.
+// //---------------------------------------------------------
+// //   msf
+// //---------------------------------------------------------
+// 
+// void Pos::msf(int* min, int* sec, int* fr, int* subFrame) const
+//       {
+//       double time = double(frame()) / double(MusEGlobal::sampleRate);
+//       *min  = int(time) / 60;
+//       *sec  = int(time) % 60;
+//       double rest = time - (*min * 60 + *sec);
+//       switch(MusEGlobal::mtcType) {
+//             case 0:     // 24 frames sec
+//                   rest *= 24;
+//                   break;
+//             case 1:     // 25
+//                   rest *= 25;
+//                   break;
+//             case 2:     // 30 drop frame
+//                   rest *= 30;
+//                   break;
+//             case 3:     // 30 non drop frame
+//                   rest *= 30;
+//                   break;
+//             }
+//       *fr = int(rest);
+//       *subFrame = int((rest- *fr)*100);
+//       }
+
 //---------------------------------------------------------
 //   msf
 //---------------------------------------------------------
 
-void Pos::msf(int* min, int* sec, int* fr, int* subFrame) const
+void Pos::msf(int* min, int* sec, int* fr, int* subFrame, LargeIntRoundMode round_mode) const
       {
-      double time = double(frame()) / double(MusEGlobal::sampleRate);
-      *min  = int(time) / 60;
-      *sec  = int(time) % 60;
-      double rest = time - (*min * 60 + *sec);
+      const uint64_t sr = (uint64_t)MusEGlobal::sampleRate;
+      const unsigned int f = frame();
+      const unsigned int time = f / sr;
+      if(min)
+        *min  = time / 60;
+      if(sec)
+        *sec  = time % 60;
+
+      unsigned int rest_fact = 24;
       switch(MusEGlobal::mtcType) {
             case 0:     // 24 frames sec
-                  rest *= 24;
+                  rest_fact = 24;
                   break;
             case 1:     // 25
-                  rest *= 25;
+                  rest_fact = 25;
                   break;
             case 2:     // 30 drop frame
-                  rest *= 30;
+                  rest_fact = 30;
                   break;
             case 3:     // 30 non drop frame
-                  rest *= 30;
+                  rest_fact = 30;
                   break;
             }
-      *fr = int(rest);
-      *subFrame = int((rest- *fr)*100);
+
+//       uint64_t rest = muse_multiply_64_div_64_to_64(frame(), rest_fact, MusEGlobal::sampleRate, LargeIntRoundDown) - 
+//                       rest_fact * (*min * 60 + *sec);
+// 
+//       *fr = int(rest);
+//       *subFrame = int((rest - *fr) * 100);
+
+//       uint64_t rest = muse_multiply_64_div_64_to_64(f, 100 * rest_fact, MusEGlobal::sampleRate, LargeIntRoundDown) -
+//                       100 * rest_fact * (*min * 60 + *sec);
+
+//       const uint64_t rest = (uint64_t)(f * 100 * rest_fact) / MusEGlobal::sampleRate -
+//                       100 * rest_fact * (*min * 60 + *sec);
+// 
+//       if(fr)
+//         *fr = int(rest / 100);
+// 
+//       if(subFrame)
+//         *subFrame = int(rest % 100);
+      
+      
+//       const uint64_t sf = ((uint64_t)(f % MusEGlobal::sampleRate) * 100 * rest_fact) / MusEGlobal::sampleRate;
+      const uint64_t ss = (uint64_t)(f % sr) * 100 * rest_fact;
+      uint64_t sf = ss / sr;
+
+      if(round_mode == LargeIntRoundUp && (ss % sr) != 0)
+        ++sf;
+      else if(round_mode == LargeIntRoundNearest && (ss % sr) >= sr / 2)
+        ++sf;
+      
+      if(subFrame)
+        *subFrame = sf % 100;
+      if(fr)
+        *fr = sf / 100;
+      }
+
+//---------------------------------------------------------
+//   msf
+//---------------------------------------------------------
+
+void Pos::msmu(/*int* hour,*/ int* min, int* sec, int* msec, int* usec, LargeIntRoundMode round_mode) const
+      {
+      const uint64_t sr = (uint64_t)MusEGlobal::sampleRate;
+      const unsigned int f = frame();
+      const unsigned int time = f / sr;
+//       if(hour)
+//         *hour = time / 3600;
+//       if(min)
+//         *min  = (time / 60) % 60;
+      if(min)
+        *min  = time / 60;
+      if(sec)
+        *sec  = time % 60;
+
+//       const uint64_t us = ((uint64_t)(f % MusEGlobal::sampleRate) * 1000000) / MusEGlobal::sampleRate;
+      const uint64_t uf = (uint64_t)(f % sr) * 1000000;
+      uint64_t us = uf / sr;
+
+      if(round_mode == LargeIntRoundUp && (uf % sr) != 0)
+        ++us;
+      else if(round_mode == LargeIntRoundNearest && (uf % sr) >= sr / 2)
+        ++us;
+
+      if(usec)
+        *usec = us % 1000;
+      if(msec)
+        *msec = us / 1000;
       }
 
 //---------------------------------------------------------

@@ -313,8 +313,12 @@ static void timebase_callback(jack_transport_state_t /* state */,
    jack_nframes_t nframes,
    jack_position_t* pos,
    int new_pos,
-   void*)
+   void* arg)
   {
+    // REMOVE Tim. clip. Added.
+    JackAudioDevice* jad = (JackAudioDevice*)arg;
+    if(jad)
+      jad->timebaseAck();
 
     if (JACK_DEBUG)
     {
@@ -436,6 +440,7 @@ JackAudioDevice::JackAudioDevice(jack_client_t* cl, char* name)
       _frameCounter = 0;
       strcpy(jackRegisteredName, name);
       _client = cl;
+      _timebaseAck = false;
 }
 
 //---------------------------------------------------------
@@ -1629,6 +1634,16 @@ bool JackAudioDevice::timebaseQuery(unsigned frames, unsigned* bar, unsigned* be
 }                
 
 //---------------------------------------------------------
+//   timebaseAck
+//   This is called by the timebase callback.
+//---------------------------------------------------------
+
+void JackAudioDevice::timebaseAck()
+{
+  _timebaseAck = true;
+}
+
+//---------------------------------------------------------
 //   systemTimeUS
 //   Return system time in microseconds as a 64-bit integer.
 //   Depends on selected clock source. 
@@ -1989,11 +2004,6 @@ void JackAudioDevice::unregisterPort(void* p)
       jack_port_unregister(_client, (jack_port_t*)p);
       }
 
-float AudioDevice::getDSP_Load()
-{
-  return 0.0f;
-}
-
 float JackAudioDevice::getDSP_Load()
 {
   return jack_cpu_load(_client);
@@ -2256,7 +2266,7 @@ int JackAudioDevice::setMaster(bool f)
     if(MusEGlobal::useJackTransport.value())
     {
       // Make Muse the Jack timebase master. Do it unconditionally (second param = 0).
-      r = jack_set_timebase_callback(_client, 0, (JackTimebaseCallback) timebase_callback, 0);
+      r = jack_set_timebase_callback(_client, 0, (JackTimebaseCallback) timebase_callback, this);
       if(MusEGlobal::debugMsg || JACK_DEBUG)
       {
         if(r)

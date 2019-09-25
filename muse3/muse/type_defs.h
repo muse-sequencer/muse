@@ -24,7 +24,7 @@
 #ifndef __TYPE_DEFS_H__
 #define __TYPE_DEFS_H__
 
-#include "stdint.h"
+#include <stdint.h>
 
 namespace MusECore {
 
@@ -77,6 +77,11 @@ namespace MusECore {
 #define SC_TRACK_MOVED                0x2000000000 // Audio or midi track's position in track list or mixer changed.
 #define SC_TRACK_RESIZED              0x4000000000 // Audio or midi track was resized in the arranger.
 #define SC_METRONOME                  0x8000000000 // Metronome lists settings such as accents changed.
+#define SC_MARKER_INSERTED            0x10000000000
+#define SC_MARKER_REMOVED             0x20000000000
+#define SC_MARKER_MODIFIED            0x40000000000
+// The marker list was rebuilt as a result of tempo changes. NOTE: Currently signals/slots are used for add/remove/modify etc.
+#define SC_MARKERS_REBUILT            0x80000000000
 #define SC_EVERYTHING                 -1           // global update
   
 typedef int64_t SongChangedFlags_t;
@@ -139,12 +144,15 @@ struct SongChangedStruct_t
 
 typedef int64_t EventID_t;
 #define MUSE_INVALID_EVENT_ID   -1
+#define MUSE_INVALID_POSITION   INT_MAX
+
 
 enum RelevantSelectedEvents { NoEventsRelevant = 0x00, NotesRelevant = 0x01, ControllersRelevant = 0x02,
                 SysexRelevant = 0x04, MetaRelevant = 0x08, WaveRelevant = 0x10,
                 AllEventsRelevant = NotesRelevant | ControllersRelevant |
                                     SysexRelevant | MetaRelevant | WaveRelevant};
 typedef int RelevantSelectedEvents_t;
+
 
 enum FunctionOptions {
   FunctionNoOptions = 0x00,
@@ -177,6 +185,7 @@ struct FunctionOptionsStruct
   
   FunctionOptionsStruct(const FunctionOptions_t& flags = FunctionEraseItemsDefault) : _flags(flags) { }
   void clear() { _flags = FunctionNoOptions; }
+  void setFlags(const FunctionOptions_t& flags) { _flags = flags; }
   void appendFlags(const FunctionOptions_t& flags) { _flags |= flags; }
   void removeFlags(const FunctionOptions_t& flags) { _flags &= ~flags; }
 };

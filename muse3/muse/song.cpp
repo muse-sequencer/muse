@@ -1213,13 +1213,25 @@ void Song::setQuantize(bool val)
 //   setMasterFlag
 //---------------------------------------------------------
 
+// REMOVE Tim. marker. Changed.
+// void Song::setMasterFlag(bool val)
+//     {
+//       _masterFlag = val;
+//       if (MusEGlobal::tempomap.setMasterFlag(cpos(), val))
+//       {
+//         emit songChanged(SC_MASTER);
+//       }      
+//     }
+
 void Song::setMasterFlag(bool val)
     {
-      _masterFlag = val;
-      if (MusEGlobal::tempomap.setMasterFlag(cpos(), val))
-      {
-        emit songChanged(SC_MASTER);
-      }      
+      // Here we have a choice of whether to allow undoing of setting the master.
+      // TODO: Add a separate config flag just for this ?
+      //if(MusEGlobal::config.selectionsUndoable)
+      //  MusEGlobal::song->applyOperation(UndoOp(UndoOp::EnableMasterTrack, val, 0), MusECore::Song::OperationUndoMode);
+      //else
+        MusEGlobal::song->applyOperation(UndoOp(UndoOp::EnableMasterTrack, val, 0), MusECore::Song::OperationExecuteUpdate);
+      
     }
 
 //---------------------------------------------------------
@@ -1803,65 +1815,140 @@ void Song::setLen(unsigned l, bool do_update)
         update();
       }
 
+// REMOVE Tim. marker. Changed.
+// //---------------------------------------------------------
+// //   addMarker
+// //---------------------------------------------------------
+// 
+// Marker* Song::addMarker(const QString& s, int t, bool lck)
+//       {
+//       Marker* marker = _markerList->add(s, t, lck);
+//       emit markerChanged(MARKER_ADD);
+//       return marker;
+//       }
+// 
+// //---------------------------------------------------------
+// //   addMarker
+// //---------------------------------------------------------
+// 
+// Marker* Song::getMarkerAt(int t)
+//       {
+//       iMarker markerI;
+//       for (markerI=_markerList->begin(); markerI != _markerList->end(); ++markerI) {
+//           if (unsigned(t) == markerI->second.tick()) //prevent of compiler warning: comparison signed/unsigned
+//             return &markerI->second;
+//           }
+//       return NULL;
+//       }
+// 
+// //---------------------------------------------------------
+// //   removeMarker
+// //---------------------------------------------------------
+// 
+// void Song::removeMarker(Marker* marker)
+//       {
+//       _markerList->remove(marker);
+//       emit markerChanged(MARKER_REMOVE);
+//       }
+// 
+// Marker* Song::setMarkerName(Marker* m, const QString& s)
+//       {
+//       m->setName(s);
+//       emit markerChanged(MARKER_NAME);
+//       return m;
+//       }
+// 
+// Marker* Song::setMarkerTick(Marker* m, int t)
+//       {
+//       Marker mm(*m);
+//       _markerList->remove(m);
+//       mm.setTick(t);
+//       m = _markerList->add(mm);
+//       emit markerChanged(MARKER_TICK);
+//       return m;
+//       }
+// 
+// Marker* Song::setMarkerLock(Marker* m, bool f)
+//       {
+//       m->setType(f ? Pos::FRAMES : Pos::TICKS);
+//       emit markerChanged(MARKER_LOCK);
+//       return m;
+//       }
+
+
 //---------------------------------------------------------
 //   addMarker
 //---------------------------------------------------------
 
-Marker* Song::addMarker(const QString& s, int t, bool lck)
+void Song::addMarker(const QString& s, unsigned t, bool lck)
       {
-      Marker* marker = _markerList->add(s, t, lck);
-      emit markerChanged(MARKER_ADD);
-      return marker;
+      Marker m(s);
+      m.setType(lck ? Pos::FRAMES : Pos::TICKS);
+      m.setTick(t);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddMarker, m));
+//       emit markerChanged(MARKER_ADD);
       }
 
+void Song::addMarker(const QString& s, const Pos& p)
+{
+      Marker m(s);
+      m.setType(p.type());
+      m.setPos(p);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddMarker, m));
+//       emit markerChanged(MARKER_ADD);
+}
+
 //---------------------------------------------------------
 //   addMarker
 //---------------------------------------------------------
 
-Marker* Song::getMarkerAt(int t)
+iMarker Song::getMarkerAt(unsigned t)
       {
-      iMarker markerI;
-      for (markerI=_markerList->begin(); markerI != _markerList->end(); ++markerI) {
-          if (unsigned(t) == markerI->second.tick()) //prevent of compiler warning: comparison signed/unsigned
-            return &markerI->second;
-          }
-      return NULL;
+      return _markerList->find(t);
       }
 
 //---------------------------------------------------------
 //   removeMarker
 //---------------------------------------------------------
 
-void Song::removeMarker(Marker* marker)
+void Song::removeMarker(const Marker& marker)
       {
-      _markerList->remove(marker);
-      emit markerChanged(MARKER_REMOVE);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteMarker, marker));
+//       emit markerChanged(MARKER_REMOVE);
       }
 
-Marker* Song::setMarkerName(Marker* m, const QString& s)
+void Song::setMarkerName(const Marker& marker, const QString& s)
       {
-      m->setName(s);
-      emit markerChanged(MARKER_NAME);
-      return m;
+//       // Grab a copy but with a new ID.
+//       Marker m = marker.copy();
+      Marker m(marker);
+      m.setName(s);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
+//       emit markerChanged(MARKER_NAME);
       }
 
-Marker* Song::setMarkerTick(Marker* m, int t)
+// void Song::setMarkerTick(const Marker& marker, const Pos& pos)
+void Song::setMarkerPos(const Marker& marker, const Pos& pos)
       {
-      Marker mm(*m);
-      _markerList->remove(m);
-      mm.setTick(t);
-      m = _markerList->add(mm);
-      emit markerChanged(MARKER_TICK);
-      return m;
+      //Marker m(marker);
+      //m.setTick(t);
+      //MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
+//       emit markerChanged(MARKER_TICK);
+
+      // Here we use the separate SetMarkerPos operation, which is 'combo-breaker' aware, to optimize repeated adjustments.
+      //MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetMarkerPos, marker, t, Pos::TICKS));
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetMarkerPos, marker, pos.posValue(), pos.type()));
       }
 
-Marker* Song::setMarkerLock(Marker* m, bool f)
+void Song::setMarkerLock(const Marker& marker, bool f)
       {
-      m->setType(f ? Pos::FRAMES : Pos::TICKS);
-      emit markerChanged(MARKER_LOCK);
-      return m;
+//       // Grab a copy but with a new ID.
+//       Marker m = marker.copy();
+      Marker m(marker);
+      m.setType(f ? Pos::FRAMES : Pos::TICKS);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
+//       emit markerChanged(MARKER_LOCK);
       }
-
 
 //---------------------------------------------------------
 //   setRecordFlag
@@ -1905,6 +1992,25 @@ void Song::endMsgCmd()
               MusEGlobal::redoAction->setEnabled(false);
             setUndoRedoText();
             emit songChanged(updateFlags);
+
+            // REMOVE Tim. marker. Added.
+            // SPECIAL for tempo or master changes: In stop mode we want
+            //  the transport to locate to the correct frame. In play mode
+            //  we simply let the transport progress naturally but we 'fake'
+            //  a new representation of transport position (_pos) in Audio::reSyncAudio()
+            //  as part of the realtime part of the tempo change operation.
+            // By now, our audio transport position (_pos) has the new tick and frame.
+            // We need to seek AFTER any song changed slots are called in case widgets
+            //  are removed etc. etc. before the posChanged signal is emitted when setPos()
+            //  is called from the seek recognition.
+//             if(!MusEGlobal::audio->isPlaying() && (updateFlags._flags & (SC_TEMPO | SC_MASTER)))
+//             {
+//               //const MusECore::Pos ap = MusEGlobal::audio->tickAndFramePos();
+//               // Don't touch Audio::_pos, make a copy.
+//               const MusECore::Pos ap = MusEGlobal::audio->pos();
+//               MusEGlobal::audioDevice->seekTransport(ap);
+//             }
+            updateTransportPos(updateFlags);
             }
       }
 
@@ -1938,6 +2044,25 @@ void Song::undo()
 
       emit songChanged(updateFlags);
       emit sigDirty();
+
+      // REMOVE Tim. marker. Added.
+      // SPECIAL for tempo or master changes: In stop mode we want
+      //  the transport to locate to the correct frame. In play mode
+      //  we simply let the transport progress naturally but we 'fake'
+      //  a new representation of transport position (_pos) in Audio::reSyncAudio()
+      //  as part of the realtime part of the tempo change operation.
+      // By now, our audio transport position (_pos) has the new tick and frame.
+      // We need to seek AFTER any song changed slots are called in case widgets
+      //  are removed etc. etc. before the posChanged signal is emitted when setPos()
+      //  is called from the seek recognition.
+//       if(!MusEGlobal::audio->isPlaying() && (updateFlags._flags & (SC_TEMPO | SC_MASTER)))
+//       {
+//         //const MusECore::Pos ap = MusEGlobal::audio->tickAndFramePos();
+//         // Don't touch Audio::_pos, make a copy.
+//         const MusECore::Pos ap = MusEGlobal::audio->pos();
+//         MusEGlobal::audioDevice->seekTransport(ap);
+//       }
+      updateTransportPos(updateFlags);
 }
 
 //---------------------------------------------------------
@@ -1970,6 +2095,25 @@ void Song::redo()
 
       emit songChanged(updateFlags);
       emit sigDirty();
+
+      // REMOVE Tim. marker. Added.
+      // SPECIAL for tempo or master changes: In stop mode we want
+      //  the transport to locate to the correct frame. In play mode
+      //  we simply let the transport progress naturally but we 'fake'
+      //  a new representation of transport position (_pos) in Audio::reSyncAudio()
+      //  as part of the realtime part of the tempo change operation.
+      // By now, our audio transport position (_pos) has the new tick and frame.
+      // We need to seek AFTER any song changed slots are called in case widgets
+      //  are removed etc. etc. before the posChanged signal is emitted when setPos()
+      //  is called from the seek recognition.
+//       if(!MusEGlobal::audio->isPlaying() && (updateFlags._flags & (SC_TEMPO | SC_MASTER)))
+//       {
+//         //const MusECore::Pos ap = MusEGlobal::audio->tickAndFramePos();
+//         // Don't touch Audio::_pos, make a copy.
+//         const MusECore::Pos ap = MusEGlobal::audio->pos();
+//         MusEGlobal::audioDevice->seekTransport(ap);
+//       }
+      updateTransportPos(updateFlags);
 }
 
 //---------------------------------------------------------
@@ -4070,6 +4214,41 @@ void Song::informAboutNewParts(const Part* orig, const Part* p1, const Part* p2,
   temp[orig].erase(orig);
   
   informAboutNewParts(temp);
+}
+
+//---------------------------------------------------------
+//   updateTransportPos
+//   called from GUI context
+// REMOVE Tim. marker. Added.
+// SPECIAL for tempo or master changes: In stop mode we want
+//  the transport to locate to the correct frame. In play mode
+//  we simply let the transport progress naturally but we 'fake'
+//  a new representation of transport position (_pos) in Audio::reSyncAudio()
+//  as part of the realtime part of the tempo change operation.
+////// By now, our audio transport position (_pos) has the new tick and frame.
+// We need to seek AFTER any song changed slots are called in case widgets
+//  are removed etc. etc. before the posChanged signal is emitted when setPos()
+//  is called from the seek recognition.
+//---------------------------------------------------------
+
+void Song::updateTransportPos(const SongChangedStruct_t& flags)
+{
+  if(!MusEGlobal::audio->isPlaying() && (flags._flags & (SC_TEMPO | SC_MASTER)))
+  {
+    //const MusECore::Pos ap = MusEGlobal::audio->tickAndFramePos();
+    // Don't touch Audio::_pos, make a copy.
+    //const MusECore::Pos ap = MusEGlobal::audio->pos();
+    
+    // Don't touch Audio::_pos, make a copy or take the tick.
+    // Note that this is only tick accurate, not frame accurate,
+    //  ie. it can only recalculate a new frame from the given tick. 
+    const MusECore::Pos p(MusEGlobal::audio->tickPos());
+
+//     // Don't touch the original, make a copy.
+//     const MusECore::Pos p(cPos());
+    
+    MusEGlobal::audioDevice->seekTransport(p.frame());
+  }
 }
 
 } // namespace MusECore

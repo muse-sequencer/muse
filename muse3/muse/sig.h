@@ -1,5 +1,3 @@
-// THIS FILE IS ORPHANED: nothing uses its functions
-
 //=========================================================
 //  MusE
 //  Linux Music Editor

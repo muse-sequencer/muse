@@ -26,6 +26,7 @@
 
 #include "type_defs.h"
 #include "sig.h"
+#include "pos.h"
 
 #include <QWidget>
 
@@ -35,10 +36,6 @@ class QLabel;
 class QSlider;
 class QToolButton;
 class QKeyEvent;
-
-namespace MusECore {
-class Pos;
-}
 
 namespace MusEGui {
 class PosEdit;
