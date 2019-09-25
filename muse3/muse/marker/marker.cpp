@@ -50,15 +50,15 @@ void Marker::read(Xml& xml)
                   case Xml::Attribut:
                         if (tag == "tick")
                         {
-                              setTick(xml.s2().toInt());
                               // REMOVE Tim. clip. Added.
                               setType(TICKS);
+                              setTick(xml.s2().toUInt());
                         }
                         // REMOVE Tim. clip. Added.
                         else if (tag == "frame")
                         {
-                              setFrame(xml.s2().toInt());
                               setType(FRAMES);
+                              setFrame(xml.s2().toUInt());
                         }
 
                         else if (tag == "lock")  // Obsolete.
@@ -113,7 +113,7 @@ Marker* MarkerList::add(const Marker& marker)
       return &i->second;
       }
 
-Marker* MarkerList::add(const QString& s, int t, bool lck)
+Marker* MarkerList::add(const QString& s, unsigned t, bool lck)
       {
       Marker marker(s);
       marker.setType(lck ? Pos::FRAMES : Pos::TICKS);
@@ -133,13 +133,13 @@ void MarkerList::write(int level, Xml& xml) const
       for (ciMarker i = begin(); i != end(); ++i) {
             const Marker& m = i->second;
 // REMOVE Tim. clip. Changed.
-//             xml.put(level, "<marker tick=\"%d\" lock=\"%d\" name=\"%s\" />",
+//             xml.put(level, "<marker tick=\"%u\" lock=\"%d\" name=\"%s\" />",
 //                m.tick(), m.type()==Pos::FRAMES, Xml::xmlString(m.name()).toLatin1().constData());
             if(m.type()==Pos::TICKS)
-              xml.put(level, "<marker tick=\"%d\" name=\"%s\" />",
+              xml.put(level, "<marker tick=\"%u\" name=\"%s\" />",
                  m.tick(), Xml::xmlString(m.name()).toLatin1().constData());
             else if(m.type()==Pos::FRAMES)
-              xml.put(level, "<marker frame=\"%d\" name=\"%s\" />",
+              xml.put(level, "<marker frame=\"%u\" name=\"%s\" />",
                  m.frame(), Xml::xmlString(m.name()).toLatin1().constData());
             }
       }
@@ -252,94 +252,94 @@ ciMarker MarkerList::findId(EventID_t id) const
 
 
 // REMOVE Tim. clip. Added.
-//---------------------------------------------------------
-// updateCurrent
-//  Sets which item is the current based on the given tick.
-//  Returns true if anything changed.
-//  Normally to be called from the audio thread only.
-//---------------------------------------------------------
-bool MarkerList::updateCurrent(unsigned int tick)
-{
-  bool currentChanged = false;
-  bool found = false;
-  iMarker i_end = end();
-  for(iMarker im = begin(); im != i_end; ++im)
-  {
-    Marker& m = im->second;
-    const unsigned int t = m.tick();
-    if(tick >= t)
-    {
-      if(found)
-      {
-        if(m.current())
-        {
-          currentChanged = true;
-          m.setCurrent(false);
-        }
-      }
-      else
-      {
-        found = true;
-        if(_iCurrent != im || !m.current())
-          currentChanged = true;
-        _iCurrent = im;
-        m.setCurrent(true);
-      }
-    }
-    else
-    {
-      if(m.current())
-        currentChanged = true;
-      m.setCurrent(false);
-    }
-  }
-  
-  if(!found && _iCurrent != cend())
-  {
-    currentChanged = true;
-    _iCurrent = cend();
-  }
-
-  return currentChanged;
-  
-//   iMarker i1 = begin();
-//   iMarker i2 = i1;
+// //---------------------------------------------------------
+// // updateCurrent
+// //  Sets which item is the current based on the given tick.
+// //  Returns true if anything changed.
+// //  Normally to be called from the audio thread only.
+// //---------------------------------------------------------
+// bool MarkerList::updateCurrent(unsigned int tick)
+// {
 //   bool currentChanged = false;
-// 
-//   for (; i1 != end(); ++i1)
+//   bool found = false;
+//   iMarker i_end = end();
+//   for(iMarker im = begin(); im != i_end; ++im)
 //   {
-//     ++i2;
-//     if (tick >= i1->first && (i2==end() || tick < i2->first))
+//     Marker& m = im->second;
+//     const unsigned int t = m.tick();
+//     if(tick >= t)
 //     {
-//       if(i1->second.current())
+//       if(found)
 //       {
-//         _iCurrent = i1;
-//         return;
+//         if(m.current())
+//         {
+//           currentChanged = true;
+//           m.setCurrent(false);
+//         }
 //       }
-// 
-//       i1->second.setCurrent(true);
-//       if(currentChanged)
+//       else
 //       {
-//         _iCurrent = i1;
-//         return;
+//         found = true;
+//         if(_iCurrent != im || !m.current())
+//           currentChanged = true;
+//         _iCurrent = im;
+//         m.setCurrent(true);
 //       }
-//       ++i1;
-//       for(; i1 != end(); ++i1)
-//       {
-//         if(i1->second.current())
-//           i1->second.setCurrent(false);
-//       }
-//       return;
 //     }
 //     else
 //     {
-//       if(i1->second.current())
-//       {
+//       if(m.current())
 //         currentChanged = true;
-//         i1->second.setCurrent(false);
-//       }
+//       m.setCurrent(false);
 //     }
 //   }
-}
+//   
+//   if(!found && _iCurrent != cend())
+//   {
+//     currentChanged = true;
+//     _iCurrent = cend();
+//   }
+// 
+//   return currentChanged;
+//   
+// //   iMarker i1 = begin();
+// //   iMarker i2 = i1;
+// //   bool currentChanged = false;
+// // 
+// //   for (; i1 != end(); ++i1)
+// //   {
+// //     ++i2;
+// //     if (tick >= i1->first && (i2==end() || tick < i2->first))
+// //     {
+// //       if(i1->second.current())
+// //       {
+// //         _iCurrent = i1;
+// //         return;
+// //       }
+// // 
+// //       i1->second.setCurrent(true);
+// //       if(currentChanged)
+// //       {
+// //         _iCurrent = i1;
+// //         return;
+// //       }
+// //       ++i1;
+// //       for(; i1 != end(); ++i1)
+// //       {
+// //         if(i1->second.current())
+// //           i1->second.setCurrent(false);
+// //       }
+// //       return;
+// //     }
+// //     else
+// //     {
+// //       if(i1->second.current())
+// //       {
+// //         currentChanged = true;
+// //         i1->second.setCurrent(false);
+// //       }
+// //     }
+// //   }
+// }
 
 } // namespace MusECore

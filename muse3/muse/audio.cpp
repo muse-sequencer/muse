@@ -1922,7 +1922,7 @@ unsigned int Audio::curFrame() const
 
 Pos Audio::tickAndFramePos() const
 {
-  Pos p(0, Pos::FRAMES);
+  Pos p(0, false);
   p.setTickAndFrame(curTickPos, _pos.frame());
   return p;
 }

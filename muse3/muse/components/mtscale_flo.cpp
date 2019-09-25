@@ -186,7 +186,7 @@ void MTScaleFlo::mouseMoveEvent(QMouseEvent* event)
             if (toRemove != MusEGlobal::song->marker()->end())
               MusEGlobal::song->removeMarker(toRemove->second);
             else
-              printf("No marker to remove\n");
+              fprintf(stderr, "No marker to remove\n");
             }
       else
             MusEGlobal::song->setPos(i, p);                             // all other cases: relocating one of the locators

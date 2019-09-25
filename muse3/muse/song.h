@@ -258,9 +258,9 @@ class Song : public QObject {
 //       Marker* setMarkerTick(Marker*, int);
 //       Marker* setMarkerLock(Marker*, bool);
 //       void setMarkerCurrent(Marker* m, bool f);
-      void addMarker(const QString& s, int t, bool lck);
+      void addMarker(const QString& s, unsigned t, bool lck);
       void addMarker(const QString& s, const Pos& p);
-      iMarker getMarkerAt(int t);
+      iMarker getMarkerAt(unsigned t);
       void removeMarker(const Marker&);
       void setMarkerName(const Marker&, const QString&);
 //       void setMarkerTick(const Marker&, const Pos& pos);

@@ -1379,7 +1379,8 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             }
           }
         break;
-        
+
+
         case UndoOp::AddMarker:
           if(uo.type == UndoOp::AddMarker && uo.newMarker->id() == n_op.newMarker->id())
           {

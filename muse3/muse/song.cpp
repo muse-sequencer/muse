@@ -1311,7 +1311,9 @@ void Song::setPos(int idx, const Pos& val, bool sig,
 //             _vcpos = val;
             _vcpos.setPos(val);
             if (isSeek && !MusEGlobal::extSyncFlag.value()) {  
-                  if (val == MusEGlobal::audio->pos())  
+//                   if (val == MusEGlobal::audio->pos())  
+//                   if (val.frame() == MusEGlobal::audio->pos().frame())
+                  if (MusEGlobal::audio->pos() == val)
                   {
                       if (MusEGlobal::heavyDebugMsg) fprintf(stderr,
                         "Song::setPos seek MusEGlobal::audio->pos already == val tick:%d frame:%d\n", val.tick(), val.frame());   
@@ -1411,39 +1413,128 @@ void Song::setPos(int idx, const Pos& val, bool sig,
             }
             }
 
-      if (idx == CPOS) {
-            const unsigned int vtick = val.tick();
-            iMarker i1 = _markerList->begin();
-            iMarker i2 = i1;
-            bool currentChanged = false;
-            for (; i1 != _markerList->end(); ++i1) {
-                  ++i2;
-                  if (vtick >= i1->first && (i2==_markerList->end() || vtick < i2->first)) {
-                        if (i1->second.current())
-                              return;
-                        i1->second.setCurrent(true);
-                        if (currentChanged) {
-                              emit markerChanged(MARKER_CUR);
-                              return;
-                              }
-                        ++i1;
-                        for (; i1 != _markerList->end(); ++i1) {
-                              if (i1->second.current())
-                                    i1->second.setCurrent(false);
-                              }
-                        emit markerChanged(MARKER_CUR);
-                        return;
-                        }
-                  else {
-                        if (i1->second.current()) {
-                              currentChanged = true;
-                              i1->second.setCurrent(false);
-                              }
-                        }
+// REMOVE Tim. clip. Changed.
+//       if (idx == CPOS) {
+//             const unsigned int vtick = val.tick();
+//             iMarker i1 = _markerList->begin();
+//             iMarker i2 = i1;
+//             bool currentChanged = false;
+//             for (; i1 != _markerList->end(); ++i1) {
+//                   ++i2;
+//                   if (vtick >= i1->first && (i2==_markerList->end() || vtick < i2->first)) {
+//                         if (i1->second.current())
+//                               return;
+//                         i1->second.setCurrent(true);
+//                         if (currentChanged) {
+//                               emit markerChanged(MARKER_CUR);
+//                               return;
+//                               }
+//                         ++i1;
+//                         for (; i1 != _markerList->end(); ++i1) {
+//                               if (i1->second.current())
+//                                     i1->second.setCurrent(false);
+//                               }
+//                         emit markerChanged(MARKER_CUR);
+//                         return;
+//                         }
+//                   else {
+//                         if (i1->second.current()) {
+//                               currentChanged = true;
+//                               i1->second.setCurrent(false);
+//                               }
+//                         }
+//                   }
+//             if (currentChanged)
+//                   emit markerChanged(MARKER_CUR);
+//             }
+
+      if(idx == CPOS)
+      {
+        const unsigned int vframe = val.frame();
+        iMarker i1 = _markerList->begin();
+        //iMarker i2 = i1;
+        bool currentChanged = false;
+        for(; i1 != _markerList->end(); ++i1)
+        {
+              const unsigned fr = i1->second.frame();
+              //bool have_current = false;
+              //const bool have_current = i1->second.current();
+              // If there are multiple items at this frame and any one of them is current,
+              //  leave it alone. It's arbitrary which one would be selected and it would
+              //  normally choose the first one, but we'll let it stick with the one that's current,
+              //  to avoid jumping around in the marker view window.
+              iMarker i2 = i1;
+//               for(; i2 != _markerList->end(); ++i2)
+//               {
+//                 if(i2->second.frame() != fr)
+//                     break;
+//                 //if(i2->second.current())
+//                 //  have_current = true;
+//               }
+//               for(; i1 != _markerList->end(); ++i1)
+//               {
+//                 if(i1->second.frame() != fr)
+//                     break;
+//                 //if(i2->second.current())
+//                 //  have_current = true;
+//                 i2 = i1;
+//               }
+              while(i2 != _markerList->end() && i2->second.frame() == fr)
+              {
+                i1 = i2;
+                ++i2;
+              }
+
+          
+              //++i2;
+              //if (vframe >= i1->second.frame() && (i2==_markerList->end() || vframe < i2->second.frame())) {
+              //if(vframe >= fr)
+              if(vframe >= fr && (i2==_markerList->end() || vframe < i2->second.frame()))
+              {
+                //++i2;
+                //if(vframe >= fr && (i2==_markerList->end() || vframe < i2->second.frame()))
+                //{
+
+                  if(i1->second.current())
+                    return;
+                  
+                  //if(have_current)
+                  //  return;
+
+                  i1->second.setCurrent(true);
+
+                  if(currentChanged)
+                  {
+                    emit markerChanged(MARKER_CUR);
+                    return;
                   }
-            if (currentChanged)
+                  //++i1;
+                  //for(; i1 != _markerList->end(); ++i1)
+                  //{
+                  //  if(i1->second.current())
+                  //    i1->second.setCurrent(false);
+                  //}
+                  for(; i2 != _markerList->end(); ++i2)
+                  {
+                    if(i2->second.current())
+                      i2->second.setCurrent(false);
+                  }
                   emit markerChanged(MARKER_CUR);
-            }
+                  return;
+                //}
+              }
+              else
+              {
+                if(i1->second.current())
+                {
+                  currentChanged = true;
+                  i1->second.setCurrent(false);
+                }
+              }
+        }
+        if(currentChanged)
+              emit markerChanged(MARKER_CUR);
+      }
       }
 
 //---------------------------------------------------------
@@ -1956,7 +2047,7 @@ void Song::setLen(unsigned l, bool do_update)
 //   addMarker
 //---------------------------------------------------------
 
-void Song::addMarker(const QString& s, int t, bool lck)
+void Song::addMarker(const QString& s, unsigned t, bool lck)
       {
       Marker m(s);
       m.setType(lck ? Pos::FRAMES : Pos::TICKS);
@@ -1978,7 +2069,7 @@ void Song::addMarker(const QString& s, const Pos& p)
 //   addMarker
 //---------------------------------------------------------
 
-iMarker Song::getMarkerAt(int t)
+iMarker Song::getMarkerAt(unsigned t)
       {
       return _markerList->find(t);
       }

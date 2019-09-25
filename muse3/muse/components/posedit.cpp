@@ -1685,12 +1685,18 @@ int PosEdit::curSegment() const
 
 void PosEdit::stepBy(int steps)
       {
-//       const bool frame_mode = smpte() && framesDisplay();
-      const MusECore::Pos::TType ttype = _pos.type();
-//       const bool frame_mode = smpte() && framesDisplay();
-      const bool frame_mode = ttype == MusECore::Pos::FRAMES;
+      // REMOVE Tim. clip. Added. Diagnostics.
+      //fprintf(stderr, "validate string:%s int:%d\n", s.toLatin1().data(), i);  
+      fprintf(stderr, "stepBy steps:%d\n", steps);  
 
-      const MusECore::Pos p(_pos);
+//       const bool frame_mode = smpte() && framesDisplay();
+//       const MusECore::Pos::TType ttype = _pos.type();
+//       const bool frame_mode = smpte() && framesDisplay();
+//       const bool frame_mode = _pos.type() == MusECore::Pos::FRAMES;
+
+//       const MusECore::Pos p(_pos);
+      MusECore::Pos p(_pos);
+
       int segment = 0;
 //       int selPos = 0;
 //       int selLen = 0;
@@ -1853,7 +1859,9 @@ void PosEdit::stepBy(int steps)
       {
         case MusECore::TimeFormatFrames:
         {
-          const unsigned int cur_val = frame_mode ? p.frame() : p.tick();
+//           const unsigned int cur_val = frame_mode ? p.frame() : p.tick();
+//           const unsigned int cur_val = p.posValue();
+          const unsigned int cur_val = p.frame();
           if(steps >= 0)
           {
             const unsigned int avail = UINT_MAX - cur_val;
@@ -1865,10 +1873,28 @@ void PosEdit::stepBy(int steps)
             if((unsigned int)-steps > cur_val)
               steps = -cur_val;
           }
-          const MusECore::Pos new_p(cur_val + steps, !frame_mode);
-          _pos.setPos(new_p);
-          updateValue();
-          emit valueChanged(_pos);
+//           const MusECore::Pos new_p(cur_val + steps, !frame_mode);
+          // Construct a new position in FRAMES from the new frame value.
+          const MusECore::Pos newPos(cur_val + steps, false);
+          p.setPos(newPos);
+          
+          // If in TICKS mode, make sure there's at least enough for one tick increment.
+          //if(!frame_mode && _pos == p)
+          // Make sure there's at least enough for one increment.
+          if(steps != 0 && _pos == p)
+          {
+            if(steps > 0)
+              p = _pos + 1;
+            else if(steps < 0)
+              p = _pos - 1;
+          }
+
+          if(_pos != p) {
+//             _pos.setPos(newPos);
+            _pos.setPos(p);
+            updateValue();
+            emit valueChanged(_pos);
+          }
         }
         break;
 
@@ -1888,17 +1914,32 @@ void PosEdit::stepBy(int steps)
               steps = -cur_val;
           }
 //           const MusECore::Pos new_p(cur_val + steps, !frame_mode);
-          const MusECore::Pos new_p(cur_val + steps, true);
-          _pos.setPos(new_p);
-          updateValue();
-          emit valueChanged(_pos);
+          // Construct a new position in TICKS from the new tick value.
+          const MusECore::Pos newPos(cur_val + steps);
+          p.setPos(newPos);
+          // If in FRAMES mode, make sure there's at least enough for one frame increment.
+          //if(frame_mode && _pos == p)
+          // Make sure there's at least enough for one increment.
+          if(steps != 0 && _pos == p)
+          {
+            if(steps > 0)
+              p = _pos + 1;
+            else if(steps < 0)
+              p = _pos - 1;
+          }
+//           _pos.setPos(new_p);
+          if(_pos != p) {
+            _pos.setPos(p);
+            updateValue();
+            emit valueChanged(_pos);
+          }
         }
         break;
 
         case MusECore::TimeFormatBBT:
         {
           segment = curSegment();
-          bool changed = false;
+//           bool changed = false;
           int bar, beat, tick;
           p.mbt(&bar, &beat, &tick);
 
@@ -1931,16 +1972,33 @@ void PosEdit::stepBy(int steps)
                 default:
                       return;
                 }
+          // Construct a new position in TICKS from the new bbt value.
           MusECore::Pos newPos(bar, beat, tick);
-          if (newPos != _pos) {
-                changed = true;
+          p.setPos(newPos);
+          // If in FRAMES mode, make sure there's at least enough for one frame increment.
+          //if(frame_mode && _pos == p)
+          // Make sure there's at least enough for one increment.
+          if(steps != 0 && _pos == p)
+          {
+            if(steps > 0)
+              p = _pos + 1;
+            else if(steps < 0)
+              p = _pos - 1;
+          }
+
+//           if (newPos != _pos) {
+          if (_pos != p) {
+//                 changed = true;
                 //_pos = newPos;
-                _pos.setPos(newPos);
-                }
-          if (changed) {
+//                 _pos.setPos(newPos);
+                _pos.setPos(p);
                 updateValue();
                 emit valueChanged(_pos);
                 }
+//           if (changed) {
+//                 updateValue();
+//                 emit valueChanged(_pos);
+//                 }
         }
         break;
 
@@ -1950,7 +2008,7 @@ void PosEdit::stepBy(int steps)
 //           bool changed = false;
           int minute, sec, frame, subframe;
           p.msf(&minute, &sec, &frame, &subframe);
-          MusECore::LargeIntRoundMode round_mode = steps > 0 ? MusECore::LargeIntRoundNearest : MusECore::LargeIntRoundDown;
+//           MusECore::LargeIntRoundMode round_mode = steps > 0 ? MusECore::LargeIntRoundNearest : MusECore::LargeIntRoundDown;
           switch(segment) {
                 case 0:
                       minute += steps;
@@ -1992,12 +2050,12 @@ void PosEdit::stepBy(int steps)
                       break;
                 case 3:
                       subframe += steps;
-//                       if (subframe < 0)
-//                             subframe = 0;
-//                       if (subframe > 99)
-//                             subframe = 99;
-                      if(steps > 0)
-                        round_mode = MusECore::LargeIntRoundUp;
+// //                       if (subframe < 0)
+// //                             subframe = 0;
+// //                       if (subframe > 99)
+// //                             subframe = 99;
+//                       if(steps > 0)
+//                         round_mode = MusECore::LargeIntRoundUp;
                       break;
                 default:
                       return;
@@ -2005,7 +2063,10 @@ void PosEdit::stepBy(int steps)
 
           // Construct a new position from the new msfs value. If the type is TICKS
           //  then set for ticks, and if we are counting upwards then set it to round up.
-          MusECore::Pos newPos(minute, sec, frame, subframe, !frame_mode, round_mode);
+//           MusECore::Pos newPos(minute, sec, frame, subframe, !frame_mode, round_mode);
+
+          // Construct a new position in FRAMES from the new msfs value.
+          MusECore::Pos newPos(minute, sec, frame, subframe);
 
 //           //unsigned int new_f = newPos.frame();
 // //           if(!smpte())
@@ -2020,12 +2081,31 @@ void PosEdit::stepBy(int steps)
 //               newPos += 1;
 //           }
 
+          
+          p.setPos(newPos);
+          
+          // If in TICKS mode, make sure there's at least enough for one tick increment.
+          //if(!frame_mode && _pos == p)
+
+          // Make sure there's at least enough for one increment.
+          if(steps != 0 && _pos == p)
+          {
+            if(steps > 0)
+              p = _pos + 1;
+            else if(steps < 0)
+              p = _pos - 1;
+          }
+
+          
             //new_f = MusECore::Pos(new_f, false);
 //           if (!(newPos == _pos)) {
-          if(newPos != _pos) {
+//           if(newPos != _pos) {
+//           if(_pos != newPos) {
+          if(_pos != p) {
 //                 changed = true;
                 //_pos = newPos;
-                _pos.setPos(newPos);
+//                 _pos.setPos(newPos);
+                _pos.setPos(p);
                 updateValue();
                 emit valueChanged(_pos);
                 }
@@ -2038,7 +2118,7 @@ void PosEdit::stepBy(int steps)
 //           bool changed = false;
           int minute, sec, msec, usec;
           p.msmu(&minute, &sec, &msec, &usec);
-          MusECore::LargeIntRoundMode round_mode = steps > 0 ? MusECore::LargeIntRoundNearest : MusECore::LargeIntRoundDown;
+//           MusECore::LargeIntRoundMode round_mode = steps > 0 ? MusECore::LargeIntRoundNearest : MusECore::LargeIntRoundDown;
           switch(segment) {
                 case 0:
                       minute += steps;
@@ -2061,20 +2141,37 @@ void PosEdit::stepBy(int steps)
                       break;
                 case 3:
                       usec += steps;
-//                       if (usec < 0)
-//                             usec = 0;
-//                       if (usec > 999)
-//                             usec = 999;
-                      if(steps > 0)
-                        round_mode = MusECore::LargeIntRoundUp;
+// //                       if (usec < 0)
+// //                             usec = 0;
+// //                       if (usec > 999)
+// //                             usec = 999;
+//                       if(steps > 0)
+//                         round_mode = MusECore::LargeIntRoundUp;
                       break;
                 default:
                       return;
                 }
 
-          // Construct a new position from the new time. If the type is TICKS then set for ticks,
-          //  and if we are counting upwards then set it to round up.
-          MusECore::Pos newPos(0, minute, sec, msec, usec, !frame_mode, round_mode);
+//           // Construct a new position from the new time. If the type is TICKS then set for ticks,
+//           //  and if we are counting upwards then set it to round up.
+//           MusECore::Pos newPos(0, minute, sec, msec, usec, !frame_mode, round_mode);
+
+          // Construct a new position in FRAMES from the new time value.
+          MusECore::Pos newPos(0, minute, sec, msec, usec, false);
+
+          p.setPos(newPos);
+
+          // If in TICKS mode, make sure there's at least enough for one tick increment.
+          //if(!frame_mode && _pos == p)
+
+          // Make sure there's at least enough for one increment.
+          if(steps != 0 && _pos == p)
+          {
+            if(steps > 0)
+              p = _pos + 1;
+            else if(steps < 0)
+              p = _pos - 1;
+          }
 
           //unsigned int new_f = newPos.frame();
 // //           if(!smpte())
@@ -2106,10 +2203,12 @@ void PosEdit::stepBy(int steps)
 //           else
             //new_f = MusECore::Pos(new_f, false);
 //           if (!(newPos == _pos)) {
-          if(newPos != _pos) {
+//           if(newPos != _pos) {
+          if(_pos != p) {
 //                 changed = true;
                 //_pos = newPos;
-                _pos.setPos(newPos);
+//                 _pos.setPos(newPos);
+                _pos.setPos(p);
                 updateValue();
                 emit valueChanged(_pos);
                 }
@@ -2430,7 +2529,7 @@ bool PosEdit::finishEdit()
               MusECore::Pos new_p(new_val, false);
               if(!frame_mode)
                 new_p.setType(MusECore::Pos::TICKS);
-              if(new_p != _pos)
+              if(_pos != new_p)
               {
                 changed = true;
     //             _pos.setPosValue(new_val);
@@ -2457,7 +2556,7 @@ bool PosEdit::finishEdit()
               MusECore::Pos new_p(new_val, true);
               if(!frame_mode)
                 new_p.setType(MusECore::Pos::TICKS);
-              if(new_p != _pos)
+              if(_pos != new_p)
               {
                 changed = true;
     //             _pos.setPosValue(new_val);
@@ -2480,7 +2579,7 @@ bool PosEdit::finishEdit()
             
           // The 'mbt' constructor.
           MusECore::Pos newPos(sl[0].toInt() - 1, sl[1].toInt() - 1, sl[2].toInt());
-          if(!(newPos == _pos)) 
+          if(_pos != newPos) 
           {
             changed = true;
             //_pos = newPos;
@@ -2500,7 +2599,7 @@ bool PosEdit::finishEdit()
           
           // The 'msfs' constructor.
           MusECore::Pos newPos(sl[0].toInt(), sl[1].toInt(), sl[2].toInt(), sl[3].toInt());
-          if(!(newPos == _pos)) 
+          if(_pos != newPos) 
           {
             changed = true;
             //_pos = newPos;
@@ -2519,8 +2618,8 @@ bool PosEdit::finishEdit()
           }  
           
           // The 'hmsms' constructor. No hours, just leave it blank.
-          MusECore::Pos newPos(0, sl[0].toInt(), sl[1].toInt(), sl[2].toInt(), sl[3].toInt());
-          if(!(newPos == _pos)) 
+          MusECore::Pos newPos(0, sl[0].toInt(), sl[1].toInt(), sl[2].toInt(), sl[3].toInt(), false);
+          if(_pos != newPos) 
           {
             changed = true;
             //_pos = newPos;
@@ -2601,7 +2700,7 @@ void PosEdit::contextMenuEvent(QContextMenuEvent* event)
   
   if(_allowedTimeFormats & MusECore::TimeFormatMSFS)
   {
-    act = menu->addAction(tr("Min:Sec:Fr:SubFr"));
+    act = menu->addAction(tr("Min:Sec:Fr:Subfr"));
     act->setData(ContextIdMSFSMode);
     act->setCheckable(true);
     act->setChecked(_timeFormatOptions == MusECore::TimeFormatMSFS);
@@ -2609,7 +2708,7 @@ void PosEdit::contextMenuEvent(QContextMenuEvent* event)
   
   if(_allowedTimeFormats & MusECore::TimeFormatMSMU)
   {
-    act = menu->addAction(tr("Min:Sec:MSec:USec"));
+    act = menu->addAction(tr("Min:Sec:mSec:uSec"));
     act->setData(ContextIdMSMUMode);
     act->setCheckable(true);
     act->setChecked(_timeFormatOptions == MusECore::TimeFormatMSMU);

@@ -90,7 +90,7 @@ class MarkerView : public TopWin {
 
    private slots:
       void addMarker();
-      void addMarker(int);
+      void addMarker(unsigned);
       void deleteMarker();
       void markerSelectionChanged();
 // REMOVE Tim. clip. Changed.

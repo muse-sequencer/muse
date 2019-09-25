@@ -54,6 +54,13 @@ class Pos {
       Pos();
       Pos(const Pos&);
       Pos(int measure, int beat, int tick);
+
+      //------------------------------------------------------------------------------------------
+      // To make it easier to work with automatic section increment/decrement over/under-flow,
+      //  these constructors accept integers which can be negative. If the end result is less than zero
+      //  or greater than UINT_MAX, the result is adjusted accordingly.
+      //------------------------------------------------------------------------------------------
+
       // Construct a position from a minute-second-frame-subframe value. If round_mode is up or nearest, any
       //  fractional frame in the result is either rounded up or to the nearest frame.
       // round_mode should normally be left as up. If ticks is true, the resulting frame is further
@@ -64,13 +71,16 @@ class Pos {
       //  is true, the resulting frame is further rounded up or to the nearest tick, and the type
       //  is set to TICKS.
       Pos(int hour, int min, int sec, int msec, int usec, bool ticks = false, LargeIntRoundMode round_mode = LargeIntRoundDown);
+      
       Pos(unsigned, bool ticks=true);
       Pos(const QString&);
       void dump(int n = 0) const;
       void mbt(int* bar, int* beat, int* tk) const;
-      void msf(int* min, int* sec, int* fr, int* subFrame) const;
+      // msf resolution is normally less than ticks or frames. Round down by default.
+      void msf(int* min, int* sec, int* fr, int* subFrame, LargeIntRoundMode round_mode = LargeIntRoundDown) const;
 // REMOVE Tim. clip. Added.
-      void msmu(/*int* hour,*/ int* min, int* sec, int* msec, int* usec) const;
+      // msmu resolution is normally greater than ticks or frames. Round up by default.
+      void msmu(/*int* hour,*/ int* min, int* sec, int* msec, int* usec, LargeIntRoundMode round_mode = LargeIntRoundUp) const;
 
       void invalidSn()  { sn = -1; }
       // Returns whether the serial number is the same as the tempomap serial number.

@@ -90,8 +90,8 @@ void MarkerItem::setMarker(const MusECore::Marker& m)
       setText(COL_NAME, m.name());
 //       setTick(m.tick());
       setPos(m);
-      if (m.type() == MusECore::Pos::FRAMES)
-            setIcon(COL_LOCK, QIcon(*lockIcon));
+      //if (m.type() == MusECore::Pos::FRAMES)
+      //      setIcon(COL_LOCK, QIcon(*lockIcon));
       setLock(m.type() == MusECore::Pos::FRAMES);
   
 }
@@ -387,13 +387,13 @@ MarkerView::MarkerView(QWidget* parent)
 
 // REMOVE Tim. clip. Changed.
       //editTick = new PosEdit;
-      editTick = new PosEdit(nullptr, MusECore::Pos::TICKS, false, MusECore::TimeFormatBBT, MusECore::TimeFormatAll);
+      editTick = new PosEdit(nullptr, MusECore::Pos::TICKS, true, MusECore::TimeFormatBBT, MusECore::TimeFormatAll);
 //       editTick->setTimeFormatOptions(MusECore::TimeFormatTicksFormatted | MusECore::TimeFormatUserAll);
       editTick->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
 
 // REMOVE Tim. clip. Changed.
 //       editSMPTE = new PosEdit;
-      editSMPTE = new PosEdit(nullptr, MusECore::Pos::FRAMES, false, MusECore::TimeFormatMSFS, MusECore::TimeFormatAll);
+      editSMPTE = new PosEdit(nullptr, MusECore::Pos::FRAMES, true, MusECore::TimeFormatMSFS, MusECore::TimeFormatAll);
 //       editSMPTE->setTimeFormatOptions(MusECore::TimeFormatFramesFormatted | MusECore::TimeFormatUserAll);
       editSMPTE->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
 
@@ -538,12 +538,19 @@ void MarkerView::writeConfiguration(int level, MusECore::Xml& xml)
       }
 
 // REMOVE Tim. clip. Changed.
+// //---------------------------------------------------------
+// //   addMarker
+// //---------------------------------------------------------
+// void MarkerView::addMarker()
+//       {
+//       addMarker(-1);
+//       }
 //---------------------------------------------------------
 //   addMarker
 //---------------------------------------------------------
 void MarkerView::addMarker()
       {
-      addMarker(-1);
+      MusEGlobal::song->addMarker(QString(""), MusEGlobal::song->cpos(), false);
       }
 // //---------------------------------------------------------
 // //   addMarker
@@ -552,9 +559,9 @@ void MarkerView::addMarker()
 //       {
 //       MusEGlobal::song->addMarker(QString(""), MusEGlobal::song->cPos());
 //       }
-void MarkerView::addMarker(int i)
+void MarkerView::addMarker(unsigned i)
       {
-      if( i==-1 ) i = MusEGlobal::song->cpos();
+//       if( i==-1 ) i = MusEGlobal::song->cpos();
       
       // Changed p3.3.43 Let MusECore::Song::addMarker emit markerChanged(MARKER_ADD)
       //  and handle it in MarkerView::markerChanged(int)
@@ -858,7 +865,8 @@ void MarkerView::updateList()
           mitem_id = mm.id();
           mitem_frame = mm.frame();
 
-          if(insert_idx == -1 && m_frame <= mitem_frame)
+//           if(insert_idx == -1 && m_frame <= mitem_frame)
+          if(insert_idx == -1 && m_frame < mitem_frame)
             insert_idx = mitem_idx;
 
           if(m_id == mitem_id)

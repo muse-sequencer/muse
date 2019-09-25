@@ -91,11 +91,12 @@ Pos::Pos(int measure, int beat, int tick)
 
 Pos::Pos(int min, int sec, int frame, int subframe, bool ticks, LargeIntRoundMode round_mode)
       {
+      const int64_t sr = (int64_t)MusEGlobal::sampleRate;
 //       uint64_t time = (uint64_t)MusEGlobal::sampleRate * (min * 60UL + sec);
 //       const uint64_t f = (uint64_t)MusEGlobal::sampleRate * (frame * 100UL + subframe);
 //       uint64_t divisor = 2400UL;
-      int64_t time = (int64_t)MusEGlobal::sampleRate * (min * 60L + sec);
-      const int64_t f = (int64_t)MusEGlobal::sampleRate * (frame * 100L + subframe);
+      int64_t time = sr * (min * 60L + sec);
+      const int64_t f = sr * (frame * 100L + subframe);
       int64_t divisor = 2400L;
       switch(MusEGlobal::mtcType) {
             case 0:     // 24 frames sec
@@ -121,8 +122,10 @@ Pos::Pos(int min, int sec, int frame, int subframe, bool ticks, LargeIntRoundMod
 
       if(time < 0)
         time = 0;
-      else if(time > UINT32_MAX)
-        time = UINT32_MAX;
+//       else if(time > UINT32_MAX)
+//         time = UINT32_MAX;
+      else if(time > INT_MAX)
+        time = INT_MAX;
 
 //       // MSF resolution is less than frame resolution. 
 //       // Round up so that the reciprocal function (frame to MSF) matches value for value.
@@ -131,9 +134,9 @@ Pos::Pos(int min, int sec, int frame, int subframe, bool ticks, LargeIntRoundMod
 
 
       if(round_mode == LargeIntRoundUp && (f % divisor) != 0)
-        time += 1;
+        ++time;
       else if(round_mode == LargeIntRoundNearest && (f % divisor) >= divisor / 2)
-        time += 1;
+        ++time;
       
 
 // REMOVE Tim. clip. Changed.
@@ -185,8 +188,10 @@ Pos::Pos(int hour, int min, int sec, int msec, int usec, bool ticks, LargeIntRou
 
       if(f < 0)
         f = 0;
-      else if(f > UINT32_MAX)
-        f = UINT32_MAX;
+//       else if(f > UINT32_MAX)
+//         f = UINT32_MAX;
+      else if(f > INT_MAX)
+        f = INT_MAX;
 
       // REMOVE Tim. clip. Added. Diagnostics.
       fprintf(stderr, "Pos: uf:%ld uf mod 1000000:%ld round_mode:%d\n", uf, uf % 1000000L, round_mode);
@@ -1155,10 +1160,11 @@ void Pos::mbt(int* bar, int* beat, int* tk) const
 //   msf
 //---------------------------------------------------------
 
-void Pos::msf(int* min, int* sec, int* fr, int* subFrame) const
+void Pos::msf(int* min, int* sec, int* fr, int* subFrame, LargeIntRoundMode round_mode) const
       {
+      const uint64_t sr = (uint64_t)MusEGlobal::sampleRate;
       const unsigned int f = frame();
-      const unsigned int time = f / MusEGlobal::sampleRate;
+      const unsigned int time = f / sr;
       if(min)
         *min  = time / 60;
       if(sec)
@@ -1199,7 +1205,15 @@ void Pos::msf(int* min, int* sec, int* fr, int* subFrame) const
 //         *subFrame = int(rest % 100);
       
       
-      const uint64_t sf = ((uint64_t)(f % MusEGlobal::sampleRate) * 100 * rest_fact) / MusEGlobal::sampleRate;
+//       const uint64_t sf = ((uint64_t)(f % MusEGlobal::sampleRate) * 100 * rest_fact) / MusEGlobal::sampleRate;
+      const uint64_t ss = (uint64_t)(f % sr) * 100 * rest_fact;
+      uint64_t sf = ss / sr;
+      
+      if(round_mode == LargeIntRoundUp && (ss % sr) != 0)
+        ++sf;
+      else if(round_mode == LargeIntRoundNearest && (ss % sr) >= sr / 2)
+        ++sf;
+      
       if(subFrame)
         *subFrame = sf % 100;
       if(fr)
@@ -1211,10 +1225,11 @@ void Pos::msf(int* min, int* sec, int* fr, int* subFrame) const
 //   msf
 //---------------------------------------------------------
 
-void Pos::msmu(/*int* hour,*/ int* min, int* sec, int* msec, int* usec) const
+void Pos::msmu(/*int* hour,*/ int* min, int* sec, int* msec, int* usec, LargeIntRoundMode round_mode) const
       {
+      const uint64_t sr = (uint64_t)MusEGlobal::sampleRate;
       const unsigned int f = frame();
-      const unsigned int time = f / MusEGlobal::sampleRate;
+      const unsigned int time = f / sr;
 //       if(hour)
 //         *hour = time / 3600;
 //       if(min)
@@ -1224,8 +1239,15 @@ void Pos::msmu(/*int* hour,*/ int* min, int* sec, int* msec, int* usec) const
       if(sec)
         *sec  = time % 60;
 
-      const uint64_t us = ((uint64_t)(f % MusEGlobal::sampleRate) * 1000000) / MusEGlobal::sampleRate;
-      
+//       const uint64_t us = ((uint64_t)(f % MusEGlobal::sampleRate) * 1000000) / MusEGlobal::sampleRate;
+      const uint64_t uf = (uint64_t)(f % sr) * 1000000;
+      uint64_t us = uf / sr;
+
+      if(round_mode == LargeIntRoundUp && (uf % sr) != 0)
+        ++us;
+      else if(round_mode == LargeIntRoundNearest && (uf % sr) >= sr / 2)
+        ++us;
+
       if(usec)
         *usec = us % 1000;
       if(msec)

@@ -217,7 +217,7 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
             if (toRemove != MusEGlobal::song->marker()->end())
               MusEGlobal::song->removeMarker(toRemove->second);
             else
-              printf("No marker to remove\n");
+              fprintf(stderr, "No marker to remove\n");
             }
       else
             MusEGlobal::song->setPos(i, p);                             // all other cases: relocating one of the locators
@@ -308,7 +308,9 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
                   if(waveMode)
 // REMOVE Tim. clip. Changed.
 //                     xe = MusEGlobal::tempomap.tick2frame(mm->first);
-                    xe = MusEGlobal::tempomap.tick2frame(mm->second.frame());
+// Hm, mistake?
+//                     xe = MusEGlobal::tempomap.tick2frame(mm->second.frame());
+                    xe = mm->second.frame();
                   else
 // REMOVE Tim. clip. Changed.
 //                     xe = mm->first;
