@@ -232,7 +232,7 @@ void PosEdit::setValue(const MusECore::Pos& time)
         // Must check whether actual values dependent on tempo or sig changed...
         if (_smpte) {
               int minute, sec, frame, subframe;
-              time.msf(&minute, &sec, &frame, &subframe);
+              time.msf(nullptr, &minute, &sec, &frame, &subframe);
               if(minute != cur_minute || sec != cur_sec || frame != cur_frame || subframe != cur_subframe)
                 updateValue();
               }
@@ -270,7 +270,7 @@ void PosEdit::updateValue()
       {
       QString s;
       if (_smpte) {
-            _pos.msf(&cur_minute, &cur_sec, &cur_frame, &cur_subframe);
+            _pos.msf(nullptr, &cur_minute, &cur_sec, &cur_frame, &cur_subframe);
             s = QString("%1:%2:%3:%4")
                 .arg(cur_minute,   3, 10, QLatin1Char('0'))
                 .arg(cur_sec,      2, 10, QLatin1Char('0'))
@@ -298,7 +298,7 @@ QAbstractSpinBox::StepEnabled PosEdit::stepEnabled() const
 
       if (_smpte) {
              int minute, sec, frame, subframe;
-            _pos.msf(&minute, &sec, &frame, &subframe);
+            _pos.msf(nullptr, &minute, &sec, &frame, &subframe);
             switch(segment) {
                   case 0:
                         if (minute == 0)
@@ -546,7 +546,7 @@ void PosEdit::stepBy(int steps)
 
       if (_smpte) {
              int minute, sec, frame, subframe;
-            _pos.msf(&minute, &sec, &frame, &subframe);
+            _pos.msf(nullptr, &minute, &sec, &frame, &subframe);
             switch(segment) {
                   case 0:
                         minute += steps;

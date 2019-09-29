@@ -1078,13 +1078,20 @@ void Pos::mbt(int* bar, int* beat, int* tk) const
 //   msf
 //---------------------------------------------------------
 
-void Pos::msf(int* min, int* sec, int* fr, int* subFrame, LargeIntRoundMode round_mode) const
+void Pos::msf(int* hour, int* min, int* sec, int* fr, int* subFrame, LargeIntRoundMode round_mode) const
       {
       const uint64_t sr = (uint64_t)MusEGlobal::sampleRate;
       const unsigned int f = frame();
       const unsigned int time = f / sr;
-      if(min)
+      if(hour)
+      {
+        *hour = time / 3600;
+        if(min)
+          *min  = (time / 60) % 60;
+      }
+      else if(min)
         *min  = time / 60;
+
       if(sec)
         *sec  = time % 60;
 
@@ -1142,17 +1149,20 @@ void Pos::msf(int* min, int* sec, int* fr, int* subFrame, LargeIntRoundMode roun
 //   msf
 //---------------------------------------------------------
 
-void Pos::msmu(/*int* hour,*/ int* min, int* sec, int* msec, int* usec, LargeIntRoundMode round_mode) const
+void Pos::msmu(int* hour, int* min, int* sec, int* msec, int* usec, LargeIntRoundMode round_mode) const
       {
       const uint64_t sr = (uint64_t)MusEGlobal::sampleRate;
       const unsigned int f = frame();
       const unsigned int time = f / sr;
-//       if(hour)
-//         *hour = time / 3600;
-//       if(min)
-//         *min  = (time / 60) % 60;
-      if(min)
+      if(hour)
+      {
+        *hour = time / 3600;
+        if(min)
+          *min  = (time / 60) % 60;
+      }
+      else if(min)
         *min  = time / 60;
+
       if(sec)
         *sec  = time % 60;
 
