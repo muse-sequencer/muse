@@ -272,27 +272,32 @@ void MarkerItem::setPos(const MusECore::Pos& v)
           .arg(tick,         3, 10, QLatin1Char('0'));
       setText(COL_TICK, s);
 
-      double time = double(v.frame())/double(MusEGlobal::sampleRate);
-      int hour = int(time) / 3600;
-      int min  = (int(time) % 3600)/60;
-      int sec  = int(time) % 60;
-      double rest = time - (hour*3600 + min * 60 + sec);
-      switch(MusEGlobal::mtcType) {
-            case 0:     // 24 frames sec
-                  rest *= 24;
-                  break;
-            case 1:     // 25
-                  rest *= 25;
-                  break;
-            case 2:     // 30 drop frame
-                  rest *= 30;
-                  break;
-            case 3:     // 30 non drop frame
-                  rest *= 30;
-                  break;
-            }
-      int frame = int(rest);
-      int subframe = int((rest-frame)*100);
+      // REMOVE Tim. clip. Changed.
+//       double time = double(v.frame())/double(MusEGlobal::sampleRate);
+//       int hour = int(time) / 3600;
+//       int min  = (int(time) % 3600)/60;
+//       int sec  = int(time) % 60;
+//       double rest = time - (hour*3600 + min * 60 + sec);
+//       switch(MusEGlobal::mtcType) {
+//             case 0:     // 24 frames sec
+//                   rest *= 24;
+//                   break;
+//             case 1:     // 25
+//                   rest *= 25;
+//                   break;
+//             case 2:     // 30 drop frame
+//                   rest *= 30;
+//                   break;
+//             case 3:     // 30 non drop frame
+//                   rest *= 30;
+//                   break;
+//             }
+//       int frame = int(rest);
+//       int subframe = int((rest-frame)*100);
+      
+      int hour, min, sec, frame, subframe;
+      v.msf(&hour, &min, &sec, &frame, &subframe);
+      
       s = QString("%1:%2:%3:%4:%5")
           .arg(hour,     2, 10, QLatin1Char('0'))
           .arg(min,      2, 10, QLatin1Char('0'))

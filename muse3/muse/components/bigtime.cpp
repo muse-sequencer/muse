@@ -396,7 +396,7 @@ bool BigTime::setString(const MusECore::Pos v)
       
       int min, sec, frame, subframe;
       
-      v.msf(&min, &sec, &frame, &subframe);
+      v.msf(nullptr, &min, &sec, &frame, &subframe);
       
       QString s;
 

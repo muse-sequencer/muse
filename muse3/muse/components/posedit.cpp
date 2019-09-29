@@ -750,7 +750,7 @@ void PosEdit::setValue(const MusECore::Pos& time)
       if(_pos == time)
       {
         int minute, sec, frame, subframe;
-        time.msf(&minute, &sec, &frame, &subframe);
+        time.msf(nullptr, &minute, &sec, &frame, &subframe);
         if(minute != cur_minute || sec != cur_sec || frame != cur_frame || subframe != cur_subframe)
           updateValue();
       }
@@ -767,7 +767,7 @@ void PosEdit::setValue(const MusECore::Pos& time)
       if(_pos == time)
       {
         int minute, sec, msec, usec;
-        time.msmu(&minute, &sec, &msec, &usec);
+        time.msmu(nullptr, &minute, &sec, &msec, &usec);
         if(minute != cur_msmu_minute || sec != cur_msmu_sec || msec != cur_msmu_msec || usec != cur_msmu_usec)
           updateValue();
       }
@@ -907,7 +907,7 @@ void PosEdit::updateValue()
 
         case MusECore::TimeFormatMSFS:
         {
-          p.msf(&cur_minute, &cur_sec, &cur_frame, &cur_subframe);
+          p.msf(nullptr, &cur_minute, &cur_sec, &cur_frame, &cur_subframe);
           s = QString("%1:%2:%3:%4")
               .arg(cur_minute,   3, 10, QLatin1Char('0'))
               .arg(cur_sec,      2, 10, QLatin1Char('0'))
@@ -918,7 +918,7 @@ void PosEdit::updateValue()
 
         case MusECore::TimeFormatMSMU:
         {
-          p.msmu(&cur_msmu_minute, &cur_msmu_sec, &cur_msmu_msec, &cur_msmu_usec);
+          p.msmu(nullptr, &cur_msmu_minute, &cur_msmu_sec, &cur_msmu_msec, &cur_msmu_usec);
           s = QString("%1:%2:%3:%4")
               .arg(cur_msmu_minute,   3, 10, QLatin1Char('0'))
               .arg(cur_msmu_sec,      2, 10, QLatin1Char('0'))
@@ -2007,7 +2007,7 @@ void PosEdit::stepBy(int steps)
           segment = curSegment();
 //           bool changed = false;
           int minute, sec, frame, subframe;
-          p.msf(&minute, &sec, &frame, &subframe);
+          p.msf(nullptr, &minute, &sec, &frame, &subframe);
 //           MusECore::LargeIntRoundMode round_mode = steps > 0 ? MusECore::LargeIntRoundNearest : MusECore::LargeIntRoundDown;
           switch(segment) {
                 case 0:
@@ -2117,7 +2117,7 @@ void PosEdit::stepBy(int steps)
           segment = curSegment();
 //           bool changed = false;
           int minute, sec, msec, usec;
-          p.msmu(&minute, &sec, &msec, &usec);
+          p.msmu(nullptr, &minute, &sec, &msec, &usec);
 //           MusECore::LargeIntRoundMode round_mode = steps > 0 ? MusECore::LargeIntRoundNearest : MusECore::LargeIntRoundDown;
           switch(segment) {
                 case 0:
