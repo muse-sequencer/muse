@@ -44,8 +44,7 @@ add_library ( xml_module SHARED
 ##
 
 set_target_properties( xml_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_xml_module
+      PROPERTIES OUTPUT_NAME muse_xml_module
       )
 
 ##

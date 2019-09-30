@@ -34,7 +34,6 @@ file (GLOB muse_string_source_files
 ## Define target
 ##
 add_library(muse_string ${MODULES_BUILD}
-      ${PROJECT_BINARY_DIR}/all-pic.h
       ${muse_string_source_files}
       )
 
@@ -50,10 +49,9 @@ set (FILES_TO_TRANSLATE
 ##
 ## Compilation flags and target name
 ##
-set_target_properties( muse_string
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-      ## OUTPUT_NAME muse_helper_str
-      )
+## set_target_properties( muse_string
+      ## PROPERTIES OUTPUT_NAME muse_helper_str
+##      )
 
 ##
 ## Install location

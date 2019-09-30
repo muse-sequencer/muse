@@ -44,7 +44,6 @@ file (GLOB synti_source_files
 ## Define target
 ##
 add_library(synti ${MODULES_BUILD}
-      ${PROJECT_BINARY_DIR}/all-pic.h
       ${mess_mocs}
       ${synti_source_files}
       )
@@ -67,8 +66,7 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties( synti
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-      OUTPUT_NAME muse_synti
+      PROPERTIES OUTPUT_NAME muse_synti
       )
 
 ##

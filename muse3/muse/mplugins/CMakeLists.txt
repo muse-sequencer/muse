@@ -90,8 +90,7 @@ set (FILES_TO_TRANSLATE
 #
 set_target_properties ( mplugins
       # PROPERTIES PREFIX ""
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_mplugins
+      PROPERTIES OUTPUT_NAME muse_mplugins
       )
 
 ##

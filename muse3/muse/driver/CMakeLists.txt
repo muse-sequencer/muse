@@ -46,7 +46,6 @@ endif (HAVE_RTAUDIO)
 ## Define target
 ##
 add_library ( driver ${MODULES_BUILD}
-       # ${PROJECT_BINARY_DIR}/all.h.pch
        ${driver_source_files}
        )
 
@@ -63,8 +62,7 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties( driver
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_driver
+      PROPERTIES OUTPUT_NAME muse_driver
       )
 
 ##

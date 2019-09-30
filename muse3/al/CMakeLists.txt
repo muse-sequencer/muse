@@ -44,7 +44,6 @@ endif (USE_SSE)
 ## Define target
 ##
 add_library(al ${MODULES_BUILD}
-      ${PROJECT_BINARY_DIR}/all.h
       ${al_source_files}
       )
 
@@ -53,14 +52,6 @@ add_library(al ${MODULES_BUILD}
 ##
 set_target_properties( al
       PROPERTIES OUTPUT_NAME muse_al
-      )
-set_source_files_properties(
-      al.cpp
-      dsp.cpp 
-      dspXMM.cpp
-      sig.cpp
-      xml.cpp
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       )
 set_source_files_properties(
       dspSSE.cpp
