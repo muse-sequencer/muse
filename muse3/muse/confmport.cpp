@@ -1275,7 +1275,7 @@ void MPConfig::deviceSelectionChanged()
 
 void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if(!(flags._flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_INSTRUMENT)))
+      if(!(flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_INSTRUMENT)))
         return;
     
 #ifdef ALSA_SUPPORT

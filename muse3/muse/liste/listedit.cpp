@@ -199,14 +199,14 @@ void ListEdit::songChanged(MusECore::SongChangedStruct_t type)
       if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
        
-      if (type._flags == 0)
+      if (!type)
             return;
-      if (type._flags & (// SC_MIDI_TRACK_PROP  FIXME Needed, but might make it slow!
+      if (type & (// SC_MIDI_TRACK_PROP  FIXME Needed, but might make it slow!
            SC_PART_REMOVED | SC_PART_MODIFIED 
          | SC_PART_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED
          | SC_SIG  // Required so that bar/beat/tick of listed items are shown correctly.
          | SC_EVENT_INSERTED | SC_SELECTION)) {
-            if (type._flags & (SC_PART_REMOVED | SC_PART_INSERTED | SC_PART_MODIFIED | SC_SIG))
+            if (type & (SC_PART_REMOVED | SC_PART_INSERTED | SC_PART_MODIFIED | SC_SIG))
                   genPartlist();
             // close window if editor has no parts anymore
             if (parts()->empty()) {
@@ -214,7 +214,7 @@ void ListEdit::songChanged(MusECore::SongChangedStruct_t type)
                   return;
                   }
             liste->setSortingEnabled(false);
-            if (type._flags == SC_SELECTION) {
+            if (type == SC_SELECTION) {
                   // BUGFIX: I found the keyboard modifier states affect how QTreeWidget::setCurrentItem() operates.
                   //         So for example (not) holding shift while lassoo-ing notes in piano roll affected 
                   //          whether multiple items were selected in this event list editor! 

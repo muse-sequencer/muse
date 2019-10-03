@@ -56,7 +56,7 @@ public:
       enum EventType { SONG_UPDATE=0, SONGLEN_CHANGE, SONG_POSCHANGE, SONG_SETPLAY, SONG_SETSTOP, SONG_REWIND, SONG_SETMUTE,
              SONG_SETCTRL, SONG_SETAUDIOVOL, SONG_IMPORT_PART, SONG_TOGGLE_EFFECT, SONG_ADD_TRACK, SONG_CHANGE_TRACKNAME,
              SONG_DELETE_TRACK };
-      QPybridgeEvent( QPybridgeEvent::EventType _type, int _p1=0, int _p2=0);
+      QPybridgeEvent( QPybridgeEvent::EventType _type, int _p1=0, int _p2=0, const SongChangedStruct_t& _sc1 = SongChangedStruct_t());
       EventType getType() { return type; }
       int getP1() { return p1; }
       int getP2() { return p2; }
@@ -66,6 +66,7 @@ public:
       const QString& getS2() { return s2; }
       double getD1() { return d1; }
       void setD1(double _d1) { d1 = _d1; }
+      SongChangedStruct_t getSC1() { return sc1; }
 
 private:
       EventType type;
@@ -73,15 +74,17 @@ private:
       double d1;
       QString s1;
       QString s2;
+      SongChangedStruct_t sc1;
 
 };
 
 //------------------------------------------------------------
-QPybridgeEvent::QPybridgeEvent(QPybridgeEvent::EventType _type, int _p1, int _p2)
+QPybridgeEvent::QPybridgeEvent(QPybridgeEvent::EventType _type, int _p1, int _p2, const SongChangedStruct_t& _sc1)
       :QEvent(QEvent::User),
       type(_type),
       p1(_p1),
-      p2(_p2)
+      p2(_p2),
+      sc1(_sc1)
 {
 }
 //------------------------------------------------------------
@@ -409,7 +412,7 @@ PyObject* createPart(PyObject*, PyObject* args)
       addPyPartEventsToMusePart(npart, part);
 
       MusEGlobal::song->addPart(npart);
-      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, SC_TRACK_MODIFIED);
+      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED);
       QApplication::postEvent(MusEGlobal::song, pyevent);
 
       Py_RETURN_NONE;
@@ -463,7 +466,7 @@ PyObject* modifyPart(PyObject*, PyObject* part)
       MusEGlobal::song->changePart(opart, npart);
       //MusEGlobal::song->endUndo(SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_INSERTED); // Crash! Probably since the call ends up in Qt GUI thread from this thread
 
-      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_INSERTED);
+      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_INSERTED);
       QApplication::postEvent(MusEGlobal::song, pyevent);
 
 
@@ -486,7 +489,7 @@ PyObject* deletePart(PyObject*, PyObject* args)
             }
 
       MusEGlobal::song->removePart(part);
-      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, SC_TRACK_MODIFIED | SC_PART_REMOVED);
+      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED | SC_PART_REMOVED);
       QApplication::postEvent(MusEGlobal::song, pyevent);
       Py_RETURN_NONE;
 }
@@ -580,7 +583,7 @@ PyObject* setMidiTrackParameter(PyObject*, PyObject* args)
             }
 
       if (changed) {
-            QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, SC_TRACK_MODIFIED);
+            QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED);
             QApplication::postEvent(MusEGlobal::song, pyevent);
             }
 
@@ -864,7 +867,7 @@ PyObject* changeTrackName(PyObject*, PyObject* args)
       pyevent->setS1(trackname);
       pyevent->setS2(newname);
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      QPybridgeEvent* pyevent2 = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, SC_TRACK_MODIFIED);
+      QPybridgeEvent* pyevent2 = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED);
       QApplication::postEvent(MusEGlobal::song, pyevent2);
       return Py_BuildValue("b", true);
 }
@@ -1216,7 +1219,7 @@ bool Song::event(QEvent* _e)
       QPybridgeEvent* e = (QPybridgeEvent*) _e;
       switch (e->getType()) {
             case QPybridgeEvent::SONG_UPDATE:
-                  this->update(e->getP1());
+                  this->update(e->getSC1());
                   break;
             case QPybridgeEvent::SONGLEN_CHANGE:
                   this->setLen(e->getP1());

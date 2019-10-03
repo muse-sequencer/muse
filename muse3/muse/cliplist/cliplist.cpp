@@ -200,7 +200,7 @@ void ClipListEdit::closeEvent(QCloseEvent* e)
 
 void ClipListEdit::songChanged(MusECore::SongChangedStruct_t type)
       {
-      if(type._flags & (SC_CLIP_MODIFIED | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))
+      if(type & (SC_CLIP_MODIFIED | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))
         updateList();
       }
 

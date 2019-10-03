@@ -1468,20 +1468,20 @@ void Song::revertOperationGroup2(Undo& /*operations*/)
 
         // Special for tempo: Need to normalize the tempo list, and resync audio. 
         // To save time this is done here, not item by item.
-        if(updateFlags._flags & SC_TEMPO)
+        if(updateFlags & SC_TEMPO)
         {
           MusEGlobal::tempomap.normalize();
           MusEGlobal::audio->reSyncAudio();
         }
         // Special for sig: Need to normalize the signature list. 
         // To save time this is done here, not item by item.
-        if(updateFlags._flags & SC_SIG)
+        if(updateFlags & SC_SIG)
           MusEGlobal::sigmap.normalize();
 
         // Special for track inserted: If it's an aux track, need to add missing aux sends to all tracks,
         //  else if it's another audio track need to add aux sends to it.
         // To save from complexity this is done here, after all the operations.
-        if(updateFlags._flags & SC_TRACK_INSERTED)
+        if(updateFlags & SC_TRACK_INSERTED)
         {
           int n = _auxs.size();
           for(iTrack i = _tracks.begin(); i != _tracks.end(); ++i) 
@@ -1505,20 +1505,20 @@ void Song::executeOperationGroup2(Undo& /*operations*/)
         
         // Special for tempo if altered: Need to normalize the tempo list, and resync audio. 
         // To save time this is done here, not item by item.
-        if(updateFlags._flags & SC_TEMPO)
+        if(updateFlags & SC_TEMPO)
         {
           MusEGlobal::tempomap.normalize();
           MusEGlobal::audio->reSyncAudio();
         }
         // Special for sig: Need to normalize the signature list. 
         // To save time this is done here, not item by item.
-        if(updateFlags._flags & SC_SIG)
+        if(updateFlags & SC_SIG)
           MusEGlobal::sigmap.normalize();
         
         // Special for track inserted: If it's an aux track, need to add missing aux sends to all tracks,
         //  else if it's another audio track need to add aux sends to it.
         // To save from complexity this is done here, after all the operations.
-        if(updateFlags._flags & SC_TRACK_INSERTED)
+        if(updateFlags & SC_TRACK_INSERTED)
         {
           int n = _auxs.size();
           for(iTrack i = _tracks.begin(); i != _tracks.end(); ++i) 

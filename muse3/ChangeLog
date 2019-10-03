@@ -1,3 +1,9 @@
+03.10.2019
+      - Redesign: All SongChanged flags are now 128-bit (split two 64-bit). (Tim)
+        128 bits of flags split as two 64-bit values in class SongChangedStruct_t,
+         to support 32-bit OSs where 128 bit integers may not be available.
+        All the SC_* #defines are now wrapped in a SongChangedStruct_t constructor.
+        The new upper 64 bits are optional. They default to zero in the constructor.
 15.09.2019
       - Event List Editor: Rebuild upon time signature changes, shows correct BBTs. (Tim)
 03.09.2019

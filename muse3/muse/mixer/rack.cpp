@@ -240,7 +240,7 @@ EffectRack::~EffectRack()
 
 void EffectRack::songChanged(MusECore::SongChangedStruct_t typ)
       {
-      if (typ._flags & (SC_ROUTE | SC_RACK)) {
+      if (typ & (SC_ROUTE | SC_RACK)) {
             updateContents();
        	    }
       }

@@ -678,7 +678,7 @@ void ScoreEdit::song_changed(MusECore::SongChangedStruct_t flags)
     if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
 
-    if (flags._flags & (SC_SELECTION | SC_EVENT_MODIFIED | SC_EVENT_REMOVED))
+    if (flags & (SC_SELECTION | SC_EVENT_MODIFIED | SC_EVENT_REMOVED))
     {
         map<const MusECore::Event*,
           const MusECore::Part*> selection=get_events(score_canvas->get_all_parts(),1, MusECore::AllEventsRelevant);
@@ -1809,11 +1809,11 @@ void ScoreCanvas::song_changed(MusECore::SongChangedStruct_t flags)
     if(parent && parent->deleting())  // Ignore while while deleting to prevent crash.
         return;
 
-    if (flags._flags & (SC_PART_MODIFIED | SC_PART_REMOVED | SC_PART_INSERTED | SC_TRACK_REMOVED))
+    if (flags & (SC_PART_MODIFIED | SC_PART_REMOVED | SC_PART_INSERTED | SC_TRACK_REMOVED))
     {
         update_parts();
 
-        if (flags._flags & (SC_PART_REMOVED | SC_TRACK_REMOVED))
+        if (flags & (SC_PART_REMOVED | SC_TRACK_REMOVED))
         {
             for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
                 it->cleanup_parts();
@@ -1829,7 +1829,7 @@ void ScoreCanvas::song_changed(MusECore::SongChangedStruct_t flags)
         }
     }
 
-    if (flags._flags & (SC_PART_MODIFIED |
+    if (flags & (SC_PART_MODIFIED |
                  SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED |
                  SC_SIG  | SC_KEY) )
     {
@@ -1844,7 +1844,7 @@ void ScoreCanvas::song_changed(MusECore::SongChangedStruct_t flags)
         emit canvas_width_changed(canvas_width());
     }
 
-    if (flags._flags & SC_SELECTION)
+    if (flags & SC_SELECTION)
     {
         redraw();
     }

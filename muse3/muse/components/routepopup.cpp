@@ -2140,11 +2140,11 @@ void RoutePopupMenu::keyPressEvent(QKeyEvent* e)
 void RoutePopupMenu::songChanged(MusECore::SongChangedStruct_t val)
 {
   DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::songChanged flags:%ld", (long int)val._flags);
-  if(val._flags & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))
+  if(val & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))
     updateRouteMenus();
-  if(val._flags & SC_PORT_ALIAS_PREFERENCE)
+  if(val & SC_PORT_ALIAS_PREFERENCE)
     preferredPortAliasChanged();
-  if(val._flags & SC_ROUTER_CHANNEL_GROUPING)
+  if(val & SC_ROUTER_CHANNEL_GROUPING)
     routerChannelGroupingChanged();
 }
 

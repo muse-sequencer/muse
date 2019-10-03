@@ -81,8 +81,8 @@ void MTScale::configChanged()
 
 void MTScale::songChanged(MusECore::SongChangedStruct_t type)
       {
-      if (type._flags & (SC_SIG|SC_TEMPO)) {
-           if ((type._flags & SC_TEMPO) && waveMode) {
+      if (type & (SC_SIG|SC_TEMPO)) {
+           if ((type & SC_TEMPO) && waveMode) {
                   pos[0] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->cpos());
                   pos[1] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->lpos());
                   pos[2] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->rpos());

@@ -4554,7 +4554,7 @@ void RouteDialog::filter(const RouteTreeItemList& srcFilterItems,
 
 void RouteDialog::songChanged(MusECore::SongChangedStruct_t v)
 {
-  if(v._flags & SC_PORT_ALIAS_PREFERENCE)
+  if(v & SC_PORT_ALIAS_PREFERENCE)
   {
     const int idx = routeAliasList->findData(QVariant::fromValue<int>(MusEGlobal::config.preferredRouteNameOrAlias));
     if(idx != -1 && idx != routeAliasList->currentIndex())
@@ -4565,7 +4565,7 @@ void RouteDialog::songChanged(MusECore::SongChangedStruct_t v)
     }
   }
   
-  if(v._flags & (SC_ROUTE | SC_CONFIG))
+  if(v & (SC_ROUTE | SC_CONFIG))
   {
     // Refill the lists of available external ports.
     tmpJackOutPorts = MusEGlobal::audioDevice->outputPorts();
@@ -4574,7 +4574,7 @@ void RouteDialog::songChanged(MusECore::SongChangedStruct_t v)
     tmpJackMidiInPorts = MusEGlobal::audioDevice->inputPorts(true);
   }
   
-  if(v._flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
+  if(v & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
           SC_ROUTE | SC_CONFIG | SC_CHANNELS | SC_PORT_ALIAS_PREFERENCE)) 
   {
     removeItems();                // Remove unused items.

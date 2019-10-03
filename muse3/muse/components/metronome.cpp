@@ -196,7 +196,7 @@ MetronomeConfig::MetronomeConfig(QWidget* parent)
 
 void MetronomeConfig::songChanged(MusECore::SongChangedStruct_t type)
 {
-  if(type._flags & SC_METRONOME)
+  if(type & SC_METRONOME)
   {
     updateValues();
   }

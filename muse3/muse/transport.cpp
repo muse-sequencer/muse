@@ -760,16 +760,16 @@ void Transport::songChanged(MusECore::SongChangedStruct_t flags)
       {
       slider->setRange(0, MusEGlobal::song->len());
       int cpos  = MusEGlobal::song->cpos();
-      if (flags._flags & (SC_MASTER | SC_TEMPO)) {
+      if (flags & (SC_MASTER | SC_TEMPO)) {
             if(!MusEGlobal::extSyncFlag.value())
               setTempo(MusEGlobal::tempomap.tempo(cpos));
             }
-      if (flags._flags & SC_SIG) {
+      if (flags & SC_SIG) {
             int z, n;
             MusEGlobal::sigmap.timesig(cpos, z, n);
             setTimesig(z, n);
             }
-      if (flags._flags & SC_MASTER)
+      if (flags & SC_MASTER)
       {
             tempo->setMasterTrack(MusEGlobal::song->masterFlag());
       }

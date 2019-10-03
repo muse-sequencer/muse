@@ -740,7 +740,7 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
       {
 #ifdef _USE_TRACKINFO_ALT
         // We must catch this first and be sure to update the strips.
-        if(type._flags & SC_TRACK_REMOVED)
+        if(type & SC_TRACK_REMOVED)
         {
           {
             AudioStrip* w = static_cast<AudioStrip*>(trackInfoWidget->getWidget(2));
@@ -780,7 +780,7 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
         }
 #else
         // We must catch this first and be sure to update the strips.
-        if(type._flags & SC_TRACK_REMOVED)
+        if(type & SC_TRACK_REMOVED)
         {
           {
             AudioStrip* w = static_cast<AudioStrip*>(trackInfoWidget->getWidget(1));
@@ -821,7 +821,7 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
 #endif
         
         // Try these, may need more/less. 
-        if(type._flags & ( SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
+        if(type & ( SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
            SC_TRACK_MOVED |
            SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))  
         {
@@ -841,32 +841,32 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
           lenEntry->blockSignals(false);
         }
         
-        if(type._flags & (SC_TRACK_SELECTION | SC_TRACK_INSERTED | SC_TRACK_REMOVED |
+        if(type & (SC_TRACK_SELECTION | SC_TRACK_INSERTED | SC_TRACK_REMOVED |
           SC_TRACK_MOVED |
           SC_TRACK_MODIFIED | SC_TRACK_RESIZED))
           trackSelectionChanged();
         
         // Keep this light, partsChanged is a heavy move! Try these, may need more. Maybe sig. Requires tempo.
-        if(type._flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
+        if(type & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
                    SC_TRACK_MOVED | SC_TRACK_RESIZED |
                    SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
                    SC_SIG | SC_TEMPO | SC_MASTER)) 
           canvas->updateItems();
         
-        if(type._flags & (SC_PART_SELECTION))
+        if(type & (SC_PART_SELECTION))
         {
           // Prevent race condition: Ignore if the change was ultimately sent by the canvas itself.
           if(type._sender != canvas)
             canvas->updateItemSelections();
         }
         
-        if (type._flags & SC_SIG)
+        if (type & SC_SIG)
               time->redraw();
-        if (type._flags & SC_TEMPO)
+        if (type & SC_TEMPO)
               setGlobalTempo(MusEGlobal::tempomap.globalTempo());
 
         // Try these:
-        if(type._flags & (SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED |
+        if(type & (SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED |
                    SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED |
                    SC_CLIP_MODIFIED))
         canvas->redraw();
@@ -883,7 +883,7 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
         // Update the arrangerview's actions.
         // This needs to come after the canvas->selectionChanged() above so that in
         //  selectionChanged(), itemsAreSelected() has the latest citems' selected flags.
-        if(type._flags & (SC_TRACK_SELECTION | SC_PART_SELECTION | 
+        if(type & (SC_TRACK_SELECTION | SC_PART_SELECTION | 
                   SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
                   SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))
           _parentWin->selectionChanged();

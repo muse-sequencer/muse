@@ -103,14 +103,14 @@ void TempoToolbar::pos_changed(int,unsigned,bool)
 
 void TempoToolbar::song_changed(MusECore::SongChangedStruct_t type)
 {
-  if(type._flags & (SC_TEMPO | SC_MASTER))
+  if(type & (SC_TEMPO | SC_MASTER))
   {
     int tempo = MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos());
     tempo_edit->blockSignals(true);
     tempo_edit->setValue(double(60000000.0/tempo));
     tempo_edit->blockSignals(false);
   }
-  if(type._flags & SC_MASTER)
+  if(type & SC_MASTER)
   {
     setMasterTrack(MusEGlobal::song->masterFlag());
   }
@@ -217,7 +217,7 @@ void SigToolbar::pos_changed(int,unsigned,bool)
 
 void SigToolbar::song_changed(MusECore::SongChangedStruct_t type)
 {
-  if(type._flags & SC_SIG)
+  if(type & SC_SIG)
   {
     int z, n;
     MusEGlobal::sigmap.timesig(MusEGlobal::song->cpos(), z, n);

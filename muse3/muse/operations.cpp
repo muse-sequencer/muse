@@ -1556,7 +1556,7 @@ SongChangedStruct_t PendingOperationList::executeRTStage()
     _sc_flags |= ip->executeRTStage();
   
   // To avoid doing this item by item, do it here.
-  if(_sc_flags._flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_ROUTE))
+  if(_sc_flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_ROUTE))
   {
     MusEGlobal::song->updateSoloStates();
     _sc_flags |= SC_SOLO;
