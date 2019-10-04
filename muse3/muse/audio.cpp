@@ -148,10 +148,6 @@ Audio::Audio()
 
       _pos.setType(Pos::FRAMES);
       _pos.setFrame(0);
-#ifdef _AUDIO_USE_TRUE_FRAME_
-      _previousPos.setType(Pos::FRAMES);
-      _previousPos.setFrame(0);
-#endif
       _curCycleFrames = 0;
       nextTickPos = curTickPos = 0;
       _precountFramePos = 0;
@@ -585,9 +581,6 @@ void Audio::reSyncAudio()
   if (isPlaying()) 
   {
     if (!MusEGlobal::checkAudioDevice()) return;
-#ifdef _AUDIO_USE_TRUE_FRAME_
-    _previousPos = _pos;
-#endif
     // NOTE: Comment added by Tim: This line is crucial if the tempo is changed during playback,
     //  either via changes to tempo map or the static tempo value. The actual transport frame is allowed
     //  to continue progressing naturally but our representation of it (_pos) jumps to a new value
@@ -880,9 +873,6 @@ void Audio::process(unsigned frames)
             (*i)->applyOutputLatencyComp(frames);
       }
       
-#ifdef _AUDIO_USE_TRUE_FRAME_
-      _previousPos = _pos;
-#endif
 // REMOVE Tim. latency. Changed. Hm, doesn't work. Position takes a long time to start moving.
       if (isPlaying()) {
       //if(isPlaying() || (MusEGlobal::extSyncFlag && MusEGlobal::midiSyncContainer.isPlaying())) {
@@ -1582,9 +1572,6 @@ void Audio::seek(const Pos& p)
       if (MusEGlobal::heavyDebugMsg)
         fprintf(stderr, "Audio::seek frame:%d\n", p.frame());
         
-#ifdef _AUDIO_USE_TRUE_FRAME_
-      _previousPos = _pos;
-#endif
       _pos        = p;
       if (!MusEGlobal::checkAudioDevice()) return;
       syncFrame   = MusEGlobal::audioDevice->framesAtCycleStart();

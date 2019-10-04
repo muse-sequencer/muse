@@ -34,12 +34,6 @@
 #include "route.h"
 #include "event.h"
 
-// An experiment to use true frames for time-stamping all recorded input. 
-// (All recorded data actually arrived in the previous period.)
-// TODO: Some more work needs to be done in WaveTrack::getData() in order to
-//  make everything line up and sync correctly. Cannot use this yet!
-//#define _AUDIO_USE_TRUE_FRAME_
-
 namespace MusECore {
 class AudioDevice;
 class AudioTrack;
@@ -147,10 +141,6 @@ class Audio {
       // Simulated current frame during precount.
       unsigned int _precountFramePos;
       
-#ifdef _AUDIO_USE_TRUE_FRAME_
-      Pos _previousPos;       // previous play position
-#endif
-
       unsigned curTickPos;   // pos at start of frame during play/record
       unsigned nextTickPos;  // pos at start of next frame during play/record
       
@@ -328,9 +318,6 @@ class Audio {
       void midiPortsChanged();
 
       const Pos& pos() const { return _pos; }
-#ifdef _AUDIO_USE_TRUE_FRAME_
-      const Pos& previousPos() const { return _previousPos; }
-#endif
       // Number of frames in the current process cycle.
       unsigned curCycleFrames() const { return _curCycleFrames; }
       const Pos& getStartRecordPos() const { return startRecordPos; }

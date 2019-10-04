@@ -6,6 +6,7 @@
         The new upper 64 bits are optional. They default to zero in the constructor.
       - Setting of extSyncFlag, useJackTransport, and useMasterFlag are now operations
          synchronized with audio. extSyncFlag and useJackTransport are now simple booleans.
+      - Removed obsolete experimental _AUDIO_USE_TRUE_FRAME_ code.
 15.09.2019
       - Event List Editor: Rebuild upon time signature changes, shows correct BBTs. (Tim)
 03.09.2019

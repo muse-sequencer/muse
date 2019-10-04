@@ -1477,11 +1477,7 @@ void VstNativeSynthIF::eventReceived(VstMidiEvent* ev)
       // So, technically this is correct. What MATTERS is how we adjust the times for storage, and/or simultaneous playback in THIS period,
       //  and TEST: we'll need to make sure any non-contiguous previous period is handled correctly by process - will it work OK as is?
       // If ALSA works OK than this should too...
-#ifdef _AUDIO_USE_TRUE_FRAME_
-      event.setTime(MusEGlobal::audio->previousPos().frame() + ev->deltaFrames);
-#else
       event.setTime(MusEGlobal::audio->pos().frame() + ev->deltaFrames);
-#endif
       event.setTick(MusEGlobal::lastExtMidiSyncTick);
 
 //       event.setChannel(*(ev->buffer) & 0xf);

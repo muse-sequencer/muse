@@ -1711,11 +1711,7 @@ void Audio::processMidi(unsigned int frames)
                   unsigned int ev_t = event.time();
                   unsigned int t = ev_t;
 
-#ifdef _AUDIO_USE_TRUE_FRAME_
-                  unsigned int pframe = _previousPos.frame();
-#else
                   unsigned int pframe = _pos.frame();
-#endif
                   if(pframe > t)  // Technically that's an error, shouldn't happen
                     t = 0;
                   else
@@ -1877,9 +1873,6 @@ void Audio::processMidi(unsigned int frames)
                                 {
                                   // All recorded events arrived in the previous period. Shift into this period for playback.
                                   unsigned int et = event.time();
-  #ifdef _AUDIO_USE_TRUE_FRAME_
-                                  unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
-  #else
                                   // The events arrived in the previous period. Shift into this period for playback.
                                   // The events are already biased with the last frame time.
                                   unsigned int t = et + MusEGlobal::segmentSize;
@@ -1891,7 +1884,6 @@ void Audio::processMidi(unsigned int frames)
                                     
                                     t = syncFrame + (MusEGlobal::segmentSize - 1);
                                   }
-  #endif
                                   event.setTime(t);
                                   md->putEvent(event, MidiDevice::NotLate);
                                   event.setTime(et);  // Restore for recording.
@@ -1911,9 +1903,6 @@ void Audio::processMidi(unsigned int frames)
                               else
                               {
                                 // All recorded events arrived in the previous period. Shift into this period for record.
-#ifdef _AUDIO_USE_TRUE_FRAME_
-                                unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
-#else
                                 unsigned int t = et + MusEGlobal::segmentSize;
                                 // Protection from slight errors in estimated frame time.
                                 if(t >= (syncFrame + MusEGlobal::segmentSize))
@@ -1923,7 +1912,6 @@ void Audio::processMidi(unsigned int frames)
                                   
                                   t = syncFrame + (MusEGlobal::segmentSize - 1);
                                 }
-#endif
                                 // Be sure to allow for some (very) late events, such as
                                 //  the first chunk's time in a multi-chunk sysex.
                                 const unsigned int a_fr = pos().frame() + t;
@@ -2105,9 +2093,6 @@ void Audio::processMidi(unsigned int frames)
                                   // All recorded events arrived in previous period. Shift into this period for playback.
                                   //  frameoffset needed to make process happy.
                                   unsigned int et = event.time();
-#ifdef _AUDIO_USE_TRUE_FRAME_
-                                  unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
-#else
                                   // The events arrived in the previous period. Shift into this period for playback.
                                   // The events are already biased with the last frame time.
                                   unsigned int t = et + MusEGlobal::segmentSize;
@@ -2119,7 +2104,6 @@ void Audio::processMidi(unsigned int frames)
                                     
                                     t = syncFrame + (MusEGlobal::segmentSize - 1);
                                   }
-#endif
                                   event.setTime(t);
                                   // Check if we're outputting to another port than default:
                                   if (devport == defaultPort) {
@@ -2267,10 +2251,6 @@ void Audio::processMidi(unsigned int frames)
                                     {
                                       // REMOVE Tim. latency. Removed. Oops, with ALSA this adds undesired shift forward!
 //                                       // All recorded events arrived in the previous period. Shift into this period for record.
-      #ifdef _AUDIO_USE_TRUE_FRAME_
-                                      unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
-      #else
-
                                       // REMOVE Tim. latency. Changed. Oops, with ALSA this adds undesired shift forward!
                                       // And with Jack midi we currently already shift forward, in the input routine!
                                       // But I'm debating where to add the correction factor - I really need to add it here
@@ -2301,7 +2281,7 @@ void Audio::processMidi(unsigned int frames)
                                         
                                         t = syncFrame - 1;
                                       }
-      #endif
+
                                       // Be sure to allow for some (very) late events, such as
                                       //  the first chunk's time in a multi-chunk sysex.
                                       const unsigned int a_fr = pos().frame() + t;
