@@ -969,7 +969,7 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
       _timeInfo.sampleRate = (double)MusEGlobal::sampleRate;
       _timeInfo.flags = 0;
 
-      Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : curr_frame, MusEGlobal::extSyncFlag.value() ? true : false);
+      Pos p(MusEGlobal::extSyncFlag ? MusEGlobal::audio->tickPos() : curr_frame, MusEGlobal::extSyncFlag ? true : false);
 
       if(value & kVstBarsValid)
       {

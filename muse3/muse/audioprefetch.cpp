@@ -191,7 +191,7 @@ void AudioPrefetch::prefetch(bool doSeek)
       {
       unsigned lpos_frame = 0;
       unsigned rpos_frame = 0;
-      const bool do_loops = MusEGlobal::song->loop() && !MusEGlobal::audio->bounce() && !MusEGlobal::extSyncFlag.value();
+      const bool do_loops = MusEGlobal::song->loop() && !MusEGlobal::audio->bounce() && !MusEGlobal::extSyncFlag;
       if(do_loops)
       {
         lpos_frame = MusEGlobal::song->lPos().frame();

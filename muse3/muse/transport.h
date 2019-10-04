@@ -145,6 +145,8 @@ class Transport : public QWidget
       void playToggled(bool);
       void configChanged();
       void sigChange(const MusECore::TimeSignature&);
+      void extSyncClicked(bool v);
+      void useJackTransportClicked(bool v);
 
    public slots:
       void setTempo(int tempo);

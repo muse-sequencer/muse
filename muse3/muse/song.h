@@ -143,7 +143,6 @@ class Song : public QObject {
       //  controllers in the gui thread and adding them safely to the controller lists.
       static LockFreeMPSCRingBuffer<MidiPlayEvent> *_ipcInEventBuffers;
       
-      bool _masterFlag;
       bool loopFlag;
       bool punchinFlag;
       bool punchoutFlag;
@@ -269,7 +268,6 @@ class Song : public QObject {
       bool record() const           { return recordFlag; }
       bool punchin() const          { return punchinFlag; }
       bool punchout() const         { return punchoutFlag; }
-      bool masterFlag() const       { return _masterFlag; }
       void setRecMode(int val)      { _recMode = val; }
       int  recMode() const          { return _recMode; }
       void setCycleMode(int val)    { _cycleMode = val; }

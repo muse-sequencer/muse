@@ -1215,11 +1215,9 @@ void Song::setQuantize(bool val)
 
 void Song::setMasterFlag(bool val)
     {
-      _masterFlag = val;
-      if (MusEGlobal::tempomap.setMasterFlag(cpos(), val))
-      {
-        emit songChanged(SC_MASTER);
-      }      
+      MusECore::PendingOperationList operations;
+      operations.add(MusECore::PendingOperationItem(&MusEGlobal::tempomap, val, MusECore::PendingOperationItem::SetUseMasterTrack));
+      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
     }
 
 //---------------------------------------------------------
@@ -1229,7 +1227,7 @@ void Song::setMasterFlag(bool val)
 
 void Song::setPlay(bool f)
       {
-      if (MusEGlobal::extSyncFlag.value()) {
+      if (MusEGlobal::extSyncFlag) {
           if (MusEGlobal::debugMsg)
             fprintf(stderr, "not allowed while using external sync");
           return;
@@ -1243,7 +1241,7 @@ void Song::setPlay(bool f)
 
 void Song::setStop(bool f)
       {
-      if (MusEGlobal::extSyncFlag.value()) {
+      if (MusEGlobal::extSyncFlag) {
           if (MusEGlobal::debugMsg)
             fprintf(stderr, "not allowed while using external sync");
           return;
@@ -1299,7 +1297,7 @@ void Song::setPos(int idx, const Pos& val, bool sig,
       
       if (idx == CPOS) {
             _vcpos = val;
-            if (isSeek && !MusEGlobal::extSyncFlag.value()) {  
+            if (isSeek && !MusEGlobal::extSyncFlag) {  
                   if (val == MusEGlobal::audio->pos())  
                   {
                       if (MusEGlobal::heavyDebugMsg) fprintf(stderr,
@@ -2122,7 +2120,7 @@ void Song::clear(bool signal, bool clear_all)
         MusEGlobal::midiPorts[i].addDefaultControllers();
       }
 
-      _masterFlag    = true;
+      MusEGlobal::tempomap.setMasterFlag(0, true);
       loopFlag       = false;
       loopFlag       = false;
       punchinFlag    = false;

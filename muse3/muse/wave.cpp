@@ -1228,7 +1228,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       //  whether master is on/off, because we may be able to use the flag to determine
       //  whether to record external tempos at all, because we may want a switch for it!
       bool master_was_on = MusEGlobal::tempomap.masterFlag();
-      if(MusEGlobal::extSyncFlag.value() && !master_was_on)
+      if(MusEGlobal::extSyncFlag && !master_was_on)
         MusEGlobal::tempomap.setMasterFlag(0, true);
 
       if((MusEGlobal::audio->loopCount() > 0 && s.tick() > lPos().tick()) || (punchin() && s.tick() < lPos().tick()))
@@ -1251,7 +1251,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
           printf("Song::cmdAddRecordedWave: remove file %s - startframe=%d endframe=%d\n", st.toLocal8Bit().constData(), s.frame(), e.frame());
 
         // Restore master flag.
-        if(MusEGlobal::extSyncFlag.value() && !master_was_on)
+        if(MusEGlobal::extSyncFlag && !master_was_on)
           MusEGlobal::tempomap.setMasterFlag(0, false);
 
         return;
@@ -1267,7 +1267,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       unsigned eframe = e.frame();
 
       // Done using master tempo map. Restore master flag.
-      if(MusEGlobal::extSyncFlag.value() && !master_was_on)
+      if(MusEGlobal::extSyncFlag && !master_was_on)
         MusEGlobal::tempomap.setMasterFlag(0, false);
 
       f->update();

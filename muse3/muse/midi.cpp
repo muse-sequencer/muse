@@ -971,7 +971,7 @@ void Audio::seekMidi()
     //---------------------------------------------------
       
     // Don't send if external sync is on. The master, and our sync routing system will take care of that.  
-    if(!MusEGlobal::extSyncFlag.value())
+    if(!MusEGlobal::extSyncFlag)
     {
       if(mp->syncInfo().MRTOut())
       {
@@ -1139,7 +1139,7 @@ void Audio::seekMidi()
       //---------------------------------------------------
         
       // Don't send if external sync is on. The master, and our sync routing system will take care of that.  
-      if(!MusEGlobal::extSyncFlag.value())
+      if(!MusEGlobal::extSyncFlag)
       {
         if(mp->syncInfo().MRTOut())
         {
@@ -1274,7 +1274,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
                           unsigned int nts, unsigned int frames, unsigned int latency_offset)
       {
       DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: cts:%u nts:%u\n", cts, nts);
-      const bool extsync = MusEGlobal::extSyncFlag.value();
+      const bool extsync = MusEGlobal::extSyncFlag;
       const int delay = track->delay;
       // If external sync is not on, we can take advantage of frame accuracy but
       //  first we must allow the next tick position to be included in the search
@@ -1579,7 +1579,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
 
 void Audio::processMidi(unsigned int frames)
       {
-      const bool extsync = MusEGlobal::extSyncFlag.value();
+      const bool extsync = MusEGlobal::extSyncFlag;
       const bool playing = isPlaying();
 
       for (iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id)
@@ -2777,7 +2777,7 @@ void Audio::processMidiMetronome(unsigned int frames)
       const MusECore::MetronomeSettings* metro_settings = 
       MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
-      const bool extsync = MusEGlobal::extSyncFlag.value();
+      const bool extsync = MusEGlobal::extSyncFlag;
       const bool playing = isPlaying();
 
       // Should the metronome be muted after precount?
@@ -3006,7 +3006,7 @@ void Audio::processAudioMetronome(unsigned int frames)
       const MusECore::MetronomeSettings* metro_settings = 
       MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
-      const bool extsync = MusEGlobal::extSyncFlag.value();
+      const bool extsync = MusEGlobal::extSyncFlag;
       const bool playing = isPlaying();
 
       // Should the metronome be muted after precount?

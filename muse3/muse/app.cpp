@@ -94,6 +94,7 @@
 #include "components/songinfo.h"
 #include "ticksynth.h"
 #include "transport.h"
+#include "tempo.h"
 #include "tlist.h"
 #include "waveedit.h"
 #include "components/projectcreateimpl.h"
@@ -1366,7 +1367,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
 
       progress->setValue(40);
 
-      transport->setMasterFlag(MusEGlobal::song->masterFlag());
+      transport->setMasterFlag(MusEGlobal::tempomap.masterFlag());
       MusEGlobal::punchinAction->setChecked(MusEGlobal::song->punchin());
       MusEGlobal::punchoutAction->setChecked(MusEGlobal::song->punchout());
       MusEGlobal::loopAction->setChecked(MusEGlobal::song->loop());

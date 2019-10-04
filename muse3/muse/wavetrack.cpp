@@ -437,7 +437,7 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
     // Do we want to record the incoming data?
     if(have_data && track_rec_flag && 
       (MusEGlobal::audio->isRecording() ||
-       (MusEGlobal::song->record() && MusEGlobal::extSyncFlag.value() && MusEGlobal::midiSyncContainer.isPlaying())) && 
+       (MusEGlobal::song->record() && MusEGlobal::extSyncFlag && MusEGlobal::midiSyncContainer.isPlaying())) && 
       recFile())
     {
       if(MusEGlobal::audio->freewheel())

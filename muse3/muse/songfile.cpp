@@ -705,7 +705,7 @@ void Song::write(int level, Xml& xml) const
       xml.intTag(level, "cpos", MusEGlobal::song->cpos());
       xml.intTag(level, "rpos", MusEGlobal::song->rpos());
       xml.intTag(level, "lpos", MusEGlobal::song->lpos());
-      xml.intTag(level, "master", _masterFlag);
+      xml.intTag(level, "master", MusEGlobal::tempomap.masterFlag());
       xml.intTag(level, "loop", loopFlag);
       xml.intTag(level, "punchin", punchinFlag);
       xml.intTag(level, "punchout", punchoutFlag);

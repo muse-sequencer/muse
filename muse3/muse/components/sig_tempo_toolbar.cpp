@@ -28,6 +28,7 @@
 #include "icons.h"
 #include "pixmap_button.h"
 #include "sig.h"
+#include "tempo.h"
 
 #include <QLabel>
 #include <QToolButton>
@@ -83,7 +84,7 @@ void TempoToolbar::init()
 
   connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(song_changed(MusECore::SongChangedStruct_t)));
   connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(pos_changed(int,unsigned,bool)));
-  connect(&MusEGlobal::extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(syncChanged(bool)));
+  //connect(&MusEGlobal::extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(syncChanged(bool)));
 
   connect(tempo_edit, SIGNAL(tempoChanged(double)), MusEGlobal::song, SLOT(setTempo(double)));
   connect(tempo_edit, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
@@ -112,7 +113,11 @@ void TempoToolbar::song_changed(MusECore::SongChangedStruct_t type)
   }
   if(type & SC_MASTER)
   {
-    setMasterTrack(MusEGlobal::song->masterFlag());
+    setMasterTrack(MusEGlobal::tempomap.masterFlag());
+  }
+  if(type & SC_EXTERNAL_MIDI_SYNC)
+  {
+    syncChanged(MusEGlobal::extSyncFlag);
   }
 }
 
