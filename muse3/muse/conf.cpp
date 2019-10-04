@@ -622,11 +622,9 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "sendClockDelay")
                               MusEGlobal::syncSendFirstClockDelay = xml.parseUInt();
                         else if (tag == "extSync")
-                              MusEGlobal::extSyncFlag.setValue(xml.parseInt());
+                                MusEGlobal::extSyncFlag = xml.parseInt();
                         else if (tag == "useJackTransport")
-                              {
-                              MusEGlobal::useJackTransport.setValue(xml.parseInt());
-                              }
+                                MusEGlobal::useJackTransport = xml.parseInt();
                         else if (tag == "jackTransportMaster")
                               {
                                 MusEGlobal::jackTransportMaster = xml.parseInt();
@@ -1822,7 +1820,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.nput(level, "<mtcoffset>%02d:%02d:%02d:%02d:%02d</mtcoffset>\n",
         MusEGlobal::mtcOffset.h(), MusEGlobal::mtcOffset.m(), MusEGlobal::mtcOffset.s(),
         MusEGlobal::mtcOffset.f(), MusEGlobal::mtcOffset.sf());
-      MusEGlobal::extSyncFlag.save(level, xml);
+      xml.intTag(level, "extSync", MusEGlobal::extSyncFlag);
       
       xml.qrectTag(level, "geometryMain",      MusEGlobal::config.geometryMain);
       xml.qrectTag(level, "geometryTransport", MusEGlobal::config.geometryTransport);
@@ -1889,11 +1887,11 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
         MusEGlobal::mtcOffset.h(), MusEGlobal::mtcOffset.m(), MusEGlobal::mtcOffset.s(),
         MusEGlobal::mtcOffset.f(), MusEGlobal::mtcOffset.sf());
       xml.uintTag(level, "sendClockDelay", MusEGlobal::syncSendFirstClockDelay);
-      xml.intTag(level, "useJackTransport", MusEGlobal::useJackTransport.value());
+      xml.intTag(level, "useJackTransport", MusEGlobal::useJackTransport);
       xml.intTag(level, "jackTransportMaster", MusEGlobal::jackTransportMaster);
       xml.intTag(level, "syncRecFilterPreset", MusEGlobal::syncRecFilterPreset);
       xml.doubleTag(level, "syncRecTempoValQuant", MusEGlobal::syncRecTempoValQuant);
-      MusEGlobal::extSyncFlag.save(level, xml);
+      xml.intTag(level, "extSync", MusEGlobal::extSyncFlag);
       
       xml.intTag(level, "bigtimeVisible",   viewBigtimeAction->isChecked());
       xml.intTag(level, "transportVisible", viewTransportAction->isChecked());

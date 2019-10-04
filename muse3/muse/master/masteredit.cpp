@@ -74,7 +74,7 @@ void MasterEdit::songChanged(MusECore::SongChangedStruct_t type)
       if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
         
-      if (type._flags & SC_SIG) {
+      if (type & SC_SIG) {
             sign->redraw();
             }
       }

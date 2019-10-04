@@ -1216,11 +1216,9 @@ void Song::setQuantize(bool val)
 void Song::setMasterFlag(bool val)
     {
 // REMOVE Tim. clip. Changed.
-//       _masterFlag = val;
-//       if (MusEGlobal::tempomap.setMasterFlag(cpos(), val))
-//       {
-//         emit songChanged(SC_MASTER);
-//       }      
+//       MusECore::PendingOperationList operations;
+//       operations.add(MusECore::PendingOperationItem(&MusEGlobal::tempomap, val, MusECore::PendingOperationItem::SetUseMasterTrack));
+//       MusEGlobal::audio->msgExecutePendingOperations(operations, true);
       
       // Here we have a choice of whether to allow undoing of setting the master.
       // TODO: Add a separate config flag just for this ?
@@ -1228,7 +1226,6 @@ void Song::setMasterFlag(bool val)
       //  MusEGlobal::song->applyOperation(UndoOp(UndoOp::EnableMasterTrack, val, 0), MusECore::Song::OperationUndoMode);
       //else
         MusEGlobal::song->applyOperation(UndoOp(UndoOp::EnableMasterTrack, val, 0), MusECore::Song::OperationExecuteUpdate);
-      
     }
 
 //---------------------------------------------------------
@@ -1238,7 +1235,7 @@ void Song::setMasterFlag(bool val)
 
 void Song::setPlay(bool f)
       {
-      if (MusEGlobal::extSyncFlag.value()) {
+      if (MusEGlobal::extSyncFlag) {
           if (MusEGlobal::debugMsg)
             fprintf(stderr, "not allowed while using external sync");
           return;
@@ -1252,7 +1249,7 @@ void Song::setPlay(bool f)
 
 void Song::setStop(bool f)
       {
-      if (MusEGlobal::extSyncFlag.value()) {
+      if (MusEGlobal::extSyncFlag) {
           if (MusEGlobal::debugMsg)
             fprintf(stderr, "not allowed while using external sync");
           return;
@@ -1310,7 +1307,7 @@ void Song::setPos(int idx, const Pos& val, bool sig,
       if (idx == CPOS) {
 //             _vcpos = val;
             _vcpos.setPos(val);
-            if (isSeek && !MusEGlobal::extSyncFlag.value()) {  
+            if (isSeek && !MusEGlobal::extSyncFlag) {  
 //                   if (val == MusEGlobal::audio->pos())  
 //                   if (val.frame() == MusEGlobal::audio->pos().frame())
                   if (MusEGlobal::audio->pos() == val)
@@ -1578,9 +1575,9 @@ void Song::update(MusECore::SongChangedStruct_t flags, bool allowRecursion)
       {
       static int level = 0;         // DEBUG
       if (level && !allowRecursion) {
-            fprintf(stderr, "THIS SHOULD NEVER HAPPEN: unallowed recursion in Song::update(%08lx), level %d!\n"
+            fprintf(stderr, "THIS SHOULD NEVER HAPPEN: unallowed recursion in Song::update(%08lx %08lx), level %d!\n"
                    "                          the songChanged() signal is NOT emitted. this will\n"
-                   "                          probably cause windows being not up-to-date.\n", (unsigned long)flags._flags, level);
+                   "                          probably cause windows being not up-to-date.\n", flags.flagsHi(), flags.flagsLo(), level);
             return;
             }
       ++level;
@@ -2148,7 +2145,7 @@ void Song::setRecordFlag(Track* track, bool val, Undo* operations)
 
 void Song::endMsgCmd()
       {
-      if (updateFlags._flags) {
+      if (updateFlags) {
             redoList->clearDelete();
             
             // It is possible the undo list is empty after removal of an empty undo, 
@@ -2434,7 +2431,7 @@ void Song::clear(bool signal, bool clear_all)
         MusEGlobal::midiPorts[i].addDefaultControllers();
       }
 
-      _masterFlag    = true;
+      MusEGlobal::tempomap.setMasterFlag(0, true);
       loopFlag       = false;
       loopFlag       = false;
       punchinFlag    = false;
@@ -4456,7 +4453,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       //  whether master is on/off, because we may be able to use the flag to determine
       //  whether to record external tempos at all, because we may want a switch for it!
       bool master_was_on = MusEGlobal::tempomap.masterFlag();
-      if(MusEGlobal::extSyncFlag.value() && !master_was_on)
+      if(MusEGlobal::extSyncFlag && !master_was_on)
         MusEGlobal::tempomap.setMasterFlag(0, true);
 
       if((MusEGlobal::audio->loopCount() > 0 && s.tick() > lPos().tick()) || (punchin() && s.tick() < lPos().tick()))
@@ -4479,7 +4476,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
           printf("Song::cmdAddRecordedWave: remove file %s - startframe=%d endframe=%d\n", st.toLocal8Bit().constData(), s.frame(), e.frame());
 
         // Restore master flag.
-        if(MusEGlobal::extSyncFlag.value() && !master_was_on)
+        if(MusEGlobal::extSyncFlag && !master_was_on)
           MusEGlobal::tempomap.setMasterFlag(0, false);
 
         return;
@@ -4495,7 +4492,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       unsigned eframe = e.frame();
 
       // Done using master tempo map. Restore master flag.
-      if(MusEGlobal::extSyncFlag.value() && !master_was_on)
+      if(MusEGlobal::extSyncFlag && !master_was_on)
         MusEGlobal::tempomap.setMasterFlag(0, false);
 
       f->update();
@@ -4551,7 +4548,7 @@ void Song::cmdChangeWave(const Event& original, const QString& tmpfile, unsigned
 
 void Song::updateTransportPos(const SongChangedStruct_t& flags)
 {
-  if(!MusEGlobal::audio->isPlaying() && (flags._flags & (SC_TEMPO | SC_MASTER)))
+  if(!MusEGlobal::audio->isPlaying() && (flags & (SC_TEMPO | SC_MASTER)))
   {
     //const MusECore::Pos ap = MusEGlobal::audio->tickAndFramePos();
     // Don't touch Audio::_pos, make a copy.

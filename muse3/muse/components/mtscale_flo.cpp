@@ -75,8 +75,8 @@ void MTScaleFlo::configChanged()
 void MTScaleFlo::songChanged(MusECore::SongChangedStruct_t type)
       {
 // REMOVE Tim. clip. Changed.
-//       if (type._flags & (SC_SIG|SC_TEMPO))
-      if (type._flags & (SC_SIG|SC_TEMPO|SC_MARKERS_REBUILT|SC_MARKER_INSERTED|SC_MARKER_REMOVED|SC_MARKER_MODIFIED))
+//       if (type & (SC_SIG|SC_TEMPO))
+      if (type & (SC_SIG|SC_TEMPO|SC_MARKERS_REBUILT|SC_MARKER_INSERTED|SC_MARKER_REMOVED|SC_MARKER_MODIFIED))
             redraw();
       }
 

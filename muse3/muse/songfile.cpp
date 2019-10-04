@@ -530,9 +530,8 @@ void Song::read(Xml& xml, bool isTemplate)
                         {
 // REMOVE Tim. clip. Changed. Avoid emitting songChanged.
 //                               setMasterFlag(xml.parseInt());
-                              _masterFlag = xml.parseInt();
                               // Tick parameter is not used.
-                              MusEGlobal::tempomap.setMasterFlag(0, _masterFlag);
+                              MusEGlobal::tempomap.setMasterFlag(0, xml.parseInt());
                         }
                         else if (tag == "info")
                               songInfoStr = xml.parse1();
@@ -711,7 +710,7 @@ void Song::write(int level, Xml& xml) const
       xml.intTag(level, "cpos", MusEGlobal::song->cpos());
       xml.intTag(level, "rpos", MusEGlobal::song->rpos());
       xml.intTag(level, "lpos", MusEGlobal::song->lpos());
-      xml.intTag(level, "master", _masterFlag);
+      xml.intTag(level, "master", MusEGlobal::tempomap.masterFlag());
       xml.intTag(level, "loop", loopFlag);
       xml.intTag(level, "punchin", punchinFlag);
       xml.intTag(level, "punchout", punchoutFlag);

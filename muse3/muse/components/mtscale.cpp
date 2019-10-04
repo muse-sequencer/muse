@@ -82,9 +82,9 @@ void MTScale::configChanged()
 void MTScale::songChanged(MusECore::SongChangedStruct_t type)
       {
 // REMOVE Tim. clip. Changed.
-//       if (type._flags & (SC_SIG|SC_TEMPO)) {
-      if (type._flags & (SC_SIG|SC_TEMPO|SC_MARKERS_REBUILT|SC_MARKER_INSERTED|SC_MARKER_REMOVED|SC_MARKER_MODIFIED)) {
-           if ((type._flags & SC_TEMPO) && waveMode) {
+//       if (type & (SC_SIG|SC_TEMPO)) {
+      if (type & (SC_SIG|SC_TEMPO|SC_MARKERS_REBUILT|SC_MARKER_INSERTED|SC_MARKER_REMOVED|SC_MARKER_MODIFIED)) {
+           if ((type & SC_TEMPO) && waveMode) {
                   pos[0] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->cpos());
                   pos[1] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->lpos());
                   pos[2] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->rpos());

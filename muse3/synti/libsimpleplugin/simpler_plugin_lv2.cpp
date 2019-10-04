@@ -984,7 +984,7 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 //    //send transport events if any
 //    LV2Synth *synth = state->synth;
 //    unsigned int cur_frame = MusEGlobal::audio->pos().frame();
-//    Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : cur_frame, MusEGlobal::extSyncFlag.value() ? true : false);
+//    Pos p(MusEGlobal::extSyncFlag ? MusEGlobal::audio->tickPos() : cur_frame, MusEGlobal::extSyncFlag ? true : false);
 //    float curBpm = (float)MusEGlobal::tempomap.globalTempo() * 600000.0f / (float)MusEGlobal::tempomap.tempo(p.tick());
 //    bool curIsPlaying = MusEGlobal::audio->isPlaying();
 //    unsigned int curFrame = MusEGlobal::audioDevice->getCurFrame();

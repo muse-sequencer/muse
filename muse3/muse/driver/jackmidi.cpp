@@ -582,14 +582,10 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
       // So, technically this is correct. What MATTERS is how we adjust the times for storage, and/or simultaneous playback in THIS period,
       //  and TEST: we'll need to make sure any non-contiguous previous period is handled correctly by process - will it work OK as is?
       // If ALSA works OK than this should too...
-#ifdef _AUDIO_USE_TRUE_FRAME_
-      abs_ft = MusEGlobal::audio->previousPos().frame() + ev->time;
-#else
       // The events arrived in the previous cycle, not this one. Adjust.
       abs_ft = MusEGlobal::audio->curSyncFrame() + ev->time;
       if(abs_ft >= MusEGlobal::segmentSize)
         abs_ft -= MusEGlobal::segmentSize;
-#endif
       event.setTime(abs_ft);
       event.setTick(MusEGlobal::lastExtMidiSyncTick);    
 

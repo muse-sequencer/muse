@@ -316,8 +316,8 @@ extern bool debugSync;
 
 extern int mtcType;
 extern MusECore::MTC mtcOffset;
-extern MusECore::BValue extSyncFlag;
-extern MusECore::BValue useJackTransport;
+extern bool extSyncFlag;
+extern bool useJackTransport;
 extern bool volatile jackTransportMaster;
 extern unsigned int syncSendFirstClockDelay; // In milliseconds.
 extern unsigned int volatile lastExtMidiSyncTick;

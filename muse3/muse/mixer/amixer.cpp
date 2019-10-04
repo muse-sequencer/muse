@@ -875,10 +875,10 @@ QWidget* AudioMixerApp::setupComponentTabbing(QWidget* previousWidget)
 void AudioMixerApp::songChanged(MusECore::SongChangedStruct_t flags)
 {
   DEBUG_MIXER(stderr, "AudioMixerApp::songChanged %llX\n", (long long)flags._flags);
-  if (flags._flags & SC_TRACK_REMOVED) {
+  if (flags & SC_TRACK_REMOVED) {
         updateStripList();
   }
-  else if (flags._flags & SC_TRACK_INSERTED) {
+  else if (flags & SC_TRACK_INSERTED) {
         updateStripList();
   }
   DEBUG_MIXER(stderr, "songChanged action = %ld\n", (long int)flags._flags);
@@ -886,7 +886,7 @@ void AudioMixerApp::songChanged(MusECore::SongChangedStruct_t flags)
   
   // This costly to do every time. Try to filter it according to required flags.
   // The only flags which would require a redraw, which is very costly, are the following:
-  if (flags._flags & (SC_TRACK_REMOVED | SC_TRACK_INSERTED | SC_TRACK_MOVED
+  if (flags & (SC_TRACK_REMOVED | SC_TRACK_INSERTED | SC_TRACK_MOVED
                //| SC_CHANNELS   // Channels due to one/two meters and peak labels can change the strip width.
                //| SC_AUX
               ))
@@ -897,7 +897,7 @@ void AudioMixerApp::songChanged(MusECore::SongChangedStruct_t flags)
         (*si)->songChanged(flags);
         }
 
-  if(flags._flags & SC_TRACK_SELECTION)
+  if(flags & SC_TRACK_SELECTION)
     updateSelectedStrips();
 }
 

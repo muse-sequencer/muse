@@ -136,7 +136,7 @@ void LMaster::songChanged(MusECore::SongChangedStruct_t type)
       if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
       
-      if (type._flags & (SC_SIG | SC_TEMPO | SC_KEY ))
+      if (type & (SC_SIG | SC_TEMPO | SC_KEY ))
             updateList();
       }
 

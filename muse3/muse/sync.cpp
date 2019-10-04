@@ -45,8 +45,8 @@ bool debugSync = false;
 
 int mtcType     = 1;
 MusECore::MTC mtcOffset;
-MusECore::BValue extSyncFlag(0, "extSync");       // false - MASTER, true - SLAVE
-MusECore::BValue useJackTransport(0,"useJackTransport");
+bool extSyncFlag = false;       // false - MASTER, true - SLAVE
+bool useJackTransport = false;
 bool volatile jackTransportMaster = true;
 
 static MusECore::MTC mtcCurTime;
@@ -673,7 +673,7 @@ void MidiSyncContainer::mtcInputQuarter(int port, unsigned char c)
                     msync.setRecMTCtype(type);
                     msync.trigMTCDetect();
                     // Not for the current in port? External sync not turned on? MTC in not turned on? Forget it.
-                    if(port == MusEGlobal::config.curMidiSyncInPort && MusEGlobal::extSyncFlag.value() && msync.MTCIn())
+                    if(port == MusEGlobal::config.curMidiSyncInPort && MusEGlobal::extSyncFlag && msync.MTCIn())
                     {
                       if(MusEGlobal::debugSync)
                         fprintf(stderr, "MidiSyncContainer::mtcInputQuarter hour byte:%x\n", (unsigned int)tmphour);
@@ -778,7 +778,7 @@ void MidiSyncContainer::setSongPosition(int port, int midiBeat)
 
       MusEGlobal::midiPorts[port].syncInfo().trigMRTDetect();
 
-      if(!MusEGlobal::extSyncFlag.value() || !MusEGlobal::midiPorts[port].syncInfo().MRTIn())
+      if(!MusEGlobal::extSyncFlag || !MusEGlobal::midiPorts[port].syncInfo().MRTIn())
             return;
 
       // Re-transmit song position to other devices if clock out turned on.
@@ -867,7 +867,7 @@ void MidiSyncContainer::realtimeSystemInput(int port, int c)
         mp->syncInfo().trigMRTDetect(); // Other
 
       // External sync not on? Clock in not turned on? Otherwise realtime in not turned on?
-      if(!MusEGlobal::extSyncFlag.value())
+      if(!MusEGlobal::extSyncFlag)
         return;
       if(!mp->syncInfo().MRTIn())
         return;
@@ -989,7 +989,7 @@ ExtMidiClock MidiSyncContainer::midiClockInput(int port, unsigned int frame)
   mp->syncInfo().trigMCSyncDetect();
   
   // External sync not on? Clock in not turned on? Otherwise realtime in not turned on?
-  if(!MusEGlobal::extSyncFlag.value())
+  if(!MusEGlobal::extSyncFlag)
     return ExtMidiClock();
   if(!mp->syncInfo().MCIn())
     return ExtMidiClock();

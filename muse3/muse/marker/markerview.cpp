@@ -610,13 +610,13 @@ void MarkerView::songChanged(MusECore::SongChangedStruct_t flags)
   // Try to minimize the work. Rebuild the list only if required.
   // The simpler updateList() just cannot handle this complex situation,
   //  due to position comparisons ALREADY being equal etc.
-  if(flags._flags &
+  if(flags &
     (SC_MARKERS_REBUILT | SC_TEMPO | SC_MASTER
      | SC_SIG // Required so that bar/beat/tick of listed items are shown correctly.
     ))
     rebuildList();
   // Can we get away with just an update?
-  else if(flags._flags & (SC_MARKER_INSERTED | SC_MARKER_REMOVED | SC_MARKER_MODIFIED))
+  else if(flags & (SC_MARKER_INSERTED | SC_MARKER_REMOVED | SC_MARKER_MODIFIED))
     updateList();
 }
 

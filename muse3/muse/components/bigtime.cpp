@@ -205,7 +205,7 @@ void BigTime::configChanged()
 void BigTime::songChanged(MusECore::SongChangedStruct_t flags)
       {
 // REMOVE Tim. clip. Changed.
-      if (flags._flags & (SC_MASTER | SC_TEMPO | SC_SIG))
+      if (flags & (SC_MASTER | SC_TEMPO | SC_SIG))
 
       // Catch SC_SIG in case BBT needs to update.
       // Note tempo and master changes are handled by the setPos() slot.

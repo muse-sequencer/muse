@@ -700,10 +700,10 @@ void WaveEdit::songChanged1(MusECore::SongChangedStruct_t bits)
           return;
 
         // We must catch this first and be sure to update the strips.
-        if(bits._flags & SC_TRACK_REMOVED)
+        if(bits & SC_TRACK_REMOVED)
           checkTrackInfoTrack();
         
-        if (bits._flags & SC_SOLO)
+        if (bits & SC_SOLO)
         {
           MusECore::WavePart* part = (MusECore::WavePart*)(parts()->begin()->second);
           solo->blockSignals(true);
@@ -715,7 +715,7 @@ void WaveEdit::songChanged1(MusECore::SongChangedStruct_t bits)
 
         // We'll receive SC_SELECTION if a different part is selected.
         // Addition - also need to respond here to moving part to another track. (Tim)
-        if (bits._flags & (SC_PART_INSERTED | SC_PART_REMOVED))
+        if (bits & (SC_PART_INSERTED | SC_PART_REMOVED))
           updateTrackInfo();
 
         // We must marshall song changed instead of connecting to the strip's song changed

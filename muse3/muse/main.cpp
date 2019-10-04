@@ -1306,7 +1306,7 @@ int main(int argc, char* argv[])
         // Jack says: "Cannot use real-time scheduling (RR/10)(1: Operation not permitted)". The kernel is non-RT.
         // I cannot seem to find a reliable answer to the question, even with dummy audio and system calls.
 
-        MusEGlobal::useJackTransport.setValue(true);
+        MusEGlobal::useJackTransport = true;
 
         // setup the prefetch fifo length now that the segmentSize is known
         MusEGlobal::fifoLength = 131072 / MusEGlobal::segmentSize;

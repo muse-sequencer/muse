@@ -496,7 +496,7 @@ void Audio::msgExecutePendingOperations(PendingOperationList& operations, bool d
         sendMsg(&msg);
         operations.executeNonRTStage();
         const SongChangedStruct_t flags = operations.flags() | extraFlags;
-        if(doUpdate && flags._flags != 0)
+        if(doUpdate && flags != SC_NOTHING)
         {
           MusEGlobal::song->update(flags);
           MusEGlobal::song->setDirty();

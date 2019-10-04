@@ -158,7 +158,7 @@ struct PendingOperationItem
     RemapDrumControllers,
     AddAudioCtrlVal,   DeleteAudioCtrlVal,    ModifyAudioCtrlVal, ModifyAudioCtrlValList,
     AddTempo,          DeleteTempo,           ModifyTempo,        SetStaticTempo,
-    SetGlobalTempo,    EnableMasterTrack,
+    SetGlobalTempo,
     AddSig,            DeleteSig,             ModifySig,
     AddKey,            DeleteKey,             ModifyKey,
     AddAuxSendValue,   
@@ -169,6 +169,7 @@ struct PendingOperationItem
     GlobalSelectAllEvents,
     ModifyAudioSamples,
     SwitchMetronomeSettings, ModifyMetronomeAccentMap,
+    SetExternalSyncFlag, SetUseJackTransport, SetUseMasterTrack,
     // REMOVE Tim. clip. Added.
     /*AddMarker, DeleteMarker, ModifyMarker,*/ ModifyMarkerList
     }; 
@@ -210,7 +211,7 @@ struct PendingOperationItem
     MusECore::SigEvent* _sig_event; 
     Route* _dst_route_pointer;
     float* _newAudioSamples;
-    bool* _metroUseSongSettings;
+    bool* _bool_pointer;
     MetroAccentsMap* _newMetroAccentsMap;
   };
 
@@ -235,7 +236,6 @@ struct PendingOperationItem
     unsigned int _uintA;
     unsigned int _posLenVal;
     bool _boolA;
-    bool _select;
     const QString *_name;
     double _aux_send_value;
     int _insert_at;
@@ -345,7 +345,8 @@ struct PendingOperationItem
 
   PendingOperationItem(TrackList* tl, bool select, unsigned long /*t0*/, unsigned long /*t1*/,
                        PendingOperationType type = GlobalSelectAllEvents)
-    { _type = type; _track_list = tl; _select = select; }
+    { _type = type; _track_list = tl; 
+        _boolA = select; }
     
   PendingOperationItem(Track* track, const QString* new_name, PendingOperationType type = ModifyTrackName)
     { _type = type; _track = track; _name = new_name; }
@@ -435,7 +436,7 @@ struct PendingOperationItem
   PendingOperationItem(TempoList* tl, int tempo, PendingOperationType type)
     { _type = type; _tempo_list = tl; _intA = tempo; }
 
-  PendingOperationItem(TempoList* tl, bool v, PendingOperationType type = EnableMasterTrack)
+  PendingOperationItem(TempoList* tl, bool v, PendingOperationType type = SetUseMasterTrack)
     { _type = type; _tempo_list = tl; _boolA = v; }
 
     
@@ -465,11 +466,12 @@ struct PendingOperationItem
   PendingOperationItem(unsigned int len, PendingOperationType type = ModifySongLength)
     { _type = type; _posLenVal = len; }
 
-  PendingOperationItem(bool* settings_switch, bool v, PendingOperationType type = SwitchMetronomeSettings)
-    { _type = type; _metroUseSongSettings = settings_switch; _select = v; }
-
   PendingOperationItem(MetroAccentsMap** old_map, MetroAccentsMap* new_map, PendingOperationType type = ModifyMetronomeAccentMap)
     { _type = type; _metroAccentsMap = old_map; _newMetroAccentsMap = new_map; }
+
+  // Type is SwitchMetronomeSettings, SetExternalSyncFlag, SetUseJackTransport.
+  PendingOperationItem(bool* bool_pointer, bool v, PendingOperationType type)
+    { _type = type; _bool_pointer = bool_pointer; _boolA = v; }
 
   PendingOperationItem(PendingOperationType type) // type is EnableAllAudioControllers.
     { _type = type; }

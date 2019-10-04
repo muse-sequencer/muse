@@ -1569,7 +1569,7 @@ bool Song::applyOperationGroup(Undo& group, OperationType type, void* sender)
     // We need to seek AFTER any song changed slots are called in case widgets
     //  are removed etc. etc. before the posChanged signal is emitted when setPos()
     //  is called from the seek recognition.
-//     const bool doseek = !MusEGlobal::audio->isPlaying() && (updateFlags._flags & (SC_TEMPO | SC_MASTER));
+//     const bool doseek = !MusEGlobal::audio->isPlaying() && (updateFlags & (SC_TEMPO | SC_MASTER));
     switch(type)
     {
       case OperationExecute:
@@ -1622,25 +1622,25 @@ void Song::revertOperationGroup2(Undo& /*operations*/)
         // Special for tempo: Need to normalize the tempo list, and resync audio. 
         // To save time this is done here, not item by item.
         // Normalize is not needed for SC_MASTER.
-        if(updateFlags._flags & SC_TEMPO)
+        if(updateFlags & SC_TEMPO)
           MusEGlobal::tempomap.normalize();
-        if(updateFlags._flags & (SC_TEMPO | SC_MASTER))
+        if(updateFlags & (SC_TEMPO | SC_MASTER))
         {
           MusEGlobal::audio->reSyncAudio();
           // Must rebuild the marker list in case any markers are 'locked'.
           if(marker()->rebuild())
-            updateFlags._flags |= SC_MARKERS_REBUILT;
+            updateFlags |= SC_MARKERS_REBUILT;
         }
 
         // Special for sig: Need to normalize the signature list. 
         // To save time this is done here, not item by item.
-        if(updateFlags._flags & SC_SIG)
+        if(updateFlags & SC_SIG)
           MusEGlobal::sigmap.normalize();
 
         // Special for track inserted: If it's an aux track, need to add missing aux sends to all tracks,
         //  else if it's another audio track need to add aux sends to it.
         // To save from complexity this is done here, after all the operations.
-        if(updateFlags._flags & SC_TRACK_INSERTED)
+        if(updateFlags & SC_TRACK_INSERTED)
         {
           int n = _auxs.size();
           for(iTrack i = _tracks.begin(); i != _tracks.end(); ++i) 
@@ -1665,25 +1665,25 @@ void Song::executeOperationGroup2(Undo& /*operations*/)
         // Special for tempo if altered: Need to normalize the tempo list, and resync audio. 
         // To save time this is done here, not item by item.
         // Normalize is not needed for SC_MASTER.
-        if(updateFlags._flags & SC_TEMPO)
+        if(updateFlags & SC_TEMPO)
           MusEGlobal::tempomap.normalize();
-        if(updateFlags._flags & (SC_TEMPO | SC_MASTER))
+        if(updateFlags & (SC_TEMPO | SC_MASTER))
         {
           MusEGlobal::audio->reSyncAudio();
           // Must rebuild the marker list in case any markers are 'locked'.
           if(marker()->rebuild())
-            updateFlags._flags |= SC_MARKERS_REBUILT;
+            updateFlags |= SC_MARKERS_REBUILT;
         }
 
         // Special for sig: Need to normalize the signature list. 
         // To save time this is done here, not item by item.
-        if(updateFlags._flags & SC_SIG)
+        if(updateFlags & SC_SIG)
           MusEGlobal::sigmap.normalize();
         
         // Special for track inserted: If it's an aux track, need to add missing aux sends to all tracks,
         //  else if it's another audio track need to add aux sends to it.
         // To save from complexity this is done here, after all the operations.
-        if(updateFlags._flags & SC_TRACK_INSERTED)
+        if(updateFlags & SC_TRACK_INSERTED)
         {
           int n = _auxs.size();
           for(iTrack i = _tracks.begin(); i != _tracks.end(); ++i) 
@@ -2742,7 +2742,7 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:EnableMasterTrack ** adding EnableMasterTrack operation\n");
 #endif                        
-                        pendingOperations.add(PendingOperationItem(&MusEGlobal::tempomap, i->b, PendingOperationItem::EnableMasterTrack));
+                        pendingOperations.add(PendingOperationItem(&MusEGlobal::tempomap, (bool)i->b, PendingOperationItem::SetUseMasterTrack));
                         updateFlags |= SC_MASTER;
                         break;
                         
@@ -2813,7 +2813,7 @@ void Song::revertOperationGroup1(Undo& operations)
                             new_marker_list = new MarkerList(*marker());
                           if(i->newMarker)
                             new_marker_list->remove(*i->newMarker);
-                          updateFlags._flags |= SC_MARKER_REMOVED;
+                          updateFlags |= SC_MARKER_REMOVED;
                         break;
                   
                   case UndoOp::DeleteMarker:
@@ -2823,7 +2823,7 @@ void Song::revertOperationGroup1(Undo& operations)
                             new_marker_list = new MarkerList(*marker());
                           if(i->oldMarker)
                             new_marker_list->add(*i->oldMarker);
-                          updateFlags._flags |= SC_MARKER_INSERTED;
+                          updateFlags |= SC_MARKER_INSERTED;
                         break;
                   
                   case UndoOp::ModifyMarker:
@@ -2836,7 +2836,7 @@ void Song::revertOperationGroup1(Undo& operations)
                             new_marker_list->remove(*i->newMarker);
                           if(i->oldMarker)
                             new_marker_list->add(*i->oldMarker);
-                          updateFlags._flags |= SC_MARKER_MODIFIED;
+                          updateFlags |= SC_MARKER_MODIFIED;
                         break;
 
                   default:
@@ -2953,7 +2953,7 @@ void Song::revertOperationGroup3(Undo& operations)
 //                             delete i->copyMarker;
 //                             i->copyMarker = 0;
 //                           }
-//                           updateFlags._flags |= SC_MARKER_LIST;
+//                           updateFlags |= SC_MARKER_LIST;
 //                         }
 //                         break;
                   case UndoOp::AddPart:
@@ -2981,7 +2981,7 @@ void Song::revertOperationGroup3(Undo& operations)
 
             // REMOVE Tim. clip. Added.
 //             // To avoid doing this item by item, do it here.
-//             if(updateFlags._flags & (SC_MASTER | SC_TEMPO /*| SC_SIG*/))
+//             if(updateFlags & (SC_MASTER | SC_TEMPO /*| SC_SIG*/))
 //             {
 // //               // We relocate the transport position frame to reflect
 // //               //  the current tick, which we want to keep the same,
@@ -3010,8 +3010,8 @@ void Song::revertOperationGroup3(Undo& operations)
 //             } 
 
             // REMOVE Tim. clip. Added.
-            if(updateFlags._flags & SC_MASTER)
-              _masterFlag = MusEGlobal::tempomap.masterFlag();
+//             if(updateFlags & SC_MASTER)
+//               _masterFlag = MusEGlobal::tempomap.masterFlag();
 
             if(!operations.empty())
               emit sigDirty();
@@ -3615,7 +3615,7 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:EnableMasterTrack ** adding EnableMasterTrack operation\n");
 #endif                        
-                        pendingOperations.add(PendingOperationItem(&MusEGlobal::tempomap, i->a, PendingOperationItem::EnableMasterTrack));
+                        pendingOperations.add(PendingOperationItem(&MusEGlobal::tempomap, (bool)i->a, PendingOperationItem::SetUseMasterTrack));
                         updateFlags |= SC_MASTER;
                         break;
                         
@@ -3701,7 +3701,7 @@ void Song::executeOperationGroup1(Undo& operations)
                             new_marker_list = new MarkerList(*marker());
                           if(i->newMarker)
                             new_marker_list->add(*i->newMarker);
-                          updateFlags._flags |= SC_MARKER_INSERTED;
+                          updateFlags |= SC_MARKER_INSERTED;
                         break;
                   
                   case UndoOp::DeleteMarker:
@@ -3711,7 +3711,7 @@ void Song::executeOperationGroup1(Undo& operations)
                             new_marker_list = new MarkerList(*marker());
                           if(i->oldMarker)
                             new_marker_list->remove(*i->oldMarker);
-                          updateFlags._flags |= SC_MARKER_REMOVED;
+                          updateFlags |= SC_MARKER_REMOVED;
                         break;
                   
                   case UndoOp::ModifyMarker:
@@ -3724,7 +3724,7 @@ void Song::executeOperationGroup1(Undo& operations)
                             new_marker_list->remove(*i->oldMarker);
                           if(i->newMarker)
                             new_marker_list->add(*i->newMarker);
-                          updateFlags._flags |= SC_MARKER_MODIFIED;
+                          updateFlags |= SC_MARKER_MODIFIED;
                         break;
 
                   default:
@@ -3841,7 +3841,7 @@ void Song::executeOperationGroup3(Undo& operations)
 //                             _markerList->remove(i->realMarker);
 //                             i->realMarker = 0;
 //                           }
-//                           updateFlags._flags |= SC_MARKER_LIST;
+//                           updateFlags |= SC_MARKER_LIST;
 //                         }
 //                         break;
                   case UndoOp::DeletePart:
@@ -3875,7 +3875,7 @@ void Song::executeOperationGroup3(Undo& operations)
 
       // REMOVE Tim. clip. Added.
 //       // To avoid doing this item by item, do it here.
-//       if(updateFlags._flags & (SC_MASTER | SC_TEMPO /*| SC_SIG*/))
+//       if(updateFlags & (SC_MASTER | SC_TEMPO /*| SC_SIG*/))
 //       {
 // //         // We relocate the transport position frame to reflect
 // //         //  the current tick, which we want to keep the same,
@@ -3903,8 +3903,8 @@ void Song::executeOperationGroup3(Undo& operations)
 //       } 
 
       // REMOVE Tim. clip. Added.
-      if(updateFlags._flags & SC_MASTER)
-        _masterFlag = MusEGlobal::tempomap.masterFlag();
+//       if(updateFlags & SC_MASTER)
+//         _masterFlag = MusEGlobal::tempomap.masterFlag();
 
       // If some operations marked as non-undoable were removed, it is OK,
       //  because we only want dirty if an undoable operation was executed, right?
