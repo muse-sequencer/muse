@@ -58,7 +58,7 @@ BigTime::BigTime(QWidget* parent)
 {
 // REMOVE Tim. clip. Removed.
 //   _curPos = 0;
-  //_curPos.setType(MusECore::Pos::FRAMES);
+  _curPos.setType(MusECore::Pos::FRAMES);
   _formatted = true;
   dwin = new QWidget(this, Qt::WindowStaysOnTopHint);  // Possibly also Qt::X11BypassWindowManagerHint
   dwin->setObjectName("bigtime-dwin");
@@ -364,7 +364,8 @@ void BigTime::closeEvent(QCloseEvent *ev)
 //   setString
 //---------------------------------------------------------
 
-bool BigTime::setString(const MusECore::Pos v)
+// bool BigTime::setString(const MusECore::Pos v)
+bool BigTime::setString(const MusECore::Pos& v)
       {
       if ((v.type() == MusECore::Pos::TICKS && v.tick() >= MUSE_INVALID_POSITION) || 
           (v.type() == MusECore::Pos::FRAMES && v.frame() >= MUSE_INVALID_POSITION)) {
@@ -483,13 +484,15 @@ bool BigTime::setString(const MusECore::Pos v)
 //   setPos
 //---------------------------------------------------------
 #define PI 3.14159265
-void BigTime::setPos(int idx, const MusECore::Pos v, bool)
+// void BigTime::setPos(int idx, const MusECore::Pos v, bool)
+void BigTime::setPos(int idx, const MusECore::Pos& v, bool)
 {
   if (idx == 0)
   {
-    _curPos = v;
+//     _curPos = v;
     //_curPos.setTickAndFrame(v);
-    //_curPos.setPos(v);
+    _curPos.setLock(v.lock());
+    _curPos.setPos(v);
 //     int calcV = v.tick()%(MusEGlobal::config.midiDivision*2);
     int calcV = _curPos.tick()%(MusEGlobal::config.midiDivision*2);
     double rangeAdjuster = PI/double(MusEGlobal::config.midiDivision);

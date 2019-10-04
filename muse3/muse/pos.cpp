@@ -49,6 +49,7 @@ Pos::Pos()
       _type   = TICKS;
       _tick   = 0;
       _frame  = 0;
+      _lock   = false;
       sn      = -1;
       }
 
@@ -58,6 +59,7 @@ Pos::Pos(const Pos& p)
       sn    = p.sn;
       _tick = p._tick;
       _frame = p._frame;
+      _lock  = p._lock;
       }
 
 Pos::Pos(unsigned t, bool ticks)
@@ -71,6 +73,7 @@ Pos::Pos(unsigned t, bool ticks)
             _frame = t;
             }
       sn = -1;
+      _lock = false;
       }
 
 Pos::Pos(const QString& s)
@@ -80,6 +83,7 @@ Pos::Pos(const QString& s)
       _tick = MusEGlobal::sigmap.bar2tick(m, b, t);
       _type = TICKS;
       sn    = -1;
+      _lock = false;
       }
 
 Pos::Pos(int measure, int beat, int tick)
@@ -87,10 +91,13 @@ Pos::Pos(int measure, int beat, int tick)
       _tick = MusEGlobal::sigmap.bar2tick(measure, beat, tick);
       _type = TICKS;
       sn    = -1;
+      _lock = false;
       }
 
 Pos::Pos(int min, int sec, int frame, int subframe, bool ticks, LargeIntRoundMode round_mode)
       {
+      _lock = false;
+
       const int64_t sr = (int64_t)MusEGlobal::sampleRate;
 //       uint64_t time = (uint64_t)MusEGlobal::sampleRate * (min * 60UL + sec);
 //       const uint64_t f = (uint64_t)MusEGlobal::sampleRate * (frame * 100UL + subframe);
@@ -159,6 +166,8 @@ Pos::Pos(int min, int sec, int frame, int subframe, bool ticks, LargeIntRoundMod
 
 Pos::Pos(int hour, int min, int sec, int msec, int usec, bool ticks, LargeIntRoundMode round_mode)
 {
+      _lock = false;
+
 //      const uint64_t sr = (uint64_t)MusEGlobal::sampleRate;
       const int64_t sr = (int64_t)MusEGlobal::sampleRate;
       
@@ -253,16 +262,29 @@ void Pos::setType(TType t)
       if (t == _type)
             return;
 
-      if (_type == TICKS) {
-            // convert from ticks to frames
-            _frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn);
-            }
-      else {
-            // convert from frames to ticks
-            _tick = MusEGlobal::tempomap.frame2tick(_frame, _tick, &sn);
-            }
+      // REMOVE Tim. clip. Added.
+      if(!_lock) {
+        if (_type == TICKS) {
+              // convert from ticks to frames
+              _frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn);
+              }
+        else {
+              // convert from frames to ticks
+              _tick = MusEGlobal::tempomap.frame2tick(_frame, _tick, &sn);
+              }
+      }
       _type = t;
       }
+
+//---------------------------------------------------------
+//   setLock
+//---------------------------------------------------------
+
+void Pos::setLock(bool v)
+{
+  _lock = v;
+  sn = -1;
+}
 
 //---------------------------------------------------------
 //   snValid
@@ -283,6 +305,7 @@ Pos& Pos::operator=(const Pos& p)
       sn    = p.sn;
       _tick = p._tick;
       _frame = p._frame;
+      _lock = p._lock;
       return *this;
       }
 
@@ -466,8 +489,11 @@ bool Pos::operator!=(const Pos& s) const
 
 unsigned Pos::tick(LargeIntRoundMode round_mode) const
       {
-      if (_type == FRAMES)
-            _tick = MusEGlobal::tempomap.frame2tick(_frame, _tick, &sn, round_mode);
+      // REMOVE Tim. clip. Added.
+      if(!_lock) {
+        if (_type == FRAMES)
+              _tick = MusEGlobal::tempomap.frame2tick(_frame, _tick, &sn, round_mode);
+      }
       return _tick;
       }
 
@@ -477,8 +503,11 @@ unsigned Pos::tick(LargeIntRoundMode round_mode) const
 
 unsigned Pos::frame(LargeIntRoundMode round_mode) const
       {
-      if (_type == TICKS)
-            _frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn, round_mode);
+      // REMOVE Tim. clip. Added.
+      if(!_lock) {
+        if (_type == TICKS)
+              _frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn, round_mode);
+      }
       return _frame;
       }
 
@@ -503,12 +532,18 @@ unsigned Pos::posValue(TType time_type) const
   switch(time_type)
   {
     case FRAMES:
-      if (_type == TICKS)
-            _frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn);
+      // REMOVE Tim. clip. Added.
+      if(!_lock) {
+        if (_type == TICKS)
+              _frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn);
+      }
       return _frame;
     case TICKS:
-      if (_type == FRAMES)
-            _tick = MusEGlobal::tempomap.frame2tick(_frame, _tick, &sn);
+      // REMOVE Tim. clip. Added.
+      if(!_lock) {
+        if (_type == FRAMES)
+              _tick = MusEGlobal::tempomap.frame2tick(_frame, _tick, &sn);
+      }
       return _tick;
   }
   return tick();
@@ -522,8 +557,11 @@ void Pos::setTick(unsigned pos, LargeIntRoundMode round_mode)
       {
       _tick = pos;
       sn    = -1;
-      if (_type == FRAMES)
-            _frame = MusEGlobal::tempomap.tick2frame(pos, &sn, round_mode);
+      // REMOVE Tim. clip. Added.
+      if(!_lock) {
+        if (_type == FRAMES)
+              _frame = MusEGlobal::tempomap.tick2frame(pos, &sn, round_mode);
+      }
       }
 
 //---------------------------------------------------------
@@ -534,8 +572,11 @@ void Pos::setFrame(unsigned pos, LargeIntRoundMode round_mode)
       {
       _frame = pos;
       sn     = -1;
-      if (_type == TICKS)
-            _tick = MusEGlobal::tempomap.frame2tick(pos, &sn, round_mode);
+      // REMOVE Tim. clip. Added.
+      if(!_lock) {
+        if (_type == TICKS)
+              _tick = MusEGlobal::tempomap.frame2tick(pos, &sn, round_mode);
+      }
       }
 
 //---------------------------------------------------------
@@ -561,13 +602,19 @@ void Pos::setPosValue(unsigned val, TType time_type)
   switch(time_type) {
     case FRAMES:
           _frame = val;
-          if (_type == TICKS)
-                _tick = MusEGlobal::tempomap.frame2tick(_frame, &sn);
+          // REMOVE Tim. clip. Added.
+          if(!_lock) {
+            if (_type == TICKS)
+                  _tick = MusEGlobal::tempomap.frame2tick(_frame, &sn);
+          }
           break;
     case TICKS:
           _tick = val;
-          if (_type == FRAMES)
-                _frame = MusEGlobal::tempomap.tick2frame(_tick, &sn);
+          // REMOVE Tim. clip. Added.
+          if(!_lock) {
+            if (_type == FRAMES)
+                  _frame = MusEGlobal::tempomap.tick2frame(_tick, &sn);
+          }
           break;
   }
 }
@@ -578,13 +625,25 @@ void Pos::setPos(const Pos& s)
   switch(s.type()) {
     case FRAMES:
           _frame = s.posValue();
-          if (_type == TICKS)
-                _tick = MusEGlobal::tempomap.frame2tick(_frame, &sn);
+          // REMOVE Tim. clip. Added.
+          if(_lock) {
+            _tick = s.tick();
+          }
+          else {
+            if (_type == TICKS)
+                  _tick = MusEGlobal::tempomap.frame2tick(_frame, &sn);
+          }
           break;
     case TICKS:
           _tick = s.posValue();
-          if (_type == FRAMES)
-                _frame = MusEGlobal::tempomap.tick2frame(_tick, &sn);
+          // REMOVE Tim. clip. Added.
+          if(_lock) {
+            _frame = s.frame();
+          }
+          else {
+            if (_type == FRAMES)
+                  _frame = MusEGlobal::tempomap.tick2frame(_tick, &sn);
+          }
           break;
   }
 }

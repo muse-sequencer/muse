@@ -90,7 +90,8 @@ class BigTime : public QWidget {
       
 // REMOVE Tim. clip. Changed.
 //       bool setString(unsigned);
-      bool setString(const MusECore::Pos);
+//       bool setString(const MusECore::Pos);
+      bool setString(const MusECore::Pos&);
       void updateValue();
 
       VerticalMetronomeWidget *metronome;
@@ -118,7 +119,8 @@ class BigTime : public QWidget {
    public slots:
 // REMOVE Tim. clip. Changed.
 //       void setPos(int, unsigned, bool);
-      void setPos(int, const MusECore::Pos, bool);
+//       void setPos(int, const MusECore::Pos, bool);
+      void setPos(int, const MusECore::Pos&, bool);
       void configChanged();
       void songChanged(MusECore::SongChangedStruct_t);
       void fmtButtonToggled(bool);

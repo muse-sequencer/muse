@@ -49,6 +49,20 @@ class Pos {
       mutable int sn;
       mutable unsigned _tick;
       mutable unsigned _frame;
+      // This flag indicates the frame and tick are separate
+      //  and are not influenced by the tempomap at all.
+      // Frame and tick can be set independently without being
+      //  altered by the tempomap.
+      // When this flag is set, the _type is effectively ignored
+      //  for several functions and the serial number is set to -1.
+      // It allows storing independent frame and tick values
+      //  conveniently housed in a Pos.
+      // It is mainly for use during external midi sync,
+      //  where frame and tick are completely independent.
+      // When asked for frame or tick, Pos will simply return
+      //  the stored frame or tick verbosely, without conversion
+      //  using the tempomap.
+      bool _lock;
 
    public:
       Pos();
@@ -95,6 +109,9 @@ class Pos {
 
       TType  type() const     { return _type; }
       void   setType(TType t);
+
+      bool lock() const { return _lock; }
+      void setLock(bool v);
 
       Pos& operator=(const Pos&);
       

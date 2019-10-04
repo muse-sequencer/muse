@@ -1921,7 +1921,7 @@ void Song::beat()
         //setPos(0, MusEGlobal::audio->pos(), true, false, true);
       // Set separate tick and frame, crucial for example during external sync.
       if (MusEGlobal::audio->isPlaying())
-       setPos(0, MusEGlobal::audio->tickAndFramePos(), true, false, true);
+        setPos(0, MusEGlobal::audio->tickAndFramePos(), true, false, true);
 
       // Process external tempo changes:
       while(!_tempoFifo.isEmpty())

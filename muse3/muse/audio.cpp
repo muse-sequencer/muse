@@ -1923,6 +1923,10 @@ unsigned int Audio::curFrame() const
 Pos Audio::tickAndFramePos() const
 {
   Pos p(0, false);
+
+  // REMOVE Tim. clip. Added.
+  p.setLock(MusEGlobal::extSyncFlag.value());
+
   p.setTickAndFrame(curTickPos, _pos.frame());
   return p;
 }
