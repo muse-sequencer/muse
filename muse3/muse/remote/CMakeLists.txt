@@ -56,7 +56,7 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties( remote
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -I${PYTHON_INCLUDE_DIRS}"
+      PROPERTIES COMPILE_FLAGS "-I${PYTHON_INCLUDE_DIRS}"
       OUTPUT_NAME muse_remote
       )
 

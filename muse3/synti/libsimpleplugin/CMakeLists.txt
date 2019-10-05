@@ -50,13 +50,11 @@ file (GLOB simpler_plugin_source_files
 ## Define target
 ##
 add_library ( simpler_plugingui SHARED   ## ${MODULES_BUILD}
-      ${PROJECT_BINARY_DIR}/all-pic.h
       ${simpler_plugingui_source_files}
       ${simpler_plugingui_mocs}
       ${simpler_plugingui_uis}
       )
 add_library ( simpler_plugin SHARED   ## ${MODULES_BUILD}
-      ${PROJECT_BINARY_DIR}/all-pic.h
       ${simpler_plugin_source_files}
       )
       
@@ -75,12 +73,10 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties( simpler_plugingui
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-      OUTPUT_NAME muse_simpler_plugingui
+      PROPERTIES OUTPUT_NAME muse_simpler_plugingui
       )
 set_target_properties( simpler_plugin
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-      OUTPUT_NAME muse_simpler_plugin
+      PROPERTIES OUTPUT_NAME muse_simpler_plugin
       )
       
 ##

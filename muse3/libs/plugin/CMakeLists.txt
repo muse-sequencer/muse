@@ -48,23 +48,18 @@ file (GLOB plugin_cache_writer_source_files
 ##
 
 add_library ( plugin_rdf_module SHARED
-      ${PROJECT_BINARY_DIR}/all-pic.h
       ${plugin_rdf_source_files}
       )
 add_library ( plugin_scan_module SHARED
-      ${PROJECT_BINARY_DIR}/all-pic.h
       ${plugin_scan_source_files}
       )
 add_library ( plugin_list_module SHARED
-      ${PROJECT_BINARY_DIR}/all-pic.h
       ${plugin_list_source_files}
       )
 add_library ( plugin_cache_reader_module SHARED
-      ${PROJECT_BINARY_DIR}/all-pic.h
       ${plugin_cache_reader_source_files}
       )
 add_library ( plugin_cache_writer_module SHARED
-      ${PROJECT_BINARY_DIR}/all-pic.h
       ${plugin_cache_writer_source_files}
       )
 
@@ -73,24 +68,19 @@ add_library ( plugin_cache_writer_module SHARED
 ##
 
 set_target_properties( plugin_rdf_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-      OUTPUT_NAME muse_plugin_rdf_module
+      PROPERTIES OUTPUT_NAME muse_plugin_rdf_module
       )
 set_target_properties( plugin_scan_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-      OUTPUT_NAME muse_plugin_scan_module
+      PROPERTIES OUTPUT_NAME muse_plugin_scan_module
       )
 set_target_properties( plugin_list_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-      OUTPUT_NAME muse_plugin_list_module
+      PROPERTIES OUTPUT_NAME muse_plugin_list_module
       )
 set_target_properties( plugin_cache_reader_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-      OUTPUT_NAME muse_plugin_cache_reader_module
+      PROPERTIES OUTPUT_NAME muse_plugin_cache_reader_module
       )
 set_target_properties( plugin_cache_writer_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-      OUTPUT_NAME muse_plugin_cache_writer_module
+      PROPERTIES OUTPUT_NAME muse_plugin_cache_writer_module
       )
 
 target_link_libraries(plugin_rdf_module

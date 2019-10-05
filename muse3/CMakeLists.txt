@@ -570,14 +570,6 @@ configure_file (
       ${PROJECT_BINARY_DIR}/config.h
       )
 
-file (COPY ${PROJECT_SOURCE_DIR}/all.h DESTINATION ${PROJECT_BINARY_DIR})
-file (RENAME ${PROJECT_BINARY_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic.h)
-
-file (COPY ${PROJECT_SOURCE_DIR}/all.h DESTINATION ${PROJECT_BINARY_DIR})
-file (RENAME ${PROJECT_BINARY_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic-debug.h)
-
-file (COPY ${PROJECT_SOURCE_DIR}/all.h DESTINATION ${PROJECT_BINARY_DIR})
-
 include_directories(
    .
    ${PROJECT_SOURCE_DIR}
