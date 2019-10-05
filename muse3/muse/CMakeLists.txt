@@ -242,8 +242,7 @@ include_directories(
 ## Compilation flags and target name
 ##
 set_target_properties( core
-      PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK} -include ${PROJECT_BINARY_DIR}/all.h"
-      
+      PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK}"
       OUTPUT_NAME muse_core
       )
 set_target_properties( muse
@@ -254,12 +253,10 @@ set_target_properties( icons
       )
 
 set_target_properties( latency_compensator_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_latency_compensator_module
+      PROPERTIES OUTPUT_NAME muse_latency_compensator_module
       )
 set_target_properties( wavepreview_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_wavepreview_module
+      PROPERTIES OUTPUT_NAME muse_wavepreview_module
       )
       
 ##
@@ -345,7 +342,7 @@ if(LV2_SUPPORT)
             )
       set_target_properties( lv2host_module
             # Avoid treating warnings as errors here, unlike the rest of the app.
-            PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -Wno-error"
+            PROPERTIES COMPILE_FLAGS "-Wno-error"
             OUTPUT_NAME muse_lv2host_module
             )
             

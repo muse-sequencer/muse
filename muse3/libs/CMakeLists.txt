@@ -22,4 +22,3 @@
 #=============================================================================
 
 subdirs(evdata memory mpevent string sysex_helper xml plugin)
-

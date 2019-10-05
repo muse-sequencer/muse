@@ -316,8 +316,8 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties( components
-      # PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti "
-      PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK} -include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti"
+      # PROPERTIES COMPILE_FLAGS "${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti "
+      PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK} ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti"
       OUTPUT_NAME muse_components
       )
 

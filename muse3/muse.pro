@@ -278,7 +278,6 @@ HEADERS = \
 	./awl/volslider.h \
 	./awl/sigedit.h \
 	./awl/tcanvas.h \
-	./all.h \
  
 
 SOURCES = \

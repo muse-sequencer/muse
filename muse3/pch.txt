@@ -18,12 +18,6 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-file (COPY ${PROJECT_SOURCE_DIR}/all.h DESTINATION ${PROJECT_BINARY_DIR})
-file (RENAME ${PROJECT_BINARY_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic.h)
-
-file (COPY ${PROJECT_SOURCE_DIR}/all.h DESTINATION ${PROJECT_BINARY_DIR})
-
-      
 # Disable precompilation of this header file for now since it is empty - Orcan 2012-05-20
 if(0)
 add_custom_command(

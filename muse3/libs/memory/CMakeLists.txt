@@ -44,8 +44,7 @@ add_library ( memory_module SHARED
 ##
 
 set_target_properties( memory_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_memory_module
+      PROPERTIES OUTPUT_NAME muse_memory_module
       )
 
 ##
