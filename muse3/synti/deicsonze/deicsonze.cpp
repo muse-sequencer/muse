@@ -45,6 +45,7 @@ float DeicsOnze::waveTable[NBRWAVES][RESOLUTION];
 int DeicsOnze::useCount = 0;
 
 QString DEI_hostConfigPath;
+QString DEI_hostCachePath;
 QString DEI_globalLibPath;
 QString DEI_sharePath;
 unsigned int DEI_segmentSize;
@@ -58,7 +59,7 @@ float DEI_denormalBias;
 
 DeicsOnze::DeicsOnze() : Mess(2) {
   
-  MusESimplePlugin::SS_initPlugins(DEI_hostConfigPath);
+  MusESimplePlugin::SS_initPlugins(DEI_hostCachePath);
 
   if (useCount++ == 0) {
     // create sinus wave table, W1
@@ -4495,6 +4496,7 @@ class QWidget;
 static Mess* instantiate(unsigned long long /*parentWinId*/, const char* /*name*/, const MessConfig* config)
 {
     DEI_hostConfigPath = QString(config->_configPath);
+    DEI_hostCachePath = QString(config->_cachePath);
     DEI_globalLibPath = QString(config->_globalLibPath);
     DEI_sharePath = QString(config->_globalSharePath);
     DEI_segmentSize = config->_segmentSize;
