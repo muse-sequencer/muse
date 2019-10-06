@@ -530,7 +530,7 @@ class PluginList : public std::list<Plugin*> {
       ~PluginList();
       };
 
-extern void SS_initPlugins(const QString& hostConfigPath);
+extern void SS_initPlugins(const QString& hostCachePath);
 extern PluginList plugins;
 
 } // namespace MusESimplePlugin

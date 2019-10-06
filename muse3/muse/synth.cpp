@@ -356,6 +356,7 @@ void* MessSynth::instantiate(const QString& instanceName)
             return 0;
             }
       QByteArray configPathBA      = MusEGlobal::configPath.toLatin1();
+      QByteArray cachePathBA       = MusEGlobal::cachePath.toLatin1();
       QByteArray museGlobalLibBA   = MusEGlobal::museGlobalLib.toLatin1();
       QByteArray museGlobalShareBA = MusEGlobal::museGlobalShare.toLatin1();
       QByteArray museUserBA        = MusEGlobal::museUser.toLatin1();
@@ -367,6 +368,7 @@ void* MessSynth::instantiate(const QString& instanceName)
                       MusEGlobal::denormalBias,
                       MusEGlobal::config.leftMouseButtonCanDecrease,
                       configPathBA.constData(),
+                      cachePathBA.constData(),
                       museGlobalLibBA.constData(),
                       museGlobalShareBA.constData(),
                       museUserBA.constData(),

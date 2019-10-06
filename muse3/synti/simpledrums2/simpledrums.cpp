@@ -70,6 +70,7 @@ float SS_denormalBias;
 QString SS_globalLibPath;
 QString SS_projectPath;
 QString SS_hostConfigPath;
+QString SS_hostCachePath;
 
 
 double rangeToPitch(int value)
@@ -124,7 +125,7 @@ SimpleSynth::SimpleSynth(int sr)
          
    synth_state = SS_INITIALIZING;
    
-   MusESimplePlugin::SS_initPlugins(SS_hostConfigPath);
+   MusESimplePlugin::SS_initPlugins(SS_hostCachePath);
 
    initBuffer  = 0;
    initLen     = 0;
@@ -2125,7 +2126,8 @@ static Mess* instantiate(unsigned long long /*parentWinId*/, const char* name, c
    SS_denormalBias      = config->_denormalBias;
    SS_globalLibPath     = QString(config->_globalLibPath);
    SS_projectPath       = QString(config->_projectPath);
-    SS_hostConfigPath        = QString(config->_configPath);
+   SS_hostConfigPath    = QString(config->_configPath);
+   SS_hostCachePath     = QString(config->_cachePath);
    SimpleSynth* synth = new SimpleSynth(config->_sampleRate);
    if (!synth->init(name)) {
       delete synth;

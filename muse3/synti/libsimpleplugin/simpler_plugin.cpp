@@ -84,13 +84,13 @@ int SS_map_logdomain2pluginparam(float pluginparam_log)
 //    search for LADSPA plugins
 //---------------------------------------------------------
 
-void SS_initPlugins(const QString& hostConfigPath)
+void SS_initPlugins(const QString& hostCachePath)
 {
   SP_TRACE_IN
   
   MusEPlugin::PluginScanList scan_list;
   // Read host plugin cache file. We only want ladspa plugins for now...
-  MusEPlugin::readPluginCacheFile(hostConfigPath + "/scanner",
+  MusEPlugin::readPluginCacheFile(hostCachePath + "/scanner",
                                   &scan_list,
                                   false,
                                   false,

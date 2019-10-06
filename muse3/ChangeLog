@@ -1,5 +1,6 @@
 05.10.2019
       - Merge PR 665 from hfiguiere: Remove unused "all.h" and all relevant code. (Tim)
+      - Fix crash: SimplerPlugin (LadspaPlugin). Regression of 03.09. Wrong cache loc.
 03.10.2019
       - Redesign: All SongChanged flags are now 128-bit (split two 64-bit). (Tim)
         128 bits of flags split as two 64-bit values in class SongChangedStruct_t,
