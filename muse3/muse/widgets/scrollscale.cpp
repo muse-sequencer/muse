@@ -262,25 +262,12 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
 	double cmag = ( cs < 0 ) ? ( 1.0/ ( -cs ) ) : double ( cs );
 	double diff = max-min;
 
-	//
-	// search initial value for slider
-	//
-	int cur   = 512;
-	int delta = 256;
-	for ( int i = 0; i < 8; ++i )
-	{
-        int tryVal   = invers ? convertQuickZoomLevelToMag(zoomLevels-1)+1 - cur : cur;
-        double fkt   = double ( tryVal ) /double(convertQuickZoomLevelToMag(zoomLevels-1));
-		double v     = ( pow ( logbase, fkt )-1 ) / ( logbase-1 );
-		double scale = invers ? ( max - v * diff ) : ( min + v * diff );
-		if ( scale == cmag ) // not very likely
-			break;
- //printf("iteration %d invers:%d soll %f(cur:%d) - ist %f\n", i, invers, scale, cur, cmag);
-		int dd = invers ? -delta : delta;
-		cur += ( scale < cmag ) ? dd : -dd;
-        delta/=2;
-	}
+  const int mag_max = convertQuickZoomLevelToMag(zoomLevels-1);
 
+  // Round up so that the reciprocal function (mag factor to zoom level) matches!
+  const double cur = ceil( log10( (cmag - min) * (logbase - 1) / diff + 1 ) * mag_max );
+
+	//fprintf(stderr, "ScrollScale: cs:%d cur:%f\n", cs, cur);
 	scale  = new QSlider (o);
         // Added by Tim. For some reason focus was on. 
         // It messes up tabbing, and really should have a shortcut instead.

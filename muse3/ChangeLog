@@ -1,3 +1,9 @@
+09.10.2019
+      - Pianoroll Editor: Increased default vertical zoom level from 1 to 2. (Tim)
+        Was challenging. The global variable 'yscale' in pianoroll.cpp had no effect
+         no matter what I put there. Fixed class ScrollScale (the slider!), had a
+         problem with the initial scale. Replaced its curious successive approximation
+         log() code with an actual log10() call, rounded up! Tested OK.
 05.10.2019
       - Merge PR 665 from hfiguiere: Remove unused "all.h" and all relevant code. (Tim)
       - Fix crash: SimplerPlugin (LadspaPlugin). Regression of 03.09. Wrong cache loc.

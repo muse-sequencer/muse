@@ -88,8 +88,10 @@ int PianoRoll::_trackInfoWidthInit = 50;
 int PianoRoll::_canvasWidthInit = 300;
 int PianoRoll::colorModeInit = 0;
 
+// Initial zoom levels:
 static const int xscale = -10;
-static const int yscale = 1;
+static const int yscale = 2;
+
 static const int pianoWidth = 40;
 static int pianorollTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | MusEGui::DrawTool | PanTool | ZoomTool;
 
@@ -442,7 +444,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
       piano->setYPos(KH * 30);
       canvas->setYPos(KH * 30);
-      vscroll->setPos(KH * 30);
+      vscroll->setOffset(KH * 30);
       info->setEnabled(false);
 
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged1(MusECore::SongChangedStruct_t)));
