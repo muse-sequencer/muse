@@ -568,6 +568,9 @@ void TopWin::storeInitialState() const
 	}
 	else
 		_toolbarNonsharedInit[_type] = saveState();
+		  
+	// Store class-specific view settings.
+	storeInitialViewState();
 }
 
 

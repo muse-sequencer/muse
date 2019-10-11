@@ -268,6 +268,9 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
 
                         if (tag == "name")
                               npart->setName(xml.parse1());
+                        else if (tag == "viewState") {
+                              npart->viewState().read(xml);
+                              }
                         else if (tag == "poslen") {
                               ((PosLen*)npart)->read(xml, "poslen");
                               }
@@ -429,6 +432,9 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
         xml.tag(level++, "part");
 
       xml.strTag(level, "name", _name);
+
+      // This won't bother writing if the state is invalid.
+      viewState().write(level, xml);
 
       PosLen::write(level, xml, "poslen");
       xml.intTag(level, "selected", _selected);

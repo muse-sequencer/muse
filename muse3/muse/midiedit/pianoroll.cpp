@@ -100,7 +100,7 @@ static int pianorollTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui
 //   PianoRoll
 //---------------------------------------------------------
 
-PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, unsigned initPos)
+PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, unsigned initPos, bool showDefaultControls)
    : MidiEditor(TopWin::PIANO_ROLL, _rasterInit, pl, parent, name)
       {
       deltaMode     = false;
@@ -118,6 +118,27 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       lastSelections = 0;
       _playEvents    = true;
       colorMode      = colorModeInit;
+      
+      const MusECore::PartList* part_list = parts();
+      // Default initial pianoroll view state.
+      _viewState = MusECore::MidiPartViewState (0, KH * 30, xscale, yscale);
+      // Include a velocity controller in the default initial view state.
+      _viewState.addController(MusECore::MidiCtrlViewState(MusECore::CTRL_VELOCITY));
+      if(part_list && !part_list->empty())
+      {
+        // If the parts' view states have never been initialized before,
+        //  do it now with the desired pianoroll initial state.
+        for(MusECore::ciPart i = part_list->begin(); i != part_list->end(); ++i)
+        {
+          if(!i->second->viewState().isValid())
+            i->second->setViewState(_viewState);
+        }
+        // Now take our initial view state from the first part found in the list.
+        // Don't bother if not showing default controls, since something else
+        //  will likely take care of it, like the song file loading routines.
+        if(showDefaultControls)
+          _viewState = part_list->begin()->second->viewState();
+      }
       
       //---------Menu----------------------------------
       
@@ -325,7 +346,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       ctrl->setToolTip(tr("Add Controller View"));
       ctrl->setFocusPolicy(Qt::NoFocus);
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
-      hscroll = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, xscale, 20000, Qt::Horizontal, mainw);
+      hscroll = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, _viewState.xscale(), 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(pianoWidth, hscroll->sizeHint().height());
       
       QSizeGrip* corner = new QSizeGrip(mainw);
@@ -378,10 +399,10 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       gridS1->setContentsMargins(0, 0, 0, 0);
       gridS1->setSpacing(0);  
 
-      time                = new MusEGui::MTScale(&_raster, split1, xscale);
-      piano               = new Piano(split1, yscale, this);
-      canvas              = new PianoCanvas(this, split1, xscale, yscale);
-      vscroll             = new MusEGui::ScrollScale(-3, 7, yscale, KH * 75, Qt::Vertical, split1);
+      time                = new MusEGui::MTScale(&_raster, split1, _viewState.xscale());
+      piano               = new Piano(split1, _viewState.yscale(), this);
+      canvas              = new PianoCanvas(this, split1, _viewState.xscale(), _viewState.yscale());
+      vscroll             = new MusEGui::ScrollScale(-3, 7, _viewState.yscale(), KH * 75, Qt::Vertical, split1);
       setCurDrumInstrument(piano->curSelectedPitch());
       
       int offset = -(MusEGlobal::config.division/4);
@@ -442,9 +463,9 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       connect(info, SIGNAL(escapePressed()),          SLOT(focusCanvas()));
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
-      piano->setYPos(KH * 30);
-      canvas->setYPos(KH * 30);
-      vscroll->setOffset(KH * 30);
+      piano->setYPos(_viewState.yscroll());
+      canvas->setYPos(_viewState.yscroll());
+      vscroll->setOffset(_viewState.yscroll());
       info->setEnabled(false);
 
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged1(MusECore::SongChangedStruct_t)));
@@ -497,6 +518,23 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
     
       initTopwinState();
       finalizeInit();
+
+      // Add initial controllers.
+      // Don't bother if not showing default controls, since something else
+      //  will likely take care of it, like the song file loading routines.
+      if(showDefaultControls)
+      {
+        CtrlEdit* ctrl_edit;
+        const MusECore::MidiCtrlViewStateList& mcvsl = _viewState.controllers();
+        for(MusECore::ciMidiCtrlViewState i = mcvsl.cbegin(); i != mcvsl.cend(); ++i)
+        {
+          const MusECore::MidiCtrlViewState& mcvs = *i;
+          ctrl_edit = addCtrl(mcvs._num);
+          if(ctrl_edit)
+            ctrl_edit->setPerNoteVel(mcvs._perNoteVel);
+        }
+      }
+      
       }
 
 //---------------------------------------------------------
@@ -1053,7 +1091,7 @@ void PianoRoll::ctrlPopupTriggered(QAction* act)
 
   if(newCtlNum != -1)
   {
-    CtrlEdit* ctrlEdit = new CtrlEdit(splitter, this, xscale, false, "pianoCtrlEdit");  
+    CtrlEdit* ctrlEdit = new CtrlEdit(splitter, this, _viewState.xscale(), false, "pianoCtrlEdit");  
     ctrlEdit->setController(newCtlNum);
     setupNewCtrl(ctrlEdit);
   }
@@ -1088,11 +1126,41 @@ void PianoRoll::addCtrlClicked()
 
 CtrlEdit* PianoRoll::addCtrl(int ctl_num)
       {
-      CtrlEdit* ctrlEdit = new CtrlEdit(splitter, this, xscale, false, "pianoCtrlEdit");  // ccharrett
+      CtrlEdit* ctrlEdit = new CtrlEdit(splitter, this, _viewState.xscale(), false, "pianoCtrlEdit");  // ccharrett
       ctrlEdit->setController(ctl_num);
       setupNewCtrl(ctrlEdit);
       return ctrlEdit;
       }
+
+//---------------------------------------------------------
+//   getViewState
+//---------------------------------------------------------
+
+MusECore::MidiPartViewState PianoRoll::getViewState() const
+{
+  MusECore::MidiPartViewState vs;
+  vs.setXScroll(hscroll->offset());
+  vs.setYScroll(vscroll->offset());
+  vs.setXScale(hscroll->getScaleValue());
+  vs.setYScale(vscroll->getScaleValue());
+  CtrlEdit* ce;
+  for(CtrlEditList::const_iterator i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i) {
+    ce = *i;
+    vs.addController(MusECore::MidiCtrlViewState(ce->ctrlNum(), ce->perNoteVel()));
+    }
+  return vs;
+}
+
+void PianoRoll::storeInitialViewState() const
+{
+  const MusECore::PartList* pl = parts();
+  if(pl)
+  {
+    const MusECore::MidiPartViewState vs = getViewState();
+    for(MusECore::ciPart i = pl->begin(); i != pl->end(); ++i)
+      i->second->setViewState(vs);
+  }
+}
 
 //---------------------------------------------------------
 //   setupNewCtrl

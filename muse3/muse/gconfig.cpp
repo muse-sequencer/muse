@@ -94,7 +94,8 @@ GlobalConfigValues config = {
         QColor(0x00, 0x7f, 0x7f),
         QColor(0x7f, 0x00, 0x7f),
         QColor(0x00, 0x7f, 0xff),
-        QColor(0x00, 0x3f, 0x3f)
+        QColor(0x00, 0x3f, 0x3f),
+        QColor(170, 85, 0)
       },
       {
         QString("Default"),   // Default part color names
@@ -113,7 +114,8 @@ GlobalConfigValues config = {
         QString("Strings"),
         QString("Keyboard"),
         QString("Piano"),
-        QString("Saxophone")
+        QString("Saxophone"),
+        QString("Organ")
       },
       QColor(51, 114, 178),   // transportHandleColor;
       QColor(219, 65, 65),    // bigTimeForegroundColor;
