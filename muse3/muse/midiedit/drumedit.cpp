@@ -167,7 +167,7 @@ void DrumEdit::closeEvent(QCloseEvent* e)
 //   DrumEdit
 //---------------------------------------------------------
 
-DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, unsigned initPos)
+DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, unsigned initPos, bool showDefaultControls)
    : MidiEditor(TopWin::DRUM, _rasterInit, pl, parent, name)
       {
       setFocusPolicy(Qt::NoFocus);  
@@ -192,6 +192,27 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       
       _group_mode = GROUP_SAME_CHANNEL;
       _ignore_hide = _ignore_hide_init;
+      
+      const MusECore::PartList* part_list = parts();
+      // Default initial pianoroll view state.
+      _viewState = MusECore::MidiPartViewState (0, 0, xscale, yscale);
+      // Include a velocity controller in the default initial view state.
+      _viewState.addController(MusECore::MidiCtrlViewState(MusECore::CTRL_VELOCITY));
+      if(part_list && !part_list->empty())
+      {
+        // If the parts' view states have never been initialized before,
+        //  do it now with the desired pianoroll initial state.
+        for(MusECore::ciPart i = part_list->begin(); i != part_list->end(); ++i)
+        {
+          if(!i->second->viewState().isValid())
+            i->second->setViewState(_viewState);
+        }
+        // Now take our initial view state from the first part found in the list.
+        // Don't bother if not showing default controls, since something else
+        //  will likely take care of it, like the song file loading routines.
+        if(showDefaultControls)
+          _viewState = part_list->begin()->second->viewState();
+      }
       
       //---------Pulldown Menu----------------------------
       menuEdit = menuBar()->addMenu(tr("&Edit"));
@@ -488,7 +509,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       ctrl->setFont(MusEGlobal::config.fonts[3]);
       ctrl->setFocusPolicy(Qt::NoFocus);
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
-      hscroll           = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, xscale, 20000, Qt::Horizontal, mainw);
+      hscroll           = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, _viewState.xscale(), 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(40, hscroll->sizeHint().height());
       ctrl->setToolTip(tr("Add Controller View"));
 
@@ -572,9 +593,10 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       gridS1->setSpacing(0);  
       gridS2->setContentsMargins(0, 0, 0, 0);
       gridS2->setSpacing(0);  
-      time                = new MusEGui::MTScale(&_raster, split1w2, xscale);
-      canvas              = new DrumCanvas(this, split1w2, xscale, yscale);
-      vscroll             = new MusEGui::ScrollScale(-2, 1, yscale, dynamic_cast<DrumCanvas*>(canvas)->getOurDrumMapSize()*TH, Qt::Vertical, split1w2);
+      time                = new MusEGui::MTScale(&_raster, split1w2, _viewState.xscale());
+      canvas              = new DrumCanvas(this, split1w2, _viewState.xscale(), _viewState.yscale());
+      vscroll             = new MusEGui::ScrollScale(-2, 1, _viewState.yscale(),
+                            dynamic_cast<DrumCanvas*>(canvas)->getOurDrumMapSize()*TH, Qt::Vertical, split1w2);
       int offset = -(MusEGlobal::config.division/4);
       canvas->setOrigin(offset, 0);
       canvas->setCanvasTools(drumeditTools);
@@ -631,7 +653,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       else
         header->hideSection(COL_HIDE);
 
-      dlist = new DList(header, split1w1, yscale, (DrumCanvas*)canvas, old_style_drummap_mode());
+      dlist = new DList(header, split1w1, _viewState.yscale(), (DrumCanvas*)canvas, old_style_drummap_mode());
       setCurDrumInstrument(dlist->getSelectedInstrument());
       
       connect(dlist, SIGNAL(keyPressed(int, int)), canvas, SLOT(keyPressed(int, int)));
@@ -675,6 +697,10 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
       setWindowTitle(canvas->getCaption());
       
+      dlist->setYPos(_viewState.yscroll());
+      canvas->setYPos(_viewState.yscroll());
+      vscroll->setOffset(_viewState.yscroll());
+
       updateHScrollRange();
       
       // connect toolbar
@@ -698,18 +724,25 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       selectionChanged(); // enable/disable "Copy" & "Paste"
       configChanged();  // set configuration values, initialize shortcuts
 
-      const MusECore::Pos cpos=MusEGlobal::song->cPos();
-      canvas->setPos(0, cpos.tick(), true);
-      canvas->selectAtTick(cpos.tick());
-      //canvas->selectFirst();
-        
-      unsigned pos=0;
-      if(initPos >= INT_MAX)
-        pos = MusEGlobal::song->cpos();
-      if(pos > INT_MAX)
-        pos = INT_MAX;
-      if (pos)
-        hscroll->setOffset((int)pos);
+      // Don't bother if not showing default stuff, since something else
+      //  will likely take care of it, like the song file loading routines.
+      if(showDefaultControls)
+      {
+        const MusECore::Pos cpos=MusEGlobal::song->cPos();
+        canvas->setPos(0, cpos.tick(), true);
+        canvas->selectAtTick(cpos.tick());
+        //canvas->selectFirst();
+          
+        unsigned pos=0;
+        if(initPos >= INT_MAX)
+          pos = MusEGlobal::song->cpos();
+        else
+          pos = initPos;
+        if(pos > INT_MAX)
+          pos = INT_MAX;
+        if (pos)
+          hscroll->setOffset((int)pos);
+      }
 
       if(canvas->track())
       {
@@ -719,6 +752,22 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       
       initTopwinState();
       finalizeInit();
+
+      // Add initial controllers.
+      // Don't bother if not showing default stuff, since something else
+      //  will likely take care of it, like the song file loading routines.
+      if(showDefaultControls)
+      {
+        CtrlEdit* ctrl_edit;
+        const MusECore::MidiCtrlViewStateList& mcvsl = _viewState.controllers();
+        for(MusECore::ciMidiCtrlViewState i = mcvsl.cbegin(); i != mcvsl.cend(); ++i)
+        {
+          const MusECore::MidiCtrlViewState& mcvs = *i;
+          ctrl_edit = addCtrl(mcvs._num);
+          if(ctrl_edit)
+            ctrl_edit->setPerNoteVel(mcvs._perNoteVel);
+        }
+      }
       }
 
 //---------------------------------------------------------
@@ -870,14 +919,6 @@ void DrumEdit::setTime(unsigned tick)
       {
       toolbar->setTime(tick);
       time->setPos(3, tick, false);
-      }
-
-//---------------------------------------------------------
-//   ~DrumEdit
-//---------------------------------------------------------
-
-DrumEdit::~DrumEdit()
-      {
       }
 
 //---------------------------------------------------------
@@ -1571,7 +1612,7 @@ void DrumEdit::ctrlPopupTriggered(QAction* act)
 
   if(newCtlNum != -1)
   {
-    CtrlEdit* ctrlEdit = new CtrlEdit(split1, this, xscale, true, "drumCtrlEdit");
+    CtrlEdit* ctrlEdit = new CtrlEdit(split1, this, _viewState.xscale(), true, "drumCtrlEdit");
     ctrlEdit->setController(newCtlNum);
     setupNewCtrl(ctrlEdit);
   }
@@ -1612,7 +1653,7 @@ void DrumEdit::addCtrlClicked()
 
 CtrlEdit* DrumEdit::addCtrl(int ctl_num)
       {
-      CtrlEdit* ctrlEdit = new CtrlEdit(split1, this, xscale, true, "drumCtrlEdit");
+      CtrlEdit* ctrlEdit = new CtrlEdit(split1, this, _viewState.xscale(), true, "drumCtrlEdit");
       ctrlEdit->setController(ctl_num);
       setupNewCtrl(ctrlEdit);
       return ctrlEdit;
@@ -1677,6 +1718,37 @@ void DrumEdit::removeCtrl(CtrlEdit* ctrl)
         }  
       }
       }
+      
+//---------------------------------------------------------
+//   getViewState
+//---------------------------------------------------------
+
+MusECore::MidiPartViewState DrumEdit::getViewState() const
+{
+  MusECore::MidiPartViewState vs;
+  vs.setXScroll(hscroll->offset());
+  vs.setYScroll(vscroll->offset());
+  vs.setXScale(hscroll->getScaleValue());
+  vs.setYScale(vscroll->getScaleValue());
+  CtrlEdit* ce;
+  for(CtrlEditList::const_iterator i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i) {
+    ce = *i;
+    vs.addController(MusECore::MidiCtrlViewState(ce->ctrlNum(), ce->perNoteVel()));
+    }
+  return vs;
+}
+
+void DrumEdit::storeInitialViewState() const
+{
+  const MusECore::PartList* pl = parts();
+  if(pl)
+  {
+    const MusECore::MidiPartViewState vs = getViewState();
+    for(MusECore::ciPart i = pl->begin(); i != pl->end(); ++i)
+      i->second->setViewState(vs);
+  }
+}
+
 //---------------------------------------------------------
 //   newCanvasWidth
 //---------------------------------------------------------

@@ -1,7 +1,9 @@
+13.10.2019
+      - Improvements to 11.10. Fix accuracy problems (re)storing view state. (Tim)
 11.10.2019
       * Midi Editor now keeps state (zoom, pos, controllers) after closing: (Tim)
         Works on a per-part basis: Whatever you set on a part it remembers.
-        Pianoroll Editor is done, tests OK. TODO: Drum Editor.
+        Pianoroll Editor and Drum Editor done.
 09.10.2019
       - Pianoroll Editor: Increased default vertical zoom level from 1 to 2. (Tim)
         Was challenging. The global variable 'yscale' in pianoroll.cpp had no effect

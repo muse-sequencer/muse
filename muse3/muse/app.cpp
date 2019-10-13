@@ -2130,9 +2130,7 @@ void MusE::startDrumEditor()
 
 void MusE::startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls)
       {
-      MusEGui::DrumEdit* drumEditor = new MusEGui::DrumEdit(pl, this, 0, _arranger->cursorValue());
-      if(showDefaultCtrls)
-        drumEditor->addCtrl();
+      MusEGui::DrumEdit* drumEditor = new MusEGui::DrumEdit(pl, this, 0, _arranger->cursorValue(), showDefaultCtrls);
       toplevels.push_back(drumEditor);
       drumEditor->show();
       connect(drumEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));

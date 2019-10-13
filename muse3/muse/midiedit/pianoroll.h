@@ -192,8 +192,8 @@ class PianoRoll : public MidiEditor {
       void storeInitialViewState() const;
       
    public:
-      PianoRoll(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = INT_MAX, bool showDefaultControls = false);
-      ~PianoRoll();
+      PianoRoll(MusECore::PartList*, QWidget* parent = 0, const char* name = 0,
+                unsigned initPos = INT_MAX, bool showDefaultControls = false);
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;
       static void readConfiguration(MusECore::Xml&);
