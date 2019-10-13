@@ -740,7 +740,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
           pos = initPos;
         if(pos > INT_MAX)
           pos = INT_MAX;
-        if (pos)
+        //if (pos)
           hscroll->setOffset((int)pos);
       }
 
