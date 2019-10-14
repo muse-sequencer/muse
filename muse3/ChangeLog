@@ -1,5 +1,6 @@
 13.10.2019
       - Improvements to 11.10. Fix accuracy problems (re)storing view state. (Tim)
+      - Jack midi: Suppress repetitive warnings of unused Midi Sense (ME_SENSE 0xfe).
 11.10.2019
       * Midi Editor now keeps state (zoom, pos, controllers) after closing: (Tim)
         Works on a per-part basis: Whatever you set on a part it remembers.

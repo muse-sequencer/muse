@@ -668,8 +668,12 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                                 }
                                 return;
                           //case ME_SONGSEL:    
-                          //case ME_TUNE_REQ:   
-                          //case ME_SENSE:
+                          //case ME_TUNE_REQ:
+
+                          // We don't use sensing. But suppress warning about this one since it is repetitive.
+                          case ME_SENSE:
+                                return;
+
                           case ME_CLOCK:      
                           {
                                 midiClockInput(abs_ft);
