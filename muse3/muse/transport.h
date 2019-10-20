@@ -24,17 +24,17 @@
 #ifndef __TRANSPORT_H__
 #define __TRANSPORT_H__
 
+#include <QWidget>
+#include <QComboBox>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QSlider>
+#include <QMouseEvent>
+#include <QToolButton>
+#include <QKeyEvent>
+
 #include "type_defs.h"
 #include "sig.h"
-
-#include <QWidget>
-
-class QComboBox;
-class QHBoxLayout;
-class QLabel;
-class QSlider;
-class QToolButton;
-class QKeyEvent;
 
 namespace MusECore {
 class Pos;

@@ -350,7 +350,7 @@ public:
       
       Track* findTrack(const Part* part) const;
       Track* findTrack(const QString& name) const;
-      bool trackExists(Track* t) const { return _tracks.find(t) != _tracks.end(); }
+      bool trackExists(Track* t) const { return _tracks.find(t) != _tracks.cend(); }
 
       void setRecordFlag(Track*, bool val, Undo* operations = 0);
       void insertTrack0(Track*, int idx);

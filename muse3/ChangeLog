@@ -1,3 +1,13 @@
+20.10.2019
+      * Mixer and strips - Save entire state. Fix label text: (Tim)
+      - Entire state of mixer is now saved, including user-adjusted strip widths.
+        The state is preserved even if no mixers are opened (created) during
+         a session. This required re-working the mixer and strip configuration
+         (song and config xml files) to be more persistent.
+      - Mixer widths restoration: Fixed (hopefully) long-time problem with mixers
+         not opening at their stored song size if the mixers are already open.
+      - Strip track labels: Replaced multi-line word-wrap with elided (...) text.
+        Reduced variable-font variation somewhat to avoid too-small fonts.
 13.10.2019
       - Improvements to 11.10. Fix accuracy problems (re)storing view state. (Tim)
       - Jack midi: Suppress repetitive warnings of unused Midi Sense (ME_SENSE 0xfe).

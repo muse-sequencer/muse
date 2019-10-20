@@ -140,12 +140,7 @@ void AudioComponentRack::newComponent( ComponentDescriptor* desc, const Componen
       
       if(desc->_label.isEmpty())
       {
-        // the thought was to acquire the correct Aux name for each Aux
-        // now they are only called Aux1, Aux2, which isn't too usable.
-        desc->_label = ((MusECore::AudioAux*)(MusEGlobal::song->auxs()->at(desc->_index)))->auxName();
-        if (desc->_label.length() > 8) { // shorten name
-            desc->_label = desc->_label.mid(0,8) + ".";
-        }
+        desc->_label = ((MusECore::AudioAux*)(MusEGlobal::song->auxs()->at(desc->_index)))->name();
       }
       if(desc->_toolTipText.isEmpty())
         desc->_toolTipText = tr("Aux send level (dB)");

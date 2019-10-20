@@ -241,6 +241,8 @@ int Track::y() const
 
 void Track::init(int channels)
       {
+      _uuid = QUuid::createUuid();
+
       _auxRouteCount = 0;  
       _nodeTraversed = false;
       _activity      = 0;
@@ -275,6 +277,12 @@ Track::Track(const Track& t, int flags)
   // moved setting the unique name to Song::duplicateTracks()
   // we'll see if there is any draw back to that.
   _name = t.name();
+
+  // Policy: Even a copy gets a unique ID.
+  // Only the file loading routines can change (restore) it.
+  //_uuid = t._uuid;
+  _uuid = QUuid::createUuid();
+
   internal_assign(t, flags | ASSIGN_PROPERTIES);
   for (int i = 0; i < MusECore::MAX_CHANNELS; ++i) {
         _meter[i] = 0.0;
@@ -2391,6 +2399,8 @@ bool Track::selectEvents(bool select, unsigned long t0, unsigned long t1)
 
 void Track::writeProperties(int level, Xml& xml) const
       {
+      xml.strTag(level, "uuid", _uuid.toString());
+
       xml.strTag(level, "name", _name);
       if (!_comment.isEmpty())
             xml.strTag(level, "comment", _comment);
@@ -2417,6 +2427,9 @@ bool Track::readProperties(Xml& xml, const QString& tag)
       {
       if (tag == "name")
             _name = xml.parse1();
+      else if (tag == "uuid")
+            _uuid = xml.parse1();
+
       else if (tag == "comment")
             _comment = xml.parse1();
       else if (tag == "record") {

@@ -43,7 +43,6 @@ class QMainWindow;
 class QMenu;
 class QPoint;
 class QRect;
-class QScrollArea;
 class QString;
 class QToolBar;
 class QToolButton;
@@ -249,7 +248,9 @@ class MusE : public QMainWindow
       MusECore::Part* readPart(MusECore::Xml& xml);
       bool checkRegionNotNull();
       void loadProjectFile1(const QString&, bool songTemplate, bool doReadMidiPorts);
+      // Write global configuration.
       void writeGlobalConfiguration(int level, MusECore::Xml&) const;
+      // Write song specific configuration.
       void writeConfiguration(int level, MusECore::Xml&) const;
       void updateConfiguration();
       QString projectTitle(QString name);

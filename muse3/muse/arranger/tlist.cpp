@@ -401,11 +401,7 @@ void TList::paint(const QRect& r)
                                       }
                                 break;
                           case COL_NAME:
-                                if (track->type() == MusECore::Track::AUDIO_AUX) {
-                                  p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, ((MusECore::AudioAux *)track)->auxName());
-                                } else {
                                   p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, track->name());
-                                }
                                 break;
                           case COL_OCHANNEL:
                                 {

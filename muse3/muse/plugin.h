@@ -37,6 +37,7 @@
 #include <QFileInfo>
 #include <QMainWindow>
 #include <QUiLoader>
+#include <QScrollArea>
 
 #include <ladspa.h>
 
@@ -68,8 +69,6 @@
 class QAbstractButton;
 class QComboBox;
 class QRadioButton;
-class QScrollArea;
-class QToolButton;
 class QToolButton;
 class QTreeWidget;
 class QRect;

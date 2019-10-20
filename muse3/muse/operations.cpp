@@ -950,16 +950,16 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
 #ifdef _PENDING_OPS_DEBUG_
       fprintf(stderr, "PendingOperationItem::executeRTStage MoveTrack from:%d to:%d\n", _from_idx, _to_idx);
 #endif      
-      int sz = _track_list->size();
+      const int sz = _track_list->size();
       if(_from_idx >= sz)
       {
         fprintf(stderr, "MusE error: PendingOperationItem::executeRTStage MoveTrack from index out of range:%d\n", _from_idx);
         return flags;
       }
-      iTrack fromIt = _track_list->begin() + _from_idx;
+      ciTrack fromIt = _track_list->cbegin() + _from_idx;
       Track* track = *fromIt;
       _track_list->erase(fromIt);
-      iTrack toIt = (_to_idx >= sz) ? _track_list->end() : _track_list->begin() + _to_idx;
+      ciTrack toIt = (_to_idx >= sz) ? _track_list->cend() : _track_list->cbegin() + _to_idx;
       _track_list->insert(toIt, track);
       flags |= SC_TRACK_MOVED;
     }

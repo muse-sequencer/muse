@@ -26,6 +26,7 @@
 #define __TRACK_H__
 
 #include <QString>
+#include <QUuid>
 
 #include <vector>
 #include <algorithm>
@@ -107,7 +108,8 @@ class Track {
       RouteList _outRoutes;
       bool _nodeTraversed;   // Internal anti circular route traversal flag.
       int _auxRouteCount;    // Number of aux paths feeding this track.
-      
+
+      QUuid _uuid;
       QString _name;
       bool _recordFlag;
       bool _recMonitor;       // For midi and audio. Whether to pass the input through to output.
@@ -134,7 +136,7 @@ class Track {
 
       // Holds latency computations each cycle.
       TrackLatencyInfo _latencyInfo;
-      
+
       bool readProperties(Xml& xml, const QString& tag);
       void writeProperties(int level, Xml& xml) const;
 
@@ -143,7 +145,9 @@ class Track {
       Track(const Track&, int flags);
       virtual ~Track();
       virtual void assign(const Track&, int flags);
-      
+
+      const QUuid& uuid() const { return _uuid; }
+
       static const char* _cname[];
       static QPixmap* trackTypeIcon(TrackType);
       static QColor trackTypeColor(TrackType);
@@ -941,7 +945,6 @@ class AudioAux : public AudioTrack {
       static  void setVisible(bool t) { _isVisible = t; }
       virtual int height() const;
       static bool visible() { return _isVisible; }
-      virtual QString auxName();
       virtual int index() { return _index; }
     };
 
@@ -1060,8 +1063,10 @@ template<class T> class tracklist : public std::vector<Track*> {
       void push_back(T v)             { vlist::push_back(v); }
       iterator begin()                { return vlist::begin(); }
       iterator end()                  { return vlist::end(); }
-      const_iterator begin() const    { return vlist::begin(); }
-      const_iterator end() const      { return vlist::end(); }
+      const_iterator begin() const    { return vlist::cbegin(); }
+      const_iterator end() const      { return vlist::cend(); }
+      const_iterator cbegin() const   { return vlist::cbegin(); }
+      const_iterator cend() const     { return vlist::cend(); }
       reverse_iterator rbegin()       { return vlist::rbegin(); }
       reverse_iterator rend()         { return vlist::rend(); }
       T& back() const                 { return (T&)(vlist::back()); }
@@ -1070,16 +1075,41 @@ template<class T> class tracklist : public std::vector<Track*> {
             return std::find(begin(), end(), t);
             }
       const_iterator find(const Track* t) const {
-            return std::find(begin(), end(), t);
+            return std::find(cbegin(), cend(), t);
+            }
+      iterator find(const QUuid& uuid) {
+            for (vlist::iterator i = begin(); i != end(); ++i) {
+                  if ((*i)->uuid() == uuid) {
+                        return i;
+                        }
+                  }
+            return end();
+            }
+      const_iterator find(const QUuid& uuid) const {
+            for (vlist::const_iterator i = cbegin(); i != cend(); ++i) {
+                  if ((*i)->uuid() == uuid) {
+                        return i;
+                        }
+                  }
+            return cend();
             }
       bool contains(const Track* t) const {
-            return std::find(begin(), end(), t) != end();
+            return std::find(cbegin(), cend(), t) != cend();
             }
       int index(const Track* t) const {
             int n = 0;
-            for (vlist::const_iterator i = begin(); i != end(); ++i, ++n) {
+            for (vlist::const_iterator i = cbegin(); i != cend(); ++i, ++n) {
                   if (*i == t)
                         return n;
+                  }
+            return -1;
+            }
+      int index(const QUuid& uuid) const {
+            int n = 0;
+            for (vlist::const_iterator i = cbegin(); i != cend(); ++i, ++n) {
+                  if ((*i)->uuid() == uuid) {
+                        return n;
+                        }
                   }
             return -1;
             }
@@ -1100,7 +1130,7 @@ template<class T> class tracklist : public std::vector<Track*> {
                   delete *i;
             vlist::clear();
             }
-      void erase(vlist::iterator i) { vlist::erase(i); }
+      void erase(vlist::const_iterator i) { vlist::erase(i); }
       void replace(Track* ot, Track* nt) {
             for (vlist::iterator i = begin(); i != end(); ++i) {
                   if (*i == ot) {
@@ -1112,7 +1142,7 @@ template<class T> class tracklist : public std::vector<Track*> {
       // Returns the number of selected tracks in this list.
       int countSelected() const {
             int c = 0;
-            for (vlist::const_iterator i = begin(); i != end(); ++i) {
+            for (vlist::const_iterator i = cbegin(); i != cend(); ++i) {
                   if ((*i)->selected()) {
                         ++c;
                         }
@@ -1126,7 +1156,7 @@ template<class T> class tracklist : public std::vector<Track*> {
             T cur = 0;
             int c = 0;
             int so;
-            for (vlist::const_iterator i = begin(); i != end(); ++i) {
+            for (vlist::const_iterator i = cbegin(); i != cend(); ++i) {
                   T t = *i;
                   so = t->selectionOrder();
                   if (t->selected() && so >= c) {

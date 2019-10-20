@@ -253,7 +253,8 @@ GlobalConfigValues config = {
          true, true, true, true,
          true, true, true, true, true,
          MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW,
-         QList<bool>()
+         QList<bool>(),
+         QList<StripConfig>()
          },
       {
          QString("Mixer B"),
@@ -262,7 +263,8 @@ GlobalConfigValues config = {
          true, true, true, true,
          true, true, true, true, true,
          MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW,
-         QList<bool>()
+         QList<bool>(),
+         QList<StripConfig>()
       },
       true,                         // TransportVisible;
       false,                        // BigTimeVisible;

@@ -35,6 +35,7 @@
 #include <QList>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QUuid>
 
 #include "globals.h"
 #include "gconfig.h"
@@ -55,7 +56,6 @@
 #include "amixer.h"
 #include "compact_knob.h"
 #include "compact_slider.h"
-#include "elided_label.h"
 #include "menutitleitem.h"
 #include "pixmap_button.h"
 
@@ -808,15 +808,13 @@ void ComponentRack::configChanged()
 //---------------------------------------------------------
 
 TrackNameLabel::TrackNameLabel(QWidget* parent, const char* name, Qt::WindowFlags f)
- : QLabel(parent, f)
+ : ElidedTextLabel(parent, name, f)
 {
-  setObjectName(name);
 }
 
 TrackNameLabel::TrackNameLabel(const QString& text, QWidget* parent, const char* name, Qt::WindowFlags f)
- : QLabel(text, parent, f)
+ : ElidedTextLabel(text, parent, name, f)
 {
-  setObjectName(name);
 }
 
 void TrackNameLabel::mouseDoubleClickEvent(QMouseEvent* ev)
@@ -959,9 +957,11 @@ void Strip::updateStyleSheet()
     return;
 
   QFont fnt(MusEGlobal::config.fonts[6]);
-  const bool need_word_wrap =
-    !MusECore::autoAdjustFontSize(label, label->text(), fnt, false, true,
-                                fnt.pointSize(), 6);
+//   const bool need_word_wrap =
+//     !MusECore::autoAdjustFontSize(label, label->text(), fnt, false, true,
+//                                 fnt.pointSize(), 7);
+  MusECore::autoAdjustFontSize(label, label->text(), fnt, false, true,
+                                fnt.pointSize(), 7);
 
   // Set the label's font.
   // Note that this is effectively useless if a stylesheet font is set.
@@ -969,12 +969,12 @@ void Strip::updateStyleSheet()
   // But we set it here anyway, in case stylesheets are not used.
   label->setFont(fnt);
 
-  if(need_word_wrap)
-    label->setWordWrap(true);
-//     label->setWordWrapMode(QTextOption::WrapAnywhere);
-  else
-//     label->setWordWrapMode(QTextOption::NoWrap);
-    label->setWordWrap(false);
+//   if(need_word_wrap)
+//     label->setWordWrap(true);
+// //     label->setWordWrapMode(QTextOption::WrapAnywhere);
+//   else
+// //     label->setWordWrapMode(QTextOption::NoWrap);
+//     label->setWordWrap(false);
 
   QColor c(track->labelColor());
   QColor c2(c.lighter());
@@ -998,13 +998,7 @@ void Strip::setLabelText()
 {
       if(!track)
         return;
-
-      if (track->type() == MusECore::Track::AUDIO_AUX) {
-          label->setText(((MusECore::AudioAux*)track)->auxName());
-      } else {
-          label->setText(track->name());
-      }
-
+      label->setText(track->name());
       updateStyleSheet();
 }
 
@@ -1114,7 +1108,10 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
 //       label->setBackgroundVisible(false);
 //       label->setTextFormat(Qt::PlainText);
 //       label->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+
       label = new TrackNameLabel(this);
+      label->setElideMode(Qt::ElideMiddle);
+      label->setFocusPolicy(Qt::NoFocus);
       label->setObjectName(track->cname());
       label->setContentsMargins(0, 0, 0, 0);
       label->setAlignment(Qt::AlignCenter);
@@ -1298,7 +1295,7 @@ void Strip::mousePressEvent(QMouseEvent* ev)
         DEBUG_STRIP(stderr, "Strip:: setStripVisible false \n");
         setStripVisible(false);
         setVisible(false);
-        MusEGlobal::song->update();
+        emit visibleChanged(this, false);
       break;
 
       case 2:
@@ -1389,7 +1386,12 @@ void Strip::changeUserWidth(int delta)
   if(_userWidth < 0)
     _userWidth = 0;
   updateGeometry();
+  emit userWidthChanged(this, _userWidth);
 }
+
+
+//============================================================
+
 
 //---------------------------------------------------------
 //   ExpanderHandle

@@ -1831,8 +1831,9 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       
       xml.intTag(level, "mixer1Visible", MusEGlobal::config.mixer1Visible);
       xml.intTag(level, "mixer2Visible", MusEGlobal::config.mixer2Visible);
-      MusEGlobal::config.mixer1.write(level, xml);
-      MusEGlobal::config.mixer2.write(level, xml);
+      // True = Write global config.
+      MusEGlobal::config.mixer1.write(level, xml, true);
+      MusEGlobal::config.mixer2.write(level, xml, true);
 
       xml.intTag(level, "showSplashScreen", MusEGlobal::config.showSplashScreen);
       xml.intTag(level, "canvasShowPartType", MusEGlobal::config.canvasShowPartType);
@@ -1911,10 +1912,9 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
 
       xml.intTag(level, "mixer1Visible",    viewMixerAAction->isChecked());
       xml.intTag(level, "mixer2Visible",    viewMixerBAction->isChecked());
-      if (mixer1)
-            mixer1->write(level, xml);
-      if (mixer2)
-            mixer2->write(level, xml);
+      // False = Write song-specific config.
+      MusEGlobal::config.mixer1.write(level, xml, false);
+      MusEGlobal::config.mixer2.write(level, xml, false);
 
       writeSeqConfiguration(level, xml, true);
 
@@ -2105,7 +2105,64 @@ namespace MusEGlobal {
 //   write
 //---------------------------------------------------------
 
-void MixerConfig::write(int level, MusECore::Xml& xml)
+void StripConfig::write(int level, MusECore::Xml& xml) const
+      {
+      if(_uuid.isNull())
+        return;
+      xml.nput(level, "<StripConfig uuid=\"%s\"", _uuid.toByteArray().constData());
+      xml.nput(level, " visible=\"%d\"", _visible);
+      if(_width >= 0)
+        xml.nput(level, " width=\"%d\"", _width);
+      xml.put(" />");
+      
+      //xml.put(">");
+      //level++;
+      // TODO: Anything else to add? ...
+      //xml.etag(level, "StripConfig");
+      }
+
+//---------------------------------------------------------
+//   read
+//---------------------------------------------------------
+
+void StripConfig::read(MusECore::Xml& xml)
+      {
+      for (;;) {
+            MusECore::Xml::Token token(xml.parse());
+            const QString& tag(xml.s1());
+            switch (token) {
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
+                        return;
+                  case MusECore::Xml::TagStart:
+                          xml.unknown("StripConfig");
+                        break;
+                  case MusECore::Xml::Attribut:
+                        if (tag == "uuid") {
+                              _uuid = QUuid(xml.s2());
+                              }
+                        else if (tag == "visible") {
+                              _visible = xml.s2().toInt();
+                              }
+                        else if (tag == "width") {
+                              _width = xml.s2().toInt();
+                              }
+                        break;
+                  case MusECore::Xml::TagEnd:
+                        if (tag == "StripConfig")
+                            return;
+                  default:
+                        break;
+                  }
+            }
+      
+      }
+
+//---------------------------------------------------------
+//   write
+//---------------------------------------------------------
+
+void MixerConfig::write(int level, MusECore::Xml& xml, bool global) const
       {
       xml.tag(level++, "Mixer");
 
@@ -2124,6 +2181,24 @@ void MixerConfig::write(int level, MusECore::Xml& xml)
       xml.intTag(level, "showSyntiTracks",  showSyntiTracks);
 
       xml.intTag(level, "displayOrder", displayOrder);
+
+      // Specific to song file.
+      if(!global)
+      {
+        if(!stripConfigList.empty())
+        {
+          const MusECore::TrackList* tl = song->tracks();
+          const int sz = stripConfigList.size();
+          for(int i = 0; i < sz; ++i)
+          {
+            const StripConfig& sc = stripConfigList.at(i);
+            // Do NOT save if there is no corresponding track.
+            if(tl->find(sc._uuid) == tl->cend())
+              continue;
+            sc.write(level, xml);
+          }
+        }
+      }
 
       xml.etag(level, "Mixer");
       }
@@ -2166,10 +2241,18 @@ void MixerConfig::read(MusECore::Xml& xml)
                               showSyntiTracks = xml.parseInt();
                         else if (tag == "displayOrder")
                               displayOrder = (DisplayOrder)xml.parseInt();
+                        // Obsolete. Support old songs.
                         else if (tag == "StripName")
                               stripOrder.append(xml.parse1());
+                        // Obsolete. Support old songs.
                         else if (tag == "StripVisible")
                               stripVisibility.append(xml.parseInt() == 0 ? false : true );
+                        else if (tag == "StripConfig") {
+                              StripConfig sc;
+                              sc.read(xml);
+                              if(!sc._uuid.isNull())
+                                stripConfigList.append(sc);
+                        }
                         else
                               xml.unknown("Mixer");
                         break;
