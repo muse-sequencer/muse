@@ -8,6 +8,7 @@
          not opening at their stored song size if the mixers are already open.
       - Strip track labels: Replaced multi-line word-wrap with elided (...) text.
         Reduced variable-font variation somewhat to avoid too-small fonts.
+        Added tooltips on the labels to help see the full text.
 13.10.2019
       - Improvements to 11.10. Fix accuracy problems (re)storing view state. (Tim)
       - Jack midi: Suppress repetitive warnings of unused Midi Sense (ME_SENSE 0xfe).

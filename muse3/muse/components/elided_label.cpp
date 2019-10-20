@@ -383,6 +383,8 @@ ElidedTextLabel::ElidedTextLabel(const QString& text,
   _hasOffMode = false;
   _off = false;
   _hovered = false;
+  
+  setToolTip(_text);
 }
 
 void ElidedTextLabel::keyPressEvent(QKeyEvent* e)
@@ -437,6 +439,7 @@ void ElidedTextLabel::paintEvent(QPaintEvent* ev)
 
   QPainter p(this);
 
+  p.save();
   const QRect r = rect();
   const QRect ar = r.adjusted(1, 1, -1, -1);
 
@@ -458,6 +461,7 @@ void ElidedTextLabel::paintEvent(QPaintEvent* ev)
 //   painter.drawText(QPoint(0, fm.ascent()), elidedText);
 
   p.drawText(ar, _alignment, elidedText);
+  p.restore();
 }
   
 void ElidedTextLabel::setText(const QString& txt) 
@@ -465,6 +469,7 @@ void ElidedTextLabel::setText(const QString& txt)
   if(_text == txt)
     return;
   _text = txt; 
+  setToolTip(_text);
 }
 
 void ElidedTextLabel::leaveEvent(QEvent *e)
