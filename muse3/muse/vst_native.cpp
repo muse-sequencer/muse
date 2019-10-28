@@ -3493,7 +3493,9 @@ void VstNativePluginWrapper::writeConfiguration(LADSPA_Handle handle, int level,
       {
          QByteArray arrOut = QByteArray::fromRawData((char *)p, len);
 
-         QByteArray outEnc64 = arrOut.toBase64();
+         // Weee! Compression!
+         QByteArray outEnc64 = qCompress(arrOut).toBase64();
+         
          QString customData(outEnc64);
          for (int pos=0; pos < customData.size(); pos+=150)
          {
@@ -3522,7 +3524,12 @@ void VstNativePluginWrapper::setCustomData(LADSPA_Handle handle, const std::vect
       param.remove('\n'); // remove all linebreaks that may have been added to prettyprint the songs file
       QByteArray paramIn;
       paramIn.append(param);
-      QByteArray dec64 = QByteArray::fromBase64(paramIn);
+      // Try to uncompress the data.
+      QByteArray dec64 = qUncompress(QByteArray::fromBase64(paramIn));
+      // Failed? Try uncompressed.
+      if(dec64.isEmpty())
+        dec64 = QByteArray::fromBase64(paramIn);
+      
       dispatch(state, 24 /* effSetChunk */, 0, dec64.size(), (void*)dec64.data(), 0.0); // index 0: is bank 1: is program
       break; //one customData tag includes all data in base64
    }

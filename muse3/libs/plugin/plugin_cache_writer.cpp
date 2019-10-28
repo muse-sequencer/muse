@@ -1859,7 +1859,9 @@ LV2_Feature lv2Features [] =
    {LV2_UI__resize, NULL},
    {LV2_PROGRAMS__Host, NULL},
    {LV2_LOG__log, NULL},
+#ifdef LV2_MAKE_PATH_SUPPORT
    {LV2_STATE__makePath, NULL},
+#endif
    {LV2_STATE__mapPath, NULL},
    {LV2_F_STATE_CHANGED, NULL},
    {LV2_F_DATA_ACCESS, NULL} //must be the last always!

@@ -1,3 +1,20 @@
+28.10.2019
+      * LV2 Major rewrite of state/worker support and more, fixes several synths: (Tim)
+      - Worker message data now uses new LockFreeDataRingBuffer for bidi comm.
+        Fixes major problems with synth workers.
+      - Fixed problems with how our worker thread is awoken. Fixes several plugins.
+      - Fixed problems with how our EvBuf reads port data. Fixes several plugins.
+      - Fixed state file storing/reading and locations. State files are stored
+         in a unique configuration folder for each plugin, even if the song file
+         is not in its own folder.
+      - All file references IN or UNDER the song project folder are deemed RELATIVE,
+         to the plugin's configuration folder. All file references OUTSIDE the song
+         file folder are deemed ABSOLUTE.
+      - New cmake option ENABLE_LV2_MAKE_PATH, it is disabled by default !!!
+        If enabled (NOT RECOMMENDED), the above mentioned configuration folders are used.
+        If disabled, NO external files or folders are created parallel to the song file.
+        This is what we want with MusE, all data stored inside the song file if possible.
+      - Tested OK saving/reloading several synths that were broken before.
 20.10.2019
       * Mixer and strips - Save entire state. Fix label text: (Tim)
       - Entire state of mixer is now saved, including user-adjusted strip widths.
