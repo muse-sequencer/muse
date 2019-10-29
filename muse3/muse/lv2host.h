@@ -69,6 +69,7 @@
 #include "lv2/lv2plug.in/ns/ext/log/log.h"
 #include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
 #include "lv2/lv2plug.in/ns/ext/dynmanifest/dynmanifest.h"
+#include "lv2/lv2plug.in/ns/ext/resize-port/resize-port.h"
 #include "lv2extui.h"
 #include "lv2extprg.h"
 
@@ -138,7 +139,7 @@ class LV2EvBuf
    LV2_Atom_Sequence *_seqbuf;
    LV2_Event_Buffer *_evbuf;
 public:
-   LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk);
+   LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t size);
    inline size_t mkPadSize(size_t size);
    inline void resetPointers(bool r, bool w);
    inline void resetBuffer();

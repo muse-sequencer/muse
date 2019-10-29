@@ -97,7 +97,7 @@ void ComponentRack::clearDelete()
   {
     ComponentWidget& cw = *ic;
     if(cw._widget)
-      delete cw._widget;
+      cw._widget->deleteLater();
   }
   _components.clear();
 }

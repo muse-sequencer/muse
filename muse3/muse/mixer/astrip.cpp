@@ -355,7 +355,7 @@ void AudioComponentRack::scanControllerComponents()
     ComponentWidget& cw = *icw;
     DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::scanControllerComponents: deleting controller component index:%d\n", cw._index);
     if(cw._widget)
-      delete cw._widget;
+      cw._widget->deleteLater();
     _components.erase(icw);
   }
 }
@@ -386,7 +386,7 @@ void AudioComponentRack::scanAuxComponents()
     ComponentWidget& cw = *icw;
     DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::scanAuxComponents: deleting aux component index:%d\n", cw._index);
     if(cw._widget)
-      delete cw._widget;
+      cw._widget->deleteLater();
     _components.erase(icw);
   }
   

@@ -1,3 +1,7 @@
+29.10.2019
+      - Fix issue 666: Crash if 'Prefer knobs not sliders' clicked on disabled instrument. (Tim)
+        Changed delete to deleteLater() in ComponentRack::clearDelete()
+        Disabled label was trying to call clearDelete() which deletes itself.
 28.10.2019
       * LV2 Major rewrite of state/worker support and more, fixes several synths: (Tim)
       - Worker message data now uses new LockFreeDataRingBuffer for bidi comm.

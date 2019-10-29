@@ -152,7 +152,6 @@ namespace MusECore
 #define LV2_F_DEFAULT_STATE LV2_STATE_PREFIX "loadDefaultState"
 #define LV2_F_STATE_CHANGED LV2_STATE_PREFIX "StateChanged"
 
-
 static LilvWorld *lilvWorld = 0;
 // LV2 does not use unique id numbers and frowns upon using anything but the uri.
 // static int uniqueID = 1;
@@ -170,6 +169,7 @@ typedef struct
    LilvNode *host_uiType;
    LilvNode *ext_uiType;
    LilvNode *ext_d_uiType;
+   LilvNode *lv2_portMinimumSize;
    LilvNode *lv2_portDiscrete;
    LilvNode *lv2_portContinuous;
    LilvNode *lv2_portLogarithmic;
@@ -296,6 +296,7 @@ void initLV2()
   lv2CacheNodes.host_uiType            = lilv_new_uri(lilvWorld, LV2_UI_HOST_URI);
   lv2CacheNodes.ext_uiType             = lilv_new_uri(lilvWorld, LV2_UI_EXTERNAL);
   lv2CacheNodes.ext_d_uiType           = lilv_new_uri(lilvWorld, LV2_UI_EXTERNAL_DEPRECATED);
+  lv2CacheNodes.lv2_portMinimumSize    = lilv_new_uri(lilvWorld, LV2_RESIZE_PORT__minimumSize);
   lv2CacheNodes.lv2_portContinuous     = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__continuousCV);
   lv2CacheNodes.lv2_portDiscrete       = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__discreteCV);
   lv2CacheNodes.lv2_portLogarithmic    = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__logarithmic);
@@ -962,7 +963,12 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
    //connect midi and control ports
    for(size_t i = 0; i < state->midiInPorts.size(); i++)
    {
-      LV2EvBuf *newEvBuffer = new LV2EvBuf(true, state->midiInPorts [i].old_api, synth->_uAtom_Sequence, synth->_uAtom_Chunk);
+      LV2EvBuf *newEvBuffer = new LV2EvBuf(
+        true,
+        state->midiInPorts [i].old_api,
+        synth->_uAtom_Sequence,
+        synth->_uAtom_Chunk,
+        LV2_EVBUF_SIZE);
       if(!newEvBuffer)
       {
          abort();
@@ -973,7 +979,12 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
 
    for(size_t i = 0; i < state->midiOutPorts.size(); i++)
    {      
-      LV2EvBuf *newEvBuffer = new LV2EvBuf(false, state->midiOutPorts [i].old_api, synth->_uAtom_Sequence, synth->_uAtom_Chunk);
+      LV2EvBuf *newEvBuffer = new LV2EvBuf(
+        false,
+        state->midiOutPorts [i].old_api,
+        synth->_uAtom_Sequence,
+        synth->_uAtom_Chunk,
+        LV2_EVBUF_SIZE);
       if(!newEvBuffer)
       {
          abort();
@@ -5502,7 +5513,7 @@ void LV2PluginWrapper_Worker::makeWork()
 
 }
 
-LV2EvBuf::LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk)
+LV2EvBuf::LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t size)
    :_isInput(isInput), _oldApi(oldApi), _uAtomTypeSequence(atomTypeSequence), _uAtomTypeChunk(atomTypeChunk)
 {
   // Resize and fill with initial value.

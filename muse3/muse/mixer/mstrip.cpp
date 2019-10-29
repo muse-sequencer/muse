@@ -531,7 +531,7 @@ void MidiComponentRack::scanControllerComponents()
     ComponentWidget& cw = *icw;
     DEBUG_MIDI_STRIP(stderr, "MidiComponentRack::scanControllerComponents: deleting controller component index:%d\n", cw._index);
     if(cw._widget)
-      delete cw._widget;
+      cw._widget->deleteLater();
     _components.erase(icw);
   }
 }
