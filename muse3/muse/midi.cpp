@@ -2633,8 +2633,7 @@ void Audio::processMidi(unsigned int frames)
 
       // Receive hardware state events sent from various threads to this audio thread.
       // Update hardware state so gui controls are updated.
-      // Static.
-      MidiPort::processGui2AudioEvents();
+      MusEGlobal::song->processIpcOutEventBuffers();
       }
 
       

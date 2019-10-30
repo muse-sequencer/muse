@@ -41,6 +41,9 @@
 #include "track.h"
 #include "synth.h"
 #include "operations.h"
+#include "lock_free_buffer.h"
+
+#define IPC_EVENT_FIFO_SIZE ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(16384)) )
 
 class QAction;
 class QFont;
@@ -141,7 +144,8 @@ class Song : public QObject {
 
       // Receives events from any threads. For now, specifically for creating new
       //  controllers in the gui thread and adding them safely to the controller lists.
-      static LockFreeMPSCRingBuffer<MidiPlayEvent> *_ipcInEventBuffers;
+      LockFreeMPSCRingBuffer<MidiPlayEvent> *_ipcInEventBuffers;
+      LockFreeMPSCRingBuffer<MidiPlayEvent> *_ipcOutEventBuffers;
       
       bool loopFlag;
       bool punchinFlag;
@@ -178,6 +182,8 @@ class Song : public QObject {
       //  that modified passed-in event sitting in the Undo item. That's not the right event!)
       Event deleteEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
       
+      void normalizePart(MusECore::Part *part);
+
    public:
       Song(const char* name = 0);
       ~Song();
@@ -330,8 +336,6 @@ class Song : public QObject {
       int arrangerRaster() { return _arrangerRaster; }        // Used by Song::cmdAddRecordedWave to snap new wave parts
       void setArrangerRaster(int r) { _arrangerRaster = r; }  // Used by Arranger snap combo box
 
-private:
-      void normalizePart(MusECore::Part *part);
 public:
       void normalizeWaveParts(Part *partCursor = NULL);
 
@@ -390,9 +394,15 @@ public:
       //  you know what you are doing because the thread needs to ask whether the controller exists before
       //  calling, and that may not be safe from threads other than gui or audio.
       bool putIpcInEvent(const MidiPlayEvent& ev);
-      // Process any special IPC audio thread - to - gui thread messages. Called by gui thread only.
-      // Returns true on success.
+      // Put an event into the IPC event ring buffer for the audio thread to process.
+      // Called by gui thread only. Returns true on success.
+      bool putIpcOutEvent(const MidiPlayEvent& ev);
+      // Process any special IPC audio thread - to - gui thread messages.
+      // Called by gui thread only. Returns true on success.
       bool processIpcInEventBuffers();
+      // Process any special gui thread - to - IPC audio thread messages.
+      // Called by audio thread only. Returns true on success.
+      bool processIpcOutEventBuffers();
 
       //-----------------------------------------
       //   undo, redo, operation groups

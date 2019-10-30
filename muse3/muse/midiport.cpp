@@ -56,9 +56,6 @@ namespace MusECore {
 
 MidiControllerList defaultManagedMidiController;
 
-LockFreeMPSCRingBuffer<MidiPlayEvent> *MidiPort::_eventBuffers = 
-  new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
-
 //---------------------------------------------------------
 //   initMidiPorts
 //---------------------------------------------------------
@@ -971,7 +968,7 @@ bool MidiPort::putHwCtrlEvent(const MidiPlayEvent& ev)
     return false;
   }
   
-  if(!eventBuffers()->put(ev))
+  if(!MusEGlobal::song->putIpcOutEvent(ev))
   {
     fprintf(stderr, "MidiPort::putHwCtrlEvent: Error: gui2AudioFifo fifo overflow\n");
     return true;
@@ -1297,34 +1294,6 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
     break;
   }
   
-  return false;
-}
-
-//---------------------------------------------------------
-//   processGui2AudioEvents
-//   To be called from audio thread only.
-//   Return true if error.
-//---------------------------------------------------------
-
-// Static.
-bool MidiPort::processGui2AudioEvents()
-{
-  // Receive hardware state events sent from various threads to this audio thread.
-  // Update hardware state so gui controls are updated.
-  // False = don't use the size snapshot, but update it.
-  const int sz = eventBuffers()->getSize(false);
-  MidiPlayEvent ev;
-  for(int i = 0; i < sz; ++i)
-  {
-    if(!eventBuffers()->get(ev))
-      continue;
-    const int port = ev.port();
-    if(port < 0 || port >= MusECore::MIDI_PORTS)
-      continue;
-    // Handle the event. Tell the gui NOT to create controllers as needed,
-    //  that should be done before it ever gets here.
-    MusEGlobal::midiPorts[port].handleGui2AudioEvent(ev, false);
-  }
   return false;
 }
 

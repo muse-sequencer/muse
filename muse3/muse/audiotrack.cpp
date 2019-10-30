@@ -2658,10 +2658,14 @@ void AudioOutput::internal_assign(const Track& t, int flags)
 
 AudioOutput::~AudioOutput()
       {
-      if (!MusEGlobal::checkAudioDevice()) return;
-      for (int i = 0; i < _channels; ++i)
+      // FIXME Never runs this on close because device is nulled first.
+      //       But possibly it's benign because it may already disconnect before it gets here...
+      if (MusEGlobal::checkAudioDevice())
+      {
+        for (int i = 0; i < _channels; ++i)
           if(jackPorts[i])
             MusEGlobal::audioDevice->unregisterPort(jackPorts[i]);
+      }
 
       if(_outputLatencyComp)
         delete _outputLatencyComp;

@@ -70,7 +70,6 @@ MidiJackDevice::MidiJackDevice(const QString& n)
 {
   _in_client_jackport  = NULL;
   _out_client_jackport = NULL;
-  init();
 }
 
 MidiJackDevice::~MidiJackDevice()

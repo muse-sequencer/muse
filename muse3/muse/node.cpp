@@ -571,10 +571,6 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
                   _curVolume = v;
               }
               const unsigned long smp = sample + k;
-              // REMOVE Tim. latency. Added. Comment.
-              // FIXME: The conversion here and below is: (float)((double)float * double),
-              //         which is a penalty esp. with a lot of tracks, according to valgrind profiling.
-              //        The solution is to cast _curVolume as float beforehand, but accuracy will suffer...
               for(int ch = start_ch; ch < trackChans; ++ch)
                 *(outBuffers[ch] + smp) = *(buffer[ch] + smp) * _curVolume;
             }

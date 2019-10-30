@@ -1,3 +1,5 @@
+30.10.2019
+      - Fix some memory leaks reported by heaptrack. Still others are puzzling... (Tim)
 29.10.2019
       - Latency correction: Fix feedback/noise using channel routing (vs. omni routing). (Tim)
       - Fix issue 666: Crash if 'Prefer knobs not sliders' clicked on disabled instrument. (Tim)

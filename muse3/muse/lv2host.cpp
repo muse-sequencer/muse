@@ -5513,7 +5513,7 @@ void LV2PluginWrapper_Worker::makeWork()
 
 }
 
-LV2EvBuf::LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t size)
+LV2EvBuf::LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t /*size*/)
    :_isInput(isInput), _oldApi(oldApi), _uAtomTypeSequence(atomTypeSequence), _uAtomTypeChunk(atomTypeChunk)
 {
   // Resize and fill with initial value.

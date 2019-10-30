@@ -80,9 +80,6 @@ MusECore::Song* song = 0;
 
 namespace MusECore {
 
-LockFreeMPSCRingBuffer<MidiPlayEvent> *Song::_ipcInEventBuffers = 
-  new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
-  
 extern void clearMidiTransforms();
 extern void clearMidiInputTransforms();
 
@@ -95,6 +92,9 @@ Song::Song(const char* name)
       {
       setObjectName(name);
 
+      _ipcInEventBuffers = new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
+      _ipcOutEventBuffers = new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
+  
       _fCpuLoad = 0.0;
       _fDspLoad = 0.0;
       _xRunsCount = 0;
@@ -123,6 +123,10 @@ Song::~Song()
       delete undoList;
       delete redoList;
       delete _markerList;
+      if(_ipcOutEventBuffers)
+        delete _ipcOutEventBuffers;
+      if(_ipcInEventBuffers)
+        delete _ipcInEventBuffers;
       }
 
 //---------------------------------------------------------
@@ -2924,6 +2928,28 @@ bool Song::putIpcInEvent(const MidiPlayEvent& ev)
   return true;
 }
 
+//---------------------------------------------------------
+// putIpcOutEvent
+//  Put an event into the IPC event ring buffer for the audio thread to process.
+//  Called by gui thread only. Returns true on success.
+//---------------------------------------------------------
+
+bool Song::putIpcOutEvent(const MidiPlayEvent& ev)
+{
+  if(!_ipcOutEventBuffers->put(ev))
+  {
+    fprintf(stderr, "Error: Song::putIpcOutEvent: Buffer overflow\n");
+    return false;
+  }
+  return true;
+}
+
+//---------------------------------------------------------
+//   processIpcInEventBuffers
+//   Called by gui thread only.
+//   Returns true on success.
+//---------------------------------------------------------
+
 bool Song::processIpcInEventBuffers()
 {
   PendingOperationList operations;
@@ -3025,7 +3051,7 @@ bool Song::processIpcInEventBuffers()
       // Let's bypass the putHwCtrlEvent and save some time -
       //  put directly into the midi port's controller event buffers.
       // This will also prevent getting stuck in continuous loop.
-      if(!mp->eventBuffers()->put(buf_ev))
+      if(!_ipcOutEventBuffers->put(buf_ev))
       {
         fprintf(stderr, "Error: Song::processIpcInEventBuffers(): Midi port controller fifo overflow\n");
         continue;
@@ -3033,6 +3059,33 @@ bool Song::processIpcInEventBuffers()
     }
   }
 
+  return true;
+}
+
+//---------------------------------------------------------
+//   processIpcOutEventBuffers
+//   Called from audio thread only.
+//   Returns true on success.
+//---------------------------------------------------------
+
+bool Song::processIpcOutEventBuffers()
+{
+  // Receive hardware state events sent from various threads to this audio thread.
+  // Update hardware state so gui controls are updated.
+  // False = don't use the size snapshot, but update it.
+  const int sz = _ipcOutEventBuffers->getSize(false);
+  MidiPlayEvent ev;
+  for(int i = 0; i < sz; ++i)
+  {
+    if(!_ipcOutEventBuffers->get(ev))
+      continue;
+    const int port = ev.port();
+    if(port < 0 || port >= MusECore::MIDI_PORTS)
+      continue;
+    // Handle the event. Tell the gui NOT to create controllers as needed,
+    //  that should be done before it ever gets here.
+    MusEGlobal::midiPorts[port].handleGui2AudioEvent(ev, false);
+  }
   return true;
 }
 
