@@ -203,7 +203,8 @@ bool TList::event(QEvent *event)
                if (helpEvent->pos().y() > yy && helpEvent->pos().y() < yy + trackHeight) {
                    if (type == MusECore::Track::AUDIO_SOFTSYNTH) {
                      MusECore::SynthI *s = (MusECore::SynthI*)track;
-                     QToolTip::showText(helpEvent->globalPos(),track->name() + " : " + s->synth()->description());
+                     QToolTip::showText(helpEvent->globalPos(),track->name() + QString(" : ") +
+                       (s->synth() ? s->synth()->description() : QString(tr("SYNTH IS UNAVAILABLE!"))));
                    }
                    else
                       QToolTip::showText(helpEvent->globalPos(),track->name());
@@ -323,9 +324,14 @@ void TList::paint(const QRect& r)
                         case MusECore::Track::AUDIO_AUX:
                               bg = MusEGlobal::config.auxTrackBg;
                               break;
-                        case MusECore::Track::AUDIO_SOFTSYNTH:
-                              bg = MusEGlobal::config.synthTrackBg;
+                        case MusECore::Track::AUDIO_SOFTSYNTH: {
+                              MusECore::SynthI *s = (MusECore::SynthI*)track;
+                              if(s->synth())
+                                bg = MusEGlobal::config.synthTrackBg;
+                              else
+                                bg = QColor(198, 77, 79);
                               break;
+                            }
                         }
 
                   p.setPen(palette().color(QPalette::Active, QPalette::Text));
@@ -1044,6 +1050,10 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       {
         MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(t);
         PopupMenu* p = new PopupMenu;
+
+        if(!synth->synth())
+          p->addAction(tr("SYNTH IS UNAVAILABLE!"));
+
         QAction* gact = p->addAction(tr("show gui"));
         gact->setCheckable(true);
         gact->setEnabled(synth->hasGui());
@@ -1101,6 +1111,14 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       MusECore::MidiPort* port = &MusEGlobal::midiPorts[oPort];
 
       PopupMenu* p = new PopupMenu;
+
+      if(port->device() && port->device()->isSynti())
+      {
+        MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(port->device());
+        if(!synth->synth())
+          p->addAction(tr("SYNTH IS UNAVAILABLE!"));
+      }
+
       QAction* gact = p->addAction(tr("show gui"));
       gact->setCheckable(true);
       gact->setEnabled(port->hasGui());

@@ -50,6 +50,8 @@
 
 namespace MusECore {
 
+int Track::_snGen=0;
+
 unsigned int Track::_soloRefCnt  = 0;
 Track* Track::_tmpSoloChainTrack = 0;
 bool Track::_tmpSoloChainDoIns   = false;
@@ -241,8 +243,7 @@ int Track::y() const
 
 void Track::init(int channels)
       {
-      _uuid = QUuid::createUuid();
-
+      _sn = newSn();
       _auxRouteCount = 0;  
       _nodeTraversed = false;
       _activity      = 0;
@@ -278,10 +279,8 @@ Track::Track(const Track& t, int flags)
   // we'll see if there is any draw back to that.
   _name = t.name();
 
-  // Policy: Even a copy gets a unique ID.
-  // Only the file loading routines can change (restore) it.
-  //_uuid = t._uuid;
-  _uuid = QUuid::createUuid();
+  // This should be reset for a copy of a track.
+  _sn = newSn();
 
   internal_assign(t, flags | ASSIGN_PROPERTIES);
   for (int i = 0; i < MusECore::MAX_CHANNELS; ++i) {
@@ -2399,8 +2398,6 @@ bool Track::selectEvents(bool select, unsigned long t0, unsigned long t1)
 
 void Track::writeProperties(int level, Xml& xml) const
       {
-      xml.strTag(level, "uuid", _uuid.toString());
-
       xml.strTag(level, "name", _name);
       if (!_comment.isEmpty())
             xml.strTag(level, "comment", _comment);
@@ -2427,9 +2424,6 @@ bool Track::readProperties(Xml& xml, const QString& tag)
       {
       if (tag == "name")
             _name = xml.parse1();
-      else if (tag == "uuid")
-            _uuid = xml.parse1();
-
       else if (tag == "comment")
             _comment = xml.parse1();
       else if (tag == "record") {

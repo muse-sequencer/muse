@@ -269,7 +269,7 @@ static Synth* findSynth(const QString& sclass, const QString& label, Synth::Type
          }
       fprintf(stderr, "synthi type:%d class:%s label:%s not found\n", type, sclass.toLatin1().constData(), label.toLatin1().constData());
       QMessageBox::warning(0,"Synth not found!",
-                  "Synth: " + label + " not found, if the project is saved it will be removed from the project");
+                  "Synth: " + label + " not found. Settings are preserved if the project is saved.");
       return 0;
       }
 
@@ -639,6 +639,14 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
 
       setName(instanceName);    // set midi device name
       setIName(instanceName);   // set instrument name
+
+      // Persistent storage. Even if the synth is not found, allow the track to load.
+      if(!s)
+      {
+        _sif = nullptr;
+        return true;
+      }
+
       _sif        = s->createSIF(this);
 
       //Andrew Deryabin: add check for NULL here to get rid of segfaults
@@ -719,17 +727,17 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
             }
 
       unsigned long idx = 0;
-      for (std::vector<double>::iterator i = initParams.begin(); i != initParams.end(); ++i, ++idx)
+      for (std::vector<double>::iterator i = _initConfig.initParams.begin(); i != _initConfig.initParams.end(); ++i, ++idx)
             _sif->setParameter(idx, *i);
 
       // p3.3.40 Since we are done with the (sometimes huge) initial parameters list, clear it.
       // TODO: Decide: Maybe keep them around for a 'reset to previously loaded values' (revert) command? ...
-      initParams.clear();
+      _initConfig.initParams.clear();
 
       //call SynthIF::setCustomData(...) with accumulated custom params
-      _sif->setCustomData(accumulatedCustomParams);
+      _sif->setCustomData(_initConfig.accumulatedCustomParams);
 
-      accumulatedCustomParams.clear();
+      _initConfig.accumulatedCustomParams.clear();
 
       return false;
       }
@@ -967,12 +975,15 @@ void SynthI::write(int level, Xml& xml) const
       {
       xml.tag(level++, "SynthI");
       AudioTrack::writeProperties(level, xml);
-      xml.strTag(level, "synthType", synthType2String(synth()->synthType()));
+      xml.strTag(level, "synthType",
+        synthType2String(synth() ? synth()->synthType() : _initConfig._type));
 
-      xml.strTag(level, "class", synth()->baseName());
+      xml.strTag(level, "class",
+        synth() ? synth()->baseName() : _initConfig._class);
 
       // To support plugins like dssi-vst where all the baseNames are the same 'dssi-vst' and the label is the name of the dll file.
-      xml.strTag(level, "label", synth()->name());
+      xml.strTag(level, "label",
+        synth() ? synth()->name() : _initConfig._label);
 
       if(openFlags() != 1)
         xml.intTag(level, "openFlags", openFlags());
@@ -985,29 +996,81 @@ void SynthI::write(int level, Xml& xml) const
       if (midiPort() != -1)
             xml.intTag(level, "port", midiPort());
 
-      if (hasGui()) {
-            xml.intTag(level, "guiVisible", guiVisible());
-            int x, y, w, h;
-            w = 0;
-            h = 0;
-            getGeometry(&x, &y, &w, &h);
-            if (h || w)
-                  xml.qrectTag(level, "geometry", QRect(x, y, w, h));
-            }
+      if(_sif)
+      {
+        if (hasGui()) {
+              xml.intTag(level, "guiVisible", guiVisible());
+              int x, y, w, h;
+              w = 0;
+              h = 0;
+              getGeometry(&x, &y, &w, &h);
+              if (h || w)
+                    xml.qrectTag(level, "geometry", QRect(x, y, w, h));
+              }
 
-      if (hasNativeGui()) {
-            xml.intTag(level, "nativeGuiVisible", nativeGuiVisible());
-            int x, y, w, h;
-            w = 0;
-            h = 0;
-            getNativeGeometry(&x, &y, &w, &h);
-            if (h || w)
-                  xml.qrectTag(level, "nativeGeometry", QRect(x, y, w, h));
-            }
+        if (hasNativeGui()) {
+              xml.intTag(level, "nativeGuiVisible", nativeGuiVisible());
+              int x, y, w, h;
+              w = 0;
+              h = 0;
+              getNativeGeometry(&x, &y, &w, &h);
+              if (h || w)
+                    xml.qrectTag(level, "nativeGeometry", QRect(x, y, w, h));
+              }
+      }
+      else
+      {
+        if(_initConfig._guiVisible)
+          xml.intTag(level, "guiVisible", _initConfig._guiVisible);
+        if (_initConfig._geometry.height() || _initConfig._geometry.width())
+              xml.qrectTag(level, "geometry", _initConfig._geometry);
 
-      _stringParamMap.write(level, xml, "stringParam");
+        if(_initConfig._nativeGuiVisible)
+          xml.intTag(level, "nativeGuiVisible", _initConfig._nativeGuiVisible);
+        if (_initConfig._nativeGeometry.height() || _initConfig._nativeGeometry.width())
+              xml.qrectTag(level, "nativeGeometry", _initConfig._nativeGeometry);
+      }
+
+      _initConfig._stringParamMap.write(level, xml, "stringParam");
       
-      _sif->write(level, xml);
+      if(_sif)
+      {
+        _sif->write(level, xml);
+      }
+      else
+      {
+        // Try to preserve existing settings...
+        if(!_initConfig.initParams.empty())
+        {
+          const int sz = _initConfig.initParams.size();
+          for(int i = 0; i < sz; ++i)
+            xml.doubleTag(level, "param", _initConfig.initParams.at(i));
+        }
+        
+        // Try to preserve existing settings...
+        if(!_initConfig.accumulatedCustomParams.empty())
+        {
+          const int sz = _initConfig.accumulatedCustomParams.size();
+          for(int i = 0; i < sz; ++i)
+          {
+            const QString& cps = _initConfig.accumulatedCustomParams.at(i);
+            // FIXME: For some reason this does not print the first newline of cps,
+            //  which should exist (all the others do).
+            xml.strTag(level, "customData", cps);
+          }
+        }
+
+        // Try to preserve existing settings...
+        const EventList* msl = midiState();
+        if(msl && !msl->empty())
+        {
+          xml.tag(level++, "midistate version=\"%d\"", SYNTH_MIDI_STATE_SAVE_VERSION);
+          for(ciEvent ie = msl->cbegin(); ie != msl->cend(); ++ie)
+            ie->second.write(level, xml, 0);
+          xml.etag(level--, "midistate");
+        }
+      }
+
       xml.etag(level, "SynthI");
       }
 
@@ -1045,14 +1108,7 @@ void MessSynthIF::write(int level, Xml& xml) const
 
 void SynthI::read(Xml& xml)
       {
-      QString sclass;
-      QString label;
-      Synth::Type type = Synth::SYNTH_TYPE_END;
-
       int port = -1;
-      bool startgui = false;
-      bool startngui = false;
-      QRect r, nr;
       int oflags = 1;
 
       for (;;) {
@@ -1064,36 +1120,36 @@ void SynthI::read(Xml& xml)
                         goto synth_read_end;
                   case Xml::TagStart:
                         if (tag == "synthType")
-                              type = string2SynthType(xml.parse1());
+                              _initConfig._type = string2SynthType(xml.parse1());
                         else if (tag == "class")
-                              sclass = xml.parse1();
+                              _initConfig._class = xml.parse1();
                         else if (tag == "label")
-                              label  = xml.parse1();
+                              _initConfig._label  = xml.parse1();
                         else if (tag == "openFlags")
                               oflags = xml.parseInt();
                         
                         else if (tag == "port")
                               port  = xml.parseInt();
                         else if (tag == "guiVisible")
-                              startgui = xml.parseInt();
+                              _initConfig._guiVisible = xml.parseInt();
                         else if (tag == "nativeGuiVisible")
-                              startngui = xml.parseInt();
+                              _initConfig._nativeGuiVisible = xml.parseInt();
                         else if (tag == "midistate")
                               readMidiState(xml);
                         else if (tag == "param") {
                               double val = xml.parseDouble();
-                              initParams.push_back(val);
+                              _initConfig.initParams.push_back(val);
                               }
                         else if (tag == "stringParam")
-                              _stringParamMap.read(xml, tag);
+                              _initConfig._stringParamMap.read(xml, tag);
                         else if (tag == "geometry")
-                              r = readGeometry(xml, tag);
+                              _initConfig._geometry = readGeometry(xml, tag);
                         else if (tag == "nativeGeometry")
-                              nr = readGeometry(xml, tag);
+                              _initConfig._nativeGeometry = readGeometry(xml, tag);
                         else if (tag == "customData") { //just place tag contents in accumulatedCustomParams
                               QString customData = xml.parse1();
                               if(!customData.isEmpty()){
-                                 accumulatedCustomParams.push_back(customData);
+                                 _initConfig.accumulatedCustomParams.push_back(customData);
                               }
                         }
                         else if (AudioTrack::readProperties(xml, tag))
@@ -1104,16 +1160,17 @@ void SynthI::read(Xml& xml)
 
                               // NOTICE: This is a hack to quietly change songs to use the new 'fluid_synth' name instead of 'fluidsynth'.
                               //         Recent linker changes required the name change in fluidsynth's cmakelists. Nov 8, 2011 By Tim.
-                              if(sclass == QString("fluidsynth") &&
-                                 (type == Synth::SYNTH_TYPE_END || type == Synth::MESS_SYNTH) &&
-                                 (label.isEmpty() || label == QString("FluidSynth")) )
-                                sclass = QString("fluid_synth");
+                              if(_initConfig._class == QString("fluidsynth") &&
+                                 (_initConfig._type == Synth::SYNTH_TYPE_END || _initConfig._type == Synth::MESS_SYNTH) &&
+                                 (_initConfig._label.isEmpty() || _initConfig._label == QString("FluidSynth")) )
+                                _initConfig._class = QString("fluid_synth");
 
-                              Synth* s = findSynth(sclass, label, type);
-                              if (s == 0)
-                                    return;
-                              if (initInstance(s, name()))
-                                    return;
+                              Synth* s = findSynth(_initConfig._class, _initConfig._label, _initConfig._type);
+
+                              // Persistent storage: If synth is not found allow the track to load.
+                              // It's OK if s is NULL. initInstance needs to do a few things.
+                              initInstance(s, name());
+
                               setOpenFlags(oflags);
                               
                               MusEGlobal::song->insertTrack0(this, -1);
@@ -1127,13 +1184,15 @@ void SynthI::read(Xml& xml)
                               // No, initializing OSC without actually showing the gui doesn't work, at least for
                               //  dssi-vst plugins - without showing the gui they exit after ten seconds.
                               //initGui();
-                              setNativeGeometry(nr.x(), nr.y(), nr.width(), nr.height());
-                              showNativeGui(startngui);
+                              setNativeGeometry(_initConfig._nativeGeometry.x(), _initConfig._nativeGeometry.y(), 
+                                                _initConfig._nativeGeometry.width(), _initConfig._nativeGeometry.height());
+                              showNativeGui(_initConfig._nativeGuiVisible);
 
                               mapRackPluginsToControllers();
 
-                              setGeometry(r.x(), r.y(), r.width(), r.height());
-                              showGui(startgui);
+                              setGeometry(_initConfig._geometry.x(), _initConfig._geometry.y(),
+                                          _initConfig._geometry.width(), _initConfig._geometry.height());
+                              showGui(_initConfig._guiVisible);
 
                               // Now that the track has been added to the lists in insertTrack2(), if it's a dssi synth
                               //  OSC can find the track and its plugins, and start their native guis if required...
@@ -1218,7 +1277,7 @@ float SynthI::getWorstPluginLatencyAudio()
     return _latencyInfo._worstPluginLatency;
 
   // Include the synth's own latency.
-  float worst_lat = _sif->latency();
+  float worst_lat = _sif ? _sif->latency() : 0.0f;
   // Include the effects rack latency.
   if(_efxPipe)
     worst_lat += _efxPipe->latency();
@@ -3482,6 +3541,9 @@ bool SynthI::getData(unsigned pos, int ports, unsigned n, float** buffer)
       {
       for (int k = 0; k < ports; ++k)
             memset(buffer[k], 0, n * sizeof(float));
+
+      if(!_sif)
+        return false;
 
       int p = midiPort();
       MidiPort* mp = (p != -1) ? &MusEGlobal::midiPorts[p] : 0;

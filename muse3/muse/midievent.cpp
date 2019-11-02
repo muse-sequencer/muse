@@ -169,8 +169,13 @@ void MidiEventBase::write(int level, Xml& xml, const Pos& offset, bool /*forcePa
       if (edata.dataLen) {
             xml.nput(" datalen=\"%d\">\n", edata.dataLen);
             xml.nput(level, "");
-            for (int i = 0; i < edata.dataLen; ++i)
+            for (int i = 0; i < edata.dataLen; ++i) {
+                  if (i && ((i % 16) == 0)) {
+                        xml.nput("\n");
+                        xml.nput(level, "");
+                        }
                   xml.nput("%02x ", edata.data[i] & 0xff);
+                  }
             xml.nput("\n");
             xml.tag(level, "/event");
             }

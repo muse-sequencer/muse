@@ -31,7 +31,6 @@
 #include <QFont>
 #include <QRect>
 #include <QString>
-#include <QUuid>
 #include <QList>
 
 namespace MusECore {
@@ -76,17 +75,31 @@ enum RouteNameAliasPreference { RoutePreferCanonicalName = 0, RoutePreferFirstAl
 enum WaveDrawing { WaveRmsPeak=1, WaveOutLine=2 };
 
 struct StripConfig {
-  QUuid _uuid;
+  // The corresponding track's serial number.
+  int _serial;
+  // The corresponding track's index in the song file.
+  // Temporary during loading to avoid globally or locally
+  //  'unique' identifiers, such as the serial, in the song file.
+  int _tmpFileIdx;
+
   bool _visible;
   int _width;
   bool _deleted;
 
-  StripConfig() { _visible = true; _width = -1; _deleted = false; }
-  StripConfig(const QUuid& uuid, bool visible, int width) { _uuid = uuid; _visible = visible; _width = width; _deleted = false; }
+  StripConfig()
+  { _serial = -1; _tmpFileIdx = -1; _visible = true; _width = -1; _deleted = false; }
+  StripConfig(int trackSerial, bool visible, int width)
+  { _serial = trackSerial; _tmpFileIdx = -1; _visible = visible; _width = width; _deleted = false; }
+
+  bool isNull() const { return _serial < 0; }
 
   void write(int level, MusECore::Xml& xml) const;
   void read(MusECore::Xml& xml);
 };
+
+typedef QList<StripConfig> StripConfigList_t;
+typedef StripConfigList_t::iterator iStripConfigList;
+typedef StripConfigList_t::const_iterator ciStripConfigList;
 
 //---------------------------------------------------------
 //   MixerConfig
@@ -127,7 +140,7 @@ struct MixerConfig {
       //  removal for the duration of the song file session.
       // When writing to file BE SURE to ignore items with no corresponding track,
       //  to filter out all the undesired 'deleted' ones.
-      QList<StripConfig> stripConfigList;
+      StripConfigList_t stripConfigList;
 
       void write(int level, MusECore::Xml& xml, bool global) const;
       void read(MusECore::Xml& xml);

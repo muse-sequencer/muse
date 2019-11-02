@@ -303,6 +303,32 @@ size_t SysExOutputProcessor::stageEvData(const EvData& evData, unsigned int fram
 //    variable len event data (sysex, meta etc.)
 //---------------------------------------------------------
 
+void EvData::setRawData(unsigned char* p, int l) 
+{
+      // Setting the data destroys any reference. Dereference now.
+      // The data may still be shared. Destroy it only if no more references.
+      if (refCount && (--(*refCount) == 0)) 
+      {
+        delete refCount;
+        refCount = 0;
+        
+        if(data)
+          delete[] data;
+      }
+      // Clear the data variable.
+      data = 0;  
+        
+      if(l > 0) 
+      {
+        // Set the data pointer.
+        data = p;
+        
+        // Setting the data destroys any reference. Create a new reference now.
+        refCount = new int(1);
+      }
+      dataLen = l;
+}
+            
 void EvData::setData(const unsigned char* p, int l) 
 {
       // Setting the data destroys any reference. Dereference now.

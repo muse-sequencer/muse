@@ -26,7 +26,6 @@
 #define __TRACK_H__
 
 #include <QString>
-#include <QUuid>
 
 #include <vector>
 #include <algorithm>
@@ -86,8 +85,9 @@ class Track {
          
    private:
       TrackType _type;
+      // Serial number generator.
+      static int _snGen;
       QString _comment;
-
       PartList _parts;
 
       void init(int channels = 0);
@@ -109,7 +109,8 @@ class Track {
       bool _nodeTraversed;   // Internal anti circular route traversal flag.
       int _auxRouteCount;    // Number of aux paths feeding this track.
 
-      QUuid _uuid;
+      // Serial number.
+      int _sn;
       QString _name;
       bool _recordFlag;
       bool _recMonitor;       // For midi and audio. Whether to pass the input through to output.
@@ -137,6 +138,8 @@ class Track {
       // Holds latency computations each cycle.
       TrackLatencyInfo _latencyInfo;
 
+      int newSn() { return _snGen++; }
+      
       bool readProperties(Xml& xml, const QString& tag);
       void writeProperties(int level, Xml& xml) const;
 
@@ -146,7 +149,7 @@ class Track {
       virtual ~Track();
       virtual void assign(const Track&, int flags);
 
-      const QUuid& uuid() const { return _uuid; }
+      inline int serial() const { return _sn; }
 
       static const char* _cname[];
       static QPixmap* trackTypeIcon(TrackType);
@@ -1077,22 +1080,6 @@ template<class T> class tracklist : public std::vector<Track*> {
       const_iterator find(const Track* t) const {
             return std::find(cbegin(), cend(), t);
             }
-      iterator find(const QUuid& uuid) {
-            for (vlist::iterator i = begin(); i != end(); ++i) {
-                  if ((*i)->uuid() == uuid) {
-                        return i;
-                        }
-                  }
-            return end();
-            }
-      const_iterator find(const QUuid& uuid) const {
-            for (vlist::const_iterator i = cbegin(); i != cend(); ++i) {
-                  if ((*i)->uuid() == uuid) {
-                        return i;
-                        }
-                  }
-            return cend();
-            }
       bool contains(const Track* t) const {
             return std::find(cbegin(), cend(), t) != cend();
             }
@@ -1104,19 +1091,31 @@ template<class T> class tracklist : public std::vector<Track*> {
                   }
             return -1;
             }
-      int index(const QUuid& uuid) const {
-            int n = 0;
-            for (vlist::const_iterator i = cbegin(); i != cend(); ++i, ++n) {
-                  if ((*i)->uuid() == uuid) {
-                        return n;
-                        }
-                  }
-            return -1;
-            }
       T index(int k) const {
             if (k < 0 || k >= (int)size())
                   return nullptr;
             return (*this)[k];
+            }
+      T findSerial(int sn) const {
+            if (sn < 0)
+                  return nullptr;
+            for (vlist::const_iterator i = cbegin(); i != cend(); ++i) {
+                  if ((*i)->serial() == sn) {
+                        return *i;
+                        }
+                  }
+            return nullptr;
+            }
+      int indexOfSerial(int sn) const {
+            if (sn < 0)
+                  return -1;
+            int n = 0;
+            for (vlist::const_iterator i = cbegin(); i != cend(); ++i, ++n) {
+                  if ((*i)->serial() == sn) {
+                        return n;
+                        }
+                  }
+            return -1;
             }
       iterator index2iterator(int k) {
             if (k < 0 || k >= (int)size())

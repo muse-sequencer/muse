@@ -86,7 +86,12 @@ class EvData {
                   refCount = 0;
                 }
             }
+      // Sets the data pointer.
+      // Takes ownership of the data and deletes it when required !
+      void setRawData(unsigned char* p, int l);
+      // Copies the data.
       void setData(const unsigned char* p, int l);
+      // Copies the data.
       void setData(const SysExInputProcessor* q);
       };
 

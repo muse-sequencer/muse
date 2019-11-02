@@ -45,11 +45,10 @@
 #include "mitplugin.h"
 #include "wave.h"
 #include "midictrl.h"
-#include "amixer.h"
 #include "audiodev.h"
 #include "conf.h"
-#include "driver/jackmidi.h"
 #include "keyevent.h"
+#include "gconfig.h"
 
 namespace MusEGlobal {
 MusECore::CloneList cloneList;
@@ -763,6 +762,67 @@ void Song::write(int level, Xml& xml) const
       MusEGlobal::cloneList = copyCloneList;
       }
 
+//--------------------------------
+//   resolveStripReferences
+//--------------------------------
+
+static void resolveStripReferences(MusEGlobal::MixerConfig* mconfig)
+{
+  MusECore::TrackList* tl = MusEGlobal::song->tracks();
+  MusECore::Track* track;
+  MusEGlobal::StripConfigList_t& scl = mconfig->stripConfigList;
+  if(!scl.empty())
+  {
+    for(MusEGlobal::iStripConfigList isc = scl.begin(); isc != scl.end(); )
+    {
+      MusEGlobal::StripConfig& sc = *isc;
+
+      // Is it a dud? Delete it.
+      if(sc.isNull() && sc._tmpFileIdx < 0)
+      {
+        isc = scl.erase(isc);
+        continue;
+      }
+
+      // Does it have a temporary track index?
+      if(sc._tmpFileIdx >= 0)
+      {
+        // Find an existing track at that index.
+        track = tl->index(sc._tmpFileIdx);
+        // No corresponding track found? Delete the strip config.
+        if(!track)
+        {
+          isc = scl.erase(isc);
+          continue;
+        }
+        // Link the strip config to the track, via serial number.
+        sc._serial = track->serial();
+        // Done with temporary index. Reset it.
+        sc._tmpFileIdx = -1;
+      }
+
+      // As for other configs with a serial and no _tmpFileIdx,
+      //  leave them alone. They may already be valid. If not,
+      //  they may need to persist for the undo system to restore from.
+      // Ultimately when saving, the strip config write() function removes duds anyway.
+
+      ++isc;
+    }
+  }
+}
+
+//--------------------------------
+//   resolveSongfileReferences
+//--------------------------------
+
+void Song::resolveSongfileReferences()
+{
+  //-----------------------------------------------
+  // Resolve mixer strip configuration references:
+  //-----------------------------------------------
+  resolveStripReferences(&MusEGlobal::config.mixer1);
+  resolveStripReferences(&MusEGlobal::config.mixer2);
+}
 
 } // namespace MusECore
 
@@ -1095,6 +1155,10 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                         else if (tag == "song")
                         {
                               MusEGlobal::song->read(xml, isTemplate);
+
+                              // Now that the song file has been fully loaded, resolve any references in the file.
+                              MusEGlobal::song->resolveSongfileReferences();
+
                               MusEGlobal::audio->msgUpdateSoloStates();
                               // Inform the rest of the app that the song (may) have changed, using these flags.
                               // After this function is called, the caller can do a general Song::update() MINUS these flags,

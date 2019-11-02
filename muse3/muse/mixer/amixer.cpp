@@ -537,37 +537,37 @@ void AudioMixerApp::addStripsTraditionalLayout()
 void AudioMixerApp::stripVisibleChanged(Strip* s, bool v)
 {
   const MusECore::Track* t = s->getTrack();
-  const QUuid& uuid = t->uuid();
+  const int sn = t->serial();
   if (!cfg->stripConfigList.empty()) {
     const int sz = cfg->stripConfigList.size();
     for (int i=0; i < sz; i++) {
       MusEGlobal::StripConfig& sc = cfg->stripConfigList[i];
-      DEBUG_MIXER(stderr, "stripVisibleChanged() processing strip [%s][%d]\n", sc._uuid.toByteArray().constData(), sc._visible);
-      if(!sc._uuid.isNull() && sc._uuid == uuid) {
+      DEBUG_MIXER(stderr, "stripVisibleChanged() processing strip [%d][%d]\n", sc._serial, sc._visible);
+      if(!sc.isNull() && sc._serial == sn) {
           sc._visible = v;
           return;
         }
       }
     }
-  fprintf(stderr, "stripVisibleChanged() StripConfig not found [%s]\n", uuid.toByteArray().constData());
+  fprintf(stderr, "stripVisibleChanged() StripConfig not found [%d]\n", sn);
 }
 
 void AudioMixerApp::stripUserWidthChanged(Strip* s, int w)
 {
   const MusECore::Track* t = s->getTrack();
-  const QUuid& uuid = t->uuid();
+  const int sn = t->serial();
   if (!cfg->stripConfigList.empty()) {
     const int sz = cfg->stripConfigList.size();
     for (int i=0; i < sz; i++) {
       MusEGlobal::StripConfig& sc = cfg->stripConfigList[i];
-      DEBUG_MIXER(stderr, "stripUserWidthChanged() processing strip [%s][%d]\n", sc._uuid.toByteArray().constData(), sc._width);
-      if(!sc._uuid.isNull() && sc._uuid == uuid) {
+      DEBUG_MIXER(stderr, "stripUserWidthChanged() processing strip [%d][%d]\n", sc._serial, sc._width);
+      if(!sc.isNull() && sc._serial == sn) {
           sc._width = w;
           return;
         }
       }
     }
-  fprintf(stderr, "stripUserWidthChanged() StripConfig not found [%s]\n", uuid.toByteArray().constData());
+  fprintf(stderr, "stripUserWidthChanged() StripConfig not found [%d]\n", sn);
 }
 
 void AudioMixerApp::setSizing()
@@ -649,10 +649,10 @@ void AudioMixerApp::addStrip(const MusECore::Track* t, const MusEGlobal::StripCo
     if(sc._width >= 0)
       strip->setUserWidth(sc._width);
 
-    // Create a strip config now if no strip config exists yet for this strip (sc is default, with null uuid).
-    if(sc._uuid.isNull())
+    // Create a strip config now if no strip config exists yet for this strip (sc is default, with invalid sn).
+    if(sc.isNull())
     {
-      const MusEGlobal::StripConfig sc(t->uuid(), strip->getStripVisible(), strip->userWidth());
+      const MusEGlobal::StripConfig sc(t->serial(), strip->getStripVisible(), strip->userWidth());
       cfg->stripConfigList.append(sc);
     }
 }
@@ -724,11 +724,11 @@ void AudioMixerApp::initMixer()
     const int sz = cfg->stripConfigList.size();
     for (int i=0; i < sz; i++) {
       const MusEGlobal::StripConfig& sc = cfg->stripConfigList.at(i);
-      DEBUG_MIXER(stderr, "processing strip #:%d [%s][%d]\n", i, sc._uuid.toByteArray().constData(), sc._visible);
-      if(!sc._deleted && !sc._uuid.isNull()) {
-        MusECore::ciTrack it = tl->find(sc._uuid);
-        if(it != tl->cend())
-          addStrip(*it, sc);
+      DEBUG_MIXER(stderr, "processing strip #:%d [%d][%d]\n", i, sc._serial, sc._visible);
+      if(!sc._deleted && !sc.isNull()) {
+        const MusECore::Track* t = tl->findSerial(sc._serial);
+        if(t)
+          addStrip(t, sc);
         }
     }
   }
@@ -799,15 +799,15 @@ bool AudioMixerApp::updateStripList()
   const int config_sz = cfg->stripConfigList.size();
   for (int i = 0; i < config_sz; ++i )
   {
-    MusEGlobal::StripConfig& s = cfg->stripConfigList[i];
-    if(!s._deleted && tl->find(s._uuid) == tl->end())
-      s._deleted = true;
+    MusEGlobal::StripConfig& sc = cfg->stripConfigList[i];
+    if(!sc._deleted && tl->indexOfSerial(sc._serial) < 0)
+      sc._deleted = true;
   }
 
   // check for new tracks
   for (MusECore::ciTrack tli = tl->cbegin(); tli != tl->end();++tli) {
     const MusECore::Track* track = *tli;
-    const QUuid& uuid = track->uuid();
+    const int sn = track->serial();
     StripList::const_iterator si = stripList.cbegin();
     for (; si != stripList.cend(); ++si) {
       if ((*si)->getTrack() == track) {
@@ -821,17 +821,17 @@ bool AudioMixerApp::updateStripList()
       int i = 0;
       for(; i < config_sz; ++i)
       {
-        MusEGlobal::StripConfig& s = cfg->stripConfigList[i];
-        if(!s._uuid.isNull() && s._uuid == uuid)
+        MusEGlobal::StripConfig& sc = cfg->stripConfigList[i];
+        if(!sc.isNull() && sc._serial == sn)
         {
           // Be sure to mark the strip config as undeleted (in use).
-          s._deleted = false;
+          sc._deleted = false;
           // Insert a new strip at the index, with the given config.
-          addStrip(track, s, idx);
+          addStrip(track, sc, idx);
           changed = true;
           break;
         }
-        if(!s._deleted)
+        if(!sc._deleted)
           ++idx;
       }
       // No config found? Append a new strip with a default config.
@@ -864,7 +864,7 @@ void AudioMixerApp::moveConfig(const Strip* s, int new_pos)
   const MusECore::Track* track = s->getTrack();
   if(!track)
     return;
-  const QUuid& uuid = track->uuid();
+  const int sn = track->serial();
 
   // The config list may also contain configs marked as 'deleted'.
   // Get the 'real' new_pos index, skipping over them.
@@ -874,16 +874,16 @@ void AudioMixerApp::moveConfig(const Strip* s, int new_pos)
   int j = 0;
   for (int i = 0; i < config_sz; ++i)
   {
-    const MusEGlobal::StripConfig& s = cfg->stripConfigList.at(i);
+    const MusEGlobal::StripConfig& sc = cfg->stripConfigList.at(i);
     // Only 'count' configs that are not deleted.
-    if(!s._deleted)
+    if(!sc._deleted)
     {
       if(new_pos_idx == -1 && j == new_pos)
         new_pos_idx = i;
       ++j;
     }
     // While we're at it, remember the index of the given strip.
-    if(s_idx == -1 && s._uuid == uuid)
+    if(s_idx == -1 && sc._serial == sn)
       s_idx = i;
     // If we have both pieces of information we're done.
     if(new_pos_idx != -1 && s_idx != -1)

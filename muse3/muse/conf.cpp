@@ -2107,9 +2107,15 @@ namespace MusEGlobal {
 
 void StripConfig::write(int level, MusECore::Xml& xml) const
       {
-      if(_uuid.isNull())
+      if(_serial < 0)
         return;
-      xml.nput(level, "<StripConfig uuid=\"%s\"", _uuid.toByteArray().constData());
+      // Do NOT save if there is no corresponding track.
+      const MusECore::TrackList* tl = song->tracks();
+      const int idx = tl->indexOfSerial(_serial);
+      if(idx < 0)
+        return;
+      xml.nput(level, "<StripConfig trackIdx=\"%d\"", idx);
+
       xml.nput(level, " visible=\"%d\"", _visible);
       if(_width >= 0)
         xml.nput(level, " width=\"%d\"", _width);
@@ -2138,8 +2144,8 @@ void StripConfig::read(MusECore::Xml& xml)
                           xml.unknown("StripConfig");
                         break;
                   case MusECore::Xml::Attribut:
-                        if (tag == "uuid") {
-                              _uuid = QUuid(xml.s2());
+                        if (tag == "trackIdx") {
+                              _tmpFileIdx = xml.s2().toInt();
                               }
                         else if (tag == "visible") {
                               _visible = xml.s2().toInt();
@@ -2187,16 +2193,9 @@ void MixerConfig::write(int level, MusECore::Xml& xml, bool global) const
       {
         if(!stripConfigList.empty())
         {
-          const MusECore::TrackList* tl = song->tracks();
           const int sz = stripConfigList.size();
           for(int i = 0; i < sz; ++i)
-          {
-            const StripConfig& sc = stripConfigList.at(i);
-            // Do NOT save if there is no corresponding track.
-            if(tl->find(sc._uuid) == tl->cend())
-              continue;
-            sc.write(level, xml);
-          }
+            stripConfigList.at(i).write(level, xml);
         }
       }
 
@@ -2250,7 +2249,7 @@ void MixerConfig::read(MusECore::Xml& xml)
                         else if (tag == "StripConfig") {
                               StripConfig sc;
                               sc.read(xml);
-                              if(!sc._uuid.isNull())
+                              if(sc._tmpFileIdx >= 0)
                                 stripConfigList.append(sc);
                         }
                         else

@@ -639,7 +639,7 @@ bool DssiSynthIF::init(DssiSynth* s)
           free(rv);
         }          
         
-        for(ciStringParamMap r = synti->_stringParamMap.begin(); r != synti->_stringParamMap.end(); ++r) 
+        for(ciStringParamMap r = synti->_initConfig._stringParamMap.begin(); r != synti->_initConfig._stringParamMap.end(); ++r) 
         {
           rv = 0;
           rv = dssi->configure(_handle, r->first.c_str(), r->second.c_str());
@@ -860,7 +860,7 @@ void DssiSynthIF::write(int level, Xml& xml) const
           void* p = 0;
           _synth->dssi->getCustomData(_handle,&p, &len);
           if (len) {
-                xml.tag(level++, "midistate version=\"%d\"", SYNTH_MIDI_STATE_SAVE_VERSION);         
+                xml.tag(level++, " version=\"%d\"", SYNTH_MIDI_STATE_SAVE_VERSION);         
                 xml.nput(level++, "<event type=\"%d\"", Sysex);
                 xml.nput(" datalen=\"%d\">\n", len+9 /* 9 = 2 bytes header + "VSTSAVE"*/);
                 xml.nput(level, "");
@@ -1916,7 +1916,7 @@ int DssiSynthIF::oscUpdate()
       
       // Send current string configuration parameters.
       int i = 0;
-      for(ciStringParamMap r = synti->_stringParamMap.begin(); r != synti->_stringParamMap.end(); ++r) 
+      for(ciStringParamMap r = synti->_initConfig._stringParamMap.begin(); r != synti->_initConfig._stringParamMap.end(); ++r) 
       {
         _oscif.oscSendConfigure(r->first.c_str(), r->second.c_str());
         // Avoid overloading the GUI if there are lots and lots of params. 
@@ -2135,7 +2135,7 @@ int DssiSynthIF::oscConfigure(const char *key, const char *value)
       #endif
       
       // Add or modify the configuration map item.
-      synti->_stringParamMap.set(key, value);
+      synti->_initConfig._stringParamMap.set(key, value);
       
       if (!strncmp(key, DSSI_RESERVED_CONFIGURE_PREFIX,
          strlen(DSSI_RESERVED_CONFIGURE_PREFIX))) {

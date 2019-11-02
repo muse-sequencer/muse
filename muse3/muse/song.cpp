@@ -3489,6 +3489,8 @@ void Song::insertTrack1(Track* track, int /*idx*/)
                   SynthI* s = (SynthI*)track;
                   Synth* sy = s->synth();
                   if (!s->isActivated()) {
+                        // Persistent storage: If the synth is not found allow the track to load.
+                        // It's OK if s is NULL. initInstance needs to do a few things.
                         s->initInstance(sy, s->name());
                         }
                   }

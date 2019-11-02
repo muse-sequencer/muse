@@ -35,7 +35,6 @@
 #include <QList>
 #include <QInputDialog>
 #include <QMessageBox>
-#include <QUuid>
 
 #include "globals.h"
 #include "gconfig.h"

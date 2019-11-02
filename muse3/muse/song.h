@@ -231,6 +231,10 @@ class Song : public QObject {
       void writeFont(int level, Xml& xml, const char* name,
          const QFont& font) const;
       QFont readFont(Xml& xml, const char* name);
+      // After a song file is successfully loaded with read(), some items which
+      //  reference other items in the file need to be resolved. (Mixer strip configs etc.)
+      void resolveSongfileReferences();
+
       QString getSongInfo() { return songInfoStr; }
       void setSongInfo(QString info, bool show) { songInfoStr = info; showSongInfo = show; }
       bool showSongInfoOnStartup() { return showSongInfo; }
