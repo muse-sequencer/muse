@@ -1515,6 +1515,7 @@ int main(int argc, char* argv[])
 
         // Now delete the application.
         delete MusEGlobal::muse;
+        MusEGlobal::muse = nullptr;
 
         // These are owned by muse and deleted above. Reset to zero now.
         MusEGlobal::undoRedo = 0;

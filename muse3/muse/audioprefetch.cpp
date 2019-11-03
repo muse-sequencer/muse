@@ -36,7 +36,7 @@
 #include "sync.h"
 
 namespace MusEGlobal {
-MusECore::AudioPrefetch* audioPrefetch;
+MusECore::AudioPrefetch* audioPrefetch = nullptr;
 }
 
 namespace MusECore {

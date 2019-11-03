@@ -1,3 +1,5 @@
+03.11.2019
+      - Fix issue 667: Hang on automatic restart. Reset jackStarted upon restart. (Tim)
 02.11.2019
       - Mixers and strips: Mods and reverts to 20.10. (Tim)
         Removed new track UUID. Found a way to work with track index and a local LUID instead.
