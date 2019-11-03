@@ -8,6 +8,7 @@
 #include "plugindialog.h"
 //#include "ui_plugindialogbase.h"
 #include "plugin.h"
+#include "gconfig.h"
 
 
 namespace MusEGui {
@@ -28,6 +29,7 @@ PluginDialog::PluginDialog(QWidget* parent)
   : QDialog(parent)
 {
     ui.setupUi(this);
+    this->setStyleSheet("font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt");
 
       group_info=NULL;
       setWindowTitle(tr("MusE: select plugin"));
