@@ -960,6 +960,18 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                 }
               }
             }
+            else if (section == COL_TRACK_IDX) {
+                if (button == Qt::LeftButton) {
+                    // Select all tracks of the same type
+                    MusEGlobal::song->selectAllTracks(false);
+                    MusECore::TrackList* all_tl = MusEGlobal::song->tracks();
+                    foreach (MusECore::Track *other_t, *all_tl) {
+                        if (other_t->type() == t->type())
+                            other_t->setSelected(true);
+                    }
+                    MusEGlobal::song->update(SC_TRACK_SELECTION);
+                }
+            }
             else if (section == COL_OCHANNEL) {
                   // Enabled for audio tracks. And synth channels cannot be changed ATM.
                   // Default to track port if -1 and track channel if -1.
