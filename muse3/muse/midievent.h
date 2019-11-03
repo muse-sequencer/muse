@@ -76,8 +76,8 @@ class MidiEventBase : public EventBase {
       virtual void setC(int val)                    { c = val;       }
       virtual void setVeloOff(int v)                { c = v;         }
 
-      virtual const unsigned char* data() const     { return edata.data;  }
-      virtual int dataLen() const                   { return edata.dataLen; }
+      virtual const unsigned char* constData() const { return edata.constData();  }
+      virtual int dataLen() const                   { return edata.dataLen(); }
       virtual void setData(const unsigned char* data, int len) { edata.setData(data, len); }
       virtual const EvData eventData() const        { return edata; }
 

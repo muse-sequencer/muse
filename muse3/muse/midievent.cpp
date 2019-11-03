@@ -48,7 +48,7 @@ MidiEventBase::MidiEventBase(const MidiEventBase& ev, bool duplicate_not_clone)
       b = ev.b;
       c = ev.c;
       if(duplicate_not_clone)
-        edata.setData(ev.data(), ev.dataLen()); // Makes a copy.
+        edata.setData(ev.constData(), ev.dataLen()); // Makes a copy.
       else
         // NOTE: Even non-shared clone events ALWAYS share edata. edata does NOT currently require 
         //        separate instances, unlike wave events which absolutely do.
@@ -71,8 +71,8 @@ void MidiEventBase::assign(const EventBase& ev)
   // NOTE: Even non-shared clone events ALWAYS share edata. edata does NOT currently require 
   //        separate instances, unlike wave events which absolutely do.
   //       Be aware when iterating or modifying clones for example. (It can save time.)
-  if(edata.data != ev.data())
-    edata.setData(ev.data(), ev.dataLen()); // Makes a copy.
+  if(edata.constData() != ev.constData())
+    edata.setData(ev.constData(), ev.dataLen()); // Makes a copy.
 }
 
 bool MidiEventBase::isSimilarTo(const EventBase& other_) const
@@ -81,11 +81,11 @@ bool MidiEventBase::isSimilarTo(const EventBase& other_) const
 	if (other==NULL) // dynamic cast hsa failed: "other_" is not of type MidiEventBase.
 		return false;
 	
-	if ((a==other->a && b==other->b && c==other->c && edata.dataLen==other->edata.dataLen && this->PosLen::operator==(*other)) == false)
+	if ((a==other->a && b==other->b && c==other->c && edata.dataLen()==other->edata.dataLen() && this->PosLen::operator==(*other)) == false)
 		return false;
 	
-	if (edata.dataLen > 0)
-		return (memcmp(edata.data, other->edata.data, edata.dataLen) == 0);
+	if (edata.dataLen() > 0)
+		return (memcmp(edata.constData(), other->edata.constData(), edata.dataLen() ) == 0);
 	else
 		return true; // no data equals no data.
 }
@@ -166,15 +166,15 @@ void MidiEventBase::write(int level, Xml& xml, const Pos& offset, bool /*forcePa
       if (c)
             xml.nput(" c=\"%d\"", c);
 
-      if (edata.dataLen) {
-            xml.nput(" datalen=\"%d\">\n", edata.dataLen);
+      if (edata.dataLen() ) {
+            xml.nput(" datalen=\"%d\">\n", edata.dataLen() );
             xml.nput(level, "");
-            for (int i = 0; i < edata.dataLen; ++i) {
+            for (int i = 0; i < edata.dataLen(); ++i) {
                   if (i && ((i % 16) == 0)) {
                         xml.nput("\n");
                         xml.nput(level, "");
                         }
-                  xml.nput("%02x ", edata.data[i] & 0xff);
+                  xml.nput("%02x ", edata.constData()[i] & 0xff);
                   }
             xml.nput("\n");
             xml.tag(level, "/event");
@@ -210,9 +210,8 @@ void MidiEventBase::read(Xml& xml)
                         {
                         QByteArray ba    = tag.toLatin1();
                         const char*s     = ba.constData();
-                        edata.data       = new unsigned char[dataLen];
-                        edata.dataLen    = dataLen;
-                        unsigned char* d = edata.data;
+                        edata.resize(dataLen);
+                        unsigned char* d = edata.data();
                         for (int i = 0; i < dataLen; ++i) {
                               char* endp;
                               *d++ = strtol(s, &endp, 16);

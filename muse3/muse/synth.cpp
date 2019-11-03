@@ -517,7 +517,7 @@ void SynthI::recordEvent(MidiRecordEvent& event)
         //---------------------------------------------------
 
         if (typ == ME_SYSEX) {
-              const unsigned char* p = event.data();
+              const unsigned char* p = event.constData();
               int n = event.len();
               if (n >= 4) {
                     if ((p[0] == 0x7f)

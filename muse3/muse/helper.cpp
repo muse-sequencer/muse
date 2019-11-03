@@ -120,7 +120,7 @@ void dumpMPEvent(const MEvent* ev)
             fprintf(stderr, "NoteOff %s(0x%x) %d\n", s.toLatin1().constData(), ev->dataA(), ev->dataB());
            }
       else if (ev->type() == ME_SYSEX) {
-            fprintf(stderr, "SysEx len %d 0x%0x ...\n", ev->len(), ev->data()[0]);
+            fprintf(stderr, "SysEx len %d 0x%0x ...\n", ev->len(), ev->constData()[0]);
             }
       else
             fprintf(stderr, "type:0x%02x a=%d b=%d\n", ev->type(), ev->dataA(), ev->dataB());

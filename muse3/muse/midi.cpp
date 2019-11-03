@@ -493,12 +493,12 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
 
                   case ME_SYSEX:
                         e.setType(Sysex);
-                        e.setData(ev.data(), ev.len());
+                        e.setData(ev.constData(), ev.len());
                         break;
 
                   case ME_META:
                         {
-                        const unsigned char* data = ev.data();
+                        const unsigned char* data = ev.constData();
                         switch (ev.dataA()) {
                               case ME_META_TEXT_1_COMMENT:
                                     if (track->comment().isEmpty())
@@ -535,7 +535,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                               case ME_META_KEY_SIGNATURE:
                                     e.setType(Meta);
                                     e.setA(ev.dataA());
-                                    e.setData(ev.data(), ev.len());
+                                    e.setData(ev.constData(), ev.len());
                                     break;
                               // Instrument and device name metas are already handled by the midi importing code.
                               case ME_META_TEXT_4_INSTRUMENT_NAME:
@@ -569,7 +569,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                             ev.dataA(), ev.dataA(), track->name().toLatin1().constData());
                                     e.setType(Meta);
                                     e.setA(ev.dataA());
-                                    e.setData(ev.data(), ev.len());
+                                    e.setData(ev.constData(), ev.len());
                                     break;
                               }
                         }
@@ -1614,7 +1614,7 @@ void Audio::processMidi(unsigned int frames)
             {
               case ME_SYSEX:
               {
-                const unsigned char* p = ev.data();
+                const unsigned char* p = ev.constData();
                 int n = ev.len();
                 if(n >= 3)
                 {

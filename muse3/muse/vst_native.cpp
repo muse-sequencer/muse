@@ -2396,7 +2396,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
         fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_SYSEX\n");
         #endif
 
-        const unsigned char* data = e.data();
+        const unsigned char* data = e.constData();
         if(e.len() >= 2)
         {
           if(data[0] == MUSE_SYNTH_SYSEX_MFG_ID)

@@ -3,6 +3,7 @@
         Removed new track UUID. Found a way to work with track index and a local LUID instead.
       - New: Persistent synth tracks. One consequence of the above fix is that synth tracks
          are preserved if the synth is not found. All data is preserved if project is saved.
+      - Class EvData rewrite: Safer. Members protected. New methods such as resize().
 30.10.2019
       - Fix some memory leaks reported by heaptrack. Still others are puzzling... (Tim)
 29.10.2019

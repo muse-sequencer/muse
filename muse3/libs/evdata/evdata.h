@@ -36,59 +36,61 @@ class SysExInputProcessor;
 //---------------------------------------------------------
 
 class EvData {
-      int* refCount;
+  private:
+      int* _refCount;
+      unsigned char* _data;
+      int _dataLen;
 
-   public:
-      unsigned char* data;
-      int dataLen;
-
+  public:
       EvData()  {
-            data     = 0;
-            dataLen  = 0;
-            refCount = 0;
+            _data     = 0;
+            _dataLen  = 0;
+            _refCount = 0;
             }
       EvData(const EvData& ed) {
-            data     = ed.data;
-            dataLen  = ed.dataLen;
-            refCount = ed.refCount;
-            if(refCount)
+            _data     = ed._data;
+            _dataLen  = ed._dataLen;
+            _refCount = ed._refCount;
+            if( _refCount )
               
-            (*refCount)++;
+            (*_refCount )++;
             }
 
       EvData& operator=(const EvData& ed) {
-            if (data == ed.data)
+            if ( _data == ed._data )
                   return *this;
-            if (refCount && (--(*refCount) == 0)) 
+            if ( _refCount && (--(*_refCount ) == 0)) 
             {
-              delete refCount;
-              if(data)
-                delete[] data;
+              delete _refCount;
+              if( _data )
+                delete[] _data;
             }
             
-            data     = ed.data;
-            dataLen  = ed.dataLen;
-            refCount = ed.refCount;
-            if(refCount)
+            _data     = ed._data;
+            _dataLen  = ed._dataLen;
+            _refCount = ed._refCount;
+            if( _refCount )
               
-            (*refCount)++;
+            (*_refCount )++;
             return *this;
             }
 
       ~EvData() {
-            if (refCount && (--(*refCount) == 0)) {
-                  if(data)
+            if ( _refCount && (--(*_refCount ) == 0)) {
+                  if( _data )
                   {  
-                    delete[] data;
-                    data = 0;
+                    delete[] _data;
+                    _data = 0;
                   }  
-                  delete refCount;
-                  refCount = 0;
+                  delete _refCount;
+                  _refCount = 0;
                 }
             }
-      // Sets the data pointer.
-      // Takes ownership of the data and deletes it when required !
-      void setRawData(unsigned char* p, int l);
+      const unsigned char* constData() const { return _data; }
+      unsigned char* data() { return _data; }
+      int dataLen() const { return _dataLen; }
+      // Allocates enough space for n bytes. Does not fill.
+      void resize(int l);
       // Copies the data.
       void setData(const unsigned char* p, int l);
       // Copies the data.

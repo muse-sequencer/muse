@@ -537,10 +537,10 @@ bool FluidSynth::processEvent(const MusECore::MidiPlayEvent& ev)
                   if (FS_DEBUG_DATA) {
                         printf("*** FluidSynth::process - Sysex received\n");
                         for (int i=0; i< ev.len(); i++)
-                              printf("%x ", ev.data()[i]);
+                              printf("%x ", ev.constData()[i]);
                         printf("\n");
                         }
-                  return sysex(ev.len(), ev.data());
+                  return sysex(ev.len(), ev.constData());
             case MusECore::ME_PITCHBEND:
                 setController(ev.channel(), MusECore::CTRL_PITCH, ev.dataA(), false);
                 break;            

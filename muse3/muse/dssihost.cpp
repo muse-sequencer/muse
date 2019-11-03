@@ -1289,7 +1289,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         fprintf(stderr, "DssiSynthIF::processEvent midi event is ME_SYSEX\n");
         #endif
         
-        const unsigned char* data = e.data();
+        const unsigned char* data = e.constData();
         if(e.len() >= 2)
         {
           if(data[0] == MUSE_SYNTH_SYSEX_MFG_ID)
@@ -1385,7 +1385,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
           char buf[len + 2];
           
           buf[0] = 0xF0;
-          memcpy(buf + 1, e.data(), len);
+          memcpy(buf + 1, e.constData(), len);
           buf[len + 1] = 0xF7;
 
           snd_seq_ev_clear(event); 

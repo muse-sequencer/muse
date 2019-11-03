@@ -828,7 +828,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e, void* evBuffer)
                   printf("MidiJackDevice::queueEvent sysex\n");
                   #endif  
                   
-                  const unsigned char* data = e.data();
+                  const unsigned char* data = e.constData();
                   int len = e.len();
                   unsigned char* p = jack_midi_event_reserve(evBuffer, ft, len+2);
                   if (p == 0) {

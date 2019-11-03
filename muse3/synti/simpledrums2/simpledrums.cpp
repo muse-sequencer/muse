@@ -409,10 +409,10 @@ bool SimpleSynth::processEvent(const MusECore::MidiPlayEvent& ev)
          if (SS_DEBUG_MIDI) {
             printf("SimpleSynth::processEvent - Sysex received\n");
             for (int i=0; i< ev.len(); i++)
-               printf("%x ", ev.data()[i]);
+               printf("%x ", ev.constData()[i]);
             printf("\n");
          }
-         return sysex(ev.len(), ev.data());
+         return sysex(ev.len(), ev.constData());
    }
    return false;
    SS_TRACE_OUT
