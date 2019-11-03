@@ -893,9 +893,7 @@ void Strip::changeTrackName()
   dlg.setWindowTitle(tr("Name"));
   dlg.setLabelText(tr("Enter track name:"));
   dlg.setTextValue(oldname);
-  // FIXME: Can't seem to set a larger font. Seems to pick one used by strip.
-  //dlg.setStyleSheet("");
-  //dlg.setFont(MusEGlobal::config.fonts[0]);
+  dlg.setStyleSheet("font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt");
 
   const int res = dlg.exec();
   if(res == QDialog::Rejected)
