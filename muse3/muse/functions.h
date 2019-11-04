@@ -407,6 +407,10 @@ bool merge_parts(const std::set<const Part*>& parts);
 bool split_part(const Part* part, int tick);
 bool delete_selected_parts();
 
+PartList* getSelectedMidiParts();
+PartList* getSelectedWaveParts();
+PartList* getSelectedParts();
+
 // internal
 QMimeData* file_to_mimedata(FILE *datafile, QString mimeType);
 

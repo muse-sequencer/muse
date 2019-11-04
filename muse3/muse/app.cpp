@@ -601,6 +601,10 @@ MusE::MusE() : QMainWindow()
       followCtsAction = new QAction(tr("Follow Continuous"), this);
       followCtsAction->setCheckable(true);
 
+      rewindOnStopAction=new QAction(tr("Rewind on stop"), this);
+      rewindOnStopAction->setCheckable(true);
+      rewindOnStopAction->setChecked(MusEGlobal::config.useRewindOnStop);
+
       settingsMetronomeAction = new QAction(QIcon(*MusEGui::settings_metronomeIcon), tr("Metronome"), this);
       settingsMidiSyncAction = new QAction(QIcon(*MusEGui::settings_midisyncIcon), tr("Midi Sync"), this);
       settingsMidiIOAction = new QAction(QIcon(*MusEGui::settings_midifileexportIcon), tr("Midi File Import/Export"), this);
@@ -696,6 +700,7 @@ MusE::MusE() : QMainWindow()
       connect(dontFollowAction, SIGNAL(triggered()), followSignalMapper, SLOT(map()));
       connect(followPageAction, SIGNAL(triggered()), followSignalMapper, SLOT(map()));
       connect(followCtsAction, SIGNAL(triggered()), followSignalMapper, SLOT(map()));
+      connect(rewindOnStopAction, SIGNAL(toggled(bool)), SLOT(toggleRewindOnStop(bool)));
 
       followSignalMapper->setMapping(dontFollowAction, CMD_FOLLOW_NO);
       followSignalMapper->setMapping(followPageAction, CMD_FOLLOW_JUMP);
@@ -924,6 +929,7 @@ MusE::MusE() : QMainWindow()
       follow->addAction(dontFollowAction);
       follow->addAction(followPageAction);
       follow->addAction(followCtsAction);
+      menuSettings->addAction(rewindOnStopAction);
       menuSettings->addAction(settingsMetronomeAction);
       menuSettings->addSeparator();
       menuSettings->addAction(settingsMidiSyncAction);
@@ -1986,7 +1992,7 @@ void MusE::startEditor(MusECore::Track* t)
 
 MusECore::PartList* MusE::getMidiPartsToEdit()
       {
-      MusECore::PartList* pl = MusEGlobal::song->getSelectedMidiParts();
+      MusECore::PartList* pl = MusECore::getSelectedMidiParts();
       if (pl->empty()) {
             QMessageBox::critical(this, QString("MusE"), tr("Nothing to edit"));
             return 0;
@@ -2146,7 +2152,7 @@ void MusE::startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls)
 
 void MusE::startWaveEditor()
       {
-      MusECore::PartList* pl = MusEGlobal::song->getSelectedWaveParts();
+      MusECore::PartList* pl = MusECore::getSelectedWaveParts();
       if (pl->empty()) {
             QMessageBox::critical(this, QString("MusE"), tr("Nothing to edit"));
             return;
@@ -2379,10 +2385,10 @@ void MusE::kbAccel(int key)
             else if (!MusEGlobal::config.useOldStyleStopShortCut)
                   MusEGlobal::song->setPlay(true);
             else if (MusEGlobal::song->cpos() != MusEGlobal::song->lpos())
-                  MusEGlobal::song->setPos(0, MusEGlobal::song->lPos());
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, MusEGlobal::song->lPos());
             else {
                   MusECore::Pos p(0, true);
-                  MusEGlobal::song->setPos(0, p);
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, p);
                   }
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_STOP].key) {
@@ -2390,7 +2396,7 @@ void MusE::kbAccel(int key)
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_GOTO_START].key) {
             MusECore::Pos p(0, true);
-            MusEGlobal::song->setPos(0, p);
+            MusEGlobal::song->setPos(MusECore::Song::CPOS, p);
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_PLAY_SONG].key ) {
             MusEGlobal::song->setPlay(true);
@@ -2410,13 +2416,13 @@ void MusE::kbAccel(int key)
             if(spos < 0)
               spos = 0;
             MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_INC].key) {
             int spos = MusEGlobal::sigmap.raster2(MusEGlobal::song->cpos() + 1, MusEGlobal::song->arrangerRaster());    // Nudge by +1, then snap up with raster2.
             MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true); //CDW
+            MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true); //CDW
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_DEC_NOSNAP].key) {
@@ -2424,22 +2430,22 @@ void MusE::kbAccel(int key)
             if(spos < 0)
               spos = 0;
             MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_INC_NOSNAP].key) {
             MusECore::Pos p(MusEGlobal::song->cpos() + MusEGlobal::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster()), true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
             return;
             }
 
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_GOTO_LEFT].key) {
             if (!MusEGlobal::song->record())
-                  MusEGlobal::song->setPos(0, MusEGlobal::song->lPos());
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, MusEGlobal::song->lPos());
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_GOTO_RIGHT].key) {
             if (!MusEGlobal::song->record())
-                  MusEGlobal::song->setPos(0, MusEGlobal::song->rPos());
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, MusEGlobal::song->rPos());
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_TOGGLE_LOOP].key) {
             MusEGlobal::song->setLoop(!MusEGlobal::song->loop());
@@ -2815,7 +2821,7 @@ void MusE::bounceToTrack()
           }
       }
 
-      MusEGlobal::song->setPos(0,MusEGlobal::song->lPos(),0,true,true);
+      MusEGlobal::song->setPos(MusECore::Song::CPOS,MusEGlobal::song->lPos(),0,true,true);
       MusEGlobal::song->bounceOutput = out;
       MusEGlobal::song->bounceTrack = track;
       MusEGlobal::song->setRecord(true);
@@ -2880,7 +2886,7 @@ void MusE::bounceToFile(MusECore::AudioOutput* ao)
       if (sf == 0)
             return;
 
-      MusEGlobal::song->setPos(0,MusEGlobal::song->lPos(),0,true,true);
+      MusEGlobal::song->setPos(MusECore::Song::CPOS,MusEGlobal::song->lPos(),0,true,true);
       MusEGlobal::song->bounceOutput = ao;
       ao->setRecFile(sf);
       if(MusEGlobal::debugMsg)
@@ -3240,6 +3246,7 @@ void MusE::updateConfiguration()
 
       helpManualAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_HELP].key);
       fullscreenAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_FULLSCREEN].key);
+      rewindOnStopAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_TOGGLE_REWINDONSTOP].key);
 
       //arrangerView->updateMusEGui::Shortcuts(); //commented out by flo: is done via signal
       }
@@ -3366,7 +3373,7 @@ QWidget* MusE::bigtimeWindow()   { return bigtime; }
 //---------------------------------------------------------
 void MusE::execDeliveredScript(int id)
 {
-      MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, true).toLatin1().constData(), MusEGlobal::song->getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
+      MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, true).toLatin1().constData(), MusECore::getSelectedParts(), 0, false); // TODO: get quant from arranger
 }
 
 //---------------------------------------------------------
@@ -3374,7 +3381,7 @@ void MusE::execDeliveredScript(int id)
 //---------------------------------------------------------
 void MusE::execUserScript(int id)
 {
-      MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, false).toLatin1().constData(), MusEGlobal::song->getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
+      MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, false).toLatin1().constData(), MusECore::getSelectedParts(), 0, false); // TODO: get quant from arranger
 }
 
 //---------------------------------------------------------
@@ -3833,7 +3840,10 @@ void MusE::setFullscreen(bool val)
     showNormal();
 }
 
-
+void MusE::toggleRewindOnStop(bool onoff)
+{
+  MusEGlobal::config.useRewindOnStop = onoff;
+}
 
 list<QMdiSubWindow*> get_all_visible_subwins(QMdiArea* mdiarea)
 {

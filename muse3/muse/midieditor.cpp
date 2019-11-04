@@ -262,7 +262,7 @@ void MidiEditor::movePlayPointerToSelectedEvent()
     if (tickPos > -1)
     {
         MusECore::Pos p0(curCanvasPart()->tick() + tickPos, true);
-        MusEGlobal::song->setPos(0, p0);
+        MusEGlobal::song->setPos(MusECore::Song::CPOS, p0);
     }
 }
 

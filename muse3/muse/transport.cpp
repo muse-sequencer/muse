@@ -648,7 +648,7 @@ void Transport::setPos(int idx, unsigned v, bool)
 
 void Transport::cposChanged(int tick)
       {
-      MusEGlobal::song->setPos(0, tick);
+      MusEGlobal::song->setPos(MusECore::Song::CPOS, tick);
       }
 
 //---------------------------------------------------------
@@ -657,7 +657,7 @@ void Transport::cposChanged(int tick)
 
 void Transport::cposChanged(const MusECore::Pos& pos)
       {
-      MusEGlobal::song->setPos(0, pos.tick());
+      MusEGlobal::song->setPos(MusECore::Song::CPOS, pos.tick());
       }
 
 //---------------------------------------------------------
@@ -666,7 +666,7 @@ void Transport::cposChanged(const MusECore::Pos& pos)
 
 void Transport::lposChanged(const MusECore::Pos& pos)
       {
-      MusEGlobal::song->setPos(1, pos.tick());
+      MusEGlobal::song->setPos(MusECore::Song::LPOS, pos.tick());
       }
 
 //---------------------------------------------------------
@@ -675,7 +675,7 @@ void Transport::lposChanged(const MusECore::Pos& pos)
 
 void Transport::rposChanged(const MusECore::Pos& pos)
       {
-      MusEGlobal::song->setPos(2, pos.tick());
+      MusEGlobal::song->setPos(MusECore::Song::RPOS, pos.tick());
       }
 
 //---------------------------------------------------------

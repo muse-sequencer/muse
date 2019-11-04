@@ -166,7 +166,7 @@ class MusE : public QMainWindow
       QAction *settingsGlobalAction, *settingsShortcutsAction, *settingsMetronomeAction, *settingsMidiSyncAction;
       QAction *settingsMidiIOAction, *settingsAppearanceAction, *settingsMidiPortAction;
       QAction *dontFollowAction, *followPageAction, *followCtsAction;
-
+      QAction *rewindOnStopAction;
       // Help Menu Actions
       QAction *helpManualAction, *helpHomepageAction, *helpReportAction, *helpAboutAction, *helpDidYouKnow;
 
@@ -338,6 +338,7 @@ class MusE : public QMainWindow
       void arrangeSubWindowsColumns();
       void tileSubWindows();
       void setDirty();
+      void toggleRewindOnStop(bool);
 
    public slots:
       bool saveAs();

@@ -1229,21 +1229,27 @@ void Song::setMasterFlag(bool val)
 //---------------------------------------------------------
 
 void Song::setPlay(bool f)
-      {
+{
       if (MusEGlobal::extSyncFlag.value()) {
           if (MusEGlobal::debugMsg)
             fprintf(stderr, "not allowed while using external sync");
           return;
       }
+
       // only allow the user to set the button "on"
       if (!f)
             MusEGlobal::playAction->setChecked(true);
-      else
+      else {
+            // keep old transport position for rewinding
+            // position if "Rewind on Stop" option is enabled
+            _startPlayPosition = MusEGlobal::audio->pos();
+
             MusEGlobal::audio->msgPlay(true);
       }
+}
 
 void Song::setStop(bool f)
-      {
+{
       if (MusEGlobal::extSyncFlag.value()) {
           if (MusEGlobal::debugMsg)
             fprintf(stderr, "not allowed while using external sync");
@@ -1252,9 +1258,10 @@ void Song::setStop(bool f)
       // only allow the user to set the button "on"
       if (!f)
             MusEGlobal::stopAction->setChecked(true);
-      else
+      else {
             MusEGlobal::audio->msgPlay(false);
       }
+}
 
 void Song::setStopPlay(bool f)
       {
@@ -1278,7 +1285,7 @@ void Song::seekTo(int tick)
 {
   if (!MusEGlobal::audio->isPlaying()) {
     Pos p(tick, true);
-    setPos(0, p);
+    setPos(CPOS, p);
   }
 }
 //---------------------------------------------------------
@@ -1286,19 +1293,19 @@ void Song::seekTo(int tick)
 //   MusEGlobal::song->setPos(Song::CPOS, pos, true, true, true);
 //---------------------------------------------------------
 
-void Song::setPos(int idx, const Pos& val, bool sig,
+void Song::setPos(POSTYPE posType, const Pos& val, bool sig,
    bool isSeek, bool adjustScrollbar)
       {
       if (MusEGlobal::heavyDebugMsg)
       {
         fprintf(stderr, "setPos %d sig=%d,seek=%d,scroll=%d  ",
-           idx, sig, isSeek, adjustScrollbar);
+           posType, sig, isSeek, adjustScrollbar);
         val.dump(0);
         fprintf(stderr, "\n");
-        fprintf(stderr, "Song::setPos before MusEGlobal::audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
+        fprintf(stderr, "Song::setPos before MusEGlobal::audio->msgSeek posType:%d isSeek:%d frame:%d\n", posType, isSeek, val.frame());
       }
-      
-      if (idx == CPOS) {
+
+      if (posType == CPOS) {
             _vcpos = val;
             if (isSeek && !MusEGlobal::extSyncFlag.value()) {  
                   if (val == MusEGlobal::audio->pos())  
@@ -1309,17 +1316,17 @@ void Song::setPos(int idx, const Pos& val, bool sig,
                   }     
                   MusEGlobal::audio->msgSeek(val);
                   if (MusEGlobal::heavyDebugMsg) fprintf(stderr,
-                    "Song::setPos after MusEGlobal::audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
+                    "Song::setPos after MusEGlobal::audio->msgSeek posTYpe:%d isSeek:%d frame:%d\n", posType, isSeek, val.frame());
                   return;
                   }
             }
-      if (val == pos[idx])
+      if (val == pos[posType])
       {
            if (MusEGlobal::heavyDebugMsg) fprintf(stderr,
              "Song::setPos MusEGlobal::song->pos already == val tick:%d frame:%d\n", val.tick(), val.frame());   
            return;
       }     
-      pos[idx] = val;
+      pos[posType] = val;
       bool swap = pos[LPOS] > pos[RPOS];
       if (swap) {        // swap lpos/rpos if lpos > rpos
             Pos tmp   = pos[LPOS];
@@ -1330,14 +1337,14 @@ void Song::setPos(int idx, const Pos& val, bool sig,
             if (swap) {
                   emit posChanged(LPOS, pos[LPOS].tick(), adjustScrollbar);
                   emit posChanged(RPOS, pos[RPOS].tick(), adjustScrollbar);
-                  if (idx != LPOS && idx != RPOS)
-                        emit posChanged(idx, pos[idx].tick(), adjustScrollbar);
+                  if (posType != LPOS && posType != RPOS)
+                        emit posChanged(posType, pos[posType].tick(), adjustScrollbar);
                   }
             else
-                  emit posChanged(idx, pos[idx].tick(), adjustScrollbar);
+                  emit posChanged(posType, pos[posType].tick(), adjustScrollbar);
             }
 
-      if (idx == CPOS) {
+      if (posType == CPOS) {
             iMarker i1 = _markerList->begin();
             iMarker i2 = i1;
             bool currentChanged = false;
@@ -1504,86 +1511,6 @@ void Song::dumpMaster()
       MusEGlobal::sigmap.dump();
       }
 
-//---------------------------------------------------------
-//   getSelectedParts
-//---------------------------------------------------------
-
-PartList* Song::getSelectedMidiParts() const
-      {
-      PartList* parts = new PartList();
-
-      /*
-            If a part is selected, edit that. 
-            If a track is selected, edit the first 
-             part of the track, the rest are 
-             'ghost parts' 
-            When multiple parts are selected, then edit the first,
-              the rest are 'ghost parts'
-      */      
-      
-      
-       // collect marked parts
-      for (ciMidiTrack t = _midis.begin(); t != _midis.end(); ++t) {
-            PartList* pl = (*t)->parts();
-            for (iPart p = pl->begin(); p != pl->end(); ++p) {
-                  if (p->second->selected()) {
-                        parts->add(p->second);
-                        }
-                  }
-            }
-      // if no part is selected, then search for selected track
-      // and collect all parts of this track
-
-      if (parts->empty()) {
-            for (ciMidiTrack t = _midis.begin(); t != _midis.end(); ++t) {
-                  if ((*t)->selected()) {
-                        PartList* pl = (*t)->parts();
-                        for (iPart p = pl->begin(); p != pl->end(); ++p)
-                              parts->add(p->second);
-                        break;
-                        }
-                  }
-            }
-      return parts;
-      }
-
-PartList* Song::getSelectedWaveParts() const
-      {
-      PartList* parts = new PartList();
-
-      /*
-            If a part is selected, edit that. 
-            If a track is selected, edit the first 
-             part of the track, the rest are 
-             'ghost parts' 
-            When multiple parts are selected, then edit the first,
-              the rest are 'ghost parts'
-      */      
-
-      // collect selected parts
-      for (ciWaveTrack t = _waves.begin(); t != _waves.end(); ++t) {
-            PartList* pl = (*t)->parts();
-            for (ciPart p = pl->begin(); p != pl->end(); ++p) {
-                  if (p->second->selected()) {
-                        parts->add(p->second);
-                        }
-                  }
-            }
-      // if no parts are selected, then search the selected track
-      // and collect all parts in this track
-
-      if (parts->empty()) {
-            for (ciWaveTrack t = _waves.begin(); t != _waves.end(); ++t) {
-                  if ((*t)->selected()) {
-                        PartList* pl = (*t)->parts();
-                        for (ciPart p = pl->begin(); p != pl->end(); ++p)
-                              parts->add(p->second);
-                        break;
-                        }
-                  }
-            }
-      return parts;
-}
 
 void Song::normalizePart(MusECore::Part *part)
 {
@@ -1742,7 +1669,7 @@ void Song::beat()
       
       
       if (MusEGlobal::audio->isPlaying())
-        setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
+        setPos(CPOS, MusEGlobal::audio->tickPos(), true, false, true);
 
       // Process external tempo changes:
       while(!_tempoFifo.isEmpty())
@@ -1784,7 +1711,7 @@ void Song::beat()
                   else if (pitch == MusEGlobal::rcRecordNote)
                         setRecord(true);
                   else if (pitch == MusEGlobal::rcGotoLeftMarkNote)
-                        setPos(0, pos[LPOS].tick(), true, true, true);
+                        setPos(CPOS, pos[LPOS].tick(), true, true, true);
                   else if (pitch == MusEGlobal::rcPlayNote)
                         setPlay(true);
                   }
@@ -2301,7 +2228,7 @@ void Song::seqSignal(int fd)
                         //  to interfere with Jack's transport timeout countdown?
                         do_set_sync_timeout = true;
                         clearRecAutomation(true);
-                        setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
+                        setPos(CPOS, MusEGlobal::audio->tickPos(), true, false, true);
                         break;
                   case 'S':   // shutdown audio
                         MusEGlobal::muse->seqStop();
@@ -2348,11 +2275,6 @@ void Song::seqSignal(int fd)
                           MusEGlobal::audioDevice->setFreewheel(false);
                         
                         MusEGlobal::audio->msgPlay(false);
-#if 0 // DELETETHIS
-                        if (record())
-                              MusEGlobal::audio->recordStop();
-                        setStopPlay(false);
-#endif
                         break;
 
                   case 'C': // Graph changed
@@ -3185,6 +3107,10 @@ void Song::stopRolling(Undo* operations)
       
       processAutomationEvents(opsp);
       
+      if (MusEGlobal::config.useRewindOnStop) {
+        setPos(Song::CPOS, _startPlayPosition);
+      }
+
       if(!operations)
         MusEGlobal::song->applyOperationGroup(ops);
       }
@@ -4037,7 +3963,7 @@ void Song::restartRecording(bool discard)
   
   applyOperationGroup(operations);
   
-  MusEGlobal::song->setPos(Song::CPOS, MusEGlobal::audio->getStartRecordPos());
+  setPos(Song::CPOS, MusEGlobal::audio->getStartRecordPos());
   //MusEGlobal::audioDevice->startTransport();
 }
 

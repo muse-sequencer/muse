@@ -80,7 +80,7 @@ class Song : public QObject {
       Q_OBJECT
 
    public:
-      enum POS        { CPOS = 0, LPOS, RPOS };
+      enum POSTYPE    { CPOS = 0, LPOS, RPOS };
       enum FollowMode { NO, JUMP, CONTINUOUS };
       enum            { REC_OVERDUP, REC_REPLACE };
       enum            { CYCLE_NORMAL, CYCLE_MIX, CYCLE_REPLACE };
@@ -150,6 +150,7 @@ class Song : public QObject {
       bool soloFlag;
       int _recMode;
       int _cycleMode;
+      Pos _startPlayPosition;
       bool _click;
       bool _quantize;
       int _arrangerRaster;        // Used for audio rec new part snapping. Set by Arranger snap combo box.
@@ -253,7 +254,7 @@ class Song : public QObject {
       //   transport
       //-----------------------------------------
 
-      void setPos(int, const Pos&, bool sig = true, bool isSeek = true,
+      void setPos(POSTYPE posType, const Pos&, bool sig = true, bool isSeek = true,
          bool adjustScrollbar = false);
       const Pos& cPos() const       { return pos[0]; }
       const Pos& lPos() const       { return pos[1]; }
@@ -323,10 +324,6 @@ class Song : public QObject {
       void addPart(Part* part);
       void removePart(Part* part);
       void changePart(Part*, Part*);
-
-      
-      PartList* getSelectedMidiParts() const; // FIXME TODO move functionality into function.cpp
-      PartList* getSelectedWaveParts() const;
 
       int arrangerRaster() { return _arrangerRaster; }        // Used by Song::cmdAddRecordedWave to snap new wave parts
       void setArrangerRaster(int r) { _arrangerRaster = r; }  // Used by Arranger snap combo box

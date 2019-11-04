@@ -271,6 +271,7 @@ struct GlobalConfigValues {
 
       QString externalWavEditor;
       bool useOldStyleStopShortCut;
+      bool useRewindOnStop;
       bool moveArmedCheckBox;
       bool useDenormalBias;
       bool useOutputLimiter;

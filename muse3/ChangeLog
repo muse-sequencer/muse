@@ -1,3 +1,9 @@
+04.11.2019
+      - Implemented issue 644: Rewind on stop (rj)
+        Added setting directly on Settings-menu as I
+        think this might be a setting that is often changed
+        might even consider making a toolbar button.
+      - Some cleanups, especially the addition of using of an enum for CPOS,LPOS,RPOS
 25.03.2019
       - Fix issue 645 "Naming a track with acentuated letter". (Tim)
         Oops, regression from 07.01.2019: utf8 chars were corrupted.

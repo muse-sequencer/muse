@@ -558,7 +558,7 @@ void MarkerView::clicked(QTreeWidgetItem* i)
             return;
             }
       MusECore::Pos p(item->tick(), true);
-      MusEGlobal::song->setPos(0, p, true, true, false);
+      MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, false);
       }
 
 //---------------------------------------------------------
@@ -582,7 +582,7 @@ void MarkerView::tickChanged(const MusECore::Pos& pos)
       if (item) {
             item->setTick(pos.tick());
             MusECore::Pos p(pos.tick(), true);
-            MusEGlobal::song->setPos(0, p, true, true, false);
+            MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, false);
             table->sortByColumn(COL_TICK, Qt::AscendingOrder);
             }
       }
@@ -653,7 +653,7 @@ void MarkerView::nextMarker()
       if (nextPos == 0xFFFFFFFF)
           return;
       MusECore::Pos p(nextPos, true);
-      MusEGlobal::song->setPos(0, p, true, true, false);
+      MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, false);
         
       }
 void MarkerView::prevMarker()
@@ -667,7 +667,7 @@ void MarkerView::prevMarker()
             }
 
       MusECore::Pos p(nextPos, true);
-      MusEGlobal::song->setPos(0, p, true, true, false);
+      MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, false);
       }
 
 } // namespace MusEGui
