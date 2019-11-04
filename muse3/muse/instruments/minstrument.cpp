@@ -186,7 +186,7 @@ static void loadIDF(QFileInfo* fi)
             switch (token) {
                   case Xml::Error:
                   case Xml::End:
-                        return;
+                        goto loadIDF_end;
                   case Xml::TagStart:
                         if (skipmode && tag == "muse")
                               skipmode = false;
@@ -243,15 +243,15 @@ static void loadIDF(QFileInfo* fi)
                         break;
                   case Xml::TagEnd:
                         if (!skipmode && tag == "muse") {
-                              return;
+                              goto loadIDF_end;
                               }
                   default:
                         break;
                   }
             }
+
+loadIDF_end:
       fclose(f);
-
-
       }
 
 //---------------------------------------------------------
@@ -931,8 +931,6 @@ void MidiInstrument::readDrummaps(Xml& xml)
         break;
     }
   }
-  printf("ERROR: THIS CANNOT HAPPEN: exited infinite loop in MidiInstrument::readDrummaps()!\n"
-         "                           not returning anything. expect undefined behaviour or even crashes.\n");
 }
 
 void MidiInstrument::writeDrummaps(int level, Xml& xml) const
@@ -1770,8 +1768,7 @@ void patch_drummap_mapping_list_t::read(Xml& xml)
     {
       case Xml::Error:
       case Xml::End:
-        delete drummap;
-        return;
+        goto pdml_read_end;
 
       case Xml::TagStart:
         if (tag == "patch_collection")
@@ -1793,10 +1790,10 @@ void patch_drummap_mapping_list_t::read(Xml& xml)
         break;
     }
   }
-  printf("ERROR: THIS CANNOT HAPPEN: exited infinite loop in patch_drummap_mapping_list_t::read()!\n"
-         "                           not returning anything. expect undefined behaviour or even crashes.\n");
-  delete drummap;
-  return;
+
+pdml_read_end:
+  fprintf(stderr, "End or Error in patch_drummap_mapping_list_t::read()!\n");
+  delete [] drummap;
 }
 
 void patch_drummap_mapping_list_t::write(int level, Xml& xml) const

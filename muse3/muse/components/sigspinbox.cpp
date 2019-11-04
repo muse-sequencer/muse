@@ -101,7 +101,12 @@ QSize SigSpinBox::sizeHint() const
         QFontMetrics fm(font());
         const int fw = st->pixelMetric(QStyle::PM_SpinBoxFrameWidth);
         int h  = fm.height() + fw * 2;
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+        int w  = fw * 2 + b_rect.width() + fm.horizontalAdvance(QString("00"));
+#else
         int w  = fw * 2 + b_rect.width() + fm.width(QString("00"));
+#endif
         return QSize(w, h).expandedTo(QApplication::globalStrut());
       }
       return QSize(20, 20).expandedTo(QApplication::globalStrut());      

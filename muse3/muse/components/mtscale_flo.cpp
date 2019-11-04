@@ -74,7 +74,7 @@ void MTScaleFlo::configChanged()
 
 void MTScaleFlo::songChanged(MusECore::SongChangedStruct_t type)
       {
-      if (type._flags & (SC_SIG|SC_TEMPO))
+      if (type & (SC_SIG|SC_TEMPO))
             redraw();
       }
 

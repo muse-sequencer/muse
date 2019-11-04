@@ -71,6 +71,10 @@ class CtrlEdit : public QWidget {
    public:
       CtrlEdit(QWidget*, MidiEditor* e, int xmag,
          bool expand = false, const char* name = 0);
+      int ctrlNum() const;
+      bool perNoteVel() const;
+      void setPerNoteVel(bool);
+
       void readStatus(MusECore::Xml&);
       void writeStatus(int, MusECore::Xml&);
       void setController(const QString& name);

@@ -909,8 +909,8 @@ MidiInputTransformDialog::MidiInputTransformDialog(QDialog* parent, Qt::WindowFl
       connect(procVal1Op,   SIGNAL(activated(int)), SLOT(procVal1OpSel(int)));
       connect(procVal2Op,   SIGNAL(activated(int)), SLOT(procVal2OpSel(int)));
       connect(funcOp,       SIGNAL(activated(int)), SLOT(funcOpSel(int)));
-      connect(presetList,   SIGNAL(itemActivated(QListWidgetItem*)),
-         SLOT(presetChanged(QListWidgetItem*)));
+      connect(presetList,   SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
+         SLOT(presetChanged(QListWidgetItem*, QListWidgetItem*)));
       connect(nameEntry,    SIGNAL(textChanged(const QString&)),
          SLOT(nameChanged(const QString&)));
       connect(commentEntry,    SIGNAL(textChanged()), SLOT(commentChanged()));
@@ -951,8 +951,6 @@ MidiInputTransformDialog::MidiInputTransformDialog(QDialog* parent, Qt::WindowFl
       //---------------------------------------------------
 
       updatePresetList();
-      presetList->setCurrentItem(presetList->item(0));
-      presetChanged(presetList->item(0));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       }
 
@@ -964,8 +962,24 @@ void MidiInputTransformDialog::songChanged(MusECore::SongChangedStruct_t flags)
 {
   // Whenever a song is loaded, flags is -1. Since transforms are part of configuration, 
   //  use SC_CONFIG here, to filter unwanted song change events.
-  if(flags._flags & SC_CONFIG)
+  if(flags & SC_CONFIG)
     updatePresetList();
+}
+
+//---------------------------------------------------------
+//   createDefaultPreset
+//---------------------------------------------------------
+
+MusECore::MidiInputTransformation* MidiInputTransformDialog::createDefaultPreset()
+{
+  // create default "New" preset
+  MusECore::MidiInputTransformation* pre = new MusECore::MidiInputTransformation(tr("New"));
+  MusECore::mtlist.push_back(pre);
+  presetList->blockSignals(true);
+  presetList->addItem(tr("New"));
+  presetList->setCurrentRow(0);
+  presetList->blockSignals(false);
+  return pre;
 }
 
 //---------------------------------------------------------
@@ -975,21 +989,24 @@ void MidiInputTransformDialog::songChanged(MusECore::SongChangedStruct_t flags)
 void MidiInputTransformDialog::updatePresetList()
 {
       cmt = 0;
+      cindex = -1;
       presetList->clear();
       
       modul1select->setChecked(true);
       for (MusECore::iMidiInputTransformation i = MusECore::mtlist.begin(); i != MusECore::mtlist.end(); ++i) {
+            presetList->blockSignals(true);
             presetList->addItem((*i)->name);
+            presetList->blockSignals(false);
             if (cmt == 0)
                   cmt = *i;
             }
       if (cmt == 0) {
             // create default "New" preset
-            cmt = new MusECore::MidiInputTransformation(tr("New"));
-            MusECore::mtlist.push_back(cmt);
-            presetList->addItem(tr("New"));
-            presetList->setCurrentItem(0);
+            cmt = createDefaultPreset();
             }
+      // Force it! Don't rely on a signal.
+      presetChanged(presetList->item(0), 0);
+
       changeModul(0);
 
       modul1enable->setChecked(MusECore::modules[0].valid);
@@ -1262,11 +1279,14 @@ void MidiInputTransformDialog::presetNew()
                   break;
             }
       MusECore::MidiInputTransformation* mt = new MusECore::MidiInputTransformation(name);
-      QListWidgetItem* lbi      = new QListWidgetItem(name);
-      presetList->addItem(lbi);
       MusECore::mtlist.push_back(mt);
+      QListWidgetItem* lbi      = new QListWidgetItem(name);
+      presetList->blockSignals(true);
+      presetList->addItem(lbi);
       presetList->setCurrentItem(lbi);
-      presetChanged(lbi);
+      presetList->blockSignals(false);
+      // Force it! Don't rely on a signal.
+      presetChanged(lbi, 0);
       }
 
 //---------------------------------------------------------
@@ -1275,16 +1295,25 @@ void MidiInputTransformDialog::presetNew()
 
 void MidiInputTransformDialog::presetDelete()
       {
-      if (cindex != -1) {
-            MusECore::iMidiInputTransformation mt = MusECore::mtlist.begin();
-            for (int i = 0; i < cindex; ++i, ++mt) {
-                  MusECore::mtlist.erase(mt);
-                  presetList->setCurrentItem(presetList->item(cindex - 1));
-                  presetList->takeItem(cindex);
-                  presetChanged(presetList->item(cindex - 1));                  
-                  break;
-                  }
-            }
+      if (presetList->count() == 0 || cindex < 0)
+        return;
+      MusECore::iMidiInputTransformation mt = MusECore::mtlist.begin();
+      for (int i = 0; i < cindex && mt != MusECore::mtlist.end(); ++i, ++mt) { }
+      
+      if(mt == MusECore::mtlist.end())
+        return;
+      
+      MusECore::mtlist.erase(mt);
+      presetList->blockSignals(true);
+      QListWidgetItem* take_item = presetList->takeItem(cindex);
+      presetList->blockSignals(false);
+      if(take_item)
+        delete take_item;
+      // Make sure there's a default item.
+      if(presetList->count() == 0)
+        cmt = createDefaultPreset();
+      // Force it! Don't rely on a signal.
+      presetChanged(presetList->currentItem(), 0);
       }
 
 //---------------------------------------------------------
@@ -1293,16 +1322,12 @@ void MidiInputTransformDialog::presetDelete()
 
 void MidiInputTransformDialog::nameChanged(const QString& s)
       {
+      if(cindex < 0)
+        return;
       cmt->name = s;
       QListWidgetItem* item = presetList->item(cindex);
-      if (s != item->text()) {
-            disconnect(presetList,   SIGNAL(itemActivated(QListWidgetItem*)),
-               this, SLOT(presetChanged(QListWidgetItem*)));
-            presetList->insertItem(cindex, s);
-            presetList->takeItem(cindex+1);
-            presetList->setCurrentItem(presetList->item(cindex));
-            connect(presetList,   SIGNAL(itemActivated(QListWidgetItem*)),
-               SLOT(presetChanged(QListWidgetItem*)));
+      if (item && s != item->text()) {
+            item->setText(s);
             }
       }
 
@@ -1671,8 +1696,13 @@ void MidiInputTransformDialog::changeModul(int k)
 //   presetChanged
 //---------------------------------------------------------
 
-void MidiInputTransformDialog::presetChanged(QListWidgetItem* item)
+void MidiInputTransformDialog::presetChanged(QListWidgetItem* item, QListWidgetItem*)
       {
+      if(!item)
+      {
+        cindex = -1;
+        return;
+      }
       cindex = presetList->row(item);
 
       //---------------------------------------------------

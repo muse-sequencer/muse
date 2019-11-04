@@ -45,6 +45,7 @@ struct MessConfig {
   float _denormalBias;
   bool _leftMouseButtonCanDecrease;
   const char* _configPath;
+  const char* _cachePath;
   const char* _globalLibPath;
   const char* _globalSharePath;
   const char* _userPath;
@@ -58,6 +59,7 @@ struct MessConfig {
     _denormalBias = 0.0;
     _leftMouseButtonCanDecrease = false;
     _configPath = 0;
+    _cachePath = 0;
     _globalLibPath = 0;
     _globalSharePath = 0;
     _userPath = 0;
@@ -71,6 +73,7 @@ struct MessConfig {
              float denormalBias,
              bool leftMouseButtonCanDecrease,
              const char* configPath,
+             const char* cachePath,
              const char* globalLibPath,
              const char* globalSharePath,
              const char* userPath,
@@ -83,6 +86,7 @@ struct MessConfig {
     _denormalBias = denormalBias;
     _leftMouseButtonCanDecrease = leftMouseButtonCanDecrease;
     _configPath = configPath;
+    _cachePath = cachePath;
     _globalLibPath = globalLibPath;
     _globalSharePath = globalSharePath;
     _userPath = userPath;

@@ -31,7 +31,6 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QPoint>
-#include <QSignalMapper>
 #include <QString>
 #include <QTextStream>
 #include <QProcess>
@@ -81,9 +80,6 @@ MusECore::Song* song = 0;
 
 namespace MusECore {
 
-LockFreeMPSCRingBuffer<MidiPlayEvent> *Song::_ipcInEventBuffers = 
-  new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
-  
 extern void clearMidiTransforms();
 extern void clearMidiInputTransforms();
 
@@ -96,6 +92,9 @@ Song::Song(const char* name)
       {
       setObjectName(name);
 
+      _ipcInEventBuffers = new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
+      _ipcOutEventBuffers = new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
+  
       _fCpuLoad = 0.0;
       _fDspLoad = 0.0;
       _xRunsCount = 0;
@@ -124,6 +123,10 @@ Song::~Song()
       delete undoList;
       delete redoList;
       delete _markerList;
+      if(_ipcOutEventBuffers)
+        delete _ipcOutEventBuffers;
+      if(_ipcInEventBuffers)
+        delete _ipcInEventBuffers;
       }
 
 //---------------------------------------------------------
@@ -1216,11 +1219,9 @@ void Song::setQuantize(bool val)
 
 void Song::setMasterFlag(bool val)
     {
-      _masterFlag = val;
-      if (MusEGlobal::tempomap.setMasterFlag(cpos(), val))
-      {
-        emit songChanged(SC_MASTER);
-      }      
+      MusECore::PendingOperationList operations;
+      operations.add(MusECore::PendingOperationItem(&MusEGlobal::tempomap, val, MusECore::PendingOperationItem::SetUseMasterTrack));
+      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
     }
 
 //---------------------------------------------------------
@@ -1230,7 +1231,7 @@ void Song::setMasterFlag(bool val)
 
 void Song::setPlay(bool f)
 {
-      if (MusEGlobal::extSyncFlag.value()) {
+      if (MusEGlobal::extSyncFlag) {
           if (MusEGlobal::debugMsg)
             fprintf(stderr, "not allowed while using external sync");
           return;
@@ -1250,7 +1251,7 @@ void Song::setPlay(bool f)
 
 void Song::setStop(bool f)
 {
-      if (MusEGlobal::extSyncFlag.value()) {
+      if (MusEGlobal::extSyncFlag) {
           if (MusEGlobal::debugMsg)
             fprintf(stderr, "not allowed while using external sync");
           return;
@@ -1307,7 +1308,7 @@ void Song::setPos(POSTYPE posType, const Pos& val, bool sig,
 
       if (posType == CPOS) {
             _vcpos = val;
-            if (isSeek && !MusEGlobal::extSyncFlag.value()) {  
+            if (isSeek && !MusEGlobal::extSyncFlag) {  
                   if (val == MusEGlobal::audio->pos())  
                   {
                       if (MusEGlobal::heavyDebugMsg) fprintf(stderr,
@@ -1419,9 +1420,9 @@ void Song::update(MusECore::SongChangedStruct_t flags, bool allowRecursion)
       {
       static int level = 0;         // DEBUG
       if (level && !allowRecursion) {
-            fprintf(stderr, "THIS SHOULD NEVER HAPPEN: unallowed recursion in Song::update(%08lx), level %d!\n"
+            fprintf(stderr, "THIS SHOULD NEVER HAPPEN: unallowed recursion in Song::update(%08lx %08lx), level %d!\n"
                    "                          the songChanged() signal is NOT emitted. this will\n"
-                   "                          probably cause windows being not up-to-date.\n", (unsigned long)flags._flags, level);
+                   "                          probably cause windows being not up-to-date.\n", flags.flagsHi(), flags.flagsLo(), level);
             return;
             }
       ++level;
@@ -1524,7 +1525,7 @@ void Song::normalizePart(MusECore::Part *part)
       if(file.isNull())
         continue;
 
-      QString tmpWavFile = QString::null;
+      QString tmpWavFile;
       if (!MusEGlobal::getUniqueTmpfileName("tmp_musewav",".wav", tmpWavFile))
       {
          return;
@@ -1821,7 +1822,7 @@ void Song::setRecordFlag(Track* track, bool val, Undo* operations)
 
 void Song::endMsgCmd()
       {
-      if (updateFlags._flags) {
+      if (updateFlags) {
             redoList->clearDelete();
             
             // It is possible the undo list is empty after removal of an empty undo, 
@@ -2050,7 +2051,7 @@ void Song::clear(bool signal, bool clear_all)
         MusEGlobal::midiPorts[i].addDefaultControllers();
       }
 
-      _masterFlag    = true;
+      MusEGlobal::tempomap.setMasterFlag(0, true);
       loopFlag       = false;
       loopFlag       = false;
       punchinFlag    = false;
@@ -2258,14 +2259,15 @@ void Song::seqSignal(int fd)
                         }
 
                         break;
-                  case 'f':   // start freewheel
-                        if(MusEGlobal::debugMsg)
-                          fprintf(stderr, "Song: seqSignal: case f: setFreewheel start\n");
-                        
-                        if(MusEGlobal::config.freewheelMode)
-                          MusEGlobal::audioDevice->setFreewheel(true);
-                        
-                        break;
+// REMOVE Tim. latency. Removed. We now do this in MusE::bounceToFile() and MusE::bounceToTrack(), BEFORE the transport is started.
+//                   case 'f':   // start freewheel
+//                         if(MusEGlobal::debugMsg)
+//                           fprintf(stderr, "Song: seqSignal: case f: setFreewheel start\n");
+//                         
+//                         if(MusEGlobal::config.freewheelMode)
+//                           MusEGlobal::audioDevice->setFreewheel(true);
+//                         
+//                         break;
 
                   case 'F':   // stop freewheel
                         if(MusEGlobal::debugMsg)
@@ -2545,7 +2547,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
     case CLEAR_ALL_EVENTS:
           if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
               tr("Clear all controller events?"), tr("&Ok"), tr("&Cancel"),
-              QString::null, 0, 1 ) == 0)
+              QString(), 0, 1 ) == 0)
             MusEGlobal::audio->msgClearControllerEvents(track, acid);
     break;
 
@@ -2848,6 +2850,28 @@ bool Song::putIpcInEvent(const MidiPlayEvent& ev)
   return true;
 }
 
+//---------------------------------------------------------
+// putIpcOutEvent
+//  Put an event into the IPC event ring buffer for the audio thread to process.
+//  Called by gui thread only. Returns true on success.
+//---------------------------------------------------------
+
+bool Song::putIpcOutEvent(const MidiPlayEvent& ev)
+{
+  if(!_ipcOutEventBuffers->put(ev))
+  {
+    fprintf(stderr, "Error: Song::putIpcOutEvent: Buffer overflow\n");
+    return false;
+  }
+  return true;
+}
+
+//---------------------------------------------------------
+//   processIpcInEventBuffers
+//   Called by gui thread only.
+//   Returns true on success.
+//---------------------------------------------------------
+
 bool Song::processIpcInEventBuffers()
 {
   PendingOperationList operations;
@@ -2949,7 +2973,7 @@ bool Song::processIpcInEventBuffers()
       // Let's bypass the putHwCtrlEvent and save some time -
       //  put directly into the midi port's controller event buffers.
       // This will also prevent getting stuck in continuous loop.
-      if(!mp->eventBuffers()->put(buf_ev))
+      if(!_ipcOutEventBuffers->put(buf_ev))
       {
         fprintf(stderr, "Error: Song::processIpcInEventBuffers(): Midi port controller fifo overflow\n");
         continue;
@@ -2957,6 +2981,33 @@ bool Song::processIpcInEventBuffers()
     }
   }
 
+  return true;
+}
+
+//---------------------------------------------------------
+//   processIpcOutEventBuffers
+//   Called from audio thread only.
+//   Returns true on success.
+//---------------------------------------------------------
+
+bool Song::processIpcOutEventBuffers()
+{
+  // Receive hardware state events sent from various threads to this audio thread.
+  // Update hardware state so gui controls are updated.
+  // False = don't use the size snapshot, but update it.
+  const int sz = _ipcOutEventBuffers->getSize(false);
+  MidiPlayEvent ev;
+  for(int i = 0; i < sz; ++i)
+  {
+    if(!_ipcOutEventBuffers->get(ev))
+      continue;
+    const int port = ev.port();
+    if(port < 0 || port >= MusECore::MIDI_PORTS)
+      continue;
+    // Handle the event. Tell the gui NOT to create controllers as needed,
+    //  that should be done before it ever gets here.
+    MusEGlobal::midiPorts[port].handleGui2AudioEvent(ev, false);
+  }
   return true;
 }
 
@@ -3364,6 +3415,8 @@ void Song::insertTrack1(Track* track, int /*idx*/)
                   SynthI* s = (SynthI*)track;
                   Synth* sy = s->synth();
                   if (!s->isActivated()) {
+                        // Persistent storage: If the synth is not found allow the track to load.
+                        // It's OK if s is NULL. initInstance needs to do a few things.
                         s->initInstance(sy, s->name());
                         }
                   }
@@ -3666,7 +3719,7 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
       {
         if(QMessageBox::question(parent, QString("Process events"),
             tr("Do you want to process ALL or only selected events?"), tr("&Selected"), tr("&All"),
-            QString::null, 0, 1 ) == 1)
+            QString(), 0, 1 ) == 1)
         {
             onlyIfSelected = false;
         }
@@ -3815,7 +3868,7 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
 }
 
 
-void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
+void Song::populateScriptMenu(QMenu* menuPlugins, ScriptReceiver* receiver)
 {
       // List scripts
       QString distScripts = MusEGlobal::museGlobalShare + "/scripts";
@@ -3834,29 +3887,22 @@ void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
             userScriptNames = dir.entryList();
             }
 
-      QSignalMapper* distSignalMapper = new QSignalMapper(this);
-      QSignalMapper* userSignalMapper = new QSignalMapper(this);
-
       if (deliveredScriptNames.size() > 0 || userScriptNames.size() > 0) {
             int id = 0;
             if (deliveredScriptNames.size() > 0) {
                   for (QStringList::Iterator it = deliveredScriptNames.begin(); it != deliveredScriptNames.end(); it++, id++) {
                         QAction* act = menuPlugins->addAction(*it);
-                        connect(act, SIGNAL(triggered()), distSignalMapper, SLOT(map()));
-                        distSignalMapper->setMapping(act, id);
+                        connect(act, &QAction::triggered, [receiver, id]() { receiver->receiveExecDeliveredScript(id); } );
                         }
                   menuPlugins->addSeparator();
                   }
             if (userScriptNames.size() > 0) {
                   for (QStringList::Iterator it = userScriptNames.begin(); it != userScriptNames.end(); it++, id++) {
                         QAction* act = menuPlugins->addAction(*it);
-                        connect(act, SIGNAL(triggered()), userSignalMapper, SLOT(map()));
-                        userSignalMapper->setMapping(act, id);
+                        connect(act, &QAction::triggered, [receiver, id]() { receiver->receiveExecUserScript(id); } );
                         }
                   menuPlugins->addSeparator();
                   }
-            connect(distSignalMapper, SIGNAL(mapped(int)), receiver, SLOT(execDeliveredScript(int)));
-            connect(userSignalMapper, SIGNAL(mapped(int)), receiver, SLOT(execUserScript(int)));
             }
       return;
 }
@@ -3933,7 +3979,7 @@ void Song::restartRecording(bool discard)
 
         new_track_names.push_back(nTrk->name());
         
-        const unsigned int idx = _tracks.index(cTrk) + idx_cnt++;
+        const int idx = _tracks.index(cTrk) + idx_cnt++;
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx + 1, nTrk));
         operations.push_back(UndoOp(UndoOp::SetTrackMute, cTrk, true));
         operations.push_back(UndoOp(UndoOp::SetTrackRecord, cTrk, false));

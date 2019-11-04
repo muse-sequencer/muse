@@ -42,7 +42,7 @@ namespace MusECore {
        fprintf(stderr,"SimpleTimer::~SimpleTimer(this=%p) called\n",this);
     }
   
-  signed long SimpleTimer::initTimer(long int)
+  signed int SimpleTimer::initTimer(unsigned long)
     {
     if(TIMER_DEBUG)
       printf("SimpleTimer::initTimer(this=%p)\n",this);

@@ -207,6 +207,12 @@ void GlobalSettingsConfig::updateSettings()
 
       deviceAudioBackendComboBox->setCurrentIndex(MusEGlobal::config.deviceAudioBackend);
 
+      enableLatencyCorrectionButton->setChecked(MusEGlobal::config.enableLatencyCorrection);
+      latencyInBranchUntermButton->setChecked(MusEGlobal::config.correctUnterminatedInBranchLatency);
+      latencyOutBranchUntermButton->setChecked(MusEGlobal::config.correctUnterminatedOutBranchLatency);
+      latencyProjectCommonButton->setChecked(MusEGlobal::config.commonProjectLatency);
+      latencyMonitorAffectingButton->setChecked(MusEGlobal::config.monitoringAffectsLatency);
+
       projDirEntry->setText(MusEGlobal::config.projectBaseFolder);
 
       startSongEntry->setText(MusEGlobal::config.startSong == "" ? "<default>" : MusEGlobal::config.startSong);
@@ -342,6 +348,12 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.midiOptimizeControllers = optimizeControllersCB->isChecked();
       
       MusEGlobal::config.projectBaseFolder = projDirEntry->text();
+      
+      MusEGlobal::config.enableLatencyCorrection = enableLatencyCorrectionButton->isChecked();
+      MusEGlobal::config.correctUnterminatedInBranchLatency = latencyInBranchUntermButton->isChecked();
+      MusEGlobal::config.correctUnterminatedOutBranchLatency = latencyOutBranchUntermButton->isChecked();
+      MusEGlobal::config.commonProjectLatency = latencyProjectCommonButton->isChecked();
+      MusEGlobal::config.monitoringAffectsLatency = latencyMonitorAffectingButton->isChecked();
       
       MusEGlobal::config.startSong   = startSongEntry->text() == "<default>" ? "" : startSongEntry->text();
       MusEGlobal::config.startMode   = startSongGroup->checkedId();

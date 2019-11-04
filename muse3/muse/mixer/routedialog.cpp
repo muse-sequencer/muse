@@ -1747,8 +1747,10 @@ void ConnectionsView::drawConnectionLine(QPainter* pPainter,
   if(y1 > h1)
     pPainter->drawLine(x1, y1, x1 + 4, y1);
 
-  // How do we'll draw it? // TODO
-  if(1) 
+  // How do we'll draw it?
+// TODO Set up a user setting switch.
+//      The drawLine below works, just need to enable it.
+//   if(1) 
   {
     // Setup control points
     QPolygon spline(4);
@@ -1762,8 +1764,8 @@ void ConnectionsView::drawConnectionLine(QPainter* pPainter,
     path.cubicTo(spline.at(1), spline.at(2), spline.at(3));
     pPainter->strokePath(path, pPainter->pen());
   }
-  else 
-    pPainter->drawLine(x1 + 4, y1, x2 - 4, y2);
+//   else 
+//     pPainter->drawLine(x1 + 4, y1, x2 - 4, y2);
 
   // Invisible input ports don't get a connecting dot.
   if(y2 > h2)
@@ -4552,7 +4554,7 @@ void RouteDialog::filter(const RouteTreeItemList& srcFilterItems,
 
 void RouteDialog::songChanged(MusECore::SongChangedStruct_t v)
 {
-  if(v._flags & SC_PORT_ALIAS_PREFERENCE)
+  if(v & SC_PORT_ALIAS_PREFERENCE)
   {
     const int idx = routeAliasList->findData(QVariant::fromValue<int>(MusEGlobal::config.preferredRouteNameOrAlias));
     if(idx != -1 && idx != routeAliasList->currentIndex())
@@ -4563,7 +4565,7 @@ void RouteDialog::songChanged(MusECore::SongChangedStruct_t v)
     }
   }
   
-  if(v._flags & (SC_ROUTE | SC_CONFIG))
+  if(v & (SC_ROUTE | SC_CONFIG))
   {
     // Refill the lists of available external ports.
     tmpJackOutPorts = MusEGlobal::audioDevice->outputPorts();
@@ -4572,7 +4574,7 @@ void RouteDialog::songChanged(MusECore::SongChangedStruct_t v)
     tmpJackMidiInPorts = MusEGlobal::audioDevice->inputPorts(true);
   }
   
-  if(v._flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
+  if(v & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
           SC_ROUTE | SC_CONFIG | SC_CHANNELS | SC_PORT_ALIAS_PREFERENCE)) 
   {
     removeItems();                // Remove unused items.
@@ -5474,12 +5476,12 @@ void RouteDialog::selectRoutes(bool doNormalSelections)
 //               
 // //               const MusECore::RouteList* rl = track->inRoutes();
 // //               for (MusECore::ciRoute r = rl->begin(); r != rl->end(); ++r) {
-// //                     //MusECore::Route dst(track->name(), true, r->channel);
-// //                     QString src(r->name());
+// //                     //MusECore::Route dst(track->displayName(), true, r->channel);
+// //                     QString src(r->displayName());
 // //                     if(r->channel != -1)
 // //                       src += QString(":") + QString::number(r->channel);
-// //                     MusECore::Route dst(track->name(), true, r->channel, MusECore::Route::TRACK_ROUTE);
-// //                     item = new QTreeWidgetItem(routeList, QStringList() << src << dst.name());
+// //                     MusECore::Route dst(track->displayName(), true, r->channel, MusECore::Route::TRACK_ROUTE);
+// //                     item = new QTreeWidgetItem(routeList, QStringList() << src << dst.displayName());
 // //                     item->setData(ROUTE_SRC_COL, RouteDialog::RouteRole, QVariant::fromValue(*r));
 // //                     item->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(dst));
 // //                     }
@@ -5504,15 +5506,15 @@ void RouteDialog::selectRoutes(bool doNormalSelections)
 //     //         const MusECore::RouteList* rl = track->outRoutes();
 //     //         for (MusECore::ciRoute r = rl->begin(); r != rl->end(); ++r) 
 //     //         {
-//     //               QString srcName(track->name());
+//     //               QString srcName(track->displayName());
 //     //               if (track->type() == MusECore::Track::AUDIO_OUTPUT) {
 //     //                     MusECore::Route s(srcName, false, r->channel);
-//     //                     srcName = s.name();
+//     //                     srcName = s.displayName();
 //     //                     }
 //     //               if(r->channel != -1)
 //     //                 srcName += QString(":") + QString::number(r->channel);
-//     //               MusECore::Route src(track->name(), false, r->channel, MusECore::Route::TRACK_ROUTE);
-//     //               item = new QTreeWidgetItem(routeList, QStringList() << srcName << r->name());
+//     //               MusECore::Route src(track->displayName(), false, r->channel, MusECore::Route::TRACK_ROUTE);
+//     //               item = new QTreeWidgetItem(routeList, QStringList() << srcName << r->displayName());
 //     //               item->setData(ROUTE_SRC_COL, RouteDialog::RouteRole, QVariant::fromValue(src));
 //     //               item->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(*r));
 //     //         }
@@ -5652,7 +5654,7 @@ void RouteDialog::addItems()
         if(item)
         {
           // Update the text.
-          item->setText(ROUTE_NAME_COL, track->name());
+          item->setText(ROUTE_NAME_COL, track->displayName());
         }
         else
         {
@@ -5674,7 +5676,7 @@ void RouteDialog::addItems()
           }
           newDstList->blockSignals(true);
           //item = new QTreeWidgetItem(dstCatItem, QStringList() << track->name() << trackLabel );
-          item = new RouteTreeWidgetItem(dstCatItem, QStringList() << track->name(), RouteTreeWidgetItem::RouteItem, false, r);
+          item = new RouteTreeWidgetItem(dstCatItem, QStringList() << track->displayName(), RouteTreeWidgetItem::RouteItem, false, r);
           //item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(r));
           item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
           item->setTextAlignment(ROUTE_NAME_COL, align_flags);
@@ -5763,7 +5765,7 @@ void RouteDialog::addItems()
         MusECore::Route src;
         MusECore::Route dst;
         QString srcName;
-        QString dstName = track->name();
+        QString dstName = track->displayName();
         switch(r->type)
         {
           case MusECore::Route::JACK_ROUTE: 
@@ -5773,7 +5775,7 @@ void RouteDialog::addItems()
             //src = *r;
             //dst = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, track,       r->channel,       r->channels, -1, 0);
             dst = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, track,       r->channel,       1, -1, 0);
-            srcName = r->name(MusEGlobal::config.preferredRouteNameOrAlias);
+            srcName = r->displayName(MusEGlobal::config.preferredRouteNameOrAlias);
           break;  
           case MusECore::Route::MIDI_DEVICE_ROUTE: 
             continue;
@@ -5794,7 +5796,7 @@ void RouteDialog::addItems()
 //               else
                 src = MusECore::Route(r->midiPort);
               dst = MusECore::Route(track);
-              srcName = r->name();
+              srcName = r->displayName();
               break;
             }
             
@@ -5818,11 +5820,11 @@ void RouteDialog::addItems()
                 dst = MusECore::Route(track, r->channel);
 //                 dst = MusECore::Route(track, chbits);
                 //dst = MusECore::Route(track, i);
-                srcName = r->name();
+                srcName = r->displayName();
                 //if(src.channel != -1)
                 //  srcName += QString(" [") + QString::number(i + 1) + QString("]");
-//                 dstName = track->name() + QString(" [") + QString::number(i + 1) + QString("]");
-                dstName = track->name() + QString(" [") + QString::number(r->channel + 1) + QString("]");
+//                 dstName = track->displayName() + QString(" [") + QString::number(i + 1) + QString("]");
+                dstName = track->displayName() + QString(" [") + QString::number(r->channel + 1) + QString("]");
                 routesItem = findRoutesItem(src, dst);
                 if(routesItem)
                 {
@@ -5847,7 +5849,7 @@ void RouteDialog::addItems()
           case MusECore::Route::TRACK_ROUTE: 
             src = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, r->track, r->remoteChannel, r->channels, -1, 0);
             dst = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, track,    r->channel,       r->channels, -1, 0);
-            srcName = r->name();
+            srcName = r->displayName();
           break;  
         }
 
@@ -5858,7 +5860,7 @@ void RouteDialog::addItems()
   
 
 
-//         QString srcName(r->name());
+//         QString srcName(r->displayName());
 //         if(r->channel != -1)
 //           srcName += QString(":") + QString::number(r->channel);
 //         
@@ -5866,7 +5868,7 @@ void RouteDialog::addItems()
 //         MusECore::Route src(*r);
 //         if(src.type == MusECore::Route::JACK_ROUTE)
 //           src.channel = -1;
-//         //const MusECore::Route dst(track->name(), true, r->channel, MusECore::Route::TRACK_ROUTE);
+//         //const MusECore::Route dst(track->displayName(), true, r->channel, MusECore::Route::TRACK_ROUTE);
 //         const MusECore::Route dst(MusECore::Route::TRACK_ROUTE, -1, track, r->remoteChannel, r->channels, r->channel, 0);
 //         
 //         
@@ -5906,7 +5908,7 @@ void RouteDialog::addItems()
 //         if(item)
 //         {
 //           // Update the text.
-//           item->setText(ROUTE_NAME_COL, track->name());
+//           item->setText(ROUTE_NAME_COL, track->displayName());
 //         }
 //         else
 //         {
@@ -5918,7 +5920,7 @@ void RouteDialog::addItems()
 //             newDstList->blockSignals(false);
 //           }
 //           newDstList->blockSignals(true);
-//           item = new QTreeWidgetItem(dstCatItem, QStringList() << track->name() << trackLabel );
+//           item = new QTreeWidgetItem(dstCatItem, QStringList() << track->displayName() << trackLabel );
 //           item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(r));
 //           newDstList->blockSignals(false);
 //         }
@@ -5961,7 +5963,7 @@ void RouteDialog::addItems()
         if(item)
         {
           // Update the text.
-          item->setText(ROUTE_NAME_COL, track->name());
+          item->setText(ROUTE_NAME_COL, track->displayName());
         }
         else
         {
@@ -5983,7 +5985,7 @@ void RouteDialog::addItems()
           }
           newSrcList->blockSignals(true);
           //item = new QTreeWidgetItem(srcCatItem, QStringList() << track->name() << trackLabel );
-          item = new RouteTreeWidgetItem(srcCatItem, QStringList() << track->name(), RouteTreeWidgetItem::RouteItem, true, r);
+          item = new RouteTreeWidgetItem(srcCatItem, QStringList() << track->displayName(), RouteTreeWidgetItem::RouteItem, true, r);
           //item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(r));
           item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
           item->setTextAlignment(ROUTE_NAME_COL, align_flags);
@@ -6078,7 +6080,7 @@ void RouteDialog::addItems()
 //         if(item)
 //         {
 //           // Update the text.
-//           item->setText(ROUTE_NAME_COL, track->name());
+//           item->setText(ROUTE_NAME_COL, track->displayName());
 //         }
 //         else
 //         {
@@ -6090,7 +6092,7 @@ void RouteDialog::addItems()
 //             newSrcList->blockSignals(false);
 //           }
 //           newSrcList->blockSignals(true);
-//           item = new QTreeWidgetItem(srcCatItem, QStringList() << track->name() << trackLabel );
+//           item = new QTreeWidgetItem(srcCatItem, QStringList() << track->displayName() << trackLabel );
 //           item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(r));
 //           newSrcList->blockSignals(false);
 //         }
@@ -6125,7 +6127,7 @@ void RouteDialog::addItems()
         //      After: (src: TrackA, Channel -1, Remote Channel  2)  dst: JackAA channel  2 Remote Channel -1
         MusECore::Route src;
         MusECore::Route dst;
-        QString srcName = track->name();
+        QString srcName = track->displayName();
         QString dstName;
         switch(r->type)
         {
@@ -6136,7 +6138,7 @@ void RouteDialog::addItems()
             //dst = MusECore::Route(MusECore::Route::JACK_ROUTE,  -1, r->jackPort, r->remoteChannel, -1, -1, r->persistentJackPortName);
             dst = MusECore::Route(MusECore::Route::JACK_ROUTE,  -1, r->jackPort, -1, -1, -1, r->persistentJackPortName);
             //dst = *r;
-            dstName = r->name(MusEGlobal::config.preferredRouteNameOrAlias);
+            dstName = r->displayName(MusEGlobal::config.preferredRouteNameOrAlias);
           break;  
           case MusECore::Route::MIDI_DEVICE_ROUTE: 
             continue;  // TODO
@@ -6157,7 +6159,7 @@ void RouteDialog::addItems()
 //                 dst = MusECore::Route(md);
 //               else
                 dst = MusECore::Route(r->midiPort);
-              dstName = r->name();
+              dstName = r->displayName();
               break;
             }
             
@@ -6182,9 +6184,9 @@ void RouteDialog::addItems()
                   //dst = MusECore::Route(r->midiPort, chbits);
                   //dst = MusECore::Route(r->midiPort);
                   dst = MusECore::Route(r->midiPort, r->channel);
-//                 srcName = track->name() + QString(" [") + QString::number(i + 1) + QString("]");
-                srcName = track->name() + QString(" [") + QString::number(r->channel + 1) + QString("]");
-                dstName = r->name();
+//                 srcName = track->displayName() + QString(" [") + QString::number(i + 1) + QString("]");
+                srcName = track->displayName() + QString(" [") + QString::number(r->channel + 1) + QString("]");
+                dstName = r->displayName();
                 //if(dst.channel != -1)
                 //  dstName += QString(" [") + QString::number(i + 1) + QString("]");
                 routesItem = findRoutesItem(src, dst);
@@ -6211,7 +6213,7 @@ void RouteDialog::addItems()
           case MusECore::Route::TRACK_ROUTE: 
             src = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, track, r->channel, r->channels, -1, 0);
             dst = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, r->track, r->remoteChannel, r->channels, -1, 0);
-            dstName = r->name();
+            dstName = r->displayName();
           break;  
         }
 
@@ -6223,16 +6225,16 @@ void RouteDialog::addItems()
         
         
         
-        //QString srcName(track->name());
+        //QString srcName(track->displayName());
         //if(track->type() == MusECore::Track::AUDIO_OUTPUT) 
         //{
         //  const MusECore::Route s(srcName, false, r->channel);
-        //  srcName = s.name();
+        //  srcName = s.displayName();
         //}
         //if(src->channel != -1)
         //  srcName += QString(":") + QString::number(r->channel);
-        //const MusECore::Route src(track->name(), false, r->channel, MusECore::Route::TRACK_ROUTE);
-        //const MusECore::Route src(track->name(), false, r->channel, MusECore::Route::TRACK_ROUTE);
+        //const MusECore::Route src(track->displayName(), false, r->channel, MusECore::Route::TRACK_ROUTE);
+        //const MusECore::Route src(track->displayName(), false, r->channel, MusECore::Route::TRACK_ROUTE);
         //const MusECore::Route src(MusECore::Route::TRACK_ROUTE, -1, track, r->remoteChannel, r->channels, r->channel, 0);
 
         //MusECore::Route dst(*r);
@@ -6304,7 +6306,7 @@ void RouteDialog::addItems()
       non_route_found = true;
       const MusECore::Route src = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, mt, chan, -1, -1, NULL);
       const MusECore::Route dst(i, chan);
-      const QString srcName = mt->name() + QString(" [") + QString::number(chan) + QString("]");
+      const QString srcName = mt->displayName() + QString(" [") + QString::number(chan) + QString("]");
       const QString dstName = mdname;
       routesItem = findRoutesItem(src, dst);
       if(routesItem)
@@ -6411,7 +6413,7 @@ void RouteDialog::addItems()
 //           continue;
 //         const MusECore::Route src = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, mt, chan, -1, -1, NULL);
 //         const MusECore::Route dst(i, chan);
-//         const QString srcName = mt->name() + QString(" [") + QString::number(chan) + QString("]");
+//         const QString srcName = mt->displayName() + QString(" [") + QString::number(chan) + QString("]");
 //         const QString dstName = mdname;
 //         routesItem = findRoutesItem(src, dst);
 //         if(routesItem)
@@ -6445,7 +6447,7 @@ void RouteDialog::addItems()
             
 //             const MusECore::Route src = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, r->track, r->channel, r->channels, r->remoteChannel, NULL);
             const MusECore::Route& src = *r;
-            QString srcName = r->name();
+            QString srcName = r->displayName();
             QString dstName = mdname;
             //const MusECore::Route dst(i, -1);
             const MusECore::Route dst(i, src.channel);
@@ -6504,7 +6506,7 @@ void RouteDialog::addItems()
 //           newDstList->blockSignals(false);
 //         }
 //         newDstList->blockSignals(true);
-//         item = new QTreeWidgetItem(dstCatItem, QStringList() << track->name() << QString("Track") );
+//         item = new QTreeWidgetItem(dstCatItem, QStringList() << track->displayName() << QString("Track") );
 //         item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(r));
 //         newDstList->blockSignals(false);
 //       }
@@ -6600,7 +6602,7 @@ void RouteDialog::addItems()
 //           newSrcList->blockSignals(false);
 //         }
 //         newSrcList->blockSignals(true);
-//         item = new QTreeWidgetItem(srcCatItem, QStringList() << track->name() << QString("Track") );
+//         item = new QTreeWidgetItem(srcCatItem, QStringList() << track->displayName() << QString("Track") );
 //         item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(r));
 //         newSrcList->blockSignals(false);
 //       }
@@ -6646,7 +6648,7 @@ void RouteDialog::addItems()
             
             //const MusECore::Route dst = MusECore::Route(MusECore::Route::JACK_ROUTE,  -1, r->jackPort, -1, -1, -1, r->persistentJackPortName);
             const MusECore::Route& dst = *r;
-            QString dstName = r->name();
+            QString dstName = r->displayName();
             QString srcName = mdname;
             //const MusECore::Route src(i, -1);
             const MusECore::Route src(i, dst.channel);
@@ -6699,16 +6701,16 @@ void RouteDialog::addItems()
         
         
         
-        //QString srcName(track->name());
+        //QString srcName(track->displayName());
         //if(track->type() == MusECore::Track::AUDIO_OUTPUT) 
         //{
         //  const MusECore::Route s(srcName, false, r->channel);
-        //  srcName = s.name();
+        //  srcName = s.displayName();
         //}
         //if(src->channel != -1)
         //  srcName += QString(":") + QString::number(r->channel);
-        //const MusECore::Route src(track->name(), false, r->channel, MusECore::Route::TRACK_ROUTE);
-        //const MusECore::Route src(track->name(), false, r->channel, MusECore::Route::TRACK_ROUTE);
+        //const MusECore::Route src(track->displayName(), false, r->channel, MusECore::Route::TRACK_ROUTE);
+        //const MusECore::Route src(track->displayName(), false, r->channel, MusECore::Route::TRACK_ROUTE);
         //const MusECore::Route src(MusECore::Route::TRACK_ROUTE, -1, track, r->remoteChannel, r->channels, r->channel, 0);
 
         //MusECore::Route dst(*r);
@@ -6841,7 +6843,7 @@ void RouteDialog::addItems()
             //dst = MusECore::Route(MusECore::Route::MIDI_DEVICE_ROUTE, -1, md,       r->channel,       1, -1, 0);
             //dst = MusECore::Route(md, r->channel);
             //dst = MusECore::Route(md, -1);
-            QString srcName = r->name(MusEGlobal::config.preferredRouteNameOrAlias);
+            QString srcName = r->displayName(MusEGlobal::config.preferredRouteNameOrAlias);
             QString dstName = mdname;
             const MusECore::Route dst(md, -1);
 
@@ -6920,7 +6922,7 @@ void RouteDialog::addItems()
   
 
 
-//         QString srcName(r->name());
+//         QString srcName(r->displayName());
 //         if(r->channel != -1)
 //           srcName += QString(":") + QString::number(r->channel);
 //         
@@ -6928,7 +6930,7 @@ void RouteDialog::addItems()
 //         MusECore::Route src(*r);
 //         if(src.type == MusECore::Route::JACK_ROUTE)
 //           src.channel = -1;
-//         //const MusECore::Route dst(track->name(), true, r->channel, MusECore::Route::TRACK_ROUTE);
+//         //const MusECore::Route dst(track->displayName(), true, r->channel, MusECore::Route::TRACK_ROUTE);
 //         const MusECore::Route dst(MusECore::Route::TRACK_ROUTE, -1, track, r->remoteChannel, r->channels, r->channel, 0);
 //         
 //         
@@ -6970,7 +6972,7 @@ void RouteDialog::addItems()
 //           newDstList->blockSignals(false);
 //         }
 //         newDstList->blockSignals(true);
-//         item = new QTreeWidgetItem(dstCatItem, QStringList() << track->name() << QString("Track") );
+//         item = new QTreeWidgetItem(dstCatItem, QStringList() << track->displayName() << QString("Track") );
 //         item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(r));
 //         newDstList->blockSignals(false);
 //       }
@@ -7061,7 +7063,7 @@ void RouteDialog::addItems()
 //           newSrcList->blockSignals(false);
 //         }
 //         newSrcList->blockSignals(true);
-//         item = new QTreeWidgetItem(srcCatItem, QStringList() << track->name() << QString("Track") );
+//         item = new QTreeWidgetItem(srcCatItem, QStringList() << track->displayName() << QString("Track") );
 //         item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(r));
 //         newSrcList->blockSignals(false);
 //       }
@@ -7110,7 +7112,7 @@ void RouteDialog::addItems()
             //dst = MusECore::Route(MusECore::Route::JACK_ROUTE,  -1, r->jackPort, r->remoteChannel, -1, -1, r->persistentJackPortName);
             const MusECore::Route dst = MusECore::Route(MusECore::Route::JACK_ROUTE,  -1, r->jackPort, -1, -1, -1, r->persistentJackPortName);
             //dst = *r;
-            QString dstName = r->name(MusEGlobal::config.preferredRouteNameOrAlias);
+            QString dstName = r->displayName(MusEGlobal::config.preferredRouteNameOrAlias);
             QString srcName = mdname;
             const MusECore::Route src(md, -1);
 
@@ -7190,16 +7192,16 @@ void RouteDialog::addItems()
         
         
         
-        //QString srcName(track->name());
+        //QString srcName(track->displayName());
         //if(track->type() == MusECore::Track::AUDIO_OUTPUT) 
         //{
         //  const MusECore::Route s(srcName, false, r->channel);
-        //  srcName = s.name();
+        //  srcName = s.displayName();
         //}
         //if(src->channel != -1)
         //  srcName += QString(":") + QString::number(r->channel);
-        //const MusECore::Route src(track->name(), false, r->channel, MusECore::Route::TRACK_ROUTE);
-        //const MusECore::Route src(track->name(), false, r->channel, MusECore::Route::TRACK_ROUTE);
+        //const MusECore::Route src(track->displayName(), false, r->channel, MusECore::Route::TRACK_ROUTE);
+        //const MusECore::Route src(track->displayName(), false, r->channel, MusECore::Route::TRACK_ROUTE);
         //const MusECore::Route src(MusECore::Route::TRACK_ROUTE, -1, track, r->remoteChannel, r->channels, r->channel, 0);
 
         //MusECore::Route dst(*r);
@@ -7243,7 +7245,7 @@ void RouteDialog::addItems()
       if(item)
       {
         // Update the text.
-        item->setText(ROUTE_NAME_COL, in_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
+        item->setText(ROUTE_NAME_COL, in_r.displayName(MusEGlobal::config.preferredRouteNameOrAlias));
       }
       else
       {
@@ -7265,9 +7267,9 @@ void RouteDialog::addItems()
           newSrcList->blockSignals(false);
         }
         newSrcList->blockSignals(true);
-        //item = new QTreeWidgetItem(srcCatItem, QStringList() << in_r.name() << jackLabel );
+        //item = new QTreeWidgetItem(srcCatItem, QStringList() << in_r.displayName() << jackLabel );
         item = new RouteTreeWidgetItem(srcCatItem, 
-                                       QStringList() << in_r.name(MusEGlobal::config.preferredRouteNameOrAlias), 
+                                       QStringList() << in_r.displayName(MusEGlobal::config.preferredRouteNameOrAlias), 
                                        RouteTreeWidgetItem::RouteItem, 
                                        true, 
                                        in_r);
@@ -7287,7 +7289,7 @@ void RouteDialog::addItems()
       if(item)
       {
         // Update the text.
-        item->setText(ROUTE_NAME_COL, out_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
+        item->setText(ROUTE_NAME_COL, out_r.displayName(MusEGlobal::config.preferredRouteNameOrAlias));
       }
       else
       {
@@ -7309,9 +7311,9 @@ void RouteDialog::addItems()
           newDstList->blockSignals(false);
         }
         newDstList->blockSignals(true);
-        //item = new QTreeWidgetItem(dstCatItem, QStringList() << out_r.name() << jackLabel );
+        //item = new QTreeWidgetItem(dstCatItem, QStringList() << out_r.displayName() << jackLabel );
         item = new RouteTreeWidgetItem(dstCatItem, 
-                                       QStringList() << out_r.name(MusEGlobal::config.preferredRouteNameOrAlias), 
+                                       QStringList() << out_r.displayName(MusEGlobal::config.preferredRouteNameOrAlias), 
                                        RouteTreeWidgetItem::RouteItem, 
                                        false, 
                                        out_r);
@@ -7331,14 +7333,15 @@ void RouteDialog::addItems()
           if(routesItem)
           {
             // Update the text.
-            routesItem->setText(ROUTE_SRC_COL, in_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
-            routesItem->setText(ROUTE_DST_COL, out_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
+            routesItem->setText(ROUTE_SRC_COL, in_r.displayName(MusEGlobal::config.preferredRouteNameOrAlias));
+            routesItem->setText(ROUTE_DST_COL, out_r.displayName(MusEGlobal::config.preferredRouteNameOrAlias));
           }
           else
           {
             routeList->blockSignals(true);
             routesItem = new QTreeWidgetItem(routeList, 
-              QStringList() << in_r.name(MusEGlobal::config.preferredRouteNameOrAlias) << out_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
+            QStringList() << in_r.displayName(MusEGlobal::config.preferredRouteNameOrAlias) <<
+                             out_r.displayName(MusEGlobal::config.preferredRouteNameOrAlias));
             routesItem->setTextAlignment(ROUTE_SRC_COL, align_flags);
             routesItem->setTextAlignment(ROUTE_DST_COL, align_flags);
             routesItem->setData(ROUTE_SRC_COL, RouteDialog::RouteRole, QVariant::fromValue(in_r));
@@ -7364,7 +7367,7 @@ void RouteDialog::addItems()
       if(item)
       {
         // Update the text.
-        item->setText(ROUTE_NAME_COL, in_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
+        item->setText(ROUTE_NAME_COL, in_r.displayName(MusEGlobal::config.preferredRouteNameOrAlias));
       }
       else
       {
@@ -7386,9 +7389,9 @@ void RouteDialog::addItems()
           newSrcList->blockSignals(false);
         }
         newSrcList->blockSignals(true);
-        //item = new QTreeWidgetItem(srcCatItem, QStringList() << in_r.name() << jackMidiLabel );
+        //item = new QTreeWidgetItem(srcCatItem, QStringList() << in_r.displayName() << jackMidiLabel );
         item = new RouteTreeWidgetItem(srcCatItem, 
-                                       QStringList() << in_r.name(MusEGlobal::config.preferredRouteNameOrAlias), 
+                                       QStringList() << in_r.displayName(MusEGlobal::config.preferredRouteNameOrAlias), 
                                        RouteTreeWidgetItem::RouteItem, 
                                        true, 
                                        in_r);
@@ -7408,7 +7411,7 @@ void RouteDialog::addItems()
       if(item)
       {
         // Update the text.
-        item->setText(ROUTE_NAME_COL, out_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
+        item->setText(ROUTE_NAME_COL, out_r.displayName(MusEGlobal::config.preferredRouteNameOrAlias));
       }
       else
       {
@@ -7430,9 +7433,9 @@ void RouteDialog::addItems()
           newDstList->blockSignals(false);
         }
         newDstList->blockSignals(true);
-        //item = new QTreeWidgetItem(dstCatItem, QStringList() << out_r.name() << jackMidiLabel );
+        //item = new QTreeWidgetItem(dstCatItem, QStringList() << out_r.displayName() << jackMidiLabel );
         item = new RouteTreeWidgetItem(dstCatItem, 
-                                       QStringList() << out_r.name(MusEGlobal::config.preferredRouteNameOrAlias), 
+                                       QStringList() << out_r.displayName(MusEGlobal::config.preferredRouteNameOrAlias), 
                                        RouteTreeWidgetItem::RouteItem, 
                                        false, 
                                        out_r);
@@ -7452,14 +7455,15 @@ void RouteDialog::addItems()
           if(routesItem)
           {
             // Update the text.
-            routesItem->setText(ROUTE_SRC_COL, in_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
-            routesItem->setText(ROUTE_DST_COL, out_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
+            routesItem->setText(ROUTE_SRC_COL, in_r.displayName(MusEGlobal::config.preferredRouteNameOrAlias));
+            routesItem->setText(ROUTE_DST_COL, out_r.displayName(MusEGlobal::config.preferredRouteNameOrAlias));
           }
           else
           {
             routeList->blockSignals(true);
             routesItem = new QTreeWidgetItem(routeList, 
-              QStringList() << in_r.name(MusEGlobal::config.preferredRouteNameOrAlias) << out_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
+              QStringList() << in_r.displayName(MusEGlobal::config.preferredRouteNameOrAlias) <<
+                               out_r.displayName(MusEGlobal::config.preferredRouteNameOrAlias));
             routesItem->setTextAlignment(ROUTE_SRC_COL, align_flags);
             routesItem->setTextAlignment(ROUTE_DST_COL, align_flags);
             routesItem->setData(ROUTE_SRC_COL, RouteDialog::RouteRole, QVariant::fromValue(in_r));

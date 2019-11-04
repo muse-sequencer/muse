@@ -72,9 +72,19 @@ QSize PosLabel::sizeHint() const
       int h  = fm.height() + fw * 2;
       int w;
       if (_smpte)
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+            w  = 2 + fm.horizontalAdvance('9') * 9 + fm.horizontalAdvance(':') * 3 + fw * 4;
+#else
             w  = 2 + fm.width('9') * 9 + fm.width(':') * 3 + fw * 4;
+#endif
       else
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+            w  = 2 + fm.horizontalAdvance('9') * 9 + fm.horizontalAdvance('.') * 2 + fw * 4;
+#else
             w  = 2 + fm.width('9') * 9 + fm.width('.') * 2 + fw * 4;
+#endif
       return QSize(w, h).expandedTo(QApplication::globalStrut());
       }
 

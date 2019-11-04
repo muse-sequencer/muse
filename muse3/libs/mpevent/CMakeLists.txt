@@ -44,8 +44,7 @@ add_library ( mpevent_module SHARED
 ##
 
 set_target_properties( mpevent_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_mpevent_module
+      PROPERTIES OUTPUT_NAME muse_mpevent_module
       )
 
 ##

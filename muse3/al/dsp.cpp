@@ -153,6 +153,19 @@ void exitDsp()
   dsp = 0;  
 }
 
+void Dsp::clear(float* dst, unsigned n, bool addDenormal)
+{
+  if(addDenormal)
+  {
+    for(unsigned i = 0; i < n; ++i)
+      dst[i] = denormalBias;
+  }
+  else
+  {
+    memset(dst, 0, n * sizeof(float));
+  }
+}
+
 void Dsp::cpy(float* dst, float* src, unsigned n, bool addDenormal)
 {
 // FIXME: Changed by T356. Not defined. Where are these???

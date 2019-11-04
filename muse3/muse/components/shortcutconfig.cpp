@@ -54,7 +54,7 @@ ShortcutConfig::ShortcutConfig(QWidget* parent)
    : QDialog(parent)
    {
    setupUi(this);
-   QSettings settings("MusE", "MusE-qt");
+   QSettings settings;
    restoreGeometry(settings.value("ShortcutConfig/geometry").toByteArray());
 
    connect(cgListView, SIGNAL(itemClicked(QTreeWidgetItem*, int )), this, SLOT(categorySelChanged(QTreeWidgetItem*, int)));
@@ -175,7 +175,7 @@ void ShortcutConfig::reject()
 
 void ShortcutConfig::closing()
 {
-      QSettings settings("MusE", "MusE-qt");
+      QSettings settings;
       settings.setValue("ShortcutConfig/geometry", saveGeometry());
       if(_config_changed)
       {

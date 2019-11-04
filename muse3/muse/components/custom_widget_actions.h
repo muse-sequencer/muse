@@ -48,23 +48,6 @@ namespace MusEGui {
 class PixmapButton;  
 
 //---------------------------------------------------------
-//   PixmapButtonsHeaderWidgetAction
-//---------------------------------------------------------
-
-class PixmapButtonsHeaderWidgetAction : public QWidgetAction { 
-      Q_OBJECT
-   private:
-      
-      QPixmap* _refPixmap;
-      QString _text;
-      int _channels;
-      
-   public:
-      PixmapButtonsHeaderWidgetAction (const QString& text, QPixmap* ref_pixmap, int channels, QWidget* parent = 0);
-      QWidget* createWidget(QWidget* parent);
-      };
-      
-//---------------------------------------------------------
 //   PixmapButtonsWidgetAction
 //---------------------------------------------------------
 

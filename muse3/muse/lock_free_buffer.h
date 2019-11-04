@@ -25,7 +25,7 @@
 #ifndef __LOCK_FREE_BUFFER_H__
 #define __LOCK_FREE_BUFFER_H__
 
-#include <map>
+//#include <map>
 #include <atomic>
 
 namespace MusECore {
@@ -650,7 +650,7 @@ class LockFreeMPSCRingBuffer
       void setCapacity(unsigned int capacity = 2)
       {
         if(_fifo)
-          delete _fifo;
+          delete[] _fifo;
         _fifo = 0;
         _capacity = roundCapacity(capacity);
         _capacityMask = _capacity - 1;

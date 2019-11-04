@@ -33,7 +33,6 @@ namespace MusECore {
 //---------------------------------------------------------
 
 class AudioPrefetch : public Thread {
-      unsigned writePos;
       unsigned seekPos; // remember last seek to optimize seeks
 
       virtual void processMsg1(const void*);

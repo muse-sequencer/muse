@@ -264,7 +264,12 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       setHeaderWhatsThis();
 
       QFontMetrics fm(initEventList->font());
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      int n = fm.horizontalAdvance('9');
+#else
       int n = fm.width('9');
+#endif
       int b = 24;
       initEventList->setAllColumnsShowFocus(true);
       initEventList->setSelectionMode(QAbstractItemView::SingleSelection);

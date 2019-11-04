@@ -44,6 +44,7 @@
 #else
 #include "driver/alsatimer.h"
 #include "driver/rtctimer.h"
+#include "driver/posixtimer.h"
 #endif
 #include "midi.h"
 #include "midiseq.h"
@@ -217,28 +218,46 @@ MidiSeq::~MidiSeq()
 
 signed int MidiSeq::selectTimer()
     {
-    int tmrFd;
-
-    printf("Trying RTC timer...\n");
 #ifdef _WIN32
+    fprintf(stderr, "Trying Qt timer...\n");
     timer = new QtTimer();
-#else
-    timer = new RtcTimer();
-#endif
-    tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
-    if (tmrFd != -1) { // ok!
-        printf("got timer = %d\n", tmrFd);
-        return tmrFd;
+    int qt_tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
+    if (qt_tmrFd != -1) { // ok!
+        fprintf(stderr, "got timer = %d\n", qt_tmrFd);
+        return qt_tmrFd;
     }
     delete timer;
-    
+#else
+  #ifdef ALSA_SUPPORT
+    fprintf(stderr, "Trying RTC timer...\n");
+    timer = new RtcTimer();
+    int rtc_tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
+    if (rtc_tmrFd != -1) { // ok!
+        fprintf(stderr, "got timer = %d\n", rtc_tmrFd);
+        return rtc_tmrFd;
+    }
+    delete timer;
+  #endif
+#endif
+  
+#ifdef POSIX_TIMER_SUPPORT
+    fprintf(stderr, "Trying POSIX timer...\n");
+    timer = new PosixTimer();
+    int posix_tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
+    if (posix_tmrFd!= -1) { // ok!
+        fprintf(stderr, "got timer = %d\n", posix_tmrFd);
+        return posix_tmrFd;
+    }
+    delete timer;
+#endif
+
 #ifdef ALSA_SUPPORT
     fprintf(stderr, "Trying ALSA timer...\n");
     timer = new AlsaTimer();
-    tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
-    if ( tmrFd!= -1) { // ok!
-        fprintf(stderr, "got timer = %d\n", tmrFd);
-        return tmrFd;
+    int alsa_tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
+    if (alsa_tmrFd!= -1) { // ok!
+        fprintf(stderr, "got timer = %d\n", alsa_tmrFd);
+        return alsa_tmrFd;
     }
     delete timer;
 #endif
@@ -357,7 +376,7 @@ void MidiSeq::updatePollFd()
             int port = dev->midiPort();
             if (port == -1)
                   continue;
-            if ((dev->rwFlags() & 0x2) || (MusEGlobal::extSyncFlag.value()
+            if ((dev->rwFlags() & 0x2) || (MusEGlobal::extSyncFlag
                && (MusEGlobal::midiPorts[port].syncInfo().MCIn())))
                   addPollFd(dev->selectRfd(), POLLIN, MusECore::midiRead, this, dev);
             if (dev->bytesToWrite())
@@ -545,7 +564,8 @@ void MidiSeq::processTimerTick()
 
       unsigned curFrame = MusEGlobal::audio->curFrame();
       
-      if (!MusEGlobal::extSyncFlag.value()) {
+// REMOVE Tim. clock. Removed. Done with scheduling now in audio thread process.
+      if (!MusEGlobal::extSyncFlag) {
             // Do not round up here since (audio) frame resolution is higher than tick resolution.
             const unsigned int curTick = muse_multiply_64_div_64_to_64(
               (uint64_t)MusEGlobal::config.division * (uint64_t)MusEGlobal::tempomap.globalTempo() * 10000UL, curFrame,

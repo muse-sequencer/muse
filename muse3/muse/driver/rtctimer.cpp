@@ -24,6 +24,10 @@
 //
 //=========================================================
 
+#include "rtctimer.h"
+
+#ifdef ALSA_SUPPORT
+
 #include <linux/version.h>
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
 #include <linux/spinlock.h>
@@ -37,8 +41,6 @@
 #include <sys/ioctl.h>
 #include <errno.h>
 
-
-#include "rtctimer.h"
 #include "globals.h"
 
 namespace MusECore {
@@ -183,3 +185,5 @@ unsigned long RtcTimer::getTimerTicks(bool /*printTicks*/)// prevent compiler wa
     }
 
 } // namespace MusECore
+
+#endif // ALSA_SUPPORT

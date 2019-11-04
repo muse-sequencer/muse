@@ -33,7 +33,6 @@
 #include <QTimer>
 #include <QScrollBar>
 #include <QComboBox>
-#include <QSignalMapper>
 #include <QAction>
 #include <QActionGroup>
 #include <QGridLayout>
@@ -114,12 +113,7 @@ class ArrangerView : public TopWin
 		QAction* func_del_overlaps_action;
 		QAction* func_legato_action;
 
-		QSignalMapper *editSignalMapper;
-		QSignalMapper *scoreOneStaffPerTrackMapper;
-		QSignalMapper *scoreAllInOneMapper;
-
 	private slots:
-		void clearScoreMenuMappers();
 		void globalCut();
 		void globalInsert();
 		void globalSplit();

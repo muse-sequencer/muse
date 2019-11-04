@@ -81,7 +81,7 @@ set (FILES_TO_TRANSLATE
 
 set_target_properties ( simpledrums
       PROPERTIES PREFIX ""
-      COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
+      COMPILE_FLAGS "-fvisibility=hidden"
       )
 
 ##

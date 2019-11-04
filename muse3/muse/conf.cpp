@@ -622,11 +622,9 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "sendClockDelay")
                               MusEGlobal::syncSendFirstClockDelay = xml.parseUInt();
                         else if (tag == "extSync")
-                              MusEGlobal::extSyncFlag.setValue(xml.parseInt());
+                                MusEGlobal::extSyncFlag = xml.parseInt();
                         else if (tag == "useJackTransport")
-                              {
-                              MusEGlobal::useJackTransport.setValue(xml.parseInt());
-                              }
+                                MusEGlobal::useJackTransport = xml.parseInt();
                         else if (tag == "jackTransportMaster")
                               {
                                 MusEGlobal::jackTransportMaster = xml.parseInt();
@@ -1124,6 +1122,17 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "deviceAudioBackend")
                               MusEGlobal::config.deviceAudioBackend = xml.parseInt();
 
+                        else if (tag == "enableLatencyCorrection")
+                              MusEGlobal::config.enableLatencyCorrection = xml.parseInt();
+                        else if (tag == "correctUnterminatedInBranchLatency")
+                              MusEGlobal::config.correctUnterminatedInBranchLatency = xml.parseInt();
+                        else if (tag == "correctUnterminatedOutBranchLatency")
+                              MusEGlobal::config.correctUnterminatedOutBranchLatency = xml.parseInt();
+                        else if (tag == "monitoringAffectsLatency")
+                              MusEGlobal::config.monitoringAffectsLatency = xml.parseInt();
+                        else if (tag == "commonProjectLatency")
+                              MusEGlobal::config.commonProjectLatency = xml.parseInt();
+                        
                         else if (tag == "minControlProcessPeriod")
                               MusEGlobal::config.minControlProcessPeriod = xml.parseUInt();
                         else if (tag == "guiRefresh")
@@ -1269,8 +1278,7 @@ bool readConfiguration(const char *configFile)
             switch (token) {
                   case Xml::Error:
                   case Xml::End:
-                        fclose(f);
-                        return true;
+                        goto read_conf_end;
                   case Xml::TagStart:
                         if (skipmode && tag == "muse")
                               skipmode = false;
@@ -1304,6 +1312,8 @@ bool readConfiguration(const char *configFile)
                         break;
                   }
             }
+
+read_conf_end:
       fclose(f);
       return true;
       }
@@ -1623,7 +1633,7 @@ bool MusE::loadConfigurationColors(QWidget* parent)
   
   if(QMessageBox::question(parent, QString("MusE"),
       tr("Color settings will immediately be replaced with any found in the file.\nAre you sure you want to proceed?"), tr("&Ok"), tr("&Cancel"),
-      QString::null, 0, 1 ) == 1)
+      QString(), 0, 1 ) == 1)
     return false;
   
   // Read, and return if error.
@@ -1653,7 +1663,7 @@ bool MusE::saveConfigurationColors(QWidget* parent)
   {
     if(QMessageBox::question(parent, QString("MusE"),
         tr("File exists.\nDo you want to overwrite it?"), tr("&Ok"), tr("&Cancel"),
-        QString::null, 0, 1 ) == 1)
+        QString(), 0, 1 ) == 1)
       return false;
   }
   FILE* f = fopen(file.toLatin1().constData(), "w");
@@ -1707,6 +1717,12 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "deviceAudioBufSize", MusEGlobal::config.deviceAudioBufSize);
       xml.intTag(level, "deviceAudioSampleRate", MusEGlobal::config.deviceAudioSampleRate);
       xml.intTag(level, "deviceAudioBackend", MusEGlobal::config.deviceAudioBackend);
+
+      xml.intTag(level, "enableLatencyCorrection", MusEGlobal::config.enableLatencyCorrection);
+      xml.intTag(level, "correctUnterminatedInBranchLatency", MusEGlobal::config.correctUnterminatedInBranchLatency);
+      xml.intTag(level, "correctUnterminatedOutBranchLatency", MusEGlobal::config.correctUnterminatedOutBranchLatency);
+      xml.intTag(level, "monitoringAffectsLatency", MusEGlobal::config.monitoringAffectsLatency);
+      xml.intTag(level, "commonProjectLatency", MusEGlobal::config.commonProjectLatency);
 
 
       xml.uintTag(level, "minControlProcessPeriod", MusEGlobal::config.minControlProcessPeriod);
@@ -1807,7 +1823,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.nput(level, "<mtcoffset>%02d:%02d:%02d:%02d:%02d</mtcoffset>\n",
         MusEGlobal::mtcOffset.h(), MusEGlobal::mtcOffset.m(), MusEGlobal::mtcOffset.s(),
         MusEGlobal::mtcOffset.f(), MusEGlobal::mtcOffset.sf());
-      MusEGlobal::extSyncFlag.save(level, xml);
+      xml.intTag(level, "extSync", MusEGlobal::extSyncFlag);
       
       xml.qrectTag(level, "geometryMain",      MusEGlobal::config.geometryMain);
       xml.qrectTag(level, "geometryTransport", MusEGlobal::config.geometryTransport);
@@ -1818,8 +1834,9 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       
       xml.intTag(level, "mixer1Visible", MusEGlobal::config.mixer1Visible);
       xml.intTag(level, "mixer2Visible", MusEGlobal::config.mixer2Visible);
-      MusEGlobal::config.mixer1.write(level, xml);
-      MusEGlobal::config.mixer2.write(level, xml);
+      // True = Write global config.
+      MusEGlobal::config.mixer1.write(level, xml, true);
+      MusEGlobal::config.mixer2.write(level, xml, true);
 
       xml.intTag(level, "showSplashScreen", MusEGlobal::config.showSplashScreen);
       xml.intTag(level, "canvasShowPartType", MusEGlobal::config.canvasShowPartType);
@@ -1874,11 +1891,11 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
         MusEGlobal::mtcOffset.h(), MusEGlobal::mtcOffset.m(), MusEGlobal::mtcOffset.s(),
         MusEGlobal::mtcOffset.f(), MusEGlobal::mtcOffset.sf());
       xml.uintTag(level, "sendClockDelay", MusEGlobal::syncSendFirstClockDelay);
-      xml.intTag(level, "useJackTransport", MusEGlobal::useJackTransport.value());
+      xml.intTag(level, "useJackTransport", MusEGlobal::useJackTransport);
       xml.intTag(level, "jackTransportMaster", MusEGlobal::jackTransportMaster);
       xml.intTag(level, "syncRecFilterPreset", MusEGlobal::syncRecFilterPreset);
       xml.doubleTag(level, "syncRecTempoValQuant", MusEGlobal::syncRecTempoValQuant);
-      MusEGlobal::extSyncFlag.save(level, xml);
+      xml.intTag(level, "extSync", MusEGlobal::extSyncFlag);
       
       xml.intTag(level, "bigtimeVisible",   viewBigtimeAction->isChecked());
       xml.intTag(level, "transportVisible", viewTransportAction->isChecked());
@@ -1898,10 +1915,9 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
 
       xml.intTag(level, "mixer1Visible",    viewMixerAAction->isChecked());
       xml.intTag(level, "mixer2Visible",    viewMixerBAction->isChecked());
-      if (mixer1)
-            mixer1->write(level, xml);
-      if (mixer2)
-            mixer2->write(level, xml);
+      // False = Write song-specific config.
+      MusEGlobal::config.mixer1.write(level, xml, false);
+      MusEGlobal::config.mixer2.write(level, xml, false);
 
       writeSeqConfiguration(level, xml, true);
 
@@ -2092,7 +2108,70 @@ namespace MusEGlobal {
 //   write
 //---------------------------------------------------------
 
-void MixerConfig::write(int level, MusECore::Xml& xml)
+void StripConfig::write(int level, MusECore::Xml& xml) const
+      {
+      if(_serial < 0)
+        return;
+      // Do NOT save if there is no corresponding track.
+      const MusECore::TrackList* tl = song->tracks();
+      const int idx = tl->indexOfSerial(_serial);
+      if(idx < 0)
+        return;
+      xml.nput(level, "<StripConfig trackIdx=\"%d\"", idx);
+
+      xml.nput(level, " visible=\"%d\"", _visible);
+      if(_width >= 0)
+        xml.nput(level, " width=\"%d\"", _width);
+      xml.put(" />");
+      
+      //xml.put(">");
+      //level++;
+      // TODO: Anything else to add? ...
+      //xml.etag(level, "StripConfig");
+      }
+
+//---------------------------------------------------------
+//   read
+//---------------------------------------------------------
+
+void StripConfig::read(MusECore::Xml& xml)
+      {
+      for (;;) {
+            MusECore::Xml::Token token(xml.parse());
+            const QString& tag(xml.s1());
+            switch (token) {
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
+                        return;
+                  case MusECore::Xml::TagStart:
+                          xml.unknown("StripConfig");
+                        break;
+                  case MusECore::Xml::Attribut:
+                        if (tag == "trackIdx") {
+                              _tmpFileIdx = xml.s2().toInt();
+                              }
+                        else if (tag == "visible") {
+                              _visible = xml.s2().toInt();
+                              }
+                        else if (tag == "width") {
+                              _width = xml.s2().toInt();
+                              }
+                        break;
+                  case MusECore::Xml::TagEnd:
+                        if (tag == "StripConfig")
+                            return;
+                  default:
+                        break;
+                  }
+            }
+      
+      }
+
+//---------------------------------------------------------
+//   write
+//---------------------------------------------------------
+
+void MixerConfig::write(int level, MusECore::Xml& xml, bool global) const
       {
       xml.tag(level++, "Mixer");
 
@@ -2111,6 +2190,17 @@ void MixerConfig::write(int level, MusECore::Xml& xml)
       xml.intTag(level, "showSyntiTracks",  showSyntiTracks);
 
       xml.intTag(level, "displayOrder", displayOrder);
+
+      // Specific to song file.
+      if(!global)
+      {
+        if(!stripConfigList.empty())
+        {
+          const int sz = stripConfigList.size();
+          for(int i = 0; i < sz; ++i)
+            stripConfigList.at(i).write(level, xml);
+        }
+      }
 
       xml.etag(level, "Mixer");
       }
@@ -2153,10 +2243,18 @@ void MixerConfig::read(MusECore::Xml& xml)
                               showSyntiTracks = xml.parseInt();
                         else if (tag == "displayOrder")
                               displayOrder = (DisplayOrder)xml.parseInt();
+                        // Obsolete. Support old songs.
                         else if (tag == "StripName")
                               stripOrder.append(xml.parse1());
+                        // Obsolete. Support old songs.
                         else if (tag == "StripVisible")
                               stripVisibility.append(xml.parseInt() == 0 ? false : true );
+                        else if (tag == "StripConfig") {
+                              StripConfig sc;
+                              sc.read(xml);
+                              if(sc._tmpFileIdx >= 0)
+                                stripConfigList.append(sc);
+                        }
                         else
                               xml.unknown("Mixer");
                         break;

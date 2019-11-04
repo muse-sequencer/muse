@@ -35,6 +35,7 @@
 #include "type_defs.h"
 #include "globaldefs.h"
 #include "drange.h"
+#include "elided_label.h"
 
 class QMouseEvent;
 class QResizeEvent;
@@ -51,7 +52,6 @@ class CompactComboBox;
 class Meter;
 class CompactKnob;
 class CompactSlider;
-class ElidedLabel;
 class CompactToolButton;
 class IconButton;
 
@@ -604,7 +604,7 @@ class ElidedLabelComponentDescriptor : public ComponentDescriptor
 //   TrackNameLabel
 //---------------------------------------------------------
 
-class TrackNameLabel : public QLabel
+class TrackNameLabel : public ElidedTextLabel
 {
   Q_OBJECT
 
@@ -687,6 +687,7 @@ class Strip : public QFrame {
       MusECore::Track* track;
 
       TrackNameLabel* label;
+
       QGridLayout* grid;
       int _curGridRow;
       Meter* meter[MusECore::MAX_CHANNELS];
@@ -743,6 +744,8 @@ class Strip : public QFrame {
    signals:
       void clearStripSelection();
       void moveStrip(Strip *s);
+      void visibleChanged(Strip *s, bool v);
+      void userWidthChanged(Strip *s, int w);
       
    public:
       Strip(QWidget* parent, MusECore::Track* t, bool hasHandle = false, bool isEmbedded = true);
@@ -761,7 +764,7 @@ class Strip : public QFrame {
       //  which allows chaining other widgets.
       virtual QWidget* setupComponentTabbing(QWidget* previousWidget = 0) = 0;
 
-      bool getStripVisible() { return _visible; }
+      bool getStripVisible() const { return _visible; }
       void setStripVisible(bool v) { _visible = v; }
 
       static const int FIXED_METER_WIDTH;

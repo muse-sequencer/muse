@@ -2,6 +2,7 @@
 //  MusE
 //  Linux Music Editor
 //  (C) Copyright 2009 Mathias Gyllengahm (lunar_shuttle@users.sf.net)
+//  (C) Copyright 2019 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -18,13 +19,14 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
 //=========================================================
+
 #include <Python.h>
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <pthread.h>
 
 #include <QApplication>
+#include <QEvent>
 
 #include "pyapi.h"
 #include "globaldefs.h"
@@ -44,13 +46,45 @@ using namespace std;
 
 namespace MusECore {
 
-static pthread_t pyapiThread;
+PyroServerThread g_pyroServerThread;
+PyObject* g_pMainModule = nullptr;
+PyObject* g_pMainDictionary = nullptr;
+
+class QPybridgeEvent : public QEvent
+{
+public:
+      enum EventType { SONG_UPDATE=0, SONGLEN_CHANGE, SONG_POSCHANGE, SONG_SETPLAY, SONG_SETSTOP, SONG_REWIND, SONG_SETMUTE,
+             SONG_SETCTRL, SONG_SETAUDIOVOL, SONG_IMPORT_PART, SONG_TOGGLE_EFFECT, SONG_ADD_TRACK, SONG_CHANGE_TRACKNAME,
+             SONG_DELETE_TRACK };
+      QPybridgeEvent( QPybridgeEvent::EventType _type, int _p1=0, int _p2=0, const SongChangedStruct_t& _sc1 = SongChangedStruct_t());
+      EventType getType() { return type; }
+      int getP1() { return p1; }
+      int getP2() { return p2; }
+      void setS1(QString in) { s1 = in; }
+      void setS2(QString in) { s2 = in; }
+      const QString& getS1() { return s1; }
+      const QString& getS2() { return s2; }
+      double getD1() { return d1; }
+      void setD1(double _d1) { d1 = _d1; }
+      SongChangedStruct_t getSC1() { return sc1; }
+
+private:
+      EventType type;
+      int p1, p2;
+      double d1;
+      QString s1;
+      QString s2;
+      SongChangedStruct_t sc1;
+
+};
+
 //------------------------------------------------------------
-QPybridgeEvent::QPybridgeEvent(QPybridgeEvent::EventType _type, int _p1, int _p2)
+QPybridgeEvent::QPybridgeEvent(QPybridgeEvent::EventType _type, int _p1, int _p2, const SongChangedStruct_t& _sc1)
       :QEvent(QEvent::User),
       type(_type),
       p1(_p1),
-      p2(_p2)
+      p2(_p2),
+      sc1(_sc1)
 {
 }
 //------------------------------------------------------------
@@ -82,8 +116,7 @@ PyObject* startPlay(PyObject*, PyObject*)
       //MusEGlobal::song->setPlay(true);
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_SETPLAY);
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 //------------------------------------------------------------
 // Stop playing
@@ -93,8 +126,7 @@ PyObject* stopPlay(PyObject*, PyObject*)
       //MusEGlobal::song->setStop(true);
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_SETSTOP);
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 //------------------------------------------------------------
 // Rewind to start
@@ -104,8 +136,7 @@ PyObject* rewindStart(PyObject*, PyObject*)
       //MusEGlobal::song->rewindStart();
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_REWIND);
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 //------------------------------------------------------------
 // Get tempo at specific position
@@ -162,7 +193,7 @@ PyObject* getParts(PyObject*, PyObject* args)
       TrackList* tracks = MusEGlobal::song->tracks();
       const char* trackname;
       if (!PyArg_ParseTuple(args, "s", &trackname)) {
-            return NULL;
+            Py_RETURN_NONE;
             }
 
       PyObject* pyparts = Py_BuildValue("[]");
@@ -246,11 +277,14 @@ PyObject* getParts(PyObject*, PyObject* args)
                         PyList_Append(pyevents, pyevent);
                         Py_DECREF(pyevent);
                         }
-                  Py_DECREF(pyevents);
+
                   // Add the event list to the pypart dictionary
                   PyObject* pystrevents = Py_BuildValue("s", "events");
                   PyDict_SetItem(pypart, pystrevents, pyevents);
+
+                  Py_DECREF(pyevents);
                   Py_DECREF(pystrevents);
+
                   PyList_Append(pyparts, pypart);
                   Py_DECREF(pypart);
                   }
@@ -258,7 +292,7 @@ PyObject* getParts(PyObject*, PyObject* args)
             return pyparts;
             }
 
-      return NULL;
+      Py_RETURN_NONE;
 }
 
 //------------------------------------------------------------
@@ -268,7 +302,7 @@ PyObject* getParts(PyObject*, PyObject* args)
 int getPythonPartId(PyObject* part)
 {
       PyObject* pyid = PyDict_GetItemString(part, "id");
-      int id = PyInt_AsLong(pyid);
+      int id = PyLong_AsLong(pyid);
       return id;
 }
 
@@ -314,27 +348,39 @@ bool addPyPartEventsToMusePart(MidiPart* npart, PyObject* part)
             PyObject* p_len = PyDict_GetItemString(pevent, "len");
             PyObject* p_data = PyDict_GetItemString(pevent, "data"); // list
 
-            int etick = PyInt_AsLong(p_etick);
-            int elen =  PyInt_AsLong(p_len);
-            string type = string(PyString_AsString(p_type));
-            int data[3];
+            int etick = PyLong_AsLong (p_etick);
+            int elen =  PyLong_AsLong (p_len);
+            
+// For Python 3.3 and above:
+#if (PY_MAJOR_VERSION >= 4) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION >= 3)
+            const char* bytes = PyUnicode_AsUTF8(p_type);
+#else
+            PyObject* p_bytes = PyUnicode_AsUTF8String(p_type);
+            const char* bytes = PyBytes_AsString(p_bytes);
+#endif
+            if(bytes && bytes[0] != 0)
+            {
+              string type = string(bytes);
+              int data[3];
 
-            // Traverse data list:
-            for (int j=0; j<3; j++) {
-                  PyObject* plItem = PyList_GetItem(p_data, j);
-                  data[j] = PyInt_AsLong(plItem);
-                  }
-            if (type == "note" || type == "ctrl") {
-                  Event event(Note);
-                  event.setA(data[0]);
-                  event.setB(data[1]);
-                  event.setC(data[2]);
-                  event.setTick(etick);
-                  event.setLenTick(elen);
-                  npart->addEvent(event);
-                  }
-            else
-                  printf("Unhandled event type from python: %s\n", type.c_str());
+              // Traverse data list:
+              for (int j=0; j<3; j++) {
+                    PyObject* plItem = PyList_GetItem(p_data, j);
+                    data[j] = PyLong_AsLong (plItem);
+
+                    }
+              if (type == "note" || type == "ctrl") {
+                    Event event(Note);
+                    event.setA(data[0]);
+                    event.setB(data[1]);
+                    event.setC(data[2]);
+                    event.setTick(etick);
+                    event.setLenTick(elen);
+                    npart->addEvent(event);
+                    }
+              else
+                    printf("Unhandled event type from python: %s\n", type.c_str());
+            }
             }
 
       return true;
@@ -349,13 +395,14 @@ PyObject* createPart(PyObject*, PyObject* args)
       PyObject* part;
 
       if (!PyArg_ParseTuple(args, "siiO", &trackname, &tick, &tickLen, &part)) {
-            return NULL;
+            Py_RETURN_NONE;
             }
 
       QString qtrackname(trackname);
       Track* t = MusEGlobal::song->findTrack(trackname);
-      if (t == NULL || t->isMidiTrack() == false)
-            return NULL;
+      if (t == NULL || t->isMidiTrack() == false) {
+            Py_RETURN_NONE;
+            }
 
       MidiTrack* track = (MidiTrack*)t;
 
@@ -365,11 +412,10 @@ PyObject* createPart(PyObject*, PyObject* args)
       addPyPartEventsToMusePart(npart, part);
 
       MusEGlobal::song->addPart(npart);
-      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, SC_TRACK_MODIFIED);
+      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED);
       QApplication::postEvent(MusEGlobal::song, pyevent);
 
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 
 //------------------------------------------------------------
@@ -396,7 +442,7 @@ PyObject* modifyPart(PyObject*, PyObject* part)
 
       if (opart == NULL) {
             printf("Part doesn't exist!\n");
-            return NULL;
+            Py_RETURN_NONE;
             }
 
       // Remove all note and controller events from current part eventlist
@@ -420,12 +466,11 @@ PyObject* modifyPart(PyObject*, PyObject* part)
       MusEGlobal::song->changePart(opart, npart);
       //MusEGlobal::song->endUndo(SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_INSERTED); // Crash! Probably since the call ends up in Qt GUI thread from this thread
 
-      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_INSERTED);
+      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_INSERTED);
       QApplication::postEvent(MusEGlobal::song, pyevent);
 
 
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 //------------------------------------------------------------
 // deletePart
@@ -435,18 +480,18 @@ PyObject* deletePart(PyObject*, PyObject* args)
 {
       int id;
       if (!PyArg_ParseTuple(args, "i", &id)) {
-            return NULL;
+            Py_RETURN_NONE;
             }
 
       Part* part = findPartBySerial(id);
-      if (part == NULL)
-            return NULL;
+      if (part == NULL) {
+            Py_RETURN_NONE;
+            }
 
       MusEGlobal::song->removePart(part);
-      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, SC_TRACK_MODIFIED | SC_PART_REMOVED);
+      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED | SC_PART_REMOVED);
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 
 //------------------------------------------------------------
@@ -457,15 +502,14 @@ PyObject* setPos(PyObject*, PyObject* args)
       int index;
       int ticks;
       if (!PyArg_ParseTuple(args, "ii", &index, &ticks)) {
-            return NULL;
+            Py_RETURN_NONE;
             }
 
       //MusEGlobal::song->setPos(index, ticks);
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_POSCHANGE, index, ticks);
       QApplication::postEvent(MusEGlobal::song, pyevent);
 
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 
 
@@ -477,13 +521,12 @@ PyObject* setSongLen(PyObject*, PyObject* args)
       unsigned len;
 
       if (!PyArg_ParseTuple(args, "i", &len)) {
-            return NULL;
+            Py_RETURN_NONE;
             }
       //MusEGlobal::song->setLen(len);// Appears to not be ok to call from python thread, we do it with event instead
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONGLEN_CHANGE, len);
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 //------------------------------------------------------------
 // getLen
@@ -509,12 +552,14 @@ PyObject* setMidiTrackParameter(PyObject*, PyObject* args)
       const char* trackname;
       const char* paramname;
       int value;
-      if(!PyArg_ParseTuple(args, "ssi", &trackname, &paramname, &value))
-            return NULL;
+      if(!PyArg_ParseTuple(args, "ssi", &trackname, &paramname, &value)) {
+            Py_RETURN_NONE;
+            }
 
       Track* track = MusEGlobal::song->findTrack(QString(trackname));
-      if (track == NULL || track->isMidiTrack() == false)
-            return NULL;
+      if (track == NULL || track->isMidiTrack() == false) {
+            Py_RETURN_NONE;
+            }
 
       MidiTrack* mt = (MidiTrack*) track;
 
@@ -538,7 +583,7 @@ PyObject* setMidiTrackParameter(PyObject*, PyObject* args)
             }
 
       if (changed) {
-            QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, SC_TRACK_MODIFIED);
+            QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED);
             QApplication::postEvent(MusEGlobal::song, pyevent);
             }
 
@@ -550,12 +595,12 @@ PyObject* setMidiTrackParameter(PyObject*, PyObject* args)
 PyObject* setLoop(PyObject*, PyObject* args)
 {
       bool loopFlag;
-      if(!PyArg_ParseTuple(args, "b", &loopFlag))
-            return NULL;
+      if(!PyArg_ParseTuple(args, "b", &loopFlag)) {
+            Py_RETURN_NONE;
+            }
 
       MusEGlobal::song->setLoop(loopFlag);
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 //------------------------------------------------------------
 // Get loop value
@@ -571,12 +616,13 @@ PyObject* getMute(PyObject*, PyObject* args)
 {
       const char* trackname;
       if (!PyArg_ParseTuple(args, "s", &trackname)) {
-            return NULL;
+            Py_RETURN_NONE;
             }
 
       Track* track = MusEGlobal::song->findTrack(QString(trackname));
-      if (track == NULL)
-            return NULL;
+      if (track == NULL) {
+            Py_RETURN_NONE;
+            }
 
       return Py_BuildValue("b", track->isMute());
 }
@@ -589,12 +635,13 @@ PyObject* setMute(PyObject*, PyObject* args)
       bool muted;
 
       if (!PyArg_ParseTuple(args, "sb", &trackname, &muted)) {
-            return NULL;
+            Py_RETURN_NONE;
             }
 
       Track* track = MusEGlobal::song->findTrack(QString(trackname));
-      if (track == NULL)
-            return NULL;
+      if (track == NULL) {
+            Py_RETURN_NONE;
+            }
 
       int mutedint = 1;
       if (muted == false)
@@ -603,8 +650,7 @@ PyObject* setMute(PyObject*, PyObject* args)
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_SETMUTE, mutedint);
       pyevent->setS1(trackname);
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 //------------------------------------------------------------
 // setController
@@ -626,12 +672,11 @@ PyObject* setMidiControllerValue(PyObject*, PyObject* args)
       int value;
 
       if (!PyArg_ParseTuple(args, "sii", &trackname, &ctrltype, &value)) {
-            return NULL;
+            Py_RETURN_NONE;
             }
 
       setController(trackname, ctrltype, value);
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 
 //------------------------------------------------------------
@@ -643,16 +688,16 @@ PyObject* getMidiControllerValue(PyObject*, PyObject* args)
       int ctrltype;
 
       if (!PyArg_ParseTuple(args, "si", &trackname, &ctrltype)) {
-            return NULL;
+            Py_RETURN_NONE;
             }
 
       Track* t = MusEGlobal::song->findTrack(QString(trackname));
-      if (t == NULL)
-            return NULL;
+      if (t == NULL) {
+            Py_RETURN_NONE;
+            }
 
       if (t->isMidiTrack() == false) {
-            Py_INCREF(Py_None);
-            return Py_None;
+            Py_RETURN_NONE;
             }
 
       MidiTrack* track = (MidiTrack*) t;
@@ -674,15 +719,14 @@ PyObject* setAudioTrackVolume(PyObject*, PyObject* args)
       double volume = 0.0f;
 
       if (!PyArg_ParseTuple(args, "sd", &trackname, &volume)) {
-            return NULL;
+            Py_RETURN_NONE;
             }
 
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_SETAUDIOVOL);
       pyevent->setD1(volume);
       pyevent->setS1(trackname);
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 //------------------------------------------------------------
 // getAudioTrackVolume
@@ -692,16 +736,18 @@ PyObject* getAudioTrackVolume(PyObject*, PyObject* args)
       const char* trackname;
 
       if (!PyArg_ParseTuple(args, "s", &trackname)) {
-            return NULL;
+            Py_RETURN_NONE;
             }
 
       Track* t = MusEGlobal::song->findTrack(QString(trackname));
-      if (t == NULL)
-            return NULL;
+      if (t == NULL) {
+            Py_RETURN_NONE;
+            }
 
       //if (t->type() == Track::DRUM || t->type() == Track::MIDI || t->type() == Track::NEW_DRUM)
-        if (t->isMidiTrack()) // changed by flo. should do the same thing and is better maintainable
-            return NULL;
+        if (t->isMidiTrack()) { // changed by flo. should do the same thing and is better maintainable
+            Py_RETURN_NONE;
+            }
 
       AudioTrack* track = (AudioTrack*) t;
       return Py_BuildValue("d", track->volume());
@@ -719,8 +765,7 @@ PyObject* getSelectedTrack(PyObject*, PyObject*)
                   return Py_BuildValue("s", track->name().toLatin1().constData());
             }
 
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 
 //------------------------------------------------------------
@@ -733,15 +778,14 @@ PyObject* importPart(PyObject*, PyObject* args)
       int tick;
 
       if (!PyArg_ParseTuple(args, "ssi", &trackname, &filename, &tick)) {
-            return NULL;
+            Py_RETURN_NONE;
             }
 
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_IMPORT_PART, tick);
       pyevent->setS1(trackname);
       pyevent->setS2(filename);
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 //------------------------------------------------------------
 // getTrackEffects
@@ -750,15 +794,17 @@ PyObject* getTrackEffects(PyObject*, PyObject* args)
 {
       const char* trackname;
       if (!PyArg_ParseTuple(args, "s", &trackname)) {
-            return NULL;
+            Py_RETURN_NONE;
             }
 
       Track* t = MusEGlobal::song->findTrack(QString(trackname));
-      if (t == NULL)
-            return NULL;
+      if (t == NULL) {
+            Py_RETURN_NONE;
+            }
 
-      if (t->type() != Track::WAVE)
-            return NULL;
+      if (t->type() != Track::WAVE) {
+            Py_RETURN_NONE;
+            }
 
       AudioTrack* track = (AudioTrack*) t;
       PyObject* pyfxnames = Py_BuildValue("[]");
@@ -782,22 +828,24 @@ PyObject* toggleTrackEffect(PyObject*, PyObject* args)
       int fxid;
       bool onoff;
 
-      if (!PyArg_ParseTuple(args, "sib", &trackname, &fxid, &onoff)) 
-            return NULL;
+      if (!PyArg_ParseTuple(args, "sib", &trackname, &fxid, &onoff)) {
+            Py_RETURN_NONE;
+            }
 
       Track* t = MusEGlobal::song->findTrack(QString(trackname));
-      if (t == NULL)
-            return NULL;
+      if (t == NULL) {
+            Py_RETURN_NONE;
+            }
 
-      if (t->type() != Track::WAVE)
-            return NULL;
+      if (t->type() != Track::WAVE) {
+            Py_RETURN_NONE;
+            }
 
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_TOGGLE_EFFECT, fxid, onoff);
       pyevent->setS1(trackname);
 
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 //------------------------------------------------------------
 // changeTrackName
@@ -807,8 +855,9 @@ PyObject* changeTrackName(PyObject*, PyObject* args)
       const char* trackname;
       const char* newname;
 
-      if (!PyArg_ParseTuple(args, "ss", &trackname, &newname)) 
-            return NULL;
+      if (!PyArg_ParseTuple(args, "ss", &trackname, &newname)) {
+            Py_RETURN_NONE;
+            }
 
       Track* t = MusEGlobal::song->findTrack(QString(trackname));
       if (t == NULL)
@@ -818,7 +867,7 @@ PyObject* changeTrackName(PyObject*, PyObject* args)
       pyevent->setS1(trackname);
       pyevent->setS2(newname);
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      QPybridgeEvent* pyevent2 = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, SC_TRACK_MODIFIED);
+      QPybridgeEvent* pyevent2 = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED);
       QApplication::postEvent(MusEGlobal::song, pyevent2);
       return Py_BuildValue("b", true);
 }
@@ -829,8 +878,7 @@ PyObject* addMidiTrack(PyObject*, PyObject*)
 {
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_ADD_TRACK, Track::MIDI);
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 //------------------------------------------------------------
 // addWaveTrack
@@ -839,8 +887,7 @@ PyObject* addWaveTrack(PyObject*, PyObject*)
 {
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_ADD_TRACK, Track::WAVE);
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 //------------------------------------------------------------
 // addInput
@@ -849,8 +896,7 @@ PyObject* addInput(PyObject*, PyObject*)
 {
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_ADD_TRACK, Track::AUDIO_INPUT);
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 //------------------------------------------------------------
 // addOutput
@@ -859,7 +905,7 @@ PyObject* addOutput(PyObject*, PyObject*)
 {
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_ADD_TRACK, Track::AUDIO_OUTPUT);
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 //------------------------------------------------------------
 // addGroup
@@ -868,7 +914,7 @@ PyObject* addGroup(PyObject*, PyObject*)
 {
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_ADD_TRACK, Track::AUDIO_GROUP);
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 //------------------------------------------------------------
 // deleteTrack
@@ -877,13 +923,14 @@ PyObject* deleteTrack(PyObject*, PyObject* args)
 {
       const char* trackname;
 
-      if (!PyArg_ParseTuple(args, "s", &trackname)) 
-            return NULL;
+      if (!PyArg_ParseTuple(args, "s", &trackname)) {
+            Py_RETURN_NONE;
+            }
 
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_DELETE_TRACK);
       pyevent->setS1(trackname);
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      return Py_None;
+      Py_RETURN_NONE;
 }
 //------------------------------------------------------------
 // getOutputRoute
@@ -893,8 +940,9 @@ PyObject* getOutputRoute(PyObject*, PyObject* args)
 {
       const char* trackname;
 
-      if (!PyArg_ParseTuple(args, "s", &trackname)) 
-            return NULL;
+      if (!PyArg_ParseTuple(args, "s", &trackname)) {
+            Py_RETURN_NONE;
+            }
 
       Track* tt = MusEGlobal::song->findTrack(QString(trackname));
       if (tt == NULL)
@@ -931,6 +979,56 @@ PyObject* getOutputRoute(PyObject*, PyObject* args)
       return routes;
 }
 */
+
+//------------------------------------------------------------
+// Get user supplied Pyro nameserver host name
+//------------------------------------------------------------
+PyObject* getConfigPyroNSHostname(PyObject*, PyObject*)
+{
+      return Py_BuildValue("s", MusEGlobal::pythonBridgePyroNSHostname.toLatin1().constData());
+}
+
+//------------------------------------------------------------
+// Get user supplied Pyro nameserver host port
+//------------------------------------------------------------
+PyObject* getConfigPyroNSPort(PyObject*, PyObject*)
+{
+      return Py_BuildValue("s", MusEGlobal::pythonBridgePyroNSPort.toLatin1().constData());
+}
+
+//------------------------------------------------------------
+// Get user supplied Pyro daemon host name
+//------------------------------------------------------------
+PyObject* getConfigPyroDaemonHostname(PyObject*, PyObject*)
+{
+      return Py_BuildValue("s", MusEGlobal::pythonBridgePyroDaemonHostname.toLatin1().constData());
+}
+
+//------------------------------------------------------------
+// Get user supplied Pyro daemon host port
+//------------------------------------------------------------
+PyObject* getConfigPyroDaemonPort(PyObject*, PyObject*)
+{
+      return Py_BuildValue("s", MusEGlobal::pythonBridgePyroDaemonPort.toLatin1().constData());
+}
+
+//------------------------------------------------------------
+// Get user supplied Pyro communication timeout
+//------------------------------------------------------------
+PyObject* getConfigPyroCommTimeout(PyObject*, PyObject*)
+{
+      return Py_BuildValue("f", MusEGlobal::pythonBridgePyroCommTimeout);
+}
+
+//------------------------------------------------------------
+// Check whether the server should run (True) or stop
+//------------------------------------------------------------
+PyObject* serverRunFlag(PyObject*, PyObject*)
+{
+      return Py_BuildValue("b", g_pyroServerThread.serverRunFlag());
+}
+
+
 //------------------------------------------------------------
 // Global method definitions for MusE:s Python API
 //
@@ -938,6 +1036,13 @@ PyObject* getOutputRoute(PyObject*, PyObject* args)
 //------------------------------------------------------------
 PyMethodDef g_methodDefinitions[] =
 {
+      { "getConfigPyroNSHostname", getConfigPyroNSHostname, METH_NOARGS, "Get configured Pyro nameserver host name" },
+      { "getConfigPyroNSPort", getConfigPyroNSPort, METH_NOARGS, "Get configured Pyro nameserver host port" },
+      { "getConfigPyroDaemonHostname", getConfigPyroDaemonHostname, METH_NOARGS, "Get configured Pyro daemon host name" },
+      { "getConfigPyroDaemonPort", getConfigPyroDaemonPort, METH_NOARGS, "Get configured Pyro daemon host port" },
+      { "getConfigPyroCommTimeout", getConfigPyroCommTimeout, METH_NOARGS, "Get configured Pyro communication timeout" },
+      { "serverRunFlag", serverRunFlag, METH_NOARGS, "Check whether the server should run (True) or stop" },
+
       { "startPlay", startPlay, METH_VARARGS, "Starts playing the song from current position" },
       { "stopPlay", stopPlay, METH_VARARGS, "Stops playback if currently playing" },
       { "rewindStart", rewindStart, METH_VARARGS, "Set current position to beginning of song" },
@@ -985,41 +1090,112 @@ PyMethodDef g_methodDefinitions[] =
       {NULL, NULL, 0, NULL}
 };
 
-/**
- * This function launches the Pyro name service, which blocks execution
- * Thus it needs its own thread
- **/
-static void* pyapithreadfunc(void*)
+bool PyroServerThread::initServer()
 {
+      _runServer = false;
+      const char* mod_name = "muse";
+
       Py_Initialize();
-      PyImport_AddModule("muse");
-      Py_InitModule( "muse", g_methodDefinitions );
+
+// For Python 3.5 and above:
+#if (PY_MAJOR_VERSION >= 4) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION >= 5)
+
+      PyObject *pMuseModule = PyImport_AddModule(mod_name);
+      PyModule_AddFunctions(pMuseModule, g_methodDefinitions);
+
+// For Python 3.0 to 3.4:
+#elif PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION < 5
+
+      PyObject *m = PyImport_AddModule(mod_name);
+
+      // Stupid HACK required. Tested OK. Borrowed from and based on these:
+      // http://code.activestate.com/recipes/579110-add-function-to-pythons-__builtin__-module-through/
+      // https://stackoverflow.com/questions/6565175/adding-new-command-to-module-through-c-api
+      PyObject *po_mod_dict = PyModule_GetDict(m);
+      PyObject *po_mod_name = PyUnicode_FromString(mod_name);
+      PyObject *po_new_func;
+      int i = 0;
+      while(g_methodDefinitions[i].ml_name && g_methodDefinitions[i].ml_meth)
+      {
+        po_new_func = PyCFunction_NewEx(&g_methodDefinitions[i], (PyObject*)NULL, po_mod_name);
+        PyDict_SetItemString(po_mod_dict, g_methodDefinitions[i].ml_name, po_new_func);
+        ++i;
+      }
+
+// For Python below 3.0:
+#else
+
+      // Life was simple, eh?
+      Py_InitModule( mod_name, g_methodDefinitions );
+
+#endif
 
       //
       // Access the "__main__" module and its name-space dictionary.
       //
 
-      PyObject *pMainModule     = PyImport_AddModule( "__main__" );
-      PyObject *pMainDictionary = PyModule_GetDict( pMainModule );
+      g_pMainModule     = PyImport_AddModule( "__main__" );
+      g_pMainDictionary = PyModule_GetDict( g_pMainModule );
+
+      return true;
+}
+
+/**
+ * This function launches the Pyro name service, which blocks execution
+ * Thus it needs its own thread
+ **/
+void PyroServerThread::run()
+{
+      if(!g_pMainDictionary)
+        return;
+  
+      _runServer = true;
+
       string launcherfilename = string(SHAREDIR) + string("/pybridge/museplauncher.py");
       printf("Initiating MusE Pybridge launcher from %s\n", launcherfilename.c_str());
       FILE* fp = fopen(launcherfilename.c_str(),"r");
-      PyRun_File(fp, launcherfilename.c_str(), Py_file_input, pMainDictionary, pMainDictionary);
-      fclose(fp);
+      if(!fp)
+      {
+        printf("MusE Pybridge open launcher file failed\n");
+      }
+      else
+      {
+        PyObject* p_res = PyRun_File(fp, launcherfilename.c_str(), Py_file_input, g_pMainDictionary, g_pMainDictionary);
+        if(p_res == NULL)
+        {
+            printf("MusE Pybridge initialization failed\n");
+            PyErr_Print();
+        }
+        fclose(fp);
 
-      return NULL;
+        printf("MusE Pybridge finished\n");
+      }
+}
+
+void PyroServerThread::stop()
+{
+  // Flag the server to stop, when it eventually gets around to reading this...
+  _runServer = false;
 }
 
 /**
  * This function currently only launches the thread. There should be some kind of check that
  * things are up and running as they are supposed to
  */
-bool initPythonBridge()
+bool startPythonBridge()
 {
-      if (pthread_create(&pyapiThread, NULL, MusECore::pyapithreadfunc, 0)) {
-            return false;
-            }
-      return true; // TODO: Verify that things are up and running!
+  g_pyroServerThread.initServer();
+  g_pyroServerThread.start();
+  return true;
+}
+
+bool stopPythonBridge()
+{
+  g_pyroServerThread.stop();
+  // Be sure to set this to something higher than what the daemon will use,
+  //  so that the thread does not timeout before the daemon does. Say, * 1.5.
+  // In units of ms.
+  return g_pyroServerThread.wait(1500.0 * MusEGlobal::pythonBridgePyroCommTimeout);
 }
 
 //---------------------------------------------------------
@@ -1043,7 +1219,7 @@ bool Song::event(QEvent* _e)
       QPybridgeEvent* e = (QPybridgeEvent*) _e;
       switch (e->getType()) {
             case QPybridgeEvent::SONG_UPDATE:
-                  this->update(e->getP1());
+                  this->update(e->getSC1());
                   break;
             case QPybridgeEvent::SONGLEN_CHANGE:
                   this->setLen(e->getP1());

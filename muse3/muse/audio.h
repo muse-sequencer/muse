@@ -34,12 +34,6 @@
 #include "route.h"
 #include "event.h"
 
-// An experiment to use true frames for time-stamping all recorded input. 
-// (All recorded data actually arrived in the previous period.)
-// TODO: Some more work needs to be done in WaveTrack::getData() in order to
-//  make everything line up and sync correctly. Cannot use this yet!
-//#define _AUDIO_USE_TRUE_FRAME_
-
 namespace MusECore {
 class AudioDevice;
 class AudioTrack;
@@ -147,10 +141,6 @@ class Audio {
       // Simulated current frame during precount.
       unsigned int _precountFramePos;
       
-#ifdef _AUDIO_USE_TRUE_FRAME_
-      Pos _previousPos;       // previous play position
-#endif
-
       unsigned curTickPos;   // pos at start of frame during play/record
       unsigned nextTickPos;  // pos at start of next frame during play/record
       
@@ -161,8 +151,20 @@ class Audio {
       // Holds the current size of the temporary clock history array.
       int _extClockHistorySize;
 
+      // Holds a brief temporary array of sorted FRAMES of clock queue, to be output to midi devices.
+      unsigned int* _clockOutputQueue;
+      // Holds the total capacity of the clock output array.
+      static const unsigned int _clockOutputQueueCapacity;
+      // Holds the current size of the temporary clock output array.
+      unsigned int _clockOutputQueueSize;
+      // Holds a central counter, in ticks, for generating midi clock out events for all device types.
+      unsigned int _clockOutputCounter;
+      // Fractional accumulator for _clockOutputCounter.
+      uint64_t _clockOutputCounterRemainder;
+
       //metronome values
       unsigned midiClick;
+      unsigned audioClick;
       int clickno;      // precount values
       int clicksMeasure;
       // Frames per beat, in precount state.
@@ -180,6 +182,8 @@ class Audio {
       bool _syncPlayStarting;
       // Prevents flood of events during seek.
       float _antiSeekFloodCounter;
+      // Whether the last call to the sync callback was ready to roll.
+      bool _syncReady;
       
       uint64_t syncTimeUS;  // Wall clock at last sync point in microseconds.
       unsigned syncFrame;    // corresponding frame no. to syncTime
@@ -212,7 +216,8 @@ class Audio {
       void processMsg(AudioMsg* msg);
       void process1(unsigned samplePos, unsigned offset, unsigned samples);
 
-      void collectEvents(MidiTrack*, unsigned int startTick, unsigned int endTick, unsigned int frames);
+      void collectEvents(MidiTrack*, unsigned int startTick, unsigned int endTick,
+                         unsigned int frames, unsigned int latency_offset);
       
       void seekMidi();
 
@@ -228,6 +233,8 @@ class Audio {
       // Process midi for a number of frames. Call from audio thread only.
       // Note that nextTickPos (and friends) will already be set before calling.
       void processMidi(unsigned int frames);
+      void processMidiMetronome(unsigned int frames);
+      void processAudioMetronome(unsigned int frames);
       
    public:
       Audio();
@@ -311,9 +318,6 @@ class Audio {
       void midiPortsChanged();
 
       const Pos& pos() const { return _pos; }
-#ifdef _AUDIO_USE_TRUE_FRAME_
-      const Pos& previousPos() const { return _previousPos; }
-#endif
       // Number of frames in the current process cycle.
       unsigned curCycleFrames() const { return _curCycleFrames; }
       const Pos& getStartRecordPos() const { return startRecordPos; }

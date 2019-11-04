@@ -203,12 +203,12 @@ void initNewDrumMap()
   {
     int idx=idrumMap[i].anote;
     if (idx < 0 || idx >= 128)
-      printf("ERROR: THIS SHOULD NEVER HAPPEN: idrumMap[%i].anote is not within 0..127!\n", idx);
+      fprintf(stderr, "ERROR: THIS SHOULD NEVER HAPPEN: idrumMap[%i].anote is not within 0..127!\n", idx);
     else
     {
       if (done[idx]==true)
       {
-        printf("ERROR: iNewDrumMap[%i] is already initialized!\n"
+        fprintf(stderr, "ERROR: iNewDrumMap[%i] is already initialized!\n"
                "       this will be probably not a problem, but some programmer didn't read\n"
                "       flo's comment at drummap.cpp, above idrumMap[].\n", idx);
       }
@@ -224,7 +224,7 @@ void initNewDrumMap()
   {
     if (done[i]==false)
     {
-      printf("ERROR: iNewDrumMap[%i] is uninitialized!\n"
+      fprintf(stderr, "ERROR: iNewDrumMap[%i] is uninitialized!\n"
              "       this will be probably not a problem, but some programmer didn't read\n"
              "       flo's comment at drummap.cpp, above idrumMap[].\n", i);
       iNewDrumMap[i].name="";
@@ -504,15 +504,11 @@ void readDrumMap(Xml& xml, bool external)
             switch (token) {
                   case Xml::Error:
                   case Xml::End:
-                        MusEGlobal::audio->msgIdle(false);
-                        return;
+                            goto read_drummap_end;
                   case Xml::TagStart:
                         if (tag == "entry") {
                               if(i >= DRUM_MAPSIZE)
-                              {
-                                MusEGlobal::audio->msgIdle(false);
-                                return;
-                              }
+                                goto read_drummap_end;
                               readDrummapEntry(xml, external ? &MusEGlobal::drumMap[i] : 0);
                               ++i;
                               }
@@ -531,17 +527,14 @@ void readDrumMap(Xml& xml, bool external)
                                     MusEGlobal::drumInmap[(unsigned int)(MusEGlobal::drumMap[i].enote)] = i;
                                     MusEGlobal::drumOutmap[(unsigned int)(MusEGlobal::drumMap[i].anote)] = i;
                                     }
-                              
-                              MusEGlobal::song->changeAllPortDrumCtrlEvents(true); // Add all port controller events.
-                              
-                              MusEGlobal::audio->msgIdle(false);
-                              return;
+                              goto read_drummap_end;
                               }
                   default:
                         break;
                   }
             }
-            
+
+read_drummap_end:
             MusEGlobal::song->changeAllPortDrumCtrlEvents(true); // Add all port controller events.
             MusEGlobal::audio->msgIdle(false);
       }
@@ -584,10 +577,12 @@ void global_drum_ordering_t::write(int level, MusECore::Xml& xml)
 
 void global_drum_ordering_t::write_single(int level, MusECore::Xml& xml, const entry_t& entry)
 {
-  xml.tag(level++, "entry");
-  xml.strTag(level, "track", entry.first->name());
-  xml.intTag(level, "instrument", entry.second);
-  xml.etag(level, "entry");
+  const int trk_idx = MusEGlobal::song->tracks()->index(entry.first);
+  if(trk_idx >= 0)
+  {
+    const QString s= QString("<item track=\"%1\" instr=\"%2\" />").arg(trk_idx).arg(entry.second);
+    xml.put(level, "%s", s.toLatin1().constData());
+  }
 }
 
 void global_drum_ordering_t::read(MusECore::Xml& xml)
@@ -596,30 +591,33 @@ void global_drum_ordering_t::read(MusECore::Xml& xml)
   
   clear();
   
-	for (;;)
-	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
-			break;
-			
-		const QString& tag = xml.s1();
-		switch (token)
-		{
-			case Xml::TagStart:
-				if (tag == "entry")
-					append(read_single(xml));
-				else
-					xml.unknown("global_drum_ordering_t");
-				break;
-				
-			case Xml::TagEnd:
-				if (tag == "drum_ordering")
-					return;
-				
-			default:
-				break;
-		}
-	}
+  for (;;)
+  {
+    Xml::Token token = xml.parse();
+    if (token == Xml::Error || token == Xml::End)
+      break;
+      
+    const QString& tag = xml.s1();
+    switch (token)
+    {
+      case Xml::TagStart:
+        // OBSOLETE. Keep for backwards compatibility.
+        if (tag == "entry")
+          append(read_single(xml));
+        else if (tag == "item")
+          append(read_item(xml));
+        else
+          xml.unknown("global_drum_ordering_t");
+        break;
+        
+      case Xml::TagEnd:
+        if (tag == "drum_ordering")
+          return;
+        
+      default:
+        break;
+    }
+  }
 }
   
 global_drum_ordering_t::entry_t global_drum_ordering_t::read_single(MusECore::Xml& xml)
@@ -672,10 +670,86 @@ global_drum_ordering_t::entry_t global_drum_ordering_t::read_single(MusECore::Xm
   end_of_read_single:
   
   if (entry.first == NULL)
-    printf("ERROR: global_drum_ordering_t::read_single() couldn't find the specified track!\n");
+    fprintf(stderr, "ERROR: global_drum_ordering_t::read_single() couldn't find the specified track!\n");
   
   if (entry.second < 0 || entry.second > 127)
-    printf("ERROR: global_drum_ordering_t::read_single(): instrument number is out of bounds (%i)!\n", entry.second);
+    fprintf(stderr, "ERROR: global_drum_ordering_t::read_single(): instrument number is out of bounds (%i)!\n", entry.second);
+  
+  return entry;
+}
+
+global_drum_ordering_t::entry_t global_drum_ordering_t::read_item(MusECore::Xml& xml)
+{
+  using MusECore::Xml;
+  using MusEGlobal::song;
+  using MusECore::ciTrack;
+
+  entry_t entry;
+  entry.first=NULL;
+  entry.second=-1;
+
+  int trk_idx = -1;
+  int instr = -1;
+
+  for (;;)
+  {
+    Xml::Token token = xml.parse();
+    if (token == Xml::Error || token == Xml::End)
+      break;
+      
+    const QString& tag = xml.s1();
+    switch (token)
+    {
+      case Xml::TagStart:
+          xml.unknown("global_drum_ordering_t (single item)");
+        break;
+        
+      case Xml::Attribut:
+            if (tag == "track")
+              trk_idx = xml.s2().toInt();
+            else if (tag == "instr")
+              instr = xml.s2().toInt();
+            else
+              fprintf(stderr, "unknown tag %s\n", tag.toLatin1().constData());
+        break;
+
+      case Xml::TagEnd:
+        if (tag == "item")
+          goto end_of_read_item;
+        break;
+        
+      default:
+        break;
+    }
+  }
+
+  end_of_read_item:
+  
+  if(trk_idx < 0)
+  {
+    fprintf(stderr, "ERROR: global_drum_ordering_t::read_single() invalid track index (%i)!\n", trk_idx);
+    return entry;
+  }
+  if(instr < 0 || instr > 127)
+  {
+    fprintf(stderr, "ERROR: global_drum_ordering_t::read_single(): instrument number is out of bounds (%i)!\n", instr);
+    return entry;
+  }
+
+  MusECore::Track* trk = MusEGlobal::song->tracks()->index(trk_idx);
+  if(!trk)
+  {
+    fprintf(stderr, "ERROR: global_drum_ordering_t::read_single() couldn't find the specified track at idx %i !\n", trk_idx);
+    return entry;
+  }
+  if(!trk->isMidiTrack())
+  {
+    fprintf(stderr, "ERROR: global_drum_ordering_t::read_single() track is not a midi track at idx %i !\n", trk_idx);
+    return entry;
+  }
+  
+  entry.first = static_cast<MusECore::MidiTrack*>(trk);
+  entry.second = instr;
   
   return entry;
 }

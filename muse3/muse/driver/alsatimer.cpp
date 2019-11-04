@@ -25,14 +25,14 @@
 //
 //=========================================================
         
-
 #include "alsatimer.h"
-#include "globals.h"
 
 #ifdef ALSA_SUPPORT
 
 #include <climits>
 #include <stdio.h>
+
+#include "globals.h"
 
 #define ALSA_TIMER_DEBUG 0
 
@@ -46,6 +46,7 @@ namespace MusECore {
      id = NULL;
      info = NULL;
      params = NULL;
+     fds = NULL;
      }
      
   AlsaTimer::~AlsaTimer()
@@ -57,6 +58,7 @@ namespace MusECore {
     if (id) snd_timer_id_free(id);
     if (info) snd_timer_info_free(info);
     if (params) snd_timer_params_free(params);
+    if(fds) free(fds);
     }
 
 signed int AlsaTimer::initTimer(unsigned long desiredFrequency)
@@ -64,10 +66,12 @@ signed int AlsaTimer::initTimer(unsigned long desiredFrequency)
   if(TIMER_DEBUG || ALSA_TIMER_DEBUG)
     fprintf(stderr, "AlsaTimer::initTimer(this=%p)\n",this);
 
-  if(id || info || params)
+  if(fds || id || info || params)
   {
     fprintf(stderr, "AlsaTimer::initTimer(): called on initialised timer!\n");
-    return fds->fd;
+    if(fds)
+      return fds->fd;
+    return 0;
   }
 
   snd_timer_id_malloc(&id);

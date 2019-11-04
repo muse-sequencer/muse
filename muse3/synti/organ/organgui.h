@@ -31,7 +31,6 @@
 #include "mpevent.h"   
 
 class QWidget;
-class QSignalMapper;
 
 #define NUM_GUI_CONTROLLER 18
 
@@ -42,7 +41,6 @@ class QSignalMapper;
 class OrganGui : public QWidget, public Ui::OrganGuiBase, public MessGui {
       Q_OBJECT
 
-      QSignalMapper* map;
       SynthGuiCtrl dctrl[NUM_GUI_CONTROLLER];
       void setParam(int, int);
 

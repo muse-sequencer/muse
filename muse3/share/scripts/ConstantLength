@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #=============================================================================
 #  MusE
@@ -24,15 +24,15 @@
 #=============================================================================
 
 import sys,time
-from PyQt4 import QtGui, QtCore
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QGridLayout, QLabel, QComboBox
 
-class ScriptClass(QtGui.QWidget):
+class ScriptClass(QWidget):
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QWidget.__init__(self, parent)
 
         self.setWindowTitle('Constant length')
-        title = QtGui.QLabel('Make all events of length:')
-        self.titleEdit = QtGui.QComboBox()
+        title = QLabel('Make all events of length:')
+        self.titleEdit = QComboBox()
         self.titleEdit.addItem('1/1',1)
         self.titleEdit.addItem('1/2',2)
         self.titleEdit.addItem('1/4',4)
@@ -42,9 +42,9 @@ class ScriptClass(QtGui.QWidget):
         self.titleEdit.addItem('1/64',64)
         self.titleEdit.setCurrentIndex(4)
 
-        button = QtGui.QPushButton("Execute")
-        self.connect(button,  QtCore.SIGNAL('clicked()'), self.execute) 
-        grid = QtGui.QGridLayout()
+        button = QPushButton("Execute")
+        button.clicked.connect(self.execute)
+        grid = QGridLayout()
         grid.setSpacing(3)
 
         grid.addWidget(title, 1, 0)
@@ -61,16 +61,16 @@ class ScriptClass(QtGui.QWidget):
         inputEvents = testFile.readlines()
         testFile.close()
 
-        beatDiv = self.titleEdit.itemData(self.titleEdit.currentIndex()).toInt()[0]
+        beatDiv = self.titleEdit.itemData(self.titleEdit.currentIndex())
         print ("beatDiv=",beatDiv)
         eventLen=0
         #get beat length to calculate minimum length of event
         for line in inputEvents:
             if line.startswith('BEATLEN'):
               tag,tick = line.split(' ')
-              eventLen=int(tick/beatDiv*4)
+              eventLen=int(int(tick)/beatDiv * 4)
               break
-        
+
         outputEvents=[]
         #loop through events
         for line in inputEvents:
@@ -79,7 +79,7 @@ class ScriptClass(QtGui.QWidget):
               tag,tick,note,length,velocity = line.split(' ')
 
               length=eventLen
-              newLine=tag+" "+tick+" "+note+" "+str(length)+" "+velocity
+              newLine=tag+" "+tick+" "+note+" "+str(length)+" "+velocity + "\n"
               outputEvents.append(newLine)
                 
             else:
@@ -93,7 +93,7 @@ class ScriptClass(QtGui.QWidget):
 
 
 
-app = QtGui.QApplication(sys.argv)
+app = QApplication(sys.argv)
 qb = ScriptClass()
 qb.show()
 sys.exit(app.exec_())

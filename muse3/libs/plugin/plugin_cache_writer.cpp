@@ -627,6 +627,7 @@ bool scanDssiDescriptor(
   {
     info->_type = PluginScanInfoStruct::PluginTypeDSSIVST;
     info->_requiredFeatures |= MusECore::PluginFixedBlockSize;
+    info->_requiredFeatures |= MusECore::PluginCoarseBlockSize;
   }
 
   if(dssi_descr->run_synth || dssi_descr->run_synth_adding ||
@@ -1777,9 +1778,13 @@ void scanLinuxVSTPlugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*de
 #define LV2_F_BOUNDED_BLOCK_LENGTH LV2_BUF_SIZE__boundedBlockLength
 #define LV2_F_FIXED_BLOCK_LENGTH LV2_BUF_SIZE__fixedBlockLength
 #define LV2_F_POWER_OF_2_BLOCK_LENGTH LV2_BUF_SIZE__powerOf2BlockLength
+// BUG FIXME: 'coarseBlockLength' is NOT in the lv2 buf-size.h header file!
+// #define LV2_F_COARSE_BLOCK_LENGTH LV2_BUF_SIZE__coarseBlockLength
+#define LV2_F_COARSE_BLOCK_LENGTH LV2_BUF_SIZE_PREFIX "coarseBlockLength"
 #define LV2_P_SEQ_SIZE LV2_BUF_SIZE__sequenceSize
 #define LV2_P_MAX_BLKLEN LV2_BUF_SIZE__maxBlockLength
 #define LV2_P_MIN_BLKLEN LV2_BUF_SIZE__minBlockLength
+#define LV2_P_NOM_BLKLEN LV2_BUF_SIZE__nominalBlockLength
 #define LV2_P_SAMPLE_RATE LV2_PARAMETERS__sampleRate
 #define LV2_F_OPTIONS LV2_OPTIONS__options
 #define LV2_F_URID_MAP LV2_URID__map
@@ -1843,6 +1848,7 @@ LV2_Feature lv2Features [] =
    {LV2_F_BOUNDED_BLOCK_LENGTH, NULL},
    {LV2_F_FIXED_BLOCK_LENGTH, NULL},
    {LV2_F_POWER_OF_2_BLOCK_LENGTH, NULL},
+   {LV2_F_COARSE_BLOCK_LENGTH, NULL},
    {LV2_F_UI_PARENT, NULL},
    {LV2_F_INSTANCE_ACCESS, NULL},
    {LV2_F_UI_EXTERNAL_HOST, NULL},
@@ -1853,7 +1859,9 @@ LV2_Feature lv2Features [] =
    {LV2_UI__resize, NULL},
    {LV2_PROGRAMS__Host, NULL},
    {LV2_LOG__log, NULL},
+#ifdef LV2_MAKE_PATH_SUPPORT
    {LV2_STATE__makePath, NULL},
+#endif
    {LV2_STATE__mapPath, NULL},
    {LV2_F_STATE_CHANGED, NULL},
    {LV2_F_DATA_ACCESS, NULL} //must be the last always!
@@ -2169,6 +2177,8 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
         reqfeat |= MusECore::PluginFixedBlockSize;
       else if(std::strcmp(uri, LV2_F_POWER_OF_2_BLOCK_LENGTH) == 0)
         reqfeat |= MusECore::PluginPowerOf2BlockSize;
+      else if(std::strcmp(uri, LV2_F_COARSE_BLOCK_LENGTH) == 0)
+        reqfeat |= MusECore::PluginCoarseBlockSize;
     }
     else
     {

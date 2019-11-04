@@ -231,7 +231,6 @@ class VstNativeSynthIF : public SynthIF
       virtual bool hasNativeGui() const;
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const ;
       virtual void setNativeGeometry(int, int, int, int);
-      virtual void preProcessAlways() { }
       virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned nframes, float** buffer) ;
       virtual MidiPlayEvent receiveEvent();
       virtual int eventsPending() const { return 0; }

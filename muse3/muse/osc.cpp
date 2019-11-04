@@ -341,8 +341,13 @@ void exitOSC()
     // Does not return a value.
     lo_server_thread_stop(serverThread);
     lo_server_thread_free(serverThread);
+    serverThread = 0;
   }  
-  serverThread = 0;
+  if(url)
+  {
+    free(url);
+    url = 0;
+  }
 }
 
 //---------------------------------------------------------

@@ -350,12 +350,12 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
     MusECore::Track* track    = npart->track();
     MusECore::Track* dtrack=NULL;
     unsigned dtick  = newpos.x(); // FIXME TODO make subtick-compatible!
-    unsigned ntrack = y2pitch(item->mp().y());
+    int ntrack = y2pitch(item->mp().y());
     MusECore::Track::TrackType type = track->type();
     if (tracks->index(track) == ntrack && (dtick == spart->tick())) {
         return false;
     }
-    if (ntrack >= tracks->size()) {
+    if (ntrack >= (int)tracks->size()) {
         ntrack = tracks->size();
         if (MusEGlobal::debugMsg)
             printf("PartCanvas::moveItem - add new track\n");
@@ -3063,7 +3063,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
       // GRID //
       //////////
 
-      QColor baseColor(MusEGlobal::config.partCanvasBg.light(104));
+      QColor baseColor(MusEGlobal::config.partCanvasBg.lighter(104));
       QPen pen;
       pen.setCosmetic(true);
 
@@ -3079,7 +3079,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
         
         drawTickRaster(p, mr, mrg, rast,
                          false, false, false,
-                         baseColor.dark(115), 
+                         baseColor.darker(115), 
                          baseColor);
       }
 
@@ -3118,7 +3118,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
 //                 fprintf(stderr, "... bottom edge in range. Drawing bottom edge at mx0_lim:%d myy_2:%d mx_2:%d myy_2:%d\n",
 //                         mx0_lim, myy_2, mx_2, myy_2);
                 
-                pen.setColor(baseColor.dark(130));
+                pen.setColor(baseColor.darker(130));
                 p.setPen(pen);
                 p.drawLine(mx0_lim, myy_2, mx_2, myy_2);
               }
@@ -3171,7 +3171,7 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& mr, const QRegion&)
           yy += th;
           }
 
-    unsigned int startPos = MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->getStartExternalRecTick() : MusEGlobal::audio->getStartRecordPos().tick();
+    unsigned int startPos = MusEGlobal::extSyncFlag ? MusEGlobal::audio->getStartExternalRecTick() : MusEGlobal::audio->getStartRecordPos().tick();
     if (MusEGlobal::song->punchin())
       startPos=MusEGlobal::song->lpos();
     int startx = mapx(startPos);

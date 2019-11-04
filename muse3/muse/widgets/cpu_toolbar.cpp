@@ -90,7 +90,12 @@ QSize PaddedValueLabel::sizeHint() const
     s = QString("%1%L2%3").arg(_prefix).arg(8.8888, _fieldWidth, 'f', _precision, QLatin1Char('8')).arg(_suffix);
   else
     s = QString("%1%2%3").arg(_prefix).arg(8, _fieldWidth, 10, QLatin1Char('8')).arg(_suffix);
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+  const int w = fontMetrics().horizontalAdvance(s);
+#else
   const int w = fontMetrics().width(s);
+#endif
   const int h = QLabel::sizeHint().height();
   return QSize(w, h);
 }

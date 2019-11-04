@@ -134,14 +134,14 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
 
 void TList::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if (flags._flags & (SC_MUTE | SC_SOLO | SC_RECFLAG | SC_TRACK_REC_MONITOR
+      if (flags & (SC_MUTE | SC_SOLO | SC_RECFLAG | SC_TRACK_REC_MONITOR
          | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED
          | SC_TRACK_MOVED
          | SC_TRACK_SELECTION | SC_ROUTE | SC_CHANNELS
          | SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED
          | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED ))
             update();
-      if (flags._flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
+      if (flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
             adjustScrollbar();
       }
 
@@ -203,7 +203,8 @@ bool TList::event(QEvent *event)
                if (helpEvent->pos().y() > yy && helpEvent->pos().y() < yy + trackHeight) {
                    if (type == MusECore::Track::AUDIO_SOFTSYNTH) {
                      MusECore::SynthI *s = (MusECore::SynthI*)track;
-                     QToolTip::showText(helpEvent->globalPos(),track->name() + " : " + s->synth()->description());
+                     QToolTip::showText(helpEvent->globalPos(),track->name() + QString(" : ") +
+                       (s->synth() ? s->synth()->description() : QString(tr("SYNTH IS UNAVAILABLE!"))));
                    }
                    else
                       QToolTip::showText(helpEvent->globalPos(),track->name());
@@ -323,9 +324,14 @@ void TList::paint(const QRect& r)
                         case MusECore::Track::AUDIO_AUX:
                               bg = MusEGlobal::config.auxTrackBg;
                               break;
-                        case MusECore::Track::AUDIO_SOFTSYNTH:
-                              bg = MusEGlobal::config.synthTrackBg;
+                        case MusECore::Track::AUDIO_SOFTSYNTH: {
+                              MusECore::SynthI *s = (MusECore::SynthI*)track;
+                              if(s->synth())
+                                bg = MusEGlobal::config.synthTrackBg;
+                              else
+                                bg = QColor(198, 77, 79);
                               break;
+                            }
                         }
 
                   p.setPen(palette().color(QPalette::Active, QPalette::Text));
@@ -353,6 +359,9 @@ void TList::paint(const QRect& r)
                   if(!header->isSectionHidden(section))
                   {
                     switch (section) {
+                          case COL_TRACK_IDX:
+                                p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, QString::number(MusEGlobal::song->tracks()->index(track) + 1));
+                                break;
                           case COL_INPUT_MONITOR:
                                 if (track->canRecordMonitor()) {
                                       (track->recMonitor() ? monitorOnSVGIcon : monitorOffSVGIcon)->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
@@ -398,11 +407,7 @@ void TList::paint(const QRect& r)
                                       }
                                 break;
                           case COL_NAME:
-                                if (track->type() == MusECore::Track::AUDIO_AUX) {
-                                  p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, ((MusECore::AudioAux *)track)->auxName());
-                                } else {
                                   p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, track->name());
-                                }
                                 break;
                           case COL_OCHANNEL:
                                 {
@@ -955,6 +960,18 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                 }
               }
             }
+            else if (section == COL_TRACK_IDX) {
+                if (button == Qt::LeftButton) {
+                    // Select all tracks of the same type
+                    MusEGlobal::song->selectAllTracks(false);
+                    MusECore::TrackList* all_tl = MusEGlobal::song->tracks();
+                    foreach (MusECore::Track *other_t, *all_tl) {
+                        if (other_t->type() == t->type())
+                            other_t->setSelected(true);
+                    }
+                    MusEGlobal::song->update(SC_TRACK_SELECTION);
+                }
+            }
             else if (section == COL_OCHANNEL) {
                   // Enabled for audio tracks. And synth channels cannot be changed ATM.
                   // Default to track port if -1 and track channel if -1.
@@ -1045,6 +1062,10 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       {
         MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(t);
         PopupMenu* p = new PopupMenu;
+
+        if(!synth->synth())
+          p->addAction(tr("SYNTH IS UNAVAILABLE!"));
+
         QAction* gact = p->addAction(tr("show gui"));
         gact->setCheckable(true);
         gact->setEnabled(synth->hasGui());
@@ -1087,14 +1108,8 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
               synth->showNativeGui(show);
               }
 #ifdef LV2_SUPPORT
-        else if (mSubPresets != NULL && ract != NULL) {
-           QWidget *mwidget = ract->parentWidget();
-           if (mwidget != NULL) {
-               if(mSubPresets == dynamic_cast<PopupMenu*>(mwidget)) {
-                  static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
-               }
-           }
-
+        else if (mSubPresets != NULL && ract != NULL && ract->data().canConvert<void *>()) {
+          static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
         }
 #endif
         delete p;
@@ -1108,6 +1123,14 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       MusECore::MidiPort* port = &MusEGlobal::midiPorts[oPort];
 
       PopupMenu* p = new PopupMenu;
+
+      if(port->device() && port->device()->isSynti())
+      {
+        MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(port->device());
+        if(!synth->synth())
+          p->addAction(tr("SYNTH IS UNAVAILABLE!"));
+      }
+
       QAction* gact = p->addAction(tr("show gui"));
       gact->setCheckable(true);
       gact->setEnabled(port->hasGui());
@@ -1155,13 +1178,12 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
             port->showNativeGui(!port->nativeGuiVisible());
             }
 #ifdef LV2_SUPPORT
-        else if (mSubPresets != NULL && ract != NULL) {
-           QWidget *mwidget = ract->parentWidget();
-           if (mwidget != NULL && port->device() && port->device()->isSynti()) {
+        else if (mSubPresets != NULL && ract != NULL && ract->data().canConvert<void *>())
+        {
+           if (port->device() && port->device()->isSynti())
+           {
                MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(port->device());
-               if(mSubPresets == dynamic_cast<PopupMenu*>(mwidget)) {
-                  static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
-               }
+               static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
            }
         }
 #endif
@@ -1377,7 +1399,7 @@ void TList::changeAutomationColor(QAction* act)
   {
       if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
           tr("Clear all controller events?"), tr("&Ok"), tr("&Cancel"),
-          QString::null, 0, 1 ) == 0)
+          QString(), 0, 1 ) == 0)
       {
         MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
         MusEGlobal::audio->msgClearControllerEvents(track, id);
@@ -1731,6 +1753,26 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   }
                   break;
                 }
+
+            case COL_TRACK_IDX:
+                  mode = START_DRAG;  // Allow a track drag to start.
+                  if (button == Qt::LeftButton) {
+                        if (!ctrl) {
+                              MusEGlobal::song->selectAllTracks(false);
+                              t->setSelected(true);
+
+                              // rec enable track if expected
+                              MusECore::TrackList recd = getRecEnabledTracks();
+                              if (recd.size() == 1 && MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+                                MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
+                                MusEGlobal::song->setRecordFlag(t,true);
+                              }
+                              }
+                        else
+                              t->setSelected(!t->selected());
+                        MusEGlobal::song->update(SC_TRACK_SELECTION);
+                    }
+                  break;
 
             case COL_INPUT_MONITOR:
                   {

@@ -32,6 +32,7 @@
 #include "tools.h"
 #include "event.h"
 #include "midictrl.h"
+#include "part.h"
 
 // Whether to show an additional 'Alt' button beside
 //  the trackinfo button, to show the old midi trackinfo panel.
@@ -52,9 +53,6 @@ class QCloseEvent;
 class QKeyEvent;
 
 namespace MusECore {
-class MidiPart;
-class Part;
-class PartList;
 class Track;
 class Xml;
 }
@@ -147,6 +145,9 @@ class PianoRoll : public MidiEditor {
       static int _canvasWidthInit;
       static int colorModeInit;
 
+      // Initial view state.
+      MusECore::MidiPartViewState _viewState;
+      
       bool _playEvents;
 
       void initShortcuts();
@@ -188,15 +189,17 @@ class PianoRoll : public MidiEditor {
       void execDeliveredScript(int id);
       void execUserScript(int id);
       void focusCanvas();
+      void storeInitialViewState() const;
       
    public:
-      PianoRoll(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = INT_MAX);
-      ~PianoRoll();
+      PianoRoll(MusECore::PartList*, QWidget* parent = 0, const char* name = 0,
+                unsigned initPos = INT_MAX, bool showDefaultControls = false);
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;
       static void readConfiguration(MusECore::Xml&);
       static void writeConfiguration(int, MusECore::Xml&);
       CtrlEdit* addCtrl(int ctl_num = MusECore::CTRL_VELOCITY);
+      MusECore::MidiPartViewState getViewState() const;
       };
 
 } // namespace MusEGui

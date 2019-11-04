@@ -402,7 +402,7 @@ bool addRoute(Route src, Route dst)
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
             fprintf(stderr, "addRoute: destination is midi port:%d, but source is not allowed\n", dst.midiPort);
             return false;
-#endif        
+#else        
         
             if(src.type != Route::TRACK_ROUTE || !src.track->isMidiTrack())
             {
@@ -433,6 +433,7 @@ bool addRoute(Route src, Route dst)
             }
             
             return ret1 || ret2;
+#endif        
       }
       else 
       {
@@ -828,6 +829,39 @@ char* Route::name(char* str, int str_size, int preferred_name_or_alias) const
 }
 
 //---------------------------------------------------------
+//   displayName
+//    create string name representation for audio node
+//---------------------------------------------------------
+
+QString Route::displayName(int preferred_name_or_alias) const
+{
+      if(type == MIDI_DEVICE_ROUTE) 
+      {
+        if(device)
+          return device->name();
+        return QWidget::tr("None");
+      }
+      else
+      if(type == JACK_ROUTE) 
+      {
+        if(MusEGlobal::checkAudioDevice() && jackPort)
+        {
+          char s[ROUTE_PERSISTENT_NAME_SIZE];
+          return QString(MusEGlobal::audioDevice->portName(jackPort, s, ROUTE_PERSISTENT_NAME_SIZE, preferred_name_or_alias));
+        }
+        return QString(persistentJackPortName);
+        
+      }
+      else
+      if(type == MIDI_PORT_ROUTE) 
+      {
+        return ROUTE_MIDIPORT_NAME_PREFIX + QString().setNum(midiPort);
+      }
+      else
+        return QString("%1:%2").arg(MusEGlobal::song->tracks()->index(track) + 1).arg(track2name(track));
+}
+
+//---------------------------------------------------------
 //   name2route
 //---------------------------------------------------------
 
@@ -1042,7 +1076,7 @@ bool routeCanConnect(const Route& src, const Route& dst)
         
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
             return false;
-#endif  
+#else  
         
             if(src.type != Route::TRACK_ROUTE || !src.track->isMidiTrack() || src.channel < -1 || src.channel >= MusECore::MUSE_MIDI_CHANNELS)
               return false;
@@ -1053,6 +1087,7 @@ bool routeCanConnect(const Route& src, const Route& dst)
               return true;
             
             return false;
+#endif  
       }
       else 
       {
@@ -1304,7 +1339,7 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
         
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
         return false;
-#endif        
+#else        
         
         if(!dst.isValid() || dst.channel < -1 || dst.channel >= MusECore::MUSE_MIDI_CHANNELS ||
            src.type != Route::TRACK_ROUTE || !src.exists() || !src.track->isMidiTrack() || src.channel < -1 || src.channel >= MusECore::MUSE_MIDI_CHANNELS)
@@ -1315,6 +1350,7 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
           return true;
         
         return false;
+#endif        
       }
       else 
       {
@@ -1433,7 +1469,7 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
         
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
             return false;
-#endif      
+#else      
             
             if(src.type != Route::TRACK_ROUTE || !src.track->isMidiTrack())
               return false;
@@ -1446,6 +1482,7 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
             
             // If one route node exists and one is missing, it's OK to reconnect, addRoute will take care of it.
               return true;
+#endif      
       }
       else 
       {
@@ -1620,7 +1657,8 @@ void Route::read(Xml& xml)
 {
       QString s;
       int dtype = MidiDevice::ALSA_MIDI;
-      int port = -1;                             
+      int port = -1;
+      int track_idx = -1;
       RouteType rtype = Route::TRACK_ROUTE;
       
       for (;;) 
@@ -1648,6 +1686,9 @@ void Route::read(Xml& xml)
                         if(tag == "name")
                           s = xml.s2();
                         else
+                        if(tag == "track") 
+                          track_idx = xml.s2().toInt();
+                        else
                         if(tag == "mport") 
                         {
                           port = xml.s2().toInt();
@@ -1671,8 +1712,26 @@ void Route::read(Xml& xml)
                             fprintf(stderr, "Route::read(): midi port <%d> out of range\n", port);
                         }
                         else
+                        // New track index method replaces obsolete track name method below.
+                        if(track_idx >= 0)
+                        {
+                          if(rtype == TRACK_ROUTE) 
+                          {
+                            const TrackList* tl = MusEGlobal::song->tracks();
+                            Track* t = tl->index(track_idx);
+                            if(t)
+                            {
+                              track = t;
+                              type = rtype;
+                            }
+                            else
+                              fprintf(stderr, "Route::read(): track index <%d> not found\n", track_idx);
+                          }
+                        }
+                        else
                         if(!s.isEmpty())
                         {
+                          // OBSOLETE. Keep for backwards compatibility. Replaced by track index method above.
                           if(rtype == TRACK_ROUTE) 
                           {
                             TrackList* tl = MusEGlobal::song->tracks();

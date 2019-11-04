@@ -106,8 +106,10 @@ QString museGlobalShare;
 QString museUser;
 QString museProject;
 QString museProjectInitPath("./");
-QString configName = QString(getenv("HOME")) + QString("/.config/MusE/MusE.cfg");
-QString configPath = QFileInfo(configName).absoluteDir().absolutePath();
+
+QString configName;
+QString configPath;
+QString cachePath;
 QString museInstruments;
 QString museUserInstruments;
 
@@ -130,6 +132,11 @@ bool loadNativeVST = true;
 bool loadDSSI = true;
 bool loadLV2 = true;
 bool usePythonBridge = false;
+QString pythonBridgePyroNSHostname;
+QString pythonBridgePyroNSPort;
+QString pythonBridgePyroDaemonHostname;
+QString pythonBridgePyroDaemonPort;
+float pythonBridgePyroCommTimeout = 5.0;
 bool useLASH = true;
 bool useAlsaWithJack = false;
 bool noAutoStartJack = false;

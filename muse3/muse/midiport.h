@@ -29,7 +29,6 @@
 #include "sync.h"
 #include "route.h"
 #include "mpevent.h"
-#include "lock_free_buffer.h"
 #include "mididev.h"
 
 class QString;
@@ -82,8 +81,6 @@ class MidiPort {
       //  something about the port changes like device, Jack routes, or instrument.
       bool _initializationsSent; 
 
-      static LockFreeMPSCRingBuffer<MidiPlayEvent> *_eventBuffers;
-
       RouteList _inRoutes, _outRoutes;
       
       void clearDevice();
@@ -92,12 +89,6 @@ class MidiPort {
       // Returns true if the controller was created.
       // To be called by gui thread only.
       bool createController(int chan, int ctrl);
-
-      // To be called from audio thread only. Returns true on success.
-      // If createAsNeeded is true, automatically send a message to the gui thread to
-      //  create items such as controllers, and cache the events sent to it and re-put
-      //  them after the controller has been created.
-      bool handleGui2AudioEvent(const MidiPlayEvent&, bool createAsNeeded);
 
    public:
       MidiPort();
@@ -221,11 +212,11 @@ class MidiPort {
 // TODO: An increment method seems possible: Wait for gui2audio to increment, then send to driver,
 //        which incurs up to one extra segment delay (if Jack midi).
       bool putControllerValue(int port, int chan, int ctlnum, double val, bool isDb);
-      // Process the gui2AudioFifo. Called from audio thread only.
-      static bool processGui2AudioEvents();
-
-      // Various IPC FIFOs.
-      static LockFreeMPSCRingBuffer<MidiPlayEvent> *eventBuffers() { return _eventBuffers; } 
+      // To be called from audio thread only. Returns true on success.
+      // If createAsNeeded is true, automatically send a message to the gui thread to
+      //  create items such as controllers, and cache the events sent to it and re-put
+      //  them after the controller has been created.
+      bool handleGui2AudioEvent(const MidiPlayEvent&, bool createAsNeeded);
 
       bool sendHwCtrlState(const MidiPlayEvent&, bool forceSend = false );
       AutomationType automationType(int channel) { return _automationType[channel]; }

@@ -240,7 +240,12 @@ void MeterSlider::paintEvent(QPaintEvent* ev)
    	p.setFont(f);
       p.setPen(QPen(Qt::darkGray, 2));
    	QFontMetrics fm(f);
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      int xt = 20 - fm.horizontalAdvance("00") - 5;
+#else
       int xt = 20 - fm.width("00") - 5;
+#endif
 
       QString s;
    	for (int i = 10; i < 70; i += 10) {

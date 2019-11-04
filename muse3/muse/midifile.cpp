@@ -702,7 +702,7 @@ void MidiFile::writeEvent(const MidiPlayEvent* event)
             case ME_SYSEX:
                   put(0xf0);
                   putvl(event->len() + 1);  // including 0xf7
-                  write(event->data(), event->len());
+                  write(event->constData(), event->len());
                   put(0xf7);
                   status = -1;      // invalidate running status
                   break;
@@ -710,7 +710,7 @@ void MidiFile::writeEvent(const MidiPlayEvent* event)
                   put(0xff);
                   put(event->dataA());
                   putvl(event->len());
-                  write(event->data(), event->len());
+                  write(event->constData(), event->len());
                   status = -1;
                   break;
             }

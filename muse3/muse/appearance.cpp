@@ -82,7 +82,12 @@ class BgPreviewWidget : public QWidget {
            //p.fillRect(QRect(w/2 - text_w/2,6,text_w + 20,text_h+4), dark);
 
            QFontMetrics fm = p.fontMetrics();
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+           text_w = fm.horizontalAdvance(imagefile);
+#else
            text_w = fm.width(imagefile);
+#endif
            text_h = fm.height();
 
            // Do the text shadow first

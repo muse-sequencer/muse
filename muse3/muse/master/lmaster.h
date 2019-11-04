@@ -37,7 +37,7 @@ class QLineEdit;
 class QComboBox;
 
 namespace MusECore {
-class SigEvent;
+struct SigEvent;
 };
 
 namespace MusEGui {

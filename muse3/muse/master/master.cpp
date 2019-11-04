@@ -72,7 +72,7 @@ void Master::songChanged(MusECore::SongChangedStruct_t type)
 {
   //if(_isDeleting) return; // todo: If things get complicated don't forget some mechanism to ignore while while deleting to prevent possible crash.
   
-  if (type._flags & (SC_SIG | SC_TEMPO | SC_KEY ))  // TEST: Reasonable to start with, may need more.
+  if (type & (SC_SIG | SC_TEMPO | SC_KEY ))  // TEST: Reasonable to start with, may need more.
     redraw();
 }
 

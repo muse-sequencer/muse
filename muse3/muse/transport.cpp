@@ -46,6 +46,8 @@
 #include "globaldefs.h"
 #include "pixmap_button.h"
 #include "tempolabel.h"
+#include "operations.h"
+#include "tempo.h"
 
 namespace MusEGui {
 
@@ -477,8 +479,8 @@ Transport::Transport(QWidget* parent, const char* name)
       jackTransportButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
 
       clickButton->setChecked(MusEGlobal::song->click());
-      syncButton->setChecked(MusEGlobal::extSyncFlag.value());
-      jackTransportButton->setChecked(MusEGlobal::useJackTransport.value());
+      syncButton->setChecked(MusEGlobal::extSyncFlag);
+      jackTransportButton->setChecked(MusEGlobal::useJackTransport);
       clickButton->setFocusPolicy(Qt::NoFocus);
       syncButton->setFocusPolicy(Qt::NoFocus);
       jackTransportButton->setFocusPolicy(Qt::NoFocus);
@@ -490,11 +492,8 @@ Transport::Transport(QWidget* parent, const char* name)
       button1->addStretch();
       
       connect(clickButton, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setClick(bool)));
-      connect(syncButton, SIGNAL(toggled(bool)), &MusEGlobal::extSyncFlag, SLOT(setValue(bool)));
-      connect(jackTransportButton, SIGNAL(toggled(bool)),&MusEGlobal::useJackTransport, SLOT(setValue(bool)));
-
-      connect(&MusEGlobal::extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(syncChanged(bool)));
-      connect(&MusEGlobal::useJackTransport, SIGNAL(valueChanged(bool)), SLOT(jackSyncChanged(bool)));
+      connect(syncButton, SIGNAL(toggled(bool)), SLOT(extSyncClicked(bool)));
+      connect(jackTransportButton, SIGNAL(toggled(bool)), SLOT(useJackTransportClicked(bool)));
 
       connect(MusEGlobal::song, SIGNAL(clickChanged(bool)), this, SLOT(setClickFlag(bool)));
 
@@ -541,7 +540,7 @@ Transport::Transport(QWidget* parent, const char* name)
       hbox->addWidget(righthandle);
       
       songChanged(SC_EVERYTHING);
-      syncChanged(MusEGlobal::extSyncFlag.value());
+      syncChanged(MusEGlobal::extSyncFlag);
       }
 
 //---------------------------------------------------------
@@ -624,7 +623,7 @@ void Transport::setPos(int idx, unsigned v, bool)
                     slider->setValue(v);
                     slider->blockSignals(false);
                   }  
-                  if (!MusEGlobal::extSyncFlag.value())
+                  if (!MusEGlobal::extSyncFlag)
                     setTempo(MusEGlobal::tempomap.tempo(v));
                   
                   {
@@ -760,18 +759,26 @@ void Transport::songChanged(MusECore::SongChangedStruct_t flags)
       {
       slider->setRange(0, MusEGlobal::song->len());
       int cpos  = MusEGlobal::song->cpos();
-      if (flags._flags & (SC_MASTER | SC_TEMPO)) {
-            if(!MusEGlobal::extSyncFlag.value())
+      if (flags & (SC_MASTER | SC_TEMPO)) {
+            if(!MusEGlobal::extSyncFlag)
               setTempo(MusEGlobal::tempomap.tempo(cpos));
             }
-      if (flags._flags & SC_SIG) {
+      if (flags & SC_SIG) {
             int z, n;
             MusEGlobal::sigmap.timesig(cpos, z, n);
             setTimesig(z, n);
             }
-      if (flags._flags & SC_MASTER)
+      if (flags & SC_MASTER)
       {
-            tempo->setMasterTrack(MusEGlobal::song->masterFlag());
+            tempo->setMasterTrack(MusEGlobal::tempomap.masterFlag());
+      }
+      if (flags & SC_EXTERNAL_MIDI_SYNC)
+      {
+            syncChanged(MusEGlobal::extSyncFlag);
+      }
+      if (flags & SC_USE_JACK_TRANSPORT)
+      {
+            jackSyncChanged(MusEGlobal::useJackTransport);
       }
       }
 
@@ -843,6 +850,28 @@ void Transport::sigChange(const MusECore::TimeSignature& sig)
   // Add will replace if found. 
   MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
                             MusEGlobal::song->cPos().tick(), sig.z, sig.n));
+}
+
+//---------------------------------------------------------
+//   extSyncClicked
+//---------------------------------------------------------
+
+void Transport::extSyncClicked(bool v)
+{
+  MusECore::PendingOperationList operations;
+  operations.add(MusECore::PendingOperationItem(&MusEGlobal::extSyncFlag, v, MusECore::PendingOperationItem::SetExternalSyncFlag));
+  MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+}
+
+//---------------------------------------------------------
+//   useJackTransportClicked
+//---------------------------------------------------------
+
+void Transport::useJackTransportClicked(bool v)
+{
+  MusECore::PendingOperationList operations;
+  operations.add(MusECore::PendingOperationItem(&MusEGlobal::useJackTransport, v, MusECore::PendingOperationItem::SetUseJackTransport));
+  MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 }
 
 void Transport::keyPressEvent(QKeyEvent* ev)

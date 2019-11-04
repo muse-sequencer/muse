@@ -84,7 +84,7 @@ namespace MusEGui {
 void MPConfig::closeEvent(QCloseEvent *event)
 {
     apply();
-    QSettings settings("MusE", "MusE-qt");
+    QSettings settings;
     settings.setValue("MPConfig/geometry", saveGeometry());
     QWidget::closeEvent(event);
 }
@@ -1119,7 +1119,7 @@ MPConfig::MPConfig(QWidget* parent)
    : QDialog(parent)
       {
       setupUi(this);
-      QSettings settings("MusE", "MusE-qt");
+      QSettings settings;
       restoreGeometry(settings.value("MPConfig/geometry").toByteArray());
 
       mdevView->setRowCount(MusECore::MIDI_PORTS);
@@ -1275,7 +1275,7 @@ void MPConfig::deviceSelectionChanged()
 
 void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if(!(flags._flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_INSTRUMENT)))
+      if(!(flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_INSTRUMENT)))
         return;
     
 #ifdef ALSA_SUPPORT

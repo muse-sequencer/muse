@@ -21,7 +21,6 @@
 //=========================================================
 
 #include <QMenu>
-#include <QSignalMapper>
 #include <QWheelEvent>
 
 #include "combobox.h"
@@ -36,18 +35,30 @@ ComboBox::ComboBox(QWidget* parent, const char* name)
    : QToolButton(parent)
       {
       setObjectName(name);
-      _currentItem = 0;
-
+      _currentItem = nullptr;
       menu = new QMenu(this);
-
-      autoTypeSignalMapper = new QSignalMapper(this);
-      connect(autoTypeSignalMapper, SIGNAL(mapped(int)), this, SLOT(activatedIntern(int)));
+      connect(menu, &QMenu::triggered, [this](QAction* act) { activatedIntern(act); } );
       }
 
 ComboBox::~ComboBox()
       {
       delete menu;
       }
+
+//---------------------------------------------------------
+//   findAction
+//---------------------------------------------------------
+
+QAction* ComboBox::findAction(int id) const
+{
+  QList<QAction*> l = menu->actions();
+  foreach(QAction* act, l)
+  {
+    if(act && act->data().isValid() && act->data().toInt() == id)
+      return act;
+  }
+  return nullptr;
+}
 
 //---------------------------------------------------------
 //   mousePressEvent
@@ -64,22 +75,40 @@ void ComboBox::mousePressEvent(QMouseEvent* /*ev*/)
 
 void ComboBox::wheelEvent(QWheelEvent* ev)
       {
-      int i = itemlist.indexOf(_currentItem);
-      int len = itemlist.count();
-      if (ev->delta() > 0 && i > 0)
-            activatedIntern(_currentItem-1);
-      else if (ev->delta() < 0 && -1 < i && i < len - 1)
-            activatedIntern(_currentItem+1);
+      QList<QAction*> l = menu->actions();
+      const int len = l.size();
+      if(len == 0)
+        return;
+
+      const int i = l.indexOf(_currentItem);
+      if(i >= 0)
+      {
+        if (ev->delta() > 0 && i > 0)
+              activatedIntern(l.at(i - 1));
+        else if (ev->delta() < 0 && i < len - 1)
+              activatedIntern(l.at(i + 1));
+      }
+      else
+      {
+        activatedIntern(l.at(0));
+      }
       }
 
 //---------------------------------------------------------
 //   activated
 //---------------------------------------------------------
 
-void ComboBox::activatedIntern(int id)
+void ComboBox::activatedIntern(QAction* act)
       {
-      setCurrentItem(id);
+      if(!act)
+        return;
+      setText(act->text());
+      int id = -1;
+      if(act->data().isValid())
+        id = act->data().toInt();
+      _currentItem = act;
       emit activated(id);
+      emit activated(act);
       }
 
 //---------------------------------------------------------
@@ -88,9 +117,12 @@ void ComboBox::activatedIntern(int id)
 
 void ComboBox::setCurrentItem(int id)
       {
-      QAction* act = (QAction*) autoTypeSignalMapper->mapping(id);
-      _currentItem = id;
-      setText(act->text());
+      QAction* act = findAction(id);
+      _currentItem = act;
+      if(act)
+        setText(act->text());
+      else
+        setText(QString());
       }
 
 //---------------------------------------------------------
@@ -100,9 +132,7 @@ void ComboBox::setCurrentItem(int id)
 void ComboBox::addAction(const QString& s, int id)
       {
       QAction *act = menu->addAction(s);
-      connect(act, SIGNAL(triggered()), autoTypeSignalMapper, SLOT(map()));
-      autoTypeSignalMapper->setMapping(act, id);
-      itemlist << id;
+      act->setData(id);
       }
 
       
@@ -113,18 +143,30 @@ void ComboBox::addAction(const QString& s, int id)
 CompactComboBox::CompactComboBox(QWidget* parent, const QIcon& icon, const char* name)
    : CompactToolButton(parent, icon, name)
       {
-      _currentItem = 0;
-
+      _currentItem = nullptr;
       menu = new QMenu(this);
-
-      autoTypeSignalMapper = new QSignalMapper(this);
-      connect(autoTypeSignalMapper, SIGNAL(mapped(int)), this, SLOT(activatedIntern(int)));
+      connect(menu, &QMenu::triggered, [this](QAction* act) { activatedIntern(act); } );
       }
 
 CompactComboBox::~CompactComboBox()
       {
       delete menu;
       }
+
+//---------------------------------------------------------
+//   findAction
+//---------------------------------------------------------
+
+QAction* CompactComboBox::findAction(int id) const
+{
+  QList<QAction*> l = menu->actions();
+  foreach(QAction* act, l)
+  {
+    if(act && act->data().isValid() && act->data().toInt() == id)
+      return act;
+  }
+  return nullptr;
+}
 
 //---------------------------------------------------------
 //   mousePressEvent
@@ -141,22 +183,40 @@ void CompactComboBox::mousePressEvent(QMouseEvent* /*ev*/)
 
 void CompactComboBox::wheelEvent(QWheelEvent* ev)
       {
-      int i = itemlist.indexOf(_currentItem);
-      int len = itemlist.count();
-      if (ev->delta() > 0 && i > 0)
-            activatedIntern(_currentItem-1);
-      else if (ev->delta() < 0 && -1 < i && i < len - 1)
-            activatedIntern(_currentItem+1);
+      QList<QAction*> l = menu->actions();
+      const int len = l.size();
+      if(len == 0)
+        return;
+
+      const int i = l.indexOf(_currentItem);
+      if(i >= 0)
+      {
+        if (ev->delta() > 0 && i > 0)
+              activatedIntern(l.at(i - 1));
+        else if (ev->delta() < 0 && i < len - 1)
+              activatedIntern(l.at(i + 1));
+      }
+      else
+      {
+        activatedIntern(l.at(0));
+      }
       }
 
 //---------------------------------------------------------
 //   activated
 //---------------------------------------------------------
 
-void CompactComboBox::activatedIntern(int id)
+void CompactComboBox::activatedIntern(QAction* act)
       {
-      setCurrentItem(id);
+      if(!act)
+        return;
+      setText(act->text());
+      int id = -1;
+      if(act->data().isValid())
+        id = act->data().toInt();
+      _currentItem = act;
       emit activated(id);
+      emit activated(act);
       }
 
 //---------------------------------------------------------
@@ -165,9 +225,12 @@ void CompactComboBox::activatedIntern(int id)
 
 void CompactComboBox::setCurrentItem(int id)
       {
-      QAction* act = (QAction*) autoTypeSignalMapper->mapping(id);
-      _currentItem = id;
-      setText(act->text());
+      QAction* act = findAction(id);
+      _currentItem = act;
+      if(act)
+        setText(act->text());
+      else
+        setText(QString());
       }
 
 //---------------------------------------------------------
@@ -177,9 +240,7 @@ void CompactComboBox::setCurrentItem(int id)
 void CompactComboBox::addAction(const QString& s, int id)
       {
       QAction *act = menu->addAction(s);
-      connect(act, SIGNAL(triggered()), autoTypeSignalMapper, SLOT(map()));
-      autoTypeSignalMapper->setMapping(act, id);
-      itemlist << id;
+      act->setData(id);
       }
       
 } // namespace MusEGui

@@ -69,8 +69,7 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties( instruments
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_instruments
+      PROPERTIES OUTPUT_NAME muse_instruments
       )
 
 ##
