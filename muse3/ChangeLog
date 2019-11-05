@@ -1,3 +1,5 @@
+05.11.2019
+      - Oops. Restore auto-create user instruments folder, likely swept away by 03.09 (Tim)
 04.11.2019
       - Implemented issue 644: Rewind on stop (rj)
         Added setting directly on Settings-menu as I

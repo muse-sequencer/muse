@@ -806,6 +806,18 @@ int main(int argc, char* argv[])
         }
 #endif
 
+        // User instruments dir:
+        MusEGlobal::museUserInstruments = MusEGlobal::configPath + "/instruments";
+        // Create user instruments dir if it doesn't exist
+        {
+          QDir uinstrDir = QDir(MusEGlobal::museUserInstruments);
+          if(!uinstrDir.exists())
+          {
+            fprintf(stderr, "User instrument directory does not exist. Creating it.\n");
+            uinstrDir.mkpath(".");
+          }
+        }
+
         MusEGui::initShortCuts();
         MusECore::readConfiguration();
 
@@ -1046,9 +1058,6 @@ int main(int argc, char* argv[])
                     ++it;
                     }
               }
-
-        // User instruments dir:
-        MusEGlobal::museUserInstruments = MusEGlobal::configPath + "/instruments";
 
         // NOTE: Set the stylesheet and style as early as possible!
         // Any later invites trouble - typically the colours may be off, 
