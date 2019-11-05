@@ -133,8 +133,12 @@ int PianoCanvas::pitch2y(int pitch) const
 
 int PianoCanvas::y2pitch(int y) const
       {
-      const int total = (10 * 7 + 5) * KH;       // 75 Ganztonschritte
+    if (y < KH)
+        return 127;
+    const int total = (10 * 7 + 5) * KH;       // 75 Ganztonschritte
       y = total - y;
+      if (y < 0)
+          return 0;
       int oct = (y / (7 * KH)) * 12;
       char kt[] = {
             0, 0, 0, 0, 0,  0,   0, 0, 0, 0,          // 5

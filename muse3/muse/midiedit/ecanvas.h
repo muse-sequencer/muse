@@ -27,9 +27,11 @@
 #include "canvas.h"
 #include "noteinfo.h"
 #include "mpevent.h"
+#include "helper.h"
 #include <QEvent>
 #include <QKeyEvent>
 #include <QVector>
+#include <QToolTip>
 
 #define KH        13
 

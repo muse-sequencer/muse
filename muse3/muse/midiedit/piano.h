@@ -82,6 +82,7 @@ class Piano : public View
       void keyReleased(int, bool);
       void curSelectedPitchChanged(int);
       void redirectWheelEvent(QWheelEvent*);
+      void wheelStep(bool);
 
    public slots:
       void setPitch(int);

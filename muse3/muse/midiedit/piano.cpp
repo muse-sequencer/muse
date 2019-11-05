@@ -508,26 +508,30 @@ int Piano::pitch2y(int pitch) const
 //---------------------------------------------------------
 
 int Piano::y2pitch(int y) const
-      {
-      const int total = (10 * 7 + 5) * KH;       // 75 full tone steps
-      y = total - y;
-      int oct = (y / (7 * KH)) * 12;
-      char kt[] = {
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            1, 1, 1, 1, 1, 1, 1,
-            2, 2, 2, 2, 2, 2,
-            3, 3, 3, 3, 3, 3, 3,
-            4, 4, 4, 4, 4, 4, 4, 4, 4,
-            5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-            6, 6, 6, 6, 6, 6, 6,
-            7, 7, 7, 7, 7, 7,
-            8, 8, 8, 8, 8, 8, 8,
-            9, 9, 9, 9, 9, 9,
-            10, 10, 10, 10, 10, 10, 10,
-            11, 11, 11, 11, 11, 11, 11, 11, 11, 11
-            };
-      return kt[y % 91] + oct;
-      }
+{
+    if (y < KH)
+        return 127;
+    const int total = (10 * 7 + 5) * KH;       // 75 full tone steps
+    y = total - y;
+    if (y < 0)
+        return 0;
+    int oct = (y / (7 * KH)) * 12;
+    char kt[] = {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 1,
+        2, 2, 2, 2, 2, 2,
+        3, 3, 3, 3, 3, 3, 3,
+        4, 4, 4, 4, 4, 4, 4, 4, 4,
+        5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+        6, 6, 6, 6, 6, 6, 6,
+        7, 7, 7, 7, 7, 7,
+        8, 8, 8, 8, 8, 8, 8,
+        9, 9, 9, 9, 9, 9,
+        10, 10, 10, 10, 10, 10, 10,
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11
+    };
+    return kt[y % 91] + oct;
+}
 
 //---------------------------------------------------------
 //   leaveEvent
@@ -651,8 +655,13 @@ void Piano::setCurSelectedPitch(int pitch)
 //---------------------------------------------------------
 
 void Piano::wheelEvent(QWheelEvent* ev)
-      {
-            emit redirectWheelEvent(ev);
-      }
+{
+    if (ev->modifiers() & Qt::ControlModifier) {
+        QPoint delta = ev->angleDelta();
+        emit wheelStep(delta.y() > 0 ? true : false);
+    }
+
+    emit redirectWheelEvent(ev);
+}
       
 } // namespace MusEGui

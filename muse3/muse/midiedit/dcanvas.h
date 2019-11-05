@@ -142,7 +142,7 @@ class DrumCanvas : public EventCanvas {
 
    private slots:
       void midiNote(int pitch, int velo);
-      
+
    public slots:
       void mapChanged(int, int);
       void keyPressed(int, int);
