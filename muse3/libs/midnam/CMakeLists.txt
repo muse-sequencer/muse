@@ -2,8 +2,8 @@
 #  MusE
 #  Linux Music Editor
 #
-#  CMakeLists.txt
-#  (C) Copyright 2014 Tim E. Real (terminator356 on users dot sourceforge dot net)
+#  midname/CMakeLists.txt
+#  (C) Copyright 2019 Tim E. Real (terminator356 on users dot sourceforge dot net)
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License
@@ -21,4 +21,42 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-subdirs(evdata memory midnam mpevent string sysex_helper xml plugin)
+include(${PROJECT_SOURCE_DIR}/pch.txt)
+
+##
+## List of source files to compile
+##
+
+file (GLOB midnam_source_files
+      midnam.cpp
+      )
+
+##
+## Define target
+##
+
+add_library ( midnam_module SHARED
+      ${midnam_source_files}
+      )
+
+##
+## Compilation flags and target name
+##
+
+set_target_properties( midnam_module
+      PROPERTIES OUTPUT_NAME muse_midnam_module
+      )
+
+target_link_libraries(midnam_module
+      xml_module
+      # ${QT_LIBRARIES}
+      )
+
+##
+## Install location
+##
+
+install(TARGETS
+        midnam_module
+      DESTINATION ${MusE_MODULES_DIR}
+      )
