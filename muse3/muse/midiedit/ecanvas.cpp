@@ -137,15 +137,11 @@ QPoint EventCanvas::raster(const QPoint& p) const
 
 void EventCanvas::mouseMove(QMouseEvent* event)
 {
-    int pitch = y2pitch(event->pos().y());
-    emit pitchChanged(pitch);
+    emit pitchChanged(y2pitch(event->pos().y()));
     int x = event->pos().x();
     if(x < 0)
         x = 0;
     emit timeChanged(editor->rasterVal(x));
-
-    if (track()->isMidiTrack() && !track()->isDrumTrack())
-        QToolTip::showText(event->globalPos(), MusECore::pitch2string(pitch) + " (" + QString::number(pitch) + ")" );
 }
 
 //---------------------------------------------------------
