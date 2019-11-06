@@ -239,6 +239,7 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
       int openFlags = 1;
       int dic = -1;   
       int doc = -1;
+      int trackIdx = -1;
       
       MidiSyncInfo tmpSi;
       int type = MidiDevice::ALSA_MIDI;
@@ -293,11 +294,14 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                               doc = xml.parseInt(); 
                         else if (tag == "midiSyncInfo")
                               tmpSi.read(xml);
-                        else if (tag == "instrument") {    // Obsolete
+                        else if (tag == "instrument") {
                               instrument = xml.parse1();
                               //MusEGlobal::midiPorts[idx].setInstrument(    // Moved below
                               //   registerMidiInstrument(instrument)
                               //   );
+                              }
+                        else if (tag == "trackIdx") {
+                              trackIdx = xml.parseInt();
                               }
                         else if (tag == "midithru")
                         {
@@ -343,7 +347,11 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
 
                               mp->setDefaultOutChannels(0); // reset output channel to take care of the case where no default is specified
 
-                              mp->changeInstrument(registerMidiInstrument(instrument));
+                              // Just set the generic instrument for now.
+                              mp->changeInstrument(genericMidiInstrument);
+                              // Set references to be resolved later...
+                              mp->setTmpFileRefs(trackIdx, instrument);
+
                               if(dic != -1)                      // p4.0.17 Leave them alone unless set by song.
                                 mp->setDefaultInChannels(dic);
                               if(doc != -1)
@@ -363,6 +371,7 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                                       dev->setOpenFlags(openFlags);
                                     MusEGlobal::audio->msgSetMidiDevice(mp, dev);
                                     }
+
                               return;
                               }
                   default:
@@ -1461,9 +1470,27 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                   if(mport->defaultOutChannels())
                     xml.intTag(level, "defaultOutChans", mport->defaultOutChannels());
                   
-                  if(!mport->instrument()->iname().isEmpty() &&                      // Tim.
-                     (mport->instrument()->iname() != "GM"))                         // FIXME: TODO: Make this user configurable.
-                    xml.strTag(level, "instrument", mport->instrument()->iname());
+                  const MidiInstrument* mi = mport->instrument();
+                  // FIXME: TODO: Make this user configurable.
+                  if(mi && !mi->iname().isEmpty() && mi->iname() != "GM")
+                  {
+                    if(mi->isSynti())
+                    {
+                      // The instrument is a synthesizer. Store a reference to
+                      //  the synthesizer track so it can be looked up upon loading.
+                      const SynthI* si = static_cast<const SynthI*>(mi);
+                      const int idx = MusEGlobal::song->tracks()->index(si);
+                      if(idx >= 0)
+                        xml.intTag(level, "trackIdx", idx);
+                    }
+                    else
+                    {
+                      // The instrument is not a synthesizer, it is one of our own
+                      //  (loaded from an *.idf file). Just store a string identifier,
+                      //  since we don't have unique indexes for .idf instruments. TODO ???
+                      xml.strTag(level, "instrument", mi->iname());
+                    }
+                  }
                     
                   if (dev) {
                         xml.strTag(level, "name",   dev->name());

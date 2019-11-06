@@ -108,6 +108,7 @@ MidiPort::MidiPort()
       _defaultOutChannels = 0;
       _device     = 0;
       _instrument = 0;
+      _tmpTrackIdx = -1;
       _controller = new MidiCtrlValListList();
       _foundInSongFile = false;
       }
@@ -221,9 +222,10 @@ bool MidiPort::hasNativeGui() const
 //   setDevice
 //---------------------------------------------------------
 
-void MidiPort::setMidiDevice(MidiDevice* dev)
+void MidiPort::setMidiDevice(MidiDevice* dev, MidiInstrument* instrument)
       {
       if (_device) {
+            // REMOVE Tim. midnam. Removed.
             if (_device->isSynti())
                   _instrument = genericMidiInstrument;
             _device->setPort(-1);
@@ -245,10 +247,9 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
                         }
                   }
             _device = dev;
-            if (_device->isSynti()) {
-                  SynthI* s = (SynthI*)_device;
-                  _instrument = s;
-                  }
+            // If an instrument was given, use it. Otherwise don't touch the instrument.
+            if(instrument)
+              _instrument = instrument;
             _state = _device->open();
             _device->setPort(portno());
             _initializationsSent = false;

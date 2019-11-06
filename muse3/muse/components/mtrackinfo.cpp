@@ -1140,7 +1140,8 @@ void MidiTrackInfo::instrPopup()
       MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
       PopupMenu* pup = new PopupMenu(false);
       
-      MusECore::MidiInstrument::populateInstrPopup(pup, instr, false);
+      //MusECore::MidiInstrument::populateInstrPopup(pup, instr, false);
+      MusECore::MidiInstrument::populateInstrPopup(pup, instr, true);
 
       if(pup->actions().count() == 0)
       {

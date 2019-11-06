@@ -219,7 +219,8 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
         MidiDevice* dev = port->device();
         if (dev==0) 
         {
-          MusEGlobal::audio->msgSetMidiDevice(port, si);
+          // This is a brand new instance. Set the instrument as well for convenience.
+          MusEGlobal::audio->msgSetMidiDevice(port, si, si);
           // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
           MusEGlobal::muse->changeConfig(true);
           if (SynthI::visible()) {
@@ -3397,42 +3398,6 @@ void Song::connectAudioPorts()
 
 void Song::insertTrack0(Track* track, int idx)
       {
-      insertTrack1(track, idx);
-      insertTrack2(track, idx);  // the same as MusEGlobal::audio->msgInsertTrack(track, idx, false);
-      insertTrack3(track, idx);
-      }
-
-//---------------------------------------------------------
-//   insertTrack1
-//    non realtime part of insertTrack
-//---------------------------------------------------------
-
-void Song::insertTrack1(Track* track, int /*idx*/)
-      {
-      switch(track->type()) {
-            case Track::AUDIO_SOFTSYNTH:
-                  {
-                  SynthI* s = (SynthI*)track;
-                  Synth* sy = s->synth();
-                  if (!s->isActivated()) {
-                        // Persistent storage: If the synth is not found allow the track to load.
-                        // It's OK if s is NULL. initInstance needs to do a few things.
-                        s->initInstance(sy, s->name());
-                        }
-                  }
-                  break;
-            default:
-                  break;
-            }
-      }
-
-//---------------------------------------------------------
-//   insertTrack2
-//    realtime part
-//---------------------------------------------------------
-
-void Song::insertTrack2(Track* track, int idx)
-{
       int n;
       switch(track->type()) {
             case Track::MIDI:
@@ -3460,6 +3425,12 @@ void Song::insertTrack2(Track* track, int idx)
             case Track::AUDIO_SOFTSYNTH:
                   {
                   SynthI* s = (SynthI*)track;
+                  Synth* sy = s->synth();
+                  if (!s->isActivated()) {
+                        // Persistent storage: If the synth is not found allow the track to load.
+                        // It's OK if s is NULL. initInstance needs to do a few things.
+                        s->initInstance(sy, s->name());
+                        }
                   MusEGlobal::midiDevices.add(s);
                   midiInstruments.push_back(s);
                   _synthIs.push_back(s);
@@ -3569,17 +3540,7 @@ void Song::insertTrack2(Track* track, int idx)
                   }
             }      
       }
-}
-
-//---------------------------------------------------------
-//   insertTrack3
-//    non realtime part of insertTrack
-//---------------------------------------------------------
-
-// empty. gets executed after the realtime part
-void Song::insertTrack3(Track* /*track*/, int /*idx*/)//prevent compiler warning: unused parameter
-{
-}
+      }
 
 //---------------------------------------------------------
 //   insertTrackOperation

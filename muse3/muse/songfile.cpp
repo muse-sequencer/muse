@@ -763,6 +763,36 @@ void Song::write(int level, Xml& xml) const
       }
 
 //--------------------------------
+//   resolveInstrumentReferences
+//--------------------------------
+
+static void resolveInstrumentReferences()
+{
+  for(int i = 0; i < MIDI_PORTS; ++i)
+  {
+    MidiPort* mp = &MusEGlobal::midiPorts[i];
+    const QString& name = mp->tmpInstrRef();
+    const int idx = mp->tmpTrackRef();
+    if(idx >= 0)
+    {
+      Track* track = MusEGlobal::song->tracks()->index(idx);
+      if(track && track->isSynthTrack())
+      {
+        SynthI* si = static_cast<SynthI*>(track);
+        mp->changeInstrument(si);
+      }
+    }
+    else if(!name.isEmpty())
+    {
+      mp->changeInstrument(registerMidiInstrument(name));
+    }
+
+    // Done with temporary file references. Clear them.
+    mp->clearTmpFileRefs();
+  }
+}
+
+//--------------------------------
 //   resolveStripReferences
 //--------------------------------
 
@@ -817,6 +847,11 @@ static void resolveStripReferences(MusEGlobal::MixerConfig* mconfig)
 
 void Song::resolveSongfileReferences()
 {
+  //-----------------------------------------------
+  // Resolve instrument references:
+  //-----------------------------------------------
+  resolveInstrumentReferences();
+
   //-----------------------------------------------
   // Resolve mixer strip configuration references:
   //-----------------------------------------------
@@ -985,123 +1020,6 @@ void MusE::readToplevels(MusECore::Xml& xml)
       }
 
 //---------------------------------------------------------
-//   readCtrl
-//---------------------------------------------------------
-
-void MusE::readCtrl(MusECore::Xml&, int /*prt*/, int /*channel*/)
-      {
-#if 0 // DELETETHIS 30. delete the whole function?
-      ChannelState* iState = MusEGlobal::midiPorts[prt].iState(channel);
-
-      int idx = 0;
-      int val = -1;
-
-      for (;;) {
-            MusECore::Xml::Token token = xml.parse();
-            switch (token) {
-                  case MusECore::Xml::Error:
-                  case MusECore::Xml::End:
-                        return;
-                  case MusECore::Xml::TagStart:
-                        xml.unknown("readCtrl");
-                        break;
-                  case MusECore::Xml::Attribut:
-                        if (xml.s1() == "idx")
-                              idx = xml.s2().toInt();
-                        else if (xml.s1() == "val")
-                              val = xml.s2().toInt();
-                        break;
-                  case MusECore::Xml::TagEnd:
-                        if (xml.s1() == "ctrl") {
-                              iState->controller[idx] = val;
-                              return;
-                              }
-                  default:
-                        break;
-                  }
-            }
-#endif
-      }
-
-//---------------------------------------------------------
-//   readMidichannel
-//---------------------------------------------------------
-
-void MusE::readMidichannel(MusECore::Xml& xml, int prt)
-      {
-      int channel = 0;
-
-      for (;;) {
-            MusECore::Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case MusECore::Xml::Error:
-                  case MusECore::Xml::End:
-                        return;
-                  case MusECore::Xml::TagStart:
-                        if (tag == "pitch") {
-//TODO                              port->setCtrl(channel, 0, CTRL_PITCH, xml.parseInt()); DELETETHIS? and below
-                              }
-                        else if (tag == "program") {
-//TODO                              port->setCtrl(channel, 0, CTRL_PROGRAM, xml.parseInt());
-                              }
-                        else if (tag == "ctrl")
-                              readCtrl(xml, prt, channel);
-                        else {
-                              xml.unknown("readMidichannel");
-                              }
-                        break;
-                  case MusECore::Xml::Attribut:
-                        if (tag == "ch") {
-                              channel = xml.s2().toInt();
-                              }
-                        break;
-                  case MusECore::Xml::TagEnd:
-                        if (tag == "midichannel")
-                              return;
-                  default:
-                        break;
-                  }
-            }
-      }
-
-//---------------------------------------------------------
-//   readMidiport
-//---------------------------------------------------------
-
-void MusE::readMidiport(MusECore::Xml& xml)
-      {
-      int port = 0;
-      for (;;) {
-            MusECore::Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case MusECore::Xml::Error:
-                  case MusECore::Xml::End:
-                        return;
-                  case MusECore::Xml::TagStart:
-                        if (tag == "midichannel")
-                              readMidichannel(xml, port);
-                        else {
-                              xml.unknown("readMidiport");
-                              }
-                        break;
-                  case MusECore::Xml::Attribut:
-                        if (tag == "port") {
-                              port = xml.s2().toInt();
-                              }
-                        break;
-                  case MusECore::Xml::TagEnd:
-                        if (tag == "midiport") {
-                              return;
-                              }
-                  default:
-                        break;
-                  }
-            }
-      }
-
-//---------------------------------------------------------
 //   read
 //    read song
 //---------------------------------------------------------
@@ -1166,15 +1084,6 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                               // Some existing windows need this, like arranger, some don't which are dynamically created after this.
                               MusEGlobal::song->update(SC_TRACK_INSERTED);
                         }
-                        else if (tag == "midiport")
-                              readMidiport(xml);
-                        else if (tag == "Controller") {  // obsolete
-                              MusECore::MidiController* ctrl = new MusECore::MidiController;
-                              ctrl->read(xml);
-                              delete ctrl;
-                              }
-                        else if (tag == "mplugin")
-                              readStatusMidiInputTransformPlugin(xml);
                         else if (tag == "toplevels")
                               readToplevels(xml);
                         else if (tag == "no_toplevels")

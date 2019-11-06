@@ -358,10 +358,8 @@ public:
       bool trackExists(Track* t) const { return _tracks.find(t) != _tracks.cend(); }
 
       void setRecordFlag(Track*, bool val, Undo* operations = 0);
+      // This is a non- realtime safe operation mainly used when loading files, while the engine is paused or idle.
       void insertTrack0(Track*, int idx);
-      void insertTrack1(Track*, int idx);
-      void insertTrack2(Track*, int idx);
-      void insertTrack3(Track*, int idx);
 
       // The currently selected track (in a multi-selection the last one selected), or null.
       Track* selectedTrack() const { return _tracks.currentSelection(); }

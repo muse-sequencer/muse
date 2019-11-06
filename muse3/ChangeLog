@@ -1,6 +1,9 @@
 06.11.2019
       - Adjusted raster drawing in view.cpp so it would draw lines that didn't (rj)
         draw correctly on my rig. We'll see if anyone objects
+      * New - Instrument can now be changed on a Synth Track: (Tim)
+        For example you can now set 'GM2' or 'My cool instrument' on ANY synth track.
+        Not as useless/dangerous as it sounds. Tested OK saving/loading/changing instruments.
 05.11.2019
       - Oops. Restore auto-create user instruments folder, likely swept away by 03.09 (Tim)
 04.11.2019

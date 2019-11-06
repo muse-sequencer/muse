@@ -30,18 +30,17 @@
 #include "route.h"
 #include "mpevent.h"
 #include "mididev.h"
+#include "minstrument.h"
 
 class QString;
 
 namespace MusECore {
 
-class MidiDevice;
 class Part;
 class MidiController;
 class MidiControllerList;
 class MidiCtrlValListList;
 class MidiCtrlValList;
-class MidiInstrument;
 
 //---------------------------------------------------------
 //   MidiPort
@@ -69,6 +68,15 @@ class MidiPort {
       MidiDevice* _device;
       QString _state;               // result of device open
       MidiInstrument* _instrument;
+      // A corresponding synth track's index in the song file, if used. Can be -1.
+      // Temporary during loading to avoid using globally or locally
+      //  'unique' identifiers in the song file, such as the serial,
+      //  to resolve references.
+      int _tmpTrackIdx;
+      // Temporary during loading. String ref to an instrument.
+      // It also helps support older files where only a string was used.
+      QString _tmpInstrRef;
+
       AutomationType _automationType[MusECore::MUSE_MIDI_CHANNELS];
       // Holds sync settings and detection monitors.
       MidiSyncInfo _syncInfo;
@@ -93,6 +101,12 @@ class MidiPort {
    public:
       MidiPort();
       ~MidiPort();
+
+      // Temporary, used during loading to resolve references to instruments.
+      void setTmpFileRefs(int i, const QString& s) { _tmpTrackIdx = i; _tmpInstrRef = s; }
+      void clearTmpFileRefs() { _tmpTrackIdx = -1; _tmpInstrRef = QString(); }
+      int tmpTrackRef() const { return _tmpTrackIdx; }
+      const QString& tmpInstrRef() const { return _tmpInstrRef; }
 
       //
       // manipulate active midi controller
@@ -136,7 +150,8 @@ class MidiPort {
       MidiDevice* device() const                { return _device; }
       const QString& state() const              { return _state; }
       void setState(const QString& s)           { _state = s; }
-      void setMidiDevice(MidiDevice* dev);
+      // If instrument is given it will be set, otherwise it won't touch the existing instrument.
+      void setMidiDevice(MidiDevice* dev, MidiInstrument* instrument = nullptr);
       const QString& portname() const;
       MidiInstrument* instrument() const   { return _instrument; }
       void setInstrument(MidiInstrument* i) { _instrument = i; }

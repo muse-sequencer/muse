@@ -71,7 +71,7 @@ const char* UndoOp::typeName()
             "SetTrackRecord", "SetTrackMute", "SetTrackSolo", "SetTrackRecMonitor", "SetTrackOff",
             "MoveTrack",
             "ModifyClip", "ModifyMarker",
-            "ModifySongLen", "DoNothing",
+            "ModifySongLen", "SetInstrument", "DoNothing",
             "EnableAllAudioControllers",
             "GlobalSelectAllEvents"
             };
@@ -488,6 +488,10 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
     
     case UndoOp::ModifySongLen:
       fprintf(stderr, "Undo::insert: ModifySongLen\n");
+    break;
+
+    case UndoOp::SetInstrument:
+      fprintf(stderr, "Undo::insert: SetInstrument\n");
     break;
 
     
@@ -984,6 +988,35 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
         break;
 
         
+        case UndoOp::SetInstrument:
+          // Check the sanity of the requested op.
+          if(n_op._oldMidiInstrument == n_op._newMidiInstrument)
+          {
+            fprintf(stderr, "MusE error: Undo::insert(): SetInstrument: Old and new instruments are the same. Ignoring.\n");
+            return;
+          }
+          
+          if(uo.type == UndoOp::SetInstrument)
+          {
+            if(uo._midiPort == n_op._midiPort)
+            {
+              if(uo._oldMidiInstrument == n_op._oldMidiInstrument && uo._newMidiInstrument == n_op._newMidiInstrument)
+              {
+                fprintf(stderr, "MusE error: Undo::insert(): Double SetInstrument. Ignoring.\n");
+                return;
+              }
+              else if(uo._newMidiInstrument == n_op._oldMidiInstrument)
+              {
+                // Replace the existing SetInstrument command's _newMidiInstrument
+                //  with the requested ModifyAudioCtrlValList command's _newMidiInstrument.
+                uo._newMidiInstrument = n_op._newMidiInstrument;
+                return;
+              }
+            }
+          }
+        break;
+
+
         case UndoOp::AddTempo:
           if(uo.type == UndoOp::AddTempo && uo.a == n_op.a)  
           {
@@ -1930,6 +1963,17 @@ UndoOp::UndoOp(UndoOp::UndoType type_, CtrlListList* ctrl_ll, CtrlList* eraseCtr
   _noUndo = noUndo;
 }
 
+UndoOp::UndoOp(UndoType type_, MidiPort* mp, MidiInstrument* instr, bool noUndo)
+{
+  assert(type_== SetInstrument);
+  assert(mp);
+  assert(instr);
+  type = type_;
+  _midiPort = mp;
+  _oldMidiInstrument = _midiPort->instrument();
+  _newMidiInstrument = instr;
+  _noUndo = noUndo;
+}
 
 UndoOp::UndoOp(UndoOp::UndoType type_)
 {
@@ -2063,6 +2107,12 @@ void Song::revertOperationGroup1(Undo& operations)
                             Synth* sy = s->synth();
                             if(!s->isActivated()) 
                               s->initInstance(sy, s->name());
+                            // FIXME TODO: We want to restore any ports using this instrument via the undo
+                            //  system but ATM a few other things can set the instrument without an undo
+                            //  operation so the undo sequence would not be correct. So we don't have much
+                            //  choice but to just reset inside the PendingOperation::DeleteTrack operation
+                            //  for now when deleting a synth track.
+                            // Still, everything else is in place for undoable setting of instrument...
                           }
                           break;
                                 
@@ -2449,8 +2499,22 @@ void Song::revertOperationGroup1(Undo& operations)
                         }
                   }
                   break;
-                        
-                        
+
+
+                  case UndoOp::SetInstrument:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::revertOperationGroup1:SetInstrument\n");
+#endif                        
+                        // Restore the old value.
+                        pendingOperations.add(PendingOperationItem(
+                          i->_midiPort, i->_oldMidiInstrument,
+                          PendingOperationItem::SetInstrument));
+                        updateFlags |= SC_MIDI_INSTRUMENT;
+                  }
+                  break;
+
+
                   case UndoOp::DeleteTempo:
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:DeleteTempo ** calling tempomap.addOperation tick:%d tempo:%d\n", i->a, i->b);
@@ -2840,6 +2904,11 @@ void Song::executeOperationGroup1(Undo& operations)
                               si->showGui(false);
                             if(si->hasNativeGui())       
                               si->showNativeGui(false);
+                            // FIXME TODO: We want to clear any ports using this instrument AND make it
+                            //  undoable but ATM a few other things can set the instrument without an undo
+                            //  operation so the undo sequence would not be correct. So we don't have much
+                            //  choice but to just reset inside the PendingOperation::DeleteTrack operation for now.
+                            // Still, everything else is in place for undoable setting of instrument...
                           }// Fall through.
                           case Track::WAVE:
                           case Track::AUDIO_OUTPUT:
@@ -3240,6 +3309,20 @@ void Song::executeOperationGroup1(Undo& operations)
                   break;
                         
                         
+                  case UndoOp::SetInstrument:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:SetInstrument\n");
+#endif                        
+                        // Set the new value.
+                        pendingOperations.add(PendingOperationItem(
+                          i->_midiPort, i->_newMidiInstrument,
+                          PendingOperationItem::SetInstrument));
+                        updateFlags |= SC_MIDI_INSTRUMENT;
+                  }
+                  break;
+
+
                   case UndoOp::AddTempo:
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:AddTempo ** calling tempomap.addOperation tick:%d tempo:%d\n", i->a, i->b);

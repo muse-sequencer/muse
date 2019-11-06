@@ -50,7 +50,6 @@ typedef MITPluginList::iterator iMITPlugin;
 extern MITPluginList mitPlugins;
 extern void processMidiInputTransformPlugins(MEvent&);
 extern void writeStatusMidiInputTransformPlugins(int, Xml&);
-extern void readStatusMidiInputTransformPlugin(Xml&);
 
 } // namespace MusECore
 

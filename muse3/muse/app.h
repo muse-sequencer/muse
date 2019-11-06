@@ -240,9 +240,6 @@ class MusE : public QMainWindow
 
       void setFollow();
       void readConfigParts(MusECore::Xml& xml);
-      void readMidiport(MusECore::Xml& xml);
-      void readMidichannel(MusECore::Xml& xml, int port);
-      void readCtrl(MusECore::Xml& xml, int port, int channel);
       void readToplevels(MusECore::Xml& xml);
       MusECore::PartList* getMidiPartsToEdit();
       MusECore::Part* readPart(MusECore::Xml& xml);

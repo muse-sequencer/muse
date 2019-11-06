@@ -75,11 +75,12 @@ enum RouteNameAliasPreference { RoutePreferCanonicalName = 0, RoutePreferFirstAl
 enum WaveDrawing { WaveRmsPeak=1, WaveOutLine=2 };
 
 struct StripConfig {
-  // The corresponding track's serial number.
+  // The corresponding track's serial number. Can be -1.
   int _serial;
-  // The corresponding track's index in the song file.
-  // Temporary during loading to avoid globally or locally
-  //  'unique' identifiers, such as the serial, in the song file.
+  // The corresponding track's index in the song file. Can be -1.
+  // Temporary during loading to avoid using globally or locally
+  //  'unique' identifiers in the song file, such as the serial,
+  //  to resolve references.
   int _tmpFileIdx;
 
   bool _visible;
