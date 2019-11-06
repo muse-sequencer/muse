@@ -1754,25 +1754,64 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   break;
                 }
 
-            case COL_TRACK_IDX:
-                  mode = START_DRAG;  // Allow a track drag to start.
-                  if (button == Qt::LeftButton) {
-                        if (!ctrl) {
-                              MusEGlobal::song->selectAllTracks(false);
-                              t->setSelected(true);
+      case COL_TRACK_IDX:
+          mode = START_DRAG;  // Allow a track drag to start.
+          if (button == Qt::LeftButton) {
 
-                              // rec enable track if expected
-                              MusECore::TrackList recd = getRecEnabledTracks();
-                              if (recd.size() == 1 && MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
-                                MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
-                                MusEGlobal::song->setRecordFlag(t,true);
+              if (ctrl)
+                  t->setSelected(!t->selected());
+
+              else if (shift) {
+                  if (tracks->countSelected() == 1 && tracks->currentSelection() == t)
+                      break;
+
+                  else if (tracks->countSelected() == 0)
+                      t->setSelected(true);
+
+                  else {
+                      int indexRange = 0, i1 = -1, i2 = -1;
+                      int indexClicked = tracks->index(t);
+                      for (MusECore::iTrack it = tracks->begin(); it != tracks->end(); ++it) {
+                          if ( (*it)->selected() ) {
+                              indexRange = tracks->index(*it);
+                              if (indexRange < indexClicked) {
+                                  i1 = indexRange;
+                                  i2 = indexClicked;
+                                  break;
                               }
-                              }
-                        else
-                              t->setSelected(!t->selected());
-                        MusEGlobal::song->update(SC_TRACK_SELECTION);
-                    }
-                  break;
+                          }
+                      }
+
+                      if (i1 == -1) {
+                          i1 = indexClicked;
+                          i2 = indexRange;
+                      }
+
+                      MusEGlobal::song->selectAllTracks(false);
+                      for (MusECore::iTrack it = tracks->begin(); it != tracks->end(); ++it) {
+                          if (tracks->index(*it) >= i1 && tracks->index(*it) <= i2 && (*it) != t)
+                              (*it)->setSelected(true);
+                      }
+                      t->setSelected(true);
+                  }
+
+              } else {
+
+                  MusEGlobal::song->selectAllTracks(false);
+                  t->setSelected(true);
+
+                  // rec enable track if expected
+                  MusECore::TrackList recd = getRecEnabledTracks();
+                  if (recd.size() == 1 && MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+                      MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
+                      MusEGlobal::song->setRecordFlag(t,true);
+                  }
+              }
+
+
+              MusEGlobal::song->update(SC_TRACK_SELECTION);
+          }
+          break;
 
             case COL_INPUT_MONITOR:
                   {
