@@ -1,3 +1,6 @@
+06.11.2019
+      - Adjusted raster drawing in view.cpp so it would draw lines that didn't (rj)
+        draw correctly on my rig. We'll see if anyone objects
 05.11.2019
       - Oops. Restore auto-create user instruments folder, likely swept away by 03.09 (Tim)
 04.11.2019

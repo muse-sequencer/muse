@@ -801,10 +801,13 @@ void View::drawTickRaster(
 //       fprintf(stderr, "View::drawTickRaster_new(): virt:%d drawText:%d mx:%d my:%d mw:%d mh:%draster%d\n",
 //               virt(), drawText, mx, my, mw, mh, raster);  
       
-      const double rast_mapx = rmapx_f(raster);
       int qq = raster;
       int qq_shift = 1;
       
+      double rast_mapx = rmapx_f(raster);
+      // NOTE: had to add this 4.0 magic value to draw the restart closer to how it used to be
+      //       without it not every point where you can put a note would have a line on many zoom levels
+      rast_mapx = rast_mapx * 4.0;
       // grid too dense?
       if (rast_mapx <= 0.01)
       {
@@ -941,7 +944,7 @@ void View::drawTickRaster(
                     ScaleRetStruct scale_info_text_lines = scale(true, bar, tpix);
                     if (scale_info_text_lines._drawBar) {
                       // highlight lines drawn with text
-                      pen.setColor(bar_color.darker(130));
+                      pen.setColor(bar_color.darker());
                     } else {
                       pen.setColor(bar_color);
                     }
@@ -965,8 +968,6 @@ void View::drawTickRaster(
 //                             mx_sm, my, mx_sm, mbottom);
                       
                       p.drawLine(mx_sm, my, mx_sm, mbottom);
-                      
-                      //p.drawLine(x_small, 0, x_small, height());
                     }
                   }
                   
@@ -1075,6 +1076,7 @@ void View::drawTickRaster(
                             pen.setColor(beat_color);
                             p.setPen(pen);
                             p.drawLine(mxx, my, mxx, mbottom);
+                            p.drawLine(mxx+1, my, mxx+1, mbottom);
                           }
                         }
                         }
