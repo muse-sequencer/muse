@@ -262,7 +262,7 @@ void MidiEditor::movePlayPointerToSelectedEvent()
     if (tickPos > -1)
     {
         MusECore::Pos p0(curCanvasPart()->tick() + tickPos, true);
-        MusEGlobal::song->setPos(0, p0);
+        MusEGlobal::song->setPos(MusECore::Song::CPOS, p0);
     }
 }
 
@@ -481,8 +481,8 @@ void MidiEditor::writeStatus(int level, MusECore::Xml& xml) const
 void MidiEditor::songChanged(MusECore::SongChangedStruct_t type)
       {
       
-      if (type._flags) {
-            if (type._flags & (SC_PART_REMOVED | SC_PART_MODIFIED
+      if (type) {
+            if (type & (SC_PART_REMOVED | SC_PART_MODIFIED
                | SC_PART_INSERTED | SC_TRACK_REMOVED)) {
                   genPartlist();
                   // close window if editor has no parts anymore
@@ -494,14 +494,14 @@ void MidiEditor::songChanged(MusECore::SongChangedStruct_t type)
             if (canvas)
                   canvas->songChanged(type);
 
-            if (type._flags & (SC_PART_REMOVED | SC_PART_MODIFIED
+            if (type & (SC_PART_REMOVED | SC_PART_MODIFIED
                | SC_PART_INSERTED | SC_TRACK_REMOVED)) {
                   
                   updateHScrollRange();
                   
                   if (canvas)
                         setWindowTitle(canvas->getCaption());
-                  if (type._flags & SC_SIG)
+                  if (type & SC_SIG)
                         time->update();
                         
               }        

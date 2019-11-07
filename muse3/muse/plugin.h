@@ -37,6 +37,7 @@
 #include <QFileInfo>
 #include <QMainWindow>
 #include <QUiLoader>
+#include <QScrollArea>
 
 #include <ladspa.h>
 
@@ -68,8 +69,6 @@
 class QAbstractButton;
 class QComboBox;
 class QRadioButton;
-class QScrollArea;
-class QToolButton;
 class QToolButton;
 class QTreeWidget;
 class QRect;
@@ -637,18 +636,18 @@ class PluginGui : public QMainWindow {
       void bypassToggled(bool);
       void sliderChanged(double value, int id, int scrollMode);
       void labelChanged(double, int);
-      void guiParamChanged(int);
+      void guiParamChanged(unsigned long int);
       void ctrlPressed(double, int);
       void ctrlReleased(double, int);
       void switchPressed(int);
       void switchReleased(int);
-      void guiParamPressed(int);
-      void guiParamReleased(int);
-      void guiSliderPressed(double, int);
-      void guiSliderReleased(double, int);
+      void guiParamPressed(unsigned long int);
+      void guiParamReleased(unsigned long int);
+      void guiSliderPressed(double, unsigned long int);
+      void guiSliderReleased(double, unsigned long int);
       void ctrlRightClicked(const QPoint &, int);
-      void guiSliderRightClicked(const QPoint &, int);
-      void guiContextMenuReq(int idx);
+      void guiSliderRightClicked(const QPoint &, unsigned long int);
+      void guiContextMenuReq(unsigned long int idx);
 
    protected slots:
       virtual void heartBeat();

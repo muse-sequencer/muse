@@ -969,7 +969,7 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
       _timeInfo.sampleRate = (double)MusEGlobal::sampleRate;
       _timeInfo.flags = 0;
 
-      Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : curr_frame, MusEGlobal::extSyncFlag.value() ? true : false);
+      Pos p(MusEGlobal::extSyncFlag ? MusEGlobal::audio->tickPos() : curr_frame, MusEGlobal::extSyncFlag ? true : false);
 
       if(value & kVstBarsValid)
       {
@@ -1477,12 +1477,7 @@ void VstNativeSynthIF::eventReceived(VstMidiEvent* ev)
       // So, technically this is correct. What MATTERS is how we adjust the times for storage, and/or simultaneous playback in THIS period,
       //  and TEST: we'll need to make sure any non-contiguous previous period is handled correctly by process - will it work OK as is?
       // If ALSA works OK than this should too...
-// REMOVE Tim. latency. Removed.
-// #ifdef _AUDIO_USE_TRUE_FRAME_
-//       event.setTime(MusEGlobal::audio->previousPos().frame() + ev->deltaFrames);
-// #else
       event.setTime(MusEGlobal::audio->pos().frame() + ev->deltaFrames);
-// #endif
       event.setTick(MusEGlobal::lastExtMidiSyncTick);
 
 //       event.setChannel(*(ev->buffer) & 0xf);
@@ -2401,7 +2396,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
         fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_SYSEX\n");
         #endif
 
-        const unsigned char* data = e.data();
+        const unsigned char* data = e.constData();
         if(e.len() >= 2)
         {
           if(data[0] == MUSE_SYNTH_SYSEX_MFG_ID)
@@ -2547,7 +2542,9 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
 
   unsigned long sample = 0;
 
-  const bool usefixedrate = (requiredFeatures() & PluginFixedBlockSize);
+  // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
+  //       For now we treat it like fixed size.
+  const bool usefixedrate = (requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize));
 
   // For now, the fixed size is clamped to the audio buffer size.
   // TODO: We could later add slower processing over several cycles -
@@ -3496,7 +3493,9 @@ void VstNativePluginWrapper::writeConfiguration(LADSPA_Handle handle, int level,
       {
          QByteArray arrOut = QByteArray::fromRawData((char *)p, len);
 
-         QByteArray outEnc64 = arrOut.toBase64();
+         // Weee! Compression!
+         QByteArray outEnc64 = qCompress(arrOut).toBase64();
+         
          QString customData(outEnc64);
          for (int pos=0; pos < customData.size(); pos+=150)
          {
@@ -3525,7 +3524,12 @@ void VstNativePluginWrapper::setCustomData(LADSPA_Handle handle, const std::vect
       param.remove('\n'); // remove all linebreaks that may have been added to prettyprint the songs file
       QByteArray paramIn;
       paramIn.append(param);
-      QByteArray dec64 = QByteArray::fromBase64(paramIn);
+      // Try to uncompress the data.
+      QByteArray dec64 = qUncompress(QByteArray::fromBase64(paramIn));
+      // Failed? Try uncompressed.
+      if(dec64.isEmpty())
+        dec64 = QByteArray::fromBase64(paramIn);
+      
       dispatch(state, 24 /* effSetChunk */, 0, dec64.size(), (void*)dec64.data(), 0.0); // index 0: is bank 1: is program
       break; //one customData tag includes all data in base64
    }

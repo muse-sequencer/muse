@@ -1200,13 +1200,13 @@ void PartCanvas::keyPress(QKeyEvent* event)
             if(spos < 0)
               spos = 0;
             MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
             return;
             }
       else if (key == shortcuts[SHRT_POS_INC].key) {
             int spos = MusEGlobal::sigmap.raster2(pos[0] + 1, *_raster);    // Nudge by +1, then snap up with raster2.
             MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
             return;
             }
       else if (key == shortcuts[SHRT_POS_DEC_NOSNAP].key) {
@@ -1214,12 +1214,12 @@ void PartCanvas::keyPress(QKeyEvent* event)
             if(spos < 0)
               spos = 0;
             MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
             return;
             }
       else if (key == shortcuts[SHRT_POS_INC_NOSNAP].key) {
             MusECore::Pos p(pos[0] + MusEGlobal::sigmap.rasterStep(pos[0], *_raster), true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_POINTER].key) {
@@ -1325,8 +1325,8 @@ void PartCanvas::keyPress(QKeyEvent* event)
               int right_tick = rightmost->part()->tick() + rightmost->part()->lenTick();
               MusECore::Pos p1(left_tick, true);
               MusECore::Pos p2(right_tick, true);
-              MusEGlobal::song->setPos(1, p1);
-              MusEGlobal::song->setPos(2, p2);
+              MusEGlobal::song->setPos(MusECore::Song::LPOS, p1);
+              MusEGlobal::song->setPos(MusECore::Song::RPOS, p2);
             }
             
             return;
@@ -2600,7 +2600,7 @@ void PartCanvas::copy(MusECore::PartList* pl)
                   tick = endTick;
             }
       MusECore::Pos p(tick, true);
-      MusEGlobal::song->setPos(0, p);
+      MusEGlobal::song->setPos(MusECore::Song::CPOS, p);
       QString mimeString = "text/x-muse-mixedpartlist";
       if (!midi)
           mimeString = "text/x-muse-wavepartlist";
@@ -2810,7 +2810,7 @@ void PartCanvas::paste(bool clone, paste_mode_t paste_mode, bool to_single_track
         }
 
         MusECore::Pos p(endPos, true);
-        MusEGlobal::song->setPos(0, p);
+        MusEGlobal::song->setPos(MusECore::Song::CPOS, p);
 
         if (paste_mode != PASTEMODE_MIX)
         {
@@ -3063,7 +3063,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
       // GRID //
       //////////
 
-      QColor baseColor(MusEGlobal::config.partCanvasBg.light(104));
+      QColor baseColor(MusEGlobal::config.partCanvasBg.lighter(104));
       QPen pen;
       pen.setCosmetic(true);
 
@@ -3079,7 +3079,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
         
         drawTickRaster(p, mr, mrg, rast,
                          false, false, false,
-                         baseColor.dark(115), 
+                         baseColor.darker(115), 
                          baseColor);
       }
 
@@ -3118,7 +3118,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
 //                 fprintf(stderr, "... bottom edge in range. Drawing bottom edge at mx0_lim:%d myy_2:%d mx_2:%d myy_2:%d\n",
 //                         mx0_lim, myy_2, mx_2, myy_2);
                 
-                pen.setColor(baseColor.dark(130));
+                pen.setColor(baseColor.darker(130));
                 p.setPen(pen);
                 p.drawLine(mx0_lim, myy_2, mx_2, myy_2);
               }
@@ -3171,7 +3171,7 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& mr, const QRegion&)
           yy += th;
           }
 
-    unsigned int startPos = MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->getStartExternalRecTick() : MusEGlobal::audio->getStartRecordPos().tick();
+    unsigned int startPos = MusEGlobal::extSyncFlag ? MusEGlobal::audio->getStartExternalRecTick() : MusEGlobal::audio->getStartRecordPos().tick();
     if (MusEGlobal::song->punchin())
       startPos=MusEGlobal::song->lpos();
     int startx = mapx(startPos);

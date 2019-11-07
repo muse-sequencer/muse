@@ -40,7 +40,7 @@
 #include "route.h"
 #include "mididev.h"
 #include "midiport.h"
-#include "instruments/minstrument.h"
+#include "minstrument.h"
 #include "metronome_class.h"
 
 namespace MusECore {
@@ -148,6 +148,7 @@ struct PendingOperationItem
     AddMidiInstrument, DeleteMidiInstrument, ReplaceMidiInstrument,
     AddMidiDevice,     DeleteMidiDevice,       
     ModifyMidiDeviceAddress,         ModifyMidiDeviceFlags,       ModifyMidiDeviceName,
+    SetInstrument,
     AddTrack,          DeleteTrack,  MoveTrack,                   ModifyTrackName,
     SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff,
     ModifyTrackDrumMapItem, ReplaceTrackDrumMapPatchList,         UpdateDrumMaps,
@@ -167,7 +168,8 @@ struct PendingOperationItem
     EnableAllAudioControllers,
     GlobalSelectAllEvents,
     ModifyAudioSamples,
-    SwitchMetronomeSettings, ModifyMetronomeAccentMap
+    SwitchMetronomeSettings, ModifyMetronomeAccentMap,
+    SetExternalSyncFlag, SetUseJackTransport, SetUseMasterTrack
     }; 
                               
   PendingOperationType _type;
@@ -205,7 +207,7 @@ struct PendingOperationItem
     MusECore::SigEvent* _sig_event; 
     Route* _dst_route_pointer;
     float* _newAudioSamples;
-    bool* _metroUseSongSettings;
+    bool* _bool_pointer;
     MetroAccentsMap* _newMetroAccentsMap;
   };
 
@@ -229,7 +231,6 @@ struct PendingOperationItem
     unsigned int _uintA;
     unsigned int _posLenVal;
     bool _boolA;
-    bool _select;
     const QString *_name;
     double _aux_send_value;
     int _insert_at;
@@ -325,7 +326,11 @@ struct PendingOperationItem
   PendingOperationItem(MidiDevice* midi_device, const QString* new_name, PendingOperationType type = ModifyMidiDeviceName)
     { _type = type; _midi_device = midi_device; _name = new_name; }
 
-    
+
+  PendingOperationItem(MidiPort* midi_port, MidiInstrument* midi_instrument, PendingOperationType type = SetInstrument)
+    { _type = type; _midi_port = midi_port; _midi_instrument = midi_instrument; }
+
+
   PendingOperationItem(TrackList* tl, Track* track, int insert_at, PendingOperationType type = AddTrack, void* sec_track_list = 0)
     { _type = type; _track_list = tl; _track = track; _insert_at = insert_at; _void_track_list = sec_track_list; }
     
@@ -337,7 +342,8 @@ struct PendingOperationItem
 
   PendingOperationItem(TrackList* tl, bool select, unsigned long /*t0*/, unsigned long /*t1*/,
                        PendingOperationType type = GlobalSelectAllEvents)
-    { _type = type; _track_list = tl; _select = select; }
+    { _type = type; _track_list = tl; 
+        _boolA = select; }
     
   PendingOperationItem(Track* track, const QString* new_name, PendingOperationType type = ModifyTrackName)
     { _type = type; _track = track; _name = new_name; }
@@ -427,6 +433,9 @@ struct PendingOperationItem
   PendingOperationItem(TempoList* tl, int tempo, PendingOperationType type)
     { _type = type; _tempo_list = tl; _intA = tempo; }
 
+  PendingOperationItem(TempoList* tl, bool v, PendingOperationType type = SetUseMasterTrack)
+    { _type = type; _tempo_list = tl; _boolA = v; }
+
     
   // NOTE: 'tick' is the desired tick. se is a new SigEvent with sig and (same) desired tick. Swapping with NEXT event is done.
   PendingOperationItem(MusECore::SigList* sl, MusECore::SigEvent* se, unsigned int tick, PendingOperationType type = AddSig)
@@ -454,11 +463,12 @@ struct PendingOperationItem
   PendingOperationItem(unsigned int len, PendingOperationType type = ModifySongLength)
     { _type = type; _posLenVal = len; }
 
-  PendingOperationItem(bool* settings_switch, bool v, PendingOperationType type = SwitchMetronomeSettings)
-    { _type = type; _metroUseSongSettings = settings_switch; _select = v; }
-
   PendingOperationItem(MetroAccentsMap** old_map, MetroAccentsMap* new_map, PendingOperationType type = ModifyMetronomeAccentMap)
     { _type = type; _metroAccentsMap = old_map; _newMetroAccentsMap = new_map; }
+
+  // Type is SwitchMetronomeSettings, SetExternalSyncFlag, SetUseJackTransport.
+  PendingOperationItem(bool* bool_pointer, bool v, PendingOperationType type)
+    { _type = type; _bool_pointer = bool_pointer; _boolA = v; }
 
   PendingOperationItem(PendingOperationType type) // type is EnableAllAudioControllers.
     { _type = type; }

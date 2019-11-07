@@ -639,7 +639,7 @@ bool DssiSynthIF::init(DssiSynth* s)
           free(rv);
         }          
         
-        for(ciStringParamMap r = synti->_stringParamMap.begin(); r != synti->_stringParamMap.end(); ++r) 
+        for(ciStringParamMap r = synti->_initConfig._stringParamMap.begin(); r != synti->_initConfig._stringParamMap.end(); ++r) 
         {
           rv = 0;
           rv = dssi->configure(_handle, r->first.c_str(), r->second.c_str());
@@ -860,7 +860,7 @@ void DssiSynthIF::write(int level, Xml& xml) const
           void* p = 0;
           _synth->dssi->getCustomData(_handle,&p, &len);
           if (len) {
-                xml.tag(level++, "midistate version=\"%d\"", SYNTH_MIDI_STATE_SAVE_VERSION);         
+                xml.tag(level++, " version=\"%d\"", SYNTH_MIDI_STATE_SAVE_VERSION);         
                 xml.nput(level++, "<event type=\"%d\"", Sysex);
                 xml.nput(" datalen=\"%d\">\n", len+9 /* 9 = 2 bytes header + "VSTSAVE"*/);
                 xml.nput(level, "");
@@ -1289,7 +1289,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         fprintf(stderr, "DssiSynthIF::processEvent midi event is ME_SYSEX\n");
         #endif
         
-        const unsigned char* data = e.data();
+        const unsigned char* data = e.constData();
         if(e.len() >= 2)
         {
           if(data[0] == MUSE_SYNTH_SYSEX_MFG_ID)
@@ -1385,7 +1385,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
           char buf[len + 2];
           
           buf[0] = 0xF0;
-          memcpy(buf + 1, e.data(), len);
+          memcpy(buf + 1, e.constData(), len);
           buf[len + 1] = 0xF7;
 
           snd_seq_ev_clear(event); 
@@ -1447,7 +1447,9 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
   // But this 'packet' method sure seems to work nicely so far, so we'll throw it in...
   //
   // Must make this detectable for dssi vst synths, just like the plugins' in-place blacklist.
-  const bool usefixedrate = (requiredFeatures() & PluginFixedBlockSize);
+  // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
+  //       For now we treat it like fixed size.
+  const bool usefixedrate = (requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize));
 
   // Note for dssi-vst this MUST equal MusEGlobal::audio period. It doesn't like broken-up runs (it stutters),
   //  even with fixed sizes. Could be a Wine + Jack thing, wanting a full Jack buffer's length.
@@ -1914,7 +1916,7 @@ int DssiSynthIF::oscUpdate()
       
       // Send current string configuration parameters.
       int i = 0;
-      for(ciStringParamMap r = synti->_stringParamMap.begin(); r != synti->_stringParamMap.end(); ++r) 
+      for(ciStringParamMap r = synti->_initConfig._stringParamMap.begin(); r != synti->_initConfig._stringParamMap.end(); ++r) 
       {
         _oscif.oscSendConfigure(r->first.c_str(), r->second.c_str());
         // Avoid overloading the GUI if there are lots and lots of params. 
@@ -2133,7 +2135,7 @@ int DssiSynthIF::oscConfigure(const char *key, const char *value)
       #endif
       
       // Add or modify the configuration map item.
-      synti->_stringParamMap.set(key, value);
+      synti->_initConfig._stringParamMap.set(key, value);
       
       if (!strncmp(key, DSSI_RESERVED_CONFIGURE_PREFIX,
          strlen(DSSI_RESERVED_CONFIGURE_PREFIX))) {

@@ -43,7 +43,8 @@ enum PluginFeature {
   PluginNoFeatures = 0x00,
   PluginFixedBlockSize = 0x01,
   PluginPowerOf2BlockSize = 0x02,
-  PluginNoInPlaceProcessing = 0x04 };
+  PluginNoInPlaceProcessing = 0x04,
+  PluginCoarseBlockSize = 0x08 };
 typedef int PluginFeatures_t;
       
 enum VstPluginFlags

@@ -103,15 +103,6 @@ details.
         lv2 >= 1.12.0 (development files)
           http://lv2plug.in
         
-        The cmake option ENABLE_LV2_SUPPLIED (default off) 
-         forces built-in versions to be used. Not recommended.
-        MusE contains built-in versions of these LV2 support libraries:
-         lv2, lilv, serd, sord and sratom, from:
-          http://lv2plug.in
-          http://drobilla.net/software
-        (The built-in versions may be slightly modified from their 
-         corresponding official versions. See muse/lv2Support/ChangeLog.)
-
       - LV2 Gtk2 User Interface support:
       
         Some LV2 plugins may provide a Gtk2 based graphical User Interface.
@@ -137,12 +128,16 @@ details.
           Recently LADISH has been emulating it instead:         
           http://ladish.org/
       
-      - Python		The python scripting language
+      - Python    The python scripting language
           http://www.python.org
-          Python support is required for some experimental features.
-          Currently it's NOT recommended to build with python support.
+          The remote control supports Python 2 or 3. See README.python.
+          The bundled midi scripts ('Functions') require Python 3.
+           
+      - Pyro 4    Python Remote Objects
+          https://pythonhosted.org/Pyro4/
+          The remote control supports Pyro 4. See README.python.
 
-      - PyQt4 is used by some of the bundled midi scripts
+      - PyQt5 is used by some of the bundled midi scripts ('Functions').
 
   Quick instructions for Ubuntu and similar distributions:
   

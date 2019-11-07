@@ -37,6 +37,7 @@
 #include "event.h"
 #include "dcanvas.h"
 #include "midictrl.h"
+#include "part.h"
 
 class QAction;
 class QCloseEvent;
@@ -51,9 +52,6 @@ class QPushButton;
 class QPoint;
 
 namespace MusECore {
-class MidiPart;
-class Part;
-class PartList;
 class SNode;
 class Xml;
 }
@@ -125,6 +123,9 @@ class DrumEdit : public MidiEditor {
       static int _dlistWidthInit, _dcanvasWidthInit;
       static bool _ignore_hide_init;
 
+      // Initial view state.
+      MusECore::MidiPartViewState _viewState;
+      
       QAction *loadAction, *saveAction, *resetAction;
       QAction *cutAction, *copyAction, *copyRangeAction, *pasteAction;
       QAction *pasteToCurPartAction, *pasteDialogAction, *deleteAction;
@@ -185,20 +186,23 @@ class DrumEdit : public MidiEditor {
       void horizontalZoom(bool zoom_in, const QPoint& glob_pos);
       void horizontalZoom(int mag, const QPoint& glob_pos);
       virtual void updateHScrollRange();
+      void storeInitialViewState() const;
 
    signals:
       void isDeleting(MusEGui::TopWin*);
 
    public:
-      DrumEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = INT_MAX);
-      virtual ~DrumEdit();
+      DrumEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0,
+               unsigned initPos = INT_MAX, bool showDefaultControls = false);
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;
       static void readConfiguration(MusECore::Xml& xml);
       static void writeConfiguration(int, MusECore::Xml&);
       
       CtrlEdit* addCtrl(int ctl_num = MusECore::CTRL_VELOCITY);
-      
+
+      MusECore::MidiPartViewState getViewState() const;
+
       bool old_style_drummap_mode() { return _old_style_drummap_mode; }
       group_mode_t group_mode() { return _group_mode; }
       bool ignore_hide() { return _ignore_hide; }

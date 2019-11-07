@@ -129,7 +129,7 @@ bool Mess::processEvent(const MusECore::MidiPlayEvent& ev)
             case MusECore::ME_NOTEOFF:
                   return playNote(ev.channel(), ev.dataA(), 0);
             case MusECore::ME_SYSEX:
-	            return sysex(ev.len(), ev.data());
+	            return sysex(ev.len(), ev.constData());
             case MusECore::ME_CONTROLLER:
                   return setController(ev.channel(), ev.dataA(), ev.dataB());
             case MusECore::ME_PITCHBEND:       

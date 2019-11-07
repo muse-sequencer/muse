@@ -28,6 +28,7 @@
 #include "config.h"
 #include "globaldefs.h"
 #include "cobject.h"
+#include "script_delivery.h"
 
 #include <QFileInfo>
 #include <list>
@@ -42,8 +43,6 @@ class QMainWindow;
 class QMenu;
 class QPoint;
 class QRect;
-class QScrollArea;
-class QSignalMapper;
 class QString;
 class QToolBar;
 class QToolButton;
@@ -170,7 +169,7 @@ class MusE : public QMainWindow
       QAction *settingsGlobalAction, *settingsShortcutsAction, *settingsMetronomeAction, *settingsMidiSyncAction;
       QAction *settingsMidiIOAction, *settingsAppearanceAction, *settingsMidiPortAction;
       QAction *dontFollowAction, *followPageAction, *followCtsAction;
-
+      QAction *rewindOnStopAction;
       // Help Menu Actions
       QAction *helpManualAction, *helpHomepageAction, *helpReportAction, *helpAboutAction, *helpDidYouKnow;
 
@@ -221,7 +220,9 @@ class MusE : public QMainWindow
       ArrangerView* arrangerView;
       MidiTransformerDialog* midiTransformerDialog;
       QMenu* openRecent;
-      
+
+      MusECore::ScriptReceiver _scriptReceiver;
+
       bool writeTopwinState;
       // Set to restart MusE (almost) from scratch before calling close().
       bool _isRestartingApp;
@@ -239,22 +240,18 @@ class MusE : public QMainWindow
 
       void setFollow();
       void readConfigParts(MusECore::Xml& xml);
-      void readMidiport(MusECore::Xml& xml);
-      void readMidichannel(MusECore::Xml& xml, int port);
-      void readCtrl(MusECore::Xml& xml, int port, int channel);
       void readToplevels(MusECore::Xml& xml);
       MusECore::PartList* getMidiPartsToEdit();
       MusECore::Part* readPart(MusECore::Xml& xml);
       bool checkRegionNotNull();
       void loadProjectFile1(const QString&, bool songTemplate, bool doReadMidiPorts);
+      // Write global configuration.
       void writeGlobalConfiguration(int level, MusECore::Xml&) const;
+      // Write song specific configuration.
       void writeConfiguration(int level, MusECore::Xml&) const;
       void updateConfiguration();
       QString projectTitle(QString name);
 
-      QSignalMapper *midiPluginSignalMapper;
-      QSignalMapper *followSignalMapper;
-      QSignalMapper *windowsMapper;
       QTimer *saveTimer;
       QTimer *blinkTimer;
       QTimer *messagePollTimer;
@@ -342,6 +339,7 @@ class MusE : public QMainWindow
       void arrangeSubWindowsColumns();
       void tileSubWindows();
       void setDirty();
+      void toggleRewindOnStop(bool);
 
    public slots:
       bool saveAs();
@@ -393,6 +391,9 @@ class MusE : public QMainWindow
 
       void resetXrunsCounter();
 
+      bool startPythonBridge();
+      bool stopPythonBridge();
+
    private:
       timeval lastCpuTime;
       timespec lastSysTime;
@@ -401,9 +402,10 @@ class MusE : public QMainWindow
       float fCurCpuLoad;
    public:
       MusE();
+
       void populateAddTrack();
 
-      void loadDefaultSong(int argc, char** argv);
+      void loadDefaultSong(const QString& filename_override);
       bool loadConfigurationColors(QWidget* parent = 0);
       bool saveConfigurationColors(QWidget* parent = 0);
       // Whether to restart MusE (almost) from scratch when calling close().
@@ -452,6 +454,7 @@ class MusE : public QMainWindow
       };
 
 extern void addProject(const QString& name);
-#endif
 
 } // namespace MusEGui
+
+#endif // __APP_H__

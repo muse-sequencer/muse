@@ -376,7 +376,7 @@ void MidiSeq::updatePollFd()
             int port = dev->midiPort();
             if (port == -1)
                   continue;
-            if ((dev->rwFlags() & 0x2) || (MusEGlobal::extSyncFlag.value()
+            if ((dev->rwFlags() & 0x2) || (MusEGlobal::extSyncFlag
                && (MusEGlobal::midiPorts[port].syncInfo().MCIn())))
                   addPollFd(dev->selectRfd(), POLLIN, MusECore::midiRead, this, dev);
             if (dev->bytesToWrite())
@@ -564,7 +564,8 @@ void MidiSeq::processTimerTick()
 
       unsigned curFrame = MusEGlobal::audio->curFrame();
       
-      if (!MusEGlobal::extSyncFlag.value()) {
+// REMOVE Tim. clock. Removed. Done with scheduling now in audio thread process.
+      if (!MusEGlobal::extSyncFlag) {
             // Do not round up here since (audio) frame resolution is higher than tick resolution.
             const unsigned int curTick = muse_multiply_64_div_64_to_64(
               (uint64_t)MusEGlobal::config.division * (uint64_t)MusEGlobal::tempomap.globalTempo() * 10000UL, curFrame,

@@ -343,6 +343,9 @@ class Lv2Plugin : public Plugin
     Lv2Plugin(const QFileInfo *fi, QString label, QString name, QString author, const LilvPlugin *plugin, PluginFeaturesType requiredFeatures);
     virtual ~Lv2Plugin();
 
+    // Just so we can point to a zero.
+    static const unsigned minBlockSize;
+
     // Create and initialize a LADSPA plugin instance. Returns null if failure.
     // Equivalent to calling (new LadspaPlugI())->initPluginInstance(this, ...).
     // The returned type depends on the this class (LadspaPluginI*, Lv2PluginI*, etc).

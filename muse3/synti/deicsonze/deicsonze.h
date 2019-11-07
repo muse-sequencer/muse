@@ -617,6 +617,7 @@ class DeicsOnze : public Mess {
 };
 
 extern QString DEI_hostConfigPath;
+extern QString DEI_hostCachePath;
 extern QString DEI_sharePath;
 extern unsigned int DEI_segmentSize;
 extern int DEI_sampleRate;

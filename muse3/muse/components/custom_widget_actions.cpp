@@ -22,7 +22,6 @@
 
 #include <QLabel>
 #include <QHBoxLayout>
-#include <QSignalMapper>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPaintEvent>
@@ -44,55 +43,6 @@
 
 namespace MusEGui {
 
-//---------------------------------------------------------
-//   PixmapButtonsHeaderWidgetAction
-//---------------------------------------------------------
-
-PixmapButtonsHeaderWidgetAction::PixmapButtonsHeaderWidgetAction(const QString& text, QPixmap* ref_pixmap, int channels, QWidget* parent)
-  : QWidgetAction(parent)
-{
-  _refPixmap = ref_pixmap;
-  _channels = channels;
-  _text = text;
-  // Just to be safe, set to -1 instead of default 0.
-  setData(-1);
-}
-
-QWidget* PixmapButtonsHeaderWidgetAction::createWidget(QWidget* parent)
-{
-  QWidget* lw = new QWidget(parent);
-  QHBoxLayout* layout = new QHBoxLayout(lw);
-
-  layout->setSpacing(0);
-  
-  QLabel* lbl = new QLabel(_text, lw);
-  lbl->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-  lbl->setAlignment(Qt::AlignCenter);
-  lbl->setAutoFillBackground(true);
-  lbl->setBackgroundRole(QPalette::Dark);
-  layout->addWidget(lbl); 
-  layout->addSpacing(8);
-  QSignalMapper* mapper = new QSignalMapper(this);
-
-  PixmapButton* pb = new PixmapButton(toggle_small_Icon, toggle_small_Icon, 2, lw, QString("T"));  // Margin  = 2
-  layout->addWidget(pb); 
-  layout->addSpacing(6);
-  
-  for(int i = 0; i < _channels; ++i)
-  {
-    PixmapButton* b = new PixmapButton(_refPixmap, _refPixmap, 2, lw, QString::number(i + 1));  // Margin  = 2
-    mapper->setMapping(b, i);
-    connect(b, SIGNAL(pressed()), mapper, SLOT(map()));
-    if((i != 0) && (i % 4 == 0))
-      layout->addSpacing(6);
-    layout->addWidget(b); 
-  }
-
-  connect(mapper, SIGNAL(mapped(int)), this, SLOT(chanClickMap(int)));
-  
-  return lw;
-}
-  
 //---------------------------------------------------------
 //   PixmapButtonsWidgetAction
 //---------------------------------------------------------
@@ -123,13 +73,10 @@ QWidget* PixmapButtonsWidgetAction::createWidget(QWidget *parent)
   layout->addSpacing(8);
   layout->addStretch();
       
-  QSignalMapper* mapper = new QSignalMapper(this);
-
   PixmapButton* pb = new PixmapButton(toggle_small_Icon, toggle_small_Icon, 2, lw);  // Margin  = 2
-  mapper->setMapping(pb, channels);  // Set to one past end.
   layout->addWidget(pb); 
   layout->addSpacing(6);
-  connect(pb, SIGNAL(pressed()), mapper, SLOT(map()));
+  connect(pb, &PixmapButton::pressed, [this, channels]() { chanClickMap(channels); } );
   
   for(int i = 0; i < channels; ++i)
   {
@@ -138,15 +85,12 @@ QWidget* PixmapButtonsWidgetAction::createWidget(QWidget *parent)
     _chan_buttons.append(b);
     b->setCheckable(true);
     b->setDown(set);
-    mapper->setMapping(b, i);
-    connect(b, SIGNAL(toggled(bool)), mapper, SLOT(map()));
+    connect(b, &PixmapButton::pressed, [this, i]() { chanClickMap(i); } );
     if((i != 0) && (i % 4 == 0))
       layout->addSpacing(6);
     layout->addWidget(b); 
   }
 
-  connect(mapper, SIGNAL(mapped(int)), this, SLOT(chanClickMap(int)));
-  
   return lw;
 }
 

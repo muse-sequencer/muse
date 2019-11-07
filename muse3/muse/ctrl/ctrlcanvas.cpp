@@ -815,31 +815,31 @@ void CtrlCanvas::songChanged(MusECore::SongChangedStruct_t type)
   if(editor->deleting())  // Ignore while while deleting to prevent crash.
     return; 
   
-  if(type._flags & SC_CONFIG)
+  if(type & SC_CONFIG)
   {
     setBg(MusEGlobal::config.midiControllerViewBg);
     setFont(MusEGlobal::config.fonts[3]);  
   }
   
   bool changed = false;
-  if(type._flags & (SC_CONFIG | SC_PART_MODIFIED | SC_SELECTION))
+  if(type & (SC_CONFIG | SC_PART_MODIFIED | SC_SELECTION))
     changed = setCurTrackAndPart();
             
   // Although changing the instrument/device in the
   //  config window generates a type of -1, we can eliminate
   //  some other useless calls using SC_CONFIG, which was not used 
   //  anywhere else in muse before now, except song header.
-  if((type._flags & (SC_CONFIG | SC_DRUM_SELECTION | SC_PIANO_SELECTION | SC_DRUMMAP)) ||
-     ((type._flags & (SC_PART_MODIFIED | SC_SELECTION)) && changed))
+  if((type & (SC_CONFIG | SC_MIDI_INSTRUMENT | SC_DRUM_SELECTION | SC_PIANO_SELECTION | SC_DRUMMAP)) ||
+     ((type & (SC_PART_MODIFIED | SC_SELECTION)) && changed))
     setMidiController(_cnum);
   
   if(!curPart)         
     return;
               
-  if(type._flags & (SC_CONFIG | SC_DRUM_SELECTION | SC_PIANO_SELECTION |
+  if(type & (SC_CONFIG | SC_MIDI_INSTRUMENT | SC_DRUM_SELECTION | SC_PIANO_SELECTION |
      SC_DRUMMAP | SC_PART_MODIFIED | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED))
     updateItems();
-  else if(type._flags & SC_SELECTION)
+  else if(type & SC_SELECTION)
   {
     // Prevent race condition: Ignore if the change was ultimately sent by the canvas itself.
     if(type._sender != this)

@@ -108,7 +108,7 @@ bool EventBase::isSimilarType(const EventBase& e,
     case Sysex:
     case Meta:
       // Are the sysex or meta length and data the same?
-      return dataLen() == e.dataLen() && (dataLen() == 0 || (memcmp(data(), e.data(), dataLen()) == 0));
+      return dataLen() == e.dataLen() && (dataLen() == 0 || (memcmp( constData(), e.constData(), dataLen()) == 0));
     break;
     
     case Wave:
@@ -365,7 +365,7 @@ int Event::veloOff() const                   { return ev ? ev->dataC() : 0;  }
 void Event::setC(int val)                    { if(ev) ev->setC(val);       }
 void Event::setVeloOff(int val)              { if(ev) ev->setC(val);       }
 
-const unsigned char* Event::data() const     { return ev ? ev->data() : 0;    }
+const unsigned char* Event::data() const     { return ev ? ev->constData() : 0;    }
 int Event::dataLen() const                   { return ev ? ev->dataLen() : 0; }
 void Event::setData(const unsigned char* data, int len) { if(ev) ev->setData(data, len); }
 const EvData Event::eventData() const        { return ev ? ev->eventData() : EvData(); }

@@ -2313,91 +2313,58 @@ void AudioTrack::mapRackPluginsToControllers()
     }
   }
 
-  // FIXME: The loop is a safe way to delete while iterating lists.
-  bool loop;
-  do
+  // Delete non-existent controllers.
+  for(ciCtrlList icl = _controller.cbegin(); icl != _controller.cend(); )
   {
-    loop = false;
-    for(ciCtrlList icl = _controller.begin(); icl != _controller.end(); ++icl)
+    CtrlList* l = icl->second;
+    int id = l->id();
+    // Ignore volume, pan, mute etc.
+    if(id < AC_PLUGIN_CTL_BASE)
     {
-      CtrlList* l = icl->second;
-      int id = l->id();
-      // Ignore volume, pan, mute etc.
-      if(id < AC_PLUGIN_CTL_BASE)
-        continue;
+      ++icl;
+      continue;
+    }
 
-      unsigned param = id & AC_PLUGIN_CTL_ID_MASK;
-      int idx = (id >> AC_PLUGIN_CTL_BASE_POW) - 1;
+    unsigned param = id & AC_PLUGIN_CTL_ID_MASK;
+    int idx = (id >> AC_PLUGIN_CTL_BASE_POW) - 1;
 
-      const PluginIBase* p = 0;
-      if(idx >= 0 && idx < MusECore::PipelineDepth)
-        p = (*_efxPipe)[idx];
-      // Support a special block for synth controllers.
-      else if(idx == MusECore::MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)
-      {
-        const SynthI* synti = static_cast < const SynthI* > (this);
-        SynthIF* sif = synti->sif();
-        if(sif)
-          p = static_cast < const PluginIBase* > (sif);
-      }
-
-      // If there's no plugin at that rack position, or the param is out of range of
-      //  the number of controls in the plugin, then it's a stray controller. Delete it.
-      // Future: Leave room for possible bypass controller at AC_PLUGIN_CTL_ID_MASK -1.
-      //if(!p || (param >= p->parameters() && (param != AC_PLUGIN_CTL_ID_MASK -1)))
+    bool do_remove = false;
+    const PluginIBase* p = 0;
+    if(idx >= 0 && idx < MusECore::PipelineDepth)
+    {
+      p = (*_efxPipe)[idx];
       if(!p || (param >= p->parameters()))
+        do_remove = true;
+    }
+    // Support a special block for synth controllers.
+    else if(idx == MusECore::MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)
+    {
+      const SynthI* synti = static_cast < const SynthI* > (this);
+      SynthIF* sif = synti->sif();
+      // Special for synths: If no sif could be found or loaded (missing pplugin etc.),
+      //  do NOT remove the loaded controllers, to preserve data upon re-saving.
+      if(sif)
       {
-        _controller.erase(id);
-
-        loop = true;
-        break;
+        p = static_cast < const PluginIBase* > (sif);
+        if(param >= p->parameters())
+          do_remove = true;
       }
+    }
+
+    // If there's no plugin at that rack position, or the param is out of range of
+    //  the number of controls in the plugin, then it's a stray controller. Delete it.
+    // Future: Leave room for possible bypass controller at AC_PLUGIN_CTL_ID_MASK -1.
+    //if(!p || (param >= p->parameters() && (param != AC_PLUGIN_CTL_ID_MASK -1)))
+    if(do_remove)
+    {
+      // C++11.
+      icl = _controller.erase(icl);
+    }
+    else
+    {
+      ++icl;
     }
   }
-  while (loop);
-
-
-    // DELETETHIS 40 i DO trust the below. some container's erase functions
-    // return an iterator to the next, so sometimes you need it=erase(it)
-    // instead of erase(it++).
-    // i'm happy with both AS LONG the above does not slow down things.
-    // when in doubt, i'd prefer the below however.
-    // so either remove the below completely (if the above works fast),
-    // or remove the above and use the below.
-    // CAUTION: the below isn't quite up-to-date! first recheck.
-    // this "not-being-up-to-date" is another reason for NOT keeping such
-    // comments!
-
-    // FIXME: Although this tested OK, and is the 'official' way to erase while iterating,
-    //  I don't trust it. I'm weary of this method. The technique didn't work
-    //  in Audio::msgRemoveTracks(), see comments there.
-    /*
-
-    // Now delete any stray controllers which don't belong to anything.
-    for(iCtrlList icl = _controller.begin(); icl != _controller.end(); )
-    {
-      CtrlList* l = icl->second;
-      int id = l->id();
-      // Ignore volume, pan, mute etc.
-      if(id < AC_PLUGIN_CTL_BASE)
-      {
-        ++icl;
-        continue;
-      }
-
-      int param = id & AC_PLUGIN_CTL_ID_MASK;
-      int idx = (id >> AC_PLUGIN_CTL_BASE_POW) - 1;
-      PluginI* p = (*_efxPipe)[idx];
-      // If there's no plugin at that rack position, or the param is out of range of
-      //  the number of controls in the plugin, then it's a stray controller. Delete it.
-      // Future: Leave room for possible bypass controller at AC_PLUGIN_CTL_ID_MASK -1.
-      //if(!p || (param >= p->parameters() && (param != AC_PLUGIN_CTL_ID_MASK -1)))
-      if(!p || (param >= p->parameters()))
-        _controller.erase(icl++);
-      else
-        ++icl;
-    }
-    */
 }
 
 RouteCapabilitiesStruct AudioTrack::routeCapabilities() const
@@ -2658,10 +2625,14 @@ void AudioOutput::internal_assign(const Track& t, int flags)
 
 AudioOutput::~AudioOutput()
       {
-      if (!MusEGlobal::checkAudioDevice()) return;
-      for (int i = 0; i < _channels; ++i)
+      // FIXME Never runs this on close because device is nulled first.
+      //       But possibly it's benign because it may already disconnect before it gets here...
+      if (MusEGlobal::checkAudioDevice())
+      {
+        for (int i = 0; i < _channels; ++i)
           if(jackPorts[i])
             MusEGlobal::audioDevice->unregisterPort(jackPorts[i]);
+      }
 
       if(_outputLatencyComp)
         delete _outputLatencyComp;
@@ -3124,15 +3095,6 @@ void AudioAux::setChannels(int n)
         free(buffer[i]);
     }
   }
-}
-
-//---------------------------------------------------------
-//   setName
-//---------------------------------------------------------
-
-QString AudioAux::auxName()
-{
-    return  QString("%1:").arg(index())+ name();
 }
 
 //---------------------------------------------------------

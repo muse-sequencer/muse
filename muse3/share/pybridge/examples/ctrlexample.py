@@ -21,12 +21,12 @@
 //=========================================================
 """
 
-import Pyro.core
+import Pyro4.core
 import time
 
-muse=Pyro.core.getProxyForURI('PYRONAME://:Default.muse')
+muse=Pyro4.core.Proxy('PYRONAME:muse')
 #for i in range(0,10):
-#      print "Ctrl no " + str(i) + " = " + str(muse.getMidiControllerValue("Track 1", i))
+#      print ("Ctrl no " + str(i) + " = " + str(muse.getMidiControllerValue("Track 1", i)))
 
 """
 for i in range(0,127):
@@ -35,7 +35,7 @@ for i in range(0,127):
 """
 
 muse.setMidiControllerValue("Track 1", 7, 56)
-print muse.getMidiControllerValue("Track 1", 7)
-print muse.getAudioTrackVolume("Out 1")
-muse.setAudioTrackVolume("Out 1", -1.0)
+print (muse.getMidiControllerValue("Track 1", 7))
+print (muse.getAudioTrackVolume("Out 1"))
+muse.setAudioTrackVolume("Out 1", 0.034)
 

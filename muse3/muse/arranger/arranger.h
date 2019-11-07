@@ -26,6 +26,17 @@
 
 #include <vector>
 #include <QString>
+#include <QAction>
+#include <QCheckBox>
+#include <QMainWindow>
+#include <QMenu>
+#include <QWheelEvent>
+#include <QKeyEvent>
+#include <QPoint>
+#include <QComboBox>
+#include <QScrollBar>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
 
 #include "type_defs.h"
 #include "midieditor.h"
@@ -36,18 +47,6 @@
 //  the trackinfo button, to show the old midi trackinfo panel.
 // TODO: TO BE REMOVED. The midi trackinfo panel is obsolete and disabled now.
 //#define _USE_TRACKINFO_ALT 1;
-
-class QAction;
-class QCheckBox;
-class QMainWindow;
-class QMenu;
-class QWheelEvent;
-class QKeyEvent;
-class QPoint;
-class QComboBox;
-class QScrollBar;
-class QVBoxLayout;
-class QHBoxLayout;
 
 namespace MusECore {
 class Track;

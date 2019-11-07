@@ -140,12 +140,7 @@ void AudioComponentRack::newComponent( ComponentDescriptor* desc, const Componen
       
       if(desc->_label.isEmpty())
       {
-        // the thought was to acquire the correct Aux name for each Aux
-        // now they are only called Aux1, Aux2, which isn't too usable.
-        desc->_label = ((MusECore::AudioAux*)(MusEGlobal::song->auxs()->at(desc->_index)))->auxName();
-        if (desc->_label.length() > 8) { // shorten name
-            desc->_label = desc->_label.mid(0,8) + ".";
-        }
+        desc->_label = ((MusECore::AudioAux*)(MusEGlobal::song->auxs()->at(desc->_index)))->name();
       }
       if(desc->_toolTipText.isEmpty())
         desc->_toolTipText = tr("Aux send level (dB)");
@@ -360,7 +355,7 @@ void AudioComponentRack::scanControllerComponents()
     ComponentWidget& cw = *icw;
     DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::scanControllerComponents: deleting controller component index:%d\n", cw._index);
     if(cw._widget)
-      delete cw._widget;
+      cw._widget->deleteLater();
     _components.erase(icw);
   }
 }
@@ -391,7 +386,7 @@ void AudioComponentRack::scanAuxComponents()
     ComponentWidget& cw = *icw;
     DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::scanAuxComponents: deleting aux component index:%d\n", cw._index);
     if(cw._widget)
-      delete cw._widget;
+      cw._widget->deleteLater();
     _components.erase(icw);
   }
   
@@ -656,18 +651,18 @@ void AudioComponentRack::auxRightClicked(QPoint, int)
 void AudioComponentRack::songChanged(MusECore::SongChangedStruct_t flags)
 {
   // Scan controllers.
-  if(flags._flags & (SC_RACK | SC_AUDIO_CONTROLLER_LIST))
+  if(flags & (SC_RACK | SC_AUDIO_CONTROLLER_LIST))
   {
     scanControllerComponents();
   }
   
   // Take care of scanning aux before setting aux enabled below.
-  if(flags._flags & SC_AUX) 
+  if(flags & SC_AUX) 
   {
     scanAuxComponents();
   }
   
-  if(flags._flags & SC_ROUTE) {
+  if(flags & SC_ROUTE) {
         // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
         // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
         setAuxEnabled(_track->auxRefCount() == 0);
@@ -927,40 +922,40 @@ void AudioStrip::songChanged(MusECore::SongChangedStruct_t val)
       MusECore::AudioTrack* src = static_cast<MusECore::AudioTrack*>(track);
 
       // Do channels before MusEGlobal::config...
-      if (val._flags & SC_CHANNELS)
+      if (val & SC_CHANNELS)
         updateChannels();
       
       // Catch when label font, or configuration min slider and meter values change.
-      if (val._flags & SC_CONFIG)
+      if (val & SC_CONFIG)
       {
         // So far only 1 instance of sending SC_CONFIG in the entire app, in instrument editor when a new instrument is saved.
       }
       
-      if (mute && (val._flags & SC_MUTE)) {      // mute && off
+      if (mute && (val & SC_MUTE)) {      // mute && off
             mute->blockSignals(true);
             mute->setChecked(src->mute());
             mute->blockSignals(false);
             updateMuteIcon();
             updateOffState();
             }
-      if (solo && (val._flags & (SC_SOLO | SC_ROUTE))) {
+      if (solo && (val & (SC_SOLO | SC_ROUTE))) {
             solo->blockSignals(true);
             solo->setChecked(track->solo());
             solo->blockSignals(false);
             solo->setIconSetB(track->internalSolo());
             updateMuteIcon();
             }
-      if (val._flags & SC_RECFLAG)
+      if (val & SC_RECFLAG)
       {
             setRecordFlag(track->recordFlag());
       }
-      if (val._flags & SC_TRACK_MODIFIED)
+      if (val & SC_TRACK_MODIFIED)
       {
             setLabelText();
       }      
       //if (val & SC_CHANNELS)
       //      updateChannels();
-      if (val._flags & SC_ROUTE) {
+      if (val & SC_ROUTE) {
             updateRouteButtons();
             if (pre) {
                   pre->blockSignals(true);
@@ -969,7 +964,7 @@ void AudioStrip::songChanged(MusECore::SongChangedStruct_t val)
                   }
           }
 
-      if(val._flags & SC_TRACK_REC_MONITOR)
+      if(val & SC_TRACK_REC_MONITOR)
       {
         // Set record monitor.
         if(_recMonitor) // && (_recMonitor->isChecked() != track->recMonitor()))
@@ -985,7 +980,7 @@ void AudioStrip::songChanged(MusECore::SongChangedStruct_t val)
       _infoRack->songChanged(val);
       _lowerRack->songChanged(val);
 
-      if (autoType && (val._flags & SC_AUTOMATION)) {
+      if (autoType && (val & SC_AUTOMATION)) {
             autoType->blockSignals(true);
             autoType->setCurrentItem(track->automationType());
             QPalette palette;

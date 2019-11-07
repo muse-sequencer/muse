@@ -163,7 +163,7 @@ void FluidSynthGui::loadClicked()
                                                       //QString("Soundfonts (*.[Ss][Ff]2);;All files (*)"));
                                                       QString("Soundfonts (*.sf2);;All files (*)"));
 
-      if (filename != QString::null) {
+      if (!filename.isEmpty()) {
             int lastslash = filename.lastIndexOf('/');
             lastdir = filename.left(lastslash);
 
@@ -247,7 +247,7 @@ void FluidSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
       {
       //Sysexes sent from the client
       if (ev.type() == MusECore::ME_SYSEX) {
-            byte* data = ev.data();
+            const byte* data = ev.constData();
             switch (*data) {
                   case FS_LASTDIR_CHANGE:
                         lastdir = QString((const char*)data+1);
@@ -264,7 +264,7 @@ void FluidSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
                         int filename_len;
 
                         int count = (int)*(data+1); //Number of elements
-                        byte* cp = data+2; //Point to beginning of first chunk
+                        const byte* cp = data+2; //Point to beginning of first chunk
                         sfListView->clear(); //Clear the listview
                         stack.clear(); //Clear the stack since we're starting over again
 
@@ -283,7 +283,7 @@ void FluidSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
                         break;
                         }
                   case FS_SEND_CHANNELINFO: {
-                        byte* chptr = (data+1);
+                        const byte* chptr = (data+1);
                         for (int i=0; i< FS_MAX_NR_OF_CHANNELS; i++) {
                               byte id = *chptr;
                               byte channel = *(chptr+1);
@@ -295,7 +295,7 @@ void FluidSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
                         break;
                         }
                   case FS_SEND_DRUMCHANNELINFO: {
-                        byte* drumchptr = (data+1);
+                        const byte* drumchptr = (data+1);
                         for (int i=0; i<FS_MAX_NR_OF_CHANNELS; i++) {
                               drumchannels[i] = *drumchptr;
                               drumchptr++;

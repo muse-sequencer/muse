@@ -560,7 +560,7 @@ void MidiDevice::processStuckNotes(const bool extsync, const unsigned sync_frame
   //if(MusEGlobal::audio->isPlaying())  
   {
     // REMOVE Tim. latency. Changed.
-//     const bool extsync = MusEGlobal::extSyncFlag.value();
+//     const bool extsync = MusEGlobal::extSyncFlag;
 //     const unsigned syncFrame = MusEGlobal::audio->curSyncFrame();
 //     const unsigned curTickPos = MusEGlobal::audio->tickPos();
 //     const unsigned nextTick = MusEGlobal::audio->nextTick();
@@ -632,7 +632,7 @@ void MidiDevice::handleStop()
   //---------------------------------------------------
   
   // Don't send if external sync is on. The master, and our sync routing system will take care of that.   
-  if(!MusEGlobal::extSyncFlag.value())
+  if(!MusEGlobal::extSyncFlag)
   {
     // Shall we check open flags? DELETETHIS 4?
     //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))

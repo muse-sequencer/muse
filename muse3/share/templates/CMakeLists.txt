@@ -22,8 +22,8 @@
 #=============================================================================
 
 file (GLOB templates_files *.med
-      MusE.cfg
-      MusE-qt.conf
+      MusE-seq.cfg
+      MusE.conf
       )
 
 install( FILES ${templates_files}

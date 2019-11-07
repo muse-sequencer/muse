@@ -50,6 +50,8 @@
 
 namespace MusECore {
 
+int Track::_snGen=0;
+
 unsigned int Track::_soloRefCnt  = 0;
 Track* Track::_tmpSoloChainTrack = 0;
 bool Track::_tmpSoloChainDoIns   = false;
@@ -241,6 +243,7 @@ int Track::y() const
 
 void Track::init(int channels)
       {
+      _sn = newSn();
       _auxRouteCount = 0;  
       _nodeTraversed = false;
       _activity      = 0;
@@ -275,6 +278,10 @@ Track::Track(const Track& t, int flags)
   // moved setting the unique name to Song::duplicateTracks()
   // we'll see if there is any draw back to that.
   _name = t.name();
+
+  // This should be reset for a copy of a track.
+  _sn = newSn();
+
   internal_assign(t, flags | ASSIGN_PROPERTIES);
   for (int i = 0; i < MusECore::MAX_CHANNELS; ++i) {
         _meter[i] = 0.0;

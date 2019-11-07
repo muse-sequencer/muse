@@ -370,31 +370,29 @@ bool WaveTrack::getInputData(unsigned pos, int channels, unsigned nframes,
               }
             }
 #endif
-            
-            if(use_latency_corr)
-            {
-              // Write the buffers to the latency compensator.
-              // By now, each copied channel should have the same latency, 
-              //  so we use this convenient common-latency version of write.
-              // TODO: Make it per-channel.
-              
-              // Prepare the latency value to be passed to the compensator's writer,
-              //  by adjusting each route latency value. ie. the route with the worst-case
-              //  latency will get ZERO delay, while routes having smaller latency will get
-              //  MORE delay, to match all the signal timings together.
-              // The route's audioLatencyOut should have already been calculated and
-              //  conveniently stored in the route.
-              if((long int)ir->audioLatencyOut < 0)
-                l = 0;
-              else
-                l = ir->audioLatencyOut;
-              
-              _latencyComp->write(nframes, l + latencyCompWriteOffset(), buffer);
-            }
+
+            // Prepare the latency value to be passed to the compensator's writer,
+            //  by adjusting each route latency value. ie. the route with the worst-case
+            //  latency will get ZERO delay, while routes having smaller latency will get
+            //  MORE delay, to match all the signal timings together.
+            // The route's audioLatencyOut should have already been calculated and
+            //  conveniently stored in the route.
+            if((long int)ir->audioLatencyOut < 0)
+              l = 0;
+            else
+              l = ir->audioLatencyOut;
             
             next_chan = dst_ch + fin_dst_chs;
             for(i = dst_ch; i < next_chan; ++i)
+            {
+              if(use_latency_corr)
+              {
+                // Write the buffers to the latency compensator.
+                // By now, each copied channel should have the same latency. 
+                _latencyComp->write(i, nframes, l + latencyCompWriteOffset(), buffer[i]);
+              }
               usedInChannelArray[i] = true;
+            }
             have_data = true;
             }
 
@@ -439,7 +437,7 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
     // Do we want to record the incoming data?
     if(have_data && track_rec_flag && 
       (MusEGlobal::audio->isRecording() ||
-       (MusEGlobal::song->record() && MusEGlobal::extSyncFlag.value() && MusEGlobal::midiSyncContainer.isPlaying())) && 
+       (MusEGlobal::song->record() && MusEGlobal::extSyncFlag && MusEGlobal::midiSyncContainer.isPlaying())) && 
       recFile())
     {
       if(MusEGlobal::audio->freewheel())

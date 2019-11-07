@@ -110,8 +110,14 @@ class MetronomeSynthIF : public SynthIF
             measLen = 0;
             accent1Len = 0;
             accent2Len = 0;
+            measSamples = nullptr;
+            beatSamples = nullptr;
+            accent1Samples = nullptr;
+            accent2Samples = nullptr;
             initSamples();
             }
+      virtual ~MetronomeSynthIF();
+
       inline virtual void guiHeartBeat()  {  }
       inline virtual bool guiVisible() const { return false; }
       inline virtual bool hasGui() const { return false; }
@@ -144,6 +150,18 @@ class MetronomeSynthIF : public SynthIF
 
       virtual bool addScheduledControlEvent(unsigned long /*i*/, double /*val*/, unsigned /*frame*/) { return true; }    // returns true if event cannot be delivered
       };
+
+MetronomeSynthIF::~MetronomeSynthIF()
+{
+    if (beatSamples)
+      delete beatSamples;
+    if (measSamples)
+      delete measSamples;
+    if (accent1Samples)
+      delete accent1Samples;
+    if (accent2Samples)
+      delete accent2Samples;
+}
 
 //---------------------------------------------------------
 //   getData
@@ -262,18 +280,22 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
 
 void MetronomeSynthIF::initSamples()
 {
-    if (beatLen)
+    if (beatSamples)
       delete beatSamples;
-    if (measLen)
+    if (measSamples)
       delete measSamples;
-    if (accent1Len)
+    if (accent1Samples)
       delete accent1Samples;
-    if (accent2Len)
+    if (accent2Samples)
       delete accent2Samples;
     beatLen = 0;
     measLen = 0;
     accent1Len = 0;
     accent2Len = 0;
+    beatSamples = nullptr;
+    measSamples = nullptr;
+    accent1Samples = nullptr;
+    accent2Samples = nullptr;
 
     SndFile beat(MusEGlobal::museGlobalShare + "/metronome/" + MusEGlobal::config.beatSample);
     if (!beat.openRead(false)) {

@@ -160,8 +160,8 @@ option ( ENABLE_VST          "Enable VST/win support (deprecated)"              
 option ( ENABLE_VST_NATIVE   "Enable Native VST support (see ENABLE_VST_VESTIGE and VST_HEADER_PATH)" ON)
 option ( ENABLE_VST_VESTIGE  "Set VST header type is Vestige"                                         ON)
 option ( ENABLE_LV2          "Enable LV2 plugins and synths support" ON)
-option ( ENABLE_LV2_SUPPLIED "Use supplied LV2 libraries instead of system versions (lv2, lilv, sord)" OFF)
 option ( ENABLE_LV2_GTK2     "Enable LV2 user interface GTK2 support" ON)
+option ( ENABLE_LV2_MAKE_PATH "Enable LV2 makePath support. Stores plugin config files separate from song. NOT RECOMMENDED." OFF)
 option ( ENABLE_LV2_DEBUG    "Enable LV2 debugging messages" OFF)
 option ( ENABLE_FLUID        "Enable fluidsynth softsynth plugins."                                ON)
 option ( ENABLE_INSTPATCH    "Enable Instrument Patch Library support (enhances soundfont support)." ON)
@@ -396,6 +396,7 @@ if (ENABLE_PYTHON)
                   set(PYTHON_SUPPORT ON)
             endif (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 2.4)
       endif (PYTHONLIBS_FOUND)
+#  TODO Check for Pyro4?
 endif (ENABLE_PYTHON)
 
 ##
@@ -471,51 +472,21 @@ endif (ENABLE_VST_VESTIGE)
 
 if (ENABLE_LV2)
     set (muse_lilv_ver "0.22.0" )
-    set (muse_lv2_ver "1.12.0")
-    set (muse_sratom_ver "0.4.6")
+    set (muse_lv2_ver "1.14.0")
     set (muse_sord_ver "0.14.0")
-    set (muse_serd_ver "0.22.0")
 
     PKG_CHECK_MODULES(LILV lilv-0>=${muse_lilv_ver})
     PKG_CHECK_MODULES(SORD sord-0>=${muse_sord_ver})
     PKG_CHECK_MODULES(LV2 lv2>=${muse_lv2_ver})
-
-    if (ENABLE_LV2_SUPPLIED)
-        set (LV2_USE_SUPPLIED_VERSION TRUE)
-    else (ENABLE_LV2_SUPPLIED)
-        set (LV2_USE_SUPPLIED_VERSION FALSE)
-    endif (ENABLE_LV2_SUPPLIED)
-
-    if (LV2_USE_SUPPLIED_VERSION)
+    
+    if (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)
         set(LV2_SUPPORT ON)
-        
-        PKG_CHECK_MODULES(PCRE libpcre)
-        set (muse_lv2_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/lv2-${muse_lv2_ver}")
-        set (muse_sratom_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/sratom-${muse_sratom_ver}")
-        set (muse_sord_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/sord-${muse_sord_ver}")
-        set (muse_serd_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/serd-${muse_serd_ver}")
-        set (muse_lilv_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/lilv-${muse_lilv_ver}" )
-        include_directories(
-            ${muse_lv2_dir}
-            ${muse_sord_dir}
-            ${muse_sratom_dir}
-            ${muse_serd_dir}
-            ${muse_lilv_dir}
-        )
+        include_directories(${LILV_INCLUDE_DIRS})
+        include_directories(${SORD_INCLUDE_DIRS})
+        include_directories(${LV2_INCLUDE_DIRS})
+    endif (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)
 
-    else (LV2_USE_SUPPLIED_VERSION)
-    
-        if (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)
-            set(LV2_SUPPORT ON)
-            
-            include_directories(${LILV_INCLUDE_DIRS})
-            include_directories(${SORD_INCLUDE_DIRS})
-            include_directories(${LV2_INCLUDE_DIRS})
-        endif (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)
-
-    endif (LV2_USE_SUPPLIED_VERSION)
-    
-    if (LV2_USE_SUPPLIED_VERSION OR (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
+    if (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)
         ## find Gtk2
         if(ENABLE_LV2_GTK2)
           find_package(GTK2 COMPONENTS gtk gtkmm)
@@ -525,7 +496,13 @@ if (ENABLE_LV2)
         endif(ENABLE_LV2_GTK2)
         
         include_directories(${PROJECT_SOURCE_DIR}/muse/lv2Support)
-    endif (LV2_USE_SUPPLIED_VERSION OR (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
+        
+        ## Do we want to support LV2 makePath?
+        if(ENABLE_LV2_MAKE_PATH)
+          set(LV2_MAKE_PATH_SUPPORT ON)
+        endif(ENABLE_LV2_MAKE_PATH)
+
+    endif (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)
 
 else (ENABLE_LV2)
       message("LV2 disabled")
@@ -600,14 +577,6 @@ configure_file (
       ${PROJECT_BINARY_DIR}/config.h
       )
 
-file (COPY ${PROJECT_SOURCE_DIR}/all.h DESTINATION ${PROJECT_BINARY_DIR})
-file (RENAME ${PROJECT_BINARY_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic.h)
-
-file (COPY ${PROJECT_SOURCE_DIR}/all.h DESTINATION ${PROJECT_BINARY_DIR})
-file (RENAME ${PROJECT_BINARY_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic-debug.h)
-
-file (COPY ${PROJECT_SOURCE_DIR}/all.h DESTINATION ${PROJECT_BINARY_DIR})
-
 include_directories(
    .
    ${PROJECT_SOURCE_DIR}
@@ -668,9 +637,6 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -Werror=format-security -Wextra -Winvalid-pch -f
 set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "Release CXX flags" FORCE)
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-std=c++11 -O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "Release w/deb info CXX flags" FORCE)
 set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "Debug CXX flags" FORCE)
-##  Use this instead of the above if trying to debug our internal LV2 support
-##   and getting an error about unneccesary brackets.
-# set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -g -O0 -DQT_DEBUG -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG} -Wno-error " CACHE STRING "Debug CXX flags" FORCE)
 
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale
@@ -743,9 +709,9 @@ if (ENABLE_LRDF AND (NOT LRDF_FOUND))
         message("** WARNING: lrdf (>= 0.5) was enabled, but development files were not found. ")
 endif (ENABLE_LRDF AND (NOT LRDF_FOUND))
 
-if (ENABLE_PYTHON AND (NOT PYTHONLIBS_FOUND))
-        message("** WARNING: python was enabled, but development files were not found.")
-endif (ENABLE_PYTHON AND (NOT PYTHONLIBS_FOUND))
+if (ENABLE_PYTHON AND (NOT PYTHON_SUPPORT))
+        message("** WARNING: python (>= 2.4) was enabled, but development files were not found or too old.")
+endif (ENABLE_PYTHON AND (NOT PYTHON_SUPPORT))
 
 if (ENABLE_ALSA AND (NOT ALSA_FOUND))
       message("** WARNING: ALSA >= 0.9.0 was enabled, but development files were not found.")
@@ -818,15 +784,14 @@ if (ENABLE_INSTPATCH AND (NOT INSTPATCH_FOUND))
 endif (ENABLE_INSTPATCH AND (NOT INSTPATCH_FOUND))
 
 if (ENABLE_LV2)
-    if ((NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)) AND (NOT ENABLE_LV2_SUPPLIED))
+    if (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
         message("** WARNING: LV2 support was chosen, but development files were not found or too old:")
         message("   Requires lv2 >= " ${muse_lv2_ver} ", lilv-0 >= " ${muse_lilv_ver} ", sord-0 >= " ${muse_sord_ver})
-        message("   Hint: Last resort: Try cmake option ENABLE_LV2_SUPPLIED to build supplied internal versions instead.")
-    else ((NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)) AND (NOT ENABLE_LV2_SUPPLIED))
+    else (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
         if (ENABLE_LV2_GTK2 AND (NOT GTK2_FOUND))
             message("** WARNING: LV2 GTK2 support is enabled, but Gtk2 (gtkmm-2, gtk+-2) development files were not found. LV2 Gtk2 UI support is disabled.")
         endif (ENABLE_LV2_GTK2 AND (NOT GTK2_FOUND))
-    endif ((NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)) AND (NOT ENABLE_LV2_SUPPLIED))
+    endif (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
 endif (ENABLE_LV2)
 
 message("")
@@ -844,6 +809,7 @@ summary_add("DSSI support" DSSI_SUPPORT)
 summary_add("LV2 support" LV2_SUPPORT)
 if(LV2_SUPPORT)
   summary_add("LV2 Gtk2 UI support" HAVE_GTK2)
+  summary_add("LV2 makePath support" LV2_MAKE_PATH_SUPPORT)
 endif(LV2_SUPPORT)
 #summary_add("VST support" VST_SUPPORT)
 summary_add("Native VST support" VST_NATIVE_SUPPORT)

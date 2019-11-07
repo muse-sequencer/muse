@@ -1,0 +1,175 @@
+Python remote control:
+=======================
+
+MusE can be remotely controlled by the Python scripting language,
+ even over a network.
+
+It supports Python 2 or 3.
+It requires Pyro 4 (Python Remote Objects).
+
+Once Python and Pyro have been installed, support them by
+ setting this MusE cmake option to 'ON':
+    ENABLE_PYTHON   (Default is 'OFF')
+
+Then build and install MusE.
+
+To enable the feature, include the command line option
+ '-y' when starting MusE.
+
+The feature uses Pyro to talk on the network.
+If you want to talk to other machines, ensure that the
+ network host name resolves to a valid address.
+Pyro won't broadcast if the host name resolves to 127.0.0.1,
+ but it'll work fine locally.
+
+If desired, the Pyro nameserver can be started manually
+ before starting MusE, for example like this:
+python -m Pyro4.naming [-n <hostname>] [-p <port>]
+ or
+python3 -m Pyro4.naming [-n <hostname>] [-p <port>]
+
+If a Pyro nameserver is NOT already running when MusE
+ is started, MusE will automatically start it for you,
+ with default settings.
+
+The Pyro nameserver host name and port can be set with
+ these MusE command line options:
+--pyro-ns-host<host>  --pyro-ns-port<port>
+
+The Pyro daemon host name and port can be set with
+ these MusE command line options:
+--pyro-daemon-host=<host> --pyro-daemon-port<port>
+
+The Pyro communication timeout can be set with
+ this MusE command line option:
+ --pyro-comm-timeout<time (s)>
+It is set to about five seconds by default.
+When closing MusE, there may be noticable delay of
+ up to the given amount of time.
+ 
+When launched with -y MusE will initialize a Python bridge.
+This means you can access MusE internals via Python
+ through Pyro. An example of how to initialize the connection
+ to MusE can be found in the distributed package under
+ share/pybridge, a file named musepclient.py.
+There are several examples found in share/pybridge/examples.
+
+List of commands:
+-------------------------------------------------------------
+  # Get current position
+  getCPos(self):
+
+  # Start playback
+  
+  startPlay(self):
+
+  # Stop playback
+  stopPlay(self):
+
+  # Rewind current position to start
+  rewindStart(self):
+
+  # Get position of left locator
+  getLPos(self):
+
+  # Get position of right locator
+  getRPos(self):
+
+  # Get tempo at particular tick
+  getTempo(self, tick):
+
+  # get track names
+  getTrackNames(self):
+
+  # get parts in a particular track
+  getParts(self, trackname):
+
+  # create part in track
+  createPart(self, trackname, starttick, lenticks, part):
+
+  # modify a part (the part to be modified is specified by its id
+  modifyPart(self, part):
+
+  # delete a part
+  deletePart(self, part):
+
+  # get first selected track in arranger window
+  getSelectedTrack(self):
+
+  # import part file to a track at a given position
+  importPart(self, trackname, filename, tick):
+
+  # set current position
+  setCPos(self, tick):
+
+  # set left locator
+  setLPos(self, tick):
+
+  # set right locator
+  setRPos(self, tick):
+
+  # set song length
+  setSongLen(self, ticks):
+
+  # get song length
+  getSongLen(self):
+
+  # get division (ticks per 1/4, or per beat?)
+  getDivision(self):
+
+  # set midi track parameter (velocity, compression, len, transpose)
+  setMidiTrackParameter(self, trackname, paramname, value):
+
+  # get loop flag
+  getLoop(self):
+
+  # set loop flag
+  setLoop(self, loopFlag):
+
+  # get track mute parameter
+  getMute(self, trackname):
+
+  # set track mute parameter
+  setMute(self, trackname, enabled):
+
+  # set mixer volume
+  setVolume(self, trackname, volume):
+
+  # get a particular midi controller value for a track
+  getMidiControllerValue(self, trackname, ctrlno):
+
+  # set a particular midi controller value for a track
+  setMidiControllerValue(self, trackname, ctrlno, value):
+
+  # set volume for audio track
+  setAudioTrackVolume(self, trackname, dvol):
+
+  # get volume for audio track
+  getAudioTrackVolume(self, trackname):
+
+  # get effect names for an audio track
+  getTrackEffects(self, trackname):
+
+  # toggle specific effect on/off
+  toggleTrackEffect(self, trackname, effectno, onoff):
+
+  #change track name
+  changeTrackName(self, trackname, newname):
+
+  # add midi track
+  addMidiTrack(self, trackname):
+
+  # add wave track
+  addWaveTrack(self, trackname):
+
+  # add audio input
+  addInput(self, trackname):
+
+  # add audio output
+  addOutput(self, trackname):
+
+  # add audio group
+  addGroup(self, trackname):
+
+  # delete a track
+  deleteTrack(self, trackname):

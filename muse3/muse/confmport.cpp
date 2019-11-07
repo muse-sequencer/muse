@@ -84,7 +84,7 @@ namespace MusEGui {
 void MPConfig::closeEvent(QCloseEvent *event)
 {
     apply();
-    QSettings settings("MusE", "MusE-qt");
+    QSettings settings;
     settings.setValue("MPConfig/geometry", saveGeometry());
     QWidget::closeEvent(event);
 }
@@ -921,10 +921,11 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
 
             case DEVCOL_INSTR:
                   {
-                  if (dev && dev->isSynti())
-                        return;
+                  //if (dev && dev->isSynti())
+                  //      return;
                   PopupMenu* pup = new PopupMenu(false);
-                  MusECore::MidiInstrument::populateInstrPopup(pup, port->instrument(), false);   
+                  //MusECore::MidiInstrument::populateInstrPopup(pup, port->instrument(), false);   
+                  MusECore::MidiInstrument::populateInstrPopup(pup, port->instrument(), true);
                   
                   if(pup->actions().count() == 0)
                   {
@@ -1119,7 +1120,7 @@ MPConfig::MPConfig(QWidget* parent)
    : QDialog(parent)
       {
       setupUi(this);
-      QSettings settings("MusE", "MusE-qt");
+      QSettings settings;
       restoreGeometry(settings.value("MPConfig/geometry").toByteArray());
 
       mdevView->setRowCount(MusECore::MIDI_PORTS);
@@ -1275,7 +1276,7 @@ void MPConfig::deviceSelectionChanged()
 
 void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if(!(flags._flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_INSTRUMENT)))
+      if(!(flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_INSTRUMENT)))
         return;
     
 #ifdef ALSA_SUPPORT
@@ -1452,7 +1453,7 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
             }
 #endif                  
 
-            if (!(dev && dev->isSynti()))
+            //if (!(dev && dev->isSynti()))
                   iteminstr->setIcon(QIcon(*buttondownIcon));
 
             itemname->setIcon(QIcon(*buttondownIcon));
@@ -1621,7 +1622,8 @@ void MPConfig::addInstanceClicked()
             MusECore::MidiPort* port  = &MusEGlobal::midiPorts[i];
             MusECore::MidiDevice* dev = port->device();
             if (dev==0) {
-                  MusEGlobal::audio->msgSetMidiDevice(port, si);
+                  // This is a brand new instance. Set the instrument as well for convenience.
+                  MusEGlobal::audio->msgSetMidiDevice(port, si, si);
                   // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
                   MusEGlobal::muse->changeConfig(true);     // save configuration file
                   MusEGlobal::song->update();

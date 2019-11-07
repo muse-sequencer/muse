@@ -281,7 +281,7 @@ bool EventCanvas::stuckNoteExists(int port, int channel, int pitch) const
 
 void EventCanvas::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if (flags._flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
+      if (flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
             // TODO FIXME: don't we actually only want SC_PART_*, and maybe SC_TRACK_DELETED?
             //             (same in waveview.cpp)
             updateItems();
@@ -319,18 +319,18 @@ void EventCanvas::songChanged(MusECore::SongChangedStruct_t flags)
                   }
       }
 
-      if(flags._flags & (SC_SELECTION))
+      if(flags & (SC_SELECTION))
       {
         // Prevent race condition: Ignore if the change was ultimately sent by the canvas itself.
         if(flags._sender != this)
           updateItemSelections();
       }
       
-      bool f1 = flags._flags & (SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED | 
+      bool f1 = static_cast<bool>(flags & (SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED | 
                          SC_PART_INSERTED | SC_PART_MODIFIED | SC_PART_REMOVED |
                          SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
-                         SC_SIG | SC_TEMPO | SC_KEY | SC_MASTER | SC_CONFIG | SC_DRUMMAP); 
-      bool f2 = flags._flags & SC_SELECTION;
+                         SC_SIG | SC_TEMPO | SC_KEY | SC_MASTER | SC_CONFIG | SC_DRUMMAP));
+      bool f2 = static_cast<bool>(flags & SC_SELECTION);
       
       // Try to avoid all unnecessary emissions.
       if(f1 || f2)
@@ -420,8 +420,8 @@ void EventCanvas::keyPress(QKeyEvent* event)
             if (found) {
                   MusECore::Pos p1(tick_min, true);
                   MusECore::Pos p2(tick_max, true);
-                  MusEGlobal::song->setPos(1, p1);
-                  MusEGlobal::song->setPos(2, p2);
+                  MusEGlobal::song->setPos(MusECore::Song::LPOS, p1);
+                  MusEGlobal::song->setPos(MusECore::Song::RPOS, p2);
                   }
             }
       // Select items by key (PianoRoll & DrumEditor)

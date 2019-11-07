@@ -147,6 +147,7 @@ unsigned int PendingOperationItem::getIndex() const
     case ModifyMidiDeviceAddress:
     case ModifyMidiDeviceFlags:
     case ModifyMidiDeviceName:
+    case SetInstrument:
     case AddTrack:
     case DeleteTrack:
     case MoveTrack:
@@ -175,6 +176,9 @@ unsigned int PendingOperationItem::getIndex() const
     case GlobalSelectAllEvents:
     case SwitchMetronomeSettings:
     case ModifyMetronomeAccentMap:
+    case SetExternalSyncFlag:
+    case SetUseJackTransport:
+    case SetUseMasterTrack:
     case ModifyAudioSamples:
     case SetStaticTempo:
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
@@ -581,6 +585,17 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       flags |= SC_CONFIG;
     break;
     
+    case SetInstrument:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage SetInstrument port:%p instr:%p\n",
+              _midi_port, _midi_instrument);
+#endif      
+      _midi_port->setInstrument(_midi_instrument);
+      // Flag the port to send initializations next time it bothers to check.
+      _midi_port->clearInitSent();
+      flags |= SC_MIDI_INSTRUMENT;
+    break;
+    
     case AddTrack:
     {
 #ifdef _PENDING_OPS_DEBUG_
@@ -780,7 +795,27 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
                     static_cast<InputList*>(_void_track_list)->erase(_track);
                     break;
               case Track::AUDIO_SOFTSYNTH:
-                    static_cast<SynthIList*>(_void_track_list)->erase(_track);
+                    {
+                      static_cast<SynthIList*>(_void_track_list)->erase(_track);
+                      
+                      // Change all ports which used the instrument.
+                      // FIXME TODO: We want to make this undoable but ATM a few other things can
+                      //  set the instrument without an undo operation so the undo sequence would
+                      //  not be correct. So we don't have much choice but to just reset for now.
+                      // Still, everything else is in place for undoable setting of instrument...
+                      const SynthI* si = static_cast<const SynthI*>(_track);
+                      for(int port = 0; port < MusECore::MIDI_PORTS; ++port)
+                      {
+                        MidiPort* mp = &MusEGlobal::midiPorts[port];
+                        if(mp->instrument() != si)
+                          continue;
+                        // Just revert to GM.
+                        mp->setInstrument(registerMidiInstrument("GM"));
+                        // Flag the port to send initializations next time it bothers to check.
+                        mp->clearInitSent();
+                        flags |= SC_MIDI_INSTRUMENT;
+                      }
+                    }     
                     break;
               default:
                     fprintf(stderr, "PendingOperationItem::executeRTStage DeleteTrack: Unknown track type %d\n", _track->type());
@@ -947,16 +982,16 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
 #ifdef _PENDING_OPS_DEBUG_
       fprintf(stderr, "PendingOperationItem::executeRTStage MoveTrack from:%d to:%d\n", _from_idx, _to_idx);
 #endif      
-      int sz = _track_list->size();
+      const int sz = _track_list->size();
       if(_from_idx >= sz)
       {
         fprintf(stderr, "MusE error: PendingOperationItem::executeRTStage MoveTrack from index out of range:%d\n", _from_idx);
         return flags;
       }
-      iTrack fromIt = _track_list->begin() + _from_idx;
+      ciTrack fromIt = _track_list->cbegin() + _from_idx;
       Track* track = *fromIt;
       _track_list->erase(fromIt);
-      iTrack toIt = (_to_idx >= sz) ? _track_list->end() : _track_list->begin() + _to_idx;
+      ciTrack toIt = (_to_idx >= sz) ? _track_list->cend() : _track_list->cbegin() + _to_idx;
       _track_list->insert(toIt, track);
       flags |= SC_TRACK_MOVED;
     }
@@ -1206,7 +1241,8 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage AddAudioCtrlVal: ctrl_l:%p frame:%u val:%f\n", 
               _aud_ctrl_list, _posLenVal, _ctl_dbl_val);
 #endif      
-      _aud_ctrl_list->insert(CtrlListInsertPair_t(_posLenVal, CtrlVal(_posLenVal, _ctl_dbl_val)));
+      // Add will replace if found.
+      _aud_ctrl_list->add(_posLenVal, _ctl_dbl_val);
       flags |= SC_AUDIO_CONTROLLER;
     break;
     case DeleteAudioCtrlVal:
@@ -1380,7 +1416,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
         //Track* t = *it;
         //if(t->isMidiTrack())
         //  continue;
-        if((*it)->selectEvents(_select))
+        if((*it)->selectEvents(_boolA))
           flags |= SC_SELECTION;
       }
     }
@@ -1412,9 +1448,9 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     case SwitchMetronomeSettings:
     {
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage SwitchMetronomeSettings: settings:%p val:%d\n", _metroUseSongSettings, _select);
+      fprintf(stderr, "PendingOperationItem::executeRTStage SwitchMetronomeSettings: settings:%p val:%d\n", _bool_pointer, _boolA);
 #endif      
-      *_metroUseSongSettings = _select;
+      *_bool_pointer = _boolA;
       flags |= SC_METRONOME;
     }
     break;
@@ -1429,6 +1465,36 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       // Transfer the original pointer back to _newMetroAccentsMap so it can be deleted in the non-RT stage.
       _newMetroAccentsMap = orig;
       flags |= SC_METRONOME;
+    }
+    break;
+
+    case SetExternalSyncFlag:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage SetExternalSyncFlag: pointer:%p val:%d\n", _bool_pointer, _boolA);
+#endif      
+      *_bool_pointer = _boolA;
+      flags |= SC_EXTERNAL_MIDI_SYNC;
+    }
+    break;
+
+    case SetUseJackTransport:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage SetUseJackTransport: pointer:%p val:%d\n", _bool_pointer, _boolA);
+#endif      
+      *_bool_pointer = _boolA;
+      flags |= SC_USE_JACK_TRANSPORT;
+    }
+    break;
+
+    case SetUseMasterTrack:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage SetUseMasterTrack: pointer:%p val:%d\n", _tempo_list, _boolA);
+#endif      
+      _tempo_list->setMasterFlag(0, _boolA);
+      flags |= SC_MASTER;
     }
     break;
 
@@ -1555,7 +1621,7 @@ SongChangedStruct_t PendingOperationList::executeRTStage()
     _sc_flags |= ip->executeRTStage();
   
   // To avoid doing this item by item, do it here.
-  if(_sc_flags._flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_ROUTE))
+  if(_sc_flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_ROUTE))
   {
     MusEGlobal::song->updateSoloStates();
     _sc_flags |= SC_SOLO;
@@ -1771,6 +1837,15 @@ bool PendingOperationList::add(PendingOperationItem op)
            poi._name == op._name)
         {
           fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyMidiDeviceName. Ignoring.\n");
+          return false;  
+        }
+      break;
+
+      case PendingOperationItem::SetInstrument:
+        if(poi._type == PendingOperationItem::SetInstrument && poi._midi_port == op._midi_port &&
+           poi._midi_instrument == op._midi_instrument)
+        {
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetInstrument. Ignoring.\n");
           return false;  
         }
       break;
@@ -2499,7 +2574,7 @@ bool PendingOperationList::add(PendingOperationItem op)
 #endif      
         if(poi._type == PendingOperationItem::GlobalSelectAllEvents && poi._track_list == op._track_list) 
         {
-          if(poi._select == op._select)
+          if(poi._boolA == op._boolA)
           {
             fprintf(stderr, "MusE error: PendingOperationList::add(): Double GlobalSelectAllEvents. Ignoring.\n");
             return false;  
@@ -2508,7 +2583,7 @@ bool PendingOperationList::add(PendingOperationItem op)
           {
             // Special: Do not 'cancel' out this one. The selecions may need to affect all events.
             // Simply replace the value.
-            poi._select = op._select; 
+            poi._boolA = op._boolA; 
             // An operation will still take place.
             return true;
           }
@@ -2531,9 +2606,9 @@ bool PendingOperationList::add(PendingOperationItem op)
       
       case PendingOperationItem::SwitchMetronomeSettings:
         if(poi._type == PendingOperationItem::SwitchMetronomeSettings && 
-          (poi._metroUseSongSettings == op._metroUseSongSettings))
+          (poi._bool_pointer == op._bool_pointer))
         {
-          if(poi._select == op._select)
+          if(poi._boolA == op._boolA)
           {
             fprintf(stderr, "MusE error: PendingOperationList::add(): Double SwitchMetronomeSettings. Ignoring.\n");
             // No operation will take place.
@@ -2561,6 +2636,69 @@ bool PendingOperationList::add(PendingOperationItem op)
 //           // An operation will still take place.
 //           return true;
 //         }
+      break;
+      
+      case PendingOperationItem::SetExternalSyncFlag:
+        if(poi._type == PendingOperationItem::SetExternalSyncFlag && 
+          (poi._bool_pointer == op._bool_pointer))
+        {
+          if(poi._boolA == op._boolA)
+          {
+            fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetExternalSyncFlag. Ignoring.\n");
+            // No operation will take place.
+            return false;  
+          }
+          else
+          {
+            // Enable or disable followed by disable or enable is useless. Cancel out both by erasing the command.
+            erase(ipos->second);
+            _map.erase(ipos);
+            // No operation will take place.
+            return false;
+          }
+        }
+      break;
+      
+      case PendingOperationItem::SetUseJackTransport:
+        if(poi._type == PendingOperationItem::SetUseJackTransport && 
+          (poi._bool_pointer == op._bool_pointer))
+        {
+          if(poi._boolA == op._boolA)
+          {
+            fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetUseJackTransport. Ignoring.\n");
+            // No operation will take place.
+            return false;  
+          }
+          else
+          {
+            // Enable or disable followed by disable or enable is useless. Cancel out both by erasing the command.
+            erase(ipos->second);
+            _map.erase(ipos);
+            // No operation will take place.
+            return false;
+          }
+        }
+      break;
+      
+      case PendingOperationItem::SetUseMasterTrack:
+        if(poi._type == PendingOperationItem::SetUseMasterTrack && 
+          (poi._tempo_list == op._tempo_list))
+        {
+          if(poi._boolA == op._boolA)
+          {
+            fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetUseMasterTrack. Ignoring.\n");
+            // No operation will take place.
+            return false;  
+          }
+          else
+          {
+            // Enable or disable followed by disable or enable is useless. Cancel out both by erasing the command.
+            erase(ipos->second);
+            _map.erase(ipos);
+            // No operation will take place.
+            return false;
+          }
+        }
       break;
       
       case PendingOperationItem::Uninitialized:

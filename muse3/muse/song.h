@@ -26,6 +26,7 @@
 
 #include <QObject>
 #include <QStringList>
+#include "script_delivery.h"
 
 #include <map>
 #include <set>
@@ -40,6 +41,9 @@
 #include "track.h"
 #include "synth.h"
 #include "operations.h"
+#include "lock_free_buffer.h"
+
+#define IPC_EVENT_FIFO_SIZE ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(16384)) )
 
 class QAction;
 class QFont;
@@ -80,7 +84,7 @@ class Song : public QObject {
       Q_OBJECT
 
    public:
-      enum POS        { CPOS = 0, LPOS, RPOS };
+      enum POSTYPE    { CPOS = 0, LPOS, RPOS };
       enum FollowMode { NO, JUMP, CONTINUOUS };
       enum            { REC_OVERDUP, REC_REPLACE };
       enum            { CYCLE_NORMAL, CYCLE_MIX, CYCLE_REPLACE };
@@ -140,9 +144,9 @@ class Song : public QObject {
 
       // Receives events from any threads. For now, specifically for creating new
       //  controllers in the gui thread and adding them safely to the controller lists.
-      static LockFreeMPSCRingBuffer<MidiPlayEvent> *_ipcInEventBuffers;
+      LockFreeMPSCRingBuffer<MidiPlayEvent> *_ipcInEventBuffers;
+      LockFreeMPSCRingBuffer<MidiPlayEvent> *_ipcOutEventBuffers;
       
-      bool _masterFlag;
       bool loopFlag;
       bool punchinFlag;
       bool punchoutFlag;
@@ -150,6 +154,7 @@ class Song : public QObject {
       bool soloFlag;
       int _recMode;
       int _cycleMode;
+      Pos _startPlayPosition;
       bool _click;
       bool _quantize;
       int _arrangerRaster;        // Used for audio rec new part snapping. Set by Arranger snap combo box.
@@ -178,6 +183,8 @@ class Song : public QObject {
       //  that modified passed-in event sitting in the Undo item. That's not the right event!)
       Event deleteEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
       
+      void normalizePart(MusECore::Part *part);
+
    public:
       Song(const char* name = 0);
       ~Song();
@@ -225,6 +232,10 @@ class Song : public QObject {
       void writeFont(int level, Xml& xml, const char* name,
          const QFont& font) const;
       QFont readFont(Xml& xml, const char* name);
+      // After a song file is successfully loaded with read(), some items which
+      //  reference other items in the file need to be resolved. (Mixer strip configs etc.)
+      void resolveSongfileReferences();
+
       QString getSongInfo() { return songInfoStr; }
       void setSongInfo(QString info, bool show) { songInfoStr = info; showSongInfo = show; }
       bool showSongInfoOnStartup() { return showSongInfo; }
@@ -253,7 +264,7 @@ class Song : public QObject {
       //   transport
       //-----------------------------------------
 
-      void setPos(int, const Pos&, bool sig = true, bool isSeek = true,
+      void setPos(POSTYPE posType, const Pos&, bool sig = true, bool isSeek = true,
          bool adjustScrollbar = false);
       const Pos& cPos() const       { return pos[0]; }
       const Pos& lPos() const       { return pos[1]; }
@@ -268,7 +279,6 @@ class Song : public QObject {
       bool record() const           { return recordFlag; }
       bool punchin() const          { return punchinFlag; }
       bool punchout() const         { return punchoutFlag; }
-      bool masterFlag() const       { return _masterFlag; }
       void setRecMode(int val)      { _recMode = val; }
       int  recMode() const          { return _recMode; }
       void setCycleMode(int val)    { _cycleMode = val; }
@@ -324,15 +334,9 @@ class Song : public QObject {
       void removePart(Part* part);
       void changePart(Part*, Part*);
 
-      
-      PartList* getSelectedMidiParts() const; // FIXME TODO move functionality into function.cpp
-      PartList* getSelectedWaveParts() const;
-
       int arrangerRaster() { return _arrangerRaster; }        // Used by Song::cmdAddRecordedWave to snap new wave parts
       void setArrangerRaster(int r) { _arrangerRaster = r; }  // Used by Arranger snap combo box
 
-private:
-      void normalizePart(MusECore::Part *part);
 public:
       void normalizeWaveParts(Part *partCursor = NULL);
 
@@ -351,13 +355,11 @@ public:
       
       Track* findTrack(const Part* part) const;
       Track* findTrack(const QString& name) const;
-      bool trackExists(Track* t) const { return _tracks.find(t) != _tracks.end(); }
+      bool trackExists(Track* t) const { return _tracks.find(t) != _tracks.cend(); }
 
       void setRecordFlag(Track*, bool val, Undo* operations = 0);
+      // This is a non- realtime safe operation mainly used when loading files, while the engine is paused or idle.
       void insertTrack0(Track*, int idx);
-      void insertTrack1(Track*, int idx);
-      void insertTrack2(Track*, int idx);
-      void insertTrack3(Track*, int idx);
 
       // The currently selected track (in a multi-selection the last one selected), or null.
       Track* selectedTrack() const { return _tracks.currentSelection(); }
@@ -391,9 +393,15 @@ public:
       //  you know what you are doing because the thread needs to ask whether the controller exists before
       //  calling, and that may not be safe from threads other than gui or audio.
       bool putIpcInEvent(const MidiPlayEvent& ev);
-      // Process any special IPC audio thread - to - gui thread messages. Called by gui thread only.
-      // Returns true on success.
+      // Put an event into the IPC event ring buffer for the audio thread to process.
+      // Called by gui thread only. Returns true on success.
+      bool putIpcOutEvent(const MidiPlayEvent& ev);
+      // Process any special IPC audio thread - to - gui thread messages.
+      // Called by gui thread only. Returns true on success.
       bool processIpcInEventBuffers();
+      // Process any special gui thread - to - IPC audio thread messages.
+      // Called by audio thread only. Returns true on success.
+      bool processIpcOutEventBuffers();
 
       //-----------------------------------------
       //   undo, redo, operation groups
@@ -433,7 +441,7 @@ public:
       //-----------------------------------------
       //   Python bridge related
       //-----------------------------------------
-#ifdef ENABLE_PYTHON
+#ifdef PYTHON_SUPPORT
       virtual bool event (QEvent* e );
 #endif
       void executeScript(QWidget *parent, const char* scriptfile, PartList* parts, int quant, bool onlyIfSelected);
@@ -474,7 +482,7 @@ public:
       Track* addNewTrack(QAction* action, Track* insertAt = 0);
       void duplicateTracks();
       QString getScriptPath(int id, bool delivered);
-      void populateScriptMenu(QMenu* menuPlugins, QObject* receiver);
+      void populateScriptMenu(QMenu* menuPlugins, ScriptReceiver* receiver);
       void setDirty() { emit sigDirty(); }
 
       /* restarts recording from last start position

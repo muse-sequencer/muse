@@ -94,6 +94,7 @@ enum {
       SHRT_START_REC, // *(keypad)
       SHRT_REC_CLEAR, // *(keypad)
       SHRT_FULLSCREEN,
+      SHRT_TOGGLE_REWINDONSTOP,
 
       //Main + Drumeditor
       SHRT_NEW, //Ctrl+N

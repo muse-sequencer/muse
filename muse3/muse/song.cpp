@@ -31,7 +31,6 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QPoint>
-#include <QSignalMapper>
 #include <QString>
 #include <QTextStream>
 #include <QProcess>
@@ -81,9 +80,6 @@ MusECore::Song* song = 0;
 
 namespace MusECore {
 
-LockFreeMPSCRingBuffer<MidiPlayEvent> *Song::_ipcInEventBuffers = 
-  new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
-  
 extern void clearMidiTransforms();
 extern void clearMidiInputTransforms();
 
@@ -96,6 +92,9 @@ Song::Song(const char* name)
       {
       setObjectName(name);
 
+      _ipcInEventBuffers = new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
+      _ipcOutEventBuffers = new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
+  
       _fCpuLoad = 0.0;
       _fDspLoad = 0.0;
       _xRunsCount = 0;
@@ -124,6 +123,10 @@ Song::~Song()
       delete undoList;
       delete redoList;
       delete _markerList;
+      if(_ipcOutEventBuffers)
+        delete _ipcOutEventBuffers;
+      if(_ipcInEventBuffers)
+        delete _ipcInEventBuffers;
       }
 
 //---------------------------------------------------------
@@ -216,7 +219,8 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
         MidiDevice* dev = port->device();
         if (dev==0) 
         {
-          MusEGlobal::audio->msgSetMidiDevice(port, si);
+          // This is a brand new instance. Set the instrument as well for convenience.
+          MusEGlobal::audio->msgSetMidiDevice(port, si, si);
           // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
           MusEGlobal::muse->changeConfig(true);
           if (SynthI::visible()) {
@@ -1216,11 +1220,9 @@ void Song::setQuantize(bool val)
 
 void Song::setMasterFlag(bool val)
     {
-      _masterFlag = val;
-      if (MusEGlobal::tempomap.setMasterFlag(cpos(), val))
-      {
-        emit songChanged(SC_MASTER);
-      }      
+      MusECore::PendingOperationList operations;
+      operations.add(MusECore::PendingOperationItem(&MusEGlobal::tempomap, val, MusECore::PendingOperationItem::SetUseMasterTrack));
+      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
     }
 
 //---------------------------------------------------------
@@ -1229,22 +1231,28 @@ void Song::setMasterFlag(bool val)
 //---------------------------------------------------------
 
 void Song::setPlay(bool f)
-      {
-      if (MusEGlobal::extSyncFlag.value()) {
+{
+      if (MusEGlobal::extSyncFlag) {
           if (MusEGlobal::debugMsg)
             fprintf(stderr, "not allowed while using external sync");
           return;
       }
+
       // only allow the user to set the button "on"
       if (!f)
             MusEGlobal::playAction->setChecked(true);
-      else
+      else {
+            // keep old transport position for rewinding
+            // position if "Rewind on Stop" option is enabled
+            _startPlayPosition = MusEGlobal::audio->pos();
+
             MusEGlobal::audio->msgPlay(true);
       }
+}
 
 void Song::setStop(bool f)
-      {
-      if (MusEGlobal::extSyncFlag.value()) {
+{
+      if (MusEGlobal::extSyncFlag) {
           if (MusEGlobal::debugMsg)
             fprintf(stderr, "not allowed while using external sync");
           return;
@@ -1252,9 +1260,10 @@ void Song::setStop(bool f)
       // only allow the user to set the button "on"
       if (!f)
             MusEGlobal::stopAction->setChecked(true);
-      else
+      else {
             MusEGlobal::audio->msgPlay(false);
       }
+}
 
 void Song::setStopPlay(bool f)
       {
@@ -1278,7 +1287,7 @@ void Song::seekTo(int tick)
 {
   if (!MusEGlobal::audio->isPlaying()) {
     Pos p(tick, true);
-    setPos(0, p);
+    setPos(CPOS, p);
   }
 }
 //---------------------------------------------------------
@@ -1286,21 +1295,21 @@ void Song::seekTo(int tick)
 //   MusEGlobal::song->setPos(Song::CPOS, pos, true, true, true);
 //---------------------------------------------------------
 
-void Song::setPos(int idx, const Pos& val, bool sig,
+void Song::setPos(POSTYPE posType, const Pos& val, bool sig,
    bool isSeek, bool adjustScrollbar)
       {
       if (MusEGlobal::heavyDebugMsg)
       {
         fprintf(stderr, "setPos %d sig=%d,seek=%d,scroll=%d  ",
-           idx, sig, isSeek, adjustScrollbar);
+           posType, sig, isSeek, adjustScrollbar);
         val.dump(0);
         fprintf(stderr, "\n");
-        fprintf(stderr, "Song::setPos before MusEGlobal::audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
+        fprintf(stderr, "Song::setPos before MusEGlobal::audio->msgSeek posType:%d isSeek:%d frame:%d\n", posType, isSeek, val.frame());
       }
-      
-      if (idx == CPOS) {
+
+      if (posType == CPOS) {
             _vcpos = val;
-            if (isSeek && !MusEGlobal::extSyncFlag.value()) {  
+            if (isSeek && !MusEGlobal::extSyncFlag) {  
                   if (val == MusEGlobal::audio->pos())  
                   {
                       if (MusEGlobal::heavyDebugMsg) fprintf(stderr,
@@ -1309,17 +1318,17 @@ void Song::setPos(int idx, const Pos& val, bool sig,
                   }     
                   MusEGlobal::audio->msgSeek(val);
                   if (MusEGlobal::heavyDebugMsg) fprintf(stderr,
-                    "Song::setPos after MusEGlobal::audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
+                    "Song::setPos after MusEGlobal::audio->msgSeek posTYpe:%d isSeek:%d frame:%d\n", posType, isSeek, val.frame());
                   return;
                   }
             }
-      if (val == pos[idx])
+      if (val == pos[posType])
       {
            if (MusEGlobal::heavyDebugMsg) fprintf(stderr,
              "Song::setPos MusEGlobal::song->pos already == val tick:%d frame:%d\n", val.tick(), val.frame());   
            return;
       }     
-      pos[idx] = val;
+      pos[posType] = val;
       bool swap = pos[LPOS] > pos[RPOS];
       if (swap) {        // swap lpos/rpos if lpos > rpos
             Pos tmp   = pos[LPOS];
@@ -1330,14 +1339,14 @@ void Song::setPos(int idx, const Pos& val, bool sig,
             if (swap) {
                   emit posChanged(LPOS, pos[LPOS].tick(), adjustScrollbar);
                   emit posChanged(RPOS, pos[RPOS].tick(), adjustScrollbar);
-                  if (idx != LPOS && idx != RPOS)
-                        emit posChanged(idx, pos[idx].tick(), adjustScrollbar);
+                  if (posType != LPOS && posType != RPOS)
+                        emit posChanged(posType, pos[posType].tick(), adjustScrollbar);
                   }
             else
-                  emit posChanged(idx, pos[idx].tick(), adjustScrollbar);
+                  emit posChanged(posType, pos[posType].tick(), adjustScrollbar);
             }
 
-      if (idx == CPOS) {
+      if (posType == CPOS) {
             iMarker i1 = _markerList->begin();
             iMarker i2 = i1;
             bool currentChanged = false;
@@ -1412,9 +1421,9 @@ void Song::update(MusECore::SongChangedStruct_t flags, bool allowRecursion)
       {
       static int level = 0;         // DEBUG
       if (level && !allowRecursion) {
-            fprintf(stderr, "THIS SHOULD NEVER HAPPEN: unallowed recursion in Song::update(%08lx), level %d!\n"
+            fprintf(stderr, "THIS SHOULD NEVER HAPPEN: unallowed recursion in Song::update(%08lx %08lx), level %d!\n"
                    "                          the songChanged() signal is NOT emitted. this will\n"
-                   "                          probably cause windows being not up-to-date.\n", (unsigned long)flags._flags, level);
+                   "                          probably cause windows being not up-to-date.\n", flags.flagsHi(), flags.flagsLo(), level);
             return;
             }
       ++level;
@@ -1504,86 +1513,6 @@ void Song::dumpMaster()
       MusEGlobal::sigmap.dump();
       }
 
-//---------------------------------------------------------
-//   getSelectedParts
-//---------------------------------------------------------
-
-PartList* Song::getSelectedMidiParts() const
-      {
-      PartList* parts = new PartList();
-
-      /*
-            If a part is selected, edit that. 
-            If a track is selected, edit the first 
-             part of the track, the rest are 
-             'ghost parts' 
-            When multiple parts are selected, then edit the first,
-              the rest are 'ghost parts'
-      */      
-      
-      
-       // collect marked parts
-      for (ciMidiTrack t = _midis.begin(); t != _midis.end(); ++t) {
-            PartList* pl = (*t)->parts();
-            for (iPart p = pl->begin(); p != pl->end(); ++p) {
-                  if (p->second->selected()) {
-                        parts->add(p->second);
-                        }
-                  }
-            }
-      // if no part is selected, then search for selected track
-      // and collect all parts of this track
-
-      if (parts->empty()) {
-            for (ciMidiTrack t = _midis.begin(); t != _midis.end(); ++t) {
-                  if ((*t)->selected()) {
-                        PartList* pl = (*t)->parts();
-                        for (iPart p = pl->begin(); p != pl->end(); ++p)
-                              parts->add(p->second);
-                        break;
-                        }
-                  }
-            }
-      return parts;
-      }
-
-PartList* Song::getSelectedWaveParts() const
-      {
-      PartList* parts = new PartList();
-
-      /*
-            If a part is selected, edit that. 
-            If a track is selected, edit the first 
-             part of the track, the rest are 
-             'ghost parts' 
-            When multiple parts are selected, then edit the first,
-              the rest are 'ghost parts'
-      */      
-
-      // collect selected parts
-      for (ciWaveTrack t = _waves.begin(); t != _waves.end(); ++t) {
-            PartList* pl = (*t)->parts();
-            for (ciPart p = pl->begin(); p != pl->end(); ++p) {
-                  if (p->second->selected()) {
-                        parts->add(p->second);
-                        }
-                  }
-            }
-      // if no parts are selected, then search the selected track
-      // and collect all parts in this track
-
-      if (parts->empty()) {
-            for (ciWaveTrack t = _waves.begin(); t != _waves.end(); ++t) {
-                  if ((*t)->selected()) {
-                        PartList* pl = (*t)->parts();
-                        for (ciPart p = pl->begin(); p != pl->end(); ++p)
-                              parts->add(p->second);
-                        break;
-                        }
-                  }
-            }
-      return parts;
-}
 
 void Song::normalizePart(MusECore::Part *part)
 {
@@ -1597,7 +1526,7 @@ void Song::normalizePart(MusECore::Part *part)
       if(file.isNull())
         continue;
 
-      QString tmpWavFile = QString::null;
+      QString tmpWavFile;
       if (!MusEGlobal::getUniqueTmpfileName("tmp_musewav",".wav", tmpWavFile))
       {
          return;
@@ -1742,7 +1671,7 @@ void Song::beat()
       
       
       if (MusEGlobal::audio->isPlaying())
-        setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
+        setPos(CPOS, MusEGlobal::audio->tickPos(), true, false, true);
 
       // Process external tempo changes:
       while(!_tempoFifo.isEmpty())
@@ -1784,7 +1713,7 @@ void Song::beat()
                   else if (pitch == MusEGlobal::rcRecordNote)
                         setRecord(true);
                   else if (pitch == MusEGlobal::rcGotoLeftMarkNote)
-                        setPos(0, pos[LPOS].tick(), true, true, true);
+                        setPos(CPOS, pos[LPOS].tick(), true, true, true);
                   else if (pitch == MusEGlobal::rcPlayNote)
                         setPlay(true);
                   }
@@ -1894,7 +1823,7 @@ void Song::setRecordFlag(Track* track, bool val, Undo* operations)
 
 void Song::endMsgCmd()
       {
-      if (updateFlags._flags) {
+      if (updateFlags) {
             redoList->clearDelete();
             
             // It is possible the undo list is empty after removal of an empty undo, 
@@ -2123,7 +2052,7 @@ void Song::clear(bool signal, bool clear_all)
         MusEGlobal::midiPorts[i].addDefaultControllers();
       }
 
-      _masterFlag    = true;
+      MusEGlobal::tempomap.setMasterFlag(0, true);
       loopFlag       = false;
       loopFlag       = false;
       punchinFlag    = false;
@@ -2301,7 +2230,7 @@ void Song::seqSignal(int fd)
                         //  to interfere with Jack's transport timeout countdown?
                         do_set_sync_timeout = true;
                         clearRecAutomation(true);
-                        setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
+                        setPos(CPOS, MusEGlobal::audio->tickPos(), true, false, true);
                         break;
                   case 'S':   // shutdown audio
                         MusEGlobal::muse->seqStop();
@@ -2349,11 +2278,6 @@ void Song::seqSignal(int fd)
                           MusEGlobal::audioDevice->setFreewheel(false);
                         
                         MusEGlobal::audio->msgPlay(false);
-#if 0 // DELETETHIS
-                        if (record())
-                              MusEGlobal::audio->recordStop();
-                        setStopPlay(false);
-#endif
                         break;
 
                   case 'C': // Graph changed
@@ -2624,7 +2548,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
     case CLEAR_ALL_EVENTS:
           if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
               tr("Clear all controller events?"), tr("&Ok"), tr("&Cancel"),
-              QString::null, 0, 1 ) == 0)
+              QString(), 0, 1 ) == 0)
             MusEGlobal::audio->msgClearControllerEvents(track, acid);
     break;
 
@@ -2927,6 +2851,28 @@ bool Song::putIpcInEvent(const MidiPlayEvent& ev)
   return true;
 }
 
+//---------------------------------------------------------
+// putIpcOutEvent
+//  Put an event into the IPC event ring buffer for the audio thread to process.
+//  Called by gui thread only. Returns true on success.
+//---------------------------------------------------------
+
+bool Song::putIpcOutEvent(const MidiPlayEvent& ev)
+{
+  if(!_ipcOutEventBuffers->put(ev))
+  {
+    fprintf(stderr, "Error: Song::putIpcOutEvent: Buffer overflow\n");
+    return false;
+  }
+  return true;
+}
+
+//---------------------------------------------------------
+//   processIpcInEventBuffers
+//   Called by gui thread only.
+//   Returns true on success.
+//---------------------------------------------------------
+
 bool Song::processIpcInEventBuffers()
 {
   PendingOperationList operations;
@@ -3028,7 +2974,7 @@ bool Song::processIpcInEventBuffers()
       // Let's bypass the putHwCtrlEvent and save some time -
       //  put directly into the midi port's controller event buffers.
       // This will also prevent getting stuck in continuous loop.
-      if(!mp->eventBuffers()->put(buf_ev))
+      if(!_ipcOutEventBuffers->put(buf_ev))
       {
         fprintf(stderr, "Error: Song::processIpcInEventBuffers(): Midi port controller fifo overflow\n");
         continue;
@@ -3036,6 +2982,33 @@ bool Song::processIpcInEventBuffers()
     }
   }
 
+  return true;
+}
+
+//---------------------------------------------------------
+//   processIpcOutEventBuffers
+//   Called from audio thread only.
+//   Returns true on success.
+//---------------------------------------------------------
+
+bool Song::processIpcOutEventBuffers()
+{
+  // Receive hardware state events sent from various threads to this audio thread.
+  // Update hardware state so gui controls are updated.
+  // False = don't use the size snapshot, but update it.
+  const int sz = _ipcOutEventBuffers->getSize(false);
+  MidiPlayEvent ev;
+  for(int i = 0; i < sz; ++i)
+  {
+    if(!_ipcOutEventBuffers->get(ev))
+      continue;
+    const int port = ev.port();
+    if(port < 0 || port >= MusECore::MIDI_PORTS)
+      continue;
+    // Handle the event. Tell the gui NOT to create controllers as needed,
+    //  that should be done before it ever gets here.
+    MusEGlobal::midiPorts[port].handleGui2AudioEvent(ev, false);
+  }
   return true;
 }
 
@@ -3186,6 +3159,10 @@ void Song::stopRolling(Undo* operations)
       
       processAutomationEvents(opsp);
       
+      if (MusEGlobal::config.useRewindOnStop) {
+        setPos(Song::CPOS, _startPlayPosition);
+      }
+
       if(!operations)
         MusEGlobal::song->applyOperationGroup(ops);
       }
@@ -3421,40 +3398,6 @@ void Song::connectAudioPorts()
 
 void Song::insertTrack0(Track* track, int idx)
       {
-      insertTrack1(track, idx);
-      insertTrack2(track, idx);  // the same as MusEGlobal::audio->msgInsertTrack(track, idx, false);
-      insertTrack3(track, idx);
-      }
-
-//---------------------------------------------------------
-//   insertTrack1
-//    non realtime part of insertTrack
-//---------------------------------------------------------
-
-void Song::insertTrack1(Track* track, int /*idx*/)
-      {
-      switch(track->type()) {
-            case Track::AUDIO_SOFTSYNTH:
-                  {
-                  SynthI* s = (SynthI*)track;
-                  Synth* sy = s->synth();
-                  if (!s->isActivated()) {
-                        s->initInstance(sy, s->name());
-                        }
-                  }
-                  break;
-            default:
-                  break;
-            }
-      }
-
-//---------------------------------------------------------
-//   insertTrack2
-//    realtime part
-//---------------------------------------------------------
-
-void Song::insertTrack2(Track* track, int idx)
-{
       int n;
       switch(track->type()) {
             case Track::MIDI:
@@ -3482,6 +3425,12 @@ void Song::insertTrack2(Track* track, int idx)
             case Track::AUDIO_SOFTSYNTH:
                   {
                   SynthI* s = (SynthI*)track;
+                  Synth* sy = s->synth();
+                  if (!s->isActivated()) {
+                        // Persistent storage: If the synth is not found allow the track to load.
+                        // It's OK if s is NULL. initInstance needs to do a few things.
+                        s->initInstance(sy, s->name());
+                        }
                   MusEGlobal::midiDevices.add(s);
                   midiInstruments.push_back(s);
                   _synthIs.push_back(s);
@@ -3591,17 +3540,7 @@ void Song::insertTrack2(Track* track, int idx)
                   }
             }      
       }
-}
-
-//---------------------------------------------------------
-//   insertTrack3
-//    non realtime part of insertTrack
-//---------------------------------------------------------
-
-// empty. gets executed after the realtime part
-void Song::insertTrack3(Track* /*track*/, int /*idx*/)//prevent compiler warning: unused parameter
-{
-}
+      }
 
 //---------------------------------------------------------
 //   insertTrackOperation
@@ -3741,7 +3680,7 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
       {
         if(QMessageBox::question(parent, QString("Process events"),
             tr("Do you want to process ALL or only selected events?"), tr("&Selected"), tr("&All"),
-            QString::null, 0, 1 ) == 1)
+            QString(), 0, 1 ) == 1)
         {
             onlyIfSelected = false;
         }
@@ -3890,7 +3829,7 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
 }
 
 
-void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
+void Song::populateScriptMenu(QMenu* menuPlugins, ScriptReceiver* receiver)
 {
       // List scripts
       QString distScripts = MusEGlobal::museGlobalShare + "/scripts";
@@ -3909,29 +3848,22 @@ void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
             userScriptNames = dir.entryList();
             }
 
-      QSignalMapper* distSignalMapper = new QSignalMapper(this);
-      QSignalMapper* userSignalMapper = new QSignalMapper(this);
-
       if (deliveredScriptNames.size() > 0 || userScriptNames.size() > 0) {
             int id = 0;
             if (deliveredScriptNames.size() > 0) {
                   for (QStringList::Iterator it = deliveredScriptNames.begin(); it != deliveredScriptNames.end(); it++, id++) {
                         QAction* act = menuPlugins->addAction(*it);
-                        connect(act, SIGNAL(triggered()), distSignalMapper, SLOT(map()));
-                        distSignalMapper->setMapping(act, id);
+                        connect(act, &QAction::triggered, [receiver, id]() { receiver->receiveExecDeliveredScript(id); } );
                         }
                   menuPlugins->addSeparator();
                   }
             if (userScriptNames.size() > 0) {
                   for (QStringList::Iterator it = userScriptNames.begin(); it != userScriptNames.end(); it++, id++) {
                         QAction* act = menuPlugins->addAction(*it);
-                        connect(act, SIGNAL(triggered()), userSignalMapper, SLOT(map()));
-                        userSignalMapper->setMapping(act, id);
+                        connect(act, &QAction::triggered, [receiver, id]() { receiver->receiveExecUserScript(id); } );
                         }
                   menuPlugins->addSeparator();
                   }
-            connect(distSignalMapper, SIGNAL(mapped(int)), receiver, SLOT(execDeliveredScript(int)));
-            connect(userSignalMapper, SIGNAL(mapped(int)), receiver, SLOT(execUserScript(int)));
             }
       return;
 }
@@ -4038,7 +3970,7 @@ void Song::restartRecording(bool discard)
   
   applyOperationGroup(operations);
   
-  MusEGlobal::song->setPos(Song::CPOS, MusEGlobal::audio->getStartRecordPos());
+  setPos(Song::CPOS, MusEGlobal::audio->getStartRecordPos());
   //MusEGlobal::audioDevice->startTransport();
 }
 

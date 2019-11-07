@@ -619,12 +619,12 @@ void SimpleSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
    // Sysexes:
    //
    else if (ev.type() == MusECore::ME_SYSEX) {
-      byte* data = ev.data();
+      const byte* data = ev.constData();
       //byte* data = d + 2;
-      int cmd = *data;
+      const int cmd = *data;
       switch (cmd) {
       case SS_SYSEX_LOAD_SAMPLE_OK: {
-         int ch = *(data+1);
+         const int ch = *(data+1);
          QString filename = (const char*) (data+2);
          sampleNameLineEdit[ch]->setText(filename.section('/',-1,-1));
          if (SS_DEBUG_MIDI) {
@@ -649,7 +649,7 @@ void SimpleSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
          if (SS_DEBUG_MIDI) {
             printf("SimpleSynthGui - sysex load sendeffect OK on fxid: %d\n", *(data+1));
          }
-         int fxid = *(data+1);
+         const int fxid = *(data+1);
          SS_PluginFront* pf = pluginGui->getPluginFront((unsigned)fxid);
          ///pf->updatePluginValue(*(data+2));
          pf->updatePluginValue(  *((MusESimplePlugin::PluginI**)(data+2)) );
@@ -669,7 +669,7 @@ void SimpleSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
          if (SS_DEBUG_MIDI) {
             printf("SimpleSynthGui - sysex clear samle OK on channel: %d\n", *(data+1));
          }
-         byte ch = *(data+1);
+         const byte ch = *(data+1);
          sampleNameLineEdit[ch]->setText("");
          break;
       }
@@ -679,8 +679,8 @@ void SimpleSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
             printf("SimpleSynthGui - plugin parameter OK on fxid: %d\n", *(data+1));
          }
          SS_PluginFront* pf = pluginGui->getPluginFront((unsigned)*(data+1));
-         int param = *(data+2);
-         int val   = *(data+3);
+         const int param = *(data+2);
+         const int val   = *(data+3);
          pf->blockSignals(true);
          pf->setParameterValue(param, val);
          pf->blockSignals(false);
@@ -691,7 +691,7 @@ void SimpleSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
          // FN: TODO
 #if 1
          const unsigned initdata_len = ev.len() - 1;
-         byte* init_data = (data + 1);
+         const byte* init_data = (data + 1);
          QFileInfo fileInfo = QFileInfo(lastSavedProject);
 
          lastProjectDir = fileInfo.path();
@@ -848,7 +848,7 @@ void SimpleSynthGui::loadSampleDialogue(int channel)
             lastDir,
             QString("Samples *.wav *.ogg *.flac (*.wav *.WAV *.ogg *.flac);;All files (*)"));
 */
-   if (filename != QString::null) {
+   if (!filename.isEmpty()) {
       QFileInfo fi(filename);
       lastDir = fi.path();
 
@@ -1019,7 +1019,7 @@ void SimpleSynthGui::loadSetup()
          QFileDialog::getOpenFileName(this, "Load setup dialog", lastProjectDir,
                                       QString("*.sds *.SDS"));
 
-   if (filename != QString::null) {
+   if (!filename.isEmpty()) {
       QFile theFile(filename);
       if (theFile.open(QIODevice::ReadOnly)) {
          unsigned initdata_len = 0;
@@ -1061,7 +1061,7 @@ void SimpleSynthGui::saveSetup()
          QFileDialog::getSaveFileName(this, "Save setup dialog", lastProjectDir,
                                       QString("*.sds *.SDS"));
 
-   if (filename != QString::null) {
+   if (!filename.isEmpty()) {
       lastSavedProject = filename;
       //byte d[1];
       byte d[3];

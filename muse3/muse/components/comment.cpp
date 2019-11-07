@@ -71,7 +71,7 @@ TrackComment::TrackComment(MusECore::Track* t, QWidget* parent)
 
 void TrackComment::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if ((flags._flags & (SC_TRACK_INSERTED|SC_TRACK_REMOVED|SC_TRACK_MODIFIED)) == 0)
+      if ((flags & (SC_TRACK_INSERTED|SC_TRACK_REMOVED|SC_TRACK_MODIFIED)) == 0)
             return;
 
       // check if track still exists:

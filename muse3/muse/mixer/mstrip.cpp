@@ -265,7 +265,7 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
           {
             if(MusECore::MidiInstrument* minstr = MusEGlobal::midiPorts[_track->outPort()].instrument())
             {
-              desc->_enabled = !minstr->isSynti();
+              //desc->_enabled = !minstr->isSynti();
               if(desc->_label.isEmpty())
                 desc->_label = minstr->iname();
             }
@@ -531,7 +531,7 @@ void MidiComponentRack::scanControllerComponents()
     ComponentWidget& cw = *icw;
     DEBUG_MIDI_STRIP(stderr, "MidiComponentRack::scanControllerComponents: deleting controller component index:%d\n", cw._index);
     if(cw._widget)
-      delete cw._widget;
+      cw._widget->deleteLater();
     _components.erase(icw);
   }
 }
@@ -796,7 +796,7 @@ void MidiComponentRack::updateComponents()
             {
               if(MusECore::MidiInstrument* minstr = MusEGlobal::midiPorts[_track->outPort()].instrument())
               {
-                setComponentEnabled(cw, !minstr->isSynti());
+                //setComponentEnabled(cw, !minstr->isSynti());
                 setComponentText(cw, minstr->iname());
               }
               else 
@@ -850,8 +850,9 @@ void MidiComponentRack::instrPopup(QPoint p)
   
   PopupMenu* pup = new PopupMenu(false);
   
-  MusECore::MidiInstrument::populateInstrPopup(pup, instr, false);
-
+  //MusECore::MidiInstrument::populateInstrPopup(pup, instr, false);
+  MusECore::MidiInstrument::populateInstrPopup(pup, instr, true);
+  
   if(pup->actions().count() == 0)
   {
     delete pup;
@@ -1195,7 +1196,7 @@ void MidiComponentRack::patchEditNameClicked(QPoint /*p*/, int id)
 void MidiComponentRack::songChanged(MusECore::SongChangedStruct_t flags)
 {
   // Scan controllers.
-  if(flags._flags & (SC_RACK | SC_MIDI_CONTROLLER_ADD | SC_MIDI_INSTRUMENT))
+  if(flags & (SC_RACK | SC_MIDI_CONTROLLER_ADD | SC_MIDI_INSTRUMENT))
   {
     scanControllerComponents();
   }
@@ -2214,14 +2215,14 @@ void MidiStrip::configChanged()
 
 void MidiStrip::songChanged(MusECore::SongChangedStruct_t val)
       {
-      if (mute && (val._flags & SC_MUTE)) {      // mute && off
+      if (mute && (val & SC_MUTE)) {      // mute && off
             mute->blockSignals(true);
             mute->setChecked(track->mute());
             mute->blockSignals(false);
             updateMuteIcon();
             updateOffState();
             }
-      if (solo && (val._flags & (SC_SOLO | SC_ROUTE))) 
+      if (solo && (val & (SC_SOLO | SC_ROUTE))) 
       {
             solo->blockSignals(true);
             solo->setChecked(track->solo());
@@ -2230,17 +2231,17 @@ void MidiStrip::songChanged(MusECore::SongChangedStruct_t val)
             updateMuteIcon();
       }
       
-      if (val._flags & SC_RECFLAG)
+      if (val & SC_RECFLAG)
       {
             setRecordFlag(track->recordFlag());
       }
-      if (val._flags & SC_TRACK_MODIFIED)
+      if (val & SC_TRACK_MODIFIED)
       {
             setLabelText();
       }      
       
       // Catch when label font changes. 
-      if (val._flags & SC_CONFIG)
+      if (val & SC_CONFIG)
       {
         // So far only 1 instance of sending SC_CONFIG in the entire app, in instrument editor when a new instrument is saved. 
       }  
@@ -2249,11 +2250,11 @@ void MidiStrip::songChanged(MusECore::SongChangedStruct_t val)
       _infoRack->songChanged(val);
       _lowerRack->songChanged(val);
       
-      if (val._flags & SC_ROUTE) {
+      if (val & SC_ROUTE) {
         updateRouteButtons();
       }
       
-      if(val._flags & SC_TRACK_REC_MONITOR)
+      if(val & SC_TRACK_REC_MONITOR)
       {
         // Set record monitor.
         if(_recMonitor)

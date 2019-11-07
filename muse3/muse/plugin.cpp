@@ -35,7 +35,6 @@
 #include <QTimer>
 #include <QComboBox>
 #include <QWhatsThis>
-#include <QSignalMapper>
 #include <QToolBar>
 #include <QMessageBox>
 #include <QShowEvent>
@@ -2882,7 +2881,9 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
   const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
   unsigned long sample = 0;
 
-  const bool usefixedrate = (requiredFeatures() & PluginFixedBlockSize);
+  // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
+  //       For now we treat it like fixed size.
+  const bool usefixedrate = (requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize));
 
   // Note for dssi-vst this MUST equal audio period. It doesn't like broken-up runs (it stutters),
   //  even with fixed sizes. Could be a Wine + Jack thing, wanting a full Jack buffer's length.
@@ -3438,19 +3439,14 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
             it = l.begin();
             gw   = new GuiWidgets[nobj];
             nobj = 0;
-            QSignalMapper* mapper = new QSignalMapper(this);
 
             // FIXME: There's no unsigned for gui params. We would need to limit nobj to MAXINT.
             // FIXME: Our MusEGui::Slider class uses doubles for values, giving some problems with float conversion.
 
-            connect(mapper, SIGNAL(mapped(int)), SLOT(guiParamChanged(int)));
-
-            QSignalMapper* mapperPressed        = new QSignalMapper(this);
-            QSignalMapper* mapperReleased       = new QSignalMapper(this);
-            QSignalMapper* mapperContextMenuReq = new QSignalMapper(this);
-            connect(mapperPressed, SIGNAL(mapped(int)), SLOT(guiParamPressed(int)));
-            connect(mapperReleased, SIGNAL(mapped(int)), SLOT(guiParamReleased(int)));
-            connect(mapperContextMenuReq, SIGNAL(mapped(int)), SLOT(guiContextMenuReq(int)));
+            DoubleLabel* dl_obj;
+            QCheckBox*   cb_obj;
+            QComboBox*   combobox_obj;
+            unsigned long int nn;
 
             for (it = l.begin(); it != l.end(); ++it) {
                   obj = *it;
@@ -3463,11 +3459,9 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                 if(rv != 1)
                     continue;
 
-                  mapper->setMapping(obj, nobj);
-                  mapperPressed->setMapping(obj, nobj);
-                  mapperReleased->setMapping(obj, nobj);
-                  mapperContextMenuReq->setMapping(obj, nobj);
-
+                  // For some reason lambdas need this local copy (nn) of nobj otherwise they fail and crash.
+                  nn = nobj;
+                  
                   gw[nobj].widget  = (QWidget*)obj;
                   gw[nobj].param   = parameter;
                   gw[nobj].type    = -1;
@@ -3513,40 +3507,41 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                           if(gw[i].type == GuiWidgets::DOUBLE_LABEL && gw[i].param == parameter)
                             ((DoubleLabel*)gw[i].widget)->setSlider(s);
                         }
-                        connect(s, SIGNAL(valueChanged(double,int,int)), mapper, SLOT(map()));
-                        connect(s, SIGNAL(sliderPressed(double, int)), SLOT(guiSliderPressed(double, int)));
-                        connect(s, SIGNAL(sliderReleased(double, int)), SLOT(guiSliderReleased(double, int)));
-                        connect(s, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(guiSliderRightClicked(const QPoint &, int)));
+                        connect(s, QOverload<double, int, int>::of(&Slider::valueChanged), [=]() { guiParamChanged(nn); } );
+                        connect(s, &Slider::sliderPressed, [this](double v, int i) { guiSliderPressed(v, i); } );
+                        connect(s, &Slider::sliderReleased, [this](double v, int i) { guiSliderReleased(v, i); } );
+                        connect(s, &Slider::sliderRightClicked, [this](const QPoint &p, int i) { guiSliderRightClicked(p, i); } );
                         }
                   else if (strcmp(obj->metaObject()->className(), "MusEGui::DoubleLabel") == 0) {
                         gw[nobj].type = GuiWidgets::DOUBLE_LABEL;
-                        ((DoubleLabel*)obj)->setId(nobj);
-                        ((DoubleLabel*)obj)->setAlignment(Qt::AlignCenter);
+                        dl_obj = static_cast<DoubleLabel*>(obj);
+                        dl_obj->setId(nobj);
+                        dl_obj->setAlignment(Qt::AlignCenter);
                         for(unsigned long i = 0; i < nobj; i++)
                         {
                           if(gw[i].type == GuiWidgets::SLIDER && gw[i].param == parameter)
                           {
-                            ((DoubleLabel*)obj)->setSlider((Slider*)gw[i].widget);
+                            dl_obj->setSlider((Slider*)gw[i].widget);
                             break;
                           }
                         }
-                        connect((DoubleLabel*)obj, SIGNAL(valueChanged(double,int)), mapper, SLOT(map()));
+                        connect((DoubleLabel*)obj, &DoubleLabel::valueChanged, [this, nn]() { guiParamChanged(nn); } );
                         }
                   else if (strcmp(obj->metaObject()->className(), "QCheckBox") == 0) {
                         gw[nobj].type = GuiWidgets::QCHECKBOX;
                         gw[nobj].widget->setContextMenuPolicy(Qt::CustomContextMenu);
-                        connect((QCheckBox*)obj, SIGNAL(toggled(bool)), mapper, SLOT(map()));
-                        connect((QCheckBox*)obj, SIGNAL(pressed()), mapperPressed, SLOT(map()));
-                        connect((QCheckBox*)obj, SIGNAL(released()), mapperReleased, SLOT(map()));
-                        connect((QCheckBox*)obj, SIGNAL(customContextMenuRequested(const QPoint &)),
-                                mapperContextMenuReq, SLOT(map()));
+                        cb_obj = static_cast<QCheckBox*>(obj);
+                        connect(cb_obj, &QCheckBox::toggled, [this, nn]() { guiParamChanged(nn); } );
+                        connect(cb_obj, &QCheckBox::pressed, [this, nn]() { guiParamPressed(nn); } );
+                        connect(cb_obj, &QCheckBox::released, [this, nn]() { guiParamReleased(nn); } );
+                        connect(cb_obj, &QCheckBox::customContextMenuRequested, [this, nn]() { guiContextMenuReq(nn); } );
                         }
                   else if (strcmp(obj->metaObject()->className(), "QComboBox") == 0) {
                         gw[nobj].type = GuiWidgets::QCOMBOBOX;
                         gw[nobj].widget->setContextMenuPolicy(Qt::CustomContextMenu);
-                        connect((QComboBox*)obj, SIGNAL(activated(int)), mapper, SLOT(map()));
-                        connect((QComboBox*)obj, SIGNAL(customContextMenuRequested(const QPoint &)),
-                                mapperContextMenuReq, SLOT(map()));
+                        combobox_obj = static_cast<QComboBox*>(obj);
+                        connect(combobox_obj, QOverload<int>::of(&QComboBox::activated), [=]() { guiParamChanged(nn); } );
+                        connect(combobox_obj, &QComboBox::customContextMenuRequested, [this, nn]() { guiContextMenuReq(nn); } );
                         }
                   else {
                         printf("unknown widget class %s\n", obj->metaObject()->className());
@@ -3572,6 +3567,9 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
 
             QFontMetrics fm = fontMetrics();
             int h           = fm.height() + 4;
+
+            Slider* sl_obj;
+            CheckBox* cb_obj;
 
             for (unsigned long i = 0; i < n; ++i) {
                   QLabel* label = 0;
@@ -3657,16 +3655,19 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         grid->addWidget(params[i].actuator, i, 0, 1, 3);
                         }
                   if (params[i].type == GuiParam::GUI_SLIDER) {
-                        connect((Slider*)params[i].actuator, SIGNAL(valueChanged(double,int,int)), SLOT(sliderChanged(double,int,int)));
-                        connect(params[i].label,    SIGNAL(valueChanged(double,int)), SLOT(labelChanged(double,int)));
-                        connect((Slider*)params[i].actuator, SIGNAL(sliderPressed(double, int)), SLOT(ctrlPressed(double, int)));
-                        connect((Slider*)params[i].actuator, SIGNAL(sliderReleased(double, int)), SLOT(ctrlReleased(double, int)));
-                        connect((Slider*)params[i].actuator, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(ctrlRightClicked(const QPoint &, int)));
+                        sl_obj = static_cast<Slider*>(params[i].actuator);
+                        connect(sl_obj, QOverload<double, int, int>::of(&Slider::valueChanged),
+                                [=](double v, int id, int scroll_mode) { sliderChanged(v, id, scroll_mode); } );
+                        connect(params[i].label, &DoubleLabel::valueChanged, [this](double v, int i) { labelChanged(v, i); } );
+                        connect(sl_obj, &Slider::sliderPressed, [this](double v, int i) { ctrlPressed(v, i); } );
+                        connect(sl_obj, &Slider::sliderReleased, [this](double v, int i) { ctrlReleased(v, i); } );
+                        connect(sl_obj, &Slider::sliderRightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
                         }
                   else if (params[i].type == GuiParam::GUI_SWITCH){
-                        connect((CheckBox*)params[i].actuator, SIGNAL(checkboxPressed(int)), SLOT(switchPressed(int)));
-                        connect((CheckBox*)params[i].actuator, SIGNAL(checkboxReleased(int)), SLOT(switchReleased(int)));
-                        connect((CheckBox*)params[i].actuator, SIGNAL(checkboxRightClicked(const QPoint &, int)), SLOT(ctrlRightClicked(const QPoint &, int)));
+                        cb_obj = (CheckBox*)params[i].actuator;
+                        connect(cb_obj, &CheckBox::checkboxPressed, [this](int i) { switchPressed(i); } );
+                        connect(cb_obj, &CheckBox::checkboxReleased, [this](int i) { switchReleased(i); } );
+                        connect(cb_obj, &CheckBox::checkboxRightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
                         }
                   }
 
@@ -4352,7 +4353,7 @@ void PluginGui::updateControls()
 //   guiParamChanged
 //---------------------------------------------------------
 
-void PluginGui::guiParamChanged(int idx)
+void PluginGui::guiParamChanged(unsigned long int idx)
 {
       QWidget* w = gw[idx].widget;
       unsigned long param  = gw[idx].param;
@@ -4429,7 +4430,7 @@ void PluginGui::guiParamChanged(int idx)
 //   guiParamPressed
 //---------------------------------------------------------
 
-void PluginGui::guiParamPressed(int idx)
+void PluginGui::guiParamPressed(unsigned long int idx)
       {
       gw[idx].pressed = true;
       unsigned long param  = gw[idx].param;
@@ -4462,7 +4463,7 @@ void PluginGui::guiParamPressed(int idx)
 //   guiParamReleased
 //---------------------------------------------------------
 
-void PluginGui::guiParamReleased(int idx)
+void PluginGui::guiParamReleased(unsigned long int idx)
       {
       unsigned long param  = gw[idx].param;
       int type   = gw[idx].type;
@@ -4506,7 +4507,7 @@ void PluginGui::guiParamReleased(int idx)
 //   guiSliderPressed
 //---------------------------------------------------------
 
-void PluginGui::guiSliderPressed(double /*val*/, int idx)
+void PluginGui::guiSliderPressed(double /*val*/, unsigned long int idx)
 {
       gw[idx].pressed = true;
       unsigned long param  = gw[idx].param;
@@ -4550,7 +4551,7 @@ void PluginGui::guiSliderPressed(double /*val*/, int idx)
 //   guiSliderReleased
 //---------------------------------------------------------
 
-void PluginGui::guiSliderReleased(double /*val*/, int idx)
+void PluginGui::guiSliderReleased(double /*val*/, unsigned long int idx)
       {
       int param  = gw[idx].param;
       QWidget *w = gw[idx].widget;
@@ -4581,7 +4582,7 @@ void PluginGui::guiSliderReleased(double /*val*/, int idx)
 //   guiSliderRightClicked
 //---------------------------------------------------------
 
-void PluginGui::guiSliderRightClicked(const QPoint &p, int idx)
+void PluginGui::guiSliderRightClicked(const QPoint &p, unsigned long int idx)
 {
   int param  = gw[idx].param;
   int id = plugin->id();
@@ -4593,7 +4594,7 @@ void PluginGui::guiSliderRightClicked(const QPoint &p, int idx)
 //   guiContextMenuReq
 //---------------------------------------------------------
 
-void PluginGui::guiContextMenuReq(int idx)
+void PluginGui::guiContextMenuReq(unsigned long int idx)
 {
   guiSliderRightClicked(QCursor().pos(), idx);
 }

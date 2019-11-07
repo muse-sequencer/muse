@@ -111,7 +111,6 @@ MidiAlsaDevice::MidiAlsaDevice(const snd_seq_addr_t& a, const QString& n)
       {
 //       _playEventFifo = new LockFreeBuffer<MidiPlayEvent>(8192);
       adr = a;
-      init();
       }
 
 MidiAlsaDevice::~MidiAlsaDevice()

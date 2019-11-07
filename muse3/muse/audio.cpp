@@ -38,6 +38,7 @@
 #include "audioprefetch.h"
 #include "plugin.h"
 #include "audio.h"
+#include "tempo.h"
 #include "wave.h"
 #include "midictrl.h"
 #include "midiseq.h"
@@ -132,6 +133,7 @@ const char* audioStates[] = {
 //---------------------------------------------------------
 
 const int Audio::_extClockHistoryCapacity = 8192;
+const unsigned int Audio::_clockOutputQueueCapacity = 8192;
       
 Audio::Audio()
       {
@@ -148,11 +150,6 @@ Audio::Audio()
 
       _pos.setType(Pos::FRAMES);
       _pos.setFrame(0);
-// REMOVE Tim. latency. Removed.
-// #ifdef _AUDIO_USE_TRUE_FRAME_
-//       _previousPos.setType(Pos::FRAMES);
-//       _previousPos.setFrame(0);
-// #endif
       _curCycleFrames = 0;
       nextTickPos = curTickPos = 0;
       _precountFramePos = 0;
@@ -171,8 +168,14 @@ Audio::Audio()
       audioClick    = 0;
       clickno       = 0;
       clicksMeasure = 0;
+
       _extClockHistory = new ExtMidiClock[_extClockHistoryCapacity];
       _extClockHistorySize = 0;
+
+      _clockOutputQueue = new unsigned int[_clockOutputQueueCapacity];
+      _clockOutputQueueSize = 0;
+      _clockOutputCounter = 0;
+      _clockOutputCounterRemainder = 0;
 
       syncTimeUS    = 0;
       syncFrame     = 0;
@@ -211,6 +214,8 @@ Audio::Audio()
 
 Audio::~Audio() 
 {
+  if(_clockOutputQueue)
+    delete[] _clockOutputQueue;
   if(_extClockHistory)
     delete[] _extClockHistory;
 } 
@@ -473,7 +478,7 @@ bool Audio::startPreCount()
   
   if (metro_settings->precountEnableFlag
     && MusEGlobal::song->click()
-    && !MusEGlobal::extSyncFlag.value()
+    && !MusEGlobal::extSyncFlag
     && ((!MusEGlobal::song->record() && metro_settings->precountOnPlay) || MusEGlobal::song->record()))
   {
         DEBUG_MIDI_METRONOME(stderr, "state = PRECOUNT!\n");
@@ -578,10 +583,6 @@ void Audio::reSyncAudio()
   if (isPlaying()) 
   {
     if (!MusEGlobal::checkAudioDevice()) return;
-// REMOVE Tim. latency. Removed.
-// #ifdef _AUDIO_USE_TRUE_FRAME_
-//     _previousPos = _pos;
-// #endif
     // NOTE: Comment added by Tim: This line is crucial if the tempo is changed during playback,
     //  either via changes to tempo map or the static tempo value. The actual transport frame is allowed
     //  to continue progressing naturally but our representation of it (_pos) jumps to a new value
@@ -666,12 +667,12 @@ void Audio::process(unsigned frames)
       
       const int jackState = MusEGlobal::audioDevice->getState();
       //const unsigned int data_pos = _pos.frame();
-      const bool is_bounce = MusEGlobal::audio->bounce();
-      const bool ext_sync = MusEGlobal::extSyncFlag.value();
+//       const bool is_bounce = MusEGlobal::audio->bounce();
+      const bool ext_sync = MusEGlobal::extSyncFlag;
       const bool song_loop = MusEGlobal::song->loop();
-      bool is_loop2_state = false;
+//       bool is_loop2_state = false;
       //unsigned int loop2_pos = 0;
-      const bool do_loops = song_loop && !is_bounce && !ext_sync;
+//       const bool do_loops = song_loop && !is_bounce && !ext_sync;
 
       //DEBUG_MIDI_TIMING(stderr, "Audio::process Current state:%s jackState:%s sync frame:%u pos frame:%u current transport frame:%u\n", 
       //        audioStates[state], audioStates[jackState], syncFrame, _pos.frame(), MusEGlobal::audioDevice->curTransportFrame());
@@ -690,7 +691,7 @@ void Audio::process(unsigned frames)
             }
       else if (state == LOOP2 && jackState == PLAY) {
             ++_loopCount;                  // Number of times we have looped so far
-            is_loop2_state = true;
+//             is_loop2_state = true;
             //loop2_pos = _pos.frame();
             Pos newPos(_loopFrame, false);
             // REMOVE Tim. latency. Added. Diagnostics.
@@ -840,7 +841,7 @@ void Audio::process(unsigned frames)
             use_jack_timebase = 
                 MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO && 
                 !MusEGlobal::jackTransportMaster && 
-                !MusEGlobal::song->masterFlag() &&
+                !MusEGlobal::tempomap.masterFlag() &&
                 !ext_sync &&
                 static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice)->timebaseQuery(
                   frames, NULL, NULL, NULL, &curr_jt_tick, &next_jt_ticks);
@@ -1030,10 +1031,6 @@ void Audio::process(unsigned frames)
             (*i)->applyOutputLatencyComp(frames);
       }
       
-// REMOVE Tim. latency. Removed.
-// #ifdef _AUDIO_USE_TRUE_FRAME_
-//       _previousPos = _pos;
-// #endif
 // REMOVE Tim. latency. Changed. Hm, doesn't work. Position takes a long time to start moving.
       if (isPlaying()) {
       //if(isPlaying() || (ext_sync && MusEGlobal::midiSyncContainer.isPlaying())) {
@@ -2324,10 +2321,6 @@ void Audio::seek(const Pos& p)
       if (MusEGlobal::heavyDebugMsg)
         fprintf(stderr, "Audio::seek frame:%d\n", p.frame());
         
-// REMOVE Tim. latency. Removed.
-// #ifdef _AUDIO_USE_TRUE_FRAME_
-//       _previousPos = _pos;
-// #endif
       _pos        = p;
       if (!MusEGlobal::checkAudioDevice()) return;
       syncFrame   = MusEGlobal::audioDevice->framesAtCycleStart();
@@ -2336,8 +2329,8 @@ void Audio::seek(const Pos& p)
       unsigned curr_jt_tick;
       if(MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO && 
          !MusEGlobal::jackTransportMaster && 
-         !MusEGlobal::song->masterFlag() &&
-         !ext_syncSyncFlag.value() &&
+         !MusEGlobal::tempomap.masterFlag() &&
+         !MusEGlobal::extSyncFlag &&
          static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice)->timebaseQuery(
              MusEGlobal::segmentSize, NULL, NULL, NULL, &curr_jt_tick, NULL))
         curTickPos = curr_jt_tick;
@@ -2414,7 +2407,7 @@ void Audio::startRolling()
       write(sigFd, "1", 1);   // Play
 
       // Don't send if external sync is on. The master, and our sync routing system will take care of that.
-      if(!MusEGlobal::extSyncFlag.value())
+      if(!MusEGlobal::extSyncFlag)
       {
         for(int port = 0; port < MusECore::MIDI_PORTS; ++port) 
         {
@@ -2521,7 +2514,7 @@ void Audio::recordStop(bool restart, Undo* ops)
       MusEGlobal::song->processMasterRec();   
         
       if (MusEGlobal::debugMsg)
-        fprintf(stderr, "recordStop - startRecordPos=%d\n", MusEGlobal::extSyncFlag.value() ? startExternalRecTick : startRecordPos.tick());
+        fprintf(stderr, "recordStop - startRecordPos=%d\n", MusEGlobal::extSyncFlag ? startExternalRecTick : startRecordPos.tick());
 
       Undo loc_ops;
       Undo& operations = ops ? (*ops) : loc_ops;
@@ -2547,7 +2540,7 @@ void Audio::recordStop(bool restart, Undo* ops)
             // Do SysexMeta. Do loops.
             buildMidiEventList(&mt->events, mt->mpevents, mt, MusEGlobal::config.division, true, true);
             MusEGlobal::song->cmdAddRecordedEvents(mt, mt->events, 
-                 MusEGlobal::extSyncFlag.value() ? startExternalRecTick : startRecordPos.tick(),
+                 MusEGlobal::extSyncFlag ? startExternalRecTick : startRecordPos.tick(),
                  operations);
             mt->events.clear();    // ** Driver should not be touching this right now.
             mt->mpevents.clear();  // ** Driver should not be touching this right now.

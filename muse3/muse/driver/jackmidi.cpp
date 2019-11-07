@@ -72,7 +72,6 @@ MidiJackDevice::MidiJackDevice(const QString& n)
   _out_client_jackport = nullptr;
   _in_port_buf = nullptr;
   _out_port_buf = nullptr;
-  init();
 }
 
 MidiJackDevice::~MidiJackDevice()
@@ -584,15 +583,10 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
       // So, technically this is correct. What MATTERS is how we adjust the times for storage, and/or simultaneous playback in THIS period,
       //  and TEST: we'll need to make sure any non-contiguous previous period is handled correctly by process - will it work OK as is?
       // If ALSA works OK than this should too...
-// REMOVE Tim. latency. Removed.
-// #ifdef _AUDIO_USE_TRUE_FRAME_
-//       abs_ft = MusEGlobal::audio->previousPos().frame() + ev->time;
-// #else
       // The events arrived in the previous cycle, not this one. Adjust.
       abs_ft = MusEGlobal::audio->curSyncFrame() + ev->time;
       if(abs_ft >= MusEGlobal::segmentSize)
         abs_ft -= MusEGlobal::segmentSize;
-// #endif
       event.setTime(abs_ft);
       event.setTick(MusEGlobal::lastExtMidiSyncTick);    
 
@@ -675,8 +669,12 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                                 }
                                 return;
                           //case ME_SONGSEL:    
-                          //case ME_TUNE_REQ:   
-                          //case ME_SENSE:
+                          //case ME_TUNE_REQ:
+
+                          // We don't use sensing. But suppress warning about this one since it is repetitive.
+                          case ME_SENSE:
+                                return;
+
                           case ME_CLOCK:      
                           {
                                 midiClockInput(abs_ft);
@@ -727,6 +725,9 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
 
 void MidiJackDevice::collectMidiEvents()
 {
+//   if(!_readEnable)
+//     return;
+  
   if(!_in_port_buf)
     return;
 
@@ -828,7 +829,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e, void* evBuffer)
                   printf("MidiJackDevice::queueEvent sysex\n");
                   #endif  
                   
-                  const unsigned char* data = e.data();
+                  const unsigned char* data = e.constData();
                   int len = e.len();
                   unsigned char* p = jack_midi_event_reserve(evBuffer, ft, len+2);
                   if (p == 0) {

@@ -494,12 +494,12 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
 
                   case ME_SYSEX:
                         e.setType(Sysex);
-                        e.setData(ev.data(), ev.len());
+                        e.setData(ev.constData(), ev.len());
                         break;
 
                   case ME_META:
                         {
-                        const unsigned char* data = ev.data();
+                        const unsigned char* data = ev.constData();
                         switch (ev.dataA()) {
                               case ME_META_TEXT_1_COMMENT:
                                     if (track->comment().isEmpty())
@@ -536,7 +536,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                               case ME_META_KEY_SIGNATURE:
                                     e.setType(Meta);
                                     e.setA(ev.dataA());
-                                    e.setData(ev.data(), ev.len());
+                                    e.setData(ev.constData(), ev.len());
                                     break;
                               // Instrument and device name metas are already handled by the midi importing code.
                               case ME_META_TEXT_4_INSTRUMENT_NAME:
@@ -570,7 +570,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                             ev.dataA(), ev.dataA(), track->name().toLatin1().constData());
                                     e.setType(Meta);
                                     e.setA(ev.dataA());
-                                    e.setData(ev.data(), ev.len());
+                                    e.setData(ev.constData(), ev.len());
                                     break;
                               }
                         }
@@ -972,7 +972,7 @@ void Audio::seekMidi()
     //---------------------------------------------------
       
     // Don't send if external sync is on. The master, and our sync routing system will take care of that.  
-    if(!MusEGlobal::extSyncFlag.value())
+    if(!MusEGlobal::extSyncFlag)
     {
       if(mp->syncInfo().MRTOut())
       {
@@ -1140,7 +1140,7 @@ void Audio::seekMidi()
       //---------------------------------------------------
         
       // Don't send if external sync is on. The master, and our sync routing system will take care of that.  
-      if(!MusEGlobal::extSyncFlag.value())
+      if(!MusEGlobal::extSyncFlag)
       {
         if(mp->syncInfo().MRTOut())
         {
@@ -1276,7 +1276,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, const unsigned int sync_fr
                           const unsigned int frame_pos, const unsigned int frames, const unsigned int latency_offset)
       {
       DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: cts:%u nts:%u\n", cts, nts);
-      const bool extsync = MusEGlobal::extSyncFlag.value();
+      const bool extsync = MusEGlobal::extSyncFlag;
       const int delay = track->delay;
       // If external sync is not on, we can take advantage of frame accuracy but
       //  first we must allow the next tick position to be included in the search
@@ -1596,7 +1596,7 @@ void Audio::processMidi(const unsigned int sync_frame,
       const unsigned int next_frame_pos = frame_pos + frames;
       //const unsigned int next_jump_pos = next_frame_pos + jump_frames;
 //       const unsigned int next_jump_pos = jump_pos + jump_frames;
-      const bool extsync = MusEGlobal::extSyncFlag.value();
+      const bool extsync = MusEGlobal::extSyncFlag;
       const bool playing = isPlaying();
 
       for (iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id)
@@ -1632,7 +1632,7 @@ void Audio::processMidi(const unsigned int sync_frame,
 //             {
 //               case ME_SYSEX:
 //               {
-//                 const unsigned char* p = ev.data();
+//                 const unsigned char* p = ev.constData();
 //                 int n = ev.len();
 //                 if(n >= 3)
 //                 {
@@ -1774,14 +1774,9 @@ void Audio::processMidi(const unsigned int sync_frame,
 //                   unsigned int t = ev_t;
 
 // REMOVE Tim. latency. Removed.
-// // REMOVE Tim. latency. Removed.
-// // #ifdef _AUDIO_USE_TRUE_FRAME_
-// //                   unsigned int pframe = _previousPos.frame();
-// // #else
 // // REMOVE Tim. latency. Changed.
 // //                   unsigned int pframe = _pos.frame();
 //                   unsigned int pframe = frame_pos;
-// // #endif
 //                   if(pframe > t)  // Technically that's an error, shouldn't happen
 //                     t = 0;
 //                   else
@@ -1961,10 +1956,6 @@ void Audio::processMidi(const unsigned int sync_frame,
                                 {
                                   // All recorded events arrived in the previous period. Shift into this period for playback.
                                   unsigned int et = event.time();
-// REMOVE Tim. latency. Removed.
-//   #ifdef _AUDIO_USE_TRUE_FRAME_
-//                                   unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
-//   #else
                                   // The events arrived in the previous period. Shift into this period for playback.
                                   // The events are already biased with the last frame time.
                                   unsigned int t = et + MusEGlobal::segmentSize;
@@ -1976,7 +1967,6 @@ void Audio::processMidi(const unsigned int sync_frame,
                                     
                                     t = sync_frame + (MusEGlobal::segmentSize - 1);
                                   }
-//   #endif
                                   event.setTime(t);
                                   md->putEvent(event, MidiDevice::NotLate);
                                   event.setTime(et);  // Restore for recording.
@@ -1996,10 +1986,6 @@ void Audio::processMidi(const unsigned int sync_frame,
                               else
                               {
                                 // All recorded events arrived in the previous period. Shift into this period for record.
-// REMOVE Tim. latency. Removed.
-// #ifdef _AUDIO_USE_TRUE_FRAME_
-//                                 unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
-// #else
                                 unsigned int t = et + MusEGlobal::segmentSize;
                                 // Protection from slight errors in estimated frame time.
                                 if(t >= (sync_frame + MusEGlobal::segmentSize))
@@ -2009,7 +1995,6 @@ void Audio::processMidi(const unsigned int sync_frame,
                                   
                                   t = sync_frame + (MusEGlobal::segmentSize - 1);
                                 }
-// #endif
                                 // Be sure to allow for some (very) late events, such as
                                 //  the first chunk's time in a multi-chunk sysex.
 // REMOVE Tim. latency. Changed.
@@ -2204,10 +2189,6 @@ void Audio::processMidi(const unsigned int sync_frame,
                                   // All recorded events arrived in previous period. Shift into this period for playback.
                                   //  frameoffset needed to make process happy.
                                   unsigned int et = event.time();
-// REMOVE Tim. latency. Removed.
-// #ifdef _AUDIO_USE_TRUE_FRAME_
-//                                   unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
-// #else
                                   // The events arrived in the previous period. Shift into this period for playback.
                                   // The events are already biased with the last frame time.
                                   unsigned int t = et + MusEGlobal::segmentSize;
@@ -2219,7 +2200,6 @@ void Audio::processMidi(const unsigned int sync_frame,
                                     
                                     t = sync_frame + (MusEGlobal::segmentSize - 1);
                                   }
-// #endif
                                   event.setTime(t);
                                   // Check if we're outputting to another port than default:
                                   if (devport == defaultPort) {
@@ -2367,11 +2347,6 @@ void Audio::processMidi(const unsigned int sync_frame,
                                     {
                                       // REMOVE Tim. latency. Removed. Oops, with ALSA this adds undesired shift forward!
 //                                       // All recorded events arrived in the previous period. Shift into this period for record.
-// REMOVE Tim. latency. Removed.
-//       #ifdef _AUDIO_USE_TRUE_FRAME_
-//                                       unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
-//       #else
-
                                       // REMOVE Tim. latency. Changed. Oops, with ALSA this adds undesired shift forward!
                                       // And with Jack midi we currently already shift forward, in the input routine!
                                       // But I'm debating where to add the correction factor - I really need to add it here
@@ -2402,7 +2377,6 @@ void Audio::processMidi(const unsigned int sync_frame,
                                         
                                         t = sync_frame - 1;
                                       }
-//       #endif
                                       // Be sure to allow for some (very) late events, such as
                                       //  the first chunk's time in a multi-chunk sysex.
 // REMOVE Tim. latency. Changed.
@@ -2614,16 +2588,145 @@ void Audio::processMidi(const unsigned int sync_frame,
       processAudioMetronome(total_frames);
       processMidiMetronome(total_frames);
 
+      // REMOVE Tim. clock. Added.
+//       //---------------------------------------------------
+//       //    send midi clock output events
+//       //---------------------------------------------------
+// 
+//       _clockOutputQueueSize = 0;
+//       if(!extsync)
+//       {
+//         const unsigned curr_audio_frame = syncFrame;
+//         const unsigned next_audio_frame = curr_audio_frame + frames;
+// //         const uint64_t numer = (uint64_t)MusEGlobal::config.division * (uint64_t)MusEGlobal::tempomap.globalTempo() * 10000UL;
+//         const uint64_t denom = (uint64_t)MusEGlobal::config.division * (uint64_t)MusEGlobal::tempomap.globalTempo() * 10000UL;
+//         const unsigned int div = MusEGlobal::config.division/24;
+// 
+// //         // Do not round up here since (audio) frame resolution is higher than tick resolution.
+// //         const unsigned int clock_tick = muse_multiply_64_div_64_to_64(numer, curr_audio_frame,
+// //           (uint64_t)MusEGlobal::sampleRate * (uint64_t)MusEGlobal::tempomap.tempo(curTickPos));
+// 
+// //         unsigned int clock_tick_end;
+//         // Is the transport moving?
+//         if(playing)
+//         {
+// //           unsigned int delta_tick;
+// //           // Did tick position wrap around?
+// //           if(curTickPos > nextTickPos)
+// //             delta_tick = curTickPos - nextTickPos;
+// //           else
+// //             delta_tick = nextTickPos - curTickPos;
+// //           clock_tick_end = clock_tick + delta_tick;
+//         }
+//         else
+//         {
+// //           // Do not round up here since (audio) frame resolution is higher than tick resolution.
+// //           clock_tick_end = muse_multiply_64_div_64_to_64(numer, next_audio_frame,
+// //             (uint64_t)MusEGlobal::sampleRate * (uint64_t)MusEGlobal::tempomap.tempo(curTickPos));
+// 
+//           uint64_t div_remainder;
+//           const uint64_t div_frames = muse_multiply_64_div_64_to_64(
+//             (uint64_t)MusEGlobal::sampleRate * (uint64_t)MusEGlobal::tempomap.tempo(curTickPos), div,
+//             denom, LargeIntRoundNone, &div_remainder);
+// 
+//           // Counter too far in future? Reset.
+//           if(_clockOutputCounter >= curr_audio_frame && _clockOutputCounter - curr_audio_frame >= div_frames)
+//           {
+//             _clockOutputCounter = curr_audio_frame;
+//             _clockOutputCounterRemainder = 0;
+//           }
+//           // Counter too far in past? Reset.
+//           else if(_clockOutputCounter < curr_audio_frame)
+//           {
+//             _clockOutputCounter = curr_audio_frame;
+//             _clockOutputCounterRemainder = 0;
+//           }
+// 
+//           //const uint64_t curr_clock_out_count = _clockOutputCounter + div_frames + (_clockOutputCounterRemainder + div_remainder) / denom;
+//           //uint64_t next_clock_out_frame = _clockOutputCounter + div_frames + (_clockOutputCounterRemainder + div_remainder) / denom;
+//           uint64_t raccum;
+//           //while(next_clock_out_frame <= next_audio_frame)
+//           while(_clockOutputCounter < next_audio_frame)
+//           {
+//             if(_clockOutputQueueSize >= _clockOutputQueueCapacity)
+//               break;
+//             
+//             //_clockOutputQueue[_clockOutputQueueSize] = _clockOutputCounter - curr_audio_frame;
+//             _clockOutputQueue[_clockOutputQueueSize] = _clockOutputCounter;
+//             ++_clockOutputQueueSize;
+//             raccum = _clockOutputCounterRemainder + div_remainder;
+//             _clockOutputCounter += div_frames + (raccum / denom);
+//             _clockOutputCounterRemainder = raccum % denom;
+//           }
+//           //const uint64_t next_clock_out_count = _clockOutputCounter + div_frames + (_clockOutputCounterRemainder + div_remainder) / denom;
+// 
+//           //if(next_audio_frame >= next_clock_out_count)
+//           //{
+//             
+//           //}
+//         }
+// 
+// //         // Did clock_tick wrap around?
+// //         if(_clockOutputCounter > clock_tick)
+// //           _clockOutputCounter = clock_tick;
+// // 
+// //         //const unsigned int div = MusEGlobal::config.division/24;
+// //         if(clock_tick_end >= _clockOutputCounter + div)
+// //         {
+// //           // This will always be at least 1.
+// //           const unsigned int num_clocks = (clock_tick_end - _clockOutputCounter) / div;
+// //           const unsigned int clk_frame_step = frames / num_clocks;
+// //           const unsigned int clk_frame_step_rem = frames % num_clocks;
+// //           unsigned int clk_frame_off;
+// //           for(unsigned int c = 0; c < num_clocks; ++c)
+// //           {
+// //             if(c >= _clockOutputQueueCapacity)
+// //               break;
+// //             clk_frame_off = c * clk_frame_step + (c * clk_frame_step_rem) / num_clocks;
+// //           }
+// // 
+// //           _clockOutputCounter = clock_tick_end;
+// //         }
+// // 
+// // 
+// //         unsigned cc, f;
+// //         while(1)
+// //         {
+// //           cc = _clockOutputCounter + div;
+// //           f = Pos(cc, true).frame();
+// //           //if(f
+// //         }
+//       }
+      
       //
       // Play all midi events up to curFrame.
       //
       for(iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id)
       {
         MidiDevice* pl_md = *id;
+//         const int pl_port = pl_md->midiPort();
+
         // We are done with the 'frozen' recording fifos, remove the events.
         pl_md->afterProcess();
 
         pl_md->processStuckNotes(extsync, sync_frame, cur_tick_pos, next_tick_pos, frame_pos, total_frames);
+        
+        // REMOVE Tim. clock. Added.
+        // While we are at it, to avoid the overhead of yet another device loop,
+        //  handle midi clock output here, for all device types.
+//         if(!extsync && pl_port >= 0 && pl_port < MIDI_PORTS)
+//         {
+//           MidiPort* clk_mp = &MusEGlobal::midiPorts[pl_port];
+//           // Clock out turned on?
+//           if(clk_mp->syncInfo().MCOut())
+//           {
+//             for(unsigned int i = 0; i < _clockOutputQueueSize; ++i)
+//             {
+//               const MidiPlayEvent clk_ev(_clockOutputQueue[i], pl_port, 0, MusECore::ME_CLOCK, 0, 0);
+//               pl_md->putEvent(clk_ev, MidiDevice::NotLate /*,MidiDevice::PlaybackBuffer*/);
+//             }
+//           }
+//         }
         
         // ALSA devices handled by another thread.
         const MidiDevice::MidiDeviceType typ = pl_md->deviceType();
@@ -2643,8 +2746,7 @@ void Audio::processMidi(const unsigned int sync_frame,
 
       // Receive hardware state events sent from various threads to this audio thread.
       // Update hardware state so gui controls are updated.
-      // Static.
-      MidiPort::processGui2AudioEvents();
+      MusEGlobal::song->processIpcOutEventBuffers();
       }
 
       
@@ -2767,7 +2869,7 @@ void Audio::processMidiMetronome(unsigned int frames)
       const MusECore::MetronomeSettings* metro_settings = 
       MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
-      const bool extsync = MusEGlobal::extSyncFlag.value();
+      const bool extsync = MusEGlobal::extSyncFlag;
       const bool playing = isPlaying();
 
       // Should the metronome be muted after precount?
@@ -2996,7 +3098,7 @@ void Audio::processAudioMetronome(unsigned int frames)
       const MusECore::MetronomeSettings* metro_settings = 
       MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
-      const bool extsync = MusEGlobal::extSyncFlag.value();
+      const bool extsync = MusEGlobal::extSyncFlag;
       const bool playing = isPlaying();
 
       // Should the metronome be muted after precount?

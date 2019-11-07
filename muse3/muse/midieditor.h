@@ -113,6 +113,7 @@ class MidiEditor : public TopWin  {
       int raster() const           { return _raster; }
       void setRaster(int val)      { _raster = val; }
       MusECore::PartList* parts()            { return _pl;  }
+      const MusECore::PartList* parts() const { return _pl;  }
       int curDrumInstrument() const  { return _curDrumInstrument; }
       MusECore::Part* curCanvasPart();
       void setCurCanvasPart(MusECore::Part*); 

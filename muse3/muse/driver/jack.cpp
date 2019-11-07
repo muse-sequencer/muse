@@ -225,7 +225,7 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void*)
       if (MusEGlobal::audio->isRunning())
       {
         // Are we using Jack transport?
-        if(MusEGlobal::useJackTransport.value())
+        if(MusEGlobal::useJackTransport)
         {
           // Just call the audio process normally. Jack transport will take care of itself.
           // Don't process while we're syncing. ToDO: May need to deliver silence in process!
@@ -271,7 +271,7 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
         }
       }
         
-      if(!MusEGlobal::useJackTransport.value())
+      if(!MusEGlobal::useJackTransport)
         return 1;
         
       int audioState = Audio::STOP;
@@ -332,9 +332,9 @@ static void timebase_callback(jack_transport_state_t /* state */,
     }
     
     //Pos p(pos->frame, false);
-      Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : pos->frame, MusEGlobal::extSyncFlag.value() ? true : false);
+      Pos p(MusEGlobal::extSyncFlag ? MusEGlobal::audio->tickPos() : pos->frame, MusEGlobal::extSyncFlag ? true : false);
       // Can't use song pos - it is only updated every (slow) GUI heartbeat !
-      //Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::song->cpos() : pos->frame, MusEGlobal::extSyncFlag.value() ? true : false);
+      //Pos p(MusEGlobal::extSyncFlag ? MusEGlobal::song->cpos() : pos->frame, MusEGlobal::extSyncFlag ? true : false);
       
       pos->valid = JackPositionBBT;
       int bar, beat, tick;
@@ -447,10 +447,20 @@ JackAudioDevice::~JackAudioDevice()
       if (JACK_DEBUG)
             fprintf(stderr, "~JackAudioDevice()\n");
       if (_client) {
+
+            // REMOVE Tim. latency. Added. TESTING.
+            if (jack_deactivate(_client)) {
+                  fprintf (stderr, "cannot deactivate client\n");
+                  }
+
             if (jack_client_close(_client)) {
                   fprintf(stderr,"jack_client_close() failed: %s\n", strerror(errno));
                   }
             }
+
+      // REMOVE Tim. latency. Added. TESTING.
+      jackStarted = false;
+
       if (JACK_DEBUG)
             fprintf(stderr, "~JackAudioDevice() after jack_client_close()\n");
       }
@@ -1654,7 +1664,7 @@ unsigned int JackAudioDevice::getCurFrame() const
   if (JACK_DEBUG)
     fprintf(stderr, "JackAudioDevice::getCurFrame pos.frame:%d\n", pos.frame);
   
-  if(!MusEGlobal::useJackTransport.value())
+  if(!MusEGlobal::useJackTransport)
     return AudioDevice::getCurFrame();
     
   return pos.frame; 
@@ -1666,7 +1676,7 @@ unsigned int JackAudioDevice::getCurFrame() const
 
 unsigned JackAudioDevice::framePos() const
       {
-      //if(!MusEGlobal::useJackTransport.value())
+      //if(!MusEGlobal::useJackTransport)
       //{
       //  if (JACK_DEBUG)
       //    fprintf(stderr, "JackAudioDevice::framePos dummyPos:%d\n", dummyPos);
@@ -2052,7 +2062,7 @@ void JackAudioDevice::setSyncTimeout(unsigned usec)
 unsigned JackAudioDevice::transportSyncToPlayDelay() const
 { 
   // If Jack transport is being used, it delays by one cycle.
-  if(MusEGlobal::useJackTransport.value())
+  if(MusEGlobal::useJackTransport)
     return MusEGlobal::segmentSize;
   return 0;
 }
@@ -2064,7 +2074,7 @@ unsigned JackAudioDevice::transportSyncToPlayDelay() const
 int JackAudioDevice::getState()
       {
       // If we're not using Jack's transport, just return current state.
-      if(!MusEGlobal::useJackTransport.value())
+      if(!MusEGlobal::useJackTransport)
       {
         //pos.valid = jack_position_bits_t(0);
         //pos.frame = MusEGlobal::audio->pos().frame();
@@ -2127,7 +2137,7 @@ void JackAudioDevice::startTransport()
       
       // If we're not using Jack's transport, just pass PLAY and current frame along
       //  as if processSync was called. 
-      if(!MusEGlobal::useJackTransport.value())
+      if(!MusEGlobal::useJackTransport)
       {
         AudioDevice::startTransport();
         return;
@@ -2147,7 +2157,7 @@ void JackAudioDevice::stopTransport()
       if (JACK_DEBUG)
             fprintf(stderr, "JackAudioDevice::stopTransport()\n");
       
-      if(!MusEGlobal::useJackTransport.value())
+      if(!MusEGlobal::useJackTransport)
       {
         AudioDevice::stopTransport();
         return;
@@ -2170,7 +2180,7 @@ void JackAudioDevice::seekTransport(unsigned frame)
       if (JACK_DEBUG)
             fprintf(stderr, "JackAudioDevice::seekTransport() frame:%d\n", frame);
       
-      if(!MusEGlobal::useJackTransport.value())
+      if(!MusEGlobal::useJackTransport)
       {
         // STOP -> STOP means seek in stop mode. PLAY -> START_PLAY means seek in play mode.
         AudioDevice::seekTransport(frame);
@@ -2191,7 +2201,7 @@ void JackAudioDevice::seekTransport(const Pos &p)
       if (JACK_DEBUG)
             fprintf(stderr, "JackAudioDevice::seekTransport(Pos) frame:%d\n", p.frame());
       
-      if(!MusEGlobal::useJackTransport.value())
+      if(!MusEGlobal::useJackTransport)
       {
         // STOP -> STOP means seek in stop mode. PLAY -> START_PLAY means seek in play mode.
         AudioDevice::seekTransport(p);
@@ -2253,7 +2263,7 @@ int JackAudioDevice::setMaster(bool f)
   int r = 0;
   if(f)
   {
-    if(MusEGlobal::useJackTransport.value())
+    if(MusEGlobal::useJackTransport)
     {
       // Make Muse the Jack timebase master. Do it unconditionally (second param = 0).
       r = jack_set_timebase_callback(_client, 0, (JackTimebaseCallback) timebase_callback, 0);

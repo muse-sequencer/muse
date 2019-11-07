@@ -161,9 +161,19 @@ void Nentry::setSize(int n)
       QFontMetrics fm = edit->fontMetrics();
       int w;
       if (n <= 16)
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+            w = fm.horizontalAdvance(s, n);
+#else
             w = fm.width(s, n);
+#endif
       else
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+            w = fm.horizontalAdvance('0') * n;
+#else
             w = fm.width('0') * n;
+#endif
 
       edit->setFixedWidth(w + 14);
       }

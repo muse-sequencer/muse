@@ -81,8 +81,8 @@ void MTScale::configChanged()
 
 void MTScale::songChanged(MusECore::SongChangedStruct_t type)
       {
-      if (type._flags & (SC_SIG|SC_TEMPO)) {
-           if ((type._flags & SC_TEMPO) && waveMode) {
+      if (type & (SC_SIG|SC_TEMPO)) {
+           if ((type & SC_TEMPO) && waveMode) {
                   pos[0] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->cpos());
                   pos[1] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->lpos());
                   pos[2] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->rpos());
@@ -176,26 +176,28 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
       x = MusEGlobal::sigmap.raster(x, *raster);
       //printf("MTScale::viewMouseMoveEvent\n");  
       emit timeChanged(x);
-      int i;
+
+      MusECore::Song::POSTYPE posType;
+
       switch (button) {
             case Qt::LeftButton:
-                  i = 0;
+                  posType = MusECore::Song::CPOS;
                   break;
             case Qt::MidButton:
-                  i = 1;
+                  posType = MusECore::Song::LPOS;
                   break;
             case Qt::RightButton:
                   if ((MusEGlobal::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
-                      i = 1;
+                      posType = MusECore::Song::LPOS;
                   else
-                      i = 2;
+                      posType = MusECore::Song::RPOS;
                   break;
             default:
                   return; // if no button is pressed the function returns here
             }
       MusECore::Pos p(x, true);
       
-      if(i== 0 && (event->modifiers() & Qt::ShiftModifier )) {        // If shift +LMB we add a marker 
+      if(posType == MusECore::Song::CPOS && (event->modifiers() & Qt::ShiftModifier )) {        // If shift +LMB we add a marker
             MusECore::Marker *alreadyExists = MusEGlobal::song->getMarkerAt(x);
             if (!alreadyExists) {
                   MusEGlobal::song->addMarker(QString(""), x, false);         
@@ -203,7 +205,7 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
                   //emit addMarker(x);
                   }
             }
-      else if (i== 2 && (event->modifiers() & Qt::ShiftModifier )) {  // If shift +RMB we remove a marker 
+      else if (posType == MusECore::Song::RPOS && (event->modifiers() & Qt::ShiftModifier )) {  // If shift +RMB we remove a marker
             MusECore::Marker *toRemove = MusEGlobal::song->getMarkerAt(x);
             if (toRemove)
               MusEGlobal::song->removeMarker(toRemove);
@@ -211,7 +213,7 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
               printf("No marker to remove\n");
             }
       else
-            MusEGlobal::song->setPos(i, p);                             // all other cases: relocating one of the locators
+            MusEGlobal::song->setPos(posType, p);                             // all other cases: relocating one of the locators
       }
 
 //---------------------------------------------------------

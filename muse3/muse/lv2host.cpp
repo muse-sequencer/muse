@@ -88,6 +88,12 @@
 // (There is also the CMake option LV2_DEBUG for more output.)
 //#define LV2_DEBUG
 
+// For process/DSP debugging output: Uncomment the fprintf section.
+#define DEBUG_LV2_PROCESS(dev, format, args...)  // fprintf(dev, format, ##args);
+
+// For general debugging output: Uncomment the fprintf section.
+#define DEBUG_LV2_GENERAL(dev, format, args...)  // fprintf(dev, format, ##args);
+
 #ifdef HAVE_GTK2
 #include "lv2Gtk2Support/lv2Gtk2Support.h"
 #endif
@@ -97,6 +103,18 @@
 // For example with GtkWindow, AMSynth fails to embed into the container window
 //  resulting in two separate windows.
 #define LV2_GUI_USE_GTKPLUG ;
+
+// This is the maximum supported worker message size.
+// Many plugins use a small worker message size, say 16. The messages simply point back to tasks
+//  that the plugin has queued up to be worked upon.
+// Some other plugins directly send over 2000 bytes in one long message.
+// Some plugins send out lots of (small message) work requests in one run even before the worker can run them.
+// Using our custom non-splitting data FIFO, we might typically set a size higher than what a true 'wrap around'
+//  data FIFO would use. But that's still far better than using a very wasteful fixed-size item based FIFO.
+// Actually, to accomodate say, the LSP 48 channel samplers, we MUST set this fairly high - even if we were to
+//  use true 'wrap aorund' FIFOs because LSP plugins try to schedule MANY work requests in one run.
+// (That's up to 8 wave files per channel x 48 channels = 384 requests x 16 bytes per message = 6,144 bytes!).
+#define LV2_WRK_FIFO_SIZE 8192
 
 namespace MusECore
 {
@@ -108,9 +126,13 @@ namespace MusECore
 #define LV2_F_BOUNDED_BLOCK_LENGTH LV2_BUF_SIZE__boundedBlockLength
 #define LV2_F_FIXED_BLOCK_LENGTH LV2_BUF_SIZE__fixedBlockLength
 #define LV2_F_POWER_OF_2_BLOCK_LENGTH LV2_BUF_SIZE__powerOf2BlockLength
+// BUG FIXME: 'coarseBlockLength' is NOT in the lv2 buf-size.h header file!
+// #define LV2_F_COARSE_BLOCK_LENGTH LV2_BUF_SIZE__coarseBlockLength
+#define LV2_F_COARSE_BLOCK_LENGTH LV2_BUF_SIZE_PREFIX "coarseBlockLength"
 #define LV2_P_SEQ_SIZE LV2_BUF_SIZE__sequenceSize
 #define LV2_P_MAX_BLKLEN LV2_BUF_SIZE__maxBlockLength
 #define LV2_P_MIN_BLKLEN LV2_BUF_SIZE__minBlockLength
+#define LV2_P_NOM_BLKLEN LV2_BUF_SIZE__nominalBlockLength
 #define LV2_P_SAMPLE_RATE LV2_PARAMETERS__sampleRate
 #define LV2_F_OPTIONS LV2_OPTIONS__options
 #define LV2_F_URID_MAP LV2_URID__map
@@ -130,7 +152,6 @@ namespace MusECore
 #define LV2_F_DEFAULT_STATE LV2_STATE_PREFIX "loadDefaultState"
 #define LV2_F_STATE_CHANGED LV2_STATE_PREFIX "StateChanged"
 
-
 static LilvWorld *lilvWorld = 0;
 // LV2 does not use unique id numbers and frowns upon using anything but the uri.
 // static int uniqueID = 1;
@@ -148,6 +169,7 @@ typedef struct
    LilvNode *host_uiType;
    LilvNode *ext_uiType;
    LilvNode *ext_d_uiType;
+   LilvNode *lv2_portMinimumSize;
    LilvNode *lv2_portDiscrete;
    LilvNode *lv2_portContinuous;
    LilvNode *lv2_portLogarithmic;
@@ -212,6 +234,7 @@ LV2_Feature lv2Features [] =
    {LV2_F_BOUNDED_BLOCK_LENGTH, NULL},
    {LV2_F_FIXED_BLOCK_LENGTH, NULL},
    {LV2_F_POWER_OF_2_BLOCK_LENGTH, NULL},
+   {LV2_F_COARSE_BLOCK_LENGTH, NULL},
    {LV2_F_UI_PARENT, NULL},
    {LV2_F_INSTANCE_ACCESS, NULL},
    {LV2_F_UI_EXTERNAL_HOST, NULL},
@@ -222,7 +245,9 @@ LV2_Feature lv2Features [] =
    {LV2_UI__resize, NULL},
    {LV2_PROGRAMS__Host, NULL},
    {LV2_LOG__log, NULL},
+#ifdef LV2_MAKE_PATH_SUPPORT
    {LV2_STATE__makePath, NULL},
+#endif
    {LV2_STATE__mapPath, NULL},
    {LV2_F_STATE_CHANGED, NULL},
    {LV2_F_DATA_ACCESS, NULL} //must be the last always!
@@ -231,6 +256,11 @@ LV2_Feature lv2Features [] =
 std::vector<LV2Synth *> synthsToFree;
 
 #define SIZEOF_ARRAY(x) sizeof(x)/sizeof(x[0])
+
+// static
+// Pointer to this required for LV2_P_MIN_BLKLEN option when
+//  composing LV2_Options_Option array in LV2Synth::LV2Synth().
+const unsigned LV2Synth::minBlockSize = 0U;
 
 void initLV2()
 {
@@ -266,6 +296,7 @@ void initLV2()
   lv2CacheNodes.host_uiType            = lilv_new_uri(lilvWorld, LV2_UI_HOST_URI);
   lv2CacheNodes.ext_uiType             = lilv_new_uri(lilvWorld, LV2_UI_EXTERNAL);
   lv2CacheNodes.ext_d_uiType           = lilv_new_uri(lilvWorld, LV2_UI_EXTERNAL_DEPRECATED);
+  lv2CacheNodes.lv2_portMinimumSize    = lilv_new_uri(lilvWorld, LV2_RESIZE_PORT__minimumSize);
   lv2CacheNodes.lv2_portContinuous     = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__continuousCV);
   lv2CacheNodes.lv2_portDiscrete       = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__discreteCV);
   lv2CacheNodes.lv2_portLogarithmic    = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__logarithmic);
@@ -518,7 +549,6 @@ void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
          if(state->controlsMask [i])
          {
             state->controlsMask [i] = false;
-
             // Force send if re-opening.
             if(state->uiIsOpening || state->lastControls [i] != controls [i].val)
             {
@@ -632,10 +662,12 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
       {
          _ifeatures [i].data = &state->prgHost;
       }
+#ifdef LV2_MAKE_PATH_SUPPORT
       else if(i == synth->_fMakePath)
       {
          _ifeatures [i].data = &state->makePath;
       }
+#endif
       else if(i == synth->_fMapPath)
       {
          _ifeatures [i].data = &state->mapPath;
@@ -877,6 +909,11 @@ void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
       state->handle = NULL;
    }
 
+   if(state->wrkDataBuffer)
+     delete state->wrkDataBuffer;
+   if(state->wrkRespDataBuffer)
+     delete state->wrkRespDataBuffer;
+
    delete state;
 }
 
@@ -885,7 +922,7 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *b
    //send transport events if any
    LV2Synth *synth = state->synth;
    unsigned int cur_frame = MusEGlobal::audio->pos().frame();
-   Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : cur_frame, MusEGlobal::extSyncFlag.value() ? true : false);
+   Pos p(MusEGlobal::extSyncFlag ? MusEGlobal::audio->tickPos() : cur_frame, MusEGlobal::extSyncFlag ? true : false);
    float curBpm = (float)MusEGlobal::tempomap.globalTempo() * 600000.0f / (float)MusEGlobal::tempomap.tempo(p.tick());
    bool curIsPlaying = MusEGlobal::audio->isPlaying();
    unsigned int curFrame = MusEGlobal::audioDevice->getCurFrame();
@@ -926,7 +963,12 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
    //connect midi and control ports
    for(size_t i = 0; i < state->midiInPorts.size(); i++)
    {
-      LV2EvBuf *newEvBuffer = new LV2EvBuf(true, state->midiInPorts [i].old_api, synth->_uAtom_Sequence, synth->_uAtom_Chunk);
+      LV2EvBuf *newEvBuffer = new LV2EvBuf(
+        true,
+        state->midiInPorts [i].old_api,
+        synth->_uAtom_Sequence,
+        synth->_uAtom_Chunk,
+        LV2_EVBUF_SIZE);
       if(!newEvBuffer)
       {
          abort();
@@ -937,7 +979,12 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
 
    for(size_t i = 0; i < state->midiOutPorts.size(); i++)
    {      
-      LV2EvBuf *newEvBuffer = new LV2EvBuf(false, state->midiOutPorts [i].old_api, synth->_uAtom_Sequence, synth->_uAtom_Chunk);
+      LV2EvBuf *newEvBuffer = new LV2EvBuf(
+        false,
+        state->midiOutPorts [i].old_api,
+        synth->_uAtom_Sequence,
+        synth->_uAtom_Chunk,
+        LV2_EVBUF_SIZE);
       if(!newEvBuffer)
       {
          abort();
@@ -1487,19 +1534,36 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
          *type = synth->mapUrid(arrType.constData());
          *flags = LV2_STATE_IS_POD;
          QByteArray valArr = it.value().second.toByteArray();
+
+#ifdef LV2_DEBUG
+         QByteArray ba = QByteArray(valArr);
+         ba.append(QChar(0));
+         DEBUG_LV2_GENERAL(stderr, "lv2state_stateRetreive synth:%s value:%s size:%d\n", synth->name().toLocal8Bit().constData(), ba.constData(), valArr.size());
+#endif
+
          if(sType.compare(QString(LV2_ATOM__Path)) == 0) //prepend project folder to abstract path
          {
-            QString plugFolder = ((state->sif != NULL) ? state->sif->name() : state->plugInst->name()) + QString("/");
+            // Make everything relative to the plugin config folder.
+            QString cfg_path = 
+              MusEGlobal::museProject;
+#ifdef LV2_MAKE_PATH_SUPPORT
+            const QString plug_name = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
+            cfg_path += QDir::separator() + 
+              QFileInfo(MusEGlobal::muse->projectName()).fileName() + QString(".lv2state") +
+              QDir::separator() + plug_name;
+            // If the plugin config folder does not exist, the plugin did not create it first with makePath().
+            // So it likely won't and doesn't use makePath or a config folder.
+            // Just make everything relative to the project folder.
+            if(!QDir(cfg_path).exists())
+              cfg_path = 
+                MusEGlobal::museProject;
+#endif
+
             QString strPath = QString::fromUtf8(valArr.data());
-            QFile ff(strPath);
-            QFileInfo fiPath(ff);
+            const QFileInfo fiPath(strPath);
             if(fiPath.isRelative())
             {
-               if(strPath.indexOf(plugFolder) < 0)
-               {
-                  strPath = plugFolder + strPath;
-               }
-               strPath = MusEGlobal::museProject + QString("/") + strPath;
+               strPath = cfg_path + QDir::separator() + strPath;
                valArr = strPath.toUtf8();
                int len = strPath.length();
                valArr.setRawData(strPath.toUtf8().constData(), len + 1);
@@ -1545,6 +1609,13 @@ LV2_State_Status LV2Synth::lv2state_stateStore(LV2_State_Handle handle, uint32_t
       {
          QString strUriType = uriType;
          QVariant varVal = QByteArray((const char *)value, size);
+
+#ifdef LV2_DEBUG
+         QByteArray ba = QByteArray((const char *)value, size);
+         ba.append(QChar(0));
+         DEBUG_LV2_GENERAL(stderr, "lv2state_stateStore: name:%s value:%s size:%d\n", synth->name().toLocal8Bit().constData(), ba.constData(), (int)size);
+#endif
+
          state->iStateValues.insert(strKey, QPair<QString, QVariant>(strUriType, varVal));
       }
       return LV2_STATE_SUCCESS;
@@ -1559,12 +1630,12 @@ LV2_Worker_Status LV2Synth::lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handl
 #endif
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
 
-   //assert(state->wrkEndWork != true);
-   if(state->wrkEndWork != false)
-      return LV2_WORKER_ERR_UNKNOWN;
-
-   state->wrkDataSize = size;
-   state->wrkDataBuffer = data;
+   if(!state->wrkDataBuffer->put(data, size))
+   {
+     fprintf(stderr, "lv2wrk_scheduleWork: Worker buffer overflow\n");
+     return LV2_WORKER_ERR_NO_SPACE;
+   }
+   
    if(MusEGlobal::audio->freewheel()) //don't wait for a thread. Do it now
       state->wrkThread->makeWork();
    else
@@ -1575,11 +1646,16 @@ LV2_Worker_Status LV2Synth::lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handl
 
 LV2_Worker_Status LV2Synth::lv2wrk_respond(LV2_Worker_Respond_Handle handle, uint32_t size, const void *data)
 {
+  // Some plugins expose a work_response function, but it may be empty
+  //  and/or they don't bother calling respond (this). (LSP...)
+
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
 
-   state->wrkDataSize = size;
-   state->wrkDataBuffer = data;
-   state->wrkEndWork = true;
+   if(!state->wrkRespDataBuffer->put(data, size))
+   {
+     fprintf(stderr, "lv2wrk_respond: Response buffer overflow\n");
+     return LV2_WORKER_ERR_NO_SPACE;
+   }
 
    return LV2_WORKER_SUCCESS;
 }
@@ -1591,7 +1667,8 @@ void LV2Synth::lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml)
 
    if(state->iState != NULL)
    {
-      state->iState->save(lilv_instance_get_handle(state->handle), LV2Synth::lv2state_stateStore, state, LV2_STATE_IS_POD, state->_ppifeatures);
+      state->iState->save(lilv_instance_get_handle(state->handle), LV2Synth::lv2state_stateStore,
+                          state, LV2_STATE_IS_POD, state->_ppifeatures);
    }
 
    if(state->sif != NULL) // write control ports values only for synths
@@ -1611,7 +1688,10 @@ void LV2Synth::lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml)
    QByteArray arrOut;
    QDataStream streamOut(&arrOut, QIODevice::WriteOnly);
    streamOut << state->iStateValues;
-   QByteArray outEnc64 = arrOut.toBase64();
+   
+   // Weee! Compression!
+   QByteArray outEnc64 = qCompress(arrOut).toBase64();
+   
    QString customData(outEnc64);
    for (int pos=0; pos < customData.size(); pos+=150)
    {
@@ -1632,7 +1712,12 @@ void LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
       param.remove('\n'); // remove all linebreaks that may have been added to prettyprint the songs file
       QByteArray paramIn;
       paramIn.append(param);
-      QByteArray dec64 = QByteArray::fromBase64(paramIn);
+      // Try to uncompress the data.
+      QByteArray dec64 = qUncompress(QByteArray::fromBase64(paramIn));
+      // Failed? Try uncompressed.
+      if(dec64.isEmpty())
+        dec64 = QByteArray::fromBase64(paramIn);
+
       QDataStream streamIn(&dec64, QIODevice::ReadOnly);
       streamIn >> state->iStateValues;
       break; //one customData tag includes all data in base64
@@ -1762,28 +1847,42 @@ int LV2Synth::lv2_vprintf(LV2_Log_Handle, LV2_URID, const char *fmt, va_list ap)
 
 }
 
+#ifdef LV2_MAKE_PATH_SUPPORT
 char *LV2Synth::lv2state_makePath(LV2_State_Make_Path_Handle handle, const char *path)
 {
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
    assert(state != NULL);
+   
+  const QString plug_name = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
 
-   QFile ff(path);
-   QFileInfo fiPath(ff);
+  // Dangerous, if a folder by that name happens to already exist.
+  const QString cfg_path = 
+    MusEGlobal::museProject +
+    QDir::separator() + QFileInfo(MusEGlobal::muse->projectName()).fileName() + QString(".lv2state") +
+    QDir::separator() + plug_name;
 
-   if(fiPath.isAbsolute())
-   {
-      return strdup(path);
-   }
+  QDir dir;
+  dir.setPath(cfg_path);
+//   int i = 0;
+//   const QString fin_Path = cfg_path + "-%1";
+//   do dir.setPath(fin_Path.arg(++i));
+//   while (dir.exists());
 
-   QString plugName = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
-   QString dirName = MusEGlobal::museProject + QString("/") + plugName;
-   QDir dir;
-   dir.mkpath(dirName);
+  QFileInfo fi(path);
+  if (fi.isRelative())
+    fi.setFile(dir, fi.filePath());
+  if (fi.isSymLink())
+    fi.setFile(fi.symLinkTarget());
 
-   QString resPath = dirName + QString("/") + QString(path);
-   return strdup(resPath.toUtf8().constData());
+  const QString& absolute_dir = fi.absolutePath();
+  if (!QDir(absolute_dir).exists())
+    dir.mkpath(absolute_dir);
+
+  const QString& absolute_path = fi.absoluteFilePath();
+  return ::strdup(absolute_path.toUtf8().constData());
 
 }
+#endif
 
 char *LV2Synth::lv2state_abstractPath(LV2_State_Map_Path_Handle handle, const char *absolute_path)
 {
@@ -1794,36 +1893,69 @@ char *LV2Synth::lv2state_abstractPath(LV2_State_Map_Path_Handle handle, const ch
    //so return duplicate without modification for now
       //return strdup(absolute_path);
 
-   QString resPath = QString(absolute_path);
-   int rIdx = resPath.lastIndexOf('/');
-   if(rIdx > -1)
-   {
-      resPath = resPath.mid(rIdx + 1);
-   }
-   QString plugName = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
-   QDir dir;
-   QString prjPath = MusEGlobal::museProject + QString("/") + plugName;
-   dir.mkpath(prjPath);
-   QFile ff(absolute_path);
-   QFileInfo fiPath(ff);
-   if(resPath.length() && fiPath.isAbsolute() && resPath != QString(absolute_path))
-   {
-      QFile::link(QString(absolute_path), prjPath + QString("/") + resPath);
-   }
+  // Make everything relative to the plugin config folder.
+  QString cfg_path = 
+    MusEGlobal::museProject;
+#ifdef LV2_MAKE_PATH_SUPPORT
+  const QString plug_name = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
+  cfg_path += QDir::separator() + 
+    QFileInfo(MusEGlobal::muse->projectName()).fileName() + QString(".lv2state") +
+    QDir::separator() + plug_name;
+  // If the plugin config folder does not exist, the plugin did not create it first with makePath().
+  // So it likely won't and doesn't use makePath or a config folder.
+  // Just make everything relative to the project folder.
+  if(!QDir(cfg_path).exists())
+    cfg_path = 
+      MusEGlobal::museProject;
+#endif
+  
+  const QFileInfo fi(absolute_path);
+  const QString& afp = fi.absoluteFilePath();
 
-   if(strlen(absolute_path) == 0)
-   {
-      resPath = prjPath + QString("/") + resPath;
-   }
+  QString abstract_path;
 
-
-   return strdup(resPath.toUtf8().constData());
-
+  // If the given path is absolute, all paths IN OR UNDER the project folder
+  //  (the folder containing the .med song file) are deemed RELATIVE - to the lv2
+  //  state config folder. All paths OUTSIDE the PROJECT folder are deemed ABSOLUTE paths.
+  // Does the path not start with the project folder?
+  if(fi.isAbsolute() && !afp.startsWith(MusEGlobal::museProject))
+    abstract_path = afp;
+  else
+    abstract_path = QDir(cfg_path).relativeFilePath(afp);
+  
+  return ::strdup(abstract_path.toUtf8().constData());
+    
 }
 
 char *LV2Synth::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const char *abstract_path)
 {
-   return LV2Synth::lv2state_makePath((LV2_State_Make_Path_Handle)handle, abstract_path);
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+   assert(state != NULL);
+
+  // Make everything relative to the plugin config folder.
+  QString cfg_path = 
+    MusEGlobal::museProject;
+#ifdef LV2_MAKE_PATH_SUPPORT
+  const QString plug_name = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
+  cfg_path += QDir::separator() + 
+    QFileInfo(MusEGlobal::muse->projectName()).fileName() + QString(".lv2state") +
+    QDir::separator() + plug_name;
+  // If the plugin config folder does not exist, the plugin did not create it first with makePath().
+  // So it likely won't and doesn't use makePath or a config folder.
+  // Just make everything relative to the project folder.
+  if(!QDir(cfg_path).exists())
+    cfg_path = 
+      MusEGlobal::museProject;
+#endif
+
+  
+  QFileInfo fi(abstract_path);
+  if (fi.isRelative())
+    fi.setFile(QDir(cfg_path), fi.filePath());
+
+  const QString& absolute_path = fi.absoluteFilePath();
+  return ::strdup(absolute_path.toUtf8().constData());
+   
 }
 
 void LV2Synth::lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, MusEGui::PopupMenu *menu)
@@ -2057,15 +2189,36 @@ void LV2Synth::lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *pre
          QString presetFile = synthName + QString("_") + presetName
                               + QString(".ttl");
          QString plugName = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
+
+         // TODO Do we need to change this to the new lv2state folder ???
          QString plugFileDirName = MusEGlobal::museProject + QString("/") + plugName;
+//           const QString plug_name = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
+//             // Make everything relative to the plugin config folder.
+//             QString cfg_path = 
+//               MusEGlobal::museProject;
+// #ifdef LV2_MAKE_PATH_SUPPORT
+//             const QString plug_name = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
+//             cfg_path += QDir::separator() + 
+//               QFileInfo(MusEGlobal::muse->projectName()).fileName() + QString(".lv2state") +
+//               QDir::separator() + plug_name;
+//             // If the plugin config folder does not exist, the plugin did not create it first with makePath().
+//             // So it likely won't and doesn't use makePath or a config folder.
+//             // Just make everything relative to the project folder.
+//             if(!QDir(cfg_path).exists())
+//               cfg_path = 
+//                 MusEGlobal::museProject;
+// #endif
+
          char *cPresetName = strdup(presetName.toUtf8().constData());
          char *cPresetDir = strdup(presetDir.toUtf8().constData());
          char *cPresetFile = strdup(presetFile.toUtf8().constData());
          char *cPlugFileDirName = strdup(plugFileDirName.toUtf8().constData());
-         LilvState* const lilvState = lilv_state_new_from_instance(state->synth->_handle, state->handle, &state->synth->_lv2_urid_map,
-                                                                   cPlugFileDirName, cPresetDir, cPresetDir, cPresetDir,
-                                                                   LV2Synth::lv2state_getPortValue, state,
-                                                                   LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE, NULL);
+         LilvState* const lilvState = lilv_state_new_from_instance(
+            state->synth->_handle,
+            state->handle, &state->synth->_lv2_urid_map,
+            cPlugFileDirName, cPresetDir, cPresetDir, cPresetDir,
+            LV2Synth::lv2state_getPortValue, state,
+            LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE, NULL);
 
          lilv_state_set_label(lilvState, cPresetName);
 
@@ -2248,8 +2401,10 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    LV2_Options_Option _tmpl_options [] =
    {
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SAMPLE_RATE), sizeof(float), uridBiMap.map(LV2_ATOM__Float), &_fSampleRate},
-      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MIN_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MIN_BLKLEN), sizeof(int32_t),
+        uridBiMap.map(LV2_ATOM__Int), &LV2Synth::minBlockSize}, // &MusEGlobal::segmentSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MAX_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_NOM_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SEQ_SIZE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_CORE__sampleRate), sizeof(double), uridBiMap.map(LV2_ATOM__Double), &_sampleRate},
       {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, NULL}
@@ -2334,10 +2489,12 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       {
          _features [i].data = &_lv2_log_log;
       }
+#ifdef LV2_MAKE_PATH_SUPPORT
       else if((std::string(LV2_STATE__makePath) == _features [i].URI))
       {
          _fMakePath = i;
       }
+#endif
       else if((std::string(LV2_STATE__mapPath) == _features [i].URI))
       {
          _fMapPath = i;
@@ -2775,6 +2932,8 @@ bool LV2SynthIF::init(LV2Synth *s)
    _state->_ppifeatures = new LV2_Feature *[SIZEOF_ARRAY(lv2Features) + 1];
    _state->sif = this;
    _state->synth = _synth;
+   _state->wrkDataBuffer = new LockFreeDataRingBuffer(LV2_WRK_FIFO_SIZE);
+   _state->wrkRespDataBuffer = new LockFreeDataRingBuffer(LV2_WRK_FIFO_SIZE);
 
    LV2Synth::lv2state_FillFeatures(_state);
 
@@ -3726,7 +3885,9 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
    const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
    // All ports must be connected to something!
    const unsigned long nop = ((unsigned long) ports) > _outports ? _outports : ((unsigned long) ports);
-   const bool usefixedrate = (requiredFeatures() & PluginFixedBlockSize);;
+   // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
+   //       For now we treat it like fixed size.
+   const bool usefixedrate = (requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize));
    const unsigned long min_per = (usefixedrate || MusEGlobal::config.minControlProcessPeriod > nframes) ? nframes : MusEGlobal::config.minControlProcessPeriod;
    const unsigned long min_per_mask = min_per - 1; // min_per must be power of 2
 
@@ -3737,6 +3898,8 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
    CtrlListList *cll = atrack->controller();
    ciCtrlList icl_first;
    const int plug_id = id();
+   void *wrk_data;
+   size_t wrk_data_sz;
 
    LV2EvBuf *evBuf = (_inportsMidi > 0) ? _state->midiInPorts [0].buffer : NULL;
 
@@ -4151,22 +4314,30 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
 #endif
 
             lilv_instance_run(_handle, nsamp);
-            //notify worker that this run() finished
-            if(_state->wrkIface && _state->wrkIface->end_run)
-               _state->wrkIface->end_run(lilv_instance_get_handle(_handle));
-            //notify worker about processed data (if any)
-            if(_state->wrkIface && _state->wrkIface->work_response && _state->wrkEndWork)
-            {
-               _state->wrkIface->work_response(lilv_instance_get_handle(_handle), _state->wrkDataSize, _state->wrkDataBuffer);
-               _state->wrkDataSize = 0;
-               _state->wrkDataBuffer = NULL;
-               _state->wrkEndWork = false;
-            }
-
-            LV2Synth::lv2audio_postProcessMidiPorts(_state, nsamp);
-
-
          }
+
+          //notify worker about processed data (if any)
+          // Do it always, even if not 'running', in case we have 'left over' responses etc,
+          //  even though work is only initiated from 'run'.
+          const unsigned int rsp_buf_sz = _state->wrkRespDataBuffer->getSize(false);
+          for(unsigned int i_sz = 0; i_sz < rsp_buf_sz; ++i_sz)
+          {
+            if(_state->wrkIface && _state->wrkIface->work_response)
+            {
+              _state->wrkRespDataBuffer->peek(&wrk_data, &wrk_data_sz);
+              _state->wrkIface->work_response(lilv_instance_get_handle(_handle), wrk_data_sz, wrk_data);
+            }
+            _state->wrkRespDataBuffer->remove();
+          }
+
+        if(ports != 0)  // Don't bother if not 'running'.
+        {
+          //notify worker that this run() finished
+          if(_state->wrkIface && _state->wrkIface->end_run)
+              _state->wrkIface->end_run(lilv_instance_get_handle(_handle));
+
+          LV2Synth::lv2audio_postProcessMidiPorts(_state, nsamp);
+        }
 
          sample += nsamp;
       }
@@ -5001,6 +5172,9 @@ LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
    state->_ppifeatures = new LV2_Feature *[SIZEOF_ARRAY(lv2Features) + 1];
    state->sif = NULL;
    state->synth = _synth;
+   state->wrkDataBuffer = new LockFreeDataRingBuffer(LV2_WRK_FIFO_SIZE);
+   state->wrkRespDataBuffer = new LockFreeDataRingBuffer(LV2_WRK_FIFO_SIZE);
+
    LV2Synth::lv2state_FillFeatures(state);
 
    state->handle = lilv_plugin_instantiate(_synth->_handle, (double)MusEGlobal::sampleRate, state->_ppifeatures);
@@ -5101,17 +5275,27 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n)
 
 
    lilv_instance_run(state->handle, n);
+
+    void *wrk_data;
+    size_t wrk_data_sz;
+    //notify worker about processed data (if any)
+    // Do it always, even if not 'running', in case we have 'left over' responses etc,
+    //  even though work is only initiated from 'run'.
+    const unsigned int rsp_buf_sz = state->wrkRespDataBuffer->getSize(false);
+    for(unsigned int i_sz = 0; i_sz < rsp_buf_sz; ++i_sz)
+    {
+      if(state->wrkIface && state->wrkIface->work_response)
+      {
+        state->wrkRespDataBuffer->peek(&wrk_data, &wrk_data_sz);
+        state->wrkIface->work_response(lilv_instance_get_handle(state->handle), wrk_data_sz, wrk_data);
+      }
+      state->wrkRespDataBuffer->remove();
+    }
+
    //notify worker that this run() finished
    if(state->wrkIface && state->wrkIface->end_run)
       state->wrkIface->end_run(lilv_instance_get_handle(state->handle));
-   //notify worker about processes data (if any)
-   if(state->wrkIface && state->wrkIface->work_response && state->wrkEndWork)
-   {
-      state->wrkEndWork = false;
-      state->wrkIface->work_response(lilv_instance_get_handle(state->handle), state->wrkDataSize, state->wrkDataBuffer);
-      state->wrkDataSize = 0;
-      state->wrkDataBuffer = NULL;
-   }
+
 
    LV2Synth::lv2audio_postProcessMidiPorts(state, n);
 }
@@ -5290,11 +5474,9 @@ void LV2PluginWrapper_Worker::run()
 
 LV2_Worker_Status LV2PluginWrapper_Worker::scheduleWork()
 {
-   if(_mSem.available() != 0)
-      return LV2_WORKER_ERR_NO_SPACE;
-   _mSem.release(1);
+   if(_mSem.available() == 0)
+     _mSem.release(1);
    return LV2_WORKER_SUCCESS;
-
 }
 
 void LV2PluginWrapper_Worker::makeWork()
@@ -5302,41 +5484,40 @@ void LV2PluginWrapper_Worker::makeWork()
 #ifdef DEBUG_LV2
    std::cerr << "LV2PluginWrapper_Worker::makeWork" << std::endl;
 #endif
-   if(_state->wrkIface && _state->wrkIface->work)
-   {
-      const void *dataBuffer = _state->wrkDataBuffer;
-      uint32_t dataSize = _state->wrkDataSize;
-      _state->wrkDataBuffer = NULL;
-      _state->wrkDataSize = 0;
-      if(_state->wrkIface->work(lilv_instance_get_handle(_state->handle),
-                                LV2Synth::lv2wrk_respond,
-                                _state,
-                                dataSize,
-                                dataBuffer) != LV2_WORKER_SUCCESS)
+   
+    void *wrk_data;
+    size_t wrk_data_sz;
+    const unsigned int wrk_buf_sz = _state->wrkDataBuffer->getSize(false);
+    for(unsigned int i_sz = 0; i_sz < wrk_buf_sz; ++i_sz)
+    {
+      if(_state->wrkIface && _state->wrkIface->work)
       {
-         _state->wrkEndWork = false;
-         _state->wrkDataBuffer = NULL;
-         _state->wrkDataSize = 0;
+        _state->wrkDataBuffer->peek(&wrk_data, &wrk_data_sz);
+        
+        // Some plugins expose a work_response function, but it may be empty
+        //  and/or they don't bother calling respond (our lv2wrk_respond). (LSP...)
+        if(_state->wrkIface->work(lilv_instance_get_handle(_state->handle),
+                                  LV2Synth::lv2wrk_respond,
+                                  _state,
+                                  wrk_data_sz,
+                                  wrk_data) != LV2_WORKER_SUCCESS)
+        {
+#ifdef DEBUG_LV2
+          std::cerr << "LV2PluginWrapper_Worker::makeWork: Error: work() != LV2_WORKER_SUCCESS" << std::endl;
+#endif
+        }
+        
       }
-   }
+      _state->wrkDataBuffer->remove();
+    }
 
 }
 
-LV2EvBuf::LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk)
+LV2EvBuf::LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t /*size*/)
    :_isInput(isInput), _oldApi(oldApi), _uAtomTypeSequence(atomTypeSequence), _uAtomTypeChunk(atomTypeChunk)
 {
-   if(_isInput)
-   {
-     // Resize and fill with initial value.
-     _buffer.resize(LV2_EVBUF_SIZE, 0);
-   }
-   else
-   {
-     // Reserve the space.
-     _buffer.reserve(LV2_EVBUF_SIZE);
-     // Add one item, the first item.
-     _buffer.assign(sizeof(LV2_Atom_Sequence), 0);
-   }
+  // Resize and fill with initial value.
+  _buffer.resize(LV2_EVBUF_SIZE, 0);
    
 #ifdef LV2_DEBUG
    std::cerr << "LV2EvBuf ctor: _buffer size:" << _buffer.size() << " capacity:" << _buffer.capacity() << std::endl;
@@ -5473,10 +5654,18 @@ bool LV2EvBuf::read(uint32_t *frames, uint32_t *subframes, uint32_t *type, uint3
    else
    {
       LV2_Atom_Event *ev = reinterpret_cast<LV2_Atom_Event *>(&_buffer [curRPointer]);
+
       if((_seqbuf->atom.size + sizeof(LV2_Atom_Sequence) - curRPointer) < sizeof(LV2_Atom_Event))
       {
          return false;
       }
+
+      // Apparently some plugins fill in the buffer and/or atom.size, some don't.
+      if(ev->body.size == 0)
+        return false;
+
+      DEBUG_LV2_PROCESS(stderr, "LV2EvBuf::read ev frames:%ld type:%d, size:%d\n", ev->time.frames, ev->body.type, ev->body.size);
+
       *frames = ev->time.frames;
       *type = ev->body.type;
       *size = ev->body.size;

@@ -92,25 +92,26 @@ void HitScale::viewMouseMoveEvent(QMouseEvent* event)
         x = 0;
       x = MusEGlobal::sigmap.raster(x, *raster);
       emit timeChanged(x);
-      int i;
+      MusECore::Song::POSTYPE posType;
+
       switch (button) {
             case Qt::LeftButton:
-                  i = 0;
+                  posType = MusECore::Song::CPOS;
                   break;
             case Qt::MidButton:
-                  i = 1;
+                  posType = MusECore::Song::LPOS;
                   break;
             case Qt::RightButton:
                   if ((MusEGlobal::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
-                      i = 1;
+                      posType = MusECore::Song::LPOS;
                   else
-                      i = 2;
+                      posType = MusECore::Song::RPOS;
                   break;
             default:
                   return;
             }
       MusECore::Pos p(x, true);
-      MusEGlobal::song->setPos(i, p);
+      MusEGlobal::song->setPos(posType, p);
       }
 
 //---------------------------------------------------------

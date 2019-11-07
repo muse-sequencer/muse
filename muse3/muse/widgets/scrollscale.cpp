@@ -31,7 +31,6 @@
 #include <QToolButton>
 #include <QToolTip>
 
-// #include "globals.h"
 #include "scrollscale.h"
 #include "icons.h"
 
@@ -44,93 +43,46 @@ namespace MusEGui {
 
 void ScrollScale::setScale ( int val, int pos_offset )
 {
-        int mag_max = convertQuickZoomLevelToMag(zoomLevels-1);
-	if(val < 0)
-	  val = 0;
-	else if(val > mag_max)
-	  val = mag_max;
 	int off = offset();
 	int old_scale_val = scaleVal;
-	if ( invers )
-        val = mag_max - val;
-	double min, max;
-	if ( scaleMin < 0 )
-		min = 1.0/ ( -scaleMin );
-	else
-		min = double ( scaleMin );
 
-	if ( scaleMax < 0 )
-		max = 1.0/ ( -scaleMax );
-	else
-		max = double ( scaleMax );
+	scaleVal = mag2scale(val);
 
-	double diff = max-min;
-    double fkt  = double ( val ) /double(mag_max);
-	double v = ( pow ( logbase, fkt )-1 ) / ( logbase-1 );
-	double scale;
-	if ( invers )
-		scale = max - v * diff;
-	else
-		scale = min + v * diff;
-
-	if ( scale < 1.0 )
-		scaleVal = - ( int ( 1.0 / scale ) );
-	else
-		scaleVal = int ( scale );
-	if ( scaleVal == -1 )   // nur so
-		scaleVal = 1;
-
-#if 0
-	if ( scaleMax > scaleMin )
-	{
-		if ( scale < scaleMin )
-			scale = scaleMin;
-		else if ( scale > scaleMax )
-			scale = scaleMax;
-	}
-	else
-	{
-		if ( scale < scaleMax )
-			scale = scaleMax;
-		else if ( scale > scaleMin )
-			scale = scaleMin;
-	}
-#endif
-    //fprintf(stderr, "scaleMin %d scaleMax %d val=%d emit scaleVal=%d\n", scaleMin, scaleMax, val, scaleVal);
+	//fprintf(stderr, "scaleMin %d scaleMax %d val=%d emit scaleVal=%d\n", scaleMin, scaleMax, val, scaleVal);
 	emit scaleChanged ( scaleVal );
 	if ( !noScale )
 		setRange ( minVal, maxVal );
 
-  int i = ( scroll->orientation() == Qt::Horizontal ) ? width() : height();
-  int pos, pmax;
-  if ( scaleVal < 1 )
-  {
-    pos = ( off-scaleVal/2 ) / ( -scaleVal );
-    pmax = ( maxVal-scaleVal-1 ) / ( -scaleVal ) - i;
-  }
-  else
-  {
-    pos = off * scaleVal;
-    pmax = maxVal * scaleVal - i;
-  }
-
-  // Zoom at cursor support...
-  if(pos_offset != 0)
-  {
-    double oscale = old_scale_val;
-    double nscale = scaleVal;
-    if(old_scale_val < 1)
-      oscale = 1.0 / -old_scale_val;
-    if(scaleVal < 1)
-      nscale = 1.0 / -scaleVal;
-    double scale_fact = nscale / oscale;
-    int pos_diff = (int)((double)pos_offset * scale_fact - (double)pos_offset + 0.5);  // 0.5 for round-off
-    pos += pos_diff;
-  }
-  
-  if(pos > pmax)
-    pos = pmax;
-  setPos(pos);
+	int i = ( scroll->orientation() == Qt::Horizontal ) ? width() : height();
+	int pos, pmax;
+	if ( scaleVal < 1 )
+	{
+		pos = ( off-scaleVal/2 ) / ( -scaleVal );
+		pmax = ( maxVal-scaleVal-1 ) / ( -scaleVal ) - i;
+	}
+	else
+	{
+		pos = off * scaleVal;
+		pmax = maxVal * scaleVal - i;
+	}
+	
+	// Zoom at cursor support...
+	if(pos_offset != 0)
+	{
+		double oscale = old_scale_val;
+		double nscale = scaleVal;
+		if(old_scale_val < 1)
+			oscale = 1.0 / -old_scale_val;
+		if(scaleVal < 1)
+			nscale = 1.0 / -scaleVal;
+		double scale_fact = nscale / oscale;
+		int pos_diff = (int)((double)pos_offset * scale_fact - (double)pos_offset + 0.5);  // 0.5 for round-off
+		pos += pos_diff;
+	}
+	
+	if(pos > pmax)
+		pos = pmax;
+	setPos(pos);
 }
 
 //---------------------------------------------------------
@@ -180,15 +132,15 @@ void ScrollScale::setRange ( int min, int max )
 	if ( min > max )
 		max = min;
   
-  scroll->setRange ( min, max );
+	scroll->setRange ( min, max );
 
 	// qt doesn't check this...
 	if ( scroll->value() < min )
 		scroll->setValue ( min );
 	if ( scroll->value() > max )
 		scroll->setValue ( max );
-        scroll->setSingleStep(20);
-        scroll->setPageStep(i);
+	scroll->setSingleStep(20);
+	scroll->setPageStep(i);
 }
 
 //---------------------------------------------------------
@@ -208,11 +160,11 @@ void ScrollScale::setPos ( unsigned pos )
 
 void ScrollScale::setPosNoLimit ( unsigned pos )
 {
-  //printf ( "ScrollScale::setPosNoLimit pos:%d scaleVal:%d offset ticks:%d\n", pos, scaleVal, pos2offset ( pos ) );
+	//printf ( "ScrollScale::setPosNoLimit pos:%d scaleVal:%d offset ticks:%d\n", pos, scaleVal, pos2offset ( pos ) );
 
-  if((int)pos > scroll->maximum())
-    scroll->setMaximum(pos);
-  scroll->setValue(pos);
+	if((int)pos > scroll->maximum())
+		scroll->setMaximum(pos);
+	scroll->setValue(pos);
 }
 
 //---------------------------------------------------------
@@ -221,8 +173,10 @@ void ScrollScale::setPosNoLimit ( unsigned pos )
 
 void ScrollScale::resizeEvent ( QResizeEvent* ev)
 {
-  QWidget::resizeEvent(ev);
-  setScale ( scale->value() );
+	QWidget::resizeEvent(ev);
+	emit scaleChanged ( scaleVal );
+	if ( !noScale )
+		setRange ( minVal, maxVal );
 }
 
 //---------------------------------------------------------
@@ -241,73 +195,47 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
 	scaleMin    = s1;
 	scaleMax    = s2;
 	minVal      = min_;
-    maxVal      = max_;
+	maxVal      = max_;
 	up          = 0;
 	down        = 0;
 	logbase     = bas;
 	invers      = inv;
-        scaleVal    = 0;
+	scaleVal    = 0;
 
-	double min, max;
-	if ( scaleMin < 0 )
-		min = 1.0/ ( -scaleMin );
-	else
-		min = double ( scaleMin );
-
-	if ( scaleMax < 0 )
-		max = 1.0/ ( -scaleMax );
-	else
-		max = double ( scaleMax );
-
-	double cmag = ( cs < 0 ) ? ( 1.0/ ( -cs ) ) : double ( cs );
-	double diff = max-min;
-
-	//
-	// search initial value for slider
-	//
-	int cur   = 512;
-	int delta = 256;
-	for ( int i = 0; i < 8; ++i )
-	{
-        int tryVal   = invers ? convertQuickZoomLevelToMag(zoomLevels-1)+1 - cur : cur;
-        double fkt   = double ( tryVal ) /double(convertQuickZoomLevelToMag(zoomLevels-1));
-		double v     = ( pow ( logbase, fkt )-1 ) / ( logbase-1 );
-		double scale = invers ? ( max - v * diff ) : ( min + v * diff );
-		if ( scale == cmag ) // not very likely
-			break;
- //printf("iteration %d invers:%d soll %f(cur:%d) - ist %f\n", i, invers, scale, cur, cmag);
-		int dd = invers ? -delta : delta;
-		cur += ( scale < cmag ) ? dd : -dd;
-        delta/=2;
-	}
-
+	scaleVal = cs;
+	const int cur = scale2mag(cs);
+  
+	//fprintf(stderr, "ScrollScale: cs:%d cur:%f\n", cs, cur);
 	scale  = new QSlider (o);
-        // Added by Tim. For some reason focus was on. 
-        // It messes up tabbing, and really should have a shortcut instead.
-        scale->setFocusPolicy(Qt::NoFocus);  
-        scale->setMinimum(0);
-        scale->setMaximum(convertQuickZoomLevelToMag(zoomLevels-1));
+	// Added by Tim. For some reason focus was on. 
+	// It messes up tabbing, and really should have a shortcut instead.
+	scale->setFocusPolicy(Qt::NoFocus);  
+	scale->setMinimum(0);
+	scale->setMaximum(convertQuickZoomLevelToMag(zoomLevels-1));
 	scale->setPageStep(1);
 	scale->setValue(cur);	
 
 	scroll = new QScrollBar ( o );
-        //scroll->setFocusPolicy(Qt::NoFocus);  // Tim.
-	setScale ( cur );
+	//scroll->setFocusPolicy(Qt::NoFocus);  // Tim.
+
+	emit scaleChanged ( scaleVal );
+	if ( !noScale )
+		setRange ( minVal, maxVal );
 
 	if ( o == Qt::Horizontal )
 	{
-                box = new QBoxLayout ( QBoxLayout::LeftToRight);
+		box = new QBoxLayout ( QBoxLayout::LeftToRight);
 		scale->setMaximumWidth ( 70 );
 		scroll->setMinimumWidth ( 50 );
 	}
 	else
 	{
-                box = new QBoxLayout ( QBoxLayout::TopToBottom);
+		box = new QBoxLayout ( QBoxLayout::TopToBottom);
 		scroll->setMinimumHeight ( 50 );
 		scale->setMaximumHeight ( 70 );
 	}
-        box->setContentsMargins(0, 0, 0, 0);
-        box->setSpacing(0);  
+	box->setContentsMargins(0, 0, 0, 0);
+	box->setSpacing(0);  
 	box->addWidget ( scroll, 10 );
 	box->addWidget ( scale, 5 );
 	setLayout(box);
@@ -336,9 +264,9 @@ void ScrollScale::setPageButtons ( bool flag )
 			QString s;
 			s.setNum ( _page+1 );
 			pageNo->setText ( s );
-                        down->setToolTip(tr ( "next page" ) );
-                        up->setToolTip(tr ( "previous page" ) );
-                        pageNo->setToolTip(tr ( "current page number" ) );
+			down->setToolTip(tr ( "next page" ) );
+			up->setToolTip(tr ( "previous page" ) );
+			pageNo->setToolTip(tr ( "current page number" ) );
 			box->insertWidget ( 1, up );
 			box->insertWidget ( 2, down );
 			box->insertSpacing ( 3, 5 );
@@ -380,7 +308,7 @@ void ScrollScale::showMag ( bool flag )
 //---------------------------------------------------------
 //   offset
 //---------------------------------------------------------
-int ScrollScale::offset()
+int ScrollScale::offset() const
 {
 	return pos2offset ( scroll->value() );
 }
@@ -388,12 +316,120 @@ int ScrollScale::offset()
 //---------------------------------------------------------
 //   pos2offset
 //---------------------------------------------------------
-int ScrollScale::pos2offset ( int pos )
+int ScrollScale::pos2offset ( int pos ) const
 {
 	if ( scaleVal < 1 )
 		return pos * ( -scaleVal ) + scaleVal/2;
 	else
 		return pos / scaleVal;
+}
+
+//---------------------------------------------------------
+//   offset2pos
+//---------------------------------------------------------
+
+int ScrollScale::offset2pos ( int off ) const
+{
+	if ( scaleVal < 1 )
+		return ( off-scaleVal/2 ) / ( -scaleVal );
+	else
+		return off * scaleVal;
+}
+
+//---------------------------------------------------------
+//   mag2scale
+//---------------------------------------------------------
+
+int ScrollScale::mag2scale(int mag) const
+{
+	int mag_max = convertQuickZoomLevelToMag(zoomLevels-1);
+	if(mag < 0)
+	  mag = 0;
+	else if(mag > mag_max)
+	  mag = mag_max;
+	if ( invers )
+		mag = mag_max - mag;
+	double min, max;
+	if ( scaleMin < 0 )
+		min = 1.0/ ( -scaleMin );
+	else
+		min = double ( scaleMin );
+
+	if ( scaleMax < 0 )
+		max = 1.0/ ( -scaleMax );
+	else
+		max = double ( scaleMax );
+
+	double diff = max-min;
+	double fkt  = double ( mag ) /double(mag_max);
+	double v = ( pow ( logbase, fkt )-1 ) / ( logbase-1 );
+	double scale;
+	if ( invers )
+		scale = max - v * diff;
+	else
+		scale = min + v * diff;
+
+#if 0
+	if ( scaleMax > scaleMin )
+	{
+		if ( scale < scaleMin )
+			scale = scaleMin;
+		else if ( scale > scaleMax )
+			scale = scaleMax;
+	}
+	else
+	{
+		if ( scale < scaleMax )
+			scale = scaleMax;
+		else if ( scale > scaleMin )
+			scale = scaleMin;
+	}
+#endif
+
+	int scale_val;
+	if ( scale < 1.0 )
+		// Floor, rather than simply casting 1.0/scale as a negative int,
+		//  was required here due to the unique nature of our negative numbers,
+		//  so that the reciprocal scale2mag() matches this mag2scale().
+		// Tested OK so far, loading and saving, with newly opened windows as well. Tim.
+		scale_val = floor ( 1.0 / ( -scale ) );
+	else
+		scale_val = int ( scale );
+	if ( scale_val == -1 )   // nur so
+		scale_val = 1;
+	return scale_val;
+}
+
+//---------------------------------------------------------
+//   scale2mag
+//---------------------------------------------------------
+
+int ScrollScale::scale2mag(int scale) const
+{
+	double min, max;
+	if ( scaleMin < 0 )
+		min = 1.0/ ( -scaleMin );
+	else
+		min = double ( scaleMin );
+
+	if ( scaleMax < 0 )
+		max = 1.0/ ( -scaleMax );
+	else
+		max = double ( scaleMax );
+
+	double cmag = ( scale < 0 ) ? ( 1.0/ ( -scale ) ) : double ( scale );
+	double diff = max-min;
+
+	const int mag_max = convertQuickZoomLevelToMag(zoomLevels-1);
+
+	// Do a log in the given logbase (see Change of Base Formula).
+	// Choice of 'log()' base (10, 2 natural etc.) is not supposed to matter.
+	const double fkt = log10( (cmag - min) * (logbase - 1) / diff + 1 ) / log10(logbase);
+// 	const double fkt = log( (cmag - min) * (logbase - 1) / diff + 1 ) / log(logbase);
+	// Round up so that the reciprocal function scale2mag() matches.
+	const double cur = ceil( fkt * mag_max );
+
+	return cur;
 }
 
 //---------------------------------------------------------
@@ -522,18 +558,17 @@ int ScrollScale::mag() const
  */
 int ScrollScale::getQuickZoomLevel(int mag)
 {
-      if (mag == 0)
-            return 0;
+	if (mag == 0)
+		return 0;
 
-      for (int i=0; i<zoomLevels-1; i++) {
-            int val1 = ScrollScale::convertQuickZoomLevelToMag(i);
-            int val2 = ScrollScale::convertQuickZoomLevelToMag(i + 1);
-            if (mag > val1 && mag <= val2)
-                  return i + 1;
-            }
+	for (int i=0; i<zoomLevels-1; i++) {
+		int val1 = ScrollScale::convertQuickZoomLevelToMag(i);
+		int val2 = ScrollScale::convertQuickZoomLevelToMag(i + 1);
+		if (mag > val1 && mag <= val2)
+			return i + 1;
+	}
 
-     return -1; 
-
+	return -1; 
 }
 
 /**
@@ -542,13 +577,13 @@ int ScrollScale::getQuickZoomLevel(int mag)
  */
 int ScrollScale::convertQuickZoomLevelToMag(int zoomlevel)
 {
-      int vals[] = {
-            0,   1,   15,  30,  46,  62,  80,  99,  119, 140,
-            163, 187, 214, 242, 274, 308, 346, 388, 436, 491,
-            555, 631, 726, 849, 1024, 1200, 1300, 1400, 1500, 1600, 1700, 1800,    
-            1900, 2100, 2200, 2300, 2400, 2500 };  
+	int vals[] = {
+		0,   1,   15,  30,  46,  62,  80,  99,  119, 140,
+		163, 187, 214, 242, 274, 308, 346, 388, 436, 491,
+		555, 631, 726, 849, 1024, 1200, 1300, 1400, 1500, 1600, 1700, 1800,    
+		1900, 2100, 2200, 2300, 2400, 2500 };  
 
-      return vals[zoomlevel];
+	return vals[zoomlevel];
 }
 
 } // namespace MusEGui
