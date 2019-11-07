@@ -659,6 +659,7 @@ void Piano::wheelEvent(QWheelEvent* ev)
     if (ev->modifiers() & Qt::ControlModifier) {
         QPoint delta = ev->angleDelta();
         emit wheelStep(delta.y() > 0 ? true : false);
+        return;
     }
 
     emit redirectWheelEvent(ev);
