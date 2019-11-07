@@ -98,8 +98,9 @@ class MEvent {
       void setLoopNum(int n)   { _loopNum = n;    }
 
       const EvData& eventData() const { return edata; }
-      unsigned char* data() const     { return edata.data; }
-      int len() const                 { return edata.dataLen; }
+      unsigned char* data()    { return edata.data(); }
+      const unsigned char* constData() const { return edata.constData(); }
+      int len() const                 { return edata.dataLen(); }
       void setData(const EvData& e)   { edata = e; }
       void setData(const unsigned char* p, int len) { edata.setData(p, len); }
 

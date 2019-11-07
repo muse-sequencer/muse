@@ -30,6 +30,8 @@
 #include "marker/marker.h"
 #include "route.h"
 #include "sig.h"
+#include "midiport.h"
+#include "minstrument.h"
 
 class QString;
 
@@ -68,6 +70,7 @@ struct UndoOp {
             //// For wholesale changes to the list. Preferred if multiple additions or deletions are required.
             //ModifyMarkerList,
             ModifySongLen, // a = new len, b = old len
+            SetInstrument,
             DoNothing,
             
             // These operation cannot be undone. They are 'one time' operations, removed after execution.
@@ -127,6 +130,11 @@ struct UndoOp {
                   double _audioCtrlVal;
                   double _audioNewCtrlVal;
                 };
+            struct {
+                  MidiPort* _midiPort;
+                  MidiInstrument* _oldMidiInstrument;
+                  MidiInstrument* _newMidiInstrument;
+                };
             };
 
       QString* _oldName;
@@ -182,6 +190,7 @@ struct UndoOp {
       UndoOp(UndoType type, CtrlListList* ctrl_ll, CtrlList* eraseCtrlList, CtrlList* addCtrlList, bool noUndo = false);
       UndoOp(UndoType type, int tick, const MusECore::TimeSignature old_sig, const MusECore::TimeSignature new_sig, bool noUndo = false);
       UndoOp(UndoType type, const Route& route_from, const Route& route_to, bool noUndo = false);
+      UndoOp(UndoType type, MidiPort* mp, MidiInstrument* instr, bool noUndo = false);
       UndoOp(UndoType type);
 };
 

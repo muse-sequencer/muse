@@ -880,7 +880,7 @@ void Audio::msgAudioWait()
 //    into idle mode
 //---------------------------------------------------------
 
-void Audio::msgSetMidiDevice(MidiPort* port, MidiDevice* device)
+void Audio::msgSetMidiDevice(MidiPort* port, MidiDevice* device, MidiInstrument* instrument)
 {
   MusECore::AudioMsg msg;
   msg.id = MusECore::SEQM_IDLE;
@@ -888,7 +888,7 @@ void Audio::msgSetMidiDevice(MidiPort* port, MidiDevice* device)
   //MusEGlobal::midiSeq->sendMsg(&msg);
   sendMsg(&msg); // Idle both audio and midi.
 
-  port->setMidiDevice(device);
+  port->setMidiDevice(device, instrument);
 
   msg.id = MusECore::SEQM_IDLE;
   msg.a  = false;

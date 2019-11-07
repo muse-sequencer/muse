@@ -1225,7 +1225,7 @@ bool Song::event(QEvent* _e)
                   this->setLen(e->getP1());
                   break;
             case QPybridgeEvent::SONG_POSCHANGE:
-                  this->setPos(e->getP1(), e->getP2());
+                  this->setPos(POSTYPE(e->getP1()), e->getP2());
                   break;
             case QPybridgeEvent::SONG_SETPLAY:
                   this->setPlay(true);

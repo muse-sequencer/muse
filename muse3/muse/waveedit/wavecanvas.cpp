@@ -369,8 +369,8 @@ void WaveCanvas::keyPress(QKeyEvent* event)
             if (found) {
                   MusECore::Pos p1(tick_min, true);
                   MusECore::Pos p2(tick_max, true);
-                  MusEGlobal::song->setPos(1, p1);
-                  MusEGlobal::song->setPos(2, p2);
+                  MusEGlobal::song->setPos(MusECore::Song::LPOS, p1);
+                  MusEGlobal::song->setPos(MusECore::Song::RPOS, p2);
                   }
             }
       // Select items by key (PianoRoll & DrumEditor)
@@ -1536,14 +1536,14 @@ void WaveCanvas::waveCmd(int cmd)
                   if(spos < 0)
                     spos = 0;
                   MusECore::Pos p(spos,true);
-                  MusEGlobal::song->setPos(0, p, true, true, true);
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
                   }
                   break;
             case CMD_RIGHT:
                   {
                   int spos = MusEGlobal::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
                   MusECore::Pos p(spos,true);
-                  MusEGlobal::song->setPos(0, p, true, true, true); 
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
                   }
                   break;
             case CMD_LEFT_NOSNAP:
@@ -1552,13 +1552,13 @@ void WaveCanvas::waveCmd(int cmd)
                   if (spos < 0)
                         spos = 0;
                   MusECore::Pos p(spos,true);
-                  MusEGlobal::song->setPos(0, p, true, true, true); //CDW
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true); //CDW
                   }
                   break;
             case CMD_RIGHT_NOSNAP:
                   {
                   MusECore::Pos p(pos[0] + editor->rasterStep(pos[0]), true);
-                  MusEGlobal::song->setPos(0, p, true, true, true); //CDW
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true); //CDW
                   }
                   break;
             case CMD_INSERT:
@@ -1586,7 +1586,7 @@ void WaveCanvas::waveCmd(int cmd)
                   MusEGlobal::song->applyOperationGroup(operations);
                   
                   MusECore::Pos p(editor->rasterVal(pos[0] + editor->rasterStep(pos[0])), true);
-                  MusEGlobal::song->setPos(0, p, true, false, true);
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, false, true);
                   }
                   return;
             case CMD_BACKSPACE:
@@ -1612,7 +1612,7 @@ void WaveCanvas::waveCmd(int cmd)
                         }
                   MusEGlobal::song->applyOperationGroup(operations);
                   MusECore::Pos p(editor->rasterVal(pos[0] - editor->rasterStep(pos[0])), true);
-                  MusEGlobal::song->setPos(0, p, true, false, true);
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, false, true);
                   }
                   break;
             }

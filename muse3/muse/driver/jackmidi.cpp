@@ -70,7 +70,6 @@ MidiJackDevice::MidiJackDevice(const QString& n)
 {
   _in_client_jackport  = NULL;
   _out_client_jackport = NULL;
-  init();
 }
 
 MidiJackDevice::~MidiJackDevice()
@@ -668,8 +667,12 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                                 }
                                 return;
                           //case ME_SONGSEL:    
-                          //case ME_TUNE_REQ:   
-                          //case ME_SENSE:
+                          //case ME_TUNE_REQ:
+
+                          // We don't use sensing. But suppress warning about this one since it is repetitive.
+                          case ME_SENSE:
+                                return;
+
                           case ME_CLOCK:      
                           {
                                 midiClockInput(abs_ft);
@@ -825,7 +828,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e, void* evBuffer)
                   printf("MidiJackDevice::queueEvent sysex\n");
                   #endif  
                   
-                  const unsigned char* data = e.data();
+                  const unsigned char* data = e.constData();
                   int len = e.len();
                   unsigned char* p = jack_midi_event_reserve(evBuffer, ft, len+2);
                   if (p == 0) {

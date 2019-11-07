@@ -32,6 +32,7 @@
 #cmakedefine OSC_SUPPORT
 #cmakedefine DSSI_SUPPORT
 #cmakedefine LV2_SUPPORT
+#cmakedefine LV2_MAKE_PATH_SUPPORT
 #cmakedefine PYTHON_SUPPORT
 #cmakedefine HAVE_INSTPATCH
 #cmakedefine HAVE_GTK2

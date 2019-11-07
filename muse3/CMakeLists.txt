@@ -161,6 +161,7 @@ option ( ENABLE_VST_NATIVE   "Enable Native VST support (see ENABLE_VST_VESTIGE 
 option ( ENABLE_VST_VESTIGE  "Set VST header type is Vestige"                                         ON)
 option ( ENABLE_LV2          "Enable LV2 plugins and synths support" ON)
 option ( ENABLE_LV2_GTK2     "Enable LV2 user interface GTK2 support" ON)
+option ( ENABLE_LV2_MAKE_PATH "Enable LV2 makePath support. Stores plugin config files separate from song. NOT RECOMMENDED." OFF)
 option ( ENABLE_LV2_DEBUG    "Enable LV2 debugging messages" OFF)
 option ( ENABLE_FLUID        "Enable fluidsynth softsynth plugins."                                ON)
 option ( ENABLE_INSTPATCH    "Enable Instrument Patch Library support (enhances soundfont support)." ON)
@@ -495,6 +496,12 @@ if (ENABLE_LV2)
         endif(ENABLE_LV2_GTK2)
         
         include_directories(${PROJECT_SOURCE_DIR}/muse/lv2Support)
+        
+        ## Do we want to support LV2 makePath?
+        if(ENABLE_LV2_MAKE_PATH)
+          set(LV2_MAKE_PATH_SUPPORT ON)
+        endif(ENABLE_LV2_MAKE_PATH)
+
     endif (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)
 
 else (ENABLE_LV2)
@@ -802,6 +809,7 @@ summary_add("DSSI support" DSSI_SUPPORT)
 summary_add("LV2 support" LV2_SUPPORT)
 if(LV2_SUPPORT)
   summary_add("LV2 Gtk2 UI support" HAVE_GTK2)
+  summary_add("LV2 makePath support" LV2_MAKE_PATH_SUPPORT)
 endif(LV2_SUPPORT)
 #summary_add("VST support" VST_SUPPORT)
 summary_add("Native VST support" VST_NATIVE_SUPPORT)

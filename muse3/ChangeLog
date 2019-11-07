@@ -1,3 +1,67 @@
+06.11.2019
+      - Adjusted raster drawing in view.cpp so it would draw lines that didn't (rj)
+        draw correctly on my rig. We'll see if anyone objects
+      * New - Instrument can now be changed on a Synth Track: (Tim)
+        For example you can now set 'GM2' or 'My cool instrument' on ANY synth track.
+        Not as useless/dangerous as it sounds. Tested OK saving/loading/changing instruments.
+05.11.2019
+      - Oops. Restore auto-create user instruments folder, likely swept away by 03.09 (Tim)
+04.11.2019
+      - Implemented issue 644: Rewind on stop (rj)
+        Added setting directly on Settings-menu as I
+        think this might be a setting that is often changed
+        might even consider making a toolbar button.
+      - Some cleanups, especially the addition of using of an enum for CPOS,LPOS,RPOS
+03.11.2019
+      - Fix issue 667: Hang on automatic restart. Reset jackStarted upon restart. (Tim)
+02.11.2019
+      - Mixers and strips: Mods and reverts to 20.10. (Tim)
+        Removed new track UUID. Found a way to work with track index and a local LUID instead.
+      - New: Persistent synth tracks. One consequence of the above fix is that synth tracks
+         are preserved if the synth is not found. All data is preserved if project is saved.
+      - Class EvData rewrite: Safer. Members protected. New methods such as resize().
+30.10.2019
+      - Fix some memory leaks reported by heaptrack. Still others are puzzling... (Tim)
+29.10.2019
+      - Latency correction: Fix feedback/noise using channel routing (vs. omni routing). (Tim)
+      - Fix issue 666: Crash if 'Prefer knobs not sliders' clicked on disabled instrument. (Tim)
+        Changed delete to deleteLater() in ComponentRack::clearDelete()
+        Disabled label was trying to call clearDelete() which deletes itself.
+28.10.2019
+      * LV2 Major rewrite of state/worker support and more, fixes several synths: (Tim)
+      - Worker message data now uses new LockFreeDataRingBuffer for bidi comm.
+        Fixes major problems with synth workers.
+      - Fixed problems with how our worker thread is awoken. Fixes several plugins.
+      - Fixed problems with how our EvBuf reads port data. Fixes several plugins.
+      - Fixed state file storing/reading and locations. State files are stored
+         in a unique configuration folder for each plugin, even if the song file
+         is not in its own folder.
+      - All file references IN or UNDER the song project folder are deemed RELATIVE,
+         to the plugin's configuration folder. All file references OUTSIDE the song
+         file folder are deemed ABSOLUTE.
+      - New cmake option ENABLE_LV2_MAKE_PATH, it is disabled by default !!!
+        If enabled (NOT RECOMMENDED), the above mentioned configuration folders are used.
+        If disabled, NO external files or folders are created parallel to the song file.
+        This is what we want with MusE, all data stored inside the song file if possible.
+      - Tested OK saving/reloading several synths that were broken before.
+20.10.2019
+      * Mixer and strips - Save entire state. Fix label text: (Tim)
+      - Entire state of mixer is now saved, including user-adjusted strip widths.
+        The state is preserved even if no mixers are opened (created) during
+         a session. This required re-working the mixer and strip configuration
+         (song and config xml files) to be more persistent.
+      - Mixer widths restoration: Fixed (hopefully) long-time problem with mixers
+         not opening at their stored song size if the mixers are already open.
+      - Strip track labels: Replaced multi-line word-wrap with elided (...) text.
+        Reduced variable-font variation somewhat to avoid too-small fonts.
+        Added tooltips on the labels to help see the full text.
+13.10.2019
+      - Improvements to 11.10. Fix accuracy problems (re)storing view state. (Tim)
+      - Jack midi: Suppress repetitive warnings of unused Midi Sense (ME_SENSE 0xfe).
+11.10.2019
+      * Midi Editor now keeps state (zoom, pos, controllers) after closing: (Tim)
+        Works on a per-part basis: Whatever you set on a part it remembers.
+        Pianoroll Editor and Drum Editor done.
 09.10.2019
       - Pianoroll Editor: Increased default vertical zoom level from 1 to 2. (Tim)
         Was challenging. The global variable 'yscale' in pianoroll.cpp had no effect
@@ -131,6 +195,7 @@
          and other problems as displayed by KDevelop Problems Reporter.
       - Fixed Midi Input Transformator and Midi Transformator problems.
         Problems creating/deleting presets. Tested all functions OK.
+>>>>>>> master
 25.03.2019
       - Fix issue 645 "Naming a track with acentuated letter". (Tim)
         Oops, regression from 07.01.2019: utf8 chars were corrupted.

@@ -140,12 +140,7 @@ void AudioComponentRack::newComponent( ComponentDescriptor* desc, const Componen
       
       if(desc->_label.isEmpty())
       {
-        // the thought was to acquire the correct Aux name for each Aux
-        // now they are only called Aux1, Aux2, which isn't too usable.
-        desc->_label = ((MusECore::AudioAux*)(MusEGlobal::song->auxs()->at(desc->_index)))->auxName();
-        if (desc->_label.length() > 8) { // shorten name
-            desc->_label = desc->_label.mid(0,8) + ".";
-        }
+        desc->_label = ((MusECore::AudioAux*)(MusEGlobal::song->auxs()->at(desc->_index)))->name();
       }
       if(desc->_toolTipText.isEmpty())
         desc->_toolTipText = tr("Aux send level (dB)");
@@ -360,7 +355,7 @@ void AudioComponentRack::scanControllerComponents()
     ComponentWidget& cw = *icw;
     DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::scanControllerComponents: deleting controller component index:%d\n", cw._index);
     if(cw._widget)
-      delete cw._widget;
+      cw._widget->deleteLater();
     _components.erase(icw);
   }
 }
@@ -391,7 +386,7 @@ void AudioComponentRack::scanAuxComponents()
     ComponentWidget& cw = *icw;
     DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::scanAuxComponents: deleting aux component index:%d\n", cw._index);
     if(cw._widget)
-      delete cw._widget;
+      cw._widget->deleteLater();
     _components.erase(icw);
   }
   

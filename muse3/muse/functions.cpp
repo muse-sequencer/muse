@@ -3049,4 +3049,101 @@ void paste_items_at(
     MusEGlobal::song->update(SC_SELECTION | SC_PART_SELECTION);
 }
 
+//---------------------------------------------------------
+//   getSelectedParts
+//---------------------------------------------------------
+PartList* getSelectedParts()
+{
+  PartList* parts1;
+  PartList* parts2;
+
+  parts1 = getSelectedMidiParts();
+  parts2 = getSelectedWaveParts();
+
+  for (ciPart p = parts2->begin(); p != parts2->end(); ++p) {
+    parts1->add(p->second);
+  }
+
+  return parts1;
+}
+
+PartList* getSelectedMidiParts()
+      {
+      PartList* parts = new PartList();
+
+      /*
+            If a part is selected, edit that.
+            If a track is selected, edit the first
+             part of the track, the rest are
+             'ghost parts'
+            When multiple parts are selected, then edit the first,
+              the rest are 'ghost parts'
+      */
+
+
+       // collect marked parts
+      for (ciMidiTrack t = MusEGlobal::song->midis()->begin(); t != MusEGlobal::song->midis()->end(); ++t) {
+            PartList* pl = (*t)->parts();
+            for (iPart p = pl->begin(); p != pl->end(); ++p) {
+                  if (p->second->selected()) {
+                        parts->add(p->second);
+                        }
+                  }
+            }
+      // if no part is selected, then search for selected track
+      // and collect all parts of this track
+
+      if (parts->empty()) {
+            for (ciMidiTrack t = MusEGlobal::song->midis()->begin(); t != MusEGlobal::song->midis()->end(); ++t) {
+                  if ((*t)->selected()) {
+                        PartList* pl = (*t)->parts();
+                        for (iPart p = pl->begin(); p != pl->end(); ++p)
+                              parts->add(p->second);
+                        break;
+                        }
+                  }
+            }
+
+      return parts;
+      }
+
+PartList* getSelectedWaveParts()
+      {
+      PartList* parts = new PartList();
+
+      /*
+            If a part is selected, edit that.
+            If a track is selected, edit the first
+             part of the track, the rest are
+             'ghost parts'
+            When multiple parts are selected, then edit the first,
+              the rest are 'ghost parts'
+      */
+
+      // collect selected parts
+      for (ciWaveTrack t = MusEGlobal::song->waves()->begin(); t != MusEGlobal::song->waves()->end(); ++t) {
+            PartList* pl = (*t)->parts();
+            for (ciPart p = pl->begin(); p != pl->end(); ++p) {
+                  if (p->second->selected()) {
+                        parts->add(p->second);
+                        }
+                  }
+            }
+      // if no parts are selected, then search the selected track
+      // and collect all parts in this track
+
+      if (parts->empty()) {
+            for (ciWaveTrack t = MusEGlobal::song->waves()->begin(); t != MusEGlobal::song->waves()->end(); ++t) {
+                  if ((*t)->selected()) {
+                        PartList* pl = (*t)->parts();
+                        for (ciPart p = pl->begin(); p != pl->end(); ++p)
+                              parts->add(p->second);
+                        break;
+                        }
+                  }
+            }
+      return parts;
+}
+
+
 } // namespace MusECore

@@ -45,11 +45,10 @@
 #include "mitplugin.h"
 #include "wave.h"
 #include "midictrl.h"
-#include "amixer.h"
 #include "audiodev.h"
 #include "conf.h"
-#include "driver/jackmidi.h"
 #include "keyevent.h"
+#include "gconfig.h"
 
 namespace MusEGlobal {
 MusECore::CloneList cloneList;
@@ -268,6 +267,9 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
 
                         if (tag == "name")
                               npart->setName(xml.parse1());
+                        else if (tag == "viewState") {
+                              npart->viewState().read(xml);
+                              }
                         else if (tag == "poslen") {
                               ((PosLen*)npart)->read(xml, "poslen");
                               }
@@ -429,6 +431,9 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
         xml.tag(level++, "part");
 
       xml.strTag(level, "name", _name);
+
+      // This won't bother writing if the state is invalid.
+      viewState().write(level, xml);
 
       PosLen::write(level, xml, "poslen");
       xml.intTag(level, "selected", _selected);
@@ -762,6 +767,102 @@ void Song::write(int level, Xml& xml) const
       MusEGlobal::cloneList = copyCloneList;
       }
 
+//--------------------------------
+//   resolveInstrumentReferences
+//--------------------------------
+
+static void resolveInstrumentReferences()
+{
+  for(int i = 0; i < MIDI_PORTS; ++i)
+  {
+    MidiPort* mp = &MusEGlobal::midiPorts[i];
+    const QString& name = mp->tmpInstrRef();
+    const int idx = mp->tmpTrackRef();
+    if(idx >= 0)
+    {
+      Track* track = MusEGlobal::song->tracks()->index(idx);
+      if(track && track->isSynthTrack())
+      {
+        SynthI* si = static_cast<SynthI*>(track);
+        mp->changeInstrument(si);
+      }
+    }
+    else if(!name.isEmpty())
+    {
+      mp->changeInstrument(registerMidiInstrument(name));
+    }
+
+    // Done with temporary file references. Clear them.
+    mp->clearTmpFileRefs();
+  }
+}
+
+//--------------------------------
+//   resolveStripReferences
+//--------------------------------
+
+static void resolveStripReferences(MusEGlobal::MixerConfig* mconfig)
+{
+  MusECore::TrackList* tl = MusEGlobal::song->tracks();
+  MusECore::Track* track;
+  MusEGlobal::StripConfigList_t& scl = mconfig->stripConfigList;
+  if(!scl.empty())
+  {
+    for(MusEGlobal::iStripConfigList isc = scl.begin(); isc != scl.end(); )
+    {
+      MusEGlobal::StripConfig& sc = *isc;
+
+      // Is it a dud? Delete it.
+      if(sc.isNull() && sc._tmpFileIdx < 0)
+      {
+        isc = scl.erase(isc);
+        continue;
+      }
+
+      // Does it have a temporary track index?
+      if(sc._tmpFileIdx >= 0)
+      {
+        // Find an existing track at that index.
+        track = tl->index(sc._tmpFileIdx);
+        // No corresponding track found? Delete the strip config.
+        if(!track)
+        {
+          isc = scl.erase(isc);
+          continue;
+        }
+        // Link the strip config to the track, via serial number.
+        sc._serial = track->serial();
+        // Done with temporary index. Reset it.
+        sc._tmpFileIdx = -1;
+      }
+
+      // As for other configs with a serial and no _tmpFileIdx,
+      //  leave them alone. They may already be valid. If not,
+      //  they may need to persist for the undo system to restore from.
+      // Ultimately when saving, the strip config write() function removes duds anyway.
+
+      ++isc;
+    }
+  }
+}
+
+//--------------------------------
+//   resolveSongfileReferences
+//--------------------------------
+
+void Song::resolveSongfileReferences()
+{
+  //-----------------------------------------------
+  // Resolve instrument references:
+  //-----------------------------------------------
+  resolveInstrumentReferences();
+
+  //-----------------------------------------------
+  // Resolve mixer strip configuration references:
+  //-----------------------------------------------
+  resolveStripReferences(&MusEGlobal::config.mixer1);
+  resolveStripReferences(&MusEGlobal::config.mixer2);
+}
 
 } // namespace MusECore
 
@@ -924,123 +1025,6 @@ void MusE::readToplevels(MusECore::Xml& xml)
       }
 
 //---------------------------------------------------------
-//   readCtrl
-//---------------------------------------------------------
-
-void MusE::readCtrl(MusECore::Xml&, int /*prt*/, int /*channel*/)
-      {
-#if 0 // DELETETHIS 30. delete the whole function?
-      ChannelState* iState = MusEGlobal::midiPorts[prt].iState(channel);
-
-      int idx = 0;
-      int val = -1;
-
-      for (;;) {
-            MusECore::Xml::Token token = xml.parse();
-            switch (token) {
-                  case MusECore::Xml::Error:
-                  case MusECore::Xml::End:
-                        return;
-                  case MusECore::Xml::TagStart:
-                        xml.unknown("readCtrl");
-                        break;
-                  case MusECore::Xml::Attribut:
-                        if (xml.s1() == "idx")
-                              idx = xml.s2().toInt();
-                        else if (xml.s1() == "val")
-                              val = xml.s2().toInt();
-                        break;
-                  case MusECore::Xml::TagEnd:
-                        if (xml.s1() == "ctrl") {
-                              iState->controller[idx] = val;
-                              return;
-                              }
-                  default:
-                        break;
-                  }
-            }
-#endif
-      }
-
-//---------------------------------------------------------
-//   readMidichannel
-//---------------------------------------------------------
-
-void MusE::readMidichannel(MusECore::Xml& xml, int prt)
-      {
-      int channel = 0;
-
-      for (;;) {
-            MusECore::Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case MusECore::Xml::Error:
-                  case MusECore::Xml::End:
-                        return;
-                  case MusECore::Xml::TagStart:
-                        if (tag == "pitch") {
-//TODO                              port->setCtrl(channel, 0, CTRL_PITCH, xml.parseInt()); DELETETHIS? and below
-                              }
-                        else if (tag == "program") {
-//TODO                              port->setCtrl(channel, 0, CTRL_PROGRAM, xml.parseInt());
-                              }
-                        else if (tag == "ctrl")
-                              readCtrl(xml, prt, channel);
-                        else {
-                              xml.unknown("readMidichannel");
-                              }
-                        break;
-                  case MusECore::Xml::Attribut:
-                        if (tag == "ch") {
-                              channel = xml.s2().toInt();
-                              }
-                        break;
-                  case MusECore::Xml::TagEnd:
-                        if (tag == "midichannel")
-                              return;
-                  default:
-                        break;
-                  }
-            }
-      }
-
-//---------------------------------------------------------
-//   readMidiport
-//---------------------------------------------------------
-
-void MusE::readMidiport(MusECore::Xml& xml)
-      {
-      int port = 0;
-      for (;;) {
-            MusECore::Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case MusECore::Xml::Error:
-                  case MusECore::Xml::End:
-                        return;
-                  case MusECore::Xml::TagStart:
-                        if (tag == "midichannel")
-                              readMidichannel(xml, port);
-                        else {
-                              xml.unknown("readMidiport");
-                              }
-                        break;
-                  case MusECore::Xml::Attribut:
-                        if (tag == "port") {
-                              port = xml.s2().toInt();
-                              }
-                        break;
-                  case MusECore::Xml::TagEnd:
-                        if (tag == "midiport") {
-                              return;
-                              }
-                  default:
-                        break;
-                  }
-            }
-      }
-
-//---------------------------------------------------------
 //   read
 //    read song
 //---------------------------------------------------------
@@ -1094,6 +1078,10 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                         else if (tag == "song")
                         {
                               MusEGlobal::song->read(xml, isTemplate);
+
+                              // Now that the song file has been fully loaded, resolve any references in the file.
+                              MusEGlobal::song->resolveSongfileReferences();
+
                               MusEGlobal::audio->msgUpdateSoloStates();
                               // Inform the rest of the app that the song (may) have changed, using these flags.
                               // After this function is called, the caller can do a general Song::update() MINUS these flags,
@@ -1101,15 +1089,6 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                               // Some existing windows need this, like arranger, some don't which are dynamically created after this.
                               MusEGlobal::song->update(SC_TRACK_INSERTED);
                         }
-                        else if (tag == "midiport")
-                              readMidiport(xml);
-                        else if (tag == "Controller") {  // obsolete
-                              MusECore::MidiController* ctrl = new MusECore::MidiController;
-                              ctrl->read(xml);
-                              delete ctrl;
-                              }
-                        else if (tag == "mplugin")
-                              readStatusMidiInputTransformPlugin(xml);
                         else if (tag == "toplevels")
                               readToplevels(xml);
                         else if (tag == "no_toplevels")

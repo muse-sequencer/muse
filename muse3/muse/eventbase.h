@@ -103,7 +103,7 @@ class EventBase : public PosLen {
       virtual void setC(int)                        { }
       virtual void setVeloOff(int)                  { }
 
-      virtual const unsigned char* data() const     { return 0; }
+      virtual const unsigned char* constData() const { return 0; }
       virtual int dataLen() const                   { return 0; }
       virtual void setData(const unsigned char*, int) { }
       virtual const EvData eventData() const        { return EvData(); }

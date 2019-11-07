@@ -51,7 +51,7 @@ void StepRec::timeout()
 	if (chord_timer_set_to_tick != MusEGlobal::song->cpos())
 	{
 		Pos p(chord_timer_set_to_tick, true);
-		MusEGlobal::song->setPos(0, p, true, false, true);
+    MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, false, true);
 	}
 }
 
@@ -193,7 +193,7 @@ void StepRec::record(const Part* part, int pitch, int len, int step, int velo, b
 
 			// simply proceed, inserting a rest
 			Pos p(MusEGlobal::song->cpos() + step, true);
-			MusEGlobal::song->setPos(0, p, true, false, true);
+      MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, false, true);
 			
 			return;
 		}

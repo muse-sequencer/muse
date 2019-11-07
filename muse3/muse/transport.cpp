@@ -729,7 +729,9 @@ void Transport::setPos(int idx, const MusECore::Pos pos, bool)
 
 void Transport::cposChanged(int tick)
       {
-      MusEGlobal::song->setPos(0, MusECore::Pos(tick, true));
+// REMOVE Tim. clip. Changed.
+//       MusEGlobal::song->setPos(MusECore::Song::CPOS, tick);
+      MusEGlobal::song->setPos(MusECore::Song::CPOS, MusECore::Pos(tick, true));
       }
 
 //---------------------------------------------------------
@@ -739,8 +741,8 @@ void Transport::cposChanged(int tick)
 void Transport::cposChanged(const MusECore::Pos pos)
       {
 // REMOVE Tim. clip. Changed.
-//       MusEGlobal::song->setPos(0, pos.tick());
-      MusEGlobal::song->setPos(0, pos);
+//       MusEGlobal::song->setPos(MusECore::Song::CPOS, pos.tick());
+      MusEGlobal::song->setPos(MusECore::Song::CPOS, pos);
       }
 
 //---------------------------------------------------------
@@ -750,7 +752,8 @@ void Transport::cposChanged(const MusECore::Pos pos)
 void Transport::lposChanged(const MusECore::Pos pos)
       {
 // REMOVE Tim. clip. Changed.
-      MusEGlobal::song->setPos(1, pos);
+//       MusEGlobal::song->setPos(MusECore::Song::LPOS, pos.tick());
+      MusEGlobal::song->setPos(MusECore::Song::LPOS, pos);
       }
 
 //---------------------------------------------------------
@@ -760,7 +763,8 @@ void Transport::lposChanged(const MusECore::Pos pos)
 void Transport::rposChanged(const MusECore::Pos pos)
       {
 // REMOVE Tim. clip. Changed.
-      MusEGlobal::song->setPos(2, pos);
+//       MusEGlobal::song->setPos(MusECore::Song::RPOS, pos.tick());
+      MusEGlobal::song->setPos(MusECore::Song::RPOS, pos);
       }
 
 //---------------------------------------------------------

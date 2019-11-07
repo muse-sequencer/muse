@@ -239,6 +239,7 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
       int openFlags = 1;
       int dic = -1;   
       int doc = -1;
+      int trackIdx = -1;
       
       MidiSyncInfo tmpSi;
       int type = MidiDevice::ALSA_MIDI;
@@ -293,11 +294,14 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                               doc = xml.parseInt(); 
                         else if (tag == "midiSyncInfo")
                               tmpSi.read(xml);
-                        else if (tag == "instrument") {    // Obsolete
+                        else if (tag == "instrument") {
                               instrument = xml.parse1();
                               //MusEGlobal::midiPorts[idx].setInstrument(    // Moved below
                               //   registerMidiInstrument(instrument)
                               //   );
+                              }
+                        else if (tag == "trackIdx") {
+                              trackIdx = xml.parseInt();
                               }
                         else if (tag == "midithru")
                         {
@@ -343,7 +347,11 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
 
                               mp->setDefaultOutChannels(0); // reset output channel to take care of the case where no default is specified
 
-                              mp->changeInstrument(registerMidiInstrument(instrument));
+                              // Just set the generic instrument for now.
+                              mp->changeInstrument(genericMidiInstrument);
+                              // Set references to be resolved later...
+                              mp->setTmpFileRefs(trackIdx, instrument);
+
                               if(dic != -1)                      // p4.0.17 Leave them alone unless set by song.
                                 mp->setDefaultInChannels(dic);
                               if(doc != -1)
@@ -363,6 +371,7 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                                       dev->setOpenFlags(openFlags);
                                     MusEGlobal::audio->msgSetMidiDevice(mp, dev);
                                     }
+
                               return;
                               }
                   default:
@@ -730,6 +739,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.styleSheetFile = xml.parse1();
                         else if (tag == "useOldStyleStopShortCut")
                               MusEGlobal::config.useOldStyleStopShortCut = xml.parseInt();
+                        else if (tag == "useRewindOnStop")
+                              MusEGlobal::config.useRewindOnStop = xml.parseInt();
                         else if (tag == "moveArmedCheckBox")
                               MusEGlobal::config.moveArmedCheckBox = xml.parseInt();
                         else if (tag == "externalWavEditor")
@@ -1459,9 +1470,27 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                   if(mport->defaultOutChannels())
                     xml.intTag(level, "defaultOutChans", mport->defaultOutChannels());
                   
-                  if(!mport->instrument()->iname().isEmpty() &&                      // Tim.
-                     (mport->instrument()->iname() != "GM"))                         // FIXME: TODO: Make this user configurable.
-                    xml.strTag(level, "instrument", mport->instrument()->iname());
+                  const MidiInstrument* mi = mport->instrument();
+                  // FIXME: TODO: Make this user configurable.
+                  if(mi && !mi->iname().isEmpty() && mi->iname() != "GM")
+                  {
+                    if(mi->isSynti())
+                    {
+                      // The instrument is a synthesizer. Store a reference to
+                      //  the synthesizer track so it can be looked up upon loading.
+                      const SynthI* si = static_cast<const SynthI*>(mi);
+                      const int idx = MusEGlobal::song->tracks()->index(si);
+                      if(idx >= 0)
+                        xml.intTag(level, "trackIdx", idx);
+                    }
+                    else
+                    {
+                      // The instrument is not a synthesizer, it is one of our own
+                      //  (loaded from an *.idf file). Just store a string identifier,
+                      //  since we don't have unique indexes for .idf instruments. TODO ???
+                      xml.strTag(level, "instrument", mi->iname());
+                    }
+                  }
                     
                   if (dev) {
                         xml.strTag(level, "name",   dev->name());
@@ -1770,6 +1799,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.strTag(level, "styleSheetFile", MusEGlobal::config.styleSheetFile);
       xml.strTag(level, "externalWavEditor", MusEGlobal::config.externalWavEditor);
       xml.intTag(level, "useOldStyleStopShortCut", MusEGlobal::config.useOldStyleStopShortCut);
+      xml.intTag(level, "useRewindOnStop", MusEGlobal::config.useRewindOnStop);
       xml.intTag(level, "moveArmedCheckBox", MusEGlobal::config.moveArmedCheckBox);
       xml.intTag(level, "popupsDefaultStayOpen", MusEGlobal::config.popupsDefaultStayOpen);
       xml.intTag(level, "leftMouseButtonCanDecrease", MusEGlobal::config.leftMouseButtonCanDecrease);
@@ -1831,8 +1861,9 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       
       xml.intTag(level, "mixer1Visible", MusEGlobal::config.mixer1Visible);
       xml.intTag(level, "mixer2Visible", MusEGlobal::config.mixer2Visible);
-      MusEGlobal::config.mixer1.write(level, xml);
-      MusEGlobal::config.mixer2.write(level, xml);
+      // True = Write global config.
+      MusEGlobal::config.mixer1.write(level, xml, true);
+      MusEGlobal::config.mixer2.write(level, xml, true);
 
       xml.intTag(level, "showSplashScreen", MusEGlobal::config.showSplashScreen);
       xml.intTag(level, "canvasShowPartType", MusEGlobal::config.canvasShowPartType);
@@ -1911,10 +1942,9 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
 
       xml.intTag(level, "mixer1Visible",    viewMixerAAction->isChecked());
       xml.intTag(level, "mixer2Visible",    viewMixerBAction->isChecked());
-      if (mixer1)
-            mixer1->write(level, xml);
-      if (mixer2)
-            mixer2->write(level, xml);
+      // False = Write song-specific config.
+      MusEGlobal::config.mixer1.write(level, xml, false);
+      MusEGlobal::config.mixer2.write(level, xml, false);
 
       writeSeqConfiguration(level, xml, true);
 
@@ -2105,7 +2135,70 @@ namespace MusEGlobal {
 //   write
 //---------------------------------------------------------
 
-void MixerConfig::write(int level, MusECore::Xml& xml)
+void StripConfig::write(int level, MusECore::Xml& xml) const
+      {
+      if(_serial < 0)
+        return;
+      // Do NOT save if there is no corresponding track.
+      const MusECore::TrackList* tl = song->tracks();
+      const int idx = tl->indexOfSerial(_serial);
+      if(idx < 0)
+        return;
+      xml.nput(level, "<StripConfig trackIdx=\"%d\"", idx);
+
+      xml.nput(level, " visible=\"%d\"", _visible);
+      if(_width >= 0)
+        xml.nput(level, " width=\"%d\"", _width);
+      xml.put(" />");
+      
+      //xml.put(">");
+      //level++;
+      // TODO: Anything else to add? ...
+      //xml.etag(level, "StripConfig");
+      }
+
+//---------------------------------------------------------
+//   read
+//---------------------------------------------------------
+
+void StripConfig::read(MusECore::Xml& xml)
+      {
+      for (;;) {
+            MusECore::Xml::Token token(xml.parse());
+            const QString& tag(xml.s1());
+            switch (token) {
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
+                        return;
+                  case MusECore::Xml::TagStart:
+                          xml.unknown("StripConfig");
+                        break;
+                  case MusECore::Xml::Attribut:
+                        if (tag == "trackIdx") {
+                              _tmpFileIdx = xml.s2().toInt();
+                              }
+                        else if (tag == "visible") {
+                              _visible = xml.s2().toInt();
+                              }
+                        else if (tag == "width") {
+                              _width = xml.s2().toInt();
+                              }
+                        break;
+                  case MusECore::Xml::TagEnd:
+                        if (tag == "StripConfig")
+                            return;
+                  default:
+                        break;
+                  }
+            }
+      
+      }
+
+//---------------------------------------------------------
+//   write
+//---------------------------------------------------------
+
+void MixerConfig::write(int level, MusECore::Xml& xml, bool global) const
       {
       xml.tag(level++, "Mixer");
 
@@ -2124,6 +2217,17 @@ void MixerConfig::write(int level, MusECore::Xml& xml)
       xml.intTag(level, "showSyntiTracks",  showSyntiTracks);
 
       xml.intTag(level, "displayOrder", displayOrder);
+
+      // Specific to song file.
+      if(!global)
+      {
+        if(!stripConfigList.empty())
+        {
+          const int sz = stripConfigList.size();
+          for(int i = 0; i < sz; ++i)
+            stripConfigList.at(i).write(level, xml);
+        }
+      }
 
       xml.etag(level, "Mixer");
       }
@@ -2166,10 +2270,18 @@ void MixerConfig::read(MusECore::Xml& xml)
                               showSyntiTracks = xml.parseInt();
                         else if (tag == "displayOrder")
                               displayOrder = (DisplayOrder)xml.parseInt();
+                        // Obsolete. Support old songs.
                         else if (tag == "StripName")
                               stripOrder.append(xml.parse1());
+                        // Obsolete. Support old songs.
                         else if (tag == "StripVisible")
                               stripVisibility.append(xml.parseInt() == 0 ? false : true );
+                        else if (tag == "StripConfig") {
+                              StripConfig sc;
+                              sc.read(xml);
+                              if(sc._tmpFileIdx >= 0)
+                                stripConfigList.append(sc);
+                        }
                         else
                               xml.unknown("Mixer");
                         break;

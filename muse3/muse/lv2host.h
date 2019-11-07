@@ -69,6 +69,7 @@
 #include "lv2/lv2plug.in/ns/ext/log/log.h"
 #include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
 #include "lv2/lv2plug.in/ns/ext/dynmanifest/dynmanifest.h"
+#include "lv2/lv2plug.in/ns/ext/resize-port/resize-port.h"
 #include "lv2extui.h"
 #include "lv2extprg.h"
 
@@ -79,6 +80,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <array>
 #include <QMutex>
 #include <QSemaphore>
 #include <QThread>
@@ -95,6 +97,8 @@
 
 #include "plugin.h"
 #include "plugin_list.h"
+
+#include "lock_free_data_buffer.h"
 
 #endif
 
@@ -135,7 +139,7 @@ class LV2EvBuf
    LV2_Atom_Sequence *_seqbuf;
    LV2_Event_Buffer *_evbuf;
 public:
-   LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk);
+   LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t size);
    inline size_t mkPadSize(size_t size);
    inline void resetPointers(bool r, bool w);
    inline void resetBuffer();
@@ -313,7 +317,9 @@ private:
     uint32_t _fWrkSchedule;
     uint32_t _fUiResize;
     uint32_t _fPrgHost;
+#ifdef LV2_MAKE_PATH_SUPPORT
     uint32_t _fMakePath;
+#endif
     uint32_t _fMapPath;
     //const LilvNode *_pluginUIType = NULL;
     LV2_URID _uTime_Position;
@@ -383,7 +389,9 @@ public:
     static void lv2prg_updatePrograms(LV2PluginWrapper_State *state);
     static int lv2_printf(LV2_Log_Handle handle, LV2_URID type, const char *fmt, ...);
     static int lv2_vprintf(LV2_Log_Handle handle, LV2_URID type, const char *fmt, va_list ap);
+#ifdef LV2_MAKE_PATH_SUPPORT
     static char *lv2state_makePath(LV2_State_Make_Path_Handle handle, const char *path);
+#endif
     static char *lv2state_abstractPath(LV2_State_Map_Path_Handle handle, const char *absolute_path);
     static char *lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const char *abstract_path);
     static void lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, MusEGui::PopupMenu *menu);
@@ -555,7 +563,6 @@ struct LV2PluginWrapper_State {
       tmpValues(NULL),
       numStateValues(0),
       wrkThread(NULL),
-      wrkEndWork(false),
       controlTimers(NULL),
       deleteLater(false),
       hasGui(false),
@@ -587,8 +594,10 @@ struct LV2PluginWrapper_State {
       uiResize.ui_resize = LV2Synth::lv2ui_Resize;
       prgHost.handle = (LV2_Programs_Handle)this;
       prgHost.program_changed = LV2SynthIF::lv2prg_Changed;
+#ifdef LV2_MAKE_PATH_SUPPORT
       makePath.handle = (LV2_State_Make_Path_Handle)this;
       makePath.path = LV2Synth::lv2state_makePath;
+#endif
       mapPath.handle = (LV2_State_Map_Path_Handle)this;
       mapPath.absolute_path = LV2Synth::lv2state_absolutePath;
       mapPath.abstract_path = LV2Synth::lv2state_abstractPath;
@@ -605,7 +614,9 @@ struct LV2PluginWrapper_State {
     LV2_External_UI_Host extHost;
     LV2_Extension_Data_Feature extData;
     LV2_Worker_Schedule wrkSched;
+#ifdef LV2_MAKE_PATH_SUPPORT
     LV2_State_Make_Path makePath;
+#endif
     LV2_State_Map_Path mapPath;
     LilvInstance *handle;
     void *uiDlHandle;
@@ -623,10 +634,10 @@ struct LV2PluginWrapper_State {
     QMap<QString, QPair<QString, QVariant> > iStateValues;
     char **tmpValues;
     size_t numStateValues;
-    std::vector<uint8_t> wrkDataBuffer;
+    LockFreeDataRingBuffer *wrkDataBuffer;
+    LockFreeDataRingBuffer *wrkRespDataBuffer;
     LV2PluginWrapper_Worker *wrkThread;
     LV2_Worker_Interface *wrkIface;
-    bool wrkEndWork;
     int *controlTimers;
     bool deleteLater;
     LV2_Atom_Forge atomForge;

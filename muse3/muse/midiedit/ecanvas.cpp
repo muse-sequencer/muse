@@ -420,8 +420,8 @@ void EventCanvas::keyPress(QKeyEvent* event)
             if (found) {
                   MusECore::Pos p1(tick_min, true);
                   MusECore::Pos p2(tick_max, true);
-                  MusEGlobal::song->setPos(1, p1);
-                  MusEGlobal::song->setPos(2, p2);
+                  MusEGlobal::song->setPos(MusECore::Song::LPOS, p1);
+                  MusEGlobal::song->setPos(MusECore::Song::RPOS, p2);
                   }
             }
       // Select items by key (PianoRoll & DrumEditor)

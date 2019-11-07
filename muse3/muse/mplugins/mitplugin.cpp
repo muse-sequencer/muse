@@ -175,12 +175,4 @@ void writeStatusMidiInputTransformPlugins(int level, Xml& xml)
             }
       }
 
-//---------------------------------------------------------
-//   readStatusMidiInputTransformPlugin
-//---------------------------------------------------------
-
-void readStatusMidiInputTransformPlugin(Xml&)
-      {
-      }
-
 } // namespace MusECore

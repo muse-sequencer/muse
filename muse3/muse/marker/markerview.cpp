@@ -1124,7 +1124,7 @@ void MarkerView::markerSelectionChanged()
 //             return;
 //             }
 //       MusECore::Pos p(item->tick(), true);
-//       MusEGlobal::song->setPos(0, p, true, true, false);
+//       MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, false);
 //       }
 
 void MarkerView::clicked(QTreeWidgetItem* i)
@@ -1136,7 +1136,7 @@ void MarkerView::clicked(QTreeWidgetItem* i)
             }
 // Hm I don't like the idea of letting song handle this. I feel that song->setPos()
 //  should only be called as a RESULT of the transport repositioning, which it ALREADY will.
-      MusEGlobal::song->setPos(0, item->marker(), true, true, false);
+      MusEGlobal::song->setPos(MusECore::Song::CPOS, item->marker(), true, true, false);
 //       MusEGlobal::audio->msgSeek(item->marker());
       }
 
@@ -1214,7 +1214,7 @@ void MarkerView::tickChanged(const MusECore::Pos& pos)
               MusEGlobal::song->setMarkerPos(item->marker(), pos);
             }
 //             MusECore::Pos p(pos.tick(), true);
-//             MusEGlobal::song->setPos(0, p, true, true, false);
+//             MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, false);
 //             table->sortByColumn(COL_TICK, Qt::AscendingOrder);
             }
       }
@@ -1289,7 +1289,7 @@ void MarkerView::nextMarker()
       if (nextPos == 0xFFFFFFFF)
           return;
       MusECore::Pos p(nextPos, true);
-      MusEGlobal::song->setPos(0, p, true, true, false);
+      MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, false);
         
       }
 void MarkerView::prevMarker()
@@ -1303,7 +1303,7 @@ void MarkerView::prevMarker()
             }
 
       MusECore::Pos p(nextPos, true);
-      MusEGlobal::song->setPos(0, p, true, true, false);
+      MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, false);
       }
 
 MarkerItem* MarkerView::findId(MusECore::EventID_t id) const

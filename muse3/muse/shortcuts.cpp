@@ -63,6 +63,8 @@ void initShortCuts()
       defShrt(SHRT_START_REC,     Qt::Key_Asterisk, QT_TRANSLATE_NOOP("shortcuts", "Transport: Toggle Record"),    GLOBAL_SHRT, "toggle_rec");
       defShrt(SHRT_REC_CLEAR,     Qt::Key_Backspace, QT_TRANSLATE_NOOP("shortcuts", "Transport: Clear all rec enabled tracks"),    GLOBAL_SHRT, "rec_clear");
       defShrt(SHRT_FULLSCREEN,       Qt::CTRL + Qt::Key_F, QT_TRANSLATE_NOOP("shortcuts", "Toggle fullscreen"), GLOBAL_SHRT, "fullscreen");
+      defShrt(SHRT_TOGGLE_REWINDONSTOP,       Qt::CTRL + Qt::SHIFT + Qt::Key_R, QT_TRANSLATE_NOOP("shortcuts", "Toggle rewind on stop"), GLOBAL_SHRT, "rewindonstop");
+
       defShrt(SHRT_CONFIG_SHORTCUTS, Qt::CTRL + Qt::SHIFT + Qt::Key_F1, QT_TRANSLATE_NOOP("shortcuts", "Settings: Configure shortcuts"), GLOBAL_SHRT, "configure_key_shortcuts");
 
       defShrt(SHRT_COPY,          Qt::CTRL + Qt::Key_C, QT_TRANSLATE_NOOP("shortcuts", "Edit: Copy"), INVIS_SHRT, "copy");

@@ -6161,9 +6161,6 @@ Lv2PluginI::Lv2PluginI()
 
 Lv2PluginI::~Lv2PluginI()
 {
-  // REMOVE Tim. scan. Added.
-  //fprintf(stderr, "Lv2PluginI::~Lv2PluginI\n");
-      
   if(_plugin) {
     // Deactivate is pure virtual, it cannot be 
     //  called from the base destructor. Do it here.

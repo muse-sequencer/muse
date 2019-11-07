@@ -453,10 +453,20 @@ JackAudioDevice::~JackAudioDevice()
       if (JACK_DEBUG)
             fprintf(stderr, "~JackAudioDevice()\n");
       if (_client) {
+
+            // REMOVE Tim. latency. Added. TESTING.
+            if (jack_deactivate(_client)) {
+                  fprintf (stderr, "cannot deactivate client\n");
+                  }
+
             if (jack_client_close(_client)) {
                   fprintf(stderr,"jack_client_close() failed: %s\n", strerror(errno));
                   }
             }
+
+      // REMOVE Tim. latency. Added. TESTING.
+      jackStarted = false;
+
       if (JACK_DEBUG)
             fprintf(stderr, "~JackAudioDevice() after jack_client_close()\n");
       }

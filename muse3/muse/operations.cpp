@@ -150,6 +150,7 @@ unsigned int PendingOperationItem::getIndex() const
     case ModifyMidiDeviceAddress:
     case ModifyMidiDeviceFlags:
     case ModifyMidiDeviceName:
+    case SetInstrument:
     case AddTrack:
     case DeleteTrack:
     case MoveTrack:
@@ -588,6 +589,17 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       flags |= SC_CONFIG;
     break;
     
+    case SetInstrument:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage SetInstrument port:%p instr:%p\n",
+              _midi_port, _midi_instrument);
+#endif      
+      _midi_port->setInstrument(_midi_instrument);
+      // Flag the port to send initializations next time it bothers to check.
+      _midi_port->clearInitSent();
+      flags |= SC_MIDI_INSTRUMENT;
+    break;
+    
     case AddTrack:
     {
 #ifdef _PENDING_OPS_DEBUG_
@@ -787,7 +799,27 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
                     static_cast<InputList*>(_void_track_list)->erase(_track);
                     break;
               case Track::AUDIO_SOFTSYNTH:
-                    static_cast<SynthIList*>(_void_track_list)->erase(_track);
+                    {
+                      static_cast<SynthIList*>(_void_track_list)->erase(_track);
+                      
+                      // Change all ports which used the instrument.
+                      // FIXME TODO: We want to make this undoable but ATM a few other things can
+                      //  set the instrument without an undo operation so the undo sequence would
+                      //  not be correct. So we don't have much choice but to just reset for now.
+                      // Still, everything else is in place for undoable setting of instrument...
+                      const SynthI* si = static_cast<const SynthI*>(_track);
+                      for(int port = 0; port < MusECore::MIDI_PORTS; ++port)
+                      {
+                        MidiPort* mp = &MusEGlobal::midiPorts[port];
+                        if(mp->instrument() != si)
+                          continue;
+                        // Just revert to GM.
+                        mp->setInstrument(registerMidiInstrument("GM"));
+                        // Flag the port to send initializations next time it bothers to check.
+                        mp->clearInitSent();
+                        flags |= SC_MIDI_INSTRUMENT;
+                      }
+                    }     
                     break;
               default:
                     fprintf(stderr, "PendingOperationItem::executeRTStage DeleteTrack: Unknown track type %d\n", _track->type());
@@ -954,16 +986,16 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
 #ifdef _PENDING_OPS_DEBUG_
       fprintf(stderr, "PendingOperationItem::executeRTStage MoveTrack from:%d to:%d\n", _from_idx, _to_idx);
 #endif      
-      int sz = _track_list->size();
+      const int sz = _track_list->size();
       if(_from_idx >= sz)
       {
         fprintf(stderr, "MusE error: PendingOperationItem::executeRTStage MoveTrack from index out of range:%d\n", _from_idx);
         return flags;
       }
-      iTrack fromIt = _track_list->begin() + _from_idx;
+      ciTrack fromIt = _track_list->cbegin() + _from_idx;
       Track* track = *fromIt;
       _track_list->erase(fromIt);
-      iTrack toIt = (_to_idx >= sz) ? _track_list->end() : _track_list->begin() + _to_idx;
+      ciTrack toIt = (_to_idx >= sz) ? _track_list->cend() : _track_list->cbegin() + _to_idx;
       _track_list->insert(toIt, track);
       flags |= SC_TRACK_MOVED;
     }
@@ -1833,6 +1865,15 @@ bool PendingOperationList::add(PendingOperationItem op)
            poi._name == op._name)
         {
           fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyMidiDeviceName. Ignoring.\n");
+          return false;  
+        }
+      break;
+
+      case PendingOperationItem::SetInstrument:
+        if(poi._type == PendingOperationItem::SetInstrument && poi._midi_port == op._midi_port &&
+           poi._midi_instrument == op._midi_instrument)
+        {
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetInstrument. Ignoring.\n");
           return false;  
         }
       break;

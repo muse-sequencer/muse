@@ -34,7 +34,7 @@
     <partColor14 r="127" g="0" b="127"></partColor14>
     <partColor15 r="0" g="127" b="255"></partColor15>
     <partColor16 r="0" g="63" b="63"></partColor16>
-    <partColor17 r="0" g="0" b="0"></partColor17>
+    <partColor17 r="170" g="85" b="0"></partColor17>
     <partCanvasBg r="98" g="124" b="168"></partCanvasBg>
     <trackBg r="84" g="97" b="114"></trackBg>
     <selectTrackBg r="109" g="174" b="178"></selectTrackBg>

@@ -1536,9 +1536,9 @@ void DeicsOnzeGui::processEvent(const MusECore::MidiPlayEvent& ev) {
   // Sysexes
   else if (ev.type() == MusECore::ME_SYSEX) {
     //printf("MusECore::ME_SYSEX\n");
-    unsigned char* data = ev.data();
+    const unsigned char* data = ev.constData();
     
-    int cmd = *data;
+    const int cmd = *data;
     float f;
     switch (cmd) {
     case SYSEX_CHORUSACTIV :

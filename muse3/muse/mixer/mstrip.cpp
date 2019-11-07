@@ -265,7 +265,7 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
           {
             if(MusECore::MidiInstrument* minstr = MusEGlobal::midiPorts[_track->outPort()].instrument())
             {
-              desc->_enabled = !minstr->isSynti();
+              //desc->_enabled = !minstr->isSynti();
               if(desc->_label.isEmpty())
                 desc->_label = minstr->iname();
             }
@@ -531,7 +531,7 @@ void MidiComponentRack::scanControllerComponents()
     ComponentWidget& cw = *icw;
     DEBUG_MIDI_STRIP(stderr, "MidiComponentRack::scanControllerComponents: deleting controller component index:%d\n", cw._index);
     if(cw._widget)
-      delete cw._widget;
+      cw._widget->deleteLater();
     _components.erase(icw);
   }
 }
@@ -796,7 +796,7 @@ void MidiComponentRack::updateComponents()
             {
               if(MusECore::MidiInstrument* minstr = MusEGlobal::midiPorts[_track->outPort()].instrument())
               {
-                setComponentEnabled(cw, !minstr->isSynti());
+                //setComponentEnabled(cw, !minstr->isSynti());
                 setComponentText(cw, minstr->iname());
               }
               else 
@@ -850,8 +850,9 @@ void MidiComponentRack::instrPopup(QPoint p)
   
   PopupMenu* pup = new PopupMenu(false);
   
-  MusECore::MidiInstrument::populateInstrPopup(pup, instr, false);
-
+  //MusECore::MidiInstrument::populateInstrPopup(pup, instr, false);
+  MusECore::MidiInstrument::populateInstrPopup(pup, instr, true);
+  
   if(pup->actions().count() == 0)
   {
     delete pup;

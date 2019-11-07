@@ -830,14 +830,14 @@ void CtrlCanvas::songChanged(MusECore::SongChangedStruct_t type)
   //  config window generates a type of -1, we can eliminate
   //  some other useless calls using SC_CONFIG, which was not used 
   //  anywhere else in muse before now, except song header.
-  if((type & (SC_CONFIG | SC_DRUM_SELECTION | SC_PIANO_SELECTION | SC_DRUMMAP)) ||
+  if((type & (SC_CONFIG | SC_MIDI_INSTRUMENT | SC_DRUM_SELECTION | SC_PIANO_SELECTION | SC_DRUMMAP)) ||
      ((type & (SC_PART_MODIFIED | SC_SELECTION)) && changed))
     setMidiController(_cnum);
   
   if(!curPart)         
     return;
               
-  if(type & (SC_CONFIG | SC_DRUM_SELECTION | SC_PIANO_SELECTION |
+  if(type & (SC_CONFIG | SC_MIDI_INSTRUMENT | SC_DRUM_SELECTION | SC_PIANO_SELECTION |
      SC_DRUMMAP | SC_PART_MODIFIED | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED))
     updateItems();
   else if(type & SC_SELECTION)

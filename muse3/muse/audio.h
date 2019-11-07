@@ -33,15 +33,14 @@
 #include "mpevent.h"
 #include "route.h"
 #include "event.h"
+#include "minstrument.h"
 
 namespace MusECore {
 class AudioDevice;
 class AudioTrack;
 class Event;
-class Event;
 class EventList;
 class MidiDevice;
-class MidiInstrument;
 class MidiPlayEvent;
 class MidiPort;
 class MidiTrack;
@@ -313,7 +312,8 @@ class Audio {
       void msgSetSendMetronome(AudioTrack*, bool);
       void msgStartMidiLearn();
       void msgPlayMidiEvent(const MidiPlayEvent* event);
-      void msgSetMidiDevice(MidiPort* port, MidiDevice* device);
+      // If instrument is given it will be set, otherwise it won't touch the existing instrument.
+      void msgSetMidiDevice(MidiPort* port, MidiDevice* device, MidiInstrument* instrument = nullptr);
 
       void midiPortsChanged();
 

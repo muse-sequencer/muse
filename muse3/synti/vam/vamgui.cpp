@@ -572,7 +572,7 @@ void VAMGui::processEvent(const MusECore::MidiPlayEvent& ev)
             
       }      
       else if (ev.type() == MusECore::ME_SYSEX)
-            sysexReceived(ev.data(), ev.len());
+            sysexReceived(ev.constData(), ev.len());
       else
       {
             #ifdef VAM_DEBUG

@@ -552,13 +552,13 @@ bool autoAdjustFontSize(QFrame* widget, const QString& txt, QFont& targetFont, b
     min = max;
 
   // Make the minimum about 3/4 the maximum font size.
-  min = int(double(max) * 0.7);
+  min = int(double(max) * 0.85);
 
   // Limit the minimum and maximum sizes to something at least readable.
-  if(max < 6)
-    max = 6;
-  if(min < 6)
-    min = 6;
+  if(max < 7)
+    max = 7;
+  if(min < 7)
+    min = 7;
 
   QRect cr = widget->contentsRect();
   QRect r;

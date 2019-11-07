@@ -43,7 +43,6 @@ class QMainWindow;
 class QMenu;
 class QPoint;
 class QRect;
-class QScrollArea;
 class QString;
 class QToolBar;
 class QToolButton;
@@ -170,7 +169,7 @@ class MusE : public QMainWindow
       QAction *settingsGlobalAction, *settingsShortcutsAction, *settingsMetronomeAction, *settingsMidiSyncAction;
       QAction *settingsMidiIOAction, *settingsAppearanceAction, *settingsMidiPortAction;
       QAction *dontFollowAction, *followPageAction, *followCtsAction;
-
+      QAction *rewindOnStopAction;
       // Help Menu Actions
       QAction *helpManualAction, *helpHomepageAction, *helpReportAction, *helpAboutAction, *helpDidYouKnow;
 
@@ -241,15 +240,14 @@ class MusE : public QMainWindow
 
       void setFollow();
       void readConfigParts(MusECore::Xml& xml);
-      void readMidiport(MusECore::Xml& xml);
-      void readMidichannel(MusECore::Xml& xml, int port);
-      void readCtrl(MusECore::Xml& xml, int port, int channel);
       void readToplevels(MusECore::Xml& xml);
       MusECore::PartList* getMidiPartsToEdit();
       MusECore::Part* readPart(MusECore::Xml& xml);
       bool checkRegionNotNull();
       void loadProjectFile1(const QString&, bool songTemplate, bool doReadMidiPorts);
+      // Write global configuration.
       void writeGlobalConfiguration(int level, MusECore::Xml&) const;
+      // Write song specific configuration.
       void writeConfiguration(int level, MusECore::Xml&) const;
       void updateConfiguration();
       QString projectTitle(QString name);
@@ -341,6 +339,7 @@ class MusE : public QMainWindow
       void arrangeSubWindowsColumns();
       void tileSubWindows();
       void setDirty();
+      void toggleRewindOnStop(bool);
 
    public slots:
       bool saveAs();

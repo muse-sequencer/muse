@@ -124,7 +124,7 @@ SysExInputProcessor::State SysExInputProcessor::processInput(EvData* dst, const 
 
 size_t SysExOutputProcessor::dataSize() const
 {
-  return _evData.dataLen;
+  return _evData.dataLen();
 }
 
 size_t SysExOutputProcessor::curChunkSize() const
@@ -141,8 +141,8 @@ size_t SysExOutputProcessor::curChunkSize() const
     {
       // The remaining number of data bytes (minus any start/end byte).
       size_t sz = 0;
-      if((int)_curPos < _evData.dataLen)
-        sz = _evData.dataLen - _curPos;
+      if((int)_curPos < _evData.dataLen() )
+        sz = _evData.dataLen() - _curPos;
 
       // Are we on the first chunk? Leave room for the start byte.
       if(_curPos == 0)
@@ -181,7 +181,7 @@ void SysExOutputProcessor::reset()
 
 SysExOutputProcessor::State SysExOutputProcessor::setEvData(const EvData& src, size_t frame)
 {
-  if(!src.data || src.dataLen == 0)
+  if(!src.constData() || src.dataLen() == 0)
     return _state;
 
   switch(_state)
@@ -228,8 +228,8 @@ bool SysExOutputProcessor::getCurChunk(unsigned char* dst, int sampleRate)
       
       // The remaining number of data bytes (minus any start/end byte).
       size_t sz = 0;
-      if((int)_curPos < _evData.dataLen)
-        sz = _evData.dataLen - _curPos;
+      if((int)_curPos < _evData.dataLen() )
+        sz = _evData.dataLen() - _curPos;
 
       // Are we on the first chunk? Leave room for the start byte.
       if(_curPos == 0)
@@ -256,7 +256,7 @@ bool SysExOutputProcessor::getCurChunk(unsigned char* dst, int sampleRate)
       if(sz != 0)
       {
         // Copy the data to the destination.
-        memcpy(p, _evData.data + _curPos, sz);
+        memcpy(p, _evData.constData() + _curPos, sz);
         // Advance the pointer.
         p += sz;
         // Advance the current position.
@@ -303,30 +303,55 @@ size_t SysExOutputProcessor::stageEvData(const EvData& evData, unsigned int fram
 //    variable len event data (sysex, meta etc.)
 //---------------------------------------------------------
 
+void EvData::resize(int l)
+{
+      // Setting the data destroys any reference. Dereference now.
+      // The data may still be shared. Destroy it only if no more references.
+      if ( _refCount && (--(*_refCount ) == 0)) 
+      {
+        delete _refCount;
+        _refCount = 0;
+        
+        if( _data )
+          delete[] _data;
+      }
+      // Clear the data variable.
+      _data = 0;  
+        
+      if(l > 0) 
+      {
+        _data = new unsigned char[l];
+        
+        // Setting the data destroys any reference. Create a new reference now.
+        _refCount = new int(1);
+      }
+      _dataLen = l;
+}
+
 void EvData::setData(const unsigned char* p, int l) 
 {
       // Setting the data destroys any reference. Dereference now.
       // The data may still be shared. Destroy it only if no more references.
-      if (refCount && (--(*refCount) == 0)) 
+      if ( _refCount && (--(*_refCount ) == 0)) 
       {
-        delete refCount;
-        refCount = 0;
+        delete _refCount;
+        _refCount = 0;
         
-        if(data)
-          delete[] data;
+        if( _data )
+          delete[] _data;
       }
       // Clear the data variable.
-      data = 0;  
+      _data = 0;  
         
       if(l > 0) 
       {
-        data = new unsigned char[l];
-        memcpy(data, p, l);
+        _data = new unsigned char[l];
+        memcpy( _data, p, l);
         
         // Setting the data destroys any reference. Create a new reference now.
-        refCount = new int(1);
+        _refCount = new int(1);
       }
-      dataLen = l;
+      _dataLen = l;
 }
             
 void EvData::setData(const SysExInputProcessor* q) 
@@ -336,28 +361,28 @@ void EvData::setData(const SysExInputProcessor* q)
         return;
       // Setting the data destroys any reference. Dereference now.
       // The data may still be shared. Destroy it only if no more references.
-      if (refCount && (--(*refCount) == 0)) 
+      if ( _refCount && (--(*_refCount ) == 0)) 
       {
-        delete refCount;
-        refCount = 0;
+        delete _refCount;
+        _refCount = 0;
         
-        if(data)
-          delete[] data;
+        if( _data )
+          delete[] _data;
       }
       // Clear the data variable.
-      data = 0;  
+      _data = 0;  
         
       const size_t l = q->size();
       if(l > 0) 
       {
         // Create a contiguous memory block to hold the data.
-        data = new unsigned char[l];
+        _data = new unsigned char[l];
         // Copy the non-contiguous chunks of data to the contiguous data.
-        q->copy(data, l);
+        q->copy( _data, l);
         // Setting the data destroys any reference. Create a new reference now.
-        refCount = new int(1);
+        _refCount = new int(1);
       }
-      dataLen = l;
+      _dataLen = l;
 }
 
 } // namespace MusECore

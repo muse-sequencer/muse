@@ -31,6 +31,7 @@
 #include <QFont>
 #include <QRect>
 #include <QString>
+#include <QList>
 
 namespace MusECore {
 class Xml;
@@ -72,6 +73,35 @@ enum ExportModeInstr_t
 enum RouteNameAliasPreference { RoutePreferCanonicalName = 0, RoutePreferFirstAlias = 1, RoutePreferSecondAlias = 2 };
 
 enum WaveDrawing { WaveRmsPeak=1, WaveOutLine=2 };
+
+struct StripConfig {
+  // The corresponding track's serial number. Can be -1.
+  int _serial;
+  // The corresponding track's index in the song file. Can be -1.
+  // Temporary during loading to avoid using globally or locally
+  //  'unique' identifiers in the song file, such as the serial,
+  //  to resolve references.
+  int _tmpFileIdx;
+
+  bool _visible;
+  int _width;
+  bool _deleted;
+
+  StripConfig()
+  { _serial = -1; _tmpFileIdx = -1; _visible = true; _width = -1; _deleted = false; }
+  StripConfig(int trackSerial, bool visible, int width)
+  { _serial = trackSerial; _tmpFileIdx = -1; _visible = visible; _width = width; _deleted = false; }
+
+  bool isNull() const { return _serial < 0; }
+
+  void write(int level, MusECore::Xml& xml) const;
+  void read(MusECore::Xml& xml);
+};
+
+typedef QList<StripConfig> StripConfigList_t;
+typedef StripConfigList_t::iterator iStripConfigList;
+typedef StripConfigList_t::const_iterator ciStripConfigList;
+
 //---------------------------------------------------------
 //   MixerConfig
 //---------------------------------------------------------
@@ -83,6 +113,7 @@ struct MixerConfig {
         STRIPS_ARRANGER_VIEW = -1002,
       };
       QString name;
+      // Obsolete. Keep for old song support.
       QStringList stripOrder;
       QRect geometry;
       bool showMidiTracks;
@@ -95,9 +126,24 @@ struct MixerConfig {
       bool showAuxTracks;
       bool showSyntiTracks;
       DisplayOrder displayOrder;
+      // Obsolete. Keep for old song support.
       QList<bool> stripVisibility;
+      // This replaces stripOrder and stripVisibility.
+      // NOTE: To avoid having to put this information within a track,
+      //  we keep it conveniently here. But this means it does not
+      //  participate in the UNDO/REDO system. If a track is 'deleted'
+      //  the information here MUST be allowed to exist so that undoing
+      //  the track 'delete' finds the info.
+      // Thus it acts sort of 'in parallel' to the undo system and is similar
+      //  to the undo list (it never dies). The redo list can die, and we
+      //  could safely remove these corresponding items. FIXME TODO: DO THAT!
+      // Therefore the list must generally be protected from haphazard item
+      //  removal for the duration of the song file session.
+      // When writing to file BE SURE to ignore items with no corresponding track,
+      //  to filter out all the undesired 'deleted' ones.
+      StripConfigList_t stripConfigList;
 
-      void write(int level, MusECore::Xml& xml);
+      void write(int level, MusECore::Xml& xml, bool global) const;
       void read(MusECore::Xml& xml);
       };
 
@@ -271,6 +317,7 @@ struct GlobalConfigValues {
 
       QString externalWavEditor;
       bool useOldStyleStopShortCut;
+      bool useRewindOnStop;
       bool moveArmedCheckBox;
       bool useDenormalBias;
       bool useOutputLimiter;

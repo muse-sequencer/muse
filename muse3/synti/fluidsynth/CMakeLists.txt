@@ -84,7 +84,8 @@ set (FILES_TO_TRANSLATE
 #
 set_target_properties ( fluid_synth 
       PROPERTIES PREFIX ""
-      COMPILE_FLAGS "-fvisibility=hidden"
+      # Avoid treating warnings as errors here, unlike the rest of the app.
+      COMPILE_FLAGS "-fvisibility=hidden -Wno-error"
       )
 
 ##

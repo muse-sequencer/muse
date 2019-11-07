@@ -41,7 +41,7 @@
 #include "mididev.h"
 #include "midiport.h"
 #include "marker/marker.h"
-#include "instruments/minstrument.h"
+#include "minstrument.h"
 #include "metronome_class.h"
 
 namespace MusECore {
@@ -149,6 +149,7 @@ struct PendingOperationItem
     AddMidiInstrument, DeleteMidiInstrument, ReplaceMidiInstrument,
     AddMidiDevice,     DeleteMidiDevice,       
     ModifyMidiDeviceAddress,         ModifyMidiDeviceFlags,       ModifyMidiDeviceName,
+    SetInstrument,
     AddTrack,          DeleteTrack,  MoveTrack,                   ModifyTrackName,
     SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff,
     ModifyTrackDrumMapItem, ReplaceTrackDrumMapPatchList,         UpdateDrumMaps,
@@ -333,7 +334,11 @@ struct PendingOperationItem
   PendingOperationItem(MidiDevice* midi_device, const QString* new_name, PendingOperationType type = ModifyMidiDeviceName)
     { _type = type; _midi_device = midi_device; _name = new_name; }
 
-    
+
+  PendingOperationItem(MidiPort* midi_port, MidiInstrument* midi_instrument, PendingOperationType type = SetInstrument)
+    { _type = type; _midi_port = midi_port; _midi_instrument = midi_instrument; }
+
+
   PendingOperationItem(TrackList* tl, Track* track, int insert_at, PendingOperationType type = AddTrack, void* sec_track_list = 0)
     { _type = type; _track_list = tl; _track = track; _insert_at = insert_at; _void_track_list = sec_track_list; }
     
