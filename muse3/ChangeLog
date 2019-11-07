@@ -4,6 +4,7 @@
       * New - Instrument can now be changed on a Synth Track: (Tim)
         For example you can now set 'GM2' or 'My cool instrument' on ANY synth track.
         Not as useless/dangerous as it sounds. Tested OK saving/loading/changing instruments.
+      - Add: Range selection (shift-click) for tracks (kybos)
 05.11.2019
       - Oops. Restore auto-create user instruments folder, likely swept away by 03.09 (Tim)
 04.11.2019
@@ -14,6 +15,9 @@
       - Some cleanups, especially the addition of using of an enum for CPOS,LPOS,RPOS
 03.11.2019
       - Fix issue 667: Hang on automatic restart. Reset jackStarted upon restart. (Tim)
+      - Fix issue 638: Font too small in popups started from mixer strip (kybos)
+      - Add: Double click on track ID selects all tracks of the same type (kybos)
+      - Fix: Change piano keys in piano roll to rectangular shapes to avoid pixelation when scaled (kybos)
 02.11.2019
       - Mixers and strips: Mods and reverts to 20.10. (Tim)
         Removed new track UUID. Found a way to work with track index and a local LUID instead.
