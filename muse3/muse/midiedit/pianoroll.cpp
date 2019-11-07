@@ -402,7 +402,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       time                = new MusEGui::MTScale(&_raster, split1, _viewState.xscale());
       piano               = new Piano(split1, _viewState.yscale(), this);
       canvas              = new PianoCanvas(this, split1, _viewState.xscale(), _viewState.yscale());
-      vscroll             = new MusEGui::ScrollScale(-3, 7, _viewState.yscale(), KH * 75, Qt::Vertical, split1);
+      vscroll             = new MusEGui::ScrollScale(-2, 6, _viewState.yscale(), KH * 75, Qt::Vertical, split1);
       setCurDrumInstrument(piano->curSelectedPitch());
 
       int offset = -(MusEGlobal::config.division/4);
@@ -454,6 +454,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       connect(piano, SIGNAL(keyPressed(int, int, bool)), canvas, SLOT(pianoPressed(int, int, bool)));
       connect(piano, SIGNAL(keyReleased(int, bool)), canvas, SLOT(pianoReleased(int, bool)));
       connect(piano, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
+      connect(piano, SIGNAL(wheelStep(bool)), vscroll, SLOT(stepScale(bool)));
       connect(srec, SIGNAL(toggled(bool)), SLOT(setSteprec(bool)));
       connect(midiin, SIGNAL(toggled(bool)), canvas, SLOT(setMidiin(bool)));
       connect(speaker, SIGNAL(toggled(bool)), SLOT(setSpeaker(bool)));

@@ -133,8 +133,12 @@ int PianoCanvas::pitch2y(int pitch) const
 
 int PianoCanvas::y2pitch(int y) const
       {
-      const int total = (10 * 7 + 5) * KH;       // 75 Ganztonschritte
+    if (y < KH)
+        return 127;
+    const int total = (10 * 7 + 5) * KH;       // 75 Ganztonschritte
       y = total - y;
+      if (y < 0)
+          return 0;
       int oct = (y / (7 * KH)) * 12;
       char kt[] = {
             0, 0, 0, 0, 0,  0,   0, 0, 0, 0,          // 5
@@ -616,8 +620,8 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
       //  necessary drawing rectangle when checking the requested update rectangle.
       // Note that this is units of ticks.
       ViewRect vbbr_exp(item->bbox(), false);
-      adjustRect(vbbr_exp, 
-                 ViewWCoordinate(0, true), 
+      adjustRect(vbbr_exp,
+                 ViewWCoordinate(0, true),
                  ViewHCoordinate(0, true),
                  ViewWCoordinate(0, true),
                  // Normally we would use the y + h for our border, but here we need to
@@ -1849,6 +1853,16 @@ void PianoCanvas::resizeEvent(QResizeEvent* ev)
       EventCanvas::resizeEvent(ev);
       }
 
+//---------------------------------------------------------
+//   mouseMove
+//---------------------------------------------------------
 
+void PianoCanvas::mouseMove(QMouseEvent* event) {
+
+    EventCanvas::mouseMove(event);
+
+    int pitch = y2pitch(event->pos().y());
+    QToolTip::showText(event->globalPos(), MusECore::pitch2string(pitch) + " (" + QString::number(pitch) + ")" );
+}
 
 } // namespace MusEGui

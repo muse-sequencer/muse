@@ -34,6 +34,7 @@
 #include <QResizeEvent>
 #include <QList>
 #include <QPair>
+#include <QToolTip>
 
 #include <stdio.h>
 #include <limits.h>
@@ -1991,6 +1992,17 @@ void DrumCanvas::rebuildOurDrumMap()
                                                   // isn't the most elegant solution here. but it will
                                                   // never be an infinite recursion
   }
+}
+
+void DrumCanvas::mouseMove(QMouseEvent* event) {
+
+    EventCanvas::mouseMove(event);
+
+    int pitch = drumEditor->get_instrument_map()[y2pitch(event->pos().y())].pitch;
+    if (track()->drummap()[pitch].name.isEmpty())
+        QToolTip::showText(event->globalPos(), MusECore::pitch2string(pitch));
+    else
+        QToolTip::showText(event->globalPos(), track()->drummap()[pitch].name);
 }
 
 } // namespace MusEGui

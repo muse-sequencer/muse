@@ -68,6 +68,7 @@ class ScrollScale : public QWidget {
       void setMag(int val, int pos_offset = 0);
       void setOffset(int val);
       void setScale(int val, int pos_offset = 0);
+      void stepScale(bool up);
 
    signals:
       void scaleChanged(int);

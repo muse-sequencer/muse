@@ -36,6 +36,16 @@
 
 namespace MusEGui {
 
+
+//---------------------------------------------------------
+//   stepScale
+//    increase/decrease scale by single step
+//---------------------------------------------------------
+void ScrollScale::stepScale ( bool up )
+{
+    setMag(scale2mag(up ? scaleVal + 1 : scaleVal - 1));
+}
+
 //---------------------------------------------------------
 //   setScale
 //    "val" - slider value in range 0-convertQuickZoomLevelToMag(zoomLevels-1)
