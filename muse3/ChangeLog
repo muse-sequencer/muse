@@ -1,3 +1,7 @@
+08.11.2019
+      - Fixed missing font scaling in drum editor at lower zoom level (kybos)
+07.11.2019
+      - Add: Tooltip for current note/instrument in the midi editors (kybos)
 06.11.2019
       - Adjusted raster drawing in view.cpp so it would draw lines that didn't (rj)
         draw correctly on my rig. We'll see if anyone objects
