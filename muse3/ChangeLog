@@ -1,5 +1,6 @@
 08.11.2019
       - Fixed missing font scaling in drum editor at lower zoom level (kybos)
+      - LV2: Fixed program_changed callback lv2prg_Changed(), seemed completely wrong. (Tim)
 07.11.2019
       - Add: Tooltip for current note/instrument in the midi editors (kybos)
 06.11.2019

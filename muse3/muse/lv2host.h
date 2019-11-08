@@ -174,6 +174,36 @@ public:
 };
 
 
+typedef struct _lv2ExtProgram
+{
+   uint32_t index;
+   uint32_t bank;
+   uint32_t prog;
+   QString name;
+   bool useIndex;
+   bool operator<(const _lv2ExtProgram& other) const
+   {
+      if(useIndex == other.useIndex && useIndex == true)
+         return index < other.index;
+
+      if(bank < other.bank)
+         return true;
+      else if(bank == other.bank && prog < other.prog)
+         return true;
+      return false;
+   }
+
+   bool operator==(const _lv2ExtProgram& other) const
+   {
+      if(useIndex == other.useIndex && useIndex == true)
+         return index == other.index;
+
+      return (bank == other.bank && prog == other.prog);
+   }
+
+
+} lv2ExtProgram;
+
 
 struct LV2MidiPort
 {
@@ -386,6 +416,7 @@ public:
     static void lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml);
     static void lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QString> & customParams);
     static unsigned lv2ui_IsSupported (const char *, const char *ui_type_uri);
+    static void lv2prg_updateProgram(LV2PluginWrapper_State *state, int idx);
     static void lv2prg_updatePrograms(LV2PluginWrapper_State *state);
     static int lv2_printf(LV2_Log_Handle handle, LV2_URID type, const char *fmt, ...);
     static int lv2_vprintf(LV2_Log_Handle handle, LV2_URID type, const char *fmt, va_list ap);
@@ -511,36 +542,6 @@ public:
 class LV2PluginWrapper;
 class LV2PluginWrapper_Worker;
 class LV2PluginWrapper_Window;
-
-typedef struct _lv2ExtProgram
-{
-   uint32_t index;
-   uint32_t bank;
-   uint32_t prog;
-   QString name;
-   bool useIndex;
-   bool operator<(const _lv2ExtProgram& other) const
-   {
-      if(useIndex == other.useIndex && useIndex == true)
-         return index < other.index;
-
-      if(bank < other.bank)
-         return true;
-      else if(bank == other.bank && prog < other.prog)
-         return true;
-      return false;
-   }
-
-   bool operator==(const _lv2ExtProgram& other) const
-   {
-      if(useIndex == other.useIndex && useIndex == true)
-         return index == other.index;
-
-      return (bank == other.bank && prog == other.prog);
-   }
-
-
-} lv2ExtProgram;
 
 struct LV2PluginWrapper_State {
    LV2PluginWrapper_State():

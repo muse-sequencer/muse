@@ -1796,6 +1796,68 @@ unsigned LV2Synth::lv2ui_IsSupported(const char *, const char *ui_type_uri)
    return 0;
 }
 
+void LV2Synth::lv2prg_updateProgram(LV2PluginWrapper_State *state, int idx)
+{
+  assert(state != NULL);
+  if(state->prgIface == NULL || idx < 0)
+    return;
+
+  const uint32_t u_idx = idx;
+  const LV2_Program_Descriptor *pDescr = state->prgIface->get_program(
+                lilv_instance_get_handle(state->handle), u_idx);
+
+  uint32_t hb;
+  uint32_t lb;
+  
+  if(pDescr)
+  {
+    // 16384 banks arranged as 128 hi and lo banks each with up to the first 128 programs supported.
+    hb = pDescr->bank >> 8;
+    lb = pDescr->bank & 0xff;
+  }
+  
+  // No program at that index? Out of range? Erase what we may have.
+  if(!pDescr || hb >= 128 || lb >= 128 || pDescr->program >= 128)
+  {
+    // Erase the program to index item.
+    for(std::map<uint32_t, uint32_t>::iterator i = state->prg2index.begin(); i != state->prg2index.end(); ++i)
+    {
+      if(i->second == u_idx)
+      {
+        state->prg2index.erase(i);
+        break;
+      } 
+    }
+    // Erase the index to program item.
+    std::map<uint32_t, lv2ExtProgram>::iterator i = state->index2prg.find(u_idx);
+    if(i != state->index2prg.end())
+      state->index2prg.erase(i);
+
+    return;
+  }
+
+  lv2ExtProgram extPrg;
+  extPrg.index = u_idx;
+  extPrg.bank = pDescr->bank;
+  extPrg.prog = pDescr->program;
+  extPrg.useIndex = true;
+  extPrg.name = QString(pDescr->name);
+
+  std::pair<std::map<uint32_t, lv2ExtProgram>::iterator, bool > ii2p =
+      state->index2prg.insert(std::make_pair(u_idx, extPrg));
+  if(!ii2p.second)
+    ii2p.first->second = extPrg;
+
+  hb &= 0x7f;
+  lb &= 0x7f;
+  uint32_t midiprg = (hb << 16) + (lb << 8) + extPrg.prog;
+
+  std::pair<std::map<uint32_t, uint32_t>::iterator, bool > ip2i =
+      state->prg2index.insert(std::make_pair(midiprg, u_idx));
+  if(!ip2i.second)
+    ip2i.first->second = u_idx;
+}
+
 void LV2Synth::lv2prg_updatePrograms(LV2PluginWrapper_State *state)
 {
    assert(state != NULL);
@@ -2327,33 +2389,13 @@ void LV2SynthIF::lv2prg_Changed(LV2_Programs_Handle handle, int32_t index)
 #endif
    if(state->sif && state->sif->synti)
    {
-      std::map<uint32_t, lv2ExtProgram>::iterator itIndex = state->index2prg.find(index);
-      if(itIndex == state->index2prg.end())
-         return;
-      int ch      = 0;
-      int port    = state->sif->synti->midiPort();
-      const lv2ExtProgram &extPrg = itIndex->second;
-      uint32_t hb = extPrg.bank >> 8;
-      uint32_t lb = extPrg.bank & 0xff;
-      if(hb > 127 || lb > 127 || extPrg.prog > 127)
-        return;
-      hb &= 0x7f;
-      lb &= 0x7f;
-      state->sif->synti->setCurrentProg(ch, extPrg.prog, lb, hb);
-      const int rv = (hb << 16) | (lb << 8) | extPrg.prog;
-      if(port != -1)
-      {
-        MidiPlayEvent event(0, port, ch, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
-        //MusEGlobal::midiPorts[port].sendEvent(event);
-        MusEGlobal::midiPorts[port].sendHwCtrlState(event, false);
-        if(state->sif->id() != -1 && state->sif->_controls != NULL)
-        {
-           for(unsigned long k = 0; k < state->sif->_inportsControl; ++k)
-           {
-              state->sif->synti->setPluginCtrlVal(genACnum(state->sif->id(), k), state->sif->_controls[k].val);
-           }
-        }
-      }
+      // "When index is -1, host should reload all the programs."
+      if(index < 0)
+        LV2Synth::lv2prg_updatePrograms(state);
+      else
+        LV2Synth::lv2prg_updateProgram(state, index);
+
+      MusEGlobal::song->update(SC_MIDI_INSTRUMENT);
    }
 }
 
@@ -4462,7 +4504,7 @@ bool LV2SynthIF::nativeGuiVisible() const
 
 void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
 {
-   LV2Synth::lv2prg_updatePrograms(_state);
+   //LV2Synth::lv2prg_updatePrograms(_state);
    menu->clear();
    MusEGui::PopupMenu *subMenuPrograms = new MusEGui::PopupMenu(menu->parent());
    subMenuPrograms->setTitle(QObject::tr("Midi programs"));
