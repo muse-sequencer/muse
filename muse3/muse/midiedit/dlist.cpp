@@ -273,6 +273,9 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
       override_col.setAlpha(64);
 
       QFont fnt(p.font());
+      QRect rtmp = map(QRect(0, 0, 0, TH));
+      if (rtmp.height() < TH)
+          fnt.setPixelSize(rtmp.height() - 1);
 
       for (int instrument = 0; instrument < ourDrumMapSize; ++instrument) {
             int yy = instrument * TH;
