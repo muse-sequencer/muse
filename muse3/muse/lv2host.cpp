@@ -152,6 +152,11 @@ namespace MusECore
 #define LV2_F_DEFAULT_STATE LV2_STATE_PREFIX "loadDefaultState"
 #define LV2_F_STATE_CHANGED LV2_STATE_PREFIX "StateChanged"
 
+#ifdef MIDNAM_SUPPORT
+#define LV2_F_MIDNAM_INTERFACE LV2_MIDNAM__interface
+#define LV2_F_MIDNAM_UPDATE LV2_MIDNAM__update
+#endif
+
 static LilvWorld *lilvWorld = 0;
 // LV2 does not use unique id numbers and frowns upon using anything but the uri.
 // static int uniqueID = 1;
@@ -244,6 +249,9 @@ LV2_Feature lv2Features [] =
    {LV2_F_OPTIONS, NULL},
    {LV2_UI__resize, NULL},
    {LV2_PROGRAMS__Host, NULL},
+#ifdef MIDNAM_SUPPORT
+   {LV2_MIDNAM__update, NULL},
+#endif
    {LV2_LOG__log, NULL},
 #ifdef LV2_MAKE_PATH_SUPPORT
    {LV2_STATE__makePath, NULL},
@@ -662,6 +670,12 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
       {
          _ifeatures [i].data = &state->prgHost;
       }
+#ifdef MIDNAM_SUPPORT
+      else if(i == synth->_fMidNamUpdate)
+      {
+         _ifeatures [i].data = &state->midnamUpdate;
+      }
+#endif
 #ifdef LV2_MAKE_PATH_SUPPORT
       else if(i == synth->_fMakePath)
       {
@@ -838,7 +852,13 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
       state->newPrgIface = false;
       state->prgIface = (LV2_Programs_Interface *)lilv_instance_get_extension_data(state->handle, LV2_PROGRAMS__Interface);
    }
+   //query for midnam interface
+   state->midnamIface = (LV2_Midnam_Interface *)lilv_instance_get_extension_data(state->handle, LV2_F_MIDNAM_INTERFACE);
 
+   // TODO: Which one do we honour if both progs and midnam exist? I suppose the midnam takes priority...
+#ifdef MIDNAM_SUPPORT
+   LV2Synth::lv2midnam_updateMidnam(state);
+#endif
    LV2Synth::lv2prg_updatePrograms(state);
 
    state->wrkThread->start(QThread::LowPriority);
@@ -1894,6 +1914,29 @@ void LV2Synth::lv2prg_updatePrograms(LV2PluginWrapper_State *state)
 
 }
 
+#ifdef MIDNAM_SUPPORT
+void LV2Synth::lv2midnam_updateMidnam(LV2PluginWrapper_State *state)
+{
+  assert(state != NULL);
+  if(state->midnamIface == NULL)
+    return;
+
+  char *pModel = state->midnamIface->model(lilv_instance_get_handle(state->handle));
+  char *pMidnam = state->midnamIface->midnam(lilv_instance_get_handle(state->handle));
+
+  // REMOVE Tim. lv2. Added. Diagnostics.
+//   fprintf(stderr, "LV2 plugin midnam model: %s\n", pModel);
+//   fprintf(stderr, "LV2 plugin midnam XML:\n%s\n", pMidnam);
+
+  // TODO WIP: Parse the XML and do things with it...
+
+
+
+  state->midnamIface->free(pModel);
+  state->midnamIface->free(pMidnam);
+}
+#endif
+
 int LV2Synth::lv2_printf(LV2_Log_Handle handle, LV2_URID type, const char *fmt, ...)
 {
    va_list argptr;
@@ -2389,6 +2432,7 @@ void LV2SynthIF::lv2prg_Changed(LV2_Programs_Handle handle, int32_t index)
 #endif
    if(state->sif && state->sif->synti)
    {
+// REMOVE Tim. lv2. Changed. TODO: Switch over to using the FIFO below...
       // "When index is -1, host should reload all the programs."
       if(index < 0)
         LV2Synth::lv2prg_updatePrograms(state);
@@ -2396,9 +2440,22 @@ void LV2SynthIF::lv2prg_Changed(LV2_Programs_Handle handle, int32_t index)
         LV2Synth::lv2prg_updateProgram(state, index);
 
       MusEGlobal::song->update(SC_MIDI_INSTRUMENT);
+      
+//      state->operationsFifo.put(LV2OperationMessage(LV2OperationMessage::ProgramChanged, index));
    }
 }
 
+#ifdef MIDNAM_SUPPORT
+void LV2SynthIF::lv2midnam_Changed(LV2_Midnam_Handle handle)
+{
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+#ifdef DEBUG_LV2
+   std::cerr << "LV2Synth::lv2midnam_Changed:" << std::endl;
+#endif
+   if(state->sif && state->sif->synti)
+     state->operationsFifo.put(LV2OperationMessage(LV2OperationMessage::MidnamUpdate));
+}
+#endif
 
 LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString author, const LilvPlugin *_plugin, PluginFeatures_t reqFeatures)
    : Synth(fi, label, name, author, QString(""), reqFeatures),
@@ -2527,6 +2584,12 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       {
          _fPrgHost = i;
       }
+#ifdef MIDNAM_SUPPORT
+      else if((std::string(LV2_MIDNAM__update) == _features [i].URI))
+      {
+         _fMidNamUpdate = i;
+      }
+#endif
       else if((std::string(LV2_LOG__log) == _features [i].URI))
       {
          _features [i].data = &_lv2_log_log;
@@ -4471,6 +4534,42 @@ void LV2SynthIF::guiHeartBeat()
    if(_state->songDirtyPending){      
       MusEGlobal::song->setDirty();
       _state->songDirtyPending = false;
+   }
+
+   LV2OperationMessage msg;
+   const unsigned int sz = _state->operationsFifo.getSize(false);
+   for(unsigned int i = 0; i < sz; ++i)
+   {
+     if(!_state->operationsFifo.get(msg))
+     {
+       fprintf(stderr, "Operations FIFO underrun\n");
+       break;
+     }
+
+     switch(msg._type)
+     {
+       case LV2OperationMessage::ProgramChanged:
+          // TODO: Not this. Compose an operation instead.
+
+          // "When index is -1, host should reload all the programs."
+          if(msg._index < 0)
+            LV2Synth::lv2prg_updatePrograms(_state);
+          else
+            LV2Synth::lv2prg_updateProgram(_state, msg._index);
+
+          MusEGlobal::song->update(SC_MIDI_INSTRUMENT);
+
+       break;
+
+       case LV2OperationMessage::MidnamUpdate:
+          // TODO: Not this. Compose an operation instead.
+
+#ifdef MIDNAM_SUPPORT
+          LV2Synth::lv2midnam_updateMidnam(_state);
+          MusEGlobal::song->update(SC_MIDI_INSTRUMENT);
+#endif
+       break;
+     }
    }
 
 }

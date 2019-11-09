@@ -429,7 +429,9 @@ class MidiInstrument {
       virtual void reset(int); 
       virtual QString getPatchName(int channel, int prog, bool drum, bool includeDefault) const;
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool);
-      static void populateInstrPopup(MusEGui::PopupMenu*, MidiInstrument* current = 0, bool show_synths = false);  // Static
+// REMOVE Tim. lv2. Changed.
+//       static void populateInstrPopup(MusEGui::PopupMenu*, MidiInstrument* current = 0, bool show_synths = false);  // Static
+      static void populateInstrPopup(MusEGui::PopupMenu*, int port, bool show_synths = false);  // Static
       void read(Xml&);
       void write(int level, Xml&);
 #ifdef _USE_INSTRUMENT_OVERRIDES_

@@ -72,6 +72,9 @@
 #include "lv2/lv2plug.in/ns/ext/resize-port/resize-port.h"
 #include "lv2extui.h"
 #include "lv2extprg.h"
+#ifdef MIDNAM_SUPPORT
+#include "midnam_lv2.h"
+#endif
 
 #include <cstring>
 #include <iostream>
@@ -98,6 +101,7 @@
 #include "plugin.h"
 #include "plugin_list.h"
 
+#include "lock_free_buffer.h"
 #include "lock_free_data_buffer.h"
 
 #endif
@@ -115,6 +119,8 @@ class LV2Synth;
 #define LV2_RT_FIFO_SIZE 128
 #define LV2_RT_FIFO_ITEM_SIZE (std::max(size_t(4096 * 16), size_t(MusEGlobal::segmentSize * 16)))
 #define LV2_EVBUF_SIZE (2*LV2_RT_FIFO_ITEM_SIZE)
+
+#define OPERATIONS_FIFO_SIZE 256 // ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(1024)) )
 
 struct LV2MidiEvent
 {
@@ -172,7 +178,6 @@ public:
    bool put(uint32_t port_index, uint32_t size, const void *data);
    bool get(uint32_t *port_index, size_t *szOut, char *data_out);
 };
-
 
 typedef struct _lv2ExtProgram
 {
@@ -304,6 +309,25 @@ struct LV2PluginWrapper_State;
 
 typedef std::map<const LilvUI *, std::pair<bool, const LilvNode *> > LV2_PLUGIN_UI_TYPES;
 
+class LV2OperationMessage
+{
+  public:
+    enum Type { 
+      // For the programs extension.
+      ProgramChanged=0,
+      // For the midnam extension.
+      MidnamUpdate
+    };
+
+    Type _type;
+    // For the programs extension. Index of program to update.
+    // Can be -1 for update all programs.
+    int _index;
+    
+    LV2OperationMessage() : _type(ProgramChanged), _index(-1) { }
+    LV2OperationMessage(Type type, int index = 0) : _type(type), _index(index) { }
+};
+
 class LV2Synth : public Synth
 {
 private:
@@ -347,6 +371,9 @@ private:
     uint32_t _fWrkSchedule;
     uint32_t _fUiResize;
     uint32_t _fPrgHost;
+#ifdef MIDNAM_SUPPORT
+    uint32_t _fMidNamUpdate;
+#endif
 #ifdef LV2_MAKE_PATH_SUPPORT
     uint32_t _fMakePath;
 #endif
@@ -418,6 +445,9 @@ public:
     static unsigned lv2ui_IsSupported (const char *, const char *ui_type_uri);
     static void lv2prg_updateProgram(LV2PluginWrapper_State *state, int idx);
     static void lv2prg_updatePrograms(LV2PluginWrapper_State *state);
+#ifdef MIDNAM_SUPPORT
+    static void lv2midnam_updateMidnam(LV2PluginWrapper_State *state);
+#endif    
     static int lv2_printf(LV2_Log_Handle handle, LV2_URID type, const char *fmt, ...);
     static int lv2_vprintf(LV2_Log_Handle handle, LV2_URID type, const char *fmt, va_list ap);
 #ifdef LV2_MAKE_PATH_SUPPORT
@@ -534,6 +564,9 @@ public:
     }
 
     static void lv2prg_Changed(LV2_Programs_Handle handle, int32_t index);
+#ifdef MIDNAM_SUPPORT
+    static void lv2midnam_Changed(LV2_Midnam_Handle handle);
+#endif
 
     friend class LV2Synth;
 };
@@ -563,9 +596,15 @@ struct LV2PluginWrapper_State {
       iState(NULL),
       tmpValues(NULL),
       numStateValues(0),
+      wrkDataBuffer(NULL),
+      wrkRespDataBuffer(NULL),
       wrkThread(NULL),
+      wrkIface(NULL),
       controlTimers(NULL),
       deleteLater(false),
+      curBpm(0),
+      curIsPlaying(false),
+      curFrame(0),
       hasGui(false),
       hasExternalGui(false),
       uiIdleIface(NULL),
@@ -577,6 +616,9 @@ struct LV2PluginWrapper_State {
       uiPrgIface(NULL),
       uiDoSelectPrg(false),
       newPrgIface(false),
+#ifdef MIDNAM_SUPPORT
+      midnamIface(NULL),
+#endif
       uiChannel(0),
       uiBank(0),
       uiProg(0),
@@ -587,7 +629,8 @@ struct LV2PluginWrapper_State {
       gtk2ResizeCompleted(false),
       gtk2AllocateCompleted(false),
       songDirtyPending(false),
-      uiIsOpening(false)
+      uiIsOpening(false),
+      operationsFifo(OPERATIONS_FIFO_SIZE)
    {
       extHost.plugin_human_id = NULL;
       extHost.ui_closed = NULL;
@@ -595,6 +638,10 @@ struct LV2PluginWrapper_State {
       uiResize.ui_resize = LV2Synth::lv2ui_Resize;
       prgHost.handle = (LV2_Programs_Handle)this;
       prgHost.program_changed = LV2SynthIF::lv2prg_Changed;
+#ifdef MIDNAM_SUPPORT
+      midnamUpdate.handle = (LV2_Midnam_Handle)this;
+      midnamUpdate.update = LV2SynthIF::lv2midnam_Changed;
+#endif
 #ifdef LV2_MAKE_PATH_SUPPORT
       makePath.handle = (LV2_State_Make_Path_Handle)this;
       makePath.path = LV2Synth::lv2state_makePath;
@@ -664,6 +711,10 @@ struct LV2PluginWrapper_State {
     std::map<uint32_t, lv2ExtProgram> index2prg;
     std::map<uint32_t, uint32_t> prg2index;
     LV2_Programs_Host prgHost;
+#ifdef MIDNAM_SUPPORT
+    LV2_Midnam_Interface *midnamIface;
+    LV2_Midnam midnamUpdate;
+#endif
     unsigned char uiChannel;
     int uiBank;
     int uiProg;
@@ -678,6 +729,7 @@ struct LV2PluginWrapper_State {
     bool gtk2AllocateCompleted;
     bool songDirtyPending;
     bool uiIsOpening;
+    LockFreeMPSCRingBuffer<LV2OperationMessage> operationsFifo;
 };
 
 

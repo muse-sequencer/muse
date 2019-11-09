@@ -164,6 +164,7 @@ option ( ENABLE_LV2_GTK2     "Enable LV2 user interface GTK2 support" ON)
 option ( ENABLE_LV2_MAKE_PATH "Enable LV2 makePath support. Stores plugin config files separate from song. NOT RECOMMENDED." OFF)
 option ( ENABLE_LV2_DEBUG    "Enable LV2 debugging messages" OFF)
 option ( ENABLE_FLUID        "Enable fluidsynth softsynth plugins."                                ON)
+option ( ENABLE_MIDNAM       "Enable MIDI Name support (MidNam). Official MMA instrument spec. Also for LV2 plugins." ON)
 option ( ENABLE_INSTPATCH    "Enable Instrument Patch Library support (enhances soundfont support)." ON)
 option ( ENABLE_EXPERIMENTAL "Enable various experimental features (not recommended)."              OFF)
 option ( ENABLE_PYTHON       "Enable experimental python control support (not recommended)."         OFF)
@@ -559,6 +560,14 @@ else ( ENABLE_INSTPATCH )
       message("Inst(rument) Patch support disabled")
 endif ( ENABLE_INSTPATCH )
 
+if ( ENABLE_MIDNAM )
+  # Ain't much to do here... yet... Looking at you XSD and therefore Xerces,
+  #  to read the offical midnam DTD document.
+  # Can we get away with just generating the hxx/cxx and slapping only them into the project?
+  # Or will we have to generate the hxx/cxx here for example (or in our midnam cmake file)
+  #  for machine-specific differences?
+  set(MIDNAM_SUPPORT ON)
+endif ( ENABLE_MIDNAM )
 
 ##
 ##   End OPTIONAL packages.
