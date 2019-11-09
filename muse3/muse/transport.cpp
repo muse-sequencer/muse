@@ -86,15 +86,12 @@ static QToolButton* newButton(const QIcon* icon, const QString& tt,
 
 Handle::Handle(QWidget* r, QWidget* parent)
    : QWidget(parent)
-      {
-      rootWin = r;
-      setFixedWidth(20);
-      setCursor(Qt::PointingHandCursor);
-      QPalette palette;
-      palette.setColor(this->backgroundRole(), MusEGlobal::config.transportHandleColor);
-      this->setPalette(palette);
-      setAutoFillBackground(true);
-      }
+{
+    rootWin = r;
+    setFixedWidth(20);
+    setCursor(Qt::PointingHandCursor);
+    this->setStyleSheet("background-color:" + MusEGlobal::config.transportHandleColor.name());
+}
 
 //---------------------------------------------------------
 //   mouseMoveEvent
