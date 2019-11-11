@@ -68,11 +68,39 @@ AboutBoxImpl::AboutBoxImpl()
     internalDebugInformation->append(QString("Segment count\t%1").arg(MusEGlobal::segmentCount));
 
     internalDebugInformation->append("\nTimer:");
-    internalDebugInformation->append(QString("Name\t\t%1").arg(MusEGlobal::midiSeq->getTimer()->getTimerName()));
-    internalDebugInformation->append(QString("Freq\t\t%1").arg(MusEGlobal::midiSeq->getTimer()->getTimerFreq()));
+    if ((MusEGlobal::midiSeq)) {
+        internalDebugInformation->append(QString("Name\t\t%1").arg(MusEGlobal::midiSeq->getTimer()->getTimerName()));
+        internalDebugInformation->append(QString("Freq\t\t%1").arg(MusEGlobal::midiSeq->getTimer()->getTimerFreq()));
+    } else {
+        internalDebugInformation->append("no timer information available as midiSeq is not instantiated");
+    }
 
-// timer
-//    internalDebugInformation->append(Realtime);
+    internalDebugInformation->append("\nMiscellaneous:");
+    internalDebugInformation->append(QString("debugMode:\t\t%1").arg(MusEGlobal::debugMode?"true":"false"));
+    internalDebugInformation->append(QString("midInputTrace:\t%1").arg(MusEGlobal::midiInputTrace?"true":"false"));
+    internalDebugInformation->append(QString("midiOutputTrace:\t%1").arg(MusEGlobal::midiOutputTrace?"true":"false"));
+    internalDebugInformation->append(QString("unityWorkaround:\t%1").arg(MusEGlobal::unityWorkaround?"true":"false"));
+    internalDebugInformation->append(QString("debugMsg:\t\t%1").arg(MusEGlobal::debugMsg?"true":"false"));
+    internalDebugInformation->append(QString("heavyDebugMsg:\t%1").arg(MusEGlobal::heavyDebugMsg?"true":"false"));
+    internalDebugInformation->append(QString("debugSync:\t\t%1").arg(MusEGlobal::debugSync?"true":"false"));
+    internalDebugInformation->append(QString("loadPlugins:\t\t%1").arg(MusEGlobal::loadPlugins?"true":"false"));
+    internalDebugInformation->append(QString("loadMESS:\t\t%1").arg(MusEGlobal::loadMESS?"true":"false"));
+    internalDebugInformation->append(QString("loadVST:\t\t%1").arg(MusEGlobal::loadVST?"true":"false"));
+    internalDebugInformation->append(QString("loadNativeVST:\t%1").arg(MusEGlobal::loadNativeVST?"true":"false"));
+    internalDebugInformation->append(QString("loadDSSI:\t\t%1").arg(MusEGlobal::loadDSSI?"true":"false"));
+    internalDebugInformation->append(QString("usePythonBridge:\t%1").arg(MusEGlobal::usePythonBridge?"true":"false"));
+
+    internalDebugInformation->append(QString("useLASH:\t\t%1").arg(MusEGlobal::useLASH?"true":"false"));
+    internalDebugInformation->append(QString("loadLV2:\t\t%1").arg(MusEGlobal::loadLV2?"true":"false"));
+    internalDebugInformation->append(QString("useAlsaWithJack:\t%1").arg(MusEGlobal::useAlsaWithJack?"true":"false"));
+    internalDebugInformation->append(QString("noAutoStartJack:\t%1").arg(MusEGlobal::noAutoStartJack?"true":"false"));
+    internalDebugInformation->append(QString("populateMidiPortsOnStart:\t%1").arg(MusEGlobal::populateMidiPortsOnStart?"true":"false"));
+    internalDebugInformation->append(QString("realtimeScheduling:\t%1").arg(MusEGlobal::realTimeScheduling?"true":"false"));
+    internalDebugInformation->append(QString("midiRTPrioOverride:\t%1").arg(MusEGlobal::midiRTPrioOverride?"true":"false"));
+    internalDebugInformation->append(QString("realtimePriority:\t%1").arg(MusEGlobal::realTimePriority));
+
+    internalDebugInformation->append(QString("midiSeqRunning:\t%1").arg(MusEGlobal::midiSeqRunning?"true":"false"));
+    internalDebugInformation->append(QString("automation:\t\t%1").arg(MusEGlobal::automation?"true":"false"));
 
 }
 
