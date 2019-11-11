@@ -63,7 +63,8 @@ class QtTimer : public Timer, public QThread {
     public:
        QtTimer();
        virtual ~QtTimer();
-       
+       virtual const char * getTimerName() { return "QtTimer"; }
+
        virtual signed int initTimer(unsigned long init);
        virtual long unsigned int setTimerResolution(unsigned long resolution);
        virtual long unsigned int getTimerResolution();

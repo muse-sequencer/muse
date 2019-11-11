@@ -23,6 +23,11 @@
 #include "aboutbox_impl.h"
 #include "config.h"
 #include "icons.h"
+#include "globals.h"
+#include "audio.h"
+#include "midiseq.h"
+#include "audiodev.h"
+#include "driver/rtaudio.h"
 
 namespace MusEGui {
 
@@ -36,19 +41,39 @@ AboutBoxImpl::AboutBoxImpl()
   QString systemInfo="";
 
 #ifdef LV2_SUPPORT
-  systemInfo.append("LV2 support enabled.\n");
+  systemInfo.append("\t\tLV2 support enabled.\n");
 #endif
 #ifdef DSSI_SUPPORT
-  systemInfo.append("DSSI support enabled.\n");
+  systemInfo.append("\t\tDSSI support enabled.\n");
 #endif
 #ifdef VST_NATIVE_SUPPORT
   #ifdef VST_VESTIGE_SUPPORT
-    systemInfo.append("Native VST support enabled using VESTIGE compatibility header.\n");
+    systemInfo.append("\t\tNative VST support enabled using VESTIGE compatibility header.\n");
   #else
-    systemInfo.append("Native VST support enabled using Steinberg VSTSDK.\n");
+    systemInfo.append("\t\tNative VST support enabled using Steinberg VSTSDK.\n");
   #endif
 #endif
-    systemInformationLabel->setText(systemInfo);
+
+    internalDebugInformation->append(versionLabel->text());
+    internalDebugInformation->append("Build info:");
+    internalDebugInformation->append(systemInfo);
+    internalDebugInformation->append("Runtime information:\n");
+    internalDebugInformation->append(QString("Running audio driver:\t%1").arg(MusEGlobal::audioDevice->driverName()));
+
+    if (MusEGlobal::audioDevice->deviceType() == MusECore::AudioDevice::RTAUDIO_AUDIO) {
+      internalDebugInformation->append(QString("RT audio driver:\t%1").arg(((MusECore::RtAudioDevice*)MusEGlobal::audioDevice)->driverBackendName()));
+    }
+    internalDebugInformation->append(QString("Sample rate\t\t%1").arg(MusEGlobal::sampleRate));
+    internalDebugInformation->append(QString("Segment size\t\t%1").arg(MusEGlobal::segmentSize));
+    internalDebugInformation->append(QString("Segment count\t%1").arg(MusEGlobal::segmentCount));
+
+    internalDebugInformation->append("\nTimer:");
+    internalDebugInformation->append(QString("Name\t\t%1").arg(MusEGlobal::midiSeq->getTimer()->getTimerName()));
+    internalDebugInformation->append(QString("Freq\t\t%1").arg(MusEGlobal::midiSeq->getTimer()->getTimerFreq()));
+
+// timer
+//    internalDebugInformation->append(Realtime);
+
 }
 
 }
