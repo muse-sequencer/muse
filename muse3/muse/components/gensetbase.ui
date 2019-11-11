@@ -985,7 +985,7 @@
           <item row="1" column="1">
            <widget class="QComboBox" name="deviceAudioSize">
             <property name="toolTip">
-             <string>Shorter periods give better midi playback resolution.</string>
+             <string>Shorter periods give better midi playback resolution. Note that this cannot be set with Jack devices!</string>
             </property>
             <item>
              <property name="text">
@@ -1043,7 +1043,11 @@
            </widget>
           </item>
           <item row="1" column="4">
-           <widget class="QComboBox" name="deviceAudioRate"/>
+           <widget class="QComboBox" name="deviceAudioRate">
+            <property name="toolTip">
+             <string>Note that samplerate cannot be set with Jack devices!</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -1316,8 +1320,8 @@ Adjusts responsiveness of audio controls and
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>560</width>
-            <height>517</height>
+            <width>556</width>
+            <height>508</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -1887,8 +1891,8 @@ Certain operations will also force them to be resent,
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>534</width>
-               <height>700</height>
+               <width>530</width>
+               <height>640</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
@@ -2484,7 +2488,7 @@ Benign XCB connection errors may still
                <x>0</x>
                <y>0</y>
                <width>560</width>
-               <height>368</height>
+               <height>373</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">

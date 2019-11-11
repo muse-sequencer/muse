@@ -106,7 +106,9 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       connect(pluginPathRemove, SIGNAL(clicked()), SLOT(removePluginPath()));
       connect(pluginPathMoveUp, SIGNAL(clicked()), SLOT(movePluginPathUp()));
       connect(pluginPathMoveDown, SIGNAL(clicked()), SLOT(movePluginPathDown()));
-      
+
+      connect(deviceAudioBackendComboBox, SIGNAL(currentIndexChanged(int)), SLOT(updateBackendDeviceSettings()));
+
       addMdiSettings(TopWin::ARRANGER);
       addMdiSettings(TopWin::SCORE);
       addMdiSettings(TopWin::PIANO_ROLL);
@@ -128,6 +130,23 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       for (int i = 0; i < numAudioSampleRates; i++){
         deviceAudioRate->addItem(QString::number(selectableAudioSampleRates[i]),i);
       }
+      updateBackendDeviceSettings();
+}
+
+void GlobalSettingsConfig::updateBackendDeviceSettings()
+{
+    int currentDevice = deviceAudioBackendComboBox->currentIndex();
+
+    if (currentDevice == MusEGlobal::JackAudio)
+    {
+        deviceAudioSize->setDisabled(true);
+        deviceAudioRate->setDisabled(true);
+    }
+    else {
+        deviceAudioSize->setDisabled(false);
+        deviceAudioRate->setDisabled(false);
+
+    }
 }
 
 void GlobalSettingsConfig::addMdiSettings(TopWin::ToplevelType t)
