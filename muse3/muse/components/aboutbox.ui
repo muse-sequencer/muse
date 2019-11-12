@@ -103,7 +103,7 @@
          <item>
           <widget class="QLabel" name="textLabel1">
            <property name="text">
-            <string>(C) Copyright 1999-2018 the MusE development team.
+            <string>(C) Copyright 1999-2019 the MusE development team.
 See http://www.muse-sequencer.org for new versions and
 more information.
 

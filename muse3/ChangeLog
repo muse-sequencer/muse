@@ -1,3 +1,5 @@
+12.11.2019
+      *** MusE 3.1.0pre2 ***
 11.11.2019
       - Added tab in Aboutbox with some runtime of MusE, feel free to add more (rj)
       - Disabled rate and size for audio device when Jack is selected as we currently
