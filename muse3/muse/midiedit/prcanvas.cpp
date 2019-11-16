@@ -1446,10 +1446,14 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
 
 void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
       {
+      const int pianoHeight = 91 * 10 + KH * 5 + 1;
+      QRect ur = mapDev(mr);
+      if (ur.height() > pianoHeight)
+      ur.setHeight(pianoHeight);
       // FIXME: For some reason need the expansion otherwise drawing
       //        artifacts (incomplete drawing). Can't figure out why.
-      const QRect ur = mapDev(mr).adjusted(0, -4, 0, 4);
-      
+      ur.adjust(0, -4, 0, 4);
+
       int ux = ur.x();
       if(ux < 0)
         ux = 0;
