@@ -1076,7 +1076,7 @@ void View::drawTickRaster(
                             pen.setColor(beat_color);
                             p.setPen(pen);
                             p.drawLine(mxx, my, mxx, mbottom);
-                            p.drawLine(mxx+1, my, mxx+1, mbottom);
+//                            p.drawLine(mxx+1, my, mxx+1, mbottom);
                           }
                         }
                         }

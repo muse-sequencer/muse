@@ -57,6 +57,7 @@ void TScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
       int y = r.y();
       int h = r.height();
       QString s;
+      p.setPen(Qt::black);
       for (int i = 30000; i <= 250000; i += 10000) {
             int yy =  mapy(280000 - i);
             if (yy < y)
