@@ -1865,7 +1865,6 @@ void PianoCanvas::mouseMove(QMouseEvent* event) {
 
     EventCanvas::mouseMove(event);
 
-//    if (_tool == MusEGui::PointerTool || _tool == MusEGui::PencilTool || _tool == MusEGui::RubberTool) {
     if (_tool & (MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool)) {
         int pitch = y2pitch(event->pos().y());
         QToolTip::showText(event->globalPos(), MusECore::pitch2string(pitch) + " (" + QString::number(pitch) + ")" );
