@@ -1865,8 +1865,10 @@ void PianoCanvas::mouseMove(QMouseEvent* event) {
 
     EventCanvas::mouseMove(event);
 
-    int pitch = y2pitch(event->pos().y());
-    QToolTip::showText(event->globalPos(), MusECore::pitch2string(pitch) + " (" + QString::number(pitch) + ")" );
+    if (_tool & (MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool)) {
+        int pitch = y2pitch(event->pos().y());
+        QToolTip::showText(event->globalPos(), MusECore::pitch2string(pitch) + " (" + QString::number(pitch) + ")" );
+    }
 }
 
 } // namespace MusEGui
