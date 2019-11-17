@@ -1,3 +1,9 @@
+17.11.2019
+	  - Introduce new scalable icons and cursors for edit tools (kybos)
+	    Improved cursor interaction in piano roll/drum editor (event canvas vs. control canvas),
+	    cursor shape shows when cursor has no function in given area
+	    Consistent cursor shape display in all editors affected (midi, part, score, master, wave)
+	    Correct cursor size on HiDPI screens (fixes issue #637)
 12.11.2019
       *** MusE 3.1.0pre3 ***
 11.11.2019
