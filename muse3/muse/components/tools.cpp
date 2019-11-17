@@ -63,21 +63,37 @@ const char* infoPan = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Panning 
 const char* infoZoom = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Zoom Tool");
 
 ToolB toolList[] = {
-      {&pointerIcon,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "pointer"),        infoPointer },
-      {&pencilIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "pencil"),         infoPencil  },
-      {&deleteIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "eraser"),         infoDel     },
-      {&cutIcon,      QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "cutter"),         infoCut     },
-      {&glueIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "glue"),           infoGlue    },
-      {&cursorIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "range"),          infoRange   },
-      {&openHandIcon, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "pan"),            infoPan     },
-      {&zoomIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "zoom"),           infoZoom    },
-      {&note1Icon,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "score"),          infoScore   },
-      {&quantIcon,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "quantize"),       infoQuant   },
-      {&drawIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "draw"),           infoDraw    },
-      {&editmuteIcon, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "mute parts"),     infoMute    },
-      {&drawIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "edit automation"),infoAutomation},
-      {&cursorIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "cursor"),         infoCursor}
+      {&pointerIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "pointer"),        infoPointer },
+      {&pencilIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "pencil"),         infoPencil  },
+      {&deleteIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "eraser"),         infoDel     },
+      {&cutterIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "cutter"),         infoCut     },
+      {&glueIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "glue"),           infoGlue    },
+      {&cursorIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "range"),          infoRange   },
+      {&handIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "pan"),            infoPan     },
+      {&zoomIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "zoom"),           infoZoom    },
+      {&pencilIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "score"),          infoScore   }, // not used
+      {&pencilIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "quantize"),       infoQuant   }, // not used
+      {&drawIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "draw"),           infoDraw    },
+      {&muteIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "mute parts"),     infoMute    },
+      {&drawIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "edit automation"),infoAutomation},
+      {&cursorIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "cursor"),         infoCursor}
       };
+//ToolB toolList[] = {
+//    {&pointerIcon,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "pointer"),        infoPointer },
+//    {&pencilIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "pencil"),         infoPencil  },
+//    {&deleteIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "eraser"),         infoDel     },
+//    {&cutIcon,      QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "cutter"),         infoCut     },
+//    {&glueIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "glue"),           infoGlue    },
+//    {&cursorIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "range"),          infoRange   },
+//    {&openHandIcon, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "pan"),            infoPan     },
+//    {&zoomIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "zoom"),           infoZoom    },
+//    {&note1Icon,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "score"),          infoScore   },
+//    {&quantIcon,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "quantize"),       infoQuant   },
+//    {&drawIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "draw"),           infoDraw    },
+//    {&editmuteIcon, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "mute parts"),     infoMute    },
+//    {&drawIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "edit automation"),infoAutomation},
+//    {&cursorIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "cursor"),         infoCursor}
+//};
 
 QMap<int,int> toolShortcuts;
 
@@ -112,7 +128,8 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
             Action* a = new Action(action, 1<<i, tr(t->tip).toLatin1().data(), true);
             actions[n] = a;
             //a->setIconSet(QIcon(**(t->icon)));
-            a->setIcon(QIcon(**(t->icon)));
+            a->setIcon(**(t->icon));
+//            a->setIcon(QIcon(**(t->icon)));
             a->setToolTip(tr(t->tip));
             a->setWhatsThis(tr(t->ltip));
             if (first) {

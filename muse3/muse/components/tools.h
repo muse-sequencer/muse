@@ -43,8 +43,8 @@ enum Tool {
    RangeTool=32,
    PanTool=64,
    ZoomTool=128,
-   ScoreTool=256,
-   QuantTool=512,
+//   ScoreTool=256,
+//   QuantTool=512,
    DrawTool=1024,
    MuteTool=2048,
    AutomationTool=4096,
@@ -57,7 +57,8 @@ const int arrangerTools = PointerTool | PencilTool | RubberTool | CutTool | Glue
                           AutomationTool | PanTool | ZoomTool;
 
 struct ToolB {
-      QPixmap** icon;
+      QIcon** icon;
+//      QPixmap** icon;
       const char* tip;
       const char* ltip;
       };

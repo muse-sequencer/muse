@@ -208,8 +208,7 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
             p.setPen(Qt::red);
             p.drawLine(xp, y, xp, y+h);
             }
-
-      }
+    }
 
 //---------------------------------------------------------
 //   draw
@@ -219,9 +218,9 @@ void Master::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       {
       drawTickRaster(p, rect, rg, 0,
                          false, false, false,
-                         MusEGlobal::config.midiCanvasBarColor, 
+                         MusEGlobal::config.midiCanvasBarColor,
                          MusEGlobal::config.midiCanvasBeatColor);
-      
+
       if ((tool == MusEGui::DrawTool) && drawLineMode) {
             p.setPen(Qt::black);
             p.drawLine(line1x, line1y, line2x, line2y);
@@ -428,22 +427,26 @@ void Master::deleteVal(int x1, int x2)
 //---------------------------------------------------------
 
 void Master::setTool(int t)
-      {
-      if (tool == MusEGui::Tool(t))
-            return;
-      tool = MusEGui::Tool(t);
-      switch(tool) {
-            case MusEGui::PencilTool:
-                  setCursor(QCursor(*pencilIcon, 4, 15));
-                  break;
-            case MusEGui::DrawTool:
-                  drawLineMode = false;
-                  break;
-            default:
-                  setCursor(QCursor(Qt::ArrowCursor));
-                  break;
-            }
-      }
+{
+    if (tool == MusEGui::Tool(t))
+        return;
+    tool = MusEGui::Tool(t);
+    switch(tool) {
+    case MusEGui::PencilTool:
+        setCursor(getCursorFromIcon(pencilIconSVG, "pencilIconSVG"));
+        break;
+    case MusEGui::RubberTool:
+        setCursor(getCursorFromIcon(deleteIconSVG, "deleteIconSVG"));
+        break;
+    case MusEGui::DrawTool:
+        setCursor(getCursorFromIcon(drawIconSVG, "drawIconSVG"));
+        drawLineMode = false;
+        break;
+    default:
+        setCursor(QCursor(Qt::ArrowCursor));
+        break;
+    }
+}
 
 //---------------------------------------------------------
 //   newVal

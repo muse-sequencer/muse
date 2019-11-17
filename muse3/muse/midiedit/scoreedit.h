@@ -781,6 +781,8 @@ class ScoreCanvas : public MusEGui::View
 		list<staff_t>::iterator current_staff;
 		bool dragging_staff;
 
+        QCursor active_tool_cursor;
+
 
 	private slots:
 		void staffmode_treble_slot();

@@ -62,14 +62,9 @@
 #include "xpm/view_mixer.xpm"
 #include "xpm/view_transport_window.xpm"
 
-#include "xpm/pointer.xpm"
-#include "xpm/pencil.xpm"
 #include "xpm/delete.xpm"
 #include "xpm/play.xpm"
 #include "xpm/closed_hand.xpm"
-#include "xpm/open_hand.xpm"
-#include "xpm/zoom.xpm"
-#include "xpm/zoom_at.xpm"
 #include "xpm/size_all.xpm"
 #include "xpm/midi_ctrl_graph_merge.xpm"
 #include "xpm/midi_ctrl_graph_merge_erase.xpm"
@@ -105,10 +100,7 @@
 #include "xpm/cmark.xpm"
 #include "xpm/lmark.xpm"
 #include "xpm/rmark.xpm"
-#include "xpm/cut.xpm"
 #include "xpm/steprec.xpm"
-#include "xpm/glue.xpm"
-#include "xpm/draw.xpm"
 #include "xpm/cursor.xpm"
 #include "xpm/quant.xpm"
 #include "xpm/fileprint.xpm"
@@ -128,7 +120,6 @@
 #include "xpm/back.xpm"
 #include "xpm/forward.xpm"
 
-// #include "xpm/mute.xpm"
 #include "xpm/solobutton_on.xpm"
 #include "xpm/solobutton_off.xpm"
 #include "xpm/solobutton_on_blksq.xpm"
@@ -300,37 +291,43 @@
 namespace MusEGui {
   bool use_theme_icons_if_possible = true;
   
-  QPixmap* MPIXMAP(const char* const* fallback, const QString&
-#if QT_VERSION >= 0x040600
-  name
-#endif
-  )
-  {
-#if QT_VERSION >= 0x040600
+  QPixmap* MPIXMAP(const char* const* fallback, const QString& name) {
     const QPixmap& fallback_pm = QPixmap(fallback);
     if(use_theme_icons_if_possible)
       return new QPixmap(QIcon::fromTheme(name, QIcon(fallback_pm)).pixmap(fallback_pm.width(),fallback_pm.height()));
     else 
-#endif
       return new QPixmap(fallback);
   }
   
-  QIcon* MICON(const char* const* fallback, const QString&
-#if QT_VERSION >= 0x040600
-  name
-#endif
-  )
-  {
-#if QT_VERSION >= 0x040600
+  QIcon* MICON(const char* const* fallback, const QString& name) {
     const QPixmap& fallback_pm = QPixmap(fallback);
     if(use_theme_icons_if_possible)
       return new QIcon(QIcon::fromTheme(name, QIcon(fallback_pm)));
     else 
-#endif
       return new QIcon(fallback_pm);
   }
-  
 
+  QCursor getCursorFromIcon(const QIcon* icon, const QString& iconname) {
+
+      const qreal dpr = qApp->devicePixelRatio();
+      int hotX, hotY;
+
+      if (iconname == "pencilIconSVG" || iconname == "glueIconSVG" || iconname == "cutterIconSVG" || iconname == "drawIconSVG") {
+          hotX = qRound(dpr * 1);
+          hotY = qRound(dpr * 17);
+      } else if (iconname == "deleteIconSVG") {
+          hotX = qRound(dpr * 3);
+          hotY = qRound(dpr * 15);
+      } else if (iconname == "magnetIconSVG") {
+          hotX = -1;
+          hotY = qRound(dpr * 15);
+      } else  {
+          hotX = -1;
+          hotY = -1;
+      }
+
+      return QCursor(icon->pixmap(DEFCURSIZE), hotX, hotY);
+  }
   
 /* Quick API reference:
    -------------------
@@ -375,8 +372,6 @@ QPixmap* routesOutIcon;
 QPixmap* routesMidiInIcon;
 QPixmap* routesMidiOutIcon;
 
-QPixmap* pointerIcon;
-QPixmap* pencilIcon;
 QPixmap* deleteIcon;
 QPixmap* punchinIcon;
 QPixmap* punchoutIcon;
@@ -386,9 +381,6 @@ QPixmap* loopIcon;
 QPixmap* loop1Icon;
 QPixmap* playIcon;
 QPixmap* closedHandIcon;
-QPixmap* openHandIcon;
-QPixmap* zoomIcon;
-QPixmap* zoomAtIcon;
 QPixmap* sizeAllIcon;
 QPixmap* midiCtrlMergeIcon;
 QPixmap* midiCtrlMergeEraseIcon;
@@ -416,10 +408,7 @@ QPixmap* stickIcon;
 QPixmap* waveIcon;
 QPixmap* synthIcon;
 QPixmap* markIcon[3];
-QPixmap* cutIcon;
 QPixmap* steprecIcon;
-QPixmap* glueIcon;
-QPixmap* drawIcon;
 QPixmap* cursorIcon;
 QPixmap* quantIcon;
 QPixmap* printIcon;
@@ -739,13 +728,25 @@ QIcon* jackTransportOnSVGIcon;
 QIcon* metronomeOffSVGIcon;
 QIcon* metronomeOnSVGIcon;
 
+QIcon* pencilIconSVG;
+QIcon* glueIconSVG;
+QIcon* cutterIconSVG;
+QIcon* zoomIconSVG;
+QIcon* zoomAtIconSVG;
+QIcon* deleteIconSVG;
+QIcon* drawIconSVG;
+QIcon* pointerIconSVG;
+QIcon* muteIconSVG;
+QIcon* handIconSVG;
+QIcon* cursorIconSVG;
+QIcon* magnetIconSVG;
+
 //----------------------------------
 // Cursors
 //----------------------------------
 
 QCursor* editpasteSCursor;
 QCursor* editpasteCloneSCursor;
-
 
 //---------------------------------------------------------
 //   initIcons
@@ -756,8 +757,6 @@ void initIcons(bool useThemeIconsIfPossible)
       use_theme_icons_if_possible = useThemeIconsIfPossible;
         
       track_commentIcon = MPIXMAP(track_comment_xpm, NULL);
-      pointerIcon  = MPIXMAP(pointer_xpm, NULL);
-      pencilIcon   = MPIXMAP(pencil_xpm, NULL);
       deleteIcon   = MPIXMAP(delete_xpm, "draw-eraser");
       punchinIcon  = MPIXMAP(punchin_xpm, NULL);
       punchoutIcon = MPIXMAP(punchout_xpm, NULL);
@@ -767,11 +766,7 @@ void initIcons(bool useThemeIconsIfPossible)
       loop1Icon    = MPIXMAP(loop1_xpm, NULL);
       playIcon     = MPIXMAP(play_xpm, "media-playback-start");
       closedHandIcon = MPIXMAP(closed_hand_xpm, NULL);
-      openHandIcon = MPIXMAP(open_hand_xpm, NULL);
-      zoomIcon     = MPIXMAP(zoom_xpm, NULL);
-      zoomAtIcon   = MPIXMAP(zoom_at_xpm, NULL);
       sizeAllIcon  = MPIXMAP(size_all_xpm, NULL);
-      zoomIcon     = MPIXMAP(zoom_xpm, NULL);
       midiCtrlMergeIcon                   = MPIXMAP(midi_ctrl_graph_merge_xpm, NULL);
       midiCtrlMergeEraseIcon              = MPIXMAP(midi_ctrl_graph_merge_erase_xpm, NULL);
       midiCtrlMergeEraseInclusiveIcon     = MPIXMAP(midi_ctrl_graph_merge_erase_inclusive_xpm, NULL);
@@ -800,10 +795,7 @@ void initIcons(bool useThemeIconsIfPossible)
       markIcon[0]  = MPIXMAP(cmark_xpm, NULL);
       markIcon[1]  = MPIXMAP(lmark_xpm, NULL);
       markIcon[2]  = MPIXMAP(rmark_xpm, NULL);
-      cutIcon      = MPIXMAP(cut_xpm, "edit-cut");
       steprecIcon  = MPIXMAP(steprec_xpm, NULL);
-      glueIcon     = MPIXMAP(glue_xpm, NULL);
-      drawIcon     = MPIXMAP(draw_xpm, NULL);
       cursorIcon   = MPIXMAP(cursor_xpm, NULL);
       quantIcon    = MPIXMAP(quant_xpm, NULL);
       saveIcon     = MPIXMAP(filesave_xpm, "document-save");
@@ -1189,7 +1181,21 @@ void initIcons(bool useThemeIconsIfPossible)
       
       metronomeOffSVGIcon = new QIcon(*metronomeOffSVGPixmap);
       metronomeOnSVGIcon = new QIcon(*metronomeOnSVGPixmap);
-      
+
+      // tool icons
+      pencilIconSVG     = new QIcon(":/svg/pencil.svg");
+      glueIconSVG       = new QIcon(":/svg/glue.svg");
+      cutterIconSVG     = new QIcon(":/svg/cutter.svg");
+      zoomIconSVG       = new QIcon(":/svg/zoom.svg");
+      zoomAtIconSVG     = new QIcon(":/svg/zoomAt.svg");
+      deleteIconSVG     = new QIcon(":/svg/eraser.svg");
+      drawIconSVG       = new QIcon(":/svg/draw.svg");
+      pointerIconSVG    = new QIcon(":/svg/pointer.svg");
+      muteIconSVG       = new QIcon(":/svg/mute_on.svg");
+      handIconSVG       = new QIcon(":/svg/hand.svg");
+      cursorIconSVG     = new QIcon(":/svg/cursor.svg");
+      magnetIconSVG     = new QIcon(":/svg/magnet.svg");
+
       //----------------------------------
       // Cursors
       //----------------------------------
@@ -1205,8 +1211,6 @@ void initIcons(bool useThemeIconsIfPossible)
 void deleteIcons()
       {
       delete track_commentIcon;
-      delete pointerIcon;
-      delete pencilIcon;
       delete deleteIcon;
       delete punchinIcon;
       delete punchoutIcon;
@@ -1216,9 +1220,6 @@ void deleteIcons()
       delete loop1Icon;
       delete playIcon;
       delete closedHandIcon;
-      delete openHandIcon;
-      delete zoomIcon;
-      delete zoomAtIcon;
       delete sizeAllIcon;
       delete midiCtrlMergeIcon;
       delete midiCtrlMergeEraseIcon;
@@ -1248,10 +1249,7 @@ void deleteIcons()
       delete markIcon[0];  
       delete markIcon[1];  
       delete markIcon[2];  
-      delete cutIcon;      
       delete steprecIcon;  
-      delete glueIcon;     
-      delete drawIcon;     
       delete cursorIcon;   
       delete quantIcon;    
       delete saveIcon;     
@@ -1270,7 +1268,7 @@ void deleteIcons()
       delete homeIcon;     
       delete backIcon;     
       delete forwardIcon;  
-      delete muteIcon;     
+      delete muteIcon;
       delete upIcon;       
       delete downIcon;     
       delete boldIcon;     
@@ -1595,6 +1593,19 @@ void deleteIcons()
       
       delete metronomeOffSVGIcon;
       delete metronomeOnSVGIcon;
+
+    delete pencilIconSVG;
+    delete glueIconSVG;
+    delete cutterIconSVG;
+    delete zoomIconSVG;
+    delete zoomAtIconSVG;
+    delete deleteIconSVG;
+    delete drawIconSVG;
+    delete pointerIconSVG;
+    delete muteIconSVG;
+    delete handIconSVG;
+    delete cursorIconSVG;
+    delete magnetIconSVG;
 
       //----------------------------------
       // Cursors
