@@ -51,7 +51,7 @@ Master::Master(MidiEditor* e, QWidget* parent, int xmag, int ymag)
    : View(parent, xmag, ymag)
       {
       editor = e;
-      setBg(Qt::white);
+      setBg(MusEGlobal::config.midiCanvasBg);
       vscroll = 0;
       pos[0]  = MusEGlobal::song->cpos();
       pos[1]  = MusEGlobal::song->lpos();
@@ -184,6 +184,7 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
             if (tempo < 0)
                   tempo = 0;
             if (tempo < wh) {
+                p.setCompositionMode(QPainter::CompositionMode_Multiply);
                 p.fillRect(stick, tempo, etick-stick, wh, Qt::blue);
                   }
             }
@@ -208,7 +209,6 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
             p.setPen(Qt::red);
             p.drawLine(xp, y, xp, y+h);
             }
-
       }
 
 //---------------------------------------------------------
@@ -216,18 +216,20 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
 //---------------------------------------------------------
 
 void Master::draw(QPainter& p, const QRect& rect, const QRegion& rg)
-      {
-      drawTickRaster(p, rect, rg, 0,
-                         false, false, false,
-                         MusEGlobal::config.midiCanvasBarColor, 
-                         MusEGlobal::config.midiCanvasBeatColor);
-      
-      if ((tool == MusEGui::DrawTool) && drawLineMode) {
-            p.setPen(Qt::black);
-            p.drawLine(line1x, line1y, line2x, line2y);
-            p.drawLine(line1x, line1y+1, line2x, line2y+1);
-            }
-      }
+{
+    drawTickRaster(p, rect, rg, 0,
+                   false, false, false,
+                   MusEGlobal::config.midiCanvasBarColor,
+                   MusEGlobal::config.midiCanvasBeatColor);
+
+    if ((tool == MusEGui::DrawTool) && drawLineMode) {
+        QPen pen;
+        pen.setCosmetic(true);
+        pen.setColor(Qt::black);
+        p.setPen(pen);
+        p.drawLine(line1x, line1y, line2x, line2y);
+    }
+}
 
 //---------------------------------------------------------
 //   newValRamp
@@ -245,6 +247,12 @@ void Master::newValRamp(int x1, int y1, int x2, int y2)
   if(x2 < 0)
     x2 = 0;
   
+  // line drawn from right to left...
+  if (x1 > x2) {
+      qSwap(x1, x2);
+      qSwap(y1, y2);
+  }
+
   int tickStart = editor->rasterVal1(x1);
   int tickEnd = editor->rasterVal2(x2);
 
