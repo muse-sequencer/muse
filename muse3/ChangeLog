@@ -1,5 +1,7 @@
 18.11.2019
     - Add dedicated new 'mute parts' svg icon, for 17.11 (Tim)
+    - Fixed metronome selection of wave files, the selection in the ui 
+      didn't actually do anything. (rj)
 17.11.2019
 	  - Introduce new scalable icons and cursors for edit tools (kybos)
 	    Improved cursor interaction in piano roll/drum editor (event canvas vs. control canvas),

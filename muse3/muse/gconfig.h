@@ -355,11 +355,6 @@ struct GlobalConfigValues {
       bool midiCtrlGraphMergeErase; // Whether to erase underlying erase target items when dragging/dropping source items.
       bool midiCtrlGraphMergeEraseInclusive; // Whether to erase target items in-between source item groups.
       bool midiCtrlGraphMergeEraseWysiwyg; // Whether to erase past the last item in a group to include its original source width.
-
-      QString measSample;
-      QString beatSample;
-      QString accent1Sample;
-      QString accent2Sample;
       RouteNameAliasPreference preferredRouteNameOrAlias;
       bool routerExpandVertically; // Whether to expand the router items vertically. (Good use of space but slow!)
       // How to group the router channels together for easier multi-channel manipulation.
