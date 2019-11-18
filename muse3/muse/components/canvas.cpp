@@ -1941,7 +1941,7 @@ void Canvas::setCursor()
             QWidget::setCursor(getCursorFromIcon(cutterIconSVG, "cutterIconSVG"));
             break;
         case MuteTool:
-            QWidget::setCursor(getCursorFromIcon(muteIconSVG, "muteIconSVG"));
+            QWidget::setCursor(getCursorFromIcon(mutePartsIconSVG, "mutePartsIconSVG"));
             break;
         case AutomationTool:
             QWidget::setCursor(QCursor(Qt::ArrowCursor));

@@ -448,7 +448,7 @@ extern QIcon* zoomAtIconSVG;
 extern QIcon* deleteIconSVG;
 extern QIcon* drawIconSVG;
 extern QIcon* pointerIconSVG;
-extern QIcon* muteIconSVG;
+extern QIcon* mutePartsIconSVG;
 extern QIcon* handIconSVG;
 extern QIcon* cursorIconSVG;
 extern QIcon* magnetIconSVG;

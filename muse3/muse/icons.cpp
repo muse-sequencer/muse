@@ -312,7 +312,8 @@ namespace MusEGui {
       const qreal dpr = qApp->devicePixelRatio();
       int hotX, hotY;
 
-      if (iconname == "pencilIconSVG" || iconname == "glueIconSVG" || iconname == "cutterIconSVG" || iconname == "drawIconSVG") {
+      if (iconname == "pencilIconSVG" || iconname == "glueIconSVG" ||
+          iconname == "cutterIconSVG" || iconname == "drawIconSVG" || iconname == "mutePartsIconSVG") {
           hotX = qRound(dpr * 1);
           hotY = qRound(dpr * 17);
       } else if (iconname == "deleteIconSVG") {
@@ -740,7 +741,7 @@ QIcon* zoomAtIconSVG;
 QIcon* deleteIconSVG;
 QIcon* drawIconSVG;
 QIcon* pointerIconSVG;
-QIcon* muteIconSVG;
+QIcon* mutePartsIconSVG;
 QIcon* handIconSVG;
 QIcon* cursorIconSVG;
 QIcon* magnetIconSVG;
@@ -1202,7 +1203,7 @@ void initIcons(bool useThemeIconsIfPossible)
       deleteIconSVG     = new QIcon(":/svg/eraser.svg");
       drawIconSVG       = new QIcon(":/svg/draw.svg");
       pointerIconSVG    = new QIcon(":/svg/pointer.svg");
-      muteIconSVG       = new QIcon(":/svg/mute_on.svg");
+      mutePartsIconSVG  = new QIcon(":/svg/mute_parts.svg");
       handIconSVG       = new QIcon(":/svg/hand.svg");
       cursorIconSVG     = new QIcon(":/svg/cursor.svg");
       magnetIconSVG     = new QIcon(":/svg/magnet.svg");
@@ -1617,7 +1618,7 @@ void deleteIcons()
     delete deleteIconSVG;
     delete drawIconSVG;
     delete pointerIconSVG;
-    delete muteIconSVG;
+    delete mutePartsIconSVG;
     delete handIconSVG;
     delete cursorIconSVG;
     delete magnetIconSVG;

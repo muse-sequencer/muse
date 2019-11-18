@@ -74,7 +74,7 @@ ToolB toolList[] = {
       {&pencilIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "score"),          infoScore   }, // not used
       {&pencilIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "quantize"),       infoQuant   }, // not used
       {&drawIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "draw"),           infoDraw    },
-      {&muteIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "mute parts"),     infoMute    },
+      {&mutePartsIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "mute parts"),     infoMute    },
       {&drawIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "edit automation"),infoAutomation},
       {&cursorIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "cursor"),         infoCursor}
       };
