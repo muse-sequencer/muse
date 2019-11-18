@@ -307,19 +307,18 @@ namespace MusEGui {
       return new QIcon(fallback_pm);
   }
 
-  QCursor getCursorFromIcon(const QIcon* icon, const QString& iconname) {
+  QCursor getCursorFromIcon(const QIcon* icon) {
 
       const qreal dpr = qApp->devicePixelRatio();
       int hotX, hotY;
 
-      if (iconname == "pencilIconSVG" || iconname == "glueIconSVG" ||
-          iconname == "cutterIconSVG" || iconname == "drawIconSVG" || iconname == "mutePartsIconSVG") {
+      if (icon == pencilIconSVG || icon == glueIconSVG || icon == cutterIconSVG || icon == drawIconSVG) {
           hotX = qRound(dpr * 1);
           hotY = qRound(dpr * 17);
-      } else if (iconname == "deleteIconSVG") {
+      } else if (icon == deleteIconSVG) {
           hotX = qRound(dpr * 3);
           hotY = qRound(dpr * 15);
-      } else if (iconname == "magnetIconSVG") {
+      } else if (icon == magnetIconSVG) {
           hotX = -1;
           hotY = qRound(dpr * 15);
       } else  {

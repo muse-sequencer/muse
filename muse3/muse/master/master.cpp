@@ -443,13 +443,13 @@ void Master::setTool(int t)
     tool = MusEGui::Tool(t);
     switch(tool) {
     case MusEGui::PencilTool:
-        setCursor(getCursorFromIcon(pencilIconSVG, "pencilIconSVG"));
+        setCursor(getCursorFromIcon(pencilIconSVG));
         break;
     case MusEGui::RubberTool:
-        setCursor(getCursorFromIcon(deleteIconSVG, "deleteIconSVG"));
+        setCursor(getCursorFromIcon(deleteIconSVG));
         break;
     case MusEGui::DrawTool:
-        setCursor(getCursorFromIcon(drawIconSVG, "drawIconSVG"));
+        setCursor(getCursorFromIcon(drawIconSVG));
         drawLineMode = false;
         break;
     default:

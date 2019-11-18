@@ -37,7 +37,7 @@ class QCursor;
 namespace MusEGui {
 
 const QSize DEFCURSIZE = QSize(18, 18);
-QCursor getCursorFromIcon(const QIcon* icon, const QString& iconname);
+QCursor getCursorFromIcon(const QIcon* icon);
 
 extern QPixmap* track_commentIcon;
 extern QPixmap* deleteIcon;

@@ -1929,19 +1929,19 @@ void Canvas::setCursor()
     case DRAG_OFF:
         switch(_tool) {
         case PencilTool:
-            QWidget::setCursor(getCursorFromIcon(pencilIconSVG, "pencilIconSVG"));
+            QWidget::setCursor(getCursorFromIcon(pencilIconSVG));
             break;
         case RubberTool:
-            QWidget::setCursor(getCursorFromIcon(deleteIconSVG, "deleteIconSVG"));
+            QWidget::setCursor(getCursorFromIcon(deleteIconSVG));
             break;
         case GlueTool:
-            QWidget::setCursor(getCursorFromIcon(glueIconSVG, "glueIconSVG"));
+            QWidget::setCursor(getCursorFromIcon(glueIconSVG));
             break;
         case CutTool:
-            QWidget::setCursor(getCursorFromIcon(cutterIconSVG, "cutterIconSVG"));
+            QWidget::setCursor(getCursorFromIcon(cutterIconSVG));
             break;
         case MuteTool:
-            QWidget::setCursor(getCursorFromIcon(mutePartsIconSVG, "mutePartsIconSVG"));
+            QWidget::setCursor(getCursorFromIcon(mutePartsIconSVG));
             break;
         case AutomationTool:
             QWidget::setCursor(QCursor(Qt::ArrowCursor));
@@ -1950,10 +1950,10 @@ void Canvas::setCursor()
             QWidget::setCursor(QCursor(Qt::ForbiddenCursor));
             break;
         case PanTool:
-            QWidget::setCursor(getCursorFromIcon(handIconSVG, "handIconSVG"));
+            QWidget::setCursor(getCursorFromIcon(handIconSVG));
             break;
         case ZoomTool:
-            QWidget::setCursor(getCursorFromIcon(zoomIconSVG, "zoomIconSVG"));
+            QWidget::setCursor(getCursorFromIcon(zoomIconSVG));
             break;
         default:
             QWidget::setCursor(QCursor(Qt::ArrowCursor));
