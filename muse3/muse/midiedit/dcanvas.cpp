@@ -1998,11 +1998,13 @@ void DrumCanvas::mouseMove(QMouseEvent* event) {
 
     EventCanvas::mouseMove(event);
 
-    int pitch = drumEditor->get_instrument_map()[y2pitch(event->pos().y())].pitch;
-    if (track()->drummap()[pitch].name.isEmpty())
-        QToolTip::showText(event->globalPos(), MusECore::pitch2string(pitch));
-    else
-        QToolTip::showText(event->globalPos(), track()->drummap()[pitch].name);
+    if (_tool & (MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | MusEGui::CursorTool)) {
+        int pitch = drumEditor->get_instrument_map()[y2pitch(event->pos().y())].pitch;
+        if (track()->drummap()[pitch].name.isEmpty())
+            QToolTip::showText(event->globalPos(), MusECore::pitch2string(pitch));
+        else
+            QToolTip::showText(event->globalPos(), track()->drummap()[pitch].name);
+    }
 }
 
 } // namespace MusEGui

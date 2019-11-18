@@ -778,13 +778,13 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
             act_color->setData(OP_PARTCOLORBASE+i);
             }
 
-      QAction *act_delete = partPopup->addAction(QIcon(*deleteIcon), tr("delete"));
+      QAction *act_delete = partPopup->addAction(*deleteIconSVG, tr("delete"));
       act_delete->setData(OP_DELETE);
-      QAction *act_split = partPopup->addAction(QIcon(*cutIcon), tr("split"));
+      QAction *act_split = partPopup->addAction(*cutterIconSVG, tr("split"));
       act_split->setData(OP_SPLIT);
-      QAction *act_glue = partPopup->addAction(QIcon(*glueIcon), tr("glue"));
+      QAction *act_glue = partPopup->addAction(*glueIconSVG, tr("glue"));
       act_glue->setData(OP_GLUE);
-      QAction *act_superglue = partPopup->addAction(QIcon(*glueIcon), tr("super glue (merge selection)"));
+      QAction *act_superglue = partPopup->addAction(*glueIconSVG, tr("super glue (merge selection)"));
       act_superglue->setData(OP_GLUESELECTION);
       QAction *act_declone = partPopup->addAction(tr("de-clone"));
       act_declone->setData(OP_DECLONE);

@@ -1,3 +1,21 @@
+17.11.2019
+	  - Introduce new scalable icons and cursors for edit tools (kybos)
+	    Improved cursor interaction in piano roll/drum editor (event canvas vs. control canvas),
+	    cursor shape shows when cursor has no function in given area
+	    Consistent cursor shape display in all editors affected (midi, part, score, master, wave)
+	    Correct cursor size on HiDPI screens (fixes issue #637)
+    - LV2: Fix sequencing/syncing plugins (Helm, LV2 metronome, NoiseMak3r...) (Tim)
+      Fixed TimePosition usage. Add quirks class for different plugin behaviour observed.
+    - Generic plugin UI: Added 'Quirks' buttons to toolbar:
+       "fixed speed" (fixes NoiseMak3r modulator stuck in small loop in stop mode for ex.),
+       "transport affects latency" (self-correcting LV2 Example Metronome for ex.), and
+       "override reported latency" (for plugins with broken or inaccurate latency reporting).
+12.11.2019
+      *** MusE 3.1.0pre3 ***
+11.11.2019
+      - Added tab in Aboutbox with some runtime of MusE, feel free to add more (rj)
+      - Disabled rate and size for audio device when Jack is selected as we currently
+        cannot change this from within MusE (rj)
 09.11.2019
       - Reorganize instrument popup menu. (Tim)
 08.11.2019

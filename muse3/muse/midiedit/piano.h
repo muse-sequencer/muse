@@ -59,6 +59,7 @@ class Piano : public View
       QPixmap* mk6;
       QPixmap* mk7;
       QPixmap* mk8;
+      QPixmap* mke;
       int keyDown;
       bool shift;
       int button;

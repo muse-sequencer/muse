@@ -86,7 +86,8 @@ class JackAudioDevice : public AudioDevice {
       JackAudioDevice(jack_client_t* cl, char * jack_id_string);
       virtual ~JackAudioDevice();
       virtual inline int deviceType() const { return JACK_AUDIO; }   
-      
+      virtual const char* driverName() const { return "JackAudioDevice"; }
+
       virtual bool start(int);
       virtual void stop ();
       

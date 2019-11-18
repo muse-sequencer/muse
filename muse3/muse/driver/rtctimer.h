@@ -45,7 +45,8 @@ class RtcTimer : public Timer{
     public:
        RtcTimer();
        virtual ~RtcTimer();
-       
+       virtual const char * getTimerName() { return "RtcTimer"; }
+
        virtual signed int initTimer(unsigned long desiredFrequency);
        virtual unsigned long setTimerResolution(unsigned long resolution);
        virtual unsigned long getTimerResolution();

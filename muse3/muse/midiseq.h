@@ -65,6 +65,8 @@ class MidiSeq : public Thread {
       virtual void threadStop();
       virtual void threadStart(void*);
       signed int selectTimer();
+
+      Timer* getTimer() { return timer; }
       // Destroy timer if valid. Returns true if successful.
       bool deleteTimer();
       void addAlsaPollFd();

@@ -616,6 +616,7 @@ int main(int argc, char* argv[])
         // Now create the application, and let Qt remove recognized arguments.
 #if QT_VERSION >= 0x050600
         QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+        QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
 
         //========================

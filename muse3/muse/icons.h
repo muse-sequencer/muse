@@ -24,10 +24,11 @@
 #ifndef ICONS_H
 #define ICONS_H
 
+#include <QApplication>
+
 class QPixmap;
 class QIcon;
 class QCursor;
-
 
 // NOTICE: Although it is tempting to use multi-icons (addPixmap, addFile etc.),
 //          certain styles do not support it, such as QtCurve.
@@ -35,9 +36,10 @@ class QCursor;
 
 namespace MusEGui {
 
+const QSize DEFCURSIZE = QSize(18, 18);
+QCursor getCursorFromIcon(const QIcon* icon, const QString& iconname);
+
 extern QPixmap* track_commentIcon;
-extern QPixmap* pointerIcon;
-extern QPixmap* pencilIcon;
 extern QPixmap* deleteIcon;
 extern QPixmap* punchinIcon;
 extern QPixmap* punchoutIcon;
@@ -68,15 +70,9 @@ extern QPixmap* muteIconOff;
 extern QPixmap* soloIconOn;
 extern QPixmap* soloIconOff;
 
-extern QPixmap* cutIcon;
 extern QPixmap* steprecIcon;
-extern QPixmap* glueIcon;
-extern QPixmap* drawIcon;
 extern QPixmap* cursorIcon;
 extern QPixmap* closedHandIcon;
-extern QPixmap* openHandIcon;
-extern QPixmap* zoomIcon;
-extern QPixmap* zoomAtIcon;
 extern QPixmap* sizeAllIcon;
 extern QPixmap* midiCtrlMergeIcon;
 extern QPixmap* midiCtrlMergeEraseIcon;
@@ -443,6 +439,19 @@ extern QIcon* metronomeOnSVGIcon;
 extern QIcon* fixedSpeedSVGIcon;
 extern QIcon* transportAffectsLatencySVGIcon;
 extern QIcon* overrideLatencySVGIcon;
+
+extern QIcon* pencilIconSVG;
+extern QIcon* glueIconSVG;
+extern QIcon* cutterIconSVG;
+extern QIcon* zoomIconSVG;
+extern QIcon* zoomAtIconSVG;
+extern QIcon* deleteIconSVG;
+extern QIcon* drawIconSVG;
+extern QIcon* pointerIconSVG;
+extern QIcon* muteIconSVG;
+extern QIcon* handIconSVG;
+extern QIcon* cursorIconSVG;
+extern QIcon* magnetIconSVG;
 
 //----------------------------------
 // Cursors
