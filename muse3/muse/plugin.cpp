@@ -3540,18 +3540,18 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       connect(fixedSpeedAct, &QAction::toggled, [this](bool v) { fixedSpeedToggled(v); } );
       tools->addAction(fixedSpeedAct);
 
-      transpGovLatencyAct = new QAction(QIcon(*transportAffectsLatencySVGIcon), tr("Transport affects latency"), this);
+      transpGovLatencyAct = new QAction(QIcon(*transportAffectsLatencySVGIcon), tr("Transport affects audio latency"), this);
       transpGovLatencyAct->setCheckable(true);
       transpGovLatencyAct->setChecked(plugin->cquirks()._transportAffectsAudioLatency);
       transpGovLatencyAct->setEnabled(plugin->usesTransportSource());
-      transpGovLatencyAct->setToolTip(tr("Transport affects latency"));
+      transpGovLatencyAct->setToolTip(tr("Transport affects audio latency"));
       connect(transpGovLatencyAct, &QAction::toggled, [this](bool v) { transportGovernsLatencyToggled(v); } );
       tools->addAction(transpGovLatencyAct);
 
-      overrideLatencyAct= new QAction(QIcon(*overrideLatencySVGIcon), tr("Override reported latency"), this);
+      overrideLatencyAct= new QAction(QIcon(*overrideLatencySVGIcon), tr("Override reported audio latency"), this);
       overrideLatencyAct->setCheckable(true);
       overrideLatencyAct->setChecked(plugin->cquirks()._overrideReportedLatency);
-      overrideLatencyAct->setToolTip(tr("Override reported latency"));
+      overrideLatencyAct->setToolTip(tr("Override reported audio latency"));
       connect(overrideLatencyAct, &QAction::toggled, [this](bool v) { overrideReportedLatencyToggled(v); } );
       tools->addAction(overrideLatencyAct);
 
@@ -3559,7 +3559,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       latencyOverrideEntry->setRange(0, 8191);
       latencyOverrideEntry->setValue(plugin->cquirks()._latencyOverrideValue);
       latencyOverrideEntry->setEnabled(plugin->cquirks()._overrideReportedLatency);
-      latencyOverrideEntry->setToolTip(tr("Reported latency override value"));
+      latencyOverrideEntry->setToolTip(tr("Reported audio latency override value"));
       // Special: Need qt helper overload for these lambdas.
       connect(latencyOverrideEntry,
         QOverload<int>::of(&QSpinBox::valueChanged), [=](int v) { latencyOverrideValueChanged(v); } );
