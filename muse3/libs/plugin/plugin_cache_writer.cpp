@@ -2065,13 +2065,19 @@ void scanLv2Ports(const LilvPlugin *plugin,
     else if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.ev_EventPort))
     {
       if(lilv_port_supports_event(plugin, lilvPort, lv2CacheNodes.lv2_TimePosition))
+      {
         port_info._flags |= PluginPortInfo::SupportsTimePosition;
+        info->_pluginFlags |= PluginScanInfoStruct::SupportsTimePosition;
+      }
       port_info._type |= PluginPortInfo::MidiPort;
     }
     else if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.atom_AtomPort))
     {
       if(lilv_port_supports_event(plugin, lilvPort, lv2CacheNodes.lv2_TimePosition))
+      {
         port_info._flags |= PluginPortInfo::SupportsTimePosition;
+        info->_pluginFlags |= PluginScanInfoStruct::SupportsTimePosition;
+      }
       port_info._type |= PluginPortInfo::MidiPort;
     }
     else if(!optional)
@@ -2296,6 +2302,8 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
           ++eop;
         else 
           ++eip;
+        if(lilv_port_supports_event(plugin, lilvPort, lv2CacheNodes.lv2_TimePosition))
+          info._pluginFlags |= PluginScanInfoStruct::SupportsTimePosition;
       }
       else if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.atom_AtomPort))
       {
@@ -2303,6 +2311,8 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
           ++eop;
         else 
           ++eip;
+        if(lilv_port_supports_event(plugin, lilvPort, lv2CacheNodes.lv2_TimePosition))
+          info._pluginFlags |= PluginScanInfoStruct::SupportsTimePosition;
       }
       else if(!optional)
       {

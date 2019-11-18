@@ -342,7 +342,7 @@ public:
     virtual void deactivate ( LADSPA_Handle handle );
     virtual void cleanup ( LADSPA_Handle handle );
     virtual void connectPort ( LADSPA_Handle handle, unsigned long port, float *value );
-    virtual void apply ( LADSPA_Handle handle, unsigned long n );
+    virtual void apply ( LADSPA_Handle handle, unsigned long n, float latency_corr = 0.0f );
     virtual LADSPA_PortDescriptor portd ( unsigned long k ) const;
 
     virtual LADSPA_PortRangeHint range ( unsigned long i );

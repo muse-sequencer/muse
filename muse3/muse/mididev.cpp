@@ -735,9 +735,6 @@ void MidiDevice::handleSeek()
 
 void MidiDevice::prepareLatencyScan() { 
   // Reset some latency info to prepare for (re)computation.
-  // TODO: Instead of doing this blindly every cycle, do it only when
-  //        a latency controller changes or a connection is made etc,
-  //        ie only when something changes.
   _captureLatencyInfo.initialize();
   _playbackLatencyInfo.initialize();
 }

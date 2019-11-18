@@ -167,6 +167,7 @@ class SynthIF : public PluginIBase {
       //-------------------------
 
       virtual PluginFeatures_t requiredFeatures() const;
+      virtual bool hasBypass() const;
       virtual bool on() const;
       virtual void setOn(bool val);
       virtual unsigned long pluginID();
@@ -203,6 +204,14 @@ class SynthIF : public PluginIBase {
       virtual float latency() const;
       virtual CtrlValueType ctrlValueType(unsigned long i) const;
       virtual CtrlList::Mode ctrlMode(unsigned long i) const;
+
+//       // Returns true if the transport source is connected to any of the
+//       //  track's midi input ports (ex. synth ports not muse midi ports).
+//       // If midiport is -1, returns true if ANY port is connected.
+//       virtual bool transportSourceConnected(unsigned int /*midiport*/ = -1) const { return false; }
+      // Returns true if the transport source is connected to any of the
+      //  track's midi input ports (ex. synth ports not muse midi ports).
+      virtual bool usesTransportSource() const { return false; }
       };
 
 //---------------------------------------------------------
@@ -354,6 +363,18 @@ class SynthI : public AudioTrack, public MidiDevice,
 
       virtual void processMidi(unsigned int /*curFrame*/ = 0);
       void preProcessAlways();
+
+//       // Returns true if the transport source is connected to any of the
+//       //  track's midi input ports (ex. synth ports not muse midi ports).
+//       // If midiport is -1, returns true if ANY port is connected.
+//       virtual bool transportSourceConnected(int midiport = -1) const
+//         { if(_sif) return _sif->transportSourceConnected(midiport); return false; }
+      // Returns true if the transport source is connected to any of the
+      //  track's midi input ports (ex. synth ports not muse midi ports).
+      virtual bool usesTransportSource() const
+        { if(_sif) return _sif->usesTransportSource(); return false; }
+      virtual bool transportAffectsAudioLatency() const
+        { if(_sif) return usesTransportSource() && _sif->cquirks()._transportAffectsAudioLatency; return false; }
 
       // Synth devices can never dominate latency, only physical/hardware midi devices can.
       inline virtual bool canDominateOutputLatencyMidi(bool /*capture*/) const { return false; }

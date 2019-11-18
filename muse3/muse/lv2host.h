@@ -379,11 +379,18 @@ private:
 #endif
     uint32_t _fMapPath;
     //const LilvNode *_pluginUIType = NULL;
+
     LV2_URID _uTime_Position;
     LV2_URID _uTime_frame;
+    LV2_URID _uTime_framesPerSecond;
     LV2_URID _uTime_speed;
     LV2_URID _uTime_beatsPerMinute;
+    LV2_URID _uTime_beatsPerBar;
+    LV2_URID _uTime_beat;
+    LV2_URID _uTime_bar;
     LV2_URID _uTime_barBeat;
+    LV2_URID _uTime_beatUnit;
+
     LV2_URID _uAtom_EventTransfer;
     LV2_URID _uAtom_Chunk;
     LV2_URID _uAtom_Sequence;
@@ -393,6 +400,7 @@ private:
     uint32_t _freeWheelPortIndex;
     bool _hasLatencyPort;
     uint32_t _latencyPortIndex;
+    bool _usesTimePosition;
     bool _isConstructed;
     float *_pluginControlsDefault;
     float *_pluginControlsMin;
@@ -419,6 +427,8 @@ public:
         return _audioOutPorts.size();
     }
     bool isConstructed() {return _isConstructed; }
+    // Returns true if ANY of the midi input ports uses time position (transport).
+    bool usesTimePosition() const { return _usesTimePosition; }
     static void lv2ui_PostShow ( LV2PluginWrapper_State *state );
     static int lv2ui_Resize ( LV2UI_Feature_Handle handle, int width, int height );
     static void lv2ui_Gtk2AllocateCb(int width, int height, void *arg);
@@ -432,10 +442,12 @@ public:
     static void lv2state_PostInstantiate ( LV2PluginWrapper_State *state );
     static void lv2ui_FreeDescriptors(LV2PluginWrapper_State *state);
     static void lv2state_FreeState(LV2PluginWrapper_State *state);
-    static void lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *buffer, unsigned long nsamp);
+    static void lv2audio_SendTransport(LV2PluginWrapper_State *state,
+                                       unsigned long sample, unsigned long nsamp,
+                                       float latency_corr = 0.0f);
     static void lv2state_InitMidiPorts ( LV2PluginWrapper_State *state );
-    static void inline lv2audio_preProcessMidiPorts (LV2PluginWrapper_State *state, unsigned long nsamp);
-    static void inline lv2audio_postProcessMidiPorts (LV2PluginWrapper_State *state, unsigned long nsamp);
+    static void inline lv2audio_preProcessMidiPorts (LV2PluginWrapper_State *state, unsigned long sample, unsigned long nsamp);
+    static void inline lv2audio_postProcessMidiPorts (LV2PluginWrapper_State *state, unsigned long sample, unsigned long nsamp);
     static const void *lv2state_stateRetreive ( LV2_State_Handle handle, uint32_t key, size_t *size, uint32_t *type, uint32_t *flags );
     static LV2_State_Status lv2state_stateStore ( LV2_State_Handle handle, uint32_t key, const void *value, size_t size, uint32_t type, uint32_t flags );
     static LV2_Worker_Status lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
@@ -549,6 +561,8 @@ public:
     bool hasLatencyOutPort() const;
     unsigned long latencyOutPortIndex() const;
     float latency() const;
+    // Returns true if ANY of the midi input ports uses time position (transport).
+    bool usesTransportSource() const;
 
     virtual void enableController(unsigned long i, bool v = true);
     virtual bool controllerEnabled(unsigned long i) const;
@@ -602,9 +616,17 @@ struct LV2PluginWrapper_State {
       wrkIface(NULL),
       controlTimers(NULL),
       deleteLater(false),
-      curBpm(0),
+
+      // Initialize these with invalid values such that the first call
+      //  of the send transport routine is guaranteed to update them.
+      curGlobalTempo(0),
+      curTempo(0),
       curIsPlaying(false),
       curFrame(0),
+      curTick(0),
+      curBeatsPerBar(0),
+      curBeatUnit(0),
+
       hasGui(false),
       hasExternalGui(false),
       uiIdleIface(NULL),
@@ -689,9 +711,16 @@ struct LV2PluginWrapper_State {
     int *controlTimers;
     bool deleteLater;
     LV2_Atom_Forge atomForge;
-    float curBpm;
+
+    // State of the transport, for testing if it changed.
+    int curGlobalTempo;
+    int curTempo;
     bool curIsPlaying;
     unsigned int curFrame;
+    unsigned int curTick;
+    int curBeatsPerBar;
+    int curBeatUnit;
+
     bool hasGui;
     bool hasExternalGui;
     LV2UI_Idle_Interface *uiIdleIface;
@@ -807,7 +836,7 @@ public:
     virtual void deactivate ( LADSPA_Handle handle );
     virtual void cleanup ( LADSPA_Handle handle );
     virtual void connectPort ( LADSPA_Handle handle, unsigned long port, float *value );
-    virtual void apply ( LADSPA_Handle handle, unsigned long n );
+    virtual void apply ( LADSPA_Handle handle, unsigned long n, float latency_corr = 0.0f );
     virtual LADSPA_PortDescriptor portd ( unsigned long k ) const;
 
     virtual LADSPA_PortRangeHint range ( unsigned long i );

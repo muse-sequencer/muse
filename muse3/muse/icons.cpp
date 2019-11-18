@@ -739,6 +739,10 @@ QIcon* jackTransportOnSVGIcon;
 QIcon* metronomeOffSVGIcon;
 QIcon* metronomeOnSVGIcon;
 
+QIcon* fixedSpeedSVGIcon;
+QIcon* transportAffectsLatencySVGIcon;
+QIcon* overrideLatencySVGIcon;
+
 //----------------------------------
 // Cursors
 //----------------------------------
@@ -1190,6 +1194,13 @@ void initIcons(bool useThemeIconsIfPossible)
       metronomeOffSVGIcon = new QIcon(*metronomeOffSVGPixmap);
       metronomeOnSVGIcon = new QIcon(*metronomeOnSVGPixmap);
       
+      fixedSpeedSVGIcon = new QIcon(":/svg/speed_off.svg");
+      fixedSpeedSVGIcon->addFile(":/svg/speed_on.svg", QSize(), QIcon::Normal, QIcon::On);
+      transportAffectsLatencySVGIcon = new QIcon(":/svg/transport_affects_latency_off.svg");
+      transportAffectsLatencySVGIcon->addFile(":/svg/transport_affects_latency_on.svg", QSize(), QIcon::Normal, QIcon::On);
+      overrideLatencySVGIcon = new QIcon(":/svg/override_latency_off.svg");
+      overrideLatencySVGIcon->addFile(":/svg/override_latency_on.svg", QSize(), QIcon::Normal, QIcon::On);
+
       //----------------------------------
       // Cursors
       //----------------------------------
@@ -1595,6 +1606,10 @@ void deleteIcons()
       
       delete metronomeOffSVGIcon;
       delete metronomeOnSVGIcon;
+
+      delete fixedSpeedSVGIcon;
+      delete transportAffectsLatencySVGIcon;
+      delete overrideLatencySVGIcon;
 
       //----------------------------------
       // Cursors

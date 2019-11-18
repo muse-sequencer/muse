@@ -440,6 +440,9 @@ extern QIcon* jackTransportOnSVGIcon;
 extern QIcon* metronomeOffSVGIcon;
 extern QIcon* metronomeOnSVGIcon;
 
+extern QIcon* fixedSpeedSVGIcon;
+extern QIcon* transportAffectsLatencySVGIcon;
+extern QIcon* overrideLatencySVGIcon;
 
 //----------------------------------
 // Cursors
