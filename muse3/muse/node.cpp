@@ -1115,7 +1115,6 @@ void AudioTrack::copyData(unsigned pos,
     // aux sends
     //---------------------------------------------------
 
-    // FIXME TODO Need multichannel changes here? Yes
     if(hasAuxSend())
     {
       AuxList* al = MusEGlobal::song->auxs();
@@ -1128,9 +1127,9 @@ void AudioTrack::copyData(unsigned pos,
         AudioAux* a = (AudioAux*)((*al)[k]);
         float** dst = a->sendBuffer();
         int auxChannels = a->channels();
-        if((availableSrcChans ==1 && auxChannels==1) || availableSrcChans == 2)
+        if((trackChans ==1 && auxChannels==1) || trackChans == 2)
         {
-          for(int ch = 0; ch < availableSrcChans; ++ch)
+          for(int ch = 0; ch < trackChans; ++ch)
           {
             float* db = dst[ch % a->channels()]; // no matter whether there's one or two dst buffers
             float* sb = outBuffers[ch];
@@ -1138,7 +1137,7 @@ void AudioTrack::copyData(unsigned pos,
               *db++ += (*sb++ * m);   // add to mix
           }
         }
-        else if(availableSrcChans==1 && auxChannels==2)  // copy mono to both channels
+        else if(trackChans==1 && auxChannels==2)  // copy mono to both channels
         {
           for(int ch = 0; ch < auxChannels; ++ch)
           {
