@@ -37,7 +37,6 @@ class QCursor;
 namespace MusEGui {
 
 const QSize DEFCURSIZE = QSize(18, 18);
-QCursor getCursorFromIcon(const QIcon* icon, const QString& iconname);
 
 extern QPixmap* track_commentIcon;
 extern QPixmap* deleteIcon;
@@ -450,6 +449,7 @@ extern QIcon* drawIconSVG;
 extern QIcon* pointerIconSVG;
 extern QIcon* mutePartsIconSVG;
 extern QIcon* handIconSVG;
+extern QIcon* closedHandIconSVG;
 extern QIcon* cursorIconSVG;
 extern QIcon* magnetIconSVG;
 
@@ -459,6 +459,18 @@ extern QIcon* magnetIconSVG;
 
 extern QCursor* editpasteSCursor;
 extern QCursor* editpasteCloneSCursor;
+
+extern QCursor* pencilCursor;
+extern QCursor* glueCursor;
+extern QCursor* cutterCursor;
+extern QCursor* zoomCursor;
+extern QCursor* zoomAtCursor;
+extern QCursor* deleteCursor;
+extern QCursor* drawCursor;
+extern QCursor* mutePartsCursor;
+extern QCursor* handCursor;
+extern QCursor* closedHandCursor;
+extern QCursor* magnetCursor;
 
 } // namespace MusEGui
 

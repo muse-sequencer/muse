@@ -307,28 +307,6 @@ namespace MusEGui {
       return new QIcon(fallback_pm);
   }
 
-  QCursor getCursorFromIcon(const QIcon* icon, const QString& iconname) {
-
-      const qreal dpr = qApp->devicePixelRatio();
-      int hotX, hotY;
-
-      if (iconname == "pencilIconSVG" || iconname == "glueIconSVG" ||
-          iconname == "cutterIconSVG" || iconname == "drawIconSVG" || iconname == "mutePartsIconSVG") {
-          hotX = qRound(dpr * 1);
-          hotY = qRound(dpr * 17);
-      } else if (iconname == "deleteIconSVG") {
-          hotX = qRound(dpr * 3);
-          hotY = qRound(dpr * 15);
-      } else if (iconname == "magnetIconSVG") {
-          hotX = -1;
-          hotY = qRound(dpr * 15);
-      } else  {
-          hotX = -1;
-          hotY = -1;
-      }
-
-      return QCursor(icon->pixmap(DEFCURSIZE), hotX, hotY);
-  }
   
 /* Quick API reference:
    -------------------
@@ -743,6 +721,7 @@ QIcon* drawIconSVG;
 QIcon* pointerIconSVG;
 QIcon* mutePartsIconSVG;
 QIcon* handIconSVG;
+QIcon* closedHandIconSVG;
 QIcon* cursorIconSVG;
 QIcon* magnetIconSVG;
 
@@ -753,6 +732,18 @@ QIcon* magnetIconSVG;
 QCursor* editpasteSCursor;
 QCursor* editpasteCloneSCursor;
 
+QCursor* pencilCursor;
+QCursor* glueCursor;
+QCursor* cutterCursor;
+QCursor* zoomCursor;
+QCursor* zoomAtCursor;
+QCursor* deleteCursor;
+QCursor* drawCursor;
+QCursor* mutePartsCursor;
+QCursor* handCursor;
+QCursor* closedHandCursor;
+QCursor* magnetCursor;
+
 //---------------------------------------------------------
 //   initIcons
 //---------------------------------------------------------
@@ -760,6 +751,8 @@ QCursor* editpasteCloneSCursor;
 void initIcons(bool useThemeIconsIfPossible)
       {
       use_theme_icons_if_possible = useThemeIconsIfPossible;
+
+      const qreal dpr = qApp->devicePixelRatio();
         
       track_commentIcon = MPIXMAP(track_comment_xpm, NULL);
       deleteIcon   = MPIXMAP(delete_xpm, "draw-eraser");
@@ -1205,6 +1198,7 @@ void initIcons(bool useThemeIconsIfPossible)
       pointerIconSVG    = new QIcon(":/svg/pointer.svg");
       mutePartsIconSVG  = new QIcon(":/svg/mute_parts.svg");
       handIconSVG       = new QIcon(":/svg/hand.svg");
+      closedHandIconSVG = new QIcon(":/svg/closed_hand.svg");
       cursorIconSVG     = new QIcon(":/svg/cursor.svg");
       magnetIconSVG     = new QIcon(":/svg/magnet.svg");
 
@@ -1214,6 +1208,19 @@ void initIcons(bool useThemeIconsIfPossible)
 
       editpasteSCursor = new QCursor(*editpasteSIcon, 8, 8);
       editpasteCloneSCursor = new QCursor(*editpasteCloneSIcon, 8, 8);
+
+      // tool cursors
+      pencilCursor     = new QCursor(pencilIconSVG->pixmap(DEFCURSIZE), qRound(dpr * 1), qRound(dpr * 17));
+      glueCursor       = new QCursor(glueIconSVG->pixmap(DEFCURSIZE),  qRound(dpr * 1), qRound(dpr * 17));
+      cutterCursor     = new QCursor(cutterIconSVG->pixmap(DEFCURSIZE),  qRound(dpr * 1), qRound(dpr * 17));
+      zoomCursor       = new QCursor(zoomIconSVG->pixmap(DEFCURSIZE));
+      zoomAtCursor     = new QCursor(zoomAtIconSVG->pixmap(DEFCURSIZE));
+      deleteCursor     = new QCursor(deleteIconSVG->pixmap(DEFCURSIZE), qRound(dpr * 3), qRound(dpr * 15));
+      drawCursor       = new QCursor(drawIconSVG->pixmap(DEFCURSIZE), qRound(dpr * 1), qRound(dpr * 17));
+      mutePartsCursor  = new QCursor(mutePartsIconSVG->pixmap(DEFCURSIZE));
+      handCursor       = new QCursor(handIconSVG->pixmap(DEFCURSIZE));
+      closedHandCursor = new QCursor(closedHandIconSVG->pixmap(DEFCURSIZE));
+      magnetCursor     = new QCursor(magnetIconSVG->pixmap(DEFCURSIZE), -1, qRound(dpr * 15));
       }
 
 //---------------------------------------------------------
@@ -1610,18 +1617,19 @@ void deleteIcons()
       delete transportAffectsLatencySVGIcon;
       delete overrideLatencySVGIcon;
 
-    delete pencilIconSVG;
-    delete glueIconSVG;
-    delete cutterIconSVG;
-    delete zoomIconSVG;
-    delete zoomAtIconSVG;
-    delete deleteIconSVG;
-    delete drawIconSVG;
-    delete pointerIconSVG;
-    delete mutePartsIconSVG;
-    delete handIconSVG;
-    delete cursorIconSVG;
-    delete magnetIconSVG;
+      delete pencilIconSVG;
+      delete glueIconSVG;
+      delete cutterIconSVG;
+      delete zoomIconSVG;
+      delete zoomAtIconSVG;
+      delete deleteIconSVG;
+      delete drawIconSVG;
+      delete pointerIconSVG;
+      delete mutePartsIconSVG;
+      delete handIconSVG;
+      delete closedHandIconSVG;
+      delete cursorIconSVG;
+      delete magnetIconSVG;
 
       //----------------------------------
       // Cursors
@@ -1629,6 +1637,18 @@ void deleteIcons()
 
       delete editpasteSCursor;
       delete editpasteCloneSCursor;
+
+      delete pencilCursor;
+      delete glueCursor;
+      delete cutterCursor;
+      delete zoomCursor;
+      delete zoomAtCursor;
+      delete deleteCursor;
+      delete drawCursor;
+      delete mutePartsCursor;
+      delete handCursor;
+      delete closedHandCursor;
+      delete magnetCursor;
       }
 
 } // namespace MusEGui
