@@ -721,6 +721,7 @@ QIcon* drawIconSVG;
 QIcon* pointerIconSVG;
 QIcon* mutePartsIconSVG;
 QIcon* handIconSVG;
+QIcon* closedHandIconSVG;
 QIcon* cursorIconSVG;
 QIcon* magnetIconSVG;
 
@@ -740,6 +741,7 @@ QCursor* deleteCursor;
 QCursor* drawCursor;
 QCursor* mutePartsCursor;
 QCursor* handCursor;
+QCursor* closedHandCursor;
 QCursor* magnetCursor;
 
 //---------------------------------------------------------
@@ -1196,6 +1198,7 @@ void initIcons(bool useThemeIconsIfPossible)
       pointerIconSVG    = new QIcon(":/svg/pointer.svg");
       mutePartsIconSVG  = new QIcon(":/svg/mute_parts.svg");
       handIconSVG       = new QIcon(":/svg/hand.svg");
+      closedHandIconSVG = new QIcon(":/svg/closed_hand.svg");
       cursorIconSVG     = new QIcon(":/svg/cursor.svg");
       magnetIconSVG     = new QIcon(":/svg/magnet.svg");
 
@@ -1212,11 +1215,12 @@ void initIcons(bool useThemeIconsIfPossible)
       cutterCursor     = new QCursor(cutterIconSVG->pixmap(DEFCURSIZE),  qRound(dpr * 1), qRound(dpr * 17));
       zoomCursor       = new QCursor(zoomIconSVG->pixmap(DEFCURSIZE));
       zoomAtCursor     = new QCursor(zoomAtIconSVG->pixmap(DEFCURSIZE));
-      deleteCursor     = new QCursor(deleteIconSVG->pixmap(DEFCURSIZE),  qRound(dpr * 3), qRound(dpr * 15));
+      deleteCursor     = new QCursor(deleteIconSVG->pixmap(DEFCURSIZE), qRound(dpr * 3), qRound(dpr * 15));
       drawCursor       = new QCursor(drawIconSVG->pixmap(DEFCURSIZE), qRound(dpr * 1), qRound(dpr * 17));
       mutePartsCursor  = new QCursor(mutePartsIconSVG->pixmap(DEFCURSIZE));
       handCursor       = new QCursor(handIconSVG->pixmap(DEFCURSIZE));
-      magnetCursor     = new QCursor(drawIconSVG->pixmap(DEFCURSIZE), -1, qRound(dpr * 15));
+      closedHandCursor = new QCursor(closedHandIconSVG->pixmap(DEFCURSIZE));
+      magnetCursor     = new QCursor(magnetIconSVG->pixmap(DEFCURSIZE), -1, qRound(dpr * 15));
       }
 
 //---------------------------------------------------------
@@ -1623,6 +1627,7 @@ void deleteIcons()
       delete pointerIconSVG;
       delete mutePartsIconSVG;
       delete handIconSVG;
+      delete closedHandIconSVG;
       delete cursorIconSVG;
       delete magnetIconSVG;
 
@@ -1642,6 +1647,7 @@ void deleteIcons()
       delete drawCursor;
       delete mutePartsCursor;
       delete handCursor;
+      delete closedHandCursor;
       delete magnetCursor;
       }
 

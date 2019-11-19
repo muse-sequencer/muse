@@ -1686,7 +1686,8 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                     ignore_mouse_move = true;      // Avoid recursion.
                     QCursor::setPos(global_start);
                     //ignore_mouse_move = false;
-                  }
+                  } else
+                      QWidget::setCursor(*handCursor);
                   break;
                   
             case DRAG_ZOOM:
@@ -1911,7 +1912,7 @@ void Canvas::setCursor()
         if(MusEGlobal::config.borderlessMouse)
             showCursor(false); // CAUTION
         else
-            QWidget::setCursor(QCursor(Qt::ClosedHandCursor));
+            QWidget::setCursor(*closedHandCursor);
         break;
 
     case DRAG_ZOOM:

@@ -65,5 +65,6 @@
         <file>svg/cursor.svg</file>
         <file>svg/zoomAt.svg</file>
         <file>svg/magnet.svg</file>
+        <file>svg/closed_hand.svg</file>
     </qresource>
 </RCC>

@@ -449,6 +449,7 @@ extern QIcon* drawIconSVG;
 extern QIcon* pointerIconSVG;
 extern QIcon* mutePartsIconSVG;
 extern QIcon* handIconSVG;
+extern QIcon* closedHandIconSVG;
 extern QIcon* cursorIconSVG;
 extern QIcon* magnetIconSVG;
 
@@ -468,6 +469,7 @@ extern QCursor* deleteCursor;
 extern QCursor* drawCursor;
 extern QCursor* mutePartsCursor;
 extern QCursor* handCursor;
+extern QCursor* closedHandCursor;
 extern QCursor* magnetCursor;
 
 } // namespace MusEGui
