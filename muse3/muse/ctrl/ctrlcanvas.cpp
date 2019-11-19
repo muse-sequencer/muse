@@ -1433,10 +1433,10 @@ void CtrlCanvas::setCursor()
         switch(tool) {
         case PencilTool:
 //            QWidget::setCursor(getCursorFromIcon(pencilIconSVG, "pencilIconSVG"));
-            QWidget::setCursor(getCursorFromIcon(magnetIconSVG));
+            QWidget::setCursor(*magnetCursor);
             break;
         case RubberTool:
-            QWidget::setCursor(getCursorFromIcon(deleteIconSVG));
+            QWidget::setCursor(*deleteCursor);
             break;
         case GlueTool:
             QWidget::setCursor(QCursor(Qt::ForbiddenCursor));
@@ -1448,7 +1448,7 @@ void CtrlCanvas::setCursor()
             QWidget::setCursor(QCursor(Qt::ForbiddenCursor));
             break;
         case DrawTool:
-            QWidget::setCursor(getCursorFromIcon(drawIconSVG));
+            QWidget::setCursor(*drawCursor);
             break;
         case PanTool:
             QWidget::setCursor(QCursor(Qt::ForbiddenCursor));

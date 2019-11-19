@@ -4657,12 +4657,12 @@ void ScoreCanvas::set_tool(int tool)
         mouse_inserts_notes=false;
         break;
     case MusEGui::RubberTool:
-        setCursor(getCursorFromIcon(deleteIconSVG));
+        setCursor(*deleteCursor);
         mouse_erases_notes=true;
         mouse_inserts_notes=false;
         break;
     case MusEGui::PencilTool:
-        setCursor(getCursorFromIcon(pencilIconSVG));
+        setCursor(*pencilCursor);
         mouse_erases_notes=false;
         mouse_inserts_notes=true;
         break;
