@@ -59,6 +59,7 @@ class Piano : public View
       QPixmap* mk6;
       QPixmap* mk7;
       QPixmap* mk8;
+      QPixmap* mke;
       int keyDown;
       bool shift;
       int button;
@@ -82,6 +83,7 @@ class Piano : public View
       void keyReleased(int, bool);
       void curSelectedPitchChanged(int);
       void redirectWheelEvent(QWheelEvent*);
+      void wheelStep(bool);
 
    public slots:
       void setPitch(int);

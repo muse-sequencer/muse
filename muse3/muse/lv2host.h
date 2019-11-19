@@ -72,6 +72,9 @@
 #include "lv2/lv2plug.in/ns/ext/resize-port/resize-port.h"
 #include "lv2extui.h"
 #include "lv2extprg.h"
+#ifdef MIDNAM_SUPPORT
+#include "midnam_lv2.h"
+#endif
 
 #include <cstring>
 #include <iostream>
@@ -98,6 +101,7 @@
 #include "plugin.h"
 #include "plugin_list.h"
 
+#include "lock_free_buffer.h"
 #include "lock_free_data_buffer.h"
 
 #endif
@@ -115,6 +119,8 @@ class LV2Synth;
 #define LV2_RT_FIFO_SIZE 128
 #define LV2_RT_FIFO_ITEM_SIZE (std::max(size_t(4096 * 16), size_t(MusEGlobal::segmentSize * 16)))
 #define LV2_EVBUF_SIZE (2*LV2_RT_FIFO_ITEM_SIZE)
+
+#define OPERATIONS_FIFO_SIZE 256 // ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(1024)) )
 
 struct LV2MidiEvent
 {
@@ -173,6 +179,35 @@ public:
    bool get(uint32_t *port_index, size_t *szOut, char *data_out);
 };
 
+typedef struct _lv2ExtProgram
+{
+   uint32_t index;
+   uint32_t bank;
+   uint32_t prog;
+   QString name;
+   bool useIndex;
+   bool operator<(const _lv2ExtProgram& other) const
+   {
+      if(useIndex == other.useIndex && useIndex == true)
+         return index < other.index;
+
+      if(bank < other.bank)
+         return true;
+      else if(bank == other.bank && prog < other.prog)
+         return true;
+      return false;
+   }
+
+   bool operator==(const _lv2ExtProgram& other) const
+   {
+      if(useIndex == other.useIndex && useIndex == true)
+         return index == other.index;
+
+      return (bank == other.bank && prog == other.prog);
+   }
+
+
+} lv2ExtProgram;
 
 
 struct LV2MidiPort
@@ -274,6 +309,25 @@ struct LV2PluginWrapper_State;
 
 typedef std::map<const LilvUI *, std::pair<bool, const LilvNode *> > LV2_PLUGIN_UI_TYPES;
 
+class LV2OperationMessage
+{
+  public:
+    enum Type { 
+      // For the programs extension.
+      ProgramChanged=0,
+      // For the midnam extension.
+      MidnamUpdate
+    };
+
+    Type _type;
+    // For the programs extension. Index of program to update.
+    // Can be -1 for update all programs.
+    int _index;
+    
+    LV2OperationMessage() : _type(ProgramChanged), _index(-1) { }
+    LV2OperationMessage(Type type, int index = 0) : _type(type), _index(index) { }
+};
+
 class LV2Synth : public Synth
 {
 private:
@@ -317,16 +371,26 @@ private:
     uint32_t _fWrkSchedule;
     uint32_t _fUiResize;
     uint32_t _fPrgHost;
+#ifdef MIDNAM_SUPPORT
+    uint32_t _fMidNamUpdate;
+#endif
 #ifdef LV2_MAKE_PATH_SUPPORT
     uint32_t _fMakePath;
 #endif
     uint32_t _fMapPath;
     //const LilvNode *_pluginUIType = NULL;
+
     LV2_URID _uTime_Position;
     LV2_URID _uTime_frame;
+    LV2_URID _uTime_framesPerSecond;
     LV2_URID _uTime_speed;
     LV2_URID _uTime_beatsPerMinute;
+    LV2_URID _uTime_beatsPerBar;
+    LV2_URID _uTime_beat;
+    LV2_URID _uTime_bar;
     LV2_URID _uTime_barBeat;
+    LV2_URID _uTime_beatUnit;
+
     LV2_URID _uAtom_EventTransfer;
     LV2_URID _uAtom_Chunk;
     LV2_URID _uAtom_Sequence;
@@ -336,6 +400,7 @@ private:
     uint32_t _freeWheelPortIndex;
     bool _hasLatencyPort;
     uint32_t _latencyPortIndex;
+    bool _usesTimePosition;
     bool _isConstructed;
     float *_pluginControlsDefault;
     float *_pluginControlsMin;
@@ -362,6 +427,8 @@ public:
         return _audioOutPorts.size();
     }
     bool isConstructed() {return _isConstructed; }
+    // Returns true if ANY of the midi input ports uses time position (transport).
+    bool usesTimePosition() const { return _usesTimePosition; }
     static void lv2ui_PostShow ( LV2PluginWrapper_State *state );
     static int lv2ui_Resize ( LV2UI_Feature_Handle handle, int width, int height );
     static void lv2ui_Gtk2AllocateCb(int width, int height, void *arg);
@@ -375,10 +442,12 @@ public:
     static void lv2state_PostInstantiate ( LV2PluginWrapper_State *state );
     static void lv2ui_FreeDescriptors(LV2PluginWrapper_State *state);
     static void lv2state_FreeState(LV2PluginWrapper_State *state);
-    static void lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *buffer, unsigned long nsamp);
+    static void lv2audio_SendTransport(LV2PluginWrapper_State *state,
+                                       unsigned long sample, unsigned long nsamp,
+                                       float latency_corr = 0.0f);
     static void lv2state_InitMidiPorts ( LV2PluginWrapper_State *state );
-    static void inline lv2audio_preProcessMidiPorts (LV2PluginWrapper_State *state, unsigned long nsamp);
-    static void inline lv2audio_postProcessMidiPorts (LV2PluginWrapper_State *state, unsigned long nsamp);
+    static void inline lv2audio_preProcessMidiPorts (LV2PluginWrapper_State *state, unsigned long sample, unsigned long nsamp);
+    static void inline lv2audio_postProcessMidiPorts (LV2PluginWrapper_State *state, unsigned long sample, unsigned long nsamp);
     static const void *lv2state_stateRetreive ( LV2_State_Handle handle, uint32_t key, size_t *size, uint32_t *type, uint32_t *flags );
     static LV2_State_Status lv2state_stateStore ( LV2_State_Handle handle, uint32_t key, const void *value, size_t size, uint32_t type, uint32_t flags );
     static LV2_Worker_Status lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
@@ -386,7 +455,11 @@ public:
     static void lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml);
     static void lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QString> & customParams);
     static unsigned lv2ui_IsSupported (const char *, const char *ui_type_uri);
+    static void lv2prg_updateProgram(LV2PluginWrapper_State *state, int idx);
     static void lv2prg_updatePrograms(LV2PluginWrapper_State *state);
+#ifdef MIDNAM_SUPPORT
+    static void lv2midnam_updateMidnam(LV2PluginWrapper_State *state);
+#endif    
     static int lv2_printf(LV2_Log_Handle handle, LV2_URID type, const char *fmt, ...);
     static int lv2_vprintf(LV2_Log_Handle handle, LV2_URID type, const char *fmt, va_list ap);
 #ifdef LV2_MAKE_PATH_SUPPORT
@@ -488,6 +561,8 @@ public:
     bool hasLatencyOutPort() const;
     unsigned long latencyOutPortIndex() const;
     float latency() const;
+    // Returns true if ANY of the midi input ports uses time position (transport).
+    bool usesTransportSource() const;
 
     virtual void enableController(unsigned long i, bool v = true);
     virtual bool controllerEnabled(unsigned long i) const;
@@ -503,6 +578,9 @@ public:
     }
 
     static void lv2prg_Changed(LV2_Programs_Handle handle, int32_t index);
+#ifdef MIDNAM_SUPPORT
+    static void lv2midnam_Changed(LV2_Midnam_Handle handle);
+#endif
 
     friend class LV2Synth;
 };
@@ -511,36 +589,6 @@ public:
 class LV2PluginWrapper;
 class LV2PluginWrapper_Worker;
 class LV2PluginWrapper_Window;
-
-typedef struct _lv2ExtProgram
-{
-   uint32_t index;
-   uint32_t bank;
-   uint32_t prog;
-   QString name;
-   bool useIndex;
-   bool operator<(const _lv2ExtProgram& other) const
-   {
-      if(useIndex == other.useIndex && useIndex == true)
-         return index < other.index;
-
-      if(bank < other.bank)
-         return true;
-      else if(bank == other.bank && prog < other.prog)
-         return true;
-      return false;
-   }
-
-   bool operator==(const _lv2ExtProgram& other) const
-   {
-      if(useIndex == other.useIndex && useIndex == true)
-         return index == other.index;
-
-      return (bank == other.bank && prog == other.prog);
-   }
-
-
-} lv2ExtProgram;
 
 struct LV2PluginWrapper_State {
    LV2PluginWrapper_State():
@@ -562,9 +610,23 @@ struct LV2PluginWrapper_State {
       iState(NULL),
       tmpValues(NULL),
       numStateValues(0),
+      wrkDataBuffer(NULL),
+      wrkRespDataBuffer(NULL),
       wrkThread(NULL),
+      wrkIface(NULL),
       controlTimers(NULL),
       deleteLater(false),
+
+      // Initialize these with invalid values such that the first call
+      //  of the send transport routine is guaranteed to update them.
+      curGlobalTempo(0),
+      curTempo(0),
+      curIsPlaying(false),
+      curFrame(0),
+      curTick(0),
+      curBeatsPerBar(0),
+      curBeatUnit(0),
+
       hasGui(false),
       hasExternalGui(false),
       uiIdleIface(NULL),
@@ -576,6 +638,9 @@ struct LV2PluginWrapper_State {
       uiPrgIface(NULL),
       uiDoSelectPrg(false),
       newPrgIface(false),
+#ifdef MIDNAM_SUPPORT
+      midnamIface(NULL),
+#endif
       uiChannel(0),
       uiBank(0),
       uiProg(0),
@@ -586,7 +651,8 @@ struct LV2PluginWrapper_State {
       gtk2ResizeCompleted(false),
       gtk2AllocateCompleted(false),
       songDirtyPending(false),
-      uiIsOpening(false)
+      uiIsOpening(false),
+      operationsFifo(OPERATIONS_FIFO_SIZE)
    {
       extHost.plugin_human_id = NULL;
       extHost.ui_closed = NULL;
@@ -594,6 +660,10 @@ struct LV2PluginWrapper_State {
       uiResize.ui_resize = LV2Synth::lv2ui_Resize;
       prgHost.handle = (LV2_Programs_Handle)this;
       prgHost.program_changed = LV2SynthIF::lv2prg_Changed;
+#ifdef MIDNAM_SUPPORT
+      midnamUpdate.handle = (LV2_Midnam_Handle)this;
+      midnamUpdate.update = LV2SynthIF::lv2midnam_Changed;
+#endif
 #ifdef LV2_MAKE_PATH_SUPPORT
       makePath.handle = (LV2_State_Make_Path_Handle)this;
       makePath.path = LV2Synth::lv2state_makePath;
@@ -641,9 +711,16 @@ struct LV2PluginWrapper_State {
     int *controlTimers;
     bool deleteLater;
     LV2_Atom_Forge atomForge;
-    float curBpm;
+
+    // State of the transport, for testing if it changed.
+    int curGlobalTempo;
+    int curTempo;
     bool curIsPlaying;
     unsigned int curFrame;
+    unsigned int curTick;
+    int curBeatsPerBar;
+    int curBeatUnit;
+
     bool hasGui;
     bool hasExternalGui;
     LV2UI_Idle_Interface *uiIdleIface;
@@ -663,6 +740,10 @@ struct LV2PluginWrapper_State {
     std::map<uint32_t, lv2ExtProgram> index2prg;
     std::map<uint32_t, uint32_t> prg2index;
     LV2_Programs_Host prgHost;
+#ifdef MIDNAM_SUPPORT
+    LV2_Midnam_Interface *midnamIface;
+    LV2_Midnam midnamUpdate;
+#endif
     unsigned char uiChannel;
     int uiBank;
     int uiProg;
@@ -677,6 +758,7 @@ struct LV2PluginWrapper_State {
     bool gtk2AllocateCompleted;
     bool songDirtyPending;
     bool uiIsOpening;
+    LockFreeMPSCRingBuffer<LV2OperationMessage> operationsFifo;
 };
 
 
@@ -754,7 +836,7 @@ public:
     virtual void deactivate ( LADSPA_Handle handle );
     virtual void cleanup ( LADSPA_Handle handle );
     virtual void connectPort ( LADSPA_Handle handle, unsigned long port, float *value );
-    virtual void apply ( LADSPA_Handle handle, unsigned long n );
+    virtual void apply ( LADSPA_Handle handle, unsigned long n, float latency_corr = 0.0f );
     virtual LADSPA_PortDescriptor portd ( unsigned long k ) const;
 
     virtual LADSPA_PortRangeHint range ( unsigned long i );

@@ -640,6 +640,7 @@ bool Track::canPassThruLatency() const
 
 void Track::prepareLatencyScan() { 
   _latencyInfo.initialize();
+  _transportSource.prepareLatencyScan(transportAffectsAudioLatency());
 }
 
 float Track::getWorstPluginLatencyAudio()

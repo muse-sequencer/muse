@@ -31,15 +31,10 @@
 
 #include <QGridLayout>
 #include <QLabel>
-#include <QScrollArea>
-#include <QTimer>
-#include <QComboBox>
 #include <QWhatsThis>
 #include <QToolBar>
 #include <QMessageBox>
-#include <QShowEvent>
-#include <QHideEvent>
-#include <QEvent>
+#include <QByteArray>
 
 #include "globals.h"
 #include "globaldefs.h"
@@ -620,6 +615,81 @@ void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, flo
       }
 
 
+//==============================================================
+//   BEGIN PluginQuirks
+//==============================================================
+
+//---------------------------------------------------------
+//   write
+//---------------------------------------------------------
+
+void PluginQuirks::write(int level, Xml& xml) const
+      {
+      // Defaults? Nothing to save.
+      if(!_fixedSpeed && !_transportAffectsAudioLatency && !_overrideReportedLatency && _latencyOverrideValue == 0)
+        return;
+
+      xml.tag(level++, "quirks");
+
+      if(_fixedSpeed)
+        xml.intTag(level, "fixedSpeed", _fixedSpeed);
+
+      if(_transportAffectsAudioLatency)
+        xml.intTag(level, "trnspAffAudLat", _transportAffectsAudioLatency);
+
+      if(_overrideReportedLatency)
+        xml.intTag(level, "ovrRepAudLat", _overrideReportedLatency);
+
+      if(_latencyOverrideValue != 0)
+        xml.intTag(level, "latOvrVal", _latencyOverrideValue);
+
+      xml.etag(--level, "quirks");
+      }
+
+//---------------------------------------------------------
+//   read
+//    return true on error
+//---------------------------------------------------------
+
+bool PluginQuirks::read(Xml& xml)
+      {
+      for (;;) {
+            Xml::Token token(xml.parse());
+            const QString& tag(xml.s1());
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return true;
+                  case Xml::TagStart:
+                        if (tag == "fixedSpeed")
+                              _fixedSpeed = xml.parseInt();
+                        else if (tag == "trnspAffAudLat")
+                              _transportAffectsAudioLatency = xml.parseInt();
+                        else if (tag == "ovrRepAudLat")
+                              _overrideReportedLatency = xml.parseInt();
+                        else if (tag == "latOvrVal")
+                              _latencyOverrideValue = xml.parseInt();
+                        else
+                              xml.unknown("PluginQuirks");
+                        break;
+                  case Xml::Attribut:
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "quirks") {
+                              return false;
+                              }
+                        return true;
+                  default:
+                        break;
+                  }
+            }
+      return true;
+      }
+
+//==============================================================
+//   END PluginQuirks
+//==============================================================
+
 
 
 //---------------------------------------------------------
@@ -636,6 +706,8 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDss
   _isVstNativePlugin = false;
   _isVstNativeSynth = false;
   _requiredFeatures = reqFeatures;
+  _usesTimePosition = false;
+
 
   #ifdef DSSI_SUPPORT
   dssi_descr = NULL;
@@ -757,6 +829,8 @@ Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
   // Hack: Blacklist vst plugins in-place, configurable for now.
   if(_isDssiVst && !MusEGlobal::config.vstInPlace)
     _requiredFeatures |= PluginNoInPlaceProcessing;
+  
+  _usesTimePosition = info._pluginFlags & MusEPlugin::PluginScanInfoStruct::SupportsTimePosition;
 }
 
 Plugin::~Plugin()
@@ -1199,13 +1273,25 @@ void Pipeline::initBuffers()
 
 float Pipeline::latency() const
 {
-  float l = 0.0;
-  PluginI* p;
+  float l = 0.0f;
+  const PluginI* p;
   for(int i = 0; i < MusECore::PipelineDepth; ++i)
   {
     p = (*this)[i];
     if(p)
-      l+= p->latency();
+    {
+// REMOVE Tim. lv2. Added. TESTING. Do we need to leave this alone for reporting?
+// I think so... It seemed we do that with tracks but then those are wave and midi tracks...
+#if 0
+      // If the transport affects audio latency, it means we can completely correct
+      //  for the latency by adjusting the transport, therefore meaning zero
+      //  resulting audio latency. As far as the rest of the app knows, the plugin
+      //  in this rack position has zero audio latency. Yet we still retain the
+      //  original latency value in each plugin so we can use it.
+      if(!p->cquirks()._transportAffectsAudioLatency)
+#endif
+        l+= p->latency();
+    }
   }
   return l;
 }
@@ -1610,33 +1696,57 @@ void Pipeline::apply(unsigned pos, unsigned long ports, unsigned long nframes, f
 {
       bool swap = false;
 
-      for (iPluginI ip = begin(); ip != end(); ++ip) {
-            PluginI* p = *ip;
+      // Divide up the total pipeline latency to distribute latency correction
+      //  among the plugins according to the latency of each plugin. Each has
+      //  more correction than the next. The values are negative, meaning 'correction'.
+      const int sz = size();
+      float latency_corr_offsets[sz];
+      float latency_corr_offset = 0.0f;
+      for(int i = sz - 1; i >= 0; --i)
+      {
+        const PluginI* p = (*this)[i];
+        if(!p)
+          continue;
+        const float lat = p->latency();
+        // If the transport affects audio latency, it means we can completely correct
+        //  for the latency by adjusting the transport, therefore meaning zero
+        //  resulting audio latency. As far as the rest of the app knows, the plugin
+        //  in this rack position has zero audio latency. Yet we still retain the
+        //  original latency value in each plugin so we can use it.
+        // Here we use a neat trick to conditionally subtract as we go, yet still 
+        //  set the right transport correction offset value for each plugin.
+        latency_corr_offsets[i] = latency_corr_offset - lat;
+        if(!p->cquirks()._transportAffectsAudioLatency)
+          latency_corr_offset -= lat;
+      }
 
-            if(p)
+      for (int i = 0; i < sz; ++i) {
+            PluginI* p = (*this)[i];
+            if(!p)
+              continue;
+
+            const float corr_offset = latency_corr_offsets[i];
+            if (p->on())
             {
-              if (p->on())
+              if (!(p->requiredFeatures() & PluginNoInPlaceProcessing))
               {
-                if (!(p->requiredFeatures() & PluginNoInPlaceProcessing))
-                {
-                      if (swap)
-                            p->apply(pos, nframes, ports, buffer, buffer);
-                      else
-                            p->apply(pos, nframes, ports, buffer1, buffer1);
-                }
-                else
-                {
-                      if (swap)
-                            p->apply(pos, nframes, ports, buffer, buffer1);
-                      else
-                            p->apply(pos, nframes, ports, buffer1, buffer);
-                      swap = !swap;
-                }
+                    if (swap)
+                          p->apply(pos, nframes, ports, buffer, buffer, corr_offset);
+                    else
+                          p->apply(pos, nframes, ports, buffer1, buffer1, corr_offset);
               }
               else
               {
-                p->apply(pos, nframes, 0, 0, 0); // Do not process (run) audio, process controllers only.
+                    if (swap)
+                          p->apply(pos, nframes, ports, buffer, buffer1, corr_offset);
+                    else
+                          p->apply(pos, nframes, ports, buffer1, buffer, corr_offset);
+                    swap = !swap;
               }
+            }
+            else
+            {
+              p->apply(pos, nframes, 0, 0, 0, corr_offset); // Do not process (run) audio, process controllers only.
             }
       }
       if (ports != 0 && swap)
@@ -2449,7 +2559,11 @@ void PluginI::activate()
 float PluginI::latency() const
 {
   // Do not report any latency if the plugin is not on.
-  if(!hasLatencyOutPort() || !on())
+  if(!on())
+    return 0.0;
+  if(cquirks()._overrideReportedLatency)
+    return cquirks()._latencyOverrideValue;
+  if(!hasLatencyOutPort())
     return 0.0;
   return controlsOut[latencyOutPortIndex()].val;
 }
@@ -2511,6 +2625,9 @@ void PluginI::writeConfiguration(int level, Xml& xml)
             }
       if (_on == false)
             xml.intTag(level, "on", _on);
+
+      _quirks.write(level, xml);
+
       if(guiVisible())
         xml.intTag(level, "gui", 1);
       int x, y, w, h;
@@ -2524,7 +2641,7 @@ void PluginI::writeConfiguration(int level, Xml& xml)
       QRect nr(x, y, w, h);
       xml.qrectTag(level, "nativeGeometry", nr);
 
-      xml.tag(level--, "/plugin");
+      xml.etag(--level, "plugin");
       }
 
 //---------------------------------------------------------
@@ -2632,8 +2749,14 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                               if (!readPreset)
                                     _on = flag;
                               }
+                        else if (tag == "quirks") {
+                              PluginQuirks q;
+                              q.read(xml);
+                              if (!readPreset)
+                                _quirks = q;
+                              }
                         else if (tag == "gui") {
-                              bool flag = xml.parseInt();
+                              const bool flag = xml.parseInt();
                               if (_plugin)
                                   showGui(flag);
                               }
@@ -2876,7 +2999,8 @@ QString PluginI::titlePrefix() const
 //   If ports is 0, just process controllers only, not audio (do not 'run').
 //---------------------------------------------------------
 
-void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** bufIn, float** bufOut)
+void PluginI::apply(unsigned pos, unsigned long n,
+                    unsigned long ports, float** bufIn, float** bufOut, float latency_corr_offset)
 {
   const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
   unsigned long sample = 0;
@@ -2898,6 +3022,9 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
   ciCtrlList icl_first;
   if(_track)
   {
+    // Correction value is negative for correction.
+    latency_corr_offset += _track->getLatencyInfo(false)._sourceCorrectionValue;
+
     at = _track->automationType();
     cll = _track->controller();
     if(_id != -1 && ports != 0)  // Don't bother if not 'running'.
@@ -3112,7 +3239,7 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
         connect(ports, sample, bufIn, bufOut);
 
         for(int i = 0; i < instances; ++i)
-          _plugin->apply(handle[i], nsamp);
+          _plugin->apply(handle[i], nsamp, latency_corr_offset);
       }
 
       sample += nsamp;
@@ -3382,21 +3509,61 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       QToolBar* tools = addToolBar(tr("File Buttons"));
 
       QAction* fileOpen = new QAction(QIcon(*openIconS), tr("Load Preset"), this);
-      connect(fileOpen, SIGNAL(triggered()), this, SLOT(load()));
+//       connect(fileOpen, SIGNAL(triggered()), this, SLOT(load()));
+      connect(fileOpen, &QAction::triggered, [this]() { load(); } );
       tools->addAction(fileOpen);
 
       QAction* fileSave = new QAction(QIcon(*saveIconS), tr("Save Preset"), this);
-      connect(fileSave, SIGNAL(triggered()), this, SLOT(save()));
+//       connect(fileSave, SIGNAL(triggered()), this, SLOT(save()));
+      connect(fileSave, &QAction::triggered, [this]() { save(); } );
       tools->addAction(fileSave);
 
       tools->addAction(QWhatsThis::createAction(this));
 
-      onOff = new QAction(QIcon(*exitIconS), tr("bypass plugin"), this);
+      //onOff = new QAction(QIcon(*exitIconS), tr("bypass plugin"), this);
+      onOff = new QAction(*muteSVGIcon, tr("bypass plugin"), this);
       onOff->setCheckable(true);
-      onOff->setChecked(plugin->on());
+      onOff->setChecked(!plugin->on());
+      onOff->setEnabled(plugin->hasBypass());
       onOff->setToolTip(tr("bypass plugin"));
-      connect(onOff, SIGNAL(toggled(bool)), SLOT(bypassToggled(bool)));
+      connect(onOff, &QAction::toggled, [this](bool v) { bypassToggled(v); } );
       tools->addAction(onOff);
+
+      tools->addSeparator();
+      tools->addWidget(new QLabel(tr("Quirks:")));
+
+      fixedSpeedAct= new QAction(QIcon(*fixedSpeedSVGIcon), tr("Fixed speed"), this);
+      fixedSpeedAct->setCheckable(true);
+      fixedSpeedAct->setChecked(plugin->cquirks()._fixedSpeed);
+      fixedSpeedAct->setEnabled(plugin->usesTransportSource());
+      fixedSpeedAct->setToolTip(tr("Fixed speed"));
+      connect(fixedSpeedAct, &QAction::toggled, [this](bool v) { fixedSpeedToggled(v); } );
+      tools->addAction(fixedSpeedAct);
+
+      transpGovLatencyAct = new QAction(QIcon(*transportAffectsLatencySVGIcon), tr("Transport affects audio latency"), this);
+      transpGovLatencyAct->setCheckable(true);
+      transpGovLatencyAct->setChecked(plugin->cquirks()._transportAffectsAudioLatency);
+      transpGovLatencyAct->setEnabled(plugin->usesTransportSource());
+      transpGovLatencyAct->setToolTip(tr("Transport affects audio latency"));
+      connect(transpGovLatencyAct, &QAction::toggled, [this](bool v) { transportGovernsLatencyToggled(v); } );
+      tools->addAction(transpGovLatencyAct);
+
+      overrideLatencyAct= new QAction(QIcon(*overrideLatencySVGIcon), tr("Override reported audio latency"), this);
+      overrideLatencyAct->setCheckable(true);
+      overrideLatencyAct->setChecked(plugin->cquirks()._overrideReportedLatency);
+      overrideLatencyAct->setToolTip(tr("Override reported audio latency"));
+      connect(overrideLatencyAct, &QAction::toggled, [this](bool v) { overrideReportedLatencyToggled(v); } );
+      tools->addAction(overrideLatencyAct);
+
+      latencyOverrideEntry = new QSpinBox();
+      latencyOverrideEntry->setRange(0, 8191);
+      latencyOverrideEntry->setValue(plugin->cquirks()._latencyOverrideValue);
+      latencyOverrideEntry->setEnabled(plugin->cquirks()._overrideReportedLatency);
+      latencyOverrideEntry->setToolTip(tr("Reported audio latency override value"));
+      // Special: Need qt helper overload for these lambdas.
+      connect(latencyOverrideEntry,
+        QOverload<int>::of(&QSpinBox::valueChanged), [=](int v) { latencyOverrideValueChanged(v); } );
+      tools->addWidget(latencyOverrideEntry);
 
       // TODO: We need to use .qrc files to use icons in WhatsThis bubbles. See Qt
       // Resource System in Qt documentation - ORCAN
@@ -4151,9 +4318,38 @@ void PluginGui::save()
 void PluginGui::bypassToggled(bool val)
       {
       setWindowTitle(plugin->titlePrefix() + plugin->name());
-      plugin->setOn(val);
+      plugin->setOn(!val);
       MusEGlobal::song->update(SC_ROUTE);
       }
+
+void PluginGui::transportGovernsLatencyToggled(bool v)
+{
+  // TODO Make a safe audio-synced operation?
+  plugin->quirks()._transportAffectsAudioLatency = v;
+  MusEGlobal::song->update(SC_ROUTE);
+}
+
+void PluginGui::fixedSpeedToggled(bool v)
+{
+  // TODO Make a safe audio-synced operation?
+  plugin->quirks()._fixedSpeed = v;
+  MusEGlobal::song->update(SC_ROUTE);
+}
+
+void PluginGui::overrideReportedLatencyToggled(bool v)
+{
+  // TODO Make a safe audio-synced operation?
+  plugin->quirks()._overrideReportedLatency = v;
+  latencyOverrideEntry->setEnabled(v);
+  MusEGlobal::song->update(SC_ROUTE);
+}
+
+void PluginGui::latencyOverrideValueChanged(int v)
+{
+  // TODO Make a safe audio-synced operation?
+  plugin->quirks()._latencyOverrideValue = v;
+  MusEGlobal::song->update(SC_ROUTE);
+}
 
 //---------------------------------------------------------
 //   setOn
@@ -4163,7 +4359,7 @@ void PluginGui::setOn(bool val)
       {
       setWindowTitle(plugin->titlePrefix() + plugin->name());
       onOff->blockSignals(true);
-      onOff->setChecked(val);
+      onOff->setChecked(!val);
       onOff->blockSignals(false);
       }
 

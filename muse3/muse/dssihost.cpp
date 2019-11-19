@@ -786,7 +786,11 @@ unsigned long DssiSynthIF::latencyOutPortIndex() const
 float DssiSynthIF::latency() const
 {
   // Do not report any latency if the plugin is not on.
-  if(!hasLatencyOutPort() || !on())
+  if(!on())
+    return 0.0;
+  if(cquirks()._overrideReportedLatency)
+    return cquirks()._latencyOverrideValue;
+  if(!hasLatencyOutPort())
     return 0.0;
   return _controlsOut[latencyOutPortIndex()].val;
 }

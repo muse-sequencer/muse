@@ -148,6 +148,7 @@ file (GLOB core_source_files
       ticksynth.cpp
       track.cpp
       transport.cpp
+      transport_obj.cpp
       undo.cpp
       value.cpp
       vst.cpp

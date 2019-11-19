@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg id="SVGRoot" width="64px" height="64px" shape-rendering="crispEdges" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path d="m47.5 34.728-13.485 13.485-17.98-17.98 26.969-26.969 17.98 17.98z" fill="#ffbf00" fill-rule="evenodd" stroke="#ffbf00" stroke-dashoffset="37.795" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" style="paint-order:fill markers stroke"/>
+ <rect transform="rotate(225)" x="-59.072" y="-11.005" width="27.311" height="40.056" fill="none" stroke="#000" stroke-dashoffset="37.795" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" style="paint-order:fill markers stroke"/>
+ <path d="m4.1851 59.933c0-0.03546 2.9998-4.3135 6.6662-9.5068 3.6664-5.1933 6.7106-9.5593 6.765-9.7023 0.20538-0.54019 0.03335-0.80657-1.56-2.4156l-1.5289-1.544 1.988-1.9806 12.824 12.823-1.9876 1.9876-1.525-1.5226c-1.3822-1.38-1.5638-1.5278-1.9392-1.5781-0.34305-0.04602-0.48688-0.0076-0.83667 0.22352-0.23232 0.1535-4.5246 3.175-9.5384 6.7146-10.039 7.0873-9.3273 6.591-9.3273 6.5016z" fill="#006dff" fill-rule="evenodd" style="paint-order:fill markers stroke"/>
+ <path d="m17.252 34.104-3.2188 3.2188 3.2188 3.2188-15.449 21.885 21.885-15.449 3.2188 3.2188 3.2188-3.2188z" fill="none" stroke="#000" stroke-dashoffset="37.795" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" style="paint-order:fill markers stroke"/>
+</svg>

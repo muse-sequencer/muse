@@ -4206,7 +4206,7 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
         }
 
         setMouseTracking(false);
-        unsetCursor();
+        setCursor(active_tool_cursor);
         inserting=false;
         dragging=false;
         drag_cursor_changed=false;
@@ -4233,7 +4233,7 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
         }
 
         dragging_staff=false;
-        unsetCursor();
+        setCursor(active_tool_cursor);
 
         y_scroll_speed=0; y_scroll_pos=0;
     }
@@ -4651,12 +4651,26 @@ void ScoreCanvas::set_tool(int tool)
 {
     switch (tool)
     {
-        case MusEGui::PointerTool: mouse_erases_notes=false; mouse_inserts_notes=false; break;
-        case MusEGui::RubberTool:  mouse_erases_notes=true;  mouse_inserts_notes=false; break;
-        case MusEGui::PencilTool:  mouse_erases_notes=false; mouse_inserts_notes=true;  break;
-        default:
-            cerr << "ERROR: THIS SHOULD NEVER HAPPEN: set_tool called with unknown tool ("<<tool<<")"<<endl;
+    case MusEGui::PointerTool:
+        setCursor(QCursor(Qt::ArrowCursor));
+        mouse_erases_notes=false;
+        mouse_inserts_notes=false;
+        break;
+    case MusEGui::RubberTool:
+        setCursor(getCursorFromIcon(deleteIconSVG, "deleteIconSVG"));
+        mouse_erases_notes=true;
+        mouse_inserts_notes=false;
+        break;
+    case MusEGui::PencilTool:
+        setCursor(getCursorFromIcon(pencilIconSVG, "pencilIconSVG"));
+        mouse_erases_notes=false;
+        mouse_inserts_notes=true;
+        break;
+    default:
+        cerr << "ERROR: THIS SHOULD NEVER HAPPEN: set_tool called with unknown tool ("<<tool<<")"<<endl;
     }
+
+    active_tool_cursor = cursor();
 }
 
 void ScoreCanvas::menu_command(int cmd)

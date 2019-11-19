@@ -136,13 +136,13 @@ QPoint EventCanvas::raster(const QPoint& p) const
 //---------------------------------------------------------
 
 void EventCanvas::mouseMove(QMouseEvent* event)
-      {
-      emit pitchChanged(y2pitch(event->pos().y()));
-      int x = event->pos().x();
-      if(x < 0)
+{
+    emit pitchChanged(y2pitch(event->pos().y()));
+    int x = event->pos().x();
+    if(x < 0)
         x = 0;
-      emit timeChanged(editor->rasterVal(x));
-      }
+    emit timeChanged(editor->rasterVal(x));
+}
 
 //---------------------------------------------------------
 //   updateItems

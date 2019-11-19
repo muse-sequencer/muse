@@ -70,6 +70,7 @@ class AudioDevice {
       virtual ~AudioDevice() {}
 
       virtual int deviceType() const = 0;
+      virtual const char* driverName() const = 0;
       virtual bool isRealtime() = 0;
       virtual int realtimePriority() const = 0; // return zero if not realtime
       

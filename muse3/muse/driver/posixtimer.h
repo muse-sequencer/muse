@@ -42,7 +42,8 @@ class PosixTimer : public Timer{
     public:
        PosixTimer();
        virtual ~PosixTimer();
-       
+       virtual const char * getTimerName() { return "PosixTimer"; }
+
        virtual signed int initTimer(unsigned long desiredFrequency);
        virtual unsigned long setTimerResolution(unsigned long resolution);
        virtual unsigned long getTimerResolution();

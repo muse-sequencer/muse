@@ -1140,8 +1140,8 @@ void MidiTrackInfo::instrPopup()
       MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
       PopupMenu* pup = new PopupMenu(false);
       
-      //MusECore::MidiInstrument::populateInstrPopup(pup, instr, false);
-      MusECore::MidiInstrument::populateInstrPopup(pup, instr, true);
+      //MusECore::MidiInstrument::populateInstrPopup(pup, port, false);
+      MusECore::MidiInstrument::populateInstrPopup(pup, port, true);
 
       if(pup->actions().count() == 0)
       {
@@ -1150,9 +1150,23 @@ void MidiTrackInfo::instrPopup()
       }  
       
       QAction *act = pup->exec(instrPushButton->mapToGlobal(QPoint(10,5)));
-      if(act) 
+      if(!act)
       {
-        QString s = act->text();
+        delete pup;
+        return;
+      }
+
+      const QString s = act->text();
+      const int actid = act->data().toInt();
+      delete pup;
+      
+      // Edit instrument
+      if(actid == 100)
+      {
+        MusEGlobal::muse->startEditInstrument(instr && !instr->isSynti() ? instr->iname() : QString());
+      }
+      else
+      {
         for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i != MusECore::midiInstruments.end(); ++i) 
         {
           if((*i)->iname() == s) 
@@ -1167,7 +1181,6 @@ void MidiTrackInfo::instrPopup()
           }
         }
       }
-      delete pup;      
       }
 
 //---------------------------------------------------------

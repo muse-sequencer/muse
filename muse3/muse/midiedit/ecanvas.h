@@ -27,9 +27,11 @@
 #include "canvas.h"
 #include "noteinfo.h"
 #include "mpevent.h"
+#include "helper.h"
 #include <QEvent>
 #include <QKeyEvent>
 #include <QVector>
+#include <QToolTip>
 
 #define KH        13
 
@@ -67,7 +69,6 @@ class EventCanvas : public Canvas {
       
       virtual void leaveEvent(QEvent*e);
       virtual void enterEvent(QEvent*e);
-      virtual void mouseMove(QMouseEvent* event);
 
    protected:
       bool _playEvents;
@@ -90,7 +91,7 @@ class EventCanvas : public Canvas {
       virtual void startPlayEvent(int note, int velocity);
       virtual void startPlayEvent(int note, int velocity, int port, int channel);
       virtual void stopPlayEvent();
-
+      virtual void mouseMove(QMouseEvent* event);
 
 
    public slots:

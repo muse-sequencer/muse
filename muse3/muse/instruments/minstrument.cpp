@@ -45,6 +45,9 @@
 #include "popupmenu.h"
 #include "drummap.h"
 #include "helper.h"
+#include "menutitleitem.h"
+#include "synth.h"
+#include "icons.h"
 
 #ifdef _USE_INSTRUMENT_OVERRIDES_
 namespace MusEGlobal {
@@ -1116,24 +1119,112 @@ patch_drummap_mapping_list_t* MidiInstrument::get_patch_drummap_mapping(int chan
   return pdml;
 }
 
-
 //---------------------------------------------------------
 //   populateInstrPopup  (static)
 //---------------------------------------------------------
 
-void MidiInstrument::populateInstrPopup(MusEGui::PopupMenu* menu, MidiInstrument* /*current*/, bool show_synths)
+void MidiInstrument::populateInstrPopup(MusEGui::PopupMenu* menu, int port, bool show_synths)
       {
       menu->clear();
-      for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i
-          != MusECore::midiInstruments.end(); ++i)
-          {
-            // Do not list synths. Although it is possible to assign a synth
-            //  as an instrument to a non-synth device, we should not allow this.
-            // (One reason is that the 'show gui' column is then enabled, which
-            //  makes no sense for a non-synth device).
-            if(show_synths || !(*i)->isSynti())
-              menu->addAction((*i)->iname());
-          }
+
+      if(port < 0 || port >= MIDI_PORTS)
+        return;
+
+      const MidiPort* mp = &MusEGlobal::midiPorts[port];
+      const MidiDevice* md = mp->device();
+
+      const MidiInstrument* dev_curr_instr = mp->instrument();
+      const SynthI* dev_synth = nullptr;
+      const MidiInstrument* dev_synth_instr = nullptr;
+      QAction* act;
+
+      act = menu->addAction(QIcon(*MusEGui::midi_edit_instrumentIcon), QWidget::tr("Edit instrument ..."));
+      act->setData(100);
+      menu->addSeparator();
+
+      menu->addAction(new MusEGui::MenuTitleItem(QObject::tr("Instruments:"), menu));
+      menu->addSeparator();
+
+      if(md && md->isSynti())
+      {
+        dev_synth = static_cast<const SynthI*>(md);
+        dev_synth_instr = static_cast<const MidiInstrument*>(dev_synth);
+      }
+
+      if(dev_synth_instr)
+      {
+        menu->addAction(new MusEGui::MenuTitleItem(QObject::tr("Current device"), menu));
+        act = menu->addAction(dev_synth_instr->iname());
+        act->setCheckable(true);
+        if(dev_synth_instr == dev_curr_instr)
+          act->setChecked(true);
+      }
+       
+      if(!MusECore::midiInstruments.empty())
+      {
+        bool has_synths = false;
+        for (MusECore::ciMidiInstrument i = MusECore::midiInstruments.cbegin(); i
+            != MusECore::midiInstruments.cend(); ++i)
+            {
+              if(show_synths && (*i)->isSynti() && (*i) != dev_synth_instr)
+              {
+                has_synths = true;
+                break;
+              }
+            }
+
+        if(has_synths)
+        {
+          if(dev_synth_instr)
+            menu->addAction(new MusEGui::MenuTitleItem(QObject::tr("Others"), menu));
+
+          MusEGui::PopupMenu* instr_menu = new MusEGui::PopupMenu(menu, false);
+          instr_menu->setTitle(QObject::tr("Files"));
+          for (MusECore::ciMidiInstrument i = MusECore::midiInstruments.cbegin(); i
+              != MusECore::midiInstruments.cend(); ++i)
+              {
+                if(!(*i)->isSynti())
+                {
+                  act = instr_menu->addAction((*i)->iname());
+                  act->setCheckable(true);
+                  if((*i) == dev_curr_instr)
+                    act->setChecked(true);
+                }
+              }
+          menu->addMenu(instr_menu);
+
+          MusEGui::PopupMenu* synth_submenu = new MusEGui::PopupMenu(menu, false);
+          synth_submenu->setTitle(QObject::tr("Synthesizers"));
+          for (MusECore::ciMidiInstrument i = MusECore::midiInstruments.cbegin(); i
+              != MusECore::midiInstruments.cend(); ++i)
+              {
+                if((*i)->isSynti() && (*i) != dev_synth_instr)
+                {
+                  act = synth_submenu->addAction((*i)->iname());
+                  act->setCheckable(true);
+                  if((*i) == dev_curr_instr)
+                    act->setChecked(true);
+                }
+              }
+          menu->addMenu(synth_submenu);
+        }
+        else
+        {
+          menu->addAction(new MusEGui::MenuTitleItem(QObject::tr("Files"), menu));
+
+          for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i
+              != MusECore::midiInstruments.end(); ++i)
+              {
+                if(!(*i)->isSynti())
+                {
+                  act = menu->addAction((*i)->iname());
+                  act->setCheckable(true);
+                  if((*i) == dev_curr_instr)
+                    act->setChecked(true);
+                }
+              }
+        }
+      }
     }
 
 //---------------------------------------------------------

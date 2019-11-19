@@ -320,10 +320,6 @@ GlobalConfigValues config = {
       true,                         // midiCtrlGraphMergeErase Whether to erase underlying erase target items when dragging/dropping source items.
       false,                        // midiCtrlGraphMergeEraseInclusive Whether to erase target items in-between source item groups.
       true,                         // midiCtrlGraphMergeEraseWysiwyg Whether to erase past the last item in a group to include its original source width.
-      QString("klick1.wav"),        // measSample
-      QString("klick2.wav"),        // beatSample
-      QString("klick3.wav"),        // accent1Sample
-      QString("klick4.wav"),        // accent2Sample
       MusEGlobal::RoutePreferCanonicalName,  // preferredRouteNameOrAlias
       true,                         // routerExpandVertically
       2,                            // routerGroupingChannels

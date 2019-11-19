@@ -1,9 +1,40 @@
+18.11.2019
+    - Add dedicated new 'mute parts' svg icon, for 17.11 (Tim)
+    - Bug 681: Fix multichannel track feeding aux track, no audio. In AudioTrack::copyData().
+    - Fixed metronome selection of wave files, the selection in the ui 
+      didn't actually do anything. (rj)
+17.11.2019
+	  - Introduce new scalable icons and cursors for edit tools (kybos)
+	    Improved cursor interaction in piano roll/drum editor (event canvas vs. control canvas),
+	    cursor shape shows when cursor has no function in given area
+	    Consistent cursor shape display in all editors affected (midi, part, score, master, wave)
+	    Correct cursor size on HiDPI screens (fixes issue #637)
+    - LV2: Fix sequencing/syncing plugins (Helm, LV2 metronome, NoiseMak3r...) (Tim)
+      Fixed TimePosition usage. Add quirks class for different plugin behaviour observed.
+    - Generic plugin UI: Added 'Quirks' buttons to toolbar:
+       "fixed speed" (fixes NoiseMak3r modulator stuck in small loop in stop mode for ex.),
+       "transport affects latency" (self-correcting LV2 Example Metronome for ex.), and
+       "override reported latency" (for plugins with broken or inaccurate latency reporting).
+12.11.2019
+      *** MusE 3.1.0pre3 ***
+11.11.2019
+      - Added tab in Aboutbox with some runtime of MusE, feel free to add more (rj)
+      - Disabled rate and size for audio device when Jack is selected as we currently
+        cannot change this from within MusE (rj)
+09.11.2019
+      - Reorganize instrument popup menu. (Tim)
+08.11.2019
+      - Fixed missing font scaling in drum editor at lower zoom level (kybos)
+      - LV2: Fixed program_changed callback lv2prg_Changed(), seemed completely wrong. (Tim)
+07.11.2019
+      - Add: Tooltip for current note/instrument in the midi editors (kybos)
 06.11.2019
       - Adjusted raster drawing in view.cpp so it would draw lines that didn't (rj)
         draw correctly on my rig. We'll see if anyone objects
       * New - Instrument can now be changed on a Synth Track: (Tim)
         For example you can now set 'GM2' or 'My cool instrument' on ANY synth track.
         Not as useless/dangerous as it sounds. Tested OK saving/loading/changing instruments.
+      - Add: Range selection (shift-click) for tracks (kybos)
 05.11.2019
       - Oops. Restore auto-create user instruments folder, likely swept away by 03.09 (Tim)
 04.11.2019
@@ -14,6 +45,9 @@
       - Some cleanups, especially the addition of using of an enum for CPOS,LPOS,RPOS
 03.11.2019
       - Fix issue 667: Hang on automatic restart. Reset jackStarted upon restart. (Tim)
+      - Fix issue 638: Font too small in popups started from mixer strip (kybos)
+      - Add: Double click on track ID selects all tracks of the same type (kybos)
+      - Fix: Change piano keys in piano roll to rectangular shapes to avoid pixelation when scaled (kybos)
 02.11.2019
       - Mixers and strips: Mods and reverts to 20.10. (Tim)
         Removed new track UUID. Found a way to work with track index and a local LUID instead.

@@ -774,6 +774,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     }
                     
                     n = act->data().toInt();
+                    delete pup;
                     
                     MusECore::MidiDevice* sdev = 0;
                     if(n < 0x10000000)
@@ -811,8 +812,6 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       if(sdev == dev)
                         sdev = 0;
                     }    
-
-                    delete pup;
                     
                     MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
                     for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
@@ -924,8 +923,8 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   //if (dev && dev->isSynti())
                   //      return;
                   PopupMenu* pup = new PopupMenu(false);
-                  //MusECore::MidiInstrument::populateInstrPopup(pup, port->instrument(), false);   
-                  MusECore::MidiInstrument::populateInstrPopup(pup, port->instrument(), true);
+                  //MusECore::MidiInstrument::populateInstrPopup(pup, no, false);   
+                  MusECore::MidiInstrument::populateInstrPopup(pup, no, true);
                   
                   if(pup->actions().count() == 0)
                   {
@@ -935,22 +934,35 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   
                   QAction* act = pup->exec(ppt);
                   if(!act)
+                  {
+                    delete pup;
                     return;
+                  }
                   
                   QString s = act->text();
+                  const int actid = act->data().toInt();
                   delete pup;
                   
-                  item->tableWidget()->item(item->row(), DEVCOL_INSTR)->setText(s);
-                  for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i
-                     != MusECore::midiInstruments.end(); ++i) {
-                        if ((*i)->iname() == s) {
-                              MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
-                              port->changeInstrument(*i);
-                              MusEGlobal::audio->msgIdle(false);
-                              break;
-                              }
-                        }
-                  MusEGlobal::song->update(SC_MIDI_INSTRUMENT);
+                  // Edit instrument
+                  if(actid == 100)
+                  {
+                    MusECore::MidiInstrument* instr = port->instrument();
+                    MusEGlobal::muse->startEditInstrument(instr && !instr->isSynti() ? instr->iname() : QString());
+                  }
+                  else
+                  {
+                    item->tableWidget()->item(item->row(), DEVCOL_INSTR)->setText(s);
+                    for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i
+                      != MusECore::midiInstruments.end(); ++i) {
+                          if ((*i)->iname() == s) {
+                                MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
+                                port->changeInstrument(*i);
+                                MusEGlobal::audio->msgIdle(false);
+                                MusEGlobal::song->update(SC_MIDI_INSTRUMENT);
+                                break;
+                                }
+                          }
+                  }
                   }
                   return;
             break;                    

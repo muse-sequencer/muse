@@ -68,7 +68,9 @@ class DummyAudioDevice : public AudioDevice {
    public:
       // Time in microseconds at which the driver was created.
       uint64_t _start_timeUS;
-      
+
+      virtual const char* driverName() const { return "DummyAudioDevice"; }
+
       // For callback usage only.
       void setCriticalVariables(unsigned segmentSize)
       {

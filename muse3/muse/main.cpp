@@ -616,6 +616,7 @@ int main(int argc, char* argv[])
         // Now create the application, and let Qt remove recognized arguments.
 #if QT_VERSION >= 0x050600
         QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+        QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
 
         //========================
@@ -1368,6 +1369,12 @@ int main(int argc, char* argv[])
         if(MusEGlobal::loadLV2)
               MusECore::initLV2();
   #endif
+
+        // Now that all the plugins are done loading from the global plugin cache list,
+        //  we are done with it. Clear it to free up memory.
+        // TODO Future: Will need to keep it around if we ever switch to using the list all the time
+        //       instead of separate global plugin and synth lists.
+        MusEPlugin::pluginList.clear();
 
         MusECore::initOSC();
 

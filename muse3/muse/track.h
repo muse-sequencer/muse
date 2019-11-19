@@ -41,6 +41,7 @@
 #include "cleftypes.h"
 #include "controlfifo.h"
 #include "latency_info.h"
+#include "transport_obj.h"
 
 class QPixmap;
 class QColor;
@@ -137,6 +138,10 @@ class Track {
 
       // Holds latency computations each cycle.
       TrackLatencyInfo _latencyInfo;
+
+      // Holds a special extra 'source': The transport stream.
+      // Tracks or plugins that request/receive transport info use this.
+      TransportSource _transportSource;
 
       int newSn() { return _snGen++; }
       
@@ -282,6 +287,16 @@ class Track {
       virtual bool recMonitor() const    { return _recMonitor; }
 
       virtual void preProcessAlways()    { }
+
+      TransportSource& transportSource() { return _transportSource; }
+//       // Returns true if the transport source is connected to any of the
+//       //  track's midi input ports (ex. synth ports not muse midi ports).
+//       // If midiport is -1, returns true if ANY port is connected.
+//       virtual bool transportSourceConnected(int /*midiport*/ = -1) const { return false; }
+      // Returns true if the transport source is connected to any of the
+      //  track's midi input ports (ex. synth ports not muse midi ports).
+      virtual bool usesTransportSource() const { return false; }
+      virtual bool transportAffectsAudioLatency() const { return false; }
 
       // Initializes this track's latency information in preparation for a latency scan.
       virtual void prepareLatencyScan();

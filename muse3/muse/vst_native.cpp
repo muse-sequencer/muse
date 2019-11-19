@@ -3347,7 +3347,7 @@ void VstNativePluginWrapper::connectPort(LADSPA_Handle handle, unsigned long por
 
 }
 
-void VstNativePluginWrapper::apply(LADSPA_Handle handle, unsigned long n)
+void VstNativePluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float /*latency_corr*/)
 {
    VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
    state->inProcess = true;

@@ -188,7 +188,7 @@ class PluginScanInfoStruct
 
     enum PluginFlags { NoPluginFlags = 0x00,
       HasGui = 0x01, HasChunks = 0x02, Realtime = 0x04, HardRealtimeCapable = 0x08, HasFreewheelPort = 0x10,
-      HasLatencyPort = 0x20 };
+      HasLatencyPort = 0x20, SupportsTimePosition = 0x40 };
     typedef int PluginFlags_t;
     
   //private:
