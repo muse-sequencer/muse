@@ -52,7 +52,7 @@ QToolBar QToolButton:checked {
 
 }
 
-QTreeView {
+QTreeView, QListView {
      alternate-background-color: rgb(60,60,60);
      background: rgb(30,30,30);
  }
