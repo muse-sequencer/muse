@@ -1,3 +1,5 @@
+19.11.2019
+    - Soundfont *.sf3 files: Small tweak allows our MESS fluidsynth to load them. (Tim)
 18.11.2019
     - Add dedicated new 'mute parts' svg icon, for 17.11 (Tim)
     - Bug 681: Fix multichannel track feeding aux track, no audio. In AudioTrack::copyData().
