@@ -83,6 +83,7 @@ class CtrlEdit : public QWidget {
       // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
       void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const
       { if(canvas) canvas->tagItems(tag_list, options); }
+      void redrawCanvas() {canvas->redraw();}
       };
 
       
