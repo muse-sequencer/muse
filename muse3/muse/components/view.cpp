@@ -951,7 +951,6 @@ void View::drawTickRaster(
 
                     //>pen.setColor(bar_color);
                   }
-                  pen.setWidth(2);
                   p.setPen(pen);
                   
                   if(scale_info._drawBar)
@@ -971,8 +970,6 @@ void View::drawTickRaster(
                       p.drawLine(mx_sm, my, mx_sm, mbottom);
                     }
                   }
-                  pen.setWidth(1); // reset
-                  p.setPen(pen);
                   
                   if(drawText)
                   {
