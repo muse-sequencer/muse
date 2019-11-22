@@ -3439,9 +3439,12 @@ QRect CtrlCanvas::overlayRect() const
 void CtrlCanvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       {
       drawTickRaster(p, rect, rg, editor->raster(),
-                         false, false, false,
-                         MusEGlobal::config.midiCanvasBarColor, 
-                         MusEGlobal::config.midiCanvasBeatColor);
+                     false, false, false,
+                     Qt::red, // dummy color, very visual so it can be detected if it is drawn.
+                     MusEGlobal::config.midiCanvasBeatColor,
+                     MusEGlobal::config.midiCanvasFineColor,
+                     MusEGlobal::config.midiCanvasBarColor
+                     );
 
       //---------------------------------------------------
       //    draw line tool

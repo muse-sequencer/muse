@@ -1513,8 +1513,11 @@ void WaveCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
       //---------------------------------------------------
 
       drawTickRaster(p, rect, rg, editor->raster(), true, false, false,
-                         MusEGlobal::config.midiCanvasBarColor, 
-                         MusEGlobal::config.midiCanvasBeatColor);
+                     MusEGlobal::config.midiCanvasBeatColor, // color sequence slightly done by trial and error..
+                     MusEGlobal::config.midiCanvasBeatColor,
+                     Qt::red, // dummy color
+                     MusEGlobal::config.midiCanvasBarColor
+                     );
       }
 
 //---------------------------------------------------------
