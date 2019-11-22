@@ -290,7 +290,7 @@ enum CommandLineParseResult
 
 CommandLineParseResult parseCommandLine(
   QCommandLineParser &parser, QString *errorMessage,
-  QString& open_filename, AudioDriverSelect& audioType, bool& force_plugin_rescan)
+  QString& open_filename, AudioDriverSelect& audioType, bool& force_plugin_rescan, bool& dont_plugin_rescan)
 {
   parser.setApplicationDescription(APP_DESCRIPTION);
   const QString version_string(VERSION);
@@ -328,8 +328,11 @@ CommandLineParseResult parseCommandLine(
   parser.addOption(option_Y);
 
   QCommandLineOption option_R("R", QCoreApplication::translate("main",
-    "Force plugin cache re-scan. (Automatic if any plugin path directories changed.)"));
+    "Force plugin cache re-creation. (Automatic if any plugin path directories changed.)"));
   parser.addOption(option_R);
+  QCommandLineOption option_C("C", QCoreApplication::translate("main",
+    "Do not re-create plugin cache. Avoids repeated re-creations in some circumstances. Use with care."));
+  parser.addOption(option_C);
   QCommandLineOption option_p("p", QCoreApplication::translate("main", "Don't load LADSPA plugins"));
   parser.addOption(option_p);
   QCommandLineOption option_S("S", QCoreApplication::translate("main", "Don't load MESS plugins"));
@@ -477,6 +480,9 @@ CommandLineParseResult parseCommandLine(
 
   if(parser.isSet(option_R))
     force_plugin_rescan = true;
+
+  if(parser.isSet(option_C))
+    dont_plugin_rescan = true;
 
   if(parser.isSet(option_S))
     MusEGlobal::loadMESS = false;
@@ -965,11 +971,13 @@ int main(int argc, char* argv[])
         QString open_filename;
         AudioDriverSelect audioType = DriverConfigSetting;
         bool force_plugin_rescan = false;
+        bool dont_plugin_rescan = false;
         // A block because we don't want ths hanging around. Use it then lose it.
         {
           QCommandLineParser parser;
           QString errorMessage;
-          switch (parseCommandLine(parser, &errorMessage, open_filename, audioType, force_plugin_rescan))
+          switch (parseCommandLine(parser, &errorMessage, open_filename,
+                                   audioType, force_plugin_rescan, dont_plugin_rescan))
           {
             case CommandLineOk:
                 break;
@@ -1143,6 +1151,8 @@ int main(int argc, char* argv[])
                                         false,
                                         // Whether to force recreation.
                                         do_rescan,
+                                        // Whether to NOT recreate.
+                                        dont_plugin_rescan,
                                         // When creating, where to find the application's own plugins.
                                         MusEGlobal::museGlobalLib,
                                         // Plugin types to check.

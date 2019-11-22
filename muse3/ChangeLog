@@ -1,3 +1,6 @@
+21.11.2019
+    - Add command line option -C "Do not re-create plugin cache." (Tim)
+      Avoids (looong) repeated re-creations in some cases. Helps devs avoid after rebuilds. 
 19.11.2019
     - Soundfont *.sf3 files: Small tweak allows our MESS fluidsynth to load them. (Tim)
 18.11.2019

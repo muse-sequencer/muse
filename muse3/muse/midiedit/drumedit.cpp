@@ -1071,6 +1071,8 @@ void DrumEdit::setRaster(int val)
       _rasterInit = val;
       MidiEditor::setRaster(val);
       canvas->redrawGrid();
+      for (auto it : ctrlEditList)
+          it->redrawCanvas();
       focusCanvas();     // give back focus after kb input
       }
 
