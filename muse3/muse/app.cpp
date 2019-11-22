@@ -2461,6 +2461,9 @@ void MusE::kbAccel(int key)
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_OPEN_TRANSPORT].key) {
             toggleTransport(!viewTransportAction->isChecked());
             }
+      else if (key == MusEGui::shortcuts[MusEGui::SHRT_OPEN_MARKER].key) {
+            toggleMarker(!viewMarkerAction->isChecked());
+            }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_OPEN_BIGTIME].key) {
             toggleBigTime(!viewBigtimeAction->isChecked());
             }
