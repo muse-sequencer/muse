@@ -806,9 +806,11 @@ void DrumCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
       //---------------------------------------------------
 
       drawTickRaster(p, mr, rg, editor->raster(), false, false, false,
-                         MusEGlobal::config.midiCanvasBarColor, 
-                         MusEGlobal::config.midiCanvasBeatColor);
-      }
+                     Qt::red, // dummy color, not used
+                     MusEGlobal::config.midiCanvasBeatColor,
+                     MusEGlobal::config.midiCanvasFineColor,
+                     MusEGlobal::config.midiCanvasBarColor);
+}
 
 //---------------------------------------------------------
 //   drawTopItem

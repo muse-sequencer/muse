@@ -475,7 +475,9 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
                          waveMode, false, true,
                          MusEGlobal::config.rulerFg, 
                          MusEGlobal::config.rulerFg,
-                         QColor(),
+                         Qt::red, // dummy color, initialize to a bold color so it will be evident if it is used
+                         Qt::red, // -"-
+                         MusEGlobal::config.rulerFg,
                          MusEGlobal::config.fonts[3], MusEGlobal::config.fonts[4]);
       }
 

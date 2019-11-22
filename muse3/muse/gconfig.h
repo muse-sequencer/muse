@@ -199,6 +199,8 @@ struct GlobalConfigValues {
       QColor synthTrackBg;
       
       QColor partCanvasBg;
+      QColor partCanvasCoarseRasterColor;
+      QColor partCanvasFineRasterColor;
       QColor ctrlGraphFg;
       QColor mixerBg;
 
@@ -208,6 +210,7 @@ struct GlobalConfigValues {
       QColor midiControllerViewBg;
       QColor drumListBg;
       QColor rulerCurrent;
+      QColor midiCanvasFineColor;
       QColor midiCanvasBeatColor;
       QColor midiCanvasBarColor;
 
