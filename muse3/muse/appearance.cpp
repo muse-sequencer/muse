@@ -220,6 +220,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x421, id, "background");
            new IdListViewItem(0x422, id, "drum list");
            new IdListViewItem(0x429, id, "raster beat");
+           new IdListViewItem(0x42c, id, "raster subbeat");
            new IdListViewItem(0x42a, id, "raster bar");
 
 
@@ -398,6 +399,7 @@ QColor* Appearance::globalConfigColorFromId(int id) const
       case 0x429: return &MusEGlobal::config.midiCanvasBeatColor; break;
       case 0x42a: return &MusEGlobal::config.midiCanvasBarColor; break;
       case 0x42b: return &MusEGlobal::config.trackSectionDividerColor; break;
+      case 0x42c: return &MusEGlobal::config.midiCanvasSubBeatColor; break;
 
 
 

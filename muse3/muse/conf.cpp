@@ -1035,6 +1035,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.midiCanvasBg = readColor(xml);
                         else if (tag == "midiCanvasBeatColor")
                               MusEGlobal::config.midiCanvasBeatColor = readColor(xml);
+                        else if (tag == "midiCanvasSubBeatColor")
+                            MusEGlobal::config.midiCanvasSubBeatColor = readColor(xml);
                         else if (tag == "midiCanvasBarColor")
                               MusEGlobal::config.midiCanvasBarColor = readColor(xml);
                         else if (tag == "midiControllerViewBackgroundColor")
@@ -1616,6 +1618,7 @@ static void writeConfigurationColors(int level, MusECore::Xml& xml, bool partCol
 
       xml.colorTag(level, "midiCanvasBackgroundColor", MusEGlobal::config.midiCanvasBg);
       xml.colorTag(level, "midiCanvasBeatColor", MusEGlobal::config.midiCanvasBeatColor);
+      xml.colorTag(level, "midiCanvasSubBeatColor", MusEGlobal::config.midiCanvasSubBeatColor);
       xml.colorTag(level, "midiCanvasBarColor", MusEGlobal::config.midiCanvasBarColor);
 
       xml.colorTag(level, "midiControllerViewBackgroundColor", MusEGlobal::config.midiControllerViewBg);

@@ -3441,7 +3441,8 @@ void CtrlCanvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       drawTickRaster(p, rect, rg, editor->raster(),
                          false, false, false,
                          MusEGlobal::config.midiCanvasBarColor, 
-                         MusEGlobal::config.midiCanvasBeatColor);
+                         MusEGlobal::config.midiCanvasBeatColor,
+                         MusEGlobal::config.midiCanvasSubBeatColor);
 
       //---------------------------------------------------
       //    draw line tool

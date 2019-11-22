@@ -169,6 +169,7 @@ class View : public QWidget {
                                       bool drawText = false,
                                       const QColor& bar_color = QColor(),
                                       const QColor& beat_color = QColor(),
+                                      const QColor& subbeat_color = QColor(),
                                       const QColor& text_color = QColor(),
                                       const QFont& large_font = QFont(),
                                       const QFont& small_font = QFont()
