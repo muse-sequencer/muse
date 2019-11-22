@@ -186,6 +186,9 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
              new IdListViewItem(0x600 + i, id, MusEGlobal::config.partColorNames[i]);
            
            new IdListViewItem(0x41c, aid, "part canvas background");
+           new IdListViewItem(0x42c, aid, "part canvas raster coarse");
+           new IdListViewItem(0x42d, aid, "part canvas raster fine");
+
            new IdListViewItem(0x41f, aid, "Ruler background");
            new IdListViewItem(0x420, aid, "Ruler text");
            new IdListViewItem(0x424, aid, "Ruler current marker space");
@@ -221,6 +224,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x422, id, "drum list");
            new IdListViewItem(0x429, id, "raster beat");
            new IdListViewItem(0x42a, id, "raster bar");
+           new IdListViewItem(0x42e, id, "raster fine");
 
 
       id = new IdListViewItem(0, itemList, "Wave Editor");
@@ -399,7 +403,9 @@ QColor* Appearance::globalConfigColorFromId(int id) const
       case 0x42a: return &MusEGlobal::config.midiCanvasBarColor; break;
       case 0x42b: return &MusEGlobal::config.trackSectionDividerColor; break;
 
-
+      case 0x42c: return &MusEGlobal::config.partCanvasCoarseRasterColor; break;
+      case 0x42d: return &MusEGlobal::config.partCanvasFineRasterColor; break;
+      case 0x42e: return &MusEGlobal::config.midiCanvasFineColor; break;
 
       case 0x500: return &MusEGlobal::config.mixerBg;   break;
       case 0x501: return &MusEGlobal::config.midiTrackLabelBg;   break;

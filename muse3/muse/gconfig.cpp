@@ -157,6 +157,8 @@ GlobalConfigValues config = {
       QColor(220, 211, 202),     // synthTrackBg;
       
       QColor(98, 124, 168),      // part canvas bg
+      QColor(71, 71, 71),        // partCanvasCoarseRaster;
+      QColor(130, 136, 168),     // partCanvasFineRaster;
       QColor(255, 170, 0),       // ctrlGraphFg;    Medium orange
       QColor(0, 0, 0),           // mixerBg;
 
@@ -166,7 +168,8 @@ GlobalConfigValues config = {
       QColor(255, 255, 255),        // midiControllerViewBg
       QColor(255, 255, 255),        // drumListBg
       QColor(255, 255, 255),        // rulerCurrent
-      Qt::gray,                     // midiCanvasBeatColor
+      QColor(210, 210, 210),        // midiCanvasFineColor
+      QColor(130, 130, 130),        // midiCanvasBeatColor
       Qt::black,                    // midiCanvasBarColor
       Qt::lightGray,                // waveNonselectedPart
       Qt::darkGray,                 // wavePeakColor

@@ -870,6 +870,10 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         
                         else if (tag == "partCanvasBg")
                               MusEGlobal::config.partCanvasBg = readColor(xml);
+                        else if (tag == "partCanvasFineRaster")
+                              MusEGlobal::config.partCanvasFineRasterColor = readColor(xml);
+                        else if (tag == "partCanvasCoarseRaster")
+                              MusEGlobal::config.partCanvasCoarseRasterColor = readColor(xml);
                         else if (tag == "trackBg")
                               MusEGlobal::config.trackBg = readColor(xml);
                         else if (tag == "selectTrackBg")
@@ -1033,10 +1037,16 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
 
                         else if (tag == "midiCanvasBackgroundColor")
                               MusEGlobal::config.midiCanvasBg = readColor(xml);
+
+                        else if (tag == "midiCanvasFineColor")
+                              MusEGlobal::config.midiCanvasFineColor = readColor(xml);
+
                         else if (tag == "midiCanvasBeatColor")
                               MusEGlobal::config.midiCanvasBeatColor = readColor(xml);
+
                         else if (tag == "midiCanvasBarColor")
                               MusEGlobal::config.midiCanvasBarColor = readColor(xml);
+
                         else if (tag == "midiControllerViewBackgroundColor")
                               MusEGlobal::config.midiControllerViewBg = readColor(xml);
                         else if (tag == "drumListBackgroundColor")
@@ -1552,6 +1562,9 @@ static void writeConfigurationColors(int level, MusECore::Xml& xml, bool partCol
       }
       
       xml.colorTag(level, "partCanvasBg",  MusEGlobal::config.partCanvasBg);
+      xml.colorTag(level, "partCanvasCoarseRaster",  MusEGlobal::config.partCanvasCoarseRasterColor);
+      xml.colorTag(level, "partCanvasFineRaster",  MusEGlobal::config.partCanvasFineRasterColor);
+
       xml.colorTag(level, "trackBg",       MusEGlobal::config.trackBg);
       xml.colorTag(level, "selectTrackBg", MusEGlobal::config.selectTrackBg);
       xml.colorTag(level, "selectTrackFg", MusEGlobal::config.selectTrackFg);
@@ -1615,6 +1628,7 @@ static void writeConfigurationColors(int level, MusECore::Xml& xml, bool partCol
       xml.colorTag(level, "partMidiLightEventColor", MusEGlobal::config.partMidiLightEventColor);
 
       xml.colorTag(level, "midiCanvasBackgroundColor", MusEGlobal::config.midiCanvasBg);
+      xml.colorTag(level, "midiCanvasFineColor", MusEGlobal::config.midiCanvasFineColor);
       xml.colorTag(level, "midiCanvasBeatColor", MusEGlobal::config.midiCanvasBeatColor);
       xml.colorTag(level, "midiCanvasBarColor", MusEGlobal::config.midiCanvasBarColor);
 
