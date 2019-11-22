@@ -2901,17 +2901,9 @@ bool checkPluginCacheFiles(
   bool debugStdErr
 )
 {
-//   filepath_set fpset;
   filepath_set cache_fpset;
   bool res = true;
   bool cache_dirty = false;
-
-// REMOVE Tim. cache. Moved below.
-//   //-----------------------------------------------------
-//   // Gather the current plugin files.
-//   //-----------------------------------------------------
-//   
-//   findPluginFiles(museGlobalLib, fpset, debugStdErr, types);
 
   //-----------------------------------------------------
   // Read whatever we've got in our current cache files.
@@ -2922,17 +2914,6 @@ bool checkPluginCacheFiles(
     cache_dirty = true;
     std::fprintf(stderr, "checkPluginCacheFiles: readAllPluginCacheFiles() failed\n");
   }
-
-//   //-----------------------------------------------------
-//   // Gather the current plugin files.
-//   //-----------------------------------------------------
-//   
-//   if(!dontRecreate && !cache_dirty /* || cache_dirty*/)
-//     findPluginFiles(museGlobalLib, fpset, debugStdErr, types);
-// 
-//   //-------------------------------------------------------------------------
-//   // Gather the unique (non-duplicate) plugin file paths found in our cache.
-//   //-------------------------------------------------------------------------
 
   // Check if cache is dirty. Don't bother if we already know it is dirty.
   if(!dontRecreate && !cache_dirty)
