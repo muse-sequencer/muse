@@ -172,8 +172,12 @@ class MuseApplication : public QApplication {
 #endif
             QKeyEvent* ke = (QKeyEvent*)event;
             MusEGlobal::globalKeyState = ke->modifiers();
-            bool accepted = ke->isAccepted();
-            if (!accepted) {
+
+            // rj - removing this test as it causes some keys to never be processed by the
+            // shortcut engine. The documentation is somewhat vague (to me) how
+            // this value should be used and that it is not always reliable
+//            bool accepted = ke->isAccepted();
+//              if (!accepted) {
                int key = ke->key();
                if (((QInputEvent*)ke)->modifiers() & Qt::ShiftModifier)
                   key += Qt::SHIFT;
@@ -183,7 +187,7 @@ class MuseApplication : public QApplication {
                   key+= Qt::CTRL;
                muse->kbAccel(key);
                return true;
-            }
+//            }
          }
          if (event->type() == QEvent::KeyRelease) {
             QKeyEvent* ke = (QKeyEvent*)event;

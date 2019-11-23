@@ -251,6 +251,8 @@ class MusE : public QMainWindow
       void writeConfiguration(int level, MusECore::Xml&) const;
       void updateConfiguration();
       QString projectTitle(QString name);
+      void toggleTrackArmSelectedTrack();
+
 
       QTimer *saveTimer;
       QTimer *blinkTimer;

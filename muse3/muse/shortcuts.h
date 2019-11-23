@@ -85,14 +85,17 @@ enum {
       SHRT_REC_RESTART_MULTI, //Shift+Space
       SHRT_STOP, //Insert
       SHRT_GOTO_START, // W
-      SHRT_GOTO_LEFT, //End-keypad
+      SHRT_GOTO_END,   // Ctrl+W
+
+      SHRT_GOTO_LEFT,  //End-keypad
       SHRT_GOTO_RIGHT, //Cursordown-keypad
       SHRT_POS_INC, // Plus
       SHRT_POS_DEC, // Minus
       SHRT_TOGGLE_LOOP, // Slash
       SHRT_TOGGLE_METRO, // C
       SHRT_START_REC, // *(keypad)
-      SHRT_REC_CLEAR, // *(keypad)
+      SHRT_REC_ARM_TRACK, // Shift+A
+      SHRT_REC_CLEAR, // backspace
       SHRT_FULLSCREEN,
       SHRT_TOGGLE_REWINDONSTOP,
 
