@@ -1,6 +1,8 @@
 22.11.2019
     - New solution to making bar lines more visible. Basically removed more hardcoded colors
       and made them configurable in the appearance dialog (rj)
+    - Fixed escape-key shortcut for closing a few more dialogs/editors:
+      master track list/graphical, instrument editor (rj)
 21.11.2019
     - Add command line option -C "Do not re-create plugin cache." (Tim)
       Avoids (looong) repeated re-creations in some cases. Helps devs avoid after rebuilds. 

@@ -1231,6 +1231,22 @@ void EditInstrument::fileClose()
       }
 
 //---------------------------------------------------------
+//   keyPressEvent
+//---------------------------------------------------------
+
+void EditInstrument::keyPressEvent(QKeyEvent* e)
+{
+    if (e->key() == Qt::Key_Escape) {
+          close();
+          return;
+          }
+    else {
+        e->ignore();
+        return;
+    }
+}
+
+//---------------------------------------------------------
 //   closeEvent
 //---------------------------------------------------------
 

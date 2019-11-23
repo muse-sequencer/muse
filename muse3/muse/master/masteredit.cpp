@@ -54,6 +54,22 @@ namespace MusEGui {
 int MasterEdit::_rasterInit = 0;
 
 //---------------------------------------------------------
+//   keyPressEvent
+//---------------------------------------------------------
+
+void MasterEdit::keyPressEvent(QKeyEvent* e)
+{
+    if (e->key() == Qt::Key_Escape) {
+          close();
+          return;
+          }
+    else {
+        e->ignore();
+        return;
+    }
+}
+
+//---------------------------------------------------------
 //   closeEvent
 //---------------------------------------------------------
 

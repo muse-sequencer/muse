@@ -67,6 +67,7 @@ class MasterEdit : public MidiEditor {
       
       static int _rasterInit;
       
+      virtual void keyPressEvent(QKeyEvent*);
       virtual void closeEvent(QCloseEvent*);
 
    private slots:

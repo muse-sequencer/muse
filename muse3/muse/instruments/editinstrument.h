@@ -70,7 +70,9 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
 
       void setHeaderToolTips();
       void setHeaderWhatsThis();
-      void closeEvent(QCloseEvent*);
+      virtual void closeEvent(QCloseEvent*);
+      virtual void keyPressEvent(QKeyEvent*);
+
       int checkDirty(MusECore::MidiInstrument*, bool isClose = false);
       bool fileSave(MusECore::MidiInstrument*, const QString&);
       void saveAs();
