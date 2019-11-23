@@ -32,21 +32,21 @@
 #include <QDialog>
 #include <QStyledItemDelegate>
 #include <QBitArray>
+#include <QCloseEvent>
+#include <QMouseEvent>
+#include <QWheelEvent>
+#include <QString>
+#include <QItemSelectionModel>
+#include <QPainter>
+#include <QColor>
+#include <QResizeEvent>
+#include <QPaintEvent>
+#include <QContextMenuEvent>
 
 //#include "ui_routedialogbase.h"
 #include "type_defs.h"
 #include "route.h"
 
-
-class QCloseEvent;
-class QMouseEvent;
-class QWheelEvent;
-class QString;
-class QMouseEvent;
-class QItemSelectionModel;
-class QPainter;
-class QColor;
-class QResizeEvent;
 
 namespace MusEGui {
 
@@ -311,9 +311,13 @@ class RouteTreeWidget : public QTreeWidget
         Q_OBJECT
         
         Q_PROPERTY(bool isInput READ isInput WRITE setIsInput)
+        // An extra property required to support stylesheets (not enough colours).
+        Q_PROPERTY(QColor categoryColor READ categoryColor WRITE setCategoryColor)
+
 private:
         bool _isInput;
         bool _channelWrap;
+        QColor _categoryColor;
         
 private slots:
         void headerSectionResized(int logicalIndex, int oldSize, int newSize);
@@ -352,6 +356,9 @@ public:
         void getItemsToDelete(QVector<QTreeWidgetItem*>& items_to_remove, bool showAllMidiPorts = false);
         //void scheduleDelayedLayout() { scheduleDelayedItemsLayout(); }  // Just to make it public.
         void selectRoutes(const QList<QTreeWidgetItem*>& routes, bool doNormalSelections);
+
+        QColor categoryColor() const { return _categoryColor; }
+        void setCategoryColor(const QColor& c) { _categoryColor = c; }
 };
 
 

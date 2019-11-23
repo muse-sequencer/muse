@@ -3,6 +3,8 @@
       and made them configurable in the appearance dialog (rj)
     - Fixed escape-key shortcut for closing a few more dialogs/editors:
       master track list/graphical, instrument editor (rj)
+    - Advanced router stylesheet support: New property 'RouteTreeWidget::categoryColor'. (Tim)
+      Also specific instance IDs Router_input_tree and Router_output_tree, if desired.
 21.11.2019
     - Add command line option -C "Do not re-create plugin cache." (Tim)
       Avoids (looong) repeated re-creations in some cases. Helps devs avoid after rebuilds. 
