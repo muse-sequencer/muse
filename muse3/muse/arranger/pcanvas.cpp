@@ -3079,8 +3079,8 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
         drawTickRaster(p, mr, mrg, rast,
                          false, false, false,
                        MusEGlobal::config.partCanvasFineRasterColor,
-                       Qt::red, // dummy color, initialize to a bold color so it will be evident if it is used
-                       Qt::red, // -"-
+                       MusEGlobal::config.partCanvasFineRasterColor,
+                       MusEGlobal::config.partCanvasFineRasterColor,
                        MusEGlobal::config.partCanvasCoarseRasterColor);
       }
 
