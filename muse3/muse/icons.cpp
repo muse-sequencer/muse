@@ -82,12 +82,6 @@
 #include "xpm/start.xpm"
 #include "xpm/fforward.xpm"
 #include "xpm/frewind.xpm"
-#include "xpm/punchin.xpm"
-#include "xpm/punchout.xpm"
-#include "xpm/punchin1.xpm"
-#include "xpm/punchout1.xpm"
-#include "xpm/loop1.xpm"
-#include "xpm/loop.xpm"
 #include "xpm/dot.xpm"
 #include "xpm/doth.xpm"
 #include "xpm/dot1.xpm"
@@ -181,7 +175,6 @@
 #include "xpm/speaker.xpm"
 #include "xpm/buttondown.xpm"
 #include "xpm/configure.xpm"
-#include "xpm/panic.xpm"
 
 // next two lines will vanish soon
 #include "xpm/solobutton.xpm"
@@ -348,12 +341,6 @@ QPixmap* routesMidiInIcon;
 QPixmap* routesMidiOutIcon;
 
 QPixmap* deleteIcon;
-QPixmap* punchinIcon;
-QPixmap* punchoutIcon;
-QPixmap* punchin1Icon;
-QPixmap* punchout1Icon;
-QPixmap* loopIcon;
-QPixmap* loop1Icon;
 QPixmap* playIcon;
 QPixmap* closedHandIcon;
 QPixmap* sizeAllIcon;
@@ -447,7 +434,6 @@ QPixmap* soloblksqIconOff;
 
 QPixmap* editmuteIcon;
 QPixmap* editmuteSIcon;
-QPixmap* panicIcon;
 
 QIcon* pianoIconSet;
 QIcon* scoreIconSet;
@@ -701,6 +687,12 @@ QIcon* fixedSpeedSVGIcon;
 QIcon* transportAffectsLatencySVGIcon;
 QIcon* overrideLatencySVGIcon;
 
+QIcon* panicSVGIcon;
+QIcon* loopSVGIcon;
+QIcon* punchinSVGIcon;
+QIcon* punchoutSVGIcon;
+
+// tool icons
 QIcon* pencilIconSVG;
 QIcon* glueIconSVG;
 QIcon* cutterIconSVG;
@@ -746,12 +738,6 @@ void initIcons(bool useThemeIconsIfPossible)
         
       track_commentIcon = MPIXMAP(track_comment_xpm, NULL);
       deleteIcon   = MPIXMAP(delete_xpm, "draw-eraser");
-      punchinIcon  = MPIXMAP(punchin_xpm, NULL);
-      punchoutIcon = MPIXMAP(punchout_xpm, NULL);
-      punchin1Icon = MPIXMAP(punchin1_xpm, NULL);
-      punchout1Icon = MPIXMAP(punchout1_xpm, NULL);
-      loopIcon     = MPIXMAP(loop_xpm, NULL);
-      loop1Icon    = MPIXMAP(loop1_xpm, NULL);
       playIcon     = MPIXMAP(play_xpm, "media-playback-start");
       closedHandIcon = MPIXMAP(closed_hand_xpm, NULL);
       sizeAllIcon  = MPIXMAP(size_all_xpm, NULL);
@@ -836,7 +822,6 @@ void initIcons(bool useThemeIconsIfPossible)
 
       editmuteIcon  = MPIXMAP(editmute_xpm, NULL);
       editmuteSIcon = MPIXMAP(editmuteS_xpm, NULL);
-      panicIcon  = MPIXMAP(panic_xpm, NULL);
 
       editcutIconSet       = MICON(editcutS_xpm, "edit-cut"); // ddskrjo
       editcopyIconSet      = MICON(editcopyS_xpm, "edit-copy");
@@ -1171,6 +1156,11 @@ void initIcons(bool useThemeIconsIfPossible)
       overrideLatencySVGIcon = new QIcon(":/svg/override_latency_off.svg");
       overrideLatencySVGIcon->addFile(":/svg/override_latency_on.svg", QSize(), QIcon::Normal, QIcon::On);
 
+      panicSVGIcon = new QIcon(":/svg/panic.svg");
+      loopSVGIcon = new QIcon(":/svg/loop.svg");
+      punchinSVGIcon = new QIcon(":/svg/punchin.svg");
+      punchoutSVGIcon = new QIcon(":/svg/punchout.svg");
+
       // tool icons
       pencilIconSVG     = new QIcon(":/svg/pencil.svg");
       glueIconSVG       = new QIcon(":/svg/glue.svg");
@@ -1215,12 +1205,6 @@ void deleteIcons()
       {
       delete track_commentIcon;
       delete deleteIcon;
-      delete punchinIcon;
-      delete punchoutIcon;
-      delete punchin1Icon;
-      delete punchout1Icon;
-      delete loopIcon;
-      delete loop1Icon;
       delete playIcon;
       delete closedHandIcon;
       delete sizeAllIcon;
@@ -1302,7 +1286,6 @@ void deleteIcons()
 
       delete editmuteIcon;
       delete editmuteSIcon;
-      delete panicIcon;
 
       delete editcutIconSet;     
       delete editcopyIconSet;    
@@ -1594,6 +1577,11 @@ void deleteIcons()
       delete fixedSpeedSVGIcon;
       delete transportAffectsLatencySVGIcon;
       delete overrideLatencySVGIcon;
+
+      delete panicSVGIcon;
+      delete loopSVGIcon;
+      delete punchinSVGIcon;
+      delete punchoutSVGIcon;
 
       delete pencilIconSVG;
       delete glueIconSVG;

@@ -407,21 +407,21 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::transportAction = new QActionGroup(this);
       MusEGlobal::transportAction->setExclusive(false);
 
-      MusEGlobal::loopAction = new QAction(QIcon( *MusEGui::loop1Icon), tr("Loop"), 
+      MusEGlobal::loopAction = new QAction(*MusEGui::loopSVGIcon, tr("Loop"),
                                            MusEGlobal::transportAction);
       MusEGlobal::loopAction->setCheckable(true);
 
       MusEGlobal::loopAction->setWhatsThis(tr("loop between left mark and right mark"));
       connect(MusEGlobal::loopAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setLoop(bool)));
 
-      MusEGlobal::punchinAction = new QAction(QIcon(*MusEGui::punchin1Icon), tr("Punchin"), 
+      MusEGlobal::punchinAction = new QAction(*MusEGui::punchinSVGIcon, tr("Punchin"),
                                               MusEGlobal::transportAction);
       MusEGlobal::punchinAction->setCheckable(true);
 
       MusEGlobal::punchinAction->setWhatsThis(tr("record starts at left mark"));
       connect(MusEGlobal::punchinAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchin(bool)));
 
-      MusEGlobal::punchoutAction = new QAction(QIcon(*MusEGui::punchout1Icon), tr("Punchout"), 
+      MusEGlobal::punchoutAction = new QAction(*MusEGui::punchoutSVGIcon, tr("Punchout"),
                                                MusEGlobal::transportAction);
       MusEGlobal::punchoutAction->setCheckable(true);
 
@@ -474,7 +474,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::recordAction->setWhatsThis(tr("to record press record and then play"));
       connect(MusEGlobal::recordAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setRecord(bool)));
 
-      MusEGlobal::panicAction = new QAction(QIcon(*MusEGui::panicIcon), tr("Panic"), this);
+      MusEGlobal::panicAction = new QAction(*MusEGui::panicSVGIcon, tr("Panic"), this);
 
       QMenu* panicPopupMenu = new QMenu(this);
       MusEGlobal::panicAction->setMenu(panicPopupMenu);

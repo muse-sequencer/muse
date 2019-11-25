@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <defs>
+  <clipPath id="presentation_clip_path">
+   <rect width="1600" height="1600"/>
+  </clipPath>
+ </defs>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g transform="matrix(.045795 0 0 .045795 -6.6618 -5.243)" stroke-width=".82532">
+  <g class="Slide" clip-path="url(#presentation_clip_path)" stroke-width=".82532">
+   <g class="Page" stroke-width=".82532">
+    <g class="com.sun.star.drawing.CustomShape">
+     <g stroke-width=".82532">
+      <rect class="BoundingBox" x="289" y="-9" width="1321" height="1620" fill="none"/>
+      <path d="m1131.5 1400.1 24-12 24-13.6 23.2-15.2 23.2-16.8 21.6-17.6 21.6-19.2 20-20.8 19.2-21.6 19.2-23.2 17.6-24 16-24.8 16-26.4 14.4-26.4 13.6-28 12-28.8 10.4-29.6 10.4-30.4 8-30.4 7.2-31.2 6.4-31.2 4.8-32 3.2-32 1.6-32.8 0.8-32-0.8-32-1.6-32.8-3.2-32-4.8-32-6.4-31.2-7.2-31.2-8-30.4-10.4-30.4-10.4-29.6-12-28.8-13.6-28-14.4-26.4-16-26.4-16-24.8-17.6-24-19.2-23.2-19.2-21.6-20-20.8-21.6-19.2-21.6-17.6-23.2-16.8-23.2-15.2-24-13.6-24-12-30.4 101.6 20 9.6 20 11.2 19.2 12.8 19.2 13.6 18.4 15.2 17.6 16 16.8 16.8 16 17.6 15.2 19.2 15.2 20 13.6 20.8 12.8 22.4 12 22.4 11.2 23.2 10.4 23.2 8.8 24.8 8 24.8 7.2 25.6 6.4 26.4 4.8 25.6 4 26.4 2.4 27.2 1.6 26.4 0.8 27.2-0.8 27.2-1.6 26.4-2.4 27.2-4 26.4-4.8 25.6-6.4 26.4-7.2 25.6-8 24.8-8.8 24.8-10.4 23.2-11.2 23.2-12 22.4-12.8 22.4-13.6 20.8-15.2 20-15.2 19.2-16 17.6-16.8 16.8-17.6 16-18.4 15.2-19.2 13.6-19.2 12.8-20 11.2-20 9.6zm338.4-1240zm-1040.8 1280.8z" fill="#1c1c1c"/>
+     </g>
+    </g>
+    <g class="com.sun.star.drawing.CustomShape">
+     <g stroke-width=".82532">
+      <rect class="BoundingBox" x="590" y="291" width="720" height="1020" fill="none"/>
+      <path d="m1016.3 1188.9 13.6-5.6 13.6-6.4 12.8-7.2 12.8-8 12.8-8.8 12-9.6 12-11.2 11.2-11.2 11.2-12.8 10.4-12.8 10.4-14.4 9.6-14.4 9.6-15.2 8-16 8-16.8 7.2-16.8 7.2-17.6 6.4-18.4 4.8-18.4 9.6-38.4 3.2-19.2 3.2-20 1.6-19.2 1.6-20 0.8-20v-20.8l-0.8-20-1.6-20-1.6-19.2-3.2-20-3.2-19.2-9.6-38.4-4.8-18.4-6.4-18.4-7.2-17.6-7.2-16.8-8-16.8-8-16-9.6-15.2-9.6-14.4-10.4-14.4-10.4-12.8-11.2-12.8-11.2-11.2-12-11.2-12-9.6-12.8-8.8-12.8-8-12.8-7.2-13.6-6.4-13.6-5.6-19.2 113.6 19.2 8 8.8 5.6 9.6 5.6 17.6 12.8 16 16 8 8.8 8 9.6 6.4 9.6 7.2 10.4 12.8 22.4 5.6 12 9.6 24 4.8 12.8 4 13.6 3.2 12.8 3.2 13.6 2.4 14.4 1.6 13.6 1.6 14.4 0.8 13.6 0.8 14.4v14.4l-0.8 14.4-0.8 13.6-1.6 14.4-1.6 13.6-2.4 14.4-3.2 13.6-3.2 12.8-4 13.6-4.8 12.8-9.6 24-5.6 12-12.8 22.4-7.2 10.4-6.4 9.6-8 9.6-8 8.8-16 16-17.6 12.8-9.6 5.6-8.8 5.6-19.2 8zm213.6-788.8zm-560.8 800.8z" fill="#1c1c1c"/>
+     </g>
+    </g>
+    <g class="com.sun.star.drawing.PolyPolygonShape">
+     <g stroke-width=".82532">
+      <rect class="BoundingBox" x="182" y="132" width="637" height="1337" fill="none"/>
+      <path d="m200 550v500h300l300 400v-1300l-300 400z" fill="#729fcf"/>
+      <path d="m200 550v500h300l300 400v-1300l-300 400z" fill="none" stroke="#000" stroke-linejoin="round" stroke-width="28.886"/>
+     </g>
+    </g>
+   </g>
+  </g>
+ </g>
+ <path d="m5 4 54 55" fill="none" stroke="#f00" stroke-linecap="round" stroke-width="6"/>
+ <path d="m5 59 54-55" fill="none" stroke="#f00" stroke-linecap="round" stroke-width="6"/>
+</svg>

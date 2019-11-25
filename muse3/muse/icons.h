@@ -40,12 +40,6 @@ const QSize DEFCURSIZE = QSize(18, 18);
 
 extern QPixmap* track_commentIcon;
 extern QPixmap* deleteIcon;
-extern QPixmap* punchinIcon;
-extern QPixmap* punchoutIcon;
-extern QPixmap* punchin1Icon;
-extern QPixmap* punchout1Icon;
-extern QPixmap* loopIcon;
-extern QPixmap* loop1Icon;
 extern QPixmap* playIcon;
 extern QPixmap* recordIcon;
 extern QPixmap* stopIcon;
@@ -135,7 +129,6 @@ extern QPixmap* configureIcon;
 
 extern QPixmap* editmuteIcon;
 extern QPixmap* editmuteSIcon;
-extern QPixmap* panicIcon;
 
 extern QIcon* pianoIconSet;
 extern QIcon* scoreIconSet;
@@ -432,6 +425,11 @@ extern QIcon* metronomeOnSVGIcon;
 extern QIcon* fixedSpeedSVGIcon;
 extern QIcon* transportAffectsLatencySVGIcon;
 extern QIcon* overrideLatencySVGIcon;
+
+extern QIcon* panicSVGIcon;
+extern QIcon* loopSVGIcon;
+extern QIcon* punchinSVGIcon;
+extern QIcon* punchoutSVGIcon;
 
 extern QIcon* pencilIconSVG;
 extern QIcon* glueIconSVG;

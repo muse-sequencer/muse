@@ -315,11 +315,11 @@ Transport::Transport(QWidget* parent, const char* name)
       QVBoxLayout *button2 = new QVBoxLayout;
       button2->setSpacing(0);
 
-      QToolButton* b1 = newButton(punchinIcon, tr("punchin"), true);
-      QToolButton* b2 = newButton(loopIcon, tr("loop"), true);
+      QToolButton* b1 = newButton(punchinSVGIcon, tr("punchin"), true);
+      QToolButton* b2 = newButton(loopSVGIcon, tr("loop"), true);
       b2->setShortcut(shortcuts[SHRT_TOGGLE_LOOP].key);
 
-      QToolButton* b3 = newButton(punchoutIcon, tr("punchout"), true);
+      QToolButton* b3 = newButton(punchoutSVGIcon, tr("punchout"), true);
       button2->addWidget(b1);
       button2->addWidget(b2);
       button2->addWidget(b3);
