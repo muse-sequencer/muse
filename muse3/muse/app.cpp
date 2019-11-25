@@ -482,7 +482,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::panicAction->setWhatsThis(tr("send note off to all midi channels"));
       connect(MusEGlobal::panicAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(panic()));
 
-      MusEGlobal::metronomeAction = new QAction(QIcon(*MusEGui::metronomeIcon), tr("Metronome"), this);
+      MusEGlobal::metronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome"), this);
       MusEGlobal::metronomeAction->setCheckable(true);
       MusEGlobal::metronomeAction->setWhatsThis(tr("turn on/off metronome"));
       MusEGlobal::metronomeAction->setChecked(MusEGlobal::song->click());
@@ -604,7 +604,7 @@ MusE::MusE() : QMainWindow()
       rewindOnStopAction->setCheckable(true);
       rewindOnStopAction->setChecked(MusEGlobal::config.useRewindOnStop);
 
-      settingsMetronomeAction = new QAction(QIcon(*MusEGui::settings_metronomeIcon), tr("Metronome"), this);
+      settingsMetronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome"), this);
       settingsMidiSyncAction = new QAction(QIcon(*MusEGui::settings_midisyncIcon), tr("Midi Sync"), this);
       settingsMidiIOAction = new QAction(QIcon(*MusEGui::settings_midifileexportIcon), tr("Midi File Import/Export"), this);
       settingsAppearanceAction = new QAction(QIcon(*MusEGui::settings_appearance_settingsIcon), tr("Appearance Settings"), this);
