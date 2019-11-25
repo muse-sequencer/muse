@@ -52,7 +52,6 @@
 #include "xpm/settings_configureshortcuts.xpm"
 #include "xpm/settings_follow_song.xpm"
 #include "xpm/settings_globalsettings.xpm"
-#include "xpm/settings_metronome.xpm"
 #include "xpm/settings_midifileexport.xpm"
 #include "xpm/settings_midiport_softsynths.xpm"
 #include "xpm/settings_midisync.xpm"
@@ -183,9 +182,6 @@
 #include "xpm/buttondown.xpm"
 #include "xpm/configure.xpm"
 #include "xpm/panic.xpm"
-#include "xpm/metronome.xpm"
-#include "xpm/metronome_off.xpm"
-
 
 // next two lines will vanish soon
 #include "xpm/solobutton.xpm"
@@ -452,8 +448,6 @@ QPixmap* soloblksqIconOff;
 QPixmap* editmuteIcon;
 QPixmap* editmuteSIcon;
 QPixmap* panicIcon;
-QPixmap* metronomeIcon;
-QPixmap* metronomeOffIcon;
 
 QIcon* pianoIconSet;
 QIcon* scoreIconSet;
@@ -551,7 +545,6 @@ QPixmap* settings_appearance_settingsIcon;
 QPixmap* settings_configureshortcutsIcon;
 QPixmap* settings_follow_songIcon;
 QPixmap* settings_globalsettingsIcon;
-QPixmap* settings_metronomeIcon;
 QPixmap* settings_midifileexportIcon;
 QPixmap* settings_midiport_softsynthsIcon;
 QPixmap* settings_midisyncIcon;
@@ -640,9 +633,6 @@ QPixmap* masterTrackOnSVGPixmap;
 
 QPixmap* jackTransportOffSVGPixmap;
 QPixmap* jackTransportOnSVGPixmap;
-
-QPixmap* metronomeOffSVGPixmap;
-QPixmap* metronomeOnSVGPixmap;
 
 
 QIcon* routingInputSVGIcon;
@@ -847,8 +837,6 @@ void initIcons(bool useThemeIconsIfPossible)
       editmuteIcon  = MPIXMAP(editmute_xpm, NULL);
       editmuteSIcon = MPIXMAP(editmuteS_xpm, NULL);
       panicIcon  = MPIXMAP(panic_xpm, NULL);
-      metronomeIcon      = MPIXMAP(metronome_xpm, NULL);
-      metronomeOffIcon   = MPIXMAP(metronome_off_xpm, NULL);
 
       editcutIconSet       = MICON(editcutS_xpm, "edit-cut"); // ddskrjo
       editcopyIconSet      = MICON(editcopyS_xpm, "edit-copy");
@@ -1001,7 +989,6 @@ void initIcons(bool useThemeIconsIfPossible)
       settings_configureshortcutsIcon               = MPIXMAP(settings_configureshortcuts_xpm, NULL);
       settings_follow_songIcon                      = MPIXMAP(settings_follow_song_xpm, NULL);
       settings_globalsettingsIcon                   = MPIXMAP(settings_globalsettings_xpm, NULL);
-      settings_metronomeIcon                        = MPIXMAP(settings_metronome_xpm, NULL);
       settings_midifileexportIcon                   = MPIXMAP(settings_midifileexport_xpm, NULL);
       settings_midiport_softsynthsIcon              = MPIXMAP(settings_midiport_softsynths_xpm, NULL);
       settings_midisyncIcon                         = MPIXMAP(settings_midisync_xpm, NULL);
@@ -1095,9 +1082,6 @@ void initIcons(bool useThemeIconsIfPossible)
       jackTransportOffSVGPixmap = new MSVGIMG(":/svg/jack_transport_off.svg");
       jackTransportOnSVGPixmap = new MSVGIMG(":/svg/jack_transport_on.svg");
 
-      metronomeOffSVGPixmap = new MSVGIMG(":/svg/metronome_off.svg");
-      metronomeOnSVGPixmap = new MSVGIMG(":/svg/metronome_on.svg");
-
       
       routingInputSVGIcon = new QIcon(*routingInputSVGPixmap);
       routingOutputSVGIcon = new QIcon(*routingOutputSVGPixmap);
@@ -1177,8 +1161,8 @@ void initIcons(bool useThemeIconsIfPossible)
       jackTransportOffSVGIcon = new QIcon(*jackTransportOffSVGPixmap);
       jackTransportOnSVGIcon = new QIcon(*jackTransportOnSVGPixmap);
       
-      metronomeOffSVGIcon = new QIcon(*metronomeOffSVGPixmap);
-      metronomeOnSVGIcon = new QIcon(*metronomeOnSVGPixmap);
+      metronomeOffSVGIcon = new QIcon(":/svg/metronome_off.svg");
+      metronomeOnSVGIcon = new QIcon(":/svg/metronome_on.svg");
       
       fixedSpeedSVGIcon = new QIcon(":/svg/speed_off.svg");
       fixedSpeedSVGIcon->addFile(":/svg/speed_on.svg", QSize(), QIcon::Normal, QIcon::On);
@@ -1319,8 +1303,6 @@ void deleteIcons()
       delete editmuteIcon;
       delete editmuteSIcon;
       delete panicIcon;
-      delete metronomeIcon;
-      delete metronomeOffIcon;
 
       delete editcutIconSet;     
       delete editcopyIconSet;    
@@ -1461,7 +1443,6 @@ void deleteIcons()
       delete settings_configureshortcutsIcon;               
       delete settings_follow_songIcon;                      
       delete settings_globalsettingsIcon;                   
-      delete settings_metronomeIcon;                        
       delete settings_midifileexportIcon;                   
       delete settings_midiport_softsynthsIcon;              
       delete settings_midisyncIcon;                         
@@ -1546,9 +1527,6 @@ void deleteIcons()
 
       delete jackTransportOffSVGPixmap;
       delete jackTransportOnSVGPixmap;
-
-      delete metronomeOffSVGPixmap;
-      delete metronomeOnSVGPixmap;
 
 
       delete routingInputSVGIcon;

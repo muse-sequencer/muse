@@ -136,8 +136,6 @@ extern QPixmap* configureIcon;
 extern QPixmap* editmuteIcon;
 extern QPixmap* editmuteSIcon;
 extern QPixmap* panicIcon;
-extern QPixmap* metronomeIcon;
-extern QPixmap* metronomeOffIcon;
 
 extern QIcon* pianoIconSet;
 extern QIcon* scoreIconSet;
@@ -279,7 +277,6 @@ extern QPixmap* settings_appearance_settingsIcon;
 extern QPixmap* settings_configureshortcutsIcon;
 extern QPixmap* settings_follow_songIcon;
 extern QPixmap* settings_globalsettingsIcon;
-extern QPixmap* settings_metronomeIcon;
 extern QPixmap* settings_midifileexportIcon;
 extern QPixmap* settings_midiport_softsynthsIcon;
 extern QPixmap* settings_midisyncIcon;
@@ -362,9 +359,6 @@ extern QPixmap* masterTrackOnSVGPixmap;
 
 extern QPixmap* jackTransportOffSVGPixmap;
 extern QPixmap* jackTransportOnSVGPixmap;
-
-extern QPixmap* metronomeOffSVGPixmap;
-extern QPixmap* metronomeOnSVGPixmap;
 
 extern QPixmap* recArmOffSVGPixmap;
 extern QPixmap* recArmOnSVGPixmap;
