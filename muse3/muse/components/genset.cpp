@@ -85,7 +85,7 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       connect(projDirOpenToolButton, SIGNAL(clicked()), SLOT(browseProjDir()));
       startSongFileOpenToolButton->setIcon(*openIcon); 
       connect(startSongFileOpenToolButton, SIGNAL(clicked()), SLOT(browseStartSongFile()));
-      startSongResetToolButton->setIcon(*undoIcon);
+      startSongResetToolButton->setIcon(*undoSVGIcon);
       connect(startSongResetToolButton, SIGNAL(clicked()), SLOT(startSongReset()));
       
       connect(applyButton, SIGNAL(clicked()), SLOT(apply()));

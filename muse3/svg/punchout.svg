@@ -16,11 +16,11 @@
    </cc:Work>
   </rdf:RDF>
  </metadata>
- <g>
-  <rect x="4" y="42" width="56" height="20" fill="url(#linearGradient4506)" stroke="#000" stroke-linecap="square" stroke-width="2" style="paint-order:markers fill stroke"/>
-  <g transform="matrix(1 0 0 -.94886 0 39.861)" stroke-width="2.0532">
-   <path d="m28.858 32.863c-1.965-2.4538-3.5727-4.4815-3.5727-4.506 0-0.0245 1.1413-0.04455 2.5363-0.04455h2.5363v-25.297h3.8453v25.297h2.5772c1.4174 0 2.5772 0.01657 2.5772 0.03682 0 0.07569-6.8084 8.9751-6.8663 8.9751-0.03321 0-1.6681-2.0076-3.6331-4.4614z" fill="#f00" stroke="#f00" stroke-linecap="square" style="paint-order:markers fill stroke"/>
-   <path d="m28.002 1.6906 7.5427 0.012747v25.297h6.5452l-9.5723 12.569-10.063-12.569h6.5452v-25" fill="none" stroke="#000"/>
+ <rect x="4" y="42" width="56" height="20" fill="url(#linearGradient4506)" stroke="#000" stroke-linecap="square" stroke-width="2" style="paint-order:markers fill stroke"/>
+ <g transform="translate(-.25 -.875)">
+  <g transform="matrix(1 0 0 -.94886 0 39.861)">
+   <path d="m26.741 31.471c-3.4037-2.3444-6.1886-4.2818-6.1886-4.3052 0-0.0234 1.977-0.04257 4.3933-0.04257h4.3933v-24.169h6.6608v24.169h4.4641c2.4553 0 4.4641 0.01582 4.4641 0.03517 0 0.07232-12.044 11.342-12.144 11.342-0.05752 0-2.6395-4.6846-6.0432-7.0291z" fill="#f00" stroke="#f00" stroke-linecap="square" stroke-width="2.0532" style="paint-order:markers fill stroke"/>
+   <path d="m26.635 2.902 10.698 0.011756v23.33h9.6667l-14.075 13.249-14.925-13.249h9.6667v-23.057" fill="none" stroke="#000" stroke-width="2.0532"/>
   </g>
  </g>
 </svg>

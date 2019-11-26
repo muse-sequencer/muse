@@ -70,5 +70,7 @@
         <file>svg/loop.svg</file>
         <file>svg/punchin.svg</file>
         <file>svg/punchout.svg</file>
+        <file>svg/redo.svg</file>
+        <file>svg/undo.svg</file>
     </qresource>
 </RCC>

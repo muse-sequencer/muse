@@ -70,7 +70,7 @@ ProjectCreateImpl::ProjectCreateImpl(QWidget *parent) :
   
   projDirToolButton->setIcon(*openIcon);
   browseDirButton->setIcon(*openIcon);
-  restorePathButton->setIcon(*undoIcon);
+  restorePathButton->setIcon(*undoSVGIcon);
 
   restorePathButton->setEnabled(false);  // Disabled at first.
   

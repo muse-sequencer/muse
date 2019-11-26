@@ -16,7 +16,7 @@
    <path d="m35.735 36.221-10.735 10.779 10.663 10.663" stroke-width="6"/>
    <path d="m24.337 6.3371 10.663 10.663-10.663 10.795" stroke-width="6"/>
   </g>
-  <g stroke="#4a0">
+  <g stroke="#0bf">
    <rect x="5" y="17" width="54" height="30.222" rx="12" ry="10.794" stroke-linecap="square" stroke-linejoin="round" stroke-width="5" style="paint-order:markers fill stroke"/>
    <path d="m35 37-10 10 10 10" stroke-width="4"/>
    <path d="m25 7 10 10-10 10" stroke-width="4"/>
