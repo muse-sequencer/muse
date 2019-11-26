@@ -33,14 +33,9 @@
 #include "muse_math.h"
 #include "mmath.h"
 
-#include <QPainter>
-#include <QPaintEvent>
 #include <QPalette>
-#include <QColor>
 #include <QLinearGradient>
-#include <QResizeEvent>
 #include <QLocale>
-#include <QEvent>
 #include <QFlags>
 #include <QToolTip>
 #include <QString>
@@ -1353,6 +1348,21 @@ void CompactKnob::setMargins(int hor, int vert)
     d_xMargin = MusECore::qwtMax(0, hor);
     d_yMargin = MusECore::qwtMax(0, vert);
     resize(this->size());
+}
+
+void CompactKnob::setMargins(QSize s)
+{
+  setMargins(s.width(), s.height());
+}
+
+void CompactKnob::setXMargin(int x)
+{
+  setMargins(x, d_yMargin);
+}
+
+void CompactKnob::setYMargin(int y)
+{
+  setMargins(d_xMargin, y);
 }
 
 //------------------------------------------------------------

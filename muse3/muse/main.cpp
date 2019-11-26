@@ -191,6 +191,10 @@ class MuseApplication : public QApplication {
             MusEGlobal::globalKeyState = ke->modifiers();
          }
 
+         if (event->type() == QEvent::MouseButtonPress) {
+           muse->snooperSelectObject(receiver);
+         }
+         
          return flag;
       }
 

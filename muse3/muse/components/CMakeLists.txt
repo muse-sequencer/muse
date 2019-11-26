@@ -120,6 +120,7 @@ QT5_WRAP_CPP (components_mocs
       sig_tempo_toolbar.h 
       slider.h  
 #       sliderbase.h  
+      snooper.h
       songinfo.h
       songpos_toolbar.h
 #       spinbox.h  
@@ -176,6 +177,7 @@ file (GLOB components_ui_files
       projectcreate.ui
       shortcutcapturedialogbase.ui  
       shortcutconfigbase.ui  
+      snooperbase.ui
       songinfo.ui  
       synthconfigbase.ui  
       tracks_duplicate_base.ui
@@ -269,6 +271,7 @@ file (GLOB components_source_files
       sig_tempo_toolbar.cpp 
       slider.cpp 
 #       sliderbase.cpp 
+      snooper.cpp
       songpos_toolbar.cpp 
 #       spinbox.cpp 
 #       spinboxFP.cpp 

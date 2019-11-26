@@ -318,6 +318,7 @@ MusE::MusE() : QMainWindow()
       midiTransformerDialog = 0;
       shortcutConfig        = 0;
       appearance            = 0;
+      _snooperDialog        = 0;
       //audioMixer            = 0;
       mixer1                = 0;
       mixer2                = 0;
@@ -2493,6 +2494,13 @@ void MusE::kbAccel(int key)
             }
       }
 
+void MusE::snooperSelectObject(const QObject* obj) const
+{
+  if(_snooperDialog && obj != _snooperDialog &&
+       _snooperDialog->isVisible() && !_snooperDialog->isHidden())
+    _snooperDialog->selectObject(obj);
+}
+
 #if 0
 //---------------------------------------------------------
 //   catchSignal
@@ -2552,10 +2560,16 @@ void MusE::cmd(int cmd)
 
 void MusE::deleteParentlessDialogs()
 {
-  if(appearance)
+// Appearance is already a child of MusE !!!
+//   if(appearance)
+//   {
+//     delete appearance;
+//     appearance = 0;
+//   }
+  if(_snooperDialog)
   {
-    delete appearance;
-    appearance = 0;
+    delete _snooperDialog;
+    _snooperDialog = 0;
   }
   if(metronomeConfig)
   {
@@ -2643,6 +2657,24 @@ void MusE::configAppearance()
           }
       else
           appearance->show();
+      }
+
+//---------------------------------------------------------
+//   startSnooper
+//---------------------------------------------------------
+
+void MusE::startSnooper()
+      {
+      if (!_snooperDialog)
+            // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
+            _snooperDialog = new MusEGui::SnooperDialog();
+      //_snooperDialog->resetValues();
+      if(_snooperDialog->isVisible()) {
+          _snooperDialog->raise();
+          _snooperDialog->activateWindow();
+          }
+      else
+          _snooperDialog->show();
       }
 
 //---------------------------------------------------------

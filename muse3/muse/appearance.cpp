@@ -298,6 +298,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       connect(openStyleSheet, SIGNAL(clicked()), SLOT(browseStyleSheet()));
       defaultStyleSheet->setIcon(*undoIcon);
       connect(defaultStyleSheet, SIGNAL(clicked()), SLOT(setDefaultStyleSheet()));
+      connect(generateStylesheetList, SIGNAL(clicked()), SLOT(snooperClicked()));
       
       //---------------------------------------------------
       //    THEMES
@@ -1633,6 +1634,15 @@ void Appearance::setDefaultStyleSheet()
 {
       // Set the style sheet to the default compiled-in resource :/style.qss
       styleSheetPath->setText(QString(":/style.qss"));
+}
+
+//---------------------------------------------------------
+//   snooperClicked
+//---------------------------------------------------------
+
+void Appearance::snooperClicked()
+{
+  MusEGlobal::muse->startSnooper();
 }
 
 //---------------------------------------------------------

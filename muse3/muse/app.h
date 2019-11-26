@@ -29,6 +29,7 @@
 #include "globaldefs.h"
 #include "cobject.h"
 #include "script_delivery.h"
+#include "snooper.h"
 
 #include <QFileInfo>
 #include <list>
@@ -207,6 +208,7 @@ class MusE : public QMainWindow
       MidiInputTransformDialog* midiInputTransform;
       ShortcutConfig* shortcutConfig;
       Appearance* appearance;
+      SnooperDialog* _snooperDialog;
       AudioMixerApp* mixer1;
       AudioMixerApp* mixer2;
       RouteDialog* routeDialog;
@@ -380,6 +382,7 @@ class MusE : public QMainWindow
       void startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls = false);
       void startEditor(MusECore::Track*);
       void startMidiTransformer();
+      void startSnooper();
       
       void focusChanged(QWidget* old, QWidget* now);
       
@@ -418,7 +421,9 @@ class MusE : public QMainWindow
       QProgressDialog *progress;
       bool importMidi(const QString name, bool merge);
       void kbAccel(int);
-      
+      // If the snooper dialog is open, selects the given object.
+      void snooperSelectObject(const QObject*) const;
+
       // writeFlag: Write to configuration file. 
       void changeConfig(bool writeFlag);
 
