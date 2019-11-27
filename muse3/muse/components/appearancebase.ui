@@ -1287,7 +1287,7 @@
                <string>Start the Snooper</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>Snooper...</string>
               </property>
              </widget>
             </item>
