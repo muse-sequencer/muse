@@ -53,6 +53,7 @@
 #include "meter.h"
 #include "utils.h"
 #include "pluglist.h"
+#include "gui.h"
 
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
@@ -3507,6 +3508,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       setWindowTitle(plugin->titlePrefix() + plugin->name());
       
       QToolBar* tools = addToolBar(tr("File Buttons"));
+      tools->setIconSize(ICON_SIZE);
 
       QAction* fileOpen = new QAction(QIcon(*openIconS), tr("Load Preset"), this);
 //       connect(fileOpen, SIGNAL(triggered()), this, SLOT(load()));

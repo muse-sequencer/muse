@@ -1,6 +1,13 @@
 26.11.2019
     * New - Introducing the Snooper (object tree) for coders and stylesheet authors: (Tim)
       Click new Snooper button in Appearance to start. Then click on anything anywhere.
+23.11.2019
+    - More keyboard shortcuts
+      * First of, I found out that several shortcuts never end up in the dispatcher since they (rj)
+        were tested against the "accepted" property. Seems this is not reliable nor needed,
+        it affected atleast PgUp, PgDn and Return.
+      * Arm currently selected track can now be bound: Default Ctrl+Return
+      * Goto end of song can be bound: Shift+W
 22.11.2019
     - New solution to making bar lines more visible. Basically removed more hardcoded colors
       and made them configurable in the appearance dialog (rj)

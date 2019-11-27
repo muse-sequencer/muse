@@ -483,7 +483,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::panicAction->setWhatsThis(tr("send note off to all midi channels"));
       connect(MusEGlobal::panicAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(panic()));
 
-      MusEGlobal::metronomeAction = new QAction(QIcon(*MusEGui::metronomeIcon), tr("Metronome"), this);
+      MusEGlobal::metronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome"), this);
       MusEGlobal::metronomeAction->setCheckable(true);
       MusEGlobal::metronomeAction->setWhatsThis(tr("turn on/off metronome"));
       MusEGlobal::metronomeAction->setChecked(MusEGlobal::song->click());
@@ -605,7 +605,7 @@ MusE::MusE() : QMainWindow()
       rewindOnStopAction->setCheckable(true);
       rewindOnStopAction->setChecked(MusEGlobal::config.useRewindOnStop);
 
-      settingsMetronomeAction = new QAction(QIcon(*MusEGui::settings_metronomeIcon), tr("Metronome"), this);
+      settingsMetronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome"), this);
       settingsMidiSyncAction = new QAction(QIcon(*MusEGui::settings_midisyncIcon), tr("Midi Sync"), this);
       settingsMidiIOAction = new QAction(QIcon(*MusEGui::settings_midifileexportIcon), tr("Midi File Import/Export"), this);
       settingsAppearanceAction = new QAction(QIcon(*MusEGui::settings_appearance_settingsIcon), tr("Appearance Settings"), this);
@@ -2379,6 +2379,7 @@ void MusE::kbAccel(int key)
          MusEGlobal::song->restartRecording(false);
       }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_PLAY_TOGGLE].key) {
+
             if (MusEGlobal::audio->isPlaying())
                   MusEGlobal::song->setStop(true);
             else if (!MusEGlobal::config.useOldStyleStopShortCut)
@@ -2392,6 +2393,10 @@ void MusE::kbAccel(int key)
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_STOP].key) {
             MusEGlobal::song->setStop(true);
+            }
+      else if (key == MusEGui::shortcuts[MusEGui::SHRT_GOTO_END].key) {
+            MusECore::Pos p(MusEGlobal::song->len(), true);
+            MusEGlobal::song->setPos(MusECore::Song::CPOS, p);
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_GOTO_START].key) {
             MusECore::Pos p(0, true);
@@ -2436,6 +2441,10 @@ void MusE::kbAccel(int key)
             MusECore::Pos p(MusEGlobal::song->cpos() + MusEGlobal::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster()), true);
             MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
             return;
+            }
+      else if (key == MusEGui::shortcuts[MusEGui::SHRT_REC_ARM_TRACK].key) {
+            if (!MusEGlobal::song->record())
+                toggleTrackArmSelectedTrack();
             }
 
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_GOTO_LEFT].key) {
@@ -4079,4 +4088,40 @@ void MusE::saveTimerSlot()
     }
 }
 
+void MusE::toggleTrackArmSelectedTrack()
+{
+    // If there is only one track selected we toggle it's rec-arm status.
+
+    int selectedTrackCount = 0;
+    MusECore::WaveTrackList* wtl = MusEGlobal::song->waves();
+    MusECore::TrackList selectedTracks;
+
+    for (MusECore::iWaveTrack i = wtl->begin(); i != wtl->end(); ++i) {
+          if((*i)->selected())
+          {
+              selectedTrackCount++;
+              selectedTracks.push_back(*i);
+          }
+    }
+    MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
+    for (MusECore::iMidiTrack i = mtl->begin(); i != mtl->end(); ++i) {
+          if((*i)->selected())
+          {
+              selectedTrackCount++;
+              selectedTracks.push_back(*i);
+          }
+    }
+    if (selectedTrackCount == 1) {
+        // Let's toggle the selected instance.
+        MusECore::PendingOperationList operations;
+        foreach (MusECore::Track *t, selectedTracks)
+        {
+          bool newRecState = !t->recordFlag();
+          if(!t->setRecordFlag1(newRecState))
+            continue;
+          operations.add(MusECore::PendingOperationItem(t, newRecState, MusECore::PendingOperationItem::SetTrackRecord));
+        }
+        MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+    }
+}
 } //namespace MusEGui

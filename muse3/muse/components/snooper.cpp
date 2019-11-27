@@ -25,6 +25,9 @@
 
 #include "snooper.h"
 
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_SNOOPER(dev, format, args...) // fprintf(dev, format, ##args);
+
 namespace MusEGui {
 
 void SnooperTreeWidgetItem::init()
@@ -78,13 +81,13 @@ SnooperDialog::SnooperDialog(QWidget* parent)
 
 SnooperDialog::~SnooperDialog()
 {
-  fprintf(stderr, "SnooperDialog::dtor\n");
+  DEBUG_SNOOPER(stderr, "SnooperDialog::dtor\n");
   disconnectAll();
 }
 
 void SnooperDialog::disconnectAll()
 {
-  fprintf(stderr, "SnooperDialog::disconnectAll():\n");
+  DEBUG_SNOOPER(stderr, "SnooperDialog::disconnectAll():\n");
   const QObject* obj;
   QTreeWidgetItemIterator iObjTree(objectTree);
   while(*iObjTree)
@@ -108,7 +111,7 @@ void SnooperDialog::showEvent(QShowEvent* e)
   e->ignore();
   if(!e->spontaneous())
   {
-    fprintf(stderr, "SnooperDialog::showEvent(): not spontaneous\n");
+    DEBUG_SNOOPER(stderr, "SnooperDialog::showEvent(): not spontaneous\n");
     disconnectAll();
     objectTree->clear();
     updateTree();
@@ -119,7 +122,7 @@ void SnooperDialog::showEvent(QShowEvent* e)
 void SnooperDialog::closeEvent(QCloseEvent* e)
 {
   e->ignore();
-  fprintf(stderr, "SnooperDialog::closeEvent():\n");
+  DEBUG_SNOOPER(stderr, "SnooperDialog::closeEvent():\n");
   disconnectAll();
   objectTree->clear();
   QDialog::closeEvent(e);
@@ -130,7 +133,7 @@ void SnooperDialog::hideEvent(QHideEvent* e)
   e->ignore();
   if(!e->spontaneous())
   {
-    fprintf(stderr, "SnooperDialog::hideEvent(): not spontaneous\n");
+    DEBUG_SNOOPER(stderr, "SnooperDialog::hideEvent(): not spontaneous\n");
     disconnectAll();
     objectTree->clear();
   }
@@ -141,11 +144,12 @@ void SnooperDialog::hideEvent(QHideEvent* e)
 bool SnooperDialog::filterBranch(bool parentIsRelevant, QTreeWidgetItem* parentItem)
 {
   const QTreeWidgetItem* root_item = objectTree->invisibleRootItem();
+  const bool is_parent_root_item = parentItem == root_item;
 
   bool is_relevant = false;
   bool this_parent_is_relevant = false;
 
-  if(parentItem == root_item)
+  if(is_parent_root_item)
   {
     is_relevant = true;
   }
@@ -184,9 +188,13 @@ bool SnooperDialog::filterBranch(bool parentIsRelevant, QTreeWidgetItem* parentI
     const QString search_obj_name = objectNameLineEdit->text();
     const int parent_item_type = parentItem->type();
 
-    const bool search_is_relevant =
-        (search_class_name.isEmpty() || cls_name.contains(search_class_name)) &&
-        (search_obj_name.isEmpty() || obj_name.contains(search_obj_name));
+    const bool search_is_relevant = parentIsRelevant ||
+        ((search_class_name.isEmpty() || cls_name.contains(search_class_name)) &&
+        (search_obj_name.isEmpty() || obj_name.contains(search_obj_name)));
+
+    //if(search_is_relevant && !search_class_name.isEmpty() && !search_obj_name.isEmpty())
+    if(search_is_relevant && (!search_class_name.isEmpty() || !search_obj_name.isEmpty()))
+      this_parent_is_relevant = true;
 
     if((!onlyAppClasses || cls_name.startsWith(QStringLiteral("MusEGui::"))) &&
        (!onlyWidgets || object->isWidgetType()) &&
@@ -196,9 +204,6 @@ bool SnooperDialog::filterBranch(bool parentIsRelevant, QTreeWidgetItem* parentI
     {
       is_relevant = true;
     }
-
-    if(search_is_relevant)
-      this_parent_is_relevant = true;
   }
 
   SnooperTreeWidgetItem* item;
@@ -206,11 +211,11 @@ bool SnooperDialog::filterBranch(bool parentIsRelevant, QTreeWidgetItem* parentI
   for(int i = 0; i < child_count; ++ i)
   {
     item = static_cast<SnooperTreeWidgetItem*>(parentItem->child(i));
-    if(filterBranch(this_parent_is_relevant, item))
+    if(filterBranch(parentIsRelevant || this_parent_is_relevant, item))
       is_relevant = true;
   }
 
-  const bool do_hide = !is_relevant && !parentIsRelevant;
+  const bool do_hide = !is_relevant && !parentIsRelevant && !this_parent_is_relevant && !is_parent_root_item;
   if(parentItem->isHidden() != do_hide)
     parentItem->setHidden(do_hide);
 
@@ -233,8 +238,8 @@ bool SnooperDialog::addBranch(QObject* object, SnooperTreeWidgetItem* parentItem
 
   item = new SnooperTreeWidgetItem(SnooperTreeWidgetItem::ObjectItem, object);
 
-  //fprintf(stderr, "SnooperDialog::addBranch(): adding connection: obj:%p cls_name:%s obj_name:%s\n",
-  //        object, mo->className(), obj_name.toLatin1().constData());
+  DEBUG_SNOOPER(stderr, "SnooperDialog::addBranch(): adding connection: obj:%p cls_name:%s obj_name:%s\n",
+          object, mo->className(), obj_name.toLatin1().constData());
 
   QMetaObject::Connection conn =
     connect(object, &QObject::destroyed, [this](QObject* o = nullptr) { objectDestroyed(o); } );
@@ -282,6 +287,7 @@ void SnooperDialog::updateTree()
   objectTree->resizeColumnToContents(SnooperTreeWidgetItem::Name);
 }
 
+// Recursive!
 bool SnooperDialog::destroyBranch(QObject *obj, QTreeWidgetItem* parentItem)
 {
   if(parentItem != objectTree->invisibleRootItem())
@@ -304,7 +310,7 @@ bool SnooperDialog::destroyBranch(QObject *obj, QTreeWidgetItem* parentItem)
 
 void SnooperDialog::objectDestroyed(QObject *obj)
 {
-  //fprintf(stderr, "SnooperDialog::objectDestroyed(): obj:%p\n", obj);
+  DEBUG_SNOOPER(stderr, "SnooperDialog::objectDestroyed(): obj:%p\n", obj);
 
   if(!isVisible())
     fprintf(stderr, "SnooperDialog::objectDestroyed(): Got objectDestroyed while Snooper is not visible! obj:%p\n", obj);
@@ -313,50 +319,67 @@ void SnooperDialog::objectDestroyed(QObject *obj)
   destroyBranch(obj, objectTree->invisibleRootItem());
 }
 
-const QTreeWidgetItem* SnooperDialog::cfindItem(const QObject* obj) const
+// Recursive!
+QTreeWidgetItem* SnooperDialog::findItem(const QObject *obj, QTreeWidgetItem* parentItem)
 {
-  const QTreeWidgetItem* root_item = objectTree->invisibleRootItem();
-  const QTreeWidgetItem* item;
-  const SnooperTreeWidgetItem* snoop_item;
-  QTreeWidgetItemIterator iObjTree(objectTree);
-  while(*iObjTree)
+  if(parentItem->isHidden())
+    return nullptr;
+
+  if(parentItem != objectTree->invisibleRootItem())
   {
-    item = *iObjTree;
-    if(item != root_item && !item->isHidden())
-    {
-      snoop_item = static_cast<const SnooperTreeWidgetItem*>(item);
-      if(snoop_item->cobject() == obj)
-        return snoop_item;
-    }
-    ++iObjTree;
+    if(static_cast<const SnooperTreeWidgetItem*>(parentItem)->cobject() == obj)
+      return parentItem;
+  }
+  QTreeWidgetItem *item;
+  const int sz = parentItem->childCount();
+  for(int i = 0; i < sz; ++i)
+  {
+    item = findItem(obj, parentItem->child(i));
+    if(item)
+      return item;
   }
   return nullptr;
 }
 
-QTreeWidgetItem* SnooperDialog::findItem(const QObject* obj)
+// Recursive!
+const QTreeWidgetItem* SnooperDialog::cfindItem(const QObject *obj, const QTreeWidgetItem* parentItem) const
 {
-  const QTreeWidgetItem* root_item = objectTree->invisibleRootItem();
-  QTreeWidgetItem* item;
-  SnooperTreeWidgetItem* snoop_item;
-  QTreeWidgetItemIterator iObjTree(objectTree);
-  while(*iObjTree)
+  if(parentItem->isHidden())
+    return nullptr;
+
+  if(parentItem != objectTree->invisibleRootItem())
   {
-    item = *iObjTree;
-    if(item != root_item && !item->isHidden())
-    {
-      snoop_item = static_cast<SnooperTreeWidgetItem*>(item);
-      if(snoop_item->cobject() == obj)
-        return snoop_item;
-    }
-    ++iObjTree;
+    if(static_cast<const SnooperTreeWidgetItem*>(parentItem)->cobject() == obj)
+      return parentItem;
+  }
+  const QTreeWidgetItem *item;
+  const int sz = parentItem->childCount();
+  for(int i = 0; i < sz; ++i)
+  {
+    item = cfindItem(obj, parentItem->child(i));
+    if(item)
+      return item;
   }
   return nullptr;
+}
+
+QTreeWidgetItem* SnooperDialog::findObject(const QObject* obj)
+{
+  // Enter the 'root branch'.
+  return findItem(obj, objectTree->invisibleRootItem());
+}
+
+const QTreeWidgetItem* SnooperDialog::cfindObject(const QObject* obj) const
+{
+  // Enter the 'root branch'.
+  return cfindItem(obj, objectTree->invisibleRootItem());
 }
 
 void SnooperDialog::filterItems()
 {
   // Enter the 'root branch'.
-  const bool this_parent_is_relevant = true;
+  // Top relevant is false here to keep the routine happy.
+  const bool this_parent_is_relevant = false;
   filterBranch(this_parent_is_relevant, objectTree->invisibleRootItem());
 }
 
@@ -379,10 +402,10 @@ void SnooperDialog::finishedLineEditing()
 
 void SnooperDialog::selectObject(const QObject* obj)
 {
-  QTreeWidgetItem* item = findItem(obj);
+  QTreeWidgetItem* item = findObject(obj);
   if(!item)
     return;
-  //item->setSelected(true);
+  item->setSelected(true);
   objectTree->setCurrentItem(item);
   objectTree->scrollToItem(item);
 }

@@ -135,12 +135,11 @@ class SnooperDialog : public QDialog, public Ui::SnooperDialogBase {
       bool filterBranch(bool parentIsRelevant, QTreeWidgetItem* parentItem);
       // Recursive!
       bool destroyBranch(QObject *obj, QTreeWidgetItem* parentItem);
+      // Recursive! Finds a non-hidden item.
+      QTreeWidgetItem* findItem(const QObject *obj, QTreeWidgetItem* parentItem);
+      const QTreeWidgetItem* cfindItem(const QObject *obj, const QTreeWidgetItem* parentItem) const;
       void disconnectAll();
       
-      // Finds a non-hidden item.
-      QTreeWidgetItem* findItem(const QObject* obj);
-      const QTreeWidgetItem* cfindItem(const QObject* obj) const;
-
    private slots:
      void objectDestroyed(QObject *obj = nullptr);
 
@@ -157,6 +156,10 @@ class SnooperDialog : public QDialog, public Ui::SnooperDialogBase {
    public:
       SnooperDialog(QWidget* parent=0);
       virtual ~SnooperDialog();
+
+      // Finds a non-hidden item.
+      QTreeWidgetItem* findObject(const QObject* obj);
+      const QTreeWidgetItem* cfindObject(const QObject* obj) const;
       };
 
 

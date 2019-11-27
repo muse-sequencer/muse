@@ -54,6 +54,8 @@ void initShortCuts()
       defShrt(SHRT_TOGGLE_METRO,  Qt::Key_C,     QT_TRANSLATE_NOOP("shortcuts", "Transport: Toggle metronome"), GLOBAL_SHRT,"toggle_metro");
       defShrt(SHRT_STOP,          Qt::Key_Insert,QT_TRANSLATE_NOOP("shortcuts", "Transport: Stop Playback"), GLOBAL_SHRT, "stop");
       defShrt(SHRT_GOTO_START,    Qt::Key_W,     QT_TRANSLATE_NOOP("shortcuts", "Transport: Goto Start"), GLOBAL_SHRT, "goto_start");
+      defShrt(SHRT_GOTO_END,      Qt::SHIFT + Qt::Key_W,     QT_TRANSLATE_NOOP("shortcuts", "Transport: Goto End"), GLOBAL_SHRT, "goto_end");
+
       defShrt(SHRT_PLAY_TOGGLE,   Qt::Key_Space, QT_TRANSLATE_NOOP("shortcuts", "Transport: Play, Stop, Rewind"), GLOBAL_SHRT, "play_toggle");
       defShrt(SHRT_REC_RESTART,   Qt::CTRL + Qt::Key_Space, QT_TRANSLATE_NOOP("shortcuts", "Transport: Restart recording"), GLOBAL_SHRT, "rec_restart");
       defShrt(SHRT_REC_RESTART_MULTI,   Qt::SHIFT + Qt::Key_Space, QT_TRANSLATE_NOOP("shortcuts", "Transport: Restart recording (multi take)"), GLOBAL_SHRT, "rec_restart_multi");
@@ -61,6 +63,7 @@ void initShortCuts()
       defShrt(SHRT_GOTO_RIGHT,    Qt::Key_PageDown,  QT_TRANSLATE_NOOP("shortcuts", "Transport: Goto right marker") , GLOBAL_SHRT, "goto_right");
       defShrt(SHRT_TOGGLE_LOOP,   Qt::Key_Slash, QT_TRANSLATE_NOOP("shortcuts", "Transport: Toggle Loop section"), GLOBAL_SHRT, "toggle_loop");
       defShrt(SHRT_START_REC,     Qt::Key_Asterisk, QT_TRANSLATE_NOOP("shortcuts", "Transport: Toggle Record"),    GLOBAL_SHRT, "toggle_rec");
+      defShrt(SHRT_REC_ARM_TRACK, Qt::CTRL + Qt::Key_Return, QT_TRANSLATE_NOOP("shortcuts", "Transport: Arm current track"),    GLOBAL_SHRT, "rec_arm_track");
       defShrt(SHRT_REC_CLEAR,     Qt::Key_Backspace, QT_TRANSLATE_NOOP("shortcuts", "Transport: Clear all rec enabled tracks"),    GLOBAL_SHRT, "rec_clear");
       defShrt(SHRT_FULLSCREEN,       Qt::CTRL + Qt::Key_F, QT_TRANSLATE_NOOP("shortcuts", "Toggle fullscreen"), GLOBAL_SHRT, "fullscreen");
       defShrt(SHRT_TOGGLE_REWINDONSTOP,       Qt::CTRL + Qt::SHIFT + Qt::Key_R, QT_TRANSLATE_NOOP("shortcuts", "Toggle rewind on stop"), GLOBAL_SHRT, "rewindonstop");
