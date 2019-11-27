@@ -20,8 +20,8 @@
       <widget class="QLabel" name="label">
        <property name="text">
         <string>This tool helps developers and designers discover objects.
-Click on anything anywhere to highlight an item.
-Installs detroyed() handlers for all objects. When open, may slow program slightly.</string>
+Click on anything anywhere or press a key to highlight an item.
+When open, may slow program slightly. This dialog is NOT shown.</string>
        </property>
       </widget>
      </item>
@@ -32,14 +32,21 @@ Installs detroyed() handlers for all objects. When open, may slow program slight
      <item>
       <widget class="QCheckBox" name="onlyAppCheckBox">
        <property name="text">
-        <string>Only MusEGui</string>
+        <string>MusEGui</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QCheckBox" name="onlyWidgetCheckBox">
        <property name="text">
-        <string>Only QWidget</string>
+        <string>QWidget</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="onlyPropsCheckBox">
+       <property name="text">
+        <string>Properties</string>
        </property>
       </widget>
      </item>
@@ -68,9 +75,36 @@ Installs detroyed() handlers for all objects. When open, may slow program slight
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
-      <widget class="QCheckBox" name="onlyPropsCheckBox">
+      <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>Only properties</string>
+        <string>Monitor:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="captureMouseClickCheckBox">
+       <property name="text">
+        <string>Mouse clicks</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="captureKeyPressCheckBox">
+       <property name="text">
+        <string>Key press</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
        </property>
       </widget>
      </item>
@@ -101,7 +135,7 @@ Installs detroyed() handlers for all objects. When open, may slow program slight
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Search class name:</string>
+        <string>Search: Class name:</string>
        </property>
       </widget>
      </item>
@@ -111,7 +145,7 @@ Installs detroyed() handlers for all objects. When open, may slow program slight
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Search object name:</string>
+        <string>Object name:</string>
        </property>
       </widget>
      </item>

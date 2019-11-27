@@ -2503,11 +2503,15 @@ void MusE::kbAccel(int key)
             }
       }
 
-void MusE::snooperSelectObject(const QObject* obj) const
+void MusE::snooperSelectObject(const QObject* obj, QEvent::Type eventType) const
 {
   if(_snooperDialog && obj != _snooperDialog &&
-       _snooperDialog->isVisible() && !_snooperDialog->isHidden())
+     _snooperDialog->isVisible() && !_snooperDialog->isHidden() &&
+     ((eventType == QEvent::MouseButtonPress && _snooperDialog->captureMouseClicks()) ||
+      (eventType == QEvent::KeyPress && _snooperDialog->captureKeyPress())))
+  {
     _snooperDialog->selectObject(obj);
+  }
 }
 
 #if 0

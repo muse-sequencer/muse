@@ -424,7 +424,7 @@ class MusE : public QMainWindow
       bool importMidi(const QString name, bool merge);
       void kbAccel(int);
       // If the snooper dialog is open, selects the given object.
-      void snooperSelectObject(const QObject*) const;
+      void snooperSelectObject(const QObject* obj, QEvent::Type eventType) const;
 
       // writeFlag: Write to configuration file. 
       void changeConfig(bool writeFlag);

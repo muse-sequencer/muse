@@ -127,6 +127,9 @@ class SnooperDialog : public QDialog, public Ui::SnooperDialogBase {
   private:
       //QTimer* _updateTimer;
 
+      bool _captureMouseClicks;
+      bool _captureKeyPress;
+
       // Recursive!
       // Return true if anything of relevance was added ie. whether the branch should (not) be discarded.
       // If parentItem is given it adds to that item. Otherwise if null it adds as top level item.
@@ -149,6 +152,8 @@ class SnooperDialog : public QDialog, public Ui::SnooperDialogBase {
      void updateTreeClicked();
      void filterToggled(bool);
      void finishedLineEditing();
+     void captureMouseClickToggled(bool);
+     void captureKeyPressToggled(bool);
 
    public slots:
      void selectObject(const QObject*);
@@ -160,6 +165,9 @@ class SnooperDialog : public QDialog, public Ui::SnooperDialogBase {
       // Finds a non-hidden item.
       QTreeWidgetItem* findObject(const QObject* obj);
       const QTreeWidgetItem* cfindObject(const QObject* obj) const;
+
+      bool captureMouseClicks() const { return _captureMouseClicks; }
+      bool captureKeyPress() const { return _captureKeyPress; }
       };
 
 

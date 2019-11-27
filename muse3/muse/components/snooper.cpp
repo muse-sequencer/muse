@@ -70,6 +70,10 @@ SnooperDialog::SnooperDialog(QWidget* parent)
   setupUi(this);
   //setAttribute(Qt::WA_DeleteOnClose);
   setObjectName(QStringLiteral("snooper dialog"));
+
+  _captureMouseClicks = captureMouseClickCheckBox->isChecked();
+  _captureKeyPress = captureKeyPressCheckBox->isChecked();
+
   connect(updateButton, &QPushButton::clicked, [this]() { updateTreeClicked(); } );
   connect(onlyAppCheckBox, &QCheckBox::toggled, [this](bool v) { filterToggled(v); } );
   connect(onlyWidgetCheckBox, &QCheckBox::toggled, [this](bool v) { filterToggled(v); } );
@@ -77,6 +81,8 @@ SnooperDialog::SnooperDialog(QWidget* parent)
   connect(separateParentedTopLevelsCheckBox, &QCheckBox::toggled, [this](bool v) { filterToggled(v); } );
   connect(classNameLineEdit, &QLineEdit::editingFinished, [this]() { finishedLineEditing(); } );
   connect(objectNameLineEdit, &QLineEdit::editingFinished, [this]() { finishedLineEditing(); } );
+  connect(captureMouseClickCheckBox, &QCheckBox::toggled, [this](bool v) { captureMouseClickToggled(v); } );
+  connect(captureKeyPressCheckBox, &QCheckBox::toggled, [this](bool v) { captureKeyPressToggled(v); } );
 }
 
 SnooperDialog::~SnooperDialog()
@@ -398,6 +404,16 @@ void SnooperDialog::finishedLineEditing()
 {
   filterItems();
   objectTree->resizeColumnToContents(SnooperTreeWidgetItem::Name);
+}
+
+void SnooperDialog::captureMouseClickToggled(bool v)
+{
+  _captureMouseClicks = v;
+}
+
+void SnooperDialog::captureKeyPressToggled(bool v)
+{
+  _captureKeyPress = v;
 }
 
 void SnooperDialog::selectObject(const QObject* obj)

@@ -157,17 +157,16 @@ class MuseApplication : public QApplication {
             }
 
       bool notify(QObject* receiver, QEvent* event) {
-         bool flag = QApplication::notify(receiver, event);
-         if (event->type() == QEvent::KeyPress) {
+         const bool flag = QApplication::notify(receiver, event);
+         const QEvent::Type type = event->type();
+         if(muse)
+           muse->snooperSelectObject(receiver, type);
+         if (type == QEvent::KeyPress) {
 #if QT_VERSION >= 0x050000
             const QMetaObject * mo = receiver->metaObject();
-            bool forQWidgetWindow = false;
             if (mo){
                if (strcmp(mo->className(), "QWidgetWindow") == 0)
-                  forQWidgetWindow = true;
-            }
-            if(forQWidgetWindow){
-               return false;
+                 return false;
             }
 #endif
             QKeyEvent* ke = (QKeyEvent*)event;
@@ -188,18 +187,15 @@ class MuseApplication : public QApplication {
                   key += Qt::ALT;
                if (((QInputEvent*)ke)->modifiers() & Qt::ControlModifier)
                   key+= Qt::CTRL;
-               muse->kbAccel(key);
+               if(muse)
+                 muse->kbAccel(key);
                return true;
             }
          }
-         if (event->type() == QEvent::KeyRelease) {
+         else if (type == QEvent::KeyRelease) {
             QKeyEvent* ke = (QKeyEvent*)event;
             ///MusEGlobal::globalKeyState = ke->stateAfter();
             MusEGlobal::globalKeyState = ke->modifiers();
-         }
-
-         if (event->type() == QEvent::MouseButtonPress) {
-           muse->snooperSelectObject(receiver);
          }
          
          return flag;
@@ -207,7 +203,7 @@ class MuseApplication : public QApplication {
 
 #ifdef HAVE_LASH
      virtual void timerEvent (QTimerEvent*) {
-            if(MusEGlobal::useLASH)
+            if(muse && MusEGlobal::useLASH)
               muse->lash_idle_cb ();
             }
 #endif /* HAVE_LASH */
