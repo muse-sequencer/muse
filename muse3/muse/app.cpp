@@ -2190,49 +2190,54 @@ void MusE::startSongInfo(bool editable)
 
       }
 
+
+void MusE::showDidYouKnowDialogIfEnabled()
+{
+    if ((bool)MusEGlobal::config.showDidYouKnow == true) {
+        showDidYouKnowDialog();
+    }
+}
 //---------------------------------------------------------
 //   showDidYouKnowDialog
 //---------------------------------------------------------
 void MusE::showDidYouKnowDialog()
-      {
-      if ((bool)MusEGlobal::config.showDidYouKnow == true) {
-        MusEGui::DidYouKnowWidget dyk;
+{
+    MusEGui::DidYouKnowWidget didYouKnow;
 
-        QFile file(MusEGlobal::museGlobalShare + "/didyouknow.txt");
-        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-          fprintf(stderr, "could not open didyouknow.txt!\n");
-          return;
-        }
+    QFile file(MusEGlobal::museGlobalShare + "/didyouknow.txt");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+      fprintf(stderr, "could not open didyouknow.txt!\n");
+      return;
+    }
 
-        // All tips are separated by an empty line. Lines starting with # are ignored
-        QString tipMessage = "";
-        while (!file.atEnd())  {
-          QString line = file.readLine();
+    // All tips are separated by an empty line. Lines starting with # are ignored
+    QString tipMessage = "";
+    while (!file.atEnd())  {
+      QString line = file.readLine();
 
-          if (!line.simplified().isEmpty() && line.at(0) != QChar('#'))
-            tipMessage.append(line);
+      if (!line.simplified().isEmpty() && line.at(0) != QChar('#'))
+        tipMessage.append(line);
 
-          if (!tipMessage.isEmpty() && line.simplified().isEmpty()) {
-            dyk.tipList.append(tipMessage);
-            tipMessage="";
-          }
-        }
-        if (!tipMessage.isEmpty()) {
-          dyk.tipList.append(tipMessage);
-        }
-
-        std::random_shuffle(dyk.tipList.begin(),dyk.tipList.end());
-
-        dyk.show();
-        if( dyk.exec()) {
-              if (dyk.dontShowCheckBox->isChecked()) {
-                    MusEGlobal::config.showDidYouKnow=false;
-                    // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
-                    MusEGlobal::muse->changeConfig(true);    // save settings
-                    }
-              }
-        }
+      if (!tipMessage.isEmpty() && line.simplified().isEmpty()) {
+        didYouKnow.tipList.append(tipMessage);
+        tipMessage="";
       }
+    }
+    if (!tipMessage.isEmpty()) {
+      didYouKnow.tipList.append(tipMessage);
+    }
+
+    std::random_shuffle(didYouKnow.tipList.begin(),didYouKnow.tipList.end());
+
+    didYouKnow.show();
+    if( didYouKnow.exec()) {
+          if (didYouKnow.dontShowCheckBox->isChecked()) {
+                MusEGlobal::config.showDidYouKnow=false;
+                // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
+                MusEGlobal::muse->changeConfig(true);    // save settings
+          }
+    }
+}
 //---------------------------------------------------------
 //   startDefineController
 //---------------------------------------------------------

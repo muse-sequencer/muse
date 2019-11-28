@@ -362,6 +362,7 @@ class MusE : public QMainWindow
       void showMarker(bool);
       void showArranger(bool);
       void importMidi(const QString &file);
+      void showDidYouKnowDialogIfEnabled();
       void showDidYouKnowDialog();
       void startEditInstrument(const QString& find_instrument = QString(), EditInstrumentTabType show_tab = EditInstrumentPatches);
       void configMidiPorts();
