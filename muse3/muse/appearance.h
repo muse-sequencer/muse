@@ -127,7 +127,6 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       void colorItemSelectionChanged();
       void browseStyleSheet();
       void setDefaultStyleSheet();
-      void snooperClicked();
       void browseFont(int);
       void browseFont0();
       void browseFont1();

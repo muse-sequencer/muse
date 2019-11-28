@@ -26,13 +26,15 @@
 
 #include <QWidget>
 #include <QDialog>
-//#include <QTimer>
+#include <QTimer>
 #include <QTreeWidgetItem>
 #include <QMetaObject>
 #include <QMetaProperty>
 #include <QShowEvent>
 #include <QHideEvent>
 #include <QCloseEvent>
+#include <QMap>
+#include <QSet>
 
 #include "ui_snooperbase.h"
 
@@ -45,14 +47,24 @@ namespace MusEGui {
 class SnooperTreeWidgetItem : public QTreeWidgetItem
 {
   public:
-        enum Cols { Name = 0, Property, PropertyType, PropertyValue };
-        enum ItemType { NormalItem = Type, ObjectItem = UserType, PropertiesItem = UserType + 1, PropertyItem = UserType + 2};
+        enum Cols { Name = 0, Property, PropertyType, PropertyValue, EventType };
+        enum ItemType {
+          NormalItem     = Type,
+          ObjectItem     = UserType,
+          PropertiesItem = ObjectItem + 1,
+          PropertyItem   = PropertiesItem + 1
+        };
         enum ItemMode { NormalMode };
 
   private:
         QObject* _object;
+        bool _isParentedTopLevelBranch;
         QMetaProperty _metaProperty;
         QMetaObject::Connection _metaConnection;
+        //QMap<int /*type*/, int /*hit_count*/> _hitMap;
+        QBrush _origBackground;
+        int _flashCounter;
+        bool _isFlashing;
 
         void init();
 
@@ -106,9 +118,18 @@ class SnooperTreeWidgetItem : public QTreeWidgetItem
 
         QObject* object() { return _object; }
         const QObject* cobject() const { return _object; }
+        
+        bool isParentedTopLevelBranch() const { return _isParentedTopLevelBranch; }
+        void setIsParentedTopLevelBranch(bool v) { _isParentedTopLevelBranch = v; }
 
         const QMetaObject::Connection& connection() const { return _metaConnection; }
         void setConnection(const QMetaObject::Connection& conn) { _metaConnection = conn; }
+
+        void startFlash(int interval, const QEvent::Type& eventType = QEvent::None);
+        bool isFlashing() const { return _isFlashing; }
+        // Driven from timer/divider. Returns true if the end was reached.
+        bool tickFlash();
+        void resetFlash();
 };
 
 //---------------------------------------------------------
@@ -119,32 +140,56 @@ class SnooperDialog : public QDialog, public Ui::SnooperDialogBase {
   
     Q_OBJECT
 
- protected:
-      virtual void showEvent(QShowEvent*);
-      virtual void hideEvent(QHideEvent*);
-      virtual void closeEvent(QCloseEvent*);
+  public:
+      typedef QMap<QEvent::Type /*event_type*/, int /*hit_count*/> HitMap;
+      typedef QMap<QObject* /*object*/, HitMap> HitBuffer;
 
+  protected:
+      void showEvent(QShowEvent*) override;
+      void hideEvent(QHideEvent*) override;
+      void closeEvent(QCloseEvent*) override;
+      bool eventFilter(QObject*, QEvent*) override;
+      
   private:
-      //QTimer* _updateTimer;
+      static QMap<int /*value*/, QString /*key*/> _eventTypeMap;
+      // In milliseconds.
+      static const int _updateTimerInterval;
+      QTimer* _updateTimer;
+      int _flashInterval;
+      // In seconds.
+      static const int _autoHideTimerInterval;
+      int _autoHideIntervalCounter;
+
+      HitBuffer _eventBuffer;
+      void putEventBuffer(QObject *obj, const QEvent::Type& eventType);
+      // Also returns the first item processed (so it can be scrolled to).
+      SnooperTreeWidgetItem* processEventBuffer();
 
       bool _captureMouseClicks;
       bool _captureKeyPress;
 
+      QSet<SnooperTreeWidgetItem*> _flashingItems;
+
       // Recursive!
       // Return true if anything of relevance was added ie. whether the branch should (not) be discarded.
       // If parentItem is given it adds to that item. Otherwise if null it adds as top level item.
-      bool addBranch(QObject* object, SnooperTreeWidgetItem* parentItem);
+      bool addBranch(QObject* object, SnooperTreeWidgetItem* parentItem, bool isParentedTopLevelBranch);
       // Recursive!
       bool filterBranch(bool parentIsRelevant, QTreeWidgetItem* parentItem);
       // Recursive!
       bool destroyBranch(QObject *obj, QTreeWidgetItem* parentItem);
       // Recursive! Finds a non-hidden item.
-      QTreeWidgetItem* findItem(const QObject *obj, QTreeWidgetItem* parentItem);
-      const QTreeWidgetItem* cfindItem(const QObject *obj, const QTreeWidgetItem* parentItem) const;
+      QTreeWidgetItem* findItem(const QObject *obj, QTreeWidgetItem* parentItem,
+                                bool noHidden, bool parentedTopLevels);
+      const QTreeWidgetItem* cfindItem(const QObject *obj, const QTreeWidgetItem* parentItem,
+                                       bool noHidden, bool parentedTopLevels) const;
+      SnooperTreeWidgetItem* selectObject(const QObject *obj, const QEvent::Type& eventType = QEvent::None);
       void disconnectAll();
       
    private slots:
      void objectDestroyed(QObject *obj = nullptr);
+
+     void updateTimerTick();
 
      void updateTree();
      void filterItems();
@@ -154,20 +199,23 @@ class SnooperDialog : public QDialog, public Ui::SnooperDialogBase {
      void finishedLineEditing();
      void captureMouseClickToggled(bool);
      void captureKeyPressToggled(bool);
+     void useFlashTimerToggled(bool);
+     void resetFlashTimerClicked();
 
-   public slots:
-     void selectObject(const QObject*);
-     
    public:
       SnooperDialog(QWidget* parent=0);
       virtual ~SnooperDialog();
 
+      static QString eventTypeString(const QEvent::Type& eventType);
+
       // Finds a non-hidden item.
-      QTreeWidgetItem* findObject(const QObject* obj);
-      const QTreeWidgetItem* cfindObject(const QObject* obj) const;
+      QTreeWidgetItem* findObject(const QObject* obj, bool noHidden, bool parentedTopLevels);
+      const QTreeWidgetItem* cfindObject(const QObject* obj, bool noHidden, bool parentedTopLevels) const;
 
       bool captureMouseClicks() const { return _captureMouseClicks; }
       bool captureKeyPress() const { return _captureKeyPress; }
+
+      void setFlashInterval(int val) { _flashInterval = (1000 * val) / _updateTimerInterval; }
       };
 
 

@@ -1274,23 +1274,6 @@
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="Line" name="line">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QToolButton" name="generateStylesheetList">
-              <property name="toolTip">
-               <string>Start the Snooper</string>
-              </property>
-              <property name="text">
-               <string>Snooper...</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </item>
           <item>
