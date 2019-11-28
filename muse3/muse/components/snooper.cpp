@@ -590,8 +590,8 @@ SnooperTreeWidgetItem* SnooperDialog::selectObject(const QObject *obj, const QEv
                                      separateParentedTopLevelsCheckBox->isChecked());
   if(!item)
   {
-    fprintf(stderr, "SnooperDialog::selectObject() Did not find class name:%s object name:%s\n",
-            obj->metaObject()->className(), obj->objectName().toLatin1().constData());
+    //fprintf(stderr, "SnooperDialog::selectObject() Did not find class name:%s object name:%s\n",
+    //        obj->metaObject()->className(), obj->objectName().toLatin1().constData());
     return nullptr;
   }
 
