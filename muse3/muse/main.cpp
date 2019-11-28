@@ -1512,7 +1512,7 @@ int main(int argc, char* argv[])
         //--------------------------------------------------
         MusEGlobal::muse->loadDefaultSong(open_filename);
 
-        QTimer::singleShot(100, MusEGlobal::muse, SLOT(showDidYouKnowDialog()));
+        QTimer::singleShot(100, MusEGlobal::muse, SLOT(showDidYouKnowDialogIfEnabled()));
 
         //--------------------------------------------------
         // Start the application...

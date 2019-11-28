@@ -1,4 +1,11 @@
 28.11.2019
+    - Fixed the DidYouKnow menu alternative so it shows the dialog even if the
+      checkbox for not displaying it is checked. (rj)
+    - Added a few more lines to the DidYouKnow.txt database
+
+27.11.2019
+    - Unfortunately had to revoke the 'easy fix' below for getting more shortcuts to work
+      there were side effects...  The search goes on for the 'real' solution (rj)
     - Snooper improvements. Moved to Help menu. Live realtime monitoring of events. (Tim)
 26.11.2019
     * New - Introducing the Snooper (object tree) for coders and stylesheet authors: (Tim)

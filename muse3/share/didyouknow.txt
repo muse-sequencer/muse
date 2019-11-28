@@ -1,28 +1,45 @@
-To get started with MusE why don't you visit the tutorials at <br><a href="http://muse-sequencer.org/index.php/Support">http://muse-sequencer.org</a>
+To get started with MusE why don't you visit the tutorials at <br>
+<a href="http://muse-sequencer.org/index.php/Support">http://muse-sequencer.org</a>
 
-MusE can add effects in realtime for audio tracks,<br>check the effect rack on the mixer strip
+MusE can add effects in realtime for audio tracks,<br>
+check the effect rack on the mixer strip
 
-For routing and selection dialogs that allow multiple selections<br>use ctrl when clicking to keep the dialog open
+For routing and selection dialogs that allow multiple selections<br>
+use ctrl when clicking to keep the dialog open
 
-MusE can use Windows VST synths if the dssi-vst bridge is installed!
+If you regularly make the same type of connections you can make a<br>
+template-project with all of your basic settings already prewired.<br>
+Just store the song as a template using the project dialog.
 
-If you regularly make the same type of connections you can make a<br> template-project with all of your basic settings already prewired.<br>Just store the song as a template using the project dialog.
+It's possible to create midi filters or generators in any<br>
+language, see instructions and examples under <br>
+muse3/share/scripts in the source.
 
-It's possible to create midi filters or generators in any<br>language, see instructions and examples under <br>muse2/share/scripts in the source.
+Click on the automation column in the track list to make<br>
+automation lines visible for a specific parameter.
 
-Click on the automation column in the track list to make<br>automation lines visible for a parameter.
+Adding effects will add more automatable parameters to the<br>
+automation column.
 
-Adding effects will add more automatable parameters to the<br>automation column.
+Most functions in MusE are reachable from the keyboard.<br>
+See 'Configure Shortcuts' under 'MusE Settings'.<br>
+For instance: A - pointer, D - draw, R - erase, S - cut.<br>
+A full list of all shortcuts, formatted for printing (sort of)<br>
+is available from the Shortcut dialog.
 
-Most functions in MusE are reachable from the keyboard.<br>See 'Configure Shortcuts' under 'MusE Settings'.<br>For instance: A - pointer, D - draw, R - erase, S - cut.
+Midi parts can be cloned. All clone parts contain the same data,<br>
+change one and all will be changed.
 
-Midi parts can be cloned. All clone parts contain the same data,<br>change one and all will be changed.
+Parts can be copied and deleted using the standard cut/copy/paste<br>
+but it is also possible to click and drag parts to duplicate.<br>
+ctrl+click+drag to duplicate parts<br>
+ctrl+alt+click+drag to create clones
 
-Parts can be copied and deleted using the standard cut/copy/paste<br>but it is also possible to click and drag parts to duplicate.<br>ctrl+click+drag to duplicate parts<br>ctrl+alt+click+drag to create clones
+When using the dark theme, make sure to select Qt theme plastique<br>
+or the theme will not be consistent.
 
-When using the dark theme, make sure to select Qt theme plastique<br>or the theme will not be consistent.
-
-If it's hard to be precise while moving automation points with the mouse,<br>trying holding the SHIFT key, the movement will be slower.
+If it's hard to be precise while moving automation points with the mouse,<br>
+trying holding the SHIFT key, the movement will be slower.
 
 During recording it is often useful to restart the recording since the previous<br>
 take wasn't perfect or you simply want several takes. While recording press<br>
@@ -30,4 +47,7 @@ shift+space (default shortcut), a new track is created and the recording is<br>
 restarted from the initial position.<br>
 If recording was done on multiple tracks, all the armed tracks will be duplicated.
 
-MusE 3.0 defaults to connecting to Pulse Audio instead of Jack to ease startup for new users. To connect to Jack change the default sound output on the Audio configuration tab in Global Settings.
+MusE 3.x defaults to connecting to Pulse Audio instead of Jack to ease startup<br>
+for new users. To connect to Jack change the default sound output on the<br>
+Audio configuration tab in Global Settings.<br>
+Or use the command line overrides to start the specific interface you wish.
