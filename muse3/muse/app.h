@@ -29,7 +29,6 @@
 #include "globaldefs.h"
 #include "cobject.h"
 #include "script_delivery.h"
-#include "snooper.h"
 
 #include <QFileInfo>
 #include <list>
@@ -95,6 +94,7 @@ class Transport;
 class VisibleTracks;
 class RouteDialog;
 class CpuToolbar;
+class SnooperDialog;
 
 #define MENU_ADD_SYNTH_ID_BASE 0x8000
 
@@ -172,7 +172,7 @@ class MusE : public QMainWindow
       QAction *dontFollowAction, *followPageAction, *followCtsAction;
       QAction *rewindOnStopAction;
       // Help Menu Actions
-      QAction *helpManualAction, *helpHomepageAction, *helpReportAction, *helpAboutAction, *helpDidYouKnow;
+      QAction *helpManualAction, *helpHomepageAction, *helpReportAction, *helpAboutAction, *helpDidYouKnow, *helpSnooperAction;
 
       QString appName;
 
@@ -423,8 +423,6 @@ class MusE : public QMainWindow
       QProgressDialog *progress;
       bool importMidi(const QString name, bool merge);
       void kbAccel(int);
-      // If the snooper dialog is open, selects the given object.
-      void snooperSelectObject(const QObject* obj, QEvent::Type eventType) const;
 
       // writeFlag: Write to configuration file. 
       void changeConfig(bool writeFlag);

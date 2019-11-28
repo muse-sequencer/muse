@@ -105,6 +105,7 @@
 #include "components/songpos_toolbar.h"
 #include "components/sig_tempo_toolbar.h"
 #include "widgets/cpu_toolbar.h"
+#include "components/snooper.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -619,6 +620,7 @@ MusE::MusE() : QMainWindow()
       helpReportAction = new QAction(tr("&Report Bug..."), this);
       helpAboutAction = new QAction(tr("&About MusE"), this);
 
+      helpSnooperAction = new QAction(tr("Snooper (developer tool)"), this);
 
       //---- Connections
       //-------- File connections
@@ -700,6 +702,7 @@ MusE::MusE() : QMainWindow()
       connect(helpReportAction, SIGNAL(triggered()), SLOT(startBugBrowser()));
       connect(helpDidYouKnow, SIGNAL(triggered()), SLOT(showDidYouKnowDialog()));
       connect(helpAboutAction, SIGNAL(triggered()), SLOT(about()));
+      connect(helpSnooperAction, &QAction::triggered, [this]() { startSnooper(); } );
 
       //--------------------------------------------------
       //    Toolbar
@@ -949,6 +952,7 @@ MusE::MusE() : QMainWindow()
       menu_help->addAction(helpDidYouKnow);
       menu_help->addSeparator();
       menu_help->addAction(helpReportAction);
+      menu_help->addAction(helpSnooperAction);
       menu_help->addSeparator();
       menu_help->addAction(helpAboutAction);
 
@@ -2502,17 +2506,6 @@ void MusE::kbAccel(int key)
                   fprintf(stderr, "unknown kbAccel 0x%x\n", key);
             }
       }
-
-void MusE::snooperSelectObject(const QObject* obj, QEvent::Type eventType) const
-{
-  if(_snooperDialog && obj != _snooperDialog &&
-     _snooperDialog->isVisible() && !_snooperDialog->isHidden() &&
-     ((eventType == QEvent::MouseButtonPress && _snooperDialog->captureMouseClicks()) ||
-      (eventType == QEvent::KeyPress && _snooperDialog->captureKeyPress())))
-  {
-    _snooperDialog->selectObject(obj);
-  }
-}
 
 #if 0
 //---------------------------------------------------------

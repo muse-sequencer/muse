@@ -22,6 +22,7 @@
 //=========================================================
 
 #include <QApplication>
+#include <QStyle>
 
 #include "snooper.h"
 
@@ -30,8 +31,20 @@
 
 namespace MusEGui {
 
+// 200ms timer interval.
+const int SnooperDialog::_updateTimerInterval = 200;
+// 1 seconds.
+const int SnooperDialog::_autoHideTimerInterval = 1000;
+
+QMap<int /*value*/, QString /*key*/> SnooperDialog::_eventTypeMap;
+
 void SnooperTreeWidgetItem::init()
 {
+  _isParentedTopLevelBranch = false;
+  _flashCounter = 0;
+  _isFlashing = false;
+  _origBackground = background(Name);
+
   switch(type())
   {
     case ObjectItem:
@@ -63,6 +76,36 @@ void SnooperTreeWidgetItem::init()
   }
 }
 
+void SnooperTreeWidgetItem::startFlash(int interval, const QEvent::Type& eventType)
+{
+  _flashCounter = interval;
+  _isFlashing = true;
+
+  const QColor col(255, 170, 128);
+  setBackground(Name, col);
+  if(eventType != QEvent::None)
+  {
+    const QString key = SnooperDialog::eventTypeString(eventType);
+    setText(EventType, QString("<%1>: ").arg(eventType) + key);
+  }
+}
+
+void SnooperTreeWidgetItem::resetFlash()
+{
+  _isFlashing = false;
+  setBackground(Name, _origBackground);
+  setText(EventType, QString());
+}
+
+bool SnooperTreeWidgetItem::tickFlash()
+{
+  if(_flashCounter <= 0)
+    return false;
+  if(--_flashCounter > 0)
+    return false;
+  resetFlash();
+  return true;
+}
 
 SnooperDialog::SnooperDialog(QWidget* parent)
   : QDialog(parent, Qt::Window)
@@ -73,8 +116,20 @@ SnooperDialog::SnooperDialog(QWidget* parent)
 
   _captureMouseClicks = captureMouseClickCheckBox->isChecked();
   _captureKeyPress = captureKeyPressCheckBox->isChecked();
+  _autoHideIntervalCounter = 0;
+
+  const QMetaObject mo = QEvent::staticMetaObject;
+  const int type_idx = mo.indexOfEnumerator("Type");
+  if(type_idx >= 0)
+  {
+    const QMetaEnum meta_enum = mo.enumerator(type_idx);
+    const int key_count = meta_enum.keyCount();
+    for(int k = 0; k < key_count; ++k)
+      _eventTypeMap.insert(meta_enum.value(k), meta_enum.key(k));
+  }
 
   connect(updateButton, &QPushButton::clicked, [this]() { updateTreeClicked(); } );
+  connect(autoHideCheckBox, &QCheckBox::toggled, [this](bool v) { filterToggled(v); } );
   connect(onlyAppCheckBox, &QCheckBox::toggled, [this](bool v) { filterToggled(v); } );
   connect(onlyWidgetCheckBox, &QCheckBox::toggled, [this](bool v) { filterToggled(v); } );
   connect(onlyPropsCheckBox, &QCheckBox::toggled, [this](bool v) { filterToggled(v); } );
@@ -83,32 +138,84 @@ SnooperDialog::SnooperDialog(QWidget* parent)
   connect(objectNameLineEdit, &QLineEdit::editingFinished, [this]() { finishedLineEditing(); } );
   connect(captureMouseClickCheckBox, &QCheckBox::toggled, [this](bool v) { captureMouseClickToggled(v); } );
   connect(captureKeyPressCheckBox, &QCheckBox::toggled, [this](bool v) { captureKeyPressToggled(v); } );
+
+  setFlashInterval(flashTimerValueSpinBox->value());
+  flashTimerValueSpinBox->setEnabled(useFlashCheckBox->isChecked());
+  resetFlashButton->setEnabled(!useFlashCheckBox->isChecked());
+  // Special for this: Need qt helper overload for these lambdas.
+  connect(flashTimerValueSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [=](int v)
+    { setFlashInterval(v); } );
+  connect(useFlashCheckBox, &QCheckBox::toggled, [this](bool v) { useFlashTimerToggled(v); } );
+  connect(resetFlashButton, &QToolButton::clicked, [this]() { resetFlashTimerClicked(); } );
+
+  _updateTimer = new QTimer(this);
+  connect(_updateTimer, &QTimer::timeout, [this]() { updateTimerTick(); } );
+  _updateTimer->start(_updateTimerInterval);
 }
 
 SnooperDialog::~SnooperDialog()
 {
   DEBUG_SNOOPER(stderr, "SnooperDialog::dtor\n");
+  _updateTimer->stop();
   disconnectAll();
 }
 
 void SnooperDialog::disconnectAll()
 {
   DEBUG_SNOOPER(stderr, "SnooperDialog::disconnectAll():\n");
-  const QObject* obj;
+  qApp->removeEventFilter(this);
+  QObject* obj;
   QTreeWidgetItemIterator iObjTree(objectTree);
   while(*iObjTree)
   {
-    const SnooperTreeWidgetItem* item = static_cast<const SnooperTreeWidgetItem*>(*iObjTree);
-    obj = item->cobject();
-    const QMetaObject* mo = obj->metaObject();
-    const QString cls_name = QString::fromLatin1(mo->className());
-    const QString obj_name = obj->objectName();
+    SnooperTreeWidgetItem* item = static_cast<SnooperTreeWidgetItem*>(*iObjTree);
+    obj = item->object();
     const QMetaObject::Connection& conn = item->connection();
     // NOTE QMetaObject::Connection has a boolean operator.
     if(conn && !disconnect(conn))
       fprintf(stderr, "SnooperDialog::disconnectAll(): disconnected failed: obj:%p cls_name:%s obj_name:%s\n",
-              obj, mo->className(), obj_name.toLatin1().constData());
+              obj, obj->metaObject()->className(), obj->objectName().toLatin1().constData());
     ++iObjTree;
+  }
+}
+
+bool SnooperDialog::eventFilter(QObject *obj, QEvent *event)
+{
+  // Pass the event on to the parent class.
+  const bool ret = QDialog::eventFilter(obj, event);
+
+  const QEvent::Type event_type = event->type();
+  if(obj != this && isVisible() && !isHidden() &&
+     ((event_type == QEvent::MouseButtonPress && captureMouseClicks()) ||
+      (event_type == QEvent::KeyPress && captureKeyPress())))
+  {
+    putEventBuffer(obj, event->type());
+    //selectObject(obj, event);
+
+//     // Restart only if already at end.
+//     if(_autoHideIntervalCounter <= 0)
+//       _autoHideIntervalCounter = _autoHideTimerInterval / _updateTimerInterval;
+  }
+  return ret;
+}
+
+void SnooperDialog::putEventBuffer(QObject *obj, const QEvent::Type& eventType)
+{
+  HitBuffer::iterator i = _eventBuffer.find(obj);
+  if(i == _eventBuffer.end())
+  {
+    HitMap hm;
+    hm.insert(eventType, 1);
+    _eventBuffer.insert(obj, hm);
+  }
+  else
+  {
+    HitMap& hm = *i;
+    HitMap::iterator ihm = hm.find(eventType);
+    if(ihm == hm.end())
+      hm.insert(eventType, 1);
+    else
+      ++ihm.value();
   }
 }
 
@@ -119,8 +226,11 @@ void SnooperDialog::showEvent(QShowEvent* e)
   {
     DEBUG_SNOOPER(stderr, "SnooperDialog::showEvent(): not spontaneous\n");
     disconnectAll();
+    _flashingItems.clear();
     objectTree->clear();
     updateTree();
+    if(!_updateTimer->isActive())
+      _updateTimer->start(_updateTimerInterval);
   }
   QDialog::showEvent(e);
 }
@@ -129,7 +239,9 @@ void SnooperDialog::closeEvent(QCloseEvent* e)
 {
   e->ignore();
   DEBUG_SNOOPER(stderr, "SnooperDialog::closeEvent():\n");
+  _updateTimer->stop();
   disconnectAll();
+  _flashingItems.clear();
   objectTree->clear();
   QDialog::closeEvent(e);
 }
@@ -140,7 +252,9 @@ void SnooperDialog::hideEvent(QHideEvent* e)
   if(!e->spontaneous())
   {
     DEBUG_SNOOPER(stderr, "SnooperDialog::hideEvent(): not spontaneous\n");
+    _updateTimer->stop();
     disconnectAll();
+    _flashingItems.clear();
     objectTree->clear();
   }
   QDialog::hideEvent(e);
@@ -192,7 +306,7 @@ bool SnooperDialog::filterBranch(bool parentIsRelevant, QTreeWidgetItem* parentI
     const bool onlyProps = onlyPropsCheckBox->isChecked();
     const QString search_class_name = classNameLineEdit->text();
     const QString search_obj_name = objectNameLineEdit->text();
-    const int parent_item_type = parentItem->type();
+    const int parent_item_type = parent_snoop_item->type();
 
     const bool search_is_relevant = parentIsRelevant ||
         ((search_class_name.isEmpty() || cls_name.contains(search_class_name)) &&
@@ -202,6 +316,13 @@ bool SnooperDialog::filterBranch(bool parentIsRelevant, QTreeWidgetItem* parentI
     if(search_is_relevant && (!search_class_name.isEmpty() || !search_obj_name.isEmpty()))
       this_parent_is_relevant = true;
 
+    // Auto-hide takes precedence over any other filtering.
+    if(autoHideCheckBox->isChecked())
+    {
+      if(parent_snoop_item->isFlashing())
+        is_relevant = true;
+    }
+    else
     if((!onlyAppClasses || cls_name.startsWith(QStringLiteral("MusEGui::"))) &&
        (!onlyWidgets || object->isWidgetType()) &&
        (!onlyProps || parent_item_type == SnooperTreeWidgetItem::PropertiesItem || 
@@ -229,37 +350,51 @@ bool SnooperDialog::filterBranch(bool parentIsRelevant, QTreeWidgetItem* parentI
 }
 
 // Recursive!
-bool SnooperDialog::addBranch(QObject* object, SnooperTreeWidgetItem* parentItem)
+bool SnooperDialog::addBranch(QObject* object, SnooperTreeWidgetItem* parentItem, bool isParentedTopLevelBranch)
 {
   // Do NOT add anything related to THIS dialog. Hard to manage destroyed signals from itself.
   if(object == this)
     return false;
 
+  const QTreeWidgetItem* root_item = objectTree->invisibleRootItem();
   SnooperTreeWidgetItem* item = nullptr;
   SnooperTreeWidgetItem* prop_parent_item = nullptr;
   SnooperTreeWidgetItem* prop_item = nullptr;
   const QMetaObject* mo = object->metaObject();
   const QString cls_name = QString::fromLatin1(mo->className());
   const QString obj_name = object->objectName();
+  const bool is_top_item = !parentItem || parentItem == root_item;
+  const bool has_parent_obj = object->parent();
+  const bool is_widget_type = object->isWidgetType();
+
+  // Whether to separate parented top levels.
+  if(has_parent_obj && is_widget_type)
+  {
+    const QWidget* widget = qobject_cast<const QWidget*>(object);
+    if(widget->isWindow() && is_top_item)
+      isParentedTopLevelBranch = true;
+  }
 
   item = new SnooperTreeWidgetItem(SnooperTreeWidgetItem::ObjectItem, object);
+  item->setIsParentedTopLevelBranch(isParentedTopLevelBranch);
 
   DEBUG_SNOOPER(stderr, "SnooperDialog::addBranch(): adding connection: obj:%p cls_name:%s obj_name:%s\n",
           object, mo->className(), obj_name.toLatin1().constData());
 
   QMetaObject::Connection conn =
     connect(object, &QObject::destroyed, [this](QObject* o = nullptr) { objectDestroyed(o); } );
-
   item->setConnection(conn);
-
+  
   const int prop_count = mo->propertyCount();
   const int prop_offset = mo->propertyOffset();
   if(prop_count > prop_offset)
   {
     prop_parent_item = new SnooperTreeWidgetItem(SnooperTreeWidgetItem::PropertiesItem, object);
+    prop_parent_item->setIsParentedTopLevelBranch(isParentedTopLevelBranch);
     for(int i = prop_offset; i < prop_count; ++i)
     {
       prop_item = new SnooperTreeWidgetItem(SnooperTreeWidgetItem::PropertyItem, object, mo->property(i));
+      prop_item->setIsParentedTopLevelBranch(isParentedTopLevelBranch);
       prop_parent_item->addChild(prop_item);
     }
     item->addChild(prop_parent_item);
@@ -267,7 +402,7 @@ bool SnooperDialog::addBranch(QObject* object, SnooperTreeWidgetItem* parentItem
 
   const QObjectList& ol = object->children();
   foreach(QObject* obj, ol)
-    addBranch(obj, item);
+    addBranch(obj, item, isParentedTopLevelBranch);
 
   if(parentItem)
     parentItem->addChild(item);
@@ -279,7 +414,9 @@ bool SnooperDialog::addBranch(QObject* object, SnooperTreeWidgetItem* parentItem
 
 void SnooperDialog::updateTree()
 {
+  _updateTimer->stop();
   disconnectAll();
+  _flashingItems.clear();
   objectTree->clear();
 
 //   const QObjectList& cl = qApp->children();
@@ -287,10 +424,13 @@ void SnooperDialog::updateTree()
 //    addBranch(obj, nullptr);
   const QWidgetList wl = qApp->topLevelWidgets();
   foreach(QWidget* obj, wl)
-    addBranch(obj, nullptr);
+    addBranch(obj, nullptr, false);
+
+  qApp->installEventFilter(this);
 
   filterItems();
   objectTree->resizeColumnToContents(SnooperTreeWidgetItem::Name);
+  _updateTimer->start(_updateTimerInterval);
 }
 
 // Recursive!
@@ -298,10 +438,13 @@ bool SnooperDialog::destroyBranch(QObject *obj, QTreeWidgetItem* parentItem)
 {
   if(parentItem != objectTree->invisibleRootItem())
   {
-    if(static_cast<SnooperTreeWidgetItem*>(parentItem)->object() == obj)
+    SnooperTreeWidgetItem* snoop_item = static_cast<SnooperTreeWidgetItem*>(parentItem);
+    if(snoop_item->object() == obj)
     {
+      // Remove the item from the flashing list, if it's there.
+      _flashingItems.remove(snoop_item);
       // Delete the branch.
-      delete parentItem;
+      delete snoop_item;
       return false;
     }
   }
@@ -326,21 +469,23 @@ void SnooperDialog::objectDestroyed(QObject *obj)
 }
 
 // Recursive!
-QTreeWidgetItem* SnooperDialog::findItem(const QObject *obj, QTreeWidgetItem* parentItem)
+QTreeWidgetItem* SnooperDialog::findItem(const QObject *obj, QTreeWidgetItem* parentItem,
+                                         bool noHidden, bool parentedTopLevels)
 {
-  if(parentItem->isHidden())
+  if(noHidden && parentItem->isHidden())
     return nullptr;
 
   if(parentItem != objectTree->invisibleRootItem())
   {
-    if(static_cast<const SnooperTreeWidgetItem*>(parentItem)->cobject() == obj)
+    const SnooperTreeWidgetItem* snoop_item = static_cast<const SnooperTreeWidgetItem*>(parentItem);
+    if(snoop_item->cobject() == obj && snoop_item->isParentedTopLevelBranch() == parentedTopLevels)
       return parentItem;
   }
   QTreeWidgetItem *item;
   const int sz = parentItem->childCount();
   for(int i = 0; i < sz; ++i)
   {
-    item = findItem(obj, parentItem->child(i));
+    item = findItem(obj, parentItem->child(i), noHidden, parentedTopLevels);
     if(item)
       return item;
   }
@@ -348,37 +493,41 @@ QTreeWidgetItem* SnooperDialog::findItem(const QObject *obj, QTreeWidgetItem* pa
 }
 
 // Recursive!
-const QTreeWidgetItem* SnooperDialog::cfindItem(const QObject *obj, const QTreeWidgetItem* parentItem) const
+const QTreeWidgetItem* SnooperDialog::cfindItem(const QObject *obj, const QTreeWidgetItem* parentItem,
+                                                bool noHidden, bool parentedTopLevels) const
 {
-  if(parentItem->isHidden())
+  if(noHidden && parentItem->isHidden())
     return nullptr;
 
   if(parentItem != objectTree->invisibleRootItem())
   {
-    if(static_cast<const SnooperTreeWidgetItem*>(parentItem)->cobject() == obj)
+    const SnooperTreeWidgetItem* snoop_item = static_cast<const SnooperTreeWidgetItem*>(parentItem);
+    if(snoop_item->cobject() == obj && snoop_item->isParentedTopLevelBranch() == parentedTopLevels)
       return parentItem;
   }
   const QTreeWidgetItem *item;
   const int sz = parentItem->childCount();
   for(int i = 0; i < sz; ++i)
   {
-    item = cfindItem(obj, parentItem->child(i));
+    item = cfindItem(obj, parentItem->child(i), noHidden, parentedTopLevels);
     if(item)
       return item;
   }
   return nullptr;
 }
 
-QTreeWidgetItem* SnooperDialog::findObject(const QObject* obj)
+QTreeWidgetItem* SnooperDialog::findObject(const QObject* obj,
+                                           bool noHidden, bool parentedTopLevels)
 {
   // Enter the 'root branch'.
-  return findItem(obj, objectTree->invisibleRootItem());
+  return findItem(obj, objectTree->invisibleRootItem(), noHidden, parentedTopLevels);
 }
 
-const QTreeWidgetItem* SnooperDialog::cfindObject(const QObject* obj) const
+const QTreeWidgetItem* SnooperDialog::cfindObject(const QObject* obj,
+                                                  bool noHidden, bool parentedTopLevels) const
 {
   // Enter the 'root branch'.
-  return cfindItem(obj, objectTree->invisibleRootItem());
+  return cfindItem(obj, objectTree->invisibleRootItem(), noHidden, parentedTopLevels);
 }
 
 void SnooperDialog::filterItems()
@@ -400,6 +549,12 @@ void SnooperDialog::filterToggled(bool)
   objectTree->resizeColumnToContents(SnooperTreeWidgetItem::Name);
 }
 
+void SnooperDialog::useFlashTimerToggled(bool v)
+{
+  flashTimerValueSpinBox->setEnabled(v);
+  resetFlashButton->setEnabled(!v);
+}
+
 void SnooperDialog::finishedLineEditing()
 {
   filterItems();
@@ -416,14 +571,113 @@ void SnooperDialog::captureKeyPressToggled(bool v)
   _captureKeyPress = v;
 }
 
-void SnooperDialog::selectObject(const QObject* obj)
+void SnooperDialog::resetFlashTimerClicked()
 {
-  QTreeWidgetItem* item = findObject(obj);
-  if(!item)
+  if(_flashingItems.isEmpty())
     return;
-  item->setSelected(true);
-  objectTree->setCurrentItem(item);
-  objectTree->scrollToItem(item);
+  for(QSet<SnooperTreeWidgetItem *>::iterator i = _flashingItems.begin(); i != _flashingItems.end(); ++i)
+    (*i)->resetFlash();
+  _flashingItems.clear();
+}
+
+SnooperTreeWidgetItem* SnooperDialog::selectObject(const QObject *obj, const QEvent::Type& eventType)
+{
+//   if((eventType != QEvent::MouseButtonPress || !captureMouseClicks()) &&
+//      (eventType != QEvent::KeyPress || !captureKeyPress()))
+//     return;
+
+  QTreeWidgetItem* item = findObject(obj, !autoHideCheckBox->isChecked(),
+                                     separateParentedTopLevelsCheckBox->isChecked());
+  if(!item)
+  {
+    fprintf(stderr, "SnooperDialog::selectObject() Did not find class name:%s object name:%s\n",
+            obj->metaObject()->className(), obj->objectName().toLatin1().constData());
+    return nullptr;
+  }
+
+  SnooperTreeWidgetItem* snoop_item = static_cast<SnooperTreeWidgetItem*>(item);
+  //_autoHideIntervalCounter = _autoHideTimerInterval / _updateTimerInterval;
+  snoop_item->startFlash(_flashInterval, eventType);
+  _flashingItems.insert(snoop_item);
+  return snoop_item;
+}
+
+SnooperTreeWidgetItem* SnooperDialog::processEventBuffer()
+{
+  if(_eventBuffer.isEmpty())
+    return nullptr;
+
+  // Suppose we should warn if things are getting busy.
+  if(_eventBuffer.size() >= 32768)
+    fprintf(stderr, "SnooperDialog::processEventBuffer(): Warning: Event buffer size >= 32768. Quite busy?\n");
+
+  SnooperTreeWidgetItem* first_item = nullptr;
+  SnooperTreeWidgetItem* item;
+  QObject *obj;
+  for(HitBuffer::iterator i = _eventBuffer.begin(); i != _eventBuffer.end(); ++i)
+  {
+    obj = i.key();
+    HitMap& hm = *i;
+    for(HitMap::iterator k = hm.begin(); k != hm.end(); ++k)
+    {
+      const QEvent::Type& event_type = k.key();
+      item = selectObject(obj, event_type);
+      if(item && !first_item)
+        first_item = item;
+    }
+  }
+  // Done with buffer. Clear it.
+  _eventBuffer.clear();
+  return first_item;
+}
+
+void SnooperDialog::updateTimerTick()
+{
+  // Avoid repeated filtering. Do it periodically.
+  //if(_autoHideIntervalCounter > 0)
+  {
+    if(_autoHideIntervalCounter <= 0 || --_autoHideIntervalCounter <= 0)
+    {
+      SnooperTreeWidgetItem* item = processEventBuffer();
+      if(autoHideCheckBox->isChecked())
+      {
+        //fprintf(stderr, "SnooperDialog::updateTimerTick(): Resetting auto-hide timer\n");
+        _autoHideIntervalCounter = _autoHideTimerInterval / _updateTimerInterval;
+        filterItems();
+      }
+      //item->setSelected(true);
+      //objectTree->setCurrentItem(item);
+      objectTree->scrollToItem(item);
+      objectTree->resizeColumnToContents(SnooperTreeWidgetItem::Name);
+    }
+    // Don't tick the flashers until the auto-hide countdown is done.
+    //return;
+  }
+
+  if(_flashingItems.isEmpty() || !useFlashCheckBox->isChecked())
+    return;
+  SnooperTreeWidgetItem* item;
+  for(QSet<SnooperTreeWidgetItem *>::iterator i = _flashingItems.begin(); i != _flashingItems.end(); )
+  {
+    item = *i;
+    if(item->tickFlash())
+      i = _flashingItems.erase(i);
+    else
+      ++i;
+  }
+}
+
+// Static
+QString SnooperDialog::eventTypeString(const QEvent::Type& eventType)
+{
+  if(eventType != QEvent::None)
+  {
+    QString key;
+    QMap<int /*value*/, QString /*key*/>::const_iterator iet = _eventTypeMap.constFind(eventType);
+    if(iet != _eventTypeMap.constEnd())
+      return *iet;
+  }
+  return QString();
 }
 
 } // namespace MusEGui

@@ -1,3 +1,5 @@
+28.11.2019
+    - Snooper improvements. Moved to Help menu. Live realtime monitoring of events. (Tim)
 26.11.2019
     * New - Introducing the Snooper (object tree) for coders and stylesheet authors: (Tim)
       Click new Snooper button in Appearance to start. Then click on anything anywhere.
