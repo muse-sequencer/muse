@@ -58,6 +58,7 @@ class SnooperTreeWidgetItem : public QTreeWidgetItem
 
   private:
         QObject* _object;
+        bool _isWindowBranch;
         bool _isParentedTopLevelBranch;
         QMetaProperty _metaProperty;
         QMetaObject::Connection _metaConnection;
@@ -121,6 +122,8 @@ class SnooperTreeWidgetItem : public QTreeWidgetItem
         
         bool isParentedTopLevelBranch() const { return _isParentedTopLevelBranch; }
         void setIsParentedTopLevelBranch(bool v) { _isParentedTopLevelBranch = v; }
+        bool isWindowBranch() const { return _isWindowBranch; }
+        void setIsWindowBranch(bool v) { _isWindowBranch = v; }
 
         const QMetaObject::Connection& connection() const { return _metaConnection; }
         void setConnection(const QMetaObject::Connection& conn) { _metaConnection = conn; }
@@ -156,7 +159,7 @@ class SnooperDialog : public QDialog, public Ui::SnooperDialogBase {
       static const int _updateTimerInterval;
       QTimer* _updateTimer;
       int _flashInterval;
-      // In seconds.
+      // In milliseconds.
       static const int _autoHideTimerInterval;
       int _autoHideIntervalCounter;
 
@@ -173,11 +176,12 @@ class SnooperDialog : public QDialog, public Ui::SnooperDialogBase {
       // Recursive!
       // Return true if anything of relevance was added ie. whether the branch should (not) be discarded.
       // If parentItem is given it adds to that item. Otherwise if null it adds as top level item.
-      bool addBranch(QObject* object, SnooperTreeWidgetItem* parentItem, bool isParentedTopLevelBranch);
+      bool addBranch(QObject* object, SnooperTreeWidgetItem* parentItem,
+                     bool isParentedTopLevelBranch, bool isWindowBranch);
       // Recursive!
       bool filterBranch(bool parentIsRelevant, QTreeWidgetItem* parentItem);
       // Recursive!
-      bool destroyBranch(QObject *obj, QTreeWidgetItem* parentItem);
+      bool destroyBranch(QObject *obj, QTreeWidgetItem* parentItem, bool deleteBranchPending);
       // Recursive! Finds a non-hidden item.
       QTreeWidgetItem* findItem(const QObject *obj, QTreeWidgetItem* parentItem,
                                 bool noHidden, bool parentedTopLevels);

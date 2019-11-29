@@ -159,9 +159,6 @@ class MuseApplication : public QApplication {
       bool notify(QObject* receiver, QEvent* event) {
          const bool flag = QApplication::notify(receiver, event);
          const QEvent::Type type = event->type();
-// REMOVE Tim. style. Added.
-//          if(muse)
-//            muse->snooperSelectObject(receiver, type);
          if (type == QEvent::KeyPress) {
 #if QT_VERSION >= 0x050000
             const QMetaObject * mo = receiver->metaObject();

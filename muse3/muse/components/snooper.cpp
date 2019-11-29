@@ -41,6 +41,7 @@ QMap<int /*value*/, QString /*key*/> SnooperDialog::_eventTypeMap;
 void SnooperTreeWidgetItem::init()
 {
   _isParentedTopLevelBranch = false;
+  _isWindowBranch = false;
   _flashCounter = 0;
   _isFlashing = false;
   _origBackground = background(Name);
@@ -277,27 +278,16 @@ bool SnooperDialog::filterBranch(bool parentIsRelevant, QTreeWidgetItem* parentI
   {
     const SnooperTreeWidgetItem* parent_snoop_item = static_cast<SnooperTreeWidgetItem*>(parentItem);
     const QObject* object = parent_snoop_item->cobject();
-    const bool is_top_item = !parentItem->parent() || parentItem->parent() == root_item;
-    const bool has_parent_obj = object->parent();
-    const bool is_widget_type = object->isWidgetType();
-  
     const bool topLevels = separateParentedTopLevelsCheckBox->isChecked();
 
     // Whether to separate parented top levels.
-    if(has_parent_obj && is_widget_type)
+    if(parent_snoop_item->isWindowBranch() && parent_snoop_item->isParentedTopLevelBranch() != topLevels)
     {
-      const QWidget* widget = qobject_cast<const QWidget*>(object);
-      if(widget->isWindow())
-      {
-        if((topLevels && !is_top_item) || (!topLevels && is_top_item))
-        {
-          if(!parentItem->isHidden())
-            parentItem->setHidden(true);
-          return false;
-        }
-      }
+      if(!parentItem->isHidden())
+        parentItem->setHidden(true);
+      return false;
     }
-
+    
     const QMetaObject* mo = object->metaObject();
     const QString cls_name = QString::fromLatin1(mo->className());
     const QString obj_name = object->objectName();
@@ -350,7 +340,8 @@ bool SnooperDialog::filterBranch(bool parentIsRelevant, QTreeWidgetItem* parentI
 }
 
 // Recursive!
-bool SnooperDialog::addBranch(QObject* object, SnooperTreeWidgetItem* parentItem, bool isParentedTopLevelBranch)
+bool SnooperDialog::addBranch(QObject* object, SnooperTreeWidgetItem* parentItem,
+                              bool isParentedTopLevelBranch, bool isWindowBranch)
 {
   // Do NOT add anything related to THIS dialog. Hard to manage destroyed signals from itself.
   if(object == this)
@@ -371,15 +362,19 @@ bool SnooperDialog::addBranch(QObject* object, SnooperTreeWidgetItem* parentItem
   if(has_parent_obj && is_widget_type)
   {
     const QWidget* widget = qobject_cast<const QWidget*>(object);
-    if(widget->isWindow() && is_top_item)
+    if(widget->isWindow())
+      isWindowBranch = true;
+    if(is_top_item)
       isParentedTopLevelBranch = true;
   }
 
   item = new SnooperTreeWidgetItem(SnooperTreeWidgetItem::ObjectItem, object);
   item->setIsParentedTopLevelBranch(isParentedTopLevelBranch);
+  item->setIsWindowBranch(isWindowBranch);
 
-  DEBUG_SNOOPER(stderr, "SnooperDialog::addBranch(): adding connection: obj:%p cls_name:%s obj_name:%s\n",
-          object, mo->className(), obj_name.toLatin1().constData());
+  DEBUG_SNOOPER(stderr,
+    "SnooperDialog::addBranch(): adding connection: obj:%p cls_name:%s obj_name:%s isParentedTopLevelBranch:%d isWindowBranch:%d\n",
+    object, mo->className(), obj_name.toLatin1().constData(), isParentedTopLevelBranch, isWindowBranch);
 
   QMetaObject::Connection conn =
     connect(object, &QObject::destroyed, [this](QObject* o = nullptr) { objectDestroyed(o); } );
@@ -391,10 +386,12 @@ bool SnooperDialog::addBranch(QObject* object, SnooperTreeWidgetItem* parentItem
   {
     prop_parent_item = new SnooperTreeWidgetItem(SnooperTreeWidgetItem::PropertiesItem, object);
     prop_parent_item->setIsParentedTopLevelBranch(isParentedTopLevelBranch);
+    prop_parent_item->setIsWindowBranch(isWindowBranch);
     for(int i = prop_offset; i < prop_count; ++i)
     {
       prop_item = new SnooperTreeWidgetItem(SnooperTreeWidgetItem::PropertyItem, object, mo->property(i));
       prop_item->setIsParentedTopLevelBranch(isParentedTopLevelBranch);
+      prop_item->setIsWindowBranch(isWindowBranch);
       prop_parent_item->addChild(prop_item);
     }
     item->addChild(prop_parent_item);
@@ -402,7 +399,7 @@ bool SnooperDialog::addBranch(QObject* object, SnooperTreeWidgetItem* parentItem
 
   const QObjectList& ol = object->children();
   foreach(QObject* obj, ol)
-    addBranch(obj, item, isParentedTopLevelBranch);
+    addBranch(obj, item, isParentedTopLevelBranch, isWindowBranch);
 
   if(parentItem)
     parentItem->addChild(item);
@@ -424,7 +421,7 @@ void SnooperDialog::updateTree()
 //    addBranch(obj, nullptr);
   const QWidgetList wl = qApp->topLevelWidgets();
   foreach(QWidget* obj, wl)
-    addBranch(obj, nullptr, false);
+    addBranch(obj, nullptr, false, false);
 
   qApp->installEventFilter(this);
 
@@ -434,26 +431,35 @@ void SnooperDialog::updateTree()
 }
 
 // Recursive!
-bool SnooperDialog::destroyBranch(QObject *obj, QTreeWidgetItem* parentItem)
+bool SnooperDialog::destroyBranch(QObject *obj, QTreeWidgetItem* parentItem, bool deleteBranchPending)
 {
+  bool delete_this_branch = false;
   if(parentItem != objectTree->invisibleRootItem())
   {
     SnooperTreeWidgetItem* snoop_item = static_cast<SnooperTreeWidgetItem*>(parentItem);
     if(snoop_item->object() == obj)
     {
-      // Remove the item from the flashing list, if it's there.
-      _flashingItems.remove(snoop_item);
-      // Delete the branch.
-      delete snoop_item;
-      return false;
+      // Mark this branch for deletion, and this item ONLY if it initiated the deletion.
+      if(!deleteBranchPending)
+      {
+        deleteBranchPending = true;
+        delete_this_branch = true;
+      }
     }
+
+    // Remove the item from the flashing list, if it's there.
+    if(deleteBranchPending)
+      _flashingItems.remove(snoop_item);
   }
 
   // Do it in reverse!
   const int sz = parentItem->childCount();
   for(int i = sz - 1; i >= 0; --i)
-    destroyBranch(obj, parentItem->child(i));
+    destroyBranch(obj, parentItem->child(i), deleteBranchPending);
 
+  if(delete_this_branch)
+    delete parentItem;
+    
   return true;
 }
 
@@ -465,7 +471,7 @@ void SnooperDialog::objectDestroyed(QObject *obj)
     fprintf(stderr, "SnooperDialog::objectDestroyed(): Got objectDestroyed while Snooper is not visible! obj:%p\n", obj);
 
   // Enter the 'root branch'.
-  destroyBranch(obj, objectTree->invisibleRootItem());
+  destroyBranch(obj, objectTree->invisibleRootItem(), false);
 }
 
 // Recursive!
@@ -478,7 +484,8 @@ QTreeWidgetItem* SnooperDialog::findItem(const QObject *obj, QTreeWidgetItem* pa
   if(parentItem != objectTree->invisibleRootItem())
   {
     const SnooperTreeWidgetItem* snoop_item = static_cast<const SnooperTreeWidgetItem*>(parentItem);
-    if(snoop_item->cobject() == obj && snoop_item->isParentedTopLevelBranch() == parentedTopLevels)
+    if(snoop_item->cobject() == obj &&
+      (!snoop_item->isWindowBranch() || snoop_item->isParentedTopLevelBranch() == parentedTopLevels))
       return parentItem;
   }
   QTreeWidgetItem *item;
@@ -502,7 +509,9 @@ const QTreeWidgetItem* SnooperDialog::cfindItem(const QObject *obj, const QTreeW
   if(parentItem != objectTree->invisibleRootItem())
   {
     const SnooperTreeWidgetItem* snoop_item = static_cast<const SnooperTreeWidgetItem*>(parentItem);
-    if(snoop_item->cobject() == obj && snoop_item->isParentedTopLevelBranch() == parentedTopLevels)
+    if(snoop_item->cobject() == obj &&
+       //snoop_item->isParentedTopLevelBranch() == parentedTopLevels)
+       (!snoop_item->isWindowBranch() || snoop_item->isParentedTopLevelBranch() == parentedTopLevels))
       return parentItem;
   }
   const QTreeWidgetItem *item;
@@ -590,8 +599,10 @@ SnooperTreeWidgetItem* SnooperDialog::selectObject(const QObject *obj, const QEv
                                      separateParentedTopLevelsCheckBox->isChecked());
   if(!item)
   {
+    // Careful, crash might happen here. Object might not exist?
     //fprintf(stderr, "SnooperDialog::selectObject() Did not find class name:%s object name:%s\n",
     //        obj->metaObject()->className(), obj->objectName().toLatin1().constData());
+    //fprintf(stderr, "SnooperDialog::selectObject() Did not find object:%p\n", obj);
     return nullptr;
   }
 
