@@ -55,17 +55,18 @@ namespace MusEGui {
 //   toolButton
 //---------------------------------------------------------
 
-static QToolButton* newButton(const QPixmap* pm, const QString& tt, 
-                              bool toggle=false, QWidget* parent=0)
-      {
-      QToolButton* button = new QToolButton(parent);
-      button->setFixedHeight(25);
-      button->setIcon(QIcon(*pm));
-      button->setCheckable(toggle);
-      button->setToolTip(tt);
-      button->setFocusPolicy(Qt::NoFocus);
-      return button;
-      }
+// Unused since switch to svg.
+// static QToolButton* newButton(const QPixmap* pm, const QString& tt, 
+//                               bool toggle=false, QWidget* parent=0)
+//       {
+//       QToolButton* button = new QToolButton(parent);
+//       button->setFixedHeight(25);
+//       button->setIcon(QIcon(*pm));
+//       button->setCheckable(toggle);
+//       button->setToolTip(tt);
+//       button->setFocusPolicy(Qt::NoFocus);
+//       return button;
+//       }
 
 static QToolButton* newButton(const QIcon* icon, const QString& tt,
                               bool toggle=false, QWidget* parent=0)
