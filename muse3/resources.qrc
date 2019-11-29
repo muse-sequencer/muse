@@ -66,5 +66,11 @@
         <file>svg/zoomAt.svg</file>
         <file>svg/magnet.svg</file>
         <file>svg/closed_hand.svg</file>
+        <file>svg/panic.svg</file>
+        <file>svg/loop.svg</file>
+        <file>svg/punchin.svg</file>
+        <file>svg/punchout.svg</file>
+        <file>svg/redo.svg</file>
+        <file>svg/undo.svg</file>
     </qresource>
 </RCC>

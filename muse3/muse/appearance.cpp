@@ -295,8 +295,10 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       //    STYLE
       //---------------------------------------------------
       openStyleSheet->setIcon(*openIcon);
+      openStyleSheet->setToolTip(tr("Open custom style sheet"));
       connect(openStyleSheet, SIGNAL(clicked()), SLOT(browseStyleSheet()));
-      defaultStyleSheet->setIcon(*undoIcon);
+      defaultStyleSheet->setIcon(*undoSVGIcon);
+      defaultStyleSheet->setToolTip(tr("Remove custom style sheet"));
       connect(defaultStyleSheet, SIGNAL(clicked()), SLOT(setDefaultStyleSheet()));
       
       //---------------------------------------------------
