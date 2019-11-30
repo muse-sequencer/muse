@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path d="m3 3h49v45h-49z" fill="#008000" stroke="#000" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="m3.0192 7.5063v-4.1179h48.955v8.2358h-48.955z" style="paint-order:stroke fill markers"/>
+ <g fill="#fff">
+  <ellipse cx="8.1161" cy="6.9829" rx="2" ry="1.8" style="paint-order:stroke fill markers"/>
+  <ellipse cx="41.748" cy="6.8636" rx="2" ry="1.8" style="paint-order:stroke fill markers"/>
+  <ellipse cx="47.537" cy="6.9034" rx="2" ry="1.8" style="paint-order:stroke fill markers"/>
+ </g>
+ <path d="m29.988 32.241h30v27.551h-30z" fill="#008000" stroke="#000" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="m30 35v-2.5212h29.972v5.0423h-29.972z" style="paint-order:stroke fill markers"/>
+ <g fill="#fff">
+  <ellipse cx="33.121" cy="34.68" rx="1.2245" ry="1.102" style="paint-order:stroke fill markers"/>
+  <ellipse cx="53.711" cy="34.607" rx="1.2245" ry="1.102" style="paint-order:stroke fill markers"/>
+  <ellipse cx="57.256" cy="34.631" rx="1.2245" ry="1.102" style="paint-order:stroke fill markers"/>
+ </g>
+</svg>

@@ -42,6 +42,7 @@
 #include <QHideEvent>
 #include <QAction>
 #include <QSpinBox>
+//#include <QToolButton>
 
 #include <ladspa.h>
 
@@ -299,12 +300,16 @@ class PluginQuirks
     bool _overrideReportedLatency;
     // Value to override the reported latency.
     int _latencyOverrideValue;
+    // Reverse scaling of native UI windows on HiDPI
+    enum NatUISCaling {GLOBAL, ON, OFF};
+    NatUISCaling _fixNativeUIScaling;
 
   PluginQuirks() :
     _fixedSpeed(false),
     _transportAffectsAudioLatency(false),
     _overrideReportedLatency(false),
-    _latencyOverrideValue(0)
+    _latencyOverrideValue(0),
+    _fixNativeUIScaling(NatUISCaling::GLOBAL)
     { }
 
   void write(int level, Xml& xml) const;
@@ -663,6 +668,8 @@ class PluginGui : public QMainWindow {
       QSpinBox* latencyOverrideEntry;
       QWidget* mw;            // main widget
       QScrollArea* view;
+      QToolButton* fixNativeUIScalingTB;
+      QString fixScalingTooltip[3];
 
       void updateControls();
       void getPluginConvertedValues(LADSPA_PortRangeHint range,
@@ -677,6 +684,7 @@ class PluginGui : public QMainWindow {
       void save();
       void bypassToggled(bool);
       void transportGovernsLatencyToggled(bool);
+      void fixNativeUIScalingTBClicked();
       void fixedSpeedToggled(bool);
       void overrideReportedLatencyToggled(bool);
       void latencyOverrideValueChanged(int);

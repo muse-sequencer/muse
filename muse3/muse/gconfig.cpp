@@ -333,6 +333,7 @@ GlobalConfigValues config = {
       false,                        // commonProjectLatency
       "",                           // mixdownPath
       true,                         // showNoteNamesInPianoRoll
+      true,                         // noPluginScaling
       false                         // selectionsUndoable Whether selecting parts or events is undoable.
     };
 
