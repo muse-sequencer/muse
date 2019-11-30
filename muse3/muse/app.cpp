@@ -79,6 +79,7 @@
 #include "miditransform.h"
 #include "mitplugin.h"
 #include "mittranspose.h"
+#include "widgets/musemdiarea.h"
 #include "components/mixdowndialog.h"
 #include "mrconfig.h"
 #include "pianoroll.h"
@@ -963,7 +964,7 @@ MusE::MusE() : QMainWindow()
       //---------------------------------------------------
 
 
-      mdiArea=new QMdiArea(this);
+      mdiArea=new MuseMdiArea(this);
       mdiArea->setOption(QMdiArea::DontMaximizeSubWindowOnActivation);
       mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);

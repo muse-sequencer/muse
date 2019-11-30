@@ -133,6 +133,7 @@ class PartCanvas : public Canvas {
 
       AutomationObject automation;
 
+      void updateSelectedItem(CItem* newItem, bool add, bool singleSelection);
       virtual void keyPress(QKeyEvent*);
       virtual void keyRelease(QKeyEvent* event);
       virtual bool mousePress(QMouseEvent*);

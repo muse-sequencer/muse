@@ -91,6 +91,7 @@ QT5_WRAP_CPP (widget_mocs
 #       midi_warn_init_pending_impl.h
 #       mixdowndialog.h  
       mlabel.h  
+      musemdiarea.h
 #       mtscale.h  
 #       mtscale_flo.h  
       # mtrackinfo.h
@@ -236,6 +237,7 @@ file (GLOB widgets_source_files
 #       mixdowndialog.cpp 
       mlabel.cpp 
       mmath.cpp
+      musemdiarea.cpp
       # mtrackinfo.cpp
 #       mtscale.cpp 
 #       mtscale_flo.cpp 

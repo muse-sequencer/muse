@@ -1,3 +1,11 @@
+30.11.2019
+    - Added a specialization of QMdiArea to work around problems with PgUp and PgDown (rj)
+      shortcuts as it was found through Snooper tool that this is the widget that
+      was stealing the keypresses.
+    - Another keypress fix in pcanvas.cpp to allow Return to be captured
+    - Fixed a crash in drumlist when using a drummap and opening without the port having 
+      been properly initialized (in this case the synth plugin was missing). The 
+      dm->port had an extreme value, now the range is checked.
 28.11.2019
     - Fixed the DidYouKnow menu alternative so it shows the dialog even if the
       checkbox for not displaying it is checked. (rj)

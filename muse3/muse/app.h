@@ -47,7 +47,7 @@ class QString;
 class QToolBar;
 class QToolButton;
 class QProgressDialog;
-class QMdiArea;
+class MuseMdiArea;
 class QTimer;
 
 namespace MusECore {
@@ -130,7 +130,7 @@ class MusE : public QMainWindow
       QAction *editSongInfoAction;
       
    private:
-      QMdiArea* mdiArea;
+      MuseMdiArea* mdiArea;
       
       TopWin* activeTopWin;
       TopWin* currentMenuSharingTopwin;
