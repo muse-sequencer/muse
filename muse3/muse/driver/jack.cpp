@@ -116,6 +116,10 @@ jack_port_rename_type             jack_port_rename_fp = NULL;
 //  Jack server running all the time until program close.
 bool jackStarted = false;
 
+// Flag for detecting if we are the transport master.
+bool jack_transport_cur_master_state = false;
+bool jack_transport_master_flag = false;
+
 //---------------------------------------------------------
 //  JackCallbackFifo
 //---------------------------------------------------------
@@ -227,6 +231,17 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void*)
         // Are we using Jack transport?
         if(MusEGlobal::useJackTransport)
         {
+          // The transport timebase callback is called before the process callback.
+          // Check if it got called, meaning we are transport master.
+          if(jack_transport_master_flag != jack_transport_cur_master_state)
+          {
+            jack_transport_cur_master_state = jack_transport_master_flag;
+            if(jack_transport_master_flag)
+              MusEGlobal::audio->sendMsgToGui('T');
+            else
+              MusEGlobal::audio->sendMsgToGui('t');
+          }
+
           // Just call the audio process normally. Jack transport will take care of itself.
           // Don't process while we're syncing. ToDO: May need to deliver silence in process!
           //if(jackAudio->getState() != Audio::START_PLAY)
@@ -244,7 +259,10 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void*)
             if (MusEGlobal::debugMsg)
                  puts("jack calling when audio is disconnected!\n");
             }
-            
+
+  // Reset for the next cycle.
+  jack_transport_master_flag = false;
+
   return 0;
 }
 
@@ -255,6 +273,8 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void*)
 
 static int processSync(jack_transport_state_t state, jack_position_t* pos, void*)
       {
+    // REMOVE Tim. master. Added.
+    fprintf(stderr, "processSync() state:%d\n", state);
       if (JACK_DEBUG)
       {
         fprintf(stderr, "processSync frame:%u\n", pos->frame);
@@ -309,14 +329,21 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
 //   timebase_callback
 //---------------------------------------------------------
 
-static void timebase_callback(jack_transport_state_t /* state */,
+// REMOVE Tim. master. Changed.
+// static void timebase_callback(jack_transport_state_t /* state */,
+static void timebase_callback(jack_transport_state_t state,
    jack_nframes_t nframes,
    jack_position_t* pos,
    int new_pos,
    void*)
   {
+    // I think, therefore I am... transport master.
+    jack_transport_master_flag = true;
+    // REMOVE Tim. master. Added.
+    fprintf(stderr, "timebase_callback() state:%d\n", state);
 
-    if (JACK_DEBUG)
+// REMOVE Tim. master. Enabled.
+//    if (JACK_DEBUG)
     {
       if(pos->valid & JackPositionBBT)
         fprintf(stderr, "timebase_callback BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",

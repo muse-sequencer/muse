@@ -11,6 +11,8 @@
       or apply their own scaling. There is now a global setting for reverting 
       the Qt window scaling. It can be overridden for each soft synth track
       by a local setting in the Quirks toolbar. (kybos)
+    - Fix # 708: Surge-vst crashes. It called our pluginHostCallback() immediately from
+       instantiate() before we stored the pointer. Added VstNativeSynth::openPlugin() (Tim)
 28.11.2019
     - Fixed the DidYouKnow menu alternative so it shows the dialog even if the
       checkbox for not displaying it is checked. (rj)

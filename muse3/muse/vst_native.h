@@ -141,6 +141,8 @@ class VstNativeSynth : public Synth {
       virtual Type synthType() const { return _isSynth ? VST_NATIVE_SYNTH : VST_NATIVE_EFFECT; }
       virtual void incInstances(int val);
       virtual AEffect* instantiate(void *userData);
+      // Opens a plugin instance, after instantiation.
+      static bool openPlugin(AEffect* plugin);
       virtual SynthIF* createSIF(SynthI*);
       unsigned long inPorts()     const { return _inports; }
       unsigned long outPorts()    const { return _outports; }

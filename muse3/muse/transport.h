@@ -119,6 +119,7 @@ class Transport : public QWidget
       IconButton* clickButton;
       IconButton* syncButton;
       IconButton* jackTransportButton;
+      IconButton* transportMasterButton;
       QToolButton* buttons[6];      // transport buttons
       QLabel* l2;
       QLabel* l3;
@@ -139,6 +140,7 @@ class Transport : public QWidget
       void setCycleMode(int);
       void songChanged(MusECore::SongChangedStruct_t);
       void syncChanged(bool);
+      void transportMasterChanged(bool);
       void jackSyncChanged(bool);
       void setRecord(bool flag);
       void stopToggled(bool);
@@ -147,6 +149,7 @@ class Transport : public QWidget
       void sigChange(const MusECore::TimeSignature&);
       void extSyncClicked(bool v);
       void useJackTransportClicked(bool v);
+      void transportMasterClicked(bool v);
 
    public slots:
       void setTempo(int tempo);

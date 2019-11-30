@@ -2319,6 +2319,16 @@ void Song::seqSignal(int fd)
 //                           MusEGlobal::song->processIpcInEventBuffers();
 //                         break;
 
+                  case 'T': // We are now the transport master.
+                        MusEGlobal::transportMasterState = true;
+                        update(SC_TRANSPORT_MASTER);
+                        break;
+
+                  case 't': // We are no longer the transport master.
+                        MusEGlobal::transportMasterState = false;
+                        update(SC_TRANSPORT_MASTER);
+                        break;
+
                   default:
                         fprintf(stderr, "unknown Seq Signal <%c>\n", buffer[i]);
                         break;

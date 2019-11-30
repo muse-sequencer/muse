@@ -4373,7 +4373,7 @@ void PluginGui::latencyOverrideValueChanged(int v)
 void PluginGui::fixNativeUIScalingTBClicked()
 {
     int state = fixNativeUIScalingTB->property("state").toInt();
-    state = (state == 2) ? 0 : ++state;
+    state = (state == 2) ? 0 : state + 1;
 //    if (state == 0) {
 //        state++;
 //    } else if (state == 1) {

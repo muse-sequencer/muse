@@ -476,22 +476,32 @@ Transport::Transport(QWidget* parent, const char* name)
       jackTransportButton->setToolTip(tr("Jack Transport on/off"));
       jackTransportButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
 
+      transportMasterButton = new IconButton(metronomeOnSVGIcon, metronomeOffSVGIcon, 0, 0, false, true);
+      transportMasterButton->setContentsMargins(0, 0, 0, 0);
+      transportMasterButton->setCheckable(true);
+      transportMasterButton->setToolTip(tr("Transport master (on) or slave (off)"));
+      transportMasterButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+
       clickButton->setChecked(MusEGlobal::song->click());
       syncButton->setChecked(MusEGlobal::extSyncFlag);
       jackTransportButton->setChecked(MusEGlobal::useJackTransport);
+      transportMasterButton->setChecked(MusEGlobal::transportMasterState);
       clickButton->setFocusPolicy(Qt::NoFocus);
       syncButton->setFocusPolicy(Qt::NoFocus);
       jackTransportButton->setFocusPolicy(Qt::NoFocus);
+      transportMasterButton->setFocusPolicy(Qt::NoFocus);
 
       button1->addStretch();
       button1->addWidget(clickButton);
       button1->addWidget(syncButton);
       button1->addWidget(jackTransportButton);
+      button1->addWidget(transportMasterButton);
       button1->addStretch();
       
       connect(clickButton, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setClick(bool)));
       connect(syncButton, SIGNAL(toggled(bool)), SLOT(extSyncClicked(bool)));
       connect(jackTransportButton, SIGNAL(toggled(bool)), SLOT(useJackTransportClicked(bool)));
+      connect(transportMasterButton, &IconButton::toggled, [this](bool v) { transportMasterClicked(v); } );
 
       connect(MusEGlobal::song, SIGNAL(clickChanged(bool)), this, SLOT(setClickFlag(bool)));
 
@@ -778,6 +788,10 @@ void Transport::songChanged(MusECore::SongChangedStruct_t flags)
       {
             jackSyncChanged(MusEGlobal::useJackTransport);
       }
+      if (flags & SC_TRANSPORT_MASTER)
+      {
+            transportMasterChanged(MusEGlobal::transportMasterState);
+      }
       }
 
 //---------------------------------------------------------
@@ -813,6 +827,14 @@ void Transport::jackSyncChanged(bool flag)
       jackTransportButton->setChecked(flag);
       jackTransportButton->blockSignals(false);
       }
+
+void Transport::transportMasterChanged(bool flag)
+      {
+      transportMasterButton->blockSignals(true);
+      transportMasterButton->setChecked(flag);
+      transportMasterButton->blockSignals(false);
+      }
+
 //---------------------------------------------------------
 //   stopToggled
 //---------------------------------------------------------
@@ -870,6 +892,17 @@ void Transport::useJackTransportClicked(bool v)
   MusECore::PendingOperationList operations;
   operations.add(MusECore::PendingOperationItem(&MusEGlobal::useJackTransport, v, MusECore::PendingOperationItem::SetUseJackTransport));
   MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+}
+
+//---------------------------------------------------------
+//   transportMasterClicked
+//---------------------------------------------------------
+
+void Transport::transportMasterClicked(bool /*v*/)
+{
+//   MusECore::PendingOperationList operations;
+//   operations.add(MusECore::PendingOperationItem(&MusEGlobal::useJackTransport, v, MusECore::PendingOperationItem::SetUseJackTransport));
+//   MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 }
 
 void Transport::keyPressEvent(QKeyEvent* ev)
