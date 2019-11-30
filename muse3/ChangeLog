@@ -1,3 +1,9 @@
+30.11.2019
+	- Fix #697: On HiDPI displays, plugin native UI windows are automatically
+	  scaled by Qt, but most of the native plugin UIs are not scalable 
+	  or apply their own scaling. There is now a global setting for reverting 
+	  the Qt window scaling. It can be overridden for each soft synth track
+	  by a local setting in the Quirks toolbar. (kybos)
 28.11.2019
     - Fixed the DidYouKnow menu alternative so it shows the dialog even if the
       checkbox for not displaying it is checked. (rj)
