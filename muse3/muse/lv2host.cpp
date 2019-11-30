@@ -1333,7 +1333,7 @@ void LV2Synth::lv2ui_Gtk2ResizeCb(int width, int height, void *arg)
     }
 }
 
-void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
+void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, PluginQuirks::NatUISCaling fixScaling)
 {
     LV2Synth* synth = state->synth;
     LV2PluginWrapper_Window *win = NULL;
@@ -1607,6 +1607,14 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
                             int w = 0;
                             int h = 0;
                             MusEGui::lv2Gtk2Helper_gtk_widget_get_allocation(uiW, &w, &h);
+
+                            if ((fixScaling == MusECore::PluginQuirks::NatUISCaling::GLOBAL && MusEGlobal::config.noPluginScaling)
+                                 || fixScaling == MusECore::PluginQuirks::NatUISCaling::ON) {
+
+                                w = qRound((qreal)w / qApp->devicePixelRatio());
+                                h = qRound((qreal)h / qApp->devicePixelRatio());
+                            }
+
                             win->setMinimumSize(w, h);
                             win->resize(w, h);
                         }
@@ -1615,7 +1623,14 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
                     else
                     {
                         // Set the minimum size to the supplied uiX11Size.
-                        win->setMinimumSize(state->uiX11Size.width(), state->uiX11Size.height());
+                         if ((fixScaling == MusECore::PluginQuirks::NatUISCaling::GLOBAL && MusEGlobal::config.noPluginScaling)
+                              || fixScaling == MusECore::PluginQuirks::NatUISCaling::ON) {
+
+                             state->uiX11Size.setWidth(qRound((qreal)state->uiX11Size.width() / qApp->devicePixelRatio()));
+                             state->uiX11Size.setHeight(qRound((qreal)state->uiX11Size.height() / qApp->devicePixelRatio()));
+                         }
+
+                         win->setMinimumSize(state->uiX11Size.width(), state->uiX11Size.height());
 
                         if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
                             win->resize(ewWin->size());
@@ -4886,7 +4901,7 @@ void LV2SynthIF::showNativeGui(bool bShow)
         _state->extHost.plugin_human_id = _state->human_id = strdup((track()->name() + QString(": ") + name()).toUtf8().constData());
     }
 
-    LV2Synth::lv2ui_ShowNativeGui(_state, bShow);
+    LV2Synth::lv2ui_ShowNativeGui(_state, bShow, cquirks()._fixNativeUIScaling);
 }
 
 void LV2SynthIF::write(int level, Xml &xml) const
@@ -5694,7 +5709,7 @@ void LV2PluginWrapper::showNativeGui(PluginI *p, bool bShow)
         state->extHost.plugin_human_id = state->human_id = strdup((p->track()->name() + QString(": ") + label()).toUtf8().constData());
     }
 
-    LV2Synth::lv2ui_ShowNativeGui(state, bShow);
+    LV2Synth::lv2ui_ShowNativeGui(state, bShow, p->cquirks()._fixNativeUIScaling);
 }
 
 bool LV2PluginWrapper::nativeGuiVisible(const PluginI *p) const

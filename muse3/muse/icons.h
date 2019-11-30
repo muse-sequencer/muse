@@ -330,6 +330,8 @@ extern QIcon* closedHandIconSVG;
 extern QIcon* cursorIconSVG;
 extern QIcon* magnetIconSVG;
 
+extern QIcon* noscaleSVGIcon[3];
+
 //----------------------------------
 // Cursors
 //----------------------------------

@@ -27,11 +27,14 @@
 
 #include "vst_native_editor.h"
 #include "vst_native.h"
+#include "gconfig.h"
 
 #include <QtGlobal>
 #if defined(Q_WS_X11)
 #include <QX11Info>
 #endif
+#include <QApplication>
+
 
 namespace MusEGui {
 
@@ -135,6 +138,13 @@ void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif, MusECore::VstNativeP
           int h = pRect->bottom - pRect->top;
           if (w > 0 && h > 0)
           {
+              if ((_sif->cquirks()._fixNativeUIScaling == MusECore::PluginQuirks::NatUISCaling::GLOBAL && MusEGlobal::config.noPluginScaling)
+                   || _sif->cquirks()._fixNativeUIScaling == MusECore::PluginQuirks::NatUISCaling::ON) {
+
+                  w = qRound((qreal)w / qApp->devicePixelRatio());
+                  h = qRound((qreal)h / qApp->devicePixelRatio());
+              }
+
                   QWidget::setMinimumSize(w, h);
                   if((w != width()) || (h != height()))
                   {
