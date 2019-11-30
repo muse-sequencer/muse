@@ -35,6 +35,7 @@
 #include <QToolBar>
 #include <QMessageBox>
 #include <QByteArray>
+#include <QToolButton>
 
 #include "globals.h"
 #include "globaldefs.h"
@@ -627,7 +628,8 @@ void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, flo
 void PluginQuirks::write(int level, Xml& xml) const
       {
       // Defaults? Nothing to save.
-      if(!_fixedSpeed && !_transportAffectsAudioLatency && !_overrideReportedLatency && _latencyOverrideValue == 0)
+      if(!_fixedSpeed && !_transportAffectsAudioLatency && !_overrideReportedLatency
+              && _latencyOverrideValue == 0 && _fixNativeUIScaling == NatUISCaling::GLOBAL)
         return;
 
       xml.tag(level++, "quirks");
@@ -643,6 +645,9 @@ void PluginQuirks::write(int level, Xml& xml) const
 
       if(_latencyOverrideValue != 0)
         xml.intTag(level, "latOvrVal", _latencyOverrideValue);
+
+      if(_fixNativeUIScaling != NatUISCaling::GLOBAL)
+        xml.intTag(level, "fixNatUIScal", _fixNativeUIScaling);
 
       xml.etag(--level, "quirks");
       }
@@ -670,6 +675,8 @@ bool PluginQuirks::read(Xml& xml)
                               _overrideReportedLatency = xml.parseInt();
                         else if (tag == "latOvrVal")
                               _latencyOverrideValue = xml.parseInt();
+                        else if (tag == "fixNatUIScal")
+                              _fixNativeUIScaling = (NatUISCaling)xml.parseInt();
                         else
                               xml.unknown("PluginQuirks");
                         break;
@@ -3567,6 +3574,13 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
         QOverload<int>::of(&QSpinBox::valueChanged), [=](int v) { latencyOverrideValueChanged(v); } );
       tools->addWidget(latencyOverrideEntry);
 
+      fixNativeUIScalingTB = new QToolButton(this);
+      fixNativeUIScalingTB->setIcon(*noscaleSVGIcon[0]);
+      fixNativeUIScalingTB->setProperty("state", 0);
+      fixNativeUIScalingTB->setToolTip(tr("Revert native UI HiDPI scaling: Follow global setting"));
+      connect(fixNativeUIScalingTB, &QToolButton::clicked, [this]() { fixNativeUIScalingTBClicked(); } );
+      tools->addWidget(fixNativeUIScalingTB);
+
       // TODO: We need to use .qrc files to use icons in WhatsThis bubbles. See Qt
       // Resource System in Qt documentation - ORCAN
       fileOpen->setWhatsThis(tr(presetOpenText));
@@ -4351,6 +4365,24 @@ void PluginGui::latencyOverrideValueChanged(int v)
   // TODO Make a safe audio-synced operation?
   plugin->quirks()._latencyOverrideValue = v;
   MusEGlobal::song->update(SC_ROUTE);
+}
+
+void PluginGui::fixNativeUIScalingTBClicked()
+{
+    int state = fixNativeUIScalingTB->property("state").toInt();
+    if (state == 0) {
+        state++;
+        fixNativeUIScalingTB->setToolTip(tr("Revert native UI HiDPI scaling"));
+    } else if (state == 1) {
+        state++;
+        fixNativeUIScalingTB->setToolTip(tr("Don't revert native UI HiDPI scaling"));
+    } else {
+        state = 0;
+        fixNativeUIScalingTB->setToolTip(tr("Native UI HiDPI scaling: Follow global setting"));
+    }
+    fixNativeUIScalingTB->setIcon(*noscaleSVGIcon[state]);
+    fixNativeUIScalingTB->setProperty("state", state);
+    plugin->quirks()._fixNativeUIScaling = (MusECore::PluginQuirks::NatUISCaling)state;
 }
 
 //---------------------------------------------------------

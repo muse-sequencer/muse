@@ -72,5 +72,8 @@
         <file>svg/punchout.svg</file>
         <file>svg/redo.svg</file>
         <file>svg/undo.svg</file>
+        <file>svg/noscale1.svg</file>
+        <file>svg/noscale2.svg</file>
+        <file>svg/noscale3.svg</file>
     </qresource>
 </RCC>

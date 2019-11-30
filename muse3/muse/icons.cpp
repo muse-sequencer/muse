@@ -504,6 +504,8 @@ QIcon* closedHandIconSVG;
 QIcon* cursorIconSVG;
 QIcon* magnetIconSVG;
 
+QIcon* noscaleSVGIcon[3];
+
 //----------------------------------
 // Cursors
 //----------------------------------
@@ -852,6 +854,10 @@ void initIcons(bool useThemeIconsIfPossible)
       cursorIconSVG     = new QIcon(":/svg/cursor.svg");
       magnetIconSVG     = new QIcon(":/svg/magnet.svg");
 
+      noscaleSVGIcon[0] = new QIcon(":/svg/noscale1.svg");
+      noscaleSVGIcon[1] = new QIcon(":/svg/noscale2.svg");
+      noscaleSVGIcon[2] = new QIcon(":/svg/noscale3.svg");
+
       //----------------------------------
       // Cursors
       //----------------------------------
@@ -1159,7 +1165,12 @@ void deleteIcons()
       delete cursorIconSVG;
       delete magnetIconSVG;
 
-      //----------------------------------
+      delete noscaleSVGIcon[0];
+      delete noscaleSVGIcon[1];
+      delete noscaleSVGIcon[2];
+
+
+    //----------------------------------
       // Cursors
       //----------------------------------
 
