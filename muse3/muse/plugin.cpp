@@ -3574,10 +3574,13 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
         QOverload<int>::of(&QSpinBox::valueChanged), [=](int v) { latencyOverrideValueChanged(v); } );
       tools->addWidget(latencyOverrideEntry);
 
+      fixScalingTooltip[0] = tr("Revert native UI HiDPI scaling: Follow global setting");
+      fixScalingTooltip[1] = tr("Revert native UI HiDPI scaling: On");
+      fixScalingTooltip[2] = tr("Revert native UI HiDPI scaling: Off");
       fixNativeUIScalingTB = new QToolButton(this);
-      fixNativeUIScalingTB->setIcon(*noscaleSVGIcon[0]);
-      fixNativeUIScalingTB->setProperty("state", 0);
-      fixNativeUIScalingTB->setToolTip(tr("Revert native UI HiDPI scaling: Follow global setting"));
+      fixNativeUIScalingTB->setIcon(*noscaleSVGIcon[plugin->cquirks()._fixNativeUIScaling]);
+      fixNativeUIScalingTB->setProperty("state", plugin->cquirks()._fixNativeUIScaling);
+      fixNativeUIScalingTB->setToolTip(fixScalingTooltip[plugin->cquirks()._fixNativeUIScaling]);
       connect(fixNativeUIScalingTB, &QToolButton::clicked, [this]() { fixNativeUIScalingTBClicked(); } );
       tools->addWidget(fixNativeUIScalingTB);
 
@@ -4370,16 +4373,15 @@ void PluginGui::latencyOverrideValueChanged(int v)
 void PluginGui::fixNativeUIScalingTBClicked()
 {
     int state = fixNativeUIScalingTB->property("state").toInt();
-    if (state == 0) {
-        state++;
-        fixNativeUIScalingTB->setToolTip(tr("Revert native UI HiDPI scaling"));
-    } else if (state == 1) {
-        state++;
-        fixNativeUIScalingTB->setToolTip(tr("Don't revert native UI HiDPI scaling"));
-    } else {
-        state = 0;
-        fixNativeUIScalingTB->setToolTip(tr("Native UI HiDPI scaling: Follow global setting"));
-    }
+    state = (state == 2) ? 0 : ++state;
+//    if (state == 0) {
+//        state++;
+//    } else if (state == 1) {
+//        state++;
+//    } else {
+//        state = 0;
+//    }
+    fixNativeUIScalingTB->setToolTip(fixScalingTooltip[state]);
     fixNativeUIScalingTB->setIcon(*noscaleSVGIcon[state]);
     fixNativeUIScalingTB->setProperty("state", state);
     plugin->quirks()._fixNativeUIScaling = (MusECore::PluginQuirks::NatUISCaling)state;

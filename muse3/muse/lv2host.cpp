@@ -1602,7 +1602,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, Pl
                         win->setCentralWidget(ewWin);
 #endif
 
-                        if (state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
+                        if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
                         {
                             int w = 0;
                             int h = 0;

@@ -665,10 +665,11 @@ class PluginGui : public QMainWindow {
       QAction* transpGovLatencyAct;
       QAction* fixedSpeedAct;
       QAction* overrideLatencyAct;
-      QToolButton* fixNativeUIScalingTB;
       QSpinBox* latencyOverrideEntry;
       QWidget* mw;            // main widget
       QScrollArea* view;
+      QToolButton* fixNativeUIScalingTB;
+      QString fixScalingTooltip[3];
 
       void updateControls();
       void getPluginConvertedValues(LADSPA_PortRangeHint range,
