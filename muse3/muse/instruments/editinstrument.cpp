@@ -213,10 +213,10 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       ctrlType->addItem(tr("Aftertouch"), MusECore::MidiController::Aftertouch);
       ctrlType->setCurrentIndex(0);
 
-      fileNewAction->setIcon(QIcon(*filenewIcon));
-      fileOpenAction->setIcon(QIcon(*openIcon));
-      fileSaveAction->setIcon(QIcon(*saveIcon));
-      fileSaveAsAction->setIcon(QIcon(*saveasIcon));
+      fileNewAction->setIcon(*filenewSVGIcon);
+      fileOpenAction->setIcon(*fileopenSVGIcon);
+      fileSaveAction->setIcon(*filesaveSVGIcon);
+      fileSaveAsAction->setIcon(*filesaveasSVGIcon);
       fileCloseAction->setIcon(QIcon(*exitIcon));
       viewController->setSelectionMode(QAbstractItemView::SingleSelection);
       toolBar->addAction(QWhatsThis::createAction(this));

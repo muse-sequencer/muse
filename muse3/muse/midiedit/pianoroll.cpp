@@ -297,21 +297,21 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       srec  = new QToolButton();
       srec->setToolTip(tr("Step Record"));
-      srec->setIcon(*steprecIcon);
+      srec->setIcon(*steprecSVGIcon);
       srec->setCheckable(true);
       srec->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(srec);
 
       midiin  = new QToolButton();
       midiin->setToolTip(tr("Midi Input"));
-      midiin->setIcon(*midiinIcon);
+      midiin->setIcon(*midiinSVGIcon);
       midiin->setCheckable(true);
       midiin->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(midiin);
 
       speaker  = new QToolButton();
       speaker->setToolTip(tr("Play Events"));
-      speaker->setIcon(*speakerIcon);
+      speaker->setIcon(*speakerSVGIcon);
       speaker->setCheckable(true);
       speaker->setChecked(true);
       speaker->setFocusPolicy(Qt::NoFocus);

@@ -495,11 +495,11 @@ MusE::MusE() : QMainWindow()
       //----Actions
       //-------- File Actions
 
-      fileNewAction = new QAction(QIcon(*MusEGui::filenewIcon), tr("&New"), this);
+      fileNewAction = new QAction(*MusEGui::filenewSVGIcon, tr("&New"), this);
       fileNewAction->setToolTip(tr("Create New Song"));
       fileNewAction->setWhatsThis(tr("Create New Song"));
 
-      fileOpenAction = new QAction(QIcon(*MusEGui::openIcon), tr("&Open"), this);
+      fileOpenAction = new QAction(*MusEGui::fileopenSVGIcon, tr("&Open..."), this);
 
       fileOpenAction->setToolTip(tr("Click this button to open a <em>new song</em>.<br>"
       "You can also select the <b>Open command</b> from the File menu."));
@@ -508,7 +508,7 @@ MusE::MusE() : QMainWindow()
 
       openRecent = new QMenu(tr("Open &Recent"), this);
 
-      fileSaveAction = new QAction(QIcon(*MusEGui::saveIcon), tr("&Save"), this);
+      fileSaveAction = new QAction(*MusEGui::filesaveSVGIcon, tr("&Save"), this);
 
       fileSaveAction->setToolTip(tr("Click this button to save the song you are "
       "editing.  You will be prompted for a file name.\n"
@@ -517,15 +517,15 @@ MusE::MusE() : QMainWindow()
       "editing.  You will be prompted for a file name.\n"
       "You can also select the Save command from the File menu."));
 
-      fileSaveAsAction = new QAction(QIcon(*MusEGui::saveasIcon), tr("Save &As"), this);
+      fileSaveAsAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save &As..."), this);
 
-      fileCloseAction = new QAction(QIcon(*MusEGui::filecloseIcon), tr("Close"), this);
+      fileCloseAction = new QAction(*MusEGui::filecloseSVGIcon, tr("Close"), this);
       
-      fileImportMidiAction = new QAction(tr("Import Midifile"), this);
-      fileExportMidiAction = new QAction(tr("Export Midifile"), this);
-      fileImportPartAction = new QAction(tr("Import Part"), this);
+      fileImportMidiAction = new QAction(tr("Import Midifile..."), this);
+      fileExportMidiAction = new QAction(tr("Export Midifile..."), this);
+      fileImportPartAction = new QAction(tr("Import Part..."), this);
 
-      fileImportWaveAction = new QAction(tr("Import Audio File"), this);
+      fileImportWaveAction = new QAction(tr("Import Audio File..."), this);
       fileMoveWaveFiles = new QAction(tr("Find unused wave files"), this);
 
       quitAction = new QAction(QIcon(*MusEGui::appexitIcon), tr("&Quit"), this);

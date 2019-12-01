@@ -307,8 +307,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       
       if (old_style_drummap_mode())
       {
-        loadAction = menuFunctions->addAction(QIcon(*openIcon), tr("Load Map"));
-        saveAction = menuFunctions->addAction(QIcon(*saveIcon), tr("Save Map"));
+        loadAction = menuFunctions->addAction(*fileopenSVGIcon, tr("Load Map"));
+        saveAction = menuFunctions->addAction(*filesaveSVGIcon, tr("Save Map"));
         resetAction = menuFunctions->addAction(tr("Reset GM Map"));
 
         connect(loadAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_LOAD); } );
@@ -419,21 +419,21 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       srec  = new QToolButton();
       srec->setToolTip(tr("Step Record"));
-      srec->setIcon(*steprecIcon);
+      srec->setIcon(*steprecSVGIcon);
       srec->setCheckable(true);
       srec->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(srec);
 
       midiin  = new QToolButton();
       midiin->setToolTip(tr("Midi Input"));
-      midiin->setIcon(*midiinIcon);
+      midiin->setIcon(*midiinSVGIcon);
       midiin->setCheckable(true);
       midiin->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(midiin);
       
       speaker  = new QToolButton();
       speaker->setToolTip(tr("Play Events"));
-      speaker->setIcon(*speakerIcon);
+      speaker->setIcon(*speakerSVGIcon);
       speaker->setCheckable(true);
       speaker->setChecked(true);
       speaker->setFocusPolicy(Qt::NoFocus);
@@ -448,14 +448,14 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
         
         QToolButton *ldm = new QToolButton();
         ldm->setToolTip(tr("Load Drummap"));
-        ldm->setIcon(*openIcon);
+        ldm->setIcon(*fileopenSVGIcon);
         ldm->setFocusPolicy(Qt::NoFocus);
         connect(ldm, SIGNAL(clicked()), SLOT(load()));
         maptools->addWidget(ldm);
         
         QToolButton *sdm = new QToolButton();
         sdm->setToolTip(tr("Store Drummap"));
-        sdm->setIcon(*saveIcon);
+        sdm->setIcon(*filesaveSVGIcon);
         sdm->setFocusPolicy(Qt::NoFocus);
         connect(sdm, SIGNAL(clicked()), SLOT(save()));
         maptools->addWidget(sdm);

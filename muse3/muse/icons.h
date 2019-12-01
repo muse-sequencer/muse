@@ -47,19 +47,11 @@ extern QPixmap* note1Icon;
 extern QPixmap* synthIcon;
 extern QPixmap* markIcon[3];
 
-extern QPixmap* steprecIcon;
 extern QPixmap* cursorIcon;
 extern QPixmap* midiCtrlMergeEraseIcon;
 extern QPixmap* midiCtrlMergeEraseInclusiveIcon;
 extern QPixmap* midiCtrlMergeEraseWysiwygIcon;
 
-extern QPixmap* openIcon;
-extern QPixmap* saveIcon;
-extern QPixmap* saveasIcon;
-extern QPixmap* openIconS;
-extern QPixmap* saveIconS;
-extern QPixmap* filenewIcon;
-extern QPixmap* filecloseIcon;
 extern QPixmap* appexitIcon;
 extern QPixmap* muteIcon;
 extern QPixmap* eyeIcon;
@@ -67,7 +59,6 @@ extern QPixmap* eyeCrossedIcon;
 extern QPixmap* eyeGrayIcon;
 extern QPixmap* upIcon;
 extern QPixmap* downIcon;
-extern QPixmap* midiinIcon;
 extern QPixmap* sysexIcon;
 extern QPixmap* ctrlIcon;
 extern QPixmap* metaIcon;
@@ -75,7 +66,6 @@ extern QPixmap* flagIcon;
 extern QPixmap* flagIconS;
 extern QPixmap* lockIcon;
 
-extern QPixmap* speakerIcon;
 extern QPixmap* buttondownIcon;
 
 extern QIcon* pianoIconSet;
@@ -315,6 +305,14 @@ extern QIcon* punchinSVGIcon;
 extern QIcon* punchoutSVGIcon;
 extern QIcon* undoSVGIcon;
 extern QIcon* redoSVGIcon;
+extern QIcon* midiinSVGIcon;
+extern QIcon* steprecSVGIcon;
+extern QIcon* speakerSVGIcon;
+extern QIcon* filenewSVGIcon;
+extern QIcon* fileopenSVGIcon;
+extern QIcon* filesaveSVGIcon;
+extern QIcon* filesaveasSVGIcon;
+extern QIcon* filecloseSVGIcon;
 
 extern QIcon* pencilIconSVG;
 extern QIcon* glueIconSVG;

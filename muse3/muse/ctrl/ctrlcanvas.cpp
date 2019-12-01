@@ -3703,7 +3703,7 @@ void CtrlCanvas::populateMergeOptions(PopupMenu* menu)
   act->setToolTip(tr("Merge a copy of the dragged items"));
   act->setEnabled(is_mv);
   
-  act = menu->addAction(QIcon(*filecloseIcon), tr("Cancel drag"));
+  act = menu->addAction(*filecloseSVGIcon, tr("Cancel drag"));
   act->setData(contextIdCancelDrag);
   act->setCheckable(false);
   act->setToolTip(tr("Cancel dragging the items"));

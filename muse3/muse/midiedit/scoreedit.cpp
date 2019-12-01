@@ -251,7 +251,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     steprec_tools->setObjectName("Score tools");
     srec  = new QToolButton();
     srec->setToolTip(tr("Step Record"));
-    srec->setIcon(*steprecIcon);
+    srec->setIcon(*steprecSVGIcon);
     srec->setCheckable(true);
     srec->setFocusPolicy(Qt::NoFocus);
     steprec_tools->addWidget(srec);

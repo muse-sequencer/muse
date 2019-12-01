@@ -3517,12 +3517,12 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       QToolBar* tools = addToolBar(tr("File Buttons"));
       tools->setIconSize(ICON_SIZE);
 
-      QAction* fileOpen = new QAction(QIcon(*openIconS), tr("Load Preset"), this);
+      QAction* fileOpen = new QAction(*fileopenSVGIcon, tr("Load Preset"), this);
 //       connect(fileOpen, SIGNAL(triggered()), this, SLOT(load()));
       connect(fileOpen, &QAction::triggered, [this]() { load(); } );
       tools->addAction(fileOpen);
 
-      QAction* fileSave = new QAction(QIcon(*saveIconS), tr("Save Preset"), this);
+      QAction* fileSave = new QAction(*filesaveSVGIcon, tr("Save Preset"), this);
 //       connect(fileSave, SIGNAL(triggered()), this, SLOT(save()));
       connect(fileSave, &QAction::triggered, [this]() { save(); } );
       tools->addAction(fileSave);
