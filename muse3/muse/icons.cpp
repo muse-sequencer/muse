@@ -68,16 +68,7 @@
 #include "xpm/cmark.xpm"
 #include "xpm/lmark.xpm"
 #include "xpm/rmark.xpm"
-#include "xpm/steprec.xpm"
 #include "xpm/cursor.xpm"
-#include "xpm/filesave.xpm"
-#include "xpm/filesaveas.xpm"
-#include "xpm/fileopen.xpm"
-#include "xpm/filesaveS.xpm"
-#include "xpm/fileopenS.xpm"
-#include "xpm/filenew.xpm"
-#include "xpm/fileclose.xpm"
-#include "xpm/appexit.xpm"
 
 #include "xpm/routing_input_button_slim_4.xpm"
 #include "xpm/routing_output_button_slim_4.xpm"
@@ -90,7 +81,6 @@
 
 #include "xpm/up.xpm"
 #include "xpm/down.xpm"
-#include "xpm/midiin.xpm"
 #include "xpm/sysex.xpm"
 #include "xpm/ctrl.xpm"
 #include "xpm/meta.xpm"
@@ -106,10 +96,7 @@
 #include "xpm/editpaste2trackS.xpm"
 #include "xpm/editpasteclone2trackS.xpm"
 
-#include "xpm/speaker.xpm"
 #include "xpm/buttondown.xpm"
-
-#include "xpm/exit.xpm"
 
 #include "xpm/toggle_small.xpm"
 #include "xpm/greendot.xpm"
@@ -201,6 +188,12 @@ namespace MusEGui {
       return new QIcon(fallback_pm);
   }
 
+  QIcon* MICONSVG(QIcon* fallback, const QString& name) {
+    if(use_theme_icons_if_possible)
+      return new QIcon(QIcon::fromTheme(name, *fallback));
+    else
+      return fallback;
+  }
   
 /* Quick API reference:
    -------------------
@@ -220,8 +213,6 @@ QPixmap* deltaOffIcon;
 QPixmap* veloPerNote_OnIcon;
 QPixmap* veloPerNote_OffIcon;
 
-QPixmap* exitIcon;
-
 QPixmap* routesInIcon;
 QPixmap* routesOutIcon;
 QPixmap* routesMidiInIcon;
@@ -239,23 +230,13 @@ QPixmap* dot1Icon;
 QPixmap* note1Icon;
 QPixmap* synthIcon;
 QPixmap* markIcon[3];
-QPixmap* steprecIcon;
 QPixmap* cursorIcon;
-QPixmap* openIcon;
-QPixmap* saveIcon;
-QPixmap* saveasIcon;
-QPixmap* openIconS;
-QPixmap* saveIconS;
-QPixmap* filenewIcon;
-QPixmap* filecloseIcon;
-QPixmap* appexitIcon;
 QPixmap* muteIcon;
 QPixmap* eyeIcon;
 QPixmap* eyeCrossedIcon;
 QPixmap* eyeGrayIcon;
 QPixmap* upIcon;
 QPixmap* downIcon;
-QPixmap* midiinIcon;
 QPixmap* sysexIcon;
 QPixmap* ctrlIcon;
 QPixmap* metaIcon;
@@ -263,7 +244,6 @@ QPixmap* flagIcon;
 QPixmap* flagIconS;
 QPixmap* lockIcon;
 
-QPixmap* speakerIcon;
 QPixmap* buttondownIcon;
 
 QIcon* pianoIconSet;
@@ -488,6 +468,17 @@ QIcon* punchinSVGIcon;
 QIcon* punchoutSVGIcon;
 QIcon* undoSVGIcon;
 QIcon* redoSVGIcon;
+QIcon* midiinSVGIcon;
+QIcon* steprecSVGIcon;
+QIcon* speakerSVGIcon;
+QIcon* filenewSVGIcon;
+QIcon* fileopenSVGIcon;
+QIcon* filesaveSVGIcon;
+QIcon* filesaveasSVGIcon;
+QIcon* filecloseSVGIcon;
+QIcon* appexitSVGIcon;
+QIcon* whatsthisSVGIcon;
+QIcon* exitSVGIcon;
 
 // tool icons
 QIcon* pencilIconSVG;
@@ -550,23 +541,13 @@ void initIcons(bool useThemeIconsIfPossible)
       markIcon[0]  = MPIXMAP(cmark_xpm, nullptr);
       markIcon[1]  = MPIXMAP(lmark_xpm, nullptr);
       markIcon[2]  = MPIXMAP(rmark_xpm, nullptr);
-      steprecIcon  = MPIXMAP(steprec_xpm, nullptr);
       cursorIcon   = MPIXMAP(cursor_xpm, nullptr);
-      saveIcon     = MPIXMAP(filesave_xpm, "document-save");
-      saveasIcon     = MPIXMAP(filesaveas_xpm, "document-save-as");
-      openIcon     = MPIXMAP(fileopen_xpm, "document-open");
-      saveIconS     = MPIXMAP(filesaveS_xpm, "document-save");
-      openIconS     = MPIXMAP(fileopenS_xpm, "document-open");
-      filenewIcon  = MPIXMAP(filenew_xpm, "document-new");
-      filecloseIcon  = MPIXMAP(fileclose_xpm, "document-close");
-      appexitIcon  = MPIXMAP(appexit_xpm, "application-exit");
       muteIcon     = MPIXMAP(editmuteS_xpm, "audio-volume-muted");
       eyeIcon      = MPIXMAP(eye_xpm, nullptr);
       eyeCrossedIcon  = MPIXMAP(eye_crossed_xpm, nullptr);
       eyeGrayIcon  = MPIXMAP(eye_gray_xpm, nullptr);
       upIcon       = MPIXMAP(up_xpm, "go-up");
       downIcon     = MPIXMAP(down_xpm, "go-down");
-      midiinIcon = MPIXMAP(midiin_xpm, nullptr);
       sysexIcon   = MPIXMAP(sysex_xpm, nullptr);
       ctrlIcon    = MPIXMAP(ctrl_xpm, nullptr);
       metaIcon    = MPIXMAP(meta_xpm, nullptr);
@@ -574,7 +555,6 @@ void initIcons(bool useThemeIconsIfPossible)
       flagIconS   = MPIXMAP(flagS_xpm, nullptr);
       lockIcon    = MPIXMAP(lock_xpm, nullptr);
 
-      speakerIcon    = MPIXMAP(speaker_xpm, nullptr);
       buttondownIcon = MPIXMAP(buttondown_xpm, "arrow-down");
 
       editcutIconSet       = MICON(editcutS_xpm, "edit-cut"); // ddskrjo
@@ -585,9 +565,6 @@ void initIcons(bool useThemeIconsIfPossible)
       editpasteClone2TrackIconSet = MICON(editpasteclone2trackS_xpm, nullptr); // ..
       editpasteSIcon      = MPIXMAP(editpasteS_xpm, nullptr);
       editpasteCloneSIcon = MPIXMAP(editpastecloneS_xpm, nullptr);
-
-      // Changed by Tim. There are IMO no suitable theme substitutes for these two so far...
-      exitIcon             = MPIXMAP(exit_xpm, nullptr);
 
       routesInIcon         = MPIXMAP(routing_input_button_slim_4_xpm, nullptr);
       routesOutIcon        = MPIXMAP(routing_output_button_slim_4_xpm, nullptr);
@@ -832,12 +809,25 @@ void initIcons(bool useThemeIconsIfPossible)
       overrideLatencySVGIcon = new QIcon(":/svg/override_latency_off.svg");
       overrideLatencySVGIcon->addFile(":/svg/override_latency_on.svg", QSize(), QIcon::Normal, QIcon::On);
 
-      panicSVGIcon = new QIcon(":/svg/panic.svg");
-      loopSVGIcon = new QIcon(":/svg/loop.svg");
-      punchinSVGIcon = new QIcon(":/svg/punchin.svg");
-      punchoutSVGIcon = new QIcon(":/svg/punchout.svg");
-      undoSVGIcon = new QIcon(":/svg/undo.svg");
-      redoSVGIcon = new QIcon(":/svg/redo.svg");
+      panicSVGIcon      = new QIcon(":/svg/panic.svg");
+      loopSVGIcon       = new QIcon(":/svg/loop.svg");
+      punchinSVGIcon    = new QIcon(":/svg/punchin.svg");
+      punchoutSVGIcon   = new QIcon(":/svg/punchout.svg");
+      undoSVGIcon       = new QIcon(":/svg/undo.svg");
+      redoSVGIcon       = new QIcon(":/svg/redo.svg");
+      midiinSVGIcon     = new QIcon(":/svg/midiin.svg");
+      steprecSVGIcon    = new QIcon(":/svg/steprec.svg");
+      speakerSVGIcon    = new QIcon(":/svg/speaker.svg");
+      whatsthisSVGIcon  = new QIcon(":/svg/whatsthis.svg");
+      exitSVGIcon       = new QIcon(":/svg/exit.svg");
+
+      filenewSVGIcon     = MICONSVG(new QIcon(":/svg/filenew.svg"), "document-new");
+      fileopenSVGIcon    = MICONSVG(new QIcon(":/svg/fileopen.svg"), "document-open");
+      filesaveSVGIcon    = MICONSVG(new QIcon(":/svg/filesave.svg"), "document-save");
+      filesaveasSVGIcon  = MICONSVG(new QIcon(":/svg/filesaveas.svg"), "document-save-as");
+      filecloseSVGIcon   = MICONSVG(new QIcon(":/svg/fileclose.svg"), "document-close");
+      appexitSVGIcon     = MICONSVG(new QIcon(":/svg/appexit.svg"), "application-exit");
+
 
       // tool icons
       pencilIconSVG     = new QIcon(":/svg/pencil.svg");
@@ -900,20 +890,10 @@ void deleteIcons()
       delete markIcon[0];  
       delete markIcon[1];  
       delete markIcon[2];  
-      delete steprecIcon;  
       delete cursorIcon;   
-      delete saveIcon;     
-      delete saveasIcon;   
-      delete openIcon;     
-      delete saveIconS;    
-      delete openIconS;    
-      delete filenewIcon;  
-      delete filecloseIcon;  
-      delete appexitIcon;  
       delete muteIcon;
       delete upIcon;       
       delete downIcon;     
-      delete midiinIcon;
       delete sysexIcon; 
       delete ctrlIcon;  
       delete metaIcon;  
@@ -921,7 +901,6 @@ void deleteIcons()
       delete flagIconS; 
       delete lockIcon;  
 
-      delete speakerIcon;    
       delete buttondownIcon;
 
       delete editcutIconSet;     
@@ -933,8 +912,6 @@ void deleteIcons()
 
       delete editpasteSIcon;
       delete editpasteCloneSIcon;
-
-      delete exitIcon;             
 
       delete routesInIcon;         
       delete routesOutIcon;        
@@ -1150,6 +1127,18 @@ void deleteIcons()
       delete punchoutSVGIcon;
       delete undoSVGIcon;
       delete redoSVGIcon;
+      delete midiinSVGIcon;
+      delete steprecSVGIcon;
+      delete speakerSVGIcon;
+
+      delete filenewSVGIcon;
+      delete fileopenSVGIcon;
+      delete filesaveSVGIcon;
+      delete filesaveasSVGIcon;
+      delete filecloseSVGIcon;
+      delete appexitSVGIcon;
+      delete whatsthisSVGIcon;
+      delete exitSVGIcon;
 
       delete pencilIconSVG;
       delete glueIconSVG;

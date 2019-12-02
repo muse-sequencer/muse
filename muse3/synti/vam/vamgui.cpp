@@ -179,9 +179,9 @@ VAMGui::VAMGui()
       setupUi(this);
       connect(this->getGuiSignal(),SIGNAL(wakeup()),this,SLOT(readMessage()));
 
-      loadPresets->setIcon(QIcon(*MusEGui::openIcon));
-      savePresets->setIcon(QIcon(*MusEGui::saveIcon));
-      savePresetsToFile->setIcon(QIcon(*MusEGui::saveasIcon));
+      loadPresets->setIcon(*MusEGui::fileopenSVGIcon);
+      savePresets->setIcon(*MusEGui::filesaveSVGIcon);
+      savePresetsToFile->setIcon(*MusEGui::filesaveasSVGIcon);
       deletePreset->setIcon(QIcon(*MusEGui::deleteIcon));
 
         // p4.0.27 First ctrl offset.

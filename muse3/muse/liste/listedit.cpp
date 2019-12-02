@@ -513,7 +513,7 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       connect(incAction,    &QAction::triggered, [this]() { cmd(CMD_INC); } );
       connect(decAction,    &QAction::triggered, [this]() { cmd(CMD_DEC); } );
 
-      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("Win&Config"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);

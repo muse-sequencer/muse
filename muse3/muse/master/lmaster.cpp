@@ -193,7 +193,7 @@ LMaster::LMaster(QWidget* parent, const char* name)
       delAction = menuEdit->addAction(tr("Delete Event"));
       delAction->setShortcut(Qt::Key_Delete);
 
-      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("Win&Config"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
@@ -229,9 +229,9 @@ LMaster::LMaster(QWidget* parent, const char* name)
       tempoButton->setText(tr("Tempo"));
       timeSigButton->setText(tr("Timesig"));
       keyButton->setText(tr("Key"));
-      tempoButton->setToolTip(tr("new tempo"));
-      timeSigButton->setToolTip(tr("new signature"));
-      keyButton->setToolTip(tr("new key"));
+      tempoButton->setToolTip(tr("New tempo"));
+      timeSigButton->setToolTip(tr("New signature"));
+      keyButton->setToolTip(tr("New key"));
       edit->addWidget(tempoButton);
       edit->addWidget(timeSigButton);
       edit->addWidget(keyButton);

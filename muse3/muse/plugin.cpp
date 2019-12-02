@@ -3517,24 +3517,26 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       QToolBar* tools = addToolBar(tr("File Buttons"));
       tools->setIconSize(ICON_SIZE);
 
-      QAction* fileOpen = new QAction(QIcon(*openIconS), tr("Load Preset"), this);
+      QAction* fileOpen = new QAction(*fileopenSVGIcon, tr("Load Preset"), this);
 //       connect(fileOpen, SIGNAL(triggered()), this, SLOT(load()));
       connect(fileOpen, &QAction::triggered, [this]() { load(); } );
       tools->addAction(fileOpen);
 
-      QAction* fileSave = new QAction(QIcon(*saveIconS), tr("Save Preset"), this);
+      QAction* fileSave = new QAction(*filesaveSVGIcon, tr("Save Preset"), this);
 //       connect(fileSave, SIGNAL(triggered()), this, SLOT(save()));
       connect(fileSave, &QAction::triggered, [this]() { save(); } );
       tools->addAction(fileSave);
 
-      tools->addAction(QWhatsThis::createAction(this));
+      QAction* whatsthis = QWhatsThis::createAction(this);
+      whatsthis->setIcon(*whatsthisSVGIcon);
+      tools->addAction(whatsthis);
 
       //onOff = new QAction(QIcon(*exitIconS), tr("bypass plugin"), this);
-      onOff = new QAction(*muteSVGIcon, tr("bypass plugin"), this);
+      onOff = new QAction(*muteSVGIcon, tr("Bypass plugin"), this);
       onOff->setCheckable(true);
       onOff->setChecked(!plugin->on());
       onOff->setEnabled(plugin->hasBypass());
-      onOff->setToolTip(tr("bypass plugin"));
+      onOff->setToolTip(tr("Bypass plugin"));
       connect(onOff, &QAction::toggled, [this](bool v) { bypassToggled(v); } );
       tools->addAction(onOff);
 

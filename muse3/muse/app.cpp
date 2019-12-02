@@ -396,8 +396,8 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::redoAction = new QAction(*MusEGui::redoSVGIcon, tr("Re&do"),
         MusEGlobal::undoRedo);
 
-      MusEGlobal::undoAction->setWhatsThis(tr("undo last change to song"));
-      MusEGlobal::redoAction->setWhatsThis(tr("redo last undo"));
+      MusEGlobal::undoAction->setWhatsThis(tr("Undo last change to song"));
+      MusEGlobal::redoAction->setWhatsThis(tr("Redo last undo"));
       MusEGlobal::undoAction->setEnabled(false);
       MusEGlobal::redoAction->setEnabled(false);
       connect(MusEGlobal::redoAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(redo()));
@@ -414,21 +414,21 @@ MusE::MusE() : QMainWindow()
                                            MusEGlobal::transportAction);
       MusEGlobal::loopAction->setCheckable(true);
 
-      MusEGlobal::loopAction->setWhatsThis(tr("loop between left mark and right mark"));
+      MusEGlobal::loopAction->setWhatsThis(tr("Loop between left mark and right mark"));
       connect(MusEGlobal::loopAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setLoop(bool)));
 
-      MusEGlobal::punchinAction = new QAction(*MusEGui::punchinSVGIcon, tr("Punchin"),
+      MusEGlobal::punchinAction = new QAction(*MusEGui::punchinSVGIcon, tr("Punch in"),
                                               MusEGlobal::transportAction);
       MusEGlobal::punchinAction->setCheckable(true);
 
-      MusEGlobal::punchinAction->setWhatsThis(tr("record starts at left mark"));
+      MusEGlobal::punchinAction->setWhatsThis(tr("Record starts at left mark"));
       connect(MusEGlobal::punchinAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchin(bool)));
 
-      MusEGlobal::punchoutAction = new QAction(*MusEGui::punchoutSVGIcon, tr("Punchout"),
+      MusEGlobal::punchoutAction = new QAction(*MusEGui::punchoutSVGIcon, tr("Punch out"),
                                                MusEGlobal::transportAction);
       MusEGlobal::punchoutAction->setCheckable(true);
 
-      MusEGlobal::punchoutAction->setWhatsThis(tr("record stops at right mark"));
+      MusEGlobal::punchoutAction->setWhatsThis(tr("Record stops at right mark"));
       connect(MusEGlobal::punchoutAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchout(bool)));
 
       QAction *tseparator = new QAction(this);
@@ -438,26 +438,26 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::startAction = new QAction(*MusEGui::rewindToStartSVGIcon, tr("Start"), 
                                              MusEGlobal::transportAction);
 
-      MusEGlobal::startAction->setWhatsThis(tr("rewind to start position"));
+      MusEGlobal::startAction->setWhatsThis(tr("Rewind to start position"));
       connect(MusEGlobal::startAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(rewindStart()));
 
       MusEGlobal::rewindAction = new QAction(*MusEGui::rewindSVGIcon, tr("Rewind"), 
                                               MusEGlobal::transportAction);
 
-      MusEGlobal::rewindAction->setWhatsThis(tr("rewind current position"));
+      MusEGlobal::rewindAction->setWhatsThis(tr("Rewind current position"));
       connect(MusEGlobal::rewindAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(rewind()));
 
       MusEGlobal::forwardAction = new QAction(*MusEGui::fastForwardSVGIcon, tr("Forward"), 
                                                MusEGlobal::transportAction);
 
-      MusEGlobal::forwardAction->setWhatsThis(tr("move current position"));
+      MusEGlobal::forwardAction->setWhatsThis(tr("Move current position"));
       connect(MusEGlobal::forwardAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(forward()));
 
       MusEGlobal::stopAction = new QAction(*MusEGui::stopSVGIcon, tr("Stop"), 
                                             MusEGlobal::transportAction);
       MusEGlobal::stopAction->setCheckable(true);
 
-      MusEGlobal::stopAction->setWhatsThis(tr("stop sequencer"));
+      MusEGlobal::stopAction->setWhatsThis(tr("Stop sequencer"));
       MusEGlobal::stopAction->setChecked(true);
       connect(MusEGlobal::stopAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setStop(bool)));
 
@@ -467,14 +467,14 @@ MusE::MusE() : QMainWindow()
                      MusEGlobal::transportAction);
       MusEGlobal::playAction->setCheckable(true);
 
-      MusEGlobal::playAction->setWhatsThis(tr("start sequencer play"));
+      MusEGlobal::playAction->setWhatsThis(tr("Start sequencer play"));
       MusEGlobal::playAction->setChecked(false);
       connect(MusEGlobal::playAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPlay(bool)));
 
       MusEGlobal::recordAction = new QAction(*MusEGui::recMasterSVGIcon, tr("Record"), 
                                               MusEGlobal::transportAction);
       MusEGlobal::recordAction->setCheckable(true);
-      MusEGlobal::recordAction->setWhatsThis(tr("to record press record and then play"));
+      MusEGlobal::recordAction->setWhatsThis(tr("To record press record and then play"));
       connect(MusEGlobal::recordAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setRecord(bool)));
 
       MusEGlobal::panicAction = new QAction(*MusEGui::panicSVGIcon, tr("Panic"), this);
@@ -482,12 +482,12 @@ MusE::MusE() : QMainWindow()
       QMenu* panicPopupMenu = new QMenu(this);
       MusEGlobal::panicAction->setMenu(panicPopupMenu);
       
-      MusEGlobal::panicAction->setWhatsThis(tr("send note off to all midi channels"));
+      MusEGlobal::panicAction->setWhatsThis(tr("Send note off to all midi channels"));
       connect(MusEGlobal::panicAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(panic()));
 
       MusEGlobal::metronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome"), this);
       MusEGlobal::metronomeAction->setCheckable(true);
-      MusEGlobal::metronomeAction->setWhatsThis(tr("turn on/off metronome"));
+      MusEGlobal::metronomeAction->setWhatsThis(tr("Turn on/off metronome"));
       MusEGlobal::metronomeAction->setChecked(MusEGlobal::song->click());
       connect(MusEGlobal::metronomeAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setClick(bool)));
       connect(MusEGlobal::song, SIGNAL(clickChanged(bool)), MusEGlobal::metronomeAction, SLOT(setChecked(bool)));
@@ -495,11 +495,11 @@ MusE::MusE() : QMainWindow()
       //----Actions
       //-------- File Actions
 
-      fileNewAction = new QAction(QIcon(*MusEGui::filenewIcon), tr("&New"), this);
-      fileNewAction->setToolTip(tr("Create New Song"));
-      fileNewAction->setWhatsThis(tr("Create New Song"));
+      fileNewAction = new QAction(*MusEGui::filenewSVGIcon, tr("&New"), this);
+      fileNewAction->setToolTip(tr("Create new song"));
+      fileNewAction->setWhatsThis(tr("Create new song"));
 
-      fileOpenAction = new QAction(QIcon(*MusEGui::openIcon), tr("&Open"), this);
+      fileOpenAction = new QAction(*MusEGui::fileopenSVGIcon, tr("&Open..."), this);
 
       fileOpenAction->setToolTip(tr("Click this button to open a <em>new song</em>.<br>"
       "You can also select the <b>Open command</b> from the File menu."));
@@ -508,7 +508,7 @@ MusE::MusE() : QMainWindow()
 
       openRecent = new QMenu(tr("Open &Recent"), this);
 
-      fileSaveAction = new QAction(QIcon(*MusEGui::saveIcon), tr("&Save"), this);
+      fileSaveAction = new QAction(*MusEGui::filesaveSVGIcon, tr("&Save"), this);
 
       fileSaveAction->setToolTip(tr("Click this button to save the song you are "
       "editing.  You will be prompted for a file name.\n"
@@ -517,33 +517,33 @@ MusE::MusE() : QMainWindow()
       "editing.  You will be prompted for a file name.\n"
       "You can also select the Save command from the File menu."));
 
-      fileSaveAsAction = new QAction(QIcon(*MusEGui::saveasIcon), tr("Save &As"), this);
+      fileSaveAsAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save &As..."), this);
 
-      fileCloseAction = new QAction(QIcon(*MusEGui::filecloseIcon), tr("Close"), this);
+      fileCloseAction = new QAction(*MusEGui::filecloseSVGIcon, tr("Close"), this);
       
-      fileImportMidiAction = new QAction(tr("Import Midifile"), this);
-      fileExportMidiAction = new QAction(tr("Export Midifile"), this);
-      fileImportPartAction = new QAction(tr("Import Part"), this);
+      fileImportMidiAction = new QAction(tr("Import Midifile..."), this);
+      fileExportMidiAction = new QAction(tr("Export Midifile..."), this);
+      fileImportPartAction = new QAction(tr("Import Part..."), this);
 
-      fileImportWaveAction = new QAction(tr("Import Audio File"), this);
-      fileMoveWaveFiles = new QAction(tr("Find unused wave files"), this);
+      fileImportWaveAction = new QAction(tr("Import Audio File..."), this);
+      fileMoveWaveFiles = new QAction(tr("Find Unused Wave Files"), this);
 
-      quitAction = new QAction(QIcon(*MusEGui::appexitIcon), tr("&Quit"), this);
+      quitAction = new QAction(*MusEGui::appexitSVGIcon, tr("&Quit"), this);
 
       editSongInfoAction = new QAction(QIcon(*MusEGui::edit_listIcon), tr("Song Info"), this);
 
       //-------- View Actions
-      viewTransportAction = new QAction(QIcon(*MusEGui::view_transport_windowIcon), tr("Transport Panel"), this);
+      viewTransportAction = new QAction(QIcon(*MusEGui::view_transport_windowIcon), tr("Transport Panel..."), this);
       viewTransportAction->setCheckable(true);
-      viewBigtimeAction = new QAction(QIcon(*MusEGui::view_bigtime_windowIcon), tr("Bigtime Window"),  this);
+      viewBigtimeAction = new QAction(QIcon(*MusEGui::view_bigtime_windowIcon), tr("Bigtime Window..."),  this);
       viewBigtimeAction->setCheckable(true);
-      viewMixerAAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer A"), this);
+      viewMixerAAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer A..."), this);
       viewMixerAAction->setCheckable(true);
-      viewMixerBAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer B"), this);
+      viewMixerBAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer B..."), this);
       viewMixerBAction->setCheckable(true);
-      viewCliplistAction = new QAction(QIcon(*MusEGui::cliplistSIcon), tr("Cliplist"), this);
+      viewCliplistAction = new QAction(QIcon(*MusEGui::cliplistSIcon), tr("Cliplist..."), this);
       viewCliplistAction->setCheckable(true);
-      viewMarkerAction = new QAction(QIcon(*MusEGui::view_markerIcon), tr("Marker View"),  this);
+      viewMarkerAction = new QAction(QIcon(*MusEGui::view_markerIcon), tr("Marker View..."),  this);
       viewMarkerAction->setCheckable(true);
       viewArrangerAction = new QAction(tr("Arranger View"),  this);
       viewArrangerAction->setCheckable(true);
@@ -552,20 +552,20 @@ MusE::MusE() : QMainWindow()
       fullscreenAction->setChecked(false);
       QMenu* master = new QMenu(tr("Mastertrack"), this);
       master->setIcon(QIcon(*edit_mastertrackIcon));
-      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Graphic"), this);
-      masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List"), this);
+      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Graphic..."), this);
+      masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List..."), this);
       master->addAction(masterGraphicAction);
       master->addAction(masterListAction);
 
       //-------- Midi Actions
       menuScriptPlugins = new QMenu(tr("&Plugins"), this);
-      midiEditInstAction = new QAction(QIcon(*MusEGui::midi_edit_instrumentIcon), tr("Edit Instrument"), this);
+      midiEditInstAction = new QAction(QIcon(*MusEGui::midi_edit_instrumentIcon), tr("Edit Instrument..."), this);
       midiInputPlugins = new QMenu(tr("Input Plugins"), this);
       midiInputPlugins->setIcon(QIcon(*MusEGui::midi_inputpluginsIcon));
-      midiTrpAction = new QAction(QIcon(*MusEGui::midi_inputplugins_transposeIcon), tr("Transpose"), this);
-      midiInputTrfAction = new QAction(QIcon(*MusEGui::midi_inputplugins_midi_input_transformIcon), tr("Midi Input Transform"), this);
-      midiInputFilterAction = new QAction(QIcon(*MusEGui::midi_inputplugins_midi_input_filterIcon), tr("Midi Input Filter"), this);
-      midiRemoteAction = new QAction(QIcon(*MusEGui::midi_inputplugins_remote_controlIcon), tr("Midi Remote Control"), this);
+      midiTrpAction = new QAction(QIcon(*MusEGui::midi_inputplugins_transposeIcon), tr("Transpose..."), this);
+      midiInputTrfAction = new QAction(QIcon(*MusEGui::midi_inputplugins_midi_input_transformIcon), tr("Midi Input Transform..."), this);
+      midiInputFilterAction = new QAction(QIcon(*MusEGui::midi_inputplugins_midi_input_filterIcon), tr("Midi Input Filter..."), this);
+      midiRemoteAction = new QAction(QIcon(*MusEGui::midi_inputplugins_remote_controlIcon), tr("Midi Remote Control..."), this);
 #ifdef BUILD_EXPERIMENTAL
       midiRhythmAction = new QAction(QIcon(*midi_inputplugins_random_rhythm_generatorIcon), tr("Rhythm Generator"), this);
 #endif
@@ -575,7 +575,7 @@ MusE::MusE() : QMainWindow()
 
       //-------- Audio Actions
       audioBounce2TrackAction = new QAction(QIcon(*MusEGui::audio_bounce_to_trackIcon), tr("Bounce to Track"), this);
-      audioBounce2FileAction = new QAction(QIcon(*MusEGui::audio_bounce_to_fileIcon), tr("Bounce to File"), this);
+      audioBounce2FileAction = new QAction(QIcon(*MusEGui::audio_bounce_to_fileIcon), tr("Bounce to File..."), this);
       audioRestartAction = new QAction(QIcon(*MusEGui::audio_restartaudioIcon), tr("Restart Audio"), this);
 
       //-------- Automation Actions
@@ -587,13 +587,13 @@ MusE::MusE() : QMainWindow()
       //-------- Windows Actions
       windowsCascadeAction = new QAction(tr("Cascade"), this);
       windowsTileAction = new QAction(tr("Tile"), this);
-      windowsRowsAction = new QAction(tr("In rows"), this);
-      windowsColumnsAction = new QAction(tr("In columns"), this);
+      windowsRowsAction = new QAction(tr("In Rows"), this);
+      windowsColumnsAction = new QAction(tr("In Columns"), this);
 
 
       //-------- Settings Actions
-      settingsGlobalAction = new QAction(QIcon(*MusEGui::settings_globalsettingsIcon), tr("Global Settings"), this);
-      settingsShortcutsAction = new QAction(QIcon(*MusEGui::settings_configureshortcutsIcon), tr("Configure Shortcuts"), this);
+      settingsGlobalAction = new QAction(QIcon(*MusEGui::settings_globalsettingsIcon), tr("Global Settings..."), this);
+      settingsShortcutsAction = new QAction(QIcon(*MusEGui::settings_configureshortcutsIcon), tr("Configure Shortcuts..."), this);
       follow = new QMenu(tr("Follow Song"), this);
       dontFollowAction = new QAction(tr("Don't Follow Song"), this);
       dontFollowAction->setCheckable(true);
@@ -603,25 +603,25 @@ MusE::MusE() : QMainWindow()
       followCtsAction = new QAction(tr("Follow Continuous"), this);
       followCtsAction->setCheckable(true);
 
-      rewindOnStopAction=new QAction(tr("Rewind on stop"), this);
+      rewindOnStopAction=new QAction(tr("Rewind on Stop"), this);
       rewindOnStopAction->setCheckable(true);
       rewindOnStopAction->setChecked(MusEGlobal::config.useRewindOnStop);
 
-      settingsMetronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome"), this);
-      settingsMidiSyncAction = new QAction(QIcon(*MusEGui::settings_midisyncIcon), tr("Midi Sync"), this);
-      settingsMidiIOAction = new QAction(QIcon(*MusEGui::settings_midifileexportIcon), tr("Midi File Import/Export"), this);
-      settingsAppearanceAction = new QAction(QIcon(*MusEGui::settings_appearance_settingsIcon), tr("Appearance Settings"), this);
-      settingsMidiPortAction = new QAction(QIcon(*MusEGui::settings_midiport_softsynthsIcon), tr("Midi Ports / Soft Synth"), this);
+      settingsMetronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome..."), this);
+      settingsMidiSyncAction = new QAction(QIcon(*MusEGui::settings_midisyncIcon), tr("Midi Sync..."), this);
+      settingsMidiIOAction = new QAction(QIcon(*MusEGui::settings_midifileexportIcon), tr("Midi File Import/Export..."), this);
+      settingsAppearanceAction = new QAction(QIcon(*MusEGui::settings_appearance_settingsIcon), tr("Appearance Settings..."), this);
+      settingsMidiPortAction = new QAction(QIcon(*MusEGui::settings_midiport_softsynthsIcon), tr("Midi Ports / Soft Synth..."), this);
 
       //-------- Help Actions
-      helpManualAction = new QAction(tr("&Manual"), this);
-      helpHomepageAction = new QAction(tr("&MusE Homepage"), this);
-      helpDidYouKnow = new QAction(tr("&Did you know?"), this);
+      helpManualAction = new QAction(tr("&Manual..."), this);
+      helpHomepageAction = new QAction(tr("&MusE Homepage..."), this);
+      helpDidYouKnow = new QAction(tr("&Did You Know?"), this);
 
       helpReportAction = new QAction(tr("&Report Bug..."), this);
-      helpAboutAction = new QAction(tr("&About MusE"), this);
+      helpAboutAction = new QAction(tr("&About MusE..."), this);
 
-      helpSnooperAction = new QAction(tr("Snooper (developer tool)"), this);
+      helpSnooperAction = new QAction(tr("Snooper (developer tool)..."), this);
 
       //---- Connections
       //-------- File connections
@@ -724,7 +724,9 @@ MusE::MusE() : QMainWindow()
       tools->addAction(fileNewAction);
       tools->addAction(fileOpenAction);
       tools->addAction(fileSaveAction);
-      tools->addAction(QWhatsThis::createAction(this));
+      QAction* whatsthis = QWhatsThis::createAction(this);
+      whatsthis->setIcon(*whatsthisSVGIcon);
+      tools->addAction(whatsthis);
 
       QToolBar* undoToolbar = addToolBar(tr("Undo/Redo"));
       undoToolbar->setObjectName("Undo/Redo tools");
@@ -957,7 +959,7 @@ MusE::MusE() : QMainWindow()
       menu_help->addSeparator();
       menu_help->addAction(helpAboutAction);
 
-      menu_help->addAction(tr("About &Qt"), qApp, SLOT(aboutQt()));
+      menu_help->addAction(tr("About &Qt..."), qApp, SLOT(aboutQt()));
 
       //---------------------------------------------------
       //    Central Widget

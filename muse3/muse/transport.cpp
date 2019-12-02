@@ -145,7 +145,7 @@ TempoSig::TempoSig(QWidget* parent)
       _masterButton = new IconButton(masterTrackOnSVGIcon, masterTrackOffSVGIcon, 0, 0, false, true);
       _masterButton->setContentsMargins(0, 0, 0, 0);
       _masterButton->setCheckable(true);
-      _masterButton->setToolTip(tr("use mastertrack tempo"));
+      _masterButton->setToolTip(tr("Use mastertrack tempo"));
       _masterButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
       _masterButton->setFocusPolicy(Qt::NoFocus);
       connect(_masterButton, SIGNAL(toggled(bool)), SLOT(masterToggled(bool)));
@@ -157,14 +157,14 @@ TempoSig::TempoSig(QWidget* parent)
       l1 = new TempoEdit();
       l1->setContentsMargins(0, 0, 0, 0);
       l1->setFocusPolicy(Qt::StrongFocus);
-      l1->setToolTip(tr("mastertrack tempo at current position, or fixed tempo"));
+      l1->setToolTip(tr("Mastertrack tempo at current position, or fixed tempo"));
       hb1->addWidget(l1);
       vb2->addLayout(hb1);
       
       l2 = new SigEdit(this);
       l2->setContentsMargins(0, 0, 0, 0);
       l2->setFocusPolicy(Qt::StrongFocus);
-      l2->setToolTip(tr("time signature at current position"));
+      l2->setToolTip(tr("Time signature at current position"));
 
       vb2->addWidget(l2);
 
@@ -316,20 +316,20 @@ Transport::Transport(QWidget* parent, const char* name)
       QVBoxLayout *button2 = new QVBoxLayout;
       button2->setSpacing(0);
 
-      QToolButton* b1 = newButton(punchinSVGIcon, tr("punchin"), true);
-      QToolButton* b2 = newButton(loopSVGIcon, tr("loop"), true);
+      QToolButton* b1 = newButton(punchinSVGIcon, tr("Punch in"), true);
+      QToolButton* b2 = newButton(loopSVGIcon, tr("Loop"), true);
       b2->setShortcut(shortcuts[SHRT_TOGGLE_LOOP].key);
 
-      QToolButton* b3 = newButton(punchoutSVGIcon, tr("punchout"), true);
+      QToolButton* b3 = newButton(punchoutSVGIcon, tr("Punch out"), true);
       button2->addWidget(b1);
       button2->addWidget(b2);
       button2->addWidget(b3);
-      b1->setToolTip(tr("Punch In"));
+      b1->setToolTip(tr("Punch in"));
       b2->setToolTip(tr("Loop"));
-      b3->setToolTip(tr("Punch Out"));
-      b1->setWhatsThis(tr("Punch In"));
+      b3->setToolTip(tr("Punch out"));
+      b1->setWhatsThis(tr("Punch in"));
       b2->setWhatsThis(tr("Loop"));
-      b3->setWhatsThis(tr("Punch Out"));
+      b3->setWhatsThis(tr("Punch out"));
 
       connect(b1, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchin(bool)));
       connect(b2, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setLoop(bool)));
@@ -412,25 +412,25 @@ Transport::Transport(QWidget* parent, const char* name)
       tb = new QHBoxLayout;
       tb->setSpacing(0);
 
-      buttons[0] = newButton(rewindToStartSVGIcon, tr("rewind to start"));
+      buttons[0] = newButton(rewindToStartSVGIcon, tr("Rewind to Start"));
       buttons[0]->setWhatsThis(tr("Click this button to rewind to start position"));
 
-      buttons[1] = newButton(rewindSVGIcon, tr("rewind"));
+      buttons[1] = newButton(rewindSVGIcon, tr("Rewind"));
       buttons[1]->setAutoRepeat(true);
       buttons[1]->setWhatsThis(tr("Click this button to rewind"));
 
-      buttons[2] = newButton(fastForwardSVGIcon, tr("forward"));
+      buttons[2] = newButton(fastForwardSVGIcon, tr("Forward"));
       buttons[2]->setAutoRepeat(true);
       buttons[2]->setWhatsThis(tr("Click this button to forward current play position"));
 
-      buttons[3] = newButton(stopSVGIcon, tr("stop"), true);
+      buttons[3] = newButton(stopSVGIcon, tr("Stop"), true);
       buttons[3]->setChecked(true);     // set STOP
       buttons[3]->setWhatsThis(tr("Click this button to stop playback"));
 
-      buttons[4] = newButton(playSVGIcon, tr("play"), true);
+      buttons[4] = newButton(playSVGIcon, tr("Play"), true);
       buttons[4]->setWhatsThis(tr("Click this button to start playback"));
 
-      buttons[5] = newButton(recMasterSVGIcon, tr("record"), true);
+      buttons[5] = newButton(recMasterSVGIcon, tr("Record"), true);
       buttons[5]->setWhatsThis(tr("Click this button to enable recording"));
 
       for (int i = 0; i < 6; ++i)
@@ -461,13 +461,13 @@ Transport::Transport(QWidget* parent, const char* name)
       clickButton = new IconButton(metronomeOnSVGIcon, metronomeOffSVGIcon, 0, 0, false, true);
       clickButton->setContentsMargins(0, 0, 0, 0);
       clickButton->setCheckable(true);
-      clickButton->setToolTip(tr("metronome on/off"));
+      clickButton->setToolTip(tr("Metronome on/off"));
       clickButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
         
       syncButton = new IconButton(externSyncOnSVGIcon, externSyncOffSVGIcon, 0, 0, false, true);
       syncButton->setContentsMargins(0, 0, 0, 0);
       syncButton->setCheckable(true);
-      syncButton->setToolTip(tr("external sync on/off"));
+      syncButton->setToolTip(tr("External sync on/off"));
       syncButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
         
       jackTransportButton = new IconButton(jackTransportOnSVGIcon, jackTransportOffSVGIcon, 0, 0, false, true);

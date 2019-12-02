@@ -294,7 +294,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       //---------------------------------------------------
       //    STYLE
       //---------------------------------------------------
-      openStyleSheet->setIcon(*openIcon);
+      openStyleSheet->setIcon(*fileopenSVGIcon);
       openStyleSheet->setToolTip(tr("Open custom style sheet"));
       connect(openStyleSheet, SIGNAL(clicked()), SLOT(browseStyleSheet()));
       defaultStyleSheet->setIcon(*undoSVGIcon);
@@ -319,13 +319,13 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       //    Fonts
       //---------------------------------------------------
 
-      fontBrowse0->setIcon(QIcon(*openIcon));
-      fontBrowse1->setIcon(QIcon(*openIcon));
-      fontBrowse2->setIcon(QIcon(*openIcon));
-      fontBrowse3->setIcon(QIcon(*openIcon));
-      fontBrowse4->setIcon(QIcon(*openIcon));
-      fontBrowse5->setIcon(QIcon(*openIcon));
-      fontBrowse6->setIcon(QIcon(*openIcon));
+      fontBrowse0->setIcon(*fileopenSVGIcon);
+      fontBrowse1->setIcon(*fileopenSVGIcon);
+      fontBrowse2->setIcon(*fileopenSVGIcon);
+      fontBrowse3->setIcon(*fileopenSVGIcon);
+      fontBrowse4->setIcon(*fileopenSVGIcon);
+      fontBrowse5->setIcon(*fileopenSVGIcon);
+      fontBrowse6->setIcon(*fileopenSVGIcon);
       connect(fontBrowse0, SIGNAL(clicked()), SLOT(browseFont0()));
       connect(fontBrowse1, SIGNAL(clicked()), SLOT(browseFont1()));
       connect(fontBrowse2, SIGNAL(clicked()), SLOT(browseFont2()));
