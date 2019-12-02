@@ -396,8 +396,8 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::redoAction = new QAction(*MusEGui::redoSVGIcon, tr("Re&do"),
         MusEGlobal::undoRedo);
 
-      MusEGlobal::undoAction->setWhatsThis(tr("undo last change to song"));
-      MusEGlobal::redoAction->setWhatsThis(tr("redo last undo"));
+      MusEGlobal::undoAction->setWhatsThis(tr("Undo last change to song"));
+      MusEGlobal::redoAction->setWhatsThis(tr("Redo last undo"));
       MusEGlobal::undoAction->setEnabled(false);
       MusEGlobal::redoAction->setEnabled(false);
       connect(MusEGlobal::redoAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(redo()));
@@ -414,21 +414,21 @@ MusE::MusE() : QMainWindow()
                                            MusEGlobal::transportAction);
       MusEGlobal::loopAction->setCheckable(true);
 
-      MusEGlobal::loopAction->setWhatsThis(tr("loop between left mark and right mark"));
+      MusEGlobal::loopAction->setWhatsThis(tr("Loop between left mark and right mark"));
       connect(MusEGlobal::loopAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setLoop(bool)));
 
-      MusEGlobal::punchinAction = new QAction(*MusEGui::punchinSVGIcon, tr("Punchin"),
+      MusEGlobal::punchinAction = new QAction(*MusEGui::punchinSVGIcon, tr("Punch in"),
                                               MusEGlobal::transportAction);
       MusEGlobal::punchinAction->setCheckable(true);
 
-      MusEGlobal::punchinAction->setWhatsThis(tr("record starts at left mark"));
+      MusEGlobal::punchinAction->setWhatsThis(tr("Record starts at left mark"));
       connect(MusEGlobal::punchinAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchin(bool)));
 
-      MusEGlobal::punchoutAction = new QAction(*MusEGui::punchoutSVGIcon, tr("Punchout"),
+      MusEGlobal::punchoutAction = new QAction(*MusEGui::punchoutSVGIcon, tr("Punch out"),
                                                MusEGlobal::transportAction);
       MusEGlobal::punchoutAction->setCheckable(true);
 
-      MusEGlobal::punchoutAction->setWhatsThis(tr("record stops at right mark"));
+      MusEGlobal::punchoutAction->setWhatsThis(tr("Record stops at right mark"));
       connect(MusEGlobal::punchoutAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchout(bool)));
 
       QAction *tseparator = new QAction(this);
@@ -438,26 +438,26 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::startAction = new QAction(*MusEGui::rewindToStartSVGIcon, tr("Start"), 
                                              MusEGlobal::transportAction);
 
-      MusEGlobal::startAction->setWhatsThis(tr("rewind to start position"));
+      MusEGlobal::startAction->setWhatsThis(tr("Rewind to start position"));
       connect(MusEGlobal::startAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(rewindStart()));
 
       MusEGlobal::rewindAction = new QAction(*MusEGui::rewindSVGIcon, tr("Rewind"), 
                                               MusEGlobal::transportAction);
 
-      MusEGlobal::rewindAction->setWhatsThis(tr("rewind current position"));
+      MusEGlobal::rewindAction->setWhatsThis(tr("Rewind current position"));
       connect(MusEGlobal::rewindAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(rewind()));
 
       MusEGlobal::forwardAction = new QAction(*MusEGui::fastForwardSVGIcon, tr("Forward"), 
                                                MusEGlobal::transportAction);
 
-      MusEGlobal::forwardAction->setWhatsThis(tr("move current position"));
+      MusEGlobal::forwardAction->setWhatsThis(tr("Move current position"));
       connect(MusEGlobal::forwardAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(forward()));
 
       MusEGlobal::stopAction = new QAction(*MusEGui::stopSVGIcon, tr("Stop"), 
                                             MusEGlobal::transportAction);
       MusEGlobal::stopAction->setCheckable(true);
 
-      MusEGlobal::stopAction->setWhatsThis(tr("stop sequencer"));
+      MusEGlobal::stopAction->setWhatsThis(tr("Stop sequencer"));
       MusEGlobal::stopAction->setChecked(true);
       connect(MusEGlobal::stopAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setStop(bool)));
 
@@ -467,14 +467,14 @@ MusE::MusE() : QMainWindow()
                      MusEGlobal::transportAction);
       MusEGlobal::playAction->setCheckable(true);
 
-      MusEGlobal::playAction->setWhatsThis(tr("start sequencer play"));
+      MusEGlobal::playAction->setWhatsThis(tr("Start sequencer play"));
       MusEGlobal::playAction->setChecked(false);
       connect(MusEGlobal::playAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPlay(bool)));
 
       MusEGlobal::recordAction = new QAction(*MusEGui::recMasterSVGIcon, tr("Record"), 
                                               MusEGlobal::transportAction);
       MusEGlobal::recordAction->setCheckable(true);
-      MusEGlobal::recordAction->setWhatsThis(tr("to record press record and then play"));
+      MusEGlobal::recordAction->setWhatsThis(tr("To record press record and then play"));
       connect(MusEGlobal::recordAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setRecord(bool)));
 
       MusEGlobal::panicAction = new QAction(*MusEGui::panicSVGIcon, tr("Panic"), this);
@@ -482,12 +482,12 @@ MusE::MusE() : QMainWindow()
       QMenu* panicPopupMenu = new QMenu(this);
       MusEGlobal::panicAction->setMenu(panicPopupMenu);
       
-      MusEGlobal::panicAction->setWhatsThis(tr("send note off to all midi channels"));
+      MusEGlobal::panicAction->setWhatsThis(tr("Send note off to all midi channels"));
       connect(MusEGlobal::panicAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(panic()));
 
       MusEGlobal::metronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome"), this);
       MusEGlobal::metronomeAction->setCheckable(true);
-      MusEGlobal::metronomeAction->setWhatsThis(tr("turn on/off metronome"));
+      MusEGlobal::metronomeAction->setWhatsThis(tr("Turn on/off metronome"));
       MusEGlobal::metronomeAction->setChecked(MusEGlobal::song->click());
       connect(MusEGlobal::metronomeAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setClick(bool)));
       connect(MusEGlobal::song, SIGNAL(clickChanged(bool)), MusEGlobal::metronomeAction, SLOT(setChecked(bool)));
