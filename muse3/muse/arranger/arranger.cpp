@@ -283,8 +283,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       lenEntry = new SpinBox(1, 10000, 1);
       lenEntry->setFocusPolicy(Qt::StrongFocus);
       lenEntry->setValue(MusEGlobal::song->len());
-      lenEntry->setToolTip(tr("song length - bars"));
-      lenEntry->setWhatsThis(tr("song length - bars"));
+      lenEntry->setToolTip(tr("Song length - bars"));
+      lenEntry->setWhatsThis(tr("Song length - bars"));
       toolbar->addWidget(lenEntry);
       connect(lenEntry, SIGNAL(valueChanged(int)), SLOT(songlenChanged(int)));
 
@@ -296,8 +296,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       globalPitchSpinBox = new SpinBox(-127, 127, 1);
       globalPitchSpinBox->setFocusPolicy(Qt::StrongFocus);
       globalPitchSpinBox->setValue(MusEGlobal::song->globalPitchShift());
-      globalPitchSpinBox->setToolTip(tr("midi pitch"));
-      globalPitchSpinBox->setWhatsThis(tr("global midi pitch shift"));
+      globalPitchSpinBox->setToolTip(tr("Midi pitch"));
+      globalPitchSpinBox->setWhatsThis(tr("Global midi pitch shift"));
       toolbar->addWidget(globalPitchSpinBox);
       connect(globalPitchSpinBox, SIGNAL(valueChanged(int)), SLOT(globalPitchChanged(int)));
       
@@ -310,8 +310,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       globalTempoSpinBox->setFocusPolicy(Qt::StrongFocus);
       globalTempoSpinBox->setSuffix(QString("%"));
       globalTempoSpinBox->setValue(MusEGlobal::tempomap.globalTempo());
-      globalTempoSpinBox->setToolTip(tr("midi tempo"));
-      globalTempoSpinBox->setWhatsThis(tr("midi tempo"));
+      globalTempoSpinBox->setToolTip(tr("Midi tempo"));
+      globalTempoSpinBox->setWhatsThis(tr("Midi tempo"));
       toolbar->addWidget(globalTempoSpinBox);
       connect(globalTempoSpinBox, SIGNAL(valueChanged(int)), SLOT(globalTempoChanged(int)));
       

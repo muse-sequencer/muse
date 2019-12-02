@@ -83,5 +83,8 @@
         <file>svg/fileopen.svg</file>
         <file>svg/filesaveas.svg</file>
         <file>svg/fileclose.svg</file>
+        <file>svg/appexit.svg</file>
+        <file>svg/whatsthis.svg</file>
+        <file>svg/exit.svg</file>
     </qresource>
 </RCC>

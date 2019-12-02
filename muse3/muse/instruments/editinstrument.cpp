@@ -58,6 +58,7 @@
 #include "editevent.h"
 #include "operations.h"
 #include "audio.h"
+#include "gui.h"
 
 namespace MusECore {
 extern int string2sysex(const QString& s, unsigned char** data);
@@ -193,6 +194,7 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
    : QMainWindow(parent, fl)
       {
       setupUi(this);
+      toolBar->setIconSize(ICON_SIZE);
 
       workingInstrument = new MusECore::MidiInstrument();
 
@@ -217,10 +219,13 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       fileOpenAction->setIcon(*fileopenSVGIcon);
       fileSaveAction->setIcon(*filesaveSVGIcon);
       fileSaveAsAction->setIcon(*filesaveasSVGIcon);
-      fileCloseAction->setIcon(QIcon(*exitIcon));
+      fileCloseAction->setIcon(*exitSVGIcon);
       viewController->setSelectionMode(QAbstractItemView::SingleSelection);
-      toolBar->addAction(QWhatsThis::createAction(this));
-      Help->addAction(QWhatsThis::createAction(this));
+
+      QAction* whatsthis = QWhatsThis::createAction(this);
+      whatsthis->setIcon(*whatsthisSVGIcon);
+      toolBar->addAction(whatsthis);
+      Help->addAction(whatsthis);
 
       // populate instrument list
       oldMidiInstrument = 0;

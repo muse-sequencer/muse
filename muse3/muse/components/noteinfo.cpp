@@ -53,7 +53,7 @@ NoteInfo::NoteInfo(QWidget* parent)
       deltaButton = new PixmapButton(deltaOnIcon, deltaOffIcon, 2);
       deltaButton->setFocusPolicy(Qt::NoFocus);
       deltaButton->setCheckable(true);
-      deltaButton->setToolTip(tr("delta/absolute mode"));
+      deltaButton->setToolTip(tr("Delta/Absolute mode"));
       addWidget(deltaButton);
       
       QLabel* label = new QLabel(tr("Start"));

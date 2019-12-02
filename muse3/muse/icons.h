@@ -52,7 +52,6 @@ extern QPixmap* midiCtrlMergeEraseIcon;
 extern QPixmap* midiCtrlMergeEraseInclusiveIcon;
 extern QPixmap* midiCtrlMergeEraseWysiwygIcon;
 
-extern QPixmap* appexitIcon;
 extern QPixmap* muteIcon;
 extern QPixmap* eyeIcon;
 extern QPixmap* eyeCrossedIcon;
@@ -80,7 +79,6 @@ extern QIcon* editpasteClone2TrackIconSet;
 extern QPixmap* editpasteSIcon;
 extern QPixmap* editpasteCloneSIcon;
 
-extern QPixmap* exitIcon;
 extern QPixmap* record1_Icon;
 
 extern QPixmap* routesInIcon;
@@ -313,6 +311,9 @@ extern QIcon* fileopenSVGIcon;
 extern QIcon* filesaveSVGIcon;
 extern QIcon* filesaveasSVGIcon;
 extern QIcon* filecloseSVGIcon;
+extern QIcon* appexitSVGIcon;
+extern QIcon* whatsthisSVGIcon;
+extern QIcon* exitSVGIcon;
 
 extern QIcon* pencilIconSVG;
 extern QIcon* glueIconSVG;

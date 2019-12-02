@@ -42,7 +42,7 @@ MTScale::MTScale(int* r, QWidget* parent, int xs, bool _mode)
    : View(parent, xs, 1)
       {
       waveMode = _mode;
-      setToolTip(tr("bar scale"));
+      setToolTip(tr("Bar scale"));
       barLocator = false;
       raster = r;
       if (waveMode) {

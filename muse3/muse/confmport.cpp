@@ -976,7 +976,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
 void MPConfig::setToolTip(QTableWidgetItem *item, int col)
       {
       switch (col) {
-            case DEVCOL_NO:     item->setToolTip(tr("Port Number")); break;
+            case DEVCOL_NO:     item->setToolTip(tr("Port number")); break;
             
 #ifndef _USE_EXTRA_INSTANCE_COLUMNS_
             case DEVCOL_GUI:    item->setToolTip(tr("Enable gui")); break;

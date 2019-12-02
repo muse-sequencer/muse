@@ -250,7 +250,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       MusEGlobal::song->populateScriptMenu(menuPlugins, &_scriptReceiver);
 
 
-      menuConfig = menuBar()->addMenu(tr("Window &Config"));      
+      menuConfig = menuBar()->addMenu(tr("Win&Config"));
       
       eventColor = menuConfig->addMenu(tr("&Event Color"));      
       
@@ -296,28 +296,30 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       tools->setObjectName("Pianoroll tools");
 
       srec  = new QToolButton();
-      srec->setToolTip(tr("Step Record"));
+      srec->setToolTip(tr("Step record"));
       srec->setIcon(*steprecSVGIcon);
       srec->setCheckable(true);
       srec->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(srec);
 
       midiin  = new QToolButton();
-      midiin->setToolTip(tr("Midi Input"));
+      midiin->setToolTip(tr("Midi input"));
       midiin->setIcon(*midiinSVGIcon);
       midiin->setCheckable(true);
       midiin->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(midiin);
 
       speaker  = new QToolButton();
-      speaker->setToolTip(tr("Play Events"));
+      speaker->setToolTip(tr("Play events"));
       speaker->setIcon(*speakerSVGIcon);
       speaker->setCheckable(true);
       speaker->setChecked(true);
       speaker->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(speaker);
 
-      tools->addAction(QWhatsThis::createAction(this));
+      QAction* whatsthis = QWhatsThis::createAction(this);
+      whatsthis->setIcon(*whatsthisSVGIcon);
+      tools->addAction(whatsthis);
       
       toolbar = new MusEGui::Toolbar1(this, _rasterInit);
       toolbar->setObjectName("Pianoroll Pos/Snap/Solo-tools");

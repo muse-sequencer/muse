@@ -69,11 +69,11 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	//setDockNestingEnabled(true); // Allow multiple rows.	Tim.
 	setIconSize(ICON_SIZE);
 
-	subwinAction=new QAction(tr("As subwindow"), this);
+    subwinAction=new QAction(tr("As Subwindow"), this);
 	subwinAction->setCheckable(true);
 	connect(subwinAction, SIGNAL(toggled(bool)), SLOT(setIsMdiWin(bool)));
 
-	shareAction=new QAction(tr("Shares tools and menu"), this);
+    shareAction=new QAction(tr("Shares Tools and Menu"), this);
 	shareAction->setCheckable(true);
 	connect(shareAction, SIGNAL(toggled(bool)), SLOT(shareToolsAndMenu(bool)));
 

@@ -69,7 +69,6 @@
 #include "xpm/lmark.xpm"
 #include "xpm/rmark.xpm"
 #include "xpm/cursor.xpm"
-#include "xpm/appexit.xpm"
 
 #include "xpm/routing_input_button_slim_4.xpm"
 #include "xpm/routing_output_button_slim_4.xpm"
@@ -98,8 +97,6 @@
 #include "xpm/editpasteclone2trackS.xpm"
 
 #include "xpm/buttondown.xpm"
-
-#include "xpm/exit.xpm"
 
 #include "xpm/toggle_small.xpm"
 #include "xpm/greendot.xpm"
@@ -216,8 +213,6 @@ QPixmap* deltaOffIcon;
 QPixmap* veloPerNote_OnIcon;
 QPixmap* veloPerNote_OffIcon;
 
-QPixmap* exitIcon;
-
 QPixmap* routesInIcon;
 QPixmap* routesOutIcon;
 QPixmap* routesMidiInIcon;
@@ -236,7 +231,6 @@ QPixmap* note1Icon;
 QPixmap* synthIcon;
 QPixmap* markIcon[3];
 QPixmap* cursorIcon;
-QPixmap* appexitIcon;
 QPixmap* muteIcon;
 QPixmap* eyeIcon;
 QPixmap* eyeCrossedIcon;
@@ -482,6 +476,9 @@ QIcon* fileopenSVGIcon;
 QIcon* filesaveSVGIcon;
 QIcon* filesaveasSVGIcon;
 QIcon* filecloseSVGIcon;
+QIcon* appexitSVGIcon;
+QIcon* whatsthisSVGIcon;
+QIcon* exitSVGIcon;
 
 // tool icons
 QIcon* pencilIconSVG;
@@ -545,7 +542,6 @@ void initIcons(bool useThemeIconsIfPossible)
       markIcon[1]  = MPIXMAP(lmark_xpm, nullptr);
       markIcon[2]  = MPIXMAP(rmark_xpm, nullptr);
       cursorIcon   = MPIXMAP(cursor_xpm, nullptr);
-      appexitIcon  = MPIXMAP(appexit_xpm, "application-exit");
       muteIcon     = MPIXMAP(editmuteS_xpm, "audio-volume-muted");
       eyeIcon      = MPIXMAP(eye_xpm, nullptr);
       eyeCrossedIcon  = MPIXMAP(eye_crossed_xpm, nullptr);
@@ -569,9 +565,6 @@ void initIcons(bool useThemeIconsIfPossible)
       editpasteClone2TrackIconSet = MICON(editpasteclone2trackS_xpm, nullptr); // ..
       editpasteSIcon      = MPIXMAP(editpasteS_xpm, nullptr);
       editpasteCloneSIcon = MPIXMAP(editpastecloneS_xpm, nullptr);
-
-      // Changed by Tim. There are IMO no suitable theme substitutes for these two so far...
-      exitIcon             = MPIXMAP(exit_xpm, nullptr);
 
       routesInIcon         = MPIXMAP(routing_input_button_slim_4_xpm, nullptr);
       routesOutIcon        = MPIXMAP(routing_output_button_slim_4_xpm, nullptr);
@@ -825,12 +818,16 @@ void initIcons(bool useThemeIconsIfPossible)
       midiinSVGIcon     = new QIcon(":/svg/midiin.svg");
       steprecSVGIcon    = new QIcon(":/svg/steprec.svg");
       speakerSVGIcon    = new QIcon(":/svg/speaker.svg");
+      whatsthisSVGIcon  = new QIcon(":/svg/whatsthis.svg");
+      exitSVGIcon       = new QIcon(":/svg/exit.svg");
 
       filenewSVGIcon     = MICONSVG(new QIcon(":/svg/filenew.svg"), "document-new");
       fileopenSVGIcon    = MICONSVG(new QIcon(":/svg/fileopen.svg"), "document-open");
       filesaveSVGIcon    = MICONSVG(new QIcon(":/svg/filesave.svg"), "document-save");
       filesaveasSVGIcon  = MICONSVG(new QIcon(":/svg/filesaveas.svg"), "document-save-as");
       filecloseSVGIcon   = MICONSVG(new QIcon(":/svg/fileclose.svg"), "document-close");
+      appexitSVGIcon     = MICONSVG(new QIcon(":/svg/appexit.svg"), "application-exit");
+
 
       // tool icons
       pencilIconSVG     = new QIcon(":/svg/pencil.svg");
@@ -894,7 +891,6 @@ void deleteIcons()
       delete markIcon[1];  
       delete markIcon[2];  
       delete cursorIcon;   
-      delete appexitIcon;  
       delete muteIcon;
       delete upIcon;       
       delete downIcon;     
@@ -916,8 +912,6 @@ void deleteIcons()
 
       delete editpasteSIcon;
       delete editpasteCloneSIcon;
-
-      delete exitIcon;             
 
       delete routesInIcon;         
       delete routesOutIcon;        
@@ -1142,6 +1136,9 @@ void deleteIcons()
       delete filesaveSVGIcon;
       delete filesaveasSVGIcon;
       delete filecloseSVGIcon;
+      delete appexitSVGIcon;
+      delete whatsthisSVGIcon;
+      delete exitSVGIcon;
 
       delete pencilIconSVG;
       delete glueIconSVG;

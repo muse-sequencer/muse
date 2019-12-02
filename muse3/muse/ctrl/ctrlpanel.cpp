@@ -110,7 +110,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       selCtrl->setFixedHeight(20);
       selCtrl->setSizePolicy(
          QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
-      selCtrl->setToolTip(tr("select controller"));
+      selCtrl->setToolTip(tr("Select controller"));
       
       // destroy button
       QPushButton* destroy = new QPushButton(tr("X"), this);
@@ -120,7 +120,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       destroy->setFixedHeight(20);
       destroy->setSizePolicy(
          QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
-      destroy->setToolTip(tr("remove panel"));
+      destroy->setToolTip(tr("Remove panel"));
       // Cursor Position
       connect(selCtrl, SIGNAL(clicked()), SLOT(ctrlPopup()));
       connect(destroy, SIGNAL(clicked()), SIGNAL(destroyPanel()));
@@ -229,7 +229,7 @@ void CtrlPanel::buildPanel()
   {
     _slider = new CompactSlider(this, "CtrlPanelSlider");
     _slider->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-    _slider->setToolTip(tr("manual adjust (Ctrl-double-click on/off)"));
+    _slider->setToolTip(tr("Manual adjust (Ctrl-double-click on/off)"));
     //_slider->setFocusPolicy(Qt::NoFocus);
     _slider->setRange(0.0, 127.0, 1.0);
     _slider->setValue(0.0);

@@ -1750,7 +1750,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
             autoType->setPalette(palette);
             }
 
-      autoType->setToolTip(tr("automation type"));
+      autoType->setToolTip(tr("Automation type"));
       connect(autoType, SIGNAL(activated(int)), SLOT(setAutomationType(int)));
       addGridWidget(autoType, _automationPos);
 

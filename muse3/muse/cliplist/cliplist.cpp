@@ -133,7 +133,7 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       setCentralWidget(editor);
 
             
-      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("Win&Config"));
       settingsMenu->addAction(subwinAction);      
       settingsMenu->addAction(shareAction);      
       settingsMenu->addAction(fullscreenAction);      

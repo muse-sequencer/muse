@@ -3527,14 +3527,16 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       connect(fileSave, &QAction::triggered, [this]() { save(); } );
       tools->addAction(fileSave);
 
-      tools->addAction(QWhatsThis::createAction(this));
+      QAction* whatsthis = QWhatsThis::createAction(this);
+      whatsthis->setIcon(*whatsthisSVGIcon);
+      tools->addAction(whatsthis);
 
       //onOff = new QAction(QIcon(*exitIconS), tr("bypass plugin"), this);
-      onOff = new QAction(*muteSVGIcon, tr("bypass plugin"), this);
+      onOff = new QAction(*muteSVGIcon, tr("Bypass plugin"), this);
       onOff->setCheckable(true);
       onOff->setChecked(!plugin->on());
       onOff->setEnabled(plugin->hasBypass());
-      onOff->setToolTip(tr("bypass plugin"));
+      onOff->setToolTip(tr("Bypass plugin"));
       connect(onOff, &QAction::toggled, [this](bool v) { bypassToggled(v); } );
       tools->addAction(onOff);
 

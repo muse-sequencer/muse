@@ -496,8 +496,8 @@ MusE::MusE() : QMainWindow()
       //-------- File Actions
 
       fileNewAction = new QAction(*MusEGui::filenewSVGIcon, tr("&New"), this);
-      fileNewAction->setToolTip(tr("Create New Song"));
-      fileNewAction->setWhatsThis(tr("Create New Song"));
+      fileNewAction->setToolTip(tr("Create new song"));
+      fileNewAction->setWhatsThis(tr("Create new song"));
 
       fileOpenAction = new QAction(*MusEGui::fileopenSVGIcon, tr("&Open..."), this);
 
@@ -526,24 +526,24 @@ MusE::MusE() : QMainWindow()
       fileImportPartAction = new QAction(tr("Import Part..."), this);
 
       fileImportWaveAction = new QAction(tr("Import Audio File..."), this);
-      fileMoveWaveFiles = new QAction(tr("Find unused wave files"), this);
+      fileMoveWaveFiles = new QAction(tr("Find Unused Wave Files"), this);
 
-      quitAction = new QAction(QIcon(*MusEGui::appexitIcon), tr("&Quit"), this);
+      quitAction = new QAction(*MusEGui::appexitSVGIcon, tr("&Quit"), this);
 
       editSongInfoAction = new QAction(QIcon(*MusEGui::edit_listIcon), tr("Song Info"), this);
 
       //-------- View Actions
-      viewTransportAction = new QAction(QIcon(*MusEGui::view_transport_windowIcon), tr("Transport Panel"), this);
+      viewTransportAction = new QAction(QIcon(*MusEGui::view_transport_windowIcon), tr("Transport Panel..."), this);
       viewTransportAction->setCheckable(true);
-      viewBigtimeAction = new QAction(QIcon(*MusEGui::view_bigtime_windowIcon), tr("Bigtime Window"),  this);
+      viewBigtimeAction = new QAction(QIcon(*MusEGui::view_bigtime_windowIcon), tr("Bigtime Window..."),  this);
       viewBigtimeAction->setCheckable(true);
-      viewMixerAAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer A"), this);
+      viewMixerAAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer A..."), this);
       viewMixerAAction->setCheckable(true);
-      viewMixerBAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer B"), this);
+      viewMixerBAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer B..."), this);
       viewMixerBAction->setCheckable(true);
-      viewCliplistAction = new QAction(QIcon(*MusEGui::cliplistSIcon), tr("Cliplist"), this);
+      viewCliplistAction = new QAction(QIcon(*MusEGui::cliplistSIcon), tr("Cliplist..."), this);
       viewCliplistAction->setCheckable(true);
-      viewMarkerAction = new QAction(QIcon(*MusEGui::view_markerIcon), tr("Marker View"),  this);
+      viewMarkerAction = new QAction(QIcon(*MusEGui::view_markerIcon), tr("Marker View..."),  this);
       viewMarkerAction->setCheckable(true);
       viewArrangerAction = new QAction(tr("Arranger View"),  this);
       viewArrangerAction->setCheckable(true);
@@ -552,20 +552,20 @@ MusE::MusE() : QMainWindow()
       fullscreenAction->setChecked(false);
       QMenu* master = new QMenu(tr("Mastertrack"), this);
       master->setIcon(QIcon(*edit_mastertrackIcon));
-      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Graphic"), this);
-      masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List"), this);
+      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Graphic..."), this);
+      masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List..."), this);
       master->addAction(masterGraphicAction);
       master->addAction(masterListAction);
 
       //-------- Midi Actions
       menuScriptPlugins = new QMenu(tr("&Plugins"), this);
-      midiEditInstAction = new QAction(QIcon(*MusEGui::midi_edit_instrumentIcon), tr("Edit Instrument"), this);
+      midiEditInstAction = new QAction(QIcon(*MusEGui::midi_edit_instrumentIcon), tr("Edit Instrument..."), this);
       midiInputPlugins = new QMenu(tr("Input Plugins"), this);
       midiInputPlugins->setIcon(QIcon(*MusEGui::midi_inputpluginsIcon));
-      midiTrpAction = new QAction(QIcon(*MusEGui::midi_inputplugins_transposeIcon), tr("Transpose"), this);
-      midiInputTrfAction = new QAction(QIcon(*MusEGui::midi_inputplugins_midi_input_transformIcon), tr("Midi Input Transform"), this);
-      midiInputFilterAction = new QAction(QIcon(*MusEGui::midi_inputplugins_midi_input_filterIcon), tr("Midi Input Filter"), this);
-      midiRemoteAction = new QAction(QIcon(*MusEGui::midi_inputplugins_remote_controlIcon), tr("Midi Remote Control"), this);
+      midiTrpAction = new QAction(QIcon(*MusEGui::midi_inputplugins_transposeIcon), tr("Transpose..."), this);
+      midiInputTrfAction = new QAction(QIcon(*MusEGui::midi_inputplugins_midi_input_transformIcon), tr("Midi Input Transform..."), this);
+      midiInputFilterAction = new QAction(QIcon(*MusEGui::midi_inputplugins_midi_input_filterIcon), tr("Midi Input Filter..."), this);
+      midiRemoteAction = new QAction(QIcon(*MusEGui::midi_inputplugins_remote_controlIcon), tr("Midi Remote Control..."), this);
 #ifdef BUILD_EXPERIMENTAL
       midiRhythmAction = new QAction(QIcon(*midi_inputplugins_random_rhythm_generatorIcon), tr("Rhythm Generator"), this);
 #endif
@@ -575,7 +575,7 @@ MusE::MusE() : QMainWindow()
 
       //-------- Audio Actions
       audioBounce2TrackAction = new QAction(QIcon(*MusEGui::audio_bounce_to_trackIcon), tr("Bounce to Track"), this);
-      audioBounce2FileAction = new QAction(QIcon(*MusEGui::audio_bounce_to_fileIcon), tr("Bounce to File"), this);
+      audioBounce2FileAction = new QAction(QIcon(*MusEGui::audio_bounce_to_fileIcon), tr("Bounce to File..."), this);
       audioRestartAction = new QAction(QIcon(*MusEGui::audio_restartaudioIcon), tr("Restart Audio"), this);
 
       //-------- Automation Actions
@@ -587,13 +587,13 @@ MusE::MusE() : QMainWindow()
       //-------- Windows Actions
       windowsCascadeAction = new QAction(tr("Cascade"), this);
       windowsTileAction = new QAction(tr("Tile"), this);
-      windowsRowsAction = new QAction(tr("In rows"), this);
-      windowsColumnsAction = new QAction(tr("In columns"), this);
+      windowsRowsAction = new QAction(tr("In Rows"), this);
+      windowsColumnsAction = new QAction(tr("In Columns"), this);
 
 
       //-------- Settings Actions
-      settingsGlobalAction = new QAction(QIcon(*MusEGui::settings_globalsettingsIcon), tr("Global Settings"), this);
-      settingsShortcutsAction = new QAction(QIcon(*MusEGui::settings_configureshortcutsIcon), tr("Configure Shortcuts"), this);
+      settingsGlobalAction = new QAction(QIcon(*MusEGui::settings_globalsettingsIcon), tr("Global Settings..."), this);
+      settingsShortcutsAction = new QAction(QIcon(*MusEGui::settings_configureshortcutsIcon), tr("Configure Shortcuts..."), this);
       follow = new QMenu(tr("Follow Song"), this);
       dontFollowAction = new QAction(tr("Don't Follow Song"), this);
       dontFollowAction->setCheckable(true);
@@ -603,25 +603,25 @@ MusE::MusE() : QMainWindow()
       followCtsAction = new QAction(tr("Follow Continuous"), this);
       followCtsAction->setCheckable(true);
 
-      rewindOnStopAction=new QAction(tr("Rewind on stop"), this);
+      rewindOnStopAction=new QAction(tr("Rewind on Stop"), this);
       rewindOnStopAction->setCheckable(true);
       rewindOnStopAction->setChecked(MusEGlobal::config.useRewindOnStop);
 
-      settingsMetronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome"), this);
-      settingsMidiSyncAction = new QAction(QIcon(*MusEGui::settings_midisyncIcon), tr("Midi Sync"), this);
-      settingsMidiIOAction = new QAction(QIcon(*MusEGui::settings_midifileexportIcon), tr("Midi File Import/Export"), this);
-      settingsAppearanceAction = new QAction(QIcon(*MusEGui::settings_appearance_settingsIcon), tr("Appearance Settings"), this);
-      settingsMidiPortAction = new QAction(QIcon(*MusEGui::settings_midiport_softsynthsIcon), tr("Midi Ports / Soft Synth"), this);
+      settingsMetronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome..."), this);
+      settingsMidiSyncAction = new QAction(QIcon(*MusEGui::settings_midisyncIcon), tr("Midi Sync..."), this);
+      settingsMidiIOAction = new QAction(QIcon(*MusEGui::settings_midifileexportIcon), tr("Midi File Import/Export..."), this);
+      settingsAppearanceAction = new QAction(QIcon(*MusEGui::settings_appearance_settingsIcon), tr("Appearance Settings..."), this);
+      settingsMidiPortAction = new QAction(QIcon(*MusEGui::settings_midiport_softsynthsIcon), tr("Midi Ports / Soft Synth..."), this);
 
       //-------- Help Actions
-      helpManualAction = new QAction(tr("&Manual"), this);
-      helpHomepageAction = new QAction(tr("&MusE Homepage"), this);
-      helpDidYouKnow = new QAction(tr("&Did you know?"), this);
+      helpManualAction = new QAction(tr("&Manual..."), this);
+      helpHomepageAction = new QAction(tr("&MusE Homepage..."), this);
+      helpDidYouKnow = new QAction(tr("&Did You Know?"), this);
 
       helpReportAction = new QAction(tr("&Report Bug..."), this);
-      helpAboutAction = new QAction(tr("&About MusE"), this);
+      helpAboutAction = new QAction(tr("&About MusE..."), this);
 
-      helpSnooperAction = new QAction(tr("Snooper (developer tool)"), this);
+      helpSnooperAction = new QAction(tr("Snooper (developer tool)..."), this);
 
       //---- Connections
       //-------- File connections
@@ -724,7 +724,9 @@ MusE::MusE() : QMainWindow()
       tools->addAction(fileNewAction);
       tools->addAction(fileOpenAction);
       tools->addAction(fileSaveAction);
-      tools->addAction(QWhatsThis::createAction(this));
+      QAction* whatsthis = QWhatsThis::createAction(this);
+      whatsthis->setIcon(*whatsthisSVGIcon);
+      tools->addAction(whatsthis);
 
       QToolBar* undoToolbar = addToolBar(tr("Undo/Redo"));
       undoToolbar->setObjectName("Undo/Redo tools");
@@ -957,7 +959,7 @@ MusE::MusE() : QMainWindow()
       menu_help->addSeparator();
       menu_help->addAction(helpAboutAction);
 
-      menu_help->addAction(tr("About &Qt"), qApp, SLOT(aboutQt()));
+      menu_help->addAction(tr("About &Qt..."), qApp, SLOT(aboutQt()));
 
       //---------------------------------------------------
       //    Central Widget

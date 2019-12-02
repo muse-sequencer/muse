@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-<svg width="64" height="64" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:xlink="http://www.w3.org/1999/xlink">
- <defs>
-  <linearGradient id="linearGradient1393" x1="25" x2="51" y1="29" y2="55" gradientUnits="userSpaceOnUse">
-   <stop stop-color="#fff" offset="0"/>
-   <stop stop-color="#fca" offset="1"/>
-  </linearGradient>
- </defs>
+<svg width="64" height="64" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
  <metadata>
   <rdf:RDF>
    <cc:Work rdf:about="">
@@ -20,11 +13,12 @@
  <path d="m18.252 61.087v-17.409l2.8862-2.6783h25.976l2.8862 2.6783v17.409" fill="#b3b3b3"/>
  <path d="m26.016 57.664v-12.364h6.984v12.364z" fill="#24356b" fill-rule="evenodd"/>
  <path d="m11.334 3.1316v26.777l3.9712 4.0165h33.093l3.9712-4.0165v-26.777" fill="none"/>
- <path d="m60.37 31.989v28.887h-11.589v-16.743l-2.9614-2.9923h-24.011l-2.958 2.9957v16.74h-1.4468l-5.1985-0.084337-4.5421-4.7895-4.292-4.0304 0.11118-17.321c0.047456-7.393-0.055562-17.515-0.055562-22.495v-9.0525h7.6702v25.851l4.2949 4.3423h33.016l4.2924-4.3448v-25.849h7.6702v28.887z" fill="#24356b" stroke="#373748" stroke-width=".12856"/>
- <path d="m60.742 61.18v-58.437h-57.773l0.19924 49.208 9.0079 9.1806 49.149 0.16695" fill="none" stroke="#000" stroke-linejoin="round" stroke-width="1px"/>
- <g transform="matrix(.42687 0 0 .42687 17.925 4.8894)" stroke-width="2.3426">
-  <path d="m10 4v55h45v-40l-15-15z" fill="url(#linearGradient1393)" stroke="#000" stroke-width="2.3426"/>
-  <path d="m40 4v15h15" fill="none" stroke="#000" stroke-width="2.3426"/>
-  <path d="m41.038 12.241v-5.7342l5.7188 5.7185c3.1453 3.1452 5.7188 5.7256 5.7188 5.7342 0 0.0087-2.5734 0.01575-5.7188 0.01575h-5.7188z" fill="#fff" style="paint-order:stroke fill markers"/>
+ <path d="m60.37 31.989v28.887h-11.589v-16.743l-2.9614-2.9923h-24.011l-2.958 2.9957v16.74h-1.4468l-5.1985-0.08434-4.5421-4.7895-4.292-4.0304 0.11118-17.321c0.047456-7.393-0.055562-17.515-0.055562-22.495v-9.0525h7.6702v25.851l4.2949 4.3423h33.016l4.2924-4.3448v-25.849h7.6702v28.887z" fill="#24356b" stroke="#373748" stroke-width=".12856"/>
+ <path d="m60.742 61.18v-58.437h-57.773l0.19924 49.208 9.0079 9.1806 49.149 0.16695" fill="none" stroke="#000" stroke-linejoin="round" stroke-width="1.0016"/>
+ <g display="none" fill="#806600" stroke="#806600" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.0016">
+  <circle cx="19.939" cy="25.012" r="2.3579" style="paint-order:stroke fill markers"/>
+  <circle cx="32.36" cy="25.011" r="2.3579" style="paint-order:stroke fill markers"/>
+  <circle cx="44.907" cy="25.247" r="2.3579" style="paint-order:stroke fill markers"/>
  </g>
+ <text transform="scale(1.1273 .8871)" x="18.70022" y="34.460735" fill="#806600" font-family="sans-serif" font-size="37.629px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="18.70022" y="34.460735" fill="#806600" font-family="sans-serif" font-size="37.629px" font-weight="bold" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal">?</tspan></text>
 </svg>

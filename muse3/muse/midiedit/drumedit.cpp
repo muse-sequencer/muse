@@ -353,7 +353,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       MusEGlobal::song->populateScriptMenu(menuScriptPlugins, &_scriptReceiver);
 
 
-      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("Win&Config"));
       if (!old_style_drummap_mode())
       {
         QMenu* menuGrouping=settingsMenu->addMenu(tr("Group"));
@@ -418,28 +418,31 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       tools->setObjectName("Drum tools");
 
       srec  = new QToolButton();
-      srec->setToolTip(tr("Step Record"));
+      srec->setToolTip(tr("Step record"));
       srec->setIcon(*steprecSVGIcon);
       srec->setCheckable(true);
       srec->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(srec);
 
       midiin  = new QToolButton();
-      midiin->setToolTip(tr("Midi Input"));
+      midiin->setToolTip(tr("Midi input"));
       midiin->setIcon(*midiinSVGIcon);
       midiin->setCheckable(true);
       midiin->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(midiin);
       
       speaker  = new QToolButton();
-      speaker->setToolTip(tr("Play Events"));
+      speaker->setToolTip(tr("Play events"));
       speaker->setIcon(*speakerSVGIcon);
       speaker->setCheckable(true);
       speaker->setChecked(true);
       speaker->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(speaker);
 
-      tools->addAction(QWhatsThis::createAction(this));
+      QAction* whatsthis = QWhatsThis::createAction(this);
+      whatsthis->setIcon(*whatsthisSVGIcon);
+      tools->addAction(whatsthis);
+
 
       if (old_style_drummap_mode())
       {
@@ -447,14 +450,14 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
         maptools->setObjectName("Drum map tools");
         
         QToolButton *ldm = new QToolButton();
-        ldm->setToolTip(tr("Load Drummap"));
+        ldm->setToolTip(tr("Load drummap"));
         ldm->setIcon(*fileopenSVGIcon);
         ldm->setFocusPolicy(Qt::NoFocus);
         connect(ldm, SIGNAL(clicked()), SLOT(load()));
         maptools->addWidget(ldm);
         
         QToolButton *sdm = new QToolButton();
-        sdm->setToolTip(tr("Store Drummap"));
+        sdm->setToolTip(tr("Store drummap"));
         sdm->setIcon(*filesaveSVGIcon);
         sdm->setFocusPolicy(Qt::NoFocus);
         connect(sdm, SIGNAL(clicked()), SLOT(save()));
@@ -469,7 +472,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       addToolBarBreak();
       
       info    = new MusEGui::NoteInfo(this);
-      info->setObjectName("Drum Note Info");
+      info->setObjectName("Drum note info");
       addToolBar(info);
 
       QToolBar* cursorToolbar = addToolBar(tr("cursor tools"));
@@ -511,7 +514,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
       hscroll           = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, _viewState.xscale(), 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(40, hscroll->sizeHint().height());
-      ctrl->setToolTip(tr("Add Controller View"));
+      ctrl->setToolTip(tr("Add controller view"));
 
       QSizeGrip* corner = new QSizeGrip(mainw);
       //corner->setFixedHeight(hscroll->sizeHint().height());

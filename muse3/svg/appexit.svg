@@ -9,7 +9,9 @@
    </cc:Work>
   </rdf:RDF>
  </metadata>
- <path d="m10 4v55h45v-40l-15-15z" fill="#fff" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
- <path d="m40 4v15h15" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
- <path d="m41.038 12.241v-5.7342l5.7188 5.7185c3.1453 3.1452 5.7188 5.7256 5.7188 5.7342 0 0.0087-2.5734 0.01575-5.7188 0.01575h-5.7188z" fill="#fff" style="paint-order:stroke fill markers"/>
+ <circle cx="31.788" cy="31.937" r="30.01" fill="#d40000" style="paint-order:stroke fill markers"/>
+ <g transform="matrix(2.1436 0 0 2.1436 -37.879 -46.974)" fill="#fff" stroke="#fff" stroke-width="2.799">
+  <path d="m25 29 15 15"/>
+  <path d="m40 29-15 15"/>
+ </g>
 </svg>
