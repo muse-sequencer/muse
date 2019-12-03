@@ -614,7 +614,7 @@ void TList::returnPressed()
                             editor->blockSignals(false); 
                             QMessageBox::critical(this,
                               tr("MusE: bad trackname"),
-                              tr("please choose a unique track name"),
+                              tr("Please choose a unique track name"),
                               QMessageBox::Ok,
                               Qt::NoButton,
                               Qt::NoButton);
@@ -1066,12 +1066,12 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
         if(!synth->synth())
           p->addAction(tr("SYNTH IS UNAVAILABLE!"));
 
-        QAction* gact = p->addAction(tr("show gui"));
+        QAction* gact = p->addAction(tr("Show gui"));
         gact->setCheckable(true);
         gact->setEnabled(synth->hasGui());
         gact->setChecked(synth->guiVisible());
   
-        QAction* nact = p->addAction(tr("show native gui"));
+        QAction* nact = p->addAction(tr("Show native gui"));
         nact->setCheckable(true);
         nact->setEnabled(synth->hasNativeGui());
         nact->setChecked(synth->nativeGuiVisible());
@@ -1131,12 +1131,12 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
           p->addAction(tr("SYNTH IS UNAVAILABLE!"));
       }
 
-      QAction* gact = p->addAction(tr("show gui"));
+      QAction* gact = p->addAction(tr("Show gui"));
       gact->setCheckable(true);
       gact->setEnabled(port->hasGui());
       gact->setChecked(port->guiVisible());
 
-      QAction* nact = p->addAction(tr("show native gui"));
+      QAction* nact = p->addAction(tr("Show native gui"));
       nact->setCheckable(true);
       nact->setEnabled(port->hasNativeGui());
       nact->setChecked(port->nativeGuiVisible());
@@ -1555,7 +1555,7 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
     }
   }
   m->addAction(new MenuTitleItem(tr("Other"), m));
-  QAction *act = m->addAction(tr("clear automation"));
+  QAction *act = m->addAction(tr("Clear automation"));
   act->setCheckable(false);
   act->setData((id<<8) + 253); // Shift 8 bits. Make clear menu item 253 (should enum this)
   

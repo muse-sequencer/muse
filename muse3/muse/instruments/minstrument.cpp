@@ -263,7 +263,7 @@ loadIDF_end:
 
 void initMidiInstruments()
       {
-      genericMidiInstrument = new MidiInstrument(QWidget::tr("generic midi"));
+      genericMidiInstrument = new MidiInstrument(QWidget::tr("Generic midi"));
       midiInstruments.push_back(genericMidiInstrument);
 
       // Initialize with a default drum map on default channel. Patch is default 0xffffff. GM-1 does not specify a drum patch number.

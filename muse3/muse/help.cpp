@@ -77,7 +77,7 @@ void MusE::startHelpBrowser()
         if (access(museHelp.toLatin1(), R_OK) != 0) {
               museHelp = DOCDIR + QString("/muse_html/single/documentation/index.html");
               if (access(museHelp.toLatin1(), R_OK) != 0) {
-                    QString info(tr("no help found at: "));
+                    QString info(tr("No help found at: "));
                     info += museHelp;
                     QMessageBox::critical(this, tr("MusE: Open Help"), info);
                     return;

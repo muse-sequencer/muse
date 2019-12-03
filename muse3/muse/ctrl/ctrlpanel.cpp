@@ -259,7 +259,7 @@ void CtrlPanel::buildPanel()
   _veloPerNoteButton = new PixmapButton(veloPerNote_OnIcon, veloPerNote_OffIcon, 2, this);  // Margin = 2
   _veloPerNoteButton->setFocusPolicy(Qt::NoFocus);
   _veloPerNoteButton->setCheckable(true);
-  _veloPerNoteButton->setToolTip(tr("all/per-note velocity mode"));
+  _veloPerNoteButton->setToolTip(tr("All/Per-note velocity mode"));
   _veloPerNoteButton->setEnabled(false);
   _veloPerNoteButton->hide();
   connect(_veloPerNoteButton, SIGNAL(clicked()), SLOT(velPerNoteClicked()));

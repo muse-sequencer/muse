@@ -234,7 +234,7 @@ void MidiTransformation::write(int level, Xml& xml)
 
 void readMidiTransform(Xml& xml)
       {
-      MidiTransformation trans(QWidget::tr("new"));
+      MidiTransformation trans(QWidget::tr("New"));
 
       for (;;) {
             Xml::Token token = xml.parse();

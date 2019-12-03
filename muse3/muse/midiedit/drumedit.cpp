@@ -93,20 +93,20 @@ static const int drumeditTools = MusEGui::PointerTool | MusEGui::PencilTool | Mu
 
 void DrumEdit::setHeaderWhatsThis()
       {
-      header->setWhatsThis(COL_HIDE, tr("hide instrument"));
-      header->setWhatsThis(COL_MUTE, tr("mute instrument"));
-      header->setWhatsThis(COL_NAME, tr("sound name"));
-      header->setWhatsThis(COL_VOLUME, tr("volume percent"));
-      header->setWhatsThis(COL_QUANT, tr("quantisation"));
-      header->setWhatsThis(COL_INPUTTRIGGER, tr("this input note triggers the sound"));
-      header->setWhatsThis(COL_NOTELENGTH, tr("note length"));
-      header->setWhatsThis(COL_NOTE, tr("this is the note which is played"));
-      header->setWhatsThis(COL_OUTCHANNEL, tr("override track output channel (hold ctl to affect all rows)"));
-      header->setWhatsThis(COL_OUTPORT, tr("override track output port (hold ctl to affect all rows)"));
-      header->setWhatsThis(COL_LEVEL1, tr("control + meta keys: draw velocity level 1"));
-      header->setWhatsThis(COL_LEVEL2, tr("meta key: draw velocity level 2"));
-      header->setWhatsThis(COL_LEVEL3, tr("draw default velocity level 3"));
-      header->setWhatsThis(COL_LEVEL4, tr("meta + alt keys: draw velocity level 4"));
+      header->setWhatsThis(COL_HIDE, tr("Hide instrument"));
+      header->setWhatsThis(COL_MUTE, tr("Mute instrument"));
+      header->setWhatsThis(COL_NAME, tr("Sound name"));
+      header->setWhatsThis(COL_VOLUME, tr("Volume percent"));
+      header->setWhatsThis(COL_QUANT, tr("Quantisation"));
+      header->setWhatsThis(COL_INPUTTRIGGER, tr("This input note triggers the sound"));
+      header->setWhatsThis(COL_NOTELENGTH, tr("Note length"));
+      header->setWhatsThis(COL_NOTE, tr("This is the note which is played"));
+      header->setWhatsThis(COL_OUTCHANNEL, tr("Override track output channel (hold ctl to affect all rows)"));
+      header->setWhatsThis(COL_OUTPORT, tr("Override track output port (hold ctl to affect all rows)"));
+      header->setWhatsThis(COL_LEVEL1, tr("Control + meta keys: Draw velocity level 1"));
+      header->setWhatsThis(COL_LEVEL2, tr("Meta key: Draw velocity level 2"));
+      header->setWhatsThis(COL_LEVEL3, tr("Draw default velocity level 3"));
+      header->setWhatsThis(COL_LEVEL4, tr("Meta + alt keys: Draw velocity level 4"));
       }
 
 //---------------------------------------------------------
@@ -115,20 +115,20 @@ void DrumEdit::setHeaderWhatsThis()
 
 void DrumEdit::setHeaderToolTips()
       {
-      header->setToolTip(COL_HIDE, tr("hide instrument"));
-      header->setToolTip(COL_MUTE, tr("mute instrument"));
-      header->setToolTip(COL_NAME, tr("sound name"));
-      header->setToolTip(COL_VOLUME, tr("volume percent"));
-      header->setToolTip(COL_QUANT, tr("quantisation"));
-      header->setToolTip(COL_INPUTTRIGGER, tr("this input note triggers the sound"));
-      header->setToolTip(COL_NOTELENGTH, tr("note length"));
-      header->setToolTip(COL_NOTE, tr("this is the note which is played"));
-      header->setToolTip(COL_OUTCHANNEL, tr("override track output channel (ctl: affect all rows)"));
-      header->setToolTip(COL_OUTPORT, tr("override track output port (ctl: affect all rows)"));
-      header->setToolTip(COL_LEVEL1, tr("control + meta keys: draw velocity level 1"));
-      header->setToolTip(COL_LEVEL2, tr("meta key: draw velocity level 2"));
-      header->setToolTip(COL_LEVEL3, tr("draw default velocity level 3"));
-      header->setToolTip(COL_LEVEL4, tr("meta + alt keys: draw velocity level 4"));
+      header->setToolTip(COL_HIDE, tr("Hide instrument"));
+      header->setToolTip(COL_MUTE, tr("Mute instrument"));
+      header->setToolTip(COL_NAME, tr("Sound name"));
+      header->setToolTip(COL_VOLUME, tr("Volume percent"));
+      header->setToolTip(COL_QUANT, tr("Quantisation"));
+      header->setToolTip(COL_INPUTTRIGGER, tr("This input note triggers the sound"));
+      header->setToolTip(COL_NOTELENGTH, tr("Note length"));
+      header->setToolTip(COL_NOTE, tr("This is the note which is played"));
+      header->setToolTip(COL_OUTCHANNEL, tr("Override track output channel (ctl: affect all rows)"));
+      header->setToolTip(COL_OUTPORT, tr("Override track output port (ctl: affect all rows)"));
+      header->setToolTip(COL_LEVEL1, tr("Control + meta keys: Draw velocity level 1"));
+      header->setToolTip(COL_LEVEL2, tr("Meta key: Draw velocity level 2"));
+      header->setToolTip(COL_LEVEL3, tr("Draw default velocity level 3"));
+      header->setToolTip(COL_LEVEL4, tr("Meta + alt keys: Draw velocity level 4"));
       }
 
 //---------------------------------------------------------
@@ -475,7 +475,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       info->setObjectName("Drum note info");
       addToolBar(info);
 
-      QToolBar* cursorToolbar = addToolBar(tr("cursor tools"));
+      QToolBar* cursorToolbar = addToolBar(tr("Cursor tools"));
       cursorToolbar->setObjectName("Cursor step tools");
       QLabel *stepStr = new QLabel(tr("Cursor step:"));
       cursorToolbar->addWidget(stepStr);

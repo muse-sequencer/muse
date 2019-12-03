@@ -759,7 +759,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
 
       partPopup->addSeparator();
       int rc = npart->part()->nClones();
-      QString st = QString(tr("s&elect "));
+      QString st = QString(tr("S&elect "));
       if(rc > 1)
         st += (QString().setNum(rc) + QString(" "));
       st += QString(tr("clones"));
@@ -767,10 +767,10 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       act_select->setData(OP_SELECT_CLONES);
 
       partPopup->addSeparator();
-      QAction *act_rename = partPopup->addAction(tr("rename"));
+      QAction *act_rename = partPopup->addAction(tr("Rename"));
       act_rename->setData(OP_RENAME);
 
-      QMenu* colorPopup = partPopup->addMenu(tr("color"));
+      QMenu* colorPopup = partPopup->addMenu(tr("Color"));
 
       // part color selection
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
@@ -778,15 +778,15 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
             act_color->setData(OP_PARTCOLORBASE+i);
             }
 
-      QAction *act_delete = partPopup->addAction(*deleteIconSVG, tr("delete"));
+      QAction *act_delete = partPopup->addAction(*deleteIconSVG, tr("Delete"));
       act_delete->setData(OP_DELETE);
-      QAction *act_split = partPopup->addAction(*cutterIconSVG, tr("split"));
+      QAction *act_split = partPopup->addAction(*cutterIconSVG, tr("Split"));
       act_split->setData(OP_SPLIT);
-      QAction *act_glue = partPopup->addAction(*glueIconSVG, tr("glue"));
+      QAction *act_glue = partPopup->addAction(*glueIconSVG, tr("Glue"));
       act_glue->setData(OP_GLUE);
-      QAction *act_superglue = partPopup->addAction(*glueIconSVG, tr("super glue (merge selection)"));
+      QAction *act_superglue = partPopup->addAction(*glueIconSVG, tr("Super glue (merge selection)"));
       act_superglue->setData(OP_GLUESELECTION);
-      QAction *act_declone = partPopup->addAction(tr("de-clone"));
+      QAction *act_declone = partPopup->addAction(tr("De-clone"));
       act_declone->setData(OP_DECLONE);
 
       partPopup->addSeparator();
@@ -796,7 +796,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   partPopup->addMenu(MusEGlobal::muse->arranger()->parentWin()->scoreSubmenu);
 //                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startScoreEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
-                  QAction *act_mexport = partPopup->addAction(tr("save part to disk"));
+                  QAction *act_mexport = partPopup->addAction(tr("Save part to disk..."));
                   act_mexport->setData(OP_SAVEPARTTODISK);
                   }
                   break;
@@ -804,16 +804,16 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
             case MusECore::Track::DRUM: {
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startDrumEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
-                  QAction *act_dexport = partPopup->addAction(tr("save part to disk"));
+                  QAction *act_dexport = partPopup->addAction(tr("Save part to disk..."));
                   act_dexport->setData(OP_SAVEPARTTODISK);
                   }
                   break;
             case MusECore::Track::WAVE: {
-                  QAction *act_wedit = partPopup->addAction(QIcon(*edit_waveIcon), tr("wave edit"));
+                  QAction *act_wedit = partPopup->addAction(QIcon(*edit_waveIcon), tr("Wave edit"));
                   act_wedit->setData(OP_WAVEEDIT);
-                  QAction *act_wexport = partPopup->addAction(tr("save part to disk"));
+                  QAction *act_wexport = partPopup->addAction(tr("Save part to disk"));
                   act_wexport->setData(OP_SAVEPARTTODISK);
-                  QAction *act_wfinfo = partPopup->addAction(tr("file info"));
+                  QAction *act_wfinfo = partPopup->addAction(tr("File info"));
                   act_wfinfo->setData(OP_FILEINFO);
                   QAction *act_wfnorm = partPopup->addAction(tr("Normalize"));
                   act_wfnorm->setData(OP_NORMALIZE);
