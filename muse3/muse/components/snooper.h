@@ -35,6 +35,7 @@
 #include <QCloseEvent>
 #include <QMap>
 #include <QSet>
+#include <QColor>
 
 #include "ui_snooperbase.h"
 
@@ -128,7 +129,7 @@ class SnooperTreeWidgetItem : public QTreeWidgetItem
         const QMetaObject::Connection& connection() const { return _metaConnection; }
         void setConnection(const QMetaObject::Connection& conn) { _metaConnection = conn; }
 
-        void startFlash(int interval, const QEvent::Type& eventType = QEvent::None);
+        void startFlash(int interval, const QColor& color, const QEvent::Type& eventType = QEvent::None);
         bool isFlashing() const { return _isFlashing; }
         // Driven from timer/divider. Returns true if the end was reached.
         bool tickFlash();
@@ -142,6 +143,9 @@ class SnooperTreeWidgetItem : public QTreeWidgetItem
 class SnooperDialog : public QDialog, public Ui::SnooperDialogBase {
   
     Q_OBJECT
+
+      // An extra property required to support stylesheets (not enough colours).
+      Q_PROPERTY(QColor flashColor READ flashColor WRITE setFlashColor)
 
   public:
       typedef QMap<QEvent::Type /*event_type*/, int /*hit_count*/> HitMap;
@@ -159,6 +163,7 @@ class SnooperDialog : public QDialog, public Ui::SnooperDialogBase {
       static const int _updateTimerInterval;
       QTimer* _updateTimer;
       int _flashInterval;
+      QColor _flashColor;
       // In milliseconds.
       static const int _autoHideTimerInterval;
       int _autoHideIntervalCounter;
@@ -220,6 +225,9 @@ class SnooperDialog : public QDialog, public Ui::SnooperDialogBase {
       bool captureKeyPress() const { return _captureKeyPress; }
 
       void setFlashInterval(int val) { _flashInterval = (1000 * val) / _updateTimerInterval; }
+      
+      QColor flashColor() const { return _flashColor; }
+      void setFlashColor(const QColor& c) { _flashColor = c; }
       };
 
 

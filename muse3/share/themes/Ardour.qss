@@ -63,3 +63,7 @@ QTreeView, QListView {
 MusEGui--RouteTreeWidget {
 	qproperty-categoryColor: DarkCyan;
 }
+
+MusEGui--SnooperDialog {
+	qproperty-flashColor: DarkCyan;
+}

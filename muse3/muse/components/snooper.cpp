@@ -77,13 +77,12 @@ void SnooperTreeWidgetItem::init()
   }
 }
 
-void SnooperTreeWidgetItem::startFlash(int interval, const QEvent::Type& eventType)
+void SnooperTreeWidgetItem::startFlash(int interval, const QColor& color, const QEvent::Type& eventType)
 {
   _flashCounter = interval;
   _isFlashing = true;
 
-  const QColor col(255, 170, 128);
-  setBackground(Name, col);
+  setBackground(Name, color);
   if(eventType != QEvent::None)
   {
     const QString key = SnooperDialog::eventTypeString(eventType);
@@ -118,6 +117,7 @@ SnooperDialog::SnooperDialog(QWidget* parent)
   _captureMouseClicks = captureMouseClickCheckBox->isChecked();
   _captureKeyPress = captureKeyPressCheckBox->isChecked();
   _autoHideIntervalCounter = 0;
+  _flashColor = QColor(255, 170, 128);
 
   const QMetaObject mo = QEvent::staticMetaObject;
   const int type_idx = mo.indexOfEnumerator("Type");
@@ -608,7 +608,7 @@ SnooperTreeWidgetItem* SnooperDialog::selectObject(const QObject *obj, const QEv
 
   SnooperTreeWidgetItem* snoop_item = static_cast<SnooperTreeWidgetItem*>(item);
   //_autoHideIntervalCounter = _autoHideTimerInterval / _updateTimerInterval;
-  snoop_item->startFlash(_flashInterval, eventType);
+  snoop_item->startFlash(_flashInterval, _flashColor, eventType);
   _flashingItems.insert(snoop_item);
   return snoop_item;
 }
