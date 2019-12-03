@@ -1460,7 +1460,7 @@ QString Pipeline::name(int idx) const
       PluginI* p = (*this)[idx];
       if (p)
             return p->name();
-      return QString(QObject::tr("Empty"));
+      return QObject::tr("Empty");
       }
 
 //---------------------------------------------------------
