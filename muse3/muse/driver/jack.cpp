@@ -116,9 +116,12 @@ jack_port_rename_type             jack_port_rename_fp = NULL;
 //  Jack server running all the time until program close.
 bool jackStarted = false;
 
-// Flag for detecting if we are the transport master.
+// Flag for detecting if sync callback is being called.
+bool jack_sync_detect_flag = false;
+JackAudioDevice::JackSyncPhases jackSyncPhase = JackAudioDevice::SyncCheck;
+// If we are the transport master.
 bool jack_transport_cur_master_state = false;
-bool jack_transport_master_flag = false;
+JackAudioDevice::JackTransportMasterPhases jackTransportMasterPhase = JackAudioDevice::MasterCheck;
 
 //---------------------------------------------------------
 //  JackCallbackFifo
@@ -221,7 +224,7 @@ static void jack_thread_init (void* )
       MusEGlobal::undoSetuid();
       }
 
-int JackAudioDevice::processAudio(jack_nframes_t frames, void*)
+int JackAudioDevice::processAudio(jack_nframes_t frames, void* arg)
 {
       jackAudio->_frameCounter += frames;
       MusEGlobal::segmentSize = frames;
@@ -231,16 +234,59 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void*)
         // Are we using Jack transport?
         if(MusEGlobal::useJackTransport)
         {
-          // The transport timebase callback is called before the process callback.
-          // Check if it got called, meaning we are transport master.
-          if(jack_transport_master_flag != jack_transport_cur_master_state)
+
+          // REMOVE Tim. master. Added.
+          if(arg)
           {
-            jack_transport_cur_master_state = jack_transport_master_flag;
-            if(jack_transport_master_flag)
-              MusEGlobal::audio->sendMsgToGui('T');
-            else
-              MusEGlobal::audio->sendMsgToGui('t');
+            JackAudioDevice* jad = (JackAudioDevice*)arg;
+            jack_client_t* client = jad->jackClient();
+            if(client)
+            {
+              jack_transport_state_t state = jack_transport_query(client, nullptr);
+
+              // The transport timebase callback is called after the process callback.
+              // Check if it got called, meaning we are transport master.
+              if(state == JackTransportStopped || state == JackTransportRolling)
+              {
+                //if(jackTransportMasterPhase == JackAudioDevice::Starting)
+                if(jackSyncPhase == SyncStarted)
+                {
+                  // Reset and wait for the next cycle to see if we became master.
+                  jackTransportMasterPhase = IsNotMaster;
+                }
+                else
+                if(jackTransportMasterPhase == IsNotMaster)
+                {
+                  // The timebase callback was not called - phase was not set to IsMaster.
+                  // Therefore we are not transport master.
+                  if(jack_transport_cur_master_state)
+                  {
+                    jack_transport_cur_master_state = false;
+                    MusEGlobal::audio->sendMsgToGui('t');
+                  }
+                  //jackTransportMasterPhase = Idle;
+                }
+                else
+                // Bring in flag here in case sync timed out in stop mode.
+                // Jack may stop calling our sync, even though on the last sync
+                //  we still requested more time by returning FALSE.
+                // There would be no other way to detect that condition.
+                if(jackSyncPhase == Synced || !jack_sync_detect_flag)
+                {
+                  // Done with phase. Reset for future sync calls.
+                  jackSyncPhase = SyncCheck;
+                }
+                //else //if(jackTransportMasterPhase == IsMaster)
+              }
+
+              if(state == JackTransportRolling)
+              {
+                // Reset and wait for the next cycle to see if we became master.
+                jackTransportMasterPhase = IsNotMaster;
+              }
+            }
           }
+          
 
           // Just call the audio process normally. Jack transport will take care of itself.
           // Don't process while we're syncing. ToDO: May need to deliver silence in process!
@@ -260,8 +306,10 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void*)
                  puts("jack calling when audio is disconnected!\n");
             }
 
-  // Reset for the next cycle.
-  jack_transport_master_flag = false;
+  // REMOVE Tim. master. Added.
+//   // Reset for next cycle.
+//   jackSyncPhase = SyncCheck;
+  jack_sync_detect_flag = false;
 
   return 0;
 }
@@ -273,8 +321,10 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void*)
 
 static int processSync(jack_transport_state_t state, jack_position_t* pos, void*)
       {
-    // REMOVE Tim. master. Added.
-    fprintf(stderr, "processSync() state:%d\n", state);
+      // REMOVE Tim. master. Added.
+      fprintf(stderr, "processSync() state:%d\n", state);
+      //jackTransportMasterPhase = JackAudioDevice::Starting;
+
       if (JACK_DEBUG)
       {
         fprintf(stderr, "processSync frame:%u\n", pos->frame);
@@ -322,6 +372,21 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
       //return MusEGlobal::audio->sync(audioState, frame);
       int rv = MusEGlobal::audio->sync(audioState, frame);
       //fprintf(stderr, "Jack processSync() after MusEGlobal::audio->sync frame:%d\n", frame);
+
+      // REMOVE Tim. master. Added.
+      jack_sync_detect_flag = true;
+      if(rv)
+      {
+        jackSyncPhase = JackAudioDevice::Synced;
+      }
+      else
+      {
+        if(jackSyncPhase == JackAudioDevice::SyncStarted)
+          jackSyncPhase = JackAudioDevice::Syncing;
+        else
+          jackSyncPhase = JackAudioDevice::SyncStarted;
+      }
+
       return rv;      
       }
 
@@ -338,9 +403,14 @@ static void timebase_callback(jack_transport_state_t state,
    void*)
   {
     // I think, therefore I am... transport master.
-    jack_transport_master_flag = true;
     // REMOVE Tim. master. Added.
     fprintf(stderr, "timebase_callback() state:%d\n", state);
+    jackTransportMasterPhase = JackAudioDevice::IsMaster;
+    if(!jack_transport_cur_master_state)
+    {
+      jack_transport_cur_master_state = true;
+      MusEGlobal::audio->sendMsgToGui('T');
+    }
 
 // REMOVE Tim. master. Enabled.
 //    if (JACK_DEBUG)
@@ -1260,7 +1330,7 @@ void JackAudioDevice::registerClient()
 
       jack_set_thread_init_callback(_client, (JackThreadInitCallback) jack_thread_init, 0);
       //jack_set_timebase_callback(client, 0, (JackTimebaseCallback) timebase_callback, 0);
-      jack_set_process_callback(_client, processAudio, 0);
+      jack_set_process_callback(_client, processAudio, this);
       
       // NOTE: We set the driver's sync timeout in the gui thread. See Song::seqSignal().
       jack_set_sync_callback(_client, processSync, 0);

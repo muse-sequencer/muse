@@ -290,6 +290,9 @@ extern QIcon* masterTrackOnSVGIcon;
 extern QIcon* jackTransportOffSVGIcon;
 extern QIcon* jackTransportOnSVGIcon;
 
+extern QIcon* transportMasterOffSVGIcon;
+extern QIcon* transportMasterOnSVGIcon;
+
 extern QIcon* metronomeOffSVGIcon;
 extern QIcon* metronomeOnSVGIcon;
 

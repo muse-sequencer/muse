@@ -54,6 +54,10 @@ typedef std::list<JackCallbackEvent>::iterator iJackCallbackEvent;
 //---------------------------------------------------------
 
 class JackAudioDevice : public AudioDevice {
+  public:
+      enum JackSyncPhases { SyncCheck = 0, SyncStarted, Syncing, Synced };
+      enum JackTransportMasterPhases { MasterCheck = 0, IsNotMaster, IsMaster };
+
       jack_client_t* _client;
       jack_transport_state_t transportState;
       jack_position_t pos;

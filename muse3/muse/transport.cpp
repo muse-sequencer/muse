@@ -476,7 +476,7 @@ Transport::Transport(QWidget* parent, const char* name)
       jackTransportButton->setToolTip(tr("Jack Transport on/off"));
       jackTransportButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
 
-      transportMasterButton = new IconButton(metronomeOnSVGIcon, metronomeOffSVGIcon, 0, 0, false, true);
+      transportMasterButton = new IconButton(transportMasterOnSVGIcon, transportMasterOffSVGIcon, 0, 0, false, true);
       transportMasterButton->setContentsMargins(0, 0, 0, 0);
       transportMasterButton->setCheckable(true);
       transportMasterButton->setToolTip(tr("Transport master (on) or slave (off)"));

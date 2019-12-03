@@ -1710,7 +1710,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
                           {
                             if(rackpos != last_rackpos)
                             {
-                              QString s = ((MusECore::AudioTrack*)t)->efxPipe()->name(rackpos);
+                              QString s = ((MusECore::AudioTrack*)t)->efxPipe() ? 
+                                ((MusECore::AudioTrack*)t)->efxPipe()->name(rackpos) : QString();
                               p->addAction(new MusEGui::MenuTitleItem(s, p)); 
                             }
                             last_rackpos = rackpos;
