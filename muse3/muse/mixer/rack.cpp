@@ -472,7 +472,7 @@ void EffectRack::doubleClicked(QListWidgetItem* it)
       int idx        = row(item);
       MusECore::Pipeline* pipe = track->efxPipe();
 
-      if (pipe->name(idx) == QString(tr("Empty"))) {
+      if (pipe->name(idx) == QString("Empty")) {
             choosePlugin(it);
             return;
             }
