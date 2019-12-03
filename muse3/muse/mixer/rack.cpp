@@ -214,7 +214,7 @@ void EffectRack::updateContents()
       for (int i = 0; i < MusECore::PipelineDepth; ++i) {
             QString name = track->efxPipe()->name(i);
             item(i)->setText(name);
-            item(i)->setToolTip(name == QString("empty") ? tr("effect rack") : name );
+            item(i)->setToolTip(name == QString(tr("Empty")) ? tr("Effect rack") : name );
             //item(i)->setBackground(track->efxPipe()->isOn(i) ? activeColor : palette().dark());
             if(viewport())
             {
@@ -307,15 +307,15 @@ void EffectRack::menuRequested(QListWidgetItem* it)
       //enum { NEW, CHANGE, UP, DOWN, REMOVE, BYPASS, SHOW, SAVE };
       enum { NEW, CHANGE, UP, DOWN, REMOVE, BYPASS, SHOW, SHOW_NATIVE, SAVE };
       QMenu* menu = new QMenu;
-      QAction* newAction = menu->addAction(tr("new"));
-      QAction* changeAction = menu->addAction(tr("change"));
-      QAction* upAction = menu->addAction(QIcon(*upIcon), tr("move up"));//,   UP, UP);
-      QAction* downAction = menu->addAction(QIcon(*downIcon), tr("move down"));//, DOWN, DOWN);
-      QAction* removeAction = menu->addAction(tr("remove"));//,    REMOVE, REMOVE);
-      QAction* bypassAction = menu->addAction(tr("bypass"));//,    BYPASS, BYPASS);
-      QAction* showGuiAction = menu->addAction(tr("show gui"));//,  SHOW, SHOW);
-      QAction* showNativeGuiAction = menu->addAction(tr("show native gui"));//,  SHOW_NATIVE, SHOW_NATIVE);
-      QAction* saveAction = menu->addAction(tr("save preset"));
+      QAction* newAction = menu->addAction(tr("New"));
+      QAction* changeAction = menu->addAction(tr("Change"));
+      QAction* upAction = menu->addAction(QIcon(*upIcon), tr("Move up"));//,   UP, UP);
+      QAction* downAction = menu->addAction(QIcon(*downIcon), tr("Move down"));//, DOWN, DOWN);
+      QAction* removeAction = menu->addAction(tr("Remove"));//,    REMOVE, REMOVE);
+      QAction* bypassAction = menu->addAction(tr("Bypass"));//,    BYPASS, BYPASS);
+      QAction* showGuiAction = menu->addAction(tr("Show gui"));//,  SHOW, SHOW);
+      QAction* showNativeGuiAction = menu->addAction(tr("Show native gui"));//,  SHOW_NATIVE, SHOW_NATIVE);
+      QAction* saveAction = menu->addAction(tr("Save preset"));
 
       newAction->setData(NEW);
       changeAction->setData(CHANGE);
@@ -472,7 +472,7 @@ void EffectRack::doubleClicked(QListWidgetItem* it)
       int idx        = row(item);
       MusECore::Pipeline* pipe = track->efxPipe();
 
-      if (pipe->name(idx) == QString("empty")) {
+      if (pipe->name(idx) == QString(tr("Empty"))) {
             choosePlugin(it);
             return;
             }

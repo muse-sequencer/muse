@@ -94,7 +94,7 @@ static bool testDirCreate(QWidget* parent, const QString& path)
           {
             QMessageBox::critical(parent,
                 QWidget::tr("MusE: create directory"),
-                QWidget::tr("creating dir failed"));
+                QWidget::tr("Creating dir failed"));
             return true;
           }
       }

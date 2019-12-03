@@ -2465,11 +2465,11 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
 
   menu->addAction(new MusEGui::MenuTitleItem(tr("Automation:"), menu));
   
-  QAction* prevEvent = menu->addAction(tr("previous event"));
+  QAction* prevEvent = menu->addAction(tr("Previous event"));
   prevEvent->setData(PREV_EVENT);
   prevEvent->setEnabled(canSeekPrev);
 
-  QAction* nextEvent = menu->addAction(tr("next event"));
+  QAction* nextEvent = menu->addAction(tr("Next event"));
   nextEvent->setData(NEXT_EVENT);
   nextEvent->setEnabled(canSeekNext);
 
@@ -2478,21 +2478,21 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   QAction* addEvent = new QAction(menu);
   menu->addAction(addEvent);
   if(isEvent)
-    addEvent->setText(tr("set event"));
+    addEvent->setText(tr("Set event"));
   else  
-    addEvent->setText(tr("add event"));
+    addEvent->setText(tr("Add event"));
   addEvent->setData(ADD_EVENT);
   addEvent->setEnabled(canAdd);
 
-  QAction* eraseEventAction = menu->addAction(tr("erase event"));
+  QAction* eraseEventAction = menu->addAction(tr("Erase event"));
   eraseEventAction->setData(CLEAR_EVENT);
   eraseEventAction->setEnabled(isEvent);
 
-  QAction* eraseRangeAction = menu->addAction(tr("erase range"));
+  QAction* eraseRangeAction = menu->addAction(tr("Erase range"));
   eraseRangeAction->setData(CLEAR_RANGE);
   eraseRangeAction->setEnabled(canEraseRange);
 
-  QAction* clearAction = menu->addAction(tr("clear automation"));
+  QAction* clearAction = menu->addAction(tr("Clear automation"));
   clearAction->setData(CLEAR_ALL_EVENTS);
   clearAction->setEnabled((bool)count);
 
@@ -2733,7 +2733,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   menu->addAction(new MusEGui::MenuTitleItem(tr("Controller:"), menu));
   QAction* bypassEvent = new QAction(menu);
   menu->addAction(bypassEvent);
-  bypassEvent->setText(tr("bypass"));
+  bypassEvent->setText(tr("Bypass"));
   bypassEvent->setData(BYPASS_CONTROLLER);
   bypassEvent->setEnabled(true);
   bypassEvent->setCheckable(true);
@@ -2744,13 +2744,13 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   QAction* addEvent = new QAction(menu);
   menu->addAction(addEvent);
   if(isEvent)
-    addEvent->setText(tr("set event"));
+    addEvent->setText(tr("Set event"));
   else
-    addEvent->setText(tr("add event"));
+    addEvent->setText(tr("Add event"));
   addEvent->setData(ADD_EVENT);
   addEvent->setEnabled(true);
 
-  QAction* eraseEventAction = menu->addAction(tr("erase event"));
+  QAction* eraseEventAction = menu->addAction(tr("Erase event"));
   eraseEventAction->setData(CLEAR_EVENT);
   eraseEventAction->setEnabled(isEvent);
 

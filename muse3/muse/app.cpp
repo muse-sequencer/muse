@@ -2960,7 +2960,7 @@ bool MusE::checkRegionNotNull()
       if (end - start <= 0) {
             QMessageBox::critical(this,
                tr("MusE: Bounce"),
-               tr("set left/right marker for bounce range")
+               tr("Set left/right marker for bounce range")
                );
             return true;
             }

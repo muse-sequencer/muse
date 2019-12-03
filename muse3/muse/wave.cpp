@@ -162,7 +162,7 @@ void SndFile::createCache(const QString& path, bool showProgress, bool bWrite, s
       return;
    QProgressDialog* progress = 0;
    if (showProgress) {
-      QString label(QWidget::tr("create peakfile for "));
+      QString label(QWidget::tr("Create peakfile for "));
       label += basename();
       progress = new QProgressDialog(label,
                                      QString(), 0, csize, 0);
@@ -1379,8 +1379,7 @@ void MusE::importWave()
       if(track == 0)
       {
          QMessageBox::critical(this, QString("MusE"),
-                 tr("to import an audio file you have first to select"
-                 "a wave track"));
+                 tr("To import an audio file you have first to select a wave track"));
                return;
 
       }

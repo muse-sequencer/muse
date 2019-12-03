@@ -112,7 +112,7 @@ bool MusE::importMidi(const QString name, bool merge)
       bool rv = mf.read();
       popenFlag ? pclose(fp) : fclose(fp);
       if (rv) {
-            QString s(tr("reading midifile\n  "));
+            QString s(tr("Reading midifile\n  "));
             s += name;
             s += tr("\nfailed: ");
             s += mf.error();
