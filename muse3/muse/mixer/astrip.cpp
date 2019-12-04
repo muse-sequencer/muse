@@ -1351,8 +1351,9 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       
       // Set the whole strip's font, except for the label.
       // May be good to keep this. In the midi strip without it the upper rack is too tall at first. So avoid trouble.
-      setFont(MusEGlobal::config.fonts[1]);  
-      setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+//      setFont(MusEGlobal::config.fonts[1]); // should be redundant, overridden by style sheet
+      setStyleSheet("QWidget {" + MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]) + "}" +
+                    "QToolTip {font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt}");
 
       channel       = at->channels();
 
