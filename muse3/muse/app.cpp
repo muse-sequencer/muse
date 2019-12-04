@@ -495,7 +495,7 @@ MusE::MusE() : QMainWindow()
       //----Actions
       //-------- File Actions
 
-      fileNewAction = new QAction(*MusEGui::filenewSVGIcon, tr("&New"), this);
+      fileNewAction = new QAction(*MusEGui::filenewSVGIcon, tr("&New..."), this);
       fileNewAction->setToolTip(tr("Create new song"));
       fileNewAction->setWhatsThis(tr("Create new song"));
 
@@ -526,11 +526,11 @@ MusE::MusE() : QMainWindow()
       fileImportPartAction = new QAction(tr("Import Part..."), this);
 
       fileImportWaveAction = new QAction(tr("Import Audio File..."), this);
-      fileMoveWaveFiles = new QAction(tr("Find Unused Wave Files"), this);
+      fileMoveWaveFiles = new QAction(tr("Find Unused Wave Files..."), this);
 
       quitAction = new QAction(*MusEGui::appexitSVGIcon, tr("&Quit"), this);
 
-      editSongInfoAction = new QAction(QIcon(*MusEGui::edit_listIcon), tr("Song Info"), this);
+      editSongInfoAction = new QAction(QIcon(*MusEGui::edit_listIcon), tr("Song Info..."), this);
 
       //-------- View Actions
       viewTransportAction = new QAction(QIcon(*MusEGui::view_transport_windowIcon), tr("Transport Panel..."), this);

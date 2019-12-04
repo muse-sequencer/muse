@@ -37,7 +37,7 @@ Step 4:
      Save the edited file "muse_fr.ts" from linguist and
      start File->Release. This generates the file "muse_fr.qm".
      Copy this file into your muse installation folder,
-     <prefix>/share/muse-2.0/locale/
+     <prefix>/share/muse-3.1/locale/
 
       or
 

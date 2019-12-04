@@ -2009,9 +2009,9 @@ void MidiStrip::setupMidiVolume()
       sl->setRange(MusEGlobal::config.minSlider, volSliderMaxDb);
       sl->setOff(MusEGlobal::config.minSlider);
       //sl->setSpecialText(tr("off"));
-      //sl->setSpecialText(QString('-') + QChar(0x221e) + QChar(' ') + tr("dB"));  // The infinity character.
+      //sl->setSpecialText(QString('-') + QChar(0x221e) + QChar(' ') + "dB");  // The infinity character.
       //sl->setToolTip(tr("Volume/gain"));
-      sl->setSuffix(tr("dB"));
+      sl->setSuffix("dB");
     }
     else
     {
