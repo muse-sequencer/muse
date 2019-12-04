@@ -1557,8 +1557,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       sl->setSlider(slider);
       //sl->setBackgroundRole(QPalette::Mid);
       sl->setToolTip(tr("Volume/gain"));
-      sl->setSuffix(tr("dB"));
-      sl->setSpecialText(QString('-') + QChar(0x221e) + QChar(' ') + tr("dB"));
+      sl->setSuffix("dB");
+      sl->setSpecialText(QString('-') + QChar(0x221e) + QChar(' ') + "dB");
       sl->setOff(MusEGlobal::config.minSlider);
       sl->setPrecision(volSliderPrec);
       sl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
