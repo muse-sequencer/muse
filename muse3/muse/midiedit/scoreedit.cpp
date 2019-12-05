@@ -457,7 +457,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
         connect(func_del_overlaps_action, &QAction::triggered, [this]() { menu_command(CMD_DELETE_OVERLAPS); } );
         connect(func_legato_action,       &QAction::triggered, [this]() { menu_command(CMD_LEGATO); } );
 
-    QMenu* settings_menu = menuBar()->addMenu(tr("Win&Config"));
+    QMenu* settings_menu = menuBar()->addMenu(tr("&Display"));
 
         color_menu = settings_menu->addMenu(tr("Note head &colors"));
             color_actions = new QActionGroup(this);

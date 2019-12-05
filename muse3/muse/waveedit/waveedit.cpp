@@ -194,7 +194,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       connect(selectNextPartAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_NEXT_PART); } );
 
       
-      QMenu* settingsMenu = menuBar()->addMenu(tr("Win&Config"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
 
       eventColor = settingsMenu->addMenu(tr("&Event Color"));      
       

@@ -250,7 +250,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       MusEGlobal::song->populateScriptMenu(menuPlugins, &_scriptReceiver);
 
 
-      menuConfig = menuBar()->addMenu(tr("Win&Config"));
+      menuConfig = menuBar()->addMenu(tr("&Display"));
       
       eventColor = menuConfig->addMenu(tr("&Event Color"));      
       
