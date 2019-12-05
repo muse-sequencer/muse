@@ -873,12 +873,11 @@ void AudioStrip::configChanged()
   }
 
   // Set the whole strip's font, except for the label.
-  if(font() != MusEGlobal::config.fonts[1])
-  {
-    setFont(MusEGlobal::config.fonts[1]);
-    DEBUG_AUDIO_STRIP(stderr, "AudioStrip::configChanged changing font: current size:%d\n", font().pointSize());
-    setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
-  }
+  //setFont(MusEGlobal::config.fonts[1]); // should be redundant, overridden by style sheet
+  DEBUG_AUDIO_STRIP(stderr, "AudioStrip::configChanged changing font: current size:%d\n", 
+                    MusEGlobal::config.fonts[1].pointSize());
+  setStyleSheet("QWidget {" + MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]) + "}" +
+                "QToolTip {font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt}");
   
   // Set the strip label's font.
   setLabelText();        

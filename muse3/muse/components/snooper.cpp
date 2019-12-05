@@ -23,6 +23,7 @@
 
 #include <QApplication>
 #include <QStyle>
+#include <QMetaProperty>
 
 #include "snooper.h"
 
@@ -65,10 +66,19 @@ void SnooperTreeWidgetItem::init()
     case PropertyItem:
       if(_object)
       {
-        setText(Name, QObject::tr("<Property>"));
-        setText(Property, QString::fromLatin1(_metaProperty.name()));
-        setText(PropertyType, QString::fromLatin1(_metaProperty.typeName()));
-        setText(PropertyValue, _metaProperty.read(_object).toString());
+        const QMetaObject* mo = _object->metaObject();
+        const int prop_count = mo->propertyCount();
+        if(_metaPropertyIndex < prop_count)
+        {
+          const QMetaProperty prop = mo->property(_metaPropertyIndex);
+          const int prop_offset = mo->propertyOffset();
+          const QString prop_str = (_metaPropertyIndex < prop_offset) ?
+                        QObject::tr("<Base Property>") : QObject::tr("<Property>");
+          setText(Name, prop_str);
+          setText(Property, QString::fromLatin1(prop.name()));
+          setText(PropertyType, QString::fromLatin1(prop.typeName()));
+          setText(PropertyValue, prop.read(_object).toString());
+        }
       }
     break;
 
@@ -379,17 +389,18 @@ bool SnooperDialog::addBranch(QObject* object, SnooperTreeWidgetItem* parentItem
   QMetaObject::Connection conn =
     connect(object, &QObject::destroyed, [this](QObject* o = nullptr) { objectDestroyed(o); } );
   item->setConnection(conn);
-  
+
+  const bool show_base_props = true;  
   const int prop_count = mo->propertyCount();
-  const int prop_offset = mo->propertyOffset();
-  if(prop_count > prop_offset)
+  const int prop_offset = show_base_props ? 0 : mo->propertyOffset();
+  if(prop_offset < prop_count)
   {
     prop_parent_item = new SnooperTreeWidgetItem(SnooperTreeWidgetItem::PropertiesItem, object);
     prop_parent_item->setIsParentedTopLevelBranch(isParentedTopLevelBranch);
     prop_parent_item->setIsWindowBranch(isWindowBranch);
     for(int i = prop_offset; i < prop_count; ++i)
     {
-      prop_item = new SnooperTreeWidgetItem(SnooperTreeWidgetItem::PropertyItem, object, mo->property(i));
+      prop_item = new SnooperTreeWidgetItem(SnooperTreeWidgetItem::PropertyItem, object, i);
       prop_item->setIsParentedTopLevelBranch(isParentedTopLevelBranch);
       prop_item->setIsWindowBranch(isWindowBranch);
       prop_parent_item->addChild(prop_item);
