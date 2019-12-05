@@ -1,5 +1,3 @@
-05.12.2019
-    - Fix by kybos for tooltip font size on mixer strips. Some further additions by me. (Tim)
 03.12.2019
     - Eliminated all but one tr("Empty") string usage in plugins/pipeline/rack. (Tim)
     - Snooper: Provide flashColor property. Changed it in Ardour and Dark qss themes.
