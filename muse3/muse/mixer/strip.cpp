@@ -985,11 +985,12 @@ void Strip::updateStyleSheet()
   c.setAlpha(190);
   c2.setAlpha(190);
 
-  QString stxt = QString("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,"
+  QString stxt = QString("* { background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,"
       "stop:0.263158 rgba(%1, %2, %3, %4), stop:0.7547368 rgba(%5, %6, %7, %8));")
       .arg(c2.red()).arg(c2.green()).arg(c2.blue()).arg(c2.alpha()).arg(c.red()).arg(c.green()).arg(c.blue()).arg(c.alpha());
   //stxt += QString("color: rgb(0, 0, 0);");
-  stxt += MusECore::font2StyleSheet(fnt);
+  stxt += MusECore::font2StyleSheet(fnt) + "}";
+  stxt += "QToolTip {font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt}";
 
   label->setStyleSheet(stxt);
 }

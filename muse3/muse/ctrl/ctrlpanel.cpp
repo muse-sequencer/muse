@@ -186,7 +186,7 @@ void CtrlPanel::buildPanel()
   if(_patchEdit->font() != MusEGlobal::config.fonts[1])
   {
     _patchEdit->setFont(MusEGlobal::config.fonts[1]);
-    _patchEdit->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+    _patchEdit->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
   }
 
   connect(_patchEdit, SIGNAL(valueChanged(int,int)), SLOT(patchCtrlChanged(int)));
@@ -217,7 +217,7 @@ void CtrlPanel::buildPanel()
     if(_knob->font() != MusEGlobal::config.fonts[1])
     {
       _knob->setFont(MusEGlobal::config.fonts[1]);
-      _knob->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+      _knob->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
     }
 
     connect(_knob, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(ctrlChanged(double,bool,int,int)));
@@ -247,7 +247,7 @@ void CtrlPanel::buildPanel()
     if(_slider->font() != MusEGlobal::config.fonts[1])
     {
       _slider->setFont(MusEGlobal::config.fonts[1]);
-      _slider->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+      _slider->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
     }
 
     connect(_slider, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(ctrlChanged(double,bool,int,int)));
@@ -511,7 +511,7 @@ void CtrlPanel::configChanged()
     if(_patchEdit->font() != MusEGlobal::config.fonts[1])
     {
       _patchEdit->setFont(MusEGlobal::config.fonts[1]);
-      _patchEdit->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+      _patchEdit->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
     }
     _patchEdit->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
   }
@@ -521,7 +521,7 @@ void CtrlPanel::configChanged()
     if(_knob->font() != MusEGlobal::config.fonts[1])
     {
       _knob->setFont(MusEGlobal::config.fonts[1]);
-      _knob->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+      _knob->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
     }
 
     // Whether to show values along with labels for certain controls.
@@ -533,7 +533,7 @@ void CtrlPanel::configChanged()
     if(_slider->font() != MusEGlobal::config.fonts[1])
     {
       _slider->setFont(MusEGlobal::config.fonts[1]);
-      _slider->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+      _slider->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
     }
 
     _slider->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);

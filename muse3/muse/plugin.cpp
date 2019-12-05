@@ -3687,7 +3687,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         fnt.setStyleStrategy(QFont::NoAntialias);
                         fnt.setHintingPreference(QFont::PreferVerticalHinting);
                         s->setFont(fnt);
-                        s->setStyleSheet(MusECore::font2StyleSheet(fnt));
+                        s->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
                         s->setSizeHint(200, 8);
 
                         for(unsigned long i = 0; i < nobj; i++)
@@ -3819,7 +3819,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         fnt.setStyleStrategy(QFont::NoAntialias);
                         fnt.setHintingPreference(QFont::PreferVerticalHinting);
                         s->setFont(fnt);
-                        s->setStyleSheet(MusECore::font2StyleSheet(fnt));
+                        s->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
 
                         s->setCursorHoming(true);
                         s->setId(i);
@@ -3907,7 +3907,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                       fnt.setStyleStrategy(QFont::NoAntialias);
                       fnt.setHintingPreference(QFont::PreferVerticalHinting);
                       m->setFont(fnt);
-                      m->setStyleSheet(MusECore::font2StyleSheet(fnt));
+                      m->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
 
                       paramsOut[i].actuator = m;
                       label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
