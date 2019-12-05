@@ -1656,7 +1656,25 @@ void Song::beat()
       }
       _heartbeatRateTimer = t;
       #endif
-      
+
+      // REMOVE Tim. master. Added.
+      static int _transportMasterCounter = 0;
+      if(MusEGlobal::audioDevice &&
+         //MusEGlobal::jackTransportMaster &&
+         //!MusEGlobal::transportMasterState &&
+         MusEGlobal::transportMasterState != MusEGlobal::jackTransportMaster &&
+         (--_transportMasterCounter <= 0))
+      {
+        const bool m = MusEGlobal::jackTransportMaster;
+        const int res = MusEGlobal::audioDevice->setMaster(m);
+        if(res == 0)
+        {
+          fprintf(stderr, "Setting transportMasterState to:%d\n", m);
+          MusEGlobal::transportMasterState = m;
+        }
+        _transportMasterCounter = 20;
+      }
+
       //First: update cpu load toolbar
 
       _fCpuLoad = MusEGlobal::muse->getCPULoad();

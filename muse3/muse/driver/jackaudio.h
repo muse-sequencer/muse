@@ -164,7 +164,7 @@ class JackAudioDevice : public AudioDevice {
       virtual void seekTransport(unsigned frame);
       virtual void seekTransport(const Pos &p);
       virtual void setFreewheel(bool f);
-      virtual int setMaster(bool f);
+      virtual int setMaster(bool f, bool unconditional = false);
       jack_transport_state_t transportQuery(jack_position_t* pos);
       bool timebaseQuery(unsigned frames, unsigned* bar, unsigned* beat, unsigned* tick, unsigned* curr_abs_tick, unsigned* next_ticks);
 

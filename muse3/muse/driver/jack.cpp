@@ -2350,7 +2350,7 @@ void* JackAudioDevice::findPort(const char* name)
 //   setMaster
 //---------------------------------------------------------
 
-int JackAudioDevice::setMaster(bool f)
+int JackAudioDevice::setMaster(bool f, bool unconditional)
 {
   if (JACK_DEBUG)
     fprintf(stderr, "JackAudioDevice::setMaster val:%d\n", f);
@@ -2363,7 +2363,7 @@ int JackAudioDevice::setMaster(bool f)
     if(MusEGlobal::useJackTransport)
     {
       // Make Muse the Jack timebase master. Do it unconditionally (second param = 0).
-      r = jack_set_timebase_callback(_client, 0, (JackTimebaseCallback) timebase_callback, 0);
+      r = jack_set_timebase_callback(_client, !unconditional, (JackTimebaseCallback) timebase_callback, 0);
       if(MusEGlobal::debugMsg || JACK_DEBUG)
       {
         if(r)

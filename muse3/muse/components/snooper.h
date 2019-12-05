@@ -29,7 +29,6 @@
 #include <QTimer>
 #include <QTreeWidgetItem>
 #include <QMetaObject>
-#include <QMetaProperty>
 #include <QShowEvent>
 #include <QHideEvent>
 #include <QCloseEvent>
@@ -61,7 +60,7 @@ class SnooperTreeWidgetItem : public QTreeWidgetItem
         QObject* _object;
         bool _isWindowBranch;
         bool _isParentedTopLevelBranch;
-        QMetaProperty _metaProperty;
+        int _metaPropertyIndex;
         QMetaObject::Connection _metaConnection;
         //QMap<int /*type*/, int /*hit_count*/> _hitMap;
         QBrush _origBackground;
@@ -72,50 +71,51 @@ class SnooperTreeWidgetItem : public QTreeWidgetItem
 
   public:
         // Overrides for QTreeWidgetItem constructor...
-        SnooperTreeWidgetItem(int type = NormalItem, QObject* obj = nullptr, const QMetaProperty& metaProp = QMetaProperty(),
+        SnooperTreeWidgetItem(int type = NormalItem, QObject* obj = nullptr, int metaPropertyIndex = 0,
                               const QMetaObject::Connection& conn = QMetaObject::Connection())
-                            : QTreeWidgetItem(type), _object(obj), _metaProperty(metaProp), _metaConnection(conn) { init(); }
+                            : QTreeWidgetItem(type), _object(obj), _metaPropertyIndex(metaPropertyIndex),
+                              _metaConnection(conn) { init(); }
 
         SnooperTreeWidgetItem(const QStringList& strings, int type = NormalItem,
-                              QObject* obj = nullptr, const QMetaProperty& metaProp = QMetaProperty(),
+                              QObject* obj = nullptr, int metaPropertyIndex = 0,
                               const QMetaObject::Connection& conn = QMetaObject::Connection())
-                            : QTreeWidgetItem(strings, type), _object(obj), _metaProperty(metaProp),
+                            : QTreeWidgetItem(strings, type), _object(obj), _metaPropertyIndex(metaPropertyIndex),
                               _metaConnection(conn) { init(); }
 
         SnooperTreeWidgetItem(QTreeWidget* parent, int type = NormalItem, QObject* obj = nullptr,
-                              const QMetaProperty& metaProp = QMetaProperty(),
+                              int metaPropertyIndex = 0,
                               const QMetaObject::Connection& conn = QMetaObject::Connection())
-                            : QTreeWidgetItem(parent, type), _object(obj), _metaProperty(metaProp)
-                              , _metaConnection(conn) { init(); }
+                            : QTreeWidgetItem(parent, type), _object(obj), _metaPropertyIndex(metaPropertyIndex), 
+                              _metaConnection(conn) { init(); }
 
         SnooperTreeWidgetItem(QTreeWidget* parent, const QStringList& strings, int type = NormalItem,
-                              QObject* obj = nullptr, const QMetaProperty& metaProp = QMetaProperty(),
+                              QObject* obj = nullptr, int metaPropertyIndex = 0,
                               const QMetaObject::Connection& conn = QMetaObject::Connection())
-                            : QTreeWidgetItem(parent, strings, type), _object(obj), _metaProperty(metaProp),
+                            : QTreeWidgetItem(parent, strings, type), _object(obj), _metaPropertyIndex(metaPropertyIndex),
                               _metaConnection(conn) { init(); }
 
         SnooperTreeWidgetItem(QTreeWidget* parent, QTreeWidgetItem* preceding, int type = NormalItem,
-                              QObject* obj = nullptr, const QMetaProperty& metaProp = QMetaProperty(),
+                              QObject* obj = nullptr, int metaPropertyIndex = 0,
                               const QMetaObject::Connection& conn = QMetaObject::Connection())
-                            : QTreeWidgetItem(parent, preceding, type), _object(obj), _metaProperty(metaProp),
+                            : QTreeWidgetItem(parent, preceding, type), _object(obj), _metaPropertyIndex(metaPropertyIndex),
                               _metaConnection(conn) { init(); }
 
         SnooperTreeWidgetItem(QTreeWidgetItem* parent, int type = NormalItem, QObject* obj = nullptr,
-                              const QMetaProperty& metaProp = QMetaProperty(),
+                              int metaPropertyIndex = 0,
                               const QMetaObject::Connection& conn = QMetaObject::Connection())
-                            : QTreeWidgetItem(parent, type), _object(obj), _metaProperty(metaProp),
+                            : QTreeWidgetItem(parent, type), _object(obj), _metaPropertyIndex(metaPropertyIndex),
                               _metaConnection(conn) { init(); }
 
         SnooperTreeWidgetItem(QTreeWidgetItem* parent, const QStringList& strings, int type = NormalItem,
-                              QObject* obj = nullptr, const QMetaProperty& metaProp = QMetaProperty(),
+                              QObject* obj = nullptr, int metaPropertyIndex = 0,
                               const QMetaObject::Connection& conn = QMetaObject::Connection())
-                            : QTreeWidgetItem(parent, strings, type), _object(obj), _metaProperty(metaProp),
+                            : QTreeWidgetItem(parent, strings, type), _object(obj), _metaPropertyIndex(metaPropertyIndex),
                               _metaConnection(conn) { init(); }
 
         SnooperTreeWidgetItem(QTreeWidgetItem* parent, QTreeWidgetItem* preceding, int type = NormalItem,
-                              QObject* obj = nullptr, const QMetaProperty& metaProp = QMetaProperty(),
+                              QObject* obj = nullptr, int metaPropertyIndex = 0,
                               const QMetaObject::Connection& conn = QMetaObject::Connection())
-                            : QTreeWidgetItem(parent, preceding, type), _object(obj), _metaProperty(metaProp),
+                            : QTreeWidgetItem(parent, preceding, type), _object(obj), _metaPropertyIndex(metaPropertyIndex),
                               _metaConnection(conn) { init(); }
 
         QObject* object() { return _object; }
