@@ -500,26 +500,20 @@ MusE::MusE() : QMainWindow()
       fileNewAction->setWhatsThis(tr("Create new song"));
 
       fileNewFromTemplateAction = new QAction(*MusEGui::filetemplateSVGIcon, tr("New from &Template..."), this);
-//      fileNewFromTemplateAction->setToolTip(tr("Create new song from a template"));
-//      fileNewFromTemplateAction->setWhatsThis(tr("Create new song from a template"));
+      fileNewFromTemplateAction->setToolTip(tr("Create new song from template"));
+      fileNewFromTemplateAction->setWhatsThis(tr("Create new song from template"));
 
       fileOpenAction = new QAction(*MusEGui::fileopenSVGIcon, tr("&Open..."), this);
 
-      fileOpenAction->setToolTip(tr("Click this button to open a <em>new song</em>.<br>"
-      "You can also select the <b>Open command</b> from the File menu."));
-      fileOpenAction->setWhatsThis(tr("Click this button to open a <em>new song</em>.<br>"
-      "You can also select the <b>Open command</b> from the File menu."));
+      fileOpenAction->setToolTip(tr("Open song from file"));
+      fileOpenAction->setWhatsThis(tr("Click this button to open an existing song."));
 
       openRecent = new QMenu(tr("Open &Recent"), this);
 
       fileSaveAction = new QAction(*MusEGui::filesaveSVGIcon, tr("&Save"), this);
 
-      fileSaveAction->setToolTip(tr("Click this button to save the song you are "
-      "editing.  You will be prompted for a file name.\n"
-      "You can also select the Save command from the File menu."));
-      fileSaveAction->setWhatsThis(tr("Click this button to save the song you are "
-      "editing.  You will be prompted for a file name.\n"
-      "You can also select the Save command from the File menu."));
+      fileSaveAction->setToolTip(tr("Save current song"));
+      fileSaveAction->setWhatsThis(tr("Click this button to save the song you are editing. You will be prompted for a file name."));
 
       fileSaveAsAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save &As..."), this);
 
@@ -727,6 +721,7 @@ MusE::MusE() : QMainWindow()
       tools = addToolBar(tr("File Buttons"));
       tools->setObjectName("File Buttons");
       tools->addAction(fileNewAction);
+      tools->addAction(fileNewFromTemplateAction);
       tools->addAction(fileOpenAction);
       tools->addAction(fileSaveAction);
       QAction* whatsthis = QWhatsThis::createAction(this);
