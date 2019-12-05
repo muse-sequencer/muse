@@ -1388,7 +1388,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       
       // Set the whole strip's font, except for the label.
       setFont(MusEGlobal::config.fonts[1]); // For some reason must keep this, the upper rack is too tall at first.
-      setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+      setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
       
       // Clear so the meters don't start off by showing stale values.
       t->setActivity(0);
@@ -2188,7 +2188,7 @@ void MidiStrip::configChanged()
   {
     //DEBUG_MIDI_STRIP(stderr, "MidiStrip::configChanged changing font: current size:%d\n", font().pointSize());
     setFont(MusEGlobal::config.fonts[1]);
-    setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+    setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
     // Update in case font changed.
     updateRackSizes(true, true);
   }
