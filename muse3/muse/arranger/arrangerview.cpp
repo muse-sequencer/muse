@@ -261,7 +261,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   functions_menu->addAction(editCleanPartsAction);
   
   
-  QMenu* menuSettings = menuBar()->addMenu(tr("Win&Config"));
+  QMenu* menuSettings = menuBar()->addMenu(tr("&Display"));
   menuSettings->addAction(tr("Configure &Custom Columns..."), this, SLOT(configCustomColumns()));
   menuSettings->addSeparator();
   menuSettings->addAction(subwinAction);

@@ -193,7 +193,7 @@ LMaster::LMaster(QWidget* parent, const char* name)
       delAction = menuEdit->addAction(tr("Delete Event"));
       delAction->setShortcut(Qt::Key_Delete);
 
-      QMenu* settingsMenu = menuBar()->addMenu(tr("Win&Config"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);

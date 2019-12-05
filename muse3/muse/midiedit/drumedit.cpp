@@ -353,7 +353,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       MusEGlobal::song->populateScriptMenu(menuScriptPlugins, &_scriptReceiver);
 
 
-      QMenu* settingsMenu = menuBar()->addMenu(tr("Win&Config"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
       if (!old_style_drummap_mode())
       {
         QMenu* menuGrouping=settingsMenu->addMenu(tr("Group"));
