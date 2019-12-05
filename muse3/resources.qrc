@@ -88,5 +88,6 @@
         <file>svg/appexit.svg</file>
         <file>svg/whatsthis.svg</file>
         <file>svg/exit.svg</file>
+        <file>svg/filefromtemplate.svg</file>
     </qresource>
 </RCC>

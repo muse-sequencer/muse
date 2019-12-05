@@ -495,9 +495,13 @@ MusE::MusE() : QMainWindow()
       //----Actions
       //-------- File Actions
 
-      fileNewAction = new QAction(*MusEGui::filenewSVGIcon, tr("&New..."), this);
+      fileNewAction = new QAction(*MusEGui::filenewSVGIcon, tr("&New"), this);
       fileNewAction->setToolTip(tr("Create new song"));
       fileNewAction->setWhatsThis(tr("Create new song"));
+
+      fileNewFromTemplateAction = new QAction(*MusEGui::filetemplateSVGIcon, tr("New from &Template..."), this);
+//      fileNewFromTemplateAction->setToolTip(tr("Create new song from a template"));
+//      fileNewFromTemplateAction->setWhatsThis(tr("Create new song from a template"));
 
       fileOpenAction = new QAction(*MusEGui::fileopenSVGIcon, tr("&Open..."), this);
 
@@ -519,7 +523,7 @@ MusE::MusE() : QMainWindow()
 
       fileSaveAsAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save &As..."), this);
 
-      fileCloseAction = new QAction(*MusEGui::filecloseSVGIcon, tr("Close"), this);
+      fileCloseAction = new QAction(*MusEGui::filecloseSVGIcon, tr("&Close"), this);
       
       fileImportMidiAction = new QAction(tr("Import Midifile..."), this);
       fileExportMidiAction = new QAction(tr("Export Midifile..."), this);
@@ -626,7 +630,8 @@ MusE::MusE() : QMainWindow()
       //---- Connections
       //-------- File connections
 
-      connect(fileNewAction,  SIGNAL(triggered()), SLOT(loadTemplate()));
+      connect(fileNewAction,  SIGNAL(triggered()), SLOT(loadDefaultTemplate()));
+      connect(fileNewFromTemplateAction,  SIGNAL(triggered()), SLOT(loadTemplate()));
       connect(fileOpenAction, SIGNAL(triggered()), SLOT(loadProject()));
       connect(openRecent, SIGNAL(aboutToShow()), SLOT(openRecentMenu()));
       connect(openRecent, SIGNAL(triggered(QAction*)), SLOT(selectProject(QAction*)));
@@ -801,6 +806,7 @@ MusE::MusE() : QMainWindow()
       menuBar()->addMenu(menu_file);
       leadingMenus.push_back(menu_file);
       menu_file->addAction(fileNewAction);
+      menu_file->addAction(fileNewFromTemplateAction);
       menu_file->addAction(fileOpenAction);
       menu_file->addMenu(openRecent);
       menu_file->addSeparator();
@@ -1516,6 +1522,16 @@ void MusE::loadTemplate()
             setUntitledProject();
             }
       }
+
+//---------------------------------------------------------
+//   loadDefaultTemplate
+//---------------------------------------------------------
+
+void MusE::loadDefaultTemplate()
+{
+        loadProjectFile(MusEGlobal::museGlobalShare + QString("/templates/default.med"), true, false);
+        setUntitledProject();
+}
 
 //---------------------------------------------------------
 //   save
@@ -3230,6 +3246,7 @@ void MusE::updateConfiguration()
       {
       fileOpenAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN].key);
       fileNewAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_NEW].key);
+      fileNewFromTemplateAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_NEW_FROM_TEMPLATE].key);
       fileSaveAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_SAVE].key);
       fileSaveAsAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_SAVE_AS].key);
 

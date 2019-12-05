@@ -475,6 +475,7 @@ QIcon* midiinSVGIcon;
 QIcon* steprecSVGIcon;
 QIcon* speakerSVGIcon;
 QIcon* filenewSVGIcon;
+QIcon* filetemplateSVGIcon;
 QIcon* fileopenSVGIcon;
 QIcon* filesaveSVGIcon;
 QIcon* filesaveasSVGIcon;
@@ -826,6 +827,7 @@ void initIcons(bool useThemeIconsIfPossible)
       speakerSVGIcon    = new QIcon(":/svg/speaker.svg");
       whatsthisSVGIcon  = new QIcon(":/svg/whatsthis.svg");
       exitSVGIcon       = new QIcon(":/svg/exit.svg");
+      filetemplateSVGIcon = new QIcon(":/svg/filefromtemplate.svg");
 
       filenewSVGIcon     = MICONSVG(new QIcon(":/svg/filenew.svg"), "document-new");
       fileopenSVGIcon    = MICONSVG(new QIcon(":/svg/fileopen.svg"), "document-open");
@@ -1141,6 +1143,7 @@ void deleteIcons()
       delete speakerSVGIcon;
 
       delete filenewSVGIcon;
+      delete filetemplateSVGIcon;
       delete fileopenSVGIcon;
       delete filesaveSVGIcon;
       delete filesaveasSVGIcon;

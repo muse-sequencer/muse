@@ -1,3 +1,11 @@
+05.12.2019
+	- Added File->New from template... menu entry. File->New loads default template (kybos)
+	- Fixed inconsistent UI texts where appropriate: (kybos)
+	  * Title-style for menu texts and window titles
+	  * Sentence-style for all other UI texts 
+	  * Three dots (...) for menu entries triggering a dialog (like Save As...)
+	- Fixed inconsistent tooltip font size (kybos)
+	- Vector replacements for many pixmap icons (kybos)
 03.12.2019
     - Eliminated all but one tr("Empty") string usage in plugins/pipeline/rack. (Tim)
     - Snooper: Provide flashColor property. Changed it in Ardour and Dark qss themes.
