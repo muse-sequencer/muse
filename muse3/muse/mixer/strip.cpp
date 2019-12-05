@@ -769,9 +769,11 @@ void ComponentRack::configChanged()
   // FIXME For some reason we have to set the font and stylesheet here as well as the strip.
   // Strip font and stylesheet changes don't seem to be propagated to these racks.
   // FIXME They also don't seem to be propagated to our CompactPatchEdit component on the midi strip.
-  //setFont(MusEGlobal::config.fonts[1]); // should be redundant, overridden by style sheet
-  setStyleSheet("QWidget {" + MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]) + "}" +
-                "QToolTip {font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt}");
+  if(font() != MusEGlobal::config.fonts[1])
+  {
+    setFont(MusEGlobal::config.fonts[1]); // should be redundant, overridden by style sheet
+    setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
+  }
 
   for(ciComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
   {
