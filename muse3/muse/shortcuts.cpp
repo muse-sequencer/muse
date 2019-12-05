@@ -86,6 +86,7 @@ void initShortCuts()
       //-----------------------------------------------------------
       // Arranger:
       defShrt(SHRT_NEW,           Qt::CTRL + Qt::Key_N, QT_TRANSLATE_NOOP("shortcuts", "File: New project"), ARRANG_SHRT + DEDIT_SHRT, "new_project");
+      defShrt(SHRT_NEW_FROM_TEMPLATE, Qt::CTRL + Qt::SHIFT + Qt::Key_N, QT_TRANSLATE_NOOP("shortcuts", "File: New project from template"), ARRANG_SHRT + DEDIT_SHRT, "new_project_from_template");
       defShrt(SHRT_OPEN,          Qt::CTRL + Qt::Key_O, QT_TRANSLATE_NOOP("shortcuts", "File: Open from disk"), ARRANG_SHRT + DEDIT_SHRT, "open_project");
       defShrt(SHRT_SAVE,          Qt::CTRL + Qt::Key_S, QT_TRANSLATE_NOOP("shortcuts", "File: Save project"), ARRANG_SHRT + DEDIT_SHRT, "save_project");
       //-----------------------------------------------------------

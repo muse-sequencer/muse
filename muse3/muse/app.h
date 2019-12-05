@@ -123,7 +123,7 @@ class MusE : public QMainWindow
             CMD_LAST };
 
       // File menu actions
-      QAction *fileSaveAction, *fileOpenAction, *fileNewAction;
+      QAction *fileSaveAction, *fileOpenAction, *fileNewAction, *fileNewFromTemplateAction;
       QAction *fileSaveAsAction, *fileImportMidiAction, *fileExportMidiAction;
       QAction *fileImportPartAction, *fileImportWaveAction, *fileMoveWaveFiles, *quitAction;
       QAction *fileCloseAction;
@@ -355,6 +355,7 @@ class MusE : public QMainWindow
       void toplevelDeleting(MusEGui::TopWin* tl);
       bool seqRestart();
       void loadTemplate();
+      void loadDefaultTemplate();
       void showBigtime(bool);
       void showMixer1(bool);
       void showMixer2(bool);

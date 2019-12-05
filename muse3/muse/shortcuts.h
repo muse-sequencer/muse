@@ -101,6 +101,7 @@ enum {
 
       //Main + Drumeditor
       SHRT_NEW, //Ctrl+N
+      SHRT_NEW_FROM_TEMPLATE, //Ctrl+Shift+N
       SHRT_OPEN, //Ctrl+O
       SHRT_SAVE, //Ctrl+S
 
