@@ -1313,7 +1313,10 @@ void TList::moveSelection(int n)
 
                     // rec enable track if expected
                     MusECore::TrackList recd = getRecEnabledTracks();
-                    if (recd.size() == 1 && MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+
+                    if (!MusEGlobal::audio->isRecording() &&
+                        recd.size() == 1 &&
+                        MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
                       MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
                       MusEGlobal::song->setRecordFlag((selTrack),true);
                     }
@@ -1803,9 +1806,11 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                   // rec enable track if expected
                   MusECore::TrackList recd = getRecEnabledTracks();
-                  if (recd.size() == 1 && MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
-                      MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
-                      MusEGlobal::song->setRecordFlag(t,true);
+                  if (!MusEGlobal::audio->isRecording() &&
+                      recd.size() == 1 &&
+                      MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+                    MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
+                    MusEGlobal::song->setRecordFlag(t,true);
                   }
               }
 
@@ -2023,7 +2028,9 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                               // rec enable track if expected
                               MusECore::TrackList recd = getRecEnabledTracks();
-                              if (recd.size() == 1 && MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+                              if (!MusEGlobal::audio->isRecording() &&
+                                  recd.size() == 1 &&
+                                  MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
                                 MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
                                 MusEGlobal::song->setRecordFlag(t,true);
                               }
@@ -2472,9 +2479,11 @@ void TList::selectTrack(MusECore::Track* tr, bool /*deselect*/)
 
         // rec enable track if expected
         MusECore::TrackList recd = getRecEnabledTracks();
-        if (recd.size() == 1 && MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
-            MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
-            MusEGlobal::song->setRecordFlag(tr,true);
+        if (!MusEGlobal::audio->isRecording() &&
+            recd.size() == 1 &&
+            MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+          MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
+          MusEGlobal::song->setRecordFlag(tr,true);
         }
     }
 

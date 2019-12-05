@@ -6,6 +6,7 @@
 	  * Three dots (...) for menu entries triggering a dialog (like Save As...)
 	- Fixed inconsistent tooltip font size (kybos)
 	- Vector replacements for many pixmap icons (kybos)
+	- Fixed bug #720 arm follows track did bad things while recording (rj)
 03.12.2019
     - Eliminated all but one tr("Empty") string usage in plugins/pipeline/rack. (Tim)
     - Snooper: Provide flashColor property. Changed it in Ardour and Dark qss themes.
