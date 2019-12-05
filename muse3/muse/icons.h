@@ -310,6 +310,7 @@ extern QIcon* midiinSVGIcon;
 extern QIcon* steprecSVGIcon;
 extern QIcon* speakerSVGIcon;
 extern QIcon* filenewSVGIcon;
+extern QIcon* filetemplateSVGIcon;
 extern QIcon* fileopenSVGIcon;
 extern QIcon* filesaveSVGIcon;
 extern QIcon* filesaveasSVGIcon;

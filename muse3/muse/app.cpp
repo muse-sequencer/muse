@@ -499,9 +499,9 @@ MusE::MusE() : QMainWindow()
       fileNewAction->setToolTip(tr("Create new song"));
       fileNewAction->setWhatsThis(tr("Create new song"));
 
-      fileNewFromTemplateAction = new QAction(*MusEGui::filenewSVGIcon, tr("&New from Template..."), this);
-      fileNewFromTemplateAction->setToolTip(tr("Create new song from template"));
-      fileNewFromTemplateAction->setWhatsThis(tr("Create new song from template"));
+      fileNewFromTemplateAction = new QAction(*MusEGui::filetemplateSVGIcon, tr("New from &Template..."), this);
+//      fileNewFromTemplateAction->setToolTip(tr("Create new song from a template"));
+//      fileNewFromTemplateAction->setWhatsThis(tr("Create new song from a template"));
 
       fileOpenAction = new QAction(*MusEGui::fileopenSVGIcon, tr("&Open..."), this);
 
@@ -523,7 +523,7 @@ MusE::MusE() : QMainWindow()
 
       fileSaveAsAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save &As..."), this);
 
-      fileCloseAction = new QAction(*MusEGui::filecloseSVGIcon, tr("Close"), this);
+      fileCloseAction = new QAction(*MusEGui::filecloseSVGIcon, tr("&Close"), this);
       
       fileImportMidiAction = new QAction(tr("Import Midifile..."), this);
       fileExportMidiAction = new QAction(tr("Export Midifile..."), this);
