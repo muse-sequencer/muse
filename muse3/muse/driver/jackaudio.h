@@ -164,6 +164,11 @@ class JackAudioDevice : public AudioDevice {
       virtual void seekTransport(unsigned frame);
       virtual void seekTransport(const Pos &p);
       virtual void setFreewheel(bool f);
+      // Whether the device has its own transport (Jack transport etc.), beyond the one built into this class.
+      virtual bool hasOwnTransport() const { return true; };
+      // Whether the device supports transport master capabilities.
+      virtual bool hasTransportMaster() const { return true; };
+      // Sets or resets transport master.
       virtual int setMaster(bool f, bool unconditional = false);
       jack_transport_state_t transportQuery(jack_position_t* pos);
       bool timebaseQuery(unsigned frames, unsigned* bar, unsigned* beat, unsigned* tick, unsigned* curr_abs_tick, unsigned* next_ticks);

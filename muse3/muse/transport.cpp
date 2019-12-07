@@ -48,6 +48,10 @@
 #include "tempolabel.h"
 #include "operations.h"
 #include "tempo.h"
+#include "audiodev.h"
+
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_TRANSPORT(dev, format, args...) // fprintf(dev, format, ##args);
 
 namespace MusEGui {
 
@@ -469,7 +473,7 @@ Transport::Transport(QWidget* parent, const char* name)
       syncButton->setCheckable(true);
       syncButton->setToolTip(tr("External sync on/off"));
       syncButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
-        
+
       jackTransportButton = new IconButton(jackTransportOnSVGIcon, jackTransportOffSVGIcon, 0, 0, false, true);
       jackTransportButton->setContentsMargins(0, 0, 0, 0);
       jackTransportButton->setCheckable(true);
@@ -484,12 +488,19 @@ Transport::Transport(QWidget* parent, const char* name)
 
       clickButton->setChecked(MusEGlobal::song->click());
       syncButton->setChecked(MusEGlobal::extSyncFlag);
-      jackTransportButton->setChecked(MusEGlobal::useJackTransport);
+      jackTransportButton->setChecked(MusEGlobal::config.useJackTransport);
       transportMasterButton->setChecked(MusEGlobal::transportMasterState);
       clickButton->setFocusPolicy(Qt::NoFocus);
       syncButton->setFocusPolicy(Qt::NoFocus);
       jackTransportButton->setFocusPolicy(Qt::NoFocus);
       transportMasterButton->setFocusPolicy(Qt::NoFocus);
+
+      // NOTE: Can't use this. Audio device does not exist at this point.
+      //jackTransportButton->setEnabled(MusEGlobal::audioDevice && MusEGlobal::audioDevice->hasOwnTransport());
+      //transportMasterButton->setEnabled(MusEGlobal::audioDevice &&
+      //    MusEGlobal::audioDevice->hasOwnTransport() &&
+      //    MusEGlobal::audioDevice->hasTransportMaster() &&
+      //    MusEGlobal::useJackTransport);
 
       button1->addStretch();
       button1->addWidget(clickButton);
@@ -502,6 +513,9 @@ Transport::Transport(QWidget* parent, const char* name)
       connect(syncButton, SIGNAL(toggled(bool)), SLOT(extSyncClicked(bool)));
       connect(jackTransportButton, SIGNAL(toggled(bool)), SLOT(useJackTransportClicked(bool)));
       connect(transportMasterButton, &IconButton::toggled, [this](bool v) { transportMasterClicked(v); } );
+
+      _transportMasterBlinkConnection = connect(MusEGlobal::muse, &MusE::blinkTimerToggled, [this](bool v)
+        { transportMasterButton->setBlinkPhase(v); } );
 
       connect(MusEGlobal::song, SIGNAL(clickChanged(bool)), this, SLOT(setClickFlag(bool)));
 
@@ -566,6 +580,11 @@ void Transport::configChanged()
       pal.setColor(lefthandle->backgroundRole(), MusEGlobal::config.transportHandleColor);
       lefthandle->setPalette(pal);
       righthandle->setPalette(pal);
+
+      const bool has_master = MusEGlobal::audioDevice && MusEGlobal::audioDevice->hasTransportMaster();
+      jackTransportButton->setEnabled(has_master);
+      transportMasterButton->setEnabled(has_master && MusEGlobal::config.useJackTransport);
+
       }
 
 //---------------------------------------------------------
@@ -786,7 +805,7 @@ void Transport::songChanged(MusECore::SongChangedStruct_t flags)
       }
       if (flags & SC_USE_JACK_TRANSPORT)
       {
-            jackSyncChanged(MusEGlobal::useJackTransport);
+            jackSyncChanged(MusEGlobal::config.useJackTransport);
       }
       if (flags & SC_TRANSPORT_MASTER)
       {
@@ -824,14 +843,45 @@ void Transport::syncChanged(bool flag)
 void Transport::jackSyncChanged(bool flag)
       {
       jackTransportButton->blockSignals(true);
+      transportMasterButton->blockSignals(true);
       jackTransportButton->setChecked(flag);
+      jackTransportButton->setEnabled(MusEGlobal::audioDevice && MusEGlobal::audioDevice->hasOwnTransport());
+      transportMasterButton->setEnabled(MusEGlobal::audioDevice && 
+          MusEGlobal::audioDevice->hasOwnTransport() && MusEGlobal::audioDevice->hasTransportMaster() && flag);
       jackTransportButton->blockSignals(false);
+      transportMasterButton->blockSignals(false);
       }
 
 void Transport::transportMasterChanged(bool flag)
       {
+      DEBUG_TRANSPORT(stderr, "transportMasterChanged() flag:%d jackTransportMaster:%d\n",
+              flag, MusEGlobal::config.jackTransportMaster);
+
       transportMasterButton->blockSignals(true);
-      transportMasterButton->setChecked(flag);
+
+      const bool has_master = MusEGlobal::audioDevice && MusEGlobal::audioDevice->hasTransportMaster();
+      if(has_master && flag)
+      {
+        DEBUG_TRANSPORT(stderr, "transportMasterChanged() We're master.\n");
+        // Reset to no blink.
+        transportMasterButton->setBlinking(false);
+        transportMasterButton->setChecked(true);
+      }
+      else if(has_master && MusEGlobal::config.jackTransportMaster)
+      {
+        DEBUG_TRANSPORT(stderr, "transportMasterChanged() Before connection:%d\n", (bool)_transportMasterBlinkConnection);
+        transportMasterButton->setChecked(false);
+        // Set to blink.
+        transportMasterButton->setBlinking(true);
+      }
+      else
+      {
+        DEBUG_TRANSPORT(stderr, "transportMasterChanged() Not master, don't wanna be either.\n");
+        // Reset to no blink.
+        transportMasterButton->setBlinking(false);
+        transportMasterButton->setChecked(false);
+      }
+      
       transportMasterButton->blockSignals(false);
       }
 
@@ -889,8 +939,16 @@ void Transport::extSyncClicked(bool v)
 
 void Transport::useJackTransportClicked(bool v)
 {
+  if(!v && MusEGlobal::transportMasterState && MusEGlobal::audioDevice)
+  {
+    // Let the operation do this.
+    //MusEGlobal::jackTransportMaster = v;
+    // Force it.
+    MusEGlobal::audioDevice->setMaster(v, false);
+  }
+
   MusECore::PendingOperationList operations;
-  operations.add(MusECore::PendingOperationItem(&MusEGlobal::useJackTransport, v, MusECore::PendingOperationItem::SetUseJackTransport));
+  operations.add(MusECore::PendingOperationItem(&MusEGlobal::config.useJackTransport, v, MusECore::PendingOperationItem::SetUseJackTransport));
   MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 }
 
@@ -898,11 +956,21 @@ void Transport::useJackTransportClicked(bool v)
 //   transportMasterClicked
 //---------------------------------------------------------
 
-void Transport::transportMasterClicked(bool /*v*/)
+void Transport::transportMasterClicked(bool v)
 {
 //   MusECore::PendingOperationList operations;
 //   operations.add(MusECore::PendingOperationItem(&MusEGlobal::useJackTransport, v, MusECore::PendingOperationItem::SetUseJackTransport));
 //   MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+  if(!MusEGlobal::audioDevice)
+    return;
+  if(MusEGlobal::config.useJackTransport)
+  {
+    //if(MusEGlobal::transportMasterState != MusEGlobal::jackTransportMaster)
+    //if(MusEGlobal::transportMasterState != MusEGlobal::jackTransportMaster)
+    MusEGlobal::config.jackTransportMaster = v;
+      // Force it.
+      MusEGlobal::audioDevice->setMaster(v, true);
+  }
 }
 
 void Transport::keyPressEvent(QKeyEvent* ev)

@@ -1,5 +1,10 @@
 06.12.2019
-        - Fixed bug #719 downmix to existing file appends to the old file (rj)
+    - Fixed bug #719 downmix to existing file appends to the old file (rj)
+    - Transport master fixes: New button on transport. Fix connect at startup etc. (Tim)
+      Seems there is no way to ask Jack if are we transport master (without setting it).
+      So new code in our Jack driver - and a 1Hz watchdog - monitor for changes to master status.
+      Care was taken to not disturb who else may be master. Click flashing button to force.
+      Tested the new button OK with three instances of MusE competing for transport master.
 05.12.2019
 	- Added File->New from template... menu entry. File->New loads default template (kybos)
 	- Fixed inconsistent UI texts where appropriate: (kybos)

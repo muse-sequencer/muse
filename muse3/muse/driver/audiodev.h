@@ -133,6 +133,11 @@ class AudioDevice {
       virtual void graphChanged() {}
       virtual void registrationChanged() {}
       virtual void connectionsChanged() {}
+      // Whether the device has its own transport (Jack transport etc.), beyond the one built into this class.
+      virtual bool hasOwnTransport() const { return false; };
+      // Whether the device supports transport master capabilities.
+      virtual bool hasTransportMaster() const { return false; };
+      // Sets or resets transport master.
       virtual int setMaster(bool f, bool unconditional = false) = 0;
 
       //----------------------------------------------

@@ -32,6 +32,7 @@
 #include <QMouseEvent>
 #include <QToolButton>
 #include <QKeyEvent>
+#include <QMetaObject>
 
 #include "type_defs.h"
 #include "sig.h"
@@ -127,7 +128,9 @@ class Transport : public QWidget
       QLabel* l6;
 
       Handle *lefthandle, *righthandle;
-      
+
+      QMetaObject::Connection _transportMasterBlinkConnection;
+
  protected:
       virtual void keyPressEvent(QKeyEvent *);
 

@@ -1061,6 +1061,7 @@ void MusE::populateAddTrack()
 void MusE::blinkTimerSlot()
 {
   MusEGlobal::blinkTimerPhase = !MusEGlobal::blinkTimerPhase;
+  emit blinkTimerToggled(MusEGlobal::blinkTimerPhase);
 }
 
 void MusE::messagePollTimerSlot()

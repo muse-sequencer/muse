@@ -1640,39 +1640,21 @@ void Song::normalizeWaveParts(Part *partCursor)
 
 void Song::beat()
       {
-      // DELETETHIS 15
-      #if 0
-      // Just a rate test...
-      static double _heartbeatRateTimer = 0.0;
-      double t = MusEUtil::curTime();
-      if(t - _heartbeatRateTimer > 0.0)
-      {
-        double rate = 1/ (t - _heartbeatRateTimer);
-        printf("heartbeat rate:%f\n", rate);
-        // Results: Song::beat() is not even called sometimes because apparently all the other
-        //  stuff connected to the heartbeat is taking up all the time before the next timer event - 
-        //  apparently Song::beat() is called last, or close to last - after the others. (Possible to choose order?)
-        // With fancy strip meters active, Song::beat() was quiet for long periods of time!
-      }
-      _heartbeatRateTimer = t;
-      #endif
-
-      // REMOVE Tim. master. Added.
+      // Watchdog for checking and setting transport master state.
       static int _transportMasterCounter = 0;
       if(MusEGlobal::audioDevice &&
-         //MusEGlobal::jackTransportMaster &&
-         //!MusEGlobal::transportMasterState &&
-         MusEGlobal::transportMasterState != MusEGlobal::jackTransportMaster &&
-         (--_transportMasterCounter <= 0))
+        MusEGlobal::audioDevice->hasOwnTransport() &&
+        MusEGlobal::audioDevice->hasTransportMaster() && 
+        MusEGlobal::config.useJackTransport && 
+        (--_transportMasterCounter <= 0))
       {
-        const bool m = MusEGlobal::jackTransportMaster;
-        const int res = MusEGlobal::audioDevice->setMaster(m);
-        if(res == 0)
+        if(MusEGlobal::config.jackTransportMaster)
         {
-          fprintf(stderr, "Setting transportMasterState to:%d\n", m);
-          MusEGlobal::transportMasterState = m;
+          if(!MusEGlobal::transportMasterState || !MusEGlobal::audio->isPlaying())
+            MusEGlobal::audioDevice->setMaster(true);
         }
-        _transportMasterCounter = 20;
+        // Set for once per second.
+        _transportMasterCounter = MusEGlobal::config.guiRefresh;
       }
 
       //First: update cpu load toolbar

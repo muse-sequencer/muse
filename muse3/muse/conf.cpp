@@ -633,12 +633,18 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "extSync")
                                 MusEGlobal::extSyncFlag = xml.parseInt();
                         else if (tag == "useJackTransport")
-                                MusEGlobal::useJackTransport = xml.parseInt();
+                                MusEGlobal::config.useJackTransport = xml.parseInt();
                         else if (tag == "jackTransportMaster")
                               {
-                                MusEGlobal::jackTransportMaster = xml.parseInt();
+                                MusEGlobal::config.jackTransportMaster = xml.parseInt();
+                                
+                                // Set this one-time flag to true so that when setMaster is called,
+                                //  it forces master. audioDevice may be NULL, esp. at startup,
+                                //  so this flag is necessary for the next valid call to setMaster.
+                                MusEGlobal::transportMasterForceFlag = true;
                                 if(MusEGlobal::audioDevice)
-                                      MusEGlobal::audioDevice->setMaster(MusEGlobal::jackTransportMaster);      
+                                  // Force it.
+                                  MusEGlobal::audioDevice->setMaster(MusEGlobal::config.jackTransportMaster, true);
                               }  
                         else if (tag == "syncRecFilterPreset")
                               {
@@ -1868,6 +1874,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
         MusEGlobal::mtcOffset.h(), MusEGlobal::mtcOffset.m(), MusEGlobal::mtcOffset.s(),
         MusEGlobal::mtcOffset.f(), MusEGlobal::mtcOffset.sf());
       xml.intTag(level, "extSync", MusEGlobal::extSyncFlag);
+      xml.intTag(level, "useJackTransport", MusEGlobal::config.useJackTransport);
+      xml.intTag(level, "jackTransportMaster", MusEGlobal::config.jackTransportMaster);
       
       xml.qrectTag(level, "geometryMain",      MusEGlobal::config.geometryMain);
       xml.qrectTag(level, "geometryTransport", MusEGlobal::config.geometryTransport);
@@ -1935,8 +1943,8 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
         MusEGlobal::mtcOffset.h(), MusEGlobal::mtcOffset.m(), MusEGlobal::mtcOffset.s(),
         MusEGlobal::mtcOffset.f(), MusEGlobal::mtcOffset.sf());
       xml.uintTag(level, "sendClockDelay", MusEGlobal::syncSendFirstClockDelay);
-      xml.intTag(level, "useJackTransport", MusEGlobal::useJackTransport);
-      xml.intTag(level, "jackTransportMaster", MusEGlobal::jackTransportMaster);
+      xml.intTag(level, "useJackTransport", MusEGlobal::config.useJackTransport);
+      xml.intTag(level, "jackTransportMaster", MusEGlobal::config.jackTransportMaster);
       xml.intTag(level, "syncRecFilterPreset", MusEGlobal::syncRecFilterPreset);
       xml.doubleTag(level, "syncRecTempoValQuant", MusEGlobal::syncRecTempoValQuant);
       xml.intTag(level, "extSync", MusEGlobal::extSyncFlag);

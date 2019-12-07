@@ -113,8 +113,6 @@ class MidiSyncConfig : public QDialog, public Ui::MidiSyncConfigBase {
    private slots:
       void heartBeat();
       void syncChanged();
-      void useJackTransportChanged(bool v);
-      void useJackTransportClicked(bool v);
       void extSyncChanged(bool v);
       void extSyncClicked(bool v);
       void ok();
