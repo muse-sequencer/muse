@@ -483,7 +483,8 @@ Transport::Transport(QWidget* parent, const char* name)
       transportMasterButton = new IconButton(transportMasterOnSVGIcon, transportMasterOffSVGIcon, 0, 0, false, true);
       transportMasterButton->setContentsMargins(0, 0, 0, 0);
       transportMasterButton->setCheckable(true);
-      transportMasterButton->setToolTip(tr("Transport master (on) or slave (off)"));
+      transportMasterButton->setToolTip(
+          tr("On: Transport master\nOff: Not master\nFlash: Waiting. Another client is master. Click to force."));
       transportMasterButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
 
       clickButton->setChecked(MusEGlobal::song->click());
