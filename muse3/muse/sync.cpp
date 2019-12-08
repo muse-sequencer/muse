@@ -46,9 +46,9 @@ bool debugSync = false;
 int mtcType     = 1;
 MusECore::MTC mtcOffset;
 bool extSyncFlag = false;       // false - MASTER, true - SLAVE
-bool transportMasterState = false;
+bool timebaseMasterState = false;
 // Hack when loading songs to force master.
-bool transportMasterForceFlag = false;
+bool timebaseMasterForceFlag = false;
 
 static MusECore::MTC mtcCurTime;
 static int mtcState;    // 0-7 next expected quarter message

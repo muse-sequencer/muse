@@ -207,6 +207,7 @@ IconButton::IconButton(QIcon* on_icon, QIcon* off_icon, QIcon* on_iconB, QIcon* 
                _hasFixedIconSize(hasFixedIconSize), _drawFlat(drawFlat), _text(text), _margin(margin)
 {
   setObjectName(name);
+  _blinking = false;
   _blinkPhase = false;
   _iconSetB = false;
   _checked = false;

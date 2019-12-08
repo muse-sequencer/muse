@@ -41,8 +41,8 @@
         <file>svg/master_track_on.svg</file>
         <file>svg/jack_transport_off.svg</file>
         <file>svg/jack_transport_on.svg</file>
-        <file>svg/transport_master_off.svg</file>
-        <file>svg/transport_master_on.svg</file>
+        <file>svg/timebase_master_off.svg</file>
+        <file>svg/timebase_master_on.svg</file>
         <file>svg/metronome_off.svg</file>
         <file>svg/metronome_on.svg</file>
         <file>svg/paste_ctrl.svg</file>

@@ -122,9 +122,9 @@ bool jackStarted = false;
 // Flag for detecting if sync callback is being called.
 bool jack_sync_detect_flag = false;
 JackAudioDevice::JackSyncPhases jackSyncPhase = JackAudioDevice::SyncCheck;
-// If we are the transport master.
-bool jack_transport_cur_master_state = false;
-JackAudioDevice::JackTransportMasterPhases jackTransportMasterPhase = JackAudioDevice::MasterCheck;
+// If we are the timebase master.
+bool jack_timebase_cur_master_state = false;
+JackAudioDevice::JackTimebaseMasterPhases jackTimebaseMasterPhase = JackAudioDevice::MasterCheck;
 
 //---------------------------------------------------------
 //  JackCallbackFifo
@@ -238,7 +238,7 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void* arg)
         {
 
           //--------------------------------------------------
-          // Jack transport master acquire/loss detection
+          // Jack timebase master acquire/loss detection
           //--------------------------------------------------
           if(arg)
           {
@@ -247,23 +247,23 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void* arg)
             if(client)
             {
               jack_transport_state_t state = jack_transport_query(client, nullptr);
-              // The transport timebase callback is called after the process callback.
-              // Check if it got called, meaning we are transport master.
+              // The timebase callback is called after the process callback.
+              // Check if it got called, meaning we are timebase master.
               if(state == JackTransportStopped || state == JackTransportRolling)
               {
                 if(jackSyncPhase == SyncStarted)
                 {
                   // Reset and wait for the next cycle to see if we became master.
-                  jackTransportMasterPhase = IsNotMaster;
+                  jackTimebaseMasterPhase = IsNotMaster;
                 }
                 else
-                if(jackTransportMasterPhase == IsNotMaster)
+                if(jackTimebaseMasterPhase == IsNotMaster)
                 {
                   // The timebase callback was not called - phase was not set to IsMaster.
-                  // Therefore we are not transport master.
-                  if(jack_transport_cur_master_state)
+                  // Therefore we are not timebase master.
+                  if(jack_timebase_cur_master_state)
                   {
-                    jack_transport_cur_master_state = false;
+                    jack_timebase_cur_master_state = false;
                     MusEGlobal::audio->sendMsgToGui('t');
                   }
                 }
@@ -282,7 +282,7 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void* arg)
               if(state == JackTransportRolling)
               {
                 // Reset and wait for the next cycle to see if we became master.
-                jackTransportMasterPhase = IsNotMaster;
+                jackTimebaseMasterPhase = IsNotMaster;
               }
             }
           }
@@ -396,11 +396,11 @@ static void timebase_callback(jack_transport_state_t,
    void*)
 #endif
   {
-    // I think, therefore I am... transport master.
-    jackTransportMasterPhase = JackAudioDevice::IsMaster;
-    if(!jack_transport_cur_master_state)
+    // I think, therefore I am... timebase master.
+    jackTimebaseMasterPhase = JackAudioDevice::IsMaster;
+    if(!jack_timebase_cur_master_state)
     {
-      jack_transport_cur_master_state = true;
+      jack_timebase_cur_master_state = true;
       MusEGlobal::audio->sendMsgToGui('T');
     }
 
@@ -2309,10 +2309,10 @@ int JackAudioDevice::setMaster(bool f, bool unconditional)
   // Check this one-time hack flag so that it forces master.
   // MusEGlobal::audioDevice may be NULL, esp. at startup when loading a song file,
   //  so this flag is necessary for the next valid call to setMaster.
-  if(MusEGlobal::transportMasterForceFlag)
+  if(MusEGlobal::timebaseMasterForceFlag)
   {
     unconditional = true;
-    MusEGlobal::transportMasterForceFlag = false;
+    MusEGlobal::timebaseMasterForceFlag = false;
   }
 
   DEBUG_JACK(stderr, "JackAudioDevice::setMaster val:%d unconditional:%d\n", f, unconditional);
@@ -2325,28 +2325,28 @@ int JackAudioDevice::setMaster(bool f, bool unconditional)
     if(MusEGlobal::config.useJackTransport)
     {
       // Make Muse the Jack timebase master. Possibly do it unconditionally (second param = 0).
-      // Note that if we are already the transport master, this will succeed and it will still
+      // Note that if we are already the timebase master, this will succeed and it will still
       //  call the timebase callback once afterwards.
       r = jack_set_timebase_callback(_client, !unconditional, (JackTimebaseCallback) timebase_callback, 0);
       if(MusEGlobal::debugMsg || JACK_DEBUG)
       {
-        if(r && !MusEGlobal::transportMasterState && unconditional)
+        if(r && !MusEGlobal::timebaseMasterState && unconditional)
           fprintf(stderr, "JackAudioDevice::setMaster jack_set_timebase_callback failed: result:%d\n", r);
       }
-      if(!(bool)r != MusEGlobal::transportMasterState)
+      if(!(bool)r != MusEGlobal::timebaseMasterState)
       {
-        MusEGlobal::transportMasterState = !(bool)r;
-        MusEGlobal::song->update(SC_TRANSPORT_MASTER);
+        MusEGlobal::timebaseMasterState = !(bool)r;
+        MusEGlobal::song->update(SC_TIMEBASE_MASTER);
       }
     }  
     else
     {
       r = 1;
       fprintf(stderr, "JackAudioDevice::setMaster cannot set master because useJackTransport is false\n");
-      if(MusEGlobal::transportMasterState)
+      if(MusEGlobal::timebaseMasterState)
       {
-        MusEGlobal::transportMasterState = false;
-        MusEGlobal::song->update(SC_TRANSPORT_MASTER);
+        MusEGlobal::timebaseMasterState = false;
+        MusEGlobal::song->update(SC_TIMEBASE_MASTER);
       }
     }
   }  
@@ -2355,13 +2355,13 @@ int JackAudioDevice::setMaster(bool f, bool unconditional)
     r = jack_release_timebase(_client);
     if(MusEGlobal::debugMsg || JACK_DEBUG)
     {
-      if(r && MusEGlobal::transportMasterState)
+      if(r && MusEGlobal::timebaseMasterState)
         fprintf(stderr, "JackAudioDevice::setMaster jack_release_timebase failed: result:%d\n", r);
     }      
-    if(!r && MusEGlobal::transportMasterState)
+    if(!r && MusEGlobal::timebaseMasterState)
     {
-      MusEGlobal::transportMasterState = false;
-      MusEGlobal::song->update(SC_TRANSPORT_MASTER);
+      MusEGlobal::timebaseMasterState = false;
+      MusEGlobal::song->update(SC_TIMEBASE_MASTER);
     }
   }
   return r;  

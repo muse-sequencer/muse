@@ -296,7 +296,7 @@ GlobalConfigValues config = {
       512,                          // Device audio buffer size
       0,                            // Device RtAudio selected backend
       true,                         // useJackTransport
-      true,                         // jackTransportMaster;
+      true,                         // timebaseMaster
 
       QString("./"),                // projectBaseFolder
       true,                         // projectStoreInFolder
@@ -335,7 +335,8 @@ GlobalConfigValues config = {
       false,                        // commonProjectLatency
       "",                           // mixdownPath
       true,                         // showNoteNamesInPianoRoll
-      true,                         // noPluginScaling
+      false,                        // noPluginScaling
+      false,                        // openMDIWinMaximized
       false                         // selectionsUndoable Whether selecting parts or events is undoable.
     };
 

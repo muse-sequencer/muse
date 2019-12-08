@@ -330,7 +330,7 @@ struct GlobalConfigValues {
       int deviceAudioBufSize;
       int deviceAudioBackend;
       bool useJackTransport;
-      bool jackTransportMaster;
+      bool timebaseMaster;
 
       QString projectBaseFolder;
       bool projectStoreInFolder;
@@ -381,6 +381,8 @@ struct GlobalConfigValues {
       bool selectionsUndoable;
       // Revert native GUI scaling on HiDPI
       bool noPluginScaling;
+      // Open MDI windows maximized
+      bool openMDIWinMaximized;
       };
 
 
