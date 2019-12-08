@@ -22,7 +22,7 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
 //=========================================================
-#include <cmath>
+#include "muse_math.h"
 #include "mmath.h"
 
 #include <QPainter>
@@ -847,7 +847,12 @@ void Slider::adjustScale()
   QFontMetrics fm = fontMetrics();
   if(d_orient == Qt::Horizontal)
   {
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+    int unit_w = fm.horizontalAdvance("888.8888");
+#else
     int unit_w = fm.width("888.8888");
+#endif
     if(unit_w == 0)
       unit_w = 20;
 

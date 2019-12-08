@@ -69,6 +69,7 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       void mdiPreset();
       void borlandPreset();
       void showAudioConverterSettings();
+      void updateBackendDeviceSettings();
 
     protected:
       void showEvent(QShowEvent*);

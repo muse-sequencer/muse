@@ -24,21 +24,23 @@
 //
 //=========================================================
 
+#include "rtctimer.h"
+
+#ifdef ALSA_SUPPORT
+
 #include <linux/version.h>
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
 #include <linux/spinlock.h>
 #include <linux/mc146818rtc.h>
 #else
 #include <linux/rtc.h>
+#include <poll.h>
 #endif
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include <poll.h>
 #include <errno.h>
 
-
-#include "rtctimer.h"
 #include "globals.h"
 
 namespace MusECore {
@@ -64,6 +66,14 @@ signed int RtcTimer::initTimer(unsigned long desiredFrequency)
     }
     MusEGlobal::doSetuid();
 
+#ifdef _WIN32
+    QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(showGPS()));
+	timer->start(15000); //time specified in ms
+//https://stackoverflow.com/questions/19287550/how-to-call-a-function-after-every-15-seconds-using-qt
+//http://doc.qt.io/qt-5/qtimer.html#details
+//http://doc.qt.io/qt-5/qt.html#TimerType-enum
+#else
     timerFd = ::open("/dev/rtc", O_RDONLY);
     if (timerFd == -1) {
           fprintf(stderr, "fatal error: open /dev/rtc failed: %s\n", strerror(errno));
@@ -82,6 +92,7 @@ signed int RtcTimer::initTimer(unsigned long desiredFrequency)
           return -1;
           }
     return timerFd;
+#endif
     }
 
 unsigned long RtcTimer::setTimerResolution(unsigned long resolution)
@@ -96,7 +107,11 @@ unsigned long RtcTimer::setTimerResolution(unsigned long resolution)
 
 unsigned long RtcTimer::setTimerFreq(unsigned long freq)
     {
-    int rc = ioctl(timerFd, RTC_IRQP_SET, freq);
+#ifdef _WIN32
+//    int rc = _getch(timerFd, );
+#else
+    int rc = ioctl(timerFd, RTC_IRQP_SET, freq); //RTC_IRQP_SET = set periodic interrupt frequency
+#endif
     if (rc == -1) {
             fprintf(stderr, "RtcTimer::setTimerFreq(): cannot set freq %lu on /dev/rtc: %s\n", freq,
                strerror(errno));
@@ -170,3 +185,5 @@ unsigned long RtcTimer::getTimerTicks(bool /*printTicks*/)// prevent compiler wa
     }
 
 } // namespace MusECore
+
+#endif // ALSA_SUPPORT

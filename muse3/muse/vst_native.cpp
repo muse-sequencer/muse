@@ -32,7 +32,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <dlfcn.h>
-#include <cmath>
+#include "muse_math.h"
 #include <set>
 #include <string>
 #include <jack/jack.h>
@@ -398,6 +398,7 @@ void initVST_Native()
       case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
       break;
@@ -608,7 +609,6 @@ AEffect* VstNativeSynth::instantiate(void* userData)
     fprintf(stderr, "Plugin supports processReplacing\n");
 
   plugin->user = userData;
-  plugin->dispatcher(plugin, effOpen, 0, 0, NULL, 0);
 
   // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
   //vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
@@ -623,14 +623,6 @@ AEffect* VstNativeSynth::instantiate(void* userData)
   ++_instances;
   _handle = hnd;
 
-  // work around to get airwave to work (author contacted so maybe another solution will
-  // reveal itself)
-  plugin->dispatcher(plugin, effSetSampleRate, 0, 0, NULL, MusEGlobal::sampleRate);
-  plugin->dispatcher(plugin, effSetBlockSize, 0, MusEGlobal::segmentSize, NULL, 0.0f);
-  plugin->dispatcher(plugin, effMainsChanged, 0, 1, NULL, 0.0f);
-  //
-
-  //plugin->dispatcher(plugin, effSetProgram, 0, 0, NULL, 0.0f); // REMOVE Tim. Or keep?
   return plugin;
 /*
 _error:
@@ -640,6 +632,25 @@ _error:
     dlclose(hnd);
   return NULL;
   */
+}
+
+//---------------------------------------------------------
+//   openPlugin
+//   static
+//---------------------------------------------------------
+
+bool VstNativeSynth::openPlugin(AEffect* plugin)
+{
+  plugin->dispatcher(plugin, effOpen, 0, 0, NULL, 0);
+
+  // work around to get airwave to work (author contacted so maybe another solution will
+  // reveal itself)
+  plugin->dispatcher(plugin, effSetSampleRate, 0, 0, NULL, MusEGlobal::sampleRate);
+  plugin->dispatcher(plugin, effSetBlockSize, 0, MusEGlobal::segmentSize, NULL, 0.0f);
+  plugin->dispatcher(plugin, effMainsChanged, 0, 1, NULL, 0.0f);
+
+  //plugin->dispatcher(plugin, effSetProgram, 0, 0, NULL, 0.0f); // REMOVE Tim. Or keep?
+  return true;
 }
 
 //---------------------------------------------------------
@@ -724,6 +735,9 @@ bool VstNativeSynthIF::init(Synth* s)
       if(!_plugin)
         return false;
 
+      if(!_synth->openPlugin(_plugin))
+        return false;
+
       queryPrograms();
       
       unsigned long outports = _synth->outPorts();
@@ -732,12 +746,21 @@ bool VstNativeSynthIF::init(Synth* s)
         _audioOutBuffers = new float*[outports];
         for(unsigned long k = 0; k < outports; ++k)
         {
+#ifdef _WIN32
+          _audioOutBuffers[k] = (float *) _aligned_malloc(16, sizeof(float *) * MusEGlobal::segmentSize);
+          if(_audioOutBuffers[k] == NULL)
+          {
+             fprintf(stderr, "ERROR: VstNativeSynthIF::init: _aligned_malloc returned error: NULL. Aborting!\n");
+             abort();
+          }
+#else
           int rv = posix_memalign((void**)&_audioOutBuffers[k], 16, sizeof(float) * MusEGlobal::segmentSize);
           if(rv != 0)
           {
             fprintf(stderr, "ERROR: VstNativeSynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
             abort();
           }
+#endif
           if(MusEGlobal::config.useDenormalBias)
           {
             for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
@@ -754,12 +777,21 @@ bool VstNativeSynthIF::init(Synth* s)
         _audioInBuffers = new float*[inports];
         for(unsigned long k = 0; k < inports; ++k)
         {
+#ifdef _WIN32
+          _audioInBuffers[k] = (float *) _aligned_malloc(16, sizeof(float *) * MusEGlobal::segmentSize);
+          if(_audioInBuffers[k] == NULL)
+          {
+             fprintf(stderr, "ERROR: VstNativeSynthIF::init: _aligned_malloc returned error: NULL. Aborting!\n");
+             abort();
+          }
+#else
           int rv = posix_memalign((void**)&_audioInBuffers[k], 16, sizeof(float) * MusEGlobal::segmentSize);
           if(rv != 0)
           {
             fprintf(stderr, "ERROR: VstNativeSynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
             abort();
           }
+#endif
           if(MusEGlobal::config.useDenormalBias)
           {
             for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
@@ -769,12 +801,21 @@ bool VstNativeSynthIF::init(Synth* s)
             memset(_audioInBuffers[k], 0, sizeof(float) * MusEGlobal::segmentSize);
         }
         
+#ifdef _WIN32
+        _audioInSilenceBuf = (float *) _aligned_malloc(16, sizeof(float *) * MusEGlobal::segmentSize);
+        if(_audioInSilenceBuf == NULL)
+        {
+           fprintf(stderr, "ERROR: VstNativeSynthIF::init: _aligned_malloc returned error: NULL. Aborting!\n");
+           abort();
+        }
+#else
         int rv = posix_memalign((void**)&_audioInSilenceBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
         if(rv != 0)
         {
           fprintf(stderr, "ERROR: VstNativeSynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
           abort();
         }
+#endif
         if(MusEGlobal::config.useDenormalBias)
         {
           for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
@@ -941,7 +982,7 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
       _timeInfo.sampleRate = (double)MusEGlobal::sampleRate;
       _timeInfo.flags = 0;
 
-      Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : curr_frame, MusEGlobal::extSyncFlag.value() ? true : false);
+      Pos p(MusEGlobal::extSyncFlag ? MusEGlobal::audio->tickPos() : curr_frame, MusEGlobal::extSyncFlag ? true : false);
 
       if(value & kVstBarsValid)
       {
@@ -990,7 +1031,11 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
       //if(MusEGlobal::audio->isRecording())
       //  _timeInfo.flags |= (kVstTransportRecording | kVstTransportChanged);
 
+#ifdef _WIN32
+      return *((long*)(&_timeInfo));
+#else
       return (long)&_timeInfo;
+#endif
    }
 
    case audioMasterProcessEvents:
@@ -1445,11 +1490,7 @@ void VstNativeSynthIF::eventReceived(VstMidiEvent* ev)
       // So, technically this is correct. What MATTERS is how we adjust the times for storage, and/or simultaneous playback in THIS period,
       //  and TEST: we'll need to make sure any non-contiguous previous period is handled correctly by process - will it work OK as is?
       // If ALSA works OK than this should too...
-#ifdef _AUDIO_USE_TRUE_FRAME_
-      event.setTime(MusEGlobal::audio->previousPos().frame() + ev->deltaFrames);
-#else
       event.setTime(MusEGlobal::audio->pos().frame() + ev->deltaFrames);
-#endif
       event.setTick(MusEGlobal::lastExtMidiSyncTick);
 
 //       event.setChannel(*(ev->buffer) & 0xf);
@@ -2368,7 +2409,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
         fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_SYSEX\n");
         #endif
 
-        const unsigned char* data = e.data();
+        const unsigned char* data = e.constData();
         if(e.len() >= 2)
         {
           if(data[0] == MUSE_SYNTH_SYSEX_MFG_ID)
@@ -2514,7 +2555,9 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
 
   unsigned long sample = 0;
 
-  const bool usefixedrate = (requiredFeatures() & PluginFixedBlockSize);
+  // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
+  //       For now we treat it like fixed size.
+  const bool usefixedrate = (requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize));
 
   // For now, the fixed size is clamped to the audio buffer size.
   // TODO: We could later add slower processing over several cycles -
@@ -3170,6 +3213,12 @@ LADSPA_Handle VstNativePluginWrapper::instantiate(PluginI *pluginI)
       return 0;
    }
 
+   if(!_synth->openPlugin(state->plugin))
+   {
+      delete state;
+      return 0;
+   }
+
    state->pluginI = pluginI;
    state->pluginWrapper = this;
    state->inPorts.resize(_inports);
@@ -3317,7 +3366,7 @@ void VstNativePluginWrapper::connectPort(LADSPA_Handle handle, unsigned long por
 
 }
 
-void VstNativePluginWrapper::apply(LADSPA_Handle handle, unsigned long n)
+void VstNativePluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float /*latency_corr*/)
 {
    VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
    state->inProcess = true;
@@ -3463,7 +3512,9 @@ void VstNativePluginWrapper::writeConfiguration(LADSPA_Handle handle, int level,
       {
          QByteArray arrOut = QByteArray::fromRawData((char *)p, len);
 
-         QByteArray outEnc64 = arrOut.toBase64();
+         // Weee! Compression!
+         QByteArray outEnc64 = qCompress(arrOut).toBase64();
+         
          QString customData(outEnc64);
          for (int pos=0; pos < customData.size(); pos+=150)
          {
@@ -3492,7 +3543,12 @@ void VstNativePluginWrapper::setCustomData(LADSPA_Handle handle, const std::vect
       param.remove('\n'); // remove all linebreaks that may have been added to prettyprint the songs file
       QByteArray paramIn;
       paramIn.append(param);
-      QByteArray dec64 = QByteArray::fromBase64(paramIn);
+      // Try to uncompress the data.
+      QByteArray dec64 = qUncompress(QByteArray::fromBase64(paramIn));
+      // Failed? Try uncompressed.
+      if(dec64.isEmpty())
+        dec64 = QByteArray::fromBase64(paramIn);
+      
       dispatch(state, 24 /* effSetChunk */, 0, dec64.size(), (void*)dec64.data(), 0.0); // index 0: is bank 1: is program
       break; //one customData tag includes all data in base64
    }

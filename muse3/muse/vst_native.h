@@ -141,6 +141,8 @@ class VstNativeSynth : public Synth {
       virtual Type synthType() const { return _isSynth ? VST_NATIVE_SYNTH : VST_NATIVE_EFFECT; }
       virtual void incInstances(int val);
       virtual AEffect* instantiate(void *userData);
+      // Opens a plugin instance, after instantiation.
+      static bool openPlugin(AEffect* plugin);
       virtual SynthIF* createSIF(SynthI*);
       unsigned long inPorts()     const { return _inports; }
       unsigned long outPorts()    const { return _outports; }
@@ -231,7 +233,6 @@ class VstNativeSynthIF : public SynthIF
       virtual bool hasNativeGui() const;
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const ;
       virtual void setNativeGeometry(int, int, int, int);
-      virtual void preProcessAlways() { }
       virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned nframes, float** buffer) ;
       virtual MidiPlayEvent receiveEvent();
       virtual int eventsPending() const { return 0; }
@@ -343,7 +344,7 @@ public:
     virtual void deactivate ( LADSPA_Handle handle );
     virtual void cleanup ( LADSPA_Handle handle );
     virtual void connectPort ( LADSPA_Handle handle, unsigned long port, float *value );
-    virtual void apply ( LADSPA_Handle handle, unsigned long n );
+    virtual void apply ( LADSPA_Handle handle, unsigned long n, float latency_corr = 0.0f );
     virtual LADSPA_PortDescriptor portd ( unsigned long k ) const;
 
     virtual LADSPA_PortRangeHint range ( unsigned long i );

@@ -24,7 +24,7 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include <cmath>
+#include "muse_math.h"
 
 #include "song.h"
 #include "part.h"
@@ -41,6 +41,115 @@
 namespace MusECore {
 
 int Part::snGen=0;
+
+//---------------------------------------------------------
+//   MidiCtrlViewState::write
+//---------------------------------------------------------
+
+void MidiCtrlViewState::write(int level, Xml& xml) const
+      {
+        xml.nput(level, "<ctrlViewState num=\"%d\"", _num);
+        if(_perNoteVel)
+          xml.nput(" perNoteVel=\"1\"");
+
+        xml.put(" />");
+      }
+
+//---------------------------------------------------------
+//   MidiPartViewState::read
+//---------------------------------------------------------
+
+void MidiCtrlViewState::read(Xml& xml)
+      {
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                     case Xml::Attribut:
+                        if (tag == "num")
+                          _num = xml.s2().toInt();
+                        else if (tag == "perNoteVel")
+                          _perNoteVel = xml.s2().toInt();
+                        break;
+               case Xml::TagEnd:
+                        if (xml.s1() == "ctrlViewState")
+                              return;
+                  default:
+                        break;
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   MidiPartViewState::write
+//---------------------------------------------------------
+
+void MidiPartViewState::write(int level, Xml& xml) const
+      {
+      // Don't bother if it's an invalid state.
+      if(!isValid())
+        return;
+
+      xml.tag(level++, "viewState xscroll=\"%d\" yscroll=\"%d\" xscale=\"%d\" yscale=\"%d\"",
+              xscroll(), yscroll(), xscale(), yscale());
+      
+      if(!_controllers.empty()) {
+        for (ciMidiCtrlViewState i = _controllers.cbegin();
+            i != _controllers.cend(); ++i) {
+              (*i).write(level, xml);
+              }
+      }
+
+      xml.tag(level, "/viewState");
+      
+      }
+
+//---------------------------------------------------------
+//   MidiPartViewState::read
+//---------------------------------------------------------
+
+void MidiPartViewState::read(Xml& xml)
+      {
+      // Make sure to clear the controllers list first.
+      clearControllers();
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case MusECore::Xml::TagStart:
+                        if (tag == "ctrlViewState") {
+                              MidiCtrlViewState mcvs;
+                              mcvs.read(xml);
+                              addController(mcvs);
+                        }
+                        else
+                              xml.unknown("MidiPartViewState");
+                        break;
+                  case Xml::Attribut:
+                        if (tag == "xscroll")
+                              setXScroll(xml.s2().toInt());
+                        else if (tag == "yscroll")
+                              setYScroll(xml.s2().toInt());
+                        else if (tag == "xscale")
+                              setXScale(xml.s2().toInt());
+                        else if (tag == "yscale")
+                              setYScale(xml.s2().toInt());
+                        break;
+                  case Xml::TagEnd:
+                        if (xml.s1() == "viewState")
+                              return;
+                  default:
+                        break;
+                  }
+            }
+      }
+
 
 
 void Part::unchainClone()
@@ -981,6 +1090,15 @@ void Song::changePart(Part* oPart, Part* nPart)
       if (epos > len())
             _len = epos;
       }
+
+//---------------------------------------------------------
+//   setViewState
+//---------------------------------------------------------
+
+void Part::setViewState(const MidiPartViewState& vs)
+{
+  _viewState = vs;
+}
 
 //---------------------------------------------------------
 //   dump

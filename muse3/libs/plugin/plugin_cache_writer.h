@@ -136,6 +136,8 @@ bool writeLinuxVstInfo(const char* filename, LinuxVST_Instance_Function lvst, bo
 void scanLv2Ports(const LilvPlugin *plugin, PluginScanInfoStruct* info, bool debugStdErr);
 #endif
 
+bool writeUnknownPluginInfo(const char* filename, int level, MusECore::Xml& xml);
+
 void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStruct& info, bool writePorts);
 
 // The museGlobalLib is where to find the application's installed libraries.
@@ -200,6 +202,8 @@ bool checkPluginCacheFiles(
   bool writePorts,
   // Force it to create every time.
   bool alwaysRecreate = false,
+  // Do not re-create.
+  bool dontRecreate = false,
   // Where to find the application's installed libraries.
   const QString& museGlobalLib = QString(),
   // The types of plugin cache files to write.

@@ -115,17 +115,26 @@ void MixdownFileDialog::accept()
 //---------------------------------------------------------
 
 void MixdownFileDialog::fdialog()
-      {
-      QString oldpath;
-      if (sf)
-            oldpath = sf->path();
-      if (!MusEGlobal::config.mixdownPath.isEmpty()) {
-          printf("Setting oldpath to %s\n", MusEGlobal::config.mixdownPath.toLatin1().data());
-          oldpath = MusEGlobal::config.mixdownPath;
-      }
-      QString path = QFileDialog::getSaveFileName(this, 0, oldpath, tr("Wave Files (*.wav);;All Files (*)"));
-      if (!path.isEmpty())
-            editPath->setText(path);
-      MusEGlobal::config.mixdownPath = path;
-      }
+{
+  QString oldpath;
+  if (sf) {
+        oldpath = sf->path();
+  }
+  if (!MusEGlobal::config.mixdownPath.isEmpty()) {
+      printf("Setting oldpath to %s\n", MusEGlobal::config.mixdownPath.toLatin1().data());
+      oldpath = MusEGlobal::config.mixdownPath;
+  }
+  QString path = QFileDialog::getSaveFileName(this, 0, oldpath, tr("Wave Files (*.wav);;All Files (*)"));
+  if (!path.isEmpty()) {
+        editPath->setText(path);
+  }
+  // check if the file already exists, which can happen.
+  // Easiest way to get the recording to work as intended we simply remove the old file.
+  if (QFileInfo::exists(path)) {
+    QFile f(path);
+    f.remove();
+  }
+  MusEGlobal::config.mixdownPath = path;
+}
+
 } // namespace MusEGui

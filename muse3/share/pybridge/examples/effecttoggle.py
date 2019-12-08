@@ -21,14 +21,14 @@
 //=========================================================
 """
 
-import Pyro.core
+import Pyro4.core
 import time
 
-muse=Pyro.core.getProxyForURI('PYRONAME://:Default.muse')
+muse=Pyro4.core.Proxy('PYRONAME:muse')
 trackname = "wavtrack"
 
 fxs = muse.getTrackEffects(trackname)
-print fxs
+print (fxs)
 
 for i in range (0,10):
       muse.toggleTrackEffect(trackname,0, False)

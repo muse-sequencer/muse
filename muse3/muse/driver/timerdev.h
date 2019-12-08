@@ -36,17 +36,18 @@ namespace MusECore {
 //---------------------------------------------------------
 
 class Timer {
-    
+
      public:
        Timer() {};
        virtual ~Timer() {};
-       
+       virtual const char * getTimerName() = 0;
+
        virtual signed int initTimer(unsigned long desiredFrequency) = 0;
        virtual unsigned long setTimerResolution(unsigned long resolution) = 0;
        virtual unsigned long getTimerResolution() = 0;
        virtual unsigned long setTimerFreq(unsigned long freq) = 0;
        virtual unsigned long getTimerFreq() = 0;
-       
+
        virtual bool startTimer() = 0;
        virtual bool stopTimer() = 0;
        virtual unsigned long getTimerTicks(bool printTicks = false) = 0;

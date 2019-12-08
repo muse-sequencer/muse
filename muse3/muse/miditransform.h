@@ -90,6 +90,7 @@ class MidiTransformerDialog : public QDialog, public Ui::MidiTransformDialogBase
       void transformEvent(MusECore::Event&, MusECore::MidiPart*, MusECore::MidiPart*, MusECore::Undo& operations);
       bool typesMatch(const MusECore::Event& e, unsigned selType);
       
+      MusECore::MidiTransformation* createDefaultPreset();
       void updatePresetList();
 
    private slots:
@@ -111,7 +112,7 @@ class MidiTransformerDialog : public QDialog, public Ui::MidiTransformDialogBase
       void procLenOpSel(int);
       void procPosOpSel(int);
       void funcOpSel(int);
-      void presetChanged(QListWidgetItem*);
+      void presetChanged(QListWidgetItem*, QListWidgetItem*);
       void nameChanged(const QString&);
       void commentChanged();
       void selVal1aChanged(int);

@@ -67,6 +67,7 @@ extern int get_paste_len();
 extern bool getUniqueFileName(const QString& filename, QString& newAbsFilePath);
 
 extern QString font2StyleSheet(const QFont& fnt);
+extern QString font2StyleSheetFull(const QFont& fnt);
 
 } // namespace MusECore
 

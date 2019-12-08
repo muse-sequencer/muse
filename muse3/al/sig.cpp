@@ -23,6 +23,7 @@
 
 #include "al.h"
 #include "sig.h"
+#include <stdio.h>
 
 namespace AL {
 

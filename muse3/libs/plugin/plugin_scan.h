@@ -33,6 +33,7 @@
 #include <map>
 // #include <list>
 // #include <memory>
+#include <cstdint>
 
 #ifdef PLUGIN_INFO_USE_QT
   #include <QString>
@@ -173,11 +174,11 @@ class PluginScanInfoStruct
       PluginTypeLADSPA   = 0x01,  PluginTypeDSSI    = 0x02,
       PluginTypeVST      = 0x04,  PluginTypeDSSIVST = 0x08,
       PluginTypeLinuxVST = 0x10,  PluginTypeLV2     = 0x20,
-      PluginTypeMESS     = 0x40,
+      PluginTypeMESS     = 0x40,  PluginTypeUnknown = 0x8000,
       PluginTypeAll = PluginTypeLADSPA   | PluginTypeDSSI |
                       PluginTypeVST      | PluginTypeDSSIVST |
                       PluginTypeLinuxVST | PluginTypeLV2 |
-                      PluginTypeMESS };
+                      PluginTypeMESS     | PluginTypeUnknown};
     typedef int PluginType_t;
 
     enum PluginClass { PluginClassNone = 0x00,
@@ -187,13 +188,13 @@ class PluginScanInfoStruct
 
     enum PluginFlags { NoPluginFlags = 0x00,
       HasGui = 0x01, HasChunks = 0x02, Realtime = 0x04, HardRealtimeCapable = 0x08, HasFreewheelPort = 0x10,
-      HasLatencyPort = 0x20 };
+      HasLatencyPort = 0x20, SupportsTimePosition = 0x40 };
     typedef int PluginFlags_t;
     
   //private:
   //protected:
   public:
-    
+
     //QFileInfo _fi;
     PluginInfoString_t _completeBaseName;
     PluginInfoString_t _baseName;
@@ -204,6 +205,11 @@ class PluginScanInfoStruct
     
     // Like "http://zynaddsubfx.sourceforge.net/fx#Phaser".
     PluginInfoString_t _uri;
+
+    // The file's time stamp in milliseconds since epoch.
+    int64_t _fileTime;
+    // Whether the file failed scanning.
+    bool _fileIsBad;
     
     PluginType _type;
     PluginClass_t _class;
@@ -247,10 +253,7 @@ class PluginScanInfoStruct
     //std::vector<unsigned long> _oIdx; //output port numbers
 
     MusECore::PluginFeatures_t _requiredFeatures;
-
-    #ifdef VST_NATIVE_SUPPORT
     MusECore::VstPluginFlags_t _vstPluginFlags;
-    #endif
 
     PluginInfoString_t _uiFilename;
 
@@ -260,6 +263,8 @@ class PluginScanInfoStruct
 
   public:
     PluginScanInfoStruct() :
+      _fileTime(0),
+      _fileIsBad(false),
       _type(PluginTypeNone),
       _class(PluginClassNone),
       _uniqueID(0),
@@ -278,10 +283,8 @@ class PluginScanInfoStruct
       _eventOutPorts(0),
       _freewheelPortIdx(0),
       _latencyPortIdx(0),
-      _requiredFeatures(MusECore::PluginNoFeatures)
-      #ifdef VST_NATIVE_SUPPORT
-      , _vstPluginFlags(MusECore::vstPluginNoFlags)
-      #endif
+      _requiredFeatures(MusECore::PluginNoFeatures),
+      _vstPluginFlags(MusECore::vstPluginNoFlags)
       { };
 
     //~PluginScanInfoStruct();

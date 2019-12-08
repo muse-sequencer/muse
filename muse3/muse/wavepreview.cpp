@@ -4,7 +4,7 @@
 
 namespace MusEGlobal
 {
-MusECore::WavePreview *wavePreview;
+MusECore::WavePreview *wavePreview = nullptr;
 }
 
 namespace MusECore
@@ -175,6 +175,7 @@ void exitWavePreview()
    if(MusEGlobal::wavePreview)
    {
       delete MusEGlobal::wavePreview;
+      MusEGlobal::wavePreview = nullptr;
    }
 }
 

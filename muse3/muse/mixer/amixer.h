@@ -24,23 +24,22 @@
 #ifndef __AMIXER_H__
 #define __AMIXER_H__
 
+#include <QMainWindow>
+#include <QWidget>
 #include <QScrollArea>
+#include <QMenu>
+#include <QAction>
+#include <QHBoxLayout>
+#include <QResizeEvent>
+#include <QMoveEvent>
+#include <QCloseEvent>
+#include <QKeyEvent>
 
 #include "type_defs.h"
-#include "cobject.h"
-#include "synth.h"
-#include "node.h"
 #include "routedialog.h"
+#include "gconfig.h"
 
 #define EFX_HEIGHT     16
-
-class QHBoxLayout;
-class QLabel;
-class QMenu;
-class QToolButton;
-class QWidget;
-class QShowEvent;
-class QCloseEvent;
 
 namespace MusECore {
 class Xml;
@@ -49,15 +48,10 @@ class Meter;
 class Track;
 }
 
-namespace MusEGlobal {
-  struct MixerConfig;
-}
-
 namespace MusEGui {
 class ComboBox;
 class DoubleLabel;
 class Knob;
-class RouteDialog;
 class Slider;
 class Strip;
 
@@ -99,7 +93,7 @@ class AudioMixerApp : public QMainWindow {
       QWidget* central;
       QHBoxLayout* mixerLayout;
       QMenu* menuStrips;
-      MusEGui::RouteDialog* routingDialog;
+      RouteDialog* routingDialog;
       QAction* routingId;
       int oldAuxsSize;
 
@@ -119,13 +113,15 @@ class AudioMixerApp : public QMainWindow {
 
       bool stripIsVisible(Strip* s);
       void redrawMixer();
-      void addStrip(MusECore::Track* t, bool visible=true);
+      void addStrip(const MusECore::Track* t, const MusEGlobal::StripConfig& sc = MusEGlobal::StripConfig(), int insert_pos = -1);
       void showRouteDialog(bool);
 
-      void updateStripList();
+      // Returns true if anything changed.
+      bool updateStripList();
       void fillStripListTraditional();
       Strip* findStripForTrack(StripList &s, MusECore::Track *t);
       void updateSelectedStrips();
+      void moveConfig(const Strip* s, int new_pos);
 
       enum UpdateAction {
             NO_UPDATE, UPDATE_ALL, UPDATE_MIDI, STRIP_INSERTED, STRIP_REMOVED
@@ -135,9 +131,7 @@ class AudioMixerApp : public QMainWindow {
       void addStripToLayoutIfVisible(Strip *s);
       void selectNextStrip(bool isRight, bool clearAll = true);
 
-
       bool eventFilter(QObject *obj,QEvent *event);
-
 
    signals:
       void closed();
@@ -161,15 +155,18 @@ class AudioMixerApp : public QMainWindow {
       void handleMenu(QAction *);
       void clearStripSelection();
       void moveStrip(Strip*);
+      void stripVisibleChanged(Strip*, bool);
+      void stripUserWidthChanged(Strip*, int);
 
    protected:
       //virtual bool event(QEvent* event);
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
+      virtual void resizeEvent(QResizeEvent*);
+      virtual void moveEvent(QMoveEvent*);
 
    public:
       AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c);
-      void write(int level, MusECore::Xml& xml);
       void clearAndDelete();
       
       // Sets up tabbing for the entire mixer. Strip by strip.

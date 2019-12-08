@@ -32,21 +32,20 @@
 #include <QDialog>
 #include <QStyledItemDelegate>
 #include <QBitArray>
+#include <QCloseEvent>
+#include <QMouseEvent>
+#include <QWheelEvent>
+#include <QString>
+#include <QItemSelectionModel>
+#include <QPainter>
+#include <QColor>
+#include <QResizeEvent>
+#include <QPaintEvent>
+#include <QContextMenuEvent>
 
-//#include "ui_routedialogbase.h"
 #include "type_defs.h"
 #include "route.h"
 
-
-class QCloseEvent;
-class QMouseEvent;
-class QWheelEvent;
-class QString;
-class QMouseEvent;
-class QItemSelectionModel;
-class QPainter;
-class QColor;
-class QResizeEvent;
 
 namespace MusEGui {
 
@@ -229,14 +228,6 @@ class RouteTreeWidgetItem : public QTreeWidgetItem
         bool fillChannelsRouteSelected(bool v) { return _channels.fillRouteSelected(v); }
         // Returns the channel, based at rect y, whose rectangle contains pt.
         int channelAt(const QPoint& pt, const QRect& rect) const;
-//         // How many non-omni channels are connected. For speed, it looks in the channel y values list, which must be current.
-//         int connectedChannels() const;
-//         // How many channels fit into the column. If w is -1, it uses the width of the first tree column.
-//         int channelsPerWidth(int w = -1) const;
-//         // How many groups accommodate the given number of channels, all on a single bar.
-//         int groupsPerChannels(int c) const;
-//         // How many bars accommodate the item's total channels, for the given number of maximum number of channels on a single bar.
-//         int barsPerColChannels(int cc) const;
 
         // For drawing channel lines:
         int channelYValue(int c) const    { return _channels.lineY(c); }
@@ -254,16 +245,11 @@ class RouteTreeWidgetItem : public QTreeWidgetItem
         bool mouseMoveHandler(QMouseEvent* e, const QRect& rect); 
         // Handles painting. Returns true if the painting was handled.
         bool paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
-//         // Returns suggested size of item.
-//         QSize getSizeHint(int col, int col_width = -1) const;
-        // Returns suggested size of item.
-//         QSize getSizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
         // Returns suggested size of item, that will fit into the given width while expanding vertically.
         // If width is -1, it uses the view width.
         QSize getSizeHint(int column, int width = -1) const;
         // Returns true if the item should be re-laid out (ie. with a tree's scheduleDelayedItemsLayout() or a delegate's sizeHintChanged()).
         // For channel items, it first adjusts the channel bar width to fit the new width.
-        //bool testForRelayout(const QModelIndex& index, int old_width, int new_width) const;
         bool testForRelayout(int column, int old_width, int new_width);
 };
 
@@ -311,9 +297,13 @@ class RouteTreeWidget : public QTreeWidget
         Q_OBJECT
         
         Q_PROPERTY(bool isInput READ isInput WRITE setIsInput)
+        // An extra property required to support stylesheets (not enough colours).
+        Q_PROPERTY(QColor categoryColor READ categoryColor WRITE setCategoryColor)
+
 private:
         bool _isInput;
         bool _channelWrap;
+        QColor _categoryColor;
         
 private slots:
         void headerSectionResized(int logicalIndex, int oldSize, int newSize);
@@ -352,6 +342,9 @@ public:
         void getItemsToDelete(QVector<QTreeWidgetItem*>& items_to_remove, bool showAllMidiPorts = false);
         //void scheduleDelayedLayout() { scheduleDelayedItemsLayout(); }  // Just to make it public.
         void selectRoutes(const QList<QTreeWidgetItem*>& routes, bool doNormalSelections);
+
+        QColor categoryColor() const { return _categoryColor; }
+        void setCategoryColor(const QColor& c) { _categoryColor = c; }
 };
 
 
@@ -384,28 +377,17 @@ class RoutingItemDelegate : public QStyledItemDelegate
 
     virtual void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
     virtual QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
-    //QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
-    //                      const QModelIndex &index) const;
-    //void setEditorData(QWidget *editor, const QModelIndex &index) const;
     virtual void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
     // Exposed as public from protected, so that it may be called from the tree widget.                  
     virtual void initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const 
       { QStyledItemDelegate::initStyleOption(option, index); }
       
-//     // Returns true if tree should be re laid out (ie. with scheduleDelayedItemsLayout()).
-//     bool testForRelayout(const QStyleOptionViewItem &option, const QModelIndex& index, int old_width, int new_width);
-
     // Emits the required sizeHintChanged(index) signal, to notify the tree to relayout the item.
     virtual void emitSizeHintChanged(const QModelIndex &index) { emit sizeHintChanged(index); }
     
   protected:
     bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index);
     bool eventFilter(QObject* editor, QEvent* event);
-    //void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
-    
-  //private slots:
-  //  void editorChanged();
-    ////void commitAndCloseEditor();
 };
 
 //---------------------------------------------------------
@@ -423,12 +405,8 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       RoutingItemDelegate* srcItemDelegate;
       RoutingItemDelegate* dstItemDelegate;
       
-      //RouteTreeWidgetItem* _srcFilterItem;
-      //RouteTreeWidgetItem* _dstFilterItem;
       RouteTreeItemList _srcFilterItems;
       RouteTreeItemList _dstFilterItems;
-      //RouteTreeItemList _srcFilterRouteItems;
-      //RouteTreeItemList _dstFilterRouteItems;
       
       virtual void closeEvent(QCloseEvent*);
       void removeItems();

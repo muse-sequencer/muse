@@ -25,9 +25,9 @@
 //
 //=========================================================
 
-#include <cmath>
 #include <stdio.h>
 
+#include "muse_math.h"
 #include "midi_consts.h"
 #include "mpevent.h"
 
@@ -177,7 +177,7 @@ bool Organ::init(const char* name)
       {
       gui = new OrganGui;
       gui->setWindowTitle(QString(name));
-      gui->show();
+      gui->hide();
 
       for (int i = 0; i < NUM_CONTROLLER; ++i)
             setController(0, synthCtrl[i].num, synthCtrl[i].val);

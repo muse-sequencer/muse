@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=MusE
+GenericName=Audio/MIDI Sequencer
+GenericName[fr]=Séquenceur audio/MIDI
+Comment=Midi Music Editor
+Comment[fr]=Éditeur MIDI de musique
+Icon=org.musesequencer.Muse3
+Type=Application
+Exec=${MusE_EXEC_NAME}
+Terminal=false
+Categories=Sequencer;Midi;X-Jack;X-Sequencers;X-MIDI;Audio;AudioVideo;
+MimeType=audio/midi;application/x-muse;application/xml;

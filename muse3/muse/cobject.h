@@ -25,6 +25,7 @@
 #define __COBJECT_H__
 
 #include "config.h"
+#include "script_delivery.h"
 
 #include <QMainWindow>
 #include <list>
@@ -123,7 +124,9 @@ class TopWin : public QMainWindow
       static bool initInited;
       
       QByteArray _savedToolbarState;
-      
+
+      MusECore::ScriptReceiver _scriptReceiver;
+
       // Set if close has been called on a TopWin having the WA_DeleteOnClose attribute.
       // The TopWins and any children should ignore any signals such as songChanged
       //  which may cause a crash while deleting.
@@ -143,6 +146,7 @@ class TopWin : public QMainWindow
       void shareToolsAndMenu(bool);
       void restoreMainwinState();
       void storeInitialState() const;
+      virtual void storeInitialViewState() const { }
       virtual void setWindowTitle (const QString&);
       virtual void focusCanvas() { }
       virtual void windowStateChanged(Qt::WindowStates oldState, Qt::WindowStates newState);

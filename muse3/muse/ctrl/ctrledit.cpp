@@ -83,6 +83,38 @@ CtrlEdit::CtrlEdit(QWidget* parent, MidiEditor* e, int xmag,
       }
 
 //---------------------------------------------------------
+//   ctrlNum
+//---------------------------------------------------------
+
+int CtrlEdit::ctrlNum() const
+{
+  if(canvas)
+    return canvas->controller()->num();
+  return 0;
+}
+
+//---------------------------------------------------------
+//   perNoteVel
+//---------------------------------------------------------
+
+bool CtrlEdit::perNoteVel() const
+{
+  if(canvas)
+    return canvas->perNoteVeloMode();
+  return false;
+}
+
+//---------------------------------------------------------
+//   setPerNoteVel
+//---------------------------------------------------------
+
+void CtrlEdit::setPerNoteVel(bool v)
+{
+  if(canvas)
+    canvas->setPerNoteVeloMode(v);
+}
+
+//---------------------------------------------------------
 //   writeStatus
 //---------------------------------------------------------
 

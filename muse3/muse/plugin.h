@@ -32,11 +32,17 @@
 #include <QPair>
 
 #include <QMouseEvent>
-#include <QDialog>
-#include <QTabBar>
 #include <QFileInfo>
 #include <QMainWindow>
 #include <QUiLoader>
+#include <QScrollArea>
+#include <QComboBox>
+#include <QRect>
+#include <QShowEvent>
+#include <QHideEvent>
+#include <QAction>
+#include <QSpinBox>
+//#include <QToolButton>
 
 #include <ladspa.h>
 
@@ -64,18 +70,6 @@
 // If the bug is ever fixed by Qt, this define should then
 //  become version-sensitive.         2017/11/28 Tim.
 #define QT_SHOW_POS_BUG_WORKAROUND 1;
-
-class QAbstractButton;
-class QComboBox;
-class QRadioButton;
-class QScrollArea;
-class QToolButton;
-class QToolButton;
-class QTreeWidget;
-class QRect;
-class QByteArray;
-class QCloseEvent;
-class QShowEvent;
 
 namespace MusEGui {
 class PluginGui;
@@ -130,6 +124,8 @@ class Plugin {
       unsigned long _controlOutPorts;
       std::vector<unsigned long> rpIdx; // Port number to control input index. Item is -1 if it's not a control input.
 
+      bool _usesTimePosition;
+
       PluginFeatures_t _requiredFeatures;
 
    public:
@@ -178,7 +174,7 @@ class Plugin {
             if(plugin)
               plugin->connect_port(handle, port, value);
             }
-      virtual void apply(LADSPA_Handle handle, unsigned long n) {
+      virtual void apply(LADSPA_Handle handle, unsigned long n, float /*latency_corr*/ = 0.0f) {
             if(plugin)
               plugin->run(handle, n);
             }
@@ -208,6 +204,7 @@ class Plugin {
             return plugin ? plugin->PortNames[i] : 0;
             }
 
+      bool usesTimePosition() const         { return _usesTimePosition; }
       unsigned long inports() const         { return _inports; }
       unsigned long outports() const        { return _outports; }
       unsigned long controlInPorts() const  { return _controlInPorts; }
@@ -284,6 +281,43 @@ struct Port {
       };
 
 //---------------------------------------------------------
+//   PluginQuirks
+//    An ugly but necessary class due to differences in plugin behaviour.
+//---------------------------------------------------------
+
+class PluginQuirks
+{
+  public:
+    // Whether the LV2 'speed' timePosition property switches to 0.0 in stop mode, or remains
+    //  fixed at 1.0 regardless of play or stop mode. Fixes plugins like TAL NoiseMak3r
+    //  stuck repeating small modulator segment at speed = 0.0.
+    bool _fixedSpeed;
+    // If the plugin uses our transport (ex. as an LV2 timePosition), sets whether the timePosition
+    //  affects actual audio latency (not just say, beat or sequencer or arpeggiator latency).
+    // Example: LV2 Example Metronome.
+    bool _transportAffectsAudioLatency;
+    // Override the plugin's reported latency. Some plugins get it wrong or not quite right.
+    bool _overrideReportedLatency;
+    // Value to override the reported latency.
+    int _latencyOverrideValue;
+    // Reverse scaling of native UI windows on HiDPI
+    enum NatUISCaling {GLOBAL, ON, OFF};
+    NatUISCaling _fixNativeUIScaling;
+
+  PluginQuirks() :
+    _fixedSpeed(false),
+    _transportAffectsAudioLatency(false),
+    _overrideReportedLatency(false),
+    _latencyOverrideValue(0),
+    _fixNativeUIScaling(NatUISCaling::GLOBAL)
+    { }
+
+  void write(int level, Xml& xml) const;
+  // Return true on error.
+  bool read(Xml& xml);
+};
+
+//---------------------------------------------------------
 //   PluginIBase
 //---------------------------------------------------------
 
@@ -294,6 +328,7 @@ class PluginIBase
       MusEGui::PluginGui* _gui;
       QRect _guiGeometry;
       QRect _nativeGuiGeometry;
+      PluginQuirks _quirks;
 
       void makeGui();
 
@@ -301,6 +336,7 @@ class PluginIBase
       PluginIBase();
       virtual ~PluginIBase();
       virtual PluginFeatures_t requiredFeatures() const = 0;
+      virtual bool hasBypass() const = 0;
       virtual bool on() const = 0;
       virtual void setOn(bool val) = 0;
       virtual unsigned long pluginID() = 0;
@@ -337,7 +373,12 @@ class PluginIBase
       virtual LADSPA_PortRangeHint range(unsigned long i) = 0;
       virtual LADSPA_PortRangeHint rangeOut(unsigned long i) = 0;
 
-      virtual float latency() = 0;
+      virtual bool usesTransportSource() const = 0;
+      virtual bool hasLatencyOutPort() const = 0;
+      virtual unsigned long latencyOutPortIndex() const = 0;
+      virtual float latency() const = 0;
+      const PluginQuirks& cquirks() const { return _quirks; }
+      PluginQuirks& quirks() { return _quirks; }
       
       virtual void setCustomData(const std::vector<QString> &) {/* Do nothing by default */}
       virtual CtrlValueType ctrlValueType(unsigned long i) const = 0;
@@ -431,6 +472,7 @@ class PluginI : public PluginIBase {
 
       virtual PluginFeatures_t requiredFeatures() const { return _plugin->requiredFeatures(); }
       
+      bool hasBypass() const  { return true; };
       bool on() const        { return _on; }
       void setOn(bool val)   { _on = val; }
 
@@ -444,7 +486,8 @@ class PluginI : public PluginIBase {
       bool initPluginInstance(Plugin*, int channels);
       void setChannels(int);
       void connect(unsigned long ports, unsigned long offset, float** src, float** dst);
-      void apply(unsigned pos, unsigned long n, unsigned long ports, float** bufIn, float** bufOut);
+      void apply(unsigned pos, unsigned long n,
+                 unsigned long ports, float** bufIn, float** bufOut, float latency_corr_offset = 0.0f);
 
       void enableController(unsigned long i, bool v = true)   { controls[i].enCtrl = v; }
       bool controllerEnabled(unsigned long i) const           { return controls[i].enCtrl; }
@@ -497,7 +540,10 @@ class PluginI : public PluginIBase {
       bool isAudioOut(unsigned long k) { return (_plugin->portd(k) & IS_AUDIO_OUT) == IS_AUDIO_OUT; }
       LADSPA_PortRangeHint range(unsigned long i) { return _plugin->range(controls[i].idx); }
       LADSPA_PortRangeHint rangeOut(unsigned long i) { return _plugin->range(controlsOut[i].idx); }
-      float latency();
+      bool usesTransportSource() const { return _plugin->usesTimePosition(); };
+      bool hasLatencyOutPort() const { return _hasLatencyOutPort; }
+      unsigned long latencyOutPortIndex() const { return _latencyOutPort; }
+      float latency() const;
       CtrlValueType ctrlValueType(unsigned long i) const { return _plugin->ctrlValueType(controls[i].idx); }
       CtrlList::Mode ctrlMode(unsigned long i) const { return _plugin->ctrlMode(controls[i].idx); }
       virtual void setCustomData(const std::vector<QString> &customParams);
@@ -540,7 +586,7 @@ class Pipeline : public std::vector<PluginI*> {
       bool addScheduledControlEvent(int track_ctrl_id, double val, unsigned frame); // returns true if event cannot be delivered
       void enableController(int track_ctrl_id, bool en);
       bool controllerEnabled(int track_ctrl_id);
-      float latency();
+      float latency() const;
       };
 
 typedef Pipeline::iterator iPluginI;
@@ -616,8 +662,14 @@ class PluginGui : public QMainWindow {
       GuiWidgets* gw;
 
       QAction* onOff;
+      QAction* transpGovLatencyAct;
+      QAction* fixedSpeedAct;
+      QAction* overrideLatencyAct;
+      QSpinBox* latencyOverrideEntry;
       QWidget* mw;            // main widget
       QScrollArea* view;
+      QToolButton* fixNativeUIScalingTB;
+      QString fixScalingTooltip[3];
 
       void updateControls();
       void getPluginConvertedValues(LADSPA_PortRangeHint range,
@@ -631,20 +683,25 @@ class PluginGui : public QMainWindow {
       void load();
       void save();
       void bypassToggled(bool);
+      void transportGovernsLatencyToggled(bool);
+      void fixNativeUIScalingTBClicked();
+      void fixedSpeedToggled(bool);
+      void overrideReportedLatencyToggled(bool);
+      void latencyOverrideValueChanged(int);
       void sliderChanged(double value, int id, int scrollMode);
       void labelChanged(double, int);
-      void guiParamChanged(int);
+      void guiParamChanged(unsigned long int);
       void ctrlPressed(double, int);
       void ctrlReleased(double, int);
       void switchPressed(int);
       void switchReleased(int);
-      void guiParamPressed(int);
-      void guiParamReleased(int);
-      void guiSliderPressed(double, int);
-      void guiSliderReleased(double, int);
+      void guiParamPressed(unsigned long int);
+      void guiParamReleased(unsigned long int);
+      void guiSliderPressed(double, unsigned long int);
+      void guiSliderReleased(double, unsigned long int);
       void ctrlRightClicked(const QPoint &, int);
-      void guiSliderRightClicked(const QPoint &, int);
-      void guiContextMenuReq(int idx);
+      void guiSliderRightClicked(const QPoint &, unsigned long int);
+      void guiContextMenuReq(unsigned long int idx);
 
    protected slots:
       virtual void heartBeat();

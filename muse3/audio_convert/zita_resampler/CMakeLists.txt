@@ -73,7 +73,7 @@ set (FILES_TO_TRANSLATE
 #
 set_target_properties ( zita_resampler_converter
       PROPERTIES PREFIX ""
-      COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
+      COMPILE_FLAGS "-fvisibility=hidden"
       # OUTPUT_NAME muse_zita_resampler_converter
       )
 

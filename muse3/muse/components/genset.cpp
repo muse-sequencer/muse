@@ -90,11 +90,11 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       
       updateSettings();
       
-      projDirOpenToolButton->setIcon(*openIcon);
+      projDirOpenToolButton->setIcon(*fileopenSVGIcon);
       connect(projDirOpenToolButton, SIGNAL(clicked()), SLOT(browseProjDir()));
-      startSongFileOpenToolButton->setIcon(*openIcon); 
+      startSongFileOpenToolButton->setIcon(*fileopenSVGIcon);
       connect(startSongFileOpenToolButton, SIGNAL(clicked()), SLOT(browseStartSongFile()));
-      startSongResetToolButton->setIcon(*undoIcon);
+      startSongResetToolButton->setIcon(*undoSVGIcon);
       connect(startSongResetToolButton, SIGNAL(clicked()), SLOT(startSongReset()));
       
       connect(applyButton, SIGNAL(clicked()), SLOT(apply()));
@@ -118,6 +118,8 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       
       connect(audioConvertersButton, SIGNAL(clicked()), SLOT(showAudioConverterSettings()));
       
+      connect(deviceAudioBackendComboBox, SIGNAL(currentIndexChanged(int)), SLOT(updateBackendDeviceSettings()));
+
       addMdiSettings(TopWin::ARRANGER);
       addMdiSettings(TopWin::SCORE);
       addMdiSettings(TopWin::PIANO_ROLL);
@@ -142,6 +144,23 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       for (int i = 0; i < MusEGlobal::numAudioSampleRates; i++){
         deviceAudioRate->addItem(QString::number(MusEGlobal::selectableAudioSampleRates[i]),i);
       }
+      updateBackendDeviceSettings();
+}
+
+void GlobalSettingsConfig::updateBackendDeviceSettings()
+{
+    int currentDevice = deviceAudioBackendComboBox->currentIndex();
+
+    if (currentDevice == MusEGlobal::JackAudio)
+    {
+        deviceAudioSize->setDisabled(true);
+        deviceAudioRate->setDisabled(true);
+    }
+    else {
+        deviceAudioSize->setDisabled(false);
+        deviceAudioRate->setDisabled(false);
+
+    }
 }
 
 void GlobalSettingsConfig::addMdiSettings(TopWin::ToplevelType t)
@@ -221,8 +240,15 @@ void GlobalSettingsConfig::updateSettings()
       denormalCheckBox->setChecked(MusEGlobal::config.useDenormalBias);
       outputLimiterCheckBox->setChecked(MusEGlobal::config.useOutputLimiter);
       vstInPlaceCheckBox->setChecked(MusEGlobal::config.vstInPlace);
+      revertPluginNativeGUIScalingCheckBox->setChecked(MusEGlobal::config.noPluginScaling);
 
       deviceAudioBackendComboBox->setCurrentIndex(MusEGlobal::config.deviceAudioBackend);
+
+      enableLatencyCorrectionButton->setChecked(MusEGlobal::config.enableLatencyCorrection);
+      latencyInBranchUntermButton->setChecked(MusEGlobal::config.correctUnterminatedInBranchLatency);
+      latencyOutBranchUntermButton->setChecked(MusEGlobal::config.correctUnterminatedOutBranchLatency);
+      latencyProjectCommonButton->setChecked(MusEGlobal::config.commonProjectLatency);
+      latencyMonitorAffectingButton->setChecked(MusEGlobal::config.monitoringAffectsLatency);
 
       projDirEntry->setText(MusEGlobal::config.projectBaseFolder);
 
@@ -360,6 +386,12 @@ void GlobalSettingsConfig::apply()
       
       MusEGlobal::config.projectBaseFolder = projDirEntry->text();
       
+      MusEGlobal::config.enableLatencyCorrection = enableLatencyCorrectionButton->isChecked();
+      MusEGlobal::config.correctUnterminatedInBranchLatency = latencyInBranchUntermButton->isChecked();
+      MusEGlobal::config.correctUnterminatedOutBranchLatency = latencyOutBranchUntermButton->isChecked();
+      MusEGlobal::config.commonProjectLatency = latencyProjectCommonButton->isChecked();
+      MusEGlobal::config.monitoringAffectsLatency = latencyMonitorAffectingButton->isChecked();
+      
       MusEGlobal::config.startSong   = startSongEntry->text() == "<default>" ? "" : startSongEntry->text();
       MusEGlobal::config.startMode   = startSongGroup->checkedId();
       MusEGlobal::config.startSongLoadConfig = readMidiConfigFromSongCheckBox->isChecked();
@@ -436,6 +468,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.smartFocus = smartFocusCheckBox->isChecked();
       MusEGlobal::config.borderlessMouse = borderlessMouseCheckBox->isChecked();
       MusEGlobal::config.velocityPerNote = velocityPerNoteCheckBox->isChecked();
+      MusEGlobal::config.noPluginScaling = revertPluginNativeGUIScalingCheckBox->isChecked();
 
       MusEGlobal::config.addHiddenTracks = addHiddenCheckBox->isChecked();
       MusEGlobal::config.unhideTracks = unhideTracksCheckBox->isChecked();

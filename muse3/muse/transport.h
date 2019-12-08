@@ -24,17 +24,18 @@
 #ifndef __TRANSPORT_H__
 #define __TRANSPORT_H__
 
+#include <QWidget>
+#include <QComboBox>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QSlider>
+#include <QMouseEvent>
+#include <QToolButton>
+#include <QKeyEvent>
+#include <QMetaObject>
+
 #include "type_defs.h"
 #include "sig.h"
-
-#include <QWidget>
-
-class QComboBox;
-class QHBoxLayout;
-class QLabel;
-class QSlider;
-class QToolButton;
-class QKeyEvent;
 
 namespace MusECore {
 class Pos;
@@ -119,6 +120,7 @@ class Transport : public QWidget
       IconButton* clickButton;
       IconButton* syncButton;
       IconButton* jackTransportButton;
+      IconButton* transportMasterButton;
       QToolButton* buttons[6];      // transport buttons
       QLabel* l2;
       QLabel* l3;
@@ -126,7 +128,9 @@ class Transport : public QWidget
       QLabel* l6;
 
       Handle *lefthandle, *righthandle;
-      
+
+      QMetaObject::Connection _transportMasterBlinkConnection;
+
  protected:
       virtual void keyPressEvent(QKeyEvent *);
 
@@ -139,12 +143,16 @@ class Transport : public QWidget
       void setCycleMode(int);
       void songChanged(MusECore::SongChangedStruct_t);
       void syncChanged(bool);
+      void transportMasterChanged(bool);
       void jackSyncChanged(bool);
       void setRecord(bool flag);
       void stopToggled(bool);
       void playToggled(bool);
       void configChanged();
       void sigChange(const MusECore::TimeSignature&);
+      void extSyncClicked(bool v);
+      void useJackTransportClicked(bool v);
+      void transportMasterClicked(bool v);
 
    public slots:
       void setTempo(int tempo);

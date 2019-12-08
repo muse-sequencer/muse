@@ -22,41 +22,42 @@
 #=============================================================================
 
 import sys,time,os
-from PyQt4 import QtGui, QtCore
-from PyQt4.QtGui import QFileDialog, QListView, QStringListModel, QButtonGroup, QPushButton
+from PyQt5.QtWidgets import QWidget, QFileDialog, QListView, QTreeView, QDirModel, QApplication
+from PyQt5.QtWidgets import QButtonGroup, QPushButton, QLabel, QGridLayout
+from PyQt5.QtCore import QFileInfo
 
-class ParterMainwidget(QtGui.QWidget):
+class ParterMainwidget(QWidget):
       def __init__(self, parent=None, muse=None, partsdir=None):
-            QtGui.QWidget.__init__(self, parent)
+            QWidget.__init__(self, parent)
             self.muse = muse
             self.partsdir = partsdir
-            self.lcurdir = QtGui.QLabel(partsdir)
+            self.lcurdir = QLabel(partsdir)
             moveupbutton = QPushButton("Parent dir")
             appendbutton = QPushButton("Append")
             putbutton = QPushButton("Put")
-            blayout = QtGui.QGridLayout()
+            blayout = QGridLayout()
             blayout.addWidget(self.lcurdir)
             blayout.addWidget(moveupbutton)
             blayout.addWidget(appendbutton)
             blayout.addWidget(putbutton)
-            self.tree = QtGui.QTreeView()
-            self.dirmodel = QtGui.QDirModel()
+            self.tree = QTreeView()
+            self.dirmodel = QDirModel()
             self.tree.setModel(self.dirmodel)
             self.tree.setRootIndex(self.dirmodel.index(self.partsdir))
 
-            layout = QtGui.QGridLayout()
+            layout = QGridLayout()
             self.setLayout(layout)
             layout.addWidget(self.tree, 0, 0)
             layout.addLayout(blayout, 0, 1)
 
-            self.connect(moveupbutton,  QtCore.SIGNAL('clicked()'), self.parentDir) 
-            self.connect(appendbutton,  QtCore.SIGNAL('clicked()'), self.appendPressed) 
-            self.connect(putbutton,  QtCore.SIGNAL('clicked()'), self.putPressed) 
+            moveupbutton.clicked.connect(self.parentDir) 
+            appendbutton.clicked.connect(self.appendPressed) 
+            putbutton.clicked.connect(self.putPressed) 
 
-            self.connect(self.tree, QtCore.SIGNAL('activated(QModelIndex)'), self.activated)
+            self.tree.doubleClicked.connect(self.activated)
 
       def parentDir(self):
-            f = QtCore.QFileInfo(self.partsdir)
+            f = QFileInfo(self.partsdir)
             self.changeDir(f.canonicalPath())
 
       def changeDir(self, newdir):
@@ -102,7 +103,7 @@ class ParterMainwidget(QtGui.QWidget):
             if len(parts) > 0:
                   part = parts[len(parts) - 1]
                   pos = part['tick'] + part['len']
-            print "Appending " + selected
+            print ("Appending " + selected)
             self.muse.importPart(trackid, selected, pos)
 
                   
@@ -118,11 +119,11 @@ class ParterMainwidget(QtGui.QWidget):
             self.muse.importPart(trackid, selected, cpos)
 
       def testfunc2(self, index):
-            print str(index.row()) + " " + str(index.column())
-            print index.data().toString()
+            print (str(index.row()) + " " + str(index.column()))
+            print (index.data().toString())
 
 if __name__ == '__main__':
-      app = QtGui.QApplication(sys.argv)
+      app = QApplication(sys.argv)
       mainw = ParterMainwidget()
       mainw.show()
       sys.exit(app.exec_())

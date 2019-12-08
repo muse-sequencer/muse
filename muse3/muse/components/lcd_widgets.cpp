@@ -36,7 +36,7 @@
 #include <QFontMetrics>
 #include <QToolTip>
 
-#include <math.h>
+#include "muse_math.h"
 
 #include "popup_double_spinbox.h"
 #include "midictrl.h"

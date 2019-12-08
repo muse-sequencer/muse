@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
+#include "muse_math.h"
 #include <sys/time.h>
 
 #include <QApplication>
@@ -43,6 +43,7 @@
 #include "part.h"
 #include "utils.h"
 #include "xml.h"
+#include "gconfig.h"
 
 namespace MusECore {
 
@@ -552,13 +553,13 @@ bool autoAdjustFontSize(QFrame* widget, const QString& txt, QFont& targetFont, b
     min = max;
 
   // Make the minimum about 3/4 the maximum font size.
-  min = int(double(max) * 0.7);
+  min = int(double(max) * 0.85);
 
   // Limit the minimum and maximum sizes to something at least readable.
-  if(max < 6)
-    max = 6;
-  if(min < 6)
-    min = 6;
+  if(max < 7)
+    max = 7;
+  if(min < 7)
+    min = 7;
 
   QRect cr = widget->contentsRect();
   QRect r;
@@ -973,6 +974,13 @@ bool getUniqueFileName(const QString& origFilepath, QString& newAbsFilePath)
       printf("Could not find a suitable filename (more than 100000 files based on %s - clean up!\n", origFilepath.toLatin1().constData());
       return false;
        }
+
+QString font2StyleSheetFull(const QFont& fnt)
+{
+    QString ss("* {" + MusECore::font2StyleSheet(fnt) + "}");
+    ss += "QToolTip {font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt}";
+    return ss;
+}
 
 QString font2StyleSheet(const QFont& fnt)
 {

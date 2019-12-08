@@ -23,7 +23,7 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include <cmath>
+#include "muse_math.h"
 
 #include "tempo.h"
 #include "globals.h"
@@ -202,8 +202,18 @@ int TempoList::tempo(unsigned tick) const
             return _tempo;
       }
 
+float TempoList::bpm(unsigned tick) const
+      {
+        return (float)globalTempo() * 600000.0f / (float)tempo(tick);
+      }
+
+float TempoList::bpmAt(unsigned tick) const
+      {
+        return (float)globalTempo() * 600000.0f / (float)tempoAt(tick);
+      }
+
 //---------------------------------------------------------
-//   tempo
+//   tempoAt
 //   Bypass the useList flag and read from the list
 //---------------------------------------------------------
 

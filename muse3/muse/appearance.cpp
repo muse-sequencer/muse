@@ -82,7 +82,12 @@ class BgPreviewWidget : public QWidget {
            //p.fillRect(QRect(w/2 - text_w/2,6,text_w + 20,text_h+4), dark);
 
            QFontMetrics fm = p.fontMetrics();
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+           text_w = fm.horizontalAdvance(imagefile);
+#else
            text_w = fm.width(imagefile);
+#endif
            text_h = fm.height();
 
            // Do the text shadow first
@@ -181,6 +186,9 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
              new IdListViewItem(0x600 + i, id, MusEGlobal::config.partColorNames[i]);
            
            new IdListViewItem(0x41c, aid, "part canvas background");
+           new IdListViewItem(0x42c, aid, "part canvas raster coarse");
+           new IdListViewItem(0x42d, aid, "part canvas raster fine");
+
            new IdListViewItem(0x41f, aid, "Ruler background");
            new IdListViewItem(0x420, aid, "Ruler text");
            new IdListViewItem(0x424, aid, "Ruler current marker space");
@@ -216,6 +224,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x422, id, "drum list");
            new IdListViewItem(0x429, id, "raster beat");
            new IdListViewItem(0x42a, id, "raster bar");
+           new IdListViewItem(0x42e, id, "raster fine");
 
 
       id = new IdListViewItem(0, itemList, "Wave Editor");
@@ -285,9 +294,11 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       //---------------------------------------------------
       //    STYLE
       //---------------------------------------------------
-      openStyleSheet->setIcon(*openIcon);
+      openStyleSheet->setIcon(*fileopenSVGIcon);
+      openStyleSheet->setToolTip(tr("Open custom style sheet"));
       connect(openStyleSheet, SIGNAL(clicked()), SLOT(browseStyleSheet()));
-      defaultStyleSheet->setIcon(*undoIcon);
+      defaultStyleSheet->setIcon(*undoSVGIcon);
+      defaultStyleSheet->setToolTip(tr("Remove custom style sheet"));
       connect(defaultStyleSheet, SIGNAL(clicked()), SLOT(setDefaultStyleSheet()));
       
       //---------------------------------------------------
@@ -308,13 +319,13 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       //    Fonts
       //---------------------------------------------------
 
-      fontBrowse0->setIcon(QIcon(*openIcon));
-      fontBrowse1->setIcon(QIcon(*openIcon));
-      fontBrowse2->setIcon(QIcon(*openIcon));
-      fontBrowse3->setIcon(QIcon(*openIcon));
-      fontBrowse4->setIcon(QIcon(*openIcon));
-      fontBrowse5->setIcon(QIcon(*openIcon));
-      fontBrowse6->setIcon(QIcon(*openIcon));
+      fontBrowse0->setIcon(*fileopenSVGIcon);
+      fontBrowse1->setIcon(*fileopenSVGIcon);
+      fontBrowse2->setIcon(*fileopenSVGIcon);
+      fontBrowse3->setIcon(*fileopenSVGIcon);
+      fontBrowse4->setIcon(*fileopenSVGIcon);
+      fontBrowse5->setIcon(*fileopenSVGIcon);
+      fontBrowse6->setIcon(*fileopenSVGIcon);
       connect(fontBrowse0, SIGNAL(clicked()), SLOT(browseFont0()));
       connect(fontBrowse1, SIGNAL(clicked()), SLOT(browseFont1()));
       connect(fontBrowse2, SIGNAL(clicked()), SLOT(browseFont2()));
@@ -394,7 +405,9 @@ QColor* Appearance::globalConfigColorFromId(int id) const
       case 0x42a: return &MusEGlobal::config.midiCanvasBarColor; break;
       case 0x42b: return &MusEGlobal::config.trackSectionDividerColor; break;
 
-
+      case 0x42c: return &MusEGlobal::config.partCanvasCoarseRasterColor; break;
+      case 0x42d: return &MusEGlobal::config.partCanvasFineRasterColor; break;
+      case 0x42e: return &MusEGlobal::config.midiCanvasFineColor; break;
 
       case 0x500: return &MusEGlobal::config.mixerBg;   break;
       case 0x501: return &MusEGlobal::config.midiTrackLabelBg;   break;

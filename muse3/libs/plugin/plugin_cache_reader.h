@@ -42,6 +42,8 @@ namespace MusEPlugin {
 // Public plugin cache functions
 //-----------------------------------------
 
+void setPluginScanFileInfo(const QString& filename, PluginScanInfoStruct* info);
+
 // TODO Depending on our needs later, make some of these private static in the cpp file.
 
 // The museGlobalLib is where to find the application's installed libraries.
@@ -74,32 +76,6 @@ PluginScanInfoStruct::PluginType_t pluginCacheFilesExist(
   const QString& path,
   // The types of plugin caches to check.
   PluginScanInfoStruct::PluginType_t types = PluginScanInfoStruct::PluginTypeAll
-);
-
-// Returns true if any of the directories or subdirectories of the given plugin cache type
-//  have modification date/times GREATER than the existing plugin cache file of the given type.
-bool pluginCacheIsDirty(
-  // Path to the cache file directory (eg. config path + /scanner).
-  const QString& path,
-  // Where to find the application's installed libraries.
-  const QString& museGlobalLib,
-  // The type of plugin cache to check.
-  PluginScanInfoStruct::PluginType type,
-  // Print some stderr text
-  bool debugStdErr = false
-);
-
-// Returns plugin type true if any of the directories or subdirectories of the given plugin cache types
-//  have modification date/times GREATER than the existing plugin cache file of the given types.
-PluginScanInfoStruct::PluginType_t pluginCachesAreDirty(
-  // Path to the cache file directory (eg. config path + /scanner).
-  const QString& path,
-  // Where to find the application's installed libraries.
-  const QString& museGlobalLib,
-  // The types of plugin caches to check.
-  PluginScanInfoStruct::PluginType_t types = PluginScanInfoStruct::PluginTypeAll,
-  // Print some stderr text
-  bool debugStdErr = false
 );
 
 // Return true on error

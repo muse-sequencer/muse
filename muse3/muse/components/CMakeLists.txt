@@ -122,6 +122,7 @@ QT5_WRAP_CPP (components_mocs
       sig_tempo_toolbar.h 
       slider.h  
 #       sliderbase.h  
+      snooper.h
       songinfo.h
       songpos_toolbar.h
 #       spinbox.h  
@@ -182,6 +183,7 @@ file (GLOB components_ui_files
       #rubberband_settings_base.ui
       shortcutcapturedialogbase.ui  
       shortcutconfigbase.ui  
+      snooperbase.ui
       songinfo.ui  
       #src_resampler_settings_base.ui
       synthconfigbase.ui  
@@ -279,6 +281,7 @@ file (GLOB components_source_files
       sig_tempo_toolbar.cpp 
       slider.cpp 
 #       sliderbase.cpp 
+      snooper.cpp
       songpos_toolbar.cpp 
 #       spinbox.cpp 
 #       spinboxFP.cpp 
@@ -328,8 +331,8 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties( components
-      # PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti "
-      PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK} -include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti"
+      # PROPERTIES COMPILE_FLAGS "${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti "
+      PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK} ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti"
       OUTPUT_NAME muse_components
       )
 

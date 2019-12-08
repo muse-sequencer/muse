@@ -26,7 +26,6 @@
 #include <QKeyEvent>
 #include <QMenu>
 #include <QMenuBar>
-#include <QSignalMapper>
 #include <QToolBar>
 #include <QTreeWidgetItem>
 
@@ -200,13 +199,14 @@ void ListEdit::songChanged(MusECore::SongChangedStruct_t type)
       if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
        
-      if (type._flags == 0)
+      if (!type)
             return;
-      if (type._flags & (// SC_MIDI_TRACK_PROP  FIXME Needed, but might make it slow!
+      if (type & (// SC_MIDI_TRACK_PROP  FIXME Needed, but might make it slow!
            SC_PART_REMOVED | SC_PART_MODIFIED 
          | SC_PART_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED
+         | SC_SIG  // Required so that bar/beat/tick of listed items are shown correctly.
          | SC_EVENT_INSERTED | SC_SELECTION)) {
-            if (type._flags & (SC_PART_REMOVED | SC_PART_INSERTED | SC_PART_MODIFIED))
+            if (type & (SC_PART_REMOVED | SC_PART_INSERTED | SC_PART_MODIFIED | SC_SIG))
                   genPartlist();
             // close window if editor has no parts anymore
             if (parts()->empty()) {
@@ -214,7 +214,7 @@ void ListEdit::songChanged(MusECore::SongChangedStruct_t type)
                   return;
                   }
             liste->setSortingEnabled(false);
-            if (type._flags == SC_SELECTION) {
+            if (type == SC_SELECTION) {
                   // BUGFIX: I found the keyboard modifier states affect how QTreeWidget::setCurrentItem() operates.
                   //         So for example (not) holding shift while lassoo-ing notes in piano roll affected 
                   //          whether multiple items were selected in this event list editor! 
@@ -470,10 +470,10 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       
       insertItems = new QActionGroup(this);
       insertItems->setExclusive(false);
-      insertNote = new QAction(QIcon(*note1Icon), tr("insert Note"), insertItems);
-      insertSysEx = new QAction(QIcon(*sysexIcon), tr("insert SysEx"), insertItems);
-      insertCtrl = new QAction(QIcon(*ctrlIcon), tr("insert Ctrl"), insertItems);
-      insertMeta = new QAction(QIcon(*metaIcon), tr("insert Meta"), insertItems);
+      insertNote = new QAction(QIcon(*note1Icon), tr("Insert Note"), insertItems);
+      insertSysEx = new QAction(QIcon(*sysexIcon), tr("Insert SysEx"), insertItems);
+      insertCtrl = new QAction(QIcon(*ctrlIcon), tr("Insert Ctrl"), insertItems);
+      insertMeta = new QAction(QIcon(*metaIcon), tr("Insert Meta"), insertItems);
 
       connect(insertNote,    SIGNAL(triggered()), SLOT(editInsertNote()));
       connect(insertSysEx,   SIGNAL(triggered()), SLOT(editInsertSysEx()));
@@ -482,8 +482,6 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
       //---------Pulldown Menu----------------------------
       
-      QSignalMapper *editSignalMapper = new QSignalMapper(this);
-    
       menuEdit = menuBar()->addMenu(tr("&Edit"));
       menuEdit->addActions(MusEGlobal::undoRedo->actions());
 
@@ -504,22 +502,18 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       menuEdit->insertSeparator();
 #endif
       QAction *deleteAction = menuEdit->addAction(tr("Delete Events"));
-      connect(deleteAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      editSignalMapper->setMapping(deleteAction, CMD_DELETE);
       deleteAction->setShortcut(Qt::Key_Delete);
       menuEdit->addSeparator();
       QAction *incAction = menuEdit->addAction(tr("Increase Tick"));
-      connect(incAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      editSignalMapper->setMapping(incAction, CMD_INC);
       QAction *decAction = menuEdit->addAction(tr("Decrease Tick"));
-      connect(decAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      editSignalMapper->setMapping(decAction, CMD_DEC);
 
       menuEdit->addActions(insertItems->actions());
 
-      connect(editSignalMapper, SIGNAL(mapped(int)), SLOT(cmd(int)));
+      connect(deleteAction, &QAction::triggered, [this]() { cmd(CMD_DELETE); } );
+      connect(incAction,    &QAction::triggered, [this]() { cmd(CMD_INC); } );
+      connect(decAction,    &QAction::triggered, [this]() { cmd(CMD_DEC); } );
 
-      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
@@ -548,9 +542,19 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
       liste = new QTreeWidget(mainw);
       QFontMetrics fm(liste->font());
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      int n = fm.horizontalAdvance('9');
+#else
       int n = fm.width('9');
+#endif
       int b = 24;
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      int c = fm.horizontalAdvance(QString("Val B"));
+#else
       int c = fm.width(QString("Val B"));
+#endif
       int sortIndW = n * 3;
       liste->setAllColumnsShowFocus(true);
       liste->sortByColumn(0, Qt::AscendingOrder);
@@ -571,14 +575,25 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       liste->setHeaderLabels(columnnames);
 
       liste->setColumnWidth(0, n * 6 + b);
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      liste->setColumnWidth(1, fm.horizontalAdvance(QString("9999.99.999")) + b);
+      liste->setColumnWidth(2, fm.horizontalAdvance(QString("Program")) + b);
+#else
       liste->setColumnWidth(1, fm.width(QString("9999.99.999")) + b);
       liste->setColumnWidth(2, fm.width(QString("Program")) + b);
+#endif
       liste->setColumnWidth(3, n * 2 + b + sortIndW);
       liste->setColumnWidth(4, c + b + sortIndW);
       liste->setColumnWidth(5, c + b + sortIndW);
       liste->setColumnWidth(6, c + b + sortIndW);
       liste->setColumnWidth(7, n * 4 + b + sortIndW);
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      liste->setColumnWidth(8, fm.horizontalAdvance(QString("MainVolume")) + 70);
+#else
       liste->setColumnWidth(8, fm.width(QString("MainVolume")) + 70);
+#endif
 
       connect(liste, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));
       connect(liste, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(doubleClicked(QTreeWidgetItem*)));

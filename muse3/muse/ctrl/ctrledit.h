@@ -71,6 +71,10 @@ class CtrlEdit : public QWidget {
    public:
       CtrlEdit(QWidget*, MidiEditor* e, int xmag,
          bool expand = false, const char* name = 0);
+      int ctrlNum() const;
+      bool perNoteVel() const;
+      void setPerNoteVel(bool);
+
       void readStatus(MusECore::Xml&);
       void writeStatus(int, MusECore::Xml&);
       void setController(const QString& name);
@@ -79,6 +83,7 @@ class CtrlEdit : public QWidget {
       // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
       void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const
       { if(canvas) canvas->tagItems(tag_list, options); }
+      void redrawCanvas() {canvas->redraw();}
       };
 
       

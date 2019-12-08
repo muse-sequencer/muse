@@ -63,7 +63,7 @@ class Xml {
       int _minorVersion;                      // Currently loaded songfile minor version
       int _majorVersion;                      // Currently loaded songfile major version
 
-      int c;            // current char
+      char c;            // current char
       char lbuffer[512];
       // When constructed with a const char* parameter, this will be valid.
       const char* bufptr;
@@ -82,9 +82,18 @@ class Xml {
       int latestMinorVersion() const { return _latestMinorVersion; }
       int majorVersion() const { return _majorVersion; }
       int minorVersion() const { return _minorVersion; }
-      bool isVersionEqualToLatest() const { return _majorVersion == _latestMajorVersion && _minorVersion == _latestMinorVersion; }
-      bool isVersionLessThanLatest() const { return _majorVersion < _latestMajorVersion || _minorVersion < _latestMinorVersion; }
-      bool isVersionGreaterThanLatest() const { return _majorVersion > _latestMajorVersion || _minorVersion > _latestMinorVersion; }
+      bool isVersionEqualToLatest() const
+        { return _majorVersion == _latestMajorVersion && _minorVersion == _latestMinorVersion; }
+      bool isVersionLessThanLatest() const
+        { return _majorVersion < _latestMajorVersion || (_majorVersion == _latestMajorVersion && _minorVersion < _latestMinorVersion); }
+      bool isVersionGreaterThanLatest() const
+        { return _majorVersion > _latestMajorVersion || (_majorVersion == _latestMajorVersion && _minorVersion > _latestMinorVersion); }
+      bool isVersionEqualTo(int major, int minor) const
+        { return _majorVersion == major && _minorVersion == minor; }
+      bool isVersionLessThan(int major, int minor) const
+        { return _majorVersion < major || (_majorVersion == major && _minorVersion < minor); }
+      bool isVersionGreaterThan(int major, int minor) const
+        { return _majorVersion > major || (_majorVersion == major && _minorVersion > minor); }
       void setVersion(int maj, int min) {
             _minorVersion = min;
             _majorVersion = maj;
@@ -105,6 +114,8 @@ class Xml {
       long int parseLongInt();
       unsigned int parseUInt();
       unsigned long int parseLongUInt();
+      long long parseLongLong();
+      unsigned long long parseULongLong();
       float parseFloat();
       double parseDouble();
       void unknown(const char*);
@@ -127,6 +138,8 @@ class Xml {
       void longIntTag(int level, const char* const name, long int val);
       void uintTag(int level, const char* const name, unsigned int val);
       void longUintTag(int level, const char* const name, unsigned long int val);
+      void longLongTag(int level, const char* const name, long long val);
+      void uLongLongTag(int level, const char* const name, unsigned long long val);
       void doubleTag(int level, const char* const name, double val);
       void floatTag(int level, const char* const name, float val);
       void strTag(int level, const char* const name, const char* val);

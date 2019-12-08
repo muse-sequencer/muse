@@ -1166,7 +1166,7 @@
 
     <PatchGroup name="User-1">
       <Patch name="The Hunter" hbank="63" lbank="8" prog="0" />
-      <Patch name="Bass'n Pad" hbank="63" lbank="8" prog="1" />
+      <Patch name="Bass&apos;n Pad" hbank="63" lbank="8" prog="1" />
       <Patch name="Surprise" hbank="63" lbank="8" prog="2" />
       <Patch name="Quo Vadis" hbank="63" lbank="8" prog="3" />
       <Patch name="Metal Arp" hbank="63" lbank="8" prog="4" />
@@ -1188,7 +1188,7 @@
       <Patch name="Basic Arp" hbank="63" lbank="8" prog="20" />
       <Patch name="Mr. Groovy" hbank="63" lbank="8" prog="21" />
       <Patch name="SyncArp 1" hbank="63" lbank="8" prog="22" />
-      <Patch name="80's Ens" hbank="63" lbank="8" prog="23" />
+      <Patch name="80&apos;s Ens" hbank="63" lbank="8" prog="23" />
       <Patch name="SyncArp 2" hbank="63" lbank="8" prog="24" />
       <Patch name="Magician" hbank="63" lbank="8" prog="25" />
       <Patch name="ANbasicARP" hbank="63" lbank="8" prog="26" />
@@ -1253,7 +1253,7 @@
       <Patch name="Afro" hbank="63" lbank="8" prog="85" />
       <Patch name="Ethnology" hbank="63" lbank="8" prog="86" />
       <Patch name="Funk Delhi" hbank="63" lbank="8" prog="87" />
-      <Patch name="R&B Solo" hbank="63" lbank="8" prog="88" />
+      <Patch name="R&amp;B Solo" hbank="63" lbank="8" prog="88" />
       <Patch name="Punchy Saw" hbank="63" lbank="8" prog="89" />
       <Patch name="StarDrop" hbank="63" lbank="8" prog="90" />
       <Patch name="Madhouse" hbank="63" lbank="8" prog="91" />
@@ -1305,7 +1305,7 @@
       <Patch name="Santur" hbank="63" lbank="9" prog="6" />
       <Patch name="SweetFlute" hbank="63" lbank="9" prog="7" />
       <Patch name="Cold Day" hbank="63" lbank="9" prog="8" />
-      <Patch name="Vintage'74" hbank="63" lbank="9" prog="9" />
+      <Patch name="Vintage&apos;74" hbank="63" lbank="9" prog="9" />
       <Patch name="101 Bass" hbank="63" lbank="9" prog="10" />
       <Patch name="Dirty Hook" hbank="63" lbank="9" prog="11" />
       <Patch name="VinylHit" hbank="63" lbank="9" prog="12" />
@@ -1337,7 +1337,7 @@
       <Patch name="Karbala 1" hbank="63" lbank="9" prog="38" />
       <Patch name="Symphony" hbank="63" lbank="9" prog="39" />
       <Patch name="MothrEarth" hbank="63" lbank="9" prog="40" />
-      <Patch name="R&B Soft" hbank="63" lbank="9" prog="41" />
+      <Patch name="R&amp;B Soft" hbank="63" lbank="9" prog="41" />
       <Patch name="Oxide" hbank="63" lbank="9" prog="42" />
       <Patch name="TranceTaO" hbank="63" lbank="9" prog="43" />
       <Patch name="LdDuck" hbank="63" lbank="9" prog="44" />
@@ -1345,7 +1345,7 @@
       <Patch name="J-Pop" hbank="63" lbank="9" prog="46" />
       <Patch name="Toukai" hbank="63" lbank="9" prog="47" />
       <Patch name="Echo" hbank="63" lbank="9" prog="48" />
-      <Patch name="Bros&Sist" hbank="63" lbank="9" prog="49" />
+      <Patch name="Bros&amp;Sist" hbank="63" lbank="9" prog="49" />
       <Patch name="Antares" hbank="63" lbank="9" prog="50" />
       <Patch name="Jazzy 2" hbank="63" lbank="9" prog="51" />
       <Patch name="Mega Slap" hbank="63" lbank="9" prog="52" />
@@ -1404,7 +1404,7 @@
       <Patch name="HardCP80" hbank="63" lbank="9" prog="105" />
       <Patch name="Pulse Step" hbank="63" lbank="9" prog="106" />
       <Patch name="Chordz" hbank="63" lbank="9" prog="107" />
-      <Patch name="Hit&Down" hbank="63" lbank="9" prog="108" />
+      <Patch name="Hit&amp;Down" hbank="63" lbank="9" prog="108" />
       <Patch name="Fast PWM" hbank="63" lbank="9" prog="109" />
       <Patch name="Tmp/Bl/Glk" hbank="63" lbank="9" prog="110" />
       <Patch name="Sprocket" hbank="63" lbank="9" prog="111" />

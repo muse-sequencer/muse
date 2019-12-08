@@ -40,6 +40,8 @@
 #include "globaldefs.h"
 #include "cleftypes.h"
 #include "controlfifo.h"
+#include "latency_info.h"
+#include "transport_obj.h"
 
 class QPixmap;
 class QColor;
@@ -57,6 +59,7 @@ class Undo;
 class WorkingDrumMapList;
 class WorkingDrumMapPatchList;
 struct MidiCtrlValRemapOperation;
+class LatencyCompensator;
 
 typedef std::vector<double> AuxSendValueList;
 typedef std::vector<double>::iterator iAuxSendValue;
@@ -83,11 +86,12 @@ class Track {
          
    private:
       TrackType _type;
+      // Serial number generator.
+      static int _snGen;
       QString _comment;
-
       PartList _parts;
 
-      void init();
+      void init(int channels = 0);
       void internal_assign(const Track&, int flags);
 
    protected:
@@ -105,7 +109,9 @@ class Track {
       RouteList _outRoutes;
       bool _nodeTraversed;   // Internal anti circular route traversal flag.
       int _auxRouteCount;    // Number of aux paths feeding this track.
-      
+
+      // Serial number.
+      int _sn;
       QString _name;
       bool _recordFlag;
       bool _recMonitor;       // For midi and audio. Whether to pass the input through to output.
@@ -130,15 +136,26 @@ class Track {
       // The selected track with the highest selected order is the most recent selected.
       int _selectionOrder;
 
+      // Holds latency computations each cycle.
+      TrackLatencyInfo _latencyInfo;
+
+      // Holds a special extra 'source': The transport stream.
+      // Tracks or plugins that request/receive transport info use this.
+      TransportSource _transportSource;
+
+      int newSn() { return _snGen++; }
+      
       bool readProperties(Xml& xml, const QString& tag);
       void writeProperties(int level, Xml& xml) const;
 
    public:
-      Track(TrackType);
+      Track(TrackType, int channels = 0);
       Track(const Track&, int flags);
       virtual ~Track();
       virtual void assign(const Track&, int flags);
-      
+
+      inline int serial() const { return _sn; }
+
       static const char* _cname[];
       static QPixmap* trackTypeIcon(TrackType);
       static QColor trackTypeColor(TrackType);
@@ -175,6 +192,10 @@ class Track {
       virtual void setName(const QString& s)  { _name = s; }
       // setNameText just sets the text, while setName can be overloaded to do other things like setting port names.
       void setNameText(const QString& s)  { _name = s; }
+      // Returns a name suitable for display like "1:Track 5" where the number is the track's index in the track list.
+      // This is useful because in the case of importing a midi file we allow duplicate, often blank, names.
+      // This display string will help identify them. Like "1:", "2:" etc.
+      QString displayName() const;
 
       TrackType type() const          { return _type; }
       void setType(TrackType t)       { _type = t; }
@@ -183,6 +204,8 @@ class Track {
       // routing
       RouteList* inRoutes()    { return &_inRoutes; }
       RouteList* outRoutes()   { return &_outRoutes; }
+      const RouteList* inRoutes() const { return &_inRoutes; }
+      const RouteList* outRoutes() const { return &_outRoutes; }
       virtual bool noInRoute() const   { return _inRoutes.empty();  }
       virtual bool noOutRoute() const  { return _outRoutes.empty(); }
       void writeRouting(int, Xml&) const;
@@ -191,7 +214,7 @@ class Track {
       void updateAuxRoute(int refInc, Track* dst);  // Internal use. 
       // Number of routable inputs/outputs for each Route::RouteType.
       virtual RouteCapabilitiesStruct routeCapabilities() const;
-      
+
       PartList* parts()               { return &_parts; }
       const PartList* cparts() const  { return &_parts; }
       Part* findPart(unsigned tick);
@@ -263,6 +286,78 @@ class Track {
       // Returns true if monitored.
       virtual bool recMonitor() const    { return _recMonitor; }
 
+      virtual void preProcessAlways()    { }
+
+      TransportSource& transportSource() { return _transportSource; }
+//       // Returns true if the transport source is connected to any of the
+//       //  track's midi input ports (ex. synth ports not muse midi ports).
+//       // If midiport is -1, returns true if ANY port is connected.
+//       virtual bool transportSourceConnected(int /*midiport*/ = -1) const { return false; }
+      // Returns true if the transport source is connected to any of the
+      //  track's midi input ports (ex. synth ports not muse midi ports).
+      virtual bool usesTransportSource() const { return false; }
+      virtual bool transportAffectsAudioLatency() const { return false; }
+
+      // Initializes this track's latency information in preparation for a latency scan.
+      virtual void prepareLatencyScan();
+      // The contribution to latency from the track's own members (audio effect rack, etc).
+      inline virtual float selfLatencyAudio(int /*channel*/) const { return 0.0f; }
+      // The cached worst latency of all the channels in the track's effect rack plus any synthesizer latency if applicable.
+      virtual float getWorstPluginLatencyAudio();
+      // The cached worst contribution to latency by any ports (for ex. Jack ports of audio input/output tracks).
+      virtual float getWorstPortLatencyAudio();
+      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc)
+      //  plus any port latency if applicable.
+      virtual float getWorstSelfLatencyAudio();
+      // Whether this track (and the branch it is in) can force other parallel branches to
+      //  increase their latency compensation to match this one.
+      // If false, this branch will NOT disturb other parallel branches' compensation,
+      //  intead only allowing compensation UP TO the worst case in other branches.
+      virtual bool canDominateOutputLatency() const;
+      virtual bool canDominateInputLatency() const;
+      // Whether this track (and the branch it is in) can force other parallel branches to
+      //  increase their latency compensation to match this one - IF this track is an end-point
+      //  and the branch allows domination.
+      // If false, this branch will NOT disturb other parallel branches' compensation,
+      //  intead only allowing compensation UP TO the worst case in other branches.
+      inline virtual bool canDominateEndPointLatency() const { return false; }
+      // Whether this track and its branch can correct for latency, not just compensate.
+      inline virtual bool canCorrectOutputLatency() const { return false; }
+      // Whether the track can pass latency values through, the SAME as if record monitor is
+      //  supported and on BUT does not require record monitor support.
+      // This is for example in the metronome MetronomeSynthI, since it is unique in that it
+      //  can correct its own latency unlike other synths, but it does not 'pass through'
+      //  the latency values to what drives it like other synths.
+      virtual bool canPassThruLatency() const;
+      // Whether any of the connected output routes are effectively connected.
+      // That means track is not off, track is monitored where applicable, etc,
+      //   ie. signal can actually flow.
+      // For Wave Tracks for example, asks whether the track is an end-point from the view of the input side.
+      virtual bool isLatencyInputTerminal() = 0;
+      // Whether any of the connected output routes are effectively connected.
+      // That means track is not off, track is monitored where applicable, etc,
+      //   ie. signal can actually flow.
+      // For Wave Tracks for example, asks whether the track is an end-point from the view of the playback side.
+      virtual bool isLatencyOutputTerminal() = 0;
+
+      virtual TrackLatencyInfo& getDominanceInfo(bool input) = 0;
+      virtual TrackLatencyInfo& getDominanceLatencyInfo(bool input) = 0;
+      // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
+      //  determined in the complete getDominanceLatencyInfo() scan.
+      // The callerBranchLatency is the inherent branch latency of the calling track, or zero if calling from
+      //  the very top outside of the branch heads (outside of output tracks or open branches).
+      // The callerBranchLatency is accumulated as setCorrectionLatencyInfo() is called on each track
+      //  in a branch of the graph.
+      virtual TrackLatencyInfo& setCorrectionLatencyInfo(bool input, float finalWorstLatency, float callerBranchLatency = 0.0f) = 0;
+      // Argument 'input': Whether we want the input side of the track. For example un-monitored wave tracks
+      //  are considered two separate paths with a recording input side and a playback output side.
+      virtual TrackLatencyInfo& getLatencyInfo(bool input) = 0;
+      // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
+      //  needed only to equalize the timing of all the AudioOutput tracks.
+      // It is applied as a direct offset in the latency delay compensator in getData().
+      virtual unsigned long latencyCompWriteOffset() const { return _latencyInfo._compensatorWriteOffset; }
+      virtual void setLatencyCompWriteOffset(float /*worstCase*/) { }
+      
       // Internal use...
       static void clearSoloRefCounts();
       void updateSoloState();
@@ -369,6 +464,26 @@ class MidiTrack : public Track {
 
       // Number of routable inputs/outputs for each Route::RouteType.
       virtual RouteCapabilitiesStruct routeCapabilities() const;
+
+      virtual bool canDominateOutputLatency() const;
+      virtual bool canCorrectOutputLatency() const;
+      virtual bool isLatencyInputTerminal();
+      virtual bool isLatencyOutputTerminal();
+
+      virtual TrackLatencyInfo& getDominanceLatencyInfo(bool input);
+      virtual TrackLatencyInfo& getDominanceInfo(bool input);
+      // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
+      //  determined in the complete getDominanceLatencyInfo() scan.
+      // The callerBranchLatency is the inherent branch latency of the calling track, or zero if calling from
+      //  the very top outside of the branch heads (outside of output tracks or open branches).
+      // The callerBranchLatency is accumulated as setCorrectionLatencyInfo() is called on each track
+      //  in a branch of the graph.
+      virtual TrackLatencyInfo& setCorrectionLatencyInfo(bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
+      virtual TrackLatencyInfo& getLatencyInfo(bool input);
+      // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
+      //  needed only to equalize the timing of all the AudioOutput tracks.
+      // It is applied as a direct offset in the latency delay compensator in getData().
+      virtual void setLatencyCompWriteOffset(float worstCase);
       
       // This enum describes what has changed in the following port/channel methods.
       enum ChangedType { NothingChanged = 0x0, PortChanged = 0x1, ChannelChanged = 0x2, DrumMapChanged = 0x4 };
@@ -512,6 +627,8 @@ class AudioTrack : public Track {
       float*  audioOutDummyBuf;
       // Internal temporary buffers for getData().
       float** _dataBuffers;
+      // Audio latency compensator.
+      LatencyCompensator* _latencyComp;
 
       // These two are not the same as the number of track channels which is always either 1 (mono) or 2 (stereo):
       // Total number of output channels.
@@ -524,11 +641,15 @@ class AudioTrack : public Track {
       virtual bool getData(unsigned, int, unsigned, float**);
 
       SndFileR _recFile;
+      // Exclusively for the recFile during bounce operations.
+      long int _recFilePos;
+      float _previousLatency;
+
       Fifo fifo;                    // fifo -> _recFile
       bool _processed;
       
    public:
-      AudioTrack(TrackType t);
+      AudioTrack(TrackType t, int channels = 2);
       
       AudioTrack(const AudioTrack&, int flags);
       virtual ~AudioTrack();
@@ -585,7 +706,9 @@ class AudioTrack : public Track {
       virtual void updateInternalSoloStates();
       
       // Puts to the recording fifo.
-      void putFifo(int channels, unsigned long n, float** bp);
+      // This also performs adjustments for latency compensation before putting to the fifo.
+      // Returns true on success.
+      bool putFifo(int channels, unsigned long n, float** bp);
       // Transfers the recording fifo to _recFile.
       void record();
       // Returns the recording fifo current count.
@@ -624,7 +747,8 @@ class AudioTrack : public Track {
       
       void readVolume(Xml& xml);
 
-      virtual void preProcessAlways() { _processed = false; }
+      virtual void preProcessAlways();
+
       // Gathers this track's audio data and either copies or adds it to a supplied destination buffer.
       // If the per-channel 'addArray' is supplied, whether to copy or add each channel is given in the array,
       //  otherwise it is given by the bulk 'add' flag.
@@ -646,7 +770,34 @@ class AudioTrack : public Track {
       
       virtual bool hasAuxSend() const { return false; }
 
-      virtual float latency(int channel); 
+      // Whether to use latency correction/compensation at all.
+      // Simply depends on _latencyComp existence AND global configuration enableLatencyCorrection flag.
+      bool useLatencyCorrection() const;
+      // The contribution to latency by the track's own members (audio effect rack, etc).
+      virtual float selfLatencyAudio(int channel) const;
+      // The cached worst latency of all the channels in the track's effect rack.
+      virtual float getWorstPluginLatencyAudio();
+      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc)
+      //  plus any port latency if applicable.
+      virtual float getWorstSelfLatencyAudio();
+      virtual TrackLatencyInfo& getDominanceInfo(bool input);
+      // Returns latency computations during each cycle. If the computations have already been done 
+      //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
+      virtual TrackLatencyInfo& getDominanceLatencyInfo(bool input);
+      // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
+      //  determined in the complete getDominanceLatencyInfo() scan.
+      // The callerBranchLatency is the inherent branch latency of the calling track, or zero if calling from
+      //  the very top outside of the branch heads (outside of output tracks or open branches).
+      // The callerBranchLatency is accumulated as setCorrectionLatencyInfo() is called on each track
+      //  in a branch of the graph.
+      virtual TrackLatencyInfo& setCorrectionLatencyInfo(bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
+      virtual TrackLatencyInfo& getLatencyInfo(bool input);
+      // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
+      //  needed only to equalize the timing of all the AudioOutput tracks.
+      // It is applied as a direct offset in the latency delay compensator in getData().
+      virtual void setLatencyCompWriteOffset(float worstCase);
+      virtual bool isLatencyInputTerminal();
+      virtual bool isLatencyOutputTerminal();
       
       // automation
       virtual AutomationType automationType() const    { return _automationType; }
@@ -678,8 +829,8 @@ class AudioTrack : public Track {
 //---------------------------------------------------------
 
 class AudioInput : public AudioTrack {
-      void* jackPorts[MusECore::MAX_CHANNELS];
-      virtual bool getData(unsigned, int, unsigned, float**);
+      void* jackPorts[MAX_CHANNELS];
+      bool getData(unsigned, int, unsigned, float**);
       static bool _isVisible;
       void internal_assign(const Track& t, int flags);
       
@@ -688,21 +839,25 @@ class AudioInput : public AudioTrack {
       AudioInput(const AudioInput&, int flags);
       virtual ~AudioInput();
 
-      virtual float latency(int channel); 
-      virtual void assign(const Track&, int flags);
+      float selfLatencyAudio(int channel) const; 
+      // The cached worst contribution to latency by any ports (for ex. Jack ports of audio input/output tracks).
+      float getWorstPortLatencyAudio();
+      // Audio Input tracks have no correction available. They ALWAYS dominate any parallel branches, if they are not 'off'.
+      bool canDominateOutputLatency() const;
+      
+      void assign(const Track&, int flags);
       AudioInput* clone(int flags) const { return new AudioInput(*this, flags); }
-      virtual AudioInput* newTrack() const { return new AudioInput(); }
-      virtual void read(Xml&);
-      virtual void write(int, Xml&) const;
-      virtual void setName(const QString& s);
+      AudioInput* newTrack() const { return new AudioInput(); }
+      void read(Xml&);
+      void write(int, Xml&) const;
+      void setName(const QString& s);
       void* jackPort(int channel) { return jackPorts[channel]; }
       void setJackPort(int channel, void*p) { jackPorts[channel] = p; }
-      virtual void setChannels(int n);
-      virtual bool hasAuxSend() const { return true; }
+      bool hasAuxSend() const { return true; }
       // Number of routable inputs/outputs for each Route::RouteType.
-      virtual RouteCapabilitiesStruct routeCapabilities() const;
+      RouteCapabilitiesStruct routeCapabilities() const;
       static void setVisible(bool t) { _isVisible = t; }
-      virtual int height() const;
+      int height() const;
       static bool visible() { return _isVisible; }
     };
 
@@ -715,6 +870,10 @@ class AudioOutput : public AudioTrack {
       float* buffer[MusECore::MAX_CHANNELS];
       float* buffer1[MusECore::MAX_CHANNELS];
       unsigned long _nframes;
+      // Audio latency compensator, for compensating output signals
+      //  according to any differing channel port latencies.
+      LatencyCompensator* _outputLatencyComp;
+
       static bool _isVisible;
       void internal_assign(const Track& t, int flags);
 
@@ -723,6 +882,17 @@ class AudioOutput : public AudioTrack {
       AudioOutput(const AudioOutput&, int flags);
       virtual ~AudioOutput();
 
+      virtual float selfLatencyAudio(int channel) const;
+      void setChannels(int n);
+      // The cached worst contribution to latency by any ports (for ex. Jack ports of audio input/output tracks).
+      float getWorstPortLatencyAudio();
+      // Audio output tracks can allow a branch to dominate if they are an end-point and the branch can dominate.
+      inline bool canDominateEndPointLatency() const { return true; }
+      // Audio Output is considered a termination point.
+      bool isLatencyInputTerminal();
+      bool isLatencyOutputTerminal();
+      void applyOutputLatencyComp(unsigned nframes);
+      
       virtual void assign(const Track&, int flags);
       AudioOutput* clone(int flags) const { return new AudioOutput(*this, flags); }
       virtual AudioOutput* newTrack() const { return new AudioOutput(); }
@@ -731,7 +901,6 @@ class AudioOutput : public AudioTrack {
       virtual void setName(const QString& s);
       void* jackPort(int channel) { return jackPorts[channel]; }
       void setJackPort(int channel, void*p) { jackPorts[channel] = p; }
-      virtual void setChannels(int n);
       // Number of routable inputs/outputs for each Route::RouteType.
       virtual RouteCapabilitiesStruct routeCapabilities() const;
       void processInit(unsigned);
@@ -794,7 +963,6 @@ class AudioAux : public AudioTrack {
       static  void setVisible(bool t) { _isVisible = t; }
       virtual int height() const;
       static bool visible() { return _isVisible; }
-      virtual QString auxName();
       virtual int index() { return _index; }
     };
 
@@ -805,13 +973,23 @@ class AudioAux : public AudioTrack {
 
 class WaveTrack : public AudioTrack {
       Fifo _prefetchFifo;  // prefetch Fifo
+      // Each wavetrack has a separate prefetch position stamp
+      //  so that consumers can retard or advance the stream and
+      //  the prefetch can pump as much buffers as required while
+      //  keeping track of the last buffer position stamp.
+      unsigned _prefetchWritePos;
       static bool _isVisible;
 
       void internal_assign(const Track&, int flags);
+      // Writes data from connected input routes to the track's latency compensator.
+      // It uses buffer for temporary storage.
+      bool getInputData(unsigned pos, int channels, unsigned nframes,
+                        bool* usedInChannelArray, float** buffer);
       
       // REMOVE Tim. samplerate. Added.
       // Return false if error.
-      bool getPrefetchData(sf_count_t framePos, int channels, sf_count_t nframe, float** bp, bool overwrite);
+//       bool getPrefetchData(sf_count_t framePos, int channels, sf_count_t nframe, float** bp, bool overwrite);
+      bool getPrefetchData(bool have_data, sf_count_t framePos, int dstChannels, sf_count_t nframe, float** bp, bool do_overwrite);
       
    public:
 
@@ -833,7 +1011,7 @@ class WaveTrack : public AudioTrack {
 
       // Called from prefetch thread:
       // If overwrite is true, copies the data. If false, adds the data.
-      virtual void fetchData(unsigned pos, unsigned frames, float** bp, bool doSeek, bool overwrite);
+      virtual void fetchData(unsigned pos, unsigned frames, float** bp, bool doSeek, bool overwrite, int latency_correction = 0);
       
 // REMOVE Tim. samplerate. Added.
       // REPLACES fetchData().
@@ -842,6 +1020,11 @@ class WaveTrack : public AudioTrack {
       
       virtual bool getData(unsigned, int ch, unsigned, float** bp);
 
+      // Depending on the Monitor setting, Wave Tracks can have available correction.
+      // If unmonitored, they will never dominate parallel branches.
+      bool canDominateOutputLatency() const;
+      bool canCorrectOutputLatency() const;
+      
 // REMOVE Tim. samplerate. Changed.
 //       void clearPrefetchFifo()      { _prefetchFifo.clear(); }
       void clearPrefetchFifo();
@@ -849,7 +1032,11 @@ class WaveTrack : public AudioTrack {
       // REMOVE Tim. samplerate. Added.
       //virtual void prefetchAudio(unsigned writePos, int channels, bool off, unsigned frames);
       virtual void prefetchAudio(sf_count_t writePos, sf_count_t frames);
-      
+
+      // For prefetch thread use only.
+      inline unsigned prefetchWritePos() const { return _prefetchWritePos; }
+      inline void setPrefetchWritePos(unsigned p) { _prefetchWritePos = p; }
+
       virtual void setChannels(int n);
       virtual bool hasAuxSend() const { return true; }
       bool canEnableRecord() const;
@@ -911,8 +1098,10 @@ template<class T> class tracklist : public std::vector<Track*> {
       void push_back(T v)             { vlist::push_back(v); }
       iterator begin()                { return vlist::begin(); }
       iterator end()                  { return vlist::end(); }
-      const_iterator begin() const    { return vlist::begin(); }
-      const_iterator end() const      { return vlist::end(); }
+      const_iterator begin() const    { return vlist::cbegin(); }
+      const_iterator end() const      { return vlist::cend(); }
+      const_iterator cbegin() const   { return vlist::cbegin(); }
+      const_iterator cend() const     { return vlist::cend(); }
       reverse_iterator rbegin()       { return vlist::rbegin(); }
       reverse_iterator rend()         { return vlist::rend(); }
       T& back() const                 { return (T&)(vlist::back()); }
@@ -921,22 +1110,47 @@ template<class T> class tracklist : public std::vector<Track*> {
             return std::find(begin(), end(), t);
             }
       const_iterator find(const Track* t) const {
-            return std::find(begin(), end(), t);
+            return std::find(cbegin(), cend(), t);
             }
       bool contains(const Track* t) const {
-            return std::find(begin(), end(), t) != end();
+            return std::find(cbegin(), cend(), t) != cend();
             }
-      unsigned index(const Track* t) const {
-            unsigned n = 0;
-            for (vlist::const_iterator i = begin(); i != end(); ++i, ++n) {
+      int index(const Track* t) const {
+            int n = 0;
+            for (vlist::const_iterator i = cbegin(); i != cend(); ++i, ++n) {
                   if (*i == t)
                         return n;
                   }
             return -1;
             }
-      T index(int k) const           { return (*this)[k]; }
+      T index(int k) const {
+            if (k < 0 || k >= (int)size())
+                  return nullptr;
+            return (*this)[k];
+            }
+      T findSerial(int sn) const {
+            if (sn < 0)
+                  return nullptr;
+            for (vlist::const_iterator i = cbegin(); i != cend(); ++i) {
+                  if ((*i)->serial() == sn) {
+                        return *i;
+                        }
+                  }
+            return nullptr;
+            }
+      int indexOfSerial(int sn) const {
+            if (sn < 0)
+                  return -1;
+            int n = 0;
+            for (vlist::const_iterator i = cbegin(); i != cend(); ++i, ++n) {
+                  if ((*i)->serial() == sn) {
+                        return n;
+                        }
+                  }
+            return -1;
+            }
       iterator index2iterator(int k) {
-            if ((unsigned)k >= size())
+            if (k < 0 || k >= (int)size())
                   return end();
             return begin() + k;
             }
@@ -947,7 +1161,7 @@ template<class T> class tracklist : public std::vector<Track*> {
                   delete *i;
             vlist::clear();
             }
-      void erase(vlist::iterator i) { vlist::erase(i); }
+      void erase(vlist::const_iterator i) { vlist::erase(i); }
       void replace(Track* ot, Track* nt) {
             for (vlist::iterator i = begin(); i != end(); ++i) {
                   if (*i == ot) {
@@ -959,7 +1173,7 @@ template<class T> class tracklist : public std::vector<Track*> {
       // Returns the number of selected tracks in this list.
       int countSelected() const {
             int c = 0;
-            for (vlist::const_iterator i = begin(); i != end(); ++i) {
+            for (vlist::const_iterator i = cbegin(); i != cend(); ++i) {
                   if ((*i)->selected()) {
                         ++c;
                         }
@@ -973,7 +1187,7 @@ template<class T> class tracklist : public std::vector<Track*> {
             T cur = 0;
             int c = 0;
             int so;
-            for (vlist::const_iterator i = begin(); i != end(); ++i) {
+            for (vlist::const_iterator i = cbegin(); i != cend(); ++i) {
                   T t = *i;
                   so = t->selectionOrder();
                   if (t->selected() && so >= c) {

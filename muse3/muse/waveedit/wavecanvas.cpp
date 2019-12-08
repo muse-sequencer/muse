@@ -43,6 +43,7 @@
 #include <QDir>
 #include <QLine>
 #include <QVector>
+#include <QProcess>
 // REMOVE Tim. samplerate. Added.
 #include <QMenu>
 #include <QColor>
@@ -52,9 +53,7 @@
 
 #include <limits.h>
 #include <stdio.h>
-#include <math.h>
-#include <errno.h>
-#include <sys/wait.h>
+#include "muse_math.h"
 #include <set>
 
 #include "app.h"
@@ -233,7 +232,7 @@ void WaveCanvas::updateItems()
 
 void WaveCanvas::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if (flags._flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
+      if (flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
             // TODO FIXME: don't we actually only want SC_PART_*, and maybe SC_TRACK_DELETED?
             //             (same in waveview.cpp)
             updateItems();
@@ -289,10 +288,10 @@ void WaveCanvas::songChanged(MusECore::SongChangedStruct_t flags)
       }
             
       
-      if (flags._flags & SC_CLIP_MODIFIED) {
+      if (flags & SC_CLIP_MODIFIED) {
             redraw(); // Boring, but the only thing possible to do
             }
-      if (flags._flags & SC_TEMPO) {
+      if (flags & SC_TEMPO) {
             setPos(0, MusEGlobal::song->cpos(), false);
             setPos(1, MusEGlobal::song->lpos(), false);
             setPos(2, MusEGlobal::song->rpos(), false);
@@ -310,18 +309,18 @@ void WaveCanvas::songChanged(MusECore::SongChangedStruct_t flags)
                   }
       }
       
-      if(flags._flags & (SC_SELECTION))
+      if(flags & (SC_SELECTION))
       {
         // Prevent race condition: Ignore if the change was ultimately sent by the canvas itself.
         if(flags._sender != this)
           updateItemSelections();
       }
       
-      bool f1 = flags._flags & (SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED | 
+      bool f1 = static_cast<bool>(flags & (SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED | 
                          SC_PART_INSERTED | SC_PART_MODIFIED | SC_PART_REMOVED |
                          SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
-                         SC_SIG | SC_TEMPO | SC_KEY | SC_MASTER | SC_CONFIG | SC_DRUMMAP); 
-      bool f2 = flags._flags & SC_SELECTION;
+                         SC_SIG | SC_TEMPO | SC_KEY | SC_MASTER | SC_CONFIG | SC_DRUMMAP)); 
+      bool f2 = static_cast<bool>(flags & SC_SELECTION);
       if(f1 || f2)   // Try to avoid all unnecessary emissions.
         emit selectionChanged(x, event, part, !f1);
       
@@ -461,8 +460,8 @@ void WaveCanvas::keyPress(QKeyEvent* event)
             if (found) {
                   MusECore::Pos p1(tick_min, true);
                   MusECore::Pos p2(tick_max, true);
-                  MusEGlobal::song->setPos(1, p1);
-                  MusEGlobal::song->setPos(2, p2);
+                  MusEGlobal::song->setPos(MusECore::Song::LPOS, p1);
+                  MusEGlobal::song->setPos(MusECore::Song::RPOS, p2);
                   }
             }
       // Select items by key (PianoRoll & DrumEditor)
@@ -3671,8 +3670,11 @@ void WaveCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
       //---------------------------------------------------
 
       drawTickRaster(p, rect, rg, editor->raster(), true, false, false,
-                         MusEGlobal::config.midiCanvasBarColor, 
-                         MusEGlobal::config.midiCanvasBeatColor);
+                     MusEGlobal::config.midiCanvasBeatColor, // color sequence slightly done by trial and error..
+                     MusEGlobal::config.midiCanvasBeatColor,
+                     Qt::red, // dummy color
+                     MusEGlobal::config.midiCanvasBarColor
+                     );
       }
 
 //---------------------------------------------------------
@@ -3694,14 +3696,14 @@ void WaveCanvas::waveCmd(int cmd)
                   if(spos < 0)
                     spos = 0;
                   MusECore::Pos p(spos,true);
-                  MusEGlobal::song->setPos(0, p, true, true, true);
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
                   }
                   break;
             case CMD_RIGHT:
                   {
                   int spos = MusEGlobal::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
                   MusECore::Pos p(spos,true);
-                  MusEGlobal::song->setPos(0, p, true, true, true); 
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
                   }
                   break;
             case CMD_LEFT_NOSNAP:
@@ -3710,13 +3712,13 @@ void WaveCanvas::waveCmd(int cmd)
                   if (spos < 0)
                         spos = 0;
                   MusECore::Pos p(spos,true);
-                  MusEGlobal::song->setPos(0, p, true, true, true); //CDW
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true); //CDW
                   }
                   break;
             case CMD_RIGHT_NOSNAP:
                   {
                   MusECore::Pos p(pos[0] + editor->rasterStep(pos[0]), true);
-                  MusEGlobal::song->setPos(0, p, true, true, true); //CDW
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true); //CDW
                   }
                   break;
             case CMD_INSERT:
@@ -3744,7 +3746,7 @@ void WaveCanvas::waveCmd(int cmd)
                   MusEGlobal::song->applyOperationGroup(operations);
                   
                   MusECore::Pos p(editor->rasterVal(pos[0] + editor->rasterStep(pos[0])), true);
-                  MusEGlobal::song->setPos(0, p, true, false, true);
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, false, true);
                   }
                   return;
             case CMD_BACKSPACE:
@@ -3770,7 +3772,7 @@ void WaveCanvas::waveCmd(int cmd)
                         }
                   MusEGlobal::song->applyOperationGroup(operations);
                   MusECore::Pos p(editor->rasterVal(pos[0] - editor->rasterStep(pos[0])), true);
-                  MusEGlobal::song->setPos(0, p, true, false, true);
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, false, true);
                   }
                   break;
             }
@@ -4254,7 +4256,7 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
                unsigned ex            = w.endframe;
                unsigned file_channels = file.channels();
 
-               QString tmpWavFile = QString::null;
+               QString tmpWavFile;
                if (!MusEGlobal::getUniqueTmpfileName("tmp_musewav",".wav", tmpWavFile)) {
                      break;
                      }
@@ -4493,55 +4495,54 @@ void WaveCanvas::editExternal(unsigned file_format, unsigned file_samplerate, un
       exttmpFile.write(file_channels, tmpdata, tmpdatalen);
       exttmpFile.close();
 
-      // Forkaborkabork
-      int pid = fork();
-      if (pid == 0) {
-            if (execlp(MusEGlobal::config.externalWavEditor.toLatin1().constData(), MusEGlobal::config.externalWavEditor.toLatin1().constData(), exttmpFileName.toLatin1().constData(), NULL) == -1) {
-                  perror("Failed to launch external editor");
-                  // Get out of here
-                  
-                   
-                  // cannot report error through gui, we are in another fork!
-                  //@!TODO: Handle unsuccessful attempts
-                  exit(99);
-                  }
-            exit(0);
-            }
-      else if (pid == -1) {
-            perror("fork failed");
-            }
+      QProcess proc;
+      QStringList arguments;
+      arguments << exttmpFileName;
+      proc.start(MusEGlobal::config.externalWavEditor, arguments);
+
+      // Wait forever. This freezes MusE until returned.
+      // FIXME TODO: Try to make something that does it asynchronously while MusE still runs?
+      //             Hm, that'd be quite hard... (More like inter-app 'live collaboration' support).
+      if(!proc.waitForFinished(-1))
+      {
+        QMessageBox::warning(this, tr("MusE - external editor failed"),
+              tr("MusE was unable to launch the external editor\ncheck if the editor setting in:\n"
+              "Global Settings->Audio:External Waveditor\nis set to a valid editor."));
+      }
+
+      if(proc.exitStatus() != QProcess::NormalExit)
+      {
+        std::fprintf(stderr, "\nError: Launch external wave editor: Exit status: %d File: %s\n", 
+                      proc.exitStatus(), MusEGlobal::config.externalWavEditor.toLatin1().constData());
+      }
+
+      if(proc.exitCode() != 0)
+      {
+        std::fprintf(stderr, "\nError: Launch external wave editor: Exit code: %d File: %s\n", 
+                      proc.exitCode(), MusEGlobal::config.externalWavEditor.toLatin1().constData());
+      }
+
+      if (exttmpFile.openRead()) {
+          printf("Could not reopen temporary file!\n");
+          }
       else {
-            int status;
-            waitpid(pid, &status, 0);
-            //printf ("status=%d\n",status);
-            if( WEXITSTATUS(status) != 0 ){
-                   QMessageBox::warning(this, tr("MusE - external editor failed"),
-                         tr("MusE was unable to launch the external editor\ncheck if the editor setting in:\n"
-                         "Global Settings->Audio:External Waveditor\nis set to a valid editor."));
-            }
-            
-            if (exttmpFile.openRead()) {
-                printf("Could not reopen temporary file!\n");
-                }
-            else {
-                // Re-read file again
-                exttmpFile.seek(0, 0);
-                size_t sz = exttmpFile.readWithHeap(file_channels, tmpdata, tmpdatalen);
-                if (sz != tmpdatalen) {
-                        // File must have been shrunken - not good. Alert user.
-                        QMessageBox::critical(this, tr("MusE - file size changed"),
-                            tr("When editing in external editor - you should not change the filesize\nsince it must fit the selected region.\n\nMissing data is muted"));
-                        for (unsigned i=0; i<file_channels; i++) {
-                            for (unsigned j=sz; j<tmpdatalen; j++) {
-                                    tmpdata[i][j] = 0;
-                                    }
-                            }
-                        }
-                }
-            QDir dir = exttmpFile.dirPath();
-            dir.remove(exttmpFileName);
-            dir.remove(exttmpFile.basename() + ".wca");
-            }
+          // Re-read file again
+          exttmpFile.seek(0, 0);
+          size_t sz = exttmpFile.readWithHeap(file_channels, tmpdata, tmpdatalen);
+          if (sz != tmpdatalen) {
+                  // File must have been shrunken - not good. Alert user.
+                  QMessageBox::critical(this, tr("MusE - file size changed"),
+                      tr("When editing in external editor - you should not change the filesize\nsince it must fit the selected region.\n\nMissing data is muted"));
+                  for (unsigned i=0; i<file_channels; i++) {
+                      for (unsigned j=sz; j<tmpdatalen; j++) {
+                              tmpdata[i][j] = 0;
+                              }
+                      }
+                  }
+          }
+      QDir dir = exttmpFile.dirPath();
+      dir.remove(exttmpFileName);
+      dir.remove(exttmpFile.basename() + ".wca");
       }
 
       

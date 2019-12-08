@@ -240,6 +240,7 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
       int openFlags = 1;
       int dic = -1;   
       int doc = -1;
+      int trackIdx = -1;
       
       MidiSyncInfo tmpSi;
       int type = MidiDevice::ALSA_MIDI;
@@ -294,11 +295,14 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                               doc = xml.parseInt(); 
                         else if (tag == "midiSyncInfo")
                               tmpSi.read(xml);
-                        else if (tag == "instrument") {    // Obsolete
+                        else if (tag == "instrument") {
                               instrument = xml.parse1();
                               //MusEGlobal::midiPorts[idx].setInstrument(    // Moved below
                               //   registerMidiInstrument(instrument)
                               //   );
+                              }
+                        else if (tag == "trackIdx") {
+                              trackIdx = xml.parseInt();
                               }
                         else if (tag == "midithru")
                         {
@@ -344,7 +348,11 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
 
                               mp->setDefaultOutChannels(0); // reset output channel to take care of the case where no default is specified
 
-                              mp->changeInstrument(registerMidiInstrument(instrument));
+                              // Just set the generic instrument for now.
+                              mp->changeInstrument(genericMidiInstrument);
+                              // Set references to be resolved later...
+                              mp->setTmpFileRefs(trackIdx, instrument);
+
                               if(dic != -1)                      // p4.0.17 Leave them alone unless set by song.
                                 mp->setDefaultInChannels(dic);
                               if(doc != -1)
@@ -364,6 +372,7 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                                       dev->setOpenFlags(openFlags);
                                     MusEGlobal::audio->msgSetMidiDevice(mp, dev);
                                     }
+
                               return;
                               }
                   default:
@@ -376,7 +385,7 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
 //   loadConfigMetronom
 //---------------------------------------------------------
 
-static void loadConfigMetronom(Xml& xml)
+static void loadConfigMetronom(Xml& xml, MetronomeSettings* metro_settings)
       {
       for (;;) {
             Xml::Token token = xml.parse();
@@ -386,59 +395,76 @@ static void loadConfigMetronom(Xml& xml)
             switch (token) {
                   case Xml::TagStart:
                         if (tag == "premeasures")
-                              MusEGlobal::preMeasures = xml.parseInt();
+                              metro_settings->preMeasures = xml.parseInt();
                         else if (tag == "measurepitch")
-                              MusEGlobal::measureClickNote = xml.parseInt();
+                              metro_settings->measureClickNote = xml.parseInt();
                         else if (tag == "measurevelo")
-                              MusEGlobal::measureClickVelo = xml.parseInt();
+                              metro_settings->measureClickVelo = xml.parseInt();
                         else if (tag == "beatpitch")
-                              MusEGlobal::beatClickNote = xml.parseInt();
+                              metro_settings->beatClickNote = xml.parseInt();
                         else if (tag == "beatvelo")
-                              MusEGlobal::beatClickVelo = xml.parseInt();
+                              metro_settings->beatClickVelo = xml.parseInt();
+                        else if (tag == "accentpitch1")
+                              metro_settings->accentClick1 = xml.parseInt();
+                        else if (tag == "accentpitch2")
+                              metro_settings->accentClick2 = xml.parseInt();
+                        else if (tag == "accentvelo1")
+                              metro_settings->accentClick1Velo = xml.parseInt();
+                        else if (tag == "accentvelo2")
+                              metro_settings->accentClick2Velo = xml.parseInt();
                         else if (tag == "channel")
-                              MusEGlobal::clickChan = xml.parseInt();
+                              metro_settings->clickChan = xml.parseInt();
                         else if (tag == "port")
-                              MusEGlobal::clickPort = xml.parseInt();
+                              metro_settings->clickPort = xml.parseInt();
                         else if (tag == "precountEnable")
-                              MusEGlobal::precountEnableFlag = xml.parseInt();
+                              metro_settings->precountEnableFlag = xml.parseInt();
                         else if (tag == "fromMastertrack")
-                              MusEGlobal::precountFromMastertrackFlag = xml.parseInt();
+                              metro_settings->precountFromMastertrackFlag = xml.parseInt();
                         else if (tag == "signatureZ")
-                              MusEGlobal::precountSigZ = xml.parseInt();
+                              metro_settings->precountSigZ = xml.parseInt();
                         else if (tag == "signatureN")
-                              MusEGlobal::precountSigN = xml.parseInt();
+                              metro_settings->precountSigN = xml.parseInt();
                         else if (tag == "precountOnPlay")
-                              MusEGlobal::precountOnPlay = xml.parseInt();
+                              metro_settings->precountOnPlay = xml.parseInt();
                         else if (tag == "precountMuteMetronome")
-                              MusEGlobal::precountMuteMetronome = xml.parseInt();
+                              metro_settings->precountMuteMetronome = xml.parseInt();
                         else if (tag == "prerecord")
-                              MusEGlobal::precountPrerecord = xml.parseInt();
+                              metro_settings->precountPrerecord = xml.parseInt();
                         else if (tag == "preroll")
-                              MusEGlobal::precountPreroll = xml.parseInt();
+                              metro_settings->precountPreroll = xml.parseInt();
                         else if (tag == "midiClickEnable")
-                              MusEGlobal::midiClickFlag = xml.parseInt();
+                              metro_settings->midiClickFlag = xml.parseInt();
                         else if (tag == "audioClickEnable")
-                              MusEGlobal::audioClickFlag = xml.parseInt();
+                              metro_settings->audioClickFlag = xml.parseInt();
                         else if (tag == "audioClickVolume")
-                              MusEGlobal::audioClickVolume = xml.parseFloat();
+                              metro_settings->audioClickVolume = xml.parseFloat();
                         else if (tag == "measClickVolume")
-                              MusEGlobal::measClickVolume = xml.parseFloat();
+                              metro_settings->measClickVolume = xml.parseFloat();
                         else if (tag == "beatClickVolume")
-                              MusEGlobal::beatClickVolume = xml.parseFloat();
+                              metro_settings->beatClickVolume = xml.parseFloat();
                         else if (tag == "accent1ClickVolume")
-                              MusEGlobal::accent1ClickVolume = xml.parseFloat();
+                              metro_settings->accent1ClickVolume = xml.parseFloat();
                         else if (tag == "accent2ClickVolume")
-                              MusEGlobal::accent2ClickVolume = xml.parseFloat();
+                              metro_settings->accent2ClickVolume = xml.parseFloat();
                         else if (tag == "clickSamples")
-                              MusEGlobal::clickSamples = (MusEGlobal::ClickSamples)xml.parseInt();
+                              metro_settings->clickSamples = (MetronomeSettings::ClickSamples)xml.parseInt();
                         else if (tag == "beatSample")
-                              MusEGlobal::config.beatSample = xml.parse1();
+                              metro_settings->beatSample = xml.parse1();
                         else if (tag == "measSample")
-                              MusEGlobal::config.measSample = xml.parse1();
+                              metro_settings->measSample = xml.parse1();
                         else if (tag == "accent1Sample")
-                              MusEGlobal::config.accent1Sample = xml.parse1();
+                              metro_settings->accent1Sample = xml.parse1();
                         else if (tag == "accent2Sample")
-                              MusEGlobal::config.accent2Sample = xml.parse1();
+                              metro_settings->accent2Sample = xml.parse1();
+                        else if (tag == "metroUseSongSettings")
+                              MusEGlobal::metroUseSongSettings = xml.parseInt();
+                        else if (tag == "metroAccPresets")
+                              MusEGlobal::metroAccentPresets.read(xml);
+                        else if (tag == "metroAccMap")
+                        {
+                              if(metro_settings->metroAccentsMap)
+                                metro_settings->metroAccentsMap->read(xml);
+                        }
                         else
                               xml.unknown("Metronome");
                         break;
@@ -455,7 +481,7 @@ static void loadConfigMetronom(Xml& xml)
 //   readSeqConfiguration
 //---------------------------------------------------------
 
-static void readSeqConfiguration(Xml& xml, bool skipMidiPorts)
+static void readSeqConfiguration(Xml& xml, MetronomeSettings* metro_settings, bool skipMidiPorts)
       {
       for (;;) {
             Xml::Token token = xml.parse();
@@ -465,7 +491,7 @@ static void readSeqConfiguration(Xml& xml, bool skipMidiPorts)
             switch (token) {
                   case Xml::TagStart:
                         if (tag == "metronom")
-                              loadConfigMetronom(xml);
+                              loadConfigMetronom(xml, metro_settings);
                         else if (tag == "mididevice")
                               readConfigMidiDevice(xml);
                         else if (tag == "midiport")
@@ -521,7 +547,9 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                            midiport configuration and VOLUME.
                         */
                         if (tag == "sequencer") {
-                              readSeqConfiguration(xml, !doReadMidiPortConfig);
+                              readSeqConfiguration(xml,
+                                doReadGlobalConfig ? &MusEGlobal::metroGlobalSettings : &MusEGlobal::metroSongSettings,
+                                !doReadMidiPortConfig);
                               break;
                               }
                         else if (tag == "waveTracksVisible")
@@ -604,16 +632,20 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "sendClockDelay")
                               MusEGlobal::syncSendFirstClockDelay = xml.parseUInt();
                         else if (tag == "extSync")
-                              MusEGlobal::extSyncFlag.setValue(xml.parseInt());
+                                MusEGlobal::extSyncFlag = xml.parseInt();
                         else if (tag == "useJackTransport")
-                              {
-                              MusEGlobal::useJackTransport.setValue(xml.parseInt());
-                              }
+                                MusEGlobal::config.useJackTransport = xml.parseInt();
                         else if (tag == "jackTransportMaster")
                               {
-                                MusEGlobal::jackTransportMaster = xml.parseInt();
+                                MusEGlobal::config.jackTransportMaster = xml.parseInt();
+                                
+                                // Set this one-time flag to true so that when setMaster is called,
+                                //  it forces master. audioDevice may be NULL, esp. at startup,
+                                //  so this flag is necessary for the next valid call to setMaster.
+                                MusEGlobal::transportMasterForceFlag = true;
                                 if(MusEGlobal::audioDevice)
-                                      MusEGlobal::audioDevice->setMaster(MusEGlobal::jackTransportMaster);      
+                                  // Force it.
+                                  MusEGlobal::audioDevice->setMaster(MusEGlobal::config.jackTransportMaster, true);
                               }  
                         else if (tag == "syncRecFilterPreset")
                               {
@@ -727,6 +759,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.styleSheetFile = xml.parse1();
                         else if (tag == "useOldStyleStopShortCut")
                               MusEGlobal::config.useOldStyleStopShortCut = xml.parseInt();
+                        else if (tag == "useRewindOnStop")
+                              MusEGlobal::config.useRewindOnStop = xml.parseInt();
                         else if (tag == "moveArmedCheckBox")
                               MusEGlobal::config.moveArmedCheckBox = xml.parseInt();
                         else if (tag == "externalWavEditor")
@@ -856,6 +890,10 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         
                         else if (tag == "partCanvasBg")
                               MusEGlobal::config.partCanvasBg = readColor(xml);
+                        else if (tag == "partCanvasFineRaster")
+                              MusEGlobal::config.partCanvasFineRasterColor = readColor(xml);
+                        else if (tag == "partCanvasCoarseRaster")
+                              MusEGlobal::config.partCanvasCoarseRasterColor = readColor(xml);
                         else if (tag == "trackBg")
                               MusEGlobal::config.trackBg = readColor(xml);
                         else if (tag == "selectTrackBg")
@@ -1019,10 +1057,16 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
 
                         else if (tag == "midiCanvasBackgroundColor")
                               MusEGlobal::config.midiCanvasBg = readColor(xml);
+
+                        else if (tag == "midiCanvasFineColor")
+                              MusEGlobal::config.midiCanvasFineColor = readColor(xml);
+
                         else if (tag == "midiCanvasBeatColor")
                               MusEGlobal::config.midiCanvasBeatColor = readColor(xml);
+
                         else if (tag == "midiCanvasBarColor")
                               MusEGlobal::config.midiCanvasBarColor = readColor(xml);
+
                         else if (tag == "midiControllerViewBackgroundColor")
                               MusEGlobal::config.midiControllerViewBg = readColor(xml);
                         else if (tag == "drumListBackgroundColor")
@@ -1117,6 +1161,17 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "deviceAudioBackend")
                               MusEGlobal::config.deviceAudioBackend = xml.parseInt();
 
+                        else if (tag == "enableLatencyCorrection")
+                              MusEGlobal::config.enableLatencyCorrection = xml.parseInt();
+                        else if (tag == "correctUnterminatedInBranchLatency")
+                              MusEGlobal::config.correctUnterminatedInBranchLatency = xml.parseInt();
+                        else if (tag == "correctUnterminatedOutBranchLatency")
+                              MusEGlobal::config.correctUnterminatedOutBranchLatency = xml.parseInt();
+                        else if (tag == "monitoringAffectsLatency")
+                              MusEGlobal::config.monitoringAffectsLatency = xml.parseInt();
+                        else if (tag == "commonProjectLatency")
+                              MusEGlobal::config.commonProjectLatency = xml.parseInt();
+                        
                         else if (tag == "minControlProcessPeriod")
                               MusEGlobal::config.minControlProcessPeriod = xml.parseUInt();
                         else if (tag == "guiRefresh")
@@ -1167,6 +1222,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.mixdownPath = xml.parse1();
                         else if (tag == "showNoteNamesInPianoRoll")
                               MusEGlobal::config.showNoteNamesInPianoRoll = xml.parseInt();
+                        else if (tag == "noPluginScaling")
+                              MusEGlobal::config.noPluginScaling = xml.parseInt();
 
 
                         // ---- the following only skips obsolete entries ----
@@ -1262,8 +1319,7 @@ bool readConfiguration(const char *configFile)
             switch (token) {
                   case Xml::Error:
                   case Xml::End:
-                        fclose(f);
-                        return true;
+                        goto read_conf_end;
                   case Xml::TagStart:
                         if (skipmode && tag == "muse")
                               skipmode = false;
@@ -1297,10 +1353,67 @@ bool readConfiguration(const char *configFile)
                         break;
                   }
             }
+
+read_conf_end:
       fclose(f);
       return true;
       }
 
+//---------------------------------------------------------
+//   writeMetronomeConfiguration
+//---------------------------------------------------------
+
+static void writeMetronomeConfiguration(int level, Xml& xml, bool is_global)
+      {
+      MusECore::MetronomeSettings* metro_settings = 
+        is_global ? &MusEGlobal::metroGlobalSettings : &MusEGlobal::metroSongSettings;
+
+      xml.tag(level++, "metronom");
+      xml.intTag(level, "premeasures", metro_settings->preMeasures);
+      xml.intTag(level, "measurepitch", metro_settings->measureClickNote);
+      xml.intTag(level, "measurevelo", metro_settings->measureClickVelo);
+      xml.intTag(level, "beatpitch", metro_settings->beatClickNote);
+      xml.intTag(level, "beatvelo", metro_settings->beatClickVelo);
+      xml.intTag(level, "accentpitch1", metro_settings->accentClick1);
+      xml.intTag(level, "accentpitch2", metro_settings->accentClick2);
+      xml.intTag(level, "accentvelo1", metro_settings->accentClick1Velo);
+      xml.intTag(level, "accentvelo2", metro_settings->accentClick2Velo);
+      xml.intTag(level, "channel", metro_settings->clickChan);
+      xml.intTag(level, "port", metro_settings->clickPort);
+
+      // Write the global metroUseSongSettings - ONLY if saving song configuration.
+      if(!is_global)
+        xml.intTag(level, "metroUseSongSettings", MusEGlobal::metroUseSongSettings);
+      // Write either the global or song accents map.
+      if(metro_settings->metroAccentsMap)
+        metro_settings->metroAccentsMap->write(level, xml);
+      // Write the global user accent presets - ONLY if saving global configuration.
+      if(is_global)
+        MusEGlobal::metroAccentPresets.write(level, xml, MusECore::MetroAccentsStruct::UserPreset);
+
+      xml.intTag(level, "precountEnable", metro_settings->precountEnableFlag);
+      xml.intTag(level, "fromMastertrack", metro_settings->precountFromMastertrackFlag);
+      xml.intTag(level, "signatureZ", metro_settings->precountSigZ);
+      xml.intTag(level, "signatureN", metro_settings->precountSigN);
+      xml.intTag(level, "precountOnPlay", metro_settings->precountOnPlay);
+      xml.intTag(level, "precountMuteMetronome", metro_settings->precountMuteMetronome);
+      xml.intTag(level, "prerecord", metro_settings->precountPrerecord);
+      xml.intTag(level, "preroll", metro_settings->precountPreroll);
+      xml.intTag(level, "midiClickEnable", metro_settings->midiClickFlag);
+      xml.intTag(level, "audioClickEnable", metro_settings->audioClickFlag);
+      xml.floatTag(level, "audioClickVolume", metro_settings->audioClickVolume);
+      xml.floatTag(level, "measClickVolume", metro_settings->measClickVolume);
+      xml.floatTag(level, "beatClickVolume", metro_settings->beatClickVolume);
+      xml.floatTag(level, "accent1ClickVolume", metro_settings->accent1ClickVolume);
+      xml.floatTag(level, "accent2ClickVolume", metro_settings->accent2ClickVolume);
+      xml.intTag(level, "clickSamples", metro_settings->clickSamples);
+      xml.strTag(level, "beatSample", metro_settings->beatSample);
+      xml.strTag(level, "measSample", metro_settings->measSample);
+      xml.strTag(level, "accent1Sample", metro_settings->accent1Sample);
+      xml.strTag(level, "accent2Sample", metro_settings->accent2Sample);
+      xml.tag(level--, "/metronom");
+      }
+      
 //---------------------------------------------------------
 //   writeSeqConfiguration
 //---------------------------------------------------------
@@ -1309,36 +1422,10 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       {
       xml.tag(level++, "sequencer");
 
-      xml.tag(level++, "metronom");
-      xml.intTag(level, "premeasures", MusEGlobal::preMeasures);
-      xml.intTag(level, "measurepitch", MusEGlobal::measureClickNote);
-      xml.intTag(level, "measurevelo", MusEGlobal::measureClickVelo);
-      xml.intTag(level, "beatpitch", MusEGlobal::beatClickNote);
-      xml.intTag(level, "beatvelo", MusEGlobal::beatClickVelo);
-      xml.intTag(level, "channel", MusEGlobal::clickChan);
-      xml.intTag(level, "port", MusEGlobal::clickPort);
-
-      xml.intTag(level, "precountEnable", MusEGlobal::precountEnableFlag);
-      xml.intTag(level, "fromMastertrack", MusEGlobal::precountFromMastertrackFlag);
-      xml.intTag(level, "signatureZ", MusEGlobal::precountSigZ);
-      xml.intTag(level, "signatureN", MusEGlobal::precountSigN);
-      xml.intTag(level, "precountOnPlay", MusEGlobal::precountOnPlay);
-      xml.intTag(level, "precountMuteMetronome", MusEGlobal::precountMuteMetronome);
-      xml.intTag(level, "prerecord", MusEGlobal::precountPrerecord);
-      xml.intTag(level, "preroll", MusEGlobal::precountPreroll);
-      xml.intTag(level, "midiClickEnable", MusEGlobal::midiClickFlag);
-      xml.intTag(level, "audioClickEnable", MusEGlobal::audioClickFlag);
-      xml.floatTag(level, "audioClickVolume", MusEGlobal::audioClickVolume);
-      xml.floatTag(level, "measClickVolume", MusEGlobal::measClickVolume);
-      xml.floatTag(level, "beatClickVolume", MusEGlobal::beatClickVolume);
-      xml.floatTag(level, "accent1ClickVolume", MusEGlobal::accent1ClickVolume);
-      xml.floatTag(level, "accent2ClickVolume", MusEGlobal::accent2ClickVolume);
-      xml.intTag(level, "clickSamples", MusEGlobal::clickSamples);
-      xml.strTag(level, "beatSample", MusEGlobal::config.beatSample);
-      xml.strTag(level, "measSample", MusEGlobal::config.measSample);
-      xml.strTag(level, "accent1Sample", MusEGlobal::config.accent1Sample);
-      xml.strTag(level, "accent2Sample", MusEGlobal::config.accent2Sample);
-      xml.tag(level--, "/metronom");
+      // If writePortInfo is true we are writing SONG configuration,
+      //  and if writePortInfo is NOT true we are writing GLOBAL configuration.
+      // Write the global user accent presets - ONLY if saving global configuration.
+      writeMetronomeConfiguration(level, xml, !writePortInfo);
 
       xml.intTag(level, "rcEnable",   MusEGlobal::rcEnable);
       xml.intTag(level, "rcStop",     MusEGlobal::rcStopNote);
@@ -1415,9 +1502,27 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                   if(mport->defaultOutChannels())
                     xml.intTag(level, "defaultOutChans", mport->defaultOutChannels());
                   
-                  if(!mport->instrument()->iname().isEmpty() &&                      // Tim.
-                     (mport->instrument()->iname() != "GM"))                         // FIXME: TODO: Make this user configurable.
-                    xml.strTag(level, "instrument", mport->instrument()->iname());
+                  const MidiInstrument* mi = mport->instrument();
+                  // FIXME: TODO: Make this user configurable.
+                  if(mi && !mi->iname().isEmpty() && mi->iname() != "GM")
+                  {
+                    if(mi->isSynti())
+                    {
+                      // The instrument is a synthesizer. Store a reference to
+                      //  the synthesizer track so it can be looked up upon loading.
+                      const SynthI* si = static_cast<const SynthI*>(mi);
+                      const int idx = MusEGlobal::song->tracks()->index(si);
+                      if(idx >= 0)
+                        xml.intTag(level, "trackIdx", idx);
+                    }
+                    else
+                    {
+                      // The instrument is not a synthesizer, it is one of our own
+                      //  (loaded from an *.idf file). Just store a string identifier,
+                      //  since we don't have unique indexes for .idf instruments. TODO ???
+                      xml.strTag(level, "instrument", mi->iname());
+                    }
+                  }
                     
                   if (dev) {
                         xml.strTag(level, "name",   dev->name());
@@ -1479,6 +1584,9 @@ static void writeConfigurationColors(int level, MusECore::Xml& xml, bool partCol
       }
       
       xml.colorTag(level, "partCanvasBg",  MusEGlobal::config.partCanvasBg);
+      xml.colorTag(level, "partCanvasCoarseRaster",  MusEGlobal::config.partCanvasCoarseRasterColor);
+      xml.colorTag(level, "partCanvasFineRaster",  MusEGlobal::config.partCanvasFineRasterColor);
+
       xml.colorTag(level, "trackBg",       MusEGlobal::config.trackBg);
       xml.colorTag(level, "selectTrackBg", MusEGlobal::config.selectTrackBg);
       xml.colorTag(level, "selectTrackFg", MusEGlobal::config.selectTrackFg);
@@ -1542,6 +1650,7 @@ static void writeConfigurationColors(int level, MusECore::Xml& xml, bool partCol
       xml.colorTag(level, "partMidiLightEventColor", MusEGlobal::config.partMidiLightEventColor);
 
       xml.colorTag(level, "midiCanvasBackgroundColor", MusEGlobal::config.midiCanvasBg);
+      xml.colorTag(level, "midiCanvasFineColor", MusEGlobal::config.midiCanvasFineColor);
       xml.colorTag(level, "midiCanvasBeatColor", MusEGlobal::config.midiCanvasBeatColor);
       xml.colorTag(level, "midiCanvasBarColor", MusEGlobal::config.midiCanvasBarColor);
 
@@ -1587,7 +1696,7 @@ bool MusE::loadConfigurationColors(QWidget* parent)
   
   if(QMessageBox::question(parent, QString("MusE"),
       tr("Color settings will immediately be replaced with any found in the file.\nAre you sure you want to proceed?"), tr("&Ok"), tr("&Cancel"),
-      QString::null, 0, 1 ) == 1)
+      QString(), 0, 1 ) == 1)
     return false;
   
   // Read, and return if error.
@@ -1617,7 +1726,7 @@ bool MusE::saveConfigurationColors(QWidget* parent)
   {
     if(QMessageBox::question(parent, QString("MusE"),
         tr("File exists.\nDo you want to overwrite it?"), tr("&Ok"), tr("&Cancel"),
-        QString::null, 0, 1 ) == 1)
+        QString(), 0, 1 ) == 1)
       return false;
   }
   FILE* f = fopen(file.toLatin1().constData(), "w");
@@ -1681,6 +1790,12 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "deviceAudioSampleRate", MusEGlobal::config.deviceAudioSampleRate);
       xml.intTag(level, "deviceAudioBackend", MusEGlobal::config.deviceAudioBackend);
 
+      xml.intTag(level, "enableLatencyCorrection", MusEGlobal::config.enableLatencyCorrection);
+      xml.intTag(level, "correctUnterminatedInBranchLatency", MusEGlobal::config.correctUnterminatedInBranchLatency);
+      xml.intTag(level, "correctUnterminatedOutBranchLatency", MusEGlobal::config.correctUnterminatedOutBranchLatency);
+      xml.intTag(level, "monitoringAffectsLatency", MusEGlobal::config.monitoringAffectsLatency);
+      xml.intTag(level, "commonProjectLatency", MusEGlobal::config.commonProjectLatency);
+
 
       xml.uintTag(level, "minControlProcessPeriod", MusEGlobal::config.minControlProcessPeriod);
       xml.intTag(level, "guiRefresh", MusEGlobal::config.guiRefresh);
@@ -1729,6 +1844,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.strTag(level, "styleSheetFile", MusEGlobal::config.styleSheetFile);
       xml.strTag(level, "externalWavEditor", MusEGlobal::config.externalWavEditor);
       xml.intTag(level, "useOldStyleStopShortCut", MusEGlobal::config.useOldStyleStopShortCut);
+      xml.intTag(level, "useRewindOnStop", MusEGlobal::config.useRewindOnStop);
       xml.intTag(level, "moveArmedCheckBox", MusEGlobal::config.moveArmedCheckBox);
       xml.intTag(level, "popupsDefaultStayOpen", MusEGlobal::config.popupsDefaultStayOpen);
       xml.intTag(level, "leftMouseButtonCanDecrease", MusEGlobal::config.leftMouseButtonCanDecrease);
@@ -1766,6 +1882,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "lv2UiBehavior", static_cast<int>(MusEGlobal::config.lv2UiBehavior));
       xml.strTag(level, "mixdownPath", MusEGlobal::config.mixdownPath);
       xml.intTag(level, "showNoteNamesInPianoRoll", MusEGlobal::config.showNoteNamesInPianoRoll);
+      xml.intTag(level, "noPluginScaling", MusEGlobal::config.noPluginScaling);
 
       for (int i = 0; i < NUM_FONTS; ++i) {
             xml.strTag(level, QString("font") + QString::number(i), MusEGlobal::config.fonts[i].toString());
@@ -1779,7 +1896,9 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.nput(level, "<mtcoffset>%02d:%02d:%02d:%02d:%02d</mtcoffset>\n",
         MusEGlobal::mtcOffset.h(), MusEGlobal::mtcOffset.m(), MusEGlobal::mtcOffset.s(),
         MusEGlobal::mtcOffset.f(), MusEGlobal::mtcOffset.sf());
-      MusEGlobal::extSyncFlag.save(level, xml);
+      xml.intTag(level, "extSync", MusEGlobal::extSyncFlag);
+      xml.intTag(level, "useJackTransport", MusEGlobal::config.useJackTransport);
+      xml.intTag(level, "jackTransportMaster", MusEGlobal::config.jackTransportMaster);
       
       xml.qrectTag(level, "geometryMain",      MusEGlobal::config.geometryMain);
       xml.qrectTag(level, "geometryTransport", MusEGlobal::config.geometryTransport);
@@ -1790,8 +1909,9 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       
       xml.intTag(level, "mixer1Visible", MusEGlobal::config.mixer1Visible);
       xml.intTag(level, "mixer2Visible", MusEGlobal::config.mixer2Visible);
-      MusEGlobal::config.mixer1.write(level, xml);
-      MusEGlobal::config.mixer2.write(level, xml);
+      // True = Write global config.
+      MusEGlobal::config.mixer1.write(level, xml, true);
+      MusEGlobal::config.mixer2.write(level, xml, true);
 
       xml.intTag(level, "showSplashScreen", MusEGlobal::config.showSplashScreen);
       xml.intTag(level, "canvasShowPartType", MusEGlobal::config.canvasShowPartType);
@@ -1846,11 +1966,11 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
         MusEGlobal::mtcOffset.h(), MusEGlobal::mtcOffset.m(), MusEGlobal::mtcOffset.s(),
         MusEGlobal::mtcOffset.f(), MusEGlobal::mtcOffset.sf());
       xml.uintTag(level, "sendClockDelay", MusEGlobal::syncSendFirstClockDelay);
-      xml.intTag(level, "useJackTransport", MusEGlobal::useJackTransport.value());
-      xml.intTag(level, "jackTransportMaster", MusEGlobal::jackTransportMaster);
+      xml.intTag(level, "useJackTransport", MusEGlobal::config.useJackTransport);
+      xml.intTag(level, "jackTransportMaster", MusEGlobal::config.jackTransportMaster);
       xml.intTag(level, "syncRecFilterPreset", MusEGlobal::syncRecFilterPreset);
       xml.doubleTag(level, "syncRecTempoValQuant", MusEGlobal::syncRecTempoValQuant);
-      MusEGlobal::extSyncFlag.save(level, xml);
+      xml.intTag(level, "extSync", MusEGlobal::extSyncFlag);
       
       xml.intTag(level, "bigtimeVisible",   viewBigtimeAction->isChecked());
       xml.intTag(level, "transportVisible", viewTransportAction->isChecked());
@@ -1870,10 +1990,9 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
 
       xml.intTag(level, "mixer1Visible",    viewMixerAAction->isChecked());
       xml.intTag(level, "mixer2Visible",    viewMixerBAction->isChecked());
-      if (mixer1)
-            mixer1->write(level, xml);
-      if (mixer2)
-            mixer2->write(level, xml);
+      // False = Write song-specific config.
+      MusEGlobal::config.mixer1.write(level, xml, false);
+      MusEGlobal::config.mixer2.write(level, xml, false);
 
       writeSeqConfiguration(level, xml, true);
 
@@ -2064,7 +2183,70 @@ namespace MusEGlobal {
 //   write
 //---------------------------------------------------------
 
-void MixerConfig::write(int level, MusECore::Xml& xml)
+void StripConfig::write(int level, MusECore::Xml& xml) const
+      {
+      if(_serial < 0)
+        return;
+      // Do NOT save if there is no corresponding track.
+      const MusECore::TrackList* tl = song->tracks();
+      const int idx = tl->indexOfSerial(_serial);
+      if(idx < 0)
+        return;
+      xml.nput(level, "<StripConfig trackIdx=\"%d\"", idx);
+
+      xml.nput(level, " visible=\"%d\"", _visible);
+      if(_width >= 0)
+        xml.nput(level, " width=\"%d\"", _width);
+      xml.put(" />");
+      
+      //xml.put(">");
+      //level++;
+      // TODO: Anything else to add? ...
+      //xml.etag(level, "StripConfig");
+      }
+
+//---------------------------------------------------------
+//   read
+//---------------------------------------------------------
+
+void StripConfig::read(MusECore::Xml& xml)
+      {
+      for (;;) {
+            MusECore::Xml::Token token(xml.parse());
+            const QString& tag(xml.s1());
+            switch (token) {
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
+                        return;
+                  case MusECore::Xml::TagStart:
+                          xml.unknown("StripConfig");
+                        break;
+                  case MusECore::Xml::Attribut:
+                        if (tag == "trackIdx") {
+                              _tmpFileIdx = xml.s2().toInt();
+                              }
+                        else if (tag == "visible") {
+                              _visible = xml.s2().toInt();
+                              }
+                        else if (tag == "width") {
+                              _width = xml.s2().toInt();
+                              }
+                        break;
+                  case MusECore::Xml::TagEnd:
+                        if (tag == "StripConfig")
+                            return;
+                  default:
+                        break;
+                  }
+            }
+      
+      }
+
+//---------------------------------------------------------
+//   write
+//---------------------------------------------------------
+
+void MixerConfig::write(int level, MusECore::Xml& xml, bool global) const
       {
       xml.tag(level++, "Mixer");
 
@@ -2083,6 +2265,17 @@ void MixerConfig::write(int level, MusECore::Xml& xml)
       xml.intTag(level, "showSyntiTracks",  showSyntiTracks);
 
       xml.intTag(level, "displayOrder", displayOrder);
+
+      // Specific to song file.
+      if(!global)
+      {
+        if(!stripConfigList.empty())
+        {
+          const int sz = stripConfigList.size();
+          for(int i = 0; i < sz; ++i)
+            stripConfigList.at(i).write(level, xml);
+        }
+      }
 
       xml.etag(level, "Mixer");
       }
@@ -2125,10 +2318,18 @@ void MixerConfig::read(MusECore::Xml& xml)
                               showSyntiTracks = xml.parseInt();
                         else if (tag == "displayOrder")
                               displayOrder = (DisplayOrder)xml.parseInt();
+                        // Obsolete. Support old songs.
                         else if (tag == "StripName")
                               stripOrder.append(xml.parse1());
+                        // Obsolete. Support old songs.
                         else if (tag == "StripVisible")
                               stripVisibility.append(xml.parseInt() == 0 ? false : true );
+                        else if (tag == "StripConfig") {
+                              StripConfig sc;
+                              sc.read(xml);
+                              if(sc._tmpFileIdx >= 0)
+                                stripConfigList.append(sc);
+                        }
                         else
                               xml.unknown("Mixer");
                         break;

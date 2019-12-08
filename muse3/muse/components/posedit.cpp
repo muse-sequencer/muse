@@ -70,9 +70,19 @@ QSize PosEdit::sizeHint() const
       int h  = fm.height() + fw * 2;
       int w = fw * 2 + b_rect.width();
       if (_smpte)
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+            w  += fm.horizontalAdvance(QString("000:00:00:00"));
+#else
             w  += fm.width(QString("000:00:00:00"));
+#endif
       else
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+            w  += fm.horizontalAdvance(QString("0000.00.000"));
+#else
             w  += fm.width(QString("0000.00.000"));
+#endif
       return QSize(w, h).expandedTo(QApplication::globalStrut());
     }
     return QSize(20, 20).expandedTo(QApplication::globalStrut());      

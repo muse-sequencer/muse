@@ -1,0 +1,87 @@
+*** MIDI EDITOR SHORTCUTS ***
+
+This document is a companion to the README.shortcuts document which lists most
+shortcuts available in MusE.
+
+In the midi editors Pianoroll and Drumeditor there are a number of keyboard 
+shortcuts that might be hard to understand their usefulness without some 
+explanation. 
+
+
+** EDIT TOOLBAR **
+
+So, without further ado let's first list the shortcuts commonly available in the 
+midi and drum editors.
+
+Edit toolbar shortcuts:
+-----------------------
+A - Pointer tool   Allows to select and move already existing notes with the mouse
+D - Draw tool      Draw new notes by clicking on the canvas
+E - Eraser tool    Delete notes by clicking on them
+P - Pan tool       Scroll view vertically (not very useful in this day and age, 
+                   scrollwheel or mouse pad scrolling is recommended)
+F - Line draw tool Can be used to manipulate values in the controller view at 
+                   the bottom by drawing lines over several notes to
+                   create ramps.
+U - Cursor tool    Only available in the drum editor, see the following chapter
+                   about drum editing using cursor.
+
+Snap shortcuts:
+---------------
+1 - Snap grid 1
+2 - Snap grid 2
+3 - Snap grid 4
+4 - Snap grid 8
+5 - Snap grid 16
+6 - Snap grid 32
+7 - Snap grid 64
+, - Toggle dotted snap
+. - Toggle triplets
+
+
+*** DRUM EDITING USING CURSOR ***
+
+The drum editor in MusE supports a keyboard based editing mode dubbed CURSOR Mode.
+CURSOR Mode is somewhat a relative to trackers but still applied to a common 
+drum matrix editor. Basically it enables drum editing without using the mouse.
+
+To get into CURSOR Mode press U or click on the [] tool icon.
+
+In CURSOR Mode the following relevant shortcuts are available:
+--------------------------------------------------------------
+Arrow keys - move cursor
+9          - cursor step down  The number of steps to jump between added notes
+0          - cursor step up    - "" -
+V          - add note with LV1 velocity (usually lowest)
+B          - add note with LV2 velocity (next lowest)
+N          - add note with LV3 velocity (next higher)
+M          - add note with LV4 velocity (highest)
+DELETE key - remove note
+--------------------------------------------------------------
+
+
+** Step by step example, making a four by four beat. **
+
+1. First create a drum part that is four bars long and open it.
+2. U to enter cursor mode
+3. 3 to set set snap grid to 4 snaps per bar
+4. Press 0 until cursor step is 4
+5. Navigate with the arrow keys to the first beat of the kick drum
+6. Press N four times to place 4 kick drums each spaced four steps apart
+7. Navigate to the third beat of the snare drum
+8. Press N four times to place 4 snare drums each spaced four steps apart
+9. Navigate to first beat of the hihat
+10.Press on 9 until cursor step is 1
+11.Press B 16 times to add hihat on all beats
+
+The result should look something like the following:
+----------------------------------------------------
+
+----------1---2---3---4---5---6
+Kickdrum: x---x---x---x---
+Snare:    --x---x---x---x-
+Hihat     xxxxxxxxxxxxxxxx
+
+
+For bugs and further feature requests please report them to:
+https://github.com/muse-sequencer/muse/issues

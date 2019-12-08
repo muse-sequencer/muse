@@ -43,6 +43,7 @@
 #include "driver/audiodev.h"
 #include "audio.h"
 #include "al/al.h"
+#include "operations.h"
 
 namespace MusEGui {
 
@@ -257,16 +258,11 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
       //connect(syncMode, SIGNAL(clicked(int)), SLOT(syncChanged(int)));
       connect(extSyncCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
       connect(mtcSyncType, SIGNAL(activated(int)), SLOT(syncChanged()));
-      connect(useJackTransportCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
-      connect(jackTransportMasterCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
       connect(syncRecFilterPreset, SIGNAL(currentIndexChanged(int)), SLOT(syncChanged()));
       connect(syncRecTempoValQuant, SIGNAL(valueChanged(double)), SLOT(syncChanged()));
-      connect(&MusEGlobal::extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(extSyncChanged(bool)));
       connect(syncDelaySpinBox, SIGNAL(valueChanged(int)), SLOT(syncChanged()));
 
-      connect(extSyncCheckbox, SIGNAL(toggled(bool)), &MusEGlobal::extSyncFlag, SLOT(setValue(bool)));
-      connect(useJackTransportCheckbox, SIGNAL(toggled(bool)),&MusEGlobal::useJackTransport, SLOT(setValue(bool)));
-      connect(&MusEGlobal::useJackTransport, SIGNAL(valueChanged(bool)), SLOT(useJackTransportChanged(bool)));
+      connect(extSyncCheckbox, SIGNAL(toggled(bool)), SLOT(extSyncClicked(bool)));
   
       // Done in show().
       //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
@@ -284,9 +280,9 @@ MidiSyncConfig::~MidiSyncConfig()
 void MidiSyncConfig::songChanged(MusECore::SongChangedStruct_t flags)
 {
       // Is it simply a midi controller value adjustment? Forget it. Otherwise, it's mainly midi port/device changes we want.
-      if(!(flags._flags & (SC_CONFIG | SC_MASTER | SC_TEMPO | SC_SIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
+      if(!(flags & (SC_CONFIG | SC_MASTER | SC_TEMPO | SC_SIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
                     SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED |
-                    SC_MIDI_CONTROLLER_ADD)))
+                    SC_MIDI_CONTROLLER_ADD | SC_EXTERNAL_MIDI_SYNC | SC_USE_JACK_TRANSPORT)))
         return;
     
       // Reset dirty flag, since we're loading new values.
@@ -300,17 +296,10 @@ void MidiSyncConfig::songChanged(MusECore::SongChangedStruct_t flags)
       //  tmpMidiSyncPorts[i] = midiSyncPorts[i];
       
       extSyncCheckbox->blockSignals(true);
-      useJackTransportCheckbox->blockSignals(true);
-      jackTransportMasterCheckbox->blockSignals(true);
       syncDelaySpinBox->blockSignals(true);
-      extSyncCheckbox->setChecked(MusEGlobal::extSyncFlag.value());
-      useJackTransportCheckbox->setChecked(MusEGlobal::useJackTransport.value());
-      jackTransportMasterCheckbox->setChecked(MusEGlobal::jackTransportMaster);
-      //jackTransportMasterCheckbox->setEnabled(MusEGlobal::useJackTransport);
+      extSyncCheckbox->setChecked(MusEGlobal::extSyncFlag);
       syncDelaySpinBox->setValue(MusEGlobal::syncSendFirstClockDelay);
       syncDelaySpinBox->blockSignals(false);
-      jackTransportMasterCheckbox->blockSignals(false);
-      useJackTransportCheckbox->blockSignals(false);
       extSyncCheckbox->blockSignals(false);
 
       int fp_idx = syncRecFilterPreset->findData(MusEGlobal::syncRecFilterPreset);
@@ -532,19 +521,6 @@ void MidiSyncConfig::syncChanged()
 //   extSyncChanged
 //---------------------------------------------------------
 
-void MidiSyncConfig::useJackTransportChanged(bool v)
-      {
-      useJackTransportCheckbox->blockSignals(true);
-      useJackTransportCheckbox->setChecked(v);
-//      if(v)
-//        MusEGlobal::song->setMasterFlag(false);
-      useJackTransportCheckbox->blockSignals(false);
-      }
-
-//---------------------------------------------------------
-//   extSyncChanged
-//---------------------------------------------------------
-
 void MidiSyncConfig::extSyncChanged(bool v)
       {
       extSyncCheckbox->blockSignals(true);
@@ -553,6 +529,17 @@ void MidiSyncConfig::extSyncChanged(bool v)
 //        MusEGlobal::song->setMasterFlag(false);
       extSyncCheckbox->blockSignals(false);
       }
+
+//---------------------------------------------------------
+//   extSyncClicked
+//---------------------------------------------------------
+
+void MidiSyncConfig::extSyncClicked(bool v)
+{
+  MusECore::PendingOperationList operations;
+  operations.add(MusECore::PendingOperationItem(&MusEGlobal::extSyncFlag, v, MusECore::PendingOperationItem::SetExternalSyncFlag));
+  MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+}
 
 //---------------------------------------------------------
 //   ok Pressed
@@ -644,15 +631,7 @@ void MidiSyncConfig::apply()
       MusEGlobal::mtcType     = mtcSyncType->currentIndex();
       // Make sure the AL namespace variables mirror our variables.
       AL::mtcType = MusEGlobal::mtcType;
-      MusEGlobal::extSyncFlag.setValue(extSyncCheckbox->isChecked());
-      MusEGlobal::useJackTransport.setValue(useJackTransportCheckbox->isChecked());
-//      if(MusEGlobal::useJackTransport)
-        MusEGlobal::jackTransportMaster = jackTransportMasterCheckbox->isChecked();
-//      else  
-//        MusEGlobal::jackTransportMaster = false;
-//      MusEGlobal::jackTransportMasterCheckbox->setEnabled(MusEGlobal::useJackTransport);
-      if(MusEGlobal::audioDevice)
-        MusEGlobal::audioDevice->setMaster(MusEGlobal::jackTransportMaster);      
+      MusEGlobal::extSyncFlag = extSyncCheckbox->isChecked();
 
       if(syncRecFilterPreset->currentIndex() != -1)
       {
@@ -689,7 +668,9 @@ void MidiSyncConfig::apply()
   
   // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
   //muse->changeConfig(true);
-  
+
+  MusEGlobal::song->update(SC_EXTERNAL_MIDI_SYNC | SC_USE_JACK_TRANSPORT);
+
   _dirty = false;
   if(applyButton->isEnabled())
     applyButton->setEnabled(false);

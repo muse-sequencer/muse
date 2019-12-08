@@ -53,7 +53,8 @@ class AlsaTimer : public Timer{
     public:
        AlsaTimer();
        virtual ~AlsaTimer();
-       
+       virtual const char* getTimerName() { return "AlsaTimer"; }
+
        virtual signed int initTimer(unsigned long desiredFrequency);
        virtual unsigned long setTimerResolution(unsigned long resolution);
        virtual unsigned long getTimerResolution();

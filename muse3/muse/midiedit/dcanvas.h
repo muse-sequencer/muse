@@ -135,14 +135,15 @@ class DrumCanvas : public EventCanvas {
       virtual void resizeEvent(QResizeEvent*);
       virtual void curPartChanged();
       int getNextStep(unsigned int pos, int basicStep, int stepSize=1);
-      
+      void mouseMove(QMouseEvent* event) override;
+
    signals:
       void newWidth(int);
       void ourDrumMapChanged(bool /*instrumentMap changed as well?*/);
 
    private slots:
       void midiNote(int pitch, int velo);
-      
+
    public slots:
       void mapChanged(int, int);
       void keyPressed(int, int);

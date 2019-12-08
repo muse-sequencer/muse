@@ -77,10 +77,13 @@ class CompactSlider : public SliderBase, public ScaleIf
                               };
       typedef int TextHighlightMode_t;
 
-  private:
       Q_PROPERTY( double lineStep READ lineStep WRITE setLineStep )
       Q_PROPERTY( double pageStep READ pageStep WRITE setPageStep )
       Q_PROPERTY( Qt::Orientation orientation READ orientation WRITE setOrientation )
+
+      Q_PROPERTY( QSize margins READ margins WRITE setMargins )
+      Q_PROPERTY( int xMargin READ xMargin WRITE setXMargin )
+      Q_PROPERTY( int yMargin READ yMargin WRITE setYMargin )
 
       Q_PROPERTY( QColor barColor READ barColor WRITE setBarColor )
       Q_PROPERTY( QColor slotColor READ slotColor WRITE setSlotColor )
@@ -90,7 +93,10 @@ class CompactSlider : public SliderBase, public ScaleIf
       Q_PROPERTY( QString valPrefix READ valPrefix WRITE setValPrefix )
       Q_PROPERTY( QString valSuffix READ valSuffix WRITE setValSuffix )
       Q_PROPERTY( QString specialValueText READ specialValueText WRITE setSpecialValueText )
+      Q_PROPERTY( QString offText READ offText WRITE setOffText )
+      Q_PROPERTY( int valueDecimals READ valueDecimals WRITE setValueDecimals )
       
+  private:
     QRect d_sliderRect;
     // Whether the mouse is currently over the thumb 'hit' space.
     bool _mouseOverThumb;
@@ -299,7 +305,13 @@ class CompactSlider : public SliderBase, public ScaleIf
     // Note setOff and SliderBase::setValue are also available.
     void setValueState(double v, bool off = false, ConversionMode mode = ConvertDefault);
     
+    QSize margins() const { return QSize(d_xMargin, d_yMargin); }
+    int xMargin() const { return d_xMargin; }
+    int yMargin() const { return d_yMargin; }
+    void setMargins(QSize);
     void setMargins(int x, int y);
+    void setXMargin(int x);
+    void setYMargin(int y);
 
     int thumbWidthMargin() const { return d_thumbWidthMargin; }
     void setThumbWidthMargin(int m) { d_thumbWidthMargin = m; update(); }

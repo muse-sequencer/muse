@@ -26,6 +26,7 @@
 #define __MIDISEQ_H__
 
 #include "thread.h"
+#include "timerdev.h"
 
 namespace MusECore {
 
@@ -34,7 +35,6 @@ class MidiPort;
 class MPEventList;
 class MTC;
 class SynthI;
-class Timer;
 
 //---------------------------------------------------------
 //   MidiSeq
@@ -65,6 +65,8 @@ class MidiSeq : public Thread {
       virtual void threadStop();
       virtual void threadStart(void*);
       signed int selectTimer();
+
+      Timer* getTimer() { return timer; }
       // Destroy timer if valid. Returns true if successful.
       bool deleteTimer();
       void addAlsaPollFd();

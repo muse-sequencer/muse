@@ -34,6 +34,7 @@
 #include <QResizeEvent>
 #include <QList>
 #include <QPair>
+#include <QToolTip>
 
 #include <stdio.h>
 #include <limits.h>
@@ -805,9 +806,11 @@ void DrumCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
       //---------------------------------------------------
 
       drawTickRaster(p, mr, rg, editor->raster(), false, false, false,
-                         MusEGlobal::config.midiCanvasBarColor, 
-                         MusEGlobal::config.midiCanvasBeatColor);
-      }
+                     Qt::red, // dummy color, not used
+                     MusEGlobal::config.midiCanvasBeatColor,
+                     MusEGlobal::config.midiCanvasFineColor,
+                     MusEGlobal::config.midiCanvasBarColor);
+}
 
 //---------------------------------------------------------
 //   drawTopItem
@@ -969,14 +972,14 @@ void DrumCanvas::cmd(int cmd)
                       if(spos < 0)
                         spos = 0;
                       MusECore::Pos p(spos,true);
-                      MusEGlobal::song->setPos(0, p, true, true, true);
+                      MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
                   }
                   break;
             case CMD_RIGHT:
                   {
                       int spos = MusEGlobal::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
                       MusECore::Pos p(spos,true);
-                      MusEGlobal::song->setPos(0, p, true, true, true);
+                      MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
                   }
                   break;
             case CMD_LEFT_NOSNAP:
@@ -986,13 +989,13 @@ void DrumCanvas::cmd(int cmd)
                   if (spos < 0)
                         spos = 0;
                   MusECore::Pos p(spos,true);
-                  MusEGlobal::song->setPos(0, p, true, true, true); //CDW
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true); //CDW
                   }
                   break;
             case CMD_RIGHT_NOSNAP:
                   {
                   MusECore::Pos p(pos[0] + editor->rasterStep(pos[0]), true);
-                  MusEGlobal::song->setPos(0, p, true, true, true); //CDW
+                  MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true); //CDW
                   }
                   break;
             }
@@ -1991,6 +1994,19 @@ void DrumCanvas::rebuildOurDrumMap()
                                                   // isn't the most elegant solution here. but it will
                                                   // never be an infinite recursion
   }
+}
+
+void DrumCanvas::mouseMove(QMouseEvent* event) {
+
+    EventCanvas::mouseMove(event);
+
+    if (_tool & (MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | MusEGui::CursorTool)) {
+        int pitch = drumEditor->get_instrument_map()[y2pitch(event->pos().y())].pitch;
+        if (track()->drummap()[pitch].name.isEmpty())
+            QToolTip::showText(event->globalPos(), MusECore::pitch2string(pitch));
+        else
+            QToolTip::showText(event->globalPos(), track()->drummap()[pitch].name);
+    }
 }
 
 } // namespace MusEGui

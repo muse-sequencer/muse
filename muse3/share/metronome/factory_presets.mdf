@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<muse version="1.0">
+  <metroAccPresets type="4" beats="4">
+    3, 0, 3, 0
+    0, 3, 0, 3
+    0, 0, 3, 0
+  </metroAccPresets>
+  <metroAccPresets type="4" beats="5">
+    3, 0, 0, 0, 0
+    3, 0, 3, 0, 0
+    0, 0, 3, 0, 0
+    0, 0, 0, 0, 3
+  </metroAccPresets>
+  <metroAccPresets type="4" beats="6">
+    3, 0, 3, 0, 3, 0
+    3, 0, 0, 3, 0, 0
+    0, 0, 3, 0, 0, 3
+    0, 0, 3, 0, 0, 0
+  </metroAccPresets>
+  <metroAccPresets type="4" beats="7">
+    3, 0, 0, 0, 0, 0, 0
+    3, 0, 3, 0, 3, 0, 0
+    3, 0, 0, 0, 3, 0, 0
+  </metroAccPresets>
+  <metroAccPresets type="4" beats="8">
+    3, 0, 0, 0, 3, 0, 0, 0
+    0, 0, 3, 0, 0, 0, 3, 0
+    3, 0, 3, 0, 3, 0, 3, 0
+    0, 3, 0, 3, 0, 3, 0, 3
+  </metroAccPresets>
+  <metroAccPresets type="4" beats="9">
+    3, 0, 0, 3, 0, 0, 3, 0, 0
+    0, 0, 3, 0, 0, 3, 0, 0, 3
+    3, 0, 0, 0, 0, 0, 0, 0, 0
+    3, 0, 0, 0, 0, 0, 3, 0, 0
+    3, 0, 3, 0, 3, 0, 3, 0, 0
+    0, 3, 0, 3, 0, 3, 0, 3, 0
+  </metroAccPresets>
+</muse>
+

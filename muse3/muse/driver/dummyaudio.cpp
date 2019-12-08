@@ -22,11 +22,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
+#include "muse_math.h"
 #include <errno.h>
 #include <stdarg.h>
 #include <pthread.h>
+#ifndef _WIN32
 #include <sys/poll.h>
+#endif
 #include <sys/time.h>
 #include <unistd.h>
 
@@ -35,7 +37,7 @@
 #include "audiodev.h"
 #include "globals.h"
 #include "song.h"
-#include "driver/alsatimer.h"
+// #include "driver/alsatimer.h"
 #include "pos.h"
 #include "gconfig.h"
 #include "large_int.h"
@@ -66,7 +68,9 @@ class DummyAudioDevice : public AudioDevice {
    public:
       // Time in microseconds at which the driver was created.
       uint64_t _start_timeUS;
-      
+
+      virtual const char* driverName() const { return "DummyAudioDevice"; }
+
       // For callback usage only.
       void setCriticalVariables(unsigned segmentSize)
       {
@@ -177,7 +181,7 @@ class DummyAudioDevice : public AudioDevice {
       virtual int realtimePriority() const { return _realTimePriority; }
 
       virtual void setFreewheel(bool) {}
-      virtual int setMaster(bool) { return 1; }
+      virtual int setMaster(bool, bool /*unconditional*/ = false) { return 1; }
       };
 
 DummyAudioDevice* dummyAudio = 0;
@@ -194,12 +198,21 @@ DummyAudioDevice::DummyAudioDevice() : AudioDevice()
       // REMOVE Tim. samplerate. Added.
       MusEGlobal::projectSampleRate = MusEGlobal::sampleRate;
       
+#ifdef _WIN32
+  buffer = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
+  if(buffer == NULL)
+  {
+      fprintf(stderr, "ERROR: DummyAudioDevice ctor: _aligned_malloc returned error: NULL. Aborting!\n");
+      abort();
+  }
+#else
       int rv = posix_memalign((void**)&buffer, 16, sizeof(float) * MusEGlobal::segmentSize);
       if(rv != 0)
       {
         fprintf(stderr, "ERROR: DummyAudioDevice ctor: posix_memalign returned error:%d. Aborting!\n", rv);
         abort();
       }
+#endif
       if(MusEGlobal::config.useDenormalBias)
       {
         for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)

@@ -75,11 +75,15 @@ struct FifoBuffer {
       MuseCount_t maxSize;
       MuseCount_t pos;
       int segs;
+      float latency;
 
       FifoBuffer() {
             buffer  = 0;
             size    = 0;
             maxSize = 0;
+            pos     = 0;
+            segs    = 0;
+            latency = 0.0f;
             }
       };
 
@@ -94,12 +98,14 @@ class Fifo {
       Fifo();
       ~Fifo();
       void clear();
-      bool put(int, MuseCount_t, float** buffer, MuseCount_t pos);
+      bool put(int segs, MuseCount_t samples, float** buffer, MuseCount_t pos, float latency);
       bool getWriteBuffer(int, MuseCount_t, float** buffer, MuseCount_t pos);
       void add();
-      bool get(int, MuseCount_t, float** buffer, MuseCount_t* pos);
+      bool peek(int segs, MuseCount_t samples, float** buffer, MuseCount_t* pos = 0, float* latency = 0); // const;
+      bool get(int segs, MuseCount_t samples, float** buffer, MuseCount_t* pos = 0, float* latency = 0);
       void remove();
       int getCount();
+      int getEmptyCount();
       bool isEmpty();
       };
   

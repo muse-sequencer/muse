@@ -51,3 +51,19 @@ QToolBar QToolButton:checked {
       padding: 2px;
 
 }
+
+QToolBar QToolButton[popupMode="1"] {
+      padding-right: 12px;
+}
+
+QTreeView, QListView {
+	alternate-background-color: rgb(127,127,137);
+}
+
+MusEGui--RouteTreeWidget {
+	qproperty-categoryColor: DarkCyan;
+}
+
+MusEGui--SnooperDialog {
+	qproperty-flashColor: DarkCyan;
+}

@@ -41,7 +41,7 @@ namespace MusEGui {
 SigScale::SigScale(int* r, QWidget* parent, int xs)
    : View(parent, xs, 1)
       {
-      setToolTip(tr("signature scale"));
+      setToolTip(tr("Signature scale"));
       raster = r;
       pos[0] = MusEGlobal::song->cpos();
       pos[1] = MusEGlobal::song->lpos();
@@ -96,25 +96,27 @@ void SigScale::viewMouseMoveEvent(QMouseEvent* event)
         x = 0;
       x = MusEGlobal::sigmap.raster(x, *raster);
       emit timeChanged(x);
-      int i;
+
+      MusECore::Song::POSTYPE posType;
+
       switch (button) {
             case Qt::LeftButton:
-                  i = 0;
+                  posType = MusECore::Song::CPOS;
                   break;
             case Qt::MidButton:
-                  i = 1;
+                  posType = MusECore::Song::LPOS;
                   break;
             case Qt::RightButton:
                   if ((MusEGlobal::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
-                      i = 1;
+                      posType = MusECore::Song::LPOS;
                   else
-                      i = 2;
+                      posType = MusECore::Song::RPOS;
                   break;
             default:
                   return;
             }
       MusECore::Pos p(x, true);
-      MusEGlobal::song->setPos(i, p);
+      MusEGlobal::song->setPos(posType, p);
       }
 
 //---------------------------------------------------------
@@ -139,6 +141,7 @@ void SigScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
       if (x < 0)
             x = 0;
       p.setFont(MusEGlobal::config.fonts[3]);
+      p.setPen(Qt::black);
       for (MusECore::ciSigEvent si = MusEGlobal::sigmap.begin(); si != MusEGlobal::sigmap.end(); ++si) {
             MusECore::SigEvent* e = si->second;
             int xp = mapx(e->tick);

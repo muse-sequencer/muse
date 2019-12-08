@@ -29,20 +29,18 @@
 #include "sync.h"
 #include "route.h"
 #include "mpevent.h"
-#include "lock_free_buffer.h"
 #include "mididev.h"
+#include "minstrument.h"
 
 class QString;
 
 namespace MusECore {
 
-class MidiDevice;
 class Part;
 class MidiController;
 class MidiControllerList;
 class MidiCtrlValListList;
 class MidiCtrlValList;
-class MidiInstrument;
 
 //---------------------------------------------------------
 //   MidiPort
@@ -70,6 +68,15 @@ class MidiPort {
       MidiDevice* _device;
       QString _state;               // result of device open
       MidiInstrument* _instrument;
+      // A corresponding synth track's index in the song file, if used. Can be -1.
+      // Temporary during loading to avoid using globally or locally
+      //  'unique' identifiers in the song file, such as the serial,
+      //  to resolve references.
+      int _tmpTrackIdx;
+      // Temporary during loading. String ref to an instrument.
+      // It also helps support older files where only a string was used.
+      QString _tmpInstrRef;
+
       AutomationType _automationType[MusECore::MUSE_MIDI_CHANNELS];
       // Holds sync settings and detection monitors.
       MidiSyncInfo _syncInfo;
@@ -82,8 +89,6 @@ class MidiPort {
       //  something about the port changes like device, Jack routes, or instrument.
       bool _initializationsSent; 
 
-      static LockFreeMPSCRingBuffer<MidiPlayEvent> *_eventBuffers;
-
       RouteList _inRoutes, _outRoutes;
       
       void clearDevice();
@@ -93,15 +98,15 @@ class MidiPort {
       // To be called by gui thread only.
       bool createController(int chan, int ctrl);
 
-      // To be called from audio thread only. Returns true on success.
-      // If createAsNeeded is true, automatically send a message to the gui thread to
-      //  create items such as controllers, and cache the events sent to it and re-put
-      //  them after the controller has been created.
-      bool handleGui2AudioEvent(const MidiPlayEvent&, bool createAsNeeded);
-
    public:
       MidiPort();
       ~MidiPort();
+
+      // Temporary, used during loading to resolve references to instruments.
+      void setTmpFileRefs(int i, const QString& s) { _tmpTrackIdx = i; _tmpInstrRef = s; }
+      void clearTmpFileRefs() { _tmpTrackIdx = -1; _tmpInstrRef = QString(); }
+      int tmpTrackRef() const { return _tmpTrackIdx; }
+      const QString& tmpInstrRef() const { return _tmpInstrRef; }
 
       //
       // manipulate active midi controller
@@ -145,7 +150,8 @@ class MidiPort {
       MidiDevice* device() const                { return _device; }
       const QString& state() const              { return _state; }
       void setState(const QString& s)           { _state = s; }
-      void setMidiDevice(MidiDevice* dev);
+      // If instrument is given it will be set, otherwise it won't touch the existing instrument.
+      void setMidiDevice(MidiDevice* dev, MidiInstrument* instrument = nullptr);
       const QString& portname() const;
       MidiInstrument* instrument() const   { return _instrument; }
       void setInstrument(MidiInstrument* i) { _instrument = i; }
@@ -221,11 +227,11 @@ class MidiPort {
 // TODO: An increment method seems possible: Wait for gui2audio to increment, then send to driver,
 //        which incurs up to one extra segment delay (if Jack midi).
       bool putControllerValue(int port, int chan, int ctlnum, double val, bool isDb);
-      // Process the gui2AudioFifo. Called from audio thread only.
-      static bool processGui2AudioEvents();
-
-      // Various IPC FIFOs.
-      static LockFreeMPSCRingBuffer<MidiPlayEvent> *eventBuffers() { return _eventBuffers; } 
+      // To be called from audio thread only. Returns true on success.
+      // If createAsNeeded is true, automatically send a message to the gui thread to
+      //  create items such as controllers, and cache the events sent to it and re-put
+      //  them after the controller has been created.
+      bool handleGui2AudioEvent(const MidiPlayEvent&, bool createAsNeeded);
 
       bool sendHwCtrlState(const MidiPlayEvent&, bool forceSend = false );
       AutomationType automationType(int channel) { return _automationType[channel]; }

@@ -37,7 +37,7 @@ class QLineEdit;
 class QComboBox;
 
 namespace MusECore {
-class SigEvent;
+struct SigEvent;
 };
 
 namespace MusEGui {
@@ -136,6 +136,7 @@ class LMaster : public MidiEditor {
       enum { CMD_DELETE, CMD_INSERT_SIG, CMD_INSERT_TEMPO, CMD_EDIT_BEAT, CMD_EDIT_VALUE, CMD_INSERT_KEY };
 
       
+      virtual void keyPressEvent(QKeyEvent*);
       virtual void closeEvent(QCloseEvent*);
       void updateList();
       void insertTempo(const MusECore::TEvent*);

@@ -20,6 +20,10 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
+#ifndef _MUSE_CONFIG_H_
+#define _MUSE_CONFIG_H_
+
+#cmakedefine POSIX_TIMER_SUPPORT
 #cmakedefine ALSA_SUPPORT
 #cmakedefine HAVE_RTAUDIO
 #cmakedefine DSSI_ALSA_COMPAT_SUPPORT
@@ -28,6 +32,9 @@
 #cmakedefine OSC_SUPPORT
 #cmakedefine DSSI_SUPPORT
 #cmakedefine LV2_SUPPORT
+#cmakedefine LV2_MAKE_PATH_SUPPORT
+#cmakedefine PYTHON_SUPPORT
+#cmakedefine MIDNAM_SUPPORT
 #cmakedefine HAVE_INSTPATCH
 #cmakedefine HAVE_GTK2
 #cmakedefine VST_SUPPORT
@@ -36,11 +43,21 @@
 #cmakedefine USE_SSE
 #cmakedefine RUBBERBAND_SUPPORT
 #cmakedefine ZITA_RESAMPLER_SUPPORT
+#cmakedefine HAVE_EXP10
+#cmakedefine HAVE_EXP10F
+#cmakedefine HAVE_EXP10L
+// #cmakedefine HAVE_M_PI
 
-#define VERSION          "${MusE_VERSION_FULL}"
-#define GITSTRING        "${MusE_GITSTRING}"
-#define PACKAGE_NAME     "MusE"
-#define DOCDIR           "${MusE_DOC_DIR}"
-#define SHAREDIR         "${MusE_SHARE_DIR}"
-#define LIBDIR           "${MusE_LIB_DIR}"
-#define BINDIR           "${MusE_BIN_DIR}"
+#define VERSION             "${MusE_VERSION_FULL}"
+#define GITSTRING           "${MusE_GITSTRING}"
+#define ORGANIZATION_NAME   "MusE"
+#define ORGANIZATION_DOMAIN "muse-sequencer.org"
+#define PACKAGE_NAME        "MusE"
+#define APP_DISPLAY_NAME    "MusE"
+#define APP_DESCRIPTION     "MusE: Linux Music Editor"
+#define DOCDIR              "${MusE_DOC_DIR}"
+#define SHAREDIR            "${MusE_SHARE_DIR}"
+#define LIBDIR              "${MusE_LIB_DIR}"
+#define BINDIR              "${MusE_BIN_DIR}"
+
+#endif // _MUSE_CONFIG_H_

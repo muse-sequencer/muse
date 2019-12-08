@@ -24,11 +24,11 @@
 #define __COMBOBOX_H__
 
 #include <QToolButton>
+#include <QAction>
 
 #include "ttoolbutton.h"
 
 class QMenu;
-class QSignalMapper;
 class QIcon;
 
 namespace MusEGui {
@@ -40,20 +40,21 @@ namespace MusEGui {
 class ComboBox : public QToolButton {
       Q_OBJECT
 
-      int _currentItem;
+      QAction* _currentItem;
       QList<int> itemlist;
 
       QMenu* menu;
       virtual void mousePressEvent(QMouseEvent*);
       virtual void wheelEvent(QWheelEvent*);
 
-      QSignalMapper* autoTypeSignalMapper;
+      QAction* findAction(int id) const;
 
    private slots:
-      void activatedIntern(int id);
+      void activatedIntern(QAction*);
 
    signals:
       void activated(int id);
+      void activated(QAction*);
 
    public:
       ComboBox(QWidget* parent = 0, const char* name = 0);
@@ -69,20 +70,21 @@ class ComboBox : public QToolButton {
 class CompactComboBox : public CompactToolButton {
       Q_OBJECT
 
-      int _currentItem;
+      QAction* _currentItem;
       QList<int> itemlist;
 
       QMenu* menu;
       virtual void mousePressEvent(QMouseEvent*);
       virtual void wheelEvent(QWheelEvent*);
 
-      QSignalMapper* autoTypeSignalMapper;
+      QAction* findAction(int id) const;
 
    private slots:
-      void activatedIntern(int id);
+      void activatedIntern(QAction*);
 
    signals:
       void activated(int id);
+      void activated(QAction*);
 
    public:
       CompactComboBox(QWidget* parent = 0, const QIcon& icon = QIcon(), const char* name = 0);

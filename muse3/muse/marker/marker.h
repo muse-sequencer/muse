@@ -27,6 +27,7 @@
 
 #include "xml.h"
 #include "pos.h"
+#include "mixed_pos_list.h"
 
 class QString;
 

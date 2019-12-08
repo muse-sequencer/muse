@@ -23,7 +23,6 @@
 
 #include "view.h"
 #include "gconfig.h"
-#include <cmath>
 #include <stdio.h>
 #include <QPainter>
 #include <QPixmap>
@@ -33,9 +32,10 @@
 #include <QKeyEvent>
 #include <QPaintEvent>
 #include <QRegion>
+#include <QVector>
 #include "tempo.h"
 
-#include "math.h"
+#include "muse_math.h"
 
 #include "sig.h"  
 
@@ -408,16 +408,17 @@ void View::paint(const QRect& r, const QRegion& rg)
       #endif
 
 // For testing...
-//       const int rg_sz = rg.rectCount();
+//       const QVector<QRect> rects = rg.rects();
+//       const int rg_sz = rects.size();
 //       int rg_r_cnt = 0;
 //       fprintf(stderr, "View::paint: virt:%d rect: x:%d y:%d w:%d h:%d region rect count:%d\n",
 //               virt(), r.x(), r.y(), r.width(), r.height(), rg_sz);
-//       for(QRegion::const_iterator i = rg.begin(); i != rg.end(); ++i, ++rg_r_cnt)
+//       for(int i = 0; i < rg_sz; ++i, ++rg_r_cnt)
 //       {
-//         const QRect& rg_r = *i;
+//         const QRect& rg_r = rects.at(i);
 //         fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
-//       }
-      
+//       }   
+
       p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::HighQualityAntialiasing, false);
       
       if (bgPixmap.isNull())
@@ -431,8 +432,8 @@ void View::paint(const QRect& r, const QRegion& rg)
       //printf("View::paint r.x:%d w:%d\n", rr.x(), rr.width());
       pdraw(p, rr, rg);       // draw into pixmap
 
-      p.resetMatrix();      // Q3 support says use resetMatrix instead, but resetMatrix advises resetTransform instead...
-      //p.resetTransform();
+      //p.resetMatrix();      // Q3 support says use resetMatrix instead, but resetMatrix advises resetTransform instead...
+      p.resetTransform();     // resetMatrix() is deprecated in Qt 5.13
       
       drawOverlay(p, r, rg);
       }
@@ -580,8 +581,8 @@ void View::pdraw(QPainter& p, const QRect& r, const QRegion& rg)
 
 void View::setPainter(QPainter& p)
       {
-      p.resetMatrix();      // Q3 support says use resetMatrix instead, but resetMatrix advises resetTransform instead...
-      //p.resetTransform();
+      //p.resetMatrix();      // Q3 support says use resetMatrix instead, but resetMatrix advises resetTransform instead...
+      p.resetTransform();     // resetMatrix() is deprecated in Qt 5.13
       
       p.translate( -(double(xpos) + rmapx_f(xorg)) , -(double(ypos) + rmapy(yorg)));
       double xMag = (xmag < 0) ? 1.0/double(-xmag) : double(xmag);
@@ -754,6 +755,8 @@ void View::drawTickRaster(
   bool drawText,
   const QColor& bar_color,
   const QColor& beat_color,
+  const QColor& fine_color,
+  const QColor& coarse_color,
   const QColor& text_color,
   const QFont& large_font,
   const QFont& small_font
@@ -800,10 +803,13 @@ void View::drawTickRaster(
 //       fprintf(stderr, "View::drawTickRaster_new(): virt:%d drawText:%d mx:%d my:%d mw:%d mh:%draster%d\n",
 //               virt(), drawText, mx, my, mw, mh, raster);  
       
-      const double rast_mapx = rmapx_f(raster);
       int qq = raster;
       int qq_shift = 1;
       
+      double rast_mapx = rmapx_f(raster);
+      // NOTE: had to add this 4.0 magic value to draw the restart closer to how it used to be
+      //       without it not every point where you can put a note would have a line on many zoom levels
+      rast_mapx = rast_mapx * 4.0;
       // grid too dense?
       if (rast_mapx <= 0.01)
       {
@@ -933,10 +939,18 @@ void View::drawTickRaster(
                   const ViewXCoordinate x_sm(tick_sm, false);
                   const int mx_sm = asMapped(x_sm)._value;
                   
-                  if(drawText)
+                  if(drawText) {
                     pen.setColor(text_color);
-                  else
-                    pen.setColor(bar_color);
+                  } else {
+
+                    ScaleRetStruct scale_info_text_lines = scale(true, bar, tpix);
+                    if (scale_info_text_lines._drawBar) {
+                      // highlight lines drawn with text
+                      pen.setColor(coarse_color);
+                    } else {
+                      pen.setColor(bar_color);
+                    }
+                  }
                   p.setPen(pen);
                   
                   if(scale_info._drawBar)
@@ -954,8 +968,6 @@ void View::drawTickRaster(
 //                             mx_sm, my, mx_sm, mbottom);
                       
                       p.drawLine(mx_sm, my, mx_sm, mbottom);
-                      
-                      //p.drawLine(x_small, 0, x_small, height());
                     }
                   }
                   
@@ -968,7 +980,7 @@ void View::drawTickRaster(
             if(!drawText && !scale_info._isSmall)
             {
               if (raster>=4) {
-                          pen.setColor(Qt::darkGray);
+                          pen.setColor(fine_color);
                           p.setPen(pen);
                           rast_xb = MusEGlobal::sigmap.bar2tick(bar, 0, 0);
                           MusEGlobal::sigmap.timesig(rast_xb, rast_z, rast_n);
@@ -1092,8 +1104,15 @@ QPoint View::mapDev(const QPoint& r) const
 
 void View::mapDev(const QRegion& rg_in, QRegion& rg_out) const
 {
+#if QT_VERSION >= 0x050800
   for(QRegion::const_iterator i = rg_in.begin(); i != rg_in.end(); ++i)
     rg_out += mapDev(*i);
+#else  
+  const QVector<QRect> rects = rg_in.rects();
+  const int sz = rects.size();
+  for(int i = 0; i < sz; ++i)
+    rg_out += mapDev(rects.at(i));
+#endif
 }
 
 #if 0
@@ -1230,8 +1249,15 @@ QPoint View::map(const QPoint& p) const
 
 void View::map(const QRegion& rg_in, QRegion& rg_out) const
 {
+#if QT_VERSION >= 0x050800
   for(QRegion::const_iterator i = rg_in.begin(); i != rg_in.end(); ++i)
     rg_out += map(*i);
+#else  
+  const QVector<QRect> rects = rg_in.rects();
+  const int sz = rects.size();
+  for(int i = 0; i < sz; ++i)
+    rg_out += map(rects.at(i));
+#endif
 }
       
 int View::mapx(int x) const

@@ -32,7 +32,7 @@
 #include <QString>
 
 #include <ladspa.h>
-#include <math.h>
+#include "muse_math.h"
 
 #include "globaldefs.h"
 #include "plugin_cache_reader.h"
@@ -530,7 +530,7 @@ class PluginList : public std::list<Plugin*> {
       ~PluginList();
       };
 
-extern void SS_initPlugins(const QString& hostConfigPath);
+extern void SS_initPlugins(const QString& hostCachePath);
 extern PluginList plugins;
 
 } // namespace MusESimplePlugin

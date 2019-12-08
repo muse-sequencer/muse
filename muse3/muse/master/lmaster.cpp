@@ -40,7 +40,6 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QSignalMapper>
 #include <QStyle>
 #include <QToolBar>
 #include <QToolButton>
@@ -117,6 +116,22 @@ QString keyToString(key_enum key)
 namespace MusEGui {
 
 //---------------------------------------------------------
+//   keyPressEvent
+//---------------------------------------------------------
+
+void LMaster::keyPressEvent(QKeyEvent* e)
+{
+    if (e->key() == Qt::Key_Escape) {
+          close();
+          return;
+          }
+    else {
+        e->ignore();
+        return;
+    }
+}
+
+//---------------------------------------------------------
 //   closeEvent
 //---------------------------------------------------------
 
@@ -137,7 +152,7 @@ void LMaster::songChanged(MusECore::SongChangedStruct_t type)
       if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
       
-      if (type._flags & (SC_SIG | SC_TEMPO | SC_KEY ))
+      if (type & (SC_SIG | SC_TEMPO | SC_KEY ))
             updateList();
       }
 
@@ -168,7 +183,6 @@ LMaster::LMaster(QWidget* parent, const char* name)
 
       //---------Pulldown Menu----------------------------
       menuEdit = menuBar()->addMenu(tr("&Edit"));
-      QSignalMapper *signalMapper = new QSignalMapper(this);
       menuEdit->addActions(MusEGlobal::undoRedo->actions());
       menuEdit->addSeparator();
       tempoAction = menuEdit->addAction(tr("Insert Tempo"));
@@ -179,28 +193,20 @@ LMaster::LMaster(QWidget* parent, const char* name)
       delAction = menuEdit->addAction(tr("Delete Event"));
       delAction->setShortcut(Qt::Key_Delete);
 
-      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
 
+      connect(tempoAction, &QAction::triggered, [this]() { cmd(CMD_INSERT_TEMPO); } );
+      connect(signAction,  &QAction::triggered, [this]() { cmd(CMD_INSERT_SIG); } );
+      connect(keyAction,   &QAction::triggered, [this]() { cmd(CMD_INSERT_KEY); } );
+      connect(posAction,   &QAction::triggered, [this]() { cmd(CMD_EDIT_BEAT); } );
+      connect(valAction,   &QAction::triggered, [this]() { cmd(CMD_EDIT_VALUE); } );
+      connect(delAction,   &QAction::triggered, [this]() { cmd(CMD_DELETE); } );
       
-      connect(tempoAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(signAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(keyAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(posAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(valAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(delAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-
-      signalMapper->setMapping(tempoAction, CMD_INSERT_TEMPO);
-      signalMapper->setMapping(signAction, CMD_INSERT_SIG);
-      signalMapper->setMapping(keyAction, CMD_INSERT_KEY);
-      signalMapper->setMapping(posAction, CMD_EDIT_BEAT);
-      signalMapper->setMapping(valAction, CMD_EDIT_VALUE);
-      signalMapper->setMapping(delAction, CMD_DELETE);
-
-      connect(signalMapper, SIGNAL(mapped(int)), SLOT(cmd(int)));
-
+      
+      
       // Toolbars ---------------------------------------------------------
       
       // NOTICE: Please ensure that any tool bar object names here match the names assigned 
@@ -223,9 +229,9 @@ LMaster::LMaster(QWidget* parent, const char* name)
       tempoButton->setText(tr("Tempo"));
       timeSigButton->setText(tr("Timesig"));
       keyButton->setText(tr("Key"));
-      tempoButton->setToolTip(tr("new tempo"));
-      timeSigButton->setToolTip(tr("new signature"));
-      keyButton->setToolTip(tr("new key"));
+      tempoButton->setToolTip(tr("New tempo"));
+      timeSigButton->setToolTip(tr("New signature"));
+      keyButton->setToolTip(tr("New key"));
       edit->addWidget(tempoButton);
       edit->addWidget(timeSigButton);
       edit->addWidget(keyButton);
@@ -597,7 +603,12 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
       emit seekTo(((LMasterLViewItem*) i)->tick());
 
       QFontMetrics fm(font());
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      int fnt_w = fm.horizontalAdvance('0');
+#else
       int fnt_w = fm.width('0');
+#endif
       if (!editedItem && editorColumn == LMASTER_VAL_COL) {
             editedItem = (LMasterLViewItem*) i;
             QRect itemRect = view->visualItemRect(editedItem);

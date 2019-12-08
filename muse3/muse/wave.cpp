@@ -24,7 +24,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
-#include <cmath>
+#include "muse_math.h"
 #include <samplerate.h>
 
 #include <QDateTime>
@@ -682,10 +682,10 @@ void SndFile::createCache(const QString& path, bool showProgress, bool bWrite, s
       return;
    QProgressDialog* progress = NULL;
    if (showProgress) {
-      QString label(QWidget::tr("create peakfile for "));
+      QString label(QWidget::tr("Create peakfile for "));
       label += basename();
       progress = new QProgressDialog(label,
-                                     QString::null, 0, csize, 0);
+                                     QString(), 0, csize, 0);
       progress->setMinimumDuration(0);
       progress->show();
    }
@@ -2221,7 +2221,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       //  whether master is on/off, because we may be able to use the flag to determine
       //  whether to record external tempos at all, because we may want a switch for it!
       bool master_was_on = MusEGlobal::tempomap.masterFlag();
-      if(MusEGlobal::extSyncFlag.value() && !master_was_on)
+      if(MusEGlobal::extSyncFlag && !master_was_on)
         MusEGlobal::tempomap.setMasterFlag(0, true);
 
       if((MusEGlobal::audio->loopCount() > 0 && s.tick() > lPos().tick()) || (punchin() && s.tick() < lPos().tick()))
@@ -2244,7 +2244,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
           INFO_WAVE(stderr, "Song::cmdAddRecordedWave: remove file %s - startframe=%d endframe=%d\n", st.toLocal8Bit().constData(), s.frame(), e.frame());
 
         // Restore master flag.
-        if(MusEGlobal::extSyncFlag.value() && !master_was_on)
+        if(MusEGlobal::extSyncFlag && !master_was_on)
           MusEGlobal::tempomap.setMasterFlag(0, false);
 
         return;
@@ -2260,7 +2260,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       unsigned eframe = e.frame();
 
       // Done using master tempo map. Restore master flag.
-      if(MusEGlobal::extSyncFlag.value() && !master_was_on)
+      if(MusEGlobal::extSyncFlag && !master_was_on)
         MusEGlobal::tempomap.setMasterFlag(0, false);
 
       f->update();
@@ -2372,8 +2372,7 @@ void MusE::importWave()
       if(!track)
       {
          QMessageBox::critical(this, QString("MusE"),
-                 tr("to import an audio file you have first to select"
-                 "a wave track"));
+                 tr("To import an audio file you have first to select a wave track"));
                return;
 
       }
@@ -2430,7 +2429,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
                                   "File will be resampled from %1 to %2 Hz.\n"
                                   "Do you still want to import it?").arg(f->samplerate()).arg(MusEGlobal::sampleRate),
                                tr("&Yes"), tr("&No"),
-                               QString::null, 0, 1 ))
+                               QString(), 0, 1 ))
       {
          return true; // this removed f from the stack, dropping refcount maybe to zero and maybe deleting the thing
       }

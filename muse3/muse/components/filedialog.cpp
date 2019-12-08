@@ -35,6 +35,12 @@
 #include "gconfig.h"
 #include "helper.h"
 
+// In response to github issue 646 "Select Directory" dialogs freezes MusE:
+// A fix for this bug: QFileDialog freezes with a Gnome environment:
+// https://bugreports.qt.io/browse/QTBUG-59184?page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel&showAll=true
+// According to the report, a user said he fixed it by NOT supplying a parent. So here we go, until further notice:
+#define MUSE_FILEDIALOG_NO_PARENT
+
 namespace MusEGui {
 
 MFileDialog::ViewType MFileDialog::lastViewUsed = GLOBAL_VIEW;
@@ -88,7 +94,7 @@ static bool testDirCreate(QWidget* parent, const QString& path)
           {
             QMessageBox::critical(parent,
                 QWidget::tr("MusE: create directory"),
-                QWidget::tr("creating dir failed"));
+                QWidget::tr("Creating dir failed"));
             return true;
           }
       }
@@ -205,8 +211,20 @@ void MFileDialog::fileChanged(const QString& path)
 //---------------------------------------------------------
 
 MFileDialog::MFileDialog(const QString& dir,
-   const QString& filter, QWidget* parent, bool writeFlag)
-  : QFileDialog(parent, QString(), QString("."), filter)
+   const QString& filter, QWidget*
+#ifdef MUSE_FILEDIALOG_NO_PARENT
+   /*parent*/,
+#else
+   parent,
+#endif
+   bool writeFlag)
+  : QFileDialog(
+#ifdef MUSE_FILEDIALOG_NO_PARENT
+    nullptr,
+#else
+    parent,
+#endif
+    QString(), QString("."), filter)
       {
       setOption(QFileDialog::DontUseNativeDialog);
       readMidiPortsSaved = true;
@@ -329,11 +347,12 @@ void MFileDialog::directoryChanged(const QString&)
 //   getOpenFileName
 //---------------------------------------------------------
 QString getOpenFileName(const QString &startWith, const char** filters_chararray,
-            QWidget* parent, const QString& name, bool* doReadMidiPorts, MFileDialog::ViewType viewType)
+    QWidget* parent, const QString& name, bool* doReadMidiPorts, MFileDialog::ViewType viewType)
       {
       QStringList filters = localizedStringListFromCharArray(filters_chararray, "file_patterns");
 
-      MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, false);
+      MFileDialog *dlg = new MFileDialog(startWith, QString(), parent, false);
+
       dlg->setNameFilters(filters);
       dlg->setWindowTitle(name);
       if (doReadMidiPorts)
@@ -365,11 +384,13 @@ QString getOpenFileName(const QString &startWith, const char** filters_chararray
 //---------------------------------------------------------
 
 QString getSaveFileName(const QString &startWith,
-   const char** filters_chararray, QWidget* parent, const QString& name, bool* writeWinState)
+   const char** filters_chararray, QWidget* parent,
+   const QString& name, bool* writeWinState)
       {
       QStringList filters = localizedStringListFromCharArray(filters_chararray, "file_patterns");
 
-      MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, true);
+      MFileDialog *dlg = new MFileDialog(startWith, QString(), parent, true);
+
       dlg->setNameFilters(filters);
       dlg->setWindowTitle(name);
       dlg->setFileMode(QFileDialog::AnyFile);
@@ -454,8 +475,7 @@ QString getImageFileName(const QString& startWith,
                   initialSelection = fi.absoluteFilePath();
                   }
             }
-      MFileDialog *dlg = new MFileDialog(*workingDirectory, QString::null,
-         parent);
+      MFileDialog *dlg = new MFileDialog(*workingDirectory, QString(), parent);
 
       /* ORCAN - disable preview for now. It is not available in qt4. We will
                  need to implement it ourselves.

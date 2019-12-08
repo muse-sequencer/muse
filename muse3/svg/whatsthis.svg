@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g stroke="#000">
+  <g>
+   <path d="m22.515 44.202 9.7766-3.1798-26.652-30.83-0.030657 39.661 10.689-3.6331" fill="none" stroke-width="3"/>
+   <path d="m51.945 30.522h-10.28v-1.3953q0-2.335 0.93969-4.1289 0.93969-1.8224 3.9581-4.613l1.8224-1.6516q1.6231-1.4807 2.3635-2.7906 0.76884-1.3099 0.76884-2.6197 0-1.9933-1.3668-3.1038-1.3668-1.139-3.8157-1.139-2.3065 0-4.9832 0.96817-2.6767 0.93969-5.5812 2.8191v-8.9413q3.4455-1.196 6.2931-1.7655 2.8475-0.56951 5.4958-0.56951 6.948 0 10.593 2.8475 3.6449 2.8191 3.6449 8.2579 0 2.7906-1.1105 5.0117-1.1105 2.1926-3.7872 4.7269l-1.8224 1.6231q-1.9363 1.7655-2.5343 2.8475-0.59798 1.0536-0.59798 2.335zm-10.28 4.2144h10.28v10.137h-10.28z" fill="#3686ff" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal"/>
+   <path d="m15 47 4 12 9-3-4-12" fill="none" stroke-width="3"/>
+  </g>
+  <path d="m17.983 51.004c-1.114-3.321-2.0709-6.0846-2.1265-6.1413-0.05558-0.05678-2.0051 0.54459-4.3323 1.3364-2.3272 0.79178-4.2469 1.424-4.266 1.4048-0.019113-0.01911-0.020481-7.4782-0.00304-16.576l0.031711-16.541 11.106 12.846c6.1084 7.0651 11.058 12.889 11 12.943-0.0584 0.0534-1.7093 0.61523-3.6687 1.2485-1.9594 0.63328-3.601 1.1886-3.6482 1.2341-0.04711 0.04547 0.81564 2.803 1.9172 6.1279s1.9558 6.0882 1.8982 6.1406c-0.0576 0.05245-1.3422 0.50442-2.8547 1.0044-1.5125 0.49996-2.8127 0.93194-2.8893 0.95997-0.08548 0.03128-0.92148-2.281-2.1647-5.9872z" fill="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width=".375" style="paint-order:stroke fill markers"/>
+ </g>
+</svg>

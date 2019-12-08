@@ -25,23 +25,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <dlfcn.h>
-#include <cmath>
 #include <string>
-#include <math.h>
+#include "muse_math.h"
 #include <sys/stat.h>
 
 #include <QGridLayout>
 #include <QLabel>
-#include <QScrollArea>
-#include <QTimer>
-#include <QComboBox>
 #include <QWhatsThis>
-#include <QSignalMapper>
 #include <QToolBar>
 #include <QMessageBox>
-#include <QShowEvent>
-#include <QHideEvent>
-#include <QEvent>
+#include <QByteArray>
+#include <QToolButton>
 
 #include "globals.h"
 #include "globaldefs.h"
@@ -60,6 +54,7 @@
 #include "meter.h"
 #include "utils.h"
 #include "pluglist.h"
+#include "gui.h"
 
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
@@ -73,6 +68,10 @@
 #include "al/dsp.h"
 
 #include "muse_math.h"
+
+#ifdef _WIN32
+#define S_ISLNK(X) 0
+#endif
 
 // Turn on debugging messages.
 //#define PLUGIN_DEBUGIN
@@ -618,6 +617,87 @@ void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, flo
       }
 
 
+//==============================================================
+//   BEGIN PluginQuirks
+//==============================================================
+
+//---------------------------------------------------------
+//   write
+//---------------------------------------------------------
+
+void PluginQuirks::write(int level, Xml& xml) const
+      {
+      // Defaults? Nothing to save.
+      if(!_fixedSpeed && !_transportAffectsAudioLatency && !_overrideReportedLatency
+              && _latencyOverrideValue == 0 && _fixNativeUIScaling == NatUISCaling::GLOBAL)
+        return;
+
+      xml.tag(level++, "quirks");
+
+      if(_fixedSpeed)
+        xml.intTag(level, "fixedSpeed", _fixedSpeed);
+
+      if(_transportAffectsAudioLatency)
+        xml.intTag(level, "trnspAffAudLat", _transportAffectsAudioLatency);
+
+      if(_overrideReportedLatency)
+        xml.intTag(level, "ovrRepAudLat", _overrideReportedLatency);
+
+      if(_latencyOverrideValue != 0)
+        xml.intTag(level, "latOvrVal", _latencyOverrideValue);
+
+      if(_fixNativeUIScaling != NatUISCaling::GLOBAL)
+        xml.intTag(level, "fixNatUIScal", _fixNativeUIScaling);
+
+      xml.etag(--level, "quirks");
+      }
+
+//---------------------------------------------------------
+//   read
+//    return true on error
+//---------------------------------------------------------
+
+bool PluginQuirks::read(Xml& xml)
+      {
+      for (;;) {
+            Xml::Token token(xml.parse());
+            const QString& tag(xml.s1());
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return true;
+                  case Xml::TagStart:
+                        if (tag == "fixedSpeed")
+                              _fixedSpeed = xml.parseInt();
+                        else if (tag == "trnspAffAudLat")
+                              _transportAffectsAudioLatency = xml.parseInt();
+                        else if (tag == "ovrRepAudLat")
+                              _overrideReportedLatency = xml.parseInt();
+                        else if (tag == "latOvrVal")
+                              _latencyOverrideValue = xml.parseInt();
+                        else if (tag == "fixNatUIScal")
+                              _fixNativeUIScaling = (NatUISCaling)xml.parseInt();
+                        else
+                              xml.unknown("PluginQuirks");
+                        break;
+                  case Xml::Attribut:
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "quirks") {
+                              return false;
+                              }
+                        return true;
+                  default:
+                        break;
+                  }
+            }
+      return true;
+      }
+
+//==============================================================
+//   END PluginQuirks
+//==============================================================
+
 
 
 //---------------------------------------------------------
@@ -634,6 +714,8 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDss
   _isVstNativePlugin = false;
   _isVstNativeSynth = false;
   _requiredFeatures = reqFeatures;
+  _usesTimePosition = false;
+
 
   #ifdef DSSI_SUPPORT
   dssi_descr = NULL;
@@ -721,6 +803,7 @@ Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
     case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
     case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
     case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
+    case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
     case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
     case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
     break;
@@ -754,6 +837,8 @@ Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
   // Hack: Blacklist vst plugins in-place, configurable for now.
   if(_isDssiVst && !MusEGlobal::config.vstInPlace)
     _requiredFeatures |= PluginNoInPlaceProcessing;
+  
+  _usesTimePosition = info._pluginFlags & MusEPlugin::PluginScanInfoStruct::SupportsTimePosition;
 }
 
 Plugin::~Plugin()
@@ -1067,6 +1152,7 @@ void initPlugins()
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
+      case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
       case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
       break;
@@ -1159,12 +1245,21 @@ void Pipeline::initBuffers()
   {
     if(!buffer[i])
     {
+#ifdef _WIN32
+      buffer[i] = (float *) _aligned_malloc(16, sizeof(float *) * MusEGlobal::segmentSize);
+      if(buffer[i] == NULL)
+      {
+         fprintf(stderr, "ERROR: Pipeline ctor: _aligned_malloc returned error: NULL. Aborting!\n");
+         abort();
+      }
+#else
       int rv = posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
       if(rv != 0)
       {
         fprintf(stderr, "ERROR: Pipeline ctor: posix_memalign returned error:%d. Aborting!\n", rv);
         abort();
       }
+#endif
     }
   }
 
@@ -1184,15 +1279,27 @@ void Pipeline::initBuffers()
 //  latency
 //---------------------------------------------------------
 
-float Pipeline::latency()
+float Pipeline::latency() const
 {
-  float l = 0.0;
-  PluginI* p;
+  float l = 0.0f;
+  const PluginI* p;
   for(int i = 0; i < MusECore::PipelineDepth; ++i)
   {
     p = (*this)[i];
     if(p)
-      l+= p->latency();
+    {
+// REMOVE Tim. lv2. Added. TESTING. Do we need to leave this alone for reporting?
+// I think so... It seemed we do that with tracks but then those are wave and midi tracks...
+#if 0
+      // If the transport affects audio latency, it means we can completely correct
+      //  for the latency by adjusting the transport, therefore meaning zero
+      //  resulting audio latency. As far as the rest of the app knows, the plugin
+      //  in this rack position has zero audio latency. Yet we still retain the
+      //  original latency value in each plugin so we can use it.
+      if(!p->cquirks()._transportAffectsAudioLatency)
+#endif
+        l+= p->latency();
+    }
   }
   return l;
 }
@@ -1353,7 +1460,7 @@ QString Pipeline::name(int idx) const
       PluginI* p = (*this)[idx];
       if (p)
             return p->name();
-      return QString("empty");
+      return QObject::tr("Empty");
       }
 
 //---------------------------------------------------------
@@ -1481,9 +1588,10 @@ void Pipeline::showGui(int idx, bool flag)
 //   showNativeGui
 //---------------------------------------------------------
 
+#if defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
 void Pipeline::showNativeGui(int idx, bool flag)
       {
-      PluginI* p = (*this)[idx];
+         PluginI* p = (*this)[idx];
 #ifdef LV2_SUPPORT
          if(p && p->plugin()->isLV2Plugin())
          {
@@ -1502,11 +1610,15 @@ void Pipeline::showNativeGui(int idx, bool flag)
 
 #endif
       #ifdef OSC_SUPPORT
-
-      if (p)
+         if (p)
             p->oscIF().oscShowGui(flag);
       #endif
       }
+#else // defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
+void Pipeline::showNativeGui(int /*idx*/, bool /*flag*/)
+      {
+      }
+#endif // defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
 
 //---------------------------------------------------------
 //   deleteGui
@@ -1592,33 +1704,57 @@ void Pipeline::apply(unsigned pos, unsigned long ports, unsigned long nframes, f
 {
       bool swap = false;
 
-      for (iPluginI ip = begin(); ip != end(); ++ip) {
-            PluginI* p = *ip;
+      // Divide up the total pipeline latency to distribute latency correction
+      //  among the plugins according to the latency of each plugin. Each has
+      //  more correction than the next. The values are negative, meaning 'correction'.
+      const int sz = size();
+      float latency_corr_offsets[sz];
+      float latency_corr_offset = 0.0f;
+      for(int i = sz - 1; i >= 0; --i)
+      {
+        const PluginI* p = (*this)[i];
+        if(!p)
+          continue;
+        const float lat = p->latency();
+        // If the transport affects audio latency, it means we can completely correct
+        //  for the latency by adjusting the transport, therefore meaning zero
+        //  resulting audio latency. As far as the rest of the app knows, the plugin
+        //  in this rack position has zero audio latency. Yet we still retain the
+        //  original latency value in each plugin so we can use it.
+        // Here we use a neat trick to conditionally subtract as we go, yet still 
+        //  set the right transport correction offset value for each plugin.
+        latency_corr_offsets[i] = latency_corr_offset - lat;
+        if(!p->cquirks()._transportAffectsAudioLatency)
+          latency_corr_offset -= lat;
+      }
 
-            if(p)
+      for (int i = 0; i < sz; ++i) {
+            PluginI* p = (*this)[i];
+            if(!p)
+              continue;
+
+            const float corr_offset = latency_corr_offsets[i];
+            if (p->on())
             {
-              if (p->on())
+              if (!(p->requiredFeatures() & PluginNoInPlaceProcessing))
               {
-                if (!(p->requiredFeatures() & PluginNoInPlaceProcessing))
-                {
-                      if (swap)
-                            p->apply(pos, nframes, ports, buffer, buffer);
-                      else
-                            p->apply(pos, nframes, ports, buffer1, buffer1);
-                }
-                else
-                {
-                      if (swap)
-                            p->apply(pos, nframes, ports, buffer, buffer1);
-                      else
-                            p->apply(pos, nframes, ports, buffer1, buffer);
-                      swap = !swap;
-                }
+                    if (swap)
+                          p->apply(pos, nframes, ports, buffer, buffer, corr_offset);
+                    else
+                          p->apply(pos, nframes, ports, buffer1, buffer1, corr_offset);
               }
               else
               {
-                p->apply(pos, nframes, 0, 0, 0); // Do not process (run) audio, process controllers only.
+                    if (swap)
+                          p->apply(pos, nframes, ports, buffer, buffer1, corr_offset);
+                    else
+                          p->apply(pos, nframes, ports, buffer1, buffer, corr_offset);
+                    swap = !swap;
               }
+            }
+            else
+            {
+              p->apply(pos, nframes, 0, 0, 0, corr_offset); // Do not process (run) audio, process controllers only.
             }
       }
       if (ports != 0 && swap)
@@ -2141,7 +2277,11 @@ double PluginI::defaultValue(unsigned long param) const
   return _plugin->defaultValue(controls[param].idx);
 }
 
-void PluginI::setCustomData(const std::vector<QString> &customParams)
+void PluginI::setCustomData(const std::vector<QString>&
+#if defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT)
+  customParams
+#endif
+)
 {
    if(_plugin == NULL)
       return;
@@ -2308,14 +2448,21 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
         }
       }
 
+#ifdef _WIN32
+      _audioInSilenceBuf = (float *) _aligned_malloc(16, sizeof(float *) * MusEGlobal::segmentSize);
+      if(_audioInSilenceBuf == NULL)
+      {
+         fprintf(stderr, "ERROR: PluginI::initPluginInstance: _audioInSilenceBuf _aligned_malloc returned error: NULL. Aborting!\n");
+         abort();
+      }
+#else
       int rv = posix_memalign((void **)&_audioInSilenceBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
-
       if(rv != 0)
       {
           fprintf(stderr, "ERROR: PluginI::initPluginInstance: _audioInSilenceBuf posix_memalign returned error:%d. Aborting!\n", rv);
           abort();
       }
-
+#endif
       if(MusEGlobal::config.useDenormalBias)
       {
           for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
@@ -2327,15 +2474,21 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
       {
           memset(_audioInSilenceBuf, 0, sizeof(float) * MusEGlobal::segmentSize);
       }
-
+#ifdef _WIN32
+      _audioOutDummyBuf = (float *) _aligned_malloc(16, sizeof(float *) * MusEGlobal::segmentSize);
+      if(_audioOutDummyBuf == NULL)
+      {
+         fprintf(stderr, "ERROR: PluginI::initPluginInstance: _audioOutDummyBuf _aligned_malloc returned error: NULL. Aborting!\n");
+         abort();
+      }
+#else
       rv = posix_memalign((void **)&_audioOutDummyBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
-
       if(rv != 0)
       {
           fprintf(stderr, "ERROR: PluginI::initPluginInstance: _audioOutDummyBuf posix_memalign returned error:%d. Aborting!\n", rv);
           abort();
       }
-
+#endif
       activate();
       return false;
       }
@@ -2411,11 +2564,16 @@ void PluginI::activate()
 //   latency
 //---------------------------------------------------------
 
-float PluginI::latency()
+float PluginI::latency() const
 {
-  if(!_hasLatencyOutPort)
+  // Do not report any latency if the plugin is not on.
+  if(!on())
     return 0.0;
-  return controlsOut[_latencyOutPort].val;
+  if(cquirks()._overrideReportedLatency)
+    return cquirks()._latencyOverrideValue;
+  if(!hasLatencyOutPort())
+    return 0.0;
+  return controlsOut[latencyOutPortIndex()].val;
 }
 
 
@@ -2475,6 +2633,9 @@ void PluginI::writeConfiguration(int level, Xml& xml)
             }
       if (_on == false)
             xml.intTag(level, "on", _on);
+
+      _quirks.write(level, xml);
+
       if(guiVisible())
         xml.intTag(level, "gui", 1);
       int x, y, w, h;
@@ -2488,7 +2649,7 @@ void PluginI::writeConfiguration(int level, Xml& xml)
       QRect nr(x, y, w, h);
       xml.qrectTag(level, "nativeGeometry", nr);
 
-      xml.tag(level--, "/plugin");
+      xml.etag(--level, "plugin");
       }
 
 //---------------------------------------------------------
@@ -2596,8 +2757,14 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                               if (!readPreset)
                                     _on = flag;
                               }
+                        else if (tag == "quirks") {
+                              PluginQuirks q;
+                              q.read(xml);
+                              if (!readPreset)
+                                _quirks = q;
+                              }
                         else if (tag == "gui") {
-                              bool flag = xml.parseInt();
+                              const bool flag = xml.parseInt();
                               if (_plugin)
                                   showGui(flag);
                               }
@@ -2741,7 +2908,12 @@ void PluginI::showNativeGui()
   _showNativeGuiPending = false;
 }
 
-void PluginI::showNativeGui(bool flag)
+void PluginI::showNativeGui(
+  bool
+#if defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
+  flag
+#endif
+)
 {
 #ifdef LV2_SUPPORT
   if(plugin() && plugin()->isLV2Plugin())
@@ -2835,12 +3007,15 @@ QString PluginI::titlePrefix() const
 //   If ports is 0, just process controllers only, not audio (do not 'run').
 //---------------------------------------------------------
 
-void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** bufIn, float** bufOut)
+void PluginI::apply(unsigned pos, unsigned long n,
+                    unsigned long ports, float** bufIn, float** bufOut, float latency_corr_offset)
 {
   const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
   unsigned long sample = 0;
 
-  const bool usefixedrate = (requiredFeatures() & PluginFixedBlockSize);
+  // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
+  //       For now we treat it like fixed size.
+  const bool usefixedrate = (requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize));
 
   // Note for dssi-vst this MUST equal audio period. It doesn't like broken-up runs (it stutters),
   //  even with fixed sizes. Could be a Wine + Jack thing, wanting a full Jack buffer's length.
@@ -2855,6 +3030,9 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
   ciCtrlList icl_first;
   if(_track)
   {
+    // Correction value is negative for correction.
+    latency_corr_offset += _track->getLatencyInfo(false)._sourceCorrectionValue;
+
     at = _track->automationType();
     cll = _track->controller();
     if(_id != -1 && ports != 0)  // Don't bother if not 'running'.
@@ -3069,7 +3247,7 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
         connect(ports, sample, bufIn, bufOut);
 
         for(int i = 0; i < instances; ++i)
-          _plugin->apply(handle[i], nsamp);
+          _plugin->apply(handle[i], nsamp, latency_corr_offset);
       }
 
       sample += nsamp;
@@ -3337,23 +3515,76 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       setWindowTitle(plugin->titlePrefix() + plugin->name());
       
       QToolBar* tools = addToolBar(tr("File Buttons"));
+      tools->setIconSize(ICON_SIZE);
 
-      QAction* fileOpen = new QAction(QIcon(*openIconS), tr("Load Preset"), this);
-      connect(fileOpen, SIGNAL(triggered()), this, SLOT(load()));
+      QAction* fileOpen = new QAction(*fileopenSVGIcon, tr("Load Preset"), this);
+//       connect(fileOpen, SIGNAL(triggered()), this, SLOT(load()));
+      connect(fileOpen, &QAction::triggered, [this]() { load(); } );
       tools->addAction(fileOpen);
 
-      QAction* fileSave = new QAction(QIcon(*saveIconS), tr("Save Preset"), this);
-      connect(fileSave, SIGNAL(triggered()), this, SLOT(save()));
+      QAction* fileSave = new QAction(*filesaveSVGIcon, tr("Save Preset"), this);
+//       connect(fileSave, SIGNAL(triggered()), this, SLOT(save()));
+      connect(fileSave, &QAction::triggered, [this]() { save(); } );
       tools->addAction(fileSave);
 
-      tools->addAction(QWhatsThis::createAction(this));
+      QAction* whatsthis = QWhatsThis::createAction(this);
+      whatsthis->setIcon(*whatsthisSVGIcon);
+      tools->addAction(whatsthis);
 
-      onOff = new QAction(QIcon(*exitIconS), tr("bypass plugin"), this);
+      //onOff = new QAction(QIcon(*exitIconS), tr("bypass plugin"), this);
+      onOff = new QAction(*muteSVGIcon, tr("Bypass plugin"), this);
       onOff->setCheckable(true);
-      onOff->setChecked(plugin->on());
-      onOff->setToolTip(tr("bypass plugin"));
-      connect(onOff, SIGNAL(toggled(bool)), SLOT(bypassToggled(bool)));
+      onOff->setChecked(!plugin->on());
+      onOff->setEnabled(plugin->hasBypass());
+      onOff->setToolTip(tr("Bypass plugin"));
+      connect(onOff, &QAction::toggled, [this](bool v) { bypassToggled(v); } );
       tools->addAction(onOff);
+
+      tools->addSeparator();
+      tools->addWidget(new QLabel(tr("Quirks:")));
+
+      fixedSpeedAct= new QAction(QIcon(*fixedSpeedSVGIcon), tr("Fixed speed"), this);
+      fixedSpeedAct->setCheckable(true);
+      fixedSpeedAct->setChecked(plugin->cquirks()._fixedSpeed);
+      fixedSpeedAct->setEnabled(plugin->usesTransportSource());
+      fixedSpeedAct->setToolTip(tr("Fixed speed"));
+      connect(fixedSpeedAct, &QAction::toggled, [this](bool v) { fixedSpeedToggled(v); } );
+      tools->addAction(fixedSpeedAct);
+
+      transpGovLatencyAct = new QAction(QIcon(*transportAffectsLatencySVGIcon), tr("Transport affects audio latency"), this);
+      transpGovLatencyAct->setCheckable(true);
+      transpGovLatencyAct->setChecked(plugin->cquirks()._transportAffectsAudioLatency);
+      transpGovLatencyAct->setEnabled(plugin->usesTransportSource());
+      transpGovLatencyAct->setToolTip(tr("Transport affects audio latency"));
+      connect(transpGovLatencyAct, &QAction::toggled, [this](bool v) { transportGovernsLatencyToggled(v); } );
+      tools->addAction(transpGovLatencyAct);
+
+      overrideLatencyAct= new QAction(QIcon(*overrideLatencySVGIcon), tr("Override reported audio latency"), this);
+      overrideLatencyAct->setCheckable(true);
+      overrideLatencyAct->setChecked(plugin->cquirks()._overrideReportedLatency);
+      overrideLatencyAct->setToolTip(tr("Override reported audio latency"));
+      connect(overrideLatencyAct, &QAction::toggled, [this](bool v) { overrideReportedLatencyToggled(v); } );
+      tools->addAction(overrideLatencyAct);
+
+      latencyOverrideEntry = new QSpinBox();
+      latencyOverrideEntry->setRange(0, 8191);
+      latencyOverrideEntry->setValue(plugin->cquirks()._latencyOverrideValue);
+      latencyOverrideEntry->setEnabled(plugin->cquirks()._overrideReportedLatency);
+      latencyOverrideEntry->setToolTip(tr("Reported audio latency override value"));
+      // Special: Need qt helper overload for these lambdas.
+      connect(latencyOverrideEntry,
+        QOverload<int>::of(&QSpinBox::valueChanged), [=](int v) { latencyOverrideValueChanged(v); } );
+      tools->addWidget(latencyOverrideEntry);
+
+      fixScalingTooltip[0] = tr("Revert native UI HiDPI scaling: Follow global setting");
+      fixScalingTooltip[1] = tr("Revert native UI HiDPI scaling: On");
+      fixScalingTooltip[2] = tr("Revert native UI HiDPI scaling: Off");
+      fixNativeUIScalingTB = new QToolButton(this);
+      fixNativeUIScalingTB->setIcon(*noscaleSVGIcon[plugin->cquirks()._fixNativeUIScaling]);
+      fixNativeUIScalingTB->setProperty("state", plugin->cquirks()._fixNativeUIScaling);
+      fixNativeUIScalingTB->setToolTip(fixScalingTooltip[plugin->cquirks()._fixNativeUIScaling]);
+      connect(fixNativeUIScalingTB, &QToolButton::clicked, [this]() { fixNativeUIScalingTBClicked(); } );
+      tools->addWidget(fixNativeUIScalingTB);
 
       // TODO: We need to use .qrc files to use icons in WhatsThis bubbles. See Qt
       // Resource System in Qt documentation - ORCAN
@@ -3396,19 +3627,14 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
             it = l.begin();
             gw   = new GuiWidgets[nobj];
             nobj = 0;
-            QSignalMapper* mapper = new QSignalMapper(this);
 
             // FIXME: There's no unsigned for gui params. We would need to limit nobj to MAXINT.
             // FIXME: Our MusEGui::Slider class uses doubles for values, giving some problems with float conversion.
 
-            connect(mapper, SIGNAL(mapped(int)), SLOT(guiParamChanged(int)));
-
-            QSignalMapper* mapperPressed        = new QSignalMapper(this);
-            QSignalMapper* mapperReleased       = new QSignalMapper(this);
-            QSignalMapper* mapperContextMenuReq = new QSignalMapper(this);
-            connect(mapperPressed, SIGNAL(mapped(int)), SLOT(guiParamPressed(int)));
-            connect(mapperReleased, SIGNAL(mapped(int)), SLOT(guiParamReleased(int)));
-            connect(mapperContextMenuReq, SIGNAL(mapped(int)), SLOT(guiContextMenuReq(int)));
+            DoubleLabel* dl_obj;
+            QCheckBox*   cb_obj;
+            QComboBox*   combobox_obj;
+            unsigned long int nn;
 
             for (it = l.begin(); it != l.end(); ++it) {
                   obj = *it;
@@ -3421,11 +3647,9 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                 if(rv != 1)
                     continue;
 
-                  mapper->setMapping(obj, nobj);
-                  mapperPressed->setMapping(obj, nobj);
-                  mapperReleased->setMapping(obj, nobj);
-                  mapperContextMenuReq->setMapping(obj, nobj);
-
+                  // For some reason lambdas need this local copy (nn) of nobj otherwise they fail and crash.
+                  nn = nobj;
+                  
                   gw[nobj].widget  = (QWidget*)obj;
                   gw[nobj].param   = parameter;
                   gw[nobj].type    = -1;
@@ -3463,7 +3687,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         fnt.setStyleStrategy(QFont::NoAntialias);
                         fnt.setHintingPreference(QFont::PreferVerticalHinting);
                         s->setFont(fnt);
-                        s->setStyleSheet(MusECore::font2StyleSheet(fnt));
+                        s->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
                         s->setSizeHint(200, 8);
 
                         for(unsigned long i = 0; i < nobj; i++)
@@ -3471,40 +3695,41 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                           if(gw[i].type == GuiWidgets::DOUBLE_LABEL && gw[i].param == parameter)
                             ((DoubleLabel*)gw[i].widget)->setSlider(s);
                         }
-                        connect(s, SIGNAL(valueChanged(double,int,int)), mapper, SLOT(map()));
-                        connect(s, SIGNAL(sliderPressed(double, int)), SLOT(guiSliderPressed(double, int)));
-                        connect(s, SIGNAL(sliderReleased(double, int)), SLOT(guiSliderReleased(double, int)));
-                        connect(s, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(guiSliderRightClicked(const QPoint &, int)));
+                        connect(s, QOverload<double, int, int>::of(&Slider::valueChanged), [=]() { guiParamChanged(nn); } );
+                        connect(s, &Slider::sliderPressed, [this](double v, int i) { guiSliderPressed(v, i); } );
+                        connect(s, &Slider::sliderReleased, [this](double v, int i) { guiSliderReleased(v, i); } );
+                        connect(s, &Slider::sliderRightClicked, [this](const QPoint &p, int i) { guiSliderRightClicked(p, i); } );
                         }
                   else if (strcmp(obj->metaObject()->className(), "MusEGui::DoubleLabel") == 0) {
                         gw[nobj].type = GuiWidgets::DOUBLE_LABEL;
-                        ((DoubleLabel*)obj)->setId(nobj);
-                        ((DoubleLabel*)obj)->setAlignment(Qt::AlignCenter);
+                        dl_obj = static_cast<DoubleLabel*>(obj);
+                        dl_obj->setId(nobj);
+                        dl_obj->setAlignment(Qt::AlignCenter);
                         for(unsigned long i = 0; i < nobj; i++)
                         {
                           if(gw[i].type == GuiWidgets::SLIDER && gw[i].param == parameter)
                           {
-                            ((DoubleLabel*)obj)->setSlider((Slider*)gw[i].widget);
+                            dl_obj->setSlider((Slider*)gw[i].widget);
                             break;
                           }
                         }
-                        connect((DoubleLabel*)obj, SIGNAL(valueChanged(double,int)), mapper, SLOT(map()));
+                        connect((DoubleLabel*)obj, &DoubleLabel::valueChanged, [this, nn]() { guiParamChanged(nn); } );
                         }
                   else if (strcmp(obj->metaObject()->className(), "QCheckBox") == 0) {
                         gw[nobj].type = GuiWidgets::QCHECKBOX;
                         gw[nobj].widget->setContextMenuPolicy(Qt::CustomContextMenu);
-                        connect((QCheckBox*)obj, SIGNAL(toggled(bool)), mapper, SLOT(map()));
-                        connect((QCheckBox*)obj, SIGNAL(pressed()), mapperPressed, SLOT(map()));
-                        connect((QCheckBox*)obj, SIGNAL(released()), mapperReleased, SLOT(map()));
-                        connect((QCheckBox*)obj, SIGNAL(customContextMenuRequested(const QPoint &)),
-                                mapperContextMenuReq, SLOT(map()));
+                        cb_obj = static_cast<QCheckBox*>(obj);
+                        connect(cb_obj, &QCheckBox::toggled, [this, nn]() { guiParamChanged(nn); } );
+                        connect(cb_obj, &QCheckBox::pressed, [this, nn]() { guiParamPressed(nn); } );
+                        connect(cb_obj, &QCheckBox::released, [this, nn]() { guiParamReleased(nn); } );
+                        connect(cb_obj, &QCheckBox::customContextMenuRequested, [this, nn]() { guiContextMenuReq(nn); } );
                         }
                   else if (strcmp(obj->metaObject()->className(), "QComboBox") == 0) {
                         gw[nobj].type = GuiWidgets::QCOMBOBOX;
                         gw[nobj].widget->setContextMenuPolicy(Qt::CustomContextMenu);
-                        connect((QComboBox*)obj, SIGNAL(activated(int)), mapper, SLOT(map()));
-                        connect((QComboBox*)obj, SIGNAL(customContextMenuRequested(const QPoint &)),
-                                mapperContextMenuReq, SLOT(map()));
+                        combobox_obj = static_cast<QComboBox*>(obj);
+                        connect(combobox_obj, QOverload<int>::of(&QComboBox::activated), [=]() { guiParamChanged(nn); } );
+                        connect(combobox_obj, &QComboBox::customContextMenuRequested, [this, nn]() { guiContextMenuReq(nn); } );
                         }
                   else {
                         printf("unknown widget class %s\n", obj->metaObject()->className());
@@ -3530,6 +3755,9 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
 
             QFontMetrics fm = fontMetrics();
             int h           = fm.height() + 4;
+
+            Slider* sl_obj;
+            CheckBox* cb_obj;
 
             for (unsigned long i = 0; i < n; ++i) {
                   QLabel* label = 0;
@@ -3591,7 +3819,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         fnt.setStyleStrategy(QFont::NoAntialias);
                         fnt.setHintingPreference(QFont::PreferVerticalHinting);
                         s->setFont(fnt);
-                        s->setStyleSheet(MusECore::font2StyleSheet(fnt));
+                        s->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
 
                         s->setCursorHoming(true);
                         s->setId(i);
@@ -3615,16 +3843,19 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         grid->addWidget(params[i].actuator, i, 0, 1, 3);
                         }
                   if (params[i].type == GuiParam::GUI_SLIDER) {
-                        connect((Slider*)params[i].actuator, SIGNAL(valueChanged(double,int,int)), SLOT(sliderChanged(double,int,int)));
-                        connect(params[i].label,    SIGNAL(valueChanged(double,int)), SLOT(labelChanged(double,int)));
-                        connect((Slider*)params[i].actuator, SIGNAL(sliderPressed(double, int)), SLOT(ctrlPressed(double, int)));
-                        connect((Slider*)params[i].actuator, SIGNAL(sliderReleased(double, int)), SLOT(ctrlReleased(double, int)));
-                        connect((Slider*)params[i].actuator, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(ctrlRightClicked(const QPoint &, int)));
+                        sl_obj = static_cast<Slider*>(params[i].actuator);
+                        connect(sl_obj, QOverload<double, int, int>::of(&Slider::valueChanged),
+                                [=](double v, int id, int scroll_mode) { sliderChanged(v, id, scroll_mode); } );
+                        connect(params[i].label, &DoubleLabel::valueChanged, [this](double v, int i) { labelChanged(v, i); } );
+                        connect(sl_obj, &Slider::sliderPressed, [this](double v, int i) { ctrlPressed(v, i); } );
+                        connect(sl_obj, &Slider::sliderReleased, [this](double v, int i) { ctrlReleased(v, i); } );
+                        connect(sl_obj, &Slider::sliderRightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
                         }
                   else if (params[i].type == GuiParam::GUI_SWITCH){
-                        connect((CheckBox*)params[i].actuator, SIGNAL(checkboxPressed(int)), SLOT(switchPressed(int)));
-                        connect((CheckBox*)params[i].actuator, SIGNAL(checkboxReleased(int)), SLOT(switchReleased(int)));
-                        connect((CheckBox*)params[i].actuator, SIGNAL(checkboxRightClicked(const QPoint &, int)), SLOT(ctrlRightClicked(const QPoint &, int)));
+                        cb_obj = (CheckBox*)params[i].actuator;
+                        connect(cb_obj, &CheckBox::checkboxPressed, [this](int i) { switchPressed(i); } );
+                        connect(cb_obj, &CheckBox::checkboxReleased, [this](int i) { switchReleased(i); } );
+                        connect(cb_obj, &CheckBox::checkboxRightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
                         }
                   }
 
@@ -3676,7 +3907,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                       fnt.setStyleStrategy(QFont::NoAntialias);
                       fnt.setHintingPreference(QFont::PreferVerticalHinting);
                       m->setFont(fnt);
-                      m->setStyleSheet(MusECore::font2StyleSheet(fnt));
+                      m->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
 
                       paramsOut[i].actuator = m;
                       label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -4108,9 +4339,55 @@ void PluginGui::save()
 void PluginGui::bypassToggled(bool val)
       {
       setWindowTitle(plugin->titlePrefix() + plugin->name());
-      plugin->setOn(val);
+      plugin->setOn(!val);
       MusEGlobal::song->update(SC_ROUTE);
       }
+
+void PluginGui::transportGovernsLatencyToggled(bool v)
+{
+  // TODO Make a safe audio-synced operation?
+  plugin->quirks()._transportAffectsAudioLatency = v;
+  MusEGlobal::song->update(SC_ROUTE);
+}
+
+void PluginGui::fixedSpeedToggled(bool v)
+{
+  // TODO Make a safe audio-synced operation?
+  plugin->quirks()._fixedSpeed = v;
+  MusEGlobal::song->update(SC_ROUTE);
+}
+
+void PluginGui::overrideReportedLatencyToggled(bool v)
+{
+  // TODO Make a safe audio-synced operation?
+  plugin->quirks()._overrideReportedLatency = v;
+  latencyOverrideEntry->setEnabled(v);
+  MusEGlobal::song->update(SC_ROUTE);
+}
+
+void PluginGui::latencyOverrideValueChanged(int v)
+{
+  // TODO Make a safe audio-synced operation?
+  plugin->quirks()._latencyOverrideValue = v;
+  MusEGlobal::song->update(SC_ROUTE);
+}
+
+void PluginGui::fixNativeUIScalingTBClicked()
+{
+    int state = fixNativeUIScalingTB->property("state").toInt();
+    state = (state == 2) ? 0 : state + 1;
+//    if (state == 0) {
+//        state++;
+//    } else if (state == 1) {
+//        state++;
+//    } else {
+//        state = 0;
+//    }
+    fixNativeUIScalingTB->setToolTip(fixScalingTooltip[state]);
+    fixNativeUIScalingTB->setIcon(*noscaleSVGIcon[state]);
+    fixNativeUIScalingTB->setProperty("state", state);
+    plugin->quirks()._fixNativeUIScaling = (MusECore::PluginQuirks::NatUISCaling)state;
+}
 
 //---------------------------------------------------------
 //   setOn
@@ -4120,7 +4397,7 @@ void PluginGui::setOn(bool val)
       {
       setWindowTitle(plugin->titlePrefix() + plugin->name());
       onOff->blockSignals(true);
-      onOff->setChecked(val);
+      onOff->setChecked(!val);
       onOff->blockSignals(false);
       }
 
@@ -4310,7 +4587,7 @@ void PluginGui::updateControls()
 //   guiParamChanged
 //---------------------------------------------------------
 
-void PluginGui::guiParamChanged(int idx)
+void PluginGui::guiParamChanged(unsigned long int idx)
 {
       QWidget* w = gw[idx].widget;
       unsigned long param  = gw[idx].param;
@@ -4387,7 +4664,7 @@ void PluginGui::guiParamChanged(int idx)
 //   guiParamPressed
 //---------------------------------------------------------
 
-void PluginGui::guiParamPressed(int idx)
+void PluginGui::guiParamPressed(unsigned long int idx)
       {
       gw[idx].pressed = true;
       unsigned long param  = gw[idx].param;
@@ -4420,7 +4697,7 @@ void PluginGui::guiParamPressed(int idx)
 //   guiParamReleased
 //---------------------------------------------------------
 
-void PluginGui::guiParamReleased(int idx)
+void PluginGui::guiParamReleased(unsigned long int idx)
       {
       unsigned long param  = gw[idx].param;
       int type   = gw[idx].type;
@@ -4464,7 +4741,7 @@ void PluginGui::guiParamReleased(int idx)
 //   guiSliderPressed
 //---------------------------------------------------------
 
-void PluginGui::guiSliderPressed(double /*val*/, int idx)
+void PluginGui::guiSliderPressed(double /*val*/, unsigned long int idx)
 {
       gw[idx].pressed = true;
       unsigned long param  = gw[idx].param;
@@ -4508,7 +4785,7 @@ void PluginGui::guiSliderPressed(double /*val*/, int idx)
 //   guiSliderReleased
 //---------------------------------------------------------
 
-void PluginGui::guiSliderReleased(double /*val*/, int idx)
+void PluginGui::guiSliderReleased(double /*val*/, unsigned long int idx)
       {
       int param  = gw[idx].param;
       QWidget *w = gw[idx].widget;
@@ -4539,7 +4816,7 @@ void PluginGui::guiSliderReleased(double /*val*/, int idx)
 //   guiSliderRightClicked
 //---------------------------------------------------------
 
-void PluginGui::guiSliderRightClicked(const QPoint &p, int idx)
+void PluginGui::guiSliderRightClicked(const QPoint &p, unsigned long int idx)
 {
   int param  = gw[idx].param;
   int id = plugin->id();
@@ -4551,7 +4828,7 @@ void PluginGui::guiSliderRightClicked(const QPoint &p, int idx)
 //   guiContextMenuReq
 //---------------------------------------------------------
 
-void PluginGui::guiContextMenuReq(int idx)
+void PluginGui::guiContextMenuReq(unsigned long int idx)
 {
   guiSliderRightClicked(QCursor().pos(), idx);
 }

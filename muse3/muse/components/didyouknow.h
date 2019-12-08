@@ -19,6 +19,9 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //=============================================================================
 
+#ifndef __DIDYOUKNOW_H__
+#define __DIDYOUKNOW_H__
+
 #include "ui_didyouknow.h"
 
 class QDialog;
@@ -81,3 +84,5 @@ class DidYouKnowWidget : public QDialog, public Ui::DidYouKnow
 };
 
 } // namespace MusEGui
+
+#endif

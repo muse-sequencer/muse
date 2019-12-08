@@ -32,7 +32,6 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QResizeEvent>
-#include <QSignalMapper>
 #include <QSizeGrip>
 #include <QToolButton>
 #include <QWhatsThis>
@@ -94,20 +93,20 @@ static const int drumeditTools = MusEGui::PointerTool | MusEGui::PencilTool | Mu
 
 void DrumEdit::setHeaderWhatsThis()
       {
-      header->setWhatsThis(COL_HIDE, tr("hide instrument"));
-      header->setWhatsThis(COL_MUTE, tr("mute instrument"));
-      header->setWhatsThis(COL_NAME, tr("sound name"));
-      header->setWhatsThis(COL_VOLUME, tr("volume percent"));
-      header->setWhatsThis(COL_QUANT, tr("quantisation"));
-      header->setWhatsThis(COL_INPUTTRIGGER, tr("this input note triggers the sound"));
-      header->setWhatsThis(COL_NOTELENGTH, tr("note length"));
-      header->setWhatsThis(COL_NOTE, tr("this is the note which is played"));
-      header->setWhatsThis(COL_OUTCHANNEL, tr("override track output channel (hold ctl to affect all rows)"));
-      header->setWhatsThis(COL_OUTPORT, tr("override track output port (hold ctl to affect all rows)"));
-      header->setWhatsThis(COL_LEVEL1, tr("control + meta keys: draw velocity level 1"));
-      header->setWhatsThis(COL_LEVEL2, tr("meta key: draw velocity level 2"));
-      header->setWhatsThis(COL_LEVEL3, tr("draw default velocity level 3"));
-      header->setWhatsThis(COL_LEVEL4, tr("meta + alt keys: draw velocity level 4"));
+      header->setWhatsThis(COL_HIDE, tr("Hide instrument"));
+      header->setWhatsThis(COL_MUTE, tr("Mute instrument"));
+      header->setWhatsThis(COL_NAME, tr("Sound name"));
+      header->setWhatsThis(COL_VOLUME, tr("Volume percent"));
+      header->setWhatsThis(COL_QUANT, tr("Quantisation"));
+      header->setWhatsThis(COL_INPUTTRIGGER, tr("This input note triggers the sound"));
+      header->setWhatsThis(COL_NOTELENGTH, tr("Note length"));
+      header->setWhatsThis(COL_NOTE, tr("This is the note which is played"));
+      header->setWhatsThis(COL_OUTCHANNEL, tr("Override track output channel (hold ctl to affect all rows)"));
+      header->setWhatsThis(COL_OUTPORT, tr("Override track output port (hold ctl to affect all rows)"));
+      header->setWhatsThis(COL_LEVEL1, tr("Control + meta keys: Draw velocity level 1"));
+      header->setWhatsThis(COL_LEVEL2, tr("Meta key: Draw velocity level 2"));
+      header->setWhatsThis(COL_LEVEL3, tr("Draw default velocity level 3"));
+      header->setWhatsThis(COL_LEVEL4, tr("Meta + alt keys: Draw velocity level 4"));
       }
 
 //---------------------------------------------------------
@@ -116,20 +115,20 @@ void DrumEdit::setHeaderWhatsThis()
 
 void DrumEdit::setHeaderToolTips()
       {
-      header->setToolTip(COL_HIDE, tr("hide instrument"));
-      header->setToolTip(COL_MUTE, tr("mute instrument"));
-      header->setToolTip(COL_NAME, tr("sound name"));
-      header->setToolTip(COL_VOLUME, tr("volume percent"));
-      header->setToolTip(COL_QUANT, tr("quantisation"));
-      header->setToolTip(COL_INPUTTRIGGER, tr("this input note triggers the sound"));
-      header->setToolTip(COL_NOTELENGTH, tr("note length"));
-      header->setToolTip(COL_NOTE, tr("this is the note which is played"));
-      header->setToolTip(COL_OUTCHANNEL, tr("override track output channel (ctl: affect all rows)"));
-      header->setToolTip(COL_OUTPORT, tr("override track output port (ctl: affect all rows)"));
-      header->setToolTip(COL_LEVEL1, tr("control + meta keys: draw velocity level 1"));
-      header->setToolTip(COL_LEVEL2, tr("meta key: draw velocity level 2"));
-      header->setToolTip(COL_LEVEL3, tr("draw default velocity level 3"));
-      header->setToolTip(COL_LEVEL4, tr("meta + alt keys: draw velocity level 4"));
+      header->setToolTip(COL_HIDE, tr("Hide instrument"));
+      header->setToolTip(COL_MUTE, tr("Mute instrument"));
+      header->setToolTip(COL_NAME, tr("Sound name"));
+      header->setToolTip(COL_VOLUME, tr("Volume percent"));
+      header->setToolTip(COL_QUANT, tr("Quantisation"));
+      header->setToolTip(COL_INPUTTRIGGER, tr("This input note triggers the sound"));
+      header->setToolTip(COL_NOTELENGTH, tr("Note length"));
+      header->setToolTip(COL_NOTE, tr("This is the note which is played"));
+      header->setToolTip(COL_OUTCHANNEL, tr("Override track output channel (ctl: affect all rows)"));
+      header->setToolTip(COL_OUTPORT, tr("Override track output port (ctl: affect all rows)"));
+      header->setToolTip(COL_LEVEL1, tr("Control + meta keys: Draw velocity level 1"));
+      header->setToolTip(COL_LEVEL2, tr("Meta key: Draw velocity level 2"));
+      header->setToolTip(COL_LEVEL3, tr("Draw default velocity level 3"));
+      header->setToolTip(COL_LEVEL4, tr("Meta + alt keys: Draw velocity level 4"));
       }
 
 //---------------------------------------------------------
@@ -140,7 +139,7 @@ void DrumEdit::closeEvent(QCloseEvent* e)
       {
       _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
 
-      QSettings settings("MusE", "MusE-qt");
+      QSettings settings;
       settings.setValue("Drumedit/windowState", saveState());
 
       //Store values of the horizontal splitter
@@ -168,7 +167,7 @@ void DrumEdit::closeEvent(QCloseEvent* e)
 //   DrumEdit
 //---------------------------------------------------------
 
-DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, unsigned initPos)
+DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, unsigned initPos, bool showDefaultControls)
    : MidiEditor(TopWin::DRUM, _rasterInit, pl, parent, name)
       {
       setFocusPolicy(Qt::NoFocus);  
@@ -190,10 +189,30 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       split1w1 = 0;
       //selPart  = 0;
       _playEvents    = true;
-      QSignalMapper *signalMapper = new QSignalMapper(this);
       
       _group_mode = GROUP_SAME_CHANNEL;
       _ignore_hide = _ignore_hide_init;
+      
+      const MusECore::PartList* part_list = parts();
+      // Default initial pianoroll view state.
+      _viewState = MusECore::MidiPartViewState (0, 0, xscale, yscale);
+      // Include a velocity controller in the default initial view state.
+      _viewState.addController(MusECore::MidiCtrlViewState(MusECore::CTRL_VELOCITY));
+      if(part_list && !part_list->empty())
+      {
+        // If the parts' view states have never been initialized before,
+        //  do it now with the desired pianoroll initial state.
+        for(MusECore::ciPart i = part_list->begin(); i != part_list->end(); ++i)
+        {
+          if(!i->second->viewState().isValid())
+            i->second->setViewState(_viewState);
+        }
+        // Now take our initial view state from the first part found in the list.
+        // Don't bother if not showing default controls, since something else
+        //  will likely take care of it, like the song file loading routines.
+        if(showDefaultControls)
+          _viewState = part_list->begin()->second->viewState();
+      }
       
       //---------Pulldown Menu----------------------------
       menuEdit = menuBar()->addMenu(tr("&Edit"));
@@ -209,22 +228,14 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       menuEdit->addSeparator();
       deleteAction = menuEdit->addAction(tr("Delete Events"));
 
-      connect(cutAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(copyAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(copyRangeAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(pasteAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(pasteToCurPartAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(pasteDialogAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(deleteAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-
-      signalMapper->setMapping(cutAction, DrumCanvas::CMD_CUT);
-      signalMapper->setMapping(copyAction, DrumCanvas::CMD_COPY);
-      signalMapper->setMapping(copyRangeAction, DrumCanvas::CMD_COPY_RANGE);
-      signalMapper->setMapping(pasteAction, DrumCanvas::CMD_PASTE);
-      signalMapper->setMapping(pasteToCurPartAction, DrumCanvas::CMD_PASTE_TO_CUR_PART);
-      signalMapper->setMapping(pasteDialogAction, DrumCanvas::CMD_PASTE_DIALOG);
-      signalMapper->setMapping(deleteAction, DrumCanvas::CMD_DEL);
-
+      connect(cutAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_CUT); } );
+      connect(copyAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_COPY); } );
+      connect(copyRangeAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_COPY_RANGE); } );
+      connect(pasteAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_PASTE); } );
+      connect(pasteToCurPartAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_PASTE_TO_CUR_PART); } );
+      connect(pasteDialogAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_PASTE_DIALOG); } );
+      connect(deleteAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_DEL); } );
+      
       menuSelect = menuEdit->addMenu(QIcon(*selectIcon), tr("&Select"));
 
       sallAction = menuSelect->addAction(QIcon(*select_allIcon), tr("Select All"));
@@ -239,21 +250,13 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       prevAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("Previous Part"));
       nextAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("Next Part"));
 
-      connect(sallAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(snoneAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(invAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(inAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(outAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(prevAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(nextAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-
-      signalMapper->setMapping(sallAction, DrumCanvas::CMD_SELECT_ALL);
-      signalMapper->setMapping(snoneAction, DrumCanvas::CMD_SELECT_NONE);
-      signalMapper->setMapping(invAction, DrumCanvas::CMD_SELECT_INVERT);
-      signalMapper->setMapping(inAction, DrumCanvas::CMD_SELECT_ILOOP);
-      signalMapper->setMapping(outAction, DrumCanvas::CMD_SELECT_OLOOP);
-      signalMapper->setMapping(prevAction, DrumCanvas::CMD_SELECT_PREV_PART);
-      signalMapper->setMapping(nextAction, DrumCanvas::CMD_SELECT_NEXT_PART);
+      connect(sallAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_ALL); } );
+      connect(snoneAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_NONE); } );
+      connect(invAction,   &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_INVERT); } );
+      connect(inAction,    &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_ILOOP); } );
+      connect(outAction,   &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_OLOOP); } );
+      connect(prevAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_PREV_PART); } );
+      connect(nextAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_NEXT_PART); } );
 
       // Functions
       menuFunctions = menuBar()->addMenu(tr("Fu&nctions"));
@@ -304,21 +307,16 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       
       if (old_style_drummap_mode())
       {
-        loadAction = menuFunctions->addAction(QIcon(*openIcon), tr("Load Map"));
-        saveAction = menuFunctions->addAction(QIcon(*saveIcon), tr("Save Map"));
+        loadAction = menuFunctions->addAction(*fileopenSVGIcon, tr("Load Map"));
+        saveAction = menuFunctions->addAction(*filesaveSVGIcon, tr("Save Map"));
         resetAction = menuFunctions->addAction(tr("Reset GM Map"));
 
-        connect(loadAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-        connect(saveAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-        connect(resetAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-
-        signalMapper->setMapping(loadAction, DrumCanvas::CMD_LOAD);
-        signalMapper->setMapping(saveAction, DrumCanvas::CMD_SAVE);
-        signalMapper->setMapping(resetAction, DrumCanvas::CMD_RESET);
+        connect(loadAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_LOAD); } );
+        connect(saveAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SAVE); } );
+        connect(resetAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_RESET); } );
 
         QAction* reorderListAction = menuFunctions->addAction(tr("Re-order map"));
-        connect(reorderListAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-        signalMapper->setMapping(reorderListAction, DrumCanvas::CMD_REORDER_LIST);
+        connect(reorderListAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_REORDER_LIST); } );
         menuFunctions->addSeparator();
       }
       else
@@ -332,28 +330,30 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       QAction* noteShiftAction = menuFunctions->addAction(tr("Move Notes"));
       QAction* delOverlapsAction = menuFunctions->addAction(tr("Delete Overlaps"));
 
-      connect(fixedAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(veloAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(crescAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(quantizeAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(eraseEventAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(noteShiftAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(delOverlapsAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-
-      signalMapper->setMapping(fixedAction, DrumCanvas::CMD_FIXED_LEN);
-      signalMapper->setMapping(veloAction, DrumCanvas::CMD_MODIFY_VELOCITY);
-      signalMapper->setMapping(crescAction, DrumCanvas::CMD_CRESCENDO);
-      signalMapper->setMapping(quantizeAction, DrumCanvas::CMD_QUANTIZE);
-      signalMapper->setMapping(eraseEventAction, DrumCanvas::CMD_ERASE_EVENT);
-      signalMapper->setMapping(noteShiftAction, DrumCanvas::CMD_NOTE_SHIFT);
-      signalMapper->setMapping(delOverlapsAction, DrumCanvas::CMD_DELETE_OVERLAPS);
+      connect(fixedAction,       &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_FIXED_LEN); } );
+      connect(veloAction,        &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_MODIFY_VELOCITY); } );
+      connect(crescAction,       &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_CRESCENDO); } );
+      connect(quantizeAction,    &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_QUANTIZE); } );
+      connect(eraseEventAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_ERASE_EVENT); } );
+      connect(noteShiftAction,   &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_NOTE_SHIFT); } );
+      connect(delOverlapsAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_DELETE_OVERLAPS); } );
 
 
+      //----------------------
+      // Scripts:
+      //----------------------
 
       QMenu* menuScriptPlugins = menuBar()->addMenu(tr("&Plugins"));
-      MusEGlobal::song->populateScriptMenu(menuScriptPlugins, this);
-      
-      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      connect(&_scriptReceiver,
+              &MusECore::ScriptReceiver::execDeliveredScriptReceived,
+              [this](int id) { execDeliveredScript(id); } );
+      connect(&_scriptReceiver,
+              &MusECore::ScriptReceiver::execUserScriptReceived,
+              [this](int id) { execUserScript(id); } );
+      MusEGlobal::song->populateScriptMenu(menuScriptPlugins, &_scriptReceiver);
+
+
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
       if (!old_style_drummap_mode())
       {
         QMenu* menuGrouping=settingsMenu->addMenu(tr("Group"));
@@ -375,19 +375,16 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
         ignoreHideAction->setCheckable(true);
         ignoreHideAction->setChecked(_ignore_hide);
         
-        connect(groupNoneAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-        connect(groupChanAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-        connect(groupMaxAction,  SIGNAL(triggered()), signalMapper, SLOT(map()));
         connect(ignoreHideAction,  SIGNAL(toggled(bool)), SLOT(set_ignore_hide(bool)));
         connect(showAllAction,  SIGNAL(triggered()), this, SLOT(showAllInstruments()));
         connect(hideAllAction,  SIGNAL(triggered()), this, SLOT(hideAllInstruments()));
         connect(hideUnusedAction,  SIGNAL(triggered()), this, SLOT(hideUnusedInstruments()));
         connect(hideEmptyAction,  SIGNAL(triggered()), this, SLOT(hideEmptyInstruments()));
 
-        signalMapper->setMapping(groupNoneAction, DrumCanvas::CMD_GROUP_NONE);
-        signalMapper->setMapping(groupChanAction, DrumCanvas::CMD_GROUP_CHAN);
-        signalMapper->setMapping(groupMaxAction,  DrumCanvas::CMD_GROUP_MAX);
-        
+        connect(groupNoneAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_GROUP_NONE); } );
+        connect(groupChanAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_GROUP_CHAN); } );
+        connect(groupMaxAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_GROUP_MAX); } );
+
         updateGroupingActions();
       }
       else
@@ -399,8 +396,6 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
-
-      connect(signalMapper, SIGNAL(mapped(int)), SLOT(cmd(int)));
 
       //---------------------------------------------------
       //    Toolbars
@@ -423,28 +418,31 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       tools->setObjectName("Drum tools");
 
       srec  = new QToolButton();
-      srec->setToolTip(tr("Step Record"));
-      srec->setIcon(*steprecIcon);
+      srec->setToolTip(tr("Step record"));
+      srec->setIcon(*steprecSVGIcon);
       srec->setCheckable(true);
       srec->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(srec);
 
       midiin  = new QToolButton();
-      midiin->setToolTip(tr("Midi Input"));
-      midiin->setIcon(*midiinIcon);
+      midiin->setToolTip(tr("Midi input"));
+      midiin->setIcon(*midiinSVGIcon);
       midiin->setCheckable(true);
       midiin->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(midiin);
       
       speaker  = new QToolButton();
-      speaker->setToolTip(tr("Play Events"));
-      speaker->setIcon(*speakerIcon);
+      speaker->setToolTip(tr("Play events"));
+      speaker->setIcon(*speakerSVGIcon);
       speaker->setCheckable(true);
       speaker->setChecked(true);
       speaker->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(speaker);
 
-      tools->addAction(QWhatsThis::createAction(this));
+      QAction* whatsthis = QWhatsThis::createAction(this);
+      whatsthis->setIcon(*whatsthisSVGIcon);
+      tools->addAction(whatsthis);
+
 
       if (old_style_drummap_mode())
       {
@@ -452,15 +450,15 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
         maptools->setObjectName("Drum map tools");
         
         QToolButton *ldm = new QToolButton();
-        ldm->setToolTip(tr("Load Drummap"));
-        ldm->setIcon(*openIcon);
+        ldm->setToolTip(tr("Load drummap"));
+        ldm->setIcon(*fileopenSVGIcon);
         ldm->setFocusPolicy(Qt::NoFocus);
         connect(ldm, SIGNAL(clicked()), SLOT(load()));
         maptools->addWidget(ldm);
         
         QToolButton *sdm = new QToolButton();
-        sdm->setToolTip(tr("Store Drummap"));
-        sdm->setIcon(*saveIcon);
+        sdm->setToolTip(tr("Store drummap"));
+        sdm->setIcon(*filesaveSVGIcon);
         sdm->setFocusPolicy(Qt::NoFocus);
         connect(sdm, SIGNAL(clicked()), SLOT(save()));
         maptools->addWidget(sdm);
@@ -474,10 +472,10 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       addToolBarBreak();
       
       info    = new MusEGui::NoteInfo(this);
-      info->setObjectName("Drum Note Info");
+      info->setObjectName("Drum note info");
       addToolBar(info);
 
-      QToolBar* cursorToolbar = addToolBar(tr("cursor tools"));
+      QToolBar* cursorToolbar = addToolBar(tr("Cursor tools"));
       cursorToolbar->setObjectName("Cursor step tools");
       QLabel *stepStr = new QLabel(tr("Cursor step:"));
       cursorToolbar->addWidget(stepStr);
@@ -514,9 +512,9 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       ctrl->setFont(MusEGlobal::config.fonts[3]);
       ctrl->setFocusPolicy(Qt::NoFocus);
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
-      hscroll           = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, xscale, 20000, Qt::Horizontal, mainw);
+      hscroll           = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, _viewState.xscale(), 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(40, hscroll->sizeHint().height());
-      ctrl->setToolTip(tr("Add Controller View"));
+      ctrl->setToolTip(tr("Add controller view"));
 
       QSizeGrip* corner = new QSizeGrip(mainw);
       //corner->setFixedHeight(hscroll->sizeHint().height());
@@ -598,9 +596,10 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       gridS1->setSpacing(0);  
       gridS2->setContentsMargins(0, 0, 0, 0);
       gridS2->setSpacing(0);  
-      time                = new MusEGui::MTScale(&_raster, split1w2, xscale);
-      canvas              = new DrumCanvas(this, split1w2, xscale, yscale);
-      vscroll             = new MusEGui::ScrollScale(-2, 1, yscale, dynamic_cast<DrumCanvas*>(canvas)->getOurDrumMapSize()*TH, Qt::Vertical, split1w2);
+      time                = new MusEGui::MTScale(&_raster, split1w2, _viewState.xscale());
+      canvas              = new DrumCanvas(this, split1w2, _viewState.xscale(), _viewState.yscale());
+      vscroll             = new MusEGui::ScrollScale(-2, 1, _viewState.yscale(),
+                            dynamic_cast<DrumCanvas*>(canvas)->getOurDrumMapSize()*TH, Qt::Vertical, split1w2);
       int offset = -(MusEGlobal::config.division/4);
       canvas->setOrigin(offset, 0);
       canvas->setCanvasTools(drumeditTools);
@@ -657,7 +656,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       else
         header->hideSection(COL_HIDE);
 
-      dlist = new DList(header, split1w1, yscale, (DrumCanvas*)canvas, old_style_drummap_mode());
+      dlist = new DList(header, split1w1, _viewState.yscale(), (DrumCanvas*)canvas, old_style_drummap_mode());
       setCurDrumInstrument(dlist->getSelectedInstrument());
       
       connect(dlist, SIGNAL(keyPressed(int, int)), canvas, SLOT(keyPressed(int, int)));
@@ -701,6 +700,10 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
       setWindowTitle(canvas->getCaption());
       
+      dlist->setYPos(_viewState.yscroll());
+      canvas->setYPos(_viewState.yscroll());
+      vscroll->setOffset(_viewState.yscroll());
+
       updateHScrollRange();
       
       // connect toolbar
@@ -724,18 +727,25 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       selectionChanged(); // enable/disable "Copy" & "Paste"
       configChanged();  // set configuration values, initialize shortcuts
 
-      const MusECore::Pos cpos=MusEGlobal::song->cPos();
-      canvas->setPos(0, cpos.tick(), true);
-      canvas->selectAtTick(cpos.tick());
-      //canvas->selectFirst();
-        
-      unsigned pos=0;
-      if(initPos >= INT_MAX)
-        pos = MusEGlobal::song->cpos();
-      if(pos > INT_MAX)
-        pos = INT_MAX;
-      if (pos)
-        hscroll->setOffset((int)pos);
+      // Don't bother if not showing default stuff, since something else
+      //  will likely take care of it, like the song file loading routines.
+      if(showDefaultControls)
+      {
+        const MusECore::Pos cpos=MusEGlobal::song->cPos();
+        canvas->setPos(0, cpos.tick(), true);
+        canvas->selectAtTick(cpos.tick());
+        //canvas->selectFirst();
+          
+        unsigned pos=0;
+        if(initPos >= INT_MAX)
+          pos = MusEGlobal::song->cpos();
+        else
+          pos = initPos;
+        if(pos > INT_MAX)
+          pos = INT_MAX;
+        //if (pos)
+          hscroll->setOffset((int)pos);
+      }
 
       if(canvas->track())
       {
@@ -745,6 +755,22 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       
       initTopwinState();
       finalizeInit();
+
+      // Add initial controllers.
+      // Don't bother if not showing default stuff, since something else
+      //  will likely take care of it, like the song file loading routines.
+      if(showDefaultControls)
+      {
+        CtrlEdit* ctrl_edit;
+        const MusECore::MidiCtrlViewStateList& mcvsl = _viewState.controllers();
+        for(MusECore::ciMidiCtrlViewState i = mcvsl.cbegin(); i != mcvsl.cend(); ++i)
+        {
+          const MusECore::MidiCtrlViewState& mcvs = *i;
+          ctrl_edit = addCtrl(mcvs._num);
+          if(ctrl_edit)
+            ctrl_edit->setPerNoteVel(mcvs._perNoteVel);
+        }
+      }
       }
 
 //---------------------------------------------------------
@@ -757,16 +783,16 @@ void DrumEdit::songChanged1(MusECore::SongChangedStruct_t bits)
           return;
         
         // We must catch this first and be sure to update the strips.
-        if(bits._flags & SC_TRACK_REMOVED)
+        if(bits & SC_TRACK_REMOVED)
           checkTrackInfoTrack();
         
-        if (bits._flags & SC_SOLO)
+        if (bits & SC_SOLO)
         {
             if(canvas->track())
               toolbar->setSolo(canvas->track()->solo());
         }      
         if ( !old_style_drummap_mode() && 
-             ( bits._flags & (SC_DRUMMAP | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
+             ( bits & (SC_DRUMMAP | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
                        SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED) ) )
           ((DrumCanvas*)(canvas))->rebuildOurDrumMap();
         
@@ -774,7 +800,7 @@ void DrumEdit::songChanged1(MusECore::SongChangedStruct_t bits)
         
         // We'll receive SC_SELECTION if a different part is selected.
         // Addition - also need to respond here to moving part to another track. (Tim)
-        if (bits._flags & (SC_PART_INSERTED | SC_PART_REMOVED))
+        if (bits & (SC_PART_INSERTED | SC_PART_REMOVED))
           updateTrackInfo();
         
         // We must marshall song changed instead of connecting to the strip's song changed
@@ -896,14 +922,6 @@ void DrumEdit::setTime(unsigned tick)
       {
       toolbar->setTime(tick);
       time->setPos(3, tick, false);
-      }
-
-//---------------------------------------------------------
-//   ~DrumEdit
-//---------------------------------------------------------
-
-DrumEdit::~DrumEdit()
-      {
       }
 
 //---------------------------------------------------------
@@ -1056,6 +1074,8 @@ void DrumEdit::setRaster(int val)
       _rasterInit = val;
       MidiEditor::setRaster(val);
       canvas->redrawGrid();
+      for (auto it : ctrlEditList)
+          it->redrawCanvas();
       focusCanvas();     // give back focus after kb input
       }
 
@@ -1597,7 +1617,7 @@ void DrumEdit::ctrlPopupTriggered(QAction* act)
 
   if(newCtlNum != -1)
   {
-    CtrlEdit* ctrlEdit = new CtrlEdit(split1, this, xscale, true, "drumCtrlEdit");
+    CtrlEdit* ctrlEdit = new CtrlEdit(split1, this, _viewState.xscale(), true, "drumCtrlEdit");
     ctrlEdit->setController(newCtlNum);
     setupNewCtrl(ctrlEdit);
   }
@@ -1638,7 +1658,7 @@ void DrumEdit::addCtrlClicked()
 
 CtrlEdit* DrumEdit::addCtrl(int ctl_num)
       {
-      CtrlEdit* ctrlEdit = new CtrlEdit(split1, this, xscale, true, "drumCtrlEdit");
+      CtrlEdit* ctrlEdit = new CtrlEdit(split1, this, _viewState.xscale(), true, "drumCtrlEdit");
       ctrlEdit->setController(ctl_num);
       setupNewCtrl(ctrlEdit);
       return ctrlEdit;
@@ -1703,6 +1723,37 @@ void DrumEdit::removeCtrl(CtrlEdit* ctrl)
         }  
       }
       }
+      
+//---------------------------------------------------------
+//   getViewState
+//---------------------------------------------------------
+
+MusECore::MidiPartViewState DrumEdit::getViewState() const
+{
+  MusECore::MidiPartViewState vs;
+  vs.setXScroll(hscroll->offset());
+  vs.setYScroll(vscroll->offset());
+  vs.setXScale(hscroll->getScaleValue());
+  vs.setYScale(vscroll->getScaleValue());
+  CtrlEdit* ce;
+  for(CtrlEditList::const_iterator i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i) {
+    ce = *i;
+    vs.addController(MusECore::MidiCtrlViewState(ce->ctrlNum(), ce->perNoteVel()));
+    }
+  return vs;
+}
+
+void DrumEdit::storeInitialViewState() const
+{
+  const MusECore::PartList* pl = parts();
+  if(pl)
+  {
+    const MusECore::MidiPartViewState vs = getViewState();
+    for(MusECore::ciPart i = pl->begin(); i != pl->end(); ++i)
+      i->second->setViewState(vs);
+  }
+}
+
 //---------------------------------------------------------
 //   newCanvasWidth
 //---------------------------------------------------------

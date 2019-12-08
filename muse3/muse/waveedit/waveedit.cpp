@@ -24,7 +24,6 @@
 #include <limits.h>
 
 #include <QMenu>
-#include <QSignalMapper>
 #include <QToolBar>
 #include <QToolButton>
 #include <QLayout>
@@ -90,8 +89,8 @@ int WaveEdit::colorModeInit = 0;
 void WaveEdit::closeEvent(QCloseEvent* e)
       {
       _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
-      
-      QSettings settings("MusE", "MusE-qt");
+
+      QSettings settings;
       //settings.setValue("Waveedit/geometry", saveGeometry());
       settings.setValue("Waveedit/windowState", saveState());
       
@@ -116,8 +115,6 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       setFocusPolicy(Qt::NoFocus);
       colorMode      = colorModeInit;
 
-      QSignalMapper* mapper = new QSignalMapper(this);
-      QSignalMapper* colorMapper = new QSignalMapper(this);
       QAction* act;
       
       //---------Pulldown Menu----------------------------
@@ -130,53 +127,40 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       menuGain = menuFunctions->addMenu(tr("&Gain"));
       
       act = menuGain->addAction("200%");
-      mapper->setMapping(act, WaveCanvas::CMD_GAIN_200);
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_GAIN_200); } );
       
       act = menuGain->addAction("150%");
-      mapper->setMapping(act, WaveCanvas::CMD_GAIN_150);
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_GAIN_150); } );
       
       act = menuGain->addAction("75%");
-      mapper->setMapping(act, WaveCanvas::CMD_GAIN_75);
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_GAIN_75); } );
       
       act = menuGain->addAction("50%");
-      mapper->setMapping(act, WaveCanvas::CMD_GAIN_50);
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_GAIN_50); } );
       
       act = menuGain->addAction("25%");
-      mapper->setMapping(act, WaveCanvas::CMD_GAIN_25);
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_GAIN_25); } );
       
       act = menuGain->addAction(tr("Other"));
-      mapper->setMapping(act, WaveCanvas::CMD_GAIN_FREE);
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      connect(mapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
+      connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_GAIN_FREE); } );
       
       menuFunctions->addSeparator();
 
       copyAction = menuEdit->addAction(tr("&Copy"));
-      mapper->setMapping(copyAction, WaveCanvas::CMD_EDIT_COPY);
-      connect(copyAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(copyAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_COPY); } );
 
       copyPartRegionAction = menuEdit->addAction(tr("&Create Part from Region"));
-      mapper->setMapping(copyPartRegionAction, WaveCanvas::CMD_CREATE_PART_REGION);
-      connect(copyPartRegionAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(copyPartRegionAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_CREATE_PART_REGION); } );
 
       cutAction = menuEdit->addAction(tr("C&ut"));
-      mapper->setMapping(cutAction, WaveCanvas::CMD_EDIT_CUT);
-      connect(cutAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(cutAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_CUT); } );
 
       pasteAction = menuEdit->addAction(tr("&Paste"));
-      mapper->setMapping(pasteAction, WaveCanvas::CMD_EDIT_PASTE);
-      connect(pasteAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(pasteAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_PASTE); } );
 
 
-      act = menuEdit->addAction(tr("Edit in E&xternal Editor"));
-      mapper->setMapping(act, WaveCanvas::CMD_EDIT_EXTERNAL);
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      act = menuEdit->addAction(tr("Edit in E&xternal Editor..."));
+      connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_EXTERNAL); } );
       
       menuEdit->addSeparator();
 
@@ -186,47 +170,38 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 //       connect(adjustWaveOffsetAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuFunctions->addAction(tr("Mute Selection"));
-      mapper->setMapping(act, WaveCanvas::CMD_MUTE);
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_MUTE); } );
       
       act = menuFunctions->addAction(tr("Normalize Selection"));
-      mapper->setMapping(act, WaveCanvas::CMD_NORMALIZE);
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_NORMALIZE); } );
       
       act = menuFunctions->addAction(tr("Fade In Selection"));
-      mapper->setMapping(act, WaveCanvas::CMD_FADE_IN);
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_FADE_IN); } );
       
       act = menuFunctions->addAction(tr("Fade Out Selection"));
-      mapper->setMapping(act, WaveCanvas::CMD_FADE_OUT);
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_FADE_OUT); } );
       
       act = menuFunctions->addAction(tr("Reverse Selection"));
-      mapper->setMapping(act, WaveCanvas::CMD_REVERSE);
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_REVERSE); } );
       
       select = menuEdit->addMenu(QIcon(*selectIcon), tr("Select"));
       
       selectAllAction = select->addAction(QIcon(*select_allIcon), tr("Select &All"));
-      mapper->setMapping(selectAllAction, WaveCanvas::CMD_SELECT_ALL);
-      connect(selectAllAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(selectAllAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_ALL); } );
       
       selectNoneAction = select->addAction(QIcon(*select_allIcon), tr("&Deselect All"));
-      mapper->setMapping(selectNoneAction, WaveCanvas::CMD_SELECT_NONE);
-      connect(selectNoneAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(selectNoneAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_NONE); } );
       
       select->addSeparator();
       
       selectPrevPartAction = select->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Previous Part"));
-      mapper->setMapping(selectPrevPartAction, WaveCanvas::CMD_SELECT_PREV_PART);
-      connect(selectPrevPartAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(selectPrevPartAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_PREV_PART); } );
       
       selectNextPartAction = select->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Next Part"));
-      mapper->setMapping(selectNextPartAction, WaveCanvas::CMD_SELECT_NEXT_PART);
-      connect(selectNextPartAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      connect(selectNextPartAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_NEXT_PART); } );
 
       
-      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
 
       eventColor = settingsMenu->addMenu(tr("&Event Color"));      
       
@@ -235,18 +210,13 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       
       evColorNormalAction = actgrp->addAction(tr("&Part colors"));
       evColorNormalAction->setCheckable(true);
-      colorMapper->setMapping(evColorNormalAction, 0);
+      connect(evColorNormalAction, &QAction::triggered, [this]() { eventColorModeChanged(0); } );
       
       evColorPartsAction = actgrp->addAction(tr("&Gray"));
       evColorPartsAction->setCheckable(true);
-      colorMapper->setMapping(evColorPartsAction, 1);
-      
-      connect(evColorNormalAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
-      connect(evColorPartsAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
+      connect(evColorPartsAction, &QAction::triggered, [this]() { eventColorModeChanged(1); } );
       
       eventColor->addActions(actgrp->actions());
-      
-      connect(colorMapper, SIGNAL(mapped(int)), this, SLOT(eventColorModeChanged(int)));
       
       settingsMenu->addSeparator();
       settingsMenu->addAction(subwinAction);
@@ -738,10 +708,10 @@ void WaveEdit::songChanged1(MusECore::SongChangedStruct_t bits)
           return;
 
         // We must catch this first and be sure to update the strips.
-        if(bits._flags & SC_TRACK_REMOVED)
+        if(bits & SC_TRACK_REMOVED)
           checkTrackInfoTrack();
         
-        if (bits._flags & SC_SOLO)
+        if (bits & SC_SOLO)
         {
           MusECore::WavePart* part = (MusECore::WavePart*)(parts()->begin()->second);
           solo->blockSignals(true);
@@ -753,7 +723,7 @@ void WaveEdit::songChanged1(MusECore::SongChangedStruct_t bits)
 
         // We'll receive SC_SELECTION if a different part is selected.
         // Addition - also need to respond here to moving part to another track. (Tim)
-        if (bits._flags & (SC_PART_INSERTED | SC_PART_REMOVED))
+        if (bits & (SC_PART_INSERTED | SC_PART_REMOVED))
           updateTrackInfo();
 
         // We must marshall song changed instead of connecting to the strip's song changed

@@ -56,9 +56,6 @@ namespace MusECore {
 
 MidiControllerList defaultManagedMidiController;
 
-LockFreeMPSCRingBuffer<MidiPlayEvent> *MidiPort::_eventBuffers = 
-  new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
-
 //---------------------------------------------------------
 //   initMidiPorts
 //---------------------------------------------------------
@@ -111,6 +108,7 @@ MidiPort::MidiPort()
       _defaultOutChannels = 0;
       _device     = 0;
       _instrument = 0;
+      _tmpTrackIdx = -1;
       _controller = new MidiCtrlValListList();
       _foundInSongFile = false;
       }
@@ -224,9 +222,10 @@ bool MidiPort::hasNativeGui() const
 //   setDevice
 //---------------------------------------------------------
 
-void MidiPort::setMidiDevice(MidiDevice* dev)
+void MidiPort::setMidiDevice(MidiDevice* dev, MidiInstrument* instrument)
       {
       if (_device) {
+            // REMOVE Tim. midnam. Removed.
             if (_device->isSynti())
                   _instrument = genericMidiInstrument;
             _device->setPort(-1);
@@ -248,10 +247,9 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
                         }
                   }
             _device = dev;
-            if (_device->isSynti()) {
-                  SynthI* s = (SynthI*)_device;
-                  _instrument = s;
-                  }
+            // If an instrument was given, use it. Otherwise don't touch the instrument.
+            if(instrument)
+              _instrument = instrument;
             _state = _device->open();
             _device->setPort(portno());
             _initializationsSent = false;
@@ -314,6 +312,9 @@ bool MidiPort::sendPendingInitializations(bool force)
 
 bool MidiPort::sendInitialControllers(unsigned start_time)
 {
+  MusECore::MetronomeSettings* metro_settings = 
+    MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
   bool rv = true;
   int port = portno();
   
@@ -322,9 +323,9 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
   int usedChanCount = 0;
   for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
     usedChans[i] = false;
-  if(MusEGlobal::song->click() && MusEGlobal::clickPort == port)
+  if(MusEGlobal::song->click() && metro_settings->clickPort == port)
   {
-    usedChans[MusEGlobal::clickChan] = true;
+    usedChans[metro_settings->clickChan] = true;
     ++usedChanCount;
   }
   bool drum_found = false;
@@ -968,7 +969,7 @@ bool MidiPort::putHwCtrlEvent(const MidiPlayEvent& ev)
     return false;
   }
   
-  if(!eventBuffers()->put(ev))
+  if(!MusEGlobal::song->putIpcOutEvent(ev))
   {
     fprintf(stderr, "MidiPort::putHwCtrlEvent: Error: gui2AudioFifo fifo overflow\n");
     return true;
@@ -1294,34 +1295,6 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
     break;
   }
   
-  return false;
-}
-
-//---------------------------------------------------------
-//   processGui2AudioEvents
-//   To be called from audio thread only.
-//   Return true if error.
-//---------------------------------------------------------
-
-// Static.
-bool MidiPort::processGui2AudioEvents()
-{
-  // Receive hardware state events sent from various threads to this audio thread.
-  // Update hardware state so gui controls are updated.
-  // False = don't use the size snapshot, but update it.
-  const int sz = eventBuffers()->getSize(false);
-  MidiPlayEvent ev;
-  for(int i = 0; i < sz; ++i)
-  {
-    if(!eventBuffers()->get(ev))
-      continue;
-    const int port = ev.port();
-    if(port < 0 || port >= MusECore::MIDI_PORTS)
-      continue;
-    // Handle the event. Tell the gui NOT to create controllers as needed,
-    //  that should be done before it ever gets here.
-    MusEGlobal::midiPorts[port].handleGui2AudioEvent(ev, false);
-  }
   return false;
 }
 
@@ -1898,28 +1871,28 @@ void MidiPort::writeRouting(int level, Xml& xml) const
       
       for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) 
       {
-        if(r->type == Route::TRACK_ROUTE && !r->name().isEmpty())
+        if(r->type == Route::TRACK_ROUTE && r->track)
         {
           // Ignore Midi Port to Audio Input routes. Handled by Track route writer. p4.0.14 Tim.
-          if(r->track && r->track->type() == Track::AUDIO_INPUT)
+          if(r->track->type() == Track::AUDIO_INPUT)
             continue;
             
-          s = QT_TRANSLATE_NOOP("@default", "Route");
+          s = "Route";
           if(r->channel != -1)
-            s += QString(QT_TRANSLATE_NOOP("@default", " channel=\"%1\"")).arg(r->channel);
+            s += QString(" channel=\"%1\"").arg(r->channel);
           xml.tag(level++, s.toLatin1().constData());
           
           xml.tag(level, "source mport=\"%d\"/", portno());
           
-          s = QT_TRANSLATE_NOOP("@default", "dest");
-          s += QString(QT_TRANSLATE_NOOP("@default", " name=\"%1\"/")).arg(Xml::xmlString(r->name()));
+          s = "dest";
+          s += QString(" track=\"%1\"/").arg(MusEGlobal::song->tracks()->index(r->track));
           xml.tag(level, s.toLatin1().constData());
           
           xml.etag(level--, "Route");
         }
       }
 }
-    
+
 // p4.0.17 Turn off if and when multiple output routes supported.
 #if 1
 //---------------------------------------------------------

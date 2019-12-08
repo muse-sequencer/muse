@@ -51,7 +51,7 @@ class Device {
 
       const QString& name() const      { return _name; }
       void setName(const QString& s)   { _name = s; }
-      const DeviceType type() const    { return _type; }
+      DeviceType type() const          { return _type; }
       void setDeviceType(DeviceType t) { _type = t; }
       int port() const                 { return _port; }
       void setPort(int p)              { _port = p; }

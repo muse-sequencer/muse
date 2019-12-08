@@ -22,7 +22,7 @@
 //=========================================================
 //#include <stdio.h>
 #include <limits.h>
-#include <cmath>
+#include "muse_math.h"
 
 #include <QCheckBox>
 #include <QLabel>
@@ -65,7 +65,7 @@ BigTime::BigTime(QWidget* parent)
   fmtButton = new QCheckBox(QString(""), this);
   fmtButton->resize(18,18);
   fmtButton->setChecked(true);
-  fmtButton->setToolTip(tr("format display"));
+  fmtButton->setToolTip(tr("Format display"));
   fmtButton->setFocusPolicy(Qt::NoFocus);
   barLabel   = new QLabel(dwin);
   beatLabel  = new QLabel(dwin);
@@ -82,16 +82,16 @@ BigTime::BigTime(QWidget* parent)
   sep5       = new QLabel(QString(":"), dwin);
   absTickLabel = new QLabel(dwin);
   absFrameLabel = new QLabel(dwin);
-  barLabel->setToolTip(tr("bar"));
-  beatLabel->setToolTip(tr("beat"));
-  tickLabel->setToolTip(tr("tick"));
+  barLabel->setToolTip(tr("Bar"));
+  beatLabel->setToolTip(tr("Beat"));
+  tickLabel->setToolTip(tr("Tick"));
   //hourLabel->setToolTip(tr("hour"));
-  minLabel->setToolTip(tr("minute"));
-  secLabel->setToolTip(tr("second"));
-  frameLabel->setToolTip(tr("frame"));
-  subFrameLabel->setToolTip(tr("subframe"));
-  absTickLabel->setToolTip(tr("tick"));
-  absFrameLabel->setToolTip(tr("frame"));
+  minLabel->setToolTip(tr("Minute"));
+  secLabel->setToolTip(tr("Second"));
+  frameLabel->setToolTip(tr("Frame"));
+  subFrameLabel->setToolTip(tr("Subframe"));
+  absTickLabel->setToolTip(tr("Tick"));
+  absFrameLabel->setToolTip(tr("Frame"));
   fmtButtonToggled(true);
   connect(fmtButton, SIGNAL(toggled(bool)), SLOT(fmtButtonToggled(bool)));
   //oldbar = oldbeat = oldtick = oldhour = oldmin = oldsec = oldframe = -1;
@@ -201,7 +201,7 @@ void BigTime::configChanged()
 
 void BigTime::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if (flags._flags & (SC_MASTER | SC_TEMPO | SC_SIG))
+      if (flags & (SC_MASTER | SC_TEMPO | SC_SIG))
         updateValue();
       }
 
@@ -376,7 +376,12 @@ void BigTime::resizeEvent(QResizeEvent *ev)
   QFontMetrics fm(f);
   int fs     = f.pixelSize();
   int hspace = 20;
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+  int tw     = fm.horizontalAdvance(QString("000:00:00:00"));
+#else
   int tw     = fm.width(QString("000:00:00:00"));
+#endif
   
   fs         = ((ev->size().width() - hspace*2)*fs) / tw;
  
@@ -391,7 +396,12 @@ void BigTime::resizeEvent(QResizeEvent *ev)
   setBgColor(MusEGlobal::config.bigTimeBackgroundColor);
   setFgColor(MusEGlobal::config.bigTimeForegroundColor);
   
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+  int digitWidth = dwin->fontMetrics().horizontalAdvance(QString("0"));
+#else
   int digitWidth = dwin->fontMetrics().width(QString("0"));
+#endif
   int vspace = (ev->size().height() - (fs*2)) / 3;
   int tickY = vspace;
   

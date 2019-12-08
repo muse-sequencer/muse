@@ -35,7 +35,7 @@
 #include <QVBoxLayout>
 #include <QColor>
 
-#include <math.h>
+#include "muse_math.h"
 
 #include "globaldefs.h"
 #include "app.h"
@@ -110,7 +110,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       selCtrl->setFixedHeight(20);
       selCtrl->setSizePolicy(
          QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
-      selCtrl->setToolTip(tr("select controller"));
+      selCtrl->setToolTip(tr("Select controller"));
       
       // destroy button
       QPushButton* destroy = new QPushButton(tr("X"), this);
@@ -120,7 +120,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       destroy->setFixedHeight(20);
       destroy->setSizePolicy(
          QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
-      destroy->setToolTip(tr("remove panel"));
+      destroy->setToolTip(tr("Remove panel"));
       // Cursor Position
       connect(selCtrl, SIGNAL(clicked()), SLOT(ctrlPopup()));
       connect(destroy, SIGNAL(clicked()), SIGNAL(destroyPanel()));
@@ -186,7 +186,7 @@ void CtrlPanel::buildPanel()
   if(_patchEdit->font() != MusEGlobal::config.fonts[1])
   {
     _patchEdit->setFont(MusEGlobal::config.fonts[1]);
-    _patchEdit->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+    _patchEdit->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
   }
 
   connect(_patchEdit, SIGNAL(valueChanged(int,int)), SLOT(patchCtrlChanged(int)));
@@ -217,7 +217,7 @@ void CtrlPanel::buildPanel()
     if(_knob->font() != MusEGlobal::config.fonts[1])
     {
       _knob->setFont(MusEGlobal::config.fonts[1]);
-      _knob->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+      _knob->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
     }
 
     connect(_knob, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(ctrlChanged(double,bool,int,int)));
@@ -229,7 +229,7 @@ void CtrlPanel::buildPanel()
   {
     _slider = new CompactSlider(this, "CtrlPanelSlider");
     _slider->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-    _slider->setToolTip(tr("manual adjust (Ctrl-double-click on/off)"));
+    _slider->setToolTip(tr("Manual adjust (Ctrl-double-click on/off)"));
     //_slider->setFocusPolicy(Qt::NoFocus);
     _slider->setRange(0.0, 127.0, 1.0);
     _slider->setValue(0.0);
@@ -247,7 +247,7 @@ void CtrlPanel::buildPanel()
     if(_slider->font() != MusEGlobal::config.fonts[1])
     {
       _slider->setFont(MusEGlobal::config.fonts[1]);
-      _slider->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+      _slider->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
     }
 
     connect(_slider, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(ctrlChanged(double,bool,int,int)));
@@ -259,7 +259,7 @@ void CtrlPanel::buildPanel()
   _veloPerNoteButton = new PixmapButton(veloPerNote_OnIcon, veloPerNote_OffIcon, 2, this);  // Margin = 2
   _veloPerNoteButton->setFocusPolicy(Qt::NoFocus);
   _veloPerNoteButton->setCheckable(true);
-  _veloPerNoteButton->setToolTip(tr("all/per-note velocity mode"));
+  _veloPerNoteButton->setToolTip(tr("All/Per-note velocity mode"));
   _veloPerNoteButton->setEnabled(false);
   _veloPerNoteButton->hide();
   connect(_veloPerNoteButton, SIGNAL(clicked()), SLOT(velPerNoteClicked()));
@@ -511,7 +511,7 @@ void CtrlPanel::configChanged()
     if(_patchEdit->font() != MusEGlobal::config.fonts[1])
     {
       _patchEdit->setFont(MusEGlobal::config.fonts[1]);
-      _patchEdit->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+      _patchEdit->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
     }
     _patchEdit->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
   }
@@ -521,7 +521,7 @@ void CtrlPanel::configChanged()
     if(_knob->font() != MusEGlobal::config.fonts[1])
     {
       _knob->setFont(MusEGlobal::config.fonts[1]);
-      _knob->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+      _knob->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
     }
 
     // Whether to show values along with labels for certain controls.
@@ -533,7 +533,7 @@ void CtrlPanel::configChanged()
     if(_slider->font() != MusEGlobal::config.fonts[1])
     {
       _slider->setFont(MusEGlobal::config.fonts[1]);
-      _slider->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+      _slider->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
     }
 
     _slider->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);

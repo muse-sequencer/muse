@@ -38,6 +38,17 @@ namespace MusEGlobal {
  *    of these values.
  *    In a perfect world it would overwrite all values and
  *    these would be removed.
+ * 
+ * SE 3 2019: In a perfect world ALL configuration values are stored here.
+ *    And most are. But some are not, they are scattered throughout the app.
+ *    But they are not THAT difficult to find by reverse looking up an xml tag
+ *     in an existing config file to find out what uses it.
+ *    We should strive to keep ALL config values here, where each item is
+ *     guaranteed to have a value. Some devs (me included) are neglecting
+ *     to put new values in the template. So it becomes ineffective.
+ * 
+ *    Therefore item 2) is no longer true. It has been disabled in main.cpp.
+ *    Tim.
  */
 
 GlobalConfigValues config = {
@@ -83,7 +94,8 @@ GlobalConfigValues config = {
         QColor(0x00, 0x7f, 0x7f),
         QColor(0x7f, 0x00, 0x7f),
         QColor(0x00, 0x7f, 0xff),
-        QColor(0x00, 0x3f, 0x3f)
+        QColor(0x00, 0x3f, 0x3f),
+        QColor(170, 85, 0)
       },
       {
         QString("Default"),   // Default part color names
@@ -102,7 +114,8 @@ GlobalConfigValues config = {
         QString("Strings"),
         QString("Keyboard"),
         QString("Piano"),
-        QString("Saxophone")
+        QString("Saxophone"),
+        QString("Organ")
       },
       QColor(51, 114, 178),   // transportHandleColor;
       QColor(219, 65, 65),    // bigTimeForegroundColor;
@@ -144,6 +157,8 @@ GlobalConfigValues config = {
       QColor(220, 211, 202),     // synthTrackBg;
       
       QColor(98, 124, 168),      // part canvas bg
+      QColor(71, 71, 71),        // partCanvasCoarseRaster;
+      QColor(130, 136, 168),     // partCanvasFineRaster;
       QColor(255, 170, 0),       // ctrlGraphFg;    Medium orange
       QColor(0, 0, 0),           // mixerBg;
 
@@ -153,7 +168,8 @@ GlobalConfigValues config = {
       QColor(255, 255, 255),        // midiControllerViewBg
       QColor(255, 255, 255),        // drumListBg
       QColor(255, 255, 255),        // rulerCurrent
-      Qt::gray,                     // midiCanvasBeatColor
+      QColor(210, 210, 210),        // midiCanvasFineColor
+      QColor(130, 130, 130),        // midiCanvasBeatColor
       Qt::black,                    // midiCanvasBarColor
       Qt::lightGray,                // waveNonselectedPart
       Qt::darkGray,                 // wavePeakColor
@@ -230,7 +246,7 @@ GlobalConfigValues config = {
       QString(""),                  // start song path
       false,                        // startSongLoadConfig
       384,                          // gui division
-      QRect(0, 0, 400, 300),        // GeometryMain;
+      QRect(0, 0, 700, 550),        // GeometryMain;
       QRect(0, 0, 200, 100),        // GeometryTransport;
       QRect(0, 0, 600, 200),        // GeometryBigTime;
       {
@@ -240,7 +256,8 @@ GlobalConfigValues config = {
          true, true, true, true,
          true, true, true, true, true,
          MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW,
-         QList<bool>()
+         QList<bool>(),
+         QList<StripConfig>()
          },
       {
          QString("Mixer B"),
@@ -249,7 +266,8 @@ GlobalConfigValues config = {
          true, true, true, true,
          true, true, true, true, true,
          MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW,
-         QList<bool>()
+         QList<bool>(),
+         QList<StripConfig>()
       },
       true,                         // TransportVisible;
       false,                        // BigTimeVisible;
@@ -267,6 +285,7 @@ GlobalConfigValues config = {
       QString(""),                  // style
       QString("sweep"),             // externalWavEditor
       false,                        // useOldStyleStopShortCut
+      true,                         // useRewindOnStop
       false,                        // moveArmedCheckBox
       true,                         // useDenormalBias
       false,                        // useOutputLimiter
@@ -276,6 +295,8 @@ GlobalConfigValues config = {
       44100,                        // Device audio preferred sample rate
       512,                          // Device audio buffer size
       0,                            // Device RtAudio selected backend
+      true,                         // useJackTransport
+      true,                         // jackTransportMaster;
 
       QString("./"),                // projectBaseFolder
       true,                         // projectStoreInFolder
@@ -304,15 +325,17 @@ GlobalConfigValues config = {
       true,                         // midiCtrlGraphMergeErase Whether to erase underlying erase target items when dragging/dropping source items.
       false,                        // midiCtrlGraphMergeEraseInclusive Whether to erase target items in-between source item groups.
       true,                         // midiCtrlGraphMergeEraseWysiwyg Whether to erase past the last item in a group to include its original source width.
-      QString("klick1.wav"),        // measSample
-      QString("klick2.wav"),        // beatSample
-      QString("klick3.wav"),        // accent1Sample
-      QString("klick4.wav"),        // accent2Sample
       MusEGlobal::RoutePreferCanonicalName,  // preferredRouteNameOrAlias
       true,                         // routerExpandVertically
       2,                            // routerGroupingChannels
+      false,                        // enableLatencyCorrection.
+      false,                        // correctUnterminatedOutBranchLatency
+      false,                        // correctUnterminatedInBranchLatency
+      false,                        // monitoringAffectsLatency
+      false,                        // commonProjectLatency
       "",                           // mixdownPath
       true,                         // showNoteNamesInPianoRoll
+      true,                         // noPluginScaling
       false                         // selectionsUndoable Whether selecting parts or events is undoable.
     };
 

@@ -20,7 +20,7 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //=============================================================================
 
-#include <cmath>
+#include "muse_math.h"
 
 #include "tempoedit.h"
 
@@ -51,7 +51,12 @@ QSize TempoEdit::sizeHint() const
       QFontMetrics fm(font());
       int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
       int h  = fm.height() + fw * 2;
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      int w  = 2 + fm.horizontalAdvance(QString("000.00")) +  fw * 4 + 30;
+#else
       int w  = 2 + fm.width(QString("000.00")) +  fw * 4 + 30;
+#endif
       return QSize(w, h).expandedTo(QApplication::globalStrut());
       }
 

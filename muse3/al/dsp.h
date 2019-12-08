@@ -24,7 +24,7 @@
 #define __DSP_H__
 
 #include <string.h>
-#include <math.h>
+#include "muse_math.h"
 
 namespace AL {
 
@@ -52,6 +52,7 @@ class Dsp {
       Dsp() {}
       virtual ~Dsp() {}
 
+      virtual void clear(float* dst, unsigned n, bool addDenormal = false);
       virtual float peak(float* buf, unsigned n, float current) {
             for (unsigned i = 0; i < n; ++i)
                   current = f_max(current, fabsf(buf[i]));

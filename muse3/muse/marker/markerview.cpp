@@ -177,10 +177,10 @@ MarkerView::MarkerView(QWidget* parent)
       {
       setWindowTitle(tr("MusE: Marker"));
 
-      QAction* markerAdd = new QAction(QIcon(*flagIcon), tr("add marker"), this);
+      QAction* markerAdd = new QAction(QIcon(*flagIcon), tr("Add marker"), this);
       connect(markerAdd, SIGNAL(triggered()), SLOT(addMarker()));
 
-      QAction* markerDelete = new QAction(QIcon(*deleteIcon), tr("delete marker"), this);
+      QAction* markerDelete = new QAction(QIcon(*deleteIcon), tr("Delete marker"), this);
       connect(markerDelete, SIGNAL(triggered()), SLOT(deleteMarker()));
 
       //---------Pulldown Menu----------------------------
@@ -190,7 +190,7 @@ MarkerView::MarkerView(QWidget* parent)
       editMenu->addAction(markerDelete);
       
       
-      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
@@ -205,7 +205,7 @@ MarkerView::MarkerView(QWidget* parent)
       //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
       //          instead of /appending/ with addToolBar().
 
-      QToolBar* edit = addToolBar(tr("edit tools"));
+      QToolBar* edit = addToolBar(tr("Edit tools"));
       edit->setObjectName("marker edit tools");
       edit->addAction(markerAdd);
       edit->addAction(markerDelete);
@@ -558,7 +558,7 @@ void MarkerView::clicked(QTreeWidgetItem* i)
             return;
             }
       MusECore::Pos p(item->tick(), true);
-      MusEGlobal::song->setPos(0, p, true, true, false);
+      MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, false);
       }
 
 //---------------------------------------------------------
@@ -582,7 +582,7 @@ void MarkerView::tickChanged(const MusECore::Pos& pos)
       if (item) {
             item->setTick(pos.tick());
             MusECore::Pos p(pos.tick(), true);
-            MusEGlobal::song->setPos(0, p, true, true, false);
+            MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, false);
             table->sortByColumn(COL_TICK, Qt::AscendingOrder);
             }
       }
@@ -653,7 +653,7 @@ void MarkerView::nextMarker()
       if (nextPos == 0xFFFFFFFF)
           return;
       MusECore::Pos p(nextPos, true);
-      MusEGlobal::song->setPos(0, p, true, true, false);
+      MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, false);
         
       }
 void MarkerView::prevMarker()
@@ -667,7 +667,7 @@ void MarkerView::prevMarker()
             }
 
       MusECore::Pos p(nextPos, true);
-      MusEGlobal::song->setPos(0, p, true, true, false);
+      MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, false);
       }
 
 } // namespace MusEGui

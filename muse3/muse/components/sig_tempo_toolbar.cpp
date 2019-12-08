@@ -28,6 +28,7 @@
 #include "icons.h"
 #include "pixmap_button.h"
 #include "sig.h"
+#include "tempo.h"
 
 #include <QLabel>
 #include <QToolButton>
@@ -59,12 +60,12 @@ void TempoToolbar::init()
   _masterButton->setContentsMargins(0, 0, 0, 0);
   _masterButton->setFocusPolicy(Qt::NoFocus);
   _masterButton->setCheckable(true);
-  _masterButton->setToolTip(tr("use mastertrack tempo"));
+  _masterButton->setToolTip(tr("Use mastertrack tempo"));
   _masterButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
   connect(_masterButton, SIGNAL(toggled(bool)), SLOT(masterToggled(bool)));
   
   tempo_edit=new TempoEdit(this);
-  tempo_edit->setToolTip(tr("mastertrack tempo at current position, or fixed tempo"));
+  tempo_edit->setToolTip(tr("Mastertrack tempo at current position, or fixed tempo"));
   tempo_edit->setContentsMargins(0, 0, 0, 0);
   tempo_edit->setFocusPolicy(Qt::StrongFocus);
 
@@ -83,7 +84,7 @@ void TempoToolbar::init()
 
   connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(song_changed(MusECore::SongChangedStruct_t)));
   connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(pos_changed(int,unsigned,bool)));
-  connect(&MusEGlobal::extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(syncChanged(bool)));
+  //connect(&MusEGlobal::extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(syncChanged(bool)));
 
   connect(tempo_edit, SIGNAL(tempoChanged(double)), MusEGlobal::song, SLOT(setTempo(double)));
   connect(tempo_edit, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
@@ -103,16 +104,20 @@ void TempoToolbar::pos_changed(int,unsigned,bool)
 
 void TempoToolbar::song_changed(MusECore::SongChangedStruct_t type)
 {
-  if(type._flags & (SC_TEMPO | SC_MASTER))
+  if(type & (SC_TEMPO | SC_MASTER))
   {
     int tempo = MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos());
     tempo_edit->blockSignals(true);
     tempo_edit->setValue(double(60000000.0/tempo));
     tempo_edit->blockSignals(false);
   }
-  if(type._flags & SC_MASTER)
+  if(type & SC_MASTER)
   {
-    setMasterTrack(MusEGlobal::song->masterFlag());
+    setMasterTrack(MusEGlobal::tempomap.masterFlag());
+  }
+  if(type & SC_EXTERNAL_MIDI_SYNC)
+  {
+    syncChanged(MusEGlobal::extSyncFlag);
   }
 }
 
@@ -191,7 +196,7 @@ void SigToolbar::init()
   sig_edit->setContentsMargins(0, 0, 0, 0);
   sig_edit->setFocusPolicy(Qt::StrongFocus);
   sig_edit->setValue(MusECore::TimeSignature(4, 4));
-  sig_edit->setToolTip(tr("time signature at current position"));
+  sig_edit->setToolTip(tr("Time signature at current position"));
   
   label=new QLabel(tr("Signature: "),this);
   label->setContentsMargins(0, 0, 0, 0);
@@ -217,7 +222,7 @@ void SigToolbar::pos_changed(int,unsigned,bool)
 
 void SigToolbar::song_changed(MusECore::SongChangedStruct_t type)
 {
-  if(type._flags & SC_SIG)
+  if(type & SC_SIG)
   {
     int z, n;
     MusEGlobal::sigmap.timesig(MusEGlobal::song->cpos(), z, n);

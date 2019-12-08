@@ -78,6 +78,10 @@ const char* PluginScanInfoStruct::typeString() const
       return "mess";
     break;
 
+    case PluginTypeUnknown:
+      return "unknown";
+    break;
+
     case PluginTypeNone:
     case PluginTypeAll:
     break;

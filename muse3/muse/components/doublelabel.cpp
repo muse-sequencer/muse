@@ -20,7 +20,7 @@
 //
 //=========================================================
 
-#include <cmath>
+#include "muse_math.h"
 
 #include "doublelabel.h"
 
@@ -197,10 +197,20 @@ QSize DoubleLabel::sizeHint() const
       if (aval >= 100000.0)
             ++n;
 
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      int w = fm.horizontalAdvance(QString("-0.")) + fm.horizontalAdvance('0') * n + 6;
+#else
       int w = fm.width(QString("-0.")) + fm.width('0') * n + 6;
+#endif
       if(!_suffix.isEmpty())
       {
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+        w += fm.horizontalAdvance(QString(" ")) + fm.horizontalAdvance(_suffix);
+#else
         w += fm.width(QString(" ")) + fm.width(_suffix);
+#endif
       }
       return QSize(w, h);
       }

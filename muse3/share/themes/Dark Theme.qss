@@ -52,7 +52,19 @@ QToolBar QToolButton:checked {
 
 }
 
-QTreeView {
+QToolBar QToolButton[popupMode="1"] {
+      padding-right: 12px;
+}
+
+QTreeView, QListView {
      alternate-background-color: rgb(60,60,60);
      background: rgb(30,30,30);
  }
+
+MusEGui--RouteTreeWidget {
+	qproperty-categoryColor: DarkSlateGray;
+}
+
+MusEGui--SnooperDialog {
+	qproperty-flashColor: DarkSlateGray;
+}

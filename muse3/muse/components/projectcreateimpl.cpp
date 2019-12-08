@@ -68,9 +68,9 @@ ProjectCreateImpl::ProjectCreateImpl(QWidget *parent) :
   }  
   projectFileTypeCB->setCurrentIndex(type_idx);
   
-  projDirToolButton->setIcon(*openIcon);
-  browseDirButton->setIcon(*openIcon);
-  restorePathButton->setIcon(*undoIcon);
+  projDirToolButton->setIcon(*fileopenSVGIcon);
+  browseDirButton->setIcon(*fileopenSVGIcon);
+  restorePathButton->setIcon(*undoSVGIcon);
 
   restorePathButton->setEnabled(false);  // Disabled at first.
   

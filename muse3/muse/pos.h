@@ -81,6 +81,8 @@ class Pos {
       TType  type() const     { return _type; }
       void   setType(TType t);
 
+      Pos& operator=(const Pos&);
+      
       Pos& operator+=(Pos a);
       Pos& operator+=(int a);
       Pos& operator-=(Pos a);
@@ -131,6 +133,8 @@ class PosLen : public Pos {
       PosLen(const PosLen&);
       void dump(int n = 0) const;
 
+      PosLen& operator=(const PosLen&);
+      
       void write(int level, Xml&, const char*) const;
       void read(Xml& xml, const char*);
       void setLenTick(unsigned);

@@ -35,7 +35,7 @@ MidiVolEntry::MidiVolEntry(QWidget* parent, bool leftMouseButtonCanDecrease)
   	_max = 127;
       setRange(-98.0f, 0.0f);
       setSpecialText(tr("off"));
-      setSuffix(tr("db"));
+      setSuffix("dB");
       setFrame(true);
       setPrecision(0);
       }

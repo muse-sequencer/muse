@@ -21,10 +21,9 @@
 //
 //=========================================================
 
-#include <cmath>
+#include "muse_math.h"
 #include "auxknob.h"
 #include "gconfig.h"
-#include "muse_math.h"
 
 namespace MusEGui {
 

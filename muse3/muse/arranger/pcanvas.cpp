@@ -23,10 +23,13 @@
 
 #include <stdio.h>
 #include <sys/stat.h>
+#ifdef _WIN32
+#include "mman.h"
+#else
 #include <sys/mman.h>
+#endif
 #include <errno.h>
 #include <limits.h>
-#include <math.h>
 #include <map>
 #include <assert.h>
 
@@ -40,6 +43,7 @@
 #include <QMimeData>
 #include <QDrag>
 
+#include "muse_math.h"
 #include "fastlog.h"
 #include "components/tools.h"
 #include "arranger.h"
@@ -67,7 +71,6 @@
 #include "dialogs.h"
 #include "components/pastedialog.h"
 #include "undo.h"
-#include "muse_math.h"
 
 using MusECore::Undo;
 using MusECore::UndoOp;
@@ -347,12 +350,12 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
     MusECore::Track* track    = npart->track();
     MusECore::Track* dtrack=NULL;
     unsigned dtick  = newpos.x(); // FIXME TODO make subtick-compatible!
-    unsigned ntrack = y2pitch(item->mp().y());
+    int ntrack = y2pitch(item->mp().y());
     MusECore::Track::TrackType type = track->type();
     if (tracks->index(track) == ntrack && (dtick == spart->tick())) {
         return false;
     }
-    if (ntrack >= tracks->size()) {
+    if (ntrack >= (int)tracks->size()) {
         ntrack = tracks->size();
         if (MusEGlobal::debugMsg)
             printf("PartCanvas::moveItem - add new track\n");
@@ -747,44 +750,44 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       partPopup->addAction(new MenuTitleItem(tr("Part:"), partPopup));
 
       QAction *act_cut = partPopup->addAction(*editcutIconSet, tr("C&ut"));
-      act_cut->setData(4);
+      act_cut->setData(OP_CUT);
       act_cut->setShortcut(Qt::CTRL+Qt::Key_X);
 
       QAction *act_copy = partPopup->addAction(*editcopyIconSet, tr("&Copy"));
-      act_copy->setData(5);
+      act_copy->setData(OP_COPY);
       act_copy->setShortcut(Qt::CTRL+Qt::Key_C);
 
       partPopup->addSeparator();
       int rc = npart->part()->nClones();
-      QString st = QString(tr("s&elect "));
+      QString st = QString(tr("S&elect "));
       if(rc > 1)
         st += (QString().setNum(rc) + QString(" "));
       st += QString(tr("clones"));
       QAction *act_select = partPopup->addAction(st);
-      act_select->setData(18);
+      act_select->setData(OP_SELECT_CLONES);
 
       partPopup->addSeparator();
-      QAction *act_rename = partPopup->addAction(tr("rename"));
-      act_rename->setData(0);
+      QAction *act_rename = partPopup->addAction(tr("Rename"));
+      act_rename->setData(OP_RENAME);
 
-      QMenu* colorPopup = partPopup->addMenu(tr("color"));
+      QMenu* colorPopup = partPopup->addMenu(tr("Color"));
 
       // part color selection
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
             QAction *act_color = colorPopup->addAction(MusECore::colorRect(MusEGlobal::config.partColors[i], 80, 80), MusEGlobal::config.partColorNames[i]);
-            act_color->setData(20+i);
+            act_color->setData(OP_PARTCOLORBASE+i);
             }
 
-      QAction *act_delete = partPopup->addAction(QIcon(*deleteIcon), tr("delete")); // ddskrjo added QIcon to all
-      act_delete->setData(1);
-      QAction *act_split = partPopup->addAction(QIcon(*cutIcon), tr("split"));
-      act_split->setData(2);
-      QAction *act_glue = partPopup->addAction(QIcon(*glueIcon), tr("glue"));
-      act_glue->setData(3);
-      QAction *act_superglue = partPopup->addAction(QIcon(*glueIcon), tr("super glue (merge selection)"));
-      act_superglue->setData(6);
-      QAction *act_declone = partPopup->addAction(tr("de-clone"));
-      act_declone->setData(15);
+      QAction *act_delete = partPopup->addAction(*deleteIconSVG, tr("Delete"));
+      act_delete->setData(OP_DELETE);
+      QAction *act_split = partPopup->addAction(*cutterIconSVG, tr("Split"));
+      act_split->setData(OP_SPLIT);
+      QAction *act_glue = partPopup->addAction(*glueIconSVG, tr("Glue"));
+      act_glue->setData(OP_GLUE);
+      QAction *act_superglue = partPopup->addAction(*glueIconSVG, tr("Super glue (merge selection)"));
+      act_superglue->setData(OP_GLUESELECTION);
+      QAction *act_declone = partPopup->addAction(tr("De-clone"));
+      act_declone->setData(OP_DECLONE);
 
       partPopup->addSeparator();
       switch(trackType) {
@@ -793,27 +796,27 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   partPopup->addMenu(MusEGlobal::muse->arranger()->parentWin()->scoreSubmenu);
 //                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startScoreEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
-                  QAction *act_mexport = partPopup->addAction(tr("save part to disk"));
-                  act_mexport->setData(16);
+                  QAction *act_mexport = partPopup->addAction(tr("Save part to disk..."));
+                  act_mexport->setData(OP_SAVEPARTTODISK);
                   }
                   break;
             case MusECore::Track::NEW_DRUM:
             case MusECore::Track::DRUM: {
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startDrumEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
-                  QAction *act_dexport = partPopup->addAction(tr("save part to disk"));
-                  act_dexport->setData(16);
+                  QAction *act_dexport = partPopup->addAction(tr("Save part to disk..."));
+                  act_dexport->setData(OP_SAVEPARTTODISK);
                   }
                   break;
             case MusECore::Track::WAVE: {
-                  QAction *act_wedit = partPopup->addAction(QIcon(*edit_waveIcon), tr("wave edit"));
-                  act_wedit->setData(14);
-                  QAction *act_wexport = partPopup->addAction(tr("save part to disk"));
-                  act_wexport->setData(16);
-                  QAction *act_wfinfo = partPopup->addAction(tr("file info"));
-                  act_wfinfo->setData(17);
+                  QAction *act_wedit = partPopup->addAction(QIcon(*edit_waveIcon), tr("Wave edit"));
+                  act_wedit->setData(OP_WAVEEDIT);
+                  QAction *act_wexport = partPopup->addAction(tr("Save part to disk"));
+                  act_wexport->setData(OP_SAVEPARTTODISK);
+                  QAction *act_wfinfo = partPopup->addAction(tr("File info"));
+                  act_wfinfo->setData(OP_FILEINFO);
                   QAction *act_wfnorm = partPopup->addAction(tr("Normalize"));
-                  act_wfnorm->setData(19);
+                  act_wfnorm->setData(OP_NORMALIZE);
                   act_wfnorm->setShortcut(Qt::CTRL+Qt::Key_N);
                   }
                   break;
@@ -834,10 +837,24 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       return partPopup;
       }
 
+void PartCanvas::renameItem(CItem *item)
+{
+  editPart = (NPart*)(item);
+  QRect r = map(curItem->bbox());
+  if (lineEditor == 0) {
+    lineEditor = new QLineEdit(this);
+    lineEditor->setFrame(true);
+    connect(lineEditor, SIGNAL(editingFinished()),SLOT(returnPressed()));
+  }
+  lineEditor->setText(editPart->name());
+  lineEditor->setFocus();
+  lineEditor->show();
+  lineEditor->setGeometry(r);
+  editMode = true;
+}
 //---------------------------------------------------------
 //   itemPopup
 //---------------------------------------------------------
-
 void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
 {
    if(n >= TOOLS_ID_BASE)
@@ -850,46 +867,33 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
    NPart* npart = (NPart*)(item);
    pl->add(npart->part());
    switch(n) {
-   case 0:     // rename
-   {
-      editPart = npart;
-      QRect r = map(curItem->bbox());
-      if (lineEditor == 0) {
-         lineEditor = new QLineEdit(this);
-         lineEditor->setFrame(true);
-         connect(lineEditor, SIGNAL(editingFinished()),SLOT(returnPressed()));
-      }
-      lineEditor->setText(editPart->name());
-      lineEditor->setFocus();
-      lineEditor->show();
-      lineEditor->setGeometry(r);
-      editMode = true;
-   }
+   case OP_RENAME:     // rename
+     renameItem(item);
       break;
-   case 1:     // delete
+   case OP_DELETE:     // delete
       deleteItem(item);
       break;
-   case 2:     // split
+   case OP_SPLIT:     // split
       splitItem(item, pt);
       break;
-   case 3:     // glue
+   case OP_GLUE:     // glue
       glueItem(item);
       break;
-   case 4:
+   case OP_CUT:
       copy(pl);
       MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeletePart, npart->part()));
       break;
-   case 5:
+   case OP_COPY:
       copy(pl);
       break;
-   case 6:
+   case OP_GLUESELECTION:
       MusECore::merge_selected_parts();
       break;
 
-   case 14:    // wave edit
+   case OP_WAVEEDIT:    // wave edit
       emit startEditor(pl, 4);
       return;
-   case 15:    // declone
+   case OP_DECLONE:    // declone
    {
       MusECore::Part* spart  = npart->part();
       MusECore::Part* dpart  = spart->duplicate(); // dpart will not be member of any clone chain!
@@ -900,7 +904,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
       MusEGlobal::song->applyOperationGroup(operations);
       break;
    }
-   case 16: // Export to file
+   case OP_SAVEPARTTODISK: // Export to file
    {
       const MusECore::Part* part = item->part();
       bool popenFlag = false;
@@ -918,7 +922,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
       break;
    }
 
-   case 17: // File info
+   case OP_FILEINFO: // File info
    {
       MusECore::Part* p = item->part();
       QString str = tr("Part name: %1\nFiles:").arg(p->name());
@@ -936,7 +940,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
       QMessageBox::information(this, "File info", str, "Ok", 0);
       break;
    }
-   case 18: // Select clones
+   case OP_SELECT_CLONES: // Select clones
    {
       MusECore::Part* part = item->part();
 
@@ -959,12 +963,12 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
 
       break;
    }
-   case 19: // Normalize
+   case OP_NORMALIZE: // Normalize
    {
       MusEGlobal::song->normalizeWaveParts(item->part());
       break;
    }
-   case 20 ... NUM_PARTCOLORS+20:
+   case OP_PARTCOLORBASE ... NUM_PARTCOLORS+20:
    {
       curColorIndex = n - 20;
       bool selfound = false;
@@ -1144,33 +1148,35 @@ MusECore::Track* PartCanvas::y2Track(int y) const
 //---------------------------------------------------------
 
 void PartCanvas::keyPress(QKeyEvent* event)
-      {
-// For testing...
-//       fprintf(stderr, "PartCanvas::keyPress isAutoRepeat:%d\n", event->isAutoRepeat());
-      
+{
+      event->accept();
+
       int key = event->key();
 
       if (editMode)
-            {
+      {
             // this will probably never happen, as edit mode has been set
             // to "false" some usec ago by returnPressed, called by editingFinished.
             if ( key == Qt::Key_Return || key == Qt::Key_Enter )
-                  {
-                  return;
-                  }
+            {
+                event->ignore();
+                return;
+            }
             // the below CAN indeed happen.
             else if ( key == Qt::Key_Escape )
-                  {
+            {
                   lineEditor->hide();
                   editMode = false;
                   return;
-                  }
             }
+      }
       // if returnPressed, called by editingFinished, was executed
       // a short time ago, ignore this keypress if it was enter or return
       if (editingFinishedTime.elapsed() < EDITING_FINISHED_TIMEOUT &&
-          (key == Qt::Key_Return || key == Qt::Key_Enter) )
-        return;
+              (key == Qt::Key_Return || key == Qt::Key_Enter) ) {
+          event->ignore();
+          return;
+      }
 
       if (event->modifiers() &  Qt::ShiftModifier)
             key +=  Qt::SHIFT;
@@ -1185,7 +1191,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
 
             MusECore::delete_selected_parts();
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_POS_DEC].key) {
             int spos = pos[0];
             if(spos > 0)
@@ -1196,84 +1202,85 @@ void PartCanvas::keyPress(QKeyEvent* event)
             if(spos < 0)
               spos = 0;
             MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_POS_INC].key) {
             int spos = MusEGlobal::sigmap.raster2(pos[0] + 1, *_raster);    // Nudge by +1, then snap up with raster2.
             MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_POS_DEC_NOSNAP].key) {
             int spos = pos[0] - MusEGlobal::sigmap.rasterStep(pos[0], *_raster);
             if(spos < 0)
-              spos = 0;
+                spos = 0;
             MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_POS_INC_NOSNAP].key) {
             MusECore::Pos p(pos[0] + MusEGlobal::sigmap.rasterStep(pos[0], *_raster), true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_TOOL_POINTER].key) {
             emit setUsedTool(PointerTool);
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_TOOL_PENCIL].key) {
             emit setUsedTool(PencilTool);
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_TOOL_RUBBER].key) {
             emit setUsedTool(RubberTool);
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_TOOL_SCISSORS].key) {
             emit setUsedTool(CutTool);
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_TOOL_LINEDRAW].key) {
             emit setUsedTool(AutomationTool);
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_TOOL_GLUE].key) {
             emit setUsedTool(GlueTool);
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_TOOL_MUTE].key) {
             emit setUsedTool(MuteTool);
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_TOOL_PAN].key) {
             emit setUsedTool(PanTool);
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_TOOL_ZOOM].key) {
             emit setUsedTool(ZoomTool);
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_SEL_TRACK_ABOVE].key) {
             emit selectTrackAbove();
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_SEL_TRACK_BELOW].key) {
             emit selectTrackBelow();
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_EDIT_TRACK_NAME].key) {
             emit editTrackNameSig();
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_MUTE_CURRENT_TRACKS].key) {
             emit muteSelectedTracks();
             return;
-            }
+      }
       else if (key == shortcuts[SHRT_SOLO_CURRENT_TRACKS].key) {
             emit soloSelectedTracks();
             return;
-            }
+      }
+
       // Shortcuts that require selected parts from here
       if (!curItem) {
           if (items.size()==0) {
@@ -1321,12 +1328,11 @@ void PartCanvas::keyPress(QKeyEvent* event)
               int right_tick = rightmost->part()->tick() + rightmost->part()->lenTick();
               MusECore::Pos p1(left_tick, true);
               MusECore::Pos p2(right_tick, true);
-              MusEGlobal::song->setPos(1, p1);
-              MusEGlobal::song->setPos(2, p2);
+              MusEGlobal::song->setPos(MusECore::Song::LPOS, p1);
+              MusEGlobal::song->setPos(MusECore::Song::RPOS, p2);
             }
-            
             return;
-            }
+      }
 
       // Select part to the right
       else if (key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key) {
@@ -1354,8 +1360,10 @@ void PartCanvas::keyPress(QKeyEvent* event)
                       newItem = i->second;
                       break;
                   }
-                  }
             }
+            updateSelectedItem(newItem, add, singleSelection);
+            return;
+      }
       // Select part to the left
       else if (key == shortcuts[SHRT_SEL_LEFT].key || key == shortcuts[SHRT_SEL_LEFT_ADD].key) {
             if (key == shortcuts[SHRT_SEL_LEFT_ADD].key)
@@ -1376,9 +1384,10 @@ void PartCanvas::keyPress(QKeyEvent* event)
                   if (ipart == part)
                         break;
                   newItem = i->second;
-                  }
             }
-
+            updateSelectedItem(newItem, add, singleSelection);
+            return;
+      }
       // Select nearest part on track above
       else if (key == shortcuts[SHRT_SEL_ABOVE].key || key == shortcuts[SHRT_SEL_ABOVE_ADD].key) {
             if (key == shortcuts[SHRT_SEL_ABOVE_ADD].key)
@@ -1411,21 +1420,23 @@ void PartCanvas::keyPress(QKeyEvent* event)
                               aboveL = items.find(QPoint(xleft,y));
                         if (xright <= ulimit)
                               aboveR = items.find(QPoint(xright,y));
-                        }
+                  }
 
                   if ((aboveL || aboveR) != 0) { //We've hit something
                         CItem* above  = 0;
                         above = (aboveL !=0) ? aboveL : aboveR;
                         newItem = above;
-                        }
+                  }
                   else { //We didn't hit anything. Move to track above, if there is one
                         track = y2Track(track->y() - 1);
                         if (track == 0)
                               return;
-                        }
                   }
-                  emit trackChanged(track);
             }
+            emit trackChanged(track);
+            updateSelectedItem(newItem, add, singleSelection);
+            return;
+      }
       // Select nearest part on track below
       else if (key == shortcuts[SHRT_SEL_BELOW].key || key == shortcuts[SHRT_SEL_BELOW_ADD].key) {
             if (key == shortcuts[SHRT_SEL_BELOW_ADD].key)
@@ -1457,27 +1468,35 @@ void PartCanvas::keyPress(QKeyEvent* event)
                               belowL = items.find(QPoint(xleft,y));
                         if (xright <= ulimit)
                               belowR = items.find(QPoint(xright,y));
-                        }
+                  }
 
                   if ((belowL || belowR) != 0) { //We've hit something
                         CItem* below = 0;
                         below = (belowL !=0) ? belowL : belowR;
                         newItem = below;
-                        }
+                  }
                   else {
                         //Get next track below, or abort if this is the lowest
                         track = y2Track(track->y() + track->height() + 1 );
                         if (track == 0)
                               return;
-                        }
                   }
-                  emit trackChanged(track);
             }
+            emit trackChanged(track);
+            updateSelectedItem(newItem, add, singleSelection);
+            return;
+      }
+      else if (key == shortcuts[SHRT_RENAME_PART].key && curItem) {
+        if (singleSelection) {
+          renameItem(curItem);
+        }
+        return;
+      }
       else if (key == shortcuts[SHRT_EDIT_PART].key && curItem) { //This should be the other way around - singleSelection first.
             if (!singleSelection) {
                   event->ignore();
                   return;
-                  }
+            }
             MusECore::PartList* pl = new MusECore::PartList;
             NPart* npart = (NPart*)(curItem);
             MusECore::Track* track = npart->part()->track();
@@ -1506,47 +1525,54 @@ void PartCanvas::keyPress(QKeyEvent* event)
                         break;
                   }
             emit startEditor(pl, type);
-            }
+            return;
+      }
       else {
             event->ignore();  // give global accelerators a chance
             return;
-            }
-
-
-      // Check if anything happened to the selected parts
-      if (newItem) {
-            //If this is a single selection, toggle previous item
-            if (singleSelection && !add)
-                  selectItem(curItem, false);
-            else if(!add)
-                  deselectAll();
-
-            curItem = newItem;
-            selectItem(newItem, true);
-
-            //Check if we've hit the left, right, upper or lower boundaries of the window. If so, scroll to new position.
-            if (newItem->x() < mapxDev(0)) {
-                  emit horizontalScroll(rmapx(newItem->x() - xorg) - 10);  // Leave some room.
-                  }
-            else if (newItem->x() + newItem->width() > mapxDev(width())) {
-                  int mx = rmapx(newItem->x());
-                  int newx = mx + rmapx(newItem->width()) - width();
-                  emit horizontalScroll( (newx > mx ? mx - 10 : newx + 10) - rmapx(xorg) );
-                  }
-
-            if (newItem->y() < mapyDev(0)) {
-                  int my = rmapy(newItem->y());
-                  int newy = my + rmapy(newItem->height()) - height();
-                  emit verticalScroll( (newy < my ? my - 10 : newy + 10) - rmapy(yorg) );
-                  }
-            else if (newItem->y() + newItem->height() > mapyDev(height())) {
-                  emit verticalScroll( rmapy(newItem->y() + newItem->height() - yorg) - height() + 10);
-                  }
-
-            redraw();
-            }
       }
 
+      // if no return has caught the event we ignore it, we should never get here!
+      fprintf(stderr, "End of PartCanvas::keyPress - we should never get here!\n");
+      event->ignore();
+}
+
+void PartCanvas::updateSelectedItem(CItem* newItem, bool add, bool singleSelection)
+{
+    // Check if anything happened to the selected parts
+    if (newItem) {
+          //If this is a single selection, toggle previous item
+          if (singleSelection && !add)
+                selectItem(curItem, false);
+          else if(!add)
+                deselectAll();
+
+          curItem = newItem;
+          selectItem(newItem, true);
+
+          //Check if we've hit the left, right, upper or lower boundaries of the window. If so, scroll to new position.
+          if (newItem->x() < mapxDev(0)) {
+                emit horizontalScroll(rmapx(newItem->x() - xorg) - 10);  // Leave some room.
+          }
+          else if (newItem->x() + newItem->width() > mapxDev(width())) {
+                int mx = rmapx(newItem->x());
+                int newx = mx + rmapx(newItem->width()) - width();
+                emit horizontalScroll( (newx > mx ? mx - 10 : newx + 10) - rmapx(xorg) );
+          }
+
+          if (newItem->y() < mapyDev(0)) {
+                int my = rmapy(newItem->y());
+                int newy = my + rmapy(newItem->height()) - height();
+                emit verticalScroll( (newy < my ? my - 10 : newy + 10) - rmapy(yorg) );
+          }
+          else if (newItem->y() + newItem->height() > mapyDev(height())) {
+                emit verticalScroll( rmapy(newItem->y() + newItem->height() - yorg) - height() + 10);
+          }
+
+          redraw();
+    }
+
+}
 //---------------------------------------------------------
 //   keyRelease
 //---------------------------------------------------------
@@ -2617,7 +2643,7 @@ void PartCanvas::copy(MusECore::PartList* pl)
                   tick = endTick;
             }
       MusECore::Pos p(tick, true);
-      MusEGlobal::song->setPos(0, p);
+      MusEGlobal::song->setPos(MusECore::Song::CPOS, p);
       QString mimeString = "text/x-muse-mixedpartlist";
       if (!midi)
           mimeString = "text/x-muse-wavepartlist";
@@ -2827,7 +2853,7 @@ void PartCanvas::paste(bool clone, paste_mode_t paste_mode, bool to_single_track
         }
 
         MusECore::Pos p(endPos, true);
-        MusEGlobal::song->setPos(0, p);
+        MusEGlobal::song->setPos(MusECore::Song::CPOS, p);
 
         if (paste_mode != PASTEMODE_MIX)
         {
@@ -3080,7 +3106,6 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
       // GRID //
       //////////
 
-      QColor baseColor(MusEGlobal::config.partCanvasBg.light(104));
       QPen pen;
       pen.setCosmetic(true);
 
@@ -3096,8 +3121,10 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
         
         drawTickRaster(p, mr, mrg, rast,
                          false, false, false,
-                         baseColor.dark(115), 
-                         baseColor);
+                       MusEGlobal::config.partCanvasFineRasterColor,
+                       MusEGlobal::config.partCanvasFineRasterColor,
+                       MusEGlobal::config.partCanvasFineRasterColor,
+                       MusEGlobal::config.partCanvasCoarseRasterColor);
       }
 
       //--------------------------------
@@ -3134,8 +3161,8 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
 // For testing...
 //                 fprintf(stderr, "... bottom edge in range. Drawing bottom edge at mx0_lim:%d myy_2:%d mx_2:%d myy_2:%d\n",
 //                         mx0_lim, myy_2, mx_2, myy_2);
-                
-                pen.setColor(baseColor.dark(130));
+
+                pen.setColor(MusEGlobal::config.partCanvasCoarseRasterColor);
                 p.setPen(pen);
                 p.drawLine(mx0_lim, myy_2, mx_2, myy_2);
               }
@@ -3188,7 +3215,7 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& mr, const QRegion&)
           yy += th;
           }
 
-    unsigned int startPos = MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->getStartExternalRecTick() : MusEGlobal::audio->getStartRecordPos().tick();
+    unsigned int startPos = MusEGlobal::extSyncFlag ? MusEGlobal::audio->getStartExternalRecTick() : MusEGlobal::audio->getStartRecordPos().tick();
     if (MusEGlobal::song->punchin())
       startPos=MusEGlobal::song->lpos();
     int startx = mapx(startPos);

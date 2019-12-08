@@ -83,8 +83,8 @@ set (FILES_TO_TRANSLATE
 #
 set_target_properties ( deicsonze
       PROPERTIES PREFIX ""
-      #COMPILE_FLAGS "-O2 -include ${PROJECT_BINARY_DIR}/all-pic.h"
-      COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
+      #COMPILE_FLAGS "-O2 -include"
+      COMPILE_FLAGS "-fvisibility=hidden"
       )
 
 ##

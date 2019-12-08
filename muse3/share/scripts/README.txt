@@ -42,7 +42,7 @@ is not interested in, otherwise data may be unintentionally removed
 Scripts can be put in two different dirs.
 <install_path>/share/muse/scripts
 for scripts bundled
-or $HOME/.config/MusE/scripts
+or $HOME/.config/MusE/MusE/scripts
 for user created scripts
 
 Remember that a script must have the executable bit set. This means

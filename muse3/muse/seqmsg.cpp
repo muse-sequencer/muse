@@ -44,6 +44,8 @@
 #include "gconfig.h"
 #include "operations.h"
 #include "ctrl.h"
+#include "globals.h"
+#include "metronome_class.h"
 
 namespace MusECore {
 
@@ -494,7 +496,7 @@ void Audio::msgExecutePendingOperations(PendingOperationList& operations, bool d
         sendMsg(&msg);
         operations.executeNonRTStage();
         const SongChangedStruct_t flags = operations.flags() | extraFlags;
-        if(doUpdate && flags._flags != 0)
+        if(doUpdate && flags != SC_NOTHING)
         {
           MusEGlobal::song->update(flags);
           MusEGlobal::song->setDirty();
@@ -608,6 +610,9 @@ void Audio::msgResetMidiDevices()
 
 void Audio::msgInitMidiDevices(bool force)
       {
+      MusECore::MetronomeSettings* metro_settings = 
+        MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
       //
       // test for explicit instrument initialization
       //
@@ -617,7 +622,7 @@ void Audio::msgInitMidiDevices(bool force)
         bool found = false;
         if(MusEGlobal::song->click())
         {
-          MidiPort* mp = &MusEGlobal::midiPorts[MusEGlobal::clickPort];
+          MidiPort* mp = &MusEGlobal::midiPorts[metro_settings->clickPort];
           if(mp->device() && 
              (mp->device()->openFlags() & 1) && 
              mp->instrument() && !mp->instrument()->midiInit()->empty() &&
@@ -821,6 +826,26 @@ void Audio::msgStartMidiLearn()
 void Audio::msgBounce()
       {
       _bounce = true;
+      
+// REMOVE Tim. latency. Added. Moved here from audio thread process code (via Song::seqSignal()).
+      if(MusEGlobal::config.freewheelMode)
+      {
+        MusEGlobal::audioDevice->setFreewheel(true);
+        // Wait a few cycles for the freewheel to take effect.
+        for(int i = 0; i < 4; ++i)
+        {
+          if(freewheel())
+            break;
+          msgAudioWait();
+        }
+        // Check if freewheel was really set.
+        if(!freewheel())
+        {
+          fprintf(stderr, "ERROR: Audio::msgBounce(): Freewheel mode did not start yet!\n");
+        }
+      }
+      
+      
       if (!MusEGlobal::checkAudioDevice()) return;
       MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->lPos());
       }
@@ -855,7 +880,7 @@ void Audio::msgAudioWait()
 //    into idle mode
 //---------------------------------------------------------
 
-void Audio::msgSetMidiDevice(MidiPort* port, MidiDevice* device)
+void Audio::msgSetMidiDevice(MidiPort* port, MidiDevice* device, MidiInstrument* instrument)
 {
   MusECore::AudioMsg msg;
   msg.id = MusECore::SEQM_IDLE;
@@ -863,7 +888,7 @@ void Audio::msgSetMidiDevice(MidiPort* port, MidiDevice* device)
   //MusEGlobal::midiSeq->sendMsg(&msg);
   sendMsg(&msg); // Idle both audio and midi.
 
-  port->setMidiDevice(device);
+  port->setMidiDevice(device, instrument);
 
   msg.id = MusECore::SEQM_IDLE;
   msg.a  = false;

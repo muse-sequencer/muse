@@ -114,6 +114,7 @@ class IconButton : public QWidget
      bool _checked;
      bool _iconSetB;
      bool _blinkPhase;
+     bool _blinking;
 
   protected:
     virtual void paintEvent(QPaintEvent* );
@@ -167,6 +168,8 @@ class IconButton : public QWidget
       // If _hasFixedIconSize is true, this relies on iconSize(). Be sure to set iconSize to the desired value.
       virtual QSize sizeHint() const;
 
+      bool blinking() const { return _blinking; }
+      void setBlinking(bool);
       bool blinkPhase() const { return _blinkPhase; }
       void setBlinkPhase(bool v);
 };

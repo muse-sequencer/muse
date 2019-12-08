@@ -54,6 +54,10 @@ typedef std::list<JackCallbackEvent>::iterator iJackCallbackEvent;
 //---------------------------------------------------------
 
 class JackAudioDevice : public AudioDevice {
+  public:
+      enum JackSyncPhases { SyncCheck = 0, SyncStarted, Syncing, Synced };
+      enum JackTransportMasterPhases { MasterCheck = 0, IsNotMaster, IsMaster };
+
       jack_client_t* _client;
       jack_transport_state_t transportState;
       jack_position_t pos;
@@ -86,7 +90,8 @@ class JackAudioDevice : public AudioDevice {
       JackAudioDevice(jack_client_t* cl, char * jack_id_string);
       virtual ~JackAudioDevice();
       virtual inline int deviceType() const { return JACK_AUDIO; }   
-      
+      virtual const char* driverName() const { return "JackAudioDevice"; }
+
       virtual bool start(int);
       virtual void stop ();
       
@@ -159,7 +164,12 @@ class JackAudioDevice : public AudioDevice {
       virtual void seekTransport(unsigned frame);
       virtual void seekTransport(const Pos &p);
       virtual void setFreewheel(bool f);
-      virtual int setMaster(bool f);
+      // Whether the device has its own transport (Jack transport etc.), beyond the one built into this class.
+      virtual bool hasOwnTransport() const { return true; };
+      // Whether the device supports transport master capabilities.
+      virtual bool hasTransportMaster() const { return true; };
+      // Sets or resets transport master.
+      virtual int setMaster(bool f, bool unconditional = false);
       jack_transport_state_t transportQuery(jack_position_t* pos);
       bool timebaseQuery(unsigned frames, unsigned* bar, unsigned* beat, unsigned* tick, unsigned* curr_abs_tick, unsigned* next_ticks);
 

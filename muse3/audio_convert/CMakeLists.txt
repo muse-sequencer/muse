@@ -41,7 +41,6 @@ file (GLOB audio_convert_source_files
 ## Define target
 ##
 add_library(audio_converter_plugin ${MODULES_BUILD}
-      ${PROJECT_BINARY_DIR}/all-pic.h
       ${audio_convert_source_files}
       )
 
@@ -57,10 +56,10 @@ set (FILES_TO_TRANSLATE
 ##
 ## Compilation flags and target name
 ##
-set_target_properties( audio_converter_plugin
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-      ## OUTPUT_NAME muse_audio_converter_plugin
-      )
+# set_target_properties( audio_converter_plugin
+#       PROPERTIES
+#       ## OUTPUT_NAME muse_audio_converter_plugin
+#       )
 
 ##
 ## Install location

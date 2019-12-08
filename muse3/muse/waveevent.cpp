@@ -37,7 +37,7 @@
 #include "wave.h"
 
 #include <iostream>
-#include <math.h>
+#include "muse_math.h"
 
 // REMOVE Tim. samplerate. Enabled.
 #define USE_SAMPLERATE

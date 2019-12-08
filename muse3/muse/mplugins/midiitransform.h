@@ -65,6 +65,7 @@ class MidiInputTransformDialog : public QDialog, public Ui::MidiInputTransformDi
       void setValOp(QWidget* a, QWidget* b, MusECore::ValOp op);
       virtual void closeEvent(QCloseEvent*);
       
+      MusECore::MidiInputTransformation* createDefaultPreset();
       void updatePresetList();
       QButtonGroup* modulGroup;
       
@@ -86,7 +87,7 @@ class MidiInputTransformDialog : public QDialog, public Ui::MidiInputTransformDi
       void procVal2OpSel(int);
       void procVal2OpUpdate(MusECore::TransformOperator op);
       void funcOpSel(int);
-      void presetChanged(QListWidgetItem*);
+      void presetChanged(QListWidgetItem*, QListWidgetItem*);
       void nameChanged(const QString&);
       void commentChanged();
       void selVal1aChanged(int);

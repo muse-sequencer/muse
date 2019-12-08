@@ -25,8 +25,12 @@
 #define __AUDIODEV_H__
 
 #include <list>
+#ifdef _WIN32
+#include <stdlib.h>
+#else
 #include <sys/resource.h>
 #include <sys/time.h>
+#endif
 #include <stdint.h>
 
 class QString;
@@ -63,6 +67,7 @@ class AudioDevice {
       virtual ~AudioDevice() {}
 
       virtual int deviceType() const = 0;
+      virtual const char* driverName() const = 0;
       virtual bool isRealtime() = 0;
       virtual int realtimePriority() const = 0; // return zero if not realtime
       
@@ -128,7 +133,12 @@ class AudioDevice {
       virtual void graphChanged() {}
       virtual void registrationChanged() {}
       virtual void connectionsChanged() {}
-      virtual int setMaster(bool f) = 0;
+      // Whether the device has its own transport (Jack transport etc.), beyond the one built into this class.
+      virtual bool hasOwnTransport() const { return false; };
+      // Whether the device supports transport master capabilities.
+      virtual bool hasTransportMaster() const { return false; };
+      // Sets or resets transport master.
+      virtual int setMaster(bool f, bool unconditional = false) = 0;
 
       //----------------------------------------------
       //   Functions for built-in transport.

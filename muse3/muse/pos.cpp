@@ -21,7 +21,7 @@
 //
 //=========================================================
 
-#include <cmath>
+#include "muse_math.h"
 #include <stdint.h>
 
 #include "pos.h"
@@ -159,6 +159,19 @@ void Pos::setType(TType t)
 // {
 //   return double(frame) * double(MusEGlobal::sampleRate) / double(MusEGlobal::projectSampleRate);
 // }
+
+//---------------------------------------------------------
+//   operator=
+//---------------------------------------------------------
+
+Pos& Pos::operator=(const Pos& p)
+      {
+      _type = p._type;
+      sn    = p.sn;
+      _tick = p._tick;
+      _frame = p._frame;
+      return *this;
+      }
 
 //---------------------------------------------------------
 //   operator+=
@@ -564,6 +577,15 @@ PosLen::PosLen(const PosLen& p)
       sn = -1;
       }
 
+PosLen& PosLen::operator=(const PosLen& p)
+      {
+      Pos::operator=(p);
+      _lenTick  = p._lenTick;
+      _lenFrame = p._lenFrame;
+      sn = -1;
+      return *this;
+      }
+      
 //---------------------------------------------------------
 //   dump
 //---------------------------------------------------------

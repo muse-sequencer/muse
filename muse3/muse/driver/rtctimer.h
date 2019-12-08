@@ -27,6 +27,10 @@
 #ifndef __RTCTIMER_H__
 #define __RTCTIMER_H__
 
+#include "config.h"
+
+#ifdef ALSA_SUPPORT
+
 #include "timerdev.h"
 
 namespace MusECore {
@@ -41,7 +45,8 @@ class RtcTimer : public Timer{
     public:
        RtcTimer();
        virtual ~RtcTimer();
-       
+       virtual const char * getTimerName() { return "RtcTimer"; }
+
        virtual signed int initTimer(unsigned long desiredFrequency);
        virtual unsigned long setTimerResolution(unsigned long resolution);
        virtual unsigned long getTimerResolution();
@@ -58,5 +63,7 @@ class RtcTimer : public Timer{
 };
 
 } // namespace MusECore
+
+#endif // ALSA_SUPPORT
 
 #endif //__RTCTIMER_H__

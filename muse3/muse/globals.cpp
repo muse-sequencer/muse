@@ -117,8 +117,10 @@ QString museGlobalShare;
 QString museUser;
 QString museProject;
 QString museProjectInitPath("./");
-QString configName = QString(getenv("HOME")) + QString("/.config/MusE/MusE.cfg");
-QString configPath = QFileInfo(configName).absoluteDir().absolutePath();
+
+QString configName;
+QString configPath;
+QString cachePath;
 QString museInstruments;
 QString museUserInstruments;
 
@@ -141,6 +143,11 @@ bool loadNativeVST = true;
 bool loadDSSI = true;
 bool loadLV2 = true;
 bool usePythonBridge = false;
+QString pythonBridgePyroNSHostname;
+QString pythonBridgePyroNSPort;
+QString pythonBridgePyroDaemonHostname;
+QString pythonBridgePyroDaemonPort;
+float pythonBridgePyroCommTimeout = 5.0;
 bool useLASH = true;
 bool useAlsaWithJack = false;
 bool noAutoStartJack = false;
@@ -286,35 +293,11 @@ QAction* cpuLoadAction;
 
 MusEGui::MusE* muse = 0;
 
-int preMeasures = 2;
-unsigned char measureClickNote = 63;
-unsigned char measureClickVelo = 127;
-unsigned char beatClickNote    = 63;
-unsigned char beatClickVelo    = 70;
-unsigned char accentClick1     = 99;
-unsigned char accentClick1Velo = 70;
-unsigned char accentClick2     = 100;
-unsigned char accentClick2Velo = 70;
-
-unsigned char clickChan = 9;
-unsigned char clickPort = 0;
-bool precountEnableFlag = false;
-bool precountFromMastertrackFlag = true;
-int precountSigZ = 4;
-int precountSigN = 4;
-bool precountOnPlay = false;
-bool precountMuteMetronome = false;
-bool precountPrerecord = false;
-bool precountPreroll = false;
-bool midiClickFlag   = true;
-bool audioClickFlag  = false;
-float audioClickVolume = 0.5f;
-float measClickVolume = 1.0f;
-float beatClickVolume = 1.0f;
-float accent1ClickVolume = 0.1f;
-float accent2ClickVolume = 0.1f;
-ClickSamples clickSamples = origSamples;
-
+MusECore::MetroAccentsPresetsMap metroAccentPresets;
+MusECore::MetronomeSettings metroGlobalSettings;
+MusECore::MetronomeSettings metroSongSettings;
+// Whether to use the global or song metronome settings.
+bool metroUseSongSettings = false;
 
 bool rcEnable = false;
 unsigned char rcStopNote = 28;

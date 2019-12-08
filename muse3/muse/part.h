@@ -26,6 +26,8 @@
 #define __PART_H__
 
 #include <map> 
+#include <vector>
+#include <climits>
 
 #include <QUuid>
 
@@ -42,6 +44,78 @@ class Xml;
 class Part;
 class WaveTrack;
 class PendingOperationList;
+
+//---------------------------------------------------------
+//   MidiCtrlViewState
+//   Stores the initial controller view state
+//---------------------------------------------------------
+
+struct MidiCtrlViewState
+{
+  // Midi controller number.
+  int _num;
+  // Per note velocity display.
+  bool _perNoteVel;
+  
+  MidiCtrlViewState() : _num(0), _perNoteVel(false) { }
+  MidiCtrlViewState(int num, bool perNoteVel = false) : _num(num), _perNoteVel(perNoteVel) { }
+
+  void read(Xml&);
+  void write(int, Xml&) const;
+};
+
+typedef std::vector<MidiCtrlViewState> MidiCtrlViewStateList;
+typedef MidiCtrlViewStateList::iterator iMidiCtrlViewState;
+typedef MidiCtrlViewStateList::const_iterator ciMidiCtrlViewState;
+
+//---------------------------------------------------------
+//   MidiPartViewState
+//   Stores the initial view state
+//---------------------------------------------------------
+
+class MidiPartViewState
+{
+private:
+  int _xscroll;
+  int _yscroll;
+  int _xscale;
+  int _yscale;
+  MidiCtrlViewStateList _controllers;
+
+public:
+  MidiPartViewState() : _xscroll(INT_MAX), _yscroll(INT_MAX), _xscale(INT_MAX), _yscale(INT_MAX) { }
+  MidiPartViewState(int xscroll, int yscroll, int xscale, int yscale) :
+        _xscroll(xscroll), _yscroll(yscroll), _xscale(xscale), _yscale(yscale) { }
+  MidiPartViewState(const MidiPartViewState& vs) : 
+    _xscroll(vs._xscroll), _yscroll(vs._yscroll),
+    _xscale(vs._xscale), _yscale(vs._yscale),
+    _controllers(vs._controllers) { }
+  MidiPartViewState& operator=(const MidiPartViewState& vs) {
+    _xscroll = vs._xscroll; _yscroll = vs._yscroll;
+    _xscale = vs._xscale; _yscale = vs._yscale;
+    _controllers = vs._controllers; return *this;
+    }
+
+  bool isValid() const { return _xscroll != INT_MAX && _yscroll != INT_MAX && _xscale != INT_MAX && _yscale != INT_MAX; }
+
+  int xscroll() const { return _xscroll; }
+  int yscroll() const { return _yscroll; }
+  int xscale() const { return _xscale; }
+  int yscale() const { return _yscale; }
+
+  void setXScroll(int x) { _xscroll = x; }
+  void setYScroll(int y) { _yscroll = y; }
+  void setXScale(int xs) { _xscale = xs; }
+  void setYScale(int ys) { _yscale = ys; }
+
+  const MidiCtrlViewStateList& controllers() { return _controllers; }
+  void addController(const MidiCtrlViewState& viewState) { _controllers.push_back(viewState); }
+  void clearControllers() { _controllers.clear(); }
+
+  void read(Xml&);
+  void write(int, Xml&) const;
+};
+
 
 struct ClonePart {
       const Part* cp;
@@ -82,6 +156,7 @@ class Part : public PosLen {
       Part* _nextClone;
       Part* _backupClone; // when a part gets removed, it's still there; and for undo-ing the remove, it must know about where it was clone-chained to.
       mutable int _hiddenEvents;   // Combination of HiddenEventsType.
+      MidiPartViewState _viewState;
 
    public:
       Part(Track*);
@@ -139,6 +214,10 @@ class Part : public PosLen {
       virtual void write(int, Xml&, bool isCopy = false, bool forceWavePaths = false) const;
       
       virtual void dump(int n = 0) const;
+
+      const MidiPartViewState& viewState() const { return _viewState; }
+      MidiPartViewState& viewState() { return _viewState; }
+      virtual void setViewState(const MidiPartViewState& vs);
       };
 
 

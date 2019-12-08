@@ -57,7 +57,7 @@ class ScrollScale : public QWidget {
       double logbase;
 
       virtual void resizeEvent(QResizeEvent*);
-      
+
    private slots:
       void pageUp();
       void pageDown();
@@ -68,6 +68,7 @@ class ScrollScale : public QWidget {
       void setMag(int val, int pos_offset = 0);
       void setOffset(int val);
       void setScale(int val, int pos_offset = 0);
+      void stepScale(bool up);
 
    signals:
       void scaleChanged(int);
@@ -92,8 +93,11 @@ class ScrollScale : public QWidget {
       int getScaleValue() const { return scaleVal; }
       void range(int* b, int* e) const { *b = minVal; *e = maxVal; }
       
-      int offset();
-      int pos2offset(int pos);
+      int offset() const;
+      int pos2offset(int pos) const;
+      int offset2pos(int off) const;
+      int mag2scale(int mag) const;
+      int scale2mag(int scale) const;
       static int getQuickZoomLevel(int mag);
       static int convertQuickZoomLevelToMag(int zoomlvl);
       const static int zoomLevels = 38;

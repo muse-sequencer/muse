@@ -44,8 +44,7 @@ add_library ( evdata_module SHARED
 ##
 
 set_target_properties( evdata_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_evdata_module
+      PROPERTIES OUTPUT_NAME muse_evdata_module
       )
 
 ##

@@ -221,6 +221,7 @@ class ExtMidiClock
 
 class MidiSyncContainer {
   private:
+// REMOVE Tim. clock. Removed.  
       unsigned int _midiClock; // Accumulator for clock output.
 
 /* Testing */
@@ -251,6 +252,7 @@ class MidiSyncContainer {
       MidiSyncContainer();
       virtual ~MidiSyncContainer();
 
+// REMOVE Tim. clock. Removed.  
       unsigned int midiClock() const { return _midiClock; }
       void setMidiClock(unsigned int val) { _midiClock = val; }
       ExtMidiClock::ExternState externalPlayState() const { return playStateExt; }
@@ -314,9 +316,9 @@ extern bool debugSync;
 
 extern int mtcType;
 extern MusECore::MTC mtcOffset;
-extern MusECore::BValue extSyncFlag;
-extern MusECore::BValue useJackTransport;
-extern bool volatile jackTransportMaster;
+extern bool extSyncFlag;
+extern bool transportMasterState;
+extern bool transportMasterForceFlag;
 extern unsigned int syncSendFirstClockDelay; // In milliseconds.
 extern unsigned int volatile lastExtMidiSyncTick;
 extern unsigned int volatile curExtMidiSyncTick;

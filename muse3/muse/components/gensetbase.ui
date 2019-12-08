@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>606</width>
+    <width>612</width>
     <height>562</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MusE: Global Settings</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_4">
-   <item>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
     <widget class="QTabWidget" name="TabWidget2">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -656,10 +656,7 @@
  a new plugin. Click this button to
  force the cache to recreate upon
   next restart. 
-Do not store frequently changing
- files such as plugin configuration
- data in these directories as it may
- trigger frequent rescans.</string>
+</string>
              </property>
              <property name="text">
               <string>&amp;Force plugin rescan and cache recreation on next restart</string>
@@ -988,7 +985,7 @@ Do not store frequently changing
           <item row="1" column="1">
            <widget class="QComboBox" name="deviceAudioSize">
             <property name="toolTip">
-             <string>Shorter periods give better midi playback resolution.</string>
+             <string>Shorter periods give better midi playback resolution. Note that this cannot be set with Jack devices!</string>
             </property>
             <item>
              <property name="text">
@@ -1046,7 +1043,11 @@ Do not store frequently changing
            </widget>
           </item>
           <item row="1" column="4">
-           <widget class="QComboBox" name="deviceAudioRate"/>
+           <widget class="QComboBox" name="deviceAudioRate">
+            <property name="toolTip">
+             <string>Note that samplerate cannot be set with Jack devices!</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -1348,8 +1349,8 @@ Adjusts responsiveness of audio controls and
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>554</width>
-            <height>517</height>
+            <width>556</width>
+            <height>479</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -1737,6 +1738,137 @@ Certain operations will also force them to be resent,
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="latencyTab">
+      <attribute name="title">
+       <string>Latency</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_20">
+       <item>
+        <widget class="QGroupBox" name="groupBox_10">
+         <property name="title">
+          <string>Latency</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_22">
+          <item>
+           <widget class="QLabel" name="label_24">
+            <property name="text">
+             <string>Whether to enable latency correction/compensation:</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="enableLatencyCorrectionButton">
+            <property name="text">
+             <string>Enable latency correction/compensation</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_7">
+            <property name="title">
+             <string>Project latency</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_17">
+             <item>
+              <widget class="QLabel" name="label_20">
+               <property name="text">
+                <string>Whether completely independent branches share a common project-wide latency:</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="latencyProjectCommonButton">
+               <property name="text">
+                <string>Project-wide latency</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_8">
+            <property name="title">
+             <string>Unterminated branches</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_18">
+             <item>
+              <widget class="QLabel" name="label_21">
+               <property name="text">
+                <string>Whether unterminated branches participate in latency correction/compensation:</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="latencyInBranchUntermButton">
+               <property name="text">
+                <string>Unterminated input branches</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="latencyOutBranchUntermButton">
+               <property name="text">
+                <string>Unterminated output branches</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_9">
+            <property name="title">
+             <string>Track monitoring</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_19">
+             <item>
+              <widget class="QLabel" name="label_22">
+               <property name="text">
+                <string>Whether track monitor buttons affect latency correction/compensation:</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="latencyMonitorAffectingButton">
+               <property name="text">
+                <string>Monitoring affects latency</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_6">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="tab3">
       <attribute name="title">
        <string>GUI Behaviour</string>
@@ -1787,22 +1919,12 @@ Certain operations will also force them to be resent,
              <property name="geometry">
               <rect>
                <x>0</x>
-               <y>0</y>
-               <width>528</width>
-               <height>700</height>
+               <y>-244</y>
+               <width>534</width>
+               <height>566</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
-              <item row="4" column="0" colspan="2">
-               <widget class="QLabel" name="textLabel1_4_2">
-                <property name="text">
-                 <string>Move single armed track with selection</string>
-                </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
               <item row="4" column="2">
                <widget class="QCheckBox" name="moveArmedCheckBox">
                 <property name="sizePolicy">
@@ -1816,13 +1938,24 @@ Certain operations will also force them to be resent,
                 </property>
                </widget>
               </item>
-              <item row="6" column="0" colspan="2">
-               <widget class="QLabel" name="TextLabel1_3">
-                <property name="toolTip">
-                 <string/>
-                </property>
+              <item row="23" column="0">
+               <widget class="QLabel" name="label_19">
                 <property name="text">
-                 <string>Some popup menus stay open (else hold Ctrl)</string>
+                 <string>Show note names on notes in pianoroll</string>
+                </property>
+               </widget>
+              </item>
+              <item row="19" column="0">
+               <widget class="QLabel" name="label_16">
+                <property name="text">
+                 <string>Monitor on record-arm automatically</string>
+                </property>
+               </widget>
+              </item>
+              <item row="22" column="0">
+               <widget class="QLabel" name="label_17">
+                <property name="text">
+                 <string>Style hack: Force line edit widgets to draw a frame</string>
                 </property>
                </widget>
               </item>
@@ -1836,125 +1969,13 @@ Certain operations will also force them to be resent,
                 </property>
                </widget>
               </item>
-              <item row="5" column="2">
-               <widget class="QCheckBox" name="projectSaveCheckBox">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="TextLabel1">
-                <property name="text">
-                 <string>GUI Refresh Rate</string>
-                </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="QSpinBox" name="guiRefreshSelect">
-                <property name="suffix">
-                 <string>/sec</string>
-                </property>
-                <property name="minimum">
-                 <number>2</number>
-                </property>
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-                <property name="value">
-                 <number>20</number>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="textLabel1_4">
-                <property name="text">
-                 <string>Use old-style stop shortcut:</string>
-                </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="2">
-               <widget class="QCheckBox" name="oldStyleStopCheckBox">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="2">
-               <widget class="QCheckBox" name="popsDefStayOpenCheckBox">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
+              <item row="22" column="2">
+               <widget class="QCheckBox" name="lineEditStyleHackCheckBox">
                 <property name="toolTip">
-                 <string>Allows some popup menus to stay open.
-Otherwise, hold Ctrl to keep them open.</string>
-                </property>
-                <property name="text">
-                 <string notr="true"/>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="0" colspan="2">
-               <widget class="QLabel" name="label_2">
-                <property name="toolTip">
-                 <string>In some areas, the middle mouse button decreases
-values, while the right button increases. Users without a
-middle mouse button can select this option to make the
-left button behave like the middle button in such areas.</string>
-                </property>
-                <property name="text">
-                 <string>Use left mouse button for decreasing values</string>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="2">
-               <widget class="QCheckBox" name="lmbDecreasesCheckBox">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string notr="true"/>
-                </property>
-               </widget>
-              </item>
-              <item row="8" column="0" colspan="2">
-               <widget class="QLabel" name="label_3">
-                <property name="text">
-                 <string>Ctrl + Right click sets left range marker</string>
-                </property>
-               </widget>
-              </item>
-              <item row="8" column="2">
-               <widget class="QCheckBox" name="rangeMarkerWithoutMMBCheckBox">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
+                 <string>Force line edit widgets to draw a frame at 
+ small sizes. Some styles refuse to draw 
+ the frame. This hack forces a frame to be 
+ drawn, but may interfere with other styles.</string>
                 </property>
                 <property name="text">
                  <string/>
@@ -1968,34 +1989,51 @@ left button behave like the middle button in such areas.</string>
                 </property>
                </widget>
               </item>
-              <item row="9" column="2">
-               <widget class="QCheckBox" name="addHiddenCheckBox">
+              <item row="12" column="2">
+               <widget class="QCheckBox" name="velocityPerNoteCheckBox">
                 <property name="text">
                  <string/>
                 </property>
                </widget>
               </item>
-              <item row="10" column="0" colspan="2">
-               <widget class="QLabel" name="label_5">
-                <property name="text">
-                 <string>Unhide tracks when adding hidden tracks</string>
+              <item row="17" column="2">
+               <widget class="QCheckBox" name="preferKnobsVsSlidersCheckBox">
+                <property name="toolTip">
+                 <string>Whether to show knobs or sliders in certain places, for example mixer strips</string>
                 </property>
-               </widget>
-              </item>
-              <item row="10" column="2">
-               <widget class="QCheckBox" name="unhideTracksCheckBox">
                 <property name="text">
                  <string/>
                 </property>
                </widget>
               </item>
-              <item row="11" column="0" colspan="2">
-               <widget class="QLabel" name="label5">
-                <property name="text">
-                 <string>Smart focus</string>
+              <item row="19" column="2">
+               <widget class="QCheckBox" name="monitorOnRecordCheckBox">
+                <property name="toolTip">
+                 <string>Whether record-arming a track 
+ automatically activates monitoring.</string>
                 </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="12" column="0" colspan="2">
+               <widget class="QLabel" name="label_6">
+                <property name="text">
+                 <string>Show newly created midi velocity graphs per-note</string>
+                </property>
+               </widget>
+              </item>
+              <item row="13" column="0" colspan="2">
+               <widget class="QLabel" name="label_8">
+                <property name="toolTip">
+                 <string/>
+                </property>
+                <property name="whatsThis">
+                 <string/>
+                </property>
+                <property name="text">
+                 <string>Borderless zoom/pan mouse (else use alternate method)</string>
                 </property>
                </widget>
               </item>
@@ -2019,80 +2057,27 @@ left button behave like the middle button in such areas.</string>
                 </property>
                </widget>
               </item>
-              <item row="12" column="0" colspan="2">
-               <widget class="QLabel" name="label_6">
+              <item row="17" column="0">
+               <widget class="QLabel" name="label_14">
                 <property name="text">
-                 <string>Show newly created midi velocity graphs per-note</string>
+                 <string>Prefer knobs instead of sliders</string>
                 </property>
                </widget>
               </item>
-              <item row="12" column="2">
-               <widget class="QCheckBox" name="velocityPerNoteCheckBox">
-                <property name="text">
-                 <string/>
+              <item row="6" column="2">
+               <widget class="QCheckBox" name="popsDefStayOpenCheckBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
                 </property>
-               </widget>
-              </item>
-              <item row="13" column="0" colspan="2">
-               <widget class="QLabel" name="label_8">
                 <property name="toolTip">
-                 <string/>
-                </property>
-                <property name="whatsThis">
-                 <string/>
+                 <string>Allows some popup menus to stay open.
+Otherwise, hold Ctrl to keep them open.</string>
                 </property>
                 <property name="text">
-                 <string>Borderless zoom/pan mouse (else use alternate method)</string>
-                </property>
-               </widget>
-              </item>
-              <item row="13" column="2">
-               <widget class="QCheckBox" name="borderlessMouseCheckBox">
-                <property name="toolTip">
-                 <string>Enable borderless mouse.
-For certain functions like zoom/pan.
-Disable to use an alternate standard 
- method.
-</string>
-                </property>
-                <property name="whatsThis">
-                 <string>Enable borderless mouse.
-For certain functions like zoom.
-Disable to use an alternate standard
- method.</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-              <item row="14" column="0">
-               <widget class="QLabel" name="label_7">
-                <property name="text">
-                 <string>Track height</string>
-                </property>
-               </widget>
-              </item>
-              <item row="14" column="2">
-               <widget class="QSpinBox" name="trackHeight">
-                <property name="suffix">
-                 <string> px</string>
-                </property>
-                <property name="minimum">
-                 <number>20</number>
-                </property>
-                <property name="maximum">
-                 <number>2000</number>
-                </property>
-                <property name="value">
-                 <number>20</number>
-                </property>
-               </widget>
-              </item>
-              <item row="15" column="0">
-               <widget class="QLabel" name="label_9">
-                <property name="text">
-                 <string>Scrollable submenus</string>
+                 <string notr="true"/>
                 </property>
                </widget>
               </item>
@@ -2110,17 +2095,24 @@ Disable to use an alternate standard
                 </property>
                </widget>
               </item>
-              <item row="16" column="2">
-               <widget class="QCheckBox" name="liveWaveUpdateCheckBox">
+              <item row="15" column="0">
+               <widget class="QLabel" name="label_9">
                 <property name="text">
-                 <string/>
+                 <string>Scrollable submenus</string>
                 </property>
                </widget>
               </item>
-              <item row="25" column="0">
-               <widget class="QLabel" name="label_11">
+              <item row="8" column="0" colspan="2">
+               <widget class="QLabel" name="label_3">
                 <property name="text">
-                 <string>LV2 UI Open behavior</string>
+                 <string>Ctrl + Right click sets left range marker</string>
+                </property>
+               </widget>
+              </item>
+              <item row="23" column="2">
+               <widget class="QCheckBox" name="showNoteNamesCheckBox">
+                <property name="text">
+                 <string/>
                 </property>
                </widget>
               </item>
@@ -2143,76 +2135,46 @@ Disable to use an alternate standard
                 </item>
                </widget>
               </item>
-              <item row="17" column="0">
-               <widget class="QLabel" name="label_14">
-                <property name="text">
-                 <string>Prefer knobs instead of sliders</string>
+              <item row="0" column="2">
+               <widget class="QSpinBox" name="guiRefreshSelect">
+                <property name="suffix">
+                 <string>/sec</string>
+                </property>
+                <property name="minimum">
+                 <number>2</number>
+                </property>
+                <property name="maximum">
+                 <number>100</number>
+                </property>
+                <property name="value">
+                 <number>20</number>
                 </property>
                </widget>
               </item>
-              <item row="17" column="2">
-               <widget class="QCheckBox" name="preferKnobsVsSlidersCheckBox">
-                <property name="toolTip">
-                 <string>Whether to show knobs or sliders in certain places, for example mixer strips</string>
+              <item row="1" column="0">
+               <widget class="QLabel" name="textLabel1_4_4">
+                <property name="text">
+                 <string>Bug fix: Fix frozen MDI windows</string>
                 </property>
+                <property name="wordWrap">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="16" column="2">
+               <widget class="QCheckBox" name="liveWaveUpdateCheckBox">
                 <property name="text">
                  <string/>
                 </property>
                </widget>
               </item>
-              <item row="18" column="0">
-               <widget class="QLabel" name="label_15">
+              <item row="3" column="0">
+               <widget class="QLabel" name="textLabel1_4">
                 <property name="text">
-                 <string>Show knob and slider values</string>
+                 <string>Use old-style stop shortcut:</string>
                 </property>
-               </widget>
-              </item>
-              <item row="18" column="2">
-               <widget class="QCheckBox" name="showControlValuesCheckBox">
-                <property name="toolTip">
-                 <string>Whether to show knob and slider values in certain places, for example mixer strips.
-Turn off to reduce clutter.</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-              <item row="19" column="0">
-               <widget class="QLabel" name="label_16">
-                <property name="text">
-                 <string>Monitor on record-arm automatically</string>
-                </property>
-               </widget>
-              </item>
-              <item row="19" column="2">
-               <widget class="QCheckBox" name="monitorOnRecordCheckBox">
-                <property name="toolTip">
-                 <string>Whether record-arming a track 
- automatically activates monitoring.</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-              <item row="22" column="0">
-               <widget class="QLabel" name="label_17">
-                <property name="text">
-                 <string>Style hack: Force line edit widgets to draw a frame</string>
-                </property>
-               </widget>
-              </item>
-              <item row="22" column="2">
-               <widget class="QCheckBox" name="lineEditStyleHackCheckBox">
-                <property name="toolTip">
-                 <string>Force line edit widgets to draw a frame at 
- small sizes. Some styles refuse to draw 
- the frame. This hack forces a frame to be 
- drawn, but may interfere with other styles.</string>
-                </property>
-                <property name="text">
-                 <string/>
+                <property name="wordWrap">
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
@@ -2234,13 +2196,197 @@ Turn off to reduce clutter.</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="textLabel1_4_4">
+              <item row="14" column="0">
+               <widget class="QLabel" name="label_7">
                 <property name="text">
-                 <string>Bug fix: Fix frozen MDI windows</string>
+                 <string>Track height</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="TextLabel1">
+                <property name="text">
+                 <string>GUI Refresh Rate</string>
                 </property>
                 <property name="wordWrap">
                  <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="18" column="0">
+               <widget class="QLabel" name="label_15">
+                <property name="text">
+                 <string>Show knob and slider values</string>
+                </property>
+               </widget>
+              </item>
+              <item row="11" column="0" colspan="2">
+               <widget class="QLabel" name="label5">
+                <property name="text">
+                 <string>Smart focus</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="2">
+               <widget class="QCheckBox" name="projectSaveCheckBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="2">
+               <widget class="QCheckBox" name="rangeMarkerWithoutMMBCheckBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="18" column="2">
+               <widget class="QCheckBox" name="showControlValuesCheckBox">
+                <property name="toolTip">
+                 <string>Whether to show knob and slider values in certain places, for example mixer strips.
+Turn off to reduce clutter.</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="2">
+               <widget class="QCheckBox" name="lmbDecreasesCheckBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string notr="true"/>
+                </property>
+               </widget>
+              </item>
+              <item row="25" column="0">
+               <widget class="QLabel" name="label_11">
+                <property name="text">
+                 <string>LV2 UI Open behavior</string>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="0" colspan="2">
+               <widget class="QLabel" name="label_2">
+                <property name="toolTip">
+                 <string>In some areas, the middle mouse button decreases
+values, while the right button increases. Users without a
+middle mouse button can select this option to make the
+left button behave like the middle button in such areas.</string>
+                </property>
+                <property name="text">
+                 <string>Use left mouse button for decreasing values</string>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="2">
+               <widget class="QCheckBox" name="addHiddenCheckBox">
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="10" column="0" colspan="2">
+               <widget class="QLabel" name="label_5">
+                <property name="text">
+                 <string>Unhide tracks when adding hidden tracks</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="0" colspan="2">
+               <widget class="QLabel" name="TextLabel1_3">
+                <property name="toolTip">
+                 <string/>
+                </property>
+                <property name="text">
+                 <string>Some popup menus stay open (else hold Ctrl)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="10" column="2">
+               <widget class="QCheckBox" name="unhideTracksCheckBox">
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0" colspan="2">
+               <widget class="QLabel" name="textLabel1_4_2">
+                <property name="text">
+                 <string>Move single armed track with selection</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="14" column="2">
+               <widget class="QSpinBox" name="trackHeight">
+                <property name="suffix">
+                 <string> px</string>
+                </property>
+                <property name="minimum">
+                 <number>20</number>
+                </property>
+                <property name="maximum">
+                 <number>2000</number>
+                </property>
+                <property name="value">
+                 <number>20</number>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="2">
+               <widget class="QCheckBox" name="oldStyleStopCheckBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="13" column="2">
+               <widget class="QCheckBox" name="borderlessMouseCheckBox">
+                <property name="toolTip">
+                 <string>Enable borderless mouse.
+For certain functions like zoom/pan.
+Disable to use an alternate standard 
+ method.
+</string>
+                </property>
+                <property name="whatsThis">
+                 <string>Enable borderless mouse.
+For certain functions like zoom.
+Disable to use an alternate standard
+ method.</string>
+                </property>
+                <property name="text">
+                 <string/>
                 </property>
                </widget>
               </item>
@@ -2268,15 +2414,18 @@ Benign XCB connection errors may still
                 </property>
                </widget>
               </item>
-              <item row="23" column="0">
-               <widget class="QLabel" name="label_19">
+              <item row="26" column="0">
+               <widget class="QLabel" name="label_23">
                 <property name="text">
-                 <string>Show note names on notes in pianoroll</string>
+                 <string>Revert native GUI scaling for plugins in HiDPI</string>
                 </property>
                </widget>
               </item>
-              <item row="23" column="2">
-               <widget class="QCheckBox" name="showNoteNamesCheckBox">
+              <item row="26" column="2">
+               <widget class="QCheckBox" name="revertPluginNativeGUIScalingCheckBox">
+                <property name="toolTip">
+                 <string>Revert native UI window HiDPI scaling (some plugins ignore this setting)</string>
+                </property>
                 <property name="text">
                  <string/>
                 </property>
@@ -2384,8 +2533,8 @@ Benign XCB connection errors may still
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>554</width>
-               <height>368</height>
+               <width>546</width>
+               <height>387</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -2403,7 +2552,7 @@ Benign XCB connection errors may still
      </widget>
     </widget>
    </item>
-   <item>
+   <item row="1" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <property name="spacing">
       <number>6</number>

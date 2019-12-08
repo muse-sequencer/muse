@@ -23,7 +23,9 @@
 //=========================================================
 
 #include <list>
+#ifndef _WIN32
 #include <termios.h>
+#endif
 #include <iostream>
 #include <stdio.h>
 
@@ -37,6 +39,7 @@
 #include <QHeaderView>
 #include <QSettings>
 
+#include "config.h"
 #include "confmport.h"
 #include "app.h"
 #include "icons.h"
@@ -81,7 +84,7 @@ namespace MusEGui {
 void MPConfig::closeEvent(QCloseEvent *event)
 {
     apply();
-    QSettings settings("MusE", "MusE-qt");
+    QSettings settings;
     settings.setValue("MPConfig/geometry", saveGeometry());
     QWidget::closeEvent(event);
 }
@@ -428,7 +431,7 @@ void MPConfig::DeviceItemRenamed(QTableWidgetItem* item)
       {
         QMessageBox::critical(this,
             tr("MusE: bad device name"),
-            tr("please choose a unique device name"),
+            tr("Please choose a unique device name"),
             QMessageBox::Ok,
             Qt::NoButton,
             Qt::NoButton);
@@ -678,7 +681,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       {
                         mapALSA.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), aix) );
                         ++aix;
-                      }  
+                      }
                       else
                       if((*i)->deviceType() == MusECore::MidiDevice::JACK_MIDI)
                       {  
@@ -771,6 +774,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     }
                     
                     n = act->data().toInt();
+                    delete pup;
                     
                     MusECore::MidiDevice* sdev = 0;
                     if(n < 0x10000000)
@@ -797,7 +801,8 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       int typ;
                       if(n < 0x20000000)
                         typ = MusECore::MidiDevice::ALSA_MIDI;
-                      else if(n < 0x30000000)
+                      else
+                      if(n < 0x30000000)
                         typ = MusECore::MidiDevice::JACK_MIDI;
                       else //if(n < 0x40000000)
                         typ = MusECore::MidiDevice::SYNTH_MIDI;
@@ -807,8 +812,6 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       if(sdev == dev)
                         sdev = 0;
                     }    
-
-                    delete pup;
                     
                     MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
                     for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
@@ -917,10 +920,11 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
 
             case DEVCOL_INSTR:
                   {
-                  if (dev && dev->isSynti())
-                        return;
+                  //if (dev && dev->isSynti())
+                  //      return;
                   PopupMenu* pup = new PopupMenu(false);
-                  MusECore::MidiInstrument::populateInstrPopup(pup, port->instrument(), false);   
+                  //MusECore::MidiInstrument::populateInstrPopup(pup, no, false);   
+                  MusECore::MidiInstrument::populateInstrPopup(pup, no, true);
                   
                   if(pup->actions().count() == 0)
                   {
@@ -930,22 +934,35 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   
                   QAction* act = pup->exec(ppt);
                   if(!act)
+                  {
+                    delete pup;
                     return;
+                  }
                   
                   QString s = act->text();
+                  const int actid = act->data().toInt();
                   delete pup;
                   
-                  item->tableWidget()->item(item->row(), DEVCOL_INSTR)->setText(s);
-                  for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i
-                     != MusECore::midiInstruments.end(); ++i) {
-                        if ((*i)->iname() == s) {
-                              MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
-                              port->changeInstrument(*i);
-                              MusEGlobal::audio->msgIdle(false);
-                              break;
-                              }
-                        }
-                  MusEGlobal::song->update(SC_MIDI_INSTRUMENT);
+                  // Edit instrument
+                  if(actid == 100)
+                  {
+                    MusECore::MidiInstrument* instr = port->instrument();
+                    MusEGlobal::muse->startEditInstrument(instr && !instr->isSynti() ? instr->iname() : QString());
+                  }
+                  else
+                  {
+                    item->tableWidget()->item(item->row(), DEVCOL_INSTR)->setText(s);
+                    for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i
+                      != MusECore::midiInstruments.end(); ++i) {
+                          if ((*i)->iname() == s) {
+                                MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
+                                port->changeInstrument(*i);
+                                MusEGlobal::audio->msgIdle(false);
+                                MusEGlobal::song->update(SC_MIDI_INSTRUMENT);
+                                break;
+                                }
+                          }
+                  }
                   }
                   return;
             break;                    
@@ -959,7 +976,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
 void MPConfig::setToolTip(QTableWidgetItem *item, int col)
       {
       switch (col) {
-            case DEVCOL_NO:     item->setToolTip(tr("Port Number")); break;
+            case DEVCOL_NO:     item->setToolTip(tr("Port number")); break;
             
 #ifndef _USE_EXTRA_INSTANCE_COLUMNS_
             case DEVCOL_GUI:    item->setToolTip(tr("Enable gui")); break;
@@ -1115,7 +1132,7 @@ MPConfig::MPConfig(QWidget* parent)
    : QDialog(parent)
       {
       setupUi(this);
-      QSettings settings("MusE", "MusE-qt");
+      QSettings settings;
       restoreGeometry(settings.value("MPConfig/geometry").toByteArray());
 
       mdevView->setRowCount(MusECore::MIDI_PORTS);
@@ -1168,7 +1185,11 @@ MPConfig::MPConfig(QWidget* parent)
 #endif                  
       ;
 
+#ifdef ALSA_SUPPORT
       addALSADevice->setChecked(MusEGlobal::midiSeq != NULL);
+#else
+      addALSADevice->setVisible(false);
+#endif
 
       instanceList->setColumnCount(columnnames.size());
       instanceList->setHorizontalHeaderLabels(columnnames);
@@ -1267,13 +1288,14 @@ void MPConfig::deviceSelectionChanged()
 
 void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if(!(flags._flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_INSTRUMENT)))
+      if(!(flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_INSTRUMENT)))
         return;
     
+#ifdef ALSA_SUPPORT
       addALSADevice->blockSignals(true);
       addALSADevice->setChecked(MusEGlobal::midiSeq != NULL);
       addALSADevice->blockSignals(false);
-
+#endif
 
       // Get currently selected index...
       int no = -1;
@@ -1443,7 +1465,7 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
             }
 #endif                  
 
-            if (!(dev && dev->isSynti()))
+            //if (!(dev && dev->isSynti()))
                   iteminstr->setIcon(QIcon(*buttondownIcon));
 
             itemname->setIcon(QIcon(*buttondownIcon));
@@ -1612,7 +1634,8 @@ void MPConfig::addInstanceClicked()
             MusECore::MidiPort* port  = &MusEGlobal::midiPorts[i];
             MusECore::MidiDevice* dev = port->device();
             if (dev==0) {
-                  MusEGlobal::audio->msgSetMidiDevice(port, si);
+                  // This is a brand new instance. Set the instrument as well for convenience.
+                  MusEGlobal::audio->msgSetMidiDevice(port, si, si);
                   // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
                   MusEGlobal::muse->changeConfig(true);     // save configuration file
                   MusEGlobal::song->update();
@@ -1892,7 +1915,7 @@ void MPConfig::addAlsaDeviceClicked(bool v)
     MusEGlobal::song->update(SC_CONFIG);
   }
 }
-      
+
 //---------------------------------------------------------
 //   beforeDeviceContextShow
 //---------------------------------------------------------

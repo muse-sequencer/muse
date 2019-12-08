@@ -44,8 +44,7 @@ add_library ( sysex_helper_module SHARED
 ##
 
 set_target_properties( sysex_helper_module
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      OUTPUT_NAME muse_sysex_helper_module
+      PROPERTIES OUTPUT_NAME muse_sysex_helper_module
       )
 
 ##

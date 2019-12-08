@@ -91,6 +91,7 @@ QT5_WRAP_CPP (widget_mocs
 #       midi_warn_init_pending_impl.h
 #       mixdowndialog.h  
       mlabel.h  
+      musemdiarea.h
 #       mtscale.h  
 #       mtscale_flo.h  
       # mtrackinfo.h
@@ -236,6 +237,7 @@ file (GLOB widgets_source_files
 #       mixdowndialog.cpp 
       mlabel.cpp 
       mmath.cpp
+      musemdiarea.cpp
       # mtrackinfo.cpp
 #       mtscale.cpp 
 #       mtscale_flo.cpp 
@@ -315,8 +317,8 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties( widgets
-      # PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti "
-      PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK} -include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti"
+      # PROPERTIES COMPILE_FLAGS "${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti "
+      PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK} ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti"
       OUTPUT_NAME muse_widgets
       )
 

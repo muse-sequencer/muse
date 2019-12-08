@@ -42,7 +42,8 @@
 #include "route.h"
 #include "mididev.h"
 #include "midiport.h"
-#include "instruments/minstrument.h"
+#include "minstrument.h"
+#include "metronome_class.h"
 //REMOVE Tim. samplerate. Added.
 #include "wave.h"
 #include "audio_convert/lib_audio_convert/audioconvert.h"
@@ -58,21 +59,8 @@ typedef MidiCtrlValListIterators_t::const_iterator ciMidiCtrlValListIterators_t;
 class MidiCtrlValListIterators : public MidiCtrlValListIterators_t
 {
    public:
-     iterator findList(const MidiCtrlValList* valList)
-     {
-       for(iterator i = begin(); i != end(); ++i)
-         if((*i)->second == valList)
-           return i;
-       return end();
-     }
-
-     const_iterator findList(const MidiCtrlValList* valList) const
-     {
-       for(const_iterator i = begin(); i != end(); ++i)
-         if((*i)->second == valList)
-           return i;
-       return end();
-     }
+     iterator findList(const MidiCtrlValList* valList);
+     const_iterator findList(const MidiCtrlValList* valList) const;
 };
 
 typedef std::map < int /*port*/, MidiCtrlValListIterators, std::less<int> > MidiCtrlValLists2bErased_t;
@@ -85,46 +73,9 @@ typedef std::pair<iMidiCtrlValLists2bErased_t, iMidiCtrlValLists2bErased_t> Midi
 class MidiCtrlValLists2bErased : public MidiCtrlValLists2bErased_t
 {
    public:
-     void add(int port, const iMidiCtrlValList& item)
-     {
-       iterator i = find(port);
-       if(i == end())
-       {
-         MidiCtrlValListIterators mcvli;
-         mcvli.push_back(item);
-         insert(MidiCtrlValLists2bErasedInsertPair_t(port, mcvli));
-         return;
-       }
-       MidiCtrlValListIterators& mcvli = i->second;
-       for(iMidiCtrlValListIterators_t imcvli = mcvli.begin(); imcvli != mcvli.end(); ++imcvli)
-       {
-         iMidiCtrlValList imcvl = *imcvli;
-         // Compare list pointers.
-         if(imcvl->second == item->second)
-           return; // Already exists.
-       }
-       mcvli.push_back(item);
-     }
-
-     iterator findList(int port, const MidiCtrlValList* valList)
-     {
-       iterator i = find(port);
-       if(i == end())
-         return end();
-       if(i->second.findList(valList) != i->second.end())
-         return i;
-       return end();
-     }
-
-     const_iterator findList(int port, const MidiCtrlValList* valList) const
-     {
-       const_iterator i = find(port);
-       if(i == end())
-         return end();
-       if(i->second.findList(valList) != i->second.end())
-         return i;
-       return end();
-     }
+     void add(int port, const iMidiCtrlValList& item);
+     iterator findList(int port, const MidiCtrlValList* valList);
+     const_iterator findList(int port, const MidiCtrlValList* valList) const;
 };
 
 
@@ -198,40 +149,45 @@ struct DrumMapTrackPatchReplaceOperation
 // New items created in GUI thread awaiting addition in audio thread.
 struct PendingOperationItem
 {
-  enum PendingOperationType { Uninitialized = 0,
-                              ModifySongLength,
-                              AddMidiInstrument, DeleteMidiInstrument, ReplaceMidiInstrument,
-                              AddMidiDevice,     DeleteMidiDevice,       
-                              ModifyMidiDeviceAddress,         ModifyMidiDeviceFlags,       ModifyMidiDeviceName,
-                              AddTrack,          DeleteTrack,  MoveTrack,                   ModifyTrackName,
-                              SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff,
-                              ModifyTrackDrumMapItem, ReplaceTrackDrumMapPatchList,         UpdateDrumMaps,
-                              AddPart,           DeletePart,   MovePart, SelectPart, ModifyPartLength,  ModifyPartName,
-                              AddEvent,          DeleteEvent,  SelectEvent,
-                              AddMidiCtrlVal,    DeleteMidiCtrlVal,     ModifyMidiCtrlVal,  AddMidiCtrlValList,
-                              RemapDrumControllers,
-                              AddAudioCtrlVal,   DeleteAudioCtrlVal,    ModifyAudioCtrlVal, ModifyAudioCtrlValList,
-                              AddTempo,          DeleteTempo,           ModifyTempo,        SetStaticTempo,
-                              SetGlobalTempo, 
-                              AddSig,            DeleteSig,             ModifySig,
-                              AddKey,            DeleteKey,             ModifyKey,
-                              //REMOVE Tim. samplerate. Added.
-                              ModifyDefaultAudioConverterSettings,                ModifyLocalAudioConverterSettings,
-                              AddStretchListRatioAt,   DeleteStretchListRatioAt,  ModifyStretchListRatioAt,
-                              //AddSamplerateRatioAt,    DeleteSamplerateRatioAt, ModifySamplerateRatioAt,
-                              //AddPitchRatioAt,         DeletePitchRatioAt,      ModifyPitchRatioAt,
-                              ModifyStretchListRatio,      //ModifySamplerateRatio,   ModifyPitchRatio,
-                              //ModifyStretchedFrameForStretch,                   ModifySquishedFrameForStretch,
-                              //ModifyStretchedFrameForResample,                  ModifySquishedFrameForResample,
+  enum PendingOperationType {
+    Uninitialized = 0,
+    ModifySongLength,
+    AddMidiInstrument, DeleteMidiInstrument, ReplaceMidiInstrument,
+    AddMidiDevice,     DeleteMidiDevice,       
+    ModifyMidiDeviceAddress,         ModifyMidiDeviceFlags,       ModifyMidiDeviceName,
+    SetInstrument,
+    AddTrack,          DeleteTrack,  MoveTrack,                   ModifyTrackName,
+    SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff,
+    ModifyTrackDrumMapItem, ReplaceTrackDrumMapPatchList,         UpdateDrumMaps,
+    AddPart,           DeletePart,   MovePart, SelectPart, ModifyPartLength,  ModifyPartName,
+    AddEvent,          DeleteEvent,  SelectEvent,
+    AddMidiCtrlVal,    DeleteMidiCtrlVal,     ModifyMidiCtrlVal,  AddMidiCtrlValList,
+    RemapDrumControllers,
+    AddAudioCtrlVal,   DeleteAudioCtrlVal,    ModifyAudioCtrlVal, ModifyAudioCtrlValList,
+    AddTempo,          DeleteTempo,           ModifyTempo,        SetStaticTempo,
+    SetGlobalTempo, 
+    AddSig,            DeleteSig,             ModifySig,
+    AddKey,            DeleteKey,             ModifyKey,
 
-                              AddAuxSendValue,
-                              AddRoute,                DeleteRoute,
-                              AddRouteNode,            DeleteRouteNode,           ModifyRouteNode,
-                              UpdateSoloStates,
-                              EnableAllAudioControllers,
-                              GlobalSelectAllEvents,
-                              ModifyAudioSamples
-                              }; 
+    //REMOVE Tim. samplerate. Added.
+    ModifyDefaultAudioConverterSettings,                ModifyLocalAudioConverterSettings,
+    AddStretchListRatioAt,   DeleteStretchListRatioAt,  ModifyStretchListRatioAt,
+    //AddSamplerateRatioAt,    DeleteSamplerateRatioAt, ModifySamplerateRatioAt,
+    //AddPitchRatioAt,         DeletePitchRatioAt,      ModifyPitchRatioAt,
+    ModifyStretchListRatio,      //ModifySamplerateRatio,   ModifyPitchRatio,
+    //ModifyStretchedFrameForStretch,                   ModifySquishedFrameForStretch,
+    //ModifyStretchedFrameForResample,                  ModifySquishedFrameForResample,
+
+    AddAuxSendValue,   
+    AddRoute,          DeleteRoute, 
+    AddRouteNode,      DeleteRouteNode,       ModifyRouteNode,
+    UpdateSoloStates,
+    EnableAllAudioControllers,
+    GlobalSelectAllEvents,
+    ModifyAudioSamples,
+    SwitchMetronomeSettings, ModifyMetronomeAccentMap,
+    SetExternalSyncFlag, SetUseJackTransport, SetUseMasterTrack
+    }; 
                               
   PendingOperationType _type;
 
@@ -258,6 +214,7 @@ struct PendingOperationItem
     AuxSendValueList* _aux_send_value_list;
     RouteList* _route_list;
     float** _audioSamplesPointer;
+    MetroAccentsMap** _metroAccentsMap;
   };
             
   union {
@@ -270,6 +227,8 @@ struct PendingOperationItem
     MusECore::SigEvent* _sig_event; 
     Route* _dst_route_pointer;
     float* _newAudioSamples;
+    bool* _bool_pointer;
+    MetroAccentsMap* _newMetroAccentsMap;
     //REMOVE Tim. samplerate. Added.
     //StretchEvent* _stretch_event;
     AudioConverterSettingsGroup* _audio_converter_settings;
@@ -296,7 +255,6 @@ struct PendingOperationItem
     unsigned int _uintA;
     unsigned int _posLenVal;
     bool _boolA;
-    bool _select;
     const QString *_name;
     double _aux_send_value;
     int _insert_at;
@@ -410,7 +368,11 @@ struct PendingOperationItem
   PendingOperationItem(MidiDevice* midi_device, const QString* new_name, PendingOperationType type = ModifyMidiDeviceName)
     { _type = type; _midi_device = midi_device; _name = new_name; }
 
-    
+
+  PendingOperationItem(MidiPort* midi_port, MidiInstrument* midi_instrument, PendingOperationType type = SetInstrument)
+    { _type = type; _midi_port = midi_port; _midi_instrument = midi_instrument; }
+
+
   PendingOperationItem(TrackList* tl, Track* track, int insert_at, PendingOperationType type = AddTrack, void* sec_track_list = 0)
     { _type = type; _track_list = tl; _track = track; _insert_at = insert_at; _void_track_list = sec_track_list; }
     
@@ -422,7 +384,8 @@ struct PendingOperationItem
 
   PendingOperationItem(TrackList* tl, bool select, unsigned long /*t0*/, unsigned long /*t1*/,
                        PendingOperationType type = GlobalSelectAllEvents)
-    { _type = type; _track_list = tl; _select = select; }
+    { _type = type; _track_list = tl; 
+        _boolA = select; }
     
   PendingOperationItem(Track* track, const QString* new_name, PendingOperationType type = ModifyTrackName)
     { _type = type; _track = track; _name = new_name; }
@@ -512,6 +475,9 @@ struct PendingOperationItem
   PendingOperationItem(TempoList* tl, int tempo, PendingOperationType type)
     { _type = type; _tempo_list = tl; _intA = tempo; }
 
+  PendingOperationItem(TempoList* tl, bool v, PendingOperationType type = SetUseMasterTrack)
+    { _type = type; _tempo_list = tl; _boolA = v; }
+
     
   // NOTE: 'tick' is the desired tick. se is a new SigEvent with sig and (same) desired tick. Swapping with NEXT event is done.
   PendingOperationItem(MusECore::SigList* sl, MusECore::SigEvent* se, unsigned int tick, PendingOperationType type = AddSig)
@@ -597,6 +563,13 @@ struct PendingOperationItem
   
   PendingOperationItem(unsigned int len, PendingOperationType type = ModifySongLength)
     { _type = type; _posLenVal = len; }
+
+  PendingOperationItem(MetroAccentsMap** old_map, MetroAccentsMap* new_map, PendingOperationType type = ModifyMetronomeAccentMap)
+    { _type = type; _metroAccentsMap = old_map; _newMetroAccentsMap = new_map; }
+
+  // Type is SwitchMetronomeSettings, SetExternalSyncFlag, SetUseJackTransport.
+  PendingOperationItem(bool* bool_pointer, bool v, PendingOperationType type)
+    { _type = type; _bool_pointer = bool_pointer; _boolA = v; }
 
   PendingOperationItem(PendingOperationType type) // type is EnableAllAudioControllers.
     { _type = type; }

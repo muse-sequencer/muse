@@ -103,7 +103,7 @@ void EffectRackDelegate::paint ( QPainter * painter, const QStyleOptionViewItem 
       QRect cr = QRect(rr.x()+itemXMargin, rr.y()+itemYMargin, 
                        rr.width() - 2 * itemXMargin, rr.height() - 2 * itemYMargin);
 
-      const QRect onrect = tr->efxPipe()->isOn(index.row()) ? rr : QRect();
+      const QRect onrect = (tr->efxPipe() && tr->efxPipe()->isOn(index.row())) ? rr : QRect();
       ItemBackgroundPainter* ibp = er->getBkgPainter();
       ibp->drawBackground(painter,
                           rr,
@@ -114,7 +114,7 @@ void EffectRackDelegate::paint ( QPainter * painter, const QStyleOptionViewItem 
                           // No, let the background painter handle the on colour.
                           //tr->efxPipe()->isOn(index.row()) ? er->getActiveColor() : option.palette.dark();
 
-      QString name = tr->efxPipe()->name(index.row());
+      QString name = tr->efxPipe() ? tr->efxPipe()->name(index.row()) : QString();
       //if (name.length() > 11)
       //      name = name.left(9) + "...";
   
@@ -211,10 +211,13 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
 
 void EffectRack::updateContents()
       {
+      MusECore::Pipeline* pipe = track->efxPipe();
+      if(!pipe)
+        return;
       for (int i = 0; i < MusECore::PipelineDepth; ++i) {
-            QString name = track->efxPipe()->name(i);
+            QString name = pipe->name(i);
             item(i)->setText(name);
-            item(i)->setToolTip(name == QString("empty") ? tr("effect rack") : name );
+            item(i)->setToolTip(pipe->empty(i) ? tr("Effect rack") : name );
             //item(i)->setBackground(track->efxPipe()->isOn(i) ? activeColor : palette().dark());
             if(viewport())
             {
@@ -240,7 +243,7 @@ EffectRack::~EffectRack()
 
 void EffectRack::songChanged(MusECore::SongChangedStruct_t typ)
       {
-      if (typ._flags & (SC_ROUTE | SC_RACK)) {
+      if (typ & (SC_ROUTE | SC_RACK)) {
             updateContents();
        	    }
       }
@@ -307,15 +310,15 @@ void EffectRack::menuRequested(QListWidgetItem* it)
       //enum { NEW, CHANGE, UP, DOWN, REMOVE, BYPASS, SHOW, SAVE };
       enum { NEW, CHANGE, UP, DOWN, REMOVE, BYPASS, SHOW, SHOW_NATIVE, SAVE };
       QMenu* menu = new QMenu;
-      QAction* newAction = menu->addAction(tr("new"));
-      QAction* changeAction = menu->addAction(tr("change"));
-      QAction* upAction = menu->addAction(QIcon(*upIcon), tr("move up"));//,   UP, UP);
-      QAction* downAction = menu->addAction(QIcon(*downIcon), tr("move down"));//, DOWN, DOWN);
-      QAction* removeAction = menu->addAction(tr("remove"));//,    REMOVE, REMOVE);
-      QAction* bypassAction = menu->addAction(tr("bypass"));//,    BYPASS, BYPASS);
-      QAction* showGuiAction = menu->addAction(tr("show gui"));//,  SHOW, SHOW);
-      QAction* showNativeGuiAction = menu->addAction(tr("show native gui"));//,  SHOW_NATIVE, SHOW_NATIVE);
-      QAction* saveAction = menu->addAction(tr("save preset"));
+      QAction* newAction = menu->addAction(tr("New"));
+      QAction* changeAction = menu->addAction(tr("Change"));
+      QAction* upAction = menu->addAction(QIcon(*upIcon), tr("Move up"));//,   UP, UP);
+      QAction* downAction = menu->addAction(QIcon(*downIcon), tr("Move down"));//, DOWN, DOWN);
+      QAction* removeAction = menu->addAction(tr("Remove"));//,    REMOVE, REMOVE);
+      QAction* bypassAction = menu->addAction(tr("Bypass"));//,    BYPASS, BYPASS);
+      QAction* showGuiAction = menu->addAction(tr("Show gui"));//,  SHOW, SHOW);
+      QAction* showNativeGuiAction = menu->addAction(tr("Show native gui"));//,  SHOW_NATIVE, SHOW_NATIVE);
+      QAction* saveAction = menu->addAction(tr("Save preset"));
 
       newAction->setData(NEW);
       changeAction->setData(CHANGE);
@@ -472,23 +475,26 @@ void EffectRack::doubleClicked(QListWidgetItem* it)
       int idx        = row(item);
       MusECore::Pipeline* pipe = track->efxPipe();
 
-      if (pipe->name(idx) == QString("empty")) {
-            choosePlugin(it);
-            return;
-            }
-      if (pipe) {
-            bool flag;
-            if (pipe->has_dssi_ui(idx))
-            {
-              flag = !pipe->nativeGuiVisible(idx);
-              pipe->showNativeGui(idx, flag);
+      if (!pipe)
+        return;
 
-            }
-            else {
-              flag = !pipe->guiVisible(idx);
-              pipe->showGui(idx, flag);
-            }
-            }
+      if (pipe->empty(idx))
+      {
+        choosePlugin(it);
+        return;
+      }
+
+      bool flag;
+      if (pipe->has_dssi_ui(idx))
+      {
+        flag = !pipe->nativeGuiVisible(idx);
+        pipe->showNativeGui(idx, flag);
+
+      }
+      else {
+        flag = !pipe->guiVisible(idx);
+        pipe->showGui(idx, flag);
+      }
       }
 
 void EffectRack::savePreset(int idx)

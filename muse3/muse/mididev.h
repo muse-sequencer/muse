@@ -35,6 +35,7 @@
 #include "lock_free_buffer.h"
 #include "sync.h"
 #include "evdata.h"
+#include "latency_info.h"
 
 #include <QString>
 
@@ -170,6 +171,10 @@ class MidiDevice {
       // The audio thread processes this fifo and clears it.
       LockFreeBuffer<ExtMidiClock> *_extClockHistoryFifo;
       
+      // Holds latency computations each cycle.
+      TrackLatencyInfo _captureLatencyInfo;
+      TrackLatencyInfo _playbackLatencyInfo;
+      
       // Returns the number of frames to shift forward output event scheduling times when putting events
       //  into the eventFifos. This is not quite the same as latency (requiring a backwards shift)
       //  although its requirement is a result of the latency.
@@ -177,10 +182,10 @@ class MidiDevice {
       //  will equal one segment size.
       // For drivers running in their own thread (ALSA, OSC input) this will typically be near zero:
       //  1 ms for ALSA given a standard sequencer timer f = 1000Hz, or near zero for OSC input.
-      virtual unsigned int pbForwardShiftFrames() const { return 0; }
+      inline virtual unsigned int pbForwardShiftFrames() const { return 0; }
 
       // Various IPC buffers. Any thread can use this.
-      LockFreeMPSCRingBuffer<MidiPlayEvent> *eventBuffers(EventBufferType bufferType) 
+      inline LockFreeMPSCRingBuffer<MidiPlayEvent> *eventBuffers(EventBufferType bufferType) 
       { 
         switch(bufferType)
         {
@@ -207,23 +212,23 @@ class MidiDevice {
       MidiDevice(const QString& name);
       virtual ~MidiDevice();
 
-      SysExInputProcessor* sysExInProcessor() { return &_sysExInProcessor; }
-      SysExOutputProcessor* sysExOutProcessor() { return &_sysExOutProcessor; }
+      inline SysExInputProcessor* sysExInProcessor() { return &_sysExInProcessor; }
+      inline SysExOutputProcessor* sysExOutProcessor() { return &_sysExOutProcessor; }
       
       virtual MidiDeviceType deviceType() const = 0;
       virtual QString deviceTypeString() const;
       
       // The meaning of the returned pointer depends on the driver.
       // For Jack it returns the address of a Jack port, for ALSA it return the address of a snd_seq_addr_t.
-      virtual void* inClientPort() { return 0; }
-      virtual void* outClientPort() { return 0; }
+      inline virtual void* inClientPort() { return 0; }
+      inline virtual void* outClientPort() { return 0; }
 
       // These three are generally for ALSA.
-      virtual void setAddressClient(int) { }
-      virtual void setAddressPort(int) { }
+      inline virtual void setAddressClient(int) { }
+      inline virtual void setAddressPort(int) { }
       // We (ab)use the ALSA value SND_SEQ_ADDRESS_UNKNOWN to
       //  mean 'unavailable' if either client and port equal it.
-      virtual bool isAddressUnknown() const { return true; }
+      inline virtual bool isAddressUnknown() const { return true; }
 
       virtual QString open() = 0;
       virtual void close() = 0;
@@ -234,29 +239,29 @@ class MidiDevice {
       bool noInRoute() const   { return _inRoutes.empty();  }
       bool noOutRoute() const  { return _outRoutes.empty(); }
       
-      const QString& name() const      { return _name; }
+      inline const QString& name() const      { return _name; }
       // setName can be overloaded to do other things like setting port names, while setNameText just sets the text.
-      virtual void setName(const QString& s)   { _name = s; }
+      inline virtual void setName(const QString& s)   { _name = s; }
       // setNameText just sets the text, while setName can be overloaded to do other things like setting port names.
-      void setNameText(const QString& s)  { _name = s; }
+      inline void setNameText(const QString& s)  { _name = s; }
       
-      int midiPort() const             { return _port; }
+      inline int midiPort() const             { return _port; }
       void setPort(int p);              
 
-      int rwFlags() const              { return _rwFlags; }
-      int openFlags() const            { return _openFlags; }
-      void setOpenFlags(int val)       { _openFlags = val; }
-      void setrwFlags(int val)         { _rwFlags = val; }
-      const QString& state() const     { return _state; }
-      void setState(const QString& s)  { _state = s; }
+      inline int rwFlags() const              { return _rwFlags; }
+      inline int openFlags() const            { return _openFlags; }
+      inline void setOpenFlags(int val)       { _openFlags = val; }
+      inline void setrwFlags(int val)         { _rwFlags = val; }
+      inline const QString& state() const     { return _state; }
+      inline void setState(const QString& s)  { _state = s; }
 
-      virtual bool isSynti() const     { return false; }
-      virtual int selectRfd()          { return -1; }
-      virtual int selectWfd()          { return -1; }
-      virtual int bytesToWrite()       { return 0; }
-      virtual void flush()             {}
-      virtual void processInput()      {}
-      virtual void discardInput()      {}
+      inline virtual bool isSynti() const     { return false; }
+      inline virtual int selectRfd()          { return -1; }
+      inline virtual int selectWfd()          { return -1; }
+      inline virtual int bytesToWrite()       { return 0; }
+      inline virtual void flush()             {}
+      inline virtual void processInput()      {}
+      inline virtual void discardInput()      {}
 
       // Event time and tick must be set by caller beforehand.
       virtual void recordEvent(MidiRecordEvent&);
@@ -293,6 +298,64 @@ class MidiDevice {
       static const int extClockHistoryCapacity;
       LockFreeBuffer<ExtMidiClock> *extClockHistory() { return _extClockHistoryFifo; }
       void midiClockInput(unsigned int frame);
+
+
+      // Initializes this track's latency information in preparation for a latency scan.
+      virtual void prepareLatencyScan();
+      // Returns the latency of a given capture or playback port of the device.
+      inline virtual unsigned int portLatency(void* /*port*/, bool /*capture*/) const { return 0; }
+      // The contribution to latency by the device's own members (midi effect rack, Jack ports etc).
+      // A midi device can contain both an input and an output. The 'capture' parameter determines which one.
+      inline virtual float selfLatencyMidi(int /*channel*/, bool /*capture*/) const { return 0.0f; }
+      // The cached worst latency of all the contributions from the track's own members (audio effect rack, etc)
+      //  plus any port latency if applicable.
+      virtual float getWorstSelfLatencyMidi(bool capture);
+      // Whether this track (and the branch it is in) can force other parallel branches to
+      //  increase their latency compensation to match this one.
+      // If false, this branch will NOT disturb other parallel branches' compensation,
+      //  intead only allowing compensation UP TO the worst case in other branches.
+      virtual bool canDominateOutputLatencyMidi(bool capture) const;
+      virtual bool canDominateInputLatencyMidi(bool capture) const;
+      // Whether this track (and the branch it is in) can force other parallel branches to
+      //  increase their latency compensation to match this one - IF this track is an end-point
+      //  and the branch allows domination.
+      // If false, this branch will NOT disturb other parallel branches' compensation,
+      //  intead only allowing compensation UP TO the worst case in other branches.
+      virtual bool canDominateEndPointLatencyMidi(bool capture) const;
+      // Whether this track and its branch can correct for latency, not just compensate.
+      inline virtual bool canCorrectOutputLatencyMidi() const { return false; }
+      // Whether the track can pass latency values through, the SAME as if record monitor is
+      //  supported and on BUT does not require record monitor support.
+      // This is for example in the metronome MetronomeSynthI, since it is unique in that it
+      //  can correct its own latency unlike other synths, but it does not 'pass through'
+      //  the latency values to what drives it like other synths.
+      virtual bool canPassThruLatencyMidi(bool capture) const;
+      // Whether any of the connected output routes are effectively connected.
+      // That means track is not off, track is monitored where applicable, etc,
+      //   ie. signal can actually flow.
+      // For Wave Tracks for example, asks whether the track is an end-point from the view of the input side.
+      virtual bool isLatencyInputTerminalMidi(bool capture);
+      // Whether any of the connected output routes are effectively connected.
+      // That means track is not off, track is monitored where applicable, etc,
+      //   ie. signal can actually flow.
+      // For Wave Tracks for example, asks whether the track is an end-point from the view of the playback side.
+      virtual bool isLatencyOutputTerminalMidi(bool capture);
+
+      virtual TrackLatencyInfo& getDominanceInfoMidi(bool capture, bool input);
+      virtual TrackLatencyInfo& getDominanceLatencyInfoMidi(bool capture, bool input);
+      // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
+      //  determined in the complete getDominanceLatencyInfo() scan.
+      // The callerBranchLatency is the inherent branch latency of the calling track, or zero if calling from
+      //  the very top outside of the branch heads (outside of output tracks or open branches).
+      // The callerBranchLatency is accumulated as setCorrectionLatencyInfo() is called on each track
+      //  in a branch of the graph.
+      virtual TrackLatencyInfo& setCorrectionLatencyInfoMidi(bool capture, bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
+      virtual TrackLatencyInfo& getLatencyInfoMidi(bool capture, bool input);
+      // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
+      //  needed only to equalize the timing of all the AudioOutput tracks.
+      // It is applied as a direct offset in the latency delay compensator in getData().
+      virtual unsigned long latencyCompWriteOffsetMidi(bool capture) const;
+      virtual void setLatencyCompWriteOffsetMidi(float worstCase, bool capture);
       };
 
 //---------------------------------------------------------

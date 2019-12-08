@@ -1,5 +1,4 @@
 #include <QMenu>
-#include <QSignalMapper>
 #include <QInputDialog>
 
 #include "globaldefs.h"
@@ -9,6 +8,7 @@
 #include "plugindialog.h"
 //#include "ui_plugindialogbase.h"
 #include "plugin.h"
+#include "gconfig.h"
 
 
 namespace MusEGui {
@@ -29,6 +29,7 @@ PluginDialog::PluginDialog(QWidget* parent)
   : QDialog(parent)
 {
     ui.setupUi(this);
+    this->setStyleSheet("font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt");
 
       group_info=NULL;
       setWindowTitle(tr("MusE: select plugin"));
@@ -100,9 +101,9 @@ PluginDialog::PluginDialog(QWidget* parent)
 
       ui.tabBar->setCurrentIndex(selectedGroup);
       ui.tabBar->setContextMenuPolicy(Qt::ActionsContextMenu);
-      newGroupAction= new QAction(tr("&create new group"),ui.tabBar);
-      delGroupAction= new QAction(tr("&delete currently selected group"),ui.tabBar);
-      renGroupAction= new QAction(tr("re&name currently selected group"),ui.tabBar);
+      newGroupAction= new QAction(tr("&Create new group"),ui.tabBar);
+      delGroupAction= new QAction(tr("&Delete currently selected group"),ui.tabBar);
+      renGroupAction= new QAction(tr("Re&name currently selected group"),ui.tabBar);
       ui.tabBar->addAction(newGroupAction);
       ui.tabBar->addAction(delGroupAction);
       ui.tabBar->addAction(renGroupAction);
@@ -183,7 +184,6 @@ void PluginDialog::plistContextMenu(const QPoint& point)
   {
     group_info = &MusEGlobal::plugin_groups.get(item->text(1), item->text(2));
     QMenu* menu = new MusEGui::PopupMenu(this, true);
-    QSignalMapper* mapper = new QSignalMapper(this);
     menu->addAction(new MusEGui::MenuTitleItem(tr("Associated categories"), menu));
 
     if (ui.tabBar->count()==1)
@@ -198,15 +198,12 @@ void PluginDialog::plistContextMenu(const QPoint& point)
         QAction* act=menu->addAction(ui.tabBar->tabText(i));
         act->setCheckable(true);
         act->setChecked(group_info->contains(i));
-        connect(act,SIGNAL(toggled(bool)), mapper, SLOT(map()));
-        mapper->setMapping(act, i);
+        connect(act, &QAction::toggled, [this, i]() { groupMenuEntryToggled(i); } );
       }
-      connect(mapper, SIGNAL(mapped(int)), this, SLOT(groupMenuEntryToggled(int)));
     }
 
     menu->exec(mapToGlobal(point));
 
-    delete mapper;
     delete menu;
 
     if (selectedGroup!=0 && !group_info->contains(selectedGroup)) // we removed the entry from the currently visible group
@@ -246,8 +243,8 @@ void PluginDialog::enableOkB()
 void PluginDialog::newGroup()
 {
   MusEGlobal::plugin_groups.shift_right(selectedGroup+1, ui.tabBar->count());
-  ui.tabBar->insertTab(selectedGroup+1, tr("new group"));
-  MusEGlobal::plugin_group_names.insert(selectedGroup, tr("new group"));
+  ui.tabBar->insertTab(selectedGroup+1, tr("New group"));
+  MusEGlobal::plugin_group_names.insert(selectedGroup, tr("New group"));
 }
 
 void PluginDialog::delGroup()
