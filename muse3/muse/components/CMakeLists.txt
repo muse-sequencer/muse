@@ -47,6 +47,7 @@
 ##
 QT5_WRAP_CPP (components_mocs
       aboutbox_impl.h 
+      appearance.h
       arrangercolumns.h 
 #       action.h
       bigtime.h
@@ -61,6 +62,7 @@ QT5_WRAP_CPP (components_mocs
       compact_knob.h
       compact_patch_edit.h
       compact_slider.h  
+      confmport.h
       copy_on_write.h
 #       cpu_toolbar.h
 #       ctrlcombo.h  
@@ -192,6 +194,7 @@ QT5_WRAP_UI (components_ui_headers ${components_ui_files})
 ##
 file (GLOB components_source_files
       aboutbox_impl.cpp 
+      appearance.cpp
       arrangercolumns.cpp 
       background_painter.cpp
       bigtime.cpp 
@@ -207,6 +210,7 @@ file (GLOB components_source_files
       compact_knob.cpp
       compact_patch_edit.cpp
       compact_slider.cpp 
+      confmport.cpp
       copy_on_write.cpp
 #       cpu_toolbar.cpp
 #       ctrlcombo.cpp 

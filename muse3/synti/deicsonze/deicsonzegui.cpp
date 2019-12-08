@@ -2515,7 +2515,7 @@ void DeicsOnzeGui::setIsInitSet(bool b) {
   sendSysex(message, 4);
 }
 void DeicsOnzeGui::setInitSetPath(const QString& s) {
-  unsigned char message[3+MAXSTRLENGTHINITSETPATH];
+  unsigned char message[4+MAXSTRLENGTHINITSETPATH];
   message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
   message[1]=DEICSONZE_UNIQUE_ID;
   message[2]=SYSEX_INITSETPATH;
@@ -2553,7 +2553,7 @@ void DeicsOnzeGui::setIsBackgroundPix(bool b) {
 }
 void DeicsOnzeGui::setBackgroundPixPath(const QString& s) {
   applyBackgroundPix();
-  unsigned char message[3+MAXSTRLENGTHBACKGROUNDPIXPATH];
+  unsigned char message[4+MAXSTRLENGTHBACKGROUNDPIXPATH];
   message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
   message[1]=DEICSONZE_UNIQUE_ID;
   message[2]=SYSEX_BACKGROUNDPIXPATH;
