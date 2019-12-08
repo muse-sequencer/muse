@@ -591,6 +591,7 @@ MusE::MusE() : QMainWindow()
 
       //-------- Settings Actions
       settingsGlobalAction = new QAction(QIcon(*MusEGui::settings_globalsettingsIcon), tr("Global Settings..."), this);
+      settingsAppearanceAction = new QAction(QIcon(*MusEGui::settings_appearance_settingsIcon), tr("Appearance..."), this);
       settingsShortcutsAction = new QAction(QIcon(*MusEGui::settings_configureshortcutsIcon), tr("Configure Shortcuts..."), this);
       follow = new QMenu(tr("Follow Song"), this);
       dontFollowAction = new QAction(tr("Don't Follow Song"), this);
@@ -608,7 +609,6 @@ MusE::MusE() : QMainWindow()
       settingsMetronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome..."), this);
       settingsMidiSyncAction = new QAction(QIcon(*MusEGui::settings_midisyncIcon), tr("Midi Sync..."), this);
       settingsMidiIOAction = new QAction(QIcon(*MusEGui::settings_midifileexportIcon), tr("Midi File Import/Export..."), this);
-      settingsAppearanceAction = new QAction(QIcon(*MusEGui::settings_appearance_settingsIcon), tr("Appearance Settings..."), this);
       settingsMidiPortAction = new QAction(QIcon(*MusEGui::settings_midiport_softsynthsIcon), tr("Midi Ports / Soft Synth..."), this);
 
       //-------- Help Actions
@@ -928,7 +928,9 @@ MusE::MusE() : QMainWindow()
       trailingMenus.push_back(menuSettings);
 
       menuSettings->addAction(settingsGlobalAction);
+      menuSettings->addAction(settingsAppearanceAction);
       menuSettings->addAction(settingsShortcutsAction);
+      menuSettings->addSeparator();
       menuSettings->addMenu(follow);
       follow->addAction(dontFollowAction);
       follow->addAction(followPageAction);
@@ -938,9 +940,6 @@ MusE::MusE() : QMainWindow()
       menuSettings->addSeparator();
       menuSettings->addAction(settingsMidiSyncAction);
       menuSettings->addAction(settingsMidiIOAction);
-      menuSettings->addSeparator();
-      menuSettings->addAction(settingsAppearanceAction);
-      menuSettings->addSeparator();
       menuSettings->addAction(settingsMidiPortAction);
 
       //---------------------------------------------------

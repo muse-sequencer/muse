@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
 <svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
  <defs>
   <clipPath id="presentation_clip_path">
@@ -15,15 +14,15 @@
    </cc:Work>
   </rdf:RDF>
  </metadata>
- <g class="Slide" transform="matrix(.045795 0 0 .045795 -6.6618 -5.243)" clip-path="url(#presentation_clip_path)" stroke-width=".82532">
-  <g class="Page" stroke-width=".82532">
-   <g class="com.sun.star.drawing.PolyPolygonShape" stroke-width=".82532">
-    <g fill="#f00" stroke="#000">
-     <rect x="214.96" y="155.17" width="1277.7" height="1320.2" rx="109.18" ry="109.18" stroke-linecap="square" stroke-linejoin="round" stroke-width="21.837" style="paint-order:markers fill stroke"/>
-     <path d="m389.3 634.71v354.55h287.85c95.951 94.547 191.9 189.09 287.85 283.64v-921.84c-95.951 94.547-191.9 189.09-287.85 283.64h-287.85z" stroke-linejoin="round" stroke-width="43.673"/>
-     <g transform="matrix(1.2227 0 0 1.2227 -285.18 -119.94)" stroke-width="35.719">
-      <path d="m1128.1 638.57 218.37 218.37"/>
-      <path d="m1346.5 638.57-218.37 218.37"/>
+ <g class="Slide" transform="matrix(.049968 0 0 .045795 -8.9936 -5.243)" clip-path="url(#presentation_clip_path)" fill="#f00" stroke-width=".82532">
+  <g class="Page" fill="#f00" stroke-width=".82532">
+   <g class="com.sun.star.drawing.PolyPolygonShape" fill="#f00" stroke-width=".82532">
+    <g fill="#f00" stroke-width=".82532">
+     <path d="m200 550v500h300c100 133.33 200 266.67 300 400v-1300c-100 133.33-200 266.67-300 400z"/>
+     <g stroke="#000" stroke-linejoin="round" stroke-width="43.673">
+      <path d="m200 550v500h300c100 133.33 200 266.67 300 400v-1300c-100 133.33-200 266.67-300 400z"/>
+      <path d="m1035.3 267.35h403.98c-33.665 269.32-67.33 538.64-100.99 807.95h-201.99c-33.665-269.32-67.33-538.64-100.99-807.95z"/>
+      <circle cx="1237.3" cy="1293.7" r="133.67" stroke-linecap="square" style="paint-order:markers fill stroke"/>
      </g>
     </g>
    </g>

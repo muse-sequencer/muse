@@ -182,46 +182,46 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            for(int i = 0; i < NUM_PARTCOLORS; ++i)
              new IdListViewItem(0x600 + i, id, MusEGlobal::config.partColorNames[i]);
            
-           new IdListViewItem(0x41c, aid, "part canvas background");
-           new IdListViewItem(0x42c, aid, "part canvas raster coarse");
-           new IdListViewItem(0x42d, aid, "part canvas raster fine");
+           new IdListViewItem(0x41c, aid, "Part canvas background");
+           new IdListViewItem(0x42c, aid, "Part canvas raster coarse");
+           new IdListViewItem(0x42d, aid, "Part canvas raster fine");
 
            new IdListViewItem(0x41f, aid, "Ruler background");
            new IdListViewItem(0x420, aid, "Ruler text");
            new IdListViewItem(0x424, aid, "Ruler current marker space");
-           new IdListViewItem(0x425, aid, "part wave peak");
-           new IdListViewItem(0x426, aid, "part wave rms");
-           new IdListViewItem(0x427, aid, "part midi event for light part color");
-           new IdListViewItem(0x428, aid, "part midi event for dark part color");
+           new IdListViewItem(0x425, aid, "Part wave peak");
+           new IdListViewItem(0x426, aid, "Part wave rms");
+           new IdListViewItem(0x427, aid, "Part midi event for light part color");
+           new IdListViewItem(0x428, aid, "Part midi event for dark part color");
 
       id = new IdListViewItem(0, aid, "Track List");
-           new IdListViewItem(0x411, id, "background");
-           new IdListViewItem(0x412, id, "midi background");
-           new IdListViewItem(0x413, id, "drum background");
-           new IdListViewItem(0x41e, id, "new drum background");
-           new IdListViewItem(0x414, id, "wave background");
-           new IdListViewItem(0x415, id, "output background");
-           new IdListViewItem(0x416, id, "input background");
-           new IdListViewItem(0x417, id, "group background");
-           new IdListViewItem(0x418, id, "aux background");
-           new IdListViewItem(0x419, id, "synth background");
-           new IdListViewItem(0x41a, id, "selected track background");
-           new IdListViewItem(0x41b, id, "selected track foreground");
-           new IdListViewItem(0x42b, id, "section dividers");
+           new IdListViewItem(0x411, id, "Background");
+           new IdListViewItem(0x412, id, "Midi background");
+           new IdListViewItem(0x413, id, "Drum background");
+           new IdListViewItem(0x41e, id, "New drum background");
+           new IdListViewItem(0x414, id, "Wave background");
+           new IdListViewItem(0x415, id, "Output background");
+           new IdListViewItem(0x416, id, "Input background");
+           new IdListViewItem(0x417, id, "Group background");
+           new IdListViewItem(0x418, id, "Aux background");
+           new IdListViewItem(0x419, id, "Synth background");
+           new IdListViewItem(0x41a, id, "Selected track background");
+           new IdListViewItem(0x41b, id, "Selected track foreground");
+           new IdListViewItem(0x42b, id, "Section dividers");
            //   0x41c - 0x420 is already used (see above)
       id = new IdListViewItem(0, itemList, "BigTime");
-           new IdListViewItem(0x100, id, "background");
-           new IdListViewItem(0x101, id, "foreground");
+           new IdListViewItem(0x100, id, "Background");
+           new IdListViewItem(0x101, id, "Foreground");
       id = new IdListViewItem(0, itemList, "Transport");
-           new IdListViewItem(0x200, id, "handle");
+           new IdListViewItem(0x200, id, "Handle");
       id = new IdListViewItem(0, itemList, "Midi Editor");
-           new IdListViewItem(0x41d, id, "controller graph color");
-           new IdListViewItem(0x423, id, "controller graph background");
-           new IdListViewItem(0x421, id, "background");
-           new IdListViewItem(0x422, id, "drum list");
-           new IdListViewItem(0x429, id, "raster beat");
-           new IdListViewItem(0x42a, id, "raster bar");
-           new IdListViewItem(0x42e, id, "raster fine");
+           new IdListViewItem(0x41d, id, "Controller graph color");
+           new IdListViewItem(0x423, id, "Controller graph background");
+           new IdListViewItem(0x421, id, "Background");
+           new IdListViewItem(0x422, id, "Drum list");
+           new IdListViewItem(0x429, id, "Raster beat");
+           new IdListViewItem(0x42a, id, "Raster bar");
+           new IdListViewItem(0x42e, id, "Raster fine");
 
 
       id = new IdListViewItem(0, itemList, "Wave Editor");
@@ -233,16 +233,16 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x305, id, "Wave nonselected part");
 
       id = new IdListViewItem(0, itemList, "Mixer");
-           new IdListViewItem(0x500, id, "background");
-           new IdListViewItem(0x501, id, "midi label");
-           new IdListViewItem(0x502, id, "drum label");
-           new IdListViewItem(0x503, id, "new drum label");
-           new IdListViewItem(0x504, id, "wave label");
-           new IdListViewItem(0x505, id, "audio output label");
-           new IdListViewItem(0x506, id, "audio input label");
-           new IdListViewItem(0x507, id, "group label");
-           new IdListViewItem(0x508, id, "aux label");
-           new IdListViewItem(0x509, id, "synth label");
+           new IdListViewItem(0x500, id, "Background");
+           new IdListViewItem(0x501, id, "Midi label");
+           new IdListViewItem(0x502, id, "Drum label");
+           new IdListViewItem(0x503, id, "New drum label");
+           new IdListViewItem(0x504, id, "Wave label");
+           new IdListViewItem(0x505, id, "Audio output label");
+           new IdListViewItem(0x506, id, "Audio input label");
+           new IdListViewItem(0x507, id, "Group label");
+           new IdListViewItem(0x508, id, "Aux label");
+           new IdListViewItem(0x509, id, "Synth label");
 
            new IdListViewItem(0x50a, id, "Slider bar default");
            new IdListViewItem(0x50b, id, "Slider default");
@@ -434,11 +434,10 @@ QColor* Appearance::globalConfigColorFromId(int id) const
       case 0x518: return &MusEGlobal::config.rackItemBackgroundColor;             break;
 
       default:
-            return 0;
-            break;
+            return nullptr;
     }
   }
-  return 0;
+  return nullptr;
 }
 
 long int Appearance::configOffsetFromColorId(int id) const

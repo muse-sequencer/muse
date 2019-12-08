@@ -89,5 +89,9 @@
         <file>svg/whatsthis.svg</file>
         <file>svg/exit.svg</file>
         <file>svg/filefromtemplate.svg</file>
+        <file>svg/ctrl.svg</file>
+        <file>svg/meta.svg</file>
+        <file>svg/note.svg</file>
+        <file>svg/sysex.svg</file>
     </qresource>
 </RCC>

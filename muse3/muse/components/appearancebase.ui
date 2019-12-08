@@ -54,21 +54,21 @@
           <item>
            <widget class="QCheckBox" name="partShownames">
             <property name="text">
-             <string>show names</string>
+             <string>Show names</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QRadioButton" name="partShowevents">
             <property name="text">
-             <string>show e&amp;vents</string>
+             <string>Show e&amp;vents</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QRadioButton" name="partShowCakes">
             <property name="text">
-             <string>show Ca&amp;kewalk Style</string>
+             <string>Show Ca&amp;kewalk style</string>
             </property>
            </widget>
           </item>
@@ -196,14 +196,14 @@
           <item row="0" column="0">
            <widget class="QRadioButton" name="radioButtonDrawOutline">
             <property name="text">
-             <string>O&amp;nly Outline</string>
+             <string>O&amp;nly outline</string>
             </property>
            </widget>
           </item>
           <item row="1" column="0">
            <widget class="QRadioButton" name="radioButtonDrawRmsPeak">
             <property name="text">
-             <string>RMS/PEAK(&amp;Traditional)</string>
+             <string>RMS/PEAK (&amp;Traditional)</string>
             </property>
            </widget>
           </item>
@@ -244,21 +244,21 @@
             <item>
              <widget class="QPushButton" name="addBgButton">
               <property name="text">
-               <string>add</string>
+               <string>Add</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QPushButton" name="removeBgButton">
               <property name="text">
-               <string>remove</string>
+               <string>Remove</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QPushButton" name="clearBgButton">
               <property name="text">
-               <string>clear</string>
+               <string>Clear</string>
               </property>
              </widget>
             </item>
@@ -270,7 +270,7 @@
        <item row="3" column="0">
         <widget class="QCheckBox" name="arrGrid">
          <property name="text">
-          <string>show snap grid</string>
+          <string>Show snap grid</string>
          </property>
         </widget>
        </item>
@@ -896,7 +896,7 @@
          <item>
           <widget class="QPushButton" name="addToPalette">
            <property name="text">
-            <string>add to palette</string>
+            <string>Add to palette</string>
            </property>
           </widget>
          </item>
@@ -1302,9 +1302,12 @@
            <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
              <widget class="QComboBox" name="colorSchemeComboBox">
+              <property name="currentText">
+               <string>Current settings</string>
+              </property>
               <item>
                <property name="text">
-                <string>current settings</string>
+                <string>Current settings</string>
                </property>
               </item>
              </widget>
