@@ -470,10 +470,10 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       
       insertItems = new QActionGroup(this);
       insertItems->setExclusive(false);
-      insertNote = new QAction(QIcon(*note1Icon), tr("Insert Note"), insertItems);
-      insertSysEx = new QAction(QIcon(*sysexIcon), tr("Insert SysEx"), insertItems);
-      insertCtrl = new QAction(QIcon(*ctrlIcon), tr("Insert Ctrl"), insertItems);
-      insertMeta = new QAction(QIcon(*metaIcon), tr("Insert Meta"), insertItems);
+      insertNote = new QAction(*noteSVGIcon, tr("Insert Note"), insertItems);
+      insertSysEx = new QAction(*sysexSVGIcon, tr("Insert SysEx"), insertItems);
+      insertCtrl = new QAction(*ctrlSVGIcon, tr("Insert Ctrl"), insertItems);
+      insertMeta = new QAction(*metaSVGIcon, tr("Insert Meta"), insertItems);
 
       connect(insertNote,    SIGNAL(triggered()), SLOT(editInsertNote()));
       connect(insertSysEx,   SIGNAL(triggered()), SLOT(editInsertSysEx()));

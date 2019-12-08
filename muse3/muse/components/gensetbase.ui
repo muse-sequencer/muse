@@ -33,7 +33,7 @@
        <item row="2" column="0">
         <widget class="QGroupBox" name="groupBox3">
          <property name="title">
-          <string>Start Muse</string>
+          <string>Start MusE</string>
          </property>
          <layout class="QGridLayout">
           <property name="topMargin">
@@ -80,7 +80,7 @@
                <item>
                 <widget class="QRadioButton" name="startLastButton">
                  <property name="text">
-                  <string>start with &amp;last song</string>
+                  <string>Start with &amp;last song</string>
                  </property>
                  <property name="checked">
                   <bool>true</bool>
@@ -96,7 +96,7 @@
                   </sizepolicy>
                  </property>
                  <property name="text">
-                  <string>start with &amp;template</string>
+                  <string>Start with &amp;template</string>
                  </property>
                  <property name="checked">
                   <bool>false</bool>
@@ -106,7 +106,7 @@
                <item>
                 <widget class="QRadioButton" name="startSongButton">
                  <property name="text">
-                  <string>sta&amp;rt with song</string>
+                  <string>Sta&amp;rt with song</string>
                  </property>
                 </widget>
                </item>
@@ -116,7 +116,7 @@
             <item row="0" column="0" colspan="2">
              <widget class="QGroupBox" name="startUpBox">
               <property name="title">
-               <string>On Launch</string>
+               <string>On launch</string>
               </property>
               <layout class="QHBoxLayout" name="hLayout_2">
                <property name="topMargin">
@@ -128,14 +128,14 @@
                <item>
                 <widget class="QCheckBox" name="showSplash">
                  <property name="text">
-                  <string>show splash screen</string>
+                  <string>Show splash screen</string>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QCheckBox" name="showDidYouKnow">
                  <property name="text">
-                  <string>show &quot;Did you know?&quot; dialog</string>
+                  <string>Show &quot;Did you know?&quot; dialog</string>
                  </property>
                 </widget>
                </item>
@@ -267,7 +267,7 @@
           <item row="1" column="1">
            <widget class="QCheckBox" name="showTransport">
             <property name="text">
-             <string>show</string>
+             <string>Show</string>
             </property>
            </widget>
           </item>
@@ -324,7 +324,7 @@
           <item row="2" column="1">
            <widget class="QCheckBox" name="showBigtime">
             <property name="text">
-             <string>show</string>
+             <string>Show</string>
             </property>
            </widget>
           </item>
@@ -371,14 +371,14 @@
           <item row="3" column="1">
            <widget class="QCheckBox" name="showMixer">
             <property name="text">
-             <string>show</string>
+             <string>Show</string>
             </property>
            </widget>
           </item>
           <item row="4" column="1">
            <widget class="QCheckBox" name="showMixer2">
             <property name="text">
-             <string>show</string>
+             <string>Show</string>
             </property>
            </widget>
           </item>
@@ -956,7 +956,7 @@
        <item row="2" column="0">
         <widget class="QGroupBox" name="deviceAudioGroupBox">
          <property name="title">
-          <string>Audio Driver settings (require restart)</string>
+          <string>Audio driver settings (require restart)</string>
          </property>
          <layout class="QGridLayout" name="gridLayout4_1">
           <item row="1" column="2">
@@ -1035,7 +1035,7 @@
           <item row="1" column="0">
            <widget class="QLabel" name="deviceAudioSizeLabel">
             <property name="text">
-             <string>Period size (Frames per period):</string>
+             <string>Period size (frames per period):</string>
             </property>
             <property name="wordWrap">
              <bool>false</bool>
@@ -1095,7 +1095,7 @@
           <item row="1" column="0">
            <widget class="QLabel" name="TextLabel3_2">
             <property name="text">
-             <string>min. Meter Value</string>
+             <string>Minimum meter value</string>
             </property>
             <property name="wordWrap">
              <bool>false</bool>
@@ -1105,7 +1105,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="TextLabel2_2">
             <property name="text">
-             <string>min. Slider Val</string>
+             <string>Minimum slider value</string>
             </property>
             <property name="wordWrap">
              <bool>false</bool>
@@ -1890,7 +1890,7 @@ Certain operations will also force them to be resent,
              <property name="geometry">
               <rect>
                <x>0</x>
-               <y>-244</y>
+               <y>0</y>
                <width>534</width>
                <height>566</height>
               </rect>
@@ -2142,7 +2142,7 @@ Otherwise, hold Ctrl to keep them open.</string>
               <item row="3" column="0">
                <widget class="QLabel" name="textLabel1_4">
                 <property name="text">
-                 <string>Use old-style stop shortcut:</string>
+                 <string>Use old-style stop shortcut</string>
                 </property>
                 <property name="wordWrap">
                  <bool>false</bool>
@@ -2177,7 +2177,7 @@ Otherwise, hold Ctrl to keep them open.</string>
               <item row="0" column="0">
                <widget class="QLabel" name="TextLabel1">
                 <property name="text">
-                 <string>GUI Refresh Rate</string>
+                 <string>GUI refresh rate</string>
                 </property>
                 <property name="wordWrap">
                  <bool>false</bool>
@@ -2474,7 +2474,7 @@ Benign XCB connection errors may still
             <item>
              <widget class="QPushButton" name="buttonTraditionalPreset">
               <property name="text">
-               <string>traditional MusE SDI</string>
+               <string>Traditional MusE SDI</string>
               </property>
              </widget>
             </item>

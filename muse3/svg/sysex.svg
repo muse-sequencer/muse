@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path d="m40.072 51.792-6.3125-8.5469h5.9219l3.5781 5.1875 3.625-5.1875h5.9219l-6.3125 8.5156 6.625 8.9844h-5.9219l-3.9375-5.5312-3.8906 5.5312h-5.9219z" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal"/>
+ <path d="m14.025 37.417h16.234v4.5469h-10.219v4.3438h9.6094v4.5469h-9.6094v5.3438h10.562v4.5469h-16.578z" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal"/>
+ <path d="m60.708 8.9857v4.25q-1.7969-0.75-3.4688-1.125t-3.1562-0.375q-1.5938 0-2.375 0.40625-0.76562 0.39062-0.76562 1.2188 0 0.67188 0.57812 1.0312 0.59375 0.35938 2.1094 0.53125l0.98438 0.14062q4.2969 0.54688 5.7812 1.7969t1.4844 3.9219q0 2.7969-2.0625 4.2031t-6.1562 1.4062q-1.7344 0-3.5938-0.28125-1.8438-0.26562-3.7969-0.8125v-4.25q1.6719 0.8125 3.4219 1.2188 1.7656 0.40625 3.5781 0.40625 1.6406 0 2.4688-0.45312t0.82812-1.3438q0-0.75-0.57812-1.1094-0.5625-0.375-2.2656-0.57812l-0.98438-0.125q-3.7344-0.46875-5.2344-1.7344t-1.5-3.8438q0-2.7812 1.9062-4.125 1.9062-1.3438 5.8438-1.3438 1.5469 0 3.25 0.23438t3.7031 0.73438z" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal"/>
+ <path d="m23.864 8.4388h5.5938l4.7031 11.875 4-11.875h5.5938l-7.3594 19.156q-1.1094 2.9219-2.5938 4.0781-1.4688 1.1719-3.8906 1.1719h-3.2344v-3.6719h1.75q1.4219 0 2.0625-0.45312 0.65625-0.45312 1.0156-1.625l0.15625-0.48438z" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal"/>
+ <path d="m19.583 3.3451v4.9375q-1.9219-0.85938-3.75-1.2969t-3.4531-0.4375q-2.1562 0-3.1875 0.59375-1.0312 0.59375-1.0312 1.8438 0 0.9375 0.6875 1.4687 0.70312 0.51562 2.5312 0.89062l2.5625 0.51562q3.8906 0.78125 5.5312 2.375t1.6406 4.5312q0 3.8594-2.2969 5.75-2.2812 1.875-6.9844 1.875-2.2187 0-4.4531-0.42188t-4.4688-1.25v-5.0781q2.2344 1.1875 4.3125 1.7969 2.0938 0.59375 4.0312 0.59375 1.9688 0 3.0156-0.65625t1.0469-1.875q0-1.0938-0.71875-1.6875-0.70312-0.59375-2.8281-1.0625l-2.3281-0.51562q-3.5-0.75-5.125-2.3906-1.6094-1.6406-1.6094-4.4219 0-3.4844 2.25-5.3594t6.4687-1.875q1.9219 0 3.9531 0.29688 2.0312 0.28125 4.2031 0.85938z" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal"/>
+</svg>

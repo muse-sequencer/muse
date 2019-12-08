@@ -159,8 +159,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   scoreSubmenu = new QMenu(tr("Score"), this);
   scoreSubmenu->setIcon(QIcon(*scoreIconSet));
 
-  scoreAllInOneSubsubmenu = new QMenu(tr("All Tracks in One Staff..."), this);
-  scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("One Staff per Track..."), this);
+  scoreAllInOneSubsubmenu = new QMenu(tr("All Tracks in One Staff"), this);
+  scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("One Staff per Track"), this);
 
   startScoreEditAction = new QAction(*scoreIconSet, tr("New Score Window..."), this);
   scoreSubmenu->addAction(startScoreEditAction);
