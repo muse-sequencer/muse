@@ -89,5 +89,7 @@
         <file>svg/whatsthis.svg</file>
         <file>svg/exit.svg</file>
         <file>svg/filefromtemplate.svg</file>
+        <file>svg/audio_stretch.svg</file>
+        <file>svg/audio_resample.svg</file>
     </qresource>
 </RCC>

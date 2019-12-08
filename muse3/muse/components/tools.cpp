@@ -81,8 +81,8 @@ ToolB toolList[] = {
       {&drawIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Edit automation"),infoAutomation},
       {&cursorIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Cursor"),         infoCursor},
 // REMOVE Tim. samplerate. Added.
-      {&cursorIconSVG,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "stretch"),        infoStretch},
-      {&cursorIconSVG,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "sample rate"),    infoSamplerate}
+      {&audioStretchIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Stretch"),     infoStretch},
+      {&audioResampleIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Sample rate"), infoSamplerate}
       };
 
 QMap<int,int> toolShortcuts;

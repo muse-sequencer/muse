@@ -498,6 +498,8 @@ QIcon* handIconSVG;
 QIcon* closedHandIconSVG;
 QIcon* cursorIconSVG;
 QIcon* magnetIconSVG;
+QIcon* audioStretchIconSVG;
+QIcon* audioResampleIconSVG;
 
 QIcon* noscaleSVGIcon[3];
 
@@ -851,6 +853,8 @@ void initIcons(bool useThemeIconsIfPossible)
       closedHandIconSVG = new QIcon(":/svg/closed_hand.svg");
       cursorIconSVG     = new QIcon(":/svg/cursor.svg");
       magnetIconSVG     = new QIcon(":/svg/magnet.svg");
+      audioStretchIconSVG = new QIcon(":/svg/audio_stretch.svg");
+      audioResampleIconSVG = new QIcon(":/svg/audio_resample.svg");
 
       noscaleSVGIcon[0] = new QIcon(":/svg/noscale1.svg");
       noscaleSVGIcon[1] = new QIcon(":/svg/noscale2.svg");
@@ -1165,6 +1169,8 @@ void deleteIcons()
       delete closedHandIconSVG;
       delete cursorIconSVG;
       delete magnetIconSVG;
+      delete audioStretchIconSVG;
+      delete audioResampleIconSVG;
 
       delete noscaleSVGIcon[0];
       delete noscaleSVGIcon[1];

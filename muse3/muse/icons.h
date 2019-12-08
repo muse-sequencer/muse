@@ -332,6 +332,8 @@ extern QIcon* handIconSVG;
 extern QIcon* closedHandIconSVG;
 extern QIcon* cursorIconSVG;
 extern QIcon* magnetIconSVG;
+extern QIcon* audioStretchIconSVG;
+extern QIcon* audioResampleIconSVG;
 
 extern QIcon* noscaleSVGIcon[3];
 
