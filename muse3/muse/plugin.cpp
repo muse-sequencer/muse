@@ -4376,13 +4376,6 @@ void PluginGui::fixNativeUIScalingTBClicked()
 {
     int state = fixNativeUIScalingTB->property("state").toInt();
     state = (state == 2) ? 0 : state + 1;
-//    if (state == 0) {
-//        state++;
-//    } else if (state == 1) {
-//        state++;
-//    } else {
-//        state = 0;
-//    }
     fixNativeUIScalingTB->setToolTip(fixScalingTooltip[state]);
     fixNativeUIScalingTB->setIcon(*noscaleSVGIcon[state]);
     fixNativeUIScalingTB->setProperty("state", state);

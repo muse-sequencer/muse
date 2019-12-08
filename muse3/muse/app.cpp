@@ -2085,7 +2085,7 @@ void MusE::startPianoroll()
 
 void MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls)
       {
-      MusEGui::PianoRoll* pianoroll = new MusEGui::PianoRoll(pl, this, 0, _arranger->cursorValue(), showDefaultCtrls);
+      MusEGui::PianoRoll* pianoroll = new MusEGui::PianoRoll(pl, this, nullptr, _arranger->cursorValue(), showDefaultCtrls);
       toplevels.push_back(pianoroll);
       pianoroll->show();
       connect(pianoroll, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));

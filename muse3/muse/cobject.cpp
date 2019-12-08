@@ -345,8 +345,11 @@ void TopWin::hide()
 
 void TopWin::show()
 {
-	if (mdisubwin)
+    if (mdisubwin) {
+        if (MusEGlobal::config.openMDIWinMaximized)
+            mdisubwin->setWindowState(Qt::WindowMaximized);
 		mdisubwin->show();
+    }
 	
 	QMainWindow::show();
 }
