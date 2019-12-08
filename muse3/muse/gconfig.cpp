@@ -295,6 +295,8 @@ GlobalConfigValues config = {
       44100,                        // Device audio preferred sample rate
       512,                          // Device audio buffer size
       0,                            // Device RtAudio selected backend
+      true,                         // useJackTransport
+      true,                         // timebaseMaster
 
       QString("./"),                // projectBaseFolder
       true,                         // projectStoreInFolder

@@ -264,6 +264,7 @@ class MusE : public QMainWindow
    signals:
       void configChanged();
       void activeTopWinChanged(MusEGui::TopWin*);
+      void blinkTimerToggled(bool state);
 
    private slots:
       void heartBeat();

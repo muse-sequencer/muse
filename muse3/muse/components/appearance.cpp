@@ -26,8 +26,6 @@
 #include <errno.h>
 
 #include <QAbstractButton>
-#include <QButtonGroup>
-#include <QColor>
 #include <QFontDialog>
 #include <QStyleFactory>
 #include <QToolTip>
@@ -37,8 +35,6 @@
 #include <QPainter>
 #include <QtGlobal>
 #include <QMessageBox>
-#include <QColorDialog>
-#include <QTimer>
 #include <QTreeWidgetItemIterator>
 #include <QMenu>
 
@@ -52,7 +48,8 @@
 #include "components/filedialog.h"
 #include "waveedit/waveedit.h"
 #include "globals.h"
-#include "conf.h"
+// Specify muse here, two reports of "conf.h" pointing to ALSA conf.h !
+#include "muse/conf.h"
 #include "gconfig.h"
 
 // For debugging output: Uncomment the fprintf section.

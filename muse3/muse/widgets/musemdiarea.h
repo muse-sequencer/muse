@@ -6,6 +6,7 @@
 
 class MuseMdiArea : public QMdiArea
 {
+  Q_OBJECT
 
 
 public:

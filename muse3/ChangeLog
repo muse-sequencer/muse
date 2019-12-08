@@ -1,5 +1,20 @@
 08.12.2019
 	- Added option for opening MDI subwindows maximized (kybos)
+    - Oops, fix stuck icons from 06.12. (Tim)
+    - Fix gross misnomer throughout, should be "timebase master, not "transport master".
+07.12.2019
+    - Update start play position when making a seek. Rewind to Start behaves
+      more logical then, imho (rj)
+    - Fix some compile warnings with LV2 worker functions, some others. (Tim)
+    - Moved appearance and confmport cpp/h files from /muse to muse/components.
+      Trying to solve some dependency problems...
+06.12.2019
+    - Fixed bug #719 downmix to existing file appends to the old file (rj)
+    - Transport master fixes: New button on transport. Fix connect at startup etc. (Tim)
+      Seems there is no way to ask Jack if are we transport master (without setting it).
+      So new code in our Jack driver - and a 1Hz watchdog - monitor for changes to master status.
+      Care was taken to not disturb who else may be master. Click flashing button to force.
+      Tested the new button OK with three instances of MusE competing for transport master.
 05.12.2019
 	- Added File->New from template... menu entry. File->New loads default template (kybos)
 	- Fixed inconsistent UI texts where appropriate: (kybos)
@@ -289,7 +304,6 @@
          and other problems as displayed by KDevelop Problems Reporter.
       - Fixed Midi Input Transformator and Midi Transformator problems.
         Problems creating/deleting presets. Tested all functions OK.
->>>>>>> master
 25.03.2019
       - Fix issue 645 "Naming a track with acentuated letter". (Tim)
         Oops, regression from 07.01.2019: utf8 chars were corrupted.
@@ -4919,9 +4933,9 @@
       * Feature: Muse now has an instrument editor, complete with a midi controller editor! (T356)
         - Click on the menu "Midi->Edit Instrument".
         - You will see a sysex editor there too, but it is non-functional. (Use the midi event editor instead).
-        - >>> Tooltips and "What's This?" are provided with IMPORTANT information. <<<
-          >>> If you want to understand how to use instruments, patches, and controllers in your song, <<< 
-          >>>    READ THEM!    <<<
+        - Tooltips and "What's This?" are provided with IMPORTANT information.
+          If you want to understand how to use instruments, patches, and controllers in your song,
+             READ THEM!    
       * Added: Environment variable MUSEINSTRUMENTS, so a (writable) instrument directory can be chosen
          instead of default /usr/share/muse/instruments etc. (T356)
         - Also added display of environment variables recognized by muse to command line help (muse -h).

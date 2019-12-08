@@ -329,6 +329,8 @@ struct GlobalConfigValues {
       int deviceAudioSampleRate;
       int deviceAudioBufSize;
       int deviceAudioBackend;
+      bool useJackTransport;
+      bool timebaseMaster;
 
       QString projectBaseFolder;
       bool projectStoreInFolder;

@@ -131,7 +131,7 @@ struct SongChangedStruct_t
 #define SC_METRONOME                  MusECore::SongChangedStruct_t(0x8000000000) // Metronome lists settings such as accents changed.
 #define SC_EXTERNAL_MIDI_SYNC         MusECore::SongChangedStruct_t(0x10000000000) // External midi sync flag changed.
 #define SC_USE_JACK_TRANSPORT         MusECore::SongChangedStruct_t(0x20000000000) // UseJackTransport flag changed.
-#define SC_TRANSPORT_MASTER           MusECore::SongChangedStruct_t(0x40000000000) // Transport master state changed.
+#define SC_TIMEBASE_MASTER            MusECore::SongChangedStruct_t(0x40000000000) // Timebase master state changed.
 #define SC_EVERYTHING                 MusECore::SongChangedStruct_t(-1, -1)       // global update
 
 

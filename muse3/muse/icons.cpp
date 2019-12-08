@@ -455,8 +455,8 @@ QIcon* masterTrackOnSVGIcon;
 QIcon* jackTransportOffSVGIcon;
 QIcon* jackTransportOnSVGIcon;
 
-QIcon* transportMasterOffSVGIcon;
-QIcon* transportMasterOnSVGIcon;
+QIcon* timebaseMasterOffSVGIcon;
+QIcon* timebaseMasterOnSVGIcon;
 
 QIcon* metronomeOffSVGIcon;
 QIcon* metronomeOnSVGIcon;
@@ -803,8 +803,8 @@ void initIcons(bool useThemeIconsIfPossible)
       jackTransportOffSVGIcon = new QIcon(*jackTransportOffSVGPixmap);
       jackTransportOnSVGIcon = new QIcon(*jackTransportOnSVGPixmap);
       
-      transportMasterOffSVGIcon = new QIcon(":/svg/transport_master_off.svg");
-      transportMasterOnSVGIcon = new QIcon(":/svg/transport_master_on.svg");
+      timebaseMasterOffSVGIcon = new QIcon(":/svg/timebase_master_off.svg");
+      timebaseMasterOnSVGIcon = new QIcon(":/svg/timebase_master_on.svg");
       
       metronomeOffSVGIcon = new QIcon(":/svg/metronome_off.svg");
       metronomeOnSVGIcon = new QIcon(":/svg/metronome_on.svg");
@@ -1122,8 +1122,8 @@ void deleteIcons()
       delete jackTransportOffSVGIcon;
       delete jackTransportOnSVGIcon;
       
-      delete transportMasterOffSVGIcon;
-      delete transportMasterOnSVGIcon;
+      delete timebaseMasterOffSVGIcon;
+      delete timebaseMasterOnSVGIcon;
       
       delete metronomeOffSVGIcon;
       delete metronomeOnSVGIcon;

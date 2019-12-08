@@ -48,6 +48,10 @@
 #include "tempolabel.h"
 #include "operations.h"
 #include "tempo.h"
+#include "audiodev.h"
+
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_TRANSPORT(dev, format, args...) // fprintf(dev, format, ##args);
 
 namespace MusEGui {
 
@@ -469,39 +473,51 @@ Transport::Transport(QWidget* parent, const char* name)
       syncButton->setCheckable(true);
       syncButton->setToolTip(tr("External sync on/off"));
       syncButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
-        
+
       jackTransportButton = new IconButton(jackTransportOnSVGIcon, jackTransportOffSVGIcon, 0, 0, false, true);
       jackTransportButton->setContentsMargins(0, 0, 0, 0);
       jackTransportButton->setCheckable(true);
       jackTransportButton->setToolTip(tr("Jack Transport on/off"));
       jackTransportButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
 
-      transportMasterButton = new IconButton(transportMasterOnSVGIcon, transportMasterOffSVGIcon, 0, 0, false, true);
-      transportMasterButton->setContentsMargins(0, 0, 0, 0);
-      transportMasterButton->setCheckable(true);
-      transportMasterButton->setToolTip(tr("Transport master (on) or slave (off)"));
-      transportMasterButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+      timebaseMasterButton = new IconButton(timebaseMasterOnSVGIcon, timebaseMasterOffSVGIcon, 0, 0, false, true);
+      timebaseMasterButton->setContentsMargins(0, 0, 0, 0);
+      timebaseMasterButton->setCheckable(true);
+      timebaseMasterButton->setToolTip(
+          tr("On: Timebase master\nOff: Not master\nFlash: Waiting. Another client is master. Click to force."));
+      timebaseMasterButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
 
       clickButton->setChecked(MusEGlobal::song->click());
       syncButton->setChecked(MusEGlobal::extSyncFlag);
-      jackTransportButton->setChecked(MusEGlobal::useJackTransport);
-      transportMasterButton->setChecked(MusEGlobal::transportMasterState);
+      jackTransportButton->setChecked(MusEGlobal::config.useJackTransport);
+      timebaseMasterButton->setChecked(MusEGlobal::timebaseMasterState);
       clickButton->setFocusPolicy(Qt::NoFocus);
       syncButton->setFocusPolicy(Qt::NoFocus);
       jackTransportButton->setFocusPolicy(Qt::NoFocus);
-      transportMasterButton->setFocusPolicy(Qt::NoFocus);
+      timebaseMasterButton->setFocusPolicy(Qt::NoFocus);
+
+      // NOTE: Can't use this. Audio device does not exist at this point.
+      //jackTransportButton->setEnabled(MusEGlobal::audioDevice && MusEGlobal::audioDevice->hasOwnTransport());
+      //timebaseMasterButton->setEnabled(MusEGlobal::audioDevice &&
+      //    MusEGlobal::audioDevice->hasOwnTransport() &&
+      //    MusEGlobal::audioDevice->hasTimebaseMaster() &&
+      //    MusEGlobal::useJackTransport);
 
       button1->addStretch();
       button1->addWidget(clickButton);
       button1->addWidget(syncButton);
       button1->addWidget(jackTransportButton);
-      button1->addWidget(transportMasterButton);
+      button1->addWidget(timebaseMasterButton);
       button1->addStretch();
       
       connect(clickButton, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setClick(bool)));
       connect(syncButton, SIGNAL(toggled(bool)), SLOT(extSyncClicked(bool)));
       connect(jackTransportButton, SIGNAL(toggled(bool)), SLOT(useJackTransportClicked(bool)));
-      connect(transportMasterButton, &IconButton::toggled, [this](bool v) { transportMasterClicked(v); } );
+      connect(timebaseMasterButton, &IconButton::toggled, [this](bool v) { timebaseMasterClicked(v); } );
+
+      _timebaseMasterBlinkConnection = connect(MusEGlobal::muse, &MusE::blinkTimerToggled, [this](bool v)
+        { 
+        timebaseMasterButton->setBlinkPhase(v); } );
 
       connect(MusEGlobal::song, SIGNAL(clickChanged(bool)), this, SLOT(setClickFlag(bool)));
 
@@ -566,6 +582,11 @@ void Transport::configChanged()
       pal.setColor(lefthandle->backgroundRole(), MusEGlobal::config.transportHandleColor);
       lefthandle->setPalette(pal);
       righthandle->setPalette(pal);
+
+      const bool has_master = MusEGlobal::audioDevice && MusEGlobal::audioDevice->hasTimebaseMaster();
+      jackTransportButton->setEnabled(has_master);
+      timebaseMasterButton->setEnabled(has_master && MusEGlobal::config.useJackTransport);
+
       }
 
 //---------------------------------------------------------
@@ -786,11 +807,11 @@ void Transport::songChanged(MusECore::SongChangedStruct_t flags)
       }
       if (flags & SC_USE_JACK_TRANSPORT)
       {
-            jackSyncChanged(MusEGlobal::useJackTransport);
+            jackSyncChanged(MusEGlobal::config.useJackTransport);
       }
-      if (flags & SC_TRANSPORT_MASTER)
+      if (flags & SC_TIMEBASE_MASTER)
       {
-            transportMasterChanged(MusEGlobal::transportMasterState);
+            timebaseMasterChanged(MusEGlobal::timebaseMasterState);
       }
       }
 
@@ -824,15 +845,46 @@ void Transport::syncChanged(bool flag)
 void Transport::jackSyncChanged(bool flag)
       {
       jackTransportButton->blockSignals(true);
+      timebaseMasterButton->blockSignals(true);
       jackTransportButton->setChecked(flag);
+      jackTransportButton->setEnabled(MusEGlobal::audioDevice && MusEGlobal::audioDevice->hasOwnTransport());
+      timebaseMasterButton->setEnabled(MusEGlobal::audioDevice && 
+          MusEGlobal::audioDevice->hasOwnTransport() && MusEGlobal::audioDevice->hasTimebaseMaster() && flag);
       jackTransportButton->blockSignals(false);
+      timebaseMasterButton->blockSignals(false);
       }
 
-void Transport::transportMasterChanged(bool flag)
+void Transport::timebaseMasterChanged(bool flag)
       {
-      transportMasterButton->blockSignals(true);
-      transportMasterButton->setChecked(flag);
-      transportMasterButton->blockSignals(false);
+      DEBUG_TRANSPORT(stderr, "timebaseMasterChanged() flag:%d timebaseMaster:%d\n",
+              flag, MusEGlobal::config.timebaseMaster);
+
+      timebaseMasterButton->blockSignals(true);
+
+      const bool has_master = MusEGlobal::audioDevice && MusEGlobal::audioDevice->hasTimebaseMaster();
+      if(has_master && flag)
+      {
+        DEBUG_TRANSPORT(stderr, "timebaseMasterChanged() We're master.\n");
+        // Reset to no blink.
+        timebaseMasterButton->setBlinking(false);
+        timebaseMasterButton->setChecked(true);
+      }
+      else if(has_master && MusEGlobal::config.timebaseMaster)
+      {
+        DEBUG_TRANSPORT(stderr, "timebaseMasterChanged() Before connection:%d\n", (bool)_timebaseMasterBlinkConnection);
+        timebaseMasterButton->setChecked(false);
+        // Set to blink.
+        timebaseMasterButton->setBlinking(true);
+      }
+      else
+      {
+        DEBUG_TRANSPORT(stderr, "timebaseMasterChanged() Not master, don't wanna be either.\n");
+        // Reset to no blink.
+        timebaseMasterButton->setBlinking(false);
+        timebaseMasterButton->setChecked(false);
+      }
+      
+      timebaseMasterButton->blockSignals(false);
       }
 
 //---------------------------------------------------------
@@ -889,20 +941,37 @@ void Transport::extSyncClicked(bool v)
 
 void Transport::useJackTransportClicked(bool v)
 {
+  if(!v && MusEGlobal::timebaseMasterState && MusEGlobal::audioDevice)
+  {
+    // Let the operation do this.
+    //MusEGlobal::config.timebaseMaster = v;
+    // Force it.
+    MusEGlobal::audioDevice->setMaster(v, false);
+  }
+
   MusECore::PendingOperationList operations;
-  operations.add(MusECore::PendingOperationItem(&MusEGlobal::useJackTransport, v, MusECore::PendingOperationItem::SetUseJackTransport));
+  operations.add(MusECore::PendingOperationItem(&MusEGlobal::config.useJackTransport, v, MusECore::PendingOperationItem::SetUseJackTransport));
   MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 }
 
 //---------------------------------------------------------
-//   transportMasterClicked
+//   timebaseMasterClicked
 //---------------------------------------------------------
 
-void Transport::transportMasterClicked(bool /*v*/)
+void Transport::timebaseMasterClicked(bool v)
 {
 //   MusECore::PendingOperationList operations;
 //   operations.add(MusECore::PendingOperationItem(&MusEGlobal::useJackTransport, v, MusECore::PendingOperationItem::SetUseJackTransport));
 //   MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+  if(!MusEGlobal::audioDevice)
+    return;
+  if(MusEGlobal::config.useJackTransport)
+  {
+    //if(MusEGlobal::timebaseMasterState != MusEGlobal::config.timebaseMaster)
+    MusEGlobal::config.timebaseMaster = v;
+      // Force it.
+      MusEGlobal::audioDevice->setMaster(v, true);
+  }
 }
 
 void Transport::keyPressEvent(QKeyEvent* ev)

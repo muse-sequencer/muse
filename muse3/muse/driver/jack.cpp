@@ -65,6 +65,9 @@
 #define JACK_CALLBACK_FIFO_SIZE 512
 
 // For debugging output: Uncomment the fprintf section.
+#define DEBUG_JACK(dev, format, args...) // fprintf(dev, format, ##args);
+
+// For debugging some of the 'persistent routes' code: Uncomment the fprintf section.
 #define DEBUG_PRST_ROUTES(dev, format, args...) // fprintf(dev, format, ##args);
 
 #ifdef VST_SUPPORT
@@ -119,9 +122,9 @@ bool jackStarted = false;
 // Flag for detecting if sync callback is being called.
 bool jack_sync_detect_flag = false;
 JackAudioDevice::JackSyncPhases jackSyncPhase = JackAudioDevice::SyncCheck;
-// If we are the transport master.
-bool jack_transport_cur_master_state = false;
-JackAudioDevice::JackTransportMasterPhases jackTransportMasterPhase = JackAudioDevice::MasterCheck;
+// If we are the timebase master.
+bool jack_timebase_cur_master_state = false;
+JackAudioDevice::JackTimebaseMasterPhases jackTimebaseMasterPhase = JackAudioDevice::MasterCheck;
 
 //---------------------------------------------------------
 //  JackCallbackFifo
@@ -214,8 +217,7 @@ inline bool checkJackClient(jack_client_t* _client)
 
 static void jack_thread_init (void* )  
       {
-      if (JACK_DEBUG)
-            fprintf(stderr, "jack_thread_init()\n");
+      DEBUG_JACK(stderr, "jack_thread_init()\n");
       MusEGlobal::doSetuid();
 #ifdef VST_SUPPORT
       if (loadVST)
@@ -232,10 +234,12 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void* arg)
       if (MusEGlobal::audio->isRunning())
       {
         // Are we using Jack transport?
-        if(MusEGlobal::useJackTransport)
+        if(MusEGlobal::config.useJackTransport)
         {
 
-          // REMOVE Tim. master. Added.
+          //--------------------------------------------------
+          // Jack timebase master acquire/loss detection
+          //--------------------------------------------------
           if(arg)
           {
             JackAudioDevice* jad = (JackAudioDevice*)arg;
@@ -243,28 +247,25 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void* arg)
             if(client)
             {
               jack_transport_state_t state = jack_transport_query(client, nullptr);
-
-              // The transport timebase callback is called after the process callback.
-              // Check if it got called, meaning we are transport master.
+              // The timebase callback is called after the process callback.
+              // Check if it got called, meaning we are timebase master.
               if(state == JackTransportStopped || state == JackTransportRolling)
               {
-                //if(jackTransportMasterPhase == JackAudioDevice::Starting)
                 if(jackSyncPhase == SyncStarted)
                 {
                   // Reset and wait for the next cycle to see if we became master.
-                  jackTransportMasterPhase = IsNotMaster;
+                  jackTimebaseMasterPhase = IsNotMaster;
                 }
                 else
-                if(jackTransportMasterPhase == IsNotMaster)
+                if(jackTimebaseMasterPhase == IsNotMaster)
                 {
                   // The timebase callback was not called - phase was not set to IsMaster.
-                  // Therefore we are not transport master.
-                  if(jack_transport_cur_master_state)
+                  // Therefore we are not timebase master.
+                  if(jack_timebase_cur_master_state)
                   {
-                    jack_transport_cur_master_state = false;
+                    jack_timebase_cur_master_state = false;
                     MusEGlobal::audio->sendMsgToGui('t');
                   }
-                  //jackTransportMasterPhase = Idle;
                 }
                 else
                 // Bring in flag here in case sync timed out in stop mode.
@@ -276,18 +277,16 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void* arg)
                   // Done with phase. Reset for future sync calls.
                   jackSyncPhase = SyncCheck;
                 }
-                //else //if(jackTransportMasterPhase == IsMaster)
               }
 
               if(state == JackTransportRolling)
               {
                 // Reset and wait for the next cycle to see if we became master.
-                jackTransportMasterPhase = IsNotMaster;
+                jackTimebaseMasterPhase = IsNotMaster;
               }
             }
           }
           
-
           // Just call the audio process normally. Jack transport will take care of itself.
           // Don't process while we're syncing. ToDO: May need to deliver silence in process!
           //if(jackAudio->getState() != Audio::START_PLAY)
@@ -306,9 +305,7 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void* arg)
                  puts("jack calling when audio is disconnected!\n");
             }
 
-  // REMOVE Tim. master. Added.
-//   // Reset for next cycle.
-//   jackSyncPhase = SyncCheck;
+  // Reset for next cycle.
   jack_sync_detect_flag = false;
 
   return 0;
@@ -321,27 +318,19 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void* arg)
 
 static int processSync(jack_transport_state_t state, jack_position_t* pos, void*)
       {
-      // REMOVE Tim. master. Added.
-      fprintf(stderr, "processSync() state:%d\n", state);
-      //jackTransportMasterPhase = JackAudioDevice::Starting;
-
-      if (JACK_DEBUG)
+#if JACK_DEBUG
+      fprintf(stderr, "processSync frame:%u state:%d\n", pos->frame, state);
+    
+      if(pos->valid & JackPositionBBT)
       {
-        fprintf(stderr, "processSync frame:%u\n", pos->frame);
-      
-        if(pos->valid & JackPositionBBT)
-        {
-          if(JACK_DEBUG)
-          {
-            fprintf(stderr, "processSync BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
-                    pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar, pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute);
-            if(pos->valid & JackBBTFrameOffset)
-              fprintf(stderr, "processSync BBTFrameOffset: %u\n", pos->bbt_offset);
-          }
-        }
+        fprintf(stderr, "processSync BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
+                pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar, pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute);
+        if(pos->valid & JackBBTFrameOffset)
+          fprintf(stderr, "processSync BBTFrameOffset: %u\n", pos->bbt_offset);
       }
+#endif
         
-      if(!MusEGlobal::useJackTransport)
+      if(!MusEGlobal::config.useJackTransport)
         return 1;
         
       int audioState = Audio::STOP;
@@ -373,7 +362,6 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
       int rv = MusEGlobal::audio->sync(audioState, frame);
       //fprintf(stderr, "Jack processSync() after MusEGlobal::audio->sync frame:%d\n", frame);
 
-      // REMOVE Tim. master. Added.
       jack_sync_detect_flag = true;
       if(rv)
       {
@@ -394,39 +382,42 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
 //   timebase_callback
 //---------------------------------------------------------
 
-// REMOVE Tim. master. Changed.
-// static void timebase_callback(jack_transport_state_t /* state */,
+#if JACK_DEBUG
 static void timebase_callback(jack_transport_state_t state,
    jack_nframes_t nframes,
    jack_position_t* pos,
    int new_pos,
    void*)
+#else
+static void timebase_callback(jack_transport_state_t,
+   jack_nframes_t,
+   jack_position_t* pos,
+   int,
+   void*)
+#endif
   {
-    // I think, therefore I am... transport master.
-    // REMOVE Tim. master. Added.
-    fprintf(stderr, "timebase_callback() state:%d\n", state);
-    jackTransportMasterPhase = JackAudioDevice::IsMaster;
-    if(!jack_transport_cur_master_state)
+    // I think, therefore I am... timebase master.
+    jackTimebaseMasterPhase = JackAudioDevice::IsMaster;
+    if(!jack_timebase_cur_master_state)
     {
-      jack_transport_cur_master_state = true;
+      jack_timebase_cur_master_state = true;
       MusEGlobal::audio->sendMsgToGui('T');
     }
 
-// REMOVE Tim. master. Enabled.
-//    if (JACK_DEBUG)
-    {
-      if(pos->valid & JackPositionBBT)
-        fprintf(stderr, "timebase_callback BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
-                pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar, pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute);
-      if(pos->valid & JackBBTFrameOffset)
-        fprintf(stderr, "timebase_callback BBTFrameOffset: %u\n", pos->bbt_offset);
-      if(pos->valid & JackPositionTimecode)
-        fprintf(stderr, "timebase_callback JackPositionTimecode: frame_time:%f next_time:%f\n", pos->frame_time, pos->next_time);
-      if(pos->valid & JackAudioVideoRatio)
-        fprintf(stderr, "timebase_callback JackAudioVideoRatio: %f\n", pos->audio_frames_per_video_frame);
-      if(pos->valid & JackVideoFrameOffset)
-        fprintf(stderr, "timebase_callback JackVideoFrameOffset: %u\n", pos->video_offset);
-    }
+#if JACK_DEBUG
+    fprintf(stderr, "timebase_callback() state:%d\n", state);
+    if(pos->valid & JackPositionBBT)
+      fprintf(stderr, "timebase_callback BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
+              pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar, pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute);
+    if(pos->valid & JackBBTFrameOffset)
+      fprintf(stderr, "timebase_callback BBTFrameOffset: %u\n", pos->bbt_offset);
+    if(pos->valid & JackPositionTimecode)
+      fprintf(stderr, "timebase_callback JackPositionTimecode: frame_time:%f next_time:%f\n", pos->frame_time, pos->next_time);
+    if(pos->valid & JackAudioVideoRatio)
+      fprintf(stderr, "timebase_callback JackAudioVideoRatio: %f\n", pos->audio_frames_per_video_frame);
+    if(pos->valid & JackVideoFrameOffset)
+      fprintf(stderr, "timebase_callback JackVideoFrameOffset: %u\n", pos->video_offset);
+#endif
     
     //Pos p(pos->frame, false);
       Pos p(MusEGlobal::extSyncFlag ? MusEGlobal::audio->tickPos() : pos->frame, MusEGlobal::extSyncFlag ? true : false);
@@ -453,12 +444,11 @@ static void timebase_callback(jack_transport_state_t state,
       
       double tempo = MusEGlobal::tempomap.tempo(p.tick());
       pos->beats_per_minute = ((double)MusEGlobal::tempomap.globalTempo() * 600000.0) / tempo;
-      if (JACK_DEBUG)
-      {
-        fprintf(stderr, "timebase_callback is new_pos:%d nframes:%u frame:%u tickPos:%d cpos:%d\n", new_pos, nframes, pos->frame, MusEGlobal::audio->tickPos(), MusEGlobal::song->cpos());
-        fprintf(stderr, " new: bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
-               pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar, pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute);
-      }
+#if JACK_DEBUG
+      fprintf(stderr, "timebase_callback is new_pos:%d nframes:%u frame:%u tickPos:%d cpos:%d\n", new_pos, nframes, pos->frame, MusEGlobal::audio->tickPos(), MusEGlobal::song->cpos());
+      fprintf(stderr, " new: bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
+              pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar, pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute);
+#endif
       
       }
 
@@ -468,8 +458,7 @@ static void timebase_callback(jack_transport_state_t state,
 
 static void processShutdown(void*)
       {
-      if (JACK_DEBUG)
-          fprintf(stderr, "processShutdown()\n");
+      DEBUG_JACK(stderr, "processShutdown()\n");
       //fprintf(stderr, "processShutdown\n");
       jackAudio->nullify_client();
       MusEGlobal::audio->shutdown();
@@ -541,8 +530,7 @@ JackAudioDevice::JackAudioDevice(jack_client_t* cl, char* name)
 
 JackAudioDevice::~JackAudioDevice()
       {
-      if (JACK_DEBUG)
-            fprintf(stderr, "~JackAudioDevice()\n");
+      DEBUG_JACK(stderr, "~JackAudioDevice()\n");
       if (_client) {
 
             // REMOVE Tim. latency. Added. TESTING.
@@ -558,8 +546,7 @@ JackAudioDevice::~JackAudioDevice()
       // REMOVE Tim. latency. Added. TESTING.
       jackStarted = false;
 
-      if (JACK_DEBUG)
-            fprintf(stderr, "~JackAudioDevice() after jack_client_close()\n");
+      DEBUG_JACK(stderr, "~JackAudioDevice() after jack_client_close()\n");
       }
 
 //---------------------------------------------------------
@@ -600,8 +587,7 @@ int JackAudioDevice::realtimePriority() const
 
 bool initJackAudio()
       {
-      if (JACK_DEBUG)
-            fprintf(stderr, "initJackAudio()\n");
+      DEBUG_JACK(stderr, "initJackAudio()\n");
       
       muse_atomic_init(&atomicGraphChangedPending);
       muse_atomic_set(&atomicGraphChangedPending, 0);
@@ -1031,9 +1017,7 @@ void JackAudioDevice::processJackCallbackEvents(const Route& our_node, jack_port
 
 void JackAudioDevice::graphChanged()
 {
-  if (JACK_DEBUG)
-        fprintf(stderr, "graphChanged()\n");
-  DEBUG_PRST_ROUTES(stderr, "JackAudioDevice::graphChanged()\n"); 
+  DEBUG_JACK(stderr, "JackAudioDevice::graphChanged()\n");
 
   if(!checkJackClient(_client))
   {
@@ -1312,8 +1296,7 @@ int JackAudioDevice::static_JackXRunCallback(void *)
 
 void JackAudioDevice::registerClient()
       {
-      if (JACK_DEBUG)
-            fprintf(stderr, "registerClient()\n");
+      DEBUG_JACK(stderr, "registerClient()\n");
       
 //       if (MusEGlobal::debugMsg) {
 //             fprintf(stderr, "JackAudioDevice::registerClient(): registering error and info callbacks...\n");
@@ -1360,8 +1343,7 @@ void JackAudioDevice::registerClient()
 
 void* JackAudioDevice::registerInPort(const char* name, bool midi)
       {
-      if(JACK_DEBUG)
-        fprintf(stderr, "registerInPort()\n");
+      DEBUG_JACK(stderr, "registerInPort()\n");
       if(!checkJackClient(_client) || !name || name[0] == '\0') 
         return NULL;
       const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
@@ -1376,8 +1358,7 @@ void* JackAudioDevice::registerInPort(const char* name, bool midi)
 
 void* JackAudioDevice::registerOutPort(const char* name, bool midi)
       {
-      if(JACK_DEBUG)
-        fprintf(stderr, "registerOutPort()\n");
+      DEBUG_JACK(stderr, "registerOutPort()\n");
       if(!checkJackClient(_client) || !name || name[0] == '\0') 
         return NULL;
       const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
@@ -1392,8 +1373,7 @@ void* JackAudioDevice::registerOutPort(const char* name, bool midi)
 
 bool JackAudioDevice::connect(void* src, void* dst)
 {
-      if (JACK_DEBUG)
-            fprintf(stderr, "JackAudioDevice::connect()\n");
+      DEBUG_JACK(stderr, "JackAudioDevice::connect()\n");
       if(!checkJackClient(_client)) return false;
       const char* sn = jack_port_name((jack_port_t*) src);
       const char* dn = jack_port_name((jack_port_t*) dst);
@@ -1409,9 +1389,8 @@ bool JackAudioDevice::connect(void* src, void* dst)
             return false;
             }
       else
-      if (JACK_DEBUG)
       {
-        fprintf(stderr, "jack connect <%s>%p - <%s>%p succeeded\n",
+        DEBUG_JACK(stderr, "jack connect <%s>%p - <%s>%p succeeded\n",
            sn, src, dn, dst);
       }      
       return true;
@@ -1419,8 +1398,7 @@ bool JackAudioDevice::connect(void* src, void* dst)
 
 bool JackAudioDevice::connect(const char* src, const char* dst)
 {
-  if(JACK_DEBUG)
-    fprintf(stderr, "JackAudioDevice::connect()\n");
+  DEBUG_JACK(stderr, "JackAudioDevice::connect()\n");
   if(!checkJackClient(_client) || !src || !dst || src[0] == '\0' || dst[0] == '\0') 
     return false;
   int err = jack_connect(_client, src, dst);
@@ -1438,8 +1416,7 @@ bool JackAudioDevice::connect(const char* src, const char* dst)
 
 bool JackAudioDevice::disconnect(void* src, void* dst)
 {
-      if (JACK_DEBUG)
-            fprintf(stderr, "JackAudioDevice::disconnect()\n");
+      DEBUG_JACK(stderr, "JackAudioDevice::disconnect()\n");
       if(!checkJackClient(_client)) return false;
       if(!src || !dst)  
         return false;
@@ -1457,9 +1434,8 @@ bool JackAudioDevice::disconnect(void* src, void* dst)
             return false;
             }
       else
-      if (JACK_DEBUG)
       {
-            fprintf(stderr, "jack disconnect <%s> - <%s> succeeded\n",
+            DEBUG_JACK(stderr, "jack disconnect <%s> - <%s> succeeded\n",
                sn, dn);
       }      
       return true;
@@ -1467,8 +1443,7 @@ bool JackAudioDevice::disconnect(void* src, void* dst)
 
 bool JackAudioDevice::disconnect(const char* src, const char* dst)
 {
-  if(JACK_DEBUG)
-    fprintf(stderr, "JackAudioDevice::disconnect()\n");
+  DEBUG_JACK(stderr, "JackAudioDevice::disconnect()\n");
   if(!checkJackClient(_client) || !src || !dst || src[0] == '\0' || dst[0] == '\0') 
     return false;
   int err = jack_disconnect(_client, src, dst);
@@ -1593,8 +1568,7 @@ bool JackAudioDevice::portsCompatible(const char* src, const char* dst) const
 
 bool JackAudioDevice::start(int /*priority*/)
       {
-      if (JACK_DEBUG)
-            fprintf(stderr, "JackAudioDevice::start()\n");
+      DEBUG_JACK(stderr, "JackAudioDevice::start()\n");
       if(!checkJackClient(_client)) return false;
 
       MusEGlobal::doSetuid();
@@ -1637,8 +1611,7 @@ bool JackAudioDevice::start(int /*priority*/)
 
 void JackAudioDevice::stop()
       {
-      if (JACK_DEBUG)
-            fprintf(stderr, "JackAudioDevice::stop()\n");
+      DEBUG_JACK(stderr, "JackAudioDevice::stop()\n");
       if(!checkJackClient(_client)) return;
       DEBUG_PRST_ROUTES (stderr, "JackAudioDevice::stop(): calling jack_deactivate()\n");
       
@@ -1664,8 +1637,7 @@ void JackAudioDevice::stop()
 
 jack_transport_state_t JackAudioDevice::transportQuery(jack_position_t* pos)
 { 
-  if (JACK_DEBUG)
-    fprintf(stderr, "JackAudioDevice::transportQuery pos:%d\n", (unsigned int)pos->frame);
+  DEBUG_JACK(stderr, "JackAudioDevice::transportQuery pos:%d\n", (unsigned int)pos->frame);
   
   // TODO: Compose and return a state if MusE is disengaged from Jack transport.
   
@@ -1684,18 +1656,16 @@ bool JackAudioDevice::timebaseQuery(unsigned frames, unsigned* bar, unsigned* be
   jack_position_t jp;
   jack_transport_query(_client, &jp); 
 
-  if(JACK_DEBUG)
-    fprintf(stderr, "timebaseQuery frame:%u\n", jp.frame); 
+  DEBUG_JACK(stderr, "timebaseQuery frame:%u\n", jp.frame); 
   
   if(jp.valid & JackPositionBBT)
   {
-    if(JACK_DEBUG)
-    {
-      fprintf(stderr, "timebaseQuery BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
-              jp.bar, jp.beat, jp.tick, jp.bar_start_tick, jp.beats_per_bar, jp.beat_type, jp.ticks_per_beat, jp.beats_per_minute);
-      if(jp.valid & JackBBTFrameOffset)
-        fprintf(stderr, "timebaseQuery BBTFrameOffset: %u\n", jp.bbt_offset);
-    }
+#if JACK_DEBUG
+    fprintf(stderr, "timebaseQuery BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
+            jp.bar, jp.beat, jp.tick, jp.bar_start_tick, jp.beats_per_bar, jp.beat_type, jp.ticks_per_beat, jp.beats_per_minute);
+    if(jp.valid & JackBBTFrameOffset)
+      fprintf(stderr, "timebaseQuery BBTFrameOffset: %u\n", jp.bbt_offset);
+#endif
     
     if(jp.ticks_per_beat > 0.0)
     {
@@ -1708,8 +1678,7 @@ bool JackAudioDevice::timebaseQuery(unsigned frames, unsigned* bar, unsigned* be
       //  produces the same tick in the end. If we can rely on that, we should be good accuracy.
       unsigned ticks  = double(MusEGlobal::config.division) * (jp.beats_per_minute / 60.0) * double(frames) / f_rate;   
 
-      if(JACK_DEBUG)
-        fprintf(stderr, "timebaseQuery curr_tick:%u f_rate:%f ticks:%u\n", curr_tick, f_rate, ticks);  
+      DEBUG_JACK(stderr, "timebaseQuery curr_tick:%u f_rate:%f ticks:%u\n", curr_tick, f_rate, ticks);  
 
       if(bar) *bar = jp.bar;
       if(beat) *beat = jp.beat;
@@ -1722,15 +1691,14 @@ bool JackAudioDevice::timebaseQuery(unsigned frames, unsigned* bar, unsigned* be
     }
   }
 
-  if(JACK_DEBUG)
-  {
-    if(jp.valid & JackPositionTimecode)
-      fprintf(stderr, "timebaseQuery JackPositionTimecode: frame_time:%f next_time:%f\n", jp.frame_time, jp.next_time);
-    if(jp.valid & JackAudioVideoRatio)
-      fprintf(stderr, "timebaseQuery JackAudioVideoRatio: %f\n", jp.audio_frames_per_video_frame);
-    if(jp.valid & JackVideoFrameOffset)
-      fprintf(stderr, "timebaseQuery JackVideoFrameOffset: %u\n", jp.video_offset);
-  }
+#if JACK_DEBUG
+  if(jp.valid & JackPositionTimecode)
+    fprintf(stderr, "timebaseQuery JackPositionTimecode: frame_time:%f next_time:%f\n", jp.frame_time, jp.next_time);
+  if(jp.valid & JackAudioVideoRatio)
+    fprintf(stderr, "timebaseQuery JackAudioVideoRatio: %f\n", jp.audio_frames_per_video_frame);
+  if(jp.valid & JackVideoFrameOffset)
+    fprintf(stderr, "timebaseQuery JackVideoFrameOffset: %u\n", jp.video_offset);
+#endif
   
   return false;
 }                
@@ -1758,10 +1726,9 @@ uint64_t JackAudioDevice::systemTimeUS() const
 
 unsigned int JackAudioDevice::getCurFrame() const
 { 
-  if (JACK_DEBUG)
-    fprintf(stderr, "JackAudioDevice::getCurFrame pos.frame:%d\n", pos.frame);
+  DEBUG_JACK(stderr, "JackAudioDevice::getCurFrame pos.frame:%d\n", pos.frame);
   
-  if(!MusEGlobal::useJackTransport)
+  if(!MusEGlobal::config.useJackTransport)
     return AudioDevice::getCurFrame();
     
   return pos.frame; 
@@ -1773,18 +1740,16 @@ unsigned int JackAudioDevice::getCurFrame() const
 
 unsigned JackAudioDevice::framePos() const
       {
-      //if(!MusEGlobal::useJackTransport)
+      //if(!MusEGlobal::config.useJackTransport)
       //{
-      //  if (JACK_DEBUG)
-      //    fprintf(stderr, "JackAudioDevice::framePos dummyPos:%d\n", dummyPos);
+      //  DEBUG_JACK(stderr, "JackAudioDevice::framePos dummyPos:%d\n", dummyPos);
       //  return dummyPos;
       //}
       
       if(!checkJackClient(_client)) return 0;
       jack_nframes_t n = jack_frame_time(_client);
       
-      //if (JACK_DEBUG)
-      //  fprintf(stderr, "JackAudioDevice::framePos jack frame:%d\n", (int)n);
+      //DEBUG_JACK(stderr, "JackAudioDevice::framePos jack frame:%d\n", (int)n);
       
       return n;
       }
@@ -1799,8 +1764,7 @@ unsigned JackAudioDevice::framesAtCycleStart() const
 { 
       if(!checkJackClient(_client)) return 0;
       jack_nframes_t n = jack_last_frame_time(_client);
-      //if (JACK_DEBUG)
-      //  fprintf(stderr, "JackAudioDevice::framesAtCycleStart jack frame:%d\n", (unsigned)n);
+      //DEBUG_JACK(stderr, "JackAudioDevice::framesAtCycleStart jack frame:%d\n", (unsigned)n);
       return (unsigned)n;
 }
 
@@ -1814,8 +1778,7 @@ unsigned JackAudioDevice::framesSinceCycleStart() const
 { 
       if(!checkJackClient(_client)) return 0;
       jack_nframes_t n = jack_frames_since_cycle_start(_client);
-      //if (JACK_DEBUG)
-      //  fprintf(stderr, "JackAudioDevice::framesSinceCycleStart jack frame:%d\n", (unsigned)n);
+      //DEBUG_JACK(stderr, "JackAudioDevice::framesSinceCycleStart jack frame:%d\n", (unsigned)n);
 
       // Safety due to inaccuracies. It cannot be after the segment, right?
       if(n >= MusEGlobal::segmentSize)
@@ -1849,8 +1812,7 @@ unsigned JackAudioDevice::curTransportFrame() const
 
 void JackAudioDevice::getJackPorts(const char** ports, std::list<QString>& name_list, bool midi, bool physical, int aliases)
       {
-      if (JACK_DEBUG)
-            fprintf(stderr, "JackAudioDevice::getJackPorts()\n");
+      DEBUG_JACK(stderr, "JackAudioDevice::getJackPorts()\n");
       QString qname;
       QString cname(jack_get_client_name(_client));
       
@@ -1930,8 +1892,7 @@ void JackAudioDevice::getJackPorts(const char** ports, std::list<QString>& name_
 
 std::list<QString> JackAudioDevice::outputPorts(bool midi, int aliases)
       {
-      if (JACK_DEBUG)
-            fprintf(stderr, "JackAudioDevice::outputPorts()\n");
+      DEBUG_JACK(stderr, "JackAudioDevice::outputPorts()\n");
       std::list<QString> clientList;
       if(!checkJackClient(_client)) return clientList;
       const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
@@ -1953,8 +1914,7 @@ std::list<QString> JackAudioDevice::outputPorts(bool midi, int aliases)
 
 std::list<QString> JackAudioDevice::inputPorts(bool midi, int aliases)
       {
-      if (JACK_DEBUG)
-            fprintf(stderr, "JackAudioDevice::inputPorts()\n");
+      DEBUG_JACK(stderr, "JackAudioDevice::inputPorts()\n");
       
       std::list<QString> clientList;
       if(!checkJackClient(_client)) return clientList;
@@ -2088,8 +2048,7 @@ unsigned int JackAudioDevice::portLatency(void* port, bool capture) const
 
 void JackAudioDevice::unregisterPort(void* p)
       {
-      if(JACK_DEBUG)
-        fprintf(stderr, "JackAudioDevice::unregisterPort(%p)\n", p);
+      DEBUG_JACK(stderr, "JackAudioDevice::unregisterPort(%p)\n", p);
       if(!checkJackClient(_client) || !p) 
         return;
 //      fprintf(stderr, "JACK: unregister Port\n");
@@ -2159,7 +2118,7 @@ void JackAudioDevice::setSyncTimeout(unsigned usec)
 unsigned JackAudioDevice::transportSyncToPlayDelay() const
 { 
   // If Jack transport is being used, it delays by one cycle.
-  if(MusEGlobal::useJackTransport)
+  if(MusEGlobal::config.useJackTransport)
     return MusEGlobal::segmentSize;
   return 0;
 }
@@ -2171,22 +2130,19 @@ unsigned JackAudioDevice::transportSyncToPlayDelay() const
 int JackAudioDevice::getState()
       {
       // If we're not using Jack's transport, just return current state.
-      if(!MusEGlobal::useJackTransport)
+      if(!MusEGlobal::config.useJackTransport)
       {
         //pos.valid = jack_position_bits_t(0);
         //pos.frame = MusEGlobal::audio->pos().frame();
         //return MusEGlobal::audio->getState();
-        //if (JACK_DEBUG)
-        //  fprintf(stderr, "JackAudioDevice::getState dummyState:%d\n", dummyState);
+        //DEBUG_JACK(stderr, "JackAudioDevice::getState dummyState:%d\n", dummyState);
         return AudioDevice::getState();
       }
       
-      //if (JACK_DEBUG)
-      //      fprintf(stderr, "JackAudioDevice::getState ()\n");
+      //DEBUG_JACK(stderr, "JackAudioDevice::getState ()\n");
       if(!checkJackClient(_client)) return 0;
       transportState = jack_transport_query(_client, &pos);
-      //if (JACK_DEBUG)
-      //    fprintf(stderr, "JackAudioDevice::getState transportState:%d\n", transportState);
+      //DEBUG_JACK(stderr, "JackAudioDevice::getState transportState:%d\n", transportState);
       
       switch (int(transportState)) {
             case JackTransportStopped:  
@@ -2217,8 +2173,7 @@ int JackAudioDevice::getState()
 
 void JackAudioDevice::setFreewheel(bool f)
       {
-      if (JACK_DEBUG)
-            fprintf(stderr, "JackAudioDevice::setFreewheel(\n");
+      DEBUG_JACK(stderr, "JackAudioDevice::setFreewheel(\n");
       if(!checkJackClient(_client)) return;
       jack_set_freewheel(_client, f);
       }
@@ -2229,12 +2184,11 @@ void JackAudioDevice::setFreewheel(bool f)
 
 void JackAudioDevice::startTransport()
     {
-      if (JACK_DEBUG)
-            fprintf(stderr, "JackAudioDevice::startTransport()\n");
+      DEBUG_JACK(stderr, "JackAudioDevice::startTransport()\n");
       
       // If we're not using Jack's transport, just pass PLAY and current frame along
       //  as if processSync was called. 
-      if(!MusEGlobal::useJackTransport)
+      if(!MusEGlobal::config.useJackTransport)
       {
         AudioDevice::startTransport();
         return;
@@ -2251,10 +2205,9 @@ void JackAudioDevice::startTransport()
 
 void JackAudioDevice::stopTransport()
     {
-      if (JACK_DEBUG)
-            fprintf(stderr, "JackAudioDevice::stopTransport()\n");
+      DEBUG_JACK(stderr, "JackAudioDevice::stopTransport()\n");
       
-      if(!MusEGlobal::useJackTransport)
+      if(!MusEGlobal::config.useJackTransport)
       {
         AudioDevice::stopTransport();
         return;
@@ -2274,10 +2227,9 @@ void JackAudioDevice::stopTransport()
 
 void JackAudioDevice::seekTransport(unsigned frame)
     {
-      if (JACK_DEBUG)
-            fprintf(stderr, "JackAudioDevice::seekTransport() frame:%d\n", frame);
+      DEBUG_JACK(stderr, "JackAudioDevice::seekTransport() frame:%d\n", frame);
       
-      if(!MusEGlobal::useJackTransport)
+      if(!MusEGlobal::config.useJackTransport)
       {
         // STOP -> STOP means seek in stop mode. PLAY -> START_PLAY means seek in play mode.
         AudioDevice::seekTransport(frame);
@@ -2295,10 +2247,9 @@ void JackAudioDevice::seekTransport(unsigned frame)
 
 void JackAudioDevice::seekTransport(const Pos &p)
       {
-      if (JACK_DEBUG)
-            fprintf(stderr, "JackAudioDevice::seekTransport(Pos) frame:%d\n", p.frame());
+      DEBUG_JACK(stderr, "JackAudioDevice::seekTransport(Pos) frame:%d\n", p.frame());
       
-      if(!MusEGlobal::useJackTransport)
+      if(!MusEGlobal::config.useJackTransport)
       {
         // STOP -> STOP means seek in stop mode. PLAY -> START_PLAY means seek in play mode.
         AudioDevice::seekTransport(p);
@@ -2338,8 +2289,7 @@ void JackAudioDevice::seekTransport(const Pos &p)
 
 void* JackAudioDevice::findPort(const char* name)
       {
-      if (JACK_DEBUG)
-            fprintf(stderr, "JackAudioDevice::findPort(%s)\n", name);
+      DEBUG_JACK(stderr, "JackAudioDevice::findPort(%s)\n", name);
       if(!checkJackClient(_client) || !name || name[0] == '\0') 
         return NULL;
       void* p = jack_port_by_name(_client, name);
@@ -2352,28 +2302,48 @@ void* JackAudioDevice::findPort(const char* name)
 
 int JackAudioDevice::setMaster(bool f, bool unconditional)
 {
-  if (JACK_DEBUG)
-    fprintf(stderr, "JackAudioDevice::setMaster val:%d\n", f);
+  // Check this one-time hack flag so that it forces master.
+  // MusEGlobal::audioDevice may be NULL, esp. at startup when loading a song file,
+  //  so this flag is necessary for the next valid call to setMaster.
+  if(MusEGlobal::timebaseMasterForceFlag)
+  {
+    unconditional = true;
+    MusEGlobal::timebaseMasterForceFlag = false;
+  }
+
+  DEBUG_JACK(stderr, "JackAudioDevice::setMaster val:%d unconditional:%d\n", f, unconditional);
   if(!checkJackClient(_client)) 
     return 0;
   
   int r = 0;
   if(f)
   {
-    if(MusEGlobal::useJackTransport)
+    if(MusEGlobal::config.useJackTransport)
     {
-      // Make Muse the Jack timebase master. Do it unconditionally (second param = 0).
+      // Make Muse the Jack timebase master. Possibly do it unconditionally (second param = 0).
+      // Note that if we are already the timebase master, this will succeed and it will still
+      //  call the timebase callback once afterwards.
       r = jack_set_timebase_callback(_client, !unconditional, (JackTimebaseCallback) timebase_callback, 0);
       if(MusEGlobal::debugMsg || JACK_DEBUG)
       {
-        if(r)
+        if(r && !MusEGlobal::timebaseMasterState && unconditional)
           fprintf(stderr, "JackAudioDevice::setMaster jack_set_timebase_callback failed: result:%d\n", r);
-      }      
+      }
+      if(!(bool)r != MusEGlobal::timebaseMasterState)
+      {
+        MusEGlobal::timebaseMasterState = !(bool)r;
+        MusEGlobal::song->update(SC_TIMEBASE_MASTER);
+      }
     }  
     else
     {
       r = 1;
       fprintf(stderr, "JackAudioDevice::setMaster cannot set master because useJackTransport is false\n");
+      if(MusEGlobal::timebaseMasterState)
+      {
+        MusEGlobal::timebaseMasterState = false;
+        MusEGlobal::song->update(SC_TIMEBASE_MASTER);
+      }
     }
   }  
   else
@@ -2381,9 +2351,14 @@ int JackAudioDevice::setMaster(bool f, bool unconditional)
     r = jack_release_timebase(_client);
     if(MusEGlobal::debugMsg || JACK_DEBUG)
     {
-      if(r)
+      if(r && MusEGlobal::timebaseMasterState)
         fprintf(stderr, "JackAudioDevice::setMaster jack_release_timebase failed: result:%d\n", r);
     }      
+    if(!r && MusEGlobal::timebaseMasterState)
+    {
+      MusEGlobal::timebaseMasterState = false;
+      MusEGlobal::song->update(SC_TIMEBASE_MASTER);
+    }
   }
   return r;  
 }
@@ -2394,13 +2369,11 @@ int JackAudioDevice::setMaster(bool f, bool unconditional)
 
 void exitJackAudio()
       {
-      if (JACK_DEBUG)
-            fprintf(stderr, "exitJackAudio()\n");
+      DEBUG_JACK(stderr, "exitJackAudio()\n");
       if (jackAudio)
             delete jackAudio;
             
-      if (JACK_DEBUG)
-            fprintf(stderr, "exitJackAudio() after delete jackAudio\n");
+      DEBUG_JACK(stderr, "exitJackAudio() after delete jackAudio\n");
       
       MusEGlobal::audioDevice = NULL;      
       muse_atomic_destroy(&atomicGraphChangedPending);

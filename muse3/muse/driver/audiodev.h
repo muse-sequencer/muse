@@ -133,6 +133,11 @@ class AudioDevice {
       virtual void graphChanged() {}
       virtual void registrationChanged() {}
       virtual void connectionsChanged() {}
+      // Whether the device has its own transport (Jack transport etc.), beyond the one built into this class.
+      virtual bool hasOwnTransport() const { return false; };
+      // Whether the device supports timebase master capabilities.
+      virtual bool hasTimebaseMaster() const { return false; };
+      // Sets or resets timebase master. Returns 0 on success. Otherwise, may return an error code.
       virtual int setMaster(bool f, bool unconditional = false) = 0;
 
       //----------------------------------------------

@@ -26,19 +26,18 @@
 
 #include "ui_appearancebase.h"
 
-class QColor;
-class QDialog;
-class QTimer;
-class QColorDialog;
-class QCloseEvent;
+#include <QColor>
+#include <QDialog>
+#include <QTimer>
+#include <QColorDialog>
+#include <QCloseEvent>
+#include <QButtonGroup>
 
-namespace MusEGlobal {
-  struct GlobalConfigValues;
-}
+#include "gconfig.h"
+#include "arranger.h"
+#include "app.h"
 
 namespace MusEGui {
-class Arranger;
-class MusE;
 
 //---------------------------------------------------------
 //   IdListViewItem

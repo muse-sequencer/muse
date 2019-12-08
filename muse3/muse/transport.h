@@ -32,6 +32,7 @@
 #include <QMouseEvent>
 #include <QToolButton>
 #include <QKeyEvent>
+#include <QMetaObject>
 
 #include "type_defs.h"
 #include "sig.h"
@@ -119,7 +120,7 @@ class Transport : public QWidget
       IconButton* clickButton;
       IconButton* syncButton;
       IconButton* jackTransportButton;
-      IconButton* transportMasterButton;
+      IconButton* timebaseMasterButton;
       QToolButton* buttons[6];      // transport buttons
       QLabel* l2;
       QLabel* l3;
@@ -127,7 +128,9 @@ class Transport : public QWidget
       QLabel* l6;
 
       Handle *lefthandle, *righthandle;
-      
+
+      QMetaObject::Connection _timebaseMasterBlinkConnection;
+
  protected:
       virtual void keyPressEvent(QKeyEvent *);
 
@@ -140,7 +143,7 @@ class Transport : public QWidget
       void setCycleMode(int);
       void songChanged(MusECore::SongChangedStruct_t);
       void syncChanged(bool);
-      void transportMasterChanged(bool);
+      void timebaseMasterChanged(bool);
       void jackSyncChanged(bool);
       void setRecord(bool flag);
       void stopToggled(bool);
@@ -149,7 +152,7 @@ class Transport : public QWidget
       void sigChange(const MusECore::TimeSignature&);
       void extSyncClicked(bool v);
       void useJackTransportClicked(bool v);
-      void transportMasterClicked(bool v);
+      void timebaseMasterClicked(bool v);
 
    public slots:
       void setTempo(int tempo);
