@@ -1,4 +1,5 @@
 08.12.2019
+	- Added option for opening MDI subwindows maximized (kybos)
     - Oops, fix stuck icons from 06.12. (Tim)
     - Fix gross misnomer throughout, should be "timebase master, not "transport master".
 07.12.2019
@@ -303,7 +304,6 @@
          and other problems as displayed by KDevelop Problems Reporter.
       - Fixed Midi Input Transformator and Midi Transformator problems.
         Problems creating/deleting presets. Tested all functions OK.
->>>>>>> master
 25.03.2019
       - Fix issue 645 "Naming a track with acentuated letter". (Tim)
         Oops, regression from 07.01.2019: utf8 chars were corrupted.
@@ -4933,9 +4933,9 @@
       * Feature: Muse now has an instrument editor, complete with a midi controller editor! (T356)
         - Click on the menu "Midi->Edit Instrument".
         - You will see a sysex editor there too, but it is non-functional. (Use the midi event editor instead).
-        - >>> Tooltips and "What's This?" are provided with IMPORTANT information. <<<
-          >>> If you want to understand how to use instruments, patches, and controllers in your song, <<< 
-          >>>    READ THEM!    <<<
+        - Tooltips and "What's This?" are provided with IMPORTANT information.
+          If you want to understand how to use instruments, patches, and controllers in your song,
+             READ THEM!    
       * Added: Environment variable MUSEINSTRUMENTS, so a (writable) instrument directory can be chosen
          instead of default /usr/share/muse/instruments etc. (T356)
         - Also added display of environment variables recognized by muse to command line help (muse -h).
