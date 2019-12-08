@@ -958,7 +958,7 @@
          <property name="title">
           <string>Audio Driver settings (require restart)</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout4">
+         <layout class="QGridLayout" name="gridLayout4_1">
           <item row="1" column="2">
            <widget class="QLabel" name="deviceAudioRateLabel">
             <property name="text">

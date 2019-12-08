@@ -62,10 +62,8 @@ subdirs (${SubDirs})
 ##
 QT5_WRAP_CPP ( muse_moc_headers
       app.h
-      appearance.h
       cobject.h
       conf.h
-      confmport.h
       midieditor.h
       miditransform.h
       plugin.h
@@ -91,13 +89,11 @@ QT5_ADD_RESOURCES (muse_qrc_files
 
 file (GLOB core_source_files
       app.cpp
-      appearance.cpp
       audio.cpp
       audioprefetch.cpp
       audiotrack.cpp
       cobject.cpp
       conf.cpp
-      confmport.cpp
       controlfifo.cpp
       ctrl.cpp
       dialogs.cpp

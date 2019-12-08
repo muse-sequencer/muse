@@ -2269,6 +2269,7 @@ void Song::seqSignal(int fd)
                         do_set_sync_timeout = true;
                         clearRecAutomation(true);
                         setPos(CPOS, MusEGlobal::audio->tickPos(), true, false, true);
+                        _startPlayPosition = MusEGlobal::audio->pos(); // update start position
                         break;
                   case 'S':   // shutdown audio
                         MusEGlobal::muse->seqStop();
