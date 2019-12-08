@@ -2137,7 +2137,7 @@ Otherwise, hold Ctrl to keep them open.</string>
               <item row="0" column="0">
                <widget class="QLabel" name="TextLabel1">
                 <property name="text">
-                 <string>GUI Refresh Rate</string>
+                 <string>GUI refresh rate</string>
                 </property>
                 <property name="wordWrap">
                  <bool>false</bool>
@@ -2266,7 +2266,7 @@ left button behave like the middle button in such areas.</string>
               <item row="3" column="0">
                <widget class="QLabel" name="textLabel1_4">
                 <property name="text">
-                 <string>Use old-style stop shortcut:</string>
+                 <string>Use old-style stop shortcut</string>
                 </property>
                 <property name="wordWrap">
                  <bool>false</bool>
