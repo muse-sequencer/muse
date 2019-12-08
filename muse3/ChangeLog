@@ -1,6 +1,7 @@
 07.12.2019
     - Update start play position when making a seek. Rewind to Start behaves
       more logical then, imho (rj)
+    - Fix some compile warnings with LV2 worker functions, some others. (Tim)
 06.12.2019
     - Fixed bug #719 downmix to existing file appends to the old file (rj)
     - Transport master fixes: New button on transport. Fix connect at startup etc. (Tim)
