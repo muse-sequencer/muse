@@ -2491,7 +2491,7 @@ left button behave like the middle button in such areas.</string>
             <item>
              <widget class="QPushButton" name="buttonTraditionalPreset">
               <property name="text">
-               <string>traditional MusE SDI</string>
+               <string>Traditional MusE SDI</string>
               </property>
              </widget>
             </item>

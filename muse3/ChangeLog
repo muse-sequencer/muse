@@ -1,3 +1,5 @@
+08.12.2019
+	- Added option for opening MDI subwindows maximized (kybos)
 05.12.2019
 	- Added File->New from template... menu entry. File->New loads default template (kybos)
 	- Fixed inconsistent UI texts where appropriate: (kybos)
