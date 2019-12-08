@@ -296,7 +296,7 @@ GlobalConfigValues config = {
       512,                          // Device audio buffer size
       0,                            // Device RtAudio selected backend
       true,                         // useJackTransport
-      true,                         // jackTransportMaster;
+      true,                         // timebaseMaster
 
       QString("./"),                // projectBaseFolder
       true,                         // projectStoreInFolder

@@ -1,3 +1,6 @@
+08.12.2019
+    - Oops, fix stuck icons from 06.12. (Tim)
+    - Fix gross misnomer throughout, should be "timebase master, not "transport master".
 07.12.2019
     - Update start play position when making a seek. Rewind to Start behaves
       more logical then, imho (rj)

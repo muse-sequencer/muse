@@ -1640,21 +1640,21 @@ void Song::normalizeWaveParts(Part *partCursor)
 
 void Song::beat()
       {
-      // Watchdog for checking and setting transport master state.
-      static int _transportMasterCounter = 0;
+      // Watchdog for checking and setting timebase master state.
+      static int _timebaseMasterCounter = 0;
       if(MusEGlobal::audioDevice &&
         MusEGlobal::audioDevice->hasOwnTransport() &&
-        MusEGlobal::audioDevice->hasTransportMaster() && 
+        MusEGlobal::audioDevice->hasTimebaseMaster() && 
         MusEGlobal::config.useJackTransport && 
-        (--_transportMasterCounter <= 0))
+        (--_timebaseMasterCounter <= 0))
       {
-        if(MusEGlobal::config.jackTransportMaster)
+        if(MusEGlobal::config.timebaseMaster)
         {
-          if(!MusEGlobal::transportMasterState || !MusEGlobal::audio->isPlaying())
+          if(!MusEGlobal::timebaseMasterState || !MusEGlobal::audio->isPlaying())
             MusEGlobal::audioDevice->setMaster(true);
         }
         // Set for once per second.
-        _transportMasterCounter = MusEGlobal::config.guiRefresh;
+        _timebaseMasterCounter = MusEGlobal::config.guiRefresh;
       }
 
       //First: update cpu load toolbar
@@ -2320,14 +2320,14 @@ void Song::seqSignal(int fd)
 //                           MusEGlobal::song->processIpcInEventBuffers();
 //                         break;
 
-                  case 'T': // We are now the transport master.
-                        MusEGlobal::transportMasterState = true;
-                        update(SC_TRANSPORT_MASTER);
+                  case 'T': // We are now the timebase master.
+                        MusEGlobal::timebaseMasterState = true;
+                        update(SC_TIMEBASE_MASTER);
                         break;
 
-                  case 't': // We are no longer the transport master.
-                        MusEGlobal::transportMasterState = false;
-                        update(SC_TRANSPORT_MASTER);
+                  case 't': // We are no longer the timebase master.
+                        MusEGlobal::timebaseMasterState = false;
+                        update(SC_TIMEBASE_MASTER);
                         break;
 
                   default:
