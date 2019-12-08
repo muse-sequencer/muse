@@ -63,7 +63,6 @@
 #include "xpm/dot.xpm"
 #include "xpm/doth.xpm"
 #include "xpm/dot1.xpm"
-#include "xpm/note1.xpm"
 #include "xpm/synth.xpm"
 #include "xpm/cmark.xpm"
 #include "xpm/lmark.xpm"
@@ -81,9 +80,6 @@
 
 #include "xpm/up.xpm"
 #include "xpm/down.xpm"
-#include "xpm/sysex.xpm"
-#include "xpm/ctrl.xpm"
-#include "xpm/meta.xpm"
 #include "xpm/flag.xpm"
 #include "xpm/flagS.xpm"
 #include "xpm/lock.xpm"
@@ -227,7 +223,6 @@ QPixmap* record1_Icon;
 QPixmap* dotIcon;
 QPixmap* dothIcon;
 QPixmap* dot1Icon;
-QPixmap* note1Icon;
 QPixmap* synthIcon;
 QPixmap* markIcon[3];
 QPixmap* cursorIcon;
@@ -237,9 +232,6 @@ QPixmap* eyeCrossedIcon;
 QPixmap* eyeGrayIcon;
 QPixmap* upIcon;
 QPixmap* downIcon;
-QPixmap* sysexIcon;
-QPixmap* ctrlIcon;
-QPixmap* metaIcon;
 QPixmap* flagIcon;
 QPixmap* flagIconS;
 QPixmap* lockIcon;
@@ -483,6 +475,11 @@ QIcon* filecloseSVGIcon;
 QIcon* appexitSVGIcon;
 QIcon* whatsthisSVGIcon;
 QIcon* exitSVGIcon;
+QIcon* noteSVGIcon;
+QIcon* metaSVGIcon;
+QIcon* ctrlSVGIcon;
+QIcon* sysexSVGIcon;
+
 
 // tool icons
 QIcon* pencilIconSVG;
@@ -542,7 +539,6 @@ void initIcons(bool useThemeIconsIfPossible)
       dotIcon      = MPIXMAP(dot_xpm, "dialog-ok-apply");
       dothIcon     = MPIXMAP(doth_xpm, "draw-circle");
       dot1Icon     = MPIXMAP(dot1_xpm, nullptr);
-      note1Icon    = MPIXMAP(note1_xpm, nullptr);
       synthIcon    = MPIXMAP(synth_xpm, nullptr);
       markIcon[0]  = MPIXMAP(cmark_xpm, nullptr);
       markIcon[1]  = MPIXMAP(lmark_xpm, nullptr);
@@ -554,9 +550,6 @@ void initIcons(bool useThemeIconsIfPossible)
       eyeGrayIcon  = MPIXMAP(eye_gray_xpm, nullptr);
       upIcon       = MPIXMAP(up_xpm, "go-up");
       downIcon     = MPIXMAP(down_xpm, "go-down");
-      sysexIcon   = MPIXMAP(sysex_xpm, nullptr);
-      ctrlIcon    = MPIXMAP(ctrl_xpm, nullptr);
-      metaIcon    = MPIXMAP(meta_xpm, nullptr);
       flagIcon    = MPIXMAP(flag_xpm, nullptr);
       flagIconS   = MPIXMAP(flagS_xpm, nullptr);
       lockIcon    = MPIXMAP(lock_xpm, nullptr);
@@ -829,9 +822,13 @@ void initIcons(bool useThemeIconsIfPossible)
       speakerSVGIcon    = new QIcon(":/svg/speaker.svg");
       whatsthisSVGIcon  = new QIcon(":/svg/whatsthis.svg");
       exitSVGIcon       = new QIcon(":/svg/exit.svg");
-      filetemplateSVGIcon = new QIcon(":/svg/filefromtemplate.svg");
+      noteSVGIcon       = new QIcon(":/svg/note.svg");
+      metaSVGIcon       = new QIcon(":/svg/meta.svg");
+      ctrlSVGIcon       = new QIcon(":/svg/ctrl.svg");
+      sysexSVGIcon      = new QIcon(":/svg/sysex.svg");
 
       filenewSVGIcon     = MICONSVG(new QIcon(":/svg/filenew.svg"), "document-new");
+      filetemplateSVGIcon = new QIcon(":/svg/filefromtemplate.svg");
       fileopenSVGIcon    = MICONSVG(new QIcon(":/svg/fileopen.svg"), "document-open");
       filesaveSVGIcon    = MICONSVG(new QIcon(":/svg/filesave.svg"), "document-save");
       filesaveasSVGIcon  = MICONSVG(new QIcon(":/svg/filesaveas.svg"), "document-save-as");
@@ -897,7 +894,6 @@ void deleteIcons()
       delete dotIcon;      
       delete dothIcon;     
       delete dot1Icon;     
-      delete note1Icon;    
       delete synthIcon;    
       delete markIcon[0];  
       delete markIcon[1];  
@@ -906,9 +902,6 @@ void deleteIcons()
       delete muteIcon;
       delete upIcon;       
       delete downIcon;     
-      delete sysexIcon; 
-      delete ctrlIcon;  
-      delete metaIcon;  
       delete flagIcon;  
       delete flagIconS; 
       delete lockIcon;  
@@ -1155,6 +1148,10 @@ void deleteIcons()
       delete appexitSVGIcon;
       delete whatsthisSVGIcon;
       delete exitSVGIcon;
+      delete noteSVGIcon;
+      delete metaSVGIcon;
+      delete ctrlSVGIcon;
+      delete sysexSVGIcon;
 
       delete pencilIconSVG;
       delete glueIconSVG;

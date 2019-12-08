@@ -43,7 +43,6 @@ extern QPixmap* deleteIcon;
 extern QPixmap* dotIcon;
 extern QPixmap* dothIcon;
 extern QPixmap* dot1Icon;
-extern QPixmap* note1Icon;
 extern QPixmap* synthIcon;
 extern QPixmap* markIcon[3];
 
@@ -58,9 +57,6 @@ extern QPixmap* eyeCrossedIcon;
 extern QPixmap* eyeGrayIcon;
 extern QPixmap* upIcon;
 extern QPixmap* downIcon;
-extern QPixmap* sysexIcon;
-extern QPixmap* ctrlIcon;
-extern QPixmap* metaIcon;
 extern QPixmap* flagIcon;
 extern QPixmap* flagIconS;
 extern QPixmap* lockIcon;
@@ -318,6 +314,10 @@ extern QIcon* filecloseSVGIcon;
 extern QIcon* appexitSVGIcon;
 extern QIcon* whatsthisSVGIcon;
 extern QIcon* exitSVGIcon;
+extern QIcon* noteSVGIcon;
+extern QIcon* metaSVGIcon;
+extern QIcon* ctrlSVGIcon;
+extern QIcon* sysexSVGIcon;
 
 extern QIcon* pencilIconSVG;
 extern QIcon* glueIconSVG;
