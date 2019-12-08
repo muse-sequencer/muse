@@ -254,7 +254,7 @@ void WaveCanvas::songChanged(MusECore::SongChangedStruct_t flags)
             }
             
 // REMOVE Tim. samplerate. Added.
-      if (flags._flags & SC_AUDIO_STRETCH) {
+      if (flags & SC_AUDIO_STRETCH) {
         for(iStretchSelectedItem is = _stretchAutomation._stretchSelectedList.begin(); 
             is != _stretchAutomation._stretchSelectedList.end(); )
         {

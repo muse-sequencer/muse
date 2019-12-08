@@ -75,6 +75,9 @@
 #include "plugin_cache_writer.h"
 #include "pluglist.h"
 #include "metronome_class.h"
+// REMOVE Tim. samplerate. Added.
+#include "audio_convert/audio_converter_plugin.h"
+#include "audio_convert/audio_converter_settings_group.h"
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>

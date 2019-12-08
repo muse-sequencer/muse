@@ -22,10 +22,7 @@
 //
 //=========================================================
 
-#include <QDialog>
-#include <QWidget>
 #include <QRadioButton>
-#include <QSignalMapper>
 #include <QList>
 // #include <QListWidgetItem>
 // #include <QVariant>
@@ -35,10 +32,8 @@
 #include <stdio.h>
 
 //#include "rubberband_converter.h"
-#include "wave.h"
 // #include "globals.h"
 #include "time_stretch.h"
-#include "xml.h"
 
 #include "rubberband_converter.h"
 
@@ -1011,27 +1006,17 @@ RubberbandSettingsDialog::RubberbandSettingsDialog(
   warningLabel->setVisible(true);
 #endif
   
-  _signalMapper = new QSignalMapper(this);
-  
   QList<QRadioButton*> allButtons = groupScrollArea->findChildren<QRadioButton*>();
   foreach(QRadioButton* button, allButtons)
   {
-    connect(button, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-    _signalMapper->setMapping(button, ConverterButtonId);
+    connect(button, &QRadioButton::clicked, [this]() { buttonClicked(ConverterButtonId); } );
   }
-  connect(useDefaultSettings,  SIGNAL(clicked()), _signalMapper, SLOT(map()));
-  connect(OKButton,            SIGNAL(clicked()), _signalMapper, SLOT(map()));
-  connect(cancelButton,        SIGNAL(clicked()), _signalMapper, SLOT(map()));
-  connect(defaultPreset,       SIGNAL(clicked()), _signalMapper, SLOT(map()));
-  connect(percussionPreset,    SIGNAL(clicked()), _signalMapper, SLOT(map()));
-  connect(maxPreset,           SIGNAL(clicked()), _signalMapper, SLOT(map()));
-  _signalMapper->setMapping(useDefaultSettings,  DefaultsButtonId);
-  _signalMapper->setMapping(OKButton,            OkButtonId);
-  _signalMapper->setMapping(cancelButton,        CancelButtonId);
-  _signalMapper->setMapping(defaultPreset,       DefaultPresetId);
-  _signalMapper->setMapping(percussionPreset,    PercussionPresetId);
-  _signalMapper->setMapping(maxPreset,           MaxPresetId);
-  connect(_signalMapper, SIGNAL(mapped(int)), this, SLOT(buttonClicked(int)));
+  connect(defaultPreset, &QRadioButton::clicked, [this]() { buttonClicked(DefaultPresetId); } );
+  connect(percussionPreset, &QRadioButton::clicked, [this]() { buttonClicked(PercussionPresetId); } );
+  connect(maxPreset, &QRadioButton::clicked, [this]() { buttonClicked(MaxPresetId); } );
+  connect(useDefaultSettings, &QCheckBox::clicked, [this]() { buttonClicked(DefaultsButtonId); } );
+  connect(OKButton, &QPushButton::clicked, [this]() { buttonClicked(OkButtonId); } );
+  connect(cancelButton, &QPushButton::clicked, [this]() { buttonClicked(CancelButtonId); } );
 }
   
 void RubberbandSettingsDialog::setControls(int opts)

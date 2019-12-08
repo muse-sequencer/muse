@@ -34,20 +34,16 @@
 #include <zita-resampler/vresampler.h>
 #endif
 
-#include <sndfile.h>
+#include <QDialog>
+#include <QWidget>
+
+#include "wave.h"
+#include "xml.h"
 
 #include "ui_zita_resampler_settings_base.h"
 #include "audio_convert/lib_audio_convert/audioconvert.h"
 
-//class QWidget;
-class QDialog;
-class QWidget;
-class QSignalMapper;
-//class QListWidgetItem;
-
 namespace MusECore {
-class SndFile;
-class Xml;
 
 //---------------------------------------------------------
 //   ZitaResamplerAudioConverter
@@ -238,7 +234,6 @@ class ZitaResamplerSettingsDialog : public QDialog, public Ui::ZitaResamplerSett
       Q_OBJECT
 
       MusECore::ZitaResamplerAudioConverterOptions* _options;
-      QSignalMapper* _signalMapper;
       
       void setControls();
      

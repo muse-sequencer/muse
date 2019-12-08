@@ -22,10 +22,7 @@
 //
 //=========================================================
 
-#include <QDialog>
-#include <QWidget>
 #include <QRadioButton>
-#include <QSignalMapper>
 // #include <QListWidgetItem>
 // #include <QVariant>
 // #include <qtextstream.h>
@@ -34,10 +31,8 @@
 #include <stdio.h>
 
 //#include "src_converter.h"
-#include "wave.h"
 // #include "globals.h"
 #include "time_stretch.h"
-#include "xml.h"
 
 #include "src_converter.h"
 // #include "audio_convert/audio_converter_settings_group.h"
@@ -1422,24 +1417,14 @@ SRCResamplerSettingsDialog::SRCResamplerSettingsDialog(
   typeGroup->setEnabled(!isLocal || (_options && _options->_useSettings));
   setControls();
 
-  _signalMapper = new QSignalMapper(this);
-  connect(typeSINCBestQuality, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-  connect(typeSINCMedium,      SIGNAL(clicked()), _signalMapper, SLOT(map()));
-  connect(typeSINCFastest,     SIGNAL(clicked()), _signalMapper, SLOT(map()));
-  connect(typeZeroOrderHold,   SIGNAL(clicked()), _signalMapper, SLOT(map()));
-  connect(typeLinear,          SIGNAL(clicked()), _signalMapper, SLOT(map()));
-  connect(useDefaultSettings,  SIGNAL(clicked()), _signalMapper, SLOT(map()));
-  connect(OKButton,            SIGNAL(clicked()), _signalMapper, SLOT(map()));
-  connect(cancelButton,        SIGNAL(clicked()), _signalMapper, SLOT(map()));
-  _signalMapper->setMapping(typeSINCBestQuality, ConverterButtonId);
-  _signalMapper->setMapping(typeSINCMedium,      ConverterButtonId);
-  _signalMapper->setMapping(typeSINCFastest,     ConverterButtonId);
-  _signalMapper->setMapping(typeZeroOrderHold,   ConverterButtonId);
-  _signalMapper->setMapping(typeLinear,          ConverterButtonId);
-  _signalMapper->setMapping(useDefaultSettings,  DefaultsButtonId);
-  _signalMapper->setMapping(OKButton,            OkButtonId);
-  _signalMapper->setMapping(cancelButton,        CancelButtonId);
-  connect(_signalMapper, SIGNAL(mapped(int)), this, SLOT(buttonClicked(int)));
+  connect(typeSINCBestQuality, &QRadioButton::clicked, [this]() { buttonClicked(ConverterButtonId); } );
+  connect(typeSINCMedium, &QRadioButton::clicked, [this]() { buttonClicked(ConverterButtonId); } );
+  connect(typeSINCFastest, &QRadioButton::clicked, [this]() { buttonClicked(ConverterButtonId); } );
+  connect(typeZeroOrderHold, &QRadioButton::clicked, [this]() { buttonClicked(ConverterButtonId); } );
+  connect(typeLinear, &QRadioButton::clicked, [this]() { buttonClicked(ConverterButtonId); } );
+  connect(useDefaultSettings, &QCheckBox::clicked, [this]() { buttonClicked(DefaultsButtonId); } );
+  connect(OKButton, &QPushButton::clicked, [this]() { buttonClicked(OkButtonId); } );
+  connect(cancelButton, &QPushButton::clicked, [this]() { buttonClicked(CancelButtonId); } );
 }
   
 void SRCResamplerSettingsDialog::setControls()

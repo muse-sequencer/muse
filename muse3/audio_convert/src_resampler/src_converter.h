@@ -29,19 +29,16 @@
 #include <sndfile.h>
 #include <samplerate.h>
 
+#include <QDialog>
+#include <QWidget>
+
+#include "wave.h"
+#include "xml.h"
+
 #include "ui_src_resampler_settings_base.h"
 #include "audio_convert/lib_audio_convert/audioconvert.h"
 
-//class QWidget;
-class QDialog;
-class QWidget;
-class QSignalMapper;
-//class QListWidgetItem;
-
-
 namespace MusECore {
-class SndFile;
-class Xml;
 
 //---------------------------------------------------------
 //   SRCAudioConverter
@@ -244,7 +241,6 @@ class SRCResamplerSettingsDialog : public QDialog, public Ui::SRCResamplerSettin
 
    private:
       MusECore::SRCAudioConverterOptions* _options;
-      QSignalMapper* _signalMapper;
       
       void setControls();
      

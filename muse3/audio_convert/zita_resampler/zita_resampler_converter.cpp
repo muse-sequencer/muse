@@ -22,10 +22,7 @@
 //
 //=========================================================
 
-#include <QDialog>
-#include <QWidget>
 #include <QRadioButton>
-#include <QSignalMapper>
 // #include <QListWidgetItem>
 // #include <QVariant>
 // #include <qtextstream.h>
@@ -34,10 +31,8 @@
 #include <stdio.h>
 
 //#include "zita_resampler_converter.h"
-#include "wave.h"
 // #include "globals.h"
 #include "time_stretch.h"
-#include "xml.h"
 
 #include "zita_resampler_converter.h"
 
@@ -620,26 +615,14 @@ ZitaResamplerSettingsDialog::ZitaResamplerSettingsDialog(
   
   setControls();
 
-  _signalMapper = new QSignalMapper(this);
-//   connect(typeSINCBestQuality, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-//   connect(typeSINCMedium,      SIGNAL(clicked()), _signalMapper, SLOT(map()));
-//   connect(typeSINCFastest,     SIGNAL(clicked()), _signalMapper, SLOT(map()));
-//   connect(typeZeroOrderHold,   SIGNAL(clicked()), _signalMapper, SLOT(map()));
-//   connect(typeLinear,        SIGNAL(clicked()), _signalMapper, SLOT(map()));
-//   _signalMapper->setMapping(typeSINCBestQuality, ConverterButton);
-//   _signalMapper->setMapping(typeSINCMedium, ConverterButton);
-//   _signalMapper->setMapping(typeSINCFastest, ConverterButton);
-//   _signalMapper->setMapping(typeZeroOrderHold, ConverterButton);
-//   _signalMapper->setMapping(typeLinear, ConverterButton);
-  
-  connect(useDefaultSettings,  SIGNAL(clicked()), _signalMapper, SLOT(map()));
-  connect(OKButton,            SIGNAL(clicked()), _signalMapper, SLOT(map()));
-  connect(cancelButton,        SIGNAL(clicked()), _signalMapper, SLOT(map()));
-  _signalMapper->setMapping(useDefaultSettings,  DefaultsButtonId);
-  _signalMapper->setMapping(OKButton,            OkButtonId);
-  _signalMapper->setMapping(cancelButton,        CancelButtonId);
-  
-  connect(_signalMapper, SIGNAL(mapped(int)), this, SLOT(buttonClicked(int)));
+//   connect(typeSINCBestQuality, &QRadioButton::clicked, [this]() { buttonClicked(ConverterButtonId); } );
+//   connect(typeSINCMedium, &QRadioButton::clicked, [this]() { buttonClicked(ConverterButtonId); } );
+//   connect(typeSINCFastest, &QRadioButton::clicked, [this]() { buttonClicked(ConverterButtonId); } );
+//   connect(typeZeroOrderHold, &QRadioButton::clicked, [this]() { buttonClicked(ConverterButtonId); } );
+//   connect(typeLinear, &QRadioButton::clicked, [this]() { buttonClicked(ConverterButtonId); } );
+  connect(useDefaultSettings, &QCheckBox::clicked, [this]() { buttonClicked(DefaultsButtonId); } );
+  connect(OKButton, &QPushButton::clicked, [this]() { buttonClicked(OkButtonId); } );
+  connect(cancelButton, &QPushButton::clicked, [this]() { buttonClicked(CancelButtonId); } );
 }
   
 void ZitaResamplerSettingsDialog::setControls()

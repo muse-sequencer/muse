@@ -34,20 +34,16 @@
 #include <rubberband/RubberBandStretcher.h>
 #endif
 
-#include <sndfile.h>
+#include <QDialog>
+#include <QWidget>
+
+#include "wave.h"
+#include "xml.h"
 
 #include "ui_rubberband_settings_base.h"
 #include "audio_convert/lib_audio_convert/audioconvert.h"
 
-//class QWidget;
-class QDialog;
-class QWidget;
-class QSignalMapper;
-//class QListWidgetItem;
-
 namespace MusECore {
-class SndFile;
-class Xml;
 
 //---------------------------------------------------------
 //   RubberBandAudioConverter
@@ -287,7 +283,6 @@ class RubberbandSettingsDialog : public QDialog, public Ui::RubberbandSettingsBa
       Q_OBJECT
 
       MusECore::RubberBandAudioConverterOptions* _options;
-      QSignalMapper* _signalMapper;
       
       void setControls(int opts);
      
