@@ -2,6 +2,7 @@
 	- Added option for opening MDI subwindows maximized (kybos)
     - Oops, fix stuck icons from 06.12. (Tim)
     - Fix gross misnomer throughout, should be "timebase master, not "transport master".
+    - Fix EffectRack::songChanged() crash when reloading songs: Check track still exists. (Tim)
 07.12.2019
     - Update start play position when making a seek. Rewind to Start behaves
       more logical then, imho (rj)

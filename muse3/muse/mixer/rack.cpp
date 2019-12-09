@@ -211,6 +211,8 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
 
 void EffectRack::updateContents()
       {
+      if(!track)
+        return;
       MusECore::Pipeline* pipe = track->efxPipe();
       if(!pipe)
         return;
@@ -243,6 +245,14 @@ EffectRack::~EffectRack()
 
 void EffectRack::songChanged(MusECore::SongChangedStruct_t typ)
       {
+      if (typ & (SC_TRACK_REMOVED)) {
+        if(!MusEGlobal::song->trackExists(track))
+        {
+          track = nullptr;
+          return;
+        }
+      }
+
       if (typ & (SC_ROUTE | SC_RACK)) {
             updateContents();
        	    }
@@ -272,6 +282,8 @@ QSize EffectRack::sizeHint() const
 
 void EffectRack::choosePlugin(QListWidgetItem* it, bool replace)
       {
+      if(!it || !track)
+        return;
       MusECore::Plugin* plugin = PluginDialog::getPlugin(this);
       if (plugin) {
             MusECore::PluginI* plugi = new MusECore::PluginI();
@@ -499,6 +511,8 @@ void EffectRack::doubleClicked(QListWidgetItem* it)
 
 void EffectRack::savePreset(int idx)
       {
+      if(!track)
+        return;
       //QString name = MusEGui::getSaveFileName(QString(""), plug_file_pattern, this,
       QString name = MusEGui::getSaveFileName(QString(""), MusEGlobal::preset_file_save_pattern, this,
          tr("MusE: Save Preset"));
@@ -551,10 +565,12 @@ void EffectRack::savePreset(int idx)
 
 void EffectRack::startDragItem(int idx)
       {
-        if (idx < 0) {
-            printf("illegal to drag index %d\n",idx);
-            return;
-        }
+      if(!track)
+        return;
+      if (idx < 0) {
+          printf("illegal to drag index %d\n",idx);
+          return;
+      }
       FILE *tmp;
       if (MusEGlobal::debugMsg) {
           QString fileName;
@@ -618,6 +634,8 @@ QStringList EffectRack::mimeTypes() const
 
 void EffectRack::dropEvent(QDropEvent *event)
 {
+      if(!event || !track)
+        return;
       QListWidgetItem *i = itemAt( event->pos() );
       if (!i)
             return;
@@ -697,20 +715,23 @@ void EffectRack::dragEnterEvent(QDragEnterEvent *event)
 
 void EffectRack::mousePressEvent(QMouseEvent *event)
       {
-      RackSlot* item = (RackSlot*) itemAt(event->pos());
-      if(event->button() & Qt::LeftButton) {
-          dragPos = event->pos();
-      }
-      else if(event->button() & Qt::RightButton) {
-          setCurrentItem(item);
-          menuRequested(item);
-          return;
-      }
-      else if(event->button() & Qt::MidButton) {
-          int idx = row(item);
-          bool flag = !track->efxPipe()->isOn(idx);
-          track->efxPipe()->setOn(idx, flag);
-          updateContents();
+      if(event && track)
+      {
+        RackSlot* item = (RackSlot*) itemAt(event->pos());
+        if(event->button() & Qt::LeftButton) {
+            dragPos = event->pos();
+        }
+        else if(event->button() & Qt::RightButton) {
+            setCurrentItem(item);
+            menuRequested(item);
+            return;
+        }
+        else if(event->button() & Qt::MidButton) {
+            int idx = row(item);
+            bool flag = !track->efxPipe()->isOn(idx);
+            track->efxPipe()->setOn(idx, flag);
+            updateContents();
+        }
       }
 
       QListWidget::mousePressEvent(event);  
@@ -718,24 +739,27 @@ void EffectRack::mousePressEvent(QMouseEvent *event)
 
 void EffectRack::mouseMoveEvent(QMouseEvent *event)
 {
-      if (event->buttons() & Qt::LeftButton) {
-            MusECore::Pipeline* pipe = track->efxPipe();
-            if(!pipe)
-              return;
+      if(event && track)
+      {
+        if (event->buttons() & Qt::LeftButton) {
+              MusECore::Pipeline* pipe = track->efxPipe();
+              if(!pipe)
+                return;
 
-            QListWidgetItem *i = itemAt(dragPos);
-            int idx0 = row(i);
-            if (!(*pipe)[idx0])
-              return; 
-            
-            int distance = (dragPos-event->pos()).manhattanLength();
-            if (distance > QApplication::startDragDistance()) {
-                  QListWidgetItem *i = itemAt( event->pos() );
-                  if (i) {
-                    int idx = row(i);
-                    startDragItem(idx);
-                }
-            }
+              QListWidgetItem *i = itemAt(dragPos);
+              int idx0 = row(i);
+              if (!(*pipe)[idx0])
+                return; 
+              
+              int distance = (dragPos-event->pos()).manhattanLength();
+              if (distance > QApplication::startDragDistance()) {
+                    QListWidgetItem *i = itemAt( event->pos() );
+                    if (i) {
+                      int idx = row(i);
+                      startDragItem(idx);
+                  }
+              }
+        }
       }
       QListWidget::mouseMoveEvent(event);
 }
@@ -743,6 +767,8 @@ void EffectRack::mouseMoveEvent(QMouseEvent *event)
 
 void EffectRack::initPlugin(MusECore::Xml xml, int idx)
       {      
+      if(!track)
+        return;
       for (;;) {
             MusECore::Xml::Token token = xml.parse();
             QString tag = xml.s1();
