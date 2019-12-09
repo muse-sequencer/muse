@@ -233,7 +233,8 @@ GlobalConfigValues config = {
       true,                         // optimize midi export file note offs
       true,                         // expRunningStatus; Save space by using running status
       true,                         // Split imported tracks into multiple parts.
-      true,                         // importMidiNewStyleDrum
+// Obsolete. There is only 'New' drum tracks now.
+//       true,                         // importMidiNewStyleDrum
       true,                         // importDevNameMetas Import Prefer Device Name metas over port number metas if both exist.
       true,                         // importInstrNameMetas Import Prefer Instrument Name metas over Mode sysexes if both exist.
       MusEGlobal::PORT_NUM_META | MusEGlobal::DEVICE_NAME_META, // exportPortsDevices. Or'd ExportPortsDevices_t flags. Export port number metas and/or device name metas.
@@ -308,7 +309,8 @@ GlobalConfigValues config = {
       MusECore::DONT_REC_MUTED_OR_HIDDEN,
       true,                         // addHiddenTracks
       true,                         // unhideTracks
-      MusEGlobal::PREFER_NEW,       // drumTrackPreference
+// Obsolete. There is only 'New' drum tracks now.
+//       MusEGlobal::PREFER_NEW,       // drumTrackPreference
       true,                         // smartFocus
       20,                           // trackHeight
       true,                         // borderlessMouse

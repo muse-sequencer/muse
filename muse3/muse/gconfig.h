@@ -48,13 +48,14 @@ enum newDrumRecordCondition_t
 
 namespace MusEGlobal {
 
-enum drumTrackPreference_t
-{
-  PREFER_OLD = 0,
-  PREFER_NEW = 1,
-  ONLY_OLD = 2,
-  ONLY_NEW = 3
-};
+// Obsolete. There is only 'New' drum tracks now.
+// enum drumTrackPreference_t
+// {
+//   PREFER_OLD = 0,
+//   PREFER_NEW = 1,
+//   ONLY_OLD = 2,
+//   ONLY_NEW = 3
+// };
 
 // Or'd together
 enum ExportPortsDevices_t
@@ -279,7 +280,8 @@ struct GlobalConfigValues {
       bool expOptimNoteOffs;  // Save space by replacing note offs with note on velocity 0
       bool expRunningStatus;  // Save space by using running status
       bool importMidiSplitParts; // Split imported tracks into multiple parts.
-      bool importMidiNewStyleDrum; // Use new style drum tracks
+// Obsolete. There is only 'New' drum tracks now.
+//       bool importMidiNewStyleDrum; // Use new style drum tracks
       bool importDevNameMetas;    // Import Prefer Device Name metas over port number metas if both exist.
       bool importInstrNameMetas;  // Import Prefer Instrument Name metas over Mode sysexes if both exist.
       int exportPortsDevices;     // Or'd ExportPortsDevices_t flags. Export port number metas and/or device name metas.
@@ -342,7 +344,8 @@ struct GlobalConfigValues {
       MusECore::newDrumRecordCondition_t newDrumRecordCondition;
       bool addHiddenTracks;
       bool unhideTracks;
-      drumTrackPreference_t drumTrackPreference;
+// Obsolete. There is only 'New' drum tracks now.
+//       drumTrackPreference_t drumTrackPreference;
       bool smartFocus;
       int trackHeight;
       bool borderlessMouse;

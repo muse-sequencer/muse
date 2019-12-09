@@ -892,8 +892,9 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.mixerBg = readColor(xml);
                         else if (tag == "midiTrackLabelBg")
                               MusEGlobal::config.midiTrackLabelBg = readColor(xml);
-                        else if (tag == "drumTrackLabelBg2")
-                              MusEGlobal::config.drumTrackLabelBg = readColor(xml);
+// Obsolete. There is only 'New' drum tracks now.
+//                         else if (tag == "drumTrackLabelBg2")
+//                               MusEGlobal::config.drumTrackLabelBg = readColor(xml);
                         else if (tag == "newDrumTrackLabelBg2")
                               MusEGlobal::config.newDrumTrackLabelBg = readColor(xml);
                         else if (tag == "waveTrackLabelBg")
@@ -1187,7 +1188,10 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "addHiddenTracks")
                               MusEGlobal::config.addHiddenTracks = xml.parseInt();
                         else if (tag == "drumTrackPreference")
-                              MusEGlobal::config.drumTrackPreference = (MusEGlobal::drumTrackPreference_t) xml.parseInt();
+                              // Obsolete. There is only 'New' drum tracks now.
+                              // drumTrackPreference is fixed until it is removed some day...
+                              //MusEGlobal::config.drumTrackPreference = (MusEGlobal::drumTrackPreference_t) xml.parseInt();
+                              xml.parseInt();
 
 #ifdef _USE_INSTRUMENT_OVERRIDES_
                         else if (tag == "drummapOverrides")
@@ -1582,7 +1586,8 @@ static void writeConfigurationColors(int level, MusECore::Xml& xml, bool partCol
 
       xml.colorTag(level, "mixerBg",            MusEGlobal::config.mixerBg);
       xml.colorTag(level, "midiTrackLabelBg",   MusEGlobal::config.midiTrackLabelBg);
-      xml.colorTag(level, "drumTrackLabelBg2",  MusEGlobal::config.drumTrackLabelBg);
+// Obsolete. There is only 'New' drum tracks now.
+//       xml.colorTag(level, "drumTrackLabelBg2",  MusEGlobal::config.drumTrackLabelBg);
       xml.colorTag(level, "newDrumTrackLabelBg2",MusEGlobal::config.newDrumTrackLabelBg);
       xml.colorTag(level, "waveTrackLabelBg",   MusEGlobal::config.waveTrackLabelBg);
       xml.colorTag(level, "outputTrackLabelBg", MusEGlobal::config.outputTrackLabelBg);
@@ -1834,7 +1839,9 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       
       xml.intTag(level, "unhideTracks", MusEGlobal::config.unhideTracks);
       xml.intTag(level, "addHiddenTracks", MusEGlobal::config.addHiddenTracks);
-      xml.intTag(level, "drumTrackPreference", MusEGlobal::config.drumTrackPreference);
+      // Obsolete. There is only 'New' drum tracks now.
+      // drumTrackPreference is fixed until it is removed some day...
+      //xml.intTag(level, "drumTrackPreference", MusEGlobal::config.drumTrackPreference);
 
 #ifdef _USE_INSTRUMENT_OVERRIDES_
       MusECore::midiInstruments.writeDrummapOverrides(level, xml);
@@ -2084,8 +2091,9 @@ void MidiFileConfig::updateValues()
       optNoteOffs->setChecked(MusEGlobal::config.expOptimNoteOffs);
       twoByteTimeSigs->setChecked(MusEGlobal::config.exp2ByteTimeSigs);
       splitPartsCheckBox->setChecked(MusEGlobal::config.importMidiSplitParts);
-      newDrumsCheckbox->setChecked(MusEGlobal::config.importMidiNewStyleDrum);
-      oldDrumsCheckbox->setChecked(!MusEGlobal::config.importMidiNewStyleDrum);
+// Obsolete. There is only 'New' drum tracks now.
+//       newDrumsCheckbox->setChecked(MusEGlobal::config.importMidiNewStyleDrum);
+//       oldDrumsCheckbox->setChecked(!MusEGlobal::config.importMidiNewStyleDrum);
       importDevNameMetas->setChecked(MusEGlobal::config.importDevNameMetas);
       importInstrNameMetas->setChecked(MusEGlobal::config.importInstrNameMetas);
       exportPortDeviceSMF0->setChecked(MusEGlobal::config.exportPortDeviceSMF0);
@@ -2120,7 +2128,8 @@ void MidiFileConfig::okClicked()
       MusEGlobal::config.expOptimNoteOffs = optNoteOffs->isChecked();
       MusEGlobal::config.exp2ByteTimeSigs = twoByteTimeSigs->isChecked();
       MusEGlobal::config.importMidiSplitParts = splitPartsCheckBox->isChecked();
-      MusEGlobal::config.importMidiNewStyleDrum = newDrumsCheckbox->isChecked();
+// Obsolete. There is only 'New' drum tracks now.
+//       MusEGlobal::config.importMidiNewStyleDrum = newDrumsCheckbox->isChecked();
       
       MusEGlobal::config.importDevNameMetas = importDevNameMetas->isChecked();
       MusEGlobal::config.importInstrNameMetas = importInstrNameMetas->isChecked();
