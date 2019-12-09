@@ -198,7 +198,8 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x411, id, "Background");
            new IdListViewItem(0x412, id, "Midi background");
            new IdListViewItem(0x413, id, "Drum background");
-           new IdListViewItem(0x41e, id, "New drum background");
+           // Obsolete. There is only 'New' drum tracks now.
+           //new IdListViewItem(0x41e, id, "New drum background");
            new IdListViewItem(0x414, id, "Wave background");
            new IdListViewItem(0x415, id, "Output background");
            new IdListViewItem(0x416, id, "Input background");
@@ -373,8 +374,10 @@ QColor* Appearance::globalConfigColorFromId(int id) const
 
       case 0x411: return &MusEGlobal::config.trackBg;       break;
       case 0x412: return &MusEGlobal::config.midiTrackBg;   break;
-      case 0x413: return &MusEGlobal::config.drumTrackBg;   break;
-      case 0x41e: return &MusEGlobal::config.newDrumTrackBg;break;
+      // Obsolete. There is only 'New' drum tracks now.
+      //case 0x413: return &MusEGlobal::config.drumTrackBg;   break;
+      //case 0x41e: return &MusEGlobal::config.newDrumTrackBg;break;
+      case 0x413: return &MusEGlobal::config.newDrumTrackBg;   break;
       case 0x414: return &MusEGlobal::config.waveTrackBg;   break;
       case 0x415: return &MusEGlobal::config.outputTrackBg; break;
       case 0x416: return &MusEGlobal::config.inputTrackBg;  break;
