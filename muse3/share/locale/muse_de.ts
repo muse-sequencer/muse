@@ -463,7 +463,7 @@ The font family is forced to &apos;Sans&apos;, which should
     <message>
         <location line="+8"/>
         <source>May require restarting MusE for best results</source>
-        <translation>Könnte einen Neustart von MusE erfordern für optimale Ergebnisse</translation>
+        <translation>Neustart von MusE könnte erforderlich sein</translation>
     </message>
     <message>
         <location line="+53"/>
@@ -5055,7 +5055,7 @@ Turn off to reduce clutter.</source>
     <message>
         <location line="+10"/>
         <source>Sta&amp;rt with song</source>
-        <translation>Mit Lied starten</translation>
+        <translation>Mit &amp;Lied starten</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -5686,7 +5686,7 @@ einen höheren Wert.</translation>
     <message>
         <location line="+7"/>
         <source>Send instrument controller default values if none in song, at init or rewind</source>
-        <translation>Standardwerte für Instrumentencontroller senden falls keine vorhanden (beim Init/Rewind)</translation>
+        <translation>Standardwerte für Instrumentencontroller senden (bei Init/Rewind)</translation>
     </message>
     <message>
         <location line="-189"/>
@@ -8964,7 +8964,7 @@ To apply the changes, please restart MusE.</source>
     <message>
         <location line="+31"/>
         <source>Fu&amp;nctions</source>
-        <translation>Fu&amp;nktionen</translation>
+        <translation>&amp;Funktionen</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -13381,7 +13381,7 @@ Alternativ das Lied mit dem Befehl &quot;Sichern&quot; im Menü &quot;Datei&quot
     <message>
         <location line="+32"/>
         <source>&amp;View</source>
-        <translation>&amp;Zeigen</translation>
+        <translation>An&amp;sicht</translation>
     </message>
     <message>
         <location line="+34"/>
@@ -13391,7 +13391,7 @@ Alternativ das Lied mit dem Befehl &quot;Sichern&quot; im Menü &quot;Datei&quot
     <message>
         <location line="+29"/>
         <source>&amp;Audio</source>
-        <translation>&amp;Audio</translation>
+        <translation type="unfinished">A&amp;udio</translation>
     </message>
     <message>
         <source>A&amp;utomation</source>
