@@ -280,16 +280,17 @@ bool MusE::importMidi(const QString name, bool merge)
                         MusECore::MidiTrack* track = new MusECore::MidiTrack();
                         if ((*t)->_isDrumTrack)
                         {
-                           if (MusEGlobal::config.importMidiNewStyleDrum)
+// Obsolete. There is only 'New' drum tracks now.
+//                            if (MusEGlobal::config.importMidiNewStyleDrum)
                               track->setType(MusECore::Track::NEW_DRUM);
-                           else
-                              track->setType(MusECore::Track::DRUM);
+//                            else
+//                               track->setType(MusECore::Track::DRUM);
                         }
                               
                         track->setOutChannel(channel);
                         track->setOutPort(port);
 
-                        MusECore::MidiPort* mport = &MusEGlobal::midiPorts[port];
+//                         MusECore::MidiPort* mport = &MusEGlobal::midiPorts[port];
                         buildMidiEventList(&track->events, el, track, division, first, false); // Don't do loops.
                         first = false;
 
@@ -299,28 +300,29 @@ bool MusE::importMidi(const QString name, bool merge)
                         //if (channel == 9 && instr->midiType() != MT_UNKNOWN) {
                         MusECore::ciMidiFilePort imp = usedPortMap->find(port);
                         if(imp != usedPortMap->end() && imp->second._isStandardDrums && channel == 9) { // A bit HACKISH, see above
-                           if (MusEGlobal::config.importMidiNewStyleDrum)
+// Obsolete. There is only 'New' drum tracks now.
+//                            if (MusEGlobal::config.importMidiNewStyleDrum)
                               track->setType(MusECore::Track::NEW_DRUM);
-                           else
-                           {
-                              track->setType(MusECore::Track::DRUM);
-                              // remap drum pitch with drumOutmap (was: Inmap. flo93 thought this was wrong)
-                              for (MusECore::iEvent i = track->events.begin(); i != track->events.end(); ++i) {
-                                    MusECore::Event ev  = i->second;
-                                    if (ev.isNote()) {
-                                          int pitch = MusEGlobal::drumOutmap[ev.pitch()];
-                                          ev.setPitch(pitch);
-                                          }
-                                    else
-                                    if(ev.type() == MusECore::Controller)
-                                    {
-                                      int ctl = ev.dataA();
-                                      MusECore::MidiController *mc = mport->drumController(ctl);
-                                      if(mc)
-                                        ev.setA((ctl & ~0xff) | MusEGlobal::drumOutmap[ctl & 0x7f]);
-                                    }
-                              }
-                           }
+//                            else
+//                            {
+//                               track->setType(MusECore::Track::DRUM);
+//                               // remap drum pitch with drumOutmap (was: Inmap. flo93 thought this was wrong)
+//                               for (MusECore::iEvent i = track->events.begin(); i != track->events.end(); ++i) {
+//                                     MusECore::Event ev  = i->second;
+//                                     if (ev.isNote()) {
+//                                           int pitch = MusEGlobal::drumOutmap[ev.pitch()];
+//                                           ev.setPitch(pitch);
+//                                           }
+//                                     else
+//                                     if(ev.type() == MusECore::Controller)
+//                                     {
+//                                       int ctl = ev.dataA();
+//                                       MusECore::MidiController *mc = mport->drumController(ctl);
+//                                       if(mc)
+//                                         ev.setA((ctl & ~0xff) | MusEGlobal::drumOutmap[ctl & 0x7f]);
+//                                     }
+//                               }
+//                            }
                         }
                               
                         processTrack(track);

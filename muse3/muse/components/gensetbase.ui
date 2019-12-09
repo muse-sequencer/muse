@@ -1348,9 +1348,9 @@ Adjusts responsiveness of audio controls and
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
-            <width>556</width>
-            <height>479</height>
+            <y>-65</y>
+            <width>560</width>
+            <height>517</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -1689,7 +1689,7 @@ Certain operations will also force them to be resent,
            <item>
             <widget class="QGroupBox" name="groupBox_3">
              <property name="title">
-              <string>Record new style drum tracks</string>
+              <string>Record drum tracks</string>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_5">
               <property name="spacing">
@@ -1921,7 +1921,7 @@ Certain operations will also force them to be resent,
                <x>0</x>
                <y>0</y>
                <width>534</width>
-               <height>588</height>
+               <height>758</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
@@ -2455,43 +2455,6 @@ left button behave like the middle button in such areas.</string>
          </layout>
         </widget>
        </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_4">
-         <property name="title">
-          <string>Drum tracks</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout9">
-          <item row="0" column="0">
-           <widget class="QRadioButton" name="onlyOldDrumBtn">
-            <property name="text">
-             <string>Only offer old-s&amp;tyle drumtracks</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QRadioButton" name="onlyNewDrumBtn">
-            <property name="text">
-             <string>Only offer new-style &amp;drumtracks</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QRadioButton" name="preferOldDrumBtn">
-            <property name="text">
-             <string>Prefer old-style drumtrac&amp;ks</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QRadioButton" name="preferNewDrumBtn">
-            <property name="text">
-             <string>Prefer &amp;new-style drumtracks</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab_2">
@@ -2550,8 +2513,8 @@ left button behave like the middle button in such areas.</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>546</width>
-               <height>387</height>
+               <width>560</width>
+               <height>368</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
