@@ -404,16 +404,23 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       QFontMetrics fm1 = header->fontMetrics();
       int fw = 11;
 
-      header->setColumnLabel(tr("#"), COL_TRACK_IDX, 10);
-      //header->setColumnLabel(QString(), COL_TRACK_IDX);
+      // Add hints for translators (//:)
+      header->setColumnLabel("#", COL_TRACK_IDX, 10);
+      //: Input monitor
       header->setColumnLabel(tr("I"), COL_INPUT_MONITOR);
+      //: Record
       header->setColumnLabel(tr("R"), COL_RECORD);
+      //: Mute
       header->setColumnLabel(tr("M"), COL_MUTE);
+      //: Solo
       header->setColumnLabel(tr("S"), COL_SOLO);
+      //: Class (track type)
       header->setColumnLabel(tr("C"), COL_CLASS);
       header->setColumnLabel(tr("Track"), COL_NAME, 100);
       header->setColumnLabel(tr("Port"), COL_OPORT, 60);
+      //: Channel
       header->setColumnLabel(tr("Ch"), COL_OCHANNEL);
+      //: Time lock
       header->setColumnLabel(tr("T"), COL_TIMELOCK);
       header->setColumnLabel(tr("Automation"), COL_AUTOMATION, 75);
       header->setColumnLabel(tr("Clef"), COL_CLEF, 75);

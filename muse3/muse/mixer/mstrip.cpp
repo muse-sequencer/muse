@@ -1434,7 +1434,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       _upperStackTabButtonB->setAlignment(Qt::AlignCenter);
       _upperStackTabButtonA->setToolTip(tr("Palette A"));
       _upperStackTabButtonB->setToolTip(tr("Palette B"));
+      //: Palette A
       _upperStackTabButtonA->setText(tr("A"));
+      //: Palette B
       _upperStackTabButtonB->setText(tr("B"));
       _upperStackTabButtonA->setHasOffMode(true);
       _upperStackTabButtonB->setHasOffMode(true);
