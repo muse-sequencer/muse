@@ -103,6 +103,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       vbox->setSpacing (0);
       kbox->setSpacing(0);
 
+      //: Select controller
       selCtrl = new QPushButton(tr("S"), this);
       selCtrl->setContentsMargins(0, 0, 0, 0);
       selCtrl->setFocusPolicy(Qt::NoFocus);
@@ -112,7 +113,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
          QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
       selCtrl->setToolTip(tr("Select controller"));
       
-      // destroy button
+      //: Remove panel (destroy button)
       QPushButton* destroy = new QPushButton(tr("X"), this);
       destroy->setContentsMargins(0, 0, 0, 0);
       destroy->setFocusPolicy(Qt::NoFocus);

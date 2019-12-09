@@ -633,7 +633,9 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       //  Ordering is hardcoded in dlist.c ("Dcols")
       header = new MusEGui::Header(split1w1, "header");
       header->setFixedHeight(31);
+      //: hide
       header->setColumnLabel(tr("H"), COL_HIDE, 20);
+      //: mute
       header->setColumnLabel(tr("M"), COL_MUTE, 20);
       header->setColumnLabel(tr("Sound"), COL_NAME, 120);
       header->setColumnLabel(tr("Vol"), COL_VOLUME);
