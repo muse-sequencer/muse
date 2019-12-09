@@ -93,6 +93,15 @@ QString Header::columnLabel(int col)
 }
 
 //---------------------------------------------------------
+//   columnLabel
+//---------------------------------------------------------
+
+QIcon Header::columnIcon(int col)
+{
+    return itemModel->horizontalHeaderItem(col)->icon();
+}
+
+//---------------------------------------------------------
 //   setColumnLabel
 //---------------------------------------------------------
 
@@ -104,6 +113,19 @@ void Header::setColumnLabel(const QString & text, int col, int width )
       if (width > -1)
            resizeSection(col, width);
       }
+
+//---------------------------------------------------------
+//   setColumnIcon
+//---------------------------------------------------------
+
+void Header::setColumnIcon(QIcon & icon, int col, int width )
+{
+    QStandardItem *sitem = new QStandardItem(icon, QString("   "));
+    itemModel->setHorizontalHeaderItem(col, sitem);
+//    itemModel->setHeaderData(col, Qt::Horizontal, QVariant::fromValue(icon), Qt::DecorationRole);
+    if (width > -1)
+        resizeSection(col, width);
+}
 
 //---------------------------------------------------------
 //   setToolTip

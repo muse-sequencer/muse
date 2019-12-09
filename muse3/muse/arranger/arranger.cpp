@@ -400,23 +400,31 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       // set up the header
       header = new Header(tracklist, "header");
       header->setFixedHeight(31);
+//      header->setIconSize(QSize(18,18));
 
-      QFontMetrics fm1 = header->fontMetrics();
-      int fw = 11;
+//      QFontMetrics fm1 = header->fontMetrics();
+//      int fw = 11;
 
       header->setColumnLabel(tr("#"), COL_TRACK_IDX, 10);
       //header->setColumnLabel(QString(), COL_TRACK_IDX);
-      header->setColumnLabel(tr("I"), COL_INPUT_MONITOR);
-      header->setColumnLabel(tr("R"), COL_RECORD);
-      header->setColumnLabel(tr("M"), COL_MUTE);
-      header->setColumnLabel(tr("S"), COL_SOLO);
-      header->setColumnLabel(tr("C"), COL_CLASS);
+//      header->setColumnLabel(tr("I"), COL_INPUT_MONITOR);
+      header->setColumnIcon(*monitorOnSVGIcon, COL_INPUT_MONITOR);
+//      header->setColumnLabel(tr("R"), COL_RECORD);
+      header->setColumnIcon(*recArmOnSVGIcon, COL_RECORD);
+//      header->setColumnLabel(tr("M"), COL_MUTE);
+      header->setColumnIcon(*muteOnSVGIcon, COL_MUTE);
+//      header->setColumnLabel(tr("S"), COL_SOLO);
+      header->setColumnIcon(*soloOnSVGIcon, COL_SOLO);
+//      header->setColumnLabel(tr("C"), COL_CLASS);
+      header->setColumnIcon(*tracktypeSVGIcon, COL_CLASS);
       header->setColumnLabel(tr("Track"), COL_NAME, 100);
       header->setColumnLabel(tr("Port"), COL_OPORT, 60);
       header->setColumnLabel(tr("Ch"), COL_OCHANNEL);
       header->setColumnLabel(tr("T"), COL_TIMELOCK);
       header->setColumnLabel(tr("Automation"), COL_AUTOMATION, 75);
       header->setColumnLabel(tr("Clef"), COL_CLEF, 75);
+
+/*
 // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
 #if QT_VERSION >= 0x050b00
         for (unsigned i=0;i<custom_columns.size();i++)
@@ -434,13 +442,15 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
           header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET+i, MAX(fm1.width(custom_columns[i].name)+fw, 30));
         //header->resizeSection(COL_TRACK_IDX, fm1.width(header->columnLabel(COL_TRACK_IDX)) + fw);
         header->resizeSection(COL_INPUT_MONITOR, fm1.width(header->columnLabel(COL_INPUT_MONITOR)) + fw);
-        header->resizeSection(COL_RECORD, fm1.width(header->columnLabel(COL_RECORD)) + fw);
+        header->resizeSection(COL_RECORD, header->iconSize().width() + fw + 100);
+//        header->resizeSection(COL_RECORD, fm1.width(header->columnLabel(COL_RECORD)) + fw);
         header->resizeSection(COL_MUTE, fm1.width(header->columnLabel(COL_MUTE)) + fw);
         header->resizeSection(COL_SOLO, fm1.width(header->columnLabel(COL_SOLO)) + fw);
         header->resizeSection(COL_CLASS, fm1.width(header->columnLabel(COL_CLASS)) + fw);
         header->resizeSection(COL_OCHANNEL, fm1.width(header->columnLabel(COL_OCHANNEL)) + fw);
         header->resizeSection(COL_TIMELOCK, fm1.width(header->columnLabel(COL_TIMELOCK)) + fw);
 #endif
+*/
 
       header->setSectionResizeMode(COL_TRACK_IDX, QHeaderView::Interactive);
       header->setSectionResizeMode(COL_INPUT_MONITOR, QHeaderView::Fixed);

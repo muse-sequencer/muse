@@ -45,7 +45,9 @@ class Header : public QHeaderView {
       void writeStatus(int level, MusECore::Xml&) const;
       void readStatus(MusECore::Xml&);
       QString columnLabel(int col);
+      QIcon columnIcon(int col);
       void setColumnLabel( const QString & s, int col, int width = -1 );
+      void setColumnIcon(QIcon &icon, int col, int width = -1 );
       void setToolTip(int col, const QString &text);
       void setWhatsThis(int col, const QString &text);
       void mousePressEvent ( QMouseEvent * e );

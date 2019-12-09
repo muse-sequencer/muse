@@ -479,7 +479,7 @@ QIcon* noteSVGIcon;
 QIcon* metaSVGIcon;
 QIcon* ctrlSVGIcon;
 QIcon* sysexSVGIcon;
-
+QIcon* tracktypeSVGIcon;
 
 // tool icons
 QIcon* pencilIconSVG;
@@ -824,6 +824,7 @@ void initIcons(bool useThemeIconsIfPossible)
       metaSVGIcon       = new QIcon(":/svg/meta.svg");
       ctrlSVGIcon       = new QIcon(":/svg/ctrl.svg");
       sysexSVGIcon      = new QIcon(":/svg/sysex.svg");
+      tracktypeSVGIcon  = new QIcon(":/svg/tracktype.svg");
 
       filenewSVGIcon     = MICONSVG(new QIcon(":/svg/filenew.svg"), "document-new");
       filetemplateSVGIcon = new QIcon(":/svg/filefromtemplate.svg");
@@ -1148,6 +1149,7 @@ void deleteIcons()
       delete metaSVGIcon;
       delete ctrlSVGIcon;
       delete sysexSVGIcon;
+      delete tracktypeSVGIcon;
 
       delete pencilIconSVG;
       delete glueIconSVG;
