@@ -465,6 +465,15 @@ void WaveEventBase::readAudio(unsigned frame, float** buffer, int channel, int n
 //   }
 //   return;
 
+  //
+  //
+  //
+  //
+  // LEFT OFF HERE: Looping problem! Does not loop! Need to seek the file! 20191210
+  //
+  //
+  //
+  //
 
   if(!f.isNull())
   {  
