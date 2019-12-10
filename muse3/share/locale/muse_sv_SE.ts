@@ -793,11 +793,11 @@ The font family is forced to &apos;Sans&apos;, which should
     </message>
     <message>
         <source>Use new-style drum tracks</source>
-        <translation>Använd nya typen trumspår</translation>
+        <translation type="vanished">Använd nya typen trumspår</translation>
     </message>
     <message>
         <source>Use old-style drum tracks</source>
-        <translation>Använd gamla typen trumspår</translation>
+        <translation type="vanished">Använd gamla typen trumspår</translation>
     </message>
     <message>
         <source>Default instrument:</source>
@@ -3946,7 +3946,7 @@ eller i annatfall, konfigurera automatiskt</translation>
     </message>
     <message>
         <source>Record new style drum tracks</source>
-        <translation>Spela in trumspår av nya typen</translation>
+        <translation type="vanished">Spela in trumspår av nya typen</translation>
     </message>
     <message>
         <source>Record all instruments</source>
@@ -3966,7 +3966,7 @@ eller i annatfall, konfigurera automatiskt</translation>
     </message>
     <message>
         <source>Drum tracks</source>
-        <translation>Trumspår</translation>
+        <translation type="vanished">Trumspår</translation>
     </message>
     <message>
         <source>Only offer old-style drumtracks</source>
@@ -4056,14 +4056,6 @@ Disable to use an alternate standard
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Only offer new-style &amp;drumtracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Prefer &amp;new-style drumtracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Warn if opening file versions different than current version</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4105,10 +4097,6 @@ Disable to use an alternate standard
     </message>
     <message>
         <source>Ordered by priority. Changes take effect on restart.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Force a full plugin rescan on next restart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4177,10 +4165,6 @@ Disable to use an alternate standard
     </message>
     <message>
         <source>Sample rate:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4422,15 +4406,11 @@ Turn off to reduce clutter.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Only offer old-s&amp;tyle drumtracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Prefer old-style drumtrac&amp;ks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Traditional MusE SDI</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Record drum tracks</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6707,18 +6687,22 @@ Högerklick för at visa GUI.</translation>
     </message>
     <message>
         <source>R</source>
+        <extracomment>Record</extracomment>
         <translation></translation>
     </message>
     <message>
         <source>M</source>
+        <extracomment>Mute</extracomment>
         <translation></translation>
     </message>
     <message>
         <source>S</source>
+        <extracomment>Solo</extracomment>
         <translation></translation>
     </message>
     <message>
         <source>C</source>
+        <extracomment>Class (track type)</extracomment>
         <translation></translation>
     </message>
     <message>
@@ -6731,10 +6715,12 @@ Högerklick för at visa GUI.</translation>
     </message>
     <message>
         <source>Ch</source>
+        <extracomment>Channel</extracomment>
         <translation></translation>
     </message>
     <message>
         <source>T</source>
+        <extracomment>Time lock</extracomment>
         <translation></translation>
     </message>
     <message>
@@ -6785,11 +6771,12 @@ See also Settings: Automatically Monitor On Record Arm.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>#</source>
+        <source>I</source>
+        <extracomment>Input monitor</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>I</source>
+        <source>Display mixer strip for current track</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7634,6 +7621,7 @@ Number of xruns
     <name>MusEGui::CtrlPanel</name>
     <message>
         <source>S</source>
+        <extracomment>Select controller</extracomment>
         <translation></translation>
     </message>
     <message>
@@ -7642,6 +7630,7 @@ Number of xruns
     </message>
     <message>
         <source>X</source>
+        <extracomment>Remove panel (destroy button)</extracomment>
         <translation></translation>
     </message>
     <message>
@@ -8143,6 +8132,7 @@ Select the destination part, then try again.</source>
     </message>
     <message>
         <source>M</source>
+        <extracomment>mute</extracomment>
         <translation>M</translation>
     </message>
     <message>
@@ -8263,6 +8253,7 @@ Select the destination part, then try again.</source>
     </message>
     <message>
         <source>H</source>
+        <extracomment>hide</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8616,10 +8607,12 @@ Clean up the instrument!</source>
     </message>
     <message>
         <source>H</source>
+        <extracomment>hide</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>M</source>
+        <extracomment>mute</extracomment>
         <translation type="unfinished">M</translation>
     </message>
     <message>
@@ -10073,10 +10066,12 @@ Proceed?</source>
     </message>
     <message>
         <source>A</source>
+        <extracomment>Palette A</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>B</source>
+        <extracomment>Palette B</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10301,72 +10296,8 @@ till flera kopplade slav-enheter.</translation>
         <translation>Enhetsnamn</translation>
     </message>
     <message>
-        <source>c</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>k</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>r</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>m</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>t</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>type</source>
-        <translation>typ</translation>
-    </message>
-    <message>
-        <source>rid</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>rc</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>rr</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>rm</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>rt</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>rw</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>tid</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>tc</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>tr</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>tm</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>tt</source>
-        <translation></translation>
+        <translation type="vanished">typ</translation>
     </message>
     <message>
         <source>MusE</source>
@@ -10450,8 +10381,8 @@ Manually rewinding the device before
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>s</source>
-        <translation type="unfinished"></translation>
+        <source>Type</source>
+        <translation type="unfinished">Typ</translation>
     </message>
 </context>
 <context>

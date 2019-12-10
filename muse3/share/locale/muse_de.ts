@@ -886,7 +886,7 @@ The font family is forced to &apos;Sans&apos;, which should
 <context>
     <name>ConfigMidiFileBase</name>
     <message>
-        <location filename="../../muse/components/configmidifilebase.ui" line="+545"/>
+        <location filename="../../muse/components/configmidifilebase.ui" line="+527"/>
         <source>&amp;OK</source>
         <translation>&amp;Bestätigen</translation>
     </message>
@@ -896,7 +896,7 @@ The font family is forced to &apos;Sans&apos;, which should
         <translation>&amp;Abbrechen</translation>
     </message>
     <message>
-        <location line="-392"/>
+        <location line="-401"/>
         <source>0 (single track)</source>
         <translation>0 (einzelne Spur)</translation>
     </message>
@@ -941,7 +941,7 @@ The font family is forced to &apos;Sans&apos;, which should
         <translation>Copyright:</translation>
     </message>
     <message>
-        <location line="-247"/>
+        <location line="-220"/>
         <source>MusE: Config Midi File Import/Export</source>
         <translation>MusE: Konfiguriere MIDI-Datei Import/Export</translation>
     </message>
@@ -985,21 +985,11 @@ The font family is forced to &apos;Sans&apos;, which should
         <translation>Instrumentenamen-Metadaten haben Priorität über Mode-SysEx-Daten</translation>
     </message>
     <message>
-        <location line="+22"/>
-        <source>Use new-style drum tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Use old-style drum tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Export:</source>
         <translation type="vanished">Export:</translation>
     </message>
     <message>
-        <location line="+164"/>
+        <location line="+175"/>
         <source>Enable extended smf format (currently not implemented)</source>
         <translation>Aktiviere erweitertes SMF-Format (momentan nicht implementiert)</translation>
     </message>
@@ -4559,7 +4549,7 @@ Fenster</translation>
         <translation>MusE: Globale Einstellungen</translation>
     </message>
     <message>
-        <location line="+855"/>
+        <location line="+852"/>
         <source>Audio</source>
         <translation>Audio</translation>
     </message>
@@ -4846,7 +4836,12 @@ Certain operations will also force them to be resent,
         <translation>Midi-Controller optimieren</translation>
     </message>
     <message>
-        <location line="+38"/>
+        <location line="+23"/>
+        <source>Record drum tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
         <source>Record a&amp;ll instruments</source>
         <translation>Alle Instrumente au&amp;fnehmen</translation>
     </message>
@@ -4859,7 +4854,7 @@ Certain operations will also force them to be resent,
     <message>
         <location line="+6"/>
         <source>Whether to enable latency correction/compensation:</source>
-        <translation type="unfinished"></translation>
+        <translation>Latenzkorrektur/-kompensation soll aktiviert werden:</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -4874,7 +4869,7 @@ Certain operations will also force them to be resent,
     <message>
         <location line="+6"/>
         <source>Whether completely independent branches share a common project-wide latency:</source>
-        <translation type="unfinished"></translation>
+        <translation>Vollständig unabhängige Zweige sollen die projektweite Latenz gemeinsam nutzen:</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -4884,37 +4879,37 @@ Certain operations will also force them to be resent,
     <message>
         <location line="+10"/>
         <source>Unterminated branches</source>
-        <translation type="unfinished"></translation>
+        <translation>Nicht terminierte Zweige</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Whether unterminated branches participate in latency correction/compensation:</source>
-        <translation type="unfinished"></translation>
+        <translation>Nicht terminierte Zweige sollen an Latenzkorrektur/-kompensation teilnehmen:</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Unterminated input branches</source>
-        <translation type="unfinished"></translation>
+        <translation>Nicht terminierte Input-Zweige</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Unterminated output branches</source>
-        <translation type="unfinished"></translation>
+        <translation>Nicht terminierte Output-Zweige</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Track monitoring</source>
-        <translation type="unfinished"></translation>
+        <translation>Track Monitoring</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Whether track monitor buttons affect latency correction/compensation:</source>
-        <translation type="unfinished"></translation>
+        <translation>Track-Monitor-Schaltflächen sollen die Latenzkorrektur/-kompensation beeinflussen:</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Monitoring affects latency</source>
-        <translation type="unfinished"></translation>
+        <translation>Monitoring beeinflusst die Latenz</translation>
     </message>
     <message>
         <location line="+322"/>
@@ -4932,12 +4927,12 @@ Certain operations will also force them to be resent,
         <translation>Notennamen auf Events in Pianoroll anzeigen</translation>
     </message>
     <message>
-        <location line="+177"/>
+        <location line="+140"/>
         <source>Traditional MusE SDI</source>
-        <translation>Traditionelles MusE SDI</translation>
+        <translation>Klassisches SDI</translation>
     </message>
     <message>
-        <location line="-184"/>
+        <location line="-147"/>
         <source>Monitor on record-arm automatically</source>
         <translation>Automatisches Monitoring bei Aufnahme-Scharfschaltung</translation>
     </message>
@@ -5038,7 +5033,7 @@ Turn off to reduce clutter.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1872"/>
+        <location line="-1869"/>
         <source>Start MusE</source>
         <translation>MusE starten</translation>
     </message>
@@ -5073,7 +5068,7 @@ Turn off to reduce clutter.</source>
         <translation>Zeige &quot;Wussten Sie?&quot;-Dialog</translation>
     </message>
     <message>
-        <location line="+821"/>
+        <location line="+818"/>
         <source>Audio driver settings (require restart)</source>
         <translation>Audio-Driver Einstellungen (erfordert Neustart)</translation>
     </message>
@@ -5119,29 +5114,26 @@ Benign XCB connection errors may still
         <translation>MDI-Subwindows maximiert öffnen</translation>
     </message>
     <message>
-        <location line="+24"/>
         <source>Drum tracks</source>
-        <translation>Schlagzeugspuren</translation>
+        <translation type="vanished">Schlagzeugspuren</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Only offer old-s&amp;tyle drumtracks</source>
-        <translation>Nur old-style Schlagzeugspuren anbieten</translation>
+        <translation type="vanished">Nur old-style Schlagzeugspuren anbieten</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Prefer old-style drumtrac&amp;ks</source>
-        <translation>Old-style Schlagzeugspuren bevorzugen</translation>
+        <translation type="vanished">Old-style Schlagzeugspuren bevorzugen</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+25"/>
         <source>GUI Style</source>
         <translation>GUI-Stil</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>MDI-subwindowness and sharing menus</source>
-        <translation>Unterfenster und Menü-Teilen</translation>
+        <translation>MDI-Unterfenster und gemeinsame Nutzung von Menüs</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -5155,12 +5147,12 @@ Benign XCB connection errors may still
     <message>
         <location line="+14"/>
         <source>Cakewalk-like MDI</source>
-        <translation>Cakewalk-ähnliches MDI</translation>
+        <translation>MDI (wie Cakewalk)</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Borland-/Mac-like MDI</source>
-        <translation>Borland-/Mac-ähnliches MDI</translation>
+        <translation>MDI (wie Borland/Mac)</translation>
     </message>
     <message>
         <location line="+59"/>
@@ -5178,7 +5170,7 @@ Benign XCB connection errors may still
         <translation>Abb&amp;rechen</translation>
     </message>
     <message>
-        <location line="-2554"/>
+        <location line="-2514"/>
         <source>Application</source>
         <translation>Anwendung</translation>
     </message>
@@ -5302,7 +5294,7 @@ Benign XCB connection errors may still
         <translation type="vanished">min. Schiebereglerwert</translation>
     </message>
     <message>
-        <location line="+1091"/>
+        <location line="+1088"/>
         <source>Enable denormal protection</source>
         <translation>Denormal-Schutz aktivieren</translation>
     </message>
@@ -5345,7 +5337,7 @@ Benign XCB connection errors may still
         <translation>16</translation>
     </message>
     <message>
-        <location line="-1082"/>
+        <location line="-1079"/>
         <source>Project directory</source>
         <translation>Projektverzeichnis</translation>
     </message>
@@ -5423,15 +5415,10 @@ oder konfiguriere sonst automatisch</translation>
     <message>
         <location line="+10"/>
         <source>Ordered by priority. Changes take effect on restart.</source>
-        <translation>Nach Priorität sortiert. Änderungen werden nach Restart aktiv.</translation>
+        <translation>Nach Priorität sortieren (Änderungen werden nach Neustart aktiv).</translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>Force a full plugin rescan on next restart</source>
-        <translation>Full-Plugin-Rescan beim Restart erzwingen</translation>
-    </message>
-    <message>
-        <location line="+3"/>
         <source>The plugin cache is used for safety
  and speed. It automatically rescans
  when any of the given directories
@@ -5445,7 +5432,7 @@ oder konfiguriere sonst automatisch</translation>
     <message>
         <location line="+10"/>
         <source>&amp;Force plugin rescan and cache recreation on next restart</source>
-        <translation>&amp;Beim Restart Plugin-Rescan und Cache-Auffrischung erzwingen</translation>
+        <translation>&amp;Full-Plugin-Rescan und Cache-Auffrischung beim Neustart erzwingen</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -5476,7 +5463,9 @@ oder konfiguriere sonst automatisch</translation>
         <location line="+6"/>
         <source>NOTE: Ensure the directory containing core LV2 bundles is included
  (typically /usr/lib/lv2). Otherwise all plugins may not load properly.</source>
-        <translation>Hinweis: Verzeichnis mit Core-LV2-Bundles muss enthalten sein (normalerweise /usr/lib/lv2). Sonst können eventuell nicht alle Plugins korrekt geladen werden.</translation>
+        <translation>HINWEIS: Verzeichnis mit Core-LV2-Bundles muss enthalten sein
+(typischerweise /usr/lib/lv2).
+Sonst können eventuell nicht alle Plugins korrekt geladen werden.</translation>
     </message>
     <message>
         <location line="+45"/>
@@ -5513,12 +5502,7 @@ oder konfiguriere sonst automatisch</translation>
         <translation>Sampling-Rate:</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="+13"/>
         <source>Audio backend:</source>
         <translation>Audio Backend:</translation>
     </message>
@@ -5579,7 +5563,7 @@ sein sollten. Einstellung erfordert Neustart.</translation>
         <location line="+7"/>
         <source>Minimum audio controller process period (samples).
 </source>
-        <translation>Minimale Audiocontroller-Periode (Samples).</translation>
+        <translation>Minimale Audiocontroller-Prozessperiode (Samples).</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -5711,22 +5695,19 @@ einen höheren Wert.</translation>
 (Ticks/Viertelnote)</translation>
     </message>
     <message>
-        <location line="+978"/>
         <source>Only offer new-style &amp;drumtracks</source>
-        <translation>Nur &amp;new-style Schlagzeugspuren anbieten</translation>
+        <translation type="vanished">Nur &amp;new-style Schlagzeugspuren anbieten</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Prefer &amp;new-style drumtracks</source>
-        <translation>Ne&amp;w-style Schlagzeugspuren bevorzugen</translation>
+        <translation type="vanished">Ne&amp;w-style Schlagzeugspuren bevorzugen</translation>
     </message>
     <message>
-        <location line="-796"/>
         <source>Record new style drum tracks</source>
-        <translation>New-style Schlagzeugspuren aufnehmen</translation>
+        <translation type="vanished">New-style Schlagzeugspuren aufnehmen</translation>
     </message>
     <message>
-        <location line="+182"/>
+        <location line="+378"/>
         <source>GUI Behaviour</source>
         <translation>GUI-Verhalten</translation>
     </message>
@@ -6317,7 +6298,7 @@ Nur benutzerdefinierte Presets können gelöscht werden.</translation>
         <location line="+10"/>
         <location line="+13"/>
         <source>Not supported yet</source>
-        <translation type="unfinished"></translation>
+        <translation>Noch nicht unterstützt</translation>
     </message>
     <message>
         <location line="+48"/>
@@ -8201,7 +8182,7 @@ Zeilenumbruch aber nur bei Leerzeichen.</translation>
         <translation>Benutzerdefiniert</translation>
     </message>
     <message>
-        <location line="+143"/>
+        <location line="+145"/>
         <source>Open custom style sheet</source>
         <translation>Custom-Stylesheet öffnen</translation>
     </message>
@@ -8211,7 +8192,7 @@ Zeilenumbruch aber nur bei Leerzeichen.</translation>
         <translation>Custom-Stylesheet entfernen</translation>
     </message>
     <message>
-        <location line="+270"/>
+        <location line="+274"/>
         <source>Keep Qt system style</source>
         <translation>Beim Qt-Systemstil belassen</translation>
     </message>
@@ -8531,38 +8512,47 @@ See also Settings: Automatically Monitor On Record Arm.</source>
         <translation>Spurinfo</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Display mixer strip for current track</source>
+        <translation>Mixerstrip für aktuellen Track anzeigen</translation>
+    </message>
+    <message>
         <location line="+10"/>
         <source>Alt</source>
         <translation>Alt</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>#</source>
-        <translation>#</translation>
+        <translation type="vanished">#</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+20"/>
         <source>I</source>
+        <extracomment>Input monitor</extracomment>
         <translation>E</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>R</source>
+        <extracomment>Record</extracomment>
         <translation>R</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>M</source>
+        <extracomment>Mute</extracomment>
         <translation>M</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>S</source>
+        <extracomment>Solo</extracomment>
         <translation>S</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>C</source>
+        <extracomment>Class (track type)</extracomment>
         <translation>C</translation>
     </message>
     <message>
@@ -8576,13 +8566,15 @@ See also Settings: Automatically Monitor On Record Arm.</source>
         <translation>Port</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Ch</source>
+        <extracomment>Channel</extracomment>
         <translation>K</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>T</source>
+        <extracomment>Time lock</extracomment>
         <translation>T</translation>
     </message>
     <message>
@@ -9089,7 +9081,7 @@ Um Sie zu übernehmen, starten Sie MusE bitte neu.
     <message>
         <location line="-8"/>
         <source>Volume/gain</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Lautstärke/Verstärkung</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -9597,8 +9589,9 @@ Number of xruns
 <context>
     <name>MusEGui::CtrlPanel</name>
     <message>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="+106"/>
+        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="+107"/>
         <source>S</source>
+        <extracomment>Select controller</extracomment>
         <translation>S</translation>
     </message>
     <message>
@@ -9629,6 +9622,7 @@ Number of xruns
     <message>
         <location line="-146"/>
         <source>X</source>
+        <extracomment>Remove panel (destroy button)</extracomment>
         <translation>X</translation>
     </message>
     <message>
@@ -10372,13 +10366,15 @@ Select the destination part, then try again.</source>
         <translation type="vanished">Controlleransicht hinzufügen</translation>
     </message>
     <message>
-        <location line="+126"/>
+        <location line="+127"/>
         <source>H</source>
+        <extracomment>hide</extracomment>
         <translation type="unfinished">H</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>M</source>
+        <extracomment>mute</extracomment>
         <translation>M</translation>
     </message>
     <message>
@@ -10536,7 +10532,7 @@ I&apos;ll only display the old-style drumtracks in this editor, dropping the oth
     <message>
         <location line="+1"/>
         <source>NPRN</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">NRPN</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -10569,13 +10565,15 @@ I&apos;ll only display the old-style drumtracks in this editor, dropping the oth
         <translation type="unfinished">Aftertouch</translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+38"/>
         <source>H</source>
+        <extracomment>hide</extracomment>
         <translation type="unfinished">H</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>M</source>
+        <extracomment>mute</extracomment>
         <translation type="unfinished">M</translation>
     </message>
     <message>
@@ -11312,7 +11310,7 @@ With the cursor tool you can:
 <context>
     <name>MusEGui::GlobalSettingsConfig</name>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="+942"/>
+        <location filename="../../muse/components/genset.cpp" line="+946"/>
         <source>MusE: Choose start template or song</source>
         <translation>MusE: Lied oder eine Vorlage für den Start wählen</translation>
     </message>
@@ -12205,7 +12203,7 @@ Proceed?</source>
     <message>
         <location line="+1"/>
         <source>NPRN</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">NRPN</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -12380,13 +12378,15 @@ Proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>A</source>
+        <extracomment>Palette A</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>B</source>
+        <extracomment>Palette B</extracomment>
         <translation type="unfinished">B</translation>
     </message>
     <message>
@@ -12602,6 +12602,11 @@ Proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+92"/>
+        <source>Type</source>
+        <translation type="unfinished">Typ</translation>
+    </message>
+    <message>
         <source>Midi clock input detected.
 Current port actually used is red.
 Click to force a port to be used.</source>
@@ -12610,7 +12615,7 @@ Der momentan verwendete Anschluss ist rot.
 Klicken Sie, um einen anderen Anschluss zu erzwingen.</translation>
     </message>
     <message>
-        <location line="-28"/>
+        <location line="-120"/>
         <source>Midi realtime input detected, including
  start/stop/continue, and song position.</source>
         <translation>Midi-Echtzeit-Eingang erkannt, einschließlich
@@ -12767,97 +12772,79 @@ Echtzeitnachrichten an einige oder alle weiterleiten kann.</translation>
         <translation>Gerätename</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>s</source>
-        <translation type="unfinished">Sek</translation>
+        <translation type="obsolete">Sek</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>c</source>
-        <translation>c</translation>
+        <translation type="vanished">c</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>k</source>
-        <translation>k</translation>
+        <translation type="vanished">k</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>r</source>
-        <translation>r</translation>
+        <translation type="vanished">r</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>m</source>
-        <translation>m</translation>
+        <translation type="vanished">m</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>t</source>
-        <translation>t</translation>
+        <translation type="vanished">t</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>type</source>
-        <translation>Typ</translation>
+        <translation type="vanished">Typ</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>rid</source>
-        <translation>rid</translation>
+        <translation type="vanished">rid</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>rc</source>
-        <translation>rc</translation>
+        <translation type="vanished">rc</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>rr</source>
-        <translation>rr</translation>
+        <translation type="vanished">rr</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>rm</source>
-        <translation>rm</translation>
+        <translation type="vanished">rm</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>rt</source>
-        <translation>rt</translation>
+        <translation type="vanished">rt</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>rw</source>
-        <translation>rw</translation>
+        <translation type="vanished">rw</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>tid</source>
-        <translation>tid</translation>
+        <translation type="vanished">tid</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>tc</source>
-        <translation>tc</translation>
+        <translation type="vanished">tc</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>tr</source>
-        <translation>tr</translation>
+        <translation type="vanished">tr</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>tm</source>
-        <translation>tm</translation>
+        <translation type="vanished">tm</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>tt</source>
-        <translation>tt</translation>
+        <translation type="vanished">tt</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+26"/>
         <source>None</source>
         <translation>Kein</translation>
     </message>
@@ -13813,7 +13800,7 @@ Aktuelles Projekt speichern?</translation>
         <translation>&amp;Überspringen</translation>
     </message>
     <message>
-        <location filename="../../muse/conf.cpp" line="+1680"/>
+        <location filename="../../muse/conf.cpp" line="+1685"/>
         <source>Load configuration colors</source>
         <translation>Farbenkonfiguration laden</translation>
     </message>
@@ -14041,7 +14028,7 @@ failed: </source>
 schlug fehl: </translation>
     </message>
     <message>
-        <location line="+440"/>
+        <location line="+442"/>
         <source>Import part is only valid for midi and wave tracks!</source>
         <translation>Part importieren ist nur möglich für MIDI und WAVE-Spuren!</translation>
     </message>
@@ -15153,7 +15140,7 @@ Right-click on plugins to add/remove from a category.</source>
     <message>
         <location line="+19"/>
         <source>Show names</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Namen anzeigen</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -15739,7 +15726,7 @@ Titel ist nicht einzigartig</translation>
     <message>
         <location line="+7"/>
         <source>Monitor on record-arm automatically</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Automatisches Monitoring bei Aufnahme-Scharfschaltung</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -15821,18 +15808,18 @@ Titel ist nicht einzigartig</translation>
         <location line="+452"/>
         <location line="+65"/>
         <source>Show gui</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">GUI anzeigen</translation>
     </message>
     <message>
         <location line="-60"/>
         <location line="+65"/>
         <source>Show native gui</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Native GUI anzeigen</translation>
     </message>
     <message>
         <location line="+422"/>
         <source>Clear automation</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Lösche Automatisierung</translation>
     </message>
     <message>
         <source>please choose a unique track name</source>
@@ -15996,7 +15983,7 @@ Titel ist nicht einzigartig</translation>
     <message>
         <location line="-18"/>
         <source>Reset the track&apos;s drum map with instrument defaults?</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Die Schlagzeugbelegung auf Standardwerte zurücksetzen?</translation>
     </message>
     <message>
         <location line="+19"/>
@@ -16037,7 +16024,7 @@ Titel ist nicht einzigartig</translation>
     <message>
         <location filename="../../muse/transport.cpp" line="+152"/>
         <source>Use mastertrack tempo</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Masterspur-Tempo verwenden</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -17192,7 +17179,7 @@ erweitert werden muss um nicht mehr als</translation>
         <translation>Bitte wählen Sie erst den Bereich für das Crescendo mit den Bereichsmarkern aus.</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="-3323"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="-3325"/>
         <source>Controller !</source>
         <translation>Kontroller !</translation>
     </message>
@@ -17345,7 +17332,7 @@ erweitert werden muss um nicht mehr als</translation>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="+2612"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="+2614"/>
         <location filename="../../muse/components/editevent.cpp" line="-271"/>
         <source>Cannot convert sysex string</source>
         <translation>Sysex Kette nicht umwandelbar</translation>

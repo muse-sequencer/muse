@@ -59,6 +59,7 @@ if (UPDATE_TRANSLATIONS)
             s1
             simpledrums2
             vam
+            components
             )
 endif (UPDATE_TRANSLATIONS)
 

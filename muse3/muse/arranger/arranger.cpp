@@ -378,6 +378,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       trackInfoButton  = new CompactToolButton(this);
       trackInfoButton->setContentsMargins(0, 0, 0, 0);
       trackInfoButton->setText(tr("TrackInfo"));
+      trackInfoButton->setToolTip(tr("Display mixer strip for current track"));
       trackInfoButton->setCheckable(true);
       trackInfoButton->setChecked(showTrackinfoFlag);
       trackInfoButton->setFocusPolicy(Qt::NoFocus);
