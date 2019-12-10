@@ -1702,7 +1702,10 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       if (ex > x2)
             ex = x2;
 
-      int pos = (xpos + sx) * xScale + event.spos() - event.frame() - px;
+      const int ev_spos = event.spos();
+      
+//       int pos = (xpos + sx) * xScale + event.spos() - event.frame() - px;
+      int pos = (xpos + sx) * xScale - event.frame() - px;
       
 //       fprintf(stderr, "\nWaveCanvas::drawItem:\nmr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
 //               mr.x(), mr.y(), mr.width(), mr.height());
@@ -1755,10 +1758,11 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
         int h   = hh / (ev_channels * 2);
         int cc  = hh % (ev_channels * 2) ? 0 : 1;
 
-        unsigned peoffset = px + event.frame() - event.spos();
+        unsigned peoffset = px + event.frame() - ev_spos;
 
 // REMOVE Tim. samplerate. Added.
-        const sf_count_t smps = f.convertPosition(f.samples());
+//         const sf_count_t smps = f.convertPosition(f.samples());
+        const sf_count_t smps = f.samples();
 
 //         // REMOVE Tim. samplerate. Added.
 //         fprintf(stderr, "WaveCanvas::drawItem: rect x:%d w:%d rr x:%d w:%d mr x:%d w:%d pos:%d sx:%d ex:%d\n",
@@ -1775,20 +1779,24 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 
 // REMOVE Tim. samplerate. Changed.
 //               f.read(sa, xScale, pos);
-              if(f.convertPosition(pos) > smps)
+//               if(f.convertPosition(pos) > smps)
+              if((ev_spos + f.convertPosition(pos)) > smps)
                 break;
               // Seek the file only once, not with every read!
               if(i == sx)
               {
-                if(f.seekUIConverted(pos, SEEK_SET | SFM_READ) == -1)
+//                 if(f.seekUIConverted(pos, SEEK_SET | SFM_READ) == -1)
+                if(f.seekUIConverted(pos, SEEK_SET | SFM_READ, ev_spos) == -1)
                   break;
               }
-              f.readConverted(sa, xScale, pos);
+//               f.readConverted(sa, xScale, pos);
+              f.readConverted(sa, xScale, pos, ev_spos);
 
 
 
               pos += xScale;
-              if (pos < event.spos())
+//               if (pos < ev_spos)
+              if (pos < 0)
                     continue;
 
               int selectionStartPos = selectionStart - peoffset; // Offset transformed to event coords
@@ -1805,7 +1813,7 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
                     QColor peak_color = MusEGlobal::config.wavePeakColor;
                     QColor rms_color  = MusEGlobal::config.waveRmsColor;
 
-                    if (pos > selectionStartPos && pos <= selectionStopPos) {
+                    if ((ev_spos + pos) > selectionStartPos && (ev_spos + pos) <= selectionStopPos) {
                           peak_color = MusEGlobal::config.wavePeakColorSelected;
                           rms_color  = MusEGlobal::config.waveRmsColorSelected;
                           QLine l_inv = clipQLine(i, y - h + cc, i, y + h - cc, mbrwp);

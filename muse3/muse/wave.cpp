@@ -1007,15 +1007,16 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allow
 // REMOVE Tim. samplerate. Added.
 //---------------------------------------------------------
 //   readConverted
+//   The offset is the offset into the sound file and is NOT converted.
 //---------------------------------------------------------
 
-void SndFile::readConverted(SampleV* s, int mag, sf_count_t pos, bool overwrite, bool allowSeek)
+void SndFile::readConverted(SampleV* s, int mag, sf_count_t pos, sf_count_t offset, bool overwrite, bool allowSeek)
       {
       if(!(_staticAudioConverterUI && _staticAudioConverterUI->isValid() &&
           (((sampleRateDiffers() || isResampled()) && (_staticAudioConverterUI->capabilities() & AudioConverter::SampleRate)) ||
            (isStretched() && (_staticAudioConverterUI->capabilities() & AudioConverter::Stretch))) ))
       {
-        read(s, mag, pos, overwrite, allowSeek);
+        read(s, mag, offset + pos, overwrite, allowSeek);
         return;
       }
         
@@ -1148,7 +1149,7 @@ void SndFile::readConverted(SampleV* s, int mag, sf_count_t pos, bool overwrite,
       else {
             mag /= cacheMag;
 //             int rest = csize - (pos/cacheMag);
-            sf_count_t rest = csize - (convertPosition(pos)/cacheMag);
+            sf_count_t rest = csize - ((offset + convertPosition(pos))/cacheMag);
 //             int end  = mag;
             sf_count_t end  = mag;
             if (rest < mag)
@@ -1157,7 +1158,7 @@ void SndFile::readConverted(SampleV* s, int mag, sf_count_t pos, bool overwrite,
             for (int ch = 0; ch < srcChannels; ++ch) {
                   int rms = 0;
 //                   int off = pos/cacheMag;
-                  sf_count_t off = convertPosition(pos)/cacheMag;
+                  sf_count_t off = (offset + convertPosition(pos))/cacheMag;
 //                   for (int offset = off; offset < off+end; offset++) {
                   for (sf_count_t offset = off; offset < off+end; offset++) {
                         rms += cache[ch][offset].rms;
@@ -1503,7 +1504,8 @@ size_t SndFile::readInternal(int srcChannels, float** dst, size_t n, bool overwr
 
 }
 
-sf_count_t SndFile::readConverted(sf_count_t pos, int srcChannels, float** buffer, sf_count_t frames, bool overwrite)
+sf_count_t SndFile::readConverted(sf_count_t pos, int srcChannels,
+                                  float** buffer, sf_count_t frames, bool overwrite)
 {
   if(_staticAudioConverter && _staticAudioConverter->isValid() &&
      (((sampleRateDiffers() || isResampled()) && (_staticAudioConverter->capabilities() & AudioConverter::SampleRate)) ||
@@ -1661,19 +1663,35 @@ sf_count_t SndFile::seekUI(sf_count_t frames, int whence)
 }
 
 // REMOVE Tim. samplerate. Added.
-sf_count_t SndFile::seekUIConverted(sf_count_t frames, int whence)
+//---------------------------------------------------------
+//   seekUIConverted
+//   The offset is the offset into the sound file and is NOT converted.
+//---------------------------------------------------------
+
+sf_count_t SndFile::seekUIConverted(sf_count_t frames, int whence, sf_count_t offset)
 {
+  //const sf_count_t smps = convertPosition(samples());
+  const sf_count_t smps = samples();
   sf_count_t rn = 0;
+  sf_count_t pos = offset + convertPosition(frames);
+  if(pos < 0)
+    pos = 0;
+  // Clamp it at 'one past the end' in other words EOF.
+  if(pos > smps)
+    pos = smps;
+  
   if(sfUI)
   {
-    rn = sf_seek(sfUI, convertPosition(frames), whence);
+//     rn = sf_seek(sfUI, convertPosition(frames), whence);
+    rn = sf_seek(sfUI, pos, whence);
     // Reset the converter. Its current state is meaningless now.
     if(_staticAudioConverterUI)
       _staticAudioConverterUI->reset();
   }
   else if(sf)
   {
-    rn = sf_seek(sf, convertPosition(frames), whence);
+//     rn = sf_seek(sf, convertPosition(frames), whence);
+    rn = sf_seek(sf, pos, whence);
     // Reset the converter. Its current state is meaningless now.
     if(_staticAudioConverter)
       _staticAudioConverter->reset();

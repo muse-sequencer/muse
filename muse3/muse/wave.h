@@ -185,9 +185,12 @@ class SndFile {
 
       // REMOVE Tim. samplerate. Added. For now I must provide separate routines here, don't want to upset anything else.
       // Reads realtime audio converted if a samplerate or shift/stretch converter is active. Otherwise a normal read.
-      sf_count_t readConverted(sf_count_t pos, int srcChannels, float** buffer, sf_count_t frames, bool overwrite = true);
+      sf_count_t readConverted(sf_count_t pos, int srcChannels,
+                               float** buffer, sf_count_t frames, bool overwrite = true);
       // Reads graphical audio converted if a samplerate or shift/stretch converter is active. Otherwise a normal read.
-      void readConverted(SampleV* s, int mag, sf_count_t pos, bool overwrite = true, bool allowSeek = true);
+      //void readConverted(SampleV* s, int mag, sf_count_t pos, bool overwrite = true, bool allowSeek = true);
+      void readConverted(SampleV* s, int mag, sf_count_t pos, sf_count_t offset,
+                         bool overwrite = true, bool allowSeek = true);
       // Seeks to a converted position if a samplerate or shift/stretch converter is active. Otherwise a normal seek.
       // The offset is the offset into the sound file and is NOT converted.
       sf_count_t seekConverted(sf_count_t frames, int whence, int offset);
@@ -205,7 +208,7 @@ class SndFile {
 //       off_t seek(off_t frames, int whence);
       sf_count_t seek(sf_count_t frames, int whence);
       sf_count_t seekUI(sf_count_t frames, int whence);
-      sf_count_t seekUIConverted(sf_count_t frames, int whence);
+      sf_count_t seekUIConverted(sf_count_t frames, int whence, sf_count_t offset);
       void read(SampleV* s, int mag, unsigned pos, bool overwrite = true, bool allowSeek = true);
       QString strerror() const;
 
@@ -347,11 +350,13 @@ class SndFileR {
             
       // REMOVE Tim. samplerate. Added. For now I must provide separate routines here, don't want to upset anything else.
       // Reads realtime audio converted if a samplerate or shift/stretch converter is active. Otherwise a normal read.
-      sf_count_t readConverted(sf_count_t pos, int channel, float** buffer, sf_count_t frames, bool overwrite = true) {
+      sf_count_t readConverted(sf_count_t pos, int channel,
+                               float** buffer, sf_count_t frames, bool overwrite = true) {
             return sf ? sf->readConverted(pos, channel, buffer, frames, overwrite) : 0; }
       // Reads graphical audio converted if a samplerate or shift/stretch converter is active. Otherwise a normal read.
-      void readConverted(SampleV* s, int mag, unsigned pos, bool overwrite = true, bool allowSeek = true) {
-            if(sf) sf->readConverted(s, mag, pos, overwrite, allowSeek); }
+      void readConverted(SampleV* s, int mag, unsigned pos, sf_count_t offset,
+                         bool overwrite = true, bool allowSeek = true) {
+            if(sf) sf->readConverted(s, mag, pos, offset, overwrite, allowSeek); }
       // Seeks to a converted position if a samplerate or shift/stretch converter is active. Otherwise a normal seek.
       // The offset is the offset into the sound file and is NOT converted.
       sf_count_t seekConverted(sf_count_t frames, int whence, int offset)
@@ -431,7 +436,8 @@ class SndFileR {
 //       off_t seek(off_t frames, int whence) {
       sf_count_t seek(sf_count_t frames, int whence) { return sf ? sf->seek(frames, whence) : 0; }
       sf_count_t seekUI(sf_count_t frames, int whence) { return sf ? sf->seekUI(frames, whence) : 0; }
-      sf_count_t seekUIConverted(sf_count_t frames, int whence) { return sf ? sf->seekUIConverted(frames, whence) : 0; }
+      sf_count_t seekUIConverted(sf_count_t frames, int whence, sf_count_t offset)
+        { return sf ? sf->seekUIConverted(frames, whence, offset) : 0; }
       void read(SampleV* s, int mag, unsigned pos, bool overwrite = true, bool allowSeek = true) {
             if(sf) sf->read(s, mag, pos, overwrite, allowSeek);
             }
