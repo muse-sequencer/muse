@@ -645,9 +645,6 @@
            </item>
            <item>
             <widget class="QCheckBox" name="pluginRescanButton">
-             <property name="toolTip">
-              <string>Force a full plugin rescan on next restart</string>
-             </property>
              <property name="whatsThis">
               <string>The plugin cache is used for safety
  and speed. It automatically rescans
@@ -972,7 +969,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="deviceAudioBackendLabel">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string/>
             </property>
             <property name="text">
              <string>Audio backend:</string>
@@ -1348,9 +1345,9 @@ Adjusts responsiveness of audio controls and
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-65</y>
-            <width>560</width>
-            <height>517</height>
+            <y>0</y>
+            <width>556</width>
+            <height>479</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -1921,7 +1918,7 @@ Certain operations will also force them to be resent,
                <x>0</x>
                <y>0</y>
                <width>534</width>
-               <height>758</height>
+               <height>588</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
@@ -2513,8 +2510,8 @@ left button behave like the middle button in such areas.</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>560</width>
-               <height>368</height>
+               <width>546</width>
+               <height>387</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
