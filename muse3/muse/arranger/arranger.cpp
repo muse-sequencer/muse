@@ -378,6 +378,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       trackInfoButton  = new CompactToolButton(this);
       trackInfoButton->setContentsMargins(0, 0, 0, 0);
       trackInfoButton->setText(tr("TrackInfo"));
+      trackInfoButton->setToolTip(tr("Display mixer strip for current track"));
       trackInfoButton->setCheckable(true);
       trackInfoButton->setChecked(showTrackinfoFlag);
       trackInfoButton->setFocusPolicy(Qt::NoFocus);
@@ -411,9 +412,10 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       header->setColumnIcon(*soloOnAloneSVGIcon, COL_SOLO);
       header->setColumnIcon(*tracktypeSVGIcon, COL_CLASS);
       header->setColumnLabel(tr("Track"), COL_NAME, 100);
-      header->setColumnLabel(tr("Track"), COL_NAME);
       header->setColumnLabel(tr("Port"), COL_OPORT, 60);
+      //: Channel
       header->setColumnLabel(tr("Ch"), COL_OCHANNEL);
+      //: Time lock
       header->setColumnLabel(tr("T"), COL_TIMELOCK);
       header->setColumnLabel(tr("Automation"), COL_AUTOMATION, 75);
       header->setColumnLabel(tr("Clef"), COL_CLEF, 75);
@@ -436,8 +438,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
           header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET+i, MAX(fm1.width(custom_columns[i].name)+fw, 30));
         //header->resizeSection(COL_TRACK_IDX, fm1.width(header->columnLabel(COL_TRACK_IDX)) + fw);
         header->resizeSection(COL_INPUT_MONITOR, fm1.width(header->columnLabel(COL_INPUT_MONITOR)) + fw);
-        header->resizeSection(COL_RECORD, header->iconSize().width() + fw + 100);
-//        header->resizeSection(COL_RECORD, fm1.width(header->columnLabel(COL_RECORD)) + fw);
+        header->resizeSection(COL_RECORD, fm1.width(header->columnLabel(COL_RECORD)) + fw);
         header->resizeSection(COL_MUTE, fm1.width(header->columnLabel(COL_MUTE)) + fw);
         header->resizeSection(COL_SOLO, fm1.width(header->columnLabel(COL_SOLO)) + fw);
         header->resizeSection(COL_CLASS, fm1.width(header->columnLabel(COL_CLASS)) + fw);

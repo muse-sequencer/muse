@@ -249,7 +249,9 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
 
       dlist_header = new Header(dlistContainer, "header");
       dlist_header->setFixedHeight(31);
+      //: hide
       dlist_header->setColumnLabel(tr("H"), COL_HIDE, 20);
+      //: mute
       dlist_header->setColumnLabel(tr("M"), COL_MUTE, 20);
       dlist_header->setColumnLabel(tr("Name"), COL_NAME, 120);
       dlist_header->setColumnLabel(tr("Vol"), COL_VOLUME);

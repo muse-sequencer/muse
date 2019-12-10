@@ -209,24 +209,24 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
       QStringList columnnames;
       columnnames << tr("Port")
 		  << tr("Device Name")
-		  << tr("s")
-		  << tr("c")
-		  << tr("k")
-		  << tr("r")
-		  << tr("m")
-		  << tr("t")
-		  << tr("type")
-		  << tr("rid") // Receive
-		  << tr("rc") // Receive
-		  << tr("rr") // Receive
-		  << tr("rm") // Receive
-		  << tr("rt") // Receive
-		  << tr("rw") // Receive
-		  << tr("tid") // Transmit
-		  << tr("tc") // Transmit
-		  << tr("tr") // Transmit
-		  << tr("tm") // Transmit
-		  << tr("tt"); // Transmit
+          << "s"
+          << "c"
+          << "k"
+          << "r"
+          << "m"
+          << "t"
+          << tr("Type")
+          << "rid" // Receive
+          << "rc" // Receive
+          << "rr" // Receive
+          << "rm" // Receive
+          << "rt" // Receive
+          << "rw" // Receive
+          << "tid" // Transmit
+          << "tc" // Transmit
+          << "tr" // Transmit
+          << "tm" // Transmit
+          << "tt"; // Transmit
 	
       devicesListView->setColumnCount(columnnames.size());
       devicesListView->setHeaderLabels(columnnames);
