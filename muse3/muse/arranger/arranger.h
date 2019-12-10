@@ -43,11 +43,6 @@
 #include "pcanvas.h"
 #include "trackautomationview.h"
 
-// Whether to show an additional 'Alt' button beside
-//  the trackinfo button, to show the old midi trackinfo panel.
-// TODO: TO BE REMOVED. The midi trackinfo panel is obsolete and disabled now.
-//#define _USE_TRACKINFO_ALT 1;
-
 namespace MusECore {
 class Track;
 class Xml;
@@ -68,9 +63,6 @@ class TList;
 class ArrangerCanvasLayout;
 class ArrangerHScrollLayout;
 class CompactToolButton;
-#ifdef _USE_TRACKINFO_ALT
-class MidiTrackInfo;
-#endif
 
 //---------------------------------------------------------
 //   Arranger
@@ -96,13 +88,7 @@ class Arranger : public QWidget {
       MTScale* time;
       SpinBox* lenEntry;
       bool showTrackinfoFlag;
-#ifdef _USE_TRACKINFO_ALT
-      bool showTrackinfoAltFlag;
-#endif
       TrackInfoWidget* trackInfoWidget;
-#ifdef _USE_TRACKINFO_ALT
-      MidiTrackInfo* midiTrackInfo;
-#endif
       AudioStrip* waveTrackInfo;
       QWidget* noTrackInfo;
       QWidget* tracklist;
@@ -110,9 +96,6 @@ class Arranger : public QWidget {
       MusECore::Track* selected;
 
       CompactToolButton* trackInfoButton;
-#ifdef _USE_TRACKINFO_ALT
-      CompactToolButton* trackInfoAltButton;
-#endif
       int trackInfoType;
       Splitter* split;
       int songType;
@@ -134,9 +117,6 @@ class Arranger : public QWidget {
       void rasterChanged(int);
       void songlenChanged(int);
       void showTrackInfo(bool);
-#ifdef _USE_TRACKINFO_ALT
-      void showTrackInfoAlt(bool);
-#endif
       void trackSelectionChanged();
       void songChanged(MusECore::SongChangedStruct_t);
       void setTime(unsigned);
