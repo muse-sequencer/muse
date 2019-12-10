@@ -29,6 +29,14 @@ QT5_WRAP_CPP (cliplist_mocs
       )
 
 ##
+## UI files
+##
+file (GLOB cliplist_ui_files
+      cliplisteditorbase.ui
+      )
+QT5_WRAP_UI ( cliplist_uis ${cliplist_ui_files} )
+
+##
 ## List of source files to compile
 ##
 file (GLOB cliplist_source_files
@@ -41,6 +49,7 @@ file (GLOB cliplist_source_files
 add_library ( cliplist ${MODULES_BUILD}
       ${cliplist_source_files}
       ${cliplist_mocs}
+      ${cliplist_uis}
       )
 
 ##
@@ -49,6 +58,7 @@ add_library ( cliplist ${MODULES_BUILD}
 set (FILES_TO_TRANSLATE
       ${FILES_TO_TRANSLATE}
       ${cliplist_source_files}
+      ${cliplist_ui_files}
       CACHE INTERNAL ""
       )
 

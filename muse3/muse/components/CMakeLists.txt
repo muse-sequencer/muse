@@ -90,6 +90,7 @@ QT5_WRAP_CPP (components_mocs
       metronome.h  
       midi_audio_control.h  
       midisyncimpl.h  
+      miditransform.h
       midi_warn_init_pending_impl.h
       mixdowndialog.h  
 #       mlabel.h  
@@ -154,7 +155,6 @@ file (GLOB components_ui_files
       arrangercolumnsbase.ui 
       appearancebase.ui 
       choose_sysex_base.ui
-      cliplisteditorbase.ui  
       commentbase.ui  
       configmidifilebase.ui
       copy_on_write_base.ui
@@ -165,12 +165,10 @@ file (GLOB components_ui_files
       fdialogbuttons.ui  
       gensetbase.ui  
       mdisettings_base.ui  
-      itransformbase.ui  
       metronomebase.ui  
       midisync.ui  
       midi_warn_init_pending.ui
       midi_audio_control_base.ui  
-      mittransposebase.ui  
       mixdowndialogbase.ui  
       # mtrackinfobase.ui
       pastedialogbase.ui
@@ -239,6 +237,7 @@ file (GLOB components_source_files
       metronome.cpp 
       midi_audio_control.cpp 
       midisyncimpl.cpp 
+      miditransform.cpp
       midi_warn_init_pending_impl.cpp
       mixdowndialog.cpp 
 #       mlabel.cpp 

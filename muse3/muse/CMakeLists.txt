@@ -65,7 +65,6 @@ QT5_WRAP_CPP ( muse_moc_headers
       cobject.h
       conf.h
       midieditor.h
-      miditransform.h
       plugin.h
       script_delivery.h
       song.h
@@ -120,7 +119,6 @@ file (GLOB core_source_files
       midifile.cpp
       midiport.cpp
       midiseq.cpp
-      miditransform.cpp
       mtc.cpp
       node.cpp
       operations.cpp
@@ -205,6 +203,7 @@ set (FILES_TO_TRANSLATE
 ##
 include_directories (
       arranger
+      cliplist
       components
       driver
       function_dialogs
@@ -222,6 +221,7 @@ include_directories (
 # Make sure to include the uic generated headers paths.
 include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}/arranger
+      ${CMAKE_CURRENT_BINARY_DIR}/cliplist
       ${CMAKE_CURRENT_BINARY_DIR}/driver
       ${CMAKE_CURRENT_BINARY_DIR}/instruments
       ${CMAKE_CURRENT_BINARY_DIR}/liste

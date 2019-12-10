@@ -44,7 +44,9 @@ QT5_WRAP_CPP ( mplugins_mocs
 ## UI files
 ##
 file (GLOB mplugins_ui_files
+      itransformbase.ui
       midifilter.ui
+      mittransposebase.ui  
       mrconfigbase.ui
       )
 QT5_WRAP_UI ( mplugins_uis ${mplugins_ui_files} )
