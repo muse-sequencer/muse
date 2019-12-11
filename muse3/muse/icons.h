@@ -319,6 +319,7 @@ extern QIcon* metaSVGIcon;
 extern QIcon* ctrlSVGIcon;
 extern QIcon* sysexSVGIcon;
 extern QIcon* tracktypeSVGIcon;
+extern QIcon* mixerstripSVGIcon;
 
 extern QIcon* pencilIconSVG;
 extern QIcon* glueIconSVG;
