@@ -172,14 +172,14 @@ void Arranger::setHeaderToolTips()
       {
       header->setToolTip(COL_TRACK_IDX,  tr("Track index"));
       header->setToolTip(COL_INPUT_MONITOR, tr("Enable input monitor"));
-      header->setToolTip(COL_RECORD,     tr("Enable Recording"));
-      header->setToolTip(COL_MUTE,       tr("Mute/Off Indicator"));
-      header->setToolTip(COL_SOLO,       tr("Solo Indicator"));
-      header->setToolTip(COL_CLASS,      tr("Track Type"));
-      header->setToolTip(COL_NAME,       tr("Track Name"));
+      header->setToolTip(COL_RECORD,     tr("Enable recording"));
+      header->setToolTip(COL_MUTE,       tr("Mute/Off indicator"));
+      header->setToolTip(COL_SOLO,       tr("Solo indicator"));
+      header->setToolTip(COL_CLASS,      tr("Track type"));
+      header->setToolTip(COL_NAME,       tr("Track name"));
       header->setToolTip(COL_OCHANNEL,   tr("Midi output channel number or audio channels"));
       header->setToolTip(COL_OPORT,      tr("Midi output port or synth midi port"));
-      header->setToolTip(COL_TIMELOCK,   tr("Time Lock"));
+      header->setToolTip(COL_TIMELOCK,   tr("Time lock"));
       header->setToolTip(COL_AUTOMATION, tr("Automation parameter selection"));
       header->setToolTip(COL_CLEF,       tr("Notation clef"));
       }
@@ -201,10 +201,10 @@ void Arranger::setHeaderWhatsThis()
       header->setWhatsThis(COL_SOLO,     tr("Solo indicator. Click to toggle.\nConnected tracks are also 'phantom' soloed,\n indicated by a dark square."));
       header->setWhatsThis(COL_CLASS,    tr("Track type. Right-click to change\n midi and drum track types."));
       header->setWhatsThis(COL_NAME,     tr("Track name. Double-click to edit.\nRight-click for more options."));
-      header->setWhatsThis(COL_OCHANNEL, tr("Midi/drum track: Output channel number.\nAudio track: Channels.\nMid/right-click to change."));
-      header->setWhatsThis(COL_OPORT,    tr("Midi/drum track: Output port.\nSynth track: Assigned midi port.\nLeft-click to change.\nRight-click to show GUI."));
+      header->setWhatsThis(COL_OCHANNEL, tr("Midi/Drum track: Output channel number.\nAudio track: Channels.\nMid/right-click to change."));
+      header->setWhatsThis(COL_OPORT,    tr("Midi/Drum track: Output port.\nSynth track: Assigned midi port.\nLeft-click to change.\nRight-click to show GUI."));
       header->setWhatsThis(COL_TIMELOCK, tr("Time lock"));
-      header->setToolTip(COL_CLEF,       tr("Notation clef. Select this tracks notation clef."));
+      header->setWhatsThis(COL_CLEF,     tr("Notation clef. Select this tracks notation clef."));
       }
 
 //---------------------------------------------------------
