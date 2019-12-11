@@ -94,5 +94,6 @@
         <file>svg/note.svg</file>
         <file>svg/sysex.svg</file>
         <file>svg/tracktype.svg</file>
+        <file>svg/mixerstrip.svg</file>
     </qresource>
 </RCC>

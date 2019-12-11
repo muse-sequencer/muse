@@ -194,7 +194,7 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
    : QMainWindow(parent, fl)
       {
       setupUi(this);
-      toolBar->setIconSize(ICON_SIZE);
+      toolBar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 
       workingInstrument = new MusECore::MidiInstrument();
 

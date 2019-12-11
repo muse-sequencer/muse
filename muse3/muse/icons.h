@@ -36,7 +36,7 @@ class QCursor;
 
 namespace MusEGui {
 
-const QSize DEFCURSIZE = QSize(18, 18);
+//const QSize DEFCURSIZE = QSize(18, 18);
 
 extern QPixmap* track_commentIcon;
 extern QPixmap* deleteIcon;
@@ -319,6 +319,7 @@ extern QIcon* metaSVGIcon;
 extern QIcon* ctrlSVGIcon;
 extern QIcon* sysexSVGIcon;
 extern QIcon* tracktypeSVGIcon;
+extern QIcon* mixerstripSVGIcon;
 
 extern QIcon* pencilIconSVG;
 extern QIcon* glueIconSVG;

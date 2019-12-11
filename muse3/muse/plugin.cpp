@@ -3515,7 +3515,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       setWindowTitle(plugin->titlePrefix() + plugin->name());
       
       QToolBar* tools = addToolBar(tr("File Buttons"));
-      tools->setIconSize(ICON_SIZE);
+      tools->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 
       QAction* fileOpen = new QAction(*fileopenSVGIcon, tr("Load Preset"), this);
 //       connect(fileOpen, SIGNAL(triggered()), this, SLOT(load()));
