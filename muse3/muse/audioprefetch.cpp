@@ -242,6 +242,8 @@ void AudioPrefetch::prefetch(bool doSeek)
                         n = 0;
                   write_pos = lpos_frame - n;
                   track->setPrefetchWritePos(write_pos);
+                  // REMOVE Tim. samplerate. Added.
+                  track->seekData(write_pos);
                 }
               }
 
