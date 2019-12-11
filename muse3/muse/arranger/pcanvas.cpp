@@ -2350,7 +2350,7 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
                    break;
                }
 //                f.readConverted(sa, xScale, pos, true, false);
-               f.readConverted(sa, xScale, samplePos + pos, true, false);
+               f.readConverted(sa, xScale, pos, samplePos, true, false);
 
                postick += tickstep;
                pos += xScale;

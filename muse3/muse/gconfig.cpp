@@ -207,6 +207,9 @@ GlobalConfigValues config = {
       // maxAliasedPointSize At what point size to switch from aliased text to non-aliased text. 
       // Zero means always use anti-aliasing. For certain widgets that use it. May be more later.
       8, 
+
+      18,                           // iconSize
+      18,                           // cursorSize (for custom cursors)
       
       false,                        // enableAlsaMidiDriver Whether to enable the ALSA midi driver
       384,                          // division;

@@ -303,7 +303,8 @@ void addProject(const QString& name)
 
 MusE::MusE() : QMainWindow()
       {
-      setIconSize(ICON_SIZE);
+      setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
+//      setIconSize(ICON_SIZE);
       setFocusPolicy(Qt::NoFocus);
       MusEGlobal::muse      = this;    // hack
       _isRestartingApp      = false;
@@ -760,7 +761,7 @@ MusE::MusE() : QMainWindow()
       QToolBar* transportToolbar = addToolBar(tr("Transport"));
       transportToolbar->setObjectName("Transport tool");
       transportToolbar->addActions(MusEGlobal::transportAction->actions());
-      transportToolbar->setIconSize(ICON_SIZE);
+      transportToolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 
       // Already has an object name.
       TempoToolbar* tempo_tb = new TempoToolbar(tr("Tempo"), this);
@@ -1349,27 +1350,24 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       autoMixerAction->setChecked(MusEGlobal::automation);
 
       showBigtime(MusEGlobal::config.bigTimeVisible);
-      showMixer1(MusEGlobal::config.mixer1Visible);
-      showMixer2(MusEGlobal::config.mixer2Visible);
-
-      // Added p3.3.43 Make sure the geometry is correct because showMixerX() will NOT
-      //  set the geometry if the mixer has already been created.
+      
+      // NOTICE! Mixers may set their own maximum size according to their content, on SongChanged.
+      //         Therefore if the mixer is ALREADY OPEN, it may have a maximum size imposed on it,
+      //          which may be SMALLER than any new size we might try to set after this.
+      //         So we MUST RESET maximium size now, BEFORE attempts to set size. As per docs:
       if(mixer1)
       {
-        //if(mixer1->geometry().size() != MusEGlobal::config.mixer1.geometry.size())   // Moved below
-        //  mixer1->resize(MusEGlobal::config.mixer1.geometry.size());
-
-        if(mixer1->geometry().topLeft() != MusEGlobal::config.mixer1.geometry.topLeft())
-          mixer1->move(MusEGlobal::config.mixer1.geometry.topLeft());
+        mixer1->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+        mixer1->setGeometry(MusEGlobal::config.mixer1.geometry);
       }
       if(mixer2)
       {
-        //if(mixer2->geometry().size() != MusEGlobal::config.mixer2.geometry.size())   // Moved below
-        //  mixer2->resize(MusEGlobal::config.mixer2.geometry.size());
-
-        if(mixer2->geometry().topLeft() != MusEGlobal::config.mixer2.geometry.topLeft())
-          mixer2->move(MusEGlobal::config.mixer2.geometry.topLeft());
+        mixer2->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+        mixer2->setGeometry(MusEGlobal::config.mixer2.geometry);
       }
+
+      showMixer1(MusEGlobal::config.mixer1Visible);
+      showMixer2(MusEGlobal::config.mixer2Visible);
 
 // REMOVE Tim. Removed. Already taken care of by settings. Reinstated! MDI window was
 //  not restoring on project reload. Didn't want to have to re-enable this, IIRC there
@@ -1397,18 +1395,6 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"
       arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
       progress->setValue(50);
-
-      // Try this AFTER the song update above which does a mixer update... Tested OK - mixers resize properly now.
-      if(mixer1)
-      {
-        if(mixer1->geometry().size() != MusEGlobal::config.mixer1.geometry.size())
-          mixer1->resize(MusEGlobal::config.mixer1.geometry.size());
-      }
-      if(mixer2)
-      {
-        if(mixer2->geometry().size() != MusEGlobal::config.mixer2.geometry.size())
-          mixer2->resize(MusEGlobal::config.mixer2.geometry.size());
-      }
 
       // Moved here from above due to crash with a song loaded and then File->New.
       // Marker view list was not updated, had non-existent items from marker list (cleared in ::clear()).
@@ -3378,13 +3364,13 @@ void MusE::showMixer1(bool on)
       if (on && mixer1 == 0) {
             mixer1 = new MusEGui::AudioMixerApp(NULL, &(MusEGlobal::config.mixer1));
             connect(mixer1, SIGNAL(closed()), SLOT(mixer1Closed()));
-            mixer1->resize(MusEGlobal::config.mixer1.geometry.size());
-            mixer1->move(MusEGlobal::config.mixer1.geometry.topLeft());
-            }
+            mixer1->setGeometry(MusEGlobal::config.mixer1.geometry);
+      }
       if (mixer1)
             mixer1->setVisible(on);
       viewMixerAAction->setChecked(on);
       }
+
 
 //---------------------------------------------------------
 //   showMixer2
@@ -3395,9 +3381,8 @@ void MusE::showMixer2(bool on)
       if (on && mixer2 == 0) {
             mixer2 = new MusEGui::AudioMixerApp(NULL, &(MusEGlobal::config.mixer2));
             connect(mixer2, SIGNAL(closed()), SLOT(mixer2Closed()));
-            mixer2->resize(MusEGlobal::config.mixer2.geometry.size());
-            mixer2->move(MusEGlobal::config.mixer2.geometry.topLeft());
-            }
+            mixer2->setGeometry(MusEGlobal::config.mixer2.geometry);
+      }
       if (mixer2)
             mixer2->setVisible(on);
       viewMixerBAction->setChecked(on);

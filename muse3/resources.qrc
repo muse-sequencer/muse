@@ -94,6 +94,7 @@
         <file>svg/note.svg</file>
         <file>svg/sysex.svg</file>
         <file>svg/tracktype.svg</file>
+        <file>svg/mixerstrip.svg</file>
         <file>svg/audio_stretch.svg</file>
         <file>svg/audio_resample.svg</file>
     </qresource>

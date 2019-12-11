@@ -159,7 +159,6 @@ file (GLOB components_ui_files
       appearancebase.ui 
       audio_converter_settings_base.ui
       choose_sysex_base.ui
-      cliplisteditorbase.ui  
       commentbase.ui  
       configmidifilebase.ui
       copy_on_write_base.ui
@@ -170,12 +169,10 @@ file (GLOB components_ui_files
       fdialogbuttons.ui  
       gensetbase.ui  
       mdisettings_base.ui  
-      itransformbase.ui  
       metronomebase.ui  
       midisync.ui  
       midi_warn_init_pending.ui
       midi_audio_control_base.ui  
-      mittransposebase.ui  
       mixdowndialogbase.ui  
       # mtrackinfobase.ui
       pastedialogbase.ui
@@ -190,7 +187,6 @@ file (GLOB components_ui_files
       #src_resampler_settings_base.ui
       synthconfigbase.ui  
       tracks_duplicate_base.ui
-      transformbase.ui  
       unusedwavefiles.ui
       warn_bad_timing.ui
       #zita_resampler_settings_base.ui

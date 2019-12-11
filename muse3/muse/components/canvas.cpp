@@ -535,7 +535,7 @@ void Canvas::draw(QPainter& p, const QRect& mr, const QRegion& mrg)
             }
       
       if(drag == DRAG_ZOOM)
-        p.drawPixmap(mapFromGlobal(global_start), zoomAtIconSVG->pixmap(DEFCURSIZE));
+        p.drawPixmap(mapFromGlobal(global_start), zoomAtIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)));
       
       //p.restore();
       //p.setWorldMatrixEnabled(true);
@@ -991,7 +991,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                           }
                           // Update the small zoom drawing area
                           QPoint pt = mapFromGlobal(global_start);
-                          QSize cursize = zoomIconSVG->actualSize(DEFCURSIZE);
+                          QSize cursize = zoomIconSVG->actualSize(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize));
                           update(pt.x(), pt.y(), cursize.width(), cursize.height());
                         }
                         break;
@@ -1715,7 +1715,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
       {
         drag = DRAG_OFF;
         QPoint pt = mapFromGlobal(global_start);
-        QSize cursize = zoomIconSVG->actualSize(DEFCURSIZE);
+        QSize cursize = zoomIconSVG->actualSize(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize));
         update(pt.x(), pt.y(), cursize.width(), cursize.height());
       }
       

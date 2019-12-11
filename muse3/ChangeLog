@@ -1,3 +1,10 @@
+10.12.2019
+    *** MusE 3.1.0pre4 ***    
+    - Dependency problems: Moved several files. All source together with ui files now. (Tim)
+    - Remove all dead obsolete trackinfo 'alt' button code.
+    - FIXED: Mixer strips missing if loading an older song saved before 20.10.2019
+    - FIXED: Duplicate strips found in songs saved before 20.10.2019
+    - FIXED: Long-time mixer problem with restoring size.
 09.12.2019
     - Remove some more "old vs. new" drum track stuff, change some text etc. (Tim)
 08.12.2019
