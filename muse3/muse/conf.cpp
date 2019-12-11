@@ -2275,6 +2275,7 @@ void MixerConfig::write(int level, MusECore::Xml& xml, bool global) const
 
 void MixerConfig::read(MusECore::Xml& xml)
       {
+      bool ignore_next_visible = false;
       for (;;) {
             MusECore::Xml::Token token(xml.parse());
             const QString& tag(xml.s1());
@@ -2309,10 +2310,28 @@ void MixerConfig::read(MusECore::Xml& xml)
                               displayOrder = (DisplayOrder)xml.parseInt();
                         // Obsolete. Support old songs.
                         else if (tag == "StripName")
-                              stripOrder.append(xml.parse1());
+                        {
+                          const QString s = xml.parse1();
+                          // Protection from duplicates in song file, observed (old flaws?).
+                          if(stripOrder.contains(s))
+                            ignore_next_visible = true;
+                          else
+                            stripOrder.append(s);
+                        }
                         // Obsolete. Support old songs.
                         else if (tag == "StripVisible")
-                              stripVisibility.append(xml.parseInt() == 0 ? false : true );
+                        {
+                          // Protection from duplicates in song file, observed (old flaws?).
+                          if(ignore_next_visible)
+                          {
+                            xml.parseInt();
+                            ignore_next_visible = false;
+                          }
+                          else
+                          {
+                            stripVisibility.append(xml.parseInt() == 0 ? false : true );
+                          }
+                        }
                         else if (tag == "StripConfig") {
                               StripConfig sc;
                               sc.read(xml);

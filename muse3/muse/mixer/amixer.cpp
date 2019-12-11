@@ -72,6 +72,7 @@ bool ScrollArea::viewportEvent(QEvent* event)
 AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
    : QMainWindow(parent)
 {
+      _resizeFlag = false;
       _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
       cfg = c;
       oldAuxsSize = 0;
@@ -590,12 +591,16 @@ void AudioMixerApp::setSizing()
       if(stripList.size() <= 6)
         setMinimumWidth(w);
 
+      // Hack flag to prevent overwriting the config geometry when resizing...
+      _resizeFlag = true;
       // At this point the width may be UNEXPANDABLE and may be small !
       // This line forces the maximum width, to at least ALLOW expansion ...
       setMaximumWidth(w);
       // ... and now, this line restores the desired size.
       if(size() != cfg->geometry.size())
         resize(cfg->geometry.size());
+      // Now reset the flag in case it wasn't already by the resize handler...
+      _resizeFlag = false;
       
       setUpdatesEnabled(true);
       view->setUpdatesEnabled(true);
@@ -702,14 +707,13 @@ void AudioMixerApp::initMixer()
   int auxsSize = MusEGlobal::song->auxs()->size();
   oldAuxsSize = auxsSize;
   const MusECore::TrackList *tl = MusEGlobal::song->tracks();
-  MusECore::ciTrack tli = tl->cbegin();
 
   // NOTE: stripOrder string list is obsolete. Must support old songs.
   if (!cfg->stripOrder.empty()) {
     const int sz = cfg->stripOrder.size();
     for (int i=0; i < sz; i++) {
       DEBUG_MIXER(stderr, "processing strip [%s][%d]\n", cfg->stripOrder.at(i).toLatin1().data(), cfg->stripVisibility.at(i));
-      for (;tli != tl->cend(); ++tli) {
+      for (MusECore::ciTrack tli = tl->cbegin(); tli != tl->cend(); ++tli) {
         if ((*tli)->name() == cfg->stripOrder.at(i)) {
           MusEGlobal::StripConfig sc;
           sc._visible = cfg->stripVisibility.at(i);
@@ -733,7 +737,7 @@ void AudioMixerApp::initMixer()
     }
   }
   else {
-    for (;tli != tl->cend(); ++tli) {
+    for (MusECore::ciTrack tli = tl->cbegin(); tli != tl->cend(); ++tli) {
       addStrip(*tli);
     }
   }
@@ -1108,16 +1112,19 @@ void AudioMixerApp::resizeEvent(QResizeEvent* e)
 {
   e->ignore();
   QMainWindow::resizeEvent(e);
-  // Make sure to update the config geometry.
-  cfg->geometry = geometry();
+  // Make sure to update the config size.
+  // Hack flag to prevent overwriting the config geometry when resizing.
+  // Do NOT overwrite if we set the flag before calling.
+  if(!_resizeFlag)
+    cfg->geometry.setSize(e->size());
 }
 
 void AudioMixerApp::moveEvent(QMoveEvent* e)
 {
   e->ignore();
   QMainWindow::moveEvent(e);
-  // Make sure to update the config geometry.
-  cfg->geometry = geometry();
+  // Make sure to update the config geometry position.
+  cfg->geometry.setTopLeft(e->pos());
 }
 
 void AudioMixerApp::clearStripSelection()
