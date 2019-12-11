@@ -1,4 +1,5 @@
 10.12.2019
+    *** MusE 3.1.0pre4 ***    
     - Dependency problems: Moved several files. All source together with ui files now. (Tim)
     - Remove all dead obsolete trackinfo 'alt' button code.
 09.12.2019

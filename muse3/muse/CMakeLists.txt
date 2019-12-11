@@ -29,6 +29,7 @@ include_directories(
 
 set (SubDirs
       widgets
+      mplugins
       components
       arranger
       cliplist
@@ -41,7 +42,6 @@ set (SubDirs
       master
       midiedit
       mixer
-      mplugins
       waveedit
       )
 if(LV2_SUPPORT)

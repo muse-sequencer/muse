@@ -90,7 +90,6 @@ QT5_WRAP_CPP (components_mocs
       metronome.h  
       midi_audio_control.h  
       midisyncimpl.h  
-      miditransform.h
       midi_warn_init_pending_impl.h
       mixdowndialog.h  
 #       mlabel.h  
@@ -181,7 +180,6 @@ file (GLOB components_ui_files
       songinfo.ui  
       synthconfigbase.ui  
       tracks_duplicate_base.ui
-      transformbase.ui  
       unusedwavefiles.ui
       warn_bad_timing.ui
       )
@@ -237,7 +235,6 @@ file (GLOB components_source_files
       metronome.cpp 
       midi_audio_control.cpp 
       midisyncimpl.cpp 
-      miditransform.cpp
       midi_warn_init_pending_impl.cpp
       mixdowndialog.cpp 
 #       mlabel.cpp 

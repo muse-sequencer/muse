@@ -34,6 +34,7 @@ if ( ENABLE_EXPERIMENTAL )
 endif ( ENABLE_EXPERIMENTAL )
 QT5_WRAP_CPP ( mplugins_mocs
       midifilterimpl.h
+      miditransform.h
       midiitransform.h
       mittranspose.h
       mrconfig.h
@@ -47,6 +48,7 @@ file (GLOB mplugins_ui_files
       itransformbase.ui
       midifilter.ui
       mittransposebase.ui  
+      transformbase.ui
       mrconfigbase.ui
       )
 QT5_WRAP_UI ( mplugins_uis ${mplugins_ui_files} )
@@ -55,7 +57,8 @@ QT5_WRAP_UI ( mplugins_uis ${mplugins_ui_files} )
 ## List of source files to compile
 ##
 file (GLOB mplugins_source_files
-      midifilterimpl.cpp 
+      midifilterimpl.cpp
+      miditransform.cpp
       midiitransform.cpp 
       mitplugin.cpp
       mittranspose.cpp 
