@@ -1346,6 +1346,22 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       autoMixerAction->setChecked(MusEGlobal::automation);
 
       showBigtime(MusEGlobal::config.bigTimeVisible);
+      
+      // NOTICE! Mixers may set their own maximum size according to their content, on SongChanged.
+      //         Therefore if the mixer is ALREADY OPEN, it may have a maximum size imposed on it,
+      //          which may be SMALLER than any new size we might try to set after this.
+      //         So we MUST RESET maximium size now, BEFORE attempts to set size. As per docs:
+      if(mixer1)
+      {
+        mixer1->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+        mixer1->setGeometry(MusEGlobal::config.mixer1.geometry);
+      }
+      if(mixer2)
+      {
+        mixer2->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+        mixer2->setGeometry(MusEGlobal::config.mixer2.geometry);
+      }
+
       showMixer1(MusEGlobal::config.mixer1Visible);
       showMixer2(MusEGlobal::config.mixer2Visible);
 
@@ -3327,19 +3343,9 @@ void MusE::bigtimeClosed()
 
 void MusE::showMixer1(bool on)
       {
-      if (on) {
-        if(mixer1 == 0) {
+      if (on && mixer1 == 0) {
             mixer1 = new MusEGui::AudioMixerApp(NULL, &(MusEGlobal::config.mixer1));
             connect(mixer1, SIGNAL(closed()), SLOT(mixer1Closed()));
-            }
-            else {
-              // NOTICE!!! Our mixers set their own maiximum size according to their content.
-              //           Therefore if the mixer is ALREADY OPEN, it will have a maximum size
-              //            imposed on it, which may be SMALLER than any new size we might
-              //            try to set after this. Therefore we MUST RESET the maximium size now,
-              //            BEFORE any attempts to set size. As per docs:
-              mixer1->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
-            }
             mixer1->setGeometry(MusEGlobal::config.mixer1.geometry);
       }
       if (mixer1)
@@ -3354,19 +3360,9 @@ void MusE::showMixer1(bool on)
 
 void MusE::showMixer2(bool on)
       {
-      if (on) {
-        if(mixer2 == 0) {
+      if (on && mixer2 == 0) {
             mixer2 = new MusEGui::AudioMixerApp(NULL, &(MusEGlobal::config.mixer2));
             connect(mixer2, SIGNAL(closed()), SLOT(mixer2Closed()));
-            }
-            else {
-              // NOTICE!!! Our mixers set their own maiximum size according to their content.
-              //           Therefore if the mixer is ALREADY OPEN, it will have a maximum size
-              //            imposed on it, which may be SMALLER than any new size we might
-              //            try to set after this. Therefore we MUST RESET the maximium size now,
-              //            BEFORE any attempts to set size. As per docs:
-              mixer2->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
-            }
             mixer2->setGeometry(MusEGlobal::config.mixer2.geometry);
       }
       if (mixer2)
