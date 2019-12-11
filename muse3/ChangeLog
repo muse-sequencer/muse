@@ -1,9 +1,9 @@
 11.12.2019
+    *** MusE 3.1.0pre4 ***    
 	- Customizable size of icons and custom tool cursors (kybos)
 	- Replaced one-letter column headers by icons in track header (kybos)
 	- German translation updated (kybos)
 10.12.2019
-    *** MusE 3.1.0pre4 ***    
     - Dependency problems: Moved several files. All source together with ui files now. (Tim)
     - Remove all dead obsolete trackinfo 'alt' button code.
     - FIXED: Mixer strips missing if loading an older song saved before 20.10.2019
