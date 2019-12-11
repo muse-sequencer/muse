@@ -255,6 +255,9 @@ struct GlobalConfigValues {
       // For certain widgets that use it. May be more later.
       int maxAliasedPointSize; 
 
+      int iconSize;
+      int cursorSize;
+
       bool enableAlsaMidiDriver; // Whether to enable the ALSA midi driver
       int division;
       int rtcTicks;

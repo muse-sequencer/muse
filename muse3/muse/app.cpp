@@ -300,7 +300,8 @@ void addProject(const QString& name)
 
 MusE::MusE() : QMainWindow()
       {
-      setIconSize(ICON_SIZE);
+      setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
+//      setIconSize(ICON_SIZE);
       setFocusPolicy(Qt::NoFocus);
       MusEGlobal::muse      = this;    // hack
       _isRestartingApp      = false;
@@ -757,7 +758,7 @@ MusE::MusE() : QMainWindow()
       QToolBar* transportToolbar = addToolBar(tr("Transport"));
       transportToolbar->setObjectName("Transport tool");
       transportToolbar->addActions(MusEGlobal::transportAction->actions());
-      transportToolbar->setIconSize(ICON_SIZE);
+      transportToolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 
       // Already has an object name.
       TempoToolbar* tempo_tb = new TempoToolbar(tr("Tempo"), this);

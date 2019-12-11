@@ -1060,7 +1060,14 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.drumListBg = readColor(xml);
 
                         else if (tag == "maxAliasedPointSize")
+
                               MusEGlobal::config.maxAliasedPointSize = xml.parseInt();
+
+                        else if (tag == "iconSize")
+                            MusEGlobal::config.iconSize = xml.parseInt();
+
+                        else if (tag == "cursorSize")
+                            MusEGlobal::config.cursorSize = xml.parseInt();
                         
                         //else if (tag == "midiSyncInfo")
                         //      readConfigMidiSyncInfo(xml);
@@ -1908,6 +1915,9 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.strTag(level, "canvasCustomBgList", MusEGlobal::config.canvasCustomBgList.join(";"));
 
       xml.intTag(level, "maxAliasedPointSize", MusEGlobal::config.maxAliasedPointSize);
+
+      xml.intTag(level, "iconSize", MusEGlobal::config.iconSize);
+      xml.intTag(level, "cursorSize", MusEGlobal::config.cursorSize);
       
       MusEGlobal::writePluginGroupConfiguration(level, xml);
 
