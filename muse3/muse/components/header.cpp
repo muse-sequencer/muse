@@ -158,13 +158,18 @@ void Header::mousePressEvent ( QMouseEvent * e )
     QAction* act = 0;
 
     for(int i=0; i < count(); i++) {
-      act = p->addAction(itemModel->horizontalHeaderItem(logicalIndex(i))->text() +
-                         "\t - "+ itemModel->horizontalHeaderItem(logicalIndex(i))->toolTip());
+        QIcon icon = itemModel->horizontalHeaderItem(logicalIndex(i))->icon();
+        if (!icon.isNull()) {
+            act = p->addAction(icon, "\t - "+ itemModel->horizontalHeaderItem(logicalIndex(i))->toolTip());
+        } else {
+            act = p->addAction(itemModel->horizontalHeaderItem(logicalIndex(i))->text() +
+                               "\t - "+ itemModel->horizontalHeaderItem(logicalIndex(i))->toolTip());
+        }
 
-      act->setCheckable(true);
-      act->setChecked(!isSectionHidden(logicalIndex(i)));
-      int data = logicalIndex(i);
-      act->setData(data);
+        act->setCheckable(true);
+        act->setChecked(!isSectionHidden(logicalIndex(i)));
+        int data = logicalIndex(i);
+        act->setData(data);
     }
     connect(p, SIGNAL(triggered(QAction*)), SLOT(changeColumns(QAction*)));
     p->exec(QCursor::pos());
