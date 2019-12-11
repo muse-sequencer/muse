@@ -161,6 +161,7 @@
 #include "xpm/router_view_splitter.xpm"
 
 #include "icons.h"
+#include "gconfig.h"
 
 #define MPNGIMG(a) QPixmap(a)
 #define MSVGIMG(a) QPixmap(a)
@@ -862,17 +863,17 @@ void initIcons(bool useThemeIconsIfPossible)
       editpasteCloneSCursor = new QCursor(*editpasteCloneSIcon, 8, 8);
 
       // tool cursors
-      pencilCursor     = new QCursor(pencilIconSVG->pixmap(DEFCURSIZE), qRound(dpr * 1), qRound(dpr * 17));
-      glueCursor       = new QCursor(glueIconSVG->pixmap(DEFCURSIZE),  qRound(dpr * 1), qRound(dpr * 17));
-      cutterCursor     = new QCursor(cutterIconSVG->pixmap(DEFCURSIZE),  qRound(dpr * 1), qRound(dpr * 17));
-      zoomCursor       = new QCursor(zoomIconSVG->pixmap(DEFCURSIZE));
-      zoomAtCursor     = new QCursor(zoomAtIconSVG->pixmap(DEFCURSIZE));
-      deleteCursor     = new QCursor(deleteIconSVG->pixmap(DEFCURSIZE), qRound(dpr * 3), qRound(dpr * 15));
-      drawCursor       = new QCursor(drawIconSVG->pixmap(DEFCURSIZE), qRound(dpr * 1), qRound(dpr * 17));
-      mutePartsCursor  = new QCursor(mutePartsIconSVG->pixmap(DEFCURSIZE));
-      handCursor       = new QCursor(handIconSVG->pixmap(DEFCURSIZE));
-      closedHandCursor = new QCursor(closedHandIconSVG->pixmap(DEFCURSIZE));
-      magnetCursor     = new QCursor(magnetIconSVG->pixmap(DEFCURSIZE), -1, qRound(dpr * 15));
+      pencilCursor     = new QCursor(pencilIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)), qRound(dpr * 1), qRound(dpr * 17));
+      glueCursor       = new QCursor(glueIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)),  qRound(dpr * 1), qRound(dpr * 17));
+      cutterCursor     = new QCursor(cutterIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)),  qRound(dpr * 1), qRound(dpr * 17));
+      zoomCursor       = new QCursor(zoomIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)));
+      zoomAtCursor     = new QCursor(zoomAtIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)));
+      deleteCursor     = new QCursor(deleteIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)), qRound(dpr * 3), qRound(dpr * 15));
+      drawCursor       = new QCursor(drawIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)), qRound(dpr * 1), qRound(dpr * 17));
+      mutePartsCursor  = new QCursor(mutePartsIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)));
+      handCursor       = new QCursor(handIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)));
+      closedHandCursor = new QCursor(closedHandIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)));
+      magnetCursor     = new QCursor(magnetIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)), -1, qRound(dpr * 15));
       }
 
 //---------------------------------------------------------

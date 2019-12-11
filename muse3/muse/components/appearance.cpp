@@ -598,6 +598,12 @@ void Appearance::resetValues()
       useThemeIcons->setChecked(config->useThemeIconsIfPossible);
       useThemeIcons->blockSignals(false);
       
+      iconSizeSpin->blockSignals(true);
+      iconSizeSpin->setValue(config->iconSize);
+      iconSizeSpin->blockSignals(false);
+      cursorSizeSpin->blockSignals(true);
+      cursorSizeSpin->setValue(config->cursorSize);
+      cursorSizeSpin->blockSignals(false);
       // Grab all the colours.
       updateColorItems();
 
@@ -834,6 +840,16 @@ bool Appearance::apply()
       config->globalAlphaBlend = globalAlphaVal->value();
       config->maxAliasedPointSize = maxAliasedPointSize->value();
 
+      if (config->iconSize != iconSizeSpin->value()) {
+          restart_required = true;
+          config->iconSize = iconSizeSpin->value();
+      }
+
+      if (config->cursorSize != cursorSizeSpin->value()) {
+          restart_required = true;
+          config->cursorSize = cursorSizeSpin->value();
+      }
+
       if(config->useThemeIconsIfPossible != useThemeIcons->isChecked())
       {
         restart_required = true;
@@ -844,6 +860,8 @@ bool Appearance::apply()
         config->waveDrawing = MusEGlobal::WaveOutLine;
       else
         config->waveDrawing = MusEGlobal::WaveRmsPeak;
+
+
 
       MusEGlobal::config = *config;
       *backupConfig = *config;

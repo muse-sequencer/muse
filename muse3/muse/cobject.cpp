@@ -67,7 +67,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
 	setObjectName(QString(name));
 	//setDockNestingEnabled(true); // Allow multiple rows.	Tim.
-	setIconSize(ICON_SIZE);
+    setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 
     subwinAction=new QAction(tr("As Subwindow"), this);
 	subwinAction->setCheckable(true);
@@ -153,7 +153,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
         QToolBar* transport_toolbar = addToolBar(tr("Transport"));
         transport_toolbar->setObjectName("Transport tool");
         transport_toolbar->addActions(MusEGlobal::transportAction->actions());
-        transport_toolbar->setIconSize(ICON_SIZE);
+        transport_toolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 
         // Already has an object name.
         TempoToolbar* tempo_tb = new TempoToolbar(tr("Tempo"), this);
@@ -475,7 +475,7 @@ void TopWin::addToolBar(QToolBar* toolbar)
 	else
 		toolbar->hide();
 	
-	toolbar->setIconSize(ICON_SIZE);
+    toolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 }
 
 QToolBar* TopWin::addToolBar(const QString& title)
