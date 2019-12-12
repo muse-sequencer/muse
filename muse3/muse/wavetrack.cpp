@@ -37,11 +37,12 @@
 #include "audioprefetch.h"
 #include "latency_compensator.h"
 
-// REMOVE Tim. samplerate. Enabled.
-//#define WAVETRACK_DEBUG
 // Turn on some cool terminal 'peak' meters for debugging
 //  presence of actual audio at various places
 // #define NODE_DEBUG_TERMINAL_PEAK_METERS
+
+// For debugging output: Uncomment the fprintf section.
+#define WAVETRACK_DEBUG(dev, format, args...) // fprintf(dev, format, ##args)
 
 namespace MusECore {
 
@@ -107,9 +108,7 @@ void WaveTrack::assign(const Track& t, int flags)
 
 void WaveTrack::seekData(sf_count_t pos)
       {
-      #ifdef WAVETRACK_DEBUG
-      fprintf(stderr, "WaveTrack::seekData %s pos:%ld\n", name().toLatin1().constData(), pos);
-      #endif
+      WAVETRACK_DEBUG(stderr, "WaveTrack::seekData %s pos:%ld\n", name().toLatin1().constData(), pos);
       
 //       // reset buffer to zero
 //       for (int i = 0; i < channels(); ++i)
@@ -202,9 +201,8 @@ void WaveTrack::seekData(sf_count_t pos)
 
 void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSeek, bool overwrite, int latency_correction)
       {
-      #ifdef WAVETRACK_DEBUG
-      fprintf(stderr, "WaveTrack::fetchData %s samples:%u pos:%u overwrite:%d\n", name().toLatin1().constData(), samples, pos, overwrite);
-      #endif
+      WAVETRACK_DEBUG(stderr, "WaveTrack::fetchData %s samples:%u pos:%u overwrite:%d\n",
+                      name().toLatin1().constData(), samples, pos, overwrite);
 
       // reset buffer to zero
       if(overwrite)
@@ -626,9 +624,8 @@ bool WaveTrack::closeAllParts()
 // //               // Get the ONE allocated interleaved buffer which is fed with direct interleaved soundfile data.
 // //               if(fifo->get(1, samples, &prefetch_buf, &pos))
 // //               {
-// //                 #ifdef WAVETRACK_DEBUG
-// //                 fprintf(stderr, "WaveTrack::getPrefetchData(%s) event fifo underrun (A)\n", name().toLocal8Bit().constData());
-// //                 #endif
+// //                 WAVETRACK_DEBUG(stderr, "WaveTrack::getPrefetchData(%s) event fifo underrun (A)\n",
+// //                                          name().toLocal8Bit().constData());
 // //               }
 // //               else if(pos != framePos)
 // //               {
@@ -642,9 +639,8 @@ bool WaveTrack::closeAllParts()
 // //
 // //                   if(fifo->get(1, samples, &prefetch_buf, &pos))
 // //                   {
-// //                     #ifdef WAVETRACK_DEBUG
-// //                     fprintf(stderr, "WaveTrack::getPrefetchData(%s) event fifo underrun (B)\n", name().toLocal8Bit().constData());
-// //                     #endif
+// //                     WAVETRACK_DEBUG(stderr, "WaveTrack::getPrefetchData(%s) event fifo underrun (B)\n",
+// //                                      name().toLocal8Bit().constData());
 // //                     break;
 // //                   }
 // //                 }
@@ -963,9 +959,8 @@ bool WaveTrack::closeAllParts()
 // //               // Get the ONE allocated interleaved buffer which is fed with direct interleaved soundfile data.
 // //               if(fifo->get(1, samples, &prefetch_buf, &pos))
 // //               {
-// //                 #ifdef WAVETRACK_DEBUG
-// //                 fprintf(stderr, "WaveTrack::getPrefetchData(%s) event fifo underrun (A)\n", name().toLocal8Bit().constData());
-// //                 #endif
+// //                 WAVETRACK_DEBUG(stderr, "WaveTrack::getPrefetchData(%s) event fifo underrun (A)\n",
+// //                                          name().toLocal8Bit().constData());
 // //               }
 // //               else if(pos != framePos)
 // //               {
@@ -979,9 +974,8 @@ bool WaveTrack::closeAllParts()
 // //
 // //                   if(fifo->get(1, samples, &prefetch_buf, &pos))
 // //                   {
-// //                     #ifdef WAVETRACK_DEBUG
-// //                     fprintf(stderr, "WaveTrack::getPrefetchData(%s) event fifo underrun (B)\n", name().toLocal8Bit().constData());
-// //                     #endif
+// //                     WAVETRACK_DEBUG(stderr, "WaveTrack::getPrefetchData(%s) event fifo underrun (B)\n",
+// //                                              name().toLocal8Bit().constData());
 // //                     break;
 // //                   }
 // //                 }

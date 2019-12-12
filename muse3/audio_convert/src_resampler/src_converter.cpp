@@ -38,12 +38,9 @@
 // #include "audio_convert/audio_converter_settings_group.h"
 // #include "audio_convert/audio_converter_plugin.h"
 
-#define ERROR_AUDIOCONVERT(dev, format, args...)  fprintf(dev, format, ##args)
-
-// REMOVE Tim. samplerate. Enabled.
 // For debugging output: Uncomment the fprintf section.
-//#define DEBUG_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
-#define DEBUG_AUDIOCONVERT(dev, format, args...) fprintf(dev, format, ##args)
+#define ERROR_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
+#define DEBUG_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
 
 // Fixed audio input buffer size.
 #define SRC_IN_BUFFER_FRAMES 1024
@@ -169,8 +166,10 @@ SRCAudioConverter::SRCAudioConverter(int systemSampleRate, int channels, AudioCo
   int srcerr;
   DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::SRCaudioConverter Creating samplerate converter type:%d with %d channels\n", _type, _channels);
   _src_state = src_new(_type, _channels, &srcerr); 
-  if(!_src_state)      
+  if(!_src_state)
+  {
     ERROR_AUDIOCONVERT(stderr, "SRCAudioConverter::SRCaudioConverter Creation of samplerate converter type:%d with %d channels failed:%s\n", _type, _channels, src_strerror(srcerr));
+  }
 }
 
 SRCAudioConverter::~SRCAudioConverter()
@@ -204,8 +203,10 @@ void SRCAudioConverter::setChannels(int ch)
   int srcerr;
   DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::setChannels Creating samplerate converter type:%d with %d channels\n", _type, ch);
   _src_state = src_new(_type, ch, &srcerr);  
-  if(!_src_state)      
+  if(!_src_state)
+  {
     ERROR_AUDIOCONVERT(stderr, "SRCAudioConverter::setChannels of samplerate converter type:%d with %d channels failed:%s\n", _type, ch, src_strerror(srcerr));
+  }
   return;  
 }
 
@@ -216,8 +217,10 @@ void SRCAudioConverter::reset()
     return;
   DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::reset this:%p\n", this);
   int srcerr = src_reset(_src_state);
-  if(srcerr != 0)      
+  if(srcerr != 0)
+  {
     ERROR_AUDIOCONVERT(stderr, "SRCAudioConverter::reset Converter reset failed: %s\n", src_strerror(srcerr));
+  }
   return;  
 }
 
@@ -603,13 +606,19 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
   //  in case something is really screwed up - we don't want to get stuck in a loop here.
   int attempts = 20;
   if(pos <= debug_min_pos)
-    fprintf(stderr, "SRCAudioConverter::process pos:%ld end_pos:%ld unsquished_pos:%ld\n", pos, end_squished_pos, unsquished_pos);
+  {
+    DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process pos:%ld end_pos:%ld unsquished_pos:%ld\n",
+                       pos, end_squished_pos, unsquished_pos);
+  }
   while(totalOutFrames < frames && attempts > 0)
   {
     cur_squished_pos = pos + totalOutFrames;
     //cur_unsquished_pos = unsquished_pos + totalOutFrames;
     if(pos <= debug_min_pos)
-      fprintf(stderr, "   cur_squished_pos:%ld outFrames:%ld totalOutFrames:%ld\n", cur_squished_pos, outFrames, totalOutFrames);
+    {
+      DEBUG_AUDIOCONVERT(stderr, "   cur_squished_pos:%ld outFrames:%ld totalOutFrames:%ld\n",
+                         cur_squished_pos, outFrames, totalOutFrames);
+    }
 
     if(_needBuffer)
     {
@@ -637,7 +646,9 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
     if(need_slice)
     {
       if(pos <= debug_min_pos)
-        fprintf(stderr, "   new slice: cur_ratio:%f\n", cur_ratio);
+      {
+        DEBUG_AUDIOCONVERT(stderr, "   new slice: cur_ratio:%f\n", cur_ratio);
+      }
 
       fin_samplerateRatio = sf_sr_ratio + cur_ratio - 1.0;
       if(fin_samplerateRatio < 0.000001)
@@ -657,7 +668,9 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
         //outFrames = next_isli->first - cur_unsquished_pos;
         outFrames = next_isli->second._finSquishedFrame - cur_squished_pos;
         if(pos <= debug_min_pos)
-          fprintf(stderr, "   new next_isli: next cur_ratio:%f outFrames:%ld\n", cur_ratio, outFrames);
+        {
+          DEBUG_AUDIOCONVERT(stderr, "   new next_isli: next cur_ratio:%f outFrames:%ld\n", cur_ratio, outFrames);
+        }
         next_isli = stretch_list->nextEvent(StretchListItem::SamplerateEvent, next_isli);
       }
       else
@@ -729,8 +742,10 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
   }
 
   if(attempts == 0)
+  {
     ERROR_AUDIOCONVERT(stderr, "SRCAudioConverter::process %s Too may attempts to process! totalOutFrames:%ld frames:%d\n",
                        sf->name().toLatin1().constData(), totalOutFrames, frames);
+  }
 
   // If we didn't get the desired number of output frames.
   if(totalOutFrames != frames)

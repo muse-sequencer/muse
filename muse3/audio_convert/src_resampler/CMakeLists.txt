@@ -92,7 +92,7 @@ target_link_libraries(src_converter
 ## Install location
 ##
 install( TARGETS src_converter
-      DESTINATION ${MusE_PLUGINS_DIR}
+      DESTINATION ${MusE_AUDIO_CONVERTER_PLUGINS_DIR}
       )
 # install( FILES ChangeLog COPYING README TODO
 #       DESTINATION ${MusE_DOC_DIR}/src_converter

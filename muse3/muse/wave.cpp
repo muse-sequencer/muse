@@ -56,14 +56,12 @@
 #include "audio_convert/audio_converter_plugin.h"
 #include "audio_convert/audio_converter_settings_group.h"
 
-//#define WAVE_DEBUG
-//#define WAVE_DEBUG_PRC
-
 // REMOVE Tim. samplerate. Added.
 #define USE_SAMPLERATE
-#define ERROR_WAVE(dev, format, args...)  fprintf(dev, format, ##args)
-#define INFO_WAVE(dev, format, args...)  fprintf(dev, format, ##args)
+
 // For debugging output: Uncomment the fprintf section.
+#define ERROR_WAVE(dev, format, args...) // fprintf(dev, format, ##args)
+#define INFO_WAVE(dev, format, args...) // fprintf(dev, format, ##args)
 #define DEBUG_WAVE(dev, format, args...)  // fprintf(dev, format, ##args)
 
 namespace MusECore {
@@ -1215,13 +1213,19 @@ void SndFile::close()
             return;
             }
       if(int err = sf_close(sf))
+      {
+        err += 0; // Touch.
         ERROR_WAVE(stderr, "SndFile::close Error:%d on sf_close(sf:%p)\n", err, sf);
+      }
       else
         sf = NULL;
       if (sfUI)
       {
             if(int err = sf_close(sfUI))
+            {
+              err += 0; // Touch.
               ERROR_WAVE(stderr, "SndFile::close Error:%d on sf_close(sfUI:%p)\n", err, sfUI);
+            }
             else
               sfUI = NULL;
       }
@@ -1998,7 +2002,9 @@ bool SndFile::checkCopyOnWrite()
           {
             // Double check.
             if(part && !p->isCloneOf(part))
+            {
               ERROR_WAVE(stderr, "SndFile::checkCopyOnWrite() Error: Two event ids are the same:%d but their parts:%p, %p are not clones!\n", (int)id, p, part);
+            }
             continue;
           }
           part = p;
@@ -2193,7 +2199,9 @@ int ClipList::idx(const Clip& clip) const
 void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusECore::Pos e, Undo& operations)
       {
       if (MusEGlobal::debugMsg)
+      {
           INFO_WAVE(stderr, "cmdAddRecordedWave - loopCount = %d, punchin = %d", MusEGlobal::audio->loopCount(), punchin());
+      }
 
       // Driver should now be in transport 'stop' mode and no longer pummping the recording wave fifo,
       //  but the fifo may not be empty yet, it's in the prefetch thread.
@@ -2259,7 +2267,9 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
                                  // counter has dropped by 2 and _recFile will probably deleted then
         remove(st.toLocal8Bit().constData());
         if(MusEGlobal::debugMsg)
+        {
           INFO_WAVE(stderr, "Song::cmdAddRecordedWave: remove file %s - startframe=%d endframe=%d\n", st.toLocal8Bit().constData(), s.frame(), e.frame());
+        }
 
         // Restore master flag.
         if(MusEGlobal::extSyncFlag && !master_was_on)

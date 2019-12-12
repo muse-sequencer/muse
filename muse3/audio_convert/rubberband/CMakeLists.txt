@@ -90,7 +90,7 @@ target_link_libraries(rubberband_converter
 ## Install location
 ##
 install( TARGETS rubberband_converter
-      DESTINATION ${MusE_PLUGINS_DIR}
+      DESTINATION ${MusE_AUDIO_CONVERTER_PLUGINS_DIR}
       )
 # install( FILES ChangeLog COPYING README TODO
 #       DESTINATION ${MusE_DOC_DIR}/rubberband_converter

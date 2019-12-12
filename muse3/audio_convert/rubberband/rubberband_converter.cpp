@@ -37,11 +37,10 @@
 
 #include "rubberband_converter.h"
 
-#define ERROR_AUDIOCONVERT(dev, format, args...)  fprintf(dev, format, ##args)
 
-// REMOVE Tim. samplerate. Enabled.
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_AUDIOCONVERT(dev, format, args...)  fprintf(dev, format, ##args)
+#define ERROR_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
+#define DEBUG_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
 
 
 // Create a new instance of the plugin.  
@@ -300,7 +299,8 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
   _rbs->setTimeRatio(inv_fin_samplerateRatio * stretchVal);
   _rbs->setPitchScale(fin_samplerateRatio);
 
-  int new_lat = _rbs->getLatency();
+//   int new_lat = _rbs->getLatency();
+  
 //   cur_lat -= 16; // HACK: Incorrect latency is always +1 more ?
 //   if(cur_lat < 0)
 //     cur_lat = 0;
@@ -336,7 +336,7 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
   //int frame = 0;
   
   // Tested: Latency will change after the above setting of ratios. Also affected by converter options.
-  //fprintf(stderr, "RubberBandAudioConverter::process latency:%lu\n", _rbs->getLatency());
+  //DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process latency:%lu\n", _rbs->getLatency());
 
 
 //   if(_latencyCompPending)
@@ -408,8 +408,10 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
       //rbinbuffer[i] = rbindata + i * new_lat;
       rbinbuffer[i] = rbindata + i * old_lat;
     if(pos <= debug_min_pos)
+    {
       //DEBUG_AUDIOCONVERT(stderr, "   Latency: new_lat:%d\n", new_lat);
-      DEBUG_AUDIOCONVERT(stderr, "   Latency: old_lat:%d new_lat:%d\n", old_lat, new_lat);
+      DEBUG_AUDIOCONVERT(stderr, "   Latency: old_lat:%d new_lat:%d\n", old_lat, _rbs->getLatency());
+    }
     //_rbs->process(rbinbuffer, new_lat, false);
     _rbs->process(rbinbuffer, old_lat, false);
   }
@@ -448,13 +450,17 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
         *(rbinbuffer[ch] + i) = *sfptr++;
     }
     if(pos <= debug_min_pos)
+    {
       DEBUG_AUDIOCONVERT(stderr, "   Normal: required:%d avail:%d\n", int(sreq), _rbs->available());
+    }
     _rbs->process(rbinbuffer, sreq, false);
   }
   
   int savail = _rbs->available();
   if(pos <= debug_min_pos)
+  {
     DEBUG_AUDIOCONVERT(stderr, "   Normal: final avail:%d\n", _rbs->available());
+  }
   if(savail > outFrames)
     savail = outFrames;
   

@@ -39,10 +39,9 @@
 //   #endif
 // #endif // USE_ALTERNATE_STRETCH_LIST
 
-#define ERROR_TIMESTRETCH(dev, format, args...)  fprintf(dev, format, ##args)
-#define INFO_TIMESTRETCH(dev, format, args...) // fprintf(dev, format, ##args)
-// REMOVE Tim. samplerate. Enabled.
 // For debugging output: Uncomment the fprintf section.
+#define ERROR_TIMESTRETCH(dev, format, args...) // fprintf(dev, format, ##args)
+#define INFO_TIMESTRETCH(dev, format, args...) // fprintf(dev, format, ##args)
 #define DEBUG_TIMESTRETCH(dev, format, args...) // fprintf(dev, format, ##args)
 
 namespace MusECore {

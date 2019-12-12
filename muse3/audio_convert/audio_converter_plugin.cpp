@@ -38,12 +38,11 @@
 
 #include <dlfcn.h>
 
-#define INFO_AUDIOCONVERT(dev, format, args...)  fprintf(dev, format, ##args)
-#define ERROR_AUDIOCONVERT(dev, format, args...)  fprintf(dev, format, ##args)
+#define INFO_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
+#define ERROR_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
 
-// REMOVE Tim. samplerate. Enabled.
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_AUDIOCONVERT(dev, format, args...)  fprintf(dev, format, ##args)
+#define DEBUG_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
 
 // To make testing keeping the library open easier.
 //#define __KEEP_LIBRARY_OPEN__
@@ -56,11 +55,13 @@ namespace MusECore {
 
 void AudioConverterPluginList::discover()
 {
-  QString s = MusEGlobal::museGlobalLib + "/plugins"; // TODO Make a new folder for these. Just use plugins for now...
+  QString s = MusEGlobal::museGlobalLib + "/converters";
 
   QDir pluginDir(s, QString("*.so"));
   if(MusEGlobal::debugMsg)
+  {
         INFO_AUDIOCONVERT(stderr, "searching for audio converters in <%s>\n", s.toLatin1().constData());
+  }
   if(pluginDir.exists())
   {
     QFileInfoList list = pluginDir.entryInfoList();
@@ -78,10 +79,8 @@ void AudioConverterPluginList::discover()
         ERROR_AUDIOCONVERT(stderr, "AudioConverterList::discover(): dlopen(%s) failed: %s\n", path, dlerror());
         continue;
       }
-      //typedef const MESS* (*MESS_Function)();
-      //MESS_Function msynth = (MESS_Function)dlsym(handle, "mess_descriptor");
-      //typedef const MESS* (*MESS_Function)();
-      Audio_Converter_Descriptor_Function desc_func = (Audio_Converter_Descriptor_Function)dlsym(handle, "audio_converter_descriptor");
+      Audio_Converter_Descriptor_Function desc_func =
+          (Audio_Converter_Descriptor_Function)dlsym(handle, "audio_converter_descriptor");
 
       if(!desc_func)
       {
@@ -120,8 +119,10 @@ void AudioConverterPluginList::discover()
       
     }
     if(MusEGlobal::debugMsg)
+    {
       //INFO_AUDIOCONVERT(stderr, "%zd Audio converters found\n", MusEGlobal::audioConverterPluginList.size());
       INFO_AUDIOCONVERT(stderr, "%zd Audio converters found\n", size());
+    }
   }
 }
 
@@ -293,8 +294,10 @@ AudioConverterPlugin::~AudioConverterPlugin()
 {
   DEBUG_AUDIOCONVERT(stderr, "AudioConverterPlugin dtor: this:%p plugin:%p id:%d\n", this, plugin, id());
   if(plugin)
+  {
   //  delete plugin;
     ERROR_AUDIOCONVERT(stderr, "  Error: plugin is not NULL\n");
+  }
     
 //#ifndef __KEEP_LIBRARY_OPEN__
   if(_handle)

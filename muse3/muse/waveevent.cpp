@@ -42,9 +42,9 @@
 // REMOVE Tim. samplerate. Enabled.
 #define USE_SAMPLERATE
 
-// REMOVE Tim. samplerate. Enabled.
-#define WAVEEVENT_DEBUG
-//#define WAVEEVENT_DEBUG_PRC
+// For debugging output: Uncomment the fprintf section.
+#define WAVEEVENT_DEBUG(dev, format, args...) // fprintf(dev, format, ##args)
+#define WAVEEVENT_DEBUG_PRC(dev, format, args...) // fprintf(dev, format, ##args)
 
 namespace MusECore {
 
@@ -331,9 +331,7 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
 
 // void WaveEventBase::seekAudio(sf_count_t offset)
 // {
-//   #ifdef WAVEEVENT_DEBUG_PRC
-//   printf("WaveEventBase::seekAudio audConv:%p offset:%lu\n", _audConv, offset);
-//   #endif
+//   WAVEEVENT_DEBUG_PRC("WaveEventBase::seekAudio audConv:%p offset:%lu\n", _audConv, offset);
 // 
 // 
 //   sf_count_t newfr = offset + _spos;
@@ -360,10 +358,7 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
 // }
 void WaveEventBase::seekAudio(sf_count_t frame)
 {
-  #ifdef WAVEEVENT_DEBUG_PRC
-  //printf("WaveEventBase::seekAudio audConv:%p offset:%lu\n", _audConv, offset);
-  printf("WaveEventBase::seekAudio offset:%lu\n", offset);
-  #endif
+  WAVEEVENT_DEBUG_PRC("WaveEventBase::seekAudio offset:%lu\n", offset);
 
 #ifdef USE_SAMPLERATE
   
@@ -425,12 +420,7 @@ void WaveEventBase::seekAudio(sf_count_t frame)
 //void WaveEventBase::readAudio(WavePart* /*part*/, unsigned /*offset*/, float** buffer, int channel, int n, bool /*doSeek*/, bool overwrite)
 void WaveEventBase::readAudio(unsigned frame, float** buffer, int channel, int n, bool /*doSeek*/, bool overwrite)
 {
-  #ifdef WAVEEVENT_DEBUG_PRC
-// REMOVE Tim. samplerate. Changed.
-//   printf("WaveEventBase::readAudio audConv:%p sfCurFrame:%ld offset:%u channel:%d n:%d\n", audConv, sfCurFrame, offset, channel, n);
-  //printf("WaveEventBase::readAudio audConv:%p offset:%u channel:%d n:%d\n", _audConv, offset, channel, n);
-  printf("WaveEventBase::readAudio offset:%u channel:%d n:%d overwrite:%d\n", offset, channel, n, overwrite);
-  #endif
+  WAVEEVENT_DEBUG_PRC("WaveEventBase::readAudio channel:%d n:%d overwrite:%d\n", channel, n, overwrite);
   
   // DELETETHIS 270. all the below stuff hasn't changed since revision 462, and 
   // will not compile, and has a TODO in it.
@@ -526,10 +516,8 @@ void WaveEventBase::readAudio(unsigned frame, float** buffer, int channel, int n
       //_sfCurFrame = sf_seek(sf, newfr, 0);
       sfCurFrame = f.seek(newfr, 0);
       
-      // Added by Tim. p3.3.17
-      #ifdef WAVEEVENT_DEBUG_PRC
-      printf("WaveEventBase::readAudio Seek frame:%ld converted to frame:%ld _sfCurFrame:%ld\n", frame, newfr, sfCurFrame);
-      #endif
+      WAVEEVENT_DEBUG_PRC("WaveEventBase::readAudio Seek frame:%ld converted to frame:%ld _sfCurFrame:%ld\n",
+                           frame, newfr, sfCurFrame);
       
       // Reset the src converter. It's current state is meaningless now.
       //int srcerr = src_reset(src_state);
@@ -547,9 +535,8 @@ void WaveEventBase::readAudio(unsigned frame, float** buffer, int channel, int n
     else  
     {
       // Added by Tim. p3.3.17
-      #ifdef WAVEEVENT_DEBUG_PRC
-      printf("WaveEventBase::readAudio No 'transport' seek, rates different. Seeking to _sfCurFrame:%ld\n", sfCurFrame);
-      #endif
+      WAVEEVENT_DEBUG_PRC("WaveEventBase::readAudio No 'transport' seek, rates different. Seeking to _sfCurFrame:%ld\n",
+                           sfCurFrame);
       
       // Sample rates are different. We can't just tell seek to go to an absolute calculated position, 
       //  since the last position can vary - it might not be what the calculated position is. 
@@ -622,10 +609,8 @@ void WaveEventBase::readAudio(unsigned frame, float** buffer, int channel, int n
   srcdata.end_of_input  = ((long)rn != inFrames);
   srcdata.src_ratio     = srcratio;
 
-  #ifdef WAVEEVENT_DEBUG_PRC
-  printf("WaveEventBase::readAudio %s processing converter... inFrames:%ld inSize:%ld outFrames:%ld outSize:%ld rn:%d", 
+  WAVEEVENT_DEBUG_PRC("WaveEventBase::readAudio %s processing converter... inFrames:%ld inSize:%ld outFrames:%ld outSize:%ld rn:%d", 
     f.name().toLatin1(), inFrames, inSize, outFrames, outSize, rn);
-  #endif
   
   //int srcerr = src_process(src_state, &srcdata);
   int srcerr = audConv->process(&srcdata);
@@ -635,9 +620,7 @@ void WaveEventBase::readAudio(unsigned frame, float** buffer, int channel, int n
     return sfCurFrame += rn;
   }
   
-  #ifdef WAVEEVENT_DEBUG_PRC
-  printf(" frames used in:%ld out:%ld\n", srcdata.input_frames_used, srcdata.output_frames_gen);
-  #endif
+  WAVEEVENT_DEBUG_PRC(" frames used in:%ld out:%ld\n", srcdata.input_frames_used, srcdata.output_frames_gen);
   
   // If the number of frames read by the soundfile equals the input frames, go back.
   // Otherwise we have reached the end of the file, so going back is useless since
@@ -648,9 +631,7 @@ void WaveEventBase::readAudio(unsigned frame, float** buffer, int channel, int n
     sf_count_t seekn = inFrames - srcdata.input_frames_used;
     if(seekn != 0)
     {
-      #ifdef WAVEEVENT_DEBUG_PRC
-      printf("WaveEventBase::readAudio Seek-back by:%d\n", seekn);
-      #endif
+      WAVEEVENT_DEBUG_PRC("WaveEventBase::readAudio Seek-back by:%d\n", seekn);
       sfCurFrame = f.seek(-seekn, SEEK_CUR);
     }
     else  
@@ -783,9 +764,8 @@ void WaveEventBase::readAudio(unsigned frame, float** buffer, int channel, int n
 // 
 // void WaveEventBase::fetchAudioData(WavePart* part, sf_count_t pos, int channels, bool off, sf_count_t frames, float** bp, bool doSeek, bool overwrite)
 //       {
-//       #ifdef WAVEEVENT_DEBUG
-//       printf("WaveEventBase::fetchData %s channels:%d samples:%lu pos:%ld\n", name().toLatin1().constData(), channels, frames, pos);
-//       #endif
+//       WAVEEVENT_DEBUG("WaveEventBase::fetchData %s channels:%d samples:%lu pos:%ld\n",
+//                        name().toLatin1().constData(), channels, frames, pos);
 //       
 //       if(overwrite)
 //       {

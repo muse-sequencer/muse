@@ -115,6 +115,10 @@ SET(MusE_SYNTHI_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/synthi)
 ## Plugins directory
 SET(MusE_PLUGINS_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/plugins)
 
+## REMOVE Tim. samplerate. Added.
+## Audio converter plugins directory
+SET(MusE_AUDIO_CONVERTER_PLUGINS_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/converters)
+
 ## Top documentation dir
 IF(NOT DEFINED MusE_DOC_DIR)
       SET(MusE_DOC_DIR ${SHARE_INSTALL_PREFIX}/doc/${MusE_INSTALL_NAME}/)

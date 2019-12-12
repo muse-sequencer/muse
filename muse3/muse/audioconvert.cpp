@@ -32,8 +32,9 @@
 #include "audioconvert.h"
 #include "eventbase.h"
 
-//#define AUDIOCONVERT_DEBUG
-//#define AUDIOCONVERT_DEBUG_PRC
+// For debugging output: Uncomment the fprintf section.
+#define AUDIOCONVERT_DEBUG(dev, format, args...) // fprintf(dev, format, ##args)
+#define AUDIOCONVERT_DEBUG_PRC(dev, format, args...) // fprintf(dev, format, ##args)
 
 namespace MusECore {
 
@@ -86,9 +87,7 @@ iAudioConvertMap AudioConvertMap::getConverter(EventBase* eb)
 
 AudioConverter::AudioConverter()
 {
-  #ifdef AUDIOCONVERT_DEBUG
-  printf("AudioConverter::AudioConverter this:%p\n", this);
-  #endif
+  AUDIOCONVERT_DEBUG("AudioConverter::AudioConverter this:%p\n", this);
 
   _refCount = 1;
   _sfCurFrame = 0;
@@ -96,17 +95,13 @@ AudioConverter::AudioConverter()
 
 AudioConverter::~AudioConverter()
 {
-  #ifdef AUDIOCONVERT_DEBUG
-  printf("AudioConverter::~AudioConverter this:%p\n", this);
-  #endif
+  AUDIOCONVERT_DEBUG("AudioConverter::~AudioConverter this:%p\n", this);
 }
 
 AudioConverter* AudioConverter::reference()
 {
   _refCount += 1;
-  #ifdef AUDIOCONVERT_DEBUG
-  printf("AudioConverter::reference this:%p current refcount:%d\n", this, _refCount);
-  #endif
+  AUDIOCONVERT_DEBUG("AudioConverter::reference this:%p current refcount:%d\n", this, _refCount);
   return this;
 }
 
@@ -115,14 +110,10 @@ AudioConverter* AudioConverter::release(AudioConverter* cv)
   if(!cv)
     return 0;
   cv->_refCount -= 1;
-  #ifdef AUDIOCONVERT_DEBUG
-  printf("AudioConverter::release converter:%p current refcount:%d\n", cv, cv->_refCount);
-  #endif
+  AUDIOCONVERT_DEBUG("AudioConverter::release converter:%p current refcount:%d\n", cv, cv->_refCount);
   if(cv->_refCount <= 0)
   {
-    #ifdef AUDIOCONVERT_DEBUG
-    printf("AudioConverter::release deleting converter:%p\n", cv);
-    #endif
+    AUDIOCONVERT_DEBUG("AudioConverter::release deleting converter:%p\n", cv);
     delete cv;
     cv = 0;
   }
@@ -135,10 +126,8 @@ off_t AudioConverter::readAudio(MusECore::SndFileR& f, unsigned offset, float** 
     return _sfCurFrame;
   
   // Added by Tim. p3.3.17 DELETETHIS or comment it in again. it's disabled anyway
-  //#ifdef AUDIOCONVERT_DEBUG_PRC
-  //printf("AudioConverter::process %s audConv:%p sfCurFrame:%ld offset:%u channel:%d fchan:%d n:%d\n", 
+  //AUDIOCONVERT_DEBUG_PRC("AudioConverter::process %s audConv:%p sfCurFrame:%ld offset:%u channel:%d fchan:%d n:%d\n", 
   //        f.name().toLatin1(), this, sfCurFrame, offset, channel, f.channels(), n);
-  //#endif
   
   off_t frame     = offset;  // _spos is added before the call.
   unsigned fsrate = f.samplerate();
@@ -166,9 +155,7 @@ off_t AudioConverter::readAudio(MusECore::SndFileR& f, unsigned offset, float** 
     _sfCurFrame = f.seek(newfr, 0);
     
     // Added by Tim. p3.3.17 DELETETHIS 3 or comment it in
-    //#ifdef AUDIOCONVERT_DEBUG_PRC
-    //printf("AudioConverter::process Seek frame:%ld converted to frame:%ld sfCurFrame:%ld\n", frame, newfr, sfCurFrame);
-    //#endif
+    //AUDIOCONVERT_DEBUG_PRC("AudioConverter::process Seek frame:%ld converted to frame:%ld sfCurFrame:%ld\n", frame, newfr, sfCurFrame);
     
     // Reset the converter. Its current state is meaningless now.
     reset();
@@ -177,9 +164,7 @@ off_t AudioConverter::readAudio(MusECore::SndFileR& f, unsigned offset, float** 
   {
     // No seek requested. 
     // Added by Tim. p3.3.17 DELETETHIS 3 or comment it in
-    //#ifdef AUDIOCONVERT_DEBUG_PRC
-    //printf("AudioConverter::process No 'transport' seek, rates different. Seeking to sfCurFrame:%ld\n", sfCurFrame);
-    //#endif
+    //AUDIOCONVERT_DEBUG_PRC("AudioConverter::process No 'transport' seek, rates different. Seeking to sfCurFrame:%ld\n", sfCurFrame);
     
     // Sample rates are different. We can't just tell seek to go to an absolute calculated position, 
     //  since the last position can vary - it might not be what the calculated position is. 
@@ -253,9 +238,7 @@ off_t AudioConverter::readAudio(MusECore::SndFileR& f, unsigned offset, float** 
   }
   else 
   {
-    #ifdef AUDIOCONVERT_DEBUG
-    printf("AudioConverter::readAudio Channel mismatch: source chans:%d -> dst chans:%d\n", fchan, channel);
-    #endif
+    AUDIOCONVERT_DEBUG_PRC("AudioConverter::readAudio Channel mismatch: source chans:%d -> dst chans:%d\n", fchan, channel);
   }
   */
   
@@ -268,18 +251,14 @@ off_t AudioConverter::readAudio(MusECore::SndFileR& f, unsigned offset, float** 
 
 SRCAudioConverter::SRCAudioConverter(int channels, int type) : AudioConverter()
 {
-  #ifdef AUDIOCONVERT_DEBUG
-  printf("SRCAudioConverter::SRCAudioConverter this:%p channels:%d type:%d\n", this, channels, type);
-  #endif
+  AUDIOCONVERT_DEBUG("SRCAudioConverter::SRCAudioConverter this:%p channels:%d type:%d\n", this, channels, type);
 
   _type = type;
   _src_state = 0;
   _channels = channels;
   
   int srcerr;
-  #ifdef AUDIOCONVERT_DEBUG
-  printf("SRCAudioConverter::SRCaudioConverter Creating samplerate converter type:%d with %d channels\n", _type, _channels);
-  #endif
+  AUDIOCONVERT_DEBUG("SRCAudioConverter::SRCaudioConverter Creating samplerate converter type:%d with %d channels\n", _type, _channels);
   _src_state = src_new(_type, _channels, &srcerr); 
   if(!_src_state)      
     printf("SRCAudioConverter::SRCaudioConverter Creation of samplerate converter type:%d with %d channels failed:%s\n", _type, _channels, src_strerror(srcerr));
@@ -287,27 +266,21 @@ SRCAudioConverter::SRCAudioConverter(int channels, int type) : AudioConverter()
 
 SRCAudioConverter::~SRCAudioConverter()
 {
-  #ifdef AUDIOCONVERT_DEBUG
-  printf("SRCAudioConverter::~SRCAudioConverter this:%p\n", this);
-  #endif
+  AUDIOCONVERT_DEBUG("SRCAudioConverter::~SRCAudioConverter this:%p\n", this);
   if(_src_state)
     src_delete(_src_state);
 }
 
 void SRCAudioConverter::setChannels(int ch)
 {
-  #ifdef AUDIOCONVERT_DEBUG
-  printf("SRCAudioConverter::setChannels this:%p channels:%d\n", this, ch);
-  #endif
+  AUDIOCONVERT_DEBUG("SRCAudioConverter::setChannels this:%p channels:%d\n", this, ch);
   if(_src_state)
     src_delete(_src_state);
   _src_state = 0;
   
   _channels = ch;
   int srcerr;
-  #ifdef AUDIOCONVERT_DEBUG
-  printf("SRCAudioConverter::setChannels Creating samplerate converter type:%d with %d channels\n", _type, ch);
-  #endif  
+  AUDIOCONVERT_DEBUG("SRCAudioConverter::setChannels Creating samplerate converter type:%d with %d channels\n", _type, ch);
   _src_state = src_new(_type, ch, &srcerr);  
   if(!_src_state)      
     printf("SRCAudioConverter::setChannels of samplerate converter type:%d with %d channels failed:%s\n", _type, ch, src_strerror(srcerr));
@@ -318,9 +291,7 @@ void SRCAudioConverter::reset()
 {
   if(!_src_state)
     return;
-  #ifdef AUDIOCONVERT_DEBUG
-  printf("SRCAudioConverter::reset this:%p\n", this);
-  #endif
+  AUDIOCONVERT_DEBUG("SRCAudioConverter::reset this:%p\n", this);
   int srcerr = src_reset(_src_state);
   if(srcerr != 0)      
     printf("SRCAudioConverter::reset Converter reset failed: %s\n", src_strerror(srcerr));
@@ -335,10 +306,8 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
     return _sfCurFrame;
   
   // Added by Tim. p3.3.17 DELETETHIS 4
-  //#ifdef AUDIOCONVERT_DEBUG_PRC
-  //printf("AudioConverter::process %s audConv:%p sfCurFrame:%ld offset:%u channel:%d fchan:%d n:%d\n", 
+  //AUDIOCONVERT_DEBUG_PRC("AudioConverter::process %s audConv:%p sfCurFrame:%ld offset:%u channel:%d fchan:%d n:%d\n", 
   //        f.name().toLatin1(), this, sfCurFrame, offset, channel, f.channels(), n);
-  //#endif
   
 //  off_t frame     = offset;  // _spos is added before the call. DELETETHIS
   unsigned fsrate = f.samplerate();
@@ -347,9 +316,7 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
   
   if((MusEGlobal::sampleRate == 0) || (fsrate == 0))
   {  
-    #ifdef AUDIOCONVERT_DEBUG
-    printf("SRCAudioConverter::process Error: MusEGlobal::sampleRate or file samplerate is zero!\n");
-    #endif
+    AUDIOCONVERT_DEBUG("SRCAudioConverter::process Error: MusEGlobal::sampleRate or file samplerate is zero!\n");
     return _sfCurFrame;
   }  
   
@@ -404,10 +371,8 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
     srcdata.end_of_input  = ((long)rn != inFrames);
     srcdata.src_ratio     = srcratio;
   
-    //#ifdef AUDIOCONVERT_DEBUG_PRC DELETETHIS or comment it in, or maybe add an additional if (heavyDebugMsg)?
-    //printf("AudioConverter::process attempt:%d inFrames:%ld outFrames:%ld rn:%d data in:%p out:%p", 
+    //AUDIOCONVERT_DEBUG_PRC("AudioConverter::process attempt:%d inFrames:%ld outFrames:%ld rn:%d data in:%p out:%p", 
     //  attempt, inFrames, outFrames, rn, srcdata.data_in, srcdata.data_out);
-    //#endif
     
     int srcerr = src_process(_src_state, &srcdata);
     if(srcerr != 0)      
@@ -422,11 +387,11 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
     //printf(" frames used in:%ld out:%ld totalOutFrames:%ld data in:%p out:%p\n", srcdata.input_frames_used, srcdata.output_frames_gen, totalOutFrames, srcdata.data_in, srcdata.data_out);
     //#endif
     
-    #ifdef AUDIOCONVERT_DEBUG
     if(srcdata.output_frames_gen != outFrames)
-      printf("SRCAudioConverter::process %s output_frames_gen:%ld != outFrames:%ld inFrames:%ld srcdata.input_frames_used:%ld rn:%d\n", 
+    {
+      AUDIOCONVERT_DEBUG("SRCAudioConverter::process %s output_frames_gen:%ld != outFrames:%ld inFrames:%ld srcdata.input_frames_used:%ld rn:%d\n", 
         f.name().toLatin1(), srcdata.output_frames_gen, outFrames, inFrames, srcdata.input_frames_used, rn); 
-    #endif
+    }
     
     // If the number of frames read by the soundfile equals the input frames, go back.
     // Otherwise we have reached the end of the file, so going back is useless since
@@ -437,9 +402,7 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
       sf_count_t seekn = inFrames - srcdata.input_frames_used;
       if(seekn != 0)
       {
-        #ifdef AUDIOCONVERT_DEBUG_PRC
-        printf("SRCAudioConverter::process Seek-back by:%d\n", seekn);
-        #endif
+        AUDIOCONVERT_DEBUG_PRC("SRCAudioConverter::process Seek-back by:%d\n", seekn);
         _sfCurFrame = f.seek(-seekn, SEEK_CUR);
       }
       else  
@@ -456,9 +419,7 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
         if(attempt == (attempts - 1))
           break;
           
-        #ifdef AUDIOCONVERT_DEBUG
-        printf("SRCAudioConverter::process %s attempt:%d totalOutFrames:%ld != n:%d try again\n", f.name().toLatin1(), attempt, totalOutFrames, n);
-        #endif
+        AUDIOCONVERT_DEBUG("SRCAudioConverter::process %s attempt:%d totalOutFrames:%ld != n:%d try again\n", f.name().toLatin1(), attempt, totalOutFrames, n);
         
         // SRC didn't give us the number of frames we requested. 
         // This can occasionally be radically different from the requested frames, or zero,
@@ -476,10 +437,8 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
     else
     {
       _sfCurFrame += rn;
-      #ifdef AUDIOCONVERT_DEBUG
-      printf("SRCAudioConverter::process %s rn:%zd != inFrames:%ld output_frames_gen:%ld outFrames:%ld srcdata.input_frames_used:%ld\n", 
+      AUDIOCONVERT_DEBUG("SRCAudioConverter::process %s rn:%zd != inFrames:%ld output_frames_gen:%ld outFrames:%ld srcdata.input_frames_used:%ld\n", 
         f.name().toLatin1(), rn, inFrames, srcdata.output_frames_gen, outFrames, srcdata.input_frames_used);
-      #endif
       
       // We've reached the end of the file. Convert the number of frames read.
       //rn = (double)rn * srcratio + 1;   DELETETHIS 5
@@ -494,9 +453,7 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
   // If we still didn't get the desired number of output frames.
   if(totalOutFrames != n)
   {
-    #ifdef AUDIOCONVERT_DEBUG
-    printf("SRCAudioConverter::process %s totalOutFrames:%ld != n:%d\n", f.name().toLatin1(), totalOutFrames, n);
-    #endif
+    AUDIOCONVERT_DEBUG("SRCAudioConverter::process %s totalOutFrames:%ld != n:%d\n", f.name().toLatin1(), totalOutFrames, n);
           
     // Let's zero the rest of it.
     long b = totalOutFrames * channel;
@@ -551,9 +508,7 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
   }
   else 
   {
-    #ifdef AUDIOCONVERT_DEBUG
-    printf("SRCAudioConverter::process Channel mismatch: source chans:%d -> dst chans:%d\n", fchan, channel);
-    #endif
+    AUDIOCONVERT_DEBUG("SRCAudioConverter::process Channel mismatch: source chans:%d -> dst chans:%d\n", fchan, channel);
   }
   
   return _sfCurFrame;
@@ -567,9 +522,7 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
 
 RubberBandAudioConverter::RubberBandAudioConverter(int channels, int options) : AudioConverter()
 {
-  #ifdef AUDIOCONVERT_DEBUG
-  printf("RubberBandAudioConverter::RubberBandAudioConverter this:%p channels:%d options:%x\n", this, channels, options);
-  #endif
+  AUDIOCONVERT_DEBUG("RubberBandAudioConverter::RubberBandAudioConverter this:%p channels:%d options:%x\n", this, channels, options);
 
   _options = options;
   _rbs = 0;
@@ -580,18 +533,14 @@ RubberBandAudioConverter::RubberBandAudioConverter(int channels, int options) : 
 
 RubberBandAudioConverter::~RubberBandAudioConverter()
 {
-  #ifdef AUDIOCONVERT_DEBUG
-  printf("RubberBandAudioConverter::~RubberBandAudioConverter this:%p\n", this);
-  #endif
+  AUDIOCONVERT_DEBUG("RubberBandAudioConverter::~RubberBandAudioConverter this:%p\n", this);
   if(_rbs)
     delete _rbs;
 }
 
 void RubberBandAudioConverter::setChannels(int ch)
 {
-  #ifdef AUDIOCONVERT_DEBUG
-  printf("RubberBandAudioConverter::setChannels this:%p channels:%d\n", this, ch);
-  #endif
+  AUDIOCONVERT_DEBUG("RubberBandAudioConverter::setChannels this:%p channels:%d\n", this, ch);
   if(_rbs)
     delete _rbs;
   _rbs = 0;
@@ -604,9 +553,7 @@ void RubberBandAudioConverter::reset()
 {
   if(!_rbs)
     return;
-  #ifdef AUDIOCONVERT_DEBUG
-  printf("RubberBandAudioConverter::reset this:%p\n", this);
-  #endif
+  AUDIOCONVERT_DEBUG("RubberBandAudioConverter::reset this:%p\n", this);
   _rbs->reset();
   return;  
 }
@@ -635,9 +582,7 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
   
   if((MusEGlobal::sampleRate == 0) || (fsrate == 0))
   {  
-    #ifdef AUDIOCONVERT_DEBUG
-    printf("RubberBandAudioConverter::process Error: MusEGlobal::sampleRate or file samplerate is zero!\n");
-    #endif
+    AUDIOCONVERT_DEBUG("RubberBandAudioConverter::process Error: MusEGlobal::sampleRate or file samplerate is zero!\n");
     return _sfCurFrame;
   }  
   
@@ -729,10 +674,8 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
     srcdata.end_of_input  = ((long)rn != inFrames);
     srcdata.src_ratio     = srcratio;
   
-    //#ifdef AUDIOCONVERT_DEBUG_PRC DELETETHIS or comment in
-    //printf("AudioConverter::process attempt:%d inFrames:%ld outFrames:%ld rn:%d data in:%p out:%p", 
+    //AUDIOCONVERT_DEBUG("AudioConverter::process attempt:%d inFrames:%ld outFrames:%ld rn:%d data in:%p out:%p", 
     //  attempt, inFrames, outFrames, rn, srcdata.data_in, srcdata.data_out);
-    //#endif
     
     int srcerr = src_process(_src_state, &srcdata);
     if(srcerr != 0)      
@@ -747,11 +690,11 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
     //printf(" frames used in:%ld out:%ld totalOutFrames:%ld data in:%p out:%p\n", srcdata.input_frames_used, srcdata.output_frames_gen, totalOutFrames, srcdata.data_in, srcdata.data_out);
     //#endif
     
-    #ifdef AUDIOCONVERT_DEBUG
     if(srcdata.output_frames_gen != outFrames)
-      printf("RubberBandAudioConverter::process %s output_frames_gen:%ld != outFrames:%ld inFrames:%ld srcdata.input_frames_used:%ld rn:%d\n", 
+    {
+      AUDIOCONVERT_DEBUG("RubberBandAudioConverter::process %s output_frames_gen:%ld != outFrames:%ld inFrames:%ld srcdata.input_frames_used:%ld rn:%d\n", 
         f.name().toLatin1(), srcdata.output_frames_gen, outFrames, inFrames, srcdata.input_frames_used, rn); 
-    #endif
+    }
     
     // If the number of frames read by the soundfile equals the input frames, go back.
     // Otherwise we have reached the end of the file, so going back is useless since
@@ -762,9 +705,7 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
       sf_count_t seekn = inFrames - srcdata.input_frames_used;
       if(seekn != 0)
       {
-        #ifdef AUDIOCONVERT_DEBUG_PRC
-        printf("RubberBandAudioConverter::process Seek-back by:%d\n", seekn);
-        #endif
+        AUDIOCONVERT_DEBUG("RubberBandAudioConverter::process Seek-back by:%d\n", seekn);
         _sfCurFrame = f.seek(-seekn, SEEK_CUR);
       }
       else  
@@ -781,9 +722,7 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
         if(attempt == (attempts - 1))
           break;
           
-        #ifdef AUDIOCONVERT_DEBUG
-        printf("RubberBandAudioConverter::process %s attempt:%d totalOutFrames:%ld != n:%d try again\n", f.name().toLatin1(), attempt, totalOutFrames, n);
-        #endif
+        AUDIOCONVERT_DEBUG("RubberBandAudioConverter::process %s attempt:%d totalOutFrames:%ld != n:%d try again\n", f.name().toLatin1(), attempt, totalOutFrames, n);
         
         // We didn't get the number of frames we requested. 
         // This can occasionally be radically different from the requested frames, or zero,
@@ -801,10 +740,8 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
     else
     {
       _sfCurFrame += rn;
-      #ifdef AUDIOCONVERT_DEBUG
-      printf("RubberBandAudioConverter::process %s rn:%zd != inFrames:%ld output_frames_gen:%ld outFrames:%ld srcdata.input_frames_used:%ld\n", 
+      AUDIOCONVERT_DEBUG("RubberBandAudioConverter::process %s rn:%zd != inFrames:%ld output_frames_gen:%ld outFrames:%ld srcdata.input_frames_used:%ld\n", 
         f.name().toLatin1(), rn, inFrames, srcdata.output_frames_gen, outFrames, srcdata.input_frames_used);
-      #endif
       
       // We've reached the end of the file. Convert the number of frames read.
       //rn = (double)rn * srcratio + 1;  DELETETHIS 5
@@ -819,9 +756,7 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
   // If we still didn't get the desired number of output frames.
   if(totalOutFrames != n)
   {
-    #ifdef AUDIOCONVERT_DEBUG
-    printf("RubberBandAudioConverter::process %s totalOutFrames:%ld != n:%d\n", f.name().toLatin1(), totalOutFrames, n);
-    #endif
+    AUDIOCONVERT_DEBUG("RubberBandAudioConverter::process %s totalOutFrames:%ld != n:%d\n", f.name().toLatin1(), totalOutFrames, n);
           
     // Let's zero the rest of it.
     long b = totalOutFrames * channel;
@@ -876,9 +811,7 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
   }
   else 
   {
-    #ifdef AUDIOCONVERT_DEBUG
-    printf("RubberBandAudioConverter::process Channel mismatch: source chans:%d -> dst chans:%d\n", fchan, channel);
-    #endif
+    AUDIOCONVERT_DEBUG("RubberBandAudioConverter::process Channel mismatch: source chans:%d -> dst chans:%d\n", fchan, channel);
   }
   
   return _sfCurFrame;

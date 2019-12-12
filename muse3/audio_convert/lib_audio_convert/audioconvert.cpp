@@ -38,11 +38,9 @@
 #include "time_stretch.h"
 #include "xml.h"
 
-#define ERROR_AUDIOCONVERT(dev, format, args...)  fprintf(dev, format, ##args)
-
-// REMOVE Tim. samplerate. Enabled.
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_AUDIOCONVERT(dev, format, args...)  fprintf(dev, format, ##args)
+#define ERROR_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
+#define DEBUG_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
 
 namespace MusECore {
 

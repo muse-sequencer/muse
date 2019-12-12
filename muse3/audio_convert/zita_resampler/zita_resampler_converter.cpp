@@ -36,11 +36,10 @@
 
 #include "zita_resampler_converter.h"
 
-#define ERROR_AUDIOCONVERT(dev, format, args...)  fprintf(dev, format, ##args)
 
-// REMOVE Tim. samplerate. Enabled.
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_AUDIOCONVERT(dev, format, args...)  fprintf(dev, format, ##args)
+#define ERROR_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
+#define DEBUG_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
 
 
 
@@ -120,7 +119,7 @@ ZitaResamplerAudioConverter::ZitaResamplerAudioConverter(int systemSampleRate,
                                                          SndFile* sf, 
                                                          int channels, 
                                                          AudioConverterSettings* /*settings*/, 
-                                                         int mode) : AudioConverter(systemSampleRate)
+                                                         int /*mode*/) : AudioConverter(systemSampleRate)
 {
   DEBUG_AUDIOCONVERT(stderr, "ZitaResamplerAudioConverter::ZitaResamplerAudioConverter this:%p channels:%d mode:%d\n", 
                      this, channels, mode);
