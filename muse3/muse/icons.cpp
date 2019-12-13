@@ -177,11 +177,11 @@ namespace MusEGui {
       return new QIcon(fallback_pm);
   }
 
-  QIcon* MICONSVG(QIcon* fallback, const QString& name) {
+  QIcon* MICONSVG(const QString& svg, const QString& name) {
     if(use_theme_icons_if_possible)
-      return new QIcon(QIcon::fromTheme(name, *fallback));
+      return new QIcon(QIcon::fromTheme(name, QIcon(svg)));
     else
-      return fallback;
+      return new QIcon(svg);
   }
   
 /* Quick API reference:
@@ -811,13 +811,13 @@ void initIcons(bool useThemeIconsIfPossible, int cursorSize)
       tracktypeSVGIcon  = new QIcon(":/svg/tracktype.svg");
       mixerstripSVGIcon = new QIcon(":/svg/mixerstrip.svg");
 
-      filenewSVGIcon     = MICONSVG(new QIcon(":/svg/filenew.svg"), "document-new");
+      filenewSVGIcon     = MICONSVG(":/svg/filenew.svg", "document-new");
       filetemplateSVGIcon = new QIcon(":/svg/filefromtemplate.svg");
-      fileopenSVGIcon    = MICONSVG(new QIcon(":/svg/fileopen.svg"), "document-open");
-      filesaveSVGIcon    = MICONSVG(new QIcon(":/svg/filesave.svg"), "document-save");
-      filesaveasSVGIcon  = MICONSVG(new QIcon(":/svg/filesaveas.svg"), "document-save-as");
-      filecloseSVGIcon   = MICONSVG(new QIcon(":/svg/fileclose.svg"), "document-close");
-      appexitSVGIcon     = MICONSVG(new QIcon(":/svg/appexit.svg"), "application-exit");
+      fileopenSVGIcon    = MICONSVG(":/svg/fileopen.svg", "document-open");
+      filesaveSVGIcon    = MICONSVG(":/svg/filesave.svg", "document-save");
+      filesaveasSVGIcon  = MICONSVG(":/svg/filesaveas.svg", "document-save-as");
+      filecloseSVGIcon   = MICONSVG(":/svg/fileclose.svg", "document-close");
+      appexitSVGIcon     = MICONSVG(":/svg/appexit.svg", "application-exit");
 
 
       // tool icons
