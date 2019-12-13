@@ -160,30 +160,30 @@
 
 namespace MusEGui {
   bool use_theme_icons_if_possible = true;
-  
+
   QPixmap* MPIXMAP(const char* const* fallback, const QString& name) {
     const QPixmap& fallback_pm = QPixmap(fallback);
     if(use_theme_icons_if_possible)
       return new QPixmap(QIcon::fromTheme(name, QIcon(fallback_pm)).pixmap(fallback_pm.width(),fallback_pm.height()));
-    else 
+    else
       return new QPixmap(fallback);
   }
-  
+
   QIcon* MICON(const char* const* fallback, const QString& name) {
     const QPixmap& fallback_pm = QPixmap(fallback);
     if(use_theme_icons_if_possible)
       return new QIcon(QIcon::fromTheme(name, QIcon(fallback_pm)));
-    else 
+    else
       return new QIcon(fallback_pm);
   }
 
-  QIcon* MICONSVG(QIcon* fallback, const QString& name) {
+  QIcon* MICONSVG(const QString& svg, const QString& name) {
     if(use_theme_icons_if_possible)
-      return new QIcon(QIcon::fromTheme(name, *fallback));
+      return new QIcon(QIcon::fromTheme(name, QIcon(svg)));
     else
-      return fallback;
+      return new QIcon(svg);
   }
-  
+
 /* Quick API reference:
    -------------------
 
@@ -515,7 +515,7 @@ void initIcons(bool useThemeIconsIfPossible, int cursorSize)
       use_theme_icons_if_possible = useThemeIconsIfPossible;
 
       const qreal dpr = qApp->devicePixelRatio();
-        
+
       track_commentIcon = MPIXMAP(track_comment_xpm, nullptr);
       deleteIcon   = MPIXMAP(delete_xpm, "draw-eraser");
       midiCtrlMergeEraseIcon              = MPIXMAP(midi_ctrl_graph_merge_erase_xpm, nullptr);
@@ -556,19 +556,19 @@ void initIcons(bool useThemeIconsIfPossible, int cursorSize)
       routesMidiOutIcon    = MPIXMAP(routing_midi_output_button_slim_xpm, nullptr);
 
       toggle_small_Icon    = MPIXMAP(toggle_small_xpm, nullptr);
-      
+
       greendotIcon         = MPIXMAP(greendot_xpm, nullptr);
       greendot12x12Icon    = MPIXMAP(greendot12x12_xpm, nullptr);
       reddotIcon           = MPIXMAP(reddot_xpm, nullptr);
-      
+
       ledGreenIcon         = new QIcon(*greendotIcon);
-      
+
       bluedotIcon          = MPIXMAP(bluedot_xpm, nullptr);
       bluedot12x12Icon     = MPIXMAP(bluedot12x12_xpm, nullptr);
       graydot12x12Icon     = MPIXMAP(graydot12x12_xpm, nullptr);
       orangedotIcon        = MPIXMAP(orangedot_xpm, nullptr);
       orangedot12x12Icon   = MPIXMAP(orangedot12x12_xpm, nullptr);
-      
+
       mixerSIcon           = MPIXMAP(mixerS_xpm, nullptr);
       cliplistSIcon        = MPIXMAP(cliplistS_xpm, nullptr);
       deltaOnIcon          = MPIXMAP(delta_on_xpm, nullptr);
@@ -644,7 +644,7 @@ void initIcons(bool useThemeIconsIfPossible, int cursorSize)
       routerFilterSourceRoutesIcon                  = MPIXMAP(router_filter_source_routes_xpm, nullptr);
       routerFilterDestinationRoutesIcon             = MPIXMAP(router_filter_destination_routes_xpm, nullptr);
       routerViewSplitterIcon                        = MPIXMAP(router_view_splitter_xpm, nullptr);
-      
+
 
       //----------------------------------
       //   SVG...
@@ -699,9 +699,9 @@ void initIcons(bool useThemeIconsIfPossible, int cursorSize)
       jackTransportOffSVGPixmap = new MSVGIMG(":/svg/jack_transport_off.svg");
       jackTransportOnSVGPixmap = new MSVGIMG(":/svg/jack_transport_on.svg");
 
-      
+
       dropDownTriangleSVGIcon  = new QIcon(":/svg/drop_down_triangle.svg");
-      
+
       routingInputSVGIcon = new QIcon(*routingInputSVGPixmap);
       routingOutputSVGIcon = new QIcon(*routingOutputSVGPixmap);
       routingInputUnconnectedSVGIcon = new QIcon(*routingInputUnconnectedSVGPixmap);
@@ -770,22 +770,22 @@ void initIcons(bool useThemeIconsIfPossible, int cursorSize)
       rewindSVGIcon = new QIcon(":/svg/rewind.svg");
 
       rewindToStartSVGIcon = new QIcon(":/svg/rewind_to_start.svg");
-      
+
       externSyncOffSVGIcon = new QIcon(*externSyncOffSVGPixmap);
       externSyncOnSVGIcon = new QIcon(*externSyncOnSVGPixmap);
-      
+
       masterTrackOffSVGIcon = new QIcon(*masterTrackOffSVGPixmap);
       masterTrackOnSVGIcon = new QIcon(*masterTrackOnSVGPixmap);
-      
+
       jackTransportOffSVGIcon = new QIcon(*jackTransportOffSVGPixmap);
       jackTransportOnSVGIcon = new QIcon(*jackTransportOnSVGPixmap);
-      
+
       timebaseMasterOffSVGIcon = new QIcon(":/svg/timebase_master_off.svg");
       timebaseMasterOnSVGIcon = new QIcon(":/svg/timebase_master_on.svg");
-      
+
       metronomeOffSVGIcon = new QIcon(":/svg/metronome_off.svg");
       metronomeOnSVGIcon = new QIcon(":/svg/metronome_on.svg");
-      
+
       fixedSpeedSVGIcon = new QIcon(":/svg/speed_off.svg");
       fixedSpeedSVGIcon->addFile(":/svg/speed_on.svg", QSize(), QIcon::Normal, QIcon::On);
       transportAffectsLatencySVGIcon = new QIcon(":/svg/transport_affects_latency_off.svg");
@@ -811,13 +811,13 @@ void initIcons(bool useThemeIconsIfPossible, int cursorSize)
       tracktypeSVGIcon  = new QIcon(":/svg/tracktype.svg");
       mixerstripSVGIcon = new QIcon(":/svg/mixerstrip.svg");
 
-      filenewSVGIcon     = MICONSVG(new QIcon(":/svg/filenew.svg"), "document-new");
+      filenewSVGIcon     = MICONSVG(":/svg/filenew.svg", "document-new");
       filetemplateSVGIcon = new QIcon(":/svg/filefromtemplate.svg");
-      fileopenSVGIcon    = MICONSVG(new QIcon(":/svg/fileopen.svg"), "document-open");
-      filesaveSVGIcon    = MICONSVG(new QIcon(":/svg/filesave.svg"), "document-save");
-      filesaveasSVGIcon  = MICONSVG(new QIcon(":/svg/filesaveas.svg"), "document-save-as");
-      filecloseSVGIcon   = MICONSVG(new QIcon(":/svg/fileclose.svg"), "document-close");
-      appexitSVGIcon     = MICONSVG(new QIcon(":/svg/appexit.svg"), "application-exit");
+      fileopenSVGIcon    = MICONSVG(":/svg/fileopen.svg", "document-open");
+      filesaveSVGIcon    = MICONSVG(":/svg/filesave.svg", "document-save");
+      filesaveasSVGIcon  = MICONSVG(":/svg/filesaveas.svg", "document-save-as");
+      filecloseSVGIcon   = MICONSVG(":/svg/fileclose.svg", "document-close");
+      appexitSVGIcon     = MICONSVG(":/svg/appexit.svg", "application-exit");
 
 
       // tool icons
@@ -873,24 +873,24 @@ void deleteIcons()
       delete midiCtrlMergeEraseWysiwygIcon;
 
       delete record1_Icon;
-      delete dotIcon;      
-      delete dothIcon;     
-      delete dot1Icon;     
-      delete synthIcon;    
-      delete markIcon[0];  
-      delete markIcon[1];  
-      delete markIcon[2];  
-      delete cursorIcon;   
+      delete dotIcon;
+      delete dothIcon;
+      delete dot1Icon;
+      delete synthIcon;
+      delete markIcon[0];
+      delete markIcon[1];
+      delete markIcon[2];
+      delete cursorIcon;
       delete muteIcon;
-      delete upIcon;       
-      delete downIcon;     
-      delete flagIcon;  
-      delete flagIconS; 
-      delete lockIcon;  
+      delete upIcon;
+      delete downIcon;
+      delete flagIcon;
+      delete flagIconS;
+      delete lockIcon;
 
-      delete editcutIconSet;     
-      delete editcopyIconSet;    
-      delete editpasteIconSet;   
+      delete editcutIconSet;
+      delete editcopyIconSet;
+      delete editpasteIconSet;
       delete editpaste2TrackIconSet;
       delete editpasteCloneIconSet;
       delete editpasteClone2TrackIconSet;
@@ -898,84 +898,84 @@ void deleteIcons()
       delete editpasteSIcon;
       delete editpasteCloneSIcon;
 
-      delete routesInIcon;         
-      delete routesOutIcon;        
-      delete routesMidiInIcon;     
-      delete routesMidiOutIcon;    
+      delete routesInIcon;
+      delete routesOutIcon;
+      delete routesMidiInIcon;
+      delete routesMidiOutIcon;
 
       delete toggle_small_Icon;
 
       delete ledGreenIcon;
       delete ledDarkGreenIcon;
 
-      delete greendotIcon;         
+      delete greendotIcon;
       delete reddotIcon;
-      delete bluedotIcon;          
-      delete orangedotIcon;          
+      delete bluedotIcon;
+      delete orangedotIcon;
 
-      delete mixerSIcon;           
-      delete cliplistSIcon;        
-      delete deltaOnIcon;          
-      delete deltaOffIcon;         
-      delete veloPerNote_OnIcon;          
-      delete veloPerNote_OffIcon;         
+      delete mixerSIcon;
+      delete cliplistSIcon;
+      delete deltaOnIcon;
+      delete deltaOffIcon;
+      delete veloPerNote_OnIcon;
+      delete veloPerNote_OffIcon;
 
-      delete addtrack_addmiditrackIcon;     
-      delete addtrack_audiogroupIcon;       
-      delete addtrack_audioinputIcon;       
-      delete addtrack_audiooutputIcon;      
-      delete addtrack_auxsendIcon;          
-      delete addtrack_drumtrackIcon;        
+      delete addtrack_addmiditrackIcon;
+      delete addtrack_audiogroupIcon;
+      delete addtrack_audioinputIcon;
+      delete addtrack_audiooutputIcon;
+      delete addtrack_auxsendIcon;
+      delete addtrack_drumtrackIcon;
       delete addtrack_newDrumtrackIcon;
-      delete addtrack_wavetrackIcon;        
-      delete edit_drummsIcon;               
-      delete edit_listIcon;                 
-      delete edit_waveIcon;                 
-      delete edit_mastertrackIcon;          
-      delete edit_track_addIcon;            
-      delete edit_track_delIcon;            
-      delete mastertrack_graphicIcon;       
-      delete mastertrack_listIcon;          
-      delete midi_transformIcon;            
-      delete selectIcon;                    
-      delete select_allIcon;                
-      delete select_all_parts_on_trackIcon; 
-      delete select_deselect_allIcon;       
-      delete icon_select_deselect_all;       
-      delete select_inside_loopIcon;        
-      delete select_invert_selectionIcon;   
-      delete select_outside_loopIcon;       
-      delete pianoIconSet;                  
-      delete scoreIconSet;                  
+      delete addtrack_wavetrackIcon;
+      delete edit_drummsIcon;
+      delete edit_listIcon;
+      delete edit_waveIcon;
+      delete edit_mastertrackIcon;
+      delete edit_track_addIcon;
+      delete edit_track_delIcon;
+      delete mastertrack_graphicIcon;
+      delete mastertrack_listIcon;
+      delete midi_transformIcon;
+      delete selectIcon;
+      delete select_allIcon;
+      delete select_all_parts_on_trackIcon;
+      delete select_deselect_allIcon;
+      delete icon_select_deselect_all;
+      delete select_inside_loopIcon;
+      delete select_invert_selectionIcon;
+      delete select_outside_loopIcon;
+      delete pianoIconSet;
+      delete scoreIconSet;
 
-      delete audio_bounce_to_fileIcon;      
-      delete audio_bounce_to_trackIcon;     
-      delete audio_restartaudioIcon;        
-      delete automation_clear_dataIcon;     
-      delete automation_mixerIcon;          
-      delete automation_take_snapshotIcon;  
-      delete midi_edit_instrumentIcon;      
-      delete midi_init_instrIcon;           
-      delete midi_inputpluginsIcon;         
-      delete midi_inputplugins_midi_input_filterIcon;       
-      delete midi_inputplugins_midi_input_transformIcon;    
-      delete midi_inputplugins_remote_controlIcon;          
-      delete midi_inputplugins_transposeIcon;               
-      delete midi_local_offIcon;                            
-      delete midi_reset_instrIcon;                          
-      delete settings_appearance_settingsIcon;              
-      delete settings_configureshortcutsIcon;               
-      delete settings_globalsettingsIcon;                   
-      delete settings_midifileexportIcon;                   
-      delete settings_midiport_softsynthsIcon;              
-      delete settings_midisyncIcon;                         
-      delete view_bigtime_windowIcon;                       
-      delete view_markerIcon;                               
-      delete view_transport_windowIcon;                     
+      delete audio_bounce_to_fileIcon;
+      delete audio_bounce_to_trackIcon;
+      delete audio_restartaudioIcon;
+      delete automation_clear_dataIcon;
+      delete automation_mixerIcon;
+      delete automation_take_snapshotIcon;
+      delete midi_edit_instrumentIcon;
+      delete midi_init_instrIcon;
+      delete midi_inputpluginsIcon;
+      delete midi_inputplugins_midi_input_filterIcon;
+      delete midi_inputplugins_midi_input_transformIcon;
+      delete midi_inputplugins_remote_controlIcon;
+      delete midi_inputplugins_transposeIcon;
+      delete midi_local_offIcon;
+      delete midi_reset_instrIcon;
+      delete settings_appearance_settingsIcon;
+      delete settings_configureshortcutsIcon;
+      delete settings_globalsettingsIcon;
+      delete settings_midifileexportIcon;
+      delete settings_midiport_softsynthsIcon;
+      delete settings_midisyncIcon;
+      delete view_bigtime_windowIcon;
+      delete view_markerIcon;
+      delete view_transport_windowIcon;
 
-      delete museIcon;                                      
-      delete aboutMuseImage;                                
-      delete museLeftSideLogo;                              
+      delete museIcon;
+      delete aboutMuseImage;
+      delete museLeftSideLogo;
       delete globalIcon;
       delete userIcon;
       delete projectIcon;
@@ -1024,7 +1024,7 @@ void deleteIcons()
 
       delete monitorOffSVGPixmap;
       delete monitorOnSVGPixmap;
-      
+
       delete externSyncOffSVGPixmap;
       delete externSyncOnSVGPixmap;
 
@@ -1086,19 +1086,19 @@ void deleteIcons()
       delete fastForwardSVGIcon;
       delete rewindSVGIcon;
       delete rewindToStartSVGIcon;
-      
+
       delete externSyncOffSVGIcon;
       delete externSyncOnSVGIcon;
-      
+
       delete masterTrackOffSVGIcon;
       delete masterTrackOnSVGIcon;
 
       delete jackTransportOffSVGIcon;
       delete jackTransportOnSVGIcon;
-      
+
       delete timebaseMasterOffSVGIcon;
       delete timebaseMasterOnSVGIcon;
-      
+
       delete metronomeOffSVGIcon;
       delete metronomeOnSVGIcon;
 
