@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
+        <file>xpm/cpu.xpm</file>
+
         <file>svg/routing_input.svg</file>
         <file>svg/routing_output.svg</file>
         <file>svg/routing_input_unconnected.svg</file>
@@ -95,5 +97,8 @@
         <file>svg/sysex.svg</file>
         <file>svg/tracktype.svg</file>
         <file>svg/mixerstrip.svg</file>
+        <file>svg/drop_down_triangle.svg</file>
+        <file>svg/down_vee.svg</file>
+        <file>svg/up_vee.svg</file>
     </qresource>
 </RCC>

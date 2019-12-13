@@ -26,7 +26,6 @@
 #include <QLatin1Char>
 
 #include "cpu_toolbar.h"
-#include "icons.h"
 
 namespace MusEGui
 {
@@ -134,7 +133,7 @@ void CpuToolbar::init()
 
   _resetButton = new QToolButton(this);
   _resetButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
-  _resetButton->setIcon(*MusEGui::cpuIcon);
+  _resetButton->setIcon(QIcon(":/xpm/cpu.xpm"));
   _resetButton->setObjectName("CpuLoadToolbarButton");
   _resetButton->setToolTip(tr("CPU load averaged over each gui-update period\nDSP load read from JACK\nNumber of xruns\n(click to reset)"));
 
