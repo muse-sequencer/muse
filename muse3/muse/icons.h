@@ -61,8 +61,6 @@ extern QPixmap* flagIcon;
 extern QPixmap* flagIconS;
 extern QPixmap* lockIcon;
 
-extern QPixmap* buttondownIcon;
-
 extern QIcon* pianoIconSet;
 extern QIcon* scoreIconSet;
 extern QIcon* editcutIconSet;
@@ -162,13 +160,8 @@ extern QIcon* globalIcon;
 extern QIcon* projectIcon;
 extern QIcon* userIcon;
 
-extern QPixmap* sineIcon;
-extern QPixmap* sawIcon;
-
 extern QIcon* pianoNewIcon;
 extern QIcon* presetsNewIcon;
-
-extern QIcon* cpuIcon;
 
 extern QPixmap* routerFilterSourceIcon;
 extern QPixmap* routerFilterDestinationIcon;
@@ -226,6 +219,8 @@ extern QPixmap* recArmOnSVGPixmap;
 extern QPixmap* monitorOffSVGPixmap;
 extern QPixmap* monitorOnSVGPixmap;
 
+
+extern QIcon* dropDownTriangleSVGIcon;
 
 extern QIcon* routingInputSVGIcon;
 extern QIcon* routingOutputSVGIcon;

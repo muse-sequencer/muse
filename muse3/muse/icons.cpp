@@ -92,8 +92,6 @@
 #include "xpm/editpaste2trackS.xpm"
 #include "xpm/editpasteclone2trackS.xpm"
 
-#include "xpm/buttondown.xpm"
-
 #include "xpm/toggle_small.xpm"
 #include "xpm/greendot.xpm"
 #include "xpm/greendot12x12.xpm"
@@ -146,13 +144,8 @@
 #include "xpm/project.xpm"
 #include "xpm/user.xpm"
 
-#include "xpm/sine.xpm"
-#include "xpm/saw.xpm"
-
 #include "xpm/pianoNew.xpm"
 #include "xpm/presetsNew.xpm"
-
-#include "xpm/cpu.xpm"
 
 #include "xpm/router_filter_source.xpm"
 #include "xpm/router_filter_destination.xpm"
@@ -161,7 +154,6 @@
 #include "xpm/router_view_splitter.xpm"
 
 #include "icons.h"
-#include "gconfig.h"
 
 #define MPNGIMG(a) QPixmap(a)
 #define MSVGIMG(a) QPixmap(a)
@@ -185,11 +177,11 @@ namespace MusEGui {
       return new QIcon(fallback_pm);
   }
 
-  QIcon* MICONSVG(QIcon* fallback, const QString& name) {
+  QIcon* MICONSVG(const QString& svg, const QString& name) {
     if(use_theme_icons_if_possible)
-      return new QIcon(QIcon::fromTheme(name, *fallback));
+      return new QIcon(QIcon::fromTheme(name, QIcon(svg)));
     else
-      return fallback;
+      return new QIcon(svg);
   }
   
 /* Quick API reference:
@@ -236,8 +228,6 @@ QPixmap* downIcon;
 QPixmap* flagIcon;
 QPixmap* flagIconS;
 QPixmap* lockIcon;
-
-QPixmap* buttondownIcon;
 
 QIcon* pianoIconSet;
 QIcon* scoreIconSet;
@@ -324,13 +314,8 @@ QIcon* projectIcon;
 QIcon* userIcon;
 
 
-QPixmap* sineIcon;
-QPixmap* sawIcon;
-
 QIcon* pianoNewIcon;
 QIcon* presetsNewIcon;
-
-QIcon* cpuIcon;
 
 QPixmap* routerFilterSourceIcon;
 QPixmap* routerFilterDestinationIcon;
@@ -388,6 +373,8 @@ QPixmap* masterTrackOnSVGPixmap;
 QPixmap* jackTransportOffSVGPixmap;
 QPixmap* jackTransportOnSVGPixmap;
 
+
+QIcon* dropDownTriangleSVGIcon;
 
 QIcon* routingInputSVGIcon;
 QIcon* routingOutputSVGIcon;
@@ -525,7 +512,7 @@ QCursor* magnetCursor;
 //   initIcons
 //---------------------------------------------------------
 
-void initIcons(bool useThemeIconsIfPossible)
+void initIcons(bool useThemeIconsIfPossible, int cursorSize)
       {
       use_theme_icons_if_possible = useThemeIconsIfPossible;
 
@@ -555,8 +542,6 @@ void initIcons(bool useThemeIconsIfPossible)
       flagIcon    = MPIXMAP(flag_xpm, nullptr);
       flagIconS   = MPIXMAP(flagS_xpm, nullptr);
       lockIcon    = MPIXMAP(lock_xpm, nullptr);
-
-      buttondownIcon = MPIXMAP(buttondown_xpm, "arrow-down");
 
       editcutIconSet       = MICON(editcutS_xpm, "edit-cut"); // ddskrjo
       editcopyIconSet      = MICON(editcopyS_xpm, "edit-copy");
@@ -653,13 +638,8 @@ void initIcons(bool useThemeIconsIfPossible)
       userIcon                                      = MICON(user_xpm, "user-home");
       projectIcon                                   = MICON(project_xpm, "folder-sound");
 
-      sineIcon                                      = MPIXMAP(sine_xpm, nullptr);
-      sawIcon                                       = MPIXMAP(saw_xpm, nullptr);
-
       pianoNewIcon                                  = MICON(pianoNew_xpm, nullptr);
       presetsNewIcon                                = MICON(presetsNew_xpm, nullptr);
-
-      cpuIcon                                       = MICON(cpu_xpm, nullptr);
 
       routerFilterSourceIcon                        = MPIXMAP(router_filter_source_xpm, nullptr);
       routerFilterDestinationIcon                   = MPIXMAP(router_filter_destination_xpm, nullptr);
@@ -721,6 +701,8 @@ void initIcons(bool useThemeIconsIfPossible)
       jackTransportOffSVGPixmap = new MSVGIMG(":/svg/jack_transport_off.svg");
       jackTransportOnSVGPixmap = new MSVGIMG(":/svg/jack_transport_on.svg");
 
+      
+      dropDownTriangleSVGIcon  = new QIcon(":/svg/drop_down_triangle.svg");
       
       routingInputSVGIcon = new QIcon(*routingInputSVGPixmap);
       routingOutputSVGIcon = new QIcon(*routingOutputSVGPixmap);
@@ -831,13 +813,13 @@ void initIcons(bool useThemeIconsIfPossible)
       tracktypeSVGIcon  = new QIcon(":/svg/tracktype.svg");
       mixerstripSVGIcon = new QIcon(":/svg/mixerstrip.svg");
 
-      filenewSVGIcon     = MICONSVG(new QIcon(":/svg/filenew.svg"), "document-new");
+      filenewSVGIcon     = MICONSVG(":/svg/filenew.svg", "document-new");
       filetemplateSVGIcon = new QIcon(":/svg/filefromtemplate.svg");
-      fileopenSVGIcon    = MICONSVG(new QIcon(":/svg/fileopen.svg"), "document-open");
-      filesaveSVGIcon    = MICONSVG(new QIcon(":/svg/filesave.svg"), "document-save");
-      filesaveasSVGIcon  = MICONSVG(new QIcon(":/svg/filesaveas.svg"), "document-save-as");
-      filecloseSVGIcon   = MICONSVG(new QIcon(":/svg/fileclose.svg"), "document-close");
-      appexitSVGIcon     = MICONSVG(new QIcon(":/svg/appexit.svg"), "application-exit");
+      fileopenSVGIcon    = MICONSVG(":/svg/fileopen.svg", "document-open");
+      filesaveSVGIcon    = MICONSVG(":/svg/filesave.svg", "document-save");
+      filesaveasSVGIcon  = MICONSVG(":/svg/filesaveas.svg", "document-save-as");
+      filecloseSVGIcon   = MICONSVG(":/svg/fileclose.svg", "document-close");
+      appexitSVGIcon     = MICONSVG(":/svg/appexit.svg", "application-exit");
 
 
       // tool icons
@@ -869,17 +851,17 @@ void initIcons(bool useThemeIconsIfPossible)
       editpasteCloneSCursor = new QCursor(*editpasteCloneSIcon, 8, 8);
 
       // tool cursors
-      pencilCursor     = new QCursor(pencilIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)), qRound(dpr * 1), qRound(dpr * 17));
-      glueCursor       = new QCursor(glueIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)),  qRound(dpr * 1), qRound(dpr * 17));
-      cutterCursor     = new QCursor(cutterIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)),  qRound(dpr * 1), qRound(dpr * 17));
-      zoomCursor       = new QCursor(zoomIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)));
-      zoomAtCursor     = new QCursor(zoomAtIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)));
-      deleteCursor     = new QCursor(deleteIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)), qRound(dpr * 3), qRound(dpr * 15));
-      drawCursor       = new QCursor(drawIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)), qRound(dpr * 1), qRound(dpr * 17));
-      mutePartsCursor  = new QCursor(mutePartsIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)));
-      handCursor       = new QCursor(handIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)));
-      closedHandCursor = new QCursor(closedHandIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)));
-      magnetCursor     = new QCursor(magnetIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)), -1, qRound(dpr * 15));
+      pencilCursor     = new QCursor(pencilIconSVG->pixmap(QSize(cursorSize, cursorSize)), qRound(dpr * 1), qRound(dpr * 17));
+      glueCursor       = new QCursor(glueIconSVG->pixmap(QSize(cursorSize, cursorSize)),  qRound(dpr * 1), qRound(dpr * 17));
+      cutterCursor     = new QCursor(cutterIconSVG->pixmap(QSize(cursorSize, cursorSize)),  qRound(dpr * 1), qRound(dpr * 17));
+      zoomCursor       = new QCursor(zoomIconSVG->pixmap(QSize(cursorSize, cursorSize)));
+      zoomAtCursor     = new QCursor(zoomAtIconSVG->pixmap(QSize(cursorSize, cursorSize)));
+      deleteCursor     = new QCursor(deleteIconSVG->pixmap(QSize(cursorSize, cursorSize)), qRound(dpr * 3), qRound(dpr * 15));
+      drawCursor       = new QCursor(drawIconSVG->pixmap(QSize(cursorSize, cursorSize)), qRound(dpr * 1), qRound(dpr * 17));
+      mutePartsCursor  = new QCursor(mutePartsIconSVG->pixmap(QSize(cursorSize, cursorSize)));
+      handCursor       = new QCursor(handIconSVG->pixmap(QSize(cursorSize, cursorSize)));
+      closedHandCursor = new QCursor(closedHandIconSVG->pixmap(QSize(cursorSize, cursorSize)));
+      magnetCursor     = new QCursor(magnetIconSVG->pixmap(QSize(cursorSize, cursorSize)), -1, qRound(dpr * 15));
       }
 
 //---------------------------------------------------------
@@ -909,8 +891,6 @@ void deleteIcons()
       delete flagIcon;  
       delete flagIconS; 
       delete lockIcon;  
-
-      delete buttondownIcon;
 
       delete editcutIconSet;     
       delete editcopyIconSet;    
@@ -1004,11 +984,6 @@ void deleteIcons()
       delete userIcon;
       delete projectIcon;
 
-      delete sineIcon;                                      
-      delete sawIcon;                                       
-      
-      delete cpuIcon;
-
       delete routerFilterSourceIcon;
       delete routerFilterDestinationIcon;
       delete routerFilterSourceRoutesIcon;
@@ -1063,6 +1038,8 @@ void deleteIcons()
       delete jackTransportOffSVGPixmap;
       delete jackTransportOnSVGPixmap;
 
+
+      delete dropDownTriangleSVGIcon;
 
       delete routingInputSVGIcon;
       delete routingOutputSVGIcon;

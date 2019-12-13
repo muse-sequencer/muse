@@ -1,5 +1,22 @@
-10.12.2019
+13.12.2019
+  - HOT Bug fix: Missing 3 MESS synths, undefined symbol MusEGlobal::config (Tim)
+    Cause: #include "gconfig.h" in icons.cpp brought in core globals which should
+     not be in these synth plugin libraries (or in icons module). Removed the line
+     and instead passed the desired global value to initIcons().
+    That said, the plugins really should be stand alone and not use the icons module
+     until the icons module becomes a true shared resource library. (Currently it
+     is initialized by core, so not quite self sufficient yet.) So... I copied the
+     required icons to the relevant synths, decoupling them from the icons module.
+    By using icons directly from qrc instead of icons module, I was also able to
+     remove the icons module from inclusion in widgets module (yay!), removing
+     a further dependency of simpledrums synth which was missing too.
+  * Module independence is a goal to strive for after 28.01.2018 MAJOR changes.
+11.12.2019
     *** MusE 3.1.0pre4 ***    
+	- Customizable size of icons and custom tool cursors (kybos)
+	- Replaced one-letter column headers by icons in track header (kybos)
+	- German translation updated (kybos)
+10.12.2019
     - Dependency problems: Moved several files. All source together with ui files now. (Tim)
     - Remove all dead obsolete trackinfo 'alt' button code.
     - FIXED: Mixer strips missing if loading an older song saved before 20.10.2019

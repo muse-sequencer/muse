@@ -43,7 +43,6 @@
 #include "muse_math.h"
 
 #include "muse/midi_consts.h"
-#include "icons.h"
 
 #include "common_defs.h"
 
@@ -67,8 +66,8 @@ FluidSynthGui::FluidSynthGui()
       fluidLabel->setPixmap(QIcon(":/fluidsynth1.png").pixmap(124, 45));
       FluidGrid->addWidget(fluidLabel, 2, 1, Qt::AlignHCenter);
 
-      ChorusType->setItemIcon(0, QIcon(*MusEGui::sineIcon));
-      ChorusType->setItemIcon(1, QIcon(*MusEGui::sawIcon));
+      ChorusType->setItemIcon(0, QIcon(":/sine.xpm"));
+      ChorusType->setItemIcon(1, QIcon(":/saw.xpm"));
 
       connect(this->getGuiSignal(),SIGNAL(wakeup()),this,SLOT(readMessage()));
       connect (Push, SIGNAL (clicked()), SLOT(loadClicked()));
@@ -440,11 +439,14 @@ void FluidSynthGui::updateChannelListView()
             else
                   drumchanstr = "No";
 
+      const QIcon bd_icon(":/drop_down_triangle.svg");
+
 	    QTableWidgetItem* chan_ = new QTableWidgetItem(chanstr);
 	    channelListView->setItem(i, FS_CHANNEL_COL, chan_);
-	    QTableWidgetItem* sfid_ = new QTableWidgetItem(QIcon(*MusEGui::buttondownIcon), sfidstr);
+	    QTableWidgetItem* sfid_ = new QTableWidgetItem(bd_icon, sfidstr);
 	    channelListView->setItem(i, FS_SF_ID_COL, sfid_);
-	    QTableWidgetItem* drum_ = new QTableWidgetItem(QIcon(*MusEGui::buttondownIcon), drumchanstr);
+	    QTableWidgetItem* drum_ = new QTableWidgetItem(bd_icon, drumchanstr);
+
 	    channelListView->setItem(i, FS_DRUM_CHANNEL_COL, drum_);
             }
       channelListView->resizeColumnsToContents();

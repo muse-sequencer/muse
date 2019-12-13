@@ -504,7 +504,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   {
                     if(dev->openFlags() & 2)  
                     {
-                      item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setIcon(QIcon(*buttondownIcon));
+                      item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setIcon(*dropDownTriangleSVGIcon);
                      item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setText(tr("in"));
                     }
                     else
@@ -528,7 +528,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   {
                     if(dev->openFlags() & 1)  
                     {
-                      item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setIcon(QIcon(*buttondownIcon));
+                      item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setIcon(*dropDownTriangleSVGIcon);
                       item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setText(tr("out"));
                     }
                     else  
@@ -1374,7 +1374,7 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
             else
             {
               itemdefin->setFlags(Qt::ItemIsEnabled);
-              itemdefin->setIcon(QIcon(*buttondownIcon));
+              itemdefin->setIcon(*dropDownTriangleSVGIcon);
             }  
             #endif
             
@@ -1394,7 +1394,7 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
             }  
             addItem(i, DEVCOL_DEF_OUT_CHANS, itemdefout, mdevView);
             itemdefout->setFlags(Qt::ItemIsEnabled);
-            itemdefout->setIcon(QIcon(*buttondownIcon));
+            itemdefout->setIcon(*dropDownTriangleSVGIcon);
 #else
             QTableWidgetItem* itemdefout = new QTableWidgetItem(MusECore::bitmap2String(port->defaultOutChannels()));
             addItem(i, DEVCOL_DEF_OUT_CHANS, itemdefout, mdevView);
@@ -1450,7 +1450,7 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
               {
                 if(dev->openFlags() & 1)  
                 {
-                  itemout->setIcon(QIcon(*buttondownIcon));
+                  itemout->setIcon(*dropDownTriangleSVGIcon);
                   itemout->setText(tr("out"));
                 }  
               }  
@@ -1458,7 +1458,7 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
               {
                 if(dev->openFlags() & 2)  
                 {
-                  itemin->setIcon(QIcon(*buttondownIcon));
+                  itemin->setIcon(*dropDownTriangleSVGIcon);
                   itemin->setText(tr("in"));
                 }  
               }  
@@ -1466,9 +1466,9 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
 #endif                  
 
             //if (!(dev && dev->isSynti()))
-                  iteminstr->setIcon(QIcon(*buttondownIcon));
+                  iteminstr->setIcon(*dropDownTriangleSVGIcon);
 
-            itemname->setIcon(QIcon(*buttondownIcon));
+            itemname->setIcon(*dropDownTriangleSVGIcon);
 
             if(i == no) sitem = itemno;
       }

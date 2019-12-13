@@ -3,6 +3,9 @@
    <qresource>
       <file>fluidsynth0.png</file>
       <file>fluidsynth1.png</file>      
+      <file>saw.xpm</file>      
+      <file>sine.xpm</file>      
+      <file>drop_down_triangle.svg</file>      
    </qresource>
 </RCC>
 
