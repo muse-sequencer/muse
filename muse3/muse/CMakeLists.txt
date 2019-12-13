@@ -133,6 +133,7 @@ file (GLOB core_source_files
       sig.cpp
       song.cpp
       songfile.cpp
+      songfile_discovery.cpp
       stringparam.cpp
       sync.cpp
       synth.cpp

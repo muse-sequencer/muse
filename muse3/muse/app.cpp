@@ -38,6 +38,8 @@
 #include <QStyleFactory>
 #include <QTextStream>
 #include <QToolButton>
+// REMOVE Tim. samplerate. Added.
+#include <QInputDialog>
 
 #include <errno.h>
 #include <iostream>
@@ -108,6 +110,8 @@
 #include "components/sig_tempo_toolbar.h"
 #include "widgets/cpu_toolbar.h"
 #include "components/snooper.h"
+// REMOVE Tim. samplerate. Added.
+#include "songfile_discovery.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -1314,6 +1318,89 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
                         setConfigDefaults();
                   }
             else {
+
+                  // REMOVE Tim. samplerate. Added.
+                  if(songTemplate)
+                  {
+                    // The project is a template. Set the project's sample rate
+                    //  to the system rate.
+                    // NOTE: A template should never contain anything 'frame' related
+                    //        like wave parts and events, or even audio automation graphs !
+                    //       That is more under the category of say, 'demo songs'.
+                    //       And here is the reason why:
+                    MusEGlobal::projectSampleRate = MusEGlobal::sampleRate;
+                  }
+                  else
+                  {
+                    MusECore::Xml d_xml(f);
+                    MusECore::SongfileDiscovery d_list(MusEGlobal::museProject);
+                    d_list.readSongfile(d_xml);
+
+                    // Be kind. Rewind.
+                    fseek(f, 0, SEEK_SET);
+
+                    // Is there a project sample rate setting in the song? (Setting added circa 2011).
+                    if(d_list._waveList._projectSampleRateValid)
+                    {
+                      MusEGlobal::projectSampleRate = d_list._waveList._projectSampleRate;
+                    }
+                    else
+                    {
+                      int sugg_val;
+                      QString sugg_phrase;
+                      if(d_list._waveList.empty())
+                      {
+                        // Suggest the current system sample rate.
+                        sugg_val = MusEGlobal::sampleRate;
+                        sugg_phrase = 
+                        tr("The project has no project sample rate (added 2011).\n"
+                           "Please enter a rate. The current system rate (%1Hz)\n"
+                           " is suggested, and cancelling uses it:").arg(MusEGlobal::sampleRate);
+                      }
+                      else
+                      {
+                        // Suggest the most common sample rate used in the song.
+                        sugg_val = d_list._waveList.getMostCommonSamplerate();
+                        sugg_phrase =
+                        tr("The project has audio waves, but no project sample rate (added 2011).\n"
+                           "Please enter a rate. The most common wave rate found is suggested,\n"
+                           " the project was probably made with it. Cancelling uses the\n"
+                           " current system rate (%1Hz):").arg(MusEGlobal::sampleRate);
+                      }
+
+                      bool ok;
+                      const int res = QInputDialog::getInt(
+                        this, tr("Project sample rate"),
+                        sugg_phrase, sugg_val,
+                        0, (10 * 1000 * 1000), 1, &ok);
+
+                      if(ok)
+                        MusEGlobal::projectSampleRate = res;
+                      else
+                        MusEGlobal::projectSampleRate = MusEGlobal::sampleRate;
+                    }
+                  
+                    if (!songTemplate && 
+                        //MusEGlobal::audioDevice->deviceType() != AudioDevice::DUMMY_AUDIO &&  // Why exclude dummy?
+                        MusEGlobal::projectSampleRate != MusEGlobal::sampleRate)
+                    {
+                      QString msg = QString("The sample rate in this project (%1Hz) and the\n"
+                        " current system setting (%2Hz) differ.\n"
+                        "Project timing will be scaled to match the new sample rate.\n"
+                        "Caution: Slight rounding errors may degrade timing accuracy.\n\n"
+                        "Live realtime audio sample rate converters will be enabled\n"
+                        " on audio files where required.\n"
+                        "The files can be permanently converted to the new sample rate.\n\n"
+                        "Save this song if you are sure you didn't mean to open it\n"
+                        " at the original sample rate.").arg(MusEGlobal::projectSampleRate).arg(MusEGlobal::sampleRate);
+                      QMessageBox::warning(MusEGlobal::muse,"Wrong sample rate", msg);
+                      // Automatically convert the project.
+                      // No: Try to keep the rate until user tells it to change.
+                      //convertProjectSampleRate();
+                    }
+                  }
+                  
+
                   MusECore::Xml xml(f);
                   read(xml, doReadMidiPorts, songTemplate);
                   bool fileError = ferror(f);
