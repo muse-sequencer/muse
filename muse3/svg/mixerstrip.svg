@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
  <defs>
   <linearGradient id="linearGradient1637" x1="31" x2="31" y1="4" y2="61" gradientTransform="matrix(.25 0 0 .80702 -2.75 5.7719)" gradientUnits="userSpaceOnUse">
    <stop stop-color="#f00" offset="0"/>
@@ -36,22 +35,10 @@
    </cc:Work>
   </rdf:RDF>
  </metadata>
- <g>
-  <g fill="none" stroke="#fff">
-   <path d="m10 3v57" stroke-width="3"/>
-   <g stroke-width="2">
-    <path d="m5 12h10"/>
-    <path d="m5 22h10"/>
-    <path d="m5 32h10"/>
-    <path d="m5 42h10"/>
-    <path d="m5 52h10"/>
-   </g>
-  </g>
-  <g fill-rule="evenodd" stroke="#000" stroke-dashoffset="37.795" stroke-linejoin="round">
-   <rect x="1" y="9" width="8" height="46" fill="url(#linearGradient1637)" style="paint-order:fill markers stroke"/>
-   <rect x="55" y="9" width="8" height="46" fill="url(#linearGradient1659)" style="paint-order:fill markers stroke"/>
-   <rect x="37" y="9" width="8" height="46" fill="url(#linearGradient1657)" style="paint-order:fill markers stroke"/>
-   <rect x="19" y="9" width="8" height="46" fill="url(#linearGradient1655)" style="paint-order:fill markers stroke"/>
-  </g>
+ <g fill-rule="evenodd" stroke="#000" stroke-dashoffset="37.795" stroke-linejoin="round">
+  <rect x="1" y="9" width="8" height="46" fill="url(#linearGradient1637)" style="paint-order:fill markers stroke"/>
+  <rect x="55" y="9" width="8" height="46" fill="url(#linearGradient1659)" style="paint-order:fill markers stroke"/>
+  <rect x="37" y="9" width="8" height="46" fill="url(#linearGradient1657)" style="paint-order:fill markers stroke"/>
+  <rect x="19" y="9" width="8" height="46" fill="url(#linearGradient1655)" style="paint-order:fill markers stroke"/>
  </g>
 </svg>

@@ -1531,10 +1531,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
         //       the 'options' items but not the 'actions' items ?
         PopupMenu* itemPopupMenu = new PopupMenu(this, false);
         populateMergeOptions(itemPopupMenu);
-#if QT_VERSION >= 0x050100
-        // This is required after Qt 5.1
         itemPopupMenu->setToolTipsVisible(true);
-#endif
         QAction *act = itemPopupMenu->exec(event->globalPos());
         int idx = -1;
         bool is_checked = false;
