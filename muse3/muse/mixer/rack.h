@@ -28,10 +28,11 @@
 #include <QListWidget>
 #include "type_defs.h"
 
-class QDragEnterEvent;
-class QDragLeaveEvent;
-class QDropEvent;
-class QMouseEvent;
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
+#include <QDropEvent>
+#include <QMouseEvent>
+#include <QEvent>
 
 namespace MusECore {
 class AudioTrack;
@@ -74,6 +75,8 @@ class EffectRack : public QListWidget {
       void dragEnterEvent(QDragEnterEvent *event);
       void mousePressEvent(QMouseEvent *event);
       void mouseMoveEvent(QMouseEvent *event);
+      void enterEvent(QEvent *event);
+      void leaveEvent(QEvent *event);
 
       QStringList mimeTypes() const;
       Qt::DropActions supportedDropActions () const;
@@ -81,7 +84,7 @@ class EffectRack : public QListWidget {
    public:
       EffectRack(QWidget*, MusECore::AudioTrack* t);
       ~EffectRack();
-      
+
       MusECore::AudioTrack* getTrack() { return track; } 
       QPoint getDragPos() { return dragPos; }
       //QColor getActiveColor() { return activeColor; }

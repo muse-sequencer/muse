@@ -322,6 +322,7 @@ GlobalConfigValues config = {
       true,                         // liveWaveUpdate
       true,                         // warnOnFileVersions Warn if file version different than current
       MusEGlobal::CONF_LV2_UI_USE_FIRST, //lv2UiBehavior
+      4,                            // audioEffectsRackVisibleItems
       true,                         // preferKnobsVsSliders Whether to prefer the use of knobs over sliders, esp in mixer.
       true,                         // showControlValues Whether to show the value along with label in small controls, esp in mixer.
       true,                         // monitorOnRecord  Whether to automatically monitor on record arm.

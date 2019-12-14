@@ -24,8 +24,6 @@
 
 #include <QByteArray>
 #include <QDrag>
-#include <QDragEnterEvent>
-#include <QDropEvent>
 #include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
@@ -34,6 +32,8 @@
 #include <QPalette>
 #include <QStyledItemDelegate>
 #include <QUrl>
+#include <QScrollBar>
+
 #include "popupmenu.h"
 
 #include <errno.h>
@@ -190,6 +190,49 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
 
       setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+      setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+      // Taken from help files, example custom stylesheets.
+      // Make a custom scrollbar. It seems this stuff can only be done with sylesheets.
+      // There doesn't seem to be style primitives or complex properites to set for all of this.
+      // Help warns that with complex controls like scrollbar, if you set one property, then ALL
+      //  properties must be set. Chopped down to a 'mini' compact size, just for the rack.
+      verticalScrollBar()->setStyleSheet(
+          "QScrollBar:vertical {"
+              "border: 2px solid grey;"
+              "background: #32CC99;"
+              "width: 12px;"
+              "margin: 10px 0 10px 0;"
+          "}"
+          "QScrollBar::handle:vertical {"
+              "background: white;"
+              "min-height: 8px;"
+          "}"
+          "QScrollBar::add-line:vertical {"
+              "border: 2px solid grey;"
+              "background: #32CC99;"
+              "height: 8px;"
+              "subcontrol-position: bottom;"
+              "subcontrol-origin: margin;"
+          "}"
+          "QScrollBar::sub-line:vertical {"
+          "    border: 2px solid grey;"
+          "    background: #32CC99;"
+          "    height: 8px;"
+          "    subcontrol-position: top;"
+          "    subcontrol-origin: margin;"
+          "}"
+          "QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {"
+          "    border: 2px solid grey;"
+          "    width: 3px;"
+          "    height: 3px;"
+          "    background: white;"
+          "}"
+          "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
+          "    background: none;"
+          "}"
+      );
+
+
       setSelectionMode(QAbstractItemView::SingleSelection);
 
       for (int i = 0; i < MusECore::PipelineDepth; ++i)
@@ -267,7 +310,7 @@ QSize EffectRack::minimumSizeHint() const
       return QSize(10, 
         2 * frameWidth() + 
         (fontMetrics().height() + 2 * EffectRackDelegate::itemYMargin + 2 * EffectRackDelegate::itemTextYMargin) 
-        * MusECore::PipelineDepth);
+        * MusEGlobal::config.audioEffectsRackVisibleItems);
       }
 
 //---------------------------------------------------------
@@ -764,6 +807,17 @@ void EffectRack::mouseMoveEvent(QMouseEvent *event)
       QListWidget::mouseMoveEvent(event);
 }
 
+void EffectRack::enterEvent(QEvent *event)
+{
+  setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+  QListWidget::enterEvent(event);
+}
+
+void EffectRack::leaveEvent(QEvent *event)
+{
+  setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  QListWidget::leaveEvent(event);
+}
 
 void EffectRack::initPlugin(MusECore::Xml xml, int idx)
       {      

@@ -1262,6 +1262,17 @@ void Strip::mousePressEvent(QMouseEvent* ev)
     act->setCheckable(true);
     act->setChecked(MusEGlobal::config.monitorOnRecord);
 
+    QMenu* audioEffectsRackVisibleItemsMenu = new QMenu(tr("Visible audio effects"));
+    for(int i = 0; i <= MusECore::PipelineDepth; ++i)
+    {
+      act = audioEffectsRackVisibleItemsMenu->addAction(QString::number(i));
+      act->setData(int(5000 + i));
+      act->setCheckable(true);
+      if(i == MusEGlobal::config.audioEffectsRackVisibleItems)
+        act->setChecked(MusEGlobal::config.monitorOnRecord);
+    }
+    menu->addMenu(audioEffectsRackVisibleItemsMenu);
+    
     menu->addAction(new MenuTitleItem(tr("Actions:"), menu));
 
     act = menu->addAction(tr("Change track name"));
@@ -1339,6 +1350,14 @@ void Strip::mousePressEvent(QMouseEvent* ev)
 
       case 1001:
         changeTrackName();
+      break;
+      
+      default:
+        if(sel >= 5000 && sel <= 5000 + MusECore::PipelineDepth)
+        {
+          MusEGlobal::config.audioEffectsRackVisibleItems = sel - 5000;
+          MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
+        }
       break;
     }
 
