@@ -774,12 +774,12 @@ void ArrangerView::updateScoreMenus()
   scoreAllInOneSubsubmenu->clear();
 
   
-  action=new QAction(tr("New"), this);
+  action=new QAction(tr("New..."), this);
   connect(action, &QAction::triggered, []() { MusEGlobal::muse->openInScoreEdit_oneStaffPerTrack(nullptr); } );
   scoreOneStaffPerTrackSubsubmenu->addAction(action);
   
   
-  action=new QAction(tr("New"), this); //the above action may NOT be reused!
+  action=new QAction(tr("New..."), this); //the above action may NOT be reused!
   connect(action, &QAction::triggered, []() { MusEGlobal::muse->openInScoreEdit_allInOne(nullptr); } );
   scoreAllInOneSubsubmenu->addAction(action);
 
