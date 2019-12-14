@@ -196,15 +196,12 @@ details.
         --------------
           There are a few different ways to configure (notice the two dots):
 
-          Type "cmake -i .." to run in step-by-step 'Wizard' mode, this is the RECOMMENDED way to
-          setup the build environment.
-
-          Or type "cmake -L .." to see options, then compose "cmake <options>" yourself. 
+          Type "cmake -L .." to see options, then compose "cmake <options>" yourself. 
           Some <options> are:
 
             -DCMAKE_BUILD_TYPE=<type>
                <type> can be blank (to reset a previous cached type to 'empty'), 
-                debug, release, RelWithDebInfo and MinSizeRel.
+                Debug, Release, RelWithDebInfo and MinSizeRel.
                Release is recommended, to get optimizations.
                If no CMAKE_BUILD_TYPE is given at all, cmake uses either the previous 
                 cached value, or else 'empty' (plain or default system optimizations).
