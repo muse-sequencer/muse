@@ -196,42 +196,46 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
       // There doesn't seem to be style primitives or complex properites to set for all of this.
       // Help warns that with complex controls like scrollbar, if you set one property, then ALL
       //  properties must be set. Chopped down to a 'mini' compact size, just for the rack.
-      verticalScrollBar()->setStyleSheet(
-          "QScrollBar:vertical {"
-              "border: 2px solid grey;"
-              "background: #32CC99;"
-              "width: 12px;"
-              "margin: 10px 0 10px 0;"
-          "}"
-          "QScrollBar::handle:vertical {"
-              "background: white;"
-              "min-height: 8px;"
-          "}"
-          "QScrollBar::add-line:vertical {"
-              "border: 2px solid grey;"
-              "background: #32CC99;"
-              "height: 8px;"
-              "subcontrol-position: bottom;"
-              "subcontrol-origin: margin;"
-          "}"
-          "QScrollBar::sub-line:vertical {"
-          "    border: 2px solid grey;"
-          "    background: #32CC99;"
-          "    height: 8px;"
-          "    subcontrol-position: top;"
-          "    subcontrol-origin: margin;"
-          "}"
-          "QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {"
-          "    border: 2px solid grey;"
-          "    width: 3px;"
-          "    height: 3px;"
-          "    background: white;"
-          "}"
-          "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
-          "    background: none;"
-          "}"
-      );
+//      verticalScrollBar()->setStyleSheet(
+//          "QScrollBar:vertical {"
+//              "border: 2px solid grey;"
+//              "background: #32CC99;"
+//              "width: 12px;"
+//              "margin: 10px 0 10px 0;"
+//          "}"
+//          "QScrollBar::handle:vertical {"
+//              "background: white;"
+//              "min-height: 8px;"
+//          "}"
+//          "QScrollBar::add-line:vertical {"
+//              "border: 2px solid grey;"
+//              "background: #32CC99;"
+//              "height: 8px;"
+//              "subcontrol-position: bottom;"
+//              "subcontrol-origin: margin;"
+//          "}"
+//          "QScrollBar::sub-line:vertical {"
+//          "    border: 2px solid grey;"
+//          "    background: #32CC99;"
+//          "    height: 8px;"
+//          "    subcontrol-position: top;"
+//          "    subcontrol-origin: margin;"
+//          "}"
+//          "QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {"
+//          "    border: 2px solid grey;"
+//          "    width: 3px;"
+//          "    height: 3px;"
+//          "    background: white;"
+//          "}"
+//          "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
+//          "    background: none;"
+//          "}"
+//      );
 
+      QFile file(":/qss/scrollbar_small_vertical.qss");
+      file.open(QFile::ReadOnly);
+      QString style = file.readAll();
+      verticalScrollBar()->setStyleSheet(style);
 
       setSelectionMode(QAbstractItemView::SingleSelection);
 
