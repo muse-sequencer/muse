@@ -151,7 +151,7 @@ details.
             libjack-jackd2-dev ladspa-sdk qt5-default qttools5-dev qttools5-dev-tools\
             liblo-dev dssi-dev lv2-dev libsamplerate0-dev libsndfile1-dev git\
             libfluidsynth-dev libgtkmm-2.4-dev librtaudio-dev libqt5svg5-dev\
-            libinstpatch-dev
+            libinstpatch-dev liblilv-dev liblrdf0-dev
     2. Clone muse source with command: 
      'git clone https://github.com/muse-sequencer/muse.git'
     3. Type 'cd muse/muse3'
