@@ -888,17 +888,30 @@ void CtrlPanel::setControlColor()
   if(_patchEdit)
   {
     _patchEdit->setReadoutColor(color);
+    // Colours in these sections were not updating with stylesheet colours,
+    //  because normally that's only done at creation, and we create these
+    //  things once and keep them around waiting to be shown.
+    // TODO : Why create all three? Try dynamically and destroying only
+    //         what's needed when setController is called.
+    // Anyway, this trick recommended by help. Tested OK.
+    // Good demonstration of how to apply a stylesheet after a property has been changed.
+    style()->unpolish(_patchEdit);
+    style()->polish(_patchEdit);
   }
 
   if(_knob)
   {
     _knob->setFaceColor(color);
+    style()->unpolish(_knob);
+    style()->polish(_knob);
   }
 
   if(_slider)
   {
     _slider->setBorderColor(color);
     _slider->setBarColor(MusEGlobal::config.sliderBarDefaultColor);
+    style()->unpolish(_slider);
+    style()->polish(_slider);
   }
 }
 

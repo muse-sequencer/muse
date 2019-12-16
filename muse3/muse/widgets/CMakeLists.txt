@@ -83,6 +83,7 @@ QT5_WRAP_CPP (widget_mocs
       lcombo.h  
       line_edit.h
       menutitleitem.h
+      menutitlewidgets.h
       meter.h
 #       meter_slider.h
 #       metronome.h  
@@ -228,6 +229,7 @@ file (GLOB widgets_source_files
       lcombo.cpp 
       line_edit.cpp
       menutitleitem.cpp
+      menutitlewidgets.cpp
       meter.cpp
 #       meter_slider.cpp
 #       metronome.cpp 

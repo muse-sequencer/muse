@@ -33,14 +33,13 @@
 #include <QDropEvent>
 #include <QMouseEvent>
 #include <QEvent>
+#include <QColor>
 
-namespace MusECore {
-class AudioTrack;
-class Xml;
-}
+#include "track.h"
+#include "xml.h"
+#include "background_painter.h"
 
 namespace MusEGui {
-class ItemBackgroundPainter;
 
 //---------------------------------------------------------
 //   EffectRack
@@ -49,10 +48,11 @@ class ItemBackgroundPainter;
 class EffectRack : public QListWidget {
       Q_OBJECT
     
+      Q_PROPERTY( QColor activeColor READ activeColor WRITE setActiveColor )
     
       MusECore::AudioTrack* track;
       int itemheight;
-      //QColor activeColor;
+      QColor _activeColor;
       ItemBackgroundPainter* _bkgPainter;
 
       virtual QSize minimumSizeHint() const;
@@ -83,11 +83,11 @@ class EffectRack : public QListWidget {
    
    public:
       EffectRack(QWidget*, MusECore::AudioTrack* t);
-      ~EffectRack();
 
-      MusECore::AudioTrack* getTrack() { return track; } 
-      QPoint getDragPos() { return dragPos; }
-      //QColor getActiveColor() { return activeColor; }
+      MusECore::AudioTrack* getTrack() const { return track; } 
+      QPoint getDragPos() const { return dragPos; }
+      QColor activeColor() const { return _activeColor; }
+      void setActiveColor(const QColor& c) { _activeColor = c; update(); }
       ItemBackgroundPainter* getBkgPainter() const { return _bkgPainter; }
 
       };

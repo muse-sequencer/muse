@@ -48,7 +48,6 @@
 #include "plugin.h"
 #include "plugindialog.h"
 #include "filedialog.h"
-#include "background_painter.h"
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
 #endif
@@ -105,6 +104,7 @@ void EffectRackDelegate::paint ( QPainter * painter, const QStyleOptionViewItem 
 
       const QRect onrect = (tr->efxPipe() && tr->efxPipe()->isOn(index.row())) ? rr : QRect();
       ItemBackgroundPainter* ibp = er->getBkgPainter();
+      ibp->setActiveColor(er->activeColor());
       ibp->drawBackground(painter,
                           rr,
                           option.palette,
@@ -181,7 +181,7 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
       setObjectName("Rack");
       setAttribute(Qt::WA_DeleteOnClose);
 
-     _bkgPainter = new ItemBackgroundPainter();
+     _bkgPainter = new ItemBackgroundPainter(this);
 
       track = t;
       itemheight = 19;
@@ -270,16 +270,6 @@ void EffectRack::updateContents()
               viewport()->update(r);
             }
       }
-      }
-
-//---------------------------------------------------------
-//   EffectRack
-//---------------------------------------------------------
-
-EffectRack::~EffectRack()
-      {
-      if(_bkgPainter)
-        delete _bkgPainter;
       }
 
 //---------------------------------------------------------

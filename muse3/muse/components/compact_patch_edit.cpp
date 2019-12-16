@@ -24,6 +24,7 @@
 
 #include <QVBoxLayout>
 #include <QMouseEvent>
+#include <QStyle>
 
 #include "compact_patch_edit.h"
 #include "lcd_widgets.h"
@@ -150,6 +151,15 @@ QWidget* CompactPatchEdit::setupComponentTabbing(QWidget* previousWidget)
 void CompactPatchEdit::setReadoutColor(const QColor& c)
 {
   _patchEdit->setReadoutColor(c);
+  // Colour was not updating with stylesheet colour.
+  // This trick recommended by help. Tested OK.
+  // Good demonstration of how to apply a stylesheet after a property has been changed.
+  if(style())
+  {
+    style()->unpolish(_patchEdit);
+    style()->polish(_patchEdit);
+  }
+
    //update();
 }
 

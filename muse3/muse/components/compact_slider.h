@@ -263,6 +263,7 @@ class CompactSlider : public SliderBase, public ScaleIf
     void setSlotColor(const QColor& c) { d_slotColor = c; update(); }
     QColor thumbColor() const { return d_thumbColor; }
     void setThumbColor(const QColor& c) { d_thumbColor = c; update(); }
+
     // Whether the user must click on the thumb or else anywhere in the control to move the value. 
     bool detectThumb() const { return _detectThumb; }
     // Set whether the user must click on the thumb or else anywhere in the control to move the value. 

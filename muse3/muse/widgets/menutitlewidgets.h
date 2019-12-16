@@ -1,8 +1,10 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//    $Id: menutitleitem.h,v 1.1.2.1 2009/06/10 00:34:59 terminator356 Exp $
-//  (C) Copyright 1999-2001 Werner Schweer (ws@seh.de)
+//  Copyright (C) 1999-2011 by Werner Schweer and others
+//
+//  menutitlewidgets.h
+//  (C) Copyright 2019 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,29 +22,27 @@
 //
 //=========================================================
 
-#ifndef __MENU_TITLE_ITEM_H__
-#define __MENU_TITLE_ITEM_H__
+#ifndef __MENU_TITLE_WIDGETS_H__
+#define __MENU_TITLE_WIDGETS_H__
 
 #include <QWidget>
-#include <QWidgetAction>
+#include <QLabel>
 #include <QString>
 
 namespace MusEGui {
 
 //---------------------------------------------------------
-//   MenuTitleItem
+//   MenuTitleLabel
 //---------------------------------------------------------
 
-class MenuTitleItem : public QWidgetAction { 
-      Q_OBJECT
+class MenuTitleLabel : public QLabel { 
+    Q_OBJECT
 
-   private:
-      QString s;
-
-   public:
-      MenuTitleItem(const QString&, QWidget* /*parent*/);
-      QWidget* createWidget(QWidget* /*parent*/);
-      };
+  public:
+    MenuTitleLabel(const QString &text, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    MenuTitleLabel(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+};
 
 } // namespace MusEGui
 #endif
+

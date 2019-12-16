@@ -50,6 +50,7 @@ QT5_WRAP_CPP (components_mocs
       appearance.h
       arrangercolumns.h 
 #       action.h
+      background_painter.h
       bigtime.h
       canvas.h  
 #       checkbox.h

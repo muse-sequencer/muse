@@ -24,14 +24,14 @@
 #ifndef __BACKGROUND_PAINTER_H__
 #define __BACKGROUND_PAINTER_H__
 
+#include <QObject>
 #include <QRect>
 #include <QColor>
-
-class QPainter;
-class QPalette;
-class QColor;
-class QRect;
-class QString;
+#include <QPainter>
+#include <QPalette>
+#include <QColor>
+#include <QRect>
+#include <QString>
 
 namespace MusEGui {
 
@@ -39,11 +39,21 @@ namespace MusEGui {
 //   ItemBackgroundPainter
 //---------------------------------------------------------
 
-class ItemBackgroundPainter
+// FIXME : To access this from a stylesheet, it must inherit QWidget !
+class ItemBackgroundPainter : public QObject
 {
-  public:
-    ItemBackgroundPainter();
+  Q_OBJECT
 
+  Q_PROPERTY( QColor activeColor READ activeColor WRITE setActiveColor )
+
+  QColor _activeColor;
+
+  public:
+   ItemBackgroundPainter(QObject* parent = nullptr);
+
+   QColor activeColor() const { return _activeColor; }
+   void setActiveColor(const QColor& c) { _activeColor = c; }
+  
    void drawBackground(QPainter* painter,
                        const QRect& rect,
                        const QPalette& pal,

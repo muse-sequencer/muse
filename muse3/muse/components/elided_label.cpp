@@ -129,6 +129,7 @@ void ElidedLabel::paintEvent(QPaintEvent* e)
   const QRect ar = r.adjusted(1, 1, -1, -1);
 
   ItemBackgroundPainter ibp;
+  ibp.setActiveColor(_activeColor);
   ibp.drawBackground(&painter, r, palette(), 1, 1, !hasOffMode() || !isOff() ? r : QRect());
 
   if (hasFocus())

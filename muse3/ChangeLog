@@ -1,3 +1,5 @@
+16.12.2019
+    - Exposed new colours for stylesheets. See Ardour and Dark qss files. (Tim)
 14.12.2019
     * NEW - Audio effects rack size increased from 4 to 8 : (Tim)
     - New right-click context menu entry on strip labels: "effects rack visible items".
