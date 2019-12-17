@@ -31,6 +31,7 @@
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QProgressDialog>
+#include <QPushButton>
 
 //#include "xml.h"
 #include "song.h"
@@ -2463,18 +2464,40 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
 //          return true; // this removed f from the stack, dropping refcount maybe to zero and maybe deleting the thing
 //       }
 
-      const QMessageBox::StandardButton res = QMessageBox::question(this, tr("Import Wavefile"),
-                               tr("This wave file has a samplerate of %1,\n"
-                                  "as opposed to current setting %2.\n"
-                                  "File will be resampled from %1 to %2 Hz.\n"
-                                  "Do you still want to import it?").arg(f->samplerate()).arg(MusEGlobal::sampleRate),
-                               QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
-      if(res != QMessageBox::Yes && res != QMessageBox::No)
+      QMessageBox mbox(this);
+      mbox.setWindowTitle(tr("Import Wavefile"));
+      mbox.setText(tr("This wave file has a samplerate of %1 Hz,\n"
+                      " as opposed to current setting %2 Hz.\n"
+                      "A live, real-time samplerate converter can be used on this file.\n"
+                      "Or, the file can be resampled now from %1 Hz to %2 Hz.").arg(f->samplerate()).arg(MusEGlobal::sampleRate));
+      mbox.setInformativeText(tr("Do you want to use a converter or resample the file now?"));
+
+      QPushButton* converter_button = mbox.addButton(tr("Use Live Converter"), QMessageBox::YesRole);
+      QPushButton* resample_button = mbox.addButton(tr("Resample now"), QMessageBox::NoRole);
+      mbox.addButton(tr("Cancel"), QMessageBox::RejectRole);
+      mbox.setDefaultButton(converter_button);
+
+      mbox.exec();
+      if(mbox.clickedButton() != converter_button && mbox.clickedButton() != resample_button)
       {
          return true; // this removed f from the stack, dropping refcount maybe to zero and maybe deleting the thing
       }
 
-      if(res == QMessageBox::No)
+      
+//       const QMessageBox::StandardButton res = QMessageBox::question(this, tr("Import Wavefile"),
+//                                tr("This wave file has a samplerate of %1,\n"
+//                                   "as opposed to current setting %2.\n"
+//                                   "File will be resampled from %1 to %2 Hz.\n"
+//                                   "Do you still want to import it?").arg(f->samplerate()).arg(MusEGlobal::sampleRate),
+//                                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
+//       if(res != QMessageBox::Yes && res != QMessageBox::No)
+//       {
+//          return true; // this removed f from the stack, dropping refcount maybe to zero and maybe deleting the thing
+//       }
+//       if(res == QMessageBox::No)
+        
+        
+      if(mbox.clickedButton() == resample_button)
       {
         
 // REMOVE Tim. samplerate. Removed. TESTING Audio converters. Reinstate!
