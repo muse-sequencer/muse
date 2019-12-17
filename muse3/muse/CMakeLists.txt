@@ -82,7 +82,7 @@ QT5_WRAP_CPP ( wavepreview_moc_headers
 ## Resource files
 ##
 QT5_ADD_RESOURCES (muse_qrc_files
-		  muse.qrc
+#		  muse.qrc
 		  ../resources.qrc
 		  )
 

@@ -1654,7 +1654,8 @@ void Appearance::browseStyleSheet()
 void Appearance::setDefaultStyleSheet()
 {
       // Set the style sheet to the default compiled-in resource :/style.qss
-      styleSheetPath->setText(QString(":/style.qss"));
+//      styleSheetPath->setText(QString(":/style.qss"));
+      styleSheetPath->clear();
 }
 
 //---------------------------------------------------------
