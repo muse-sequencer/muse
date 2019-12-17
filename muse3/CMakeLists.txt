@@ -657,12 +657,13 @@ file (GLOB doc_files
       ChangeLog
       COPYING
       libdivide_LICENSE
-      NEWS
       README
-      README.de
+      README.editor-shortcuts
       README.effects-rack
       README.instruments
       README.ladspaguis
+      README.metronome
+      README.python
       README.shortcuts
       README.softsynth
       README.translate
