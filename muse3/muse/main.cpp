@@ -163,13 +163,11 @@ class MuseApplication : public QApplication {
          const bool flag = QApplication::notify(receiver, event);
          const QEvent::Type type = event->type();
          if (type == QEvent::KeyPress) {
-#if QT_VERSION >= 0x050000
             const QMetaObject * mo = receiver->metaObject();
             if (mo){
                if (strcmp(mo->className(), "QWidgetWindow") == 0)
                  return false;
             }
-#endif
             QKeyEvent* ke = (QKeyEvent*)event;
             MusEGlobal::globalKeyState = ke->modifiers();
 
@@ -553,17 +551,7 @@ CommandLineParseResult parseCommandLine(
 int main(int argc, char* argv[])
       {
       // Get the separator used for file paths.
-      #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
-          const QChar list_separator = QDir::listSeparator();
-      #else
-          // Ugly solution. No c/c++ solution except in c++17, which is a bit too new ATM.
-          // Hopefully everyone's got Qt 5.6 or higher.
-          #if defined(WIN32) || defined(_WIN32)
-              const QChar list_separator = QChar(';');
-          #else
-              const QChar list_separator = QChar(':');
-          #endif
-      #endif
+      const QChar list_separator = QDir::listSeparator();
 
       // Get environment variables for various paths.
       // "The Qt environment manipulation functions are thread-safe, but this requires that
@@ -628,10 +616,8 @@ int main(int argc, char* argv[])
   #endif
 
         // Now create the application, and let Qt remove recognized arguments.
-#if QT_VERSION >= 0x050600
         QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
         QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-#endif
 
         //========================
         //  Application instance:
@@ -655,25 +641,10 @@ int main(int argc, char* argv[])
         //        (ie. ~./config/MusE/MusE-qt).
         //       Beware, setting application name and organization name influence these locations.
 
-        #if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
           // "Returns a directory location where user-specific configuration files should be written.
           //  This is an application-specific directory, and the returned path is never empty.
           //  This enum value was added in Qt 5.5."
-          MusEGlobal::configPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-        #else
-          // "Returns a directory location where user-specific configuration files should be written.
-          //  This may be either a generic value or application-specific, and the returned path is never empty."
-          //MusEGlobal::configPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
-          //    + QString("/") + QString(ORGANIZATION_NAME) + QString("/") + QString(PACKAGE_NAME);
-          // "Returns a directory location where user-specific configuration files shared between multiple
-          //   applications should be written. This is a generic value and the returned path is never empty."
-          // According to the chart in the docs, here we should be able to rely on this  since
-          //  'ConfigLocation' acts a bit different on some OS (it might already include the app name).
-          // Also, according to the docs and observation this should equal (resemble?) what is returned by
-          //  the newer 'AppConfigLocation' in Qt 5.5.
-          MusEGlobal::configPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
-              + "/" + ORGANIZATION_NAME + "/" + PACKAGE_NAME;
-        #endif
+        MusEGlobal::configPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
 
         // "Returns a directory location where user-specific non-essential (cached) data should be written.
         //  This is an application-specific directory. The returned path is never empty."

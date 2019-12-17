@@ -86,12 +86,10 @@ ProjectCreateImpl::ProjectCreateImpl(QWidget *parent) :
   connect(createFolderCheckbox,SIGNAL(clicked()), this, SLOT(createProjFolderChanged()));
   connect(projectFileTypeCB,SIGNAL(currentIndexChanged(int)), this, SLOT(updateDirectoryPath()));
   connect(buttonBox, SIGNAL(accepted()), this, SLOT(ok()));
-#if QT_VERSION >= 0x040700
   projectNameEdit->setPlaceholderText("<Project Name>");
   // Orcan: Commented out since there is no QPlainTextEdit::setPlaceholderText()
   //        as of Qt-4.7.1
   //commentEdit->setPlaceholderText("<Add information about project here>");
-#endif
   updateDirectoryPath();
   projectNameEdit->setFocus();
   show();

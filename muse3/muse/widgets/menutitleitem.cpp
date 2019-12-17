@@ -18,9 +18,8 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //=============================================================================
 
-#include <QLabel>
-
 #include "menutitleitem.h"
+#include "menutitlewidgets.h"
 
 namespace MusEGui {
 
@@ -31,6 +30,7 @@ namespace MusEGui {
 MenuTitleItem::MenuTitleItem(const QString& ss, QWidget* parent)
   : QWidgetAction(parent)
       {
+        setObjectName("menuTitleItem");
         s = ss;
         // Don't allow to click on it.
         setEnabled(false);
@@ -40,13 +40,7 @@ MenuTitleItem::MenuTitleItem(const QString& ss, QWidget* parent)
 
 QWidget* MenuTitleItem::createWidget(QWidget *parent)
 {
-  QLabel* l = new QLabel(s, parent);
-  l->setAlignment(Qt::AlignCenter);
-  l->setAutoFillBackground(true);
-  //QPalette palette;
-  //palette.setColor(label->backgroundRole(), c);
-  //l->setPalette(palette);
-  l->setBackgroundRole(QPalette::Dark);
+  MenuTitleLabel* l = new MenuTitleLabel(s, parent);
   return l;
 }
 

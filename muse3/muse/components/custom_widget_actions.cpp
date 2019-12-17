@@ -34,6 +34,7 @@
 #include <QGraphicsWidget>
 #include <QMouseEvent>
 
+#include "menutitlewidgets.h"
 #include "icons.h"
 #include "pixmap_button.h"
 #include "custom_widget_actions.h"
@@ -470,21 +471,17 @@ RoutingMatrixActionWidget::RoutingMatrixActionWidget(RoutingMatrixWidgetAction* 
     left_title_layout->setContentsMargins(0, 0, 0, 0); // Zero because we're already inside a layout.
     if(!_action->array()->checkBoxTitle().isEmpty())
     {
-      QLabel* cb_lbl = new QLabel(_action->array()->checkBoxTitle(), parent);
+      MenuTitleLabel* cb_lbl = new MenuTitleLabel(_action->array()->checkBoxTitle(), parent);
       cb_lbl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       cb_lbl->setAlignment(Qt::AlignCenter);
-      cb_lbl->setAutoFillBackground(true);
-      cb_lbl->setBackgroundRole(QPalette::Dark);
       left_title_layout->addWidget(cb_lbl);
       left_title_layout->addSpacing(4);
     }
     if(!_action->array()->headerTitle().isEmpty())
     {
-      QLabel* hdr_lbl = new QLabel(_action->array()->headerTitle(), parent);
+      MenuTitleLabel* hdr_lbl = new MenuTitleLabel(_action->array()->headerTitle(), parent);
       hdr_lbl->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
       hdr_lbl->setAlignment(Qt::AlignCenter);
-      hdr_lbl->setAutoFillBackground(true);
-      hdr_lbl->setBackgroundRole(QPalette::Dark);
       left_title_layout->addWidget(hdr_lbl);
       left_title_layout->addSpacing(4);
     }
@@ -502,11 +499,9 @@ RoutingMatrixActionWidget::RoutingMatrixActionWidget(RoutingMatrixWidgetAction* 
   }
   else
   {
-    QLabel* lbl = new QLabel(_action->array()->arrayTitle(), parent);
+    MenuTitleLabel* lbl = new MenuTitleLabel(_action->array()->arrayTitle(), parent);
     lbl->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
     lbl->setAlignment(Qt::AlignCenter);
-    lbl->setAutoFillBackground(true);
-    lbl->setBackgroundRole(QPalette::Dark);
     right_v_layout->addWidget(lbl);
   }
   
@@ -936,32 +931,26 @@ QWidget* RoutingMatrixHeaderWidgetAction::createWidget(QWidget *parent)
 
   if(!_checkBoxLabel.isEmpty())
   {
-    QLabel* lbl = new QLabel(_checkBoxLabel, parent);
+    MenuTitleLabel* lbl = new MenuTitleLabel(_checkBoxLabel, parent);
     lbl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     lbl->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    lbl->setAutoFillBackground(true);
-    lbl->setBackgroundRole(QPalette::Dark);
     h_layout->addWidget(lbl);
   }
   
   if(!_itemLabel.isEmpty())
   {
-    QLabel* lbl = new QLabel(_itemLabel, parent);
+    MenuTitleLabel* lbl = new MenuTitleLabel(_itemLabel, parent);
     lbl->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
     lbl->setAlignment(Qt::AlignCenter);
-    lbl->setAutoFillBackground(true);
-    lbl->setBackgroundRole(QPalette::Dark);
     h_layout->addSpacing(4);
     h_layout->addWidget(lbl);
   }
   
   if(!_arrayLabel.isEmpty())
   {
-    QLabel* lbl = new QLabel(_arrayLabel, parent);
+    MenuTitleLabel* lbl = new MenuTitleLabel(_arrayLabel, parent);
     lbl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     lbl->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    lbl->setAutoFillBackground(true);
-    lbl->setBackgroundRole(QPalette::Dark);
     h_layout->addSpacing(4);
     h_layout->addWidget(lbl);
   }

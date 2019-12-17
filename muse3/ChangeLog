@@ -1,3 +1,9 @@
+16.12.2019
+    - Exposed new colours for stylesheets. See Ardour and Dark qss files. (Tim)
+    - Fixed #740: sf3 files crash. libinstpatch code: We did not check returned pointers.
+14.12.2019
+    * NEW - Audio effects rack size increased from 4 to 8 : (Tim)
+    - New right-click context menu entry on strip labels: "effects rack visible items".
 13.12.2019
   - HOT Bug fix: Missing 3 MESS synths, undefined symbol MusEGlobal::config (Tim)
     Cause: #include "gconfig.h" in icons.cpp brought in core globals which should

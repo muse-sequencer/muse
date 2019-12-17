@@ -34,10 +34,7 @@
 #include <QDesktopWidget>
 #include <QCursor>
 #include <QToolTip>
-// screenGeometry() is obsolete. Qt >= 5.6 ? use primaryScreen().
-#if QT_VERSION >= 0x050600
 #include <QScreen>
-#endif
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_SLIDER_BASE(dev, format, args...)  //fprintf(dev, format, ##args);
 
@@ -665,12 +662,7 @@ void SliderBase::mouseMoveEvent(QMouseEvent *e)
     d_trackingTempDisable = meta; // Generate automation graph recording straight lines if modifier held.
     if(borderlessMouse())
     {
-// screenGeometry() is obsolete. Qt >= 5.6 ? use primaryScreen().
-#if QT_VERSION >= 0x050600
       const QRect r = QApplication::primaryScreen()->geometry();
-#else
-      const QRect r = QApplication::desktop()->screenGeometry();
-#endif
       const QPoint scrn_cntr(r.width()/2, r.height()/2);
       QPoint delta;
       if(_firstMouseMoveAfterPress)

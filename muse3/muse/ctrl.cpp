@@ -833,13 +833,11 @@ void CtrlList::read(Xml& xml)
                         }
                         else if (tag == "color")
                         {
-#if QT_VERSION >= 0x040700
                               ok = _displayColor.isValidColor(xml.s2());
                               if (!ok) {
                                 printf("CtrlList::read failed reading color string: %s\n", xml.s2().toLatin1().constData());
                                 break;
                               }
-#endif
                               _displayColor.setNamedColor(xml.s2());
                         }
                         else

@@ -91,7 +91,7 @@ CompactKnob::CompactKnob(QWidget* parent, const char* name,
       setEnableValueToolTips(true);
       setShowValueToolTipsOnHover(true);
 
-      _bkgPainter = new ItemBackgroundPainter();
+      _bkgPainter = new ItemBackgroundPainter(this);
 
       _hovered = false;
       _labelHovered = false;
@@ -143,12 +143,6 @@ CompactKnob::CompactKnob(QWidget* parent, const char* name,
 
       setUpdateTime(50);
       }
-
-CompactKnob::~CompactKnob()
-{
-  if(_bkgPainter)
-    delete _bkgPainter;
-}
 
 // Static.
 QSize CompactKnob::getMinimumSizeHint(const QFontMetrics& fm,
@@ -779,7 +773,8 @@ void CompactKnob::drawBackground(QPainter* painter)
                                   palette(),
                                   d_xMargin,
                                   d_yMargin,
-                                  hasOffMode() && ! isOff() ? _labelRect : QRect());
+                                  hasOffMode() && ! isOff() ? _labelRect : QRect(),
+                                  d_activeColor);
     break;
 
     case Top:
@@ -803,7 +798,8 @@ void CompactKnob::drawBackground(QPainter* painter)
                                   palette(),
                                   d_xMargin,
                                   d_yMargin,
-                                  hasOffMode() && ! isOff() ? _labelRect : QRect());
+                                  hasOffMode() && ! isOff() ? _labelRect : QRect(), 
+                                  d_activeColor);
     }
     break;
   }
@@ -1327,6 +1323,15 @@ void CompactKnob::setShinyColor(const QColor& c)
 void CompactKnob::setMarkerColor(const QColor& c)
 {
   d_markerColor = c;
+  update();
+}
+
+//------------------------------------------------------------
+//  setActiveColor
+//------------------------------------------------------------
+void CompactKnob::setActiveColor(const QColor& c)
+{
+  d_activeColor = c;
   update();
 }
 

@@ -894,6 +894,9 @@ void AudioStrip::configChanged()
   if(sl->enableStyleHack() != MusEGlobal::config.lineEditStyleHack)
     sl->setEnableStyleHack(MusEGlobal::config.lineEditStyleHack);
 
+  // Possible, but leave it to the background painter for now.
+  //rack->setActiveColor(MusEGlobal::config.rackItemBackgroundColor);
+
   _upperRack->configChanged();
   _infoRack->configChanged();
   _lowerRack->configChanged();

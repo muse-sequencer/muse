@@ -66,7 +66,9 @@ class LCDPainter
 class LCDPatchEdit : public QFrame
 {
   Q_OBJECT
+
   //Q_PROPERTY(QString text READ text WRITE setText)
+  Q_PROPERTY( QColor readoutColor READ readoutColor WRITE setReadoutColor )
 
   public:
     enum PatchSections { HBankSection, LBankSection, ProgSection };
@@ -169,7 +171,7 @@ class LCDPatchEdit : public QFrame
     void setReadoutOrientation(PatchOrientation);
 
     QColor readoutColor() const { return _readoutColor; }
-    void setReadoutColor(const QColor& c) { _readoutColor = c; update(); }
+    void setReadoutColor(const QColor& c);
 
     int value() const;
     void setValue(int v);

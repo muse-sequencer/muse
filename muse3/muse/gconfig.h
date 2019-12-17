@@ -357,6 +357,7 @@ struct GlobalConfigValues {
       bool liveWaveUpdate;   //live update wave tracks while recording
       bool warnOnFileVersions; // Warn if file version different than current
       CONF_LV2_UI_BEHAVIOR lv2UiBehavior;
+      int audioEffectsRackVisibleItems; // Number of rack slots visible at one time in the rack.
       bool preferKnobsVsSliders; // Whether to prefer the use of knobs over sliders, esp in mixer.
       bool showControlValues; // Whether to show the value along with label in small controls, esp in mixer.
       bool monitorOnRecord;  // Whether to automatically monitor on record arm.

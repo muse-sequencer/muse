@@ -24,8 +24,6 @@
 
 #include <QByteArray>
 #include <QDrag>
-#include <QDragEnterEvent>
-#include <QDropEvent>
 #include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
@@ -34,6 +32,8 @@
 #include <QPalette>
 #include <QStyledItemDelegate>
 #include <QUrl>
+#include <QScrollBar>
+
 #include "popupmenu.h"
 
 #include <errno.h>
@@ -48,7 +48,6 @@
 #include "plugin.h"
 #include "plugindialog.h"
 #include "filedialog.h"
-#include "background_painter.h"
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
 #endif
@@ -105,6 +104,7 @@ void EffectRackDelegate::paint ( QPainter * painter, const QStyleOptionViewItem 
 
       const QRect onrect = (tr->efxPipe() && tr->efxPipe()->isOn(index.row())) ? rr : QRect();
       ItemBackgroundPainter* ibp = er->getBkgPainter();
+      ibp->setActiveColor(er->activeColor());
       ibp->drawBackground(painter,
                           rr,
                           option.palette,
@@ -181,7 +181,7 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
       setObjectName("Rack");
       setAttribute(Qt::WA_DeleteOnClose);
 
-     _bkgPainter = new ItemBackgroundPainter();
+     _bkgPainter = new ItemBackgroundPainter(this);
 
       track = t;
       itemheight = 19;
@@ -190,6 +190,53 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
 
       setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+      setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+      // Taken from help files, example custom stylesheets.
+      // Make a custom scrollbar. It seems this stuff can only be done with sylesheets.
+      // There doesn't seem to be style primitives or complex properites to set for all of this.
+      // Help warns that with complex controls like scrollbar, if you set one property, then ALL
+      //  properties must be set. Chopped down to a 'mini' compact size, just for the rack.
+//      verticalScrollBar()->setStyleSheet(
+//          "QScrollBar:vertical {"
+//              "border: 2px solid grey;"
+//              "background: #32CC99;"
+//              "width: 12px;"
+//              "margin: 10px 0 10px 0;"
+//          "}"
+//          "QScrollBar::handle:vertical {"
+//              "background: white;"
+//              "min-height: 8px;"
+//          "}"
+//          "QScrollBar::add-line:vertical {"
+//              "border: 2px solid grey;"
+//              "background: #32CC99;"
+//              "height: 8px;"
+//              "subcontrol-position: bottom;"
+//              "subcontrol-origin: margin;"
+//          "}"
+//          "QScrollBar::sub-line:vertical {"
+//          "    border: 2px solid grey;"
+//          "    background: #32CC99;"
+//          "    height: 8px;"
+//          "    subcontrol-position: top;"
+//          "    subcontrol-origin: margin;"
+//          "}"
+//          "QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {"
+//          "    border: 2px solid grey;"
+//          "    width: 3px;"
+//          "    height: 3px;"
+//          "    background: white;"
+//          "}"
+//          "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
+//          "    background: none;"
+//          "}"
+//      );
+
+      QFile file(":/qss/scrollbar_small_vertical.qss");
+      file.open(QFile::ReadOnly);
+      QString style = file.readAll();
+      verticalScrollBar()->setStyleSheet(style);
+
       setSelectionMode(QAbstractItemView::SingleSelection);
 
       for (int i = 0; i < MusECore::PipelineDepth; ++i)
@@ -230,16 +277,6 @@ void EffectRack::updateContents()
       }
 
 //---------------------------------------------------------
-//   EffectRack
-//---------------------------------------------------------
-
-EffectRack::~EffectRack()
-      {
-      if(_bkgPainter)
-        delete _bkgPainter;
-      }
-
-//---------------------------------------------------------
 //   songChanged
 //---------------------------------------------------------
 
@@ -267,7 +304,7 @@ QSize EffectRack::minimumSizeHint() const
       return QSize(10, 
         2 * frameWidth() + 
         (fontMetrics().height() + 2 * EffectRackDelegate::itemYMargin + 2 * EffectRackDelegate::itemTextYMargin) 
-        * MusECore::PipelineDepth);
+        * MusEGlobal::config.audioEffectsRackVisibleItems);
       }
 
 //---------------------------------------------------------
@@ -764,6 +801,17 @@ void EffectRack::mouseMoveEvent(QMouseEvent *event)
       QListWidget::mouseMoveEvent(event);
 }
 
+void EffectRack::enterEvent(QEvent *event)
+{
+  setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+  QListWidget::enterEvent(event);
+}
+
+void EffectRack::leaveEvent(QEvent *event)
+{
+  setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  QListWidget::leaveEvent(event);
+}
 
 void EffectRack::initPlugin(MusECore::Xml xml, int idx)
       {      
