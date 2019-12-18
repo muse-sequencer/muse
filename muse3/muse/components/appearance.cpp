@@ -704,32 +704,34 @@ void Appearance::changeTheme()
         return;
     }
 
+    backgroundTree->reset();
 
     QString currentTheme = colorSchemeComboBox->currentText();
     printf("Changing to theme %s\n", currentTheme.toLatin1().constData() );
 
-    QString themeDir = MusEGlobal::museGlobalShare + "/themes/";
-    backgroundTree->reset();
+    QString styleFile = QFileInfo(currentTheme).baseName() + ".qss";
+    QString stylePath = MusEGlobal::configPath + "/themes/" + styleFile;
 
-    QString configPath = themeDir + currentTheme;
-    if (QFile::exists(themeDir + QFileInfo(currentTheme).baseName()+ ".qss"))
+    if (!QFile::exists(stylePath)) {
+        stylePath = MusEGlobal::museGlobalShare + "/themes/" + styleFile;
+    }
+
+    if (QFile::exists(stylePath))
     {
-      styleSheetPath->setText(themeDir + QFileInfo(currentTheme).baseName()+ ".qss");
-      MusEGlobal::config.styleSheetFile = styleSheetPath->text();
+      styleSheetPath->setText(stylePath);
+      MusEGlobal::config.styleSheetFile = stylePath;
       if (MusEGlobal::debugMsg)
           printf("Setting config.styleSheetFile to %s\n", config->styleSheetFile.toLatin1().data());
-
-      MusECore::readConfiguration(configPath.toLatin1().constData());
-      // We want the simple version, don't set the style or stylesheet yet.
-      MusEGlobal::muse->changeConfig(true);
     }
     else
     {
       MusEGlobal::config.styleSheetFile = "";
-      // We want the simple version, don't set the style or stylesheet yet.
-      MusEGlobal::muse->changeConfig(true);
-      MusECore::readConfiguration(configPath.toLatin1().constData());
     }
+
+    QString configPath = MusEGlobal::museGlobalShare + "/themes/" + currentTheme;
+    // We want the simple version, don't set the style or stylesheet yet.
+    MusEGlobal::muse->changeConfig(true);
+    MusECore::readConfiguration(configPath.toLatin1().constData());
 
     hide();
 
@@ -1642,7 +1644,8 @@ void Appearance::browseStyleSheet()
         path = info.absolutePath();
       }
       
-      QString file = QFileDialog::getOpenFileName(this, tr("Select style sheet"), path, tr("Qt style sheets (*.qss)"));
+      QString file = MusEGui::getOpenFileName(QString("themes"), MusEGlobal::stylesheet_file_pattern, this,
+                                              tr("Select style sheet"), nullptr, MusEGui::MFileDialog::GLOBAL_VIEW);
       styleSheetPath->setText(file);
 }
 
