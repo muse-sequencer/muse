@@ -262,6 +262,12 @@ const char* colors_config_file_pattern[] = {
       0
 };
 
+const char* stylesheet_file_pattern[] = {
+    QT_TRANSLATE_NOOP("file_patterns", "Qt style sheets (*.qss)"),
+    QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
+    0
+};
+
 Qt::KeyboardModifiers globalKeyState;
 
 // Midi Filter Parameter
