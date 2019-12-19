@@ -57,6 +57,7 @@ class DummyAudioDevice : public AudioDevice {
       pthread_t dummyThread;
       float* buffer;
       int _realTimePriority;
+      bool _freewheelMode;
 
       // Critical variables that need to all update at once.
       // We employ a 'flipping' technique.
@@ -180,7 +181,8 @@ class DummyAudioDevice : public AudioDevice {
       //virtual int realtimePriority() const { return 40; }
       virtual int realtimePriority() const { return _realTimePriority; }
 
-      virtual void setFreewheel(bool) {}
+      bool freewheelMode() const { return _freewheelMode; }
+      virtual void setFreewheel(bool v) { _freewheelMode = v; }
       virtual int setMaster(bool, bool /*unconditional*/ = false) { return 1; }
       };
 
@@ -188,6 +190,7 @@ DummyAudioDevice* dummyAudio = 0;
 
 DummyAudioDevice::DummyAudioDevice() : AudioDevice()
       {
+        _freewheelMode = false;
 //       MusEGlobal::sampleRate = MusEGlobal::config.dummyAudioSampleRate;
 //       MusEGlobal::segmentSize = MusEGlobal::config.dummyAudioBufSize;
         
@@ -294,25 +297,35 @@ std::list<QString> DummyAudioDevice::inputPorts(bool midi, int /*aliases*/)
 static void* dummyLoop(void* ptr)
       {
       DummyAudioDevice *drvPtr = (DummyAudioDevice *)ptr;
-      
+      bool freewheel = false;
+
       for(;;) 
       {
         drvPtr->setCriticalVariables(MusEGlobal::segmentSize);
   
         if(MusEGlobal::audio->isRunning()) {
+          // Detect if freewheel was requested.
+          const bool fm = drvPtr->freewheelMode();
+          if(fm != freewheel)
+          {
+            freewheel = fm;
+            MusEGlobal::audio->setFreewheel(fm);
+          }
+          
           // Use our built-in transport, which INCLUDES the necessary
           //  calls to Audio::sync() and ultimately Audio::process(),
           //  and increments the built-in play position.
           drvPtr->processTransport(MusEGlobal::segmentSize);
         }
 
-        usleep(MusEGlobal::segmentSize*1000000/MusEGlobal::sampleRate);
+        if(!freewheel)
+          usleep(MusEGlobal::segmentSize*1000000/MusEGlobal::sampleRate);
       }
       pthread_exit(0);
       }
 
 //---------------------------------------------------------
-//   dummyLoop
+//   start
 //   Returns true on success.
 //---------------------------------------------------------
 

@@ -2316,7 +2316,8 @@ void Song::seqSignal(int fd)
                         if(MusEGlobal::config.freewheelMode)
                           MusEGlobal::audioDevice->setFreewheel(false);
                         
-                        MusEGlobal::audio->msgPlay(false);
+// REMOVE Tim. samplerate. Removed. Done in process now.
+//                         MusEGlobal::audio->msgPlay(false);
                         break;
 
                   case 'C': // Graph changed
@@ -3188,6 +3189,10 @@ void Song::processMasterRec()
 
 void Song::abortRolling()
 {
+  // REMOVE Tim. samplerate. Added.
+  if(MusEGlobal::audio->freewheel())
+    MusEGlobal::audioDevice->setFreewheel(false);
+
   if (record())
         MusEGlobal::audio->recordStop();
   setStopPlay(false);
@@ -3199,6 +3204,10 @@ void Song::abortRolling()
 
 void Song::stopRolling(Undo* operations)
       {
+      // REMOVE Tim. samplerate. Added.
+      if(MusEGlobal::audio->freewheel())
+        MusEGlobal::audioDevice->setFreewheel(false);
+
       Undo ops;
       Undo* opsp = operations ? operations : &ops;
       

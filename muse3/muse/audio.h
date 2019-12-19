@@ -125,13 +125,16 @@ struct AudioMsg : public ThreadMsg {   // this should be an union
 class Audio {
    public:
       enum State {STOP, START_PLAY, PLAY, LOOP1, LOOP2, SYNC, PRECOUNT};
+      enum BounceState { BounceOff = 0, BounceStart, BounceOn };
 
    private:
       bool _running;          // audio is active
       bool recording;         // recording is active
       bool idle;              // do nothing in idle mode
       bool _freewheel;
-      bool _bounce;
+// REMOVE Tim. samplerate. Changed.
+//       bool _bounce;
+      BounceState _bounceState;
       unsigned _loopFrame;     // Startframe of loop if in LOOP mode. Not quite the same as left marker !
       int _loopCount;         // Number of times we have looped so far
 
@@ -209,6 +212,7 @@ class Audio {
       bool filterEvent(const MidiPlayEvent* event, int type, bool thru);
 
       void startRolling();
+      void abortRolling();
       void stopRolling();
 
       void panic();
@@ -360,7 +364,9 @@ class Audio {
       void initDevices(bool force = true);
 
       void sendMsgToGui(char c);
-      bool bounce() const { return _bounce; }
+// REMOVE Tim. samplerate. Changed.
+//       bool bounce() const { return _bounce; }
+      bool bounce() const { return _bounceState == BounceStart || _bounceState == BounceOn; }
 
       long getXruns() { return m_Xruns; }
       void resetXruns() { m_Xruns = 0; }

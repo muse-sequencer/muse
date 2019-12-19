@@ -2907,7 +2907,7 @@ void MusE::bounceToTrack()
       {
         for(MusECore::iAudioOutput iao = ol->begin(); iao != ol->end(); ++iao)
         {
-   MusECore::AudioOutput* o = *iao;
+          MusECore::AudioOutput* o = *iao;
           if(o->selected())
           {
             if(out)
@@ -2970,13 +2970,18 @@ void MusE::bounceToTrack()
           }
       }
 
-      MusEGlobal::song->setPos(MusECore::Song::CPOS,MusEGlobal::song->lPos(),0,true,true);
+// REMOVE Tim. samplerate. Removed. Seek is done by msgBounce().
+//       MusEGlobal::song->setPos(MusECore::Song::CPOS,MusEGlobal::song->lPos(),0,true,true);
+
+      // This will wait a few cycles until freewheel is set and a seek is done.
+      MusEGlobal::audio->msgBounce();
       MusEGlobal::song->bounceOutput = out;
       MusEGlobal::song->bounceTrack = track;
       MusEGlobal::song->setRecord(true);
       MusEGlobal::song->setRecordFlag(track, true);
       track->prepareRecording();
-      MusEGlobal::audio->msgBounce();
+// REMOVE Tim. samplerate. Removed. Moved above.
+//       MusEGlobal::audio->msgBounce();
       MusEGlobal::song->setPlay(true);
       }
 
@@ -3036,7 +3041,11 @@ void MusE::bounceToFile(MusECore::AudioOutput* ao)
       if (sf == 0)
             return;
 
-      MusEGlobal::song->setPos(MusECore::Song::CPOS,MusEGlobal::song->lPos(),0,true,true);
+// REMOVE Tim. samplerate. Removed. Seek is done by msgBounce().
+//       MusEGlobal::song->setPos(MusECore::Song::CPOS,MusEGlobal::song->lPos(),0,true,true);
+
+      // This will wait a few cycles until freewheel is set and a seek is done.
+      MusEGlobal::audio->msgBounce();
       MusEGlobal::song->bounceOutput = ao;
       ao->setRecFile(sf);
       if(MusEGlobal::debugMsg)
@@ -3044,7 +3053,8 @@ void MusE::bounceToFile(MusECore::AudioOutput* ao)
       MusEGlobal::song->setRecord(true, false);
       MusEGlobal::song->setRecordFlag(ao, true);
       ao->prepareRecording();
-      MusEGlobal::audio->msgBounce();
+// REMOVE Tim. samplerate. Removed. Moved above.
+//       MusEGlobal::audio->msgBounce();
       MusEGlobal::song->setPlay(true);
       }
 

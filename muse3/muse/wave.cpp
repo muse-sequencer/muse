@@ -2469,10 +2469,11 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
       mbox.setText(tr("This wave file has a samplerate of %1 Hz,\n"
                       " as opposed to current setting %2 Hz.\n"
                       "A live, real-time samplerate converter can be used on this file.\n"
-                      "Or, the file can be resampled now from %1 Hz to %2 Hz.").arg(f->samplerate()).arg(MusEGlobal::sampleRate));
+                      "Or, a copy of the file can be resampled now from %1 Hz to %2 Hz.")
+                      .arg(f->samplerate()).arg(MusEGlobal::sampleRate));
       mbox.setInformativeText(tr("Do you want to use a converter or resample the file now?"));
 
-      QPushButton* converter_button = mbox.addButton(tr("Use Live Converter"), QMessageBox::YesRole);
+      QPushButton* converter_button = mbox.addButton(tr("Use live converter"), QMessageBox::YesRole);
       QPushButton* resample_button = mbox.addButton(tr("Resample now"), QMessageBox::NoRole);
       mbox.addButton(tr("Cancel"), QMessageBox::RejectRole);
       mbox.setDefaultButton(converter_button);
