@@ -593,11 +593,7 @@ void Appearance::resetValues()
       maxAliasedPointSize->blockSignals(true);
       maxAliasedPointSize->setValue(config->maxAliasedPointSize);
       maxAliasedPointSize->blockSignals(false);
-      
-      useThemeIcons->blockSignals(true);
-      useThemeIcons->setChecked(config->useThemeIconsIfPossible);
-      useThemeIcons->blockSignals(false);
-      
+          
       iconSizeSpin->blockSignals(true);
       iconSizeSpin->setValue(config->iconSize);
       iconSizeSpin->blockSignals(false);
@@ -852,17 +848,10 @@ bool Appearance::apply()
           config->cursorSize = cursorSizeSpin->value();
       }
 
-      if(config->useThemeIconsIfPossible != useThemeIcons->isChecked())
-      {
-        restart_required = true;
-        config->useThemeIconsIfPossible = useThemeIcons->isChecked();
-      }
-      
       if (radioButtonDrawOutline->isChecked())
         config->waveDrawing = MusEGlobal::WaveOutLine;
       else
         config->waveDrawing = MusEGlobal::WaveRmsPeak;
-
 
 
       MusEGlobal::config = *config;
