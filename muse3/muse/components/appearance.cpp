@@ -1646,7 +1646,8 @@ void Appearance::browseStyleSheet()
       
       QString file = MusEGui::getOpenFileName(QString("themes"), MusEGlobal::stylesheet_file_pattern, this,
                                               tr("Select style sheet"), nullptr, MusEGui::MFileDialog::GLOBAL_VIEW);
-      styleSheetPath->setText(file);
+      if (!file.isEmpty())
+          styleSheetPath->setText(file);
 }
 
 
