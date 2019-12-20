@@ -1277,18 +1277,6 @@
            </layout>
           </item>
           <item>
-           <widget class="QCheckBox" name="useThemeIcons">
-            <property name="toolTip">
-             <string>If suitable icons are available from
- the desktop theme, use them
- instead of the built-in icons.</string>
-            </property>
-            <property name="text">
-             <string>Use theme icons if available. Requires restarting MusE.</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_9">
             <property name="bottomMargin">
              <number>0</number>
