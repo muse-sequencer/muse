@@ -174,52 +174,6 @@ extern QPixmap* routerViewSplitterIcon;
 //   SVG...
 //----------------------------------
 
-extern QPixmap* routingInputSVGPixmap;
-extern QPixmap* routingOutputSVGPixmap;
-extern QPixmap* routingInputUnconnectedSVGPixmap;
-extern QPixmap* routingOutputUnconnectedSVGPixmap;
-
-extern QPixmap* headphonesOffSVGPixmap;
-extern QPixmap* headphonesOnSVGPixmap;
-
-extern QPixmap* muteOffSVGPixmap;
-extern QPixmap* muteOnSVGPixmap;
-extern QPixmap* muteOnXSVGPixmap;
-extern QPixmap* muteProxyOnSVGPixmap;
-extern QPixmap* muteAndProxyOnSVGPixmap;
-
-extern QPixmap* soloOffSVGPixmap;
-extern QPixmap* soloOnSVGPixmap;
-extern QPixmap* soloOnAloneSVGPixmap;
-extern QPixmap* soloProxyOnSVGPixmap;
-extern QPixmap* soloProxyOnAloneSVGPixmap;
-extern QPixmap* soloAndProxyOnSVGPixmap;
-
-extern QPixmap* trackOffSVGPixmap;
-extern QPixmap* trackOnSVGPixmap;
-
-extern QPixmap* stereoOffSVGPixmap;
-extern QPixmap* stereoOnSVGPixmap;
-
-extern QPixmap* preFaderOffSVGPixmap;
-extern QPixmap* preFaderOnSVGPixmap;
-
-extern QPixmap* externSyncOffSVGPixmap;
-extern QPixmap* externSyncOnSVGPixmap;
-
-extern QPixmap* masterTrackOffSVGPixmap;
-extern QPixmap* masterTrackOnSVGPixmap;
-
-extern QPixmap* jackTransportOffSVGPixmap;
-extern QPixmap* jackTransportOnSVGPixmap;
-
-extern QPixmap* recArmOffSVGPixmap;
-extern QPixmap* recArmOnSVGPixmap;
-
-extern QPixmap* monitorOffSVGPixmap;
-extern QPixmap* monitorOnSVGPixmap;
-
-
 extern QIcon* dropDownTriangleSVGIcon;
 
 extern QIcon* routingInputSVGIcon;
