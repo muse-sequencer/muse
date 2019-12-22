@@ -39,7 +39,7 @@
 // #include "audio_convert/audio_converter_plugin.h"
 
 // For debugging output: Uncomment the fprintf section.
-#define ERROR_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
+#define ERROR_AUDIOCONVERT(dev, format, args...) fprintf(dev, format, ##args)
 #define DEBUG_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
 
 // Fixed audio input buffer size.
@@ -526,7 +526,10 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
 
 
 
-  const MuseFrame_t unsquished_pos = stretch_list->unSquish(pos);
+// REMOVE Tim. samplerate. Changed. 12/19 This must be wrong.
+//   const MuseFrame_t unsquished_pos = stretch_list->unSquish(pos);
+  const MuseFrame_t unsquished_pos = stretch_list->unSquish(pos * sf_sr_ratio);
+
 //   //const double stretchVal    = stretch_list->ratioAt(StretchListItem::StretchEvent, new_frame);
 //   const double samplerateVal = stretch_list->ratioAt(StretchListItem::SamplerateEvent, unsquished_pos);
 //   DEBUG_AUDIOCONVERT(stderr,
@@ -587,7 +590,13 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
   bool need_slice = true;
 
   double cur_ratio = 1.0;
+// REMOVE Tim. samplerate. Changed. 12/19 This must be wrong.
   iStretchListItem next_isli = stretch_list->upper_bound(unsquished_pos);
+  //iStretchListItem next_isli = stretch_list->upper_bound(pos);
+
+//   fprintf(stderr, "SRCAudioConverter::process pos:%ld unsquished_pos:%ld\n",
+//                      pos, unsquished_pos);
+
   if(next_isli != stretch_list->begin())
   {
     --next_isli;
@@ -650,7 +659,9 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
         DEBUG_AUDIOCONVERT(stderr, "   new slice: cur_ratio:%f\n", cur_ratio);
       }
 
-      fin_samplerateRatio = sf_sr_ratio + cur_ratio - 1.0;
+// REMOVE Tim. samplerate. Changed. 12/19 This must be wrong.
+//       fin_samplerateRatio = sf_sr_ratio + cur_ratio - 1.0;
+      fin_samplerateRatio = sf_sr_ratio * cur_ratio;
       if(fin_samplerateRatio < 0.000001)
       {
         DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process Error: fin_samplerateRatio ratio is near zero!\n");

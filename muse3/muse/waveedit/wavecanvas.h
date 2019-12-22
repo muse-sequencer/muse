@@ -186,7 +186,8 @@ class WaveCanvas : public EventCanvas {
 //       double logToVal(double inLog, double min, double max);
 //       double valToLog(double inV, double min, double max);
 //       void newStretchAutomationVertex(QPoint inPos);
-      MusECore::iStretchListItem stretchListHitTest(int types, QPoint pt, WEvent* wevent, MusECore::StretchList* stretchList);
+//       MusECore::iStretchListItem stretchListHitTest(int types, QPoint pt, WEvent* wevent, MusECore::StretchList* stretchList);
+      MusECore::iStretchListItem stretchListHitTest(int types, QPoint pt, WEvent* wevent);
       void setStretchAutomationCursor(QPoint pt);
 
    protected:

@@ -2296,7 +2296,7 @@ bool Fifo::put(int segs, MuseCount_t samples, float** src, MuseCount_t pos, floa
 bool Fifo::peek(int segs, MuseCount_t samples, float** dst, MuseCount_t* pos, float* latency) //const
       {
       #ifdef FIFO_DEBUG
-      fprintf(stderr, "FIFO::peek/get segs:%d samples:%ld count:%ld\n", segs, samples, muse_atomic_read(&count));
+      fprintf(stderr, "FIFO::peek/get segs:%d samples:%ld count:%d\n", segs, samples, muse_atomic_read(&count));
       #endif
 
       // Non-const peek required because of this.

@@ -1370,6 +1370,8 @@ sf_count_t SndFile::convertPosition(sf_count_t pos) const
 //   if(_staticAudioConverter && (_staticAudioConverter->capabilities() & AudioConverter::SampleRate))
 //     new_pos *= sampleRateRatio();
 
+//   fprintf(stderr, "SndFile::convertPosition pos:%lu\n", pos);
+
   double new_pos = pos;
   if(_staticAudioConverter)
   {
@@ -1379,13 +1381,17 @@ sf_count_t SndFile::convertPosition(sf_count_t pos) const
     if(_staticAudioConverter->capabilities() & AudioConverter::SampleRate)
       type |= StretchListItem::SamplerateEvent;
 
-//     new_pos = _stretchList->stretch(pos);
-    if(type != 0)
-      new_pos = _stretchList->unSquish(pos, type);
-    //new_pos = pos;
-
     if(_staticAudioConverter->capabilities() & AudioConverter::SampleRate)
       new_pos *= sampleRateRatio();
+    
+    //new_pos = _stretchList->stretch(pos);
+    if(type != 0)
+//       new_pos = _stretchList->unSquish(pos, type);
+      new_pos = _stretchList->unSquish(new_pos, type);
+    //new_pos = pos;
+
+//     if(_staticAudioConverter->capabilities() & AudioConverter::SampleRate)
+//       new_pos *= sampleRateRatio();
   }
 
   return new_pos;

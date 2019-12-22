@@ -885,7 +885,8 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
               else //if(_tool == SamplerateTool)
                 type = MusECore::StretchListItem::SamplerateEvent;
               
-              MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent, sl);
+//               MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent, sl);
+              MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent);
               if(isli_hit_test == sl->end())
               {
                 if(!ctl)
@@ -1075,7 +1076,8 @@ void WaveCanvas::mouseRelease(QMouseEvent* ev)
           else // if(_tool == SamplerateTool)
             type = MusECore::StretchListItem::SamplerateEvent;
 
-          MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent, sl);
+//           MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent, sl);
+          MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent);
           if(isli_hit_test == sl->end())
             break;
 
@@ -1184,7 +1186,10 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                     MusECore::iStretchListItem isli_typed = sl->findEvent(ssi._type, iss->first);
                     if(isli_typed == sl->end())
                       continue;
-                    
+
+                    //const bool wave_sr_differs = sf.sampleRateDiffers();
+                    const double wave_sr_ratio = sf.sampleRateRatio();
+
                     thisFrame = isli_typed->first;
                     
                     const MusECore::StretchListItem& sli_typed = isli_typed->second;
@@ -1222,12 +1227,16 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                       {
                         //{
                           const double left_prev_smpx = prev_sli_typed._samplerateSquishedFrame;
-                          const double left_this_smpx = sl->squish(thisFrame, MusECore::StretchListItem::SamplerateEvent);
+//                           const double left_this_smpx = sl->squish(thisFrame, MusECore::StretchListItem::SamplerateEvent);
+                          const double left_this_smpx = sl->squish(thisFrame / wave_sr_ratio,
+                                                                   MusECore::StretchListItem::SamplerateEvent);
                           const double left_dsmpx = left_this_smpx - left_prev_smpx;
                           const double left_effective_sr = left_dsmpx / (double)delta_fr;
                           
                           const double right_this_smpx = sli_typed._samplerateSquishedFrame;
-                          const double right_next_smpx = sl->squish(nextFrame, MusECore::StretchListItem::SamplerateEvent);
+//                           const double right_next_smpx = sl->squish(nextFrame, MusECore::StretchListItem::SamplerateEvent);
+                          const double right_next_smpx = sl->squish(nextFrame / wave_sr_ratio,
+                                                                    MusECore::StretchListItem::SamplerateEvent);
                           const double right_dsmpx = right_next_smpx - right_this_smpx;
                           const double right_effective_sr = right_dsmpx / (double)next_delta_fr;
 
@@ -1314,12 +1323,16 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                       {
                         //{
                           const double left_prev_strx = prev_sli_typed._stretchSquishedFrame;
-                          const double left_this_strx = sl->squish(thisFrame, MusECore::StretchListItem::StretchEvent);
+//                           const double left_this_strx = sl->squish(thisFrame, MusECore::StretchListItem::StretchEvent);
+                          const double left_this_strx = sl->squish(thisFrame / wave_sr_ratio,
+                                                                   MusECore::StretchListItem::StretchEvent);
                           const double left_dstrx = left_this_strx - (double)left_prev_strx;
                           const double left_effective_str = left_dstrx / (double)delta_fr;
 
                           const double right_this_strx = sli_typed._stretchSquishedFrame;
-                          const double right_next_strx = sl->squish(nextFrame, MusECore::StretchListItem::StretchEvent);
+//                           const double right_next_strx = sl->squish(nextFrame, MusECore::StretchListItem::StretchEvent);
+                          const double right_next_strx = sl->squish(nextFrame / wave_sr_ratio,
+                                                                    MusECore::StretchListItem::StretchEvent);
                           const double right_dstrx = right_next_strx - (double)right_this_strx;
                           const double right_effective_str = right_dstrx / (double)next_delta_fr;
 
@@ -2241,7 +2254,7 @@ void WaveCanvas::drawTopItem(QPainter& p, const QRect& rect, const QRegion&)
 }
 
 //---------------------------------------------------------
-//   drawAutomation
+//   drawStretchAutomation
 //---------------------------------------------------------
 
 void WaveCanvas::drawStretchAutomation(QPainter& p, const QRect& rr, WEvent* item) const
@@ -2258,6 +2271,9 @@ void WaveCanvas::drawStretchAutomation(QPainter& p, const QRect& rr, WEvent* ite
     if(!sl)
       return;
 
+
+    //const bool wave_sr_differs = sf.sampleRateDiffers();
+    const double wave_sr_ratio = sf.sampleRateRatio();
 
 //     //QRect mwpr  = map(QRect(wp->frame(), 0, wp->lenFrame(), height()));
 //     QRect mwpr  = map(QRect(event.frame(), 0, event.lenFrame(), height()));
@@ -2295,7 +2311,7 @@ void WaveCanvas::drawStretchAutomation(QPainter& p, const QRect& rr, WEvent* ite
       //if((_tool == StretchTool && (sli._type & MusECore::StretchListItem::StretchEvent)) ||
       //   (_tool == SamplerateTool && (sli._type & MusECore::StretchListItem::SamplerateEvent)))
       {
-        xpixel = mapx(sl->squish((double)is->first) + item->x());
+        xpixel = mapx(sl->squish((double)is->first) / wave_sr_ratio + item->x());
         
         DEBUG_WAVECANVAS(stderr, "drawStretchAutomation: rr.x:%d rr.w:%d xpixel:%d\n", rr.x(), rr.width(), xpixel);
         
@@ -3191,9 +3207,27 @@ bool checkIfNearPoint(int mouseX, int mouseY, int eventX, int eventY, int circum
 //     return outVal;
 // }
 
-MusECore::iStretchListItem WaveCanvas::stretchListHitTest(int types, QPoint pt, WEvent* wevent, MusECore::StretchList* stretchList)
+// MusECore::iStretchListItem WaveCanvas::stretchListHitTest(int types, QPoint pt,
+//    WEvent* wevent, MusECore::StretchList* stretchList)
+MusECore::iStretchListItem WaveCanvas::stretchListHitTest(int types, QPoint pt, WEvent* wevent)
 {
+  const MusECore::Event event = wevent->event();
+  if(event.type() != MusECore::Wave)
+    return MusECore::iStretchListItem();
+  
+  const MusECore::SndFileR sf = event.sndFile();
+  if(sf.isNull())
+    return MusECore::iStretchListItem();
+  
+  MusECore::StretchList* stretchList = sf.stretchList();
+  if(!stretchList)
+    return MusECore::iStretchListItem();
+
+  //const bool wave_sr_differs = sf.sampleRateDiffers();
+  const double wave_sr_ratio = sf.sampleRateRatio();
+
   const int pt_x = pt.x();
+  const int wevent_x = wevent->x();
   int closest_dist = _stretchAutomationPointDetectDist;
   MusECore::iStretchListItem closest_ev = stretchList->end();
   for(MusECore::iStretchListItem is = stretchList->begin(); is != stretchList->end(); ++is)
@@ -3207,8 +3241,8 @@ MusECore::iStretchListItem WaveCanvas::stretchListHitTest(int types, QPoint pt, 
       continue;
     
     //const int xpixel = mapx(stretchList->squish((double)is->first) + wevent->x());
-    const double newSqFrame = se._finSquishedFrame;
-    const int xpixel = mapx(newSqFrame + wevent->x());
+    const double newSqFrame = se._finSquishedFrame / wave_sr_ratio;
+    const int xpixel = mapx(newSqFrame + wevent_x);
     const int pt_pixel = mapx(pt_x);
     
     const int x_diff = (xpixel > pt_pixel) ? (xpixel - pt_pixel) : (pt_pixel - xpixel);
@@ -3262,7 +3296,8 @@ void WaveCanvas::setStretchAutomationCursor(QPoint pt)
   else // if(_tool == SamplerateTool)
     type = MusECore::StretchListItem::SamplerateEvent;
 
-  MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent, sl);
+//   MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent, sl);
+  MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent);
   if(isli_hit_test == sl->end())
     setCursor();
   else
