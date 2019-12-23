@@ -38,7 +38,7 @@
 
 
 // For debugging output: Uncomment the fprintf section.
-#define ERROR_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
+#define ERROR_AUDIOCONVERT(dev, format, args...) fprintf(dev, format, ##args)
 #define DEBUG_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
 
 

@@ -39,8 +39,8 @@
 
 
 // For debugging output: Uncomment the fprintf section.
-#define ERROR_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
-#define DEBUG_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
+#define ERROR_AUDIOCONVERT(dev, format, args...) fprintf(dev, format, ##args)
+#define DEBUG_AUDIOCONVERT(dev, format, args...) fprintf(dev, format, ##args)
 
 
 // Create a new instance of the plugin.  
@@ -156,7 +156,9 @@ RubberBandAudioConverter::RubberBandAudioConverter(int systemSampleRate,
   }
   
   _channels = channels;
-  _latencyCompPending = true; // Set to compensate at the first process.
+// REMOVE Tim. samplerate. Changed. 12/19 Removed. TESTING Reinstate.
+//   _latencyCompPending = true; // Set to compensate at the first process.
+  _latencyCompPending = false; // Set to compensate at the first process.
   
 #ifdef RUBBERBAND_SUPPORT
 //   _rbs = new RubberBand::RubberBandStretcher(MusEGlobal::sampleRate, _channels, _options);
@@ -195,7 +197,8 @@ void RubberBandAudioConverter::reset()
   if(!_rbs)
     return;
   _rbs->reset();
-  _latencyCompPending = true;
+// REMOVE Tim. samplerate. Changed. 12/19 Removed. TESTING Reinstate.
+//   _latencyCompPending = true;
   return;  
 #endif
 }
@@ -235,6 +238,8 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
     return 0;
   }  
   
+  const int fchan           = sf->channels();
+  const double sf_sr_ratio  = sf->sampleRateRatio();
   StretchList* stretch_list = sf->stretchList();
 
   //const double stretch = stretch_list->stretchAt(_sfCurFrame * srcratio);
@@ -243,13 +248,22 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
 //   const double samplerateVal = stretch_list->samplerateAt(pos);
   //const MuseFrame_t new_frame = sf->convertPosition(pos);
   //const MuseFrame_t new_frame = stretch_list->unStretch(pos);
-  const MuseFrame_t new_frame = stretch_list->unSquish(pos);
+
+// REMOVE Tim. samplerate. Changed. 12/19 This must be wrong.
+//   const MuseFrame_t new_frame = stretch_list->unSquish(pos);
+//   pos *= sf_sr_ratio;
+//   const MuseFrame_t new_frame = stretch_list->unSquish(pos);
+  const double d_pos = sf_sr_ratio * double(pos);
+  const MuseFrame_t new_frame = stretch_list->unSquish(d_pos);
+  
   const double stretchVal    = stretch_list->ratioAt(StretchListItem::StretchEvent, new_frame);
   const double samplerateVal = stretch_list->ratioAt(StretchListItem::SamplerateEvent, new_frame);
   //DEBUG_AUDIOCONVERT(stderr,
   //  "RubberBandAudioConverter::process: frame:%ld new_frame:%ld stretchRatio:%f samplerateRatio:%f\n", pos, new_frame, stretchVal, samplerateVal);
   
-  const double fin_samplerateRatio = sf->sampleRateRatio() + samplerateVal - 1.0;
+// REMOVE Tim. samplerate. Changed. 12/19 This must be wrong.
+//   const double fin_samplerateRatio = sf->sampleRateRatio() + samplerateVal - 1.0;
+  const double fin_samplerateRatio = sf_sr_ratio * samplerateVal;
   
   if(fin_samplerateRatio < 0.0001)
   {  
@@ -261,7 +275,6 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
   const double inv_fin_samplerateRatio = 1.0 / fin_samplerateRatio;
   
 //  SRC_DATA srcdata;
-  const int fchan       = sf->channels();
   
 //   // Ratio is defined as output sample rate over input samplerate.
 //   double srcratio = (double)MusEGlobal::sampleRate / (double)fsrate;
@@ -292,7 +305,8 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
       
   //int cur_lat = _rbs->getLatency();
 
-  int debug_min_pos = 256;
+//   int debug_min_pos = 256;
+  const double debug_min_pos = 256;
 
   int old_lat = _rbs->getLatency();
   // For just sample rate conversion, apply complimentary ratio to time and pitch.
@@ -407,10 +421,11 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
     for(int i = 0; i < fchan; ++i)
       //rbinbuffer[i] = rbindata + i * new_lat;
       rbinbuffer[i] = rbindata + i * old_lat;
-    if(pos <= debug_min_pos)
+//     if(pos <= debug_min_pos)
+    if(d_pos <= debug_min_pos)
     {
       //DEBUG_AUDIOCONVERT(stderr, "   Latency: new_lat:%d\n", new_lat);
-      DEBUG_AUDIOCONVERT(stderr, "   Latency: old_lat:%d new_lat:%d\n", old_lat, _rbs->getLatency());
+      DEBUG_AUDIOCONVERT(stderr, "   Latency: old_lat:%d new_lat:%d\n", old_lat, (int)_rbs->getLatency());
     }
     //_rbs->process(rbinbuffer, new_lat, false);
     _rbs->process(rbinbuffer, old_lat, false);
@@ -449,7 +464,8 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
       for(int ch = 0; ch < fchan; ++ch)
         *(rbinbuffer[ch] + i) = *sfptr++;
     }
-    if(pos <= debug_min_pos)
+//     if(pos <= debug_min_pos)
+    if(d_pos <= debug_min_pos)
     {
       DEBUG_AUDIOCONVERT(stderr, "   Normal: required:%d avail:%d\n", int(sreq), _rbs->available());
     }
@@ -457,7 +473,8 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
   }
   
   int savail = _rbs->available();
-  if(pos <= debug_min_pos)
+//   if(pos <= debug_min_pos)
+  if(d_pos <= debug_min_pos)
   {
     DEBUG_AUDIOCONVERT(stderr, "   Normal: final avail:%d\n", _rbs->available());
   }
@@ -472,7 +489,9 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
     //if((int)retrieved < new_lat)
     if((int)retrieved < old_lat)
     //{ DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process: Latency retrieved_count:%d is less than requested:%d\n", int(retrieved), new_lat); }
-    { DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process: Latency retrieved_count:%d is less than requested:%d\n", int(retrieved), old_lat); }
+    { DEBUG_AUDIOCONVERT(stderr,
+      "RubberBandAudioConverter::process: Latency retrieved_count:%d is less than requested:%d\n",
+      int(retrieved), old_lat); }
     //savail -= new_lat;
     savail -= old_lat;
   }
@@ -482,13 +501,16 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
   size_t retrieved = _rbs->retrieve(rboutbuffer, savail);
   if((int)retrieved < savail)
   {
-    DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process: retrieved_count:%d is less than savail:%d\n", int(retrieved), savail);
+    DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process: retrieved_count:%d is less than savail:%d\n",
+                       int(retrieved), savail);
     savail = retrieved;
   }
   
   if(savail < frames)
   {
-    DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process: available() is less than needed. Converter is finished ???\n");
+    DEBUG_AUDIOCONVERT(stderr,
+      "RubberBandAudioConverter::process: savail:%d is less than needed frames:%d. Converter is finished ???\n",
+      savail, frames);
     // We didn't get the total required frames. Zero the rest.
     const size_t zeros = frames - savail;
     for(int i = 0; i < fchan; ++i)

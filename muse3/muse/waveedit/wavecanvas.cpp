@@ -878,8 +878,10 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
               MusECore::StretchList* sl = sf.stretchList();
               if(!sl)
                 break;
-              
-              MusECore::StretchListItem::StretchEventType type;
+
+             const double sf_sr_ratio  = sf->sampleRateRatio();
+
+             MusECore::StretchListItem::StretchEventType type;
               if(_tool == StretchTool)
                 type = MusECore::StretchListItem::StretchEvent;
               else //if(_tool == SamplerateTool)
@@ -894,7 +896,11 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
                   ssl.clear();
                   update();
                 }
-                double newframe = sl->unSquish(MusECore::MuseFrame_t(x - wevent->x()));
+
+// REMOVE Tim. samplerate. Changed. 12/19 This must be wrong.
+//                 double newframe = sl->unSquish(MusECore::MuseFrame_t(x - wevent->x()));
+                double newframe = sl->unSquish(sf_sr_ratio * double(x - wevent->x()));
+
                 MusECore::PendingOperationList operations;
                 //sl->addListOperation(type, newframe, sl->ratioAt(type, newframe), operations);
 //                 sf.addAtStretchListOperation(type, newframe, sl->ratioAt(type, newframe), operations);
@@ -1170,7 +1176,8 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                   if(delta_pt.x() == 0)
                     break;
                   double prevNewVal, thisNewVal;
-                  MusECore::MuseFrame_t prevFrame, thisFrame, nextFrame, delta_fr, next_delta_fr;
+//                   MusECore::MuseFrame_t prevFrame, thisFrame, nextFrame, delta_fr, next_delta_fr;
+                  double prevFrame, thisFrame, nextFrame, delta_fr, next_delta_fr;
                   MusECore::PendingOperationList operations;
                   StretchSelectedList_t& ssl = _stretchAutomation._stretchSelectedList;
                   for(ciStretchSelectedItem iss = ssl.begin(); iss != ssl.end(); ++iss)
@@ -1189,8 +1196,12 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
 
                     //const bool wave_sr_differs = sf.sampleRateDiffers();
                     const double wave_sr_ratio = sf.sampleRateRatio();
+//                     const double inv_wave_sr_ratio = 1.0 / wave_sr_ratio;
 
-                    thisFrame = isli_typed->first;
+// REMOVE Tim. samplerate. Changed. 12/19 This must be wrong.
+//                     thisFrame = isli_typed->first;
+                    //thisFrame = inv_wave_sr_ratio * double(isli_typed->first);
+                    thisFrame = double(isli_typed->first);
                     
                     const MusECore::StretchListItem& sli_typed = isli_typed->second;
                     
@@ -1198,21 +1209,32 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                     if(prev_isli_typed == sl->end())
                       continue;
                     
-                    prevFrame = prev_isli_typed->first;
+// REMOVE Tim. samplerate. Changed. 12/19 This must be wrong.
+//                     prevFrame = prev_isli_typed->first;
+                    //prevFrame = inv_wave_sr_ratio * double(prev_isli_typed->first);
+                    prevFrame = double(prev_isli_typed->first);
                     
                     const MusECore::StretchListItem& prev_sli_typed = prev_isli_typed->second;
                     
                     MusECore::iStretchListItem next_isli_typed = sl->nextEvent(ssi._type, isli_typed);
                     if(next_isli_typed == sl->end())
-                      nextFrame = sf.samples();
+// REMOVE Tim. samplerate. Changed. 12/19 This must be wrong.
+//                       nextFrame = sf.samples();
+                      //nextFrame = inv_wave_sr_ratio * double(sf.samples());
+                      nextFrame = double(sf.samples());
                     else
-                      nextFrame = next_isli_typed->first;
+// REMOVE Tim. samplerate. Changed. 12/19 This must be wrong.
+//                       nextFrame = next_isli_typed->first;
+                      //nextFrame = inv_wave_sr_ratio * double(next_isli_typed->first);
+                      nextFrame = double(next_isli_typed->first);
                     
                     next_delta_fr = nextFrame - thisFrame;
+                    // FIXME: Comparing double with zero.
                     if(next_delta_fr <= 0)
                       continue;
                     
                     delta_fr = thisFrame - prevFrame;
+                    // FIXME: Comparing double with zero.
                     if(delta_fr <= 0)
                       continue;
                     
@@ -1227,60 +1249,64 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                       {
                         //{
                           const double left_prev_smpx = prev_sli_typed._samplerateSquishedFrame;
-//                           const double left_this_smpx = sl->squish(thisFrame, MusECore::StretchListItem::SamplerateEvent);
-                          const double left_this_smpx = sl->squish(thisFrame / wave_sr_ratio,
-                                                                   MusECore::StretchListItem::SamplerateEvent);
+                          const double left_this_smpx = sl->squish(thisFrame, MusECore::StretchListItem::SamplerateEvent);
                           const double left_dsmpx = left_this_smpx - left_prev_smpx;
-                          const double left_effective_sr = left_dsmpx / (double)delta_fr;
+//                           const double left_effective_sr = left_dsmpx / (double)delta_fr;
+                          const double left_effective_sr = left_dsmpx / delta_fr;
                           
                           const double right_this_smpx = sli_typed._samplerateSquishedFrame;
-//                           const double right_next_smpx = sl->squish(nextFrame, MusECore::StretchListItem::SamplerateEvent);
-                          const double right_next_smpx = sl->squish(nextFrame / wave_sr_ratio,
-                                                                    MusECore::StretchListItem::SamplerateEvent);
+                          const double right_next_smpx = sl->squish(nextFrame, MusECore::StretchListItem::SamplerateEvent);
                           const double right_dsmpx = right_next_smpx - right_this_smpx;
-                          const double right_effective_sr = right_dsmpx / (double)next_delta_fr;
+//                           const double right_effective_sr = right_dsmpx / (double)next_delta_fr;
+                          const double right_effective_sr = right_dsmpx / next_delta_fr;
 
                           INFO_WAVECANVAS(stderr, "WaveCanvas::mouseMove StretchEvent delta_pt.x:%d\n", delta_pt.x());
 
                           double left_min_stretch_delta_x =
-                            (minStretchRatio - prev_sli_typed._stretchRatio) * left_effective_sr * (double)delta_fr;
+//                             (minStretchRatio - prev_sli_typed._stretchRatio) * left_effective_sr * (double)delta_fr;
+                            (minStretchRatio - prev_sli_typed._stretchRatio) * left_effective_sr * delta_fr;
                           if(left_min_stretch_delta_x > 0.0)
                             left_min_stretch_delta_x = 0.0;
                           if((double)delta_pt.x() < left_min_stretch_delta_x)
                             delta_pt.setX(left_min_stretch_delta_x);
 
                           double right_min_stretch_delta_x =
-                            (minStretchRatio - sli_typed._stretchRatio) * right_effective_sr * (double)next_delta_fr;
+//                             (minStretchRatio - sli_typed._stretchRatio) * right_effective_sr * (double)next_delta_fr;
+                            (minStretchRatio - sli_typed._stretchRatio) * right_effective_sr * next_delta_fr;
                           if(right_min_stretch_delta_x > 0.0)
                             right_min_stretch_delta_x = 0.0;
                           if(-(double)delta_pt.x() < right_min_stretch_delta_x)
                             delta_pt.setX(right_min_stretch_delta_x);
 
-                          INFO_WAVECANVAS(stderr, "  left_min_stretch_delta_x:%f right_min_stretch_delta_x:%f\n", // REMOVE Tim. samplerate. Added.
+                          INFO_WAVECANVAS(stderr, "  left_min_stretch_delta_x:%f right_min_stretch_delta_x:%f\n",
                                           left_min_stretch_delta_x, right_min_stretch_delta_x);
 
                           if(maxStretchRatio > 0.0)
                           {
                             double left_max_stretch_delta_x =
-                              (maxStretchRatio - prev_sli_typed._stretchRatio) * left_effective_sr * (double)delta_fr;
-                            if(left_max_stretch_delta_x < 0.0)
+//                               (maxStretchRatio - prev_sli_typed._stretchRatio) * left_effective_sr * (double)delta_fr;
+                                 (maxStretchRatio - prev_sli_typed._stretchRatio) * left_effective_sr * delta_fr;
+                         if(left_max_stretch_delta_x < 0.0)
                               left_max_stretch_delta_x = 0.0;
                             if((double)delta_pt.x() > left_max_stretch_delta_x)
                               delta_pt.setX(left_max_stretch_delta_x);
 
                             double right_max_stretch_delta_x =
-                              (maxStretchRatio - sli_typed._stretchRatio) * right_effective_sr * (double)next_delta_fr;
+//                               (maxStretchRatio - sli_typed._stretchRatio) * right_effective_sr * (double)next_delta_fr;
+                                 (maxStretchRatio - sli_typed._stretchRatio) * right_effective_sr * next_delta_fr;
                             if(right_max_stretch_delta_x < 0.0)
                               right_max_stretch_delta_x = 0.0;
                             if((double)delta_pt.x() > right_max_stretch_delta_x)
                               delta_pt.setX(right_max_stretch_delta_x);
                           }
 
-                          const double left_effective_dx = (double)delta_pt.x() / left_effective_sr;
-                          prevNewVal = prev_sli_typed._stretchRatio + (left_effective_dx / (double)delta_fr);
+                          const double left_effective_dx = wave_sr_ratio * (double)delta_pt.x() / left_effective_sr;
+//                           prevNewVal = prev_sli_typed._stretchRatio + (left_effective_dx / (double)delta_fr);
+                          prevNewVal = prev_sli_typed._stretchRatio + (left_effective_dx / delta_fr);
 
-                          const double right_effective_dx = (double)delta_pt.x() / right_effective_sr;
-                          thisNewVal = sli_typed._stretchRatio - (right_effective_dx / (double)next_delta_fr);
+                          const double right_effective_dx = wave_sr_ratio * (double)delta_pt.x() / right_effective_sr;
+//                           thisNewVal = sli_typed._stretchRatio - (right_effective_dx / (double)next_delta_fr);
+                          thisNewVal = sli_typed._stretchRatio - (right_effective_dx / next_delta_fr);
 
                           
 //                           //if(prevNewVal < sf.minStretchRatio())
@@ -1323,60 +1349,76 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                       {
                         //{
                           const double left_prev_strx = prev_sli_typed._stretchSquishedFrame;
-//                           const double left_this_strx = sl->squish(thisFrame, MusECore::StretchListItem::StretchEvent);
-                          const double left_this_strx = sl->squish(thisFrame / wave_sr_ratio,
-                                                                   MusECore::StretchListItem::StretchEvent);
-                          const double left_dstrx = left_this_strx - (double)left_prev_strx;
-                          const double left_effective_str = left_dstrx / (double)delta_fr;
+                          //const double left_prev_strx = inv_wave_sr_ratio * prev_sli_typed._stretchSquishedFrame; // Inv?
+                          const double left_this_strx = sl->squish(thisFrame, MusECore::StretchListItem::StretchEvent);
+//                           const double left_dstrx = left_this_strx - (double)left_prev_strx;
+//                           const double left_effective_str = left_dstrx / (double)delta_fr;
+                          const double left_dstrx = left_this_strx - left_prev_strx;
+                          const double left_effective_str = left_dstrx / delta_fr;
 
                           const double right_this_strx = sli_typed._stretchSquishedFrame;
-//                           const double right_next_strx = sl->squish(nextFrame, MusECore::StretchListItem::StretchEvent);
-                          const double right_next_strx = sl->squish(nextFrame / wave_sr_ratio,
-                                                                    MusECore::StretchListItem::StretchEvent);
-                          const double right_dstrx = right_next_strx - (double)right_this_strx;
-                          const double right_effective_str = right_dstrx / (double)next_delta_fr;
+                          //const double right_this_strx = inv_wave_sr_ratio * sli_typed._stretchSquishedFrame;  // Inv?
+                          const double right_next_strx = sl->squish(nextFrame, MusECore::StretchListItem::StretchEvent);
+//                           const double right_dstrx = right_next_strx - (double)right_this_strx;
+//                           const double right_effective_str = right_dstrx / (double)next_delta_fr;
+                          const double right_dstrx = right_next_strx - right_this_strx;
+                          const double right_effective_str = right_dstrx / next_delta_fr;
 
                           INFO_WAVECANVAS(stderr, "WaveCanvas::mouseMove SamplerateEvent delta_pt.x:%d\n", delta_pt.x());
 
                           double left_min_samplerate_delta_x =
-                            (minSamplerateRatio - prev_sli_typed._samplerateRatio) * left_effective_str * (double)delta_fr;
+//                             (minSamplerateRatio - prev_sli_typed._samplerateRatio) * left_effective_str * (double)delta_fr;
+                            (minSamplerateRatio - prev_sli_typed._samplerateRatio) * left_effective_str * delta_fr;
                           if(left_min_samplerate_delta_x > 0.0)
                             left_min_samplerate_delta_x = 0.0;
                           if((double)delta_pt.x() < left_min_samplerate_delta_x)
                             delta_pt.setX(left_min_samplerate_delta_x);
 
                           double right_min_samplerate_delta_x =
-                            (minSamplerateRatio - sli_typed._samplerateRatio) * right_effective_str * (double)next_delta_fr;
+//                             (minSamplerateRatio - sli_typed._samplerateRatio) * right_effective_str * (double)next_delta_fr;
+                            (minSamplerateRatio - sli_typed._samplerateRatio) * right_effective_str * next_delta_fr;
                           if(right_min_samplerate_delta_x > 0.0)
                             right_min_samplerate_delta_x = 0.0;
                           if(-(double)delta_pt.x() < right_min_samplerate_delta_x)
                             delta_pt.setX(right_min_samplerate_delta_x);
 
-                          INFO_WAVECANVAS(stderr, "  left_min_samplerate_delta_x:%f right_min_samplerate_delta_x:%f\n", // REMOVE Tim. samplerate. Added.
+                          INFO_WAVECANVAS(stderr, "  left_min_samplerate_delta_x:%f right_min_samplerate_delta_x:%f\n",
                                           left_min_samplerate_delta_x, right_min_samplerate_delta_x);
 
                           if(maxSamplerateRatio > 0.0)
                           {
                             double left_max_samplerate_delta_x =
-                              (maxSamplerateRatio - prev_sli_typed._samplerateRatio) * left_effective_str * (double)delta_fr;
+//                               (maxSamplerateRatio - prev_sli_typed._samplerateRatio) * left_effective_str * (double)delta_fr;
+                              (maxSamplerateRatio - prev_sli_typed._samplerateRatio) * left_effective_str * delta_fr;
                             if(left_max_samplerate_delta_x < 0.0)
                               left_max_samplerate_delta_x = 0.0;
                             if((double)delta_pt.x() > left_max_samplerate_delta_x)
                               delta_pt.setX(left_max_samplerate_delta_x);
 
                             double right_max_samplerate_delta_x =
-                              (maxSamplerateRatio - sli_typed._samplerateRatio) * right_effective_str * (double)next_delta_fr;
+//                               (maxSamplerateRatio - sli_typed._samplerateRatio) * right_effective_str * (double)next_delta_fr;
+                              (maxSamplerateRatio - sli_typed._samplerateRatio) * right_effective_str * next_delta_fr;
                             if(right_max_samplerate_delta_x < 0.0)
                               right_max_samplerate_delta_x = 0.0;
                             if((double)delta_pt.x() > right_max_samplerate_delta_x)
                               delta_pt.setX(right_max_samplerate_delta_x);
                           }
 
-                          const double left_effective_dx = (double)delta_pt.x() / left_effective_str;
-                          prevNewVal = 1.0 / ((1.0 / prev_sli_typed._samplerateRatio) + (left_effective_dx / (double)delta_fr));
+                          const double left_effective_dx = wave_sr_ratio * (double)delta_pt.x() / left_effective_str;
+//                           prevNewVal =
+//                             1.0 / ((1.0 / prev_sli_typed._samplerateRatio) + (left_effective_dx / (double)delta_fr));
+                          prevNewVal =
+                            1.0 / ((1.0 / prev_sli_typed._samplerateRatio) + (left_effective_dx / delta_fr));
+                          //prevNewVal =
+                          //  1.0 / (inv_wave_sr_ratio * (1.0 / prev_sli_typed._samplerateRatio) + (left_effective_dx / delta_fr));
 
-                          const double right_effective_dx = (double)delta_pt.x() / right_effective_str;
-                          thisNewVal = 1.0 / ((1.0 / sli_typed._samplerateRatio) - (right_effective_dx / (double)next_delta_fr));
+                          const double right_effective_dx = wave_sr_ratio * (double)delta_pt.x() / right_effective_str;
+//                           thisNewVal =
+//                             1.0 / ((1.0 / sli_typed._samplerateRatio) - (right_effective_dx / (double)next_delta_fr));
+                          thisNewVal =
+                            1.0 / ((1.0 / sli_typed._samplerateRatio) - (right_effective_dx / next_delta_fr));
+                          //thisNewVal =
+                          //  1.0 / (inv_wave_sr_ratio * (1.0 / sli_typed._samplerateRatio) - (right_effective_dx / next_delta_fr));
 
 
 //                           //if(prevNewVal < sf.minSamplerateRatio())

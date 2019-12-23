@@ -2002,6 +2002,7 @@ MuseFrame_t StretchList::unSquish(double frame, int type) const
     factor = (_samplerateRatio * prevSamplerate);
   }
 
+  // FIXME: Hm, lrint? Try returning double.
   return prevFrame + lrint((frame - prevNewUnFrame) * factor);
 }
 

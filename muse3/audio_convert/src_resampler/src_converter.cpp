@@ -528,7 +528,9 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
 
 // REMOVE Tim. samplerate. Changed. 12/19 This must be wrong.
 //   const MuseFrame_t unsquished_pos = stretch_list->unSquish(pos);
-  const MuseFrame_t unsquished_pos = stretch_list->unSquish(pos * sf_sr_ratio);
+  //const MuseFrame_t unsquished_pos = stretch_list->unSquish(pos * sf_sr_ratio);
+  const double d_pos = sf_sr_ratio * double(pos);
+  const MuseFrame_t unsquished_pos = stretch_list->unSquish(d_pos);
 
 //   //const double stretchVal    = stretch_list->ratioAt(StretchListItem::StretchEvent, new_frame);
 //   const double samplerateVal = stretch_list->ratioAt(StretchListItem::SamplerateEvent, unsquished_pos);
@@ -586,7 +588,8 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
 //   srcdata.data_in       = inbuffer;
   _srcdata.data_out      = outbuffer;
 
-  const int debug_min_pos = 120;
+//   const int debug_min_pos = 120;
+  const double debug_min_pos = 120;
   bool need_slice = true;
 
   double cur_ratio = 1.0;
@@ -606,27 +609,34 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
     next_isli = stretch_list->nextEvent(StretchListItem::SamplerateEvent, next_isli);
   double fin_samplerateRatio, inv_fin_samplerateRatio;
 
-  MuseFrame_t cur_squished_pos;
-  //MuseFrame_t cur_unsquished_pos;
-  const MuseFrame_t end_squished_pos = pos + frames;
+// REMOVE Tim. samplerate. Changed. 12/19 This must be wrong.
+//   MuseFrame_t cur_squished_pos;
+//   const MuseFrame_t end_squished_pos = pos + frames;
+  double d_cur_squished_pos;
+  const double d_end_squished_pos = d_pos + frames;
+
   //const MuseFrame_t end_unsquished_pos = stretch_list->unSquish(end_squished_pos);
   sf_count_t outFrames = frames - totalOutFrames;
   // Set some kind of limit on the number of attempts to completely fill the output buffer,
   //  in case something is really screwed up - we don't want to get stuck in a loop here.
   int attempts = 20;
-  if(pos <= debug_min_pos)
+//   if(pos <= debug_min_pos)
+  if(d_pos <= debug_min_pos)
   {
-    DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process pos:%ld end_pos:%ld unsquished_pos:%ld\n",
-                       pos, end_squished_pos, unsquished_pos);
+    DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process d_pos:%f d_end_pos:%f unsquished_pos:%ld\n",
+                       d_pos, d_end_squished_pos, unsquished_pos);
   }
   while(totalOutFrames < frames && attempts > 0)
   {
-    cur_squished_pos = pos + totalOutFrames;
+//     cur_squished_pos = pos + totalOutFrames;
+    d_cur_squished_pos = d_pos + totalOutFrames;
+
     //cur_unsquished_pos = unsquished_pos + totalOutFrames;
-    if(pos <= debug_min_pos)
+//     if(pos <= debug_min_pos)
+    if(d_pos <= debug_min_pos)
     {
-      DEBUG_AUDIOCONVERT(stderr, "   cur_squished_pos:%ld outFrames:%ld totalOutFrames:%ld\n",
-                         cur_squished_pos, outFrames, totalOutFrames);
+      DEBUG_AUDIOCONVERT(stderr, "   d_cur_squished_pos:%ld outFrames:%ld totalOutFrames:%ld\n",
+                         d_cur_squished_pos, outFrames, totalOutFrames);
     }
 
     if(_needBuffer)
@@ -654,7 +664,8 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
 
     if(need_slice)
     {
-      if(pos <= debug_min_pos)
+//       if(pos <= debug_min_pos)
+      if(d_pos <= debug_min_pos)
       {
         DEBUG_AUDIOCONVERT(stderr, "   new slice: cur_ratio:%f\n", cur_ratio);
       }
@@ -672,13 +683,17 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
       if(next_isli != stretch_list->end() &&
          //next_isli->first >= cur_unsquished_pos &&
          //next_isli->first < end_unsquished_pos)
-         next_isli->second._finSquishedFrame >= cur_squished_pos &&
-         next_isli->second._finSquishedFrame < end_squished_pos)
+//          next_isli->second._finSquishedFrame >= cur_squished_pos &&
+//          next_isli->second._finSquishedFrame < end_squished_pos)
+         next_isli->second._finSquishedFrame >= d_cur_squished_pos &&
+         next_isli->second._finSquishedFrame < d_end_squished_pos)
       {
         cur_ratio = next_isli->second._samplerateRatio;
         //outFrames = next_isli->first - cur_unsquished_pos;
-        outFrames = next_isli->second._finSquishedFrame - cur_squished_pos;
-        if(pos <= debug_min_pos)
+//         outFrames = next_isli->second._finSquishedFrame - cur_squished_pos;
+        outFrames = next_isli->second._finSquishedFrame - d_cur_squished_pos;
+//         if(pos <= debug_min_pos)
+        if(d_pos <= debug_min_pos)
         {
           DEBUG_AUDIOCONVERT(stderr, "   new next_isli: next cur_ratio:%f outFrames:%ld\n", cur_ratio, outFrames);
         }
