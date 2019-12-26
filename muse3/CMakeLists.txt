@@ -115,7 +115,6 @@ SET(MusE_SYNTHI_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/synthi)
 ## Plugins directory
 SET(MusE_PLUGINS_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/plugins)
 
-## REMOVE Tim. samplerate. Added.
 ## Audio converter plugins directory
 SET(MusE_AUDIO_CONVERTER_PLUGINS_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/converters)
 
@@ -632,6 +631,8 @@ include_directories(
    ${PROJECT_SOURCE_DIR}/libs/plugin
    ${PROJECT_SOURCE_DIR}/libs/string
    ${PROJECT_SOURCE_DIR}/libs/sysex_helper
+   ${PROJECT_SOURCE_DIR}/libs/time_stretch
+   ${PROJECT_SOURCE_DIR}/libs/wave
    ${PROJECT_SOURCE_DIR}/libs/xml
    ${PROJECT_SOURCE_DIR}/muse
    ${PROJECT_SOURCE_DIR}/muse/function_dialogs
@@ -686,7 +687,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -g -O0 -DQT_DEBUG -Werror -Wall -Wextra -f
 
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale
-subdirs(doc libs al awl grepmidi sandbox man plugins audio_convert muse synti packaging utils demos share)
+subdirs(doc libs audio_convert al awl grepmidi sandbox man plugins muse synti packaging utils demos share)
 
 ## Install doc files
 file (GLOB doc_files

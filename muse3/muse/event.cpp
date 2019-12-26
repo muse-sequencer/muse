@@ -23,14 +23,10 @@
 
 #include <stdio.h>
 #include "event.h"
-#include "eventbase.h"
 #include "waveevent.h"
 #include "midievent.h"
-// REMOVE Tim. samplerate. Added.
-#include "part.h"
 #include "midi.h"
-
-//#define USE_SAMPLERATE
+#include "part.h"
 
 namespace MusECore {
 
@@ -299,7 +295,7 @@ Event Event::mid(unsigned a, unsigned b) const { return ev ? Event(ev->mid(a, b)
 
 bool Event::isNote() const                   { return ev ? ev->isNote() : false;        }
 bool Event::isNoteOff() const                { return ev ? ev->isNoteOff() : false;     }
-bool Event::isNoteOff(const Event& e) const  { return ev ? ev->isNoteOff(e) : false; }
+bool Event::isNoteOff(const Event& e) const  { return ev ? (e.isNoteOff() && (e.pitch() == dataA())) : false; }
 int Event::dataA() const                     { return ev ? ev->dataA() : 0;  }
 int Event::pitch() const                     { return ev ? ev->dataA() : 0;  }
 void Event::setA(int val)                    { if(ev) ev->setA(val);       }
@@ -329,22 +325,14 @@ void Event::setSndFile(MusECore::SndFileR& sf)
   if(ev) ev->setSndFile(sf);   
 }
 
-// REMOVE Tim. samplerate. Changed.
-//void Event::readAudio(MusECore::WavePart* part, unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite)
 void Event::readAudio(unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite)
       {
-//         if(ev) ev->readAudio(part, offset, bpp, channels, nn, doSeek, overwrite);
         if(ev) ev->readAudio(offset, bpp, channels, nn, doSeek, overwrite);
       }
-// REMOVE Tim. samplerate. Added.
 void Event::seekAudio(sf_count_t offset)
       {
         if(ev) ev->seekAudio(offset);
       }
-// void Event::clearAudioPrefetchFifo()
-// {
-//         if(ev) ev->clearAudioPrefetchFifo();
-// }
 Fifo* Event::audioPrefetchFifo()
 {
         return ev ? ev->audioPrefetchFifo() : 0;
@@ -353,15 +341,6 @@ void Event::prefetchAudio(Part* part, sf_count_t frames)
 {
         if(ev) ev->prefetchAudio(part, frames);
 }
-// void Event::fetchAudioData(WavePart* part, sf_count_t pos, int channels, bool off, sf_count_t frames, float** bp, bool doSeek, bool overwrite)
-// {
-//         if(ev) ev->fetchAudioData(part, pos, channels, off, frames, bp, doSeek, overwrite);
-// }
-// bool Event::getAudioPrefetchBuffer(int segs, unsigned long samples, float** dst, unsigned* pos)
-// {
-//         // Return true if fifo is empty, or event is invalid. 
-//         return ev ? ev->getAudioPrefetchBuffer(segs, pos, samples, dst, pos) : true;
-// }
       
 //--------------------------------------------------------
 // 'Agnostic' position methods - can be TICKS and FRAMES.

@@ -132,8 +132,6 @@ class Audio {
       bool recording;         // recording is active
       bool idle;              // do nothing in idle mode
       bool _freewheel;
-// REMOVE Tim. samplerate. Changed.
-//       bool _bounce;
       BounceState _bounceState;
       unsigned _loopFrame;     // Startframe of loop if in LOOP mode. Not quite the same as left marker !
       int _loopCount;         // Number of times we have looped so far
@@ -364,8 +362,6 @@ class Audio {
       void initDevices(bool force = true);
 
       void sendMsgToGui(char c);
-// REMOVE Tim. samplerate. Changed.
-//       bool bounce() const { return _bounce; }
       bool bounce() const { return _bounceState == BounceStart || _bounceState == BounceOn; }
 
       long getXruns() { return m_Xruns; }

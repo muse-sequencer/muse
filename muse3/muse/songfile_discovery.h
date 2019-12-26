@@ -50,20 +50,11 @@ typedef std::pair<SongSamplerates_t::iterator, SongSamplerates_t::iterator> Song
 class SongfileDiscoveryWaveList : public std::list<SongfileDiscoveryWaveItem>
 {
   public:
-//     SongfileDiscoveryWaveList() : _projectSampleRate(0), _projectSampleRateValid(false) {}
-//     
     int _projectSampleRate;
     bool _projectSampleRateValid;
     SongSamplerates_t _samplerates;
 
     void setProjectSampleRate(int r) { _projectSampleRate = r; _projectSampleRateValid = true; }
-// 
-//     void readWaveEvent(Xml& xml);
-//     void readWavePart(Xml& xml);
-//     void readWaveTrack(Xml&);
-//     void readSong(Xml&);
-//     void readSongfile(Xml& xml);
-//     
     int getMostCommonSamplerate() const;
 };
 

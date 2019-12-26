@@ -21,7 +21,6 @@
 //
 //=========================================================
 
-#include "event.h"
 #include "midievent.h"
 #include "xml.h"
 #include "mpevent.h"
@@ -108,11 +107,6 @@ EventBase* MidiEventBase::mid(unsigned b, unsigned e) const
 bool MidiEventBase::isNoteOff() const
       {
       return (type() == Note && (velo() == 0));
-      }
-
-bool MidiEventBase::isNoteOff(const Event& e) const
-      {
-      return (e.isNoteOff() && (e.pitch() == a));
       }
 
 void MidiEventBase::dump(int n) const

@@ -58,7 +58,9 @@ set_target_properties( audio_convert
 ## Linkage
 ##
 target_link_libraries(audio_convert
+      time_stretch_module
       xml_module
+      ${SNDFILE_LIBRARIES}
       )
 
 ##

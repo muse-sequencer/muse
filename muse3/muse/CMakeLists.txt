@@ -89,6 +89,7 @@ QT5_ADD_RESOURCES (muse_qrc_files
 file (GLOB core_source_files
       app.cpp
       audio.cpp
+      audio_fifo.cpp
       audioprefetch.cpp
       audiotrack.cpp
       cobject.cpp
@@ -140,7 +141,6 @@ file (GLOB core_source_files
       tempo.cpp
       thread.cpp
       ticksynth.cpp
-      time_stretch.cpp
       track.cpp
       transport.cpp
       transport_obj.cpp
@@ -148,7 +148,7 @@ file (GLOB core_source_files
       value.cpp
       vst.cpp
       vst_native.cpp
-      wave.cpp
+      wave_helper.cpp
       waveevent.cpp
       wavetrack.cpp
       steprec.cpp
@@ -222,7 +222,6 @@ include_directories (
 # Make sure to include the uic generated headers paths.
 include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}/arranger
-#       ${CMAKE_CURRENT_BINARY_DIR}/audio_convert
       ${CMAKE_CURRENT_BINARY_DIR}/cliplist
       ${CMAKE_CURRENT_BINARY_DIR}/driver
       ${CMAKE_CURRENT_BINARY_DIR}/instruments
@@ -294,6 +293,8 @@ target_link_libraries(core
       Threads::Threads
       synti
       sysex_helper_module
+      time_stretch_module
+      wave_module
       waveedit
       wavepreview_module
       widgets

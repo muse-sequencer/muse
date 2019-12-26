@@ -29,7 +29,6 @@
 
 #include "app.h"
 #include "song.h"
-#include "node.h"
 #include "audiodev.h"
 #include "mididev.h"
 #include "midiport.h"
@@ -48,7 +47,6 @@
 #include "gconfig.h"
 #include "pos.h"
 #include "ticksynth.h"
-//#include "operations.h"
 #include "undo.h"
 #include "globals.h"
 #include "large_int.h"
@@ -141,8 +139,6 @@ Audio::Audio()
       recording     = false;
       idle          = false;
       _freewheel    = false;
-// REMOVE Tim. samplerate. Changed.
-//       _bounce       = false;
       _bounceState  = BounceOff;
       _loopFrame    = 0;
       _loopCount    = 0;
@@ -687,13 +683,6 @@ void Audio::process(unsigned frames)
             stopRolling();
             }
       else if (state == START_PLAY && jackState == STOP) {
-// REMOVE Tim. samplerate. Changed. FIXME What? Why startTransport ???
-//             state = STOP;
-// //             if (_bounce) {
-//             if(bounce())
-//                   MusEGlobal::audioDevice->startTransport();
-//             else
-//                   write(sigFd, "3", 1);   // abort rolling
             abortRolling();
             }
       else if (state == STOP && jackState == PLAY) {
@@ -778,19 +767,10 @@ void Audio::process(unsigned frames)
             if (!freewheel())
                   MusEGlobal::audioPrefetch->msgTick(isRecording(), true);
 
-// REMOVE Tim. samplerate. Changed.
-//             if (_bounce && _pos >= MusEGlobal::song->rPos()) {
-//                   _bounce = false;
-//                   write(sigFd, "F", 1);
-//                   return;
-//                   }
             if (bounce() && _pos >= MusEGlobal::song->rPos()) {
                   _bounceState = BounceOff;
                   // This is safe in both Jack 1 and 2.
                   MusEGlobal::audioDevice->stopTransport();
-                  // Turn off freewheel mode.
-                  // This might not be safe from process. Message the gui to do it.
-                  //write(sigFd, "F", 1);
                   return;
                   }
                   
@@ -1659,12 +1639,10 @@ void Audio::startRolling()
       if (MusEGlobal::debugMsg)
         fprintf(stderr, "startRolling - loopCount=%d, _pos=%d\n", _loopCount, _pos.tick());
 
-      // REMOVE Tim. samplerate. Added.
       // The transport (and user) must NOT be allowed
       //  to influence the position during bounce mode.
       if(_bounceState != BounceOn)
       {      
-
         if(_loopCount == 0) {
           startRecordPos = _pos;
           startExternalRecTick = curTickPos;
@@ -1673,8 +1651,6 @@ void Audio::startRolling()
               recording      = true;
               WaveTrackList* tracks = MusEGlobal::song->waves();
               for (iWaveTrack i = tracks->begin(); i != tracks->end(); ++i) {
-  // REMOVE Tim. samplerate. Changed.
-  //                         (*i)->resetMeter();
                           WaveTrack* track = *i;
                           track->resetMeter();
                           // If we are in freewheel mode, directly seek the wave files.
@@ -1697,7 +1673,6 @@ void Audio::startRolling()
       }
 
       state = PLAY;
-      
       
       if(_bounceState != BounceOn)
       {      
@@ -1747,12 +1722,10 @@ void Audio::startRolling()
             }
       }
 
-      // REMOVE Tim. samplerate. Added.
       if(_bounceState == BounceStart)
         _bounceState = BounceOn;
      }
 
-// REMOVE Tim. samplerate. Added.
 //---------------------------------------------------------
 //   abortRolling
 //---------------------------------------------------------
@@ -1802,11 +1775,7 @@ void Audio::abortRolling()
             (*i)->resetMeter();
             }
       recording    = false;
-      // REMOVE Tim. samplerate. Added.
       _bounceState = BounceOff;
-//       endRecordPos = _pos;
-//       endExternalRecTick = curTickPos;
-//       write(sigFd, "0", 1);   // STOP
       write(sigFd, "3", 1);   // abort rolling
       }
 
@@ -1859,7 +1828,6 @@ void Audio::stopRolling()
             (*i)->resetMeter();
             }
       recording    = false;
-      // REMOVE Tim. samplerate. Added.
       _bounceState = BounceOff;
       endRecordPos = _pos;
       endExternalRecTick = curTickPos;

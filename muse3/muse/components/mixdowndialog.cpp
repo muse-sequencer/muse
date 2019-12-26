@@ -105,7 +105,8 @@ void MixdownFileDialog::accept()
             }
       if (path.right(4) != ".wav")
             path += ".wav";
-      sf = new MusECore::SndFile(path);
+      sf = new MusECore::SndFile(path, MusEGlobal::sampleRate, MusEGlobal::segmentSize,
+                                 true, &MusEGlobal::audioConverterPluginList);
       sf->setFormat(format, channel, MusEGlobal::sampleRate);
       done(1);
       }

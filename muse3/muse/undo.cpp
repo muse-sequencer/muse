@@ -35,6 +35,7 @@
 #include "part.h"
 #include "audiodev.h"
 #include "track.h"
+#include "wave_helper.h"
 
 #include <string.h>
 #include <QAction>
@@ -2206,7 +2207,7 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::ModifyClip:
-                        MusECore::SndFile::applyUndoFile(i->nEvent, i->tmpwavfile, i->startframe, i->endframe);
+                        sndFileApplyUndoFile(i->nEvent, i->tmpwavfile, i->startframe, i->endframe);
                         updateFlags |= SC_CLIP_MODIFIED;
                         break;
                   case UndoOp::ModifyTrackChannel:
@@ -2370,7 +2371,7 @@ void Song::revertOperationGroup1(Undo& operations)
                             // It should not be the job of the pending operations list to do this.
                             // TODO Coordinate close/open with part mute and/or track off.
                             if(!f.isNull() && !f.isOpen())
-                              f->openRead();
+                              f->openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings);
                           }
                           
                           addEventOperation(i->nEvent, editable_part, i->doCtrls, i->doClones);
@@ -2961,7 +2962,7 @@ void Song::executeOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::ModifyClip:
-                        MusECore::SndFile::applyUndoFile(i->nEvent, i->tmpwavfile, i->startframe, i->endframe);
+                        sndFileApplyUndoFile(i->nEvent, i->tmpwavfile, i->startframe, i->endframe);
                         updateFlags |= SC_CLIP_MODIFIED;
                         break;
                   case UndoOp::ModifyTrackChannel:
@@ -3163,7 +3164,7 @@ void Song::executeOperationGroup1(Undo& operations)
                           // It should not be the job of the pending operations list to do this.
                           // TODO Coordinate close/open with part mute and/or track off.
                           if(!f.isNull() && !f.isOpen())
-                            f.openRead();
+                            f.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings);
                         }
                         
                         addEventOperation(i->nEvent, editable_part, i->doCtrls, i->doClones);

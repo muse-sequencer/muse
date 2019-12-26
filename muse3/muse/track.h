@@ -34,7 +34,7 @@
 #include "part.h"
 #include "mpevent.h"
 #include "key.h"
-#include "node.h"
+#include "audio_fifo.h"
 #include "route.h"
 #include "ctrl.h"
 #include "globaldefs.h"
@@ -986,9 +986,7 @@ class WaveTrack : public AudioTrack {
       bool getInputData(unsigned pos, int channels, unsigned nframes,
                         bool* usedInChannelArray, float** buffer);
       
-      // REMOVE Tim. samplerate. Added.
       // Return false if error.
-//       bool getPrefetchData(sf_count_t framePos, int channels, sf_count_t nframe, float** bp, bool overwrite);
       bool getPrefetchData(bool have_data, sf_count_t framePos, int dstChannels, sf_count_t nframe, float** bp, bool do_overwrite);
       
    public:
@@ -1013,9 +1011,6 @@ class WaveTrack : public AudioTrack {
       // If overwrite is true, copies the data. If false, adds the data.
       virtual void fetchData(unsigned pos, unsigned frames, float** bp, bool doSeek, bool overwrite, int latency_correction = 0);
       
-// REMOVE Tim. samplerate. Added.
-      // REPLACES fetchData().
-      //virtual void fetchAudioData(unsigned pos, int channels, bool off, unsigned frames, float** bp, bool doSeek, bool overwrite);
       virtual void seekData(sf_count_t pos);
       
       virtual bool getData(unsigned, int ch, unsigned, float** bp);
@@ -1025,12 +1020,8 @@ class WaveTrack : public AudioTrack {
       bool canDominateOutputLatency() const;
       bool canCorrectOutputLatency() const;
       
-// REMOVE Tim. samplerate. Changed.
-//       void clearPrefetchFifo()      { _prefetchFifo.clear(); }
       void clearPrefetchFifo();
       Fifo* prefetchFifo()          { return &_prefetchFifo; }
-      // REMOVE Tim. samplerate. Added.
-      //virtual void prefetchAudio(unsigned writePos, int channels, bool off, unsigned frames);
       virtual void prefetchAudio(sf_count_t writePos, sf_count_t frames);
 
       // For prefetch thread use only.

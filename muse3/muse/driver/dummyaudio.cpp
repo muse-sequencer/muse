@@ -198,7 +198,6 @@ DummyAudioDevice::DummyAudioDevice() : AudioDevice()
       // Make sure the AL namespace variables mirror our variables.
       AL::sampleRate = MusEGlobal::sampleRate;
       MusEGlobal::segmentSize = MusEGlobal::config.deviceAudioBufSize;
-      // REMOVE Tim. samplerate. Added.
       MusEGlobal::projectSampleRate = MusEGlobal::sampleRate;
       
 #ifdef _WIN32

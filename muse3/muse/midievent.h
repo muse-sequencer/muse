@@ -57,7 +57,6 @@ class MidiEventBase : public EventBase {
 
       virtual bool isNote() const                   { return type() == Note; }
       virtual bool isNoteOff() const;
-      virtual bool isNoteOff(const Event&) const;
       virtual int pitch() const                     { return a;      }
       virtual int program() const                   { return a;      }
       virtual int cntrl() const                     { return a;      }

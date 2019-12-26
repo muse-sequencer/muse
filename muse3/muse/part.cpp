@@ -26,17 +26,15 @@
 #include <stdio.h>
 #include "muse_math.h"
 
-#include "song.h"
 #include "part.h"
+#include "song.h"
 #include "track.h"
 #include "globals.h"
-#include "event.h"
 #include "audio.h"
 #include "wave.h"
 #include "midiport.h"
 #include "drummap.h"
 #include "midictrl.h"
-#include "operations.h"
 
 namespace MusECore {
 
@@ -1189,7 +1187,7 @@ bool WavePart::openAllEvents()
     if(!f.isNull() && !f.isOpen())
     {
       opened = true;
-      f.openRead();
+      f.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings);
     }
   }
   return opened;

@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //
 //  rubberband_converter.cpp
-//  (C) Copyright 2016 Tim E. Real (terminator356 A T sourceforge D O T net)
+//  (C) Copyright 2010-2020 Tim E. Real (terminator356 A T sourceforge D O T net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -24,23 +24,16 @@
 
 #include <QRadioButton>
 #include <QList>
-// #include <QListWidgetItem>
-// #include <QVariant>
-// #include <qtextstream.h>
 
-#include <math.h>
 #include <stdio.h>
 
-//#include "rubberband_converter.h"
-// #include "globals.h"
+#include "muse_math.h"
 #include "time_stretch.h"
-
 #include "rubberband_converter.h"
-
 
 // For debugging output: Uncomment the fprintf section.
 #define ERROR_AUDIOCONVERT(dev, format, args...) fprintf(dev, format, ##args)
-#define DEBUG_AUDIOCONVERT(dev, format, args...) fprintf(dev, format, ##args)
+#define DEBUG_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
 
 
 // Create a new instance of the plugin.  
@@ -121,8 +114,6 @@ RubberBandAudioConverter::RubberBandAudioConverter(int systemSampleRate,
   DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::RubberBandAudioConverter this:%p channels:%d mode:%d\n", 
                      this, channels, mode);
 
-  //_localSettings.initOptions(true);
-  
 #ifdef RUBBERBAND_SUPPORT
   const int mask      = ~(RubberBand::RubberBandStretcher::OptionProcessOffline | RubberBand::RubberBandStretcher::OptionProcessRealTime);
   const int of_flags  = RubberBand::RubberBandStretcher::OptionProcessOffline;
@@ -161,9 +152,7 @@ RubberBandAudioConverter::RubberBandAudioConverter(int systemSampleRate,
   _latencyCompPending = false; // Set to compensate at the first process.
   
 #ifdef RUBBERBAND_SUPPORT
-//   _rbs = new RubberBand::RubberBandStretcher(MusEGlobal::sampleRate, _channels, _options);
   _rbs = new RubberBand::RubberBandStretcher(_systemSampleRate, _channels, _options);
-  // , initialTimeRatio = 1.0, initialPitchScale = 1.0 DELETETHIS
 #endif
 }
 
@@ -184,9 +173,7 @@ void RubberBandAudioConverter::setChannels(int ch)
 #ifdef RUBBERBAND_SUPPORT
   if(_rbs)
     delete _rbs;
-//   _rbs = new RubberBand::RubberBandStretcher(MusEGlobal::sampleRate, _channels, _options);
   _rbs = new RubberBand::RubberBandStretcher(_systemSampleRate, _channels, _options);
-  // , initialTimeRatio = 1.0, initialPitchScale = 1.0
 #endif
 }
 
@@ -204,108 +191,38 @@ void RubberBandAudioConverter::reset()
 }
 
 #ifdef RUBBERBAND_SUPPORT
-int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos, 
-                                      float** buffer, int channels, int frames, bool overwrite)
+int RubberBandAudioConverter::process(
+  SNDFILE* sf_handle,
+  const int sf_chans, const double sf_sr_ratio, const StretchList* sf_stretch_list,
+  const sf_count_t pos,
+  float** buffer, const int channels, const int frames, const bool overwrite)
 {
   if(!_rbs)
     return 0;
   
-  //return src_process(_src_state, sd); DELETETHIS
-  
-//   if(f.isNull())
-//     return _sfCurFrame;
-  
-  // Added by Tim. p3.3.17 DELETETHIS 4
-  //#ifdef AUDIOCONVERT_DEBUG_PRC
-  //DEBUG_AUDIOCONVERT(stderr, "AudioConverter::process %s audConv:%p sfCurFrame:%ld offset:%u channel:%d fchan:%d n:%d\n", 
-  //        f.name().toLatin1(), this, sfCurFrame, offset, channel, f.channels(), n);
-  //#endif
-  
-//  off_t frame     = offset;  // _spos is added before the call. DELETETHIS
-  
-//   unsigned fsrate = f.samplerate();
-  
-  //bool resample   = src_state && ((unsigned)MusEGlobal::sampleRate != fsrate);   DELETETHIS 2
-//  bool resample   = isValid() && ((unsigned)MusEGlobal::sampleRate != fsrate);  
-  
-//   if((MusEGlobal::sampleRate == 0) || (fsrate == 0))
-//   if((MusEGlobal::sampleRate == 0) || (f.samplerate() == 0))
-//   if((MusEGlobal::sampleRate == 0) || (sf->samplerate() == 0))
-  if((_systemSampleRate <= 0) || (sf->samplerate() <= 0))
+  if(_systemSampleRate <= 0)
   {  
-    DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process Error: _systemSampleRate or file samplerate <= 0!\n");
-//     return _sfCurFrame;
+    DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process Error: systemSampleRate <= 0!\n");
+    //return _sfCurFrame;
     return 0;
   }  
-  
-  const int fchan           = sf->channels();
-  const double sf_sr_ratio  = sf->sampleRateRatio();
-  StretchList* stretch_list = sf->stretchList();
 
-  //const double stretch = stretch_list->stretchAt(_sfCurFrame * srcratio);
-  //const double stretch = stretch_list->stretchAt(_sfCurFrame);
-//   const double stretchVal    = stretch_list->stretchAt(pos);
-//   const double samplerateVal = stretch_list->samplerateAt(pos);
-  //const MuseFrame_t new_frame = sf->convertPosition(pos);
-  //const MuseFrame_t new_frame = stretch_list->unStretch(pos);
-
-// REMOVE Tim. samplerate. Changed. 12/19 This must be wrong.
-//   const MuseFrame_t new_frame = stretch_list->unSquish(pos);
-//   pos *= sf_sr_ratio;
-//   const MuseFrame_t new_frame = stretch_list->unSquish(pos);
   const double d_pos = sf_sr_ratio * double(pos);
-  const MuseFrame_t new_frame = stretch_list->unSquish(d_pos);
+  const MuseFrame_t new_frame = sf_stretch_list->unSquish(d_pos);
   
-  const double stretchVal    = stretch_list->ratioAt(StretchListItem::StretchEvent, new_frame);
-  const double samplerateVal = stretch_list->ratioAt(StretchListItem::SamplerateEvent, new_frame);
-  //DEBUG_AUDIOCONVERT(stderr,
-  //  "RubberBandAudioConverter::process: frame:%ld new_frame:%ld stretchRatio:%f samplerateRatio:%f\n", pos, new_frame, stretchVal, samplerateVal);
+  const double stretchVal    = sf_stretch_list->ratioAt(StretchListItem::StretchEvent, new_frame);
+  const double samplerateVal = sf_stretch_list->ratioAt(StretchListItem::SamplerateEvent, new_frame);
   
-// REMOVE Tim. samplerate. Changed. 12/19 This must be wrong.
-//   const double fin_samplerateRatio = sf->sampleRateRatio() + samplerateVal - 1.0;
   const double fin_samplerateRatio = sf_sr_ratio * samplerateVal;
   
   if(fin_samplerateRatio < 0.0001)
   {  
     DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process Error: fin_samplerateRatio ratio is near zero!\n");
-//     return _sfCurFrame;
+    //return _sfCurFrame;
     return 0;
   }  
   
   const double inv_fin_samplerateRatio = 1.0 / fin_samplerateRatio;
-  
-//  SRC_DATA srcdata;
-  
-//   // Ratio is defined as output sample rate over input samplerate.
-//   double srcratio = (double)MusEGlobal::sampleRate / (double)fsrate;
-  
-  // Extra input compensation.
-//   sf_count_t inComp = 1;
-  
-//   sf_count_t outFrames  = frames;
-//   sf_count_t outSize    = outFrames * fchan;
-  
-  //long inSize = long(outSize * srcratio) + 1                      // From MusE-2 file converter.  DELETETHIS 3
-  //long inSize = (long)floor(((double)outSize / srcratio));        // From simplesynth.
-  //long inFrames = (long)floor(((double)outFrames / srcratio));    // From simplesynth.
-//   long inFrames = (long)ceil(((double)outFrames / srcratio)) + inComp;    // From simplesynth.
-//   sf_count_t inFrames = ceil(((double)outFrames * srcratio)) + inComp;    // From simplesynth.
-  
-//   sf_count_t inSize = inFrames * fchan;
-  //sf_count_t inSize = inFrames * channel; DELETETHIS
-  
-  // Start with buffers at expected sizes. We won't need anything larger than this, but add 4 for good luck.
-//   float inbuffer[inSize]; // +4
-//  float outbuffer[outSize]; DELETETHIS
-      
-  //float* rbinbuffer[fchan]; DELETETHIS 4
-  //float rbindata[inSize];
-  //for (int i = 0; i < fchan; ++i)
-  //      rbinbuffer[i] = rbindata + i * inFrames;
-      
-  //int cur_lat = _rbs->getLatency();
-
-//   int debug_min_pos = 256;
   const double debug_min_pos = 256;
 
   int old_lat = _rbs->getLatency();
@@ -313,121 +230,33 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
   _rbs->setTimeRatio(inv_fin_samplerateRatio * stretchVal);
   _rbs->setPitchScale(fin_samplerateRatio);
 
-//   int new_lat = _rbs->getLatency();
-  
-//   cur_lat -= 16; // HACK: Incorrect latency is always +1 more ?
-//   if(cur_lat < 0)
-//     cur_lat = 0;
-
-  // Force a latency compensation step if latency changed.
-  //if(new_lat != cur_lat)
-  //  _latencyCompPending = true;
-
   sf_count_t outFrames  = frames;
   if(_latencyCompPending)
-    //outFrames += new_lat;
     outFrames += old_lat;
-  sf_count_t outSize    = outFrames * fchan;
-  float* rboutbuffer[fchan];
+  sf_count_t outSize    = outFrames * sf_chans;
+  float* rboutbuffer[sf_chans];
   float rboutdata[outSize];
-  for(int i = 0; i < fchan; ++i)
+  for(int i = 0; i < sf_chans; ++i)
     rboutbuffer[i] = rboutdata + i * outFrames;
       
   sf_count_t rn           = 0;
-//   sf_count_t totalOutFrames = 0;
-  
-//  srcdata.data_in       = inbuffer; DELETETHIS 3
-  //srcdata.data_out      = outbuffer;
-//  srcdata.data_out      = buffer;
-//   float** data_out       = rboutbuffer;
-  
-  // Set some kind of limit on the number of attempts to completely fill the output buffer, 
-  //  in case something is really screwed up - we don't want to get stuck in a loop here.
-  //int attempts = 10;
-  //for(int attempt = 0; attempt < attempts; ++attempt)
-  //int savail;
-//   size_t sreq;
-  //int frame = 0;
   
   // Tested: Latency will change after the above setting of ratios. Also affected by converter options.
   //DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process latency:%lu\n", _rbs->getLatency());
 
-
-//   if(_latencyCompPending)
-//   {
-//     int lat = _rbs->getLatency() - 1; // HACK: Incorrect latency is always +1 more ?
-//     //int lat = 64;
-//     while(_rbs->available() < lat)
-//     {
-//       size_t sreq = _rbs->getSamplesRequired();
-//       DEBUG_AUDIOCONVERT(stderr, "   Latency: required:%d avail:%d\n", int(sreq), _rbs->available());
-//       if(sreq <= 0)
-//           break;
-//       size_t rbinSize = sreq * fchan;
-//       float rbindata[rbinSize];
-//       // Must de-interleave data to feed to rubberband.
-//       float* rbinbuffer[fchan];
-//       for(int i = 0; i < fchan; ++i)
-//         rbinbuffer[i] = rbindata + i * sreq;
-//       memset(rbindata, 0, rbinSize * sizeof(float));
-//
-//       _rbs->process(rbinbuffer, sreq, false);
-//     }
-//
-//     int savail = _rbs->available();
-//     DEBUG_AUDIOCONVERT(stderr, "   Latency: final avail:%d\n", _rbs->available());
-//     //if(savail > lat)
-//     //  savail = lat;
-//
-//
-//     float* outbuf[fchan];
-//     //float outdat[lat];
-//     float outdat[savail * fchan];
-//     for(int i = 0; i < fchan; ++i)
-//       //outbuf[i] = outdat + i * lat;
-//       outbuf[i] = outdat + i * savail;
-//
-//
-//     // Retrieves de-interleaved data.
-//     size_t retrieved = _rbs->retrieve(outbuf, savail);
-//     if((int)retrieved < savail)
-//     {
-//       DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process: Latency retrieved_count:%d is less than savail:%d\n", int(retrieved), savail);
-//       savail = retrieved;
-//     }
-//
-//     if(savail < lat)
-//     {
-//       DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process: Latency available() is less than needed. Converter is finished ???\n");
-//       // We didn't get the total required frames. Zero the rest.
-//       //const size_t zeros = lat - savail;
-//       //for(int i = 0; i < fchan; ++i)
-//       //  memset(outbuf[i] + savail, 0, zeros * sizeof(float));
-//     }
-//
-// //     _latencyCompPending = false;
-//   }
-
-
-  //if(_latencyCompPending && new_lat > 0)
   if(_latencyCompPending && old_lat > 0)
   {
-    //size_t rbinSize = new_lat * fchan;
-    size_t rbinSize = old_lat * fchan;
+    size_t rbinSize = old_lat * sf_chans;
     float rbindata[rbinSize];
     memset(rbindata, 0, rbinSize * sizeof(float));
     // Must de-interleave data to feed to rubberband.
-    float* rbinbuffer[fchan];
-    for(int i = 0; i < fchan; ++i)
-      //rbinbuffer[i] = rbindata + i * new_lat;
+    float* rbinbuffer[sf_chans];
+    for(int i = 0; i < sf_chans; ++i)
       rbinbuffer[i] = rbindata + i * old_lat;
-//     if(pos <= debug_min_pos)
     if(d_pos <= debug_min_pos)
     {
-      //DEBUG_AUDIOCONVERT(stderr, "   Latency: new_lat:%d\n", new_lat);
       DEBUG_AUDIOCONVERT(stderr, "   Latency: old_lat:%d new_lat:%d\n", old_lat, (int)_rbs->getLatency());
     }
-    //_rbs->process(rbinbuffer, new_lat, false);
     _rbs->process(rbinbuffer, old_lat, false);
   }
 
@@ -437,15 +266,14 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
     if(sreq <= 0)
         break;
     
-    size_t rbinSize = sreq * fchan;
+    size_t rbinSize = sreq * sf_chans;
     float sfdata[rbinSize];
-    rn = sf_readf_float(handle,  sfdata, sreq);
-    _sfCurFrame += rn;
+    rn = sf_readf_float(sf_handle,  sfdata, sreq);
     // Zero any buffer portion not filled by the file read. TODO: De-normals required here?
     if((size_t)rn != sreq)
     {
-      const size_t zeros = (sreq - rn) * fchan;
-      const size_t zero_start = rn * fchan;
+      const size_t zeros = (sreq - rn) * sf_chans;
+      const size_t zero_start = rn * sf_chans;
       memset(&sfdata[zero_start], 0, zeros * sizeof(float));
     }
     
@@ -455,16 +283,15 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
     //       If optimized, be sure to move it to our AL-DSP (assembly) library. With SSE etc, it's easier. 
     //       Alas, for now use out-of-place memory since stack *should* be cheap here without much nesting.
     float rbindata[rbinSize];
-    float* rbinbuffer[fchan];
-    for(int i = 0; i < fchan; ++i)
+    float* rbinbuffer[sf_chans];
+    for(int i = 0; i < sf_chans; ++i)
       rbinbuffer[i] = rbindata + i * sreq;
     float* sfptr = sfdata;
     for(size_t i = 0; i < sreq; ++i) 
     {
-      for(int ch = 0; ch < fchan; ++ch)
+      for(int ch = 0; ch < sf_chans; ++ch)
         *(rbinbuffer[ch] + i) = *sfptr++;
     }
-//     if(pos <= debug_min_pos)
     if(d_pos <= debug_min_pos)
     {
       DEBUG_AUDIOCONVERT(stderr, "   Normal: required:%d avail:%d\n", int(sreq), _rbs->available());
@@ -473,7 +300,6 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
   }
   
   int savail = _rbs->available();
-//   if(pos <= debug_min_pos)
   if(d_pos <= debug_min_pos)
   {
     DEBUG_AUDIOCONVERT(stderr, "   Normal: final avail:%d\n", _rbs->available());
@@ -481,18 +307,15 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
   if(savail > outFrames)
     savail = outFrames;
   
-  //if(_latencyCompPending && new_lat > 0)
   if(_latencyCompPending && old_lat > 0)
   {
-    //size_t retrieved = _rbs->retrieve(rboutbuffer, new_lat);
     size_t retrieved = _rbs->retrieve(rboutbuffer, old_lat);
-    //if((int)retrieved < new_lat)
     if((int)retrieved < old_lat)
-    //{ DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process: Latency retrieved_count:%d is less than requested:%d\n", int(retrieved), new_lat); }
-    { DEBUG_AUDIOCONVERT(stderr,
+    { 
+      DEBUG_AUDIOCONVERT(stderr,
       "RubberBandAudioConverter::process: Latency retrieved_count:%d is less than requested:%d\n",
-      int(retrieved), old_lat); }
-    //savail -= new_lat;
+      int(retrieved), old_lat);
+    }
     savail -= old_lat;
   }
   _latencyCompPending = false;
@@ -513,11 +336,11 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
       savail, frames);
     // We didn't get the total required frames. Zero the rest.
     const size_t zeros = frames - savail;
-    for(int i = 0; i < fchan; ++i)
+    for(int i = 0; i < sf_chans; ++i)
       memset(rboutbuffer[i] + savail, 0, zeros * sizeof(float));
   }
   
-  if(fchan == channels)
+  if(sf_chans == channels)
   {
     if(overwrite)
       for(int ch = 0; ch < channels; ++ch)
@@ -528,7 +351,7 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
         for(int i = 0; i < frames; ++i) 
           *(buffer[ch] + i) += *(rboutbuffer[ch] + i);
   }
-  else if((fchan == 2) && (channels == 1)) 
+  else if((sf_chans == 2) && (channels == 1)) 
   {
     // stereo to mono
     if(overwrite)
@@ -538,7 +361,7 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
       for(int i = 0; i < frames; ++i)
         *(buffer[0] + i) += *(rboutbuffer[0] + i) + *(rboutbuffer[1] + i);
   }
-  else if((fchan == 1) && (channels == 2)) 
+  else if((sf_chans == 1) && (channels == 2)) 
   {
     // mono to stereo
     float data;
@@ -559,7 +382,8 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
   }
   else 
   {
-    DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process Channel mismatch: source chans:%d -> dst chans:%d\n", fchan, channels);
+    DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process Channel mismatch: source chans:%d -> dst chans:%d\n",
+                       sf_chans, channels);
   }
   
   return frames;
@@ -567,23 +391,16 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
 
 #else // RUBBERBAND_SUPPORT
 
-int RubberBandAudioConverter::process(SndFile* /*sf*/, SNDFILE* /*handle*/, sf_count_t /*pos*/, 
-                                      float** /*buffer*/, int /*channels*/, int /*frames*/, bool /*overwrite*/)
+int RubberBandAudioConverter::process(
+  SNDFILE* /*sf_handle*/,
+  const int /*sf_chans*/, const double /*sf_sr_ratio*/, const StretchList* /*sf_stretch_list*/,
+  const sf_count_t /*pos*/,
+  float** /*buffer*/, const int /*channels*/, const int /*frames*/, const bool /*overwrite*/)
 {
   return 0;
 }
 
 #endif // RUBBERBAND_SUPPORT
-
-// void RubberBandAudioConverter::read(Xml&)
-// {
-//   
-// }
-// 
-// void RubberBandAudioConverter::write(int, Xml&) const
-// {
-//   
-// }
 
 
 //---------------------------------------------------------
@@ -592,7 +409,6 @@ int RubberBandAudioConverter::process(SndFile* /*sf*/, SNDFILE* /*handle*/, sf_c
 
 void RubberBandAudioConverterOptions::write(int level, Xml& xml) const
       {
-      //xml.tag(level++, "settings");
       xml.tag(level++, "settings mode=\"%d\"", _mode);
       
       xml.intTag(level, "useSettings", _useSettings);
@@ -660,11 +476,6 @@ RubberBandAudioConverterSettings::RubberBandAudioConverterSettings(
   initOptions(isLocal); 
 }
       
-// MusECore::AudioConverterSettings* RubberBandAudioConverterSettings::createSettings(bool isLocal)
-// {
-//   return new MusECore::RubberBandAudioConverterSettings(isLocal);
-// }
-
 void RubberBandAudioConverterSettings::assign(const AudioConverterSettings& other)
 {
   const RubberBandAudioConverterSettings& rb_other = 
@@ -673,25 +484,6 @@ void RubberBandAudioConverterSettings::assign(const AudioConverterSettings& othe
   _realtimeOptions = rb_other._realtimeOptions;
   _guiOptions      = rb_other._guiOptions;
 }
-
-// bool RubberBandAudioConverterSettings::isSet(int mode) const 
-// { 
-//   if(mode & ~(AudioConverterSettings::OfflineMode | 
-//               AudioConverterSettings::RealtimeMode | 
-//               AudioConverterSettings::GuiMode))
-//     fprintf(stderr, "RubberBandAudioConverterSettings::isSet() Warning: Unknown modes included:%d\n", mode);
-//   
-//   if((mode <= 0 || (mode & AudioConverterSettings::OfflineMode)) && _offlineOptions.isSet())
-//     return true;
-// 
-//   if((mode <= 0 || (mode & AudioConverterSettings::RealtimeMode)) && _realtimeOptions.isSet())
-//     return true;
-// 
-//   if((mode <= 0 || (mode & AudioConverterSettings::GuiMode)) && _guiOptions.isSet())
-//     return true;
-//     
-//   return false;
-// }
 
 bool RubberBandAudioConverterSettings::useSettings(int mode) const 
 { 
@@ -721,148 +513,27 @@ int RubberBandAudioConverterSettings::executeUI(int mode, QWidget* parent, bool 
 
 void RubberBandAudioConverterSettings::write(int level, Xml& xml) const
 {
-//       if(!useSettings())
-//         return;
-//       
-//       xml.tag(level++, "rubberbandSettings");
-//       //xml.tag(level++, "audioConverterSettings converterID=\"%d\" name=\"%s\"", descriptor->_ID, descriptor->_name);
-//       
-// //       if(_offlineOptions._optionProcess != -1)
-// //         xml.intTag(level, "offlineProcess", _offlineOptions._optionProcess);
-// //       if(_realtimeOptions._optionProcess != -1)
-// //         xml.intTag(level, "realtimeProcess", _realtimeOptions._optionProcess);
-// //       
-// //       if(_offlineOptions._optionStretch != -1)
-// //         xml.intTag(level, "offlineStretch", _offlineOptions._optionStretch);
-// //       if(_realtimeOptions._optionStretch != -1)
-// //         xml.intTag(level, "realtimeStretch", _realtimeOptions._optionStretch);
-// //       
-// //       if(_offlineOptions._optionThreading != -1)
-// //         xml.intTag(level, "offlineThreading", _offlineOptions._optionThreading);
-// //       if(_realtimeOptions._optionThreading != -1)
-// //         xml.intTag(level, "realtimeThreading", _realtimeOptions._optionThreading);
-// //       
-// //       if(_offlineOptions._optionWindow != -1)
-// //         xml.intTag(level, "offlineWindow", _offlineOptions._optionWindow);
-// //       if(_realtimeOptions._optionWindow != -1)
-// //         xml.intTag(level, "realtimeWindow", _realtimeOptions._optionWindow);
-// //       
-// //       if(_offlineOptions._optionSmoothing != -1)
-// //         xml.intTag(level, "offlineSmoothing", _offlineOptions._optionSmoothing);
-// //       if(_realtimeOptions._optionSmoothing != -1)
-// //         xml.intTag(level, "realtimeSmoothing", _realtimeOptions._optionSmoothing);
-// //       
-// //       if(_offlineOptions._optionChannels != -1)
-// //         xml.intTag(level, "offlineChannels", _offlineOptions._optionChannels);
-// //       if(_realtimeOptions._optionChannels != -1)
-// //         xml.intTag(level, "realtimeChannels", _realtimeOptions._optionChannels);
-// //       
-// //       if(_offlineOptions._optionTransients != -1)
-// //         xml.intTag(level, "offlineTransients", _offlineOptions._optionTransients);
-// //       if(_realtimeOptions._optionTransients != -1)
-// //         xml.intTag(level, "realtimeTransients", _realtimeOptions._optionTransients);
-// //       
-// //       if(_offlineOptions._optionDetector != -1)
-// //         xml.intTag(level, "offlineDetector", _offlineOptions._optionDetector);
-// //       if(_realtimeOptions._optionDetector != -1)
-// //         xml.intTag(level, "realtimeDetector", _realtimeOptions._optionDetector);
-// //       
-// //       if(_offlineOptions._optionPhase != -1)
-// //         xml.intTag(level, "offlinePhase", _offlineOptions._optionPhase);
-// //       if(_realtimeOptions._optionPhase != -1)
-// //         xml.intTag(level, "realtimePhase", _realtimeOptions._optionPhase);
-// //       
-// //       if(_offlineOptions._optionFormant != -1)
-// //         xml.intTag(level, "offlineFormant", _offlineOptions._optionFormant);
-// //       if(_realtimeOptions._optionFormant != -1)
-// //         xml.intTag(level, "realtimeFormant", _realtimeOptions._optionFormant);
-// //       
-// //       if(_offlineOptions._optionPitch != -1)
-// //         xml.intTag(level, "offlinePitch", _offlineOptions._optionPitch);
-// //       if(_realtimeOptions._optionPitch != -1)
-// //         xml.intTag(level, "realtimePitch", _realtimeOptions._optionPitch);
-//       
-//       if(_offlineOptions._options != -1)
-//         xml.intTag(level, "offlineOptions", _offlineOptions._options);
-//       if(_realtimeOptions._options != -1)
-//         xml.intTag(level, "realtimeOptions", _realtimeOptions._options);
-//       
-//       xml.tag(--level, "/rubberbandSettings");
-//       //xml.tag(--level, "/audioConverterSettings");
-  
-  
-  
-//   const bool use_off = !(_offlineOptions == defaultOfflineOptions);
-//   const bool use_rt  = !(_realtimeOptions == defaultRealtimeOptions);
-//   const bool use_gui = !(_guiOptions == defaultGuiOptions);
-// 
-//   if(use_off | use_rt || use_gui)
-//   {
-//     xml.tag(level++, "rubberbandSettings");
-//     
-//     if(use_off)
-//     {
-//       xml.tag(level++, "offline");
-//       _offlineOptions.write(level, xml);
-//       xml.tag(--level, "/offline");
-//     }
-//     
-//     if(use_rt)
-//     {
-//       xml.tag(level++, "realtime");
-//       _realtimeOptions.write(level, xml);
-//       xml.tag(--level, "/realtime");
-//     }
-//     
-//     if(use_gui)
-//     {
-//       xml.tag(level++, "gui");
-//       _guiOptions.write(level, xml);
-//       xml.tag(--level, "/gui");
-//     }
-//     
-//     xml.tag(--level, "/rubberbandSettings");
-//   }
-  
   const bool use_off = !(_offlineOptions == RubberBandAudioConverterOptions::defaultOfflineOptions);
   const bool use_rt  = !(_realtimeOptions == RubberBandAudioConverterOptions::defaultRealtimeOptions);
   const bool use_gui = !(_guiOptions == RubberBandAudioConverterOptions::defaultGuiOptions);
 
   if(use_off | use_rt || use_gui)
   {
-    //xml.tag(level++, "audioConverterSetting id=\"%d\"", descriptor._ID);
-    //xml.tag(level++, "audioConverterSetting name=\"%s\"", descriptor._name);
     xml.tag(level++, "audioConverterSetting name=\"%s\"", Xml::xmlString(descriptor._name).toLatin1().constData());
-    //xml.tag(level++, descriptor._name);
     
     if(use_off)
     {
-      //xml.tag(level++, "offline");
-      //xml.tag(level, "audioConverterSetting id=\"%d\" mode=\"%d\"", descriptor._ID, AudioConverterSettings::OfflineMode);
-      //xml.tag(level, "audioConverterSetting mode=\"%d\"", AudioConverterSettings::OfflineMode);
       _offlineOptions.write(level, xml);
-      //xml.tag(--level, "/offline");
-      //xml.tag(--level, "/audioConverterSetting");
     }
     
     if(use_rt)
     {
-      //xml.tag(level++, "realtime");
-      //xml.tag(level, "audioConverterSetting id=\"%d\" mode=\"%d\"", descriptor._ID, AudioConverterSettings::RealtimeMode);
-      //xml.tag(level, "audioConverterSetting mode=\"%d\"", AudioConverterSettings::RealtimeMode);
       _realtimeOptions.write(level, xml);
-      //xml.tag(--level, "/realtime");
-      //xml.tag(--level, "/audioConverterSetting");
     }
     
     if(use_gui)
     {
-      //xml.tag(level++, "gui");
-      //xml.tag(level, "audioConverterSetting id=\"%d\" mode=\"%d\"", descriptor._ID, AudioConverterSettings::GuiMode);
-      //xml.tag(level, "audioConverterSetting mode=\"%d\"", AudioConverterSettings::GuiMode);
       _guiOptions.write(level, xml);
-      //xml.tag(--level, "/gui");
-      //xml.tag(--level, "/audioConverterSetting");
     }
     
     xml.tag(--level, "/audioConverterSetting");
@@ -871,39 +542,6 @@ void RubberBandAudioConverterSettings::write(int level, Xml& xml) const
 
 void RubberBandAudioConverterSettings::read(Xml& xml)
       {
-//       for (;;) {
-//             Xml::Token token = xml.parse();
-//             const QString& tag = xml.s1();
-//             switch (token) {
-//                   case Xml::Error:
-//                   case Xml::End:
-//                         return;
-//                   case Xml::TagStart:
-//                         if (tag == "offlineOptions")
-//                               _offlineOptions._options = xml.parseInt();
-//                         else if (tag == "realtimeOptions")
-//                               _realtimeOptions._options = xml.parseInt();
-//                         else if (tag == "guiOptions")
-//                               _guiOptions._options = xml.parseInt();
-//                         
-//                         else
-//                               xml.unknown("rubberbandSettings");
-//                               //xml.unknown("audioConverterSettings");
-//                         break;
-//                   case Xml::Attribut:
-//                               fprintf(stderr, "rubberbandSettings unknown tag %s\n", tag.toLatin1().constData());
-//                               //fprintf(stderr, "audioConverterSettings unknown tag %s\n", tag.toLatin1().constData());
-//                         break;
-//                   case Xml::TagEnd:
-//                         if (tag == "rubberbandSettings") {
-//                         //if (tag == "audioConverterSettings") {
-//                               return;
-//                               }
-//                   default:
-//                         break;
-//                   }
-//             }
-            
   int mode = -1;
   for (;;) {
       Xml::Token token = xml.parse();
@@ -913,13 +551,6 @@ void RubberBandAudioConverterSettings::read(Xml& xml)
             case Xml::End:
                   return;
             case Xml::TagStart:
-//                   if (tag == "offline")
-//                         _offlineOptions.read(xml);
-//                   else if (tag == "realtime")
-//                         _realtimeOptions.read(xml);
-//                   else if (tag == "gui")
-//                         _guiOptions.read(xml);
-                  
                   if(mode != -1)
                   {
                     RubberBandAudioConverterOptions* opts = NULL;
@@ -949,18 +580,15 @@ void RubberBandAudioConverterSettings::read(Xml& xml)
                   }
                   
                   else
-                      //xml.unknown("rubberbandSettings");
                       xml.unknown("settings");
                   break;
             case Xml::Attribut:
                   if (tag == "mode")
                         mode = xml.s2().toInt();
                   else
-                        //fprintf(stderr, "rubberbandSettings unknown tag %s\n", tag.toLatin1().constData());
                         fprintf(stderr, "settings unknown tag %s\n", tag.toLatin1().constData());
                   break;
             case Xml::TagEnd:
-                  //if (tag == "rubberbandSettings") {
                   if (tag == "settings") {
                         return;
                         }
@@ -1051,32 +679,6 @@ void RubberbandSettingsDialog::setControls(int opts)
 {
 #ifdef RUBBERBAND_SUPPORT
   
-//   if(!_options)
-//     return;
-//   
-// //   if(useDefaultSettings->isVisible())
-// //   {
-// //     useDefaultSettings->blockSignals(true);
-// //     useDefaultSettings->setChecked(!_options->_useSettings);
-// //     useDefaultSettings->blockSignals(false);
-// //   }
-// 
-//   const int opts = _options->_options;
-
-//   if(opts & RubberBand::RubberBandStretcher::OptionProcessRealTime)
-//   {
-//     processRealTime->blockSignals(true);
-//     processRealTime->setChecked(true);
-//     processRealTime->blockSignals(false);
-//   }
-//   else
-//   {
-//     processOffline->blockSignals(true);
-//     processOffline->setChecked(true);
-//     processOffline->blockSignals(false);
-//   }
-
-
   if(opts & RubberBand::RubberBandStretcher::OptionStretchPrecise)
   {
     stretchPrecise->blockSignals(true);
@@ -1244,8 +846,6 @@ void RubberbandSettingsDialog::setControls(int opts)
     channelsApart->setChecked(true);
     channelsApart->blockSignals(false);
   }
-
-  //groupScrollArea->setEnabled(!useDefaultSettings->isVisible() || _options->_useSettings);
   
 #endif
 }
@@ -1318,12 +918,6 @@ void RubberbandSettingsDialog::accept()
 
   int opts = 0;
 
-//   if(processRealTime->isChecked())
-//     opts |= RubberBand::RubberBandStretcher::OptionProcessRealTime;
-//   else if(processOffline->isChecked())
-//     opts |= RubberBand::RubberBandStretcher::OptionProcessOffline;
-
-  
   if(stretchPrecise->isChecked())
     opts |= RubberBand::RubberBandStretcher::OptionStretchPrecise;
   else if(stretchElastic->isChecked())

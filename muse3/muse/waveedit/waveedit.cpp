@@ -61,11 +61,9 @@
 #include "trackinfo_layout.h"
 #include "splitter.h"
 
-#define ERROR_WAVEEDIT(dev, format, args...)  fprintf(dev, format, ##args)
-
-// REMOVE Tim. samplerate. Enabled.
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_WAVEEDIT(dev, format, args...)  fprintf(dev, format, ##args)
+#define ERROR_WAVEEDIT(dev, format, args...)  fprintf(dev, format, ##args)
+#define DEBUG_WAVEEDIT(dev, format, args...) // fprintf(dev, format, ##args)
 
 namespace MusECore {
 extern QColor readColor(MusECore::Xml& xml);
@@ -75,7 +73,7 @@ namespace MusEGui {
 
 static int waveEditTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | 
                            MusEGui::CutTool | MusEGui::RangeTool | PanTool | ZoomTool |
-                           StretchTool | SamplerateTool; // REMOVE Tim. samplerate. Added.
+                           StretchTool | SamplerateTool;
 
 int WaveEdit::_rasterInit = 96;
 int WaveEdit::_trackInfoWidthInit = 50;
@@ -840,7 +838,6 @@ void WaveEdit::keyPressEvent(QKeyEvent* event)
             tools2->set(MusEGui::RangeTool);
             return;
             }
-      // REMOVE Tim. samplerate. Added.
       else if (key == shortcuts[SHRT_TOOL_STRETCH].key) {
             tools2->set(MusEGui::StretchTool);
             return;

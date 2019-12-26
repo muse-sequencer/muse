@@ -26,22 +26,20 @@
 #include <set>
 #include <QSet>
 #include <QStringList>
+#include <QActionGroup>
+#include <QString>
+#include <QMenu>
+#include <QWidget>
+#include <QLine>
+#include <QRect>
 
 #include "drummap.h"
+#include "part.h"
+#include "track.h"
+#include "mpevent.h"
 #include "type_defs.h"
 
-class QActionGroup;
-class QString;
-class QMenu;
-class QWidget;
-class QLine;
-class QRect;
-
 namespace MusECore {
-class Part;
-class Track;
-class PartList;
-class MEvent;
 
 void enumerateJackMidiDevices();
 void populateMidiPorts();

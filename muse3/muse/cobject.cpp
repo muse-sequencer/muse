@@ -40,10 +40,8 @@
 #include <QWidgetAction>
 #include <QLabel>
 
-#define ERROR_COBJECT(dev, format, args...)  fprintf(dev, format, ##args)
-
-// REMOVE Tim. samplerate. Enabled.
 // For debugging output: Uncomment the fprintf section.
+#define ERROR_COBJECT(dev, format, args...)  fprintf(dev, format, ##args)
 #define DEBUG_COBJECT(dev, format, args...) // fprintf(dev, format, ##args)
 
 using std::list;
@@ -176,7 +174,6 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
         connect(sig_tb, SIGNAL(returnPressed()), SLOT(focusCanvas()));
         connect(sig_tb, SIGNAL(escapePressed()), SLOT(focusCanvas()));
 
- // REMOVE Tim. samplerate. Added. Added comment.
  // NOTICE: It seems after the switch to Qt5, windows with a parent have stay-on-top behaviour.
  // But with the fix below, other TopWin destructors are not called when closing the app.
  // So there is now an additional fix in MusE::closeEvent() which deletes all parentless TopWin.

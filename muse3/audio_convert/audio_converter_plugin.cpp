@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //
 //  audio_converter_list.cpp
-//  (C) Copyright 2016 Tim E. Real (terminator356 A T sourceforge D O T net)
+//  (C) Copyright 2010-2020 Tim E. Real (terminator356 A T sourceforge D O T net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -21,12 +21,7 @@
 //
 //=========================================================
 
-//#include "lib_audio_convert/audioconvert.h"
 #include "audio_converter_plugin.h"
-
-#include "globals.h"
-#include "xml.h"
-#include "wave.h"
 
 #include <QDir>
 #include <QString>
@@ -38,29 +33,21 @@
 
 #include <dlfcn.h>
 
-#define INFO_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
-#define ERROR_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
-
 // For debugging output: Uncomment the fprintf section.
+#define ERROR_AUDIOCONVERT(dev, format, args...) fprintf(dev, format, ##args)
+#define INFO_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
 #define DEBUG_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
-
-// To make testing keeping the library open easier.
-//#define __KEEP_LIBRARY_OPEN__
-
-namespace MusEGlobal {
-MusECore::AudioConverterPluginList audioConverterPluginList;
-}
 
 namespace MusECore {
 
-void AudioConverterPluginList::discover()
+void AudioConverterPluginList::discover(const QString& museGlobalLib, bool debugMsg)
 {
-  QString s = MusEGlobal::museGlobalLib + "/converters";
+  QString s = museGlobalLib + "/converters";
 
   QDir pluginDir(s, QString("*.so"));
-  if(MusEGlobal::debugMsg)
+  if(debugMsg)
   {
-        INFO_AUDIOCONVERT(stderr, "searching for audio converters in <%s>\n", s.toLatin1().constData());
+    INFO_AUDIOCONVERT(stderr, "searching for audio converters in <%s>\n", s.toLatin1().constData());
   }
   if(pluginDir.exists())
   {
@@ -105,10 +92,8 @@ void AudioConverterPluginList::discover()
         if(!descr)
               break;
         // Make sure it doesn't already exist.
-        //if(MusEGlobal::audioConverterPluginList.find(descr->_name, descr->_ID))
         if(find(descr->_name, descr->_ID))
           continue;
-        //MusEGlobal::audioConverterPluginList.add(fi, descr);
         add(fi, descr);
       }
         
@@ -118,9 +103,8 @@ void AudioConverterPluginList::discover()
 #endif
       
     }
-    if(MusEGlobal::debugMsg)
+    if(debugMsg)
     {
-      //INFO_AUDIOCONVERT(stderr, "%zd Audio converters found\n", MusEGlobal::audioConverterPluginList.size());
       INFO_AUDIOCONVERT(stderr, "%zd Audio converters found\n", size());
     }
   }
@@ -132,13 +116,11 @@ void AudioConverterPluginList::discover()
 
 AudioConverterPluginList::~AudioConverterPluginList()
 {
-//#ifdef __KEEP_LIBRARY_OPEN__
   DEBUG_AUDIOCONVERT(stderr, "AudioConverterPluginList dtor: Closing libraries...\n");
   // Must close the libraries.
   for(iAudioConverterPlugin ip = begin(); ip != end(); ++ip)
     if(*ip)
       delete *ip;
-//#endif
 }
 
 //---------------------------------------------------------
@@ -169,94 +151,6 @@ AudioConverterPlugin* AudioConverterPluginList::find(const char* name, int ID, i
   return cap_res;
 }
 
-// void AudioConverterPluginList::readDefaultSettings(Xml& /*xml*/)
-// {
-// //   int at = 0;
-// //   for (;;) {
-// //         Xml::Token token = xml.parse();
-// //         const QString& tag = xml.s1();
-// //         switch (token) {
-// //               case Xml::Error:
-// //               case Xml::End:
-// //                     return 0;
-// //               case Xml::TagStart:
-// //                     if (tag == "tick")
-// //                           tick = xml.parseInt();
-// //                     else if (tag == "val")
-// //                           tempo = xml.parseInt();
-// //                     else
-// //                           xml.unknown("TEvent");
-// //                     break;
-// //               case Xml::Attribut:
-// //                     if (tag == "at")
-// //                           at = xml.s2().toInt();
-// //                     break;
-// //               case Xml::TagEnd:
-// //                     if (tag == "tempo") {
-// //                           return at;
-// //                           }
-// //               default:
-// //                     break;
-// //               }
-// //         }
-// //   return 0;
-//   
-//   
-// //   for (;;) {
-// //         Xml::Token token = xml.parse();
-// //         const QString& tag = xml.s1();
-// //         switch (token) {
-// //               case Xml::Error:
-// //               case Xml::End:
-// //                     return;
-// //               case Xml::TagStart:
-// //                     if (tag == "preferredResampler")
-// //                           preferredResampler = xml.parseInt();
-// //                     else if (tag == "preferredShifter")
-// //                           preferredShifter = xml.parseInt();
-// //                     else if (tag == "SRCSettings")
-// //                           SRCResamplerSettings.read(xml);
-// //                     else if (tag == "zitaResamplerSettings")
-// //                           zitaResamplerSettings.read(xml);
-// //                     else if (tag == "rubberbandSettings")
-// //                           rubberbandSettings.read(xml);
-// //                     //else if (tag == "soundtouchSettings")  // TODO
-// //                     //      soundtouchSettings.read(xml);
-// //                     
-// //                     
-// //                     
-// //                     
-// //                     
-// //                     else
-// //                           xml.unknown("audioConverterSettings");
-// //                     break;
-// //               case Xml::Attribut:
-// //                         //if (tag == "id")
-// //                         //      id = xml.s2().toInt();
-// //                         //else
-// //                           fprintf(stderr, "audioConverterSettings unknown tag %s\n", tag.toLatin1().constData());
-// //                     break;
-// //               case Xml::TagEnd:
-// //                     if (tag == "audioConverterSettings") {
-// //                           return;
-// //                           }
-// //               default:
-// //                     break;
-// //               }
-// //         }
-// 
-// }
-// 
-// void AudioConverterPluginList::writeDefaultSettings(int /*level*/, Xml& /*xml*/) const
-// {
-// //   xml.tag(level++, "audioConverterSettings");
-// //   
-// //   for(iAudioConverterPlugin i = begin(); i != end(); ++i)
-// //     (*i)->defaultSettings()->write(level, xml);
-// //   
-// //   xml.tag(--level, "/audioConverterSettings");
-// }
-
 //---------------------------------------------------------
 //   AudioConverterPlugin
 //---------------------------------------------------------
@@ -272,8 +166,6 @@ AudioConverterPlugin::AudioConverterPlugin(QFileInfo* f, const AudioConverterDes
   _label = QString(d->_label);
   _name = QString(d->_name);
   _uniqueID = d->_ID;
-//   _maker = QString(d->Maker);
-//   _copyright = QString(d->Copyright);
   _maxChannels = d->_maxChannels;
   _capabilities = d->_capabilities;
 
@@ -283,11 +175,6 @@ AudioConverterPlugin::AudioConverterPlugin(QFileInfo* f, const AudioConverterDes
   _maxSamplerateRatio = d->_maxSamplerateRatio;
   _minPitchShiftRatio = d->_minPitchShiftRatio;
   _maxPitchShiftRatio = d->_maxPitchShiftRatio;
-
-//   _defaultSettings = 0;
-//   if(d->createSettings)
-//     // Create non-local default settings.
-//     _defaultSettings = d->createSettings(false);
 }
 
 AudioConverterPlugin::~AudioConverterPlugin()
@@ -295,17 +182,11 @@ AudioConverterPlugin::~AudioConverterPlugin()
   DEBUG_AUDIOCONVERT(stderr, "AudioConverterPlugin dtor: this:%p plugin:%p id:%d\n", this, plugin, id());
   if(plugin)
   {
-  //  delete plugin;
     ERROR_AUDIOCONVERT(stderr, "  Error: plugin is not NULL\n");
   }
     
-//#ifndef __KEEP_LIBRARY_OPEN__
   if(_handle)
     dlclose(_handle);
-//#endif
-    
-//   if(_defaultSettings)
-//     delete _defaultSettings;
 }
 
 
@@ -315,7 +196,6 @@ int AudioConverterPlugin::incReferences(int val)
 
   int newref = _references + val;
 
-//   if(newref == 0)
   if(newref <= 0)
   {
     _references = 0;
@@ -389,12 +269,13 @@ int AudioConverterPlugin::incReferences(int val)
 }
 
 AudioConverterHandle AudioConverterPlugin::instantiate(AudioConverterPluginI* /*plugi*/, 
+                                                       int systemSampleRate,
                                                        int channels, 
                                                        AudioConverterSettings* settings, 
                                                        int mode)
 {
   DEBUG_AUDIOCONVERT(stderr, "AudioConverterPlugin::instantiate\n");
-  AudioConverterHandle h = plugin->instantiate(MusEGlobal::sampleRate, plugin, channels, settings, mode);
+  AudioConverterHandle h = plugin->instantiate(systemSampleRate, plugin, channels, settings, mode);
   if(!h)
   {
     ERROR_AUDIOCONVERT(stderr, "AudioConverterPlugin::instantiate() Error: plugin:%s instantiate failed!\n", plugin->_name);
@@ -422,8 +303,7 @@ AudioConverterPluginI::~AudioConverterPluginI()
   {
     for(int i = 0; i < instances; ++i)
     {
-      // Delete each of the converters.
-      //delete handle[i];
+      // Cleanup each of the converters.
       if(_plugin)
         _plugin->cleanup(handle[i]);
     }
@@ -433,7 +313,6 @@ AudioConverterPluginI::~AudioConverterPluginI()
   
   if (_plugin)
   {
-//     deactivate();
     _plugin->incReferences(-1);
   }
 }
@@ -447,23 +326,13 @@ void AudioConverterPluginI::init()
 }
 
 bool AudioConverterPluginI::initPluginInstance(AudioConverterPlugin* plug,
+                                               int systemSampleRate,
                                                int channels, 
                                                AudioConverterSettings* settings, 
                                                int mode)
 {
-  // If plug is given, set it, otherwise attempt to use whatever is already set.
-//   if(plug)
-//   {
-//     if(plug != _plugin)
-//       ERROR_AUDIOCONVERT(stderr, 
-//         "AudioConverterPluginI::initPluginInstance: Warning: plug:%p != _plugin:%p\n", plug, _plugin);
-//     _plugin = plug;
-//   }
-
-  //if(!_plugin)
   if(!plug)
   {
-    //ERROR_AUDIOCONVERT(stderr, "AudioConverterPluginI::initPluginInstance: Error: No plugin\n");
     ERROR_AUDIOCONVERT(stderr, "AudioConverterPluginI::initPluginInstance: Error: plug is zero\n");
     return true;
   }
@@ -483,27 +352,13 @@ bool AudioConverterPluginI::initPluginInstance(AudioConverterPlugin* plug,
   _name  = _plugin->name() + inst;
   _label = _plugin->label() + inst;
 
-//       unsigned long ins = plug->inports();
-//       unsigned long outs = plug->outports();
   int max_chans = _plugin->maxChannels(); // -1 = don't care, infinite channels.
-//       if(outs)
-  
-//       if(max_chans == 0)
-//         return true;
   
   if(max_chans > 0)
   {
-//         instances = channel / outs;
     instances = _channels / max_chans;
     if(instances < 1)
       instances = 1;
-//       }
-//       else
-//       if(ins)
-//       {
-//         instances = channel / ins;
-//         if(instances < 1)
-//           instances = 1;
   }
   else
   // Don't care. Unlimited channels.
@@ -517,39 +372,13 @@ bool AudioConverterPluginI::initPluginInstance(AudioConverterPlugin* plug,
   {
     DEBUG_AUDIOCONVERT(stderr, "  instance:%d\n", i);
 
-    handle[i] = _plugin->instantiate(this, _channels, settings, mode);
+    handle[i] = _plugin->instantiate(this, systemSampleRate, _channels, settings, mode);
     if(!handle[i])
       return true;
   }
 
-//       activate();
   return false;
 }
-
-// AudioConverterSettings* AudioConverterPluginI::createSettings(AudioConverterPlugin* plug, bool isLocal)
-// { 
-//   // If plug is given, set it, otherwise attempt to use whatever is already set.
-//   if(plug)
-//   {
-//     if(plug != _plugin)
-//       ERROR_AUDIOCONVERT(stderr, 
-//         "AudioConverterPluginI::createSettings: Warning: plug:%p != _plugin:%p\n", plug, _plugin);
-//     _plugin = plug;
-//   }
-//   
-//   if(!_plugin)
-//   {
-//     ERROR_AUDIOCONVERT(stderr, "AudioConverterPluginI::createSettings: No plugin\n");
-//     return;
-//   }
-//   
-//   // We are creating an object from the library. Increment the references
-//   //  so that the library may be opened.
-//   if(_plugin->incReferences(1) == 0)
-//     return 0;
-//   
-//   return _plugin->createSettings(isLocal); 
-// }
 
 bool AudioConverterPluginI::isValid() const
 {
@@ -584,34 +413,20 @@ void AudioConverterPluginI::reset()
       handle[i]->reset();
 }
 
-// The offset is the offset into the sound file and is NOT converted.
-sf_count_t AudioConverterPluginI::seekAudio(SndFile* sf, sf_count_t frame, int offset)
-{ 
-  if(!handle) return 0;
-  for(int i = 0; i < instances; ++i) 
-    if(handle[i])
-    {
-      sf_count_t count = handle[i]->seekAudio(sf, frame, offset);
-      // FIXME: Multiple instances point to the SAME SndFile. 
-      //        Make seperate SndFile instances per-channel,
-      //         make this function per-handle, and work with 
-      //         each count returned.
-      //        No choice, for now just return after the first handle found:
-      return count;
-    }
-  return 0;
-}
-
-int AudioConverterPluginI::process(SndFile* sf, SNDFILE* sf_handle, sf_count_t pos, float** buffer, 
-            int channels, int frames, bool overwrite)
+int AudioConverterPluginI::process(
+  SNDFILE* sf_handle,
+  const int sf_chans, const double sf_sr_ratio, const StretchList* sf_stretch_list,
+  const sf_count_t pos,
+  float** buffer, const int channels, const int frames, const bool overwrite)
 {
   if(!handle) return 0;
   for(int i = 0; i < instances; ++i) 
     if(handle[i])
     {
-      int count = handle[i]->process(sf, sf_handle, pos, buffer, channels, frames, overwrite);
+      int count = handle[i]->process(sf_handle, sf_chans, sf_sr_ratio, sf_stretch_list,
+                                     pos, buffer, channels, frames, overwrite);
       // FIXME: Multiple instances point to the SAME SndFile. 
-      //        Make seperate SndFile instances per-channel,
+      //        Make separate SndFile instances per-channel,
       //         make this function per-handle, and work with 
       //         each count returned.
       //        No choice, for now just return after the first handle found:
@@ -634,23 +449,10 @@ AudioConverterSettingsI::AudioConverterSettingsI()
 AudioConverterSettingsI::~AudioConverterSettingsI()
 {
   DEBUG_AUDIOCONVERT(stderr, "AudioConverterSettingsI dtor: this:%p\n", this);
-//   if(handle)
-//   {
-//     for(int i = 0; i < instances; ++i)
-//     {
-//       // Delete each of the converters.
-//       //delete handle[i];
-//       if(_plugin)
-//         _plugin->cleanup(handle[i]);
-//     }
-//     // Delete the array of converters.
-//     delete[] handle;
-//   }
   
   if(_plugin)
   {
     DEBUG_AUDIOCONVERT(stderr, "  _plugin:%p id:%d\n", _plugin, _plugin->id());
-//     deactivate();
     if(_settings)
       _plugin->cleanupSettings(_settings);
     
@@ -660,10 +462,8 @@ AudioConverterSettingsI::~AudioConverterSettingsI()
 
 void AudioConverterSettingsI::init()
 {
-  _plugin           = NULL;
-//   instances         = 0;
-  _settings            = NULL;
-//   _channels         = 0;
+  _plugin    = NULL;
+  _settings  = NULL;
 }
 
 void AudioConverterSettingsI::assign(const AudioConverterSettingsI& other)

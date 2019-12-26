@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //
 //  zita_resampler_converter.cpp
-//  (C) Copyright 2016 Tim E. Real (terminator356 A T sourceforge D O T net)
+//  (C) Copyright 2010-2020 Tim E. Real (terminator356 A T sourceforge D O T net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -23,19 +23,12 @@
 //=========================================================
 
 #include <QRadioButton>
-// #include <QListWidgetItem>
-// #include <QVariant>
-// #include <qtextstream.h>
 
-#include <math.h>
 #include <stdio.h>
 
-//#include "zita_resampler_converter.h"
-// #include "globals.h"
+#include "muse_math.h"
 #include "time_stretch.h"
-
 #include "zita_resampler_converter.h"
-
 
 // For debugging output: Uncomment the fprintf section.
 #define ERROR_AUDIOCONVERT(dev, format, args...) fprintf(dev, format, ##args)
@@ -51,7 +44,7 @@ MusECore::AudioConverter* instantiate(int systemSampleRate,
                                       MusECore::AudioConverterSettings* settings, 
                                       int mode)
 {
-  return new MusECore::ZitaResamplerAudioConverter(systemSampleRate, NULL, channels, settings, mode);  // TODO Pass SF
+  return new MusECore::ZitaResamplerAudioConverter(systemSampleRate, channels, settings, mode);  // TODO Pass SF?
 }
 
 // Destroy the instance after usage.
@@ -116,7 +109,6 @@ namespace MusECore {
 //---------------------------------------------------------
 
 ZitaResamplerAudioConverter::ZitaResamplerAudioConverter(int systemSampleRate,
-                                                         SndFile* sf, 
                                                          int channels, 
                                                          AudioConverterSettings* /*settings*/, 
                                                          int /*mode*/) : AudioConverter(systemSampleRate)
@@ -124,8 +116,6 @@ ZitaResamplerAudioConverter::ZitaResamplerAudioConverter(int systemSampleRate,
   DEBUG_AUDIOCONVERT(stderr, "ZitaResamplerAudioConverter::ZitaResamplerAudioConverter this:%p channels:%d mode:%d\n", 
                      this, channels, mode);
 
-  //_localSettings.initOptions(true);
-  
   // "... hlen = 32 should provide very high quality for F_min equal to 
   //  48 kHz or higher, while hlen = 48 should be sufficient for an F_min of 44.1 kHz"
   //
@@ -155,7 +145,7 @@ ZitaResamplerAudioConverter::ZitaResamplerAudioConverter(int systemSampleRate,
 //   }
   
   _channels = channels;
-  _ratio = sf ? sf->sampleRateRatio() : 1.0;
+//   _ratio = sf ? sf->sampleRateRatio() : 1.0;
   
 #ifdef ZITA_RESAMPLER_SUPPORT
   _rbs = new VResampler();
@@ -198,30 +188,39 @@ void ZitaResamplerAudioConverter::reset()
 }
 
 #ifdef ZITA_RESAMPLER_SUPPORT
-int ZitaResamplerAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos, 
-                                         float** buffer, int channels, int frames, bool overwrite)
+// TODO
+int ZitaResamplerAudioConverter::process(
+  SNDFILE* sf_handle,
+  const int sf_chans, const double sf_sr_ratio, const StretchList* sf_stretch_list,
+  const sf_count_t pos,
+  float** buffer, const int channels, const int frames, const bool overwrite)
 {
-  if(!_rbs || !sf)
+  if(!_rbs)
     return 0;
-  
-//   if((MusEGlobal::sampleRate == 0) || (sf->samplerate() == 0))
-  if((_systemSampleRate <= 0) || (sf->samplerate() <= 0))
+
+  if(_systemSampleRate <= 0)
   {  
-    DEBUG_AUDIOCONVERT(stderr, "ZitaResamplerAudioConverter::process Error: _systemSampleRate or file samplerate <= 0!\n");
+    DEBUG_AUDIOCONVERT(stderr, "ZitaResamplerAudioConverter::process Error: systemSampleRate <= 0!\n");
+    //return _sfCurFrame;
     return 0;
   }  
-  
-  const double srcratio = sf->sampleRateRatio();
-  const double inv_srcratio = 1.0 / srcratio;
-  
-  const int fchan       = sf->channels();
+
+  // TODO
+  const double inv_sf_sr_ratio = 1.0 / sf_sr_ratio;
+  fin_samplerateRatio = sf_sr_ratio * cur_ratio;
+  if(fin_samplerateRatio < 0.000001)
+  {
+    DEBUG_AUDIOCONVERT(stderr, "ZitaResamplerAudioConverter::process Error: fin_samplerateRatio ratio is near zero!\n");
+    fin_samplerateRatio = 0.000001;
+  }
+  inv_fin_samplerateRatio = 1.0 / fin_samplerateRatio;
   
   sf_count_t outFrames  = frames;  
-  sf_count_t outSize    = outFrames * fchan;
+  sf_count_t outSize    = outFrames * sf_chans;
   
-  float* rboutbuffer[fchan];
+  float* rboutbuffer[sf_chans];
   float rboutdata[outSize];
-  for(int i = 0; i < fchan; ++i)
+  for(int i = 0; i < sf_chans; ++i)
     rboutbuffer[i] = rboutdata + i * outFrames;
       
   sf_count_t rn           = 0;
@@ -261,8 +260,11 @@ int ZitaResamplerAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_
 
 #else // ZITA_RESAMPLER_SUPPORT
 
-int ZitaResamplerAudioConverter::process(SndFile* /*sf*/, SNDFILE* /*handle*/, sf_count_t /*pos*/, 
-                                         float** /*buffer*/, int /*channels*/, int /*frames*/, bool /*overwrite*/)
+int ZitaResamplerAudioConverter::process(
+  SNDFILE* /*sf_handle*/,
+  const int /*sf_chans*/, const double /*sf_sr_ratio*/, const StretchList* /*sf_stretch_list*/,
+  const sf_count_t /*pos*/,
+  float** /*buffer*/, const int /*channels*/, const int /*frames*/, const bool /*overwrite*/)
 {
   return 0;
 }
@@ -276,11 +278,9 @@ int ZitaResamplerAudioConverter::process(SndFile* /*sf*/, SNDFILE* /*handle*/, s
 
 void ZitaResamplerAudioConverterOptions::write(int level, Xml& xml) const
       {
-      //xml.tag(level++, "settings");
       xml.tag(level++, "settings mode=\"%d\"", _mode);
       
       xml.intTag(level, "useSettings", _useSettings);
-      //xml.intTag(level, "converterType", _converterType);
       
       xml.tag(--level, "/settings");
       
@@ -288,7 +288,6 @@ void ZitaResamplerAudioConverterOptions::write(int level, Xml& xml) const
 
 void ZitaResamplerAudioConverterOptions::read(Xml& xml)
       {
-//       int id = -1;
       for (;;) {
             Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
@@ -299,8 +298,6 @@ void ZitaResamplerAudioConverterOptions::read(Xml& xml)
                   case Xml::TagStart:
                         if (tag == "useSettings")
                               _useSettings = xml.parseInt();
-                        //else if (tag == "converterType")
-                        //      _converterType = xml.parseInt();
                         else
                               xml.unknown("settings");
                         break;
@@ -324,34 +321,27 @@ void ZitaResamplerAudioConverterOptions::read(Xml& xml)
 // Some hard-coded defaults.
 #ifdef ZITA_RESAMPLER_SUPPORT
 const ZitaResamplerAudioConverterOptions ZitaResamplerAudioConverterOptions::
-      defaultOfflineOptions(false, AudioConverterSettings::OfflineMode); //, SRC_SINC_BEST_QUALITY);
+      defaultOfflineOptions(false, AudioConverterSettings::OfflineMode);
 const ZitaResamplerAudioConverterOptions ZitaResamplerAudioConverterOptions::
-      defaultRealtimeOptions(false, AudioConverterSettings::RealtimeMode); //, SRC_SINC_MEDIUM_QUALITY);
+      defaultRealtimeOptions(false, AudioConverterSettings::RealtimeMode);
 const ZitaResamplerAudioConverterOptions ZitaResamplerAudioConverterOptions::
-      defaultGuiOptions(false, AudioConverterSettings::GuiMode); //, SRC_SINC_FASTEST);
+      defaultGuiOptions(false, AudioConverterSettings::GuiMode);
 #else
 const ZitaResamplerAudioConverterOptions ZitaResamplerAudioConverterOptions::
-      defaultOfflineOptions(false, AudioConverterSettings::OfflineMode); //, 0);
+      defaultOfflineOptions(false, AudioConverterSettings::OfflineMode);
 const ZitaResamplerAudioConverterOptions ZitaResamplerAudioConverterOptions::
-      defaultRealtimeOptions(false, AudioConverterSettings::RealtimeMode); //, 0);
+      defaultRealtimeOptions(false, AudioConverterSettings::RealtimeMode);
 const ZitaResamplerAudioConverterOptions ZitaResamplerAudioConverterOptions::
-      defaultGuiOptions(false, AudioConverterSettings::GuiMode); //, 0);
+      defaultGuiOptions(false, AudioConverterSettings::GuiMode);
 #endif
 
 ZitaResamplerAudioConverterSettings::ZitaResamplerAudioConverterSettings(
-  //int converterID, 
   bool isLocal) 
-  //: AudioConverterSettings(converterID)
   : AudioConverterSettings(descriptor._ID)
 { 
   initOptions(isLocal); 
 }
       
-// MusECore::AudioConverterSettings* ZitaResamplerAudioConverterSettings::createSettings(bool isLocal)
-// {
-//   return new MusECore::ZitaResamplerAudioConverterSettings(isLocal);
-// }
-
 void ZitaResamplerAudioConverterSettings::assign(const AudioConverterSettings& other)
 {
   const ZitaResamplerAudioConverterSettings& zita_other = 
@@ -360,25 +350,6 @@ void ZitaResamplerAudioConverterSettings::assign(const AudioConverterSettings& o
   _realtimeOptions = zita_other._realtimeOptions;
   _guiOptions      = zita_other._guiOptions;
 }
-
-// bool ZitaResamplerAudioConverterSettings::isSet(int mode) const 
-// { 
-//   if(mode & ~(AudioConverterSettings::OfflineMode | 
-//               AudioConverterSettings::RealtimeMode | 
-//               AudioConverterSettings::GuiMode))
-//     fprintf(stderr, "ZitaResamplerAudioConverterSettings::isSet() Warning: Unknown modes included:%d\n", mode);
-//   
-//   if((mode <= 0 || (mode & AudioConverterSettings::OfflineMode)) && _offlineOptions.isSet())
-//     return true;
-// 
-//   if((mode <= 0 || (mode & AudioConverterSettings::RealtimeMode)) && _realtimeOptions.isSet())
-//     return true;
-// 
-//   if((mode <= 0 || (mode & AudioConverterSettings::GuiMode)) && _guiOptions.isSet())
-//     return true;
-//     
-//   return false;
-// }
 
 bool ZitaResamplerAudioConverterSettings::useSettings(int mode) const 
 { 
@@ -408,77 +379,27 @@ int ZitaResamplerAudioConverterSettings::executeUI(int mode, QWidget* parent, bo
 
 void ZitaResamplerAudioConverterSettings::write(int level, Xml& xml) const
 {
-//   const bool use_off = !(_offlineOptions == defaultOfflineOptions);
-//   const bool use_rt  = !(_realtimeOptions == defaultRealtimeOptions);
-//   const bool use_gui = !(_guiOptions == defaultGuiOptions);
-// 
-//   if(use_off | use_rt || use_gui)
-//   {
-//     xml.tag(level++, "zitaResamplerSettings");
-//     
-//     if(use_off)
-//     {
-//       xml.tag(level++, "offline");
-//       _offlineOptions.write(level, xml);
-//       xml.tag(--level, "/offline");
-//     }
-//     
-//     if(use_rt)
-//     {
-//       xml.tag(level++, "realtime");
-//       _realtimeOptions.write(level, xml);
-//       xml.tag(--level, "/realtime");
-//     }
-//     
-//     if(use_gui)
-//     {
-//       xml.tag(level++, "gui");
-//       _guiOptions.write(level, xml);
-//       xml.tag(--level, "/gui");
-//     }
-//     
-//     xml.tag(--level, "/zitaResamplerSettings");
-//   }
-  
   const bool use_off = !(_offlineOptions == ZitaResamplerAudioConverterOptions::defaultOfflineOptions);
   const bool use_rt  = !(_realtimeOptions == ZitaResamplerAudioConverterOptions::defaultRealtimeOptions);
   const bool use_gui = !(_guiOptions == ZitaResamplerAudioConverterOptions::defaultGuiOptions);
 
   if(use_off | use_rt || use_gui)
   {
-    //xml.tag(level++, "audioConverterSetting id=\"%d\"", descriptor._ID);
-    //xml.tag(level++, "audioConverterSetting name=\"%s\"", descriptor._name);
     xml.tag(level++, "audioConverterSetting name=\"%s\"", Xml::xmlString(descriptor._name).toLatin1().constData());
-    //xml.tag(level++, descriptor._name);
     
     if(use_off)
     {
-      //xml.tag(level++, "offline");
-      //xml.tag(level, "audioConverterSetting id=\"%d\" mode=\"%d\"", descriptor._ID, AudioConverterSettings::OfflineMode);
-      //xml.tag(level, "audioConverterSetting mode=\"%d\"", AudioConverterSettings::OfflineMode);
       _offlineOptions.write(level, xml);
-      //xml.tag(--level, "/offline");
-      //xml.tag(--level, "/audioConverterSetting");
     }
     
     if(use_rt)
     {
-      //xml.tag(level++, "realtime");
-      //xml.tag(level, "audioConverterSetting id=\"%d\" mode=\"%d\"", descriptor._ID, AudioConverterSettings::RealtimeMode);
-      //xml.tag(level, "audioConverterSetting mode=\"%d\"", AudioConverterSettings::RealtimeMode);
       _realtimeOptions.write(level, xml);
-      //xml.tag(--level, "/realtime");
-      //xml.tag(--level, "/audioConverterSetting");
     }
     
     if(use_gui)
     {
-      //xml.tag(level++, "gui");
-      //xml.tag(level, "audioConverterSetting id=\"%d\" mode=\"%d\"", descriptor._ID, AudioConverterSettings::GuiMode);
-      //xml.tag(level, "audioConverterSetting mode=\"%d\"", AudioConverterSettings::GuiMode);
       _guiOptions.write(level, xml);
-      //xml.tag(--level, "/gui");
-      //xml.tag(--level, "/audioConverterSetting");
     }
     
     xml.tag(--level, "/audioConverterSetting");
@@ -496,13 +417,6 @@ void ZitaResamplerAudioConverterSettings::read(Xml& xml)
                   case Xml::End:
                         return;
                   case Xml::TagStart:
-//                         if (tag == "offline")
-//                               _offlineOptions.read(xml);
-//                         else if (tag == "realtime")
-//                               _realtimeOptions.read(xml);
-//                         else if (tag == "gui")
-//                               _guiOptions.read(xml);
-                        
                         if(mode != -1)
                         {
                           ZitaResamplerAudioConverterOptions* opts = NULL;
@@ -532,18 +446,15 @@ void ZitaResamplerAudioConverterSettings::read(Xml& xml)
                         }
                   
                         else
-                              //xml.unknown("zitaResamplerSettings");
                               xml.unknown("settings");
                         break;
                   case Xml::Attribut:
                         if (tag == "mode")
                             mode = xml.s2().toInt();
                         else
-                              //fprintf(stderr, "zitaResamplerSettings unknown tag %s\n", tag.toLatin1().constData());
                               fprintf(stderr, "settings unknown tag %s\n", tag.toLatin1().constData());
                         break;
                   case Xml::TagEnd:
-                        //if (tag == "zitaResamplerSettings") {
                         if (tag == "settings") {
                               return;
                               }
@@ -614,11 +525,6 @@ ZitaResamplerSettingsDialog::ZitaResamplerSettingsDialog(
   
   setControls();
 
-//   connect(typeSINCBestQuality, &QRadioButton::clicked, [this]() { buttonClicked(ConverterButtonId); } );
-//   connect(typeSINCMedium, &QRadioButton::clicked, [this]() { buttonClicked(ConverterButtonId); } );
-//   connect(typeSINCFastest, &QRadioButton::clicked, [this]() { buttonClicked(ConverterButtonId); } );
-//   connect(typeZeroOrderHold, &QRadioButton::clicked, [this]() { buttonClicked(ConverterButtonId); } );
-//   connect(typeLinear, &QRadioButton::clicked, [this]() { buttonClicked(ConverterButtonId); } );
   connect(useDefaultSettings, &QCheckBox::clicked, [this]() { buttonClicked(DefaultsButtonId); } );
   connect(OKButton, &QPushButton::clicked, [this]() { buttonClicked(OkButtonId); } );
   connect(cancelButton, &QPushButton::clicked, [this]() { buttonClicked(CancelButtonId); } );
@@ -630,45 +536,9 @@ void ZitaResamplerSettingsDialog::setControls()
   
   if(!_options)
     return;
-  
-//   switch(_options->_converterType)
-//   {
-//     case SRC_SINC_BEST_QUALITY:
-//       typeSINCBestQuality->blockSignals(true);
-//       typeSINCBestQuality->setChecked(true);
-//       typeSINCBestQuality->blockSignals(false);
-//     break;
-//     
-//     case SRC_SINC_MEDIUM_QUALITY:
-//       typeSINCMedium->blockSignals(true);
-//       typeSINCMedium->setChecked(true);
-//       typeSINCMedium->blockSignals(false);
-//     break;
-//     
-//     case SRC_SINC_FASTEST:
-//       typeSINCFastest->blockSignals(true);
-//       typeSINCFastest->setChecked(true);
-//       typeSINCFastest->blockSignals(false);
-//     break;
-//     
-//     case SRC_ZERO_ORDER_HOLD:
-//       typeZeroOrderHold->blockSignals(true);
-//       typeZeroOrderHold->setChecked(true);
-//       typeZeroOrderHold->blockSignals(false);
-//     break;
-//     
-//     case SRC_LINEAR:
-//       typeLinear->blockSignals(true);
-//       typeLinear->setChecked(true);
-//       typeLinear->blockSignals(false);
-//     break;
-/*   
-    default:
-    break;
-  }*/
 
-  //optionsGroup->setEnabled(!useDefaultSettings->isVisible() || _options->_useSettings);
-  
+  // TODO
+
 #endif
 }
 
@@ -678,8 +548,6 @@ void ZitaResamplerSettingsDialog::buttonClicked(int idx)
   {
     case DefaultsButtonId:
       OKButton->setEnabled(true);
-      //setControls();
-      //optionsGroup->setEnabled(_options->_useSettings);
       optionsGroup->setEnabled(!useDefaultSettings->isChecked());
     break;
     
@@ -713,7 +581,8 @@ void ZitaResamplerSettingsDialog::accept()
   }
   
 #ifdef ZITA_RESAMPLER_SUPPORT
-  
+
+// TODO
 //   int type = -1;
 //   if(typeSINCBestQuality->isChecked())
 //     type = SRC_SINC_BEST_QUALITY;

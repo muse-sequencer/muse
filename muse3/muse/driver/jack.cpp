@@ -702,7 +702,6 @@ bool initJackAudio()
 
       MusEGlobal::sampleRate  = jack_get_sample_rate(client);
 
-      // REMOVE Tim. samplerate. Added.
       MusEGlobal::projectSampleRate = MusEGlobal::sampleRate;
 
       // Make sure the AL namespace variables mirror our variables.

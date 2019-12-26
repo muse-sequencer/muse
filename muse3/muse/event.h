@@ -24,32 +24,20 @@
 #ifndef __EVENT_H__
 #define __EVENT_H__
 
+#include <QString>
+
 #include <map>
 #include <set>
 #include <sys/types.h>
 #include <sndfile.h>
 
 #include "type_defs.h"
+#include "eventbase.h"
 #include "pos.h"
-#include "evdata.h"
 #include "mpevent.h"
-#include "wave.h" // for SndFileR
-
-class QString;
+#include "xml.h"
 
 namespace MusECore {
-
-class Xml;
-class EventBase;
-// REMOVE Tim. samplerate. Changed.
-//class WavePart;
-class Part;
-// REMOVE Tim. samplerate. Added.
-class Fifo;
-
-// NOTICE: The values 3 and 4 (PAfter and CAfter) are reserved for the support of those two obsolete
-//          channel and key pressure events in old files. They are converted to controllers upon load.
-enum EventType { Note=0, Controller=1, Sysex=2, /*PAfter=3,*/ /*CAfter=4,*/ Meta=5, Wave=6 };
 
 //---------------------------------------------------------
 //   Event
@@ -134,16 +122,10 @@ class Event {
       MusECore::SndFileR sndFile() const;
       virtual void setSndFile(MusECore::SndFileR& sf);
       
-// REMOVE Tim. samplerate. Changed.
-//       virtual void readAudio(MusECore::WavePart* part, unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite);
       virtual void readAudio(unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite);
-// REMOVE Tim. samplerate. Added.
       virtual void seekAudio(sf_count_t offset);
-      //virtual void clearAudioPrefetchFifo();
       virtual Fifo* audioPrefetchFifo();
       virtual void prefetchAudio(Part* part, sf_count_t frames);
-      //virtual void fetchAudioData(WavePart* part, sf_count_t pos, int channels, bool off, sf_count_t frames, float** bp, bool doSeek, bool overwrite);
-      //virtual bool getAudioPrefetchBuffer(int segs, unsigned long samples, float** dst, unsigned* pos);
       
       //--------------------------------------------------------
       // 'Agnostic' position methods - can be TICKS and FRAMES.

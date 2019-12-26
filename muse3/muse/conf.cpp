@@ -701,17 +701,10 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "pluginCacheTriggerRescan")
                               MusEGlobal::config.pluginCacheTriggerRescan = xml.parseInt();
                         
-// REMOVE Tim. samplerate. Added.
-//                         else if (tag == "preferredAudioResampler")
-//                               MusEGlobal::config.preferredAudioResampler = xml.parseInt();
-//                         else if (tag == "preferredAudioStretcher")
-//                               MusEGlobal::config.preferredAudioStretcher = xml.parseInt();
                         else if (tag == "audioConverterSettingsGroup")
                         {
-                              //AudioConverter::defaultSettings.read(xml);
-                              //MusEGlobal::defaultAudioConverterSettings.read(xml);
                               if(MusEGlobal::defaultAudioConverterSettings)
-                                MusEGlobal::defaultAudioConverterSettings->read(xml);
+                                MusEGlobal::defaultAudioConverterSettings->read(xml, &MusEGlobal::audioConverterPluginList);
                         }
 
                         else if (tag == "preferredRouteNameOrAlias")
@@ -1771,13 +1764,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.strTag(level, "pluginLinuxVstPathList", MusEGlobal::config.pluginLinuxVstPathList.join(":"));
       xml.strTag(level, "pluginLv2PathList", MusEGlobal::config.pluginLv2PathList.join(":"));
       
-// REMOVE Tim. samplerate. Added.
-//       xml.intTag(level, "preferredAudioResampler", MusEGlobal::config.preferredAudioResampler);
-//       xml.intTag(level, "preferredAudioStretcher", MusEGlobal::config.preferredAudioStretcher);
-      //MusECore::AudioConverter::defaultSettings.write(level, xml);
-      //MusEGlobal::defaultAudioConverterSettings.write(level, xml);
       if(MusEGlobal::defaultAudioConverterSettings)
-        MusEGlobal::defaultAudioConverterSettings->write(level, xml);
+        MusEGlobal::defaultAudioConverterSettings->write(level, xml, &MusEGlobal::audioConverterPluginList);
       
       xml.intTag(level, "pluginCacheTriggerRescan", MusEGlobal::config.pluginCacheTriggerRescan);
                         

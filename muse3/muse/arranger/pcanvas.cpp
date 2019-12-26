@@ -2311,7 +2311,6 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
      drawoffset = rmapxDev(x1 - eventx);
    }
    postick += drawoffset;
-//    pos = samplePos + MusEGlobal::tempomap.tick2frame(postick) - rootFrame - startFrame;
    pos = MusEGlobal::tempomap.tick2frame(postick) - rootFrame - startFrame;
 
    QPen pen;
@@ -2326,7 +2325,6 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
    if(ex > x2)
      ex = x2;
    bool isfirst = true;
-//    const sf_count_t smps = f.convertPosition(f.samples());
    const sf_count_t smps = f.samples();
    if (h < 20) {
          //    combine multi channels into one waveform
@@ -2335,21 +2333,15 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
          for (; i < ex; i++) {
                MusECore::SampleV sa[channels];
                xScale = MusEGlobal::tempomap.deltaTick2frame(postick, postick + tickstep);
-// REMOVE Tim. samplerate. Changed.
-//                f.read(sa, xScale, pos, true, false);
-//                if(f.convertPosition(pos) > smps)
-               //if(f.convertPosition(samplePos + pos) > smps)
                if((samplePos + f.convertPosition(pos)) > smps)
                  break;
                // Seek the file only once, not with every read!
                if(isfirst)
                {
                  isfirst = false;
-//                  if(f.seekUIConverted(pos, SEEK_SET | SFM_READ) == -1)
                  if(f.seekUIConverted(pos, SEEK_SET | SFM_READ, samplePos) == -1)
                    break;
                }
-//                f.readConverted(sa, xScale, pos, true, false);
                f.readConverted(sa, xScale, pos, samplePos, true, false);
 
                postick += tickstep;
@@ -2385,21 +2377,15 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
                int y  = startY + hm;
                MusECore::SampleV sa[channels];
                xScale = MusEGlobal::tempomap.deltaTick2frame(postick, postick + tickstep);
-// REMOVE Tim. samplerate. Changed.
-//                f.read(sa, xScale, pos, true, false);
-//                if(f.convertPosition(pos) > smps)
-               //if(f.convertPosition(samplePos + pos) > smps)
                if((samplePos + f.convertPosition(pos)) > smps)
                  break;
                // Seek the file only once, not with every read!
                if(isfirst)
                {
                  isfirst = false;
-//                  if(f.seekUIConverted(pos, SEEK_SET | SFM_READ) == -1)
                  if(f.seekUIConverted(pos, SEEK_SET | SFM_READ, samplePos) == -1)
                    break;
                }
-//                f.readConverted(sa, xScale, pos, true, false);
                f.readConverted(sa, xScale, pos, samplePos, true, false);
 
                postick += tickstep;
@@ -2930,7 +2916,7 @@ void PartCanvas::startDrag(CItem* item, DragType t)
 
       md->setData("text/x-muse-partlist", data);
 
-      // "MusECore::Note that setMimeData() assigns ownership of the QMimeData object to the QDrag object.
+      // "Note that setMimeData() assigns ownership of the QMimeData object to the QDrag object.
       //  The QDrag must be constructed on the heap with a parent QWidget to ensure that Qt can
       //  clean up after the drag and drop operation has been completed. "
       QDrag* drag = new QDrag(this);

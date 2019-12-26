@@ -2,8 +2,8 @@
 #  MusE
 #  Linux Music Editor
 #
-#  audio_convert/CMakeLists.txt
-#  (C) Copyright 2016 Tim E. Real (terminator356 A T sourceforge D O T net)
+#  CMakeLists.txt
+#  (C) Copyright 2020 Tim E. Real (terminator356 on users dot sourceforge dot net)
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License
@@ -21,58 +21,58 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-add_subdirectory(lib_audio_convert)
-add_subdirectory(src_resampler)
-add_subdirectory(zita_resampler)
-add_subdirectory(rubberband)
-
-
 include(${PROJECT_SOURCE_DIR}/pch.txt)
 
 ##
 ## List of source files to compile
 ##
-file (GLOB audio_convert_source_files
-      audio_converter_plugin.cpp
-      audio_converter_settings_group.cpp
+file (GLOB wave_source_files
+      wave.cpp
       )
 
 ##
 ## Define target
 ##
-add_library(audio_converter_plugin ${MODULES_BUILD}
-      ${audio_convert_source_files}
+# add_library(muse_time_stretch_module ${MODULES_BUILD}
+add_library(wave_module SHARED
+      ${wave_source_files}
       )
 
 ##
 ## Linkage
 ##
-target_link_libraries(audio_converter_plugin
-      xml_module
-      dl
+target_link_libraries(wave_module
+      time_stretch_module
+      audio_converter_plugin
+      ${SNDFILE_LIBRARIES}
       )
 ##
 ## Append to the list of translations
 ##
 set (FILES_TO_TRANSLATE
       ${FILES_TO_TRANSLATE}
-      ${audio_convert_source_files}
+      ${wave_source_files}
       CACHE INTERNAL ""
       )
 
 ##
 ## Compilation flags and target name
 ##
-# set_target_properties( audio_converter_plugin
-#       PROPERTIES
-#       ## OUTPUT_NAME muse_audio_converter_plugin
-#       )
+set_target_properties ( wave_module
+      PROPERTIES OUTPUT_NAME muse_wave_module
+      )
+
 
 ##
 ## Install location
 ##
-if ( ${MODULES_BUILD} STREQUAL SHARED )
-      install(TARGETS audio_converter_plugin
-            DESTINATION ${MusE_MODULES_DIR}
-            )
-endif ( ${MODULES_BUILD} STREQUAL SHARED )
+install(TARGETS
+        wave_module
+      DESTINATION ${MusE_MODULES_DIR}
+      )
+
+# if ( ${MODULES_BUILD} STREQUAL SHARED )
+#       install(TARGETS wave_module
+#             DESTINATION ${MusE_MODULES_DIR}
+#             )
+# endif ( ${MODULES_BUILD} STREQUAL SHARED )

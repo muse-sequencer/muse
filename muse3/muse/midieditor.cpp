@@ -43,11 +43,9 @@
 #include <QPainter>
 #include <QPixmap>
 
-#define ERROR_MIDIEDITOR(dev, format, args...)  fprintf(dev, format, ##args)
-
-// REMOVE Tim. samplerate. Enabled.
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_MIDIEDITOR(dev, format, args...)  fprintf(dev, format, ##args)
+#define ERROR_MIDIEDITOR(dev, format, args...)  fprintf(dev, format, ##args)
+#define DEBUG_MIDIEDITOR(dev, format, args...) // fprintf(dev, format, ##args)
 
 namespace MusEGui {
 

@@ -30,17 +30,6 @@ namespace MusECore {
 
 class Xml;
 
-//REMOVE Tim. samplerate. Added.
-// class MuseFrame
-// {
-//   private:
-//     unsigned _frame;
-//   public:
-//     MuseFrame(unsigned frame = 0);
-//     operator unsigned() const;
-//     operator=(const MuseFrame& other);
-// };
-
 //---------------------------------------------------------
 //   Pos
 //    depending on type _tick or _frame is a cached
@@ -57,14 +46,8 @@ class Pos {
       TType _type;
       mutable int sn;
       mutable unsigned _tick;
-//REMOVE Tim. samplerate. Changed.
       mutable unsigned _frame;
-      //mutable MuseFrame _frame;
 
-   //REMOVE Tim. samplerate. Added.
-   //protected:
-   //   unsigned convertFrame4SampleRate(unsigned) const;
-      
    public:
       Pos();
       Pos(const Pos&);
@@ -123,9 +106,7 @@ class Pos {
 
 class PosLen : public Pos {
       mutable unsigned _lenTick;
-//REMOVE Tim. samplerate. Changed.
       mutable unsigned _lenFrame;
-      //mutable MuseFrame _lenFrame;
       mutable int sn;
 
    public:

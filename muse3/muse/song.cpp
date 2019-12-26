@@ -43,6 +43,8 @@
 #include "driver/alsamidi.h"
 #include "song.h"
 #include "track.h"
+#include "part.h"
+
 #include "undo.h"
 #include "key.h"
 #include "globals.h"
@@ -71,7 +73,10 @@
 #include "route.h"
 #include "strntcpy.h"
 
+// For debugging output: Uncomment the fprintf section.
 #define ERROR_TIMESTRETCH(dev, format, args...)  fprintf(dev, format, ##args)
+#define ERROR_WAVE(dev, format, args...) fprintf(dev, format, ##args)
+#define INFO_WAVE(dev, format, args...) // fprintf(dev, format, ##args)
 
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
@@ -94,9 +99,6 @@ Song::Song(const char* name)
       {
       setObjectName(name);
 
-      // REMOVE Tim. samplerate. Added.
-      //_projectAudioSampleRate = 44100;
-      
       _ipcInEventBuffers = new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
       _ipcOutEventBuffers = new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
   
@@ -147,38 +149,40 @@ void Song::putEvent(int pv)
             }
       }
 
-// REMOVE Tim. samplerate. Added.
-// //---------------------------------------------------------
-// //   setProjectSampleRate
-// //---------------------------------------------------------
-// 
-// void Song::setProjectSampleRate(int rate)
-// {
-//   if(rate != MusEGlobal::projectSampleRate)
-//     // TODO: Do the permanent conversion.
-//     convertProjectSampleRate(rate);
-//   
-//   // Now set the rate.
-//   MusEGlobal::projectSampleRate;
-// }
-// 
-// //---------------------------------------------------------
-// //   projectSampleRateDiffers
-// //---------------------------------------------------------
-// 
-// bool Song::projectSampleRateDiffers() const
-// {
-//   return MusEGlobal::projectSampleRate != MusEGlobal::sampleRate;
-// }
-// 
-// //---------------------------------------------------------
-// //   projectSampleRateRatio
-// //---------------------------------------------------------
-// 
-// double Song::projectSampleRateRatio() const
-// {
-//   return (double)MusEGlobal::projectSampleRate / (double)MusEGlobal::sampleRate;
-// }
+// REMOVE Tim. samplerate. Added. TODO
+#if 0
+//---------------------------------------------------------
+//   setProjectSampleRate
+//---------------------------------------------------------
+
+void Song::setProjectSampleRate(int rate)
+{
+  if(rate != MusEGlobal::projectSampleRate)
+    // TODO: Do the permanent conversion.
+    convertProjectSampleRate(rate);
+  
+  // Now set the rate.
+  MusEGlobal::projectSampleRate;
+}
+
+//---------------------------------------------------------
+//   projectSampleRateDiffers
+//---------------------------------------------------------
+
+bool Song::projectSampleRateDiffers() const
+{
+  return MusEGlobal::projectSampleRate != MusEGlobal::sampleRate;
+}
+
+//---------------------------------------------------------
+//   projectSampleRateRatio
+//---------------------------------------------------------
+
+double Song::projectSampleRateRatio() const
+{
+  return (double)MusEGlobal::projectSampleRate / (double)MusEGlobal::sampleRate;
+}
+#endif
 
 //---------------------------------------------------------
 //   setTempo
@@ -1037,6 +1041,142 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
 }
 
 //---------------------------------------------------------
+//   cmdAddRecordedWave
+//---------------------------------------------------------
+
+void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusECore::Pos e, Undo& operations)
+      {
+      if (MusEGlobal::debugMsg)
+      {
+          INFO_WAVE(stderr, "cmdAddRecordedWave - loopCount = %d, punchin = %d",
+                    MusEGlobal::audio->loopCount(), punchin());
+      }
+
+      // Driver should now be in transport 'stop' mode and no longer pummping the recording wave fifo,
+      //  but the fifo may not be empty yet, it's in the prefetch thread.
+      // Wait a few seconds for the fifo to be empty, until it has been fully transferred to the
+      //  track's recFile sndfile, which is done via Audio::process() sending periodic 'tick' messages
+      //  to the prefetch thread to write its fifo to the sndfile, always UNLESS in stop or idle mode.
+      // It now sends one final tick message at stop, so we /should/ have all our buffers available here.
+      // This GUI thread is notified of the stop condition via the audio thread sending a message
+      //  as soon as the state change is read from the driver.
+      // NOTE: The fifo scheme is used only if NOT in transport freewheel mode where the data is directly
+      //  written to the sndfile and therefore stops immediately when the transport stops and thus is
+      //  safe to read here regardless of waiting.
+      int tout = 100; // Ten seconds. Otherwise we gotta move on.
+      while(track->recordFifoCount() != 0)
+      {
+        usleep(100000);
+        --tout;
+        if(tout == 0)
+        {
+          ERROR_WAVE(stderr, "Song::cmdAddRecordedWave: Error: Timeout waiting for _tempoFifo to empty! Count:%d\n",
+                     track->prefetchFifo()->getCount());
+          break;
+        }
+      }
+
+      // It should now be safe to work with the resultant sndfile here in the GUI thread.
+      // No other thread should be touching it right now.
+      MusECore::SndFileR f = track->recFile();
+      if (f.isNull()) {
+            ERROR_WAVE(stderr, "cmdAddRecordedWave: no snd file for track <%s>\n",
+               track->name().toLocal8Bit().constData());
+            return;
+            }
+
+      // If externally clocking (and therefore master was forced off),
+      //  tempos may have been recorded. We really should temporarily force
+      //  the master tempo map on in order to properly determine the ticks below.
+      // Else internal clocking, the user decided to record either with or without
+      //  master on, so let it be.
+      // FIXME: We really should allow the master flag to be on at the same time as
+      //  the external sync flag! AFAIR when external sync is on, no part of the app shall
+      //  depend on the tempo map anyway, so it should not matter whether it's on or off.
+      // If we do that, then we may be able to remove this section and user simply decides
+      //  whether master is on/off, because we may be able to use the flag to determine
+      //  whether to record external tempos at all, because we may want a switch for it!
+      bool master_was_on = MusEGlobal::tempomap.masterFlag();
+      if(MusEGlobal::extSyncFlag && !master_was_on)
+        MusEGlobal::tempomap.setMasterFlag(0, true);
+
+      if((MusEGlobal::audio->loopCount() > 0 && s.tick() > lPos().tick()) || (punchin() && s.tick() < lPos().tick()))
+        s.setTick(lPos().tick());
+      // If we are looping, just set the end to the right marker, since we don't know how many loops have occurred.
+      // (Fixed: Added Audio::loopCount)
+      // Otherwise if punchout is on, limit the end to the right marker.
+      if((MusEGlobal::audio->loopCount() > 0) || (punchout() && e.tick() > rPos().tick()) )
+        e.setTick(rPos().tick());
+
+      // No part to be created? Delete the rec sound file.
+      if(s.frame() >= e.frame())
+      {
+        QString st = f->path();
+        // The function which calls this function already does this immediately after. But do it here anyway.
+        track->setRecFile(NULL); // upon "return", f is removed from the stack, the WaveTrack::_recFile's
+                                 // counter has dropped by 2 and _recFile will probably deleted then
+        remove(st.toLocal8Bit().constData());
+        if(MusEGlobal::debugMsg)
+        {
+          INFO_WAVE(stderr, "Song::cmdAddRecordedWave: remove file %s - startframe=%d endframe=%d\n",
+                    st.toLocal8Bit().constData(), s.frame(), e.frame());
+        }
+
+        // Restore master flag.
+        if(MusEGlobal::extSyncFlag && !master_was_on)
+          MusEGlobal::tempomap.setMasterFlag(0, false);
+
+        return;
+      }
+// REMOVE Tim. Wave. Removed. Probably I should never have done this. It's more annoying than helpful. Look at it another way: Importing a wave DOES NOT do this.
+//       // Round the start down using the Arranger part snap raster value.
+//       int a_rast = MusEGlobal::song->arrangerRaster();
+//       unsigned sframe = (a_rast == 1) ? s.frame() : Pos(MusEGlobal::sigmap.raster1(s.tick(), MusEGlobal::song->arrangerRaster())).frame();
+//       // Round the end up using the Arranger part snap raster value.
+//       unsigned eframe = (a_rast == 1) ? e.frame() : Pos(MusEGlobal::sigmap.raster2(e.tick(), MusEGlobal::song->arrangerRaster())).frame();
+// //       unsigned etick = Pos(eframe, false).tick();
+      unsigned sframe = s.frame();
+      unsigned eframe = e.frame();
+
+      // Done using master tempo map. Restore master flag.
+      if(MusEGlobal::extSyncFlag && !master_was_on)
+        MusEGlobal::tempomap.setMasterFlag(0, false);
+
+      f->update(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings);
+
+      MusECore::WavePart* part = new MusECore::WavePart(track);
+      part->setFrame(sframe);
+      part->setLenFrame(eframe - sframe);
+      part->setName(track->name());
+
+      // create Event
+      MusECore::Event event(MusECore::Wave);
+      event.setSndFile(f);
+      // We are done with the _recFile member. Set to zero.
+      track->setRecFile(0);
+
+      event.setSpos(0);
+      // Since the part start was snapped down, we must apply the difference so that the
+      //  wave event tick lines up with when the user actually started recording.
+      event.setFrame(s.frame() - sframe);
+      // NO Can't use this. SF reports too long samples at first part recorded in sequence. See samples() - funny business with SEEK ?
+      //event.setLenFrame(f.samples());
+      event.setLenFrame(e.frame() - s.frame());
+      part->addEvent(event);
+
+      operations.push_back(UndoOp(UndoOp::AddPart, part));
+      }
+
+//---------------------------------------------------------
+//   cmdChangeWave
+//   called from GUI context
+//---------------------------------------------------------
+void Song::cmdChangeWave(const Event& original, QString tmpfile, unsigned sx, unsigned ex)
+      {
+      MusEGlobal::song->undoOp(UndoOp::ModifyClip, original, tmpfile, sx, ex);
+      }
+
+//---------------------------------------------------------
 //   findTrack
 //---------------------------------------------------------
 
@@ -1571,7 +1711,9 @@ void Song::normalizePart(MusECore::Part *part)
       }
 
       MusEGlobal::audio->msgIdle(true); // Not good with playback during operations
-      MusECore::SndFile tmpFile(tmpWavFile);
+      
+      MusECore::SndFile tmpFile(tmpWavFile, MusEGlobal::sampleRate, MusEGlobal::segmentSize,
+                                      true, &MusEGlobal::audioConverterPluginList);
       unsigned int file_channels = file.channels();
       tmpFile.setFormat(file.format(), file_channels, file.samplerate());
       if (tmpFile.openWrite())
@@ -1589,7 +1731,7 @@ void Song::normalizePart(MusECore::Part *part)
       file.seek(0, 0);
       file.readWithHeap(file_channels, tmpdata, tmpdatalen);
       file.close();
-      tmpFile.write(file_channels, tmpdata, tmpdatalen);
+      tmpFile.write(file_channels, tmpdata, tmpdatalen, MusEGlobal::config.liveWaveUpdate);
       tmpFile.close();
 
       float loudest = 0.0;
@@ -1615,10 +1757,10 @@ void Song::normalizePart(MusECore::Part *part)
 
       file.openWrite();
       file.seek(0, 0);
-      file.write(file_channels, tmpdata, tmpdatalen);
-      file.update();
+      file.write(file_channels, tmpdata, tmpdatalen, MusEGlobal::config.liveWaveUpdate);
+      file.update(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings);
       file.close();
-      file.openRead();
+      file.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings);
 
       for (unsigned i=0; i<file_channels; i++)
       {
@@ -2315,9 +2457,6 @@ void Song::seqSignal(int fd)
                         
                         if(MusEGlobal::config.freewheelMode)
                           MusEGlobal::audioDevice->setFreewheel(false);
-                        
-// REMOVE Tim. samplerate. Removed. Done in process now.
-//                         MusEGlobal::audio->msgPlay(false);
                         break;
 
                   case 'C': // Graph changed
@@ -3189,7 +3328,6 @@ void Song::processMasterRec()
 
 void Song::abortRolling()
 {
-  // REMOVE Tim. samplerate. Added.
   if(MusEGlobal::audio->freewheel())
     MusEGlobal::audioDevice->setFreewheel(false);
 
@@ -3204,7 +3342,6 @@ void Song::abortRolling()
 
 void Song::stopRolling(Undo* operations)
       {
-      // REMOVE Tim. samplerate. Added.
       if(MusEGlobal::audio->freewheel())
         MusEGlobal::audioDevice->setFreewheel(false);
 
@@ -4074,9 +4211,6 @@ void Song::informAboutNewParts(const Part* orig, const Part* p1, const Part* p2,
 //   StretchList operations
 //---------------------------------------------------------
 
-#ifdef USE_ALTERNATE_STRETCH_LIST
-
-
 void Song::stretchModifyOperation(
   StretchList* stretch_list, StretchListItem::StretchEventType type, double value, PendingOperationList& ops) const
 {
@@ -4121,63 +4255,11 @@ void Song::stretchListModifyOperation(
   ops.add(PendingOperationItem(type, stretch_list, ie, frame, value, PendingOperationItem::ModifyStretchListRatioAt));
 }
 
-
-
-#else
-
-
-void Song::stretchListAddOperation(StretchList* stretch_list, MuseFrame_t frame, double stretch, PendingOperationList& ops) const
-{
-  if (frame > MUSE_TIME_STRETCH_MAX_FRAME)
-    frame = MUSE_TIME_STRETCH_MAX_FRAME;
-  iStretchEvent e = stretch_list->upper_bound(frame);
-
-  if(frame == e->second->_frame)
-    ops.add(PendingOperationItem(stretch_list, e, stretch, PendingOperationItem::ModifyStretch));
-  else 
-  {
-    PendingOperationItem poi(stretch_list, 0, frame, PendingOperationItem::AddStretch);
-    iPendingOperation ipo = ops.findAllocationOp(poi);
-    if(ipo != ops.end())
-    {
-      PendingOperationItem& poi = *ipo;
-      // Simply replace the value.
-      poi._stretch_event->_stretch = stretch;
-    }
-    else
-    {
-      poi._stretch_event = new StretchEvent(stretch, frame); // These are the desired frame and stretch but...
-      ops.add(poi);                               //  add will do the proper swapping with next event.
-    }
-  }
-}
-
-//---------------------------------------------------------
-//   delOperation
-//---------------------------------------------------------
-
-void Song::stretchListDelOperation(StretchList* stretch_list, MuseFrame_t frame, PendingOperationList& ops) const
-{
-  iStretchEvent e = stretch_list->find(frame);
-  if (e == stretch_list->end()) {
-        printf("StretchList::delOperation frame:%ld not found\n", frame);
-        return;
-        }
-  PendingOperationItem poi(stretch_list, e, PendingOperationItem::DeleteStretch);
-  // NOTE: Deletion is done in post-RT stage 3.
-  ops.add(poi);
-}
-
-#endif
-
-
 void Song::modifyAudioConverterSettingsOperation(
   SndFileR sndfile,
   AudioConverterSettingsGroup* settings,
   bool isLocalSettings,
-  PendingOperationList& ops //,
-  //bool doResample,
-  //bool doStretch)
+  PendingOperationList& ops
   ) const
 {
   const StretchList* sl = sndfile.stretchList();
@@ -4187,12 +4269,16 @@ void Song::modifyAudioConverterSettingsOperation(
                                                            isLocalSettings,
                                                            AudioConverterSettings::RealtimeMode,
                                                            doResample,
-                                                           doStretch);
+                                                           doStretch,
+                                                           &MusEGlobal::audioConverterPluginList,
+                                                           MusEGlobal::defaultAudioConverterSettings);
   AudioConverterPluginI* converterUI = sndfile.setupAudioConverter(settings,
                                                            isLocalSettings,
                                                            AudioConverterSettings::GuiMode,
                                                            doResample,
-                                                           doStretch);
+                                                           doStretch,
+                                                           &MusEGlobal::audioConverterPluginList,
+                                                           MusEGlobal::defaultAudioConverterSettings);
 
 //   if(!converter && !converterUI)
 //     return;
@@ -4203,8 +4289,6 @@ void Song::modifyAudioConverterSettingsOperation(
 
 void Song::modifyAudioConverterOperation(
   SndFileR sndfile,
-  //AudioConverterSettingsGroup* settings, 
-  //bool isLocalSettings, 
   PendingOperationList& ops,
   bool doResample,
   bool doStretch) const
@@ -4218,12 +4302,16 @@ void Song::modifyAudioConverterOperation(
                                                            isLocalSettings,
                                                            AudioConverterSettings::RealtimeMode,
                                                            doResample,
-                                                           doStretch);
+                                                           doStretch,
+                                                           &MusEGlobal::audioConverterPluginList,
+                                                           MusEGlobal::defaultAudioConverterSettings);
   AudioConverterPluginI* converterUI = sndfile.setupAudioConverter(settings,
                                                            isLocalSettings,
                                                            AudioConverterSettings::GuiMode,
                                                            doResample,
-                                                           doStretch);
+                                                           doStretch,
+                                                           &MusEGlobal::audioConverterPluginList,
+                                                           MusEGlobal::defaultAudioConverterSettings);
 
 //   if(!converter && !converterUI)
 //     return;
@@ -4240,13 +4328,6 @@ void Song::modifyStretchListOperation(SndFileR sndfile, int type, double value, 
 void Song::addAtStretchListOperation(SndFileR sndfile, int type, MuseFrame_t frame, double value, PendingOperationList& ops) const
 {
   StretchList* sl = sndfile.stretchList();
-//   iStretchListItem ie = sl->find(frame);
-//   if(ie != sl->end())
-//     ops.add(PendingOperationItem(type, sl, ie, frame, value, PendingOperationItem::ModifyStretchListRatioAt));
-//   else
-//     ops.add(PendingOperationItem(type, sl, frame, value, PendingOperationItem::AddStretchListRatioAt));
-
-//   sndfile.stretchList()->addListOperation(StretchListItem::StretchEventType(type), frame, value, ops);
   stretchListAddOperation(sl, StretchListItem::StretchEventType(type), frame, value, ops);
   
   bool wantStretch = false;
@@ -4292,15 +4373,6 @@ void Song::delAtStretchListOperation(SndFileR sndfile, int types, MuseFrame_t fr
     return;
   
   StretchList* sl = sndfile.stretchList();
-//   iStretchListItem e = sl->find(frame);
-//   if (e == sl->end()) {
-//         ERROR_WAVE(stderr, "SndFile::delAtStretchListOperation frame:%ld not found\n", frame);
-//         return;
-//         }
-//   PendingOperationItem poi(types, sl, e, PendingOperationItem::DeleteStretchListRatioAt);
-//   // NOTE: Deletion is done in post-RT stage 3.
-//   ops.add(poi);
-//   sl->stretchListDelOperation(types, frame, ops);
   stretchListDelOperation(sl, types, frame, ops);
 
   StretchListInfo info =  sl->testDelListOperation(types, frame);
@@ -4329,13 +4401,6 @@ void Song::delAtStretchListOperation(SndFileR sndfile, int types, MuseFrame_t fr
 void Song::modifyAtStretchListOperation(SndFileR sndfile, int type, MuseFrame_t frame, double value, PendingOperationList& ops) const
 {
   StretchList* sl = sndfile.stretchList();
-//   iStretchListItem ie = sl->find(frame);
-//   if(ie == sl->end()) {
-//         ERROR_WAVE(stderr, "SndFile::modifyAtStretchListOperation frame:%ld not found\n", frame);
-//         return;
-//         }
-//   ops.add(PendingOperationItem(type, sl, ie, frame, value, PendingOperationItem::ModifyStretchListRatioAt));
-//   sl->modifyListOperation(sndfile, StretchListItem::StretchEventType(type), frame, value, ops);
   stretchListModifyOperation(sl, StretchListItem::StretchEventType(type), frame, value, ops);
   
   bool wantStretch = false;
@@ -4399,19 +4464,10 @@ void Song::modifyDefaultAudioConverterSettingsOperation(AudioConverterSettingsGr
           // Is the event using its own local settings? Ignore.
           if(cur_ev_settings->useSettings())
             continue;
-          //MusECore::StretchList* sl = e.sndFile().stretchList();
-          //if(sl)
-//             e.sndFile().modifyAudioConverterSettingsOperation(MusEGlobal::defaultAudioConverterSettings, 
-//                                                       false,  // false = Default, non-local settings.
-//                                                       ops); //, 
-//                                                       //sl->isResampled(), 
-//                                                       //sl->isStretched());
-            modifyAudioConverterSettingsOperation(e.sndFile(),
-                                                  MusEGlobal::defaultAudioConverterSettings, 
-                                                  false,  // false = Default, non-local settings.
-                                                  ops); //, 
-                                                  //sl->isResampled(), 
-                                                  //sl->isStretched());
+          modifyAudioConverterSettingsOperation(e.sndFile(),
+                                                MusEGlobal::defaultAudioConverterSettings, 
+                                                false,  // false = Default, non-local settings.
+                                                ops);
         }
       }
     }

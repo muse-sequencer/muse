@@ -1,9 +1,9 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
+//  (C) Copyright 2003-2020 Werner Schweer (ws@seh.de) and others
 //
-//  muse_time.h
-//  Copyright (C) 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  wave_helper.h
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -21,16 +21,22 @@
 //
 //=========================================================
 
-#ifndef __MUSE_TIME_H__
-#define __MUSE_TIME_H__
+#ifndef __WAVE_HELPER_H__
+#define __WAVE_HELPER_H__
 
-#include <stdint.h>
+#include "event.h"
+#include "wave.h"
+#include "time_stretch.h"
+#include "audio_convert/audio_converter_settings_group.h"
 
 namespace MusECore {
 
-typedef int64_t MuseFrame_t;
-typedef int64_t MuseCount_t;
+bool sndFileCheckCopyOnWrite(const SndFileR sndFile);
+void sndFileApplyUndoFile(const Event& original, const QString* tmpfile, unsigned startframe, unsigned endframe);
+// If audioConverterSettings and stretchList are given, they are assigned.
+SndFileR sndFileGetWave(const QString& name, bool readOnlyFlag, bool openFlag = true, bool showErrorBox = true, 
+                 const AudioConverterSettingsGroup* audioConverterSettings = NULL, const StretchList* stretchList = NULL);
 
-}   // namespace MusECore
+}
 
 #endif

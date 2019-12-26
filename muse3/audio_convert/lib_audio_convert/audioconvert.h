@@ -6,7 +6,7 @@
 //  (C) Copyright 1999-2009 Werner Schweer (ws@seh.de)
 //
 //  Audio converter module created by Tim 
-//  (C) Copyright 2009-2016 Tim E. Real (terminator356 A T sourceforge D O T net)
+//  (C) Copyright 2009-2020 Tim E. Real (terminator356 A T sourceforge D O T net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -27,15 +27,15 @@
 #ifndef __AUDIOCONVERT_H__
 #define __AUDIOCONVERT_H__
 
-#include "config.h"
+//#include "config.h"
 
+#include <QWidget>
 #include <sndfile.h>
 
-class QWidget;
+#include "xml.h"
+#include "time_stretch.h"
 
 namespace MusECore {
-class SndFile;
-class Xml;
 
 class AudioConverterSettings;
 class AudioConverter;
@@ -89,7 +89,6 @@ class AudioConverterSettings
     //  those suitable for gui display (relaxed quality vs fastest is acceptable).
     // They can be OR'd together.
     enum ModeType { OfflineMode = 0x01, RealtimeMode = 0x02, GuiMode = 0x04};
-    //static const char* modeNames[];
     
   protected:
     int _converterID;
@@ -102,17 +101,9 @@ class AudioConverterSettings
     
     virtual void assign(const AudioConverterSettings&) = 0;
     
-    // Creates another new settings object. Caller is responsible for deleting the returned object.
-    // Settings will initialize normally. or with 'don't care', if isLocal is false or true resp.
-//     virtual AudioConverterSettings* createSettings(bool isLocal) = 0;
-  
     virtual int executeUI(int mode, QWidget* parent = NULL, bool isLocal = false) = 0;
     virtual void read(Xml&) = 0;
     virtual void write(int, Xml&) const = 0;
-//     // Returns whether any setting is set ie. non-default.
-//     // Mode is a combination of AudioConverterSettings::ModeType selecting
-//     //  which of the settings to check. Can also be <= 0, meaning all.
-//     virtual bool isSet(int mode = -1) const = 0;
     // Returns whether to use these settings or defer to default settings.
     // Mode is a combination of AudioConverterSettings::ModeType selecting
     //  which of the settings to check. Can also be <= 0, meaning all.
@@ -124,93 +115,35 @@ class AudioConverterSettings
 //   AudioConverter
 //---------------------------------------------------------
 
-//class AudioConverterSettingsGroup;
 class AudioConverter
 {
    public:
      // Can be or'd together.
-//      enum ConverterID  { SRCResampler=0x01, RubberBand=0x02, ZitaResampler=0x04, SoundTouch=0x08 };
-     // Or'd together.
      enum Capabilities { SampleRate=0x01, Stretch=0x02, Pitch=0x04 };
      
    protected:
       int _systemSampleRate;
       int _channels;
       int _refCount;
-      sf_count_t _sfCurFrame;
 
-//       double _sampleRateRatio;
-//       double _stretchRatio;
-//       double _pitchRatio;
-      
    public:   
       AudioConverter(int systemSampleRate);
       virtual ~AudioConverter();
       
-      // Returns combination of available ConverterID values.
-//       static int availableConverters();
-      // Whether the ID is valid and available.
-//       static bool isValidID(int converterID);
-      
-//       // The name of the converter.
-//       static const char* name(int converterID);
-//       // Returns combination of Capabilities values.
-//       static int capabilities(int converterID);
-//       // Maximum available channels. -1 means infinite, don't care.
-//       static int maxChannels(int converterID);
-      
-//       static AudioConverterDescriptor* converterDescriptor(int converterID);
-
-      //static AudioConverterSettingsGroup defaultSettings;
-      
-      // Create an instance of a converter with a number of channels.
-//       static AudioConverterHandle create(int converterID, int channels);
       // Reference this instance of a converter. Increases the reference count.
       AudioConverterHandle reference();
       // De-reference this instance of a converter. Decreases the reference count. Destroys the instance if count is zero.
       static AudioConverterHandle release(AudioConverter* cv);
       
-//       static void readDefaults(Xml&);
-//       static void writeDefaults(int, Xml&);
-
-//       // The name of the converter.
-//       virtual const char* name() const = 0;
-//       // Returns combination of Capabilities values.
-//       virtual int capabilities() const = 0;
-//       // Maximum available channels. -1 means infinite, don't care.
-//       virtual int maxChannels() const = 0;
-      
-//       virtual const AudioConverterDescriptor* descriptor() const = 0;
-
-      
-//       sf_count_t readAudio(MusECore::SndFileR& sf, unsigned offset, float** buffer, 
-//                       int channels, int frames, bool doSeek, bool overwrite);
-//       sf_count_t seekAudio(MusECore::SndFileR& sf, sf_count_t offset);
-//       sf_count_t readAudio(MusECore::SndFileR sf, unsigned offset, float** buffer, 
-//                       int channels, int frames, bool doSeek, bool overwrite);
-//       sf_count_t seekAudio(MusECore::SndFileR sf, sf_count_t offset);
-//       sf_count_t readAudio(SndFile* sf, unsigned offset, float** buffer, 
-//                       int channels, int frames, bool doSeek, bool overwrite);
-      
-      // The offset is the offset into the sound file and is NOT converted.
-      virtual sf_count_t seekAudio(SndFile* sf, sf_count_t frame, int offset);
-      
       virtual bool isValid() = 0;
       virtual void reset() = 0;
       virtual void setChannels(int ch) = 0;
-//       virtual sf_count_t process(MusECore::SndFileR& sf, float** buffer, 
-//                             int channels, int frames, bool overwrite) = 0; // Interleaved buffer if stereo.
-//       virtual sf_count_t process(MusECore::SndFileR sf, float** buffer, 
-//                             int channels, int frames, bool overwrite) = 0; // Interleaved buffer if stereo.
-//       virtual sf_count_t process(SndFile* sf, float** buffer, 
-//                             int channels, int frames, bool overwrite) = 0; // Interleaved buffer if stereo.
-      virtual int process(SndFile* sf, SNDFILE* handle, sf_count_t pos, float** buffer, 
-                            int channels, int frames, bool overwrite) = 0;
-                            
-      //virtual void read(Xml&) = 0;
-      //virtual void write(int, Xml&, const AudioConverterDescriptor* descriptor) const = 0;
-      //virtual void write(int, Xml&) const = 0;
-                            
+
+      virtual int process(
+        SNDFILE* sf_handle,
+        const int sf_chans, const double sf_sr_ratio, const StretchList* sf_stretch_list,
+        const sf_count_t pos,
+        float** buffer, const int channels, const int frames, const bool overwrite) = 0;
 };
 
 } // namespace MusECore

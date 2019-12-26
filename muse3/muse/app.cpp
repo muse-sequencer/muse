@@ -38,8 +38,12 @@
 #include <QStyleFactory>
 #include <QTextStream>
 #include <QToolButton>
-// REMOVE Tim. samplerate. Added.
 #include <QInputDialog>
+#include <QAction>
+#include <QStringList>
+#include <QPushButton>
+#include <QDir>
+#include <samplerate.h>
 
 #include <errno.h>
 #include <iostream>
@@ -68,6 +72,7 @@
 #include "components/genset.h"
 #include "gui.h"
 #include "helper.h"
+#include "wave_helper.h"
 #include "icons.h"
 #include "instruments/editinstrument.h"
 #include "listedit.h"
@@ -110,8 +115,12 @@
 #include "components/sig_tempo_toolbar.h"
 #include "widgets/cpu_toolbar.h"
 #include "components/snooper.h"
-// REMOVE Tim. samplerate. Added.
 #include "songfile_discovery.h"
+#include "pos.h"
+#include "wave.h"
+#include "wavepreview.h"
+#include "track.h"
+#include "part.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -230,8 +239,6 @@ bool MusE::seqStart()
         {
           MusEGlobal::audioPrefetch->start(pfprio);
           // In case prefetch is not filled, do it now.
-          // REMOVE Tim. samplerate. Changed.
-          //MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->pos().frame()); // Don't force.
           MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->pos().frame(), true); // Force it upon startup only.
         }
       }
@@ -1319,7 +1326,6 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
                   }
             else {
 
-                  // REMOVE Tim. samplerate. Added.
                   if(songTemplate)
                   {
                     // The project is a template. Set the project's sample rate
@@ -1708,7 +1714,6 @@ void MusE::closeEvent(QCloseEvent* event)
             }
             }
       
-      // REMOVE Tim. samplerate. Added. 
       // NOTICE: In the TopWin constructor, recently all top levels were changed to parentless, 
       //  to fix stay-on-top behaviour that seems to have been introduced in Qt5.
       // But now, when the app closes by main mindow for example, all other top win destructors 
@@ -2970,9 +2975,6 @@ void MusE::bounceToTrack()
           }
       }
 
-// REMOVE Tim. samplerate. Removed. Seek is done by msgBounce().
-//       MusEGlobal::song->setPos(MusECore::Song::CPOS,MusEGlobal::song->lPos(),0,true,true);
-
       // This will wait a few cycles until freewheel is set and a seek is done.
       MusEGlobal::audio->msgBounce();
       MusEGlobal::song->bounceOutput = out;
@@ -2980,8 +2982,6 @@ void MusE::bounceToTrack()
       MusEGlobal::song->setRecord(true);
       MusEGlobal::song->setRecordFlag(track, true);
       track->prepareRecording();
-// REMOVE Tim. samplerate. Removed. Moved above.
-//       MusEGlobal::audio->msgBounce();
       MusEGlobal::song->setPlay(true);
       }
 
@@ -3041,9 +3041,6 @@ void MusE::bounceToFile(MusECore::AudioOutput* ao)
       if (sf == 0)
             return;
 
-// REMOVE Tim. samplerate. Removed. Seek is done by msgBounce().
-//       MusEGlobal::song->setPos(MusECore::Song::CPOS,MusEGlobal::song->lPos(),0,true,true);
-
       // This will wait a few cycles until freewheel is set and a seek is done.
       MusEGlobal::audio->msgBounce();
       MusEGlobal::song->bounceOutput = ao;
@@ -3053,8 +3050,6 @@ void MusE::bounceToFile(MusECore::AudioOutput* ao)
       MusEGlobal::song->setRecord(true, false);
       MusEGlobal::song->setRecordFlag(ao, true);
       ao->prepareRecording();
-// REMOVE Tim. samplerate. Removed. Moved above.
-//       MusEGlobal::audio->msgBounce();
       MusEGlobal::song->setPlay(true);
       }
 
@@ -4240,4 +4235,331 @@ void MusE::toggleTrackArmSelectedTrack()
         MusEGlobal::audio->msgExecutePendingOperations(operations, true);
     }
 }
+
+//---------------------------------------------------------
+//   importWave
+//---------------------------------------------------------
+
+void MusE::importWave()
+{
+   MusECore::Track* track = _arranger->curTrack();
+   if (!track || track->type() != MusECore::Track::WAVE) {
+
+      //just create new wave track and go on...
+      if(MusEGlobal::song)
+      {
+         QAction act(MusEGlobal::song);
+         act.setData(MusECore::Track::WAVE);
+         track = MusEGlobal::song->addNewTrack(&act, NULL);
+      }
+
+      if(!track)
+      {
+         QMessageBox::critical(this, QString("MusE"),
+                 tr("To import an audio file you have first to select a wave track"));
+               return;
+
+      }
+
+   }
+   MusECore::AudioPreviewDialog afd(this, MusEGlobal::sampleRate);
+   afd.setDirectory(MusEGlobal::lastWavePath);
+   afd.setWindowTitle(tr("Import Audio File"));
+   /*QString fn = afd.getOpenFileName(MusEGlobal::lastWavePath, MusEGlobal::audio_file_pattern, this,
+         tr("Import Audio File"), 0);
+*/
+   if(afd.exec() == QFileDialog::Rejected)
+   {
+      return;
+   }
+
+   QStringList filenames = afd.selectedFiles();
+   if(filenames.size() < 1)
+   {
+      return;
+   }
+   QString fn = filenames [0];
+
+   if (!fn.isEmpty()) {
+      MusEGlobal::lastWavePath = fn;
+      importWaveToTrack(fn);
+   }
+}
+
+//---------------------------------------------------------
+//   importWaveToTrack
+//---------------------------------------------------------
+
+bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* track)
+{
+   if (track==NULL)
+      track = _arranger->curTrack();
+
+   MusECore::SndFileR f = MusECore::sndFileGetWave(name, true);
+
+   if (f.isNull()) {
+      fprintf(stderr, "import audio file failed\n");
+      return true;
+   }
+   track->setChannels(f->channels());
+   track->resetMeter();
+   int samples = f->samples();
+   if (MusEGlobal::sampleRate != f->samplerate()) {
+      QMessageBox mbox(this);
+      mbox.setWindowTitle(tr("Import Wavefile"));
+      mbox.setText(tr("This wave file has a samplerate of %1 Hz,\n"
+                      " as opposed to current setting %2 Hz.\n"
+                      "A live, real-time samplerate converter can be used on this file.\n"
+                      "Or, a copy of the file can be resampled now from %1 Hz to %2 Hz.")
+                      .arg(f->samplerate()).arg(MusEGlobal::sampleRate));
+      mbox.setInformativeText(tr("Do you want to use a converter or resample the file now?"));
+
+      QPushButton* converter_button = mbox.addButton(tr("Use live converter"), QMessageBox::YesRole);
+      QPushButton* resample_button = mbox.addButton(tr("Resample now"), QMessageBox::NoRole);
+      mbox.addButton(tr("Cancel"), QMessageBox::RejectRole);
+      mbox.setDefaultButton(converter_button);
+
+      mbox.exec();
+      if(mbox.clickedButton() != converter_button && mbox.clickedButton() != resample_button)
+      {
+         return true; // this removed f from the stack, dropping refcount maybe to zero and maybe deleting the thing
+      }
+
+      if(mbox.clickedButton() == resample_button)
+      {
+        //save project if necessary
+        //copy wave to project's folder,
+        //rename it if there is a duplicate,
+        //resample to project's rate
+
+        if(MusEGlobal::museProject == MusEGlobal::museProjectInitPath)
+        {
+          if(!MusEGlobal::muse->saveAs())
+              return true;
+        }
+
+        QFileInfo fi(f.name());
+        QString projectPath = MusEGlobal::museProject + QDir::separator();
+        QString fExt = "wav";
+        QString fBaseName = fi.baseName();
+        QString fNewPath = "";
+        bool bNameIsNotUsed = false;
+        for(int i = 0; i < 1000; i++)
+        {
+          fNewPath = projectPath + fBaseName + ((i == 0) ? "" : QString::number(i)) +  "." + fExt;
+          if(!QFile(fNewPath).exists())
+          {
+              bNameIsNotUsed = true;
+              break;
+          }
+        }
+
+        if(!bNameIsNotUsed)
+        {
+          QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
+                                tr("There are too many wave files\n"
+                                    "of the same base name as imported wave file\n"
+                                    "Can not continue."));
+          return true;
+        }
+
+        SF_INFO sfiNew;
+        sfiNew.channels = f.channels();
+        sfiNew.format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
+        sfiNew.frames = 0;
+        sfiNew.samplerate = MusEGlobal::sampleRate;
+        sfiNew.seekable = 1;
+        sfiNew.sections = 0;
+
+        SNDFILE *sfNew = sf_open(fNewPath.toUtf8().constData(), SFM_RDWR, &sfiNew);
+        if(sfNew == NULL)
+        {
+          QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
+                                tr("Can't create new wav file in project folder!\n") + sf_strerror(NULL));
+          return true;
+        }
+
+        int srErr = 0;
+        SRC_STATE *srState = src_new(SRC_SINC_BEST_QUALITY, sfiNew.channels, &srErr);
+        if(!srState)
+        {
+          QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
+                                tr("Failed to initialize sample rate converter!"));
+          sf_close(sfNew);
+          QFile(fNewPath).remove();
+          return true;
+        }
+
+
+
+        float fPeekMax = 1.0f; //if output save file will peek above this walue
+        //it should be normalized later
+        float fNormRatio = 1.0f / fPeekMax;
+        int nTriesMax = 5;
+        int nCurTry = 0;
+        do
+        {
+          QProgressDialog pDlg(MusEGlobal::muse);
+          pDlg.setMinimum(0);
+          pDlg.setMaximum(f.samples());
+          pDlg.setCancelButtonText(tr("Cancel"));
+          if(nCurTry == 0)
+          {
+              pDlg.setLabelText(tr("Resampling wave file\n"
+                                      "\"%1\"\n"
+                                      "from %2 to %3 Hz...")
+                                  .arg(f.name()).arg(f.samplerate()).arg(sfiNew.samplerate));
+          }
+          else
+          {
+              pDlg.setLabelText(tr("Output has clipped\n"
+                                  "Resampling again and normalizing wave file\n"
+                                  "\"%1\"\n"
+                                  "Try %2 of %3...")
+                                .arg(QFileInfo(fNewPath).fileName()).arg(nCurTry).arg(nTriesMax));
+          }
+          pDlg.setWindowModality(Qt::WindowModal);
+          src_reset(srState);
+          SRC_DATA sd;
+          sd.src_ratio = ((double)MusEGlobal::sampleRate) / (double)f.samplerate();
+          sf_count_t szBuf = 8192;
+          float srcBuffer [szBuf];
+          float dstBuffer [szBuf];
+          unsigned sChannels = f.channels();
+          sf_count_t szBufInFrames = szBuf / sChannels;
+          sf_count_t szFInFrames = f.samples();
+          sf_count_t nFramesRead = 0;
+          sf_count_t nFramesWrote = 0;
+          sd.end_of_input = 0;
+          bool bEndOfInput = false;
+          pDlg.setValue(0);
+
+          f.seek(0, SEEK_SET);
+
+          while(sd.end_of_input == 0)
+          {
+              size_t nFramesBuf = 0;
+              if(bEndOfInput)
+                sd.end_of_input = 1;
+              else
+              {
+                nFramesBuf = f.readDirect(srcBuffer, szBufInFrames);
+                if(nFramesBuf == 0)
+                    break;
+                nFramesRead += nFramesBuf;
+              }
+
+              sd.data_in = srcBuffer;
+              sd.data_out = dstBuffer;
+              sd.input_frames = nFramesBuf;
+              sd.output_frames = szBufInFrames;
+              sd.input_frames_used = 0;
+              sd.output_frames_gen = 0;
+              do
+              {
+                if(src_process(srState, &sd) != 0)
+                    break;
+                sd.data_in += sd.input_frames_used * sChannels;
+                sd.input_frames -= sd.input_frames_used;
+
+                if(sd.output_frames_gen > 0)
+                {
+                    nFramesWrote += sd.output_frames_gen;
+                    //detect maximum peek value;
+                    for(unsigned ch = 0; ch < sChannels; ch++)
+                    {
+
+                      for(long k = 0; k < sd.output_frames_gen; k++)
+                      {
+                          dstBuffer [k * sChannels + ch] *= fNormRatio; //normilize if needed
+                          float fCurPeek = dstBuffer [k * sChannels + ch];
+                          if(fPeekMax < fCurPeek)
+                          {
+                            //update maximum peek value
+                            fPeekMax = fCurPeek;
+                          }
+                      }
+                    }
+                    sf_writef_float(sfNew, dstBuffer, sd.output_frames_gen);
+                }
+                else
+                    break;
+
+              }
+              while(true);
+
+              pDlg.setValue(nFramesRead);
+
+              if(nFramesRead >= szFInFrames)
+              {
+                bEndOfInput = true;
+              }
+
+              if(pDlg.wasCanceled())//free all resources
+              {
+                src_delete(srState);
+                sf_close(sfNew);
+                f.close();
+                f = NULL;
+                QFile(fNewPath).remove();
+                return true;
+              }
+          }
+
+          pDlg.setValue(szFInFrames);
+
+          if(fPeekMax > 1.0f) //output has clipped. Normilize it
+          {
+              nCurTry++;
+              sf_seek(sfNew, 0, SEEK_SET);
+              f.seek(0, SEEK_SET);
+              pDlg.setValue(0);
+              fNormRatio = 1.0f / fPeekMax;
+              fPeekMax = 1.0f;
+          }
+          else
+              break;
+        }
+        while(nCurTry <= nTriesMax);
+
+        src_delete(srState);
+
+        sf_close(sfNew);
+
+        f.close();
+        f = NULL;
+
+        //reopen resampled wave again
+        f = MusECore::sndFileGetWave(fNewPath, true);
+        if(!f)
+        {
+          printf("import audio file failed\n");
+          return true;
+        }
+        samples = f->samples();
+      }
+   }
+
+   MusECore::WavePart* part = new MusECore::WavePart((MusECore::WaveTrack *)track);
+   if (tick)
+      part->setTick(tick);
+   else
+      part->setTick(MusEGlobal::song->cpos());
+   part->setLenFrame(samples);
+
+   MusECore::Event event(MusECore::Wave);
+   MusECore::SndFileR sf(f);
+   event.setSndFile(sf);
+   event.setSpos(0);
+   event.setLenFrame(samples);
+   part->addEvent(event);
+
+   part->setName(QFileInfo(f->name()).completeBaseName());
+   MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddPart, part));
+   unsigned endTick = part->tick() + part->lenTick();
+   if (MusEGlobal::song->len() < endTick)
+      MusEGlobal::song->setLen(endTick);
+   return false;
+}
+
 } //namespace MusEGui

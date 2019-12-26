@@ -221,14 +221,6 @@ void AudioPrefetch::prefetch(bool doSeek)
             int ch           = track->channels();
             float* bp[ch];
 
-// <<<<<<< HEAD
-//             // True = do overwrite.
-//             track->fetchData(writePos, MusEGlobal::segmentSize, bp, doSeek, true);
-//             
-//             // REMOVE Tim. samplerate. Added. Removed temporarily. TODO: Reinstate
-//             //track->prefetchAudio(writePos, ch, track->off(), MusEGlobal::segmentSize);
-// //             track->prefetchAudio(writePos, MusEGlobal::segmentSize);
-// =======
             // Fill up the empty buffers.
             for(int i = 0; i < empty_count; ++i)
             {
@@ -242,7 +234,6 @@ void AudioPrefetch::prefetch(bool doSeek)
                         n = 0;
                   write_pos = lpos_frame - n;
                   track->setPrefetchWritePos(write_pos);
-                  // REMOVE Tim. samplerate. Added.
                   track->seekData(write_pos);
                 }
               }
@@ -256,16 +247,11 @@ void AudioPrefetch::prefetch(bool doSeek)
               // True = do overwrite.
               track->fetchData(write_pos, MusEGlobal::segmentSize, bp, doSeek, true);
               
-            // REMOVE Tim. samplerate. Added. Removed temporarily. TODO: Reinstate
-            //track->prefetchAudio(writePos, ch, track->off(), MusEGlobal::segmentSize);
-//             track->prefetchAudio(writePos, MusEGlobal::segmentSize);
-
               // Only the first fetch should seek if required. Reset the flag now.
               doSeek = false;
               
               write_pos += MusEGlobal::segmentSize;
               track->setPrefetchWritePos(write_pos);
-// >>>>>>> bbb0eddbfdb7aec24d76c2cef8564e6740b67646
             }
           }
       }
@@ -300,35 +286,7 @@ void AudioPrefetch::seek(unsigned seekTo)
       for (iWaveTrack it = tl->begin(); it != tl->end(); ++it) {
             WaveTrack* track = *it;
             track->clearPrefetchFifo();
-// <<<<<<< HEAD
-//             // REMOVE Tim. samplerate. Added.
-//             track->seekData(seekTo);
-//             }
-//       
-//       
-//       
-// // REMOVE Tim. samplerate. Removed.
-// //       bool isFirstPrefetch = true;
-//       for (unsigned int i = 0; i < (MusEGlobal::fifoLength)-1; ++i)//prevent compiler warning: comparison of signed/unsigned
-//       {      
-//             // Indicate do a seek command before read, but only on the first pass. 
-// // REMOVE Tim. samplerate. Changed.
-// //             prefetch(isFirstPrefetch);
-//             prefetch(false);
-//             
-// // REMOVE Tim. samplerate. Removed.
-// //             isFirstPrefetch = false;
-//             
-//             // To help speed things up even more, check the count again. Return if more seek messages are pending. (p3.3.20)
-//             if(seekCount > 1)
-//             {
-//               --seekCount;
-//               return;
-//             }  
-//       }
-// =======
             track->setPrefetchWritePos(seekTo);
-            // REMOVE Tim. samplerate. Added.
             track->seekData(seekTo);
             }
       
@@ -341,7 +299,6 @@ void AudioPrefetch::seek(unsigned seekTo)
         --seekCount;
         return;
       }  
-// >>>>>>> bbb0eddbfdb7aec24d76c2cef8564e6740b67646
             
       seekPos  = seekTo;
       --seekCount;

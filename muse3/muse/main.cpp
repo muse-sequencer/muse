@@ -75,7 +75,6 @@
 #include "plugin_cache_writer.h"
 #include "pluglist.h"
 #include "metronome_class.h"
-// REMOVE Tim. samplerate. Added.
 #include "audio_convert/audio_converter_plugin.h"
 #include "audio_convert/audio_converter_settings_group.h"
 
@@ -806,10 +805,8 @@ int main(int argc, char* argv[])
 
         MusEGui::initShortCuts();
 
-        // REMOVE Tim. samplerate. Added.
         // Discover available MusE audio converters, before reading configuration
-        MusEGlobal::audioConverterPluginList.discover();
-        //MusEGlobal::defaultAudioConverterSettings.populate(&MusEGlobal::audioConverterPluginList, false);
+        MusEGlobal::audioConverterPluginList.discover(MusEGlobal::museGlobalLib, MusEGlobal::debugMsg);
         MusEGlobal::defaultAudioConverterSettings = new MusECore::AudioConverterSettingsGroup(false); // Default, non-local settings.
         MusEGlobal::defaultAudioConverterSettings->populate(&MusEGlobal::audioConverterPluginList, false);
         
@@ -1562,7 +1559,6 @@ int main(int argc, char* argv[])
       // END Restart loop. For (re)starting the app.
       //============================================
 
-      // REMOVE Tim. samplerate. Added.
       if(MusEGlobal::defaultAudioConverterSettings)
         delete MusEGlobal::defaultAudioConverterSettings;
       

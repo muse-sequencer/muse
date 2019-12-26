@@ -892,8 +892,6 @@ void CtrlList::read(Xml& xml)
                                   break;
                                 }
                                   
-// REMOVE Tim. samplerate. Changed.
-//                                 add(frame, val);
                                 // For now, the conversion only has a TEMPORARY effect during song loading.
                                 // See comments in Song::read at the "samplerate" tag.
                                 add(MusEGlobal::convertFrame4ProjectSampleRate(frame), val);

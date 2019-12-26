@@ -375,7 +375,6 @@ enum {
       //arragner
       SHRT_PART_NORMALIZE, // Alt+N
 
-      // REMOVE Tim. samplerate. Added.
       SHRT_TOOL_STRETCH,
       SHRT_TOOL_SAMPLERATE,
       

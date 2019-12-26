@@ -513,8 +513,6 @@ void Song::readMarker(Xml& xml)
       _markerList->add(m);
       }
 
-
-// REMOVE Tim. samplerate. Added.
 //---------------------------------------------------------
 //   checkSongSampleRate
 //   Called by gui thread.
@@ -562,10 +560,6 @@ void Song::checkSongSampleRate()
 
 void Song::read(Xml& xml, bool /*isTemplate*/)
       {
-      // REMOVE Tim. samplerate. Added.
-      //int cur_samplerate = MusEGlobal::sampleRate;  
-      //bool samplerate_found = false;
-      
       MusEGlobal::cloneList.clear();
       for (;;) {
          if (MusEGlobal::muse->progress) {
@@ -611,64 +605,6 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
                         else if (tag == "follow")
                               _follow  = FollowMode(xml.parseInt());
                         else if (tag == "sampleRate") {
-// REMOVE Tim. samplerate. Changed.
-                          
-// // <<<<<<< HEAD
-//                           
-//                               // REMOVE Tim. samplerate. Changed.
-// //                               int sRate  = xml.parseInt();
-// //                               if (!isTemplate && MusEGlobal::audioDevice->deviceType() != AudioDevice::DUMMY_AUDIO && sRate != MusEGlobal::sampleRate)
-// //                                 QMessageBox::warning(MusEGlobal::muse,"Wrong sample rate", "The sample rate in this project and the current system setting differs, the project may not work as intended!");
-// //                          
-//                               //   NOTE: For now, projectSampleRate is TEMPORARILY set to the project sample rate during song loading,
-//                               //          then at the END of song loading (below) is immediately set to the real current rate.
-//                               //         This makes it EASY for the object loading routines below to use the DIFFERENCE in rates to adjust frames.
-//                               //         It was hoped to be able to KEEP this new projectSampleRate by using a MuseFrame class with a casting 
-//                               //          operator int() to replace the _frame member, thus keeping MusE respectful of the original sample rate 
-//                               //          WITHOUT changing any stored frame values. But it looks like it might be more complicated than that.
-//                               //         So projectSampleRate is set to the system rate at the END of this loading routine, for now...
-//                               MusEGlobal::projectSampleRate = xml.parseInt();
-//                               //samplerate_found = true;
-//                               if (!isTemplate && 
-//                                   //MusEGlobal::audioDevice->deviceType() != AudioDevice::DUMMY_AUDIO &&  // Why exclude dummy?
-//                                   MusEGlobal::projectSampleRate != MusEGlobal::sampleRate)
-//                               {
-//                                 QString msg = QString("The sample rate in this project (%1Hz) and the\n"
-//                                  " current system setting (%2Hz) differ.\n"
-//                                  "Project timing will be scaled to match the new sample rate.\n"
-//                                  "Caution: Slight rounding errors may degrade timing accuracy.\n\n"
-//                                  "Live realtime audio sample rate converters will be enabled\n"
-//                                  " on audio files where required.\n"
-//                                  "The files can be permanently converted to the new sample rate.\n\n"
-//                                  "Save this song if you are sure you didn't mean to open it\n"
-//                                  " at the original sample rate.").arg(MusEGlobal::projectSampleRate).arg(MusEGlobal::sampleRate);
-//                                 QMessageBox::warning(MusEGlobal::muse,"Wrong sample rate", msg);
-//                                 // Automatically convert the project.
-//                                 // No: Try to keep the rate until user tells it to change.
-//                                 //convertProjectSampleRate();
-//                               }
-//                               
-// // =======
-// //                               int sRate  = xml.parseInt();
-// //                               if (!isTemplate && MusEGlobal::audioDevice->deviceType() != AudioDevice::DUMMY_AUDIO && sRate != MusEGlobal::sampleRate) {
-// // 
-// //                                 if (MusEGlobal::audioDevice->deviceType() == AudioDevice::RTAUDIO_AUDIO) {
-// //                                   // restart audio with selected sample rate
-// //                                   MusEGlobal::sampleRate = sRate;
-// //                                   MusEGlobal::audioDevice->stop();
-// //                                   MusEGlobal::audioDevice->start(0);
-// //                                   if (MusEGlobal::sampleRate == sRate) {
-// //                                     QMessageBox::warning(MusEGlobal::muse,"Sample rate", "Changing sample rate to song setting " + QString::number(sRate) + "!");
-// //                                   } else {
-// //                                     QMessageBox::warning(MusEGlobal::muse,"Sample rate", "Tried changing sample rate to song setting " +
-// //                                                          QString::number(sRate) + " but driver set it to " + QString::number(MusEGlobal::sampleRate) + "!");
-// //                                   }
-// //                                 } else {
-// //                                   QMessageBox::warning(MusEGlobal::muse,"Wrong sample rate", "The sample rate in this project and the current system setting differs, the project may not work as intended!");
-// //                                 }
-// //                               }
-// // >>>>>>> origin/master
-
                               // Ignore. Sample rate setting is handled by the
                               //  song discovery mechanism (in MusE::loadProjectFile1()).
                               xml.parseInt();
@@ -677,7 +613,6 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
                               MusEGlobal::tempomap.read(xml);
                               }
                         else if (tag == "siglist")
-                              ///MusEGlobal::sigmap.read(xml);
                               MusEGlobal::sigmap.read(xml);
                         else if (tag == "keylist") {
                               MusEGlobal::keymap.read(xml);
@@ -784,11 +719,6 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
 song_read_end:
       dirty = false;
 
-      // REMOVE Tim. samplerate. Added.
-      // Ignore. Sample rate setting is handled by the
-      //  song discovery mechanism (in MusE::loadProjectFile1()).
-      //MusEGlobal::projectSampleRate = MusEGlobal::sampleRate;
-      
       // Since cloneList is also used for copy/paste operations,
       //  clear the copy clone list again.
       MusEGlobal::cloneList.clear();
@@ -956,50 +886,51 @@ void Song::resolveSongfileReferences()
   resolveStripReferences(&MusEGlobal::config.mixer2);
 }
 
-// REMOVE Tim. samplerate. Added.
-// //---------------------------------------------------------
-// //   convertProjectSampleRate
-// //---------------------------------------------------------
-// 
-// void Song::convertProjectSampleRate(int newRate)
-// {
-//   double sratio = double(newRate) / double(MusEGlobal::sampleRate);
-//   
-//   for(iTrack i = _tracks.begin(); i != _tracks.end(); ++i)
-//   {
-//     Track* track = *i;
-//     //if(track->isMidiTrack)
-//     //  continue;
-//     
-//     PartList* parts = track->parts();
-//     
-//     for(iPart ip = parts->begin(); i != parts->end(); ++i)
-//     {
-//       Part* part = *ip;
-//       
-//       EventList& el = part->nonconst_events();
-//       
-//       for(iEvent ie = el.begin(); ie != el.end(); ++ie)
-//       {
-//         Event& e = *ie;
-//       }
-//       
-//       if(part->type() == Part::FRAMES)
-//       {
-//         part->setFrame(double(part->frame()) * sratio);
-//         part->setLenFrame(double(part->lenFrame()) * sratio);
-//       }
-//     }
-//     
-//     if(track->type == Track::WAVE)
-//     {
-//       
-//     }
-// 
-//     
-//   }
-// }
+// REMOVE Tim. samplerate. Added. TODO
+#if 0
+//---------------------------------------------------------
+//   convertProjectSampleRate
+//---------------------------------------------------------
+
+void Song::convertProjectSampleRate(int newRate)
+{
+  double sratio = double(newRate) / double(MusEGlobal::sampleRate);
+  
+  for(iTrack i = _tracks.begin(); i != _tracks.end(); ++i)
+  {
+    Track* track = *i;
+    //if(track->isMidiTrack)
+    //  continue;
+    
+    PartList* parts = track->parts();
+    
+    for(iPart ip = parts->begin(); i != parts->end(); ++i)
+    {
+      Part* part = *ip;
       
+      EventList& el = part->nonconst_events();
+      
+      for(iEvent ie = el.begin(); ie != el.end(); ++ie)
+      {
+        Event& e = *ie;
+      }
+      
+      if(part->type() == Part::FRAMES)
+      {
+        part->setFrame(double(part->frame()) * sratio);
+        part->setLenFrame(double(part->lenFrame()) * sratio);
+      }
+    }
+    
+    if(track->type == Track::WAVE)
+    {
+      
+    }
+
+    
+  }
+}
+#endif 
       
 } // namespace MusECore
 

@@ -42,16 +42,18 @@ unsigned fifoLength =  128;       // 131072/segmentSize
                                   // 131072 - magic number that gives a sufficient buffer size
 int segmentCount = 2;
 
-// REMOVE Tim. samplerate. Added.
 //   NOTE: For now, this is TEMPORARILY set to the project sample rate during song loading,
 //          then at the END of song loading is immediately set to the real current rate.
 //         See comments in Song::read() at the "samplerate" tag section.
 int projectSampleRate = sampleRate;
-// REMOVE Tim. samplerate. Added. Moved here from genset.cpp.
 const int numAudioSampleRates = 8;
 const int selectableAudioSampleRates[] = {
       22050, 32000, 44100, 48000, 64000, 88200, 96000, 192000
       };
+
+MusECore::AudioConverterPluginList audioConverterPluginList;
+// This global variable is a pointer so that we can replace it quickly with a new one in RT operations.
+MusECore::AudioConverterSettingsGroup* defaultAudioConverterSettings;
 
 // denormal bias value used to eliminate the manifestation of denormals by
 // lifting the zero level slightly above zero
@@ -330,7 +332,6 @@ const QString noOutputRoutingToolTipWarn = outputRoutingToolTipBase + QString("\
 
 bool midiSeqRunning = false;
 
-//REMOVE Tim. samplerate. Added.
 //---------------------------------------------------------
 //   convertFrame4ProjectSampleRate
 //---------------------------------------------------------

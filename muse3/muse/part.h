@@ -30,17 +30,15 @@
 #include <climits>
 
 #include <QUuid>
+#include <QString>
 
+#include "pos.h"
 #include "event.h"
-#include "audio_convert/lib_audio_convert/audioconvert.h"
-
-class QString;
 
 namespace MusECore {
 
 class MidiTrack;
 class Track;
-class Xml;
 class Part;
 class WaveTrack;
 class PendingOperationList;

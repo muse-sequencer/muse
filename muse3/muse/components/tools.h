@@ -49,7 +49,6 @@ enum Tool {
    MuteTool=2048,
    AutomationTool=4096,
    CursorTool=8192,
-   // REMOVE Tim. samplerate. Added.
    StretchTool=16384,
    SamplerateTool=32768
 };

@@ -40,7 +40,6 @@
 #include "filedialog.h"
 #include "al/al.h"
 
-// REMOVE Tim. samplerate. Added.
 #include "song.h"
 #include "operations.h"
 #include "audio.h"
@@ -59,12 +58,6 @@ static int divisions[] = {
 static int selectableAudioBufSizes[] = {
       16, 32, 64, 128, 256, 512, 1024, 2048
       };
-// REMOVE Tim. samplerate. Removed. Moved to globals.
-// static int selectableAudioSampleRates[] = {
-//       22050, 32000, 44100, 48000, 64000, 88200, 96000, 192000
-//       };
-// int numAudioSampleRates = 8;
-
 static unsigned long minControlProcessPeriods[] = {
       1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048
       };
@@ -138,9 +131,6 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       deviceAudioBackendComboBox->setDisabled(true);
 #endif
 
-// REMOVE Tim. samplerate. Changed.
-//       for (int i = 0; i < numAudioSampleRates; i++){
-//         deviceAudioRate->addItem(QString::number(selectableAudioSampleRates[i]),i);
       for (int i = 0; i < MusEGlobal::numAudioSampleRates; i++){
         deviceAudioRate->addItem(QString::number(MusEGlobal::selectableAudioSampleRates[i]),i);
       }
@@ -201,9 +191,6 @@ void GlobalSettingsConfig::updateSettings()
                   }
             }
       
-// REMOVE Tim. samplerate. Changed.
-//       for (int i = 0; i < numAudioSampleRates; ++i) {
-//             if (selectableAudioSampleRates[i] == MusEGlobal::config.deviceAudioSampleRate) {
       for (int i = 0; i < MusEGlobal::numAudioSampleRates; ++i) {
             if (MusEGlobal::selectableAudioSampleRates[i] == MusEGlobal::config.deviceAudioSampleRate) {
                   deviceAudioRate->setCurrentIndex(i);
@@ -404,8 +391,6 @@ void GlobalSettingsConfig::apply()
       
       int das = deviceAudioSize->currentIndex();
       MusEGlobal::config.deviceAudioBufSize = selectableAudioBufSizes[das];
-// REMOVE Tim. samplerate. Changed.
-//       MusEGlobal::config.deviceAudioSampleRate = selectableAudioSampleRates[deviceAudioRate->currentIndex()];
       MusEGlobal::config.deviceAudioSampleRate = MusEGlobal::selectableAudioSampleRates[deviceAudioRate->currentIndex()];
 
       MusEGlobal::config.deviceAudioBackend = deviceAudioBackendComboBox->currentIndex();
@@ -688,7 +673,6 @@ void GlobalSettingsConfig::borlandPreset()
   updateMdiSettings();
 }
 
-// REMOVE Tim. samplerate. Added.
 void GlobalSettingsConfig::showAudioConverterSettings()
 {
   if(!MusEGlobal::defaultAudioConverterSettings)
