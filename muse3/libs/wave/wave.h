@@ -39,6 +39,23 @@
 namespace MusECore {
 
 //---------------------------------------------------------
+//   SndFileVirtualData
+//    For virtual (memory or stream) operation
+//---------------------------------------------------------
+
+class SndFileVirtualData
+{
+  public:
+    void* _virtualData;
+    sf_count_t _virtualBytes;
+    sf_count_t _virtualCurPos;
+
+    SndFileVirtualData() : _virtualData(nullptr), _virtualBytes(0), _virtualCurPos(0) { }
+    SndFileVirtualData(void* virtualData, const sf_count_t virtualBytes)
+      : _virtualData(virtualData), _virtualBytes(virtualBytes), _virtualCurPos(0) { }
+};
+
+//---------------------------------------------------------
 //   SampleV
 //    peak file value
 //---------------------------------------------------------
@@ -72,6 +89,9 @@ class SndFile {
       SampleVtype* cache;
       sf_count_t csize;                    //!< frames in cache
 
+      // For virtual (memory or stream) operation:
+      SndFileVirtualData _virtualData;
+
       float *writeBuffer;
       size_t writeSegSize;
 
@@ -86,12 +106,20 @@ class SndFile {
       int refCount;
 
    public:
+      // Constructor for file operation.
       SndFile(const QString& name, int systemSampleRate, unsigned int segSize,
+              bool installConverter, AudioConverterPluginList* pluginList);
+      // Constructor for virtual (memory or stream) operation.
+      SndFile(void* virtualData, sf_count_t virtualBytes,
+              int systemSampleRate, unsigned int segSize,
               bool installConverter, AudioConverterPluginList* pluginList);
       ~SndFile();
       int getRefCount() { return refCount; }
 
       static SndFileList sndFiles;
+
+      // For virtual (memory or stream) operation.
+      SndFileVirtualData& virtualData() { return _virtualData; }
 
       void createCache(const QString& path, bool showProgress, bool bWrite, sf_count_t cstart = 0);
       void readCache(const QString& path, bool progress);
@@ -146,6 +174,9 @@ class SndFile {
       bool isResampled() const;
       
       sf_count_t samples() const;
+      // Returns number of samples, adjusted for file-to-system samplerate ratio.
+      sf_count_t samplesConverted() const;
+
       int channels() const;
       int samplerate() const;
       int format() const;
@@ -264,6 +295,9 @@ class SndFileR {
       inline sf_count_t convertPosition(sf_count_t pos) const { return sf ? sf->convertPosition(pos) : pos; };
       
       sf_count_t samples() const    { return sf ? sf->samples() : 0; }
+      // Returns number of samples, adjusted for file-to-system samplerate ratio.
+      sf_count_t samplesConverted() const { return sf ? sf->samplesConverted() : 0; }
+
       int channels() const   { return sf ? sf->channels() : 0; }
       int samplerate() const { return sf ? sf->samplerate() : 0; }
       int format() const     { return sf ? sf->format() : 0; }

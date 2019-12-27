@@ -21,6 +21,8 @@
 //
 //=========================================================
 
+
+#include <cstring>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
@@ -43,6 +45,85 @@ const int cacheMag = 128;
 
 
 SndFileList SndFile::sndFiles;
+
+sf_count_t sndfile_vio_get_filelen(void *user_data)
+{
+  return ((SndFile*)user_data)->virtualData()._virtualBytes;
+}
+
+sf_count_t sndfile_vio_seek(sf_count_t offset, int whence, void *user_data)
+{
+  SndFile* sf = (SndFile*)user_data;
+  SndFileVirtualData& vd = sf->virtualData();
+  if(!vd._virtualData)
+    return -1;
+  switch(whence)
+  {
+    case SEEK_CUR:
+      if(vd._virtualCurPos + offset < 0 || vd._virtualCurPos + offset >= vd._virtualBytes)
+        return -1;
+      vd._virtualCurPos += offset;
+    break;
+
+    case SEEK_END:
+      if(vd._virtualBytes + offset < 0 || vd._virtualBytes + offset >= vd._virtualBytes)
+        return -1;
+      vd._virtualCurPos = vd._virtualBytes + offset;
+    break;
+
+    default:
+      if(offset < 0 || offset >= vd._virtualBytes)
+        return -1;
+      vd._virtualCurPos = offset;
+    break;
+  }
+
+  return vd._virtualCurPos;
+}
+
+sf_count_t sndfile_vio_read(void *ptr, sf_count_t count, void *user_data)
+{
+  SndFile* sf = (SndFile*)user_data;
+  SndFileVirtualData& vd = sf->virtualData();
+  if(!vd._virtualData)
+    return 0;
+  if(vd._virtualCurPos >= vd._virtualBytes)
+    return 0;
+  if(vd._virtualCurPos + count > vd._virtualBytes)
+    count = vd._virtualBytes - vd._virtualCurPos;
+  std::memcpy(ptr, vd._virtualData, count);
+  vd._virtualCurPos += count;
+  return count;
+}
+
+sf_count_t sndfile_vio_write(const void *ptr, sf_count_t count, void *user_data)
+{
+  SndFile* sf = (SndFile*)user_data;
+  SndFileVirtualData& vd = sf->virtualData();
+  if(!vd._virtualData)
+    return 0;
+  if(vd._virtualCurPos >= vd._virtualBytes)
+    return 0;
+  if(vd._virtualCurPos + count > vd._virtualBytes)
+    count = vd._virtualBytes - vd._virtualCurPos;
+  std::memcpy(vd._virtualData, ptr, count);
+  vd._virtualCurPos += count;
+  return count;
+}
+
+sf_count_t sndfile_vio_tell(void *user_data)
+{
+  return ((SndFile*)user_data)->virtualData()._virtualCurPos;
+}
+
+SF_VIRTUAL_IO sndfile_vio
+{
+  sndfile_vio_get_filelen,
+  sndfile_vio_seek,
+  sndfile_vio_read,
+  sndfile_vio_write,
+  sndfile_vio_tell
+};
 
 //---------------------------------------------------------
 //   SndFile
@@ -80,6 +161,40 @@ SndFile::SndFile(const QString& name, int systemSampleRate, unsigned int segSize
       _dynamicAudioConverterUI = nullptr;
       }
 
+SndFile::SndFile(
+  void* virtualData, sf_count_t virtualBytes,
+  int systemSampleRate, unsigned int segSize,
+  bool installConverter, AudioConverterPluginList* pluginList)
+  : _systemSampleRate(systemSampleRate), _virtualData(SndFileVirtualData(virtualData, virtualBytes))
+{
+      _stretchList = nullptr;
+      _audioConverterSettings = nullptr;
+      if(installConverter)
+      {
+        _stretchList = new StretchList();
+        // true = Local settings, initialized to -1.
+        _audioConverterSettings = new AudioConverterSettingsGroup(true); // Local settings.
+        if(pluginList)
+          _audioConverterSettings->populate(pluginList, true);
+      }
+      
+      finfo = nullptr;
+      sf    = nullptr;
+      sfUI  = nullptr;
+      csize = 0;
+      cache = nullptr;
+      openFlag = false;
+      //sndFiles.push_back(this);
+      refCount = 0;
+      writeBuffer = nullptr;
+      writeSegSize = std::max((size_t)segSize, (size_t)cacheMag);// cache minimum segment size for write operations
+      
+      _staticAudioConverter    = nullptr;
+      _staticAudioConverterUI  = nullptr;
+      _dynamicAudioConverter   = nullptr;
+      _dynamicAudioConverterUI = nullptr;
+}
+
 SndFile::~SndFile()
       {
       DEBUG_WAVE(stderr, "SndFile dtor this:%p\n", this);
@@ -92,9 +207,10 @@ SndFile::~SndFile()
                   break;
                   }
             }
-      delete finfo;
+      if(finfo)
+        delete finfo;
       if (cache)
-            delete[] cache;
+        delete[] cache;
       if(writeBuffer)
          delete [] writeBuffer;
 
@@ -116,22 +232,38 @@ bool SndFile::openRead(AudioConverterPluginList* pluginList,
             DEBUG_WAVE(stderr, "SndFile:: already open\n");
             return false;
             }
-      QString p = path();
-      sfinfo.format = 0;
-      sfUI = nullptr;
-      sf = sf_open(p.toLocal8Bit().constData(), SFM_READ, &sfinfo);
-      if (!sf)
-            return true;
-      if(createCache){
-         sfinfo.format = 0;
-         sfUI = sf_open(p.toLocal8Bit().constData(), SFM_READ, &sfinfo);
-         if (!sfUI){
-            sf_close(sf);
-            sf = nullptr;
-            return true;
-         }
-      }
 
+      if(finfo)
+      {
+        QString p = path();
+        if(p.isEmpty())
+          return true;
+        sfinfo.format = 0;
+        sfUI = nullptr;
+        sf = sf_open(p.toLocal8Bit().constData(), SFM_READ, &sfinfo);
+        if (!sf)
+              return true;
+        if(finfo && createCache){
+          sfinfo.format = 0;
+          sfUI = sf_open(p.toLocal8Bit().constData(), SFM_READ, &sfinfo);
+          if (!sfUI){
+              sf_close(sf);
+              sf = nullptr;
+              return true;
+          }
+        }
+      }
+      else
+      {
+        if(!_virtualData._virtualData)
+          return true;
+        //sfinfo.format = 0; // Supplied by caller via setFormat.
+        sfUI = nullptr;
+        sf = sf_open_virtual(&sndfile_vio, SFM_READ, &sfinfo, this);
+        if (!sf)
+          return true;
+      }
+      
       const StretchList* sl = stretchList();
       _staticAudioConverter   = setupAudioConverter(audioConverterSettings(), 
                                                     true,  // true = Local settings.
@@ -140,7 +272,8 @@ bool SndFile::openRead(AudioConverterPluginList* pluginList,
                                                     sl->isStretched(),
                                                     pluginList,
                                                     defaultSettings);
-      _staticAudioConverterUI = setupAudioConverter(audioConverterSettings(), 
+      if(finfo)
+        _staticAudioConverterUI = setupAudioConverter(audioConverterSettings(), 
                                                     true,  // true = Local settings.
                                                     AudioConverterSettings::GuiMode, 
                                                     sl->isResampled(),
@@ -151,9 +284,9 @@ bool SndFile::openRead(AudioConverterPluginList* pluginList,
       writeFlag = false;
       openFlag  = true;
 
-      if (createCache) {
+      if (finfo && createCache) {
         QString cacheName = finfo->absolutePath() + QString("/") + finfo->completeBaseName() + QString(".wca");
-      readCache(cacheName, showProgress);
+        readCache(cacheName, showProgress);
       }
       return false;
       }
@@ -354,6 +487,9 @@ void SndFile::update(AudioConverterPluginList* pluginList,
                      const AudioConverterSettingsGroup* defaultSettings,
                      bool showProgress)
       {
+      if(!finfo)
+        return;
+
       close();
 
       // force recreation of wca data
@@ -371,7 +507,7 @@ void SndFile::update(AudioConverterPluginList* pluginList,
 
 void SndFile::createCache(const QString& path, bool showProgress, bool bWrite, sf_count_t cstart)
 {
-   if(cstart >= csize)
+   if(!finfo || cstart >= csize)
       return;
    QProgressDialog* progress = nullptr;
    if (showProgress) {
@@ -431,6 +567,9 @@ void SndFile::createCache(const QString& path, bool showProgress, bool bWrite, s
 
 void SndFile::readCache(const QString& path, bool showProgress)
 {
+   if(!finfo)
+     return;
+
    if (cache) {
       delete[] cache;
    }
@@ -464,6 +603,9 @@ void SndFile::readCache(const QString& path, bool showProgress)
 
 void SndFile::writeCache(const QString& path)
       {
+      if(!finfo)
+        return;
+
       FILE* cfile = fopen(path.toLocal8Bit().constData(), "w");
       if (cfile == 0)
             return;
@@ -479,6 +621,9 @@ void SndFile::writeCache(const QString& path)
 
 void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allowSeek)
       {
+      if(!finfo)
+        return;
+
       const int srcChannels = channels();
       
       if(overwrite)
@@ -595,6 +740,9 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allow
 
 void SndFile::readConverted(SampleV* s, int mag, sf_count_t pos, sf_count_t offset, bool overwrite, bool allowSeek)
       {
+      if(!finfo)
+        return;
+
       if(!(_staticAudioConverterUI && _staticAudioConverterUI->isValid() &&
           (((sampleRateDiffers() || isResampled()) && (_staticAudioConverterUI->capabilities() & AudioConverter::SampleRate)) ||
            (isStretched() && (_staticAudioConverterUI->capabilities() & AudioConverter::Stretch))) ))
@@ -691,9 +839,23 @@ bool SndFile::openWrite()
             DEBUG_WAVE(stderr, "SndFile:: alread open\n");
             return false;
             }
-  QString p = path();
 
-      sf = sf_open(p.toLocal8Bit().constData(), SFM_RDWR, &sfinfo);
+      // File based:
+      if(finfo)
+      {
+        const QString p = path();
+        if(p.isEmpty())
+          return true;
+        sf = sf_open(p.toLocal8Bit().constData(), SFM_RDWR, &sfinfo);
+      }
+      // Memory based:
+      else
+      {
+        if(!_virtualData._virtualData)
+          return true;
+        sf = sf_open_virtual(&sndfile_vio, SFM_RDWR, &sfinfo, this);
+      }
+
       sfUI = nullptr;
       if (sf) {
             if(writeBuffer)
@@ -701,10 +863,13 @@ bool SndFile::openWrite()
             writeBuffer = new float [writeSegSize * std::max(2, sfinfo.channels)];
             openFlag  = true;
             writeFlag = true;
-            QString cacheName = finfo->absolutePath() +
-               QString("/") + finfo->completeBaseName() + QString(".wca");
-            readCache(cacheName, true);
+            if(finfo)
+            {
+              QString cacheName = finfo->absolutePath() +
+                QString("/") + finfo->completeBaseName() + QString(".wca");
+              readCache(cacheName, true);
             }
+          }
       return !sf;
       }
 
@@ -769,37 +934,38 @@ void SndFile::remove()
       {
       if (openFlag)
             close();
-      QFile::remove(finfo->filePath());
+      if(finfo)
+        QFile::remove(finfo->filePath());
       }
 
 QString SndFile::basename() const
       {
-      return finfo->completeBaseName();
+      return finfo ? finfo->completeBaseName() : QString();
       }
 
 QString SndFile::path() const
       {
-      return finfo->filePath();
+      return finfo ? finfo->filePath() : QString();
       }
 
 QString SndFile::canonicalPath() const
       {
-      return finfo->canonicalFilePath();
+      return finfo ? finfo->canonicalFilePath() : QString();
       }
 
 QString SndFile::dirPath() const
       {
-      return finfo->absolutePath();
+      return finfo ? finfo->absolutePath() : QString();
       }
 
 QString SndFile::canonicalDirPath() const
       {
-      return finfo->canonicalPath();
+      return finfo ? finfo->canonicalPath() : QString();
       }
 
 QString SndFile::name() const
       {
-      return finfo->fileName();
+      return finfo ? finfo->fileName() : QString();
       }
 
       
@@ -866,7 +1032,7 @@ sf_count_t SndFile::convertPosition(sf_count_t pos) const
 
 sf_count_t SndFile::samples() const
       {
-      if (!writeFlag) // if file is read only sfinfo is reliable
+      if (!finfo || !writeFlag) // if file is read only sfinfo is reliable
           return sfinfo.frames;
       SNDFILE* sfPtr = sf;
       if (sfUI)
@@ -875,6 +1041,17 @@ sf_count_t SndFile::samples() const
       sf_count_t frames = sf_seek(sfPtr, 0, SEEK_END | SFM_READ);
       sf_seek(sfPtr, curPos, SEEK_SET | SFM_READ);
       return frames;
+      }
+
+//---------------------------------------------------------
+//   samplesConverted
+//---------------------------------------------------------
+
+sf_count_t SndFile::samplesConverted() const
+      {
+      if(sfinfo.samplerate == 0 || _systemSampleRate == 0)
+        return 0;
+      return samples() / sampleRateRatio();
       }
 
 //---------------------------------------------------------
