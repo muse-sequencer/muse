@@ -110,6 +110,7 @@ class SndFile {
       SndFile(const QString& name, int systemSampleRate, unsigned int segSize,
               bool installConverter, AudioConverterPluginList* pluginList);
       // Constructor for virtual (memory or stream) operation.
+      // When using the virtual interface, be sure to call setFormat before opening.
       SndFile(void* virtualData, sf_count_t virtualBytes,
               int systemSampleRate, unsigned int segSize,
               bool installConverter, AudioConverterPluginList* pluginList);
@@ -138,6 +139,7 @@ class SndFile {
                                                  const AudioConverterSettingsGroup* defaultSettings
                                                 ) const;
 
+      // When using the virtual interface, be sure to call setFormat before opening.
       //!< returns true on error
       bool openRead(AudioConverterPluginList* pluginList,
                     const AudioConverterSettingsGroup* defaultSettings,
@@ -181,7 +183,7 @@ class SndFile {
       int samplerate() const;
       int format() const;
       int sampleBits() const;
-      void setFormat(int fmt, int ch, int rate);
+      void setFormat(int fmt, int ch, int rate, sf_count_t frames = 0);
 
       size_t read(int channel, float**, size_t, bool overwrite = true);
       size_t readWithHeap(int channel, float**, size_t, bool overwrite = true);
@@ -266,6 +268,7 @@ class SndFileR {
       { return sf ? sf->setupAudioConverter(
           settings, isLocalSettings, mode, doResample, doStretch, pluginList, defaultSettings) : nullptr; }
 
+      // When using the virtual interface, be sure to call setFormat before opening.
       bool openRead(AudioConverterPluginList* pluginList,
                     const AudioConverterSettingsGroup* defaultSettings,
                     bool createCache=true)
@@ -302,8 +305,8 @@ class SndFileR {
       int samplerate() const { return sf ? sf->samplerate() : 0; }
       int format() const     { return sf ? sf->format() : 0; }
       int sampleBits() const      { return sf ? sf->sampleBits() : 0; }
-      void setFormat(int fmt, int ch, int rate) {
-            if(sf) sf->setFormat(fmt, ch, rate);
+      void setFormat(int fmt, int ch, int rate, sf_count_t frames = 0) {
+            if(sf) sf->setFormat(fmt, ch, rate, frames);
             }
       size_t readWithHeap(int channel, float** f, size_t n, bool overwrite = true) {
             return sf ? sf->readWithHeap(channel, f, n, overwrite) : 0;

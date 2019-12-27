@@ -319,10 +319,6 @@ void MetronomeSynthIF::initSamples()
                   MusEGlobal::sampleRate, MusEGlobal::segmentSize,
                   true, &MusEGlobal::audioConverterPluginList);
       if (!beat.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings, false)) {
-  // REMOVE Tim. samplerate. Changed.
-  //       beatLen = beat.samples();
-  //       beatSamples = new float[beatLen];
-  //       beat.read(1, &beatSamples, beatLen);
         beatLen = beat.samplesConverted();
         beatSamples = new float[beatLen];
         beat.readConverted(0 /* pos */, 1 /* channels */, &beatSamples, beatLen);
@@ -334,10 +330,6 @@ void MetronomeSynthIF::initSamples()
                   MusEGlobal::sampleRate, MusEGlobal::segmentSize,
                   true, &MusEGlobal::audioConverterPluginList);
       if (!meas.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings, false)) {
-  // REMOVE Tim. samplerate. Changed.
-  //       measLen = meas.samples();
-  //       measSamples = new float[measLen];
-  //       meas.read(1, &measSamples, measLen);
         measLen = meas.samplesConverted();
         measSamples = new float[measLen];
         meas.readConverted(0, 1, &measSamples, measLen);
@@ -349,10 +341,6 @@ void MetronomeSynthIF::initSamples()
                   MusEGlobal::sampleRate, MusEGlobal::segmentSize,
                   true, &MusEGlobal::audioConverterPluginList);
       if (!accent1.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings, false)) {
-  // REMOVE Tim. samplerate. Changed.
-  //       accent1Len = accent1.samples();
-  //       accent1Samples = new float[accent1Len];
-  //       accent1.read(1, &accent1Samples, accent1Len);
         accent1Len = accent1.samplesConverted();
         accent1Samples = new float[accent1Len];
         accent1.readConverted(0, 1, &accent1Samples, accent1Len);
@@ -364,10 +352,6 @@ void MetronomeSynthIF::initSamples()
                   MusEGlobal::sampleRate, MusEGlobal::segmentSize,
                   true, &MusEGlobal::audioConverterPluginList);
       if (!accent2.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings, false)) {
-  // REMOVE Tim. samplerate. Changed.
-  //       accent2Len = accent2.samples();
-  //       accent2Samples = new float[accent2Len];
-  //       accent2.read(1, &accent2Samples, accent2Len);
         accent2Len = accent2.samplesConverted();
         accent2Samples = new float[accent2Len];
         accent2.readConverted(0, 1, &accent2Samples, accent2Len);
@@ -379,7 +363,7 @@ void MetronomeSynthIF::initSamples()
       SndFile defClickEmphasis((void*)defaultClickEmphasis, sizeof(defaultClickEmphasis),
                   MusEGlobal::sampleRate, MusEGlobal::segmentSize,
                   true, &MusEGlobal::audioConverterPluginList);
-      defClickEmphasis.setFormat(SF_FORMAT_RAW | SF_FORMAT_FLOAT, 1, 44100);
+      defClickEmphasis.setFormat(SF_FORMAT_RAW | SF_FORMAT_FLOAT, 1, 44100, defaultClickEmphasisLength);
       if (!defClickEmphasis.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings, false)) {
         defaultClickEmphasisLengthConverted = defClickEmphasis.samplesConverted();
         defaultClickEmphasisConverted = new float[defaultClickEmphasisLengthConverted];
@@ -391,7 +375,7 @@ void MetronomeSynthIF::initSamples()
       SndFile defClick((void*)defaultClick, sizeof(defaultClick),
                   MusEGlobal::sampleRate, MusEGlobal::segmentSize,
                   true, &MusEGlobal::audioConverterPluginList);
-      defClick.setFormat(SF_FORMAT_RAW | SF_FORMAT_FLOAT, 1, 44100);
+      defClick.setFormat(SF_FORMAT_RAW | SF_FORMAT_FLOAT, 1, 44100, defaultClickLength);
       if (!defClick.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings, false)) {
         defaultClickLengthConverted = defClick.samplesConverted();
         defaultClickConverted = new float[defaultClickLengthConverted];
@@ -413,16 +397,6 @@ void MetronomeSynthIF::initSamplesOperation(MusECore::PendingOperationList& oper
                MusEGlobal::sampleRate, MusEGlobal::segmentSize,
                true, &MusEGlobal::audioConverterPluginList);
   if (!beat.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings, false)) {
-// REMOVE Tim. samplerate. Changed.
-//     const sf_count_t newBeatLen = beat.samples();
-//     if(newBeatLen != 0)
-//     {
-//       float* newBeatSamples = new float[newBeatLen];
-//       beat.read(1, &newBeatSamples, newBeatLen);
-//       operations.add(PendingOperationItem(&beatSamples, newBeatSamples, 
-//                                           &beatLen, newBeatLen, 
-//                                           PendingOperationItem::ModifyAudioSamples));
-//     }
     const sf_count_t newBeatLen = beat.samplesConverted();
     if(newBeatLen != 0)
     {
@@ -438,16 +412,6 @@ void MetronomeSynthIF::initSamplesOperation(MusECore::PendingOperationList& oper
                MusEGlobal::sampleRate, MusEGlobal::segmentSize,
                true, &MusEGlobal::audioConverterPluginList);
   if (!meas.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings, false)) {
-// REMOVE Tim. samplerate. Changed.
-//     const sf_count_t newMeasLen = meas.samples();
-//     if(newMeasLen != 0)
-//     {
-//       float* newMeasSamples = new float[newMeasLen];
-//       meas.read(1, &newMeasSamples, newMeasLen);
-//       operations.add(PendingOperationItem(&measSamples, newMeasSamples, 
-//                                           &measLen, newMeasLen, 
-//                                           PendingOperationItem::ModifyAudioSamples));
-//     }
     const sf_count_t newMeasLen = meas.samplesConverted();
     if(newMeasLen != 0)
     {
@@ -463,16 +427,6 @@ void MetronomeSynthIF::initSamplesOperation(MusECore::PendingOperationList& oper
                MusEGlobal::sampleRate, MusEGlobal::segmentSize,
                true, &MusEGlobal::audioConverterPluginList);
   if (!accent1.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings, false)) {
-// REMOVE Tim. samplerate. Changed.
-//     const sf_count_t newAccent1Len = accent1.samples();
-//     if(newAccent1Len != 0)
-//     {
-//       float* newAccent1Samples = new float[newAccent1Len];
-//       accent1.read(1, &newAccent1Samples, newAccent1Len);
-//       operations.add(PendingOperationItem(&accent1Samples, newAccent1Samples, 
-//                                           &accent1Len, newAccent1Len, 
-//                                           PendingOperationItem::ModifyAudioSamples));
-//     }
     const sf_count_t newAccent1Len = accent1.samplesConverted();
     if(newAccent1Len != 0)
     {
@@ -488,16 +442,6 @@ void MetronomeSynthIF::initSamplesOperation(MusECore::PendingOperationList& oper
                MusEGlobal::sampleRate, MusEGlobal::segmentSize,
                true, &MusEGlobal::audioConverterPluginList);
   if (!accent2.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings, false)) {
-// REMOVE Tim. samplerate. Changed.
-//     const sf_count_t newAccent2Len = accent2.samples();
-//     if(newAccent2Len != 0)
-//     {
-//       float* newAccent2Samples = new float[newAccent2Len];
-//       accent2.read(1, &newAccent2Samples, newAccent2Len);
-//       operations.add(PendingOperationItem(&accent2Samples, newAccent2Samples, 
-//                                           &accent2Len, newAccent2Len, 
-//                                           PendingOperationItem::ModifyAudioSamples));
-//     }
     const sf_count_t newAccent2Len = accent2.samplesConverted();
     if(newAccent2Len != 0)
     {

@@ -91,7 +91,8 @@ sf_count_t sndfile_vio_read(void *ptr, sf_count_t count, void *user_data)
     return 0;
   if(vd._virtualCurPos + count > vd._virtualBytes)
     count = vd._virtualBytes - vd._virtualCurPos;
-  std::memcpy(ptr, vd._virtualData, count);
+  // TODO Defer to AL::DSP for this?
+  std::memcpy(ptr, (const char*)vd._virtualData + vd._virtualCurPos, count);
   vd._virtualCurPos += count;
   return count;
 }
@@ -106,7 +107,8 @@ sf_count_t sndfile_vio_write(const void *ptr, sf_count_t count, void *user_data)
     return 0;
   if(vd._virtualCurPos + count > vd._virtualBytes)
     count = vd._virtualBytes - vd._virtualCurPos;
-  std::memcpy(vd._virtualData, ptr, count);
+  // TODO Defer to AL::DSP for this?
+  std::memcpy((char*)vd._virtualData + vd._virtualCurPos, ptr, count);
   vd._virtualCurPos += count;
   return count;
 }
@@ -1073,13 +1075,13 @@ int SndFile::format() const
       return sfinfo.format;
       }
 
-void SndFile::setFormat(int fmt, int ch, int rate)
+void SndFile::setFormat(int fmt, int ch, int rate, sf_count_t frames)
       {
       sfinfo.samplerate = rate;
       sfinfo.channels   = ch;
       sfinfo.format     = fmt;
       sfinfo.seekable   = true;
-      sfinfo.frames     = 0;
+      sfinfo.frames     = frames;
       }
 
 //---------------------------------------------------------
