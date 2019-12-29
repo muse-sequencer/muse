@@ -95,7 +95,7 @@ class AudioConverterPlugin {
                                                int systemSampleRate,
                                                int channels, 
                                                AudioConverterSettings* settings, 
-                                               int mode);
+                                               AudioConverterSettings::ModeType mode);
       virtual void cleanup(AudioConverterHandle handle) {
             if(plugin && plugin->cleanup)
               plugin->cleanup(handle);
@@ -181,7 +181,7 @@ class AudioConverterPluginI {
                               int systemSampleRate,
                               int channels,
                               AudioConverterSettings* settings,
-                              int mode);
+                              AudioConverterSettings::ModeType mode);
       
       // Returns whether all the instances are valid - that each AudioConverter is valid.
       bool isValid() const;
@@ -190,6 +190,9 @@ class AudioConverterPluginI {
 
       void reset();
       
+      // Returns the mode of all the instances.
+      AudioConverterSettings::ModeType mode() const;
+
       int process(
         SNDFILE* sf_handle,
         const int sf_chans, const double sf_sr_ratio, const StretchList* sf_stretch_list,
@@ -236,7 +239,7 @@ class AudioConverterSettingsI {
       bool isDefault()
       { return _settings ? _settings->isDefault() : true; } // Act like it's default.
       
-      int executeUI(int mode, QWidget* parent = NULL, bool isLocal = false)
+      int executeUI(AudioConverterSettings::ModeType mode, QWidget* parent = NULL, bool isLocal = false)
       { return _settings ? _settings->executeUI(mode, parent, isLocal) : 0; }
       
       void read(Xml& xml) { if(_settings) _settings->read(xml); }

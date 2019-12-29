@@ -51,7 +51,7 @@ struct RubberBandAudioConverterOptions
   static const RubberBandAudioConverterOptions defaultRealtimeOptions;
   static const RubberBandAudioConverterOptions defaultGuiOptions;
   
-  int _mode;
+  AudioConverterSettings::ModeType _mode;
   // Whether to use these settings or defer to 
   //  some higher default settings if available.
   // The highest level (defaults) will ignore this value.
@@ -59,7 +59,7 @@ struct RubberBandAudioConverterOptions
   int _options;
   
   RubberBandAudioConverterOptions(bool useSettings = false,
-                           int mode = AudioConverterSettings::OfflineMode,
+                           AudioConverterSettings::ModeType mode = AudioConverterSettings::OfflineMode,
 #ifdef RUBBERBAND_SUPPORT
                            int options = RubberBand::RubberBandStretcher::DefaultOptions)
 #else
@@ -70,7 +70,7 @@ struct RubberBandAudioConverterOptions
   }
   
   void initOptions(bool useSettings,
-                   int mode,
+                   AudioConverterSettings::ModeType mode,
                    int options)
   {
     _mode = mode;
@@ -105,23 +105,26 @@ class RubberBandAudioConverterSettings : public AudioConverterSettings
     void assign(const AudioConverterSettings&);
     
     void initOptions(bool /*isLocal*/) {
-      _offlineOptions.initOptions( RubberBandAudioConverterOptions::defaultOfflineOptions._useSettings,
-                                   AudioConverterSettings::OfflineMode,
-                                   RubberBandAudioConverterOptions::defaultOfflineOptions._options);
+      _offlineOptions.initOptions(
+        RubberBandAudioConverterOptions::defaultOfflineOptions._useSettings,
+        AudioConverterSettings::OfflineMode,
+        RubberBandAudioConverterOptions::defaultOfflineOptions._options);
       
-      _realtimeOptions.initOptions(RubberBandAudioConverterOptions::defaultRealtimeOptions._useSettings,
-                                   AudioConverterSettings::RealtimeMode,
-                                   RubberBandAudioConverterOptions::defaultRealtimeOptions._options);
+      _realtimeOptions.initOptions(
+        RubberBandAudioConverterOptions::defaultRealtimeOptions._useSettings,
+        AudioConverterSettings::RealtimeMode,
+        RubberBandAudioConverterOptions::defaultRealtimeOptions._options);
       
-      _guiOptions.initOptions(     RubberBandAudioConverterOptions::defaultGuiOptions._useSettings,
-                                   AudioConverterSettings::GuiMode,
-                                   RubberBandAudioConverterOptions::defaultGuiOptions._options);}
+      _guiOptions.initOptions(
+        RubberBandAudioConverterOptions::defaultGuiOptions._useSettings,
+        AudioConverterSettings::GuiMode,
+        RubberBandAudioConverterOptions::defaultGuiOptions._options);}
       
     RubberBandAudioConverterOptions* offlineOptions() { return &_offlineOptions; }
     RubberBandAudioConverterOptions* realtimeOptions() { return &_realtimeOptions; }
     RubberBandAudioConverterOptions* guiOptions() { return &_guiOptions; }
     
-    int executeUI(int mode, QWidget* parent = NULL, bool isLocal = false);
+    int executeUI(ModeType mode, QWidget* parent = NULL, bool isLocal = false);
     void read(Xml&);
     void write(int, Xml&) const;
     // Returns whether to use these settings or defer to default settings.
@@ -151,19 +154,22 @@ class RubberBandAudioConverter : public AudioConverter
       RubberBandAudioConverter(int systemSampleRate,
                                int channels, 
                                AudioConverterSettings* settings, 
-                               int mode);
+                               AudioConverterSettings::ModeType mode);
       ~RubberBandAudioConverter();
       
-      virtual bool isValid() 
+      bool isValid() const
 #ifdef RUBBERBAND_SUPPORT
       { return _rbs != 0; }
 #else
       { return false; }
 #endif
-      virtual void reset();
-      virtual void setChannels(int ch);
+      void reset();
+      void setChannels(int ch);
+
+      AudioConverterSettings::ModeType mode() const;
+
       // Make sure beforehand that sf samplerate is not <= 0.
-      virtual int process(
+      int process(
         SNDFILE* sf_handle,
         const int sf_chans, const double sf_sr_ratio, const StretchList* sf_stretch_list,
         const sf_count_t pos,
@@ -196,7 +202,7 @@ class RubberbandSettingsDialog : public QDialog, public Ui::RubberbandSettingsBa
 
    public:
       enum buttonId { DefaultsButtonId, ConverterButtonId, OkButtonId, CancelButtonId, DefaultPresetId, PercussionPresetId, MaxPresetId };
-      RubberbandSettingsDialog(int mode,
+      RubberbandSettingsDialog(MusECore::AudioConverterSettings::ModeType mode,
                                QWidget* parent = NULL,
                                MusECore::AudioConverterSettings* settings = NULL,
                                bool isLocal = false);

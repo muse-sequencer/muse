@@ -30,9 +30,6 @@
 #include <QPushButton>
 #include <QList>
 
-#include "audio_convert/audio_converter_settings_group.h"
-#include "audio_convert/audio_converter_plugin.h"
-
 #include "audio_converter_settings.h"
 
 namespace MusEGui {
@@ -175,7 +172,7 @@ void AudioConverterSettingsDialog::guiSettingsClicked()
   showSettings(MusECore::AudioConverterSettings::GuiMode);
 }
 
-void AudioConverterSettingsDialog::showSettings(int mode)
+void AudioConverterSettingsDialog::showSettings(MusECore::AudioConverterSettings::ModeType mode)
 {
   if(!_settings)
     return;

@@ -295,7 +295,7 @@ bool SndFile::openRead(AudioConverterPluginList* pluginList,
 
 AudioConverterPluginI* SndFile::setupAudioConverter(const AudioConverterSettingsGroup* settings, 
                                                     bool isLocalSettings, 
-                                                    int mode, 
+                                                    AudioConverterSettings::ModeType mode, 
                                                     bool doResample,
                                                     bool doStretch,
                                                     AudioConverterPluginList* pluginList,
@@ -378,7 +378,7 @@ AudioConverterPluginI* SndFile::setupAudioConverter(const AudioConverterSettings
 return plugI;
 }
 
-AudioConverterPluginI* SndFile::staticAudioConverter(int mode) const 
+AudioConverterPluginI* SndFile::staticAudioConverter(AudioConverterSettings::ModeType mode) const 
 { 
   switch(mode)
   {
@@ -397,7 +397,7 @@ AudioConverterPluginI* SndFile::staticAudioConverter(int mode) const
   return nullptr; 
 }
 
-void SndFile::setStaticAudioConverter(AudioConverterPluginI* converter, int mode)
+void SndFile::setStaticAudioConverter(AudioConverterPluginI* converter, AudioConverterSettings::ModeType mode)
 {
   switch(mode)
   {

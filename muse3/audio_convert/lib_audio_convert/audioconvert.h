@@ -37,9 +37,40 @@
 
 namespace MusECore {
 
-class AudioConverterSettings;
+class AudioConverterSettings
+{
+  public:
+    // Three types of settings: 
+    // Those suitable for offline work (highest quality vs. slowest is desirable), 
+    //  those suitable for realtime work (speed vs quality depends on the end goal), and 
+    //  those suitable for gui display (relaxed quality vs fastest is acceptable).
+    // They can be OR'd together.
+    enum ModeType { OfflineMode = 0x01, RealtimeMode = 0x02, GuiMode = 0x04};
+    
+  protected:
+    int _converterID;
+    
+  public:
+    AudioConverterSettings(int converterID) : _converterID(converterID) { }
+    virtual ~AudioConverterSettings() { }
+  
+    int converterID() const { return _converterID; }
+    
+    virtual void assign(const AudioConverterSettings&) = 0;
+    
+    virtual int executeUI(ModeType mode, QWidget* parent = NULL, bool isLocal = false) = 0;
+    virtual void read(Xml&) = 0;
+    virtual void write(int, Xml&) const = 0;
+    // Returns whether to use these settings or defer to default settings.
+    // Mode is a combination of AudioConverterSettings::ModeType selecting
+    //  which of the settings to check. Can also be <= 0, meaning all.
+    virtual bool useSettings(int mode = -1) const = 0;
+    virtual bool isDefault() const = 0;
+};
+      
 class AudioConverter;
 typedef AudioConverter* AudioConverterHandle;
+
 struct AudioConverterDescriptor
 {
   // Unique ID of the converter.
@@ -64,7 +95,7 @@ struct AudioConverterDescriptor
   // Create an instance of the plugin.
   // Mode is an AudioConverterSettings::ModeType selecting which of the settings to use.
   AudioConverterHandle (*instantiate)(int systemSampleRate, const struct AudioConverterDescriptor* Descriptor,
-                                 int channels, AudioConverterSettings* settings, int mode);
+                                 int channels, AudioConverterSettings* settings, AudioConverterSettings::ModeType mode);
   
   // Destroy the instance after usage.
   void (*cleanup)(AudioConverterHandle Instance);
@@ -80,37 +111,6 @@ typedef const AudioConverterDescriptor*
   (*Audio_Converter_Descriptor_Function)(unsigned long Index);
 
   
-class AudioConverterSettings
-{
-  public:
-    // Three types of settings: 
-    // Those suitable for offline work (highest quality vs. slowest is desirable), 
-    //  those suitable for realtime work (speed vs quality depends on the end goal), and 
-    //  those suitable for gui display (relaxed quality vs fastest is acceptable).
-    // They can be OR'd together.
-    enum ModeType { OfflineMode = 0x01, RealtimeMode = 0x02, GuiMode = 0x04};
-    
-  protected:
-    int _converterID;
-    
-  public:
-    AudioConverterSettings(int converterID) : _converterID(converterID) { }
-    virtual ~AudioConverterSettings() { }
-  
-    int converterID() const { return _converterID; }
-    
-    virtual void assign(const AudioConverterSettings&) = 0;
-    
-    virtual int executeUI(int mode, QWidget* parent = NULL, bool isLocal = false) = 0;
-    virtual void read(Xml&) = 0;
-    virtual void write(int, Xml&) const = 0;
-    // Returns whether to use these settings or defer to default settings.
-    // Mode is a combination of AudioConverterSettings::ModeType selecting
-    //  which of the settings to check. Can also be <= 0, meaning all.
-    virtual bool useSettings(int mode = -1) const = 0;
-    virtual bool isDefault() const = 0;
-};
-      
 //---------------------------------------------------------
 //   AudioConverter
 //---------------------------------------------------------
@@ -125,9 +125,10 @@ class AudioConverter
       int _systemSampleRate;
       int _channels;
       int _refCount;
+      AudioConverterSettings::ModeType _mode;
 
    public:   
-      AudioConverter(int systemSampleRate);
+      AudioConverter(int systemSampleRate, AudioConverterSettings::ModeType mode);
       virtual ~AudioConverter();
       
       // Reference this instance of a converter. Increases the reference count.
@@ -135,9 +136,12 @@ class AudioConverter
       // De-reference this instance of a converter. Decreases the reference count. Destroys the instance if count is zero.
       static AudioConverterHandle release(AudioConverter* cv);
       
-      virtual bool isValid() = 0;
+      virtual bool isValid() const = 0;
       virtual void reset() = 0;
       virtual void setChannels(int ch) = 0;
+
+      // Returns the current mode.
+      virtual AudioConverterSettings::ModeType mode() const = 0;
 
       virtual int process(
         SNDFILE* sf_handle,

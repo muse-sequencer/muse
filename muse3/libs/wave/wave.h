@@ -132,7 +132,7 @@ class SndFile {
       //  directly used instead of the comparison to, and possible use of, the global default above.
       AudioConverterPluginI* setupAudioConverter(const AudioConverterSettingsGroup* settings,
                                                  bool isLocalSettings, 
-                                                 int mode, 
+                                                 AudioConverterSettings::ModeType mode, 
                                                  bool doResample,
                                                  bool doStretch,
                                                  AudioConverterPluginList* pluginList,
@@ -201,8 +201,8 @@ class SndFile {
       // Seeks to a converted position if a samplerate or shift/stretch converter is active. Otherwise a normal seek.
       // The offset is the offset into the sound file and is NOT converted.
       sf_count_t seekConverted(sf_count_t frames, int whence, int offset);
-      AudioConverterPluginI* staticAudioConverter(int mode) const;
-      void setStaticAudioConverter(AudioConverterPluginI* converter, int mode);
+      AudioConverterPluginI* staticAudioConverter(AudioConverterSettings::ModeType mode) const;
+      void setStaticAudioConverter(AudioConverterPluginI* converter, AudioConverterSettings::ModeType mode);
       AudioConverterSettingsGroup* audioConverterSettings() const { return _audioConverterSettings; }
       void setAudioConverterSettings(AudioConverterSettingsGroup* settings);
       StretchList* stretchList() const { return _stretchList; }
@@ -260,7 +260,7 @@ class SndFileR {
       //  directly used instead of the comparison to, and possible use of, the global default above.
       AudioConverterPluginI* setupAudioConverter(const AudioConverterSettingsGroup* settings, 
                                                  bool isLocalSettings, 
-                                                 int mode, 
+                                                 AudioConverterSettings::ModeType mode, 
                                                  bool doResample,
                                                  bool doStretch,
                                                  AudioConverterPluginList* pluginList,
@@ -333,9 +333,9 @@ class SndFileR {
       // The offset is the offset into the sound file and is NOT converted.
       sf_count_t seekConverted(sf_count_t frames, int whence, int offset)
       { return sf ? sf->seekConverted(frames, whence, offset) : 0; }
-      AudioConverterPluginI* staticAudioConverter(int mode) const
+      AudioConverterPluginI* staticAudioConverter(AudioConverterSettings::ModeType mode) const
       { return sf ? sf->staticAudioConverter(mode) : 0; }
-      void setStaticAudioConverter(AudioConverterPluginI* converter, int mode)
+      void setStaticAudioConverter(AudioConverterPluginI* converter, AudioConverterSettings::ModeType mode)
       { if(sf) sf->setStaticAudioConverter(converter, mode); }
       AudioConverterSettingsGroup* audioConverterSettings() const { return sf ? sf->audioConverterSettings() : 0; }
       void setAudioConverterSettings(AudioConverterSettingsGroup* settings)

@@ -359,6 +359,10 @@ class Song : public QObject {
         StretchList* stretch_list, StretchListItem::StretchEventType type, MuseFrame_t frame,
         double value, PendingOperationList& ops) const;
 
+      void setAudioConvertersOfflineOperation(
+        bool isOffline
+        );
+
       void modifyAudioConverterSettingsOperation(
         SndFileR sndfile,
         AudioConverterSettingsGroup* settings,
@@ -370,7 +374,8 @@ class Song : public QObject {
         SndFileR sndfile,
         PendingOperationList& ops,
         bool doResample,
-        bool doStretch) const;
+        bool doStretch
+        ) const;
 
       void modifyStretchListOperation(
         SndFileR sndfile, int type, double value, PendingOperationList& ops) const;

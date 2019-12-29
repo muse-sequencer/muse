@@ -2975,6 +2975,10 @@ void MusE::bounceToTrack()
           }
       }
 
+      // REMOVE Tim. samplerate. Added.
+      // Switch all wave converters to offline settings mode.
+      MusEGlobal::song->setAudioConvertersOfflineOperation(true);
+
       // This will wait a few cycles until freewheel is set and a seek is done.
       MusEGlobal::audio->msgBounce();
       MusEGlobal::song->bounceOutput = out;
@@ -3040,6 +3044,10 @@ void MusE::bounceToFile(MusECore::AudioOutput* ao)
       MusECore::SndFile* sf = MusECore::getSndFile(0, this);
       if (sf == 0)
             return;
+
+      // REMOVE Tim. samplerate. Added.
+      // Switch all wave converters to offline settings mode.
+      MusEGlobal::song->setAudioConvertersOfflineOperation(true);
 
       // This will wait a few cycles until freewheel is set and a seek is done.
       MusEGlobal::audio->msgBounce();
@@ -4292,7 +4300,7 @@ void MusE::importWave()
 
 bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* track)
 {
-   if (track==NULL)
+   if (!track)
       track = _arranger->curTrack();
 
    MusECore::SndFileR f = MusECore::sndFileGetWave(name, true);
@@ -4325,7 +4333,11 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
          return true; // this removed f from the stack, dropping refcount maybe to zero and maybe deleting the thing
       }
 
-      if(mbox.clickedButton() == resample_button)
+      if(mbox.clickedButton() == converter_button)
+      {
+        samples = f->samplesConverted();
+      }
+      else if(mbox.clickedButton() == resample_button)
       {
         //save project if necessary
         //copy wave to project's folder,
@@ -4500,7 +4512,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
                 src_delete(srState);
                 sf_close(sfNew);
                 f.close();
-                f = NULL;
+                f = nullptr;
                 QFile(fNewPath).remove();
                 return true;
               }
@@ -4527,7 +4539,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
         sf_close(sfNew);
 
         f.close();
-        f = NULL;
+        f = nullptr;
 
         //reopen resampled wave again
         f = MusECore::sndFileGetWave(fNewPath, true);

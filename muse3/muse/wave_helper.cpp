@@ -242,11 +242,11 @@ SndFileR sndFileGetWave(const QString& inName, bool readOnlyFlag, bool openFlag,
             }
 
       // Allow multiple instances.
-      SndFile* f = NULL;
+      SndFile* f = nullptr;
       if (!QFile::exists(name)) {
             fprintf(stderr, "wave file <%s> not found\n",
                 name.toLocal8Bit().constData());
-            return NULL;
+            return nullptr;
             }
       f = new SndFile(name, MusEGlobal::sampleRate, MusEGlobal::segmentSize,
                true, &MusEGlobal::audioConverterPluginList);
@@ -289,7 +289,7 @@ SndFileR sndFileGetWave(const QString& inName, bool readOnlyFlag, bool openFlag,
                                   QMessageBox::Ok, QMessageBox::Ok);
 
               delete f;
-              f = NULL;
+              f = nullptr;
               }
         }
       return f;

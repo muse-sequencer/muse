@@ -43,7 +43,7 @@ MusECore::AudioConverter* instantiate(int systemSampleRate,
                                       const MusECore::AudioConverterDescriptor* /*Descriptor*/,
                                       int channels, 
                                       MusECore::AudioConverterSettings* settings, 
-                                      int mode)
+                                      MusECore::AudioConverterSettings::ModeType mode)
 {
   return new MusECore::SRCAudioConverter(systemSampleRate, channels, settings, mode);
 }
@@ -110,8 +110,10 @@ namespace MusECore {
 //   SRCAudioConverter
 //---------------------------------------------------------
 
-SRCAudioConverter::SRCAudioConverter(int systemSampleRate, int channels, AudioConverterSettings* settings, int mode) 
-  : AudioConverter(systemSampleRate)
+SRCAudioConverter::SRCAudioConverter(
+  int systemSampleRate, int channels,
+  AudioConverterSettings* settings, AudioConverterSettings::ModeType mode)
+  : AudioConverter(systemSampleRate, mode)
 {
   DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::SRCAudioConverter this:%p channels:%d mode:%d\n", 
                      this, channels, mode);
@@ -209,6 +211,11 @@ void SRCAudioConverter::resetSrcData()
 {
   _curInBufferFrame = 0;
   _needBuffer = true;
+}
+
+AudioConverterSettings::ModeType SRCAudioConverter::mode() const
+{ 
+  return _mode;
 }
 
 int SRCAudioConverter::process(
@@ -557,7 +564,7 @@ bool SRCAudioConverterSettings::useSettings(int mode) const
   return false;
 }
 
-int SRCAudioConverterSettings::executeUI(int mode, QWidget* parent, bool isLocal) 
+int SRCAudioConverterSettings::executeUI(ModeType mode, QWidget* parent, bool isLocal) 
 {
   MusEGui::SRCResamplerSettingsDialog dlg(mode, parent, this, isLocal);
   return dlg.exec(); 
@@ -660,7 +667,7 @@ void SRCAudioConverterSettings::read(Xml& xml)
 namespace MusEGui {
   
 SRCResamplerSettingsDialog::SRCResamplerSettingsDialog(
-  int mode,
+  MusECore::AudioConverterSettings::ModeType mode,
   QWidget* parent, 
   MusECore::AudioConverterSettings* settings, 
   bool isLocal)

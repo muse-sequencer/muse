@@ -768,7 +768,8 @@ void Audio::process(unsigned frames)
                   MusEGlobal::audioPrefetch->msgTick(isRecording(), true);
 
             if (bounce() && _pos >= MusEGlobal::song->rPos()) {
-                  _bounceState = BounceOff;
+                  // Need to let the resulting stopRolling take care of resetting bounce.
+                  //_bounceState = BounceOff;
                   // This is safe in both Jack 1 and 2.
                   MusEGlobal::audioDevice->stopTransport();
                   return;
@@ -1775,8 +1776,15 @@ void Audio::abortRolling()
             (*i)->resetMeter();
             }
       recording    = false;
-      _bounceState = BounceOff;
-      write(sigFd, "3", 1);   // abort rolling
+      if(_bounceState == BounceOff)
+      {
+        write(sigFd, "3", 1);   // abort rolling
+      }
+      else
+      {
+        _bounceState = BounceOff;
+        write(sigFd, "A", 1);   // abort rolling + Special stop bounce (offline) mode
+      }
       }
 
 //---------------------------------------------------------
@@ -1828,10 +1836,17 @@ void Audio::stopRolling()
             (*i)->resetMeter();
             }
       recording    = false;
-      _bounceState = BounceOff;
       endRecordPos = _pos;
       endExternalRecTick = curTickPos;
-      write(sigFd, "0", 1);   // STOP
+      if(_bounceState == BounceOff)
+      {
+        write(sigFd, "0", 1);   // STOP
+      }
+      else
+      {
+        _bounceState = BounceOff;
+        write(sigFd, "B", 1);   // STOP + Special stop bounce (offline) mode
+      }
       }
 
 //---------------------------------------------------------

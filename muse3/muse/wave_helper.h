@@ -31,11 +31,11 @@
 
 namespace MusECore {
 
-bool sndFileCheckCopyOnWrite(const SndFileR sndFile);
-void sndFileApplyUndoFile(const Event& original, const QString* tmpfile, unsigned startframe, unsigned endframe);
+extern bool sndFileCheckCopyOnWrite(const SndFileR sndFile);
+extern void sndFileApplyUndoFile(const Event& original, const QString* tmpfile, unsigned startframe, unsigned endframe);
 // If audioConverterSettings and stretchList are given, they are assigned.
-SndFileR sndFileGetWave(const QString& name, bool readOnlyFlag, bool openFlag = true, bool showErrorBox = true, 
-                 const AudioConverterSettingsGroup* audioConverterSettings = NULL, const StretchList* stretchList = NULL);
+extern SndFileR sndFileGetWave(const QString& name, bool readOnlyFlag, bool openFlag = true, bool showErrorBox = true, 
+                 const AudioConverterSettingsGroup* audioConverterSettings = nullptr, const StretchList* stretchList = nullptr);
 
 }
 

@@ -272,7 +272,7 @@ AudioConverterHandle AudioConverterPlugin::instantiate(AudioConverterPluginI* /*
                                                        int systemSampleRate,
                                                        int channels, 
                                                        AudioConverterSettings* settings, 
-                                                       int mode)
+                                                       AudioConverterSettings::ModeType mode)
 {
   DEBUG_AUDIOCONVERT(stderr, "AudioConverterPlugin::instantiate\n");
   AudioConverterHandle h = plugin->instantiate(systemSampleRate, plugin, channels, settings, mode);
@@ -329,7 +329,7 @@ bool AudioConverterPluginI::initPluginInstance(AudioConverterPlugin* plug,
                                                int systemSampleRate,
                                                int channels, 
                                                AudioConverterSettings* settings, 
-                                               int mode)
+                                               AudioConverterSettings::ModeType mode)
 {
   if(!plug)
   {
@@ -411,6 +411,32 @@ void AudioConverterPluginI::reset()
   for(int i = 0; i < instances; ++i) 
     if(handle[i])
       handle[i]->reset();
+}
+
+AudioConverterSettings::ModeType AudioConverterPluginI::mode() const
+{
+  if(!handle)
+    return AudioConverterSettings::RealtimeMode;
+  AudioConverterSettings::ModeType fin_m = AudioConverterSettings::RealtimeMode;
+  AudioConverterSettings::ModeType m;
+  bool first = true;
+  for(int i = 0; i < instances; ++i)
+    if(handle[i])
+    {
+      m = handle[i]->mode();
+      if(m != fin_m)
+      {
+        // Check: Each instance should be in the same mode.
+        if(!first)
+        {
+          ERROR_AUDIOCONVERT(stderr,
+            "AudioConverterPluginI::mode(): Error: Different mode:%d than first:%d in instance\n", m, fin_m);
+        }
+        first = false;
+        fin_m = m;
+      }
+    }
+  return fin_m;
 }
 
 int AudioConverterPluginI::process(

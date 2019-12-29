@@ -38,11 +38,12 @@
 
 // Create a new instance of the plugin.  
 // Mode is an AudioConverterSettings::ModeType selecting which of the settings to use.
-MusECore::AudioConverter* instantiate(int systemSampleRate,
-                                      const MusECore::AudioConverterDescriptor* /*Descriptor*/,
-                                      int channels, 
-                                      MusECore::AudioConverterSettings* settings, 
-                                      int mode)
+MusECore::AudioConverter* instantiate(
+  int systemSampleRate,
+  const MusECore::AudioConverterDescriptor* /*Descriptor*/,
+  int channels, 
+  MusECore::AudioConverterSettings* settings, 
+  MusECore::AudioConverterSettings::ModeType mode)
 {
   return new MusECore::ZitaResamplerAudioConverter(systemSampleRate, channels, settings, mode);  // TODO Pass SF?
 }
@@ -108,10 +109,12 @@ namespace MusECore {
 //   ZitaResamplerAudioConverter
 //---------------------------------------------------------
 
-ZitaResamplerAudioConverter::ZitaResamplerAudioConverter(int systemSampleRate,
-                                                         int channels, 
-                                                         AudioConverterSettings* /*settings*/, 
-                                                         int /*mode*/) : AudioConverter(systemSampleRate)
+ZitaResamplerAudioConverter::ZitaResamplerAudioConverter(
+  int systemSampleRate,
+  int channels, 
+  AudioConverterSettings* /*settings*/, 
+  AudioConverterSettings::ModeType mode)
+  : AudioConverter(systemSampleRate, mode)
 {
   DEBUG_AUDIOCONVERT(stderr, "ZitaResamplerAudioConverter::ZitaResamplerAudioConverter this:%p channels:%d mode:%d\n", 
                      this, channels, mode);
@@ -185,6 +188,11 @@ void ZitaResamplerAudioConverter::reset()
   _rbs->reset();
 #endif
   return;  
+}
+
+AudioConverterSettings::ModeType ZitaResamplerAudioConverter::mode() const
+{ 
+  return _mode;
 }
 
 #ifdef ZITA_RESAMPLER_SUPPORT
@@ -371,7 +379,8 @@ bool ZitaResamplerAudioConverterSettings::useSettings(int mode) const
   return false;
 }
 
-int ZitaResamplerAudioConverterSettings::executeUI(int mode, QWidget* parent, bool isLocal) 
+int ZitaResamplerAudioConverterSettings::executeUI(
+  ModeType mode, QWidget* parent, bool isLocal) 
 {
   MusEGui::ZitaResamplerSettingsDialog dlg(mode, parent, this, isLocal);
   return dlg.exec(); 
@@ -473,7 +482,7 @@ void ZitaResamplerAudioConverterSettings::read(Xml& xml)
 namespace MusEGui {
   
 ZitaResamplerSettingsDialog::ZitaResamplerSettingsDialog(
-  int mode, 
+  MusECore::AudioConverterSettings::ModeType mode, 
   QWidget* parent, 
   MusECore::AudioConverterSettings* settings, 
   bool isLocal)

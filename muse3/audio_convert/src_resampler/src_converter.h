@@ -47,7 +47,7 @@ struct SRCAudioConverterOptions
   static const SRCAudioConverterOptions defaultRealtimeOptions;
   static const SRCAudioConverterOptions defaultGuiOptions;
   
-  int _mode;
+  AudioConverterSettings::ModeType _mode;
   // Whether to use these settings or defer to 
   //  some higher default settings if available.
   // The highest level (defaults) will ignore this value.
@@ -55,16 +55,18 @@ struct SRCAudioConverterOptions
   
   int _converterType;
   
-  SRCAudioConverterOptions(bool useSettings = defaultOfflineOptions._useSettings, 
-                           int mode = AudioConverterSettings::OfflineMode,
-                           int converterType = defaultOfflineOptions._converterType)
+  SRCAudioConverterOptions(
+    bool useSettings = defaultOfflineOptions._useSettings, 
+    AudioConverterSettings::ModeType mode = AudioConverterSettings::OfflineMode,
+    int converterType = defaultOfflineOptions._converterType)
   {
     initOptions(useSettings, mode, converterType);
   }
   
-  void initOptions(bool useSettings, 
-                   int mode,
-                   int converterType)
+  void initOptions(
+    bool useSettings, 
+    AudioConverterSettings::ModeType mode,
+    int converterType)
   {
     _mode = mode;
     _useSettings = useSettings;
@@ -98,23 +100,26 @@ class SRCAudioConverterSettings : public AudioConverterSettings
     void assign(const AudioConverterSettings&);
     
     void initOptions(bool /*isLocal*/) {
-      _offlineOptions.initOptions( SRCAudioConverterOptions::defaultOfflineOptions._useSettings,
-                                   AudioConverterSettings::OfflineMode,
-                                   SRCAudioConverterOptions::defaultOfflineOptions._converterType);
+      _offlineOptions.initOptions(
+        SRCAudioConverterOptions::defaultOfflineOptions._useSettings,
+        AudioConverterSettings::OfflineMode,
+        SRCAudioConverterOptions::defaultOfflineOptions._converterType);
       
-      _realtimeOptions.initOptions(SRCAudioConverterOptions::defaultRealtimeOptions._useSettings,
-                                   AudioConverterSettings::RealtimeMode,
-                                   SRCAudioConverterOptions::defaultRealtimeOptions._converterType);
+      _realtimeOptions.initOptions(
+        SRCAudioConverterOptions::defaultRealtimeOptions._useSettings,
+        AudioConverterSettings::RealtimeMode,
+        SRCAudioConverterOptions::defaultRealtimeOptions._converterType);
       
-      _guiOptions.initOptions(     SRCAudioConverterOptions::defaultGuiOptions._useSettings,
-                                   AudioConverterSettings::GuiMode,
-                                   SRCAudioConverterOptions::defaultGuiOptions._converterType);}
+      _guiOptions.initOptions(
+        SRCAudioConverterOptions::defaultGuiOptions._useSettings,
+        AudioConverterSettings::GuiMode,
+        SRCAudioConverterOptions::defaultGuiOptions._converterType);}
                                    
     SRCAudioConverterOptions* offlineOptions() { return &_offlineOptions; }
     SRCAudioConverterOptions* realtimeOptions() { return &_realtimeOptions; }
     SRCAudioConverterOptions* guiOptions() { return &_guiOptions; }
     
-    int executeUI(int mode, QWidget* parent = NULL, bool isLocal = false);
+    int executeUI(ModeType mode, QWidget* parent = NULL, bool isLocal = false);
     void read(Xml&);
     void write(int, Xml&) const;
     // Returns whether to use these settings or defer to default settings.
@@ -145,14 +150,18 @@ class SRCAudioConverter : public AudioConverter
 
    public:   
       // Mode is an AudioConverterSettings::ModeType selecting which of the settings to use.
-      SRCAudioConverter(int systemSampleRate, int channels, AudioConverterSettings* settings, int mode);
+      SRCAudioConverter(int systemSampleRate, int channels, AudioConverterSettings* settings,
+                        AudioConverterSettings::ModeType mode);
       ~SRCAudioConverter();
       
-      virtual bool isValid() { return _src_state != 0; }
-      virtual void reset();
-      virtual void setChannels(int ch);
+      bool isValid() const { return _src_state != 0; }
+      void reset();
+      void setChannels(int ch);
+
+      AudioConverterSettings::ModeType mode() const;
+
       // Make sure beforehand that sf samplerate is not <= 0.
-      virtual int process(
+      int process(
         SNDFILE* sf_handle,
         const int sf_chans, const double sf_sr_ratio, const StretchList* sf_stretch_list,
         const sf_count_t pos,
@@ -186,10 +195,11 @@ class SRCResamplerSettingsDialog : public QDialog, public Ui::SRCResamplerSettin
 
    public:
       enum buttonId { DefaultsButtonId, ConverterButtonId, OkButtonId, CancelButtonId };
-      SRCResamplerSettingsDialog(int mode, 
-                                 QWidget* parent = NULL, 
-                                 MusECore::AudioConverterSettings* settings = NULL, 
-                                 bool isLocal = false);
+      SRCResamplerSettingsDialog(
+        MusECore::AudioConverterSettings::ModeType mode, 
+        QWidget* parent = NULL, 
+        MusECore::AudioConverterSettings* settings = NULL, 
+        bool isLocal = false);
       };
 
 } // namespace MusEGui

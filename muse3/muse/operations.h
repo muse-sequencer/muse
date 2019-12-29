@@ -168,6 +168,7 @@ struct PendingOperationItem
     AddKey,            DeleteKey,             ModifyKey,
 
     ModifyDefaultAudioConverterSettings,                ModifyLocalAudioConverterSettings,
+    SetAudioConverterOfflineMode,
     AddStretchListRatioAt,   DeleteStretchListRatioAt,  ModifyStretchListRatioAt,
     ModifyStretchListRatio,
 
@@ -284,10 +285,12 @@ struct PendingOperationItem
     { _type = type; _audio_converter_settings = new_settings; }
       
   PendingOperationItem(SndFile* sf, AudioConverterSettingsGroup* new_settings, 
-                       AudioConverterPluginI* newAudioConverter, AudioConverterPluginI* newAudioConverterUI, 
+                       AudioConverterPluginI* newAudioConverter,
+                       AudioConverterPluginI* newAudioConverterUI,
                        PendingOperationType type = ModifyLocalAudioConverterSettings)
     { _type = type; _sndFile = sf; 
-      _audio_converter = newAudioConverter; _audio_converter_ui = newAudioConverterUI; 
+      _audio_converter = newAudioConverter;
+      _audio_converter_ui = newAudioConverterUI;
       _audio_converter_settings = new_settings; }
       
   PendingOperationItem(float** samples, float* new_samples, int* samples_len, int new_samples_len, 
@@ -295,6 +298,11 @@ struct PendingOperationItem
     { _type = type; _audioSamplesPointer = samples; _newAudioSamples = new_samples; 
       _audioSamplesLen = samples_len, _newAudioSamplesLen = new_samples_len; }
     
+  PendingOperationItem(SndFile* sf, AudioConverterPluginI* newAudioConverter,
+                       PendingOperationType type = SetAudioConverterOfflineMode)
+    { _type = type; _sndFile = sf; _audio_converter = newAudioConverter; }
+
+
   // The operation is constructed and allocated in non-realtime before the call, then the controllers modified in realtime stage,
   //  then operation is deleted in non-realtime stage.
   PendingOperationItem(MidiCtrlValRemapOperation* operation, PendingOperationType type = RemapDrumControllers)

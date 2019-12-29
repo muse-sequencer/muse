@@ -188,6 +188,7 @@ unsigned int PendingOperationItem::getIndex() const
     case ModifyLocalAudioConverterSettings:
     case ModifyDefaultAudioConverterSettings:
     case ModifyStretchListRatio:
+    case SetAudioConverterOfflineMode:
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
     
@@ -340,6 +341,22 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     }
     break;
       
+    case SetAudioConverterOfflineMode:
+    {
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SetAudioConverterOfflineMode: "
+                                "sndFile:%p audio_converter:%p\n", 
+                                _sndFile, _audio_converter);
+
+      AudioConverterPluginI* cur_conv = _sndFile->staticAudioConverter(AudioConverterSettings::RealtimeMode);
+      //if(_audio_converter)
+        _sndFile->setStaticAudioConverter(_audio_converter, AudioConverterSettings::RealtimeMode);
+      // Transfer the original pointer into the member, so it can be deleted in the non-RT stage.
+      _audio_converter = cur_conv;
+      flags |= SC_AUDIO_CONVERTER;
+    }
+    break;
+
+
     case ModifyTrackDrumMapItem:
     {
 #ifdef _PENDING_OPS_DEBUG_
@@ -1589,6 +1606,12 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
         delete _audio_converter_ui;
     break;
 
+    case SetAudioConverterOfflineMode:
+      // At this point this is the original pointer that were replaced. Delete the original object now.
+      if(_audio_converter)
+        delete _audio_converter;
+    break;
+
     case ModifyDefaultAudioConverterSettings:
       // At this point this is the original pointer that was replaced. Delete the original object now.
       if(_audio_converter_settings)
@@ -1757,13 +1780,24 @@ bool PendingOperationList::add(PendingOperationItem op)
       case PendingOperationItem::ModifyLocalAudioConverterSettings:
         if(poi._type == PendingOperationItem::ModifyLocalAudioConverterSettings && poi._sndFile == op._sndFile &&
            poi._audio_converter_settings == op._audio_converter_settings && 
-           poi._audio_converter == op._audio_converter && poi._audio_converter_ui == op._audio_converter_ui)
+           poi._audio_converter == op._audio_converter &&
+           poi._audio_converter_ui == op._audio_converter_ui)
         {
           ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double ModifyLocalAudioConverterSettings. Ignoring.\n");
           return false;  
         }
       break;
     
+      case PendingOperationItem::SetAudioConverterOfflineMode:
+        if(poi._type == PendingOperationItem::SetAudioConverterOfflineMode && poi._sndFile == op._sndFile &&
+           poi._audio_converter == op._audio_converter)
+        {
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double SetAudioConverterOfflineMode. Ignoring.\n");
+          return false;  
+        }
+      break;
+
+
       case PendingOperationItem::ModifyTrackDrumMapItem:
         if(poi._type == PendingOperationItem::ModifyTrackDrumMapItem &&
            poi._drum_map_track_operation == op._drum_map_track_operation)

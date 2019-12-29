@@ -2459,6 +2459,20 @@ void Song::seqSignal(int fd)
                           MusEGlobal::audioDevice->setFreewheel(false);
                         break;
 
+                  case 'A': // Abort rolling + Special stop bounce (offline) mode
+                          do_set_sync_timeout = true;
+                          abortRolling();
+                          // Switch all the wave converters back to online mode.
+                          setAudioConvertersOfflineOperation(false);
+                        break;
+
+                  case 'B': // Stop + Special stop bounce mode
+                          do_set_sync_timeout = true;
+                          stopRolling();
+                          // Switch all the wave converters back to online mode.
+                          setAudioConvertersOfflineOperation(false);
+                        break;
+
                   case 'C': // Graph changed
                         if (MusEGlobal::audioDevice)
                             MusEGlobal::audioDevice->graphChanged();
@@ -4236,7 +4250,7 @@ void Song::stretchListDelOperation(
   
   iStretchListItem e = stretch_list->find(frame);
   if (e == stretch_list->end()) {
-        ERROR_TIMESTRETCH(stderr, "StretchList::delOperation frame:%ld not found\n", frame);
+        ERROR_TIMESTRETCH(stderr, "Song::stretchListDelOperation frame:%ld not found\n", frame);
         return;
         }
   PendingOperationItem poi(types, stretch_list, e, PendingOperationItem::DeleteStretchListRatioAt);
@@ -4249,10 +4263,104 @@ void Song::stretchListModifyOperation(
 {
   iStretchListItem ie = stretch_list->find(frame);
   if(ie == stretch_list->end()) {
-        ERROR_TIMESTRETCH(stderr, "StretchList::modifyListOperation frame:%ld not found\n", frame);
+        ERROR_TIMESTRETCH(stderr, "Song::stretchListModifyOperation frame:%ld not found\n", frame);
         return;
         }
   ops.add(PendingOperationItem(type, stretch_list, ie, frame, value, PendingOperationItem::ModifyStretchListRatioAt));
+}
+
+void Song::setAudioConvertersOfflineOperation(
+  bool isOffline
+  )
+{
+  WaveTrackList* wtl = waves();
+  if(wtl->empty())
+    return;
+
+  PendingOperationList ops;
+
+  AudioConverterSettingsGroup* settings;
+  bool isLocalSettings;
+  StretchList* sl;
+  bool doStretch;
+  bool doResample;
+  AudioConverterSettings::ModeType cur_mode;
+  AudioConverterPluginI* cur_converter;
+  AudioConverterPluginI* converter;
+  const WaveTrack* wt;
+  const PartList* pl;
+  const Part* pt;
+  ciPart pl_end;
+  ciEvent el_end;
+  SndFileR sndfile;
+  ciWaveTrack wtl_end = wtl->cend();
+  for(ciWaveTrack iwt = wtl->cbegin(); iwt != wtl_end; ++iwt)
+  {
+    wt = *iwt;
+    pl = wt->cparts();
+    pl_end = pl->cend();
+    for(ciPart ip = pl->cbegin(); ip != pl_end; ++ip)
+    {
+      pt = ip->second;
+      const EventList& el = pt->events();
+      el_end = el.end();
+      for(ciEvent ie = el.cbegin(); ie != el_end; ++ie)
+      {
+        const Event& e = ie->second;
+        sndfile = e.sndFile();
+        //if(sndfile.isNull())
+        //  continue;
+        
+        // Check if the current realtime converter is already in offline mode.
+        cur_converter = sndfile.staticAudioConverter(AudioConverterSettings::RealtimeMode);
+        if(cur_converter)
+        {
+          cur_mode = cur_converter->mode();
+          if((isOffline && cur_mode == AudioConverterSettings::OfflineMode) ||
+            (!isOffline && cur_mode == AudioConverterSettings::RealtimeMode))
+            continue;
+        }
+          
+        settings = sndfile.audioConverterSettings()->useSettings() ?
+          sndfile.audioConverterSettings() : MusEGlobal::defaultAudioConverterSettings;
+        isLocalSettings = sndfile.audioConverterSettings()->useSettings();
+
+        sl = sndfile.stretchList();
+        doStretch = sl->isStretched();
+        doResample = sl->isResampled();
+
+        // For offline mode, we COULD create a third converter just for it, apart from the main
+        //  and UI converters. But our system doesn't have a third converter (yet) - and it may
+        //  or may not get one, we'll see. Still, the operation supports setting it, in case.
+        // So instead, in offline mode we switch out the main converter for one with with offline settings.
+        converter = sndfile.setupAudioConverter(
+          settings,
+          isLocalSettings,
+          isOffline ? 
+            AudioConverterSettings::OfflineMode :
+            AudioConverterSettings::RealtimeMode,
+          doResample,
+          doStretch,
+          &MusEGlobal::audioConverterPluginList,
+          MusEGlobal::defaultAudioConverterSettings);
+
+          // No point if there's already no converter.
+          if(!converter && !cur_converter)
+            continue;
+
+          // REMOVE Tim. samplerate. Added. Diagnostics.
+          fprintf(stderr, "Song::setAudioConvertersOfflineOperation Setting sndfile:%s to isOffline:%d\n",
+                  sndfile.name().toLocal8Bit().constData(), isOffline);
+          
+          ops.add(PendingOperationItem(
+            *sndfile,
+            converter,   // Main converter. 
+            PendingOperationItem::SetAudioConverterOfflineMode));
+      }
+    }
+  }
+
+  MusEGlobal::audio->msgExecutePendingOperations(ops, true);
 }
 
 void Song::modifyAudioConverterSettingsOperation(
@@ -4265,6 +4373,10 @@ void Song::modifyAudioConverterSettingsOperation(
   const StretchList* sl = sndfile.stretchList();
   const bool doStretch = sl->isStretched();
   const bool doResample = sl->isResampled();
+  // For offline mode, we COULD create a third converter just for it, apart from the main
+  //  and UI converters. But our system doesn't have a third converter (yet) - and it may
+  //  or may not get one, we'll see. Still, the operation supports setting it, in case.
+  // So instead, in offline mode we switch out the main converter for one with with offline settings.
   AudioConverterPluginI* converter   = sndfile.setupAudioConverter(settings,
                                                            isLocalSettings,
                                                            AudioConverterSettings::RealtimeMode,
@@ -4284,7 +4396,12 @@ void Song::modifyAudioConverterSettingsOperation(
 //     return;
 
   // We want to change the settings, and the converters if neccesary.
-  ops.add(PendingOperationItem(*sndfile, settings, converter, converterUI, PendingOperationItem::ModifyLocalAudioConverterSettings));
+  ops.add(PendingOperationItem(
+    *sndfile,
+    settings,    // We want to change the converters and the settings.
+    converter,   // Main converter. 
+    converterUI, // UI converter.
+    PendingOperationItem::ModifyLocalAudioConverterSettings));
 }
 
 void Song::modifyAudioConverterOperation(
@@ -4298,6 +4415,10 @@ void Song::modifyAudioConverterOperation(
 
   const bool isLocalSettings = sndfile.audioConverterSettings()->useSettings();
 
+  // For offline mode, we COULD create a third converter just for it, apart from the main
+  //  and UI converters. But our system doesn't have a third converter (yet) - and it may
+  //  or may not get one, we'll see. Still, the operation supports setting it, in case.
+  // So instead, in offline mode we switch out the main converter for one with with offline settings.
   AudioConverterPluginI* converter   = sndfile.setupAudioConverter(settings,
                                                            isLocalSettings,
                                                            AudioConverterSettings::RealtimeMode,
@@ -4316,8 +4437,12 @@ void Song::modifyAudioConverterOperation(
 //   if(!converter && !converterUI)
 //     return;
 
-  // NULL = we only want to change the converters, not the settings.
-  ops.add(PendingOperationItem(*sndfile, NULL, converter, converterUI, PendingOperationItem::ModifyLocalAudioConverterSettings));
+  ops.add(PendingOperationItem(
+    *sndfile,
+    nullptr,     // We only want to change the converters, not the settings.
+    converter,   // Main converter.
+    converterUI, // UI converter.
+    PendingOperationItem::ModifyLocalAudioConverterSettings));
 }
 
 void Song::modifyStretchListOperation(SndFileR sndfile, int type, double value, PendingOperationList& ops) const

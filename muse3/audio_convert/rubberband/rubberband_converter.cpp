@@ -42,7 +42,7 @@ MusECore::AudioConverter* instantiate(int systemSampleRate,
                             const MusECore::AudioConverterDescriptor* /*Descriptor*/,
                             int channels, 
                             MusECore::AudioConverterSettings* settings, 
-                            int mode)
+                            MusECore::AudioConverterSettings::ModeType mode)
 {
   return new MusECore::RubberBandAudioConverter(systemSampleRate, channels, settings, mode);
 }
@@ -106,10 +106,12 @@ namespace MusECore {
 //   RubberBandAudioConverter
 //---------------------------------------------------------
 
-RubberBandAudioConverter::RubberBandAudioConverter(int systemSampleRate,
-                                                   int channels, 
-                                                   AudioConverterSettings* settings, 
-                                                   int mode) : AudioConverter(systemSampleRate)
+RubberBandAudioConverter::RubberBandAudioConverter(
+  int systemSampleRate,
+  int channels, 
+  AudioConverterSettings* settings, 
+  AudioConverterSettings::ModeType mode)
+  : AudioConverter(systemSampleRate, mode)
 {
   DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::RubberBandAudioConverter this:%p channels:%d mode:%d\n", 
                      this, channels, mode);
@@ -188,6 +190,11 @@ void RubberBandAudioConverter::reset()
 //   _latencyCompPending = true;
   return;  
 #endif
+}
+
+AudioConverterSettings::ModeType RubberBandAudioConverter::mode() const
+{ 
+  return _mode;
 }
 
 #ifdef RUBBERBAND_SUPPORT
@@ -505,7 +512,8 @@ bool RubberBandAudioConverterSettings::useSettings(int mode) const
   return false;
 }
 
-int RubberBandAudioConverterSettings::executeUI(int mode, QWidget* parent, bool isLocal) 
+int RubberBandAudioConverterSettings::executeUI(
+  ModeType mode, QWidget* parent, bool isLocal) 
 {
   MusEGui::RubberbandSettingsDialog dlg(mode, parent, this, isLocal);
   return dlg.exec(); 
@@ -608,7 +616,7 @@ void RubberBandAudioConverterSettings::read(Xml& xml)
 namespace MusEGui {
   
 RubberbandSettingsDialog::RubberbandSettingsDialog(
-  int mode,
+  MusECore::AudioConverterSettings::ModeType mode,
   QWidget* parent,
   MusECore::AudioConverterSettings* settings,
   bool isLocal)

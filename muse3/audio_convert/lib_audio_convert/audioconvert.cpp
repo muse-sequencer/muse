@@ -41,8 +41,8 @@ namespace MusECore {
 //   AudioConverter
 //---------------------------------------------------------
 
-AudioConverter::AudioConverter(int systemSampleRate) :
-  _systemSampleRate(systemSampleRate), _channels(0), _refCount(1)
+AudioConverter::AudioConverter(int systemSampleRate, AudioConverterSettings::ModeType mode) :
+  _systemSampleRate(systemSampleRate), _channels(0), _refCount(1), _mode(mode)
 {
   DEBUG_AUDIOCONVERT(stderr, "AudioConverter::AudioConverter this:%p\n", this);
 }
@@ -74,6 +74,5 @@ AudioConverterHandle AudioConverter::release(AudioConverter* cv)
   }
   return cv;  
 }
-
 
 } // namespace MusECore

@@ -26,11 +26,8 @@
 
 #include "ui_audio_converter_settings_base.h"
 
-namespace MusECore {
-//class AudioConverterSettings;
-class AudioConverterSettingsGroup;
-class AudioConverterPluginList;
-}
+#include "audio_convert/audio_converter_plugin.h"
+#include "audio_convert/audio_converter_settings_group.h"
 
 namespace MusEGui {
   
@@ -44,7 +41,7 @@ class AudioConverterSettingsDialog : public QDialog, public Ui::AudioConverterSe
      
      void fillList();
      void enableSettingsButtons();
-     void showSettings(int mode);
+     void showSettings(MusECore::AudioConverterSettings::ModeType mode);
      
    private slots:
       void useDefaultsClicked();

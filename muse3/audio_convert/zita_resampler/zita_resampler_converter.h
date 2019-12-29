@@ -52,20 +52,21 @@ struct ZitaResamplerAudioConverterOptions
   static const ZitaResamplerAudioConverterOptions defaultRealtimeOptions;
   static const ZitaResamplerAudioConverterOptions defaultGuiOptions;
   
-  int _mode;
+  AudioConverterSettings::ModeType _mode;
   // Whether to use these settings or defer to 
   //  some higher default settings if available.
   // The highest level (defaults) will ignore this value.
   bool _useSettings;
   
-  ZitaResamplerAudioConverterOptions(bool useSettings = false,
-                                     int mode = AudioConverterSettings::OfflineMode)
+  ZitaResamplerAudioConverterOptions(
+    bool useSettings = false,
+    AudioConverterSettings::ModeType mode = AudioConverterSettings::OfflineMode)
   {
     initOptions(useSettings, mode);
   }
   
   void initOptions(bool useSettings, 
-                   int mode)
+                   AudioConverterSettings::ModeType mode)
   {
     _mode = mode;
     
@@ -106,21 +107,24 @@ class ZitaResamplerAudioConverterSettings : public AudioConverterSettings
     void assign(const AudioConverterSettings&);
     
     void initOptions(bool /*isLocal*/) {
-      _offlineOptions.initOptions( ZitaResamplerAudioConverterOptions::defaultOfflineOptions._useSettings,
-                                   AudioConverterSettings::OfflineMode);
+      _offlineOptions.initOptions(
+        ZitaResamplerAudioConverterOptions::defaultOfflineOptions._useSettings,
+        AudioConverterSettings::OfflineMode);
       
-      _realtimeOptions.initOptions(ZitaResamplerAudioConverterOptions::defaultRealtimeOptions._useSettings,
-                                   AudioConverterSettings::RealtimeMode);
+      _realtimeOptions.initOptions(
+        ZitaResamplerAudioConverterOptions::defaultRealtimeOptions._useSettings,
+        AudioConverterSettings::RealtimeMode);
       
-      _guiOptions.initOptions(     ZitaResamplerAudioConverterOptions::defaultGuiOptions._useSettings,
-                                   AudioConverterSettings::GuiMode);
+      _guiOptions.initOptions(
+        ZitaResamplerAudioConverterOptions::defaultGuiOptions._useSettings,
+        AudioConverterSettings::GuiMode);
       }
       
     ZitaResamplerAudioConverterOptions* offlineOptions() { return &_offlineOptions; }
     ZitaResamplerAudioConverterOptions* realtimeOptions() { return &_realtimeOptions; }
     ZitaResamplerAudioConverterOptions* guiOptions() { return &_guiOptions; }
     
-    int executeUI(int mode, QWidget* parent = NULL, bool isLocal = false);
+    int executeUI(ModeType mode, QWidget* parent = NULL, bool isLocal = false);
     void read(Xml&);
     void write(int, Xml&) const;
     // Returns whether to use these settings or defer to default settings.
@@ -151,19 +155,22 @@ class ZitaResamplerAudioConverter : public AudioConverter
       ZitaResamplerAudioConverter(int systemSampleRate,
                                   int channels, 
                                   AudioConverterSettings* settings, 
-                                  int mode);
+                                  AudioConverterSettings::ModeType mode);
       ~ZitaResamplerAudioConverter();
       
-      virtual bool isValid()
+      bool isValid() const
 #ifdef ZITA_RESAMPLER_SUPPORT
       { return _rbs != 0; }
 #else
       { return false; }
 #endif
-      virtual void reset();
-      virtual void setChannels(int ch);
+      void reset();
+      void setChannels(int ch);
+      
+      AudioConverterSettings::ModeType mode() const;
+
       // Make sure beforehand that sf samplerate is not <= 0.
-      virtual int process(
+      int process(
         SNDFILE* sf_handle,
         const int sf_chans, const double sf_sr_ratio, const StretchList* sf_stretch_list,
         const sf_count_t pos,
@@ -196,7 +203,7 @@ class ZitaResamplerSettingsDialog : public QDialog, public Ui::ZitaResamplerSett
 
    public:
       enum buttonId { DefaultsButtonId, ConverterButtonId, OkButtonId, CancelButtonId };
-      ZitaResamplerSettingsDialog(int mode, 
+      ZitaResamplerSettingsDialog(MusECore::AudioConverterSettings::ModeType mode, 
                                   QWidget* parent = NULL, 
                                   MusECore::AudioConverterSettings* settings = NULL, 
                                   bool isLocal = false);
