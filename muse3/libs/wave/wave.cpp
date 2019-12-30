@@ -132,12 +132,12 @@ SF_VIRTUAL_IO sndfile_vio
 //---------------------------------------------------------
 
 SndFile::SndFile(const QString& name, int systemSampleRate, unsigned int segSize,
-                 bool installConverter, AudioConverterPluginList* pluginList)
-  : _systemSampleRate(systemSampleRate)
+                 bool installConverter, AudioConverterPluginList* pluginList, bool isOffline)
+  : _isOffline(isOffline), _useConverter(installConverter), _systemSampleRate(systemSampleRate)
       {
       _stretchList = nullptr;
       _audioConverterSettings = nullptr;
-      if(installConverter)
+      if(_useConverter)
       {
         _stretchList = new StretchList();
         // true = Local settings, initialized to -1.
@@ -166,12 +166,14 @@ SndFile::SndFile(const QString& name, int systemSampleRate, unsigned int segSize
 SndFile::SndFile(
   void* virtualData, sf_count_t virtualBytes,
   int systemSampleRate, unsigned int segSize,
-  bool installConverter, AudioConverterPluginList* pluginList)
-  : _systemSampleRate(systemSampleRate), _virtualData(SndFileVirtualData(virtualData, virtualBytes))
+  bool installConverter, AudioConverterPluginList* pluginList, bool isOffline)
+  : _isOffline(isOffline), _useConverter(installConverter),
+    _systemSampleRate(systemSampleRate),
+    _virtualData(SndFileVirtualData(virtualData, virtualBytes))
 {
       _stretchList = nullptr;
       _audioConverterSettings = nullptr;
-      if(installConverter)
+      if(_useConverter)
       {
         _stretchList = new StretchList();
         // true = Local settings, initialized to -1.
@@ -222,6 +224,64 @@ SndFile::~SndFile()
         delete _audioConverterSettings;
       }
 
+int SndFile::getRefCount() const   { return refCount; }
+bool SndFile::isOpen() const       { return openFlag; }
+bool SndFile::isWritable() const   { return writeFlag; }
+bool SndFile::useConverter() const { return _useConverter; }
+AudioConverterSettingsGroup* SndFile::audioConverterSettings() const { return _audioConverterSettings; }
+StretchList* SndFile::stretchList() const { return _stretchList; }
+
+bool SndFile::isOffline()
+{
+  if(_staticAudioConverter)
+    _isOffline = _staticAudioConverter->mode() == AudioConverterSettings::OfflineMode;
+  return _isOffline;
+}
+
+// REMOVE Tim. samplerate. Added.
+bool SndFile::setOffline(
+  bool v,
+  AudioConverterPluginList* pluginList,
+  AudioConverterSettingsGroup* defaultSettings)
+{
+  // Check if the current mode is already in the requested mode.
+  if(isOffline() == v)
+    return false;
+
+  _isOffline = v;
+
+  // Delete the current converter, if any.
+  AudioConverterPluginI* converter = staticAudioConverter(AudioConverterSettings::RealtimeMode);
+  if(converter)
+    delete converter;
+  converter = nullptr;
+  
+  if(useConverter() && audioConverterSettings())
+  {
+    const AudioConverterSettingsGroup* settings = audioConverterSettings()->useSettings() ?
+      audioConverterSettings() : defaultSettings;
+    const bool isLocalSettings = audioConverterSettings()->useSettings();
+
+    const bool doStretch = isStretched();
+    const bool doResample = isResampled();
+
+    // For offline mode, we COULD create a third converter just for it, apart from the main
+    //  and UI converters. But our system doesn't have a third converter (yet) - and it may
+    //  or may not get one, we'll see. Still, the operation supports setting it, in case.
+    // So instead, in offline mode we switch out the main converter for one with with offline settings.
+    converter = setupAudioConverter(
+      settings,
+      isLocalSettings,
+      v ? AudioConverterSettings::OfflineMode : AudioConverterSettings::RealtimeMode,
+      doResample,
+      doStretch,
+      pluginList,
+      defaultSettings);
+  }
+  setStaticAudioConverter(converter, AudioConverterSettings::RealtimeMode);
+  return true;
+}
+
 //---------------------------------------------------------
 //   openRead
 //---------------------------------------------------------
@@ -235,6 +295,7 @@ bool SndFile::openRead(AudioConverterPluginList* pluginList,
             return false;
             }
 
+      // File based:
       if(finfo)
       {
         QString p = path();
@@ -255,6 +316,7 @@ bool SndFile::openRead(AudioConverterPluginList* pluginList,
           }
         }
       }
+      // Memory based:
       else
       {
         if(!_virtualData._virtualData)
@@ -265,23 +327,30 @@ bool SndFile::openRead(AudioConverterPluginList* pluginList,
         if (!sf)
           return true;
       }
-      
-      const StretchList* sl = stretchList();
-      _staticAudioConverter   = setupAudioConverter(audioConverterSettings(), 
-                                                    true,  // true = Local settings.
-                                                    AudioConverterSettings::RealtimeMode,
-                                                    sl->isResampled(),
-                                                    sl->isStretched(),
-                                                    pluginList,
-                                                    defaultSettings);
-      if(finfo)
-        _staticAudioConverterUI = setupAudioConverter(audioConverterSettings(), 
-                                                    true,  // true = Local settings.
-                                                    AudioConverterSettings::GuiMode, 
-                                                    sl->isResampled(),
-                                                    sl->isStretched(),
-                                                    pluginList,
-                                                    defaultSettings);
+
+      if(useConverter())
+      {
+        _staticAudioConverter = setupAudioConverter(
+          audioConverterSettings(), 
+          true,  // true = Local settings.
+          isOffline() ?
+            AudioConverterSettings::OfflineMode :
+            AudioConverterSettings::RealtimeMode,
+          isResampled(),
+          isStretched(),
+          pluginList,
+          defaultSettings);
+
+        if(finfo)
+          _staticAudioConverterUI = setupAudioConverter(
+            audioConverterSettings(), 
+            true,  // true = Local settings.
+            AudioConverterSettings::GuiMode, 
+            isResampled(),
+            isStretched(),
+            pluginList,
+            defaultSettings);
+      }
       
       writeFlag = false;
       openFlag  = true;
@@ -301,7 +370,7 @@ AudioConverterPluginI* SndFile::setupAudioConverter(const AudioConverterSettings
                                                     AudioConverterPluginList* pluginList,
                                                     const AudioConverterSettingsGroup* defaultSettings) const
 {
-  if(!defaultSettings || !pluginList)
+  if(!useConverter() || !defaultSettings || !pluginList)
     return nullptr;
   
   AudioConverterPluginI* plugI = nullptr;
@@ -428,9 +497,11 @@ double SndFile::minStretchRatio() const
 double SndFile::maxStretchRatio() const
 {
   double m = -1.0;
-  if(_staticAudioConverter && _staticAudioConverter->maxStretchRatio() > 0.0 && (m < 0.0 || _staticAudioConverter->maxStretchRatio() < m))
+  if(_staticAudioConverter && _staticAudioConverter->maxStretchRatio() > 0.0 &&
+     (m < 0.0 || _staticAudioConverter->maxStretchRatio() < m))
     m = _staticAudioConverter->maxStretchRatio();
-  if(_staticAudioConverterUI && _staticAudioConverterUI->maxStretchRatio() > 0.0 && (m < 0.0 || _staticAudioConverterUI->maxStretchRatio() < m))
+  if(_staticAudioConverterUI && _staticAudioConverterUI->maxStretchRatio() > 0.0 &&
+     (m < 0.0 || _staticAudioConverterUI->maxStretchRatio() < m))
     m = _staticAudioConverterUI->maxStretchRatio();
   return m;
 }
@@ -448,9 +519,11 @@ double SndFile::minSamplerateRatio() const
 double SndFile::maxSamplerateRatio() const
 {
   double m = -1.0;
-  if(_staticAudioConverter && _staticAudioConverter->maxSamplerateRatio() > 0.0 && (m < 0.0 || _staticAudioConverter->maxSamplerateRatio() < m))
+  if(_staticAudioConverter && _staticAudioConverter->maxSamplerateRatio() > 0.0 &&
+     (m < 0.0 || _staticAudioConverter->maxSamplerateRatio() < m))
     m = _staticAudioConverter->maxSamplerateRatio();
-  if(_staticAudioConverterUI && _staticAudioConverterUI->maxSamplerateRatio() > 0.0 && (m < 0.0 || _staticAudioConverterUI->maxSamplerateRatio() < m))
+  if(_staticAudioConverterUI && _staticAudioConverterUI->maxSamplerateRatio() > 0.0 &&
+     (m < 0.0 || _staticAudioConverterUI->maxSamplerateRatio() < m))
     m = _staticAudioConverterUI->maxStretchRatio();
   return m;
 }
@@ -468,9 +541,11 @@ double SndFile::minPitchShiftRatio() const
 double SndFile::maxPitchShiftRatio() const
 {
   double m = -1.0;
-  if(_staticAudioConverter && _staticAudioConverter->maxPitchShiftRatio() > 0.0 && (m < 0.0 || _staticAudioConverter->maxPitchShiftRatio() < m))
+  if(_staticAudioConverter && _staticAudioConverter->maxPitchShiftRatio() > 0.0 &&
+     (m < 0.0 || _staticAudioConverter->maxPitchShiftRatio() < m))
     m = _staticAudioConverter->maxPitchShiftRatio();
-  if(_staticAudioConverterUI && _staticAudioConverterUI->maxPitchShiftRatio() > 0.0 && (m < 0.0 || _staticAudioConverterUI->maxPitchShiftRatio() < m))
+  if(_staticAudioConverterUI && _staticAudioConverterUI->maxPitchShiftRatio() > 0.0 &&
+     (m < 0.0 || _staticAudioConverterUI->maxPitchShiftRatio() < m))
     m = _staticAudioConverterUI->maxPitchShiftRatio();
   return m;
 }
@@ -745,7 +820,8 @@ void SndFile::readConverted(SampleV* s, int mag, sf_count_t pos, sf_count_t offs
       if(!finfo)
         return;
 
-      if(!(_staticAudioConverterUI && _staticAudioConverterUI->isValid() &&
+      if(!useConverter() ||
+         !(_staticAudioConverterUI && _staticAudioConverterUI->isValid() &&
           (((sampleRateDiffers() || isResampled()) && (_staticAudioConverterUI->capabilities() & AudioConverter::SampleRate)) ||
            (isStretched() && (_staticAudioConverterUI->capabilities() & AudioConverter::Stretch))) ))
       {
@@ -1010,7 +1086,7 @@ bool SndFile::isResampled() const
 sf_count_t SndFile::convertPosition(sf_count_t pos) const
 {
   double new_pos = pos;
-  if(_staticAudioConverter && _stretchList)
+  if(useConverter() && _staticAudioConverter && _stretchList)
   {
     int type = 0;
     if(_staticAudioConverter->capabilities() & AudioConverter::Stretch)
@@ -1160,7 +1236,7 @@ size_t SndFile::readInternal(int srcChannels, float** dst, size_t n, bool overwr
 sf_count_t SndFile::readConverted(sf_count_t pos, int srcChannels,
                                   float** buffer, sf_count_t frames, bool overwrite)
 {
-  if(_staticAudioConverter && _staticAudioConverter->isValid() &&
+  if(useConverter() && _staticAudioConverter && _staticAudioConverter->isValid() &&
      (((sampleRateDiffers() || isResampled()) && (_staticAudioConverter->capabilities() & AudioConverter::SampleRate)) ||
       (isStretched() && (_staticAudioConverter->capabilities() & AudioConverter::Stretch))) )
   {
@@ -1335,14 +1411,14 @@ sf_count_t SndFile::seekUIConverted(sf_count_t frames, int whence, sf_count_t of
   {
     rn = sf_seek(sfUI, pos, whence);
     // Reset the converter. Its current state is meaningless now.
-    if(_staticAudioConverterUI)
+    if(useConverter() && _staticAudioConverterUI)
       _staticAudioConverterUI->reset();
   }
   else if(sf)
   {
     rn = sf_seek(sf, pos, whence);
     // Reset the converter. Its current state is meaningless now.
-    if(_staticAudioConverter)
+    if(useConverter() && _staticAudioConverter)
       _staticAudioConverter->reset();
   }
   return rn;
@@ -1355,7 +1431,7 @@ sf_count_t SndFile::seekUIConverted(sf_count_t frames, int whence, sf_count_t of
 
 sf_count_t SndFile::seekConverted(sf_count_t frames, int whence, int offset)
       {
-      if(_staticAudioConverter && _staticAudioConverter->isValid() &&
+      if(useConverter() && _staticAudioConverter && _staticAudioConverter->isValid() &&
          (((sampleRateDiffers() || isResampled()) && (_staticAudioConverter->capabilities() & AudioConverter::SampleRate)) ||
           (isStretched() && (_staticAudioConverter->capabilities() & AudioConverter::Stretch))) )
       {

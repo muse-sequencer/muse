@@ -83,6 +83,11 @@ class SndFile {
       AudioConverterPluginI* _dynamicAudioConverterUI;
       AudioConverterSettingsGroup* _audioConverterSettings;
       StretchList* _stretchList;
+      // Whether the converter is in offline mode.
+      // Always use isOffline() to check instead of reading this directly.
+      bool _isOffline;
+      // Whether to use any converter(s) at all.
+      bool _useConverter;
 
       int _systemSampleRate;
       SF_INFO sfinfo;
@@ -108,16 +113,26 @@ class SndFile {
    public:
       // Constructor for file operation.
       SndFile(const QString& name, int systemSampleRate, unsigned int segSize,
-              bool installConverter, AudioConverterPluginList* pluginList);
+              bool installConverter, AudioConverterPluginList* pluginList, bool isOffline = false);
       // Constructor for virtual (memory or stream) operation.
       // When using the virtual interface, be sure to call setFormat before opening.
       SndFile(void* virtualData, sf_count_t virtualBytes,
               int systemSampleRate, unsigned int segSize,
-              bool installConverter, AudioConverterPluginList* pluginList);
+              bool installConverter, AudioConverterPluginList* pluginList, bool isOffline = false);
       ~SndFile();
-      int getRefCount() { return refCount; }
+      int getRefCount() const;
 
       static SndFileList sndFiles;
+
+      // Whether to use any converter(s) at all.
+      bool useConverter() const;
+
+      // Whether the converter is in offline mode.
+      // Always use isOffline() to check instead of reading the member directly.
+      bool isOffline();
+      // Set the converter offline mode.
+      // Returns whether the mode was actually changed.
+      bool setOffline(bool v, AudioConverterPluginList* pluginList, AudioConverterSettingsGroup* defaultSettings);
 
       // For virtual (memory or stream) operation.
       SndFileVirtualData& virtualData() { return _virtualData; }
@@ -149,8 +164,9 @@ class SndFile {
       void close();
       void remove();
 
-      bool isOpen() const     { return openFlag; }
-      bool isWritable() const { return writeFlag; }
+      bool isOpen() const;
+      bool isWritable() const;
+
       void update(AudioConverterPluginList* pluginList,
                   const AudioConverterSettingsGroup* defaultSettings,
                   bool showProgress = true);
@@ -203,9 +219,9 @@ class SndFile {
       sf_count_t seekConverted(sf_count_t frames, int whence, int offset);
       AudioConverterPluginI* staticAudioConverter(AudioConverterSettings::ModeType mode) const;
       void setStaticAudioConverter(AudioConverterPluginI* converter, AudioConverterSettings::ModeType mode);
-      AudioConverterSettingsGroup* audioConverterSettings() const { return _audioConverterSettings; }
+      AudioConverterSettingsGroup* audioConverterSettings() const;
       void setAudioConverterSettings(AudioConverterSettingsGroup* settings);
-      StretchList* stretchList() const { return _stretchList; }
+      StretchList* stretchList() const;
       
       sf_count_t seek(sf_count_t frames, int whence);
       sf_count_t seekUI(sf_count_t frames, int whence);
@@ -250,8 +266,19 @@ class SndFileR {
 
       operator bool() { return sf!=NULL; }
       ~SndFileR();
-      int getRefCount() const { return sf ? sf->refCount : 0; }
+      int getRefCount() const { return sf ? sf->getRefCount() : 0; }
       bool isNull() const     { return sf == 0; }
+
+      // Whether to use any converter(s) at all.
+      bool useConverter() const { return sf ? sf->useConverter() : false; }
+
+      // Whether the converter is in offline mode.
+      // Always use isOffline() to check instead of reading the member directly.
+      bool isOffline() { return sf ? sf->isOffline() : false; }
+      // Set the converter offline mode.
+      // Returns whether the mode was actually changed.
+      bool setOffline(bool v, AudioConverterPluginList* pluginList, AudioConverterSettingsGroup* defaultSettings)
+      { return sf ? sf->setOffline(v, pluginList, defaultSettings) : false; }
 
       // Creates a new converter based on the supplied settings and AudioConverterSettings::ModeType mode.
       // If isLocalSettings is true, settings is treated as a local settings which may override the 
@@ -296,6 +323,12 @@ class SndFileR {
       inline bool sampleRateDiffers() const { return sf ? sf->sampleRateDiffers() : false; };
       // Convert a frame position to its resampled or stretched position.
       inline sf_count_t convertPosition(sf_count_t pos) const { return sf ? sf->convertPosition(pos) : pos; };
+      // Returns whether ANY stretch event has a stretch ratio other than 1.0 
+      //  ie. the map is stretched, a stretcher must be engaged.
+      bool isStretched() const { return sf ? sf->isStretched() : false; }
+      // Returns whether ANY stretch event has a samplerate ratio other than 1.0 
+      //  ie. the map is stretched, a samplerate converter must be engaged.
+      bool isResampled() const { return sf ? sf->isResampled() : false; }
       
       sf_count_t samples() const    { return sf ? sf->samples() : 0; }
       // Returns number of samples, adjusted for file-to-system samplerate ratio.

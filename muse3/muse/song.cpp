@@ -4310,7 +4310,11 @@ void Song::setAudioConvertersOfflineOperation(
         sndfile = e.sndFile();
         //if(sndfile.isNull())
         //  continue;
-        
+
+        // Check if we are to use any converters at all.
+        if(!sndfile.useConverter())
+          continue;
+
         // Check if the current realtime converter is already in offline mode.
         cur_converter = sndfile.staticAudioConverter(AudioConverterSettings::RealtimeMode);
         if(cur_converter)
@@ -4370,27 +4374,34 @@ void Song::modifyAudioConverterSettingsOperation(
   PendingOperationList& ops
   ) const
 {
-  const StretchList* sl = sndfile.stretchList();
-  const bool doStretch = sl->isStretched();
-  const bool doResample = sl->isResampled();
+  if(!sndfile.useConverter())
+    return;
+  const bool isOffline = sndfile.isOffline();
+  const bool doStretch = sndfile.isStretched();
+  const bool doResample = sndfile.isResampled();
   // For offline mode, we COULD create a third converter just for it, apart from the main
   //  and UI converters. But our system doesn't have a third converter (yet) - and it may
   //  or may not get one, we'll see. Still, the operation supports setting it, in case.
   // So instead, in offline mode we switch out the main converter for one with with offline settings.
-  AudioConverterPluginI* converter   = sndfile.setupAudioConverter(settings,
-                                                           isLocalSettings,
-                                                           AudioConverterSettings::RealtimeMode,
-                                                           doResample,
-                                                           doStretch,
-                                                           &MusEGlobal::audioConverterPluginList,
-                                                           MusEGlobal::defaultAudioConverterSettings);
-  AudioConverterPluginI* converterUI = sndfile.setupAudioConverter(settings,
-                                                           isLocalSettings,
-                                                           AudioConverterSettings::GuiMode,
-                                                           doResample,
-                                                           doStretch,
-                                                           &MusEGlobal::audioConverterPluginList,
-                                                           MusEGlobal::defaultAudioConverterSettings);
+  AudioConverterPluginI* converter = sndfile.setupAudioConverter(
+    settings,
+    isLocalSettings,
+    isOffline ?
+      AudioConverterSettings::OfflineMode :
+      AudioConverterSettings::RealtimeMode,
+    doResample,
+    doStretch,
+    &MusEGlobal::audioConverterPluginList,
+    MusEGlobal::defaultAudioConverterSettings);
+
+  AudioConverterPluginI* converterUI = sndfile.setupAudioConverter(
+    settings,
+    isLocalSettings,
+    AudioConverterSettings::GuiMode,
+    doResample,
+    doStretch,
+    &MusEGlobal::audioConverterPluginList,
+    MusEGlobal::defaultAudioConverterSettings);
 
 //   if(!converter && !converterUI)
 //     return;
@@ -4410,6 +4421,9 @@ void Song::modifyAudioConverterOperation(
   bool doResample,
   bool doStretch) const
 {
+  if(!sndfile.useConverter())
+    return;
+  const bool isOffline = sndfile.isOffline();
   AudioConverterSettingsGroup* settings = sndfile.audioConverterSettings()->useSettings() ?
     sndfile.audioConverterSettings() : MusEGlobal::defaultAudioConverterSettings;
 
@@ -4419,20 +4433,25 @@ void Song::modifyAudioConverterOperation(
   //  and UI converters. But our system doesn't have a third converter (yet) - and it may
   //  or may not get one, we'll see. Still, the operation supports setting it, in case.
   // So instead, in offline mode we switch out the main converter for one with with offline settings.
-  AudioConverterPluginI* converter   = sndfile.setupAudioConverter(settings,
-                                                           isLocalSettings,
-                                                           AudioConverterSettings::RealtimeMode,
-                                                           doResample,
-                                                           doStretch,
-                                                           &MusEGlobal::audioConverterPluginList,
-                                                           MusEGlobal::defaultAudioConverterSettings);
-  AudioConverterPluginI* converterUI = sndfile.setupAudioConverter(settings,
-                                                           isLocalSettings,
-                                                           AudioConverterSettings::GuiMode,
-                                                           doResample,
-                                                           doStretch,
-                                                           &MusEGlobal::audioConverterPluginList,
-                                                           MusEGlobal::defaultAudioConverterSettings);
+  AudioConverterPluginI* converter   = sndfile.setupAudioConverter(
+    settings,
+    isLocalSettings,
+    isOffline ?
+      AudioConverterSettings::OfflineMode :
+      AudioConverterSettings::RealtimeMode,
+    doResample,
+    doStretch,
+    &MusEGlobal::audioConverterPluginList,
+    MusEGlobal::defaultAudioConverterSettings);
+
+  AudioConverterPluginI* converterUI = sndfile.setupAudioConverter(
+    settings,
+    isLocalSettings,
+    AudioConverterSettings::GuiMode,
+    doResample,
+    doStretch,
+    &MusEGlobal::audioConverterPluginList,
+    MusEGlobal::defaultAudioConverterSettings);
 
 //   if(!converter && !converterUI)
 //     return;
@@ -4447,11 +4466,15 @@ void Song::modifyAudioConverterOperation(
 
 void Song::modifyStretchListOperation(SndFileR sndfile, int type, double value, PendingOperationList& ops) const
 {
+  if(!sndfile.useConverter())
+    return;
   ops.add(PendingOperationItem(type, sndfile.stretchList(), value, PendingOperationItem::ModifyStretchListRatio));
 }
 
 void Song::addAtStretchListOperation(SndFileR sndfile, int type, MuseFrame_t frame, double value, PendingOperationList& ops) const
 {
+  if(!sndfile.useConverter())
+    return;
   StretchList* sl = sndfile.stretchList();
   stretchListAddOperation(sl, StretchListItem::StretchEventType(type), frame, value, ops);
   
@@ -4493,6 +4516,8 @@ void Song::addAtStretchListOperation(SndFileR sndfile, int type, MuseFrame_t fra
 
 void Song::delAtStretchListOperation(SndFileR sndfile, int types, MuseFrame_t frame, PendingOperationList& ops) const
 {
+  if(!sndfile.useConverter())
+    return;
   // Do not delete the item at zeroth frame.
   if(frame == 0)
     return;
@@ -4525,6 +4550,8 @@ void Song::delAtStretchListOperation(SndFileR sndfile, int types, MuseFrame_t fr
 
 void Song::modifyAtStretchListOperation(SndFileR sndfile, int type, MuseFrame_t frame, double value, PendingOperationList& ops) const
 {
+  if(!sndfile.useConverter())
+    return;
   StretchList* sl = sndfile.stretchList();
   stretchListModifyOperation(sl, StretchListItem::StretchEventType(type), frame, value, ops);
   
