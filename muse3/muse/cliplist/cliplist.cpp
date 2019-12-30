@@ -178,7 +178,7 @@ ClipListEdit::~ClipListEdit()
 void ClipListEdit::updateList()
       {
       editor->view->clear();
-      for (MusECore::iSndFile f = MusECore::SndFile::sndFiles.begin(); f != MusECore::SndFile::sndFiles.end(); ++f) {
+      for (MusECore::iSndFile f = MusEGlobal::sndFiles.begin(); f != MusEGlobal::sndFiles.end(); ++f) {
             new ClipItem(editor->view, *f);
             }
       clipSelectionChanged();

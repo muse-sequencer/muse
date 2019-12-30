@@ -1187,7 +1187,7 @@ bool WavePart::openAllEvents()
     if(!f.isNull() && !f.isOpen())
     {
       opened = true;
-      f.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings);
+      f.openRead();
     }
   }
   return opened;

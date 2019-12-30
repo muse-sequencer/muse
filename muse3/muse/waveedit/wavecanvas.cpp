@@ -2686,9 +2686,8 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
           // we need to redefine startpos and stoppos
           if (copiedPart =="")
             return;
-          MusECore::SndFile pasteFile(copiedPart, MusEGlobal::sampleRate, MusEGlobal::segmentSize,
-                                      true, &MusEGlobal::audioConverterPluginList);
-          pasteFile.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings);
+          MusECore::SndFile pasteFile(copiedPart);
+          pasteFile.openRead();
           startpos = pos[0];
           stoppos = startpos+ pasteFile.samples(); // possibly this is wrong if there are tempo changes
           pasteFile.close();
@@ -2810,10 +2809,9 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
                   continue; 
                 }
               }
-              MusECore::SndFile* newSF = new MusECore::SndFile(newFilePath, MusEGlobal::sampleRate,
-                  MusEGlobal::segmentSize, true, &MusEGlobal::audioConverterPluginList);
+              MusECore::SndFile* newSF = new MusECore::SndFile(newFilePath);
               MusECore::SndFileR newSFR(newSF);  // Create a sndFileR for the new file
-              if(newSFR.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings))  
+              if(newSFR.openRead())  
               {
                 printf("MusE Error: Could not open new sound file: %s\n", newSFR.canonicalPath().toLatin1().constData());
                 continue; // newSF will be deleted when newSFR goes out of scope and is deleted
@@ -2853,8 +2851,7 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
                      }
 
                MusEGlobal::audio->msgIdle(true); // Not good with playback during operations
-               MusECore::SndFile tmpFile(tmpWavFile, MusEGlobal::sampleRate,
-                  MusEGlobal::segmentSize, true, &MusEGlobal::audioConverterPluginList);
+               MusECore::SndFile tmpFile(tmpWavFile);
                tmpFile.setFormat(file.format(), file_channels, file.samplerate());
                if (tmpFile.openWrite()) {
                      MusEGlobal::audio->msgIdle(false);
@@ -2911,9 +2908,8 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
                            break;
                      case PASTE:
                            {
-                           MusECore::SndFile pasteFile(copiedPart, MusEGlobal::sampleRate,
-                               MusEGlobal::segmentSize, true, &MusEGlobal::audioConverterPluginList);
-                           pasteFile.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings);
+                           MusECore::SndFile pasteFile(copiedPart);
+                           pasteFile.openRead();
                            pasteFile.seek(tmpdataoffset, 0);
                            pasteFile.readWithHeap(file_channels, tmpdata, tmpdatalen);
                            }
@@ -2932,9 +2928,9 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
                file.openWrite();
                file.seek(tmpdataoffset, 0);
                file.write(file_channels, tmpdata, tmpdatalen, MusEGlobal::config.liveWaveUpdate);
-               file.update(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings);
+               file.update();
                file.close();
-               file.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings);
+               file.openRead();
 
                for (unsigned i=0; i<file_channels; i++) {
                      delete[] tmpdata[i];
@@ -2960,8 +2956,7 @@ void WaveCanvas::copySelection(unsigned file_channels, float** tmpdata, unsigned
             return;
             }
 
-      MusECore::SndFile tmpFile(copiedPart, MusEGlobal::sampleRate, MusEGlobal::segmentSize,
-                                true, &MusEGlobal::audioConverterPluginList);
+      MusECore::SndFile tmpFile(copiedPart);
       tmpFile.setFormat(format, file_channels, sampleRate);
       tmpFile.openWrite();
       tmpFile.write(file_channels, tmpdata, length, MusEGlobal::config.liveWaveUpdate);
@@ -3079,8 +3074,7 @@ void WaveCanvas::editExternal(unsigned file_format, unsigned file_samplerate, un
             return;
             }
 
-      MusECore::SndFile exttmpFile(exttmpFileName, MusEGlobal::sampleRate, MusEGlobal::segmentSize,
-                                true, &MusEGlobal::audioConverterPluginList);
+      MusECore::SndFile exttmpFile(exttmpFileName);
       exttmpFile.setFormat(file_format, file_channels, file_samplerate);
       if (exttmpFile.openWrite()) {
             printf("Could not open temporary file...\n");
@@ -3117,7 +3111,7 @@ void WaveCanvas::editExternal(unsigned file_format, unsigned file_samplerate, un
                       proc.exitCode(), MusEGlobal::config.externalWavEditor.toLatin1().constData());
       }
 
-      if (exttmpFile.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings)) {
+      if (exttmpFile.openRead()) {
           printf("Could not reopen temporary file!\n");
           }
       else {

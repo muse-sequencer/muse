@@ -2975,7 +2975,6 @@ void MusE::bounceToTrack()
           }
       }
 
-      // REMOVE Tim. samplerate. Added.
       // Switch all wave converters to offline settings mode.
       MusEGlobal::song->setAudioConvertersOfflineOperation(true);
 
@@ -3045,7 +3044,6 @@ void MusE::bounceToFile(MusECore::AudioOutput* ao)
       if (sf == 0)
             return;
 
-      // REMOVE Tim. samplerate. Added.
       // Switch all wave converters to offline settings mode.
       MusEGlobal::song->setAudioConvertersOfflineOperation(true);
 

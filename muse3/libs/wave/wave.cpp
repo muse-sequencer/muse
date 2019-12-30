@@ -43,8 +43,27 @@ namespace MusECore {
 
 const int cacheMag = 128;
 
+// static
+SndFileList* SndFile::_sndFiles = nullptr;
+AudioConverterPluginList* SndFile::_pluginList = nullptr;
+AudioConverterSettingsGroup** SndFile::_defaultSettings = nullptr;
+int SndFile::_systemSampleRate = 0;
+int SndFile::_segSize = 0;
 
-SndFileList SndFile::sndFiles;
+// static
+void SndFile::initWaveModule(
+  SndFileList* sndFiles,
+  AudioConverterPluginList* pluginList, 
+  AudioConverterSettingsGroup** defaultSettings,
+  int systemSampleRate,
+  int segSize)
+{
+  _sndFiles = sndFiles;
+  _pluginList = pluginList;
+  _defaultSettings = defaultSettings;
+  _systemSampleRate = systemSampleRate;
+  _segSize = segSize;
+}
 
 sf_count_t sndfile_vio_get_filelen(void *user_data)
 {
@@ -131,9 +150,11 @@ SF_VIRTUAL_IO sndfile_vio
 //   SndFile
 //---------------------------------------------------------
 
-SndFile::SndFile(const QString& name, int systemSampleRate, unsigned int segSize,
-                 bool installConverter, AudioConverterPluginList* pluginList, bool isOffline)
-  : _isOffline(isOffline), _useConverter(installConverter), _systemSampleRate(systemSampleRate)
+SndFile::SndFile(
+  const QString& name,
+  bool installConverter,
+  bool isOffline)
+  : _isOffline(isOffline), _useConverter(installConverter)
       {
       _stretchList = nullptr;
       _audioConverterSettings = nullptr;
@@ -142,8 +163,8 @@ SndFile::SndFile(const QString& name, int systemSampleRate, unsigned int segSize
         _stretchList = new StretchList();
         // true = Local settings, initialized to -1.
         _audioConverterSettings = new AudioConverterSettingsGroup(true); // Local settings.
-        if(pluginList)
-          _audioConverterSettings->populate(pluginList, true);
+        if(_pluginList)
+          _audioConverterSettings->populate(_pluginList, true);
       }
       
       finfo = new QFileInfo(name);
@@ -152,10 +173,11 @@ SndFile::SndFile(const QString& name, int systemSampleRate, unsigned int segSize
       csize = 0;
       cache = nullptr;
       openFlag = false;
-      sndFiles.push_back(this);
+      if(_sndFiles)
+        _sndFiles->push_back(this);
       refCount = 0;
       writeBuffer = nullptr;
-      writeSegSize = std::max((size_t)segSize, (size_t)cacheMag);// cache minimum segment size for write operations
+      writeSegSize = std::max((size_t)_segSize, (size_t)cacheMag);// cache minimum segment size for write operations
       
       _staticAudioConverter    = nullptr;
       _staticAudioConverterUI  = nullptr;
@@ -164,11 +186,11 @@ SndFile::SndFile(const QString& name, int systemSampleRate, unsigned int segSize
       }
 
 SndFile::SndFile(
-  void* virtualData, sf_count_t virtualBytes,
-  int systemSampleRate, unsigned int segSize,
-  bool installConverter, AudioConverterPluginList* pluginList, bool isOffline)
+  void* virtualData,
+  sf_count_t virtualBytes,
+  bool installConverter,
+  bool isOffline)
   : _isOffline(isOffline), _useConverter(installConverter),
-    _systemSampleRate(systemSampleRate),
     _virtualData(SndFileVirtualData(virtualData, virtualBytes))
 {
       _stretchList = nullptr;
@@ -178,8 +200,8 @@ SndFile::SndFile(
         _stretchList = new StretchList();
         // true = Local settings, initialized to -1.
         _audioConverterSettings = new AudioConverterSettingsGroup(true); // Local settings.
-        if(pluginList)
-          _audioConverterSettings->populate(pluginList, true);
+        if(_pluginList)
+          _audioConverterSettings->populate(_pluginList, true);
       }
       
       finfo = nullptr;
@@ -188,10 +210,11 @@ SndFile::SndFile(
       csize = 0;
       cache = nullptr;
       openFlag = false;
-      //sndFiles.push_back(this);
+      //if(_sndFiles)
+      //  _sndFiles->push_back(this);
       refCount = 0;
       writeBuffer = nullptr;
-      writeSegSize = std::max((size_t)segSize, (size_t)cacheMag);// cache minimum segment size for write operations
+      writeSegSize = std::max((size_t)_segSize, (size_t)cacheMag);// cache minimum segment size for write operations
       
       _staticAudioConverter    = nullptr;
       _staticAudioConverterUI  = nullptr;
@@ -204,13 +227,16 @@ SndFile::~SndFile()
       DEBUG_WAVE(stderr, "SndFile dtor this:%p\n", this);
       if (openFlag)
             close();
-      for (iSndFile i = sndFiles.begin(); i != sndFiles.end(); ++i) {
+      if(_sndFiles)
+      {
+        for (iSndFile i = _sndFiles->begin(); i != _sndFiles->end(); ++i) {
             if (*i == this) {
                   //DEBUG_WAVE(stderr, "erasing from sndfiles:%s\n", finfo->canonicalFilePath().toLatin1().constData());
-                  sndFiles.erase(i);
+                  _sndFiles->erase(i);
                   break;
                   }
             }
+      }
       if(finfo)
         delete finfo;
       if (cache)
@@ -238,11 +264,8 @@ bool SndFile::isOffline()
   return _isOffline;
 }
 
-// REMOVE Tim. samplerate. Added.
 bool SndFile::setOffline(
-  bool v,
-  AudioConverterPluginList* pluginList,
-  AudioConverterSettingsGroup* defaultSettings)
+  bool v)
 {
   // Check if the current mode is already in the requested mode.
   if(isOffline() == v)
@@ -259,7 +282,7 @@ bool SndFile::setOffline(
   if(useConverter() && audioConverterSettings())
   {
     const AudioConverterSettingsGroup* settings = audioConverterSettings()->useSettings() ?
-      audioConverterSettings() : defaultSettings;
+      audioConverterSettings() : *_defaultSettings;
     const bool isLocalSettings = audioConverterSettings()->useSettings();
 
     const bool doStretch = isStretched();
@@ -274,9 +297,7 @@ bool SndFile::setOffline(
       isLocalSettings,
       v ? AudioConverterSettings::OfflineMode : AudioConverterSettings::RealtimeMode,
       doResample,
-      doStretch,
-      pluginList,
-      defaultSettings);
+      doStretch);
   }
   setStaticAudioConverter(converter, AudioConverterSettings::RealtimeMode);
   return true;
@@ -286,9 +307,7 @@ bool SndFile::setOffline(
 //   openRead
 //---------------------------------------------------------
 
-bool SndFile::openRead(AudioConverterPluginList* pluginList,
-                       const AudioConverterSettingsGroup* defaultSettings,
-                       bool createCache, bool showProgress)
+bool SndFile::openRead(bool createCache, bool showProgress)
       {
       if (openFlag) {
             DEBUG_WAVE(stderr, "SndFile:: already open\n");
@@ -337,9 +356,7 @@ bool SndFile::openRead(AudioConverterPluginList* pluginList,
             AudioConverterSettings::OfflineMode :
             AudioConverterSettings::RealtimeMode,
           isResampled(),
-          isStretched(),
-          pluginList,
-          defaultSettings);
+          isStretched());
 
         if(finfo)
           _staticAudioConverterUI = setupAudioConverter(
@@ -347,9 +364,7 @@ bool SndFile::openRead(AudioConverterPluginList* pluginList,
             true,  // true = Local settings.
             AudioConverterSettings::GuiMode, 
             isResampled(),
-            isStretched(),
-            pluginList,
-            defaultSettings);
+            isStretched());
       }
       
       writeFlag = false;
@@ -366,11 +381,9 @@ AudioConverterPluginI* SndFile::setupAudioConverter(const AudioConverterSettings
                                                     bool isLocalSettings, 
                                                     AudioConverterSettings::ModeType mode, 
                                                     bool doResample,
-                                                    bool doStretch,
-                                                    AudioConverterPluginList* pluginList,
-                                                    const AudioConverterSettingsGroup* defaultSettings) const
+                                                    bool doStretch) const
 {
-  if(!useConverter() || !defaultSettings || !pluginList)
+  if(!useConverter() || !*_defaultSettings || !_pluginList)
     return nullptr;
   
   AudioConverterPluginI* plugI = nullptr;
@@ -378,23 +391,23 @@ AudioConverterPluginI* SndFile::setupAudioConverter(const AudioConverterSettings
   int pref_resampler = 
     (settings && (settings->_options._useSettings || !isLocalSettings)) ? 
       settings->_options._preferredResampler :
-      defaultSettings->_options._preferredResampler;
+      (*_defaultSettings)->_options._preferredResampler;
   
   int pref_shifter = 
     (settings && (settings->_options._useSettings || !isLocalSettings)) ? 
       settings->_options._preferredShifter:
-      defaultSettings->_options._preferredShifter;
+      (*_defaultSettings)->_options._preferredShifter;
 
   AudioConverterSettingsI* def_res_settings = nullptr;
   AudioConverterSettingsI* local_res_settings = nullptr;
   AudioConverterSettingsI* rt_res_settings = nullptr;
-  AudioConverterPlugin* res_plugin = pluginList->find(0, pref_resampler, AudioConverter::SampleRate);
+  AudioConverterPlugin* res_plugin = _pluginList->find(0, pref_resampler, AudioConverter::SampleRate);
   if(res_plugin)
   {
     if(isLocalSettings)
     {
-      def_res_settings = defaultSettings->find(
-          defaultSettings->_options._preferredResampler);
+      def_res_settings = (*_defaultSettings)->find(
+          (*_defaultSettings)->_options._preferredResampler);
       local_res_settings = settings ? settings->find(pref_resampler) : nullptr;
       rt_res_settings = (local_res_settings && local_res_settings->useSettings(mode)) ? local_res_settings : def_res_settings;
     }
@@ -405,13 +418,13 @@ AudioConverterPluginI* SndFile::setupAudioConverter(const AudioConverterSettings
   AudioConverterSettingsI* def_str_settings = nullptr;
   AudioConverterSettingsI* local_str_settings = nullptr;
   AudioConverterSettingsI* rt_str_settings = nullptr;
-  AudioConverterPlugin* str_plugin = pluginList->find(0, pref_shifter, AudioConverter::Stretch);
+  AudioConverterPlugin* str_plugin = _pluginList->find(0, pref_shifter, AudioConverter::Stretch);
   if(str_plugin)
   {
     if(isLocalSettings)
     {
-      def_str_settings = defaultSettings->find(
-          defaultSettings->_options._preferredShifter);
+      def_str_settings = (*_defaultSettings)->find(
+          (*_defaultSettings)->_options._preferredShifter);
       local_str_settings = settings ? settings->find(pref_shifter) : nullptr;
       rt_str_settings = (local_str_settings && local_str_settings->useSettings(mode)) ? local_str_settings : def_str_settings;
       
@@ -560,9 +573,7 @@ void SndFile::setAudioConverterSettings(AudioConverterSettingsGroup* settings)
 //    called after recording to file
 //---------------------------------------------------------
 
-void SndFile::update(AudioConverterPluginList* pluginList,
-                     const AudioConverterSettingsGroup* defaultSettings,
-                     bool showProgress)
+void SndFile::update(bool showProgress)
       {
       if(!finfo)
         return;
@@ -573,7 +584,7 @@ void SndFile::update(AudioConverterPluginList* pluginList,
       QString cacheName = finfo->absolutePath() +
          QString("/") + finfo->completeBaseName() + QString(".wca");
       ::remove(cacheName.toLocal8Bit().constData());
-      if (openRead(pluginList, defaultSettings, true, showProgress)) {
+      if (openRead(true, showProgress)) {
             ERROR_WAVE(stderr, "SndFile::update openRead(%s) failed: %s\n", path().toLocal8Bit().constData(), strerror().toLocal8Bit().constData());
             }
       }

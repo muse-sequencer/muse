@@ -117,8 +117,10 @@ RubberBandAudioConverter::RubberBandAudioConverter(
                      this, channels, mode);
 
 #ifdef RUBBERBAND_SUPPORT
-  const int mask      = ~(RubberBand::RubberBandStretcher::OptionProcessOffline | RubberBand::RubberBandStretcher::OptionProcessRealTime);
-  const int of_flags  = RubberBand::RubberBandStretcher::OptionProcessOffline;
+  const int mask      = ~(RubberBand::RubberBandStretcher::OptionProcessOffline |
+                          RubberBand::RubberBandStretcher::OptionProcessRealTime);
+  //const int of_flags  = RubberBand::RubberBandStretcher::OptionProcessOffline;
+  const int of_flags  = RubberBand::RubberBandStretcher::OptionProcessRealTime;
   const int rt_flags  = RubberBand::RubberBandStretcher::OptionProcessRealTime;
   const int gui_flags = RubberBand::RubberBandStretcher::OptionProcessRealTime;
 #else

@@ -1142,7 +1142,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       if(MusEGlobal::extSyncFlag && !master_was_on)
         MusEGlobal::tempomap.setMasterFlag(0, false);
 
-      f->update(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings);
+      f->update();
 
       MusECore::WavePart* part = new MusECore::WavePart(track);
       part->setFrame(sframe);
@@ -1712,8 +1712,7 @@ void Song::normalizePart(MusECore::Part *part)
 
       MusEGlobal::audio->msgIdle(true); // Not good with playback during operations
       
-      MusECore::SndFile tmpFile(tmpWavFile, MusEGlobal::sampleRate, MusEGlobal::segmentSize,
-                                      true, &MusEGlobal::audioConverterPluginList);
+      MusECore::SndFile tmpFile(tmpWavFile);
       unsigned int file_channels = file.channels();
       tmpFile.setFormat(file.format(), file_channels, file.samplerate());
       if (tmpFile.openWrite())
@@ -1758,9 +1757,9 @@ void Song::normalizePart(MusECore::Part *part)
       file.openWrite();
       file.seek(0, 0);
       file.write(file_channels, tmpdata, tmpdatalen, MusEGlobal::config.liveWaveUpdate);
-      file.update(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings);
+      file.update();
       file.close();
-      file.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings);
+      file.openRead();
 
       for (unsigned i=0; i<file_channels; i++)
       {
@@ -4344,9 +4343,7 @@ void Song::setAudioConvertersOfflineOperation(
             AudioConverterSettings::OfflineMode :
             AudioConverterSettings::RealtimeMode,
           doResample,
-          doStretch,
-          &MusEGlobal::audioConverterPluginList,
-          MusEGlobal::defaultAudioConverterSettings);
+          doStretch);
 
           // No point if there's already no converter.
           if(!converter && !cur_converter)
@@ -4390,18 +4387,14 @@ void Song::modifyAudioConverterSettingsOperation(
       AudioConverterSettings::OfflineMode :
       AudioConverterSettings::RealtimeMode,
     doResample,
-    doStretch,
-    &MusEGlobal::audioConverterPluginList,
-    MusEGlobal::defaultAudioConverterSettings);
+    doStretch);
 
   AudioConverterPluginI* converterUI = sndfile.setupAudioConverter(
     settings,
     isLocalSettings,
     AudioConverterSettings::GuiMode,
     doResample,
-    doStretch,
-    &MusEGlobal::audioConverterPluginList,
-    MusEGlobal::defaultAudioConverterSettings);
+    doStretch);
 
 //   if(!converter && !converterUI)
 //     return;
@@ -4440,18 +4433,14 @@ void Song::modifyAudioConverterOperation(
       AudioConverterSettings::OfflineMode :
       AudioConverterSettings::RealtimeMode,
     doResample,
-    doStretch,
-    &MusEGlobal::audioConverterPluginList,
-    MusEGlobal::defaultAudioConverterSettings);
+    doStretch);
 
   AudioConverterPluginI* converterUI = sndfile.setupAudioConverter(
     settings,
     isLocalSettings,
     AudioConverterSettings::GuiMode,
     doResample,
-    doStretch,
-    &MusEGlobal::audioConverterPluginList,
-    MusEGlobal::defaultAudioConverterSettings);
+    doStretch);
 
 //   if(!converter && !converterUI)
 //     return;

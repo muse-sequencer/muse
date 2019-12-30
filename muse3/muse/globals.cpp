@@ -51,6 +51,8 @@ const int selectableAudioSampleRates[] = {
       22050, 32000, 44100, 48000, 64000, 88200, 96000, 192000
       };
 
+MusECore::SndFileList sndFiles;
+
 MusECore::AudioConverterPluginList audioConverterPluginList;
 // This global variable is a pointer so that we can replace it quickly with a new one in RT operations.
 MusECore::AudioConverterSettingsGroup* defaultAudioConverterSettings;

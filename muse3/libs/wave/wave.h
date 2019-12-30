@@ -89,7 +89,6 @@ class SndFile {
       // Whether to use any converter(s) at all.
       bool _useConverter;
 
-      int _systemSampleRate;
       SF_INFO sfinfo;
       SampleVtype* cache;
       sf_count_t csize;                    //!< frames in cache
@@ -112,17 +111,34 @@ class SndFile {
 
    public:
       // Constructor for file operation.
-      SndFile(const QString& name, int systemSampleRate, unsigned int segSize,
-              bool installConverter, AudioConverterPluginList* pluginList, bool isOffline = false);
+      SndFile(
+        const QString& name,
+        bool installConverter = true,
+        bool isOffline = false);
       // Constructor for virtual (memory or stream) operation.
       // When using the virtual interface, be sure to call setFormat before opening.
-      SndFile(void* virtualData, sf_count_t virtualBytes,
-              int systemSampleRate, unsigned int segSize,
-              bool installConverter, AudioConverterPluginList* pluginList, bool isOffline = false);
-      ~SndFile();
-      int getRefCount() const;
+      SndFile(
+        void* virtualData,
+        sf_count_t virtualBytes,
+        bool installConverter = true,
+        bool isOffline = false);
 
-      static SndFileList sndFiles;
+      ~SndFile();
+
+      static AudioConverterPluginList* _pluginList;
+      static AudioConverterSettingsGroup** _defaultSettings;
+      static int _systemSampleRate;
+      static int _segSize;
+      static SndFileList* _sndFiles;
+
+      static void initWaveModule(
+        SndFileList* sndFiles,
+        AudioConverterPluginList* pluginList, 
+        AudioConverterSettingsGroup** defaultSettings,
+        int systemSampleRate,
+        int segSize);
+
+      int getRefCount() const;
 
       // Whether to use any converter(s) at all.
       bool useConverter() const;
@@ -132,7 +148,7 @@ class SndFile {
       bool isOffline();
       // Set the converter offline mode.
       // Returns whether the mode was actually changed.
-      bool setOffline(bool v, AudioConverterPluginList* pluginList, AudioConverterSettingsGroup* defaultSettings);
+      bool setOffline(bool v);
 
       // For virtual (memory or stream) operation.
       SndFileVirtualData& virtualData() { return _virtualData; }
@@ -149,16 +165,12 @@ class SndFile {
                                                  bool isLocalSettings, 
                                                  AudioConverterSettings::ModeType mode, 
                                                  bool doResample,
-                                                 bool doStretch,
-                                                 AudioConverterPluginList* pluginList,
-                                                 const AudioConverterSettingsGroup* defaultSettings
+                                                 bool doStretch
                                                 ) const;
 
       // When using the virtual interface, be sure to call setFormat before opening.
       //!< returns true on error
-      bool openRead(AudioConverterPluginList* pluginList,
-                    const AudioConverterSettingsGroup* defaultSettings,
-                    bool createCache=true, bool showProgress=true);
+      bool openRead(bool createCache=true, bool showProgress=true);
       //!< returns true on error
       bool openWrite();
       void close();
@@ -167,9 +179,7 @@ class SndFile {
       bool isOpen() const;
       bool isWritable() const;
 
-      void update(AudioConverterPluginList* pluginList,
-                  const AudioConverterSettingsGroup* defaultSettings,
-                  bool showProgress = true);
+      void update(bool showProgress = true);
 
       QString basename() const;     //!< filename without extension
       QString dirPath() const;      //!< path
@@ -237,8 +247,6 @@ class SndFile {
       double minPitchShiftRatio() const;
       double maxPitchShiftRatio() const;
 
-      static SndFile* search(const QString& name);
-
       friend class SndFileR;
       };
 
@@ -277,8 +285,8 @@ class SndFileR {
       bool isOffline() { return sf ? sf->isOffline() : false; }
       // Set the converter offline mode.
       // Returns whether the mode was actually changed.
-      bool setOffline(bool v, AudioConverterPluginList* pluginList, AudioConverterSettingsGroup* defaultSettings)
-      { return sf ? sf->setOffline(v, pluginList, defaultSettings) : false; }
+      bool setOffline(bool v)
+      { return sf ? sf->setOffline(v) : false; }
 
       // Creates a new converter based on the supplied settings and AudioConverterSettings::ModeType mode.
       // If isLocalSettings is true, settings is treated as a local settings which may override the 
@@ -289,26 +297,19 @@ class SndFileR {
                                                  bool isLocalSettings, 
                                                  AudioConverterSettings::ModeType mode, 
                                                  bool doResample,
-                                                 bool doStretch,
-                                                 AudioConverterPluginList* pluginList,
-                                                 const AudioConverterSettingsGroup* defaultSettings) const
+                                                 bool doStretch) const
       { return sf ? sf->setupAudioConverter(
-          settings, isLocalSettings, mode, doResample, doStretch, pluginList, defaultSettings) : nullptr; }
+          settings, isLocalSettings, mode, doResample, doStretch) : nullptr; }
 
       // When using the virtual interface, be sure to call setFormat before opening.
-      bool openRead(AudioConverterPluginList* pluginList,
-                    const AudioConverterSettingsGroup* defaultSettings,
-                    bool createCache=true)
-      { return sf ? sf->openRead(pluginList, defaultSettings, createCache) : true;  }
+      bool openRead(bool createCache=true) { return sf ? sf->openRead(createCache) : true;  }
       bool openWrite()        { return sf ? sf->openWrite() : true; }
       void close()            { if(sf) sf->close();     }
       void remove()           { if(sf) sf->remove();    }
 
       bool isOpen() const     { return sf ? sf->isOpen() : false; }
       bool isWritable() const { return sf ? sf->isWritable() : false; }
-      void update(AudioConverterPluginList* pluginList,
-                  const AudioConverterSettingsGroup* defaultSettings)
-                              { if(sf) sf->update(pluginList, defaultSettings); }
+      void update(bool showProgress = true) { if(sf) sf->update(showProgress); }
 
       QString basename() const { return sf ? sf->basename() : QString(); }
       QString dirPath() const  { return sf ? sf->dirPath() : QString(); }

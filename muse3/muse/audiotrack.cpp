@@ -3162,8 +3162,7 @@ bool AudioTrack::prepareRecording()
                if (!fil.exists())
                   break;
                   }
-            _recFile = new MusECore::SndFile(fil.fileName(), MusEGlobal::sampleRate, MusEGlobal::segmentSize,
-                                      true, &MusEGlobal::audioConverterPluginList);
+            _recFile = new MusECore::SndFile(fil.fileName());
 
             _recFile->setFormat(
                SF_FORMAT_WAV | SF_FORMAT_FLOAT,

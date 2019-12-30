@@ -139,7 +139,7 @@ void sndFileApplyUndoFile(const Event& original, const QString* tmpfile, unsigne
             }
 
       if (!orig.isOpen()) {
-            if (orig.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings)) {
+            if (orig.openRead()) {
                   fprintf(stderr,
                     "sndFileApplyUndoFile: Cannot open original file %s for reading - cannot undo! Aborting\n", 
                     orig.canonicalPath().toLocal8Bit().constData());
@@ -147,10 +147,9 @@ void sndFileApplyUndoFile(const Event& original, const QString* tmpfile, unsigne
                   }
             }
 
-      SndFile tmp  = SndFile(*tmpfile, MusEGlobal::sampleRate, MusEGlobal::segmentSize,
-               true, &MusEGlobal::audioConverterPluginList);
+      SndFile tmp  = SndFile(*tmpfile);
       if (!tmp.isOpen()) {
-            if (tmp.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings)) {
+            if (tmp.openRead()) {
                   fprintf(stderr,
                     "sndFileApplyUndoFile: Could not open temporary file %s for writing - cannot undo! Aborting\n",
                     tmpfile->toLocal8Bit().constData());
@@ -215,8 +214,8 @@ void sndFileApplyUndoFile(const Event& original, const QString* tmpfile, unsigne
             }
 
       orig.close();
-      orig.openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings);
-      orig.update(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings);
+      orig.openRead();
+      orig.update();
       MusEGlobal::audio->msgIdle(false);
       }
 
@@ -248,8 +247,7 @@ SndFileR sndFileGetWave(const QString& inName, bool readOnlyFlag, bool openFlag,
                 name.toLocal8Bit().constData());
             return nullptr;
             }
-      f = new SndFile(name, MusEGlobal::sampleRate, MusEGlobal::segmentSize,
-               true, &MusEGlobal::audioConverterPluginList);
+      f = new SndFile(name);
 
       // Assign audio converter settings if given.
       if(audioConverterSettings)
@@ -262,7 +260,7 @@ SndFileR sndFileGetWave(const QString& inName, bool readOnlyFlag, bool openFlag,
       {
         bool error;
         if (readOnlyFlag)
-              error = f->openRead(&MusEGlobal::audioConverterPluginList, MusEGlobal::defaultAudioConverterSettings);
+              error = f->openRead();
         else {
               error = f->openWrite();
               // if peak cache is older than wave file we reaquire the cache
