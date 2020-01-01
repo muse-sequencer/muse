@@ -1393,7 +1393,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
                       QString msg = QString("The sample rate in this project (%1Hz) and the\n"
                         " current system setting (%2Hz) differ.\n"
                         "Project timing will be scaled to match the new sample rate.\n"
-                        "Caution: Slight rounding errors may degrade timing accuracy.\n\n"
+                        "Caution: Accuracy and sound quality may vary with rate and settings.\n\n"
                         "Live realtime audio sample rate converters will be enabled\n"
                         " on audio files where required.\n"
                         "The files can be permanently converted to the new sample rate.\n\n"
