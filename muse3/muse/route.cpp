@@ -27,7 +27,6 @@
 
 #include "song.h"
 #include "route.h"
-#include "node.h"
 #include "audio.h"
 #include "track.h"
 #include "synth.h"

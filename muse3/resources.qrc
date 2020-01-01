@@ -102,5 +102,7 @@
         <file>svg/arrow_up.svg</file>
         <file>svg/arrow_down.svg</file>
         <file>qss/scrollbar_small_vertical.qss</file>
+        <file>svg/audio_stretch.svg</file>
+        <file>svg/audio_resample.svg</file>
     </qresource>
 </RCC>

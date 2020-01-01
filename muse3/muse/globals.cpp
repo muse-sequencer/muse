@@ -42,6 +42,21 @@ unsigned fifoLength =  128;       // 131072/segmentSize
                                   // 131072 - magic number that gives a sufficient buffer size
 int segmentCount = 2;
 
+//   NOTE: For now, this is TEMPORARILY set to the project sample rate during song loading,
+//          then at the END of song loading is immediately set to the real current rate.
+//         See comments in Song::read() at the "samplerate" tag section.
+int projectSampleRate = sampleRate;
+const int numAudioSampleRates = 8;
+const int selectableAudioSampleRates[] = {
+      22050, 32000, 44100, 48000, 64000, 88200, 96000, 192000
+      };
+
+MusECore::SndFileList sndFiles;
+
+MusECore::AudioConverterPluginList audioConverterPluginList;
+// This global variable is a pointer so that we can replace it quickly with a new one in RT operations.
+MusECore::AudioConverterSettingsGroup* defaultAudioConverterSettings;
+
 // denormal bias value used to eliminate the manifestation of denormals by
 // lifting the zero level slightly above zero
 // denormal problems occur when values get extremely close to zero
@@ -318,6 +333,15 @@ const QString noOutputRoutingToolTipWarn = outputRoutingToolTipBase + QString("\
 //uid_t euid, ruid;  // effective user id, real user id
 
 bool midiSeqRunning = false;
+
+//---------------------------------------------------------
+//   convertFrame4ProjectSampleRate
+//---------------------------------------------------------
+
+unsigned convertFrame4ProjectSampleRate(unsigned frame)
+{
+  return double(frame) * double(MusEGlobal::sampleRate) / double(MusEGlobal::projectSampleRate);
+}
 
 //---------------------------------------------------------
 //   doSetuid

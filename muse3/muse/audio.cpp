@@ -29,7 +29,6 @@
 
 #include "app.h"
 #include "song.h"
-#include "node.h"
 #include "audiodev.h"
 #include "mididev.h"
 #include "midiport.h"
@@ -48,7 +47,6 @@
 #include "gconfig.h"
 #include "pos.h"
 #include "ticksynth.h"
-//#include "operations.h"
 #include "undo.h"
 #include "globals.h"
 #include "large_int.h"
@@ -141,7 +139,7 @@ Audio::Audio()
       recording     = false;
       idle          = false;
       _freewheel    = false;
-      _bounce       = false;
+      _bounceState  = BounceOff;
       _loopFrame    = 0;
       _loopCount    = 0;
       m_Xruns       = 0;
@@ -674,7 +672,6 @@ void Audio::process(unsigned frames)
 // So we do this in MusE::bounceToFile() and MusE::bounceToTrack(), BEFORE the transport is started.
 //             if (_bounce)
 //                   write(sigFd, "f", 1);
-
             }
       else if (state == LOOP2 && jackState == PLAY) {
             ++_loopCount;                  // Number of times we have looped so far
@@ -686,12 +683,7 @@ void Audio::process(unsigned frames)
             stopRolling();
             }
       else if (state == START_PLAY && jackState == STOP) {
-            state = STOP;
-            if (_bounce) {
-                  MusEGlobal::audioDevice->startTransport();
-                  }
-            else
-                  write(sigFd, "3", 1);   // abort rolling
+            abortRolling();
             }
       else if (state == STOP && jackState == PLAY) {
             _loopCount = 0;
@@ -775,9 +767,11 @@ void Audio::process(unsigned frames)
             if (!freewheel())
                   MusEGlobal::audioPrefetch->msgTick(isRecording(), true);
 
-            if (_bounce && _pos >= MusEGlobal::song->rPos()) {
-                  _bounce = false;
-                  write(sigFd, "F", 1);
+            if (bounce() && _pos >= MusEGlobal::song->rPos()) {
+                  // Need to let the resulting stopRolling take care of resetting bounce.
+                  //_bounceState = BounceOff;
+                  // This is safe in both Jack 1 and 2.
+                  MusEGlobal::audioDevice->stopTransport();
                   return;
                   }
                   
@@ -801,7 +795,7 @@ void Audio::process(unsigned frames)
             //
             if ((curTickPos >= MusEGlobal::song->len())
                && !(MusEGlobal::song->record()
-                || _bounce
+                || bounce()
                 || MusEGlobal::song->loop())) {
 
                   if(MusEGlobal::debugMsg)
@@ -814,7 +808,7 @@ void Audio::process(unsigned frames)
             //
             //  check for loop end
             //
-            if (state == PLAY && MusEGlobal::song->loop() && !_bounce && !MusEGlobal::extSyncFlag) {
+            if (state == PLAY && MusEGlobal::song->loop() && !bounce() && !MusEGlobal::extSyncFlag) {
                   const Pos& loop = MusEGlobal::song->rPos();
                   unsigned n = loop.frame() - samplePos - (3 * frames);
                   if (n < frames) {
@@ -1561,53 +1555,58 @@ void Audio::processMsg(AudioMsg* msg)
 
 void Audio::seek(const Pos& p)
       {
-      // This is expected and required sometimes, for example to
-      //  sync the prefetch system to a position we are ALREADY at.
-      // But being fairly costly, not too frequently. So we warn just in case.
-      if (_pos == p) {
-            if(MusEGlobal::debugMsg)
-              fprintf(stderr, "Audio::seek already at frame:%u\n", p.frame());
-            }
-
-      if (MusEGlobal::heavyDebugMsg)
-        fprintf(stderr, "Audio::seek frame:%d\n", p.frame());
-        
-      _pos        = p;
-      if (!MusEGlobal::checkAudioDevice()) return;
-      syncFrame   = MusEGlobal::audioDevice->framesAtCycleStart();
-      
-#ifdef _JACK_TIMEBASE_DRIVES_MIDI_
-      unsigned curr_jt_tick;
-      if(MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO && 
-         !MusEGlobal::config.timebaseMaster && 
-         !MusEGlobal::tempomap.masterFlag() &&
-         !MusEGlobal::extSyncFlag &&
-         static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice)->timebaseQuery(
-             MusEGlobal::segmentSize, NULL, NULL, NULL, &curr_jt_tick, NULL))
-        curTickPos = curr_jt_tick;
-      else
-#endif
-      curTickPos  = _pos.tick();
-
-      // Now that curTickPos is set, set the correct initial metronome midiClick.
-      updateMidiClick();
-      
-      //
-      // Handle stuck notes and set controllers for new position:
-      //
-
-      seekMidi();
-      
-      if (state != LOOP2 && !freewheel())
+      // The transport (and user) must NOT be allowed to influence the position during bounce mode.
+      if(!bounce())
       {
-            // We need to force prefetch to update, to ensure the most recent data. 
-            // Things can happen to a part before play is pressed - such as part muting, 
-            //  part moving etc. Without a force, the wrong data was being played.  Tim 08/17/08
-            // This does not wait.
-            MusEGlobal::audioPrefetch->msgSeek(_pos.frame(), true);
+        // This is expected and required sometimes, for example to
+        //  sync the prefetch system to a position we are ALREADY at.
+        // But being fairly costly, not too frequently. So we warn just in case.
+        if (_pos == p) {
+              if(MusEGlobal::debugMsg)
+                fprintf(stderr, "Audio::seek already at frame:%u\n", p.frame());
+              }
+
+        if (MusEGlobal::heavyDebugMsg)
+          fprintf(stderr, "Audio::seek frame:%d\n", p.frame());
+          
+        _pos        = p;
+        if (!MusEGlobal::checkAudioDevice()) return;
+        syncFrame   = MusEGlobal::audioDevice->framesAtCycleStart();
+        
+  #ifdef _JACK_TIMEBASE_DRIVES_MIDI_
+        unsigned curr_jt_tick;
+        if(MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO && 
+          !MusEGlobal::config.timebaseMaster && 
+          !MusEGlobal::tempomap.masterFlag() &&
+          !MusEGlobal::extSyncFlag &&
+          static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice)->timebaseQuery(
+              MusEGlobal::segmentSize, NULL, NULL, NULL, &curr_jt_tick, NULL))
+          curTickPos = curr_jt_tick;
+        else
+  #endif
+        curTickPos  = _pos.tick();
+
+        // Now that curTickPos is set, set the correct initial metronome midiClick.
+        updateMidiClick();
+        
+        //
+        // Handle stuck notes and set controllers for new position:
+        //
+
+        seekMidi();
+        
+        if (state != LOOP2 && !freewheel())
+        {
+          // We need to force prefetch to update, to ensure the most recent data. 
+          // Things can happen to a part before play is pressed - such as part muting, 
+          //  part moving etc. Without a force, the wrong data was being played.  Tim 08/17/08
+          // This does not wait.
+          // FIXME: Actually it WILL until the the message is sent, but which is usually right away.
+          MusEGlobal::audioPrefetch->msgSeek(_pos.frame(), true);
+        }
+              
+        write(sigFd, "G", 1);   // signal seek to gui
       }
-            
-      write(sigFd, "G", 1);   // signal seek to gui
       }
 
 //---------------------------------------------------------
@@ -1641,63 +1640,152 @@ void Audio::startRolling()
       if (MusEGlobal::debugMsg)
         fprintf(stderr, "startRolling - loopCount=%d, _pos=%d\n", _loopCount, _pos.tick());
 
-      if(_loopCount == 0) {
-        startRecordPos = _pos;
-        startExternalRecTick = curTickPos;
-      }
-      if (MusEGlobal::song->record()) {
-            recording      = true;
-            WaveTrackList* tracks = MusEGlobal::song->waves();
-            for (iWaveTrack i = tracks->begin(); i != tracks->end(); ++i) {
-                        (*i)->resetMeter();
-                  }
-            }
-      state = PLAY;
-      write(sigFd, "1", 1);   // Play
-
-      // Don't send if external sync is on. The master, and our sync routing system will take care of that.
-      if(!MusEGlobal::extSyncFlag)
-      {
-        for(int port = 0; port < MusECore::MIDI_PORTS; ++port) 
-        {
-          MidiPort* mp = &MusEGlobal::midiPorts[port];
-          MidiDevice* dev = mp->device();
-          if(!dev)
-            continue;
-              
-          MidiSyncInfo& si = mp->syncInfo();
-            
-          if(si.MMCOut())
-            mp->sendMMCDeferredPlay();
-          
-          if(si.MRTOut())
-          {
-            if(curTickPos)
-              mp->sendContinue();
-            else
-              mp->sendStart();
-          }  
+      // The transport (and user) must NOT be allowed
+      //  to influence the position during bounce mode.
+      if(_bounceState != BounceOn)
+      {      
+        if(_loopCount == 0) {
+          startRecordPos = _pos;
+          startExternalRecTick = curTickPos;
         }
-      }  
+        if (MusEGlobal::song->record()) {
+              recording      = true;
+              WaveTrackList* tracks = MusEGlobal::song->waves();
+              for (iWaveTrack i = tracks->begin(); i != tracks->end(); ++i) {
+                          WaveTrack* track = *i;
+                          track->resetMeter();
+                          // If we are in freewheel mode, directly seek the wave files.
+                          // Since the audio converter support was added, the wave files MUST be allowed to
+                          //  progress naturally during play, pulled in a stream manner by the particular converter.
+                          // Therefore we no longer seek with EVERY data fetch, so do it here, directly.
+                          // We CANNOT do this in Audio::seek in response to a transport relocation, because
+                          //  the transport (and user) must not be allowed to influence the position during freewheel.
+                          // Note that when freewheeling, prefetch is essentially UNUSED. We can ignore it here.
+                          if(freewheel() /*&& bounce()*/)
+                          {
+                            // Might as well do this. Not costly. Prepare for next 'real' non-freewheel seek?
+                            track->clearPrefetchFifo();
+                            track->setPrefetchWritePos(_pos.frame());
 
-      // Set the correct initial metronome midiClick.
-      // Theoretically shouldn't have to do this here, in seek() should be enough.
-      // But just in case, no harm.
-      updateMidiClick();
-      
-      // re-enable sustain 
-      for (int i = 0; i < MusECore::MIDI_PORTS; ++i) {
-          MidiPort* mp = &MusEGlobal::midiPorts[i];
-          if(!mp->device())
-            continue;
-          for (int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch) {
-              if (mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) {
-                        const MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 127);
-                        mp->device()->putEvent(ev, MidiDevice::NotLate);
-                  }
+                            track->seekData(_pos.frame());
+                          }
+                    }
               }
+      }
+
+      state = PLAY;
+      
+      if(_bounceState != BounceOn)
+      {      
+        write(sigFd, "1", 1);   // Play
+
+        // Don't send if external sync is on. The master, and our sync routing system will take care of that.
+        if(!MusEGlobal::extSyncFlag)
+        {
+          for(int port = 0; port < MusECore::MIDI_PORTS; ++port) 
+          {
+            MidiPort* mp = &MusEGlobal::midiPorts[port];
+            MidiDevice* dev = mp->device();
+            if(!dev)
+              continue;
+                
+            MidiSyncInfo& si = mp->syncInfo();
+              
+            if(si.MMCOut())
+              mp->sendMMCDeferredPlay();
+            
+            if(si.MRTOut())
+            {
+              if(curTickPos)
+                mp->sendContinue();
+              else
+                mp->sendStart();
+            }  
           }
+        }  
+
+        // Set the correct initial metronome midiClick.
+        // Theoretically shouldn't have to do this here, in seek() should be enough.
+        // But just in case, no harm.
+        updateMidiClick();
+        
+        // re-enable sustain 
+        for (int i = 0; i < MusECore::MIDI_PORTS; ++i) {
+            MidiPort* mp = &MusEGlobal::midiPorts[i];
+            if(!mp->device())
+              continue;
+            for (int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch) {
+                if (mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) {
+                          const MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 127);
+                          mp->device()->putEvent(ev, MidiDevice::NotLate);
+                    }
+                }
+            }
+      }
+
+      if(_bounceState == BounceStart)
+        _bounceState = BounceOn;
      }
+
+//---------------------------------------------------------
+//   abortRolling
+//---------------------------------------------------------
+
+void Audio::abortRolling()
+{
+      if (MusEGlobal::debugMsg)
+        fprintf(stderr, "Audio::abortRolling state %s\n", audioStates[state]);
+      
+      state = STOP;
+
+      //
+      // Clear midi device notes and stop stuck notes:
+      //
+
+      // Clear the special sync play state (separate from audio play state).
+      MusEGlobal::midiSyncContainer.setExternalPlayState(ExtMidiClock::ExternStopped); // Not playing.   Moved here from MidiSeq::processStop()
+
+      // Stop the ALSA devices...
+      if(MusEGlobal::midiSeq)
+        MusEGlobal::midiSeq->msgStop();  // FIXME: This waits!
+
+      // Stop any non-ALSA devices...
+      for(iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id)
+      {
+        MidiDevice* md = *id;
+        const MidiDevice::MidiDeviceType type = md->deviceType();
+        // Only for non-ALSA devices.
+        switch(type)
+        {
+          case MidiDevice::ALSA_MIDI:
+          break;
+
+          case MidiDevice::JACK_MIDI:
+          case MidiDevice::SYNTH_MIDI:
+            md->handleStop();
+          break;
+        }
+      }
+
+      // There may be disk read/write fifo buffers waiting to be emptied. Send one last tick to the disk thread.
+      if(!freewheel())
+        MusEGlobal::audioPrefetch->msgTick(recording, false); // This does not wait.
+      
+      WaveTrackList* tracks = MusEGlobal::song->waves();
+      for (iWaveTrack i = tracks->begin(); i != tracks->end(); ++i) {
+            (*i)->resetMeter();
+            }
+      recording    = false;
+      if(_bounceState == BounceOff)
+      {
+        write(sigFd, "3", 1);   // abort rolling
+      }
+      else
+      {
+        _bounceState = BounceOff;
+        write(sigFd, "A", 1);   // abort rolling + Special stop bounce (offline) mode
+      }
+      }
 
 //---------------------------------------------------------
 //   stopRolling
@@ -1750,7 +1838,15 @@ void Audio::stopRolling()
       recording    = false;
       endRecordPos = _pos;
       endExternalRecTick = curTickPos;
-      write(sigFd, "0", 1);   // STOP
+      if(_bounceState == BounceOff)
+      {
+        write(sigFd, "0", 1);   // STOP
+      }
+      else
+      {
+        _bounceState = BounceOff;
+        write(sigFd, "B", 1);   // STOP + Special stop bounce (offline) mode
+      }
       }
 
 //---------------------------------------------------------

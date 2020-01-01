@@ -23,12 +23,10 @@
 
 #include <stdio.h>
 #include "event.h"
-#include "eventbase.h"
 #include "waveevent.h"
 #include "midievent.h"
 #include "midi.h"
-
-//#define USE_SAMPLERATE
+#include "part.h"
 
 namespace MusECore {
 
@@ -139,11 +137,7 @@ void EventBase::dump(int n) const
 
 Event Event::duplicate() const
       {
-      #ifdef USE_SAMPLERATE
-      return ev ? Event(ev->duplicate(), _audConv) : Event();
-      #else
       return ev ? Event(ev->duplicate()) : Event();
-      #endif
       }
 
 //---------------------------------------------------------
@@ -152,11 +146,7 @@ Event Event::duplicate() const
 
 Event Event::clone() const
       {
-      #ifdef USE_SAMPLERATE
-      return ev ? Event(ev->clone(), _audConv) : Event();
-      #else
       return ev ? Event(ev->clone()) : Event();
-      #endif
       }
 
 //---------------------------------------------------------
@@ -185,45 +175,18 @@ Event::Event(const Event& e) {
             ev = e.ev;
             if(ev)
               ++(ev->refCount);
-            
-            #ifdef USE_SAMPLERATE
-            if(e._audConv)
-              _audConv = e._audConv->reference();
-            #endif
           }
 Event::Event(EventBase* eb) {
             ev = eb;
 	    if(ev)
               ++(ev->refCount);
-            
-            #ifdef USE_SAMPLERATE
-            if(ev && !ev->sndFile().isNull())
-              _audConv = new SRCAudioConverter(ev->sndFile().channels(), SRC_SINC_MEDIUM_QUALITY);
-            #endif  
             }
-#ifdef USE_SAMPLERATE
-Event::Event(EventBase* eb, AudioConverter* cv) {
-            _sfCurFrame = 0;
-            _audConv = 0;
-            
-            ev = eb;
-	    if(ev)
-              ++(ev->refCount);
-            
-            if(cv)
-              _audConv = cv->reference();
-            }
-#endif  
             
 Event::~Event() {
             if (ev && --(ev->refCount) == 0) {
                   delete ev;
                   ev=0;
                   }
-
-            #ifdef USE_SAMPLERATE
-            AudioConverter::release(_audConv);
-            #endif
             }
 
 MidiPlayEvent Event::asMidiPlayEvent(unsigned time, int port, int channel) const
@@ -284,15 +247,6 @@ Event& Event::operator=(const Event& e) {
               if (ev)
                     ++(ev->refCount);
             }      
-            
-            #ifdef USE_SAMPLERATE
-            if (_audConv != e._audConv)
-            {
-              if(_audConv)
-                AudioConverter::release(_audConv);
-              _audConv = e._audConv->reference();
-            }      
-            #endif
             return *this;
             }
 
@@ -332,16 +286,6 @@ void Event::move(int offset)      { if(ev) ev->move(offset); }
 void Event::read(Xml& xml)            
 { 
   if(ev) ev->read(xml); 
-  
-  #ifdef USE_SAMPLERATE
-  if(ev && !ev->sndFile().isNull())
-  {
-    if(_audConv)
-      _audConv->setChannels(ev->sndFile().channels());
-    else
-      _audConv = new SRCAudioConverter(ev->sndFile().channels(), SRC_SINC_MEDIUM_QUALITY);
-  }  
-  #endif
 }
 
 
@@ -351,7 +295,7 @@ Event Event::mid(unsigned a, unsigned b) const { return ev ? Event(ev->mid(a, b)
 
 bool Event::isNote() const                   { return ev ? ev->isNote() : false;        }
 bool Event::isNoteOff() const                { return ev ? ev->isNoteOff() : false;     }
-bool Event::isNoteOff(const Event& e) const  { return ev ? ev->isNoteOff(e) : false; }
+bool Event::isNoteOff(const Event& e) const  { return ev ? (e.isNoteOff() && (e.pitch() == dataA())) : false; }
 int Event::dataA() const                     { return ev ? ev->dataA() : 0;  }
 int Event::pitch() const                     { return ev ? ev->dataA() : 0;  }
 void Event::setA(int val)                    { if(ev) ev->setA(val);       }
@@ -379,26 +323,25 @@ MusECore::SndFileR Event::sndFile() const    { return ev ? ev->sndFile() : MusEC
 void Event::setSndFile(MusECore::SndFileR& sf) 
 { 
   if(ev) ev->setSndFile(sf);   
-  
-  #ifdef USE_SAMPLERATE
-  if(_audConv)
-  { 
-    if(!sf.isNull())
-      _audConv->setChannels(sf.channels());
-  }
-  else
-  {
-    if(ev && !sf.isNull())
-      _audConv = new SRCAudioConverter(ev->sndFile().channels(), SRC_SINC_MEDIUM_QUALITY);
-  }
-  #endif
 }
 
-void Event::readAudio(MusECore::WavePart* part, unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite)
+void Event::readAudio(unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite)
       {
-        if(ev) ev->readAudio(part, offset, bpp, channels, nn, doSeek, overwrite);
+        if(ev) ev->readAudio(offset, bpp, channels, nn, doSeek, overwrite);
       }
-
+void Event::seekAudio(sf_count_t offset)
+      {
+        if(ev) ev->seekAudio(offset);
+      }
+Fifo* Event::audioPrefetchFifo()
+{
+        return ev ? ev->audioPrefetchFifo() : 0;
+}
+void Event::prefetchAudio(Part* part, sf_count_t frames)
+{
+        if(ev) ev->prefetchAudio(part, frames);
+}
+      
 //--------------------------------------------------------
 // 'Agnostic' position methods - can be TICKS and FRAMES.
 //--------------------------------------------------------

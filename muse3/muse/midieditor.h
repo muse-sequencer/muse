@@ -104,7 +104,7 @@ class MidiEditor : public TopWin  {
    public:
       MidiEditor(ToplevelType t, int, MusECore::PartList*,
          QWidget* parent = 0, const char* name = 0);
-      ~MidiEditor();
+      virtual ~MidiEditor();
 
       int rasterStep(unsigned tick) const;
       unsigned rasterVal(unsigned v)  const;

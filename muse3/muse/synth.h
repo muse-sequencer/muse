@@ -30,7 +30,6 @@
 
 #include "globals.h"
 #include "globaldefs.h"
-#include "node.h"
 #include "instruments/minstrument.h"
 #include "mididev.h"
 #include "midiport.h"

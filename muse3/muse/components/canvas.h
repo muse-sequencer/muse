@@ -153,7 +153,8 @@ class Canvas : public View {
       virtual void keyRelease(QKeyEvent*);
       virtual bool mousePress(QMouseEvent*) { return true; }
       virtual void mouseMove(QMouseEvent* event) = 0;
-      virtual void mouseRelease(const QPoint&) {}
+//       virtual void mouseRelease(const QPoint&) {}
+      virtual void mouseRelease(QMouseEvent*) {}
       // Resets all mouse operations if detecting missed mouseRelease event (which DOES happen).
       // Returns true if reset was actually done.
       virtual bool cancelMouseOps();

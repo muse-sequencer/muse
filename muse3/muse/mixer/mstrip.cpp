@@ -48,7 +48,6 @@
 #include "track.h"
 #include "doublelabel.h"
 #include "rack.h"
-#include "node.h"
 #include "amixer.h"
 #include "icons.h"
 #include "gconfig.h"

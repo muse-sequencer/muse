@@ -27,7 +27,6 @@
 
 #include <QApplication>
 #include <QClipboard>
-#include <QPainter>
 #include <QDrag>
 #include <QDragLeaveEvent>
 #include <QDragEnterEvent>
@@ -36,13 +35,14 @@
 #include <QFile>
 #include <QInputDialog>
 #include <QMouseEvent>
-#include <QList>
 #include <QPair>
 #include <QMessageBox>
 #include <QDir>
 #include <QLine>
 #include <QVector>
 #include <QProcess>
+#include <QColor>
+#include <QPen>
 
 #include <set>
 
@@ -72,8 +72,28 @@
 #include "copy_on_write.h"
 #include "helper.h"
 #include "sig.h"
+#include "wave_helper.h"
+
+#include "menutitleitem.h"
+#include "audio_converter_settings.h"
+#include "audio_convert/audio_converter_plugin.h"
+#include "audio_convert/audio_converter_settings_group.h"
+#include "sndfile.h"
+#include "operations.h"
+#define ABS(x) (abs(x))
+#define FABS(x) (fabs(x))
+
+// For debugging output: Uncomment the fprintf section.
+#define ERROR_WAVECANVAS(dev, format, args...)  fprintf(dev, format, ##args)
+#define INFO_WAVECANVAS(dev, format, args...) // fprintf(dev, format, ##args)
+#define DEBUG_WAVECANVAS(dev, format, args...) // fprintf(dev, format, ##args)
+
 
 namespace MusEGui {
+
+const int WaveCanvas::_stretchAutomationPointDetectDist = 4;
+const int WaveCanvas::_stretchAutomationPointWidthUnsel = 2;
+const int WaveCanvas::_stretchAutomationPointWidthSel = 3;
 
 //---------------------------------------------------------
 //   WEvent
@@ -223,6 +243,40 @@ void WaveCanvas::songChanged(MusECore::SongChangedStruct_t flags)
                         }
                   }
             }
+            
+      if (flags & SC_AUDIO_STRETCH) {
+        for(iStretchSelectedItem is = _stretchAutomation._stretchSelectedList.begin(); 
+            is != _stretchAutomation._stretchSelectedList.end(); )
+        {
+          MusECore::MuseFrame_t frame   = is->first;
+          StretchSelectedItem& ssi  = is->second;
+          MusECore::StretchList* sl = ssi._sndFile.stretchList();
+          if(!sl)
+            continue;
+          
+          MusEGui::ciCItem i;
+          for(i = items.begin(); i != items.end(); ++i)
+          {
+            WEvent* we = static_cast<WEvent*>(i->second);
+            MusECore::Event e = we->event();
+            if(MusECore::StretchList* e_sl = e.sndFile().stretchList())
+            {
+              if(e_sl == sl && e_sl->find(frame) != e_sl->end())
+                break;
+            }
+          }
+          
+          if(i == items.end())
+          {
+            iStretchSelectedItem is_save = is;
+            _stretchAutomation._stretchSelectedList.erase(is);
+            is = is_save;
+          }
+          else
+            ++is;
+        }
+      }
+            
       
       if (flags & SC_CLIP_MODIFIED) {
             redraw(); // Boring, but the only thing possible to do
@@ -343,13 +397,40 @@ void WaveCanvas::keyPress(QKeyEvent* event)
       if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
             key+= Qt::CTRL;
 
+      if (key == shortcuts[SHRT_DELETE].key)
+      {
+        switch (_tool)
+        {
+          case StretchTool:
+          case SamplerateTool:
+          {
+            MusECore::PendingOperationList operations;
+            StretchSelectedList_t& ssl = _stretchAutomation._stretchSelectedList;
+            for(iStretchSelectedItem isi = ssl.begin(); isi != ssl.end(); ++isi)
+            {
+              StretchSelectedItem& ssi = isi->second;
+//               ssi._sndFile.delAtStretchListOperation(ssi._type, isi->first, operations);
+              MusEGlobal::song->delAtStretchListOperation(ssi._sndFile, ssi._type, isi->first, operations);
+            }
+            ssl.clear();
+            MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+          }
+          break;
+
+          default:
+          break;
+        }
+
+        return;
+      }
+
       // TODO: New WaveCanvas: Convert these to frames, and remove unneeded functions.
             
       //
       //  Shortcut for DrumEditor & PianoRoll
       //  Sets locators to selected events
       //
-      if (key == shortcuts[SHRT_LOCATORS_TO_SELECTION].key) {
+      else if (key == shortcuts[SHRT_LOCATORS_TO_SELECTION].key) {
             int tick_max = 0;
             int tick_min = INT_MAX;
             bool found = false;
@@ -710,56 +791,252 @@ void WaveCanvas::wheelEvent(QWheelEvent* ev)
 
 bool WaveCanvas::mousePress(QMouseEvent* event)
       {
-    if (event->modifiers() & Qt::ControlModifier) {
-            return true;
-            }
+//     if (event->modifiers() & Qt::ControlModifier) {
+//             return true;
+//             }
+      const bool ctl = event->modifiers() & Qt::ControlModifier;
       button = event->button();
       QPoint pt = event->pos();
       unsigned x = event->x();
 
-      switch (_tool) {
+      switch (_tool)
+      {
             default:
                   break;
-             case RangeTool:
-                  switch (button) {
+            case RangeTool:
+                  if (ctl)
+                          return true;
+                  switch (button) 
+                  {
                         case Qt::LeftButton:
-                              if (mode == NORMAL) {
+                              if (mode == NORMAL)
+                              {
                                     // redraw and reset:
-                                    if (selectionStart != selectionStop) {
+                                    if (selectionStart != selectionStop) 
+                                    {
                                           selectionStart = selectionStop = 0;
                                           redraw();
-                                          }
+                                    }
                                     mode = DRAG;
                                     dragstartx = x;
                                     selectionStart = selectionStop = x;
                                     drag = DRAG_LASSO_START;
                                     Canvas::start = pt;
                                     return false;
-                                    }
+                              }
                               break;
 
                         case Qt::MidButton:
                         case Qt::RightButton:
                         default:
                               break;
-                        }
+                  }
 
-                   break;
+            break;
+            
+            case StretchTool:
+            case SamplerateTool:
+            {
+              if(button != Qt::LeftButton)
+                return true;
+              
+              StretchSelectedList_t& ssl = _stretchAutomation._stretchSelectedList;
+              //if(!ctl)
+              //{
+              //  ssl.clear();
+              //  update();
+              //}
+              
+              // TODO Look properly through the whole list instead of just current one.
+              //if(!curItem)
+              //  break;
+              //WEvent* wevent = static_cast<WEvent*>(curItem);
+              CItem* item = items.find(pt);
+              if(!item)
+                break;
+              WEvent* wevent = static_cast<WEvent*>(item);
+
+              const MusECore::Event event = wevent->event();
+              if(event.type() != MusECore::Wave)
+                break;
+              
+              MusECore::SndFileR sf = event.sndFile();
+              if(sf.isNull())
+                break;
+              
+              MusECore::StretchList* sl = sf.stretchList();
+              if(!sl)
+                break;
+
+             const double sf_sr_ratio  = sf->sampleRateRatio();
+
+             MusECore::StretchListItem::StretchEventType type;
+              if(_tool == StretchTool)
+                type = MusECore::StretchListItem::StretchEvent;
+              else //if(_tool == SamplerateTool)
+                type = MusECore::StretchListItem::SamplerateEvent;
+              
+              MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent);
+              if(isli_hit_test == sl->end())
+              {
+                if(!ctl)
+                {
+                  ssl.clear();
+                  update();
+                }
+
+                double newframe = sl->unSquish(sf_sr_ratio * double(x - wevent->x()));
+
+                MusECore::PendingOperationList operations;
+                MusEGlobal::song->addAtStretchListOperation(sf, type, newframe, sl->ratioAt(type, newframe), operations);
+                MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+                ssl.insert(StretchSelectedItemInsertPair_t(newframe, StretchSelectedItem(type, sf)));
+                _stretchAutomation._startMovePoint = pt;
+                _stretchAutomation._controllerState = stretchStartMove;
+                QWidget::setCursor(Qt::SizeHorCursor);
+                break;
+              }
+
+              iStretchSelectedItemPair res = ssl.equal_range(isli_hit_test->first);
+              iStretchSelectedItem isi;
+              for(isi = res.first; isi != res.second; ++isi)
+                if(isi->second._sndFile.stretchList() == sl && isi->second._type)
+                  break;
+
+              if(isi != res.second)
+              {
+                if(ctl)
+                {
+                  ssl.erase(isi);
+                  //setCursor();
+                  update();
+                }
+                else
+                {
+                  _stretchAutomation._startMovePoint = pt;
+                  _stretchAutomation._controllerState = stretchStartMove;
+                  QWidget::setCursor(Qt::SizeHorCursor);
+                }
+              }
+              else
+              {
+                if(!ctl)
+                  ssl.clear();
+                ssl.insert(std::pair<MusECore::MuseFrame_t, StretchSelectedItem>(isli_hit_test->first, 
+                                                                                 StretchSelectedItem(type, sf)));
+                _stretchAutomation._startMovePoint = pt;
+                _stretchAutomation._controllerState = stretchStartMove;
+                QWidget::setCursor(Qt::SizeHorCursor);
+                update();
+              }
             }
-      return true;
+            break;
+            
       }
+
+  return true;
+}
 
 //---------------------------------------------------------
 //   viewMouseReleaseEvent
 //---------------------------------------------------------
 
-void WaveCanvas::mouseRelease(const QPoint&)
+void WaveCanvas::mouseRelease(QMouseEvent* ev)
+{
+  QPoint pt = ev->pos();
+  const bool ctl = ev->modifiers() & Qt::ControlModifier;
+
+  switch(_tool)
+  {
+    case StretchTool:
+    case SamplerateTool:
+    {
+      if(button != Qt::LeftButton)
       {
-      button = Qt::NoButton;
-      if (mode == DRAG) {
-            mode = NORMAL;
-            }
+        _stretchAutomation._controllerState = stretchDoNothing;
+        setStretchAutomationCursor(pt);
+        return;
       }
+
+      StretchSelectedList_t& ssl = _stretchAutomation._stretchSelectedList;
+      switch(_stretchAutomation._controllerState)
+      {
+        case stretchMovingController:
+        case stretchAddNewController:
+          //setCursor();
+          break;
+
+        case stretchDoNothing:
+        case stretchStartMove:
+          if(!ctl)
+          {
+            ssl.clear();
+            update();
+          }
+
+          // TODO Look properly through the whole list instead of just current one.
+          //if(!curItem)
+          //  break;
+          //WEvent* wevent = static_cast<WEvent*>(curItem);
+          CItem* item = items.find(pt);
+          if(!item)
+            break;
+          WEvent* wevent = static_cast<WEvent*>(item);
+
+          const MusECore::Event event = wevent->event();
+          if(event.type() != MusECore::Wave)
+            break;
+
+          const MusECore::SndFileR sf = event.sndFile();
+          if(sf.isNull())
+            break;
+
+          MusECore::StretchList* sl = sf.stretchList();
+          if(!sl)
+            break;
+
+          MusECore::StretchListItem::StretchEventType type;
+          if(_tool == StretchTool)
+            type = MusECore::StretchListItem::StretchEvent;
+          else // if(_tool == SamplerateTool)
+            type = MusECore::StretchListItem::SamplerateEvent;
+
+          MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent);
+          if(isli_hit_test == sl->end())
+            break;
+
+          iStretchSelectedItemPair res = ssl.equal_range(isli_hit_test->first);
+          iStretchSelectedItem isi;
+          for(isi = res.first; isi != res.second; ++isi)
+            if(isi->second._sndFile.stretchList() == sl && isi->second._type)
+              break;
+
+          if(isi == res.second)
+          {
+            ssl.insert(std::pair<MusECore::MuseFrame_t, StretchSelectedItem>(isli_hit_test->first,
+                                                                              StretchSelectedItem(type, sf)));
+            update();
+          }
+
+          break;
+      }
+
+
+    }
+    break;
+
+    default:
+      break;
+  }
+
+  _stretchAutomation._controllerState = stretchDoNothing;
+      
+  button = Qt::NoButton;
+  if(mode == DRAG)
+    mode = NORMAL;
+
+  setStretchAutomationCursor(pt);
+}
 
 //---------------------------------------------------------
 //   viewMousevent
@@ -767,58 +1044,293 @@ void WaveCanvas::mouseRelease(const QPoint&)
 
 void WaveCanvas::mouseMove(QMouseEvent* event)
       {
-      int x = event->x();
+      QPoint pt = event->pos();
+      int x = pt.x();
       if (x < 0)
             x = 0;
+      
       emit timeChanged(x);
 
-      switch (button) {
-            case Qt::LeftButton:
-                  if (mode == DRAG) {
-                        int mx      = mapx(x);
-                        int mstart  = mapx(selectionStart);
-                        int mstop   = mapx(selectionStop);
-                        //int mdstart = mapx(dragstartx);
-                        QRect r(0, 0, 0, height());
+      switch(_tool)
+      {
+            case StretchTool:
+            case SamplerateTool:
+            {
+              event->accept();
+              //bool slowMotion = event->modifiers() & Qt::ShiftModifier;
+              //processStretchAutomationMovements(event->pos(), slowMotion);
+
+              //if(button != Qt::LeftButton)
+              //{
+              //  _stretchAutomation._controllerState = stretchDoNothing;
+              //  setCursor();
+              //  return;
+              //}
+              
+              switch(_stretchAutomation._controllerState)
+              {
+                case stretchDoNothing:
+                case stretchAddNewController:
+                  setStretchAutomationCursor(pt);
+                break;
+                
+                case stretchStartMove:
+                  _stretchAutomation._controllerState = stretchMovingController;
+                // NOTE: Error suppressor for new gcc 7 'fallthrough' level 3 and 4:
+                // FALLTHROUGH
+                case stretchMovingController:
+                {
+                  if(button != Qt::LeftButton)
+                  {
+                    _stretchAutomation._controllerState = stretchDoNothing;
+                    //setCursor();
+                    break;;
+                  }
+                  QPoint delta_pt = QPoint(pt.x() - _stretchAutomation._startMovePoint.x(),
+                                        pt.y() - _stretchAutomation._startMovePoint.y());
+                  if(delta_pt.x() == 0)
+                    break;
+                  double prevNewVal, thisNewVal;
+                  double prevFrame, thisFrame, nextFrame, delta_fr, next_delta_fr;
+                  MusECore::PendingOperationList operations;
+                  StretchSelectedList_t& ssl = _stretchAutomation._stretchSelectedList;
+                  for(ciStretchSelectedItem iss = ssl.begin(); iss != ssl.end(); ++iss)
+                  {
+                    const StretchSelectedItem& ssi = iss->second;
+                    MusECore::SndFileR sf = ssi._sndFile;
+                    if(sf.isNull())
+                      continue;
+                    MusECore::StretchList* sl = sf.stretchList();
+                    if(!sl)
+                      continue;
+                    
+                    MusECore::iStretchListItem isli_typed = sl->findEvent(ssi._type, iss->first);
+                    if(isli_typed == sl->end())
+                      continue;
+
+                    const double wave_sr_ratio = sf.sampleRateRatio();
+
+                    thisFrame = double(isli_typed->first);
+                    
+                    const MusECore::StretchListItem& sli_typed = isli_typed->second;
+                    
+                    MusECore::iStretchListItem prev_isli_typed = sl->previousEvent(ssi._type, isli_typed);
+                    if(prev_isli_typed == sl->end())
+                      continue;
+                    
+                    prevFrame = double(prev_isli_typed->first);
+                    
+                    const MusECore::StretchListItem& prev_sli_typed = prev_isli_typed->second;
+                    
+                    MusECore::iStretchListItem next_isli_typed = sl->nextEvent(ssi._type, isli_typed);
+                    if(next_isli_typed == sl->end())
+                      nextFrame = double(sf.samples());
+                    else
+                      nextFrame = double(next_isli_typed->first);
+                    
+                    next_delta_fr = nextFrame - thisFrame;
+                    // FIXME: Comparing double with zero.
+                    if(next_delta_fr <= 0)
+                      continue;
+                    
+                    delta_fr = thisFrame - prevFrame;
+                    // FIXME: Comparing double with zero.
+                    if(delta_fr <= 0)
+                      continue;
+                    
+                    const double minStretchRatio = sf.minStretchRatio();
+                    const double maxStretchRatio = sf.maxStretchRatio();
+                    const double minSamplerateRatio = sf.minSamplerateRatio();
+                    const double maxSamplerateRatio = sf.maxSamplerateRatio();
+
+                    switch(ssi._type)
+                    {
+                      case MusECore::StretchListItem::StretchEvent:
+                      {
+                        const double left_prev_smpx = prev_sli_typed._samplerateSquishedFrame;
+                        const double left_this_smpx = sl->squish(thisFrame, MusECore::StretchListItem::SamplerateEvent);
+                        const double left_dsmpx = left_this_smpx - left_prev_smpx;
+                        const double left_effective_sr = left_dsmpx / delta_fr;
                         
-                        if (x < dragstartx) {
-                              if(x < selectionStart)
-                              {
-                                r.setLeft(mx);
-                                r.setWidth((selectionStop >= dragstartx ? mstop : mstart) - mx);
-                              }
-                              else
-                              {
-                                r.setLeft(mstart);
-                                r.setWidth(mx - mstart);
-                              }
-                              selectionStart = x;
-                              selectionStop = dragstartx;
-                              }
-                        else {
-                              if(x >= selectionStop)
-                              {
-                                r.setLeft(selectionStart < dragstartx ? mstart : mstop);
-                                r.setWidth(mx - (selectionStart < dragstartx ? mstart : mstop));
-                              }
-                              else
-                              {
-                                r.setLeft(mx);
-                                r.setWidth(mstop - mx);
-                              }
-                              selectionStart = dragstartx;
-                              selectionStop = x;
-                              }
-                        update(r);
+                        const double right_this_smpx = sli_typed._samplerateSquishedFrame;
+                        const double right_next_smpx = sl->squish(nextFrame, MusECore::StretchListItem::SamplerateEvent);
+                        const double right_dsmpx = right_next_smpx - right_this_smpx;
+                        const double right_effective_sr = right_dsmpx / next_delta_fr;
+
+                        INFO_WAVECANVAS(stderr, "WaveCanvas::mouseMove StretchEvent delta_pt.x:%d\n", delta_pt.x());
+
+                        double left_min_stretch_delta_x =
+                          (minStretchRatio - prev_sli_typed._stretchRatio) * left_effective_sr * delta_fr;
+                        if(left_min_stretch_delta_x > 0.0)
+                          left_min_stretch_delta_x = 0.0;
+                        if((double)delta_pt.x() < left_min_stretch_delta_x)
+                          delta_pt.setX(left_min_stretch_delta_x);
+
+                        double right_min_stretch_delta_x =
+                          (minStretchRatio - sli_typed._stretchRatio) * right_effective_sr * next_delta_fr;
+                        if(right_min_stretch_delta_x > 0.0)
+                          right_min_stretch_delta_x = 0.0;
+                        if(-(double)delta_pt.x() < right_min_stretch_delta_x)
+                          delta_pt.setX(right_min_stretch_delta_x);
+
+                        INFO_WAVECANVAS(stderr, "  left_min_stretch_delta_x:%f right_min_stretch_delta_x:%f\n",
+                                        left_min_stretch_delta_x, right_min_stretch_delta_x);
+
+                        if(maxStretchRatio > 0.0)
+                        {
+                          double left_max_stretch_delta_x =
+                                (maxStretchRatio - prev_sli_typed._stretchRatio) * left_effective_sr * delta_fr;
+                        if(left_max_stretch_delta_x < 0.0)
+                            left_max_stretch_delta_x = 0.0;
+                          if((double)delta_pt.x() > left_max_stretch_delta_x)
+                            delta_pt.setX(left_max_stretch_delta_x);
+
+                          double right_max_stretch_delta_x =
+                                (maxStretchRatio - sli_typed._stretchRatio) * right_effective_sr * next_delta_fr;
+                          if(right_max_stretch_delta_x < 0.0)
+                            right_max_stretch_delta_x = 0.0;
+                          if((double)delta_pt.x() > right_max_stretch_delta_x)
+                            delta_pt.setX(right_max_stretch_delta_x);
                         }
-                  break;
-            case Qt::MidButton:
-                  break;
-            case Qt::RightButton:
-                  break;
-            default:
-                  return;
+
+                        const double left_effective_dx = wave_sr_ratio * (double)delta_pt.x() / left_effective_sr;
+                        prevNewVal = prev_sli_typed._stretchRatio + (left_effective_dx / delta_fr);
+
+                        const double right_effective_dx = wave_sr_ratio * (double)delta_pt.x() / right_effective_sr;
+                        thisNewVal = sli_typed._stretchRatio - (right_effective_dx / next_delta_fr);
+                      }
+                      break;
+                      case MusECore::StretchListItem::SamplerateEvent:
+                      {
+                        const double left_prev_strx = prev_sli_typed._stretchSquishedFrame;
+                        const double left_this_strx = sl->squish(thisFrame, MusECore::StretchListItem::StretchEvent);
+                        const double left_dstrx = left_this_strx - left_prev_strx;
+                        const double left_effective_str = left_dstrx / delta_fr;
+
+                        const double right_this_strx = sli_typed._stretchSquishedFrame;
+                        const double right_next_strx = sl->squish(nextFrame, MusECore::StretchListItem::StretchEvent);
+                        const double right_dstrx = right_next_strx - right_this_strx;
+                        const double right_effective_str = right_dstrx / next_delta_fr;
+
+                        INFO_WAVECANVAS(stderr, "WaveCanvas::mouseMove SamplerateEvent delta_pt.x:%d\n", delta_pt.x());
+
+                        double left_min_samplerate_delta_x =
+                          (minSamplerateRatio - prev_sli_typed._samplerateRatio) * left_effective_str * delta_fr;
+                        if(left_min_samplerate_delta_x > 0.0)
+                          left_min_samplerate_delta_x = 0.0;
+                        if((double)delta_pt.x() < left_min_samplerate_delta_x)
+                          delta_pt.setX(left_min_samplerate_delta_x);
+
+                        double right_min_samplerate_delta_x =
+                          (minSamplerateRatio - sli_typed._samplerateRatio) * right_effective_str * next_delta_fr;
+                        if(right_min_samplerate_delta_x > 0.0)
+                          right_min_samplerate_delta_x = 0.0;
+                        if(-(double)delta_pt.x() < right_min_samplerate_delta_x)
+                          delta_pt.setX(right_min_samplerate_delta_x);
+
+                        INFO_WAVECANVAS(stderr, "  left_min_samplerate_delta_x:%f right_min_samplerate_delta_x:%f\n",
+                                        left_min_samplerate_delta_x, right_min_samplerate_delta_x);
+
+                        if(maxSamplerateRatio > 0.0)
+                        {
+                          double left_max_samplerate_delta_x =
+                            (maxSamplerateRatio - prev_sli_typed._samplerateRatio) * left_effective_str * delta_fr;
+                          if(left_max_samplerate_delta_x < 0.0)
+                            left_max_samplerate_delta_x = 0.0;
+                          if((double)delta_pt.x() > left_max_samplerate_delta_x)
+                            delta_pt.setX(left_max_samplerate_delta_x);
+
+                          double right_max_samplerate_delta_x =
+                            (maxSamplerateRatio - sli_typed._samplerateRatio) * right_effective_str * next_delta_fr;
+                          if(right_max_samplerate_delta_x < 0.0)
+                            right_max_samplerate_delta_x = 0.0;
+                          if((double)delta_pt.x() > right_max_samplerate_delta_x)
+                            delta_pt.setX(right_max_samplerate_delta_x);
+                        }
+
+                        const double left_effective_dx = wave_sr_ratio * (double)delta_pt.x() / left_effective_str;
+                        prevNewVal =
+                          1.0 / ((1.0 / prev_sli_typed._samplerateRatio) + (left_effective_dx / delta_fr));
+
+                        const double right_effective_dx = wave_sr_ratio * (double)delta_pt.x() / right_effective_str;
+                        thisNewVal =
+                          1.0 / ((1.0 / sli_typed._samplerateRatio) - (right_effective_dx / next_delta_fr));
+                      }
+                      break;
+                      case MusECore::StretchListItem::PitchEvent:
+                        prevNewVal = prev_sli_typed._pitchRatio; // TODO
+                      break;
+                    }
+                    
+                    MusEGlobal::song->modifyAtStretchListOperation(sf, ssi._type, prevFrame, prevNewVal, operations);
+                    MusEGlobal::song->modifyAtStretchListOperation(sf, ssi._type, thisFrame, thisNewVal, operations);
+                  }
+                  MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+                  _stretchAutomation._startMovePoint = pt;
+                } 
+                break;
+              }
             }
+            break;
+            
+            
+            default:
+            {
+              event->ignore();
+              
+              switch (button) 
+              {
+                case Qt::LeftButton:
+                      if (mode == DRAG) 
+                      {
+                            int mx      = mapx(x);
+                            int mstart  = mapx(selectionStart);
+                            int mstop   = mapx(selectionStop);
+                            //int mdstart = mapx(dragstartx);
+                            QRect r(0, 0, 0, height());
+                            
+                            if (x < dragstartx) {
+                                  if(x < selectionStart)
+                                  {
+                                    r.setLeft(mx);
+                                    r.setWidth((selectionStop >= dragstartx ? mstop : mstart) - mx);
+                                  }
+                                  else
+                                  {
+                                    r.setLeft(mstart);
+                                    r.setWidth(mx - mstart);
+                                  }
+                                  selectionStart = x;
+                                  selectionStop = dragstartx;
+                                  }
+                            else {
+                                  if(x >= selectionStop)
+                                  {
+                                    r.setLeft(selectionStart < dragstartx ? mstart : mstop);
+                                    r.setWidth(mx - (selectionStart < dragstartx ? mstart : mstop));
+                                  }
+                                  else
+                                  {
+                                    r.setLeft(mx);
+                                    r.setWidth(mstop - mx);
+                                  }
+                                  selectionStart = dragstartx;
+                                  selectionStop = x;
+                                  }
+                            update(r);
+                      }
+                      break;
+                case Qt::MidButton:
+                      break;
+                case Qt::RightButton:
+                      break;
+                default:
+                      return;
+              }              
+              
+          }
+          break;
+      }
       }
       
 //---------------------------------------------------------
@@ -899,7 +1411,7 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       p.setWorldMatrixEnabled(false);
 
       int sx, ex;
-      
+
       sx = event.frame() + px + xScale/2;
       ex = sx + event.lenFrame();
       sx = sx / xScale - xpos;
@@ -910,7 +1422,9 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       if (ex > x2)
             ex = x2;
 
-      int pos = (xpos + sx) * xScale + event.spos() - event.frame() - px;
+      const int ev_spos = event.spos();
+      
+      int pos = (xpos + sx) * xScale - event.frame() - px;
       
 //       fprintf(stderr, "\nWaveCanvas::drawItem:\nmr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
 //               mr.x(), mr.y(), mr.width(), mr.height());
@@ -926,7 +1440,7 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 // //       vbr.dump("vbr:");
       
       QBrush brush;
-      if (item->isMoving()) 
+      if (item->isMoving())
       {
             QColor c(Qt::gray);
             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
@@ -936,8 +1450,8 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
             brush = QBrush(gradient);
             p.fillRect(sx, y1, ex - sx + 1, y2, brush);
       }
-      else 
-      if (item->isSelected()) 
+      else
+      if (item->isSelected())
       {
           QColor c(Qt::black);
           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
@@ -963,14 +1477,32 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
         int h   = hh / (ev_channels * 2);
         int cc  = hh % (ev_channels * 2) ? 0 : 1;
 
-        unsigned peoffset = px + event.frame() - event.spos();
+        unsigned peoffset = px + event.frame() - ev_spos;
+
+        const sf_count_t smps = f.samples();
+
+//         fprintf(stderr, "WaveCanvas::drawItem: rect x:%d w:%d rr x:%d w:%d mr x:%d w:%d pos:%d sx:%d ex:%d\n",
+//                 rect.x(), rect.width(),
+//                 rr.x(), rr.width(),
+//                 mr.x(), mr.width(),
+//                 pos,
+//                 sx, ex);
 
         for (int i = sx; i < ex; i++) {
               int y = h;
               MusECore::SampleV sa[f.channels()];
-              f.read(sa, xScale, pos);
+              if((ev_spos + f.convertPosition(pos)) > smps)
+                break;
+              // Seek the file only once, not with every read!
+              if(i == sx)
+              {
+                if(f.seekUIConverted(pos, SEEK_SET | SFM_READ, ev_spos) == -1)
+                  break;
+              }
+              f.readConverted(sa, xScale, pos, ev_spos);
+
               pos += xScale;
-              if (pos < event.spos())
+              if (pos < 0)
                     continue;
 
               int selectionStartPos = selectionStart - peoffset; // Offset transformed to event coords
@@ -987,7 +1519,7 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
                     QColor peak_color = MusEGlobal::config.wavePeakColor;
                     QColor rms_color  = MusEGlobal::config.waveRmsColor;
 
-                    if (pos > selectionStartPos && pos <= selectionStopPos) {
+                    if ((ev_spos + pos) > selectionStartPos && (ev_spos + pos) <= selectionStopPos) {
                           peak_color = MusEGlobal::config.wavePeakColorSelected;
                           rms_color  = MusEGlobal::config.waveRmsColorSelected;
                           QLine l_inv = clipQLine(i, y - h + cc, i, y + h - cc, mbrwp);
@@ -1019,7 +1551,7 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
                     y += 2 * h;
                   }
               }
-            
+
         int hn = hh / ev_channels;
         int hhn = hn / 2;
         for (int i = 0; i < ev_channels; ++i) {
@@ -1040,7 +1572,7 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
             }
       }
 
-      //      
+      //
       // Draw custom dashed borders around the wave event
       //
 
@@ -1101,8 +1633,222 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 //   drawTopItem
 //---------------------------------------------------------
 
-void WaveCanvas::drawTopItem(QPainter& , const QRect&, const QRegion&)
-{}
+void WaveCanvas::drawTopItem(QPainter& p, const QRect& rect, const QRegion&)
+{
+  
+  // TODO TODO: Convert this routine to new drawing system pulled from master? 20190121
+
+  QRect mr = map(rect);
+  
+  DEBUG_WAVECANVAS(stderr, "WaveCanvas::drawTopItem: rect.x:%d rect.w:%d mr.x:%d mr.w:%d\n",
+                   rect.x(), rect.width(), mr.x(), mr.width());
+
+  p.save();
+  p.setWorldMatrixEnabled(false);
+          
+  for(MusEGui::ciCItem i = items.begin(); i != items.end(); ++i) 
+  {
+    //if(!(i->second->isSelected()))
+    //  continue;
+    WEvent* e = static_cast<WEvent*>(i->second);
+    drawStretchAutomation(p, mr, e);
+  }        
+  
+  p.restore();
+
+}
+
+//---------------------------------------------------------
+//   drawStretchAutomation
+//---------------------------------------------------------
+
+void WaveCanvas::drawStretchAutomation(QPainter& p, const QRect& rr, WEvent* item) const
+{
+    const MusECore::Event event = item->event();
+    if(event.type() != MusECore::Wave)
+      return;
+    
+    const MusECore::SndFileR sf = event.sndFile();
+    if(sf.isNull())
+      return;
+    
+    const MusECore::StretchList* sl = sf.stretchList();
+    if(!sl)
+      return;
+
+
+    //const bool wave_sr_differs = sf.sampleRateDiffers();
+    const double wave_sr_ratio = sf.sampleRateRatio();
+
+    p.setBrush(Qt::NoBrush);
+
+    QColor c;
+    QPen pen;
+    int xpixel;
+    QVector<qreal> pattern;
+    pattern << 4 << 4;
+    const StretchSelectedList_t& ssl = _stretchAutomation._stretchSelectedList;
+    ciStretchSelectedItemPair res;
+    for(MusECore::ciStretchListItem is = sl->begin(); is != sl->end(); ++is)
+    {
+      // Do not recognize or draw the item at zeroth frame.
+      if(is->first == 0)
+        continue;
+  
+      const MusECore::StretchListItem& sli = is->second;
+      //if((_tool == StretchTool && (sli._type & MusECore::StretchListItem::StretchEvent)) ||
+      //   (_tool == SamplerateTool && (sli._type & MusECore::StretchListItem::SamplerateEvent)))
+      {
+        xpixel = mapx(sl->squish((double)is->first) / wave_sr_ratio + item->x());
+        
+        DEBUG_WAVECANVAS(stderr, "drawStretchAutomation: rr.x:%d rr.w:%d xpixel:%d\n", rr.x(), rr.width(), xpixel);
+        
+        if(sli._type & MusECore::StretchListItem::StretchEvent)
+        {
+          //if(_tool == StretchTool)
+            c = Qt::magenta;
+          //else 
+          //  c = Qt::darkMagenta;
+          
+          res = ssl.equal_range(is->first); // FIXME Calls non-constant version? Want constant version.
+          for(ciStretchSelectedItem ise = res.first; ise != res.second; ++ise)
+          {
+            if(ise->first == is->first && ise->second._sndFile.stretchList() == sl && ise->second._type == MusECore::StretchListItem::StretchEvent)
+            {
+              c = Qt::white;
+              break;
+            }
+          }
+          
+          //c.setAlpha(200);
+          pen.setColor(c);
+          pen.setDashPattern(pattern);
+          p.setPen(pen);
+          p.drawLine(xpixel, rr.top() - 2, xpixel, rr.bottom() - 2);
+        }
+        
+        if(sli._type & MusECore::StretchListItem::SamplerateEvent)
+        {
+          //if(_tool == SamplerateTool)
+            c = Qt::cyan;
+          //else 
+          //  c = Qt::darkCyan;
+
+          res = ssl.equal_range(is->first); // FIXME Calls non-constant version? Want constant version.
+          for(ciStretchSelectedItem ise = res.first; ise != res.second; ++ise)
+          {
+            if(ise->first == is->first && ise->second._sndFile.stretchList() == sl && ise->second._type == MusECore::StretchListItem::SamplerateEvent)
+            {
+              c = Qt::white;
+              break;
+            }
+          }
+          
+          //c.setAlpha(200);
+          pen.setColor(c);
+          pen.setDashPattern(pattern);
+          // Offset to help distinguish from stretch lines.
+          pen.setDashOffset(4.0);
+          p.setPen(pen);
+          // Draw reverse direction to help distinguish from stretch lines.
+          p.drawLine(xpixel, rr.bottom() - 2, xpixel, rr.top() - 2);
+        }
+      }
+    }    
+}
+
+MusECore::iStretchListItem WaveCanvas::stretchListHitTest(int types, QPoint pt, WEvent* wevent)
+{
+  const MusECore::Event event = wevent->event();
+  if(event.type() != MusECore::Wave)
+    return MusECore::iStretchListItem();
+  
+  const MusECore::SndFileR sf = event.sndFile();
+  if(sf.isNull())
+    return MusECore::iStretchListItem();
+  
+  MusECore::StretchList* stretchList = sf.stretchList();
+  if(!stretchList)
+    return MusECore::iStretchListItem();
+
+  //const bool wave_sr_differs = sf.sampleRateDiffers();
+  const double wave_sr_ratio = sf.sampleRateRatio();
+
+  const int pt_x = pt.x();
+  const int wevent_x = wevent->x();
+  int closest_dist = _stretchAutomationPointDetectDist;
+  MusECore::iStretchListItem closest_ev = stretchList->end();
+  for(MusECore::iStretchListItem is = stretchList->begin(); is != stretchList->end(); ++is)
+  {
+    // Do not recognize or draw the item at zeroth frame.
+    if(is->first == 0)
+      continue;
+  
+    const MusECore::StretchListItem& se = is->second;
+    if(!(se._type & types))
+      continue;
+    
+    const double newSqFrame = se._finSquishedFrame / wave_sr_ratio;
+    const int xpixel = mapx(newSqFrame + wevent_x);
+    const int pt_pixel = mapx(pt_x);
+    
+    const int x_diff = (xpixel > pt_pixel) ? (xpixel - pt_pixel) : (pt_pixel - xpixel);
+    if(x_diff <= closest_dist)
+    {
+      closest_dist = x_diff;
+      closest_ev = is;
+    }
+  }
+  
+  return closest_ev;
+}
+
+void WaveCanvas::setStretchAutomationCursor(QPoint pt)
+{
+  if(_tool != StretchTool && _tool != SamplerateTool)
+    return;
+  
+  CItem* item = items.find(pt);
+  if(!item)
+  {
+    setCursor();
+    return;
+  }
+  WEvent* wevent = static_cast<WEvent*>(item);
+
+  const MusECore::Event event = wevent->event();
+  if(event.type() != MusECore::Wave)
+  {
+    setCursor();
+    return;
+  }
+
+  MusECore::SndFileR sf = event.sndFile();
+  if(sf.isNull())
+  {
+    setCursor();
+    return;
+  }
+
+  MusECore::StretchList* sl = sf.stretchList();
+  if(!sl)
+  {
+    setCursor();
+    return;
+  }
+
+  MusECore::StretchListItem::StretchEventType type;
+  if(_tool == StretchTool)
+    type = MusECore::StretchListItem::StretchEvent;
+  else // if(_tool == SamplerateTool)
+    type = MusECore::StretchListItem::SamplerateEvent;
+
+  MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent);
+  if(isli_hit_test == sl->end())
+    setCursor();
+  else
+    QWidget::setCursor(Qt::SizeHorCursor);
+}
 
 //---------------------------------------------------------
 //   drawMoving
@@ -1963,7 +2709,7 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
           MusECore::SndFileR file = w.event.sndFile();
           if(file.isNull())
             continue;
-          if(file.checkCopyOnWrite())
+          if(sndFileCheckCopyOnWrite(file))
           {
             std::vector<MusECore::SndFileR>::iterator i = copy_files_proj_dir.begin();
             for( ; i != copy_files_proj_dir.end(); ++i)
@@ -2010,7 +2756,7 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
             if(w.event.empty())
               continue;
             MusECore::SndFileR file = w.event.sndFile();
-            if(file.isNull() || !file.checkCopyOnWrite()) // Make sure to re-check
+            if(file.isNull() || !sndFileCheckCopyOnWrite(file)) // Make sure to re-check
               continue;
             QString filePath = MusEGlobal::museProject + QString("/") + file.name();
             QString newFilePath;
@@ -2126,7 +2872,7 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
                file.seek(tmpdataoffset, 0);
                file.readWithHeap(file_channels, tmpdata, tmpdatalen);
                file.close();
-               tmpFile.write(file_channels, tmpdata, tmpdatalen);
+               tmpFile.write(file_channels, tmpdata, tmpdatalen, MusEGlobal::config.liveWaveUpdate);
                tmpFile.close();
 
                switch(operation)
@@ -2181,7 +2927,7 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
 
                file.openWrite();
                file.seek(tmpdataoffset, 0);
-               file.write(file_channels, tmpdata, tmpdatalen);
+               file.write(file_channels, tmpdata, tmpdatalen, MusEGlobal::config.liveWaveUpdate);
                file.update();
                file.close();
                file.openRead();
@@ -2213,7 +2959,7 @@ void WaveCanvas::copySelection(unsigned file_channels, float** tmpdata, unsigned
       MusECore::SndFile tmpFile(copiedPart);
       tmpFile.setFormat(format, file_channels, sampleRate);
       tmpFile.openWrite();
-      tmpFile.write(file_channels, tmpdata, length);
+      tmpFile.write(file_channels, tmpdata, length, MusEGlobal::config.liveWaveUpdate);
       tmpFile.close();
 
       if (blankData) {
@@ -2335,7 +3081,7 @@ void WaveCanvas::editExternal(unsigned file_format, unsigned file_samplerate, un
             return;
             }
       // Write out change-data to this file:
-      exttmpFile.write(file_channels, tmpdata, tmpdatalen);
+      exttmpFile.write(file_channels, tmpdata, tmpdatalen, MusEGlobal::config.liveWaveUpdate);
       exttmpFile.close();
 
       QProcess proc;
@@ -2595,4 +3341,84 @@ void WaveCanvas::resizeEvent(QResizeEvent* ev)
         redraw();
       }
 
+//---------------------------------------------------------
+//   genItemPopup
+//---------------------------------------------------------
+
+QMenu* WaveCanvas::genItemPopup(CItem* item)
+      {
+      QMenu* eventPopup = new QMenu(this);
+
+      eventPopup->addAction(new MenuTitleItem(tr("Wave event:"), eventPopup));
+
+      eventPopup->addSeparator();
+      QAction *act_settings = eventPopup->addAction(tr("Converter settings"));
+      act_settings->setData(0);
+      act_settings->setEnabled(item && !item->event().sndFile().isNull());
+
+      genCanvasPopup(eventPopup);
+      return eventPopup;
+      }
+
+//---------------------------------------------------------
+//   itemPopup
+//---------------------------------------------------------
+
+void WaveCanvas::itemPopup(CItem* /*item*/, int n, const QPoint& /*pt*/)
+{
+   if(n >= TOOLS_ID_BASE)
+   {
+      canvasPopup(n);
+      return;
+   }
+
+  switch(n)
+  {
+    case 0:     // Settings
+    if(curItem && !curItem->event().sndFile().isNull())
+    {
+      if(MusECore::AudioConverterSettingsGroup* settings = curItem->event().sndFile().audioConverterSettings())
+      {
+        MusECore::AudioConverterSettingsGroup* wrk_set = new MusECore::AudioConverterSettingsGroup(true); // Local settings.
+        wrk_set->assign(*settings);
+        AudioConverterSettingsDialog dialog(this, 
+                                            &MusEGlobal::audioConverterPluginList, 
+                                            wrk_set, 
+                                            true); // Local settings.
+        if(dialog.exec() == QDialog::Accepted)
+        {
+          MusECore::PendingOperationList operations;
+          MusEGlobal::song->modifyAudioConverterSettingsOperation(
+            curItem->event().sndFile(),
+            wrk_set,
+            MusEGlobal::defaultAudioConverterSettings,
+            true,  // Local settings.
+            operations);
+
+          if(operations.empty())
+          {
+            delete wrk_set;
+          }
+          else
+          {
+            MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+            //MusEGlobal::song->update(SC_);
+          }
+        }
+        else
+        {
+          delete wrk_set;
+        }
+        
+      }
+    }
+    break;
+        
+    default:
+        printf("unknown action %d\n", n);
+        break;
+  }
+}
+
 } // namespace MusEGui
+

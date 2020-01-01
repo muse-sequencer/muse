@@ -23,8 +23,6 @@
 #include <list>
 
 #include "helper.h"
-#include "part.h"
-#include "track.h"
 #include "song.h"
 #include "app.h"
 #include "icons.h"
@@ -37,6 +35,7 @@
 #include "route.h"
 #include "mididev.h"
 #include "globaldefs.h"
+#include "globals.h"
 #include "audio.h"
 #include "audiodev.h"
 #include "midi.h"
@@ -48,24 +47,19 @@
 #include "lv2host.h"
 #include "vst_native.h"
 #include "appearance.h"
-#include "mpevent.h"
 
 #include <strings.h>
 
-#include <QMenu>
 #include <QApplication>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QFileDialog>
-#include <QString>
-#include <QStringList>
-#include <QLine>
-#include <QRect>
 #include <QByteArray>
 #include <QStyle>
 #include <QStyleFactory>
 #include <QVector>
+#include <QMessageBox>
 
 using std::set;
 
@@ -811,7 +805,6 @@ void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int va
 		MusEGlobal::audio->msgPlayMidiEvent(&ev);
 	}
 }
-
 
 } // namespace MusECore
 

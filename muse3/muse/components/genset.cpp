@@ -40,6 +40,13 @@
 #include "filedialog.h"
 #include "al/al.h"
 
+#include "song.h"
+#include "operations.h"
+#include "audio.h"
+#include "audio_converter_settings.h"
+#include "audio_convert/audio_converter_plugin.h"
+#include "audio_convert/audio_converter_settings_group.h"
+
 namespace MusEGui {
 
 static int rtcResolutions[] = {
@@ -51,11 +58,6 @@ static int divisions[] = {
 static int selectableAudioBufSizes[] = {
       16, 32, 64, 128, 256, 512, 1024, 2048
       };
-static int selectableAudioSampleRates[] = {
-      22050, 32000, 44100, 48000, 64000, 88200, 96000, 192000
-      };
-int numAudioSampleRates = 8;
-
 static unsigned long minControlProcessPeriods[] = {
       1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048
       };
@@ -106,7 +108,9 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       connect(pluginPathRemove, SIGNAL(clicked()), SLOT(removePluginPath()));
       connect(pluginPathMoveUp, SIGNAL(clicked()), SLOT(movePluginPathUp()));
       connect(pluginPathMoveDown, SIGNAL(clicked()), SLOT(movePluginPathDown()));
-
+      
+      connect(audioConvertersButton, SIGNAL(clicked()), SLOT(showAudioConverterSettings()));
+      
       connect(deviceAudioBackendComboBox, SIGNAL(currentIndexChanged(int)), SLOT(updateBackendDeviceSettings()));
 
       addMdiSettings(TopWin::ARRANGER);
@@ -127,8 +131,8 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       deviceAudioBackendComboBox->setDisabled(true);
 #endif
 
-      for (int i = 0; i < numAudioSampleRates; i++){
-        deviceAudioRate->addItem(QString::number(selectableAudioSampleRates[i]),i);
+      for (int i = 0; i < MusEGlobal::numAudioSampleRates; i++){
+        deviceAudioRate->addItem(QString::number(MusEGlobal::selectableAudioSampleRates[i]),i);
       }
       updateBackendDeviceSettings();
 }
@@ -187,8 +191,8 @@ void GlobalSettingsConfig::updateSettings()
                   }
             }
       
-      for (int i = 0; i < numAudioSampleRates; ++i) {
-            if (selectableAudioSampleRates[i] == MusEGlobal::config.deviceAudioSampleRate) {
+      for (int i = 0; i < MusEGlobal::numAudioSampleRates; ++i) {
+            if (MusEGlobal::selectableAudioSampleRates[i] == MusEGlobal::config.deviceAudioSampleRate) {
                   deviceAudioRate->setCurrentIndex(i);
                   break;
                   }
@@ -387,7 +391,7 @@ void GlobalSettingsConfig::apply()
       
       int das = deviceAudioSize->currentIndex();
       MusEGlobal::config.deviceAudioBufSize = selectableAudioBufSizes[das];
-      MusEGlobal::config.deviceAudioSampleRate = selectableAudioSampleRates[deviceAudioRate->currentIndex()];
+      MusEGlobal::config.deviceAudioSampleRate = MusEGlobal::selectableAudioSampleRates[deviceAudioRate->currentIndex()];
 
       MusEGlobal::config.deviceAudioBackend = deviceAudioBackendComboBox->currentIndex();
 
@@ -667,6 +671,30 @@ void GlobalSettingsConfig::borlandPreset()
   }
   
   updateMdiSettings();
+}
+
+void GlobalSettingsConfig::showAudioConverterSettings()
+{
+  if(!MusEGlobal::defaultAudioConverterSettings)
+    return;
+  MusECore::AudioConverterSettingsGroup* wrk_set = new MusECore::AudioConverterSettingsGroup(false); // Default, non-local settings.
+  wrk_set->assign(*MusEGlobal::defaultAudioConverterSettings);
+  AudioConverterSettingsDialog dialog(this, 
+                                      &MusEGlobal::audioConverterPluginList, 
+                                      wrk_set, 
+                                      false); // Default, non-local settings.
+  if(dialog.exec() == QDialog::Accepted)
+  {
+    MusECore::PendingOperationList operations;
+    MusEGlobal::song->modifyDefaultAudioConverterSettingsOperation(wrk_set, operations);
+    if(!operations.empty())
+    {
+      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+      //MusEGlobal::song->update(SC_);
+    }
+  }
+  else
+    delete wrk_set;
 }
 
 void GlobalSettingsConfig::addPluginPath()

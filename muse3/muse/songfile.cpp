@@ -21,6 +21,8 @@
 //
 //=========================================================
 
+#include <map>
+
 #include <QUuid>
 #include <QProgressDialog>
 #include <QMessageBox>
@@ -512,10 +514,51 @@ void Song::readMarker(Xml& xml)
       }
 
 //---------------------------------------------------------
+//   checkSongSampleRate
+//   Called by gui thread.
+//---------------------------------------------------------
+
+void Song::checkSongSampleRate()
+{
+  std::map<int, int> waveRates;
+  
+  for(ciWaveTrack iwt = waves()->begin(); iwt != waves()->end(); ++iwt)
+  {
+    WaveTrack* wt = *iwt;
+    for(ciPart ipt = wt->parts()->begin(); ipt != wt->parts()->end(); ++ipt)
+    {
+      Part* pt = ipt->second;
+      for(ciEvent ie = pt->events().begin(); ie != pt->events().end(); ++ie)
+      {
+        const Event e(ie->second);
+        if(e.sndFile().isOpen())
+        {
+          const int sr = e.sndFile().samplerate();
+          std::map<int, int>::iterator iwr = waveRates.find(sr);
+          if(iwr == waveRates.end())
+          {
+            waveRates.insert(std::pair<int, int>(sr, 1));
+          }
+          else
+          {
+            ++iwr->second;
+          }
+        }
+      }
+    }
+  }
+  
+  for(std::map<int, int>::const_iterator iwr = waveRates.cbegin(); iwr != waveRates.cend(); ++iwr)
+  {
+    
+  }
+}
+
+//---------------------------------------------------------
 //   read
 //---------------------------------------------------------
 
-void Song::read(Xml& xml, bool isTemplate)
+void Song::read(Xml& xml, bool /*isTemplate*/)
       {
       MusEGlobal::cloneList.clear();
       for (;;) {
@@ -562,30 +605,14 @@ void Song::read(Xml& xml, bool isTemplate)
                         else if (tag == "follow")
                               _follow  = FollowMode(xml.parseInt());
                         else if (tag == "sampleRate") {
-                              int sRate  = xml.parseInt();
-                              if (!isTemplate && MusEGlobal::audioDevice->deviceType() != AudioDevice::DUMMY_AUDIO && sRate != MusEGlobal::sampleRate) {
-
-                                if (MusEGlobal::audioDevice->deviceType() == AudioDevice::RTAUDIO_AUDIO) {
-                                  // restart audio with selected sample rate
-                                  MusEGlobal::sampleRate = sRate;
-                                  MusEGlobal::audioDevice->stop();
-                                  MusEGlobal::audioDevice->start(0);
-                                  if (MusEGlobal::sampleRate == sRate) {
-                                    QMessageBox::warning(MusEGlobal::muse,"Sample rate", "Changing sample rate to song setting " + QString::number(sRate) + "!");
-                                  } else {
-                                    QMessageBox::warning(MusEGlobal::muse,"Sample rate", "Tried changing sample rate to song setting " +
-                                                         QString::number(sRate) + " but driver set it to " + QString::number(MusEGlobal::sampleRate) + "!");
-                                  }
-                                } else {
-                                  QMessageBox::warning(MusEGlobal::muse,"Wrong sample rate", "The sample rate in this project and the current system setting differs, the project may not work as intended!");
-                                }
-                              }
+                              // Ignore. Sample rate setting is handled by the
+                              //  song discovery mechanism (in MusE::loadProjectFile1()).
+                              xml.parseInt();
                             }
                         else if (tag == "tempolist") {
                               MusEGlobal::tempomap.read(xml);
                               }
                         else if (tag == "siglist")
-                              ///MusEGlobal::sigmap.read(xml);
                               MusEGlobal::sigmap.read(xml);
                         else if (tag == "keylist") {
                               MusEGlobal::keymap.read(xml);
@@ -859,6 +886,52 @@ void Song::resolveSongfileReferences()
   resolveStripReferences(&MusEGlobal::config.mixer2);
 }
 
+// REMOVE Tim. samplerate. Added. TODO
+#if 0
+//---------------------------------------------------------
+//   convertProjectSampleRate
+//---------------------------------------------------------
+
+void Song::convertProjectSampleRate(int newRate)
+{
+  double sratio = double(newRate) / double(MusEGlobal::sampleRate);
+  
+  for(iTrack i = _tracks.begin(); i != _tracks.end(); ++i)
+  {
+    Track* track = *i;
+    //if(track->isMidiTrack)
+    //  continue;
+    
+    PartList* parts = track->parts();
+    
+    for(iPart ip = parts->begin(); i != parts->end(); ++i)
+    {
+      Part* part = *ip;
+      
+      EventList& el = part->nonconst_events();
+      
+      for(iEvent ie = el.begin(); ie != el.end(); ++ie)
+      {
+        Event& e = *ie;
+      }
+      
+      if(part->type() == Part::FRAMES)
+      {
+        part->setFrame(double(part->frame()) * sratio);
+        part->setLenFrame(double(part->lenFrame()) * sratio);
+      }
+    }
+    
+    if(track->type == Track::WAVE)
+    {
+      
+    }
+
+    
+  }
+}
+#endif 
+      
 } // namespace MusECore
 
 namespace MusEGui {

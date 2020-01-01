@@ -54,7 +54,6 @@
 #include "track.h"
 #include "song.h"
 #include "header.h"
-#include "node.h"
 #include "audio.h"
 #include "instruments/minstrument.h"
 #include "app.h"

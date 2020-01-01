@@ -567,6 +567,23 @@ unsigned long long Xml::parseULongLong()
       }
 
 //---------------------------------------------------------
+//   parseLongInt
+//---------------------------------------------------------
+
+long int Xml::parseLongInt()
+      {
+      QString s(parse1().simplified());
+      bool ok;
+      int base = 10;
+      if (s.startsWith("0x") || s.startsWith("0X")) {
+            base = 16;
+            s = s.mid(2);
+            }
+      long int n = s.toLong(&ok, base);
+      return n;
+      }
+
+//---------------------------------------------------------
 //   parseUInt
 //---------------------------------------------------------
 
@@ -580,6 +597,23 @@ unsigned int Xml::parseUInt()
             s = s.mid(2);
             }
       unsigned int n = s.toUInt(&ok, base);
+      return n;
+      }
+
+//---------------------------------------------------------
+//   parseLongUInt
+//---------------------------------------------------------
+
+unsigned long int Xml::parseLongUInt()
+      {
+      QString s(parse1().simplified());
+      bool ok;
+      int base = 10;
+      if (s.startsWith("0x") || s.startsWith("0X")) {
+            base = 16;
+            s = s.mid(2);
+            }
+      unsigned long int n = s.toULong(&ok, base);
       return n;
       }
 
@@ -971,6 +1005,12 @@ void Xml::intTag(int level, const char* name, int val)
       }
       }
 
+void Xml::longIntTag(int level, const char* name, long int val)
+      {
+      putLevel(level);
+      fprintf(f, "<%s>%ld</%s>\n", name, val, name);
+      }
+
 void Xml::uintTag(int level, const char* name, unsigned int val)
       {
       putLevel(level);
@@ -1020,6 +1060,12 @@ void Xml::uLongLongTag(int level, const char* name, unsigned long long val)
         else if(_destStr)
           _destStr->append(s);
       }
+      }
+
+void Xml::longUintTag(int level, const char* name, unsigned long int val)
+      {
+      putLevel(level);
+      fprintf(f, "<%s>%lu</%s>\n", name, val, name);
       }
 
 void Xml::floatTag(int level, const char* name, float val)
@@ -1208,6 +1254,5 @@ QString Xml::xmlString(const QString& ss)
       s.replace('"', "&quot;");
       return s;
       }
-
 
 } // namespace MusECore

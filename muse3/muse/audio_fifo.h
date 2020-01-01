@@ -1,9 +1,9 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//  $Id: node.h,v 1.8.2.2 2006/04/13 19:09:48 spamatica Exp $
-//
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
+//
+//  audio_fifo.h
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -21,10 +21,11 @@
 //
 //=========================================================
 
-#ifndef __AUDIONODE_H__
-#define __AUDIONODE_H__
+#ifndef __AUDIO_FIFO_H__
+#define __AUDIO_FIFO_H__
 
 #include "muse_atomic.h"
+#include "muse_time.h"
 
 namespace MusECore {
   
@@ -34,9 +35,9 @@ namespace MusECore {
 
 struct FifoBuffer {
       float* buffer;
-      int size;
-      int maxSize;
-      unsigned pos;
+      MuseCount_t size;
+      MuseCount_t maxSize;
+      MuseCount_t pos;
       int segs;
       float latency;
 
@@ -54,25 +55,26 @@ class Fifo {
       int nbuffer;
       int ridx;               // read index; only touched by reader
       int widx;               // write index; only touched by writer
-      muse_atomic_t count;         // buffer count; writer increments, reader decrements
+      muse_atomic_t count;    // buffer count; writer increments, reader decrements
       FifoBuffer** buffer;
 
    public:
       Fifo();
       ~Fifo();
       void clear();
-      bool put(int segs, unsigned long samples, float** buffer, unsigned pos, float latency);
-      bool getWriteBuffer(int, unsigned long, float** buffer, unsigned pos);
+      bool put(int segs, MuseCount_t samples, float** buffer, MuseCount_t pos, float latency);
+      bool getWriteBuffer(int, MuseCount_t, float** buffer, MuseCount_t pos);
       void add();
-      bool peek(int segs, unsigned long samples, float** buffer, unsigned* pos = 0, float* latency = 0); // const;
-      bool get(int segs, unsigned long samples, float** buffer, unsigned* pos = 0, float* latency = 0);
+      bool peek(int segs, MuseCount_t samples, float** buffer, MuseCount_t* pos = 0, float* latency = 0); // const;
+      bool get(int segs, MuseCount_t samples, float** buffer, MuseCount_t* pos = 0, float* latency = 0);
       void remove();
       int getCount();
       int getEmptyCount();
       bool isEmpty();
       };
-
+  
 } // namespace MusECore
 
 #endif
+
 

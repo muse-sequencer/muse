@@ -234,6 +234,7 @@ void AudioPrefetch::prefetch(bool doSeek)
                         n = 0;
                   write_pos = lpos_frame - n;
                   track->setPrefetchWritePos(write_pos);
+                  track->seekData(write_pos);
                 }
               }
 
@@ -286,6 +287,7 @@ void AudioPrefetch::seek(unsigned seekTo)
             WaveTrack* track = *it;
             track->clearPrefetchFifo();
             track->setPrefetchWritePos(seekTo);
+            track->seekData(seekTo);
             }
       
       // Indicate do a seek command before read (only on the first fetch).

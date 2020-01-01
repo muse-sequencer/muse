@@ -1,3 +1,11 @@
+01.01.2020
+    * NEW - Audio live! time-stretch and samplerate-stretch conversion : (Tim)
+      Merge from audio-convert branch. Many changes and fixes along the way.
+    - Wave editor has two new tool buttons which place two new types of markers
+       on the canvas. Move the markers around to affect the sound. Click on a
+       marker to select it. Press Del to delete the marker.
+    - Wave module moved into separate library with no external dependencies.
+    - New MuseFrame_t MuseCount_t types.
 16.12.2019
     - Exposed new colours for stylesheets. See Ardour and Dark qss files. (Tim)
     - Fixed #740: sf3 files crash. libinstpatch code: We did not check returned pointers.
