@@ -83,14 +83,14 @@ void AudioConverterSettingsGroupOptions::read(Xml& xml)
 
 AudioConverterSettingsGroup::~AudioConverterSettingsGroup()
 {
-  for(iterator i = begin(); i != end(); ++i)
+  for(const_iterator i = cbegin(); i != cend(); ++i)
     delete (*i);
 }
  
 void AudioConverterSettingsGroup::assign(const AudioConverterSettingsGroup& other)
 {
   clearDelete();
-  for(ciAudioConverterSettingsI i = other.begin(); i != other.end(); ++i)
+  for(const_iterator i = other.cbegin(); i != other.cend(); ++i)
   {
     AudioConverterSettingsI* other_settingsI = *i;
     AudioConverterSettingsI* new_settingsI = new AudioConverterSettingsI();
@@ -105,7 +105,7 @@ void AudioConverterSettingsGroup::assign(const AudioConverterSettingsGroup& othe
 
 void AudioConverterSettingsGroup::clearDelete()
 {
-  for(iterator i = begin(); i != end(); ++i)
+  for(const_iterator i = cbegin(); i != cend(); ++i)
     delete (*i);
   clear();
 }
@@ -118,7 +118,7 @@ void AudioConverterSettingsGroup::populate(AudioConverterPluginList* plugList, b
 
   initOptions();
   
-  for(iAudioConverterPlugin ip = plugList->begin(); ip != plugList->end(); ++ip)
+  for(ciAudioConverterPlugin ip = plugList->cbegin(); ip != plugList->cend(); ++ip)
   {
     if(AudioConverterPlugin* p = *ip)
     {
@@ -135,7 +135,7 @@ void AudioConverterSettingsGroup::populate(AudioConverterPluginList* plugList, b
  
 AudioConverterSettingsI* AudioConverterSettingsGroup::find(int ID) const
 {
-  for(const_iterator i = begin(); i != end(); ++i)
+  for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     AudioConverterSettingsI* settings = *i;
     if(settings->pluginID() == ID)
@@ -247,7 +247,7 @@ void AudioConverterSettingsGroup::write(int level, Xml& xml, AudioConverterPlugi
       xml.strTag(level, "preferredShifter", plugin->name().toLatin1().constData());
   }
   
-  for(const_iterator i = begin(); i != end(); ++i)
+  for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     if(AudioConverterSettingsI* settings = *i)
       settings->write(level, xml);
@@ -260,7 +260,7 @@ bool AudioConverterSettingsGroup::useSettings(int mode) const
 {
   if(_options._useSettings)
     return true;
-  for(ciAudioConverterSettingsI i = begin(); i != end(); ++i)
+  for(const_iterator i = cbegin(); i != cend(); ++i)
     if((*i)->useSettings(mode))
       return true;
   return false;
@@ -268,7 +268,7 @@ bool AudioConverterSettingsGroup::useSettings(int mode) const
 
 bool AudioConverterSettingsGroup::isDefault() const
 {
-  for(const_iterator i = begin(); i != end(); ++i)
+  for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     if(AudioConverterSettingsI* settings = *i)
       if(!settings->isDefault())

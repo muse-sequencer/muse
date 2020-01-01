@@ -65,7 +65,7 @@ class AudioConverterPlugin {
       double _maxPitchShiftRatio;
 
    public:
-      AudioConverterPlugin(QFileInfo* f, const AudioConverterDescriptor* d);
+      AudioConverterPlugin(const QFileInfo* f, const AudioConverterDescriptor* d);
       virtual ~AudioConverterPlugin();
       virtual QString label() const                        { return _label; }
       QString name() const                         { return _name; }
@@ -125,8 +125,7 @@ class AudioConverterPluginList : public std::list<AudioConverterPlugin*> {
       // Discover available plugins and fill the list.
       void discover(const QString& museGlobalLib, bool debugMsg = false);
       
-      void add(QFileInfo* fi, const AudioConverterDescriptor* d) 
-      { push_back(new AudioConverterPlugin(fi, d)); }
+      void add(const QFileInfo* fi, const AudioConverterDescriptor* d);
 
       AudioConverterPlugin* find(const char* name = 0, int ID = -1, int capabilities = -1);
       };

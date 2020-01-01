@@ -3389,10 +3389,17 @@ void WaveCanvas::itemPopup(CItem* /*item*/, int n, const QPoint& /*pt*/)
         {
           MusECore::PendingOperationList operations;
           MusEGlobal::song->modifyAudioConverterSettingsOperation(
-            curItem->event().sndFile(), wrk_set, true,  // Local settings.
+            curItem->event().sndFile(),
+            wrk_set,
+            MusEGlobal::defaultAudioConverterSettings,
+            true,  // Local settings.
             operations);
 
-          if(!operations.empty())
+          if(operations.empty())
+          {
+            delete wrk_set;
+          }
+          else
           {
             MusEGlobal::audio->msgExecutePendingOperations(operations, true);
             //MusEGlobal::song->update(SC_);

@@ -294,6 +294,7 @@ bool SndFile::setOffline(
     // So instead, in offline mode we switch out the main converter for one with with offline settings.
     converter = setupAudioConverter(
       settings,
+      *_defaultSettings,
       isLocalSettings,
       v ? AudioConverterSettings::OfflineMode : AudioConverterSettings::RealtimeMode,
       doResample,
@@ -350,7 +351,8 @@ bool SndFile::openRead(bool createCache, bool showProgress)
       if(useConverter())
       {
         _staticAudioConverter = setupAudioConverter(
-          audioConverterSettings(), 
+          audioConverterSettings(),
+          *_defaultSettings,
           true,  // true = Local settings.
           isOffline() ?
             AudioConverterSettings::OfflineMode :
@@ -361,6 +363,7 @@ bool SndFile::openRead(bool createCache, bool showProgress)
         if(finfo)
           _staticAudioConverterUI = setupAudioConverter(
             audioConverterSettings(), 
+            *_defaultSettings,
             true,  // true = Local settings.
             AudioConverterSettings::GuiMode, 
             isResampled(),
@@ -377,13 +380,15 @@ bool SndFile::openRead(bool createCache, bool showProgress)
       return false;
       }
 
-AudioConverterPluginI* SndFile::setupAudioConverter(const AudioConverterSettingsGroup* settings, 
-                                                    bool isLocalSettings, 
-                                                    AudioConverterSettings::ModeType mode, 
-                                                    bool doResample,
-                                                    bool doStretch) const
+AudioConverterPluginI* SndFile::setupAudioConverter(
+  const AudioConverterSettingsGroup* settings, 
+  const AudioConverterSettingsGroup* defaultSettings,
+  bool isLocalSettings, 
+  AudioConverterSettings::ModeType mode, 
+  bool doResample,
+  bool doStretch) const
 {
-  if(!useConverter() || !*_defaultSettings || !_pluginList)
+  if(!useConverter() || !defaultSettings || !_pluginList)
     return nullptr;
   
   AudioConverterPluginI* plugI = nullptr;
@@ -391,12 +396,12 @@ AudioConverterPluginI* SndFile::setupAudioConverter(const AudioConverterSettings
   int pref_resampler = 
     (settings && (settings->_options._useSettings || !isLocalSettings)) ? 
       settings->_options._preferredResampler :
-      (*_defaultSettings)->_options._preferredResampler;
+      defaultSettings->_options._preferredResampler;
   
   int pref_shifter = 
     (settings && (settings->_options._useSettings || !isLocalSettings)) ? 
       settings->_options._preferredShifter:
-      (*_defaultSettings)->_options._preferredShifter;
+      defaultSettings->_options._preferredShifter;
 
   AudioConverterSettingsI* def_res_settings = nullptr;
   AudioConverterSettingsI* local_res_settings = nullptr;
@@ -406,8 +411,8 @@ AudioConverterPluginI* SndFile::setupAudioConverter(const AudioConverterSettings
   {
     if(isLocalSettings)
     {
-      def_res_settings = (*_defaultSettings)->find(
-          (*_defaultSettings)->_options._preferredResampler);
+      def_res_settings = defaultSettings->find(
+          defaultSettings->_options._preferredResampler);
       local_res_settings = settings ? settings->find(pref_resampler) : nullptr;
       rt_res_settings = (local_res_settings && local_res_settings->useSettings(mode)) ? local_res_settings : def_res_settings;
     }
@@ -423,8 +428,8 @@ AudioConverterPluginI* SndFile::setupAudioConverter(const AudioConverterSettings
   {
     if(isLocalSettings)
     {
-      def_str_settings = (*_defaultSettings)->find(
-          (*_defaultSettings)->_options._preferredShifter);
+      def_str_settings = defaultSettings->find(
+          defaultSettings->_options._preferredShifter);
       local_str_settings = settings ? settings->find(pref_shifter) : nullptr;
       rt_str_settings = (local_str_settings && local_str_settings->useSettings(mode)) ? local_str_settings : def_str_settings;
       
@@ -1081,6 +1086,13 @@ bool SndFile::isStretched() const
   if(!_stretchList)
     return false;
   return _stretchList->isStretched();
+}
+
+bool SndFile::isPitchShifted() const
+{ 
+  if(!_stretchList)
+    return false;
+  return _stretchList->isPitchShifted();
 }
 
 bool SndFile::isResampled() const 

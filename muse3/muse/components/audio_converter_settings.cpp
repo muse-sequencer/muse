@@ -98,7 +98,7 @@ void AudioConverterSettingsDialog::fillList()
   
   if(_pluginList)
   {
-    for(MusECore::ciAudioConverterPlugin ip = _pluginList->begin(); ip != _pluginList->end(); ++ip)
+    for(MusECore::ciAudioConverterPlugin ip = _pluginList->cbegin(); ip != _pluginList->cend(); ++ip)
     {
       MusECore::AudioConverterPlugin* plugin = *ip;
       QListWidgetItem* item = new QListWidgetItem(plugin->name(), converterList);

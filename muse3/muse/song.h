@@ -366,6 +366,7 @@ class Song : public QObject {
       void modifyAudioConverterSettingsOperation(
         SndFileR sndfile,
         AudioConverterSettingsGroup* settings,
+        AudioConverterSettingsGroup* defaultSettings,
         bool isLocalSettings,
         PendingOperationList& ops
         ) const;

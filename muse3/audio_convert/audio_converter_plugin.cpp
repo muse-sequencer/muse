@@ -52,8 +52,8 @@ void AudioConverterPluginList::discover(const QString& museGlobalLib, bool debug
   if(pluginDir.exists())
   {
     QFileInfoList list = pluginDir.entryInfoList();
-    QFileInfo* fi;
-    for(QFileInfoList::iterator it=list.begin(); it!=list.end(); ++it)
+    const QFileInfo* fi;
+    for(QFileInfoList::const_iterator it=list.cbegin(); it!=list.cend(); ++it)
     {
       fi = &*it;
 
@@ -118,9 +118,14 @@ AudioConverterPluginList::~AudioConverterPluginList()
 {
   DEBUG_AUDIOCONVERT(stderr, "AudioConverterPluginList dtor: Closing libraries...\n");
   // Must close the libraries.
-  for(iAudioConverterPlugin ip = begin(); ip != end(); ++ip)
+  for(const_iterator ip = cbegin(); ip != cend(); ++ip)
     if(*ip)
       delete *ip;
+}
+
+void AudioConverterPluginList::add(const QFileInfo* fi, const AudioConverterDescriptor* d) 
+{ 
+  push_back(new AudioConverterPlugin(fi, d));
 }
 
 //---------------------------------------------------------
@@ -132,7 +137,7 @@ AudioConverterPlugin* AudioConverterPluginList::find(const char* name, int ID, i
   const bool id_valid = (ID != -1);
   const bool caps_valid = (capabilities != -1);
   AudioConverterPlugin* cap_res = NULL;
-  for(iAudioConverterPlugin i = begin(); i != end(); ++i)
+  for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     AudioConverterPlugin* plugin = *i;
     const bool name_match = (name && (strcmp(name, plugin->name().toLatin1().constData()) == 0));
@@ -155,7 +160,7 @@ AudioConverterPlugin* AudioConverterPluginList::find(const char* name, int ID, i
 //   AudioConverterPlugin
 //---------------------------------------------------------
 
-AudioConverterPlugin::AudioConverterPlugin(QFileInfo* f, const AudioConverterDescriptor* d)
+AudioConverterPlugin::AudioConverterPlugin(const QFileInfo* f, const AudioConverterDescriptor* d)
 {
   fi = *f;
   plugin = NULL;

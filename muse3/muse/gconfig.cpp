@@ -222,7 +222,7 @@ GlobalConfigValues config = {
       false,                        // velocityPerNote Whether to show per-note or all velocities
       -60,                          // int minMeter;
       -60.0,                        // double minSlider;
-      false,                        // use Jack freewheel
+      true,                         // use Jack freewheel
       20,                           // int guiRefresh;
       QString(""),                  // userInstrumentsDir  // Obsolete. Must keep for compatibility.
       //QString(""),                // helpBrowser; // Obsolete

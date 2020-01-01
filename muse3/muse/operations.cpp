@@ -186,6 +186,7 @@ unsigned int PendingOperationItem::getIndex() const
     case ModifyAudioSamples:
     case SetStaticTempo:
     case ModifyLocalAudioConverterSettings:
+    case ModifyLocalAudioConverter:
     case ModifyDefaultAudioConverterSettings:
     case ModifyStretchListRatio:
     case SetAudioConverterOfflineMode:
@@ -310,31 +311,38 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     case ModifyLocalAudioConverterSettings:
     {
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyLocalAudioConverterSettings: "
-                                "sndFile:%p settings:%p audio_converter:%p audio_converter_ui:%p\n", 
-                                _sndFile, _audio_converter_settings, _audio_converter, _audio_converter_ui);
+                                "sndFile:%p settings:%p\n", 
+                                *_sndFileR, _audio_converter_settings);
 
       // _audio_converter_settings can be NULL meaning don't touch, settings can only be 
-      //  'replaced' but not deleted, while _audio_converter and _audio_converter_ui 
-      //  can be NULL meaning delete them.
+      //  'replaced' but not deleted.
       if(_audio_converter_settings)
       {
-        AudioConverterSettingsGroup* cur_settings = _sndFile->audioConverterSettings();
-        _sndFile->setAudioConverterSettings(_audio_converter_settings);
+        AudioConverterSettingsGroup* cur_settings = _sndFileR.audioConverterSettings();
+        _sndFileR.setAudioConverterSettings(_audio_converter_settings);
         // Transfer the original pointer into the member, so it can be deleted in the non-RT stage.
         _audio_converter_settings = cur_settings;
         flags |= SC_AUDIO_CONVERTER;
       }
+    }
+    break;
       
-      AudioConverterPluginI* cur_conv = _sndFile->staticAudioConverter(AudioConverterSettings::RealtimeMode);
+    case ModifyLocalAudioConverter:
+    {
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyLocalAudioConverter: "
+                                "sndFile:%p audio_converter:%p audio_converter_ui:%p\n", 
+                                *_sndFileR, _audio_converter, _audio_converter_ui);
+
+      // _audio_converter and _audio_converter_ui can be NULL meaning delete them.
+      AudioConverterPluginI* cur_conv = _sndFileR.staticAudioConverter(AudioConverterSettings::RealtimeMode);
       //if(_audio_converter)
-        _sndFile->setStaticAudioConverter(_audio_converter, AudioConverterSettings::RealtimeMode);
+        _sndFileR.setStaticAudioConverter(_audio_converter, AudioConverterSettings::RealtimeMode);
       // Transfer the original pointer into the member, so it can be deleted in the non-RT stage.
       _audio_converter = cur_conv;
-      flags |= SC_AUDIO_CONVERTER;
       
-      AudioConverterPluginI* cur_convUI = _sndFile->staticAudioConverter(AudioConverterSettings::GuiMode);
+      AudioConverterPluginI* cur_convUI = _sndFileR.staticAudioConverter(AudioConverterSettings::GuiMode);
       //if(_audio_converter_ui)
-        _sndFile->setStaticAudioConverter(_audio_converter_ui, AudioConverterSettings::GuiMode);
+        _sndFileR.setStaticAudioConverter(_audio_converter_ui, AudioConverterSettings::GuiMode);
       // Transfer the original pointer into the member, so it can be deleted in the non-RT stage.
       _audio_converter_ui = cur_convUI;
       flags |= SC_AUDIO_CONVERTER;
@@ -345,11 +353,11 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     {
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SetAudioConverterOfflineMode: "
                                 "sndFile:%p audio_converter:%p\n", 
-                                _sndFile, _audio_converter);
+                                *_sndFile, _audio_converter);
 
-      AudioConverterPluginI* cur_conv = _sndFile->staticAudioConverter(AudioConverterSettings::RealtimeMode);
+      AudioConverterPluginI* cur_conv = _sndFileR.staticAudioConverter(AudioConverterSettings::RealtimeMode);
       //if(_audio_converter)
-        _sndFile->setStaticAudioConverter(_audio_converter, AudioConverterSettings::RealtimeMode);
+        _sndFileR.setStaticAudioConverter(_audio_converter, AudioConverterSettings::RealtimeMode);
       // Transfer the original pointer into the member, so it can be deleted in the non-RT stage.
       _audio_converter = cur_conv;
       flags |= SC_AUDIO_CONVERTER;
@@ -1600,6 +1608,10 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
       // At this point these are the original pointers that were replaced. Delete the original objects now.
       if(_audio_converter_settings)
         delete _audio_converter_settings;
+    break;
+
+    case ModifyLocalAudioConverter:
+      // At this point these are the original pointers that were replaced. Delete the original objects now.
       if(_audio_converter)
         delete _audio_converter;
       if(_audio_converter_ui)
@@ -1778,18 +1790,26 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
     
       case PendingOperationItem::ModifyLocalAudioConverterSettings:
-        if(poi._type == PendingOperationItem::ModifyLocalAudioConverterSettings && poi._sndFile == op._sndFile &&
-           poi._audio_converter_settings == op._audio_converter_settings && 
-           poi._audio_converter == op._audio_converter &&
-           poi._audio_converter_ui == op._audio_converter_ui)
+        if(poi._type == PendingOperationItem::ModifyLocalAudioConverterSettings && *poi._sndFileR == *op._sndFileR &&
+           poi._audio_converter_settings == op._audio_converter_settings)
         {
           ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double ModifyLocalAudioConverterSettings. Ignoring.\n");
           return false;  
         }
       break;
     
+      case PendingOperationItem::ModifyLocalAudioConverter:
+        if(poi._type == PendingOperationItem::ModifyLocalAudioConverter && *poi._sndFileR == *op._sndFileR &&
+           poi._audio_converter == op._audio_converter &&
+           poi._audio_converter_ui == op._audio_converter_ui)
+        {
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double ModifyLocalAudioConverter. Ignoring.\n");
+          return false;  
+        }
+      break;
+    
       case PendingOperationItem::SetAudioConverterOfflineMode:
-        if(poi._type == PendingOperationItem::SetAudioConverterOfflineMode && poi._sndFile == op._sndFile &&
+        if(poi._type == PendingOperationItem::SetAudioConverterOfflineMode && *poi._sndFileR == *op._sndFileR &&
            poi._audio_converter == op._audio_converter)
         {
           ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double SetAudioConverterOfflineMode. Ignoring.\n");

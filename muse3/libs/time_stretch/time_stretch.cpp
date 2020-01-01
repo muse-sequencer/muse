@@ -234,7 +234,7 @@ void StretchList::normalizeListFrames()
   _isStretched = (_stretchRatio != 1.0);
   _isResampled = (_samplerateRatio != 1.0);
   _isPitchShifted = (_pitchRatio != 1.0);
-  for(iStretchListItem ise = begin(); ise != end(); ++ise)
+  for(iterator ise = begin(); ise != end(); ++ise)
   {
     thisFrame = ise->first;
     StretchListItem& se = ise->second;
@@ -542,12 +542,10 @@ void StretchList::write(int level, Xml& xml) const
   if(empty())
     return;
   
-  const StretchList* sl = this;
-  
   xml.tag(level++, "stretchlist");
   int i = 0;
   QString seStr("%1 %2 %3 %4 %5, ");
-  for (ciStretchListItem ise = sl->begin(); ise != sl->end(); ++ise) {
+  for (const_iterator ise = cbegin(); ise != cend(); ++ise) {
         xml.nput(level, 
                   seStr.arg(ise->first)
                       .arg(ise->second._stretchRatio)
@@ -572,9 +570,8 @@ void StretchList::write(int level, Xml& xml) const
 
 void StretchList::dump() const
 {
-  const StretchList* sl = this;
   INFO_TIMESTRETCH(stderr, "\nStretchList: isNormalized:%d\n", _isNormalized);
-  for(ciStretchListItem i = sl->begin(); i != sl->end(); ++i) 
+  for(const_iterator i = cbegin(); i != cend(); ++i) 
   {
     INFO_TIMESTRETCH(stderr, "frame:%6ld StretchRatio:%f SamplerateRatio:%f PitchRatio:%f "
                     "stretchedFrame:%f squishedFrame:%f\n",
@@ -715,15 +712,14 @@ iStretchListItem StretchList::previousEvent(int types, iStretchListItem item)
 
 ciStretchListItem StretchList::cPreviousEvent(int types, ciStretchListItem item) const
 {
-  const StretchList* sl = this;
   ciStretchListItem i = item;
-  while(i != sl->begin())
+  while(i != cbegin())
   {
     --i;
     if(i->second._type & types)
       return i;
   }
-  return sl->end();
+  return cend();
 }
 
 iStretchListItem StretchList::nextEvent(int types, iStretchListItem item)
@@ -761,12 +757,11 @@ double StretchList::ratioAt(StretchListItem::StretchEventType type, MuseFrame_t 
 {
   // If the zeroth frame is the only item, its ratios must (should) all be at 1.0 right now
   //  so they will be ignored.
-  const StretchList* sl = this;
-  if(sl->size() == 1)
+  if(size() == 1)
     return 1.0;
 
-  ciStretchListItem i = sl->upper_bound(frame);
-  if(i == sl->begin())
+  const_iterator i = upper_bound(frame);
+  if(i == cbegin())
     return 1.0;
   --i;
 
@@ -838,15 +833,14 @@ void StretchList::delRatioAt(int types, MuseFrame_t frame, bool do_normalize)
 
 double StretchList::stretch(MuseFrame_t frame, int type) const
 {
-  const StretchList* sl = this;
   MuseFrame_t prevFrame;
-  double prevNewFrame;
+  double prevNewFrame = frame;
   double prevStretch;
   double prevSamplerate;
-  double dtime;
+  double dtime = 0.0;
   
-  ciStretchListItem i = sl->upper_bound(frame);
-  if(i == sl->begin())
+  const_iterator i = upper_bound(frame);
+  if(i == cbegin())
     return frame;
   
   --i;
@@ -879,15 +873,14 @@ double StretchList::stretch(MuseFrame_t frame, int type) const
 
 double StretchList::stretch(double frame, int type) const
 {
-  const StretchList* sl = this;
   MuseFrame_t prevFrame;
-  double prevNewFrame;
+  double prevNewFrame = frame;
   double prevStretch;
   double prevSamplerate;
-  double dtime;
+  double dtime = 0.0;
   
-  ciStretchListItem i = sl->upper_bound(frame);
-  if(i == sl->begin())
+  const_iterator i = upper_bound(frame);
+  if(i == cbegin())
     return frame;
   
   --i;
@@ -920,15 +913,14 @@ double StretchList::stretch(double frame, int type) const
 
 double StretchList::squish(MuseFrame_t frame, int type) const
 {
-  const StretchList* sl = this;
   MuseFrame_t prevFrame;
-  double prevNewUnFrame;
+  double prevNewUnFrame = frame;
   double prevStretch;
   double prevSamplerate;
-  double dtime;
+  double dtime = 0.0;
   
-  ciStretchListItem i = sl->upper_bound(frame);
-  if(i == sl->begin())
+  const_iterator i = upper_bound(frame);
+  if(i == cbegin())
     return frame;
   
   --i;
@@ -961,15 +953,14 @@ double StretchList::squish(MuseFrame_t frame, int type) const
       
 double StretchList::squish(double frame, int type) const
 {
-  const StretchList* sl = this;
   MuseFrame_t prevFrame;
-  double prevNewUnFrame;
+  double prevNewUnFrame = frame;
   double prevStretch;
   double prevSamplerate;
-  double dtime;
+  double dtime = 0.0;
   
-  ciStretchListItem i = sl->upper_bound(frame);
-  if(i == sl->begin())
+  const_iterator i = upper_bound(frame);
+  if(i == cbegin())
     return frame;
   
   --i;
@@ -1006,18 +997,17 @@ double StretchList::squish(double frame, int type) const
 
 MuseFrame_t StretchList::unStretch(double frame, int type) const
 {
-  const StretchList* sl = this;
-  if(sl->empty())
+  if(empty())
     return frame;
     
   MuseFrame_t prevFrame;
-  double prevNewFrame;
+  double prevNewFrame = frame;
   double prevStretch;
   double prevSamplerate;
-  double factor;
+  double factor = 1.0;
   
-  ciStretchListItem e;
-  for(e = sl->begin(); e != sl->end(); ++e) 
+  const_iterator e;
+  for(e = cbegin(); e != cend(); ++e) 
   {
     if((type & StretchListItem::StretchEvent) &&    // Full conversion requested.
         (type & StretchListItem::SamplerateEvent))
@@ -1043,7 +1033,7 @@ MuseFrame_t StretchList::unStretch(double frame, int type) const
     }
   }
         
-  if(e == sl->begin())
+  if(e == cbegin())
     return frame;
         
   --e;
@@ -1080,18 +1070,17 @@ MuseFrame_t StretchList::unStretch(double frame, int type) const
 
 MuseFrame_t StretchList::unSquish(double frame, int type) const
 {
-  const StretchList* sl = this;
-  if(sl->empty())
+  if(empty())
     return frame;
     
   MuseFrame_t prevFrame;
-  double prevNewUnFrame;
+  double prevNewUnFrame = frame;
   double prevStretch;
   double prevSamplerate;
-  double factor;
+  double factor = 1.0;
   
-  ciStretchListItem e;
-  for(e = sl->begin(); e != sl->end(); ++e) 
+  const_iterator e;
+  for(e = cbegin(); e != cend(); ++e) 
   {
     if((type & StretchListItem::StretchEvent) &&    // Full conversion requested.
         (type & StretchListItem::SamplerateEvent))
@@ -1117,7 +1106,7 @@ MuseFrame_t StretchList::unSquish(double frame, int type) const
     }
   }
         
-  if(e == sl->begin())
+  if(e == cbegin())
     return frame;
         
   --e;
@@ -1160,7 +1149,7 @@ StretchListInfo StretchList::testDelListOperation(int types, MuseFrame_t frame) 
   info._isStretched = (_stretchRatio != 1.0);
   info._isResampled = (_samplerateRatio != 1.0);
   info._isPitchShifted = (_pitchRatio != 1.0);
-  for(ciStretchListItem ise = begin(); ise != end(); ++ise)
+  for(const_iterator ise = cbegin(); ise != cend(); ++ise)
   {
     fr = ise->first;
     // Ignore the special zeroth frame.

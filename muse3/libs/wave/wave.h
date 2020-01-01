@@ -162,6 +162,7 @@ class SndFile {
       // If isLocalSettings is false, settings is treated as the global default settings and is 
       //  directly used instead of the comparison to, and possible use of, the global default above.
       AudioConverterPluginI* setupAudioConverter(const AudioConverterSettingsGroup* settings,
+                                                 const AudioConverterSettingsGroup* defaultSettings,
                                                  bool isLocalSettings, 
                                                  AudioConverterSettings::ModeType mode, 
                                                  bool doResample,
@@ -197,6 +198,9 @@ class SndFile {
       // Returns whether ANY stretch event has a stretch ratio other than 1.0 
       //  ie. the map is stretched, a stretcher must be engaged.
       bool isStretched() const;
+      // Returns whether ANY stretch event has a pitch ratio other than 1.0 
+      //  ie. the map is pitch shifted, a shifter must be engaged.
+      bool isPitchShifted() const;
       // Returns whether ANY stretch event has a samplerate ratio other than 1.0 
       //  ie. the map is stretched, a samplerate converter must be engaged.
       bool isResampled() const;
@@ -293,13 +297,15 @@ class SndFileR {
       //  global default settings.
       // If isLocalSettings is false, settings is treated as the global default settings and is 
       //  directly used instead of the comparison to, and possible use of, the global default above.
-      AudioConverterPluginI* setupAudioConverter(const AudioConverterSettingsGroup* settings, 
-                                                 bool isLocalSettings, 
-                                                 AudioConverterSettings::ModeType mode, 
-                                                 bool doResample,
-                                                 bool doStretch) const
+      AudioConverterPluginI* setupAudioConverter(
+        const AudioConverterSettingsGroup* settings, 
+        const AudioConverterSettingsGroup* defaultSettings,
+        bool isLocalSettings, 
+        AudioConverterSettings::ModeType mode, 
+        bool doResample,
+        bool doStretch) const
       { return sf ? sf->setupAudioConverter(
-          settings, isLocalSettings, mode, doResample, doStretch) : nullptr; }
+          settings, defaultSettings, isLocalSettings, mode, doResample, doStretch) : nullptr; }
 
       // When using the virtual interface, be sure to call setFormat before opening.
       bool openRead(bool createCache=true) { return sf ? sf->openRead(createCache) : true;  }
@@ -327,6 +333,9 @@ class SndFileR {
       // Returns whether ANY stretch event has a stretch ratio other than 1.0 
       //  ie. the map is stretched, a stretcher must be engaged.
       bool isStretched() const { return sf ? sf->isStretched() : false; }
+      // Returns whether ANY stretch event has a pitch ratio other than 1.0 
+      //  ie. the map is pitch shifted, a shifter must be engaged.
+      bool isPitchShifted() const { return sf ? sf->isPitchShifted() : false; }
       // Returns whether ANY stretch event has a samplerate ratio other than 1.0 
       //  ie. the map is stretched, a samplerate converter must be engaged.
       bool isResampled() const { return sf ? sf->isResampled() : false; }

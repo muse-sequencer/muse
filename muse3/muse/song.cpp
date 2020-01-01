@@ -4280,7 +4280,6 @@ void Song::setAudioConvertersOfflineOperation(
 
   AudioConverterSettingsGroup* settings;
   bool isLocalSettings;
-  StretchList* sl;
   bool doStretch;
   bool doResample;
   AudioConverterSettings::ModeType cur_mode;
@@ -4328,9 +4327,8 @@ void Song::setAudioConvertersOfflineOperation(
           sndfile.audioConverterSettings() : MusEGlobal::defaultAudioConverterSettings;
         isLocalSettings = sndfile.audioConverterSettings()->useSettings();
 
-        sl = sndfile.stretchList();
-        doStretch = sl->isStretched();
-        doResample = sl->isResampled();
+        doStretch = sndfile.isStretched();
+        doResample = sndfile.isResampled();
 
         // For offline mode, we COULD create a third converter just for it, apart from the main
         //  and UI converters. But our system doesn't have a third converter (yet) - and it may
@@ -4338,6 +4336,7 @@ void Song::setAudioConvertersOfflineOperation(
         // So instead, in offline mode we switch out the main converter for one with with offline settings.
         converter = sndfile.setupAudioConverter(
           settings,
+          MusEGlobal::defaultAudioConverterSettings,
           isLocalSettings,
           isOffline ? 
             AudioConverterSettings::OfflineMode :
@@ -4354,7 +4353,7 @@ void Song::setAudioConvertersOfflineOperation(
                   sndfile.name().toLocal8Bit().constData(), isOffline);
           
           ops.add(PendingOperationItem(
-            *sndfile,
+            sndfile,
             converter,   // Main converter. 
             PendingOperationItem::SetAudioConverterOfflineMode));
       }
@@ -4367,6 +4366,7 @@ void Song::setAudioConvertersOfflineOperation(
 void Song::modifyAudioConverterSettingsOperation(
   SndFileR sndfile,
   AudioConverterSettingsGroup* settings,
+  AudioConverterSettingsGroup* defaultSettings,
   bool isLocalSettings,
   PendingOperationList& ops
   ) const
@@ -4382,6 +4382,7 @@ void Song::modifyAudioConverterSettingsOperation(
   // So instead, in offline mode we switch out the main converter for one with with offline settings.
   AudioConverterPluginI* converter = sndfile.setupAudioConverter(
     settings,
+    defaultSettings,
     isLocalSettings,
     isOffline ?
       AudioConverterSettings::OfflineMode :
@@ -4391,6 +4392,7 @@ void Song::modifyAudioConverterSettingsOperation(
 
   AudioConverterPluginI* converterUI = sndfile.setupAudioConverter(
     settings,
+    defaultSettings,
     isLocalSettings,
     AudioConverterSettings::GuiMode,
     doResample,
@@ -4399,13 +4401,17 @@ void Song::modifyAudioConverterSettingsOperation(
 //   if(!converter && !converterUI)
 //     return;
 
-  // We want to change the settings, and the converters if neccesary.
+  // We want to change the settings, and the converters if necessary...
   ops.add(PendingOperationItem(
-    *sndfile,
-    settings,    // We want to change the converters and the settings.
+    sndfile,
+    settings,
+    PendingOperationItem::ModifyLocalAudioConverterSettings));
+
+  ops.add(PendingOperationItem(
+    sndfile,
     converter,   // Main converter. 
     converterUI, // UI converter.
-    PendingOperationItem::ModifyLocalAudioConverterSettings));
+    PendingOperationItem::ModifyLocalAudioConverter));
 }
 
 void Song::modifyAudioConverterOperation(
@@ -4426,8 +4432,9 @@ void Song::modifyAudioConverterOperation(
   //  and UI converters. But our system doesn't have a third converter (yet) - and it may
   //  or may not get one, we'll see. Still, the operation supports setting it, in case.
   // So instead, in offline mode we switch out the main converter for one with with offline settings.
-  AudioConverterPluginI* converter   = sndfile.setupAudioConverter(
+  AudioConverterPluginI* converter = sndfile.setupAudioConverter(
     settings,
+    MusEGlobal::defaultAudioConverterSettings,
     isLocalSettings,
     isOffline ?
       AudioConverterSettings::OfflineMode :
@@ -4437,6 +4444,7 @@ void Song::modifyAudioConverterOperation(
 
   AudioConverterPluginI* converterUI = sndfile.setupAudioConverter(
     settings,
+    MusEGlobal::defaultAudioConverterSettings,
     isLocalSettings,
     AudioConverterSettings::GuiMode,
     doResample,
@@ -4446,11 +4454,10 @@ void Song::modifyAudioConverterOperation(
 //     return;
 
   ops.add(PendingOperationItem(
-    *sndfile,
-    nullptr,     // We only want to change the converters, not the settings.
+    sndfile,
     converter,   // Main converter.
     converterUI, // UI converter.
-    PendingOperationItem::ModifyLocalAudioConverterSettings));
+    PendingOperationItem::ModifyLocalAudioConverter));
 }
 
 void Song::modifyStretchListOperation(SndFileR sndfile, int type, double value, PendingOperationList& ops) const
@@ -4470,9 +4477,9 @@ void Song::addAtStretchListOperation(SndFileR sndfile, int type, MuseFrame_t fra
   bool wantStretch = false;
   bool wantResample = sndfile.sampleRateDiffers();
   bool wantPitch = false;
-  const bool haveStretch = sl->isStretched();
-  const bool haveResample = sl->isResampled() || wantResample;
-  const bool havePitch = sl->isPitchShifted();
+  const bool haveStretch = sndfile.isStretched();
+  const bool haveResample = sndfile.isResampled() || wantResample;
+  const bool havePitch = sndfile.isPitchShifted();
   
   //// If the requested value is anything other than 1.0, request converters.
   //if(value != 1.0)
@@ -4521,9 +4528,9 @@ void Song::delAtStretchListOperation(SndFileR sndfile, int types, MuseFrame_t fr
   const bool wantResample = info._isResampled || srdiffers;
   const bool wantPitch    = info._isPitchShifted;
   
-  const bool haveStretch  = sl->isStretched();
-  const bool haveResample = sl->isResampled() || srdiffers;
-  const bool havePitch    = sl->isPitchShifted();
+  const bool haveStretch  = sndfile.isStretched();
+  const bool haveResample = sndfile.isResampled() || srdiffers;
+  const bool havePitch    = sndfile.isPitchShifted();
   
   if((!wantStretch  && haveStretch) || 
      (!wantResample && haveResample) || 
@@ -4547,9 +4554,9 @@ void Song::modifyAtStretchListOperation(SndFileR sndfile, int type, MuseFrame_t 
   bool wantStretch = false;
   bool wantResample = sndfile.sampleRateDiffers();
   bool wantPitch = false;
-  const bool haveStretch = sl->isStretched();
-  const bool haveResample = sl->isResampled() || wantResample;
-  const bool havePitch = sl->isPitchShifted();
+  const bool haveStretch = sndfile.isStretched();
+  const bool haveResample = sndfile.isResampled() || wantResample;
+  const bool havePitch = sndfile.isPitchShifted();
   
   //// If the requested value is anything other than 1.0, request converters.
   //if(value != 1.0)
@@ -4589,27 +4596,59 @@ void Song::modifyDefaultAudioConverterSettingsOperation(AudioConverterSettingsGr
   // Now, schedule changes to each wave event if necessary.
   // Note that at this point the above default change has not occurred yet, 
   //  so we must tell it to use what the settings WILL BE, not what they are now.
-  for(ciWaveTrack it = MusEGlobal::song->waves()->begin(); it != MusEGlobal::song->waves()->end(); ++it)
+  for(ciWaveTrack it = MusEGlobal::song->waves()->cbegin(); it != MusEGlobal::song->waves()->cend(); ++it)
   {
     const WaveTrack* wtrack = *it;
-    for(ciPart ip = wtrack->cparts()->begin(); ip != wtrack->cparts()->end(); ++ip)
+    for(ciPart ip = wtrack->cparts()->cbegin(); ip != wtrack->cparts()->cend(); ++ip)
     {
       const Part* part = ip->second;
-      for(ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie)
+      for(ciEvent ie = part->events().cbegin(); ie != part->events().cend(); ++ie)
       {
         const Event& e = ie->second;
         if(e.type() != Wave)
           continue;
-        if(const AudioConverterSettingsGroup* cur_ev_settings = e.sndFile().audioConverterSettings())
-        {
-          // Is the event using its own local settings? Ignore.
-          if(cur_ev_settings->useSettings())
-            continue;
-          modifyAudioConverterSettingsOperation(e.sndFile(),
-                                                MusEGlobal::defaultAudioConverterSettings, 
-                                                false,  // false = Default, non-local settings.
-                                                ops);
-        }
+        SndFileR sndfile = e.sndFile();
+        if(!sndfile.useConverter())
+          continue;
+        const AudioConverterSettingsGroup* cur_ev_settings = sndfile.audioConverterSettings();
+        // Is the event using its own local settings? Ignore.
+        if(!cur_ev_settings || cur_ev_settings->useSettings())
+          continue;
+
+        const bool isOffline = sndfile.isOffline();
+        const bool doStretch = sndfile.isStretched();
+        const bool doResample = sndfile.isResampled();
+        // For offline mode, we COULD create a third converter just for it, apart from the main
+        //  and UI converters. But our system doesn't have a third converter (yet) - and it may
+        //  or may not get one, we'll see. Still, the operation supports setting it, in case.
+        // So instead, in offline mode we switch out the main converter for one with with offline settings.
+        AudioConverterPluginI* converter = sndfile.setupAudioConverter(
+          settings,
+          settings,
+          false,  // false = Default, non-local settings.
+          isOffline ?
+            AudioConverterSettings::OfflineMode :
+            AudioConverterSettings::RealtimeMode,
+          doResample,
+          doStretch);
+
+        AudioConverterPluginI* converterUI = sndfile.setupAudioConverter(
+          settings,
+          settings,
+          false,  // false = Default, non-local settings.
+          AudioConverterSettings::GuiMode,
+          doResample,
+          doStretch);
+
+      //   if(!converter && !converterUI)
+      //     return;
+
+        // We only want to change the converters, if necessary.
+        ops.add(PendingOperationItem(
+          sndfile,
+          converter,   // Main converter. 
+          converterUI, // UI converter.
+          PendingOperationItem::ModifyLocalAudioConverter));
       }
     }
   }
