@@ -96,9 +96,15 @@ class TempoList : public TEMPOLIST {
       void write(int, Xml&) const;
       void dump() const;
 
-      // Returns a tempo value from the list if master is on, or else the static tempo value.
+      // Returns the actual Beats Per Minute at given tick or the static tempo value if master (useList) is off.
+      float bpm(unsigned tick) const;
+      // Bypass the master (useList) flag and return the actual Beats Per Minute at the given tick.
+      float bpmAt(unsigned tick) const;
+      // Returns a tempo value from the list at the given tick if master (useList) is on, or else the static tempo value.
+      // This is not in the same units as BPM.
       int tempo(unsigned tick) const;
-      // Returns a tempo value from the list if master is on, or else the static tempo value.
+      // Bypass the master (useList) flag and return a tempo value directly from the list at the given tick.
+      // This is not in the same units as BPM.
       int tempoAt(unsigned tick) const;
       
       

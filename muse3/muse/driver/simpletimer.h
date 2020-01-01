@@ -40,7 +40,8 @@ class SimpleTimer : public Timer, public QThread {
     public:
        SimpleTimer();
        virtual ~SimpleTimer();
-       
+       virtual const char * getTimerName() { return "SimpleTimer"; }
+
        virtual signed int initTimer(unsigned long init);
        virtual unsigned long setTimerResolution(unsigned long resolution);
        virtual unsigned long getTimerResolution();

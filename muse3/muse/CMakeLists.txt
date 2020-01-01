@@ -29,6 +29,7 @@ include_directories(
 
 set (SubDirs
       widgets
+      mplugins
       components
       arranger
       cliplist
@@ -41,7 +42,6 @@ set (SubDirs
       master
       midiedit
       mixer
-      mplugins
       waveedit
       )
 if(LV2_SUPPORT)
@@ -62,12 +62,9 @@ subdirs (${SubDirs})
 ##
 QT5_WRAP_CPP ( muse_moc_headers
       app.h
-      appearance.h
       cobject.h
       conf.h
-      confmport.h
       midieditor.h
-      miditransform.h
       plugin.h
       script_delivery.h
       song.h
@@ -85,20 +82,18 @@ QT5_WRAP_CPP ( wavepreview_moc_headers
 ## Resource files
 ##
 QT5_ADD_RESOURCES (muse_qrc_files
-		  muse.qrc
+#		  muse.qrc
 		  ../resources.qrc
 		  )
 
 file (GLOB core_source_files
       app.cpp
-      appearance.cpp
       audio.cpp
       audioconvert.cpp
       audioprefetch.cpp
       audiotrack.cpp
       cobject.cpp
       conf.cpp
-      confmport.cpp
       controlfifo.cpp
       ctrl.cpp
       dialogs.cpp
@@ -124,7 +119,6 @@ file (GLOB core_source_files
       midifile.cpp
       midiport.cpp
       midiseq.cpp
-      miditransform.cpp
       mtc.cpp
       node.cpp
       operations.cpp
@@ -148,6 +142,7 @@ file (GLOB core_source_files
       ticksynth.cpp
       track.cpp
       transport.cpp
+      transport_obj.cpp
       undo.cpp
       value.cpp
       vst.cpp
@@ -208,6 +203,7 @@ set (FILES_TO_TRANSLATE
 ##
 include_directories (
       arranger
+      cliplist
       components
       driver
       function_dialogs
@@ -225,6 +221,7 @@ include_directories (
 # Make sure to include the uic generated headers paths.
 include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}/arranger
+      ${CMAKE_CURRENT_BINARY_DIR}/cliplist
       ${CMAKE_CURRENT_BINARY_DIR}/driver
       ${CMAKE_CURRENT_BINARY_DIR}/instruments
       ${CMAKE_CURRENT_BINARY_DIR}/liste

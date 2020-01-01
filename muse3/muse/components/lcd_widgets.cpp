@@ -313,6 +313,12 @@ void LCDPatchEdit::setReadoutOrientation(PatchOrientation orient)
   update();
 }
 
+void LCDPatchEdit::setReadoutColor(const QColor& c)
+{
+  _readoutColor = c;
+  update();
+}
+
 void LCDPatchEdit::setMaxAliasedPointSize(int sz)
 {
   if(sz<0)sz=0;
@@ -451,8 +457,6 @@ void LCDPatchEdit::paintEvent(QPaintEvent* e)
   }
 
   ItemBackgroundPainter ibp;
-
-  //ibp.drawBackground(&painter, rect(), pal);
 
   switch(_orient)
   {

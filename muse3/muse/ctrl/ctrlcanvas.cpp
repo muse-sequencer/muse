@@ -1386,102 +1386,102 @@ void CtrlCanvas::endMoveItems()
 }
 
 void CtrlCanvas::setCursor()
-      {
-      showCursor();
-      switch (drag) {
-            case DRAGX_MOVE:
-            case DRAGX_COPY:
-                  View::setCursor(QCursor(Qt::SizeHorCursor));
-                  break;
+{
+    showCursor();
+    switch (drag) {
+    case DRAGX_MOVE:
+    case DRAGX_COPY:
+        View::setCursor(QCursor(Qt::SizeHorCursor));
+        break;
 
-            case DRAGY_MOVE:
-            case DRAGY_COPY:
-                  View::setCursor(QCursor(Qt::SizeVerCursor));
-                  break;
+    case DRAGY_MOVE:
+    case DRAGY_COPY:
+        View::setCursor(QCursor(Qt::SizeVerCursor));
+        break;
 
-            case DRAG_MOVE:
-            case DRAG_COPY:
-	          // Bug in KDE cursor theme? On some distros this cursor is actually another version of a closed hand! From 'net:
-                  // "It might be a problem in the distribution as Qt uses the cursor that is provided by X.org/xcursor extension with name "size_all".
-	          //  We fixed this issue by setting the KDE cursor theme to "System theme" "
-                  View::setCursor(QCursor(Qt::SizeAllCursor));
-                  break;
+    case DRAG_MOVE:
+    case DRAG_COPY:
+        // Bug in KDE cursor theme? On some distros this cursor is actually another version of a closed hand! From 'net:
+        // "It might be a problem in the distribution as Qt uses the cursor that is provided by X.org/xcursor extension with name "size_all".
+        //  We fixed this issue by setting the KDE cursor theme to "System theme" "
+        View::setCursor(QCursor(Qt::SizeAllCursor));
+        break;
 
-            case DRAG_RESIZE:
-                  View::setCursor(QCursor(Qt::SizeHorCursor));
-                  break;
+    case DRAG_RESIZE:
+        View::setCursor(QCursor(Qt::SizeHorCursor));
+        break;
 
-            case DRAG_PAN:
-                  if(MusEGlobal::config.borderlessMouse)
-                    showCursor(false); // CAUTION
-                  else
-                    View::setCursor(QCursor(Qt::ClosedHandCursor));
-                  break;
-                  
-            case DRAG_ZOOM:
-                  if(MusEGlobal::config.borderlessMouse)
-                    showCursor(false); // CAUTION
-                  break;
-                  
-            case DRAG_DELETE:
-            case DRAG_COPY_START:
-            case DRAG_MOVE_START:
-            case DRAG_NEW:
-            case DRAG_LASSO_START:
-            case DRAG_LASSO:
-            case DRAG_OFF:
-                  switch(tool) {
-                        case PencilTool:
-                              View::setCursor(QCursor(*pencilIcon, 4, 15));
-                              break;
-                        case RubberTool:
-                              View::setCursor(QCursor(*deleteIcon, 4, 15));
-                              break;
-                        case GlueTool:
-                              View::setCursor(QCursor(*glueIcon, 4, 15));
-                              break;
-                        case CutTool:
-                              View::setCursor(QCursor(*cutIcon, 4, 15));
-                              break;
-                        case MuteTool:
-                              View::setCursor(QCursor(*editmuteIcon, 4, 15));
-                              break;
-                        case AutomationTool:
-                              View::setCursor(QCursor(Qt::ArrowCursor));
-                              break;
-                        case PanTool:
-                              View::setCursor(QCursor(Qt::OpenHandCursor));
-                              break;
-                        case ZoomTool:
-                              View::setCursor(QCursor(*zoomAtIcon, 0, 0));
-                              break;
-                        default:
-                              if(moving.empty())
-                              {
-                                View::setCursor(QCursor(Qt::ArrowCursor));
-                              }
-                              else
-                              {
-                                if(_movingItemUnderCursor)
-                                {
-                                  View::setCursor(QCursor(Qt::SizeAllCursor));
-                                }
-                                else
-                                {
-                                  if(_dragType == MOVE_MOVE)
-                                    //View::setCursor(QCursor(*midiCtrlMergeEraseWysiwygIcon, 0, 0));
-                                    View::setCursor(*editpasteSCursor);
-                                  else
-                                    //View::setCursor(QCursor(*midiCtrlMergeCopyEraseWysiwygIcon, 0, 0));
-                                    View::setCursor(*editpasteCloneSCursor);
-                                }
-                              }
-                                
-                              break;
-                        }
-                  break;
+    case DRAG_PAN:
+        if(MusEGlobal::config.borderlessMouse)
+            showCursor(false); // CAUTION
+        else
+            View::setCursor(QCursor(Qt::ClosedHandCursor));
+        break;
+
+    case DRAG_ZOOM:
+        if(MusEGlobal::config.borderlessMouse)
+            showCursor(false); // CAUTION
+        break;
+
+    case DRAG_DELETE:
+    case DRAG_COPY_START:
+    case DRAG_MOVE_START:
+    case DRAG_NEW:
+    case DRAG_LASSO_START:
+    case DRAG_LASSO:
+    case DRAG_OFF:
+        switch(tool) {
+        case PencilTool:
+//            QWidget::setCursor(getCursorFromIcon(pencilIconSVG, "pencilIconSVG"));
+            QWidget::setCursor(*magnetCursor);
+            break;
+        case RubberTool:
+            QWidget::setCursor(*deleteCursor);
+            break;
+        case GlueTool:
+            QWidget::setCursor(QCursor(Qt::ForbiddenCursor));
+            break;
+        case CutTool:
+            QWidget::setCursor(QCursor(Qt::ForbiddenCursor));
+            break;
+        case MuteTool:
+            QWidget::setCursor(QCursor(Qt::ForbiddenCursor));
+            break;
+        case DrawTool:
+            QWidget::setCursor(*drawCursor);
+            break;
+        case PanTool:
+            QWidget::setCursor(QCursor(Qt::ForbiddenCursor));
+            break;
+        case ZoomTool:
+            QWidget::setCursor(QCursor(Qt::ForbiddenCursor));
+            break;
+        default:
+            if(moving.empty())
+            {
+                View::setCursor(QCursor(Qt::ArrowCursor));
             }
-      }
+            else
+            {
+                if(_movingItemUnderCursor)
+                {
+                    View::setCursor(QCursor(Qt::SizeAllCursor));
+                }
+                else
+                {
+                    if(_dragType == MOVE_MOVE)
+                        //View::setCursor(QCursor(*midiCtrlMergeEraseWysiwygIcon, 0, 0));
+                        View::setCursor(*editpasteSCursor);
+                    else
+                        //View::setCursor(QCursor(*midiCtrlMergeCopyEraseWysiwygIcon, 0, 0));
+                        View::setCursor(*editpasteCloneSCursor);
+                }
+            }
+            break;
+        }
+        break;
+    }
+}
 
 //---------------------------------------------------------
 //   viewMousePressEvent
@@ -1531,10 +1531,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
         //       the 'options' items but not the 'actions' items ?
         PopupMenu* itemPopupMenu = new PopupMenu(this, false);
         populateMergeOptions(itemPopupMenu);
-#if QT_VERSION >= 0x050100
-        // This is required after Qt 5.1
         itemPopupMenu->setToolTipsVisible(true);
-#endif
         QAction *act = itemPopupMenu->exec(event->globalPos());
         int idx = -1;
         bool is_checked = false;
@@ -1648,7 +1645,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
                           drag = DRAG_RESIZE;
                           changeVal(xpos, xpos, ypos);
                           }
-                    setCursor();
+//                    setCursor();
                     break;
 
               case MusEGui::RubberTool:
@@ -3439,9 +3436,12 @@ QRect CtrlCanvas::overlayRect() const
 void CtrlCanvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       {
       drawTickRaster(p, rect, rg, editor->raster(),
-                         false, false, false,
-                         MusEGlobal::config.midiCanvasBarColor, 
-                         MusEGlobal::config.midiCanvasBeatColor);
+                     false, false, false,
+                     Qt::red, // dummy color, very visual so it can be detected if it is drawn.
+                     MusEGlobal::config.midiCanvasBeatColor,
+                     MusEGlobal::config.midiCanvasFineColor,
+                     MusEGlobal::config.midiCanvasBarColor
+                     );
 
       //---------------------------------------------------
       //    draw line tool
@@ -3700,7 +3700,7 @@ void CtrlCanvas::populateMergeOptions(PopupMenu* menu)
   act->setToolTip(tr("Merge a copy of the dragged items"));
   act->setEnabled(is_mv);
   
-  act = menu->addAction(QIcon(*filecloseIcon), tr("Cancel drag"));
+  act = menu->addAction(*filecloseSVGIcon, tr("Cancel drag"));
   act->setData(contextIdCancelDrag);
   act->setCheckable(false);
   act->setToolTip(tr("Cancel dragging the items"));
@@ -3717,6 +3717,5 @@ bool CtrlCanvas::mergeDraggedItems(bool /*copy*/)
   
   return true;
 }
-
 
 } // namespace MusEGui

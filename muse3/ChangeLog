@@ -1,9 +1,148 @@
+16.12.2019
+    - Exposed new colours for stylesheets. See Ardour and Dark qss files. (Tim)
+    - Fixed #740: sf3 files crash. libinstpatch code: We did not check returned pointers.
+14.12.2019
+    * NEW - Audio effects rack size increased from 4 to 8 : (Tim)
+    - New right-click context menu entry on strip labels: "effects rack visible items".
+13.12.2019
+  - HOT Bug fix: Missing 3 MESS synths, undefined symbol MusEGlobal::config (Tim)
+    Cause: #include "gconfig.h" in icons.cpp brought in core globals which should
+     not be in these synth plugin libraries (or in icons module). Removed the line
+     and instead passed the desired global value to initIcons().
+    That said, the plugins really should be stand alone and not use the icons module
+     until the icons module becomes a true shared resource library. (Currently it
+     is initialized by core, so not quite self sufficient yet.) So... I copied the
+     required icons to the relevant synths, decoupling them from the icons module.
+    By using icons directly from qrc instead of icons module, I was also able to
+     remove the icons module from inclusion in widgets module (yay!), removing
+     a further dependency of simpledrums synth which was missing too.
+  * Module independence is a goal to strive for after 28.01.2018 MAJOR changes.
+11.12.2019
+    *** MusE 3.1.0pre4 ***    
+	- Customizable size of icons and custom tool cursors (kybos)
+	- Replaced one-letter column headers by icons in track header (kybos)
+	- German translation updated (kybos)
+10.12.2019
+    - Dependency problems: Moved several files. All source together with ui files now. (Tim)
+    - Remove all dead obsolete trackinfo 'alt' button code.
+    - FIXED: Mixer strips missing if loading an older song saved before 20.10.2019
+    - FIXED: Duplicate strips found in songs saved before 20.10.2019
+    - FIXED: Long-time mixer problem with restoring size.
+09.12.2019
+    - Remove some more "old vs. new" drum track stuff, change some text etc. (Tim)
+08.12.2019
+	- Added option for opening MDI subwindows maximized (kybos)
+    - Oops, fix stuck icons from 06.12. (Tim)
+    - Fix gross misnomer throughout, should be "timebase master, not "transport master".
+    - Fix EffectRack::songChanged() crash when reloading songs: Check track still exists. (Tim)
+07.12.2019
+    - Update start play position when making a seek. Rewind to Start behaves
+      more logical then, imho (rj)
+    - Fix some compile warnings with LV2 worker functions, some others. (Tim)
+    - Moved appearance and confmport cpp/h files from /muse to muse/components.
+      Trying to solve some dependency problems...
+06.12.2019
+    - Fixed bug #719 downmix to existing file appends to the old file (rj)
+    - Transport master fixes: New button on transport. Fix connect at startup etc. (Tim)
+      Seems there is no way to ask Jack if are we transport master (without setting it).
+      So new code in our Jack driver - and a 1Hz watchdog - monitor for changes to master status.
+      Care was taken to not disturb who else may be master. Click flashing button to force.
+      Tested the new button OK with three instances of MusE competing for transport master.
+05.12.2019
+	- Added File->New from template... menu entry. File->New loads default template (kybos)
+	- Fixed inconsistent UI texts where appropriate: (kybos)
+	  * Title-style for menu texts and window titles
+	  * Sentence-style for all other UI texts 
+	  * Three dots (...) for menu entries triggering a dialog (like Save As...)
+	- Fixed inconsistent tooltip font size (kybos)
+	- Vector replacements for many pixmap icons (kybos)
+	- Fixed bug #720 arm follows track did bad things while recording (rj)
+03.12.2019
+    - Eliminated all but one tr("Empty") string usage in plugins/pipeline/rack. (Tim)
+    - Snooper: Provide flashColor property. Changed it in Ardour and Dark qss themes.
+30.11.2019
+    - Added a specialization of QMdiArea to work around problems with PgUp and PgDown
+      shortcuts as it was found through Snooper tool that this is the widget that
+      was stealing the keypresses.
+    - Another keypress fix in pcanvas.cpp to allow Return to be captured
+    - Fixed a crash in drumlist when using a drummap and opening without the port having 
+      been properly initialized (in this case the synth plugin was missing). The 
+      dm->port had an extreme value, now the range is checked. (rj)
+    - Fix #697: On HiDPI displays, plugin native UI windows are automatically
+      scaled by Qt, but most of the native plugin UIs are not scalable 
+      or apply their own scaling. There is now a global setting for reverting 
+      the Qt window scaling. It can be overridden for each soft synth track
+      by a local setting in the Quirks toolbar. (kybos)
+    - Fix # 708: Surge-vst crashes. It called our pluginHostCallback() immediately from
+       instantiate() before we stored the pointer. Added VstNativeSynth::openPlugin() (Tim)
+28.11.2019
+    - Fixed the DidYouKnow menu alternative so it shows the dialog even if the
+      checkbox for not displaying it is checked. (rj)
+    - Added a few more lines to the DidYouKnow.txt database
+    - Snooper improvements, fix crashes, fix 'parented top level' not working right. (Tim)
+27.11.2019
+    - Unfortunately had to revoke the 'easy fix' below for getting more shortcuts to work
+      there were side effects...  The search goes on for the 'real' solution (rj)
+    - Snooper improvements. Moved to Help menu. Live realtime monitoring of events. (Tim)
+26.11.2019
+    * New - Introducing the Snooper (object tree) for coders and stylesheet authors: (Tim)
+      Click new Snooper button in Appearance to start. Then click on anything anywhere.
+23.11.2019
+    - More keyboard shortcuts
+      * First of, I found out that several shortcuts never end up in the dispatcher since they (rj)
+        were tested against the "accepted" property. Seems this is not reliable nor needed,
+        it affected atleast PgUp, PgDn and Return.
+      * Arm currently selected track can now be bound: Default Ctrl+Return
+      * Goto end of song can be bound: Shift+W
+22.11.2019
+    - New solution to making bar lines more visible. Basically removed more hardcoded colors
+      and made them configurable in the appearance dialog (rj)
+    - Fixed escape-key shortcut for closing a few more dialogs/editors:
+      master track list/graphical, instrument editor (rj)
+    - Advanced router stylesheet support: New property 'RouteTreeWidget::categoryColor'. (Tim)
+      Also specific instance IDs Router_input_tree and Router_output_tree, if desired.
+21.11.2019
+    - Add command line option -C "Do not re-create plugin cache." (Tim)
+      Avoids (looong) repeated re-creations in some cases. Helps devs avoid after rebuilds. 
+19.11.2019
+    - Soundfont *.sf3 files: Small tweak allows our MESS fluidsynth to load them. (Tim)
+18.11.2019
+    - Add dedicated new 'mute parts' svg icon, for 17.11 (Tim)
+    - Bug 681: Fix multichannel track feeding aux track, no audio. In AudioTrack::copyData().
+    - Fixed metronome selection of wave files, the selection in the ui 
+      didn't actually do anything. (rj)
+17.11.2019
+	  - Introduce new scalable icons and cursors for edit tools (kybos)
+	    Improved cursor interaction in piano roll/drum editor (event canvas vs. control canvas),
+	    cursor shape shows when cursor has no function in given area
+	    Consistent cursor shape display in all editors affected (midi, part, score, master, wave)
+	    Correct cursor size on HiDPI screens (fixes issue #637)
+    - LV2: Fix sequencing/syncing plugins (Helm, LV2 metronome, NoiseMak3r...) (Tim)
+      Fixed TimePosition usage. Add quirks class for different plugin behaviour observed.
+    - Generic plugin UI: Added 'Quirks' buttons to toolbar:
+       "fixed speed" (fixes NoiseMak3r modulator stuck in small loop in stop mode for ex.),
+       "transport affects latency" (self-correcting LV2 Example Metronome for ex.), and
+       "override reported latency" (for plugins with broken or inaccurate latency reporting).
+12.11.2019
+      *** MusE 3.1.0pre3 ***
+11.11.2019
+      - Added tab in Aboutbox with some runtime of MusE, feel free to add more (rj)
+      - Disabled rate and size for audio device when Jack is selected as we currently
+        cannot change this from within MusE (rj)
+09.11.2019
+      - Reorganize instrument popup menu. (Tim)
+08.11.2019
+      - Fixed missing font scaling in drum editor at lower zoom level (kybos)
+      - LV2: Fixed program_changed callback lv2prg_Changed(), seemed completely wrong. (Tim)
+07.11.2019
+      - Add: Tooltip for current note/instrument in the midi editors (kybos)
 06.11.2019
       - Adjusted raster drawing in view.cpp so it would draw lines that didn't (rj)
         draw correctly on my rig. We'll see if anyone objects
       * New - Instrument can now be changed on a Synth Track: (Tim)
         For example you can now set 'GM2' or 'My cool instrument' on ANY synth track.
         Not as useless/dangerous as it sounds. Tested OK saving/loading/changing instruments.
+      - Add: Range selection (shift-click) for tracks (kybos)
 05.11.2019
       - Oops. Restore auto-create user instruments folder, likely swept away by 03.09 (Tim)
 04.11.2019
@@ -14,6 +153,9 @@
       - Some cleanups, especially the addition of using of an enum for CPOS,LPOS,RPOS
 03.11.2019
       - Fix issue 667: Hang on automatic restart. Reset jackStarted upon restart. (Tim)
+      - Fix issue 638: Font too small in popups started from mixer strip (kybos)
+      - Add: Double click on track ID selects all tracks of the same type (kybos)
+      - Fix: Change piano keys in piano roll to rectangular shapes to avoid pixelation when scaled (kybos)
 02.11.2019
       - Mixers and strips: Mods and reverts to 20.10. (Tim)
         Removed new track UUID. Found a way to work with track index and a local LUID instead.
@@ -195,7 +337,6 @@
          and other problems as displayed by KDevelop Problems Reporter.
       - Fixed Midi Input Transformator and Midi Transformator problems.
         Problems creating/deleting presets. Tested all functions OK.
->>>>>>> master
 25.03.2019
       - Fix issue 645 "Naming a track with acentuated letter". (Tim)
         Oops, regression from 07.01.2019: utf8 chars were corrupted.
@@ -4825,9 +4966,9 @@
       * Feature: Muse now has an instrument editor, complete with a midi controller editor! (T356)
         - Click on the menu "Midi->Edit Instrument".
         - You will see a sysex editor there too, but it is non-functional. (Use the midi event editor instead).
-        - >>> Tooltips and "What's This?" are provided with IMPORTANT information. <<<
-          >>> If you want to understand how to use instruments, patches, and controllers in your song, <<< 
-          >>>    READ THEM!    <<<
+        - Tooltips and "What's This?" are provided with IMPORTANT information.
+          If you want to understand how to use instruments, patches, and controllers in your song,
+             READ THEM!    
       * Added: Environment variable MUSEINSTRUMENTS, so a (writable) instrument directory can be chosen
          instead of default /usr/share/muse/instruments etc. (T356)
         - Also added display of environment variables recognized by muse to command line help (muse -h).

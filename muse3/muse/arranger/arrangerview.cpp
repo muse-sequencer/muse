@@ -121,19 +121,19 @@ ArrangerView::ArrangerView(QWidget* parent)
   editDeleteAction = new QAction(QIcon(*deleteIcon), tr("D&elete"), this);
   editCutAction = new QAction(QIcon(*editcutIconSet), tr("C&ut"), this);
   editCopyAction = new QAction(QIcon(*editcopyIconSet), tr("&Copy"), this);
-  editCopyRangeAction = new QAction(QIcon(*editcopyIconSet), tr("Copy in range"), this);
+  editCopyRangeAction = new QAction(QIcon(*editcopyIconSet), tr("Copy in Range"), this);
   editPasteAction = new QAction(QIcon(*editpasteIconSet), tr("&Paste"), this);
-  editPasteCloneAction = new QAction(QIcon(*editpasteCloneIconSet), tr("Paste c&lone"), this);
-  editPasteToTrackAction = new QAction(QIcon(*editpaste2TrackIconSet), tr("Paste to selected &track"), this);
-  editPasteCloneToTrackAction = new QAction(QIcon(*editpasteClone2TrackIconSet), tr("Paste clone to selected trac&k"), this);
-  editPasteDialogAction = new QAction(QIcon(*editpasteIconSet), tr("Paste (show dialo&g)"), this);
+  editPasteCloneAction = new QAction(QIcon(*editpasteCloneIconSet), tr("Paste C&lone"), this);
+  editPasteToTrackAction = new QAction(QIcon(*editpaste2TrackIconSet), tr("Paste to Selected &Track"), this);
+  editPasteCloneToTrackAction = new QAction(QIcon(*editpasteClone2TrackIconSet), tr("Paste Clone to Selected Trac&k"), this);
+  editPasteDialogAction = new QAction(QIcon(*editpasteIconSet), tr("Paste (Show Dialo&g)..."), this);
   editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert Empty Measure"), this);
   editDeleteSelectedAction = new QAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"), this);
   editDuplicateSelTrackAction = new QAction(QIcon(*edit_track_addIcon), tr("Duplicate Selected Tracks"), this);
 
-  editShrinkPartsAction = new QAction(tr("Shrink selected parts"), this);
-  editExpandPartsAction = new QAction(tr("Expand selected parts"), this);
-  editCleanPartsAction = new QAction(tr("Purge hidden events from selected parts"), this);
+  editShrinkPartsAction = new QAction(tr("Shrink Selected Parts"), this);
+  editExpandPartsAction = new QAction(tr("Expand Selected Parts"), this);
+  editCleanPartsAction = new QAction(tr("Purge Hidden Events from Selected Parts"), this);
 
 
   addTrack = new QMenu(tr("Add Track"), this);
@@ -159,22 +159,22 @@ ArrangerView::ArrangerView(QWidget* parent)
   scoreSubmenu = new QMenu(tr("Score"), this);
   scoreSubmenu->setIcon(QIcon(*scoreIconSet));
 
-  scoreAllInOneSubsubmenu = new QMenu(tr("all tracks in one staff"), this);
-  scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("one staff per track"), this);
+  scoreAllInOneSubsubmenu = new QMenu(tr("All Tracks in One Staff"), this);
+  scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("One Staff per Track"), this);
 
-  startScoreEditAction = new QAction(*scoreIconSet, tr("New score window"), this);
+  startScoreEditAction = new QAction(*scoreIconSet, tr("New Score Window..."), this);
   scoreSubmenu->addAction(startScoreEditAction);
   
   scoreSubmenu->addMenu(scoreAllInOneSubsubmenu);
   scoreSubmenu->addMenu(scoreOneStaffPerTrackSubsubmenu);
   updateScoreMenus();
 
-  startPianoEditAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
-  startDrumEditAction = new QAction(QIcon(*edit_drummsIcon), tr("Drums"), this);
-  startListEditAction = new QAction(QIcon(*edit_listIcon), tr("List"), this);
-  startWaveEditAction = new QAction(QIcon(*edit_waveIcon), tr("Wave"), this);
+  startPianoEditAction = new QAction(*pianoIconSet, tr("Pianoroll..."), this);
+  startDrumEditAction = new QAction(QIcon(*edit_drummsIcon), tr("Drums..."), this);
+  startListEditAction = new QAction(QIcon(*edit_listIcon), tr("List..."), this);
+  startWaveEditAction = new QAction(QIcon(*edit_waveIcon), tr("Wave..."), this);
 
-  midiTransformerAction = new QAction(QIcon(*midi_transformIcon), tr("Midi &Transform"), this);
+  midiTransformerAction = new QAction(QIcon(*midi_transformIcon), tr("Midi &Transform..."), this);
 
 
   //-------- Structure Actions
@@ -182,9 +182,9 @@ ArrangerView::ArrangerView(QWidget* parent)
   strGlobalInsertAction = new QAction(tr("Global Insert"), this);
   strGlobalSplitAction = new QAction(tr("Global Split"), this);
 
-  strGlobalCutSelAction = new QAction(tr("Global Cut - selected tracks"), this);
-  strGlobalInsertSelAction = new QAction(tr("Global Insert - selected tracks"), this);
-  strGlobalSplitSelAction = new QAction(tr("Global Split - selected tracks"), this);
+  strGlobalCutSelAction = new QAction(tr("Global Cut - Selected Tracks"), this);
+  strGlobalInsertSelAction = new QAction(tr("Global Insert - Selected Tracks"), this);
+  strGlobalSplitSelAction = new QAction(tr("Global Split - Selected Tracks"), this);
 
 
 
@@ -223,7 +223,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuEdit->addAction(startListEditAction);
   menuEdit->addAction(startWaveEditAction);
 
-  QMenu* functions_menu = menuBar()->addMenu(tr("Functions"));
+  QMenu* functions_menu = menuBar()->addMenu(tr("Fu&nctions"));
   functions_menu->addAction(midiTransformerAction);
   functions_menu->addSeparator();
   QMenu* menuStructure = functions_menu->addMenu(tr("&Structure"));
@@ -236,8 +236,8 @@ ArrangerView::ArrangerView(QWidget* parent)
     menuStructure->addAction(strGlobalSplitSelAction);
   functions_menu->addSeparator();
   QAction* func_quantize_action =     functions_menu->addAction(tr("&Quantize Notes"));
-  QAction* func_notelen_action =      functions_menu->addAction(tr("Change note &length"));
-  QAction* func_velocity_action =     functions_menu->addAction(tr("Change note &velocity"));
+  QAction* func_notelen_action =      functions_menu->addAction(tr("Change Note &Length"));
+  QAction* func_velocity_action =     functions_menu->addAction(tr("Change Note &Velocity"));
   QAction* func_cresc_action =        functions_menu->addAction(tr("Crescendo/Decrescendo"));
   QAction* func_transpose_action =    functions_menu->addAction(tr("Transpose"));
   QAction* func_erase_action =        functions_menu->addAction(tr("Erase Events (Not Parts)"));
@@ -261,8 +261,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   functions_menu->addAction(editCleanPartsAction);
   
   
-  QMenu* menuSettings = menuBar()->addMenu(tr("Window &Config"));
-  menuSettings->addAction(tr("Configure &custom columns"), this, SLOT(configCustomColumns()));
+  QMenu* menuSettings = menuBar()->addMenu(tr("&Display"));
+  menuSettings->addAction(tr("Configure &Custom Columns..."), this, SLOT(configCustomColumns()));
   menuSettings->addSeparator();
   menuSettings->addAction(subwinAction);
   menuSettings->addAction(shareAction);
@@ -774,12 +774,12 @@ void ArrangerView::updateScoreMenus()
   scoreAllInOneSubsubmenu->clear();
 
   
-  action=new QAction(tr("New"), this);
+  action=new QAction(tr("New..."), this);
   connect(action, &QAction::triggered, []() { MusEGlobal::muse->openInScoreEdit_oneStaffPerTrack(nullptr); } );
   scoreOneStaffPerTrackSubsubmenu->addAction(action);
   
   
-  action=new QAction(tr("New"), this); //the above action may NOT be reused!
+  action=new QAction(tr("New..."), this); //the above action may NOT be reused!
   connect(action, &QAction::triggered, []() { MusEGlobal::muse->openInScoreEdit_allInOne(nullptr); } );
   scoreAllInOneSubsubmenu->addAction(action);
 
@@ -928,7 +928,7 @@ void ArrangerView::configCustomColumns()
   dialog->exec();
   delete dialog;
   
-  QMessageBox::information(this, tr("Changed Settings"), tr("Unfortunately, the changed arranger column settings\ncannot be applied while MusE is running.\nTo apply the changes, please restart MusE. Sorry.\n(we'll try to fix that)"));
+  QMessageBox::information(this, tr("Changed Settings"), tr("The changed arranger column settings\ncannot be applied while MusE is running.\nTo apply the changes, please restart MusE."));
 }
 
 } // namespace MusEGui

@@ -101,9 +101,9 @@ PluginDialog::PluginDialog(QWidget* parent)
 
       ui.tabBar->setCurrentIndex(selectedGroup);
       ui.tabBar->setContextMenuPolicy(Qt::ActionsContextMenu);
-      newGroupAction= new QAction(tr("&create new group"),ui.tabBar);
-      delGroupAction= new QAction(tr("&delete currently selected group"),ui.tabBar);
-      renGroupAction= new QAction(tr("re&name currently selected group"),ui.tabBar);
+      newGroupAction= new QAction(tr("&Create new group"),ui.tabBar);
+      delGroupAction= new QAction(tr("&Delete currently selected group"),ui.tabBar);
+      renGroupAction= new QAction(tr("Re&name currently selected group"),ui.tabBar);
       ui.tabBar->addAction(newGroupAction);
       ui.tabBar->addAction(delGroupAction);
       ui.tabBar->addAction(renGroupAction);
@@ -243,8 +243,8 @@ void PluginDialog::enableOkB()
 void PluginDialog::newGroup()
 {
   MusEGlobal::plugin_groups.shift_right(selectedGroup+1, ui.tabBar->count());
-  ui.tabBar->insertTab(selectedGroup+1, tr("new group"));
-  MusEGlobal::plugin_group_names.insert(selectedGroup, tr("new group"));
+  ui.tabBar->insertTab(selectedGroup+1, tr("New group"));
+  MusEGlobal::plugin_group_names.insert(selectedGroup, tr("New group"));
 }
 
 void PluginDialog::delGroup()

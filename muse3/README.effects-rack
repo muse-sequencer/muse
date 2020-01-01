@@ -1,13 +1,14 @@
-Sept 1, 2011 v0.0.3 by Tim.
+Dec 14, 2019 v0.0.4 by Tim.
 
 Understanding the Effects Rack
 ------------------------------
 
 All audio track types (Input, Output, Group, Wave, Synth, and Aux) have
  an effects rack into which audio plugins can be inserted in a chain. 
-Currently each rack can accommodate up to four plugins.
+Currently each rack can accommodate up to eight plugins.
 
-MusE currently supports LADSPA plugins and DSSI effects plugins.
+MusE currently supports LADSPA plugins and DSSI effects plugins,
+ and LV2 and VST effects plugins.
 
 One must carefully consider how many audio inputs and outputs a plugin has, 
  and how may channels the particular audio track has (1 mono or 2 stereo), 

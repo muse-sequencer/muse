@@ -209,24 +209,24 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
       QStringList columnnames;
       columnnames << tr("Port")
 		  << tr("Device Name")
-		  << tr("s")
-		  << tr("c")
-		  << tr("k")
-		  << tr("r")
-		  << tr("m")
-		  << tr("t")
-		  << tr("type")
-		  << tr("rid") // Receive
-		  << tr("rc") // Receive
-		  << tr("rr") // Receive
-		  << tr("rm") // Receive
-		  << tr("rt") // Receive
-		  << tr("rw") // Receive
-		  << tr("tid") // Transmit
-		  << tr("tc") // Transmit
-		  << tr("tr") // Transmit
-		  << tr("tm") // Transmit
-		  << tr("tt"); // Transmit
+          << "s"
+          << "c"
+          << "k"
+          << "r"
+          << "m"
+          << "t"
+          << tr("Type")
+          << "rid" // Receive
+          << "rc" // Receive
+          << "rr" // Receive
+          << "rm" // Receive
+          << "rt" // Receive
+          << "rw" // Receive
+          << "tid" // Transmit
+          << "tc" // Transmit
+          << "tr" // Transmit
+          << "tm" // Transmit
+          << "tt"; // Transmit
 	
       devicesListView->setColumnCount(columnnames.size());
       devicesListView->setHeaderLabels(columnnames);
@@ -258,14 +258,11 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
       //connect(syncMode, SIGNAL(clicked(int)), SLOT(syncChanged(int)));
       connect(extSyncCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
       connect(mtcSyncType, SIGNAL(activated(int)), SLOT(syncChanged()));
-      connect(useJackTransportCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
-      connect(jackTransportMasterCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
       connect(syncRecFilterPreset, SIGNAL(currentIndexChanged(int)), SLOT(syncChanged()));
       connect(syncRecTempoValQuant, SIGNAL(valueChanged(double)), SLOT(syncChanged()));
       connect(syncDelaySpinBox, SIGNAL(valueChanged(int)), SLOT(syncChanged()));
 
       connect(extSyncCheckbox, SIGNAL(toggled(bool)), SLOT(extSyncClicked(bool)));
-      connect(useJackTransportCheckbox, SIGNAL(toggled(bool)), SLOT(useJackTransportClicked(bool)));
   
       // Done in show().
       //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
@@ -299,17 +296,10 @@ void MidiSyncConfig::songChanged(MusECore::SongChangedStruct_t flags)
       //  tmpMidiSyncPorts[i] = midiSyncPorts[i];
       
       extSyncCheckbox->blockSignals(true);
-      useJackTransportCheckbox->blockSignals(true);
-      jackTransportMasterCheckbox->blockSignals(true);
       syncDelaySpinBox->blockSignals(true);
       extSyncCheckbox->setChecked(MusEGlobal::extSyncFlag);
-      useJackTransportCheckbox->setChecked(MusEGlobal::useJackTransport);
-      jackTransportMasterCheckbox->setChecked(MusEGlobal::jackTransportMaster);
-      //jackTransportMasterCheckbox->setEnabled(MusEGlobal::useJackTransport);
       syncDelaySpinBox->setValue(MusEGlobal::syncSendFirstClockDelay);
       syncDelaySpinBox->blockSignals(false);
-      jackTransportMasterCheckbox->blockSignals(false);
-      useJackTransportCheckbox->blockSignals(false);
       extSyncCheckbox->blockSignals(false);
 
       int fp_idx = syncRecFilterPreset->findData(MusEGlobal::syncRecFilterPreset);
@@ -528,26 +518,6 @@ void MidiSyncConfig::syncChanged()
       }
 
 //---------------------------------------------------------
-//   useJackTransportChanged
-//---------------------------------------------------------
-
-void MidiSyncConfig::useJackTransportChanged(bool v)
-      {
-      useJackTransportCheckbox->blockSignals(true);
-      useJackTransportCheckbox->setChecked(v);
-//      if(v)
-//        MusEGlobal::song->setMasterFlag(false);
-      useJackTransportCheckbox->blockSignals(false);
-      }
-
-void MidiSyncConfig::useJackTransportClicked(bool v)
-{
-  MusECore::PendingOperationList operations;
-  operations.add(MusECore::PendingOperationItem(&MusEGlobal::useJackTransport, v, MusECore::PendingOperationItem::SetUseJackTransport));
-  MusEGlobal::audio->msgExecutePendingOperations(operations, true);
-}
-
-//---------------------------------------------------------
 //   extSyncChanged
 //---------------------------------------------------------
 
@@ -662,14 +632,6 @@ void MidiSyncConfig::apply()
       // Make sure the AL namespace variables mirror our variables.
       AL::mtcType = MusEGlobal::mtcType;
       MusEGlobal::extSyncFlag = extSyncCheckbox->isChecked();
-      MusEGlobal::useJackTransport = useJackTransportCheckbox->isChecked();
-//      if(MusEGlobal::useJackTransport)
-        MusEGlobal::jackTransportMaster = jackTransportMasterCheckbox->isChecked();
-//      else  
-//        MusEGlobal::jackTransportMaster = false;
-//      MusEGlobal::jackTransportMasterCheckbox->setEnabled(MusEGlobal::useJackTransport);
-      if(MusEGlobal::audioDevice)
-        MusEGlobal::audioDevice->setMaster(MusEGlobal::jackTransportMaster);      
 
       if(syncRecFilterPreset->currentIndex() != -1)
       {

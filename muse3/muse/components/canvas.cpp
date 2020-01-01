@@ -36,10 +36,7 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QRect>
-// screenGeometry() is obsolete. Qt >= 5.6 ? use primaryScreen().
-#if QT_VERSION >= 0x050600
 #include <QScreen>
-#endif
 
 #include <vector>
 
@@ -535,7 +532,7 @@ void Canvas::draw(QPainter& p, const QRect& mr, const QRegion& mrg)
             }
       
       if(drag == DRAG_ZOOM)
-        p.drawPixmap(mapFromGlobal(global_start), *zoomAtIcon);
+        p.drawPixmap(mapFromGlobal(global_start), zoomAtIconSVG->pixmap(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize)));
       
       //p.restore();
       //p.setWorldMatrixEnabled(true);
@@ -958,12 +955,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                             //  button while the mouse has been dragged outside causes it to bypass us !
                             setMouseGrab(true); // CAUTION
                             
-// screenGeometry() is obsolete. Qt >= 5.6 ? use primaryScreen().
-#if QT_VERSION >= 0x050600
                             QRect r = QApplication::primaryScreen()->geometry();
-#else
-                            QRect r = QApplication::desktop()->screenGeometry();
-#endif
                             ignore_mouse_move = true;      // Avoid recursion.
                             QCursor::setPos( QPoint(r.width()/2, r.height()/2) );
                             //ignore_mouse_move = false;
@@ -980,18 +972,15 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                             setMouseGrab(true); // CAUTION
                             
 // screenGeometry() is obsolete. Qt >= 5.6 ? use primaryScreen().
-#if QT_VERSION >= 0x050600
                             QRect r = QApplication::primaryScreen()->geometry();
-#else
-                            QRect r = QApplication::desktop()->screenGeometry();
-#endif
                             ignore_mouse_move = true;      // Avoid recursion.
                             QCursor::setPos( QPoint(r.width()/2, r.height()/2) );
                             //ignore_mouse_move = false;
                           }
                           // Update the small zoom drawing area
                           QPoint pt = mapFromGlobal(global_start);
-                          update(pt.x(), pt.y(), zoomIcon->width(), zoomIcon->height());
+                          QSize cursize = zoomIconSVG->actualSize(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize));
+                          update(pt.x(), pt.y(), cursize.width(), cursize.height());
                         }
                         break;
 
@@ -1246,12 +1235,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
         cancelMouseOps();
       }
       
-// screenGeometry() is obsolete. Qt >= 5.6 ? use primaryScreen().
-#if QT_VERSION >= 0x050600
       QRect  screen_rect    = QApplication::primaryScreen()->geometry();
-#else
-      QRect  screen_rect    = QApplication::desktop()->screenGeometry();
-#endif
       QPoint screen_center  = QPoint(screen_rect.width()/2, screen_rect.height()/2);
       QPoint glob_dist      = event->globalPos() - ev_global_pos;
       QPoint glob_zoom_dist = MusEGlobal::config.borderlessMouse ? (event->globalPos() - screen_center) : glob_dist;
@@ -1685,7 +1669,8 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                     ignore_mouse_move = true;      // Avoid recursion.
                     QCursor::setPos(global_start);
                     //ignore_mouse_move = false;
-                  }
+                  } else
+                      QWidget::setCursor(*handCursor);
                   break;
                   
             case DRAG_ZOOM:
@@ -1713,7 +1698,8 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
       {
         drag = DRAG_OFF;
         QPoint pt = mapFromGlobal(global_start);
-        update(pt.x(), pt.y(), zoomIcon->width(), zoomIcon->height());
+        QSize cursize = zoomIconSVG->actualSize(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize));
+        update(pt.x(), pt.y(), cursize.width(), cursize.height());
       }
       
       // Cancel all previous mouse ops. Right now there should be no moving list and drag should be off etc.
@@ -1877,86 +1863,90 @@ void Canvas::resizeToTheLeft(const QPoint &pos)
 }
 
 void Canvas::setCursor()
-      {
-      showCursor();
-      switch (drag) {
-            case DRAGX_MOVE:
-            case DRAGX_COPY:
-            case DRAGX_CLONE:
-                  QWidget::setCursor(QCursor(Qt::SizeHorCursor));
-                  break;
+{
+    showCursor();
+    switch (drag) {
+    case DRAGX_MOVE:
+    case DRAGX_COPY:
+    case DRAGX_CLONE:
+        QWidget::setCursor(QCursor(Qt::SizeHorCursor));
+        break;
 
-            case DRAGY_MOVE:
-            case DRAGY_COPY:
-            case DRAGY_CLONE:
-                  QWidget::setCursor(QCursor(Qt::SizeVerCursor));
-                  break;
+    case DRAGY_MOVE:
+    case DRAGY_COPY:
+    case DRAGY_CLONE:
+        QWidget::setCursor(QCursor(Qt::SizeVerCursor));
+        break;
 
-            case DRAG_MOVE:
-            case DRAG_COPY:
-            case DRAG_CLONE:
-	          // Bug in KDE cursor theme? On some distros this cursor is actually another version of a closed hand! From 'net:
-                  // "It might be a problem in the distribution as Qt uses the cursor that is provided by X.org/xcursor extension with name "size_all".
-	          //  We fixed this issue by setting the KDE cursor theme to "System theme" "
-                  QWidget::setCursor(QCursor(Qt::SizeAllCursor));  
-                  break;
+    case DRAG_MOVE:
+    case DRAG_COPY:
+    case DRAG_CLONE:
+        // Bug in KDE cursor theme? On some distros this cursor is actually another version of a closed hand! From 'net:
+        // "It might be a problem in the distribution as Qt uses the cursor that is provided by X.org/xcursor extension with name "size_all".
+        //  We fixed this issue by setting the KDE cursor theme to "System theme" "
+        QWidget::setCursor(QCursor(Qt::SizeAllCursor));
+        break;
 
-            case DRAG_RESIZE:
-                  QWidget::setCursor(QCursor(Qt::SizeHorCursor));
-                  break;
+    case DRAG_RESIZE:
+        QWidget::setCursor(QCursor(Qt::SizeHorCursor));
+        break;
 
-            case DRAG_PAN:
-                  if(MusEGlobal::config.borderlessMouse)
-                    showCursor(false); // CAUTION
-                  else
-                    QWidget::setCursor(QCursor(Qt::ClosedHandCursor));
-                  break;
-                  
-            case DRAG_ZOOM:
-                  if(MusEGlobal::config.borderlessMouse)
-                    showCursor(false); // CAUTION
-                  break;
-                  
-            case DRAG_DELETE:
-            case DRAG_COPY_START:
-            case DRAG_CLONE_START:
-            case DRAG_MOVE_START:
-            case DRAG_NEW:
-            case DRAG_LASSO_START:
-            case DRAG_LASSO:
-            case DRAG_OFF:
-                  switch(_tool) {
-                        case PencilTool:
-                              QWidget::setCursor(QCursor(*pencilIcon, 4, 15));
-                              break;
-                        case RubberTool:
-                              QWidget::setCursor(QCursor(*deleteIcon, 4, 15));
-                              break;
-                        case GlueTool:
-                              QWidget::setCursor(QCursor(*glueIcon, 4, 15));
-                              break;
-                        case CutTool:
-                              QWidget::setCursor(QCursor(*cutIcon, 4, 15));
-                              break;
-                        case MuteTool:
-                              QWidget::setCursor(QCursor(*editmuteIcon, 4, 15));
-                              break;
-                        case AutomationTool:
-                              QWidget::setCursor(QCursor(Qt::ArrowCursor));
-                              break;
-                        case PanTool:
-                              QWidget::setCursor(QCursor(Qt::OpenHandCursor));
-                              break;
-                        case ZoomTool:
-                              QWidget::setCursor(QCursor(*zoomAtIcon, 0, 0));
-                              break;
-                        default:
-                              QWidget::setCursor(QCursor(Qt::ArrowCursor));
-                              break;
-                        }
-                  break;
-            }
-      }
+    case DRAG_PAN:
+        if(MusEGlobal::config.borderlessMouse)
+            showCursor(false); // CAUTION
+        else
+            QWidget::setCursor(*closedHandCursor);
+        break;
+
+    case DRAG_ZOOM:
+        if(MusEGlobal::config.borderlessMouse)
+            showCursor(false); // CAUTION
+        break;
+
+    case DRAG_DELETE:
+    case DRAG_COPY_START:
+    case DRAG_CLONE_START:
+    case DRAG_MOVE_START:
+    case DRAG_NEW:
+    case DRAG_LASSO_START:
+    case DRAG_LASSO:
+    case DRAG_OFF:
+        switch(_tool) {
+        case PencilTool:
+            QWidget::setCursor(*pencilCursor);
+            break;
+        case RubberTool:
+            QWidget::setCursor(*deleteCursor);
+            break;
+        case GlueTool:
+            QWidget::setCursor(*glueCursor);
+            break;
+        case CutTool:
+            QWidget::setCursor(*cutterCursor);
+            break;
+        case MuteTool:
+            QWidget::setCursor(*mutePartsCursor);
+            break;
+        case AutomationTool:
+            QWidget::setCursor(*drawCursor);
+            break;
+        case DrawTool:
+            // set for prcanvas/dcanvas as they inherit this w/o redefinition
+            QWidget::setCursor(QCursor(Qt::ForbiddenCursor));
+            break;
+        case PanTool:
+            QWidget::setCursor(*handCursor);
+            break;
+        case ZoomTool:
+            QWidget::setCursor(*zoomCursor);
+            break;
+        default:
+            QWidget::setCursor(QCursor(Qt::ArrowCursor));
+            break;
+        }
+        break;
+    }
+}
 
 //---------------------------------------------------------
 //   keyPress
@@ -2174,3 +2164,4 @@ bool Canvas::cancelMouseOps()
 }
 
 } // namespace MusEGui
+

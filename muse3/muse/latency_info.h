@@ -110,7 +110,7 @@ struct TrackLatencyInfo
   
   //--------------------------------------------------------
   // Special for Metronome: We don't have Metronome routes.
-  // So we must store this information here just for Midi Tracks.
+  // So we must store this information here just for the metronome.
   // Temporary variables used during latency calculations:
   // Holds the output latency of this node, so that it can be compared with others.
   float _latencyOutMetronome;

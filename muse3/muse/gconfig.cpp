@@ -122,13 +122,13 @@ GlobalConfigValues config = {
       QColor(0, 0, 0),        // bigTimeBackgroundColor;
       QColor(200, 192, 171),  // waveEditBackgroundColor;
       {
-        QFont(QString("arial"), 10, QFont::Normal),
-        QFont(QString("arial"), 7,  QFont::Normal),    // Mixer strips and midi track info panel
-        QFont(QString("arial"), 10, QFont::Normal),
-        QFont(QString("arial"), 10, QFont::Bold),
-        QFont(QString("arial"), 8,  QFont::Normal),    // Small numbers: Timescale and markers, part name overlay
-        QFont(QString("arial"), 8,  QFont::Bold),      // Small bold numbers such as marker text
-        QFont(QString("arial"), 8,  QFont::Bold, true)  // Mixer strip labels. Looks and fits better with bold + italic than bold alone, 
+        QFont(QString("helvetica"), 10, QFont::Normal),
+        QFont(QString("helvetica"), 7,  QFont::Normal),    // Mixer strips and midi track info panel
+        QFont(QString("helvetica"), 10, QFont::Normal),
+        QFont(QString("helvetica"), 10, QFont::Bold),
+        QFont(QString("helvetica"), 8,  QFont::Normal),    // Small numbers: Timescale and markers, part name overlay
+        QFont(QString("helvetica"), 8,  QFont::Bold),      // Small bold numbers such as marker text
+        QFont(QString("helvetica"), 8,  QFont::Bold, true)  // Mixer strip labels. Looks and fits better with bold + italic than bold alone,
                                                         //  at the price of only few more pixels than Normal mode.
         },
       QColor(84, 97, 114),          // trackBg;
@@ -157,6 +157,8 @@ GlobalConfigValues config = {
       QColor(220, 211, 202),     // synthTrackBg;
       
       QColor(98, 124, 168),      // part canvas bg
+      QColor(71, 71, 71),        // partCanvasCoarseRaster;
+      QColor(130, 136, 168),     // partCanvasFineRaster;
       QColor(255, 170, 0),       // ctrlGraphFg;    Medium orange
       QColor(0, 0, 0),           // mixerBg;
 
@@ -166,7 +168,8 @@ GlobalConfigValues config = {
       QColor(255, 255, 255),        // midiControllerViewBg
       QColor(255, 255, 255),        // drumListBg
       QColor(255, 255, 255),        // rulerCurrent
-      Qt::gray,                     // midiCanvasBeatColor
+      QColor(210, 210, 210),        // midiCanvasFineColor
+      QColor(130, 130, 130),        // midiCanvasBeatColor
       Qt::black,                    // midiCanvasBarColor
       Qt::lightGray,                // waveNonselectedPart
       Qt::darkGray,                 // wavePeakColor
@@ -197,13 +200,14 @@ GlobalConfigValues config = {
 
       MusEGlobal::WaveOutLine,      // waveDrawing
 
-      true,                         // useThemeIconsIfPossible Whether to try to see if various icons are available from the theme.
-      
       false,                        // fixFrozenMDISubWindows Turn on a fix for frozen MDIs in Breeze/Oxygen themes.
       
       // maxAliasedPointSize At what point size to switch from aliased text to non-aliased text. 
       // Zero means always use anti-aliasing. For certain widgets that use it. May be more later.
       8, 
+
+      18,                           // iconSize
+      18,                           // cursorSize (for custom cursors)
       
       false,                        // enableAlsaMidiDriver Whether to enable the ALSA midi driver
       384,                          // division;
@@ -230,7 +234,8 @@ GlobalConfigValues config = {
       true,                         // optimize midi export file note offs
       true,                         // expRunningStatus; Save space by using running status
       true,                         // Split imported tracks into multiple parts.
-      true,                         // importMidiNewStyleDrum
+// Obsolete. There is only 'New' drum tracks now.
+//       true,                         // importMidiNewStyleDrum
       true,                         // importDevNameMetas Import Prefer Device Name metas over port number metas if both exist.
       true,                         // importInstrNameMetas Import Prefer Instrument Name metas over Mode sysexes if both exist.
       MusEGlobal::PORT_NUM_META | MusEGlobal::DEVICE_NAME_META, // exportPortsDevices. Or'd ExportPortsDevices_t flags. Export port number metas and/or device name metas.
@@ -292,6 +297,8 @@ GlobalConfigValues config = {
       44100,                        // Device audio preferred sample rate
       512,                          // Device audio buffer size
       0,                            // Device RtAudio selected backend
+      true,                         // useJackTransport
+      true,                         // timebaseMaster
 
       QString("./"),                // projectBaseFolder
       true,                         // projectStoreInFolder
@@ -303,7 +310,8 @@ GlobalConfigValues config = {
       MusECore::DONT_REC_MUTED_OR_HIDDEN,
       true,                         // addHiddenTracks
       true,                         // unhideTracks
-      MusEGlobal::PREFER_NEW,       // drumTrackPreference
+// Obsolete. There is only 'New' drum tracks now.
+//       MusEGlobal::PREFER_NEW,       // drumTrackPreference
       true,                         // smartFocus
       20,                           // trackHeight
       true,                         // borderlessMouse
@@ -312,6 +320,7 @@ GlobalConfigValues config = {
       true,                         // liveWaveUpdate
       true,                         // warnOnFileVersions Warn if file version different than current
       MusEGlobal::CONF_LV2_UI_USE_FIRST, //lv2UiBehavior
+      4,                            // audioEffectsRackVisibleItems
       true,                         // preferKnobsVsSliders Whether to prefer the use of knobs over sliders, esp in mixer.
       true,                         // showControlValues Whether to show the value along with label in small controls, esp in mixer.
       true,                         // monitorOnRecord  Whether to automatically monitor on record arm.
@@ -320,10 +329,6 @@ GlobalConfigValues config = {
       true,                         // midiCtrlGraphMergeErase Whether to erase underlying erase target items when dragging/dropping source items.
       false,                        // midiCtrlGraphMergeEraseInclusive Whether to erase target items in-between source item groups.
       true,                         // midiCtrlGraphMergeEraseWysiwyg Whether to erase past the last item in a group to include its original source width.
-      QString("klick1.wav"),        // measSample
-      QString("klick2.wav"),        // beatSample
-      QString("klick3.wav"),        // accent1Sample
-      QString("klick4.wav"),        // accent2Sample
       MusEGlobal::RoutePreferCanonicalName,  // preferredRouteNameOrAlias
       true,                         // routerExpandVertically
       2,                            // routerGroupingChannels
@@ -334,6 +339,8 @@ GlobalConfigValues config = {
       false,                        // commonProjectLatency
       "",                           // mixdownPath
       true,                         // showNoteNamesInPianoRoll
+      false,                        // noPluginScaling
+      false,                        // openMDIWinMaximized
       false                         // selectionsUndoable Whether selecting parts or events is undoable.
     };
 

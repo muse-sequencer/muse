@@ -33,14 +33,9 @@
 #include "muse_math.h"
 #include "mmath.h"
 
-#include <QPainter>
-#include <QPaintEvent>
 #include <QPalette>
-#include <QColor>
 #include <QLinearGradient>
-#include <QResizeEvent>
 #include <QLocale>
-#include <QEvent>
 #include <QFlags>
 #include <QToolTip>
 #include <QString>
@@ -96,7 +91,7 @@ CompactKnob::CompactKnob(QWidget* parent, const char* name,
       setEnableValueToolTips(true);
       setShowValueToolTipsOnHover(true);
 
-      _bkgPainter = new ItemBackgroundPainter();
+      _bkgPainter = new ItemBackgroundPainter(this);
 
       _hovered = false;
       _labelHovered = false;
@@ -148,12 +143,6 @@ CompactKnob::CompactKnob(QWidget* parent, const char* name,
 
       setUpdateTime(50);
       }
-
-CompactKnob::~CompactKnob()
-{
-  if(_bkgPainter)
-    delete _bkgPainter;
-}
 
 // Static.
 QSize CompactKnob::getMinimumSizeHint(const QFontMetrics& fm,
@@ -784,7 +773,8 @@ void CompactKnob::drawBackground(QPainter* painter)
                                   palette(),
                                   d_xMargin,
                                   d_yMargin,
-                                  hasOffMode() && ! isOff() ? _labelRect : QRect());
+                                  hasOffMode() && ! isOff() ? _labelRect : QRect(),
+                                  d_activeColor);
     break;
 
     case Top:
@@ -808,7 +798,8 @@ void CompactKnob::drawBackground(QPainter* painter)
                                   palette(),
                                   d_xMargin,
                                   d_yMargin,
-                                  hasOffMode() && ! isOff() ? _labelRect : QRect());
+                                  hasOffMode() && ! isOff() ? _labelRect : QRect(), 
+                                  d_activeColor);
     }
     break;
   }
@@ -1336,6 +1327,15 @@ void CompactKnob::setMarkerColor(const QColor& c)
 }
 
 //------------------------------------------------------------
+//  setActiveColor
+//------------------------------------------------------------
+void CompactKnob::setActiveColor(const QColor& c)
+{
+  d_activeColor = c;
+  update();
+}
+
+//------------------------------------------------------------
 //
 //.F  CompactKnob::setMargins
 //  Set distances between the widget's border and
@@ -1353,6 +1353,21 @@ void CompactKnob::setMargins(int hor, int vert)
     d_xMargin = MusECore::qwtMax(0, hor);
     d_yMargin = MusECore::qwtMax(0, vert);
     resize(this->size());
+}
+
+void CompactKnob::setMargins(QSize s)
+{
+  setMargins(s.width(), s.height());
+}
+
+void CompactKnob::setXMargin(int x)
+{
+  setMargins(x, d_yMargin);
+}
+
+void CompactKnob::setYMargin(int y)
+{
+  setMargins(d_xMargin, y);
 }
 
 //------------------------------------------------------------

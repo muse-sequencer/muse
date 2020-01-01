@@ -68,7 +68,9 @@ class DummyAudioDevice : public AudioDevice {
    public:
       // Time in microseconds at which the driver was created.
       uint64_t _start_timeUS;
-      
+
+      virtual const char* driverName() const { return "DummyAudioDevice"; }
+
       // For callback usage only.
       void setCriticalVariables(unsigned segmentSize)
       {
@@ -179,7 +181,7 @@ class DummyAudioDevice : public AudioDevice {
       virtual int realtimePriority() const { return _realTimePriority; }
 
       virtual void setFreewheel(bool) {}
-      virtual int setMaster(bool) { return 1; }
+      virtual int setMaster(bool, bool /*unconditional*/ = false) { return 1; }
       };
 
 DummyAudioDevice* dummyAudio = 0;

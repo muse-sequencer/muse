@@ -470,10 +470,10 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       
       insertItems = new QActionGroup(this);
       insertItems->setExclusive(false);
-      insertNote = new QAction(QIcon(*note1Icon), tr("insert Note"), insertItems);
-      insertSysEx = new QAction(QIcon(*sysexIcon), tr("insert SysEx"), insertItems);
-      insertCtrl = new QAction(QIcon(*ctrlIcon), tr("insert Ctrl"), insertItems);
-      insertMeta = new QAction(QIcon(*metaIcon), tr("insert Meta"), insertItems);
+      insertNote = new QAction(*noteSVGIcon, tr("Insert Note"), insertItems);
+      insertSysEx = new QAction(*sysexSVGIcon, tr("Insert SysEx"), insertItems);
+      insertCtrl = new QAction(*ctrlSVGIcon, tr("Insert Ctrl"), insertItems);
+      insertMeta = new QAction(*metaSVGIcon, tr("Insert Meta"), insertItems);
 
       connect(insertNote,    SIGNAL(triggered()), SLOT(editInsertNote()));
       connect(insertSysEx,   SIGNAL(triggered()), SLOT(editInsertSysEx()));
@@ -513,7 +513,7 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       connect(incAction,    &QAction::triggered, [this]() { cmd(CMD_INC); } );
       connect(decAction,    &QAction::triggered, [this]() { cmd(CMD_DEC); } );
 
-      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);

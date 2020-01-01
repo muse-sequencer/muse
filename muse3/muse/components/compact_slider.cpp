@@ -1461,6 +1461,21 @@ void CompactSlider::setMargins(int hor, int vert)
     resize(this->size());
 }
 
+void CompactSlider::setMargins(QSize s)
+{
+  setMargins(s.width(), s.height());
+}
+
+void CompactSlider::setXMargin(int x)
+{
+  setMargins(x, d_yMargin);
+}
+
+void CompactSlider::setYMargin(int y)
+{
+  setMargins(d_xMargin, y);
+}
+
 //------------------------------------------------------------
 //
 //.F  CompactSlider::sizeHint

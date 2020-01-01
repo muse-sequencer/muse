@@ -13,13 +13,22 @@ QToolBar QToolButton {
 
 }
 
+/* What's this doing here? QAction is not a QWidget
 QAction {
       background-color: rgb(150,150,150);
      spacing: 3px;
      padding: 1px 4px;
      background: transparent;
      border-radius: 4px;
- }
+ } */
+
+/*QMenu::item {
+     background-color: rgb(150,150,150);
+     spacing: 3px;
+     padding: 1px 4px;
+     background: transparent;
+     border-radius: 4px;
+ }*/
 
 QMenu::item:selected {
      background-color: rgb(40,90,40);
@@ -51,3 +60,57 @@ QToolBar QToolButton:checked {
       padding: 2px;
 
 }
+
+QToolBar QToolButton[popupMode="1"] {
+      padding-right: 12px;
+}
+
+QTreeView, QListView {
+	alternate-background-color: rgb(127,127,137);
+}
+
+/* The category item background colour in the advanced router trees: */
+MusEGui--RouteTreeWidget {
+  qproperty-categoryColor: DarkCyan;
+}
+
+MusEGui--SnooperDialog {
+  qproperty-flashColor: DarkCyan;
+}
+
+
+/* These share the same config colour (orange)
+    but can be set separately here: */
+/*====================================================*/
+MusEGui--EffectRack {
+  qproperty-activeColor: Green;
+}
+MusEGui--CompactKnob {
+  qproperty-activeColor: Green;
+}
+MusEGui--ElidedLabel {
+  qproperty-activeColor: Green;
+}
+/*====================================================*/
+
+
+/* The LCD number readout colour in the midi patch control: */
+MusEGui--LCDPatchEdit {
+  qproperty-readoutColor: Yellow;
+}
+
+
+/* The title header background colour in popup and routing menus: */
+MusEGui--MenuTitleLabel {
+  background-color: DarkCyan;
+}
+
+/* Didn't work. The # selector never seems to work. */
+/*
+QMenu::item#menuTitleItem {
+     background-color: DarkCyan;
+}
+MusEGui--PopupMenu::item#menuTitleItem {
+     background-color: DarkCyan;
+}
+*/

@@ -44,6 +44,7 @@ class ElidedLabel : public QFrame
   //Q_PROPERTY(QString text READ text WRITE setText)
 
   //Q_PROPERTY(Qt::TextElideMode elideMode READ elideMode WRITE setElideMode)
+  Q_PROPERTY( QColor activeColor READ activeColor WRITE setActiveColor )
 
   private:
     int _id;
@@ -54,6 +55,7 @@ class ElidedLabel : public QFrame
     int _fontPointMin;
     bool _fontIgnoreHeight;
     bool _fontIgnoreWidth;
+    QColor _activeColor;
     QString _text;
     QFont _curFont;
     // Whether the mouse is over the entire control.
@@ -113,6 +115,9 @@ class ElidedLabel : public QFrame
     QString text() const { return _text; }
     void setText(const QString& txt);
     
+    QColor activeColor() const { return _activeColor; }
+    void setActiveColor(const QColor& c) { _activeColor = c; update(); }
+
     int fontPointMin() const { return _fontPointMin; }
     void setFontPointMin(int point);
 

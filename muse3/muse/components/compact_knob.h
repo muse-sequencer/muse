@@ -29,18 +29,18 @@
 #include "sliderbase.h"
 #include "sclif.h"
 
-class QPoint;
-class QRect;
-class QSize;
-class QColor;
-class QFont;
-class QFontMetrics;
-class QResizeEvent;
-class QPainter;
-class QEvent;
-class QPaintEvent;
-class QMouseEvent;
-class QKeyEvent;
+#include <QPoint>
+#include <QRect>
+#include <QSize>
+#include <QColor>
+#include <QFont>
+#include <QFontMetrics>
+#include <QResizeEvent>
+#include <QPainter>
+#include <QEvent>
+#include <QPaintEvent>
+#include <QMouseEvent>
+#include <QKeyEvent>
 
 namespace MusEGui {
 
@@ -58,6 +58,27 @@ class CompactKnob : public SliderBase, public ScaleIf
    public:
       enum KnobLabelPos { None, Left, Right, Top, Bottom };
       enum Symbol { Line, Dot };
+
+      Q_PROPERTY( QSize margins READ margins WRITE setMargins )
+      Q_PROPERTY( int xMargin READ xMargin WRITE setXMargin )
+      Q_PROPERTY( int yMargin READ yMargin WRITE setYMargin )
+
+      Q_PROPERTY( int knobWidth READ knobWidth WRITE setKnobWidth )
+      Q_PROPERTY( double totalAngle READ totalAngle WRITE setTotalAngle )
+      Q_PROPERTY( int borderWidth READ borderWidth WRITE setBorderWidth )
+
+      Q_PROPERTY( QColor faceColor READ faceColor WRITE setFaceColor )
+      Q_PROPERTY( QColor altFaceColor READ altFaceColor WRITE setAltFaceColor )
+      Q_PROPERTY( QColor shinyColor READ shinyColor WRITE setShinyColor )
+      Q_PROPERTY( QColor markerColor READ markerColor WRITE setMarkerColor )
+      Q_PROPERTY( QColor activeColor READ activeColor WRITE setActiveColor )
+      
+      Q_PROPERTY( QString labelText READ labelText WRITE setLabelText )
+      Q_PROPERTY( QString valPrefix READ valPrefix WRITE setValPrefix )
+      Q_PROPERTY( QString valSuffix READ valSuffix WRITE setValSuffix )
+      Q_PROPERTY( QString specialValueText READ specialValueText WRITE setSpecialValueText )
+      Q_PROPERTY( QString offText READ offText WRITE setOffText )
+      Q_PROPERTY( int valueDecimals READ valueDecimals WRITE setValueDecimals )
 
    private:
       KnobLabelPos d_labelPos;
@@ -121,6 +142,7 @@ class CompactKnob : public SliderBase, public ScaleIf
       QColor d_shinyColor;
       QColor d_curFaceColor;
       QColor d_markerColor;
+      QColor d_activeColor;
 
       void recalcAngle();
       void valueChange();
@@ -169,7 +191,6 @@ class CompactKnob : public SliderBase, public ScaleIf
           const QString& valSuffix = QString(),
           const QString& specialValueText = QString(),
           const QColor& faceColor = QColor());
-      ~CompactKnob();
 
       static QSize getMinimumSizeHint(const QFontMetrics& fm,
                                       //Qt::Orientation orient = Qt::Vertical,
@@ -195,19 +216,25 @@ class CompactKnob : public SliderBase, public ScaleIf
       int valueDecimals() const { return _valueDecimals; }
       void setValueDecimals(int d) { if(d < 0) return; _valueDecimals = d; update(); }
 
+      int knobWidth() const { return d_knobWidth; }
       void setKnobWidth(int w);
+      double totalAngle() const { return d_totalAngle; }
       void setTotalAngle (double angle);
+      int borderWidth() const { return d_borderWidth; }
       void setBorderWidth(int bw);
+
       void selectFaceColor(bool alt);
-      bool selectedFaceColor() { return _faceColSel; }
-      QColor faceColor() { return d_faceColor; }
+      bool selectedFaceColor() const { return _faceColSel; }
+      QColor faceColor() const { return d_faceColor; }
       void setFaceColor(const QColor& c);
-      QColor altFaceColor() { return d_altFaceColor; }
+      QColor altFaceColor() const { return d_altFaceColor; }
       void setAltFaceColor(const QColor& c);
-      QColor shinyColor() { return d_shinyColor; }
+      QColor shinyColor() const { return d_shinyColor; }
       void setShinyColor(const QColor& c);
-      QColor markerColor() { return d_markerColor; }
+      QColor markerColor() const { return d_markerColor; }
       void setMarkerColor(const QColor& c);
+      QColor activeColor() const { return d_activeColor; }
+      void setActiveColor(const QColor& c);
 
       QString toolTipValueText(bool inclLabel, bool inclVal) const;
 
@@ -228,7 +255,13 @@ class CompactKnob : public SliderBase, public ScaleIf
       // Note setOff and SliderBase::setValue are also available.
       void setValueState(double v, bool off = false, ConversionMode mode = ConvertDefault);
 
+      QSize margins() const { return QSize(d_xMargin, d_yMargin); }
+      int xMargin() const { return d_xMargin; }
+      int yMargin() const { return d_yMargin; }
+      void setMargins(QSize);
       void setMargins(int x, int y);
+      void setXMargin(int x);
+      void setYMargin(int y);
 
       virtual QSize sizeHint() const;
       };

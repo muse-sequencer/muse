@@ -34,6 +34,7 @@
 #include <QResizeEvent>
 #include <QList>
 #include <QPair>
+#include <QToolTip>
 
 #include <stdio.h>
 #include <limits.h>
@@ -805,9 +806,11 @@ void DrumCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
       //---------------------------------------------------
 
       drawTickRaster(p, mr, rg, editor->raster(), false, false, false,
-                         MusEGlobal::config.midiCanvasBarColor, 
-                         MusEGlobal::config.midiCanvasBeatColor);
-      }
+                     Qt::red, // dummy color, not used
+                     MusEGlobal::config.midiCanvasBeatColor,
+                     MusEGlobal::config.midiCanvasFineColor,
+                     MusEGlobal::config.midiCanvasBarColor);
+}
 
 //---------------------------------------------------------
 //   drawTopItem
@@ -1991,6 +1994,19 @@ void DrumCanvas::rebuildOurDrumMap()
                                                   // isn't the most elegant solution here. but it will
                                                   // never be an infinite recursion
   }
+}
+
+void DrumCanvas::mouseMove(QMouseEvent* event) {
+
+    EventCanvas::mouseMove(event);
+
+    if (_tool & (MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | MusEGui::CursorTool)) {
+        int pitch = drumEditor->get_instrument_map()[y2pitch(event->pos().y())].pitch;
+        if (track()->drummap()[pitch].name.isEmpty())
+            QToolTip::showText(event->globalPos(), MusECore::pitch2string(pitch));
+        else
+            QToolTip::showText(event->globalPos(), track()->drummap()[pitch].name);
+    }
 }
 
 } // namespace MusEGui

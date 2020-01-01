@@ -202,6 +202,8 @@ bool checkPluginCacheFiles(
   bool writePorts,
   // Force it to create every time.
   bool alwaysRecreate = false,
+  // Do not re-create.
+  bool dontRecreate = false,
   // Where to find the application's installed libraries.
   const QString& museGlobalLib = QString(),
   // The types of plugin cache files to write.

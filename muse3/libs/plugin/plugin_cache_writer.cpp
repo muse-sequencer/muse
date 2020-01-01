@@ -2065,13 +2065,19 @@ void scanLv2Ports(const LilvPlugin *plugin,
     else if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.ev_EventPort))
     {
       if(lilv_port_supports_event(plugin, lilvPort, lv2CacheNodes.lv2_TimePosition))
+      {
         port_info._flags |= PluginPortInfo::SupportsTimePosition;
+        info->_pluginFlags |= PluginScanInfoStruct::SupportsTimePosition;
+      }
       port_info._type |= PluginPortInfo::MidiPort;
     }
     else if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.atom_AtomPort))
     {
       if(lilv_port_supports_event(plugin, lilvPort, lv2CacheNodes.lv2_TimePosition))
+      {
         port_info._flags |= PluginPortInfo::SupportsTimePosition;
+        info->_pluginFlags |= PluginScanInfoStruct::SupportsTimePosition;
+      }
       port_info._type |= PluginPortInfo::MidiPort;
     }
     else if(!optional)
@@ -2296,6 +2302,8 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
           ++eop;
         else 
           ++eip;
+        if(lilv_port_supports_event(plugin, lilvPort, lv2CacheNodes.lv2_TimePosition))
+          info._pluginFlags |= PluginScanInfoStruct::SupportsTimePosition;
       }
       else if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.atom_AtomPort))
       {
@@ -2303,6 +2311,8 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
           ++eop;
         else 
           ++eip;
+        if(lilv_port_supports_event(plugin, lilvPort, lv2CacheNodes.lv2_TimePosition))
+          info._pluginFlags |= PluginScanInfoStruct::SupportsTimePosition;
       }
       else if(!optional)
       {
@@ -2885,21 +2895,15 @@ bool checkPluginCacheFiles(
   PluginScanList* list,
   bool writePorts,
   bool alwaysRecreate,
+  bool dontRecreate,
   const QString& museGlobalLib,
   PluginScanInfoStruct::PluginType_t types,
   bool debugStdErr
 )
 {
-  filepath_set fpset;
   filepath_set cache_fpset;
   bool res = true;
   bool cache_dirty = false;
-
-  //-----------------------------------------------------
-  // Gather the current plugin files.
-  //-----------------------------------------------------
-  
-  findPluginFiles(museGlobalLib, fpset, debugStdErr, types);
 
   //-----------------------------------------------------
   // Read whatever we've got in our current cache files.
@@ -2911,12 +2915,20 @@ bool checkPluginCacheFiles(
     std::fprintf(stderr, "checkPluginCacheFiles: readAllPluginCacheFiles() failed\n");
   }
 
-  //-------------------------------------------------------------------------
-  // Gather the unique (non-duplicate) plugin file paths found in our cache.
-  //-------------------------------------------------------------------------
-  
-  if(!cache_dirty)
+  // Check if cache is dirty. Don't bother if we already know it is dirty.
+  if(!dontRecreate && !cache_dirty)
   {
+    //-----------------------------------------------------
+    // Gather the current plugin files.
+    //-----------------------------------------------------
+
+    filepath_set fpset;
+    findPluginFiles(museGlobalLib, fpset, debugStdErr, types);
+
+    //-------------------------------------------------------------------------
+    // Gather the unique (non-duplicate) plugin file paths found in our cache.
+    //-------------------------------------------------------------------------
+
     for(iPluginScanList ips = list->begin(); ips != list->end(); ++ips)
     {
       PluginScanInfoRef inforef = *ips;
@@ -2955,7 +2967,7 @@ bool checkPluginCacheFiles(
   //  perhaps by accident, like mixing your vst and linux vst plugins.
   // For that we must rescan everything even if only one cache file is missing.
   // If ANY of the caches are dirty or we are forcing recreation, create them now.
-  if(alwaysRecreate || cache_dirty)
+  if(!dontRecreate && (alwaysRecreate || cache_dirty))
   {
     if(debugStdErr)
       std::fprintf(stderr, "Re-scanning and creating plugin cache files...\n");

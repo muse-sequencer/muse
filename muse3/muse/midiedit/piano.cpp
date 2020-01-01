@@ -289,7 +289,15 @@ static const char *mk8_xpm[] = {
     "........................................",
     "........................................",
 };
-      
+
+static const char *mke_xpm[] = {
+    "40 3 1 1",
+    "# c #000000",
+    "########################################",
+    "########################################",
+    "########################################",
+};
+
 /*
       0   1   2  3  4  5  6  7  8  9  10
       c-2 c-1 C0 C1 C2 C3 C4 C5 C6 C7 C8 - G8
@@ -349,6 +357,8 @@ Piano::Piano(QWidget* parent, int ymag, MidiEditor* editor)
       mk6 = new QPixmap(mk6_xpm);
       mk7 = new QPixmap(mk7_xpm);
       mk8 = new QPixmap(mk8_xpm);
+
+      mke = new QPixmap(mke_xpm);
       
       keyDown = -1;
       button = Qt::NoButton;
@@ -360,12 +370,20 @@ Piano::Piano(QWidget* parent, int ymag, MidiEditor* editor)
 
 void Piano::draw(QPainter& p, const QRect& mr, const QRegion&)
       {
+      const int octaveSize = 91;
+      const int pianoHeight = octaveSize * 10 + KH * 5 + 3;
+
+      QRect ur = mapDev(mr);
+      if (ur.height() > pianoHeight)
+          ur.setHeight(pianoHeight);
       // FIXME: For some reason need the expansion otherwise drawing
       //        artifacts (incomplete drawing). Can't figure out why.
-      const QRect ur = mapDev(mr).adjusted(0, -4, 0, 4);
-      
-      QPoint offset(0, KH*2);
-      p.drawTiledPixmap(ur, *octave, ur.topLeft()+offset);
+      ur.adjust(0, -4, 0, 4);
+
+      p.drawPixmap(0, -KH * 2, *octave);
+      for (int i = 0; i < 10; i++)
+          p.drawPixmap(0, (KH * 5) + (octaveSize * i), *octave);
+      p.drawPixmap(0, (KH * 5) + (octaveSize * 10), *mke);
 
       if (_curSelectedPitch != -1 && _curSelectedPitch != curPitch)
       {
@@ -421,11 +439,10 @@ void Piano::draw(QPainter& p, const QRect& mr, const QRegion&)
       p.setRenderHint(QPainter::Antialiasing);
       p.setPen(Qt::black);
       p.setFont(QFont("Arial", 7));
-      int octaveSize=91;
 
       for (int drawKey = 0; drawKey < 11; drawKey++) {
           int drawY = octaveSize * drawKey + 82 - KH*2;
-          p.drawText(23, drawY + 8, "C" + QString::number(8 - drawKey));
+          p.drawText(23, drawY + 7, "C" + QString::number(8 - drawKey));
       }
 
 
@@ -508,26 +525,30 @@ int Piano::pitch2y(int pitch) const
 //---------------------------------------------------------
 
 int Piano::y2pitch(int y) const
-      {
-      const int total = (10 * 7 + 5) * KH;       // 75 full tone steps
-      y = total - y;
-      int oct = (y / (7 * KH)) * 12;
-      char kt[] = {
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            1, 1, 1, 1, 1, 1, 1,
-            2, 2, 2, 2, 2, 2,
-            3, 3, 3, 3, 3, 3, 3,
-            4, 4, 4, 4, 4, 4, 4, 4, 4,
-            5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-            6, 6, 6, 6, 6, 6, 6,
-            7, 7, 7, 7, 7, 7,
-            8, 8, 8, 8, 8, 8, 8,
-            9, 9, 9, 9, 9, 9,
-            10, 10, 10, 10, 10, 10, 10,
-            11, 11, 11, 11, 11, 11, 11, 11, 11, 11
-            };
-      return kt[y % 91] + oct;
-      }
+{
+    if (y < KH)
+        return 127;
+    const int total = (10 * 7 + 5) * KH;       // 75 full tone steps
+    y = total - y;
+    if (y < 0)
+        return 0;
+    int oct = (y / (7 * KH)) * 12;
+    char kt[] = {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 1,
+        2, 2, 2, 2, 2, 2,
+        3, 3, 3, 3, 3, 3, 3,
+        4, 4, 4, 4, 4, 4, 4, 4, 4,
+        5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+        6, 6, 6, 6, 6, 6, 6,
+        7, 7, 7, 7, 7, 7,
+        8, 8, 8, 8, 8, 8, 8,
+        9, 9, 9, 9, 9, 9,
+        10, 10, 10, 10, 10, 10, 10,
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11
+    };
+    return kt[y % 91] + oct;
+}
 
 //---------------------------------------------------------
 //   leaveEvent
@@ -651,8 +672,14 @@ void Piano::setCurSelectedPitch(int pitch)
 //---------------------------------------------------------
 
 void Piano::wheelEvent(QWheelEvent* ev)
-      {
-            emit redirectWheelEvent(ev);
-      }
+{
+    if (ev->modifiers() & Qt::ControlModifier) {
+        QPoint delta = ev->angleDelta();
+        emit wheelStep(delta.y() > 0 ? true : false);
+        return;
+    }
+
+    emit redirectWheelEvent(ev);
+}
       
 } // namespace MusEGui

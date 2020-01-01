@@ -54,6 +54,22 @@ namespace MusEGui {
 int MasterEdit::_rasterInit = 0;
 
 //---------------------------------------------------------
+//   keyPressEvent
+//---------------------------------------------------------
+
+void MasterEdit::keyPressEvent(QKeyEvent* e)
+{
+    if (e->key() == Qt::Key_Escape) {
+          close();
+          return;
+          }
+    else {
+        e->ignore();
+        return;
+    }
+}
+
+//---------------------------------------------------------
 //   closeEvent
 //---------------------------------------------------------
 
@@ -91,7 +107,7 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       _raster = 0;      // measure
 
       //---------Pulldown Menu----------------------------
-      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
@@ -121,11 +137,11 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
 
       cursorPos = new MusEGui::PosLabel(0);
       cursorPos->setFixedHeight(22);
-      cursorPos->setToolTip(tr("time at cursor position"));
+      cursorPos->setToolTip(tr("Time at cursor position"));
       info->addWidget(cursorPos);
       tempo = new MusEGui::TempoLabel(0);
       tempo->setFixedHeight(22);
-      tempo->setToolTip(tr("tempo at cursor position"));
+      tempo->setToolTip(tr("Tempo at cursor position"));
       info->addWidget(tempo);
 
       const char* rastval[] = {

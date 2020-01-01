@@ -614,7 +614,7 @@ void TList::returnPressed()
                             editor->blockSignals(false); 
                             QMessageBox::critical(this,
                               tr("MusE: bad trackname"),
-                              tr("please choose a unique track name"),
+                              tr("Please choose a unique track name"),
                               QMessageBox::Ok,
                               Qt::NoButton,
                               Qt::NoButton);
@@ -1066,12 +1066,12 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
         if(!synth->synth())
           p->addAction(tr("SYNTH IS UNAVAILABLE!"));
 
-        QAction* gact = p->addAction(tr("show gui"));
+        QAction* gact = p->addAction(tr("Show gui"));
         gact->setCheckable(true);
         gact->setEnabled(synth->hasGui());
         gact->setChecked(synth->guiVisible());
   
-        QAction* nact = p->addAction(tr("show native gui"));
+        QAction* nact = p->addAction(tr("Show native gui"));
         nact->setCheckable(true);
         nact->setEnabled(synth->hasNativeGui());
         nact->setChecked(synth->nativeGuiVisible());
@@ -1131,12 +1131,12 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
           p->addAction(tr("SYNTH IS UNAVAILABLE!"));
       }
 
-      QAction* gact = p->addAction(tr("show gui"));
+      QAction* gact = p->addAction(tr("Show gui"));
       gact->setCheckable(true);
       gact->setEnabled(port->hasGui());
       gact->setChecked(port->guiVisible());
 
-      QAction* nact = p->addAction(tr("show native gui"));
+      QAction* nact = p->addAction(tr("Show native gui"));
       nact->setCheckable(true);
       nact->setEnabled(port->hasNativeGui());
       nact->setChecked(port->nativeGuiVisible());
@@ -1313,7 +1313,10 @@ void TList::moveSelection(int n)
 
                     // rec enable track if expected
                     MusECore::TrackList recd = getRecEnabledTracks();
-                    if (recd.size() == 1 && MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+
+                    if (!MusEGlobal::audio->isRecording() &&
+                        recd.size() == 1 &&
+                        MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
                       MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
                       MusEGlobal::song->setRecordFlag((selTrack),true);
                     }
@@ -1555,7 +1558,7 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
     }
   }
   m->addAction(new MenuTitleItem(tr("Other"), m));
-  QAction *act = m->addAction(tr("clear automation"));
+  QAction *act = m->addAction(tr("Clear automation"));
   act->setCheckable(false);
   act->setData((id<<8) + 253); // Shift 8 bits. Make clear menu item 253 (should enum this)
   
@@ -1710,7 +1713,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
                           {
                             if(rackpos != last_rackpos)
                             {
-                              QString s = ((MusECore::AudioTrack*)t)->efxPipe()->name(rackpos);
+                              QString s = ((MusECore::AudioTrack*)t)->efxPipe() ? 
+                                ((MusECore::AudioTrack*)t)->efxPipe()->name(rackpos) : QString();
                               p->addAction(new MusEGui::MenuTitleItem(s, p)); 
                             }
                             last_rackpos = rackpos;
@@ -1802,9 +1806,11 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                   // rec enable track if expected
                   MusECore::TrackList recd = getRecEnabledTracks();
-                  if (recd.size() == 1 && MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
-                      MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
-                      MusEGlobal::song->setRecordFlag(t,true);
+                  if (!MusEGlobal::audio->isRecording() &&
+                      recd.size() == 1 &&
+                      MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+                    MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
+                    MusEGlobal::song->setRecordFlag(t,true);
                   }
               }
 
@@ -2022,7 +2028,9 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                               // rec enable track if expected
                               MusECore::TrackList recd = getRecEnabledTracks();
-                              if (recd.size() == 1 && MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+                              if (!MusEGlobal::audio->isRecording() &&
+                                  recd.size() == 1 &&
+                                  MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
                                 MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
                                 MusEGlobal::song->setRecordFlag(t,true);
                               }
@@ -2471,9 +2479,11 @@ void TList::selectTrack(MusECore::Track* tr, bool /*deselect*/)
 
         // rec enable track if expected
         MusECore::TrackList recd = getRecEnabledTracks();
-        if (recd.size() == 1 && MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
-            MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
-            MusEGlobal::song->setRecordFlag(tr,true);
+        if (!MusEGlobal::audio->isRecording() &&
+            recd.size() == 1 &&
+            MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+          MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
+          MusEGlobal::song->setRecordFlag(tr,true);
         }
     }
 

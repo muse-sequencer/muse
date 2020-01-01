@@ -152,7 +152,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       connect(pasteAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_PASTE); } );
 
 
-      act = menuEdit->addAction(tr("Edit in E&xternal Editor"));
+      act = menuEdit->addAction(tr("Edit in E&xternal Editor..."));
       connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_EXTERNAL); } );
       
       menuEdit->addSeparator();
@@ -194,7 +194,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       connect(selectNextPartAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_NEXT_PART); } );
 
       
-      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
 
       eventColor = settingsMenu->addMenu(tr("&Event Color"));      
       

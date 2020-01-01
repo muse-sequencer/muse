@@ -250,8 +250,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     QToolBar* steprec_tools=addToolBar(tr("Step recording tools"));
     steprec_tools->setObjectName("Score tools");
     srec  = new QToolButton();
-    srec->setToolTip(tr("Step Record"));
-    srec->setIcon(*steprecIcon);
+    srec->setToolTip(tr("Step record"));
+    srec->setIcon(*steprecSVGIcon);
     srec->setCheckable(true);
     srec->setFocusPolicy(Qt::NoFocus);
     steprec_tools->addWidget(srec);
@@ -457,7 +457,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
         connect(func_del_overlaps_action, &QAction::triggered, [this]() { menu_command(CMD_DELETE_OVERLAPS); } );
         connect(func_legato_action,       &QAction::triggered, [this]() { menu_command(CMD_LEGATO); } );
 
-    QMenu* settings_menu = menuBar()->addMenu(tr("Window &Config"));
+    QMenu* settings_menu = menuBar()->addMenu(tr("&Display"));
 
         color_menu = settings_menu->addMenu(tr("Note head &colors"));
             color_actions = new QActionGroup(this);
@@ -4206,7 +4206,7 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
         }
 
         setMouseTracking(false);
-        unsetCursor();
+        setCursor(active_tool_cursor);
         inserting=false;
         dragging=false;
         drag_cursor_changed=false;
@@ -4233,7 +4233,7 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
         }
 
         dragging_staff=false;
-        unsetCursor();
+        setCursor(active_tool_cursor);
 
         y_scroll_speed=0; y_scroll_pos=0;
     }
@@ -4651,12 +4651,26 @@ void ScoreCanvas::set_tool(int tool)
 {
     switch (tool)
     {
-        case MusEGui::PointerTool: mouse_erases_notes=false; mouse_inserts_notes=false; break;
-        case MusEGui::RubberTool:  mouse_erases_notes=true;  mouse_inserts_notes=false; break;
-        case MusEGui::PencilTool:  mouse_erases_notes=false; mouse_inserts_notes=true;  break;
-        default:
-            cerr << "ERROR: THIS SHOULD NEVER HAPPEN: set_tool called with unknown tool ("<<tool<<")"<<endl;
+    case MusEGui::PointerTool:
+        setCursor(QCursor(Qt::ArrowCursor));
+        mouse_erases_notes=false;
+        mouse_inserts_notes=false;
+        break;
+    case MusEGui::RubberTool:
+        setCursor(*deleteCursor);
+        mouse_erases_notes=true;
+        mouse_inserts_notes=false;
+        break;
+    case MusEGui::PencilTool:
+        setCursor(*pencilCursor);
+        mouse_erases_notes=false;
+        mouse_inserts_notes=true;
+        break;
+    default:
+        cerr << "ERROR: THIS SHOULD NEVER HAPPEN: set_tool called with unknown tool ("<<tool<<")"<<endl;
     }
+
+    active_tool_cursor = cursor();
 }
 
 void ScoreCanvas::menu_command(int cmd)

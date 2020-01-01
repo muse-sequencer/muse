@@ -250,7 +250,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       MusEGlobal::song->populateScriptMenu(menuPlugins, &_scriptReceiver);
 
 
-      menuConfig = menuBar()->addMenu(tr("Window &Config"));      
+      menuConfig = menuBar()->addMenu(tr("&Display"));
       
       eventColor = menuConfig->addMenu(tr("&Event Color"));      
       
@@ -296,28 +296,30 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       tools->setObjectName("Pianoroll tools");
 
       srec  = new QToolButton();
-      srec->setToolTip(tr("Step Record"));
-      srec->setIcon(*steprecIcon);
+      srec->setToolTip(tr("Step record"));
+      srec->setIcon(*steprecSVGIcon);
       srec->setCheckable(true);
       srec->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(srec);
 
       midiin  = new QToolButton();
-      midiin->setToolTip(tr("Midi Input"));
-      midiin->setIcon(*midiinIcon);
+      midiin->setToolTip(tr("Midi input"));
+      midiin->setIcon(*midiinSVGIcon);
       midiin->setCheckable(true);
       midiin->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(midiin);
 
       speaker  = new QToolButton();
-      speaker->setToolTip(tr("Play Events"));
-      speaker->setIcon(*speakerIcon);
+      speaker->setToolTip(tr("Play events"));
+      speaker->setIcon(*speakerSVGIcon);
       speaker->setCheckable(true);
       speaker->setChecked(true);
       speaker->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(speaker);
 
-      tools->addAction(QWhatsThis::createAction(this));
+      QAction* whatsthis = QWhatsThis::createAction(this);
+      whatsthis->setIcon(*whatsthisSVGIcon);
+      tools->addAction(whatsthis);
       
       toolbar = new MusEGui::Toolbar1(this, _rasterInit);
       toolbar->setObjectName("Pianoroll Pos/Snap/Solo-tools");
@@ -402,7 +404,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       time                = new MusEGui::MTScale(&_raster, split1, _viewState.xscale());
       piano               = new Piano(split1, _viewState.yscale(), this);
       canvas              = new PianoCanvas(this, split1, _viewState.xscale(), _viewState.yscale());
-      vscroll             = new MusEGui::ScrollScale(-3, 7, _viewState.yscale(), KH * 75, Qt::Vertical, split1);
+      vscroll             = new MusEGui::ScrollScale(-2, 6, _viewState.yscale(), KH * 75, Qt::Vertical, split1);
       setCurDrumInstrument(piano->curSelectedPitch());
 
       int offset = -(MusEGlobal::config.division/4);
@@ -454,6 +456,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       connect(piano, SIGNAL(keyPressed(int, int, bool)), canvas, SLOT(pianoPressed(int, int, bool)));
       connect(piano, SIGNAL(keyReleased(int, bool)), canvas, SLOT(pianoReleased(int, bool)));
       connect(piano, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
+      connect(piano, SIGNAL(wheelStep(bool)), vscroll, SLOT(stepScale(bool)));
       connect(srec, SIGNAL(toggled(bool)), SLOT(setSteprec(bool)));
       connect(midiin, SIGNAL(toggled(bool)), canvas, SLOT(setMidiin(bool)));
       connect(speaker, SIGNAL(toggled(bool)), SLOT(setSpeaker(bool)));
@@ -1305,6 +1308,8 @@ void PianoRoll::setRaster(int val)
       _rasterInit = val;
       MidiEditor::setRaster(val);
       canvas->redrawGrid();
+      for (auto it : ctrlEditList)
+          it->redrawCanvas();
       focusCanvas();     // give back focus after kb input
       }
 

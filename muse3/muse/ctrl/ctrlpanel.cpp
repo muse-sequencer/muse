@@ -103,6 +103,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       vbox->setSpacing (0);
       kbox->setSpacing(0);
 
+      //: Select controller
       selCtrl = new QPushButton(tr("S"), this);
       selCtrl->setContentsMargins(0, 0, 0, 0);
       selCtrl->setFocusPolicy(Qt::NoFocus);
@@ -110,9 +111,9 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       selCtrl->setFixedHeight(20);
       selCtrl->setSizePolicy(
          QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
-      selCtrl->setToolTip(tr("select controller"));
+      selCtrl->setToolTip(tr("Select controller"));
       
-      // destroy button
+      //: Remove panel (destroy button)
       QPushButton* destroy = new QPushButton(tr("X"), this);
       destroy->setContentsMargins(0, 0, 0, 0);
       destroy->setFocusPolicy(Qt::NoFocus);
@@ -120,7 +121,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       destroy->setFixedHeight(20);
       destroy->setSizePolicy(
          QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
-      destroy->setToolTip(tr("remove panel"));
+      destroy->setToolTip(tr("Remove panel"));
       // Cursor Position
       connect(selCtrl, SIGNAL(clicked()), SLOT(ctrlPopup()));
       connect(destroy, SIGNAL(clicked()), SIGNAL(destroyPanel()));
@@ -186,7 +187,7 @@ void CtrlPanel::buildPanel()
   if(_patchEdit->font() != MusEGlobal::config.fonts[1])
   {
     _patchEdit->setFont(MusEGlobal::config.fonts[1]);
-    _patchEdit->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+    _patchEdit->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
   }
 
   connect(_patchEdit, SIGNAL(valueChanged(int,int)), SLOT(patchCtrlChanged(int)));
@@ -217,7 +218,7 @@ void CtrlPanel::buildPanel()
     if(_knob->font() != MusEGlobal::config.fonts[1])
     {
       _knob->setFont(MusEGlobal::config.fonts[1]);
-      _knob->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+      _knob->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
     }
 
     connect(_knob, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(ctrlChanged(double,bool,int,int)));
@@ -229,7 +230,7 @@ void CtrlPanel::buildPanel()
   {
     _slider = new CompactSlider(this, "CtrlPanelSlider");
     _slider->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-    _slider->setToolTip(tr("manual adjust (Ctrl-double-click on/off)"));
+    _slider->setToolTip(tr("Manual adjust (Ctrl-double-click on/off)"));
     //_slider->setFocusPolicy(Qt::NoFocus);
     _slider->setRange(0.0, 127.0, 1.0);
     _slider->setValue(0.0);
@@ -247,7 +248,7 @@ void CtrlPanel::buildPanel()
     if(_slider->font() != MusEGlobal::config.fonts[1])
     {
       _slider->setFont(MusEGlobal::config.fonts[1]);
-      _slider->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+      _slider->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
     }
 
     connect(_slider, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(ctrlChanged(double,bool,int,int)));
@@ -259,7 +260,7 @@ void CtrlPanel::buildPanel()
   _veloPerNoteButton = new PixmapButton(veloPerNote_OnIcon, veloPerNote_OffIcon, 2, this);  // Margin = 2
   _veloPerNoteButton->setFocusPolicy(Qt::NoFocus);
   _veloPerNoteButton->setCheckable(true);
-  _veloPerNoteButton->setToolTip(tr("all/per-note velocity mode"));
+  _veloPerNoteButton->setToolTip(tr("All/Per-note velocity mode"));
   _veloPerNoteButton->setEnabled(false);
   _veloPerNoteButton->hide();
   connect(_veloPerNoteButton, SIGNAL(clicked()), SLOT(velPerNoteClicked()));
@@ -511,7 +512,7 @@ void CtrlPanel::configChanged()
     if(_patchEdit->font() != MusEGlobal::config.fonts[1])
     {
       _patchEdit->setFont(MusEGlobal::config.fonts[1]);
-      _patchEdit->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+      _patchEdit->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
     }
     _patchEdit->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
   }
@@ -521,7 +522,7 @@ void CtrlPanel::configChanged()
     if(_knob->font() != MusEGlobal::config.fonts[1])
     {
       _knob->setFont(MusEGlobal::config.fonts[1]);
-      _knob->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+      _knob->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
     }
 
     // Whether to show values along with labels for certain controls.
@@ -533,7 +534,7 @@ void CtrlPanel::configChanged()
     if(_slider->font() != MusEGlobal::config.fonts[1])
     {
       _slider->setFont(MusEGlobal::config.fonts[1]);
-      _slider->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+      _slider->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
     }
 
     _slider->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
@@ -887,17 +888,30 @@ void CtrlPanel::setControlColor()
   if(_patchEdit)
   {
     _patchEdit->setReadoutColor(color);
+    // Colours in these sections were not updating with stylesheet colours,
+    //  because normally that's only done at creation, and we create these
+    //  things once and keep them around waiting to be shown.
+    // TODO : Why create all three? Try dynamically and destroying only
+    //         what's needed when setController is called.
+    // Anyway, this trick recommended by help. Tested OK.
+    // Good demonstration of how to apply a stylesheet after a property has been changed.
+    style()->unpolish(_patchEdit);
+    style()->polish(_patchEdit);
   }
 
   if(_knob)
   {
     _knob->setFaceColor(color);
+    style()->unpolish(_knob);
+    style()->polish(_knob);
   }
 
   if(_slider)
   {
     _slider->setBorderColor(color);
     _slider->setBarColor(MusEGlobal::config.sliderBarDefaultColor);
+    style()->unpolish(_slider);
+    style()->polish(_slider);
   }
 }
 

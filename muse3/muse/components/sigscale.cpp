@@ -41,7 +41,7 @@ namespace MusEGui {
 SigScale::SigScale(int* r, QWidget* parent, int xs)
    : View(parent, xs, 1)
       {
-      setToolTip(tr("signature scale"));
+      setToolTip(tr("Signature scale"));
       raster = r;
       pos[0] = MusEGlobal::song->cpos();
       pos[1] = MusEGlobal::song->lpos();
@@ -141,6 +141,7 @@ void SigScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
       if (x < 0)
             x = 0;
       p.setFont(MusEGlobal::config.fonts[3]);
+      p.setPen(Qt::black);
       for (MusECore::ciSigEvent si = MusEGlobal::sigmap.begin(); si != MusEGlobal::sigmap.end(); ++si) {
             MusECore::SigEvent* e = si->second;
             int xp = mapx(e->tick);

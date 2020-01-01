@@ -32,9 +32,18 @@
 #include <QToolTip>
 
 #include "scrollscale.h"
-#include "icons.h"
 
 namespace MusEGui {
+
+
+//---------------------------------------------------------
+//   stepScale
+//    increase/decrease scale by single step
+//---------------------------------------------------------
+void ScrollScale::stepScale ( bool up )
+{
+    setMag(scale2mag(up ? scaleVal + 1 : scaleVal - 1));
+}
 
 //---------------------------------------------------------
 //   setScale
@@ -257,9 +266,9 @@ void ScrollScale::setPageButtons ( bool flag )
 		if ( up == 0 )
 		{
 			up = new QToolButton;
-			up->setIcon ( QIcon(*upIcon) );
+			up->setIcon ( QIcon(":/svg/up_vee.svg") );
 			down = new QToolButton;
-			down->setIcon ( QIcon(*downIcon) );
+			down->setIcon ( QIcon(":/svg/down_vee.svg") );
 			pageNo = new QLabel;
 			QString s;
 			s.setNum ( _page+1 );

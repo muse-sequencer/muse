@@ -755,6 +755,8 @@ void View::drawTickRaster(
   bool drawText,
   const QColor& bar_color,
   const QColor& beat_color,
+  const QColor& fine_color,
+  const QColor& coarse_color,
   const QColor& text_color,
   const QFont& large_font,
   const QFont& small_font
@@ -944,12 +946,10 @@ void View::drawTickRaster(
                     ScaleRetStruct scale_info_text_lines = scale(true, bar, tpix);
                     if (scale_info_text_lines._drawBar) {
                       // highlight lines drawn with text
-                      pen.setColor(bar_color.darker());
+                      pen.setColor(coarse_color);
                     } else {
                       pen.setColor(bar_color);
                     }
-
-                    //>pen.setColor(bar_color);
                   }
                   p.setPen(pen);
                   
@@ -980,7 +980,7 @@ void View::drawTickRaster(
             if(!drawText && !scale_info._isSmall)
             {
               if (raster>=4) {
-                          pen.setColor(Qt::darkGray);
+                          pen.setColor(fine_color);
                           p.setPen(pen);
                           rast_xb = MusEGlobal::sigmap.bar2tick(bar, 0, 0);
                           MusEGlobal::sigmap.timesig(rast_xb, rast_z, rast_n);
@@ -1076,7 +1076,6 @@ void View::drawTickRaster(
                             pen.setColor(beat_color);
                             p.setPen(pen);
                             p.drawLine(mxx, my, mxx, mbottom);
-                            p.drawLine(mxx+1, my, mxx+1, mbottom);
                           }
                         }
                         }

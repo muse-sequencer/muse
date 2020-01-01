@@ -110,6 +110,8 @@ class AudioMixerApp : public QMainWindow {
       bool mixerClicked;
       // Current local state of knobs versus sliders preference global setting.
       bool _preferKnobs;
+      // Hack flag to prevent overwriting the config geometry when resizing.
+      bool _resizeFlag;
 
       bool stripIsVisible(Strip* s);
       void redrawMixer();

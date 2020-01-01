@@ -609,7 +609,6 @@ AEffect* VstNativeSynth::instantiate(void* userData)
     fprintf(stderr, "Plugin supports processReplacing\n");
 
   plugin->user = userData;
-  plugin->dispatcher(plugin, effOpen, 0, 0, NULL, 0);
 
   // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
   //vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
@@ -624,14 +623,6 @@ AEffect* VstNativeSynth::instantiate(void* userData)
   ++_instances;
   _handle = hnd;
 
-  // work around to get airwave to work (author contacted so maybe another solution will
-  // reveal itself)
-  plugin->dispatcher(plugin, effSetSampleRate, 0, 0, NULL, MusEGlobal::sampleRate);
-  plugin->dispatcher(plugin, effSetBlockSize, 0, MusEGlobal::segmentSize, NULL, 0.0f);
-  plugin->dispatcher(plugin, effMainsChanged, 0, 1, NULL, 0.0f);
-  //
-
-  //plugin->dispatcher(plugin, effSetProgram, 0, 0, NULL, 0.0f); // REMOVE Tim. Or keep?
   return plugin;
 /*
 _error:
@@ -641,6 +632,25 @@ _error:
     dlclose(hnd);
   return NULL;
   */
+}
+
+//---------------------------------------------------------
+//   openPlugin
+//   static
+//---------------------------------------------------------
+
+bool VstNativeSynth::openPlugin(AEffect* plugin)
+{
+  plugin->dispatcher(plugin, effOpen, 0, 0, NULL, 0);
+
+  // work around to get airwave to work (author contacted so maybe another solution will
+  // reveal itself)
+  plugin->dispatcher(plugin, effSetSampleRate, 0, 0, NULL, MusEGlobal::sampleRate);
+  plugin->dispatcher(plugin, effSetBlockSize, 0, MusEGlobal::segmentSize, NULL, 0.0f);
+  plugin->dispatcher(plugin, effMainsChanged, 0, 1, NULL, 0.0f);
+
+  //plugin->dispatcher(plugin, effSetProgram, 0, 0, NULL, 0.0f); // REMOVE Tim. Or keep?
+  return true;
 }
 
 //---------------------------------------------------------
@@ -723,6 +733,9 @@ bool VstNativeSynthIF::init(Synth* s)
       _synth = (VstNativeSynth*)s;
       _plugin = _synth->instantiate(&userData);
       if(!_plugin)
+        return false;
+
+      if(!_synth->openPlugin(_plugin))
         return false;
 
       queryPrograms();
@@ -3200,6 +3213,12 @@ LADSPA_Handle VstNativePluginWrapper::instantiate(PluginI *pluginI)
       return 0;
    }
 
+   if(!_synth->openPlugin(state->plugin))
+   {
+      delete state;
+      return 0;
+   }
+
    state->pluginI = pluginI;
    state->pluginWrapper = this;
    state->inPorts.resize(_inports);
@@ -3347,7 +3366,7 @@ void VstNativePluginWrapper::connectPort(LADSPA_Handle handle, unsigned long por
 
 }
 
-void VstNativePluginWrapper::apply(LADSPA_Handle handle, unsigned long n)
+void VstNativePluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float /*latency_corr*/)
 {
    VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
    state->inProcess = true;

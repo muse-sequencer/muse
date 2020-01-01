@@ -24,8 +24,6 @@
 
 #include <QByteArray>
 #include <QDrag>
-#include <QDragEnterEvent>
-#include <QDropEvent>
 #include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
@@ -34,6 +32,8 @@
 #include <QPalette>
 #include <QStyledItemDelegate>
 #include <QUrl>
+#include <QScrollBar>
+
 #include "popupmenu.h"
 
 #include <errno.h>
@@ -48,7 +48,6 @@
 #include "plugin.h"
 #include "plugindialog.h"
 #include "filedialog.h"
-#include "background_painter.h"
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
 #endif
@@ -103,8 +102,9 @@ void EffectRackDelegate::paint ( QPainter * painter, const QStyleOptionViewItem 
       QRect cr = QRect(rr.x()+itemXMargin, rr.y()+itemYMargin, 
                        rr.width() - 2 * itemXMargin, rr.height() - 2 * itemYMargin);
 
-      const QRect onrect = tr->efxPipe()->isOn(index.row()) ? rr : QRect();
+      const QRect onrect = (tr->efxPipe() && tr->efxPipe()->isOn(index.row())) ? rr : QRect();
       ItemBackgroundPainter* ibp = er->getBkgPainter();
+      ibp->setActiveColor(er->activeColor());
       ibp->drawBackground(painter,
                           rr,
                           option.palette,
@@ -114,7 +114,7 @@ void EffectRackDelegate::paint ( QPainter * painter, const QStyleOptionViewItem 
                           // No, let the background painter handle the on colour.
                           //tr->efxPipe()->isOn(index.row()) ? er->getActiveColor() : option.palette.dark();
 
-      QString name = tr->efxPipe()->name(index.row());
+      QString name = tr->efxPipe() ? tr->efxPipe()->name(index.row()) : QString();
       //if (name.length() > 11)
       //      name = name.left(9) + "...";
   
@@ -181,7 +181,7 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
       setObjectName("Rack");
       setAttribute(Qt::WA_DeleteOnClose);
 
-     _bkgPainter = new ItemBackgroundPainter();
+     _bkgPainter = new ItemBackgroundPainter(this);
 
       track = t;
       itemheight = 19;
@@ -190,6 +190,53 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
 
       setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+      setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+      // Taken from help files, example custom stylesheets.
+      // Make a custom scrollbar. It seems this stuff can only be done with sylesheets.
+      // There doesn't seem to be style primitives or complex properites to set for all of this.
+      // Help warns that with complex controls like scrollbar, if you set one property, then ALL
+      //  properties must be set. Chopped down to a 'mini' compact size, just for the rack.
+//      verticalScrollBar()->setStyleSheet(
+//          "QScrollBar:vertical {"
+//              "border: 2px solid grey;"
+//              "background: #32CC99;"
+//              "width: 12px;"
+//              "margin: 10px 0 10px 0;"
+//          "}"
+//          "QScrollBar::handle:vertical {"
+//              "background: white;"
+//              "min-height: 8px;"
+//          "}"
+//          "QScrollBar::add-line:vertical {"
+//              "border: 2px solid grey;"
+//              "background: #32CC99;"
+//              "height: 8px;"
+//              "subcontrol-position: bottom;"
+//              "subcontrol-origin: margin;"
+//          "}"
+//          "QScrollBar::sub-line:vertical {"
+//          "    border: 2px solid grey;"
+//          "    background: #32CC99;"
+//          "    height: 8px;"
+//          "    subcontrol-position: top;"
+//          "    subcontrol-origin: margin;"
+//          "}"
+//          "QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {"
+//          "    border: 2px solid grey;"
+//          "    width: 3px;"
+//          "    height: 3px;"
+//          "    background: white;"
+//          "}"
+//          "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
+//          "    background: none;"
+//          "}"
+//      );
+
+      QFile file(":/qss/scrollbar_small_vertical.qss");
+      file.open(QFile::ReadOnly);
+      QString style = file.readAll();
+      verticalScrollBar()->setStyleSheet(style);
+
       setSelectionMode(QAbstractItemView::SingleSelection);
 
       for (int i = 0; i < MusECore::PipelineDepth; ++i)
@@ -211,10 +258,15 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
 
 void EffectRack::updateContents()
       {
+      if(!track)
+        return;
+      MusECore::Pipeline* pipe = track->efxPipe();
+      if(!pipe)
+        return;
       for (int i = 0; i < MusECore::PipelineDepth; ++i) {
-            QString name = track->efxPipe()->name(i);
+            QString name = pipe->name(i);
             item(i)->setText(name);
-            item(i)->setToolTip(name == QString("empty") ? tr("effect rack") : name );
+            item(i)->setToolTip(pipe->empty(i) ? tr("Effect rack") : name );
             //item(i)->setBackground(track->efxPipe()->isOn(i) ? activeColor : palette().dark());
             if(viewport())
             {
@@ -225,21 +277,19 @@ void EffectRack::updateContents()
       }
 
 //---------------------------------------------------------
-//   EffectRack
-//---------------------------------------------------------
-
-EffectRack::~EffectRack()
-      {
-      if(_bkgPainter)
-        delete _bkgPainter;
-      }
-
-//---------------------------------------------------------
 //   songChanged
 //---------------------------------------------------------
 
 void EffectRack::songChanged(MusECore::SongChangedStruct_t typ)
       {
+      if (typ & (SC_TRACK_REMOVED)) {
+        if(!MusEGlobal::song->trackExists(track))
+        {
+          track = nullptr;
+          return;
+        }
+      }
+
       if (typ & (SC_ROUTE | SC_RACK)) {
             updateContents();
        	    }
@@ -254,7 +304,7 @@ QSize EffectRack::minimumSizeHint() const
       return QSize(10, 
         2 * frameWidth() + 
         (fontMetrics().height() + 2 * EffectRackDelegate::itemYMargin + 2 * EffectRackDelegate::itemTextYMargin) 
-        * MusECore::PipelineDepth);
+        * MusEGlobal::config.audioEffectsRackVisibleItems);
       }
 
 //---------------------------------------------------------
@@ -269,6 +319,8 @@ QSize EffectRack::sizeHint() const
 
 void EffectRack::choosePlugin(QListWidgetItem* it, bool replace)
       {
+      if(!it || !track)
+        return;
       MusECore::Plugin* plugin = PluginDialog::getPlugin(this);
       if (plugin) {
             MusECore::PluginI* plugi = new MusECore::PluginI();
@@ -307,15 +359,15 @@ void EffectRack::menuRequested(QListWidgetItem* it)
       //enum { NEW, CHANGE, UP, DOWN, REMOVE, BYPASS, SHOW, SAVE };
       enum { NEW, CHANGE, UP, DOWN, REMOVE, BYPASS, SHOW, SHOW_NATIVE, SAVE };
       QMenu* menu = new QMenu;
-      QAction* newAction = menu->addAction(tr("new"));
-      QAction* changeAction = menu->addAction(tr("change"));
-      QAction* upAction = menu->addAction(QIcon(*upIcon), tr("move up"));//,   UP, UP);
-      QAction* downAction = menu->addAction(QIcon(*downIcon), tr("move down"));//, DOWN, DOWN);
-      QAction* removeAction = menu->addAction(tr("remove"));//,    REMOVE, REMOVE);
-      QAction* bypassAction = menu->addAction(tr("bypass"));//,    BYPASS, BYPASS);
-      QAction* showGuiAction = menu->addAction(tr("show gui"));//,  SHOW, SHOW);
-      QAction* showNativeGuiAction = menu->addAction(tr("show native gui"));//,  SHOW_NATIVE, SHOW_NATIVE);
-      QAction* saveAction = menu->addAction(tr("save preset"));
+      QAction* newAction = menu->addAction(tr("New"));
+      QAction* changeAction = menu->addAction(tr("Change"));
+      QAction* upAction = menu->addAction(QIcon(*upIcon), tr("Move up"));//,   UP, UP);
+      QAction* downAction = menu->addAction(QIcon(*downIcon), tr("Move down"));//, DOWN, DOWN);
+      QAction* removeAction = menu->addAction(tr("Remove"));//,    REMOVE, REMOVE);
+      QAction* bypassAction = menu->addAction(tr("Bypass"));//,    BYPASS, BYPASS);
+      QAction* showGuiAction = menu->addAction(tr("Show gui"));//,  SHOW, SHOW);
+      QAction* showNativeGuiAction = menu->addAction(tr("Show native gui"));//,  SHOW_NATIVE, SHOW_NATIVE);
+      QAction* saveAction = menu->addAction(tr("Save preset"));
 
       newAction->setData(NEW);
       changeAction->setData(CHANGE);
@@ -472,27 +524,32 @@ void EffectRack::doubleClicked(QListWidgetItem* it)
       int idx        = row(item);
       MusECore::Pipeline* pipe = track->efxPipe();
 
-      if (pipe->name(idx) == QString("empty")) {
-            choosePlugin(it);
-            return;
-            }
-      if (pipe) {
-            bool flag;
-            if (pipe->has_dssi_ui(idx))
-            {
-              flag = !pipe->nativeGuiVisible(idx);
-              pipe->showNativeGui(idx, flag);
+      if (!pipe)
+        return;
 
-            }
-            else {
-              flag = !pipe->guiVisible(idx);
-              pipe->showGui(idx, flag);
-            }
-            }
+      if (pipe->empty(idx))
+      {
+        choosePlugin(it);
+        return;
+      }
+
+      bool flag;
+      if (pipe->has_dssi_ui(idx))
+      {
+        flag = !pipe->nativeGuiVisible(idx);
+        pipe->showNativeGui(idx, flag);
+
+      }
+      else {
+        flag = !pipe->guiVisible(idx);
+        pipe->showGui(idx, flag);
+      }
       }
 
 void EffectRack::savePreset(int idx)
       {
+      if(!track)
+        return;
       //QString name = MusEGui::getSaveFileName(QString(""), plug_file_pattern, this,
       QString name = MusEGui::getSaveFileName(QString(""), MusEGlobal::preset_file_save_pattern, this,
          tr("MusE: Save Preset"));
@@ -545,10 +602,12 @@ void EffectRack::savePreset(int idx)
 
 void EffectRack::startDragItem(int idx)
       {
-        if (idx < 0) {
-            printf("illegal to drag index %d\n",idx);
-            return;
-        }
+      if(!track)
+        return;
+      if (idx < 0) {
+          printf("illegal to drag index %d\n",idx);
+          return;
+      }
       FILE *tmp;
       if (MusEGlobal::debugMsg) {
           QString fileName;
@@ -612,6 +671,8 @@ QStringList EffectRack::mimeTypes() const
 
 void EffectRack::dropEvent(QDropEvent *event)
 {
+      if(!event || !track)
+        return;
       QListWidgetItem *i = itemAt( event->pos() );
       if (!i)
             return;
@@ -691,20 +752,23 @@ void EffectRack::dragEnterEvent(QDragEnterEvent *event)
 
 void EffectRack::mousePressEvent(QMouseEvent *event)
       {
-      RackSlot* item = (RackSlot*) itemAt(event->pos());
-      if(event->button() & Qt::LeftButton) {
-          dragPos = event->pos();
-      }
-      else if(event->button() & Qt::RightButton) {
-          setCurrentItem(item);
-          menuRequested(item);
-          return;
-      }
-      else if(event->button() & Qt::MidButton) {
-          int idx = row(item);
-          bool flag = !track->efxPipe()->isOn(idx);
-          track->efxPipe()->setOn(idx, flag);
-          updateContents();
+      if(event && track)
+      {
+        RackSlot* item = (RackSlot*) itemAt(event->pos());
+        if(event->button() & Qt::LeftButton) {
+            dragPos = event->pos();
+        }
+        else if(event->button() & Qt::RightButton) {
+            setCurrentItem(item);
+            menuRequested(item);
+            return;
+        }
+        else if(event->button() & Qt::MidButton) {
+            int idx = row(item);
+            bool flag = !track->efxPipe()->isOn(idx);
+            track->efxPipe()->setOn(idx, flag);
+            updateContents();
+        }
       }
 
       QListWidget::mousePressEvent(event);  
@@ -712,31 +776,47 @@ void EffectRack::mousePressEvent(QMouseEvent *event)
 
 void EffectRack::mouseMoveEvent(QMouseEvent *event)
 {
-      if (event->buttons() & Qt::LeftButton) {
-            MusECore::Pipeline* pipe = track->efxPipe();
-            if(!pipe)
-              return;
+      if(event && track)
+      {
+        if (event->buttons() & Qt::LeftButton) {
+              MusECore::Pipeline* pipe = track->efxPipe();
+              if(!pipe)
+                return;
 
-            QListWidgetItem *i = itemAt(dragPos);
-            int idx0 = row(i);
-            if (!(*pipe)[idx0])
-              return; 
-            
-            int distance = (dragPos-event->pos()).manhattanLength();
-            if (distance > QApplication::startDragDistance()) {
-                  QListWidgetItem *i = itemAt( event->pos() );
-                  if (i) {
-                    int idx = row(i);
-                    startDragItem(idx);
-                }
-            }
+              QListWidgetItem *i = itemAt(dragPos);
+              int idx0 = row(i);
+              if (!(*pipe)[idx0])
+                return; 
+              
+              int distance = (dragPos-event->pos()).manhattanLength();
+              if (distance > QApplication::startDragDistance()) {
+                    QListWidgetItem *i = itemAt( event->pos() );
+                    if (i) {
+                      int idx = row(i);
+                      startDragItem(idx);
+                  }
+              }
+        }
       }
       QListWidget::mouseMoveEvent(event);
 }
 
+void EffectRack::enterEvent(QEvent *event)
+{
+  setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+  QListWidget::enterEvent(event);
+}
+
+void EffectRack::leaveEvent(QEvent *event)
+{
+  setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  QListWidget::leaveEvent(event);
+}
 
 void EffectRack::initPlugin(MusECore::Xml xml, int idx)
       {      
+      if(!track)
+        return;
       for (;;) {
             MusECore::Xml::Token token = xml.parse();
             QString tag = xml.s1();

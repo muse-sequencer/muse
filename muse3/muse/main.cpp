@@ -113,7 +113,7 @@ extern void setAlsaClientName(const char*);
 }
 
 namespace MusEGui {
-void initIcons(bool useThemeIconsIfPossible);
+void initIcons(int cursorSize);
 void initShortCuts();
 #ifdef HAVE_LASH
 extern lash_client_t * lash_client;
@@ -157,23 +157,25 @@ class MuseApplication : public QApplication {
             }
 
       bool notify(QObject* receiver, QEvent* event) {
-         bool flag = QApplication::notify(receiver, event);
-         if (event->type() == QEvent::KeyPress) {
-#if QT_VERSION >= 0x050000
+         const bool flag = QApplication::notify(receiver, event);
+         const QEvent::Type type = event->type();
+         if (type == QEvent::KeyPress) {
             const QMetaObject * mo = receiver->metaObject();
-            bool forQWidgetWindow = false;
             if (mo){
                if (strcmp(mo->className(), "QWidgetWindow") == 0)
-                  forQWidgetWindow = true;
+                 return false;
             }
-            if(forQWidgetWindow){
-               return false;
-            }
-#endif
             QKeyEvent* ke = (QKeyEvent*)event;
             MusEGlobal::globalKeyState = ke->modifiers();
+
+            // rj - removing this test as it causes some keys to never be processed by the
+            // shortcut engine. The documentation is somewhat vague (to me) how
+            // this value should be used and that it is not always reliable
+            //
+            // aaand, reinstated as it -of course- had draw backs. Need to find another solution.
+            // to be continued
             bool accepted = ke->isAccepted();
-            if (!accepted) {
+              if (!accepted) {
                int key = ke->key();
                if (((QInputEvent*)ke)->modifiers() & Qt::ShiftModifier)
                   key += Qt::SHIFT;
@@ -181,22 +183,23 @@ class MuseApplication : public QApplication {
                   key += Qt::ALT;
                if (((QInputEvent*)ke)->modifiers() & Qt::ControlModifier)
                   key+= Qt::CTRL;
-               muse->kbAccel(key);
+               if(muse)
+                 muse->kbAccel(key);
                return true;
             }
          }
-         if (event->type() == QEvent::KeyRelease) {
+         else if (type == QEvent::KeyRelease) {
             QKeyEvent* ke = (QKeyEvent*)event;
             ///MusEGlobal::globalKeyState = ke->stateAfter();
             MusEGlobal::globalKeyState = ke->modifiers();
          }
-
+         
          return flag;
       }
 
 #ifdef HAVE_LASH
      virtual void timerEvent (QTimerEvent*) {
-            if(MusEGlobal::useLASH)
+            if(muse && MusEGlobal::useLASH)
               muse->lash_idle_cb ();
             }
 #endif /* HAVE_LASH */
@@ -290,7 +293,7 @@ enum CommandLineParseResult
 
 CommandLineParseResult parseCommandLine(
   QCommandLineParser &parser, QString *errorMessage,
-  QString& open_filename, AudioDriverSelect& audioType, bool& force_plugin_rescan)
+  QString& open_filename, AudioDriverSelect& audioType, bool& force_plugin_rescan, bool& dont_plugin_rescan)
 {
   parser.setApplicationDescription(APP_DESCRIPTION);
   const QString version_string(VERSION);
@@ -328,8 +331,11 @@ CommandLineParseResult parseCommandLine(
   parser.addOption(option_Y);
 
   QCommandLineOption option_R("R", QCoreApplication::translate("main",
-    "Force plugin cache re-scan. (Automatic if any plugin path directories changed.)"));
+    "Force plugin cache re-creation. (Automatic if any plugin path directories changed.)"));
   parser.addOption(option_R);
+  QCommandLineOption option_C("C", QCoreApplication::translate("main",
+    "Do not re-create plugin cache. Avoids repeated re-creations in some circumstances. Use with care."));
+  parser.addOption(option_C);
   QCommandLineOption option_p("p", QCoreApplication::translate("main", "Don't load LADSPA plugins"));
   parser.addOption(option_p);
   QCommandLineOption option_S("S", QCoreApplication::translate("main", "Don't load MESS plugins"));
@@ -478,6 +484,9 @@ CommandLineParseResult parseCommandLine(
   if(parser.isSet(option_R))
     force_plugin_rescan = true;
 
+  if(parser.isSet(option_C))
+    dont_plugin_rescan = true;
+
   if(parser.isSet(option_S))
     MusEGlobal::loadMESS = false;
 
@@ -539,17 +548,7 @@ CommandLineParseResult parseCommandLine(
 int main(int argc, char* argv[])
       {
       // Get the separator used for file paths.
-      #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
-          const QChar list_separator = QDir::listSeparator();
-      #else
-          // Ugly solution. No c/c++ solution except in c++17, which is a bit too new ATM.
-          // Hopefully everyone's got Qt 5.6 or higher.
-          #if defined(WIN32) || defined(_WIN32)
-              const QChar list_separator = QChar(';');
-          #else
-              const QChar list_separator = QChar(':');
-          #endif
-      #endif
+      const QChar list_separator = QDir::listSeparator();
 
       // Get environment variables for various paths.
       // "The Qt environment manipulation functions are thread-safe, but this requires that
@@ -614,9 +613,8 @@ int main(int argc, char* argv[])
   #endif
 
         // Now create the application, and let Qt remove recognized arguments.
-#if QT_VERSION >= 0x050600
         QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
+        QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
         //========================
         //  Application instance:
@@ -640,25 +638,10 @@ int main(int argc, char* argv[])
         //        (ie. ~./config/MusE/MusE-qt).
         //       Beware, setting application name and organization name influence these locations.
 
-        #if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
           // "Returns a directory location where user-specific configuration files should be written.
           //  This is an application-specific directory, and the returned path is never empty.
           //  This enum value was added in Qt 5.5."
-          MusEGlobal::configPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-        #else
-          // "Returns a directory location where user-specific configuration files should be written.
-          //  This may be either a generic value or application-specific, and the returned path is never empty."
-          //MusEGlobal::configPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
-          //    + QString("/") + QString(ORGANIZATION_NAME) + QString("/") + QString(PACKAGE_NAME);
-          // "Returns a directory location where user-specific configuration files shared between multiple
-          //   applications should be written. This is a generic value and the returned path is never empty."
-          // According to the chart in the docs, here we should be able to rely on this  since
-          //  'ConfigLocation' acts a bit different on some OS (it might already include the app name).
-          // Also, according to the docs and observation this should equal (resemble?) what is returned by
-          //  the newer 'AppConfigLocation' in Qt 5.5.
-          MusEGlobal::configPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
-              + "/" + ORGANIZATION_NAME + "/" + PACKAGE_NAME;
-        #endif
+        MusEGlobal::configPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
 
         // "Returns a directory location where user-specific non-essential (cached) data should be written.
         //  This is an application-specific directory. The returned path is never empty."
@@ -964,11 +947,13 @@ int main(int argc, char* argv[])
         QString open_filename;
         AudioDriverSelect audioType = DriverConfigSetting;
         bool force_plugin_rescan = false;
+        bool dont_plugin_rescan = false;
         // A block because we don't want ths hanging around. Use it then lose it.
         {
           QCommandLineParser parser;
           QString errorMessage;
-          switch (parseCommandLine(parser, &errorMessage, open_filename, audioType, force_plugin_rescan))
+          switch (parseCommandLine(parser, &errorMessage, open_filename,
+                                   audioType, force_plugin_rescan, dont_plugin_rescan))
           {
             case CommandLineOk:
                 break;
@@ -1142,6 +1127,8 @@ int main(int argc, char* argv[])
                                         false,
                                         // Whether to force recreation.
                                         do_rescan,
+                                        // Whether to NOT recreate.
+                                        dont_plugin_rescan,
                                         // When creating, where to find the application's own plugins.
                                         MusEGlobal::museGlobalLib,
                                         // Plugin types to check.
@@ -1168,7 +1155,7 @@ int main(int argc, char* argv[])
         
         MusECore::initAudio();
 
-        MusEGui::initIcons(MusEGlobal::config.useThemeIconsIfPossible);
+        MusEGui::initIcons(MusEGlobal::config.cursorSize);
 
         if (MusEGlobal::loadMESS)
           MusECore::initMidiSynth(); // Need to do this now so that Add Track -> Synth menu is populated when MusE is created.
@@ -1315,8 +1302,6 @@ int main(int argc, char* argv[])
         // Jack says: "Cannot use real-time scheduling (RR/10)(1: Operation not permitted)". The kernel is non-RT.
         // I cannot seem to find a reliable answer to the question, even with dummy audio and system calls.
 
-        MusEGlobal::useJackTransport = true;
-
         // setup the prefetch fifo length now that the segmentSize is known
         MusEGlobal::fifoLength = 131072 / MusEGlobal::segmentSize;
         MusECore::initAudioPrefetch();
@@ -1368,6 +1353,12 @@ int main(int argc, char* argv[])
         if(MusEGlobal::loadLV2)
               MusECore::initLV2();
   #endif
+
+        // Now that all the plugins are done loading from the global plugin cache list,
+        //  we are done with it. Clear it to free up memory.
+        // TODO Future: Will need to keep it around if we ever switch to using the list all the time
+        //       instead of separate global plugin and synth lists.
+        MusEPlugin::pluginList.clear();
 
         MusECore::initOSC();
 
@@ -1487,7 +1478,7 @@ int main(int argc, char* argv[])
         //--------------------------------------------------
         MusEGlobal::muse->loadDefaultSong(open_filename);
 
-        QTimer::singleShot(100, MusEGlobal::muse, SLOT(showDidYouKnowDialog()));
+        QTimer::singleShot(100, MusEGlobal::muse, SLOT(showDidYouKnowDialogIfEnabled()));
 
         //--------------------------------------------------
         // Start the application...
