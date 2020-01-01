@@ -94,7 +94,7 @@ static bool testDirCreate(QWidget* parent, const QString& path)
           {
             QMessageBox::critical(parent,
                 QWidget::tr("MusE: create directory"),
-                QWidget::tr("creating dir failed"));
+                QWidget::tr("Creating dir failed"));
             return true;
           }
       }
@@ -248,17 +248,10 @@ MFileDialog::MFileDialog(const QString& dir,
             spl->insertWidget(0,&buttons);
 
         // Qt >= 4.6 allows us to select icons from the theme
-#if QT_VERSION >= 0x040600
             buttons.globalButton->setIcon(*globalIcon);
             buttons.userButton->setIcon(*userIcon);
             buttons.homeButton->setIcon(*userIcon);
             buttons.projectButton->setIcon(*projectIcon);
-#else
-            buttons.globalButton->setIcon(style()->standardIcon(QStyle::SP_DirIcon));
-            buttons.userButton->setIcon(style()->standardIcon(QStyle::SP_DesktopIcon));
-            buttons.homeButton->setIcon(style()->standardIcon(QStyle::SP_DirHomeIcon));
-            buttons.projectButton->setIcon(style()->standardIcon(QStyle::SP_DirOpenIcon));
-#endif
 
             buttons.globalButton->setAutoExclusive(true);
             buttons.userButton->setAutoExclusive(true);

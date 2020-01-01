@@ -71,7 +71,7 @@ typedef int VstPluginFlags_t;
 const int MAX_PLUGINS  = 8;
 
 // plugins in mixer rack, max up to MAX_PLUGINS
-const int PipelineDepth = 4;
+const int PipelineDepth = 8;
 
 // max audio channels
 const int MAX_CHANNELS = 2;

@@ -36,193 +36,66 @@ class QCursor;
 
 namespace MusEGui {
 
-const QSize DEFCURSIZE = QSize(18, 18);
+//const QSize DEFCURSIZE = QSize(18, 18);
 
 extern QPixmap* track_commentIcon;
 extern QPixmap* deleteIcon;
-extern QPixmap* punchinIcon;
-extern QPixmap* punchoutIcon;
-extern QPixmap* punchin1Icon;
-extern QPixmap* punchout1Icon;
-extern QPixmap* loopIcon;
-extern QPixmap* loop1Icon;
-extern QPixmap* playIcon;
-extern QPixmap* recordIcon;
-extern QPixmap* stopIcon;
-extern QPixmap* startIcon;
-extern QPixmap* fforwardIcon;
-extern QPixmap* frewindIcon;
 extern QPixmap* dotIcon;
 extern QPixmap* dothIcon;
 extern QPixmap* dot1Icon;
-extern QPixmap* noteIcon;
-extern QPixmap* note1Icon;
-extern QPixmap* stickIcon;
-extern QPixmap* waveIcon;
 extern QPixmap* synthIcon;
 extern QPixmap* markIcon[3];
 
-extern QPixmap* recEchoIconOn;
-extern QPixmap* recEchoIconOff;
-extern QPixmap* muteIconOn;
-extern QPixmap* muteIconOff;
-extern QPixmap* soloIconOn;
-extern QPixmap* soloIconOff;
-
-extern QPixmap* steprecIcon;
 extern QPixmap* cursorIcon;
-extern QPixmap* closedHandIcon;
-extern QPixmap* sizeAllIcon;
-extern QPixmap* midiCtrlMergeIcon;
 extern QPixmap* midiCtrlMergeEraseIcon;
 extern QPixmap* midiCtrlMergeEraseInclusiveIcon;
 extern QPixmap* midiCtrlMergeEraseWysiwygIcon;
-extern QPixmap* midiCtrlMergeCopyIcon;
-extern QPixmap* midiCtrlMergeCopyEraseIcon;
-extern QPixmap* midiCtrlMergeCopyEraseInclusiveIcon;
-extern QPixmap* midiCtrlMergeCopyEraseWysiwygIcon;
 
-extern QPixmap* quantIcon;
-extern QPixmap* printIcon;
-extern QPixmap* printIconS;
-extern QPixmap* openIcon;
-extern QPixmap* saveIcon;
-extern QPixmap* saveasIcon;
-extern QPixmap* openIconS;
-extern QPixmap* saveIconS;
-extern QPixmap* saveasIconS;
-extern QPixmap* archiveIcon;
-extern QPixmap* findIcon;
-extern QPixmap* masterIcon;
-extern QPixmap* filenewIcon;
-extern QPixmap* filenewIconS;
-extern QPixmap* filecloseIcon;
-extern QPixmap* appexitIcon;
-extern QPixmap* homeIcon;
-extern QPixmap* backIcon;
-extern QPixmap* forwardIcon;
 extern QPixmap* muteIcon;
 extern QPixmap* eyeIcon;
 extern QPixmap* eyeCrossedIcon;
 extern QPixmap* eyeGrayIcon;
 extern QPixmap* upIcon;
 extern QPixmap* downIcon;
-extern QPixmap* boldIcon;
-extern QPixmap* italicIcon;
-extern QPixmap* underlinedIcon;
-extern QPixmap* gvIcon;
-extern QPixmap* midiinIcon;
-extern QPixmap* sysexIcon;
-extern QPixmap* ctrlIcon;
-extern QPixmap* metaIcon;
-extern QPixmap* pitchIcon;
-extern QPixmap* cafterIcon;
-extern QPixmap* pafterIcon;
 extern QPixmap* flagIcon;
 extern QPixmap* flagIconS;
 extern QPixmap* lockIcon;
-extern QPixmap* tocIcon;
-extern QPixmap* exitIconS;
-
-extern QPixmap* undoIcon;
-extern QPixmap* redoIcon;
-extern QPixmap* undoIconS;
-extern QPixmap* redoIconS;
-
-extern QPixmap* speakerIcon;
-extern QPixmap* buttondownIcon;
-extern QPixmap* configureIcon;
-
-extern QPixmap* editmuteIcon;
-extern QPixmap* editmuteSIcon;
-extern QPixmap* panicIcon;
-extern QPixmap* metronomeIcon;
-extern QPixmap* metronomeOffIcon;
 
 extern QIcon* pianoIconSet;
 extern QIcon* scoreIconSet;
 extern QIcon* editcutIconSet;
-extern QIcon* editmuteIconSet;
 extern QIcon* editcopyIconSet;
 extern QIcon* editpasteIconSet;
 extern QIcon* editpaste2TrackIconSet;
 extern QIcon* editpasteCloneIconSet;
 extern QIcon* editpasteClone2TrackIconSet;
 
-/* Not used
-extern QIcon* pianoIcon;
-extern QIcon* editcutIcon;
-extern QIcon* editcopyIcon;
-extern QIcon* editpasteIcon;
-extern QIcon* editpasteCloneIcon;
-extern QIcon* editpaste2TrackIcon;
-extern QIcon* editpasteClone2TrackIcon;
-*/
 extern QPixmap* editpasteSIcon;
 extern QPixmap* editpasteCloneSIcon;
 
-extern QPixmap* exitIcon;
-extern QPixmap* exit1Icon;
 extern QPixmap* record1_Icon;
-extern QPixmap* record_on_Icon;
-extern QPixmap* record_off_Icon;
-extern QPixmap* newmuteIcon;
-extern QPixmap* soloIcon;
 
 extern QPixmap* routesInIcon;
 extern QPixmap* routesOutIcon;
 extern QPixmap* routesMidiInIcon;
 extern QPixmap* routesMidiOutIcon;
-extern QPixmap* muteIconOn;
-extern QPixmap* muteIconOff;
-extern QPixmap* soloIconOn; 
-extern QPixmap* soloIconOff;
-extern QPixmap* soloblksqIconOn; 
-extern QPixmap* soloblksqIconOff;
-//extern QIcon* soloIconSet1;
-//extern QIcon* soloIconSet2;
 
 extern QPixmap* toggle_small_Icon;
-extern QPixmap* redLedIcon;
-extern QPixmap* darkRedLedIcon;
 
-extern QIcon* ledRedIcon;
-extern QIcon* ledDarkRedIcon;
 extern QIcon* ledGreenIcon;
 extern QIcon* ledDarkGreenIcon;
 
 extern QPixmap* greendotIcon;
 extern QPixmap* greendot12x12Icon;
 extern QPixmap* reddotIcon;
-extern QPixmap* darkgreendotIcon;
-extern QPixmap* graydotIcon;
 extern QPixmap* graydot12x12Icon;
 extern QPixmap* bluedotIcon;
 extern QPixmap* bluedot12x12Icon;
 extern QPixmap* orangedotIcon;
 extern QPixmap* orangedot12x12Icon;
-extern QPixmap* offIcon;
-extern QPixmap* blacksquareIcon;
-extern QPixmap* blacksqcheckIcon;
-extern QPixmap* checkSquareIcon;
 
-extern QPixmap* mastertrackSIcon;
-extern QPixmap* localoffSIcon;
-extern QPixmap* miditransformSIcon;
-extern QPixmap* midi_plugSIcon;
-extern QPixmap* miditransposeSIcon;
-extern QPixmap* midiThruOnIcon;
-extern QPixmap* midiThruOffIcon;
 extern QPixmap* mixerSIcon;
-extern QPixmap* mustangSIcon;
-extern QPixmap* resetSIcon;
-extern QPixmap* track_addIcon;
-extern QPixmap* track_deleteIcon;
-extern QPixmap* listSIcon;
-extern QPixmap* inputpluginSIcon;
 extern QPixmap* cliplistSIcon;
-extern QPixmap* mixerAudioSIcon;
-extern QPixmap* initSIcon;
 extern QPixmap* deltaOnIcon;
 extern QPixmap* deltaOffIcon;
 extern QPixmap* veloPerNote_OnIcon;
@@ -240,16 +113,12 @@ extern QPixmap* edit_drummsIcon;
 extern QPixmap* edit_listIcon;
 extern QPixmap* edit_waveIcon;
 extern QPixmap* edit_mastertrackIcon;
-extern QPixmap* edit_pianorollIcon;
-extern QPixmap* edit_scoreIcon;
 extern QPixmap* edit_track_addIcon;
 extern QPixmap* edit_track_delIcon;
 extern QPixmap* mastertrack_graphicIcon;
 extern QPixmap* mastertrack_listIcon;
 extern QPixmap* midi_transformIcon;
-extern QPixmap* midi_transposeIcon;
 extern QPixmap* selectIcon;
-extern QIcon*   icon_select;
 extern QPixmap* select_allIcon;
 extern QPixmap* select_all_parts_on_trackIcon;
 extern QPixmap* select_deselect_allIcon;
@@ -264,33 +133,24 @@ extern QPixmap* audio_restartaudioIcon;
 extern QPixmap* automation_clear_dataIcon;
 extern QPixmap* automation_mixerIcon;
 extern QPixmap* automation_take_snapshotIcon;
-extern QPixmap* edit_midiIcon;
 extern QPixmap* midi_edit_instrumentIcon;
 extern QPixmap* midi_init_instrIcon;
 extern QPixmap* midi_inputpluginsIcon;
 extern QPixmap* midi_inputplugins_midi_input_filterIcon;
 extern QPixmap* midi_inputplugins_midi_input_transformIcon;
-extern QPixmap* midi_inputplugins_random_rhythm_generatorIcon;
 extern QPixmap* midi_inputplugins_remote_controlIcon;
 extern QPixmap* midi_inputplugins_transposeIcon;
 extern QPixmap* midi_local_offIcon;
 extern QPixmap* midi_reset_instrIcon;
 extern QPixmap* settings_appearance_settingsIcon;
 extern QPixmap* settings_configureshortcutsIcon;
-extern QPixmap* settings_follow_songIcon;
 extern QPixmap* settings_globalsettingsIcon;
-extern QPixmap* settings_metronomeIcon;
 extern QPixmap* settings_midifileexportIcon;
 extern QPixmap* settings_midiport_softsynthsIcon;
 extern QPixmap* settings_midisyncIcon;
 extern QPixmap* view_bigtime_windowIcon;
-extern QPixmap* view_cliplistIcon;
 extern QPixmap* view_markerIcon;
-extern QPixmap* view_mixerIcon;
 extern QPixmap* view_transport_windowIcon;
-
-extern QPixmap* monoIcon;
-extern QPixmap* stereoIcon;
 
 extern QPixmap* museIcon;
 extern QPixmap* aboutMuseImage;
@@ -300,18 +160,8 @@ extern QIcon* globalIcon;
 extern QIcon* projectIcon;
 extern QIcon* userIcon;
 
-extern QPixmap* sineIcon;
-extern QPixmap* sawIcon;
-
 extern QIcon* pianoNewIcon;
 extern QIcon* presetsNewIcon;
-
-extern QIcon* cpuIcon;
-extern QPixmap* sliderPngImage;
-extern QPixmap* knobPngImage;
-extern QPixmap* knobBasePngImage;
-extern QPixmap* rimBasePngImage;
-extern QPixmap* knobSmallPngImage;
 
 extern QPixmap* routerFilterSourceIcon;
 extern QPixmap* routerFilterDestinationIcon;
@@ -324,54 +174,7 @@ extern QPixmap* routerViewSplitterIcon;
 //   SVG...
 //----------------------------------
 
-extern QPixmap* routingInputSVGPixmap;
-extern QPixmap* routingOutputSVGPixmap;
-extern QPixmap* routingInputUnconnectedSVGPixmap;
-extern QPixmap* routingOutputUnconnectedSVGPixmap;
-
-extern QPixmap* headphonesOffSVGPixmap;
-extern QPixmap* headphonesOnSVGPixmap;
-
-extern QPixmap* muteOffSVGPixmap;
-extern QPixmap* muteOnSVGPixmap;
-extern QPixmap* muteOnXSVGPixmap;
-extern QPixmap* muteProxyOnSVGPixmap;
-extern QPixmap* muteAndProxyOnSVGPixmap;
-
-extern QPixmap* soloOffSVGPixmap;
-extern QPixmap* soloOnSVGPixmap;
-extern QPixmap* soloOnAloneSVGPixmap;
-extern QPixmap* soloProxyOnSVGPixmap;
-extern QPixmap* soloProxyOnAloneSVGPixmap;
-extern QPixmap* soloAndProxyOnSVGPixmap;
-
-extern QPixmap* trackOffSVGPixmap;
-extern QPixmap* trackOnSVGPixmap;
-
-extern QPixmap* stereoOffSVGPixmap;
-extern QPixmap* stereoOnSVGPixmap;
-
-extern QPixmap* preFaderOffSVGPixmap;
-extern QPixmap* preFaderOnSVGPixmap;
-
-extern QPixmap* externSyncOffSVGPixmap;
-extern QPixmap* externSyncOnSVGPixmap;
-
-extern QPixmap* masterTrackOffSVGPixmap;
-extern QPixmap* masterTrackOnSVGPixmap;
-
-extern QPixmap* jackTransportOffSVGPixmap;
-extern QPixmap* jackTransportOnSVGPixmap;
-
-extern QPixmap* metronomeOffSVGPixmap;
-extern QPixmap* metronomeOnSVGPixmap;
-
-extern QPixmap* recArmOffSVGPixmap;
-extern QPixmap* recArmOnSVGPixmap;
-
-extern QPixmap* monitorOffSVGPixmap;
-extern QPixmap* monitorOnSVGPixmap;
-
+extern QIcon* dropDownTriangleSVGIcon;
 
 extern QIcon* routingInputSVGIcon;
 extern QIcon* routingOutputSVGIcon;
@@ -432,12 +235,40 @@ extern QIcon* masterTrackOnSVGIcon;
 extern QIcon* jackTransportOffSVGIcon;
 extern QIcon* jackTransportOnSVGIcon;
 
+extern QIcon* timebaseMasterOffSVGIcon;
+extern QIcon* timebaseMasterOnSVGIcon;
+
 extern QIcon* metronomeOffSVGIcon;
 extern QIcon* metronomeOnSVGIcon;
 
 extern QIcon* fixedSpeedSVGIcon;
 extern QIcon* transportAffectsLatencySVGIcon;
 extern QIcon* overrideLatencySVGIcon;
+
+extern QIcon* panicSVGIcon;
+extern QIcon* loopSVGIcon;
+extern QIcon* punchinSVGIcon;
+extern QIcon* punchoutSVGIcon;
+extern QIcon* undoSVGIcon;
+extern QIcon* redoSVGIcon;
+extern QIcon* midiinSVGIcon;
+extern QIcon* steprecSVGIcon;
+extern QIcon* speakerSVGIcon;
+extern QIcon* filenewSVGIcon;
+extern QIcon* filetemplateSVGIcon;
+extern QIcon* fileopenSVGIcon;
+extern QIcon* filesaveSVGIcon;
+extern QIcon* filesaveasSVGIcon;
+extern QIcon* filecloseSVGIcon;
+extern QIcon* appexitSVGIcon;
+extern QIcon* whatsthisSVGIcon;
+extern QIcon* exitSVGIcon;
+extern QIcon* noteSVGIcon;
+extern QIcon* metaSVGIcon;
+extern QIcon* ctrlSVGIcon;
+extern QIcon* sysexSVGIcon;
+extern QIcon* tracktypeSVGIcon;
+extern QIcon* mixerstripSVGIcon;
 
 extern QIcon* pencilIconSVG;
 extern QIcon* glueIconSVG;
@@ -452,6 +283,8 @@ extern QIcon* handIconSVG;
 extern QIcon* closedHandIconSVG;
 extern QIcon* cursorIconSVG;
 extern QIcon* magnetIconSVG;
+
+extern QIcon* noscaleSVGIcon[3];
 
 //----------------------------------
 // Cursors

@@ -29,8 +29,8 @@
 //	central point of tweaking the gui
 //
 
-static const int ICON_WIDTH = 18;
-static const QSize ICON_SIZE(ICON_WIDTH, ICON_WIDTH);
+//static const int ICON_WIDTH = 18;
+//static const QSize ICON_SIZE(ICON_WIDTH, ICON_WIDTH);
 
 #endif
 

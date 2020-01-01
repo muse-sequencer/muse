@@ -41,7 +41,7 @@ namespace MusEGui {
 SigScale::SigScale(int* r, QWidget* parent, int xs)
    : View(parent, xs, 1)
       {
-      setToolTip(tr("signature scale"));
+      setToolTip(tr("Signature scale"));
       raster = r;
       pos[0] = MusEGlobal::song->cpos();
       pos[1] = MusEGlobal::song->lpos();

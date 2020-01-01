@@ -93,20 +93,20 @@ static const int drumeditTools = MusEGui::PointerTool | MusEGui::PencilTool | Mu
 
 void DrumEdit::setHeaderWhatsThis()
       {
-      header->setWhatsThis(COL_HIDE, tr("hide instrument"));
-      header->setWhatsThis(COL_MUTE, tr("mute instrument"));
-      header->setWhatsThis(COL_NAME, tr("sound name"));
-      header->setWhatsThis(COL_VOLUME, tr("volume percent"));
-      header->setWhatsThis(COL_QUANT, tr("quantisation"));
-      header->setWhatsThis(COL_INPUTTRIGGER, tr("this input note triggers the sound"));
-      header->setWhatsThis(COL_NOTELENGTH, tr("note length"));
-      header->setWhatsThis(COL_NOTE, tr("this is the note which is played"));
-      header->setWhatsThis(COL_OUTCHANNEL, tr("override track output channel (hold ctl to affect all rows)"));
-      header->setWhatsThis(COL_OUTPORT, tr("override track output port (hold ctl to affect all rows)"));
-      header->setWhatsThis(COL_LEVEL1, tr("control + meta keys: draw velocity level 1"));
-      header->setWhatsThis(COL_LEVEL2, tr("meta key: draw velocity level 2"));
-      header->setWhatsThis(COL_LEVEL3, tr("draw default velocity level 3"));
-      header->setWhatsThis(COL_LEVEL4, tr("meta + alt keys: draw velocity level 4"));
+      header->setWhatsThis(COL_HIDE, tr("Hide instrument"));
+      header->setWhatsThis(COL_MUTE, tr("Mute instrument"));
+      header->setWhatsThis(COL_NAME, tr("Sound name"));
+      header->setWhatsThis(COL_VOLUME, tr("Volume percent"));
+      header->setWhatsThis(COL_QUANT, tr("Quantisation"));
+      header->setWhatsThis(COL_INPUTTRIGGER, tr("This input note triggers the sound"));
+      header->setWhatsThis(COL_NOTELENGTH, tr("Note length"));
+      header->setWhatsThis(COL_NOTE, tr("This is the note which is played"));
+      header->setWhatsThis(COL_OUTCHANNEL, tr("Override track output channel (hold ctl to affect all rows)"));
+      header->setWhatsThis(COL_OUTPORT, tr("Override track output port (hold ctl to affect all rows)"));
+      header->setWhatsThis(COL_LEVEL1, tr("Control + meta keys: Draw velocity level 1"));
+      header->setWhatsThis(COL_LEVEL2, tr("Meta key: Draw velocity level 2"));
+      header->setWhatsThis(COL_LEVEL3, tr("Draw default velocity level 3"));
+      header->setWhatsThis(COL_LEVEL4, tr("Meta + alt keys: Draw velocity level 4"));
       }
 
 //---------------------------------------------------------
@@ -115,20 +115,20 @@ void DrumEdit::setHeaderWhatsThis()
 
 void DrumEdit::setHeaderToolTips()
       {
-      header->setToolTip(COL_HIDE, tr("hide instrument"));
-      header->setToolTip(COL_MUTE, tr("mute instrument"));
-      header->setToolTip(COL_NAME, tr("sound name"));
-      header->setToolTip(COL_VOLUME, tr("volume percent"));
-      header->setToolTip(COL_QUANT, tr("quantisation"));
-      header->setToolTip(COL_INPUTTRIGGER, tr("this input note triggers the sound"));
-      header->setToolTip(COL_NOTELENGTH, tr("note length"));
-      header->setToolTip(COL_NOTE, tr("this is the note which is played"));
-      header->setToolTip(COL_OUTCHANNEL, tr("override track output channel (ctl: affect all rows)"));
-      header->setToolTip(COL_OUTPORT, tr("override track output port (ctl: affect all rows)"));
-      header->setToolTip(COL_LEVEL1, tr("control + meta keys: draw velocity level 1"));
-      header->setToolTip(COL_LEVEL2, tr("meta key: draw velocity level 2"));
-      header->setToolTip(COL_LEVEL3, tr("draw default velocity level 3"));
-      header->setToolTip(COL_LEVEL4, tr("meta + alt keys: draw velocity level 4"));
+      header->setToolTip(COL_HIDE, tr("Hide instrument"));
+      header->setToolTip(COL_MUTE, tr("Mute instrument"));
+      header->setToolTip(COL_NAME, tr("Sound name"));
+      header->setToolTip(COL_VOLUME, tr("Volume percent"));
+      header->setToolTip(COL_QUANT, tr("Quantisation"));
+      header->setToolTip(COL_INPUTTRIGGER, tr("This input note triggers the sound"));
+      header->setToolTip(COL_NOTELENGTH, tr("Note length"));
+      header->setToolTip(COL_NOTE, tr("This is the note which is played"));
+      header->setToolTip(COL_OUTCHANNEL, tr("Override track output channel (ctl: affect all rows)"));
+      header->setToolTip(COL_OUTPORT, tr("Override track output port (ctl: affect all rows)"));
+      header->setToolTip(COL_LEVEL1, tr("Control + meta keys: Draw velocity level 1"));
+      header->setToolTip(COL_LEVEL2, tr("Meta key: Draw velocity level 2"));
+      header->setToolTip(COL_LEVEL3, tr("Draw default velocity level 3"));
+      header->setToolTip(COL_LEVEL4, tr("Meta + alt keys: Draw velocity level 4"));
       }
 
 //---------------------------------------------------------
@@ -307,8 +307,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       
       if (old_style_drummap_mode())
       {
-        loadAction = menuFunctions->addAction(QIcon(*openIcon), tr("Load Map"));
-        saveAction = menuFunctions->addAction(QIcon(*saveIcon), tr("Save Map"));
+        loadAction = menuFunctions->addAction(*fileopenSVGIcon, tr("Load Map"));
+        saveAction = menuFunctions->addAction(*filesaveSVGIcon, tr("Save Map"));
         resetAction = menuFunctions->addAction(tr("Reset GM Map"));
 
         connect(loadAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_LOAD); } );
@@ -353,7 +353,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       MusEGlobal::song->populateScriptMenu(menuScriptPlugins, &_scriptReceiver);
 
 
-      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
       if (!old_style_drummap_mode())
       {
         QMenu* menuGrouping=settingsMenu->addMenu(tr("Group"));
@@ -418,28 +418,31 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       tools->setObjectName("Drum tools");
 
       srec  = new QToolButton();
-      srec->setToolTip(tr("Step Record"));
-      srec->setIcon(*steprecIcon);
+      srec->setToolTip(tr("Step record"));
+      srec->setIcon(*steprecSVGIcon);
       srec->setCheckable(true);
       srec->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(srec);
 
       midiin  = new QToolButton();
-      midiin->setToolTip(tr("Midi Input"));
-      midiin->setIcon(*midiinIcon);
+      midiin->setToolTip(tr("Midi input"));
+      midiin->setIcon(*midiinSVGIcon);
       midiin->setCheckable(true);
       midiin->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(midiin);
       
       speaker  = new QToolButton();
-      speaker->setToolTip(tr("Play Events"));
-      speaker->setIcon(*speakerIcon);
+      speaker->setToolTip(tr("Play events"));
+      speaker->setIcon(*speakerSVGIcon);
       speaker->setCheckable(true);
       speaker->setChecked(true);
       speaker->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(speaker);
 
-      tools->addAction(QWhatsThis::createAction(this));
+      QAction* whatsthis = QWhatsThis::createAction(this);
+      whatsthis->setIcon(*whatsthisSVGIcon);
+      tools->addAction(whatsthis);
+
 
       if (old_style_drummap_mode())
       {
@@ -447,15 +450,15 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
         maptools->setObjectName("Drum map tools");
         
         QToolButton *ldm = new QToolButton();
-        ldm->setToolTip(tr("Load Drummap"));
-        ldm->setIcon(*openIcon);
+        ldm->setToolTip(tr("Load drummap"));
+        ldm->setIcon(*fileopenSVGIcon);
         ldm->setFocusPolicy(Qt::NoFocus);
         connect(ldm, SIGNAL(clicked()), SLOT(load()));
         maptools->addWidget(ldm);
         
         QToolButton *sdm = new QToolButton();
-        sdm->setToolTip(tr("Store Drummap"));
-        sdm->setIcon(*saveIcon);
+        sdm->setToolTip(tr("Store drummap"));
+        sdm->setIcon(*filesaveSVGIcon);
         sdm->setFocusPolicy(Qt::NoFocus);
         connect(sdm, SIGNAL(clicked()), SLOT(save()));
         maptools->addWidget(sdm);
@@ -469,10 +472,10 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       addToolBarBreak();
       
       info    = new MusEGui::NoteInfo(this);
-      info->setObjectName("Drum Note Info");
+      info->setObjectName("Drum note info");
       addToolBar(info);
 
-      QToolBar* cursorToolbar = addToolBar(tr("cursor tools"));
+      QToolBar* cursorToolbar = addToolBar(tr("Cursor tools"));
       cursorToolbar->setObjectName("Cursor step tools");
       QLabel *stepStr = new QLabel(tr("Cursor step:"));
       cursorToolbar->addWidget(stepStr);
@@ -511,7 +514,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
       hscroll           = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, _viewState.xscale(), 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(40, hscroll->sizeHint().height());
-      ctrl->setToolTip(tr("Add Controller View"));
+      ctrl->setToolTip(tr("Add controller view"));
 
       QSizeGrip* corner = new QSizeGrip(mainw);
       //corner->setFixedHeight(hscroll->sizeHint().height());
@@ -630,7 +633,9 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       //  Ordering is hardcoded in dlist.c ("Dcols")
       header = new MusEGui::Header(split1w1, "header");
       header->setFixedHeight(31);
+      //: hide
       header->setColumnLabel(tr("H"), COL_HIDE, 20);
+      //: mute
       header->setColumnLabel(tr("M"), COL_MUTE, 20);
       header->setColumnLabel(tr("Sound"), COL_NAME, 120);
       header->setColumnLabel(tr("Vol"), COL_VOLUME);

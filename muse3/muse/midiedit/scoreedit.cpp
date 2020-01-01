@@ -250,8 +250,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     QToolBar* steprec_tools=addToolBar(tr("Step recording tools"));
     steprec_tools->setObjectName("Score tools");
     srec  = new QToolButton();
-    srec->setToolTip(tr("Step Record"));
-    srec->setIcon(*steprecIcon);
+    srec->setToolTip(tr("Step record"));
+    srec->setIcon(*steprecSVGIcon);
     srec->setCheckable(true);
     srec->setFocusPolicy(Qt::NoFocus);
     steprec_tools->addWidget(srec);
@@ -457,7 +457,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
         connect(func_del_overlaps_action, &QAction::triggered, [this]() { menu_command(CMD_DELETE_OVERLAPS); } );
         connect(func_legato_action,       &QAction::triggered, [this]() { menu_command(CMD_LEGATO); } );
 
-    QMenu* settings_menu = menuBar()->addMenu(tr("Window &Config"));
+    QMenu* settings_menu = menuBar()->addMenu(tr("&Display"));
 
         color_menu = settings_menu->addMenu(tr("Note head &colors"));
             color_actions = new QActionGroup(this);

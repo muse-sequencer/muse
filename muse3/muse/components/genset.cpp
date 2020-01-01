@@ -81,11 +81,11 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       
       updateSettings();
       
-      projDirOpenToolButton->setIcon(*openIcon);
+      projDirOpenToolButton->setIcon(*fileopenSVGIcon);
       connect(projDirOpenToolButton, SIGNAL(clicked()), SLOT(browseProjDir()));
-      startSongFileOpenToolButton->setIcon(*openIcon); 
+      startSongFileOpenToolButton->setIcon(*fileopenSVGIcon);
       connect(startSongFileOpenToolButton, SIGNAL(clicked()), SLOT(browseStartSongFile()));
-      startSongResetToolButton->setIcon(*undoIcon);
+      startSongResetToolButton->setIcon(*undoSVGIcon);
       connect(startSongResetToolButton, SIGNAL(clicked()), SLOT(startSongReset()));
       
       connect(applyButton, SIGNAL(clicked()), SLOT(apply()));
@@ -223,6 +223,8 @@ void GlobalSettingsConfig::updateSettings()
       denormalCheckBox->setChecked(MusEGlobal::config.useDenormalBias);
       outputLimiterCheckBox->setChecked(MusEGlobal::config.useOutputLimiter);
       vstInPlaceCheckBox->setChecked(MusEGlobal::config.vstInPlace);
+      revertPluginNativeGUIScalingCheckBox->setChecked(MusEGlobal::config.noPluginScaling);
+      openMDIWinMaximizedCheckBox->setChecked(MusEGlobal::config.openMDIWinMaximized);
 
       deviceAudioBackendComboBox->setCurrentIndex(MusEGlobal::config.deviceAudioBackend);
 
@@ -290,13 +292,15 @@ void GlobalSettingsConfig::updateSettings()
       addHiddenCheckBox->setChecked(MusEGlobal::config.addHiddenTracks);
       unhideTracksCheckBox->setChecked(MusEGlobal::config.unhideTracks);
 
-      switch (MusEGlobal::config.drumTrackPreference)
-      {
-        case MusEGlobal::ONLY_NEW: onlyNewDrumBtn->setChecked(true); break;
-        case MusEGlobal::ONLY_OLD: onlyOldDrumBtn->setChecked(true); break;
-        case MusEGlobal::PREFER_NEW: preferNewDrumBtn->setChecked(true); break;
-        case MusEGlobal::PREFER_OLD: preferOldDrumBtn->setChecked(true); break;
-      }
+// Obsolete. There is only 'New' drum tracks now.
+// drumTrackPreference is fixed until it is removed some day...
+//       switch (MusEGlobal::config.drumTrackPreference)
+//       {
+//         case MusEGlobal::ONLY_NEW: onlyNewDrumBtn->setChecked(true); break;
+//         case MusEGlobal::ONLY_OLD: onlyOldDrumBtn->setChecked(true); break;
+//         case MusEGlobal::PREFER_NEW: preferNewDrumBtn->setChecked(true); break;
+//         case MusEGlobal::PREFER_OLD: preferOldDrumBtn->setChecked(true); break;
+//       }
 
       trackHeight->setValue(MusEGlobal::config.trackHeight);
 
@@ -448,6 +452,8 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.smartFocus = smartFocusCheckBox->isChecked();
       MusEGlobal::config.borderlessMouse = borderlessMouseCheckBox->isChecked();
       MusEGlobal::config.velocityPerNote = velocityPerNoteCheckBox->isChecked();
+      MusEGlobal::config.noPluginScaling = revertPluginNativeGUIScalingCheckBox->isChecked();
+      MusEGlobal::config.openMDIWinMaximized = openMDIWinMaximizedCheckBox->isChecked();
 
       MusEGlobal::config.addHiddenTracks = addHiddenCheckBox->isChecked();
       MusEGlobal::config.unhideTracks = unhideTracksCheckBox->isChecked();
@@ -487,14 +493,16 @@ void GlobalSettingsConfig::apply()
       if(MusEGlobal::midiSeq)
         MusEGlobal::midiSeq->msgSetRtc();        // set midi tick rate
       
-      if (onlyNewDrumBtn->isChecked())
-        MusEGlobal::config.drumTrackPreference=MusEGlobal::ONLY_NEW;
-      else if (onlyOldDrumBtn->isChecked())
-        MusEGlobal::config.drumTrackPreference=MusEGlobal::ONLY_OLD;
-      else if (preferOldDrumBtn->isChecked())
-        MusEGlobal::config.drumTrackPreference=MusEGlobal::PREFER_OLD;
-      else if (preferNewDrumBtn->isChecked())
-        MusEGlobal::config.drumTrackPreference=MusEGlobal::PREFER_NEW;
+      // Obsolete. There is only 'New' drum tracks now.
+      // drumTrackPreference is fixed until it is removed some day...
+//       if (onlyNewDrumBtn->isChecked())
+//         MusEGlobal::config.drumTrackPreference=MusEGlobal::ONLY_NEW;
+//       else if (onlyOldDrumBtn->isChecked())
+//         MusEGlobal::config.drumTrackPreference=MusEGlobal::ONLY_OLD;
+//       else if (preferOldDrumBtn->isChecked())
+//         MusEGlobal::config.drumTrackPreference=MusEGlobal::PREFER_OLD;
+//       else if (preferNewDrumBtn->isChecked())
+//         MusEGlobal::config.drumTrackPreference=MusEGlobal::PREFER_NEW;
 
       MusEGlobal::config.trackHeight = trackHeight->value();
 

@@ -98,8 +98,8 @@ set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 SET(MusE_VERSION_MAJOR 3)
 SET(MusE_VERSION_MINOR 1)
 SET(MusE_VERSION_PATCH 0)
-SET(MusE_VERSION       "3.1.0pre3")
-SET(MusE_VERSION_FULL  "3.1.0pre3")
+SET(MusE_VERSION       "3.1.0pre4")
+SET(MusE_VERSION_FULL  "3.1.0pre4")
 SET(MusE_INSTALL_NAME  "muse-3.1")
 SET(MusE_EXEC_NAME     "muse3")
 
@@ -657,12 +657,13 @@ file (GLOB doc_files
       ChangeLog
       COPYING
       libdivide_LICENSE
-      NEWS
       README
-      README.de
+      README.editor-shortcuts
       README.effects-rack
       README.instruments
       README.ladspaguis
+      README.metronome
+      README.python
       README.shortcuts
       README.softsynth
       README.translate

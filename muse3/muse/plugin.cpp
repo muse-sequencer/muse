@@ -35,6 +35,7 @@
 #include <QToolBar>
 #include <QMessageBox>
 #include <QByteArray>
+#include <QToolButton>
 
 #include "globals.h"
 #include "globaldefs.h"
@@ -53,6 +54,7 @@
 #include "meter.h"
 #include "utils.h"
 #include "pluglist.h"
+#include "gui.h"
 
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
@@ -626,7 +628,8 @@ void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, flo
 void PluginQuirks::write(int level, Xml& xml) const
       {
       // Defaults? Nothing to save.
-      if(!_fixedSpeed && !_transportAffectsAudioLatency && !_overrideReportedLatency && _latencyOverrideValue == 0)
+      if(!_fixedSpeed && !_transportAffectsAudioLatency && !_overrideReportedLatency
+              && _latencyOverrideValue == 0 && _fixNativeUIScaling == NatUISCaling::GLOBAL)
         return;
 
       xml.tag(level++, "quirks");
@@ -642,6 +645,9 @@ void PluginQuirks::write(int level, Xml& xml) const
 
       if(_latencyOverrideValue != 0)
         xml.intTag(level, "latOvrVal", _latencyOverrideValue);
+
+      if(_fixNativeUIScaling != NatUISCaling::GLOBAL)
+        xml.intTag(level, "fixNatUIScal", _fixNativeUIScaling);
 
       xml.etag(--level, "quirks");
       }
@@ -669,6 +675,8 @@ bool PluginQuirks::read(Xml& xml)
                               _overrideReportedLatency = xml.parseInt();
                         else if (tag == "latOvrVal")
                               _latencyOverrideValue = xml.parseInt();
+                        else if (tag == "fixNatUIScal")
+                              _fixNativeUIScaling = (NatUISCaling)xml.parseInt();
                         else
                               xml.unknown("PluginQuirks");
                         break;
@@ -1452,7 +1460,7 @@ QString Pipeline::name(int idx) const
       PluginI* p = (*this)[idx];
       if (p)
             return p->name();
-      return QString("empty");
+      return QObject::tr("Empty");
       }
 
 //---------------------------------------------------------
@@ -3507,25 +3515,28 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       setWindowTitle(plugin->titlePrefix() + plugin->name());
       
       QToolBar* tools = addToolBar(tr("File Buttons"));
+      tools->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 
-      QAction* fileOpen = new QAction(QIcon(*openIconS), tr("Load Preset"), this);
+      QAction* fileOpen = new QAction(*fileopenSVGIcon, tr("Load Preset"), this);
 //       connect(fileOpen, SIGNAL(triggered()), this, SLOT(load()));
       connect(fileOpen, &QAction::triggered, [this]() { load(); } );
       tools->addAction(fileOpen);
 
-      QAction* fileSave = new QAction(QIcon(*saveIconS), tr("Save Preset"), this);
+      QAction* fileSave = new QAction(*filesaveSVGIcon, tr("Save Preset"), this);
 //       connect(fileSave, SIGNAL(triggered()), this, SLOT(save()));
       connect(fileSave, &QAction::triggered, [this]() { save(); } );
       tools->addAction(fileSave);
 
-      tools->addAction(QWhatsThis::createAction(this));
+      QAction* whatsthis = QWhatsThis::createAction(this);
+      whatsthis->setIcon(*whatsthisSVGIcon);
+      tools->addAction(whatsthis);
 
       //onOff = new QAction(QIcon(*exitIconS), tr("bypass plugin"), this);
-      onOff = new QAction(*muteSVGIcon, tr("bypass plugin"), this);
+      onOff = new QAction(*muteSVGIcon, tr("Bypass plugin"), this);
       onOff->setCheckable(true);
       onOff->setChecked(!plugin->on());
       onOff->setEnabled(plugin->hasBypass());
-      onOff->setToolTip(tr("bypass plugin"));
+      onOff->setToolTip(tr("Bypass plugin"));
       connect(onOff, &QAction::toggled, [this](bool v) { bypassToggled(v); } );
       tools->addAction(onOff);
 
@@ -3564,6 +3575,16 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       connect(latencyOverrideEntry,
         QOverload<int>::of(&QSpinBox::valueChanged), [=](int v) { latencyOverrideValueChanged(v); } );
       tools->addWidget(latencyOverrideEntry);
+
+      fixScalingTooltip[0] = tr("Revert native UI HiDPI scaling: Follow global setting");
+      fixScalingTooltip[1] = tr("Revert native UI HiDPI scaling: On");
+      fixScalingTooltip[2] = tr("Revert native UI HiDPI scaling: Off");
+      fixNativeUIScalingTB = new QToolButton(this);
+      fixNativeUIScalingTB->setIcon(*noscaleSVGIcon[plugin->cquirks()._fixNativeUIScaling]);
+      fixNativeUIScalingTB->setProperty("state", plugin->cquirks()._fixNativeUIScaling);
+      fixNativeUIScalingTB->setToolTip(fixScalingTooltip[plugin->cquirks()._fixNativeUIScaling]);
+      connect(fixNativeUIScalingTB, &QToolButton::clicked, [this]() { fixNativeUIScalingTBClicked(); } );
+      tools->addWidget(fixNativeUIScalingTB);
 
       // TODO: We need to use .qrc files to use icons in WhatsThis bubbles. See Qt
       // Resource System in Qt documentation - ORCAN
@@ -3666,7 +3687,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         fnt.setStyleStrategy(QFont::NoAntialias);
                         fnt.setHintingPreference(QFont::PreferVerticalHinting);
                         s->setFont(fnt);
-                        s->setStyleSheet(MusECore::font2StyleSheet(fnt));
+                        s->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
                         s->setSizeHint(200, 8);
 
                         for(unsigned long i = 0; i < nobj; i++)
@@ -3798,7 +3819,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         fnt.setStyleStrategy(QFont::NoAntialias);
                         fnt.setHintingPreference(QFont::PreferVerticalHinting);
                         s->setFont(fnt);
-                        s->setStyleSheet(MusECore::font2StyleSheet(fnt));
+                        s->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
 
                         s->setCursorHoming(true);
                         s->setId(i);
@@ -3886,7 +3907,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                       fnt.setStyleStrategy(QFont::NoAntialias);
                       fnt.setHintingPreference(QFont::PreferVerticalHinting);
                       m->setFont(fnt);
-                      m->setStyleSheet(MusECore::font2StyleSheet(fnt));
+                      m->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
 
                       paramsOut[i].actuator = m;
                       label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -4349,6 +4370,16 @@ void PluginGui::latencyOverrideValueChanged(int v)
   // TODO Make a safe audio-synced operation?
   plugin->quirks()._latencyOverrideValue = v;
   MusEGlobal::song->update(SC_ROUTE);
+}
+
+void PluginGui::fixNativeUIScalingTBClicked()
+{
+    int state = fixNativeUIScalingTB->property("state").toInt();
+    state = (state == 2) ? 0 : state + 1;
+    fixNativeUIScalingTB->setToolTip(fixScalingTooltip[state]);
+    fixNativeUIScalingTB->setIcon(*noscaleSVGIcon[state]);
+    fixNativeUIScalingTB->setProperty("state", state);
+    plugin->quirks()._fixNativeUIScaling = (MusECore::PluginQuirks::NatUISCaling)state;
 }
 
 //---------------------------------------------------------

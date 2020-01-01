@@ -34,11 +34,6 @@
 #include "midictrl.h"
 #include "part.h"
 
-// Whether to show an additional 'Alt' button beside
-//  the trackinfo button, to show the old midi trackinfo panel.
-// TODO: TO BE REMOVED. The midi trackinfo panel is obsolete and disabled now.
-//#define _USE_TRACKINFO_ALT 1;
-
 class QSplitter;
 class QAction;
 class QMenu;

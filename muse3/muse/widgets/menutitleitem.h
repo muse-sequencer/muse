@@ -23,7 +23,9 @@
 #ifndef __MENU_TITLE_ITEM_H__
 #define __MENU_TITLE_ITEM_H__
 
+#include <QWidget>
 #include <QWidgetAction>
+#include <QString>
 
 namespace MusEGui {
 
@@ -33,9 +35,8 @@ namespace MusEGui {
 
 class MenuTitleItem : public QWidgetAction { 
       Q_OBJECT
+
    private:
-      
-        
       QString s;
 
    public:

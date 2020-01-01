@@ -37,6 +37,13 @@ file (GLOB vam_ui_files
 QT5_WRAP_UI ( vam_uis ${vam_ui_files} )
 
 ##
+## Resource files
+##
+QT5_ADD_RESOURCES (vam_qrc_files
+      vam.qrc
+      )
+
+##
 ## List of source files to compile
 ##
 file (GLOB vam_source_files
@@ -51,6 +58,7 @@ add_library ( vam SHARED
       ${vam_source_files}
       ${vam_mocs}
       ${vam_uis}
+      ${vam_qrc_files}
       )
 
 ##
@@ -79,10 +87,8 @@ set_target_properties ( vam
 ## Linkage
 ##
 target_link_libraries(vam
-      # al
       synti
       ${QT_LIBRARIES}
-      icons
       mpevent_module
       xml_module
       )

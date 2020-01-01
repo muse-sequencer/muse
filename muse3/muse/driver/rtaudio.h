@@ -322,7 +322,7 @@ class RtAudioDevice : public AudioDevice {
       virtual int realtimePriority() const { return 40; }
 
       virtual void setFreewheel(bool) {}
-      virtual int setMaster(bool) { return 1; }
+      virtual int setMaster(bool, bool /*unconditional*/ = false) { return 1; }
 };
 
 } // namespace MusECore

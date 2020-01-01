@@ -83,6 +83,7 @@ QT5_WRAP_CPP (widget_mocs
       lcombo.h  
       line_edit.h
       menutitleitem.h
+      menutitlewidgets.h
       meter.h
 #       meter_slider.h
 #       metronome.h  
@@ -91,6 +92,7 @@ QT5_WRAP_CPP (widget_mocs
 #       midi_warn_init_pending_impl.h
 #       mixdowndialog.h  
       mlabel.h  
+      musemdiarea.h
 #       mtscale.h  
 #       mtscale_flo.h  
       # mtrackinfo.h
@@ -227,6 +229,7 @@ file (GLOB widgets_source_files
       lcombo.cpp 
       line_edit.cpp
       menutitleitem.cpp
+      menutitlewidgets.cpp
       meter.cpp
 #       meter_slider.cpp
 #       metronome.cpp 
@@ -236,6 +239,7 @@ file (GLOB widgets_source_files
 #       mixdowndialog.cpp 
       mlabel.cpp 
       mmath.cpp
+      musemdiarea.cpp
       # mtrackinfo.cpp
 #       mtscale.cpp 
 #       mtscale_flo.cpp 
@@ -324,7 +328,6 @@ set_target_properties( widgets
 ##
 target_link_libraries ( widgets
       ${QT_LIBRARIES}
-      icons
       )
 
 ##

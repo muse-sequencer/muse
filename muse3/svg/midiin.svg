@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g transform="matrix(.97901 0 0 .97901 .67518 .66591)" stroke-width="1.0214">
+  <circle cx="32.172" cy="31.73" r="30.413" stroke="#000" stroke-linecap="square" stroke-linejoin="round" stroke-width="3.0643" style="paint-order:markers fill stroke"/>
+  <circle cx="32.172" cy="31.73" r="27.983" fill="none" stroke="#fff" stroke-linecap="square" stroke-linejoin="round" stroke-width="3.0643" style="paint-order:markers fill stroke"/>
+  <g fill="#fff" stroke="#fff">
+   <path d="m26.456 58.991v-10.991h11.544v10.991h-11.544" stroke-width="1.0214px"/>
+   <g stroke-linecap="square" stroke-linejoin="round" stroke-width="3.0643">
+    <circle cx="32.614" cy="13.028" r="2.5676" style="paint-order:markers fill stroke"/>
+    <circle cx="45.076" cy="19.745" r="2.5676" style="paint-order:markers fill stroke"/>
+    <circle cx="19.841" cy="19.745" r="2.5676" style="paint-order:markers fill stroke"/>
+    <circle cx="14.759" cy="32.473" r="2.5676" style="paint-order:markers fill stroke"/>
+    <circle cx="49.761" cy="32.517" r="2.5676" style="paint-order:markers fill stroke"/>
+   </g>
+  </g>
+ </g>
+</svg>

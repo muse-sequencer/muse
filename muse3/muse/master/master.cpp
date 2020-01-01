@@ -231,9 +231,12 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
 void Master::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       {
       drawTickRaster(p, rect, rg, 0,
-                         false, false, false,
-                         MusEGlobal::config.midiCanvasBarColor,
-                         MusEGlobal::config.midiCanvasBeatColor);
+                     false, false, false,
+                     Qt::red, // dummy color - order set by trial and error..
+                     MusEGlobal::config.midiCanvasBeatColor,
+                     Qt::red, // dummy color
+                     MusEGlobal::config.midiCanvasBarColor
+                     );
 
       if ((tool == MusEGui::DrawTool) && drawLineMode) {
           QPen pen;

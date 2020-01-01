@@ -21,12 +21,8 @@
 //
 //=========================================================
 
-#include <QPainter>
 #include <QBrush>
-#include <QColor>
-#include <QPalette>
 #include <QLinearGradient>
-#include <QRect>
 
 #include "gconfig.h"
 #include "background_painter.h"
@@ -37,7 +33,8 @@
 
 namespace MusEGui {
 
-ItemBackgroundPainter::ItemBackgroundPainter()
+ItemBackgroundPainter::ItemBackgroundPainter(QObject* parent)
+ : QObject(parent)
 {
 
 }
@@ -58,7 +55,13 @@ void ItemBackgroundPainter::drawBackground(QPainter* painter,
   if(!onRect.isNull())
     onfull = (onRect == fullRect);
 
-  QColor acolor = activeColor.isValid() ? activeColor : MusEGlobal::config.rackItemBackgroundColor;
+  QColor acolor;
+  if(activeColor.isValid())
+    acolor = activeColor;
+  else if(_activeColor.isValid()) 
+    acolor = _activeColor;
+  else
+    acolor = MusEGlobal::config.rackItemBackgroundColor;
 
   QRect cr = QRect(fullRect.x() + xMargin, fullRect.y() + yMargin,
                     fullRect.width() - 2 * xMargin, fullRect.height() - 2 * yMargin);

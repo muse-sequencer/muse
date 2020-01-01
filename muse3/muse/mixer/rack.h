@@ -28,18 +28,18 @@
 #include <QListWidget>
 #include "type_defs.h"
 
-class QDragEnterEvent;
-class QDragLeaveEvent;
-class QDropEvent;
-class QMouseEvent;
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
+#include <QDropEvent>
+#include <QMouseEvent>
+#include <QEvent>
+#include <QColor>
 
-namespace MusECore {
-class AudioTrack;
-class Xml;
-}
+#include "track.h"
+#include "xml.h"
+#include "background_painter.h"
 
 namespace MusEGui {
-class ItemBackgroundPainter;
 
 //---------------------------------------------------------
 //   EffectRack
@@ -48,10 +48,11 @@ class ItemBackgroundPainter;
 class EffectRack : public QListWidget {
       Q_OBJECT
     
+      Q_PROPERTY( QColor activeColor READ activeColor WRITE setActiveColor )
     
       MusECore::AudioTrack* track;
       int itemheight;
-      //QColor activeColor;
+      QColor _activeColor;
       ItemBackgroundPainter* _bkgPainter;
 
       virtual QSize minimumSizeHint() const;
@@ -74,17 +75,19 @@ class EffectRack : public QListWidget {
       void dragEnterEvent(QDragEnterEvent *event);
       void mousePressEvent(QMouseEvent *event);
       void mouseMoveEvent(QMouseEvent *event);
+      void enterEvent(QEvent *event);
+      void leaveEvent(QEvent *event);
 
       QStringList mimeTypes() const;
       Qt::DropActions supportedDropActions () const;
    
    public:
       EffectRack(QWidget*, MusECore::AudioTrack* t);
-      ~EffectRack();
-      
-      MusECore::AudioTrack* getTrack() { return track; } 
-      QPoint getDragPos() { return dragPos; }
-      //QColor getActiveColor() { return activeColor; }
+
+      MusECore::AudioTrack* getTrack() const { return track; } 
+      QPoint getDragPos() const { return dragPos; }
+      QColor activeColor() const { return _activeColor; }
+      void setActiveColor(const QColor& c) { _activeColor = c; update(); }
       ItemBackgroundPainter* getBkgPainter() const { return _bkgPainter; }
 
       };

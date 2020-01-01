@@ -93,6 +93,15 @@ QString Header::columnLabel(int col)
 }
 
 //---------------------------------------------------------
+//   columnLabel
+//---------------------------------------------------------
+
+QIcon Header::columnIcon(int col)
+{
+    return itemModel->horizontalHeaderItem(col)->icon();
+}
+
+//---------------------------------------------------------
 //   setColumnLabel
 //---------------------------------------------------------
 
@@ -104,6 +113,19 @@ void Header::setColumnLabel(const QString & text, int col, int width )
       if (width > -1)
            resizeSection(col, width);
       }
+
+//---------------------------------------------------------
+//   setColumnIcon
+//---------------------------------------------------------
+
+void Header::setColumnIcon(QIcon & icon, int col, int width )
+{
+    // empty string must be set as placeholder (icon size is ignored)
+    QStandardItem *sitem = new QStandardItem(icon, QString("    "));
+    itemModel->setHorizontalHeaderItem(col, sitem);
+    if (width > -1)
+        resizeSection(col, width);
+}
 
 //---------------------------------------------------------
 //   setToolTip
@@ -136,13 +158,18 @@ void Header::mousePressEvent ( QMouseEvent * e )
     QAction* act = 0;
 
     for(int i=0; i < count(); i++) {
-      act = p->addAction(itemModel->horizontalHeaderItem(logicalIndex(i))->text() +
-                         "\t - "+ itemModel->horizontalHeaderItem(logicalIndex(i))->toolTip());
+        QIcon icon = itemModel->horizontalHeaderItem(logicalIndex(i))->icon();
+        if (!icon.isNull()) {
+            act = p->addAction(icon, "\t - "+ itemModel->horizontalHeaderItem(logicalIndex(i))->toolTip());
+        } else {
+            act = p->addAction(itemModel->horizontalHeaderItem(logicalIndex(i))->text() +
+                               "\t - "+ itemModel->horizontalHeaderItem(logicalIndex(i))->toolTip());
+        }
 
-      act->setCheckable(true);
-      act->setChecked(!isSectionHidden(logicalIndex(i)));
-      int data = logicalIndex(i);
-      act->setData(data);
+        act->setCheckable(true);
+        act->setChecked(!isSectionHidden(logicalIndex(i)));
+        int data = logicalIndex(i);
+        act->setData(data);
     }
     connect(p, SIGNAL(triggered(QAction*)), SLOT(changeColumns(QAction*)));
     p->exec(QCursor::pos());

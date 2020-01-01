@@ -654,10 +654,14 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
                         case COL_OUTPORT:
                               if(dcanvas)
                                 isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, WorkingDrumMapEntry::PortField);
-                              if(dm->port != -1)
+                              if(dm->port >= 0 && dm->port < MusECore::MIDI_PORTS) {
+                                // muse can now keep port info for synths that are not properly instantiated.
+                                // This seems however to lead to dm->port being set to an abnormal value.
+                                // We make a check that it is within bounds before continuing
                                 s = QString("%1:%2")
                                     .arg(dm->port + 1)
                                     .arg(MusEGlobal::midiPorts[dm->port].portname());
+                              }
                               align = Qt::AlignVCenter | Qt::AlignLeft;
                               break;
                         }

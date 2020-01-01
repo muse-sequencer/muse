@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
+        <file>xpm/cpu.xpm</file>
         <file>svg/routing_input.svg</file>
         <file>svg/routing_output.svg</file>
         <file>svg/routing_input_unconnected.svg</file>
@@ -41,6 +42,8 @@
         <file>svg/master_track_on.svg</file>
         <file>svg/jack_transport_off.svg</file>
         <file>svg/jack_transport_on.svg</file>
+        <file>svg/timebase_master_off.svg</file>
+        <file>svg/timebase_master_on.svg</file>
         <file>svg/metronome_off.svg</file>
         <file>svg/metronome_on.svg</file>
         <file>svg/paste_ctrl.svg</file>
@@ -66,5 +69,38 @@
         <file>svg/zoomAt.svg</file>
         <file>svg/magnet.svg</file>
         <file>svg/closed_hand.svg</file>
+        <file>svg/panic.svg</file>
+        <file>svg/loop.svg</file>
+        <file>svg/punchin.svg</file>
+        <file>svg/punchout.svg</file>
+        <file>svg/redo.svg</file>
+        <file>svg/undo.svg</file>
+        <file>svg/noscale1.svg</file>
+        <file>svg/noscale2.svg</file>
+        <file>svg/noscale3.svg</file>
+        <file>svg/midiin.svg</file>
+        <file>svg/speaker.svg</file>
+        <file>svg/steprec.svg</file>
+        <file>svg/filesave.svg</file>
+        <file>svg/filenew.svg</file>
+        <file>svg/fileopen.svg</file>
+        <file>svg/filesaveas.svg</file>
+        <file>svg/fileclose.svg</file>
+        <file>svg/appexit.svg</file>
+        <file>svg/whatsthis.svg</file>
+        <file>svg/exit.svg</file>
+        <file>svg/filefromtemplate.svg</file>
+        <file>svg/ctrl.svg</file>
+        <file>svg/meta.svg</file>
+        <file>svg/note.svg</file>
+        <file>svg/sysex.svg</file>
+        <file>svg/tracktype.svg</file>
+        <file>svg/mixerstrip.svg</file>
+        <file>svg/drop_down_triangle.svg</file>
+        <file>svg/down_vee.svg</file>
+        <file>svg/up_vee.svg</file>
+        <file>svg/arrow_up.svg</file>
+        <file>svg/arrow_down.svg</file>
+        <file>qss/scrollbar_small_vertical.qss</file>
     </qresource>
 </RCC>

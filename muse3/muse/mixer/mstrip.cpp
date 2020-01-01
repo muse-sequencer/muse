@@ -1388,7 +1388,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       
       // Set the whole strip's font, except for the label.
       setFont(MusEGlobal::config.fonts[1]); // For some reason must keep this, the upper rack is too tall at first.
-      setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+      setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
       
       // Clear so the meters don't start off by showing stale values.
       t->setActivity(0);
@@ -1434,7 +1434,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       _upperStackTabButtonB->setAlignment(Qt::AlignCenter);
       _upperStackTabButtonA->setToolTip(tr("Palette A"));
       _upperStackTabButtonB->setToolTip(tr("Palette B"));
+      //: Palette A
       _upperStackTabButtonA->setText(tr("A"));
+      //: Palette B
       _upperStackTabButtonB->setText(tr("B"));
       _upperStackTabButtonA->setHasOffMode(true);
       _upperStackTabButtonB->setHasOffMode(true);
@@ -2009,9 +2011,9 @@ void MidiStrip::setupMidiVolume()
       sl->setRange(MusEGlobal::config.minSlider, volSliderMaxDb);
       sl->setOff(MusEGlobal::config.minSlider);
       //sl->setSpecialText(tr("off"));
-      //sl->setSpecialText(QString('-') + QChar(0x221e) + QChar(' ') + tr("dB"));  // The infinity character.
+      //sl->setSpecialText(QString('-') + QChar(0x221e) + QChar(' ') + "dB");  // The infinity character.
       //sl->setToolTip(tr("Volume/gain"));
-      sl->setSuffix(tr("dB"));
+      sl->setSuffix("dB");
     }
     else
     {
@@ -2188,7 +2190,7 @@ void MidiStrip::configChanged()
   {
     //DEBUG_MIDI_STRIP(stderr, "MidiStrip::configChanged changing font: current size:%d\n", font().pointSize());
     setFont(MusEGlobal::config.fonts[1]);
-    setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+    setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
     // Update in case font changed.
     updateRackSizes(true, true);
   }

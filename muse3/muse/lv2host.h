@@ -433,7 +433,7 @@ public:
     static int lv2ui_Resize ( LV2UI_Feature_Handle handle, int width, int height );
     static void lv2ui_Gtk2AllocateCb(int width, int height, void *arg);
     static void lv2ui_Gtk2ResizeCb(int width, int height, void *arg);
-    static void lv2ui_ShowNativeGui ( LV2PluginWrapper_State *state, bool bShow );
+    static void lv2ui_ShowNativeGui (LV2PluginWrapper_State *state, bool bShow , PluginQuirks::NatUISCaling fixScaling);
     static void lv2ui_PortWrite ( LV2UI_Controller controller, uint32_t port_index, uint32_t buffer_size, uint32_t protocol, void const *buffer );
     static void lv2ui_Touch (LV2UI_Controller controller, uint32_t port_index, bool grabbed);
     static void lv2ui_ExtUi_Closed ( LV2UI_Controller contr );

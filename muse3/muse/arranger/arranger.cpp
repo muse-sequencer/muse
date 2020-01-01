@@ -77,10 +77,6 @@
 #include "shortcuts.h"
 #include "ttoolbutton.h"
 
-#ifdef _USE_TRACKINFO_ALT
-#include "mtrackinfo.h"
-#endif
-
 namespace MusEGui {
 
 std::vector<Arranger::custom_col_t> Arranger::custom_columns;     //FINDMICH TODO: eliminate all usage of new_custom_columns
@@ -176,14 +172,14 @@ void Arranger::setHeaderToolTips()
       {
       header->setToolTip(COL_TRACK_IDX,  tr("Track index"));
       header->setToolTip(COL_INPUT_MONITOR, tr("Enable input monitor"));
-      header->setToolTip(COL_RECORD,     tr("Enable Recording"));
-      header->setToolTip(COL_MUTE,       tr("Mute/Off Indicator"));
-      header->setToolTip(COL_SOLO,       tr("Solo Indicator"));
-      header->setToolTip(COL_CLASS,      tr("Track Type"));
-      header->setToolTip(COL_NAME,       tr("Track Name"));
+      header->setToolTip(COL_RECORD,     tr("Enable recording"));
+      header->setToolTip(COL_MUTE,       tr("Mute/Off indicator"));
+      header->setToolTip(COL_SOLO,       tr("Solo indicator"));
+      header->setToolTip(COL_CLASS,      tr("Track type"));
+      header->setToolTip(COL_NAME,       tr("Track name"));
       header->setToolTip(COL_OCHANNEL,   tr("Midi output channel number or audio channels"));
       header->setToolTip(COL_OPORT,      tr("Midi output port or synth midi port"));
-      header->setToolTip(COL_TIMELOCK,   tr("Time Lock"));
+      header->setToolTip(COL_TIMELOCK,   tr("Time lock"));
       header->setToolTip(COL_AUTOMATION, tr("Automation parameter selection"));
       header->setToolTip(COL_CLEF,       tr("Notation clef"));
       }
@@ -205,10 +201,10 @@ void Arranger::setHeaderWhatsThis()
       header->setWhatsThis(COL_SOLO,     tr("Solo indicator. Click to toggle.\nConnected tracks are also 'phantom' soloed,\n indicated by a dark square."));
       header->setWhatsThis(COL_CLASS,    tr("Track type. Right-click to change\n midi and drum track types."));
       header->setWhatsThis(COL_NAME,     tr("Track name. Double-click to edit.\nRight-click for more options."));
-      header->setWhatsThis(COL_OCHANNEL, tr("Midi/drum track: Output channel number.\nAudio track: Channels.\nMid/right-click to change."));
-      header->setWhatsThis(COL_OPORT,    tr("Midi/drum track: Output port.\nSynth track: Assigned midi port.\nLeft-click to change.\nRight-click to show GUI."));
+      header->setWhatsThis(COL_OCHANNEL, tr("Midi/Drum track: Output channel number.\nAudio track: Channels.\nMid/right-click to change."));
+      header->setWhatsThis(COL_OPORT,    tr("Midi/Drum track: Output port.\nSynth track: Assigned midi port.\nLeft-click to change.\nRight-click to show GUI."));
       header->setWhatsThis(COL_TIMELOCK, tr("Time lock"));
-      header->setToolTip(COL_CLEF,       tr("Notation clef. Select this tracks notation clef."));
+      header->setWhatsThis(COL_CLEF,     tr("Notation clef. Select this tracks notation clef."));
       }
 
 //---------------------------------------------------------
@@ -223,9 +219,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       _raster  = 0;      // measure
       selected = 0;
       showTrackinfoFlag = true;
-#ifdef _USE_TRACKINFO_ALT
-      showTrackinfoAltFlag = false;
-#endif
       
       cursVal = INT_MAX;
       
@@ -283,8 +276,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       lenEntry = new SpinBox(1, 10000, 1);
       lenEntry->setFocusPolicy(Qt::StrongFocus);
       lenEntry->setValue(MusEGlobal::song->len());
-      lenEntry->setToolTip(tr("song length - bars"));
-      lenEntry->setWhatsThis(tr("song length - bars"));
+      lenEntry->setToolTip(tr("Song length - bars"));
+      lenEntry->setWhatsThis(tr("Song length - bars"));
       toolbar->addWidget(lenEntry);
       connect(lenEntry, SIGNAL(valueChanged(int)), SLOT(songlenChanged(int)));
 
@@ -296,8 +289,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       globalPitchSpinBox = new SpinBox(-127, 127, 1);
       globalPitchSpinBox->setFocusPolicy(Qt::StrongFocus);
       globalPitchSpinBox->setValue(MusEGlobal::song->globalPitchShift());
-      globalPitchSpinBox->setToolTip(tr("midi pitch"));
-      globalPitchSpinBox->setWhatsThis(tr("global midi pitch shift"));
+      globalPitchSpinBox->setToolTip(tr("Midi pitch"));
+      globalPitchSpinBox->setWhatsThis(tr("Global midi pitch shift"));
       toolbar->addWidget(globalPitchSpinBox);
       connect(globalPitchSpinBox, SIGNAL(valueChanged(int)), SLOT(globalPitchChanged(int)));
       
@@ -310,8 +303,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       globalTempoSpinBox->setFocusPolicy(Qt::StrongFocus);
       globalTempoSpinBox->setSuffix(QString("%"));
       globalTempoSpinBox->setValue(MusEGlobal::tempomap.globalTempo());
-      globalTempoSpinBox->setToolTip(tr("midi tempo"));
-      globalTempoSpinBox->setWhatsThis(tr("midi tempo"));
+      globalTempoSpinBox->setToolTip(tr("Midi tempo"));
+      globalTempoSpinBox->setWhatsThis(tr("Midi tempo"));
       toolbar->addWidget(globalTempoSpinBox);
       connect(globalTempoSpinBox, SIGNAL(valueChanged(int)), SLOT(globalTempoChanged(int)));
       
@@ -377,70 +370,37 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
       trackInfoButton  = new CompactToolButton(this);
       trackInfoButton->setContentsMargins(0, 0, 0, 0);
-      trackInfoButton->setText(tr("TrackInfo"));
+      trackInfoButton->setIcon(*mixerstripSVGIcon);
+      trackInfoButton->setToolTip(tr("Show mixer strip for current track"));
       trackInfoButton->setCheckable(true);
       trackInfoButton->setChecked(showTrackinfoFlag);
       trackInfoButton->setFocusPolicy(Qt::NoFocus);
-      trackInfoButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+      trackInfoButton->setFixedSize(52, 14);
       connect(trackInfoButton, SIGNAL(toggled(bool)), SLOT(showTrackInfo(bool)));
 
-#ifdef _USE_TRACKINFO_ALT
-      trackInfoAltButton  = new CompactToolButton(this);
-      trackInfoAltButton->setContentsMargins(0, 0, 0, 0);
-      trackInfoAltButton->setText(tr("Alt"));
-      trackInfoAltButton->setCheckable(true);
-      trackInfoAltButton->setChecked(showTrackinfoAltFlag);
-      trackInfoAltButton->setFocusPolicy(Qt::NoFocus);
-      trackInfoAltButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
-      connect(trackInfoAltButton, SIGNAL(toggled(bool)), SLOT(showTrackInfoAlt(bool)));
-#endif
-      
       genTrackInfo(trackInfoWidget);
 
       // set up the header
       header = new Header(tracklist, "header");
       header->setFixedHeight(31);
 
-      QFontMetrics fm1 = header->fontMetrics();
-      int fw = 11;
+//      QFontMetrics fm1 = header->fontMetrics();
+//      int fw = 11;
 
       header->setColumnLabel(tr("#"), COL_TRACK_IDX, 10);
-      //header->setColumnLabel(QString(), COL_TRACK_IDX);
-      header->setColumnLabel(tr("I"), COL_INPUT_MONITOR);
-      header->setColumnLabel(tr("R"), COL_RECORD);
-      header->setColumnLabel(tr("M"), COL_MUTE);
-      header->setColumnLabel(tr("S"), COL_SOLO);
-      header->setColumnLabel(tr("C"), COL_CLASS);
+      header->setColumnIcon(*monitorOnSVGIcon, COL_INPUT_MONITOR);
+      header->setColumnIcon(*recArmOnSVGIcon, COL_RECORD);
+      header->setColumnIcon(*muteOnSVGIcon, COL_MUTE);
+      header->setColumnIcon(*soloOnAloneSVGIcon, COL_SOLO);
+      header->setColumnIcon(*tracktypeSVGIcon, COL_CLASS);
       header->setColumnLabel(tr("Track"), COL_NAME, 100);
       header->setColumnLabel(tr("Port"), COL_OPORT, 60);
+      //: Channel
       header->setColumnLabel(tr("Ch"), COL_OCHANNEL);
+      //: Time lock
       header->setColumnLabel(tr("T"), COL_TIMELOCK);
       header->setColumnLabel(tr("Automation"), COL_AUTOMATION, 75);
       header->setColumnLabel(tr("Clef"), COL_CLEF, 75);
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
-        for (unsigned i=0;i<custom_columns.size();i++)
-          header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET+i, MAX(fm1.horizontalAdvance(custom_columns[i].name)+fw, 30));
-        //header->resizeSection(COL_TRACK_IDX, fm1.horizontalAdvance(header->columnLabel(COL_TRACK_IDX)) + fw);
-        header->resizeSection(COL_INPUT_MONITOR, fm1.horizontalAdvance(header->columnLabel(COL_INPUT_MONITOR)) + fw);
-        header->resizeSection(COL_RECORD, fm1.horizontalAdvance(header->columnLabel(COL_RECORD)) + fw);
-        header->resizeSection(COL_MUTE, fm1.horizontalAdvance(header->columnLabel(COL_MUTE)) + fw);
-        header->resizeSection(COL_SOLO, fm1.horizontalAdvance(header->columnLabel(COL_SOLO)) + fw);
-        header->resizeSection(COL_CLASS, fm1.horizontalAdvance(header->columnLabel(COL_CLASS)) + fw);
-        header->resizeSection(COL_OCHANNEL, fm1.horizontalAdvance(header->columnLabel(COL_OCHANNEL)) + fw);
-        header->resizeSection(COL_TIMELOCK, fm1.horizontalAdvance(header->columnLabel(COL_TIMELOCK)) + fw);
-#else
-        for (unsigned i=0;i<custom_columns.size();i++)
-          header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET+i, MAX(fm1.width(custom_columns[i].name)+fw, 30));
-        //header->resizeSection(COL_TRACK_IDX, fm1.width(header->columnLabel(COL_TRACK_IDX)) + fw);
-        header->resizeSection(COL_INPUT_MONITOR, fm1.width(header->columnLabel(COL_INPUT_MONITOR)) + fw);
-        header->resizeSection(COL_RECORD, fm1.width(header->columnLabel(COL_RECORD)) + fw);
-        header->resizeSection(COL_MUTE, fm1.width(header->columnLabel(COL_MUTE)) + fw);
-        header->resizeSection(COL_SOLO, fm1.width(header->columnLabel(COL_SOLO)) + fw);
-        header->resizeSection(COL_CLASS, fm1.width(header->columnLabel(COL_CLASS)) + fw);
-        header->resizeSection(COL_OCHANNEL, fm1.width(header->columnLabel(COL_OCHANNEL)) + fw);
-        header->resizeSection(COL_TIMELOCK, fm1.width(header->columnLabel(COL_TIMELOCK)) + fw);
-#endif
 
       header->setSectionResizeMode(COL_TRACK_IDX, QHeaderView::Interactive);
       header->setSectionResizeMode(COL_INPUT_MONITOR, QHeaderView::Fixed);
@@ -460,6 +420,9 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       // 04/18/17 Time lock remains unused. Disabled until a use is found.
       // Plans were to use it (or not) when time stretching / pitch shifting work is done.
       header->setSectionHidden(COL_TIMELOCK, true);
+
+      // Resizing apparently has no effect at all here (kybos)
+      setHeaderSizes();
 
       setHeaderToolTips();
       setHeaderWhatsThis();
@@ -499,12 +462,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       hscroll->setFocusPolicy(Qt::NoFocus);
       hscroll->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       
-#ifdef _USE_TRACKINFO_ALT
-      bottomHLayout = new ArrangerHScrollLayout(0, trackInfoButton, trackInfoAltButton, hscroll, editor);
-#else
-      // No Alt panel here.
       bottomHLayout = new ArrangerHScrollLayout(0, trackInfoButton, 0, hscroll, editor);
-#endif
       
       box->addLayout(bottomHLayout);
       bottomHLayout->setContentsMargins(0, 0, 0, 0);
@@ -554,16 +512,9 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(globalPitchSpinBox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
       connect(globalTempoSpinBox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
       connect(globalTempoSpinBox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
-#ifdef _USE_TRACKINFO_ALT
-      connect(midiTrackInfo,      SIGNAL(returnPressed()), SLOT(focusCanvas()));
-      connect(midiTrackInfo,      SIGNAL(escapePressed()), SLOT(focusCanvas()));
-#endif
 
       //connect(this,      SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
       connect(list,      SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
-#ifdef _USE_TRACKINFO_ALT
-      //connect(trackInfo, SIGNAL(redirectWheelEvent(QWheelEvent*)), infoScroll, SLOT(redirectedWheelEvent(QWheelEvent*)));
-#endif
       
       egrid->addWidget(time, 0, 0, 1, 2);
       egrid->addWidget(MusECore::hLine(editor), 1, 0, 1, 2);
@@ -599,10 +550,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(MusEGlobal::song,   SIGNAL(controllerChanged(MusECore::Track*, int)), SLOT(controllerChanged(MusECore::Track*, int)));
 
       configChanged();  // set configuration values
-#ifdef _USE_TRACKINFO_ALT
-      if(canvas->part())
-        midiTrackInfo->setTrack(canvas->part()->track());   
-#endif
       showTrackInfo(showTrackinfoFlag);
       
       setDefaultSplitterSizes();
@@ -738,47 +685,6 @@ void Arranger::songlenChanged(int n)
 
 void Arranger::songChanged(MusECore::SongChangedStruct_t type)
       {
-#ifdef _USE_TRACKINFO_ALT
-        // We must catch this first and be sure to update the strips.
-        if(type & SC_TRACK_REMOVED)
-        {
-          {
-            AudioStrip* w = static_cast<AudioStrip*>(trackInfoWidget->getWidget(2));
-            if(w)
-            {
-              MusECore::Track* t = w->getTrack();
-              if(t)
-              {
-                if(!MusEGlobal::song->trackExists(t))
-                {
-                  delete w;
-                  trackInfoWidget->addWidget(0, 2);
-                  selected = 0;
-                  switchInfo(0);
-                } 
-              }   
-            } 
-          }
-          
-          {
-            MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(3));
-            if(w)
-            {
-              MusECore::Track* t = w->getTrack();
-              if(t)
-              {
-                if(!MusEGlobal::song->trackExists(t))
-                {
-                  delete w;
-                  trackInfoWidget->addWidget(0, 3);
-                  selected = 0;
-                  switchInfo(0);
-                } 
-              }   
-            } 
-          }
-        }
-#else
         // We must catch this first and be sure to update the strips.
         if(type & SC_TRACK_REMOVED)
         {
@@ -818,7 +724,6 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
             } 
           }
         }
-#endif
         
         // Try these, may need more/less. 
         if(type & ( SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
@@ -1173,24 +1078,6 @@ void Arranger::verticalScrollSetYpos(unsigned ypos)
 
 void Arranger::clear()
       {
-#ifdef _USE_TRACKINFO_ALT
-      {
-        AudioStrip* w = static_cast<AudioStrip*>(trackInfoWidget->getWidget(2));
-        if (w)
-              delete w;
-        trackInfoWidget->addWidget(0, 2);
-      }
-      
-      {
-        MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(3));
-        if (w)
-              delete w;
-        trackInfoWidget->addWidget(0, 3);
-      }
-      
-      selected = 0;
-      midiTrackInfo->setTrack(0);
-#else
       {
         AudioStrip* w = static_cast<AudioStrip*>(trackInfoWidget->getWidget(1));
         if (w)
@@ -1206,7 +1093,6 @@ void Arranger::clear()
       }
       
       selected = 0;
-#endif
       }
 
 //void Arranger::wheelEvent(QWheelEvent* ev)
@@ -1225,22 +1111,11 @@ void Arranger::controllerChanged(MusECore::Track *t, int ctrlId)
 
 void Arranger::showTrackInfo(bool flag)
       {
+      trackInfoButton->setToolTip(flag ? tr("Hide mixer strip for current track") : tr("Show mixer strip for current track"));
       showTrackinfoFlag = flag;
       trackInfoWidget->setVisible(flag);
       updateTrackInfo(-1);
       }
-
-#ifdef _USE_TRACKINFO_ALT
-//---------------------------------------------------------
-//   showTrackInfoAlt
-//---------------------------------------------------------
-
-void Arranger::showTrackInfoAlt(bool flag)
-      {
-      showTrackinfoAltFlag = flag;
-      updateTrackInfo(-1);
-      }
-#endif
 
 //---------------------------------------------------------
 //   genTrackInfo
@@ -1262,18 +1137,9 @@ void Arranger::genTrackInfo(TrackInfoWidget* trackInfo)
       noTrackInfo->setGeometry(0, 0, 65, 200);
       noTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding));
 
-#ifdef _USE_TRACKINFO_ALT
-      midiTrackInfo = new MidiTrackInfo(trackInfo);
-      
-      trackInfo->addWidget(noTrackInfo, 0);
-      trackInfo->addWidget(midiTrackInfo, 1);
-      trackInfo->addWidget(0, 2);  // AudioStrip placeholder.
-      trackInfo->addWidget(0, 3);  // MidiStrip placeholder.
-#else
       trackInfo->addWidget(noTrackInfo, 0);
       trackInfo->addWidget(0, 1);  // AudioStrip placeholder.
       trackInfo->addWidget(0, 2);  // MidiStrip placeholder.
-#endif
       }
 
 //---------------------------------------------------------
@@ -1291,30 +1157,10 @@ void Arranger::updateTrackInfo(MusECore::SongChangedStruct_t /*flags*/)
             return;
             }
       if (selected->isMidiTrack()) {
-#ifdef _USE_TRACKINFO_ALT
-            if(showTrackinfoAltFlag)
-            {
-              switchInfo(1);
-              // If a different part was selected
-              if(midiTrackInfo->track() != selected)
-                // Set a new track and do a complete update.
-                midiTrackInfo->setTrack(selected);
-              else  
-                // Otherwise just regular update with specific flags.
-                midiTrackInfo->updateTrackInfo(flags);
-            }
-            else
-              switchInfo(3);
-#else
               switchInfo(2);
-#endif
             }
       else {
-#ifdef _USE_TRACKINFO_ALT
-            switchInfo(2);
-#else
             switchInfo(1);
-#endif
             }
       }
 
@@ -1322,102 +1168,6 @@ void Arranger::updateTrackInfo(MusECore::SongChangedStruct_t /*flags*/)
 //   switchInfo
 //---------------------------------------------------------
 
-#ifdef _USE_TRACKINFO_ALT
-void Arranger::switchInfo(int n)
-      {
-      if (n == 2) {
-          {
-            MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(3));
-            if (w)
-            {
-              //fprintf(stderr, "Arranger::switchInfo audio strip: deleting midi strip\n");
-              delete w;
-              //w->deleteLater();
-              trackInfoWidget->addWidget(0, 3);
-            }
-          }
-          {
-              AudioStrip* w = static_cast<AudioStrip*>(trackInfoWidget->getWidget(2));
-              if (w == 0 || selected != w->getTrack()) {
-                    if (w)
-                    {
-                          //fprintf(stderr, "Arranger::switchInfo deleting strip\n");
-                          delete w;
-                          //w->deleteLater();
-                    }
-                    w = new AudioStrip(trackInfoWidget, static_cast<MusECore::AudioTrack*>(selected));
-                    // Broadcast changes to other selected tracks.
-                    w->setBroadcastChanges(true);
-
-                    // Set focus yielding to the canvas.
-                    if(MusEGlobal::config.smartFocus)
-                    {
-                      w->setFocusYieldWidget(canvas);
-                      //w->setFocusPolicy(Qt::WheelFocus);
-                    }
-
-                    // We must marshall song changed instead of connecting to the strip's song changed
-                    //  otherwise it crashes when loading another song because track is no longer valid
-                    //  and the strip's songChanged() seems to be called before Arranger songChanged()
-                    //  gets called and has a chance to stop the crash.
-                    //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), w, SLOT(songChanged(MusECore::SongChangedStruct_t)));
-                    
-                    connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
-                    w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-                    trackInfoWidget->addWidget(w, 2);
-                    w->show();
-                    //setTabOrder(midiTrackInfo, w);
-                    }
-          }
-        }
-
-      else if (n == 3) {
-          {
-            AudioStrip* w = static_cast<AudioStrip*>(trackInfoWidget->getWidget(2));
-            if (w)
-            {
-              //fprintf(stderr, "Arranger::switchInfo midi strip: deleting audio strip\n");
-              delete w;
-              //w->deleteLater();
-              trackInfoWidget->addWidget(0, 2);
-            }
-          }
-          {
-            MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(3));
-            if (w == 0 || selected != w->getTrack()) {
-                  if (w)
-                  {
-                        //fprintf(stderr, "Arranger::switchInfo deleting strip\n");
-                        delete w;
-                        //w->deleteLater();
-                  }
-                  w = new MidiStrip(trackInfoWidget, static_cast<MusECore::MidiTrack*>(selected));
-                  // Broadcast changes to other selected tracks.
-                  w->setBroadcastChanges(true);
-                  // Set focus yielding to the arranger canvas.
-                  if(MusEGlobal::config.smartFocus)
-                  {
-                    w->setFocusYieldWidget(canvas);
-                    //w->setFocusPolicy(Qt::WheelFocus);
-                  }
-
-                  // No. See above.
-                  //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), w, SLOT(songChanged(MusECore::SongChangedStruct_t)));
-                  
-                  connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
-                  w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-                  trackInfoWidget->addWidget(w, 3);
-                  w->show();
-                  //setTabOrder(midiTrackInfo, w);
-                  }
-          }
-        }
-            
-      if (trackInfoWidget->curIdx() == n)
-            return;
-      trackInfoWidget->raiseWidget(n);
-      }
-#else
 void Arranger::switchInfo(int n)
       {
       if (n == 1) {
@@ -1512,42 +1262,11 @@ void Arranger::switchInfo(int n)
             return;
       trackInfoWidget->raiseWidget(n);
       }
-#endif
 
 //---------------------------------------------------------
 //   trackInfoSongChange
 //---------------------------------------------------------
 
-#ifdef _USE_TRACKINFO_ALT
-void Arranger::trackInfoSongChange(MusECore::SongChangedStruct_t flags)
-{
-  if(!selected || !showTrackinfoFlag)
-    return;
-
-  // Only update what is showing.
-  if(selected->isMidiTrack()) 
-  {
-    if(showTrackinfoAltFlag)
-    {
-      MidiTrackInfo* w = static_cast<MidiTrackInfo*>(trackInfoWidget->getWidget(1));
-      if(w)
-        w->songChanged(flags);
-    }
-    else
-    {
-      MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(3));
-      if(w)
-        w->songChanged(flags);
-    }
-  }
-  else 
-  {
-    AudioStrip* w = static_cast<AudioStrip*>(trackInfoWidget->getWidget(2));
-    if(w)
-      w->songChanged(flags);
-  }
-}
-#else
 void Arranger::trackInfoSongChange(MusECore::SongChangedStruct_t flags)
 {
   if(!selected || !showTrackinfoFlag)
@@ -1567,7 +1286,6 @@ void Arranger::trackInfoSongChange(MusECore::SongChangedStruct_t flags)
       w->songChanged(flags);
   }
 }
-#endif
 
 void Arranger::keyPressEvent(QKeyEvent* event)
 {

@@ -167,9 +167,11 @@ class View : public QWidget {
                                       bool waveMode = false,
                                       bool useGivenColors = false,
                                       bool drawText = false,
-                                      const QColor& bar_color = QColor(),
-                                      const QColor& beat_color = QColor(),
-                                      const QColor& text_color = QColor(),
+                                      const QColor& bar_color = Qt::cyan, // default to very obvious color to visualize uninitialized drawing
+                                      const QColor& beat_color = Qt::cyan,
+                                      const QColor& fine_color = Qt::cyan,
+                                      const QColor& coarse_color = Qt::cyan,
+                                      const QColor& text_color = Qt::cyan,
                                       const QFont& large_font = QFont(),
                                       const QFont& small_font = QFont()
                                      );

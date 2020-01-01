@@ -45,7 +45,6 @@
 #include "xml.h"
 #include "muse/midi_consts.h"
 #include "muse/midictrl_consts.h"
-#include "muse/icons.h"
 
 const char *vam_ctrl_names[] = {
   "DCO1_PITCHMOD", "DCO1_WAVEFORM", "DCO1_FM", "DCO1_PWM",
@@ -179,11 +178,18 @@ VAMGui::VAMGui()
       setupUi(this);
       connect(this->getGuiSignal(),SIGNAL(wakeup()),this,SLOT(readMessage()));
 
-      loadPresets->setIcon(QIcon(*MusEGui::openIcon));
-      savePresets->setIcon(QIcon(*MusEGui::saveIcon));
-      savePresetsToFile->setIcon(QIcon(*MusEGui::saveasIcon));
-      deletePreset->setIcon(QIcon(*MusEGui::deleteIcon));
-
+#if 0
+      loadPresets->setIcon(QIcon::fromTheme("document-open", QIcon(":/fileopen.svg")));
+      savePresets->setIcon(QIcon::fromTheme("document-save", QIcon(":/filesave.svg")));
+      savePresetsToFile->setIcon(QIcon::fromTheme("document-save-as", QIcon(":/filesaveas.svg")));
+      deletePreset->setIcon(QIcon::fromTheme("draw-eraser", QIcon(":/eraser.svg")));
+#else
+      loadPresets->setIcon(QIcon(":/fileopen.svg"));
+      savePresets->setIcon(QIcon(":/filesave.svg"));
+      savePresetsToFile->setIcon(QIcon(":/filesaveas.svg"));
+      deletePreset->setIcon(QIcon(":/eraser.svg"));
+#endif
+      
         // p4.0.27 First ctrl offset.
 	dctrl[DCO1_PITCHMOD - VAM_FIRST_CTRL] = SynthGuiCtrl(PitchModS, LCDNumber1,  SynthGuiCtrl::SLIDER);
 	dctrl[DCO1_WAVEFORM - VAM_FIRST_CTRL] = SynthGuiCtrl(Waveform, 0, SynthGuiCtrl::COMBOBOX);

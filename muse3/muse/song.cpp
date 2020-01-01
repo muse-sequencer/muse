@@ -1812,23 +1812,23 @@ void Song::normalizeWaveParts(Part *partCursor)
 
 void Song::beat()
       {
-      // DELETETHIS 15
-      #if 0
-      // Just a rate test...
-      static double _heartbeatRateTimer = 0.0;
-      double t = MusEUtil::curTime();
-      if(t - _heartbeatRateTimer > 0.0)
+      // Watchdog for checking and setting timebase master state.
+      static int _timebaseMasterCounter = 0;
+      if(MusEGlobal::audioDevice &&
+        MusEGlobal::audioDevice->hasOwnTransport() &&
+        MusEGlobal::audioDevice->hasTimebaseMaster() && 
+        MusEGlobal::config.useJackTransport && 
+        (--_timebaseMasterCounter <= 0))
       {
-        double rate = 1/ (t - _heartbeatRateTimer);
-        printf("heartbeat rate:%f\n", rate);
-        // Results: Song::beat() is not even called sometimes because apparently all the other
-        //  stuff connected to the heartbeat is taking up all the time before the next timer event - 
-        //  apparently Song::beat() is called last, or close to last - after the others. (Possible to choose order?)
-        // With fancy strip meters active, Song::beat() was quiet for long periods of time!
+        if(MusEGlobal::config.timebaseMaster)
+        {
+          if(!MusEGlobal::timebaseMasterState || !MusEGlobal::audio->isPlaying())
+            MusEGlobal::audioDevice->setMaster(true);
+        }
+        // Set for once per second.
+        _timebaseMasterCounter = MusEGlobal::config.guiRefresh;
       }
-      _heartbeatRateTimer = t;
-      #endif
-      
+
       //First: update cpu load toolbar
 
       _fCpuLoad = MusEGlobal::muse->getCPULoad();
@@ -2561,6 +2561,8 @@ void Song::seqSignal(int fd)
                         //  and we need it to allow that.
                         setPos(CPOS, MusEGlobal::audio->tickAndFramePos(), true, false, true, true);
                         //setPos(CPOS, MusEGlobal::audio->tickPos(), true, false, true, true);
+
+                        _startPlayPosition = MusEGlobal::audio->pos(); // update start position
                         break;
                   }
                   case 'S':   // shutdown audio
@@ -2649,6 +2651,16 @@ void Song::seqSignal(int fd)
 //                         if(MusEGlobal::song)
 //                           MusEGlobal::song->processIpcInEventBuffers();
 //                         break;
+
+                  case 'T': // We are now the timebase master.
+                        MusEGlobal::timebaseMasterState = true;
+                        update(SC_TIMEBASE_MASTER);
+                        break;
+
+                  case 't': // We are no longer the timebase master.
+                        MusEGlobal::timebaseMasterState = false;
+                        update(SC_TIMEBASE_MASTER);
+                        break;
 
                   default:
                         fprintf(stderr, "unknown Seq Signal <%c>\n", buffer[i]);
@@ -2786,11 +2798,11 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
 
   menu->addAction(new MusEGui::MenuTitleItem(tr("Automation:"), menu));
   
-  QAction* prevEvent = menu->addAction(tr("previous event"));
+  QAction* prevEvent = menu->addAction(tr("Previous event"));
   prevEvent->setData(PREV_EVENT);
   prevEvent->setEnabled(canSeekPrev);
 
-  QAction* nextEvent = menu->addAction(tr("next event"));
+  QAction* nextEvent = menu->addAction(tr("Next event"));
   nextEvent->setData(NEXT_EVENT);
   nextEvent->setEnabled(canSeekNext);
 
@@ -2799,21 +2811,21 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   QAction* addEvent = new QAction(menu);
   menu->addAction(addEvent);
   if(isEvent)
-    addEvent->setText(tr("set event"));
+    addEvent->setText(tr("Set event"));
   else  
-    addEvent->setText(tr("add event"));
+    addEvent->setText(tr("Add event"));
   addEvent->setData(ADD_EVENT);
   addEvent->setEnabled(canAdd);
 
-  QAction* eraseEventAction = menu->addAction(tr("erase event"));
+  QAction* eraseEventAction = menu->addAction(tr("Erase event"));
   eraseEventAction->setData(CLEAR_EVENT);
   eraseEventAction->setEnabled(isEvent);
 
-  QAction* eraseRangeAction = menu->addAction(tr("erase range"));
+  QAction* eraseRangeAction = menu->addAction(tr("Erase range"));
   eraseRangeAction->setData(CLEAR_RANGE);
   eraseRangeAction->setEnabled(canEraseRange);
 
-  QAction* clearAction = menu->addAction(tr("clear automation"));
+  QAction* clearAction = menu->addAction(tr("Clear automation"));
   clearAction->setData(CLEAR_ALL_EVENTS);
   clearAction->setEnabled((bool)count);
 
@@ -3054,7 +3066,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   menu->addAction(new MusEGui::MenuTitleItem(tr("Controller:"), menu));
   QAction* bypassEvent = new QAction(menu);
   menu->addAction(bypassEvent);
-  bypassEvent->setText(tr("bypass"));
+  bypassEvent->setText(tr("Bypass"));
   bypassEvent->setData(BYPASS_CONTROLLER);
   bypassEvent->setEnabled(true);
   bypassEvent->setCheckable(true);
@@ -3065,13 +3077,13 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   QAction* addEvent = new QAction(menu);
   menu->addAction(addEvent);
   if(isEvent)
-    addEvent->setText(tr("set event"));
+    addEvent->setText(tr("Set event"));
   else
-    addEvent->setText(tr("add event"));
+    addEvent->setText(tr("Add event"));
   addEvent->setData(ADD_EVENT);
   addEvent->setEnabled(true);
 
-  QAction* eraseEventAction = menu->addAction(tr("erase event"));
+  QAction* eraseEventAction = menu->addAction(tr("Erase event"));
   eraseEventAction->setData(CLEAR_EVENT);
   eraseEventAction->setEnabled(isEvent);
 

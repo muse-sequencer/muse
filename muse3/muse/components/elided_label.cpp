@@ -129,6 +129,7 @@ void ElidedLabel::paintEvent(QPaintEvent* e)
   const QRect ar = r.adjusted(1, 1, -1, -1);
 
   ItemBackgroundPainter ibp;
+  ibp.setActiveColor(_activeColor);
   ibp.drawBackground(&painter, r, palette(), 1, 1, !hasOffMode() || !isOff() ? r : QRect());
 
   if (hasFocus())
@@ -144,8 +145,10 @@ void ElidedLabel::paintEvent(QPaintEvent* e)
         painter.setPen(QPen(Qt::black));
 
   painter.setRenderHint(QPainter::Antialiasing);
-  painter.setFont(_curFont);
-  QFontMetrics fm = painter.fontMetrics();
+//   painter.setFont(_curFont);
+//   QFontMetrics fm = painter.fontMetrics();
+  //painter.setFont(font());
+  QFontMetrics fm = fontMetrics();
   QString elidedText = fm.elidedText(_text, _elideMode, r.width());
 //   painter.drawText(QPoint(0, fm.ascent()), elidedText);
 

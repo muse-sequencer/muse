@@ -1532,10 +1532,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
         //       the 'options' items but not the 'actions' items ?
         PopupMenu* itemPopupMenu = new PopupMenu(this, false);
         populateMergeOptions(itemPopupMenu);
-#if QT_VERSION >= 0x050100
-        // This is required after Qt 5.1
         itemPopupMenu->setToolTipsVisible(true);
-#endif
         QAction *act = itemPopupMenu->exec(event->globalPos());
         int idx = -1;
         bool is_checked = false;
@@ -3440,9 +3437,12 @@ QRect CtrlCanvas::overlayRect() const
 void CtrlCanvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       {
       drawTickRaster(p, rect, rg, editor->raster(),
-                         false, false, false,
-                         MusEGlobal::config.midiCanvasBarColor, 
-                         MusEGlobal::config.midiCanvasBeatColor);
+                     false, false, false,
+                     Qt::red, // dummy color, very visual so it can be detected if it is drawn.
+                     MusEGlobal::config.midiCanvasBeatColor,
+                     MusEGlobal::config.midiCanvasFineColor,
+                     MusEGlobal::config.midiCanvasBarColor
+                     );
 
       //---------------------------------------------------
       //    draw line tool
@@ -3701,7 +3701,7 @@ void CtrlCanvas::populateMergeOptions(PopupMenu* menu)
   act->setToolTip(tr("Merge a copy of the dragged items"));
   act->setEnabled(is_mv);
   
-  act = menu->addAction(QIcon(*filecloseIcon), tr("Cancel drag"));
+  act = menu->addAction(*filecloseSVGIcon, tr("Cancel drag"));
   act->setData(ContextIdCancelDrag);
   act->setCheckable(false);
   act->setToolTip(tr("Cancel dragging the items"));

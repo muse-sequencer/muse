@@ -799,7 +799,7 @@ void Audio::process(unsigned frames)
             unsigned curr_jt_tick, next_jt_ticks;
             use_jack_timebase = 
                 MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO && 
-                !MusEGlobal::jackTransportMaster && 
+                !MusEGlobal::config.timebaseMaster && 
                 !MusEGlobal::tempomap.masterFlag() &&
                 !MusEGlobal::extSyncFlag &&
                 static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice)->timebaseQuery(
@@ -1593,7 +1593,7 @@ void Audio::seek(const Pos& p)
 #ifdef _JACK_TIMEBASE_DRIVES_MIDI_
       unsigned curr_jt_tick;
       if(MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO && 
-         !MusEGlobal::jackTransportMaster && 
+         !MusEGlobal::config.timebaseMaster && 
          !MusEGlobal::tempomap.masterFlag() &&
          !MusEGlobal::extSyncFlag &&
          static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice)->timebaseQuery(

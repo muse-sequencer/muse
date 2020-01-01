@@ -47,8 +47,10 @@
 ##
 QT5_WRAP_CPP (components_mocs
       aboutbox_impl.h 
+      appearance.h
       arrangercolumns.h 
 #       action.h
+      background_painter.h
       bigtime.h
       canvas.h  
 #       checkbox.h
@@ -61,6 +63,7 @@ QT5_WRAP_CPP (components_mocs
       compact_knob.h
       compact_patch_edit.h
       compact_slider.h  
+      confmport.h
       copy_on_write.h
 #       cpu_toolbar.h
 #       ctrlcombo.h  
@@ -120,6 +123,7 @@ QT5_WRAP_CPP (components_mocs
       sig_tempo_toolbar.h 
       slider.h  
 #       sliderbase.h  
+      snooper.h
       songinfo.h
       songpos_toolbar.h
 #       spinbox.h  
@@ -151,7 +155,6 @@ file (GLOB components_ui_files
       arrangercolumnsbase.ui 
       appearancebase.ui 
       choose_sysex_base.ui
-      cliplisteditorbase.ui  
       commentbase.ui  
       configmidifilebase.ui
       copy_on_write_base.ui
@@ -162,12 +165,10 @@ file (GLOB components_ui_files
       fdialogbuttons.ui  
       gensetbase.ui  
       mdisettings_base.ui  
-      itransformbase.ui  
       metronomebase.ui  
       midisync.ui  
       midi_warn_init_pending.ui
       midi_audio_control_base.ui  
-      mittransposebase.ui  
       mixdowndialogbase.ui  
       # mtrackinfobase.ui
       pastedialogbase.ui
@@ -176,10 +177,10 @@ file (GLOB components_ui_files
       projectcreate.ui
       shortcutcapturedialogbase.ui  
       shortcutconfigbase.ui  
+      snooperbase.ui
       songinfo.ui  
       synthconfigbase.ui  
       tracks_duplicate_base.ui
-      transformbase.ui  
       unusedwavefiles.ui
       warn_bad_timing.ui
       )
@@ -190,6 +191,7 @@ QT5_WRAP_UI (components_ui_headers ${components_ui_files})
 ##
 file (GLOB components_source_files
       aboutbox_impl.cpp 
+      appearance.cpp
       arrangercolumns.cpp 
       background_painter.cpp
       bigtime.cpp 
@@ -205,6 +207,7 @@ file (GLOB components_source_files
       compact_knob.cpp
       compact_patch_edit.cpp
       compact_slider.cpp 
+      confmport.cpp
       copy_on_write.cpp
 #       cpu_toolbar.cpp
 #       ctrlcombo.cpp 
@@ -269,6 +272,7 @@ file (GLOB components_source_files
       sig_tempo_toolbar.cpp 
       slider.cpp 
 #       sliderbase.cpp 
+      snooper.cpp
       songpos_toolbar.cpp 
 #       spinbox.cpp 
 #       spinboxFP.cpp 

@@ -131,11 +131,12 @@ struct SongChangedStruct_t
 #define SC_METRONOME                  MusECore::SongChangedStruct_t(0x8000000000) // Metronome lists settings such as accents changed.
 #define SC_EXTERNAL_MIDI_SYNC         MusECore::SongChangedStruct_t(0x10000000000) // External midi sync flag changed.
 #define SC_USE_JACK_TRANSPORT         MusECore::SongChangedStruct_t(0x20000000000) // UseJackTransport flag changed.
-#define SC_MARKER_INSERTED            MusECore::SongChangedStruct_t(0x40000000000)
-#define SC_MARKER_REMOVED             MusECore::SongChangedStruct_t(0x80000000000)
-#define SC_MARKER_MODIFIED            MusECore::SongChangedStruct_t(0x100000000000)
+#define SC_TIMEBASE_MASTER            MusECore::SongChangedStruct_t(0x40000000000) // Timebase master state changed.
+#define SC_MARKER_INSERTED            MusECore::SongChangedStruct_t(0x80000000000)
+#define SC_MARKER_REMOVED             MusECore::SongChangedStruct_t(0x100000000000)
+#define SC_MARKER_MODIFIED            MusECore::SongChangedStruct_t(0x200000000000)
 // The marker list was rebuilt as a result of tempo changes. NOTE: Currently signals/slots are used for add/remove/modify etc.
-#define SC_MARKERS_REBUILT            MusECore::SongChangedStruct_t(0x200000000000)
+#define SC_MARKERS_REBUILT            MusECore::SongChangedStruct_t(0x400000000000)
 #define SC_EVERYTHING                 MusECore::SongChangedStruct_t(-1, -1)       // global update
 
 

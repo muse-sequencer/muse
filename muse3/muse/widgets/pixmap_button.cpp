@@ -186,6 +186,7 @@ IconButton::IconButton(QWidget* parent, const char* name)
              : QWidget(parent)
 {
   setObjectName(name);
+  _blinking = false;
   _blinkPhase = false;
   _iconSetB = false;
   _iconSize = QSize(16, 16);
@@ -206,6 +207,7 @@ IconButton::IconButton(QIcon* on_icon, QIcon* off_icon, QIcon* on_iconB, QIcon* 
                _hasFixedIconSize(hasFixedIconSize), _drawFlat(drawFlat), _text(text), _margin(margin)
 {
   setObjectName(name);
+  _blinking = false;
   _blinkPhase = false;
   _iconSetB = false;
   _checked = false;
@@ -322,7 +324,7 @@ void IconButton::paintEvent(QPaintEvent* ev)
     mode = hasFocus() ? QIcon::Selected : QIcon::Normal;
   else
     mode = QIcon::Disabled;
-  QIcon::State state = (isChecked() && (!_blinkPhase || !isEnabled())) ? QIcon::On : QIcon::Off;
+  const bool is_on = ((_blinking || isChecked()) && (!_blinking || !_blinkPhase || !isEnabled())) ? true : false;
 
   QIcon* ico = 0;
   QPainter p(this);
@@ -332,12 +334,12 @@ void IconButton::paintEvent(QPaintEvent* ev)
   else
   {
     if(_iconSetB)
-      ico = _checked ? _onIconB : _offIconB;
+      ico = is_on ? _onIconB : _offIconB;
     else
-      ico = _checked ? _onIcon : _offIcon;
+      ico = is_on ? _onIcon : _offIcon;
 
     if(ico)
-      ico->paint(&p, rect(), Qt::AlignCenter, mode, state);
+      ico->paint(&p, rect(), Qt::AlignCenter, mode, QIcon::On);
   }
 
 // TODO Bah! Just want a mouse-over rectangle for flat mode but some styles do this or that but not the other thing.
@@ -440,6 +442,13 @@ void IconButton::setDrawFlat(bool v)
 {
   _drawFlat = v;
   update();
+}
+
+void IconButton::setBlinking(bool v)
+{
+  _blinking = v;
+  if(!_blinking)
+    setBlinkPhase(false);
 }
 
 void IconButton::setBlinkPhase(bool v)

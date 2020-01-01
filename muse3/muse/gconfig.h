@@ -48,13 +48,14 @@ enum newDrumRecordCondition_t
 
 namespace MusEGlobal {
 
-enum drumTrackPreference_t
-{
-  PREFER_OLD = 0,
-  PREFER_NEW = 1,
-  ONLY_OLD = 2,
-  ONLY_NEW = 3
-};
+// Obsolete. There is only 'New' drum tracks now.
+// enum drumTrackPreference_t
+// {
+//   PREFER_OLD = 0,
+//   PREFER_NEW = 1,
+//   ONLY_OLD = 2,
+//   ONLY_NEW = 3
+// };
 
 // Or'd together
 enum ExportPortsDevices_t
@@ -199,6 +200,8 @@ struct GlobalConfigValues {
       QColor synthTrackBg;
       
       QColor partCanvasBg;
+      QColor partCanvasCoarseRasterColor;
+      QColor partCanvasFineRasterColor;
       QColor ctrlGraphFg;
       QColor mixerBg;
 
@@ -208,6 +211,7 @@ struct GlobalConfigValues {
       QColor midiControllerViewBg;
       QColor drumListBg;
       QColor rulerCurrent;
+      QColor midiCanvasFineColor;
       QColor midiCanvasBeatColor;
       QColor midiCanvasBarColor;
 
@@ -242,14 +246,15 @@ struct GlobalConfigValues {
 
       WaveDrawing waveDrawing;
 
-      bool useThemeIconsIfPossible; // Whether to try to see if various icons are available from the theme.
-      
       // Turn on a fix for frozen MDIs in Breeze/Oxygen themes.
       bool fixFrozenMDISubWindows;
       
       // At what point size to switch from aliased text to non-aliased text. Zero means always use anti-aliasing. 
       // For certain widgets that use it. May be more later.
       int maxAliasedPointSize; 
+
+      int iconSize;
+      int cursorSize;
 
       bool enableAlsaMidiDriver; // Whether to enable the ALSA midi driver
       int division;
@@ -276,7 +281,8 @@ struct GlobalConfigValues {
       bool expOptimNoteOffs;  // Save space by replacing note offs with note on velocity 0
       bool expRunningStatus;  // Save space by using running status
       bool importMidiSplitParts; // Split imported tracks into multiple parts.
-      bool importMidiNewStyleDrum; // Use new style drum tracks
+// Obsolete. There is only 'New' drum tracks now.
+//       bool importMidiNewStyleDrum; // Use new style drum tracks
       bool importDevNameMetas;    // Import Prefer Device Name metas over port number metas if both exist.
       bool importInstrNameMetas;  // Import Prefer Instrument Name metas over Mode sysexes if both exist.
       int exportPortsDevices;     // Or'd ExportPortsDevices_t flags. Export port number metas and/or device name metas.
@@ -326,6 +332,8 @@ struct GlobalConfigValues {
       int deviceAudioSampleRate;
       int deviceAudioBufSize;
       int deviceAudioBackend;
+      bool useJackTransport;
+      bool timebaseMaster;
 
       QString projectBaseFolder;
       bool projectStoreInFolder;
@@ -337,7 +345,8 @@ struct GlobalConfigValues {
       MusECore::newDrumRecordCondition_t newDrumRecordCondition;
       bool addHiddenTracks;
       bool unhideTracks;
-      drumTrackPreference_t drumTrackPreference;
+// Obsolete. There is only 'New' drum tracks now.
+//       drumTrackPreference_t drumTrackPreference;
       bool smartFocus;
       int trackHeight;
       bool borderlessMouse;
@@ -346,6 +355,7 @@ struct GlobalConfigValues {
       bool liveWaveUpdate;   //live update wave tracks while recording
       bool warnOnFileVersions; // Warn if file version different than current
       CONF_LV2_UI_BEHAVIOR lv2UiBehavior;
+      int audioEffectsRackVisibleItems; // Number of rack slots visible at one time in the rack.
       bool preferKnobsVsSliders; // Whether to prefer the use of knobs over sliders, esp in mixer.
       bool showControlValues; // Whether to show the value along with label in small controls, esp in mixer.
       bool monitorOnRecord;  // Whether to automatically monitor on record arm.
@@ -374,6 +384,10 @@ struct GlobalConfigValues {
       // Whether selecting parts or events is undoable.
       // If set, it can be somewhat tedious for the user to step through all the undo/redo items.
       bool selectionsUndoable;
+      // Revert native GUI scaling on HiDPI
+      bool noPluginScaling;
+      // Open MDI windows maximized
+      bool openMDIWinMaximized;
       };
 
 

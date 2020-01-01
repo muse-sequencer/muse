@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="11.14mm" height="8.3825mm" fill-rule="evenodd" stroke-linejoin="round" stroke-width="28.222" preserveAspectRatio="xMidYMid" version="1.2" viewBox="0 0 1114 838.25" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:ooo="http://xml.openoffice.org/svg/export" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><metadata><rdf:RDF><cc:Work rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/><dc:title/></cc:Work></rdf:RDF></metadata>
+ <defs class="ClipPathGroup">
+  <clipPath id="presentation_clip_path">
+   <rect width="1600" height="1600"/>
+  </clipPath>
+ </defs>
+ <defs class="TextShapeIndex">
+ </defs>
+ <defs class="EmbeddedBulletChars">
+ </defs>
+ <g transform="translate(-257 -668.75)">
+  <g class="Master_Slide">
+  </g>
+ </g>
+ <g class="SlideGroup" transform="translate(-257 -668.75)">
+    <g class="Slide" clip-path="url(#presentation_clip_path)">
+     <g class="Page">
+      <g class="com.sun.star.drawing.PolyLineShape">
+       <g fill="none">
+        <rect class="BoundingBox" x="257" y="670" width="1114" height="837"/>
+        <path d="m1264 776-476 624-424-624" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="212"/>
+       </g>
+      </g>
+     </g>
+    </g>
+ </g>
+</svg>

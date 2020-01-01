@@ -43,6 +43,7 @@
 #include "part.h"
 #include "utils.h"
 #include "xml.h"
+#include "gconfig.h"
 
 namespace MusECore {
 
@@ -973,6 +974,13 @@ bool getUniqueFileName(const QString& origFilepath, QString& newAbsFilePath)
       printf("Could not find a suitable filename (more than 100000 files based on %s - clean up!\n", origFilepath.toLatin1().constData());
       return false;
        }
+
+QString font2StyleSheetFull(const QFont& fnt)
+{
+    QString ss("* {" + MusECore::font2StyleSheet(fnt) + "}");
+    ss += "QToolTip {font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt}";
+    return ss;
+}
 
 QString font2StyleSheet(const QFont& fnt)
 {

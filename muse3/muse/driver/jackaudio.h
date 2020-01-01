@@ -54,6 +54,10 @@ typedef std::list<JackCallbackEvent>::iterator iJackCallbackEvent;
 //---------------------------------------------------------
 
 class JackAudioDevice : public AudioDevice {
+  public:
+      enum JackSyncPhases { SyncCheck = 0, SyncStarted, Syncing, Synced };
+      enum JackTimebaseMasterPhases { MasterCheck = 0, IsNotMaster, IsMaster };
+
       jack_client_t* _client;
       jack_transport_state_t transportState;
       jack_position_t pos;
@@ -61,7 +65,7 @@ class JackAudioDevice : public AudioDevice {
       // Free-running frame counter incremented always in process.
       jack_nframes_t _frameCounter; 
       // REMOVE Tim. clip. Added.
-      bool _timebaseAck;
+//       bool _timebaseAck;
 
       PendingOperationList operations;
       // Temporary, for processing callback event FIFO.
@@ -162,12 +166,17 @@ class JackAudioDevice : public AudioDevice {
       virtual void seekTransport(unsigned frame);
       virtual void seekTransport(const Pos &p);
       virtual void setFreewheel(bool f);
-      virtual int setMaster(bool f);
+      // Whether the device has its own transport (Jack transport etc.), beyond the one built into this class.
+      virtual bool hasOwnTransport() const { return true; };
+      // Whether the device supports timebase master capabilities.
+      virtual bool hasTimebaseMaster() const { return true; };
+      // Sets or resets timebase master. Returns 0 on success. Otherwise, may return an error code.
+      virtual int setMaster(bool f, bool unconditional = false);
       jack_transport_state_t transportQuery(jack_position_t* pos);
       bool timebaseQuery(unsigned frames, unsigned* bar, unsigned* beat, unsigned* tick, unsigned* curr_abs_tick, unsigned* next_ticks);
       // REMOVE Tim. clip. Added.
       // This is called by the timebase callback.
-      void timebaseAck();
+//       void timebaseAck();
 
       void graphChanged();
       };

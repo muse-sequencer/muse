@@ -60,12 +60,12 @@ void TempoToolbar::init()
   _masterButton->setContentsMargins(0, 0, 0, 0);
   _masterButton->setFocusPolicy(Qt::NoFocus);
   _masterButton->setCheckable(true);
-  _masterButton->setToolTip(tr("use mastertrack tempo"));
+  _masterButton->setToolTip(tr("Use mastertrack tempo"));
   _masterButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
   connect(_masterButton, SIGNAL(toggled(bool)), SLOT(masterToggled(bool)));
   
   tempo_edit=new TempoEdit(this);
-  tempo_edit->setToolTip(tr("mastertrack tempo at current position, or fixed tempo"));
+  tempo_edit->setToolTip(tr("Mastertrack tempo at current position, or fixed tempo"));
   tempo_edit->setContentsMargins(0, 0, 0, 0);
   tempo_edit->setFocusPolicy(Qt::StrongFocus);
 
@@ -196,7 +196,7 @@ void SigToolbar::init()
   sig_edit->setContentsMargins(0, 0, 0, 0);
   sig_edit->setFocusPolicy(Qt::StrongFocus);
   sig_edit->setValue(MusECore::TimeSignature(4, 4));
-  sig_edit->setToolTip(tr("time signature at current position"));
+  sig_edit->setToolTip(tr("Time signature at current position"));
   
   label=new QLabel(tr("Signature: "),this);
   label->setContentsMargins(0, 0, 0, 0);

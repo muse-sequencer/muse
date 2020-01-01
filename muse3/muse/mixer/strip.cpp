@@ -766,6 +766,15 @@ QWidget* ComponentRack::setupComponentTabbing(QWidget* previousWidget)
 
 void ComponentRack::configChanged() 
 { 
+  // FIXME For some reason we have to set the font and stylesheet here as well as the strip.
+  // Strip font and stylesheet changes don't seem to be propagated to these racks.
+  // FIXME They also don't seem to be propagated to our CompactPatchEdit component on the midi strip.
+  if(font() != MusEGlobal::config.fonts[1])
+  {
+    setFont(MusEGlobal::config.fonts[1]); // should be redundant, overridden by style sheet
+    setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
+  }
+
   for(ciComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
   {
     const ComponentWidget& cw = *ic;
@@ -911,7 +920,7 @@ void Strip::changeTrackName()
     {
       QMessageBox::critical(this,
         tr("MusE: bad trackname"),
-        tr("please choose a unique track name"),
+        tr("Please choose a unique track name"),
         QMessageBox::Ok,
         Qt::NoButton,
         Qt::NoButton);
@@ -978,11 +987,12 @@ void Strip::updateStyleSheet()
   c.setAlpha(190);
   c2.setAlpha(190);
 
-  QString stxt = QString("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,"
+  QString stxt = QString("* { background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,"
       "stop:0.263158 rgba(%1, %2, %3, %4), stop:0.7547368 rgba(%5, %6, %7, %8));")
       .arg(c2.red()).arg(c2.green()).arg(c2.blue()).arg(c2.alpha()).arg(c.red()).arg(c.green()).arg(c.blue()).arg(c.alpha());
   //stxt += QString("color: rgb(0, 0, 0);");
-  stxt += MusECore::font2StyleSheet(fnt);
+  stxt += MusECore::font2StyleSheet(fnt) + "}";
+  stxt += "QToolTip {font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt}";
 
   label->setStyleSheet(stxt);
 }
@@ -1252,6 +1262,17 @@ void Strip::mousePressEvent(QMouseEvent* ev)
     act->setCheckable(true);
     act->setChecked(MusEGlobal::config.monitorOnRecord);
 
+    QMenu* audioEffectsRackVisibleItemsMenu = new QMenu(tr("Visible audio effects"));
+    for(int i = 0; i <= MusECore::PipelineDepth; ++i)
+    {
+      act = audioEffectsRackVisibleItemsMenu->addAction(QString::number(i));
+      act->setData(int(5000 + i));
+      act->setCheckable(true);
+      if(i == MusEGlobal::config.audioEffectsRackVisibleItems)
+        act->setChecked(MusEGlobal::config.monitorOnRecord);
+    }
+    menu->addMenu(audioEffectsRackVisibleItemsMenu);
+    
     menu->addAction(new MenuTitleItem(tr("Actions:"), menu));
 
     act = menu->addAction(tr("Change track name"));
@@ -1329,6 +1350,14 @@ void Strip::mousePressEvent(QMouseEvent* ev)
 
       case 1001:
         changeTrackName();
+      break;
+      
+      default:
+        if(sel >= 5000 && sel <= 5000 + MusECore::PipelineDepth)
+        {
+          MusEGlobal::config.audioEffectsRackVisibleItems = sel - 5000;
+          MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
+        }
       break;
     }
 

@@ -47,7 +47,7 @@ class QString;
 class QToolBar;
 class QToolButton;
 class QProgressDialog;
-class QMdiArea;
+class MuseMdiArea;
 class QTimer;
 
 namespace MusECore {
@@ -94,6 +94,7 @@ class Transport;
 class VisibleTracks;
 class RouteDialog;
 class CpuToolbar;
+class SnooperDialog;
 
 #define MENU_ADD_SYNTH_ID_BASE 0x8000
 
@@ -122,14 +123,14 @@ class MusE : public QMainWindow
             CMD_LAST };
 
       // File menu actions
-      QAction *fileSaveAction, *fileOpenAction, *fileNewAction;
+      QAction *fileSaveAction, *fileOpenAction, *fileNewAction, *fileNewFromTemplateAction;
       QAction *fileSaveAsAction, *fileImportMidiAction, *fileExportMidiAction;
       QAction *fileImportPartAction, *fileImportWaveAction, *fileMoveWaveFiles, *quitAction;
       QAction *fileCloseAction;
       QAction *editSongInfoAction;
       
    private:
-      QMdiArea* mdiArea;
+      MuseMdiArea* mdiArea;
       
       TopWin* activeTopWin;
       TopWin* currentMenuSharingTopwin;
@@ -171,7 +172,7 @@ class MusE : public QMainWindow
       QAction *dontFollowAction, *followPageAction, *followCtsAction;
       QAction *rewindOnStopAction;
       // Help Menu Actions
-      QAction *helpManualAction, *helpHomepageAction, *helpReportAction, *helpAboutAction, *helpDidYouKnow;
+      QAction *helpManualAction, *helpHomepageAction, *helpReportAction, *helpAboutAction, *helpDidYouKnow, *helpSnooperAction;
 
       QString appName;
 
@@ -207,6 +208,7 @@ class MusE : public QMainWindow
       MidiInputTransformDialog* midiInputTransform;
       ShortcutConfig* shortcutConfig;
       Appearance* appearance;
+      SnooperDialog* _snooperDialog;
       AudioMixerApp* mixer1;
       AudioMixerApp* mixer2;
       RouteDialog* routeDialog;
@@ -251,6 +253,8 @@ class MusE : public QMainWindow
       void writeConfiguration(int level, MusECore::Xml&) const;
       void updateConfiguration();
       QString projectTitle(QString name);
+      void toggleTrackArmSelectedTrack();
+
 
       QTimer *saveTimer;
       QTimer *blinkTimer;
@@ -260,6 +264,7 @@ class MusE : public QMainWindow
    signals:
       void configChanged();
       void activeTopWinChanged(MusEGui::TopWin*);
+      void blinkTimerToggled(bool state);
 
    private slots:
       void heartBeat();
@@ -351,6 +356,7 @@ class MusE : public QMainWindow
       void toplevelDeleting(MusEGui::TopWin* tl);
       bool seqRestart();
       void loadTemplate();
+      void loadDefaultTemplate();
       void showBigtime(bool);
       void showMixer1(bool);
       void showMixer2(bool);
@@ -358,6 +364,7 @@ class MusE : public QMainWindow
       void showMarker(bool);
       void showArranger(bool);
       void importMidi(const QString &file);
+      void showDidYouKnowDialogIfEnabled();
       void showDidYouKnowDialog();
       void startEditInstrument(const QString& find_instrument = QString(), EditInstrumentTabType show_tab = EditInstrumentPatches);
       void configMidiPorts();
@@ -380,6 +387,7 @@ class MusE : public QMainWindow
       void startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls = false);
       void startEditor(MusECore::Track*);
       void startMidiTransformer();
+      void startSnooper();
       
       void focusChanged(QWidget* old, QWidget* now);
       
@@ -418,7 +426,7 @@ class MusE : public QMainWindow
       QProgressDialog *progress;
       bool importMidi(const QString name, bool merge);
       void kbAccel(int);
-      
+
       // writeFlag: Write to configuration file. 
       void changeConfig(bool writeFlag);
 

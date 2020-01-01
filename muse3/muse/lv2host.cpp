@@ -1333,7 +1333,7 @@ void LV2Synth::lv2ui_Gtk2ResizeCb(int width, int height, void *arg)
     }
 }
 
-void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
+void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, PluginQuirks::NatUISCaling fixScaling)
 {
     LV2Synth* synth = state->synth;
     LV2PluginWrapper_Window *win = NULL;
@@ -1607,6 +1607,14 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
                             int w = 0;
                             int h = 0;
                             MusEGui::lv2Gtk2Helper_gtk_widget_get_allocation(uiW, &w, &h);
+
+                            if ((fixScaling == MusECore::PluginQuirks::NatUISCaling::GLOBAL && MusEGlobal::config.noPluginScaling)
+                                 || fixScaling == MusECore::PluginQuirks::NatUISCaling::ON) {
+
+                                w = qRound((qreal)w / qApp->devicePixelRatio());
+                                h = qRound((qreal)h / qApp->devicePixelRatio());
+                            }
+
                             win->setMinimumSize(w, h);
                             win->resize(w, h);
                         }
@@ -1615,7 +1623,14 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
                     else
                     {
                         // Set the minimum size to the supplied uiX11Size.
-                        win->setMinimumSize(state->uiX11Size.width(), state->uiX11Size.height());
+                         if ((fixScaling == MusECore::PluginQuirks::NatUISCaling::GLOBAL && MusEGlobal::config.noPluginScaling)
+                              || fixScaling == MusECore::PluginQuirks::NatUISCaling::ON) {
+
+                             state->uiX11Size.setWidth(qRound((qreal)state->uiX11Size.width() / qApp->devicePixelRatio()));
+                             state->uiX11Size.setHeight(qRound((qreal)state->uiX11Size.height() / qApp->devicePixelRatio()));
+                         }
+
+                         win->setMinimumSize(state->uiX11Size.width(), state->uiX11Size.height());
 
                         if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
                             win->resize(ewWin->size());
@@ -2106,11 +2121,12 @@ char *LV2Synth::lv2state_makePath(LV2_State_Make_Path_Handle handle, const char 
 }
 #endif
 
+#ifdef LV2_MAKE_PATH_SUPPORT
 char *LV2Synth::lv2state_abstractPath(LV2_State_Map_Path_Handle handle, const char *absolute_path)
+#else
+char *LV2Synth::lv2state_abstractPath(LV2_State_Map_Path_Handle /*handle*/, const char *absolute_path)
+#endif
 {
-    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
-    assert(state != NULL);
-
     //some plugins do not support abstract paths properly,
     //so return duplicate without modification for now
     //return strdup(absolute_path);
@@ -2119,6 +2135,9 @@ char *LV2Synth::lv2state_abstractPath(LV2_State_Map_Path_Handle handle, const ch
     QString cfg_path =
         MusEGlobal::museProject;
 #ifdef LV2_MAKE_PATH_SUPPORT
+    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+    assert(state != NULL);
+
     const QString plug_name = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
     cfg_path += QDir::separator() +
                 QFileInfo(MusEGlobal::muse->projectName()).fileName() + QString(".lv2state") +
@@ -2149,15 +2168,20 @@ char *LV2Synth::lv2state_abstractPath(LV2_State_Map_Path_Handle handle, const ch
 
 }
 
+#ifdef LV2_MAKE_PATH_SUPPORT
 char *LV2Synth::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const char *abstract_path)
+#else
+char *LV2Synth::lv2state_absolutePath(LV2_State_Map_Path_Handle /*handle*/, const char *abstract_path)
+#endif
 {
-    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
-    assert(state != NULL);
-
     // Make everything relative to the plugin config folder.
     QString cfg_path =
         MusEGlobal::museProject;
+
 #ifdef LV2_MAKE_PATH_SUPPORT
+    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+    assert(state != NULL);
+
     const QString plug_name = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
     cfg_path += QDir::separator() +
                 QFileInfo(MusEGlobal::muse->projectName()).fileName() + QString(".lv2state") +
@@ -4139,8 +4163,6 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
     CtrlListList *cll = atrack->controller();
     ciCtrlList icl_first;
     const int plug_id = id();
-    void *wrk_data;
-    size_t wrk_data_sz;
 
     LV2EvBuf *evBuf = (_inportsMidi > 0) ? _state->midiInPorts [0].buffer : NULL;
 
@@ -4568,8 +4590,10 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
             {
                 if(_state->wrkIface && _state->wrkIface->work_response)
                 {
-                    _state->wrkRespDataBuffer->peek(&wrk_data, &wrk_data_sz);
-                    _state->wrkIface->work_response(lilv_instance_get_handle(_handle), wrk_data_sz, wrk_data);
+                    void *wrk_data = nullptr;
+                    size_t wrk_data_sz = 0;
+                    if(_state->wrkRespDataBuffer->peek(&wrk_data, &wrk_data_sz))
+                      _state->wrkIface->work_response(lilv_instance_get_handle(_handle), wrk_data_sz, wrk_data);
                 }
                 _state->wrkRespDataBuffer->remove();
             }
@@ -4886,7 +4910,7 @@ void LV2SynthIF::showNativeGui(bool bShow)
         _state->extHost.plugin_human_id = _state->human_id = strdup((track()->name() + QString(": ") + name()).toUtf8().constData());
     }
 
-    LV2Synth::lv2ui_ShowNativeGui(_state, bShow);
+    LV2Synth::lv2ui_ShowNativeGui(_state, bShow, cquirks()._fixNativeUIScaling);
 }
 
 void LV2SynthIF::write(int level, Xml &xml) const
@@ -5573,8 +5597,6 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float latenc
 
     lilv_instance_run(state->handle, n);
 
-    void *wrk_data;
-    size_t wrk_data_sz;
     //notify worker about processed data (if any)
     // Do it always, even if not 'running', in case we have 'left over' responses etc,
     //  even though work is only initiated from 'run'.
@@ -5583,8 +5605,10 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float latenc
     {
         if(state->wrkIface && state->wrkIface->work_response)
         {
-            state->wrkRespDataBuffer->peek(&wrk_data, &wrk_data_sz);
-            state->wrkIface->work_response(lilv_instance_get_handle(state->handle), wrk_data_sz, wrk_data);
+            void *wrk_data = nullptr;
+            size_t wrk_data_sz = 0;
+            if(state->wrkRespDataBuffer->peek(&wrk_data, &wrk_data_sz))
+              state->wrkIface->work_response(lilv_instance_get_handle(state->handle), wrk_data_sz, wrk_data);
         }
         state->wrkRespDataBuffer->remove();
     }
@@ -5694,7 +5718,7 @@ void LV2PluginWrapper::showNativeGui(PluginI *p, bool bShow)
         state->extHost.plugin_human_id = state->human_id = strdup((p->track()->name() + QString(": ") + label()).toUtf8().constData());
     }
 
-    LV2Synth::lv2ui_ShowNativeGui(state, bShow);
+    LV2Synth::lv2ui_ShowNativeGui(state, bShow, p->cquirks()._fixNativeUIScaling);
 }
 
 bool LV2PluginWrapper::nativeGuiVisible(const PluginI *p) const
@@ -5782,28 +5806,28 @@ void LV2PluginWrapper_Worker::makeWork()
     std::cerr << "LV2PluginWrapper_Worker::makeWork" << std::endl;
 #endif
 
-    void *wrk_data;
-    size_t wrk_data_sz;
     const unsigned int wrk_buf_sz = _state->wrkDataBuffer->getSize(false);
     for(unsigned int i_sz = 0; i_sz < wrk_buf_sz; ++i_sz)
     {
         if(_state->wrkIface && _state->wrkIface->work)
         {
-            _state->wrkDataBuffer->peek(&wrk_data, &wrk_data_sz);
-
-            // Some plugins expose a work_response function, but it may be empty
-            //  and/or they don't bother calling respond (our lv2wrk_respond). (LSP...)
-            if(_state->wrkIface->work(lilv_instance_get_handle(_state->handle),
-                                      LV2Synth::lv2wrk_respond,
-                                      _state,
-                                      wrk_data_sz,
-                                      wrk_data) != LV2_WORKER_SUCCESS)
+            void *wrk_data = nullptr;
+            size_t wrk_data_sz = 0;
+            if(_state->wrkDataBuffer->peek(&wrk_data, &wrk_data_sz))
             {
-#ifdef DEBUG_LV2
-                std::cerr << "LV2PluginWrapper_Worker::makeWork: Error: work() != LV2_WORKER_SUCCESS" << std::endl;
-#endif
+              // Some plugins expose a work_response function, but it may be empty
+              //  and/or they don't bother calling respond (our lv2wrk_respond). (LSP...)
+              if(_state->wrkIface->work(lilv_instance_get_handle(_state->handle),
+                                        LV2Synth::lv2wrk_respond,
+                                        _state,
+                                        wrk_data_sz,
+                                        wrk_data) != LV2_WORKER_SUCCESS)
+              {
+  #ifdef DEBUG_LV2
+                  std::cerr << "LV2PluginWrapper_Worker::makeWork: Error: work() != LV2_WORKER_SUCCESS" << std::endl;
+  #endif
+              }
             }
-
         }
         _state->wrkDataBuffer->remove();
     }

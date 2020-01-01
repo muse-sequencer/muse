@@ -689,6 +689,9 @@ static void loadSf2NoteSampleNames(FluidSoundFont& font, IpatchSF2 *sf2)
 
   // Get preset children of SoundFont
   presets = ipatch_container_get_children (IPATCH_CONTAINER (sf2), IPATCH_TYPE_SF2_PRESET);
+  if(!presets)
+    return;
+
   ipatch_list_init_iter (presets, &pIter);
 
   // Iterate over presets in list
@@ -705,7 +708,8 @@ static void loadSf2NoteSampleNames(FluidSoundFont& font, IpatchSF2 *sf2)
 
     // Compose a patch numer. Drums are on special bank 128.
     patch = (bank << 16) | (0xff << 8) | (program & 0x7f);
-    PatchNoteSampleNameListResult_t res_pnsnl = font._noteSampleNameList.insert(PatchNoteSampleNameInsertPair_t(patch, NoteSampleNameList()));
+    PatchNoteSampleNameListResult_t res_pnsnl = 
+      font._noteSampleNameList.insert(PatchNoteSampleNameInsertPair_t(patch, NoteSampleNameList()));
     iPatchNoteSampleNameList_t res_ipnsnl = res_pnsnl.first;
     NoteSampleNameList& nsl = res_ipnsnl->second;
 
@@ -797,6 +801,9 @@ static void loadNoteSampleNames(FluidSoundFont& font)
 
   sffile = ipatch_sf2_file_new ();
 
+  if(!sffile)
+    return;
+
   fhandle = ipatch_file_open(IPATCH_FILE(sffile), fname, "r", &err);
   if(!fhandle)
   {
@@ -808,7 +815,21 @@ static void loadNoteSampleNames(FluidSoundFont& font)
   }
 
   sf2_reader = ipatch_sf2_reader_new(fhandle);
+  if(!sf2_reader)
+  {
+    ipatch_file_close(fhandle);
+    g_object_unref (sffile);
+    return;
+  }
+  
   sf2 = ipatch_sf2_reader_load(sf2_reader, NULL);
+  if(!sf2)
+  {
+    ipatch_file_close(fhandle);
+    //g_object_unref(sf2_reader);  // Needed?
+    g_object_unref (sffile);
+    return;
+  }
 
   loadSf2NoteSampleNames(font, sf2);
 
