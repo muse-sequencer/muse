@@ -685,8 +685,13 @@ RubberbandSettingsDialog::RubberbandSettingsDialog(
   connect(cancelButton, &QPushButton::clicked, [this]() { buttonClicked(CancelButtonId); } );
 }
   
-void RubberbandSettingsDialog::setControls(int)
-//void RubberbandSettingsDialog::setControls(int opts) // does not compile
+void RubberbandSettingsDialog::setControls(
+#ifdef RUBBERBAND_SUPPORT
+  int opts
+#else
+  int /*opts*/
+#endif
+  )
 {
 #ifdef RUBBERBAND_SUPPORT
   
