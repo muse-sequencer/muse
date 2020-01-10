@@ -114,11 +114,11 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       bool apply();
       // Ask to close and if so, tell the main window to close the app and return true.
       bool checkClose();
+      bool changeTheme();
 
    private slots:
       void applyClicked();
       void okClicked();
-      void changeTheme();
       void cancel();
       void addBackground();
       void removeBackground();

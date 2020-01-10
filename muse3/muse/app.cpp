@@ -315,39 +315,38 @@ void addProject(const QString& name)
 MusE::MusE() : QMainWindow()
       {
       setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
-//      setIconSize(ICON_SIZE);
       setFocusPolicy(Qt::NoFocus);
       MusEGlobal::muse      = this;    // hack
       _isRestartingApp      = false;
-      clipListEdit          = 0;
-      midiSyncConfig        = 0;
-      midiRemoteConfig      = 0;
-      midiPortConfig        = 0;
-      metronomeConfig       = 0;
-      midiFileConfig        = 0;
-      midiFilterConfig      = 0;
-      midiInputTransform    = 0;
-      midiRhythmGenerator   = 0;
-      globalSettingsConfig  = 0;
-      markerView            = 0;
-      arrangerView          = 0;
-      softSynthesizerConfig = 0;
-      midiTransformerDialog = 0;
-      shortcutConfig        = 0;
-      appearance            = 0;
-      _snooperDialog        = 0;
+      clipListEdit          = nullptr;
+      midiSyncConfig        = nullptr;
+      midiRemoteConfig      = nullptr;
+      midiPortConfig        = nullptr;
+      metronomeConfig       = nullptr;
+      midiFileConfig        = nullptr;
+      midiFilterConfig      = nullptr;
+      midiInputTransform    = nullptr;
+      midiRhythmGenerator   = nullptr;
+      globalSettingsConfig  = nullptr;
+      markerView            = nullptr;
+      arrangerView          = nullptr;
+      softSynthesizerConfig = nullptr;
+      midiTransformerDialog = nullptr;
+      shortcutConfig        = nullptr;
+      appearance            = nullptr;
+      _snooperDialog        = nullptr;
       //audioMixer            = 0;
-      mixer1                = 0;
-      mixer2                = 0;
-      routeDialog           = 0;
+      mixer1                = nullptr;
+      mixer2                = nullptr;
+      routeDialog           = nullptr;
       watchdogThread        = 0;
-      editInstrument        = 0;
+      editInstrument        = nullptr;
       //routingPopupMenu      = 0;
-      progress              = 0;
+      progress              = nullptr;
       saveIncrement         = 0;
-      activeTopWin          = NULL;
-      currentMenuSharingTopwin = NULL;
-      waitingForTopwin      = NULL;
+      activeTopWin          = nullptr;
+      currentMenuSharingTopwin = nullptr;
+      waitingForTopwin      = nullptr;
 
       appName               = PACKAGE_NAME;
       setWindowTitle(appName);
@@ -1029,7 +1028,7 @@ MusE::MusE() : QMainWindow()
       }
 
       transport = new MusEGui::Transport(this, "transport");
-      bigtime   = 0;
+      bigtime   = nullptr;
 
       MusEGlobal::song->blockSignals(false);
 

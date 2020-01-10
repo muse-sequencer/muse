@@ -3865,7 +3865,7 @@ QMenu* EditInstrument::createPopupPatchList(bool drum)
                           if(!pm) {
                             pm = new QMenu(pgp->name, patchpopup);
                             patchpopup->addMenu(pm);
-                            pm->setFont(MusEGlobal::config.fonts[0]);
+                            pm->setFont(qApp->font());
                           }
                           int id = ((mp->hbank & 0xff) << 16)
                                       + ((mp->lbank & 0xff) << 8) + (mp->program & 0xff);

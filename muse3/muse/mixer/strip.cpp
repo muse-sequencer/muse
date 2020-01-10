@@ -902,7 +902,7 @@ void Strip::changeTrackName()
   dlg.setWindowTitle(tr("Name"));
   dlg.setLabelText(tr("Enter track name:"));
   dlg.setTextValue(oldname);
-  dlg.setStyleSheet("font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt");
+  dlg.setStyleSheet("font-size:" + QString::number(qApp->font().pointSize()) + "pt");
 
   const int res = dlg.exec();
   if(res == QDialog::Rejected)
@@ -992,7 +992,7 @@ void Strip::updateStyleSheet()
       .arg(c2.red()).arg(c2.green()).arg(c2.blue()).arg(c2.alpha()).arg(c.red()).arg(c.green()).arg(c.blue()).arg(c.alpha());
   //stxt += QString("color: rgb(0, 0, 0);");
   stxt += MusECore::font2StyleSheet(fnt) + "}";
-  stxt += "QToolTip {font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt}";
+  stxt += "QToolTip {font-size:" + QString::number(qApp->font().pointSize()) + "pt}";
 
   label->setStyleSheet(stxt);
 }

@@ -1248,7 +1248,7 @@ void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int /*chan*/, 
                               if(!pm) {
                                 pm = new MusEGui::PopupMenu(pgp->name, menu, menu->stayOpen());  // Use the parent stayOpen here.
                                 menu->addMenu(pm);
-                                pm->setFont(MusEGlobal::config.fonts[0]);
+                                pm->setFont(qApp->font());
                               }
                               int id = ((mp->hbank & 0xff) << 16)
                                          + ((mp->lbank & 0xff) << 8) + (mp->program & 0xff);

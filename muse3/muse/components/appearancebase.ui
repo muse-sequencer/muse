@@ -1174,6 +1174,13 @@
           <item>
            <layout class="QHBoxLayout">
             <item>
+             <widget class="QLabel" name="label_5">
+              <property name="text">
+               <string>Qt system style</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QComboBox" name="themeComboBox">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -1223,28 +1230,28 @@
               </item>
              </widget>
             </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
-             <widget class="QLabel" name="theme_label">
+             <widget class="QLabel" name="label_6">
               <property name="text">
-               <string>May require restarting MusE for best results</string>
+               <string>MusE color scheme</string>
               </property>
              </widget>
             </item>
             <item>
-             <spacer name="Spacer2">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+             <widget class="QComboBox" name="colorSchemeComboBox">
+              <property name="currentText">
+               <string>Current settings</string>
               </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Expanding</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>90</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
+              <item>
+               <property name="text">
+                <string>Current settings</string>
+               </property>
+              </item>
+             </widget>
             </item>
            </layout>
           </item>
@@ -1253,7 +1260,7 @@
             <item>
              <widget class="QLabel" name="label_41">
               <property name="text">
-               <string>Style Sheet:</string>
+               <string>Style sheet</string>
               </property>
              </widget>
             </item>
@@ -1355,39 +1362,6 @@
            </layout>
           </item>
           <item>
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>MusE color scheme</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_5">
-            <item>
-             <widget class="QComboBox" name="colorSchemeComboBox">
-              <property name="currentText">
-               <string>Current settings</string>
-              </property>
-              <item>
-               <property name="text">
-                <string>Current settings</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="changeThemeButton">
-              <property name="text">
-               <string>Change</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
            <spacer name="spacer3">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -1412,39 +1386,7 @@
           <string>Fonts</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_6">
-          <property name="leftMargin">
-           <number>11</number>
-          </property>
-          <property name="topMargin">
-           <number>2</number>
-          </property>
-          <property name="rightMargin">
-           <number>11</number>
-          </property>
-          <property name="bottomMargin">
-           <number>6</number>
-          </property>
-          <property name="spacing">
-           <number>6</number>
-          </property>
-          <item row="6" column="2">
-           <widget class="QSpinBox" name="fontSize4">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="4">
-           <widget class="QCheckBox" name="italic1">
-            <property name="text">
-             <string>Italic</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
+          <item row="2" column="1">
            <widget class="QLineEdit" name="fontName1">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -1454,48 +1396,21 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="2">
-           <widget class="QLabel" name="TextLabel1_1">
-            <property name="text">
-             <string>Size (pt)</string>
-            </property>
-            <property name="wordWrap">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="4">
-           <widget class="QCheckBox" name="italic2">
+          <item row="2" column="4">
+           <widget class="QCheckBox" name="italic1">
             <property name="text">
              <string>Italic</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="3">
-           <widget class="QCheckBox" name="bold0">
+          <item row="6" column="3">
+           <widget class="QCheckBox" name="bold5">
             <property name="text">
              <string>Bold</string>
             </property>
            </widget>
           </item>
-          <item row="7" column="0">
-           <widget class="QLabel" name="textLabel7_2">
-            <property name="text">
-             <string>Font 5</string>
-            </property>
-            <property name="wordWrap">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="4">
-           <widget class="QCheckBox" name="italic3">
-            <property name="text">
-             <string>Italic</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="5">
+          <item row="1" column="5">
            <widget class="QToolButton" name="fontBrowse0">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
@@ -1508,77 +1423,7 @@
             </property>
            </widget>
           </item>
-          <item row="8" column="4">
-           <widget class="QCheckBox" name="italic6">
-            <property name="text">
-             <string>Italic</string>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="5">
-           <widget class="QToolButton" name="fontBrowse6">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="3">
-           <widget class="QCheckBox" name="bold2">
-            <property name="text">
-             <string>Bold</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="2">
-           <widget class="QSpinBox" name="fontSize1">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="5">
-           <widget class="QToolButton" name="fontBrowse3">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="5">
-           <widget class="QToolButton" name="fontBrowse5">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="4">
-           <widget class="QCheckBox" name="italic5">
-            <property name="text">
-             <string>Italic</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="5">
+          <item row="3" column="5">
            <widget class="QToolButton" name="fontBrowse2">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
@@ -1591,7 +1436,17 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="6" column="0">
+           <widget class="QLabel" name="textLabel7_2">
+            <property name="text">
+             <string>Font 5</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
            <widget class="QLabel" name="textLabel4">
             <property name="text">
              <string>Font 1</string>
@@ -1601,193 +1456,8 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="textLabel3">
-            <property name="text">
-             <string>Font 0</string>
-            </property>
-            <property name="wordWrap">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="2">
-           <widget class="QSpinBox" name="fontSize5">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="3">
-           <widget class="QCheckBox" name="bold6">
-            <property name="text">
-             <string>Bold</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="fontName2">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="1">
-           <widget class="QLineEdit" name="fontName6">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="2">
-           <widget class="QSpinBox" name="fontSize3">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="1">
-           <widget class="QLineEdit" name="fontName5">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="1">
-           <widget class="QLabel" name="label_14">
-            <property name="toolTip">
-             <string/>
-            </property>
-            <property name="whatsThis">
-             <string/>
-            </property>
-            <property name="text">
-             <string>Maximum aliased size, 0 = no alias:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="2">
-           <widget class="QSpinBox" name="fontSize2">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2">
-           <widget class="QSpinBox" name="fontSize0">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="textLabel5">
-            <property name="text">
-             <string>Font 2</string>
-            </property>
-            <property name="wordWrap">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="4">
-           <widget class="QCheckBox" name="italic4">
-            <property name="text">
-             <string>Italic</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="1">
-           <widget class="QLineEdit" name="fontName4">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="3">
-           <widget class="QCheckBox" name="bold4">
-            <property name="text">
-             <string>Bold</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="textLabel7">
-            <property name="text">
-             <string>Font 4</string>
-            </property>
-            <property name="wordWrap">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="3">
-           <widget class="QCheckBox" name="bold5">
-            <property name="text">
-             <string>Bold</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="4">
-           <widget class="QCheckBox" name="italic0">
-            <property name="text">
-             <string>Italic</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="fontName0">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QLineEdit" name="fontName3">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="3">
-           <widget class="QCheckBox" name="bold1">
-            <property name="text">
-             <string>Bold</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="5">
-           <widget class="QToolButton" name="fontBrowse4">
+          <item row="4" column="5">
+           <widget class="QToolButton" name="fontBrowse3">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
               <horstretch>0</horstretch>
@@ -1799,7 +1469,71 @@
             </property>
            </widget>
           </item>
-          <item row="9" column="2">
+          <item row="4" column="0">
+           <widget class="QLabel" name="textLabel6">
+            <property name="text">
+             <string>Font 3</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QSpinBox" name="fontSize2">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="fontName3">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QLineEdit" name="fontName5">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="fontName0">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="4">
+           <widget class="QCheckBox" name="italic3">
+            <property name="text">
+             <string>Italic</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="4">
+           <widget class="QCheckBox" name="italic6">
+            <property name="text">
+             <string>Italic</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="2">
            <widget class="QSpinBox" name="maxAliasedPointSize">
             <property name="toolTip">
              <string>At what point size to switch from aliased text
@@ -1835,24 +1569,112 @@ The font family is forced to 'Sans', which should
             </property>
            </widget>
           </item>
-          <item row="5" column="3">
-           <widget class="QCheckBox" name="bold3">
+          <item row="3" column="3">
+           <widget class="QCheckBox" name="bold2">
             <property name="text">
              <string>Bold</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="textLabel6">
+          <item row="7" column="1">
+           <widget class="QLineEdit" name="fontName6">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QSpinBox" name="fontSize4">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="textLabel7_3">
             <property name="text">
-             <string>Font 3</string>
+             <string>Font 6</string>
             </property>
             <property name="wordWrap">
              <bool>false</bool>
             </property>
            </widget>
           </item>
-          <item row="8" column="2">
+          <item row="5" column="3">
+           <widget class="QCheckBox" name="bold4">
+            <property name="text">
+             <string>Bold</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="fontName4">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="4">
+           <widget class="QCheckBox" name="italic5">
+            <property name="text">
+             <string>Italic</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="textLabel3">
+            <property name="text">
+             <string>Font 0</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QCheckBox" name="bold0">
+            <property name="text">
+             <string>Bold</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="textLabel2">
+            <property name="text">
+             <string>Family</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="textLabel7">
+            <property name="text">
+             <string>Font 4</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="4">
+           <widget class="QCheckBox" name="italic0">
+            <property name="text">
+             <string>Italic</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="2">
            <widget class="QSpinBox" name="fontSize6">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -1862,7 +1684,41 @@ The font family is forced to 'Sans', which should
             </property>
            </widget>
           </item>
-          <item row="3" column="5">
+          <item row="6" column="5">
+           <widget class="QToolButton" name="fontBrowse5">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="4">
+           <widget class="QCheckBox" name="italic4">
+            <property name="text">
+             <string>Italic</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="3">
+           <widget class="QCheckBox" name="bold3">
+            <property name="text">
+             <string>Bold</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="3">
+           <widget class="QCheckBox" name="bold1">
+            <property name="text">
+             <string>Bold</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="5">
            <widget class="QToolButton" name="fontBrowse1">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
@@ -1875,23 +1731,126 @@ The font family is forced to 'Sans', which should
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QLabel" name="textLabel2">
+          <item row="8" column="1">
+           <widget class="QLabel" name="label_14">
+            <property name="toolTip">
+             <string/>
+            </property>
+            <property name="whatsThis">
+             <string/>
+            </property>
             <property name="text">
-             <string>Family</string>
+             <string>Maximum aliased size, 0 = no alias:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QSpinBox" name="fontSize3">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QSpinBox" name="fontSize0">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QSpinBox" name="fontSize1">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="textLabel5">
+            <property name="text">
+             <string>Font 2</string>
             </property>
             <property name="wordWrap">
              <bool>false</bool>
             </property>
            </widget>
           </item>
-          <item row="8" column="0">
-           <widget class="QLabel" name="textLabel7_3">
+          <item row="7" column="5">
+           <widget class="QToolButton" name="fontBrowse6">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
-             <string>Font 6</string>
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2">
+           <widget class="QSpinBox" name="fontSize5">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="4">
+           <widget class="QCheckBox" name="italic2">
+            <property name="text">
+             <string>Italic</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="3">
+           <widget class="QCheckBox" name="bold6">
+            <property name="text">
+             <string>Bold</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="fontName2">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="TextLabel1_1">
+            <property name="text">
+             <string>Size (pt)</string>
             </property>
             <property name="wordWrap">
              <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="5">
+           <widget class="QToolButton" name="fontBrowse4">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>...</string>
             </property>
            </widget>
           </item>
