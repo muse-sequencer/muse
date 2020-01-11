@@ -619,7 +619,8 @@ void Arranger::setHeaderSizes()
     // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
 #if QT_VERSION >= 0x050b00
     header->resizeSection(COL_TRACK_IDX, qMax(fm1.horizontalAdvance(header->columnLabel(COL_TRACK_IDX)) + fw, 30));
-    header->resizeSection(COL_NAME, qMax(fm1.horizontalAdvance(header->columnLabel(COL_OPORT)) + fw, 60));
+    header->resizeSection(COL_NAME, qMax(fm1.horizontalAdvance(header->columnLabel(COL_NAME)) + fw, 100));
+    header->resizeSection(COL_OPORT, qMax(fm1.horizontalAdvance(header->columnLabel(COL_OPORT)) + fw, 60));
     header->resizeSection(COL_OCHANNEL, fm1.horizontalAdvance(header->columnLabel(COL_OCHANNEL)) + fw);
     header->resizeSection(COL_TIMELOCK, fm1.horizontalAdvance(header->columnLabel(COL_TIMELOCK)) + fw);
     header->resizeSection(COL_AUTOMATION, qMax(fm1.horizontalAdvance(header->columnLabel(COL_AUTOMATION)) + fw, 80));
