@@ -29,7 +29,7 @@ PluginDialog::PluginDialog(QWidget* parent)
   : QDialog(parent)
 {
     ui.setupUi(this);
-    this->setStyleSheet("font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt");
+    this->setStyleSheet("font-size:" + QString::number(qApp->font().pointSize()) + "pt");
 
       group_info=NULL;
       setWindowTitle(tr("MusE: select plugin"));

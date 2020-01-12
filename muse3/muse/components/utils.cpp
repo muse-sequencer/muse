@@ -978,7 +978,7 @@ bool getUniqueFileName(const QString& origFilepath, QString& newAbsFilePath)
 QString font2StyleSheetFull(const QFont& fnt)
 {
     QString ss("* {" + MusECore::font2StyleSheet(fnt) + "}");
-    ss += "QToolTip {font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt}";
+    ss += "QToolTip {font-size:" + QString::number(qApp->font().pointSize()) + "pt}";
     return ss;
 }
 

@@ -303,7 +303,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       //---------------------------------------------------
       //    THEMES
       //---------------------------------------------------
-      connect(changeThemeButton, SIGNAL(clicked()), SLOT(changeTheme()));
+//      connect(changeThemeButton, SIGNAL(clicked()), SLOT(changeTheme()));
 
       QDir themeDir(MusEGlobal::museGlobalShare + QString("/themes"));
       QStringList list;
@@ -687,17 +687,17 @@ void Appearance::updateFonts()
 //
 //---------------------------------------------------------
 
-void Appearance::changeTheme()
+bool Appearance::changeTheme()
 {
     if (colorSchemeComboBox->currentIndex() == 0) {
-      return;
+      return false;
     }
     if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
       tr("Do you really want to reset colors to theme default?"),
       QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok)
        != QMessageBox::Ok)
     {
-        return;
+        return false;
     }
 
     backgroundTree->reset();
@@ -714,25 +714,29 @@ void Appearance::changeTheme()
 
     if (QFile::exists(stylePath))
     {
-      styleSheetPath->setText(stylePath);
-      MusEGlobal::config.styleSheetFile = stylePath;
-      if (MusEGlobal::debugMsg)
-          printf("Setting config.styleSheetFile to %s\n", config->styleSheetFile.toLatin1().data());
+        styleSheetPath->setText(stylePath);
+        MusEGlobal::config.styleSheetFile = stylePath;
+        if (MusEGlobal::debugMsg)
+            printf("Setting config.styleSheetFile to %s\n", config->styleSheetFile.toLatin1().data());
     }
     else
     {
-      MusEGlobal::config.styleSheetFile = "";
+        styleSheetPath->setText("");
+        MusEGlobal::config.styleSheetFile = "";
     }
 
-    QString configPath = MusEGlobal::museGlobalShare + "/themes/" + currentTheme;
+    QString configColorPath = MusEGlobal::configPath + "/themes/" + QFileInfo(currentTheme).baseName() + ".cfc";
+    if (!QFile::exists(configColorPath)) {
+        configColorPath = MusEGlobal::museGlobalShare + "/themes/" + currentTheme;
+    }
+
     // We want the simple version, don't set the style or stylesheet yet.
-    MusEGlobal::muse->changeConfig(true);
-    MusECore::readConfiguration(configPath.toLatin1().constData());
+    MusECore::readConfiguration(configColorPath.toLatin1().constData());
+//    MusEGlobal::muse->changeConfig(true);
 
     hide();
 
-    // If required, ask user to restart the application for proper results.
-    checkClose();
+    return true;
 }
 
 //---------------------------------------------------------
@@ -742,6 +746,11 @@ void Appearance::changeTheme()
 bool Appearance::apply()
 {
       bool restart_required = false;
+
+      if (changeTheme()) {
+          *config = MusEGlobal::config;
+          restart_required = true;
+      }
 
       int showPartEvent = 0;
       int showPartType = 0;
@@ -783,18 +792,10 @@ bool Appearance::apply()
       for (int i = 0; i < user_bg->childCount(); ++i)
             config->canvasCustomBgList << user_bg->child(i)->data(0, Qt::UserRole).toString();
 
-      if(config->styleSheetFile != styleSheetPath->text())
-      {
-        restart_required = true;
-        config->styleSheetFile = styleSheetPath->text();
-      }
-
       config->fonts[0].setFamily(fontName0->text());
-
       config->fonts[0].setPointSize(fontSize0->value());
       config->fonts[0].setItalic(italic0->isChecked());
       config->fonts[0].setBold(bold0->isChecked());
-      QApplication::setFont(config->fonts[0]);
 
       config->fonts[1].setFamily(fontName1->text());
       config->fonts[1].setPointSize(fontSize1->value());
@@ -832,8 +833,6 @@ bool Appearance::apply()
         config->style = themeComboBox->currentIndex() == 0 ? QString() : themeComboBox->currentText();
       }
 
-      // setting up a new theme might change the fontsize, so re-read
-      fontSize0->setValue(QApplication::font().pointSize());
       config->canvasShowGrid = arrGrid->isChecked();
       config->globalAlphaBlend = globalAlphaVal->value();
       config->maxAliasedPointSize = maxAliasedPointSize->value();
@@ -1674,4 +1673,3 @@ void Appearance::browseFont(int n)
       }
 
 } // namespace MusEGui
-
