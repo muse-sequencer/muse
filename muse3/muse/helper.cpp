@@ -1956,7 +1956,7 @@ void loadStyleSheetFile(const QString& s)
 void updateThemeAndStyle(bool forceStyle)
 {
   // Note that setting a stylesheet completely takes over the font until blanked again.
-  qApp->setFont(MusEGlobal::config.fonts[0]);
+//  qApp->setFont(MusEGlobal::config.fonts[0]); // has no effect
   loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
   loadTheme(MusEGlobal::config.style, forceStyle || !MusEGlobal::config.styleSheetFile.isEmpty());
 }

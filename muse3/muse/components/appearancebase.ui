@@ -1410,19 +1410,6 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="5">
-           <widget class="QToolButton" name="fontBrowse0">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
           <item row="3" column="5">
            <widget class="QToolButton" name="fontBrowse2">
             <property name="sizePolicy">
@@ -1511,6 +1498,9 @@
           </item>
           <item row="1" column="1">
            <widget class="QLineEdit" name="fontName0">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1633,7 +1623,7 @@ The font family is forced to 'Sans', which should
           <item row="1" column="0">
            <widget class="QLabel" name="textLabel3">
             <property name="text">
-             <string>Font 0</string>
+             <string>System</string>
             </property>
             <property name="wordWrap">
              <bool>false</bool>
@@ -1642,6 +1632,9 @@ The font family is forced to 'Sans', which should
           </item>
           <item row="1" column="3">
            <widget class="QCheckBox" name="bold0">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Bold</string>
             </property>
@@ -1669,6 +1662,9 @@ The font family is forced to 'Sans', which should
           </item>
           <item row="1" column="4">
            <widget class="QCheckBox" name="italic0">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Italic</string>
             </property>
@@ -1756,6 +1752,9 @@ The font family is forced to 'Sans', which should
           </item>
           <item row="1" column="2">
            <widget class="QSpinBox" name="fontSize0">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
               <horstretch>0</horstretch>
