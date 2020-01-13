@@ -388,8 +388,13 @@ install(TARGETS
 if ( ${MODULES_BUILD} STREQUAL SHARED )
       install(TARGETS core icons 
               # latency_compensator_module
-              lv2host_module 
             DESTINATION ${MusE_MODULES_DIR}
             )
+      # This conditional fixes an error when LV2_SUPPORT is false:
+      #  "install TARGETS given target "lv2host_module" which does not exist."
+      if (LV2_SUPPORT)
+        install ( TARGETS lv2host_module DESTINATION ${MusE_MODULES_DIR} )
+      endif (LV2_SUPPORT)
+              
 endif ( ${MODULES_BUILD} STREQUAL SHARED )
 

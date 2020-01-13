@@ -1,6 +1,7 @@
 12.01.2020
     - Oops. Reinstall missing darkgreendot.xpm (Tim)
     - Fix compile error when RtAudio headers not found.
+    - Fix "lv2host_module does not exist" compile error when LV2 support disabled.
 09.01.2020
     - Fix rubberband compile error + pull trackheader size fixes from kybos. (Tim)
 01.01.2020
