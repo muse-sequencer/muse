@@ -1,5 +1,6 @@
 12.01.2020
     - Oops. Reinstall missing darkgreendot.xpm (Tim)
+    - Fix compile error when RtAudio headers not found.
 09.01.2020
     - Fix rubberband compile error + pull trackheader size fixes from kybos. (Tim)
 01.01.2020
