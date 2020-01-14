@@ -1,3 +1,5 @@
+14.01.2020
+    - LV2: Remove deprecated LV2_Event_Buffer and LV2_URI_Map_Feature. (Tim)
 12.01.2020
     - Oops. Reinstall missing darkgreendot.xpm (Tim)
     - Fix compile error when RtAudio headers not found.

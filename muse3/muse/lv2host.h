@@ -53,7 +53,9 @@
 #include "lv2/lv2plug.in/ns/ext/atom/atom.h"
 #include "lv2/lv2plug.in/ns/ext/midi/midi.h"
 #include "lv2/lv2plug.in/ns/ext/buf-size/buf-size.h"
+#ifdef LV2_EVENT_BUFFER_SUPPORT
 #include "lv2/lv2plug.in/ns/ext/event/event.h"
+#endif
 #include "lv2/lv2plug.in/ns/ext/options/options.h"
 #include "lv2/lv2plug.in/ns/ext/parameters/parameters.h"
 #include "lv2/lv2plug.in/ns/ext/patch/patch.h"
@@ -61,7 +63,9 @@
 #include "lv2/lv2plug.in/ns/ext/presets/presets.h"
 #include "lv2/lv2plug.in/ns/ext/state/state.h"
 #include "lv2/lv2plug.in/ns/ext/time/time.h"
+#ifdef LV2_URI_MAP_SUPPORT
 #include "lv2/lv2plug.in/ns/ext/uri-map/uri-map.h"
+#endif
 #include "lv2/lv2plug.in/ns/ext/urid/urid.h"
 #include "lv2/lv2plug.in/ns/ext/worker/worker.h"
 #include "lv2/lv2plug.in/ns/ext/port-props/port-props.h"
@@ -130,27 +134,42 @@ struct LV2MidiEvent
 
 class LV2EvBuf
 {
+#ifdef LV2_EVENT_BUFFER_SUPPORT
    enum LV2_BUF_TYPE
    {
       LV2_BUF_EVENT,
       LV2_BUF_ATOM
    };
+#endif
    std::vector<uint8_t> _buffer;
    size_t curWPointer;
    size_t curRPointer;
    bool _isInput;
+#ifdef LV2_EVENT_BUFFER_SUPPORT
    bool _oldApi;
+#endif
    LV2_URID _uAtomTypeSequence;
    LV2_URID _uAtomTypeChunk;
    LV2_Atom_Sequence *_seqbuf;
+#ifdef LV2_EVENT_BUFFER_SUPPORT
    LV2_Event_Buffer *_evbuf;
+#endif
 public:
+#ifdef LV2_EVENT_BUFFER_SUPPORT
    LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t size);
+#else
+   LV2EvBuf(bool isInput, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t size);
+#endif
    inline size_t mkPadSize(size_t size);
    inline void resetPointers(bool r, bool w);
    inline void resetBuffer();
+#ifdef LV2_EVENT_BUFFER_SUPPORT
    bool write(uint32_t frames, uint32_t subframes, uint32_t type, uint32_t size, const uint8_t *data);
    bool read(uint32_t *frames, uint32_t  *subframes, uint32_t  *type, uint32_t  *size, uint8_t  **data );
+#else
+   bool write(uint32_t frames, uint32_t type, uint32_t size, const uint8_t *data);
+   bool read(uint32_t *frames, uint32_t  *type, uint32_t  *size, uint8_t  **data );
+#endif
    uint8_t *getRawBuffer();
    void dump();
 };
@@ -212,12 +231,19 @@ typedef struct _lv2ExtProgram
 
 struct LV2MidiPort
 {
+#ifdef LV2_EVENT_BUFFER_SUPPORT
     LV2MidiPort (const LilvPort *_p, uint32_t _i, QString _n, bool _f, bool _supportsTimePos) :
         port ( _p ), index ( _i ), name ( _n ), old_api ( _f ), supportsTimePos(_supportsTimePos), buffer(0){}
+#else
+    LV2MidiPort (const LilvPort *_p, uint32_t _i, QString _n, bool _supportsTimePos) :
+        port ( _p ), index ( _i ), name ( _n ), supportsTimePos(_supportsTimePos), buffer(0){}
+#endif
     const LilvPort *port;
     uint32_t index; //plugin real port index
     QString name;
+#ifdef LV2_EVENT_BUFFER_SUPPORT
     bool old_api; //true for LV2_Event port    
+#endif
     bool supportsTimePos;   
     LV2EvBuf *buffer;
 };
@@ -338,7 +364,9 @@ private:
     LV2_Options_Option *_options;
     LV2_URID_Map _lv2_urid_map;
     LV2_URID_Unmap _lv2_urid_unmap;
+#ifdef LV2_URI_MAP_SUPPORT
     LV2_URI_Map_Feature _lv2_uri_map;
+#endif
     LV2_Log_Log _lv2_log_log;    
     double _sampleRate;
     float _fSampleRate;
