@@ -644,10 +644,10 @@ void Appearance::bgSelectionChanged(QTreeWidgetItem* item)
 
 void Appearance::updateFonts()
       {
-      fontSize0->setValue(qApp->font().pointSize());
-      fontName0->setText(qApp->font().family());
-      italic0->setChecked(qApp->font().italic());
-      bold0->setChecked(qApp->font().bold());
+      fontSize0->setValue(MusEGlobal::config.fonts[0].pointSize());
+      fontName0->setText(MusEGlobal::config.fonts[0].family());
+      italic0->setChecked(MusEGlobal::config.fonts[0].italic());
+      bold0->setChecked(MusEGlobal::config.fonts[0].bold());
 
       fontSize1->setValue(config->fonts[1].pointSize());
       fontName1->setText(config->fonts[1].family());

@@ -1037,6 +1037,12 @@ MusE::MusE() : QMainWindow()
 
       MusEGlobal::song->update();
       updateWindowMenu();
+
+      ensurePolished();
+      MusEGlobal::config.fonts[0].setFamily(font().family());
+      MusEGlobal::config.fonts[0].setPointSize(font().pointSize());
+      MusEGlobal::config.fonts[0].setBold(font().bold());
+      MusEGlobal::config.fonts[0].setItalic(font().italic());
       }
 
 //---------------------------------------------------------
