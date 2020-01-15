@@ -318,14 +318,12 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       //    Fonts
       //---------------------------------------------------
 
-      fontBrowse0->setIcon(*fileopenSVGIcon);
       fontBrowse1->setIcon(*fileopenSVGIcon);
       fontBrowse2->setIcon(*fileopenSVGIcon);
       fontBrowse3->setIcon(*fileopenSVGIcon);
       fontBrowse4->setIcon(*fileopenSVGIcon);
       fontBrowse5->setIcon(*fileopenSVGIcon);
       fontBrowse6->setIcon(*fileopenSVGIcon);
-      connect(fontBrowse0, SIGNAL(clicked()), SLOT(browseFont0()));
       connect(fontBrowse1, SIGNAL(clicked()), SLOT(browseFont1()));
       connect(fontBrowse2, SIGNAL(clicked()), SLOT(browseFont2()));
       connect(fontBrowse3, SIGNAL(clicked()), SLOT(browseFont3()));
@@ -646,10 +644,10 @@ void Appearance::bgSelectionChanged(QTreeWidgetItem* item)
 
 void Appearance::updateFonts()
       {
-      fontSize0->setValue(config->fonts[0].pointSize());
-      fontName0->setText(config->fonts[0].family());
-      italic0->setChecked(config->fonts[0].italic());
-      bold0->setChecked(config->fonts[0].bold());
+      fontSize0->setValue(MusEGlobal::config.fonts[0].pointSize());
+      fontName0->setText(MusEGlobal::config.fonts[0].family());
+      italic0->setChecked(MusEGlobal::config.fonts[0].italic());
+      bold0->setChecked(MusEGlobal::config.fonts[0].bold());
 
       fontSize1->setValue(config->fonts[1].pointSize());
       fontName1->setText(config->fonts[1].family());
@@ -792,10 +790,10 @@ bool Appearance::apply()
       for (int i = 0; i < user_bg->childCount(); ++i)
             config->canvasCustomBgList << user_bg->child(i)->data(0, Qt::UserRole).toString();
 
-      config->fonts[0].setFamily(fontName0->text());
-      config->fonts[0].setPointSize(fontSize0->value());
-      config->fonts[0].setItalic(italic0->isChecked());
-      config->fonts[0].setBold(bold0->isChecked());
+//      config->fonts[0].setFamily(fontName0->text());
+//      config->fonts[0].setPointSize(fontSize0->value());
+//      config->fonts[0].setItalic(italic0->isChecked());
+//      config->fonts[0].setBold(bold0->isChecked());
 
       config->fonts[1].setFamily(fontName1->text());
       config->fonts[1].setPointSize(fontSize1->value());
@@ -1654,7 +1652,6 @@ void Appearance::setDefaultStyleSheet()
 //   browseFont
 //---------------------------------------------------------
 
-void Appearance::browseFont0() { browseFont(0); }
 void Appearance::browseFont1() { browseFont(1); }
 void Appearance::browseFont2() { browseFont(2); }
 void Appearance::browseFont3() { browseFont(3); }

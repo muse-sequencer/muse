@@ -758,8 +758,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.moveArmedCheckBox = xml.parseInt();
                         else if (tag == "externalWavEditor")
                               MusEGlobal::config.externalWavEditor = xml.parse1();
-                        else if (tag == "font0")
-                              MusEGlobal::config.fonts[0].fromString(xml.parse1());
+//                        else if (tag == "font0")
+//                              MusEGlobal::config.fonts[0].fromString(xml.parse1());
                         else if (tag == "font1")
                               MusEGlobal::config.fonts[1].fromString(xml.parse1());
                         else if (tag == "font2")
@@ -1889,7 +1889,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "noPluginScaling", MusEGlobal::config.noPluginScaling);
       xml.intTag(level, "openMDIWinMaximized", MusEGlobal::config.openMDIWinMaximized);
 
-      for (int i = 0; i < NUM_FONTS; ++i) {
+      for (int i = 1; i < NUM_FONTS; ++i) {
+//          for (int i = 0; i < NUM_FONTS; ++i) {
             xml.strTag(level, QString("font") + QString::number(i), MusEGlobal::config.fonts[i].toString());
             }
             
