@@ -128,6 +128,11 @@ void TempoList::normalize()
               e->first - e->second->tick,
               denom, LargeIntRoundUp);
             }
+      // Invalidate all cached frame or tick values used in the program, such as in class Pos.
+      // On the very next call of tick2frame() or frame2tick(), serial numbers are compared
+      //  and if they are the same a cached value is returned.
+      // Otherwise if the serial numbers are not the same the value is recalculated.
+      ++_tempoSN;
       }
 
 //---------------------------------------------------------
@@ -181,7 +186,6 @@ void TempoList::eraseRange(unsigned stick, unsigned etick)
       delete ite->second;
     erase(se, ee); // Erase range does NOT include the last element.
     normalize();
-    ++_tempoSN;
 }
       
 //---------------------------------------------------------
@@ -239,7 +243,6 @@ void TempoList::del(unsigned tick, bool do_normalize)
             return;
             }
       del(e, do_normalize);
-      ++_tempoSN;
       }
 
 void TempoList::del(iTEvent e, bool do_normalize)
@@ -255,7 +258,6 @@ void TempoList::del(iTEvent e, bool do_normalize)
       erase(e);
       if(do_normalize)
         normalize();
-      ++_tempoSN;
       }
 
 //---------------------------------------------------------
@@ -267,10 +269,11 @@ void TempoList::del(iTEvent e, bool do_normalize)
 void TempoList::setTempo(unsigned tick, int newTempo)
       {
       if (useList)
-            add(tick, newTempo);
+            add(tick, newTempo, true);
       else
-            _tempo = newTempo;
-      ++_tempoSN;
+      {
+        setStaticTempo(newTempo);
+      }
       }
 
 //---------------------------------------------------------
@@ -280,7 +283,6 @@ void TempoList::setTempo(unsigned tick, int newTempo)
 void TempoList::setGlobalTempo(int val)
       {
       _globalTempo = val;
-      ++_tempoSN;
       normalize();
       }
 
@@ -291,7 +293,6 @@ void TempoList::setGlobalTempo(int val)
 void TempoList::addTempo(unsigned t, int tempo, bool do_normalize)
       {
       add(t, tempo, do_normalize);
-      ++_tempoSN;
       }
 
 //---------------------------------------------------------
@@ -301,7 +302,6 @@ void TempoList::addTempo(unsigned t, int tempo, bool do_normalize)
 void TempoList::delTempo(unsigned tick, bool do_normalize)
       {
       del(tick, do_normalize);
-      ++_tempoSN;
       }
 
 //---------------------------------------------------------
@@ -332,13 +332,13 @@ bool TempoList::setMasterFlag(unsigned /*tick*/, bool val)
 //   ticks2frames
 //---------------------------------------------------------
 
-unsigned TempoList::ticks2frames(unsigned ticks, unsigned tempoTick) const
+unsigned TempoList::ticks2frames(unsigned ticks, unsigned tempoTick, LargeIntRoundMode round_mode) const
 {
   // Tick resolution is less than frame resolution. 
   // Round up so that the reciprocal function (frame to tick) matches value for value.
   return muse_multiply_64_div_64_to_64(
     (uint64_t)MusEGlobal::sampleRate * (uint64_t)tempo(tempoTick), ticks,
-    (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL, LargeIntRoundUp);
+    (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL, round_mode);
 }
 
 // TODO
@@ -357,16 +357,16 @@ unsigned TempoList::ticks2frames(unsigned ticks, unsigned tempoTick) const
 //   tick2frame
 //---------------------------------------------------------
 
-unsigned TempoList::tick2frame(unsigned tick, unsigned frame, int* sn) const
+unsigned TempoList::tick2frame(unsigned tick, unsigned frame, int* sn, LargeIntRoundMode round_mode) const
       {
-      return (*sn == _tempoSN) ? frame : tick2frame(tick, sn);
+      return (*sn == _tempoSN) ? frame : tick2frame(tick, sn, round_mode);
       }
 
 //---------------------------------------------------------
 //   tick2frame
 //---------------------------------------------------------
 
-unsigned TempoList::tick2frame(unsigned tick, int* sn) const
+unsigned TempoList::tick2frame(unsigned tick, int* sn, LargeIntRoundMode round_mode) const
       {
       unsigned f;
       const uint64_t numer = (uint64_t)MusEGlobal::sampleRate;
@@ -380,12 +380,12 @@ unsigned TempoList::tick2frame(unsigned tick, int* sn) const
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
             f = i->second->frame + muse_multiply_64_div_64_to_64(
-              numer * (uint64_t)i->second->tempo, tick - i->second->tick, denom, LargeIntRoundUp);
+              numer * (uint64_t)i->second->tempo, tick - i->second->tick, denom, round_mode);
             }
       else {
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
-            f = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick, denom, LargeIntRoundUp);
+            f = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick, denom, round_mode);
             }
       if (sn)
             *sn = _tempoSN;
@@ -438,7 +438,7 @@ unsigned TempoList::frame2tick(unsigned frame, int* sn, LargeIntRoundMode round_
 //   deltaTick2frame
 //---------------------------------------------------------
 
-unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn) const
+unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn, LargeIntRoundMode round_mode) const
       {
       unsigned int f1, f2;
       const uint64_t numer = (uint64_t)MusEGlobal::sampleRate;
@@ -453,7 +453,7 @@ unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn) con
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
             f1 = i->second->frame + muse_multiply_64_div_64_to_64(
-              numer * (uint64_t)i->second->tempo, tick1 - i->second->tick, denom, LargeIntRoundUp);
+              numer * (uint64_t)i->second->tempo, tick1 - i->second->tick, denom, round_mode);
 
             i = upper_bound(tick2);
             if (i == end()) {
@@ -462,15 +462,15 @@ unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn) con
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
             f2 = i->second->frame + muse_multiply_64_div_64_to_64(
-              numer * (uint64_t)i->second->tempo, tick2 - i->second->tick, denom, LargeIntRoundUp);
+              numer * (uint64_t)i->second->tempo, tick2 - i->second->tick, denom, round_mode);
             }
       else {
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
-            f1 = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick1, denom, LargeIntRoundUp);
+            f1 = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick1, denom, round_mode);
             // Tick resolution is less than frame resolution. 
             // Round up so that the reciprocal function (frame to tick) matches value for value.
-            f2 = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick2, denom, LargeIntRoundUp);
+            f2 = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick2, denom, round_mode);
             }
       if (sn)
             *sn = _tempoSN;
@@ -578,7 +578,6 @@ void TempoList::read(Xml& xml)
                   case Xml::TagEnd:
                         if (tag == "tempolist") {
                               normalize();
-                              ++_tempoSN;
                               return;
                               }
                   default:

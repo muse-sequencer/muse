@@ -109,19 +109,19 @@ class TempoList : public TEMPOLIST {
       
       
       //-------------------------------------------------------------------------------------------------------
-      // These tick to frame methods always round up (ceiling), so that they provide a good
-      //  one-to-one relation with the tick to frame methods.
+      // Normally do not round these tick to frame methods down since (audio) frame resolution is higher than tick
+      //  resolution. Other rounding methods are provided for convenience, since tick to frame is a 'broad' question.
       //-------------------------------------------------------------------------------------------------------
       // Returns the number of frames contained in the given ticks,
       //  at the tempo at the tick given by tempoTick. Honours useList.
-      unsigned ticks2frames(unsigned ticks, unsigned tempoTick) const;
+      unsigned ticks2frames(unsigned ticks, unsigned tempoTick, LargeIntRoundMode round_mode = LargeIntRoundUp) const;
 // TODO
 //       // Returns the number of ticks contained in the given frames,
 //       //  at the tempo at the tick given by tempoTick. Honours useList.
 //       unsigned frames2ticks(unsigned frames, unsigned tempoTick) const;
-      unsigned tick2frame(unsigned tick, unsigned frame, int* sn) const;
-      unsigned tick2frame(unsigned tick, int* sn = 0) const;
-      unsigned deltaTick2frame(unsigned tick1, unsigned tick2, int* sn = 0) const;
+      unsigned tick2frame(unsigned tick, unsigned frame, int* sn, LargeIntRoundMode round_mode = LargeIntRoundUp) const;
+      unsigned tick2frame(unsigned tick, int* sn = 0, LargeIntRoundMode round_mode = LargeIntRoundUp) const;
+      unsigned deltaTick2frame(unsigned tick1, unsigned tick2, int* sn = 0, LargeIntRoundMode round_mode = LargeIntRoundUp) const;
       
       //-------------------------------------------------------------------------------------------------------
       // Normally do not round these frame to tick methods up since (audio) frame resolution is higher than tick
