@@ -498,9 +498,6 @@ public:
       void startUndo(void* sender = 0);
       void endUndo(MusECore::SongChangedStruct_t);
 
-// REMOVE Tim. wave. Removed.
-//       void undoOp(UndoOp::UndoType type, const Event& changedEvent, const QString& changeData, int startframe, int endframe); // FIXME FINDMICHJETZT what's that?! remove it!
-
       void executeOperationGroup1(Undo& operations);
       void executeOperationGroup2(Undo& operations);
       void executeOperationGroup3(Undo& operations);
