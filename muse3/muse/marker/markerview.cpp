@@ -629,7 +629,7 @@ void MarkerView::rebuildList()
 {
       MusECore::MarkerList* marker = MusEGlobal::song->marker();
       const MarkerItem* selitem = (MarkerItem*)table->currentItem();
-      std::int64_t selitem_id = -1;
+      MusECore::EventID_t selitem_id = -1;
       if(selitem)
         selitem_id = selitem->marker().id();
       int m_id;
@@ -729,10 +729,10 @@ void MarkerView::updateList()
       MusECore::MarkerList* marker = MusEGlobal::song->marker();
       const MarkerItem* selitem = (MarkerItem*)table->currentItem();
 // //       int selitem_idx = -1;
-      std::int64_t selitem_id = -1;
+      MusECore::EventID_t selitem_id = -1;
       MarkerItem* new_selitem = nullptr;
 // //       int new_selitem_idx = -1;
-//       std::int64_t new_selitem_id = -1;
+//       MusECore::EventID_t new_selitem_id = -1;
 //       // = table->indexOfTopLevelItem(selitem);
 // //       MusECore::Marker* selm     = selitem ? selitem->marker() : 0;
 // //       MusECore::Marker selm;

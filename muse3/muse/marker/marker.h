@@ -23,15 +23,14 @@
 #ifndef __MARKER_H__
 #define __MARKER_H__
 
+#include <QString>
+
 #include <map>
-#include <cstdint>
 
 #include "xml.h"
 #include "pos.h"
 #include "type_defs.h"
 #include "mixed_pos_list.h"
-
-class QString;
 
 namespace MusECore {
 
@@ -40,10 +39,10 @@ namespace MusECore {
 //---------------------------------------------------------
 
 class Marker : public Pos {
-      static std::int64_t _idGen;
-      std::int64_t newId() { return _idGen++; }
+      static EventID_t _idGen;
+      EventID_t newId() { return _idGen++; }
 
-      std::int64_t _id;
+      EventID_t _id;
       QString _name;
       bool _current;
 
@@ -57,7 +56,7 @@ class Marker : public Pos {
       // Creates a copy of this marker but with a new ID.
       Marker copy() const;
       void read(Xml&);
-      std::int64_t id() const { return _id; }
+      EventID_t id() const { return _id; }
       const QString name() const     { return _name; }
       void setName(const QString& s) { _name = s;    }
       bool current() const           { return _current; }

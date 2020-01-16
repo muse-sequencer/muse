@@ -1290,7 +1290,7 @@ void Pos::msf(int* hour, int* min, int* sec, int* fr, int* subFrame, LargeIntRou
 
 // REMOVE Tim. clip. Added.
 //---------------------------------------------------------
-//   msf
+//   msmu
 //---------------------------------------------------------
 
 void Pos::msmu(int* hour, int* min, int* sec, int* msec, int* usec, LargeIntRoundMode round_mode) const

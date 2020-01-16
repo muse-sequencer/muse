@@ -24,12 +24,11 @@
 #include <list>
 
 #include "marker.h"
-#include "xml.h"
 
 namespace MusECore {
 
 // Static.
-std::int64_t Marker::_idGen = 0;
+EventID_t Marker::_idGen = 0;
 
 //---------------------------------------------------------
 //   read
@@ -164,7 +163,7 @@ void MarkerList::remove(Marker* m)
 void MarkerList::remove(const Marker& m)
       {
       const QString& s = m.name();
-      const std::int64_t id = m.id();
+      const EventID_t id = m.id();
       std::pair<iMarker, iMarker> rng = equal_range(m.tick());
       for(iMarker i = rng.first; i != rng.second; ++i) {
             const Marker& mm = i->second;
