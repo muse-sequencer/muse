@@ -72,9 +72,7 @@ void Master::songChanged(MusECore::SongChangedStruct_t type)
 {
   //if(_isDeleting) return; // todo: If things get complicated don't forget some mechanism to ignore while while deleting to prevent possible crash.
   
-// REMOVE Tim. clip. Changed.
   if (type & (SC_SIG | SC_TEMPO | SC_KEY ))  // TEST: Reasonable to start with, may need more.
-  //if (type & SC_SIG)  // TEST: Reasonable to start with, may need more.
     redraw();
 }
 
@@ -173,7 +171,6 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
 
       int wh = height();
 
-// REMOVE Tim. clip. Added.
       QColor graph_fg_color = MusEGlobal::config.ctrlGraphFg;
       graph_fg_color.setAlpha(MusEGlobal::config.globalAlphaBlend);
       QPen pen;
@@ -194,8 +191,6 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
                   tempo = 0;
             if (tempo < wh) {
                 p.setCompositionMode(QPainter::CompositionMode_Multiply);
-// REMOVE Tim. clip. Changed.
-//                 p.fillRect(stick, tempo, etick-stick, wh, Qt::blue);
                 p.fillRect(stick, tempo, etick-stick, wh, graph_fg_color);
                 p.setCompositionMode(QPainter::CompositionMode_SourceOver);
                   }
@@ -253,8 +248,6 @@ void Master::draw(QPainter& p, const QRect& rect, const QRegion& rg)
 
 void Master::newValRamp(int x1, int y1, int x2, int y2, MusECore::Undo& operations)
 {
-  //MusECore::Undo operations;
-
 // loop through all tick positions between x1 and x2
 // remove all tempo changes and add new ones for changed
 
@@ -299,8 +292,6 @@ void Master::newValRamp(int x1, int y1, int x2, int y2, MusECore::Undo& operatio
         priorTick = tick;
     }
   }
-
-  //MusEGlobal::song->applyOperationGroup(operations);
 }
 
 
@@ -447,10 +438,6 @@ bool Master::deleteVal1(unsigned int x1, unsigned int x2, MusECore::Undo& operat
             }
       
       for (QList< QPair<int,int> >::iterator it=stuff_to_do.begin(); it!=stuff_to_do.end(); it++)
-        // REMOVE Tim. clip. Changed.
-        // Operation is undoable but do not start/end undo.
-        //MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo,
-        //                      it->first, it->second), MusECore::Song::OperationUndoable);
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo, it->first, it->second));
       
       return !stuff_to_do.empty();
@@ -511,10 +498,6 @@ void Master::newVal(int x1, int x2, int y, MusECore::Undo& operations)
             xx1 = tmp;
             }
       deleteVal1(xx1, xx2, operations);
-      // REMOVE Tim. clip. Changed.
-      // Operation is undoable but do not start/end undo.
-      //MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddTempo,
-      //              xx1, int(60000000000.0/(280000 - y))), MusECore::Song::OperationUndoable);
       operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTempo,
                     xx1, int(60000000000.0/(280000 - y))));
       redraw();
