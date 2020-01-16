@@ -102,8 +102,6 @@ class AudioDevice {
       virtual void* registerOutPort(const char* /*name*/, bool /*midi*/) = 0;
       virtual void* registerInPort(const char* /*name*/, bool /*midi*/) = 0;
 
-// REMOVE Tim. clip. Changed.
-//       virtual float getDSP_Load() = 0;
       virtual float getDSP_Load() { return 0.0f; }
 
       virtual PortType portType(void*) const = 0;

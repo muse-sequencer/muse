@@ -396,11 +396,6 @@ static void timebase_callback(jack_transport_state_t,
    void* /*arg*/)
 #endif
   {
-    // REMOVE Tim. clip. Added.
-//     JackAudioDevice* jad = (JackAudioDevice*)arg;
-//     if(jad)
-//       jad->timebaseAck();
-
     // I think, therefore I am... timebase master.
     jackTimebaseMasterPhase = JackAudioDevice::IsMaster;
     if(!jack_timebase_cur_master_state)
@@ -527,8 +522,6 @@ JackAudioDevice::JackAudioDevice(jack_client_t* cl, char* name)
       _frameCounter = 0;
       strcpy(jackRegisteredName, name);
       _client = cl;
-      // REMOVE Tim. clip. Added.
-//       _timebaseAck = false;
 }
 
 //---------------------------------------------------------
@@ -2064,12 +2057,6 @@ void JackAudioDevice::unregisterPort(void* p)
 //      fprintf(stderr, "JACK: unregister Port\n");
       jack_port_unregister(_client, (jack_port_t*)p);
       }
-
-// REMOVE Tim. clip. Removed. WTF?
-// float AudioDevice::getDSP_Load()
-// {
-//   return 0.0f;
-// }
 
 float JackAudioDevice::getDSP_Load()
 {

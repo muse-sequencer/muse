@@ -239,11 +239,6 @@ class RtAudioDevice : public AudioDevice {
         return port;
       }
 
-// REMOVE Tim. clip. Removed.
-//       float getDSP_Load() {
-//         return 0.0f;
-//       }
-
       virtual AudioDevice::PortType portType(void*) const { return AudioPort; }
       virtual AudioDevice::PortDirection portDirection(void*) const { return OutputPort; }
       virtual void unregisterPort(void*) {}
