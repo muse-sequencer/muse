@@ -20,9 +20,6 @@
 //
 //=========================================================
 
-// REMOVE Tim. clip. Added.
-#include <list>
-
 #include "marker.h"
 
 namespace MusECore {
@@ -49,11 +46,9 @@ void Marker::read(Xml& xml)
                   case Xml::Attribut:
                         if (tag == "tick")
                         {
-                              // REMOVE Tim. clip. Added.
                               setType(TICKS);
                               setTick(xml.s2().toUInt());
                         }
-                        // REMOVE Tim. clip. Added.
                         else if (tag == "frame")
                         {
                               setType(FRAMES);
@@ -105,10 +100,7 @@ Marker Marker::copy() const
 
 Marker* MarkerList::add(const Marker& marker)
       {
-// REMOVE Tim. clip. Changed.
-//       iMarker i = insert(std::pair<const int, Marker> (marker.tick(), Marker(marker)));
       iMarker i = MixedPosList_t::add(Marker(marker));
-//       iMarker i = MixedPosList_t::add(marker);
       return &i->second;
       }
 
@@ -117,8 +109,6 @@ Marker* MarkerList::add(const QString& s, unsigned t, bool lck)
       Marker marker(s);
       marker.setType(lck ? Pos::FRAMES : Pos::TICKS);
       marker.setTick(t);
-// REMOVE Tim. clip. Changed.
-//       iMarker i = insert(std::pair<const int, Marker> (t, marker));
       iMarker i = MixedPosList_t::add(marker);
       return &i->second;
       }
@@ -131,9 +121,6 @@ void MarkerList::write(int level, Xml& xml) const
       {
       for (ciMarker i = begin(); i != end(); ++i) {
             const Marker& m = i->second;
-// REMOVE Tim. clip. Changed.
-//             xml.put(level, "<marker tick=\"%u\" lock=\"%d\" name=\"%s\" />",
-//                m.tick(), m.type()==Pos::FRAMES, Xml::xmlString(m.name()).toLatin1().constData());
             if(m.type()==Pos::TICKS)
               xml.put(level, "<marker tick=\"%u\" name=\"%s\" />",
                  m.tick(), Xml::xmlString(m.name()).toLatin1().constData());
@@ -156,10 +143,9 @@ void MarkerList::remove(Marker* m)
                   return;
                   }
             }
-      printf("MarkerList::remove(): marker not found\n");
+      fprintf(stderr, "MarkerList::remove(): marker not found\n");
       }
 
-// REMOVE Tim. clip. Added.
 void MarkerList::remove(const Marker& m)
       {
       const QString& s = m.name();
@@ -168,71 +154,13 @@ void MarkerList::remove(const Marker& m)
       for(iMarker i = rng.first; i != rng.second; ++i) {
             const Marker& mm = i->second;
             if(mm.id() == id && mm.name() == s) {
-//                   if(mm.current())
-//                   {
-//                     iMarker iif = i;
-//                     ++iif;
-//                     if(iif != rng.second)
-//                     {
-//                       iif->second.setCurrent(true);
-//                       _iCurrent = iif;
-//                     }
-//                     else
-//                     {
-//                       if(i == begin())
-//                       {
-//                         _iCurrent = cend();
-//                       }
-//                       else
-//                       {
-//                         iMarker iib = i;
-//                         --iib;
-//                         iib->second.setCurrent(true);
-//                         _iCurrent = iib;
-//                       }
-//                     }
-//                   }
                   erase(i);
                   return;
                   }
             }
-      printf("MarkerList::remove(): marker not found\n");
+      fprintf(stderr, "MarkerList::remove(): marker not found\n");
       }
 
-// // REMOVE Tim. clip. Added.
-// //---------------------------------------------------------
-// //   rebuild
-// //    After any tempo changes, it is essential to rebuild the list
-// //     so that any 'locked' items are re-sorted properly by tick.
-// //    Returns true if any items were rebuilt.
-// //---------------------------------------------------------
-// 
-// bool MarkerList::rebuild()
-// {
-//   std::list<Marker> to_be_added;
-//   for(iMarker i = begin(); i != end(); )
-//   {
-//     const Marker& m = i->second;
-//     if(m.type() == Pos::FRAMES)
-//     {
-//       to_be_added.push_back(m);
-//       i = erase(i);
-//     }
-//     else
-//     {
-//       ++i;
-//     }
-//   }
-//   for(std::list<Marker>::iterator ai = to_be_added.begin(); ai != to_be_added.end(); ++ai)
-//   {
-//     const Marker& m = *ai;
-// //     insert(std::pair<const int, Marker> (m.tick(), Marker(m)));
-//     add(Marker(m));
-//   }
-//   return !to_be_added.empty();
-// }
-
-// REMOVE Tim. clip. Added.
 iMarker MarkerList::findId(EventID_t id)
 {
   for(iMarker i = begin(); i != end(); ++i)
@@ -248,97 +176,5 @@ ciMarker MarkerList::findId(EventID_t id) const
       return i;
   return end();
 }
-
-
-// REMOVE Tim. clip. Added.
-// //---------------------------------------------------------
-// // updateCurrent
-// //  Sets which item is the current based on the given tick.
-// //  Returns true if anything changed.
-// //  Normally to be called from the audio thread only.
-// //---------------------------------------------------------
-// bool MarkerList::updateCurrent(unsigned int tick)
-// {
-//   bool currentChanged = false;
-//   bool found = false;
-//   iMarker i_end = end();
-//   for(iMarker im = begin(); im != i_end; ++im)
-//   {
-//     Marker& m = im->second;
-//     const unsigned int t = m.tick();
-//     if(tick >= t)
-//     {
-//       if(found)
-//       {
-//         if(m.current())
-//         {
-//           currentChanged = true;
-//           m.setCurrent(false);
-//         }
-//       }
-//       else
-//       {
-//         found = true;
-//         if(_iCurrent != im || !m.current())
-//           currentChanged = true;
-//         _iCurrent = im;
-//         m.setCurrent(true);
-//       }
-//     }
-//     else
-//     {
-//       if(m.current())
-//         currentChanged = true;
-//       m.setCurrent(false);
-//     }
-//   }
-//   
-//   if(!found && _iCurrent != cend())
-//   {
-//     currentChanged = true;
-//     _iCurrent = cend();
-//   }
-// 
-//   return currentChanged;
-//   
-// //   iMarker i1 = begin();
-// //   iMarker i2 = i1;
-// //   bool currentChanged = false;
-// // 
-// //   for (; i1 != end(); ++i1)
-// //   {
-// //     ++i2;
-// //     if (tick >= i1->first && (i2==end() || tick < i2->first))
-// //     {
-// //       if(i1->second.current())
-// //       {
-// //         _iCurrent = i1;
-// //         return;
-// //       }
-// // 
-// //       i1->second.setCurrent(true);
-// //       if(currentChanged)
-// //       {
-// //         _iCurrent = i1;
-// //         return;
-// //       }
-// //       ++i1;
-// //       for(; i1 != end(); ++i1)
-// //       {
-// //         if(i1->second.current())
-// //           i1->second.setCurrent(false);
-// //       }
-// //       return;
-// //     }
-// //     else
-// //     {
-// //       if(i1->second.current())
-// //       {
-// //         currentChanged = true;
-// //         i1->second.setCurrent(false);
-// //       }
-// //     }
-// //   }
-// }
 
 } // namespace MusECore

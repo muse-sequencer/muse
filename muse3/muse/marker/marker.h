@@ -67,51 +67,23 @@ class Marker : public Pos {
 //   MarkerList
 //---------------------------------------------------------
 
-// REMOVE Tim. clip. Changed.
-// class MarkerList : public std::multimap<unsigned, Marker, std::less<unsigned> >
 class MarkerList : public MixedPosList_t<unsigned, Marker, std::less<unsigned> >
 {
-   private:
-//      const_iterator _iCurrent;
-
    public:
-//       MarkerList() : MixedPosList_t(Pos::TICKS), _iCurrent(cend()) { }
       MarkerList() : MixedPosList_t(Pos::TICKS) { }
-      
-      // REMOVE Tim. clip. Removed. Did I add this ???
-      //int mappedTypeSize() const { return sizeof(mapped_type); }
-      
+
       // Normally to be called from the audio thread only.
       Marker* add(const Marker& m);
       Marker* add(const QString& s, unsigned t, bool lck);
       void remove(Marker*);
-      // REMOVE Tim. clip. Added.
       void remove(const Marker&);
 
-//       // REMOVE Tim. clip. Added.
-//       // After any tempo changes, it is essential to rebuild the list
-//       //  so that any 'locked' items are re-sorted properly by tick.
-//       // Returns true if any items were rebuilt.
-//       // Normally to be called from the audio thread only.
-//       bool rebuild();
-
-      // REMOVE Tim. clip. Added.
       MarkerList::const_iterator findId(EventID_t id) const; // Slow, index t is not known
       MarkerList::iterator findId(EventID_t id);             // Slow, index t is not known
-
-//       // Returns an iterator to the current marker, or end() if none is current.
-//       const_iterator current() const { return _iCurrent; }
-//       // Sets which marker is the current based on the given tick.
-//       // Returns true if anything changed.
-//       // Normally to be called from the audio thread only.
-//       bool updateCurrent(unsigned int tick);
 
       void write(int, Xml&) const;
       };
 
-// REMOVE Tim. clip. Changed.
-// typedef std::multimap<unsigned, Marker, std::less<unsigned> >::iterator iMarker;
-// typedef std::multimap<unsigned, Marker, std::less<unsigned> >::const_iterator ciMarker;
 typedef MarkerList::iterator iMarker;
 typedef MarkerList::const_iterator ciMarker;
 
