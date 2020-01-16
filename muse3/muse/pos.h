@@ -71,16 +71,14 @@ class Pos {
 
       //------------------------------------------------------------------------------------------
       // To make it easier to work with automatic section increment/decrement over/under-flow,
-      //  these constructors accept integers which can be negative. If the end result is less than zero
-      //  or greater than UINT_MAX, the result is adjusted accordingly.
+      //  these constructors accept integers which can be negative. If the end result is out of range,
+      //  the result is adjusted accordingly.
       //------------------------------------------------------------------------------------------
 
       // Construct a position from a minute-second-frame-subframe value. If round_mode is up or nearest, any
       //  fractional frame in the result is either rounded up or to the nearest frame.
-//       // round_mode should normally be left as up. If ticks is true, the resulting frame is further
       // round_mode should normally be left as down. If ticks is true, the resulting frame is further
       //  rounded up or to the nearest tick, and the type is set to TICKS.
-//       Pos(int min, int sec, int frame, int subframe, bool ticks = false, LargeIntRoundMode round_mode = LargeIntRoundUp);
       Pos(int min, int sec, int frame, int subframe, bool ticks = false, LargeIntRoundMode round_mode = LargeIntRoundDown);
       // Construct a position from a time value. If round_mode is up or nearest, any fractional frame in the result
       //  is either rounded up or to the nearest frame. round_mode should normally be left as down. If ticks
@@ -92,12 +90,9 @@ class Pos {
       Pos(const QString&);
       void dump(int n = 0) const;
       void mbt(int* bar, int* beat, int* tk) const;
-//       // msf resolution is normally less than ticks or frames. Round down by default.
-//       void msf(int* min, int* sec, int* fr, int* subFrame, LargeIntRoundMode round_mode = LargeIntRoundDown) const;
       // If hour is given, hours and minutes will be split accordingly, with min being a maximum of 59.
       // Otherwise if hour is null, min will be unlimited.
       void msf(int* hour, int* min, int* sec, int* fr, int* subFrame, LargeIntRoundMode round_mode = LargeIntRoundUp) const;
-// REMOVE Tim. clip. Added.
       // msmu resolution is normally greater than ticks or frames. Round up by default.
       // If hour is given, hours and minutes will be split accordingly, with min being a maximum of 59.
       // Otherwise if hour is null, min will be unlimited.
