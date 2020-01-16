@@ -1171,9 +1171,11 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
 //   cmdChangeWave
 //   called from GUI context
 //---------------------------------------------------------
-void Song::cmdChangeWave(const Event& original, QString tmpfile, unsigned sx, unsigned ex)
+
+void Song::cmdChangeWave(const Event& original, const QString& tmpfile, unsigned sx, unsigned ex)
       {
-      MusEGlobal::song->undoOp(UndoOp::ModifyClip, original, tmpfile, sx, ex);
+      addUndo(UndoOp(UndoOp::ModifyClip,original,tmpfile,sx,ex));
+      temporaryWavFiles.push_back(tmpfile);
       }
 
 //---------------------------------------------------------

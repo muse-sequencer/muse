@@ -337,7 +337,7 @@ class Song : public QObject {
       void selectEvent(Event&, Part*, bool select);   
       void selectAllEvents(Part*, bool select); // See selectEvent().  
 
-      void cmdChangeWave(const Event& original, QString tmpfile, unsigned sx, unsigned ex);
+      void cmdChangeWave(const Event& original, const QString& tmpfile, unsigned sx, unsigned ex);
       void remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int newport); // called from GUI thread
       void changeAllPortDrumCtrlEvents(bool add, bool drumonly = false); // called from GUI thread
       
@@ -478,8 +478,6 @@ public:
       // The songChanged structure will contain this pointer.
       void startUndo(void* sender = 0);
       void endUndo(MusECore::SongChangedStruct_t);
-
-      void undoOp(UndoOp::UndoType type, const Event& changedEvent, const QString& changeData, int startframe, int endframe); // FIXME FINDMICHJETZT what's that?! remove it!
 
       void executeOperationGroup1(Undo& operations);
       void executeOperationGroup2(Undo& operations);

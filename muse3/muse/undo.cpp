@@ -1996,12 +1996,6 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Route& route_from_, const Route& ro
       }
 #pragma GCC diagnostic pop
 
-void Song::undoOp(UndoOp::UndoType type, const Event& changedEvent, const QString& changeData, int startframe, int endframe)
-      {
-      addUndo(UndoOp(type,changedEvent,changeData,startframe,endframe));
-      temporaryWavFiles.push_back(QString(changeData));
-      }
-
 //---------------------------------------------------------
 //   addUndo
 //---------------------------------------------------------
