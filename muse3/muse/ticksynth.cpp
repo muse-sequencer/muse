@@ -101,6 +101,11 @@ class MetronomeSynthIF : public SynthIF
       float *accent2Samples;
       int    accent2Len;
 
+      float *defaultClickEmphasisConverted;
+      int    defaultClickEmphasisLengthConverted;
+      float *defaultClickConverted;
+      int    defaultClickLengthConverted;
+
       bool processEvent(const MidiPlayEvent& ev);
       
    public:
@@ -114,6 +119,10 @@ class MetronomeSynthIF : public SynthIF
             beatSamples = nullptr;
             accent1Samples = nullptr;
             accent2Samples = nullptr;
+            defaultClickEmphasisConverted = nullptr;
+            defaultClickEmphasisLengthConverted = 0;
+            defaultClickConverted = nullptr;
+            defaultClickLengthConverted = 0;
             initSamples();
             }
       virtual ~MetronomeSynthIF();
@@ -154,13 +163,18 @@ class MetronomeSynthIF : public SynthIF
 MetronomeSynthIF::~MetronomeSynthIF()
 {
     if (beatSamples)
-      delete beatSamples;
+      delete [] beatSamples;
     if (measSamples)
-      delete measSamples;
+      delete [] measSamples;
     if (accent1Samples)
-      delete accent1Samples;
+      delete [] accent1Samples;
     if (accent2Samples)
-      delete accent2Samples;
+      delete [] accent2Samples;
+
+    if (defaultClickEmphasisConverted)
+      delete [] defaultClickEmphasisConverted;
+    if (defaultClickConverted)
+      delete [] defaultClickConverted;
 }
 
 //---------------------------------------------------------
@@ -300,34 +314,62 @@ void MetronomeSynthIF::initSamples()
     MusECore::MetronomeSettings* metro_settings =
       MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
-    SndFile beat(MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->beatSample);
-    if (!beat.openRead(false)) {
-      beatLen = beat.samples();
-      beatSamples = new float[beatLen];
-      beat.read(1, &beatSamples, beatLen);
+    {
+      SndFile beat(MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->beatSample, true, true);
+      if (!beat.openRead(false)) {
+        beatLen = beat.samplesConverted();
+        beatSamples = new float[beatLen];
+        beat.readConverted(0 /* pos */, 1 /* channels */, &beatSamples, beatLen);
+      }
     }
 
-    SndFile meas(MusEGlobal::museGlobalShare  + "/metronome/" + metro_settings->measSample);
-    if (!meas.openRead(false)) {
-      measLen = meas.samples();
-      measSamples = new float[measLen];
-      meas.read(1, &measSamples, measLen);
+    {
+      SndFile meas(MusEGlobal::museGlobalShare  + "/metronome/" + metro_settings->measSample, true, true);
+      if (!meas.openRead(false)) {
+        measLen = meas.samplesConverted();
+        measSamples = new float[measLen];
+        meas.readConverted(0, 1, &measSamples, measLen);
+      }
     }
 
-    SndFile accent1(MusEGlobal::museGlobalShare +  "/metronome/" + metro_settings->accent1Sample);
-    if (!accent1.openRead(false)) {
-      accent1Len = accent1.samples();
-      accent1Samples = new float[accent1Len];
-      accent1.read(1, &accent1Samples, accent1Len);
+    {
+      SndFile accent1(MusEGlobal::museGlobalShare +  "/metronome/" + metro_settings->accent1Sample, true, true);
+      if (!accent1.openRead(false)) {
+        accent1Len = accent1.samplesConverted();
+        accent1Samples = new float[accent1Len];
+        accent1.readConverted(0, 1, &accent1Samples, accent1Len);
+      }
     }
 
-    SndFile accent2(MusEGlobal::museGlobalShare +  "/metronome/" + metro_settings->accent2Sample);
-    if (!accent2.openRead(false)) {
-      accent2Len = accent2.samples();
-      accent2Samples = new float[accent2Len];
-      accent2.read(1, &accent2Samples, accent2Len);
+    {
+      SndFile accent2(MusEGlobal::museGlobalShare +  "/metronome/" + metro_settings->accent2Sample, true, true);
+      if (!accent2.openRead(false)) {
+        accent2Len = accent2.samplesConverted();
+        accent2Samples = new float[accent2Len];
+        accent2.readConverted(0, 1, &accent2Samples, accent2Len);
+      }
     }
 
+    
+    {
+      SndFile defClickEmphasis((void*)defaultClickEmphasis, sizeof(defaultClickEmphasis), true, true);
+      defClickEmphasis.setFormat(SF_FORMAT_RAW | SF_FORMAT_FLOAT, 1, 44100, defaultClickEmphasisLength);
+      if (!defClickEmphasis.openRead(false)) {
+        defaultClickEmphasisLengthConverted = defClickEmphasis.samplesConverted();
+        defaultClickEmphasisConverted = new float[defaultClickEmphasisLengthConverted];
+        defClickEmphasis.readConverted(0, 1, &defaultClickEmphasisConverted, defaultClickEmphasisLengthConverted);
+      }
+    }
+
+    {
+      SndFile defClick((void*)defaultClick, sizeof(defaultClick), true, true);
+      defClick.setFormat(SF_FORMAT_RAW | SF_FORMAT_FLOAT, 1, 44100, defaultClickLength);
+      if (!defClick.openRead(false)) {
+        defaultClickLengthConverted = defClick.samplesConverted();
+        defaultClickConverted = new float[defaultClickLengthConverted];
+        defClick.readConverted(0, 1, &defaultClickConverted, defaultClickLengthConverted);
+      }
+    }
 }
 
 //---------------------------------------------------------
@@ -339,52 +381,52 @@ void MetronomeSynthIF::initSamplesOperation(MusECore::PendingOperationList& oper
   MusECore::MetronomeSettings* metro_settings =
     MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
-  SndFile beat(MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->beatSample);
+  SndFile beat(MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->beatSample, true, true);
   if (!beat.openRead(false)) {
-    const sf_count_t newBeatLen = beat.samples();
+    const sf_count_t newBeatLen = beat.samplesConverted();
     if(newBeatLen != 0)
     {
       float* newBeatSamples = new float[newBeatLen];
-      beat.read(1, &newBeatSamples, newBeatLen);
+      beat.readConverted(0, 1, &newBeatSamples, newBeatLen);
       operations.add(PendingOperationItem(&beatSamples, newBeatSamples, 
                                           &beatLen, newBeatLen, 
                                           PendingOperationItem::ModifyAudioSamples));
     }
   }
   
-  SndFile meas(MusEGlobal::museGlobalShare  + "/metronome/" + metro_settings->measSample);
+  SndFile meas(MusEGlobal::museGlobalShare  + "/metronome/" + metro_settings->measSample, true, true);
   if (!meas.openRead(false)) {
-    const sf_count_t newMeasLen = meas.samples();
+    const sf_count_t newMeasLen = meas.samplesConverted();
     if(newMeasLen != 0)
     {
       float* newMeasSamples = new float[newMeasLen];
-      meas.read(1, &newMeasSamples, newMeasLen);
+      meas.readConverted(0, 1, &newMeasSamples, newMeasLen);
       operations.add(PendingOperationItem(&measSamples, newMeasSamples, 
                                           &measLen, newMeasLen, 
                                           PendingOperationItem::ModifyAudioSamples));
     }
   }
 
-  SndFile accent1(MusEGlobal::museGlobalShare +  "/metronome/" + metro_settings->accent1Sample);
+  SndFile accent1(MusEGlobal::museGlobalShare +  "/metronome/" + metro_settings->accent1Sample, true, true);
   if (!accent1.openRead(false)) {
-    const sf_count_t newAccent1Len = accent1.samples();
+    const sf_count_t newAccent1Len = accent1.samplesConverted();
     if(newAccent1Len != 0)
     {
       float* newAccent1Samples = new float[newAccent1Len];
-      accent1.read(1, &newAccent1Samples, newAccent1Len);
+      accent1.readConverted(0, 1, &newAccent1Samples, newAccent1Len);
       operations.add(PendingOperationItem(&accent1Samples, newAccent1Samples, 
                                           &accent1Len, newAccent1Len, 
                                           PendingOperationItem::ModifyAudioSamples));
     }
   }
 
-  SndFile accent2(MusEGlobal::museGlobalShare +  "/metronome/" + metro_settings->accent2Sample);
+  SndFile accent2(MusEGlobal::museGlobalShare +  "/metronome/" + metro_settings->accent2Sample, true, true);
   if (!accent2.openRead(false)) {
-    const sf_count_t newAccent2Len = accent2.samples();
+    const sf_count_t newAccent2Len = accent2.samplesConverted();
     if(newAccent2Len != 0)
     {
       float* newAccent2Samples = new float[newAccent2Len];
-      accent2.read(1, &newAccent2Samples, newAccent2Len);
+      accent2.readConverted(0, 1, &newAccent2Samples, newAccent2Len);
       operations.add(PendingOperationItem(&accent2Samples, newAccent2Samples, 
                                           &accent2Len, newAccent2Len, 
                                           PendingOperationItem::ModifyAudioSamples));
@@ -406,8 +448,8 @@ bool MetronomeSynthIF::processEvent(const MidiPlayEvent& ev)
 
     if (ev.dataA() == MusECore::measureSound) {
         if (metro_settings->clickSamples == MetronomeSettings::origSamples) {
-            data = defaultClickEmphasis;
-            len  = defaultClickEmphasisLength;
+            data = defaultClickEmphasisConverted;
+            len  = defaultClickEmphasisLengthConverted;
         }
         else {
               data = measSamples;
@@ -417,8 +459,8 @@ bool MetronomeSynthIF::processEvent(const MidiPlayEvent& ev)
     }
     else if (ev.dataA() == MusECore::beatSound) {
         if (metro_settings->clickSamples == MetronomeSettings::origSamples) {
-            data = defaultClick;
-            len  = defaultClickLength;
+            data = defaultClickConverted;
+            len  = defaultClickLengthConverted;
         } else {
             data = beatSamples;
             len  = beatLen;

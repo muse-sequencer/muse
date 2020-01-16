@@ -24,6 +24,7 @@ project(muse)
 
 include(FindPkgConfig)
 include(CheckIncludeFile)
+include(CheckIncludeFileCXX)
 include(CheckIncludeFiles)
 include (CheckCSourceCompiles)
 include(cmake/Summary.cmake)
@@ -114,6 +115,9 @@ SET(MusE_SYNTHI_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/synthi)
 ## Plugins directory
 SET(MusE_PLUGINS_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/plugins)
 
+## Audio converter plugins directory
+SET(MusE_AUDIO_CONVERTER_PLUGINS_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/converters)
+
 ## Top documentation dir
 IF(NOT DEFINED MusE_DOC_DIR)
       SET(MusE_DOC_DIR ${SHARE_INSTALL_PREFIX}/doc/${MusE_INSTALL_NAME}/)
@@ -164,6 +168,8 @@ option ( ENABLE_LV2_GTK2     "Enable LV2 user interface GTK2 support" ON)
 option ( ENABLE_LV2_MAKE_PATH "Enable LV2 makePath support. Stores plugin config files separate from song. NOT RECOMMENDED." OFF)
 option ( ENABLE_LV2_DEBUG    "Enable LV2 debugging messages" OFF)
 option ( ENABLE_FLUID        "Enable fluidsynth softsynth plugins."                                ON)
+option ( ENABLE_RUBBERBAND   "Enable RubberBand Audio Stretcher/Pitch Shifter/Sample Rate Converter" ON)
+#option ( ENABLE_ZITA_RESAMPLER "Enable Zita Resampler Audio Sample Rate Converter" ON)  # TODO See below...
 option ( ENABLE_MIDNAM       "Enable MIDI Name support (MidNam). Official MMA instrument spec. Also for LV2 plugins." ON)
 option ( ENABLE_INSTPATCH    "Enable Instrument Patch Library support (enhances soundfont support)." ON)
 option ( ENABLE_EXPERIMENTAL "Enable various experimental features (not recommended)."              OFF)
@@ -539,6 +545,36 @@ else ( ENABLE_FLUID )
 endif ( ENABLE_FLUID )
 
 ##
+## check for rubberband
+##
+
+if ( ENABLE_RUBBERBAND )
+      PKG_CHECK_MODULES(RUBBERBAND rubberband>=1.8.1)
+      if (RUBBERBAND_FOUND)
+            include_directories(${RUBBERBAND_INCLUDE_DIRS})
+            set(RUBBERBAND_SUPPORT ON)
+      endif (RUBBERBAND_FOUND)
+else ( ENABLE_RUBBERBAND )
+      message("RubberBand disabled")
+endif ( ENABLE_RUBBERBAND )
+
+
+##
+## check for zita-resampler
+##
+
+# TODO FIXME: The check finds the file, but for some reason the check's test program fails
+#              due to a problem in the zita resampler-table header.
+if (ENABLE_ZITA_RESAMPLER)
+    CHECK_INCLUDE_FILE_CXX(zita-resampler/resampler.h HAVE_ZITA_RESAMPLER_H)
+    if (HAVE_ZITA_RESAMPLER_H)
+        set(ZITA_RESAMPLER_SUPPORT ON)
+    endif (HAVE_ZITA_RESAMPLER_H)
+else (ENABLE_ZITA_RESAMPLER)
+      message("Zita resampler disabled")
+endif (ENABLE_ZITA_RESAMPLER)
+
+##
 ## check for libinstpatch
 ##
 
@@ -595,6 +631,8 @@ include_directories(
    ${PROJECT_SOURCE_DIR}/libs/plugin
    ${PROJECT_SOURCE_DIR}/libs/string
    ${PROJECT_SOURCE_DIR}/libs/sysex_helper
+   ${PROJECT_SOURCE_DIR}/libs/time_stretch
+   ${PROJECT_SOURCE_DIR}/libs/wave
    ${PROJECT_SOURCE_DIR}/libs/xml
    ${PROJECT_SOURCE_DIR}/muse
    ${PROJECT_SOURCE_DIR}/muse/function_dialogs
@@ -649,7 +687,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -g -O0 -DQT_DEBUG -Werror -Wall -Wextra -f
 
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale
-subdirs(doc libs al awl grepmidi sandbox man plugins muse synti packaging utils demos share)
+subdirs(doc libs audio_convert al awl grepmidi sandbox man plugins muse synti packaging utils demos share)
 
 ## Install doc files
 file (GLOB doc_files
@@ -804,6 +842,14 @@ if (ENABLE_LV2)
     endif (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
 endif (ENABLE_LV2)
 
+if (ENABLE_RUBBERBAND AND (NOT RUBBERBAND_FOUND))
+        message("** WARNING: RubberBand was enabled, but development files were not found.")
+endif (ENABLE_RUBBERBAND AND (NOT RUBBERBAND_FOUND))
+
+if (ENABLE_ZITA_RESAMPLER AND (NOT HAVE_ZITA_RESAMPLER_H))
+        message("** WARNING: Zita Resampler was enabled, but development files were not found.")
+endif (ENABLE_ZITA_RESAMPLER AND (NOT HAVE_ZITA_RESAMPLER_H))
+
 message("")
 
 ## Show a summary of what we got
@@ -824,6 +870,8 @@ endif(LV2_SUPPORT)
 #summary_add("VST support" VST_SUPPORT)
 summary_add("Native VST support" VST_NATIVE_SUPPORT)
 summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)
+summary_add("RubberBand support" RUBBERBAND_SUPPORT)
+summary_add("Zita Resampler support" ZITA_RESAMPLER_SUPPORT)
 summary_add("Instpatch support" HAVE_INSTPATCH)
 summary_add("Experimental features" ENABLE_EXPERIMENTAL)
 summary_show()

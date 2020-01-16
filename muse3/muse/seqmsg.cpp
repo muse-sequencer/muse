@@ -535,7 +535,7 @@ void Audio::msgPlay(bool val)
       }else {
             if (MusEGlobal::audioDevice)
                 MusEGlobal::audioDevice->stopTransport();
-            _bounce = false;
+            _bounceState = BounceOff;
             }
       }
 
@@ -563,7 +563,7 @@ void Audio::msgExternalPlay(bool val, bool doRewind)
             state = STOP;
             if (MusEGlobal::audioDevice)
                 MusEGlobal::audioDevice->stopTransport();
-            _bounce = false;
+            _bounceState = BounceOff;
             }
       }
 
@@ -825,7 +825,26 @@ void Audio::msgStartMidiLearn()
 
 void Audio::msgBounce()
       {
-      _bounce = true;
+      if (!MusEGlobal::checkAudioDevice()) return;
+
+      MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->lPos());
+      // Wait until seek takes effect.
+      msgAudioWait();
+      msgAudioWait();
+      for(int i = 0; i < 100; ++i)
+      {
+        if(_syncReady)
+          break;
+        msgAudioWait();
+      }
+      // Check if seek is really done.
+      if(!_syncReady)
+      {
+        fprintf(stderr, "ERROR: Audio::msgBounce(): Sync not ready!\n");
+        return;
+      }
+      
+      _bounceState = BounceStart;
       
 // REMOVE Tim. latency. Added. Moved here from audio thread process code (via Song::seqSignal()).
       if(MusEGlobal::config.freewheelMode)
@@ -845,9 +864,6 @@ void Audio::msgBounce()
         }
       }
       
-      
-      if (!MusEGlobal::checkAudioDevice()) return;
-      MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->lPos());
       }
 
 //---------------------------------------------------------

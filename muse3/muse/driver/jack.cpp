@@ -708,6 +708,9 @@ bool initJackAudio()
       //jackAudio->registerClient(); 
 
       MusEGlobal::sampleRate  = jack_get_sample_rate(client);
+
+      MusEGlobal::projectSampleRate = MusEGlobal::sampleRate;
+
       // Make sure the AL namespace variables mirror our variables.
       AL::sampleRate = MusEGlobal::sampleRate;
       MusEGlobal::segmentSize = jack_get_buffer_size(client);
@@ -1709,17 +1712,6 @@ bool JackAudioDevice::timebaseQuery(unsigned frames, unsigned* bar, unsigned* be
   
   return false;
 }                
-
-// REMOVE Tim. clip. Added.
-// //---------------------------------------------------------
-// //   timebaseAck
-// //   This is called by the timebase callback.
-// //---------------------------------------------------------
-// 
-// void JackAudioDevice::timebaseAck()
-// {
-//   _timebaseAck = true;
-// }
 
 //---------------------------------------------------------
 //   systemTimeUS

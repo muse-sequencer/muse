@@ -112,7 +112,7 @@
 // Using our custom non-splitting data FIFO, we might typically set a size higher than what a true 'wrap around'
 //  data FIFO would use. But that's still far better than using a very wasteful fixed-size item based FIFO.
 // Actually, to accomodate say, the LSP 48 channel samplers, we MUST set this fairly high - even if we were to
-//  use true 'wrap aorund' FIFOs because LSP plugins try to schedule MANY work requests in one run.
+//  use true 'wrap around' FIFOs because LSP plugins try to schedule MANY work requests in one run.
 // (That's up to 8 wave files per channel x 48 channels = 384 requests x 16 bytes per message = 6,144 bytes!).
 #define LV2_WRK_FIFO_SIZE 8192
 
@@ -137,7 +137,9 @@ namespace MusECore
 #define LV2_F_OPTIONS LV2_OPTIONS__options
 #define LV2_F_URID_MAP LV2_URID__map
 #define LV2_F_URID_UNMAP LV2_URID__unmap
+#ifdef LV2_URI_MAP_SUPPORT
 #define LV2_F_URI_MAP LV2_URI_MAP_URI
+#endif
 #define LV2_F_UI_PARENT LV2_UI__parent
 #define LV2_F_INSTANCE_ACCESS NS_EXT "instance-access"
 #define LV2_F_DATA_ACCESS LV2_DATA_ACCESS_URI
@@ -165,7 +167,9 @@ static LilvWorld *lilvWorld = 0;
 typedef struct
 {
     LilvNode *atom_AtomPort;
+#ifdef LV2_EVENT_BUFFER_SUPPORT
     LilvNode *ev_EventPort;
+#endif
     LilvNode *lv2_AudioPort;
     LilvNode *lv2_ControlPort;
     LilvNode *lv2_InputPort;
@@ -216,6 +220,7 @@ const char *Synth_Urid_Unmap(LV2_URID_Unmap_Handle _host_data, LV2_URID id)
     return _synth->unmapUrid(id);
 }
 
+#ifdef LV2_URI_MAP_SUPPORT
 LV2_URID Synth_Uri_Map(LV2_URI_Map_Callback_Data _host_data, const char *, const char *uri)
 {
     LV2Synth *_synth = reinterpret_cast<LV2Synth *>(_host_data);
@@ -227,7 +232,7 @@ LV2_URID Synth_Uri_Map(LV2_URI_Map_Callback_Data _host_data, const char *, const
 
     return _synth->mapUrid(uri);
 }
-
+#endif
 
 static CacheNodes lv2CacheNodes;
 
@@ -235,7 +240,9 @@ LV2_Feature lv2Features [] =
 {
     {LV2_F_URID_MAP, NULL},
     {LV2_F_URID_UNMAP, NULL},
+#ifdef LV2_URI_MAP_SUPPORT
     {LV2_F_URI_MAP, NULL},
+#endif
     {LV2_F_BOUNDED_BLOCK_LENGTH, NULL},
     {LV2_F_FIXED_BLOCK_LENGTH, NULL},
     {LV2_F_POWER_OF_2_BLOCK_LENGTH, NULL},
@@ -295,7 +302,9 @@ void initLV2()
     lilvWorld = lilv_world_new();
 
     lv2CacheNodes.atom_AtomPort          = lilv_new_uri(lilvWorld, LV2_ATOM__AtomPort);
+#ifdef LV2_EVENT_BUFFER_SUPPORT
     lv2CacheNodes.ev_EventPort           = lilv_new_uri(lilvWorld, LV2_EVENT__EventPort);
+#endif
     lv2CacheNodes.lv2_AudioPort          = lilv_new_uri(lilvWorld, LV2_CORE__AudioPort);
     lv2CacheNodes.lv2_ControlPort        = lilv_new_uri(lilvWorld, LV2_CORE__ControlPort);
     lv2CacheNodes.lv2_InputPort          = lilv_new_uri(lilvWorld, LV2_CORE__InputPort);
@@ -1097,7 +1106,11 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state,
       // REMOVE Tim. lv2. Added. TESTING. This should be required. Seems OK so far.
       lv2_atom_forge_pop(atomForge, &frame);
 
+#ifdef LV2_EVENT_BUFFER_SUPPORT
       buffer->write(sample, 0, lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
+#else
+      buffer->write(sample, lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
+#endif
     }
 }
 
@@ -1113,7 +1126,9 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
     {
         LV2EvBuf *newEvBuffer = new LV2EvBuf(
             true,
+#ifdef LV2_EVENT_BUFFER_SUPPORT
             state->midiInPorts [i].old_api,
+#endif
             synth->_uAtom_Sequence,
             synth->_uAtom_Chunk,
             LV2_EVBUF_SIZE);
@@ -1129,7 +1144,9 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
     {
         LV2EvBuf *newEvBuffer = new LV2EvBuf(
             false,
+#ifdef LV2_EVENT_BUFFER_SUPPORT
             state->midiOutPorts [i].old_api,
+#endif
             synth->_uAtom_Sequence,
             synth->_uAtom_Chunk,
             LV2_EVBUF_SIZE);
@@ -1167,7 +1184,11 @@ void LV2Synth::lv2audio_preProcessMidiPorts(LV2PluginWrapper_State *state, unsig
         {
             LV2EvBuf *buffer = it->second;
             const LV2_Atom* const atom = (const LV2_Atom*)evtBuffer;
+#ifdef LV2_EVENT_BUFFER_SUPPORT
             buffer->write(sample, 0, atom->type, atom->size,  static_cast<const uint8_t *>(LV2_ATOM_BODY_CONST(atom)));
+#else
+            buffer->write(sample, atom->type, atom->size,  static_cast<const uint8_t *>(LV2_ATOM_BODY_CONST(atom)));
+#endif
         }
 
     }
@@ -1185,13 +1206,20 @@ void LV2Synth::lv2audio_postProcessMidiPorts(LV2PluginWrapper_State *state, unsi
 
     for(size_t j = 0; j < outp; j++)
     {
+#ifdef LV2_EVENT_BUFFER_SUPPORT
         if(!state->midiOutPorts [j].old_api)
+#endif
         {
             do
             {
-                uint32_t frames, subframes, type, size;
+                uint32_t frames, type, size;
                 uint8_t *data = NULL;
+#ifdef LV2_EVENT_BUFFER_SUPPORT
+                uint32_t subframes;
                 if(!state->midiOutPorts [j].buffer->read(&frames, &subframes, &type, &size, &data))
+#else
+                if(!state->midiOutPorts [j].buffer->read(&frames, &type, &size, &data))
+#endif
                 {
                     break;
                 }
@@ -2671,8 +2699,10 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
     _lv2_urid_map.handle = this;
     _lv2_urid_unmap.unmap = Synth_Urid_Unmap;
     _lv2_urid_unmap.handle = this;
+#ifdef LV2_URI_MAP_SUPPORT
     _lv2_uri_map.uri_to_id = Synth_Uri_Map;
     _lv2_uri_map.callback_data = this;
+#endif
     _lv2_log_log.handle = this;
     _lv2_log_log.printf = LV2Synth::lv2_printf;
     _lv2_log_log.vprintf = LV2Synth::lv2_vprintf;
@@ -2696,10 +2726,12 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
         {
             _features [i].data = &_lv2_urid_unmap;
         }
+#ifdef LV2_URI_MAP_SUPPORT
         else if(std::string(LV2_F_URI_MAP) == _features [i].URI)
         {
             _features [i].data = &_lv2_uri_map;
         }
+#endif
         else if(std::string(LV2_F_OPTIONS) == _features [i].URI)
         {
             _features [i].data = _options;
@@ -2869,6 +2901,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
         {
             aPorts->push_back(LV2AudioPort(_port, i, NULL, _portName));
         }
+#ifdef LV2_EVENT_BUFFER_SUPPORT
         else if(lilv_port_is_a(_handle, _port, lv2CacheNodes.ev_EventPort))
         {
             bool portSupportsTimePos = lilv_port_supports_event(_handle, _port, lv2CacheNodes.lv2_TimePosition);
@@ -2876,12 +2909,17 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
               _usesTimePosition = true;
             mPorts->push_back(LV2MidiPort(_port, i, _portName, true /* old api is on */,portSupportsTimePos));
         }
+#endif
         else if(lilv_port_is_a(_handle, _port, lv2CacheNodes.atom_AtomPort))
         {
             bool portSupportsTimePos = lilv_port_supports_event(_handle, _port, lv2CacheNodes.lv2_TimePosition);
             if(portSupportsTimePos)
               _usesTimePosition = true;
+#ifdef LV2_EVENT_BUFFER_SUPPORT
             mPorts->push_back(LV2MidiPort(_port, i, _portName, false /* old api is off */, portSupportsTimePos));
+#else
+            mPorts->push_back(LV2MidiPort(_port, i, _portName, portSupportsTimePos));
+#endif
         }
         else if(!optional)
         {
@@ -3499,7 +3537,11 @@ void LV2SynthIF::sendLv2MidiEvent(LV2EvBuf *evBuf, long frame, int paramCount, u
             midiEv [1] = b;
         if(paramCount == 3)
             midiEv [2] = c;
+#ifdef LV2_EVENT_BUFFER_SUPPORT
         evBuf->write(frame, 0, _synth->_midi_event_id, paramCount, midiEv);
+#else
+        evBuf->write(frame, _synth->_midi_event_id, paramCount, midiEv);
+#endif
     }
 }
 
@@ -5834,8 +5876,13 @@ void LV2PluginWrapper_Worker::makeWork()
 
 }
 
+#ifdef LV2_EVENT_BUFFER_SUPPORT
 LV2EvBuf::LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t /*size*/)
     :_isInput(isInput), _oldApi(oldApi), _uAtomTypeSequence(atomTypeSequence), _uAtomTypeChunk(atomTypeChunk)
+#else
+LV2EvBuf::LV2EvBuf(bool isInput, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t /*size*/)
+    :_isInput(isInput), _uAtomTypeSequence(atomTypeSequence), _uAtomTypeChunk(atomTypeChunk)
+#endif
 {
     // Resize and fill with initial value.
     _buffer.resize(LV2_EVBUF_SIZE, 0);
@@ -5857,11 +5904,13 @@ void LV2EvBuf::resetPointers(bool r, bool w)
     if(!r && !w)
         return;
     size_t ptr = 0;
+#ifdef LV2_EVENT_BUFFER_SUPPORT
     if(_oldApi)
     {
         ptr = sizeof(LV2_Event_Buffer);
     }
     else
+#endif
     {
         ptr = sizeof(LV2_Atom_Sequence);
     }
@@ -5878,6 +5927,7 @@ void LV2EvBuf::resetPointers(bool r, bool w)
 
 void LV2EvBuf::resetBuffer()
 {
+#ifdef LV2_EVENT_BUFFER_SUPPORT
     if(_oldApi)
     {
         _evbuf = reinterpret_cast<LV2_Event_Buffer *>(&_buffer [0]);
@@ -5889,6 +5939,7 @@ void LV2EvBuf::resetBuffer()
         _evbuf->size = 0;
     }
     else
+#endif
     {
         _seqbuf = reinterpret_cast<LV2_Atom_Sequence *>(&_buffer [0]);
         if(!_isInput)
@@ -5907,10 +5958,15 @@ void LV2EvBuf::resetBuffer()
     resetPointers(true, true);
 }
 
+#ifdef LV2_EVENT_BUFFER_SUPPORT
 bool LV2EvBuf::write(uint32_t frames, uint32_t subframes, uint32_t type, uint32_t size, const uint8_t *data)
+#else
+bool LV2EvBuf::write(uint32_t frames, uint32_t type, uint32_t size, const uint8_t *data)
+#endif
 {
     if(!_isInput)
         return false;
+#ifdef LV2_EVENT_BUFFER_SUPPORT
     if(_oldApi)
     {
         size_t paddedSize = mkPadSize(sizeof(LV2_Event) + size);
@@ -5931,6 +5987,7 @@ bool LV2EvBuf::write(uint32_t frames, uint32_t subframes, uint32_t type, uint32_
         _evbuf->event_count++;
     }
     else
+#endif
     {
         size_t paddedSize = mkPadSize(sizeof(LV2_Atom_Event) + size);
         size_t resSize = curWPointer + paddedSize;
@@ -5951,12 +6008,20 @@ bool LV2EvBuf::write(uint32_t frames, uint32_t subframes, uint32_t type, uint32_
     return true;
 }
 
+#ifdef LV2_EVENT_BUFFER_SUPPORT
 bool LV2EvBuf::read(uint32_t *frames, uint32_t *subframes, uint32_t *type, uint32_t *size, uint8_t **data)
+#else
+bool LV2EvBuf::read(uint32_t *frames, uint32_t *type, uint32_t *size, uint8_t **data)
+#endif
 {
-    *frames = *subframes = *type = *size = 0;
+    *frames = *type = *size = 0;
+#ifdef LV2_EVENT_BUFFER_SUPPORT
+    *subframes = 0;
+#endif    
     *data = NULL;
     if(_isInput)
         return false;
+#ifdef LV2_EVENT_BUFFER_SUPPORT
     if(_oldApi)
     {
         LV2_Event *ev = reinterpret_cast<LV2_Event *>(&_buffer [curRPointer]);
@@ -5973,6 +6038,7 @@ bool LV2EvBuf::read(uint32_t *frames, uint32_t *subframes, uint32_t *type, uint3
         curRPointer += padSize;
     }
     else
+#endif
     {
         LV2_Atom_Event *ev = reinterpret_cast<LV2_Atom_Event *>(&_buffer [curRPointer]);
 
@@ -6005,9 +6071,11 @@ uint8_t *LV2EvBuf::getRawBuffer()
 
 void LV2EvBuf::dump()
 {
+#ifdef LV2_EVENT_BUFFER_SUPPORT
     if(_oldApi) {
         return;
     }
+#endif
 
     int n = 1;
     LV2_Atom_Sequence *b = (LV2_Atom_Sequence *)&_buffer [0];

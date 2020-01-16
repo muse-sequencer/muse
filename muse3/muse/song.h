@@ -45,6 +45,9 @@
 
 #define IPC_EVENT_FIFO_SIZE ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(16384)) )
 
+#include "time_stretch.h"
+#include "audio_convert/audio_converter_settings_group.h"
+
 class QAction;
 class QFont;
 class QMenu;
@@ -188,6 +191,8 @@ class Song : public QObject {
       //  the real one returned here. (Otherwise when the user hits 'undo' it would restore
       //  that modified passed-in event sitting in the Undo item. That's not the right event!)
       Event deleteEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
+
+      void checkSongSampleRate();
       
       void normalizePart(MusECore::Part *part);
 
@@ -252,6 +257,21 @@ class Song : public QObject {
 
       int globalPitchShift() const      { return _globalPitchShift; }
       void setGlobalPitchShift(int val) { _globalPitchShift = val; }
+      
+      // REMOVE Tim. samplerate. Added. TODO
+#if 0
+      // Set the project's sample rate. This can be different than the current actual sample rate.
+      void setProjectSampleRate(int rate);
+      // Ratio of the project's sample rate to the current audio sample rate.
+      double projectSampleRateRatio() const;
+      // Whether the project's sample rate ratio is exactly 1.
+      bool projectSampleRateDiffers() const;
+      // This scales the sample rate, by scaling the frame values of all objects or properties that use or store 
+      //  a value in 'frames', such as wave parts/events position and length, and audio automation graphs.
+      // It does NOT resample audio files, that is another function.
+      // Caution: Slight rounding errors can degrade timing accuracy, especially if repeated scalings are done.
+      void convertProjectSampleRate(int newRate);
+#endif
 
       //-----------------------------------------
       //   Marker
@@ -328,7 +348,7 @@ class Song : public QObject {
       //   event manipulations
       //-----------------------------------------
 
-      void cmdAddRecordedWave(WaveTrack* track, Pos, Pos, Undo& operations);
+      void cmdAddRecordedWave(WaveTrack* track, Pos s, Pos e, Undo& operations);
       void cmdAddRecordedEvents(MidiTrack*, const EventList&, unsigned, Undo& operations);
 
       // May be called from GUI or audio thread. Also selects events in clone parts. Safe for now because audio/midi processing doesn't 
@@ -341,7 +361,53 @@ class Song : public QObject {
       void changeAllPortDrumCtrlEvents(bool add, bool drumonly = false); // called from GUI thread
       
       void addExternalTempo(const TempoRecEvent& e) { _tempoFifo.put(e); }
-      
+
+      //--------------------------------------------
+      //   Time-stretch / samplerate manipulations
+      //--------------------------------------------
+
+      void stretchModifyOperation(
+         StretchList* stretch_list, StretchListItem::StretchEventType type, double value,
+         PendingOperationList& ops) const;
+      void stretchListAddOperation(
+        StretchList* stretch_list, StretchListItem::StretchEventType type, MuseFrame_t frame,
+        double value, PendingOperationList& ops) const;
+      void stretchListDelOperation(
+        StretchList* stretch_list, int types, MuseFrame_t frame, PendingOperationList& ops) const;
+      void stretchListModifyOperation(
+        StretchList* stretch_list, StretchListItem::StretchEventType type, MuseFrame_t frame,
+        double value, PendingOperationList& ops) const;
+
+      void setAudioConvertersOfflineOperation(
+        bool isOffline
+        );
+
+      void modifyAudioConverterSettingsOperation(
+        SndFileR sndfile,
+        AudioConverterSettingsGroup* settings,
+        AudioConverterSettingsGroup* defaultSettings,
+        bool isLocalSettings,
+        PendingOperationList& ops
+        ) const;
+
+      void modifyAudioConverterOperation(
+        SndFileR sndfile,
+        PendingOperationList& ops,
+        bool doResample,
+        bool doStretch
+        ) const;
+
+      void modifyStretchListOperation(
+        SndFileR sndfile, int type, double value, PendingOperationList& ops) const;
+      void addAtStretchListOperation(
+        SndFileR sndfile, int type, MuseFrame_t frame, double value, PendingOperationList& ops) const;
+      void delAtStretchListOperation(
+        SndFileR sndfile, int types, MuseFrame_t frame, PendingOperationList& ops) const;
+      void modifyAtStretchListOperation(
+        SndFileR sndfile, int type, MuseFrame_t frame, double value, PendingOperationList& ops) const;
+      void modifyDefaultAudioConverterSettingsOperation(
+        AudioConverterSettingsGroup* settings, PendingOperationList& ops);
+
       //-----------------------------------------
       //   part manipulations
       //-----------------------------------------

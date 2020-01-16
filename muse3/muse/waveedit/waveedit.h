@@ -118,7 +118,7 @@ class WaveEdit : public MidiEditor {
 
    public:
       WaveEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0);
-      ~WaveEdit();
+      virtual ~WaveEdit();
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;
       static void readConfiguration(MusECore::Xml&);

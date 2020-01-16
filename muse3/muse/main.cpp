@@ -75,6 +75,9 @@
 #include "plugin_cache_writer.h"
 #include "pluglist.h"
 #include "metronome_class.h"
+#include "audio_convert/audio_converter_plugin.h"
+#include "audio_convert/audio_converter_settings_group.h"
+#include "wave.h"
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
@@ -802,6 +805,13 @@ int main(int argc, char* argv[])
         }
 
         MusEGui::initShortCuts();
+
+        // Discover available MusE audio converters, before reading configuration
+        MusEGlobal::audioConverterPluginList.discover(MusEGlobal::museGlobalLib, MusEGlobal::debugMsg);
+        // Default, non-local settings.
+        MusEGlobal::defaultAudioConverterSettings = new MusECore::AudioConverterSettingsGroup(false);
+        MusEGlobal::defaultAudioConverterSettings->populate(&MusEGlobal::audioConverterPluginList, false);
+        
         MusECore::readConfiguration();
 
         // Need to put a sane defaults here because we can't use '~' in the file name strings.
@@ -1306,6 +1316,14 @@ int main(int argc, char* argv[])
         MusEGlobal::fifoLength = 131072 / MusEGlobal::segmentSize;
         MusECore::initAudioPrefetch();
 
+        // Set up the wave module now that sampleRate and segmentSize are known.
+        MusECore::SndFile::initWaveModule(
+          &MusEGlobal::sndFiles,
+          &MusEGlobal::audioConverterPluginList,
+          &MusEGlobal::defaultAudioConverterSettings,
+          MusEGlobal::sampleRate,
+          MusEGlobal::segmentSize);
+        
         if(muse_splash)
         {
           muse_splash->showMessage(splash_prefix + QString(" Initializing midi devices..."));
@@ -1551,6 +1569,10 @@ int main(int argc, char* argv[])
       // END Restart loop. For (re)starting the app.
       //============================================
 
+      if(MusEGlobal::defaultAudioConverterSettings)
+        delete MusEGlobal::defaultAudioConverterSettings;
+      MusEGlobal::defaultAudioConverterSettings = nullptr;
+      
       if(MusEGlobal::debugMsg) 
         fprintf(stderr, "Finished! Exiting main, return value:%d\n", rv);
       return rv;

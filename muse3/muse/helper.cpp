@@ -23,8 +23,6 @@
 #include <list>
 
 #include "helper.h"
-#include "part.h"
-#include "track.h"
 #include "song.h"
 #include "app.h"
 #include "icons.h"
@@ -37,6 +35,7 @@
 #include "route.h"
 #include "mididev.h"
 #include "globaldefs.h"
+#include "globals.h"
 #include "audio.h"
 #include "audiodev.h"
 #include "midi.h"
@@ -48,26 +47,21 @@
 #include "lv2host.h"
 #include "vst_native.h"
 #include "appearance.h"
-#include "mpevent.h"
 // REMOVE Tim. wave. Added.
 #include "event.h"
 
 #include <strings.h>
 
-#include <QMenu>
 #include <QApplication>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QFileDialog>
-#include <QString>
-#include <QStringList>
-#include <QLine>
-#include <QRect>
 #include <QByteArray>
 #include <QStyle>
 #include <QStyleFactory>
 #include <QVector>
+#include <QMessageBox>
 
 // REMOVE Tim. wave. Added. Moved here from wave.cpp
 #include <QMessageBox>
@@ -817,277 +811,6 @@ void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int va
 		MusEGlobal::audio->msgPlayMidiEvent(&ev);
 	}
 }
-
-// REMOVE Tim. wave. Added. Moved here from wave.cpp
-//---------------------------------------------------------
-//   getWave
-//---------------------------------------------------------
-
-SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool showErrorBox)
-      {
-      QString name = inName;
-
-      if (QFileInfo(name).isRelative()) {
-            name = MusEGlobal::museProject + QString("/") + name;
-            }
-      else {
-            if (!QFile::exists(name)) {
-                  if (QFile::exists(MusEGlobal::museProject + QString("/") + name)) {
-                        name = MusEGlobal::museProject + QString("/") + name;
-                        }
-                  }
-            }
-
-      // only open one instance of wave file
-      // REMOVE Tim. Sharing. Changed. For testing only so far.
-      //SndFile* f = SndFile::sndFiles.search(name);
-      SndFile* f = 0;
-      //if (f == 0)
-      //{
-            if (!QFile::exists(name)) {
-                  fprintf(stderr, "wave file <%s> not found\n",
-                     name.toLocal8Bit().constData());
-                  return NULL;
-                  }
-            f = new SndFile(name);
-
-            if(openFlag)
-            {
-              bool error;
-              if (readOnlyFlag)
-                    error = f->openRead();
-              else {
-                    error = f->openWrite();
-                    // if peak cache is older than wave file we reaquire the cache
-                    QFileInfo wavinfo(name);
-                    QString cacheName = wavinfo.absolutePath() + QString("/") + wavinfo.completeBaseName() + QString(".wca");
-                    QFileInfo wcainfo(cacheName);
-                    if (!wcainfo.exists() || wcainfo.lastModified() < wavinfo.lastModified()) {
-                          QFile(cacheName).remove();
-                          f->readCache(cacheName,true);
-                          }
-
-              }
-              if (error) {
-                    fprintf(stderr, "open wave file(%s) for %s failed: %s\n",
-                      name.toLocal8Bit().constData(),
-                      readOnlyFlag ? "writing" : "reading",
-                      f->strerror().toLocal8Bit().constData());
-                      if(showErrorBox)
-                        QMessageBox::critical(NULL, "MusE import error.",
-                                        "MusE failed to import the file.\n"
-                                        "Possibly this wasn't a sound file?\n"
-                                        "If it was check the permissions, MusE\n"
-                                        "sometimes requires write access to the file.");
-
-                    delete f;
-                    f = 0;
-                    }
-              }
-//             }
-//       else {
-//               if(openFlag)
-//               {
-//                 if (!readOnlyFlag && ! f->isWritable()) {
-//                       if (f->isOpen())
-//                             f->close();
-//                       f->openWrite();
-//                       }
-//                 else {
-//                       // if peak cache is older than wave file we reaquire the cache
-//                       QFileInfo wavinfo(name);
-//                       QString cacheName = wavinfo.absolutePath() + QString("/") + wavinfo.completeBaseName() + QString(".wca");
-//                       QFileInfo wcainfo(cacheName);
-//                       if (!wcainfo.exists() || wcainfo.lastModified() < wavinfo.lastModified()) {
-//                             QFile(cacheName).remove();
-//                             f->readCache(cacheName,true);
-//                             }
-//
-//                       }
-//               }
-//             }
-      return f;
-      }
-
-// REMOVE Tim. wave. Added. Moved here from wave.cpp
-//---------------------------------------------------------
-//   checkCopyOnWrite
-//---------------------------------------------------------
-
-bool checkCopyOnWrite(const SndFileR& sndfile)
-{
-  QString path_this = sndfile.canonicalPath();
-  if(path_this.isEmpty())
-    return false;
-
-  const QFileInfo finfo(sndfile.path());
-  const bool fwrite = finfo.isWritable();
-
-  // No exceptions: Even if this wave event is a clone, if it ain't writeable we gotta copy the wave.
-  if(!fwrite)
-    return true;
-
-  // Count the number of unique part wave events (including possibly this one) using this file.
-  // Not much choice but to search all active wave events - the sndfile ref count is not the solution for this...
-  int use_count = 0;
-  EventID_t id = MUSE_INVALID_EVENT_ID;
-  Part* part = 0;
-  WaveTrackList* wtl = MusEGlobal::song->waves();
-  for(ciTrack it = wtl->begin(); it != wtl->end(); ++it)
-  {
-    PartList* pl = (*it)->parts();
-    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-    {
-      Part* p = ip->second;
-      const EventList& el = p->events();
-//       const EventList& el = ip->second->events();
-//       // We are looking for active independent non-clone parts
-//       if(ip->second->hasClones())
-//         continue;
-      for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
-      {
-        if(ie->second.type() != Wave)
-          continue;
-        const Event& ev = ie->second;
-        if(ev.empty() || ev.id() == MUSE_INVALID_EVENT_ID)
-          continue;
-        const SndFileR sf = ev.sndFile();
-        if(sf.isNull())
-          continue;
-        QString path = sf.canonicalPath();
-        if(path.isEmpty())
-          continue;
-        if(path == path_this)
-        {
-          // Ignore clones of an already found event.
-          if(ev.id() == id)
-          {
-            // Double check.
-            if(part && !p->isCloneOf(part))
-              fprintf(stderr, "checkCopyOnWrite() Error: Two event ids are the same:%d but their parts:%p, %p are not clones!\n", (int)id, p, part);
-            continue;
-          }
-          part = p;
-          id = ev.id();
-          ++use_count;
-        }
-        // If more than one unique part wave event is using the file, signify that the caller should make a copy of it.
-        if(use_count > 1)
-          return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-//---------------------------------------------------------
-//   waveApplyUndoFile
-//---------------------------------------------------------
-
-void waveApplyUndoFile(const Event& original, const QString* tmpfile, unsigned startframe, unsigned endframe)
-      {
-      // This one is called on both undo and redo of a wavfile
-      // For redo to be called, undo must have been called first, and we don't store both the original data and the modified data in separate
-      // files. Thus, each time this function is called the data in the "original"-file will be written to the tmpfile, after the data
-      // from the tmpfile has been applied.
-      //
-      // F.ex. if mute has been made on part of a wavfile, the unmuted data is stored in the tmpfile when
-      // the undo operation occurs. The unmuted data is then written back to the original file, and the mute data will be
-      // put in the tmpfile, and when redo is eventually called the data is switched again (causing the muted data to be written to the "original"
-      // file. The data is merely switched.
-
-      if (original.empty()) {
-            printf("SndFile::applyUndoFile: Internal error: original event is empty - Aborting\n");
-            return;
-            }
-
-      SndFileR orig = original.sndFile();
-
-      if (orig.isNull()) {
-            printf("SndFile::applyUndoFile: Internal error: original sound file is NULL - Aborting\n");
-            return;
-            }
-      if (orig.canonicalPath().isEmpty()) {
-            printf("SndFile::applyUndoFile: Error: Original sound file name is empty - Aborting\n");
-            return;
-            }
-
-      if (!orig.isOpen()) {
-            if (orig.openRead()) {
-                  printf("Cannot open original file %s for reading - cannot undo! Aborting\n", orig.canonicalPath().toLocal8Bit().constData());
-                  return;
-                  }
-            }
-
-      SndFile tmp  = SndFile(*tmpfile);
-      if (!tmp.isOpen()) {
-            if (tmp.openRead()) {
-                  printf("Could not open temporary file %s for writing - cannot undo! Aborting\n", tmpfile->toLocal8Bit().constData());
-                  return;
-                  }
-            }
-
-      MusEGlobal::audio->msgIdle(true);
-      tmp.setFormat(orig.format(), orig.channels(), orig.samplerate());
-
-      // Read data in original file to memory before applying tmpfile to original
-      unsigned file_channels = orig.channels();
-      unsigned tmpdatalen = endframe - startframe;
-      float*   data2beoverwritten[file_channels];
-
-      for (unsigned i=0; i<file_channels; i++) {
-            data2beoverwritten[i] = new float[tmpdatalen];
-            }
-      orig.seek(startframe, 0);
-      orig.readWithHeap(file_channels, data2beoverwritten, tmpdatalen);
-
-      orig.close();
-
-      // Read data from temporary file to memory
-      float* tmpfiledata[file_channels];
-      for (unsigned i=0; i<file_channels; i++) {
-            tmpfiledata[i] = new float[tmpdatalen];
-            }
-      tmp.seek(0, 0);
-      tmp.readWithHeap(file_channels, tmpfiledata, tmpdatalen);
-      tmp.close();
-
-      // Write temporary data to original file:
-      if (orig.openWrite()) {
-            printf("Cannot open orig for write - aborting.\n");
-            return;
-            }
-
-      orig.seek(startframe, 0);
-      orig.write(file_channels, tmpfiledata, tmpdatalen);
-
-      // Delete dataholder for temporary file
-      for (unsigned i=0; i<file_channels; i++) {
-            delete[] tmpfiledata[i];
-            }
-
-      // Write the overwritten data to the tmpfile
-      if (tmp.openWrite()) {
-            printf("Cannot open tmpfile for writing - redo operation of this file won't be possible. Aborting.\n");
-            MusEGlobal::audio->msgIdle(false);
-            return;
-            }
-      tmp.seek(0, 0);
-      tmp.write(file_channels, data2beoverwritten, tmpdatalen);
-      tmp.close();
-
-      // Delete dataholder for replaced original file
-      for (unsigned i=0; i<file_channels; i++) {
-            delete[] data2beoverwritten[i];
-            }
-
-      orig.close();
-      orig.openRead();
-      orig.update();
-      MusEGlobal::audio->msgIdle(false);
-      }
-
 
 } // namespace MusECore
 
@@ -2239,7 +1962,7 @@ void loadStyleSheetFile(const QString& s)
 void updateThemeAndStyle(bool forceStyle)
 {
   // Note that setting a stylesheet completely takes over the font until blanked again.
-  qApp->setFont(MusEGlobal::config.fonts[0]);
+//  qApp->setFont(MusEGlobal::config.fonts[0]); // has no effect
   loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
   loadTheme(MusEGlobal::config.style, forceStyle || !MusEGlobal::config.styleSheetFile.isEmpty());
 }

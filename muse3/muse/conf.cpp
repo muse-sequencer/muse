@@ -71,6 +71,7 @@
 #include "amixer.h"
 #include "track.h"
 #include "plugin.h"
+#include "audio_convert/audio_converter_settings_group.h"
 #include "filedialog.h"
 #include "al/al.h"
 
@@ -700,6 +701,12 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "pluginCacheTriggerRescan")
                               MusEGlobal::config.pluginCacheTriggerRescan = xml.parseInt();
                         
+                        else if (tag == "audioConverterSettingsGroup")
+                        {
+                              if(MusEGlobal::defaultAudioConverterSettings)
+                                MusEGlobal::defaultAudioConverterSettings->read(xml, &MusEGlobal::audioConverterPluginList);
+                        }
+
                         else if (tag == "preferredRouteNameOrAlias")
                               MusEGlobal::config.preferredRouteNameOrAlias = static_cast<MusEGlobal::RouteNameAliasPreference>(xml.parseInt());
                         else if (tag == "routerExpandVertically")
@@ -751,8 +758,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.moveArmedCheckBox = xml.parseInt();
                         else if (tag == "externalWavEditor")
                               MusEGlobal::config.externalWavEditor = xml.parse1();
-                        else if (tag == "font0")
-                              MusEGlobal::config.fonts[0].fromString(xml.parse1());
+//                        else if (tag == "font0")
+//                              MusEGlobal::config.fonts[0].fromString(xml.parse1());
                         else if (tag == "font1")
                               MusEGlobal::config.fonts[1].fromString(xml.parse1());
                         else if (tag == "font2")
@@ -1756,6 +1763,10 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.strTag(level, "pluginVstPathList", MusEGlobal::config.pluginVstPathList.join(":"));
       xml.strTag(level, "pluginLinuxVstPathList", MusEGlobal::config.pluginLinuxVstPathList.join(":"));
       xml.strTag(level, "pluginLv2PathList", MusEGlobal::config.pluginLv2PathList.join(":"));
+      
+      if(MusEGlobal::defaultAudioConverterSettings)
+        MusEGlobal::defaultAudioConverterSettings->write(level, xml, &MusEGlobal::audioConverterPluginList);
+      
       xml.intTag(level, "pluginCacheTriggerRescan", MusEGlobal::config.pluginCacheTriggerRescan);
                         
       xml.intTag(level, "enableAlsaMidiDriver", MusEGlobal::config.enableAlsaMidiDriver);
@@ -1878,7 +1889,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "noPluginScaling", MusEGlobal::config.noPluginScaling);
       xml.intTag(level, "openMDIWinMaximized", MusEGlobal::config.openMDIWinMaximized);
 
-      for (int i = 0; i < NUM_FONTS; ++i) {
+      for (int i = 1; i < NUM_FONTS; ++i) {
+//          for (int i = 0; i < NUM_FONTS; ++i) {
             xml.strTag(level, QString("font") + QString::number(i), MusEGlobal::config.fonts[i].toString());
             }
             

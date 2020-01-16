@@ -61,6 +61,8 @@ const char* infoCursor = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Curso
 const char* infoRange = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Range tool");
 const char* infoPan = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Panning tool");
 const char* infoZoom = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Zoom tool");
+const char* infoStretch = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Stretch Tool");
+const char* infoSamplerate = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Sample Rate Tool");
 
 ToolB toolList[] = {
       {&pointerIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Pointer"),        infoPointer },
@@ -76,7 +78,9 @@ ToolB toolList[] = {
       {&drawIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Draw"),           infoDraw    },
       {&mutePartsIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Mute parts"),     infoMute    },
       {&drawIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Edit automation"),infoAutomation},
-      {&cursorIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Cursor"),         infoCursor}
+      {&cursorIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Cursor"),         infoCursor},
+      {&audioStretchIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Stretch"),     infoStretch},
+      {&audioResampleIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Sample rate"), infoSamplerate}
       };
 
 QMap<int,int> toolShortcuts;
@@ -143,6 +147,8 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
       toolShortcuts[MuteTool]    = SHRT_TOOL_MUTE;
       toolShortcuts[AutomationTool] = SHRT_TOOL_LINEDRAW;
       toolShortcuts[CursorTool]  = SHRT_TOOL_CURSOR;
+      toolShortcuts[StretchTool]  = SHRT_TOOL_STRETCH;
+      toolShortcuts[SamplerateTool]  = SHRT_TOOL_SAMPLERATE;
       }
 
 //---------------------------------------------------------

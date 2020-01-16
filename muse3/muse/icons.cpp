@@ -96,6 +96,7 @@
 #include "xpm/greendot.xpm"
 #include "xpm/greendot12x12.xpm"
 #include "xpm/reddot.xpm"
+#include "xpm/darkgreendot.xpm"
 #include "xpm/bluedot.xpm"
 #include "xpm/bluedot12x12.xpm"
 #include "xpm/graydot12x12.xpm"
@@ -209,6 +210,7 @@ QPixmap* toggle_small_Icon;
 QPixmap* greendotIcon;
 QPixmap* greendot12x12Icon;
 QPixmap* reddotIcon;
+QPixmap* darkgreendotIcon;
 QPixmap* graydot12x12Icon;
 QPixmap* bluedotIcon;
 QPixmap* bluedot12x12Icon;
@@ -402,6 +404,8 @@ QIcon* handIconSVG;
 QIcon* closedHandIconSVG;
 QIcon* cursorIconSVG;
 QIcon* magnetIconSVG;
+QIcon* audioStretchIconSVG;
+QIcon* audioResampleIconSVG;
 
 QIcon* noscaleSVGIcon[3];
 
@@ -476,9 +480,11 @@ void initIcons(int cursorSize)
       greendotIcon         = new QPixmap(greendot_xpm);
       greendot12x12Icon    = new QPixmap(greendot12x12_xpm);
       reddotIcon           = new QPixmap(reddot_xpm);
-      
+      darkgreendotIcon     = new QPixmap(darkgreendot_xpm);
+
       ledGreenIcon         = new QIcon(*greendotIcon);
-      
+      ledDarkGreenIcon     = new QIcon(*darkgreendotIcon);
+
       bluedotIcon          = new QPixmap(bluedot_xpm);
       bluedot12x12Icon     = new QPixmap(bluedot12x12_xpm);
       graydot12x12Icon     = new QPixmap(graydot12x12_xpm);
@@ -702,6 +708,8 @@ void initIcons(int cursorSize)
       closedHandIconSVG = new QIcon(":/svg/closed_hand.svg");
       cursorIconSVG     = new QIcon(":/svg/cursor.svg");
       magnetIconSVG     = new QIcon(":/svg/magnet.svg");
+      audioStretchIconSVG = new QIcon(":/svg/audio_stretch.svg");
+      audioResampleIconSVG = new QIcon(":/svg/audio_resample.svg");
 
       noscaleSVGIcon[0] = new QIcon(":/svg/noscale1.svg");
       noscaleSVGIcon[1] = new QIcon(":/svg/noscale2.svg");
@@ -778,6 +786,7 @@ void deleteIcons()
 
       delete greendotIcon;         
       delete reddotIcon;
+      delete darkgreendotIcon;
       delete bluedotIcon;          
       delete orangedotIcon;          
 
@@ -969,6 +978,8 @@ void deleteIcons()
       delete closedHandIconSVG;
       delete cursorIconSVG;
       delete magnetIconSVG;
+      delete audioStretchIconSVG;
+      delete audioResampleIconSVG;
 
       delete noscaleSVGIcon[0];
       delete noscaleSVGIcon[1];

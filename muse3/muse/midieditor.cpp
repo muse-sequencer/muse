@@ -43,6 +43,10 @@
 #include <QPainter>
 #include <QPixmap>
 
+// For debugging output: Uncomment the fprintf section.
+#define ERROR_MIDIEDITOR(dev, format, args...)  fprintf(dev, format, ##args)
+#define DEBUG_MIDIEDITOR(dev, format, args...) // fprintf(dev, format, ##args)
+
 namespace MusEGui {
 
 //---------------------------------------------------------
@@ -403,6 +407,7 @@ void MidiEditor::tagItems(MusECore::TagEventList* tag_list, const MusECore::Even
 
 MidiEditor::~MidiEditor()
       {
+      DEBUG_MIDIEDITOR(stderr, "MidiEditor dtor\n");
       if (_pl)
             delete _pl;
       }

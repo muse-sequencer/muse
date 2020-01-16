@@ -1520,8 +1520,8 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                         break;
                      }
                   }
-                  else if(_tool == AutomationTool){
-                    // The PartCanvas mouseMove will take care of its own cursor.
+                  else if(_tool == AutomationTool || _tool == StretchTool || _tool == SamplerateTool){
+                    // The PartCanvas and WaveCanvas mouseMove will take care of its own cursor.
                     // Break otherwise there is bad flickering as the 'pointing hand' competes with 'cross' etc.
                     break;
                   }
@@ -1708,7 +1708,12 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
       if (redrawFlag)
             redraw();
 
-      mouseRelease(pos);
+      // HACK
+      QMouseEvent e(event->type(), pos,
+         event->globalPos(), event->button(), event->buttons(), event->modifiers());
+      mouseRelease(&e);
+      
+      //mouseRelease(pos);
 }
 
 //---------------------------------------------------------
@@ -1804,6 +1809,7 @@ void Canvas::setTool(int t)
             return;
       _tool = Tool(t);
       setCursor();
+      update();
       }
 
 //---------------------------------------------------------

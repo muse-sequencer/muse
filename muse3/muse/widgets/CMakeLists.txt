@@ -293,6 +293,7 @@ file (GLOB widgets_source_files
 #       vst_native_editor.cpp
 #       warn_bad_timing.cpp
       widget_stack.cpp
+      #zita_resampler_settings.cpp
       )
 
 ##

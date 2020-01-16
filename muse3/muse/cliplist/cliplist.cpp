@@ -34,7 +34,7 @@
 //#include "ui_cliplisteditorbase.h"
 #include "app.h"
 #include "wavepreview.h"
-#include "helper.h"
+#include "wave_helper.h"
 
 namespace MusEGui {
 
@@ -249,7 +249,7 @@ void ClipListEdit::updateList()
 
 
 // REMOVE Tim. wave. Changed.
-//       for (MusECore::iSndFile f = MusECore::SndFile::sndFiles.begin(); f != MusECore::SndFile::sndFiles.end(); ++f) {
+//       for (MusECore::iSndFile f = MusEGlobal::sndFiles.begin(); f != MusEGlobal::sndFiles.end(); ++f) {
 //             new ClipItem(editor->view, *f);
 //             }
 
@@ -545,7 +545,7 @@ MusECore::SndFileR ClipListEdit::importWave()
    if (!fn.isEmpty()) {
       MusEGlobal::lastWavePath = fn;
       // Open it as well...
-      return MusECore::getWave(fn, true, true);
+      return MusECore::sndFileGetWave(fn, true, true);
    }
    
    return MusECore::SndFileR();

@@ -25,13 +25,17 @@
 #define __EVENTBASE_H__
 
 #include <sys/types.h>
+#include <sndfile.h>
 
 #include "type_defs.h"
 #include "pos.h"
-#include "event.h"
+#include "audio_fifo.h"
+#include "evdata.h"
+#include "wave.h" // for SndFileR
 
 namespace MusECore {
-class WavePart;
+
+class Part;
 
 //---------------------------------------------------------
 //   EventBase
@@ -84,7 +88,6 @@ class EventBase : public PosLen {
 
       virtual bool isNote() const                   { return false; }
       virtual bool isNoteOff() const                { return false; }
-      virtual bool isNoteOff(const Event&) const    { return false; }
       virtual int pitch() const                     { return 0;      }
       virtual int program() const                   { return 0;      }
       virtual int cntrl() const                     { return 0;      }
@@ -124,8 +127,10 @@ class EventBase : public PosLen {
       // Creates a copy of the event base, excluding the 'group' _id. 
       virtual EventBase* duplicate() const = 0; 
       
-      virtual void readAudio(WavePart* /*part*/, unsigned /*offset*/, 
-                             float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { }
+      virtual void readAudio(unsigned /*frame*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { }
+      virtual void seekAudio(sf_count_t /*frame*/) { }
+      virtual Fifo* audioPrefetchFifo()     { return 0; }
+      virtual void prefetchAudio(Part* /*part*/, sf_count_t /*frames*/) { }
       };
 
 } // namespace MusECore

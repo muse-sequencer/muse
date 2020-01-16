@@ -50,6 +50,7 @@ QT5_WRAP_CPP (components_mocs
       appearance.h
       arrangercolumns.h 
 #       action.h
+      audio_converter_settings.h
       background_painter.h
       bigtime.h
       canvas.h  
@@ -111,6 +112,7 @@ QT5_WRAP_CPP (components_mocs
       poslabel.h  
       projectcreateimpl.h
       routepopup.h  
+      #rubberband_settings.h
       scroll_area.h
 #       scrollbar.h
 #       scrollscale.h  
@@ -129,6 +131,7 @@ QT5_WRAP_CPP (components_mocs
 #       spinbox.h  
 #       spinboxFP.h  
       splitter.h  
+      #src_resampler_settings.h
 #       swidget.h  
       tb1.h  
 #       tempolabel.h
@@ -145,6 +148,7 @@ QT5_WRAP_CPP (components_mocs
       vst_native_editor.h
       warn_bad_timing.h
 #       widget_stack.h
+      #zita_resampler_settings.h
       )
 
 ##
@@ -154,6 +158,7 @@ file (GLOB components_ui_files
       aboutbox.ui  
       arrangercolumnsbase.ui 
       appearancebase.ui 
+      audio_converter_settings_base.ui
       choose_sysex_base.ui
       commentbase.ui  
       configmidifilebase.ui
@@ -175,14 +180,17 @@ file (GLOB components_ui_files
       pasteeventsdialogbase.ui
       plugindialogbase.ui
       projectcreate.ui
+      #rubberband_settings_base.ui
       shortcutcapturedialogbase.ui  
       shortcutconfigbase.ui  
       snooperbase.ui
       songinfo.ui  
+      #src_resampler_settings_base.ui
       synthconfigbase.ui  
       tracks_duplicate_base.ui
       unusedwavefiles.ui
       warn_bad_timing.ui
+      #zita_resampler_settings_base.ui
       )
 QT5_WRAP_UI (components_ui_headers ${components_ui_files})
 
@@ -193,6 +201,7 @@ file (GLOB components_source_files
       aboutbox_impl.cpp 
       appearance.cpp
       arrangercolumns.cpp 
+      audio_converter_settings.cpp
       background_painter.cpp
       bigtime.cpp 
       canvas.cpp 
@@ -257,6 +266,7 @@ file (GLOB components_source_files
       poslabel.cpp
       projectcreateimpl.cpp
       routepopup.cpp 
+      #rubberband_settings.cpp
 #       scldiv.cpp
 #       scldraw.cpp
 #       sclif.cpp
@@ -277,6 +287,7 @@ file (GLOB components_source_files
 #       spinbox.cpp 
 #       spinboxFP.cpp 
       splitter.cpp  
+      #src_resampler_settings.cpp
 #       swidget.cpp 
       tb1.cpp   
 #       tempolabel.cpp 
@@ -295,6 +306,7 @@ file (GLOB components_source_files
       vst_native_editor.cpp
       warn_bad_timing.cpp
 #       widget_stack.cpp
+      #zita_resampler_settings.cpp
       )
 
 ##

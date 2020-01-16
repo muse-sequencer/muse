@@ -27,12 +27,9 @@
 #include <sys/types.h>
 
 #include "eventbase.h"
-
-class AudioConverter;
+#include "muse_time.h"
 
 namespace MusECore {
-
-class WavePart;
 
 //---------------------------------------------------------
 //   WaveEvent
@@ -42,6 +39,9 @@ class WaveEventBase : public EventBase {
       QString _name;
       SndFileR f;
       int _spos;            // start sample position in WaveFile
+      Fifo* _prefetchFifo;            // Prefetch Fifo
+      MuseCount_t _prefetchWritePos;  // Current fifo write position.
+      MuseCount_t _lastSeekPos;       // Remember last seek to optimize seeks.
 
       // Creates a non-shared clone (copies event base), including the same 'group' id.
       virtual EventBase* clone() const { return new WaveEventBase(*this); }
@@ -52,7 +52,7 @@ class WaveEventBase : public EventBase {
       WaveEventBase(EventType t);
       // Creates a non-shared clone with same id, or duplicate with unique id, and 0 ref count and invalid Pos sn. 
       WaveEventBase(const WaveEventBase& ev, bool duplicate_not_clone = false);
-      virtual ~WaveEventBase() {}
+      virtual ~WaveEventBase();
       
       virtual void assign(const EventBase& ev); // Assigns to this event, excluding the _id. 
       
@@ -71,8 +71,10 @@ class WaveEventBase : public EventBase {
       virtual SndFileR sndFile() const         { return f;      }
       virtual void setSndFile(SndFileR& sf)    { f = sf;        }
       
-      virtual void readAudio(WavePart* part, unsigned offset, 
-                             float** bpp, int channels, int nn, bool doSeek, bool overwrite);
+      virtual void readAudio(unsigned frame, float** bpp, int channels, int nn, bool doSeek, bool overwrite);
+      virtual void seekAudio(sf_count_t frame);
+      virtual Fifo* audioPrefetchFifo()        { return _prefetchFifo; }
+      virtual void prefetchAudio(Part* part, sf_count_t frames);
       };
       
 } // namespace MusECore

@@ -120,8 +120,7 @@ void Header::setColumnLabel(const QString & text, int col, int width )
 
 void Header::setColumnIcon(QIcon & icon, int col, int width )
 {
-    // empty string must be set as placeholder (icon size is ignored)
-    QStandardItem *sitem = new QStandardItem(icon, QString("    "));
+    QStandardItem *sitem = new QStandardItem(icon, QString(""));
     itemModel->setHorizontalHeaderItem(col, sitem);
     if (width > -1)
         resizeSection(col, width);

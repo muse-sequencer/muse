@@ -138,7 +138,7 @@ class PartCanvas : public Canvas {
       virtual void keyRelease(QKeyEvent* event);
       virtual bool mousePress(QMouseEvent*);
       virtual void mouseMove(QMouseEvent* event);
-      virtual void mouseRelease(const QPoint&);
+      virtual void mouseRelease(QMouseEvent*);
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void leaveEvent(QEvent*e);
       virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());

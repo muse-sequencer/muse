@@ -27,7 +27,9 @@
 #include "audio.h"
 #include "midiseq.h"
 #include "audiodev.h"
+#ifdef HAVE_RTAUDIO
 #include "driver/rtaudio.h"
+#endif
 
 namespace MusEGui {
 
@@ -60,9 +62,11 @@ AboutBoxImpl::AboutBoxImpl()
     internalDebugInformation->append("Runtime information:\n");
     internalDebugInformation->append(QString("Running audio driver:\t%1").arg(MusEGlobal::audioDevice->driverName()));
 
+#ifdef HAVE_RTAUDIO
     if (MusEGlobal::audioDevice->deviceType() == MusECore::AudioDevice::RTAUDIO_AUDIO) {
       internalDebugInformation->append(QString("RT audio driver:\t%1").arg(((MusECore::RtAudioDevice*)MusEGlobal::audioDevice)->driverBackendName()));
     }
+#endif
     internalDebugInformation->append(QString("Sample rate\t\t%1").arg(MusEGlobal::sampleRate));
     internalDebugInformation->append(QString("Segment size\t\t%1").arg(MusEGlobal::segmentSize));
     internalDebugInformation->append(QString("Segment count\t%1").arg(MusEGlobal::segmentCount));

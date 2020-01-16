@@ -21,4 +21,4 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-subdirs(evdata memory midnam mpevent string sysex_helper xml plugin)
+subdirs(evdata memory midnam mpevent string sysex_helper xml time_stretch wave plugin)

@@ -37,8 +37,15 @@
 #include <QWheelEvent>
 #include <QResizeEvent>
 #include <QTimer>
+#include <QList>
+#include <QRect>
+#include <QMenu>
+#include <QPainter>
+#include <QPoint>
 
-class QRect;
+#include <map>
+#include "muse_time.h"
+#include "time_stretch.h"
 
 namespace MusECore {
 class SndFileR;
@@ -67,6 +74,62 @@ class WEvent : public EItem {
       WEvent(const MusECore::Event& e, MusECore::Part* p, int height);
       };
 
+      
+struct StretchSelectedItem
+{
+  MusECore::StretchListItem::StretchEventType _type;
+  MusECore::SndFileR _sndFile;
+  
+  StretchSelectedItem(MusECore::StretchListItem::StretchEventType type, 
+                      MusECore::SndFileR sndFile = MusECore::SndFileR())
+  {
+    _type = type;
+    _sndFile = sndFile;
+  }
+};
+
+typedef std::multimap<MusECore::MuseFrame_t, StretchSelectedItem, std::less<MusECore::MuseFrame_t> > StretchSelectedList_t;
+typedef StretchSelectedList_t::iterator iStretchSelectedItem;
+typedef StretchSelectedList_t::const_iterator ciStretchSelectedItem;
+typedef StretchSelectedList_t::reverse_iterator riStretchSelectedItem;
+typedef StretchSelectedList_t::const_reverse_iterator criStretchSelectedItem;
+
+typedef std::pair<iStretchSelectedItem, iStretchSelectedItem> iStretchSelectedItemPair;
+typedef std::pair<ciStretchSelectedItem, ciStretchSelectedItem> ciStretchSelectedItemPair;
+
+typedef std::pair<MusECore::MuseFrame_t, StretchSelectedItem> StretchSelectedItemInsertPair_t;
+
+enum StretchControllerVals { stretchDoNothing, stretchStartMove, stretchMovingController, stretchAddNewController };
+struct StretchAutomationObject {
+  StretchSelectedList_t _stretchSelectedList;
+  StretchControllerVals _controllerState;
+  bool _moveController;
+  QPoint _startMovePoint;
+  
+  
+  
+//   QPoint startMovePoint;
+//   QList<MusECore::MuseFrame_t> currentCtrlFrameList;
+//   bool currentCtrlValid;
+//   //MusECore::CtrlList *currentCtrlList;
+//   MusECore::StretchList* currentCtrlList;
+//   MusECore::Track *currentTrack;
+//   bool moveController;
+//   StretchControllerVals controllerState;
+//   QString currentText;
+//   bool breakUndoCombo;
+  //QRect currentTextRect;
+  //QRect currentVertexRect;
+  //int currentTick;
+  //int currentYNorm;
+  
+  StretchAutomationObject()
+  {
+    _controllerState = stretchDoNothing;
+    _moveController = false;
+  }
+};
+
 //---------------------------------------------------------
 //   WaveCanvas
 //---------------------------------------------------------
@@ -77,6 +140,10 @@ class WaveCanvas : public EventCanvas {
       enum { NORMAL, DRAG } mode;
       enum { MUTE = 0, NORMALIZE, FADE_IN, FADE_OUT, REVERSE, GAIN, EDIT_EXTERNAL, CUT, COPY, PASTE }; //!< Modify operations
       
+      static const int _stretchAutomationPointDetectDist;
+      static const int _stretchAutomationPointWidthUnsel;
+      static const int _stretchAutomationPointWidthSel;
+      
       int yScale;
       int button;
       unsigned startSample;
@@ -85,6 +152,8 @@ class WaveCanvas : public EventCanvas {
       int selectionStart, selectionStop, dragstartx;
       int lastGainvalue; //!< Stores the last used gainvalue when specifying gain value in the editgain dialog
       QString copiedPart;
+
+      StretchAutomationObject _stretchAutomation;
       
       //bool getUniqueTmpfileName(QString& newFilename); //!< Generates unique filename for temporary SndFile
       MusECore::WaveSelectionList getSelection(unsigned startpos, unsigned stoppos);
@@ -99,7 +168,10 @@ class WaveCanvas : public EventCanvas {
       void editExternal(unsigned file_format, unsigned file_samplerate, unsigned channels, float** data, unsigned length);
       //void applyLadspa(unsigned channels, float** data, unsigned length); //!< Apply LADSPA plugin on selection
 
-      
+      void drawStretchAutomation(QPainter& p, const QRect& r, WEvent* wevent) const;
+      MusECore::iStretchListItem stretchListHitTest(int types, QPoint pt, WEvent* wevent);
+      void setStretchAutomationCursor(QPoint pt);
+
    protected:
       virtual QPoint raster(const QPoint&) const;
       void drawParts(QPainter&, bool /*do_cur_part*/, const QRect&, const QRegion& = QRegion());
@@ -108,7 +180,7 @@ class WaveCanvas : public EventCanvas {
       virtual void wheelEvent(QWheelEvent*);
       virtual bool mousePress(QMouseEvent*);
       virtual void mouseMove(QMouseEvent* event);
-      virtual void mouseRelease(const QPoint&);
+      virtual void mouseRelease(QMouseEvent*);
       virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
       void drawMarkers(QPainter& p, const QRect& mr, const QRegion& mrg = QRegion());
       
@@ -137,6 +209,9 @@ class WaveCanvas : public EventCanvas {
       virtual void curPartChanged();
       virtual void resizeEvent(QResizeEvent*);
       void adjustWaveOffset(); 
+      
+      virtual QMenu* genItemPopup(CItem*);
+      virtual void itemPopup(CItem*, int, const QPoint&);
       
    private slots:
       void setPos(int idx, unsigned val, bool adjustScrollbar);

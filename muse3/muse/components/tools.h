@@ -48,7 +48,9 @@ enum Tool {
    DrawTool=1024,
    MuteTool=2048,
    AutomationTool=4096,
-   CursorTool=8192
+   CursorTool=8192,
+   StretchTool=16384,
+   SamplerateTool=32768
 };
 
 extern QMap<int,int> toolShortcuts;

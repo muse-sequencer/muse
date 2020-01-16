@@ -28,12 +28,14 @@
 #include <set>
 
 #include "type_defs.h"
+#include "muse_time.h"
 #include "event.h"
 #include "midictrl.h" 
 #include "ctrl.h"
 #include "tempo.h" 
 #include "sig.h" 
 #include "keyevent.h"
+#include "time_stretch.h"
 #include "part.h"
 #include "track.h"
 #include "midiedit/drummap.h"
@@ -43,6 +45,9 @@
 #include "marker/marker.h"
 #include "minstrument.h"
 #include "metronome_class.h"
+#include "wave.h"
+#include "audio_convert/audio_converter_plugin.h"
+#include "audio_convert/audio_converter_settings_group.h"
 
 namespace MusECore {
 
@@ -162,6 +167,12 @@ struct PendingOperationItem
     SetGlobalTempo,
     AddSig,            DeleteSig,             ModifySig,
     AddKey,            DeleteKey,             ModifyKey,
+
+    ModifyDefaultAudioConverterSettings, ModifyLocalAudioConverterSettings, ModifyLocalAudioConverter,
+    SetAudioConverterOfflineMode,
+    AddStretchListRatioAt,   DeleteStretchListRatioAt,  ModifyStretchListRatioAt,
+    ModifyStretchListRatio,
+
     AddAuxSendValue,   
     AddRoute,          DeleteRoute, 
     AddRouteNode,      DeleteRouteNode,       ModifyRouteNode,
@@ -190,6 +201,7 @@ struct PendingOperationItem
     TempoList* _tempo_list;  
     MusECore::SigList* _sig_list; 
     KeyList* _key_list;
+    StretchList* _stretch_list;  
     PartList* _part_list; 
     TrackList* _track_list;
     MidiDeviceList* _midi_device_list;
@@ -214,6 +226,7 @@ struct PendingOperationItem
     float* _newAudioSamples;
     bool* _bool_pointer;
     MetroAccentsMap* _newMetroAccentsMap;
+    AudioConverterSettingsGroup* _audio_converter_settings;
   };
 
   iPart _iPart; 
@@ -225,12 +238,15 @@ struct PendingOperationItem
   iTEvent _iTEvent;
   MusECore::iSigEvent _iSigEvent;
   iKeyEvent _iKeyEvent;
+  iStretchListItem _iStretchEvent;
   iMidiInstrument _iMidiInstrument;
   iMidiDevice _iMidiDevice;
   iRoute _iRoute;
   iMarker _iMarker;
   Route _src_route;
   Route _dst_route;
+  // SndFileR is only 8 bytes but can't be in a union becuase of non-trivial destructor (?).
+  SndFileR _sndFileR;
   
   union {
     int _intA;
@@ -249,6 +265,8 @@ struct PendingOperationItem
     DrumMapTrackPatchOperation* _drum_map_track_patch_operation;
     DrumMapTrackPatchReplaceOperation* _drum_map_track_patch_replace_operation;
     MidiCtrlValRemapOperation* _midi_ctrl_val_remap_operation;
+    MuseFrame_t _museFrame;
+    AudioConverterPluginI* _audio_converter;
   };
   
   union {
@@ -259,6 +277,8 @@ struct PendingOperationItem
     int _address_port;
     int _open_flags;
     int _ctl_num;
+    int _stretch_type;
+    AudioConverterPluginI* _audio_converter_ui;
   };
 
   union {
@@ -266,14 +286,38 @@ struct PendingOperationItem
     unsigned int _uintC;
     int _ctl_val;
     double _ctl_dbl_val;
+    double _audio_converter_value;
     bool _marker_lock;
   };
+
+  PendingOperationItem(AudioConverterSettingsGroup* new_settings,
+                       PendingOperationType type = ModifyDefaultAudioConverterSettings)
+    { _type = type; _audio_converter_settings = new_settings; }
+      
+  PendingOperationItem(SndFileR sf, AudioConverterSettingsGroup* new_settings, 
+                       PendingOperationType type = ModifyLocalAudioConverterSettings)
+    { _type = type; _sndFileR = sf; 
+      _audio_converter_settings = new_settings; }
+      
+  PendingOperationItem(SndFileR sf,
+                       AudioConverterPluginI* newAudioConverter,
+                       AudioConverterPluginI* newAudioConverterUI,
+                       PendingOperationType type = ModifyLocalAudioConverter)
+    { _type = type; _sndFileR = sf; 
+      _audio_converter = newAudioConverter;
+      _audio_converter_ui = newAudioConverterUI; }
+      
+  PendingOperationItem(SndFileR sf, AudioConverterPluginI* newAudioConverter,
+                       PendingOperationType type = SetAudioConverterOfflineMode)
+    { _type = type; _sndFileR = sf; _audio_converter = newAudioConverter; }
+
 
   PendingOperationItem(float** samples, float* new_samples, int* samples_len, int new_samples_len, 
                        PendingOperationType type = ModifyAudioSamples)
     { _type = type; _audioSamplesPointer = samples; _newAudioSamples = new_samples; 
       _audioSamplesLen = samples_len, _newAudioSamplesLen = new_samples_len; }
-    
+
+
   // The operation is constructed and allocated in non-realtime before the call, then the controllers modified in realtime stage,
   //  then operation is deleted in non-realtime stage.
   PendingOperationItem(MidiCtrlValRemapOperation* operation, PendingOperationType type = RemapDrumControllers)
@@ -467,7 +511,23 @@ struct PendingOperationItem
     
   PendingOperationItem(KeyList* kl, const iKeyEvent& ike, key_enum ke, PendingOperationType type = ModifyKey)
     { _type = type; _key_list = kl; _iKeyEvent = ike; _intA = ke; }
+
+
+  PendingOperationItem(int stretchType, StretchList* sl, MuseFrame_t frame, double ratio, PendingOperationType type = AddStretchListRatioAt)
+    { _type = type; _stretch_type = stretchType, _stretch_list = sl; _museFrame = frame; _audio_converter_value = ratio; }
     
+  PendingOperationItem(int stretchTypes, StretchList* sl, const iStretchListItem& ise, PendingOperationType type = DeleteStretchListRatioAt)
+    { _type = type; _stretch_type = stretchTypes, _stretch_list = sl; _iStretchEvent = ise; }
+    
+  PendingOperationItem(int stretchType, StretchList* sl, const iStretchListItem& ise, MuseFrame_t new_frame, double ratio, 
+                       PendingOperationType type = ModifyStretchListRatioAt)
+    { _type = type; _stretch_type = stretchType, _stretch_list = sl; _iStretchEvent = ise; 
+      _museFrame = new_frame; _audio_converter_value = ratio; }
+  
+  PendingOperationItem(int stretchType, StretchList* sl, double ratio, PendingOperationType type = ModifyStretchListRatio)
+    { _type = type; _stretch_type = stretchType, _stretch_list = sl; _audio_converter_value = ratio; }
+  
+  
   PendingOperationItem(unsigned int len, PendingOperationType type = ModifySongLength)
     { _type = type; _posLenVal = len; }
 

@@ -78,6 +78,7 @@ class TopWin : public QMainWindow
       QMdiSubWindow* getMdiWin() const { return mdisubwin; }
 
       TopWin(ToplevelType t, QWidget* parent=0, const char* name=0, Qt::WindowFlags f = Qt::Window);
+      virtual ~TopWin();
          
       bool sharesToolsAndMenu() const { return _sharesToolsAndMenu; }
       const std::list<QToolBar*>& toolbars() { return _toolbars; }

@@ -27,7 +27,11 @@
 #include "canvas.h"
 #include "noteinfo.h"
 #include "mpevent.h"
+
+#include "midieditor.h"
+
 #include "helper.h"
+
 #include <QEvent>
 #include <QKeyEvent>
 #include <QVector>
@@ -59,7 +63,6 @@ typedef std::map<Part*, PartToChange>::iterator iPartToChange;
 namespace MusEGui {
 
 
-class MidiEditor;
 //---------------------------------------------------------
 //   EventCanvas
 //---------------------------------------------------------

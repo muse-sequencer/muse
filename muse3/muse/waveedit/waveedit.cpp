@@ -61,6 +61,10 @@
 #include "trackinfo_layout.h"
 #include "splitter.h"
 
+// For debugging output: Uncomment the fprintf section.
+#define ERROR_WAVEEDIT(dev, format, args...)  fprintf(dev, format, ##args)
+#define DEBUG_WAVEEDIT(dev, format, args...) // fprintf(dev, format, ##args)
+
 namespace MusECore {
 extern QColor readColor(MusECore::Xml& xml);
 }
@@ -68,7 +72,8 @@ extern QColor readColor(MusECore::Xml& xml);
 namespace MusEGui {
 
 static int waveEditTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | 
-                           MusEGui::CutTool | MusEGui::RangeTool | PanTool | ZoomTool;
+                           MusEGui::CutTool | MusEGui::RangeTool | PanTool | ZoomTool |
+                           StretchTool | SamplerateTool;
 
 int WaveEdit::_rasterInit = 96;
 int WaveEdit::_trackInfoWidthInit = 50;
@@ -564,6 +569,7 @@ void WaveEdit::setTime(unsigned samplepos)
 
 WaveEdit::~WaveEdit()
       {
+      DEBUG_WAVEEDIT(stderr, "WaveEdit dtor\n");
       }
 
 //---------------------------------------------------------
@@ -832,6 +838,15 @@ void WaveEdit::keyPressEvent(QKeyEvent* event)
             tools2->set(MusEGui::RangeTool);
             return;
             }
+      else if (key == shortcuts[SHRT_TOOL_STRETCH].key) {
+            tools2->set(MusEGui::StretchTool);
+            return;
+            }
+      else if (key == shortcuts[SHRT_TOOL_SAMPLERATE].key) {
+            tools2->set(MusEGui::SamplerateTool);
+            return;
+            }
+            
       else if (key == shortcuts[SHRT_EVENT_COLOR].key) {
             if (colorMode == 0)
                   colorMode = 1;

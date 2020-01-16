@@ -28,6 +28,11 @@
 
 namespace MusECore {
 
+// REMOVE Tim. Added. Moved here from event.h.
+// NOTICE: The values 3 and 4 (PAfter and CAfter) are reserved for the support of those two obsolete
+//          channel and key pressure events in old files. They are converted to controllers upon load.
+enum EventType { Note=0, Controller=1, Sysex=2, /*PAfter=3,*/ /*CAfter=4,*/ Meta=5, Wave=6 };
+  
 typedef int64_t SongChangedFlags_t;
 
 struct SongChangedStruct_t
@@ -132,11 +137,13 @@ struct SongChangedStruct_t
 #define SC_EXTERNAL_MIDI_SYNC         MusECore::SongChangedStruct_t(0x10000000000) // External midi sync flag changed.
 #define SC_USE_JACK_TRANSPORT         MusECore::SongChangedStruct_t(0x20000000000) // UseJackTransport flag changed.
 #define SC_TIMEBASE_MASTER            MusECore::SongChangedStruct_t(0x40000000000) // Timebase master state changed.
-#define SC_MARKER_INSERTED            MusECore::SongChangedStruct_t(0x80000000000)
-#define SC_MARKER_REMOVED             MusECore::SongChangedStruct_t(0x100000000000)
-#define SC_MARKER_MODIFIED            MusECore::SongChangedStruct_t(0x200000000000)
+#define SC_AUDIO_CONVERTER            MusECore::SongChangedStruct_t(0x80000000000) // Audio converters settings or value lists changed.
+#define SC_AUDIO_STRETCH              MusECore::SongChangedStruct_t(0x100000000000) // Audio converters stretch/pitch ratios changed.
+#define SC_MARKER_INSERTED            MusECore::SongChangedStruct_t(0x200000000000)
+#define SC_MARKER_REMOVED             MusECore::SongChangedStruct_t(0x400000000000)
+#define SC_MARKER_MODIFIED            MusECore::SongChangedStruct_t(0x800000000000)
 // The marker list was rebuilt as a result of tempo changes. NOTE: Currently signals/slots are used for add/remove/modify etc.
-#define SC_MARKERS_REBUILT            MusECore::SongChangedStruct_t(0x400000000000)
+#define SC_MARKERS_REBUILT            MusECore::SongChangedStruct_t(0x1000000000000)
 #define SC_EVERYTHING                 MusECore::SongChangedStruct_t(-1, -1)       // global update
 
 

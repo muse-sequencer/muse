@@ -29,6 +29,9 @@
 #include "value.h"
 #include "mtc.h"
 #include "metronome_class.h"
+#include "wave.h"
+#include "audio_convert/audio_converter_plugin.h"
+#include "audio_convert/audio_converter_settings_group.h"
 
 #include <unistd.h>
 
@@ -51,6 +54,15 @@ extern int sampleRate;
 extern unsigned segmentSize;
 extern unsigned fifoLength; // inversely proportional to segmentSize
 extern int segmentCount;
+extern int projectSampleRate;
+extern const int numAudioSampleRates;
+extern const int selectableAudioSampleRates[];
+
+extern MusECore::SndFileList sndFiles;
+
+extern MusECore::AudioConverterPluginList audioConverterPluginList;
+// This global variable is a pointer so that we can replace it quickly with a new one in RT operations.
+extern MusECore::AudioConverterSettingsGroup* defaultAudioConverterSettings;
 
 extern bool overrideAudioOutput;
 extern bool overrideAudioInput;
@@ -214,6 +226,8 @@ extern void doSetuid();
 extern void undoSetuid();
 extern bool checkAudioDevice();
 extern bool getUniqueTmpfileName(QString subDir, QString ext, QString& newFilename);
+
+extern unsigned convertFrame4ProjectSampleRate(unsigned frame);
 
 } // namespace MusEGlobal
 

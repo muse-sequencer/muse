@@ -29,6 +29,10 @@
 // Enable for debugging:
 //#define _PENDING_OPS_DEBUG_
 
+// For debugging output: Uncomment the fprintf section.
+#define ERROR_OPERATIONS(dev, format, args...)  fprintf(dev, format, ##args)
+#define DEBUG_OPERATIONS(dev, format, args...)  //fprintf(dev, format, ##args)
+
 namespace MusECore {
 
 //-----------------------------------
@@ -184,6 +188,11 @@ unsigned int PendingOperationItem::getIndex() const
     case SetUseMasterTrack:
     case ModifyAudioSamples:
     case SetStaticTempo:
+    case ModifyLocalAudioConverterSettings:
+    case ModifyLocalAudioConverter:
+    case ModifyDefaultAudioConverterSettings:
+    case ModifyStretchListRatio:
+    case SetAudioConverterOfflineMode:
     case ModifyMarkerList:
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
@@ -267,9 +276,17 @@ unsigned int PendingOperationItem::getIndex() const
       // We want the 'real' tick, not _iKeyEvent->first which is the index of the next iterator! 
       return _iKeyEvent->second.tick;  // Tick
     
+    case AddStretchListRatioAt:
+      return _museFrame;  // Frame
     
+    case DeleteStretchListRatioAt:
+      return _iStretchEvent->first;  // Frame
+    
+    case ModifyStretchListRatioAt:
+      return _iStretchEvent->first;  // Frame
+
     default:
-      fprintf(stderr, "PendingOperationItem::getIndex unknown op type: %d\n", _type);
+      ERROR_OPERATIONS(stderr, "PendingOperationItem::getIndex unknown op type: %d\n", _type);
       return 0;
     break;  
   }
@@ -277,9 +294,81 @@ unsigned int PendingOperationItem::getIndex() const
 
 SongChangedStruct_t PendingOperationItem::executeRTStage()
 {
-    SongChangedStruct_t flags = 0;
+  SongChangedStruct_t flags = 0;
   switch(_type)
   {
+    case ModifyDefaultAudioConverterSettings:
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyDefaultAudioConverterSettings: "
+                                "settings:%p\n", _audio_converter_settings);
+      if(_audio_converter_settings)
+      {
+        // Grab the current settings.
+        AudioConverterSettingsGroup* cur_settings = MusEGlobal::defaultAudioConverterSettings;
+        // Now change the actual global pointer variable.
+        MusEGlobal::defaultAudioConverterSettings = _audio_converter_settings;
+        // Transfer the original pointer into the member, so it can be deleted in the non-RT stage.
+        _audio_converter_settings = cur_settings;
+        flags |= SC_AUDIO_CONVERTER;
+      }
+    break;
+    
+    case ModifyLocalAudioConverterSettings:
+    {
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyLocalAudioConverterSettings: "
+                                "sndFile:%p settings:%p\n", 
+                                *_sndFileR, _audio_converter_settings);
+
+      // _audio_converter_settings can be NULL meaning don't touch, settings can only be 
+      //  'replaced' but not deleted.
+      if(_audio_converter_settings)
+      {
+        AudioConverterSettingsGroup* cur_settings = _sndFileR.audioConverterSettings();
+        _sndFileR.setAudioConverterSettings(_audio_converter_settings);
+        // Transfer the original pointer into the member, so it can be deleted in the non-RT stage.
+        _audio_converter_settings = cur_settings;
+        flags |= SC_AUDIO_CONVERTER;
+      }
+    }
+    break;
+      
+    case ModifyLocalAudioConverter:
+    {
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyLocalAudioConverter: "
+                                "sndFile:%p audio_converter:%p audio_converter_ui:%p\n", 
+                                *_sndFileR, _audio_converter, _audio_converter_ui);
+
+      // _audio_converter and _audio_converter_ui can be NULL meaning delete them.
+      AudioConverterPluginI* cur_conv = _sndFileR.staticAudioConverter(AudioConverterSettings::RealtimeMode);
+      //if(_audio_converter)
+        _sndFileR.setStaticAudioConverter(_audio_converter, AudioConverterSettings::RealtimeMode);
+      // Transfer the original pointer into the member, so it can be deleted in the non-RT stage.
+      _audio_converter = cur_conv;
+      
+      AudioConverterPluginI* cur_convUI = _sndFileR.staticAudioConverter(AudioConverterSettings::GuiMode);
+      //if(_audio_converter_ui)
+        _sndFileR.setStaticAudioConverter(_audio_converter_ui, AudioConverterSettings::GuiMode);
+      // Transfer the original pointer into the member, so it can be deleted in the non-RT stage.
+      _audio_converter_ui = cur_convUI;
+      flags |= SC_AUDIO_CONVERTER;
+    }
+    break;
+      
+    case SetAudioConverterOfflineMode:
+    {
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SetAudioConverterOfflineMode: "
+                                "sndFile:%p audio_converter:%p\n", 
+                                *_sndFile, _audio_converter);
+
+      AudioConverterPluginI* cur_conv = _sndFileR.staticAudioConverter(AudioConverterSettings::RealtimeMode);
+      //if(_audio_converter)
+        _sndFileR.setStaticAudioConverter(_audio_converter, AudioConverterSettings::RealtimeMode);
+      // Transfer the original pointer into the member, so it can be deleted in the non-RT stage.
+      _audio_converter = cur_conv;
+      flags |= SC_AUDIO_CONVERTER;
+    }
+    break;
+
+
     case ModifyTrackDrumMapItem:
     {
 #ifdef _PENDING_OPS_DEBUG_
@@ -402,9 +491,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
     
     case UpdateSoloStates:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage UpdateSoloStates: track_list:%p:\n", _track_list);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage UpdateSoloStates: track_list:%p:\n", _track_list);
       // TODO Use the track_list, or simply keep as dummy parameter to identify UpdateSoloStates?
       MusEGlobal::song->updateSoloStates();
       flags |= SC_SOLO;
@@ -413,7 +500,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     // TODO: Try to break this operation down so that only the actual operation is executed stage-2. 
     case AddRoute:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddRoute: src/dst routes:\n");
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddRoute: src/dst routes:\n");
       _src_route.dump();
       _dst_route.dump();
 #endif      
@@ -424,7 +511,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     // TODO: Try to break this operation down so that only the actual operation is executed stage-2. 
     case DeleteRoute:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage DeleteRoute: src/dst routes:\n");
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteRoute: src/dst routes:\n");
       _src_route.dump();
       _dst_route.dump();
 #endif      
@@ -434,7 +521,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     case AddRouteNode:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddRouteNode: route_list:%p route:\n", _route_list);
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddRouteNode: route_list:%p route:\n", _route_list);
       _src_route.dump();
 #endif      
       _route_list->push_back(_src_route);
@@ -443,7 +530,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     case DeleteRouteNode:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage DeleteRouteNode: route_list:%p route:\n", _route_list);
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteRouteNode: route_list:%p route:\n", _route_list);
       _iRoute->dump();
 #endif      
       _route_list->erase(_iRoute);
@@ -452,7 +539,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     case ModifyRouteNode:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyRouteNode: src/dst routes:\n");
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyRouteNode: src/dst routes:\n");
       _src_route.dump();
       _dst_route_pointer->dump();
 #endif      
@@ -461,25 +548,19 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
 
     case AddAuxSendValue:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddAuxSendValue aux_send_value_list:%p val:%f\n", _aux_send_value_list, _aux_send_value);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddAuxSendValue aux_send_value_list:%p val:%f\n", _aux_send_value_list, _aux_send_value);
       _aux_send_value_list->push_back(_aux_send_value);
     break;
 
     
     case AddMidiInstrument:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddMidiInstrument instrument_list:%p instrument:%p\n", _midi_instrument_list, _midi_instrument);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddMidiInstrument instrument_list:%p instrument:%p\n", _midi_instrument_list, _midi_instrument);
       _midi_instrument_list->push_back(_midi_instrument);
       flags |= SC_CONFIG | SC_MIDI_INSTRUMENT | SC_DRUMMAP | SC_MIDI_CONTROLLER_ADD;
     break;
     
     case DeleteMidiInstrument:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage DeleteMidiInstrument instrument_list:%p instrument:%p\n", _midi_instrument_list, *_iMidiInstrument);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteMidiInstrument instrument_list:%p instrument:%p\n", _midi_instrument_list, *_iMidiInstrument);
       _midi_instrument_list->erase(_iMidiInstrument);
       flags |= SC_CONFIG | SC_MIDI_INSTRUMENT | SC_DRUMMAP | SC_MIDI_CONTROLLER_ADD;
     break;
@@ -547,25 +628,19 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
 
     case AddMidiDevice:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddMidiDevice devicelist:%p device:%p\n", _midi_device_list, _midi_device);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddMidiDevice devicelist:%p device:%p\n", _midi_device_list, _midi_device);
       _midi_device_list->push_back(_midi_device);
       flags |= SC_CONFIG;
     break;
     
     case DeleteMidiDevice:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage DeleteMidiDevice devicelist:%p device:%p\n", _midi_device_list, *_iMidiDevice);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteMidiDevice devicelist:%p device:%p\n", _midi_device_list, *_iMidiDevice);
       _midi_device_list->erase(_iMidiDevice);
       flags |= SC_CONFIG;
     break;
     
     case ModifyMidiDeviceAddress:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyMidiDeviceAddress device:%p client:%d port:%d\n", _midiDevice, _address_client, _address_port);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyMidiDeviceAddress device:%p client:%d port:%d\n", _midi_device, _address_client, _address_port);
       _midi_device->setAddressClient(_address_client);
       _midi_device->setAddressPort(_address_port);
       _midi_device->setOpenFlags(_open_flags);
@@ -573,18 +648,14 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
     
     case ModifyMidiDeviceFlags:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyMidiDeviceFlags device:%p rwFlags:%d openFlags:%d\n", _midiDevice, _rw_flags, _open_flags);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyMidiDeviceFlags device:%p rwFlags:%d openFlags:%d\n", _midi_device, _rw_flags, _open_flags);
       _midi_device->setrwFlags(_rw_flags);
       _midi_device->setOpenFlags(_open_flags);
       flags |= SC_CONFIG;
     break;
     
     case ModifyMidiDeviceName:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyMidiDeviceName device:%p name:%s\n", _midiDevice, _name->toLocal8Bit().data());
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyMidiDeviceName device:%p name:%s\n", _midi_device, _name->toLocal8Bit().data());
       _midi_device->setName(*_name);
       flags |= SC_CONFIG;
     break;
@@ -602,9 +673,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     case AddTrack:
     {
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddTrack track_list:%p track:%p\n", _track_list, _track);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddTrack track_list:%p track:%p\n", _track_list, _track);
       if(_void_track_list)
       {
         switch(_track->type())
@@ -643,7 +712,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
                     static_cast<SynthIList*>(_void_track_list)->push_back(static_cast<SynthI*>(_track));
                     break;
               default:
-                    fprintf(stderr, "PendingOperationItem::executeRTStage AddTrack: Unknown track type %d\n", _track->type());
+                    ERROR_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddTrack: Unknown track type %d\n", _track->type());
                     return flags;
         }
       }
@@ -768,9 +837,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     case DeleteTrack:
     {
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage DeleteTrack track_list:%p track:%p sec_track_list:%p\n", _track_list, _track, _void_track_list);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteTrack track_list:%p track:%p sec_track_list:%p\n", _track_list, _track, _void_track_list);
       unchainTrackParts(_track);
       if(_void_track_list)
       {
@@ -822,7 +889,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
                     }     
                     break;
               default:
-                    fprintf(stderr, "PendingOperationItem::executeRTStage DeleteTrack: Unknown track type %d\n", _track->type());
+                    ERROR_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteTrack: Unknown track type %d\n", _track->type());
                     return flags;
         }
       }
@@ -983,13 +1050,11 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     case MoveTrack:
     {
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage MoveTrack from:%d to:%d\n", _from_idx, _to_idx);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage MoveTrack from:%d to:%d\n", _from_idx, _to_idx);
       const int sz = _track_list->size();
       if(_from_idx >= sz)
       {
-        fprintf(stderr, "MusE error: PendingOperationItem::executeRTStage MoveTrack from index out of range:%d\n", _from_idx);
+        ERROR_OPERATIONS(stderr, "MusE error: PendingOperationItem::executeRTStage MoveTrack from index out of range:%d\n", _from_idx);
         return flags;
       }
       ciTrack fromIt = _track_list->cbegin() + _from_idx;
@@ -1002,9 +1067,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
     
     case ModifyTrackName:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyTrackName track:%p new_val:%s\n", _track, _name->toLocal8Bit().data());
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyTrackName track:%p new_val:%s\n", _track, _name->toLocal8Bit().data());
       _track->setName(*_name);
       flags |= (SC_TRACK_MODIFIED | SC_MIDI_TRACK_PROP);
       // If it's an aux track, notify aux UI controls to reload, or change their names etc.
@@ -1014,9 +1077,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     case SetTrackRecord:
     {
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage SetTrackRecord track:%p new_val:%d\n", _track, _boolA);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SetTrackRecord track:%p new_val:%d\n", _track, _boolA);
       const bool mon = _track->setRecordFlag2AndCheckMonitor(_boolA);
       flags |= SC_RECFLAG;
       if(mon)
@@ -1025,17 +1086,13 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
     
     case SetTrackMute:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage SetTrackMute track:%p new_val:%d\n", _track, _boolA);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SetTrackMute track:%p new_val:%d\n", _track, _boolA);
       _track->setMute(_boolA);
       flags |= SC_MUTE;
     break;
     
     case SetTrackSolo:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage SetTrackSolo track:%p new_val:%d\n", _track, _boolA);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SetTrackSolo track:%p new_val:%d\n", _track, _boolA);
       _track->setSolo(_boolA);
       flags |= SC_SOLO;
     break;
@@ -1058,9 +1115,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     
     case AddPart:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddPart part:%p\n", _part);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddPart part:%p\n", _part);
       _part_list->add(_part);
       _part->rechainClone();
       // Be sure to mark the part as not deleted if it exists in the global copy/paste clone list.
@@ -1079,9 +1134,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     case DeletePart:
     {
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage DeletePart part:%p\n", _iPart->second);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeletePart part:%p\n", _iPart->second);
       Part* p = _iPart->second;
       _part_list->erase(_iPart);
       p->unchainClone();
@@ -1102,18 +1155,14 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
 
     case ModifyPartLength:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyPartLength part:%p old_val:%d new_val:%u\n", _part, _part->lenValue(), _posLenVal);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyPartLength part:%p old_val:%d new_val:%u\n", _part, _part->lenValue(), _posLenVal);
       //_part->type() == Pos::FRAMES ? _part->setLenFrame(_posLenVal) : _part->setLenTick(_posLenVal);
       _part->setLenValue(_posLenVal);
       flags |= SC_PART_MODIFIED;
     break;
     
     case MovePart:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage MovePart part:%p track:%p new_pos:%u\n", _part, _track, _posLenVal);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage MovePart part:%p track:%p new_pos:%u\n", _part, _track, _posLenVal);
       if(_track)
       {
         if(_part->track() && _iPart != _part->track()->parts()->end())
@@ -1146,9 +1195,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
 
     case ModifyPartName:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyPartName part:%p new_val:%s\n", _part, _name->toLocal8Bit().data());
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyPartName part:%p new_val:%s\n", _part, _name->toLocal8Bit().data());
       _part->setName(*_name);
       flags |= SC_PART_MODIFIED;
     break;
@@ -1156,27 +1203,27 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     case AddEvent:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddEvent pre:    ");
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddEvent pre:    ");
       _ev.dump();
-#endif      
+#endif
       _part->addEvent(_ev);
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddEvent post:   ");
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddEvent post:   ");
       _ev.dump();
-#endif      
+#endif
       flags |= SC_EVENT_INSERTED;
     break;
     
     case DeleteEvent:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage DeleteEvent pre:    ");
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteEvent pre:    ");
       _ev.dump();
-#endif      
+#endif
       _part->nonconst_events().erase(_iev);
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage DeleteEvent post:   ");
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteEvent post:   ");
       _ev.dump();
-#endif      
+#endif
       flags |= SC_EVENT_REMOVED;
     break;
     
@@ -1191,16 +1238,12 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
 
     
     case AddMidiCtrlValList:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddMidiCtrlValList: mcvll:%p mcvl:%p chan:%d\n", _mcvll, _mcvl, _intA);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddMidiCtrlValList: mcvll:%p mcvl:%p chan:%d\n", _mcvll, _mcvl, _intA);
       _mcvll->add(_intA, _mcvl);
       flags |= SC_MIDI_CONTROLLER_ADD;
     break;
     case AddMidiCtrlVal:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddMidiCtrlVal: mcvl:%p part:%p tick:%u val:%d\n", _mcvl, _part, _posLenVal, _intB);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddMidiCtrlVal: mcvl:%p part:%p tick:%u val:%d\n", _mcvl, _part, _posLenVal, _intB);
       // Do not attempt to add cached events which are outside of the part.
       // Or to muted parts, or muted tracks, or 'off' tracks.
       if(_posLenVal >= _part->posValue() &&
@@ -1212,27 +1255,21 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       // No song changed flags are required to be set here.
     break;
     case DeleteMidiCtrlVal:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage DeleteMidiCtrlVal: mcvl:%p tick:%u part:%p val:%d\n", 
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteMidiCtrlVal: mcvl:%p tick:%u part:%p val:%d\n", 
                        _mcvl, _imcv->first, _imcv->second.part, _imcv->second.val);
-#endif      
       _mcvl->erase(_imcv);
       // No song changed flags are required to be set here.
     break;
     case ModifyMidiCtrlVal:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyMidiCtrlVal: part:%p old_val:%d new_val:%d\n", 
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyMidiCtrlVal: part:%p old_val:%d new_val:%d\n", 
                        _imcv->second.part, _imcv->second.val, _intA);
-#endif      
       _imcv->second.val = _intA;
     break;
     
     
     case ModifyAudioCtrlValList:
     {
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyAudioCtrlValList: old ctrl_l:%p new ctrl_l:%p\n", _iCtrlList->second, _aud_ctrl_list);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyAudioCtrlValList: old ctrl_l:%p new ctrl_l:%p\n", _iCtrlList->second, _aud_ctrl_list);
       CtrlList* orig = _iCtrlList->second;
       _iCtrlList->second = _aud_ctrl_list;
       // Transfer the original pointer back to _aud_ctrl_list so it can be deleted in the non-RT stage.
@@ -1241,27 +1278,22 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     }
     break;
     case AddAudioCtrlVal:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddAudioCtrlVal: ctrl_l:%p frame:%u val:%f\n", 
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddAudioCtrlVal: ctrl_l:%p frame:%u val:%f\n", 
               _aud_ctrl_list, _posLenVal, _ctl_dbl_val);
-#endif      
+      //_aud_ctrl_list->insert(CtrlListInsertPair_t(_posLenVal, CtrlVal(_posLenVal, _ctl_dbl_val)));
       // Add will replace if found.
       _aud_ctrl_list->add(_posLenVal, _ctl_dbl_val);
       flags |= SC_AUDIO_CONTROLLER;
     break;
     case DeleteAudioCtrlVal:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage DeleteAudioCtrlVal: ctrl_l:%p ctrl_num:%d frame:%d val:%f\n", 
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteAudioCtrlVal: ctrl_l:%p ctrl_num:%d frame:%d val:%f\n", 
                        _aud_ctrl_list, _aud_ctrl_list->id(), _iCtrl->first, _iCtrl->second.val);
-#endif      
       _aud_ctrl_list->erase(_iCtrl);
       flags |= SC_AUDIO_CONTROLLER;
     break;
     case ModifyAudioCtrlVal:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyAudioCtrlVal: frame:%u old_val:%f new_val:%f\n", 
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyAudioCtrlVal: frame:%u old_val:%f new_val:%f\n", 
                        _iCtrl->first, _iCtrl->second.val, _ctl_dbl_val);
-#endif
       // If the frame is the same, just change the value.
       if(_iCtrl->second.frame == _posLenVal)
       {
@@ -1278,30 +1310,24 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     
     case AddTempo:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddTempo: tempolist:%p tempo:%p %d tick:%u\n", 
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddTempo: tempolist:%p tempo:%p %d tick:%u\n", 
                        _tempo_list, _tempo_event, _tempo_event->tempo, _tempo_event->tick);
-#endif      
       _tempo_list->add(_posLenVal, _tempo_event, false);  // Defer normalize until end of stage 2.
       flags |= SC_TEMPO;
     break;
     
     case DeleteTempo:
       {
-#ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationItem::executeRTStage DeleteTempo: tempolist:%p event:%p: tick:%u tempo:%d\n", 
+        DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteTempo: tempolist:%p event:%p: tick:%u tempo:%d\n", 
                          _tempo_list, _iTEvent->second, _iTEvent->second->tick,  _iTEvent->second->tempo);
-#endif      
         _tempo_list->del(_iTEvent, false); // Defer normalize until end of stage 2.
         flags |= SC_TEMPO;
       }
     break;
     
     case ModifyTempo:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyTempo: tempolist:%p event:%p: tick:%u old_tempo:%d new_tempo:%d\n", 
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyTempo: tempolist:%p event:%p: tick:%u old_tempo:%d new_tempo:%d\n", 
                        _tempo_list, _iTEvent->second, _iTEvent->second->tick,  _iTEvent->second->tempo, _intA);
-#endif      
       _iTEvent->second->tempo = _intA;
       flags |= SC_TEMPO;
     break;
@@ -1315,39 +1341,31 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
     
     case SetGlobalTempo:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage SetGlobalTempo: tempolist:%p new_tempo:%d\n", _tempo_list, _intA);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SetGlobalTempo: tempolist:%p new_tempo:%d\n", _tempo_list, _intA);
       _tempo_list->setGlobalTempo(_intA);
       flags |= SC_TEMPO;
     break;
 
     
     case AddSig:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddSig: siglist:%p sig:%p %d/%d tick:%u\n", 
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddSig: siglist:%p sig:%p %d/%d tick:%u\n", 
                        _sig_list, _sig_event, _sig_event->sig.z, _sig_event->sig.n, _sig_event->tick);
-#endif      
       _sig_list->add(_posLenVal, _sig_event, false);  // Defer normalize until end of stage 2.
       flags |= SC_SIG;
     break;
     
     case DeleteSig:
       {
-#ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationItem::executeRTStage DeleteSig: siglist:%p event:%p: tick:%u sig:%d/%d\n", 
+        DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteSig: siglist:%p event:%p: tick:%u sig:%d/%d\n", 
                          _sig_list, _iSigEvent->second, _iSigEvent->second->tick,  _iSigEvent->second->sig.z, _iSigEvent->second->sig.n);
-#endif      
         _sig_list->del(_iSigEvent, false); // Defer normalize until end of stage 2.
         flags |= SC_SIG;
       }
     break;
     
     case ModifySig:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifySig: siglist:%p event:%p: tick:%u old_sig:%d/%d new_sig:%d/%d\n", 
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifySig: siglist:%p event:%p: tick:%u old_sig:%d/%d new_sig:%d/%d\n", 
                        _sig_list, _iSigEvent->second, _iSigEvent->second->tick,  _iSigEvent->second->sig.z, _iSigEvent->second->sig.n, _intA, _intB);
-#endif      
       _iSigEvent->second->sig.z = _intA;
       _iSigEvent->second->sig.n = _intB;
       flags |= SC_SIG;
@@ -1355,47 +1373,83 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     
     
     case AddKey:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage AddKey: keylist:%p key:%d tick:%u\n", _key_list, _intB, _posLenVal);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddKey: keylist:%p key:%d tick:%u\n", _key_list, _intB, _posLenVal);
       _key_list->add(KeyEvent(key_enum(_intB), _posLenVal)); 
       flags |= SC_KEY;
     break;
     
     case DeleteKey:
       {
-#ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationItem::executeRTStage DeleteKey: keylist:%p key:%d tick:%u\n",
+        DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteKey: keylist:%p key:%d tick:%u\n",
                          _key_list, _iKeyEvent->second.key, _iKeyEvent->second.tick);
-#endif      
         _key_list->del(_iKeyEvent);
         flags |= SC_KEY;
       }
     break;
     
     case ModifyKey:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyKey: keylist:%p old_key:%d new_key:%d tick:%u\n", 
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyKey: keylist:%p old_key:%d new_key:%d tick:%u\n", 
                        _key_list, _iKeyEvent->second.key, _intA, _iKeyEvent->second.tick);
-#endif      
       _iKeyEvent->second.key = key_enum(_intA);
       flags |= SC_KEY;
     break;
 
     
+    case ModifyStretchListRatio:
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyStretchListRatio: stretchType:%d stretchlist:%p new_ratio:%f\n", 
+                       _stretch_type, _stretch_list, _audio_converter_value);
+      // Defer normalize until end of stage 2.
+      _stretch_list->setRatio(StretchListItem::StretchEventType(_stretch_type), _audio_converter_value, false);
+      flags |= SC_AUDIO_STRETCH;
+    break;
+    
+    case AddStretchListRatioAt:
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddStretchListRatioAt: stretchType:%d stretchlist:%p ratio:%f frame:%ld\n", 
+                       _stretch_type, _stretch_list, _audio_converter_value, _museFrame);
+      // Defer normalize until end of stage 2.
+      _stretch_list->addRatioAt(StretchListItem::StretchEventType(_stretch_type), _museFrame, _audio_converter_value, false);
+      
+      flags |= SC_AUDIO_STRETCH;
+    break;
+    
+    case DeleteStretchListRatioAt:
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteStretchListRatioAt: stretchlist:%p frame:%ld types:%d\n", 
+                        _stretch_list, _iStretchEvent->first, _stretch_type);
+      // Defer normalize until end of stage 2.
+      _stretch_list->del(_stretch_type, _iStretchEvent, false);
+      flags |= SC_AUDIO_STRETCH;
+    break;
+    
+    case ModifyStretchListRatioAt:
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyStretchListRatioAt: "
+                               "stretchType:%d stretchlist:%p frame:%ld new_frame:%ld new_ratio:%f\n", 
+                       _stretch_type, _stretch_list, _iStretchEvent->first, _museFrame, _audio_converter_value);
+      
+      // If the frame is the same, just change the value.
+      if(_iStretchEvent->first == _museFrame)
+        // Defer normalize until end of stage 2.
+        _stretch_list->setRatioAt(StretchListItem::StretchEventType(_stretch_type), _iStretchEvent, _audio_converter_value, false);
+      // Otherwise erase + add is required.
+      else
+      {
+        // Defer normalize until end of stage 2.
+        _stretch_list->del(_stretch_type, _iStretchEvent, false);
+        _stretch_list->add(StretchListItem::StretchEventType(_stretch_type), _museFrame, _audio_converter_value, false);
+      }
+      
+      flags |= SC_AUDIO_STRETCH;
+    break;
+    
+    
     case ModifySongLength:
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifySongLength: len:%d\n", _posLenVal);
-#endif      
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifySongLength: len:%d\n", _posLenVal);
       MusEGlobal::song->setLen(_posLenVal, false); // false = Do not emit update signals here !
       flags |= SC_EVERYTHING;
     break;
     
     case EnableAllAudioControllers:
     {
-#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage EnableAllAudioControllers\n");
-#endif
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage EnableAllAudioControllers\n");
       TrackList* tl = MusEGlobal::song->tracks();
       for (iTrack it = tl->begin(); it != tl->end(); ++it)
       {
@@ -1524,7 +1578,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
     
     default:
-      fprintf(stderr, "PendingOperationItem::executeRTStage unknown type %d\n", _type);
+      ERROR_OPERATIONS(stderr, "PendingOperationItem::executeRTStage unknown type %d\n", _type);
     break;
   }
   return flags;
@@ -1547,10 +1601,8 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
 
     case DeleteTempo:
       {
-#ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationItem::executeNonRTStage DeleteTempo: tempolist:%p event:%p:\n", 
+        DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeNonRTStage DeleteTempo: tempolist:%p event:%p:\n", 
                          _tempo_list, _tempo_event);
-#endif      
         if(_tempo_event)
         {  
           delete _tempo_event;
@@ -1561,16 +1613,40 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
     
     case DeleteSig:
       {
-#ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationItem::executeNonRTStage DeleteSig: siglist:%p event:%p:\n", 
+        DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeNonRTStage DeleteSig: siglist:%p event:%p:\n", 
                          _sig_list, _sig_event);
-#endif      
         if(_sig_event)
         {  
           delete _sig_event;
           _sig_event = 0;
         }
       }
+    break;
+    
+    case ModifyLocalAudioConverterSettings:
+      // At this point these are the original pointers that were replaced. Delete the original objects now.
+      if(_audio_converter_settings)
+        delete _audio_converter_settings;
+    break;
+
+    case ModifyLocalAudioConverter:
+      // At this point these are the original pointers that were replaced. Delete the original objects now.
+      if(_audio_converter)
+        delete _audio_converter;
+      if(_audio_converter_ui)
+        delete _audio_converter_ui;
+    break;
+
+    case SetAudioConverterOfflineMode:
+      // At this point this is the original pointer that were replaced. Delete the original object now.
+      if(_audio_converter)
+        delete _audio_converter;
+    break;
+
+    case ModifyDefaultAudioConverterSettings:
+      // At this point this is the original pointer that was replaced. Delete the original object now.
+      if(_audio_converter_settings)
+        delete _audio_converter_settings;
     break;
     
     case ReplaceMidiInstrument:
@@ -1642,9 +1718,7 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
 
 SongChangedStruct_t PendingOperationList::executeRTStage()
 {
-#ifdef _PENDING_OPS_DEBUG_
-  fprintf(stderr, "PendingOperationList::executeRTStage executing...\n");
-#endif      
+  DEBUG_OPERATIONS(stderr, "PendingOperationList::executeRTStage executing...\n");
   for(iPendingOperation ip = begin(); ip != end(); ++ip)
     _sc_flags |= ip->executeRTStage();
   
@@ -1655,14 +1729,39 @@ SongChangedStruct_t PendingOperationList::executeRTStage()
     _sc_flags |= SC_SOLO;
   } 
   
+  // To avoid doing this item by item, do it here.
+  StretchList* sl;
+  for(iPendingOperation ip = begin(); ip != end(); ++ip)
+  {
+    const PendingOperationItem& poi = *ip;
+    switch(poi._type)
+    {
+      //case PendingOperationItem::AddSamplerateRatioAt:
+      //case PendingOperationItem::DeleteSamplerateRatioAt:
+      //case PendingOperationItem::ModifySamplerateRatioAt:
+      case PendingOperationItem::AddStretchListRatioAt:
+      case PendingOperationItem::DeleteStretchListRatioAt:
+      case PendingOperationItem::ModifyStretchListRatioAt:
+      case PendingOperationItem::ModifyStretchListRatio:
+        sl = poi._stretch_list;
+        if(sl && !sl->isNormalized())
+        {
+          sl->normalizeListFrames();
+          _sc_flags |= SC_AUDIO_STRETCH;
+        }
+      break;
+      
+      default:
+      break;
+    }
+  }
+
   return _sc_flags;
 }
 
 SongChangedStruct_t PendingOperationList::executeNonRTStage()
 {
-#ifdef _PENDING_OPS_DEBUG_
-  fprintf(stderr, "PendingOperationList::executeNonRTStage executing...\n");
-#endif      
+  DEBUG_OPERATIONS(stderr, "PendingOperationList::executeNonRTStage executing...\n");
   for(iPendingOperation ip = begin(); ip != end(); ++ip)
     _sc_flags |= ip->executeNonRTStage();
   return _sc_flags;
@@ -1673,9 +1772,7 @@ void PendingOperationList::clear()
   _sc_flags = 0;
   _map.clear();
   std::list<PendingOperationItem>::clear();  
-#ifdef _PENDING_OPS_DEBUG_
-  fprintf(stderr, "PendingOperationList::clear * post map size:%d list size:%d\n", _map.size(), size());
-#endif      
+  DEBUG_OPERATIONS(stderr, "PendingOperationList::clear * post map size:%d list size:%d\n", (int)_map.size(), (int)size());
 }
 
 bool PendingOperationList::add(PendingOperationItem op)
@@ -1708,6 +1805,44 @@ bool PendingOperationList::add(PendingOperationItem op)
     
     switch(op._type)
     {
+      case PendingOperationItem::ModifyDefaultAudioConverterSettings:
+        if(poi._type == PendingOperationItem::ModifyDefaultAudioConverterSettings && 
+           poi._audio_converter_settings == op._audio_converter_settings)
+        {
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double ModifyDefaultAudioConverterSettings. Ignoring.\n");
+          return false;  
+        }
+      break;
+    
+      case PendingOperationItem::ModifyLocalAudioConverterSettings:
+        if(poi._type == PendingOperationItem::ModifyLocalAudioConverterSettings && *poi._sndFileR == *op._sndFileR &&
+           poi._audio_converter_settings == op._audio_converter_settings)
+        {
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double ModifyLocalAudioConverterSettings. Ignoring.\n");
+          return false;  
+        }
+      break;
+    
+      case PendingOperationItem::ModifyLocalAudioConverter:
+        if(poi._type == PendingOperationItem::ModifyLocalAudioConverter && *poi._sndFileR == *op._sndFileR &&
+           poi._audio_converter == op._audio_converter &&
+           poi._audio_converter_ui == op._audio_converter_ui)
+        {
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double ModifyLocalAudioConverter. Ignoring.\n");
+          return false;  
+        }
+      break;
+    
+      case PendingOperationItem::SetAudioConverterOfflineMode:
+        if(poi._type == PendingOperationItem::SetAudioConverterOfflineMode && *poi._sndFileR == *op._sndFileR &&
+           poi._audio_converter == op._audio_converter)
+        {
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double SetAudioConverterOfflineMode. Ignoring.\n");
+          return false;  
+        }
+      break;
+
+
       case PendingOperationItem::ModifyTrackDrumMapItem:
         if(poi._type == PendingOperationItem::ModifyTrackDrumMapItem &&
            poi._drum_map_track_operation == op._drum_map_track_operation)
@@ -1746,7 +1881,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       case PendingOperationItem::UpdateSoloStates:
         if(poi._type == PendingOperationItem::UpdateSoloStates && poi._track_list == op._track_list)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double UpdateSoloStates. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double UpdateSoloStates. Ignoring.\n");
           return false;  
         }
       break;
@@ -1754,7 +1889,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       case PendingOperationItem::AddRoute:
         if(poi._type == PendingOperationItem::AddRoute && poi._src_route == op._src_route && poi._dst_route == op._dst_route)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double AddRoute. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double AddRoute. Ignoring.\n");
           return false;  
         }
       break;
@@ -1762,7 +1897,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       case PendingOperationItem::DeleteRoute:
         if(poi._type == PendingOperationItem::DeleteRoute && poi._src_route == op._src_route && poi._dst_route == op._dst_route)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double DeleteRoute. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteRoute. Ignoring.\n");
           return false;  
         }
       break;
@@ -1770,7 +1905,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       case PendingOperationItem::AddRouteNode:
         if(poi._type == PendingOperationItem::AddRouteNode && poi._route_list == op._route_list && poi._src_route == op._src_route)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double AddRouteNode. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double AddRouteNode. Ignoring.\n");
           return false;  
         }
       break;
@@ -1778,7 +1913,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       case PendingOperationItem::DeleteRouteNode:
         if(poi._type == PendingOperationItem::DeleteRouteNode && poi._route_list == op._route_list && poi._iRoute == op._iRoute)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double DeleteRouteNode. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteRouteNode. Ignoring.\n");
           return false;  
         }
       break;
@@ -1786,7 +1921,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       case PendingOperationItem::ModifyRouteNode:
         if(poi._type == PendingOperationItem::ModifyRouteNode && poi._src_route == op._src_route && poi._dst_route_pointer == op._dst_route_pointer)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyRouteNode. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double ModifyRouteNode. Ignoring.\n");
           return false;  
         }
       break;
@@ -1803,7 +1938,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         if(poi._type == PendingOperationItem::AddMidiInstrument && poi._midi_instrument_list == op._midi_instrument_list && 
            poi._midi_instrument == op._midi_instrument)  
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double AddMidiInstrument. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double AddMidiInstrument. Ignoring.\n");
           return false;  
         }
       break;
@@ -1812,7 +1947,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         if(poi._type == PendingOperationItem::DeleteMidiInstrument && poi._midi_instrument_list == op._midi_instrument_list && 
            poi._iMidiInstrument == op._iMidiInstrument)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double DeleteMidiInstrument. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteMidiInstrument. Ignoring.\n");
           return false;  
         }
       break;
@@ -1829,7 +1964,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       case PendingOperationItem::AddMidiDevice:
         if(poi._type == PendingOperationItem::AddMidiDevice && poi._midi_device_list == op._midi_device_list && poi._midi_device == op._midi_device)  
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double AddMidiDevice. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double AddMidiDevice. Ignoring.\n");
           return false;  
         }
       break;
@@ -1837,7 +1972,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       case PendingOperationItem::DeleteMidiDevice:
         if(poi._type == PendingOperationItem::DeleteMidiDevice && poi._midi_device_list == op._midi_device_list && poi._iMidiDevice == op._iMidiDevice)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double DeleteMidiDevice. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteMidiDevice. Ignoring.\n");
           return false;  
         }
       break;
@@ -1846,7 +1981,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         if(poi._type == PendingOperationItem::ModifyMidiDeviceAddress && poi._midi_device == op._midi_device &&
            poi._address_client == op._address_client && poi._address_port == op._address_port)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyMidiDeviceAddress. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double ModifyMidiDeviceAddress. Ignoring.\n");
           return false;  
         }
       break;
@@ -1855,7 +1990,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         if(poi._type == PendingOperationItem::ModifyMidiDeviceFlags && poi._midi_device == op._midi_device &&
            poi._rw_flags == op._rw_flags && poi._open_flags == op._open_flags)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyMidiDeviceFlags. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double ModifyMidiDeviceFlags. Ignoring.\n");
           return false;  
         }
       break;
@@ -1864,7 +1999,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         if(poi._type == PendingOperationItem::ModifyMidiDeviceName && poi._midi_device == op._midi_device &&
            poi._name == op._name)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyMidiDeviceName. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double ModifyMidiDeviceName. Ignoring.\n");
           return false;  
         }
       break;
@@ -1900,7 +2035,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       case PendingOperationItem::DeleteTrack:
         if(poi._type == PendingOperationItem::DeleteTrack && poi._track_list == op._track_list && poi._track == op._track)  
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double DeleteTrack. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteTrack. Ignoring.\n");
           return false;  
         }
         else if(poi._type == PendingOperationItem::AddTrack && poi._track_list == op._track_list && poi._track == op._track)  
@@ -1927,7 +2062,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         if(poi._type == PendingOperationItem::ModifyTrackName && poi._track == op._track &&
            poi._name == op._name)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyTrackName. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double ModifyTrackName. Ignoring.\n");
           return false;  
         }
       break;
@@ -1937,7 +2072,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         {
           if(poi._boolA == op._boolA)  
           {
-            fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetTrackRecord. Ignoring.\n");
+            ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double SetTrackRecord. Ignoring.\n");
             return false;  
           }
           else
@@ -1956,7 +2091,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         {
           if(poi._boolA == op._boolA)  
           {
-            fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetTrackMute. Ignoring.\n");
+            ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double SetTrackMute. Ignoring.\n");
             return false;  
           }
           else
@@ -1975,7 +2110,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         {
           if(poi._boolA == op._boolA)  
           {
-            fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetTrackSolo. Ignoring.\n");
+            ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double SetTrackSolo. Ignoring.\n");
             return false;  
           }
           else
@@ -2030,7 +2165,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       case PendingOperationItem::AddPart:
         if(poi._type == PendingOperationItem::AddPart && poi._part_list == op._part_list && poi._part == op._part)  
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double AddPart. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double AddPart. Ignoring.\n");
           return false;  
         }
         else if(poi._type == PendingOperationItem::DeletePart && poi._part_list == op._part_list && poi._iPart->second == op._part)  
@@ -2046,7 +2181,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       case PendingOperationItem::DeletePart:
         if(poi._type == PendingOperationItem::DeletePart && poi._part_list == op._part_list && poi._iPart->second == op._iPart->second)  
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double DeletePart. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeletePart. Ignoring.\n");
           return false;  
         }
         else if(poi._type == PendingOperationItem::AddPart && poi._part_list == op._part_list && poi._part == op._iPart->second)  
@@ -2085,7 +2220,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         if(poi._type == PendingOperationItem::ModifyPartName && poi._part == op._part &&
            poi._name == op._name)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyPartName. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double ModifyPartName. Ignoring.\n");
           return false;  
         }
       break;
@@ -2094,7 +2229,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       case PendingOperationItem::AddEvent:
         if(poi._type == PendingOperationItem::AddEvent && poi._part == op._part && poi._ev == op._ev)  
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double AddEvent. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double AddEvent. Ignoring.\n");
           return false;  
         }
         else if(poi._type == PendingOperationItem::DeleteEvent && poi._part == op._part && poi._iev->second == op._ev)  
@@ -2110,7 +2245,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       case PendingOperationItem::DeleteEvent:
         if(poi._type == PendingOperationItem::DeleteEvent && poi._part == op._part && poi._iev->second == op._iev->second)  
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double DeleteEvent. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteEvent. Ignoring.\n");
           return false;  
         }
         else if(poi._type == PendingOperationItem::AddEvent && poi._part == op._part && poi._ev == op._iev->second)  
@@ -2233,7 +2368,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         if(poi._type == PendingOperationItem::DeleteAudioCtrlVal && poi._aud_ctrl_list == op._aud_ctrl_list)
         {
           // Multiple delete commands not allowed! 
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double DeleteAudioCtrlVal. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteAudioCtrlVal. Ignoring.\n");
           return false;
         }
         else if(poi._type == PendingOperationItem::AddAudioCtrlVal && poi._aud_ctrl_list == op._aud_ctrl_list)
@@ -2281,12 +2416,10 @@ bool PendingOperationList::add(PendingOperationItem op)
       
       
       case PendingOperationItem::AddTempo:
-#ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationList::add() AddTempo\n");
-#endif      
+        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() AddTempo\n");
         if(poi._type == PendingOperationItem::AddTempo && poi._tempo_list == op._tempo_list)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double AddTempo. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double AddTempo. Ignoring.\n");
           return false;  
           // Simply replace the value.
         }
@@ -2297,18 +2430,16 @@ bool PendingOperationList::add(PendingOperationItem op)
         else if(poi._type == PendingOperationItem::ModifyTempo && poi._tempo_list == op._tempo_list)
         {
           // Modify followed by add. Error.
-          fprintf(stderr, "MusE error: PendingOperationList::add(): ModifyTempo then AddTempo. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): ModifyTempo then AddTempo. Ignoring.\n");
           return false;  
         }
       break;
         
       case PendingOperationItem::DeleteTempo:
-#ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationList::add() DeleteTempo\n");
-#endif      
+        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteTempo\n");
         if(poi._type == PendingOperationItem::DeleteTempo && poi._tempo_list == op._tempo_list)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double DeleteTempo. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteTempo. Ignoring.\n");
           return false;  
         }
         else if(poi._type == PendingOperationItem::AddTempo && poi._tempo_list == op._tempo_list)
@@ -2331,9 +2462,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
       
       case PendingOperationItem::ModifyTempo:
-#ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationList::add() ModifyTempo\n");
-#endif      
+        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() ModifyTempo\n");
         if(poi._type == PendingOperationItem::ModifyTempo && poi._tempo_list == op._tempo_list)
         {
           // Simply replace the value.
@@ -2379,9 +2508,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
         
       case PendingOperationItem::SetGlobalTempo:
-#ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationList::add() SetGlobalTempo\n");
-#endif      
+        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() SetGlobalTempo\n");
         if(poi._type == PendingOperationItem::SetGlobalTempo && poi._tempo_list == op._tempo_list)
         {
           // Simply replace the new value.
@@ -2393,12 +2520,10 @@ bool PendingOperationList::add(PendingOperationItem op)
 
       
       case PendingOperationItem::AddSig:
-#ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationList::add() AddSig\n");
-#endif      
+        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() AddSig\n");
         if(poi._type == PendingOperationItem::AddSig && poi._sig_list == op._sig_list) 
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double AddSig. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double AddSig. Ignoring.\n");
           return false;  
           // Simply replace the value.
         }
@@ -2409,18 +2534,16 @@ bool PendingOperationList::add(PendingOperationItem op)
         else if(poi._type == PendingOperationItem::ModifySig && poi._sig_list == op._sig_list)
         {
           // Modify followed by add. Error.
-          fprintf(stderr, "MusE error: PendingOperationList::add(): ModifySig then AddSig. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): ModifySig then AddSig. Ignoring.\n");
           return false;  
         }
       break;
         
       case PendingOperationItem::DeleteSig:
-#ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationList::add() DeleteSig\n");
-#endif      
+        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteSig\n");
         if(poi._type == PendingOperationItem::DeleteSig && poi._sig_list == op._sig_list)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double DeleteSig. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteSig. Ignoring.\n");
           return false;  
         }
         else if(poi._type == PendingOperationItem::AddSig && poi._sig_list == op._sig_list)
@@ -2443,9 +2566,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
       
       case PendingOperationItem::ModifySig:
-#ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationList::add() ModifySig\n");
-#endif      
+        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() ModifySig\n");
         if(poi._type == PendingOperationItem::ModifySig && poi._sig_list == op._sig_list)
         {
           // Simply replace the value.
@@ -2479,9 +2600,7 @@ bool PendingOperationList::add(PendingOperationItem op)
 
       
       case PendingOperationItem::AddKey:
-#ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationList::add() AddKey\n");
-#endif      
+        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() AddKey\n");
         if(poi._type == PendingOperationItem::AddKey && poi._key_list == op._key_list) 
         {
           // Simply replace the value.
@@ -2507,13 +2626,11 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
         
       case PendingOperationItem::DeleteKey:
-#ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationList::add() DeleteKey\n");
-#endif      
+        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteKey\n");
         if(poi._type == PendingOperationItem::DeleteKey && poi._key_list == op._key_list)
         {
           // Multiple delete commands not allowed! 
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double DeleteKey. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteKey. Ignoring.\n");
           return false;  
         }
         else if(poi._type == PendingOperationItem::AddKey && poi._key_list == op._key_list)
@@ -2539,9 +2656,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
       
       case PendingOperationItem::ModifyKey:
-#ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationList::add() ModifyKey\n");
-#endif      
+        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() ModifyKey\n");
         if(poi._type == PendingOperationItem::ModifyKey && poi._key_list == op._key_list)
         {
           // Simply replace the value.
@@ -2572,10 +2687,97 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
       
       
+      case PendingOperationItem::AddStretchListRatioAt:
+        if(poi._type == PendingOperationItem::AddStretchListRatioAt && poi._stretch_list == op._stretch_list && 
+           poi._stretch_type == op._stretch_type)
+        {
+          // Simply replace the value.
+          poi._audio_converter_value = op._audio_converter_value; 
+          return true;
+        }
+// Todo?
+//         else if(poi._type == PendingOperationItem::DeleteStretchListRatioAt && poi._stretch_list == op._stretch_list && 
+//            poi._stretch_type == op._stretch_type)
+//         {
+//           // Transform existing delete command into a modify command.
+//           poi._type = PendingOperationItem::ModifyStretchListRatioAt;
+//           poi._audio_converter_value = op._audio_converter_value; 
+//           return true;
+//         }
+        else if(poi._type == PendingOperationItem::ModifyStretchListRatioAt && poi._stretch_list == op._stretch_list &&
+           poi._stretch_type == op._stretch_type)
+        {
+          // Simply replace the value.
+          poi._audio_converter_value = op._audio_converter_value;
+          return true;
+        }
+      break;
+      
+      case PendingOperationItem::DeleteStretchListRatioAt:
+        if(poi._type == PendingOperationItem::DeleteStretchListRatioAt && poi._stretch_list == op._stretch_list && 
+           poi._stretch_type == op._stretch_type)
+        {
+          // Multiple delete commands not allowed! 
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteStretchRatioAt. Ignoring.\n");
+          return false;
+        }
+// Todo?
+//         else if(poi._type == PendingOperationItem::AddStretchListRatioAt && poi._stretch_list == op._stretch_list)
+//         {
+//           // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
+//           erase(ipos->second);
+//           _map.erase(ipos);
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::ModifyStretchListRatioAt && poi._stretch_list == op._stretch_list)
+//         {
+//           // Modify followed by delete is equivalent to just deleting.
+//           // Transform existing modify command into a delete command.
+//           poi._type = PendingOperationItem::DeleteStretchListRatioAt;
+//           return true;
+//         }
+      break;
+      
+      case PendingOperationItem::ModifyStretchListRatioAt:
+        if(poi._type == PendingOperationItem::ModifyStretchListRatioAt && poi._stretch_list == op._stretch_list &&
+           poi._stretch_type == op._stretch_type)
+        {
+          // Simply replace the value.
+          poi._audio_converter_value = op._audio_converter_value;
+          return true;
+        }
+// Todo?
+//         else if(poi._type == PendingOperationItem::DeleteStretchListRatioAt && poi._stretch_list == op._stretch_list && 
+//            poi._stretch_type == op._stretch_type)
+//         {
+//           // Transform existing delete command into a modify command.
+//           poi._type = PendingOperationItem::ModifyStretchListRatioAt;
+//           poi._audio_converter_value = op._audio_converter_value; 
+//           return true;
+//         }
+        else if(poi._type == PendingOperationItem::AddStretchListRatioAt && poi._stretch_list == op._stretch_list &&
+           poi._stretch_type == op._stretch_type)
+        {
+          // Simply replace the add value with the modify value.
+          poi._audio_converter_value = op._audio_converter_value; 
+          return true;
+        }
+      break;
+
+
+      case PendingOperationItem::ModifyStretchListRatio:
+        if(poi._type == PendingOperationItem::ModifyStretchListRatio && poi._stretch_list == op._stretch_list &&
+           poi._stretch_type == op._stretch_type)
+        {
+          // Simply replace the value.
+          poi._audio_converter_value = op._audio_converter_value;
+          return true;
+        }
+      break;
+
+
       case PendingOperationItem::ModifySongLength:
-#ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationList::add() ModifySongLength\n");
-#endif      
+        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() ModifySongLength\n");
         if(poi._type == PendingOperationItem::ModifySongLength)
         {
           // Simply replace the value.
@@ -2586,12 +2788,10 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;  
 
       case PendingOperationItem::EnableAllAudioControllers:
-#ifdef _PENDING_OPS_DEBUG_
-        fprintf(stderr, "PendingOperationList::add() EnableAllAudioControllers\n");
-#endif      
+        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() EnableAllAudioControllers\n");
         if(poi._type == PendingOperationItem::EnableAllAudioControllers)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double EnableAllAudioControllers. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double EnableAllAudioControllers. Ignoring.\n");
           return false;  
         }
       break;  
@@ -2742,7 +2942,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
       
       case PendingOperationItem::Uninitialized:
-        fprintf(stderr, "MusE error: PendingOperationList::add(): Uninitialized item. Ignoring.\n");
+        ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Uninitialized item. Ignoring.\n");
         return false;  
       break;  
         
@@ -2781,10 +2981,8 @@ bool PendingOperationList::add(PendingOperationItem op)
       {
         if(poi._type == PendingOperationItem::DeleteTempo && poi._tempo_list == op._tempo_list)
         {
-#ifdef _PENDING_OPS_DEBUG_
-          fprintf(stderr, "PendingOperationList::add() DeleteTempo + ModifyTempo: Incrementing modify iterator: idx:%u cur tempo:%d tick:%u\n", 
+          DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteTempo + ModifyTempo: Incrementing modify iterator: idx:%u cur tempo:%d tick:%u\n", 
                   idx, op._iTEvent->second->tempo, op._iTEvent->second->tick);
-#endif      
           op._iTEvent++;
           break;
         }
@@ -2793,10 +2991,8 @@ bool PendingOperationList::add(PendingOperationItem op)
       {
         if(poi._type == PendingOperationItem::DeleteSig && poi._sig_list == op._sig_list)
         {
-#ifdef _PENDING_OPS_DEBUG_
-          fprintf(stderr, "PendingOperationList::add() DeleteSig + ModifySig: Incrementing modify iterator: idx:%u cur sig:%d/%d tick:%u\n", 
+          DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteSig + ModifySig: Incrementing modify iterator: idx:%u cur sig:%d/%d tick:%u\n", 
                   idx, op._iSigEvent->second->sig.z, op._iSigEvent->second->sig.n, op._iSigEvent->second->tick);
-#endif      
           op._iSigEvent++;
           break;
         }
@@ -2805,10 +3001,8 @@ bool PendingOperationList::add(PendingOperationItem op)
       {
         if(poi._type == PendingOperationItem::DeleteKey && poi._key_list == op._key_list)
         {
-#ifdef _PENDING_OPS_DEBUG_
-          fprintf(stderr, "PendingOperationList::add() DeleteKey + ModifyKey: Incrementing modify iterator: idx:%u cur key:%d tick:%u\n", 
+          DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteKey + ModifyKey: Incrementing modify iterator: idx:%u cur key:%d tick:%u\n", 
                   idx, op._iKeyEvent->second.key, op._iKeyEvent->second.tick);
-#endif      
           op._iKeyEvent++;
           break;
         }

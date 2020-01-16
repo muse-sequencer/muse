@@ -43,6 +43,8 @@
 #include "driver/alsamidi.h"
 #include "song.h"
 #include "track.h"
+#include "part.h"
+
 #include "undo.h"
 #include "key.h"
 #include "globals.h"
@@ -70,6 +72,11 @@
 #include "tempo.h"
 #include "route.h"
 #include "strntcpy.h"
+
+// For debugging output: Uncomment the fprintf section.
+#define ERROR_TIMESTRETCH(dev, format, args...)  fprintf(dev, format, ##args)
+#define ERROR_WAVE(dev, format, args...) fprintf(dev, format, ##args)
+#define INFO_WAVE(dev, format, args...) // fprintf(dev, format, ##args)
 
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
@@ -141,6 +148,41 @@ void Song::putEvent(int pv)
             ++noteFifoSize;
             }
       }
+
+// REMOVE Tim. samplerate. Added. TODO
+#if 0
+//---------------------------------------------------------
+//   setProjectSampleRate
+//---------------------------------------------------------
+
+void Song::setProjectSampleRate(int rate)
+{
+  if(rate != MusEGlobal::projectSampleRate)
+    // TODO: Do the permanent conversion.
+    convertProjectSampleRate(rate);
+  
+  // Now set the rate.
+  MusEGlobal::projectSampleRate;
+}
+
+//---------------------------------------------------------
+//   projectSampleRateDiffers
+//---------------------------------------------------------
+
+bool Song::projectSampleRateDiffers() const
+{
+  return MusEGlobal::projectSampleRate != MusEGlobal::sampleRate;
+}
+
+//---------------------------------------------------------
+//   projectSampleRateRatio
+//---------------------------------------------------------
+
+double Song::projectSampleRateRatio() const
+{
+  return (double)MusEGlobal::projectSampleRate / (double)MusEGlobal::sampleRate;
+}
+#endif
 
 //---------------------------------------------------------
 //   setTempo
@@ -999,6 +1041,148 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
 }
 
 //---------------------------------------------------------
+//   cmdAddRecordedWave
+//---------------------------------------------------------
+
+void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusECore::Pos e, Undo& operations)
+      {
+      if (MusEGlobal::debugMsg)
+      {
+          INFO_WAVE(stderr, "cmdAddRecordedWave - loopCount = %d, punchin = %d",
+                    MusEGlobal::audio->loopCount(), punchin());
+      }
+
+      // Driver should now be in transport 'stop' mode and no longer pummping the recording wave fifo,
+      //  but the fifo may not be empty yet, it's in the prefetch thread.
+      // Wait a few seconds for the fifo to be empty, until it has been fully transferred to the
+      //  track's recFile sndfile, which is done via Audio::process() sending periodic 'tick' messages
+      //  to the prefetch thread to write its fifo to the sndfile, always UNLESS in stop or idle mode.
+      // It now sends one final tick message at stop, so we /should/ have all our buffers available here.
+      // This GUI thread is notified of the stop condition via the audio thread sending a message
+      //  as soon as the state change is read from the driver.
+      // NOTE: The fifo scheme is used only if NOT in transport freewheel mode where the data is directly
+      //  written to the sndfile and therefore stops immediately when the transport stops and thus is
+      //  safe to read here regardless of waiting.
+      int tout = 100; // Ten seconds. Otherwise we gotta move on.
+      while(track->recordFifoCount() != 0)
+      {
+        usleep(100000);
+        --tout;
+        if(tout == 0)
+        {
+          ERROR_WAVE(stderr, "Song::cmdAddRecordedWave: Error: Timeout waiting for _tempoFifo to empty! Count:%d\n",
+                     track->prefetchFifo()->getCount());
+          break;
+        }
+      }
+
+      // It should now be safe to work with the resultant sndfile here in the GUI thread.
+      // No other thread should be touching it right now.
+      MusECore::SndFileR f = track->recFile();
+      if (f.isNull()) {
+            ERROR_WAVE(stderr, "cmdAddRecordedWave: no snd file for track <%s>\n",
+               track->name().toLocal8Bit().constData());
+            return;
+            }
+
+      // If externally clocking (and therefore master was forced off),
+      //  tempos may have been recorded. We really should temporarily force
+      //  the master tempo map on in order to properly determine the ticks below.
+      // Else internal clocking, the user decided to record either with or without
+      //  master on, so let it be.
+      // FIXME: We really should allow the master flag to be on at the same time as
+      //  the external sync flag! AFAIR when external sync is on, no part of the app shall
+      //  depend on the tempo map anyway, so it should not matter whether it's on or off.
+      // If we do that, then we may be able to remove this section and user simply decides
+      //  whether master is on/off, because we may be able to use the flag to determine
+      //  whether to record external tempos at all, because we may want a switch for it!
+      bool master_was_on = MusEGlobal::tempomap.masterFlag();
+      if(MusEGlobal::extSyncFlag && !master_was_on)
+        MusEGlobal::tempomap.setMasterFlag(0, true);
+
+      if((MusEGlobal::audio->loopCount() > 0 && s.tick() > lPos().tick()) || (punchin() && s.tick() < lPos().tick()))
+        s.setTick(lPos().tick());
+      // If we are looping, just set the end to the right marker, since we don't know how many loops have occurred.
+      // (Fixed: Added Audio::loopCount)
+      // Otherwise if punchout is on, limit the end to the right marker.
+      if((MusEGlobal::audio->loopCount() > 0) || (punchout() && e.tick() > rPos().tick()) )
+        e.setTick(rPos().tick());
+
+      // No part to be created? Delete the rec sound file.
+      if(s.frame() >= e.frame())
+      {
+        QString st = f->path();
+        // The function which calls this function already does this immediately after. But do it here anyway.
+        track->setRecFile(NULL); // upon "return", f is removed from the stack, the WaveTrack::_recFile's
+                                 // counter has dropped by 2 and _recFile will probably deleted then
+        remove(st.toLocal8Bit().constData());
+        if(MusEGlobal::debugMsg)
+        {
+          INFO_WAVE(stderr, "Song::cmdAddRecordedWave: remove file %s - startframe=%d endframe=%d\n",
+                    st.toLocal8Bit().constData(), s.frame(), e.frame());
+        }
+
+        // Restore master flag.
+        if(MusEGlobal::extSyncFlag && !master_was_on)
+          MusEGlobal::tempomap.setMasterFlag(0, false);
+
+        return;
+      }
+// REMOVE Tim. Wave. Removed. Probably I should never have done this. It's more annoying than helpful. Look at it another way: Importing a wave DOES NOT do this.
+//       // Round the start down using the Arranger part snap raster value.
+//       int a_rast = MusEGlobal::song->arrangerRaster();
+//       unsigned sframe = (a_rast == 1) ? s.frame() : Pos(MusEGlobal::sigmap.raster1(s.tick(), MusEGlobal::song->arrangerRaster())).frame();
+//       // Round the end up using the Arranger part snap raster value.
+//       unsigned eframe = (a_rast == 1) ? e.frame() : Pos(MusEGlobal::sigmap.raster2(e.tick(), MusEGlobal::song->arrangerRaster())).frame();
+// //       unsigned etick = Pos(eframe, false).tick();
+      unsigned sframe = s.frame();
+      unsigned eframe = e.frame();
+
+      // Done using master tempo map. Restore master flag.
+      if(MusEGlobal::extSyncFlag && !master_was_on)
+        MusEGlobal::tempomap.setMasterFlag(0, false);
+
+      f->update();
+
+      MusECore::WavePart* part = new MusECore::WavePart(track);
+      part->setFrame(sframe);
+      part->setLenFrame(eframe - sframe);
+      part->setName(track->name());
+
+      // create Event
+      MusECore::Event event(MusECore::Wave);
+      event.setSndFile(f);
+      // We are done with the _recFile member. Set to zero.
+      track->setRecFile(0);
+
+      event.setSpos(0);
+      // Since the part start was snapped down, we must apply the difference so that the
+      //  wave event tick lines up with when the user actually started recording.
+      event.setFrame(s.frame() - sframe);
+      // NO Can't use this. SF reports too long samples at first part recorded in sequence. See samples() - funny business with SEEK ?
+      //event.setLenFrame(f.samples());
+      event.setLenFrame(e.frame() - s.frame());
+      part->addEvent(event);
+
+      operations.push_back(UndoOp(UndoOp::AddPart, part));
+      }
+
+//---------------------------------------------------------
+//   cmdChangeWave
+//   called from GUI context
+//---------------------------------------------------------
+// REMOVE Tim. wave. Changed
+// void Song::cmdChangeWave(const Event& original, QString tmpfile, unsigned sx, unsigned ex)
+//       {
+//       MusEGlobal::song->undoOp(UndoOp::ModifyClip, original, tmpfile, sx, ex);
+//       }
+void Song::cmdChangeWave(const Event& original, const QString& tmpfile, unsigned sx, unsigned ex)
+      {
+      addUndo(UndoOp(UndoOp::ModifyClip,original,tmpfile,sx,ex));
+      temporaryWavFiles.push_back(tmpfile);
+      }
+
+//---------------------------------------------------------
 //   findTrack
 //---------------------------------------------------------
 
@@ -1705,6 +1889,7 @@ void Song::normalizePart(MusECore::Part *part)
       }
 
       MusEGlobal::audio->msgIdle(true); // Not good with playback during operations
+      
       MusECore::SndFile tmpFile(tmpWavFile);
       unsigned int file_channels = file.channels();
       tmpFile.setFormat(file.format(), file_channels, file.samplerate());
@@ -1723,7 +1908,7 @@ void Song::normalizePart(MusECore::Part *part)
       file.seek(0, 0);
       file.readWithHeap(file_channels, tmpdata, tmpdatalen);
       file.close();
-      tmpFile.write(file_channels, tmpdata, tmpdatalen);
+      tmpFile.write(file_channels, tmpdata, tmpdatalen, MusEGlobal::config.liveWaveUpdate);
       tmpFile.close();
 
       float loudest = 0.0;
@@ -1749,7 +1934,7 @@ void Song::normalizePart(MusECore::Part *part)
 
       file.openWrite();
       file.seek(0, 0);
-      file.write(file_channels, tmpdata, tmpdatalen);
+      file.write(file_channels, tmpdata, tmpdatalen, MusEGlobal::config.liveWaveUpdate);
       file.update();
       file.close();
       file.openRead();
@@ -2609,8 +2794,20 @@ void Song::seqSignal(int fd)
                         
                         if(MusEGlobal::config.freewheelMode)
                           MusEGlobal::audioDevice->setFreewheel(false);
-                        
-                        MusEGlobal::audio->msgPlay(false);
+                        break;
+
+                  case 'A': // Abort rolling + Special stop bounce (offline) mode
+                          do_set_sync_timeout = true;
+                          abortRolling();
+                          // Switch all the wave converters back to online mode.
+                          setAudioConvertersOfflineOperation(false);
+                        break;
+
+                  case 'B': // Stop + Special stop bounce mode
+                          do_set_sync_timeout = true;
+                          stopRolling();
+                          // Switch all the wave converters back to online mode.
+                          setAudioConvertersOfflineOperation(false);
                         break;
 
                   case 'C': // Graph changed
@@ -3482,6 +3679,9 @@ void Song::processMasterRec()
 
 void Song::abortRolling()
 {
+  if(MusEGlobal::audio->freewheel())
+    MusEGlobal::audioDevice->setFreewheel(false);
+
   if (record())
         MusEGlobal::audio->recordStop();
   setStopPlay(false);
@@ -3493,6 +3693,9 @@ void Song::abortRolling()
 
 void Song::stopRolling(Undo* operations)
       {
+      if(MusEGlobal::audio->freewheel())
+        MusEGlobal::audioDevice->setFreewheel(false);
+
       Undo ops;
       Undo* opsp = operations ? operations : &ops;
       
@@ -4355,142 +4558,444 @@ void Song::informAboutNewParts(const Part* orig, const Part* p1, const Part* p2,
   informAboutNewParts(temp);
 }
 
-// REMOVE Tim. wave. Added. Moved here from wave.cpp
 //---------------------------------------------------------
-//   cmdAddRecordedWave
+//   StretchList operations
 //---------------------------------------------------------
 
-void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusECore::Pos e, Undo& operations)
-      {
-      if (MusEGlobal::debugMsg)
-          printf("cmdAddRecordedWave - loopCount = %d, punchin = %d", MusEGlobal::audio->loopCount(), punchin());
+void Song::stretchModifyOperation(
+  StretchList* stretch_list, StretchListItem::StretchEventType type, double value, PendingOperationList& ops) const
+{
+  ops.add(PendingOperationItem(type, stretch_list, value, PendingOperationItem::ModifyStretchListRatio));
+}
 
-      // Driver should now be in transport 'stop' mode and no longer pummping the recording wave fifo,
-      //  but the fifo may not be empty yet, it's in the prefetch thread.
-      // Wait a few seconds for the fifo to be empty, until it has been fully transferred to the
-      //  track's recFile sndfile, which is done via Audio::process() sending periodic 'tick' messages
-      //  to the prefetch thread to write its fifo to the sndfile, always UNLESS in stop or idle mode.
-      // It now sends one final tick message at stop, so we /should/ have all our buffers available here.
-      // This GUI thread is notified of the stop condition via the audio thread sending a message
-      //  as soon as the state change is read from the driver.
-      // NOTE: The fifo scheme is used only if NOT in transport freewheel mode where the data is directly
-      //  written to the sndfile and therefore stops immediately when the transport stops and thus is
-      //  safe to read here regardless of waiting.
-      int tout = 100; // Ten seconds. Otherwise we gotta move on.
-      while(track->recordFifoCount() != 0)
-      {
-        usleep(100000);
-        --tout;
-        if(tout == 0)
-        {
-          fprintf(stderr, "Song::cmdAddRecordedWave: Error: Timeout waiting for _tempoFifo to empty! Count:%d\n", track->prefetchFifo()->getCount());
-          break;
-        }
-      }
+void Song::stretchListAddOperation(
+  StretchList* stretch_list, StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops) const
+{
+  iStretchListItem ie = stretch_list->find(frame);
+  if(ie != stretch_list->end())
+    ops.add(PendingOperationItem(type, stretch_list, ie, frame, value, PendingOperationItem::ModifyStretchListRatioAt));
+  else
+    ops.add(PendingOperationItem(type, stretch_list, frame, value, PendingOperationItem::AddStretchListRatioAt));
+}
 
-      // It should now be safe to work with the resultant sndfile here in the GUI thread.
-      // No other thread should be touching it right now.
-      MusECore::SndFileR f = track->recFile();
-      if (f.isNull()) {
-            printf("cmdAddRecordedWave: no snd file for track <%s>\n",
-               track->name().toLocal8Bit().constData());
-            return;
-            }
-
-      // If externally clocking (and therefore master was forced off),
-      //  tempos may have been recorded. We really should temporarily force
-      //  the master tempo map on in order to properly determine the ticks below.
-      // Else internal clocking, the user decided to record either with or without
-      //  master on, so let it be.
-      // FIXME: We really should allow the master flag to be on at the same time as
-      //  the external sync flag! AFAIR when external sync is on, no part of the app shall
-      //  depend on the tempo map anyway, so it should not matter whether it's on or off.
-      // If we do that, then we may be able to remove this section and user simply decides
-      //  whether master is on/off, because we may be able to use the flag to determine
-      //  whether to record external tempos at all, because we may want a switch for it!
-      bool master_was_on = MusEGlobal::tempomap.masterFlag();
-      if(MusEGlobal::extSyncFlag && !master_was_on)
-        MusEGlobal::tempomap.setMasterFlag(0, true);
-
-      if((MusEGlobal::audio->loopCount() > 0 && s.tick() > lPos().tick()) || (punchin() && s.tick() < lPos().tick()))
-        s.setTick(lPos().tick());
-      // If we are looping, just set the end to the right marker, since we don't know how many loops have occurred.
-      // (Fixed: Added Audio::loopCount)
-      // Otherwise if punchout is on, limit the end to the right marker.
-      if((MusEGlobal::audio->loopCount() > 0) || (punchout() && e.tick() > rPos().tick()) )
-        e.setTick(rPos().tick());
-
-      // No part to be created? Delete the rec sound file.
-      if(s.frame() >= e.frame())
-      {
-        QString st = f->path();
-        // The function which calls this function already does this immediately after. But do it here anyway.
-        track->setRecFile(NULL); // upon "return", f is removed from the stack, the WaveTrack::_recFile's
-                                 // counter has dropped by 2 and _recFile will probably deleted then
-        remove(st.toLocal8Bit().constData());
-        if(MusEGlobal::debugMsg)
-          printf("Song::cmdAddRecordedWave: remove file %s - startframe=%d endframe=%d\n", st.toLocal8Bit().constData(), s.frame(), e.frame());
-
-        // Restore master flag.
-        if(MusEGlobal::extSyncFlag && !master_was_on)
-          MusEGlobal::tempomap.setMasterFlag(0, false);
-
+void Song::stretchListDelOperation(
+  StretchList* stretch_list, int types, MuseFrame_t frame, PendingOperationList& ops) const
+{
+  // Do not delete the item at zeroth frame.
+  if(frame == 0)
+    return;
+  
+  iStretchListItem e = stretch_list->find(frame);
+  if (e == stretch_list->end()) {
+        ERROR_TIMESTRETCH(stderr, "Song::stretchListDelOperation frame:%ld not found\n", frame);
         return;
-      }
-// REMOVE Tim. Wave. Removed. Probably I should never have done this. It's more annoying than helpful. Look at it another way: Importing a wave DOES NOT do this.
-//       // Round the start down using the Arranger part snap raster value.
-//       int a_rast = MusEGlobal::song->arrangerRaster();
-//       unsigned sframe = (a_rast == 1) ? s.frame() : Pos(MusEGlobal::sigmap.raster1(s.tick(), MusEGlobal::song->arrangerRaster())).frame();
-//       // Round the end up using the Arranger part snap raster value.
-//       unsigned eframe = (a_rast == 1) ? e.frame() : Pos(MusEGlobal::sigmap.raster2(e.tick(), MusEGlobal::song->arrangerRaster())).frame();
-// //       unsigned etick = Pos(eframe, false).tick();
-      unsigned sframe = s.frame();
-      unsigned eframe = e.frame();
+        }
+  PendingOperationItem poi(types, stretch_list, e, PendingOperationItem::DeleteStretchListRatioAt);
+  // NOTE: Deletion is done in post-RT stage 3.
+  ops.add(poi);
+}
 
-      // Done using master tempo map. Restore master flag.
-      if(MusEGlobal::extSyncFlag && !master_was_on)
-        MusEGlobal::tempomap.setMasterFlag(0, false);
+void Song::stretchListModifyOperation(
+  StretchList* stretch_list, StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops) const
+{
+  iStretchListItem ie = stretch_list->find(frame);
+  if(ie == stretch_list->end()) {
+        ERROR_TIMESTRETCH(stderr, "Song::stretchListModifyOperation frame:%ld not found\n", frame);
+        return;
+        }
+  ops.add(PendingOperationItem(type, stretch_list, ie, frame, value, PendingOperationItem::ModifyStretchListRatioAt));
+}
 
-      f->update();
+void Song::setAudioConvertersOfflineOperation(
+  bool isOffline
+  )
+{
+  WaveTrackList* wtl = waves();
+  if(wtl->empty())
+    return;
 
-      MusECore::WavePart* part = new MusECore::WavePart(track);
-      part->setFrame(sframe);
-      part->setLenFrame(eframe - sframe);
-      part->setName(track->name());
+  PendingOperationList ops;
 
-      // create Event
-      MusECore::Event event(MusECore::Wave);
-      event.setSndFile(f);
-      // We are done with the _recFile member. Set to zero.
-      track->setRecFile(0);
-
-      event.setSpos(0);
-      // Since the part start was snapped down, we must apply the difference so that the
-      //  wave event tick lines up with when the user actually started recording.
-      event.setFrame(s.frame() - sframe);
-      // NO Can't use this. SF reports too long samples at first part recorded in sequence. See samples() - funny business with SEEK ?
-      //event.setLenFrame(f.samples());
-      event.setLenFrame(e.frame() - s.frame());
-      part->addEvent(event);
-
-      operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, part));
-      }
-
-// REMOVE Tim. wave. Added. Moved here from wave.cpp
-//---------------------------------------------------------
-//   cmdChangeWave
-//   called from GUI context
-//---------------------------------------------------------
-void Song::cmdChangeWave(const Event& original, const QString& tmpfile, unsigned sx, unsigned ex)
+  AudioConverterSettingsGroup* settings;
+  bool isLocalSettings;
+  bool doStretch;
+  bool doResample;
+  AudioConverterSettings::ModeType cur_mode;
+  AudioConverterPluginI* cur_converter;
+  AudioConverterPluginI* converter;
+  const WaveTrack* wt;
+  const PartList* pl;
+  const Part* pt;
+  ciPart pl_end;
+  ciEvent el_end;
+  SndFileR sndfile;
+  ciWaveTrack wtl_end = wtl->cend();
+  for(ciWaveTrack iwt = wtl->cbegin(); iwt != wtl_end; ++iwt)
+  {
+    wt = *iwt;
+    pl = wt->cparts();
+    pl_end = pl->cend();
+    for(ciPart ip = pl->cbegin(); ip != pl_end; ++ip)
+    {
+      pt = ip->second;
+      const EventList& el = pt->events();
+      el_end = el.end();
+      for(ciEvent ie = el.cbegin(); ie != el_end; ++ie)
       {
-      addUndo(UndoOp(UndoOp::ModifyClip,original,tmpfile,sx,ex));
-      temporaryWavFiles.push_back(tmpfile);
-      }
+        const Event& e = ie->second;
+        sndfile = e.sndFile();
+        //if(sndfile.isNull())
+        //  continue;
 
+        // Check if we are to use any converters at all.
+        if(!sndfile.useConverter())
+          continue;
+
+        // Check if the current realtime converter is already in offline mode.
+        cur_converter = sndfile.staticAudioConverter(AudioConverterSettings::RealtimeMode);
+        if(cur_converter)
+        {
+          cur_mode = cur_converter->mode();
+          if((isOffline && cur_mode == AudioConverterSettings::OfflineMode) ||
+            (!isOffline && cur_mode == AudioConverterSettings::RealtimeMode))
+            continue;
+        }
+          
+        settings = sndfile.audioConverterSettings()->useSettings() ?
+          sndfile.audioConverterSettings() : MusEGlobal::defaultAudioConverterSettings;
+        isLocalSettings = sndfile.audioConverterSettings()->useSettings();
+
+        doStretch = sndfile.isStretched();
+        doResample = sndfile.isResampled();
+
+        // For offline mode, we COULD create a third converter just for it, apart from the main
+        //  and UI converters. But our system doesn't have a third converter (yet) - and it may
+        //  or may not get one, we'll see. Still, the operation supports setting it, in case.
+        // So instead, in offline mode we switch out the main converter for one with with offline settings.
+        converter = sndfile.setupAudioConverter(
+          settings,
+          MusEGlobal::defaultAudioConverterSettings,
+          isLocalSettings,
+          isOffline ? 
+            AudioConverterSettings::OfflineMode :
+            AudioConverterSettings::RealtimeMode,
+          doResample,
+          doStretch);
+
+          // No point if there's already no converter.
+          if(!converter && !cur_converter)
+            continue;
+
+          // REMOVE Tim. samplerate. Added. Diagnostics.
+          fprintf(stderr, "Song::setAudioConvertersOfflineOperation Setting sndfile:%s to isOffline:%d\n",
+                  sndfile.name().toLocal8Bit().constData(), isOffline);
+          
+          ops.add(PendingOperationItem(
+            sndfile,
+            converter,   // Main converter. 
+            PendingOperationItem::SetAudioConverterOfflineMode));
+      }
+    }
+  }
+
+  MusEGlobal::audio->msgExecutePendingOperations(ops, true);
+}
+
+void Song::modifyAudioConverterSettingsOperation(
+  SndFileR sndfile,
+  AudioConverterSettingsGroup* settings,
+  AudioConverterSettingsGroup* defaultSettings,
+  bool isLocalSettings,
+  PendingOperationList& ops
+  ) const
+{
+  if(!sndfile.useConverter())
+    return;
+  const bool isOffline = sndfile.isOffline();
+  const bool doStretch = sndfile.isStretched();
+  const bool doResample = sndfile.isResampled();
+  // For offline mode, we COULD create a third converter just for it, apart from the main
+  //  and UI converters. But our system doesn't have a third converter (yet) - and it may
+  //  or may not get one, we'll see. Still, the operation supports setting it, in case.
+  // So instead, in offline mode we switch out the main converter for one with with offline settings.
+  AudioConverterPluginI* converter = sndfile.setupAudioConverter(
+    settings,
+    defaultSettings,
+    isLocalSettings,
+    isOffline ?
+      AudioConverterSettings::OfflineMode :
+      AudioConverterSettings::RealtimeMode,
+    doResample,
+    doStretch);
+
+  AudioConverterPluginI* converterUI = sndfile.setupAudioConverter(
+    settings,
+    defaultSettings,
+    isLocalSettings,
+    AudioConverterSettings::GuiMode,
+    doResample,
+    doStretch);
+
+//   if(!converter && !converterUI)
+//     return;
+
+  // We want to change the settings, and the converters if necessary...
+  ops.add(PendingOperationItem(
+    sndfile,
+    settings,
+    PendingOperationItem::ModifyLocalAudioConverterSettings));
+
+  ops.add(PendingOperationItem(
+    sndfile,
+    converter,   // Main converter. 
+    converterUI, // UI converter.
+    PendingOperationItem::ModifyLocalAudioConverter));
+}
+
+void Song::modifyAudioConverterOperation(
+  SndFileR sndfile,
+  PendingOperationList& ops,
+  bool doResample,
+  bool doStretch) const
+{
+  if(!sndfile.useConverter())
+    return;
+  const bool isOffline = sndfile.isOffline();
+  AudioConverterSettingsGroup* settings = sndfile.audioConverterSettings()->useSettings() ?
+    sndfile.audioConverterSettings() : MusEGlobal::defaultAudioConverterSettings;
+
+  const bool isLocalSettings = sndfile.audioConverterSettings()->useSettings();
+
+  // For offline mode, we COULD create a third converter just for it, apart from the main
+  //  and UI converters. But our system doesn't have a third converter (yet) - and it may
+  //  or may not get one, we'll see. Still, the operation supports setting it, in case.
+  // So instead, in offline mode we switch out the main converter for one with with offline settings.
+  AudioConverterPluginI* converter = sndfile.setupAudioConverter(
+    settings,
+    MusEGlobal::defaultAudioConverterSettings,
+    isLocalSettings,
+    isOffline ?
+      AudioConverterSettings::OfflineMode :
+      AudioConverterSettings::RealtimeMode,
+    doResample,
+    doStretch);
+
+  AudioConverterPluginI* converterUI = sndfile.setupAudioConverter(
+    settings,
+    MusEGlobal::defaultAudioConverterSettings,
+    isLocalSettings,
+    AudioConverterSettings::GuiMode,
+    doResample,
+    doStretch);
+
+//   if(!converter && !converterUI)
+//     return;
+
+  ops.add(PendingOperationItem(
+    sndfile,
+    converter,   // Main converter.
+    converterUI, // UI converter.
+    PendingOperationItem::ModifyLocalAudioConverter));
+}
+
+void Song::modifyStretchListOperation(SndFileR sndfile, int type, double value, PendingOperationList& ops) const
+{
+  if(!sndfile.useConverter())
+    return;
+  ops.add(PendingOperationItem(type, sndfile.stretchList(), value, PendingOperationItem::ModifyStretchListRatio));
+}
+
+void Song::addAtStretchListOperation(SndFileR sndfile, int type, MuseFrame_t frame, double value, PendingOperationList& ops) const
+{
+  if(!sndfile.useConverter())
+    return;
+  StretchList* sl = sndfile.stretchList();
+  stretchListAddOperation(sl, StretchListItem::StretchEventType(type), frame, value, ops);
+  
+  bool wantStretch = false;
+  bool wantResample = sndfile.sampleRateDiffers();
+  bool wantPitch = false;
+  const bool haveStretch = sndfile.isStretched();
+  const bool haveResample = sndfile.isResampled() || wantResample;
+  const bool havePitch = sndfile.isPitchShifted();
+  
+  //// If the requested value is anything other than 1.0, request converters.
+  //if(value != 1.0)
+  //{
+    switch(type)
+    {
+      case StretchListItem::StretchEvent:
+        wantStretch = true;
+      break;
+      case StretchListItem::SamplerateEvent:
+        wantResample = true;
+      break;
+      case StretchListItem::PitchEvent:
+        wantPitch = true;
+      break;
+    }
+  //}
+  
+  if((wantStretch  && !haveStretch) || 
+     (wantResample && !haveResample) || 
+     (wantPitch    && !havePitch))
+  {
+    const bool doStretch  = wantStretch  ? true : haveStretch;
+    const bool doResample = wantResample ? true : haveResample;
+  //const bool doPitch    = wantPitch    ? true : havePitch;
+    
+    modifyAudioConverterOperation(sndfile, ops, doResample, doStretch);
+  }
+}
+
+void Song::delAtStretchListOperation(SndFileR sndfile, int types, MuseFrame_t frame, PendingOperationList& ops) const
+{
+  if(!sndfile.useConverter())
+    return;
+  // Do not delete the item at zeroth frame.
+  if(frame == 0)
+    return;
+  
+  StretchList* sl = sndfile.stretchList();
+  stretchListDelOperation(sl, types, frame, ops);
+
+  StretchListInfo info =  sl->testDelListOperation(types, frame);
+  
+  const bool srdiffers = sndfile.sampleRateDiffers();
+  const bool wantStretch  = info._isStretched;
+  const bool wantResample = info._isResampled || srdiffers;
+  const bool wantPitch    = info._isPitchShifted;
+  
+  const bool haveStretch  = sndfile.isStretched();
+  const bool haveResample = sndfile.isResampled() || srdiffers;
+  const bool havePitch    = sndfile.isPitchShifted();
+  
+  if((!wantStretch  && haveStretch) || 
+     (!wantResample && haveResample) || 
+     (!wantPitch    && havePitch))
+  {
+    const bool doStretch  = !wantStretch  ? false : haveStretch;
+    const bool doResample = !wantResample ? false : haveResample;
+  //const bool doPitch    = !wantPitch    ? false : havePitch;
+    
+    modifyAudioConverterOperation(sndfile, ops, doResample, doStretch);
+  }
+}
+
+void Song::modifyAtStretchListOperation(SndFileR sndfile, int type, MuseFrame_t frame, double value, PendingOperationList& ops) const
+{
+  if(!sndfile.useConverter())
+    return;
+  StretchList* sl = sndfile.stretchList();
+  stretchListModifyOperation(sl, StretchListItem::StretchEventType(type), frame, value, ops);
+  
+  bool wantStretch = false;
+  bool wantResample = sndfile.sampleRateDiffers();
+  bool wantPitch = false;
+  const bool haveStretch = sndfile.isStretched();
+  const bool haveResample = sndfile.isResampled() || wantResample;
+  const bool havePitch = sndfile.isPitchShifted();
+  
+  //// If the requested value is anything other than 1.0, request converters.
+  //if(value != 1.0)
+  //{
+    switch(type)
+    {
+      case StretchListItem::StretchEvent:
+        wantStretch = true;
+      break;
+      case StretchListItem::SamplerateEvent:
+        wantResample = true;
+      break;
+      case StretchListItem::PitchEvent:
+        wantPitch = true;
+      break;
+    }
+  //}
+  
+  if((wantStretch  && !haveStretch) || 
+     (wantResample && !haveResample) || 
+     (wantPitch    && !havePitch))
+  {
+    const bool doStretch  = wantStretch  ? true : haveStretch;
+    const bool doResample = wantResample ? true : haveResample;
+  //const bool doPitch    = wantPitch    ? true : havePitch;
+    
+    modifyAudioConverterOperation(sndfile, ops, doResample, doStretch);
+  }
+}
+
+void Song::modifyDefaultAudioConverterSettingsOperation(AudioConverterSettingsGroup* settings, 
+                                                        PendingOperationList& ops)
+{
+  // First, schedule the change to the actual default settings pointer variable.
+  ops.add(PendingOperationItem(settings, PendingOperationItem::ModifyDefaultAudioConverterSettings));
+  
+  // Now, schedule changes to each wave event if necessary.
+  // Note that at this point the above default change has not occurred yet, 
+  //  so we must tell it to use what the settings WILL BE, not what they are now.
+  for(ciWaveTrack it = MusEGlobal::song->waves()->cbegin(); it != MusEGlobal::song->waves()->cend(); ++it)
+  {
+    const WaveTrack* wtrack = *it;
+    for(ciPart ip = wtrack->cparts()->cbegin(); ip != wtrack->cparts()->cend(); ++ip)
+    {
+      const Part* part = ip->second;
+      for(ciEvent ie = part->events().cbegin(); ie != part->events().cend(); ++ie)
+      {
+        const Event& e = ie->second;
+        if(e.type() != Wave)
+          continue;
+        SndFileR sndfile = e.sndFile();
+        if(!sndfile.useConverter())
+          continue;
+        const AudioConverterSettingsGroup* cur_ev_settings = sndfile.audioConverterSettings();
+        // Is the event using its own local settings? Ignore.
+        if(!cur_ev_settings || cur_ev_settings->useSettings())
+          continue;
+
+        const bool isOffline = sndfile.isOffline();
+        const bool doStretch = sndfile.isStretched();
+        const bool doResample = sndfile.isResampled();
+        // For offline mode, we COULD create a third converter just for it, apart from the main
+        //  and UI converters. But our system doesn't have a third converter (yet) - and it may
+        //  or may not get one, we'll see. Still, the operation supports setting it, in case.
+        // So instead, in offline mode we switch out the main converter for one with with offline settings.
+        AudioConverterPluginI* converter = sndfile.setupAudioConverter(
+          settings,
+          settings,
+          false,  // false = Default, non-local settings.
+          isOffline ?
+            AudioConverterSettings::OfflineMode :
+            AudioConverterSettings::RealtimeMode,
+          doResample,
+          doStretch);
+
+        AudioConverterPluginI* converterUI = sndfile.setupAudioConverter(
+          settings,
+          settings,
+          false,  // false = Default, non-local settings.
+          AudioConverterSettings::GuiMode,
+          doResample,
+          doStretch);
+
+      //   if(!converter && !converterUI)
+      //     return;
+
+        // We only want to change the converters, if necessary.
+        ops.add(PendingOperationItem(
+          sndfile,
+          converter,   // Main converter. 
+          converterUI, // UI converter.
+          PendingOperationItem::ModifyLocalAudioConverter));
+      }
+    }
+  }
+}
+
+// REMOVE Tim. clip. Added.
 //---------------------------------------------------------
 //   updateTransportPos
 //   called from GUI context
-// REMOVE Tim. clip. Added.
 // SPECIAL for tempo or master changes: In stop mode we want
 //  the transport to locate to the correct frame. In play mode
 //  we simply let the transport progress naturally but we 'fake'
@@ -4522,6 +5027,7 @@ void Song::updateTransportPos(const SongChangedStruct_t& flags)
   }
 }
 
+// REMOVE Tim. clip. Added.
 //---------------------------------------------------------
 //   adjustMarkerListOperation
 //   Items between startPos and startPos + diff are removed.
@@ -4560,5 +5066,6 @@ bool Song::adjustMarkerListOperation(MarkerList* markerlist, unsigned int startP
 
   return true;
 }
+
 
 } // namespace MusECore

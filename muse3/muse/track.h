@@ -34,7 +34,7 @@
 #include "part.h"
 #include "mpevent.h"
 #include "key.h"
-#include "node.h"
+#include "audio_fifo.h"
 #include "route.h"
 #include "ctrl.h"
 #include "globaldefs.h"
@@ -986,6 +986,9 @@ class WaveTrack : public AudioTrack {
       bool getInputData(unsigned pos, int channels, unsigned nframes,
                         bool* usedInChannelArray, float** buffer);
       
+      // Return false if error.
+      bool getPrefetchData(bool have_data, sf_count_t framePos, int dstChannels, sf_count_t nframe, float** bp, bool do_overwrite);
+      
    public:
 
       WaveTrack();
@@ -1004,8 +1007,11 @@ class WaveTrack : public AudioTrack {
       virtual void read(Xml&);
       virtual void write(int, Xml&) const;
 
+      // Called from prefetch thread:
       // If overwrite is true, copies the data. If false, adds the data.
       virtual void fetchData(unsigned pos, unsigned frames, float** bp, bool doSeek, bool overwrite, int latency_correction = 0);
+      
+      virtual void seekData(sf_count_t pos);
       
       virtual bool getData(unsigned, int ch, unsigned, float** bp);
 
@@ -1014,8 +1020,10 @@ class WaveTrack : public AudioTrack {
       bool canDominateOutputLatency() const;
       bool canCorrectOutputLatency() const;
       
-      void clearPrefetchFifo()      { _prefetchFifo.clear(); }
+      void clearPrefetchFifo();
       Fifo* prefetchFifo()          { return &_prefetchFifo; }
+      virtual void prefetchAudio(sf_count_t writePos, sf_count_t frames);
+
       // For prefetch thread use only.
       inline unsigned prefetchWritePos() const { return _prefetchWritePos; }
       inline void setPrefetchWritePos(unsigned p) { _prefetchWritePos = p; }

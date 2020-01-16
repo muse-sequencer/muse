@@ -35,8 +35,7 @@
 #include "part.h"
 #include "audiodev.h"
 #include "track.h"
-// REMOVE Tim. wave. Added.
-#include "helper.h"
+#include "wave_helper.h"
 
 #include <string.h>
 #include <QAction>
@@ -2437,9 +2436,7 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::ModifyClip:
-// REMOVE Tim. wave. Changed.
-//                         MusECore::SndFile::applyUndoFile(i->nEvent, i->tmpwavfile, i->startframe, i->endframe);
-                        waveApplyUndoFile(i->nEvent, i->tmpwavfile, i->startframe, i->endframe);
+                        sndFileApplyUndoFile(i->nEvent, i->tmpwavfile, i->startframe, i->endframe);
                         updateFlags |= SC_CLIP_MODIFIED;
                         break;
                   case UndoOp::ModifyTrackChannel:
@@ -3276,9 +3273,7 @@ void Song::executeOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::ModifyClip:
-// REMOVE Tim. wave. Changed.
-//                         MusECore::SndFile::applyUndoFile(i->nEvent, i->tmpwavfile, i->startframe, i->endframe);
-                        waveApplyUndoFile(i->nEvent, i->tmpwavfile, i->startframe, i->endframe);
+                        sndFileApplyUndoFile(i->nEvent, i->tmpwavfile, i->startframe, i->endframe);
                         updateFlags |= SC_CLIP_MODIFIED;
                         break;
                   case UndoOp::ModifyTrackChannel:

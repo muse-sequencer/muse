@@ -89,7 +89,7 @@ QT5_ADD_RESOURCES (muse_qrc_files
 file (GLOB core_source_files
       app.cpp
       audio.cpp
-      audioconvert.cpp
+      audio_fifo.cpp
       audioprefetch.cpp
       audiotrack.cpp
       cobject.cpp
@@ -134,6 +134,7 @@ file (GLOB core_source_files
       sig.cpp
       song.cpp
       songfile.cpp
+      songfile_discovery.cpp
       stringparam.cpp
       sync.cpp
       synth.cpp
@@ -147,7 +148,7 @@ file (GLOB core_source_files
       value.cpp
       vst.cpp
       vst_native.cpp
-      wave.cpp
+      wave_helper.cpp
       waveevent.cpp
       wavetrack.cpp
       steprec.cpp
@@ -270,6 +271,7 @@ target_link_libraries(wavepreview_module
 target_link_libraries(core
       al
       arranger
+      audio_converter_plugin
       cliplist
       ctrl
       driver
@@ -291,6 +293,8 @@ target_link_libraries(core
       Threads::Threads
       synti
       sysex_helper_module
+      time_stretch_module
+      wave_module
       waveedit
       wavepreview_module
       widgets
@@ -302,6 +306,7 @@ target_link_libraries(core
       ## Bring in the dssi alsa compatibility libraries if required
       ${DSSI_ALSA_COMPAT_LIBRARIES}
       ${SNDFILE_LIBRARIES}
+      # Note that this also appears in the audio_convert/src_resampler shared library.
       ${SAMPLERATE_LIBRARIES}
       ${REM_LIB}
       ${FST_LIB}
@@ -383,7 +388,13 @@ install(TARGETS
 if ( ${MODULES_BUILD} STREQUAL SHARED )
       install(TARGETS core icons 
               # latency_compensator_module
-              lv2host_module 
             DESTINATION ${MusE_MODULES_DIR}
             )
+      # This conditional fixes an error when LV2_SUPPORT is false:
+      #  "install TARGETS given target "lv2host_module" which does not exist."
+      if (LV2_SUPPORT)
+        install ( TARGETS lv2host_module DESTINATION ${MusE_MODULES_DIR} )
+      endif (LV2_SUPPORT)
+              
 endif ( ${MODULES_BUILD} STREQUAL SHARED )
+

@@ -41,6 +41,8 @@
 #cmakedefine VST_NATIVE_SUPPORT
 #cmakedefine VST_VESTIGE_SUPPORT
 #cmakedefine USE_SSE
+#cmakedefine RUBBERBAND_SUPPORT
+#cmakedefine ZITA_RESAMPLER_SUPPORT
 #cmakedefine HAVE_EXP10
 #cmakedefine HAVE_EXP10F
 #cmakedefine HAVE_EXP10L
