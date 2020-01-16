@@ -1,9 +1,10 @@
 15.01.2020
-    - Cherry pick four things from pos_ctrls_fixes branch: (Tim)
+    - Cherry pick five things from pos_ctrls_fixes branch: (Tim)
       1) Fix when tempo serial number is incremented. (Fixes broken looping etc.)
       2) Add rounding choice to tempo tick-to-frame methods (part of pending Pos fixes).
       3) Remove awkward lone undoOp in song.h
       4) Pos class makeover: New 'lock'. Rounding choice. New method msmu() (MinSecMsecUsec).
+      5) Add default getDSP_Load() in class AudioDevice, remove useless ones in RTAudio/dummy.
 14.01.2020
     - LV2: Remove deprecated LV2_Event_Buffer and LV2_URI_Map_Feature. (Tim)
 12.01.2020
