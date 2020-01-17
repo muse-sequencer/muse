@@ -108,11 +108,6 @@ class TempoList : public TEMPOLIST {
       int tempoAt(unsigned tick) const;
       
 
-// REMOVE Tim. clip. Changed.      
-//       //-------------------------------------------------------------------------------------------------------
-//       // These tick to frame methods always round up (ceiling), so that they provide a good
-//       //  one-to-one relation with the frame to tick methods.
-//       //-------------------------------------------------------------------------------------------------------
       //-------------------------------------------------------------------------------------------------------
       // Normally do not round these tick to frame methods down since (audio) frame resolution is higher than tick
       //  resolution. Other rounding methods are provided for convenience, since tick to frame is a 'broad' question.

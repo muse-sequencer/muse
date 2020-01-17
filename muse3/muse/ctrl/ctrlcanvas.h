@@ -198,14 +198,6 @@ class CtrlCanvas : public MusEGui::View {
             MOVE_MOVE, MOVE_COPY
             };
 
-// REMOVE Tim. clip. Changed.
-//       static const int contextIdCancelDrag;
-//       static const int contextIdMerge;
-//       static const int contextIdMergeCopy;
-//       static const int contextIdErase;
-//       static const int contextIdEraseWysiwyg;
-//       static const int contextIdEraseInclusive;
-
       enum ContextIds {
         ContextIdCancelDrag = 0x01,
         ContextIdMerge = 0x02,

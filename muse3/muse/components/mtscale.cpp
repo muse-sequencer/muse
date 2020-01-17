@@ -81,8 +81,6 @@ void MTScale::configChanged()
 
 void MTScale::songChanged(MusECore::SongChangedStruct_t type)
       {
-// REMOVE Tim. clip. Changed.
-//       if (type & (SC_SIG|SC_TEMPO)) {
       if (type & (SC_SIG|SC_TEMPO|SC_MARKERS_REBUILT|SC_MARKER_INSERTED|SC_MARKER_REMOVED|SC_MARKER_MODIFIED)) {
            if ((type & SC_TEMPO) && waveMode) {
                   pos[0] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->cpos());
@@ -200,9 +198,6 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
       MusECore::Pos p(x, true);
       
       if(posType == MusECore::Song::CPOS && (event->modifiers() & Qt::ShiftModifier )) {        // If shift +LMB we add a marker
-// REMOVE Tim. clip. Changed.
-//             MusECore::Marker *alreadyExists = MusEGlobal::song->getMarkerAt(x);
-//             if (!alreadyExists) {
             const MusECore::iMarker alreadyExists = MusEGlobal::song->getMarkerAt(x);
             if (alreadyExists == MusEGlobal::song->marker()->end()) {
                   MusEGlobal::song->addMarker(QString(""), x, false);         
@@ -211,10 +206,6 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
                   }
             }
       else if (posType == MusECore::Song::RPOS && (event->modifiers() & Qt::ShiftModifier )) {  // If shift +RMB we remove a marker
-//             MusECore::Marker *toRemove = MusEGlobal::song->getMarkerAt(x);
-//             if (toRemove)
-//               MusEGlobal::song->removeMarker(toRemove);
-// REMOVE Tim. clip. Changed.
             const MusECore::iMarker toRemove = MusEGlobal::song->getMarkerAt(x);
             if (toRemove != MusEGlobal::song->marker()->end())
               MusEGlobal::song->removeMarker(toRemove->second);
@@ -308,14 +299,10 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
             if (mm != marker->end()) {
                   
                   if(waveMode)
-// REMOVE Tim. clip. Changed.
-//                     xe = MusEGlobal::tempomap.tick2frame(mm->first);
 // Hm, mistake?
 //                     xe = MusEGlobal::tempomap.tick2frame(mm->second.frame());
                     xe = mm->second.frame();
                   else
-// REMOVE Tim. clip. Changed.
-//                     xe = mm->first;
                     xe = mm->second.tick();
                   }
             

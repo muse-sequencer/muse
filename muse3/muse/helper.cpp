@@ -47,7 +47,6 @@
 #include "lv2host.h"
 #include "vst_native.h"
 #include "appearance.h"
-// REMOVE Tim. wave. Added.
 #include "event.h"
 
 #include <strings.h>
@@ -61,11 +60,6 @@
 #include <QStyle>
 #include <QStyleFactory>
 #include <QVector>
-#include <QMessageBox>
-
-// REMOVE Tim. wave. Added. Moved here from wave.cpp
-#include <QMessageBox>
-#include <QDateTime>
 
 using std::set;
 

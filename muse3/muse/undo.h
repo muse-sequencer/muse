@@ -105,13 +105,8 @@ struct UndoOp {
                   QString* tmpwavfile; //!< The file with the changed data
                   };
             struct {
-// REMOVE Tim. clip. Changed.
-//                   Marker* realMarker; 
-//                   Marker* copyMarker;
                   Marker* oldMarker; 
                   Marker* newMarker;
-//                   MarkerList** oldMarkerList; 
-//                   MarkerList* newMarkerList; 
                 };
             struct {
                   const Track* _propertyTrack;
@@ -171,10 +166,6 @@ struct UndoOp {
       UndoOp(UndoType type, const Event& nev, const Event& oev, const Part* part, bool doCtrls, bool doClones, bool noUndo = false);
       UndoOp(UndoType type, const Event& nev, const Part* part, bool, bool, bool noUndo = false);
       UndoOp(UndoType type, const Event& changedEvent, const QString& changeData, int startframe, int endframe, bool noUndo = false);
-// REMOVE Tim. clip. Changed.
-//       UndoOp(UndoType type, Marker* copyMarker, Marker* realMarker, bool noUndo = false);
-      //// newMarker does not have to be created by caller. Just a pointer to a marker - we make copies of both oldMarker and newMarker.
-      //UndoOp(UndoType type, const Marker& oldMarker, Marker* newMarker = nullptr, bool noUndo = false);
       UndoOp(UndoType type, const Marker& oldMarker, const Marker& newMarker, bool noUndo = false);
       UndoOp(UndoType type, const Marker& marker, bool noUndo = false);
       UndoOp(UndoType type, const Marker& marker, unsigned int new_pos, Pos::TType new_time_type, bool noUndo = false);

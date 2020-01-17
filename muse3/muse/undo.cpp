@@ -154,9 +154,6 @@ void UndoList::clearDelete()
                   break;
 
             case UndoOp::ModifyMarker:
-// REMOVE Tim. clip. Changed.
-//                   if (i->copyMarker)
-//                     delete i->copyMarker;
             case UndoOp::SetMarkerPos:
             case UndoOp::AddMarker:
             case UndoOp::DeleteMarker:
@@ -206,9 +203,6 @@ void UndoList::clearDelete()
                   break;
 
             case UndoOp::ModifyMarker:
-// REMOVE Tim. clip. Changed.
-//                   if (i->realMarker)
-//                     delete i->realMarker;
             case UndoOp::SetMarkerPos:
             case UndoOp::AddMarker:
             case UndoOp::DeleteMarker:
@@ -545,8 +539,6 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
 #endif
 
   // (NOTE: Use this handy speed-up 'if' line to exclude unhandled operation types)
-// REMOVE Tim. clip. Changed.
-//   if(n_op.type != UndoOp::ModifyTrackChannel && n_op.type != UndoOp::ModifyClip && n_op.type != UndoOp::ModifyMarker && n_op.type != UndoOp::DoNothing) 
   if(n_op.type != UndoOp::ModifyTrackChannel && n_op.type != UndoOp::ModifyClip && n_op.type != UndoOp::DoNothing) 
   {
     // TODO FIXME: Must look beyond position and optimize in that direction too !
@@ -1499,7 +1491,6 @@ bool Undo::merge_combo(const Undo& other)
   int has_select_event=0x02;
   int has_select_part=0x04;
   int has_modify_aud_ctrl_val=0x08;
-  // REMOVE Tim. clip. Added.
   int has_set_marker_pos=0x10;
 
   int has = 0;
@@ -1607,13 +1598,6 @@ bool Song::applyOperationGroup(Undo& group, OperationType type, void* sender)
       case OperationExecute:
       case OperationUndoable:
         ret = false;
-//         if(doseek)
-//         {
-//           //MusECore::Pos ap = MusEGlobal::audio->tickAndFramePos();
-//           // Don't touch Audio::_pos, make a copy.
-//           const MusECore::Pos ap = MusEGlobal::audio->pos();
-//           MusEGlobal::audioDevice->seekTransport(ap);
-//         }
         updateTransportPos(updateFlags);
       break;
       
@@ -1621,13 +1605,6 @@ bool Song::applyOperationGroup(Undo& group, OperationType type, void* sender)
       case OperationUndoableUpdate:
         emit songChanged(updateFlags);
         ret = false;
-//         if(doseek)
-//         {
-//           //const MusECore::Pos ap = MusEGlobal::audio->tickAndFramePos();
-//           // Don't touch Audio::_pos, make a copy.
-//           const MusECore::Pos ap = MusEGlobal::audio->pos();
-//           MusEGlobal::audioDevice->seekTransport(ap);
-//         }
         updateTransportPos(updateFlags);
       break;
       
@@ -2016,35 +1993,12 @@ UndoOp::UndoOp(UndoType type_, const Event& nev, const Part* part_, bool a_, boo
       }
       }
       
-// REMOVE Tim. clip. Changed.
-// UndoOp::UndoOp(UndoType type_, Marker* copyMarker_, Marker* realMarker_, bool noUndo)
-//       {
-//       assert(type_==ModifyMarker);
-// // REMOVE Tim. global cut. Changed. copyMarker_ or realMarker_ can be null.
-// //      assert(copyMarker_);
-// //      assert(realMarker_);
-//       assert(copyMarker_ || realMarker_);
-// 
-//       type    = type_;
-//       realMarker  = realMarker_;
-//       copyMarker  = copyMarker_;
-//       _noUndo = noUndo;
-//       }
 UndoOp::UndoOp(UndoType type_, const Marker& oldMarker_, const Marker& newMarker_, bool noUndo)
       {
       assert(type_==ModifyMarker);
       type    = type_;
       oldMarker  = new Marker(oldMarker_);
-//       // Enforce a new ID in case caller did not use assign.
-//       if(newMarker_.id() == oldMarker_.id())
-//       {
-//         newMarker = new Marker();
-//         newMarker->assign(newMarker_);
-//       }
-//       else
-//       {
-        newMarker = new Marker(newMarker_);
-//       }
+      newMarker = new Marker(newMarker_);
       _noUndo = noUndo;
       }
 
@@ -2067,15 +2021,11 @@ UndoOp::UndoOp(UndoType type_, const Marker& marker_, unsigned int new_pos, Pos:
       assert(type_==SetMarkerPos);
       type    = type_;
       oldMarker = new Marker(marker_);
-//       // Enforce a new ID in case caller did not use assign.
-//       newMarker = new Marker();
-//       newMarker->assign(marker_);
       newMarker = new Marker(marker_);
       newMarker->setPosValue(new_pos, new_time_type);
       _noUndo = noUndo;
       }
 
-// REMOVE Tim. clip. Added.
 // UndoOp::UndoOp(UndoType type_, MarkerList** oldMarkerList_, MarkerList* newMarkerList_, bool noUndo)
 //       {
 //       assert(type_==ModifyMarkerList);
@@ -2086,7 +2036,6 @@ UndoOp::UndoOp(UndoType type_, const Marker& marker_, unsigned int new_pos, Pos:
 //       newMarkerList = newMarkerList_;
 //       _noUndo = noUndo;
 //       }
-      
       
 UndoOp::UndoOp(UndoType type_, const Event& changedEvent, const QString& changeData, int startframe_, int endframe_, bool noUndo)
       {
@@ -2859,7 +2808,6 @@ void Song::revertOperationGroup1(Undo& operations)
                         //updateFlags |= SC_SONG_LEN;
                         break;
                         
-// REMOVE Tim. clip. Added.
                   case UndoOp::AddMarker:
                           // Create the new list if it doesn't already exist.
                           // Make a copy of the original list.
@@ -2898,7 +2846,6 @@ void Song::revertOperationGroup1(Undo& operations)
                   }
             }
 
-      // REMOVE Tim. clip. Added.
       if(new_marker_list)
         pendingOperations.add(PendingOperationItem(&_markerList, new_marker_list, PendingOperationItem::ModifyMarkerList));
       }
@@ -2994,22 +2941,6 @@ void Song::revertOperationGroup3(Undo& operations)
                         }
                         
                         break;
-// REMOVE Tim. clip. Removed. Moved into stage 1.
-//                   case UndoOp::ModifyMarker:
-//                         {
-//                           if (i->realMarker) {
-//                             Marker tmpMarker = *i->realMarker;
-//                             *i->realMarker = *i->copyMarker; // swap them
-//                             *i->copyMarker = tmpMarker;
-//                           }
-//                           else {
-//                             i->realMarker = _markerList->add(*i->copyMarker);
-//                             delete i->copyMarker;
-//                             i->copyMarker = 0;
-//                           }
-//                           updateFlags |= SC_MARKER_LIST;
-//                         }
-//                         break;
                   case UndoOp::AddPart:
                         // Ensure that wave event sndfile file handles are closed.
                         // It should not be the job of the pending operations list to do this.
@@ -3032,40 +2963,6 @@ void Song::revertOperationGroup3(Undo& operations)
                         break;
                   }
             }
-
-            // REMOVE Tim. clip. Added.
-//             // To avoid doing this item by item, do it here.
-//             if(updateFlags & (SC_MASTER | SC_TEMPO /*| SC_SIG*/))
-//             {
-// //               // We relocate the transport position frame to reflect
-// //               //  the current tick, which we want to keep the same,
-// //               //  which means the current frame is not valid.
-// //               // If we did it the other way round, ie. adjusting song tick
-// //               //  to reflect current transport frame, then the tick-based
-// //               //  song cursors would jump around whenever tempo was adjusted.
-// //               //MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->cPos());
-//               
-// //               // Inform the rest of the app's visual controls that any
-// //               //  ticks or frames used should be redisplayed with new values.
-// //               // Set separate tick and frame, crucial for example during external sync.
-// //               setPos(CPOS, MusEGlobal::audio->tickAndFramePos(), true, false, false);
-//               
-//               // We relocate the transport position frame to reflect
-//               //  the current tick, which we want to keep the same,
-//               //  which means the current frame is not valid.
-//               // If we did it the other way round, ie. adjusting song tick
-//               //  to reflect current transport frame, then the tick-based
-//               //  song cursors would jump around whenever tempo was adjusted.
-//               // At the same time, inform the rest of the app's visual controls that any
-//               //  ticks or frames used should be redisplayed with new values.
-//               // Set separate tick and frame, crucial for example during external sync.
-// //               if(!MusEGlobal::audio->isPlaying()) 
-// //                 setPos(CPOS, MusEGlobal::audio->tickAndFramePos(), true, true, false);
-//             } 
-
-            // REMOVE Tim. clip. Added.
-//             if(updateFlags & SC_MASTER)
-//               _masterFlag = MusEGlobal::tempomap.masterFlag();
 
             if(!operations.empty())
               emit sigDirty();
@@ -3764,7 +3661,6 @@ void Song::executeOperationGroup1(Undo& operations)
                         updateFlags |= SC_SELECTION;
                         break;
                         
-// REMOVE Tim. clip. Added.
                   case UndoOp::AddMarker:
                           // Create the new list if it doesn't already exist.
                           // Make a copy of the original list.
@@ -3803,7 +3699,6 @@ void Song::executeOperationGroup1(Undo& operations)
                   }
             }
 
-      // REMOVE Tim. clip. Added.
       if(new_marker_list)
         pendingOperations.add(PendingOperationItem(&_markerList, new_marker_list, PendingOperationItem::ModifyMarkerList));
       }
@@ -3900,21 +3795,6 @@ void Song::executeOperationGroup3(Undo& operations)
                         // TODO Coordinate close/open with part mute and/or track off.
                         editable_track->closeAllParts();
                         break;
-// REMOVE Tim. clip. Removed. Moved into stage 1.
-//                   case UndoOp::ModifyMarker:
-//                         {
-//                           if (i->copyMarker) {
-//                             Marker tmpMarker = *i->realMarker;
-//                             *i->realMarker = *i->copyMarker; // swap them
-//                             *i->copyMarker = tmpMarker;
-//                           } else {
-//                             i->copyMarker = new Marker(*i->realMarker);
-//                             _markerList->remove(i->realMarker);
-//                             i->realMarker = 0;
-//                           }
-//                           updateFlags |= SC_MARKER_LIST;
-//                         }
-//                         break;
                   case UndoOp::DeletePart:
                         // Ensure that wave event sndfile file handles are closed.
                         // It should not be the job of the pending operations list to do this.
@@ -3943,39 +3823,6 @@ void Song::executeOperationGroup3(Undo& operations)
             else
               ++i;
             }
-
-      // REMOVE Tim. clip. Added.
-//       // To avoid doing this item by item, do it here.
-//       if(updateFlags & (SC_MASTER | SC_TEMPO /*| SC_SIG*/))
-//       {
-// //         // We relocate the transport position frame to reflect
-// //         //  the current tick, which we want to keep the same,
-// //         //  which means the current frame is not valid.
-// //         // If we did it the other way round, ie. adjusting song tick
-// //         //  to reflect current transport frame, then the tick-based
-// //         //  song cursors would jump around whenever tempo was adjusted.
-// //         //MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->cPos());
-// //         
-// //         // Inform the rest of the app's visual controls that any
-// //         //  ticks or frames used should be redisplayed with new values.
-// //         setPos(CPOS, MusEGlobal::audio->tickAndFramePos(), true, false, false);
-//         
-//         // We relocate the transport position frame to reflect
-//         //  the current tick, which we want to keep the same,
-//         //  which means the current frame is not valid.
-//         // If we did it the other way round, ie. adjusting song tick
-//         //  to reflect current transport frame, then the tick-based
-//         //  song cursors would jump around whenever tempo was adjusted.
-//         // At the same time, inform the rest of the app's visual controls that any
-//         //  ticks or frames used should be redisplayed with new values.
-//         // Set separate tick and frame, crucial for example during external sync.
-// //         if(!MusEGlobal::audio->isPlaying()) 
-// //           setPos(CPOS, MusEGlobal::audio->tickAndFramePos(), true, true, false);
-//       } 
-
-      // REMOVE Tim. clip. Added.
-//       if(updateFlags & SC_MASTER)
-//         _masterFlag = MusEGlobal::tempomap.masterFlag();
 
       // If some operations marked as non-undoable were removed, it is OK,
       //  because we only want dirty if an undoable operation was executed, right?

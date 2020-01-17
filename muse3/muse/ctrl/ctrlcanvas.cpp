@@ -53,15 +53,6 @@ static MusECore::MidiCtrlValList veloList(MusECore::CTRL_VELOCITY);    // dummy
 
 namespace MusEGui {
 
-// REMOVE Tim. clip. Removed.
-// // Static.
-// const int CtrlCanvas::contextIdCancelDrag = 0x01;
-// const int CtrlCanvas::contextIdMerge = 0x02;
-// const int CtrlCanvas::contextIdMergeCopy = 0x04;
-// const int CtrlCanvas::contextIdErase = 0x8;
-// const int CtrlCanvas::contextIdEraseWysiwyg = 0x10;
-// const int CtrlCanvas::contextIdEraseInclusive = 0x20;
-  
 //---------------------------------------------------------
 //   computeVal
 //---------------------------------------------------------

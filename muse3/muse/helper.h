@@ -33,9 +33,6 @@
 #include <QLine>
 #include <QRect>
 
-// REMOVE Tim. wave. Added.
-#include "wave.h"
-
 #include "drummap.h"
 #include "part.h"
 #include "track.h"

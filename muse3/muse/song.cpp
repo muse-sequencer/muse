@@ -1400,11 +1400,6 @@ void Song::setQuantize(bool val)
 
 void Song::setMasterFlag(bool val)
     {
-// REMOVE Tim. clip. Changed.
-//       MusECore::PendingOperationList operations;
-//       operations.add(MusECore::PendingOperationItem(&MusEGlobal::tempomap, val, MusECore::PendingOperationItem::SetUseMasterTrack));
-//       MusEGlobal::audio->msgExecutePendingOperations(operations, true);
-      
       // Here we have a choice of whether to allow undoing of setting the master.
       // TODO: Add a separate config flag just for this ?
       //if(MusEGlobal::config.selectionsUndoable)
@@ -1603,115 +1598,44 @@ void Song::setPos(POSTYPE posType, const Pos& val, bool sig,
             }
             }
 
-// REMOVE Tim. clip. Changed.
-//       if (idx == CPOS) {
-//             const unsigned int vtick = val.tick();
-//             iMarker i1 = _markerList->begin();
-//             iMarker i2 = i1;
-//             bool currentChanged = false;
-//             for (; i1 != _markerList->end(); ++i1) {
-//                   ++i2;
-//                   if (vtick >= i1->first && (i2==_markerList->end() || vtick < i2->first)) {
-//                         if (i1->second.current())
-//                               return;
-//                         i1->second.setCurrent(true);
-//                         if (currentChanged) {
-//                               emit markerChanged(MARKER_CUR);
-//                               return;
-//                               }
-//                         ++i1;
-//                         for (; i1 != _markerList->end(); ++i1) {
-//                               if (i1->second.current())
-//                                     i1->second.setCurrent(false);
-//                               }
-//                         emit markerChanged(MARKER_CUR);
-//                         return;
-//                         }
-//                   else {
-//                         if (i1->second.current()) {
-//                               currentChanged = true;
-//                               i1->second.setCurrent(false);
-//                               }
-//                         }
-//                   }
-//             if (currentChanged)
-//                   emit markerChanged(MARKER_CUR);
-//             }
-
       if(posType == CPOS)
       {
         const unsigned int vframe = val.frame();
         iMarker i1 = _markerList->begin();
-        //iMarker i2 = i1;
         bool currentChanged = false;
         for(; i1 != _markerList->end(); ++i1)
         {
               const unsigned fr = i1->second.frame();
-              //bool have_current = false;
-              //const bool have_current = i1->second.current();
               // If there are multiple items at this frame and any one of them is current,
               //  leave it alone. It's arbitrary which one would be selected and it would
               //  normally choose the first one, but we'll let it stick with the one that's current,
               //  to avoid jumping around in the marker view window.
               iMarker i2 = i1;
-//               for(; i2 != _markerList->end(); ++i2)
-//               {
-//                 if(i2->second.frame() != fr)
-//                     break;
-//                 //if(i2->second.current())
-//                 //  have_current = true;
-//               }
-//               for(; i1 != _markerList->end(); ++i1)
-//               {
-//                 if(i1->second.frame() != fr)
-//                     break;
-//                 //if(i2->second.current())
-//                 //  have_current = true;
-//                 i2 = i1;
-//               }
               while(i2 != _markerList->end() && i2->second.frame() == fr)
               {
                 i1 = i2;
                 ++i2;
               }
 
-          
-              //++i2;
-              //if (vframe >= i1->second.frame() && (i2==_markerList->end() || vframe < i2->second.frame())) {
-              //if(vframe >= fr)
               if(vframe >= fr && (i2==_markerList->end() || vframe < i2->second.frame()))
               {
-                //++i2;
-                //if(vframe >= fr && (i2==_markerList->end() || vframe < i2->second.frame()))
-                //{
+                if(i1->second.current())
+                  return;
+                
+                i1->second.setCurrent(true);
 
-                  if(i1->second.current())
-                    return;
-                  
-                  //if(have_current)
-                  //  return;
-
-                  i1->second.setCurrent(true);
-
-                  if(currentChanged)
-                  {
-                    emit markerChanged(MARKER_CUR);
-                    return;
-                  }
-                  //++i1;
-                  //for(; i1 != _markerList->end(); ++i1)
-                  //{
-                  //  if(i1->second.current())
-                  //    i1->second.setCurrent(false);
-                  //}
-                  for(; i2 != _markerList->end(); ++i2)
-                  {
-                    if(i2->second.current())
-                      i2->second.setCurrent(false);
-                  }
+                if(currentChanged)
+                {
                   emit markerChanged(MARKER_CUR);
                   return;
-                //}
+                }
+                for(; i2 != _markerList->end(); ++i2)
+                {
+                  if(i2->second.current())
+                    i2->second.setCurrent(false);
+                }
+                emit markerChanged(MARKER_CUR);
+                return;
               }
               else
               {
@@ -2094,66 +2018,6 @@ void Song::setLen(unsigned l, bool do_update)
         update();
       }
 
-// REMOVE Tim. clip. Changed.
-// //---------------------------------------------------------
-// //   addMarker
-// //---------------------------------------------------------
-// 
-// Marker* Song::addMarker(const QString& s, int t, bool lck)
-//       {
-//       Marker* marker = _markerList->add(s, t, lck);
-//       emit markerChanged(MARKER_ADD);
-//       return marker;
-//       }
-// 
-// //---------------------------------------------------------
-// //   addMarker
-// //---------------------------------------------------------
-// 
-// Marker* Song::getMarkerAt(int t)
-//       {
-//       iMarker markerI;
-//       for (markerI=_markerList->begin(); markerI != _markerList->end(); ++markerI) {
-//           if (unsigned(t) == markerI->second.tick()) //prevent of compiler warning: comparison signed/unsigned
-//             return &markerI->second;
-//           }
-//       return NULL;
-//       }
-// 
-// //---------------------------------------------------------
-// //   removeMarker
-// //---------------------------------------------------------
-// 
-// void Song::removeMarker(Marker* marker)
-//       {
-//       _markerList->remove(marker);
-//       emit markerChanged(MARKER_REMOVE);
-//       }
-// 
-// Marker* Song::setMarkerName(Marker* m, const QString& s)
-//       {
-//       m->setName(s);
-//       emit markerChanged(MARKER_NAME);
-//       return m;
-//       }
-// 
-// Marker* Song::setMarkerTick(Marker* m, int t)
-//       {
-//       Marker mm(*m);
-//       _markerList->remove(m);
-//       mm.setTick(t);
-//       m = _markerList->add(mm);
-//       emit markerChanged(MARKER_TICK);
-//       return m;
-//       }
-// 
-// Marker* Song::setMarkerLock(Marker* m, bool f)
-//       {
-//       m->setType(f ? Pos::FRAMES : Pos::TICKS);
-//       emit markerChanged(MARKER_LOCK);
-//       return m;
-//       }
-
 //---------------------------------------------------------
 //   addMarker
 //---------------------------------------------------------
@@ -2164,7 +2028,6 @@ void Song::addMarker(const QString& s, unsigned t, bool lck)
       m.setType(lck ? Pos::FRAMES : Pos::TICKS);
       m.setTick(t);
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddMarker, m));
-//       emit markerChanged(MARKER_ADD);
       }
 
 void Song::addMarker(const QString& s, const Pos& p)
@@ -2173,7 +2036,6 @@ void Song::addMarker(const QString& s, const Pos& p)
       m.setType(p.type());
       m.setPos(p);
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddMarker, m));
-//       emit markerChanged(MARKER_ADD);
 }
 
 //---------------------------------------------------------
@@ -2192,42 +2054,27 @@ iMarker Song::getMarkerAt(unsigned t)
 void Song::removeMarker(const Marker& marker)
       {
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteMarker, marker));
-//       emit markerChanged(MARKER_REMOVE);
       }
 
 void Song::setMarkerName(const Marker& marker, const QString& s)
       {
-//       // Grab a copy but with a new ID.
-//       Marker m = marker.copy();
       Marker m(marker);
       m.setName(s);
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
-//       emit markerChanged(MARKER_NAME);
       }
 
-// void Song::setMarkerTick(const Marker& marker, const Pos& pos)
 void Song::setMarkerPos(const Marker& marker, const Pos& pos)
       {
-      //Marker m(marker);
-      //m.setTick(t);
-      //MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
-//       emit markerChanged(MARKER_TICK);
-
       // Here we use the separate SetMarkerPos operation, which is 'combo-breaker' aware, to optimize repeated adjustments.
-      //MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetMarkerPos, marker, t, Pos::TICKS));
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetMarkerPos, marker, pos.posValue(), pos.type()));
       }
 
 void Song::setMarkerLock(const Marker& marker, bool f)
       {
-//       // Grab a copy but with a new ID.
-//       Marker m = marker.copy();
       Marker m(marker);
       m.setType(f ? Pos::FRAMES : Pos::TICKS);
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
-//       emit markerChanged(MARKER_LOCK);
       }
-
 
 //---------------------------------------------------------
 //   setRecordFlag
@@ -4988,7 +4835,6 @@ void Song::modifyDefaultAudioConverterSettingsOperation(AudioConverterSettingsGr
   }
 }
 
-// REMOVE Tim. clip. Added.
 //---------------------------------------------------------
 //   updateTransportPos
 //   called from GUI context
@@ -5023,7 +4869,6 @@ void Song::updateTransportPos(const SongChangedStruct_t& flags)
   }
 }
 
-// REMOVE Tim. clip. Added.
 //---------------------------------------------------------
 //   adjustMarkerListOperation
 //   Items between startPos and startPos + diff are removed.

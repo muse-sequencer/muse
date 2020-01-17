@@ -151,13 +151,11 @@ typedef int64_t EventID_t;
 #define MUSE_INVALID_EVENT_ID   -1
 #define MUSE_INVALID_POSITION   INT_MAX
 
-
 enum RelevantSelectedEvents { NoEventsRelevant = 0x00, NotesRelevant = 0x01, ControllersRelevant = 0x02,
                 SysexRelevant = 0x04, MetaRelevant = 0x08, WaveRelevant = 0x10,
                 AllEventsRelevant = NotesRelevant | ControllersRelevant |
                                     SysexRelevant | MetaRelevant | WaveRelevant};
 typedef int RelevantSelectedEvents_t;
-
 
 enum FunctionOptions {
   FunctionNoOptions = 0x00,
@@ -194,86 +192,6 @@ struct FunctionOptionsStruct
   void appendFlags(const FunctionOptions_t& flags) { _flags |= flags; }
   void removeFlags(const FunctionOptions_t& flags) { _flags &= ~flags; }
 };
-
-// // Typically used for displaying and editing time values in positional widgets (PosEdit etc).
-// enum TimeFormatOptions { TimeFormatNoOptions = 0x0,
-//   // The mode of operation.
-//   TimeModeFrames = 0x01,
-//   // The displayed mode.
-//   TimeDisplayFrames = 0x02,
-//   // Whether to format the display.
-//   TimeFormatFormatted = 0x04,
-// 
-//   TimeFormatTicksFormatted = TimeFormatFormatted,
-//   TimeFormatFramesFormatted = TimeDisplayFrames | TimeModeFrames | TimeFormatFormatted,
-//   TimeFormatTicksUnFormatted = TimeFormatNoOptions,
-//   TimeFormatFramesUnFormatted = TimeDisplayFrames | TimeModeFrames,
-// 
-//   // Whether the user can change the type or format (from a popup menu etc).
-//   TimeFormatUserMode = 0x08, TimeFormatUserDisplayMode = 0x10, TimeFormatUserFormat = 0x20,
-//   TimeFormatUserAll = TimeFormatUserMode | TimeFormatUserDisplayMode | TimeFormatUserFormat,
-// 
-//   TimeFormatAllOptions = TimeDisplayFrames | TimeModeFrames | TimeFormatFormatted | 
-//     TimeFormatUserMode | TimeFormatUserDisplayMode | TimeFormatUserFormat
-//   };
-// typedef int TimeFormatOptions_t;
-//   
-// class TimeFormatOptionsStruct
-// {
-//   public:
-//     TimeFormatOptions_t _flags;
-// 
-//     TimeFormatOptionsStruct(const TimeFormatOptions_t& flags =
-//       TimeFormatTicksFormatted | TimeFormatUserAll) : _flags(flags) { }
-// 
-//     bool operator==(const TimeFormatOptionsStruct& a)
-//     { return _flags == a._flags; }
-// 
-//     bool operator!=(const TimeFormatOptionsStruct& a)
-//     { return _flags != a._flags; }
-// 
-//     TimeFormatOptionsStruct& operator=(const TimeFormatOptionsStruct& a)
-//     { _flags = a._flags; return *this; }
-// 
-//     TimeFormatOptionsStruct& operator|=(const TimeFormatOptionsStruct& a)
-//     { _flags |= a._flags; return *this; }
-// 
-//     TimeFormatOptionsStruct& operator&=(const TimeFormatOptionsStruct& a)
-//     { _flags &= a._flags; return *this; }
-// 
-//     // Adds (ORs) flags.
-//     TimeFormatOptionsStruct& operator+=(const TimeFormatOptionsStruct& a)
-//     { _flags |= a._flags; return *this; } // Yes, that's 'or'.
-// 
-//     // Removes flags.
-//     TimeFormatOptionsStruct& operator-=(const TimeFormatOptionsStruct& a)
-//     { _flags &= ~a._flags; return *this; } // Yes, that's 'and neg'.
-// 
-//     friend TimeFormatOptionsStruct operator|(const TimeFormatOptionsStruct& a, const TimeFormatOptionsStruct& b)
-//     { TimeFormatOptionsStruct s = a;  return s |= b; }
-// 
-//     friend TimeFormatOptionsStruct operator&(const TimeFormatOptionsStruct& a, const TimeFormatOptionsStruct& b)
-//     { TimeFormatOptionsStruct s = a;  return s &= b; }
-// 
-//     // Adds (ORs) flags.
-//     friend TimeFormatOptionsStruct operator+(const TimeFormatOptionsStruct& a, const TimeFormatOptionsStruct& b)
-//     { TimeFormatOptionsStruct s = a;  return s += b; }
-// 
-//     // Removes flags.
-//     friend TimeFormatOptionsStruct operator-(const TimeFormatOptionsStruct& a, const TimeFormatOptionsStruct& b)
-//     { TimeFormatOptionsStruct s = a;  return s -= b; }
-// 
-//     void clear() { _flags = TimeFormatNoOptions; }
-//     void setOptions(const TimeFormatOptionsStruct& options, bool set = true)
-//     { if(set) _flags |= options._flags; else _flags &= ~options._flags; }
-//     void setFlags(const TimeFormatOptions_t& flags, bool set = true)
-//     { if(set) _flags |= flags; else _flags &= ~flags; }
-//     bool optionsSet(const TimeFormatOptionsStruct& options) const
-//     { return _flags & options._flags; }
-//     bool flagsSet(const TimeFormatOptions_t& flags) const
-//     { return _flags & flags; }
-//     
-// };
 
 // Typically used for displaying and editing time values in positional widgets (PosEdit etc).
 enum TimeFormatOptions { TimeFormatNoOptions = 0x0,

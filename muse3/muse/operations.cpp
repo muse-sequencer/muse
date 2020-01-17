@@ -22,9 +22,6 @@
 
 #include "operations.h"
 #include "song.h"
-// REMOVE Tim. clip. Added.
-#include "audio.h"
-#include "audiodev.h"
 
 // Enable for debugging:
 //#define _PENDING_OPS_DEBUG_
@@ -2873,7 +2870,6 @@ bool PendingOperationList::add(PendingOperationItem op)
 //           // Simply replace the list.
 //           poi._newMetroAccentsMap = op._newMetroAccentsMap;
 //           // An operation will still take place.
-
 //           return true;
 //         }
       break;
@@ -3128,44 +3124,6 @@ bool PendingOperationList::delTempoOperation(unsigned tick, TempoList* tl)
   add(poi);
   return true;
 }
-
-// REMOVE Tim. clip. Added.
-// //---------------------------------------------------------
-// //   adjustMarkerListOperation
-// //   Items between startPos and startPos + diff are removed.
-// //   Items after startPos + diff are adjusted 'diff' number of ticks.
-// //---------------------------------------------------------
-// 
-// bool PendingOperationList::adjustMarkerListOperation(MarkerList* markerlist, unsigned int startPos, int diff)
-// {
-//   if(!markerlist || markerlist->empty() || diff == 0)
-//     return false;
-//   
-//   MarkerList* new_markerlist = new MarkerList();
-//   for(ciMarker i = markerlist->begin(); i != markerlist->end(); ++i)
-//   {
-//     const Marker& m = i->second;
-//     unsigned int tick = m.tick();
-//     if(tick >= startPos)
-//     {
-//       if(tick >= startPos + diff)
-//       {
-//         Marker newMarker(m);
-//         newMarker.setTick(tick - diff);
-//         new_markerlist->add(newMarker);
-//       }
-//     }
-//     else
-//     {
-//       new_markerlist->add(m);
-//     }
-//   }
-// 
-//   PendingOperationItem poi(markerlist, new_markerlist, PendingOperationItem::ModifyMarkerList);
-//   add(poi);
-// 
-//   return true;
-// }
 
 
 } // namespace MusECore

@@ -182,8 +182,7 @@ struct PendingOperationItem
     ModifyAudioSamples,
     SwitchMetronomeSettings, ModifyMetronomeAccentMap,
     SetExternalSyncFlag, SetUseJackTransport, SetUseMasterTrack,
-    // REMOVE Tim. clip. Added.
-    /*AddMarker, DeleteMarker, ModifyMarker,*/ ModifyMarkerList
+    ModifyMarkerList
     }; 
                               
   PendingOperationType _type;
@@ -541,18 +540,6 @@ struct PendingOperationItem
   PendingOperationItem(PendingOperationType type) // type is EnableAllAudioControllers.
     { _type = type; }
 
-// REMOVE Tim. clip. Added.
-//   PendingOperationItem(MarkerList* marker_l, const QString* newName, unsigned int tick, bool lock, PendingOperationType type = AddMarker)
-//     { _type = type; _marker_list = marker_l; _name = newName; _marker_tick = tick; _marker_lock = lock; }
-//     
-//   PendingOperationItem(MarkerList* marker_l, const iMarker& oldMarker, PendingOperationType type = DeleteMarker)
-//     { _type = type; _marker_list = marker_l; _iMarker = oldMarker; }
-//     
-//   PendingOperationItem(MarkerList* marker_l, const iMarker& oldMarker, const QString* newName,
-//                        unsigned int tick, bool lock, PendingOperationType type = ModifyMarker)
-//     { _type = type; _marker_list = marker_l; _iMarker = oldMarker; _name = newName; _marker_tick = tick; _marker_lock = lock; }
-    
-  // REMOVE Tim. clip. Added.
   // Takes ownership of the original list so it can be deleted in the non-RT stage.
   PendingOperationItem(MarkerList** orig_marker_l, MarkerList* new_marker_l, PendingOperationType type = ModifyMarkerList)
     { _type = type; _orig_marker_list = orig_marker_l; _marker_list = new_marker_l; }
@@ -610,10 +597,6 @@ class PendingOperationList : public std::list<PendingOperationItem>
     bool delTimeSigOperation(unsigned tick, MusECore::SigList* sl);
     bool addTempoOperation(unsigned tick, int tempo, TempoList* tl);
     bool delTempoOperation(unsigned tick, TempoList* tl);
-// REMOVE Tim. clip. Added.
-//     // Items between startPos and startPos + diff are removed.
-//     // Items after startPos + diff are adjusted 'diff' number of ticks.
-//     bool adjustMarkerListOperation(MarkerList* markerlist, unsigned int startPos, int diff);
 };
 
 typedef PendingOperationList::iterator iPendingOperation;

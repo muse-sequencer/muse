@@ -576,8 +576,7 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
                   case Xml::TagStart:
                         if (tag == "master")
                         {
-// REMOVE Tim. clip. Changed. Avoid emitting songChanged.
-//                               setMasterFlag(xml.parseInt());
+                              // Avoid emitting songChanged.
                               // Tick parameter is not used.
                               MusEGlobal::tempomap.setMasterFlag(0, xml.parseInt());
                         }

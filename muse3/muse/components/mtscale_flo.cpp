@@ -74,8 +74,6 @@ void MTScaleFlo::configChanged()
 
 void MTScaleFlo::songChanged(MusECore::SongChangedStruct_t type)
       {
-// REMOVE Tim. clip. Changed.
-//       if (type & (SC_SIG|SC_TEMPO))
       if (type & (SC_SIG|SC_TEMPO|SC_MARKERS_REBUILT|SC_MARKER_INSERTED|SC_MARKER_REMOVED|SC_MARKER_MODIFIED))
             redraw();
       }
@@ -171,18 +169,11 @@ void MTScaleFlo::mouseMoveEvent(QMouseEvent* event)
       MusECore::Pos p(tick, true);
       
       if(posType == MusECore::Song::CPOS && (event->modifiers() & Qt::ShiftModifier )) {        // If shift +LMB we add a marker
-// REMOVE Tim. clip. Changed.
-//             MusECore::Marker *alreadyExists = MusEGlobal::song->getMarkerAt(tick);
-//             if (!alreadyExists)
             const MusECore::iMarker alreadyExists = MusEGlobal::song->getMarkerAt(tick);
             if (alreadyExists == MusEGlobal::song->marker()->end())
                   MusEGlobal::song->addMarker(QString(""), tick, false);         
             }
       else if (posType == MusECore::Song::RPOS && (event->modifiers() & Qt::ShiftModifier )) {  // If shift +RMB we remove a marker
-// REMOVE Tim. clip. Changed.
-//             MusECore::Marker *toRemove = MusEGlobal::song->getMarkerAt(tick);
-//             if (toRemove)
-//               MusEGlobal::song->removeMarker(toRemove);
             const MusECore::iMarker toRemove = MusEGlobal::song->getMarkerAt(tick);
             if (toRemove != MusEGlobal::song->marker()->end())
               MusEGlobal::song->removeMarker(toRemove->second);
