@@ -772,8 +772,10 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.fonts[5].fromString(xml.parse1());
                         else if (tag == "font6")
                               MusEGlobal::config.fonts[6].fromString(xml.parse1());
+                        else if (tag == "autoAdjustFontSize")
+                              MusEGlobal::config.autoAdjustFontSize = xml.parseInt();
                         else if (tag == "globalAlphaBlend")
-                              MusEGlobal::config.globalAlphaBlend = xml.parseInt();
+                            MusEGlobal::config.globalAlphaBlend = xml.parseInt();
                         else if (tag == "palette0")
                               MusEGlobal::config.palette[0] = readColor(xml);
                         else if (tag == "palette1")
@@ -1893,6 +1895,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
 //          for (int i = 0; i < NUM_FONTS; ++i) {
             xml.strTag(level, QString("font") + QString::number(i), MusEGlobal::config.fonts[i].toString());
             }
+      xml.intTag(level, "autoAdjustFontSize", MusEGlobal::config.autoAdjustFontSize);
             
       xml.intTag(level, "globalAlphaBlend", MusEGlobal::config.globalAlphaBlend);
       
