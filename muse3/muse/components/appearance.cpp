@@ -504,6 +504,7 @@ void Appearance::resetValues()
       *backupConfig = MusEGlobal::config;  // init with global config values
       styleSheetPath->setText(config->styleSheetFile);
       updateFonts();
+      cbAutoAdjustFontSize->setChecked(config->autoAdjustFontSize);
 
       setConfigurationColors();
       
@@ -834,6 +835,7 @@ bool Appearance::apply()
       config->canvasShowGrid = arrGrid->isChecked();
       config->globalAlphaBlend = globalAlphaVal->value();
       config->maxAliasedPointSize = maxAliasedPointSize->value();
+      config->autoAdjustFontSize = cbAutoAdjustFontSize->isChecked();
 
       if (config->iconSize != iconSizeSpin->value()) {
           restart_required = true;
@@ -1670,3 +1672,24 @@ void Appearance::browseFont(int n)
       }
 
 } // namespace MusEGui
+
+void MusEGui::Appearance::on_pbAdjustFontSizes_clicked()
+{
+    int fs = fontSize0->value();
+    fontSize1->setValue(qRound(fs * MusEGlobal::FntFac::F1));
+    fontSize2->setValue(qRound(fs * MusEGlobal::FntFac::F2));
+    fontSize3->setValue(qRound(fs * MusEGlobal::FntFac::F3));
+    fontSize4->setValue(qRound(fs * MusEGlobal::FntFac::F4));
+    fontSize5->setValue(qRound(fs * MusEGlobal::FntFac::F5));
+    fontSize6->setValue(qRound(fs * MusEGlobal::FntFac::F6));
+}
+
+void MusEGui::Appearance::on_pbSetFontFamily_clicked()
+{
+    fontName1->setText(fontName0->text());
+    fontName2->setText(fontName0->text());
+    fontName3->setText(fontName0->text());
+    fontName4->setText(fontName0->text());
+    fontName5->setText(fontName0->text());
+    fontName6->setText(fontName0->text());
+}

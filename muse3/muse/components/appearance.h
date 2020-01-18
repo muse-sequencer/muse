@@ -158,7 +158,12 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       ~Appearance();
       void resetValues();
       static QString& getSetDefaultStyle(const QString *newStyle = NULL);
-      };
+private slots:
+      void on_pbSetFontFamily_clicked();
+
+private slots:
+      void on_pbAdjustFontSizes_clicked();
+};
 
 } // namespace MusEGui
 

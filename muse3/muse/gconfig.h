@@ -48,6 +48,16 @@ enum newDrumRecordCondition_t
 
 namespace MusEGlobal {
 
+// font scaling factors
+struct FntFac {
+    static constexpr double F1 = 0.7;
+    static constexpr double F2 = 1.0;
+    static constexpr double F3 = 1.0;
+    static constexpr double F4 = 0.8;
+    static constexpr double F5 = 0.8;
+    static constexpr double F6 = 0.8;
+};
+
 // Obsolete. There is only 'New' drum tracks now.
 // enum drumTrackPreference_t
 // {
@@ -174,6 +184,7 @@ struct GlobalConfigValues {
       QColor bigTimeBackgroundColor;
       QColor waveEditBackgroundColor;
       QFont fonts[NUM_FONTS];
+      bool autoAdjustFontSize;
       QColor trackBg;
       QColor selectTrackBg;
       QColor selectTrackFg;
