@@ -13,10 +13,10 @@ Most Linux distributions include MusE ready to install, check your package manag
 
 Installation from source code:
 ------------------------------
-Stable source code releases are [here](http://sourceforge.net/project/showfiles.php?group_id=93414).
+Stable source code releases are [here](https://github.com/muse-sequencer/muse/releases).
 Or one of the git branches can be cloned, built, and installed.
 
-Installation instructions are in the [README](muse3/README) file. German version: [README.de](muse3/README.de).
+Installation instructions are in the [README](muse3/README) file.
 
 Documentation:
 --------------
