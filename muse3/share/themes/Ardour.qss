@@ -3,6 +3,10 @@ QWidget {
       color: rgb(193,193,197);
 }
 
+QWidget:!enabled {
+	color: rgb(150,150,154);
+}
+
 QToolBar QToolButton {
       background-color: rgb(93,94,106);
       border-color: rgb(70,70,70);
@@ -12,15 +16,6 @@ QToolBar QToolButton {
       padding: 1px;
 
 }
-
-/* What's this doing here? QAction is not a QWidget
-QAction {
-      background-color: rgb(150,150,150);
-     spacing: 3px;
-     padding: 1px 4px;
-     background: transparent;
-     border-radius: 4px;
- } */
 
 /*QMenu::item {
      background-color: rgb(150,150,150);
