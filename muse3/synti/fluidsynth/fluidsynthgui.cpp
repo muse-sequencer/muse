@@ -444,6 +444,7 @@ void FluidSynthGui::updateChannelListView()
 	    QTableWidgetItem* chan_ = new QTableWidgetItem(chanstr);
 	    channelListView->setItem(i, FS_CHANNEL_COL, chan_);
 	    QTableWidgetItem* sfid_ = new QTableWidgetItem(bd_icon, sfidstr);
+        sfid_->setToolTip("Ctrl to fill all channels\nShift to fill empty channels");
 	    channelListView->setItem(i, FS_SF_ID_COL, sfid_);
 	    QTableWidgetItem* drum_ = new QTableWidgetItem(bd_icon, drumchanstr);
 
@@ -555,13 +556,9 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
 
             QAction *lastaction = popup->addAction("unspecified");
             lastaction->setData(lastindex);
-            QAction * act = popup->exec(ppt, 0);
+            QAction * act = popup->exec(ppt, nullptr);
             if (act) {
-                bool allch = false;
-                if (qApp->keyboardModifiers() & Qt::ControlModifier)
-                    allch = true;
-
-
+                Qt::KeyboardModifiers keymod = qApp->keyboardModifiers();
                 int sfid = act->data().toInt();
                 QString fontname;
                 if (sfid == lastindex) {
@@ -573,18 +570,20 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
                     fontname = getSoundFontName((byte)sfid);
                 }
                 //byte channel = atoi(item->text().toLatin1()) - 1;
-                if (allch) {
+                if (keymod & (Qt::ShiftModifier|Qt::ControlModifier)) {
                     for (int i = 0; i < FS_MAX_NR_OF_CHANNELS; i++) {
+                        if (keymod & Qt::ShiftModifier && channels[i] != FS_UNSPECIFIED_ID && i != row)
+                            continue;
+                        sendChannelChange((byte)sfid, (byte)i);
+                        channels[i] = (byte)sfid;
                         channelListView->item(i, col)->setText(fontname);
-                        sendChannelChange(sfid, i);
                     }
-                    sendUpdateDrumMaps();
                 } else {
-                    byte channel = row;
-                    sendChannelChange(sfid, channel);
-                    sendUpdateDrumMaps();
+                    sendChannelChange((byte)sfid, (byte)row);
+                    channels[row] = (byte)sfid;
                     item->setText(fontname);
                 }
+                sendUpdateDrumMaps();
             }
             delete popup;
       }

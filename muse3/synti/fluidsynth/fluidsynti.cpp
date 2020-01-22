@@ -1722,7 +1722,7 @@ void LoadFontWorker::execLoadFont(void * t)
                   printf("This was the last font, rewriting channel settings...\n");
             fptr->rewriteChannelSettings();
             //Update data in GUI-window.
-            fptr->sendSoundFontData();;
+            fptr->sendSoundFontData();
             fptr->sendChannelData();
             }
 
