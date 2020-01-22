@@ -444,6 +444,7 @@ void FluidSynthGui::updateChannelListView()
 	    QTableWidgetItem* chan_ = new QTableWidgetItem(chanstr);
 	    channelListView->setItem(i, FS_CHANNEL_COL, chan_);
 	    QTableWidgetItem* sfid_ = new QTableWidgetItem(bd_icon, sfidstr);
+        sfid_->setToolTip("Ctrl to fill all channels\nShift to fill empty channels");
 	    channelListView->setItem(i, FS_SF_ID_COL, sfid_);
 	    QTableWidgetItem* drum_ = new QTableWidgetItem(bd_icon, drumchanstr);
 
@@ -527,8 +528,8 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
             int i = 0;
             int lastindex = 0;
             for (std::list<FluidGuiSoundFont>::reverse_iterator it = stack.rbegin(); it != stack.rend(); it++) {
-                  i++;
-                  /*byte* d = (byte*) it->name.toLatin1();
+                i++;
+                /*byte* d = (byte*) it->name.toLatin1();
                   for (int i=0; i<96; i++) {
                         if (i%16 == 0)
                               printf("%x:",(i+d));
@@ -548,33 +549,44 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
                               printf("\n");
                         }
                   printf("\n\n");*/
-                  QAction* act1 = popup->addAction(it->name);
-    act1->setData((int)it->id);
-    lastindex = std::max(lastindex, (int)it->id  + 1);
-                  }
+                QAction* act1 = popup->addAction(it->name);
+                act1->setData((int)it->id);
+                lastindex = std::max(lastindex, (int)it->id  + 1);
+            }
 
             QAction *lastaction = popup->addAction("unspecified");
-	    lastaction->setData(lastindex);
-            QAction * act = popup->exec(ppt, 0);
+            lastaction->setData(lastindex);
+            QAction * act = popup->exec(ppt, nullptr);
             if (act) {
-           int sfid = act->data().toInt();
-                  QString fontname;
-                  if (sfid == lastindex) {
-                        sfid = FS_UNSPECIFIED_ID;
-                        fontname = "unspecified";	//Actually, it's not possible to reset fluid-channels as for now,
-                        } //so this is just a dummy that makes the synth block any events for the channel
-                  else {
-                        //sfid = getSoundFontId(act->text());
-                        fontname = getSoundFontName((byte)sfid);
-                        }
-                  //byte channel = atoi(item->text().toLatin1()) - 1;
-                  byte channel = row;
-                  sendChannelChange(sfid, channel);
-                  sendUpdateDrumMaps();
-                  item->setText(fontname);
-                  }
+                Qt::KeyboardModifiers keymod = qApp->keyboardModifiers();
+                int sfid = act->data().toInt();
+                QString fontname;
+                if (sfid == lastindex) {
+                    sfid = FS_UNSPECIFIED_ID;
+                    fontname = "unspecified";	//Actually, it's not possible to reset fluid-channels as for now,
+                } //so this is just a dummy that makes the synth block any events for the channel
+                else {
+                    //sfid = getSoundFontId(act->text());
+                    fontname = getSoundFontName((byte)sfid);
+                }
+                //byte channel = atoi(item->text().toLatin1()) - 1;
+                if (keymod & (Qt::ShiftModifier|Qt::ControlModifier)) {
+                    for (int i = 0; i < FS_MAX_NR_OF_CHANNELS; i++) {
+                        if (keymod & Qt::ShiftModifier && channels[i] != FS_UNSPECIFIED_ID && i != row)
+                            continue;
+                        sendChannelChange((byte)sfid, (byte)i);
+                        channels[i] = (byte)sfid;
+                        channelListView->item(i, col)->setText(fontname);
+                    }
+                } else {
+                    sendChannelChange((byte)sfid, (byte)row);
+                    channels[row] = (byte)sfid;
+                    item->setText(fontname);
+                }
+                sendUpdateDrumMaps();
+            }
             delete popup;
-         }
+      }
          // Drumchannel column:
       else if (col == FS_DRUM_CHANNEL_COL) {
             QMenu* popup = new QMenu(this);
