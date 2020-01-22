@@ -527,8 +527,8 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
             int i = 0;
             int lastindex = 0;
             for (std::list<FluidGuiSoundFont>::reverse_iterator it = stack.rbegin(); it != stack.rend(); it++) {
-                  i++;
-                  /*byte* d = (byte*) it->name.toLatin1();
+                i++;
+                /*byte* d = (byte*) it->name.toLatin1();
                   for (int i=0; i<96; i++) {
                         if (i%16 == 0)
                               printf("%x:",(i+d));
@@ -548,33 +548,46 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
                               printf("\n");
                         }
                   printf("\n\n");*/
-                  QAction* act1 = popup->addAction(it->name);
-    act1->setData((int)it->id);
-    lastindex = std::max(lastindex, (int)it->id  + 1);
-                  }
+                QAction* act1 = popup->addAction(it->name);
+                act1->setData((int)it->id);
+                lastindex = std::max(lastindex, (int)it->id  + 1);
+            }
 
             QAction *lastaction = popup->addAction("unspecified");
-	    lastaction->setData(lastindex);
+            lastaction->setData(lastindex);
             QAction * act = popup->exec(ppt, 0);
             if (act) {
-           int sfid = act->data().toInt();
-                  QString fontname;
-                  if (sfid == lastindex) {
-                        sfid = FS_UNSPECIFIED_ID;
-                        fontname = "unspecified";	//Actually, it's not possible to reset fluid-channels as for now,
-                        } //so this is just a dummy that makes the synth block any events for the channel
-                  else {
-                        //sfid = getSoundFontId(act->text());
-                        fontname = getSoundFontName((byte)sfid);
-                        }
-                  //byte channel = atoi(item->text().toLatin1()) - 1;
-                  byte channel = row;
-                  sendChannelChange(sfid, channel);
-                  sendUpdateDrumMaps();
-                  item->setText(fontname);
-                  }
+                bool allch = false;
+                if (qApp->keyboardModifiers() & Qt::ControlModifier)
+                    allch = true;
+
+
+                int sfid = act->data().toInt();
+                QString fontname;
+                if (sfid == lastindex) {
+                    sfid = FS_UNSPECIFIED_ID;
+                    fontname = "unspecified";	//Actually, it's not possible to reset fluid-channels as for now,
+                } //so this is just a dummy that makes the synth block any events for the channel
+                else {
+                    //sfid = getSoundFontId(act->text());
+                    fontname = getSoundFontName((byte)sfid);
+                }
+                //byte channel = atoi(item->text().toLatin1()) - 1;
+                if (allch) {
+                    for (int i = 0; i < FS_MAX_NR_OF_CHANNELS; i++) {
+                        channelListView->item(i, col)->setText(fontname);
+                        sendChannelChange(sfid, i);
+                    }
+                    sendUpdateDrumMaps();
+                } else {
+                    byte channel = row;
+                    sendChannelChange(sfid, channel);
+                    sendUpdateDrumMaps();
+                    item->setText(fontname);
+                }
+            }
             delete popup;
-         }
+      }
          // Drumchannel column:
       else if (col == FS_DRUM_CHANNEL_COL) {
             QMenu* popup = new QMenu(this);
