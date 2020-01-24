@@ -1012,7 +1012,9 @@ bool PianoCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint
       NEvent* nevent = (NEvent*) item;
       MusECore::Event event    = nevent->event();
       int npitch     = y2pitch(pos.y());
+      event.setSelected(false);
       MusECore::Event newEvent = (dtype == MOVE_COPY) ? event.duplicate() : event.clone();
+      newEvent.setSelected(true);
       int x          = pos.x();
       if (x < 0)
             x = 0;
