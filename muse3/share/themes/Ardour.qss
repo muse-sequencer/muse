@@ -7,6 +7,10 @@ QWidget:!enabled {
 	color: rgb(150,150,154);
 }
 
+QToolTip {
+	background-color: rgb(180, 180, 180);
+}
+
 QToolBar QToolButton {
       background-color: rgb(93,94,106);
       border-color: rgb(70,70,70);
