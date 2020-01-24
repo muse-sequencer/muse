@@ -100,21 +100,26 @@ void SigScale::viewMouseMoveEvent(QMouseEvent* event)
       MusECore::Song::POSTYPE posType;
 
       switch (button) {
-            case Qt::LeftButton:
-                  posType = MusECore::Song::CPOS;
-                  break;
-            case Qt::MidButton:
-                  posType = MusECore::Song::LPOS;
-                  break;
-            case Qt::RightButton:
-                  if ((MusEGlobal::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
-                      posType = MusECore::Song::LPOS;
-                  else
-                      posType = MusECore::Song::RPOS;
-                  break;
-            default:
-                  return;
-            }
+      case Qt::LeftButton:
+          if ((MusEGlobal::config.rangeMarkersSet == MusEGlobal::CONF_SET_MARKERS_CTRL_LEFT_CTRL_RIGHT) && (event->modifiers() & Qt::ControlModifier))
+              posType = MusECore::Song::LPOS;
+          else
+              posType = MusECore::Song::CPOS;
+          break;
+      case Qt::MidButton:
+          posType = MusECore::Song::LPOS;
+          break;
+      case Qt::RightButton:
+          if ((MusEGlobal::config.rangeMarkersSet == MusEGlobal::CONF_SET_MARKERS_CTRL_LEFT_CTRL_RIGHT) && (event->modifiers() & Qt::ControlModifier))
+              posType = MusECore::Song::RPOS;
+          else if ((MusEGlobal::config.rangeMarkersSet == MusEGlobal::CONF_SET_MARKERS_CTRL_RIGHT_RIGHT) && (event->modifiers() & Qt::ControlModifier))
+              posType = MusECore::Song::LPOS;
+          else
+              posType = MusECore::Song::RPOS;
+          break;
+      default:
+          return; // if no button is pressed the function returns here
+      }
       MusECore::Pos p(x, true);
       MusEGlobal::song->setPos(posType, p);
       }

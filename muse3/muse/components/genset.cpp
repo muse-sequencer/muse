@@ -288,13 +288,20 @@ void GlobalSettingsConfig::updateSettings()
       projectSaveCheckBox->setChecked(MusEGlobal::config.useProjectSaveDialog);
       popsDefStayOpenCheckBox->setChecked(MusEGlobal::config.popupsDefaultStayOpen);
       lmbDecreasesCheckBox->setChecked(MusEGlobal::config.leftMouseButtonCanDecrease);
-      rangeMarkerWithoutMMBCheckBox->setChecked(MusEGlobal::config.rangeMarkerWithoutMMB);
+//      rangeMarkerWithoutMMBCheckBox->setChecked(MusEGlobal::config.rangeMarkerWithoutMMB);
       smartFocusCheckBox->setChecked(MusEGlobal::config.smartFocus);
       borderlessMouseCheckBox->setChecked(MusEGlobal::config.borderlessMouse);
       velocityPerNoteCheckBox->setChecked(MusEGlobal::config.velocityPerNote);
       
       addHiddenCheckBox->setChecked(MusEGlobal::config.addHiddenTracks);
       unhideTracksCheckBox->setChecked(MusEGlobal::config.unhideTracks);
+
+      switch (MusEGlobal::config.rangeMarkersSet)
+      {
+      case MusEGlobal::CONF_SET_MARKERS_MID_RIGHT: rangeMarkers1RadioButton->setChecked(true); break;
+      case MusEGlobal::CONF_SET_MARKERS_CTRL_RIGHT_RIGHT: rangeMarkers2RadioButton->setChecked(true); break;
+      case MusEGlobal::CONF_SET_MARKERS_CTRL_LEFT_CTRL_RIGHT: rangeMarkers3RadioButton->setChecked(true); break;
+      }
 
 // Obsolete. There is only 'New' drum tracks now.
 // drumTrackPreference is fixed until it is removed some day...
@@ -452,12 +459,19 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.useProjectSaveDialog = projectSaveCheckBox->isChecked();
       MusEGlobal::config.popupsDefaultStayOpen = popsDefStayOpenCheckBox->isChecked();
       MusEGlobal::config.leftMouseButtonCanDecrease = lmbDecreasesCheckBox->isChecked();
-      MusEGlobal::config.rangeMarkerWithoutMMB = rangeMarkerWithoutMMBCheckBox->isChecked();
+//      MusEGlobal::config.rangeMarkerWithoutMMB = rangeMarkerWithoutMMBCheckBox->isChecked();
       MusEGlobal::config.smartFocus = smartFocusCheckBox->isChecked();
       MusEGlobal::config.borderlessMouse = borderlessMouseCheckBox->isChecked();
       MusEGlobal::config.velocityPerNote = velocityPerNoteCheckBox->isChecked();
       MusEGlobal::config.noPluginScaling = revertPluginNativeGUIScalingCheckBox->isChecked();
       MusEGlobal::config.openMDIWinMaximized = openMDIWinMaximizedCheckBox->isChecked();
+
+      if (rangeMarkers1RadioButton->isChecked())
+          MusEGlobal::config.rangeMarkersSet=MusEGlobal::CONF_SET_MARKERS_MID_RIGHT;
+      else if (rangeMarkers2RadioButton->isChecked())
+          MusEGlobal::config.rangeMarkersSet=MusEGlobal::CONF_SET_MARKERS_CTRL_RIGHT_RIGHT;
+      else if (rangeMarkers3RadioButton->isChecked())
+          MusEGlobal::config.rangeMarkersSet=MusEGlobal::CONF_SET_MARKERS_CTRL_LEFT_CTRL_RIGHT;
 
       MusEGlobal::config.addHiddenTracks = addHiddenCheckBox->isChecked();
       MusEGlobal::config.unhideTracks = unhideTracksCheckBox->isChecked();
