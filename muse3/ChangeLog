@@ -1,3 +1,9 @@
+24.01.2020
+	- Global settings: Split GUI behaviour tab into two separate tabs (kybos)
+	- Add another set of mouse shortcuts for range markers - Ctrl+Left/Ctrl+Right (kybos)
+23.01.2020
+	- MESS FluidSynth: Add key modifiers to distribute soundfonts to all/empty channels 
+	  with single click (kybos).
 15.01.2020
     - Cherry pick five things from pos_ctrls_fixes branch: (Tim)
       1) Fix when tempo serial number is incremented. (Fixes broken looping etc.)
