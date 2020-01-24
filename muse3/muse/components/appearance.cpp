@@ -1634,8 +1634,10 @@ void Appearance::browseStyleSheet()
       
       QString file = MusEGui::getOpenFileName(QString("themes"), MusEGlobal::stylesheet_file_pattern, this,
                                               tr("Select style sheet"), nullptr, MusEGui::MFileDialog::GLOBAL_VIEW);
-      if (!file.isEmpty())
+      if (!file.isEmpty()) {
           styleSheetPath->setText(file);
+          config->styleSheetFile = file;
+      }
 }
 
 
@@ -1645,8 +1647,6 @@ void Appearance::browseStyleSheet()
 
 void Appearance::setDefaultStyleSheet()
 {
-      // Set the style sheet to the default compiled-in resource :/style.qss
-//      styleSheetPath->setText(QString(":/style.qss"));
       styleSheetPath->clear();
 }
 
@@ -1664,16 +1664,17 @@ void Appearance::browseFont6() { browseFont(6); }
 void Appearance::browseFont(int n)
       {
       bool ok;
-      QFont font = QFontDialog::getFont(&ok, config->fonts[n], this, "browseFont");
+      QFont f(config->fonts[n]);
+      if (!f.bold() && !f.italic())
+          f.setStyleName("Regular");
+      QFont font = QFontDialog::getFont(&ok, f, this, "browseFont");
       if (ok) {
             config->fonts[n] = font;
             updateFonts();
             }
       }
 
-} // namespace MusEGui
-
-void MusEGui::Appearance::on_pbAdjustFontSizes_clicked()
+void Appearance::on_pbAdjustFontSizes_clicked()
 {
     int fs = fontSize0->value();
     fontSize1->setValue(qRound(fs * MusEGlobal::FntFac::F1));
@@ -1684,7 +1685,7 @@ void MusEGui::Appearance::on_pbAdjustFontSizes_clicked()
     fontSize6->setValue(qRound(fs * MusEGlobal::FntFac::F6));
 }
 
-void MusEGui::Appearance::on_pbSetFontFamily_clicked()
+void Appearance::on_pbSetFontFamily_clicked()
 {
     fontName1->setText(fontName0->text());
     fontName2->setText(fontName0->text());
@@ -1693,3 +1694,5 @@ void MusEGui::Appearance::on_pbSetFontFamily_clicked()
     fontName5->setText(fontName0->text());
     fontName6->setText(fontName0->text());
 }
+
+} // namespace MusEGui
