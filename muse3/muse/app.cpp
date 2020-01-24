@@ -1044,14 +1044,16 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::config.fonts[0].setBold(font().bold());
       MusEGlobal::config.fonts[0].setItalic(font().italic());
 
-      int fs = font().pointSize();
-      MusEGlobal::config.fonts[1].setPointSize(qRound(fs * MusEGlobal::FntFac::F1));
-      MusEGlobal::config.fonts[2].setPointSize(qRound(fs * MusEGlobal::FntFac::F2));
-      MusEGlobal::config.fonts[3].setPointSize(qRound(fs * MusEGlobal::FntFac::F3));
-      MusEGlobal::config.fonts[4].setPointSize(qRound(fs * MusEGlobal::FntFac::F4));
-      MusEGlobal::config.fonts[5].setPointSize(qRound(fs * MusEGlobal::FntFac::F5));
-      MusEGlobal::config.fonts[6].setPointSize(qRound(fs * MusEGlobal::FntFac::F6));
+      if (MusEGlobal::config.autoAdjustFontSize) {
+          int fs = font().pointSize();
+          MusEGlobal::config.fonts[1].setPointSize(qRound(fs * MusEGlobal::FntFac::F1));
+          MusEGlobal::config.fonts[2].setPointSize(qRound(fs * MusEGlobal::FntFac::F2));
+          MusEGlobal::config.fonts[3].setPointSize(qRound(fs * MusEGlobal::FntFac::F3));
+          MusEGlobal::config.fonts[4].setPointSize(qRound(fs * MusEGlobal::FntFac::F4));
+          MusEGlobal::config.fonts[5].setPointSize(qRound(fs * MusEGlobal::FntFac::F5));
+          MusEGlobal::config.fonts[6].setPointSize(qRound(fs * MusEGlobal::FntFac::F6));
       }
+}
 
 //---------------------------------------------------------
 //   setHeartBeat
