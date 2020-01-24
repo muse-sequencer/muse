@@ -307,7 +307,8 @@ GlobalConfigValues config = {
       256,                          // minControlProcessPeriod
       false,                        // popupsDefaultStayOpen
       false,                        // leftMouseButtonCanDecrease
-      false,                        // rangeMarkerWithoutMMB
+//      false,                        // rangeMarkerWithoutMMB
+      MusEGlobal::CONF_SET_MARKERS_MID_RIGHT, // rangeMarkersSet
       MusECore::DONT_REC_MUTED_OR_HIDDEN,
       true,                         // addHiddenTracks
       true,                         // unhideTracks
