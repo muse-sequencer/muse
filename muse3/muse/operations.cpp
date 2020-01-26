@@ -190,6 +190,7 @@ unsigned int PendingOperationItem::getIndex() const
     case ModifyDefaultAudioConverterSettings:
     case ModifyStretchListRatio:
     case SetAudioConverterOfflineMode:
+    case ModifyMarkerList:
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
     
@@ -1499,6 +1500,24 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     }
     break;
 
+    case ModifyMarkerList:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyMarkerList: "
+                      "orig list:%p new list:%p\n", _orig_marker_list, _marker_list);
+#endif      
+      if(_orig_marker_list && _marker_list)
+      {
+        MarkerList* orig = *_orig_marker_list;
+        *_orig_marker_list = _marker_list;
+        // Transfer the original pointer back to _marker_list so it can be deleted in the non-RT stage.
+        _marker_list = orig;
+      }
+      // Currently no flags for this.
+      //flags |= SC_MARKERS_REBUILT;
+    }
+    break;
+    
     case SwitchMetronomeSettings:
     {
 #ifdef _PENDING_OPS_DEBUG_
@@ -1674,6 +1693,12 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
       // At this point _newAudioSamples points to the original memory that was replaced. Delete it now.
       if(_newAudioSamples)
         delete _newAudioSamples;
+    break;
+
+    case ModifyMarkerList:
+      // At this point _marker_list points to the original memory that was replaced. Delete it now.
+      if(_marker_list)
+        delete _marker_list;
     break;
 
     case ModifyMetronomeAccentMap:
@@ -2804,6 +2829,17 @@ bool PendingOperationList::add(PendingOperationItem op)
 //         }
       break;
       
+      case PendingOperationItem::ModifyMarkerList:
+// TODO Not quite right yet.
+//         if(poi._type == PendingOperationItem::ModifyMarkerList && 
+//           // If attempting to repeatedly modify the same list, or, if progressively modifying (list to list to list etc).
+//           poi._orig_marker_list && op._orig_marker_list &&
+//           (*poi._orig_marker_list == *op._orig_marker_list || poi._marker_list == op._marker_list))
+//         {
+//           // Simply replace the list.
+//           poi._newAudioSamples = op._newAudioSamples; 
+//           poi._newAudioSamplesLen = op._newAudioSamplesLen; 
+
       case PendingOperationItem::SwitchMetronomeSettings:
         if(poi._type == PendingOperationItem::SwitchMetronomeSettings && 
           (poi._bool_pointer == op._bool_pointer))
@@ -3033,7 +3069,7 @@ bool PendingOperationList::delTimeSigOperation(unsigned tick, MusECore::SigList*
 {
   MusECore::iSigEvent e = sl->find(tick);
   if (e == sl->end()) {
-        printf("PendingOperationList::delTimeSigOperation tick:%d not found\n", tick);
+        fprintf(stderr, "PendingOperationList::delTimeSigOperation tick:%d not found\n", tick);
         return false;
         }
   MusECore::PendingOperationItem poi(sl, e, PendingOperationItem::DeleteSig);
@@ -3047,8 +3083,15 @@ bool PendingOperationList::delTimeSigOperation(unsigned tick, MusECore::SigList*
 
 bool PendingOperationList::addTempoOperation(unsigned tick, int tempo, TempoList* tl)
 {
+  // It is forbidden to add a tempo beyond MAX_TICK.
+  // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
   if (tick > MAX_TICK)
-    tick = MAX_TICK;
+  {
+    //tick = MAX_TICK;
+    DEBUG_OPERATIONS(stderr, "PendingOperationList::addTempoOperation tick:%d > MAX_TICK, ignoring\n", tick);
+    return false;
+  }
+
   iTEvent e = tl->upper_bound(tick);
 
   if(tick == e->second->tick)
@@ -3076,13 +3119,55 @@ bool PendingOperationList::addTempoOperation(unsigned tick, int tempo, TempoList
 //   delTempoOperation
 //---------------------------------------------------------
 
+// REMOVE Tim. struct. Changed.
+// bool PendingOperationList::delTempoOperation(unsigned tick, TempoList* tl)
+// {
+//   iTEvent e = tl->find(tick);
+//   if (e == tl->end()) {
+//         fprintf(stderr, "PendingOperationList::delTempoOperation tick:%d not found\n", tick);
+//         return false;
+//         }
+//   // It is forbidden to delete a tempo beyond MAX_TICK.
+//   // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
+//   if (e->first > MAX_TICK)
+//   {
+//     //tick = MAX_TICK;
+//     DEBUG_OPERATIONS(stderr,
+//       "PendingOperationList::delTempoOperation tick:%d: idx > MAX_TICK: forbidden to delete, ignoring\n", tick);
+//     return false;
+//   }
+// 
+//   PendingOperationItem poi(tl, e, PendingOperationItem::DeleteTempo);
+//   // NOTE: Deletion is done in post-RT stage 3.
+//   add(poi);
+//   return true;
+// }
+// 
 bool PendingOperationList::delTempoOperation(unsigned tick, TempoList* tl)
 {
+//   for (ciTEvent it = tl->cbegin(); it != tl->cend(); ++it) {
+//     const TEvent* ev = (TEvent*)it->second;
+//     unsigned int tick = ev->tick;
+//     int tempo = ev->tempo;
+//     if (tick < startPos )
+//       continue;
+//   }
+  
   iTEvent e = tl->find(tick);
   if (e == tl->end()) {
-        printf("PendingOperationList::delTempoOperation tick:%d not found\n", tick);
+        ERROR_OPERATIONS(stderr, "PendingOperationList::delTempoOperation tick:%d not found\n", tick);
         return false;
         }
+  // It is forbidden to delete a tempo beyond MAX_TICK.
+  // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
+  if (e->first > MAX_TICK)
+  {
+    //tick = MAX_TICK;
+    DEBUG_OPERATIONS(stderr,
+      "PendingOperationList::delTempoOperation tick:%d: idx > MAX_TICK: forbidden to delete, ignoring\n", tick);
+    return false;
+  }
+
   PendingOperationItem poi(tl, e, PendingOperationItem::DeleteTempo);
   // NOTE: Deletion is done in post-RT stage 3.
   add(poi);

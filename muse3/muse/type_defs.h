@@ -139,11 +139,17 @@ struct SongChangedStruct_t
 #define SC_TIMEBASE_MASTER            MusECore::SongChangedStruct_t(0x40000000000) // Timebase master state changed.
 #define SC_AUDIO_CONVERTER            MusECore::SongChangedStruct_t(0x80000000000) // Audio converters settings or value lists changed.
 #define SC_AUDIO_STRETCH              MusECore::SongChangedStruct_t(0x100000000000) // Audio converters stretch/pitch ratios changed.
+#define SC_MARKER_INSERTED            MusECore::SongChangedStruct_t(0x200000000000)
+#define SC_MARKER_REMOVED             MusECore::SongChangedStruct_t(0x400000000000)
+#define SC_MARKER_MODIFIED            MusECore::SongChangedStruct_t(0x800000000000)
+// The marker list was rebuilt as a result of tempo changes. NOTE: Currently signals/slots are used for add/remove/modify etc.
+#define SC_MARKERS_REBUILT            MusECore::SongChangedStruct_t(0x1000000000000)
 #define SC_EVERYTHING                 MusECore::SongChangedStruct_t(-1, -1)       // global update
 
 
 typedef int64_t EventID_t;
 #define MUSE_INVALID_EVENT_ID   -1
+#define MUSE_INVALID_POSITION   INT_MAX
 
 enum RelevantSelectedEvents { NoEventsRelevant = 0x00, NotesRelevant = 0x01, ControllersRelevant = 0x02,
                 SysexRelevant = 0x04, MetaRelevant = 0x08, WaveRelevant = 0x10,
@@ -182,6 +188,7 @@ struct FunctionOptionsStruct
   
   FunctionOptionsStruct(const FunctionOptions_t& flags = FunctionEraseItemsDefault) : _flags(flags) { }
   void clear() { _flags = FunctionNoOptions; }
+  void setFlags(const FunctionOptions_t& flags) { _flags = flags; }
   void appendFlags(const FunctionOptions_t& flags) { _flags |= flags; }
   void removeFlags(const FunctionOptions_t& flags) { _flags &= ~flags; }
 };

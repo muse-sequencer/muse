@@ -760,7 +760,7 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
         // Try these:
         if(type & (SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED |
                    SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED |
-                   SC_CLIP_MODIFIED))
+                   SC_CLIP_MODIFIED | SC_MARKER_INSERTED | SC_MARKER_REMOVED | SC_MARKER_MODIFIED))
         canvas->redraw();
         
         // We must marshall song changed instead of connecting to the strip's song changed

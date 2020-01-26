@@ -1400,9 +1400,12 @@ void Song::setQuantize(bool val)
 
 void Song::setMasterFlag(bool val)
     {
-      MusECore::PendingOperationList operations;
-      operations.add(MusECore::PendingOperationItem(&MusEGlobal::tempomap, val, MusECore::PendingOperationItem::SetUseMasterTrack));
-      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+      // Here we have a choice of whether to allow undoing of setting the master.
+      // TODO: Add a separate config flag just for this ?
+      //if(MusEGlobal::config.selectionsUndoable)
+      //  MusEGlobal::song->applyOperation(UndoOp(UndoOp::EnableMasterTrack, val, 0), MusECore::Song::OperationUndoMode);
+      //else
+        MusEGlobal::song->applyOperation(UndoOp(UndoOp::EnableMasterTrack, val, 0), MusECore::Song::OperationExecuteUpdate);
     }
 
 //---------------------------------------------------------
@@ -1476,7 +1479,7 @@ void Song::seekTo(int tick)
 //---------------------------------------------------------
 
 void Song::setPos(POSTYPE posType, const Pos& val, bool sig,
-   bool isSeek, bool adjustScrollbar)
+   bool isSeek, bool adjustScrollbar, bool /*force*/)
       {
       if (MusEGlobal::heavyDebugMsg)
       {
@@ -1526,38 +1529,57 @@ void Song::setPos(POSTYPE posType, const Pos& val, bool sig,
                   emit posChanged(posType, pos[posType].tick(), adjustScrollbar);
             }
 
-      if (posType == CPOS) {
-            iMarker i1 = _markerList->begin();
-            iMarker i2 = i1;
-            bool currentChanged = false;
-            for (; i1 != _markerList->end(); ++i1) {
-                  ++i2;
-                  if (val.tick() >= i1->first && (i2==_markerList->end() || val.tick() < i2->first)) {
-                        if (i1->second.current())
-                              return;
-                        i1->second.setCurrent(true);
-                        if (currentChanged) {
-                              emit markerChanged(MARKER_CUR);
-                              return;
-                              }
-                        ++i1;
-                        for (; i1 != _markerList->end(); ++i1) {
-                              if (i1->second.current())
-                                    i1->second.setCurrent(false);
-                              }
-                        emit markerChanged(MARKER_CUR);
-                        return;
-                        }
-                  else {
-                        if (i1->second.current()) {
-                              currentChanged = true;
-                              i1->second.setCurrent(false);
-                              }
-                        }
-                  }
-            if (currentChanged)
+      if(posType == CPOS)
+      {
+        const unsigned int vframe = val.frame();
+        iMarker i1 = _markerList->begin();
+        bool currentChanged = false;
+        for(; i1 != _markerList->end(); ++i1)
+        {
+              const unsigned fr = i1->second.frame();
+              // If there are multiple items at this frame and any one of them is current,
+              //  leave it alone. It's arbitrary which one would be selected and it would
+              //  normally choose the first one, but we'll let it stick with the one that's current,
+              //  to avoid jumping around in the marker view window.
+              iMarker i2 = i1;
+              while(i2 != _markerList->end() && i2->second.frame() == fr)
+              {
+                i1 = i2;
+                ++i2;
+              }
+
+              if(vframe >= fr && (i2==_markerList->end() || vframe < i2->second.frame()))
+              {
+                if(i1->second.current())
+                  return;
+                
+                i1->second.setCurrent(true);
+
+                if(currentChanged)
+                {
                   emit markerChanged(MARKER_CUR);
-            }
+                  return;
+                }
+                for(; i2 != _markerList->end(); ++i2)
+                {
+                  if(i2->second.current())
+                    i2->second.setCurrent(false);
+                }
+                emit markerChanged(MARKER_CUR);
+                return;
+              }
+              else
+              {
+                if(i1->second.current())
+                {
+                  currentChanged = true;
+                  i1->second.setCurrent(false);
+                }
+              }
+        }
+        if(currentChanged)
+              emit markerChanged(MARKER_CUR);
+      }
       }
 
 //---------------------------------------------------------
@@ -1918,61 +1940,59 @@ void Song::setLen(unsigned l, bool do_update)
 //   addMarker
 //---------------------------------------------------------
 
-Marker* Song::addMarker(const QString& s, int t, bool lck)
+void Song::addMarker(const QString& s, unsigned t, bool lck)
       {
-      Marker* marker = _markerList->add(s, t, lck);
-      emit markerChanged(MARKER_ADD);
-      return marker;
+      Marker m(s);
+      m.setType(lck ? Pos::FRAMES : Pos::TICKS);
+      m.setTick(t);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddMarker, m));
       }
+
+void Song::addMarker(const QString& s, const Pos& p)
+{
+      Marker m(s);
+      m.setType(p.type());
+      m.setPos(p);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddMarker, m));
+}
 
 //---------------------------------------------------------
 //   addMarker
 //---------------------------------------------------------
 
-Marker* Song::getMarkerAt(int t)
+iMarker Song::getMarkerAt(unsigned t)
       {
-      iMarker markerI;
-      for (markerI=_markerList->begin(); markerI != _markerList->end(); ++markerI) {
-          if (unsigned(t) == markerI->second.tick()) //prevent of compiler warning: comparison signed/unsigned
-            return &markerI->second;
-          }
-      return NULL;
+      return _markerList->find(t);
       }
 
 //---------------------------------------------------------
 //   removeMarker
 //---------------------------------------------------------
 
-void Song::removeMarker(Marker* marker)
+void Song::removeMarker(const Marker& marker)
       {
-      _markerList->remove(marker);
-      emit markerChanged(MARKER_REMOVE);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteMarker, marker));
       }
 
-Marker* Song::setMarkerName(Marker* m, const QString& s)
+void Song::setMarkerName(const Marker& marker, const QString& s)
       {
-      m->setName(s);
-      emit markerChanged(MARKER_NAME);
-      return m;
+      Marker m(marker);
+      m.setName(s);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
       }
 
-Marker* Song::setMarkerTick(Marker* m, int t)
+void Song::setMarkerPos(const Marker& marker, const Pos& pos)
       {
-      Marker mm(*m);
-      _markerList->remove(m);
-      mm.setTick(t);
-      m = _markerList->add(mm);
-      emit markerChanged(MARKER_TICK);
-      return m;
+      // Here we use the separate SetMarkerPos operation, which is 'combo-breaker' aware, to optimize repeated adjustments.
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetMarkerPos, marker, pos.posValue(), pos.type()));
       }
 
-Marker* Song::setMarkerLock(Marker* m, bool f)
+void Song::setMarkerLock(const Marker& marker, bool f)
       {
-      m->setType(f ? Pos::FRAMES : Pos::TICKS);
-      emit markerChanged(MARKER_LOCK);
-      return m;
+      Marker m(marker);
+      m.setType(f ? Pos::FRAMES : Pos::TICKS);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
       }
-
 
 //---------------------------------------------------------
 //   setRecordFlag
@@ -4656,6 +4676,78 @@ void Song::modifyDefaultAudioConverterSettingsOperation(AudioConverterSettingsGr
   }
 }
 
+//---------------------------------------------------------
+//   updateTransportPos
+//   called from GUI context
+// SPECIAL for tempo or master changes: In stop mode we want
+//  the transport to locate to the correct frame. In play mode
+//  we simply let the transport progress naturally but we 'fake'
+//  a new representation of transport position (_pos) in Audio::reSyncAudio()
+//  as part of the realtime part of the tempo change operation.
+////// By now, our audio transport position (_pos) has the new tick and frame.
+// We need to seek AFTER any song changed slots are called in case widgets
+//  are removed etc. etc. before the posChanged signal is emitted when setPos()
+//  is called from the seek recognition.
+//---------------------------------------------------------
+
+void Song::updateTransportPos(const SongChangedStruct_t& flags)
+{
+  if(!MusEGlobal::audio->isPlaying() && (flags & (SC_TEMPO | SC_MASTER)))
+  {
+    //const MusECore::Pos ap = MusEGlobal::audio->tickAndFramePos();
+    // Don't touch Audio::_pos, make a copy.
+    //const MusECore::Pos ap = MusEGlobal::audio->pos();
+    
+    // Don't touch Audio::_pos, make a copy or take the tick.
+    // Note that this is only tick accurate, not frame accurate,
+    //  ie. it can only recalculate a new frame from the given tick. 
+    const MusECore::Pos p(MusEGlobal::audio->tickPos());
+
+//     // Don't touch the original, make a copy.
+//     const MusECore::Pos p(cPos());
+    
+    MusEGlobal::audioDevice->seekTransport(p.frame());
+  }
+}
+
+//---------------------------------------------------------
+//   adjustMarkerListOperation
+//   Items between startPos and startPos + diff are removed.
+//   Items after startPos + diff are adjusted 'diff' number of ticks.
+//---------------------------------------------------------
+
+bool Song::adjustMarkerListOperation(MarkerList* markerlist, unsigned int startPos, int diff, PendingOperationList& ops)
+{
+  if(!markerlist || markerlist->empty() || diff == 0)
+    return false;
+  
+  MarkerList* new_markerlist = new MarkerList();
+  for(ciMarker i = markerlist->begin(); i != markerlist->end(); ++i)
+  {
+    const Marker& m = i->second;
+    unsigned int tick = m.tick();
+    if(tick >= startPos)
+    {
+      if(tick >= startPos + diff)
+      {
+        // Grab a copy but with a new ID.
+        Marker newMarker = m.copy();
+        newMarker.setTick(tick - diff);
+        new_markerlist->add(newMarker);
+      }
+    }
+    else
+    {
+      // Grab a copy but with a new ID.
+      new_markerlist->add(m.copy());
+    }
+  }
+
+  PendingOperationItem poi(markerlist, new_markerlist, PendingOperationItem::ModifyMarkerList);
+  ops.add(poi);
+
+  return true;
+}
 
 
 } // namespace MusECore

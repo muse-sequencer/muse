@@ -42,6 +42,7 @@
 #include "route.h"
 #include "mididev.h"
 #include "midiport.h"
+#include "marker/marker.h"
 #include "minstrument.h"
 #include "metronome_class.h"
 #include "wave.h"
@@ -180,7 +181,8 @@ struct PendingOperationItem
     GlobalSelectAllEvents,
     ModifyAudioSamples,
     SwitchMetronomeSettings, ModifyMetronomeAccentMap,
-    SetExternalSyncFlag, SetUseJackTransport, SetUseMasterTrack
+    SetExternalSyncFlag, SetUseJackTransport, SetUseMasterTrack,
+    ModifyMarkerList
     }; 
                               
   PendingOperationType _type;
@@ -205,6 +207,7 @@ struct PendingOperationItem
     MidiInstrumentList* _midi_instrument_list;
     AuxSendValueList* _aux_send_value_list;
     RouteList* _route_list;
+    MarkerList** _orig_marker_list;
     float** _audioSamplesPointer;
     MetroAccentsMap** _metroAccentsMap;
   };
@@ -215,6 +218,7 @@ struct PendingOperationItem
     Track* _track;
     MidiCtrlValList* _mcvl;
     CtrlList* _aud_ctrl_list;
+    MarkerList* _marker_list;
     TEvent* _tempo_event; 
     MusECore::SigEvent* _sig_event; 
     Route* _dst_route_pointer;
@@ -237,6 +241,7 @@ struct PendingOperationItem
   iMidiInstrument _iMidiInstrument;
   iMidiDevice _iMidiDevice;
   iRoute _iRoute;
+  iMarker _iMarker;
   Route _src_route;
   Route _dst_route;
   // SndFileR is only 8 bytes but can't be in a union becuase of non-trivial destructor (?).
@@ -266,6 +271,7 @@ struct PendingOperationItem
   union {
     int _intB;
     unsigned int _uintB;
+    unsigned int _marker_tick;
     int _to_idx;
     int _address_port;
     int _open_flags;
@@ -280,6 +286,7 @@ struct PendingOperationItem
     int _ctl_val;
     double _ctl_dbl_val;
     double _audio_converter_value;
+    bool _marker_lock;
   };
 
   PendingOperationItem(AudioConverterSettingsGroup* new_settings,
@@ -533,6 +540,10 @@ struct PendingOperationItem
   PendingOperationItem(PendingOperationType type) // type is EnableAllAudioControllers.
     { _type = type; }
 
+  // Takes ownership of the original list so it can be deleted in the non-RT stage.
+  PendingOperationItem(MarkerList** orig_marker_l, MarkerList* new_marker_l, PendingOperationType type = ModifyMarkerList)
+    { _type = type; _orig_marker_list = orig_marker_l; _marker_list = new_marker_l; }
+    
   PendingOperationItem()
     { _type = Uninitialized; }
     

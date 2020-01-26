@@ -91,8 +91,7 @@ class Song : public QObject {
       enum FollowMode { NO, JUMP, CONTINUOUS };
       enum            { REC_OVERDUP, REC_REPLACE };
       enum            { CYCLE_NORMAL, CYCLE_MIX, CYCLE_REPLACE };
-      enum { MARKER_CUR, MARKER_ADD, MARKER_REMOVE, MARKER_NAME,
-         MARKER_TICK, MARKER_LOCK };
+      enum { MARKER_CUR };
       enum OperationType {
         // Execute the operation only, the operation is not un-doable. No song update.
         OperationExecute,
@@ -171,8 +170,12 @@ class Song : public QObject {
       QStringList deliveredScriptNames;
       QStringList userScriptNames;
 
+      // Private: Update the audio device's real transport position after a tempo or master change for ex.
+      void updateTransportPos(const SongChangedStruct_t& flags);
+      
       // These are called from non-RT thread operations execution stage 1.
       void insertTrackOperation(Track* track, int idx, PendingOperationList& ops);
+      bool adjustMarkerListOperation(MarkerList* markerlist, unsigned int startPos, int diff, PendingOperationList& ops);
       void removeTrackOperation(Track* track, PendingOperationList& ops);
       bool addEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
       void changeEventOperation(const Event& oldEvent, const Event& newEvent,
@@ -272,20 +275,22 @@ class Song : public QObject {
       //-----------------------------------------
 
       MarkerList* marker() const { return _markerList; }
-      Marker* addMarker(const QString& s, int t, bool lck);
-      Marker* getMarkerAt(int t);
-      void removeMarker(Marker*);
-      Marker* setMarkerName(Marker*, const QString&);
-      Marker* setMarkerTick(Marker*, int);
-      Marker* setMarkerLock(Marker*, bool);
-      void setMarkerCurrent(Marker* m, bool f);
+      // For wholesale swapping of a new list. Takes ownership of the given list.
+      void setMarkerList(MarkerList* ml) { _markerList = ml; }
+      void addMarker(const QString& s, unsigned t, bool lck);
+      void addMarker(const QString& s, const Pos& p);
+      iMarker getMarkerAt(unsigned t);
+      void removeMarker(const Marker&);
+      void setMarkerName(const Marker&, const QString&);
+      void setMarkerPos(const Marker&, const Pos& pos);
+      void setMarkerLock(const Marker&, bool);
 
       //-----------------------------------------
       //   transport
       //-----------------------------------------
 
       void setPos(POSTYPE posType, const Pos&, bool sig = true, bool isSeek = true,
-         bool adjustScrollbar = false);
+         bool adjustScrollbar = false, bool force = false);
       const Pos& cPos() const       { return pos[0]; }
       const Pos& lPos() const       { return pos[1]; }
       const Pos& rPos() const       { return pos[2]; }
@@ -560,6 +565,7 @@ public:
    signals:
       void songChanged(MusECore::SongChangedStruct_t); 
       void posChanged(int, unsigned, bool);
+      void posChanged(int, const MusECore::Pos, bool);
       void loopChanged(bool);
       void recordChanged(bool);
       void playChanged(bool);

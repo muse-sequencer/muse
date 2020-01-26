@@ -45,6 +45,8 @@ namespace MusECore {
 //    helper that adjusts tempo, sig, key and marker
 //    lists everything from startPos is adjusted
 //    'diff' number of ticks.
+//   If diff is negative it is a 'cut' operation,
+//    otherwise it is an 'insert' operation.
 //---------------------------------------------------------
 
 void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
@@ -53,9 +55,12 @@ void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
   const SigList* s   = &MusEGlobal::sigmap;
   const KeyList* k   = &MusEGlobal::keymap;
 
-  criTEvent it   = t->rbegin();
+// REMOVE Tim. struct. Removed.
+//   criTEvent it   = t->rbegin();
   criSigEvent is = s->rbegin();
   criKeyEvent ik = k->rbegin();
+
+  const bool is_cut = diff < 0;
 
   // key
   for (; ik != k->rend(); ik++) {
@@ -65,37 +70,52 @@ void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
     if (tick < startPos )
       break;
 
-// REMOVE Tim. global cut. Changed.
-//     if (tick > startPos && tick +diff < startPos ) { // remove
-    if (tick >= startPos && tick < startPos + diff) { // remove
+    if(is_cut && tick < startPos - diff) { // diff is negative, remove
       operations.push_back(UndoOp(UndoOp::DeleteKey, tick, key));
     }
     else {
       operations.push_back(UndoOp(UndoOp::DeleteKey,tick, key));
-// REMOVE Tim. global cut. Changed.
-//      operations.push_back(UndoOp(UndoOp::AddKey,tick+diff, key));
-      operations.push_back(UndoOp(UndoOp::AddKey,tick - diff, key));
-      }
+      operations.push_back(UndoOp(UndoOp::AddKey, tick + diff, key));
+    }
   }
 
   // tempo
-  for (; it != t->rend(); it++) {
+// REMOVE Tim. struct. Changed.
+//   for (; it != t->rend(); it++) {
+//     const TEvent* ev = (TEvent*)it->second;
+//     unsigned int tick = ev->tick;
+//     int tempo = ev->tempo;
+//     if (tick < startPos )
+//       break;
+// 
+//     if (is_cut && tick < startPos - diff) { // diff is negative, remove
+//       operations.push_back(UndoOp(UndoOp::DeleteTempo,tick, tempo));
+//     }
+//     else {
+//       operations.push_back(UndoOp(UndoOp::DeleteTempo,tick, tempo));
+//       operations.push_back(UndoOp(UndoOp::AddTempo, tick + diff, tempo));
+//       }
+//   }
+  for (ciTEvent it = t->cbegin(); it != t->cend(); ++it) {
     const TEvent* ev = (TEvent*)it->second;
     unsigned int tick = ev->tick;
     int tempo = ev->tempo;
     if (tick < startPos )
-      break;
+      continue;
 
-// REMOVE Tim. global cut. Changed.
-//    if (tick > startPos && tick +diff < startPos ) { // remove
-    if (tick >= startPos && tick < startPos + diff) { // remove
+//     // It is forbidden to add or delete a tempo beyond MAX_TICK.
+//     // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
+//     MusECore::ciTEvent ii = it;
+//     ++ii;
+//     if (ii == t->end())
+//       break;
+    
+    if (is_cut && tick < startPos - diff) { // diff is negative, remove
       operations.push_back(UndoOp(UndoOp::DeleteTempo,tick, tempo));
     }
     else {
       operations.push_back(UndoOp(UndoOp::DeleteTempo,tick, tempo));
-// REMOVE Tim. global cut. Changed.
-//      operations.push_back(UndoOp(UndoOp::AddTempo,tick+diff, tempo));
-      operations.push_back(UndoOp(UndoOp::AddTempo,tick - diff, tempo));
+      operations.push_back(UndoOp(UndoOp::AddTempo, tick + diff, tempo));
       }
   }
 
@@ -108,41 +128,32 @@ void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
 
     int z = ev->sig.z;
     int n = ev->sig.n;
-// REMOVE Tim. global cut. Changed.
-//    if (tick > startPos && tick +diff < startPos ) { // remove
-    if (tick >= startPos && tick < startPos + diff) { // remove
+    if (is_cut && tick < startPos - diff) { // diff is negative, remove
       operations.push_back(UndoOp(UndoOp::DeleteSig,tick, z, n));
     }
     else {
       operations.push_back(UndoOp(UndoOp::DeleteSig,tick, z, n));
-// REMOVE Tim. global cut. Changed.
-//      operations.push_back(UndoOp(UndoOp::AddSig,tick+diff, z, n));
-      operations.push_back(UndoOp(UndoOp::AddSig,tick - diff, z, n));
+      operations.push_back(UndoOp(UndoOp::AddSig,tick + diff, z, n));
     }
   }
 
   MarkerList *markerlist = MusEGlobal::song->marker();
   for(iMarker i = markerlist->begin(); i != markerlist->end(); ++i)
   {
-      Marker* m = &i->second;
-      unsigned int tick = m->tick();
+      const Marker& m = i->second;
+      unsigned int tick = m.tick();
       if (tick >= startPos)
       {
-// REMOVE Tim. global cut. Changed.
-//        if (tick + diff < startPos ) { // these ticks should be removed
-        if (tick < startPos + diff) { // these ticks should be removed
-          operations.push_back(UndoOp(UndoOp::ModifyMarker, 0, m));
+        if (is_cut && tick < startPos - diff) { // diff is negative, these ticks should be removed
+          operations.push_back(UndoOp(UndoOp::DeleteMarker, m));
         } else {
-          Marker *newMarker = new Marker();
-          *newMarker = *m;
-// REMOVE Tim. global cut. Changed.
-//          newMarker->setTick(tick + diff);
-          newMarker->setTick(tick - diff);
-          operations.push_back(UndoOp(UndoOp::ModifyMarker, newMarker, m));
+          // Grab a copy but with a new ID.
+          Marker newMarker = m.copy();
+          newMarker.setTick(tick + diff);
+          operations.push_back(UndoOp(UndoOp::ModifyMarker, m, newMarker));
         }
       }
   }
-
 }
 
 //---------------------------------------------------------
@@ -228,11 +239,9 @@ void globalCut(bool onlySelectedTracks)
                         }
                   }
             }
-// REMOVE Tim. global cut. Changed.
-//       int diff = lpos - rpos;
-//      adjustGlobalLists(operations, lpos, diff);
+
       unsigned int diff = lpos > rpos ? lpos - rpos : rpos - lpos;
-      adjustGlobalLists(operations, lpos > rpos ? rpos : lpos, diff);
+      adjustGlobalLists(operations, lpos > rpos ? rpos : lpos, -diff); // diff is negative meaning cut
 
       MusEGlobal::song->applyOperationGroup(operations);
       }

@@ -65,8 +65,11 @@ TempoList::~TempoList()
 
 void TempoList::add(unsigned tick, int tempo, bool do_normalize)
       {
+      // It is forbidden to add a tempo beyond MAX_TICK.
+      // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
       if (tick > MAX_TICK)
-            tick = MAX_TICK;
+            //tick = MAX_TICK;
+            return;
       iTEvent e = upper_bound(tick);
 
       if (tick == e->second->tick)
@@ -85,6 +88,11 @@ void TempoList::add(unsigned tick, int tempo, bool do_normalize)
 
 void TempoList::add(unsigned tick, TEvent* e, bool do_normalize)
 {
+  // It is forbidden to add a tempo beyond MAX_TICK.
+  // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
+  if (tick > MAX_TICK)
+        //tick = MAX_TICK;
+        return;
   int tempo = e->tempo;
   std::pair<iTEvent, bool> res = insert(std::pair<const unsigned, TEvent*> (tick, e));
   if(!res.second)
@@ -247,6 +255,10 @@ void TempoList::del(unsigned tick, bool do_normalize)
 
 void TempoList::del(iTEvent e, bool do_normalize)
       {
+      // It is forbidden to delete a tempo beyond MAX_TICK.
+      // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
+      if (e->first > MAX_TICK)
+            return;
       iTEvent ne = e;
       ++ne;
       if (ne == end()) {

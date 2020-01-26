@@ -25,6 +25,7 @@
 
 #include "type_defs.h"
 #include "cobject.h"
+#include "marker.h"
 
 #include <QTreeWidgetItem>
 
@@ -35,7 +36,6 @@ class QToolButton;
 class QTreeWidget;
 
 namespace MusECore {
-class Marker;
 ///class PosEdit;
 class Pos;
 }
@@ -49,16 +49,18 @@ class PosEdit;
 //---------------------------------------------------------
 
 class MarkerItem : public QTreeWidgetItem {
-      MusECore::Marker* _marker;
+      MusECore::Marker _marker;
 
    public:
-      MarkerItem(QTreeWidget* parent, MusECore::Marker* m);
-      MusECore::Marker* marker() const { return _marker; }
+      MarkerItem(QTreeWidget* parent, const MusECore::Marker& m);
+      MarkerItem(const MusECore::Marker& m);
+      MusECore::Marker marker() const { return _marker; }
+      void setMarker(const MusECore::Marker& m); // { _marker = m; }
       unsigned tick() const;
       const QString name() const;
       bool lock() const;
       void setName(const QString& s);
-      void setTick(unsigned t);
+      void setPos(const MusECore::Pos& v);
       void setLock(bool lck);
       };
 
@@ -81,14 +83,15 @@ class MarkerView : public TopWin {
 
    private slots:
       void addMarker();
-      void addMarker(int);
+      void addMarker(unsigned);
       void deleteMarker();
       void markerSelectionChanged();
-      void nameChanged(const QString&);
+      void nameChanged();
       void tickChanged(const MusECore::Pos&);
       void lockChanged(bool);
       void markerChanged(int);
       void clicked(QTreeWidgetItem*);
+      void rebuildList();
       void updateList();
       void songChanged(MusECore::SongChangedStruct_t);
       
@@ -105,6 +108,8 @@ class MarkerView : public TopWin {
       static void writeConfiguration(int, MusECore::Xml&);
       void nextMarker();
       void prevMarker();
+
+      MarkerItem* findId(MusECore::EventID_t id) const;
       };
 
 }

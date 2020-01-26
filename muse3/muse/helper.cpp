@@ -47,6 +47,7 @@
 #include "lv2host.h"
 #include "vst_native.h"
 #include "appearance.h"
+#include "event.h"
 
 #include <strings.h>
 

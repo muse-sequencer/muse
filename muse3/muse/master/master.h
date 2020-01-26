@@ -70,11 +70,15 @@ class Master : public MusEGui::View {
       virtual void viewMouseReleaseEvent(QMouseEvent*);
 
       void draw(QPainter&, const QRect&, const QRegion& = QRegion());
-      void newVal(int x1, int x2, int y);
-      bool deleteVal1(unsigned int x1, unsigned int x2);
-      void deleteVal(int x1, int x2);
+      void newVal(int x1, int x2, int y, MusECore::Undo& operations);
+      bool deleteVal1(unsigned int x1, unsigned int x2, MusECore::Undo& operations);
+      void deleteVal(int x1, int x2, MusECore::Undo& operations);
 
-      void newValRamp(int x1, int y1, int x2, int y2);
+      void newValRamp(int x1, int y1, int x2, int y2, MusECore::Undo& operations);
+
+   protected:
+      // Accumulated operations during drawing etc.
+      MusECore::Undo _operations;
 
    private slots:
       void songChanged(MusECore::SongChangedStruct_t);

@@ -65,13 +65,13 @@ const char* UndoOp::typeName()
             "AddPart",  "DeletePart", "MovePart", "ModifyPartLength", "ModifyPartName", "SelectPart",
             "AddEvent", "DeleteEvent", "ModifyEvent", "SelectEvent",
             "AddAudioCtrlVal", "DeleteAudioCtrlVal", "ModifyAudioCtrlVal", "ModifyAudioCtrlValList",
-            "AddTempo", "DeleteTempo", "ModifyTempo", "SetTempo", "SetStaticTempo", "SetGlobalTempo",
+            "AddTempo", "DeleteTempo", "ModifyTempo", "SetTempo", "SetStaticTempo", "SetGlobalTempo", "EnableMasterTrack",
             "AddSig",   "DeleteSig",   "ModifySig",
             "AddKey",   "DeleteKey",   "ModifyKey",
             "ModifyTrackName", "ModifyTrackChannel",
             "SetTrackRecord", "SetTrackMute", "SetTrackSolo", "SetTrackRecMonitor", "SetTrackOff",
             "MoveTrack",
-            "ModifyClip", "ModifyMarker",
+            "ModifyClip", "AddMarker", "DeleteMarker", "ModifyMarker", "SetMarkerPos",
             "ModifySongLen", "SetInstrument", "DoNothing",
             "EnableAllAudioControllers",
             "GlobalSelectAllEvents"
@@ -154,8 +154,13 @@ void UndoList::clearDelete()
                   break;
 
             case UndoOp::ModifyMarker:
-                  if (i->copyMarker)
-                    delete i->copyMarker;
+            case UndoOp::SetMarkerPos:
+            case UndoOp::AddMarker:
+            case UndoOp::DeleteMarker:
+                  if (i->oldMarker)
+                    delete i->oldMarker;
+                  if (i->newMarker)
+                    delete i->newMarker;
                   break;
                   
             case UndoOp::ModifyPartName:
@@ -198,8 +203,13 @@ void UndoList::clearDelete()
                   break;
 
             case UndoOp::ModifyMarker:
-                  if (i->realMarker)
-                    delete i->realMarker;
+            case UndoOp::SetMarkerPos:
+            case UndoOp::AddMarker:
+            case UndoOp::DeleteMarker:
+                  if (i->oldMarker)
+                    delete i->oldMarker;
+                  if (i->newMarker)
+                    delete i->newMarker;
                   break;
                   
             case UndoOp::ModifyPartName:
@@ -453,6 +463,9 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
     case UndoOp::SetGlobalTempo:
       fprintf(stderr, "Undo::insert: SetGlobalTempo\n");
     break;
+    case UndoOp::EnableMasterTrack:
+      fprintf(stderr, "Undo::insert: EnableMasterTrack\n");
+    break;
     
     
     case UndoOp::AddSig:
@@ -482,8 +495,20 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
     break;
     
     
+    case UndoOp::AddMarker:
+      fprintf(stderr, "Undo::insert: AddMarker\n");
+    break;
+
+    case UndoOp::DeleteMarker:
+      fprintf(stderr, "Undo::insert: DeleteMarker\n");
+    break;
+
     case UndoOp::ModifyMarker:
       fprintf(stderr, "Undo::insert: ModifyMarker\n");
+    break;
+
+    case UndoOp::SetMarkerPos:
+      fprintf(stderr, "Undo::insert: SetMarkerPos\n");
     break;
 
     
@@ -514,7 +539,7 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
 #endif
 
   // (NOTE: Use this handy speed-up 'if' line to exclude unhandled operation types)
-  if(n_op.type != UndoOp::ModifyTrackChannel && n_op.type != UndoOp::ModifyClip && n_op.type != UndoOp::ModifyMarker && n_op.type != UndoOp::DoNothing) 
+  if(n_op.type != UndoOp::ModifyTrackChannel && n_op.type != UndoOp::ModifyClip && n_op.type != UndoOp::DoNothing) 
   {
     // TODO FIXME: Must look beyond position and optimize in that direction too !
     //for(Undo::iterator iuo = begin(); iuo != position; ++iuo)
@@ -1182,6 +1207,23 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           }
         break;
 
+        case UndoOp::EnableMasterTrack:
+          if(uo.type == UndoOp::EnableMasterTrack)
+          {
+            if(uo.a == n_op.a)
+            {
+              fprintf(stderr, "MusE error: Undo::insert(): Double EnableMasterTrack. Ignoring.\n");
+              return;  
+            }
+            else
+            {
+              // Toggling is useless. Cancel out the enable or disable + disable or enable by erasing the disable or enable command.
+              erase(iuo);
+              return;  
+            }
+          }
+        break;
+
         
         case UndoOp::AddSig:
           if(uo.type == UndoOp::AddSig && uo.a == n_op.a)  
@@ -1361,6 +1403,73 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             }
           }
         break;
+
+
+        case UndoOp::AddMarker:
+          if(uo.type == UndoOp::AddMarker && uo.newMarker->id() == n_op.newMarker->id())
+          {
+            // Done with older operation marker. Be sure to delete it.
+            delete uo.newMarker;
+            // Simply replace the existing new marker with the newer marker.
+            uo.newMarker = n_op.newMarker;
+            return;  
+          }
+          else if(uo.type == UndoOp::DeleteMarker && uo.newMarker->id() == n_op.oldMarker->id())
+          {
+            // Done with operation markers. Be sure to delete them.
+            delete uo.newMarker;
+            delete n_op.oldMarker;
+            // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
+            erase(iuo);
+            return;  
+          }
+        break;
+        
+        case UndoOp::DeleteMarker:
+          if(uo.type == UndoOp::DeleteMarker && uo.oldMarker->id() == n_op.oldMarker->id())
+          {
+            // Done with older operation marker. Be sure to delete it.
+            delete uo.oldMarker;
+            // Simply replace the existing new marker with the newer marker.
+            uo.oldMarker = n_op.oldMarker;
+            return;  
+          }
+          else if(uo.type == UndoOp::AddMarker && uo.oldMarker->id() == n_op.newMarker->id())
+          {
+            // Done with operation markers. Be sure to delete them.
+            delete uo.oldMarker;
+            delete n_op.newMarker;
+            // Delete followed by add is useless. Cancel out the delete + add by erasing the delete command.
+            erase(iuo);
+            return;  
+          }
+        break;
+        
+        case UndoOp::ModifyMarker:
+          if(uo.type == UndoOp::ModifyMarker && uo.oldMarker->id() == n_op.oldMarker->id())
+          {
+            // Done with older operation markers. Be sure to delete them.
+            delete uo.oldMarker;
+            delete uo.newMarker;
+            // Simply replace the older operation markers with the newer ones.
+            uo.oldMarker = n_op.oldMarker;
+            uo.newMarker = n_op.newMarker;
+            return;  
+          }
+        break;
+        
+        case UndoOp::SetMarkerPos:
+          if(uo.type == UndoOp::SetMarkerPos && uo.oldMarker->id() == n_op.oldMarker->id())
+          {
+            // Done with older operation markers. Be sure to delete them.
+            delete uo.oldMarker;
+            delete uo.newMarker;
+            // Simply replace the older operation markers with the newer ones.
+            uo.oldMarker = n_op.oldMarker;
+            uo.newMarker = n_op.newMarker;
+            return;  
+          }
+        break;
         
         // NOTE Some other undo op types may need treatment as well !
         
@@ -1382,6 +1491,7 @@ bool Undo::merge_combo(const Undo& other)
   int has_select_event=0x02;
   int has_select_part=0x04;
   int has_modify_aud_ctrl_val=0x08;
+  int has_set_marker_pos=0x10;
 
   int has = 0;
   for (ciUndoOp op=this->begin(); op!=this->end(); op++)
@@ -1391,6 +1501,7 @@ bool Undo::merge_combo(const Undo& other)
                   case UndoOp::SelectEvent: has |= has_select_event; break;
                   case UndoOp::SelectPart: has |= has_select_part; break;
                   case UndoOp::ModifyAudioCtrlVal: has |= has_modify_aud_ctrl_val; break;
+                  case UndoOp::SetMarkerPos: has |= has_set_marker_pos; break;
                   default: has |= has_other; break;
           }
   
@@ -1401,10 +1512,13 @@ bool Undo::merge_combo(const Undo& other)
                   case UndoOp::SelectEvent: has |= has_select_event; break;
                   case UndoOp::SelectPart: has |= has_select_part; break;
                   case UndoOp::ModifyAudioCtrlVal: has |= has_modify_aud_ctrl_val; break;
+                  case UndoOp::SetMarkerPos: has |= has_set_marker_pos; break;
                   default: has |= has_other; break;
           }
   
-  bool mergeable = (has == has_select_event || has == has_select_part || has == has_modify_aud_ctrl_val);
+  bool mergeable =
+    (has == has_select_event || has == has_select_part ||
+     has == has_modify_aud_ctrl_val || has == has_set_marker_pos);
   
   if (mergeable)
           this->insert(this->end(), other.begin(), other.end());
@@ -1422,6 +1536,7 @@ bool Song::applyOperation(const UndoOp& op, OperationType type, void* sender)
 
 bool Song::applyOperationGroup(Undo& group, OperationType type, void* sender)
 {
+  bool ret = false;
   if (!group.empty())
   {
     switch(type)
@@ -1471,24 +1586,24 @@ bool Song::applyOperationGroup(Undo& group, OperationType type, void* sender)
     {
       case OperationExecute:
       case OperationUndoable:
-        return false;
+        ret = false;
       break;
       
       case OperationExecuteUpdate:
       case OperationUndoableUpdate:
         emit songChanged(updateFlags);
-        return false;
+        ret = false;
       break;
       
       case OperationUndoMode:
         // Also emits songChanged and resets undoMode.
         endUndo(0);
-        return true;
+        ret = true;
       break;
     }
   }
         
-  return false;
+  return ret;
 }
 
 //---------------------------------------------------------
@@ -1502,11 +1617,17 @@ void Song::revertOperationGroup2(Undo& /*operations*/)
 
         // Special for tempo: Need to normalize the tempo list, and resync audio. 
         // To save time this is done here, not item by item.
+        // Normalize is not needed for SC_MASTER.
         if(updateFlags & SC_TEMPO)
-        {
           MusEGlobal::tempomap.normalize();
+        if(updateFlags & (SC_TEMPO | SC_MASTER))
+        {
           MusEGlobal::audio->reSyncAudio();
+          // Must rebuild the marker list in case any markers are 'locked'.
+          if(marker()->rebuild())
+            updateFlags |= SC_MARKERS_REBUILT;
         }
+
         // Special for sig: Need to normalize the signature list. 
         // To save time this is done here, not item by item.
         if(updateFlags & SC_SIG)
@@ -1539,11 +1660,17 @@ void Song::executeOperationGroup2(Undo& /*operations*/)
         
         // Special for tempo if altered: Need to normalize the tempo list, and resync audio. 
         // To save time this is done here, not item by item.
+        // Normalize is not needed for SC_MASTER.
         if(updateFlags & SC_TEMPO)
-        {
           MusEGlobal::tempomap.normalize();
+        if(updateFlags & (SC_TEMPO | SC_MASTER))
+        {
           MusEGlobal::audio->reSyncAudio();
+          // Must rebuild the marker list in case any markers are 'locked'.
+          if(marker()->rebuild())
+            updateFlags |= SC_MARKERS_REBUILT;
         }
+
         // Special for sig: Need to normalize the signature list. 
         // To save time this is done here, not item by item.
         if(updateFlags & SC_SIG)
@@ -1576,7 +1703,7 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
       {
       assert(type_==AddKey || type_==DeleteKey || type_== ModifyKey ||
              type_==AddTempo || type_==DeleteTempo || type_==ModifyTempo || 
-             type_==SetTempo || type_==SetStaticTempo || type_==SetGlobalTempo ||  
+             type_==SetTempo || type_==SetStaticTempo || type_==SetGlobalTempo || type_==EnableMasterTrack ||
              type_==AddSig || type_==DeleteSig ||
              type_==ModifySongLen || type_==MoveTrack ||
              type_==GlobalSelectAllEvents);
@@ -1594,10 +1721,17 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
           b = MusEGlobal::tempomap.globalTempo();
         break;
         
+        case UndoOp::EnableMasterTrack:
+          // a is already the new master flag, b is the existing master flag.
+          b = MusEGlobal::tempomap.masterFlag();
+        break;
+        
         // For these operations, we must check if a value already exists and transform them into modify operations...
         case UndoOp::AddTempo:
         {
           int t = a;
+          // It is forbidden to add a tempo beyond MAX_TICK.
+          // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
           if(t > MAX_TICK)
             t = MAX_TICK;
           iTEvent ite = MusEGlobal::tempomap.upper_bound(t);
@@ -1618,8 +1752,13 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
           if(MusEGlobal::tempomap.masterFlag())
           {
             int t = a;
-            if(t > MAX_TICK)
-              t = MAX_TICK;
+            // It is forbidden to add a tempo beyond MAX_TICK.
+            // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
+            // Do NOT limit the tick here. No choice but to let this constructor finish, then
+            //  ignore / abandon the operation in later code when it sees tick > MAX_TICK.
+            // Limiting here causes problems with incorrect operations etc.
+            //if(t > MAX_TICK)
+            //  t = MAX_TICK;
             iTEvent ite = MusEGlobal::tempomap.upper_bound(t);
             if((int)ite->second->tick == t)
             {
@@ -1848,20 +1987,50 @@ UndoOp::UndoOp(UndoType type_, const Event& nev, const Part* part_, bool a_, boo
       }
       }
       
-UndoOp::UndoOp(UndoType type_, Marker* copyMarker_, Marker* realMarker_, bool noUndo)
+UndoOp::UndoOp(UndoType type_, const Marker& oldMarker_, const Marker& newMarker_, bool noUndo)
       {
       assert(type_==ModifyMarker);
-// REMOVE Tim. global cut. Changed. copyMarker_ or realMarker_ can be null.
-//      assert(copyMarker_);
-//      assert(realMarker_);
-      assert(copyMarker_ || realMarker_);
-
       type    = type_;
-      realMarker  = realMarker_;
-      copyMarker  = copyMarker_;
+      oldMarker  = new Marker(oldMarker_);
+      newMarker = new Marker(newMarker_);
       _noUndo = noUndo;
       }
 
+UndoOp::UndoOp(UndoType type_, const Marker& marker_, bool noUndo)
+      {
+      assert(type_==AddMarker || type_==DeleteMarker);
+      type    = type_;
+      oldMarker = newMarker = nullptr;
+      Marker** mp = nullptr;
+      if(type_== AddMarker)
+        mp = &newMarker;
+      else
+        mp = &oldMarker;
+      *mp = new Marker(marker_);
+      _noUndo = noUndo;
+      }
+
+UndoOp::UndoOp(UndoType type_, const Marker& marker_, unsigned int new_pos, Pos::TType new_time_type, bool noUndo)
+      {
+      assert(type_==SetMarkerPos);
+      type    = type_;
+      oldMarker = new Marker(marker_);
+      newMarker = new Marker(marker_);
+      newMarker->setPosValue(new_pos, new_time_type);
+      _noUndo = noUndo;
+      }
+
+// UndoOp::UndoOp(UndoType type_, MarkerList** oldMarkerList_, MarkerList* newMarkerList_, bool noUndo)
+//       {
+//       assert(type_==ModifyMarkerList);
+//       assert(oldMarkerList);
+//       assert(newMarkerList);
+//       type    = type_;
+//       oldMarkerList = oldMarkerList_;
+//       newMarkerList = newMarkerList_;
+//       _noUndo = noUndo;
+//       }
+      
 UndoOp::UndoOp(UndoType type_, const Event& changedEvent, const QString& changeData, int startframe_, int endframe_, bool noUndo)
       {
       assert(type_==ModifyClip);
@@ -2018,6 +2187,8 @@ void Song::addUndo(UndoOp i)
 
 void Song::revertOperationGroup1(Undo& operations)
       {
+      MarkerList* new_marker_list = nullptr;
+      
       for (riUndoOp i = operations.rbegin(); i != operations.rend(); ++i) {
             Track* editable_track = const_cast<Track*>(i->track);
             Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
@@ -2564,6 +2735,14 @@ void Song::revertOperationGroup1(Undo& operations)
                         updateFlags |= SC_TEMPO;
                         break;
                         
+                  case UndoOp::EnableMasterTrack:
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::revertOperationGroup1:EnableMasterTrack ** adding EnableMasterTrack operation\n");
+#endif                        
+                        pendingOperations.add(PendingOperationItem(&MusEGlobal::tempomap, (bool)i->b, PendingOperationItem::SetUseMasterTrack));
+                        updateFlags |= SC_MASTER;
+                        break;
+                        
                   case UndoOp::DeleteSig:
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:DeleteSig ** calling MusEGlobal::sigmap.addOperation\n");
@@ -2623,11 +2802,46 @@ void Song::revertOperationGroup1(Undo& operations)
                         //updateFlags |= SC_SONG_LEN;
                         break;
                         
+                  case UndoOp::AddMarker:
+                          // Create the new list if it doesn't already exist.
+                          // Make a copy of the original list.
+                          if(!new_marker_list)
+                            new_marker_list = new MarkerList(*marker());
+                          if(i->newMarker)
+                            new_marker_list->remove(*i->newMarker);
+                          updateFlags |= SC_MARKER_REMOVED;
+                        break;
+                  
+                  case UndoOp::DeleteMarker:
+                          // Create the new list if it doesn't already exist.
+                          // Make a copy of the original list.
+                          if(!new_marker_list)
+                            new_marker_list = new MarkerList(*marker());
+                          if(i->oldMarker)
+                            new_marker_list->add(*i->oldMarker);
+                          updateFlags |= SC_MARKER_INSERTED;
+                        break;
+                  
+                  case UndoOp::ModifyMarker:
+                  case UndoOp::SetMarkerPos:
+                          // Create the new list if it doesn't already exist.
+                          // Make a copy of the original list.
+                          if(!new_marker_list)
+                            new_marker_list = new MarkerList(*marker());
+                          if(i->newMarker)
+                            new_marker_list->remove(*i->newMarker);
+                          if(i->oldMarker)
+                            new_marker_list->add(*i->oldMarker);
+                          updateFlags |= SC_MARKER_MODIFIED;
+                        break;
+
                   default:
                         break;
                   }
             }
-      return;
+
+      if(new_marker_list)
+        pendingOperations.add(PendingOperationItem(&_markerList, new_marker_list, PendingOperationItem::ModifyMarkerList));
       }
 
 //---------------------------------------------------------
@@ -2721,20 +2935,6 @@ void Song::revertOperationGroup3(Undo& operations)
                         }
                         
                         break;
-                  case UndoOp::ModifyMarker:
-                        {
-                          if (i->realMarker) {
-                            Marker tmpMarker = *i->realMarker;
-                            *i->realMarker = *i->copyMarker; // swap them
-                            *i->copyMarker = tmpMarker;
-                          }
-                          else {
-                            i->realMarker = _markerList->add(*i->copyMarker);
-                            delete i->copyMarker;
-                            i->copyMarker = 0;
-                          }
-                        }
-                        break;
                   case UndoOp::AddPart:
                         // Ensure that wave event sndfile file handles are closed.
                         // It should not be the job of the pending operations list to do this.
@@ -2771,6 +2971,7 @@ void Song::revertOperationGroup3(Undo& operations)
 void Song::executeOperationGroup1(Undo& operations)
       {
       unsigned song_len = MusEGlobal::song->len();
+      MarkerList* new_marker_list = nullptr;
         
       for (iUndoOp i = operations.begin(); i != operations.end(); ++i) {
             Track* editable_track = const_cast<Track*>(i->track);
@@ -3372,6 +3573,14 @@ void Song::executeOperationGroup1(Undo& operations)
                         updateFlags |= SC_TEMPO;
                         break;
                         
+                  case UndoOp::EnableMasterTrack:
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:EnableMasterTrack ** adding EnableMasterTrack operation\n");
+#endif                        
+                        pendingOperations.add(PendingOperationItem(&MusEGlobal::tempomap, (bool)i->a, PendingOperationItem::SetUseMasterTrack));
+                        updateFlags |= SC_MASTER;
+                        break;
+                        
                   case UndoOp::AddSig:
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:AddSig ** calling MusEGlobal::sigmap.addOperation\n");
@@ -3446,10 +3655,46 @@ void Song::executeOperationGroup1(Undo& operations)
                         updateFlags |= SC_SELECTION;
                         break;
                         
+                  case UndoOp::AddMarker:
+                          // Create the new list if it doesn't already exist.
+                          // Make a copy of the original list.
+                          if(!new_marker_list)
+                            new_marker_list = new MarkerList(*marker());
+                          if(i->newMarker)
+                            new_marker_list->add(*i->newMarker);
+                          updateFlags |= SC_MARKER_INSERTED;
+                        break;
+                  
+                  case UndoOp::DeleteMarker:
+                          // Create the new list if it doesn't already exist.
+                          // Make a copy of the original list.
+                          if(!new_marker_list)
+                            new_marker_list = new MarkerList(*marker());
+                          if(i->oldMarker)
+                            new_marker_list->remove(*i->oldMarker);
+                          updateFlags |= SC_MARKER_REMOVED;
+                        break;
+                  
+                  case UndoOp::ModifyMarker:
+                  case UndoOp::SetMarkerPos:
+                          // Create the new list if it doesn't already exist.
+                          // Make a copy of the original list.
+                          if(!new_marker_list)
+                            new_marker_list = new MarkerList(*marker());
+                          if(i->oldMarker)
+                            new_marker_list->remove(*i->oldMarker);
+                          if(i->newMarker)
+                            new_marker_list->add(*i->newMarker);
+                          updateFlags |= SC_MARKER_MODIFIED;
+                        break;
+
                   default:
                         break;
                   }
             }
+
+      if(new_marker_list)
+        pendingOperations.add(PendingOperationItem(&_markerList, new_marker_list, PendingOperationItem::ModifyMarkerList));
       }
 
 //---------------------------------------------------------
@@ -3543,19 +3788,6 @@ void Song::executeOperationGroup3(Undo& operations)
                         // It should not be the job of the pending operations list to do this.
                         // TODO Coordinate close/open with part mute and/or track off.
                         editable_track->closeAllParts();
-                        break;
-                  case UndoOp::ModifyMarker:
-                        {
-                          if (i->copyMarker) {
-                            Marker tmpMarker = *i->realMarker;
-                            *i->realMarker = *i->copyMarker; // swap them
-                            *i->copyMarker = tmpMarker;
-                          } else {
-                            i->copyMarker = new Marker(*i->realMarker);
-                            _markerList->remove(i->realMarker);
-                            i->realMarker = 0;
-                          }
-                        }
                         break;
                   case UndoOp::DeletePart:
                         // Ensure that wave event sndfile file handles are closed.

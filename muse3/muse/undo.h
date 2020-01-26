@@ -57,14 +57,18 @@ struct UndoOp {
             AddAudioCtrlVal, DeleteAudioCtrlVal, ModifyAudioCtrlVal, ModifyAudioCtrlValList,
             // Add, delete and modify operate directly on the list.
             // setTempo does only if master is set, otherwise it operates on the static tempo value.
-            AddTempo, DeleteTempo, ModifyTempo, SetTempo, SetStaticTempo, SetGlobalTempo, 
+            AddTempo, DeleteTempo, ModifyTempo, SetTempo, SetStaticTempo, SetGlobalTempo, EnableMasterTrack,
             AddSig,   DeleteSig,   ModifySig,
             AddKey,   DeleteKey,   ModifyKey,
             ModifyTrackName, ModifyTrackChannel,
             SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff,
             MoveTrack,
             ModifyClip,
-            ModifyMarker,
+            AddMarker, DeleteMarker, ModifyMarker,
+            // This one is provided separately for optimizing repeated adjustments. It is 'combo breaker' -aware.
+            SetMarkerPos,
+            //// For wholesale changes to the list. Preferred if multiple additions or deletions are required.
+            //ModifyMarkerList,
             ModifySongLen, // a = new len, b = old len
             SetInstrument,
             DoNothing,
@@ -101,8 +105,8 @@ struct UndoOp {
                   QString* tmpwavfile; //!< The file with the changed data
                   };
             struct {
-                  Marker* realMarker; 
-                  Marker* copyMarker;
+                  Marker* oldMarker; 
+                  Marker* newMarker;
                 };
             struct {
                   const Track* _propertyTrack;
@@ -162,7 +166,12 @@ struct UndoOp {
       UndoOp(UndoType type, const Event& nev, const Event& oev, const Part* part, bool doCtrls, bool doClones, bool noUndo = false);
       UndoOp(UndoType type, const Event& nev, const Part* part, bool, bool, bool noUndo = false);
       UndoOp(UndoType type, const Event& changedEvent, const QString& changeData, int startframe, int endframe, bool noUndo = false);
-      UndoOp(UndoType type, Marker* copyMarker, Marker* realMarker, bool noUndo = false);
+      UndoOp(UndoType type, const Marker& oldMarker, const Marker& newMarker, bool noUndo = false);
+      UndoOp(UndoType type, const Marker& marker, bool noUndo = false);
+      UndoOp(UndoType type, const Marker& marker, unsigned int new_pos, Pos::TType new_time_type, bool noUndo = false);
+      // Takes ownership of the old list (deletes it).
+      //UndoOp(UndoType type, MarkerList** oldMarkerList, MarkerList* newMarkerList, bool noUndo = false);
+
       UndoOp(UndoType type, const Track* track, const QString& old_name, const QString& new_name, bool noUndo = false);
       UndoOp(UndoType type, const Track* track, int old_chan, int new_chan, bool noUndo = false);
       //UndoOp(UndoType type, const Track* track, int ctrlID, int frame, bool noUndo = false); // Same as above.
