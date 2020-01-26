@@ -175,7 +175,7 @@
         <item>
          <widget class="QGroupBox" name="horizontalGroupBox">
           <property name="title">
-           <string>affect CCs at</string>
+           <string>Affect CCs at</string>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
            <property name="spacing">
