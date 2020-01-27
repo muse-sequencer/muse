@@ -1,3 +1,6 @@
+26.01.2020
+    - Fixed broken version comparison macro in fluidsynti.cpp (Tim)
+    - Replaced obsolete QTime with QElapsedTimer. Tested OK.
 24.01.2020
 	- Global settings: Split GUI behaviour tab into two separate tabs (kybos)
 	- Add another set of mouse shortcuts for range markers - Ctrl+Left/Ctrl+Right (kybos)
