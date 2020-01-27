@@ -44,7 +44,10 @@ void Header::readStatus(MusECore::Xml& xml)
                 case MusECore::Xml::End:
                       return;
                 case MusECore::Xml::Text:
-                      restoreState(QByteArray::fromHex(tag.toLatin1()));
+                      // We can only restore the header state with version-compatible data.
+                      // If columns were altered, 'alien' loaded data will not fit!
+                      if(xml.isVersionEqualToLatest())
+                            restoreState(QByteArray::fromHex(tag.toLatin1()));
                       break;
                 case MusECore::Xml::TagStart:
                       xml.unknown("Header");
