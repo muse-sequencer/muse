@@ -158,10 +158,6 @@ Published under the GNU Public License</source>
 Опубликовано на условиях GNU Public License {1999-2012 ?} {1999-2014 ?}</translation>
     </message>
     <message>
-        <source>Version info (replaced programmatically)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>(C) Copyright 1999-2015 Werner Schweer and others.
 See http://www.muse-sequencer.org for new versions and
 more information.
@@ -178,19 +174,19 @@ Published under the GNU Public License</source>
         <translation type="unfinished">MusE</translation>
     </message>
     <message>
-        <source>(C) Copyright 1999-2019 the MusE development team.
-See http://www.muse-sequencer.org for new versions and
-more information.
-
-Published under the GNU Public License</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Internals</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>System information (useful for debugging):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(C) Copyright 1999-2020 the MusE development team.
+See http://www.muse-sequencer.org for new versions and
+more information.
+
+Published under the GNU Public License</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -358,7 +354,7 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>Font 0</source>
-        <translation>Шрифт 0</translation>
+        <translation type="vanished">Шрифт 0</translation>
     </message>
     <message>
         <source>Bold</source>
@@ -426,7 +422,7 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>Style Sheet:</source>
-        <translation>Таблица Стилей:</translation>
+        <translation type="vanished">Таблица Стилей:</translation>
     </message>
     <message>
         <source>Font 6</source>
@@ -434,7 +430,7 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>May require restarting MusE for best results</source>
-        <translation>Может потребоваться перезапуск MusE</translation>
+        <translation type="vanished">Может потребоваться перезапуск MusE</translation>
     </message>
     <message>
         <source>Themes</source>
@@ -450,7 +446,7 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>Change</source>
-        <translation>Изменить</translation>
+        <translation type="vanished">Изменить</translation>
     </message>
     <message>
         <source>Show names</source>
@@ -509,25 +505,11 @@ Published under the GNU Public License</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>If suitable icons are available from
- the desktop theme, use them
- instead of the built-in icons.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Use theme icons if available. Requires restarting MusE.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Current settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Size (pt)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Maximum aliased size, 0 = no alias:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -539,6 +521,59 @@ Aliased text is bright and sharp but may look poor
  in some cases.
 The font family is forced to &apos;Sans&apos;, which should 
  give reasonable results at low point sizes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Qt system style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Style sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Icon size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Custom cursor size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Distribute current system font family to all other fonts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>System</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Font sizes for fonts 1-6 are determined at every program start, to optimally match the currently used system font.
+Disable if you want to set fixed sizes in the font settings below.
+
+Default scaling factors:
+Font 1: 70%
+Font 2: 100%
+Font 3: 100%
+Font 4: 80%
+Font 5: 80%
+Font 6: 80%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Calculate and apply relative font sizes dynamically at program start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum aliased size, 0 = no alias</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert</source>
+        <translation type="unfinished">Вставить</translation>
+    </message>
+    <message>
+        <source>Fill in optimal font sizes in relation to the system font</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -621,7 +656,7 @@ The font family is forced to &apos;Sans&apos;, which should
     </message>
     <message>
         <source>affect CCs at</source>
-        <translation>влияет на контроллеры</translation>
+        <translation type="vanished">влияет на контроллеры</translation>
     </message>
     <message>
         <source>begin of song</source>
@@ -642,6 +677,57 @@ The font family is forced to &apos;Sans&apos;, which should
     <message>
         <source>Done</source>
         <translation>Готово</translation>
+    </message>
+    <message>
+        <source>Affect CCs at</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AudioConverterSettingsBase</name>
+    <message>
+        <source>Audio Converter Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Available audio converters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Offline settings...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Realtime settings...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gui settings...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use default preferences (see Global Settings)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preferences</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>When only samplerate conversion is required, use:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>When time stretching or pitch shifting is required, use:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">Отмена</translation>
     </message>
 </context>
 <context>
@@ -670,10 +756,6 @@ The font family is forced to &apos;Sans&apos;, which should
     </message>
     <message>
         <source>Hex:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>TextLabel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -823,7 +905,7 @@ The font family is forced to &apos;Sans&apos;, which should
     </message>
     <message>
         <source>Alt+2</source>
-        <translation>Alt+2</translation>
+        <translation type="vanished">Alt+2</translation>
     </message>
     <message>
         <source>Note: Format 0 uses the FIRST midi track&apos;s name/comment in the arranger</source>
@@ -835,7 +917,7 @@ The font family is forced to &apos;Sans&apos;, which should
     </message>
     <message>
         <source>Alt+Z</source>
-        <translation>Alt+Z</translation>
+        <translation type="vanished">Alt+Z</translation>
     </message>
     <message>
         <source>Use new-style drum tracks</source>
@@ -895,10 +977,6 @@ If this is off every event will have a
     </message>
     <message>
         <source>Use Running &amp;Status</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Alt+S</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4011,7 +4089,7 @@ Adjusts responsiveness of audio controls and
     </message>
     <message>
         <source>Behavior</source>
-        <translation>Поведение</translation>
+        <translation type="vanished">Поведение</translation>
     </message>
     <message>
         <source>Choose start song or template</source>
@@ -4400,10 +4478,6 @@ Certain operations will also force them to be resent,
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Fix frozen MDI windows</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>With some themes like Breeze or Oxygen, 
  MDI windows may be frozen and 
  non-responsive to the mouse. 
@@ -4414,11 +4488,6 @@ Benign XCB connection errors may still
     </message>
     <message>
         <source>Revert native GUI scaling for plugins in HiDPI</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Prefer midi volume as decibels 
- instead of 0-127.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4459,10 +4528,6 @@ Turn off to reduce clutter.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Ctrl + Right click sets left range marker</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Bug fix: Fix frozen MDI windows</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4476,10 +4541,6 @@ Turn off to reduce clutter.</source>
     </message>
     <message>
         <source>Ask always</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LV2 UI Open behavior</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4516,6 +4577,46 @@ Turn off to reduce clutter.</source>
     </message>
     <message>
         <source>Record drum tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample rate conversion, time stretching and pitch shifting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio converter settings...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LV2 UI open behavior</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set range markers (left / right)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Middle mouse button / Right mouse button</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ctrl + Right mouse button / Right mouse button</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ctrl + Left mouse button / Ctrl + Right mouse button</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GUI Tweaks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tweaks</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6502,7 +6603,7 @@ Word-breaking but only with spaces.</source>
     </message>
     <message>
         <source>Qt style sheets (*.qss)</source>
-        <translation>Таблицы стилей Qt (*.qss)</translation>
+        <translation type="vanished">Таблицы стилей Qt (*.qss)</translation>
     </message>
     <message>
         <source>Keep Qt system style</source>
@@ -6559,23 +6660,23 @@ Restart now?</source>
     <name>MusEGui::Arranger</name>
     <message>
         <source>Enable Recording</source>
-        <translation>Разрешить запись</translation>
+        <translation type="vanished">Разрешить запись</translation>
     </message>
     <message>
         <source>Mute/Off Indicator</source>
-        <translation>Без звука </translation>
+        <translation type="vanished">Без звука </translation>
     </message>
     <message>
         <source>Solo Indicator</source>
-        <translation>Соло</translation>
+        <translation type="vanished">Соло</translation>
     </message>
     <message>
         <source>Track Type</source>
-        <translation>Тип трека</translation>
+        <translation type="vanished">Тип трека</translation>
     </message>
     <message>
         <source>Track Name</source>
-        <translation>Имя трека</translation>
+        <translation type="vanished">Имя трека</translation>
     </message>
     <message>
         <source>Midi output channel number or audio channels</source>
@@ -6587,7 +6688,7 @@ Restart now?</source>
     </message>
     <message>
         <source>Time Lock</source>
-        <translation>Блокировка времени</translation>
+        <translation type="vanished">Блокировка времени</translation>
     </message>
     <message>
         <source>Automation parameter selection</source>
@@ -6635,7 +6736,7 @@ Right-click for more options.</source>
         <source>Midi/drum track: Output channel number.
 Audio track: Channels.
 Mid/right-click to change.</source>
-        <translation>Трек Midi/Ударных: номер канала выхода.
+        <translation type="vanished">Трек Midi/Ударных: номер канала выхода.
 Аудио трек: Каналы.
 Чтобы изменить, щелкните Средней/Правой кнопкой мыши.</translation>
     </message>
@@ -6644,7 +6745,7 @@ Mid/right-click to change.</source>
 Synth track: Assigned midi port.
 Left-click to change.
 Right-click to show GUI.</source>
-        <translation>Трек Midi/Ударных: Порт выхода.
+        <translation type="vanished">Трек Midi/Ударных: Порт выхода.
 Трек синтезатора: Назначенный midi-порт.
 Щелчок левой кнопкой - изменить.
 Щелчок правой кнопкой - показать ГИП.</translation>
@@ -6735,27 +6836,27 @@ Right-click to show GUI.</source>
     </message>
     <message>
         <source>TrackInfo</source>
-        <translation>ТрекИнфо</translation>
+        <translation type="vanished">ТрекИнфо</translation>
     </message>
     <message>
         <source>R</source>
         <extracomment>Record</extracomment>
-        <translation>R</translation>
+        <translation type="vanished">R</translation>
     </message>
     <message>
         <source>M</source>
         <extracomment>Mute</extracomment>
-        <translation>M</translation>
+        <translation type="vanished">M</translation>
     </message>
     <message>
         <source>S</source>
         <extracomment>Solo</extracomment>
-        <translation>S</translation>
+        <translation type="vanished">S</translation>
     </message>
     <message>
         <source>C</source>
         <extracomment>Class (track type)</extracomment>
-        <translation>Т</translation>
+        <translation type="vanished">Т</translation>
     </message>
     <message>
         <source>Track</source>
@@ -6819,16 +6920,53 @@ See also Settings: Automatically Monitor On Record Arm.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Alt</source>
+        <source>I</source>
+        <extracomment>Input monitor</extracomment>
+        <translation type="obsolete">Вх</translation>
+    </message>
+    <message>
+        <source>Enable recording</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>I</source>
-        <extracomment>Input monitor</extracomment>
-        <translation type="unfinished">Вх</translation>
+        <source>Mute/Off indicator</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Display mixer strip for current track</source>
+        <source>Solo indicator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Track type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Track name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi/Drum track: Output channel number.
+Audio track: Channels.
+Mid/right-click to change.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi/Drum track: Output port.
+Synth track: Assigned midi port.
+Left-click to change.
+Right-click to show GUI.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show mixer strip for current track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>#</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hide mixer strip for current track</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7087,7 +7225,7 @@ See also Settings: Automatically Monitor On Record Arm.</source>
     </message>
     <message>
         <source>New</source>
-        <translation>Новый</translation>
+        <translation type="vanished">Новый</translation>
     </message>
     <message>
         <source>Configure &amp;custom columns</source>
@@ -7223,6 +7361,10 @@ To apply the changes, please restart MusE. Sorry.
         <source>The changed arranger column settings
 cannot be applied while MusE is running.
 To apply the changes, please restart MusE.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9021,6 +9163,22 @@ With the cursor tool you can:
     <message>
         <source>Cursor</source>
         <translation type="unfinished">Курсор</translation>
+    </message>
+    <message>
+        <source>Select Stretch tool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select Sample rate tool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stretch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample rate</source>
+        <translation type="unfinished">Частота дискретизации</translation>
     </message>
 </context>
 <context>
@@ -11087,11 +11245,11 @@ Do you still want to import it?</source>
     </message>
     <message>
         <source>&amp;Yes</source>
-        <translation>&amp;Да</translation>
+        <translation type="vanished">&amp;Да</translation>
     </message>
     <message>
         <source>&amp;No</source>
-        <translation>&amp;Нет</translation>
+        <translation type="vanished">&amp;Нет</translation>
     </message>
     <message>
         <source>Song Position</source>
@@ -11141,13 +11299,6 @@ The first track&apos;s port will be used. Playback will likely be wrong
  unless the channels used in one port are different from all other ports.
 Canceling and setting a different export format would be better.
 Continue?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>This wave file has a samplerate of %1,
-as opposed to current setting %2.
-File will be resampled from %1 to %2 Hz.
-Do you still want to import it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -11519,6 +11670,42 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Set left/right marker for bounce range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The project has no project sample rate (added 2011).
+Please enter a rate. The current system rate (%1Hz)
+ is suggested, and cancelling uses it:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The project has audio waves, but no project sample rate (added 2011).
+Please enter a rate. The most common wave rate found is suggested,
+ the project was probably made with it. Cancelling uses the
+ current system rate (%1Hz):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Project sample rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This wave file has a samplerate of %1 Hz,
+ as opposed to current setting %2 Hz.
+A live, real-time samplerate converter can be used on this file.
+Or, a copy of the file can be resampled now from %1 Hz to %2 Hz.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do you want to use a converter or resample the file now?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use live converter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Resample now</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -12733,7 +12920,11 @@ the selected title is not unique</source>
     </message>
     <message>
         <source>Signature: </source>
-        <translation type="unfinished">Размер:</translation>
+        <translation type="obsolete">Размер:</translation>
+    </message>
+    <message>
+        <source>Signature </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -12799,6 +12990,10 @@ the selected title is not unique</source>
     </message>
     <message>
         <source>Hide strip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Visible audio effects</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -13068,10 +13263,14 @@ the selected title is not unique</source>
     </message>
     <message>
         <source>Tempo: </source>
-        <translation type="unfinished">Темп:</translation>
+        <translation type="obsolete">Темп:</translation>
     </message>
     <message>
         <source>TAP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tempo </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -13497,6 +13696,14 @@ Missing data is muted</source>
 
 Утерянные данные заглушены</translation>
     </message>
+    <message>
+        <source>Wave event:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Converter settings</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::WaveEdit</name>
@@ -13806,7 +14013,7 @@ Missing data is muted</source>
     </message>
     <message>
         <source>insert</source>
-        <translation>вставить</translation>
+        <translation type="vanished">вставить</translation>
     </message>
     <message>
         <source> times</source>
@@ -13814,7 +14021,7 @@ Missing data is muted</source>
     </message>
     <message>
         <source>raster</source>
-        <translation>значение</translation>
+        <translation type="vanished">значение</translation>
     </message>
     <message>
         <source> ticks</source>
@@ -13882,6 +14089,14 @@ to be expanded by more than </source>
     <message>
         <source>Erase inclusive</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert</source>
+        <translation type="unfinished">Вставить</translation>
+    </message>
+    <message>
+        <source>Raster</source>
+        <translation type="unfinished">Значение</translation>
     </message>
 </context>
 <context>
@@ -14134,6 +14349,17 @@ to be expanded by more than </source>
     </message>
     <message>
         <source>TAKE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE import error.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE failed to import the file.
+Possibly this wasn&apos;t a sound file?
+If it was check the permissions, MusE
+sometimes requires write access to the file.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -14605,6 +14831,212 @@ This also turns on text word wrap, which may
     <message>
         <source>Remove selected route</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>RubberbandSettingsBase</name>
+    <message>
+        <source>Rubberband Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rubberband support is not enabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use default settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Presets:</source>
+        <translation type="unfinished">Пресеты:</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Percussion</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stretch:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Elastic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Precise</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Window:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Standard</source>
+        <translation type="unfinished">Стандартный</translation>
+    </message>
+    <message>
+        <source>Short</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Long</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation type="unfinished">Выкл</translation>
+    </message>
+    <message>
+        <source>On</source>
+        <translation type="unfinished">Вкл</translation>
+    </message>
+    <message>
+        <source>Channels:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Apart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Together</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transients:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Crisp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mixed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smooth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detector:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compound</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Percussive</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Soft</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Phase:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Laminar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Independent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Formant:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Shifted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preserved</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pitch:</source>
+        <translation type="unfinished">Высота тона:</translation>
+    </message>
+    <message>
+        <source>High speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>High quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>High consistency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">Отмена</translation>
+    </message>
+</context>
+<context>
+    <name>SRCResamplerSettingsBase</name>
+    <message>
+        <source>SRC Resampler Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use default settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Converter Type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SINC Best quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SINC Medium quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SINC Fastest</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zero Order Hold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">Отмена</translation>
     </message>
 </context>
 <context>
@@ -15451,6 +15883,33 @@ Robert Jonsson
     </message>
 </context>
 <context>
+    <name>ZitaResamplerSettingsBase</name>
+    <message>
+        <source>Zita Resampler Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zita Resampler support is not enabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use default settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Options:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">Отмена</translation>
+    </message>
+</context>
+<context>
     <name>file_patterns</name>
     <message>
         <source>Midi/Kar (*.mid *.MID *.kar *.KAR *.mid.gz *.mid.bz2)</source>
@@ -15587,6 +16046,10 @@ Robert Jonsson
     <message>
         <source>Color configuration files (*.cfc)</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Qt style sheets (*.qss)</source>
+        <translation type="unfinished">Таблицы стилей Qt (*.qss)</translation>
     </message>
 </context>
 <context>
@@ -16772,6 +17235,14 @@ Continue?</source>
     </message>
     <message>
         <source>Solo all currently selected tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tool: Stretch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tool: Sample rate</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

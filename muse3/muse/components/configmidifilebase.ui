@@ -20,7 +20,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="importTab">
       <attribute name="title">
@@ -266,7 +266,7 @@ If this is off every event will have a
           <string>Use Running &amp;Status</string>
          </property>
          <property name="shortcut">
-          <string>Alt+S</string>
+          <string notr="true">Alt+S</string>
          </property>
         </widget>
        </item>
@@ -283,7 +283,7 @@ If this is off every event will have a
           <string>Replace note-offs with &amp;zero velocity note-ons</string>
          </property>
          <property name="shortcut">
-          <string>Alt+Z</string>
+          <string notr="true">Alt+Z</string>
          </property>
         </widget>
        </item>
@@ -293,7 +293,7 @@ If this is off every event will have a
           <string>Use &amp;2-byte time signatures instead of standard 4</string>
          </property>
          <property name="shortcut">
-          <string>Alt+2</string>
+          <string notr="true">Alt+2</string>
          </property>
         </widget>
        </item>

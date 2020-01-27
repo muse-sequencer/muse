@@ -40,7 +40,7 @@
         <item row="0" column="0">
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>insert</string>
+           <string>Insert</string>
           </property>
          </widget>
         </item>
@@ -60,7 +60,7 @@
         <item row="1" column="0">
          <widget class="QLabel" name="label_3">
           <property name="text">
-           <string>raster</string>
+           <string>Raster</string>
           </property>
          </widget>
         </item>
@@ -268,7 +268,7 @@ to be expanded by more than </string>
          <string>Keep e&amp;xisting</string>
         </property>
         <property name="icon">
-         <iconset resource="../../resources.qrc">
+         <iconset>
           <normaloff>:/svg/paste_ctrl.svg</normaloff>:/svg/paste_ctrl.svg</iconset>
         </property>
         <property name="iconSize">
@@ -291,7 +291,7 @@ to be expanded by more than </string>
          <string>Erase existin&amp;g</string>
         </property>
         <property name="icon">
-         <iconset resource="../../resources.qrc">
+         <iconset>
           <normaloff>:/svg/paste_ctrl_erase.svg</normaloff>:/svg/paste_ctrl_erase.svg</iconset>
         </property>
         <property name="iconSize">
@@ -311,7 +311,7 @@ to be expanded by more than </string>
          <string>Erase WYSIWYG</string>
         </property>
         <property name="icon">
-         <iconset resource="../../resources.qrc">
+         <iconset>
           <normaloff>:/svg/paste_ctrl_erase_wysiwyg.svg</normaloff>:/svg/paste_ctrl_erase_wysiwyg.svg</iconset>
         </property>
         <property name="iconSize">
@@ -331,7 +331,7 @@ to be expanded by more than </string>
          <string>Erase inclusive</string>
         </property>
         <property name="icon">
-         <iconset resource="../../resources.qrc">
+         <iconset>
           <normaloff>:/svg/paste_ctrl_erase_inclusive.svg</normaloff>:/svg/paste_ctrl_erase_inclusive.svg</iconset>
         </property>
         <property name="iconSize">
@@ -404,9 +404,7 @@ to be expanded by more than </string>
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources>
-  <include location="../../resources.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>okButton</sender>
