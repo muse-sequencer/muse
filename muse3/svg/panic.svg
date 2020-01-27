@@ -1,31 +1,131 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
- <defs>
-  <clipPath id="presentation_clip_path">
-   <rect width="1600" height="1600"/>
-  </clipPath>
- </defs>
- <metadata>
-  <rdf:RDF>
-   <cc:Work rdf:about="">
-    <dc:format>image/svg+xml</dc:format>
-    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:title/>
-   </cc:Work>
-  </rdf:RDF>
- </metadata>
- <g class="Slide" transform="matrix(.049968 0 0 .045795 -8.9936 -5.243)" clip-path="url(#presentation_clip_path)" fill="#f00" stroke-width=".82532">
-  <g class="Page" fill="#f00" stroke-width=".82532">
-   <g class="com.sun.star.drawing.PolyPolygonShape" fill="#f00" stroke-width=".82532">
-    <g fill="#f00" stroke-width=".82532">
-     <path d="m200 550v500h300c100 133.33 200 266.67 300 400v-1300c-100 133.33-200 266.67-300 400z"/>
-     <g stroke="#000" stroke-linejoin="round" stroke-width="43.673">
-      <path d="m200 550v500h300c100 133.33 200 266.67 300 400v-1300c-100 133.33-200 266.67-300 400z"/>
-      <path d="m1035.3 267.35h403.98c-33.665 269.32-67.33 538.64-100.99 807.95h-201.99c-33.665-269.32-67.33-538.64-100.99-807.95z"/>
-      <circle cx="1237.3" cy="1293.7" r="133.67" stroke-linecap="square" style="paint-order:markers fill stroke"/>
-     </g>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="64px"
+   height="64px"
+   viewBox="0 0 64 64"
+   version="1.1"
+   id="SVGRoot"
+   sodipodi:docname="panic2.svg"
+   inkscape:version="0.92.4 (unknown)">
+  <defs
+     id="defs1366">
+    <clipPath
+       id="presentation_clip_path"
+       clipPathUnits="userSpaceOnUse">
+      <rect
+         x="0"
+         y="0"
+         width="1600"
+         height="1600"
+         id="rect2" />
+    </clipPath>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="22.627417"
+     inkscape:cx="19.780311"
+     inkscape:cy="33.7224"
+     inkscape:document-units="px"
+     inkscape:current-layer="id5"
+     showgrid="true"
+     inkscape:window-width="3840"
+     inkscape:window-height="2057"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:grid-bbox="true"
+     inkscape:snap-global="false"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:pagecheckerboard="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid1922" />
+    <sodipodi:guide
+       position="-8,13"
+       orientation="0,1"
+       id="guide861"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata1369">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       style="display:inline;stroke-width:0.82532132"
+       id="id1"
+       class="Slide"
+       clip-path="url(#presentation_clip_path)"
+       transform="matrix(0.04579463,0,0,0.04579463,-6.6618256,-5.2429656)">
+      <g
+         style="stroke-width:0.82532132"
+         class="Page"
+         id="g74">
+        <g
+           style="stroke-width:0.82532132"
+           class="com.sun.star.drawing.PolyPolygonShape"
+           id="g72">
+          <g
+             style="stroke-width:0.82532132"
+             id="id5">
+            <rect
+               style="fill:#ff0000;fill-opacity:1;stroke:#000000;stroke-width:21.83662033;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers fill stroke"
+               id="rect1748"
+               width="1277.728"
+               height="1320.1903"
+               x="214.95546"
+               y="155.1701"
+               rx="109.18311"
+               ry="109.18311" />
+            <path
+               style="display:inline;fill:#ff0000;stroke:#000000;stroke-width:43.67324448;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+               d="m 389.30491,634.70736 c 0,118.18419 0,236.3684 0,354.55253 95.95084,0 191.90171,0 287.85255,0 95.95087,94.54731 191.90173,189.09471 287.85256,283.64201 0,-307.27881 0,-614.5577 0,-921.83658 -95.95083,94.54736 -191.90169,189.0947 -287.85256,283.64204 -95.95084,0 -191.90171,0 -287.85255,0 z"
+               id="path69"
+               inkscape:connector-curvature="0" />
+            <g
+               id="g1631"
+               transform="matrix(1.2226827,0,0,1.2226827,-285.17655,-119.94282)"
+               style="fill:#ff0000;stroke:#000000;stroke-width:35.7191925;stroke-miterlimit:4;stroke-dasharray:none">
+              <path
+                 inkscape:connector-curvature="0"
+                 id="path1625"
+                 d="m 1128.1197,638.56756 218.3662,218.36621"
+                 style="fill:#ff0000;stroke:#000000;stroke-width:35.7191925;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+              <path
+                 inkscape:connector-curvature="0"
+                 id="path1627"
+                 d="M 1346.4859,638.56756 1128.1197,856.93377"
+                 style="fill:#ff0000;stroke:#000000;stroke-width:35.7191925;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+            </g>
+          </g>
+        </g>
+      </g>
     </g>
-   </g>
   </g>
- </g>
 </svg>
