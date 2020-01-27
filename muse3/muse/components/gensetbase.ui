@@ -1919,7 +1919,7 @@ Certain operations will also force them to be resent,
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_21">
        <item>
-        <layout class="QGridLayout" name="gridLayout">
+        <layout class="QGridLayout" name="gridLayout5">
          <item row="0" column="0">
           <widget class="QLabel" name="TextLabel1">
            <property name="text">
@@ -2032,7 +2032,7 @@ Certain operations will also force them to be resent,
         </spacer>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="groupBox1">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
