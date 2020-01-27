@@ -69,7 +69,7 @@ void TempoToolbar::init()
   tempo_edit->setContentsMargins(0, 0, 0, 0);
   tempo_edit->setFocusPolicy(Qt::StrongFocus);
 
-  label=new QLabel(tr("Tempo: "),this);
+  label=new QLabel(tr("Tempo "),this);
   label->setContentsMargins(0, 0, 0, 0);
 
   tap_button = new QToolButton(this);
@@ -198,7 +198,7 @@ void SigToolbar::init()
   sig_edit->setValue(MusECore::TimeSignature(4, 4));
   sig_edit->setToolTip(tr("Time signature at current position"));
   
-  label=new QLabel(tr("Signature: "),this);
+  label=new QLabel(tr("Signature "),this);
   label->setContentsMargins(0, 0, 0, 0);
   
   addWidget(label);

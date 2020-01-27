@@ -1725,7 +1725,7 @@ The font family is forced to 'Sans', which should
              <string/>
             </property>
             <property name="text">
-             <string>Maximum aliased size, 0 = no alias:</string>
+             <string>Maximum aliased size, 0 = no alias</string>
             </property>
            </widget>
           </item>

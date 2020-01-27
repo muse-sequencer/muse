@@ -1350,7 +1350,7 @@ Adjusts responsiveness of audio controls and
        <item row="3" column="0">
         <widget class="QGroupBox" name="audioConvertersGroupBox">
          <property name="title">
-          <string>Sample rate conversion, time stretching and pitch shifting:</string>
+          <string>Sample rate conversion, time stretching and pitch shifting</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
@@ -2322,7 +2322,7 @@ Disable to use an alternate standard
                  </sizepolicy>
                 </property>
                 <property name="toolTip">
-                 <string>Fix frozen MDI windows</string>
+                 <string/>
                 </property>
                 <property name="whatsThis">
                  <string>With some themes like Breeze or Oxygen, 

@@ -61,8 +61,8 @@ const char* infoCursor = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Curso
 const char* infoRange = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Range tool");
 const char* infoPan = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Panning tool");
 const char* infoZoom = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Zoom tool");
-const char* infoStretch = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Stretch Tool");
-const char* infoSamplerate = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Sample Rate Tool");
+const char* infoStretch = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Stretch tool");
+const char* infoSamplerate = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Sample rate tool");
 
 ToolB toolList[] = {
       {&pointerIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Pointer"),        infoPointer },

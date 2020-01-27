@@ -17,7 +17,7 @@
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Available audio converters:</string>
+      <string>Available audio converters</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
@@ -103,7 +103,7 @@
    <item>
     <widget class="QGroupBox" name="preferencesGroup">
      <property name="title">
-      <string>Preferences:</string>
+      <string>Preferences</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_4">
       <item>
