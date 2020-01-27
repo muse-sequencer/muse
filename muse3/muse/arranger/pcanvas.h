@@ -26,7 +26,7 @@
 
 #include <QVector>
 #include <set>
-#include <QTime>
+#include <QElapsedTimer>
 
 #include "type_defs.h"
 #include "song.h"
@@ -129,7 +129,7 @@ class PartCanvas : public Canvas {
       static const int _automationPointWidthUnsel;
       static const int _automationPointWidthSel;
       
-      QTime editingFinishedTime;
+      QElapsedTimer editingFinishedTime;
 
       AutomationObject automation;
 

@@ -45,10 +45,13 @@
 #include "muse/midi_consts.h"
 
 // fluid_synth_error() is deprecated in 2.0.2 and will cause a compile error.
-#if !(FLUIDSYNTH_VERSION_MAJOR >= 2 && FLUIDSYNTH_VERSION_MINOR >= 0 && FLUIDSYNTH_VERSION_MICRO >= 2)
+#define FLUIDSYNTI_FS_VERSION FLUIDSYNTI_FS_VERSION_CHECK(FLUIDSYNTH_VERSION_MAJOR, FLUIDSYNTH_VERSION_MINOR, FLUIDSYNTH_VERSION_MICRO)
+#define FLUIDSYNTI_FS_VERSION_CHECK(major, minor, micro) ((major<<16)|(minor<<8)|(micro))
+
+#if ( FLUIDSYNTI_FS_VERSION < FLUIDSYNTI_FS_VERSION_CHECK(2, 0, 2) )
 #define FLUIDSYNTI_HAVE_FLUID_SYNTH_ERROR 1
 #endif
-
+      
 #ifdef HAVE_INSTPATCH
 #include <libinstpatch/libinstpatch.h>
 typedef std::multimap < int /* note */, std::string > NoteSampleNameList_t;

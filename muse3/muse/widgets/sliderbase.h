@@ -28,7 +28,7 @@
 
 #include "drange.h"
 
-#include <QTime>
+#include <QElapsedTimer>
 #include <QWidget>
 
 class QFocusEvent;
@@ -54,7 +54,7 @@ class SliderBase : public QWidget, public DoubleRange
   int d_tmrID;
   int d_updTime;
   int d_timerTick;
-  QTime d_time;
+  QElapsedTimer d_time;
   double d_speed;
   double d_mass;
   bool _cursorHoming;
