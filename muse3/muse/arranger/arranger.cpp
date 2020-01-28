@@ -397,6 +397,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       header->setColumnLabel(tr("T"), COL_TIMELOCK);
       header->setColumnLabel(tr("Automation"), COL_AUTOMATION);
       header->setColumnLabel(tr("Clef"), COL_CLEF);
+      for (unsigned i = 0; i < custom_columns.size(); i++)
+         header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET + i);
 
       header->setSectionResizeMode(COL_TRACK_IDX, QHeaderView::Interactive);
       header->setSectionResizeMode(COL_INPUT_MONITOR, QHeaderView::Fixed);
