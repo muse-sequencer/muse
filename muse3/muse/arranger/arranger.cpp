@@ -397,6 +397,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       header->setColumnLabel(tr("T"), COL_TIMELOCK);
       header->setColumnLabel(tr("Automation"), COL_AUTOMATION);
       header->setColumnLabel(tr("Clef"), COL_CLEF);
+      for (unsigned i = 0; i < custom_columns.size(); i++)
+         header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET+i);
 
       header->setSectionResizeMode(COL_TRACK_IDX, QHeaderView::Interactive);
       header->setSectionResizeMode(COL_INPUT_MONITOR, QHeaderView::Fixed);
@@ -410,7 +412,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       header->setSectionResizeMode(COL_TIMELOCK, QHeaderView::Fixed);
       header->setSectionResizeMode(COL_AUTOMATION, QHeaderView::Interactive);
       header->setSectionResizeMode(COL_CLEF, QHeaderView::Interactive);
-      for (unsigned i=0;i<custom_columns.size();i++)
+      for (unsigned i = 0; i < custom_columns.size(); i++)
         header->setSectionResizeMode(COL_CUSTOM_MIDICTRL_OFFSET+i, QHeaderView::Interactive);
 
       // 04/18/17 Time lock remains unused. Disabled until a use is found.
