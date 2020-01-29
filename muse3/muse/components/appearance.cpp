@@ -599,6 +599,9 @@ void Appearance::resetValues()
       cursorSizeSpin->blockSignals(true);
       cursorSizeSpin->setValue(config->cursorSize);
       cursorSizeSpin->blockSignals(false);
+
+      cascadeStylesheetsCheckBox->setChecked(config->cascadeStylesheets);
+
       // Grab all the colours.
       updateColorItems();
 

@@ -1384,7 +1384,10 @@
           <item row="1" column="0">
            <widget class="QCheckBox" name="cascadeStylesheetsCheckBox">
             <property name="toolTip">
-             <string>If a user style sheet for the current theme exists and is selected, it will be merged with the default style sheet. The user style sheet takes precedence in case of identical selectors and styles.</string>
+             <string>If a user style sheet for one of  the MusE color schemes exists
+and is selected, it will be merged with the default style sheet
+for this scheme. The user style sheet takes precedence and 
+overwrites identical settings in the default style sheet.</string>
             </property>
             <property name="text">
              <string>Cascade default and user style sheets</string>
