@@ -482,16 +482,16 @@ void TList::paint(const QRect& r)
                                 }
                                 break;
                           default:
-                                if (section>=COL_CUSTOM_MIDICTRL_OFFSET)
+                                if (section >= COL_CUSTOM_MIDICTRL_OFFSET)
                                 {
                                   if (track->isMidiTrack())
                                   {
-                                    int col_ctrl_no=Arranger::custom_columns[section-COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
+                                    int col_ctrl_no=Arranger::custom_columns[section - COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
                                     MusECore::MidiTrack* mt=dynamic_cast<MusECore::MidiTrack*>(track);
                                     MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
                                     MusECore::MidiController* mctl = mp->midiController(col_ctrl_no);
                                     int val;
-                                    if (Arranger::custom_columns[section-COL_CUSTOM_MIDICTRL_OFFSET].affected_pos ==
+                                    if (Arranger::custom_columns[section - COL_CUSTOM_MIDICTRL_OFFSET].affected_pos ==
                                         Arranger::custom_col_t::AFFECT_BEGIN)
                                       val=mt->getControllerChangeAtTick(0,col_ctrl_no,MusECore::CTRL_VAL_UNKNOWN);
                                     else

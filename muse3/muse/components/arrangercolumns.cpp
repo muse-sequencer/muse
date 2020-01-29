@@ -111,9 +111,9 @@ void ArrangerColumns::somethingChanged()
 		int lnum = spinBoxLCtrlNo->value();
 		int ctrl_number = MusECore::MidiController::genNum(t, hnum, lnum);
 
-		Arranger::new_custom_columns[row].name=nameEdit->text();
-		Arranger::new_custom_columns[row].ctrl=ctrl_number;
-		Arranger::new_custom_columns[row].affected_pos=(affectBeginButton->isChecked() ? Arranger::custom_col_t::AFFECT_BEGIN : Arranger::custom_col_t::AFFECT_CPOS);
+        Arranger::custom_columns[row].name=nameEdit->text();
+        Arranger::custom_columns[row].ctrl=ctrl_number;
+        Arranger::custom_columns[row].affected_pos=(affectBeginButton->isChecked() ? Arranger::custom_col_t::AFFECT_BEGIN : Arranger::custom_col_t::AFFECT_CPOS);
 
 		listWidget->currentItem()->setText(getListEntryString(row));
 	}
@@ -121,14 +121,14 @@ void ArrangerColumns::somethingChanged()
 
 QString ArrangerColumns::getListEntryString(int row)
 {
-	return "\""+Arranger::new_custom_columns[row].name+"\": "+MusECore::midiCtrlNumString(Arranger::new_custom_columns[row].ctrl, true);
+    return "\""+Arranger::custom_columns[row].name+"\": "+MusECore::midiCtrlNumString(Arranger::custom_columns[row].ctrl, true);
 }
 
 void ArrangerColumns::initList()
 {
 	listWidget->clear();
 	
-	for (unsigned int i=0;i<Arranger::new_custom_columns.size(); i++)
+    for (unsigned int i=0;i<Arranger::custom_columns.size(); i++)
 		listWidget->addItem(getListEntryString(i));
 }
 
@@ -146,8 +146,8 @@ void ArrangerColumns::itemSelected(int i)
 		frame->setEnabled(true);
 		delBtn->setEnabled(true);
 		
-		nameEdit->setText(Arranger::new_custom_columns[i].name);
-		int num=Arranger::new_custom_columns[i].ctrl;
+        nameEdit->setText(Arranger::custom_columns[i].name);
+        int num=Arranger::custom_columns[i].ctrl;
 		int idx = ctrlType->findData(MusECore::midiControllerType(num));
 		if(idx != -1)
 		  ctrlType->setCurrentIndex(idx);
@@ -161,8 +161,8 @@ void ArrangerColumns::itemSelected(int i)
 		else
 			spinBoxLCtrlNo->setValue(0);
 		
-		affectBeginButton->setChecked(Arranger::new_custom_columns[i].affected_pos == Arranger::custom_col_t::AFFECT_BEGIN);
-		affectCposButton->setChecked(Arranger::new_custom_columns[i].affected_pos == Arranger::custom_col_t::AFFECT_CPOS);
+        affectBeginButton->setChecked(Arranger::custom_columns[i].affected_pos == Arranger::custom_col_t::AFFECT_BEGIN);
+        affectCposButton->setChecked(Arranger::custom_columns[i].affected_pos == Arranger::custom_col_t::AFFECT_CPOS);
 	}
 	
 	ignoreSomethingChanged=false;
@@ -170,7 +170,7 @@ void ArrangerColumns::itemSelected(int i)
 
 void ArrangerColumns::addEntry()
 {
-	Arranger::new_custom_columns.push_back(Arranger::custom_col_t(0,QString("?")));
+    Arranger::custom_columns.push_back(Arranger::custom_col_t(0,QString("?")));
 	listWidget->addItem(getListEntryString(listWidget->count()));
 	listWidget->setCurrentRow(listWidget->count()-1);
 }
@@ -181,9 +181,9 @@ void ArrangerColumns::delEntry()
 	
 	if (row!=-1)
 	{
-		std::vector<Arranger::custom_col_t>::iterator it=Arranger::new_custom_columns.begin();
+        std::vector<Arranger::custom_col_t>::iterator it=Arranger::custom_columns.begin();
 		advance(it, row);
-		Arranger::new_custom_columns.erase(it);
+        Arranger::custom_columns.erase(it);
 
 		initList();
 		
