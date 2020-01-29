@@ -1367,6 +1367,13 @@
           <item row="0" column="0">
            <widget class="QLineEdit" name="styleSheetPath"/>
           </item>
+          <item row="0" column="2">
+           <widget class="QToolButton" name="defaultStyleSheet">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="1">
            <widget class="QToolButton" name="openStyleSheet">
             <property name="text">
@@ -1374,10 +1381,13 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="2">
-           <widget class="QToolButton" name="defaultStyleSheet">
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="cascadeStylesheetsCheckBox">
+            <property name="toolTip">
+             <string>If a user style sheet for the current theme exists and is selected, it will be merged with the default style sheet. The user style sheet takes precedence in case of identical selectors and styles.</string>
+            </property>
             <property name="text">
-             <string>...</string>
+             <string>Cascade default and user style sheets</string>
             </property>
            </widget>
           </item>

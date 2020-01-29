@@ -847,6 +847,11 @@ bool Appearance::apply()
           config->cursorSize = cursorSizeSpin->value();
       }
 
+      if (config->cascadeStylesheets != cascadeStylesheetsCheckBox->isChecked()) {
+          restart_required = true;
+          config->cascadeStylesheets = cascadeStylesheetsCheckBox->isChecked();
+      }
+
       if (radioButtonDrawOutline->isChecked())
         config->waveDrawing = MusEGlobal::WaveOutLine;
       else
