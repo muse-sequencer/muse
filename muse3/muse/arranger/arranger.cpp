@@ -79,8 +79,7 @@
 
 namespace MusEGui {
 
-std::vector<Arranger::custom_col_t> Arranger::custom_columns;     //FINDMICH TODO: eliminate all usage of new_custom_columns
-std::vector<Arranger::custom_col_t> Arranger::new_custom_columns; //and instead let the arranger update without restarting muse!
+std::vector<Arranger::custom_col_t> Arranger::custom_columns;
 QByteArray Arranger::header_state;
 static const char* gArrangerRasterStrings[] = {
       QT_TRANSLATE_NOOP("MusEGui::Arranger", "Off"), QT_TRANSLATE_NOOP("MusEGui::Arranger", "Bar"), "1/2", "1/4", "1/8", "1/16"
@@ -91,12 +90,12 @@ void Arranger::writeCustomColumns(int level, MusECore::Xml& xml)
 {
   xml.tag(level++, "custom_columns");
   
-  for (unsigned i=0;i<new_custom_columns.size();i++)
+  for (unsigned i = 0; i < custom_columns.size(); i++)
   {
     xml.tag(level++, "column");
-    xml.strTag(level, "name", new_custom_columns[i].name);
-    xml.intTag(level, "ctrl", new_custom_columns[i].ctrl);
-    xml.intTag(level, "affected_pos", new_custom_columns[i].affected_pos);
+    xml.strTag(level, "name", custom_columns[i].name);
+    xml.intTag(level, "ctrl", custom_columns[i].ctrl);
+    xml.intTag(level, "affected_pos", custom_columns[i].affected_pos);
     xml.etag(--level, "column");
   }
   
@@ -113,7 +112,6 @@ void Arranger::readCustomColumns(MusECore::Xml& xml)
             switch (token) {
                   case MusECore::Xml::Error:
                   case MusECore::Xml::End:
-                        new_custom_columns=custom_columns;
                         return;
                   case MusECore::Xml::TagStart:
                         if (tag == "column")
@@ -124,7 +122,6 @@ void Arranger::readCustomColumns(MusECore::Xml& xml)
                   case MusECore::Xml::TagEnd:
                         if (tag == "custom_columns")
                         {
-                              new_custom_columns=custom_columns;
                               return;
                         }
                   default:
@@ -398,7 +395,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       header->setColumnLabel(tr("Automation"), COL_AUTOMATION);
       header->setColumnLabel(tr("Clef"), COL_CLEF);
       for (unsigned i = 0; i < custom_columns.size(); i++)
-         header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET+i);
+         header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET + i);
 
       header->setSectionResizeMode(COL_TRACK_IDX, QHeaderView::Interactive);
       header->setSectionResizeMode(COL_INPUT_MONITOR, QHeaderView::Fixed);
@@ -1328,5 +1325,20 @@ void Arranger::horizontalZoom(int mag, const QPoint& glob_pos)
     hscroll->setMag(hscroll->mag() + mag, cp.x());
 }
 
+void Arranger::updateHeaderCustomColumns()
+{
+    for (int i = COL_CUSTOM_MIDICTRL_OFFSET; i < header->count(); i++)
+        header->removeColumn(i);
+
+    header->headerDataChanged(Qt::Horizontal, COL_CUSTOM_MIDICTRL_OFFSET, header->count());
+
+    for (unsigned i = 0; i < custom_columns.size(); i++) {
+        header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET + i);
+        header->showSection(COL_CUSTOM_MIDICTRL_OFFSET + i);
+    }
+
+    setHeaderSizes();
+    list->redraw();
+}
 
 } // namespace MusEGui

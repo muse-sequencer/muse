@@ -168,8 +168,7 @@ class Arranger : public QWidget {
           affected_pos=a;
         }
       };
-      static std::vector<custom_col_t> custom_columns;     //FINDMICH TODO: eliminate all usage of new_custom_columns
-      static std::vector<custom_col_t> new_custom_columns; //and instead let the arranger update without restarting muse!
+      static std::vector<custom_col_t> custom_columns;
 
       Arranger(ArrangerView* parent, const char* name = 0);
 
@@ -193,6 +192,7 @@ class Arranger : public QWidget {
       void clear();
       void songIsClearing() { canvas->songIsClearing(); }
       void setDefaultSplitterSizes();
+      void updateHeaderCustomColumns();
       
       unsigned cursorValue() { return cursVal; }
       
