@@ -51,9 +51,10 @@ namespace MusECore {
 
 void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
 {
-  const TempoList* t = &MusEGlobal::tempomap;
-  const SigList* s   = &MusEGlobal::sigmap;
-  const KeyList* k   = &MusEGlobal::keymap;
+  const TempoList* t  = &MusEGlobal::tempomap;
+  const SigList* s    = &MusEGlobal::sigmap;
+  const KeyList* k    = &MusEGlobal::keymap;
+  const MarkerList* m = MusEGlobal::song->marker();
 
 // REMOVE Tim. struct. Removed.
 //   criTEvent it   = t->rbegin();
@@ -171,23 +172,32 @@ void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
       operations.push_back(UndoOp(UndoOp::AddSig, tick + diff, ev->sig.z, ev->sig.n));
   }
 
-
-  MarkerList *markerlist = MusEGlobal::song->marker();
-  for(iMarker i = markerlist->begin(); i != markerlist->end(); ++i)
+  // markers
+  // What needs to be deleted?
+  for(ciMarker i = m->cbegin(); i != m->cend(); ++i)
   {
-      const Marker& m = i->second;
-      unsigned int tick = m.tick();
-      if (tick >= startPos)
-      {
-        if (is_cut && tick < startPos - diff) { // diff is negative, these ticks should be removed
-          operations.push_back(UndoOp(UndoOp::DeleteMarker, m));
-        } else {
-          // Grab a copy but with a new ID.
-          Marker newMarker = m.copy();
-          newMarker.setTick(tick + diff);
-          operations.push_back(UndoOp(UndoOp::ModifyMarker, m, newMarker));
-        }
-      }
+    const Marker& ev = i->second;
+    unsigned int tick = ev.tick();
+    if (tick < startPos )
+      continue;
+    if (is_cut && tick < startPos - diff) { // diff is negative, these ticks should be removed
+      operations.push_back(UndoOp(UndoOp::DeleteMarker, ev));
+    }
+  }
+  // What needs to be added or modified?
+  for(ciMarker i = m->cbegin(); i != m->cend(); ++i)
+  {
+    const Marker& ev = i->second;
+    unsigned int tick = ev.tick();
+    if (tick < startPos )
+      continue;
+    if (!is_cut || tick >= startPos - diff)
+    {
+      // Grab a copy but with a new ID.
+      Marker newMarker = ev.copy();
+      newMarker.setTick(tick + diff);
+      operations.push_back(UndoOp(UndoOp::ModifyMarker, ev, newMarker));
+    }
   }
 }
 

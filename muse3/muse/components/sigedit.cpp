@@ -132,8 +132,12 @@ void SigEdit::setValue(const MusECore::TimeSignature& s)
 
 void SigEdit::updateValue()
       {
+      zSpin->blockSignals(true);
+      nSpin->blockSignals(true);
       zSpin->setValue(_sig.z);
       nSpin->setValue(_sig.n);
+      zSpin->blockSignals(false);
+      nSpin->blockSignals(false);
       }
 
 void SigEdit::paintEvent(QPaintEvent* event) {

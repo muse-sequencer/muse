@@ -678,7 +678,10 @@ void MarkerView::nameChanged()
       MarkerItem* item = (MarkerItem*)table->currentItem();
       if (item)
       {
-        MusEGlobal::song->setMarkerName(item->marker(), editName->text());
+        const QString txt = editName->text();
+        // Avoid multiple identical changes from return pressed and focus lost etc.
+        if(item->marker().name() != txt)
+          MusEGlobal::song->setMarkerName(item->marker(), txt);
       }
       }
 
