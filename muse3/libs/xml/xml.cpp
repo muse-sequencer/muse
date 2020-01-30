@@ -163,10 +163,11 @@ void Xml::token(int cc)
       for (; i < 9999999;) {   // Stop at a reasonably large amount 10 million.
             if (c == ' ' || c == '\t' || c == cc || c == '\n' || c == EOF)
                   break;
-            buffer[i++] = c;
+            buffer.append(c);
+            i++;
             next();
             }
-      buffer[i] = 0;
+      buffer.append(char(0));
       _s2 = buffer;     // deep copy !?
       }
 
@@ -179,12 +180,14 @@ void Xml::stoken()
       {
       QByteArray buffer;
       int i = 0;
-      buffer[i++] = c;
+      buffer.append(c);
+      i++;
       next();
 
       for (;i < 10000000*4-1;) {  // Stop at a reasonably large amount 10 million.
             if (c == '"') {
-                  buffer[i++] = c;
+                  buffer.append(c);
+                  i++;
                   next();
                   break;
                   }
@@ -217,23 +220,26 @@ void Xml::stoken()
                   if (c == EOF || k == 6) {
                         // dump entity
                         int n = 0;
-                        buffer[i++] = '&';
+                        buffer.append('&');
+                        i++;
                         for (;(i < 511) && (n < k); ++i, ++n)
-                              buffer[i] = entity[n];
+                              buffer.append(entity[n]);
                         }
                   else {
-                        buffer[i++] = c;
+                        buffer.append(c);
+                        i++;
                      }
                   }
             else if(c != EOF)
             {
-              buffer[i++] = c;
+              buffer.append(c);
+              i++;
             }
             if (c == EOF)
                   break;
             next();
             }
-      buffer[i] = 0;
+      buffer.append(char(0));
       _s2 = buffer;
       }
 
@@ -321,17 +327,19 @@ Xml::Token Xml::parse()
             if (c == '?') {
                   next();
                   idx = 0;
+                  buffer.clear();
                   for (;;) {
                         if (c == '?' || c == EOF || c == '>')
                               break;
                         
-                        buffer[idx++] = c;
+                        buffer.append(c);
+                        idx++;
                         
                         // TODO: check overflow
                         next();
                         }
                   
-                  buffer[idx] = 0;
+                  buffer.append(char(0));
                   _s1 = QString(buffer);
 
                   if (c == EOF) {
@@ -361,17 +369,19 @@ Xml::Token Xml::parse()
                   goto again;
                   }
             idx = 0;
+            buffer.clear();
             for (;;) {
                   if (c == '/' || c == ' ' || c == '\t' || c == '>' || c == '\n' || c == EOF)
                         break;
                   // TODO: check overflow
                   
-                  buffer[idx++] = c;
+                  buffer.append(c);
+                  idx++;
                   
                   next();
                   }
             
-            buffer[idx] = 0;
+            buffer.append(char(0));
             _s1 = QString(buffer);
 
             // skip white space:
@@ -422,28 +432,32 @@ Xml::Token Xml::parse()
                   goto error;
                   }
             idx = 0;
+            buffer.clear();
             for (;;) {
                   if (c == EOF || c == '<')
                         break;
                   if (c == '&') {
                         next();
                         if (c == '<') {         // be tolerant with old muse files
-                              buffer[idx++] = '&';
+                              buffer.append('&');
+                              idx++;
                               continue;
                               }
                               
                         QByteArray name;
                         int name_idx = 0;
-                        name[name_idx++] = c;
+                        name.append(c);
+                        name_idx++;
                      
                         for (; name_idx < 9999999;) {   // Stop at a reasonably large amount 10 million.
                               next();
                               if (c == ';')
                                     break;
-                              name[name_idx++] = c;
+                              name.append(c);
+                              name_idx++;
                               }
                               
-                        name[name_idx] = 0;
+                        name.append(char(0));
 
                         if (strcmp(name, "lt") == 0)
                               c = '<';
@@ -460,12 +474,13 @@ Xml::Token Xml::parse()
                         
                         }
 
-                  buffer[idx++] = c;
+                  buffer.append(c);
+                  idx++;
                   
                   next();
                   }
                   
-            buffer[idx] = 0;
+            buffer.append(char(0));
             _s1 = QString(buffer);
 
             if (c == '<')
