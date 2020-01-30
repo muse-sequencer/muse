@@ -83,10 +83,15 @@ class SigList : public SIGLIST {
    public:
       SigList();
       ~SigList();
+
+      // Makes a copy of the source list including all allocated items.
+      // This clears and deletes existing items in the destination list.
+      void copy(const SigList& src);
+
       void clear();
-      void add(unsigned tick, const TimeSignature& s);
+      void add(unsigned tick, const TimeSignature& s, bool do_normalize = true);
       void add(unsigned tick, SigEvent* e, bool do_normalize = true);
-      void del(unsigned tick);
+      void del(unsigned tick, bool do_normalize = true);
       void del(iSigEvent, bool do_normalize = true);
       void normalize();
       

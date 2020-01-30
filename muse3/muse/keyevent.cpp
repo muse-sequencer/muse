@@ -50,6 +50,27 @@ KeyList::KeyList()
       }
 
 //---------------------------------------------------------
+//   copy
+//---------------------------------------------------------
+
+void KeyList::copy(const KeyList& src)
+{
+  // Clear the existing destination list.
+  KEYLIST::clear();
+
+  for (ciKeyEvent i = src.cbegin(); i != src.cend(); ++i)
+  {
+    KeyEvent new_e = KeyEvent(i->second);
+    std::pair<iKeyEvent, bool> res = insert(std::pair<const unsigned, KeyEvent> (i->first, new_e));
+    if(!res.second)
+    {
+      fprintf(stderr, "KeyList::copy insert failed: keylist:%p key:%d tick:%d\n", 
+                        this, new_e.key, new_e.tick);
+    }
+  }
+}
+
+//---------------------------------------------------------
 //   add
 //---------------------------------------------------------
 
@@ -94,22 +115,23 @@ void KeyList::add(KeyEvent e)
   }
 }
 
-//---------------------------------------------------------
-//   addOperation
-//---------------------------------------------------------
-
-void KeyList::addOperation(unsigned tick, key_enum key, PendingOperationList& ops)
-{
-  if (tick > MAX_TICK)
-    tick = MAX_TICK;
-  
-  iKeyEvent e = upper_bound(tick);
-  if(tick == e->second.tick)
-    ops.add(PendingOperationItem(this, e, key, PendingOperationItem::ModifyKey));
-  else 
-    // These are the desired tick and key but add will do the proper swapping with next event.
-    ops.add(MusECore::PendingOperationItem(this, key, tick, PendingOperationItem::AddKey));
-}
+// REMOVE Tim. tempo. Removed.
+// //---------------------------------------------------------
+// //   addOperation
+// //---------------------------------------------------------
+// 
+// void KeyList::addOperation(unsigned tick, key_enum key, PendingOperationList& ops)
+// {
+//   if (tick > MAX_TICK)
+//     tick = MAX_TICK;
+//   
+//   iKeyEvent e = upper_bound(tick);
+//   if(tick == e->second.tick)
+//     ops.add(PendingOperationItem(this, e, key, PendingOperationItem::ModifyKey));
+//   else 
+//     // These are the desired tick and key but add will do the proper swapping with next event.
+//     ops.add(MusECore::PendingOperationItem(this, key, tick, PendingOperationItem::AddKey));
+// }
 
 //---------------------------------------------------------
 //   KeyList::dump
@@ -176,20 +198,21 @@ void KeyList::del(iKeyEvent e)
       erase(e);
       }
 
-//---------------------------------------------------------
-//   delOperation
-//---------------------------------------------------------
-
-void KeyList::delOperation(unsigned tick, PendingOperationList& ops)
-{
-  iKeyEvent e = find(tick);
-  if (e == end()) {
-        printf("KeyList::delOperation tick:%d not found\n", tick);
-        return;
-        }
-  PendingOperationItem poi(this, e, PendingOperationItem::DeleteKey);
-  ops.add(poi);
-}
+// REMOVE Tim. tempo. Removed.
+// //---------------------------------------------------------
+// //   delOperation
+// //---------------------------------------------------------
+// 
+// void KeyList::delOperation(unsigned tick, PendingOperationList& ops)
+// {
+//   iKeyEvent e = find(tick);
+//   if (e == end()) {
+//         printf("KeyList::delOperation tick:%d not found\n", tick);
+//         return;
+//         }
+//   PendingOperationItem poi(this, e, PendingOperationItem::DeleteKey);
+//   ops.add(poi);
+// }
 
 //---------------------------------------------------------
 //   addKey

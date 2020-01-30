@@ -111,17 +111,19 @@ bool PendingOperationItem::isAllocationOp(const PendingOperationItem& op) const
         return true;
     break;
     
-    case AddTempo:
-      // _posLenVal is tick.
-      if(_type == AddTempo && _tempo_list == op._tempo_list && _posLenVal == op._posLenVal)
-        return true;
-    break;
+// REMOVE Tim. tempo. Removed.
+//     case AddTempo:
+//       // _posLenVal is tick.
+//       if(_type == AddTempo && _tempo_list == op._tempo_list && _posLenVal == op._posLenVal)
+//         return true;
+//     break;
       
-    case AddSig:
-      // _posLenVal is tick.
-      if(_type == AddSig && _sig_list == op._sig_list && _posLenVal == op._posLenVal)
-        return true;
-    break;
+// REMOVE Tim. tempo. Removed.
+//     case AddSig:
+//       // _posLenVal is tick.
+//       if(_type == AddSig && _sig_list == op._sig_list && _posLenVal == op._posLenVal)
+//         return true;
+//     break;
     
     // In the case of type AddMidiDevice, this searches for the name only.
     case AddMidiDevice:
@@ -191,6 +193,10 @@ unsigned int PendingOperationItem::getIndex() const
     case ModifyStretchListRatio:
     case SetAudioConverterOfflineMode:
     case ModifyMarkerList:
+// REMOVE Tim. tempo. Added.
+    case ModifyTempoList:
+    case ModifySigList:
+    case ModifyKeyList:
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
     
@@ -241,37 +247,40 @@ unsigned int PendingOperationItem::getIndex() const
       return _iCtrl->first;  // Frame
 
     
-    case AddTempo:
-      return _posLenVal;  // Tick
+// REMOVE Tim. tempo. Removed.
+//     case AddTempo:
+//       return _posLenVal;  // Tick
+//     
+//     case DeleteTempo:
+//       return _iTEvent->first;  // Tick
+//     
+//     case ModifyTempo:
+//       // We want the 'real' tick, not _iTEvent->first which is the index of the next iterator! 
+//       return _iTEvent->second->tick;  // Tick
     
-    case DeleteTempo:
-      return _iTEvent->first;  // Tick
     
-    case ModifyTempo:
-      // We want the 'real' tick, not _iTEvent->first which is the index of the next iterator! 
-      return _iTEvent->second->tick;  // Tick
-    
-    
-    case AddSig:
-      return _posLenVal;  // Tick
-    
-    case DeleteSig:
-      return _iSigEvent->first;  // Tick
-    
-    case ModifySig:
-      // We want the 'real' tick, not _iSigEvent->first which is the index of the next iterator! 
-      return _iSigEvent->second->tick;  // Tick
+// REMOVE Tim. tempo. Removed.
+//     case AddSig:
+//       return _posLenVal;  // Tick
+//     
+//     case DeleteSig:
+//       return _iSigEvent->first;  // Tick
+//     
+//     case ModifySig:
+//       // We want the 'real' tick, not _iSigEvent->first which is the index of the next iterator! 
+//       return _iSigEvent->second->tick;  // Tick
 
     
-    case AddKey:
-      return _posLenVal;  // Tick
-    
-    case DeleteKey:
-      return _iKeyEvent->first;  // Tick
-    
-    case ModifyKey:
-      // We want the 'real' tick, not _iKeyEvent->first which is the index of the next iterator! 
-      return _iKeyEvent->second.tick;  // Tick
+// REMOVE Tim. tempo. Removed.
+//     case AddKey:
+//       return _posLenVal;  // Tick
+//     
+//     case DeleteKey:
+//       return _iKeyEvent->first;  // Tick
+//     
+//     case ModifyKey:
+//       // We want the 'real' tick, not _iKeyEvent->first which is the index of the next iterator! 
+//       return _iKeyEvent->second.tick;  // Tick
     
     case AddStretchListRatioAt:
       return _museFrame;  // Frame
@@ -1306,28 +1315,42 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
     
     
-    case AddTempo:
-      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddTempo: tempolist:%p tempo:%p %d tick:%u\n", 
-                       _tempo_list, _tempo_event, _tempo_event->tempo, _tempo_event->tick);
-      _tempo_list->add(_posLenVal, _tempo_event, false);  // Defer normalize until end of stage 2.
-      flags |= SC_TEMPO;
-    break;
-    
-    case DeleteTempo:
+// REMOVE Tim. tempo. Changed.
+//     case AddTempo:
+//       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddTempo: tempolist:%p tempo:%p %d tick:%u\n", 
+//                        _tempo_list, _tempo_event, _tempo_event->tempo, _tempo_event->tick);
+//       _tempo_list->add(_posLenVal, _tempo_event, false);  // Defer normalize until end of stage 2.
+//       flags |= SC_TEMPO;
+//     break;
+//     
+//     case DeleteTempo:
+//       {
+//         DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteTempo: tempolist:%p event:%p: tick:%u tempo:%d\n", 
+//                          _tempo_list, _iTEvent->second, _iTEvent->second->tick,  _iTEvent->second->tempo);
+//         _tempo_list->del(_iTEvent, false); // Defer normalize until end of stage 2.
+//         flags |= SC_TEMPO;
+//       }
+//     break;
+//     
+//     case ModifyTempo:
+//       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyTempo: tempolist:%p event:%p: tick:%u old_tempo:%d new_tempo:%d\n", 
+//                        _tempo_list, _iTEvent->second, _iTEvent->second->tick,  _iTEvent->second->tempo, _intA);
+//       _iTEvent->second->tempo = _intA;
+//       flags |= SC_TEMPO;
+//     break;
+    case ModifyTempoList:
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyTempoList: orig tempolist:%p new tempolist:%p\n", 
+                       _orig_tempo_list, _tempo_list);
+      if(_orig_tempo_list && _tempo_list)
       {
-        DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteTempo: tempolist:%p event:%p: tick:%u tempo:%d\n", 
-                         _tempo_list, _iTEvent->second, _iTEvent->second->tick,  _iTEvent->second->tempo);
-        _tempo_list->del(_iTEvent, false); // Defer normalize until end of stage 2.
-        flags |= SC_TEMPO;
+        // Since the original tempo list is not an allocated pointer, there are no pointers to quickly exchange.
+        // Instead use swap() which is also constant in time. Just like quickly exchanging pointers.
+        // Transfers the original list back to _tempo_list so it can be deleted in the non-RT stage.
+        _orig_tempo_list->swap(*_tempo_list);
       }
-    break;
-    
-    case ModifyTempo:
-      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyTempo: tempolist:%p event:%p: tick:%u old_tempo:%d new_tempo:%d\n", 
-                       _tempo_list, _iTEvent->second, _iTEvent->second->tick,  _iTEvent->second->tempo, _intA);
-      _iTEvent->second->tempo = _intA;
       flags |= SC_TEMPO;
     break;
+    
     
     case SetStaticTempo:
 #ifdef _PENDING_OPS_DEBUG_
@@ -1344,50 +1367,77 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
 
     
-    case AddSig:
-      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddSig: siglist:%p sig:%p %d/%d tick:%u\n", 
-                       _sig_list, _sig_event, _sig_event->sig.z, _sig_event->sig.n, _sig_event->tick);
-      _sig_list->add(_posLenVal, _sig_event, false);  // Defer normalize until end of stage 2.
+// REMOVE Tim. tempo. Changed.
+//     case AddSig:
+//       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddSig: siglist:%p sig:%p %d/%d tick:%u\n", 
+//                        _sig_list, _sig_event, _sig_event->sig.z, _sig_event->sig.n, _sig_event->tick);
+//       _sig_list->add(_posLenVal, _sig_event, false);  // Defer normalize until end of stage 2.
+//       flags |= SC_SIG;
+//     break;
+//     
+//     case DeleteSig:
+//       {
+//         DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteSig: siglist:%p event:%p: tick:%u sig:%d/%d\n", 
+//                          _sig_list, _iSigEvent->second, _iSigEvent->second->tick,  _iSigEvent->second->sig.z, _iSigEvent->second->sig.n);
+//         _sig_list->del(_iSigEvent, false); // Defer normalize until end of stage 2.
+//         flags |= SC_SIG;
+//       }
+//     break;
+//     
+//     case ModifySig:
+//       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifySig: siglist:%p event:%p: tick:%u old_sig:%d/%d new_sig:%d/%d\n", 
+//                        _sig_list, _iSigEvent->second, _iSigEvent->second->tick,  _iSigEvent->second->sig.z, _iSigEvent->second->sig.n, _intA, _intB);
+//       _iSigEvent->second->sig.z = _intA;
+//       _iSigEvent->second->sig.n = _intB;
+//       flags |= SC_SIG;
+//     break;
+    case ModifySigList:
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifySigList: orig siglist:%p new siglist:%p\n", 
+                       _orig_sig_list, _sig_list);
+      if(_orig_sig_list && _sig_list)
+      {
+        // Since the original sig list is not an allocated pointer, there are no pointers to quickly exchange.
+        // Instead use swap() which is also constant in time. Just like quickly exchanging pointers.
+        // Transfers the original list back to _sig_list so it can be deleted in the non-RT stage.
+        _orig_sig_list->swap(*_sig_list);
+      }
       flags |= SC_SIG;
     break;
     
-    case DeleteSig:
+    
+    
+// REMOVE Tim. tempo. Changed.
+//     case AddKey:
+//       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddKey: keylist:%p key:%d tick:%u\n", _key_list, _intB, _posLenVal);
+//       _key_list->add(KeyEvent(key_enum(_intB), _posLenVal)); 
+//       flags |= SC_KEY;
+//     break;
+//     
+//     case DeleteKey:
+//       {
+//         DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteKey: keylist:%p key:%d tick:%u\n",
+//                          _key_list, _iKeyEvent->second.key, _iKeyEvent->second.tick);
+//         _key_list->del(_iKeyEvent);
+//         flags |= SC_KEY;
+//       }
+//     break;
+//     
+//     case ModifyKey:
+//       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyKey: keylist:%p old_key:%d new_key:%d tick:%u\n", 
+//                        _key_list, _iKeyEvent->second.key, _intA, _iKeyEvent->second.tick);
+//       _iKeyEvent->second.key = key_enum(_intA);
+//       flags |= SC_KEY;
+//     break;
+    case ModifyKeyList:
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyKeyList: orig keylist:%p new keylist:%p\n", 
+                       _orig_key_list, _key_list);
+      if(_orig_key_list && _key_list)
       {
-        DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteSig: siglist:%p event:%p: tick:%u sig:%d/%d\n", 
-                         _sig_list, _iSigEvent->second, _iSigEvent->second->tick,  _iSigEvent->second->sig.z, _iSigEvent->second->sig.n);
-        _sig_list->del(_iSigEvent, false); // Defer normalize until end of stage 2.
-        flags |= SC_SIG;
+        // Since the original key list is not an allocated pointer, there are no pointers to quickly exchange.
+        // Instead use swap() which is also constant in time. Just like quickly exchanging pointers.
+        // Transfers the original list back to _sig_list so it can be deleted in the non-RT stage.
+        _orig_key_list->swap(*_key_list);
       }
-    break;
-    
-    case ModifySig:
-      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifySig: siglist:%p event:%p: tick:%u old_sig:%d/%d new_sig:%d/%d\n", 
-                       _sig_list, _iSigEvent->second, _iSigEvent->second->tick,  _iSigEvent->second->sig.z, _iSigEvent->second->sig.n, _intA, _intB);
-      _iSigEvent->second->sig.z = _intA;
-      _iSigEvent->second->sig.n = _intB;
-      flags |= SC_SIG;
-    break;
-    
-    
-    case AddKey:
-      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddKey: keylist:%p key:%d tick:%u\n", _key_list, _intB, _posLenVal);
-      _key_list->add(KeyEvent(key_enum(_intB), _posLenVal)); 
-      flags |= SC_KEY;
-    break;
-    
-    case DeleteKey:
-      {
-        DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteKey: keylist:%p key:%d tick:%u\n",
-                         _key_list, _iKeyEvent->second.key, _iKeyEvent->second.tick);
-        _key_list->del(_iKeyEvent);
-        flags |= SC_KEY;
-      }
-    break;
-    
-    case ModifyKey:
-      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyKey: keylist:%p old_key:%d new_key:%d tick:%u\n", 
-                       _key_list, _iKeyEvent->second.key, _intA, _iKeyEvent->second.tick);
-      _iKeyEvent->second.key = key_enum(_intA);
       flags |= SC_KEY;
     break;
 
@@ -1596,29 +1646,51 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
         flags |= SC_ROUTE;
     break;
 
-    case DeleteTempo:
-      {
-        DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeNonRTStage DeleteTempo: tempolist:%p event:%p:\n", 
-                         _tempo_list, _tempo_event);
-        if(_tempo_event)
-        {  
-          delete _tempo_event;
-          _tempo_event = 0;
-        }
-      }
+// REMOVE Tim. tempo. Changed.
+//     case DeleteTempo:
+//       {
+//         DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeNonRTStage DeleteTempo: tempolist:%p event:%p:\n", 
+//                          _tempo_list, _tempo_event);
+//         if(_tempo_event)
+//         {  
+//           delete _tempo_event;
+//           _tempo_event = 0;
+//         }
+//       }
+//     break;
+    case ModifyTempoList:
+      // At this point _tempo_list contains all the items that were in the original tempo list, via swap(). Delete it now.
+      if(_tempo_list)
+        delete _tempo_list;
     break;
+
     
-    case DeleteSig:
-      {
-        DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeNonRTStage DeleteSig: siglist:%p event:%p:\n", 
-                         _sig_list, _sig_event);
-        if(_sig_event)
-        {  
-          delete _sig_event;
-          _sig_event = 0;
-        }
-      }
+// REMOVE Tim. tempo. Changed.
+//     case DeleteSig:
+//       {
+//         DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeNonRTStage DeleteSig: siglist:%p event:%p:\n", 
+//                          _sig_list, _sig_event);
+//         if(_sig_event)
+//         {  
+//           delete _sig_event;
+//           _sig_event = 0;
+//         }
+//       }
+//     break;
+    case ModifySigList:
+      // At this point _sig_list contains all the items that were in the original sig list, via swap(). Delete it now.
+      if(_sig_list)
+        delete _sig_list;
     break;
+
+
+// REMOVE Tim. tempo. Added.
+    case ModifyKeyList:
+      // At this point _key_list contains all the items that were in the original key list, via swap(). Delete it now.
+      if(_key_list)
+        delete _key_list;
+    break;
+
     
     case ModifyLocalAudioConverterSettings:
       // At this point these are the original pointers that were replaced. Delete the original objects now.
@@ -1780,8 +1852,10 @@ bool PendingOperationList::add(PendingOperationItem op)
   {
     // For these special allocation ops, searching has already been done before hand. Just add them.
     case PendingOperationItem::AddMidiCtrlValList:
-    case PendingOperationItem::AddTempo:
-    case PendingOperationItem::AddSig:
+// REMOVE Tim. tempo. Removed.
+//     case PendingOperationItem::AddTempo:
+// REMOVE Tim. tempo. Removed.
+//     case PendingOperationItem::AddSig:
     {
       iPendingOperation iipo = insert(end(), op);
       _map.insert(std::pair<unsigned int, iPendingOperation>(t, iipo));
@@ -2412,84 +2486,95 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
       
       
-      case PendingOperationItem::AddTempo:
-        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() AddTempo\n");
-        if(poi._type == PendingOperationItem::AddTempo && poi._tempo_list == op._tempo_list)
-        {
-          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double AddTempo. Ignoring.\n");
-          return false;  
-          // Simply replace the value.
-        }
-        else if(poi._type == PendingOperationItem::DeleteTempo && poi._tempo_list == op._tempo_list)
-        {
-          // Delete followed by add. Cannot cancel them out because add already created a new object. Allow to add...
-        }
-        else if(poi._type == PendingOperationItem::ModifyTempo && poi._tempo_list == op._tempo_list)
-        {
-          // Modify followed by add. Error.
-          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): ModifyTempo then AddTempo. Ignoring.\n");
-          return false;  
-        }
+// REMOVE Tim. tempo. Changed.
+//       case PendingOperationItem::AddTempo:
+//         DEBUG_OPERATIONS(stderr, "PendingOperationList::add() AddTempo\n");
+//         if(poi._type == PendingOperationItem::AddTempo && poi._tempo_list == op._tempo_list)
+//         {
+//           ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double AddTempo. Ignoring.\n");
+//           return false;  
+//           // Simply replace the value.
+//         }
+//         else if(poi._type == PendingOperationItem::DeleteTempo && poi._tempo_list == op._tempo_list)
+//         {
+//           // Delete followed by add. Cannot cancel them out because add already created a new object. Allow to add...
+//         }
+//         else if(poi._type == PendingOperationItem::ModifyTempo && poi._tempo_list == op._tempo_list)
+//         {
+//           // Modify followed by add. Error.
+//           ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): ModifyTempo then AddTempo. Ignoring.\n");
+//           return false;  
+//         }
+//       break;
+//         
+//       case PendingOperationItem::DeleteTempo:
+//         DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteTempo\n");
+//         if(poi._type == PendingOperationItem::DeleteTempo && poi._tempo_list == op._tempo_list)
+//         {
+//           ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteTempo. Ignoring.\n");
+//           return false;  
+//         }
+//         else if(poi._type == PendingOperationItem::AddTempo && poi._tempo_list == op._tempo_list)
+//         {
+//           // Add followed by delete. Cannot cancel them out because add already created a new object. Allow to delete...
+//         }
+//         else if(poi._type == PendingOperationItem::ModifyTempo && poi._tempo_list == op._tempo_list)
+//         {
+//           // Modify followed by delete is equivalent to just deleting.
+//           // Transform existing modify command into a delete command.
+//           poi._type = PendingOperationItem::DeleteTempo;
+//           // Modify's iterator will point one AFTER the delete iterator. So decrement the iterator.
+//           //--poi._iTEvent;
+//           // Replace the modify iterator with the delete iterator.
+//           poi._iTEvent = op._iTEvent;
+//           poi._tempo_event = op._tempo_event;
+//           // An operation will still take place.
+//           return true;
+//         }
+//       break;
+//       
+//       case PendingOperationItem::ModifyTempo:
+//         DEBUG_OPERATIONS(stderr, "PendingOperationList::add() ModifyTempo\n");
+//         if(poi._type == PendingOperationItem::ModifyTempo && poi._tempo_list == op._tempo_list)
+//         {
+//           // Simply replace the value.
+//           poi._intA = op._intA; 
+//           // An operation will still take place.
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::AddTempo && poi._tempo_list == op._tempo_list)
+//         {
+//           // Add followed by modify. Just replace the add value
+//           poi._tempo_event->tempo = op._iTEvent->second->tempo;
+//           // An operation will still take place.
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::DeleteTempo && poi._tempo_list == op._tempo_list)
+//         {
+//           // Transform existing delete command into a modify command.
+//           poi._type = PendingOperationItem::ModifyTempo;
+//           // Delete's iterator will point one BEFORE the modify iterator. So increment the iterator.
+//           //++poi._iTEvent;
+//           // Replace the delete iterator with the modify iterator.
+//           poi._iTEvent = op._iTEvent;
+//           // Grab the tempo.
+//           poi._intA = op._intA;
+//           // Delete always does normalize, so nowhere to grab this value from.
+//           //poi._intB = true;  
+//           // An operation will still take place.
+//           return true;
+//         }
+//       break;
+      case PendingOperationItem::ModifyTempoList:
+// TODO Not quite right yet.
+//         if(poi._type == PendingOperationItem::ModifyTempoList && 
+//           // If attempting to repeatedly modify the same list, or, if progressively modifying (list to list to list etc).
+//           (poi._orig_tempo_list == op._orig_tempo_list || poi._tempo_list == op._tempo_list))
+//         {
+//           // Simply replace the list.
+//           poi._tempo_list = op._tempo_list; 
       break;
-        
-      case PendingOperationItem::DeleteTempo:
-        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteTempo\n");
-        if(poi._type == PendingOperationItem::DeleteTempo && poi._tempo_list == op._tempo_list)
-        {
-          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteTempo. Ignoring.\n");
-          return false;  
-        }
-        else if(poi._type == PendingOperationItem::AddTempo && poi._tempo_list == op._tempo_list)
-        {
-          // Add followed by delete. Cannot cancel them out because add already created a new object. Allow to delete...
-        }
-        else if(poi._type == PendingOperationItem::ModifyTempo && poi._tempo_list == op._tempo_list)
-        {
-          // Modify followed by delete is equivalent to just deleting.
-          // Transform existing modify command into a delete command.
-          poi._type = PendingOperationItem::DeleteTempo;
-          // Modify's iterator will point one AFTER the delete iterator. So decrement the iterator.
-          //--poi._iTEvent;
-          // Replace the modify iterator with the delete iterator.
-          poi._iTEvent = op._iTEvent;
-          poi._tempo_event = op._tempo_event;
-          // An operation will still take place.
-          return true;
-        }
-      break;
-      
-      case PendingOperationItem::ModifyTempo:
-        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() ModifyTempo\n");
-        if(poi._type == PendingOperationItem::ModifyTempo && poi._tempo_list == op._tempo_list)
-        {
-          // Simply replace the value.
-          poi._intA = op._intA; 
-          // An operation will still take place.
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::AddTempo && poi._tempo_list == op._tempo_list)
-        {
-          // Add followed by modify. Just replace the add value
-          poi._tempo_event->tempo = op._iTEvent->second->tempo;
-          // An operation will still take place.
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::DeleteTempo && poi._tempo_list == op._tempo_list)
-        {
-          // Transform existing delete command into a modify command.
-          poi._type = PendingOperationItem::ModifyTempo;
-          // Delete's iterator will point one BEFORE the modify iterator. So increment the iterator.
-          //++poi._iTEvent;
-          // Replace the delete iterator with the modify iterator.
-          poi._iTEvent = op._iTEvent;
-          // Grab the tempo.
-          poi._intA = op._intA;
-          // Delete always does normalize, so nowhere to grab this value from.
-          //poi._intB = true;  
-          // An operation will still take place.
-          return true;
-        }
-      break;
+
       
       case PendingOperationItem::SetStaticTempo:
 #ifdef _PENDING_OPS_DEBUG_
@@ -2516,171 +2601,191 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
 
       
-      case PendingOperationItem::AddSig:
-        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() AddSig\n");
-        if(poi._type == PendingOperationItem::AddSig && poi._sig_list == op._sig_list) 
-        {
-          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double AddSig. Ignoring.\n");
-          return false;  
-          // Simply replace the value.
-        }
-        else if(poi._type == PendingOperationItem::DeleteSig && poi._sig_list== op._sig_list) 
-        {
-          // Delete followed by add. Cannot cancel them out because add already created a new object. Allow to add...
-        }
-        else if(poi._type == PendingOperationItem::ModifySig && poi._sig_list == op._sig_list)
-        {
-          // Modify followed by add. Error.
-          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): ModifySig then AddSig. Ignoring.\n");
-          return false;  
-        }
-      break;
-        
-      case PendingOperationItem::DeleteSig:
-        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteSig\n");
-        if(poi._type == PendingOperationItem::DeleteSig && poi._sig_list == op._sig_list)
-        {
-          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteSig. Ignoring.\n");
-          return false;  
-        }
-        else if(poi._type == PendingOperationItem::AddSig && poi._sig_list == op._sig_list)
-        {
-          // Add followed by delete. Cannot cancel them out because add already created a new object. Allow to delete...
-        }
-        else if(poi._type == PendingOperationItem::ModifySig && poi._sig_list == op._sig_list)
-        {
-          // Modify followed by delete is equivalent to just deleting.
-          // Transform existing modify command into a delete command.
-          poi._type = PendingOperationItem::DeleteSig;
-          // Modify's iterator will point one AFTER the delete iterator. So decrement the iterator.
-          //--poi._iSigEvent;
-          // Replace the modify iterator with the delete iterator.
-          poi._iSigEvent = op._iSigEvent;
-          poi._sig_event = op._sig_event;
-          // An operation will still take place.
-          return true;
-        }
-      break;
-      
-      case PendingOperationItem::ModifySig:
-        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() ModifySig\n");
-        if(poi._type == PendingOperationItem::ModifySig && poi._sig_list == op._sig_list)
-        {
-          // Simply replace the value.
-          poi._intA = op._intA; 
-          poi._intB = op._intB; 
-          // An operation will still take place.
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::AddSig && poi._sig_list == op._sig_list)
-        {
-          // Add followed by modify. Just replace the add value
-          poi._sig_event->sig = op._iSigEvent->second->sig;
-          // An operation will still take place.
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::DeleteSig && poi._sig_list == op._sig_list)
-        {
-          // Transform existing delete command into a modify command.
-          poi._type = PendingOperationItem::ModifySig;
-          // Delete's iterator will point one BEFORE the modify iterator. So increment the iterator.
-          //++poi._iSigEvent;
-          // Replace the delete iterator with the modify iterator.
-          poi._iSigEvent = op._iSigEvent;
-          // Grab the signature.
-          poi._intA = op._intA;
-          poi._intB = op._intB;
-          // An operation will still take place.
-          return true;
-        }
+// REMOVE Tim. tempo. Changed.
+//       case PendingOperationItem::AddSig:
+//         DEBUG_OPERATIONS(stderr, "PendingOperationList::add() AddSig\n");
+//         if(poi._type == PendingOperationItem::AddSig && poi._sig_list == op._sig_list) 
+//         {
+//           ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double AddSig. Ignoring.\n");
+//           return false;  
+//           // Simply replace the value.
+//         }
+//         else if(poi._type == PendingOperationItem::DeleteSig && poi._sig_list== op._sig_list) 
+//         {
+//           // Delete followed by add. Cannot cancel them out because add already created a new object. Allow to add...
+//         }
+//         else if(poi._type == PendingOperationItem::ModifySig && poi._sig_list == op._sig_list)
+//         {
+//           // Modify followed by add. Error.
+//           ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): ModifySig then AddSig. Ignoring.\n");
+//           return false;  
+//         }
+//       break;
+//         
+//       case PendingOperationItem::DeleteSig:
+//         DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteSig\n");
+//         if(poi._type == PendingOperationItem::DeleteSig && poi._sig_list == op._sig_list)
+//         {
+//           ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteSig. Ignoring.\n");
+//           return false;  
+//         }
+//         else if(poi._type == PendingOperationItem::AddSig && poi._sig_list == op._sig_list)
+//         {
+//           // Add followed by delete. Cannot cancel them out because add already created a new object. Allow to delete...
+//         }
+//         else if(poi._type == PendingOperationItem::ModifySig && poi._sig_list == op._sig_list)
+//         {
+//           // Modify followed by delete is equivalent to just deleting.
+//           // Transform existing modify command into a delete command.
+//           poi._type = PendingOperationItem::DeleteSig;
+//           // Modify's iterator will point one AFTER the delete iterator. So decrement the iterator.
+//           //--poi._iSigEvent;
+//           // Replace the modify iterator with the delete iterator.
+//           poi._iSigEvent = op._iSigEvent;
+//           poi._sig_event = op._sig_event;
+//           // An operation will still take place.
+//           return true;
+//         }
+//       break;
+//       
+//       case PendingOperationItem::ModifySig:
+//         DEBUG_OPERATIONS(stderr, "PendingOperationList::add() ModifySig\n");
+//         if(poi._type == PendingOperationItem::ModifySig && poi._sig_list == op._sig_list)
+//         {
+//           // Simply replace the value.
+//           poi._intA = op._intA; 
+//           poi._intB = op._intB; 
+//           // An operation will still take place.
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::AddSig && poi._sig_list == op._sig_list)
+//         {
+//           // Add followed by modify. Just replace the add value
+//           poi._sig_event->sig = op._iSigEvent->second->sig;
+//           // An operation will still take place.
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::DeleteSig && poi._sig_list == op._sig_list)
+//         {
+//           // Transform existing delete command into a modify command.
+//           poi._type = PendingOperationItem::ModifySig;
+//           // Delete's iterator will point one BEFORE the modify iterator. So increment the iterator.
+//           //++poi._iSigEvent;
+//           // Replace the delete iterator with the modify iterator.
+//           poi._iSigEvent = op._iSigEvent;
+//           // Grab the signature.
+//           poi._intA = op._intA;
+//           poi._intB = op._intB;
+//           // An operation will still take place.
+//           return true;
+//         }
+//       break;
+      case PendingOperationItem::ModifySigList:
+// TODO Not quite right yet.
+//         if(poi._type == PendingOperationItem::ModifySigList && 
+//           // If attempting to repeatedly modify the same list, or, if progressively modifying (list to list to list etc).
+//           (poi._orig_sig_list == op._orig_sig_list || poi._sig_list == op._sig_list))
+//         {
+//           // Simply replace the list.
+//           poi._sig_list = op._sig_list; 
       break;
 
       
-      case PendingOperationItem::AddKey:
-        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() AddKey\n");
-        if(poi._type == PendingOperationItem::AddKey && poi._key_list == op._key_list) 
-        {
-          // Simply replace the value.
-          poi._intB = op._intB; 
-          // An operation will still take place.
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::DeleteKey && poi._key_list== op._key_list) 
-        {
-          // Transform existing delete command into a modify command.
-          poi._type = PendingOperationItem::ModifyKey;
-          poi._intA = op._intB; 
-          // An operation will still take place.
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::ModifyKey && poi._key_list == op._key_list)
-        {
-          // Simply replace the value.
-          poi._intA = op._intB;
-          // An operation will still take place.
-          return true;
-        }
-      break;
-        
-      case PendingOperationItem::DeleteKey:
-        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteKey\n");
-        if(poi._type == PendingOperationItem::DeleteKey && poi._key_list == op._key_list)
-        {
-          // Multiple delete commands not allowed! 
-          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteKey. Ignoring.\n");
-          return false;  
-        }
-        else if(poi._type == PendingOperationItem::AddKey && poi._key_list == op._key_list)
-        {
-          // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
-          erase(ipos->second);
-          _map.erase(ipos);
-          // No operation will take place.
-          return false;
-        }
-        else if(poi._type == PendingOperationItem::ModifyKey && poi._key_list == op._key_list)
-        {
-          // Modify followed by delete is equivalent to just deleting.
-          // Transform existing modify command into a delete command.
-          poi._type = PendingOperationItem::DeleteKey;
-          // Modify's iterator will point one AFTER the delete iterator. So decrement the iterator.
-          //--poi._iKeyEvent;
-          // Replace the modify iterator with the delete iterator.
-          poi._iKeyEvent = op._iKeyEvent;
-          // An operation will still take place.
-          return true;
-        }
-      break;
-      
-      case PendingOperationItem::ModifyKey:
-        DEBUG_OPERATIONS(stderr, "PendingOperationList::add() ModifyKey\n");
-        if(poi._type == PendingOperationItem::ModifyKey && poi._key_list == op._key_list)
-        {
-          // Simply replace the value.
-          poi._intA = op._intA;
-          // An operation will still take place.
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::AddKey && poi._key_list == op._key_list)
-        {
-          // Simply replace the add value with the modify value.
-          poi._intB = op._intA; 
-          // An operation will still take place.
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::DeleteKey && poi._key_list == op._key_list)
-        {
-          // Transform existing delete command into a modify command.
-          poi._type = PendingOperationItem::ModifyKey;
-          // Delete's iterator will point one BEFORE the modify iterator. So increment the iterator.
-          //++poi._iKeyEvent;
-          // Replace the delete iterator with the modify iterator.
-          poi._iKeyEvent = op._iKeyEvent;
-          // Replace the value.
-          poi._intA = op._intA;
-          // An operation will still take place.
-          return true;
-        }
+// REMOVE Tim. tempo. Changed.
+//       case PendingOperationItem::AddKey:
+//         DEBUG_OPERATIONS(stderr, "PendingOperationList::add() AddKey\n");
+//         if(poi._type == PendingOperationItem::AddKey && poi._key_list == op._key_list) 
+//         {
+//           // Simply replace the value.
+//           poi._intB = op._intB; 
+//           // An operation will still take place.
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::DeleteKey && poi._key_list== op._key_list) 
+//         {
+//           // Transform existing delete command into a modify command.
+//           poi._type = PendingOperationItem::ModifyKey;
+//           poi._intA = op._intB; 
+//           // An operation will still take place.
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::ModifyKey && poi._key_list == op._key_list)
+//         {
+//           // Simply replace the value.
+//           poi._intA = op._intB;
+//           // An operation will still take place.
+//           return true;
+//         }
+//       break;
+//         
+//       case PendingOperationItem::DeleteKey:
+//         DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteKey\n");
+//         if(poi._type == PendingOperationItem::DeleteKey && poi._key_list == op._key_list)
+//         {
+//           // Multiple delete commands not allowed! 
+//           ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteKey. Ignoring.\n");
+//           return false;  
+//         }
+//         else if(poi._type == PendingOperationItem::AddKey && poi._key_list == op._key_list)
+//         {
+//           // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
+//           erase(ipos->second);
+//           _map.erase(ipos);
+//           // No operation will take place.
+//           return false;
+//         }
+//         else if(poi._type == PendingOperationItem::ModifyKey && poi._key_list == op._key_list)
+//         {
+//           // Modify followed by delete is equivalent to just deleting.
+//           // Transform existing modify command into a delete command.
+//           poi._type = PendingOperationItem::DeleteKey;
+//           // Modify's iterator will point one AFTER the delete iterator. So decrement the iterator.
+//           //--poi._iKeyEvent;
+//           // Replace the modify iterator with the delete iterator.
+//           poi._iKeyEvent = op._iKeyEvent;
+//           // An operation will still take place.
+//           return true;
+//         }
+//       break;
+//       
+//       case PendingOperationItem::ModifyKey:
+//         DEBUG_OPERATIONS(stderr, "PendingOperationList::add() ModifyKey\n");
+//         if(poi._type == PendingOperationItem::ModifyKey && poi._key_list == op._key_list)
+//         {
+//           // Simply replace the value.
+//           poi._intA = op._intA;
+//           // An operation will still take place.
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::AddKey && poi._key_list == op._key_list)
+//         {
+//           // Simply replace the add value with the modify value.
+//           poi._intB = op._intA; 
+//           // An operation will still take place.
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::DeleteKey && poi._key_list == op._key_list)
+//         {
+//           // Transform existing delete command into a modify command.
+//           poi._type = PendingOperationItem::ModifyKey;
+//           // Delete's iterator will point one BEFORE the modify iterator. So increment the iterator.
+//           //++poi._iKeyEvent;
+//           // Replace the delete iterator with the modify iterator.
+//           poi._iKeyEvent = op._iKeyEvent;
+//           // Replace the value.
+//           poi._intA = op._intA;
+//           // An operation will still take place.
+//           return true;
+//         }
+//       break;
+      case PendingOperationItem::ModifyKeyList:
+// TODO Not quite right yet.
+//         if(poi._type == PendingOperationItem::ModifyKeyList && 
+//           // If attempting to repeatedly modify the same list, or, if progressively modifying (list to list to list etc).
+//           (poi._orig_key_list == op._orig_key_list || poi._key_list == op._key_list))
+//         {
+//           // Simply replace the list.
+//           poi._key_list = op._key_list; 
       break;
       
       
@@ -2839,6 +2944,7 @@ bool PendingOperationList::add(PendingOperationItem op)
 //           // Simply replace the list.
 //           poi._newAudioSamples = op._newAudioSamples; 
 //           poi._newAudioSamplesLen = op._newAudioSamplesLen; 
+      break;
 
       case PendingOperationItem::SwitchMetronomeSettings:
         if(poi._type == PendingOperationItem::SwitchMetronomeSettings && 
@@ -2947,64 +3053,80 @@ bool PendingOperationList::add(PendingOperationItem op)
     }
   }
 
-  // Special for these types of lists: Because of the way these lists operate,
-  //  a delete operation followed by a modify operation on the SAME iterator
-  //  needs special attention: The delete operation will ERASE the iterator
-  //  that the modify operation points to! Also the two operations will have 
-  //  different sorting ticks and won't be caught in the above loop. 
-  // The only way around it is to increment the modify iterator now so that it is 
-  //  already pointing to the next item by the time the delete operation happens:
-  if(op._type == PendingOperationItem::ModifyTempo || 
-     op._type == PendingOperationItem::ModifySig || 
-     op._type == PendingOperationItem::ModifyKey)
-  {
-    unsigned int idx = 0;
-    if(op._type == PendingOperationItem::ModifyTempo)
-      idx = op._iTEvent->first;
-    else if(op._type == PendingOperationItem::ModifySig)
-      idx = op._iSigEvent->first;
-    else if(op._type == PendingOperationItem::ModifyKey)
-      idx = op._iKeyEvent->first;
-    
-    iPendingOperationSortedRange r = _map.equal_range(idx);
-    iPendingOperationSorted ipos = r.second;
-    while(ipos != r.first)
-    {
-      --ipos;
-      PendingOperationItem& poi = *ipos->second;
-      
-      if(op._type == PendingOperationItem::ModifyTempo)
-      {
-        if(poi._type == PendingOperationItem::DeleteTempo && poi._tempo_list == op._tempo_list)
-        {
-          DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteTempo + ModifyTempo: Incrementing modify iterator: idx:%u cur tempo:%d tick:%u\n", 
-                  idx, op._iTEvent->second->tempo, op._iTEvent->second->tick);
-          op._iTEvent++;
-          break;
-        }
-      }
-      else if(op._type == PendingOperationItem::ModifySig)
-      {
-        if(poi._type == PendingOperationItem::DeleteSig && poi._sig_list == op._sig_list)
-        {
-          DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteSig + ModifySig: Incrementing modify iterator: idx:%u cur sig:%d/%d tick:%u\n", 
-                  idx, op._iSigEvent->second->sig.z, op._iSigEvent->second->sig.n, op._iSigEvent->second->tick);
-          op._iSigEvent++;
-          break;
-        }
-      }
-      else if(op._type == PendingOperationItem::ModifyKey)
-      {
-        if(poi._type == PendingOperationItem::DeleteKey && poi._key_list == op._key_list)
-        {
-          DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteKey + ModifyKey: Incrementing modify iterator: idx:%u cur key:%d tick:%u\n", 
-                  idx, op._iKeyEvent->second.key, op._iKeyEvent->second.tick);
-          op._iKeyEvent++;
-          break;
-        }
-      }
-    }
-  }
+// REMOVE Tim. tempo. Removed.
+//   // Special for these types of lists: Because of the way these lists operate,
+//   //  a delete operation followed by a modify operation on the SAME iterator
+//   //  needs special attention: The delete operation will ERASE the iterator
+//   //  that the modify operation points to! Also the two operations will have 
+//   //  different sorting ticks and won't be caught in the above loop. 
+//   // The only way around it is to increment the modify iterator now so that it is 
+//   //  already pointing to the next item by the time the delete operation happens:
+//   if(
+// // REMOVE Tim. tempo. Removed.
+// //      op._type == PendingOperationItem::ModifyTempo || 
+// // REMOVE Tim. tempo. Removed.
+// //      op._type == PendingOperationItem::ModifySig || 
+// // REMOVE Tim. tempo. Removed.
+// //      op._type == PendingOperationItem::ModifyKey
+//   )
+//   {
+//     unsigned int idx = 0;
+// // REMOVE Tim. tempo. Removed.
+// //     if(op._type == PendingOperationItem::ModifyTempo)
+// //       idx = op._iTEvent->first;
+// //     else
+// // REMOVE Tim. tempo. Removed.
+// //     if(op._type == PendingOperationItem::ModifySig)
+// //       idx = op._iSigEvent->first;
+// //     else
+// // REMOVE Tim. tempo. Removed.
+// //     if(op._type == PendingOperationItem::ModifyKey)
+// //       idx = op._iKeyEvent->first;
+//     
+//     iPendingOperationSortedRange r = _map.equal_range(idx);
+//     iPendingOperationSorted ipos = r.second;
+//     while(ipos != r.first)
+//     {
+//       --ipos;
+//       PendingOperationItem& poi = *ipos->second;
+//       
+// // REMOVE Tim. tempo. Removed.
+// //       if(op._type == PendingOperationItem::ModifyTempo)
+// //       {
+// //         if(poi._type == PendingOperationItem::DeleteTempo && poi._tempo_list == op._tempo_list)
+// //         {
+// //           DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteTempo + ModifyTempo: Incrementing modify iterator: idx:%u cur tempo:%d tick:%u\n", 
+// //                   idx, op._iTEvent->second->tempo, op._iTEvent->second->tick);
+// //           op._iTEvent++;
+// //           break;
+// //         }
+// //       }
+// //       else
+// // REMOVE Tim. tempo. Removed.
+// //       if(op._type == PendingOperationItem::ModifySig)
+// //       {
+// //         if(poi._type == PendingOperationItem::DeleteSig && poi._sig_list == op._sig_list)
+// //         {
+// //           DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteSig + ModifySig: Incrementing modify iterator: idx:%u cur sig:%d/%d tick:%u\n", 
+// //                   idx, op._iSigEvent->second->sig.z, op._iSigEvent->second->sig.n, op._iSigEvent->second->tick);
+// //           op._iSigEvent++;
+// //           break;
+// //         }
+// //       }
+// //       else
+// // REMOVE Tim. tempo. Removed.
+// //       if(op._type == PendingOperationItem::ModifyKey)
+// //       {
+// //         if(poi._type == PendingOperationItem::DeleteKey && poi._key_list == op._key_list)
+// //         {
+// //           DEBUG_OPERATIONS(stderr, "PendingOperationList::add() DeleteKey + ModifyKey: Incrementing modify iterator: idx:%u cur key:%d tick:%u\n", 
+// //                   idx, op._iKeyEvent->second.key, op._iKeyEvent->second.tick);
+// //           op._iKeyEvent++;
+// //           break;
+// //         }
+//       }
+//     }
+//   }
   
   iPendingOperation iipo = insert(end(), op);
   _map.insert(std::pair<unsigned int, iPendingOperation>(t, iipo));
@@ -3026,105 +3148,140 @@ iPendingOperation PendingOperationList::findAllocationOp(const PendingOperationI
 }
 
 
-//---------------------------------------------------------
-//   addTimeSigOperation
-//---------------------------------------------------------
+// REMOVE Tim. tempo. Removed.
+// //---------------------------------------------------------
+// //   addTimeSigOperation
+// //---------------------------------------------------------
+// 
+// bool PendingOperationList::addTimeSigOperation(unsigned tick, const MusECore::TimeSignature& s, MusECore::SigList* sl)
+// {
+//   //if (tick > MAX_TICK)
+//   //  tick = MAX_TICK;
+//   
+//   if (s.z == 0 || s.n == 0) {
+//         fprintf(stderr, "PendingOperationList::addOperation illegal time signature %d/%d\n", s.z, s.n);
+//         return false;
+//         }
+//   MusECore::iSigEvent e = sl->upper_bound(tick);
+//   if(tick == e->second->tick)
+//     add(PendingOperationItem(sl, e, s, MusECore::PendingOperationItem::ModifySig));
+//   else 
+//   {
+//     MusECore::PendingOperationItem poi(sl, 0, tick, PendingOperationItem::AddSig);
+//     MusECore::iPendingOperation ipo = findAllocationOp(poi);
+//     if(ipo != end())
+//     {
+//       MusECore::PendingOperationItem& poi = *ipo;
+//       // Simply replace the value.
+//       poi._sig_event->sig = s;
+//     }
+//     else
+//     {
+//       poi._sig_event = new MusECore::SigEvent(s, tick); // These are the desired tick and sig but...
+//       add(poi);                           //  add will do the proper swapping with next event.
+//     }
+//   }
+//   return true;
+// }
+// 
+// //---------------------------------------------------------
+// //   delTimeSigOperation
+// //---------------------------------------------------------
+// 
+// bool PendingOperationList::delTimeSigOperation(unsigned tick, MusECore::SigList* sl)
+// {
+//   MusECore::iSigEvent e = sl->find(tick);
+//   if (e == sl->end()) {
+//         fprintf(stderr, "PendingOperationList::delTimeSigOperation tick:%d not found\n", tick);
+//         return false;
+//         }
+//   MusECore::PendingOperationItem poi(sl, e, PendingOperationItem::DeleteSig);
+//   add(poi);
+//   return true;
+// }
 
-bool PendingOperationList::addTimeSigOperation(unsigned tick, const MusECore::TimeSignature& s, MusECore::SigList* sl)
-{
-  //if (tick > MAX_TICK)
-  //  tick = MAX_TICK;
-  
-  if (s.z == 0 || s.n == 0) {
-        fprintf(stderr, "PendingOperationList::addOperation illegal time signature %d/%d\n", s.z, s.n);
-        return false;
-        }
-  MusECore::iSigEvent e = sl->upper_bound(tick);
-  if(tick == e->second->tick)
-    add(PendingOperationItem(sl, e, s, MusECore::PendingOperationItem::ModifySig));
-  else 
-  {
-    MusECore::PendingOperationItem poi(sl, 0, tick, PendingOperationItem::AddSig);
-    MusECore::iPendingOperation ipo = findAllocationOp(poi);
-    if(ipo != end())
-    {
-      MusECore::PendingOperationItem& poi = *ipo;
-      // Simply replace the value.
-      poi._sig_event->sig = s;
-    }
-    else
-    {
-      poi._sig_event = new MusECore::SigEvent(s, tick); // These are the desired tick and sig but...
-      add(poi);                           //  add will do the proper swapping with next event.
-    }
-  }
-  return true;
-}
+// REMOVE Tim. tempo. Removed.
+// //---------------------------------------------------------
+// //   addTempoOperation
+// //---------------------------------------------------------
+// 
+// bool PendingOperationList::addTempoOperation(unsigned tick, int tempo, TempoList* tl)
+// {
+//   // It is forbidden to add a tempo beyond MAX_TICK.
+//   // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
+//   if (tick > MAX_TICK)
+//   {
+//     //tick = MAX_TICK;
+//     DEBUG_OPERATIONS(stderr, "PendingOperationList::addTempoOperation tick:%d > MAX_TICK, ignoring\n", tick);
+//     return false;
+//   }
+// 
+// // REMOVE Tim. tempo. Removed. Can't search here, caused error, items may not have been added yet in stage 2 !
+//   iTEvent e = tl->upper_bound(tick);
+// 
+//   if(tick == e->second->tick)
+//     add(PendingOperationItem(tl, e, tempo, PendingOperationItem::ModifyTempo));
+//   else 
+//   {
+//     PendingOperationItem poi(tl, 0, tick, PendingOperationItem::AddTempo);
+//     iPendingOperation ipo = findAllocationOp(poi);
+//     if(ipo != end())
+//     {
+//       PendingOperationItem& poi = *ipo;
+//       // Simply replace the value.
+//       poi._tempo_event->tempo = tempo;
+//     }
+//     else
+//     {
+//       poi._tempo_event = new TEvent(tempo, tick); // These are the desired tick and tempo but...
+//       add(poi);                               //  add will do the proper swapping with next event.
+//     }
+//   }
+//   return true;
+// }
 
-//---------------------------------------------------------
-//   delTimeSigOperation
-//---------------------------------------------------------
-
-bool PendingOperationList::delTimeSigOperation(unsigned tick, MusECore::SigList* sl)
-{
-  MusECore::iSigEvent e = sl->find(tick);
-  if (e == sl->end()) {
-        fprintf(stderr, "PendingOperationList::delTimeSigOperation tick:%d not found\n", tick);
-        return false;
-        }
-  MusECore::PendingOperationItem poi(sl, e, PendingOperationItem::DeleteSig);
-  add(poi);
-  return true;
-}
-
-//---------------------------------------------------------
-//   addTempoOperation
-//---------------------------------------------------------
-
-bool PendingOperationList::addTempoOperation(unsigned tick, int tempo, TempoList* tl)
-{
-  // It is forbidden to add a tempo beyond MAX_TICK.
-  // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
-  if (tick > MAX_TICK)
-  {
-    //tick = MAX_TICK;
-    DEBUG_OPERATIONS(stderr, "PendingOperationList::addTempoOperation tick:%d > MAX_TICK, ignoring\n", tick);
-    return false;
-  }
-
-  iTEvent e = tl->upper_bound(tick);
-
-  if(tick == e->second->tick)
-    add(PendingOperationItem(tl, e, tempo, PendingOperationItem::ModifyTempo));
-  else 
-  {
-    PendingOperationItem poi(tl, 0, tick, PendingOperationItem::AddTempo);
-    iPendingOperation ipo = findAllocationOp(poi);
-    if(ipo != end())
-    {
-      PendingOperationItem& poi = *ipo;
-      // Simply replace the value.
-      poi._tempo_event->tempo = tempo;
-    }
-    else
-    {
-      poi._tempo_event = new TEvent(tempo, tick); // These are the desired tick and tempo but...
-      add(poi);                               //  add will do the proper swapping with next event.
-    }
-  }
-  return true;
-}
-
-//---------------------------------------------------------
-//   delTempoOperation
-//---------------------------------------------------------
-
-// REMOVE Tim. struct. Changed.
+// REMOVE Tim. tempo. Removed.
+// //---------------------------------------------------------
+// //   delTempoOperation
+// //---------------------------------------------------------
+// 
+// // REMOVE Tim. struct. Changed.
+// // bool PendingOperationList::delTempoOperation(unsigned tick, TempoList* tl)
+// // {
+// //   iTEvent e = tl->find(tick);
+// //   if (e == tl->end()) {
+// //         fprintf(stderr, "PendingOperationList::delTempoOperation tick:%d not found\n", tick);
+// //         return false;
+// //         }
+// //   // It is forbidden to delete a tempo beyond MAX_TICK.
+// //   // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
+// //   if (e->first > MAX_TICK)
+// //   {
+// //     //tick = MAX_TICK;
+// //     DEBUG_OPERATIONS(stderr,
+// //       "PendingOperationList::delTempoOperation tick:%d: idx > MAX_TICK: forbidden to delete, ignoring\n", tick);
+// //     return false;
+// //   }
+// // 
+// //   PendingOperationItem poi(tl, e, PendingOperationItem::DeleteTempo);
+// //   // NOTE: Deletion is done in post-RT stage 3.
+// //   add(poi);
+// //   return true;
+// // }
+// // 
 // bool PendingOperationList::delTempoOperation(unsigned tick, TempoList* tl)
 // {
+// //   for (ciTEvent it = tl->cbegin(); it != tl->cend(); ++it) {
+// //     const TEvent* ev = (TEvent*)it->second;
+// //     unsigned int tick = ev->tick;
+// //     int tempo = ev->tempo;
+// //     if (tick < startPos )
+// //       continue;
+// //   }
+//   
 //   iTEvent e = tl->find(tick);
 //   if (e == tl->end()) {
-//         fprintf(stderr, "PendingOperationList::delTempoOperation tick:%d not found\n", tick);
+//         ERROR_OPERATIONS(stderr, "PendingOperationList::delTempoOperation tick:%d not found\n", tick);
 //         return false;
 //         }
 //   // It is forbidden to delete a tempo beyond MAX_TICK.
@@ -3142,37 +3299,6 @@ bool PendingOperationList::addTempoOperation(unsigned tick, int tempo, TempoList
 //   add(poi);
 //   return true;
 // }
-// 
-bool PendingOperationList::delTempoOperation(unsigned tick, TempoList* tl)
-{
-//   for (ciTEvent it = tl->cbegin(); it != tl->cend(); ++it) {
-//     const TEvent* ev = (TEvent*)it->second;
-//     unsigned int tick = ev->tick;
-//     int tempo = ev->tempo;
-//     if (tick < startPos )
-//       continue;
-//   }
-  
-  iTEvent e = tl->find(tick);
-  if (e == tl->end()) {
-        ERROR_OPERATIONS(stderr, "PendingOperationList::delTempoOperation tick:%d not found\n", tick);
-        return false;
-        }
-  // It is forbidden to delete a tempo beyond MAX_TICK.
-  // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
-  if (e->first > MAX_TICK)
-  {
-    //tick = MAX_TICK;
-    DEBUG_OPERATIONS(stderr,
-      "PendingOperationList::delTempoOperation tick:%d: idx > MAX_TICK: forbidden to delete, ignoring\n", tick);
-    return false;
-  }
-
-  PendingOperationItem poi(tl, e, PendingOperationItem::DeleteTempo);
-  // NOTE: Deletion is done in post-RT stage 3.
-  add(poi);
-  return true;
-}
 
 
 } // namespace MusECore

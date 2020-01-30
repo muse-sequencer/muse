@@ -74,12 +74,35 @@ SigList::~SigList()
       }
 
 //---------------------------------------------------------
+//   copy
+//---------------------------------------------------------
+
+void SigList::copy(const SigList& src)
+{
+  // Clear and delete the existing destination list.
+  for (iSigEvent i = begin(); i != end(); ++i)
+    delete i->second;
+  SIGLIST::clear();
+
+  for (ciSigEvent i = src.cbegin(); i != src.cend(); ++i)
+  {
+    SigEvent* new_e = new SigEvent(*i->second);
+    std::pair<iSigEvent, bool> res = insert(std::pair<const unsigned, SigEvent*> (i->first, new_e));
+    if(!res.second)
+    {
+      fprintf(stderr, "SigList::copy insert failed: siglist:%p sig:%p %d/%d tick:%d\n", 
+                      this, new_e, new_e->sig.z, new_e->sig.n, new_e->tick);
+    }
+  }
+}
+
+//---------------------------------------------------------
 //   add
 //    signatures are only allowed at the beginning of
 //    a bar
 //---------------------------------------------------------
 
-void SigList::add(unsigned tick, const TimeSignature& s)
+void SigList::add(unsigned tick, const TimeSignature& s, bool do_normalize)
       {
       if (s.z == 0 || s.n == 0) {
             printf("illegal signature %d/%d\n", s.z, s.n);
@@ -103,7 +126,8 @@ void SigList::add(unsigned tick, const TimeSignature& s)
             ne->tick = tick;
             insert(std::pair<const unsigned, SigEvent*> (tick, ev));
             }
-      normalize();
+      if(do_normalize)      
+        normalize();
       }
 
 void SigList::add(unsigned tick, SigEvent* e, bool do_normalize)
@@ -136,7 +160,7 @@ void SigList::add(unsigned tick, SigEvent* e, bool do_normalize)
 //   del
 //---------------------------------------------------------
 
-void SigList::del(unsigned tick)
+void SigList::del(unsigned tick, bool do_normalize)
       {
 // printf("SigList::del(%d)\n", tick);
       iSigEvent e = find(tick);
@@ -153,7 +177,8 @@ void SigList::del(unsigned tick)
       ne->second->sig = e->second->sig;
       ne->second->tick  = e->second->tick;
       erase(e);
-      normalize();
+      if(do_normalize)
+        normalize();
       }
 
 void SigList::del(iSigEvent e, bool do_normalize)

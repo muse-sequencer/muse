@@ -107,6 +107,10 @@ class KeyList : public KEYLIST {
    public:
 
       KeyList();
+      // Makes a copy of the source list including all items.
+      // This clears existing items in the destination list.
+      void copy(const KeyList& src);
+
       void clear();
 
       void read(Xml&);
@@ -118,8 +122,9 @@ class KeyList : public KEYLIST {
       void addKey(unsigned t, key_enum newKey);
       void delKey(unsigned tick);
       
-      void addOperation(unsigned tick, key_enum key, PendingOperationList& ops); 
-      void delOperation(unsigned tick, PendingOperationList& ops);
+// REMOVE Tim. tempo. Removed.
+//       void addOperation(unsigned tick, key_enum key, PendingOperationList& ops); 
+//       void delOperation(unsigned tick, PendingOperationList& ops);
       };
 
 } // namespace MusECore

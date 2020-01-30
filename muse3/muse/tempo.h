@@ -88,6 +88,11 @@ class TempoList : public TEMPOLIST {
    public:
       TempoList();
       ~TempoList();
+
+      // Makes a copy of the source list including all allocated items.
+      // This clears and deletes existing items in the destination list.
+      void copy(const TempoList& src);
+
       void normalize();
       void clear();
       void eraseRange(unsigned stick, unsigned etick);

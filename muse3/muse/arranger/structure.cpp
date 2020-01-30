@@ -57,26 +57,45 @@ void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
 
 // REMOVE Tim. struct. Removed.
 //   criTEvent it   = t->rbegin();
-  criSigEvent is = s->rbegin();
-  criKeyEvent ik = k->rbegin();
+//   criSigEvent is = s->rbegin();
+//   criKeyEvent ik = k->rbegin();
 
   const bool is_cut = diff < 0;
 
   // key
-  for (; ik != k->rend(); ik++) {
-    const KeyEvent &ev = (KeyEvent)ik->second;
-    unsigned int tick = ev.tick;
-    int key = ev.key;
+// REMOVE Tim. struct. Changed.
+//   for (; ik != k->rend(); ik++) {
+//     const KeyEvent &ev = (KeyEvent)ik->second;
+//     unsigned int tick = ev.tick;
+//     int key = ev.key;
+//     if (tick < startPos )
+//       break;
+// 
+//     if(is_cut && tick < startPos - diff) { // diff is negative, remove
+//       operations.push_back(UndoOp(UndoOp::DeleteKey, tick, key));
+//     }
+//     else {
+//       operations.push_back(UndoOp(UndoOp::DeleteKey,tick, key));
+//       operations.push_back(UndoOp(UndoOp::AddKey, tick + diff, key));
+//     }
+//   }
+  // It is important that the order of operations always be delete followed by add...
+  // What needs to be deleted?
+  for (ciKeyEvent ik = k->cbegin(); ik != k->cend(); ++ik) {
+    const KeyEvent& ev = ik->second;
+    const unsigned int tick = ev.tick;
     if (tick < startPos )
-      break;
-
-    if(is_cut && tick < startPos - diff) { // diff is negative, remove
-      operations.push_back(UndoOp(UndoOp::DeleteKey, tick, key));
-    }
-    else {
-      operations.push_back(UndoOp(UndoOp::DeleteKey,tick, key));
-      operations.push_back(UndoOp(UndoOp::AddKey, tick + diff, key));
-    }
+      continue;
+    operations.push_back(UndoOp(UndoOp::DeleteKey, tick, ev.key));
+  }
+  // What needs to be added?
+  for (ciKeyEvent ik = k->cbegin(); ik != k->cend(); ++ik) {
+    const KeyEvent& ev = ik->second;
+    const unsigned int tick = ev.tick;
+    if (tick < startPos )
+      continue;
+    if (!is_cut || tick >= startPos - diff)
+      operations.push_back(UndoOp(UndoOp::AddKey, tick + diff, ev.key));
   }
 
   // tempo
@@ -96,46 +115,62 @@ void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
 //       operations.push_back(UndoOp(UndoOp::AddTempo, tick + diff, tempo));
 //       }
 //   }
+  // It is important that the order of operations always be delete followed by add...
+  // What needs to be deleted?
   for (ciTEvent it = t->cbegin(); it != t->cend(); ++it) {
     const TEvent* ev = (TEvent*)it->second;
-    unsigned int tick = ev->tick;
-    int tempo = ev->tempo;
+    const unsigned int tick = ev->tick;
     if (tick < startPos )
       continue;
-
-//     // It is forbidden to add or delete a tempo beyond MAX_TICK.
-//     // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
-//     MusECore::ciTEvent ii = it;
-//     ++ii;
-//     if (ii == t->end())
-//       break;
-    
-    if (is_cut && tick < startPos - diff) { // diff is negative, remove
-      operations.push_back(UndoOp(UndoOp::DeleteTempo,tick, tempo));
-    }
-    else {
-      operations.push_back(UndoOp(UndoOp::DeleteTempo,tick, tempo));
-      operations.push_back(UndoOp(UndoOp::AddTempo, tick + diff, tempo));
-      }
+    operations.push_back(UndoOp(UndoOp::DeleteTempo,tick, ev->tempo));
+  }
+  // What needs to be added?
+  for (ciTEvent it = t->cbegin(); it != t->cend(); ++it) {
+    const TEvent* ev = (TEvent*)it->second;
+    const unsigned int tick = ev->tick;
+    if (tick < startPos )
+      continue;
+    if (!is_cut || tick >= startPos - diff)
+      operations.push_back(UndoOp(UndoOp::AddTempo, tick + diff, ev->tempo));
   }
 
   // sig
-  for (; is != s->rend(); is++) {
-    const MusECore::SigEvent* ev = (MusECore::SigEvent*)is->second;
-    unsigned int tick = ev->tick;
+// REMOVE Tim. struct. Changed.
+//   for (; is != s->rend(); is++) {
+//     const MusECore::SigEvent* ev = (MusECore::SigEvent*)is->second;
+//     unsigned int tick = ev->tick;
+//     if (tick < startPos )
+//       break;
+// 
+//     int z = ev->sig.z;
+//     int n = ev->sig.n;
+//     if (is_cut && tick < startPos - diff) { // diff is negative, remove
+//       operations.push_back(UndoOp(UndoOp::DeleteSig,tick, z, n));
+//     }
+//     else {
+//       operations.push_back(UndoOp(UndoOp::DeleteSig,tick, z, n));
+//       operations.push_back(UndoOp(UndoOp::AddSig,tick + diff, z, n));
+//     }
+//   }
+  // It is important that the order of operations always be delete followed by add...
+  // What needs to be deleted?
+  for (ciSigEvent is = s->cbegin(); is != s->cend(); ++is) {
+    const SigEvent* ev = (SigEvent*)is->second;
+    const unsigned int tick = ev->tick;
     if (tick < startPos )
-      break;
-
-    int z = ev->sig.z;
-    int n = ev->sig.n;
-    if (is_cut && tick < startPos - diff) { // diff is negative, remove
-      operations.push_back(UndoOp(UndoOp::DeleteSig,tick, z, n));
-    }
-    else {
-      operations.push_back(UndoOp(UndoOp::DeleteSig,tick, z, n));
-      operations.push_back(UndoOp(UndoOp::AddSig,tick + diff, z, n));
-    }
+      continue;
+    operations.push_back(UndoOp(UndoOp::DeleteSig,tick, ev->sig.z, ev->sig.n));
   }
+  // What needs to be added?
+  for (ciSigEvent is = s->cbegin(); is != s->cend(); ++is) {
+    const SigEvent* ev = (SigEvent*)is->second;
+    const unsigned int tick = ev->tick;
+    if (tick < startPos )
+      continue;
+    if (!is_cut || tick >= startPos - diff)
+      operations.push_back(UndoOp(UndoOp::AddSig, tick + diff, ev->sig.z, ev->sig.n));
+  }
+
 
   MarkerList *markerlist = MusEGlobal::song->marker();
   for(iMarker i = markerlist->begin(); i != markerlist->end(); ++i)
@@ -240,7 +275,7 @@ void globalCut(bool onlySelectedTracks)
                   }
             }
 
-      unsigned int diff = lpos > rpos ? lpos - rpos : rpos - lpos;
+      const unsigned int diff = lpos > rpos ? lpos - rpos : rpos - lpos;
       adjustGlobalLists(operations, lpos > rpos ? rpos : lpos, -diff); // diff is negative meaning cut
 
       MusEGlobal::song->applyOperationGroup(operations);

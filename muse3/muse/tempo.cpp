@@ -60,16 +60,36 @@ TempoList::~TempoList()
       }
 
 //---------------------------------------------------------
+//   copy
+//---------------------------------------------------------
+
+void TempoList::copy(const TempoList& src)
+{
+  // Clear and delete the existing destination list.
+  for (iTEvent i = begin(); i != end(); ++i)
+    delete i->second;
+  TEMPOLIST::clear();
+
+  for (ciTEvent i = src.cbegin(); i != src.cend(); ++i)
+  {
+    TEvent* new_e = new TEvent(*i->second);
+    std::pair<iTEvent, bool> res = insert(std::pair<const unsigned, TEvent*> (i->first, new_e));
+    if(!res.second)
+    {
+      fprintf(stderr, "TempoList::copy insert failed: tempolist:%p tempo:%p %d tick:%d\n", 
+                        this, new_e, new_e->tempo, new_e->tick);
+    }
+  }
+}
+
+//---------------------------------------------------------
 //   add
 //---------------------------------------------------------
 
 void TempoList::add(unsigned tick, int tempo, bool do_normalize)
       {
-      // It is forbidden to add a tempo beyond MAX_TICK.
-      // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
       if (tick > MAX_TICK)
-            //tick = MAX_TICK;
-            return;
+            tick = MAX_TICK;
       iTEvent e = upper_bound(tick);
 
       if (tick == e->second->tick)
@@ -88,11 +108,6 @@ void TempoList::add(unsigned tick, int tempo, bool do_normalize)
 
 void TempoList::add(unsigned tick, TEvent* e, bool do_normalize)
 {
-  // It is forbidden to add a tempo beyond MAX_TICK.
-  // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
-  if (tick > MAX_TICK)
-        //tick = MAX_TICK;
-        return;
   int tempo = e->tempo;
   std::pair<iTEvent, bool> res = insert(std::pair<const unsigned, TEvent*> (tick, e));
   if(!res.second)
@@ -255,10 +270,6 @@ void TempoList::del(unsigned tick, bool do_normalize)
 
 void TempoList::del(iTEvent e, bool do_normalize)
       {
-      // It is forbidden to delete a tempo beyond MAX_TICK.
-      // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
-      if (e->first > MAX_TICK)
-            return;
       iTEvent ne = e;
       ++ne;
       if (ne == end()) {
