@@ -117,12 +117,12 @@ class ArrangerView : public TopWin
 		void globalCut();
 		void globalInsert();
 		void globalSplit();
-                void globalCutSel();
-                void globalInsertSel();
-                void globalSplitSel();
-                void cmd(int);
-                void addNewTrack(QAction* action);
-                void configCustomColumns();
+        void globalCutSel();
+        void globalInsertSel();
+        void globalSplitSel();
+        void cmd(int);
+        void addNewTrack(QAction* action);
+        void configCustomColumns();
 
 	signals:
 		void isDeleting(MusEGui::TopWin*);

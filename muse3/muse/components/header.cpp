@@ -55,6 +55,7 @@ void Header::readStatus(MusECore::Xml& xml)
                 case MusECore::Xml::TagEnd:
                       if (tag ==objectName())
                             return;
+                      break;
                 default:
                       break;
                 }
@@ -157,15 +158,17 @@ void Header::mousePressEvent ( QMouseEvent * e )
     p->disconnect();
     p->clear();
     p->setTitle(tr("Track Info Columns"));
-    QAction* act = 0;
+    QAction* act = nullptr;
 
     for(int i=0; i < count(); i++) {
-        QIcon icon = itemModel->horizontalHeaderItem(logicalIndex(i))->icon();
+        const QIcon& icon = itemModel->horizontalHeaderItem(logicalIndex(i))->icon();
         if (!icon.isNull()) {
-            act = p->addAction(icon, "\t - "+ itemModel->horizontalHeaderItem(logicalIndex(i))->toolTip());
+            act = p->addAction(icon, "\t - " + itemModel->horizontalHeaderItem(logicalIndex(i))->toolTip());
         } else {
-            act = p->addAction(itemModel->horizontalHeaderItem(logicalIndex(i))->text() +
-                               "\t - "+ itemModel->horizontalHeaderItem(logicalIndex(i))->toolTip());
+            QString tt = itemModel->horizontalHeaderItem(logicalIndex(i))->toolTip();
+            if (tt.isEmpty())
+                tt = tr("Custom column");
+            act = p->addAction(itemModel->horizontalHeaderItem(logicalIndex(i))->text() + "\t - " + tt);
         }
 
         act->setCheckable(true);
@@ -181,15 +184,22 @@ void Header::mousePressEvent ( QMouseEvent * e )
   }
 
   QHeaderView::mousePressEvent(e);
-
 }
+
 void Header::changeColumns(QAction *a)
 {
-  int section = a->data().toInt();
-  if (isSectionHidden(section))
-    showSection(section);
-  else
-    hideSection(section);
+    int section = a->data().toInt();
+    if (isSectionHidden(section))
+        showSection(section);
+    else
+        hideSection(section);
+
+    resizeSection(section, sectionSizeHint(section));
+}
+
+void Header::removeColumn(int col)
+{
+    itemModel->removeColumn(col);
 }
 
 } // namespace MusEGui

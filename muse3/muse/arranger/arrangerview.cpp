@@ -924,11 +924,15 @@ void ArrangerView::globalSplitSel() { MusECore::globalSplit(true); }
 
 void ArrangerView::configCustomColumns()
 {
-  ArrangerColumns* dialog = new ArrangerColumns(this);
-  dialog->exec();
-  delete dialog;
-  
-  QMessageBox::information(this, tr("Changed Settings"), tr("The changed arranger column settings\ncannot be applied while MusE is running.\nTo apply the changes, please restart MusE."));
+    auto tmp = Arranger::custom_columns;
+    ArrangerColumns* dialog = new ArrangerColumns(this);
+    int rc = dialog->exec();
+    delete dialog;
+
+    if (rc == QDialog::Accepted)
+        arranger->updateHeaderCustomColumns();
+    else
+        Arranger::custom_columns = tmp;
 }
 
 } // namespace MusEGui

@@ -1,3 +1,8 @@
+30.01.2020
+    - Replace deprecated QByteArray::[] 'past-end' usage with append() in xml module. (Tim)
+      Caused thousand of errors in debug mode, very slow to start up.
+29.01.2020
+    - Fixed and improved custom columns functionality (kybos)
 26.01.2020
     - Fixed broken version comparison macro in fluidsynti.cpp (Tim)
     - Replaced obsolete QTime with QElapsedTimer. Tested OK.
