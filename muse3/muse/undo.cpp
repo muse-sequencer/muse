@@ -1414,14 +1414,14 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             uo.newMarker = n_op.newMarker;
             return;  
           }
-          else if(uo.type == UndoOp::DeleteMarker && uo.newMarker->id() == n_op.oldMarker->id())
+          else if(uo.type == UndoOp::DeleteMarker && uo.oldMarker->id() == n_op.newMarker->id())
           {
-            // Done with operation markers. Be sure to delete them.
-            delete uo.newMarker;
-            delete n_op.oldMarker;
-            // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
-            erase(iuo);
-            return;  
+            // Delete followed by add. Transform the existing DeleteMarker operation into a ModifyMarker.
+            uo.type = UndoOp::ModifyMarker;
+            // Move the new marker into the ModifyMarker command's new marker.
+            // Keep the existing DeleteMarker command's oldMarker.
+            uo.newMarker = n_op.newMarker;
+            return;
           }
         break;
         
@@ -1434,12 +1434,12 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             uo.oldMarker = n_op.oldMarker;
             return;  
           }
-          else if(uo.type == UndoOp::AddMarker && uo.oldMarker->id() == n_op.newMarker->id())
+          else if(uo.type == UndoOp::AddMarker && uo.newMarker->id() == n_op.oldMarker->id())
           {
             // Done with operation markers. Be sure to delete them.
             delete uo.oldMarker;
             delete n_op.newMarker;
-            // Delete followed by add is useless. Cancel out the delete + add by erasing the delete command.
+            // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
             erase(iuo);
             return;  
           }
@@ -1448,11 +1448,10 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
         case UndoOp::ModifyMarker:
           if(uo.type == UndoOp::ModifyMarker && uo.oldMarker->id() == n_op.oldMarker->id())
           {
-            // Done with older operation markers. Be sure to delete them.
-            delete uo.oldMarker;
+            // Done with these operation markers. Be sure to delete them.
             delete uo.newMarker;
-            // Simply replace the older operation markers with the newer ones.
-            uo.oldMarker = n_op.oldMarker;
+            delete n_op.oldMarker;
+            // Simply replace the older operation marker with the newer one.
             uo.newMarker = n_op.newMarker;
             return;  
           }
@@ -1461,11 +1460,10 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
         case UndoOp::SetMarkerPos:
           if(uo.type == UndoOp::SetMarkerPos && uo.oldMarker->id() == n_op.oldMarker->id())
           {
-            // Done with older operation markers. Be sure to delete them.
-            delete uo.oldMarker;
+            // Done with these operation markers. Be sure to delete them.
             delete uo.newMarker;
-            // Simply replace the older operation markers with the newer ones.
-            uo.oldMarker = n_op.oldMarker;
+            delete n_op.oldMarker;
+            // Simply replace the older operation marker with the newer one.
             uo.newMarker = n_op.newMarker;
             return;  
           }
@@ -2181,7 +2179,6 @@ void Song::addUndo(UndoOp i)
 void Song::revertOperationGroup1(Undo& operations)
       {
       MarkerList* new_marker_list = nullptr;
-      // REMOVE Tim. tempo. Added.
       TempoList* new_tempo_list = nullptr;
       SigList* new_sig_list = nullptr;
       KeyList* new_key_list = nullptr;
@@ -2682,8 +2679,6 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:DeleteTempo ** calling tempomap.addOperation tick:%d tempo:%d\n", i->a, i->b);
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         pendingOperations.addTempoOperation(i->a, i->b, &MusEGlobal::tempomap);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_tempo_list)
@@ -2701,8 +2696,6 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:AddTempo ** calling tempomap.delOperation tick:%d\n", i->a);
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         pendingOperations.delTempoOperation(i->a, &MusEGlobal::tempomap);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_tempo_list)
@@ -2720,8 +2713,6 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:ModifyTempo ** calling tempomap.addOperation tick:%d tempo:%d\n", i->a, i->b);
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         pendingOperations.addTempoOperation(i->a, i->b, &MusEGlobal::tempomap);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_tempo_list)
@@ -2777,8 +2768,6 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:DeleteSig ** calling MusEGlobal::sigmap.addOperation\n");
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         pendingOperations.addTimeSigOperation(i->a, MusECore::TimeSignature(i->b, i->c), &MusEGlobal::sigmap);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_sig_list)
@@ -2796,8 +2785,6 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:AddSig ** calling MusEGlobal::sigmap.delOperation\n");
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         pendingOperations.delTimeSigOperation(i->a, &MusEGlobal::sigmap);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_sig_list)
@@ -2815,9 +2802,6 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:ModifySig ** calling MusEGlobal::sigmap.addOperation\n");
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         // TODO: Hm should that be ->d and ->e like in executeOperationGroup1?
-//                         pendingOperations.addTimeSigOperation(i->a, MusECore::TimeSignature(i->b, i->c), &MusEGlobal::sigmap);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_sig_list)
@@ -2837,8 +2821,6 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:DeleteKey ** calling keymap.addOperation\n");
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         MusEGlobal::keymap.addOperation(i->a, key_enum(i->b), pendingOperations);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_key_list)
@@ -2855,8 +2837,6 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:AddKey ** calling keymap.delOperation\n");
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         MusEGlobal::keymap.delOperation(i->a, pendingOperations);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_key_list)
@@ -2873,8 +2853,6 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:ModifyKey ** calling keymap.addOperation\n");
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         MusEGlobal::keymap.addOperation(i->a, key_enum(i->b), pendingOperations);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_key_list)
@@ -2934,15 +2912,12 @@ void Song::revertOperationGroup1(Undo& operations)
                   }
             }
 
-// REMOVE Tim. tempo. Added.
       if(new_tempo_list)
         pendingOperations.add(PendingOperationItem(&MusEGlobal::tempomap, new_tempo_list, PendingOperationItem::ModifyTempoList));
 
-// REMOVE Tim. tempo. Added.
       if(new_sig_list)
         pendingOperations.add(PendingOperationItem(&MusEGlobal::sigmap, new_sig_list, PendingOperationItem::ModifySigList));
 
-// REMOVE Tim. tempo. Added.
       if(new_key_list)
         pendingOperations.add(PendingOperationItem(&MusEGlobal::keymap, new_key_list, PendingOperationItem::ModifyKeyList));
 
@@ -3078,7 +3053,6 @@ void Song::executeOperationGroup1(Undo& operations)
       {
       unsigned song_len = MusEGlobal::song->len();
       MarkerList* new_marker_list = nullptr;
-      // REMOVE Tim. tempo. Added.
       TempoList* new_tempo_list = nullptr;
       SigList* new_sig_list = nullptr;
       KeyList* new_key_list = nullptr;
@@ -3633,8 +3607,6 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:AddTempo ** calling tempomap.addOperation tick:%d tempo:%d\n", i->a, i->b);
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         pendingOperations.addTempoOperation(i->a, i->b, &MusEGlobal::tempomap);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_tempo_list)
@@ -3652,8 +3624,6 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:DeleteTempo ** calling tempomap.delOperation tick:%d\n", i->a);
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         pendingOperations.delTempoOperation(i->a, &MusEGlobal::tempomap);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_tempo_list)
@@ -3671,8 +3641,6 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:ModifyTempo ** calling tempomap.addOperation tick:%d tempo:%d\n", i->a, i->c);
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         pendingOperations.addTempoOperation(i->a, i->c, &MusEGlobal::tempomap);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_tempo_list)
@@ -3728,8 +3696,6 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:AddSig ** calling MusEGlobal::sigmap.addOperation\n");
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         pendingOperations.addTimeSigOperation(i->a, MusECore::TimeSignature(i->b, i->c), &MusEGlobal::sigmap);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_sig_list)
@@ -3747,8 +3713,6 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:DeleteSig ** calling MusEGlobal::sigmap.delOperation\n");
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         pendingOperations.delTimeSigOperation(i->a, &MusEGlobal::sigmap);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_sig_list)
@@ -3766,8 +3730,6 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:ModifySig ** calling MusEGlobal::sigmap.addOperation\n");
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         pendingOperations.addTimeSigOperation(i->a, MusECore::TimeSignature(i->d, i->e), &MusEGlobal::sigmap);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_sig_list)
@@ -3786,8 +3748,6 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:AddKey ** calling keymap.addOperation\n");
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         MusEGlobal::keymap.addOperation(i->a, key_enum(i->b), pendingOperations);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_key_list)
@@ -3804,8 +3764,6 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:DeleteKey ** calling keymap.delOperation\n");
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         MusEGlobal::keymap.delOperation(i->a, pendingOperations);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_key_list)
@@ -3822,8 +3780,6 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:ModifyKey ** calling keymap.addOperation\n");
 #endif                        
-// REMOVE Tim. tempo. Changed.
-//                         MusEGlobal::keymap.addOperation(i->a, key_enum(i->c), pendingOperations);
                         // Create the new list if it doesn't already exist.
                         // Make a copy of the original list.
                         if(!new_key_list)
@@ -3899,15 +3855,12 @@ void Song::executeOperationGroup1(Undo& operations)
                   }
             }
 
-// REMOVE Tim. tempo. Added.
       if(new_tempo_list)
         pendingOperations.add(PendingOperationItem(&MusEGlobal::tempomap, new_tempo_list, PendingOperationItem::ModifyTempoList));
 
-// REMOVE Tim. tempo. Added.
       if(new_sig_list)
         pendingOperations.add(PendingOperationItem(&MusEGlobal::sigmap, new_sig_list, PendingOperationItem::ModifySigList));
 
-// REMOVE Tim. tempo. Added.
       if(new_key_list)
         pendingOperations.add(PendingOperationItem(&MusEGlobal::keymap, new_key_list, PendingOperationItem::ModifyKeyList));
 

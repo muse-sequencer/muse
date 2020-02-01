@@ -115,24 +115,6 @@ void KeyList::add(KeyEvent e)
   }
 }
 
-// REMOVE Tim. tempo. Removed.
-// //---------------------------------------------------------
-// //   addOperation
-// //---------------------------------------------------------
-// 
-// void KeyList::addOperation(unsigned tick, key_enum key, PendingOperationList& ops)
-// {
-//   if (tick > MAX_TICK)
-//     tick = MAX_TICK;
-//   
-//   iKeyEvent e = upper_bound(tick);
-//   if(tick == e->second.tick)
-//     ops.add(PendingOperationItem(this, e, key, PendingOperationItem::ModifyKey));
-//   else 
-//     // These are the desired tick and key but add will do the proper swapping with next event.
-//     ops.add(MusECore::PendingOperationItem(this, key, tick, PendingOperationItem::AddKey));
-// }
-
 //---------------------------------------------------------
 //   KeyList::dump
 //---------------------------------------------------------
@@ -197,22 +179,6 @@ void KeyList::del(iKeyEvent e)
       ne->second.tick  = e->second.tick;
       erase(e);
       }
-
-// REMOVE Tim. tempo. Removed.
-// //---------------------------------------------------------
-// //   delOperation
-// //---------------------------------------------------------
-// 
-// void KeyList::delOperation(unsigned tick, PendingOperationList& ops)
-// {
-//   iKeyEvent e = find(tick);
-//   if (e == end()) {
-//         printf("KeyList::delOperation tick:%d not found\n", tick);
-//         return;
-//         }
-//   PendingOperationItem poi(this, e, PendingOperationItem::DeleteKey);
-//   ops.add(poi);
-// }
 
 //---------------------------------------------------------
 //   addKey

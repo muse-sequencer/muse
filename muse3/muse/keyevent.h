@@ -121,10 +121,6 @@ class KeyList : public KEYLIST {
 
       void addKey(unsigned t, key_enum newKey);
       void delKey(unsigned tick);
-      
-// REMOVE Tim. tempo. Removed.
-//       void addOperation(unsigned tick, key_enum key, PendingOperationList& ops); 
-//       void delOperation(unsigned tick, PendingOperationList& ops);
       };
 
 } // namespace MusECore

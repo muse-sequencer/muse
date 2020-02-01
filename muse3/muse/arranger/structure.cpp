@@ -56,30 +56,9 @@ void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
   const KeyList* k    = &MusEGlobal::keymap;
   const MarkerList* m = MusEGlobal::song->marker();
 
-// REMOVE Tim. struct. Removed.
-//   criTEvent it   = t->rbegin();
-//   criSigEvent is = s->rbegin();
-//   criKeyEvent ik = k->rbegin();
-
   const bool is_cut = diff < 0;
 
   // key
-// REMOVE Tim. struct. Changed.
-//   for (; ik != k->rend(); ik++) {
-//     const KeyEvent &ev = (KeyEvent)ik->second;
-//     unsigned int tick = ev.tick;
-//     int key = ev.key;
-//     if (tick < startPos )
-//       break;
-// 
-//     if(is_cut && tick < startPos - diff) { // diff is negative, remove
-//       operations.push_back(UndoOp(UndoOp::DeleteKey, tick, key));
-//     }
-//     else {
-//       operations.push_back(UndoOp(UndoOp::DeleteKey,tick, key));
-//       operations.push_back(UndoOp(UndoOp::AddKey, tick + diff, key));
-//     }
-//   }
   // It is important that the order of operations always be delete followed by add...
   // What needs to be deleted?
   for (ciKeyEvent ik = k->cbegin(); ik != k->cend(); ++ik) {
@@ -100,22 +79,6 @@ void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
   }
 
   // tempo
-// REMOVE Tim. struct. Changed.
-//   for (; it != t->rend(); it++) {
-//     const TEvent* ev = (TEvent*)it->second;
-//     unsigned int tick = ev->tick;
-//     int tempo = ev->tempo;
-//     if (tick < startPos )
-//       break;
-// 
-//     if (is_cut && tick < startPos - diff) { // diff is negative, remove
-//       operations.push_back(UndoOp(UndoOp::DeleteTempo,tick, tempo));
-//     }
-//     else {
-//       operations.push_back(UndoOp(UndoOp::DeleteTempo,tick, tempo));
-//       operations.push_back(UndoOp(UndoOp::AddTempo, tick + diff, tempo));
-//       }
-//   }
   // It is important that the order of operations always be delete followed by add...
   // What needs to be deleted?
   for (ciTEvent it = t->cbegin(); it != t->cend(); ++it) {
@@ -136,23 +99,7 @@ void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
   }
 
   // sig
-// REMOVE Tim. struct. Changed.
-//   for (; is != s->rend(); is++) {
-//     const MusECore::SigEvent* ev = (MusECore::SigEvent*)is->second;
-//     unsigned int tick = ev->tick;
-//     if (tick < startPos )
-//       break;
-// 
-//     int z = ev->sig.z;
-//     int n = ev->sig.n;
-//     if (is_cut && tick < startPos - diff) { // diff is negative, remove
-//       operations.push_back(UndoOp(UndoOp::DeleteSig,tick, z, n));
-//     }
-//     else {
-//       operations.push_back(UndoOp(UndoOp::DeleteSig,tick, z, n));
-//       operations.push_back(UndoOp(UndoOp::AddSig,tick + diff, z, n));
-//     }
-//   }
+  // FIXME: sig still has some issues upon undo. Possibly due to the special raster snap applied to sig?
   // It is important that the order of operations always be delete followed by add...
   // What needs to be deleted?
   for (ciSigEvent is = s->cbegin(); is != s->cend(); ++is) {
@@ -215,6 +162,15 @@ void globalCut(bool onlySelectedTracks)
             return;
 
       Undo operations;
+
+      const unsigned int diff = lpos > rpos ? lpos - rpos : rpos - lpos;
+      adjustGlobalLists(operations, lpos > rpos ? rpos : lpos, -diff); // diff is negative meaning cut
+      // Splitting wave parts requires the tempo list be done and EXECUTED beforehand.
+      // FIXME: This and the part splitting results in two separate operations, user must press undo twice to undo them.
+      //        Find a way to combine undo ops while leaving them as separate operations?
+      MusEGlobal::song->applyOperationGroup(operations);
+      operations.clear();
+
       TrackList* tracks = MusEGlobal::song->tracks();
       
       for (iTrack it = tracks->begin(); it != tracks->end(); ++it) {
@@ -285,9 +241,6 @@ void globalCut(bool onlySelectedTracks)
                   }
             }
 
-      const unsigned int diff = lpos > rpos ? lpos - rpos : rpos - lpos;
-      adjustGlobalLists(operations, lpos > rpos ? rpos : lpos, -diff); // diff is negative meaning cut
-
       MusEGlobal::song->applyOperationGroup(operations);
       }
 
@@ -311,6 +264,13 @@ void globalInsert(bool onlySelectedTracks)
 Undo movePartsTotheRight(unsigned int startTicks, unsigned int moveTicks, bool only_selected, set<Track*>* tracklist)
 {
       Undo operations;
+      adjustGlobalLists(operations, startTicks, moveTicks);
+      // Splitting wave parts requires the tempo list be done and EXECUTED beforehand.
+      // FIXME: This and the part splitting results in two separate operations, user must press undo twice to undo them.
+      //        Find a way to combine undo ops while leaving them as separate operations?
+      MusEGlobal::song->applyOperationGroup(operations);
+      operations.clear();
+
       TrackList* tracks = MusEGlobal::song->tracks();
       
       for (iTrack it = tracks->begin(); it != tracks->end(); ++it) {
@@ -343,8 +303,6 @@ Undo movePartsTotheRight(unsigned int startTicks, unsigned int moveTicks, bool o
                         }
                   }
             }
-
-      adjustGlobalLists(operations, startTicks, moveTicks);
 
       return operations;
       }

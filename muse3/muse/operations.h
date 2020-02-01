@@ -163,15 +163,8 @@ struct PendingOperationItem
     AddMidiCtrlVal,    DeleteMidiCtrlVal,     ModifyMidiCtrlVal,  AddMidiCtrlValList,
     RemapDrumControllers,
     AddAudioCtrlVal,   DeleteAudioCtrlVal,    ModifyAudioCtrlVal, ModifyAudioCtrlValList,
-// REMOVE Tim. tempo. Changed.
-//     AddTempo,          DeleteTempo,           ModifyTempo,        SetStaticTempo,
-//     SetGlobalTempo, 
     ModifyTempoList,   SetStaticTempo,        SetGlobalTempo, 
-// REMOVE Tim. tempo. Changed.
-//     AddSig,            DeleteSig,             ModifySig,
     ModifySigList,
-// REMOVE Tim. tempo. Changed.
-//     AddKey,            DeleteKey,             ModifyKey,
     ModifyKeyList,
 
     ModifyDefaultAudioConverterSettings, ModifyLocalAudioConverterSettings, ModifyLocalAudioConverter,
@@ -203,14 +196,8 @@ struct PendingOperationItem
   union {
     MidiCtrlValListList* _mcvll;
     CtrlListList* _aud_ctrl_list_list;
-// REMOVE Tim. tempo. Changed.
-//     TempoList* _tempo_list;
     TempoList* _orig_tempo_list;
-// REMOVE Tim. tempo. Changed.
-//     MusECore::SigList* _sig_list; 
     MusECore::SigList* _orig_sig_list; 
-// REMOVE Tim. tempo. Changed.
-//     KeyList* _key_list;
     KeyList* _orig_key_list;
     StretchList* _stretch_list;  
     PartList* _part_list; 
@@ -231,13 +218,8 @@ struct PendingOperationItem
     MidiCtrlValList* _mcvl;
     CtrlList* _aud_ctrl_list;
     MarkerList* _marker_list;
-// REMOVE Tim. tempo. Changed.
-//     TEvent* _tempo_event; 
     TempoList* _tempo_list;  
-// REMOVE Tim. tempo. Changed.
-//     MusECore::SigEvent* _sig_event; 
     MusECore::SigList* _sig_list; 
-    // REMOVE Tim. tempo. Added.
     KeyList* _key_list;
     Route* _dst_route_pointer;
     float* _newAudioSamples;
@@ -252,10 +234,6 @@ struct PendingOperationItem
   iMidiCtrlVal _imcv;
   iCtrl _iCtrl;
   iCtrlList _iCtrlList;
-// REMOVE Tim. tempo. Removed.
-//   iTEvent _iTEvent;
-//   MusECore::iSigEvent _iSigEvent;
-//   iKeyEvent _iKeyEvent;
   iStretchListItem _iStretchEvent;
   iMidiInstrument _iMidiInstrument;
   iMidiDevice _iMidiDevice;
@@ -487,19 +465,6 @@ struct PendingOperationItem
     { _type = type; _aud_ctrl_list = ctrl_l; _iCtrl = ictl; _posLenVal = new_frame; _ctl_dbl_val = new_ctrl_val; }
     
   
-// REMOVE Tim. tempo. Changed.
-//   // NOTE: 'tick' is the desired tick. te is a new TEvent with tempo and (same) desired tick. Swapping with NEXT event is done.
-//   PendingOperationItem(TempoList* tl, TEvent* te, unsigned int tick, PendingOperationType type = AddTempo)
-//     { _type = type; _tempo_list = tl; _tempo_event = te; _posLenVal = tick; }
-//     
-//   // NOTE: _tempo_event is required. We must erase 'ite' in stage 2, then delete the TEvent* in stage 3 (not stage 1),
-//   //        so 'ite' is unavailable to fetch the TEvent* from it (in ite->second).
-//   PendingOperationItem(TempoList* tl, const iTEvent& ite, PendingOperationType type = DeleteTempo)
-//     { _type = type; _tempo_list = tl; _iTEvent = ite; _tempo_event = ite->second; }
-//     
-//   PendingOperationItem(TempoList* tl, const iTEvent& ite, int tempo, PendingOperationType type = ModifyTempo)
-//     { _type = type; _tempo_list = tl; _iTEvent = ite; _intA = tempo; }
-    
   // Takes ownership of the original list so it can be deleted in the non-RT stage.
   PendingOperationItem(TempoList* orig_tempo_l, TempoList* new_tempo_l, PendingOperationType type = ModifyTempoList)
     { _type = type; _orig_tempo_list = orig_tempo_l; _tempo_list = new_tempo_l; }
@@ -512,33 +477,11 @@ struct PendingOperationItem
     { _type = type; _tempo_list = tl; _boolA = v; }
 
     
-// REMOVE Tim. tempo. Changed.
-//   // NOTE: 'tick' is the desired tick. se is a new SigEvent with sig and (same) desired tick. Swapping with NEXT event is done.
-//   PendingOperationItem(MusECore::SigList* sl, MusECore::SigEvent* se, unsigned int tick, PendingOperationType type = AddSig)
-//     { _type = type; _sig_list = sl; _sig_event = se; _posLenVal = tick; }
-//     
-//   // NOTE: _sig_event is required. We must erase 'ise' in stage 2, then delete the SigEvent* in stage 3 (not stage 1),
-//   //        so 'ise' is unavailable to fetch the SigEvent* from it (in ise->second).
-//   PendingOperationItem(MusECore::SigList* sl, const MusECore::iSigEvent& ise, PendingOperationType type = DeleteSig)
-//     { _type = type; _sig_list = sl; _iSigEvent = ise; _sig_event = ise->second; }
-//     
-//   PendingOperationItem(MusECore::SigList* sl, const MusECore::iSigEvent& ise, const MusECore::TimeSignature& s, PendingOperationType type = ModifySig)
-//     { _type = type; _sig_list = sl; _iSigEvent = ise; _intA = s.z; _intB = s.n; }
   // Takes ownership of the original list so it can be deleted in the non-RT stage.
   PendingOperationItem(SigList* orig_sig_l, SigList* new_sig_l, PendingOperationType type = ModifySigList)
     { _type = type; _orig_sig_list = orig_sig_l; _sig_list = new_sig_l; }
     
     
-// REMOVE Tim. tempo. Changed.
-//   // NOTE: 'tick' is the desired tick. ke is a new SigEvent with sig and (same) desired tick. Swapping with NEXT event is done.
-//   PendingOperationItem(KeyList* kl, key_enum ke, unsigned int tick, PendingOperationType type = AddKey)
-//     { _type = type; _key_list = kl; _posLenVal = tick; _intB = ke; }
-//     
-//   PendingOperationItem(KeyList* kl, const iKeyEvent& ike, PendingOperationType type = DeleteKey)
-//     { _type = type; _key_list = kl; _iKeyEvent = ike; }
-//     
-//   PendingOperationItem(KeyList* kl, const iKeyEvent& ike, key_enum ke, PendingOperationType type = ModifyKey)
-//     { _type = type; _key_list = kl; _iKeyEvent = ike; _intA = ke; }
   // Takes ownership of the original list so it can be deleted in the non-RT stage.
   PendingOperationItem(KeyList* orig_key_l, KeyList* new_key_l, PendingOperationType type = ModifyKeyList)
     { _type = type; _orig_key_list = orig_key_l; _key_list = new_key_l; }
@@ -623,14 +566,6 @@ class PendingOperationList : public std::list<PendingOperationItem>
     // Find an existing special allocation command (like AddMidiCtrlValList). 
     // The comparison ignores the actual allocated value, so that such commands can be found before they do their allocating.
     iterator findAllocationOp(const PendingOperationItem& op);
-
-// REMOVE Tim. tempo. Removed.
-//     // Returns true if successful.
-//     bool addTimeSigOperation(unsigned tick, const MusECore::TimeSignature& s, MusECore::SigList* sl);
-//     bool delTimeSigOperation(unsigned tick, MusECore::SigList* sl);
-// REMOVE Tim. tempo. Removed.
-//     bool addTempoOperation(unsigned tick, int tempo, TempoList* tl);
-//     bool delTempoOperation(unsigned tick, TempoList* tl);
 };
 
 typedef PendingOperationList::iterator iPendingOperation;
