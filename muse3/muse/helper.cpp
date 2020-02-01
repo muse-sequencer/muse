@@ -1931,10 +1931,41 @@ void loadStyleSheetFile(const QString& s)
 {
     if(MusEGlobal::debugMsg)
       fprintf(stderr, "loadStyleSheetFile:%s\n", s.toLatin1().constData());
+
     if(s.isEmpty())
     {
       qApp->setStyleSheet(s);
       return;
+    }
+
+    if (MusEGlobal::config.cascadeStylesheets) {
+        QString style = QFileInfo(s).baseName();
+        QString stylePathUser = MusEGlobal::configPath + "/themes/" + style + ".qss";
+        QString stylePathDef = MusEGlobal::museGlobalShare + "/themes/" + style + ".qss";
+
+        if (QFile::exists(stylePathUser) && QFile::exists(stylePathDef)) {
+            QFile fdef(stylePathDef);
+            if (!fdef.open(QIODevice::ReadOnly)) {
+                printf("loading style sheet <%s> failed\n", qPrintable(s));
+                return;
+            }
+            QFile fuser(stylePathUser);
+            if (!fuser.open(QIODevice::ReadOnly)) {
+                printf("loading style sheet <%s> failed\n", qPrintable(s));
+                fdef.close();
+                return;
+            }
+
+            QByteArray sdef = fdef.readAll();
+            QByteArray suser = fuser.readAll();
+            QString sheet(QString::fromUtf8(sdef.data()) + '\n' + QString::fromUtf8(suser.data()));
+            qApp->setStyleSheet(sheet);
+
+            fdef.close();
+            fuser.close();
+
+            return;
+        }
     }
 
     QFile cf(s);

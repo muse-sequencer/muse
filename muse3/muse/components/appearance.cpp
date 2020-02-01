@@ -599,6 +599,9 @@ void Appearance::resetValues()
       cursorSizeSpin->blockSignals(true);
       cursorSizeSpin->setValue(config->cursorSize);
       cursorSizeSpin->blockSignals(false);
+
+      cascadeStylesheetsCheckBox->setChecked(config->cascadeStylesheets);
+
       // Grab all the colours.
       updateColorItems();
 
@@ -845,6 +848,11 @@ bool Appearance::apply()
       if (config->cursorSize != cursorSizeSpin->value()) {
           restart_required = true;
           config->cursorSize = cursorSizeSpin->value();
+      }
+
+      if (config->cascadeStylesheets != cascadeStylesheetsCheckBox->isChecked()) {
+          restart_required = true;
+          config->cascadeStylesheets = cascadeStylesheetsCheckBox->isChecked();
       }
 
       if (radioButtonDrawOutline->isChecked())

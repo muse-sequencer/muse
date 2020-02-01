@@ -272,6 +272,7 @@ struct GlobalConfigValues {
 
       int iconSize;
       int cursorSize;
+      bool cascadeStylesheets;
 
       bool enableAlsaMidiDriver; // Whether to enable the ALSA midi driver
       int division;
