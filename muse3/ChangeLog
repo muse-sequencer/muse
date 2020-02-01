@@ -1,3 +1,17 @@
+01.02.2020
+    - Global cut/insert: Overhaul. Fix crashes with markers. (Tim)
+      Cherry pick from pos_ctrls_fixes branch: Redesigned markers and marker viewer.
+      Marker functions now undoable! (Lack of that was causing crashes.)
+    - Tempo, signature, and key maps: Fixed problems with Global cut/insert.
+      Replaced complex realtime stage-2 map item-by-item operations with simple swapping
+       of entire map with complete replacement map pre-composed in stage 1 (gui thread).
+      Virtually zero cpu time, and realtime safe, no potential allocation or deallocation.
+      TODO: Sig still seems to not undo quite correctly, possibly due to raster-snapping.
+            Tempo list operations must be executed before wave part splitting! So two
+             separate operations are done - user must hit undo TWICE to undo them! (Better
+             that for now, rather than one single BUT INCORRECT undoable operation.)
+            Master track graphic editor: Tempo ramp NOT undoable! Not working correctly.
+            Most of this stuff is pre-existing. Still, it is better now ;-)
 30.01.2020
     - Replace deprecated QByteArray::[] 'past-end' usage with append() in xml module. (Tim)
       Caused thousand of errors in debug mode, very slow to start up.
