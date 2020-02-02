@@ -1579,7 +1579,8 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       }
       
       
-static void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames = true)
+void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames)
+//static void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames = true)
 {
      for (int i = 0; i < 16; ++i) {
             xml.colorTag(level, QString("palette") + QString::number(i), MusEGlobal::config.palette[i]);
