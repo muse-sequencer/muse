@@ -62,6 +62,7 @@ namespace MusECore {
 extern bool readConfiguration();
 extern bool readConfiguration(const char *configFile);
 extern void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalConfig);
+extern void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames = true);
 }
 
 #endif

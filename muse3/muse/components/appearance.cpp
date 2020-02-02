@@ -306,13 +306,11 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
 //      connect(changeThemeButton, SIGNAL(clicked()), SLOT(changeTheme()));
 
       QDir themeDir(MusEGlobal::museGlobalShare + QString("/themes"));
-      QStringList list;
-
       QStringList fileTypes;
       fileTypes.append("*.cfg");
-      list = themeDir.entryList(fileTypes);
-
-      colorSchemeComboBox->addItems(list);
+      QFileInfoList list = themeDir.entryInfoList(fileTypes);
+      for (auto item : list)
+          colorSchemeComboBox->addItem(item.baseName());
 
       //---------------------------------------------------
       //    Fonts
@@ -694,20 +692,36 @@ bool Appearance::changeTheme()
     if (colorSchemeComboBox->currentIndex() == 0) {
       return false;
     }
-    if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
-      tr("Do you really want to reset colors to theme default?"),
-      QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok)
-       != QMessageBox::Ok)
-    {
-        return false;
-    }
-
-    backgroundTree->reset();
 
     QString currentTheme = colorSchemeComboBox->currentText();
-    printf("Changing to theme %s\n", currentTheme.toLatin1().constData() );
+    QString lastTheme = QFileInfo(config->styleSheetFile).baseName();
+    if (lastTheme.isEmpty()) // default theme has not stylesheet
+        lastTheme = "Light Theme";
 
-    QString styleFile = QFileInfo(currentTheme).baseName() + ".qss";
+    if (lastTheme == currentTheme)
+        return false;
+
+    printf("Changing to theme %s\n", qPrintable(currentTheme) );
+
+
+    QString lastColorPath = MusEGlobal::configPath + "/themes/" + lastTheme + ".cfc";
+
+    FILE* f = fopen(qPrintable(lastColorPath), "w");
+    if (!f) {
+        fprintf(stderr, "Saving configuration colors to <%s> failed: %s\n",
+                qPrintable(lastColorPath), strerror(errno));
+    } else {
+        MusECore::Xml xml(f);
+        xml.header();
+        xml.nput(0, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
+        xml.tag(1, "configuration");
+        MusECore::writeConfigurationColors(2, xml, false); // Don't save part colour names.
+        xml.etag(1, "configuration");
+        xml.tag(0, "/muse");
+        fclose(f);
+    }
+
+    QString styleFile = currentTheme + ".qss";
     QString stylePath = MusEGlobal::configPath + "/themes/" + styleFile;
 
     if (!QFile::exists(stylePath)) {
@@ -724,18 +738,19 @@ bool Appearance::changeTheme()
     else
     {
         styleSheetPath->setText("");
-        MusEGlobal::config.styleSheetFile = "";
+        MusEGlobal::config.styleSheetFile.clear();
     }
 
-    QString configColorPath = MusEGlobal::configPath + "/themes/" + QFileInfo(currentTheme).baseName() + ".cfc";
+    QString configColorPath = MusEGlobal::configPath + "/themes/" + currentTheme + ".cfc";
     if (!QFile::exists(configColorPath)) {
-        configColorPath = MusEGlobal::museGlobalShare + "/themes/" + currentTheme;
+        configColorPath = MusEGlobal::museGlobalShare + "/themes/" + currentTheme + ".cfg";
     }
 
     // We want the simple version, don't set the style or stylesheet yet.
-    MusECore::readConfiguration(configColorPath.toLatin1().constData());
+    MusECore::readConfiguration(qPrintable(configColorPath));
 //    MusEGlobal::muse->changeConfig(true);
 
+    backgroundTree->reset();
     hide();
 
     return true;
