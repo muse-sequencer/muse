@@ -306,8 +306,6 @@ void Master::viewMousePressEvent(QMouseEvent* event)
       int ypos = start.y();
 
       _operations.clear();
-// REMOVE Tim. tempo. Removed.
-//       bool do_redraw = false;
 
       MusEGui::Tool activeTool = tool;
 
@@ -333,11 +331,9 @@ void Master::viewMousePressEvent(QMouseEvent* event)
                         line2x = xpos;
                         line2y = ypos;
                         newValRamp(line1x, line1y, line2x, line2y, _operations);
-                        // REMOVE Tim. tempo. Added.
                         // Operation is undoable.
                         MusEGlobal::song->applyOperationGroup(_operations);
                         _operations.clear();
-
                         drawLineMode = false;
                         }
                   else {
@@ -345,8 +341,6 @@ void Master::viewMousePressEvent(QMouseEvent* event)
                         line2y = line1y = ypos;
                         drawLineMode = true;
                         }
-// REMOVE Tim. tempo. Changed.
-//                   do_redraw = true;
                   redraw();
                   return;
 
@@ -357,9 +351,7 @@ void Master::viewMousePressEvent(QMouseEvent* event)
 
       // Operation is undoable but do not start/end undo.
       MusEGlobal::song->applyOperationGroup(_operations, MusECore::Song::OperationUndoable);
-// REMOVE Tim. tempo. Removed.
-//       if(do_redraw)
-        redraw();
+      redraw();
       }
 
 //---------------------------------------------------------
