@@ -1,3 +1,5 @@
+04.02.2020
+    - Master track graphic editor: Fixed tempo ramp function was not undoable. (Tim)
 03.02.2020
     - Fix issue 763: Plugin cache recreated on each startup. (Tim)
       When there was more than one LV2 plugin with the same name (but different uri)
