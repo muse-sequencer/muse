@@ -118,36 +118,6 @@ Synth* SynthList::find(const QString& fileCompleteBaseName, const QString& plugi
 //  SynthIF
 //--------------------------------
 
-void SynthIF::getMapItem(int channel, int patch, int index, DrumMap& dest_map, int
-#ifdef _USE_INSTRUMENT_OVERRIDES_
-  overrideType
-#endif
-) const
-{
-  // Not found? Search the global mapping list.
-  const patch_drummap_mapping_list_t* def_pdml = genericMidiInstrument->get_patch_drummap_mapping(channel, true); // Include default.
-  if(def_pdml)
-  {
-    ciPatchDrummapMapping_t ipdm = def_pdml->find(patch, true); // Include default.
-    if(ipdm == def_pdml->end())
-    {
-      // Not found? Is there a default patch mapping?
-  #ifdef _USE_INSTRUMENT_OVERRIDES_
-      if(overrideType & WorkingDrumMapEntry::InstrumentDefaultOverride)
-  #endif
-        ipdm = def_pdml->find(CTRL_PROGRAM_VAL_DONT_CARE, true); // Include default.
-
-      if(ipdm != def_pdml->end())
-      {
-        dest_map = (*ipdm).drummap[index];
-        return;
-      }
-    }
-  }
-
-  dest_map = iNewDrumMap[index];;
-}
-
 //--------------------------------
 // Methods for PluginIBase:
 //--------------------------------
@@ -616,6 +586,47 @@ RouteCapabilitiesStruct SynthI::routeCapabilities() const
   return s;
 }
 
+void SynthI::getMapItem(int channel, int patch, int index, DrumMap& dest_map, int
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+  overrideType
+#endif
+) const
+{
+  QString note_name;
+  if(_sif)
+  {
+    // true = Want percussion names, not melodic.
+    note_name = _sif->getNoteSampleName(true, channel, patch, index);
+  }
+
+  // Not found? Search the global mapping list.
+  const patch_drummap_mapping_list_t* def_pdml = genericMidiInstrument->get_patch_drummap_mapping(channel, true); // Include default.
+  if(def_pdml)
+  {
+    ciPatchDrummapMapping_t ipdm = def_pdml->find(patch, true); // Include default.
+    if(ipdm == def_pdml->end())
+    {
+      // Not found? Is there a default patch mapping?
+  #ifdef _USE_INSTRUMENT_OVERRIDES_
+      if(overrideType & WorkingDrumMapEntry::InstrumentDefaultOverride)
+  #endif
+        ipdm = def_pdml->find(CTRL_PROGRAM_VAL_DONT_CARE, true); // Include default.
+
+      if(ipdm != def_pdml->end())
+      {
+        dest_map = (*ipdm).drummap[index];
+        if(!note_name.isEmpty())
+          dest_map.name = note_name;
+        return;
+      }
+    }
+  }
+
+  dest_map = iNewDrumMap[index];
+  if(!note_name.isEmpty())
+    dest_map.name = note_name;
+}
+
 //---------------------------------------------------------
 //   init
 //---------------------------------------------------------
@@ -800,56 +811,14 @@ int MessSynthIF::getControllerInfo(int id, QString* name, int* ctrl, int* min, i
       return ret;
       }
 
-void MessSynthIF::getMapItem(int channel, int patch, int index, DrumMap& dest_map, int
-#ifdef _USE_INSTRUMENT_OVERRIDES_
-  overrideType
-#endif
-) const
+QString MessSynthIF::getNoteSampleName(
+  bool drum, int channel, int patch, int note) const
 {
-  // Could just call the ancestor, but we can save the double string copy by optimizing below...
-  // SynthIF::getMapItem(channel, patch, index, dest_map);
-
-  DrumMap* dm = NULL;
-  // Not found? Search the global mapping list.
-  patch_drummap_mapping_list_t* def_pdml = genericMidiInstrument->get_patch_drummap_mapping(channel, true); // Include default.
-  if(def_pdml)
-  {
-    ciPatchDrummapMapping_t ipdm = def_pdml->find(patch, true); // Include default.
-    if(ipdm == def_pdml->end())
-    {
-      // Not found? Is there a default patch mapping?
-      #ifdef _USE_INSTRUMENT_OVERRIDES_
-      if(overrideType & WorkingDrumMapEntry::InstrumentDefaultOverride)
-      #endif
-        ipdm = def_pdml->find(CTRL_PROGRAM_VAL_DONT_CARE, true); // Include default.
-
-      if(ipdm != def_pdml->end())
-        dm = &(*ipdm).drummap[index];
-    }
-  }
-  if(!dm)
-    dm = &iNewDrumMap[index];
-  DrumMap& base_dm = *dm;
-  dest_map.vol = base_dm.vol;
-  dest_map.quant = base_dm.quant;
-  dest_map.len = base_dm.len;
-  dest_map.anote = base_dm.anote;
-  dest_map.enote = base_dm.enote;
-  dest_map.channel = base_dm.channel;
-  dest_map.port = base_dm.port;
-  dest_map.lv1 = base_dm.lv1;
-  dest_map.lv2 = base_dm.lv2;
-  dest_map.lv3 = base_dm.lv3;
-  dest_map.lv4 = base_dm.lv4;
-  dest_map.hide = base_dm.hide;
-  dest_map.mute = base_dm.mute;
-
   const char* str;
-  // true = Want percussion names, not melodic.
-  if(_mess->getNoteSampleName(true, channel, patch, index, &str))
-    dest_map.name = QString(str);
-  else
-    dest_map.name = base_dm.name;
+  // drum = Want percussion names, not melodic.
+  if(_mess->getNoteSampleName(drum, channel, patch, note, &str))
+    return QString(str);
+  return QString();
 }
 
 //---------------------------------------------------------

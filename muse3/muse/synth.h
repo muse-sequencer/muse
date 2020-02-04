@@ -161,10 +161,9 @@ class SynthIF : public PluginIBase {
       virtual double getParameter(unsigned long idx) const = 0;
       virtual void setParameter(unsigned long idx, double value) = 0;
       virtual int getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval) = 0;      
-      // Returns a map item with members filled from either the original or working map item,
-      //  depending on which Field flags are set. The returned map includes any requested
-      //  WorkingDrumMapEntry::OverrideType instrument overrides. Channel can be -1 meaning default.
-      virtual void getMapItem(int /*channel*/, int /*patch*/, int /*index*/, DrumMap& /*dest_map*/, int /*overrideType*/ = WorkingDrumMapEntry::AllOverrides) const;
+      // drum = Want percussion names, not melodic.
+      virtual QString getNoteSampleName(bool /*drum*/, int /*channel*/, 
+                                     int /*patch*/, int /*note*/) const { return QString(); }
 
       //-------------------------
       // Methods for PluginIBase:
@@ -334,9 +333,8 @@ class SynthI : public AudioTrack, public MidiDevice,
       // Returns a map item with members filled from either the original or working map item,
       //  depending on which Field flags are set. The returned map includes any requested
       //  WorkingDrumMapEntry::OverrideType instrument overrides. Channel can be -1 meaning default.
-      virtual void getMapItem(int channel, int patch, int index, DrumMap& dest_map, int overrideType = WorkingDrumMapEntry::AllOverrides) const {
-            if(!_sif) return; else _sif->getMapItem(channel, patch, index, dest_map, overrideType);
-            }
+      virtual void getMapItem(int channel, int patch, int index, DrumMap& dest_map,
+                              int overrideType = WorkingDrumMapEntry::AllOverrides) const;
 
       virtual void populatePatchPopup(MusEGui::PopupMenu* m, int i, bool d) {
             if(!_sif) return; else _sif->populatePatchPopup(m, i, d);
@@ -469,10 +467,9 @@ class MessSynthIF : public SynthIF {
       inline virtual double getParameter(unsigned long) const { return 0.0; }
       virtual void setParameter(unsigned long, double) {}
       virtual int getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval);
-      // Returns a map item with members filled from either the original or working map item,
-      //  depending on which Field flags are set. The returned map includes any requested
-      //  WorkingDrumMapEntry::OverrideType instrument overrides. Channel can be -1 meaning default.
-      virtual void getMapItem(int /*channel*/, int /*patch*/, int /*index*/, DrumMap& /*dest_map*/, int /*overrideType*/ = WorkingDrumMapEntry::AllOverrides) const;
+      // drum = Want percussion names, not melodic.
+      virtual QString getNoteSampleName(bool drum, int channel, int patch, int note) const;
+
       };
 
 typedef std::vector<MusECore::Synth*>::iterator iSynthList;

@@ -1,5 +1,10 @@
 04.02.2020
     - Master track graphic editor: Fixed tempo ramp function was not undoable. (Tim)
+    - Referring to 30.11.2019: "Fixed crash in drumlist when synth plugin was missing."
+      Observed crash still there immediately (the drum list was empty).
+      Fixed and tested OK, saving and reloading, even if synth plugin is missing. The
+       drum list is filled now. Even if the missing plugin was MESS fluidsynth (unlikely),
+       the default map will be used since no note names are available from the synth.
 03.02.2020
     - Fix issue 763: Plugin cache recreated on each startup. (Tim)
       When there was more than one LV2 plugin with the same name (but different uri)
