@@ -31,7 +31,6 @@
             Tempo list operations must be executed before wave part splitting! So two
              separate operations are done - user must hit undo TWICE to undo them! (Better
              that for now, rather than one single BUT INCORRECT undoable operation.)
-            Master track graphic editor: Tempo ramp NOT undoable! Not working correctly.
             Most of this stuff is pre-existing. Still, it is better now ;-)
 30.01.2020
     - Replace deprecated QByteArray::[] 'past-end' usage with append() in xml module. (Tim)
