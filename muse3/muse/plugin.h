@@ -96,6 +96,10 @@ class Plugin {
       int _references;
       int _instNo;
       QFileInfo fi;
+      // Universal resource identifier, for plugins that use it (LV2).
+      // If this exists, it should be used INSTEAD of file info, for comparison etc.
+      // Never rely on the file info if a uri exists.
+      QString _uri;
       LADSPA_Descriptor_Function ladspa;
       const LADSPA_Descriptor *plugin;
       unsigned long _uniqueID;
@@ -130,12 +134,13 @@ class Plugin {
 
    public:
       Plugin() {} //empty constructor for LV2PluginWrapper
-      Plugin(QFileInfo* f, const LADSPA_Descriptor* d, 
+      Plugin(QFileInfo* f, const LADSPA_Descriptor* d, const QString& uri,
              bool isDssi = false, bool isDssiSynth = false, bool isDssiVst = false,
              PluginFeatures_t reqFeatures = PluginNoFeatures);
       Plugin(const MusEPlugin::PluginScanInfoStruct&);
       virtual ~Plugin();
       virtual PluginFeatures_t requiredFeatures() const { return _requiredFeatures; }
+      QString uri() const                          { return _uri; }
       virtual QString label() const                        { return _label; }
       QString name() const                         { return _name; }
       unsigned long id() const                     { return _uniqueID; }
@@ -238,17 +243,19 @@ class PluginGroups : public QMap< QPair<QString, QString>, QSet<int> >
 
 class PluginList : public std::list<Plugin *> {
    public:
-      void add(QFileInfo* fi, const LADSPA_Descriptor* d, 
+      void add(QFileInfo* fi, const LADSPA_Descriptor* d, const QString& uri,
                bool isDssi = false, bool isDssiSynth = false, bool isDssiVst = false,
                PluginFeatures_t reqFeatures = PluginNoFeatures)
       {
-        push_back(new Plugin(fi, d, isDssi, isDssiSynth, isDssiVst, reqFeatures));
+        push_back(new Plugin(fi, d, uri, isDssi, isDssiSynth, isDssiVst, reqFeatures));
       }
 
       void add(const MusEPlugin::PluginScanInfoStruct& scan_info)
       { push_back(new Plugin(scan_info)); }
 
-      Plugin* find(const QString& file, const QString& label) const;
+      // Each argument optional, can be empty.
+      // If uri is not empty, the search is based solely on it, the other arguments are ignored.
+      Plugin* find(const QString& file, const QString& uri, const QString& label) const;
       PluginList() {}
       };
 
@@ -343,6 +350,7 @@ class PluginIBase
       virtual int id() = 0;
       virtual QString pluginLabel() const = 0;
       virtual QString name() const = 0;
+      virtual QString uri() const = 0;
       virtual QString lib() const = 0;
       virtual QString dirPath() const = 0;
       virtual QString fileName() const = 0;
@@ -499,6 +507,7 @@ class PluginI : public PluginIBase {
       QString label() const          { return _label; }
       QString name() const           { return _name; }
       QString lib() const            { return _plugin->lib(); }
+      QString uri() const            { return _plugin->uri(); }
       QString dirPath() const        { return _plugin->dirPath(); }
       QString fileName() const       { return _plugin->fileName(); }
       QString titlePrefix() const;
@@ -569,6 +578,7 @@ class Pipeline : public std::vector<PluginI*> {
       void setOn(int, bool);
       QString label(int idx) const;
       QString name(int idx) const;
+      QString uri(int idx) const;
       void showGui(int, bool);
       bool isDssiPlugin(int) const;
       bool isLV2Plugin(int idx) const;
@@ -712,6 +722,7 @@ class PluginGui : public QMainWindow {
       ~PluginGui();
       void setOn(bool);
       void updateValues();
+      void updateWindowTitle();
       };
 
 

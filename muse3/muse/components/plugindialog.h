@@ -3,13 +3,11 @@
 
 #include "ui_plugindialogbase.h"
 #include <QDialog>
+#include <QTreeWidgetItem>
+#include <QAbstractButton>
+#include "globaldefs.h"
+
 #include "globals.h"
-
-class QAbstractButton;
-
-namespace Ui {
-class PluginDialogBase;
-}
 
 namespace MusECore {
 class Plugin;
@@ -17,6 +15,17 @@ class Plugin;
 
 namespace MusEGui {
 
+//---------------------------------------------------------
+//   PluginItem
+//---------------------------------------------------------
+
+class PluginItem : public QTreeWidgetItem {
+      bool _hasUri;
+
+   public:
+      PluginItem(bool hasUri, QTreeWidget* parent = nullptr);
+      bool hasUri() const { return _hasUri; }
+      };
 
 
 class PluginDialog : public QDialog {
@@ -35,7 +44,7 @@ class PluginDialog : public QDialog {
 
    private slots:
       void enableOkB();
-      void pluginTypeSelectionChanged(QAbstractButton*);
+      void pluginTypeSelectionChanged(QAbstractButton* ab);
       void tabChanged(int);
       void tabMoved(int,int);
       void fillPlugs();
@@ -77,17 +86,6 @@ class PluginDialog : public QDialog {
 };
 
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 #endif // PLUGINDIALOGBASE_H

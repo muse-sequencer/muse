@@ -438,7 +438,7 @@ public:
     virtual Type synthType() const {
         return _isSynth ? LV2_SYNTH : LV2_EFFECT;
     }
-    LV2Synth ( const QFileInfo &fi, QString label, QString name, QString author, 
+    LV2Synth ( const QFileInfo &fi, const QString& uri, const QString& label, const QString& name, const QString& author, 
                const LilvPlugin *_plugin, PluginFeatures_t reqFeatures = PluginNoFeatures );
     virtual ~LV2Synth();
 

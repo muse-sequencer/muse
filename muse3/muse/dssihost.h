@@ -94,7 +94,7 @@ class DssiSynth : public Synth {
       bool _isDssiVst;
 
    public:
-      DssiSynth(QFileInfo&, const DSSI_Descriptor*, bool isDssiVst = false, 
+      DssiSynth(QFileInfo&, const QString& uri, const DSSI_Descriptor*, bool isDssiVst = false, 
                 PluginFeatures_t reqFeatures = PluginNoFeatures); // removed const for QFileInfo
       DssiSynth(const MusEPlugin::PluginScanInfoStruct& info);
       virtual ~DssiSynth();
@@ -200,6 +200,7 @@ class DssiSynthIF : public SynthIF
       int id();
       QString pluginLabel() const;  
       QString lib() const;            
+      QString uri() const;
       QString dirPath() const;
       QString fileName() const;
       void enableController(unsigned long i, bool v = true);      

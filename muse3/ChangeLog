@@ -1,3 +1,22 @@
+03.02.2020
+    - Fix issue 763: Plugin cache recreated on each startup. (Tim)
+      When there was more than one LV2 plugin with the same name (but different uri)
+       such as deteriorate.lv2/downsampler* and avw.lv2/downsampler*, the cache was
+       recreated every time, and only ONE of the plugins was allowed, the other ignored.
+      This MAJOR REWRITE of our cache and plugin system fixes that AND allows both
+       plugins, as long as the uris are different (this is allowed in LV2).
+      For example, both deteriorate.lv2/downsampler* and avw.lv2/downsampler* are now shown.
+      The LV2 cache file has been ELIMINATED. It was useless, not necessary, caused problems.
+      To distinguish between like-named plugins, several places where plugin names are shown
+       now also show the uri either as a tooltip, or appended to the name, or replacing the
+       library string, such as plugin dialog, synth menu, synth config, strip labels, tracklist...
+      In addition, there was a problem with dssi-vst which caused cache recreation every time,
+       since the dssi-vst library installs itself in BOTH the ldaspa and dssi folders. This has
+       been fixed. The ladspa cache file now contains additional ladspa and dssi dssi-vst entries.
+      TODO: There is a remaining problem: A shell plugin that reports no plugins may still
+       trigger cache recreation every time because there is no entry in the cache file. Such as
+       dssi-vst not finding any plugins. To fix this, the cache files must change from a 'flat'
+       listing to one ALWAYS listing the shell plugins - and the plugins they contain (if any).
 01.02.2020
     - Global cut/insert: Overhaul. Fix crashes with markers. (Tim)
       Cherry pick from pos_ctrls_fixes branch: Redesigned markers and marker viewer.

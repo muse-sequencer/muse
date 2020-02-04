@@ -599,6 +599,8 @@ const char* pluginCacheFilename(PluginScanInfoStruct::PluginType type)
       return "linux_vst_plugins.scan";
     break;
 
+    // SPECIAL for LV2: Obsolete. Cache file not used any more.
+    // Keep so we can delete old files.
     case PluginScanInfoStruct::PluginTypeLV2:
       return "lv2_plugins.scan";
     break;
@@ -755,11 +757,12 @@ bool readPluginCacheFiles(
       res = false;
   }
 
-  if(types & PluginScanInfoStruct::PluginTypeLV2)
-  {
-    if(!readPluginCacheFile(path, list, readPorts, readEnums, PluginScanInfoStruct::PluginTypeLV2))
-      res = false;
-  }
+  // SPECIAL for LV2: No need for a cache file. Do not read one here.
+  //if(types & PluginScanInfoStruct::PluginTypeLV2)
+  //{
+  //  if(!readPluginCacheFile(path, list, readPorts, readEnums, PluginScanInfoStruct::PluginTypeLV2))
+  //    res = false;
+  //}
 
   if(types & PluginScanInfoStruct::PluginTypeVST)
   {

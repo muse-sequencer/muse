@@ -62,6 +62,10 @@ class SynthIF;
 class Synth {
    protected:
       QFileInfo info;
+      // Universal resource identifier, for plugins that use it (LV2).
+      // If this exists, it should be used INSTEAD of file info, for comparison etc.
+      // Never rely on the file info if a uri exists.
+      QString _uri;
       int _instances;
       QString _name;
       QString _description;
@@ -72,7 +76,7 @@ class Synth {
    public:
       enum Type { METRO_SYNTH=0, MESS_SYNTH, DSSI_SYNTH, VST_SYNTH, VST_NATIVE_SYNTH, VST_NATIVE_EFFECT, LV2_SYNTH, LV2_EFFECT, SYNTH_TYPE_END };
 
-      Synth(const QFileInfo& fi, 
+      Synth(const QFileInfo& fi, const QString& uri,
             QString label, QString descr, QString maker, QString ver, 
             PluginFeatures_t reqFeatures = PluginNoFeatures);
 
@@ -82,6 +86,7 @@ class Synth {
       inline virtual PluginFeatures_t requiredFeatures() const { return _requiredFeatures; }
       inline int instances() const                            { return _instances; }
       inline virtual void incInstances(int val)               { _instances += val; }
+      inline QString uri() const                              { return _uri; }
       inline QString completeBaseName()                       { return info.completeBaseName(); } // ddskrjo
       inline QString baseName()                               { return info.baseName(); } // ddskrjo
       inline QString name() const                             { return _name; }
@@ -104,8 +109,8 @@ class MessSynth : public Synth {
       const MESS* _descr;
 
    public:
-      MessSynth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver) :
-               Synth(fi, label, descr, maker, ver) { _descr = 0; }
+      MessSynth(const QFileInfo& fi, QString uri, QString label, QString descr, QString maker, QString ver) :
+               Synth(fi, uri, label, descr, maker, ver) { _descr = 0; }
 
       virtual ~MessSynth() {}
       inline virtual Type synthType() const { return MESS_SYNTH; }
@@ -174,6 +179,7 @@ class SynthIF : public PluginIBase {
       virtual QString pluginLabel() const;
       virtual QString name() const;
       virtual QString lib() const;
+      virtual QString uri() const;
       virtual QString dirPath() const;
       virtual QString fileName() const;
       virtual QString titlePrefix() const;
@@ -221,6 +227,7 @@ struct SynthConfiguration
 {
   Synth::Type _type;
   QString _class;
+  QString _uri;
   QString _label;
   QRect _geometry;
   QRect _nativeGeometry;
@@ -303,6 +310,10 @@ class SynthI : public AudioTrack, public MidiDevice,
 
       void setName(const QString& s);
       inline QString name() const          { return AudioTrack::name(); }
+
+      inline QString uri() const           { return synthesizer ? synthesizer->uri() : QString(); }
+
+      inline const SynthConfiguration& initConfig() const { return _initConfig; }
 
       inline Synth* synth() const          { return synthesizer; }
       inline virtual bool isSynti() const  { return true; }
@@ -470,7 +481,9 @@ class SynthList : public std::vector<MusECore::Synth*>
 {
   public:
     SynthList() { }
-    Synth* find(const QString& fileCompleteBaseName, const QString& pluginName) const;
+    // Each argument optional, can be empty.
+    // If uri is not empty, the search is based solely on it, the other arguments are ignored.
+    Synth* find(const QString& fileCompleteBaseName, const QString& pluginUri, const QString& pluginName) const;
 };
 
 

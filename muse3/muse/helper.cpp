@@ -1287,6 +1287,7 @@ QMenu* populateAddSynth(QWidget* parent)
         if(!mmaps[itype])
         {  
           mmaps[itype] = new PopupMenu(parent);
+          mmaps[itype]->setToolTipsVisible(true);
           mmaps[itype]->setIcon(*synthIcon);
           mmaps[itype]->setTitle(MusECore::synthType2String((MusECore::Synth::Type)itype));
           synp->addMenu(mmaps[itype]);
@@ -1294,6 +1295,8 @@ QMenu* populateAddSynth(QWidget* parent)
         //QAction* act = mmaps[itype]->addAction(synth->description() + " <" + synth->name() + ">");
         QAction* act = mmaps[itype]->addAction(synth->description());
         act->setData( MENU_ADD_SYNTH_ID_BASE * (itype + 1) + idx );
+        if(!synth->uri().isEmpty())
+          act->setToolTip(synth->uri());
       }  
     }
   }

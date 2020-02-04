@@ -103,8 +103,7 @@ class RoutePopupMenu : public PopupMenu
     virtual bool routerChannelGroupingChanged(); 
 
     // For auto-breakup of a too-wide menu. Virtual.
-    virtual PopupMenu* cloneMenu(const QString& title, QWidget* parent = 0, bool /*stayOpen*/ = false)
-      { return new RoutePopupMenu(_route, title, parent, _isOutMenu, _broadcastChanges); }
+    virtual PopupMenu* cloneMenu(const QString& title, QWidget* parent = 0, bool /*stayOpen*/ = false, bool showTooltips = false);
 
   public:
     RoutePopupMenu(QWidget* parent = 0, bool isOutput = false, bool broadcastChanges = false);

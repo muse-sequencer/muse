@@ -27,6 +27,12 @@
 
 #include <QWidget>
 #include <QToolTip>
+#include <QTreeWidgetItem>
+#include <QTreeWidget>
+#include <QTableWidget>
+#include <QPoint>
+#include <QMenu>
+#include <QAction>
 
 #include "ui_synthconfigbase.h"
 #include "type_defs.h"
@@ -35,18 +41,29 @@
 // Make permanent later.
 #define _USE_EXTRA_INSTANCE_COLUMNS_
 
-class QTreeWidget;
-class QTableWidget;
-class QPoint;
-class QMenu;
-class QAction;
-
 namespace MusECore {
 class Xml;
 }
 
 namespace MusEGui {
 class PopupMenu;
+
+//---------------------------------------------------------
+//   SynthItem
+//---------------------------------------------------------
+
+class SynthItem : public QTreeWidgetItem {
+   private:
+     bool _hasUri;
+
+   public:
+     SynthItem(
+       bool hasUri,
+       QTreeWidget* parent = nullptr
+     );
+      
+     bool hasUri() const { return _hasUri; }
+};
 
 //---------------------------------------------------------
 //   MPConfig

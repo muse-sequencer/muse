@@ -279,6 +279,14 @@ void PopupMenu::closeUp()
   }
 }
 
+// For auto-breakup of a too-wide menu.
+PopupMenu* PopupMenu::cloneMenu(const QString& title, QWidget* parent, bool stayOpen, bool showTooltips)
+{
+  PopupMenu* m = new PopupMenu(title, parent, stayOpen);
+  m->setToolTipsVisible(showTooltips);
+  return m;
+}
+      
 #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
 void PopupMenu::timerHandler()
 {
@@ -416,7 +424,7 @@ PopupMenu* PopupMenu::getMenu()
    {
       // This menu is too wide. So make a new one...
       QString s(tr("<More...> %1").arg(_cur_menu_count));
-      _cur_menu = cloneMenu(s, this, _stayOpen);
+      _cur_menu = cloneMenu(s, this, _stayOpen, toolTipsVisible());
       ++_cur_menu_count;
       QMenu::addMenu(_cur_menu);
    }

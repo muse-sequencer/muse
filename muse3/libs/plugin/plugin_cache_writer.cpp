@@ -2610,6 +2610,14 @@ static void findLinuxVSTPluginFiles(filepath_set& /*fplist*/, bool /*debugStdErr
 }
 #endif // VST_NATIVE_SUPPORT
 
+
+// SPECIAL for LV2: No need for a cache file.
+// Do not find and compare LV2 library files here.
+// This caused problems with identically named plugins
+//  being excluded, and triggering rescans every time.
+// LV2 frowns upon using anything but the URI !
+#if 0
+
 //---------------------------------------------------------
 //   findLv2PluginFile
 //---------------------------------------------------------
@@ -2720,6 +2728,9 @@ static void findLv2PluginFiles(filepath_set& /*fplist*/, bool /*debugStdErr*/)
 }
 #endif
 
+#endif  // 0
+
+
 //---------------------------------------------------------
 //  findPluginFiles
 //---------------------------------------------------------
@@ -2753,11 +2764,16 @@ static void findPluginFiles(const QString& museGlobalLib,
     findLinuxVSTPluginFiles(fplist, debugStdErr);
   }
 
-  if(types & (PluginScanInfoStruct::PluginTypeLV2))
-  {
-    // Now do LV2 plugins...
-    findLv2PluginFiles(fplist, debugStdErr);
-  }
+  // SPECIAL for LV2: No need for a cache file.
+  // Do not find and compare LV2 library files here.
+  // This caused problems with identically named plugins
+  //  being excluded, and triggering rescans every time.
+  // LV2 frowns upon using anything but the URI !
+  //if(types & (PluginScanInfoStruct::PluginTypeLV2))
+  //{
+  //  // Now do LV2 plugins...
+  //  findLv2PluginFiles(fplist, debugStdErr);
+  //}
 }
 
 //---------------------------------------------------------
@@ -2772,7 +2788,7 @@ bool writePluginCacheFile(
   PluginScanInfoStruct::PluginType_t types)
 {
   bool res = false;
-  QString targ_filepath = scanOutPath + "/" + filename;
+  const QString targ_filepath = scanOutPath + "/" + filename;
 
   const QDir scanOutDir(scanOutPath);
   if(!scanOutDir.exists())
@@ -2799,7 +2815,7 @@ bool writePluginCacheFile(
       {
         PluginScanInfoRef inforef = *ips;
         const PluginScanInfoStruct& infos = inforef->info();
-        
+
         // Look only for the specified type(s).
         if(infos._type & types)
           writePluginScanInfo(level, xml, infos, writePorts);
@@ -2859,9 +2875,13 @@ bool createPluginCacheFiles(
     createPluginCacheFile(path, PluginScanInfoStruct::PluginTypeDSSI, list, writePorts,
       museGlobalLib, PluginScanInfoStruct::PluginTypeDSSI | PluginScanInfoStruct::PluginTypeDSSIVST, debugStdErr);
 
+  // NOTE: Because the dss-vst library installs itself in both the dssi AND ladspa folders,
+  //        we must include dssi-vst types in the search here.
+  //       The result is that the ladspa cache file will contain BOTH the ladspa folder dssi-vst file scan
+  //        and the dssi folder dss-vst file scan.
   if(types & PluginScanInfoStruct::PluginTypeLADSPA)
     createPluginCacheFile(path, PluginScanInfoStruct::PluginTypeLADSPA, list, writePorts,
-      museGlobalLib, PluginScanInfoStruct::PluginTypeLADSPA, debugStdErr);
+      museGlobalLib, PluginScanInfoStruct::PluginTypeLADSPA | PluginScanInfoStruct::PluginTypeDSSIVST, debugStdErr);
     
   if(types & PluginScanInfoStruct::PluginTypeLinuxVST)
     createPluginCacheFile(path, PluginScanInfoStruct::PluginTypeLinuxVST, list, writePorts,
@@ -2871,9 +2891,10 @@ bool createPluginCacheFiles(
     createPluginCacheFile(path, PluginScanInfoStruct::PluginTypeMESS, list, writePorts,
       museGlobalLib, PluginScanInfoStruct::PluginTypeMESS, debugStdErr);
     
-  if(types & PluginScanInfoStruct::PluginTypeLV2)
-    createPluginCacheFile(path, PluginScanInfoStruct::PluginTypeLV2, list, writePorts,
-      museGlobalLib, PluginScanInfoStruct::PluginTypeLV2, debugStdErr);
+  // SPECIAL for LV2: No need for a cache file. Do not create one here. Read directly into the list later.
+  //if(types & PluginScanInfoStruct::PluginTypeLV2)
+  //  createPluginCacheFile(path, PluginScanInfoStruct::PluginTypeLV2, list, writePorts,
+  //    museGlobalLib, PluginScanInfoStruct::PluginTypeLV2, debugStdErr);
     
   if(types & PluginScanInfoStruct::PluginTypeVST)
     createPluginCacheFile(path, PluginScanInfoStruct::PluginTypeVST, list, writePorts,
@@ -2980,6 +3001,22 @@ bool checkPluginCacheFiles(
     }
   }
 
+  // SPECIAL for LV2: Get rid of old cache file. Not used any more.
+  const QString targ_filepath = path + "/" + QString(pluginCacheFilename(PluginScanInfoStruct::PluginTypeLV2));
+  QFile targ_qfile(targ_filepath);
+  if(targ_qfile.exists())
+  {
+    std::fprintf(stderr, "Deleting obsolete LV2 plugin cache file:%s\n",
+                 targ_filepath.toLatin1().constData());
+    if(!targ_qfile.remove())
+      std::fprintf(stderr, "Error: Deleting obsolete LV2 plugin cache file failed!\n");
+  }
+  
+  // SPECIAL for LV2: No need for a cache file.
+  // Bring LV2 plugins directly into the list, after all the cache scanning and creation.
+  if(types & PluginScanInfoStruct::PluginTypeLV2)
+    scanLv2Plugins(list, writePorts, debugStdErr);
+  
   return res;
 }
 

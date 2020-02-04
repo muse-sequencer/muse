@@ -248,7 +248,8 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
       if (MusEGlobal::debugMsg)
         fprintf(stderr, "Song::addNewTrack synth: type:%d idx:%d class:%s label:%s\n", ntype, n, MusEGlobal::synthis[n]->baseName().toLatin1().constData(), MusEGlobal::synthis[n]->name().toLatin1().constData());  
         
-      SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->name(), (Synth::Type)ntype, insertAt);
+      SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->uri(),
+                                MusEGlobal::synthis[n]->name(), (Synth::Type)ntype, insertAt);
       if(!si)
         return 0;
       

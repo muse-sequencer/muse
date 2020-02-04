@@ -21,6 +21,20 @@ QRect PluginDialog::geometrySave = QRect();
 QByteArray PluginDialog::listSave = QByteArray();
 
 //---------------------------------------------------------
+//   PluginItem
+//---------------------------------------------------------
+
+PluginItem::PluginItem(
+      bool hasUri,
+      QTreeWidget* parent
+    )
+  :  QTreeWidgetItem(parent),
+      _hasUri(hasUri)
+{
+  
+}
+
+//---------------------------------------------------------
 //   PluginDialog
 //    select Plugin dialog
 //---------------------------------------------------------
@@ -280,9 +294,14 @@ void PluginDialog::renameGroup()
 
 MusECore::Plugin* PluginDialog::value()
 {
-      QTreeWidgetItem* item = ui.pList->currentItem();
+      PluginItem* item = static_cast<PluginItem*>(ui.pList->currentItem());
       if (item)
-        return MusEGlobal::plugins.find(item->text(1), item->text(2));
+      {
+        return MusEGlobal::plugins.find(
+          !item->hasUri() ? item->text(1) : QString(),
+          item->hasUri()  ? item->text(1) : QString(),
+          item->text(2));
+      }
       printf("plugin not found\n");
       return 0;
 }
@@ -454,9 +473,13 @@ void PluginDialog::fillPlugs()
                continue;
             }
 
-            QTreeWidgetItem* item = new QTreeWidgetItem;
+            PluginItem* item = new PluginItem(!(*i)->uri().isEmpty());
             item->setText(0,  type_name);
-            item->setText(1,  (*i)->lib());
+            if(!(*i)->uri().isEmpty())
+              item->setText(1,  (*i)->uri());
+            else
+              item->setText(1,  (*i)->lib());
+
             item->setText(2,  (*i)->label());
             item->setText(3,  (*i)->name());
             item->setText(4,  QString().setNum(ai));

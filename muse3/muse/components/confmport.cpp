@@ -29,13 +29,9 @@
 #include <iostream>
 #include <stdio.h>
 
-#include <QMenu>
-#include <QAction>
 #include <QActionGroup>
 #include <QMessageBox>
 #include <QPixmap>
-#include <QTableWidget>
-#include <QTableWidgetItem>
 #include <QHeaderView>
 #include <QSettings>
 
@@ -76,6 +72,20 @@ extern MusECore::SynthList synthis;
 }
 
 namespace MusEGui {
+
+//---------------------------------------------------------
+//   SynthItem
+//---------------------------------------------------------
+
+SynthItem::SynthItem(
+      bool hasUri,
+      QTreeWidget* parent
+    )
+  :  QTreeWidgetItem(parent),
+      _hasUri(hasUri)
+{
+  
+}
 
 //---------------------------------------------------------
 //   closeEvent
@@ -1481,8 +1491,12 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
       synthList->clear();
       for (std::vector<MusECore::Synth*>::iterator i = MusEGlobal::synthis.begin();
          i != MusEGlobal::synthis.end(); ++i) {
-            QTreeWidgetItem* item = new QTreeWidgetItem(synthList);
-            item->setText(0, QString((*i)->baseName()));
+            SynthItem* item = new SynthItem(!(*i)->uri().isEmpty(), synthList);
+            if((*i)->uri().isEmpty())
+              item->setText(0, QString((*i)->baseName()));
+            else
+              item->setText(0, QString((*i)->uri()));
+
             item->setText(1, MusECore::synthType2String((*i)->synthType()));
             s.setNum((*i)->instances());
             item->setText(2, s);
@@ -1619,13 +1633,15 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
 
 void MPConfig::addInstanceClicked()
       {
-      QTreeWidgetItem* item = synthList->currentItem();
+      SynthItem* item = static_cast<SynthItem*>(synthList->currentItem());
       if (item == 0)
             return;
       // Add at end of list.
-      MusECore::SynthI *si = MusEGlobal::song->createSynthI(item->text(0), 
-                                                            item->text(3), 
-                                                            MusECore::string2SynthType(item->text(1))); 
+      MusECore::SynthI *si = MusEGlobal::song->createSynthI(
+        !item->hasUri() ? item->text(0) : QString(), 
+        item->hasUri() ? item->text(0) : QString(), 
+        item->text(3), 
+        MusECore::string2SynthType(item->text(1))); 
       if(!si)
         return;
 

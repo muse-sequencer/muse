@@ -387,7 +387,7 @@ ElidedTextLabel::ElidedTextLabel(const QString& text,
   _off = false;
   _hovered = false;
   
-  setToolTip(_text);
+  setToolTip(_text + _tooltipText);
 }
 
 void ElidedTextLabel::keyPressEvent(QKeyEvent* e)
@@ -472,7 +472,15 @@ void ElidedTextLabel::setText(const QString& txt)
   if(_text == txt)
     return;
   _text = txt; 
-  setToolTip(_text);
+  setToolTip(_text + _tooltipText);
+}
+
+void ElidedTextLabel::setTooltipText(const QString& txt) 
+{ 
+  if(_tooltipText == txt)
+    return;
+  _tooltipText = txt; 
+  setToolTip(_text + _tooltipText);
 }
 
 void ElidedTextLabel::leaveEvent(QEvent *e)

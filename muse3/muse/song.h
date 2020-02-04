@@ -498,7 +498,8 @@ public:
       //   Configuration
       //-----------------------------------------
 
-      SynthI* createSynthI(const QString& sclass, const QString& label = QString(), Synth::Type type = Synth::SYNTH_TYPE_END, Track* insertAt = 0);
+      SynthI* createSynthI(const QString& sclass, const QString& uri, const QString& label = QString(),
+                           Synth::Type type = Synth::SYNTH_TYPE_END, Track* insertAt = 0);
       
       //-----------------------------------------
       //   Debug

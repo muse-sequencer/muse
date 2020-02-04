@@ -1006,6 +1006,13 @@ void Strip::setLabelText()
       if(!track)
         return;
       label->setText(track->name());
+      if(track->isSynthTrack())
+      {
+        MusECore::SynthI *s = static_cast<MusECore::SynthI*>(track);
+        if(!s->uri().isEmpty())
+          label->setTooltipText(QString(" \n") + s->uri());
+      }
+
       updateStyleSheet();
 }
 

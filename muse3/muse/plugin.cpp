@@ -704,7 +704,8 @@ bool PluginQuirks::read(Xml& xml)
 //   Plugin
 //---------------------------------------------------------
 
-Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDssiSynth, bool isDssiVst, PluginFeatures_t reqFeatures)
+Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, const QString& uri,
+               bool isDssi, bool isDssiSynth, bool isDssiVst, PluginFeatures_t reqFeatures)
 {
   _isDssi = isDssi;
   _isDssiSynth = isDssiSynth;
@@ -721,7 +722,10 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDss
   dssi_descr = NULL;
   #endif
 
-  fi = *f;
+  if(f)
+    fi = *f;
+  _uri = uri;
+
   plugin = NULL;
   ladspa = NULL;
   _handle = 0;
@@ -815,6 +819,8 @@ Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
 
 //   fi = info._fi;
   fi = QFileInfo(PLUGIN_GET_QSTRING(info.filePath()));
+  _uri = PLUGIN_GET_QSTRING(info._uri);
+
   plugin = NULL;
   ladspa = NULL;
   _handle = 0;
@@ -1099,11 +1105,14 @@ void initPlugins()
         if(MusEGlobal::loadPlugins)
         {
           // Make sure it doesn't already exist.
-          if(const Plugin* pl = MusEGlobal::plugins.find(PLUGIN_GET_QSTRING(info._completeBaseName),
-             PLUGIN_GET_QSTRING(info._label)))
+          if(const Plugin* pl = MusEGlobal::plugins.find(
+            PLUGIN_GET_QSTRING(info._completeBaseName),
+            PLUGIN_GET_QSTRING(info._uri),
+            PLUGIN_GET_QSTRING(info._label)))
           {
-            fprintf(stderr, "Ignoring LADSPA effect label:%s path:%s duplicate of path:%s\n",
+            fprintf(stderr, "Ignoring LADSPA effect label:%s uri:%s path:%s duplicate of path:%s\n",
                     PLUGIN_GET_CSTRING(info._label),
+                    PLUGIN_GET_CSTRING(info._uri),
                     PLUGIN_GET_CSTRING(info.filePath()),
                     pl->filePath().toLatin1().constData());
           }
@@ -1128,11 +1137,14 @@ void initPlugins()
              info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument)
           {
             // Make sure it doesn't already exist.
-            if(const Plugin* pl = MusEGlobal::plugins.find(PLUGIN_GET_QSTRING(info._completeBaseName),
-               PLUGIN_GET_QSTRING(info._label)))
+            if(const Plugin* pl = MusEGlobal::plugins.find(
+              PLUGIN_GET_QSTRING(info._completeBaseName),
+              PLUGIN_GET_QSTRING(info._uri),
+              PLUGIN_GET_QSTRING(info._label)))
             {
-              fprintf(stderr, "Ignoring DSSI effect label:%s path:%s duplicate of path:%s\n",
+              fprintf(stderr, "Ignoring DSSI effect label:%s uri:%s path:%s duplicate of path:%s\n",
                       PLUGIN_GET_CSTRING(info._label),
+                      PLUGIN_GET_CSTRING(info._uri),
                       PLUGIN_GET_CSTRING(info.filePath()),
                       pl->filePath().toLatin1().constData());
             }
@@ -1164,10 +1176,15 @@ void initPlugins()
 //   find
 //---------------------------------------------------------
 
-Plugin* PluginList::find(const QString& file, const QString& label) const
+Plugin* PluginList::find(const QString& file, const QString& uri, const QString& label) const
       {
+      const bool f_empty = file.isEmpty();
+      const bool u_empty = uri.isEmpty();
+      const bool l_empty = label.isEmpty();
       for (ciPlugin i = begin(); i != end(); ++i) {
-            if ((file == (*i)->lib()) && (label == (*i)->label()))
+            if ( (!u_empty || f_empty || file  == (*i)->lib()) &&
+                 (u_empty  || uri   == (*i)->uri()) &&
+                 (!u_empty || l_empty || label == (*i)->label()))
                   return *i;
             }
 
@@ -1462,6 +1479,19 @@ QString Pipeline::name(int idx) const
             return p->name();
       return QObject::tr("Empty");
       }
+
+//---------------------------------------------------------
+//   uri
+//---------------------------------------------------------
+
+QString Pipeline::uri(int idx) const
+      {
+      PluginI* p = (*this)[idx];
+      if (p)
+            return p->uri();
+      return QString();
+      }
+
 
 //---------------------------------------------------------
 //   empty
@@ -1787,7 +1817,7 @@ void PluginIBase::showGui()
 {
   if(_gui == 0)
     makeGui();
-  _gui->setWindowTitle(titlePrefix() + name());
+  _gui->updateWindowTitle();
   if(_gui->isVisible())
     _gui->hide();
   else
@@ -2601,8 +2631,19 @@ bool PluginI::setControl(const QString& s, double val)
 
 void PluginI::writeConfiguration(int level, Xml& xml)
       {
-      xml.tag(level++, "plugin file=\"%s\" label=\"%s\" channel=\"%d\"",
-         Xml::xmlString(_plugin->lib()).toLatin1().constData(), Xml::xmlString(_plugin->label()).toLatin1().constData(), channel);
+      if(_plugin->uri().isEmpty())
+      {
+        xml.tag(level++, "plugin file=\"%s\" label=\"%s\" channel=\"%d\"",
+           Xml::xmlString(_plugin->lib()).toLatin1().constData(),
+           Xml::xmlString(_plugin->label()).toLatin1().constData(), channel);
+      }
+      else
+      {
+        xml.tag(level++, "plugin uri=\"%s\" label=\"%s\" channel=\"%d\"",
+           Xml::xmlString(_plugin->uri()).toLatin1().constData(),
+           Xml::xmlString(_plugin->label()).toLatin1().constData(), channel);
+      }
+
 #ifdef LV2_SUPPORT
       if(_plugin != NULL && _plugin->isLV2Plugin())//save lv2 plugin state custom data before controls
       {
@@ -2720,6 +2761,7 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
       {
       QString file;
       QString label;
+      QString uri;
 
       //custom params in xml song file , synth tag, that will be passed to new PluginI:setCustomData(Xml &) method
       //now only lv2host uses them, others simply ignore
@@ -2737,15 +2779,17 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                         return true;
                   case Xml::TagStart:
                         if (!readPreset && _plugin == 0) {
-                              _plugin = MusEGlobal::plugins.find(file, label);
+                              _plugin = MusEGlobal::plugins.find(file, uri, label);
 
                               if (_plugin)
                               {
                                  if(initPluginInstance(_plugin, channel)) {
                                     _plugin = 0;
                                     xml.parse1();
-                                    printf("Error initializing plugin instance (%s, %s)\n",
-                                       file.toLatin1().constData(), label.toLatin1().constData());
+                                    printf("Error initializing plugin instance (%s, %s, %s)\n",
+                                       file.toLatin1().constData(),
+                                       uri.toLatin1().constData(),
+                                       label.toLatin1().constData());
                                     //break;      // Don't break - let it read any control tags.
                                     }
                                  }
@@ -2811,6 +2855,19 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                                     file = s;
                                     }
                               }
+                        else if (tag == "uri") {
+                              QString s = xml.s2();
+                              if (readPreset) {
+                                    if (s != plugin()->uri()) {
+                                          printf("Error: Wrong preset uri %s. Uri must be a %s\n",
+                                             s.toLatin1().constData(), plugin()->uri().toLatin1().constData());
+                                          return true;
+                                          }
+                                    }
+                              else {
+                                    uri = s;
+                                    }
+                              }
                         else if (tag == "label") {
                               if (!readPreset)
                                     label = xml.s2();
@@ -2823,20 +2880,24 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                   case Xml::TagEnd:
                         if (tag == "plugin") {
                               if (!readPreset && _plugin == 0) {
-                                    _plugin = MusEGlobal::plugins.find(file, label);
+                                    _plugin = MusEGlobal::plugins.find(file, uri, label);
                                     if (_plugin == 0)
                                     {
                                       QMessageBox::warning(0,"Plugin not found!",
                                                   "Plugin: " + label + " not found, if the project is saved it will be removed from the project");
-                                      printf("Warning: - Plugin not found (%s, %s)\n",
-                                         file.toLatin1().constData(), label.toLatin1().constData());
+                                      fprintf(stderr, "Warning: - Plugin not found (%s, %s, %s)\n",
+                                         file.toLatin1().constData(),
+                                         uri.toLatin1().constData(),
+                                         label.toLatin1().constData());
                                       return true;
                                     }
 
                                     if (initPluginInstance(_plugin, channel))
                                     {
-                                      printf("Error initializing plugin instance (%s, %s)\n",
-                                        file.toLatin1().constData(), label.toLatin1().constData());
+                                      fprintf(stderr, "Error initializing plugin instance (%s, %s, %s)\n",
+                                        file.toLatin1().constData(),
+                                        uri.toLatin1().constData(),
+                                        label.toLatin1().constData());
                                       return true;
                                     }
                               }
@@ -3512,7 +3573,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       params = 0;
       paramsOut = 0;
       plugin = p;
-      setWindowTitle(plugin->titlePrefix() + plugin->name());
+      updateWindowTitle();
       
       QToolBar* tools = addToolBar(tr("File Buttons"));
       tools->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
@@ -3940,6 +4001,13 @@ PluginGui::~PluginGui()
             delete[] paramsOut;
       }
 
+void PluginGui::updateWindowTitle()
+{
+  if(plugin)
+    setWindowTitle(plugin->titlePrefix() + plugin->name() +
+      (plugin->uri().isEmpty() ? QString() : QString(" : ") + plugin->uri()));
+}
+
 void PluginGui::hideEvent(QHideEvent *e)
 {
   if(plugin)
@@ -4338,7 +4406,7 @@ void PluginGui::save()
 
 void PluginGui::bypassToggled(bool val)
       {
-      setWindowTitle(plugin->titlePrefix() + plugin->name());
+      updateWindowTitle();
       plugin->setOn(!val);
       MusEGlobal::song->update(SC_ROUTE);
       }
@@ -4388,7 +4456,7 @@ void PluginGui::fixNativeUIScalingTBClicked()
 
 void PluginGui::setOn(bool val)
       {
-      setWindowTitle(plugin->titlePrefix() + plugin->name());
+      updateWindowTitle();
       onOff->blockSignals(true);
       onOff->setChecked(!val);
       onOff->blockSignals(false);

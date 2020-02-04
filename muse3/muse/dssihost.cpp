@@ -110,11 +110,14 @@ void initDSSI()
             info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument)
           {
             // Make sure it doesn't already exist.
-            if(const Synth* sy = MusEGlobal::synthis.find(PLUGIN_GET_QSTRING(info._completeBaseName),
+            if(const Synth* sy = MusEGlobal::synthis.find(
+               PLUGIN_GET_QSTRING(info._completeBaseName),
+               PLUGIN_GET_QSTRING(info._uri),
                PLUGIN_GET_QSTRING(info._label)))
             {
-              fprintf(stderr, "Ignoring DSSI synth label:%s path:%s duplicate of path:%s\n",
+              fprintf(stderr, "Ignoring DSSI synth label:%s uri:%s path:%s duplicate of path:%s\n",
                       PLUGIN_GET_CSTRING(info._label),
+                      PLUGIN_GET_CSTRING(info._uri),
                       PLUGIN_GET_CSTRING(info.filePath()),
                       sy->filePath().toLatin1().constData());
             }
@@ -150,8 +153,10 @@ void initDSSI()
 //   Synth.version =  nil (no such field in ladspa, maybe try copyright instead)
 //---------------------------------------------------------
 
-DssiSynth::DssiSynth(QFileInfo& fi, const DSSI_Descriptor* d, bool isDssiVst, PluginFeatures_t reqFeatures) : // ddskrjo removed const from QFileInfo
-  Synth(fi, QString(d->LADSPA_Plugin->Label), QString(d->LADSPA_Plugin->Name), QString(d->LADSPA_Plugin->Maker), QString(), reqFeatures) 
+DssiSynth::DssiSynth(QFileInfo& fi, const QString& uri, const DSSI_Descriptor* d,
+                     bool isDssiVst, PluginFeatures_t reqFeatures) : // ddskrjo removed const from QFileInfo
+  Synth(fi, uri, QString(d->LADSPA_Plugin->Label), QString(d->LADSPA_Plugin->Name),
+        QString(d->LADSPA_Plugin->Maker), QString(), reqFeatures) 
 {
   df = 0;
   handle = 0;
@@ -204,6 +209,7 @@ DssiSynth::DssiSynth(QFileInfo& fi, const DSSI_Descriptor* d, bool isDssiVst, Pl
 
 DssiSynth::DssiSynth(const MusEPlugin::PluginScanInfoStruct& info) 
  : Synth(PLUGIN_GET_QSTRING(info.filePath()),
+         PLUGIN_GET_QSTRING(info._uri),
          PLUGIN_GET_QSTRING(info._label),
          PLUGIN_GET_QSTRING(info._name),
          PLUGIN_GET_QSTRING(info._maker),
@@ -2406,6 +2412,7 @@ unsigned long DssiSynthIF::pluginID()                        { return (_synth &&
 int DssiSynthIF::id()                                        { return MusECore::MAX_PLUGINS; } // Set for special block reserved for dssi synth. p4.0.20
 QString DssiSynthIF::pluginLabel() const                     { return (_synth && _synth->dssi) ? QString(_synth->dssi->LADSPA_Plugin->Label) : QString(); }
 QString DssiSynthIF::lib() const                             { return _synth ? _synth->completeBaseName() : QString(); }
+QString DssiSynthIF::uri() const                             { return _synth ? _synth->uri() : QString(); }
 QString DssiSynthIF::dirPath() const                         { return _synth ? _synth->absolutePath() : QString(); }
 QString DssiSynthIF::fileName() const                        { return _synth ? _synth->fileName() : QString(); }
 void DssiSynthIF::enableController(unsigned long i, bool v)  { _controls[i].enCtrl = v; }

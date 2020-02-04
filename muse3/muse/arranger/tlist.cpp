@@ -203,7 +203,11 @@ bool TList::event(QEvent *event)
                    if (type == MusECore::Track::AUDIO_SOFTSYNTH) {
                      MusECore::SynthI *s = (MusECore::SynthI*)track;
                      QToolTip::showText(helpEvent->globalPos(),track->name() + QString(" : ") +
-                       (s->synth() ? s->synth()->description() : QString(tr("SYNTH IS UNAVAILABLE!"))));
+                       (s->synth() ? s->synth()->description() : QString(tr("SYNTH IS UNAVAILABLE!"))) +
+                       (s->synth() ? (s->synth()->uri().isEmpty() ? QString() :
+                         QString(" \n") + s->synth()->uri()) :
+                           (s->initConfig()._uri.isEmpty() ? QString() :
+                             QString(" \n") + s->initConfig()._uri)));
                    }
                    else
                       QToolTip::showText(helpEvent->globalPos(),track->name());

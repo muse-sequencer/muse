@@ -99,10 +99,15 @@ Synth::Type string2SynthType(const QString& type)
 //   find
 //---------------------------------------------------------
 
-Synth* SynthList::find(const QString& fileCompleteBaseName, const QString& pluginName) const
+Synth* SynthList::find(const QString& fileCompleteBaseName, const QString& pluginUri, const QString& pluginName) const
       {
+      const bool f_empty = fileCompleteBaseName.isEmpty();
+      const bool u_empty = pluginUri.isEmpty();
+      const bool l_empty = pluginName.isEmpty();
       for (ciSynthList i = begin(); i != end(); ++i) {
-            if ((fileCompleteBaseName == (*i)->completeBaseName()) && (pluginName == (*i)->name()))
+            if ((!u_empty || f_empty || fileCompleteBaseName == (*i)->completeBaseName()) &&
+                (u_empty || pluginUri  == (*i)->uri()) &&
+                (!u_empty || l_empty || pluginName == (*i)->name()))
                   return *i;
             }
 
@@ -158,6 +163,7 @@ inline int SynthIF::id()                                        { return MusECor
 inline QString SynthIF::pluginLabel() const                     { return QString(); }
 inline QString SynthIF::name() const                            { return synti->name(); }
 inline QString SynthIF::lib() const                             { return QString(); }
+inline QString SynthIF::uri() const                             { return synti->uri(); }
 inline QString SynthIF::dirPath() const                         { return QString(); }
 inline QString SynthIF::fileName() const                        { return QString(); }
 inline QString SynthIF::titlePrefix() const                     { return QString(); }
@@ -258,19 +264,26 @@ void MessSynthIF::setNativeGeometry(int x, int y, int w, int h)
 //---------------------------------------------------------
 //   findSynth
 //    search for synthesizer base class
+//   Each argument optional, can be empty.
+//   If uri is not empty, the search is based solely on it,
+//    the other arguments are ignored.
 //---------------------------------------------------------
 
-static Synth* findSynth(const QString& sclass, const QString& label, Synth::Type type = Synth::SYNTH_TYPE_END)
+static Synth* findSynth(const QString& sclass, const QString& uri,
+                        const QString& label, Synth::Type type = Synth::SYNTH_TYPE_END)
       {
       for (std::vector<Synth*>::iterator i = MusEGlobal::synthis.begin();
          i != MusEGlobal::synthis.end(); ++i)
          {
-            if( ((*i)->baseName() == sclass) &&
-                (label.isEmpty() || ((*i)->name() == label)) &&
-                (type == Synth::SYNTH_TYPE_END || type == (*i)->synthType() || (type == Synth::LV2_SYNTH && (*i)->synthType() == Synth::LV2_EFFECT)) )
+            if( (!uri.isEmpty() || sclass.isEmpty() || (*i)->baseName() == sclass) &&
+                (uri.isEmpty()  || ((*i)->uri() == uri)) &&
+                (!uri.isEmpty() || label.isEmpty()  || ((*i)->name() == label)) &&
+                (type == Synth::SYNTH_TYPE_END || type == (*i)->synthType() ||
+                 (type == Synth::LV2_SYNTH && (*i)->synthType() == Synth::LV2_EFFECT)) )
               return *i;
          }
-      fprintf(stderr, "synthi type:%d class:%s label:%s not found\n", type, sclass.toLatin1().constData(), label.toLatin1().constData());
+      fprintf(stderr, "synthi type:%d class:%s uri:%s label:%s not found\n",
+              type, sclass.toLatin1().constData(), uri.toLatin1().constData(), label.toLatin1().constData());
       QMessageBox::warning(0,"Synth not found!",
                   "Synth: " + label + " not found. Settings are preserved if the project is saved.");
       return 0;
@@ -281,9 +294,11 @@ static Synth* findSynth(const QString& sclass, const QString& label, Synth::Type
 //    create a synthesizer instance of class "label"
 //---------------------------------------------------------
 
-static SynthI* createSynthInstance(const QString& sclass, const QString& label, Synth::Type type = Synth::SYNTH_TYPE_END)
+static SynthI* createSynthInstance(
+  const QString& sclass, const QString& uri,
+  const QString& label, Synth::Type type = Synth::SYNTH_TYPE_END)
       {
-      Synth* s = findSynth(sclass, label, type);
+      Synth* s = findSynth(sclass, uri, label, type);
       SynthI* si = 0;
       if (s) {
             si = new SynthI();
@@ -300,7 +315,8 @@ static SynthI* createSynthInstance(const QString& sclass, const QString& label, 
                }
             }
       else {
-            fprintf(stderr, "createSynthInstance: synthi class:%s label:%s not found\n", sclass.toLatin1().constData(), label.toLatin1().constData());
+            fprintf(stderr, "createSynthInstance: synthi class:%s uri:%s label:%s not found\n",
+                    sclass.toLatin1().constData(), uri.toLatin1().constData(), label.toLatin1().constData());
             QMessageBox::warning(0,"Synth not found!",
                         "Synth: " + label + " not found, if the project is saved it will be removed from the project");
       }
@@ -312,8 +328,10 @@ static SynthI* createSynthInstance(const QString& sclass, const QString& label, 
 //   Synth
 //---------------------------------------------------------
 
-Synth::Synth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver, PluginFeatures_t reqFeatures)
-   : info(fi), _name(label), _description(descr), _maker(maker), _version(ver), _requiredFeatures(reqFeatures)
+Synth::Synth(const QFileInfo& fi, const QString& uri, QString label, QString descr,
+             QString maker, QString ver, PluginFeatures_t reqFeatures)
+   : info(fi), _uri(uri), _name(label), _description(descr),
+     _maker(maker), _version(ver), _requiredFeatures(reqFeatures)
       {
       _instances = 0;
       }
@@ -905,12 +923,16 @@ void initMidiSynth()
       {
         if(MusEGlobal::loadMESS)
         {
+          const QString uri = PLUGIN_GET_QSTRING(info._uri);
           // Make sure it doesn't already exist.
-          if(const Synth* sy = MusEGlobal::synthis.find(PLUGIN_GET_QSTRING(info._completeBaseName),
+          if(const Synth* sy = MusEGlobal::synthis.find(
+              PLUGIN_GET_QSTRING(info._completeBaseName),
+              uri,
               PLUGIN_GET_QSTRING(info._name)))
           {
-            fprintf(stderr, "Ignoring MESS synth name:%s path:%s duplicate of path:%s\n",
+            fprintf(stderr, "Ignoring MESS synth name:%s uri:%s path:%s duplicate of path:%s\n",
                     PLUGIN_GET_CSTRING(info._name),
+                    PLUGIN_GET_CSTRING(info._uri),
                     PLUGIN_GET_CSTRING(info.filePath()),
                     sy->filePath().toLatin1().constData());
           }
@@ -918,6 +940,7 @@ void initMidiSynth()
           {
             MusEGlobal::synthis.push_back(
               new MessSynth(PLUGIN_GET_QSTRING(info.filePath()),
+                            uri,
                             PLUGIN_GET_QSTRING(info._name),
                             PLUGIN_GET_QSTRING(info._description),
                             QString(""),
@@ -949,9 +972,10 @@ void initMidiSynth()
 //    If insertAt is valid, inserts before insertAt. Else at the end after all tracks.
 //---------------------------------------------------------
 
-SynthI* Song::createSynthI(const QString& sclass, const QString& label, Synth::Type type, Track* insertAt)
+SynthI* Song::createSynthI(const QString& sclass, const QString& uri,
+                           const QString& label, Synth::Type type, Track* insertAt)
       {
-      SynthI* si = createSynthInstance(sclass, label, type);
+      SynthI* si = createSynthInstance(sclass, uri, label, type);
       if(!si)
         return 0;
 
@@ -981,8 +1005,16 @@ void SynthI::write(int level, Xml& xml) const
       xml.strTag(level, "synthType",
         synthType2String(synth() ? synth()->synthType() : _initConfig._type));
 
-      xml.strTag(level, "class",
-        synth() ? synth()->baseName() : _initConfig._class);
+      const QString uri = synth() ? synth()->uri() : _initConfig._uri;
+      if(uri.isEmpty())
+      {
+        xml.strTag(level, "class",
+          synth() ? synth()->baseName() : _initConfig._class);
+      }
+      else
+      {
+        xml.strTag(level, "uri", uri);
+      }
 
       // To support plugins like dssi-vst where all the baseNames are the same 'dssi-vst' and the label is the name of the dll file.
       xml.strTag(level, "label",
@@ -1130,6 +1162,8 @@ void SynthI::read(Xml& xml)
                               _initConfig._type = string2SynthType(xml.parse1());
                         else if (tag == "class")
                               _initConfig._class = xml.parse1();
+                        else if (tag == "uri")
+                              _initConfig._uri = xml.parse1();
                         else if (tag == "label")
                               _initConfig._label  = xml.parse1();
                         else if (tag == "openFlags")
@@ -1175,7 +1209,10 @@ void SynthI::read(Xml& xml)
                                  (_initConfig._label.isEmpty() || _initConfig._label == QString("FluidSynth")) )
                                 _initConfig._class = QString("fluid_synth");
 
-                              Synth* s = findSynth(_initConfig._class, _initConfig._label, _initConfig._type);
+                              Synth* s = findSynth(
+                                _initConfig._class,
+                                _initConfig._uri,
+                                _initConfig._label, _initConfig._type);
 
                               // Persistent storage: If synth is not found allow the track to load.
                               // It's OK if s is NULL. initInstance needs to do a few things.

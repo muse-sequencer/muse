@@ -264,9 +264,11 @@ void EffectRack::updateContents()
       if(!pipe)
         return;
       for (int i = 0; i < MusECore::PipelineDepth; ++i) {
-            QString name = pipe->name(i);
+            const QString name = pipe->name(i);
+            const QString uri = pipe->uri(i);
             item(i)->setText(name);
-            item(i)->setToolTip(pipe->empty(i) ? tr("Effect rack") : name );
+            const QString ttname = name + (uri.isEmpty() ? QString() : QString(" \n") + uri);
+            item(i)->setToolTip(pipe->empty(i) ? tr("Effect rack") : ttname );
             //item(i)->setBackground(track->efxPipe()->isOn(i) ? activeColor : palette().dark());
             if(viewport())
             {
@@ -838,7 +840,7 @@ void EffectRack::initPlugin(MusECore::Xml xml, int idx)
                                   MusEGlobal::audio->msgAddPlugin(track, idx, plugi);
                                   MusEGlobal::song->update(SC_RACK);
                                   if (plugi->guiVisible())
-                                    plugi->gui()->setWindowTitle(plugi->titlePrefix() + plugi->name());
+                                    plugi->gui()->updateWindowTitle();
                                   return;
                                   }
                               }

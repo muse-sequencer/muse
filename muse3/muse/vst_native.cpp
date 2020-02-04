@@ -333,20 +333,29 @@ void initVST_Native()
         {
           const QString inf_cbname = PLUGIN_GET_QSTRING(info._completeBaseName);
           const QString inf_name   = PLUGIN_GET_QSTRING(info._name);
-          const Plugin* plug_found = MusEGlobal::plugins.find(inf_cbname, inf_name);
-          const Synth* synth_found = MusEGlobal::synthis.find(inf_cbname, inf_name);
+          const QString inf_uri    = PLUGIN_GET_QSTRING(info._uri);
+          const Plugin* plug_found = MusEGlobal::plugins.find(
+            inf_cbname,
+            inf_uri,
+            inf_name);
+          const Synth* synth_found = MusEGlobal::synthis.find(
+            inf_cbname,
+            inf_uri,
+            inf_name);
           
           if(plug_found)
           {
-            fprintf(stderr, "Ignoring LinuxVST effect name:%s path:%s duplicate of path:%s\n",
+            fprintf(stderr, "Ignoring LinuxVST effect name:%s uri:%s path:%s duplicate of path:%s\n",
                     PLUGIN_GET_CSTRING(info._name),
+                    PLUGIN_GET_CSTRING(info._uri),
                     PLUGIN_GET_CSTRING(info.filePath()),
                     plug_found->filePath().toLatin1().constData());
           }
           if(synth_found)
           {
-            fprintf(stderr, "Ignoring LinuxVST synth name:%s path:%s duplicate of path:%s\n",
+            fprintf(stderr, "Ignoring LinuxVST synth name:%s uri:%s path:%s duplicate of path:%s\n",
                     PLUGIN_GET_CSTRING(info._name),
+                    PLUGIN_GET_CSTRING(info._uri),
                     PLUGIN_GET_CSTRING(info.filePath()),
                     synth_found->filePath().toLatin1().constData());
           }
@@ -411,10 +420,10 @@ void initVST_Native()
 //   VstNativeSynth
 //---------------------------------------------------------
 
-VstNativeSynth::VstNativeSynth(const QFileInfo& fi, AEffect* plugin, 
+VstNativeSynth::VstNativeSynth(const QFileInfo& fi, const QString& uri, AEffect* plugin, 
                                const QString& label, const QString& desc, const QString& maker, const QString& ver, 
                                VstIntPtr id, void *dlHandle, bool isSynth, PluginFeatures_t reqFeatures)
-  : Synth(fi, label, desc, maker, ver, reqFeatures)
+  : Synth(fi, uri, label, desc, maker, ver, reqFeatures)
 {
   _handle = dlHandle;
   _id = id;
@@ -462,6 +471,7 @@ VstNativeSynth::VstNativeSynth(const QFileInfo& fi, AEffect* plugin,
 
 VstNativeSynth::VstNativeSynth(const MusEPlugin::PluginScanInfoStruct& info)
   : Synth(PLUGIN_GET_QSTRING(info.filePath()),
+          PLUGIN_GET_QSTRING(info._uri),
           PLUGIN_GET_QSTRING(info._label),
           PLUGIN_GET_QSTRING(info._description),
           PLUGIN_GET_QSTRING(info._maker),
@@ -3001,6 +3011,7 @@ unsigned long VstNativeSynthIF::pluginID()                        { return (_plu
 int VstNativeSynthIF::id()                                        { return MusECore::MAX_PLUGINS; } // Set for special block reserved for synth. 
 QString VstNativeSynthIF::pluginLabel() const                     { return _synth ? QString(_synth->name()) : QString(); } // FIXME Maybe wrong
 QString VstNativeSynthIF::lib() const                             { return _synth ? _synth->completeBaseName() : QString(); }
+QString VstNativeSynthIF::uri() const                             { return _synth ? _synth->uri() : QString(); }
 QString VstNativeSynthIF::dirPath() const                         { return _synth ? _synth->absolutePath() : QString(); }
 QString VstNativeSynthIF::fileName() const                        { return _synth ? _synth->fileName() : QString(); }
 void VstNativeSynthIF::enableController(unsigned long i, bool v)  { _controls[i].enCtrl = v; }
@@ -3144,6 +3155,7 @@ VstNativePluginWrapper::VstNativePluginWrapper(VstNativeSynth *s, PluginFeatures
 #endif
 
    fi = _synth->info;
+   _uri = _synth->uri();
    ladspa = NULL;
    _handle = 0;
    _references = 0;

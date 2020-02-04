@@ -33,13 +33,21 @@ namespace MusEPlugin {
 //---------------------------------------------------------
 
 PluginScanInfoRef PluginScanList::find(const PluginInfoString_t& file,
+                                       const PluginInfoString_t& uri,
                                        const PluginInfoString_t& label,
                                        PluginScanInfoStruct::PluginType_t types) const
 {
+  const bool f_empty = file.isEmpty();
+  const bool u_empty = uri.isEmpty();
+  const bool l_empty = label.isEmpty();
   for(ciPluginScanList i = begin(); i != end(); ++i)
   {
     const PluginScanInfoRef& ref = *i;
-    if((ref->info()._type & types) && (file == ref->info()._completeBaseName) && (label == ref->info()._label))
+    if((ref->info()._type & types) &&
+       //(!u_empty || f_empty || file == ref->info()._completeBaseName) &&
+       (!u_empty || f_empty || file == ref->info().filePath()) &&
+       (u_empty  || uri   == ref->info()._uri) &&
+       (!u_empty || l_empty || label == ref->info()._label))
       return ref;
   }
   //fprintf(stderr, "Plugin <%s> not found\n", name.toLatin1().constData());
@@ -48,11 +56,18 @@ PluginScanInfoRef PluginScanList::find(const PluginInfoString_t& file,
 
 PluginScanInfoRef PluginScanList::find(const PluginScanInfoStruct& info) const
 {
+  //const bool f_empty = info._completeBaseName.isEmpty();
+  const bool f_empty = info.filePath().isEmpty();
+  const bool u_empty = info._uri.isEmpty();
+  const bool l_empty = info._label.isEmpty();
   for(ciPluginScanList i = begin(); i != end(); ++i)
   {
     const PluginScanInfoRef& ref = *i;
-    if((info._type == ref->info()._type) && (info._completeBaseName == ref->info()._completeBaseName) &&
-          (info._label == ref->info()._label))
+    if((info._type == ref->info()._type) && 
+       //(!u_empty || f_empty || info._completeBaseName == ref->info()._completeBaseName) &&
+       (!u_empty || f_empty || info.filePath() == ref->info().filePath()) &&
+       (u_empty  || info._uri == ref->info()._uri) &&
+       (!u_empty || l_empty || info._label == ref->info()._label))
           return ref;
   }
   //fprintf(stderr, "Plugin <%s> not found\n", name.toLatin1().constData());

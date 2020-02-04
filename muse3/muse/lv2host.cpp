@@ -354,20 +354,29 @@ void initLV2()
             {
                 const QString inf_cbname = PLUGIN_GET_QSTRING(info._completeBaseName);
                 const QString inf_name   = PLUGIN_GET_QSTRING(info._name);
-                const Plugin* plug_found = MusEGlobal::plugins.find(inf_cbname, inf_name);
-                const Synth* synth_found = MusEGlobal::synthis.find(inf_cbname, inf_name);
+                const QString inf_uri    = PLUGIN_GET_QSTRING(info._uri);
+                const Plugin* plug_found = MusEGlobal::plugins.find(
+                  inf_cbname,
+                  inf_uri,
+                  inf_name);
+                const Synth* synth_found = MusEGlobal::synthis.find(
+                  inf_cbname,
+                  inf_uri,
+                  inf_name);
 
                 if(plug_found)
                 {
-                    fprintf(stderr, "Ignoring LV2 effect name:%s path:%s duplicate of path:%s\n",
+                    fprintf(stderr, "Ignoring LV2 effect name:%s uri:%s path:%s duplicate of path:%s\n",
                             PLUGIN_GET_CSTRING(info._name),
+                            PLUGIN_GET_CSTRING(info._uri),
                             PLUGIN_GET_CSTRING(info.filePath()),
                             plug_found->filePath().toLatin1().constData());
                 }
                 if(synth_found)
                 {
-                    fprintf(stderr, "Ignoring LV2 synth name:%s path:%s duplicate of path:%s\n",
+                    fprintf(stderr, "Ignoring LV2 synth name:%s uri:%s path:%s duplicate of path:%s\n",
                             PLUGIN_GET_CSTRING(info._name),
+                            PLUGIN_GET_CSTRING(info._uri),
                             PLUGIN_GET_CSTRING(info.filePath()),
                             synth_found->filePath().toLatin1().constData());
                 }
@@ -436,6 +445,7 @@ void initLV2()
 
                         LV2Synth *new_synth = new LV2Synth(
                             PLUGIN_GET_QSTRING(info.filePath()),
+                            inf_uri,
                             name,
                             name,
                             author,
@@ -2626,8 +2636,9 @@ void LV2SynthIF::lv2midnam_Changed(LV2_Midnam_Handle handle)
 }
 #endif
 
-LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString author, const LilvPlugin *_plugin, PluginFeatures_t reqFeatures)
-    : Synth(fi, label, name, author, QString(""), reqFeatures),
+LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label, const QString& name, const QString& author,
+                   const LilvPlugin *_plugin, PluginFeatures_t reqFeatures)
+    : Synth(fi, uri, label, name, author, QString(""), reqFeatures),
       _handle(_plugin),
       _features(NULL),
       _ppfeatures(NULL),
@@ -5464,6 +5475,7 @@ LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, PluginFeatures_t reqFeatures)
 #endif
 
     fi = _synth->info;
+    _uri = _synth->uri();
     ladspa = NULL;
     _handle = 0;
     _references = 0;

@@ -132,7 +132,7 @@ class VstNativeSynth : public Synth {
       bool _hasChunks;
 
    public:
-      VstNativeSynth(const QFileInfo& fi, AEffect* plugin,
+      VstNativeSynth(const QFileInfo& fi, const QString& uri, AEffect* plugin,
                      const QString& label, const QString& desc, const QString& maker, const QString& ver,
                      VstIntPtr id, void *dlHandle, bool isSynth, PluginFeatures_t reqFeatures = PluginNoFeatures);
       VstNativeSynth(const MusEPlugin::PluginScanInfoStruct& info);
@@ -254,6 +254,7 @@ class VstNativeSynthIF : public SynthIF
       int id();
       QString pluginLabel() const;
       QString lib() const;
+      QString uri() const;
       QString dirPath() const;
       QString fileName() const;
       void enableController(unsigned long i, bool v = true);

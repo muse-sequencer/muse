@@ -88,8 +88,7 @@ Q_OBJECT
     virtual void closeUp();
     
     // For auto-breakup of a too-wide menu. Virtual.
-    virtual PopupMenu* cloneMenu(const QString& title, QWidget* parent = 0, bool stayOpen = false)
-      { return new PopupMenu(title, parent, stayOpen); }
+    virtual PopupMenu* cloneMenu(const QString& title, QWidget* parent = 0, bool stayOpen = false, bool showTooltips = false);
 
   public: signals:
     void aboutToShowContextMenu(PopupMenu* menu, QAction* menuAction, QMenu* ctxMenu);

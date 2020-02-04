@@ -61,7 +61,8 @@ static MetronomeSynth* metronomeSynth = 0;
 
 class MetronomeSynth : public Synth {
    public:
-      MetronomeSynth(const QFileInfo& fi) : Synth(fi, QString("Metronome"), QString("Metronome"), QString(), QString()) {}
+      MetronomeSynth(const QFileInfo& fi, const QString& uri) : 
+        Synth(fi, uri, QString("Metronome"), QString("Metronome"), QString(), QString()) {}
       virtual ~MetronomeSynth() {}
       inline virtual Type synthType() const { return METRO_SYNTH; }
       inline virtual void incInstances(int) {}
@@ -781,7 +782,7 @@ bool MetronomeSynthI::isLatencyOutputTerminalMidi(bool capture)
 void initMetronome()
       {
       QFileInfo fi;
-      metronomeSynth = new MetronomeSynth(fi);
+      metronomeSynth = new MetronomeSynth(fi, QString());
       metronome = new MetronomeSynthI();
       
       QString name("metronome");

@@ -2423,6 +2423,13 @@ bool RoutePopupMenu::routerChannelGroupingChanged()
   return changed;
 }
 
+PopupMenu* RoutePopupMenu::cloneMenu(const QString& title, QWidget* parent, bool /*stayOpen*/, bool showTooltips)
+{
+  PopupMenu* m = new RoutePopupMenu(_route, title, parent, _isOutMenu, _broadcastChanges);
+  m->setToolTipsVisible(showTooltips);
+  return m;
+}
+
 void RoutePopupMenu::updateRouteMenus()    
 {
   // NOTE: The purpose of this routine is to make sure the items actually reflect

@@ -46,11 +46,14 @@ class PluginScanList : public std::list<PluginScanInfoRef>
   public:
     PluginScanList() {}
 
-    // Returns false if attempting to add a duplicate plugin (regardless of location).
     bool add(PluginScanInfo* info);
+    // Each argument optional, can be empty.
+    // If uri is not empty, the search is based solely on it, the other arguments are ignored.
     PluginScanInfoRef find(const PluginInfoString_t& file,
+                           const PluginInfoString_t& uri,
                            const PluginInfoString_t& label,
                            PluginScanInfoStruct::PluginType_t types = PluginScanInfoStruct::PluginTypeAll) const;
+    // If uri is not empty, the search is based solely on it, the other info members are ignored.
     PluginScanInfoRef find(const PluginScanInfoStruct& info) const;
 };
 typedef PluginScanList::iterator iPluginScanList;

@@ -149,6 +149,7 @@ class ElidedTextLabel : public QFrame
     Qt::TextElideMode _elideMode;
     Qt::Alignment _alignment;
     QString _text;
+    QString _tooltipText;
     // Whether the mouse is over the entire control.
     bool _hovered;
 
@@ -201,6 +202,10 @@ class ElidedTextLabel : public QFrame
 
     QString text() const { return _text; }
     void setText(const QString& txt);
+
+    // This tooltip text is appened to the normal text, to form a compound tooltip.
+    QString tooltipText() const { return _tooltipText; }
+    void setTooltipText(const QString& txt);
 };
 
 } // namespace MusEGui
