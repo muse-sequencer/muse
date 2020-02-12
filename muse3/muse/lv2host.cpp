@@ -3924,7 +3924,7 @@ bool LV2SynthIF::getNoteSampleName(
 }
 #else
 bool LV2SynthIF::getNoteSampleName(
-  bool drum, int channel, int patch, int note, QString* name) const
+  bool /*drum*/, int /*channel*/, int /*patch*/, int /*note*/, QString* /*name*/) const
 {
   return false;
 }
