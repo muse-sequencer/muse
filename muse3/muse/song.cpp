@@ -216,7 +216,7 @@ void Song::setSig(const MusECore::TimeSignature& sig)
 //---------------------------------------------------------
 //    addNewTrack
 //    Called from GUI context
-//    If insertAt is valid, inserts before insertAt. Else at the end after all tracks.
+//    If insertAt is valid, inserts after insertAt. Else at the end after all tracks.
 //    Besides normal track types, n includes synth menu ids from populateAddTrack()
 //---------------------------------------------------------
 
@@ -304,7 +304,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
 //    addTrack
 //    called from GUI context
 //    type is track type
-//    If insertAt is valid, inserts before insertAt. Else at the end after all tracks.
+//    If insertAt is valid, inserts after insertAt. Else at the end after all tracks.
 //---------------------------------------------------------
 
 Track* Song::addTrack(Track::TrackType type, Track* insertAt)
@@ -362,9 +362,14 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
             }
       track->setDefaultName();
       
+      // make sure we insert after the selected track or at the end
       int idx = insertAt ? _tracks.index(insertAt) : -1;
-      
-      // Add default track <-> midiport routes. 
+
+      if (idx != -1 && int(_tracks.size()) > idx) {
+         idx++;
+      }
+
+      // Add default track <-> midiport routes.
       if(track->isMidiTrack()) 
       {
         MidiTrack* mt = (MidiTrack*)track;

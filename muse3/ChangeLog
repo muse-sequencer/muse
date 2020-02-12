@@ -1,3 +1,6 @@
+12.02.2020
+    - Changed addTrack shortcut to insert after selected track, inserting before
+      felt strange and made it impossible to insert tracks at the end (rj)
 11.02.2020
     - Some more work on MidiName support: Completed FULL parser and C++ bindings. (Tim)
 04.02.2020

@@ -7,7 +7,7 @@ MusE is a MIDI/Audio sequencer with recording and editing capabilities written o
 MusE aims to be a complete multitrack virtual studio for Linux.
 It is published under the GNU General Public License. 
 
-Visit the MusE web site at: http://www.muse-sequencer.org
+Visit the MusE web site at: https://muse-sequencer.github.io/
 
 Most Linux distributions include MusE ready to install, check your package manager.
 
