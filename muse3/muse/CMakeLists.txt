@@ -358,7 +358,7 @@ if(LV2_SUPPORT)
       endif(HAVE_GTK2)
 
       target_link_libraries(lv2host_module ${QT_LIBRARIES})
-      
+      target_link_libraries(lv2host_module midnam_module)
       target_link_libraries(core lv2host_module)
 endif(LV2_SUPPORT)
 
