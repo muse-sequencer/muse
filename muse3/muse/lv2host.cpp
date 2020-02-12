@@ -3898,6 +3898,37 @@ int LV2SynthIF::getControllerInfo(int id, QString* name, int *ctrl, int *min, in
 
 }
 
+#ifdef MIDNAM_SUPPORT
+bool LV2SynthIF::getNoteSampleName(
+  bool /*drum*/, int /*channel*/, int /*patch*/, int /*note*/, QString* name) const
+{
+  if(!name)
+    return false;
+  
+// TODO Get MidNam note name...
+  
+//   const char* str;
+//   // Returns true if a note name list was found.
+//   // str is NULL if no note was found.
+//   // drum = Want percussion names, not melodic.
+//   if(_mess->getNoteSampleName(drum, channel, patch, note, &str))
+//   {
+//     // str could be null.
+//     *name = QString(str);
+//     // A note name list was found.
+//     return true;
+//   }
+
+  // No note name list was found.
+  return false;
+}
+#else
+bool LV2SynthIF::getNoteSampleName(
+  bool drum, int channel, int patch, int note, QString* name) const
+{
+  return false;
+}
+#endif
 
 
 bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long frame)

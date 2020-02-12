@@ -161,9 +161,12 @@ class SynthIF : public PluginIBase {
       virtual double getParameter(unsigned long idx) const = 0;
       virtual void setParameter(unsigned long idx, double value) = 0;
       virtual int getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval) = 0;      
+      // Returns true if a note name list is found for the given patch.
+      // If true, name either contains the note name, or is blank if no note name was found.
       // drum = Want percussion names, not melodic.
-      virtual QString getNoteSampleName(bool /*drum*/, int /*channel*/, 
-                                     int /*patch*/, int /*note*/) const { return QString(); }
+      virtual bool getNoteSampleName(
+        bool /*drum*/, int /*channel*/, 
+        int /*patch*/, int /*note*/, QString* /*name*/) const { return false; }
 
       //-------------------------
       // Methods for PluginIBase:
@@ -467,9 +470,11 @@ class MessSynthIF : public SynthIF {
       inline virtual double getParameter(unsigned long) const { return 0.0; }
       virtual void setParameter(unsigned long, double) {}
       virtual int getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval);
+      // Returns true if a note name list is found for the given patch.
+      // If true, name either contains the note name, or is blank if no note name was found.
       // drum = Want percussion names, not melodic.
-      virtual QString getNoteSampleName(bool drum, int channel, int patch, int note) const;
-
+      virtual bool getNoteSampleName(
+        bool drum, int channel, int patch, int note, QString* name) const;
       };
 
 typedef std::vector<MusECore::Synth*>::iterator iSynthList;

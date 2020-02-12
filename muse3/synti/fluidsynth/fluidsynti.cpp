@@ -699,7 +699,8 @@ static void loadSf2NoteSampleNames(FluidSoundFont& font, IpatchSF2 *sf2)
 
   // Iterate over presets in list
   for (pset = ipatch_item_first (&pIter); pset != NULL; pset = ipatch_item_next (&pIter))
-  { // Get name of preset, MIDI bank, and MIDI program number
+  {
+    // Get name of preset, MIDI bank, and MIDI program number
     g_object_get (pset,
                   "name", &psetName,
                   "bank", &bank,
@@ -709,20 +710,29 @@ static void loadSf2NoteSampleNames(FluidSoundFont& font, IpatchSF2 *sf2)
 
     //fprintf(stderr, "psetName:%s bank:%d program:%d\n", psetName, bank, program);
 
+    // Get preset zones
+    pZones = ipatch_container_get_children (IPATCH_CONTAINER (pset), IPATCH_TYPE_SF2_ZONE);
+    
+    // No preset zone? Then we have no note name list for this preset.
+    if(!pZones)
+    {
+      g_free (psetName);
+      continue;
+    }
+
     // Compose a patch numer. Drums are on special bank 128.
     patch = (bank << 16) | (0xff << 8) | (program & 0x7f);
     PatchNoteSampleNameListResult_t res_pnsnl = 
       font._noteSampleNameList.insert(PatchNoteSampleNameInsertPair_t(patch, NoteSampleNameList()));
     iPatchNoteSampleNameList_t res_ipnsnl = res_pnsnl.first;
     NoteSampleNameList& nsl = res_ipnsnl->second;
-
-    // Get preset zones
-    pZones = ipatch_container_get_children (IPATCH_CONTAINER (pset), IPATCH_TYPE_SF2_ZONE);
+    
     ipatch_list_init_iter (pZones, &pZoneIter);
 
     // Iterate over preset zones
     for (pZone = ipatch_item_first (&pZoneIter); pZone != NULL; pZone = ipatch_item_next (&pZoneIter))
-    { // Get linked instrument and preset zone note range set flag
+    { 
+      // Get linked instrument and preset zone note range set flag
       g_object_get (pZone,
                     "link-item", &inst,
                     "note-range-set", &pRangeSet,
@@ -737,6 +747,15 @@ static void loadSf2NoteSampleNames(FluidSoundFont& font, IpatchSF2 *sf2)
 
       // Get instrument zones
       iZones = ipatch_container_get_children (IPATCH_CONTAINER (inst), IPATCH_TYPE_SF2_ZONE);
+
+      // No instrument zones? Then we have an empty note name list for this preset.
+      if(!iZones)
+      {
+        g_free (instName);
+        g_object_unref (inst);
+        continue;
+      }
+
       ipatch_list_init_iter (iZones, &iZoneIter);
 
       for (iZone = ipatch_item_first (&iZoneIter); iZone != NULL; iZone = ipatch_item_next (&iZoneIter))
@@ -1277,12 +1296,24 @@ bool FluidSynth::getNoteSampleName(bool drum, int channel, int patch, int note, 
     if(fsf.intid == fc.font_intid) // || fsf.extid == fc.font_extid)
     {
       ciPatchNoteSampleNameList_t ipnsnl = fsf._noteSampleNameList.find(patch);
-      if(ipnsnl != fsf._noteSampleNameList.end())
+      if(ipnsnl == fsf._noteSampleNameList.end())
+      {
+        // The soundfont has no note name list for that patch.
+        return false;
+      }
+      else
       {
         const NoteSampleNameList& pnsnl = ipnsnl->second;
         ciNoteSampleNameList_t insnl = pnsnl.find(note);
-        if(insnl != pnsnl.end())
+        if(insnl == pnsnl.end())
         {
+          // The soundfont has a note name list, but no name was found for that note.
+          *name = NULL;
+          return true;
+        }
+        else
+        {
+          // The soundfont has a note name list, and a name was found for that note.
           const std::string& str = insnl->second;
           *name = str.c_str();
           return true;

@@ -410,7 +410,8 @@ class MidiInstrument {
       // Returns a map item with members filled from either the original or working map item,
       //  depending on which Field flags are set. The returned map includes any requested
       //  WorkingDrumMapEntry::OverrideType instrument overrides. Channel can be -1 meaning default.
-      virtual void getMapItem(int channel, int patch, int index, DrumMap& dest_map, int overrideType = WorkingDrumMapEntry::AllOverrides) const;
+      virtual void getMapItem(int channel, int patch, int index, DrumMap& dest_map,
+                              int overrideType = WorkingDrumMapEntry::AllOverrides) const;
 
       EventList* midiInit() const            { return _midiInit; }
       EventList* midiReset() const           { return _midiReset; }
