@@ -627,6 +627,7 @@ include_directories(
    ${PROJECT_SOURCE_DIR}
    ${PROJECT_SOURCE_DIR}/libs/evdata
    ${PROJECT_SOURCE_DIR}/libs/memory
+   ${PROJECT_SOURCE_DIR}/libs/midnam
    ${PROJECT_SOURCE_DIR}/libs/mpevent
    ${PROJECT_SOURCE_DIR}/libs/plugin
    ${PROJECT_SOURCE_DIR}/libs/string

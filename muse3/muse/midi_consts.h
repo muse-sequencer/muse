@@ -47,7 +47,8 @@ enum {
       ME_START       = 0xfa,
       ME_CONTINUE    = 0xfb,
       ME_STOP        = 0xfc,
-      ME_SENSE       = 0xfe
+      ME_SENSE       = 0xfe,
+      ME_RESET       = 0xff
       };
 
 //--------------------------------------      

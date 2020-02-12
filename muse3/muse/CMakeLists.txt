@@ -284,6 +284,7 @@ target_link_libraries(core
       master
       memory_module
       midiedit
+      midnam_module
       mixer
       mpevent_module
       mplugins

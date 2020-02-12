@@ -32,8 +32,6 @@
 #include <QByteArray>
 #include <QByteArrayList>
 #include <QStringList>
-#include <QListIterator>
-#include <QStringListIterator>
 #include <sys/stat.h>
 
 #include <map>

@@ -1,3 +1,5 @@
+11.02.2020
+    - Some more work on MidiName support: Completed FULL parser and C++ bindings. (Tim)
 04.02.2020
     - Master track graphic editor: Fixed tempo ramp function was not undoable. (Tim)
     - Referring to 30.11.2019: "Fixed crash in drumlist when synth plugin was missing."

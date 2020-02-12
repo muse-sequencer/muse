@@ -78,6 +78,7 @@
 #include "lv2extprg.h"
 #ifdef MIDNAM_SUPPORT
 #include "midnam_lv2.h"
+#include "midnam.h"
 #endif
 
 #include <cstring>
@@ -771,6 +772,7 @@ struct LV2PluginWrapper_State {
 #ifdef MIDNAM_SUPPORT
     LV2_Midnam_Interface *midnamIface;
     LV2_Midnam midnamUpdate;
+    MidNamMIDIName midnamDocument;
 #endif
     unsigned char uiChannel;
     int uiBank;

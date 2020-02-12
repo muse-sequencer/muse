@@ -2094,13 +2094,10 @@ void LV2Synth::lv2midnam_updateMidnam(LV2PluginWrapper_State *state)
     char *pModel = state->midnamIface->model(lilv_instance_get_handle(state->handle));
     char *pMidnam = state->midnamIface->midnam(lilv_instance_get_handle(state->handle));
 
-    // REMOVE Tim. lv2. Added. Diagnostics.
-//   fprintf(stderr, "LV2 plugin midnam model: %s\n", pModel);
-//   fprintf(stderr, "LV2 plugin midnam XML:\n%s\n", pMidnam);
-
-    // TODO WIP: Parse the XML and do things with it...
-
-
+    // Wrap an xml around the text.
+    Xml xml(pMidnam);
+    // Read the xml into our midnam container.
+    state->midnamDocument.read(xml);
 
     state->midnamIface->free(pModel);
     state->midnamIface->free(pMidnam);

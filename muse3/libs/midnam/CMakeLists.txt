@@ -49,7 +49,8 @@ set_target_properties( midnam_module
 
 target_link_libraries(midnam_module
       xml_module
-      # ${QT_LIBRARIES}
+      mpevent_module
+      ${QT_LIBRARIES}
       )
 
 ##

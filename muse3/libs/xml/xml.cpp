@@ -354,13 +354,52 @@ Xml::Token Xml::parse()
                   next();
                   return Proc;
                   }
-            else if (c == '!') {    // process comment
+            else if (c == '!') {    // process comment or declaration
+                  bool check_start = true;
+                  bool startc = false;
+                  bool startc_2 = false;
                   bool endc = false;
+                  bool endc_2 = false;
                   for(;;) {
                         next();
-                        if (c == '>' && endc)
+                        if(c == '-')
+                        {
+                          if (check_start)
+                          {
+                            if(startc)
+                            {
+                              startc_2 = true;
+                              check_start = false;
+                            }
+                            else
+                            {
+                              startc = true;
+                            }
+                            continue;
+                          }
+                          // Check for end -- only if start -- was found.
+                          else if(startc_2)
+                          {
+                            if(endc)
+                              endc_2 = true;
+                            else
+                              endc = true;
+                            continue;
+                          }
+                        }
+                        else
+                        {
+                          if (check_start)
+                          {
+                            check_start = false;
+                            // It's a declaration, such as 'DOCTYPE' reference to dtd...
+                          }
+                          // It's not a '-' character so that destroys the start of any comment end sequence.
+                          endc = endc_2 = false;
+                        }
+                        // Check for '>' if declaration (no start --) or comment (start and end -- found).
+                        if (c == '>' && (!startc_2 || endc_2))
                               break;
-                        endc = c == '-';
                         if (c == EOF) {
                               fprintf(stderr, "XML: unexpected EOF in comment\n");
                               goto error;
