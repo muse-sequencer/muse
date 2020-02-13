@@ -394,16 +394,16 @@ Xml::Token Xml::parse()
                             check_start = false;
                             // It's a declaration, such as 'DOCTYPE' reference to dtd...
                           }
+                          // Check for '>' if declaration (no start --) or comment (start and end -- found).
+                          if (c == '>' && (!startc_2 || endc_2))
+                                break;
+                          if (c == EOF) {
+                                fprintf(stderr, "XML: unexpected EOF in comment\n");
+                                goto error;
+                                }
                           // It's not a '-' character so that destroys the start of any comment end sequence.
                           endc = endc_2 = false;
                         }
-                        // Check for '>' if declaration (no start --) or comment (start and end -- found).
-                        if (c == '>' && (!startc_2 || endc_2))
-                              break;
-                        if (c == EOF) {
-                              fprintf(stderr, "XML: unexpected EOF in comment\n");
-                              goto error;
-                              }
                         }
                   goto again;
                   }

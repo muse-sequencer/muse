@@ -152,7 +152,8 @@ class Mess {
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const {return 0;}
       virtual const char* getPatchName(int, int, bool) const { return "?"; }
       virtual const MidiPatch* getPatchInfo(int, const MidiPatch*) const { return 0; }
-      // True if it found a name.
+      // Returns true if a note name list is found for the given patch.
+      // If true, name either contains the note name, or is NULL if no note name was found.
       virtual bool getNoteSampleName(bool /*drum*/, int /*channel*/, 
                                      int /*patch*/, int /*note*/, 
                                      const char** /*name*/) const { return false; }

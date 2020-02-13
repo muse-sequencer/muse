@@ -569,6 +569,11 @@ public:
     virtual double getParameterOut ( unsigned long n ) const;
     virtual void setParameter ( unsigned long idx, double value );
     virtual int getControllerInfo ( int id, QString* name, int *ctrl, int *min, int *max, int *initval );
+    // Returns true if a note name list is found for the given patch.
+    // If true, name either contains the note name, or is blank if no note name was found.
+    // drum = Want percussion names, not melodic.
+    virtual bool getNoteSampleName(
+      bool drum, int channel, int patch, int note, QString* name) const;
 
     virtual void writeConfiguration ( int level, Xml &xml );
     virtual bool readConfiguration ( Xml &xml, bool readPreset=false );

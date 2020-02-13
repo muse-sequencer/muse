@@ -592,11 +592,12 @@ void SynthI::getMapItem(int channel, int patch, int index, DrumMap& dest_map, in
 #endif
 ) const
 {
+  bool has_note_name_list = false;
   QString note_name;
   if(_sif)
   {
     // true = Want percussion names, not melodic.
-    note_name = _sif->getNoteSampleName(true, channel, patch, index);
+    has_note_name_list = _sif->getNoteSampleName(true, channel, patch, index, &note_name);
   }
 
   // Not found? Search the global mapping list.
@@ -615,7 +616,8 @@ void SynthI::getMapItem(int channel, int patch, int index, DrumMap& dest_map, in
       if(ipdm != def_pdml->end())
       {
         dest_map = (*ipdm).drummap[index];
-        if(!note_name.isEmpty())
+        if(has_note_name_list)
+          // It has a note name list. The note name can be blank meaning no note found.
           dest_map.name = note_name;
         return;
       }
@@ -623,7 +625,8 @@ void SynthI::getMapItem(int channel, int patch, int index, DrumMap& dest_map, in
   }
 
   dest_map = iNewDrumMap[index];
-  if(!note_name.isEmpty())
+  if(has_note_name_list)
+    // It has a note name list. The note name can be blank meaning no note found.
     dest_map.name = note_name;
 }
 
@@ -811,14 +814,26 @@ int MessSynthIF::getControllerInfo(int id, QString* name, int* ctrl, int* min, i
       return ret;
       }
 
-QString MessSynthIF::getNoteSampleName(
-  bool drum, int channel, int patch, int note) const
+bool MessSynthIF::getNoteSampleName(
+  bool drum, int channel, int patch, int note, QString* name) const
 {
+  if(!name)
+    return false;
+
   const char* str;
+  // Returns true if a note name list was found.
+  // str is NULL if no note was found.
   // drum = Want percussion names, not melodic.
   if(_mess->getNoteSampleName(drum, channel, patch, note, &str))
-    return QString(str);
-  return QString();
+  {
+    // str could be null.
+    *name = QString(str);
+    // A note name list was found.
+    return true;
+  }
+
+  // No note name list was found.
+  return false;
 }
 
 //---------------------------------------------------------

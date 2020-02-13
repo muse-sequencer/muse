@@ -5,6 +5,11 @@
 12.02.2020
     - Changed addTrack shortcut to insert after selected track, inserting before
       felt strange and made it impossible to insert tracks at the end (rj)
+    - Drum list note names: Fixed mixing of default names with synth note names. (Tim)
+      When there was no note name available from a synth for a note, it was allowing
+       the default note name to appear instead. This is fixed and the note name
+       will be blank now, that is, drum list should now fully respect the complete
+       note name map provided by the synth - including unlisted blank names.
 11.02.2020
     - Some more work on MidiName support: Completed FULL parser and C++ bindings. (Tim)
 04.02.2020

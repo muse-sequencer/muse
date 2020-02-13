@@ -162,7 +162,8 @@ public:
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const;
       virtual bool processEvent(const MusECore::MidiPlayEvent&);
       #ifdef HAVE_INSTPATCH
-      // True if it found a name.
+      // Returns true if a note name list is found for the given patch.
+      // If true, name either contains the note name, or is NULL if no note name was found.
       virtual bool getNoteSampleName(bool drum, int channel, int patch, int note, const char** name) const;
       #endif
 

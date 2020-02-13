@@ -204,10 +204,14 @@ class MidNamNoteNameList
     MidNamNoteNameList* _p_ref;
     bool _isReference;
 
+    bool _hasNoteNameList;
+
   public:
-    MidNamNoteNameList() : _p_ref(nullptr), _isReference(false) { }
+    MidNamNoteNameList() : _p_ref(nullptr), _isReference(false), _hasNoteNameList(false) { }
     MidNamNoteNameList(const QString& name) :
-      _name(name), _p_ref(nullptr), _isReference(false) { }
+      _name(name), _p_ref(nullptr), _isReference(false), _hasNoteNameList(false) { }
+    bool hasNoteNameList() const { return _hasNoteNameList; }
+    // Outside of these classes, always use this method to get the real list.
     MidNamNoteNameList* objectOrRef() { return (_isReference && _p_ref) ? _p_ref : this; }
     void setObjectOrRef(MidNamNoteNameList* l) { _p_ref = l; }
     void resetObjectOrRef() { _p_ref = nullptr; }
@@ -720,7 +724,9 @@ class MidNamMasterDeviceNames
     MidNamManufacturer& manufacturer() { return _manufacturer; }
     MidiNamModelList& modelList() { return _modelList; }
     MidNamDevice& device() { return _device; }
-    MidNamDeviceModeList& deviceModeList() { return _deviceModeList; }
+// REMOVE Tim. midnam. Changed.
+//     MidNamDeviceModeList& deviceModeList() { return _deviceModeList; }
+    const MidNamDeviceModeList* deviceModeList() const { return &_deviceModeList; }
     MidiNamChannelNameSetList& channelNameSetList() { return _channelNameSetList; }
     MidNamNameList& nameList() { return _nameList; }
     void write(int level, MusECore::Xml& xml) const;
@@ -808,6 +814,9 @@ class MidNamMIDINameDocument
     MidNamDeviceModeList& standardDeviceModeList() { return _standardDeviceModeList; }
     void write(int level, MusECore::Xml& xml) const;
     bool read(MusECore::Xml& xml);
+
+    bool getNoteSampleName(
+      bool drum, int channel, int patch, int note, QString* name) const;
 };
 
 class MidNamMIDIName
