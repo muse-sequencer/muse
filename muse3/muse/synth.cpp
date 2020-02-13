@@ -938,7 +938,7 @@ void initMidiSynth()
 //---------------------------------------------------------
 //   createSynthI
 //    create a synthesizer instance of class "label"
-//    If insertAt is valid, inserts after insertAt. Else at the end after all tracks.
+//    If insertAt is valid, inserts before insertAt. Else at the end after all tracks.
 //---------------------------------------------------------
 
 SynthI* Song::createSynthI(const QString& sclass, const QString& uri,
@@ -948,14 +948,7 @@ SynthI* Song::createSynthI(const QString& sclass, const QString& uri,
       if(!si)
         return 0;
 
-      // make sure we insert after the selected track or at the end
       int idx = insertAt ? _tracks.index(insertAt) : -1;
-
-      if (idx != -1 && int(_tracks.size()) > idx) {
-         idx++;
-      }
-
-
 
       OutputList* ol = MusEGlobal::song->outputs();
       // Add an omnibus default route to master (first audio output)

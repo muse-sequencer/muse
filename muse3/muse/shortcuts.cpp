@@ -111,14 +111,23 @@ void initShortCuts()
       defShrt(SHRT_OPEN_GRAPHIC_MASTER,   Qt::CTRL + Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Open graphical mastertrack editor"), ARRANG_SHRT, "open_graph_master");
       defShrt(SHRT_OPEN_LIST_MASTER,      Qt::CTRL + Qt::SHIFT + Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Open list mastertrack editor"), ARRANG_SHRT, "open_list_master");
       defShrt(SHRT_OPEN_MIDI_TRANSFORM,   Qt::CTRL + Qt::Key_T, QT_TRANSLATE_NOOP("shortcuts", "Open midi transformer"), ARRANG_SHRT, "open_midi_transform");
+
       defShrt(SHRT_ADD_MIDI_TRACK,        Qt::CTRL + Qt::Key_J, QT_TRANSLATE_NOOP("shortcuts", "Add midi track"), ARRANG_SHRT, "add_midi_track");
       defShrt(SHRT_ADD_DRUM_TRACK,        0, QT_TRANSLATE_NOOP("shortcuts", "Add drum track"), ARRANG_SHRT, "add_drum_track");
-      defShrt(SHRT_ADD_NEW_STYLE_DRUM_TRACK,        0, QT_TRANSLATE_NOOP("shortcuts", "Add new style drum track"), ARRANG_SHRT, "add_new_style_drum_track");
       defShrt(SHRT_ADD_WAVE_TRACK,        Qt::CTRL + Qt::Key_K, QT_TRANSLATE_NOOP("shortcuts", "Add wave track"), ARRANG_SHRT, "add_wave_track");
       defShrt(SHRT_ADD_AUDIO_OUTPUT,      0, QT_TRANSLATE_NOOP("shortcuts", "Add audio output"), ARRANG_SHRT, "add_audio_output");
       defShrt(SHRT_ADD_AUDIO_GROUP,       0, QT_TRANSLATE_NOOP("shortcuts", "Add audio group"), ARRANG_SHRT, "add_audio_group");
       defShrt(SHRT_ADD_AUDIO_INPUT,       0, QT_TRANSLATE_NOOP("shortcuts", "Add audio input"), ARRANG_SHRT, "add_audio_input");
       defShrt(SHRT_ADD_AUDIO_AUX  ,       0, QT_TRANSLATE_NOOP("shortcuts", "Add audio aux"), ARRANG_SHRT, "add_audio_aux");
+
+      defShrt(SHRT_INSERT_MIDI_TRACK,        0, QT_TRANSLATE_NOOP("shortcuts", "Insert midi track"), ARRANG_SHRT, "insert_midi_track");
+      defShrt(SHRT_INSERT_DRUM_TRACK,        0, QT_TRANSLATE_NOOP("shortcuts", "Insert drum track"), ARRANG_SHRT, "insert_drum_track");
+      defShrt(SHRT_INSERT_WAVE_TRACK,        0, QT_TRANSLATE_NOOP("shortcuts", "Insert wave track"), ARRANG_SHRT, "insert_wave_track");
+      defShrt(SHRT_INSERT_AUDIO_OUTPUT,      0, QT_TRANSLATE_NOOP("shortcuts", "Insert audio output"), ARRANG_SHRT, "insert_audio_output");
+      defShrt(SHRT_INSERT_AUDIO_GROUP,       0, QT_TRANSLATE_NOOP("shortcuts", "Insert audio group"), ARRANG_SHRT, "insert_audio_group");
+      defShrt(SHRT_INSERT_AUDIO_INPUT,       0, QT_TRANSLATE_NOOP("shortcuts", "Insert audio input"), ARRANG_SHRT, "insert_audio_input");
+      defShrt(SHRT_INSERT_AUDIO_AUX  ,       0, QT_TRANSLATE_NOOP("shortcuts", "Insert audio aux"), ARRANG_SHRT, "insert_audio_aux");
+
       defShrt(SHRT_GLOBAL_CUT,            0, QT_TRANSLATE_NOOP("shortcuts", "Structure: Global cut"), ARRANG_SHRT, "global_cut");
       defShrt(SHRT_GLOBAL_INSERT,         0, QT_TRANSLATE_NOOP("shortcuts", "Structure: Global insert"), ARRANG_SHRT, "global_insert");
       defShrt(SHRT_GLOBAL_SPLIT,          0, QT_TRANSLATE_NOOP("shortcuts", "Structure: Global split"), ARRANG_SHRT,  "global_split");

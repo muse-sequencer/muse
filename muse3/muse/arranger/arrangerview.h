@@ -88,12 +88,15 @@ class ArrangerView : public TopWin
 		// Edit Menu actions
 		QMenu* select;
 		QMenu* addTrack;
+    QMenu* insertTrack;
 
 		QAction *strGlobalCutAction, *strGlobalInsertAction, *strGlobalSplitAction;
     QAction *strGlobalCutSelAction, *strGlobalInsertSelAction, *strGlobalSplitSelAction;
-    QAction *trackMidiAction, *trackDrumAction,
-    *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
+    QAction *trackAMidiAction, *trackADrumAction, *trackAWaveAction, *trackAOutputAction, *trackAGroupAction;
 		QAction *trackAInputAction, *trackAAuxAction;
+    QAction *trackIMidiAction, *trackIDrumAction, *trackIWaveAction, *trackIOutputAction, *trackIGroupAction;
+    QAction *trackIInputAction, *trackIAuxAction;
+
 		QAction *editDeleteAction,*editCutAction, *editCopyAction, *editCopyRangeAction;
 		QAction *editPasteAction, *editPasteCloneAction, *editPasteToTrackAction, *editPasteCloneToTrackAction, *editPasteDialogAction;
 		QAction *editInsertEMAction, *editPasteC2TAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
@@ -122,6 +125,7 @@ class ArrangerView : public TopWin
         void globalSplitSel();
         void cmd(int);
         void addNewTrack(QAction* action);
+        void insertNewTrack(QAction* action);
         void configCustomColumns();
 
 	signals:

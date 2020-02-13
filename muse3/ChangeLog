@@ -1,3 +1,7 @@
+13.02.2020:
+    - Reverted previous addTrack change, it affected Insert menu which then behaved wrong. (rj) 
+      * Changed Add Track alternative in edit menu to have this effect instead
+      * Added Insert Track to edit menu also, together with shortcuts
 12.02.2020
     - Changed addTrack shortcut to insert after selected track, inserting before
       felt strange and made it impossible to insert tracks at the end (rj)

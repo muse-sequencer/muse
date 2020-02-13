@@ -188,13 +188,23 @@ enum {
       SHRT_MIXER_AUTOMATION_CLEAR, //Default: undefined
 
       SHRT_ADD_MIDI_TRACK, //Default: Ctrl+J
-      SHRT_ADD_DRUM_TRACK, //Default: undefined
+      SHRT_ADD_DRUM_TRACK, //Default: Ctrl+k
       SHRT_ADD_NEW_STYLE_DRUM_TRACK, //Default: undefined
       SHRT_ADD_WAVE_TRACK, //Default: undefined
       SHRT_ADD_AUDIO_OUTPUT, //Default: undefined
       SHRT_ADD_AUDIO_GROUP, //Default: undefined
       SHRT_ADD_AUDIO_INPUT, //Default: undefined
       SHRT_ADD_AUDIO_AUX, //Default: undefined
+
+      SHRT_INSERT_MIDI_TRACK, //Default: undefined
+      SHRT_INSERT_DRUM_TRACK, //Default: undefined
+      SHRT_INSERT_NEW_STYLE_DRUM_TRACK, //Default: undefined
+      SHRT_INSERT_WAVE_TRACK, //Default: undefined
+      SHRT_INSERT_AUDIO_OUTPUT, //Default: undefined
+      SHRT_INSERT_AUDIO_GROUP, //Default: undefined
+      SHRT_INSERT_AUDIO_INPUT, //Default: undefined
+      SHRT_INSERT_AUDIO_AUX, //Default: undefined
+
       SHRT_RESET_MIDI, //Ctrl+Alt+Z
 
       SHRT_OPEN_HELP, //F1
