@@ -132,14 +132,16 @@ void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif, MusECore::VstNativeP
 
   vstPlug->dispatcher(vstPlug, effEditOpen, 0, value, ptr, 0.0f);
 
+  const MusECore::PluginQuirks& quirks = _sif ? _sif->cquirks() : _pstate->pluginI->cquirks();
+
   if(vstPlug->dispatcher(vstPlug, effEditGetRect, 0, 0, &pRect, 0.0f))
   {
           int w = pRect->right - pRect->left;
           int h = pRect->bottom - pRect->top;
           if (w > 0 && h > 0)
           {
-              if ((_sif->cquirks()._fixNativeUIScaling == MusECore::PluginQuirks::NatUISCaling::GLOBAL && MusEGlobal::config.noPluginScaling)
-                   || _sif->cquirks()._fixNativeUIScaling == MusECore::PluginQuirks::NatUISCaling::ON) {
+              if ((quirks._fixNativeUIScaling == MusECore::PluginQuirks::NatUISCaling::GLOBAL && MusEGlobal::config.noPluginScaling)
+                   || quirks._fixNativeUIScaling == MusECore::PluginQuirks::NatUISCaling::ON) {
 
                   w = qRound((qreal)w / qApp->devicePixelRatio());
                   h = qRound((qreal)h / qApp->devicePixelRatio());

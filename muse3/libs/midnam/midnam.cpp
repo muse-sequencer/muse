@@ -2159,6 +2159,9 @@ bool MidNamNoteNameList::read(MusECore::Xml& xml)
                     if (tag == "NoteNameList")
                     {
                       _isReference = false;
+                      // This is an actual note name list,
+                      //  regardless if it is empty.
+                      _hasNoteNameList = true;
                       return true;
                     }
                     else if (tag == "UsesNoteNameList")
@@ -3716,6 +3719,38 @@ bool MidNamMIDINameDocument::resolveReferences()
   gatherReferences(&refs);
   return refs.resolveReferences();
 }
+
+bool MidNamMIDINameDocument::getNoteSampleName(
+  bool /*drum*/, int /*channel*/, int /*patch*/, int /*note*/, QString* /*name*/) const
+{
+//   if(name->isEmpty())
+//     return false;
+// 
+//   // Which of the three exclusively possible device lists is dominant (has stuff in it)?
+//   if(!_masterDeviceNamesList.empty())
+//   {
+//     // We currently can only deal with one list.
+//     const MidNamMasterDeviceNames& mdn = _masterDeviceNamesList.front();
+//     if(!mdn.deviceModeList()->empty())
+//     {
+//       // We currently can only deal with one list.
+//       const MidNamDeviceMode& dm = *mdn.deviceModeList()->begin();
+//       
+//     }
+//   }
+//   else if(!_extendingDeviceNamesList.empty())
+//   {
+//     
+//   }
+//   else if(!_standardDeviceModeList.empty())
+//   {
+//     
+//   }
+  
+
+  return false;
+}
+
 
 //----------------------------------------------------------------
 
