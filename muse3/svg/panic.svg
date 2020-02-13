@@ -1,77 +1,15 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="64px"
-   height="64px"
-   viewBox="0 0 64 64"
-   version="1.1"
-   id="SVGRoot"
-   inkscape:version="0.92.4 (unknown)"
-   sodipodi:docname="panic.svg">
-  <defs
-     id="defs815" />
-  <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0.0"
-     inkscape:pageshadow="2"
-     inkscape:zoom="22.627417"
-     inkscape:cx="19.912893"
-     inkscape:cy="31.933709"
-     inkscape:document-units="px"
-     inkscape:current-layer="layer1"
-     showgrid="true"
-     inkscape:window-width="3840"
-     inkscape:window-height="2059"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     inkscape:grid-bbox="true">
-    <inkscape:grid
-       type="xygrid"
-       id="grid1371" />
-  </sodipodi:namedview>
-  <metadata
-     id="metadata818">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <g
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer"
-     id="layer1">
-    <circle
-       style="display:inline;opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#aa0000;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:37.79527664;stroke-opacity:1;paint-order:fill markers stroke"
-       id="path1392"
-       cx="32"
-       cy="32"
-       r="26.685852" />
-    <path
-       inkscape:connector-curvature="0"
-       style="fill:#007897;fill-opacity:1;stroke-width:1"
-       d="M 31.621664,12.016544 H 33.7997 l 0.20028,0.175249 v 0.976343 q 0.67592,1.351905 5.007034,2.929094 6.008468,1.752492 6.008468,5.20736 0,3.655129 -3.054282,6.058516 h -0.100144 l -0.751058,-0.801107 q 1.527141,-1.226717 1.527141,-3.329681 0,-1.752492 -5.708044,-3.529941 Q 34.625871,18.650895 34,18 v 26.687365 q 0,3.830364 -5.60788,4.956985 h -1.427044 q -6.058516,0 -6.058516,-4.205927 0,-3.279633 5.307457,-3.855455 h 0.575809 q 2.403387,0 4.631538,1.60228 V 12.191859 Z"
-       id="path4" />
-    <path
-       style="fill:#800000;fill-opacity:1;stroke:#aa0000;stroke-width:7;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 13,13 53,51"
-       id="path1472"
-       inkscape:connector-curvature="0" />
-  </g>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" shape-rendering="crispEdges" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <circle cx="32" cy="32" r="26.686" fill="none" stroke="#a00" stroke-dashoffset="37.795" stroke-linecap="round" stroke-linejoin="round" stroke-width="7" style="paint-order:fill markers stroke"/>
+ <path d="m31.622 12.017h2.178l0.20028 0.17525v0.97634q0.67592 1.3519 5.007 2.9291 6.0085 1.7525 6.0085 5.2074 0 3.6551-3.0543 6.0585h-0.10014l-0.75106-0.80111q1.5271-1.2267 1.5271-3.3297 0-1.7525-5.708-3.5299-2.3032-1.0515-2.9291-1.7024v26.687q0 3.8304-5.6079 4.957h-1.427q-6.0585 0-6.0585-4.2059 0-3.2796 5.3075-3.8555h0.57581q2.4034 0 4.6315 1.6023v-30.993z" fill="#009acf"/>
+ <path d="m13 13 40 38" fill="#800000" stroke="#a00" stroke-width="7"/>
 </svg>
