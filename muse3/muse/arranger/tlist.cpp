@@ -281,6 +281,7 @@ void TList::paint(const QRect& r)
       const int svg_sz = qMin(header_fh + 2, qMax(MIN_TRACKHEIGHT - 5, 6));
 
       MusECore::TrackList* l = MusEGlobal::song->tracks();
+      const MusECore::Track* cur_sel_track = l->currentSelection();
       int idx = 0;
       int yy  = -ypos;
       for (MusECore::iTrack i = l->begin(); i != l->end(); ++idx, yy += (*i)->height(), ++i) {
@@ -298,8 +299,14 @@ void TList::paint(const QRect& r)
             //
             QColor bg;
             if (track->selected()) {
-                  bg = MusEGlobal::config.selectTrackBg;
-                  p.setPen(MusEGlobal::config.selectTrackFg);
+                  if (track == cur_sel_track) {
+                        bg = MusEGlobal::config.selectTrackBg.darker(140);
+                        p.setPen(MusEGlobal::config.selectTrackFg.darker(140));
+                        }
+                  else {
+                        bg = MusEGlobal::config.selectTrackBg;
+                        p.setPen(MusEGlobal::config.selectTrackFg);
+                        }
                   }
             else {	
                   switch(type) {
