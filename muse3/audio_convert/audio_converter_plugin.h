@@ -121,7 +121,10 @@ class AudioConverterPluginList : public std::list<AudioConverterPlugin*> {
    public:
       AudioConverterPluginList() { }
       virtual ~AudioConverterPluginList();
-      
+
+      // Delete all the items and clear the list.
+      void clearDelete();
+
       // Discover available plugins and fill the list.
       void discover(const QString& museGlobalLib, bool debugMsg = false);
       

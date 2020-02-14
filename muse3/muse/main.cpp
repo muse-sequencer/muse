@@ -1563,16 +1563,18 @@ int main(int argc, char* argv[])
         
         // Reset the recently opened list.
         MusEGui::projectRecentList.clear();
+
+        // Clear and delete these.
+        if(MusEGlobal::defaultAudioConverterSettings)
+          delete MusEGlobal::defaultAudioConverterSettings;
+        MusEGlobal::defaultAudioConverterSettings = nullptr;
+        MusEGlobal::audioConverterPluginList.clearDelete();
       }
 
       //============================================
       // END Restart loop. For (re)starting the app.
       //============================================
 
-      if(MusEGlobal::defaultAudioConverterSettings)
-        delete MusEGlobal::defaultAudioConverterSettings;
-      MusEGlobal::defaultAudioConverterSettings = nullptr;
-      
       if(MusEGlobal::debugMsg) 
         fprintf(stderr, "Finished! Exiting main, return value:%d\n", rv);
       return rv;

@@ -55,7 +55,7 @@ MusECore::SndFileList sndFiles;
 
 MusECore::AudioConverterPluginList audioConverterPluginList;
 // This global variable is a pointer so that we can replace it quickly with a new one in RT operations.
-MusECore::AudioConverterSettingsGroup* defaultAudioConverterSettings;
+MusECore::AudioConverterSettingsGroup* defaultAudioConverterSettings = nullptr;
 
 // denormal bias value used to eliminate the manifestation of denormals by
 // lifting the zero level slightly above zero

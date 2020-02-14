@@ -35,7 +35,7 @@
 
 // For debugging output: Uncomment the fprintf section.
 #define ERROR_AUDIOCONVERT(dev, format, args...) fprintf(dev, format, ##args)
-#define INFO_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
+#define INFO_AUDIOCONVERT(dev, format, args...)  fprintf(dev, format, ##args)
 #define DEBUG_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
 
 namespace MusECore {
@@ -116,11 +116,21 @@ void AudioConverterPluginList::discover(const QString& museGlobalLib, bool debug
 
 AudioConverterPluginList::~AudioConverterPluginList()
 {
-  DEBUG_AUDIOCONVERT(stderr, "AudioConverterPluginList dtor: Closing libraries...\n");
+  DEBUG_AUDIOCONVERT(stderr, "AudioConverterPluginList dtor: Deleting plugins...\\n");
   // Must close the libraries.
   for(const_iterator ip = cbegin(); ip != cend(); ++ip)
     if(*ip)
       delete *ip;
+}
+
+void AudioConverterPluginList::clearDelete()
+{
+  DEBUG_AUDIOCONVERT(stderr, "AudioConverterPluginList clearDelete: Deleting plugins...\n");
+  // Must close the libraries.
+  for(const_iterator ip = cbegin(); ip != cend(); ++ip)
+    if(*ip)
+      delete *ip;
+  clear();
 }
 
 void AudioConverterPluginList::add(const QFileInfo* fi, const AudioConverterDescriptor* d) 
@@ -185,13 +195,24 @@ AudioConverterPlugin::AudioConverterPlugin(const QFileInfo* f, const AudioConver
 AudioConverterPlugin::~AudioConverterPlugin()
 {
   DEBUG_AUDIOCONVERT(stderr, "AudioConverterPlugin dtor: this:%p plugin:%p id:%d\n", this, plugin, id());
-  if(plugin)
-  {
-    ERROR_AUDIOCONVERT(stderr, "  Error: plugin is not NULL\n");
-  }
+
+  // Actually, not an error, currently. We are the ones who purposely leave the library open.
+  // Therefore we are the ones who must close it here.
+  // TODO: Try to find a way to NOT leave the library open?
+  //if(plugin)
+  //{
+  //  ERROR_AUDIOCONVERT(stderr, "AudioConverterPlugin dtor: Error: plugin is not NULL\n");
+  //}
     
   if(_handle)
+  {
+    DEBUG_AUDIOCONVERT(stderr, "AudioConverterPlugin dtor: _handle is not NULL, closing library...\n");
     dlclose(_handle);
+  }
+  
+  _handle = NULL;
+  _descriptorFunction = NULL;
+  plugin = NULL;
 }
 
 
