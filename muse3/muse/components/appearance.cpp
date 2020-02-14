@@ -1173,6 +1173,8 @@ void Appearance::chooseColorClicked()
   else
     setColorDialogWindowText();
     
+  QRect r = this->geometry();
+  _colorDialog->move(r.x() + 250, r.y() + 170);
   _colorDialog->show();
   _colorDialog->raise();
 }
