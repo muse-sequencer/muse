@@ -3149,6 +3149,27 @@ bool MidNamDeviceMode::gatherReferences(MidNamReferencesList* refs) const
   return refs->deviceModeObjs.add(const_cast<MidNamDeviceMode*>(this));
 }
 
+bool MidNamDeviceMode::getNoteSampleName(
+  bool /*drum*/, int /*channel*/, int /*patch*/, int /*note*/, QString* /*name*/) const
+{
+//   if(name->isEmpty())
+//     return false;
+// 
+//   if(!_channelNameSetAssignments.empty())
+//   {
+//     // We currently can only deal with one list.
+//     const MidiNamChannelNameSetAssign& n = *_channelNameSetAssignments.begin();
+//     
+//   }
+//   
+//   if(!_isCustomDeviceMode)
+//   {
+//     
+//   }
+    
+  return false;
+}
+
 
 //----------------------------------------------------------------
 
@@ -3504,6 +3525,23 @@ bool MidNamMasterDeviceNames::gatherReferences(MidNamReferencesList* refs) const
   _nameList.gatherReferences(refs);
   _channelNameSetList.gatherReferences(refs);
   return true;
+}
+
+bool MidNamMasterDeviceNames::getNoteSampleName(
+  bool /*drum*/, int /*channel*/, int /*patch*/, int /*note*/, QString* /*name*/) const
+{
+//   if(name->isEmpty())
+//     return false;
+// 
+//   if(!deviceModeList()->empty())
+//   {
+//     // We currently can only deal with one list.
+//     const MidNamDeviceMode& dm = *deviceModeList()->begin();
+//     
+//   }
+  
+
+  return false;
 }
 
 

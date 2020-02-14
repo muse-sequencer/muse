@@ -1283,7 +1283,7 @@ size_t SndFile::write(int srcChannels, float** src, size_t n, bool liveWaveUpdat
    size_t wrFrames = 0;
 
    if(n <= writeSegSize)
-       wrFrames = realWrite(srcChannels, src, n, liveWaveUpdate);
+       wrFrames = realWrite(srcChannels, src, n, wrFrames, liveWaveUpdate);
    else
    {
       while(1)

@@ -2,6 +2,9 @@
     - Reverted previous addTrack change, it affected Insert menu which then behaved wrong. (rj) 
       * Changed Add Track alternative in edit menu to have this effect instead
       * Added Insert Track to edit menu also, together with shortcuts
+    - Oops! Fix bug 765: Crackling in recorded files. Caused by 01.01.2020 commit. (Tim)
+      Changed SndFile::write(): wrFrames = realWrite(srcChannels, src, n, liveWaveUpdate);
+       to wrFrames = realWrite(srcChannels, src, n, wrFrames, liveWaveUpdate);
 12.02.2020
     - Changed addTrack shortcut to insert after selected track, inserting before
       felt strange and made it impossible to insert tracks at the end (rj)

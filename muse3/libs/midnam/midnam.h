@@ -94,19 +94,27 @@ typedef std::pair<iMidiNamAvailableForChannels, bool> MidiNamAvailableForChannel
 //-------------------------------------------------------------------
 
 
+class MidNamChannelNameSet;
 class MidiNamChannelNameSetAssign
 {
   private:
     int _channel;
     QString _nameSet;
 
+    // Points to a reference.
+    MidNamChannelNameSet* _p_ref;
+
   public:
-    MidiNamChannelNameSetAssign() : _channel(0) { }
-    MidiNamChannelNameSetAssign(int channel, const QString& nameSet) : _channel(channel), _nameSet(nameSet) { }
+    MidiNamChannelNameSetAssign() : _channel(0), _p_ref(nullptr) { }
+    MidiNamChannelNameSetAssign(int channel, const QString& nameSet) :
+      _channel(channel), _nameSet(nameSet), _p_ref(nullptr) { }
     int channel() const { return _channel; }
     const QString& nameSet() const { return _nameSet; }
     void setNameSet(const QString& nameSet) { 
         _nameSet = nameSet; }
+    MidNamChannelNameSet* channelNameSet() { return  _p_ref; }
+    void setChannelNameSet(MidNamChannelNameSet* l) { _p_ref = l; }
+    void resetChannelNameSet() { _p_ref = nullptr; }
     bool operator<(const MidiNamChannelNameSetAssign& n) const { return _channel < n._channel; }
     void write(int level, MusECore::Xml& xml) const;
     bool read(MusECore::Xml& xml);
@@ -444,7 +452,6 @@ typedef std::pair<iMidiNamPatchBankList, bool> MidiNamPatchBankListPair;
 
 //-----------------------------------------------------------------
 
-
 class MidNamChannelNameSet
 {
   private:
@@ -572,6 +579,9 @@ class MidNamDeviceMode
     bool operator<(const MidNamDeviceMode& n) const { return _name < n._name; }
     void write(int level, MusECore::Xml& xml) const;
     bool read(MusECore::Xml& xml);
+
+    bool getNoteSampleName(
+      bool drum, int channel, int patch, int note, QString* name) const;
 };
 
 class MidNamDeviceModeList : public std::set<MidNamDeviceMode>
@@ -731,6 +741,9 @@ class MidNamMasterDeviceNames
     MidNamNameList& nameList() { return _nameList; }
     void write(int level, MusECore::Xml& xml) const;
     bool read(MusECore::Xml& xml);
+
+    bool getNoteSampleName(
+      bool drum, int channel, int patch, int note, QString* name) const;
 };
 
 class MidNamMasterDeviceNamesList : public std::list<MidNamMasterDeviceNames>
