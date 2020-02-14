@@ -1,3 +1,5 @@
+14.02.2020:
+    - Custom Drum Editor 'move note' cursor, fix a few others. Fix mouse-up restoration. (Tim)
 13.02.2020:
     - Reverted previous addTrack change, it affected Insert menu which then behaved wrong. (rj) 
       * Changed Add Track alternative in edit menu to have this effect instead

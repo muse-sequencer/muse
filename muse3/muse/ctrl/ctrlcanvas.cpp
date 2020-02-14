@@ -1424,8 +1424,8 @@ void CtrlCanvas::setCursor()
     case DRAG_OFF:
         switch(tool) {
         case PencilTool:
-//            QWidget::setCursor(getCursorFromIcon(pencilIconSVG, "pencilIconSVG"));
-            QWidget::setCursor(*magnetCursor);
+            QWidget::setCursor(*pencilCursor);
+//             QWidget::setCursor(*magnetCursor);
             break;
         case RubberTool:
             QWidget::setCursor(*deleteCursor);

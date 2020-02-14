@@ -137,6 +137,9 @@ class DrumCanvas : public EventCanvas {
       int getNextStep(unsigned int pos, int basicStep, int stepSize=1);
       void mouseMove(QMouseEvent* event) override;
 
+   protected:
+      void setCursor() override;
+     
    signals:
       void newWidth(int);
       void ourDrumMapChanged(bool /*instrumentMap changed as well?*/);

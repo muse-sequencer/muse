@@ -1705,6 +1705,9 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
       // Cancel all previous mouse ops. Right now there should be no moving list and drag should be off etc.
       cancelMouseOps();
 
+      // Be sure to reset the cursor.
+      setCursor();
+
       if (redrawFlag)
             redraw();
 

@@ -2009,4 +2009,44 @@ void DrumCanvas::mouseMove(QMouseEvent* event) {
     }
 }
 
+void DrumCanvas::setCursor()
+{
+    // Avoid duplication, just do it below.
+    //showCursor();
+
+    switch (drag) {
+
+// Possibly do these later.
+//     case DRAGX_MOVE:
+//     case DRAGX_COPY:
+//     case DRAGX_CLONE:
+//         QWidget::setCursor(QCursor(Qt::SizeHorCursor));
+//         break;
+// 
+//     case DRAGY_MOVE:
+//     case DRAGY_COPY:
+//     case DRAGY_CLONE:
+//         QWidget::setCursor(QCursor(Qt::SizeVerCursor));
+//         break;
+
+    case DRAG_MOVE:
+    case DRAG_COPY:
+    case DRAG_CLONE:
+        // Make sure to do this.
+        showCursor();
+        QWidget::setCursor(*customMoveCursor);
+        break;
+
+//     case DRAG_RESIZE:
+//         QWidget::setCursor(QCursor(Qt::SizeHorCursor));
+//         break;
+
+    default:
+        // Let the Canvas handle it, and call showCursor().
+        Canvas::setCursor();
+        break;
+    }
+}
+
+
 } // namespace MusEGui

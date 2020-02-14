@@ -68,6 +68,7 @@
         <file>svg/cursor.svg</file>
         <file>svg/zoomAt.svg</file>
         <file>svg/magnet.svg</file>
+        <file>svg/cursor_move.svg</file>
         <file>svg/closed_hand.svg</file>
         <file>svg/panic.svg</file>
         <file>svg/loop.svg</file>

@@ -72,12 +72,6 @@ class Canvas : public View {
       //  events might cause us to miss a decrement with QApplication::restoreOverrideCursor().
       int _cursorOverrideCount;
       
-      // If show is true, calls QApplication::restoreOverrideCursor() until _cursorOverrideCount-- is <= 0.
-      // If show is false, calls QApplication::setOverrideCursor with a blank cursor.
-      void showCursor(bool show = true);
-      // Sets or resets the _mouseGrabbed flag and grabs or releases the mouse.
-      void setMouseGrab(bool grabbed = false);
-      
    protected:
       enum DragMode {
             DRAG_OFF=0, DRAG_NEW,
@@ -140,7 +134,7 @@ class Canvas : public View {
 
       void setLasso(const QRect& r);
       void resizeToTheLeft(const QPoint &pos);
-      void setCursor();
+      virtual void setCursor();
       virtual void viewKeyPressEvent(QKeyEvent* event);
       virtual void viewKeyReleaseEvent(QKeyEvent* event);
       virtual void viewMousePressEvent(QMouseEvent* event);
@@ -225,6 +219,12 @@ class Canvas : public View {
       virtual void itemMoved(const CItem*, const QPoint&) {}
       virtual void curPartChanged() { emit curPartHasChanged(curPart); }
 
+      // If show is true, calls QApplication::restoreOverrideCursor() until _cursorOverrideCount-- is <= 0.
+      // If show is false, calls QApplication::setOverrideCursor with a blank cursor.
+      void showCursor(bool show = true);
+      // Sets or resets the _mouseGrabbed flag and grabs or releases the mouse.
+      void setMouseGrab(bool grabbed = false);
+      
    public slots:
       void setTool(int t);
       virtual void setPos(int, unsigned, bool adjustScrollbar);
