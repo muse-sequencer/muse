@@ -229,10 +229,17 @@ static bool loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
           int level = 0;
           level = xml.putFileVersion(level);
 
-          MusEPlugin::writeLinuxVstInfo(filename, getInstance, do_ports, level, xml);
+          bool success = MusEPlugin::writeLinuxVstInfo(filename, getInstance, do_ports, level, xml);
 
           xml.tag(1, "/muse");
-          found = true;
+
+          if (success) {
+            found = true;
+          } else {
+            std::fprintf(stderr, "muse_plugin_scan: writeLinuxVstInfo(%s) failed\n", filename);
+            found = false;
+            outfile.seek(0);
+          }
         }
         else
         {
