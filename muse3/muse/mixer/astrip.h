@@ -125,7 +125,7 @@ class AudioStrip : public Strip {
       
   private:
       GridPosStruct _preScrollAreaPos_A;
-      GridPosStruct _preScrollAreaPos_B;
+      //GridPosStruct _preScrollAreaPos_B;
       GridPosStruct _effectRackPos;
       GridPosStruct _stereoToolPos;
       GridPosStruct _preToolPos;
@@ -136,16 +136,16 @@ class AudioStrip : public Strip {
       GridPosStruct _sliderPos;
       GridPosStruct _sliderLabelPos;
       GridPosStruct _postScrollAreaPos_A;
-      GridPosStruct _postScrollAreaPos_B;
+      //GridPosStruct _postScrollAreaPos_B;
       GridPosStruct _offPos;
       GridPosStruct _recPos;
       GridPosStruct _mutePos;
       GridPosStruct _soloPos;
-      GridPosStruct _routesPos;
+      //GridPosStruct _routesPos;
       GridPosStruct _inRoutesPos;
       GridPosStruct _outRoutesPos;
       GridPosStruct _automationPos;
-      GridPosStruct _rightSpacerPos;
+      //GridPosStruct _rightSpacerPos;
       GridPosStruct _offMonRecPos;
     
       int channel;

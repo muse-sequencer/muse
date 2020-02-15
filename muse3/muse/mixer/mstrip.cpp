@@ -1395,7 +1395,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       _inRoutesPos         = GridPosStruct(_curGridRow,     0, 1, 1);
       _outRoutesPos        = GridPosStruct(_curGridRow,     1, 1, 1);
-      _routesPos           = GridPosStruct(_curGridRow,     0, 1, 2);
+      //_routesPos           = GridPosStruct(_curGridRow,     0, 1, 2);
 
       _upperStackTabPos    = GridPosStruct(_curGridRow + 1, 0, 1, 2);
 
@@ -1418,7 +1418,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       _automationPos       = GridPosStruct(_curGridRow + 9, 0, 1, 2);
 
-      _rightSpacerPos      = GridPosStruct(_curGridRow + 9, 2, 1, 1);
+      //_rightSpacerPos      = GridPosStruct(_curGridRow + 9, 2, 1, 1);
 
 
       _upperStackTabButtonA = new ElidedLabel();

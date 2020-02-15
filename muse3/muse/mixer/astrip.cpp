@@ -1361,7 +1361,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       _inRoutesPos         = GridPosStruct(_curGridRow,     0, 1, 1);
       _outRoutesPos        = GridPosStruct(_curGridRow,     1, 1, 1);
-      _routesPos           = GridPosStruct(_curGridRow,     0, 1, 2);
+      //_routesPos           = GridPosStruct(_curGridRow,     0, 1, 2);
 
       _effectRackPos       = GridPosStruct(_curGridRow + 1, 0, 1, 3);
 
@@ -1372,7 +1372,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       _preScrollAreaPos_A  = GridPosStruct(_curGridRow + 3, 0, 1, 3);
 
 
-      _preScrollAreaPos_B  = GridPosStruct(_curGridRow + 4, 2, 1, 1);
+      //_preScrollAreaPos_B  = GridPosStruct(_curGridRow + 4, 2, 1, 1);
       _sliderPos           = GridPosStruct(_curGridRow + 4, 0, 4, 2);
 
 
@@ -1383,7 +1383,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       _infoSpacerBottom    = GridPosStruct(_curGridRow + 7, 2, 1, 1);
 
       _sliderLabelPos      = GridPosStruct(_curGridRow + 8, 0, 1, 2);
-      _postScrollAreaPos_B = GridPosStruct(_curGridRow + 8, 2, 1, 1);
+      //_postScrollAreaPos_B = GridPosStruct(_curGridRow + 8, 2, 1, 1);
 
       _postScrollAreaPos_A = GridPosStruct(_curGridRow + 9, 0, 1, 3);
 
@@ -1397,11 +1397,12 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       _automationPos       = GridPosStruct(_curGridRow + 12, 0, 1, 2);
 
-      _rightSpacerPos      = GridPosStruct(_curGridRow + 13, 2, 1, 1);
+      //_rightSpacerPos      = GridPosStruct(_curGridRow + 13, 2, 1, 1);
 
 
       _infoRack = new AudioComponentRack(at, aStripInfoRack, false);
       //_infoRack->setVisible(false); // Not visible unless expanded.
+      _infoRack->setVisible(false); // Hide until we figure out what to put in there....
       // FIXME For some reason StyledPanel has trouble, intermittent sometimes panel is drawn, sometimes not. 
       //_infoRack->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
       _infoRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
