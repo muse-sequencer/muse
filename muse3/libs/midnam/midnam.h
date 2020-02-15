@@ -99,7 +99,7 @@ class MidiNamChannelNameSetAssign
 {
   private:
     int _channel;
-    QString _nameSet;
+    QString _name;
 
     // Points to a reference.
     MidNamChannelNameSet* _p_ref;
@@ -107,28 +107,38 @@ class MidiNamChannelNameSetAssign
   public:
     MidiNamChannelNameSetAssign() : _channel(0), _p_ref(nullptr) { }
     MidiNamChannelNameSetAssign(int channel, const QString& nameSet) :
-      _channel(channel), _nameSet(nameSet), _p_ref(nullptr) { }
+      _channel(channel), _name(nameSet), _p_ref(nullptr) { }
     int channel() const { return _channel; }
-    const QString& nameSet() const { return _nameSet; }
-    void setNameSet(const QString& nameSet) { 
-        _nameSet = nameSet; }
-    MidNamChannelNameSet* channelNameSet() { return  _p_ref; }
-    void setChannelNameSet(MidNamChannelNameSet* l) { _p_ref = l; }
-    void resetChannelNameSet() { _p_ref = nullptr; }
+    const QString& name() const { return _name; }
+    void setName(const QString& nameSet) { 
+        _name = nameSet; }
+    // NOTE: Unlike the other referencing classes, this always returns the reference object and can be NULL.
+    MidNamChannelNameSet* objectOrRef() { return  _p_ref; }
+    void setObjectOrRef(MidNamChannelNameSet* l) { _p_ref = l; }
+    void resetObjectOrRef() { _p_ref = nullptr; }
+    bool gatherReferences(MidNamReferencesList* refs) const;
     bool operator<(const MidiNamChannelNameSetAssign& n) const { return _channel < n._channel; }
     void write(int level, MusECore::Xml& xml) const;
     bool read(MusECore::Xml& xml);
+
+    bool getNoteSampleName(
+      bool drum, int channel, int patch, int note, QString* name) const;
 };
 
-class MidiNamChannelNameSetAssignments : public std::set<MidiNamChannelNameSetAssign>
+// REMOVE Tim. midnam. Changed.
+//class MidiNamChannelNameSetAssignments : public std::set<MidiNamChannelNameSetAssign>
+class MidiNamChannelNameSetAssignments : public std::map<int /* channel */, MidiNamChannelNameSetAssign, std::less<int>>
 {
   public:
+    bool add(const MidiNamChannelNameSetAssign& a);
     void write(int level, MusECore::Xml& xml) const;
     void read(MusECore::Xml& xml);
 };
 typedef MidiNamChannelNameSetAssignments::iterator iMidiNamChannelNameSetAssignments;
 typedef MidiNamChannelNameSetAssignments::const_iterator ciMidiNamChannelNameSetAssignments;
-typedef std::pair<iMidiNamChannelNameSetAssignments, bool> MidiNamChannelNameSetAssignmentsPair;
+// typedef std::pair<iMidiNamChannelNameSetAssignments, bool> MidiNamChannelNameSetAssignmentsPair;
+typedef std::pair<int /* channel */, const MidiNamChannelNameSetAssign&> MidiNamChannelNameSetAssignmentsPair;
+typedef std::pair<iMidiNamChannelNameSetAssignments, iMidiNamChannelNameSetAssignments> MidiNamChannelNameSetAssignmentsRange;
 
 
 //-------------------------------------------------------------------
@@ -220,6 +230,7 @@ class MidNamNoteNameList
       _name(name), _p_ref(nullptr), _isReference(false), _hasNoteNameList(false) { }
     bool hasNoteNameList() const { return _hasNoteNameList; }
     // Outside of these classes, always use this method to get the real list.
+    const MidNamNoteNameList* objectOrRef() const { return (_isReference && _p_ref) ? _p_ref : this; }
     MidNamNoteNameList* objectOrRef() { return (_isReference && _p_ref) ? _p_ref : this; }
     void setObjectOrRef(MidNamNoteNameList* l) { _p_ref = l; }
     void resetObjectOrRef() { _p_ref = nullptr; }
@@ -468,10 +479,16 @@ class MidNamChannelNameSet
     MidNamChannelNameSet(
       const QString& name) :
       _name(name) {}
+    const QString& name() const { return _name; }
+    void setName(const QString& nameSet) { 
+        _name = nameSet; }
     bool gatherReferences(MidNamReferencesList* refs) const;
     bool operator<(const MidNamChannelNameSet& n) const { return _name < n._name; }
     void write(int level, MusECore::Xml& xml) const;
     bool read(MusECore::Xml& xml);
+
+    bool getNoteSampleName(
+      bool drum, int channel, int patch, int note, QString* name) const;
 };
 
 class MidiNamChannelNameSetList : public std::set<MidNamChannelNameSet>
@@ -786,6 +803,8 @@ typedef MidNamReferenceList_t<MidiNamValNames*>      MidiNamValNamesRefs_t;
 typedef MidNamReferenceList_t<MidiNamCtrls*>         MidiNamCtrlsRefs_t;
 typedef MidNamReferenceList_t<MidiNamPatchNameList*> MidiNamPatchNameListRefs_t;
 typedef MidNamReferenceList_t<MidNamDeviceMode*>     MidNamDeviceModeRefs_t;
+typedef MidNamReferenceList_t<MidiNamChannelNameSetAssign*> MidiNamChannelNameSetAssignRefs_t;
+typedef MidNamReferenceList_t<MidNamChannelNameSet*> MidNamChannelNameSetRefs_t;
 
 struct MidNamReferencesList
 {
@@ -794,6 +813,8 @@ struct MidNamReferencesList
   MidiNamCtrlsRefs_t         ctrlsObjs;
   MidiNamPatchNameListRefs_t patchNameListObjs;
   MidNamDeviceModeRefs_t     deviceModeObjs;
+  MidiNamChannelNameSetAssignRefs_t channelNameSetAssignObjs;
+  MidNamChannelNameSetRefs_t channelNameSetObjs;
 
   bool resolveReferences() const;
 };

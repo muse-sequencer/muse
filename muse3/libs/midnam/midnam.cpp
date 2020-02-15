@@ -1877,7 +1877,7 @@ void MidiNamChannelNameSetAssign::write(int level, MusECore::Xml& xml) const
 {
   // MidNam Channel range is 1..16
   xml.put(level, "<ChannelNameSetAssign Channel=\"%d\" NameSet=\"%s\" />",
-          _channel + 1, Xml::xmlString(_nameSet).toLocal8Bit().constData());
+          _channel + 1, Xml::xmlString(_name).toLocal8Bit().constData());
 }
 
 bool MidiNamChannelNameSetAssign::read(MusECore::Xml& xml)
@@ -1911,7 +1911,7 @@ bool MidiNamChannelNameSetAssign::read(MusECore::Xml& xml)
                         return false;
                       --chan;
                       _channel = chan;
-                      _nameSet = nameset;
+                      _name = nameset;
                       return true;
                     }
               default:
@@ -1921,9 +1921,29 @@ bool MidiNamChannelNameSetAssign::read(MusECore::Xml& xml)
   return false;
 }
 
+bool MidiNamChannelNameSetAssign::gatherReferences(MidNamReferencesList* refs) const
+{
+  return refs->channelNameSetAssignObjs.add(const_cast<MidiNamChannelNameSetAssign*>(this));
+}
+
+bool MidiNamChannelNameSetAssign::getNoteSampleName(
+  bool drum, int channel, int patch, int note, QString* name) const
+{
+  if(!name)
+    return false;
+  // Go directly to the reference object.
+  if(_p_ref)
+    return _p_ref->getNoteSampleName(drum, channel, patch, note, name);
+  return false;
+}
+
 
 //----------------------------------------------------------------
 
+bool MidiNamChannelNameSetAssignments::add(const MidiNamChannelNameSetAssign& a)
+{
+  return insert(MidiNamChannelNameSetAssignmentsPair(a.channel(), a)).second;
+}
 
 void MidiNamChannelNameSetAssignments::write(int level, MusECore::Xml& xml) const
 {
@@ -1931,7 +1951,9 @@ void MidiNamChannelNameSetAssignments::write(int level, MusECore::Xml& xml) cons
     return;
   xml.tag(level++, "ChannelNameSetAssignments");
   for(const_iterator i = cbegin(); i != cend(); ++i)
-    (*i).write(level, xml);
+// REMOVE Tim. midnam. Changed.
+//     (*i).write(level, xml);
+    i->second.write(level, xml);
   xml.etag(--level, "ChannelNameSetAssignments");
 }
 
@@ -1949,7 +1971,9 @@ void MidiNamChannelNameSetAssignments::read(MusECore::Xml& xml)
                         {
                           MidiNamChannelNameSetAssign n;
                           if(n.read(xml))
-                            insert(n);
+// REMOVE Tim. midnam. Changed.
+//                             insert(n);
+                            add(n);
                         }
                         else
                           xml.unknown("MidiNamChannelNameSetAssignments");
@@ -2893,6 +2917,24 @@ bool MidNamChannelNameSet::gatherReferences(MidNamReferencesList* refs) const
   _noteNameList.gatherReferences(refs);
   _controlNameList.gatherReferences(refs);
   _patchBankList.gatherReferences(refs);
+  return refs->channelNameSetObjs.add(const_cast<MidNamChannelNameSet*>(this));
+}
+
+bool MidNamChannelNameSet::getNoteSampleName(
+  bool /*drum*/, int /*channel*/, int /*patch*/, int note, QString* name) const
+{
+  if(!name)
+    return false;
+  const MidNamNoteNameList* n = _noteNameList.objectOrRef();
+  if(!n->hasNoteNameList())
+    return false;
+  ciNoteIndexMap inim = n->noteIndexMap().find(note);
+  if(inim == n->noteIndexMap().cend())
+    return false;
+
+  ciMidiNamNotes inotes = inim->second;
+  *name = inotes->name();
+
   return true;
 }
 
@@ -3150,22 +3192,22 @@ bool MidNamDeviceMode::gatherReferences(MidNamReferencesList* refs) const
 }
 
 bool MidNamDeviceMode::getNoteSampleName(
-  bool /*drum*/, int /*channel*/, int /*patch*/, int /*note*/, QString* /*name*/) const
+  bool drum, int channel, int patch, int note, QString* name) const
 {
-//   if(name->isEmpty())
-//     return false;
-// 
-//   if(!_channelNameSetAssignments.empty())
-//   {
-//     // We currently can only deal with one list.
-//     const MidiNamChannelNameSetAssign& n = *_channelNameSetAssignments.begin();
-//     
-//   }
-//   
-//   if(!_isCustomDeviceMode)
-//   {
-//     
-//   }
+  if(!name)
+    return false;
+
+  ciMidiNamChannelNameSetAssignments ia = _channelNameSetAssignments.find(channel);
+  if(ia != _channelNameSetAssignments.cend())
+  {
+    const MidiNamChannelNameSetAssign& cns = ia->second;
+    return cns.getNoteSampleName(drum, channel, patch, note, name);
+  }
+  else
+  if(!_isCustomDeviceMode)
+  {
+    //_channelNameSetList
+  }
     
   return false;
 }
@@ -3530,7 +3572,7 @@ bool MidNamMasterDeviceNames::gatherReferences(MidNamReferencesList* refs) const
 bool MidNamMasterDeviceNames::getNoteSampleName(
   bool /*drum*/, int /*channel*/, int /*patch*/, int /*note*/, QString* /*name*/) const
 {
-//   if(name->isEmpty())
+//   if(!name)
 //     return false;
 // 
 //   if(!deviceModeList()->empty())
@@ -3672,6 +3714,28 @@ bool MidNamReferencesList::resolveReferences() const
     }
   }
   
+  for(MidNamChannelNameSetRefs_t::const_iterator ir = channelNameSetObjs.cbegin();
+      ir != channelNameSetObjs.cend(); ++ir)
+  {
+    MidNamChannelNameSet* lobj = *ir;
+    // Unlike the other referencing classes, MidNamChannelNameSet is not referenceable.
+    // Here we are looking for a separate corresponding MidNamChannelNameSet.
+    // Make sure it has a name to reference to!
+    if(/*lobj->isReference() ||*/ lobj->name().isEmpty())
+      continue;
+    for(MidiNamChannelNameSetAssignRefs_t::const_iterator iref = channelNameSetAssignObjs.cbegin();
+        iref != channelNameSetAssignObjs.cend(); ++iref)
+    {
+      MidiNamChannelNameSetAssign* lref = *iref;
+      // Here we are just looking for the name of a separate corresponding MidNamChannelNameSet.
+      //if(!lref->isReference())
+      //  continue;
+      // Do the names match? Set the reference's object.
+      if(lobj->name() == lref->name())
+        lref->setObjectOrRef(lobj);
+    }
+  }
+  
   return true;
 }
 
@@ -3761,7 +3825,7 @@ bool MidNamMIDINameDocument::resolveReferences()
 bool MidNamMIDINameDocument::getNoteSampleName(
   bool /*drum*/, int /*channel*/, int /*patch*/, int /*note*/, QString* /*name*/) const
 {
-//   if(name->isEmpty())
+//   if(!name)
 //     return false;
 // 
 //   // Which of the three exclusively possible device lists is dominant (has stuff in it)?

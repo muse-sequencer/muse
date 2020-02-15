@@ -101,13 +101,17 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       rlist->verticalHeader()->hide();
       rlist->horizontalHeader()->hide();
       //rlist->setContentsMargins(0,0,0,0);  
-      rlist->setMinimumWidth(96);
 
       raster->setView(rlist);
 
+      int w = 0;
       for (int j = 0; j < 3; j++)
+      {
         for (int i = 0; i < 10; i++)
           rlist->setItem(i, j, new QTableWidgetItem(tr(rasterStrings[i + j * 10])));
+        w += rlist->columnWidth(j);
+      }
+      rlist->setMinimumWidth(w);
        
       setRaster(r);
       //setContentsMargins(0,0,0,0);  
