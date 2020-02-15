@@ -21,6 +21,7 @@
 //
 //=========================================================
 
+#include <QMessageBox>
 #include <QDir>
 #include <QTemporaryFile>
 #include <QDateTime>
@@ -1566,10 +1567,27 @@ static bool pluginScan(
 //     fail = true;
 //   }
 
-  if(!process.waitForFinished(9000))
+  if(!process.waitForFinished(6000))
   {
     std::fprintf(stderr, "\npluginScan FAILED: waitForFinished: file: %s\n\n", filename_ba.constData());
-    fail = true;
+    while (1) {
+      QMessageBox::StandardButton btn = QMessageBox::warning(
+          NULL, QMessageBox::tr("Plugin Scanner"),
+          QMessageBox::tr("Checking Plugin %1 is taking a very long time, do you want to keep waiting for it to finish, or skip this plugin?").arg(filename),
+          QMessageBox::Retry|QMessageBox::Abort, QMessageBox::Retry);
+
+      if (btn == QMessageBox::Retry) {
+        if (process.state() == QProcess::NotRunning) {
+          break; // success
+        }
+        if(process.waitForFinished(6000)) {
+          break; // success
+        }
+      } else {
+        fail = true;
+        break; // failure
+      }
+    }
   }
 
   if(!fail && debugStdErr)
@@ -2976,8 +2994,16 @@ bool checkPluginCacheFiles(
     //-------------------------
 
     // Any remaining items in fpset must be 'new' plugins.
-    if(!cache_dirty && !fpset.empty())
+    if(!cache_dirty && !fpset.empty()) {
+      if(debugStdErr)
+      {
+        std::fprintf(stderr, "Setting cache to dirty due to NEW plugins:\n");
+        for (auto &plug: fpset) {
+            std::fprintf(stderr, "New plugin %s:\n", plug.first.toLatin1().data());
+        }
+      }
       cache_dirty = true;
+    }
   }
 
   // If ANY of the cache files do not exist we will recreate all of them.
