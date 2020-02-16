@@ -323,8 +323,9 @@ void GlobalSettingsConfig::updateSettings()
       pluginDssiPathList->clear();
       pluginDssiPathList->addItems(MusEGlobal::config.pluginDssiPathList);
 
-      pluginVstPathList->clear();
-      pluginVstPathList->addItems(MusEGlobal::config.pluginVstPathList);
+// removed since they do not contain anything currently
+//      pluginVstPathList->clear();
+//      pluginVstPathList->addItems(MusEGlobal::config.pluginVstPathList);
 
       pluginLinuxVstPathList->clear();
       pluginLinuxVstPathList->addItems(MusEGlobal::config.pluginLinuxVstPathList);
@@ -535,9 +536,10 @@ void GlobalSettingsConfig::apply()
       for (int i = 0; i < pluginDssiPathList->count(); ++i)
             MusEGlobal::config.pluginDssiPathList << pluginDssiPathList->item(i)->text();
 
-      MusEGlobal::config.pluginVstPathList.clear();
-      for (int i = 0; i < pluginVstPathList->count(); ++i)
-            MusEGlobal::config.pluginVstPathList << pluginVstPathList->item(i)->text();
+// removed since they do not contain anything currently
+//      MusEGlobal::config.pluginVstPathList.clear();
+//      for (int i = 0; i < pluginVstPathList->count(); ++i)
+//            MusEGlobal::config.pluginVstPathList << pluginVstPathList->item(i)->text();
 
       MusEGlobal::config.pluginLinuxVstPathList.clear();
       for (int i = 0; i < pluginLinuxVstPathList->count(); ++i)
@@ -726,10 +728,11 @@ void GlobalSettingsConfig::addPluginPath()
         path = pluginDssiPathList->currentItem()->text();
     break;
     
-    case VstTab:
-      if(pluginVstPathList->currentItem())
-        path = pluginVstPathList->currentItem()->text();
-    break;
+// removed since they do not contain anything currently
+//    case VstTab:
+//      if(pluginVstPathList->currentItem())
+//        path = pluginVstPathList->currentItem()->text();
+//    break;
     
     case LinuxVstTab:
       if(pluginLinuxVstPathList->currentItem())
@@ -760,9 +763,10 @@ void GlobalSettingsConfig::addPluginPath()
       pluginDssiPathList->addItem(new_path);
     break;
     
-    case VstTab:
-      pluginVstPathList->addItem(new_path);
-    break;
+// removed since they do not contain anything currently
+//    case VstTab:
+//      pluginVstPathList->addItem(new_path);
+//    break;
     
     case LinuxVstTab:
       pluginLinuxVstPathList->addItem(new_path);
@@ -792,10 +796,11 @@ void GlobalSettingsConfig::editPluginPath()
         path = pluginDssiPathList->currentItem()->text();
     break;
     
-    case VstTab:
-      if(pluginVstPathList->currentItem())
-        path = pluginVstPathList->currentItem()->text();
-    break;
+// removed since they do not contain anything currently
+//    case VstTab:
+//      if(pluginVstPathList->currentItem())
+//        path = pluginVstPathList->currentItem()->text();
+//    break;
     
     case LinuxVstTab:
       if(pluginLinuxVstPathList->currentItem())
@@ -828,10 +833,11 @@ void GlobalSettingsConfig::editPluginPath()
         pluginDssiPathList->currentItem()->setText(new_path);
     break;
     
-    case VstTab:
-      if(pluginVstPathList->currentItem())
-        pluginVstPathList->currentItem()->setText(new_path);
-    break;
+// removed since they do not contain anything currently
+//    case VstTab:
+//      if(pluginVstPathList->currentItem())
+//        pluginVstPathList->currentItem()->setText(new_path);
+//    break;
     
     case LinuxVstTab:
       if(pluginLinuxVstPathList->currentItem())
@@ -872,10 +878,11 @@ void GlobalSettingsConfig::removePluginPath()
         delete item;
     break;
     
-    case VstTab:
-      foreach(QListWidgetItem* item, pluginVstPathList->selectedItems())
-        delete item;
-    break;
+// removed since they do not contain anything currently
+//    case VstTab:
+//      foreach(QListWidgetItem* item, pluginVstPathList->selectedItems())
+//        delete item;
+//    break;
     
     case LinuxVstTab:
       foreach(QListWidgetItem* item, pluginLinuxVstPathList->selectedItems())
@@ -905,9 +912,10 @@ void GlobalSettingsConfig::movePluginPathUp()
       list = pluginDssiPathList;
     break;
     
-    case VstTab:
-      list = pluginVstPathList;
-    break;
+// removed since they do not contain anything currently
+//    case VstTab:
+//      list = pluginVstPathList;
+//    break;
     
     case LinuxVstTab:
       list = pluginLinuxVstPathList;
@@ -945,9 +953,10 @@ void GlobalSettingsConfig::movePluginPathDown()
       list = pluginDssiPathList;
     break;
     
-    case VstTab:
-      list = pluginVstPathList;
-    break;
+// removed since they do not contain anything currently
+//    case VstTab:
+//      list = pluginVstPathList;
+//    break;
     
     case LinuxVstTab:
       list = pluginLinuxVstPathList;

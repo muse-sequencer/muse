@@ -81,7 +81,7 @@ namespace MusECore {
 extern void connectNodes(AudioTrack*, AudioTrack*);
 bool SynthI::_isVisible=false;
 
-const char* synthTypes[] = { "METRONOME", "MESS", "DSSI", "Wine VST", "Native VST (synths)", "Native VST (effects)", "LV2 (synths)", "LV2 (effects)", "UNKNOWN" };
+const char* synthTypes[] = { "METRONOME", "MESS", "DSSI", "Wine VST", "VST (synths)", "VST (effects)", "LV2 (synths)", "LV2 (effects)", "UNKNOWN" };
 QString synthType2String(Synth::Type type) { return QString(synthTypes[type]); }
 
 Synth::Type string2SynthType(const QString& type)
