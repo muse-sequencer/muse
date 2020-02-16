@@ -1,3 +1,7 @@
+16.02.2020:
+    - Removed the VST tab referencing Wine VST and relabeled Native VST as VST (rj)
+    - Remove Wine VST plugin type in dropdown as we only support that through
+      dssi-vst and it is dead since many years
 15.02.2020:
     - Fixed issue with plugin scan #763, where a valid vst plugin but nonfunctional was never
       added to the cache and hence caused a rescan every time (rj)

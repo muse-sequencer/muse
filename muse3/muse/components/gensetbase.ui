@@ -746,26 +746,9 @@
                </item>
               </layout>
              </widget>
-             <widget class="QWidget" name="pluginVstPathTab">
-              <attribute name="title">
-               <string>VST</string>
-              </attribute>
-              <layout class="QVBoxLayout" name="verticalLayout_14">
-               <item>
-                <widget class="QListWidget" name="pluginVstPathList">
-                 <property name="alternatingRowColors">
-                  <bool>true</bool>
-                 </property>
-                 <property name="selectionMode">
-                  <enum>QAbstractItemView::ExtendedSelection</enum>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
              <widget class="QWidget" name="pluginLinuxVstPathTab">
               <attribute name="title">
-               <string>Linux VST</string>
+               <string>VST</string>
               </attribute>
               <layout class="QVBoxLayout" name="verticalLayout_11">
                <item>
@@ -1393,7 +1376,7 @@ Adjusts responsiveness of audio controls and
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>534</width>
+            <width>540</width>
             <height>485</height>
            </rect>
           </property>
@@ -2245,8 +2228,8 @@ Turn off to reduce clutter.</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>512</width>
-               <height>444</height>
+               <width>514</width>
+               <height>438</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
@@ -2612,8 +2595,8 @@ Otherwise, hold Ctrl to keep them open.</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>510</width>
-               <height>410</height>
+               <width>524</width>
+               <height>411</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">

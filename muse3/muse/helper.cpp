@@ -1260,10 +1260,12 @@ QMenu* populateAddSynth(QWidget* parent)
   {
     synth = *i;
     type = synth->synthType();
-#ifdef DSSI_SUPPORT
-    if (type == MusECore::Synth::DSSI_SYNTH && ((MusECore::DssiSynth*)synth)->isDssiVst() ) // Place Wine VSTs in a separate sub menu
-      type = MusECore::Synth::VST_SYNTH;
-#endif
+
+// dssi-vst is dead, really no point in keeping this case around
+//#ifdef DSSI_SUPPORT
+//    if (type == MusECore::Synth::DSSI_SYNTH && ((MusECore::DssiSynth*)synth)->isDssiVst() ) // Place Wine VSTs in a separate sub menu
+//      type = MusECore::Synth::VST_SYNTH;
+//#endif
 
     if(type >= ntypes)
       continue; 
