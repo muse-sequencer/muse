@@ -62,6 +62,7 @@
 #include "song.h"
 #include "ctrl.h"
 #include "minstrument.h"
+#include "operations.h"
 
 #include "app.h"
 #include "globals.h"
@@ -3900,27 +3901,11 @@ int LV2SynthIF::getControllerInfo(int id, QString* name, int *ctrl, int *min, in
 
 #ifdef MIDNAM_SUPPORT
 bool LV2SynthIF::getNoteSampleName(
-  bool /*drum*/, int /*channel*/, int /*patch*/, int /*note*/, QString* name) const
+  bool drum, int channel, int patch, int note, QString* name) const
 {
   if(!name)
     return false;
-  
-// TODO Get MidNam note name...
-  
-//   const char* str;
-//   // Returns true if a note name list was found.
-//   // str is NULL if no note was found.
-//   // drum = Want percussion names, not melodic.
-//   if(_mess->getNoteSampleName(drum, channel, patch, note, &str))
-//   {
-//     // str could be null.
-//     *name = QString(str);
-//     // A note name list was found.
-//     return true;
-//   }
-
-  // No note name list was found.
-  return false;
+  return _state->midnamDocument.getNoteSampleName(drum, channel, patch, note, name);
 }
 #else
 bool LV2SynthIF::getNoteSampleName(
@@ -4806,14 +4791,25 @@ void LV2SynthIF::guiHeartBeat()
             break;
 
         case LV2OperationMessage::MidnamUpdate:
+            {
             // TODO: Not this. Compose an operation instead.
 
 #ifdef MIDNAM_SUPPORT
             LV2Synth::lv2midnam_updateMidnam(_state);
-            MusEGlobal::song->update(SC_MIDI_INSTRUMENT);
+
+            // Since this is a notification from the synth to update midnam,
+            //  tell the rest of the app that the update happened.
+            const int port = synti->midiPort();
+            if(port >= 0 && port < MIDI_PORTS)
+            {
+              PendingOperationList operations;
+              operations.add(PendingOperationItem(&MusEGlobal::midiPorts[port], PendingOperationItem::UpdateDrumMaps));
+              MusEGlobal::audio->msgExecutePendingOperations(operations, true /* SC_MIDI_INSTRUMENT */);
+            }
 #endif
+            }
             break;
-        }
+      }
     }
 
 }
