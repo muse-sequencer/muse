@@ -81,8 +81,9 @@
       </g>
       <g class="com.sun.star.drawing.CustomShape">
        <g id="id7">
-        <rect class="BoundingBox" stroke="none" fill="none" x="883" y="70" width="485" height="966"/>
-        <path fill="rgb(0,0,0)" stroke="none" d="M 883,292 L 1125,70 1367,292 1180,292 1180,814 1367,814 1125,1035 883,814 1070,814 1070,292 883,292 Z"/>
+        <rect class="BoundingBox" stroke="none" fill="none" x="817" y="34" width="644" height="1092"/>
+        <path fill="rgb(178,178,178)" stroke="none" d="M 884,311 L 1138,71 1393,311 1214,311 1214,847 1393,847 1138,1088 884,847 1063,847 1063,311 884,311 Z"/>
+        <path fill="none" stroke="rgb(0,0,0)" stroke-width="53" stroke-linejoin="miter" stroke-linecap="square" d="M 884,311 L 1138,71 1393,311 1214,311 1214,847 1393,847 1138,1088 884,847 1063,847 1063,311 884,311 Z"/>
        </g>
       </g>
      </g>
