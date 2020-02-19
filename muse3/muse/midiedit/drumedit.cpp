@@ -507,7 +507,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       genTrackInfo(trackInfoWidget);
       
       split1            = new MusEGui::Splitter(Qt::Vertical, mainw, "split1");
-      ctrl = new QPushButton(tr("ctrl"), mainw);
+      ctrl = new QPushButton("Ctrl", mainw);
       ctrl->setObjectName("Ctrl");
       ctrl->setFont(MusEGlobal::config.fonts[3]);
       ctrl->setFocusPolicy(Qt::NoFocus);

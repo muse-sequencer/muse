@@ -342,7 +342,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       hsplitter->setChildrenCollapsible(true);
       //hsplitter->setHandleWidth(4);
       
-      ctrl = new QPushButton(tr("ctrl"), mainw);
+      ctrl = new QPushButton("Ctrl", mainw);
       ctrl->setObjectName("Ctrl");
       ctrl->setFont(MusEGlobal::config.fonts[3]);
       ctrl->setToolTip(tr("Add Controller View"));
