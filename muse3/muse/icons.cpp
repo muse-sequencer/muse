@@ -404,7 +404,10 @@ QIcon* handIconSVG;
 QIcon* closedHandIconSVG;
 QIcon* cursorIconSVG;
 //QIcon* magnetIconSVG;
-QIcon* customMoveIconSVG;
+//QIcon* customMoveIconSVG;
+QIcon* pencilMove4WayIconSVG;
+QIcon* pencilMoveHorizIconSVG;
+QIcon* pencilMoveVertIconSVG;
 QIcon* audioStretchIconSVG;
 QIcon* audioResampleIconSVG;
 
@@ -428,7 +431,10 @@ QCursor* mutePartsCursor;
 QCursor* handCursor;
 QCursor* closedHandCursor;
 //QCursor* magnetCursor;
-QCursor* customMoveCursor;
+//QCursor* customMoveCursor;
+QCursor* pencilMove4WayCursor;
+QCursor* pencilMoveHorizCursor;
+QCursor* pencilMoveVertCursor;
 
 //---------------------------------------------------------
 //   initIcons
@@ -710,7 +716,10 @@ void initIcons(int cursorSize)
       closedHandIconSVG = new QIcon(":/svg/closed_hand.svg");
       cursorIconSVG     = new QIcon(":/svg/cursor.svg");
       //magnetIconSVG     = new QIcon(":/svg/magnet.svg");
-      customMoveIconSVG = new QIcon(":/svg/cursor_move.svg");
+      //customMoveIconSVG = new QIcon(":/svg/cursor_move.svg");
+      pencilMove4WayIconSVG = new QIcon(":/svg/pencil_move_4_way.svg");
+      pencilMoveHorizIconSVG = new QIcon(":/svg/pencil_move_horiz.svg");
+      pencilMoveVertIconSVG = new QIcon(":/svg/pencil_move_vert.svg");
       audioStretchIconSVG = new QIcon(":/svg/audio_stretch.svg");
       audioResampleIconSVG = new QIcon(":/svg/audio_resample.svg");
 
@@ -738,7 +747,13 @@ void initIcons(int cursorSize)
       closedHandCursor = new QCursor(closedHandIconSVG->pixmap(QSize(cursorSize, cursorSize)));
       //magnetCursor     = new QCursor(magnetIconSVG->pixmap(QSize(cursorSize, cursorSize)), -1, qRound(dpr * 15));
       // This one needs to be bigger to contain drum notes.
-      customMoveCursor = new QCursor(customMoveIconSVG->pixmap(QSize(2 * cursorSize, 2 * cursorSize)));
+      //customMoveCursor = new QCursor(customMoveIconSVG->pixmap(QSize(2 * cursorSize, 2 * cursorSize)));
+      pencilMove4WayCursor = 
+        new QCursor(pencilMove4WayIconSVG->pixmap(QSize(cursorSize, cursorSize)), qRound(dpr * 1), qRound(dpr * 17));
+      pencilMoveHorizCursor = 
+        new QCursor(pencilMoveHorizIconSVG->pixmap(QSize(cursorSize, cursorSize)), qRound(dpr * 1), qRound(dpr * 17));
+      pencilMoveVertCursor = 
+        new QCursor(pencilMoveVertIconSVG->pixmap(QSize(cursorSize, cursorSize)), qRound(dpr * 1), qRound(dpr * 17));
       }
 
 //---------------------------------------------------------
@@ -983,7 +998,10 @@ void deleteIcons()
       delete closedHandIconSVG;
       delete cursorIconSVG;
       //delete magnetIconSVG;
-      delete customMoveIconSVG;
+      //delete customMoveIconSVG;
+      delete pencilMove4WayIconSVG;
+      delete pencilMoveHorizIconSVG;
+      delete pencilMoveVertIconSVG;
       delete audioStretchIconSVG;
       delete audioResampleIconSVG;
 
@@ -1010,7 +1028,10 @@ void deleteIcons()
       delete handCursor;
       delete closedHandCursor;
       //delete magnetCursor;
-      delete customMoveCursor;
+      //delete customMoveCursor;
+      delete pencilMove4WayCursor;
+      delete pencilMoveHorizCursor;
+      delete pencilMoveVertCursor;
       }
 
 } // namespace MusEGui

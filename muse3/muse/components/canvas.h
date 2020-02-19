@@ -135,6 +135,7 @@ class Canvas : public View {
       void setLasso(const QRect& r);
       void resizeToTheLeft(const QPoint &pos);
       virtual void setCursor();
+      virtual void setMouseOverItemCursor();
       virtual void viewKeyPressEvent(QKeyEvent* event);
       virtual void viewKeyReleaseEvent(QKeyEvent* event);
       virtual void viewMousePressEvent(QMouseEvent* event);

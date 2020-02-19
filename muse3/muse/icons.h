@@ -283,7 +283,10 @@ extern QIcon* handIconSVG;
 extern QIcon* closedHandIconSVG;
 extern QIcon* cursorIconSVG;
 //extern QIcon* magnetIconSVG;
-extern QIcon* customMoveIconSVG;
+//extern QIcon* customMoveIconSVG;
+extern QIcon* pencilMove4WayIconSVG;
+extern QIcon* pencilMoveHorizIconSVG;
+extern QIcon* pencilMoveVertIconSVG;
 extern QIcon* audioStretchIconSVG;
 extern QIcon* audioResampleIconSVG;
 
@@ -307,7 +310,10 @@ extern QCursor* mutePartsCursor;
 extern QCursor* handCursor;
 extern QCursor* closedHandCursor;
 //extern QCursor* magnetCursor;
-extern QCursor* customMoveCursor;
+//extern QCursor* customMoveCursor;
+extern QCursor* pencilMove4WayCursor;
+extern QCursor* pencilMoveHorizCursor;
+extern QCursor* pencilMoveVertCursor;
 
 } // namespace MusEGui
 

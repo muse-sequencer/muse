@@ -2016,36 +2016,51 @@ void DrumCanvas::setCursor()
 
     switch (drag) {
 
-// Possibly do these later.
-//     case DRAGX_MOVE:
-//     case DRAGX_COPY:
-//     case DRAGX_CLONE:
-//         QWidget::setCursor(QCursor(Qt::SizeHorCursor));
-//         break;
-// 
-//     case DRAGY_MOVE:
-//     case DRAGY_COPY:
-//     case DRAGY_CLONE:
-//         QWidget::setCursor(QCursor(Qt::SizeVerCursor));
-//         break;
+    case DRAGX_MOVE:
+    case DRAGX_COPY:
+    case DRAGX_CLONE:
+        // Make sure to do this.
+        showCursor();
+        QWidget::setCursor(*pencilMoveHorizCursor);
+        break;
+
+    case DRAGY_MOVE:
+    case DRAGY_COPY:
+    case DRAGY_CLONE:
+        // Make sure to do this.
+        showCursor();
+        QWidget::setCursor(*pencilMoveVertCursor);
+        break;
 
     case DRAG_MOVE:
     case DRAG_COPY:
     case DRAG_CLONE:
         // Make sure to do this.
         showCursor();
-        QWidget::setCursor(*customMoveCursor);
+        QWidget::setCursor(*pencilMove4WayCursor);
         break;
 
-//     case DRAG_RESIZE:
-//         QWidget::setCursor(QCursor(Qt::SizeHorCursor));
-//         break;
+    case DRAG_RESIZE:
+        // Make sure to do this.
+        showCursor();
+        QWidget::setCursor(*pencilMoveHorizCursor);
+        break;
 
     default:
         // Let the Canvas handle it, and call showCursor().
         Canvas::setCursor();
         break;
     }
+}
+
+//---------------------------------------------------------
+//   setMouseOverItemCursor
+//---------------------------------------------------------
+
+void DrumCanvas::setMouseOverItemCursor()
+{
+  //showCursor();
+  QWidget::setCursor(*pencilMove4WayCursor);
 }
 
 

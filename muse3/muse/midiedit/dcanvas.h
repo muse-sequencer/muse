@@ -139,6 +139,7 @@ class DrumCanvas : public EventCanvas {
 
    protected:
       void setCursor() override;
+      void setMouseOverItemCursor() override;
      
    signals:
       void newWidth(int);

@@ -1516,7 +1516,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
             case DRAG_OFF:
                   if(_tool == PencilTool){
                      if(findCurrentItem(ev_pos)){
-                        QWidget::setCursor(QCursor(Qt::SizeHorCursor));
+                        setMouseOverItemCursor();
                         break;
                      }
                   }
@@ -1955,6 +1955,16 @@ void Canvas::setCursor()
         }
         break;
     }
+}
+
+//---------------------------------------------------------
+//   setMouseOverItemCursor
+//---------------------------------------------------------
+
+void Canvas::setMouseOverItemCursor()
+{
+  //showCursor();
+  QWidget::setCursor(QCursor(Qt::SizeHorCursor));
 }
 
 //---------------------------------------------------------
