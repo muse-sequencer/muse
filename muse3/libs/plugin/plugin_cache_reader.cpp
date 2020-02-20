@@ -26,6 +26,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QDateTime>
+#include <QStandardPaths>
 
 // For sorting port enum values.
 #include <map>
@@ -409,12 +410,16 @@ QStringList pluginGetLadspaDirectories(const QString& museGlobalLib)
   // Add our own LADSPA plugin directory...
   sl.append(museGlobalLib + QString("/plugins"));
   // Now add other directories...
-  QString ladspaPath = std::getenv("LADSPA_PATH");
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+  QString ladspaPath = qEnvironmentVariable("LADSPA_PATH");
+#else
+  QString ladspaPath = QString::fromLocal8Bit(qgetenv("LADSPA_PATH"));
+#endif
   if(ladspaPath.isEmpty())
   {
-    QString homePath = std::getenv("HOME");
+    QString homePath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
     if(!homePath.isEmpty())
-      homePath += QString("/ladspa:");
+      homePath += QString("/ladspa:") + homePath + QString("/.ladspa:");
     ladspaPath = homePath + QString("/usr/local/lib64/ladspa:/usr/lib64/ladspa:/usr/local/lib/ladspa:/usr/lib/ladspa");
   }
   if(!ladspaPath.isEmpty())
@@ -432,10 +437,14 @@ QStringList pluginGetMessDirectories(const QString& museGlobalLib)
   // Add our own MESS plugin directory...
   sl.append(museGlobalLib + QString("/synthi"));
   // Now add other directories...
-  QString messPath = std::getenv("MESS_PATH");
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+  QString messPath = qEnvironmentVariable("MESS_PATH");
+#else
+  QString messPath = QString::fromLocal8Bit(qgetenv("MESS_PATH"));
+#endif
   if(messPath.isEmpty())
   {
-    QString homePath = std::getenv("HOME");
+    QString homePath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
     if(!homePath.isEmpty())
       homePath += QString("/MESS:");
     messPath = homePath + QString("/usr/local/lib64/MESS:/usr/lib64/MESS:/usr/local/lib/MESS:/usr/lib/MESS");
@@ -452,12 +461,16 @@ QStringList pluginGetMessDirectories(const QString& museGlobalLib)
 QStringList pluginGetDssiDirectories()
 {
   QStringList sl;
-  QString dssiPath = std::getenv("DSSI_PATH");
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+  QString dssiPath = qEnvironmentVariable("DSSI_PATH");
+#else
+  QString dssiPath = QString::fromLocal8Bit(qgetenv("DSSI_PATH"));
+#endif
   if(dssiPath.isEmpty())
   {
-    QString homePath = std::getenv("HOME");
+    QString homePath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
     if(!homePath.isEmpty())
-      homePath += QString("/dssi:");
+      homePath += QString("/dssi:") + homePath + QString("/.dssi:");
     dssiPath = homePath + QString("/usr/local/lib64/dssi:/usr/lib64/dssi:/usr/local/lib/dssi:/usr/lib/dssi");
   }
   if(!dssiPath.isEmpty())
@@ -466,24 +479,67 @@ QStringList pluginGetDssiDirectories()
 }
 
 //---------------------------------------------------------
-//   pluginGetLinuxVstDirectories
+//   pluginGetLinuxVstDirectories Linux vst plugins (*.so)
 //---------------------------------------------------------
 
 QStringList pluginGetLinuxVstDirectories()
 {
   QStringList sl;
-  QString vstPath = std::getenv("LINUX_VST_PATH");
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+  QString vstPath = qEnvironmentVariable("LXVST_PATH");
+#else
+  QString vstPath = QString::fromLocal8Bit(qgetenv("LXVST_PATH"));
+#endif
   if(vstPath.isEmpty())
   {
-    vstPath = std::getenv("VST_PATH");
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+    QString vstPath = qEnvironmentVariable("VST_PATH");
+#else
+    QString vstPath = QString::fromLocal8Bit(qgetenv("VST_PATH"));
+#endif
+    if(vstPath.isEmpty())
     {
-      if(vstPath.isEmpty())
+      QString homePath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+      QString fin_path;
+      if(!homePath.isEmpty())
       {
-        QString homePath = std::getenv("HOME");
-        if(!homePath.isEmpty())
-          homePath += QString("/.vst:") + homePath + QString("/vst:");
-        vstPath = homePath + QString("/usr/local/lib64/vst:/usr/local/lib/vst:/usr/lib64/vst:/usr/lib/vst");
+
+// On win, vst is usually where *.dll files are found. We don't want that with Linux *.so vst files.
+// Otherwise on Linux for example, vst is where Linux vst *.so files are found.
+// On win, lxvst should be safe, likely where Linux vst *.so files might be found (if that's even a thing!).
+#ifndef Q_OS_WIN
+        fin_path += homePath + QString("/vst:");
+#endif
+        fin_path += homePath + QString("/lxvst:");
+
+#ifndef Q_OS_WIN
+        fin_path += homePath + QString("/.vst:");
+#endif
+        fin_path += homePath + QString("/.lxvst:");
       }
+
+#ifndef Q_OS_WIN
+      fin_path += QString("/usr/local/lib64/vst:");
+#endif
+      fin_path += QString("/usr/local/lib64/lxvst:");
+      
+#ifndef Q_OS_WIN
+      fin_path += QString("/usr/local/lib/vst:");
+#endif
+      fin_path += QString("/usr/local/lib/lxvst:");
+      
+#ifndef Q_OS_WIN
+      fin_path += QString("/usr/lib64/vst:");
+#endif
+      fin_path += QString("/usr/lib64/lxvst:");
+      
+#ifndef Q_OS_WIN
+      fin_path += QString("/usr/lib/vst:");
+#endif
+      // No last colon.
+      fin_path += QString("/usr/lib/lxvst");
+                
+      vstPath = fin_path;
     }
   }
   if(!vstPath.isEmpty())
@@ -492,19 +548,32 @@ QStringList pluginGetLinuxVstDirectories()
 }
 
 //---------------------------------------------------------
-//   pluginGetVstDirectories
+//   pluginGetVstDirectories Win vst plugins (*.dll)
 //---------------------------------------------------------
 
 QStringList pluginGetVstDirectories()
 {
   QStringList sl;
-  QString vstPath = std::getenv("VST_PATH");
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+  QString vstPath = qEnvironmentVariable("VST_PATH");
+#else
+  QString vstPath = QString::fromLocal8Bit(qgetenv("VST_PATH"));
+#endif
   if(vstPath.isEmpty())
   {
-    QString homePath = std::getenv("HOME");
+    // TODO: Refine this, and below, for Q_OS_WIN. Where exactly do we look though?
+    QString homePath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
     if(!homePath.isEmpty())
-      homePath += QString("/.vst:") + homePath + QString("/vst:");
-    vstPath = homePath + QString("/usr/local/lib64/vst:/usr/local/lib/vst:/usr/lib64/vst:/usr/lib/vst");
+    {
+// On win, vst is usually where *.dll files are found. We don't want that with Linux *.so vst files.
+// Otherwise on Linux for example, vst is where Linux vst *.so files are found.
+#ifdef Q_OS_WIN
+      homePath += QString("/vst:") + homePath + QString("/.vst");
+#else
+      homePath += QString("/vst win 32bit:") + homePath + QString("/.vst win 32bit");
+#endif
+    }
+    vstPath = homePath;
   }
   if(!vstPath.isEmpty())
     sl.append(vstPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
@@ -518,12 +587,16 @@ QStringList pluginGetVstDirectories()
 QStringList pluginGetLv2Directories()
 {
   QStringList sl;
-  QString lv2Path = std::getenv("LV2_PATH");
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+  QString lv2Path = qEnvironmentVariable("LV2_PATH");
+#else
+  QString lv2Path = QString::fromLocal8Bit(qgetenv("LV2_PATH"));
+#endif
   if(lv2Path.isEmpty())
   {
-    QString homePath = std::getenv("HOME");
+    QString homePath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
     if(!homePath.isEmpty())
-      homePath += QString("/.lv2:");
+      homePath += QString("/lv2:") + homePath + QString("/.lv2:");
     lv2Path = homePath + QString("/usr/local/lib64/lv2:/usr/lib64/lv2:/usr/local/lib/lv2:/usr/lib/lv2");
   }
   if(!lv2Path.isEmpty())

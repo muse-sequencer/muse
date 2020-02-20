@@ -271,14 +271,17 @@ static void printExtraHelpText()
       printf("These variables are read ONCE upon first-time run, to fill the Plugin Paths\n"
                       " in Global Settings. Afterwards the paths can be altered in Global Settings:\n\n");
       printf("   LADSPA_PATH: Override where to look for ladspa plugins, or else\n"
-                      "     ~/ladspa:/usr/local/lib64/ladspa:/usr/lib64/ladspa:/usr/local/lib/ladspa:/usr/lib/ladspa\n\n");
+                      "     ~/ladspa:~/.ladspa:/usr/local/lib64/ladspa:/usr/lib64/ladspa:/usr/local/lib/ladspa:/usr/lib/ladspa\n\n");
 #ifdef DSSI_SUPPORT
-      printf("   DSSI_PATH: Override where to look for dssi plugins (dssi-vst plugins: VST_PATH), or else\n"
-                      "     ~/dssi:/usr/local/lib64/dssi:/usr/lib64/dssi:/usr/local/lib/dssi:/usr/lib/dssi\n\n" );      
+      printf("   DSSI_PATH: Override where to look for dssi plugins, or else\n"
+                      "     ~/dssi:~/.dssi:/usr/local/lib64/dssi:/usr/lib64/dssi:/usr/local/lib/dssi:/usr/lib/dssi\n\n" );      
+      printf("   VST_PATH: Override where dssi-vst (if installed) looks for Wine vst plugins, or else\n"
+                      "     ~/vst win 32bit:~/.vst win 32bit or ~/vst:~/.vst on windows\n\n");
 #endif
 #ifdef VST_NATIVE_SUPPORT
-      printf("   VST_NATIVE_PATH: Override where to look for native vst plugins, or else VST_PATH, or else\n"
-                      "     ~/.vst:~/vst:/usr/local/lib64/vst:/usr/local/lib/vst:/usr/lib64/vst:/usr/lib/vst\n\n");
+      printf("   LXVST_PATH: Override where to look for Linux vst plugins, or else VST_PATH, or else\n"
+                      "     ~/lxvst:~/.lxvst:/usr/local/lib64/lxvst:/usr/local/lib/lxvst:/usr/lib64/lxvst:/usr/lib/lxvst\n"
+                      "     also on Linux ~/vst:~/.vst:/usr/local/lib64/vst:/usr/local/lib/vst:/usr/lib64/vst:/usr/lib/vst\n\n");
 #endif
 #ifdef LV2_SUPPORT
       printf("   LV2_PATH: Override where to look for LV2 plugins or else\n"
@@ -348,7 +351,7 @@ CommandLineParseResult parseCommandLine(
   parser.addOption(option_V);
 #endif
 #ifdef VST_NATIVE_SUPPORT
-  QCommandLineOption option_N("N", QCoreApplication::translate("main", "Don't load Native VST plugins"));
+  QCommandLineOption option_N("N", QCoreApplication::translate("main", "Don't load LinuxVST plugins"));
   parser.addOption(option_N);
 #endif
 #ifdef DSSI_SUPPORT
@@ -563,17 +566,17 @@ int main(int argc, char* argv[])
         const QString ladspa_path = qEnvironmentVariable("LADSPA_PATH");
         const QString dssi_path = qEnvironmentVariable("DSSI_PATH");
         const QString vst_path = qEnvironmentVariable("VST_PATH");
-        const QString nvst_path = qEnvironmentVariable("LINUX_VST_PATH");
+        // This Linux VST path is known to be used by Ardour.
+        const QString lxvst_path = qEnvironmentVariable("LXVST_PATH");
         const QString lv2_path = qEnvironmentVariable("LV2_PATH");
       #else
         // "To convert the data to a QString use QString::fromLocal8Bit()."
         const QString ladspa_path = QString::fromLocal8Bit(qgetenv("LADSPA_PATH"));
         const QString dssi_path = QString::fromLocal8Bit(qgetenv("DSSI_PATH"));
         const QString vst_path = QString::fromLocal8Bit(qgetenv("VST_PATH"));
-        const QString nvst_path = QString::fromLocal8Bit(qgetenv("LINUX_VST_PATH"));
+        const QString lxvst_path = QString::fromLocal8Bit(qgetenv("LXVST_PATH"));
         const QString lv2_path = QString::fromLocal8Bit(qgetenv("LV2_PATH"));
       #endif
-
 
 
       bool plugin_rescan_already_done = false;
@@ -831,6 +834,7 @@ int main(int argc, char* argv[])
           {
             MusEGlobal::config.pluginLadspaPathList << 
               (MusEGlobal::museUser + QString("/ladspa")) <<
+              (MusEGlobal::museUser + QString("/.ladspa")) <<
               QString("/usr/local/lib64/ladspa") <<
               QString("/usr/local/lib/ladspa") <<
               QString("/usr/lib64/ladspa") <<
@@ -855,6 +859,7 @@ int main(int argc, char* argv[])
           {
             MusEGlobal::config.pluginDssiPathList << 
               (MusEGlobal::museUser + QString("/dssi")) <<
+              (MusEGlobal::museUser + QString("/.dssi")) <<
               QString("/usr/local/lib64/dssi") <<
               QString("/usr/local/lib/dssi") <<
               QString("/usr/lib64/dssi") <<
@@ -869,20 +874,25 @@ int main(int argc, char* argv[])
         if(!found && qputenv("DSSI_PATH", MusEGlobal::config.pluginDssiPathList.join(list_separator).toLocal8Bit()) == 0)
           fprintf(stderr, "Error setting DSSI_PATH\n");
 
-        //==============
-        //  VST paths:
-        //==============
+        //=======================
+        //  Win VST (*.dll) paths:
+        //=======================
         found = false;
         if(MusEGlobal::config.pluginVstPathList.isEmpty())
         {
           if(vst_path.isEmpty())
           {
             MusEGlobal::config.pluginVstPathList << 
-              (MusEGlobal::museUser + QString("/.vst")) <<
-              QString("/usr/local/lib64/vst") <<
-              QString("/usr/local/lib/vst") <<
-              QString("/usr/lib64/vst") <<
-              QString("/usr/lib/vst");
+// On win, vst is usually where *.dll files are found. We don't want that with Linux *.so vst files.
+// Otherwise on Linux for example, vst is where Linux vst *.so files are found.
+#ifdef Q_OS_WIN
+              // TODO: Refine this for Q_OS_WIN. Where exactly do we look though?
+              (MusEGlobal::museUser + QString("/vst")) <<
+              (MusEGlobal::museUser + QString("/.vst"));
+#else
+              (MusEGlobal::museUser + QString("/vst win 32bit")) <<
+              (MusEGlobal::museUser + QString("/.vst win 32bit"));
+#endif
           }
           else
           {
@@ -893,22 +903,51 @@ int main(int argc, char* argv[])
         if(!found && qputenv("VST_PATH", MusEGlobal::config.pluginVstPathList.join(list_separator).toLocal8Bit()) == 0)
           fprintf(stderr, "Error setting VST_PATH\n");
 
-        //==================
-        //  LinuxVST paths:
-        //==================
+        //=======================
+        //  LinuxVST (*.so) paths:
+        //=======================
         found = false;
         if(MusEGlobal::config.pluginLinuxVstPathList.isEmpty())
         {
-          if(nvst_path.isEmpty())
+          if(lxvst_path.isEmpty())
           {
             if(vst_path.isEmpty())
             {
-              MusEGlobal::config.pluginLinuxVstPathList << 
+              MusEGlobal::config.pluginLinuxVstPathList <<
+
+// On win, vst is usually where *.dll files are found. We don't want that with Linux *.so vst files.
+// Otherwise on Linux for example, vst is where Linux vst *.so files are found.
+// On win, lxvst should be safe, likely where Linux vst *.so files might be found (if that's even a thing!).
+#ifndef Q_OS_WIN
+                (MusEGlobal::museUser + QString("/vst")) <<
+#endif
+                (MusEGlobal::museUser + QString("/lxvst")) <<
+
+#ifndef Q_OS_WIN
                 (MusEGlobal::museUser + QString("/.vst")) <<
+#endif
+                (MusEGlobal::museUser + QString("/.lxvst")) <<
+
+#ifndef Q_OS_WIN
                 QString("/usr/local/lib64/vst") <<
+#endif
+                QString("/usr/local/lib64/lxvst") <<
+
+#ifndef Q_OS_WIN
                 QString("/usr/local/lib/vst") <<
+#endif
+                QString("/usr/local/lib/lxvst") <<
+
+#ifndef Q_OS_WIN
                 QString("/usr/lib64/vst") <<
-                QString("/usr/lib/vst");
+#endif
+                QString("/usr/lib64/lxvst") <<
+
+#ifndef Q_OS_WIN
+                QString("/usr/lib/vst")  <<
+#endif
+                QString("/usr/lib/lxvst");
+
             }
             else
             {
@@ -918,12 +957,12 @@ int main(int argc, char* argv[])
           }
           else
           {
-            MusEGlobal::config.pluginLinuxVstPathList = nvst_path.split(list_separator, QString::SkipEmptyParts);
+            MusEGlobal::config.pluginLinuxVstPathList = lxvst_path.split(list_separator, QString::SkipEmptyParts);
             found = true;
           }
         }
-        if(!found && qputenv("LINUX_VST_PATH", MusEGlobal::config.pluginLinuxVstPathList.join(list_separator).toLocal8Bit()) == 0)
-          fprintf(stderr, "Error setting LINUX_VST_PATH\n");
+        if(!found && qputenv("LXVST_PATH", MusEGlobal::config.pluginLinuxVstPathList.join(list_separator).toLocal8Bit()) == 0)
+          fprintf(stderr, "Error setting LXVST_PATH\n");
 
         //==============
         //  LV2 paths:
@@ -936,6 +975,7 @@ int main(int argc, char* argv[])
           if(lv2_path.isEmpty())
           {
             MusEGlobal::config.pluginLv2PathList <<
+              (MusEGlobal::museUser + QString("/lv2")) <<
               (MusEGlobal::museUser + QString("/.lv2")) <<
               QString("/usr/local/lib64/lv2") <<
               QString("/usr/local/lib/lv2") <<

@@ -1,3 +1,8 @@
+20.02.2020:
+    - Partial revert of 16.02.2020. dssi-vst works now. Extra path tab was required. (Tim)
+      Description labels added to dialog vst path tabs (*.dll vs. *.so etc)
+      Linux vst paths now include 'lxvst'. It's a commonly used folder besides 'vst'.
+      Changed all std::getenv() in plugin_cache_reader.cpp to qEnvironmentVariable().
 19.02.2020:
     - Fix new drum move cursor. New Canvas::setMouseOverItemCursor() fixes hover cursor. (Tim)
 18.02.2020:

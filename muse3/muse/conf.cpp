@@ -692,9 +692,15 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.pluginLadspaPathList = xml.parse1().split(":", QString::SkipEmptyParts);
                         else if (tag == "pluginDssiPathList")
                               MusEGlobal::config.pluginDssiPathList = xml.parse1().split(":", QString::SkipEmptyParts);
+                        // Obsolete. Replaced with one below.
                         else if (tag == "pluginVstPathList")
+                              xml.parse1();
+                        else if (tag == "pluginVstsPathList")
                               MusEGlobal::config.pluginVstPathList = xml.parse1().split(":", QString::SkipEmptyParts);
+                        // Obsolete. Replaced with one below.
                         else if (tag == "pluginLinuxVstPathList")
+                              xml.parse1();
+                        else if (tag == "pluginLinuxVstsPathList")
                               MusEGlobal::config.pluginLinuxVstPathList = xml.parse1().split(":", QString::SkipEmptyParts);
                         else if (tag == "pluginLv2PathList")
                               MusEGlobal::config.pluginLv2PathList = xml.parse1().split(":", QString::SkipEmptyParts);
@@ -1768,8 +1774,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
 
       xml.strTag(level, "pluginLadspaPathList", MusEGlobal::config.pluginLadspaPathList.join(":"));
       xml.strTag(level, "pluginDssiPathList", MusEGlobal::config.pluginDssiPathList.join(":"));
-      xml.strTag(level, "pluginVstPathList", MusEGlobal::config.pluginVstPathList.join(":"));
-      xml.strTag(level, "pluginLinuxVstPathList", MusEGlobal::config.pluginLinuxVstPathList.join(":"));
+      xml.strTag(level, "pluginVstsPathList", MusEGlobal::config.pluginVstPathList.join(":"));
+      xml.strTag(level, "pluginLinuxVstsPathList", MusEGlobal::config.pluginLinuxVstPathList.join(":"));
       xml.strTag(level, "pluginLv2PathList", MusEGlobal::config.pluginLv2PathList.join(":"));
       
       if(MusEGlobal::defaultAudioConverterSettings)

@@ -42,7 +42,7 @@ namespace MusEGui {
 class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase {
       Q_OBJECT
 
-      enum PathTab { LadspaTab, DssiTab, VstTab, LinuxVstTab, Lv2Tab };
+      enum PathTab { LadspaTab = 0, DssiTab, VstTab, LinuxVstTab, Lv2Tab };
       
    private slots:
       void updateSettings();

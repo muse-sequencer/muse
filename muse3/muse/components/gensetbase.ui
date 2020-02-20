@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>576</width>
-    <height>585</height>
+    <width>607</width>
+    <height>644</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -746,11 +746,43 @@
                </item>
               </layout>
              </widget>
+             <widget class="QWidget" name="pluginVstPathTab">
+              <attribute name="title">
+               <string>DSSI VST</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_14">
+               <item>
+                <widget class="QLabel" name="label_3">
+                 <property name="text">
+                  <string>Directories where dssi-vst (if installed)
+ looks for Wine vst plugins (*.dll files)</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QListWidget" name="pluginVstPathList">
+                 <property name="alternatingRowColors">
+                  <bool>true</bool>
+                 </property>
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::ExtendedSelection</enum>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
              <widget class="QWidget" name="pluginLinuxVstPathTab">
               <attribute name="title">
-               <string>VST</string>
+               <string>Linux VST</string>
               </attribute>
               <layout class="QVBoxLayout" name="verticalLayout_11">
+               <item>
+                <widget class="QLabel" name="label_14">
+                 <property name="text">
+                  <string>Directories containing Linux vst plugins (*.so files)</string>
+                 </property>
+                </widget>
+               </item>
                <item>
                 <widget class="QListWidget" name="pluginLinuxVstPathList">
                  <property name="alternatingRowColors">
@@ -1376,8 +1408,8 @@ Adjusts responsiveness of audio controls and
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>540</width>
-            <height>485</height>
+            <width>589</width>
+            <height>534</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -2228,8 +2260,8 @@ Turn off to reduce clutter.</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>514</width>
-               <height>438</height>
+               <width>563</width>
+               <height>482</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
@@ -2595,8 +2627,8 @@ Otherwise, hold Ctrl to keep them open.</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>524</width>
-               <height>411</height>
+               <width>573</width>
+               <height>450</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
