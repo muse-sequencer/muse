@@ -477,7 +477,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       QToolBar* cursorToolbar = addToolBar(tr("Cursor tools"));
       cursorToolbar->setObjectName("Cursor step tools");
-      QLabel *stepStr = new QLabel(tr("Cursor step:"));
+      QLabel *stepStr = new QLabel(tr("Cursor step"));
       cursorToolbar->addWidget(stepStr);
       stepLenWidget = new QComboBox();
       stepLenWidget->setToolTip(tr("Set step size for cursor edit"));
