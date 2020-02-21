@@ -247,8 +247,8 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
    const char* name, CtrlPanel* pnl) : View(parent, xmag, 1, name)
       {
       if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
-            setBg(MusEGlobal::config.midiCanvasBg);
-            setBg(QPixmap());
+          setBg(MusEGlobal::config.midiControllerViewBg);
+          setBg(QPixmap());
       }
       else {
             setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));

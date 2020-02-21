@@ -1789,6 +1789,7 @@ void DrumEdit::configChanged()
       else {
             canvas->setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
       }
+      dlist->setBg(MusEGlobal::config.drumListBg);
       initShortcuts();
       }
 
