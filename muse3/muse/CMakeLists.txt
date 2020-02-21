@@ -65,6 +65,7 @@ QT5_WRAP_CPP ( muse_moc_headers
       cobject.h
       conf.h
       midieditor.h
+      midi_editor_layout.h
       plugin.h
       script_delivery.h
       song.h
@@ -115,6 +116,7 @@ file (GLOB core_source_files
       midictrl.cpp
       mididev.cpp
       midieditor.cpp
+      midi_editor_layout.cpp
       midievent.cpp
       midifile.cpp
       midiport.cpp

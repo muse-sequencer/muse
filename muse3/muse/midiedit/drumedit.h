@@ -115,7 +115,7 @@ class DrumEdit : public MidiEditor {
       MusEGui::Header* header;
       QToolBar* tools;
       QComboBox *stepLenWidget;
-      QPushButton* ctrl;
+      QToolButton* ctrl;
 
       static int _rasterInit;
       static int _trackInfoWidthInit;

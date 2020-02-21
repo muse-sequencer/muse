@@ -72,6 +72,7 @@
 #include "operations.h"
 // #include "function_dialogs/quantize.h"
 #include "trackinfo_layout.h"
+#include "midi_editor_layout.h"
 
 namespace MusEGui {
 
@@ -507,43 +508,39 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       genTrackInfo(trackInfoWidget);
       
       split1            = new MusEGui::Splitter(Qt::Vertical, mainw, "split1");
-      ctrl = new QPushButton("Ctrl", mainw);
+      ctrl = new QToolButton(mainw);
+      ctrl->setText("Ctrl");
       ctrl->setObjectName("Ctrl");
       ctrl->setFont(MusEGlobal::config.fonts[3]);
       ctrl->setFocusPolicy(Qt::NoFocus);
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
       hscroll           = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, _viewState.xscale(), 20000, Qt::Horizontal, mainw);
+      hscroll->setFocusPolicy(Qt::NoFocus);
+      hscroll->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+
       ctrl->setFixedSize(40, hscroll->sizeHint().height());
       ctrl->setToolTip(tr("Add controller view"));
+      //ctrl->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
       QSizeGrip* corner = new QSizeGrip(mainw);
-      //corner->setFixedHeight(hscroll->sizeHint().height());
+      corner->setFixedHeight(hscroll->sizeHint().height());
       
-      QWidget* gridSplit1_w = new QWidget();
-      gridSplit1_w->setObjectName("gridSplit1_w");
-      gridSplit1_w->setContentsMargins(0, 0, 0, 0);
-      QGridLayout* gridSplit1 = new QGridLayout(gridSplit1_w);
+      MidiEditorHScrollLayout* gridSplit1 = 
+        new MidiEditorHScrollLayout(nullptr, ctrl, nullptr, hscroll, corner, nullptr);
       gridSplit1->setContentsMargins(0, 0, 0, 0);
       gridSplit1->setSpacing(0);  
-      gridSplit1->setRowStretch(0, 100);
-      gridSplit1->setColumnStretch(1, 100);
-      gridSplit1->addWidget(ctrl,    0, 0);
-      gridSplit1->addWidget(hscroll, 0, 1);
-      gridSplit1->addWidget(corner,  0, 2, Qt::AlignBottom|Qt::AlignRight);
-      gridSplit1_w->setMaximumHeight(hscroll->sizeHint().height());
-      gridSplit1_w->setMinimumHeight(hscroll->sizeHint().height());
-      
-      QWidget* split1_w = new QWidget();
+
+      QWidget* split1_w = new QWidget(hsplitter);
       split1_w->setObjectName("split1_w");
       split1_w->setContentsMargins(0, 0, 0, 0);
       QVBoxLayout* split1_w_vbox = new QVBoxLayout(split1_w);
       split1_w_vbox->setContentsMargins(0, 0, 0, 0);
       split1_w_vbox->setSpacing(0);  
-      split1_w_vbox->addWidget(split1);
-      split1_w_vbox->addWidget(gridSplit1_w);
-      
-      hsplitter->addWidget(split1_w);
-          
+      // Let the vertical splitter take up room so that the next widget
+      //  (gridSplit1 - the bottom space layout) does not expand.
+      split1_w_vbox->addWidget(split1, 1000);
+      split1_w_vbox->addLayout(gridSplit1);
+
       QSizePolicy tipolicy, epolicy;
       hsplitter->setStretchFactor(hsplitter->indexOf(trackInfoWidget), 0);
       tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
@@ -590,8 +587,12 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       epolicy.setVerticalStretch(100);
       split1w2->setSizePolicy(epolicy);
       
+      // Now that we have the second widget in splitter 2 (split1w2),
+      //  set up the horizontal scroll layout to follow its width.
+      gridSplit1->setEditor(split1w2);
+      
       QGridLayout* gridS1 = new QGridLayout(split1w1);
-      QGridLayout* gridS2 = new QGridLayout(split1w2);
+      MidiEditorCanvasLayout* gridS2 = new MidiEditorCanvasLayout(split1w2, gridSplit1);
       gridS1->setContentsMargins(0, 0, 0, 0);
       gridS1->setSpacing(0);  
       gridS2->setContentsMargins(0, 0, 0, 0);
@@ -894,7 +895,7 @@ void DrumEdit::updateHScrollRange()
       // Show another quarter measure due to imprecise drawing at canvas end point.
       e += MusEGlobal::sigmap.ticksMeasure(e) / 4;
       // Compensate for drum list, splitter handle, and vscroll widths. 
-      e += canvas->rmapxDev(dlist->width() + split2->handleWidth() - vscroll->width()); 
+      e += canvas->rmapxDev(split2->handleWidth() - vscroll->width()); 
       int s1, e1;
       hscroll->range(&s1, &e1);
       if(s != s1 || e != e1) 
