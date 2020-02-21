@@ -86,7 +86,7 @@ NoteInfo::NoteInfo(QWidget* parent)
       selPitch->setDeltaMode(deltaMode);
       addWidget(selPitch);
 
-      label = new QLabel(tr("Velo On"));
+      label = new QLabel(tr("Velo on"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       addWidget(label);
@@ -98,7 +98,7 @@ NoteInfo::NoteInfo(QWidget* parent)
       selVelOn->setSingleStep(1);
       addWidget(selVelOn);
 
-      label = new QLabel(tr("Velo Off"));
+      label = new QLabel(tr("Velo off"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       addWidget(label);

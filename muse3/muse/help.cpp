@@ -94,7 +94,7 @@ void MusE::startHelpBrowser()
 
 void MusE::startHomepageBrowser()
       {
-      QString museHome = QString("http://www.muse-sequencer.org");
+      QString museHome = QString("https://muse-sequencer.github.io");
 
       launchBrowser(museHome);
       }
@@ -105,7 +105,7 @@ void MusE::startHomepageBrowser()
 
 void MusE::startBugBrowser()
       {
-      QString museBugPage("http://www.muse-sequencer.org/index.php/Report_a_bug");
+      QString museBugPage("https://github.com/muse-sequencer/muse/issues");
       launchBrowser(museBugPage);
       }
 
