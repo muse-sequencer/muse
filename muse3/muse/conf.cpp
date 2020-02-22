@@ -908,8 +908,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "midiTrackLabelBg")
                               MusEGlobal::config.midiTrackLabelBg = readColor(xml);
 // Obsolete. There is only 'New' drum tracks now.
-//                         else if (tag == "drumTrackLabelBg2")
-//                               MusEGlobal::config.drumTrackLabelBg = readColor(xml);
+                        else if (tag == "drumTrackLabelBg2")
+                              /*MusEGlobal::config.drumTrackLabelBg =*/ readColor(xml);
                         else if (tag == "newDrumTrackLabelBg2")
                               MusEGlobal::config.newDrumTrackLabelBg = readColor(xml);
                         else if (tag == "waveTrackLabelBg")
