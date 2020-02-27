@@ -407,8 +407,11 @@ bool DrumCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
       int ntick        = (rasterize ? editor->rasterVal(x) : x) - dest_part->tick();
       if (ntick < 0)
             ntick = 0;
+
+      event.setSelected(false);
       MusECore::Event newEvent   = event.clone();
-      
+      newEvent.setSelected(true);
+
       int ev_pitch = instrument_map[instrument].pitch;
       newEvent.setPitch(ev_pitch);
       newEvent.setTick(ntick);
