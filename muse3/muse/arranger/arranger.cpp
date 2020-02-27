@@ -367,13 +367,13 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       trackInfoButton  = new CompactToolButton(this);
       trackInfoButton->setContentsMargins(0, 0, 0, 0);
       trackInfoButton->setIcon(*mixerstripSVGIcon);
-      trackInfoButton->setToolTip(tr("Show mixer strip for current track (F5)"));
+      trackInfoButton->setToolTip(tr("Show mixer strip for current track"));
       trackInfoButton->setCheckable(true);
       trackInfoButton->setChecked(showTrackinfoFlag);
       trackInfoButton->setFocusPolicy(Qt::NoFocus);
       trackInfoButton->setFixedSize(20, 14);
       trackInfoButton->setDrawFlat(true);
-      trackInfoButton->setShortcut(QKeySequence(Qt::Key_F5));
+//      trackInfoButton->setShortcut(QKeySequence(Qt::Key_F5));
       trackInfoButton->setCursor(QCursor(Qt::PointingHandCursor));
       connect(trackInfoButton, SIGNAL(toggled(bool)), SLOT(showTrackInfo(bool)));
 
@@ -1100,7 +1100,7 @@ void Arranger::controllerChanged(MusECore::Track *t, int ctrlId)
 
 void Arranger::showTrackInfo(bool flag)
       {
-      trackInfoButton->setToolTip(flag ? tr("Hide mixer strip for current track (F5)") : tr("Show mixer strip for current track (F5)"));
+      trackInfoButton->setToolTip(flag ? tr("Hide mixer strip for current track") : tr("Show mixer strip for current track"));
       showTrackinfoFlag = flag;
       trackInfoWidget->setVisible(flag);
       updateTrackInfo(-1);
