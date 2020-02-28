@@ -938,7 +938,7 @@ void MidiComponentRack::patchPopupActivated(QAction* act)
   MusECore::MidiInstrument* instr = mp->instrument();
   if(!instr)
     return;
-  
+
   if(act->data().type() == QVariant::Int || act->data().type() == QVariant::UInt)
   {
     bool ok;

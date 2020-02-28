@@ -109,6 +109,8 @@ typedef std::pair<int /* channel */, const MidiNamAvailableChannel&> MidiNamAvai
 
 
 class MidNamChannelNameSet;
+class MidiNamPatch;
+class MidiNamPatchBankList;
 class MidiNamChannelNameSetAssign
 {
   private:
@@ -135,6 +137,13 @@ class MidiNamChannelNameSetAssign
     void write(int level, MusECore::Xml& xml) const;
     bool read(MusECore::Xml& xml);
 
+    // Like find but if bank high or low are valid,
+    //  it searches for a match using them.
+    // Whereas find searches for an exact match.
+    const MidiNamPatch* findPatch(int channel, int patch) const;
+
+    const MidiNamPatchBankList* getPatchBanks(int channel) const;
+
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;
 };
@@ -151,6 +160,13 @@ class MidiNamChannelNameSetAssignments : public std::map<int /* channel */, Midi
     bool gatherReferences(MidNamReferencesList* refs) const;
     void write(int level, MusECore::Xml& xml) const;
     void read(MusECore::Xml& xml);
+
+    // Like find but if bank high or low are valid,
+    //  it searches for a match using them.
+    // Whereas find searches for an exact match.
+    const MidiNamPatch* findPatch(int channel, int patch) const;
+
+    const MidiNamPatchBankList* getPatchBanks(int channel) const;
 
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;
@@ -433,6 +449,8 @@ class MidiNamPatch
     MidiNamCtrls& controlNameList() { return _controlNameList; }
     const MidiNamCtrls& controlNameList() const { return _controlNameList; }
     bool gatherReferences(MidNamReferencesList* refs) const;
+    const QString& name() const { return _name; }
+    void setName(const QString& name) { _name = name; }
     bool operator<(const MidiNamPatch& n) const { return _patchNumber < n._patchNumber; }
     void write(int level, MusECore::Xml& xml) const;
     bool read(MusECore::Xml& xml);
@@ -456,6 +474,7 @@ class MidiNamPatchNameList : public std::map<int /* patchNumber */, MidiNamPatch
     MidiNamPatchNameList(const QString& name) :
       _name(name), _p_ref(nullptr), _isReference(false) { }
     bool add(const MidiNamPatch& a);
+    const MidiNamPatchNameList* objectOrRef() const { return (_isReference && _p_ref) ? _p_ref : this; }
     MidiNamPatchNameList* objectOrRef() { return (_isReference && _p_ref) ? _p_ref : this; }
     void setObjectOrRef(MidiNamPatchNameList* l) { _p_ref = l; }
     void resetObjectOrRef() { _p_ref = nullptr; }
@@ -468,8 +487,13 @@ class MidiNamPatchNameList : public std::map<int /* patchNumber */, MidiNamPatch
     void write(int level, MusECore::Xml& xml) const;
     void read(MusECore::Xml& xml);
 
+    // Like find but if bank high or low are valid,
+    //  it searches for a match using them.
+    // Whereas find searches for an exact match.
+    const MidiNamPatch* findPatch(int patch, int bankHL = 0xffff) const;
+
     bool getNoteSampleName(
-      bool drum, int channel, int patch, int note, QString* name) const;
+      bool drum, int channel, int patch, int note, QString* name, int bankHL = 0xffff) const;
 };
 typedef MidiNamPatchNameList::iterator iMidiNamPatchNameList;
 typedef MidiNamPatchNameList::const_iterator ciMidiNamPatchNameList;
@@ -503,9 +527,16 @@ class MidiNamPatchBank
     const MidiNamMIDICommands& MIDICommands() const { return _MIDICommands; }
     int bankHL() const { return _bankHL; }
     bool gatherReferences(MidNamReferencesList* refs) const;
+    const QString& name() const { return _name; }
+    void setName(const QString& name) { _name = name; }
     bool operator<(const MidiNamPatchBank& n) const { return _bankHL < n._bankHL; }
     void write(int level, MusECore::Xml& xml) const;
     bool read(MusECore::Xml& xml);
+
+    // Like find but if bank high or low are valid,
+    //  it searches for a match using them.
+    // Whereas find searches for an exact match.
+    const MidiNamPatch* findPatch(int patch) const;
 
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;
@@ -517,6 +548,11 @@ class MidiNamPatchBankList : public std::map<int /* bankHL */, MidiNamPatchBank,
     bool add(const MidiNamPatchBank& a);
     bool gatherReferences(MidNamReferencesList* refs) const;
     void write(int level, MusECore::Xml& xml) const;
+
+    // Like find but if bank high or low are valid,
+    //  it searches for a match using them.
+    // Whereas find searches for an exact match.
+    const MidiNamPatch* findPatch(int patch) const;
 
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;
@@ -552,6 +588,13 @@ class MidNamChannelNameSet
     void write(int level, MusECore::Xml& xml) const;
     bool read(MusECore::Xml& xml);
 
+    // Like find but if bank high or low are valid,
+    //  it searches for a match using them.
+    // Whereas find searches for an exact match.
+    const MidiNamPatch* findPatch(int channel, int patch) const;
+
+    const MidiNamPatchBankList* getPatchBanks(int channel) const;
+
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;
 };
@@ -561,6 +604,13 @@ class MidiNamChannelNameSetList : public std::set<MidNamChannelNameSet>
   public:
     bool gatherReferences(MidNamReferencesList* refs) const;
     void write(int level, MusECore::Xml& xml) const;
+
+    // Like find but if bank high or low are valid,
+    //  it searches for a match using them.
+    // Whereas find searches for an exact match.
+    const MidiNamPatch* findPatch(int channel, int patch) const;
+
+    const MidiNamPatchBankList* getPatchBanks(int channel) const;
 
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;
@@ -664,6 +714,13 @@ class MidNamDeviceMode
     bool operator<(const MidNamDeviceMode& n) const { return _name < n._name; }
     void write(int level, MusECore::Xml& xml) const;
     bool read(MusECore::Xml& xml);
+
+    // Like find but if bank high or low are valid,
+    //  it searches for a match using them.
+    // Whereas find searches for an exact match.
+    const MidiNamPatch* findPatch(int channel, int patch) const;
+
+    const MidiNamPatchBankList* getPatchBanks(int channel) const;
 
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;
@@ -825,6 +882,13 @@ class MidNamMasterDeviceNames
     void write(int level, MusECore::Xml& xml) const;
     bool read(MusECore::Xml& xml);
 
+    // Like find but if bank high or low are valid,
+    //  it searches for a match using them.
+    // Whereas find searches for an exact match.
+    const MidiNamPatch* findPatch(int channel, int patch) const;
+
+    const MidiNamPatchBankList* getPatchBanks(int channel) const;
+
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;
 };
@@ -915,6 +979,13 @@ class MidNamMIDINameDocument
     void write(int level, MusECore::Xml& xml) const;
     bool read(MusECore::Xml& xml);
 
+    // Like find but if bank high or low are valid,
+    //  it searches for a match using them.
+    // Whereas find searches for an exact match.
+    const MidiNamPatch* findPatch(int channel, int patch) const;
+
+    const MidiNamPatchBankList* getPatchBanks(int channel) const;
+
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;
 };
@@ -923,15 +994,26 @@ class MidNamMIDIName
 {
   private:
     MidNamMIDINameDocument _MIDINameDocument;
+    // Whether the document contains anything
+    //  ie MIDINameDocument tag was found and loaded OK.
+    bool _isEmpty;
 
   public:
-    MidNamMIDIName() {}
-    void clear() { _MIDINameDocument.clear(); }
+    MidNamMIDIName() : _isEmpty(true) {}
+    bool isEmpty () const { return _isEmpty; }
+    void clear() { _MIDINameDocument.clear(); _isEmpty = true; }
     // This gathers all references and objects and resolves the references.
     // Run this AFTER the document has been fully read.
     bool resolveReferences() { return _MIDINameDocument.resolveReferences(); }
     void write(int level, MusECore::Xml& xml) const;
     bool read(MusECore::Xml& xml);
+
+    // Like find but if bank high or low are valid,
+    //  it searches for a match using them.
+    // Whereas find searches for an exact match.
+    const MidiNamPatch* findPatch(int channel, int patch) const;
+
+    const MidiNamPatchBankList* getPatchBanks(int channel) const;
 
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;

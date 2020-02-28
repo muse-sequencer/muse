@@ -78,7 +78,6 @@
 #include "lv2extprg.h"
 #ifdef MIDNAM_SUPPORT
 #include "midnam_lv2.h"
-#include "midnam.h"
 #endif
 
 #include <cstring>
@@ -538,6 +537,11 @@ private:
     bool processEvent (const MidiPlayEvent &, LV2EvBuf *evBuf, long frame);
     bool lv2MidiControlValues ( size_t port, int ctlnum, int *min, int *max, int *def );
     float midi2Lv2Value ( unsigned long port, int ctlnum, int val );
+#ifdef MIDNAM_SUPPORT
+    QString getPatchNameMidNam (int, int, bool ) const;
+    void populatePatchPopupMidNam (MusEGui::PopupMenu*, int channel, bool drum);
+#endif
+
     LV2PluginWrapper_State *_state;
     
 public:
@@ -777,7 +781,6 @@ struct LV2PluginWrapper_State {
 #ifdef MIDNAM_SUPPORT
     LV2_Midnam_Interface *midnamIface;
     LV2_Midnam midnamUpdate;
-    MidNamMIDIName midnamDocument;
 #endif
     unsigned char uiChannel;
     int uiBank;

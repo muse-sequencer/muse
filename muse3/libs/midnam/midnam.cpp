@@ -1949,6 +1949,22 @@ bool MidiNamChannelNameSetAssign::gatherReferences(MidNamReferencesList* refs) c
   return refs->channelNameSetAssignObjs.add(const_cast<MidiNamChannelNameSetAssign*>(this));
 }
 
+const MidiNamPatch* MidiNamChannelNameSetAssign::findPatch(int channel, int patch) const
+{
+  // Go directly to the reference object.
+  if(!_p_ref)
+    return nullptr;
+  return _p_ref->findPatch(channel, patch);
+}
+
+const MidiNamPatchBankList* MidiNamChannelNameSetAssign::getPatchBanks(int channel) const
+{
+  // Go directly to the reference object.
+  if(!_p_ref)
+    return nullptr;
+  return _p_ref->getPatchBanks(channel);
+}
+
 bool MidiNamChannelNameSetAssign::getNoteSampleName(
   bool drum, int channel, int patch, int note, QString* name) const
 {
@@ -2017,6 +2033,32 @@ bool MidiNamChannelNameSetAssignments::gatherReferences(MidNamReferencesList* re
   for(const_iterator i = cbegin(); i != cend(); ++i)
     i->second.gatherReferences(refs);
   return true;
+}
+
+const MidiNamPatch* MidiNamChannelNameSetAssignments::findPatch(int channel, int patch) const
+{
+  if(!_hasChannelNameSetAssignments)
+    return nullptr;
+
+  const_iterator ia = find(channel);
+  if(ia == cend())
+    return nullptr;
+    
+  const MidiNamChannelNameSetAssign& cns = ia->second;
+  return cns.findPatch(channel, patch);
+}
+
+const MidiNamPatchBankList* MidiNamChannelNameSetAssignments::getPatchBanks(int channel) const
+{
+  if(!_hasChannelNameSetAssignments)
+    return nullptr;
+
+  const_iterator ia = find(channel);
+  if(ia == cend())
+    return nullptr;
+    
+  const MidiNamChannelNameSetAssign& cns = ia->second;
+  return cns.getPatchBanks(channel);
 }
 
 bool MidiNamChannelNameSetAssignments::getNoteSampleName(
@@ -2850,8 +2892,82 @@ bool MidiNamPatchNameList::gatherReferences(MidNamReferencesList* refs) const
   return refs->patchNameListObjs.add(const_cast<MidiNamPatchNameList*>(this));
 }
 
+const MidiNamPatch* MidiNamPatchNameList::findPatch(int patch, int /*bankHL*/) const
+{
+//   const int bankH = (bankHL >> 8) & 0xff;
+//   const int bankL = bankHL & 0xff;
+// 
+//   const int patch_bankH = (patch >> 16) & 0xff;
+//   const int patch_bankL = (patch >> 8) & 0xff;
+//   const int patch_prog = patch & 0xff;
+// 
+//   for(const_iterator i = cbegin(); i != cend(); ++i)
+//   {
+//     const MidiNamPatch& p = i->second;
+//     const int p_num = p.patchNumber();
+//     // Replace the patch's bank high or low if bank high or low are given.
+//     const int p_bankH = bankH != 0xff ? bankH : ((p_num >> 16) & 0xff);
+//     const int p_bankL = bankL != 0xff ? bankL : ((p_num >> 8) & 0xff);
+//     const int p_prog = p_num & 0xff;
+// 
+//     // Are we looking for a grand default patch and the resulting patch number is CTRL_PROGRAM_VAL_DONT_CARE?
+//     // Or else does the resulting patch number match what we're looking for?
+//     if((patch == CTRL_VAL_UNKNOWN && p_bankH == 0xff && p_bankL == 0xff && p_prog == 0xff) ||
+//        (p_bankH == patch_bankH && p_bankL == patch_bankL && p_prog == patch_prog))
+//       return &i->second;
+//   }
+// 
+//   return nullptr;
+
+
+  const MidiNamPatchNameList* n = objectOrRef();
+  
+  const_iterator i;
+
+  // Are we looking for a grand default patch?
+  if(patch == CTRL_VAL_UNKNOWN)
+  {
+    i = n->find(CTRL_PROGRAM_VAL_DONT_CARE);
+  }
+  else
+  {
+    // Try looking for the verbose patch number.
+    i = n->find(patch);
+    if(i == n->cend())
+    {
+      // Verbose patch number was not found. Try looking for defaults...
+      const int bankH = (patch >> 16) & 0xff;
+      const int bankL = (patch >> 8) & 0xff;
+      const int prog  = patch & 0xff;
+
+      // See if there are defaults for each individual member...
+      if(bankH != 0xff)
+        i = n->find(patch | 0xff0000);
+      if(i == n->cend() && bankL != 0xff)
+        i = n->find(patch | 0xff00);
+      if(i == n->cend() && prog != 0xff)
+        i = n->find(patch | 0xff);
+      // See if there are defaults for combinations of individual members:
+      if(i == n->cend() && bankH != 0xff && bankL != 0xff)
+        i = n->find(patch | 0xffff00);
+      if(i == n->cend() && bankH != 0xff && prog != 0xff)
+        i = n->find(patch | 0xff00ff);
+      if(i == n->cend() && bankL != 0xff && prog != 0xff)
+        i = n->find(patch | 0xffff);
+      // And finally, see if there's a grand default patch.
+      if(i == n->cend())
+        i = n->find(CTRL_PROGRAM_VAL_DONT_CARE);
+    }
+  }
+
+  if(i == n->cend())
+    return nullptr;
+
+  return &i->second;
+}
+
 bool MidiNamPatchNameList::getNoteSampleName(
-  bool drum, int channel, int patch, int note, QString* name) const
+  bool drum, int channel, int patch, int note, QString* name, int bankHL) const
 {
   if(!name)
     return false;
@@ -2862,49 +2978,54 @@ bool MidiNamPatchNameList::getNoteSampleName(
   //         only a bankL in each patch. Need to let the patch/patchlist
   //         sort of, kind of, search first. Test later with real midnam files.
 
-  const_iterator i;
-
-  // Are we looking for a grand default patch?
-  if(patch == CTRL_VAL_UNKNOWN)
-  {
-    i = find(CTRL_PROGRAM_VAL_DONT_CARE);
-  }
-  else
-  {
-    // Try looking for the verbose patch number.
-    i = find(patch);
-    if(i == cend())
-    {
-      // Verbose patch number was not found. Try looking for defaults...
-      const int bankH = (patch >> 16) & 0xff;
-      const int bankL = (patch >> 8) & 0xff;
-      const int prog  = patch & 0xff;
-
-      // See if there are defaults for each individual member...
-      if(bankH != 0xff)
-        i = find(patch | 0xff0000);
-      else if(bankL != 0xff)
-        i = find(patch | 0xff00);
-      else if(prog != 0xff)
-        i = find(patch | 0xff);
-      // See if there are defaults for combinations of individual members:
-      else if(bankH != 0xff && bankL != 0xff)
-        i = find(patch | 0xffff00);
-      else if(bankH != 0xff && prog != 0xff)
-        i = find(patch | 0xff00ff);
-      else if(bankL != 0xff && prog != 0xff)
-        i = find(patch | 0xffff);
-      // And finally, see if there's a grand default patch.
-      else
-        i = find(CTRL_PROGRAM_VAL_DONT_CARE);
-    }
-  }
-
-  if(i == cend())
+//   const_iterator i;
+// 
+//   // Are we looking for a grand default patch?
+//   if(patch == CTRL_VAL_UNKNOWN)
+//   {
+//     i = find(CTRL_PROGRAM_VAL_DONT_CARE);
+//   }
+//   else
+//   {
+//     // Try looking for the verbose patch number.
+//     i = find(patch);
+//     if(i == cend())
+//     {
+//       // Verbose patch number was not found. Try looking for defaults...
+//       const int bankH = (patch >> 16) & 0xff;
+//       const int bankL = (patch >> 8) & 0xff;
+//       const int prog  = patch & 0xff;
+// 
+//       // See if there are defaults for each individual member...
+//       if(bankH != 0xff)
+//         i = find(patch | 0xff0000);
+//       else if(bankL != 0xff)
+//         i = find(patch | 0xff00);
+//       else if(prog != 0xff)
+//         i = find(patch | 0xff);
+//       // See if there are defaults for combinations of individual members:
+//       else if(bankH != 0xff && bankL != 0xff)
+//         i = find(patch | 0xffff00);
+//       else if(bankH != 0xff && prog != 0xff)
+//         i = find(patch | 0xff00ff);
+//       else if(bankL != 0xff && prog != 0xff)
+//         i = find(patch | 0xffff);
+//       // And finally, see if there's a grand default patch.
+//       else
+//         i = find(CTRL_PROGRAM_VAL_DONT_CARE);
+//     }
+//   }
+// 
+//   if(i == cend())
+//     return false;
+// 
+//   const MidiNamPatch& mp = i->second;
+//   return mp.getNoteSampleName(drum, channel, patch, note, name);
+  
+  const MidiNamPatch* mp = findPatch(patch, bankHL);
+  if(!mp)
     return false;
-
-  const MidiNamPatch& mp = i->second;
-  return mp.getNoteSampleName(drum, channel, patch, note, name);
+  return mp->getNoteSampleName(drum, channel, patch, note, name);
 }
 
 
@@ -2996,6 +3117,124 @@ bool MidiNamPatchBank::gatherReferences(MidNamReferencesList* refs) const
   return _patchNameList.gatherReferences(refs);
 }
 
+const MidiNamPatch* MidiNamPatchBank::findPatch(int patch) const
+{
+//   const int bankH = (bankHL >> 8) & 0xff;
+//   const int bankL = bankHL & 0xff;
+// 
+//   const int patch_bankH = (patch >> 16) & 0xff;
+//   const int patch_bankL = (patch >> 8) & 0xff;
+//   const int patch_prog = patch & 0xff;
+// 
+//   for(const_iterator i = cbegin(); i != cend(); ++i)
+//   {
+//     const MidiNamPatch& p = i->second;
+//     const int p_num = p.patchNumber();
+//     // Replace the patch's bank high or low if bank high or low are given.
+//     const int p_bankH = bankH != 0xff ? bankH : ((p_num >> 16) & 0xff);
+//     const int p_bankL = bankL != 0xff ? bankL : ((p_num >> 8) & 0xff);
+//     const int p_prog = p_num & 0xff;
+// 
+//     // Are we looking for a grand default patch and the resulting patch number is CTRL_PROGRAM_VAL_DONT_CARE?
+//     // Or else does the resulting patch number match what we're looking for?
+//     if((patch == CTRL_VAL_UNKNOWN && p_bankH == 0xff && p_bankL == 0xff && p_prog == 0xff) ||
+//        (p_bankH == patch_bankH && p_bankL == patch_bankL && p_prog == patch_prog))
+//       return &i->second;
+//   }
+// 
+//   return nullptr;
+
+
+
+
+// //   const_iterator i;
+// 
+//   // Are we looking for a grand default patch?
+//   if(patch == CTRL_VAL_UNKNOWN)
+//   {
+//     // This bank not the grand default bank?
+//     if(_bankHL != 0xffff)
+//       return nullptr;
+//     // Pass on to the patch list.
+//     return _patchNameList.objectOrRef()->findPatch(patch);
+//   }
+//   else
+//   {
+//     // Try looking for the verbose patch number.
+//     i = find(patch);
+//     if(i == cend())
+//     {
+//       // Verbose patch number was not found. Try looking for defaults...
+//       const int bankH = (patch >> 16) & 0xff;
+//       const int bankL = (patch >> 8) & 0xff;
+//       const int prog  = patch & 0xff;
+// 
+//       // See if there are defaults for each individual member...
+//       if(bankH != 0xff)
+//         i = find(patch | 0xff0000);
+//       else if(bankL != 0xff)
+//         i = find(patch | 0xff00);
+//       else if(prog != 0xff)
+//         i = find(patch | 0xff);
+//       // See if there are defaults for combinations of individual members:
+//       else if(bankH != 0xff && bankL != 0xff)
+//         i = find(patch | 0xffff00);
+//       else if(bankH != 0xff && prog != 0xff)
+//         i = find(patch | 0xff00ff);
+//       else if(bankL != 0xff && prog != 0xff)
+//         i = find(patch | 0xffff);
+//       // And finally, see if there's a grand default patch.
+//       else
+//         i = find(CTRL_PROGRAM_VAL_DONT_CARE);
+//     }
+//   }
+// 
+//   if(i == cend())
+//     return nullptr;
+// 
+//   return &i->second;
+//   
+  
+  
+  
+  
+//   const bool has_bankH = _MIDICommands.hasBankH();
+//   const bool has_bankL = _MIDICommands.hasBankL();
+// 
+//   int fin_patch = patch;
+// 
+//   // Does the bank have its own bank number midi commands?
+//   if(has_bankH || has_bankL)
+//   {
+//     int patch_bank_hl;
+//     // Are we looking for a grand default patch?
+//     if(patch == CTRL_VAL_UNKNOWN)
+//     {
+//       patch_bank_hl = 0xffff;
+//       fin_patch = CTRL_PROGRAM_VAL_DONT_CARE;
+//     }
+//     else
+//     {
+//       patch_bank_hl = (patch >> 8) & 0xffff;
+//     }
+//     
+//     
+//     // If it is not the bank number we're looking for, return.
+//     if(patch_bank_hl != _bankHL)
+//       return false;
+//     // Set the bank high and low to 'unknown' (default) so that the _patchNameList can find it.
+//     // Patches can have their own midi controller commands, but if there are bank controller commands,
+//     //  in this case that would interfere with the bank number. So likely if patches have their
+//     //  own controller commands, they should not have bank controller commands, and therefore
+//     //  should all match on bank == 0xffff.
+//     fin_patch |= 0xffff00;
+//   }
+//   
+//   return _patchNameList.getNoteSampleName(drum, channel, fin_patch, note, name);
+  
+  return _patchNameList.findPatch(patch);
+}
+
 bool MidiNamPatchBank::getNoteSampleName(
   bool drum, int channel, int patch, int note, QString* name) const
 {
@@ -3008,39 +3247,41 @@ bool MidiNamPatchBank::getNoteSampleName(
   //         only a bankL in each patch. Need to let the patch/patchlist
   //         sort of, kind of, search first. Test later with real midnam files.
 
-  const bool has_bankH = _MIDICommands.hasBankH();
-  const bool has_bankL = _MIDICommands.hasBankL();
+//   const bool has_bankH = _MIDICommands.hasBankH();
+//   const bool has_bankL = _MIDICommands.hasBankL();
+// 
+//   int fin_patch = patch;
+// 
+//   // Does the bank have its own bank number midi commands?
+//   if(has_bankH || has_bankL)
+//   {
+//     int patch_bank_hl;
+//     // Are we looking for a grand default patch?
+//     if(patch == CTRL_VAL_UNKNOWN)
+//     {
+//       patch_bank_hl = 0xffff;
+//       fin_patch = CTRL_PROGRAM_VAL_DONT_CARE;
+//     }
+//     else
+//     {
+//       patch_bank_hl = (patch >> 8) & 0xffff;
+//     }
+//     
+//     
+//     // If it is not the bank number we're looking for, return.
+//     if(patch_bank_hl != _bankHL)
+//       return false;
+//     // Set the bank high and low to 'unknown' (default) so that the _patchNameList can find it.
+//     // Patches can have their own midi controller commands, but if there are bank controller commands,
+//     //  in this case that would interfere with the bank number. So likely if patches have their
+//     //  own controller commands, they should not have bank controller commands, and therefore
+//     //  should all match on bank == 0xffff.
+//     fin_patch |= 0xffff00;
+//   }
+//   
+//   return _patchNameList.getNoteSampleName(drum, channel, fin_patch, note, name);
 
-  int fin_patch = patch;
-
-  // Does the bank have its own bank number midi commands?
-  if(has_bankH || has_bankL)
-  {
-    int patch_bank_hl;
-    // Are we looking for a grand default patch?
-    if(patch == CTRL_VAL_UNKNOWN)
-    {
-      patch_bank_hl = 0xffff;
-      fin_patch = CTRL_PROGRAM_VAL_DONT_CARE;
-    }
-    else
-    {
-      patch_bank_hl = (patch >> 8) & 0xffff;
-    }
-    
-    
-    // If it is not the bank number we're looking for, return.
-    if(patch_bank_hl != _bankHL)
-      return false;
-    // Set the bank high and low to 'unknown' (default) so that the _patchNameList can find it.
-    // Patches can have their own midi controller commands, but if there are bank controller commands,
-    //  in this case that would interfere with the bank number. So likely if patches have their
-    //  own controller commands, they should not have bank controller commands, and therefore
-    //  should all match on bank == 0xffff.
-    fin_patch |= 0xffff00;
-  }
-  
-  return _patchNameList.getNoteSampleName(drum, channel, fin_patch, note, name);
+  return _patchNameList.getNoteSampleName(drum, channel, patch, note, name, _bankHL);
 }
 
 
@@ -3065,67 +3306,87 @@ bool MidiNamPatchBankList::gatherReferences(MidNamReferencesList* refs) const
   return true;
 }
 
+const MidiNamPatch* MidiNamPatchBankList::findPatch(int patch) const
+{
+//   const int patch_bankH = (patch >> 16) & 0xff;
+//   const int patch_bankL = (patch >> 8) & 0xff;
+//   const int patch_prog = patch & 0xff;
+// 
+//   for(const_iterator i = cbegin(); i != cend(); ++i)
+//   {
+//     const MidiNamPatchBank& p = i->second;
+//     const int bankHL = p.bankHL();
+//     const int bankH = (bankHL >> 8) & 0xff;
+//     const int bankL = bankHL & 0xff;
+// 
+//     const int p_num = p.patchNumber();
+//     // Replace the patch's bank high or low if bank high or low are given.
+//     const int p_bankH = bankH != 0xff ? bankH : ((p_num >> 16) & 0xff);
+//     const int p_bankL = bankL != 0xff ? bankL : ((p_num >> 8) & 0xff);
+//     const int p_prog = p_num & 0xff;
+// 
+//     // Are we looking for a grand default patch and the resulting patch number is CTRL_PROGRAM_VAL_DONT_CARE?
+//     // Or else does the resulting patch number match what we're looking for?
+//     if((patch == CTRL_VAL_UNKNOWN && p_bankH == 0xff && p_bankL == 0xff && p_prog == 0xff) ||
+//        (p_bankH == patch_bankH && p_bankL == patch_bankL && p_prog == patch_prog))
+//       return &i->second;
+//   }
+// 
+//   return nullptr;
+  
+  
+  
+  const_iterator i;
+
+  // Are we looking for a grand default patch?
+  if(patch == CTRL_VAL_UNKNOWN)
+  {
+    // See if this bank has a grand default bank.
+    i = find(0xffff);
+//     if(_bankHL != 0xffff)
+//       return nullptr;
+//     // Pass on to the patch list.
+//     return _patchNameList.objectOrRef()->findPatch(patch);
+  }
+  else
+  {
+    // Try looking for the verbose bank number.
+    const int patch_bankHL = (patch >> 8) & 0xffff;
+    i = find(patch_bankHL);
+    if(i == cend())
+    {
+      // Verbose bank number was not found. Try looking for defaults...
+      const int bankH = (patch_bankHL >> 8) & 0xff;
+      const int bankL = patch_bankHL & 0xff;
+
+      // See if there are defaults for each individual member...
+      if(bankH != 0xff)
+        i = find(patch_bankHL | 0xff00);
+      else if(bankL != 0xff)
+        i = find(patch_bankHL | 0xff);
+      // And finally, see if there's a grand default bank.
+      else
+        i = find(0xffff);
+    }
+  }
+
+  if(i == cend())
+    return nullptr;
+
+  return i->second.findPatch(patch);
+}
+
 bool MidiNamPatchBankList::getNoteSampleName(
   bool drum, int channel, int patch, int note, QString* name) const
 {
   if(!name)
     return false;
 
-  // REMOVE Tim. midnam.
-  // FIXME: This may not be right.
-  //        It is possible there may be only a bankH in the patch bank and
-  //         only a bankL in each patch. Need to let the patch/patchlist
-  //         sort of, kind of, search first. Test later with real midnam files.
-
-  const_iterator i;
-
-  // Are we looking for a grand default patch?
-  if(patch == CTRL_VAL_UNKNOWN)
-  {
-    i = find(CTRL_PROGRAM_VAL_DONT_CARE);
-  }
-  else
-  {
-    // Try looking for the verbose patch number.
-    i = find(patch);
-    if(i == cend())
-    {
-      // Verbose patch number was not found. Try looking for defaults...
-      const int bankH = (patch >> 16) & 0xff;
-      const int bankL = (patch >> 8) & 0xff;
-      const int prog  = patch & 0xff;
-
-      // See if there are defaults for each individual member...
-      if(bankH != 0xff)
-        i = find(patch | 0xff0000);
-      else if(bankL != 0xff)
-        i = find(patch | 0xff00);
-      else if(prog != 0xff)
-        i = find(patch | 0xff);
-      // See if there are defaults for combinations of individual members:
-      else if(bankH != 0xff && bankL != 0xff)
-        i = find(patch | 0xffff00);
-      else if(bankH != 0xff && prog != 0xff)
-        i = find(patch | 0xff00ff);
-      else if(bankL != 0xff && prog != 0xff)
-        i = find(patch | 0xffff);
-      // And finally, see if there's a grand default patch.
-      else
-        i = find(CTRL_PROGRAM_VAL_DONT_CARE);
-    }
-  }
-
-  if(i == cend())
+  const MidiNamPatch* p = findPatch(patch);
+  if(!p)
     return false;
 
-  
-//   const int bankHL = (patch >> 8) & 0xffff;
-//   const_iterator i = find(bankHL);
-//   if(i == cend())
-//     return false;
-  
-  const MidiNamPatchBank& pb = i->second;
-  return pb.getNoteSampleName(drum, channel, patch, note, name);
+  return p->getNoteSampleName(drum, channel, patch, note, name);
 }
 
 
@@ -3220,6 +3481,22 @@ bool MidNamChannelNameSet::gatherReferences(MidNamReferencesList* refs) const
   return refs->channelNameSetObjs.add(const_cast<MidNamChannelNameSet*>(this));
 }
 
+const MidiNamPatch* MidNamChannelNameSet::findPatch(int channel, int patch) const
+{
+  if(_availableForChannels.find(channel) == _availableForChannels.end())
+    return nullptr;
+
+  return _patchBankList.findPatch(patch);
+}
+
+const MidiNamPatchBankList* MidNamChannelNameSet::getPatchBanks(int channel) const
+{
+  if(_availableForChannels.find(channel) == _availableForChannels.end())
+    return nullptr;
+
+  return &_patchBankList;
+}
+
 bool MidNamChannelNameSet::getNoteSampleName(
   bool drum, int channel, int patch, int note, QString* name) const
 {
@@ -3251,6 +3528,28 @@ bool MidiNamChannelNameSetList::gatherReferences(MidNamReferencesList* refs) con
   for(const_iterator i = cbegin(); i != cend(); ++i)
     i->gatherReferences(refs);
   return true;
+}
+
+const MidiNamPatch* MidiNamChannelNameSetList::findPatch(int channel, int patch) const
+{
+  for(const_iterator i = cbegin(); i != cend(); ++i)
+  {
+    const MidiNamPatch* p = i->findPatch(channel, patch);
+    if(p)
+      return p;
+  }
+  return nullptr;
+}
+
+const MidiNamPatchBankList* MidiNamChannelNameSetList::getPatchBanks(int channel) const
+{
+  for(const_iterator i = cbegin(); i != cend(); ++i)
+  {
+    const MidiNamPatchBankList* p = i->getPatchBanks(channel);
+    if(p)
+      return p;
+  }
+  return nullptr;
 }
 
 bool MidiNamChannelNameSetList::getNoteSampleName(
@@ -3504,6 +3803,42 @@ bool MidNamDeviceMode::gatherReferences(MidNamReferencesList* refs) const
   _nameList.gatherReferences(refs);
   _channelNameSetList.gatherReferences(refs);
   return refs->deviceModeObjs.add(const_cast<MidNamDeviceMode*>(this));
+}
+
+const MidiNamPatch* MidNamDeviceMode::findPatch(int channel, int patch) const
+{
+  ciMidiNamChannelNameSetAssignments ia = _channelNameSetAssignments.find(channel);
+  if(ia == _channelNameSetAssignments.cend())
+    return nullptr;
+
+  const MidiNamChannelNameSetAssign& cns = ia->second;
+  // FIXME Whether to return or not... Need an enum return value.
+  const MidiNamPatch* p = cns.findPatch(channel, patch);
+  if(p)
+    return p;
+  
+  if(!_isCustomDeviceMode)
+    return _channelNameSetList.findPatch(channel, patch);
+    
+  return nullptr;
+}
+
+const MidiNamPatchBankList* MidNamDeviceMode::getPatchBanks(int channel) const
+{
+  ciMidiNamChannelNameSetAssignments ia = _channelNameSetAssignments.find(channel);
+  if(ia == _channelNameSetAssignments.cend())
+    return nullptr;
+
+  const MidiNamChannelNameSetAssign& cns = ia->second;
+  // FIXME Whether to return or not... Need an enum return value.
+  const MidiNamPatchBankList* p = cns.getPatchBanks(channel);
+  if(p)
+    return p;
+  
+  if(!_isCustomDeviceMode)
+    return _channelNameSetList.getPatchBanks(channel);
+    
+  return nullptr;
 }
 
 bool MidNamDeviceMode::getNoteSampleName(
@@ -3884,6 +4219,30 @@ bool MidNamMasterDeviceNames::gatherReferences(MidNamReferencesList* refs) const
   return true;
 }
 
+const MidiNamPatch* MidNamMasterDeviceNames::findPatch(int channel, int patch) const
+{
+  if(!deviceModeList()->empty())
+  {
+    // We currently can only deal with one list.
+    const MidNamDeviceMode& dm = *deviceModeList()->begin();
+    return dm.findPatch(channel, patch);
+  }
+  
+  return _channelNameSetList.findPatch(channel, patch);
+}
+
+const MidiNamPatchBankList* MidNamMasterDeviceNames::getPatchBanks(int channel) const
+{
+  if(!deviceModeList()->empty())
+  {
+    // We currently can only deal with one list.
+    const MidNamDeviceMode& dm = *deviceModeList()->begin();
+    return dm.getPatchBanks(channel);
+  }
+  
+  return _channelNameSetList.getPatchBanks(channel);
+}
+
 bool MidNamMasterDeviceNames::getNoteSampleName(
   bool drum, int channel, int patch, int note, QString* name) const
 {
@@ -4136,6 +4495,58 @@ bool MidNamMIDINameDocument::resolveReferences()
   return refs.resolveReferences();
 }
 
+const MidiNamPatch* MidNamMIDINameDocument::findPatch(int channel, int patch) const
+{
+  // Which of the three exclusively possible device lists is dominant (has stuff in it)?
+  if(!_masterDeviceNamesList.empty())
+  {
+    // We currently can only deal with one list.
+    const MidNamMasterDeviceNames& mdn = _masterDeviceNamesList.front();
+    if(!mdn.deviceModeList()->empty())
+    {
+      // We currently can only deal with one list.
+      const MidNamDeviceMode& dm = *mdn.deviceModeList()->begin();
+      return dm.findPatch(channel, patch);
+    }
+  }
+  else if(!_extendingDeviceNamesList.empty())
+  {
+    
+  }
+  else if(!_standardDeviceModeList.empty())
+  {
+    
+  }
+
+  return nullptr;
+}
+
+const MidiNamPatchBankList* MidNamMIDINameDocument::getPatchBanks(int channel) const
+{
+  // Which of the three exclusively possible device lists is dominant (has stuff in it)?
+  if(!_masterDeviceNamesList.empty())
+  {
+    // We currently can only deal with one list.
+    const MidNamMasterDeviceNames& mdn = _masterDeviceNamesList.front();
+    if(!mdn.deviceModeList()->empty())
+    {
+      // We currently can only deal with one list.
+      const MidNamDeviceMode& dm = *mdn.deviceModeList()->begin();
+      return dm.getPatchBanks(channel);
+    }
+  }
+  else if(!_extendingDeviceNamesList.empty())
+  {
+    
+  }
+  else if(!_standardDeviceModeList.empty())
+  {
+    
+  }
+
+  return nullptr;
+}
+
 bool MidNamMIDINameDocument::getNoteSampleName(
   bool drum, int channel, int patch, int note, QString* name) const
 {
@@ -4198,6 +4609,9 @@ bool MidNamMIDIName::read(MusECore::Xml& xml)
                     {
                       if(!_MIDINameDocument.read(xml))
                         return false;
+                      // We have successfully loaded a valid document.
+                      // It's no longer empty.
+                      _isEmpty = false;
                     }
 
                     else
@@ -4212,6 +4626,16 @@ bool MidNamMIDIName::read(MusECore::Xml& xml)
               }
         }
   return false;
+}
+
+const MidiNamPatch* MidNamMIDIName::findPatch(int channel, int patch) const
+{
+  return _MIDINameDocument.findPatch(channel, patch);
+}
+
+const MidiNamPatchBankList* MidNamMIDIName::getPatchBanks(int channel) const
+{
+  return _MIDINameDocument.getPatchBanks(channel);
 }
 
 bool MidNamMIDIName::getNoteSampleName(

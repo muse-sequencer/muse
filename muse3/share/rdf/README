@@ -1,0 +1,6 @@
+Any LADSPA rdf files placed here will OVERRIDE official versions
+ that may come with their respective plugins.
+
+The rdf files installed here by the program are CORRECTED versions
+ of the official versions of a few plugins.
+There were several errors in them. Authors were contacted, no reply.

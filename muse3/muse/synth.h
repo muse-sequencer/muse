@@ -139,6 +139,10 @@ class SynthIF : public PluginIBase {
       SynthIF(SynthI* s) { synti = s; }
       virtual ~SynthIF() {}
 
+      // Provide proper outside access instead of relying on being a 'friend' of SynthI.
+      inline SynthI* synthI() { return synti; }
+      inline const SynthI* synthI_const() const { return synti; }
+
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
       inline virtual int oldMidiStateHeader(const unsigned char** /*data*/) const { return 0; }
 
@@ -156,7 +160,7 @@ class SynthIF : public PluginIBase {
       virtual int totalInChannels() const = 0;
       virtual void deactivate3() = 0;
       virtual QString getPatchName(int, int, bool) const = 0;
-      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool) = 0;
+      virtual void populatePatchPopup(MusEGui::PopupMenu*, int /*channel*/, bool /*drum*/) = 0;
       virtual void write(int level, Xml& xml) const = 0;
       virtual double getParameter(unsigned long idx) const = 0;
       virtual void setParameter(unsigned long idx, double value) = 0;

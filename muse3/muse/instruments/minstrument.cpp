@@ -1110,6 +1110,15 @@ void MidiInstrument::writeDrummapOverrides(int level, Xml& xml) const
 }
 #endif
 
+//---------------------------------------------------------
+//   readMidnamDocument
+//---------------------------------------------------------
+
+bool MidiInstrument::readMidnamDocument(Xml& xml)
+{
+  return _midnamDocument.read(xml);
+}
+
 patch_drummap_mapping_list_t* MidiInstrument::get_patch_drummap_mapping(int channel, bool includeDefault)
 {
   patch_drummap_mapping_list_t* pdml = _channelDrumMapping.find(channel, includeDefault);

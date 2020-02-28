@@ -21,7 +21,7 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-file (GLOB rdf_files *.rdfs *.rdf)
+file (GLOB rdf_files *.rdfs *.rdf README)
 
 install( FILES ${rdf_files}
       DESTINATION ${MusE_SHARE_DIR}/rdf

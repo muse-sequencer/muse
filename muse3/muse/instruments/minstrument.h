@@ -33,6 +33,11 @@
 #include <QString>
 #include "midiedit/drummap.h"
 
+#include "config.h"
+#ifdef MIDNAM_SUPPORT
+#include "midnam.h"
+#endif
+
 // REMOVE Tim. newdrums. Added.
 // Adds the ability to override at instrument level.
 // But it just makes things too complex for the user.
@@ -370,7 +375,11 @@ class MidiInstrument {
       char* _initScript;
       QString _name;
       QString _filePath;
-      
+
+#ifdef MIDNAM_SUPPORT
+      MidNamMIDIName _midnamDocument;
+#endif
+
       void writeDrummaps(int level, Xml& xml) const;
       void readDrummaps(Xml& xml);
 
@@ -435,6 +444,14 @@ class MidiInstrument {
       void write(int level, Xml&);
 #ifdef _USE_INSTRUMENT_OVERRIDES_
       void writeDrummapOverrides(int level, Xml&) const;
+#endif
+
+#ifdef MIDNAM_SUPPORT
+      MidNamMIDIName& midnamDocument() { return _midnamDocument; }
+      const MidNamMIDIName& midnamDocument() const { return _midnamDocument; }
+      // Possible plan: Use this INSTEAD of a direct call to MidNamMIDIName::read()
+      //  so that we can catch it and update some stuff here afterwards (controllers).
+      bool readMidnamDocument(Xml&);
 #endif
 
       PatchGroupList* groups()        { return &pg; }

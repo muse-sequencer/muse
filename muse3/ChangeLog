@@ -1,3 +1,6 @@
+28.02.2020:
+    - LV2: Now shows MidiName patch names (gmsynth.v2 for example). (Tim)
+    - Added share/rdf/README to describe what's there and why.
 23.02.2020:
     *** Final MusE 3.1.0 *** 
 21.02.2020:

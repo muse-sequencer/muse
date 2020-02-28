@@ -2089,19 +2089,25 @@ void LV2Synth::lv2prg_updatePrograms(LV2PluginWrapper_State *state)
 void LV2Synth::lv2midnam_updateMidnam(LV2PluginWrapper_State *state)
 {
     assert(state != NULL);
-    if(state->midnamIface == NULL)
+    if(state->midnamIface == NULL || state->sif == NULL)
         return;
 
-    char *pModel = state->midnamIface->model(lilv_instance_get_handle(state->handle));
     char *pMidnam = state->midnamIface->midnam(lilv_instance_get_handle(state->handle));
+    //fprintf(stderr, "%s\n", pMidnam);
+    
+    if(pMidnam)
+    {
+      // Wrap an xml around the text.
+      Xml xml(pMidnam);
+      // Read the xml into our midnam container.
+      state->sif->synthI()->readMidnamDocument(xml);
+      // Free the text.
+      state->midnamIface->free(pMidnam);
+    }
 
-    // Wrap an xml around the text.
-    Xml xml(pMidnam);
-    // Read the xml into our midnam container.
-    state->midnamDocument.read(xml);
-
-    state->midnamIface->free(pModel);
-    state->midnamIface->free(pMidnam);
+    // Unused yet.
+    //char *pModel = state->midnamIface->model(lilv_instance_get_handle(state->handle));
+    //state->midnamIface->free(pModel);
 }
 #endif
 
@@ -2359,7 +2365,7 @@ void LV2Synth::lv2state_PortWrite(LV2UI_Controller controller, uint32_t port_ind
             if(state->sif->id() != -1)
             {
                 unsigned long pid = genACnum(state->sif->id(), cport);
-                state->sif->synti->recordAutomation(pid, value);
+                state->sif->synthI()->recordAutomation(pid, value);
             }
 
             //state->sif->enableController(cport, false);
@@ -2607,19 +2613,8 @@ void LV2SynthIF::lv2prg_Changed(LV2_Programs_Handle handle, int32_t index)
 #ifdef DEBUG_LV2
     std::cerr << "LV2Synth::lv2prg_Changed: index: " << index << std::endl;
 #endif
-    if(state->sif && state->sif->synti)
-    {
-// REMOVE Tim. lv2. Changed. TODO: Switch over to using the FIFO below...
-        // "When index is -1, host should reload all the programs."
-        if(index < 0)
-            LV2Synth::lv2prg_updatePrograms(state);
-        else
-            LV2Synth::lv2prg_updateProgram(state, index);
-
-        MusEGlobal::song->update(SC_MIDI_INSTRUMENT);
-
-//      state->operationsFifo.put(LV2OperationMessage(LV2OperationMessage::ProgramChanged, index));
-    }
+    if(state->sif && state->sif->synthI_const())
+        state->operationsFifo.put(LV2OperationMessage(LV2OperationMessage::ProgramChanged, index));
 }
 
 #ifdef MIDNAM_SUPPORT
@@ -2629,7 +2624,7 @@ void LV2SynthIF::lv2midnam_Changed(LV2_Midnam_Handle handle)
 #ifdef DEBUG_LV2
     std::cerr << "LV2Synth::lv2midnam_Changed:" << std::endl;
 #endif
-    if(state->sif && state->sif->synti)
+    if(state->sif && state->sif->synthI_const())
         state->operationsFifo.put(LV2OperationMessage(LV2OperationMessage::MidnamUpdate));
 }
 #endif
@@ -3905,7 +3900,7 @@ bool LV2SynthIF::getNoteSampleName(
 {
   if(!name)
     return false;
-  return _state->midnamDocument.getNoteSampleName(drum, channel, patch, note, name);
+  return synthI_const()->midnamDocument().getNoteSampleName(drum, channel, patch, note, name);
 }
 #else
 bool LV2SynthIF::getNoteSampleName(
@@ -4732,29 +4727,50 @@ double LV2SynthIF::getParameterOut(long unsigned int n) const
 }
 
 
-QString LV2SynthIF::getPatchName(int /* ch */, int prog, bool) const
+#ifdef MIDNAM_SUPPORT
+QString LV2SynthIF::getPatchNameMidNam(int ch, int prog, bool /*drum*/) const
 {
-    uint32_t program = prog & 0xff;
-    uint32_t lbank   = (prog >> 8) & 0xff;
-    uint32_t hbank   = (prog >> 16) & 0xff;
+    const MidiNamPatch* mnp = synthI_const()->midnamDocument().findPatch(ch, prog);
+    if(!mnp)
+      return QString("?");
 
-    if (program > 127)  // Map "dont care" to 0
-        program = 0;
-    if (lbank > 127)
-        lbank = 0;
-    if (hbank > 127)
-        hbank = 0;
-    const uint32_t patch = (hbank << 16) | (lbank << 8) | program;
+    return mnp->name();
+}
+#endif
 
-    std::map<uint32_t, uint32_t>::iterator itPrg = _state->prg2index.find(patch);
-    if(itPrg == _state->prg2index.end())
-        return QString("?");
-    uint32_t index = itPrg->second;
-    std::map<uint32_t, lv2ExtProgram>::iterator itIndex = _state->index2prg.find(index);
-    if(itIndex == _state->index2prg.end())
-        return QString("?");
-    return QString(itIndex->second.name);
+QString LV2SynthIF::getPatchName(int ch, int prog, bool drum) const
+{
+    // If there is a MidiName document, it takes priority over any LV2 programs.
+#ifdef MIDNAM_SUPPORT
+    if(!synthI_const()->midnamDocument().isEmpty())
+    {
+      return getPatchNameMidNam(ch, prog, drum);
+    }
+    else
+#endif
 
+    {
+      uint32_t program = prog & 0xff;
+      uint32_t lbank   = (prog >> 8) & 0xff;
+      uint32_t hbank   = (prog >> 16) & 0xff;
+
+      if (program > 127)  // Map "dont care" to 0
+          program = 0;
+      if (lbank > 127)
+          lbank = 0;
+      if (hbank > 127)
+          hbank = 0;
+      const uint32_t patch = (hbank << 16) | (lbank << 8) | program;
+
+      std::map<uint32_t, uint32_t>::iterator itPrg = _state->prg2index.find(patch);
+      if(itPrg == _state->prg2index.end())
+          return QString("?");
+      uint32_t index = itPrg->second;
+      std::map<uint32_t, lv2ExtProgram>::iterator itIndex = _state->index2prg.find(index);
+      if(itIndex == _state->index2prg.end())
+          return QString("?");
+      return QString(itIndex->second.name);
+    }
 }
 
 void LV2SynthIF::guiHeartBeat()
@@ -4792,9 +4808,8 @@ void LV2SynthIF::guiHeartBeat()
 
         case LV2OperationMessage::MidnamUpdate:
             {
-            // TODO: Not this. Compose an operation instead.
-
 #ifdef MIDNAM_SUPPORT
+            // TODO: Not this. Compose an operation instead.
             LV2Synth::lv2midnam_updateMidnam(_state);
 
             // Since this is a notification from the synth to update midnam,
@@ -4841,50 +4856,122 @@ bool LV2SynthIF::nativeGuiVisible() const
     return false;
 }
 
-void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
+#ifdef MIDNAM_SUPPORT
+void LV2SynthIF::populatePatchPopupMidNam(MusEGui::PopupMenu *menu, int channel, bool)
+{
+    const MidiNamPatchBankList* pbl = synthI_const()->midnamDocument().getPatchBanks(channel);
+    if(!pbl)
+      return;
+
+    std::map<int, MusEGui::PopupMenu *> submenus;
+
+    for(MidiNamPatchBankList::const_iterator ipbl = pbl->cbegin(); ipbl != pbl->cend(); ++ipbl)
+    {
+        const MidiNamPatchBank& pb = ipbl->second;
+        const MidiNamPatchNameList& pnl = pb.patchNameList();
+        const int pb_bankHL = pb.bankHL();
+        const int pb_bankH = (pb_bankHL >> 8) & 0xff;
+        const int pb_bankL = pb_bankHL & 0xff;
+
+        for(MidiNamPatchNameList::const_iterator ipnl = pnl.cbegin(); ipnl != pnl.cend(); ++ipnl)
+        {
+          const MidiNamPatch& mnp = ipnl->second;
+          const int mnp_patch = mnp.patchNumber();
+          // Replace with patch bank high and/or low if they are valid.
+          const int mnp_bankH = pb_bankH == 0xff ? ((mnp_patch >> 16) & 0xff) : pb_bankH;
+          const int mnp_bankL = pb_bankL == 0xff ? ((mnp_patch >> 8) & 0xff) : pb_bankL;
+          const int mnp_prog  = mnp_patch & 0xff;
+
+          const int fin_mnp_bankHL = (mnp_bankH << 8) | mnp_bankL;
+
+          std::map<int, MusEGui::PopupMenu *>::iterator itS = submenus.find(fin_mnp_bankHL);
+          MusEGui::PopupMenu *submenu= NULL;
+          if(itS != submenus.end())
+          {
+              submenu = itS->second;
+          }
+          else
+          {
+              // Use the parent stayOpen here.
+              submenu = new MusEGui::PopupMenu(menu, menu->stayOpen());
+              const QString& pb_name = pb.name();
+              const QString& pnl_name = pnl.name();
+              const QString fin_bank_name = 
+                pb_name.isEmpty() ? 
+                  (pnl_name.isEmpty() ? (QString("Bank #") + QString::number(fin_mnp_bankHL + 1)) : pnl_name) :
+                    pb_name;
+              submenu->setTitle(fin_bank_name);
+              menu->addMenu(submenu);
+              submenus.insert(std::make_pair(fin_mnp_bankHL, submenu));
+          }
+
+          const int fin_mnp_patch = (fin_mnp_bankHL << 8) | mnp_prog;
+          QAction *act = submenu->addAction(mnp.name());
+          act->setData(fin_mnp_patch);
+        }
+    }
+}
+#endif
+
+void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int channel, bool drum)
 {
     //LV2Synth::lv2prg_updatePrograms(_state);
     menu->clear();
-    MusEGui::PopupMenu *subMenuPrograms = new MusEGui::PopupMenu(menu->parent());
+    // Use the parent stayOpen here.
+    MusEGui::PopupMenu *subMenuPrograms = new MusEGui::PopupMenu(menu, menu->stayOpen());
     subMenuPrograms->setTitle(QObject::tr("Midi programs"));
     subMenuPrograms->setIcon(QIcon(*MusEGui::pianoNewIcon));
     menu->addMenu(subMenuPrograms);
-    MusEGui::PopupMenu *subMenuPresets = new MusEGui::PopupMenu(menu->parent());
+    // Use the parent stayOpen here.
+    MusEGui::PopupMenu *subMenuPresets = new MusEGui::PopupMenu(menu, menu->stayOpen());
     subMenuPresets->setTitle(QObject::tr("Presets"));
     menu->addMenu(subMenuPresets);
 
     //First: fill programs submenu
-    std::map<int, MusEGui::PopupMenu *> submenus;
-    std::map<uint32_t, lv2ExtProgram>::iterator itIndex;
-    for(itIndex = _state->index2prg.begin(); itIndex != _state->index2prg.end(); ++itIndex)
+
+    // If there is a MidiName document, it takes priority over any LV2 programs.
+#ifdef MIDNAM_SUPPORT
+    if(!synthI_const()->midnamDocument().isEmpty())
     {
-        const lv2ExtProgram &extPrg = itIndex->second;
-        uint32_t hb = extPrg.bank >> 8;
-        uint32_t lb = extPrg.bank & 0xff;
-        // 16384 banks arranged as 128 hi and lo banks each with up to the first 128 programs supported.
-        if(hb > 127 || lb > 127 || extPrg.prog > 127)
-            continue;
-        hb &= 0x7f;
-        lb &= 0x7f;
-        const uint32_t patch_bank = (hb << 8) | lb;
-        const uint32_t patch = (patch_bank << 8) | extPrg.prog;
+      populatePatchPopupMidNam(subMenuPrograms, channel, drum);
+    }
+    else
+#endif
 
-        std::map<int, MusEGui::PopupMenu *>::iterator itS = submenus.find(patch_bank);
-        MusEGui::PopupMenu *submenu= NULL;
-        if(itS != submenus.end())
-        {
-            submenu = itS->second;
-        }
-        else
-        {
-            submenu = new MusEGui::PopupMenu(menu->parent());
-            submenu->setTitle(QString("Bank #") + QString::number(extPrg.bank + 1));
-            subMenuPrograms->addMenu(submenu);
-            submenus.insert(std::make_pair(patch_bank, submenu));
-        }
+    {
+      std::map<int, MusEGui::PopupMenu *> submenus;
+      std::map<uint32_t, lv2ExtProgram>::iterator itIndex;
+      for(itIndex = _state->index2prg.begin(); itIndex != _state->index2prg.end(); ++itIndex)
+      {
+          const lv2ExtProgram &extPrg = itIndex->second;
+          uint32_t hb = extPrg.bank >> 8;
+          uint32_t lb = extPrg.bank & 0xff;
+          // 16384 banks arranged as 128 hi and lo banks each with up to the first 128 programs supported.
+          if(hb > 127 || lb > 127 || extPrg.prog > 127)
+              continue;
+          hb &= 0x7f;
+          lb &= 0x7f;
+          const uint32_t patch_bank = (hb << 8) | lb;
+          const uint32_t patch = (patch_bank << 8) | extPrg.prog;
 
-        QAction *act = submenu->addAction(extPrg.name);
-        act->setData(patch);
+          std::map<int, MusEGui::PopupMenu *>::iterator itS = submenus.find(patch_bank);
+          MusEGui::PopupMenu *submenu= NULL;
+          if(itS != submenus.end())
+          {
+              submenu = itS->second;
+          }
+          else
+          {
+              // Use the parent stayOpen here.
+              submenu = new MusEGui::PopupMenu(subMenuPrograms, subMenuPrograms->stayOpen());
+              submenu->setTitle(QString("Bank #") + QString::number(extPrg.bank + 1));
+              subMenuPrograms->addMenu(submenu);
+              submenus.insert(std::make_pair(patch_bank, submenu));
+          }
+
+          QAction *act = submenu->addAction(extPrg.name);
+          act->setData(patch);
+      }
     }
 
     //Second:: Fill presets submenu
