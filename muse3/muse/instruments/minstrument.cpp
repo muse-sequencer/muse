@@ -1114,10 +1114,12 @@ void MidiInstrument::writeDrummapOverrides(int level, Xml& xml) const
 //   readMidnamDocument
 //---------------------------------------------------------
 
+#ifdef MIDNAM_SUPPORT
 bool MidiInstrument::readMidnamDocument(Xml& xml)
 {
   return _midnamDocument.read(xml);
 }
+#endif
 
 patch_drummap_mapping_list_t* MidiInstrument::get_patch_drummap_mapping(int channel, bool includeDefault)
 {
