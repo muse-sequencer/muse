@@ -69,6 +69,7 @@ using namespace std;
 #include "cmd.h"
 #include "song.h"
 #include "shortcuts.h"
+#include "menutitleitem.h"
 
 using MusEGlobal::debugMsg;
 using MusEGlobal::heavyDebugMsg;
@@ -159,8 +160,7 @@ bool pixmaps_initalized=false;
 QColor* mycolors; // array [NUM_MYCOLORS]
 
 
-
-
+static const int scoreTools = PointerTool | PencilTool | RubberTool;
 
 set<QString> ScoreEdit::names;
 
@@ -241,7 +241,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
     addToolBarBreak();
 
-    edit_tools = new MusEGui::EditToolBar(this, MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool);
+    edit_tools = new MusEGui::EditToolBar(this, scoreTools);
     addToolBar(edit_tools);
     edit_tools->set(MusEGui::PointerTool);
     score_canvas->set_tool(MusEGui::PointerTool);
@@ -259,7 +259,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
     QToolBar* quant_toolbar = addToolBar(tr("Quantisation settings"));
     quant_toolbar->setObjectName("Score quantisation toolbar");
-    quant_toolbar->addWidget(new QLabel(tr("Quantisation:"), quant_toolbar));
+    quant_toolbar->addWidget(new QLabel(tr("Quantisation"), quant_toolbar));
     quant_combobox = new QComboBox(this);
     quant_combobox->addItem("2");  // if you add or remove items from
     quant_combobox->addItem("4");  // here, also change all code regarding
@@ -275,9 +275,9 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     quant_toolbar->addWidget(quant_combobox);
 
 
-    quant_toolbar->addSeparator();
-
-    quant_toolbar->addWidget(new QLabel(tr("Pixels per whole:"), quant_toolbar));
+    QLabel* label = new QLabel(tr("Pixels per whole"));
+    label->setIndent(3);
+    quant_toolbar->addWidget(label);
     px_per_whole_spinbox = new SpinBox(this);
     px_per_whole_spinbox->setFocusPolicy(Qt::StrongFocus);
     px_per_whole_spinbox->setRange(10, 1200);
@@ -294,7 +294,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     QToolBar* note_settings_toolbar = addToolBar(tr("Note settings"));
     //don't change that name, or you will lose toolbar settings
     note_settings_toolbar->setObjectName("New note settings");
-    note_settings_toolbar->addWidget(new QLabel(tr("Note length:"), note_settings_toolbar));
+    note_settings_toolbar->addWidget(new QLabel(tr("Note length"), note_settings_toolbar));
     len_actions=new QActionGroup(this);
     n1_action = note_settings_toolbar->addAction("1");
     n2_action = note_settings_toolbar->addAction("2");
@@ -342,27 +342,13 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
             menu_command(CMD_NOTELEN_LAST);
     }
 
-    note_settings_toolbar->addSeparator();
-
-    apply_velo_to_label = new QLabel(tr("Apply to new notes:"), note_settings_toolbar);
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
-        int w1 = apply_velo_to_label->fontMetrics().horizontalAdvance(tr("Apply to new notes:"));
-        int w2 = apply_velo_to_label->fontMetrics().horizontalAdvance(tr("Apply to selected notes:"));
-#else
-        int w1 = apply_velo_to_label->fontMetrics().width(tr("Apply to new notes:"));
-        int w2 = apply_velo_to_label->fontMetrics().width(tr("Apply to selected notes:"));
-#endif
-        if (w1>w2)
-            apply_velo_to_label->setFixedWidth(w1+5);
-        else
-            apply_velo_to_label->setFixedWidth(w2+5);
-
-    note_settings_toolbar->addWidget(apply_velo_to_label);
-    note_settings_toolbar->addWidget(new QLabel(tr("Velocity:"), note_settings_toolbar));
+    label = new QLabel(tr("Velocity"));
+    label->setIndent(3);
+    note_settings_toolbar->addWidget(label);
     velo_spinbox = new SpinBox(this);
     velo_spinbox->setRange(0, 127);
     velo_spinbox->setSingleStep(1);
+    velo_spinbox->setToolTip(tr("Apply to selected notes, or new notes if none is selected"));
     //we do not use the valueChanged signal, because that would generate
     //many many undos when using the spin buttons.
     connect(velo_spinbox, SIGNAL(editingFinished()), SLOT(velo_box_changed()));
@@ -372,10 +358,13 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     note_settings_toolbar->addWidget(velo_spinbox);
     velo_spinbox->setValue(ScoreCanvas::note_velo_init);
 
-    note_settings_toolbar->addWidget(new QLabel(tr("Off-Velocity:"), note_settings_toolbar));
+    label = new QLabel(tr("Off-Velocity"));
+    label->setIndent(3);
+    note_settings_toolbar->addWidget(label);
     velo_off_spinbox = new SpinBox(this);
     velo_off_spinbox->setRange(0, 127);
     velo_off_spinbox->setSingleStep(1);
+    velo_off_spinbox->setToolTip(tr("Apply to selected notes, or new notes if none is selected"));
     //we do not use the valueChanged signal, because that would generate
     //many many undos when using the spin buttons.
     connect(velo_off_spinbox, SIGNAL(editingFinished()), SLOT(velo_off_box_changed()));
@@ -586,6 +575,13 @@ bool ScoreEdit::itemsAreSelected() const
   return false;
 }
 
+
+void ScoreEdit::setEditTool(int tool)
+{
+    edit_tools->set(tool);
+}
+
+
 //---------------------------------------------------------
 //   tagItems
 //---------------------------------------------------------
@@ -682,14 +678,7 @@ void ScoreEdit::song_changed(MusECore::SongChangedStruct_t flags)
     {
         map<const MusECore::Event*,
           const MusECore::Part*> selection=get_events(score_canvas->get_all_parts(),1, MusECore::AllEventsRelevant);
-        if (selection.empty())
-        {
-            apply_velo_to_label->setText(tr("Apply to new notes:"));
-        }
-        else
-        {
-            apply_velo_to_label->setText(tr("Apply to selected notes:"));
-
+        if (!selection.empty()) {
             int velo=-1;
             int velo_off=-1;
             for (map<const MusECore::Event*, const MusECore::Part*>::iterator it=selection.begin(); it!=selection.end(); it++)
@@ -4166,9 +4155,13 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 
                         setMouseTracking(true);
                     }
-                }
+
+                } else if (event->button() == Qt::RightButton)
+                    callContextMenu();
         }
-    }
+
+    } else if (event->button() == Qt::RightButton)
+        callContextMenu();
 }
 
 void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
@@ -4671,6 +4664,7 @@ void ScoreCanvas::set_tool(int tool)
     }
 
     active_tool_cursor = cursor();
+    active_tool = tool;
 }
 
 void ScoreCanvas::menu_command(int cmd)
@@ -4981,6 +4975,49 @@ void ScoreCanvas::add_new_parts(const std::map< const MusECore::Part*, std::set<
 
     fully_recalculate();
 }
+
+
+QMenu* ScoreCanvas::toolContextMenu()
+{
+    QMenu* r_menu = new QMenu(this);
+    QAction* act0 = 0;
+
+    r_menu->addAction(new MenuTitleItem(tr("Tools:"), r_menu));
+
+    for (unsigned i = 0; i < gNumberOfTools; ++i) {
+        if ((scoreTools & (1 << i)) == 0)
+            continue;
+        QAction* act = r_menu->addAction(QIcon(**toolList[i].icon), tr(toolList[i].tip));
+
+        if (MusEGui::toolShortcuts.contains(1 << i)) {
+            act->setShortcut(MusEGui::shortcuts[MusEGui::toolShortcuts[1 << i]].key);
+        }
+
+        act->setData(scoreTools & (1 << i));
+        act->setCheckable(true);
+        act->setChecked((1 << i) == active_tool);
+        if (!act0)
+            act0 = act;
+    }
+
+    r_menu->setActiveAction(act0);
+    return r_menu;
+}
+
+void ScoreCanvas::callContextMenu()
+{
+    QMenu * cm = toolContextMenu();
+    if (cm) {
+        QAction *act = cm->exec(QCursor::pos());
+        if (act && act->data().isValid()) {
+            int tool = act->data().toInt();
+            parent->setEditTool(tool);
+        }
+        delete cm;
+    }
+}
+
+
 
 } // namespace MusEGui
 
