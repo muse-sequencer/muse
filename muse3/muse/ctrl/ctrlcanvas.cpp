@@ -788,7 +788,7 @@ bool CtrlCanvas::setCurTrackAndPart()
 void CtrlCanvas::configChanged()    
 { 
   if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
-        setBg(MusEGlobal::config.midiCanvasBg);
+        setBg(MusEGlobal::config.midiControllerViewBg);
         setBg(QPixmap());
   }
   else {
