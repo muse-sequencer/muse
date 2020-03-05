@@ -2683,6 +2683,7 @@ void CtrlCanvas::setTool(int t)
             }
 
       cancelMouseOps();
+      setCursor();
       }
 
 //---------------------------------------------------------
