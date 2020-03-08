@@ -695,7 +695,7 @@ void AudioMixerApp::initMixer()
   //clearAndDelete();
 
   showMidiTracksId->setChecked(cfg->showMidiTracks);
-  showDrumTracksId->setChecked(cfg->showDrumTracks);
+//  showDrumTracksId->setChecked(cfg->showDrumTracks);
   showNewDrumTracksId->setChecked(cfg->showNewDrumTracks);
   showInputTracksId->setChecked(cfg->showInputTracks);
   showOutputTracksId->setChecked(cfg->showOutputTracks);
