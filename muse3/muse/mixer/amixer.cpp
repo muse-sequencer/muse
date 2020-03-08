@@ -101,8 +101,8 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       actionItems->setExclusive(false);
       
       showMidiTracksId = new QAction(tr("Show Midi Tracks"), actionItems);
-      showDrumTracksId = new QAction(tr("Show Drum Tracks"), actionItems);
-      showNewDrumTracksId = new QAction(tr("Show New Style Drum Tracks"), actionItems);
+//      showDrumTracksId = new QAction(tr("Show Drum Tracks"), actionItems);
+      showNewDrumTracksId = new QAction(tr("Show Drum Tracks"), actionItems);
       showWaveTracksId = new QAction(tr("Show Wave Tracks"), actionItems);
 
       QAction *separator = new QAction(this);
@@ -115,10 +115,10 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       showAuxTracksId = new QAction(tr("Show Auxs"), actionItems);
       showSyntiTracksId = new QAction(tr("Show Synthesizers"), actionItems);
 
-      showDrumTracksId->setVisible(false);
+//      showDrumTracksId->setVisible(false);
       
       showMidiTracksId->setCheckable(true);
-      showDrumTracksId->setCheckable(true);
+//      showDrumTracksId->setCheckable(true);
       showNewDrumTracksId->setCheckable(true);
       showWaveTracksId->setCheckable(true);
       showInputTracksId->setCheckable(true);
@@ -128,7 +128,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       showSyntiTracksId->setCheckable(true);
 
       connect(showMidiTracksId,    &QAction::triggered, [this](bool v) { showMidiTracksChanged(v); } );
-      connect(showDrumTracksId,    &QAction::triggered, [this](bool v) { showDrumTracksChanged(v); } );
+//      connect(showDrumTracksId,    &QAction::triggered, [this](bool v) { showDrumTracksChanged(v); } );
       connect(showNewDrumTracksId, &QAction::triggered, [this](bool v) { showNewDrumTracksChanged(v); } );
       connect(showWaveTracksId,    &QAction::triggered, [this](bool v) { showWaveTracksChanged(v); } );
       connect(showInputTracksId,   &QAction::triggered, [this](bool v) { showInputTracksChanged(v); } );
@@ -1030,11 +1030,11 @@ void AudioMixerApp::showMidiTracksChanged(bool v)
     cfg->showMidiTracks = v;
     redrawMixer();
 }
-void AudioMixerApp::showDrumTracksChanged(bool v)
-{
-    cfg->showDrumTracks = v;
-    redrawMixer();
-}
+//void AudioMixerApp::showDrumTracksChanged(bool v)
+//{
+//    cfg->showDrumTracks = v;
+//    redrawMixer();
+//}
 void AudioMixerApp::showNewDrumTracksChanged(bool v)
 {
     cfg->showNewDrumTracks = v;
