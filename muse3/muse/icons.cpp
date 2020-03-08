@@ -731,8 +731,8 @@ void initIcons(int cursorSize)
       // Cursors
       //----------------------------------
 
-      editpasteSCursor = new QCursor(*editpasteSIcon, 8, 8);
-      editpasteCloneSCursor = new QCursor(*editpasteCloneSIcon, 8, 8);
+      editpasteSCursor = new QCursor(QPixmap(*editpasteSIcon).scaled(qRound(dpr * cursorSize), qRound(dpr * cursorSize)));
+      editpasteCloneSCursor = new QCursor(QPixmap(*editpasteCloneSIcon).scaled(qRound(dpr * cursorSize), qRound(dpr * cursorSize)));
 
       // tool cursors
       pencilCursor     = new QCursor(pencilIconSVG->pixmap(QSize(cursorSize, cursorSize)), 0, qRound(dpr * (cursorSize - 1)));
