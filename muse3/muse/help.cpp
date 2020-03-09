@@ -45,48 +45,10 @@ namespace MusEGui {
 //---------------------------------------------------------
 
 void MusE::startHelpBrowser()
-      {
-      QString lang(getenv("LANG"));
-      QString museHelp;
-      bool pdffound = false;
-      
-#ifdef MUSE_USE_PDF_HELP_FILE
-      museHelp = DOCDIR + QString("/muse_pdf/documentation_") + lang + QString(".pdf");
-      if (access(museHelp.toLatin1(), R_OK) != 0)
-      {
-            museHelp = DOCDIR + QString("/muse_pdf/documentation.pdf");
-            if (access(museHelp.toLatin1(), R_OK) != 0)
-            {
-                  //QString info(tr("no help found at: "));
-                  //info += museHelp;
-                  //info += tr("\nTrying HTML file instead...\n");
-                  //QMessageBox::critical(this, tr("MusE: Open Help"), info);
-                  fprintf(stderr, "MusE::startHelpBrowser() no help found at:%s\nTrying HTML file instead...",
-                          museHelp.toLatin1().constData());
-            }
-            else
-              pdffound = true;
-      }
-      else
-        pdffound = true;
-#endif            
-
-      if(!pdffound)
-      {
-        museHelp = DOCDIR + QString("/muse_html/single/documentation/index_") + lang + QString(".html");
-        if (access(museHelp.toLatin1(), R_OK) != 0) {
-              museHelp = DOCDIR + QString("/muse_html/single/documentation/index.html");
-              if (access(museHelp.toLatin1(), R_OK) != 0) {
-                    QString info(tr("No help found at: "));
-                    info += museHelp;
-                    QMessageBox::critical(this, tr("MusE: Open Help"), info);
-                    return;
-                    }
-              }
-      }
-      
-      launchBrowser(museHelp);
-      }
+{
+    QString museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation");
+    launchBrowser(museManual);
+}
 
 //---------------------------------------------------------
 //   startHelpBrowser
@@ -95,7 +57,6 @@ void MusE::startHelpBrowser()
 void MusE::startHomepageBrowser()
       {
       QString museHome = QString("https://muse-sequencer.github.io");
-
       launchBrowser(museHome);
       }
 
@@ -133,11 +94,10 @@ void MusE::launchBrowser(QString &whereTo)
       {
       if (! QDesktopServices::openUrl(QUrl(whereTo)))
             {
-            QMessageBox::information(this, tr("Unable to launch help"), 
-                                     tr("For some reason MusE has to launch the default\n"
-                                        "browser on your machine."),
-                                     QMessageBox::Ok, QMessageBox::Ok);
-            printf("Unable to launch help\n");
+            QMessageBox::information(this, tr("Unable to launch browser"),
+                                     tr("Error launching default browser"),
+                                     QMessageBox::Ok);
+            printf("Unable to launch browser\n");
             }
       }
 
