@@ -98,7 +98,7 @@ class AudioMixerApp : public QMainWindow {
       int oldAuxsSize;
 
       QAction* showMidiTracksId;
-      QAction* showDrumTracksId;
+//      QAction* showDrumTracksId;
       QAction* showNewDrumTracksId;
       QAction* showInputTracksId;
       QAction* showOutputTracksId;
@@ -145,7 +145,7 @@ class AudioMixerApp : public QMainWindow {
       void toggleRouteDialog();
       void routingDialogClosed();
       void showMidiTracksChanged(bool);
-      void showDrumTracksChanged(bool);
+//      void showDrumTracksChanged(bool);
       void showNewDrumTracksChanged(bool);
       void showWaveTracksChanged(bool);
       void showInputTracksChanged(bool);

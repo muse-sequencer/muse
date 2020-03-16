@@ -731,17 +731,17 @@ void initIcons(int cursorSize)
       // Cursors
       //----------------------------------
 
-      editpasteSCursor = new QCursor(*editpasteSIcon, 8, 8);
-      editpasteCloneSCursor = new QCursor(*editpasteCloneSIcon, 8, 8);
+      editpasteSCursor = new QCursor(QPixmap(*editpasteSIcon).scaled(qRound(dpr * cursorSize), qRound(dpr * cursorSize)));
+      editpasteCloneSCursor = new QCursor(QPixmap(*editpasteCloneSIcon).scaled(qRound(dpr * cursorSize), qRound(dpr * cursorSize)));
 
       // tool cursors
-      pencilCursor     = new QCursor(pencilIconSVG->pixmap(QSize(cursorSize, cursorSize)), qRound(dpr * 1), qRound(dpr * 17));
-      glueCursor       = new QCursor(glueIconSVG->pixmap(QSize(cursorSize, cursorSize)),  qRound(dpr * 1), qRound(dpr * 17));
-      cutterCursor     = new QCursor(cutterIconSVG->pixmap(QSize(cursorSize, cursorSize)),  qRound(dpr * 1), qRound(dpr * 17));
+      pencilCursor     = new QCursor(pencilIconSVG->pixmap(QSize(cursorSize, cursorSize)), 0, qRound(dpr * (cursorSize - 1)));
+      glueCursor       = new QCursor(glueIconSVG->pixmap(QSize(cursorSize, cursorSize)),  0, qRound(dpr * (cursorSize - 1)));
+      cutterCursor     = new QCursor(cutterIconSVG->pixmap(QSize(cursorSize, cursorSize)),  0, qRound(dpr * (cursorSize - 1)));
       zoomCursor       = new QCursor(zoomIconSVG->pixmap(QSize(cursorSize, cursorSize)));
       zoomAtCursor     = new QCursor(zoomAtIconSVG->pixmap(QSize(cursorSize, cursorSize)));
-      deleteCursor     = new QCursor(deleteIconSVG->pixmap(QSize(cursorSize, cursorSize)), qRound(dpr * 1), qRound(dpr * 15));
-      drawCursor       = new QCursor(drawIconSVG->pixmap(QSize(cursorSize, cursorSize)), qRound(dpr * 1), qRound(dpr * 17));
+      deleteCursor     = new QCursor(deleteIconSVG->pixmap(QSize(cursorSize, cursorSize)), qRound(dpr * (cursorSize / 6)), qRound(dpr * (cursorSize - 1)));
+      drawCursor       = new QCursor(drawIconSVG->pixmap(QSize(cursorSize, cursorSize)), 0, qRound(dpr * (cursorSize - 1)));
       mutePartsCursor  = new QCursor(mutePartsIconSVG->pixmap(QSize(cursorSize, cursorSize)));
       handCursor       = new QCursor(handIconSVG->pixmap(QSize(cursorSize, cursorSize)));
       closedHandCursor = new QCursor(closedHandIconSVG->pixmap(QSize(cursorSize, cursorSize)));
@@ -749,11 +749,11 @@ void initIcons(int cursorSize)
       // This one needs to be bigger to contain drum notes.
       //customMoveCursor = new QCursor(customMoveIconSVG->pixmap(QSize(2 * cursorSize, 2 * cursorSize)));
       pencilMove4WayCursor = 
-        new QCursor(pencilMove4WayIconSVG->pixmap(QSize(cursorSize, cursorSize)), qRound(dpr * 1), qRound(dpr * 17));
+        new QCursor(pencilMove4WayIconSVG->pixmap(QSize(cursorSize, cursorSize)), 0, qRound(dpr * (cursorSize - 1)));
       pencilMoveHorizCursor = 
-        new QCursor(pencilMoveHorizIconSVG->pixmap(QSize(cursorSize, cursorSize)), qRound(dpr * 1), qRound(dpr * 17));
+        new QCursor(pencilMoveHorizIconSVG->pixmap(QSize(cursorSize, cursorSize)), 0, qRound(dpr * (cursorSize - 1)));
       pencilMoveVertCursor = 
-        new QCursor(pencilMoveVertIconSVG->pixmap(QSize(cursorSize, cursorSize)), qRound(dpr * 1), qRound(dpr * 17));
+        new QCursor(pencilMoveVertIconSVG->pixmap(QSize(cursorSize, cursorSize)), 0, qRound(dpr * (cursorSize - 1)));
       }
 
 //---------------------------------------------------------
