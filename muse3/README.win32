@@ -1,8 +1,103 @@
-Information on building MusE on Windows. 
-Named the file win32 though it extends to windows in general but the word Windows is just to unambiguous.
+# Building MusE on Windows. 
+
+The file is named win32 though it extends to windows in general but the word Windows is just too ambiguous.
 
 There is a thread in the forum with the most recent effort to bring Windows support to MusE:
 https://linuxmusicians.com/viewtopic.php?f=61&t=19353
 
-To be elaborated.
+Be warned that the Windows build of MusE is work-in-progress and is mostly of interest to tinkerers that wish
+to pursue this effort.
+
+## Instructions
+
+The following steps allow native Muse (git) compilation under Windows with the mingw64 compiler. Optional steps or alternatives are commented out.
+It is available in it's original formatting here:
+    https://musicsecrets.euniversity.pub/muse.html
+
+    Support files:
+
+        Required dependencies
+        Fix make paths script (place it in muse/muse3)
+        Compile components script (place it in muse/muse3)
+        Compile Muse script (place it in muse/muse3)
+        Pack script (TODO)
+
+
+    1. Install msys2 from http://www.msys2.org/ in a short path (i.e. f:/a)
+    # From the msys2 terminal
+    pacman -Syu
+    # Close the msys2 terminal and open it again
+    pacman -Su
+
+    2. From mingw64 shell from now on, install common packages:
+    pacman -S \
+    mingw-w64-x86_64-toolchain \
+    python3 \
+    python3-setuptools \
+    mingw-w64-x86_64-python3 \
+    mingw-w64-x86_64-python3-setuptools \
+    python2 \
+    python2-setuptools \
+    pkg-config \
+    mingw-w64-x86_64-pkg-config \
+    autoconf \
+    automake \
+    perl \
+    gtk-doc \
+    flex \
+    bison \
+    patch \
+    libtool \
+    mingw-w64-x86_64-libtool \
+    wget \
+    git \
+    nasm \
+    mingw-w64-x86_64-nasm \
+    dos2unix \
+    mingw-w64-x86_64-cmake
+
+    3. Install pre-built dependencies
+    pacman -S \
+    base-devel \
+    mercurial \
+    cvs \
+    p7zip \
+    ruby \
+    mingw-w64-x86_64-qt5 \
+    mingw-w64-x86_64-ladspa-sdk \
+    mingw-w64-x86_64-libsndfile \
+    mingw-w64-x86_64-libsamplerate \
+    mingw-w64-x86_64-fluidsynth \
+    mingw-w64-x86_64-gtkmm \
+    mingw-w64-x86_64-dlfcn
+
+    # Build the following packages with these commands in /usr/src:
+    cd /usr/src
+    cd #PACKAGE_DIR#
+    makepkg-mingw -g >> PKGBUILD
+    makepkg-mingw
+    pacman -U *.pkg.tar.xz
+    cd ..
+
+    mingw-w64-liblo
+    mingw-w64-serd
+    mingw-w64-sord
+    mingw-w64-lv2
+    mingw-w64-sratom
+    mingw-w64-lilv
+    mingw-w64-portaudio
+    mingw-w64-jack
+
+    4. Build Muse
+    cd /usr/src
+    git clone --recurse-submodules -b master git://github.com/muse-sequencer/muse.git
+    cd /usr/src/muse/muse3
+    export LIBRARY_PATH=/mingw64/lib
+    export CPATH=/mingw64/include
+    # Copy here the files compile_muse_mingw.sh and CMakeLists.txt
+    ./compile_muse_mingw.sh
+
+    5. Pack files (TODO)
+    # Place muse_pack.sh in /usr/src
+    ./muse_pack.sh
 
