@@ -901,20 +901,34 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                                      }
                                   }
                                   setCursor();
-                                  if(resizeDirection == RESIZE_TO_THE_RIGHT){
-                                    int dx = start.x() - curItem->x();
-                                    curItem->setWidth(dx);
-                                  }else{
-                                    int endX = curItem->x() + curItem->width();
-                                    end = QPoint(endX, curItem->y());
-                                    resizeToTheLeft(ev_pos);
-                                  }
-                                  start = curItem->pos();
-                                }
-                                deselectAll();
-                                deselect_all = true;
-                                if (curItem)
+
+                                  multiResize = supportsMultipleResize && ctrl;
+
+                                  if (multiResize) {
                                       selectItem(curItem, true);
+                                      if (resizeDirection == RESIZE_TO_THE_RIGHT)
+                                          resizeSelected(start.x() - curItem->x() - curItem->width());
+                                      else
+                                          resizeSelected(start.x() - curItem->x(), true);
+                                  } else {
+                                      if (resizeDirection == RESIZE_TO_THE_RIGHT) {
+                                          int dx = start.x() - curItem->x();
+                                          curItem->setWidth(dx);
+                                      } else {
+                                          int endX = curItem->x() + curItem->width();
+                                          end = QPoint(endX, curItem->y());
+                                          resizeToTheLeft(ev_pos);
+                                      }
+                                  }
+
+                                  start = curItem->pos();
+
+                                  if (!multiResize) {
+                                    deselectAll();
+                                    deselect_all = true;
+                                    selectItem(curItem, true);
+                                  }
+                                }
                               }
                         else {
                               drag = DRAG_NEW;
@@ -1182,12 +1196,19 @@ void Canvas::scrollTimerDone()
                 
           case DRAG_RESIZE:
                 if (curItem && doHMove) {
-                      int w = ev_pos.x() - curItem->x();
-                      if(w < 1)
-                        w = 1;
-                      curItem->setWidth(w);
-                      redraw();
-                      }
+                    if (multiResize) {
+                        if (resizeDirection == RESIZE_TO_THE_RIGHT)
+                            resizeSelected(ev_pos.x() - curItem->x() - curItem->width());
+                        else
+                            resizeSelected(ev_pos.x() - curItem->x(), true);
+                    } else {
+                        int w = ev_pos.x() - curItem->x();
+                        if(w < 1)
+                            w = 1;
+                        curItem->setWidth(w);
+                    }
+                    redraw();
+                }
                 break;
           default:  
                 break;
@@ -1462,16 +1483,20 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
 
             case DRAG_RESIZE:
                   if (curItem && last_dist.x()) {
-                        if(resizeDirection == RESIZE_TO_THE_RIGHT){
-                           int w = ev_pos.x() - curItem->x();
-                           if(w < 1)
-                             w = 1;
-                           curItem->setWidth(w);
-                        }else{
-                           resizeToTheLeft(ev_pos);
-                        }
-                        redraw();
-                        }
+                      if (multiResize) {
+                          resizeSelected(last_dist.x(), resizeDirection == RESIZE_TO_THE_LEFT);
+                      } else {
+                          if (resizeDirection == RESIZE_TO_THE_RIGHT) {
+                              int w = ev_pos.x() - curItem->x();
+                              if(w < 1)
+                                  w = 1;
+                              curItem->setWidth(w);
+                          } else {
+                              resizeToTheLeft(ev_pos);
+                          }
+                      }
+                      redraw();
+                  }
                   break;
                   
             case DRAG_DELETE:
@@ -1623,16 +1648,19 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
             case DRAG_OFF:
                   break;
             case DRAG_RESIZE:
-                  if(curItem){                    
-                    if(resizeDirection == RESIZE_TO_THE_LEFT){
-                       QPoint rpos = QPoint(raster(pos).x(), curItem->y());
-                       resizeToTheLeft(rpos);
-                       curItem->move(start);
-                    }
-                    resizeItem(curItem, shift, ctrl);
-                    itemSelectionsChanged();
-                    redraw();
-                    resizeDirection = RESIZE_TO_THE_RIGHT; // reset to default state or ctrl+rightclick resize will cease to work
+                  if (curItem) {
+                      if(resizeDirection == RESIZE_TO_THE_LEFT) {
+                          if (!supportsMultipleResize) {
+                              QPoint rpos = QPoint(raster(pos).x(), curItem->y());
+                              resizeToTheLeft(rpos);
+                              curItem->move(start);
+                          }
+                      }
+                      resizeItem(curItem, shift, ctrl);
+                      itemSelectionsChanged();
+                      redraw();
+                      multiResize = false;
+                      resizeDirection = RESIZE_TO_THE_RIGHT; // reset to default state or ctrl+rightclick resize will cease to work
                   }
                   break;
             case DRAG_NEW:
@@ -1858,8 +1886,24 @@ void Canvas::setLasso(const QRect& r)
   lassoToRegion(lasso, lassoRegion);
 }
 
-void Canvas::resizeToTheLeft(const QPoint &pos)
+void Canvas::resizeSelected(const int &dist, const bool left)
 {
+    for (auto &it: items) {
+        if (!it.second->isSelected())
+            continue;
+
+        if (left) {
+            QPoint mp(qMin(it.second->pos().x() + it.second->width() - 2, it.second->x() + dist), it.second->y());
+            it.second->setTopLeft(mp);
+
+        } else {
+            it.second->setWidth(qMax(1, it.second->width() + dist));
+        }
+    }
+}
+
+void Canvas::resizeToTheLeft(const QPoint &pos)
+{    
    int newX = pos.x();
    if(end.x() - newX < 1)
       newX = end.x() - 1;

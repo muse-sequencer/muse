@@ -73,6 +73,7 @@ class CItem {
       virtual QRect bbox() const           { return QRect(); }
       virtual void setBBox(const QRect&)   { }
       virtual void move(const QPoint&)     { }
+      virtual void setTopLeft(const QPoint&)     { }
       virtual bool contains(const QPoint&) const  { return false; }
       virtual bool intersects(const QRect&) const { return false; }
 
@@ -115,6 +116,10 @@ class BItem : public CItem {
             _bbox.moveTopLeft(tl);
             _pos = tl;
             }
+      void setTopLeft(const QPoint &tl) {
+          _bbox.setTopLeft(tl);
+          _pos = tl;
+      }
       bool contains(const QPoint& p) const  { return _bbox.contains(p); }
       bool intersects(const QRect& r) const { return r.intersects(_bbox); }
       };
