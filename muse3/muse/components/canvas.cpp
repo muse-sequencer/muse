@@ -82,7 +82,9 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
       resizeDirection= RESIZE_TO_THE_RIGHT;
 
       supportsResizeToTheLeft = false;
-      
+      supportsMultipleResize = false;
+      multiResize = false;
+
       scrollSpeed=30;    // hardcoded scroll jump
 
       drag    = DRAG_OFF;
