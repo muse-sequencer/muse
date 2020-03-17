@@ -1869,6 +1869,9 @@ void PianoCanvas::mouseMove(QMouseEvent* event) {
 
     EventCanvas::mouseMove(event);
 
+    if (!MusEGlobal::config.showNoteTooltips)
+        return;
+
     static CItem* hoverItem = nullptr;
 
     if (_tool & (MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool)) {
@@ -1920,7 +1923,7 @@ void PianoCanvas::mouseMove(QMouseEvent* event) {
 //---------------------------------------------------------
 QMenu* PianoCanvas::genItemPopup(MusEGui::CItem* item) {
     // no context menu available, use for item selection
-    item->setSelected(true);
+    item->setSelected(!item->isSelected());
     return nullptr;
 }
 

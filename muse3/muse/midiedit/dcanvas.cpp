@@ -2003,6 +2003,9 @@ void DrumCanvas::mouseMove(QMouseEvent* event) {
 
     EventCanvas::mouseMove(event);
 
+    if (!MusEGlobal::config.showNoteTooltips)
+        return;
+
     static CItem* hoverItem = nullptr;
 
     if (_tool & (MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | MusEGui::CursorTool)) {

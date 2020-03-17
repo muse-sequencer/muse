@@ -342,6 +342,7 @@ GlobalConfigValues config = {
       false,                        // commonProjectLatency
       "",                           // mixdownPath
       true,                         // showNoteNamesInPianoRoll
+      true,                         // showNoteTooltipsCheckBox
       false,                        // noPluginScaling
       false,                        // openMDIWinMaximized
       false                         // selectionsUndoable Whether selecting parts or events is undoable.
