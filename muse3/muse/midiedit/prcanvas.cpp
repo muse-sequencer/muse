@@ -1862,17 +1862,69 @@ void PianoCanvas::resizeEvent(QResizeEvent* ev)
       }
 
 //---------------------------------------------------------
-//   mouseMove
+//   mouseMove (override)
 //---------------------------------------------------------
 
 void PianoCanvas::mouseMove(QMouseEvent* event) {
 
     EventCanvas::mouseMove(event);
 
+    if (!MusEGlobal::config.showNoteTooltips)
+        return;
+
+    static CItem* hoverItem = nullptr;
+
     if (_tool & (MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool)) {
-        int pitch = y2pitch(event->pos().y());
-        QToolTip::showText(event->globalPos(), MusECore::pitch2string(pitch) + " (" + QString::number(pitch) + ")" );
+
+        QString str;
+        CItem* item = findCurrentItem(event->pos());
+        if (item) {
+            if (hoverItem == item)
+                return;
+
+            hoverItem = item;
+
+            int pitch = item->event().pitch();
+            MusECore::Pos start(item->event().tick() + item->part()->tick());
+
+            int bar, beat, tick, hour, min, sec, msec;
+
+            start.mbt(&bar, &beat, &tick);
+            QString str_bar = QString("%1.%2.%3")
+                .arg(bar + 1,  4, 10, QLatin1Char('0'))
+                .arg(beat + 1, 2, 10, QLatin1Char('0'))
+                .arg(tick,     3, 10, QLatin1Char('0'));
+
+            start.msmu(&hour, &min, &sec, &msec, nullptr);
+            QString str_time = QString("%1:%2:%3.%4")
+                .arg(hour,  2, 10, QLatin1Char('0'))
+                .arg(min,   2, 10, QLatin1Char('0'))
+                .arg(sec,   2, 10, QLatin1Char('0'))
+                .arg(msec,  3, 10, QLatin1Char('0'));
+
+            str = tr("Note: ") + MusECore::pitch2string(pitch) + " (" + QString::number(pitch) + ")\n"
+                    + tr("Velocity: ") + QString::number(item->event().velo()) + "\n"
+                    + tr("Start (bar): ") +  str_bar + "\n"
+                    + tr("Start (time): ") + str_time + "\n"
+                    + tr("Length (ticks): ") + QString::number(item->event().lenTick());
+
+        } else {
+            hoverItem = nullptr;
+            int pitch = y2pitch(event->pos().y());
+            str = MusECore::pitch2string(pitch) + " (" + QString::number(pitch) + ")";
+        }
+
+        QToolTip::showText(event->globalPos(), str);
     }
+}
+
+//---------------------------------------------------------
+//   genItemPopup (override)
+//---------------------------------------------------------
+QMenu* PianoCanvas::genItemPopup(MusEGui::CItem* item) {
+    // no context menu available, use for item selection
+    item->setSelected(!item->isSelected());
+    return nullptr;
 }
 
 } // namespace MusEGui

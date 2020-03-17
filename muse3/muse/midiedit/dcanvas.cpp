@@ -2003,12 +2003,55 @@ void DrumCanvas::mouseMove(QMouseEvent* event) {
 
     EventCanvas::mouseMove(event);
 
+    if (!MusEGlobal::config.showNoteTooltips)
+        return;
+
+    static CItem* hoverItem = nullptr;
+
     if (_tool & (MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | MusEGui::CursorTool)) {
+
+        QString str;
+        CItem* item = findCurrentItem(event->pos());
+        if (item && hoverItem == item)
+            return;
+
         int pitch = drumEditor->get_instrument_map()[y2pitch(event->pos().y())].pitch;
         if (track()->drummap()[pitch].name.isEmpty())
-            QToolTip::showText(event->globalPos(), MusECore::pitch2string(pitch));
+            str = MusECore::pitch2string(pitch) + " (" + QString::number(pitch) + ")";
         else
-            QToolTip::showText(event->globalPos(), track()->drummap()[pitch].name);
+            str = track()->drummap()[pitch].name + " (" + MusECore::pitch2string(pitch)
+                    + "/" + QString::number(pitch) + ")";
+
+        if (item) {
+            hoverItem = item;
+
+            MusECore::Pos start(item->event().tick() + item->part()->tick());
+
+            int bar, beat, tick, hour, min, sec, msec;
+
+            start.mbt(&bar, &beat, &tick);
+            QString str_bar = QString("%1.%2.%3")
+                .arg(bar + 1,  4, 10, QLatin1Char('0'))
+                .arg(beat + 1, 2, 10, QLatin1Char('0'))
+                .arg(tick,     3, 10, QLatin1Char('0'));
+
+            start.msmu(&hour, &min, &sec, &msec, nullptr);
+            QString str_time = QString("%1:%2:%3.%4")
+                .arg(hour,  2, 10, QLatin1Char('0'))
+                .arg(min,   2, 10, QLatin1Char('0'))
+                .arg(sec,   2, 10, QLatin1Char('0'))
+                .arg(msec,  3, 10, QLatin1Char('0'));
+
+            str = tr("Note: ") + str + "\n"
+                    + tr("Velocity: ") + QString::number(item->event().velo()) + "\n"
+                    + tr("Start (bar): ") +  str_bar + "\n"
+                    + tr("Start (time): ") + str_time;
+
+        } else {
+            hoverItem = nullptr;
+        }
+
+        QToolTip::showText(event->globalPos(), str);
     }
 }
 

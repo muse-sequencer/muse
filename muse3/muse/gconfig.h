@@ -400,6 +400,7 @@ struct GlobalConfigValues {
       bool commonProjectLatency;
       QString mixdownPath;
       bool showNoteNamesInPianoRoll;
+      bool showNoteTooltips;
       // Whether selecting parts or events is undoable.
       // If set, it can be somewhat tedious for the user to step through all the undo/redo items.
       bool selectionsUndoable;
