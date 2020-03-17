@@ -132,7 +132,6 @@ class Canvas : public View {
 
       bool supportsResizeToTheLeft;
       bool supportsMultipleResize;
-      bool multiResize;
 
       void setLasso(const QRect& r);
       void resizeToTheLeft(const QPoint &pos);

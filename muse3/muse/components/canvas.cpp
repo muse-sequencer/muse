@@ -83,7 +83,6 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
 
       supportsResizeToTheLeft = false;
       supportsMultipleResize = false;
-      multiResize = false;
 
       scrollSpeed=30;    // hardcoded scroll jump
 
@@ -805,6 +804,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       
       bool alt        = keyState & Qt::AltModifier;
       bool ctrl       = keyState & Qt::ControlModifier;
+      bool shift      = keyState & Qt::ShiftModifier;
       
       start           = event->pos();
       ev_pos          = start;
@@ -893,8 +893,17 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                                   setCursor();
                                   setMouseGrab(true); // CAUTION
                                   break;
-                                }
-                                else {
+
+                                } else if (supportsMultipleResize && ctrl) {
+                                    if (!shift) { //Select or deselect only the clicked item
+                                        selectItem(curItem, !(curItem->isSelected()));
+                                    } else { //Select or deselect all on the same pitch
+                                        bool selected = !(curItem->isSelected());
+                                        for (auto &it: items)
+                                            if (it.second->y() == curItem->y() )
+                                                selectItem(it.second, selected);
+                                    }
+                                } else {
                                   drag = DRAG_RESIZE;
                                   resizeDirection = RESIZE_TO_THE_RIGHT;
                                   if(supportsResizeToTheLeft){
@@ -904,9 +913,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                                   }
                                   setCursor();
 
-                                  multiResize = supportsMultipleResize && ctrl;
-
-                                  if (multiResize) {
+                                  if (supportsMultipleResize) {
                                       selectItem(curItem, true);
                                       if (resizeDirection == RESIZE_TO_THE_RIGHT)
                                           resizeSelected(start.x() - curItem->x() - curItem->width());
@@ -925,7 +932,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
 
                                   start = curItem->pos();
 
-                                  if (!multiResize) {
+                                  if (!supportsMultipleResize) {
                                     deselectAll();
                                     deselect_all = true;
                                     selectItem(curItem, true);
@@ -1198,7 +1205,7 @@ void Canvas::scrollTimerDone()
                 
           case DRAG_RESIZE:
                 if (curItem && doHMove) {
-                    if (multiResize) {
+                    if (supportsMultipleResize) {
                         if (resizeDirection == RESIZE_TO_THE_RIGHT)
                             resizeSelected(ev_pos.x() - curItem->x() - curItem->width());
                         else
@@ -1485,7 +1492,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
 
             case DRAG_RESIZE:
                   if (curItem && last_dist.x()) {
-                      if (multiResize) {
+                      if (supportsMultipleResize) {
                           resizeSelected(last_dist.x(), resizeDirection == RESIZE_TO_THE_LEFT);
                       } else {
                           if (resizeDirection == RESIZE_TO_THE_RIGHT) {
@@ -1661,7 +1668,6 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                       resizeItem(curItem, shift, ctrl);
                       itemSelectionsChanged();
                       redraw();
-                      multiResize = false;
                       resizeDirection = RESIZE_TO_THE_RIGHT; // reset to default state or ctrl+rightclick resize will cease to work
                   }
                   break;

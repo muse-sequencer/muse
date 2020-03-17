@@ -1126,7 +1126,7 @@ void PianoCanvas::resizeItem(CItem* item, bool noSnap, bool rasterize)         /
     unsigned max_diff_len = 0;
     MusECore::Part* part;
 
-    for (auto it: items) {
+    for (auto &it: items) {
         if (!it.second->isSelected())
             continue;
 
