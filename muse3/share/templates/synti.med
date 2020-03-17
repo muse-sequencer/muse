@@ -28,7 +28,6 @@
       <solo>0</solo>
       <off>0</off>
       <channels>2</channels>
-      <height>20</height>
       <locked>0</locked>
       <prefader>0</prefader>
       <sendMetronome>1</sendMetronome>
@@ -47,7 +46,6 @@
       <solo>0</solo>
       <off>1</off>
       <channels>1</channels>
-      <height>20</height>
       <locked>0</locked>
       <prefader>0</prefader>
       <sendMetronome>0</sendMetronome>
@@ -82,7 +80,6 @@
       <solo>0</solo>
       <off>0</off>
       <channels>1</channels>
-      <height>20</height>
       <locked>0</locked>
       <prefader>0</prefader>
       <sendMetronome>0</sendMetronome>
@@ -121,7 +118,6 @@
       <solo>0</solo>
       <off>0</off>
       <channels>0</channels>
-      <height>20</height>
       <locked>0</locked>
       <selected>1</selected>
       <device>199</device>

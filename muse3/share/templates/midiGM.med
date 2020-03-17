@@ -28,7 +28,6 @@
       <solo>0</solo>
       <off>0</off>
       <channels>0</channels>
-      <height>20</height>
       <locked>0</locked>
       <selected>1</selected>
       <device>-1</device>
@@ -50,7 +49,6 @@
       <solo>0</solo>
       <off>0</off>
       <channels>0</channels>
-      <height>20</height>
       <locked>0</locked>
       <device>-1</device>
       <channel>1</channel>
@@ -71,7 +69,6 @@
       <solo>0</solo>
       <off>0</off>
       <channels>0</channels>
-      <height>20</height>
       <locked>0</locked>
       <device>-1</device>
       <channel>2</channel>
@@ -92,7 +89,6 @@
       <solo>0</solo>
       <off>0</off>
       <channels>0</channels>
-      <height>20</height>
       <locked>0</locked>
       <device>-1</device>
       <channel>3</channel>
@@ -113,7 +109,6 @@
       <solo>0</solo>
       <off>0</off>
       <channels>0</channels>
-      <height>20</height>
       <locked>0</locked>
       <device>-1</device>
       <channel>9</channel>
