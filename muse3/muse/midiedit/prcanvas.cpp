@@ -1934,8 +1934,9 @@ void PianoCanvas::mouseMove(QMouseEvent* event) {
 //   genItemPopup (override)
 //---------------------------------------------------------
 QMenu* PianoCanvas::genItemPopup(MusEGui::CItem* item) {
-    // no context menu available, use for item selection
-    item->setSelected(!item->isSelected());
+    // no context menu available, use for single item selection
+    deselectAll();
+    item->setSelected(true);
     return nullptr;
 }
 
