@@ -1,3 +1,18 @@
+18.03.2020
+	- Enable multiple resizing in piano roll (#748) (kybos)
+	- Enable CTRL+Left Mouse Click item selection in edit mode in piano roll (kybos)
+17.03.2020
+	- Add more information to note tooltips in midi editors (kybos)
+	- Remove fixed track heigth from file templates, to enforce global setting (kybos)
+09.03.2020
+	- Transfer Help content to github wiki, link Manual to wiki in MusE (kybos)
+08.03.2020
+	- Fix EditPaste cursor HiDPI issue in midi editors->controller views (kybos)
+05.03.2020
+	- Fix tool cursor not changing in midi editors->controller views (kybos)
+	- Fix background color setting ignored in midi editors->controller views (kybos)
+04.03.2020
+	- Add tool context menu to Score Editor (kybos)
 28.02.2020:
     - LV2: Now shows MidiName patch names (gmsynth.lv2 for example). (Tim)
     - Added share/rdf/README to describe what's there and why.

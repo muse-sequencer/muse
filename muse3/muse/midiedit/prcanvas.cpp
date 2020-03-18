@@ -101,6 +101,7 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
       colorMode = 0;
       for (int i=0;i<128;i++) noteHeldDown[i]=false;
       supportsResizeToTheLeft = true;
+      supportsMultipleResize = true;
       
       steprec=new MusECore::StepRec(noteHeldDown);
       
@@ -1117,54 +1118,65 @@ void PianoCanvas::newItem(CItem* item, bool noSnap)
 //---------------------------------------------------------
 
 void PianoCanvas::resizeItem(CItem* item, bool noSnap, bool rasterize)         // experimental changes to try dynamically extending parts
-      {
-      NEvent* nevent = (NEvent*) item;
-      MusECore::Event event    = nevent->event();
-      MusECore::Event newEvent = event.clone();
-      int len;
+{
+    Q_UNUSED(item)
+    Q_UNUSED(rasterize)
 
-      MusECore::Part* part = nevent->part();
+    MusECore::Undo operations;
+    unsigned max_diff_len = 0;
+    MusECore::Part* part;
 
-      if (noSnap)
+    for (auto &it: items) {
+        if (!it.second->isSelected())
+            continue;
+
+        part = it.second->part();
+
+        QPoint topLeft = QPoint(qMax((unsigned)it.second->x(), part->tick()), it.second->y());
+        it.second->setTopLeft(raster(topLeft));
+
+        NEvent* nevent = (NEvent*) it.second;
+        MusECore::Event event    = nevent->event();
+        MusECore::Event newEvent = event.clone();
+        int len;
+
+        if (noSnap)
             len = nevent->width();
-      else {
+        else {
             unsigned tick = event.tick() + part->tick();
             len = editor->rasterVal(tick + nevent->width()) - tick;
             if (len <= 0)
-                  len = editor->raster();
-      }
-
-      MusECore::Undo operations;
-      int diff = event.tick()+len-part->lenTick();
-      
-      if((nevent->mp() != nevent->pos()) && (resizeDirection == RESIZE_TO_THE_LEFT))
-      {
-         int x = nevent->mp().x();
-         if (x < 0)
-               x = 0;
-         int ntick = (rasterize ? editor->rasterVal(x) : x) - part->tick();
-         if (ntick < 0)
-               ntick = 0;
-         newEvent.setTick(ntick);
-      }
-
-      if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
-      {
-        newEvent.setLenTick(len);
-        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,newEvent, event, nevent->part(), false, false));
-        
-        if (diff > 0)// part must be extended?
-        {
-              schedule_resize_all_same_len_clone_parts(part, event.tick()+len, operations);
-              printf("resizeItem: extending\n");
+                len = editor->raster();
         }
-      }
 
-      //else forbid action by not performing it
-      MusEGlobal::song->applyOperationGroup(operations);
-      songChanged(SC_EVENT_MODIFIED); //this forces an update of the itemlist, which is necessary
-                                      //to remove "forbidden" events from the list again
-      }
+        int diff = event.tick() + len - part->lenTick();
+
+        if (resizeDirection == RESIZE_TO_THE_LEFT) {
+            int x = qMax(0, nevent->x());
+            int ntick = qMax(0u, x - part->tick());
+            newEvent.setTick(ntick);
+        }
+
+        if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
+        {
+            newEvent.setLenTick(len);
+            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, nevent->part(), false, false));
+
+            if (diff > 0) // part must be extended?
+                max_diff_len = qMax(event.tick() + len, max_diff_len);
+        }
+    }
+
+    if (max_diff_len > 0) {
+        schedule_resize_all_same_len_clone_parts(part, max_diff_len, operations);
+        printf("resizeItem: extending\n");
+    }
+
+    //else forbid action by not performing it
+    MusEGlobal::song->applyOperationGroup(operations);
+    songChanged(SC_EVENT_MODIFIED); //this forces an update of the itemlist, which is necessary
+    //to remove "forbidden" events from the list again
+}
 
 //---------------------------------------------------------
 //   deleteItem

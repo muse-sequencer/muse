@@ -131,9 +131,11 @@ class Canvas : public View {
       QMenu* canvasPopupMenu;
 
       bool supportsResizeToTheLeft;
+      bool supportsMultipleResize;
 
       void setLasso(const QRect& r);
       void resizeToTheLeft(const QPoint &pos);
+      void resizeSelected(const int &dist, const bool left = false);
       virtual void setCursor();
       virtual void setMouseOverItemCursor();
       virtual void viewKeyPressEvent(QKeyEvent* event);
