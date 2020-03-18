@@ -914,7 +914,11 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                                   setCursor();
 
                                   if (supportsMultipleResize) {
-                                      selectItem(curItem, true);
+                                      if (!curItem->isSelected()) {
+                                        deselectAll();
+                                        deselect_all = true;
+                                        selectItem(curItem, true);
+                                      }
                                       if (resizeDirection == RESIZE_TO_THE_RIGHT)
                                           resizeSelected(start.x() - curItem->x() - curItem->width());
                                       else
