@@ -1,8 +1,10 @@
 18.03.2020
 	- Enable multiple resizing in piano roll (#748) (kybos)
 	- Enable CTRL+Left Mouse Click item selection in edit mode in piano roll (kybos)
+	- Enable Right Mouse Click for exclusive single selection in edit mode/piano roll (kybos)
 17.03.2020
 	- Add more information to note tooltips in midi editors (kybos)
+	- Add global setting for switching off the note tooltips (kybos)
 	- Remove fixed track heigth from file templates, to enforce global setting (kybos)
 09.03.2020
 	- Transfer Help content to github wiki, link Manual to wiki in MusE (kybos)
