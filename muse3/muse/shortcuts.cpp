@@ -111,6 +111,8 @@ void initShortCuts()
       defShrt(SHRT_OPEN_GRAPHIC_MASTER,   Qt::CTRL + Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Open graphical mastertrack editor"), ARRANG_SHRT, "open_graph_master");
       defShrt(SHRT_OPEN_LIST_MASTER,      Qt::CTRL + Qt::SHIFT + Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Open list mastertrack editor"), ARRANG_SHRT, "open_list_master");
       defShrt(SHRT_OPEN_MIDI_TRANSFORM,   Qt::CTRL + Qt::Key_T, QT_TRANSLATE_NOOP("shortcuts", "Open midi transformer"), ARRANG_SHRT, "open_midi_transform");
+      defShrt(SHRT_OPEN_PLUGIN_GUI,       Qt::CTRL + Qt::Key_U, QT_TRANSLATE_NOOP("shortcuts", "Open track Synth GUI"), ARRANG_SHRT, "open_plugin_gui");
+
 
       defShrt(SHRT_ADD_MIDI_TRACK,        Qt::CTRL + Qt::Key_J, QT_TRANSLATE_NOOP("shortcuts", "Add midi track"), ARRANG_SHRT, "add_midi_track");
       defShrt(SHRT_ADD_DRUM_TRACK,        0, QT_TRANSLATE_NOOP("shortcuts", "Add drum track"), ARRANG_SHRT, "add_drum_track");

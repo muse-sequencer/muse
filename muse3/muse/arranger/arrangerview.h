@@ -120,6 +120,7 @@ class ArrangerView : public TopWin
 		void globalCut();
 		void globalInsert();
 		void globalSplit();
+    void openCurrentTrackSynthGui();
         void globalCutSel();
         void globalInsertSel();
         void globalSplitSel();
@@ -146,6 +147,7 @@ class ArrangerView : public TopWin
 		~ArrangerView();
 
 		QAction *startScoreEditAction, *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
+    QAction *openCurrentTrackSynthGuiAction;
 		QMenu *scoreSubmenu, *scoreOneStaffPerTrackSubsubmenu, *scoreAllInOneSubsubmenu;
 
 		void populateAddTrack();

@@ -142,6 +142,7 @@ enum {
       SHRT_OPEN_GRAPHIC_MASTER, //Ctrl+M
       SHRT_OPEN_LIST_MASTER, //Ctrl+Shift+M
       SHRT_OPEN_MIDI_TRANSFORM, //Ctrl+T
+      SHRT_OPEN_PLUGIN_GUI,
 
       SHRT_GLOBAL_CUT, //Default: undefined
       SHRT_GLOBAL_INSERT, //Default: undefined
