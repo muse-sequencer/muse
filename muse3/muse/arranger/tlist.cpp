@@ -111,11 +111,11 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
       setMouseTracking(true);
       header    = hdr;
 
-      _scroll    = 0;
-      editTrack = 0;
-      editor    = 0;
-      chan_edit = NULL;
-      ctrl_edit = NULL;
+      _scroll    = nullptr;
+      editTrack = nullptr;
+      editor    = nullptr;
+      chan_edit = nullptr;
+      ctrl_edit = nullptr;
       mode      = NORMAL;
 
       //setBackgroundMode(Qt::NoBackground); // ORCAN - FIXME. DELETETHIS?
@@ -257,8 +257,8 @@ void TList::paint(const QRect& r)
       mask.setColorAt(1, mask_edge);
 
       // Find up to two tracks that are soloed.
-      MusECore::Track* solo_t_1 = 0;
-      MusECore::Track* solo_t_2 = 0;
+      MusECore::Track* solo_t_1 = nullptr;
+      MusECore::Track* solo_t_2 = nullptr;
       {
         MusECore::TrackList* tl = MusEGlobal::song->tracks();
         for(MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it)

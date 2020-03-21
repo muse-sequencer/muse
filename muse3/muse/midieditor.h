@@ -68,7 +68,6 @@ class MidiEditor : public TopWin  {
       EventCanvas* canvas;
       
       TrackInfoWidget* trackInfoWidget;
-      QWidget* noTrackInfo;
       MusECore::Track* selected;
 
       CtrlEditList ctrlEditList;

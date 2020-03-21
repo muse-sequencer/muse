@@ -57,7 +57,6 @@ NoteInfo::NoteInfo(QWidget* parent)
       addWidget(deltaButton);
       
       QLabel* label = new QLabel(tr("Start"));
-      label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       addWidget(label);
       
@@ -68,7 +67,6 @@ NoteInfo::NoteInfo(QWidget* parent)
       addWidget(selTime);
 
       label = new QLabel(tr("Len"));
-      label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       addWidget(label);
       selLen = new SpinBox();
@@ -78,7 +76,6 @@ NoteInfo::NoteInfo(QWidget* parent)
       addWidget(selLen);
 
       label = new QLabel(tr("Pitch"));
-      label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       addWidget(label);
       selPitch = new PitchEdit;
@@ -87,7 +84,6 @@ NoteInfo::NoteInfo(QWidget* parent)
       addWidget(selPitch);
 
       label = new QLabel(tr("Velo on"));
-      label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       addWidget(label);
       selVelOn = new SpinBox();
@@ -99,7 +95,6 @@ NoteInfo::NoteInfo(QWidget* parent)
       addWidget(selVelOn);
 
       label = new QLabel(tr("Velo off"));
-      label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       addWidget(label);
       selVelOff = new SpinBox();

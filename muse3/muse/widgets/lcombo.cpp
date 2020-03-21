@@ -43,11 +43,11 @@ LabelCombo::LabelCombo(const QString& txt, QWidget* parent,
       // Ignored was only solution, others were too tall. The label takes priority then.  //
       //box->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);                 //
       box->setEditable(false);
-      layout->addSpacing(5);
+      layout->addSpacing(2);
       layout->addWidget(label);
-      layout->addSpacing(5);
+//      layout->addSpacing(2);
       layout->addWidget(box);
-      layout->addSpacing(5);
+//      layout->addSpacing(2);
       layout->setContentsMargins(0, 0, 0, 0);
       connect(box, SIGNAL(activated(int)), SIGNAL(activated(int)));
       }

@@ -90,7 +90,6 @@ class Arranger : public QWidget {
       bool showTrackinfoFlag;
       TrackInfoWidget* trackInfoWidget;
       AudioStrip* waveTrackInfo;
-      QWidget* noTrackInfo;
       QWidget* tracklist;
 
       MusECore::Track* selected;
