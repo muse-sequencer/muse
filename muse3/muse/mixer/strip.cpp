@@ -153,7 +153,7 @@ void ComponentRack::newComponentWidget( ComponentDescriptor* desc, const Compone
       CompactKnobComponentDescriptor* d = static_cast<CompactKnobComponentDescriptor*>(desc);
       if(!d->_compactKnob)
       {
-        CompactKnob* control = new CompactKnob(0,
+        CompactKnob* control = new CompactKnob(nullptr,
                                                d->_objName,
                                                CompactKnob::Right,
                                                d->_label);
@@ -218,7 +218,7 @@ void ComponentRack::newComponentWidget( ComponentDescriptor* desc, const Compone
       CompactSliderComponentDescriptor* d = static_cast<CompactSliderComponentDescriptor*>(desc);
       if(!d->_compactSlider)
       {
-        CompactSlider* control = new CompactSlider(0, d->_objName, Qt::Horizontal, CompactSlider::None, d->_label);
+        CompactSlider* control = new CompactSlider(nullptr, d->_objName, Qt::Horizontal, CompactSlider::None, d->_label);
         d->_compactSlider = control;
         control->setId(d->_index);
         control->setRange(d->_min, d->_max, d->_step);
@@ -280,7 +280,7 @@ void ComponentRack::newComponentWidget( ComponentDescriptor* desc, const Compone
       ElidedLabelComponentDescriptor* d = static_cast<ElidedLabelComponentDescriptor*>(desc);
       if(!d->_elidedLabel)
       {
-        ElidedLabel* control = new ElidedLabel(0, d->_elideMode);
+        ElidedLabel* control = new ElidedLabel(nullptr, d->_elideMode);
         d->_elidedLabel = control;
         control->setObjectName(d->_objName);
         
@@ -1077,24 +1077,24 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
       _visible = true;
       dragOn=false;
 
-      sliderGrid    = 0;
-      record        = 0;
-      solo          = 0;
-      mute          = 0;
-      iR            = 0;
-      oR            = 0;
-      autoType      = 0;
+      sliderGrid    = nullptr;
+      record        = nullptr;
+      solo          = nullptr;
+      mute          = nullptr;
+      iR            = nullptr;
+      oR            = nullptr;
+      autoType      = nullptr;
 
       track    = t;
-      meter[0] = 0;
-      meter[1] = 0;
+      meter[0] = nullptr;
+      meter[1] = nullptr;
       setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding));
       
       grid = new QGridLayout();
       grid->setContentsMargins(0, 0, 0, 0);
       grid->setSpacing(0);
       
-      _handle = 0;
+      _handle = nullptr;
       if(hasHandle)
       {
         _handle = new ExpanderHandle();

@@ -326,7 +326,7 @@ void IconButton::paintEvent(QPaintEvent* ev)
     mode = QIcon::Disabled;
   const bool is_on = ((_blinking || isChecked()) && (!_blinking || !_blinkPhase || !isEnabled())) ? true : false;
 
-  QIcon* ico = 0;
+  QIcon* ico = nullptr;
   QPainter p(this);
   if(!_text.isEmpty())
     //p.drawText(w2 - mw2, h2 - mh2, mw, mh, *pm);

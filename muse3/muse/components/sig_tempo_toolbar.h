@@ -45,7 +45,7 @@ namespace MusEGui
     Q_OBJECT
     
     private:
-      QLabel* label;
+//      QLabel* label;
       TempoEdit* tempo_edit;
       QToolButton *tap_button;
       IconButton* _masterButton;
@@ -81,7 +81,7 @@ namespace MusEGui
     Q_OBJECT
     
     private:
-      QLabel* label;
+//      QLabel* label;
       SigEdit* sig_edit;   
       
       void init();

@@ -38,6 +38,7 @@ PaddedValueLabel::PaddedValueLabel(bool isFloat, QWidget* parent, Qt::WindowFlag
                                    const QString& prefix, const QString& suffix)
                  :QLabel(parent, f), _isFloat(isFloat), _prefix(prefix), _suffix(suffix)
 {
+  setObjectName("PaddedValueLabel");
   setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   _iVal = 0;
   _dVal = 0.0;
@@ -137,13 +138,14 @@ void CpuToolbar::init()
   _resetButton->setObjectName("CpuLoadToolbarButton");
   _resetButton->setToolTip(tr("CPU load averaged over each gui-update period\nDSP load read from JACK\nNumber of xruns\n(click to reset)"));
 
-  _cpuLabel = new PaddedValueLabel(true, this, 0, "CPU:", "%");
+  _cpuLabel = new PaddedValueLabel(true, this, 0, "CPU: ", "%");
   _cpuLabel->setFieldWidth(5);
   _cpuLabel->setPrecision(1);
-  _dspLabel = new PaddedValueLabel(true, this, 0, "DSP:", "%");
+  _cpuLabel->setIndent(2);
+  _dspLabel = new PaddedValueLabel(true, this, 0, "DSP: ", "%");
   _dspLabel->setFieldWidth(5);
   _dspLabel->setPrecision(1);
-  _xrunsLabel = new PaddedValueLabel(false, this, 0, "XRUNS:");
+  _xrunsLabel = new PaddedValueLabel(false, this, 0, "XRUNS: ");
   _xrunsLabel->setFieldWidth(3);
 
   setValues(0.0f, 0.0f, 0);

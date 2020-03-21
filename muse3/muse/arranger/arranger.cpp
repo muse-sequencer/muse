@@ -240,15 +240,13 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       toolbar->setObjectName("ArrangerToolbar");
       
       QLabel* label = new QLabel(tr("Cursor"));
-      label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-      label->setIndent(3);
       toolbar->addWidget(label);
-      cursorPos = new PosLabel(0);
+      cursorPos = new PosLabel(nullptr, "PosLabel");
+      cursorPos->setToolTip(tr("Cursor position"));
       cursorPos->setEnabled(false);
       toolbar->addWidget(cursorPos);
 
       label = new QLabel(tr("Snap"));
-      label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       toolbar->addWidget(label);
       _rasterCombo = new QComboBox();
@@ -262,8 +260,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       _rasterCombo->setFocusPolicy(Qt::TabFocus);
 
       // Song len
-      label = new QLabel(tr("Len"));
-      label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+      label = new QLabel(tr("Bars"));
       label->setIndent(3);
       toolbar->addWidget(label);
 
@@ -278,7 +275,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(lenEntry, SIGNAL(valueChanged(int)), SLOT(songlenChanged(int)));
 
       label = new QLabel(tr("Pitch"));
-      label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       toolbar->addWidget(label);
       
@@ -291,7 +287,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(globalPitchSpinBox, SIGNAL(valueChanged(int)), SLOT(globalPitchChanged(int)));
       
       label = new QLabel(tr("Tempo"));
-      label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       toolbar->addWidget(label);
       
@@ -457,7 +452,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       hscroll->setFocusPolicy(Qt::NoFocus);
       hscroll->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       
-      bottomHLayout = new ArrangerHScrollLayout(0, trackInfoButton, 0, hscroll, editor);
+      bottomHLayout = new ArrangerHScrollLayout(nullptr, trackInfoButton, hscroll, editor);
       
       box->addLayout(bottomHLayout);
       bottomHLayout->setContentsMargins(0, 0, 0, 0);
@@ -1112,23 +1107,8 @@ void Arranger::showTrackInfo(bool flag)
 
 void Arranger::genTrackInfo(TrackInfoWidget* trackInfo)
       {
-      noTrackInfo          = new QWidget(trackInfo);
-      noTrackInfo->setAutoFillBackground(true);
-      QPixmap *noInfoPix   = new QPixmap(160, 1000);
-      const QPixmap *logo  = new QPixmap(*museLeftSideLogo);
-      noInfoPix->fill(noTrackInfo->palette().color(QPalette::Window) );
-      QPainter p(noInfoPix);
-      p.drawPixmap(10, 0, *logo, 0,0, logo->width(), logo->height());
-
-      QPalette palette;
-      palette.setBrush(noTrackInfo->backgroundRole(), QBrush(*noInfoPix));
-      noTrackInfo->setPalette(palette);
-      noTrackInfo->setGeometry(0, 0, 65, 200);
-      noTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding));
-
-      trackInfo->addWidget(noTrackInfo, 0);
-      trackInfo->addWidget(0, 1);  // AudioStrip placeholder.
-      trackInfo->addWidget(0, 2);  // MidiStrip placeholder.
+      trackInfo->addWidget(nullptr, 1);  // AudioStrip placeholder.
+      trackInfo->addWidget(nullptr, 2);  // MidiStrip placeholder.
       }
 
 //---------------------------------------------------------
@@ -1141,7 +1121,7 @@ void Arranger::updateTrackInfo(MusECore::SongChangedStruct_t /*flags*/)
             switchInfo(-1);
             return;
             }
-      if (selected == 0) {
+      if (selected == nullptr) {
             switchInfo(0);
             return;
             }
@@ -1167,12 +1147,12 @@ void Arranger::switchInfo(int n)
               //fprintf(stderr, "Arranger::switchInfo audio strip: deleting midi strip\n");
               delete w;
               //w->deleteLater();
-              trackInfoWidget->addWidget(0, 2);
+              trackInfoWidget->addWidget(nullptr, 2);
             }
           }
           {
               AudioStrip* w = static_cast<AudioStrip*>(trackInfoWidget->getWidget(1));
-              if (w == 0 || selected != w->getTrack()) {
+              if (w == nullptr || selected != w->getTrack()) {
                     if (w)
                     {
                           //fprintf(stderr, "Arranger::switchInfo deleting strip\n");
@@ -1213,12 +1193,12 @@ void Arranger::switchInfo(int n)
               //fprintf(stderr, "Arranger::switchInfo midi strip: deleting audio strip\n");
               delete w;
               //w->deleteLater();
-              trackInfoWidget->addWidget(0, 1);
+              trackInfoWidget->addWidget(nullptr, 1);
             }
           }
           {
             MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(2));
-            if (w == 0 || selected != w->getTrack()) {
+            if (w == nullptr || selected != w->getTrack()) {
                   if (w)
                   {
                         //fprintf(stderr, "Arranger::switchInfo deleting strip\n");

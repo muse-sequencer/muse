@@ -59,7 +59,7 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
    : QToolBar(QString("Pos/Snap/Solo-tools"), parent)
       {
       setObjectName("Pos/Snap/Solo-tools");
-      pitch = 0;
+      pitch = nullptr;
       showPitch = sp;
 
       solo = new QToolButton();    
@@ -74,14 +74,13 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       //---------------------------------------------------
 
       QLabel* label = new QLabel(tr("Cursor"));
-      label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       //label->setContentsMargins(0,0,0,0);  
       addWidget(label);
-      pos   = new PosLabel(0, "pos");
+      pos   = new PosLabel(nullptr, "PosLabel");
       addWidget(pos);
       if (showPitch) {
-            pitch = new PitchLabel(0);
+            pitch = new PitchLabel(nullptr, "PitchLabel");
             pitch->setEnabled(false);
             addWidget(pitch);
             }
@@ -90,7 +89,7 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       //  Raster
       //---------------------------------------------------
 
-      raster = new LabelCombo(tr("Snap"), 0);
+      raster = new LabelCombo(tr("Snap"), nullptr);
       raster->setFocusPolicy(Qt::TabFocus);
       //raster->setContentsMargins(0,0,0,0);  
 

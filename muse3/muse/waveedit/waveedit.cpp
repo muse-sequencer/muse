@@ -254,10 +254,12 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       tb1->addWidget(label);
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
-      pos1 = new PosLabel(0);
+      pos1 = new PosLabel(nullptr);
+      pos1->setObjectName("PosLabel");
       pos1->setFixedHeight(22);
       tb1->addWidget(pos1);
-      pos2 = new PosLabel(0);
+      pos2 = new PosLabel(nullptr);
+      pos2->setObjectName("PosLabel");
       pos2->setFixedHeight(22);
       pos2->setSmpte(true);
       tb1->addWidget(pos2);
