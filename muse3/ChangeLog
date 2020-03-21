@@ -1,5 +1,6 @@
 21.03.2020
     - Add shortcut (Ctrl+U) for opening synth UI for selected synth-track in arranger (rj)
+    - Added wave part extend beyond end of part if there is more wave file (rj)
 18.03.2020
 	- Enable multiple resizing in piano roll (#748) (kybos)
 	- Enable CTRL+Left Mouse Click item selection in edit mode in piano roll (kybos)
