@@ -1310,6 +1310,9 @@ size_t SndFile::realWrite(int srcChannels, float** src, size_t n, size_t offs, b
 
    const float limitValue=0.9999;
 
+   for (int ch = 0; ch < srcChannels; ++ch)
+     if(!src[ch])
+       return 0;
 
    if (srcChannels == dstChannels) {
       for (size_t i = iStart; i < iEnd; ++i) {

@@ -869,13 +869,16 @@ void AudioTrack::copyData(unsigned pos,
             else
               sp = outBuffers[srcStartChan]; // In all other cases use the main buffers.
             float* dp = dstBuffer[c + dstStartChan];
-            if(addArray ? addArray[c + dstStartChan] : add)
+            if(dp)
             {
-              for(unsigned k = 0; k < nframes; ++k)
-                *dp++ += *sp++;
+              if(addArray ? addArray[c + dstStartChan] : add)
+              {
+                for(unsigned k = 0; k < nframes; ++k)
+                  *dp++ += *sp++;
+              }
+              else
+                AL::dsp->cpy(dp, sp, nframes);
             }
-            else
-              AL::dsp->cpy(dp, sp, nframes);
           }
         }
         // Zero the rest of the supplied buffers.
@@ -883,13 +886,16 @@ void AudioTrack::copyData(unsigned pos,
         {
           if(addArray ? addArray[i] : add)
             continue;
-          if(MusEGlobal::config.useDenormalBias)
+          if(dstBuffer[i])
           {
-            for(unsigned int q = 0; q < nframes; ++q)
-              dstBuffer[i][q] = MusEGlobal::denormalBias;
+            if(MusEGlobal::config.useDenormalBias)
+            {
+              for(unsigned int q = 0; q < nframes; ++q)
+                dstBuffer[i][q] = MusEGlobal::denormalBias;
+            }
+            else
+              memset(dstBuffer[i], 0, sizeof(float) * nframes);
           }
-          else
-            memset(dstBuffer[i], 0, sizeof(float) * nframes);
         }
       }
       else if(requestedSrcChans >= 2 && requestedDstChannels == 1)
@@ -901,25 +907,31 @@ void AudioTrack::copyData(unsigned pos,
           {
             float* sp = outBuffers[srcStartChan + sch];
             float* dp = dstBuffer[dstStartChan];
-            if((addArray ? addArray[dstStartChan] : add) || sch != 0)
+            if(dp)
             {
-              for(unsigned k = 0; k < nframes; ++k)
-                *dp++ += *sp++;
+              if((addArray ? addArray[dstStartChan] : add) || sch != 0)
+              {
+                for(unsigned k = 0; k < nframes; ++k)
+                  *dp++ += *sp++;
+              }
+              else
+                AL::dsp->cpy(dp, sp, nframes);
             }
-            else
-              AL::dsp->cpy(dp, sp, nframes);
           }
         }
         else if(addArray ? !addArray[dstStartChan] : !add)
         {
-          // Zero the supplied buffer.
-          if(MusEGlobal::config.useDenormalBias)
+          if(dstBuffer[dstStartChan])
           {
-            for(unsigned int q = 0; q < nframes; ++q)
-              dstBuffer[dstStartChan][q] = MusEGlobal::denormalBias;
+            // Zero the supplied buffer.
+            if(MusEGlobal::config.useDenormalBias)
+            {
+              for(unsigned int q = 0; q < nframes; ++q)
+                dstBuffer[dstStartChan][q] = MusEGlobal::denormalBias;
+            }
+            else
+              memset(dstBuffer[dstStartChan], 0, sizeof(float) * nframes);
           }
-          else
-            memset(dstBuffer[dstStartChan], 0, sizeof(float) * nframes);
         }
       }
       else
@@ -929,26 +941,32 @@ void AudioTrack::copyData(unsigned pos,
         {
           float* sp = outBuffers[c + srcStartChan];
           float* dp = dstBuffer[c + dstStartChan];
-          if(addArray ? addArray[c + dstStartChan] : add)
+          if(dp)
           {
-            for(unsigned k = 0; k < nframes; ++k)
-              *dp++ += *sp++;
+            if(addArray ? addArray[c + dstStartChan] : add)
+            {
+              for(unsigned k = 0; k < nframes; ++k)
+                *dp++ += *sp++;
+            }
+            else
+              AL::dsp->cpy(dp, sp, nframes);
           }
-          else
-            AL::dsp->cpy(dp, sp, nframes);
         }
         // Zero the rest of the supplied buffers.
         for(i = dstStartChan + cnt; i < (dstStartChan + availDstChannels); ++i)
         {
           if(addArray ? addArray[i] : add)
             continue;
-          if(MusEGlobal::config.useDenormalBias)
+          if(dstBuffer[i])
           {
-            for(unsigned int q = 0; q < nframes; ++q)
-              dstBuffer[i][q] = MusEGlobal::denormalBias;
+            if(MusEGlobal::config.useDenormalBias)
+            {
+              for(unsigned int q = 0; q < nframes; ++q)
+                dstBuffer[i][q] = MusEGlobal::denormalBias;
+            }
+            else
+              memset(dstBuffer[i], 0, sizeof(float) * nframes);
           }
-          else
-            memset(dstBuffer[i], 0, sizeof(float) * nframes);
         }
       }
     }
@@ -961,13 +979,16 @@ void AudioTrack::copyData(unsigned pos,
       {
         if(addArray ? addArray[i] : add)
           continue;
-        if(MusEGlobal::config.useDenormalBias)
+        if(dstBuffer[i])
         {
-          for(unsigned int q = 0; q < nframes; ++q)
-            dstBuffer[i][q] = MusEGlobal::denormalBias;
+          if(MusEGlobal::config.useDenormalBias)
+          {
+            for(unsigned int q = 0; q < nframes; ++q)
+              dstBuffer[i][q] = MusEGlobal::denormalBias;
+          }
+          else
+            memset(dstBuffer[i], 0, sizeof(float) * nframes);
         }
-        else
-          memset(dstBuffer[i], 0, sizeof(float) * nframes);
       }
     }
     return;
@@ -994,13 +1015,16 @@ void AudioTrack::copyData(unsigned pos,
       {
         if(addArray ? addArray[i] : add)
           continue;
-        if(MusEGlobal::config.useDenormalBias)
+        if(dstBuffer[i])
         {
-          for(unsigned int q = 0; q < nframes; ++q)
-            dstBuffer[i][q] = MusEGlobal::denormalBias;
+          if(MusEGlobal::config.useDenormalBias)
+          {
+            for(unsigned int q = 0; q < nframes; ++q)
+              dstBuffer[i][q] = MusEGlobal::denormalBias;
+          }
+          else
+            memset(dstBuffer[i], 0, sizeof(float) * nframes);
         }
-        else
-          memset(dstBuffer[i], 0, sizeof(float) * nframes);
       }
 
       _efxPipe->apply(pos, 0, nframes, 0);  // Just process controls only, not audio (do not 'run').
@@ -1092,13 +1116,16 @@ void AudioTrack::copyData(unsigned pos,
       {
         if(addArray ? addArray[i] : add)
           continue;
-        if(MusEGlobal::config.useDenormalBias)
+        if(dstBuffer[i])
         {
-          for(unsigned int q = 0; q < nframes; q++)
-            dstBuffer[i][q] = MusEGlobal::denormalBias;
+          if(MusEGlobal::config.useDenormalBias)
+          {
+            for(unsigned int q = 0; q < nframes; q++)
+              dstBuffer[i][q] = MusEGlobal::denormalBias;
+          }
+          else
+            memset(dstBuffer[i], 0, sizeof(float) * nframes);
         }
-        else
-          memset(dstBuffer[i], 0, sizeof(float) * nframes);
       }
       return; // We're outta here.
     }
@@ -1161,13 +1188,16 @@ void AudioTrack::copyData(unsigned pos,
       {
         if(addArray ? addArray[i] : add)
           continue;
-        if(MusEGlobal::config.useDenormalBias)
+        if(dstBuffer[i])
         {
-          for(unsigned int q = 0; q < nframes; q++)
-            dstBuffer[i][q] = MusEGlobal::denormalBias;
+          if(MusEGlobal::config.useDenormalBias)
+          {
+            for(unsigned int q = 0; q < nframes; q++)
+              dstBuffer[i][q] = MusEGlobal::denormalBias;
+          }
+          else
+            memset(dstBuffer[i], 0, sizeof(float) * nframes);
         }
-        else
-          memset(dstBuffer[i], 0, sizeof(float) * nframes);
       }
       return;
     }
@@ -1186,13 +1216,16 @@ void AudioTrack::copyData(unsigned pos,
           else
             sp = outBuffers[srcStartChan]; // In all other cases use the main buffers.
           float* dp = dstBuffer[c + dstStartChan];
-          if(addArray ? addArray[c + dstStartChan] : add)
+          if(dp)
           {
-            for(unsigned k = 0; k < nframes; ++k)
-              *dp++ += *sp++;
+            if(addArray ? addArray[c + dstStartChan] : add)
+            {
+              for(unsigned k = 0; k < nframes; ++k)
+                *dp++ += *sp++;
+            }
+            else
+              AL::dsp->cpy(dp, sp, nframes);
           }
-          else
-            AL::dsp->cpy(dp, sp, nframes);
         }
       }
       // Zero the rest of the supplied buffers.
@@ -1200,13 +1233,16 @@ void AudioTrack::copyData(unsigned pos,
       {
         if(addArray ? addArray[i] : add)
           continue;
-        if(MusEGlobal::config.useDenormalBias)
+        if(dstBuffer[i])
         {
-          for(unsigned int q = 0; q < nframes; ++q)
-            dstBuffer[i][q] = MusEGlobal::denormalBias;
+          if(MusEGlobal::config.useDenormalBias)
+          {
+            for(unsigned int q = 0; q < nframes; ++q)
+              dstBuffer[i][q] = MusEGlobal::denormalBias;
+          }
+          else
+            memset(dstBuffer[i], 0, sizeof(float) * nframes);
         }
-        else
-          memset(dstBuffer[i], 0, sizeof(float) * nframes);
       }
     }
     else if(requestedSrcChans >= 2 && requestedDstChannels == 1)
@@ -1218,25 +1254,31 @@ void AudioTrack::copyData(unsigned pos,
         {
           float* sp = outBuffers[srcStartChan + sch];
           float* dp = dstBuffer[dstStartChan];
-          if((addArray ? addArray[dstStartChan] : add) || sch != 0)
+          if(dp)
           {
-            for(unsigned k = 0; k < nframes; ++k)
-              *dp++ += *sp++;
+            if((addArray ? addArray[dstStartChan] : add) || sch != 0)
+            {
+              for(unsigned k = 0; k < nframes; ++k)
+                *dp++ += *sp++;
+            }
+            else
+              AL::dsp->cpy(dp, sp, nframes);
           }
-          else
-            AL::dsp->cpy(dp, sp, nframes);
         }
       }
       else if(addArray ? !addArray[dstStartChan] : !add)
       {
-        // Zero the supplied buffer.
-        if(MusEGlobal::config.useDenormalBias)
+        if(dstBuffer[dstStartChan])
         {
-          for(unsigned int q = 0; q < nframes; ++q)
-            dstBuffer[dstStartChan][q] = MusEGlobal::denormalBias;
+          // Zero the supplied buffer.
+          if(MusEGlobal::config.useDenormalBias)
+          {
+            for(unsigned int q = 0; q < nframes; ++q)
+              dstBuffer[dstStartChan][q] = MusEGlobal::denormalBias;
+          }
+          else
+            memset(dstBuffer[dstStartChan], 0, sizeof(float) * nframes);
         }
-        else
-          memset(dstBuffer[dstStartChan], 0, sizeof(float) * nframes);
       }
     }
     else //if(srcChans == dstChans)
@@ -1246,26 +1288,32 @@ void AudioTrack::copyData(unsigned pos,
       {
         float* sp = outBuffers[c + srcStartChan];
         float* dp = dstBuffer[c + dstStartChan];
-        if(addArray ? addArray[c + dstStartChan] : add)
+        if(dp)
         {
-          for(unsigned k = 0; k < nframes; ++k)
-            *dp++ += *sp++;
+          if(addArray ? addArray[c + dstStartChan] : add)
+          {
+            for(unsigned k = 0; k < nframes; ++k)
+              *dp++ += *sp++;
+          }
+          else
+            AL::dsp->cpy(dp, sp, nframes);
         }
-        else
-          AL::dsp->cpy(dp, sp, nframes);
       }
       // Zero the rest of the supplied buffers.
       for(i = dstStartChan + cnt; i < (dstStartChan + availDstChannels); ++i)
       {
         if(addArray ? addArray[i] : add)
           continue;
-        if(MusEGlobal::config.useDenormalBias)
+        if(dstBuffer[i])
         {
-          for(unsigned int q = 0; q < nframes; ++q)
-            dstBuffer[i][q] = MusEGlobal::denormalBias;
+          if(MusEGlobal::config.useDenormalBias)
+          {
+            for(unsigned int q = 0; q < nframes; ++q)
+              dstBuffer[i][q] = MusEGlobal::denormalBias;
+          }
+          else
+            memset(dstBuffer[i], 0, sizeof(float) * nframes);
         }
-        else
-          memset(dstBuffer[i], 0, sizeof(float) * nframes);
       }
     }
   }
@@ -1687,21 +1735,41 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
 }
 
 //---------------------------------------------------------
+//   registerPorts
+//---------------------------------------------------------
+
+bool AudioInput::registerPorts(int idx)
+      {
+      if (!MusEGlobal::checkAudioDevice()) return false;
+      int b, e;
+      if(idx < 0) { b = 0; e = channels(); }
+      else { if(idx >= channels()) return false; b = idx; e = idx + 1; }
+      bool res = false;
+      for (int i = b; i < e; ++i) {
+            if (!jackPorts[i]) {
+                  const QString s = QString("%1-%2").arg(name()).arg(i).left(127);
+                  jackPorts[i] = MusEGlobal::audioDevice->registerInPort(s.toLatin1().constData(), false);
+                  if(jackPorts[i])
+                    res = true;
+                  else
+                    fprintf(stderr, "AudioInput::registerPorts: Port <%s> registration FAILED !\n", s.toLatin1().constData());
+                  }
+            }
+      return res;
+      }
+
+//---------------------------------------------------------
 //   setName
 //---------------------------------------------------------
 
 void AudioInput::setName(const QString& s)
       {
-      _name = s;
+      AudioTrack::setName(s);
       if (!MusEGlobal::checkAudioDevice()) return;
+      const QString n("%1-%2");
       for (int i = 0; i < channels(); ++i) {
-            char buffer[128];
-            snprintf(buffer, 128, "%s-%d", _name.toLatin1().constData(), i);
             if (jackPorts[i])
-                  MusEGlobal::audioDevice->setPortName(jackPorts[i], buffer);
-            else {
-                  jackPorts[i] = MusEGlobal::audioDevice->registerInPort(buffer, false);
-                  }
+                  MusEGlobal::audioDevice->setPortName(jackPorts[i], n.arg(name()).arg(i).left(127).toLatin1().constData());
             }
       }
 
@@ -1947,15 +2015,16 @@ void AudioOutput::processInit(unsigned nframes)
       _nframes = nframes;
       if (!MusEGlobal::checkAudioDevice()) return;
       for (int i = 0; i < channels(); ++i) {
+            buffer[i] = nullptr;
             if (jackPorts[i]) {
                   buffer[i] = MusEGlobal::audioDevice->getBuffer(jackPorts[i], nframes);
-                  if (MusEGlobal::config.useDenormalBias) {
-                      for (unsigned int j=0; j < nframes; j++)
-                              buffer[i][j] += MusEGlobal::denormalBias;
+                  if(buffer[i]) {
+                      if (MusEGlobal::config.useDenormalBias) {
+                          for (unsigned int j=0; j < nframes; j++)
+                                  buffer[i][j] += MusEGlobal::denormalBias;
                       }
                   }
-            else
-                  fprintf(stderr, "PANIC: processInit: no buffer from audio driver\n");
+               }
             }
       }
 
@@ -1972,6 +2041,9 @@ void AudioOutput::process(unsigned pos, unsigned offset, unsigned n)
       #endif
 
       for (int i = 0; i < _channels; ++i) {
+            // Safety check. The port, and therefore the buffer, may be null.
+            if(!buffer[i])
+              return;
             buffer1[i] = buffer[i] + offset;
       }
       copyData(pos, -1, _channels, _channels, -1, -1, n, buffer1);
@@ -2012,12 +2084,15 @@ void AudioOutput::silence(unsigned n)
       {
       processInit(n);
       for (int i = 0; i < channels(); ++i)
-          if (MusEGlobal::config.useDenormalBias) {
-              for (unsigned int j=0; j < n; j++)
-                  buffer[i][j] = MusEGlobal::denormalBias;
-            } else {
-                  memset(buffer[i], 0, n * sizeof(float));
-                  }
+          if(buffer[i])
+          {
+              if (MusEGlobal::config.useDenormalBias) {
+                  for (unsigned int j=0; j < n; j++)
+                      buffer[i][j] = MusEGlobal::denormalBias;
+                } else {
+                      memset(buffer[i], 0, n * sizeof(float));
+                      }
+          }
       }
 
 //---------------------------------------------------------
@@ -2129,20 +2204,41 @@ void AudioOutput::processWrite()
       }
 
 //---------------------------------------------------------
+//   registerPorts
+//---------------------------------------------------------
+
+bool AudioOutput::registerPorts(int idx)
+      {
+      if (!MusEGlobal::checkAudioDevice()) return false;
+      int b, e;
+      if(idx < 0) { b = 0; e = channels(); }
+      else { if(idx >= channels()) return false; b = idx; e = idx + 1; }
+      bool res = false;
+      for (int i = b; i < e; ++i) {
+            if (!jackPorts[i]) {
+                  const QString s = QString("%1-%2").arg(name()).arg(i).left(127);
+                  jackPorts[i] = MusEGlobal::audioDevice->registerOutPort(s.toLatin1().constData(), false);
+                  if(jackPorts[i])
+                    res = true;
+                  else
+                    fprintf(stderr, "AudioOutput::registerPorts: Port <%s> registration FAILED !\n", s.toLatin1().constData());
+                  }
+            }
+      return res;
+      }
+
+//---------------------------------------------------------
 //   setName
 //---------------------------------------------------------
 
 void AudioOutput::setName(const QString& s)
       {
-      _name = s;
+      AudioTrack::setName(s);
       if (!MusEGlobal::checkAudioDevice()) return;
+      const QString n("%1-%2");
       for (int i = 0; i < channels(); ++i) {
-            char buffer[128];
-            snprintf(buffer, 128, "%s-%d", _name.toLatin1().constData(), i);
             if (jackPorts[i])
-                  MusEGlobal::audioDevice->setPortName(jackPorts[i], buffer);
-            else
-                  jackPorts[i] = MusEGlobal::audioDevice->registerOutPort(buffer, false);
+                  MusEGlobal::audioDevice->setPortName(jackPorts[i], n.arg(name()).arg(i).left(127).toLatin1().constData());
             }
       }
 

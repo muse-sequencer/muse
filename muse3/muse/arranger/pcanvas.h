@@ -156,7 +156,6 @@ class PartCanvas : public Canvas {
       virtual bool deleteItem(CItem*);
       virtual void renameItem(CItem*);
       virtual void moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true);
-      virtual bool moveItem(MusECore::Undo& operations, CItem*, const QPoint&, DragType);
 
       virtual void startDrag(CItem*, DragType);
       virtual void dragEnterEvent(QDragEnterEvent*);

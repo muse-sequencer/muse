@@ -24,7 +24,12 @@
 
 namespace MusEGui {
   
-DuplicateTracksDialog::DuplicateTracksDialog(bool audio, bool /*midi*/, bool /*drum*/, bool newdrum, QWidget* parent)
+DuplicateTracksDialog::DuplicateTracksDialog(
+  bool audio, bool /*midi*/, bool /*drum*/, bool newdrum,
+  QWidget* parent,
+  bool copies, bool allRoutes, bool defaultRoutes,
+  bool noParts, bool duplicateParts, bool copyParts, bool cloneParts
+  )
   : QDialog(parent)
 {
   setupUi(this);
@@ -34,6 +39,18 @@ DuplicateTracksDialog::DuplicateTracksDialog(bool audio, bool /*midi*/, bool /*d
   pluginCtrlsCheckBox->setVisible(audio);
   copyDrumlistCheckBox->setVisible(newdrum);
 
+  copiesSpinBox->setVisible(copies);
+  copiesLabel->setVisible(copies);
+  
+  allRoutesRadioButton->setVisible(allRoutes);
+  defaultRoutesRadioButton->setVisible(defaultRoutes);
+  routesFrame->setVisible(allRoutes || defaultRoutes);
+  
+  noPartsRadioButton->setVisible(noParts);
+  duplicatePartsRadioButton->setVisible(duplicateParts);
+  copyPartsRadioButton->setVisible(copyParts);
+  clonePartsRadioButton->setVisible(cloneParts);
+  partsFrame->setVisible(noParts || duplicateParts || copyParts || cloneParts);
 
   connect(okPushButton, SIGNAL(clicked()), this, SLOT(accept()));
   connect(cancelPushButton, SIGNAL(clicked()), this, SLOT(reject()));

@@ -122,6 +122,7 @@ file (GLOB core_source_files
       midiport.cpp
       midiseq.cpp
       mtc.cpp
+      name_factory.cpp
       node.cpp
       operations.cpp
       osc.cpp

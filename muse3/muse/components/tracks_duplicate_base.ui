@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>308</width>
-    <height>398</height>
+    <width>327</width>
+    <height>472</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="copiesLabel">
        <property name="text">
         <string>Number of copies</string>
        </property>
@@ -56,7 +56,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QFrame" name="frame">
+    <widget class="QFrame" name="routesFrame">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
@@ -99,7 +99,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QFrame" name="frame_2">
+    <widget class="QFrame" name="partsFrame">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>

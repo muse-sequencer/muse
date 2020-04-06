@@ -42,6 +42,7 @@
 #include <QIcon>
 #include <QMimeData>
 #include <QDrag>
+#include <QStringList>
 
 #include "muse_math.h"
 #include "fastlog.h"
@@ -71,6 +72,8 @@
 #include "dialogs.h"
 #include "components/pastedialog.h"
 #include "undo.h"
+#include "tracks_duplicate.h"
+#include "name_factory.h"
 
 using MusECore::Undo;
 using MusECore::UndoOp;
@@ -146,11 +149,18 @@ int PartCanvas::y2pitch(int y) const
       MusECore::TrackList* tl = MusEGlobal::song->tracks();
       int yy  = 0;
       int idx = 0;
-      for (MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it, ++idx) {
+      MusECore::ciTrack it;
+      for (it = tl->begin(); it != tl->end(); ++it, ++idx) {
             int h = (*it)->height();
             if (y < yy+h)
                   break;
             yy += h;
+            }
+      if(it == tl->end()) {
+            while(y >= yy + MusEGlobal::config.trackHeight) {
+                  ++idx;
+                  yy += MusEGlobal::config.trackHeight;
+                  }
             }
       return idx;
       }
@@ -164,10 +174,14 @@ int PartCanvas::pitch2y(int p) const
       MusECore::TrackList* tl = MusEGlobal::song->tracks();
       int yy  = 0;
       int idx = 0;
-      for (MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it, ++idx) {
+      MusECore::ciTrack it;
+      for (it = tl->begin(); it != tl->end(); ++it, ++idx) {
             if (idx == p)
                   break;
             yy += (*it)->height();
+            }
+      if(it == tl->end()) {
+            yy += (p - idx) * MusEGlobal::config.trackHeight;
             }
       return yy;
       }
@@ -186,7 +200,7 @@ int PartCanvas::y2height(int y) const
                   return h;
             yy += h;
             }
-      return 20;
+      return MusEGlobal::config.trackHeight;
 }
 
 //---------------------------------------------------------
@@ -309,10 +323,111 @@ void PartCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, DragType dtype
 {
   MusECore::Undo operations;
 
-  for(iCItem ici = items.begin(); ici != items.end(); ++ici)
+  // We need a map of canvas items sorted by Y position.
+  typedef std::multimap<int /* y */, CItem*> y_map_t;
+  y_map_t y_map;
+  for(ciCItem ici = items.cbegin(); ici != items.cend(); ++ici)
+  {
+    CItem* ci = ici->second;
+    y_map.insert(std::pair<int, CItem*>(ci->bbox().y(), ci));
+  }
+  
+  int cur_new_track_idx = -1;
+
+  // Find out how many new track types we need, for the options dialog.
+  int audio_found = 0;
+  int midi_found = 0;
+  int drum_found = 0;
+  int new_drum_found = 0;
+  for(y_map_t::const_iterator ici = y_map.cbegin(); ici != y_map.cend(); ++ici)
   {
     CItem* ci = ici->second;
     ci->setMoving(false);
+
+    const int x = ci->pos().x();
+    const int y = ci->pos().y();
+    const int nx = x + dx;
+    const int ny = pitch2y(y2pitch(y) + dp);
+    QPoint newpos = QPoint(nx, ny);
+    if(rasterize)
+      newpos = raster(newpos);
+
+    const NPart* npart    = (NPart*) ci;
+    const MusECore::Part* spart     = npart->part();
+    const MusECore::Track* track    = npart->track();
+    const unsigned dtick  = newpos.x(); // FIXME TODO make subtick-compatible!
+    const int ntrack = y2pitch(ci->mp().y());
+    const MusECore::Track::TrackType type = track->type();
+    if (tracks->index(track) == ntrack && (dtick == spart->tick())) {
+        continue;
+    }
+
+    if (ntrack >= (int)tracks->size()) {
+        // Would create a new track, but only at the first part found on a track.
+        if(ntrack != cur_new_track_idx)
+        {
+          cur_new_track_idx = ntrack;
+          
+          if(type == MusECore::Track::DRUM)
+            ++drum_found;
+          else if(type == MusECore::Track::NEW_DRUM)
+            ++new_drum_found;
+          else if(type == MusECore::Track::MIDI)
+            ++midi_found;
+          else
+            ++audio_found;
+        }
+    }
+  }
+  
+  int flags = MusECore::Track::ASSIGN_PROPERTIES;
+  if(audio_found != 0 || midi_found != 0 || drum_found != 0 || new_drum_found != 0)
+  {  
+    MusEGui::DuplicateTracksDialog* dlg = new MusEGui::DuplicateTracksDialog(
+        audio_found, midi_found, drum_found, new_drum_found,
+        nullptr, // parent
+        false,   // copies
+        true,    // allRoutes
+        true,    // defaultRoutes
+        false,   // noParts
+        false,   // duplicateParts
+        false,   // copyParts
+        false    // cloneParts
+      );
+
+    int rv = dlg->exec();
+    if(rv == QDialog::Rejected)
+    {
+      delete dlg;
+      return;
+    }
+    
+    if(dlg->copyStdCtrls())
+      flags |= MusECore::Track::ASSIGN_STD_CTRLS;
+    if(dlg->copyPlugins())
+      flags |= MusECore::Track::ASSIGN_PLUGINS;
+    if(dlg->copyPluginCtrls())
+      flags |= MusECore::Track::ASSIGN_PLUGIN_CTRLS;
+    if(dlg->allRoutes())
+      flags |= MusECore::Track::ASSIGN_ROUTES;
+    if(dlg->defaultRoutes())
+      flags |= MusECore::Track::ASSIGN_DEFAULT_ROUTES;
+
+    if(dlg->copyDrumlist())
+      flags |= MusECore::Track::ASSIGN_DRUMLIST;
+    
+    delete dlg;
+  }
+  
+  // Reset.
+  cur_new_track_idx = -1;
+  int num_incompatible = 0;
+  MusECore::Track* dtrack = nullptr;
+  MusECore::TrackNameFactory track_names;
+  
+  for(y_map_t::iterator ici = y_map.begin(); ici != y_map.end(); ++ici)
+  {
+    CItem* ci = ici->second;
 
     int x = ci->pos().x();
     int y = ci->pos().y();
@@ -323,69 +438,75 @@ void PartCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, DragType dtype
       newpos = raster(newpos);
     selectItem(ci, true);
 
-    bool result=moveItem(operations, ci, newpos, dtype);
-    if (result)
-        ci->move(newpos);
-
-    if(moving.size() == 1) {
-          itemReleased(curItem, newpos);
-          }
-    if(dtype == MOVE_COPY || dtype == MOVE_CLONE)
-          selectItem(ci, false);
-  }
-
-  MusEGlobal::song->applyOperationGroup(operations);
-    updateItems();
-}
-
-//---------------------------------------------------------
-//   moveItem
-//    return false, if copy/move not allowed
-//---------------------------------------------------------
-
-bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint& newpos, DragType t)
-{
-    NPart* npart    = (NPart*) item;
+    NPart* npart    = (NPart*) ci;
     MusECore::Part* spart     = npart->part();
     MusECore::Track* track    = npart->track();
-    MusECore::Track* dtrack=NULL;
     unsigned dtick  = newpos.x(); // FIXME TODO make subtick-compatible!
-    int ntrack = y2pitch(item->mp().y());
+    int ntrack = y2pitch(ci->mp().y());
     MusECore::Track::TrackType type = track->type();
     if (tracks->index(track) == ntrack && (dtick == spart->tick())) {
-        return false;
+        continue;
     }
-    if (ntrack >= (int)tracks->size()) {
-        ntrack = tracks->size();
-        if (MusEGlobal::debugMsg)
-            printf("PartCanvas::moveItem - add new track\n");
-        dtrack = MusEGlobal::song->addTrack(type);  // Add at end of list. Creates additional Undo entry.
 
-        if (type == MusECore::Track::WAVE) {
-            MusECore::WaveTrack* st = (MusECore::WaveTrack*) track;
-            MusECore::WaveTrack* dt = (MusECore::WaveTrack*) dtrack;
-            dt->setChannels(st->channels());
+    if (ntrack >= (int)tracks->size()) {
+        // Create a new track, but only at the first part found on a track.
+        if(ntrack != cur_new_track_idx)
+        {
+          cur_new_track_idx = ntrack;
+
+          // TODO Make sure the list redraws without this !
+          //         emit tracklistChanged();
+          
+          if(!track_names.genUniqueNames(type, track->name(), 1))
+            continue;
+          
+#if 1
+          // FIXME Works but height is copied with PROPERTIES - we don't want that but it
+          //        can be corrected below, BUT some other things are copied that we may not want.
+          //       Do we really want copies, or a fresh blank track? Maybe pop up a dialog and ask ?
+          dtrack = track->clone(flags);
+#else
+          dtrack = MusEGlobal::song->createTrack(type);
+#endif
+          
+          if(!dtrack)
+            continue;
+          
+#if 1
+          // For the line above, if used. Fix the height instead of using the original track height.
+          dtrack->setHeight(MusEGlobal::config.trackHeight);
+#endif
+
+          dtrack->setName(track_names.first());
+
+          if (type == MusECore::Track::WAVE) {
+              MusECore::WaveTrack* st = (MusECore::WaveTrack*) track;
+              MusECore::WaveTrack* dt = (MusECore::WaveTrack*) dtrack;
+              dt->setChannels(st->channels());
+          }
+
+          // Add at end of list.
+          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, -1, dtrack));
         }
-        emit tracklistChanged();
     }
     else
     {
         dtrack = tracks->index(ntrack);
         if (dtrack->type() != type) {
-            QMessageBox::critical(this, QString("MusE"),
-                                  tr("Cannot copy/move/clone to different Track-Type"));
-                                  return false;
+            ++num_incompatible;
+            continue;
         }
     }
 
+    if(!dtrack)
+      continue;
 
-
-    if(t == MOVE_MOVE)
+    if(dtype == MOVE_MOVE)
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::MovePart, spart, spart->posValue(), dtick, MusECore::Pos::TICKS, track, dtrack));
     else
     {
         MusECore::Part* dpart;
-        bool clone = (t == MOVE_CLONE || (t == MOVE_COPY && spart->hasClones()));
+        bool clone = (dtype == MOVE_CLONE || (dtype == MOVE_COPY && spart->hasClones()));
 
         // Gives the new part a new serial number.
         if (clone)
@@ -398,7 +519,15 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
 
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
     }
-    return true;
+  }
+
+  if(num_incompatible > 0)
+  {
+    QMessageBox::critical(this, QString("MusE"),
+                          tr("Cannot copy/move/clone to different Track-Type"));
+  }
+
+  MusEGlobal::song->applyOperationGroup(operations);
 }
 
 //---------------------------------------------------------
@@ -2019,7 +2148,8 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&, const 
         int yy  = 0;
         int y = item->mp().y();
         int ih = item->height();
-        for(MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it)
+        MusECore::ciTrack it;
+        for(it = tl->begin(); it != tl->end(); ++it)
         {
           int h = (*it)->height();
           if(y < yy+h)
@@ -2029,6 +2159,8 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&, const 
           }
           yy += h;
         }
+        if(it == tl->end())
+          ih = MusEGlobal::config.trackHeight;
         p.drawRect(item->mp().x(), item->mp().y(), item->width(), ih);
       }
 

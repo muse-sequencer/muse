@@ -120,7 +120,11 @@ bool Fifo::put(int segs, MuseCount_t samples, float** src, MuseCount_t pos, floa
       b->pos  = pos;
       b->latency = latency;
       for (int i = 0; i < segs; ++i)
+      {
+            if(!src[i])
+              return true;
             AL::dsp->cpy(b->buffer + i * samples, src[i], samples);
+      }
       add();
       return false;
       }

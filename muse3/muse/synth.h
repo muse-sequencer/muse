@@ -286,7 +286,6 @@ class SynthI : public AudioTrack, public MidiDevice,
 
       virtual QString open();
       virtual void close();
-      virtual Track* newTrack() const { return 0; }
 
    public:
       friend class SynthIF;

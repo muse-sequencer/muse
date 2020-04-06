@@ -209,7 +209,6 @@ extern int midiLearnCtrl;
 
 extern bool midiSeqRunning;
 extern bool automation;
-extern int trackHeight;
 
 extern const QString inputRoutingToolTipBase;
 extern const QString outputRoutingToolTipBase;
