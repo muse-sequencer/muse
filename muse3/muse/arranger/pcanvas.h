@@ -119,7 +119,6 @@ class PartCanvas : public Canvas {
       int* _raster;
       MusECore::TrackList* tracks;
 
-      MusECore::Part* resizePart;
       QLineEdit* lineEditor;
       NPart* editPart;
       int curColorIndex;

@@ -682,9 +682,9 @@ void PartCanvas::resizeItem(CItem* i, bool noSnap, bool ctrl)
       snappedpos = MusEGlobal::sigmap.raster(pos, *_raster);
    }
    unsigned int newwidth = snappedpos - p->tick();
-   if (newwidth == 0)
+   if (newwidth == 0) {
       newwidth = MusEGlobal::sigmap.rasterStep(p->tick(), *_raster);
-
+   }
    bool doMove = false;
    unsigned int newPos = 0;
    if((i->mp() != i->pos()) && (resizeDirection == RESIZE_TO_THE_LEFT))
@@ -696,8 +696,6 @@ void PartCanvas::resizeItem(CItem* i, bool noSnap, bool ctrl)
         newPos  = i->mp().x();
    }
    MusEGlobal::song->cmdResizePart(t, p, newwidth, doMove, newPos, !ctrl);
-
-
 }
 
 //---------------------------------------------------------
@@ -1996,18 +1994,14 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 
       p.setWorldMatrixEnabled(true);
 
-      MusECore::MidiPart* mp = 0;
-      MusECore::WavePart* wp = 0;
       MusECore::Track::TrackType type = part->track()->type();
-      if (type == MusECore::Track::WAVE)
-            wp =(MusECore::WavePart*)part;
-      else
-            mp = (MusECore::MidiPart*)part;
-
-      if (wp)
-          drawWavePart(p, ur, wp, ubbr);
-      else if (mp)
-          drawMidiPart(p, ur, mp, ubbr, vfrom, vto, item_selected);
+      if (type == MusECore::Track::WAVE) {
+        MusECore::WavePart* wp =(MusECore::WavePart*)part;
+        drawWavePart(p, ur, wp, ubbr);
+      } else {
+        MusECore::MidiPart* mp = (MusECore::MidiPart*)part;
+        drawMidiPart(p, ur, mp, ubbr, vfrom, vto, item_selected);
+      }
 
       p.setWorldMatrixEnabled(false);
 
@@ -2571,11 +2565,21 @@ void PartCanvas::drawWavePart(QPainter& p,
       //int h  = hh/2;
       int startY  = pr.y();
 
-      for (MusECore::ciEvent e = wp->events().begin(); e != wp->events().end(); ++e) {
+      for (auto reverseIterator = wp->events().rbegin(); reverseIterator != wp->events().rend(); ++reverseIterator) {
 
-            MusECore::Event event = e->second;
-            MusECore::SndFileR f = event.sndFile();
-            drawWaveSndFile(p, f, event.spos(), wp->frame(), event.frame(), event.lenFrame(), startY, x1, x2, hh);
+            MusECore::Event event = reverseIterator->second;
+            auto f = event.sndFile();
+            if (drag == DRAG_RESIZE && reverseIterator == wp->events().rbegin()) { // the last event is subject to live extending
+
+              // _pr is in tick resolution
+              const int endFrame = MusEGlobal::tempomap.tick2frame(_pr.width());
+
+              // we're at the last event, extend the wave drawing so it is displayed past the old end of the part
+              drawWaveSndFile(p, f, event.spos(), wp->frame(), event.frame(), endFrame, startY, x1, x2, hh);
+            }
+            else {
+              drawWaveSndFile(p, f, event.spos(), wp->frame(), event.frame(), event.lenFrame(), startY, x1, x2, hh);
+            }
 
 
             }

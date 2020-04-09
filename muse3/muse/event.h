@@ -174,7 +174,6 @@ typedef std::pair <iFindMidiCtlsList, bool> FindMidiCtlsListInsResPair_t;
 
 typedef std::multimap <unsigned, Event, std::less<unsigned> > EL;
 typedef EL::iterator iEvent;
-typedef EL::reverse_iterator riEvent;
 typedef EL::const_iterator ciEvent;
 typedef std::pair <ciEvent, ciEvent> cEventRange;
 typedef std::pair <iEvent, iEvent> EventRange;
