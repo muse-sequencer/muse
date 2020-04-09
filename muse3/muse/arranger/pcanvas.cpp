@@ -685,17 +685,15 @@ void PartCanvas::resizeItem(CItem* i, bool noSnap, bool ctrl)
    if (newwidth == 0) {
       newwidth = MusEGlobal::sigmap.rasterStep(p->tick(), *_raster);
    }
-   bool doMove = false;
    unsigned int newPos = 0;
-   if((i->mp() != i->pos()) && (resizeDirection == RESIZE_TO_THE_LEFT))
+   if((i->mp() != i->pos()) && (resizeDirection == MusECore::RESIZE_TO_THE_LEFT))
    {
-      doMove = true;
       if(i->mp().x() < 0)
         newPos = 0;
       else
         newPos  = i->mp().x();
    }
-   MusEGlobal::song->cmdResizePart(t, p, newwidth, doMove, newPos, !ctrl);
+   MusEGlobal::song->cmdResizePart(t, p, newwidth, resizeDirection, newPos, !ctrl);
 }
 
 //---------------------------------------------------------

@@ -948,8 +948,10 @@ void Song::removePart(Part* part)
 //   cmdResizePart
 //---------------------------------------------------------
 
-void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doMove, unsigned int newPos, bool doClones)
+void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, MusECore::ResizeDirection resizeDirection, unsigned int newPos, bool doClones)
       {
+    printf("cmdResizePart %d\n", newPos);
+
       switch(track->type()) {
             case Track::WAVE:
             case Track::MIDI:
@@ -962,12 +964,13 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doMov
                   Part* part_it = oPart;
                   do
                   {
-                      if(part_it->lenValue() == orig_len)
+                      if(part_it->lenValue() == orig_len && resizeDirection == MusECore::RESIZE_TO_THE_RIGHT) {
                         operations.push_back(UndoOp(UndoOp::ModifyPartLength, part_it, orig_len, len, Pos::TICKS));
-                      if(doMove)
-                         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::MovePart,
-                           part_it, part_it->posValue(), newPos, MusECore::Pos::TICKS, track, track));
-                          
+                      }
+                      if(resizeDirection == MusECore::RESIZE_TO_THE_LEFT) {
+                        operations.push_back(UndoOp(UndoOp::ModifyPartStart, part_it, orig_len, newPos, Pos::TICKS));
+                      }
+
                       part_it = part_it->nextClone();
                   } while (doClones && (part_it != oPart));
                   

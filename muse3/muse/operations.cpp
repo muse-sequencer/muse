@@ -127,6 +127,7 @@ bool PendingOperationItem::isAllocationOp(const PendingOperationItem& op) const
 
 unsigned int PendingOperationItem::getIndex() const
 {
+    printf("GetIndex()\n");
   switch(_type)
   {
     case Uninitialized:
@@ -185,6 +186,9 @@ unsigned int PendingOperationItem::getIndex() const
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
     
+    case ModifyPartStart:
+      return _part->posValue();
+
     case ModifyPartLength:
       return _part->posValue();
     
@@ -1110,7 +1114,38 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     }
     break;
 
+    case ModifyPartStart:
+    {
+//#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyPartStart part:%p old_val:%d new_val:%u\n", _part, _part->lenValue(), _posLenVal);
+//#endif
+      // Go through all events and adjust their position from the new start of the part
+      int newPartStart = _posLenVal;
+      int oldPartStart = _part->tick();
+      int startTickChange = oldPartStart - newPartStart;
+printf("newPartStart = %d oldPartStart = %d startTickChange=%d\n", newPartStart, oldPartStart, startTickChange);
+      EventList eventList = _part->events();
+
+      for (EventList::const_iterator ci = eventList.begin(); ci != eventList.end(); ++ci) {
+
+          if (ci == eventList.begin() && _part->partType() == MusECore::Part::WavePartType ) { // first event in a wave part must be extended.
+          }
+          else {
+              printf("Adjusting event tick %d\n", ((Event&)ci->second).tick());
+              ((Event&)ci->second).setTick(((Event&)ci->second).tick() + startTickChange);
+          }
+      }
+      printf("DID a resize start!\n");
+
+      _part->setTick(_posLenVal);
+      _part->setLenTick(_part->lenTick()+startTickChange);
+      flags |= SC_PART_MODIFIED;
+      flags |= SC_EVENT_MODIFIED;
+    }
+    break;
+
     case ModifyPartLength:
+    {
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyPartLength part:%p old_val:%d new_val:%u\n", _part, _part->lenValue(), _posLenVal);
 
       // If we are extending a wave part the underlying event (containing the wave file, also must be extended)
@@ -1134,6 +1169,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
 
       _part->setLenValue(_posLenVal);
       flags |= SC_PART_MODIFIED;
+    }
     break;
     
     case MovePart:

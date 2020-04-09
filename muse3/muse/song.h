@@ -42,6 +42,7 @@
 #include "synth.h"
 #include "operations.h"
 #include "lock_free_buffer.h"
+#include "canvas.h"
 
 #define IPC_EVENT_FIFO_SIZE ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(16384)) )
 
@@ -399,7 +400,7 @@ class Song : public QObject {
       //-----------------------------------------
 
       // called from GUI thread, calls applyOperationGroup. FIXME TODO: better move that into functions.cpp or whatever.      
-      void cmdResizePart(Track* t, Part* p, unsigned int size, bool doMove, unsigned int newPos, bool doClones=false);
+      void cmdResizePart(Track* t, Part* p, unsigned int size, MusECore::ResizeDirection resizeDirection, unsigned int newPos, bool doClones=false);
 
       void addPart(Part* part);
       void removePart(Part* part);
