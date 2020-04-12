@@ -443,76 +443,79 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
                                     int cur_channel      = cur_track->outChannel();
                                     MusECore::MidiPort* cur_port   = &MusEGlobal::midiPorts[cur_track->outPort()];
 
-                                    if(old_style_drummap_mode)
-                                    {
-                                      // Default to track port if -1 and track channel if -1.
-                                      int channel = dm->channel;
-                                      if(channel == -1)
-                                        channel = cur_channel;
-                                      int mport = dm->port;
-                                      if(mport == -1)
-                                        mport = cur_track->outPort();
-                                      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mport];
-                                      int instr_pitch = dm->anote;
-                                      MusECore::MidiCtrlValListList* cll = mp->controller();
-                                      const int min = channel << 24;
-                                      const int max = min + 0x1000000;
-                                      bool found = false;
-                                      bool used = false;
-                                      bool off = true;
-                                      for(MusECore::iMidiCtrlValList imcvl = cll->lower_bound(min); imcvl != cll->lower_bound(max); ++imcvl)
-                                      {
-                                        MusECore::MidiCtrlValList* cl = imcvl->second;
-                                        MusECore::MidiController* c   = mp->midiController(cl->num());
-                                        if(!c->isPerNoteController())
-                                          continue;
-                                        int cnum = c->num();
-                                        int num = cl->num();
-                                        int pitch = num & 0x7f;
-                                        if(pitch != instr_pitch)
-                                          continue;
-
-                                        found = true;
-                                        for(MusECore::ciEvent ie = cur_part->events().begin(); ie != cur_part->events().end(); ++ie)
-                                        {
-                                          MusECore::Event e = ie->second;
-                                          if(e.type() != MusECore::Controller)
-                                            continue;
-                                          int ctl_num = e.dataA();
-                                          if((ctl_num | 0xff) == cnum && (ctl_num & 0x7f) == instrument)
-                                          {
-                                            used = true;
-                                            break;
-                                          }
-                                        }
-                                        off = cl->hwVal() == MusECore::CTRL_VAL_UNKNOWN;  // Does it have a value or is it 'off'?
-                                        if(used && !off)
-                                          break;  // We have all the info we need, done.
-                                      }
-
-                                      if(found)
-                                      {
-                                        int rx = r.x() + 1;
-                                        int ry = r.y() + r.height()/2 - 3;
-                                        int rw = 6;
-                                        int rh = 6;
-                                        if(used)
-                                        {
-                                          if(off)
-                                            p.drawPixmap(rx, ry, rw, rh, *greendot12x12Icon);
-                                          else
-                                            p.drawPixmap(rx, ry, rw, rh, *orangedot12x12Icon);
-                                        }
-                                        else
-                                        {
-                                          if(off)
-                                            p.drawPixmap(rx, ry, rw, rh, *graydot12x12Icon);
-                                          else
-                                            p.drawPixmap(rx, ry, rw, rh, *bluedot12x12Icon);
-                                        }
-                                      }
-                                    }
-                                    else
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//                                     if(old_style_drummap_mode)
+//                                     {
+//                                       // Default to track port if -1 and track channel if -1.
+//                                       int channel = dm->channel;
+//                                       if(channel == -1)
+//                                         channel = cur_channel;
+//                                       int mport = dm->port;
+//                                       if(mport == -1)
+//                                         mport = cur_track->outPort();
+//                                       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mport];
+//                                       int instr_pitch = dm->anote;
+//                                       MusECore::MidiCtrlValListList* cll = mp->controller();
+//                                       const int min = channel << 24;
+//                                       const int max = min + 0x1000000;
+//                                       bool found = false;
+//                                       bool used = false;
+//                                       bool off = true;
+//                                       for(MusECore::iMidiCtrlValList imcvl = cll->lower_bound(min); imcvl != cll->lower_bound(max); ++imcvl)
+//                                       {
+//                                         MusECore::MidiCtrlValList* cl = imcvl->second;
+// // REMOVE Tim. midnam. Changed.
+// //                                         MusECore::MidiController* c   = mp->midiController(cl->num());
+//                                         MusECore::MidiController* c   = mp->midiController(cl->num(), channel);
+//                                         if(!c->isPerNoteController())
+//                                           continue;
+//                                         int cnum = c->num();
+//                                         int num = cl->num();
+//                                         int pitch = num & 0x7f;
+//                                         if(pitch != instr_pitch)
+//                                           continue;
+// 
+//                                         found = true;
+//                                         for(MusECore::ciEvent ie = cur_part->events().begin(); ie != cur_part->events().end(); ++ie)
+//                                         {
+//                                           MusECore::Event e = ie->second;
+//                                           if(e.type() != MusECore::Controller)
+//                                             continue;
+//                                           int ctl_num = e.dataA();
+//                                           if((ctl_num | 0xff) == cnum && (ctl_num & 0x7f) == instrument)
+//                                           {
+//                                             used = true;
+//                                             break;
+//                                           }
+//                                         }
+//                                         off = cl->hwVal() == MusECore::CTRL_VAL_UNKNOWN;  // Does it have a value or is it 'off'?
+//                                         if(used && !off)
+//                                           break;  // We have all the info we need, done.
+//                                       }
+// 
+//                                       if(found)
+//                                       {
+//                                         int rx = r.x() + 1;
+//                                         int ry = r.y() + r.height()/2 - 3;
+//                                         int rw = 6;
+//                                         int rh = 6;
+//                                         if(used)
+//                                         {
+//                                           if(off)
+//                                             p.drawPixmap(rx, ry, rw, rh, *greendot12x12Icon);
+//                                           else
+//                                             p.drawPixmap(rx, ry, rw, rh, *orangedot12x12Icon);
+//                                         }
+//                                         else
+//                                         {
+//                                           if(off)
+//                                             p.drawPixmap(rx, ry, rw, rh, *graydot12x12Icon);
+//                                           else
+//                                             p.drawPixmap(rx, ry, rw, rh, *bluedot12x12Icon);
+//                                         }
+//                                       }
+//                                     }
+//                                     else
                                     {
 
                                       QSet<MusECore::Track*>* group = &dcanvas->get_instrument_map()[instrument].tracks;
@@ -557,7 +560,9 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
                                           for(MusECore::iMidiCtrlValList imcvl = cll->lower_bound(min); imcvl != cll->lower_bound(max); ++imcvl)
                                           {
                                             MusECore::MidiCtrlValList* cl = imcvl->second;
-                                            MusECore::MidiController* c   = cur_port->midiController(cl->num());
+// REMOVE Tim. midnam. Changed.
+//                                             MusECore::MidiController* c   = cur_port->midiController(cl->num());
+                                            MusECore::MidiController* c   = cur_port->midiController(cl->num(), cur_channel);
                                             if(!c->isPerNoteController())
                                               continue;
                                             int cnum = c->num();
@@ -803,7 +808,9 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
 
       if(button == Qt::RightButton)
       {
-        if(dcanvas && !old_style_drummap_mode)
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//         if(dcanvas && !old_style_drummap_mode)
+        if(dcanvas)
         {
           enum MapPopupIDs { HideInstrumentID = 0, ShowInstrumentID,
                             ResetFieldID, ResetItemID, ResetColumnID, ResetMapID,
@@ -1126,7 +1133,9 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
             }
 
       update();
-      if (!old_style_drummap_mode && dm_old != *dm && dcanvas) //something changed and we're in new style mode?
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//       if (!old_style_drummap_mode && dm_old != *dm && dcanvas) //something changed and we're in new style mode?
+      if (dm_old != *dm && dcanvas) //something changed and we're in new style mode?
         dcanvas->propagate_drummap_change(instrument, field, false, false, false, false);
 
       MusEGlobal::song->update(SC_DRUM_SELECTION);
@@ -1700,21 +1709,22 @@ void DList::pitchEdited()
 
             case COL_INPUTTRIGGER:
                field = MusECore::WorkingDrumMapEntry::ENoteField;
-               if (old_style_drummap_mode)
-               {
-                  //Check if there is any other MusEGlobal::drumMap with the same inmap value (there should be one (and only one):-)
-                  //If so, switch the inmap between the instruments
-                  for (int i=0; i<ourDrumMapSize; i++) {
-                        if (ourDrumMap[i].enote == val && &ourDrumMap[i] != editEntry) {
-                              MusEGlobal::drumInmap[int(editEntry->enote)] = i;
-                              ourDrumMap[i].enote = editEntry->enote;
-                              break;
-                              }
-                        }
-                  //TODO: Set all the notes on the track with instrument=dm->enote to instrument=val
-                  MusEGlobal::drumInmap[val] = instrument;
-               }
-               else
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//                if (old_style_drummap_mode)
+//                {
+//                   //Check if there is any other MusEGlobal::drumMap with the same inmap value (there should be one (and only one):-)
+//                   //If so, switch the inmap between the instruments
+//                   for (int i=0; i<ourDrumMapSize; i++) {
+//                         if (ourDrumMap[i].enote == val && &ourDrumMap[i] != editEntry) {
+//                               MusEGlobal::drumInmap[int(editEntry->enote)] = i;
+//                               ourDrumMap[i].enote = editEntry->enote;
+//                               break;
+//                               }
+//                         }
+//                   //TODO: Set all the notes on the track with instrument=dm->enote to instrument=val
+//                   MusEGlobal::drumInmap[val] = instrument;
+//                }
+//                else
                {
                   if (dcanvas)
                   {
@@ -1853,13 +1863,16 @@ void DList::init(QHeaderView* h, QWidget* parent)
 
 }
 
-DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_, bool oldstyle)
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+// DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_, bool oldstyle)
+DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_)
    : MusEGui::View(parent, 1, ymag)
       {
       dcanvas=dcanvas_;
       ourDrumMap=dcanvas->getOurDrumMap();
       ourDrumMapSize=dcanvas->getOurDrumMapSize();
-      old_style_drummap_mode=oldstyle;
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       old_style_drummap_mode=oldstyle;
       connect(dcanvas, SIGNAL(ourDrumMapChanged(bool)), SLOT(ourDrumMapChanged(bool)));
       
       init(h, parent);
@@ -1871,7 +1884,8 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag, MusECore::DrumMap* dm, i
       dcanvas=NULL;
       ourDrumMap=dm;
       ourDrumMapSize=dmSize;
-      old_style_drummap_mode=false;
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       old_style_drummap_mode=false;
       
       init(h, parent);
       }
@@ -1919,22 +1933,26 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
       if (drag == DRAG) {
             int y = ev->y();
             int dInstrument;
-            if (old_style_drummap_mode)
-                  dInstrument = y / TH;
-            else
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//             if (old_style_drummap_mode)
+//                   dInstrument = y / TH;
+//             else
                   dInstrument = (y+TH/2) / TH;
             
             if (dInstrument < 0) dInstrument=0;
-            if (old_style_drummap_mode)
-            {
-              if (dInstrument >= ourDrumMapSize) dInstrument=ourDrumMapSize-1;
-            }
-            else
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//             if (old_style_drummap_mode)
+//             {
+//               if (dInstrument >= ourDrumMapSize) dInstrument=ourDrumMapSize-1;
+//             }
+//             else
             {
               if (dInstrument > ourDrumMapSize) dInstrument=ourDrumMapSize; // allow moving something below the last element
             }
             
-            int cur_sel = (!old_style_drummap_mode && dInstrument>sInstrument) ? dInstrument-1 : dInstrument;
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//             int cur_sel = (!old_style_drummap_mode && dInstrument>sInstrument) ? dInstrument-1 : dInstrument;
+            int cur_sel = dInstrument>sInstrument ? dInstrument-1 : dInstrument;
             
             setCursor(QCursor(Qt::ArrowCursor));
             currentlySelected = &ourDrumMap[cur_sel];
@@ -2029,7 +2047,7 @@ void DList::wheelEvent(QWheelEvent* ev)
     case COL_NAME:
           break;
 
-    case COL_OUTPORT: // this column isn't visible in new style drum mode
+    case COL_OUTPORT:
 // TODO
 //           field = MusECore::WorkingDrumMapEntry::PortField;
 //           if ((button == Qt::RightButton) || (button == Qt::LeftButton)) {
@@ -2059,21 +2077,22 @@ void DList::wheelEvent(QWheelEvent* ev)
           else if (val > 127)
                 val = 127;
 
-          if (old_style_drummap_mode)
-          {
-              //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
-              //If so, switch the inmap between the instruments
-              for (int i=0; i<ourDrumMapSize; i++) {
-                    if (ourDrumMap[i].enote == val && &ourDrumMap[i] != dm) {
-                          MusEGlobal::drumInmap[int(dm->enote)] = i;
-                          ourDrumMap[i].enote = dm->enote;
-                          break;
-                          }
-                    }
-              //TODO: Set all the notes on the track with instrument=dm->enote to instrument=val
-              MusEGlobal::drumInmap[val] = instrument;
-          }
-          else
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//           if (old_style_drummap_mode)
+//           {
+//               //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
+//               //If so, switch the inmap between the instruments
+//               for (int i=0; i<ourDrumMapSize; i++) {
+//                     if (ourDrumMap[i].enote == val && &ourDrumMap[i] != dm) {
+//                           MusEGlobal::drumInmap[int(dm->enote)] = i;
+//                           ourDrumMap[i].enote = dm->enote;
+//                           break;
+//                           }
+//                     }
+//               //TODO: Set all the notes on the track with instrument=dm->enote to instrument=val
+//               MusEGlobal::drumInmap[val] = instrument;
+//           }
+//           else
           {
             if (dcanvas)
             {
@@ -2109,7 +2128,8 @@ void DList::wheelEvent(QWheelEvent* ev)
           break;
     case COL_NOTE:
           field = MusECore::WorkingDrumMapEntry::ANoteField;
-          if (old_style_drummap_mode) //only allow changing in old style mode
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//           if (old_style_drummap_mode) //only allow changing in old style mode
           {
             val = dm->anote + delta;
             if (val < 0)
@@ -2128,7 +2148,7 @@ void DList::wheelEvent(QWheelEvent* ev)
 
           emit keyPressed(instrument, 100);
           break;
-    case COL_OUTCHANNEL: // this column isn't visible in new style drum mode
+    case COL_OUTCHANNEL:
           field = MusECore::WorkingDrumMapEntry::ChanField;
           val = dm->channel + delta;
           // Default to track port if -1 and track channel if -1.
@@ -2210,7 +2230,9 @@ void DList::wheelEvent(QWheelEvent* ev)
   }
 
   update();
-  if (!old_style_drummap_mode && dm_old != *dm && dcanvas) //something changed and we're in new style mode?
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//   if (!old_style_drummap_mode && dm_old != *dm && dcanvas) //something changed and we're in new style mode?
+  if (dm_old != *dm && dcanvas) //something changed and we're in new style mode?
     dcanvas->propagate_drummap_change(instrument, field, false, false, false, false);
 }
       

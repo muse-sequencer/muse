@@ -635,7 +635,8 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
         switch(_track->type())
         {
               case Track::MIDI:
-              case Track::DRUM:
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//               case Track::DRUM:
               case Track::NEW_DRUM:
                     static_cast<MidiTrackList*>(_void_track_list)->push_back(static_cast<MidiTrack*>(_track));
                     break;
@@ -800,7 +801,8 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
         switch(_track->type())
         {
               case Track::MIDI:
-              case Track::DRUM:
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//               case Track::DRUM:
               case Track::NEW_DRUM:
                     static_cast<MidiTrackList*>(_void_track_list)->erase(_track);
                     break;

@@ -81,7 +81,8 @@ class DrumEdit : public MidiEditor {
    private:
       group_mode_t _group_mode;
       bool _ignore_hide;
-      bool _old_style_drummap_mode;
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       bool _old_style_drummap_mode;
       
       QMenu* menuEdit, *menuFunctions, *menuSelect;
 
@@ -126,7 +127,8 @@ class DrumEdit : public MidiEditor {
       // Initial view state.
       MusECore::MidiPartViewState _viewState;
       
-      QAction *loadAction, *saveAction, *resetAction;
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       QAction *loadAction, *saveAction, *resetAction;
       QAction *cutAction, *copyAction, *copyRangeAction, *pasteAction;
       QAction *pasteToCurPartAction, *pasteDialogAction, *deleteAction;
       QAction *fixedAction, *veloAction, *crescAction, *quantizeAction;
@@ -171,7 +173,8 @@ class DrumEdit : public MidiEditor {
       void hideUnusedInstruments();
       void hideEmptyInstruments();
       
-      void display_old_new_conflict_message();
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       void display_old_new_conflict_message();
 
       void deltaModeChanged(bool);
       void midiNote(int pitch, int velo);
@@ -203,7 +206,8 @@ class DrumEdit : public MidiEditor {
 
       MusECore::MidiPartViewState getViewState() const;
 
-      bool old_style_drummap_mode() { return _old_style_drummap_mode; }
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       bool old_style_drummap_mode() { return _old_style_drummap_mode; }
       group_mode_t group_mode() { return _group_mode; }
       bool ignore_hide() { return _ignore_hide; }
       

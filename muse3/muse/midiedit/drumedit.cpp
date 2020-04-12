@@ -266,62 +266,63 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       
       
-      // throw out new-style and midi tracks if there are old-style tracks present
-      bool has_old_style_tracks=false;
-      for (MusECore::ciPart p = parts()->begin(); p != parts()->end(); ++p)
-        if (p->second->track()->type()==MusECore::Track::DRUM)
-        {
-          has_old_style_tracks=true;
-          break;
-        }
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       // throw out new-style and midi tracks if there are old-style tracks present
+//       bool has_old_style_tracks=false;
+//       for (MusECore::ciPart p = parts()->begin(); p != parts()->end(); ++p)
+//         if (p->second->track()->type()==MusECore::Track::DRUM)
+//         {
+//           has_old_style_tracks=true;
+//           break;
+//         }
+//       
+//       if (has_old_style_tracks)
+//       {
+//         bool thrown_out=false;
+//         bool again;
+//         do
+//         {
+//           again=false;
+//           for (MusECore::ciPart p = parts()->begin(); p != parts()->end();p++)
+//             if (p->second->track()->type()!=MusECore::Track::DRUM)
+//             {
+//               parts()->remove(p->second);
+//               thrown_out=true;
+//               again=true;
+//               break;
+//             }
+//         } while (again);
+//       
+//         if (thrown_out)
+//         {
+//           QTimer* timer = new QTimer(this);
+//           timer->setSingleShot(true);
+//           connect(timer,SIGNAL(timeout()), this, SLOT(display_old_new_conflict_message()));
+//           timer->start(10);
+//         }
+//       }
+// 
+//       _old_style_drummap_mode=has_old_style_tracks;
       
-      if (has_old_style_tracks)
-      {
-        bool thrown_out=false;
-        bool again;
-        do
-        {
-          again=false;
-          for (MusECore::ciPart p = parts()->begin(); p != parts()->end();p++)
-            if (p->second->track()->type()!=MusECore::Track::DRUM)
-            {
-              parts()->remove(p->second);
-              thrown_out=true;
-              again=true;
-              break;
-            }
-        } while (again);
       
-        if (thrown_out)
-        {
-          QTimer* timer = new QTimer(this);
-          timer->setSingleShot(true);
-          connect(timer,SIGNAL(timeout()), this, SLOT(display_old_new_conflict_message()));
-          timer->start(10);
-        }
-      }
 
-      _old_style_drummap_mode=has_old_style_tracks;
       
-      
-
-      
-      if (old_style_drummap_mode())
-      {
-        loadAction = menuFunctions->addAction(*fileopenSVGIcon, tr("Load Map"));
-        saveAction = menuFunctions->addAction(*filesaveSVGIcon, tr("Save Map"));
-        resetAction = menuFunctions->addAction(tr("Reset GM Map"));
-
-        connect(loadAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_LOAD); } );
-        connect(saveAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SAVE); } );
-        connect(resetAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_RESET); } );
-
-        QAction* reorderListAction = menuFunctions->addAction(tr("Re-order map"));
-        connect(reorderListAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_REORDER_LIST); } );
-        menuFunctions->addSeparator();
-      }
-      else
-        loadAction=saveAction=resetAction=NULL;
+//       if (old_style_drummap_mode())
+//       {
+//         loadAction = menuFunctions->addAction(*fileopenSVGIcon, tr("Load Map"));
+//         saveAction = menuFunctions->addAction(*filesaveSVGIcon, tr("Save Map"));
+//         resetAction = menuFunctions->addAction(tr("Reset GM Map"));
+// 
+//         connect(loadAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_LOAD); } );
+//         connect(saveAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SAVE); } );
+//         connect(resetAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_RESET); } );
+// 
+//         QAction* reorderListAction = menuFunctions->addAction(tr("Re-order map"));
+//         connect(reorderListAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_REORDER_LIST); } );
+//         menuFunctions->addSeparator();
+//       }
+//       else
+//         loadAction=saveAction=resetAction=NULL;
 
       fixedAction = menuFunctions->addAction(tr("Set Fixed Length"));
       veloAction = menuFunctions->addAction(tr("Modify Velocity"));
@@ -355,7 +356,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
 
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
-      if (!old_style_drummap_mode())
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       if (!old_style_drummap_mode())
       {
         QMenu* menuGrouping=settingsMenu->addMenu(tr("Group"));
         groupNoneAction = menuGrouping->addAction(tr("Don't group"));
@@ -388,12 +390,12 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
         updateGroupingActions();
       }
-      else
-      {
-        groupNoneAction=NULL;
-        groupChanAction=NULL;
-        groupMaxAction =NULL;
-      }
+//       else
+//       {
+//         groupNoneAction=NULL;
+//         groupChanAction=NULL;
+//         groupMaxAction =NULL;
+//       }
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
@@ -445,25 +447,26 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       tools->addAction(whatsthis);
 
 
-      if (old_style_drummap_mode())
-      {
-        QToolBar* maptools = addToolBar(tr("Drum map tools"));
-        maptools->setObjectName("Drum map tools");
-        
-        QToolButton *ldm = new QToolButton();
-        ldm->setToolTip(tr("Load drummap"));
-        ldm->setIcon(*fileopenSVGIcon);
-        ldm->setFocusPolicy(Qt::NoFocus);
-        connect(ldm, SIGNAL(clicked()), SLOT(load()));
-        maptools->addWidget(ldm);
-        
-        QToolButton *sdm = new QToolButton();
-        sdm->setToolTip(tr("Store drummap"));
-        sdm->setIcon(*filesaveSVGIcon);
-        sdm->setFocusPolicy(Qt::NoFocus);
-        connect(sdm, SIGNAL(clicked()), SLOT(save()));
-        maptools->addWidget(sdm);
-      }
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       if (old_style_drummap_mode())
+//       {
+//         QToolBar* maptools = addToolBar(tr("Drum map tools"));
+//         maptools->setObjectName("Drum map tools");
+//         
+//         QToolButton *ldm = new QToolButton();
+//         ldm->setToolTip(tr("Load drummap"));
+//         ldm->setIcon(*fileopenSVGIcon);
+//         ldm->setFocusPolicy(Qt::NoFocus);
+//         connect(ldm, SIGNAL(clicked()), SLOT(load()));
+//         maptools->addWidget(ldm);
+//         
+//         QToolButton *sdm = new QToolButton();
+//         sdm->setToolTip(tr("Store drummap"));
+//         sdm->setIcon(*filesaveSVGIcon);
+//         sdm->setFocusPolicy(Qt::NoFocus);
+//         connect(sdm, SIGNAL(clicked()), SLOT(save()));
+//         maptools->addWidget(sdm);
+//       }
 
       // don't show pitch value in toolbar
       toolbar = new MusEGui::Toolbar1(this, _rasterInit, false);
@@ -654,12 +657,16 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       setHeaderToolTips();
       setHeaderWhatsThis();
 
-      if (!old_style_drummap_mode() && _ignore_hide)
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//       if (!old_style_drummap_mode() && _ignore_hide)
+      if (_ignore_hide)
         header->showSection(COL_HIDE);
       else
         header->hideSection(COL_HIDE);
 
-      dlist = new DList(header, split1w1, _viewState.yscale(), (DrumCanvas*)canvas, old_style_drummap_mode());
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//       dlist = new DList(header, split1w1, _viewState.yscale(), (DrumCanvas*)canvas, old_style_drummap_mode());
+      dlist = new DList(header, split1w1, _viewState.yscale(), (DrumCanvas*)canvas);
       setCurDrumInstrument(dlist->getSelectedInstrument());
       
       connect(dlist, SIGNAL(keyPressed(int, int)), canvas, SLOT(keyPressed(int, int)));
@@ -829,16 +836,17 @@ void DrumEdit::midiNote(int pitch, int velo)
 
   if ((DrumCanvas*)(canvas)->midiin())
   {
-    if (old_style_drummap_mode()) {
-        MusECore::DrumMap *dmap= ((DrumCanvas*)canvas)->getOurDrumMap();
-        for (index = 0; index < ((DrumCanvas*)canvas)->getOurDrumMapSize(); ++index) {
-
-          if ((&dmap[index])->anote == pitch)
-            break;
-        }
-
-    }
-    else
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//     if (old_style_drummap_mode()) {
+//         MusECore::DrumMap *dmap= ((DrumCanvas*)canvas)->getOurDrumMap();
+//         for (index = 0; index < ((DrumCanvas*)canvas)->getOurDrumMapSize(); ++index) {
+// 
+//           if ((&dmap[index])->anote == pitch)
+//             break;
+//         }
+// 
+//     }
+//     else
     {
         for (index = 0; index < get_instrument_map().size(); ++index) {
           if (get_instrument_map().at(index).pitch == pitch)
@@ -1456,9 +1464,10 @@ void DrumEdit::cmd(int cmd)
                               MusECore::paste_items(partlist_to_set(parts()), (canvas->part()));
                               break;
                               
-            case DrumCanvas::CMD_LOAD: load(); break;
-            case DrumCanvas::CMD_SAVE: save(); break;
-            case DrumCanvas::CMD_RESET: reset(); break;
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//             case DrumCanvas::CMD_LOAD: load(); break;
+//             case DrumCanvas::CMD_SAVE: save(); break;
+//             case DrumCanvas::CMD_RESET: reset(); break;
             case DrumCanvas::CMD_MODIFY_VELOCITY:
                   {
                   FunctionDialogReturnVelocity ret =
@@ -1638,7 +1647,8 @@ void DrumEdit::addCtrlClicked()
   int cur_instr = curDrumInstrument();
   // HACK! New drum ctrl canvas current drum index is not the same as the editor current drum index.
   //       Should try to fix this situation - two different values exist. Tim.
-  if(!old_style_drummap_mode())
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//   if(!old_style_drummap_mode())
     cur_instr = (cur_instr & ~0xff) | get_instrument_map()[cur_instr].pitch;
   
   int est_width = populateMidiCtrlMenu(pup, parts(), curCanvasPart(), cur_instr);
@@ -2115,7 +2125,9 @@ void DrumEdit::set_ignore_hide(bool val)
   // this may only called be from the action's toggled signal.
   // if called otherwise, the action's checked state isn't updated!
 
-  if (!old_style_drummap_mode() && _ignore_hide)
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//   if (!old_style_drummap_mode() && _ignore_hide)
+  if (_ignore_hide)
     header->showSection(COL_HIDE);
   else
     header->hideSection(COL_HIDE);
@@ -2228,9 +2240,12 @@ void DrumEdit::hideEmptyInstruments()
 }
 
 
-void DrumEdit::display_old_new_conflict_message()
-{
-  QMessageBox::information(this, tr("Not all parts are displayed"), tr("You selected both old-style-drumtracks and others (that is: new-style or midi tracks), but they cannot displayed in the same drum edit.\nI'll only display the old-style drumtracks in this editor, dropping the others."));
-}
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+// void DrumEdit::display_old_new_conflict_message()
+// {
+//   QMessageBox::information(this, tr("Not all parts are displayed"), tr("You selected both old-style-drumtracks and others
+//   (that is: new-style or midi tracks), but they cannot displayed in the same drum edit.\nI'll only display the
+//   old-style drumtracks in this editor, dropping the others."));
+// }
 
 } // namespace MusEGui

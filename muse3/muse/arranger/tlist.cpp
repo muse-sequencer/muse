@@ -500,7 +500,10 @@ void TList::paint(const QRect& r)
                                     int col_ctrl_no=Arranger::custom_columns[section - COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
                                     MusECore::MidiTrack* mt=dynamic_cast<MusECore::MidiTrack*>(track);
                                     MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-                                    MusECore::MidiController* mctl = mp->midiController(col_ctrl_no);
+// REMOVE Tim. midnam. Changed.
+//                                     MusECore::MidiController* mctl = mp->midiController(col_ctrl_no);
+                                    const int chan = mt->outChannel();
+                                    MusECore::MidiController* mctl = mp->midiController(col_ctrl_no, chan);
                                     int val;
                                     if (Arranger::custom_columns[section - COL_CUSTOM_MIDICTRL_OFFSET].affected_pos ==
                                         Arranger::custom_col_t::AFFECT_BEGIN)
@@ -687,7 +690,10 @@ void TList::ctrlValueFinished()
     {
       int val = ctrl_edit->value();
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-      MusECore::MidiController* mctl = mp->midiController(ctrl_num);
+// REMOVE Tim. midnam. Changed.
+//       MusECore::MidiController* mctl = mp->midiController(ctrl_num);
+      const int chan = mt->outChannel();
+      MusECore::MidiController* mctl = mp->midiController(ctrl_num, chan);
 
       if (val==ctrl_edit->minimum())
         val=MusECore::CTRL_VAL_UNKNOWN;
@@ -1028,7 +1034,10 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                 
                 MusECore::MidiTrack* mt=(MusECore::MidiTrack*)t;
                 MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-                MusECore::MidiController* mctl = mp->midiController(ctrl_num);
+// REMOVE Tim. midnam. Changed.
+//                 MusECore::MidiController* mctl = mp->midiController(ctrl_num);
+                const int chan = mt->outChannel();
+                MusECore::MidiController* mctl = mp->midiController(ctrl_num, chan);
 
                 if (ctrl_num!=MusECore::CTRL_PROGRAM)
                 {
@@ -2220,7 +2229,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       int ctrl_num = Arranger::custom_columns[col-COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
                       
                       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-                      MusECore::MidiController* mctl = mp->midiController(ctrl_num);
+// REMOVE Tim. midnam. Changed.
+//                       MusECore::MidiController* mctl = mp->midiController(ctrl_num);
+                      const int chan = mt->outChannel();
+                      MusECore::MidiController* mctl = mp->midiController(ctrl_num, chan);
                       
                       int minval=mctl->minVal()+mctl->bias();
                       int maxval=mctl->maxVal()+mctl->bias();

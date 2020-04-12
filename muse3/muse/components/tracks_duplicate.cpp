@@ -24,7 +24,9 @@
 
 namespace MusEGui {
   
-DuplicateTracksDialog::DuplicateTracksDialog(bool audio, bool /*midi*/, bool /*drum*/, bool newdrum, QWidget* parent)
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+// DuplicateTracksDialog::DuplicateTracksDialog(bool audio, bool /*midi*/, bool /*drum*/, bool newdrum, QWidget* parent)
+DuplicateTracksDialog::DuplicateTracksDialog(bool audio, bool /*midi*/, bool newdrum, QWidget* parent)
   : QDialog(parent)
 {
   setupUi(this);

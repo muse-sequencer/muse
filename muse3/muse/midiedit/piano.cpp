@@ -464,7 +464,9 @@ void Piano::draw(QPainter& p, const QRect& mr, const QRegion&)
       for(MusECore::ciMidiCtrlValList it = cll->lower_bound(min); it != cll->lower_bound(max); ++it)
       {
         MusECore::MidiCtrlValList* cl = it->second;
-        MusECore::MidiController* c   = port->midiController(cl->num());
+// REMOVE Tim. midnam. Changed.
+//         MusECore::MidiController* c   = port->midiController(cl->num());
+        MusECore::MidiController* c   = port->midiController(cl->num(), channel);
         if(!c->isPerNoteController())
           continue;
         int cnum = c->num();

@@ -33,7 +33,7 @@
 #include <vector>
 #include <string>
 #include "al/xml.h"
-#include "muse/midictrl_consts.h"
+#include "midictrl_consts.h"
 
 #define NBROP 4 //do not change
 #define MAXCHARTAG 256

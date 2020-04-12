@@ -488,15 +488,18 @@ void Song::duplicateTracks()
 
   int audio_found = 0;
   int midi_found = 0;
-  int drum_found = 0;
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//   int drum_found = 0;
   int new_drum_found = 0;
   for(iTrack it = tl.begin(); it != tl.end(); ++it) 
     if((*it)->selected()) 
     {
       Track::TrackType type = (*it)->type(); 
-      if(type == Track::DRUM)
-        ++drum_found;
-      else if(type == Track::NEW_DRUM)
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       if(type == Track::DRUM)
+//         ++drum_found;
+//       else
+      if(type == Track::NEW_DRUM)
         ++new_drum_found;
       else if(type == Track::MIDI)
         ++midi_found;
@@ -504,10 +507,14 @@ void Song::duplicateTracks()
         ++audio_found;
     }
  
-  if(audio_found == 0 && midi_found == 0 && drum_found == 0 && new_drum_found==0)
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//   if(audio_found == 0 && midi_found == 0 && drum_found == 0 && new_drum_found==0)
+  if(audio_found == 0 && midi_found == 0 && new_drum_found==0)
     return;
   
-  MusEGui::DuplicateTracksDialog* dlg = new MusEGui::DuplicateTracksDialog(audio_found, midi_found, drum_found, new_drum_found);
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//   MusEGui::DuplicateTracksDialog* dlg = new MusEGui::DuplicateTracksDialog(audio_found, midi_found, drum_found, new_drum_found);
+  MusEGui::DuplicateTracksDialog* dlg = new MusEGui::DuplicateTracksDialog(audio_found, midi_found, new_drum_found);
 
   int rv = dlg->exec();
   if(rv == QDialog::Rejected)
@@ -784,7 +791,9 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
   for(ciMidiTrack it = _midis.begin(); it != _midis.end(); ++it) 
   {
     MidiTrack* mt = *it;
-    if(mt->type() != Track::DRUM)
+// REMOVE Tim. part. Changed. Old drum not used anymore.
+//     if(mt->type() != Track::DRUM)
+    if(mt->type() != Track::NEW_DRUM)
       continue;
       
     MidiPort* trackmp = &MusEGlobal::midiPorts[mt->outPort()];
@@ -813,21 +822,59 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
         {
           int tick = ev.tick() + part->tick();
 
-          if(mt->type() == Track::DRUM)
+// REMOVE Tim. part. Changed. Old drum not used anymore.
+//           if(mt->type() == Track::DRUM)
+//           {
+//             // Default to track port if -1 and track channel if -1.
+//             int ch = MusEGlobal::drumMap[note].channel;
+//             if(ch == -1)
+//               ch = mt->outChannel();
+//             int port = MusEGlobal::drumMap[note].port;
+//             if(port == -1)
+//               port = mt->outPort();
+//             MidiPort* mp = &MusEGlobal::midiPorts[port];
+//             cntrl = (cntrl & ~0xff) | MusEGlobal::drumMap[note].anote;
+//             // Remove the port controller value.
+//             mp->deleteController(ch, tick, cntrl, val, part);
+// 
+//             if(newnote != -1 && newnote != MusEGlobal::drumMap[note].anote)
+//               cntrl = (cntrl & ~0xff) | newnote;
+//             if(newchan != -1 && newchan != ch)
+//               ch = newchan;
+//             if(newport != -1 && newport != port)
+//               port = newport;
+//             mp = &MusEGlobal::midiPorts[port];
+//             // Add the port controller value.
+//             mp->setControllerVal(ch, tick, cntrl, val, part);
+//           }
+          //if(mt->type() == Track::NEW_DRUM)
           {
             // Default to track port if -1 and track channel if -1.
-            int ch = MusEGlobal::drumMap[note].channel;
+            int ch = mt->drummap()[note].channel;
             if(ch == -1)
               ch = mt->outChannel();
-            int port = MusEGlobal::drumMap[note].port;
+            int port = mt->drummap()[note].port;
             if(port == -1)
               port = mt->outPort();
             MidiPort* mp = &MusEGlobal::midiPorts[port];
-            cntrl = (cntrl & ~0xff) | MusEGlobal::drumMap[note].anote;
+            cntrl = (cntrl & ~0xff) | mt->drummap()[note].anote;
             // Remove the port controller value.
             mp->deleteController(ch, tick, cntrl, val, part);
 
-            if(newnote != -1 && newnote != MusEGlobal::drumMap[note].anote)
+            
+            // FIXME FIXME CHECK THIS
+            //
+            //  Why wasn't 'ch' given its own 'ch_add' variable?
+            //  Why wasn't 'mp' given its own 'mp_add' variable?
+            //  That means the channel and port will default to the ones
+            //   being erased above, not the track's. That can't be right !
+            //  Checked callers: Looks OK for this routine only.
+            //  If newnote, newchan, or newport are -1 it means
+            //   "don't touch, use the original". IOW it means we only
+            //   want to change what is not -1.
+            
+            
+            if(newnote != -1 && newnote != mt->drummap()[note].anote)
               cntrl = (cntrl & ~0xff) | newnote;
             if(newchan != -1 && newchan != ch)
               ch = newchan;
@@ -856,7 +903,9 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
   for(ciMidiTrack it = _midis.begin(); it != _midis.end(); ++it) 
   {
     MidiTrack* mt = *it;
-    if(mt->type() != Track::DRUM)
+// REMOVE Tim. part. Changed. Old drum not used anymore.
+//     if(mt->type() != Track::DRUM)
+    if(mt->type() != Track::NEW_DRUM)
       continue;
       
     trackmp = &MusEGlobal::midiPorts[mt->outPort()];
@@ -880,15 +929,26 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
         // Is it a drum controller event, according to the track port's instrument?
         if(trackmp->drumController(cntrl))
         {
-          if(mt->type() == Track::DRUM)
+// REMOVE Tim. part. Changed. Old drum not used anymore.
+//           if(mt->type() == Track::DRUM)
+//           {
+//             int note = cntrl & 0x7f;
+//             // Default to track port if -1 and track channel if -1.
+//             if(MusEGlobal::drumMap[note].channel != -1)
+//               ch = MusEGlobal::drumMap[note].channel;
+//             if(MusEGlobal::drumMap[note].port != -1)
+//               mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+//             cntrl = (cntrl & ~0xff) | MusEGlobal::drumMap[note].anote;
+//           }
+          //if(mt->type() == Track::NEW_DRUM)
           {
             int note = cntrl & 0x7f;
             // Default to track port if -1 and track channel if -1.
-            if(MusEGlobal::drumMap[note].channel != -1)
-              ch = MusEGlobal::drumMap[note].channel;
-            if(MusEGlobal::drumMap[note].port != -1)
-              mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
-            cntrl = (cntrl & ~0xff) | MusEGlobal::drumMap[note].anote;
+            if(mt->drummap()[note].channel != -1)
+              ch = mt->drummap()[note].channel;
+            if(mt->drummap()[note].port != -1)
+              mp = &MusEGlobal::midiPorts[mt->drummap()[note].port];
+            cntrl = (cntrl & ~0xff) | mt->drummap()[note].anote;
           }
         }
         else
@@ -2852,25 +2912,67 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
     mt = track;
   else  
     mt = (MidiTrack*)part->track();
-  int portno    = mt->outPort();
-  int channel   = mt->outChannel();
-  MidiPort* mp  = &MusEGlobal::midiPorts[portno];
+//   int portno    = mt->outPort();
+//   int channel   = mt->outChannel();
+//   MidiPort* mp  = &MusEGlobal::midiPorts[portno];
   
   int dctl = ctlnum;
+//   // Is it a drum controller, according to the track port's instrument?
+//   MidiController *dmc = mp->drumController(ctlnum);
+
+// REMOVE Tim. midnam. Changed. This was broken for a while, forgotten since new drums!
+//   if(dmc)
+//   {
+//     // Change the controller event's index into the drum map to an instrument note.
+//     int note = ctlnum & 0x7f;
+//     dctl &= ~0xff;
+//     // Default to track port if -1 and track channel if -1.
+//     if(MusEGlobal::drumMap[note].channel != -1)
+//       channel = MusEGlobal::drumMap[note].channel;
+//     if(MusEGlobal::drumMap[note].port != -1)
+//       mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+//     dctl |= MusEGlobal::drumMap[note].anote;
+//   }
+  
+
+//   if(dmc)
+//   {
+//     // Change the controller event's index into the drum map to an instrument note.
+//     int note = ctlnum & 0x7f;
+//     dctl &= ~0xff;
+//     if(mt->type() == MusECore::Track::DRUM)
+//     {
+//       // Default to track port if -1 and track channel if -1.
+//       const int pn = MusEGlobal::drumMap[note].port;
+//       if(pn != -1)
+//          portno = pn;
+//       const int ch = MusEGlobal::drumMap[note].channel;
+//       if(ch != -1)
+//         channel = ch;
+//       dctl |= MusEGlobal::drumMap[note].anote;
+//     }
+//     else if(mt->type() == MusECore::Track::NEW_DRUM)
+//     {
+//       // Default to track port if -1 and track channel if -1.
+//       const int pn = mt->drummap()[note].port;
+//       if(pn != -1)
+//         portno = pn;
+//       const int ch = mt->drummap()[note].channel;
+//       if(ch != -1)
+//         channel = ch;
+//       dctl |= mt->drummap()[note].anote;
+//     } 
+// 
+//     mp = &MusEGlobal::midiPorts[portno];
+//   }
+  
   // Is it a drum controller, according to the track port's instrument?
-  MidiController *dmc = mp->drumController(ctlnum);
-  if(dmc)
-  {
-    // Change the controller event's index into the drum map to an instrument note.
-    int note = ctlnum & 0x7f;
-    dctl &= ~0xff;
-    // Default to track port if -1 and track channel if -1.
-    if(MusEGlobal::drumMap[note].channel != -1)
-      channel = MusEGlobal::drumMap[note].channel;
-    if(MusEGlobal::drumMap[note].port != -1)
-      mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
-    dctl |= MusEGlobal::drumMap[note].anote;
-  }
+  int channel;
+  MidiPort* mp;
+  mt->drumMappedPortChanCtrl(&dctl, nullptr, &mp, &channel);
+
+
+  
     
   unsigned tick = cpos();
   
@@ -2923,7 +3025,9 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   }
   
   int initval = 0;
-  MidiController* mc = mp->midiController(ctlnum, false);
+// REMOVE Tim. midnam. Changed.
+//   MidiController* mc = mp->midiController(ctlnum, false);
+  MidiController* mc = mp->midiController(ctlnum, channel, false);
   if(mc)
   {
     const int bias = mc->bias();
@@ -3632,7 +3736,8 @@ void Song::insertTrack0(Track* track, int idx)
       int n;
       switch(track->type()) {
             case Track::MIDI:
-            case Track::DRUM:
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//             case Track::DRUM:
             case Track::NEW_DRUM:
                   _midis.push_back((MidiTrack*)track);
                   addPortCtrlEvents(((MidiTrack*)track));
@@ -3783,7 +3888,8 @@ void Song::insertTrackOperation(Track* track, int idx, PendingOperationList& ops
       void* sec_track_list = 0;
       switch(track->type()) {
             case Track::MIDI:
-            case Track::DRUM:
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//             case Track::DRUM:
             case Track::NEW_DRUM:
                   sec_track_list = &_midis;
                   break;
@@ -3842,7 +3948,8 @@ void Song::removeTrackOperation(Track* track, PendingOperationList& ops)
       void* sec_track_list = 0;
       switch(track->type()) {
             case Track::MIDI:
-            case Track::DRUM:
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//             case Track::DRUM:
             case Track::NEW_DRUM:
                     sec_track_list = &_midis;
             break;

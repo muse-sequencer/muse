@@ -28,7 +28,7 @@
 #ifndef __ORGAN_H__
 #define __ORGAN_H__
 
-#include "muse/midictrl_consts.h"
+#include "midictrl_consts.h"
 #include "libsynti/mess.h"
 #include "common_defs.h"
 

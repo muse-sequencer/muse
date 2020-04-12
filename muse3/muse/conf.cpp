@@ -109,7 +109,9 @@ static void readController(Xml& xml, int midiPort, int channel)
                   case Xml::TagEnd:
                         if (tag == "controller") {
                               MidiPort* port = &MusEGlobal::midiPorts[midiPort];
-                              val = port->limitValToInstrCtlRange(id, val);
+// REMOVE Tim. midnam. Changed.
+//                               val = port->limitValToInstrCtlRange(id, val);
+                              val = port->limitValToInstrCtlRange(id, val, channel);
                               // The value here will actually be sent to the device LATER, in MidiPort::setMidiDevice()
                               port->setHwCtrlState(channel, id, val);
                               return;

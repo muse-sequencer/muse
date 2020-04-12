@@ -77,7 +77,8 @@ class CtrlEdit : public QWidget {
 
       void readStatus(MusECore::Xml&);
       void writeStatus(int, MusECore::Xml&);
-      void setController(const QString& name);
+// REMOVE Tim. midnam. Removed. Unused.
+//       void setController(const QString& name);
       bool itemsAreSelected() const { if(!canvas) return false; return canvas->itemsAreSelected(); }
       // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
       // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.

@@ -32,7 +32,7 @@
 #include "muse_math.h"
 #include "libsynti/mess.h"
 #include "muse/midi_consts.h"
-#include "muse/midictrl_consts.h"
+#include "midictrl_consts.h"
 
 #include "common_defs.h"
 #include "vam.h"

@@ -165,17 +165,19 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
 
                 if(MusEGlobal::config.exportDrumMapOverrides)
                 {
-                  if (track && track->type() == MusECore::Track::DRUM) {
-                        // Map drum-notes to the drum-map values
-                        fin_pitch = MusEGlobal::drumMap[pitch].anote;
-                        // Default to track port if -1 and track channel if -1.
-                        // Port is only allowed to change in format 1.
-                        if(MusEGlobal::drumMap[pitch].port != -1 && MusEGlobal::config.smfFormat != 0)
-                          fin_port = MusEGlobal::drumMap[pitch].port;
-                        if(MusEGlobal::drumMap[pitch].channel != -1)
-                          fin_chan = MusEGlobal::drumMap[pitch].channel;
-                        }
-                  else if (track && track->type() == MusECore::Track::NEW_DRUM) {
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//                   if (track && track->type() == MusECore::Track::DRUM) {
+//                         // Map drum-notes to the drum-map values
+//                         fin_pitch = MusEGlobal::drumMap[pitch].anote;
+//                         // Default to track port if -1 and track channel if -1.
+//                         // Port is only allowed to change in format 1.
+//                         if(MusEGlobal::drumMap[pitch].port != -1 && MusEGlobal::config.smfFormat != 0)
+//                           fin_port = MusEGlobal::drumMap[pitch].port;
+//                         if(MusEGlobal::drumMap[pitch].channel != -1)
+//                           fin_chan = MusEGlobal::drumMap[pitch].channel;
+//                         }
+//                   else
+                  if (track && track->type() == MusECore::Track::NEW_DRUM) {
                         // Map drum-notes to the drum-map values
                         // We must look at what the drum map WOULD say at the note's tick,
                         //  not what it says now at the current cursor.
@@ -254,17 +256,19 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
                   // Is it a drum controller event, according to the track port's instrument?
                   if(MusEGlobal::midiPorts[port].drumController(ctlnum))
                   {
-                    if (track && track->type() == MusECore::Track::DRUM) {
-                      int v_idx = ctlnum & 0x7f;
-                      fin_ctlnum = (ctlnum & ~0xff) | MusEGlobal::drumMap[v_idx].anote;
-                      // Default to track port if -1 and track channel if -1.
-                      // Port is only allowed to change in format 1.
-                      if(MusEGlobal::drumMap[v_idx].port != -1 && MusEGlobal::config.smfFormat != 0)
-                        fin_port = MusEGlobal::drumMap[v_idx].port;
-                      if(MusEGlobal::drumMap[v_idx].channel != -1)
-                        fin_chan = MusEGlobal::drumMap[v_idx].channel;
-                      }
-                    else if (track && track->type() == MusECore::Track::NEW_DRUM) {
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//                     if (track && track->type() == MusECore::Track::DRUM) {
+//                       int v_idx = ctlnum & 0x7f;
+//                       fin_ctlnum = (ctlnum & ~0xff) | MusEGlobal::drumMap[v_idx].anote;
+//                       // Default to track port if -1 and track channel if -1.
+//                       // Port is only allowed to change in format 1.
+//                       if(MusEGlobal::drumMap[v_idx].port != -1 && MusEGlobal::config.smfFormat != 0)
+//                         fin_port = MusEGlobal::drumMap[v_idx].port;
+//                       if(MusEGlobal::drumMap[v_idx].channel != -1)
+//                         fin_chan = MusEGlobal::drumMap[v_idx].channel;
+//                       }
+//                     else
+                    if (track && track->type() == MusECore::Track::NEW_DRUM) {
                       int v_idx = ctlnum & 0x7f;
                       track->getMapItemAt(tick, v_idx, dm, WorkingDrumMapEntry::AllOverrides);
                       fin_ctlnum = (ctlnum & ~0xff) | dm.anote;
@@ -664,17 +668,19 @@ void MusE::exportMidi()
                           int fin_port = port;
                           int fin_chan = channel;
 
-                          if (track->type() == MusECore::Track::DRUM) {
-                                // Map drum-notes to the drum-map values
-                                int instr = ev.pitch();
-                                pitch = MusEGlobal::drumMap[instr].anote;
-                                // Default to track port if -1 and track channel if -1.
-                                if(MusEGlobal::drumMap[instr].port != -1)
-                                  fin_port = MusEGlobal::drumMap[instr].port;
-                                if(MusEGlobal::drumMap[instr].channel != -1)
-                                  fin_chan = MusEGlobal::drumMap[instr].channel;
-                                }
-                          else if (track->type() == MusECore::Track::NEW_DRUM) {
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//                           if (track->type() == MusECore::Track::DRUM) {
+//                                 // Map drum-notes to the drum-map values
+//                                 int instr = ev.pitch();
+//                                 pitch = MusEGlobal::drumMap[instr].anote;
+//                                 // Default to track port if -1 and track channel if -1.
+//                                 if(MusEGlobal::drumMap[instr].port != -1)
+//                                   fin_port = MusEGlobal::drumMap[instr].port;
+//                                 if(MusEGlobal::drumMap[instr].channel != -1)
+//                                   fin_chan = MusEGlobal::drumMap[instr].channel;
+//                                 }
+//                           else
+                          if (track->type() == MusECore::Track::NEW_DRUM) {
                                 // Map drum-notes to the drum-map values
                                 // We must look at what the drum map WOULD say at the note's tick,
                                 //  not what it says now at the current cursor.
@@ -792,19 +798,22 @@ void MusE::exportMidi()
                           // Is it a drum controller event, according to the track port's instrument?
                           if(MusEGlobal::midiPorts[port].drumController(ctlnum))
                           {
-                            if (track->type() == MusECore::Track::DRUM) {
-                              int v_idx = ctlnum & 0x7f;
-                              fin_ctlnum = (ctlnum & ~0xff) | MusEGlobal::drumMap[v_idx].anote;
-                              // Default to track port if -1 and track channel if -1.
-                              if(MusEGlobal::drumMap[v_idx].port != -1)
-                                fin_port = MusEGlobal::drumMap[v_idx].port;
-                              if(MusEGlobal::drumMap[v_idx].channel != -1)
-                                fin_chan = MusEGlobal::drumMap[v_idx].channel;
-                              }
-                            else if (track->type() == MusECore::Track::NEW_DRUM) {
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//                             if (track->type() == MusECore::Track::DRUM) {
+//                               int v_idx = ctlnum & 0x7f;
+//                               fin_ctlnum = (ctlnum & ~0xff) | MusEGlobal::drumMap[v_idx].anote;
+//                               // Default to track port if -1 and track channel if -1.
+//                               if(MusEGlobal::drumMap[v_idx].port != -1)
+//                                 fin_port = MusEGlobal::drumMap[v_idx].port;
+//                               if(MusEGlobal::drumMap[v_idx].channel != -1)
+//                                 fin_chan = MusEGlobal::drumMap[v_idx].channel;
+//                               }
+//                             else
+                            if (track->type() == MusECore::Track::NEW_DRUM) {
                               int v_idx = ctlnum & 0x7f;
                               track->getMapItemAt(tick, v_idx, dm, MusECore::WorkingDrumMapEntry::AllOverrides);
                               fin_ctlnum = (ctlnum & ~0xff) | dm.anote;
+                              // Default to track port if -1 and track channel if -1.
                               if(dm.port != -1)
                                 fin_port = dm.port;
                               if(dm.channel != -1)

@@ -38,6 +38,9 @@
 #include "midnam.h"
 #endif
 
+// REMOVE Tim. midnam. Added.
+#include "midictrl_consts.h"
+
 // REMOVE Tim. newdrums. Added.
 // Adds the ability to override at instrument level.
 // But it just makes things too complex for the user.
@@ -342,7 +345,6 @@ class ChannelDrumMappingList : public ChannelDrumMappingList_t {
 };
 
 
-
 //---------------------------------------------------------
 //   MidiInstrument
 //---------------------------------------------------------
@@ -426,9 +428,32 @@ class MidiInstrument {
       EventList* midiReset() const           { return _midiReset; }
       EventList* midiState() const           { return _midiState; }
       const char* initScript() const         { return _initScript; }
+// REMOVE Tim. midnam. Changed.
       MidiControllerList* controller() const { return _controller; }
+      //MidiControllerList* controller() { return _controller; }
+      // REMOVE Tim. midnam. Added.
+      //const MidiControllerList* controller() const { return _controller; }
       bool waitForLSB() { return _waitForLSB; }
       void setWaitForLSB(bool v) { _waitForLSB = v; }
+
+      // REMOVE Tim. midnam. Added.
+      // Finds a controller. By default it looks in this instrument's MidiControllerList map
+      //  just like calling the map's find(). But if channel or patch are given (not default),
+      //  it looks in BOTH the midnam's MidiControllerList and the instrument's MidiControllerList.
+      // In other words, the instrument's list acts as a default for all channels and patches,
+      //  and has no 'channel' or 'patch number'. The midnam's list takes priority if used.
+      // Like find() which finds a verbose ctl number, but this version also finds a per-note
+      //  controller if there is one for the given ctl number, if no verbose one was found. The ctl
+      //  number can be the 'real' controller number, ie the low byte can be the actual note number
+      //  and does not have to be 0xff.
+      // Returns null if no such specific controller OR suitable default is found.
+      MidiController* findController(int num, int channel = -1, int patch = CTRL_PROGRAM_VAL_DONT_CARE) const;
+      // Fills a given MidiControllerList with all available controllers for a given channel and patch.
+      // By default it gathers from this instrument's MidiControllerList map just like calling controller().
+      // But if channel or patch are given (not default), it gathers from BOTH the midnam's MidiControllerList
+      //  and the instrument's MidiControllerList.
+      // This would not be suitable for realtime code since it may allocate. And it copies all the items to dest.
+      void getControllers(MidiControllerList* dest, int channel = -1, int patch = CTRL_PROGRAM_VAL_DONT_CARE) const;
       
       // Virtual so that inheriters (synths etc) can return whatever they want.
       virtual NoteOffMode noteOffMode() const { return _noteOffMode; }

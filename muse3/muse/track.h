@@ -42,6 +42,8 @@
 #include "controlfifo.h"
 #include "latency_info.h"
 #include "transport_obj.h"
+// REMOVE Tim. midnam. Added.
+#include "midiport.h"
 
 class QPixmap;
 class QColor;
@@ -511,6 +513,15 @@ class MidiTrack : public Track {
       int outPort() const             { return _outPort;     }
       int outChannel() const          { return _outChannel;  }
 
+// REMOVE Tim. midnam. Added.
+      // Given ctrl, if ctrl is a drum (per-note) controller, fills the other parameters with the
+      //  mapped track ctrl, port, and channel from the drum map, and returns true.
+      // If ctrl is not a drum controller, port and channel are filled with the track's
+      //  port and channel (same as outPort() and outChannel()), and ctrl is not changed, and returns false.
+      // Port, mport, and channel can be null. Ctrl is the fully qualified number if any (low byte is note)
+      //  and if ctrl is a drum controller ctrl is filled the note mapped to the drum map 'anote'.
+      bool drumMappedPortChanCtrl(int *ctrl, int *port, MidiPort** mport, int *channel) const;
+
       virtual void setSolo(bool val);
       virtual void updateSoloStates(bool noDec);
       virtual void updateInternalSoloStates();
@@ -535,6 +546,7 @@ class MidiTrack : public Track {
       clefTypes getClef() { return clefType; }
       
       DrumMap* drummap() { return _drummap; }
+      const DrumMap* drummap() const { return _drummap; }
       int map_drum_in(int enote) { return drum_in_map[enote]; }
       void update_drum_in_map();
       void init_drum_ordering();

@@ -176,27 +176,28 @@ bool DrumCanvas::index2Note(int index, int* port, int* channel, int* note)
         return false;
 
       int mport, ch;
-      if(old_style_drummap_mode)
-      {
-        // Default to track port if -1 and track channel if -1.
-        mport = ourDrumMap[index].port;
-        if(mport == -1)
-        {
-          if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
-            return false;
-          MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(curPart->track());
-          mport = mt->outPort();
-        }
-        ch = ourDrumMap[index].channel;
-        if(ch == -1)
-        {
-          if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
-            return false;
-          MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(curPart->track());
-          ch = mt->outChannel();
-        }
-      }
-      else
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       if(old_style_drummap_mode)
+//       {
+//         // Default to track port if -1 and track channel if -1.
+//         mport = ourDrumMap[index].port;
+//         if(mport == -1)
+//         {
+//           if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
+//             return false;
+//           MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(curPart->track());
+//           mport = mt->outPort();
+//         }
+//         ch = ourDrumMap[index].channel;
+//         if(ch == -1)
+//         {
+//           if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
+//             return false;
+//           MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(curPart->track());
+//           ch = mt->outChannel();
+//         }
+//       }
+//       else
       {
         // Default to track port if -1 and track channel if -1.
         MusECore::Track* track = 0;
@@ -940,10 +941,11 @@ void DrumCanvas::cmd(int cmd)
                   }
                   break;
 
-            case CMD_SAVE:
-            case CMD_LOAD:
-                  printf("DrumCanvas:: cmd not implemented %d\n", cmd);
-                  break;
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//             case CMD_SAVE:
+//             case CMD_LOAD:
+//                   printf("DrumCanvas:: cmd not implemented %d\n", cmd);
+//                   break;
 
             case CMD_FIXED_LEN: //Set notes to the length specified in the drummap
                   if (!selectionSize())
