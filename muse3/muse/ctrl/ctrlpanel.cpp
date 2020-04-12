@@ -1023,7 +1023,9 @@ void CtrlPanel::ctrlRightClicked(const QPoint& p, int /*id*/)
     
   int cdp = ctrlcanvas->getCurDrumPitch();
   int ctlnum = _ctrl->num();
-  if((_track->type() == MusECore::Track::DRUM || _track->type() == MusECore::Track::NEW_DRUM) &&
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//   if((_track->type() == MusECore::Track::DRUM || _track->type() == MusECore::Track::NEW_DRUM) &&
+  if(_track->isDrumTrack() &&
      _ctrl->isPerNoteController() && cdp >= 0)
     //ctlnum = (ctlnum & ~0xff) | MusEGlobal::drumMap[cdp].enote; DELETETHIS or which of them is correct?
     ctlnum = (ctlnum & ~0xff) | cdp;

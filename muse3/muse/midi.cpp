@@ -326,11 +326,13 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                   case ME_NOTEON:
                         e.setType(Note);
 
-                        if (track->type() == Track::DRUM) {
-                              int instr = MusEGlobal::drumInmap[ev.dataA()];
-                              e.setPitch(instr);
-                              }
-                        else if (track->type() == Track::NEW_DRUM) {
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//                         if (track->type() == Track::DRUM) {
+//                               int instr = MusEGlobal::drumInmap[ev.dataA()];
+//                               e.setPitch(instr);
+//                               }
+//                         else
+                        if (track->isDrumTrack()) {
                               int instr = track->map_drum_in(ev.dataA());
                               e.setPitch(instr);
                               }
@@ -342,11 +344,13 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                         break;
                   case ME_NOTEOFF:
                         e.setType(Note);
-                        if (track->type() == Track::DRUM) {
-                              int instr = MusEGlobal::drumInmap[ev.dataA()];
-                              e.setPitch(instr);
-                              }
-                        else if (track->type() == Track::NEW_DRUM) {
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//                         if (track->type() == Track::DRUM) {
+//                               int instr = MusEGlobal::drumInmap[ev.dataA()];
+//                               e.setPitch(instr);
+//                               }
+//                         else
+                        if (track->isDrumTrack()) {
                               int instr = track->map_drum_in(ev.dataA());
                               e.setPitch(instr);
                               }
@@ -450,15 +454,17 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                     int ctl = ev.dataA();
                                     e.setA(ctl);
 
-                                    if(track->type() == Track::DRUM)
-                                    {
-                                      // Is it a drum controller event, according to the track port's instrument?
-                                      MidiController *mc = MusEGlobal::midiPorts[track->outPort()].drumController(ctl);
-                                      if(mc)
-                                        // Store an index into the drum map.
-                                        e.setA((ctl & ~0xff) | MusEGlobal::drumInmap[ctl & 0x7f]);
-                                    }
-                                    else if(track->type() == Track::NEW_DRUM)
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//                                     if(track->type() == Track::DRUM)
+//                                     {
+//                                       // Is it a drum controller event, according to the track port's instrument?
+//                                       MidiController *mc = MusEGlobal::midiPorts[track->outPort()].drumController(ctl);
+//                                       if(mc)
+//                                         // Store an index into the drum map.
+//                                         e.setA((ctl & ~0xff) | MusEGlobal::drumInmap[ctl & 0x7f]);
+//                                     }
+//                                     else
+                                    if(track->isDrumTrack())
                                     {
                                       // Is it a drum controller event, according to the track port's instrument?
                                       MidiController *mc = MusEGlobal::midiPorts[track->outPort()].drumController(ctl);
@@ -907,7 +913,7 @@ void Audio::seekMidi()
 //     }
 //     // REMOVE Tim. midnam. Added.
 //     else
-    if(mt->type() == MusECore::Track::NEW_DRUM)
+    if(mt->isDrumTrack())
     {
       for(int i = 0; i < DRUM_MAPSIZE; ++i)
       {
@@ -960,7 +966,7 @@ void Audio::seekMidi()
 //           }
 //           // REMOVE Tim. midnam. Added.
 //           else
-          if(mt->type() == MusECore::Track::NEW_DRUM)
+          if(mt->isDrumTrack())
           {
             for(int i = 0; i < DRUM_MAPSIZE; ++i)
             {
@@ -1380,13 +1386,15 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
                   //
                   if (ev.type() == Meta)
                         continue;
-                  if (track->type() == Track::DRUM) {
-                        int instr = ev.pitch();
-                        // ignore muted drums
-                        if (ev.isNote() && MusEGlobal::drumMap[instr].mute)
-                              continue;
-                        }
-                  else if (track->type() == Track::NEW_DRUM) {
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//                   if (track->type() == Track::DRUM) {
+//                         int instr = ev.pitch();
+//                         // ignore muted drums
+//                         if (ev.isNote() && MusEGlobal::drumMap[instr].mute)
+//                               continue;
+//                         }
+//                   else
+                  if (track->isDrumTrack()) {
                         int instr = ev.pitch();
                         // ignore muted drums
                         if (ev.isNote() && track->drummap()[instr].mute)
@@ -1453,7 +1461,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
 //                                    veloOff   = int(double(veloOff) * (double(MusEGlobal::drumMap[instr].vol) / 100.0)) ;
 //                                    }
 //                               else
-                              if (track->type() == Track::NEW_DRUM)  {
+                              if (track->isDrumTrack())  {
                                     // Map drum-notes to the drum-map values
                                    int instr = ev.pitch();
                                    pitch     = track->drummap()[instr].anote;
@@ -1560,7 +1568,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
 //                                   }
 //                                 }
 //                                 else
-                                if (track->type() == Track::NEW_DRUM)
+                                if (track->isDrumTrack())
                                 {
                                   int ctl   = ev.dataA();
                                   // Is it a drum controller event, according to the track port's instrument?
@@ -2018,7 +2026,7 @@ void Audio::processMidi(unsigned int frames)
 //                                             event.setA(MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].anote);
 //                                       }
 //                                       else
-                                      if (track->type() == Track::NEW_DRUM)
+                                      if (track->isDrumTrack())
                                       {
                                         int pitch = event.dataA();
                                         int dmindex = track->map_drum_in(pitch);
@@ -2095,7 +2103,7 @@ void Audio::processMidi(unsigned int frames)
 //                                     }
 //                                   }
 //                                   else
-                                  if (track->type() == Track::NEW_DRUM) //FINDMICHJETZT TEST
+                                  if (track->isDrumTrack()) //FINDMICHJETZT TEST
                                   {
                                     ctl = event.dataA();
                                     // Regardless of what port the event came from, is it a drum controller event
@@ -2347,7 +2355,9 @@ void Audio::processMidi(unsigned int frames)
                                     //  to the track port so buildMidiEventList will accept it. Even though
                                     //  the port may have no device "<none>".
                                     //
-                                    if (track->type() == Track::DRUM || track->type() == Track::NEW_DRUM)
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//                                     if (track->type() == Track::DRUM || track->type() == Track::NEW_DRUM)
+                                    if (track->isDrumTrack())
                                     {
                                       // Is it a drum controller event?
                                       if(mc)

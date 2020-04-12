@@ -73,7 +73,10 @@ typedef std::vector<double>::iterator iAuxSendValue;
 class Track {
    public:
       enum TrackType {
-         MIDI=0, DRUM, NEW_DRUM, WAVE, AUDIO_OUTPUT, AUDIO_INPUT, AUDIO_GROUP,
+         MIDI=0, 
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//          DRUM,
+         NEW_DRUM, WAVE, AUDIO_OUTPUT, AUDIO_INPUT, AUDIO_GROUP,
          AUDIO_AUX, AUDIO_SOFTSYNTH
          };
       // NOTE: ASSIGN_DUPLICATE_PARTS ASSIGN_COPY_PARTS and ASSIGN_CLONE_PARTS are not allowed together - choose one. 
@@ -393,8 +396,11 @@ class Track {
       bool readProperty(Xml& xml, const QString& tag);
       int channels() const                { return _channels; }
       virtual void setChannels(int n);
-      bool isMidiTrack() const       { return type() == MIDI || type() == DRUM || type() == NEW_DRUM; }
-      bool isDrumTrack() const       { return type() == DRUM || type() == NEW_DRUM; }
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//       bool isMidiTrack() const       { return type() == MIDI || type() == DRUM || type() == NEW_DRUM; }
+//       bool isDrumTrack() const       { return type() == DRUM || type() == NEW_DRUM; }
+      bool isMidiTrack() const       { return type() == MIDI || type() == NEW_DRUM; }
+      bool isDrumTrack() const       { return type() == NEW_DRUM; }
       bool isSynthTrack() const      { return type() == AUDIO_SOFTSYNTH; }
       virtual bool canRecord() const { return false; }
       virtual bool canRecordMonitor() const { return false; }

@@ -1081,7 +1081,8 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doMov
       switch(track->type()) {
             case Track::WAVE:
             case Track::MIDI:
-            case Track::DRUM:
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//             case Track::DRUM:
             case Track::NEW_DRUM:
                   {
                   Undo operations;
@@ -1130,7 +1131,8 @@ void Part::splitPart(unsigned int tickpos, Part*& p1, Part*& p2) const
                   l2 = lenFrame() - l1;
                   break;
           case Track::MIDI:
-          case Track::DRUM:
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//           case Track::DRUM:
           case Track::NEW_DRUM:
                   if(tickpos <= tick() || lenTick() <= l1)
                     return;
@@ -1151,7 +1153,8 @@ void Part::splitPart(unsigned int tickpos, Part*& p1, Part*& p2) const
                   p2->setLenFrame(l2);
                   break;
           case Track::MIDI:
-          case Track::DRUM:
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//           case Track::DRUM:
           case Track::NEW_DRUM:
                   p1->setLenTick(l1);
                   p2->setTick(tickpos);

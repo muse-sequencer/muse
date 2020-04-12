@@ -801,8 +801,9 @@ void DrumEdit::songChanged1(MusECore::SongChangedStruct_t bits)
             if(canvas->track())
               toolbar->setSolo(canvas->track()->solo());
         }      
-        if ( !old_style_drummap_mode() && 
-             ( bits & (SC_DRUMMAP | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//         if ( !old_style_drummap_mode() && 
+        if ( ( bits & (SC_DRUMMAP | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
                        SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED) ) )
           ((DrumCanvas*)(canvas))->rebuildOurDrumMap();
         
@@ -1552,7 +1553,8 @@ void DrumEdit::cmd(int cmd)
                   }
                   break;
                   }
-            case DrumCanvas::CMD_REORDER_LIST: ((DrumCanvas*)(canvas))->moveAwayUnused(); break;
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//             case DrumCanvas::CMD_REORDER_LIST: ((DrumCanvas*)(canvas))->moveAwayUnused(); break;
             //case DrumCanvas::CMD_FIXED_LEN: // this must be handled by the drum canvas, due to its
                                               // special nature (each drum has its own length)
             
@@ -2047,8 +2049,9 @@ void DrumEdit::setSpeaker(bool val)
 
 void DrumEdit::initShortcuts()
       {
-      if (loadAction) loadAction->setShortcut(shortcuts[SHRT_OPEN].key);
-      if (saveAction) saveAction->setShortcut(shortcuts[SHRT_SAVE].key);
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       if (loadAction) loadAction->setShortcut(shortcuts[SHRT_OPEN].key);
+//       if (saveAction) saveAction->setShortcut(shortcuts[SHRT_SAVE].key);
 
       cutAction->setShortcut(shortcuts[SHRT_CUT].key);
       copyAction->setShortcut(shortcuts[SHRT_COPY].key);

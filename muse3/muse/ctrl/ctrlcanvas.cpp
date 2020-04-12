@@ -3704,7 +3704,9 @@ bool CtrlCanvas::cancelMouseOps()
 bool CtrlCanvas::setCurDrumPitch(int instrument)
 {
       DrumEdit* drumedit = dynamic_cast<DrumEdit*>(editor);
-      if (drumedit == NULL || drumedit->old_style_drummap_mode())
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//       if (drumedit == NULL || drumedit->old_style_drummap_mode())
+      if (drumedit == NULL)
         curDrumPitch = instrument;
       else // new style drummap mode
       {

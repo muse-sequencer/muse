@@ -120,25 +120,26 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
       {
       drumEditor=static_cast<DrumEdit*>(pr);
       
-      old_style_drummap_mode = drumEditor->old_style_drummap_mode();
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       old_style_drummap_mode = drumEditor->old_style_drummap_mode();
 
-      if (old_style_drummap_mode)
-      {
-        if (debugMsg) printf("DrumCanvas in old style drummap mode\n");
-        ourDrumMap = MusEGlobal::drumMap;
-        must_delete_our_drum_map=false;
-        
-        instrument_number_mapping_t temp;
-        for (MusECore::ciPart it=drumEditor->parts()->begin(); it!=drumEditor->parts()->end(); it++)
-          temp.tracks.insert(it->second->track());
-
-        for (int i=0;i<DRUM_MAPSIZE;i++)
-        {
-          temp.pitch=i;
-          instrument_map.append(temp);
-        }
-      }
-      else
+//       if (old_style_drummap_mode)
+//       {
+//         if (debugMsg) printf("DrumCanvas in old style drummap mode\n");
+//         ourDrumMap = MusEGlobal::drumMap;
+//         must_delete_our_drum_map=false;
+//         
+//         instrument_number_mapping_t temp;
+//         for (MusECore::ciPart it=drumEditor->parts()->begin(); it!=drumEditor->parts()->end(); it++)
+//           temp.tracks.insert(it->second->track());
+// 
+//         for (int i=0;i<DRUM_MAPSIZE;i++)
+//         {
+//           temp.pitch=i;
+//           instrument_map.append(temp);
+//         }
+//       }
+//       else
       {
         if (debugMsg) printf("DrumCanvas in new style drummap mode\n");
         ourDrumMap=NULL;
@@ -479,7 +480,9 @@ CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
   if ((instrument<0) || (instrument>=getOurDrumMapSize()))
     return NULL;
 
-  if (!old_style_drummap_mode && !instrument_map[instrument].tracks.contains(curPart->track()))
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//   if (!old_style_drummap_mode && !instrument_map[instrument].tracks.contains(curPart->track()))
+  if (!instrument_map[instrument].tracks.contains(curPart->track()))
   {
     if (debugMsg)
       printf("tried to create a new Item which cannot be inside the current track. looking for destination part...\n");
@@ -625,7 +628,9 @@ void DrumCanvas::itemPressed(const CItem* item)
       int index = e.pitch();
       // play note:
 
-      if (!old_style_drummap_mode) {
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       if (!old_style_drummap_mode)
+      {
           for (int i = 0; i < instrument_map.size(); ++i) {
               if (instrument_map.at(i).pitch == index) {
                   index = i;
@@ -1118,89 +1123,90 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
    // spitch may be the same as dpitch! and something in here must be executed
    // even if they're same (i assume it's song->update(SC_DRUMMAP)) (flo93)
    
-   if (old_style_drummap_mode)
-   {
-      MusECore::Undo operations;
-      std::vector< std::pair<MusECore::Part*, MusECore::Event> > delete_events;
-      std::vector< std::pair<MusECore::Part*, MusECore::Event> > add_events;
-      
-      typedef std::vector< std::pair<MusECore::Part*, MusECore::Event> >::iterator idel_ev;
-      typedef std::vector< std::pair<MusECore::Part*, MusECore::Event> >::iterator iadd_ev;
-      
-      MusECore::MidiTrackList* tracks = MusEGlobal::song->midis();
-      for (MusECore::ciMidiTrack t = tracks->begin(); t != tracks->end(); t++) {
-            MusECore::MidiTrack* curTrack = *t;
-            if (curTrack->type() != MusECore::Track::DRUM)
-                  continue;
-
-            MusECore::MidiPort* mp = &MusEGlobal::midiPorts[curTrack->outPort()];
-            MusECore::PartList* parts= curTrack->parts();
-            for (MusECore::iPart part = parts->begin(); part != parts->end(); ++part) {
-                  const MusECore::EventList& events = part->second->events();
-                  MusECore::Part* thePart = part->second;
-                  for (MusECore::ciEvent i = events.begin(); i != events.end(); ++i) {
-                        MusECore::Event event = i->second;
-                        if(event.type() != MusECore::Controller && event.type() != MusECore::Note)
-                          continue;
-                        int pitch = event.pitch();
-                        bool drc = false;
-                        // Is it a drum controller event, according to the track port's instrument?
-                        if(event.type() == MusECore::Controller && mp->drumController(event.dataA()))
-                        {
-                          drc = true;
-                          pitch = event.dataA() & 0x7f;
-                        }
-                        
-                        if (pitch == spitch) {
-                              const MusECore::Event& spitch_event = i->second;
-                              delete_events.push_back(std::pair<MusECore::Part*, MusECore::Event>(thePart, spitch_event));
-                              MusECore::Event newEvent = spitch_event.clone();
-                              if(drc)
-                                newEvent.setA((newEvent.dataA() & ~0xff) | dpitch);
-                              else
-                                newEvent.setPitch(dpitch);
-                              add_events.push_back(std::pair<MusECore::Part*, MusECore::Event>(thePart, newEvent));
-                              }
-                        else if (pitch == dpitch) {
-                              const MusECore::Event& dpitch_event = i->second;
-                              delete_events.push_back(std::pair<MusECore::Part*, MusECore::Event>(thePart, dpitch_event));
-                              MusECore::Event newEvent = dpitch_event.clone();
-                              if(drc)
-                                newEvent.setA((newEvent.dataA() & ~0xff) | spitch);
-                              else
-                                newEvent.setPitch(spitch);
-                              add_events.push_back(std::pair<MusECore::Part*, MusECore::Event>(thePart, newEvent));
-                              }
-                        }
-                  }
-            }
-
-      for (idel_ev i = delete_events.begin(); i != delete_events.end(); i++) {
-            MusECore::Part*  thePart = (*i).first;
-            const MusECore::Event& theEvent = (*i).second;
-            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, theEvent, thePart, true, false));
-            }
-
-      MusECore::DrumMap dm = MusEGlobal::drumMap[spitch];
-      MusEGlobal::drumMap[spitch] = MusEGlobal::drumMap[dpitch];
-      MusEGlobal::drumMap[dpitch] = dm;
-      MusEGlobal::drumInmap[int(MusEGlobal::drumMap[spitch].enote)]  = spitch;
-      MusEGlobal::drumOutmap[int(MusEGlobal::drumMap[int(spitch)].anote)] = spitch;
-      MusEGlobal::drumInmap[int(MusEGlobal::drumMap[int(dpitch)].enote)]  = dpitch;
-      MusEGlobal::drumOutmap[int(MusEGlobal::drumMap[int(dpitch)].anote)] = dpitch;
-            
-      for (iadd_ev i = add_events.begin(); i != add_events.end(); i++) {
-            MusECore::Part*  thePart = (*i).first;
-            MusECore::Event& theEvent = (*i).second;
-            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, theEvent, thePart, true, false));
-            }
-
-      // Operation is undoable but do not start/end undo.
-      MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationUndoable);
-      // This update is necessary, as it's not handled by applyOperationGroup()
-      MusEGlobal::song->update(SC_DRUMMAP);
-   }
-   else // if (!old_style_drummap_mode)
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//    if (old_style_drummap_mode)
+//    {
+//       MusECore::Undo operations;
+//       std::vector< std::pair<MusECore::Part*, MusECore::Event> > delete_events;
+//       std::vector< std::pair<MusECore::Part*, MusECore::Event> > add_events;
+//       
+//       typedef std::vector< std::pair<MusECore::Part*, MusECore::Event> >::iterator idel_ev;
+//       typedef std::vector< std::pair<MusECore::Part*, MusECore::Event> >::iterator iadd_ev;
+//       
+//       MusECore::MidiTrackList* tracks = MusEGlobal::song->midis();
+//       for (MusECore::ciMidiTrack t = tracks->begin(); t != tracks->end(); t++) {
+//             MusECore::MidiTrack* curTrack = *t;
+//             if (curTrack->type() != MusECore::Track::DRUM)
+//                   continue;
+// 
+//             MusECore::MidiPort* mp = &MusEGlobal::midiPorts[curTrack->outPort()];
+//             MusECore::PartList* parts= curTrack->parts();
+//             for (MusECore::iPart part = parts->begin(); part != parts->end(); ++part) {
+//                   const MusECore::EventList& events = part->second->events();
+//                   MusECore::Part* thePart = part->second;
+//                   for (MusECore::ciEvent i = events.begin(); i != events.end(); ++i) {
+//                         MusECore::Event event = i->second;
+//                         if(event.type() != MusECore::Controller && event.type() != MusECore::Note)
+//                           continue;
+//                         int pitch = event.pitch();
+//                         bool drc = false;
+//                         // Is it a drum controller event, according to the track port's instrument?
+//                         if(event.type() == MusECore::Controller && mp->drumController(event.dataA()))
+//                         {
+//                           drc = true;
+//                           pitch = event.dataA() & 0x7f;
+//                         }
+//                         
+//                         if (pitch == spitch) {
+//                               const MusECore::Event& spitch_event = i->second;
+//                               delete_events.push_back(std::pair<MusECore::Part*, MusECore::Event>(thePart, spitch_event));
+//                               MusECore::Event newEvent = spitch_event.clone();
+//                               if(drc)
+//                                 newEvent.setA((newEvent.dataA() & ~0xff) | dpitch);
+//                               else
+//                                 newEvent.setPitch(dpitch);
+//                               add_events.push_back(std::pair<MusECore::Part*, MusECore::Event>(thePart, newEvent));
+//                               }
+//                         else if (pitch == dpitch) {
+//                               const MusECore::Event& dpitch_event = i->second;
+//                               delete_events.push_back(std::pair<MusECore::Part*, MusECore::Event>(thePart, dpitch_event));
+//                               MusECore::Event newEvent = dpitch_event.clone();
+//                               if(drc)
+//                                 newEvent.setA((newEvent.dataA() & ~0xff) | spitch);
+//                               else
+//                                 newEvent.setPitch(spitch);
+//                               add_events.push_back(std::pair<MusECore::Part*, MusECore::Event>(thePart, newEvent));
+//                               }
+//                         }
+//                   }
+//             }
+// 
+//       for (idel_ev i = delete_events.begin(); i != delete_events.end(); i++) {
+//             MusECore::Part*  thePart = (*i).first;
+//             const MusECore::Event& theEvent = (*i).second;
+//             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, theEvent, thePart, true, false));
+//             }
+// 
+//       MusECore::DrumMap dm = MusEGlobal::drumMap[spitch];
+//       MusEGlobal::drumMap[spitch] = MusEGlobal::drumMap[dpitch];
+//       MusEGlobal::drumMap[dpitch] = dm;
+//       MusEGlobal::drumInmap[int(MusEGlobal::drumMap[spitch].enote)]  = spitch;
+//       MusEGlobal::drumOutmap[int(MusEGlobal::drumMap[int(spitch)].anote)] = spitch;
+//       MusEGlobal::drumInmap[int(MusEGlobal::drumMap[int(dpitch)].enote)]  = dpitch;
+//       MusEGlobal::drumOutmap[int(MusEGlobal::drumMap[int(dpitch)].anote)] = dpitch;
+//             
+//       for (iadd_ev i = add_events.begin(); i != add_events.end(); i++) {
+//             MusECore::Part*  thePart = (*i).first;
+//             MusECore::Event& theEvent = (*i).second;
+//             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, theEvent, thePart, true, false));
+//             }
+// 
+//       // Operation is undoable but do not start/end undo.
+//       MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationUndoable);
+//       // This update is necessary, as it's not handled by applyOperationGroup()
+//       MusEGlobal::song->update(SC_DRUMMAP);
+//    }
+//    else // if (!old_style_drummap_mode)
    {
       if (dpitch!=spitch)
       {
@@ -1375,18 +1381,19 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
                         }
                         break;
                   case NoteInfo::VAL_PITCH:
-                        if (old_style_drummap_mode)
-                        {
-                        int pitch = -val;
-                        if(delta_mode)
-                          pitch += event.pitch();  
-                        if (pitch > 127)
-                              pitch = 127;
-                        else if (pitch < 0)
-                              pitch = 0;
-                        newEvent.setPitch(pitch);
-                        }
-                        else
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//                         if (old_style_drummap_mode)
+//                         {
+//                         int pitch = -val;
+//                         if(delta_mode)
+//                           pitch += event.pitch();  
+//                         if (pitch > 127)
+//                               pitch = 127;
+//                         else if (pitch < 0)
+//                               pitch = 0;
+//                         newEvent.setPitch(pitch);
+//                         }
+//                         else
                         {
                           int direction = -val;
                           for (int i = 0; i < instrument_map.size(); ++i) {
@@ -1613,36 +1620,37 @@ void DrumCanvas::selectCursorEvent(const MusECore::Event* ev)
 }
 
 
-void DrumCanvas::moveAwayUnused()
-{
-  if (!old_style_drummap_mode)
-  {
-    printf("THIS SHOULD NEVER HAPPEN: DrumCanvas::moveAwayUnused() cannot be used in new style mode\n");
-    return;
-  }
-	
-	QSet<int> used;
-	for (iCItem it=items.begin(); it!=items.end(); it++)
-	{
-		const MusECore::Event& ev=it->second->event();
-		
-		if (ev.type()==MusECore::Note)
-			used.insert(ev.pitch());
-	}
-	
-	int count=0;
-	for (QSet<int>::iterator it=used.begin(); it!=used.end();)
-	{
-		while ((*it != count) && (used.find(count)!=used.end())) count++;
-		
-		if (*it != count)
-			mapChanged(*it, count);
-
-		count++;
-		
-		used.erase(it++);
-	}
-}
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+// void DrumCanvas::moveAwayUnused()
+// {
+//   if (!old_style_drummap_mode)
+//   {
+//     printf("THIS SHOULD NEVER HAPPEN: DrumCanvas::moveAwayUnused() cannot be used in new style mode\n");
+//     return;
+//   }
+// 	
+// 	QSet<int> used;
+// 	for (iCItem it=items.begin(); it!=items.end(); it++)
+// 	{
+// 		const MusECore::Event& ev=it->second->event();
+// 		
+// 		if (ev.type()==MusECore::Note)
+// 			used.insert(ev.pitch());
+// 	}
+// 	
+// 	int count=0;
+// 	for (QSet<int>::iterator it=used.begin(); it!=used.end();)
+// 	{
+// 		while ((*it != count) && (used.find(count)!=used.end())) count++;
+// 		
+// 		if (*it != count)
+// 			mapChanged(*it, count);
+// 
+// 		count++;
+// 		
+// 		used.erase(it++);
+// 	}
+// }
 
 
 //---------------------------------------------------------
@@ -1845,7 +1853,8 @@ void DrumCanvas::rebuildOurDrumMap()
   using MusEGlobal::global_drum_ordering;
   
   
-  if (!old_style_drummap_mode)
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//   if (!old_style_drummap_mode)
   {
     //fprintf(stderr, "DrumCanvas::rebuildOurDrumMap\n");
     bool need_update = false;

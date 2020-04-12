@@ -606,7 +606,8 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
 
       MusECore::MidiTrack* track   = part->track();
       MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
-      const bool isDrum        = track->type() == MusECore::Track::DRUM;
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       const bool isDrum        = track->type() == MusECore::Track::DRUM;
       const bool isNewDrum     = track->type() == MusECore::Track::NEW_DRUM;
       const bool isMidi        = track->type() == MusECore::Track::MIDI;
       MusECore::MidiCtrlValListList* cll = port->controller();
@@ -627,9 +628,11 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
             if(port->drumController(ev_num))
             {
               ev_cnum |= 0xff;
-              if(isDrum)
-                num = (ev_num & ~0xff) | MusEGlobal::drumMap[ev_num & 0xff].anote;
-              else if(isNewDrum)
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//               if(isDrum)
+//                 num = (ev_num & ~0xff) | MusEGlobal::drumMap[ev_num & 0xff].anote;
+//               else
+              if(isNewDrum)
                 num = (ev_num & ~0xff) | track->drummap()[ev_num & 0xff].anote;
 
               ev_note = ev_num & 0xff;
@@ -778,7 +781,8 @@ void EditCtrlDialog::newController()
       MusECore::MidiTrack* track    = part->track();
       const int portn               = track->outPort();
       MusECore::MidiPort* port      = &MusEGlobal::midiPorts[portn];
-      const bool isDrum      = track->type() == MusECore::Track::DRUM;
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       const bool isDrum      = track->type() == MusECore::Track::DRUM;
       const bool isNewDrum   = track->type() == MusECore::Track::NEW_DRUM;
       const bool isMidi      = track->type() == MusECore::Track::MIDI;
       MusECore::MidiInstrument* instr   = port->instrument();
@@ -796,7 +800,9 @@ void EditCtrlDialog::newController()
           MusECore::MidiController* c = ci->second;
           const int cnum = c->num();
           const int show = c->showInTracks();
-          if(((isDrum || isNewDrum) && !(show & MusECore::MidiController::ShowInDrum)) ||
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//           if(((isDrum || isNewDrum) && !(show & MusECore::MidiController::ShowInDrum)) ||
+          if((isNewDrum && !(show & MusECore::MidiController::ShowInDrum)) ||
              (isMidi && !(show & MusECore::MidiController::ShowInMidi)))
             continue;
           // If it's not already in the parent menu...

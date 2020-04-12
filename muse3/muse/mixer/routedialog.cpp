@@ -211,7 +211,8 @@ bool RouteTreeWidgetItem::setChannels()
                 chans = _isInput ? rcaps._jackChannels._outChannels : rcaps._trackChannels._inChannels;
               break;
               case MusECore::Track::MIDI:
-              case MusECore::Track::DRUM:
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//               case MusECore::Track::DRUM:
               case MusECore::Track::NEW_DRUM:
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
                 chans = _isInput ? MusECore::MUSE_MIDI_CHANNELS : rcaps._midiPortChannels._inChannels;
@@ -3035,7 +3036,8 @@ void RouteDialog::addItems()
         dst_routable = rcaps._trackChannels._inRoutable;
       break;
       case MusECore::Track::MIDI:
-      case MusECore::Track::DRUM:
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       case MusECore::Track::DRUM:
       case MusECore::Track::NEW_DRUM:
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
         src_chans = MusECore::MUSE_MIDI_CHANNELS;

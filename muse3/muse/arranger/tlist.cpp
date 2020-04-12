@@ -313,9 +313,10 @@ void TList::paint(const QRect& r)
                         case MusECore::Track::MIDI:
                               bg = MusEGlobal::config.midiTrackBg;
                               break;
-                        case MusECore::Track::DRUM:
-                              bg = MusEGlobal::config.drumTrackBg;
-                              break;
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//                         case MusECore::Track::DRUM:
+//                               bg = MusEGlobal::config.drumTrackBg;
+//                               break;
                         case MusECore::Track::NEW_DRUM:
                               bg = MusEGlobal::config.newDrumTrackBg;
                               break;
@@ -1136,7 +1137,9 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       }
       
       
-      if (t->type() != MusECore::Track::MIDI && t->type() != MusECore::Track::DRUM && t->type() != MusECore::Track::NEW_DRUM)
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//       if (t->type() != MusECore::Track::MIDI && t->type() != MusECore::Track::DRUM && t->type() != MusECore::Track::NEW_DRUM)
+      if (t->type() != MusECore::Track::MIDI && t->type() != MusECore::Track::NEW_DRUM)
             return;
       int oPort      = ((MusECore::MidiTrack*)t)->outPort();
       MusECore::MidiPort* port = &MusEGlobal::midiPorts[oPort];
@@ -2751,27 +2754,29 @@ void TList::classesPopupMenu(MusECore::Track* tIn, int x, int y, bool allSelecte
 
 void TList::changeTrackToType(MusECore::Track *t, MusECore::Track::TrackType trackType)
 {
-  if ((trackType == MusECore::Track::MIDI  ||  trackType == MusECore::Track::NEW_DRUM) && t->type() == MusECore::Track::DRUM)
-  {
-    //
-    //    Drum -> Midi
-    //
-    MusEGlobal::audio->msgIdle(true);
-    static_cast<MusECore::MidiTrack*>(t)->convertToType(trackType);
-    MusEGlobal::audio->msgIdle(false);
-    MusEGlobal::song->update(SC_EVENT_MODIFIED);
-  }
-  else if (trackType == MusECore::Track::DRUM && (t->type() == MusECore::Track::MIDI  ||  t->type() == MusECore::Track::NEW_DRUM))
-  {
-    //
-    //    Midi -> Drum
-    //
-    MusEGlobal::audio->msgIdle(true);
-    static_cast<MusECore::MidiTrack*>(t)->convertToType(trackType);
-    MusEGlobal::audio->msgIdle(false);
-    MusEGlobal::song->update(SC_EVENT_MODIFIED);
-  }
-  else // MIDI -> NEW_DRUM or vice versa. added by flo.
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//   if ((trackType == MusECore::Track::MIDI  ||  trackType == MusECore::Track::NEW_DRUM) && t->type() == MusECore::Track::DRUM)
+//   {
+//     //
+//     //    Drum -> Midi
+//     //
+//     MusEGlobal::audio->msgIdle(true);
+//     static_cast<MusECore::MidiTrack*>(t)->convertToType(trackType);
+//     MusEGlobal::audio->msgIdle(false);
+//     MusEGlobal::song->update(SC_EVENT_MODIFIED);
+//   }
+//   else if (trackType == MusECore::Track::DRUM && (t->type() == MusECore::Track::MIDI  ||  t->type() == MusECore::Track::NEW_DRUM))
+//   {
+//     //
+//     //    Midi -> Drum
+//     //
+//     MusEGlobal::audio->msgIdle(true);
+//     static_cast<MusECore::MidiTrack*>(t)->convertToType(trackType);
+//     MusEGlobal::audio->msgIdle(false);
+//     MusEGlobal::song->update(SC_EVENT_MODIFIED);
+//   }
+//   else
+  // MIDI -> NEW_DRUM or vice versa. added by flo.
   {
     MusEGlobal::audio->msgIdle(true);
     t->setType(trackType);

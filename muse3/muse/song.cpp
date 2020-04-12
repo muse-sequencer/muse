@@ -317,11 +317,12 @@ Track* Song::createTrack(Track::TrackType type, bool setDefaults)
                   track->setType(Track::NEW_DRUM);
                   ((MidiTrack*)track)->setOutChannel(9);
                   break;
-            case Track::DRUM:
-                  track = new MidiTrack();
-                  track->setType(Track::DRUM);
-                  ((MidiTrack*)track)->setOutChannel(9);
-                  break;
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//             case Track::DRUM:
+//                   track = new MidiTrack();
+//                   track->setType(Track::DRUM);
+//                   ((MidiTrack*)track)->setOutChannel(9);
+//                   break;
             case Track::WAVE:
                   track = new MusECore::WaveTrack();
                   break;
@@ -395,7 +396,9 @@ Track* Song::createTrack(Track::TrackType type, bool setDefaults)
                     {
                       defOutFound = true;
                       mt->setOutPort(i);
-                      if(type != Track::DRUM && type != Track::NEW_DRUM)  // Leave drum tracks at channel 10.
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//                       if(type != Track::DRUM && type != Track::NEW_DRUM)  // Leave drum tracks at channel 10.
+                      if(type != Track::NEW_DRUM)  // Leave drum tracks at channel 10.
                         mt->setOutChannel(ch);
                       //updateFlags |= SC_ROUTE;
                       break;               
@@ -484,9 +487,10 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
             case Track::NEW_DRUM:
                   if (MusEGlobal::config.unhideTracks) MidiTrack::setVisible(true);
                   break;
-            case Track::DRUM:
-                  if (MusEGlobal::config.unhideTracks) MidiTrack::setVisible(true);
-                  break;
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//             case Track::DRUM:
+//                   if (MusEGlobal::config.unhideTracks) MidiTrack::setVisible(true);
+//                   break;
             case Track::WAVE:
                   if (MusEGlobal::config.unhideTracks) WaveTrack::setVisible(true);
                   break;

@@ -213,7 +213,8 @@ bool Track::isVisible()
     case Track::WAVE:
         return WaveTrack::visible();
     case Track::MIDI:
-    case Track::DRUM:
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//     case Track::DRUM:
     case Track::NEW_DRUM:
         return MidiTrack::visible();
     case Track::AUDIO_SOFTSYNTH:
@@ -375,8 +376,9 @@ QPixmap* Track::trackTypeIcon(TrackType type)
               return MusEGui::addtrack_addmiditrackIcon;
         case MusECore::Track::NEW_DRUM:
               return MusEGui::addtrack_newDrumtrackIcon;
-        case MusECore::Track::DRUM:
-              return MusEGui::addtrack_drumtrackIcon;
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//         case MusECore::Track::DRUM:
+//               return MusEGui::addtrack_drumtrackIcon;
         case MusECore::Track::WAVE:
               return MusEGui::addtrack_wavetrackIcon;
         case MusECore::Track::AUDIO_OUTPUT:
@@ -407,8 +409,9 @@ QColor Track::trackTypeColor(TrackType type)
               return MusEGlobal::config.midiTrackBg;
         case MusECore::Track::NEW_DRUM:
               return MusEGlobal::config.newDrumTrackBg;
-        case MusECore::Track::DRUM:
-              return MusEGlobal::config.drumTrackBg;
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//         case MusECore::Track::DRUM:
+//               return MusEGlobal::config.drumTrackBg;
         case MusECore::Track::WAVE:
               return MusEGlobal::config.waveTrackBg;
         case MusECore::Track::AUDIO_OUTPUT:
@@ -439,8 +442,9 @@ QColor Track::trackTypeLabelColor(TrackType type)
               return MusEGlobal::config.midiTrackLabelBg;
         case MusECore::Track::NEW_DRUM:
               return MusEGlobal::config.newDrumTrackLabelBg;
-        case MusECore::Track::DRUM:
-              return MusEGlobal::config.drumTrackLabelBg;
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//         case MusECore::Track::DRUM:
+//               return MusEGlobal::config.drumTrackLabelBg;
         case MusECore::Track::WAVE:
               return MusEGlobal::config.waveTrackLabelBg;
         case MusECore::Track::AUDIO_OUTPUT:
@@ -761,7 +765,10 @@ void MidiTrack::internal_assign(const Track& t, int flags)
                   {
                     defOutFound = true;
                     _outPort = i;
-                    if(type() != Track::DRUM) //&& type != Track::NEW_DRUM)  // Leave drum tracks at channel 10. TODO: Want new drum too?
+                    // Leave drum tracks at channel 10. TODO: Want new drum too?
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//                     if(type() != Track::DRUM) //&& type != Track::NEW_DRUM)
+                    //if(type() != Track::NEW_DRUM)
                       _outChannel = ch;
                     break;               
                   }
@@ -904,47 +911,48 @@ void MidiTrack::convertToType(TrackType trackType)
     }
     setType(trackType);
   }
-  else if(trackType == MusECore::Track::DRUM)
-  {
-    //
-    //    Midi -> Drum
-    //
-
-    // Default to track port if -1 and track channel if -1. No need anymore to ask to change all items.
-
-    // Delete all port controller events.
-    MusEGlobal::song->changeAllPortDrumCtrlEvents(false);
-
-    MusECore::PartList* pl = parts();
-    for (MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip) {
-      for (MusECore::ciEvent ie = ip->second->events().begin(); ie != ip->second->events().end(); ++ie) {
-        MusECore::Event ev = ie->second;
-        if (ev.type() == MusECore::Note)
-        {
-          int pitch = ev.pitch();
-          pitch = MusEGlobal::drumInmap[pitch];
-          ev.setPitch(pitch);
-        }
-        else
-        {
-          if(ev.type() == MusECore::Controller)
-          {
-            int ctl = ev.dataA();
-            // Is it a drum controller event, according to the track port's instrument?
-            MusECore::MidiController *mc = MusEGlobal::midiPorts[outPort()].drumController(ctl);
-            if(mc)
-              // Change the controller event's instrument note to an index into the drum map.
-              ev.setA((ctl & ~0xff) | MusEGlobal::drumInmap[ctl & 0x7f]);
-          }
-        }
-      }
-    }
-
-    setType(MusECore::Track::DRUM);
-
-    // Add all port controller events.
-    MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
-  }
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//   else if(trackType == MusECore::Track::DRUM)
+//   {
+//     //
+//     //    Midi -> Drum
+//     //
+// 
+//     // Default to track port if -1 and track channel if -1. No need anymore to ask to change all items.
+// 
+//     // Delete all port controller events.
+//     MusEGlobal::song->changeAllPortDrumCtrlEvents(false);
+// 
+//     MusECore::PartList* pl = parts();
+//     for (MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip) {
+//       for (MusECore::ciEvent ie = ip->second->events().begin(); ie != ip->second->events().end(); ++ie) {
+//         MusECore::Event ev = ie->second;
+//         if (ev.type() == MusECore::Note)
+//         {
+//           int pitch = ev.pitch();
+//           pitch = MusEGlobal::drumInmap[pitch];
+//           ev.setPitch(pitch);
+//         }
+//         else
+//         {
+//           if(ev.type() == MusECore::Controller)
+//           {
+//             int ctl = ev.dataA();
+//             // Is it a drum controller event, according to the track port's instrument?
+//             MusECore::MidiController *mc = MusEGlobal::midiPorts[outPort()].drumController(ctl);
+//             if(mc)
+//               // Change the controller event's instrument note to an index into the drum map.
+//               ev.setA((ctl & ~0xff) | MusEGlobal::drumInmap[ctl & 0x7f]);
+//           }
+//         }
+//       }
+//     }
+// 
+//     setType(MusECore::Track::DRUM);
+// 
+//     // Add all port controller events.
+//     MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
+//   }
 }
 
 void MidiTrack::remove_ourselves_from_drum_ordering()
@@ -1688,30 +1696,31 @@ bool MidiTrack::drumMappedPortChanCtrl(int *ctrl, int *port, MidiPort** mport, i
     res = true;
     const int note = t_ctrl & 0x7f;
     // Is it a drum controller old_event, according to the track port's instrument?
-    if(type() == Track::DRUM)
-    {
-      // Default to track port if -1 and track channel if -1.
-      const int ch = MusEGlobal::drumMap[note].channel;
-      if(ch != -1)
-        t_ch = ch;
-      const int p = MusEGlobal::drumMap[note].port;
-      if(p != -1)
-        t_port = p;
-      t_ctrl &= ~0xff;
-      t_ctrl |= MusEGlobal::drumMap[note].anote;
-    }
-//     else if(type() == Track::NEW_DRUM)
+//     if(type() == Track::DRUM)
 //     {
 //       // Default to track port if -1 and track channel if -1.
-//       const int ch = drummap()[note].channel;
+//       const int ch = MusEGlobal::drumMap[note].channel;
 //       if(ch != -1)
 //         t_ch = ch;
-//       const int p = drummap()[note].port;
+//       const int p = MusEGlobal::drumMap[note].port;
 //       if(p != -1)
 //         t_port = p;
 //       t_ctrl &= ~0xff;
-//       t_ctrl |= drummap()[note].anote;
+//       t_ctrl |= MusEGlobal::drumMap[note].anote;
 //     }
+//     else
+    if(type() == Track::NEW_DRUM)
+    {
+      // Default to track port if -1 and track channel if -1.
+      const int ch = drummap()[note].channel;
+      if(ch != -1)
+        t_ch = ch;
+      const int p = drummap()[note].port;
+      if(p != -1)
+        t_port = p;
+      t_ctrl &= ~0xff;
+      t_ctrl |= drummap()[note].anote;
+    }
   }
 
   *ctrl = t_ctrl;
@@ -1991,9 +2000,11 @@ void MidiTrack::write(int level, Xml& xml) const
       {
       const char* tag;
 
-      if (type() == DRUM)
-            tag = "drumtrack";
-      else if (type() == MIDI)
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       if (type() == DRUM)
+//             tag = "drumtrack";
+//       else
+      if (type() == MIDI)
             tag = "miditrack";
       else if (type() == NEW_DRUM)
             tag = "newdrumtrack";

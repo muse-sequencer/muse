@@ -273,7 +273,9 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
             for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
             {
               // Leave drum track channel at current setting.
-              if((*it)->type() == MusECore::Track::DRUM)
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//               if((*it)->type() == MusECore::Track::DRUM)
+              if((*it)->type() == MusECore::Track::NEW_DRUM)
                 changed |= (*it)->setOutPortAndUpdate(no, false);
               else
                 changed |= (*it)->setOutPortAndChannelAndUpdate(no, ch, false);

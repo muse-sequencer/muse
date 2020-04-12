@@ -983,7 +983,8 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
 {
   switch(t->type()) {
       case MusECore::Track::MIDI:
-      case MusECore::Track::DRUM:
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       case MusECore::Track::DRUM:
       case MusECore::Track::NEW_DRUM:
       case MusECore::Track::AUDIO_SOFTSYNTH:
       {
@@ -1524,7 +1525,8 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)(cur_part->track());
       int channel      = track->outChannel();
       MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
-      bool isDrum      = track->type() == MusECore::Track::DRUM;
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//       bool isDrum      = track->type() == MusECore::Track::DRUM;
       bool isNewDrum   = track->type() == MusECore::Track::NEW_DRUM;
       bool isMidi      = track->type() == MusECore::Track::MIDI;
       MusECore::MidiInstrument* instr = port->instrument();
@@ -1554,12 +1556,14 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
             int num = cl->num();
             if (isDrumCtrl) {
                   // Only show controller for current pitch:
-                  if (isDrum)
-                  {
-                    if ((curDrumPitch < 0) || ((num & 0xff) != MusEGlobal::drumMap[curDrumPitch].anote))
-                          continue;
-                  }
-                  else if (isNewDrum)
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//                   if (isDrum)
+//                   {
+//                     if ((curDrumPitch < 0) || ((num & 0xff) != MusEGlobal::drumMap[curDrumPitch].anote))
+//                           continue;
+//                   }
+//                   else
+                  if (isNewDrum)
                   {
                     if ((curDrumPitch < 0) || ((num & 0xff) != track->drummap()[curDrumPitch].anote))
                           continue;
@@ -1594,8 +1598,11 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
                               {
                                 if((ctl_num & 0xff) != curDrumPitch)
                                   continue;
-                                if(isDrum)
-                                  ctl_num = (ctl_num & ~0xff) | MusEGlobal::drumMap[ctl_num & 0x7f].anote;
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//                                 if(isDrum)
+//                                   ctl_num = (ctl_num & ~0xff) | MusEGlobal::drumMap[ctl_num & 0x7f].anote;
+                                if(isNewDrum)
+                                  ctl_num = (ctl_num & ~0xff) | track->drummap()[ctl_num & 0x7f].anote;
                               }
                               if(ctl_num == num)
                               {
@@ -1676,16 +1683,20 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
       {
           int show = ci->second->showInTracks();
-          if(((isDrum || isNewDrum) && !(show & MusECore::MidiController::ShowInDrum)) ||
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//           if(((isDrum || isNewDrum) && !(show & MusECore::MidiController::ShowInDrum)) ||
+          if((isNewDrum && !(show & MusECore::MidiController::ShowInDrum)) ||
              (isMidi && !(show & MusECore::MidiController::ShowInMidi)))
             continue;
           int cnum = ci->second->num();
           int num = cnum;
           if(ci->second->isPerNoteController())
           {
-            if (isDrum && curDrumPitch >= 0)
-              num = (cnum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
-            else if (isNewDrum && curDrumPitch >= 0)
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//             if (isDrum && curDrumPitch >= 0)
+//               num = (cnum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
+//             else
+            if (isNewDrum && curDrumPitch >= 0)
               num = (cnum & ~0xff) | track->drummap()[curDrumPitch].anote;
             else if (isMidi && curDrumPitch >= 0)
               num = (cnum & ~0xff) | curDrumPitch; //FINDMICH does this work?

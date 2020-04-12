@@ -60,7 +60,8 @@ bool TrackNameFactory::genUniqueNames(Track::TrackType type, QString base, int c
     switch(type)
     {
       case Track::MIDI:
-          case Track::DRUM:
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//           case Track::DRUM:
           case Track::NEW_DRUM:
           case Track::WAVE:
                 base = QString("Track");

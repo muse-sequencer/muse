@@ -288,7 +288,8 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
                   MusECore::Track* track = *it;
                   switch(track->type()) {
                         case MusECore::Track::MIDI:
-                        case MusECore::Track::DRUM:
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//                         case MusECore::Track::DRUM:
                         case MusECore::Track::NEW_DRUM:
                               {
                               MusECore::MidiPart* part = new MusECore::MidiPart((MusECore::MidiTrack*)track);
@@ -741,7 +742,8 @@ CItem* PartCanvas::newItem(const QPoint& pos, int key_modifiers)
       NPart* np = 0;
       switch(track->type()) {
             case MusECore::Track::MIDI:
-            case MusECore::Track::DRUM:
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//             case MusECore::Track::DRUM:
             case MusECore::Track::NEW_DRUM:
                   pa = new MusECore::MidiPart((MusECore::MidiTrack*)track);
                   pa->setTick(x);
@@ -807,7 +809,8 @@ void PartCanvas::newItem(CItem* i, bool noSnap)
           switch(track->type())
           {
                 case MusECore::Track::MIDI:
-                case MusECore::Track::DRUM:
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//                 case MusECore::Track::DRUM:
                 case MusECore::Track::NEW_DRUM:
                       new_part = new MusECore::MidiPart((MusECore::MidiTrack*)track);
                       break;
@@ -945,7 +948,9 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   }
                   break;
             case MusECore::Track::NEW_DRUM:
-            case MusECore::Track::DRUM: {
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//             case MusECore::Track::DRUM:
+            {
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startDrumEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
                   QAction *act_dexport = partPopup->addAction(tr("Save part to disk..."));
@@ -1652,7 +1657,8 @@ void PartCanvas::keyPress(QKeyEvent* event)
 
             switch (track->type()) {
                   case MusECore::Track::NEW_DRUM:
-                  case MusECore::Track::DRUM:
+// REMOVE Tim. midnam. Removed. Old drum not used any more.
+//                   case MusECore::Track::DRUM:
                         type = 3;
                         break;
 
@@ -2251,7 +2257,9 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
       using std::pair;
 
       MusECore::ciEvent ito(events.lower_bound(to));
-      bool isdrum = (mt->type() == MusECore::Track::DRUM  ||  mt->type() == MusECore::Track::NEW_DRUM);
+// REMOVE Tim. midnam. Changed. Old drum not used any more.
+//       bool isdrum = (mt->type() == MusECore::Track::DRUM  ||  mt->type() == MusECore::Track::NEW_DRUM);
+      bool isdrum = mt->isDrumTrack();
 
       // draw controllers ------------------------------------------
       pen.setColor(QColor(192,192,color_brightness/2));
