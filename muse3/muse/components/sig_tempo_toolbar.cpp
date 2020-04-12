@@ -69,8 +69,8 @@ void TempoToolbar::init()
   tempo_edit->setContentsMargins(0, 0, 0, 0);
   tempo_edit->setFocusPolicy(Qt::StrongFocus);
 
-  label=new QLabel(tr("Tempo "),this);
-  label->setContentsMargins(0, 0, 0, 0);
+//  label=new QLabel(tr("Tempo "),this);
+//  label->setContentsMargins(0, 0, 0, 0);
 
   tap_button = new QToolButton(this);
   tap_button->setText(tr("TAP"));
@@ -78,7 +78,7 @@ void TempoToolbar::init()
 
 //   addWidget(_externSyncButton);
   addWidget(_masterButton);
-  addWidget(label);
+//  addWidget(label);
   addWidget(tempo_edit);
   addWidget(tap_button);
 
@@ -123,7 +123,7 @@ void TempoToolbar::song_changed(MusECore::SongChangedStruct_t type)
 
 void TempoToolbar::syncChanged(bool flag)
       {
-        label->setEnabled(!flag);
+//        label->setEnabled(!flag);
         tap_button->setEnabled(!flag);
         tempo_edit->setExternalMode(flag);
       }
@@ -198,10 +198,10 @@ void SigToolbar::init()
   sig_edit->setValue(MusECore::TimeSignature(4, 4));
   sig_edit->setToolTip(tr("Time signature at current position"));
   
-  label=new QLabel(tr("Signature "),this);
-  label->setContentsMargins(0, 0, 0, 0);
+//  label=new QLabel(tr("Signature "),this);
+//  label->setContentsMargins(0, 0, 0, 0);
   
-  addWidget(label);
+//  addWidget(label);
   addWidget(sig_edit);
   
   connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(song_changed(MusECore::SongChangedStruct_t)));

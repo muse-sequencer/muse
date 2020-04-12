@@ -164,7 +164,6 @@ class ScoreEdit : public TopWin
 		ScoreCanvas* score_canvas;
 		MusEGui::MTScaleFlo* time_bar;
 		
-		QLabel* apply_velo_to_label;
 		bool apply_velo;
 		
 		static set<QString> names;
@@ -216,7 +215,8 @@ class ScoreEdit : public TopWin
 		// Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
 		// Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
 		void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
-	};
+        void setEditTool(int tool);
+};
 
 
 
@@ -677,6 +677,9 @@ class ScoreCanvas : public MusEGui::View
 		void cleanup_staves();
 		void maybe_close_if_empty();
 
+        QMenu* toolContextMenu();
+        void callContextMenu();
+
 // defaults  ----------------------------------------------------------
 	public:
 		enum coloring_mode_t {COLOR_MODE_BLACK, COLOR_MODE_PART, COLOR_MODE_VELO};
@@ -782,6 +785,7 @@ class ScoreCanvas : public MusEGui::View
 		bool dragging_staff;
 
         QCursor active_tool_cursor;
+        int active_tool;
 
 
 	private slots:

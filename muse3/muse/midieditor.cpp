@@ -120,22 +120,7 @@ void MidiEditor::genPartlist()
 
 void MidiEditor::genTrackInfo(TrackInfoWidget* trackInfo)
       {
-      noTrackInfo          = new QWidget(trackInfo);
-      noTrackInfo->setAutoFillBackground(true);
-      QPixmap *noInfoPix   = new QPixmap(160, 1000);
-      const QPixmap *logo  = new QPixmap(*museLeftSideLogo);
-      noInfoPix->fill(noTrackInfo->palette().color(QPalette::Window) );
-      QPainter p(noInfoPix);
-      p.drawPixmap(10, 0, *logo, 0,0, logo->width(), logo->height());
-
-      QPalette palette;
-      palette.setBrush(noTrackInfo->backgroundRole(), QBrush(*noInfoPix));
-      noTrackInfo->setPalette(palette);
-      noTrackInfo->setGeometry(0, 0, 65, 200);
-      noTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding));
-
-      trackInfo->addWidget(noTrackInfo,   0);
-      trackInfo->addWidget(0, 1);
+      trackInfo->addWidget(nullptr, 1);
       }
 
 //---------------------------------------------------------

@@ -1,3 +1,44 @@
+06.04.2020
+    - Fixed bug 790 Crash when dragging parts to blank area. (Tim)
+      Bonus: Now supports dragging parts from multiple non-contiguous tracks,
+       it attempts to create new tracks for all of them.
+      Bonus: The 'duplicate tracks' dialog pops up, asks what should be copied.
+      Bonus: Previously, user must press undo twice to undo the move. Now a single undo.
+    - Fixed 'drum ordering' bugs (drum notes order) after drag parts or duplicate tracks.
+    - Fixed some flaws with track copy constructors and assign() methods.
+    - Added new class TrackNameFactory. A complete list of new UNIQUE track names can
+       be requested BEFORE the new tracks are added to the song. All requests for unique
+       track names now go through this central class. It uses a modified version of
+       Robert's smart '#' character detection and naming sequencing. Robert wrote:
+       "there is still a gaping hole in the logic, making multiple duplicates of multiple
+       tracks still does not produce valid results" but his logic was OK - it was the
+       fact that the tracks are not added yet, which this new factory class SOLVES.
+    - Streamlined and fixed some problems with audio input/output track Jack port creation.
+      The ports are now only (un/)registered when the track is added/deleted.
+    - Added crash protection throughout audio processing against null destination buffers,
+       which may occurr if Jack ports could not be created.
+    - Extracted audio input/output track port registration in setName() into a separate
+       registerPorts() method. The ports are no longer registered in setName().
+21.03.2020
+    - Add shortcut (Ctrl+U) for opening synth UI for selected synth-track in arranger (rj)
+    - Added wave part extend beyond end of part if there is more wave file (rj)
+18.03.2020
+	- Enable multiple resizing in piano roll (#748) (kybos)
+	- Enable CTRL+Left Mouse Click item selection in edit mode in piano roll (kybos)
+	- Enable Right Mouse Click for exclusive single selection in edit mode/piano roll (kybos)
+17.03.2020
+	- Add more information to note tooltips in midi editors (kybos)
+	- Add global setting for switching off the note tooltips (kybos)
+	- Remove fixed track heigth from file templates, to enforce global setting (kybos)
+09.03.2020
+	- Transfer Help content to github wiki, link Manual to wiki in MusE (kybos)
+08.03.2020
+	- Fix EditPaste cursor HiDPI issue in midi editors->controller views (kybos)
+05.03.2020
+	- Fix tool cursor not changing in midi editors->controller views (kybos)
+	- Fix background color setting ignored in midi editors->controller views (kybos)
+04.03.2020
+	- Add tool context menu to Score Editor (kybos)
 28.02.2020:
     - LV2: Now shows MidiName patch names (gmsynth.lv2 for example). (Tim)
     - Added share/rdf/README to describe what's there and why.

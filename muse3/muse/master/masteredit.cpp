@@ -131,15 +131,14 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       // Make it appear like a Toolbar1 object.
       info->setObjectName("Pos/Snap/Solo-tools");
       QLabel* label  = new QLabel(tr("Cursor"));
-      label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-      label->setIndent(3);
+      label->setIndent(2);
       info->addWidget(label);
 
-      cursorPos = new MusEGui::PosLabel(0);
+      cursorPos = new MusEGui::PosLabel(nullptr, "PosLabel");
       cursorPos->setFixedHeight(22);
       cursorPos->setToolTip(tr("Time at cursor position"));
       info->addWidget(cursorPos);
-      tempo = new MusEGui::TempoLabel(0);
+      tempo = new MusEGui::TempoLabel(nullptr, "TempoLabel");
       tempo->setFixedHeight(22);
       tempo->setToolTip(tr("Tempo at cursor position"));
       info->addWidget(tempo);
@@ -147,7 +146,7 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       const char* rastval[] = {
             QT_TRANSLATE_NOOP("MusEGui::MasterEdit", "Off"), QT_TRANSLATE_NOOP("MusEGui::MasterEdit", "Bar"), "1/2", "1/4", "1/8", "1/16"
             };
-      rasterLabel = new MusEGui::LabelCombo(tr("Snap"), 0);
+      rasterLabel = new MusEGui::LabelCombo(tr("Snap"), nullptr);
       rasterLabel->setFocusPolicy(Qt::TabFocus);
       for (int i = 0; i < 6; i++)
             rasterLabel->insertItem(i, tr(rastval[i]));

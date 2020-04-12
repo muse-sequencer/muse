@@ -548,6 +548,10 @@ public:
       void setQuantize(bool val);
       void panic();
       void seqSignal(int fd);
+      // Creates a track but does not add it to the track list, the caller must do that.
+      // The track name is not set and must be set by the caller.
+      // If setDefaults is true, adds default in/out routes/channels to the track.
+      Track* createTrack(Track::TrackType type, bool setDefaults = true);
       Track* addTrack(Track::TrackType type, Track* insertAt = 0);
       Track* addNewTrack(QAction* action, Track* insertAt = 0);
       void duplicateTracks();

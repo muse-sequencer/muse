@@ -99,21 +99,18 @@ class ArrangerHScrollLayout : public QHBoxLayout
       {
       Q_OBJECT
       CompactToolButton* _trackinfoButton;
-      CompactToolButton* _trackinfoAltButton;
       ScrollScale* _sb;
       
       // This is not actually in the layout, but used anyway.
       QWidget* _editor;
       
       QWidgetItem* _trackinfoButtonLi;
-      QWidgetItem* _trackinfoAltButtonLi;
       QSpacerItem* _spacerLi;
       QWidgetItem* _sbLi;
       
     public:
       ArrangerHScrollLayout(QWidget *parent, 
                             CompactToolButton* trackinfoButton, 
-                            CompactToolButton* trackinfoAltButton,
                             ScrollScale* sb, 
                             QWidget* editor);
       ~ArrangerHScrollLayout();

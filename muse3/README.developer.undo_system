@@ -1,0 +1,178 @@
+V 0.0.1 03/26/2020 By Tim.
+
+
+A mini review of the Operations and Undo system in MusE.
+========================================================
+
+Operations:
+------------
+
+During each audio cycle segment, a realtime audio thread
+ processes audio and midi.
+
+A block of audio and midi events are gathered to be played
+ in the next segment to various outputs, while a block of
+ incoming audio and midi events from the last segment are
+ recorded from various inputs.
+
+Various containers house all the audio and midi events
+ in a song, from which the realtime process thread gathers
+ the required events for the next playback segment.
+
+When it is desired to alter the contents of the various
+ containers which house all audio and midi events, and
+ to do so from a thread other than the realtime thread,
+ for example the GUI thread, the actual change must be
+ synchronized with and take place in the realtime audio
+ thread, otherwise these concurrent accesses will crash.
+
+In a realtime audio thread it is forbidden to use code
+ that may block or wait or take a long time, such as
+ mutexes, memory allocations, or printing functions.
+
+So MusE does not use any mutexes or locks of any kind
+ in the realtime thread. Instead it uses synchronized
+ OPERATIONS to make desired changes in the realtime
+ process callback just before audio and midi are processed.
+
+Example: To change a note in a list of notes in a song
+ from inside a GUI dialog, an OPERATION is requested,
+ and the GUI thread will pause while the realtime thread
+ executes the request. The GUI thread resumes when the
+ OPERATION is done.
+
+Note that it is possible the realtime audio thread may NOT
+ be running in realtime, for example if the audio system
+ is not set up for realtime. MusE is fairly tolerant of
+ that, but it is possible the audio thread may not finish
+ before the GUI thread runs again, which may cause a
+ concurrency crash if some list was being changed.
+This is why realtime is important and why it is important
+ to try to make changes as quickly as possible in the audio
+ thread in case the thread is not realtime - if the changes
+ are taking a long time in the audio thread, the GUI thread
+ might run.
+
+
+Undo/redo:
+----------
+
+It is desirable to have an undo/redo for many OPERATIONS.
+And yet, not all OPERATIONS can be or need to be undoable.
+
+So for many OPERATIONS, the request is sent to the UNDO system,
+ instead of directly to the OPERATIONS system. The UNDO system
+ remembers the OPERATION so that it can be undone and redone.
+
+Still, some requests are sent directly to the OPERATIONS system,
+ bypassing the UNDO system.
+
+In addition, the UNDO system has the ability to process some
+ requests WITHOUT remembering them for undoing, basically
+ passing them on to the OPERATIONS system.
+This is convenient for example when a list of UNDO OPERATIONS
+ contains some OPERATIONS that should not be undoable. This
+ eases the caller's composition of lists of requests, using
+ only the UNDO system instead of working both the UNDO and
+ OPERATIONS systems.
+
+The UNDO system has a few tricks. It can combine previously
+ executed commands into one list. It can reduce repeated
+ similar commands to just one, such as when operating a mouse
+ to adjust some value - only the last value at mouse-up is stored
+ instead of storing hundreds of values in hundreds of commands.
+ 
+
+Operations vs. Undo Operations
+-------------------------------
+
+A distinction should be made between OPERATIONS and UNDO OPERATIONS:
+Although the UNDO system takes requests and composes and executes
+ OPERATIONS, UNDO requests are not the same as OPERATION requests.
+The caller does not pass OPERATION requests to the UNDO system,
+ the caller passes UNDO OPERATIONS. Owing to the different nature
+ of the two systems, the composition and structure of the requests
+ is different. For example OPERATIONS system has the ModifyTempoList
+ OPERATION, but the UNDO system has AddTempo DeleteTempo and ModifyTempo
+ UNDO OPERATIONS.
+
+
+Stages:
+-------
+
+Both the OPERATIONS and UNDO systems work in STAGES:
+
+* OPERATIONS system:
+The OPERATIONS system has two STAGES: A REALTIME STAGE followed by
+ a NON-REALTIME STAGE.
+ 
+The idea is that the caller composes an OPERATION beforehand in the
+ GUI thread, then passes it to the OPERATIONS system where any
+ realtime-sensitive changes occur in the REALTIME STAGE, followed by
+ any non-realtime-sensitive code in the NON-REALTIME STAGE such as
+ cleanups, safe deletion of memory no longer used, etc.
+
+* UNDO system:
+The UNDO system has three STAGES: A NON-REALTIME STAGE (1), followed
+ by a REALTIME STAGE (2) which basically just calls the OPERATIONS
+ system REALTIME STAGE, followed by a NON-REALTIME STAGE (3) which
+ basically just calls the OPERATIONS system NON-REALTIME STAGE.
+
+The UNDO system NON-REALTIME STAGE (1) is a convenient place where any
+ non-realtime-sensitive code can by run BEFORE the REALTIME STAGE.
+It offers a place to compose complex preparations for a request
+ instead of the caller having to do it, trying to make the caller's
+ job as simple as possible. For example memory allocation.
+The OPERATIONS system has no such STAGE. The caller must compose
+ the OPERATION and handle any allocation etc. although the system's
+ NON-REALTIME STAGE can be used to cleanup, deallocate etc.
+
+
+Altering lists vs. swapping them out quickly:
+---------------------------------------------
+
+In the OPERATIONS system's realtime code, the idea is to execute
+ only the bare minimum code required to make the changes. Such as
+ inserting in a list, or calling erase with an iterator that was
+ already found in the GUI thread so that erase is 'ready to go'.
+Before the OPERATIONS system was added, the UNDO system handled
+ all of this, but it was ALSO executing some awfully heavy code.
+
+But even though those list insert/erase techniques are as tight
+ as they can be, they STILL may allocate or de-allocate memory,
+ which is not realtime safe !
+
+
+One way to guarantee very fast changes to containers (fixed time)
+ is to completely swap them with another list, composed beforehand
+ with the desired changes.
+If the container happens to be a pointer-to, the pointer can be
+ quickly, even atomically, swapped with another pointer-to,
+  guaranteeing no hiccups or xruns in the processing.
+If the container is NOT a pointer-to, unfortunately there is no
+ pointer to swap, since the container is the object.
+However some containers have a swap() method which has very fast
+ fixed-time complexity, which really helps in this situation.
+
+Note with this technique, the UNDO system does NOT store a copy
+ of the container for each UNDO OPERATION in the UNDO history.
+The UNDO system only stores the necessary CHANGES, saving memory.
+When an actual Undo is performed, only then is a new replacement
+ list composed based on those changes, and then swapped out with
+ the original.
+
+
+Several OPERATIONS have now been switched over to this technique.
+One caveat and inefficiency is that with a very large container
+ needing only a simple change, you will be making a copy of it,
+  albeit only for a brief time until swapped.
+
+
+Tempo, time signature, key, and other special operations:
+---------------------------------------------------------
+
+These three tempo, sig and key areas have very special needs
+ due to how these containers operate. The code is somewhat complex.
+
+In addition certain other operations have special needs and have
+ more complex code.

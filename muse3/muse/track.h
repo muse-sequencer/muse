@@ -79,6 +79,7 @@ class Track {
       // NOTE: ASSIGN_DUPLICATE_PARTS ASSIGN_COPY_PARTS and ASSIGN_CLONE_PARTS are not allowed together - choose one. 
       // (Safe, but it will choose one action over the other.)
       enum AssignFlags {
+         ASSIGN_NONE=0,
          ASSIGN_PROPERTIES=1, 
          ASSIGN_DUPLICATE_PARTS=2, ASSIGN_COPY_PARTS=4, ASSIGN_CLONE_PARTS=8, 
          ASSIGN_PLUGINS=16, 
@@ -152,6 +153,19 @@ class Track {
 
    public:
       Track(TrackType, int channels = 0);
+      // Copy constructor.
+      // The various AssignFlags (flags) determine what is copied.
+      // For now, the new track's name is set to the original name.
+      // The caller SHOULD set a proper unique name afterwards,
+      //  otherwise identical track names will appear in the song.
+      // It is possible for us to automatically to choose a unique name
+      //  here, but that may not be wise in some cases (such as modifying a
+      //  track copy and then requesting the operations system switch tracks -
+      //  in that case we want the names to be the same).
+      // Also, it is possible the name choosing routine(s) may fail for
+      //  whatever reason, and we cannot abort creation here.
+      // For that reason, it is best for the caller to try and pick a
+      //  unique name successfully BEFORE calling this constructor.
       Track(const Track&, int flags);
       virtual ~Track();
       virtual void assign(const Track&, int flags);
@@ -229,7 +243,6 @@ class Track {
       
       virtual void write(int, Xml&) const = 0;
 
-      virtual Track* newTrack() const = 0;
       virtual Track* clone(int flags) const    = 0;
       // Returns true if any event in any part was opened. Does not operate on the part's clones, if any.
       virtual bool openAllParts() { return false; };
@@ -378,7 +391,6 @@ class Track {
       void resetMeter();
 
       bool readProperty(Xml& xml, const QString& tag);
-      void setDefaultName(QString base = QString());
       int channels() const                { return _channels; }
       virtual void setChannels(int n);
       bool isMidiTrack() const       { return type() == MIDI || type() == DRUM || type() == NEW_DRUM; }
@@ -433,6 +445,8 @@ class MidiTrack : public Track {
       MidiTrack(const MidiTrack&, int flags);
       virtual ~MidiTrack();
 
+      // FIXME This public assign() method doesn't really 'assign' routes -
+      //        if routes are assigned in flags, it does not clear existing routes !
       virtual void assign(const Track&, int flags);
       virtual void convertToType(TrackType trackType);
 
@@ -460,7 +474,6 @@ class MidiTrack : public Track {
 
       virtual int height() const;
       
-      virtual MidiTrack* newTrack() const { return new MidiTrack(); }
       virtual MidiTrack* clone(int flags) const { return new MidiTrack(*this, flags); }
       virtual Part* newPart(Part*p=0, bool clone=false);
 
@@ -666,6 +679,8 @@ class AudioTrack : public Track {
       AudioTrack(const AudioTrack&, int flags);
       virtual ~AudioTrack();
 
+      // FIXME This public assign() method doesn't really 'assign' routes -
+      //        if routes are assigned in flags, it does not clear existing routes !
       virtual void assign(const Track&, int flags);
       
       virtual AudioTrack* clone(int flags) const = 0;
@@ -857,11 +872,16 @@ class AudioInput : public AudioTrack {
       // Audio Input tracks have no correction available. They ALWAYS dominate any parallel branches, if they are not 'off'.
       bool canDominateOutputLatency() const;
       
+      // FIXME This public assign() method doesn't really 'assign' routes -
+      //        if routes are assigned in flags, it does not clear existing routes !
+      //       For input/output tracks we need to disconnect the routes from Jack.
       void assign(const Track&, int flags);
       AudioInput* clone(int flags) const { return new AudioInput(*this, flags); }
-      AudioInput* newTrack() const { return new AudioInput(); }
       void read(Xml&);
       void write(int, Xml&) const;
+      // Register one or all input ports. If idx = -1 it registers all ports.
+      // Returns true if ANY of the port(s) were successfully registered.
+      bool registerPorts(int idx = -1);
       void setName(const QString& s);
       void* jackPort(int channel) { return jackPorts[channel]; }
       void setJackPort(int channel, void*p) { jackPorts[channel] = p; }
@@ -894,7 +914,7 @@ class AudioOutput : public AudioTrack {
       AudioOutput(const AudioOutput&, int flags);
       virtual ~AudioOutput();
 
-      virtual float selfLatencyAudio(int channel) const;
+      float selfLatencyAudio(int channel) const;
       void setChannels(int n);
       // The cached worst contribution to latency by any ports (for ex. Jack ports of audio input/output tracks).
       float getWorstPortLatencyAudio();
@@ -905,25 +925,30 @@ class AudioOutput : public AudioTrack {
       bool isLatencyOutputTerminal();
       void applyOutputLatencyComp(unsigned nframes);
       
-      virtual void assign(const Track&, int flags);
+      // FIXME This public assign() method doesn't really 'assign' routes -
+      //        if routes are assigned in flags, it does not clear existing routes !
+      //       For input/output tracks we need to disconnect the routes from Jack.
+      void assign(const Track&, int flags);
       AudioOutput* clone(int flags) const { return new AudioOutput(*this, flags); }
-      virtual AudioOutput* newTrack() const { return new AudioOutput(); }
-      virtual void read(Xml&);
-      virtual void write(int, Xml&) const;
-      virtual void setName(const QString& s);
+      void read(Xml&);
+      void write(int, Xml&) const;
+      // Register one or all output ports. If idx = -1 it registers all ports.
+      // Returns true if ANY of the port(s) were successfully registered.
+      bool registerPorts(int idx = -1);
+      void setName(const QString& s);
       void* jackPort(int channel) { return jackPorts[channel]; }
       void setJackPort(int channel, void*p) { jackPorts[channel] = p; }
       // Number of routable inputs/outputs for each Route::RouteType.
-      virtual RouteCapabilitiesStruct routeCapabilities() const;
+      RouteCapabilitiesStruct routeCapabilities() const;
       void processInit(unsigned);
       void process(unsigned pos, unsigned offset, unsigned);
       void processWrite();
       void silence(unsigned);
-      virtual bool canRecord() const { return true; }
+      bool canRecord() const { return true; }
 
       static void setVisible(bool t) { _isVisible = t; }
       static bool visible() { return _isVisible; }
-      virtual int height() const;
+      int height() const;
     };
 
 //---------------------------------------------------------
@@ -937,7 +962,6 @@ class AudioGroup : public AudioTrack {
       AudioGroup(const AudioGroup& t, int flags) : AudioTrack(t, flags) { }
       
       AudioGroup* clone(int flags) const { return new AudioGroup(*this, flags); }
-      virtual AudioGroup* newTrack() const { return new AudioGroup(); }
       virtual void read(Xml&);
       virtual void write(int, Xml&) const;
       virtual bool hasAuxSend() const { return true; }
@@ -960,7 +984,6 @@ class AudioAux : public AudioTrack {
       
       AudioAux* clone(int flags) const { return new AudioAux(*this, flags); }
       ~AudioAux();
-      virtual AudioAux* newTrack() const { return new AudioAux(); }
       virtual void read(Xml&);
       virtual void write(int, Xml&) const;
       virtual bool getData(unsigned, int, unsigned, float**);
@@ -1006,10 +1029,11 @@ class WaveTrack : public AudioTrack {
       WaveTrack();
       WaveTrack(const WaveTrack& wt, int flags);
 
+      // FIXME This public assign() method doesn't really 'assign' routes -
+      //        if routes are assigned in flags, it does not clear existing routes !
       virtual void assign(const Track&, int flags);
       
       virtual WaveTrack* clone(int flags) const    { return new WaveTrack(*this, flags); }
-      virtual WaveTrack* newTrack() const { return new WaveTrack(); }
       virtual Part* newPart(Part*p=0, bool clone=false);
       // Returns true if any event in any part was opened. Does not operate on the part's clones, if any.
       bool openAllParts();

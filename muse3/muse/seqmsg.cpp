@@ -191,9 +191,7 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
               {
                 if (i < n && ai->jackPort(i) == 0) 
                 {
-                  char buffer[128];
-                  snprintf(buffer, 128, "%s-%d", name.toLatin1().constData(), i);
-                  ai->setJackPort(i, MusEGlobal::audioDevice->registerInPort(buffer, false));
+                  ai->registerPorts(i);
                 }
                 else if ((i >= n) && ai->jackPort(i)) 
                 {
@@ -221,9 +219,7 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
                         void* jp = ao->jackPort(i);
                         if (i < n && jp == 0) 
                         {
-                              char buffer[128];
-                              snprintf(buffer, 128, "%s-%d", name.toLatin1().constData(), i);
-                              ao->setJackPort(i, MusEGlobal::audioDevice->registerOutPort(buffer, false));
+                              ao->registerPorts(i);
                         }
                         else if (i >= n && jp) 
                         {

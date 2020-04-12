@@ -2283,21 +2283,9 @@ void Song::revertOperationGroup1(Undo& operations)
                             {
                               for(int ch = 0; ch < ao->channels(); ++ch) 
                               {
-                                // Register the track's jack port, or just set the name.
-                                char buffer[128];
-                                snprintf(buffer, 128, "%s-%d", ao->name().toLatin1().constData(), ch);
-                                // REMOVE Tim. Persistent routes. Added. Don't think we need this here.
-                                if(ao->jackPort(ch))
-                                {
-                                  MusEGlobal::audioDevice->setPortName(ao->jackPort(ch), buffer);
+                                // This should be OK since the track has not yet been added in the realtime stage.
+                                if(ao->registerPorts(ch))
                                   updateFlags |= SC_ROUTE;
-                                }
-                                else
-                                {  
-                                  // This should be OK since the track has not yet been added in the realtime stage.
-                                  ao->setJackPort(ch, MusEGlobal::audioDevice->registerOutPort(buffer, false));
-                                  updateFlags |= SC_ROUTE;
-                                }
                                 
                                 // Set the route Jack ports now to relieve our graph callback handler from having to do it.
                                 RouteList* rl = ao->outRoutes();
@@ -2319,21 +2307,9 @@ void Song::revertOperationGroup1(Undo& operations)
                             {
                               for(int ch = 0; ch < ai->channels(); ++ch) 
                               {
-                                // Register the track's jack port, or just set the name.
-                                char buffer[128];
-                                snprintf(buffer, 128, "%s-%d", ai->name().toLatin1().constData(), ch);
-                                // REMOVE Tim. Persistent routes. Added. Don't think we need this here.
-                                if(ai->jackPort(ch))
-                                {
-                                  MusEGlobal::audioDevice->setPortName(ai->jackPort(ch), buffer);
+                                // This should be OK since the track has not yet been added in the realtime stage.
+                                if(ai->registerPorts(ch))
                                   updateFlags |= SC_ROUTE;
-                                }
-                                else
-                                {
-                                  // This should be OK since the track has not yet been added in the realtime stage.
-                                  ai->setJackPort(ch, MusEGlobal::audioDevice->registerInPort(buffer, false));
-                                  updateFlags |= SC_ROUTE;
-                                }
                                 
                                 // Set the route Jack ports now to relieve our graph callback handler from having to do it.
                                 RouteList* rl = ai->inRoutes();
@@ -3090,21 +3066,9 @@ void Song::executeOperationGroup1(Undo& operations)
                             {
                               for(int ch = 0; ch < ao->channels(); ++ch) 
                               {
-                                // Register the track's jack port, or just set the name.
-                                char buffer[128];
-                                snprintf(buffer, 128, "%s-%d", ao->name().toLatin1().constData(), ch);
-                                // REMOVE Tim. Persistent routes. Added. Don't think we need this here.
-                                if(ao->jackPort(ch))
-                                {
-                                  MusEGlobal::audioDevice->setPortName(ao->jackPort(ch), buffer);
+                                // This should be OK since the track has not yet been added in the realtime stage.
+                                if(ao->registerPorts(ch))
                                   updateFlags |= SC_ROUTE;
-                                }
-                                else
-                                {
-                                  // This should be OK since the track has not yet been added in the realtime stage.
-                                  ao->setJackPort(ch, MusEGlobal::audioDevice->registerOutPort(buffer, false));
-                                  updateFlags |= SC_ROUTE;
-                                }
                                 
                                 // Set the route Jack ports now to relieve our graph callback handler from having to do it.
                                 RouteList* rl = ao->outRoutes();
@@ -3128,21 +3092,9 @@ void Song::executeOperationGroup1(Undo& operations)
                             {
                               for(int ch = 0; ch < ai->channels(); ++ch) 
                               {
-                                // Register the track's jack port, or just set the name.
-                                char buffer[128];
-                                snprintf(buffer, 128, "%s-%d", ai->name().toLatin1().constData(), ch);
-                                // REMOVE Tim. Persistent routes. Added. Don't think we need this here.
-                                if(ai->jackPort(ch))
-                                {
-                                  MusEGlobal::audioDevice->setPortName(ai->jackPort(ch), buffer);
+                                // This should be OK since the track has not yet been added in the realtime stage.
+                                if(ai->registerPorts(ch))
                                   updateFlags |= SC_ROUTE;
-                                }
-                                else
-                                {
-                                  // This should be OK since the track has not yet been added in the realtime stage.
-                                  ai->setJackPort(ch, MusEGlobal::audioDevice->registerInPort(buffer, false));
-                                  updateFlags |= SC_ROUTE;
-                                }
                                 
                                 // Set the route Jack ports now to relieve our graph callback handler from having to do it.
                                 RouteList* rl = ai->inRoutes();

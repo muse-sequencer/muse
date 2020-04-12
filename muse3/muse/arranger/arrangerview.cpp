@@ -67,6 +67,7 @@
 #include "xml.h"
 #include "arrangercolumns.h"
 #include "tlist.h"
+#include "synth.h"
 
 namespace MusEGui {
 
@@ -176,6 +177,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   startListEditAction = new QAction(QIcon(*edit_listIcon), tr("List..."), this);
   startWaveEditAction = new QAction(QIcon(*edit_waveIcon), tr("Wave..."), this);
 
+  openCurrentTrackSynthGuiAction =  new QAction(QIcon(*settings_midiport_softsynthsIcon), tr("Open Synth Plugin GUI..."), this);
+
   midiTransformerAction = new QAction(QIcon(*midi_transformIcon), tr("Midi &Transform..."), this);
 
 
@@ -225,6 +228,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuEdit->addAction(startDrumEditAction);
   menuEdit->addAction(startListEditAction);
   menuEdit->addAction(startWaveEditAction);
+  menuEdit->addAction(openCurrentTrackSynthGuiAction);
 
   QMenu* functions_menu = menuBar()->addMenu(tr("Fu&nctions"));
   functions_menu->addAction(midiTransformerAction);
@@ -300,6 +304,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(startDrumEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startDrumEditor()));
   connect(startListEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startListEditor()));
   connect(startWaveEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startWaveEditor()));
+  connect(openCurrentTrackSynthGuiAction, SIGNAL(triggered()), SLOT(openCurrentTrackSynthGui()));
+
 
   connect(midiTransformerAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startMidiTransformer()));
 
@@ -891,6 +897,7 @@ void ArrangerView::updateShortcuts()
       startDrumEditAction->setShortcut(shortcuts[SHRT_OPEN_DRUMS].key);
       startListEditAction->setShortcut(shortcuts[SHRT_OPEN_LIST].key);
       startWaveEditAction->setShortcut(shortcuts[SHRT_OPEN_WAVE].key);
+      openCurrentTrackSynthGuiAction->setShortcut(shortcuts[SHRT_OPEN_PLUGIN_GUI].key);
 
       midiTransformerAction->setShortcut(shortcuts[SHRT_OPEN_MIDI_TRANSFORM].key);
       strGlobalCutAction->setShortcut(shortcuts[SHRT_GLOBAL_CUT].key);
@@ -953,6 +960,25 @@ void ArrangerView::globalSplit() { MusECore::globalSplit(); }
 void ArrangerView::globalCutSel() { MusECore::globalCut(true); }
 void ArrangerView::globalInsertSel() { MusECore::globalInsert(true); }
 void ArrangerView::globalSplitSel() { MusECore::globalSplit(true); }
+
+void ArrangerView::openCurrentTrackSynthGui()
+{
+  auto curTrack = MusEGlobal::muse->arranger()->curTrack();
+
+  if(curTrack->isSynthTrack()) {
+
+    MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(curTrack);
+
+    if (synth->hasNativeGui()) {
+
+      synth->showNativeGui(!synth->nativeGuiVisible());
+    }
+    else if (synth->hasGui()) {
+
+      synth->showGui(!synth->guiVisible());
+    }
+  }
+}
 
 void ArrangerView::configCustomColumns()
 {

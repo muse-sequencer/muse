@@ -63,7 +63,7 @@ class Canvas : public View {
       bool canScrollUp;
       bool canScrollDown;
 
-      CItem *findCurrentItem(const QPoint &cStart);
+//      CItem *findCurrentItem(const QPoint &cStart);
       
       // Whether we have grabbed the mouse.
       bool _mouseGrabbed;
@@ -131,9 +131,11 @@ class Canvas : public View {
       QMenu* canvasPopupMenu;
 
       bool supportsResizeToTheLeft;
+      bool supportsMultipleResize;
 
       void setLasso(const QRect& r);
       void resizeToTheLeft(const QPoint &pos);
+      void resizeSelected(const int &dist, const bool left = false);
       virtual void setCursor();
       virtual void setMouseOverItemCursor();
       virtual void viewKeyPressEvent(QKeyEvent* event);
@@ -225,6 +227,7 @@ class Canvas : public View {
       void showCursor(bool show = true);
       // Sets or resets the _mouseGrabbed flag and grabs or releases the mouse.
       void setMouseGrab(bool grabbed = false);
+      CItem *findCurrentItem(const QPoint &cStart);
       
    public slots:
       void setTool(int t);

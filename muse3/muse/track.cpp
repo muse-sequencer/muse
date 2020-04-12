@@ -251,7 +251,6 @@ int Track::y() const
 
 void Track::init(int channels)
       {
-      _sn = newSn();
       _auxRouteCount = 0;  
       _nodeTraversed = false;
       _activity      = 0;
@@ -276,26 +275,27 @@ void Track::init(int channels)
 
 Track::Track(Track::TrackType t, int channels)
 {
-      init(channels);
       _type = t;
+      _sn = newSn();
+      init(channels);
 }
 
 Track::Track(const Track& t, int flags)
 {
   _type         = t.type();
-  // moved setting the unique name to Song::duplicateTracks()
-  // we'll see if there is any draw back to that.
-  _name = t.name();
 
   // This should be reset for a copy of a track.
   _sn = newSn();
+  
+  init(t._channels);
+
+  // moved setting the unique name to Song::duplicateTracks()
+  // we'll see if there is any draw back to that.
+  // See comments in the header about naming copied tracks,
+  //  and why we don't automatically pick a unique name.
+  _name = t.name();
 
   internal_assign(t, flags | ASSIGN_PROPERTIES);
-  for (int i = 0; i < MusECore::MAX_CHANNELS; ++i) {
-        _meter[i] = 0.0;
-        _peak[i]  = 0.0;
-        _isClipped[i] = false;
-        }
 }
 
 Track::~Track()
@@ -316,20 +316,47 @@ void Track::internal_assign(const Track& t, int flags)
 {
       if(flags & ASSIGN_PROPERTIES)
       {
-        _auxRouteCount = t._auxRouteCount;
-        _nodeTraversed = t._nodeTraversed;
-        _activity     = t._activity;
-        _lastActivity = t._lastActivity;
+        // Leave at init value. Should be set by adding routes later.
+        //_auxRouteCount = t._auxRouteCount;
+
+        // Leave at init value. Set by anti-circular routing mechanism later.
+        //_nodeTraversed = t._nodeTraversed;
+
+        // Leave at init value. (How can there be 'activity' yet on a new track?)
+        //_activity     = t._activity;
+        //_lastActivity = t._lastActivity;
+
+        // Leave at init value. Likely we don't want the new track soloed,
+        //  although there may be cases where we want that (such as modifying a
+        //  track copy and then requesting the operations system switch tracks -
+        //  in that case we likely want the solo to be the same). For now, caller
+        //  can set afterwards. TODO Decide whether to copy it.
+        //_solo         = t._solo;
+
+        // Leave at init value. Set by soloing and routing mechanisms later.
+        //_internalSolo = t._internalSolo;
+
+        // Leave at init value. Set by init().
+        //_channels     = t._channels;
+
+        // Special for selected. Make sure this is called.
+        // NOTE This makes this track the most recent selected. TODO Try to leave
+        //  the original track as the most recent selected. (More involved - the
+        //  '_selected' members of all tracks would need to be re-indexed).
+        setSelected(t.selected());
+
+        // Leave at init value. Set by setSelected(), above.
+        //_selectionOrder = t.selectionOrder();
+
+        // For now, copy this. It may be set later.
+        _y            = t._y;
+
+        // For now, copy this. The caller may set it to some other value after.
+        _height       = t._height;
+
+        _off          = t._off;
         _recordFlag   = t._recordFlag;
         _mute         = t._mute;
-        _solo         = t._solo;
-        _internalSolo = t._internalSolo;
-        _off          = t._off;
-        _channels     = t._channels;
-        _selected     = t.selected();
-        _selectionOrder = t.selectionOrder();
-        _y            = t._y;
-        _height       = t._height;
         _comment      = t.comment();
         _locked       = t.locked();
         _recMonitor   = t._recMonitor;
@@ -431,59 +458,6 @@ QColor Track::trackTypeLabelColor(TrackType type)
         }
   return QColor();
 }
-
-//---------------------------------------------------------
-//   setDefaultName
-//    generate unique name for track
-//---------------------------------------------------------
-
-void Track::setDefaultName(QString base)
-      {
-      int num_base = 1;  
-      if(base.isEmpty())
-      {  
-        switch(_type) {
-              case MIDI:
-              case DRUM:
-              case NEW_DRUM:
-              case WAVE:
-                    base = QString("Track");
-                    break;
-              case AUDIO_OUTPUT:
-                    base = QString("Out");
-                    break;
-              case AUDIO_GROUP:
-                    base = QString("Group");
-                    break;
-              case AUDIO_AUX:
-                    base = QString("Aux");
-                    break;
-              case AUDIO_INPUT:
-                    base = QString("Input");
-                    break;
-              case AUDIO_SOFTSYNTH:
-                    base = QString("Synth");
-                    break;
-              };
-        base += " ";
-      }        
-      else 
-      {
-        num_base = 2;  
-        base += " #";
-      }
-      
-      for (int i = num_base; true; ++i) {
-            QString n;
-            n.setNum(i);
-            QString s = base + n;
-            Track* track = MusEGlobal::song->findTrack(s);
-            if (track == 0) {
-                  setName(s);
-                  break;
-                  }
-            }
-      }
 
 //---------------------------------------------------------
 //   displayName
@@ -695,7 +669,6 @@ MidiTrack::MidiTrack()
    : Track(MIDI)
       {
       init();
-      clefType=trebleClef;
       
       _drummap=new DrumMap[128];
       _workingDrumMapPatchList = new WorkingDrumMapPatchList();
@@ -706,10 +679,10 @@ MidiTrack::MidiTrack()
 MidiTrack::MidiTrack(const MidiTrack& mt, int flags)
   : Track(mt, flags)
 {
+      init();
+      
       _drummap=new DrumMap[128];
       _workingDrumMapPatchList = new WorkingDrumMapPatchList();
-
-      init_drummap(true /* write drummap ordering information as well */);
 
       internal_assign(mt, flags | Track::ASSIGN_PROPERTIES);  
 }
@@ -731,6 +704,7 @@ void MidiTrack::internal_assign(const Track& t, int flags)
         len            = mt.len;
         compression    = mt.compression;
         clefType       = mt.clefType;
+        _curDrumPatchNumber = mt._curDrumPatchNumber;
       }  
       
       if(flags & ASSIGN_ROUTES)
@@ -742,14 +716,6 @@ void MidiTrack::internal_assign(const Track& t, int flags)
         for(ciRoute ir = mt._outRoutes.begin(); ir != mt._outRoutes.end(); ++ir)
           // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
          _outRoutes.push_back(*ir); 
-
-      for (MusEGlobal::global_drum_ordering_t::iterator it=MusEGlobal::global_drum_ordering.begin(); it!=MusEGlobal::global_drum_ordering.end(); it++)
-        if (it->first == &mt)
-        {
-          it=MusEGlobal::global_drum_ordering.insert(it, *it); // duplicates the entry at it, set it to the first entry of both
-          it++;                                                // make it point to the second entry
-          it->first=this;
-        }
       }
       else if(flags & ASSIGN_DEFAULT_ROUTES)
       {
@@ -821,6 +787,22 @@ void MidiTrack::internal_assign(const Track& t, int flags)
       
       if (flags & ASSIGN_DRUMLIST)
       {
+        // Safety in case assignment called on an existing track which is already in global_drum_ordering.
+        remove_ourselves_from_drum_ordering();
+        
+        for (MusEGlobal::global_drum_ordering_t::iterator it=MusEGlobal::global_drum_ordering.begin();
+            it!=MusEGlobal::global_drum_ordering.end(); ++it)
+        {
+          if (it->first == &mt)
+          {
+             // duplicates the entry at it, set it to the first entry of both
+            it=MusEGlobal::global_drum_ordering.insert(it, *it);
+            // make it point to the second entry
+            ++it;
+            it->first=this;
+          }
+        }
+
         for (int i=0;i<128;i++) // no memcpy allowed here. dunno exactly why,
           _drummap[i]=mt._drummap[i]; // seems QString-related.
         update_drum_in_map();
@@ -829,6 +811,10 @@ void MidiTrack::internal_assign(const Track& t, int flags)
 
         if(mt._workingDrumMapPatchList)
           *_workingDrumMapPatchList = *mt._workingDrumMapPatchList;
+      }
+      else
+      {
+        init_drummap(true /* write drummap ordering information as well */);
       }
 
       const bool dup = flags & ASSIGN_DUPLICATE_PARTS;
@@ -991,6 +977,8 @@ void MidiTrack::init()
       }
 
       _outChannel    = (type()==NEW_DRUM) ? 9 : 0;
+
+      clefType=trebleClef;
 
       _curDrumPatchNumber = CTRL_VAL_UNKNOWN;
 

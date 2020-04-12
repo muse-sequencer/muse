@@ -70,6 +70,7 @@ extern bool hIsB;
 
 namespace MusECore {
 
+
 static const char* vall[] = {
       "c","c#","d","d#","e","f","f#","g","g#","a","a#","h"
       };

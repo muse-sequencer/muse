@@ -237,7 +237,7 @@ bool Audio::start()
                       if (MusEGlobal::debugMsg) fprintf(stderr, "reconnecting input %s\n", (*i)->name().toLatin1().data());
                       for (int x=0; x < (*i)->channels();x++)
                           (*i)->setJackPort(x,0);
-                      (*i)->setName((*i)->name()); // restore jack connection
+                      (*i)->registerPorts();
                       }
 
                 OutputList* otl = MusEGlobal::song->outputs();
@@ -246,7 +246,7 @@ bool Audio::start()
                       for (int x=0; x < (*i)->channels();x++)
                           (*i)->setJackPort(x,0);
                       if (MusEGlobal::debugMsg) fprintf(stderr, "name=%s\n",(*i)->name().toLatin1().data());
-                      (*i)->setName((*i)->name()); // restore jack connection
+                      (*i)->registerPorts();
                       }
                }
           else {

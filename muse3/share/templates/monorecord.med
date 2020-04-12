@@ -28,7 +28,6 @@
       <solo>0</solo>
       <off>0</off>
       <channels>1</channels>
-      <height>20</height>
       <locked>1</locked>
       <prefader>0</prefader>
       <sendMetronome>1</sendMetronome>
@@ -47,7 +46,6 @@
       <solo>0</solo>
       <off>0</off>
       <channels>1</channels>
-      <height>20</height>
       <locked>1</locked>
       <prefader>0</prefader>
       <sendMetronome>0</sendMetronome>
@@ -66,7 +64,6 @@
       <solo>0</solo>
       <off>0</off>
       <channels>1</channels>
-      <height>20</height>
       <locked>0</locked>
       <selected>1</selected>
       <prefader>0</prefader>

@@ -1114,7 +1114,26 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
 
     case ModifyPartLength:
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyPartLength part:%p old_val:%d new_val:%u\n", _part, _part->lenValue(), _posLenVal);
-      //_part->type() == Pos::FRAMES ? _part->setLenFrame(_posLenVal) : _part->setLenTick(_posLenVal);
+
+      // If we are extending a wave part the underlying event (containing the wave file, also must be extended)
+      if (_part->partType() == MusECore::Part::WavePartType) {
+
+        // find the event that exists at the end of the part (if there is one) and extend it
+        auto eventList = _part->events();
+
+        // find event with largest framepos
+        Event& lastEvent = eventList.begin()->second;
+        for (auto ci = eventList.begin(); ci != eventList.end(); ++ci) {
+          if ( ((Event&)ci->second).frame() > lastEvent.frame())
+          {
+              lastEvent = ci->second;
+          }
+        }
+        // not entirely correct if the event does not start at part start
+        // but maybe it is enough as the event will be long enough.
+        lastEvent.setLenValue(_posLenVal);
+      }
+
       _part->setLenValue(_posLenVal);
       flags |= SC_PART_MODIFIED;
     break;

@@ -72,6 +72,7 @@
 #include "tempo.h"
 #include "route.h"
 #include "strntcpy.h"
+#include "name_factory.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define ERROR_TIMESTRETCH(dev, format, args...)  fprintf(dev, format, ##args)
@@ -290,7 +291,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
         return 0;
       
       Track* t = addTrack((Track::TrackType)n, insertAt);
-      if (t->isVisible()) {
+      if (t && t->isVisible()) {
         selectAllTracks(false);
         t->setSelected(true);
         update(SC_TRACK_SELECTION);
@@ -299,23 +300,17 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
     }  
 }          
           
-      
 //---------------------------------------------------------
-//    addTrack
-//    called from GUI context
-//    type is track type
-//    If insertAt is valid, inserts before insertAt. Else at the end after all tracks.
+//    createTrack
 //---------------------------------------------------------
 
-Track* Song::addTrack(Track::TrackType type, Track* insertAt)
+Track* Song::createTrack(Track::TrackType type, bool setDefaults)
       {
-      Track* track = 0;
-      int lastAuxIdx = _auxs.size();
+      Track* track = nullptr;
       switch(type) {
             case Track::MIDI:
                   track = new MidiTrack();
                   track->setType(Track::MIDI);
-                  if (MusEGlobal::config.unhideTracks) MidiTrack::setVisible(true);
                   break;
             case Track::NEW_DRUM:
                   track = new MidiTrack();
@@ -326,151 +321,199 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
                   track = new MidiTrack();
                   track->setType(Track::DRUM);
                   ((MidiTrack*)track)->setOutChannel(9);
-                  if (MusEGlobal::config.unhideTracks) MidiTrack::setVisible(true);
                   break;
             case Track::WAVE:
                   track = new MusECore::WaveTrack();
-                  ((AudioTrack*)track)->addAuxSend(lastAuxIdx);
-                  if (MusEGlobal::config.unhideTracks) WaveTrack::setVisible(true);
                   break;
             case Track::AUDIO_OUTPUT:
                   track = new AudioOutput();
-                  if (MusEGlobal::config.unhideTracks) AudioOutput::setVisible(true);
                   break;
             case Track::AUDIO_GROUP:
                   track = new AudioGroup();
-                  ((AudioTrack*)track)->addAuxSend(lastAuxIdx);
-                  if (MusEGlobal::config.unhideTracks) AudioGroup::setVisible(true);
                   break;
             case Track::AUDIO_AUX:
                   track = new AudioAux();
-                  if (MusEGlobal::config.unhideTracks) AudioAux::setVisible(true);
                   break;
             case Track::AUDIO_INPUT:
                   track = new AudioInput();
-                  ((AudioTrack*)track)->addAuxSend(lastAuxIdx);
-                  if (MusEGlobal::config.unhideTracks) AudioInput::setVisible(true);
                   break;
             case Track::AUDIO_SOFTSYNTH:
-                  fprintf(stderr, "not implemented: Song::addTrack(SOFTSYNTH)\n");
-                  // ((AudioTrack*)track)->addAuxSend(lastAuxIdx);
-                  break;
+                  fprintf(stderr, "not implemented: Song::createTrack(SOFTSYNTH)\n");
+                  return nullptr;
             default:
-                  fprintf(stderr, "THIS SHOULD NEVER HAPPEN: Song::addTrack() illegal type %d. returning NULL.\n"
+                  fprintf(stderr, "THIS SHOULD NEVER HAPPEN: Song::createTrack() illegal type %d. returning NULL.\n"
                          "save your work if you can and expect soon crashes!\n", type);
-                  return NULL;
+                  return nullptr;
             }
-      track->setDefaultName();
-      
-      int idx = insertAt ? _tracks.index(insertAt) : -1;
 
-      // Add default track <-> midiport routes.
-      if(track->isMidiTrack()) 
+      if(setDefaults)
       {
-        MidiTrack* mt = (MidiTrack*)track;
-        int c;
-        bool defOutFound = false;                /// TODO: Remove this if and when multiple output routes supported.
-        const int chmask = (1 << MusECore::MUSE_MIDI_CHANNELS) - 1;
-        for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
+        // Add default track <-> midiport routes.
+        if(track->isMidiTrack()) 
         {
-          MidiPort* mp = &MusEGlobal::midiPorts[i];
-          if(!mp->device())  // Only if device is valid.
-            continue;
-          if(mp->device()->rwFlags() & 0x02) // Readable
+          MidiTrack* mt = (MidiTrack*)track;
+          int c;
+          bool defOutFound = false;                /// TODO: Remove this if and when multiple output routes supported.
+          const int chmask = (1 << MusECore::MUSE_MIDI_CHANNELS) - 1;
+          for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
           {
-            c = mp->defaultInChannels();
-            if(c)
+            MidiPort* mp = &MusEGlobal::midiPorts[i];
+            if(!mp->device())  // Only if device is valid.
+              continue;
+            if(mp->device()->rwFlags() & 0x02) // Readable
             {
-              // All channels set or Omni? Use an Omni route:
-              if(c == -1 || c == chmask)
-                track->inRoutes()->push_back(Route(i));
-              else
-              // Add individual channels:  
-              for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)
-              {
-                if(c & (1 << ch))
-                  track->inRoutes()->push_back(Route(i, ch));
-              }
-            }
-          }
-          
-          if(mp->device()->rwFlags() & 0x01) // Writeable
-          {
-            if(!defOutFound)                       ///
-            {
-              c = mp->defaultOutChannels();
+              c = mp->defaultInChannels();
               if(c)
               {
-                
-#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-                if(c == -1)
-                  c = 1;  // Just to be safe, shouldn't happen, default to channel 0.
-                for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)   
-                {
-                  if(c & (1 << ch))
-                  {
-                    defOutFound = true;
-                    mt->setOutPort(i);
-                    if(type != Track::DRUM && type != Track::NEW_DRUM)  // Leave drum tracks at channel 10.
-                      mt->setOutChannel(ch);
-                    //updateFlags |= SC_ROUTE;
-                    break;               
-                  }
-                }
-#else 
                 // All channels set or Omni? Use an Omni route:
                 if(c == -1 || c == chmask)
-                  track->outRoutes()->push_back(Route(i));
+                  track->inRoutes()->push_back(Route(i));
                 else
                 // Add individual channels:  
                 for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)
                 {
                   if(c & (1 << ch))
-                    track->outRoutes()->push_back(Route(i, ch));
+                    track->inRoutes()->push_back(Route(i, ch));
                 }
-#endif
               }
-            }  
-          }
-        }
-
-        if (!defOutFound) { // no default port found
-          // set it to the port with highest number
-
-          for(int i = MusECore::MIDI_PORTS-1; i >= 0; --i) {
-
-            MidiPort* mp = &MusEGlobal::midiPorts[i];
-
-            if (mp->device() != NULL) {
-
-              mt->setOutPort(i);
-              break;
-            }
-          }
-        }
-      }
-                  
-      //
-      //  add default route to master
-      //
-      OutputList* ol = MusEGlobal::song->outputs();
-      if (!ol->empty()) {
-            AudioOutput* ao = ol->front();
-            switch(type) {
-                  case Track::WAVE:
-                  case Track::AUDIO_AUX:
-                        //fprintf(stderr, "Song::addTrack(): WAVE or AUDIO_AUX type:%d name:%s pushing default route to master\n", track->type(), track->name().toLatin1().constData());  
-                        track->outRoutes()->push_back(Route(ao));
-                        break;
-                  // It should actually never get here now, but just in case.
-                  case Track::AUDIO_SOFTSYNTH:
-                        track->outRoutes()->push_back(Route(ao));
-                        break;
-                  default:
-                        break;
-                  }
             }
             
+            if(mp->device()->rwFlags() & 0x01) // Writeable
+            {
+              if(!defOutFound)                       ///
+              {
+                c = mp->defaultOutChannels();
+                if(c)
+                {
+                  
+  #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+                  if(c == -1)
+                    c = 1;  // Just to be safe, shouldn't happen, default to channel 0.
+                  for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)   
+                  {
+                    if(c & (1 << ch))
+                    {
+                      defOutFound = true;
+                      mt->setOutPort(i);
+                      if(type != Track::DRUM && type != Track::NEW_DRUM)  // Leave drum tracks at channel 10.
+                        mt->setOutChannel(ch);
+                      //updateFlags |= SC_ROUTE;
+                      break;               
+                    }
+                  }
+  #else 
+                  // All channels set or Omni? Use an Omni route:
+                  if(c == -1 || c == chmask)
+                    track->outRoutes()->push_back(Route(i));
+                  else
+                  // Add individual channels:  
+                  for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch)
+                  {
+                    if(c & (1 << ch))
+                      track->outRoutes()->push_back(Route(i, ch));
+                  }
+  #endif
+                }
+              }  
+            }
+          }
+
+          if (!defOutFound) { // no default port found
+            // set it to the port with highest number
+
+            for(int i = MusECore::MIDI_PORTS-1; i >= 0; --i) {
+
+              MidiPort* mp = &MusEGlobal::midiPorts[i];
+
+              if (mp->device() != NULL) {
+
+                mt->setOutPort(i);
+                break;
+              }
+            }
+          }
+        }
+                    
+        //
+        //  add default route to master
+        //
+        OutputList* ol = MusEGlobal::song->outputs();
+        if (!ol->empty()) {
+              AudioOutput* ao = ol->front();
+              switch(type) {
+                    case Track::WAVE:
+                    case Track::AUDIO_AUX:
+                          //fprintf(stderr, "Song::addTrack(): WAVE or AUDIO_AUX type:%d name:%s pushing default route to master\n", track->type(), track->name().toLatin1().constData());  
+                          track->outRoutes()->push_back(Route(ao));
+                          break;
+                    // It should actually never get here now, but just in case.
+                    case Track::AUDIO_SOFTSYNTH:
+                          track->outRoutes()->push_back(Route(ao));
+                          break;
+                    default:
+                          break;
+                    }
+              }
+      }
+            
+      return track;
+      }
+
+//---------------------------------------------------------
+//    addTrack
+//    called from GUI context
+//    type is track type
+//    If insertAt is valid, inserts before insertAt. Else at the end after all tracks.
+//---------------------------------------------------------
+
+Track* Song::addTrack(Track::TrackType type, Track* insertAt)
+      {
+      // Try to generate a unique track name.
+      TrackNameFactory names(type);
+      if(names.isEmpty())
+        return nullptr;
+
+      Track* track = createTrack(type, true);
+      if(!track)
+        return nullptr;
+
+      switch(type) {
+            case Track::MIDI:
+                  if (MusEGlobal::config.unhideTracks) MidiTrack::setVisible(true);
+                  break;
+            case Track::NEW_DRUM:
+                  if (MusEGlobal::config.unhideTracks) MidiTrack::setVisible(true);
+                  break;
+            case Track::DRUM:
+                  if (MusEGlobal::config.unhideTracks) MidiTrack::setVisible(true);
+                  break;
+            case Track::WAVE:
+                  if (MusEGlobal::config.unhideTracks) WaveTrack::setVisible(true);
+                  break;
+            case Track::AUDIO_OUTPUT:
+                  if (MusEGlobal::config.unhideTracks) AudioOutput::setVisible(true);
+                  break;
+            case Track::AUDIO_GROUP:
+                  if (MusEGlobal::config.unhideTracks) AudioGroup::setVisible(true);
+                  break;
+            case Track::AUDIO_AUX:
+                  if (MusEGlobal::config.unhideTracks) AudioAux::setVisible(true);
+                  break;
+            case Track::AUDIO_INPUT:
+                  if (MusEGlobal::config.unhideTracks) AudioInput::setVisible(true);
+                  break;
+            case Track::AUDIO_SOFTSYNTH:
+                  fprintf(stderr, "not implemented: Song::addTrack(SOFTSYNTH)\n");
+                  return nullptr;
+            default:
+                  fprintf(stderr, "THIS SHOULD NEVER HAPPEN: Song::addTrack() illegal type %d. returning NULL.\n"
+                         "save your work if you can and expect soon crashes!\n", type);
+                  return nullptr;
+            }
+
+      track->setName(names.first());
+
+      int idx = insertAt ? _tracks.index(insertAt) : -1;
       applyOperation(UndoOp(UndoOp::AddTrack, idx, track));
             
       return track;
@@ -483,15 +526,14 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
 
 void Song::duplicateTracks()
 {
-  // Make a temporary copy.  
-  TrackList tl = _tracks;  
+  const TrackList& tl = _tracks;  
 
   int audio_found = 0;
   int midi_found = 0;
 // REMOVE Tim. midnam. Removed. Old drum not used any more.
 //   int drum_found = 0;
   int new_drum_found = 0;
-  for(iTrack it = tl.begin(); it != tl.end(); ++it) 
+  for(ciTrack it = tl.cbegin(); it != tl.cend(); ++it) 
     if((*it)->selected()) 
     {
       Track::TrackType type = (*it)->type(); 
@@ -550,50 +592,29 @@ void Song::duplicateTracks()
   
   delete dlg;
   
-  QString track_name;
+//   QString track_name;
   int idx;
   int trackno = tl.size();
+  TrackNameFactory names;
   
   Undo operations;
-  for(TrackList::reverse_iterator it = tl.rbegin(); it != tl.rend(); ++it) 
+  for(TrackList::const_reverse_iterator it = tl.crbegin(); it != tl.crend(); ++it) 
   {
     Track* track = *it;
     if(track->selected()) 
     {
-      track_name = track->name();
-      int counter=0;
-      int numberIndex=0;
-      for(int cp = 0; cp < copies; ++cp)
+      if(names.genUniqueNames(track->type(), track->name(), copies))
       {
+        for(int cp = 0; cp < copies; ++cp)
+        {
           Track* new_track = track->clone(flags);
-
-          // assign new names to copied tracks. there is still a gaping hole in the logic
-          // making multiple duplicates of multiple tracks still does not produce valid results.
-          if (cp == 0) { // retrieve the first index for renaming the following tracks
-            numberIndex = new_track->name().lastIndexOf("#");
-            if (numberIndex == -1 || numberIndex > track_name.size()) { // according to Qt doc for lastIndexOf it should return -1 when not found
-              track_name += " #";                                       // apparently it returns str_size+1 ?! Let's catch both
-              numberIndex = track_name.size();
-              counter=1;
-            }
-            else {
-              counter = new_track->name().right(new_track->name().size()-numberIndex-1).toInt();
-            }
-          }
-          QString tempName;
-          while(true) {
-            tempName = track_name.left(numberIndex+1) + QString::number(++counter);
-            Track* track = findTrack(tempName);
-            if(track == 0)
-            {
-              new_track->setName(tempName);
-              break;
-            }
-          }
-
+          if(!new_track)
+            break;
+          new_track->setName(names.at(cp));
           idx = trackno + cp;
           operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx, new_track));
-      }  
+        }
+      }
     }
     --trackno;
   }
@@ -4235,7 +4256,7 @@ void Song::restartRecording(bool discard)
   }
   
   //clear all recorded midi events and wave files
-  QStringList new_track_names;
+  TrackNameFactory new_track_names;
   
   int idx_cnt = 0;
   for(size_t i = 0; i < _tracks.size(); i++)
@@ -4246,38 +4267,12 @@ void Song::restartRecording(bool discard)
       Track *nTrk = NULL;
       if(!discard)
       {
-        nTrk = cTrk->clone(clone_flags);
-        
-        QString track_name = cTrk->name();
-        int counter=0;
-        int numberIndex=0;
-        // Assign a new name to the cloned track.
-        numberIndex = track_name.lastIndexOf("#");
-        // according to Qt doc for lastIndexOf it should return -1 when not found
-        // apparently it returns str_size+1 ?! Let's catch both
-        if (numberIndex == -1 || numberIndex > track_name.size()) {
-          track_name += " #";                                       
-          numberIndex = track_name.size();
-          counter=1;
-        }
-        else {
-          counter = track_name.right(track_name.size()-numberIndex-1).toInt();
-        }
-        QString tempName;
-        while(true) {
-          tempName = track_name.left(numberIndex+1) + QString::number(++counter);
-          if(new_track_names.indexOf(tempName) >= 0)
-            continue;
-          Track* track = findTrack(tempName);
-          if(track == 0)
-          {
-            nTrk->setName(tempName);
-            break;
-          }
-        }
+        if(!new_track_names.genUniqueNames(cTrk->type(), cTrk->name(), 1))
+          continue;
 
-        new_track_names.push_back(nTrk->name());
-        
+        nTrk = cTrk->clone(clone_flags);
+        nTrk->setName(new_track_names.first());
+
         const int idx = _tracks.index(cTrk) + idx_cnt++;
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx + 1, nTrk));
         operations.push_back(UndoOp(UndoOp::SetTrackMute, cTrk, true));

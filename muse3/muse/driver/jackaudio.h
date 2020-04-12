@@ -58,6 +58,7 @@ class JackAudioDevice : public AudioDevice {
       enum JackSyncPhases { SyncCheck = 0, SyncStarted, Syncing, Synced };
       enum JackTimebaseMasterPhases { MasterCheck = 0, IsNotMaster, IsMaster };
 
+  private:
       jack_client_t* _client;
       jack_transport_state_t transportState;
       jack_position_t pos;

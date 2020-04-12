@@ -68,7 +68,7 @@ QSize PosEdit::sizeHint() const
       QFontMetrics fm = fontMetrics();
       const int fw = st->pixelMetric(QStyle::PM_SpinBoxFrameWidth);
       int h  = fm.height() + fw * 2;
-      int w = fw * 2 + b_rect.width();
+      int w = fw * 2 + b_rect.width() + 2; // adding 2 pixels so the string is not cut off
       if (_smpte)
 // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
 #if QT_VERSION >= 0x050b00

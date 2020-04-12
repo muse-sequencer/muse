@@ -150,6 +150,8 @@ void WavePreview::addData(int channels, int nframes, float *buffer[])
       int chns = std::min(channels, sfi.channels);
       for(int i = 0; i < chns; i++)
       {
+         if(!buffer[i])
+           continue;
          for(int k = 0; k < nframes; k++)
          {
             buffer [i] [k] += srcbuffer [k * sfi.channels + i];

@@ -2393,16 +2393,12 @@ AudioInput::AudioInput(const AudioInput& t, int flags)
   for (int i = 0; i < MusECore::MAX_CHANNELS; ++i)
         jackPorts[i] = 0;
 
-  // Register ports.
-  if(MusEGlobal::checkAudioDevice())
-  {
-    for (int i = 0; i < channels(); ++i)
-    {
-      char buffer[128];
-      snprintf(buffer, 128, "%s-%d", _name.toLatin1().constData(), i);
-      jackPorts[i] = MusEGlobal::audioDevice->registerInPort(buffer, false);
-    }
-  }
+  // It is pointless to try to register ports right now since the
+  //  track names are currently the same. The registration will fail
+  //  due to duplicate port names.
+  // Therefore the caller MUST set a unique track name afterwards,
+  //  which does succeed at registering the ports.
+
   internal_assign(t, flags);
 }
 
@@ -2426,9 +2422,8 @@ void AudioInput::internal_assign(const Track& t, int flags)
       // Defer all Jack routes to these copy constructors or assign !
       if(ir->type != Route::JACK_ROUTE)
         continue;
-      // FIXME Must use msgAddRoute instead of _inRoutes.push_back, because it connects to Jack.
-      // The track is still fresh has not been added to track lists yet. Will cause audio processing problems ?
-      MusEGlobal::audio->msgAddRoute(*ir, Route(this, ir->channel, ir->channels));
+      // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+      _inRoutes.push_back(*ir);
     }
   }
 }
@@ -2533,7 +2528,7 @@ void AudioInput::read(Xml& xml)
                         break;
                   case Xml::TagEnd:
                         if (tag == "AudioInput") {
-                              setName(name());  // allocate jack ports
+                              registerPorts();  // allocate jack ports
                               mapRackPluginsToControllers();
                               return;
                               }
@@ -2579,16 +2574,12 @@ AudioOutput::AudioOutput(const AudioOutput& t, int flags)
         jackPorts[i] = 0;
   _nframes = 0;
 
-  // Register ports.
-  if(MusEGlobal::checkAudioDevice())
-  {
-    for (int i = 0; i < channels(); ++i)
-    {
-      char buffer[128];
-      snprintf(buffer, 128, "%s-%d", _name.toLatin1().constData(), i);
-      jackPorts[i] = MusEGlobal::audioDevice->registerOutPort(buffer, false);
-    }
-  }
+  // It is pointless to try to register ports right now since the
+  //  track names are currently the same. The registration will fail
+  //  due to duplicate port names.
+  // Therefore the caller MUST set a unique track name afterwards,
+  //  which does succeed at registering the ports.
+
   internal_assign(t, flags);
 }
 
@@ -2612,9 +2603,8 @@ void AudioOutput::internal_assign(const Track& t, int flags)
       // Defer all Jack routes to these copy constructors or assign !
       if(ir->type != Route::JACK_ROUTE)
         continue;
-      // FIXME Must use msgAddRoute instead of _outRoutes.push_back, because it connects to Jack.
-      // The track is still fresh has not been added to track lists yet. Will cause audio processing problems ?
-      MusEGlobal::audio->msgAddRoute(Route(this, ir->channel, ir->channels), *ir);
+      // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+      _outRoutes.push_back(*ir);
     }
   }
 }
@@ -2744,6 +2734,8 @@ void AudioOutput::applyOutputLatencyComp(unsigned nframes)
     const int track_out_channels = MusECore::MAX_CHANNELS; //totalProcessBuffers(); // totalOutChannels();
     for(int i = 0; i < track_out_channels; ++i)
     {
+      if(!buffer[i])
+        continue;
       // Prepare the latency value to be passed to the compensator's writer,
       //  by adjusting each channel latency value. ie. the channel with the worst-case
       //  latency will get ZERO delay, while channels having smaller latency will get
@@ -2799,7 +2791,7 @@ void AudioOutput::read(Xml& xml)
                         break;
                   case Xml::TagEnd:
                         if (tag == "AudioOutput") {
-                              setName(name());  // allocate jack ports
+                              registerPorts();  // allocate jack ports
                               mapRackPluginsToControllers();
                               return;
                               }

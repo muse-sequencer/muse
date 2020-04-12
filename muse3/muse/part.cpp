@@ -1172,12 +1172,12 @@ void Part::splitPart(unsigned int tickpos, Part*& p1, Part*& p2) const
                   unsigned int s1 = event.frame() + ps;
                   unsigned int s2 = event.endFrame() + ps;
                   
-                  if ((s2 > d1p1) && (s1 < d2p1)) {
-                        Event si = event.mid(d1p1 - ps, d2p1 - ps);
+                 if ((s2 > d1p1) && (s1 < d2p1)) {
+                        Event si = event.mid(d1p1 - ps, d2p1);
                         p1->addEvent(si);
                         }
                   if ((s2 > d1p2) && (s1 < d2p2)) {
-                        Event si = event.mid(d1p2 - ps, d2p2 - ps);
+                        Event si = event.mid(d1p2 - ps, d2p2);
                         p2->addEvent(si);
                         }
                   }
@@ -1287,19 +1287,7 @@ int MidiPart::hasHiddenEvents() const
 
 int WavePart::hasHiddenEvents() const
 {
-  unsigned int len = lenFrame();
-  
-  // TODO: For now, we don't support events before the left border, only events past the right border.
-  for(ciEvent ev=_events.begin(); ev!=_events.end(); ev++)
-  {
-    if(ev->second.endFrame() > len)
-    {
-      _hiddenEvents = RightEventsHidden;  // Cache the result for later.
-      return _hiddenEvents;
-    }  
-  }
-  _hiddenEvents = NoEventsHidden;  // Cache the result for later.
-  return _hiddenEvents;
+  return NoEventsHidden;
 }
 
 bool WavePart::openAllEvents()
