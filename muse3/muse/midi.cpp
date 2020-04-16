@@ -1057,7 +1057,7 @@ void Audio::seekMidi()
           {
             if(Track* t = p->track())
             {
-              if(t->type() == MusECore::Track::NEW_DRUM)
+              if(t->type() == MusECore::Track::DRUM)
               {
                 MidiTrack* mt = static_cast<MidiTrack*>(t);
                 int v_idx = ctlnum & 0x7f;

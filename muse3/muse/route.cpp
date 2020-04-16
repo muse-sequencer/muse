@@ -1098,11 +1098,11 @@ bool routeCanConnect(const Route& src, const Route& dst)
         switch(src.track->type())
         {
           case Track::MIDI:
-          case Track::NEW_DRUM:
+          case Track::DRUM:
             switch(dst.track->type())
             {
               case Track::MIDI:
-              case Track::NEW_DRUM:
+              case Track::DRUM:
               case Track::WAVE:
               case Track::AUDIO_OUTPUT:
               case Track::AUDIO_GROUP:
@@ -1122,7 +1122,7 @@ bool routeCanConnect(const Route& src, const Route& dst)
             switch(dst.track->type())
             {
               case Track::MIDI:
-              case Track::NEW_DRUM:
+              case Track::DRUM:
               case Track::WAVE:
               case Track::AUDIO_OUTPUT:
               case Track::AUDIO_GROUP:
@@ -1141,7 +1141,7 @@ bool routeCanConnect(const Route& src, const Route& dst)
             switch(dst.track->type())
             {
               case Track::MIDI:
-              case Track::NEW_DRUM:
+              case Track::DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
                 return false;
@@ -1158,7 +1158,7 @@ bool routeCanConnect(const Route& src, const Route& dst)
             switch(dst.track->type())
             {
               case Track::MIDI:
-              case Track::NEW_DRUM:
+              case Track::DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
                 return false;
@@ -1175,7 +1175,7 @@ bool routeCanConnect(const Route& src, const Route& dst)
             switch(dst.track->type())
             {
               case Track::MIDI:
-              case Track::NEW_DRUM:
+              case Track::DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
                 return false;
@@ -1192,7 +1192,7 @@ bool routeCanConnect(const Route& src, const Route& dst)
             switch(dst.track->type())
             {
               case Track::MIDI:
-              case Track::NEW_DRUM:
+              case Track::DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
                 return false;
@@ -1209,7 +1209,7 @@ bool routeCanConnect(const Route& src, const Route& dst)
             switch(dst.track->type())
             {
               case Track::MIDI:
-              case Track::NEW_DRUM:
+              case Track::DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
                 return false;
@@ -1485,11 +1485,11 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
         switch(src.track->type())
         {
           case Track::MIDI:
-          case Track::NEW_DRUM:
+          case Track::DRUM:
             switch(dst.track->type())
             {
               case Track::MIDI:
-              case Track::NEW_DRUM:
+              case Track::DRUM:
               case Track::WAVE:
               case Track::AUDIO_OUTPUT:
               case Track::AUDIO_GROUP:
@@ -1509,7 +1509,7 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
             switch(dst.track->type())
             {
               case Track::MIDI:
-              case Track::NEW_DRUM:
+              case Track::DRUM:
               case Track::WAVE:
               case Track::AUDIO_OUTPUT:
               case Track::AUDIO_GROUP:
@@ -1528,7 +1528,7 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
             switch(dst.track->type())
             {
               case Track::MIDI:
-              case Track::NEW_DRUM:
+              case Track::DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
                 return false;
@@ -1545,7 +1545,7 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
             switch(dst.track->type())
             {
               case Track::MIDI:
-              case Track::NEW_DRUM:
+              case Track::DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
                 return false;
@@ -1562,7 +1562,7 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
             switch(dst.track->type())
             {
               case Track::MIDI:
-              case Track::NEW_DRUM:
+              case Track::DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
                 return false;
@@ -1579,7 +1579,7 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
             switch(dst.track->type())
             {
               case Track::MIDI:
-              case Track::NEW_DRUM:
+              case Track::DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
                 return false;
@@ -1596,7 +1596,7 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
             switch(dst.track->type())
             {
               case Track::MIDI:
-              case Track::NEW_DRUM:
+              case Track::DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
                 return false;

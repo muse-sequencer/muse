@@ -99,7 +99,7 @@ void addPortCtrlEvents(MidiTrack* t, bool drum_ctls, bool non_drum_ctls)
         // Is it a drum controller event, according to the track port's instrument?
         MidiPort* mp;
         int ch;
-        is_drum_ctl = t->drumMappedPortChanCtrl(&cntrl, nullptr, &mp, &ch);
+        is_drum_ctl = t->mappedPortChanCtrl(&cntrl, nullptr, &mp, &ch);
 
         if((is_drum_ctl && drum_ctls) || (!is_drum_ctl && non_drum_ctls))
           mp->setControllerVal(ch, tick, cntrl, val, part);
@@ -148,7 +148,7 @@ void removePortCtrlEvents(MidiTrack* t, bool drum_ctls, bool non_drum_ctls)
         // Is it a drum controller event, according to the track port's instrument?
         MidiPort* mp;
         int ch;
-        is_drum_ctl = t->drumMappedPortChanCtrl(&cntrl, nullptr, &mp, &ch);
+        is_drum_ctl = t->mappedPortChanCtrl(&cntrl, nullptr, &mp, &ch);
 
         if((is_drum_ctl && drum_ctls) || (!is_drum_ctl && non_drum_ctls))
           mp->deleteController(ch, tick, cntrl, val, part);
@@ -187,7 +187,7 @@ bool Track::isVisible()
     case Track::WAVE:
         return WaveTrack::visible();
     case Track::MIDI:
-    case Track::NEW_DRUM:
+    case Track::DRUM:
         return MidiTrack::visible();
     case Track::AUDIO_SOFTSYNTH:
         return SynthI::visible();
@@ -346,7 +346,7 @@ QPixmap* Track::trackTypeIcon(TrackType type)
   switch(type) {
         case MusECore::Track::MIDI:
               return MusEGui::addtrack_addmiditrackIcon;
-        case MusECore::Track::NEW_DRUM:
+        case MusECore::Track::DRUM:
               return MusEGui::addtrack_newDrumtrackIcon;
         case MusECore::Track::WAVE:
               return MusEGui::addtrack_wavetrackIcon;
@@ -376,7 +376,7 @@ QColor Track::trackTypeColor(TrackType type)
   switch(type) {
         case MusECore::Track::MIDI:
               return MusEGlobal::config.midiTrackBg;
-        case MusECore::Track::NEW_DRUM:
+        case MusECore::Track::DRUM:
               return MusEGlobal::config.newDrumTrackBg;
         case MusECore::Track::WAVE:
               return MusEGlobal::config.waveTrackBg;
@@ -406,7 +406,7 @@ QColor Track::trackTypeLabelColor(TrackType type)
   switch(type) {
         case MusECore::Track::MIDI:
               return MusEGlobal::config.midiTrackLabelBg;
-        case MusECore::Track::NEW_DRUM:
+        case MusECore::Track::DRUM:
               return MusEGlobal::config.newDrumTrackLabelBg;
         case MusECore::Track::WAVE:
               return MusEGlobal::config.waveTrackLabelBg;
@@ -843,7 +843,7 @@ bool MidiTrack::setRecordFlag2AndCheckMonitor(bool f)
 
 void MidiTrack::convertToType(TrackType trackType)
 {
-  if(trackType == MusECore::Track::MIDI  ||  trackType == MusECore::Track::NEW_DRUM)
+  if(trackType == MusECore::Track::MIDI  ||  trackType == MusECore::Track::DRUM)
   {
     //
     //    Drum -> Midi
@@ -903,7 +903,7 @@ void MidiTrack::init()
         }
       }
 
-      _outChannel    = (type()==NEW_DRUM) ? 9 : 0;
+      _outChannel    = (type()==DRUM) ? 9 : 0;
 
       clefType=trebleClef;
 
@@ -1597,10 +1597,10 @@ bool MidiTrack::noOutRoute() const
 }
 
 //---------------------------------------------------------
-//   drumMappedPortChanCtrl
+//   mappedPortChanCtrl
 //---------------------------------------------------------
 
-bool MidiTrack::drumMappedPortChanCtrl(int *ctrl, int *port, MidiPort** mport, int *channel) const
+bool MidiTrack::mappedPortChanCtrl(int *ctrl, int *port, MidiPort** mport, int *channel) const
 {
   bool res = false;
   int t_ctrl = *ctrl;
@@ -1614,7 +1614,7 @@ bool MidiTrack::drumMappedPortChanCtrl(int *ctrl, int *port, MidiPort** mport, i
     res = true;
     const int note = t_ctrl & 0x7f;
     // Is it a drum controller old_event, according to the track port's instrument?
-    if(type() == Track::NEW_DRUM)
+    if(type() == Track::DRUM)
     {
       // Default to track port if -1 and track channel if -1.
       const int ch = drummap()[note].channel;
@@ -1907,7 +1907,7 @@ void MidiTrack::write(int level, Xml& xml) const
 
       if (type() == MIDI)
             tag = "miditrack";
-      else if (type() == NEW_DRUM)
+      else if (type() == DRUM)
             tag = "newdrumtrack";
       else {
             printf("THIS SHOULD NEVER HAPPEN: non-midi-type in MidiTrack::write()\n");
@@ -1948,7 +1948,7 @@ void MidiTrack::writeOurDrumSettings(int level, Xml& xml) const
 
 void MidiTrack::MidiCtrlRemapOperation(int index, int newPort, int newChan, int newNote, MidiCtrlValRemapOperation* rmop)
 {
-  if(type() != Track::NEW_DRUM || _outPort < 0 || _outPort >= MusECore::MIDI_PORTS)
+  if(type() != Track::DRUM || _outPort < 0 || _outPort >= MusECore::MIDI_PORTS)
     return;
 
   // Default to track port if -1 and track channel if -1.
@@ -2099,7 +2099,7 @@ void MidiTrack::MidiCtrlRemapOperation(int index, int newPort, int newChan, int 
 
 void MidiTrack::dumpMap()
 {
-  if(type() != NEW_DRUM)
+  if(type() != DRUM)
     return;
   const int port = outPort();
   if(port < 0 || port >= MusECore::MIDI_PORTS)
@@ -2580,7 +2580,7 @@ unsigned MidiTrack::getControllerValueLifetime(unsigned tick, int ctrl)
 
 bool MidiTrack::updateDrummap(int doSignal)
 {
-  if(type() != Track::NEW_DRUM || _outPort < 0 || _outPort >= MusECore::MIDI_PORTS)
+  if(type() != Track::DRUM || _outPort < 0 || _outPort >= MusECore::MIDI_PORTS)
     return false;
   MidiPort* mp = &MusEGlobal::midiPorts[_outPort];
   const int patch = mp->hwCtrlState(_outChannel, CTRL_PROGRAM);
@@ -2648,7 +2648,7 @@ isInstrumentMod
 , bool doWholeMap)
 {
   //if(!isDrumTrack())
-  if(type() != NEW_DRUM)
+  if(type() != DRUM)
     return;
   const int port = outPort();
   if(port < 0 || port >= MusECore::MIDI_PORTS)
@@ -2808,7 +2808,7 @@ isInstrumentMod
 )
 {
   //if(!isDrumTrack())
-  if(type() != NEW_DRUM)
+  if(type() != DRUM)
     return;
 
 #ifdef _USE_INSTRUMENT_OVERRIDES_
@@ -2838,7 +2838,7 @@ isInstrumentMod
 void MidiTrack::getMapItemAt(int tick, int index, DrumMap& dest_map, int overrideType) const
 {
   //if(!isDrumTrack())
-  if(type() != NEW_DRUM)
+  if(type() != DRUM)
   {
     dest_map = iNewDrumMap[index];
     return;
@@ -2865,7 +2865,7 @@ void MidiTrack::getMapItemAt(int tick, int index, DrumMap& dest_map, int overrid
 void MidiTrack::getMapItem(int patch, int index, DrumMap& dest_map, int overrideType) const
 {
   //if(!isDrumTrack())
-  if(type() != NEW_DRUM)
+  if(type() != DRUM)
   {
     dest_map = iNewDrumMap[index];
     return;
@@ -2994,7 +2994,7 @@ void MidiTrack::getMapItem(int patch, int index, DrumMap& dest_map, int override
 int MidiTrack::isWorkingMapItem(int index, int fields, int patch) const
 {
   int ret = WorkingDrumMapEntry::NoOverride;
-  if(type() != NEW_DRUM)
+  if(type() != DRUM)
     return ret;
 
   // Is there an instrument override for this drum map item?
@@ -3033,7 +3033,7 @@ int MidiTrack::isWorkingMapItem(int index, int fields, int patch) const
 
 bool MidiTrack::normalizeDrumMap(int patch)
 {
-  if(type() != NEW_DRUM)
+  if(type() != DRUM)
     return false;
   //WorkingDrumMapList* wdml = _workingDrumMapPatchList->find(patch, true);
   WorkingDrumMapList* wdml = _workingDrumMapPatchList->find(patch, false);
@@ -3271,7 +3271,7 @@ bool MidiTrack::normalizeDrumMap(int patch)
 
 bool MidiTrack::normalizeDrumMap()
 {
-  if(type() != NEW_DRUM)
+  if(type() != DRUM)
     return false;
   const int port = outPort();
   if(port < 0 || port >= MusECore::MIDI_PORTS)

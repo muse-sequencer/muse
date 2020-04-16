@@ -72,7 +72,7 @@ typedef std::vector<double>::iterator iAuxSendValue;
 class Track {
    public:
       enum TrackType {
-         MIDI=0, NEW_DRUM, WAVE, AUDIO_OUTPUT, AUDIO_INPUT, AUDIO_GROUP,
+         MIDI=0, DRUM, WAVE, AUDIO_OUTPUT, AUDIO_INPUT, AUDIO_GROUP,
          AUDIO_AUX, AUDIO_SOFTSYNTH
          };
       // NOTE: ASSIGN_DUPLICATE_PARTS ASSIGN_COPY_PARTS and ASSIGN_CLONE_PARTS are not allowed together - choose one. 
@@ -392,8 +392,8 @@ class Track {
       bool readProperty(Xml& xml, const QString& tag);
       int channels() const                { return _channels; }
       virtual void setChannels(int n);
-      bool isMidiTrack() const       { return type() == MIDI || type() == NEW_DRUM; }
-      bool isDrumTrack() const       { return type() == NEW_DRUM; }
+      bool isMidiTrack() const       { return type() == MIDI || type() == DRUM; }
+      bool isDrumTrack() const       { return type() == DRUM; }
       bool isSynthTrack() const      { return type() == AUDIO_SOFTSYNTH; }
       virtual bool canRecord() const { return false; }
       virtual bool canRecordMonitor() const { return false; }
@@ -531,7 +531,7 @@ class MidiTrack : public Track {
       //  port and channel (same as outPort() and outChannel()), and ctrl is not changed, and returns false.
       // Port, mport, and channel can be null. Ctrl is the fully qualified number if any (low byte is note)
       //  and if ctrl is a drum controller ctrl is filled the note mapped to the drum map 'anote'.
-      bool drumMappedPortChanCtrl(int *ctrl, int *port, MidiPort** mport, int *channel) const;
+      bool mappedPortChanCtrl(int *ctrl, int *port, MidiPort** mport, int *channel) const;
 
       virtual void setSolo(bool val);
       virtual void updateSoloStates(bool noDec);

@@ -983,7 +983,7 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
 {
   switch(t->type()) {
       case MusECore::Track::MIDI:
-      case MusECore::Track::NEW_DRUM:
+      case MusECore::Track::DRUM:
       case MusECore::Track::AUDIO_SOFTSYNTH:
       {
             MusECore::MidiTrack* track = 0;
@@ -1325,7 +1325,7 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool /*evenIgn
 
         QAction* newdrum = addTrack->addAction(QIcon(*addtrack_newDrumtrackIcon),
                                           qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Drum Track")));
-        newdrum->setData(MusECore::Track::NEW_DRUM);
+        newdrum->setData(MusECore::Track::DRUM);
         grp->addAction(newdrum);
       }
       if (populateAll || MusECore::WaveTrack::visible()) {
@@ -1523,7 +1523,7 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)(cur_part->track());
       int channel      = track->outChannel();
       MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
-      bool isNewDrum   = track->type() == MusECore::Track::NEW_DRUM;
+      bool isNewDrum   = track->type() == MusECore::Track::DRUM;
       bool isMidi      = track->type() == MusECore::Track::MIDI;
       MusECore::MidiInstrument* instr = port->instrument();
       MusECore::MidiCtrlValListList* cll = port->controller();

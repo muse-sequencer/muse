@@ -313,7 +313,7 @@ void TList::paint(const QRect& r)
                         case MusECore::Track::MIDI:
                               bg = MusEGlobal::config.midiTrackBg;
                               break;
-                        case MusECore::Track::NEW_DRUM:
+                        case MusECore::Track::DRUM:
                               bg = MusEGlobal::config.newDrumTrackBg;
                               break;
                         case MusECore::Track::WAVE:
@@ -1126,7 +1126,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
         return;
       }
       
-      if (t->type() != MusECore::Track::MIDI && t->type() != MusECore::Track::NEW_DRUM)
+      if (t->type() != MusECore::Track::MIDI && t->type() != MusECore::Track::DRUM)
             return;
       int oPort      = ((MusECore::MidiTrack*)t)->outPort();
       MusECore::MidiPort* port = &MusEGlobal::midiPorts[oPort];
@@ -2062,7 +2062,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         p->addAction(QIcon(*track_commentIcon), tr("Track Comment"))->setData(1002);
                         p->addSeparator();
                         
-                        if (t->type()==MusECore::Track::NEW_DRUM)
+                        if (t->type()==MusECore::Track::DRUM)
                         {
                           QAction* tmp;
                           tmp=p->addAction(tr("Save track's drumlist"));
@@ -2459,7 +2459,7 @@ void TList::copyTrackDrummap(MusECore::MidiTrack* t, bool /*full*/)
   for(MusECore::iMidiTrack it = MusEGlobal::song->midis()->begin(); it != MusEGlobal::song->midis()->end(); ++it)
   {
     mt = *it;
-    if(mt == t || !mt->selected() || mt->type() != MusECore::Track::NEW_DRUM)
+    if(mt == t || !mt->selected() || mt->type() != MusECore::Track::DRUM)
       continue;
 
     // The allocated WorkingDrumMapPatchList wdmpl will become the new list and the
@@ -2714,7 +2714,7 @@ void TList::classesPopupMenu(MusECore::Track* tIn, int x, int y, bool allSelecte
   QMenu p;
   p.clear();
   p.addAction(QIcon(*addtrack_addmiditrackIcon), tr("Midi"))->setData(MusECore::Track::MIDI);
-  p.addAction(QIcon(*addtrack_newDrumtrackIcon), tr("Drum"))->setData(MusECore::Track::NEW_DRUM);
+  p.addAction(QIcon(*addtrack_newDrumtrackIcon), tr("Drum"))->setData(MusECore::Track::DRUM);
   QAction* act = p.exec(mapToGlobal(QPoint(x, y)), 0);
 
   if (!act)

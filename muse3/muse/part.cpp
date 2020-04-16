@@ -268,7 +268,7 @@ void addPortCtrlEvents(const Event& event, Part* part, unsigned int tick, unsign
     MidiTrack* mt = (MidiTrack*)track;
     MidiPort* mp;
     int ch;
-    mt->drumMappedPortChanCtrl(&cntrl, nullptr, &mp, &ch);
+    mt->mappedPortChanCtrl(&cntrl, nullptr, &mp, &ch);
 
     MidiCtrlValListList* mcvll = mp->controller();
     MidiCtrlValList* mcvl = NULL;
@@ -328,7 +328,7 @@ void addPortCtrlEvents(Part* part, bool doClones)
 
           MidiPort* mp;
           int ch;
-          mt->drumMappedPortChanCtrl(&cntrl, nullptr, &mp, &ch);
+          mt->mappedPortChanCtrl(&cntrl, nullptr, &mp, &ch);
 
           mp->setControllerVal(ch, tck, cntrl, val, p);
         }
@@ -377,7 +377,7 @@ bool removePortCtrlEvents(const Event& event, Part* part, Track* track, PendingO
     // Is it a drum controller event, according to the track port's instrument?
     MidiPort* mp;
     int ch;
-    mt->drumMappedPortChanCtrl(&cntrl, nullptr, &mp, &ch);
+    mt->mappedPortChanCtrl(&cntrl, nullptr, &mp, &ch);
 
 
     MidiCtrlValListList* mcvll = mp->controller();
@@ -432,7 +432,7 @@ void removePortCtrlEvents(Part* part, bool doClones)
           // Is it a drum controller event, according to the track port's instrument?
           MidiPort* mp;
           int ch;
-          mt->drumMappedPortChanCtrl(&cntrl, nullptr, &mp, &ch);
+          mt->mappedPortChanCtrl(&cntrl, nullptr, &mp, &ch);
 
           mp->deleteController(ch, tck, cntrl, val, p);
         }
@@ -477,7 +477,7 @@ void modifyPortCtrlEvents(const Event& old_event, const Event& event, Part* part
   // Is it a drum controller old_event, according to the track port's instrument?
   int ch_erase;
   MidiPort* mp_erase;
-  mt->drumMappedPortChanCtrl(&cntrl_erase, nullptr, &mp_erase, &ch_erase);
+  mt->mappedPortChanCtrl(&cntrl_erase, nullptr, &mp_erase, &ch_erase);
 
   
   MidiCtrlValListList* mcvll_erase = mp_erase->controller();
@@ -518,7 +518,7 @@ void modifyPortCtrlEvents(const Event& old_event, const Event& event, Part* part
   // Is it a drum controller event, according to the track port's instrument?
   int ch_add;
   MidiPort* mp_add;
-  mt->drumMappedPortChanCtrl(&cntrl_add, nullptr, &mp_add, &ch_add);
+  mt->mappedPortChanCtrl(&cntrl_add, nullptr, &mp_add, &ch_add);
 
   MidiCtrlValList* mcvl_add;
   MidiCtrlValListList* mcvll_add = mp_add->controller();
@@ -869,7 +869,7 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doMov
       switch(track->type()) {
             case Track::WAVE:
             case Track::MIDI:
-            case Track::NEW_DRUM:
+            case Track::DRUM:
                   {
                   Undo operations;
                                                                         
@@ -917,7 +917,7 @@ void Part::splitPart(unsigned int tickpos, Part*& p1, Part*& p2) const
                   l2 = lenFrame() - l1;
                   break;
           case Track::MIDI:
-          case Track::NEW_DRUM:
+          case Track::DRUM:
                   if(tickpos <= tick() || lenTick() <= l1)
                     return;
                   l1 = tickpos - tick();
@@ -937,7 +937,7 @@ void Part::splitPart(unsigned int tickpos, Part*& p1, Part*& p2) const
                   p2->setLenFrame(l2);
                   break;
           case Track::MIDI:
-          case Track::NEW_DRUM:
+          case Track::DRUM:
                   p1->setLenTick(l1);
                   p2->setTick(tickpos);
                   p2->setLenTick(l2);

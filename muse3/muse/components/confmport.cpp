@@ -273,7 +273,7 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
             for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
             {
               // Leave drum track channel at current setting.
-              if((*it)->type() == MusECore::Track::NEW_DRUM)
+              if((*it)->type() == MusECore::Track::DRUM)
                 changed |= (*it)->setOutPortAndUpdate(no, false);
               else
                 changed |= (*it)->setOutPortAndChannelAndUpdate(no, ch, false);

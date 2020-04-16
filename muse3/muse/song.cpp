@@ -312,9 +312,9 @@ Track* Song::createTrack(Track::TrackType type, bool setDefaults)
                   track = new MidiTrack();
                   track->setType(Track::MIDI);
                   break;
-            case Track::NEW_DRUM:
+            case Track::DRUM:
                   track = new MidiTrack();
-                  track->setType(Track::NEW_DRUM);
+                  track->setType(Track::DRUM);
                   ((MidiTrack*)track)->setOutChannel(9);
                   break;
             case Track::WAVE:
@@ -390,7 +390,7 @@ Track* Song::createTrack(Track::TrackType type, bool setDefaults)
                     {
                       defOutFound = true;
                       mt->setOutPort(i);
-                      if(type != Track::NEW_DRUM)  // Leave drum tracks at channel 10.
+                      if(type != Track::DRUM)  // Leave drum tracks at channel 10.
                         mt->setOutChannel(ch);
                       //updateFlags |= SC_ROUTE;
                       break;               
@@ -476,7 +476,7 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
             case Track::MIDI:
                   if (MusEGlobal::config.unhideTracks) MidiTrack::setVisible(true);
                   break;
-            case Track::NEW_DRUM:
+            case Track::DRUM:
                   if (MusEGlobal::config.unhideTracks) MidiTrack::setVisible(true);
                   break;
             case Track::WAVE:
@@ -527,7 +527,7 @@ void Song::duplicateTracks()
     if((*it)->selected()) 
     {
       Track::TrackType type = (*it)->type(); 
-      if(type == Track::NEW_DRUM)
+      if(type == Track::DRUM)
         ++new_drum_found;
       else if(type == Track::MIDI)
         ++midi_found;
@@ -793,7 +793,7 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
   for(ciMidiTrack it = _midis.begin(); it != _midis.end(); ++it) 
   {
     MidiTrack* mt = *it;
-    if(mt->type() != Track::NEW_DRUM)
+    if(mt->type() != Track::DRUM)
       continue;
       
     MidiPort* trackmp = &MusEGlobal::midiPorts[mt->outPort()];
@@ -822,7 +822,7 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
         {
           int tick = ev.tick() + part->tick();
 
-          if(mt->type() == Track::NEW_DRUM)
+          if(mt->type() == Track::DRUM)
           {
             // Default to track port if -1 and track channel if -1.
             int ch = mt->drummap()[note].channel;
@@ -878,7 +878,7 @@ void Song::changeMidiCtrlCacheEvents(
   for(ciMidiTrack it = _midis.begin(); it != _midis.end(); ++it) 
   {
     MidiTrack* mt = *it;
-    if((mt->type() == Track::NEW_DRUM && drum_tracks) || ((mt->type() == Track::MIDI && midi_tracks)))
+    if((mt->type() == Track::DRUM && drum_tracks) || ((mt->type() == Track::MIDI && midi_tracks)))
     {
       if(add)
         addPortCtrlEvents(mt, drum_ctls, non_drum_ctls);
@@ -2836,7 +2836,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   // Is it a drum controller, according to the track port's instrument?
   int channel;
   MidiPort* mp;
-  mt->drumMappedPortChanCtrl(&dctl, nullptr, &mp, &channel);
+  mt->mappedPortChanCtrl(&dctl, nullptr, &mp, &channel);
 
   unsigned tick = cpos();
   
@@ -3598,7 +3598,7 @@ void Song::insertTrack0(Track* track, int idx)
       int n;
       switch(track->type()) {
             case Track::MIDI:
-            case Track::NEW_DRUM:
+            case Track::DRUM:
                   _midis.push_back((MidiTrack*)track);
                   break;
             case Track::WAVE:
@@ -3746,7 +3746,7 @@ void Song::insertTrackOperation(Track* track, int idx, PendingOperationList& ops
       void* sec_track_list = 0;
       switch(track->type()) {
             case Track::MIDI:
-            case Track::NEW_DRUM:
+            case Track::DRUM:
                   sec_track_list = &_midis;
                   break;
             case Track::WAVE:
@@ -3804,7 +3804,7 @@ void Song::removeTrackOperation(Track* track, PendingOperationList& ops)
       void* sec_track_list = 0;
       switch(track->type()) {
             case Track::MIDI:
-            case Track::NEW_DRUM:
+            case Track::DRUM:
                     sec_track_list = &_midis;
             break;
             case Track::WAVE:

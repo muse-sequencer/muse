@@ -295,7 +295,7 @@ bool MusE::importMidi(const QString name, bool merge)
                         {
 // Obsolete. There is only 'New' drum tracks now.
 //                            if (MusEGlobal::config.importMidiNewStyleDrum)
-                              track->setType(MusECore::Track::NEW_DRUM);
+                              track->setType(MusECore::Track::DRUM);
 //                            else
 //                               track->setType(MusECore::Track::DRUM);
                         }
@@ -315,7 +315,7 @@ bool MusE::importMidi(const QString name, bool merge)
                         if(imp != usedPortMap->end() && imp->second._isStandardDrums && channel == 9) { // A bit HACKISH, see above
 // Obsolete. There is only 'New' drum tracks now.
 //                            if (MusEGlobal::config.importMidiNewStyleDrum)
-                              track->setType(MusECore::Track::NEW_DRUM);
+                              track->setType(MusECore::Track::DRUM);
 //                            else
 //                            {
 //                               track->setType(MusECore::Track::DRUM);

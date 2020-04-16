@@ -357,7 +357,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
         for(iMidiTrack imt = mtlp->begin(); imt != mtlp->end(); ++imt)
         {
           mt = *imt;
-          if(mt->type() != Track::NEW_DRUM)
+          if(mt->type() != Track::DRUM)
             continue;
           if(mt->updateDrummap(false))
             flags |= (SC_DRUMMAP);
@@ -393,7 +393,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
         for(iMidiTrack imt = mtlp->begin(); imt != mtlp->end(); ++imt)
         {
           mt = *imt;
-          if(mt->type() != Track::NEW_DRUM)
+          if(mt->type() != Track::DRUM)
             continue;
           if(mt->updateDrummap(false))
             flags |= (SC_DRUMMAP);
@@ -561,7 +561,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       for(iMidiTrack imt = mtlp->begin(); imt != mtlp->end(); ++imt)
       {
         mt = *imt;
-        if(mt->type() != Track::NEW_DRUM)
+        if(mt->type() != Track::DRUM)
           continue;
         mt_port = mt->outPort();
         if(mt_port < 0 || mt_port >= MusECore::MIDI_PORTS)
@@ -635,7 +635,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
         switch(_track->type())
         {
               case Track::MIDI:
-              case Track::NEW_DRUM:
+              case Track::DRUM:
                     static_cast<MidiTrackList*>(_void_track_list)->push_back(static_cast<MidiTrack*>(_track));
                     break;
               case Track::WAVE:
@@ -799,7 +799,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
         switch(_track->type())
         {
               case Track::MIDI:
-              case Track::NEW_DRUM:
+              case Track::DRUM:
                     static_cast<MidiTrackList*>(_void_track_list)->erase(_track);
                     break;
               case Track::WAVE:

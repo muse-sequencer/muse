@@ -288,7 +288,7 @@ void CtrlPanel::heartBeat()
       int cdp = ctrlcanvas->getCurDrumPitch();
       if(_ctrl->isPerNoteController() && cdp >= 0)
       {
-        if(_track->type() == MusECore::Track::NEW_DRUM)
+        if(_track->type() == MusECore::Track::DRUM)
         {
           // Default to track port if -1 and track channel if -1.
           outport = _track->drummap()[cdp].port;
@@ -569,7 +569,7 @@ void CtrlPanel::ctrlChanged(double val, bool off, int /*id*/, int /*scrollMode*/
       int cdp = ctrlcanvas->getCurDrumPitch();
       if(_ctrl->isPerNoteController() && cdp >= 0)
       {
-        if(_track->type() == MusECore::Track::NEW_DRUM)
+        if(_track->type() == MusECore::Track::DRUM)
         {
           // Default to track port if -1 and track channel if -1.
           outport = _track->drummap()[cdp].port;
@@ -629,7 +629,7 @@ void CtrlPanel::setController()
   _dnum = _ctrl->num();
   if(_ctrl->isPerNoteController() && cdp >= 0)
   {
-    if(_track->type() == MusECore::Track::NEW_DRUM)
+    if(_track->type() == MusECore::Track::DRUM)
     {
       _dnum = (_dnum & ~0xff) | _track->drummap()[cdp].anote;
       int mport = _track->drummap()[cdp].port;

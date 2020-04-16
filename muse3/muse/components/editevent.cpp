@@ -507,7 +507,7 @@ MusECore::Event EditCtrlDialog::getEvent()
       MusECore::MidiTrack* track  = part->track();
       MusECore::MidiPort* port    = &MusEGlobal::midiPorts[track->outPort()];
       int channel                 = track->outChannel();
-      bool isNewDrum              = track->type() == MusECore::Track::NEW_DRUM;
+      bool isNewDrum              = track->type() == MusECore::Track::DRUM;
 
       int evnum = cnum;
       int num = cnum;
@@ -590,7 +590,7 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
 
       MusECore::MidiTrack* track   = part->track();
       MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
-      const bool isNewDrum     = track->type() == MusECore::Track::NEW_DRUM;
+      const bool isNewDrum     = track->type() == MusECore::Track::DRUM;
       const bool isMidi        = track->type() == MusECore::Track::MIDI;
       MusECore::MidiCtrlValListList* cll = port->controller();
       const int channel        = track->outChannel();
@@ -751,7 +751,7 @@ void EditCtrlDialog::newController()
       MusECore::MidiTrack* track    = part->track();
       const int portn               = track->outPort();
       MusECore::MidiPort* port      = &MusEGlobal::midiPorts[portn];
-      const bool isNewDrum   = track->type() == MusECore::Track::NEW_DRUM;
+      const bool isNewDrum   = track->type() == MusECore::Track::DRUM;
       const bool isMidi      = track->type() == MusECore::Track::MIDI;
       MusECore::MidiInstrument* instr   = port->instrument();
       const int channel = track->outChannel();

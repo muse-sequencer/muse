@@ -329,7 +329,7 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
   }
   for(ciMidiTrack imt = MusEGlobal::song->midis()->begin(); imt != MusEGlobal::song->midis()->end(); ++imt)
   {
-    if((*imt)->type() == MusECore::Track::NEW_DRUM)
+    if((*imt)->type() == MusECore::Track::DRUM)
     {
       for(int i = 0; i < DRUM_MAPSIZE; ++i)
       {
@@ -1608,7 +1608,7 @@ bool MidiPort::updateDrumMaps(int chan, int patch)
   for(iMidiTrack t = MusEGlobal::song->midis()->begin(); t != MusEGlobal::song->midis()->end(); ++t)
   {
     mt = *t;
-    if(mt->type() != Track::NEW_DRUM)
+    if(mt->type() != Track::DRUM)
       continue;
     port = mt->outPort();
     if(port < 0 || port >= MusECore::MIDI_PORTS || &MusEGlobal::midiPorts[port] != this)
@@ -1655,7 +1655,7 @@ bool MidiPort::updateDrumMaps()
   for(iMidiTrack t = MusEGlobal::song->midis()->begin(); t != MusEGlobal::song->midis()->end(); ++t)
   {
     mt = *t;
-    if(mt->type() != Track::NEW_DRUM)
+    if(mt->type() != Track::DRUM)
       continue;
     port = mt->outPort();
     if(port < 0 || port >= MusECore::MIDI_PORTS || &MusEGlobal::midiPorts[port] != this)

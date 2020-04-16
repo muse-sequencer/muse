@@ -889,7 +889,7 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
     if((curDrumPitch >= 0) && ((num & 0xff) == 0xff))
     {
       di = (num & ~0xff) | curDrumPitch;
-      if(mt->type() == MusECore::Track::NEW_DRUM)
+      if(mt->type() == MusECore::Track::DRUM)
       {
         is_newdrum_ctl = true;
         n = (num & ~0xff) | mt->drummap()[curDrumPitch].anote;
@@ -1099,7 +1099,7 @@ void CtrlCanvas::updateItems()
                     else if (e.type() == MusECore::Controller) 
                     {
                       int ctl = e.dataA();
-                      if(part->track() && part->track()->type() == MusECore::Track::NEW_DRUM && (_cnum & 0xff) == 0xff)
+                      if(part->track() && part->track()->type() == MusECore::Track::DRUM && (_cnum & 0xff) == 0xff)
                       {
                         if(curDrumPitch < 0)
                           continue;
@@ -2677,7 +2677,7 @@ void CtrlCanvas::pFillBackgrounds(QPainter& p, const QRect& rect, const MusECore
   MusECore::MidiPort* mp;
   int chan;
   int cnum = _cnum;
-  bool is_newdrum_ctl = (mt->type() == MusECore::Track::NEW_DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
+  bool is_newdrum_ctl = (mt->type() == MusECore::Track::DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
 
   if(is_newdrum_ctl)
   {
@@ -2944,7 +2944,7 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
     MusECore::MidiPort* mp;
     int chan;
     int cnum = _cnum;
-    bool is_newdrum_ctl = (mt->type() == MusECore::Track::NEW_DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
+    bool is_newdrum_ctl = (mt->type() == MusECore::Track::DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
 
     if(is_newdrum_ctl)
     {
@@ -3093,7 +3093,7 @@ void CtrlCanvas::pdrawExtraDrumCtrlItems(QPainter& p, const QRect& rect, const M
     MusECore::MidiPort* mp;
     int chan;
     int cnum = _cnum;
-    bool is_newdrum_ctl = (mt->type() == MusECore::Track::NEW_DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
+    bool is_newdrum_ctl = (mt->type() == MusECore::Track::DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
 
     if(is_newdrum_ctl)
     {
@@ -3267,7 +3267,7 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect, const QRegion& region)
       
       // Special: Draw fg drum controller items for non-current selected drum, for the current part
       // FIXME TODO Finish this off, not correct yet.
-      if(curPart && curPart->track() && curPart->track()->type() == MusECore::Track::NEW_DRUM &&
+      if(curPart && curPart->track() && curPart->track()->type() == MusECore::Track::DRUM &&
          curDrumPitch >= 0 && ((_cnum & 0xff) == 0xff))
       {
         // Default to track port if -1 and track channel if -1.

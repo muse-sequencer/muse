@@ -628,14 +628,14 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
                               }
                         else if (tag == "drumtrack") { // Old drumtrack is obsolete.
                               MidiTrack* track = new MidiTrack();
-                              track->setType(Track::NEW_DRUM);
+                              track->setType(Track::DRUM);
                               track->read(xml);
-                              track->convertToType(Track::NEW_DRUM); // Convert the notes and controllers.
+                              track->convertToType(Track::DRUM); // Convert the notes and controllers.
                               insertTrack0(track, -1);
                               }
                         else if (tag == "newdrumtrack") {
                               MidiTrack* track = new MidiTrack();
-                              track->setType(Track::NEW_DRUM);
+                              track->setType(Track::DRUM);
                               track->read(xml);
                               insertTrack0(track, -1);
                               }

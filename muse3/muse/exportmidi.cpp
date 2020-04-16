@@ -165,7 +165,7 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
 
                 if(MusEGlobal::config.exportDrumMapOverrides)
                 {
-                  if (track && track->type() == MusECore::Track::NEW_DRUM) {
+                  if (track && track->type() == MusECore::Track::DRUM) {
                         // Map drum-notes to the drum-map values
                         // We must look at what the drum map WOULD say at the note's tick,
                         //  not what it says now at the current cursor.
@@ -244,7 +244,7 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
                   // Is it a drum controller event, according to the track port's instrument?
                   if(MusEGlobal::midiPorts[port].drumController(ctlnum))
                   {
-                    if (track && track->type() == MusECore::Track::NEW_DRUM) {
+                    if (track && track->type() == MusECore::Track::DRUM) {
                       int v_idx = ctlnum & 0x7f;
                       track->getMapItemAt(tick, v_idx, dm, WorkingDrumMapEntry::AllOverrides);
                       fin_ctlnum = (ctlnum & ~0xff) | dm.anote;
@@ -644,7 +644,7 @@ void MusE::exportMidi()
                           int fin_port = port;
                           int fin_chan = channel;
 
-                          if (track->type() == MusECore::Track::NEW_DRUM) {
+                          if (track->type() == MusECore::Track::DRUM) {
                                 // Map drum-notes to the drum-map values
                                 // We must look at what the drum map WOULD say at the note's tick,
                                 //  not what it says now at the current cursor.
@@ -762,7 +762,7 @@ void MusE::exportMidi()
                           // Is it a drum controller event, according to the track port's instrument?
                           if(MusEGlobal::midiPorts[port].drumController(ctlnum))
                           {
-                            if (track->type() == MusECore::Track::NEW_DRUM) {
+                            if (track->type() == MusECore::Track::DRUM) {
                               int v_idx = ctlnum & 0x7f;
                               track->getMapItemAt(tick, v_idx, dm, MusECore::WorkingDrumMapEntry::AllOverrides);
                               fin_ctlnum = (ctlnum & ~0xff) | dm.anote;

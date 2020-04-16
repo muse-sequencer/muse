@@ -59,7 +59,7 @@ bool TrackNameFactory::genUniqueNames(Track::TrackType type, QString base, int c
     switch(type)
     {
       case Track::MIDI:
-      case Track::NEW_DRUM:
+      case Track::DRUM:
       case Track::WAVE:
             base = QString("Track");
             break;

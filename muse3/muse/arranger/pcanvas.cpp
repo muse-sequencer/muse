@@ -288,7 +288,7 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
                   MusECore::Track* track = *it;
                   switch(track->type()) {
                         case MusECore::Track::MIDI:
-                        case MusECore::Track::NEW_DRUM:
+                        case MusECore::Track::DRUM:
                               {
                               MusECore::MidiPart* part = new MusECore::MidiPart((MusECore::MidiTrack*)track);
                               part->setTick(pos[1]);
@@ -366,7 +366,7 @@ void PartCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, DragType dtype
         {
           cur_new_track_idx = ntrack;
           
-          if(type == MusECore::Track::NEW_DRUM)
+          if(type == MusECore::Track::DRUM)
             ++new_drum_found;
           else if(type == MusECore::Track::MIDI)
             ++midi_found;
@@ -720,7 +720,7 @@ CItem* PartCanvas::newItem(const QPoint& pos, int key_modifiers)
       NPart* np = 0;
       switch(track->type()) {
             case MusECore::Track::MIDI:
-            case MusECore::Track::NEW_DRUM:
+            case MusECore::Track::DRUM:
                   pa = new MusECore::MidiPart((MusECore::MidiTrack*)track);
                   pa->setTick(x);
                   pa->setLenTick(len);
@@ -785,7 +785,7 @@ void PartCanvas::newItem(CItem* i, bool noSnap)
           switch(track->type())
           {
                 case MusECore::Track::MIDI:
-                case MusECore::Track::NEW_DRUM:
+                case MusECore::Track::DRUM:
                       new_part = new MusECore::MidiPart((MusECore::MidiTrack*)track);
                       break;
                 case MusECore::Track::WAVE:
@@ -921,7 +921,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   act_mexport->setData(OP_SAVEPARTTODISK);
                   }
                   break;
-            case MusECore::Track::NEW_DRUM:
+            case MusECore::Track::DRUM:
             {
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startDrumEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
@@ -1628,7 +1628,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
             //  else track is midi
 
             switch (track->type()) {
-                  case MusECore::Track::NEW_DRUM:
+                  case MusECore::Track::DRUM:
                         type = 3;
                         break;
 
