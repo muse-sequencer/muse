@@ -189,24 +189,6 @@ void CtrlEdit::setController(int n)
   canvas->setController(n);
 }
 
-// REMOVE Tim. midnam. Removed. Unused.
-// void CtrlEdit::setController(const QString& name)
-// {
-//   int portno = canvas->track()->outPort();
-//   MusECore::MidiPort* port = &MusEGlobal::midiPorts[portno];
-//   MusECore::MidiInstrument* instr = port->instrument();
-//   MusECore::MidiControllerList* mcl = instr->controller();
-// 
-//   for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) 
-//   {
-//     if (ci->second->name() == name) 
-//     {
-//       canvas->setController(ci->second->num());
-//       break;
-//     }
-//   }
-// }
-
 void CtrlEdit::curPartHasChanged(MusECore::Part* p)
 {
   canvas->curPartHasChanged(p);

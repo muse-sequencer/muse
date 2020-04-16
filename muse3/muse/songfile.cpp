@@ -1154,6 +1154,10 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                               // Now that the song file has been fully loaded, resolve any references in the file.
                               MusEGlobal::song->resolveSongfileReferences();
 
+                              // Now that all track and instrument references have been resolved,
+                              //  it is safe to add all the midi controller cache values.
+                              MusEGlobal::song->changeMidiCtrlCacheEvents(true, true, true, true, true);
+
                               MusEGlobal::audio->msgUpdateSoloStates();
                               // Inform the rest of the app that the song (may) have changed, using these flags.
                               // After this function is called, the caller can do a general Song::update() MINUS these flags,

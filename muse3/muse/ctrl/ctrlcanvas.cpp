@@ -881,33 +881,14 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
     MusECore::MidiTrack* mt = part->track();
     MusECore::MidiPort* mp = NULL;
     MusECore::MidiController* mp_mc = NULL;
-// REMOVE Tim. midnam. Added.
     int chan;
     int di = 0;
     int n = 0;
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//     bool is_drum_ctl = false;
     bool is_newdrum_ctl = false;
 
     if((curDrumPitch >= 0) && ((num & 0xff) == 0xff))
     {
       di = (num & ~0xff) | curDrumPitch;
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//       if((mt->type() == MusECore::Track::DRUM))
-//       {
-//         is_drum_ctl = true;
-//         n = (num & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;  
-//         // Default to track port if -1 and track channel if -1.
-//         int mport = MusEGlobal::drumMap[curDrumPitch].port;
-//         if(mport == -1)
-//           mport = mt->outPort();
-//         mp = &MusEGlobal::midiPorts[mport];
-// // REMOVE Tim. midnam. Added.
-//         chan = MusEGlobal::drumMap[curDrumPitch].channel;
-//         if(chan == -1)
-//           chan = mt->outChannel();
-//       }
-//       else
       if(mt->type() == MusECore::Track::NEW_DRUM)
       {
         is_newdrum_ctl = true;
@@ -917,7 +898,6 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
         if(mport == -1)
           mport = mt->outPort();
         mp = &MusEGlobal::midiPorts[mport];
-// REMOVE Tim. midnam. Added.
         chan = mt->drummap()[curDrumPitch].channel;
         if(chan == -1)
           chan = mt->outChannel();
@@ -926,7 +906,6 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
       {
         n = di; // Simple one-to-one correspondence. There is no 'mapping' for piano roll midi - yet.
         mp = &MusEGlobal::midiPorts[mt->outPort()];
-// REMOVE Tim. midnam. Added.
         chan = mt->outChannel();
       }
     }    
@@ -935,13 +914,10 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
        di = num;
        n = num;
        mp = &MusEGlobal::midiPorts[mt->outPort()];          
-// REMOVE Tim. midnam. Added.
        chan = mt->outChannel();
     }
     
     if(mp)
-// REMOVE Tim. midnam. Changed.
-//       mp_mc = mp->midiController(n);
       mp_mc = mp->midiController(n, chan);
     
     if(dnum)
@@ -973,8 +949,6 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
       }
       
       ctrlInfo->fin_ctrl_num = n;
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//       ctrlInfo->is_drum_ctl = is_drum_ctl;
       ctrlInfo->is_newdrum_ctl = is_newdrum_ctl;
       ctrlInfo->min = min;
       ctrlInfo->max = max;
@@ -1038,7 +1012,6 @@ bool CtrlCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselect
             // Here we have a choice of whether to allow undoing of selections.
             // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
             opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent,
-//                                                   item->part(), i->second->isSelected(), item->part()->selected()));
                                               //item->event(), item->part(), item_selected, obj_selected, false));
                                               item->event(), item->part(), item_selected, obj_selected));
             changed=true;
@@ -1126,29 +1099,6 @@ void CtrlCanvas::updateItems()
                     else if (e.type() == MusECore::Controller) 
                     {
                       int ctl = e.dataA();
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//                       if(part->track() && part->track()->type() == MusECore::Track::DRUM && (_cnum & 0xff) == 0xff)
-//                       {
-//                         if(curDrumPitch < 0)
-//                           continue;
-//                         // Default to track port if -1 and track channel if -1.
-//                         int port = MusEGlobal::drumMap[ctl & 0x7f].port;
-//                         if(port == -1)
-//                           port = part->track()->outPort();
-//                         int chan = MusEGlobal::drumMap[ctl & 0x7f].channel;
-//                         if(chan == -1)
-//                           chan = part->track()->outChannel();
-//                         int cur_port = MusEGlobal::drumMap[curDrumPitch].port;
-//                         if(cur_port == -1)
-//                           cur_port = part->track()->outPort();
-//                         int cur_chan = MusEGlobal::drumMap[curDrumPitch].channel;
-//                         if(cur_chan == -1)
-//                           cur_chan = part->track()->outChannel();
-//                         if((port != cur_port) || (chan != cur_chan))
-//                           continue;
-//                         ctl = (ctl & ~0xff) | MusEGlobal::drumMap[ctl & 0x7f].anote;
-//                       }
-//                       else
                       if(part->track() && part->track()->type() == MusECore::Track::NEW_DRUM && (_cnum & 0xff) == 0xff)
                       {
                         if(curDrumPitch < 0)
@@ -2725,28 +2675,10 @@ void CtrlCanvas::pFillBackgrounds(QPainter& p, const QRect& rect, const MusECore
   
   MusECore::MidiTrack* mt = part->track();
   MusECore::MidiPort* mp;
-// REMOVE Tim. midnam. Added.
   int chan;
   int cnum = _cnum;
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//   bool is_drum_ctl = (mt->type() == MusECore::Track::DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
   bool is_newdrum_ctl = (mt->type() == MusECore::Track::NEW_DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
 
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//   if(is_drum_ctl)
-//   {
-//     // Default to track port if -1 and track channel if -1.
-//     int mport = MusEGlobal::drumMap[curDrumPitch].port;
-//     if(mport == -1)
-//       mport = mt->outPort();
-//     mp = &MusEGlobal::midiPorts[mport];
-//     cnum = (_cnum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
-// // REMOVE Tim. midnam. Added.
-//     chan = MusEGlobal::drumMap[curDrumPitch].channel;
-//     if(chan == -1)
-//       chan = mt->outChannel();
-//   }
-//   else
   if(is_newdrum_ctl)
   {
     // Default to track port if -1 and track channel if -1.
@@ -2755,7 +2687,6 @@ void CtrlCanvas::pFillBackgrounds(QPainter& p, const QRect& rect, const MusECore
       mport = mt->outPort();
     mp = &MusEGlobal::midiPorts[mport];
     cnum = (_cnum & ~0xff) | mt->drummap()[curDrumPitch].anote;
-// REMOVE Tim. midnam. Added.
     chan = mt->drummap()[curDrumPitch].channel;
     if(chan == -1)
       chan = mt->outChannel();
@@ -2763,12 +2694,9 @@ void CtrlCanvas::pFillBackgrounds(QPainter& p, const QRect& rect, const MusECore
   else
   {
     mp = &MusEGlobal::midiPorts[mt->outPort()];
-// REMOVE Tim. midnam. Added.
     chan = mt->outChannel();
   }
   
-// REMOVE Tim. midnam. Changed.
-//   MusECore::MidiController* mc = mp->midiController(cnum);
   MusECore::MidiController* mc = mp->midiController(cnum, chan);
   
   int min;
@@ -2796,8 +2724,6 @@ void CtrlCanvas::pFillBackgrounds(QPainter& p, const QRect& rect, const MusECore
       continue;
     MusECore::Event ev = e->event();
     // Draw drum controllers from another drum on top of ones from this drum.
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-//     if((is_drum_ctl || is_newdrum_ctl) && ev.type() == MusECore::Controller && ev.dataA() != _didx)
     if(is_newdrum_ctl && ev.type() == MusECore::Controller && ev.dataA() != _didx)
       continue;
     int tick = mapx(!ev.empty() ? ev.tick() + e->part()->tick() : 0);
@@ -2870,8 +2796,6 @@ void CtrlCanvas::drawMoving(QPainter& p, const QRect& rect, const QRegion& /*reg
   CtrlCanvasInfoStruct info_out;
   partControllers(curPart, _cnum, 0, 0, 0, 0, &info_out);
   const int cnum = info_out.fin_ctrl_num;
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//   const bool is_drum_ctl = info_out.is_drum_ctl;
   const bool is_newdrum_ctl = info_out.is_newdrum_ctl;    
   const int min = info_out.min;
   const int max = info_out.max;
@@ -2892,8 +2816,6 @@ void CtrlCanvas::drawMoving(QPainter& p, const QRect& rect, const QRegion& /*reg
     if(ev.empty())
       continue;
     // Draw drum controllers from another drum on top of ones from this drum.
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-//     if((is_drum_ctl || is_newdrum_ctl) && ev.type() == MusECore::Controller && ev.dataA() != _didx)
     if(is_newdrum_ctl && ev.type() == MusECore::Controller && ev.dataA() != _didx)
       continue;
 
@@ -3020,28 +2942,10 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
     
     MusECore::MidiTrack* mt = part->track();
     MusECore::MidiPort* mp;
-// REMOVE Tim. midnam. Added.
     int chan;
     int cnum = _cnum;
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//     bool is_drum_ctl = (mt->type() == MusECore::Track::DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
     bool is_newdrum_ctl = (mt->type() == MusECore::Track::NEW_DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
 
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//     if(is_drum_ctl)
-//     {
-//       // Default to track port if -1 and track channel if -1.
-//       int mport = MusEGlobal::drumMap[curDrumPitch].port;
-//       if(mport == -1)
-//         mport = mt->outPort();
-//       mp = &MusEGlobal::midiPorts[mport];
-//       cnum = (_cnum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
-// // REMOVE Tim. midnam. Added.
-//       chan = MusEGlobal::drumMap[curDrumPitch].channel;
-//       if(chan == -1)
-//         chan = mt->outChannel();
-//     }
-//     else
     if(is_newdrum_ctl)
     {
       // Default to track port if -1 and track channel if -1.
@@ -3050,7 +2954,6 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
         mport = mt->outPort();
       mp = &MusEGlobal::midiPorts[mport];
       cnum = (_cnum & ~0xff) | mt->drummap()[curDrumPitch].anote;
-// REMOVE Tim. midnam. Added.
       chan = mt->drummap()[curDrumPitch].channel;
       if(chan == -1)
         chan = mt->outChannel();
@@ -3058,12 +2961,9 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
     else
     {
       mp = &MusEGlobal::midiPorts[mt->outPort()];
-// REMOVE Tim. midnam. Added.
       chan = mt->outChannel();
     }
     
-// REMOVE Tim. midnam. Changed.
-//     MusECore::MidiController* mc = mp->midiController(cnum);
     MusECore::MidiController* mc = mp->midiController(cnum, chan);
     
     int min;
@@ -3094,8 +2994,6 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
         continue;
       MusECore::Event ev = e->event();
       // Draw drum controllers from another drum on top of ones from this drum.
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-//       if((is_drum_ctl || is_newdrum_ctl) && ev.type() == MusECore::Controller && ev.dataA() != _didx)
       if(is_newdrum_ctl && ev.type() == MusECore::Controller && ev.dataA() != _didx)
         continue;
       int tick = mapx(!ev.empty() ? ev.tick() + e->part()->tick() : 0);
@@ -3193,28 +3091,10 @@ void CtrlCanvas::pdrawExtraDrumCtrlItems(QPainter& p, const QRect& rect, const M
     
     MusECore::MidiTrack* mt = part->track();
     MusECore::MidiPort* mp;
-// REMOVE Tim. midnam. Added.
     int chan;
     int cnum = _cnum;
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//     bool is_drum_ctl = (mt->type() == MusECore::Track::DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
     bool is_newdrum_ctl = (mt->type() == MusECore::Track::NEW_DRUM) && (curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff);
 
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//     if(is_drum_ctl)
-//     {
-//       // Default to track port if -1 and track channel if -1.
-//       int mport = MusEGlobal::drumMap[curDrumPitch].port;
-//       if(mport == -1)
-//         mport = mt->outPort();
-//       mp = &MusEGlobal::midiPorts[mport];
-//       cnum = (_cnum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
-//       // REMOVE Tim. midnam. Added.
-//       chan = MusEGlobal::drumMap[curDrumPitch].channel;
-//       if(chan == -1)
-//         chan = mt->outChannel();
-//     }
-//     else
     if(is_newdrum_ctl)
     {
       // Default to track port if -1 and track channel if -1.
@@ -3223,7 +3103,6 @@ void CtrlCanvas::pdrawExtraDrumCtrlItems(QPainter& p, const QRect& rect, const M
         mport = mt->outPort();
       mp = &MusEGlobal::midiPorts[mport];
       cnum = (_cnum & ~0xff) | mt->drummap()[curDrumPitch].anote;
-      // REMOVE Tim. midnam. Added.
       chan = mt->drummap()[curDrumPitch].channel;
       if(chan == -1)
         chan = mt->outChannel();
@@ -3231,12 +3110,9 @@ void CtrlCanvas::pdrawExtraDrumCtrlItems(QPainter& p, const QRect& rect, const M
     else
     {
       mp = &MusEGlobal::midiPorts[mt->outPort()];
-      // REMOVE Tim. midnam. Added.
       chan = mt->outChannel();
     }
     
-// REMOVE Tim. midnam. Changed.
-//     MusECore::MidiController* mc = mp->midiController(cnum);
     MusECore::MidiController* mc = mp->midiController(cnum, chan);
     
     int min;
@@ -3266,11 +3142,6 @@ void CtrlCanvas::pdrawExtraDrumCtrlItems(QPainter& p, const QRect& rect, const M
       MusECore::Event ev = e->event();
       // Draw drum controllers from another drum on top of ones from this drum.
       // FIXME TODO Finish this off, not correct yet.
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-//       if(drum_ctl == -1 && (is_drum_ctl || is_newdrum_ctl) && ev.type() == MusECore::Controller && ev.dataA() != _didx)
-//         continue;
-//       if(drum_ctl != -1 && (!(is_drum_ctl || is_newdrum_ctl) || (ev.type() == MusECore::Controller && ev.dataA() == _didx)))
-//         continue;
       if(drum_ctl == -1 && is_newdrum_ctl && ev.type() == MusECore::Controller && ev.dataA() != _didx)
         continue;
       if(drum_ctl != -1 && (!is_newdrum_ctl || (ev.type() == MusECore::Controller && ev.dataA() == _didx)))
@@ -3396,25 +3267,6 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect, const QRegion& region)
       
       // Special: Draw fg drum controller items for non-current selected drum, for the current part
       // FIXME TODO Finish this off, not correct yet.
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//       if(curPart && curPart->track() && curPart->track()->type() == MusECore::Track::DRUM && 
-//          curDrumPitch >= 0 && ((_cnum & 0xff) == 0xff))
-//       {
-//         // Default to track port if -1 and track channel if -1.
-//         int port = MusEGlobal::drumMap[curDrumPitch].port;
-//         if(port == -1)
-//           port = curPart->track()->outPort();
-//         int anote = MusEGlobal::drumMap[curDrumPitch].anote;
-//         for(int i = 0; i < DRUM_MAPSIZE; ++i)
-//         {
-//           int iport = MusEGlobal::drumMap[i].port;
-//           if(iport == -1)
-//             iport = curPart->track()->outPort();
-//           if(i != curDrumPitch && iport == port && MusEGlobal::drumMap[i].anote == anote)
-//             pdrawExtraDrumCtrlItems(p, rect, curPart, anote);
-//         }
-//       }
-//       else
       if(curPart && curPart->track() && curPart->track()->type() == MusECore::Track::NEW_DRUM &&
          curDrumPitch >= 0 && ((_cnum & 0xff) == 0xff))
       {
@@ -3704,8 +3556,6 @@ bool CtrlCanvas::cancelMouseOps()
 bool CtrlCanvas::setCurDrumPitch(int instrument)
 {
       DrumEdit* drumedit = dynamic_cast<DrumEdit*>(editor);
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-//       if (drumedit == NULL || drumedit->old_style_drummap_mode())
       if (drumedit == NULL)
         curDrumPitch = instrument;
       else // new style drummap mode

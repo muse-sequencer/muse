@@ -2818,9 +2818,7 @@ bool MidiNamCtrl::readMidnam(MusECore::Xml& xml)
 
 //----------------------------------------------------------------
 
-// REMOVE Tim. midnam. Changed.
 MidiNamCtrls::MidiNamCtrls(const MidiNamCtrls& mcl) : MidiControllerList()
-//MidiNamCtrls::MidiNamCtrls(const MidiNamCtrls& mcl) : CompoundMidiControllerList_t()
 {
   for(const_iterator i = mcl.cbegin(); i != mcl.cend(); ++i)
   {
@@ -2879,6 +2877,9 @@ void MidiNamCtrls::readMidnam(MusECore::Xml& xml)
                   case MusECore::Xml::TagEnd:
                         if (tag == "ControlNameList") {
                             _isReference = false;
+                            // This is an actual control name list,
+                            //  regardless if it is empty.
+                            _hasMidiNamCtrls = true;
                             return;
                         }
                         else if (tag == "UsesControlNameList") {
@@ -2900,7 +2901,10 @@ bool MidiNamCtrls::gatherReferences(MidNamReferencesList* refs) const
 
 const MidiControllerList* MidiNamCtrls::getControllers(int /*channel*/, int /*patch*/) const
 {
-  return objectOrRef();
+  const MidiNamCtrls* ctrls = objectOrRef();
+  if(ctrls && ctrls->hasMidiNamCtrls())
+    return ctrls;
+  return nullptr;
 }
 
 
@@ -3586,7 +3590,11 @@ const MidiControllerList* MidNamChannelNameSet::getControllers(int channel, int 
 {
   const MidiNamPatch* p = findPatch(channel, patch);
   if(p)
-    return p->getControllers(channel, patch);
+  {
+    const MidiControllerList* mcl = p->getControllers(channel, patch);
+    if(mcl)
+      return mcl;
+  }
   
   return _controlNameList.getControllers(channel, patch);
 }

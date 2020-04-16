@@ -1806,8 +1806,6 @@ void Strip::componentChanged(int type, double val, bool off, int id, int scrollM
     const int m_port  = m_track->outPort();
     const int m_chan  = m_track->outChannel();
     MusECore::MidiPort* m_mp = &MusEGlobal::midiPorts[m_port];
-// REMOVE Tim. midnam. Changed.
-//     MusECore::MidiController* m_mctl = m_mp->midiController(id, false);
     MusECore::MidiController* m_mctl = m_mp->midiController(id, m_chan,  false);
     if(!m_mctl)
       return;
@@ -1894,8 +1892,6 @@ void Strip::componentChanged(int type, double val, bool off, int id, int scrollM
 
         double d_val = ma_val;
         MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
-// REMOVE Tim. midnam. Changed.
-//         MusECore::MidiController* mctl = mp->midiController(id, false);
         MusECore::MidiController* mctl = mp->midiController(id, chan, false);
         if(!mctl)
           continue;
@@ -2013,8 +2009,6 @@ void Strip::componentChanged(int type, double val, bool off, int id, int scrollM
         doneMidiTracks.append(mils);
 
         MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
-// REMOVE Tim. midnam. Changed.
-//         MusECore::MidiController* mctl = mp->midiController(m_ctlnum, false);
         MusECore::MidiController* mctl = mp->midiController(m_ctlnum, chan, false);
         if(mctl)
         {
@@ -2107,8 +2101,6 @@ void Strip::componentPressed(int type, double val, int id)
     const int m_port  = m_track->outPort();
     const int m_chan  = m_track->outChannel();
     MusECore::MidiPort* m_mp = &MusEGlobal::midiPorts[m_port];
-// REMOVE Tim. midnam. Changed.
-//     MusECore::MidiController* m_mctl = m_mp->midiController(id, false);
     MusECore::MidiController* m_mctl = m_mp->midiController(id, m_chan, false);
     if(!m_mctl)
       return;
@@ -2299,8 +2291,6 @@ void Strip::componentReleased(int type, double val, int id)
     const int m_port  = m_track->outPort();
     const int m_chan  = m_track->outChannel();
     MusECore::MidiPort* m_mp = &MusEGlobal::midiPorts[m_port];
-// REMOVE Tim. midnam. Changed.
-//     MusECore::MidiController* m_mctl = m_mp->midiController(id, false);
     MusECore::MidiController* m_mctl = m_mp->midiController(id, m_chan, false);
     if(!m_mctl)
       return;
@@ -2502,8 +2492,6 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
     const int m_port  = m_track->outPort();
     const int m_chan  = m_track->outChannel();
     MusECore::MidiPort* m_mp = &MusEGlobal::midiPorts[m_port];
-// REMOVE Tim. midnam. Changed.
-//     MusECore::MidiController* m_mctl = m_mp->midiController(id, false);
     MusECore::MidiController* m_mctl = m_mp->midiController(id, m_chan, false);
     if(!m_mctl)
       return;
@@ -2629,8 +2617,6 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
         doneMidiTracks.append(mils);
 
         MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
-// REMOVE Tim. midnam. Changed.
-//         MusECore::MidiController* mctl = mp->midiController(id, false);
         MusECore::MidiController* mctl = mp->midiController(id, chan, false);
         if(!mctl)
           continue;
@@ -2805,8 +2791,6 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
         doneMidiTracks.append(mils);
 
         MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
-// REMOVE Tim. midnam. Changed.
-//         MusECore::MidiController* mctl = mp->midiController(m_ctlnum, false);
         MusECore::MidiController* mctl = mp->midiController(m_ctlnum, chan, false);
         if(mctl)
         {

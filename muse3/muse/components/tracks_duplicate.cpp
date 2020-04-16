@@ -24,13 +24,6 @@
 
 namespace MusEGui {
   
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-// DuplicateTracksDialog::DuplicateTracksDialog(
-//   bool audio, bool /*midi*/, bool /*drum*/, bool newdrum,
-//   QWidget* parent,
-//   bool copies, bool allRoutes, bool defaultRoutes,
-//   bool noParts, bool duplicateParts, bool copyParts, bool cloneParts
-//   )
 DuplicateTracksDialog::DuplicateTracksDialog(
   bool audio, bool /*midi*/, bool newdrum,
   QWidget* parent,

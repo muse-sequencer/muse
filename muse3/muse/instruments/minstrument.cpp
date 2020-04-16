@@ -1400,31 +1400,6 @@ overrideType
 
 }
 
-// REMOVE Tim. midnam. Added.
-// const MidiController* MidiInstrument::findController(int num, int channel, int patch) const
-// {
-//   ciMidiController imc;
-// 
-// #ifdef MIDNAM_SUPPORT
-//   // Is there a midnam controller list for the given channel and patch?
-//   const MidiControllerList* mcl = _midnamDocument.getControllers(channel, patch);
-//   if(mcl)
-//   {
-//     // Is there a controller for the given num?
-//     imc = mcl->find(num);
-//     if(imc != mcl->end())
-//       // Return that controller.
-//       return imc->second;
-//   }
-// #endif
-//   // No midnam controller was found. Does the instrument have the controller?
-//   imc = controller()->find(num);
-//   if(imc != mcl->end())
-//     // Return that controller.
-//     return imc->second;
-//   // No midnam or instrument controller was found. Return null.
-//   return nullptr;
-// }
 MidiController* MidiInstrument::findController(int num, int channel, int patch) const
 {
 #ifdef MIDNAM_SUPPORT

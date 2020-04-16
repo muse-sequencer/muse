@@ -424,8 +424,6 @@ QString EventListItem::text(int col) const
                         case MusECore::Controller:
                               {
                               MusECore::MidiPort* mp = &MusEGlobal::midiPorts[part->track()->outPort()];
-// REMOVE Tim. midnam. Changed.
-//                               MusECore::MidiController* mc = mp->midiController(event.dataA());
                               const int chan = part->track()->outChannel();
                               MusECore::MidiController* mc = mp->midiController(event.dataA(), chan);
                               s = mc->name();

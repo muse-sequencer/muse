@@ -100,7 +100,6 @@ class MidiController {
 
       const QString& name() const         { return _name;   }
       int num() const                     { return _num;    }
-// REMOVE Tim. midnam. Added.
       ControllerType type() const;
       void setName(const QString& s)      { _name = s;      }
       void setNum(int v)                  { _num = v;       }
@@ -119,8 +118,6 @@ class MidiController {
       int bias() const                    { return _bias; }
       int showInTracks() const            { return _showInTracks; }
       void setShowInTracks(int i)         { _showInTracks = i; }
-// REMOVE Tim. midnam. Changed.
-//       bool isPerNoteController() const    { return (_num & 0xff) == 0xff; }
       bool isPerNoteController() const;
       static int genNum(ControllerType, int, int);
       };
@@ -149,7 +146,6 @@ class MidiControllerList : public MidiControllerList_t
       //       However, an inheritor such as the class MidiNamCtrls
       //        found in the MidNam module DOES delete its own.
 
-// REMOVE Tim. midnam. Added.
       // Like find() which finds a verbose ctl number, but this version also finds a per-note
       //  controller if there is one for the given ctl number, if no verbose one was found.
       // Returns null if no controller found. The ctl number can be the 'real' controller number,
@@ -205,7 +201,6 @@ typedef std::pair<int /* number */, MidiController*> MidiControllerListPair;
 
 extern MidiController::ControllerType midiControllerType(int num);
 extern int midiCtrlTerms2Number(MidiController::ControllerType type, int ctrl = 0);
-// REMOVE Tim. midnam. Added.
 extern bool isPerNoteMidiController(int num);
 
 

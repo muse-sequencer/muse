@@ -288,18 +288,6 @@ void CtrlPanel::heartBeat()
       int cdp = ctrlcanvas->getCurDrumPitch();
       if(_ctrl->isPerNoteController() && cdp >= 0)
       {
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//         if(_track->type() == MusECore::Track::DRUM)
-//         {
-//           // Default to track port if -1 and track channel if -1.
-//           outport = MusEGlobal::drumMap[cdp].port;
-//           if(outport == -1)
-//             outport = _track->outPort();
-//           chan = MusEGlobal::drumMap[cdp].channel;
-//           if(chan == -1)
-//             chan = _track->outChannel();
-//         }
-//         else
         if(_track->type() == MusECore::Track::NEW_DRUM)
         {
           // Default to track port if -1 and track channel if -1.
@@ -355,8 +343,6 @@ void CtrlPanel::heartBeat()
           int max = 127;
           int bias = 0;
           int initval = 0;
-// REMOVE Tim. midnam. Changed.
-//           MusECore::MidiController* mc = mp->midiController(_dnum);
           MusECore::MidiController* mc = mp->midiController(_dnum, chan);
           if(mc)
           {
@@ -583,18 +569,6 @@ void CtrlPanel::ctrlChanged(double val, bool off, int /*id*/, int /*scrollMode*/
       int cdp = ctrlcanvas->getCurDrumPitch();
       if(_ctrl->isPerNoteController() && cdp >= 0)
       {
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//         if(_track->type() == MusECore::Track::DRUM)
-//         {
-//           // Default to track port if -1 and track channel if -1.
-//           outport = MusEGlobal::drumMap[cdp].port;
-//           if(outport == -1)
-//             outport = _track->outPort();
-//           chan = MusEGlobal::drumMap[cdp].channel;
-//           if(chan == -1)
-//             chan = _track->outChannel();
-//         }
-//         else
         if(_track->type() == MusECore::Track::NEW_DRUM)
         {
           // Default to track port if -1 and track channel if -1.
@@ -655,20 +629,6 @@ void CtrlPanel::setController()
   _dnum = _ctrl->num();
   if(_ctrl->isPerNoteController() && cdp >= 0)
   {
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//     if(_track->type() == MusECore::Track::DRUM)
-//     {
-//       _dnum = (_dnum & ~0xff) | MusEGlobal::drumMap[cdp].anote;
-//       int mport = MusEGlobal::drumMap[cdp].port;
-//       // Default to track port if -1 and track channel if -1.
-//       if(mport == -1)
-//         mport = _track->outPort();
-//       mp = &MusEGlobal::midiPorts[mport];
-//       ch = MusEGlobal::drumMap[cdp].channel;
-//       if(ch == -1)
-//         ch = _track->outChannel();
-//     }
-//     else
     if(_track->type() == MusECore::Track::NEW_DRUM)
     {
       _dnum = (_dnum & ~0xff) | _track->drummap()[cdp].anote;
@@ -1023,8 +983,6 @@ void CtrlPanel::ctrlRightClicked(const QPoint& p, int /*id*/)
     
   int cdp = ctrlcanvas->getCurDrumPitch();
   int ctlnum = _ctrl->num();
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-//   if((_track->type() == MusECore::Track::DRUM || _track->type() == MusECore::Track::NEW_DRUM) &&
   if(_track->isDrumTrack() &&
      _ctrl->isPerNoteController() && cdp >= 0)
     //ctlnum = (ctlnum & ~0xff) | MusEGlobal::drumMap[cdp].enote; DELETETHIS or which of them is correct?

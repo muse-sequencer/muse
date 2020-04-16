@@ -39,14 +39,6 @@ class DuplicateTracksDialog : public QDialog, public Ui::DuplicateTracksBase
     //int exec();
 
   public:
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-//     DuplicateTracksDialog(
-//       bool audio, bool midi, bool drum, bool newdrum,
-//       QWidget* parent = 0,
-//       bool copies = true,
-//       bool allRoutes = true, bool defaultRoutes = true,
-//       bool noParts = true, bool duplicateParts = true, bool copyParts = true, bool cloneParts = true
-//       );
     DuplicateTracksDialog(
       bool audio, bool midi, bool newdrum,
       QWidget* parent = 0,

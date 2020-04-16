@@ -1,3 +1,10 @@
+13.04.2020
+    - Fix regression from 12.04.2019: Midi controller cache not proper after loading. (Tim)
+      Since we now resolve track and instrument references AFTER a song file is FULLY loaded,
+       calling addPortCtrlEvents() on all tracks BEFORE doing the resolving had no effect.
+      Now port midi control cache events are added on all tracks AFTER the resolving.
+    - Moved classes MidiController and MidiControllerList from midictrl module into a separate
+       midi_controller module (library in libs) so that our midnam library can use it.
 06.04.2020
     - Fixed bug 790 Crash when dragging parts to blank area. (Tim)
       Bonus: Now supports dragging parts from multiple non-contiguous tracks,

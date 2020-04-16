@@ -983,8 +983,6 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
 {
   switch(t->type()) {
       case MusECore::Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//       case MusECore::Track::DRUM:
       case MusECore::Track::NEW_DRUM:
       case MusECore::Track::AUDIO_SOFTSYNTH:
       {
@@ -1525,20 +1523,15 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)(cur_part->track());
       int channel      = track->outChannel();
       MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//       bool isDrum      = track->type() == MusECore::Track::DRUM;
       bool isNewDrum   = track->type() == MusECore::Track::NEW_DRUM;
       bool isMidi      = track->type() == MusECore::Track::MIDI;
       MusECore::MidiInstrument* instr = port->instrument();
-// REMOVE Tim. midnam. Removed.
-//       MusECore::MidiControllerList* mcl = instr->controller();
       MusECore::MidiCtrlValListList* cll = port->controller();
       const int min = channel << 24;
       const int max = min + 0x1000000;
       const int edit_ins = max + 3;
       const int velo = max + 0x101;
       int est_width = 0;  
-      // REMOVE Tim. midnam. Added.
       const int patch = port->hwCtrlState(channel, MusECore::CTRL_PROGRAM);
       
       std::list<CI> sList;
@@ -1547,8 +1540,6 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
 
       for (MusECore::iMidiCtrlValList it = cll->lower_bound(min); it != cll->lower_bound(max); ++it) {
             MusECore::MidiCtrlValList* cl = it->second;
-// REMOVE Tim. midnam. Changed.
-//             MusECore::MidiController* c   = port->midiController(cl->num());
             MusECore::MidiController* c   = port->midiController(cl->num(), channel);
             bool isDrumCtrl = (c->isPerNoteController());
             int show = c->showInTracks();
@@ -1556,13 +1547,6 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
             int num = cl->num();
             if (isDrumCtrl) {
                   // Only show controller for current pitch:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//                   if (isDrum)
-//                   {
-//                     if ((curDrumPitch < 0) || ((num & 0xff) != MusEGlobal::drumMap[curDrumPitch].anote))
-//                           continue;
-//                   }
-//                   else
                   if (isNewDrum)
                   {
                     if ((curDrumPitch < 0) || ((num & 0xff) != track->drummap()[curDrumPitch].anote))
@@ -1598,9 +1582,6 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
                               {
                                 if((ctl_num & 0xff) != curDrumPitch)
                                   continue;
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-//                                 if(isDrum)
-//                                   ctl_num = (ctl_num & ~0xff) | MusEGlobal::drumMap[ctl_num & 0x7f].anote;
                                 if(isNewDrum)
                                   ctl_num = (ctl_num & ~0xff) | track->drummap()[ctl_num & 0x7f].anote;
                               }
@@ -1620,8 +1601,6 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
                      (((isDrumCtrl || isNewDrum) && !(show & MusECore::MidiController::ShowInDrum)) ||
                      (isMidi && !(show & MusECore::MidiController::ShowInMidi))))
                     continue;
-// REMOVE Tim. midnam. Changed.
-//                   bool isinstr = mcl->find(cnum) != mcl->end();
                   const bool isinstr = instr->findController(cnum, channel, patch) != nullptr;
                   // Need to distinguish between global default controllers and 
                   //  instrument defined controllers. Instrument takes priority over global
@@ -1676,15 +1655,12 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       if(fmw > est_width)
         est_width = fmw;
       PopupMenu * ctrlSubPop = new PopupMenu(stext, menu, true);  // true = enable stay open
-// REMOVE Tim. midnam. Added.
       MusECore::MidiControllerList* mcl = new MusECore::MidiControllerList();
       instr->getControllers(mcl, channel, patch);
 
       for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
       {
           int show = ci->second->showInTracks();
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-//           if(((isDrum || isNewDrum) && !(show & MusECore::MidiController::ShowInDrum)) ||
           if((isNewDrum && !(show & MusECore::MidiController::ShowInDrum)) ||
              (isMidi && !(show & MusECore::MidiController::ShowInMidi)))
             continue;
@@ -1692,10 +1668,6 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
           int num = cnum;
           if(ci->second->isPerNoteController())
           {
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//             if (isDrum && curDrumPitch >= 0)
-//               num = (cnum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
-//             else
             if (isNewDrum && curDrumPitch >= 0)
               num = (cnum & ~0xff) | track->drummap()[curDrumPitch].anote;
             else if (isMidi && curDrumPitch >= 0)
@@ -1711,7 +1683,6 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
             already_added_nums.insert(num); //cnum);
           }
       }
-      // REMOVE Tim. midnam. Added.
       delete mcl;
 
       menu->addMenu(ctrlSubPop);

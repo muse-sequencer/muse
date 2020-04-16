@@ -140,8 +140,6 @@ class DList : public View {
       MusEGui::DrumCanvas* dcanvas;
       MusECore::DrumMap* ourDrumMap;
       int ourDrumMapSize;
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//       bool old_style_drummap_mode;
       
       QHeaderView* header;
       QLineEdit* editor;
@@ -199,8 +197,6 @@ class DList : public View {
       void valEdit(int line, int section);
       void pitchEdit(int line, int section);
       void setCurDrumInstrument(int n);
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-//       DList(QHeaderView*, QWidget* parent, int ymag, DrumCanvas* dcanvas, bool oldstyle);
       DList(QHeaderView*, QWidget* parent, int ymag, DrumCanvas* dcanvas);
       DList(QHeaderView* h, QWidget* parent, int ymag, MusECore::DrumMap* dm, int dmSize=128);
       virtual ~DList();

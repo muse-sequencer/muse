@@ -341,6 +341,7 @@ bool MusE::importMidi(const QString name, bool merge)
                         processTrack(track);
                         
                         MusEGlobal::song->insertTrack0(track, -1);
+                        MusECore::addPortCtrlEvents(track);
                 }
               }
 						}
@@ -356,6 +357,7 @@ bool MusE::importMidi(const QString name, bool merge)
                   buildMidiEventList(&track->events, el, track, division, true, false); // Do SysexMeta. Don't do loops.
                   processTrack(track);
                   MusEGlobal::song->insertTrack0(track, -1);
+                  MusECore::addPortCtrlEvents(track);
                   }
             }
             
@@ -528,32 +530,6 @@ void MusE::importController(int channel, MusECore::MidiPort* mport, int n)
       if (i != vll->end())
             return;           // controller does already exist
       MusECore::MidiController* ctrl = 0;
-// REMOVE Tim. midnam. Changed.
-// //       MusECore::MidiControllerList* mcl = instr->controller();
-//       const int patch = mport->hwCtrlState(channel, MusECore::CTRL_PROGRAM);
-//       MusECore::MidiControllerList* mcl = new MusECore::MidiControllerList();
-//       instr->getControllers(mcl, channel, patch);
-// 
-//       for (MusECore::iMidiController i = mcl->begin(); i != mcl->end(); ++i) {
-//             MusECore::MidiController* mc = i->second;
-//             int cn = mc->num();
-//             if (cn == n) {
-//                   ctrl = mc;
-//                   break;
-//                   }
-//             // wildcard?
-//             if (mc->isPerNoteController() && ((cn & ~0xff) == (n & ~0xff))) {
-//                   ctrl = i->second;
-//                   break;
-//                   }
-//             }
-//       // REMOVE Tim. midnam. Added.
-//       delete mcl;
-// 
-//       if (ctrl == 0) {
-//             printf("controller 0x%x not defined for instrument %s, channel %d\n",
-//                n, instr->iname().toLatin1().constData(), channel);
-//             }
 
       // Search the instrument's controller lists (including midnam controllers).
       const int patch = mport->hwCtrlState(channel, MusECore::CTRL_PROGRAM);

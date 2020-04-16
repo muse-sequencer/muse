@@ -288,8 +288,6 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
                   MusECore::Track* track = *it;
                   switch(track->type()) {
                         case MusECore::Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//                         case MusECore::Track::DRUM:
                         case MusECore::Track::NEW_DRUM:
                               {
                               MusECore::MidiPart* part = new MusECore::MidiPart((MusECore::MidiTrack*)track);
@@ -338,8 +336,6 @@ void PartCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, DragType dtype
   // Find out how many new track types we need, for the options dialog.
   int audio_found = 0;
   int midi_found = 0;
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//   int drum_found = 0;
   int new_drum_found = 0;
   for(y_map_t::const_iterator ici = y_map.cbegin(); ici != y_map.cend(); ++ici)
   {
@@ -370,10 +366,6 @@ void PartCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, DragType dtype
         {
           cur_new_track_idx = ntrack;
           
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//           if(type == MusECore::Track::DRUM)
-//             ++drum_found;
-//           else
           if(type == MusECore::Track::NEW_DRUM)
             ++new_drum_found;
           else if(type == MusECore::Track::MIDI)
@@ -385,22 +377,8 @@ void PartCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, DragType dtype
   }
   
   int flags = MusECore::Track::ASSIGN_PROPERTIES;
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-//   if(audio_found != 0 || midi_found != 0 || drum_found != 0 || new_drum_found != 0)
   if(audio_found != 0 || midi_found != 0 || new_drum_found != 0)
   {  
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-//     MusEGui::DuplicateTracksDialog* dlg = new MusEGui::DuplicateTracksDialog(
-//         audio_found, midi_found, drum_found, new_drum_found,
-//         nullptr, // parent
-//         false,   // copies
-//         true,    // allRoutes
-//         true,    // defaultRoutes
-//         false,   // noParts
-//         false,   // duplicateParts
-//         false,   // copyParts
-//         false    // cloneParts
-//       );
     MusEGui::DuplicateTracksDialog* dlg = new MusEGui::DuplicateTracksDialog(
         audio_found, midi_found, new_drum_found,
         nullptr, // parent
@@ -742,8 +720,6 @@ CItem* PartCanvas::newItem(const QPoint& pos, int key_modifiers)
       NPart* np = 0;
       switch(track->type()) {
             case MusECore::Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//             case MusECore::Track::DRUM:
             case MusECore::Track::NEW_DRUM:
                   pa = new MusECore::MidiPart((MusECore::MidiTrack*)track);
                   pa->setTick(x);
@@ -809,8 +785,6 @@ void PartCanvas::newItem(CItem* i, bool noSnap)
           switch(track->type())
           {
                 case MusECore::Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//                 case MusECore::Track::DRUM:
                 case MusECore::Track::NEW_DRUM:
                       new_part = new MusECore::MidiPart((MusECore::MidiTrack*)track);
                       break;
@@ -948,8 +922,6 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   }
                   break;
             case MusECore::Track::NEW_DRUM:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//             case MusECore::Track::DRUM:
             {
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startDrumEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
@@ -1657,8 +1629,6 @@ void PartCanvas::keyPress(QKeyEvent* event)
 
             switch (track->type()) {
                   case MusECore::Track::NEW_DRUM:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//                   case MusECore::Track::DRUM:
                         type = 3;
                         break;
 
@@ -2257,8 +2227,6 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
       using std::pair;
 
       MusECore::ciEvent ito(events.lower_bound(to));
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-//       bool isdrum = (mt->type() == MusECore::Track::DRUM  ||  mt->type() == MusECore::Track::NEW_DRUM);
       bool isdrum = mt->isDrumTrack();
 
       // draw controllers ------------------------------------------

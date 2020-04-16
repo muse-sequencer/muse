@@ -1098,14 +1098,10 @@ bool routeCanConnect(const Route& src, const Route& dst)
         switch(src.track->type())
         {
           case Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//           case Track::DRUM:
           case Track::NEW_DRUM:
             switch(dst.track->type())
             {
               case Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//               case Track::DRUM:
               case Track::NEW_DRUM:
               case Track::WAVE:
               case Track::AUDIO_OUTPUT:
@@ -1126,8 +1122,6 @@ bool routeCanConnect(const Route& src, const Route& dst)
             switch(dst.track->type())
             {
               case Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//               case Track::DRUM:
               case Track::NEW_DRUM:
               case Track::WAVE:
               case Track::AUDIO_OUTPUT:
@@ -1147,8 +1141,6 @@ bool routeCanConnect(const Route& src, const Route& dst)
             switch(dst.track->type())
             {
               case Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//               case Track::DRUM:
               case Track::NEW_DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
@@ -1166,8 +1158,6 @@ bool routeCanConnect(const Route& src, const Route& dst)
             switch(dst.track->type())
             {
               case Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//               case Track::DRUM:
               case Track::NEW_DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
@@ -1185,8 +1175,6 @@ bool routeCanConnect(const Route& src, const Route& dst)
             switch(dst.track->type())
             {
               case Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//               case Track::DRUM:
               case Track::NEW_DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
@@ -1204,8 +1192,6 @@ bool routeCanConnect(const Route& src, const Route& dst)
             switch(dst.track->type())
             {
               case Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//               case Track::DRUM:
               case Track::NEW_DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
@@ -1223,8 +1209,6 @@ bool routeCanConnect(const Route& src, const Route& dst)
             switch(dst.track->type())
             {
               case Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//               case Track::DRUM:
               case Track::NEW_DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
@@ -1501,14 +1485,10 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
         switch(src.track->type())
         {
           case Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//           case Track::DRUM:
           case Track::NEW_DRUM:
             switch(dst.track->type())
             {
               case Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//               case Track::DRUM:
               case Track::NEW_DRUM:
               case Track::WAVE:
               case Track::AUDIO_OUTPUT:
@@ -1529,8 +1509,6 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
             switch(dst.track->type())
             {
               case Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//               case Track::DRUM:
               case Track::NEW_DRUM:
               case Track::WAVE:
               case Track::AUDIO_OUTPUT:
@@ -1550,8 +1528,6 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
             switch(dst.track->type())
             {
               case Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//               case Track::DRUM:
               case Track::NEW_DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
@@ -1569,8 +1545,6 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
             switch(dst.track->type())
             {
               case Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//               case Track::DRUM:
               case Track::NEW_DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
@@ -1588,8 +1562,6 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
             switch(dst.track->type())
             {
               case Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//               case Track::DRUM:
               case Track::NEW_DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
@@ -1607,8 +1579,6 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
             switch(dst.track->type())
             {
               case Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//               case Track::DRUM:
               case Track::NEW_DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:
@@ -1626,8 +1596,6 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
             switch(dst.track->type())
             {
               case Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//               case Track::DRUM:
               case Track::NEW_DRUM:
               case Track::AUDIO_INPUT:
               case Track::AUDIO_AUX:

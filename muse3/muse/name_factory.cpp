@@ -59,27 +59,25 @@ bool TrackNameFactory::genUniqueNames(Track::TrackType type, QString base, int c
     switch(type)
     {
       case Track::MIDI:
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//           case Track::DRUM:
-          case Track::NEW_DRUM:
-          case Track::WAVE:
-                base = QString("Track");
-                break;
-          case Track::AUDIO_OUTPUT:
-                base = QString("Out");
-                break;
-          case Track::AUDIO_GROUP:
-                base = QString("Group");
-                break;
-          case Track::AUDIO_AUX:
-                base = QString("Aux");
-                break;
-          case Track::AUDIO_INPUT:
-                base = QString("Input");
-                break;
-          case Track::AUDIO_SOFTSYNTH:
-                base = QString("Synth");
-                break;
+      case Track::NEW_DRUM:
+      case Track::WAVE:
+            base = QString("Track");
+            break;
+      case Track::AUDIO_OUTPUT:
+            base = QString("Out");
+            break;
+      case Track::AUDIO_GROUP:
+            base = QString("Group");
+            break;
+      case Track::AUDIO_AUX:
+            base = QString("Aux");
+            break;
+      case Track::AUDIO_INPUT:
+            base = QString("Input");
+            break;
+      case Track::AUDIO_SOFTSYNTH:
+            base = QString("Synth");
+            break;
     };
     base += " ";
   }        

@@ -225,7 +225,6 @@ bool MidiPort::hasNativeGui() const
 void MidiPort::setMidiDevice(MidiDevice* dev, MidiInstrument* instrument)
       {
       if (_device) {
-            // REMOVE Tim. midnam. Removed.
             if (_device->isSynti())
                   _instrument = genericMidiInstrument;
             _device->setPort(-1);
@@ -328,34 +327,8 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
     usedChans[metro_settings->clickChan] = true;
     ++usedChanCount;
   }
-//   bool drum_found = false;
   for(ciMidiTrack imt = MusEGlobal::song->midis()->begin(); imt != MusEGlobal::song->midis()->end(); ++imt)
   {
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//     if((*imt)->type() == MusECore::Track::DRUM)
-//     {
-//       if(!drum_found)
-//       {
-//         drum_found = true; 
-//         for(int i = 0; i < DRUM_MAPSIZE; ++i)
-//         {
-//           // Default to track port if -1 and track channel if -1.
-//           int mport = MusEGlobal::drumMap[i].port;
-//           if(mport == -1)
-//             mport = (*imt)->outPort();
-//           int mchan = MusEGlobal::drumMap[i].channel;
-//           if(mchan == -1)
-//             mchan = (*imt)->outChannel();
-//           if(mport != port || usedChans[mchan])
-//             continue;
-//           usedChans[mchan] = true;
-//           ++usedChanCount;
-//           if(usedChanCount >= MusECore::MUSE_MIDI_CHANNELS)
-//             break;  // All are used, done searching.
-//         }
-//       }
-//     }
-//     else
     if((*imt)->type() == MusECore::Track::NEW_DRUM)
     {
       for(int i = 0; i < DRUM_MAPSIZE; ++i)
@@ -390,24 +363,15 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
   // NOT for syntis. Use midiState and/or initParams for that. 
   if(MusEGlobal::config.midiSendInit && MusEGlobal::config.midiSendCtlDefaults && _instrument && !_device->isSynti())
   {
-// REMOVE Tim. midnam. Changed.
-//     MidiControllerList* cl = _instrument->controller();
     MusECore::MidiControllerList* cl = new MusECore::MidiControllerList();
 
     MidiController* mc;
 
-// REMOVE Tim. midnam. Changed.
-//     for(ciMidiController imc = cl->begin(); imc != cl->end(); ++imc) 
-//     {
-//       mc = imc->second;
-//       for(int chan = 0; chan < MusECore::MUSE_MIDI_CHANNELS; ++chan)
-//       {
     for(int chan = 0; chan < MusECore::MUSE_MIDI_CHANNELS; ++chan)
     {
       if(!usedChans[chan])
         continue;  // This channel on this port is not used in the song.
 
-      // REMOVE Tim. midnam. Added.
       const int patch = hwCtrlState(chan, CTRL_PROGRAM);
       cl->clear();
       instrument()->getControllers(cl, chan, patch);
@@ -415,8 +379,6 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
       for(ciMidiController imc = cl->begin(); imc != cl->end(); ++imc) 
       {
         mc = imc->second;
-//         if(!usedChans[chan])
-//           continue;  // This channel on this port is not used in the song.
         ciMidiCtrlValList i;
 
         // Look for an initial value for this midi controller, on this midi channel, in the song...
@@ -445,7 +407,6 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
         }    
       }
     }
-    // REMOVE Tim. midnam. Added.
     delete cl;
   }
 
@@ -547,30 +508,23 @@ void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
   // No initial value was found in the song for this midi controller on this midi channel. Try the instrument...
   if(_instrument)
   {
-// REMOVE Tim. midnam. Changed.
-//     MidiControllerList* cl = _instrument->controller();
-//     ciMidiController imc = cl->find(ctl);  
-//     if(imc != cl->end())
-//     {
-//       MidiController* mc = imc->second;
-      const int patch = hwCtrlState(chan, CTRL_PROGRAM);
-      const MidiController* mc = instrument()->findController(ctl, chan, patch);
+    const int patch = hwCtrlState(chan, CTRL_PROGRAM);
+    const MidiController* mc = instrument()->findController(ctl, chan, patch);
 
-      int initval = mc->initVal();
-      
-      // Initialize from either the instrument controller's initial value, or the supplied value.
-      if(initval != CTRL_VAL_UNKNOWN)
+    int initval = mc->initVal();
+    
+    // Initialize from either the instrument controller's initial value, or the supplied value.
+    if(initval != CTRL_VAL_UNKNOWN)
+    {
+      if(_device)
       {
-        if(_device)
-        {
-          MidiPlayEvent ev(0, portno(), chan, ME_CONTROLLER, ctl, initval + mc->bias());
-        _device->putEvent(ev, MidiDevice::NotLate);
-        }  
-        setHwCtrlStates(chan, ctl, CTRL_VAL_UNKNOWN, initval + mc->bias());
-        
-        return;
-      }
-//     }  
+        MidiPlayEvent ev(0, portno(), chan, ME_CONTROLLER, ctl, initval + mc->bias());
+      _device->putEvent(ev, MidiDevice::NotLate);
+      }  
+      setHwCtrlStates(chan, ctl, CTRL_VAL_UNKNOWN, initval + mc->bias());
+      
+      return;
+    }
   }
   
   // No initial value was found in the song or instrument for this midi controller. Just send the given value.
@@ -828,8 +782,6 @@ void MidiPort::addDefaultControllers()
 //   limitValToInstrCtlRange
 //---------------------------------------------------------
 
-// REMOVE Tim. midnam. Changed.
-//int MidiPort::limitValToInstrCtlRange(MidiController* mc, int val)
 int MidiPort::limitValToInstrCtlRange(const MidiController* mc, int val)
 {
   if(!_instrument || !mc || val == CTRL_VAL_UNKNOWN)
@@ -856,16 +808,11 @@ int MidiPort::limitValToInstrCtlRange(const MidiController* mc, int val)
   return val;
 }
             
-// REMOVE Tim. midnam. Changed.
-// int MidiPort::limitValToInstrCtlRange(int ctl, int val)
 int MidiPort::limitValToInstrCtlRange(int ctl, int val, int chan)
 {
   if(!_instrument || val == CTRL_VAL_UNKNOWN)
     return val;
     
-// REMOVE Tim. midnam. Removed.
-//   MidiControllerList* cl = _instrument->controller();
-
   // FIXME: This might be optimized by calling midiController instead,
   //         and simply asking if it's a drum controller. Saves one list iteration.
   // Is it a drum controller?
@@ -875,10 +822,6 @@ int MidiPort::limitValToInstrCtlRange(int ctl, int val, int chan)
   if(!mc)
   {
     // It's not a drum controller. Find it as a regular controller instead.
-// REMOVE Tim. midnam. Changed.
-//     iMidiController imc = cl->find(ctl);
-//     if(imc != cl->end())
-//       mc = imc->second;
     const int patch = hwCtrlState(chan, CTRL_PROGRAM);
     mc = _instrument->findController(ctl, chan, patch);
   }
@@ -890,8 +833,6 @@ int MidiPort::limitValToInstrCtlRange(int ctl, int val, int chan)
   return val;
 }
 
-// REMOVE Tim. midnam. Changed.
-//double MidiPort::limitValToInstrCtlRange(MidiController* mc, double val)
 double MidiPort::limitValToInstrCtlRange(const MidiController* mc, double val)
 {
   if(!_instrument || !mc || int(val) == CTRL_VAL_UNKNOWN)
@@ -917,15 +858,10 @@ double MidiPort::limitValToInstrCtlRange(const MidiController* mc, double val)
   return val;
 }
 
-// REMOVE Tim. midnam. Changed.
-//double MidiPort::limitValToInstrCtlRange(int ctl, double val)
 double MidiPort::limitValToInstrCtlRange(int ctl, double val, int chan)
 {
   if(!_instrument || int(val) == CTRL_VAL_UNKNOWN)
     return val;
-
-// REMOVE Tim. midnam. Removed.
-//   MidiControllerList* cl = _instrument->controller();
 
   // FIXME: This might be optimized by calling midiController instead,
   //         and simply asking if it's a drum controller. Saves one list iteration.
@@ -936,10 +872,6 @@ double MidiPort::limitValToInstrCtlRange(int ctl, double val, int chan)
   if(!mc)
   {
     // It's not a drum controller. Find it as a regular controller instead.
-// REMOVE Tim. midnam. Changed.
-//     iMidiController imc = cl->find(ctl);
-//     if(imc != cl->end())
-//       mc = imc->second;
     const int patch = hwCtrlState(chan, CTRL_PROGRAM);
     mc = _instrument->findController(ctl, chan, patch);
   }
@@ -1056,8 +988,6 @@ bool MidiPort::putControllerValue(int port, int chan, int ctlnum, double val, bo
     return true;
 
   // Don't create if not found.
-// REMOVE Tim. midnam. Changed.
-//   MusECore::MidiController* mc = midiController(ctlnum, false);
   MusECore::MidiController* mc = midiController(ctlnum, chan, false);
   if(!mc)
     return true;
@@ -1119,8 +1049,6 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
           if(!MidiController::iValIsUnknown(i_dataB))
             hb = i_dataB & 0xff;
           if(hb != 0xff)
-// REMOVE Tim. midnam. Changed.
-//             hb = limitValToInstrCtlRange(i_dataA, hb);
             hb = limitValToInstrCtlRange(i_dataA, hb, chn);
           int lb = 0xff;
           int pr = 0xff;
@@ -1165,8 +1093,6 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
           if(!MidiController::iValIsUnknown(i_dataB))
             lb = i_dataB & 0xff;
           if(lb != 0xff)
-// REMOVE Tim. midnam. Changed.
-//             lb = limitValToInstrCtlRange(i_dataA, lb);
             lb = limitValToInstrCtlRange(i_dataA, lb, chn);
           int pr = 0xff;
           
@@ -1228,8 +1154,6 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
             return false;
           }
 
-// REMOVE Tim. midnam. Changed.
-//           fin_db = limitValToInstrCtlRange(i_dataA, i_dataB);
           fin_db = limitValToInstrCtlRange(i_dataA, i_dataB, chn);
           // Set the value.
           imcvl->second->setHwVal(fin_db);
@@ -1255,8 +1179,6 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
         return false;
       }
 
-// REMOVE Tim. midnam. Changed.
-//       fin_db = limitValToInstrCtlRange(fin_da, i_dataB);
       fin_db = limitValToInstrCtlRange(fin_da, i_dataB, chn);
       // Set the value.
       imcvl->second->setHwVal(fin_db);
@@ -1277,8 +1199,6 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
         return false;
       }
 
-// REMOVE Tim. midnam. Changed.
-//       fin_db = limitValToInstrCtlRange(CTRL_AFTERTOUCH, i_dataA);
       fin_db = limitValToInstrCtlRange(CTRL_AFTERTOUCH, i_dataA, chn);
       // Set the value.
       imcvl->second->setHwVal(fin_db);
@@ -1299,8 +1219,6 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
         return false;
       }
 
-// REMOVE Tim. midnam. Changed.
-//       fin_db = limitValToInstrCtlRange(CTRL_PITCH, i_dataA);
       fin_db = limitValToInstrCtlRange(CTRL_PITCH, i_dataA, chn);
       // Set the value.
       imcvl->second->setHwVal(fin_db);
@@ -1327,8 +1245,6 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
       if(!MidiController::iValIsUnknown(i_dataA))
         pr = i_dataA & 0xff;
       //if(pr != 0xff)
-// REMOVE Tim. midnam. Changed.
-//       //  pr = limitValToInstrCtlRange(da, pr);
       //  pr = limitValToInstrCtlRange(da, pr, chn);
       
       MidiCtrlValList* mcvl = imcvl->second;
@@ -1385,8 +1301,6 @@ bool MidiPort::sendHwCtrlState(const MidiPlayEvent& ev, bool forceSend)
               if(!MidiController::iValIsUnknown(db))
                 hb = db & 0xff;
               if(hb != 0xff)
-// REMOVE Tim. midnam. Changed.
-//                 hb = limitValToInstrCtlRange(da, hb);
                 hb = limitValToInstrCtlRange(da, hb, chn);
               int lb = 0xff;
               int pr = 0xff;
@@ -1414,8 +1328,6 @@ bool MidiPort::sendHwCtrlState(const MidiPlayEvent& ev, bool forceSend)
               if(!MidiController::iValIsUnknown(db))
                 lb = db & 0xff;
               if(lb != 0xff)
-// REMOVE Tim. midnam. Changed.
-//                 lb = limitValToInstrCtlRange(da, lb);
                 lb = limitValToInstrCtlRange(da, lb, chn);
               int pr = 0xff;
               
@@ -1487,8 +1399,6 @@ bool MidiPort::sendHwCtrlState(const MidiPlayEvent& ev, bool forceSend)
           if(!MidiController::iValIsUnknown(da))
             pr = da & 0xff;
           //if(pr != 0xff)
-// REMOVE Tim. midnam. Changed.
-//           //  pr = limitValToInstrCtlRange(da, pr);
           //  pr = limitValToInstrCtlRange(da, pr, chn);
           
           fin_da = CTRL_PROGRAM;
@@ -1831,70 +1741,6 @@ void MidiPort::deleteController(int ch, unsigned int tick, int ctrl, int val, Pa
       cl->second->delMCtlVal(tick, part, val);
       }
 
-// REMOVE Tim. midnam. Changed.
-// //---------------------------------------------------------
-// //   midiController
-// //---------------------------------------------------------
-// 
-// MidiController* MidiPort::midiController(int num, bool createIfNotFound) const
-//       {
-//       if (_instrument) {
-//             MidiControllerList* mcl = _instrument->controller();
-//             for (iMidiController i = mcl->begin(); i != mcl->end(); ++i) {
-//                   int cn = i->second->num();
-//                   if (cn == num)
-//                         return i->second;
-//                   // wildcard?
-//                   if (i->second->isPerNoteController() && ((cn & ~0xff) == (num & ~0xff)))
-//                         return i->second;
-//                   }
-//             }
-//       
-//       for (iMidiController i = defaultMidiController.begin(); i != defaultMidiController.end(); ++i) {
-//             int cn = i->second->num();
-//             if (cn == num)
-//                   return i->second;
-//             // wildcard?
-//             if (i->second->isPerNoteController() && ((cn & ~0xff) == (num & ~0xff)))
-//                   return i->second;
-//             }
-//       
-//       if(!createIfNotFound)
-//         return NULL;
-// 
-//       QString name = midiCtrlName(num);
-//       int min = 0;
-//       int max = 127;
-//       
-//       MidiController::ControllerType t = midiControllerType(num);
-//       switch (t) {
-//             case MidiController::RPN:
-//             case MidiController::NRPN:
-//             case MidiController::Controller7:
-//             case MidiController::PolyAftertouch:
-//             case MidiController::Aftertouch:
-//                   max = 127;
-//                   break;
-//             case MidiController::Controller14:
-//             case MidiController::RPN14:
-//             case MidiController::NRPN14:
-//                   max = 16383;
-//                   break;
-//             case MidiController::Program:
-//                   max = 0xffffff;
-//                   break;
-//             case MidiController::Pitch:
-//                   max = 8191;
-//                   min = -8192;
-//                   break;
-//             case MidiController::Velo:        // cannot happen
-//                   break;
-//             }
-//       MidiController* c = new MidiController(name, num, min, max, 0, 0);
-//       defaultMidiController.add(c);
-//       return c;
-//       }
-
 //---------------------------------------------------------
 //   midiController
 //---------------------------------------------------------
@@ -1952,39 +1798,6 @@ MidiController* MidiPort::midiController(int num, int chan, bool createIfNotFoun
       defaultMidiController.add(mc);
       return mc;
       }
-
-// REMOVE Tim. midnam. Changed.
-// //---------------------------------------------------------
-// //   drumController
-// //   Returns instrument drum controller if ctl is a drum controller number.
-// //   Otherwise returns zero. 
-// //   NOTE: Midnam apparently has no concept of drum controllers, so the fact
-// //    that this only asks in the instrument's controllers and not the midnam is OK.
-// //---------------------------------------------------------
-// 
-// MidiController* MidiPort::drumController(int ctl)
-// {
-//   if(!_instrument)
-//     return 0;
-//     
-//   MidiControllerList* cl = _instrument->controller();
-//   
-//   // If it's an RPN, NRPN, RPN14, or NRPN14 controller...
-//   if(((ctl - CTRL_RPN_OFFSET >= 0) && (ctl - CTRL_RPN_OFFSET <= 0xffff)) ||
-//      ((ctl - CTRL_NRPN_OFFSET >= 0) && (ctl - CTRL_NRPN_OFFSET <= 0xffff)) ||
-//      ((ctl - CTRL_RPN14_OFFSET >= 0) && (ctl - CTRL_RPN14_OFFSET <= 0xffff)) ||
-//      ((ctl - CTRL_NRPN14_OFFSET >= 0) && (ctl - CTRL_NRPN14_OFFSET <= 0xffff)) ||
-//      ((ctl - CTRL_INTERNAL_OFFSET >= 0) && (ctl - CTRL_INTERNAL_OFFSET <= 0xffff)))  // Include internals
-//   {
-//     // Does the instrument have a drum controller to match this controller's number?
-//     iMidiController imc = cl->find(ctl | 0xff);
-//     if(imc != cl->end())
-//       // Yes, it's a drum controller. Return a pointer to it.
-//       return imc->second;  
-//   }
-//   
-//   return 0;
-// }
 
 //---------------------------------------------------------
 //   drumController

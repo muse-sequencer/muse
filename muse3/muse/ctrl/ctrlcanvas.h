@@ -106,15 +106,11 @@ class CtrlCanvas : public MusEGui::View {
       struct CtrlCanvasInfoStruct
       {
         int fin_ctrl_num;
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//         bool is_drum_ctl;
         bool is_newdrum_ctl;
         int min;
         int max;
         int bias;
         
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-//         CtrlCanvasInfoStruct() : fin_ctrl_num(0), is_drum_ctl(false), is_newdrum_ctl(false), min(0), max(127), bias(0) {}
         CtrlCanvasInfoStruct() : fin_ctrl_num(0), is_newdrum_ctl(false), min(0), max(127), bias(0) {}
       };
 

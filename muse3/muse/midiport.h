@@ -156,20 +156,13 @@ class MidiPort {
       MidiInstrument* instrument() const   { return _instrument; }
       void setInstrument(MidiInstrument* i) { _instrument = i; }
       void changeInstrument(MidiInstrument* i);
-// REMOVE Tim. midnam. Changed.
-//       MidiController* midiController(int num, bool createIfNotFound = true) const;
       MidiController* midiController(int num, int chan = -1, bool createIfNotFound = true) const;
       MidiCtrlValList* addManagedController(int channel, int ctrl);
       // To be called from realtime audio thread only.
       void tryCtrlInitVal(int chan, int ctl, int val);
-// REMOVE Tim. midnam. Changed.
-//       int limitValToInstrCtlRange(int ctl, int val);
       int limitValToInstrCtlRange(int ctl, int val, int chan = -1);
-//       double limitValToInstrCtlRange(int ctl, double val);
       double limitValToInstrCtlRange(int ctl, double val, int chan = -1);
-//       int limitValToInstrCtlRange(MidiController* mc, int val);
       int limitValToInstrCtlRange(const MidiController* mc, int val);
-//       double limitValToInstrCtlRange(MidiController* mc, double val);
       double limitValToInstrCtlRange(const MidiController* mc, double val);
       MidiController* drumController(int ctl);
       // Update drum maps when patch is known.

@@ -42,7 +42,6 @@
 #include "controlfifo.h"
 #include "latency_info.h"
 #include "transport_obj.h"
-// REMOVE Tim. midnam. Added.
 #include "midiport.h"
 
 class QPixmap;
@@ -73,10 +72,7 @@ typedef std::vector<double>::iterator iAuxSendValue;
 class Track {
    public:
       enum TrackType {
-         MIDI=0, 
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//          DRUM,
-         NEW_DRUM, WAVE, AUDIO_OUTPUT, AUDIO_INPUT, AUDIO_GROUP,
+         MIDI=0, NEW_DRUM, WAVE, AUDIO_OUTPUT, AUDIO_INPUT, AUDIO_GROUP,
          AUDIO_AUX, AUDIO_SOFTSYNTH
          };
       // NOTE: ASSIGN_DUPLICATE_PARTS ASSIGN_COPY_PARTS and ASSIGN_CLONE_PARTS are not allowed together - choose one. 
@@ -396,9 +392,6 @@ class Track {
       bool readProperty(Xml& xml, const QString& tag);
       int channels() const                { return _channels; }
       virtual void setChannels(int n);
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-//       bool isMidiTrack() const       { return type() == MIDI || type() == DRUM || type() == NEW_DRUM; }
-//       bool isDrumTrack() const       { return type() == DRUM || type() == NEW_DRUM; }
       bool isMidiTrack() const       { return type() == MIDI || type() == NEW_DRUM; }
       bool isDrumTrack() const       { return type() == NEW_DRUM; }
       bool isSynthTrack() const      { return type() == AUDIO_SOFTSYNTH; }
@@ -532,7 +525,6 @@ class MidiTrack : public Track {
       int outPort() const             { return _outPort;     }
       int outChannel() const          { return _outChannel;  }
 
-// REMOVE Tim. midnam. Added.
       // Given ctrl, if ctrl is a drum (per-note) controller, fills the other parameters with the
       //  mapped track ctrl, port, and channel from the drum map, and returns true.
       // If ctrl is not a drum controller, port and channel are filled with the track's
@@ -1270,8 +1262,8 @@ typedef tracklist<SynthI*>::iterator iSynthI;
 typedef tracklist<SynthI*>::const_iterator ciSynthI;
 typedef tracklist<SynthI*> SynthIList;
 
-extern void addPortCtrlEvents(MidiTrack* t);
-extern void removePortCtrlEvents(MidiTrack* t);
+extern void addPortCtrlEvents(MidiTrack* t, bool drum_ctls = true, bool non_drum_ctls = true);
+extern void removePortCtrlEvents(MidiTrack* t, bool drum_ctls = true, bool non_drum_ctls = true);
 extern void addPortCtrlEvents(Track* track, PendingOperationList& ops);
 extern void removePortCtrlEvents(Track* track, PendingOperationList& ops);
 } // namespace MusECore

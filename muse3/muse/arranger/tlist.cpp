@@ -313,10 +313,6 @@ void TList::paint(const QRect& r)
                         case MusECore::Track::MIDI:
                               bg = MusEGlobal::config.midiTrackBg;
                               break;
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//                         case MusECore::Track::DRUM:
-//                               bg = MusEGlobal::config.drumTrackBg;
-//                               break;
                         case MusECore::Track::NEW_DRUM:
                               bg = MusEGlobal::config.newDrumTrackBg;
                               break;
@@ -501,8 +497,6 @@ void TList::paint(const QRect& r)
                                     int col_ctrl_no=Arranger::custom_columns[section - COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
                                     MusECore::MidiTrack* mt=dynamic_cast<MusECore::MidiTrack*>(track);
                                     MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-// REMOVE Tim. midnam. Changed.
-//                                     MusECore::MidiController* mctl = mp->midiController(col_ctrl_no);
                                     const int chan = mt->outChannel();
                                     MusECore::MidiController* mctl = mp->midiController(col_ctrl_no, chan);
                                     int val;
@@ -691,8 +685,6 @@ void TList::ctrlValueFinished()
     {
       int val = ctrl_edit->value();
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-// REMOVE Tim. midnam. Changed.
-//       MusECore::MidiController* mctl = mp->midiController(ctrl_num);
       const int chan = mt->outChannel();
       MusECore::MidiController* mctl = mp->midiController(ctrl_num, chan);
 
@@ -1035,8 +1027,6 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                 
                 MusECore::MidiTrack* mt=(MusECore::MidiTrack*)t;
                 MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-// REMOVE Tim. midnam. Changed.
-//                 MusECore::MidiController* mctl = mp->midiController(ctrl_num);
                 const int chan = mt->outChannel();
                 MusECore::MidiController* mctl = mp->midiController(ctrl_num, chan);
 
@@ -1136,9 +1126,6 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
         return;
       }
       
-      
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-//       if (t->type() != MusECore::Track::MIDI && t->type() != MusECore::Track::DRUM && t->type() != MusECore::Track::NEW_DRUM)
       if (t->type() != MusECore::Track::MIDI && t->type() != MusECore::Track::NEW_DRUM)
             return;
       int oPort      = ((MusECore::MidiTrack*)t)->outPort();
@@ -2232,8 +2219,6 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       int ctrl_num = Arranger::custom_columns[col-COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
                       
                       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-// REMOVE Tim. midnam. Changed.
-//                       MusECore::MidiController* mctl = mp->midiController(ctrl_num);
                       const int chan = mt->outChannel();
                       MusECore::MidiController* mctl = mp->midiController(ctrl_num, chan);
                       
@@ -2754,28 +2739,6 @@ void TList::classesPopupMenu(MusECore::Track* tIn, int x, int y, bool allSelecte
 
 void TList::changeTrackToType(MusECore::Track *t, MusECore::Track::TrackType trackType)
 {
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//   if ((trackType == MusECore::Track::MIDI  ||  trackType == MusECore::Track::NEW_DRUM) && t->type() == MusECore::Track::DRUM)
-//   {
-//     //
-//     //    Drum -> Midi
-//     //
-//     MusEGlobal::audio->msgIdle(true);
-//     static_cast<MusECore::MidiTrack*>(t)->convertToType(trackType);
-//     MusEGlobal::audio->msgIdle(false);
-//     MusEGlobal::song->update(SC_EVENT_MODIFIED);
-//   }
-//   else if (trackType == MusECore::Track::DRUM && (t->type() == MusECore::Track::MIDI  ||  t->type() == MusECore::Track::NEW_DRUM))
-//   {
-//     //
-//     //    Midi -> Drum
-//     //
-//     MusEGlobal::audio->msgIdle(true);
-//     static_cast<MusECore::MidiTrack*>(t)->convertToType(trackType);
-//     MusEGlobal::audio->msgIdle(false);
-//     MusEGlobal::song->update(SC_EVENT_MODIFIED);
-//   }
-//   else
   // MIDI -> NEW_DRUM or vice versa. added by flo.
   {
     MusEGlobal::audio->msgIdle(true);

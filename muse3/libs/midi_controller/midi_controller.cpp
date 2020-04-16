@@ -329,7 +329,6 @@ int midiCtrlTerms2Number(MidiController::ControllerType type, int ctrl)
 }
 
 
-// REMOVE Tim. midnam. Added.
 //---------------------------------------------------------
 //   isPerNoteMidiController
 //---------------------------------------------------------
@@ -345,7 +344,6 @@ bool isPerNoteMidiController(int ctl)
        n == CTRL_NRPN14_OFFSET));
 }
 
-// REMOVE Tim. midnam. Added.
 //---------------------------------------------------------
 //   isPerNoteController
 //---------------------------------------------------------
@@ -355,7 +353,6 @@ bool MidiController::isPerNoteController() const
   return isPerNoteMidiController(num());
 }
 
-// REMOVE Tim. midnam. Added.
 //---------------------------------------------------------
 //   type
 //---------------------------------------------------------
@@ -913,7 +910,6 @@ void MidiControllerList::clear()
 #endif
 // =========================================================
 
-// REMOVE Tim. midnam. Added.
 //---------------------------------------------------------
 //   perNoteController
 //   Returns per-note controller if there is one for the given ctl number.

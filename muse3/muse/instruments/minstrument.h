@@ -38,7 +38,6 @@
 #include "midnam.h"
 #endif
 
-// REMOVE Tim. midnam. Added.
 #include "midictrl_consts.h"
 
 // REMOVE Tim. newdrums. Added.
@@ -428,15 +427,10 @@ class MidiInstrument {
       EventList* midiReset() const           { return _midiReset; }
       EventList* midiState() const           { return _midiState; }
       const char* initScript() const         { return _initScript; }
-// REMOVE Tim. midnam. Changed.
       MidiControllerList* controller() const { return _controller; }
-      //MidiControllerList* controller() { return _controller; }
-      // REMOVE Tim. midnam. Added.
-      //const MidiControllerList* controller() const { return _controller; }
       bool waitForLSB() { return _waitForLSB; }
       void setWaitForLSB(bool v) { _waitForLSB = v; }
 
-      // REMOVE Tim. midnam. Added.
       // Finds a controller. By default it looks in this instrument's MidiControllerList map
       //  just like calling the map's find(). But if channel or patch are given (not default),
       //  it looks in BOTH the midnam's MidiControllerList and the instrument's MidiControllerList.

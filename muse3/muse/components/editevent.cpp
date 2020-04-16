@@ -505,8 +505,6 @@ MusECore::Event EditCtrlDialog::getEvent()
         cnum = item->data(Qt::UserRole).toInt();
 
       MusECore::MidiTrack* track  = part->track();
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//       bool isDrum                 = track->type() == MusECore::Track::DRUM;
       MusECore::MidiPort* port    = &MusEGlobal::midiPorts[track->outPort()];
       int channel                 = track->outChannel();
       bool isNewDrum              = track->type() == MusECore::Track::NEW_DRUM;
@@ -517,18 +515,6 @@ MusECore::Event EditCtrlDialog::getEvent()
       {
         evnum = (cnum & ~0xff) | (noteSpinBox->value() & 0x7f);
         num = evnum;
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//         if(isDrum)
-//         {
-//           MusECore::DrumMap* dm = &MusEGlobal::drumMap[noteSpinBox->value() & 0x7f];
-//           num     = (cnum & ~0xff) | dm->anote;
-//           // Default to track port if -1 and track channel if -1.
-//           if(dm->port != -1)
-//             port    = &MusEGlobal::midiPorts[dm->port];
-//           if(dm->channel != -1)
-//             channel = dm->channel;
-//         }
-//         else
         if(isNewDrum)
         {
           MusECore::DrumMap* dm = &track->drummap()[noteSpinBox->value() & 0x7f];
@@ -541,8 +527,6 @@ MusECore::Event EditCtrlDialog::getEvent()
         }
       }
 
-// REMOVE Tim. midnam. Changed.
-//       MusECore::MidiController* c = port->midiController(cnum);
       MusECore::MidiController* c = port->midiController(cnum, channel);
       MusECore::MidiCtrlValListList* cll = port->controller();
 
@@ -606,15 +590,11 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
 
       MusECore::MidiTrack* track   = part->track();
       MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//       const bool isDrum        = track->type() == MusECore::Track::DRUM;
       const bool isNewDrum     = track->type() == MusECore::Track::NEW_DRUM;
       const bool isMidi        = track->type() == MusECore::Track::MIDI;
       MusECore::MidiCtrlValListList* cll = port->controller();
       const int channel        = track->outChannel();
       const MusECore::MidiInstrument* instr = port->instrument();
-// REMOVE Tim. midnam. Removed.
-//       MusECore::MidiControllerList* mcl = instr->controller();
       int val = 0;
       int ev_num = 0;
       int num = 0;
@@ -628,10 +608,6 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
             if(port->drumController(ev_num))
             {
               ev_cnum |= 0xff;
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//               if(isDrum)
-//                 num = (ev_num & ~0xff) | MusEGlobal::drumMap[ev_num & 0xff].anote;
-//               else
               if(isNewDrum)
                 num = (ev_num & ~0xff) | track->drummap()[ev_num & 0xff].anote;
 
@@ -639,8 +615,6 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
             }
           }
 
-// REMOVE Tim. midnam. Changed.
-//       MusECore::MidiController* mc = port->midiController(ev_num);
       MusECore::MidiController* mc = port->midiController(ev_num, channel);
       
       ctrlList->clear();
@@ -660,8 +634,6 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
             const int ch = it->first >> 24;
             if(ch != channel)
               continue;
-// REMOVE Tim. midnam. Changed.
-//             MusECore::MidiController* c   = port->midiController(cl->num());
             MusECore::MidiController* c   = port->midiController(cl->num(), ch);
             const bool isDrumCtrl = (c->isPerNoteController());
             const int show = c->showInTracks();
@@ -682,8 +654,6 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
                      (((isDrumCtrl || isNewDrum) && !(show & MusECore::MidiController::ShowInDrum)) ||
                      (isMidi && !(show & MusECore::MidiController::ShowInMidi))))
                     continue;
-// REMOVE Tim. midnam. Changed.
-//                   bool isinstr = mcl->find(cnum) != mcl->end();
                   const int patch = port->hwCtrlState(ch, MusECore::CTRL_PROGRAM);
                   const bool isinstr = instr->findController(cnum, ch, patch) != nullptr;
                   // Need to distinguish between global default controllers and
@@ -781,27 +751,20 @@ void EditCtrlDialog::newController()
       MusECore::MidiTrack* track    = part->track();
       const int portn               = track->outPort();
       MusECore::MidiPort* port      = &MusEGlobal::midiPorts[portn];
-// REMOVE Tim. midnam. Removed. Old drum not used any more.
-//       const bool isDrum      = track->type() == MusECore::Track::DRUM;
       const bool isNewDrum   = track->type() == MusECore::Track::NEW_DRUM;
       const bool isMidi      = track->type() == MusECore::Track::MIDI;
       MusECore::MidiInstrument* instr   = port->instrument();
-// REMOVE Tim. midnam. Changed.
-//       MusECore::MidiControllerList* mcl = instr->controller();
       const int channel = track->outChannel();
       const int patch = port->hwCtrlState(channel, MusECore::CTRL_PROGRAM);
       MusECore::MidiControllerList* mcl = new MusECore::MidiControllerList();
       instr->getControllers(mcl, channel, patch);
       
       MusECore::MidiCtrlValListList* cll = port->controller();
-//       int channel              = track->outChannel();
       for (MusECore::ciMidiController ci = mcl->cbegin(); ci != mcl->cend(); ++ci)
       {
           MusECore::MidiController* c = ci->second;
           const int cnum = c->num();
           const int show = c->showInTracks();
-// REMOVE Tim. midnam. Changed. Old drum not used any more.
-//           if(((isDrum || isNewDrum) && !(show & MusECore::MidiController::ShowInDrum)) ||
           if((isNewDrum && !(show & MusECore::MidiController::ShowInDrum)) ||
              (isMidi && !(show & MusECore::MidiController::ShowInMidi)))
             continue;
@@ -856,7 +819,6 @@ void EditCtrlDialog::newController()
                         }
                   }
             }
-      // REMOVE Tim. midnam. Added.
       delete mcl;
             
       delete pup;
@@ -873,8 +835,6 @@ void EditCtrlDialog::ctrlListClicked(QListWidgetItem* item)
       MusECore::MidiTrack* track  = part->track();
       int portn                   = track->outPort();
       MusECore::MidiPort* port    = &MusEGlobal::midiPorts[portn];
-// REMOVE Tim. midnam. Changed.
-//       MusECore::MidiController* c = port->midiController(cnum);
       const int chan = track->outChannel();
       MusECore::MidiController* c = port->midiController(cnum, chan);
       int val;

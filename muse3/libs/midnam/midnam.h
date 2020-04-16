@@ -418,9 +418,7 @@ class MidiNamCtrl : public MidiController
     bool readMidnam(MusECore::Xml& xml);
 };
 
-// REMOVE Tim. midnam. Changed.
 class MidiNamCtrls : public MidiControllerList
-//class MidiNamCtrls : public CompoundMidiControllerList_t
 {
   private:
     QString _name;
@@ -429,15 +427,18 @@ class MidiNamCtrls : public MidiControllerList
     MidiNamCtrls* _p_ref;
     bool _isReference;
 
+    bool _hasMidiNamCtrls;
+
   public:
-    MidiNamCtrls() : _p_ref(nullptr), _isReference(false) { }
+    MidiNamCtrls() : _p_ref(nullptr), _isReference(false), _hasMidiNamCtrls(false) { }
     MidiNamCtrls(const QString& name) :
-      _name(name), _p_ref(nullptr), _isReference(false) { }
+      _name(name), _p_ref(nullptr), _isReference(false), _hasMidiNamCtrls(false) { }
     MidiNamCtrls(const MidiNamCtrls& mcl);
     // We require a destructor here because MidiControllerList
     //  does not delete its contents.
     ~MidiNamCtrls();
 
+    bool hasMidiNamCtrls() const { return _hasMidiNamCtrls; }
     const MidiNamCtrls* objectOrRef() const { return (_isReference && _p_ref) ? _p_ref : this; }
     MidiNamCtrls* objectOrRef() { return (_isReference && _p_ref) ? _p_ref : this; }
     void setObjectOrRef(MidiNamCtrls* l) { _p_ref = l; }
@@ -454,9 +455,6 @@ class MidiNamCtrls : public MidiControllerList
     // If channel is -1 or patch is don't care, it looks for defaults.
     const MidiControllerList* getControllers(int channel = -1, int patch = CTRL_PROGRAM_VAL_DONT_CARE) const;
 };
-// typedef MidiNamCtrls::iterator iMidiNamCtrl;
-// typedef MidiNamCtrls::const_iterator ciMidiNamCtrl;
-// typedef std::pair<iMidiNamCtrl, bool> MidiNamCtrlPair;
 
 
 //-----------------------------------------------------------------
