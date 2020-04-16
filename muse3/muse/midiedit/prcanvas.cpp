@@ -1151,7 +1151,7 @@ void PianoCanvas::resizeItem(CItem* item, bool noSnap, bool rasterize)         /
 
         int diff = event.tick() + len - part->lenTick();
 
-        if (resizeDirection == MusECore::RESIZE_TO_THE_LEFT) {
+        if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
             int x = qMax(0, nevent->x());
             int ntick = qMax(0u, x - part->tick());
             newEvent.setTick(ntick);

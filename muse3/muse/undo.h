@@ -43,7 +43,7 @@ class CtrlListList;
 class CtrlList;
 struct CtrlVal;
 
-enum ResizeDirection {
+enum class ResizeDirection {
       RESIZE_TO_THE_LEFT,
       RESIZE_TO_THE_RIGHT
 };

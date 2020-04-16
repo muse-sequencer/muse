@@ -315,9 +315,9 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       
     case SetAudioConverterOfflineMode:
     {
-      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SetAudioConverterOfflineMode: "
-                                "sndFile:%p audio_converter:%p\n", 
-                                *_sndFile, _audio_converter);
+//      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SetAudioConverterOfflineMode: "
+//                                "sndFile:%p audio_converter:%p\n",
+//                                *_sndFile, _audio_converter);
 
       AudioConverterPluginI* cur_conv = _sndFileR.staticAudioConverter(AudioConverterSettings::RealtimeMode);
       //if(_audio_converter)
@@ -1116,29 +1116,43 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
 
     case ModifyPartStart:
     {
-//#ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyPartStart part:%p old_val:%d new_val:%u\n", _part, _part->lenValue(), _posLenVal);
-//#endif
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyPartStart part:%p old_val:%d new_val:%u\n", _part, _part->frame(), _posLenVal);
+
       // Go through all events and adjust their position from the new start of the part
+
       int newPartStart = _posLenVal;
-      int oldPartStart = _part->tick();
-      int startTickChange = oldPartStart - newPartStart;
-printf("newPartStart = %d oldPartStart = %d startTickChange=%d\n", newPartStart, oldPartStart, startTickChange);
+      int oldPartStart = _part->posValue();
+      int startPosChange = oldPartStart - newPartStart;
+      auto partType = _part->partType();
+
       EventList eventList = _part->events();
 
-      for (EventList::const_iterator ci = eventList.begin(); ci != eventList.end(); ++ci) {
+//      fprintf(stderr,"newPartStart = %d oldPartStart = %d startTickChange=%d partType=%d\n",
+//              newPartStart, oldPartStart, startPosChange, _part->partType());
 
-          if (ci == eventList.begin() && _part->partType() == MusECore::Part::WavePartType ) { // first event in a wave part must be extended.
+      for (EventList::const_iterator ci = eventList.begin(); ci != eventList.end(); ci++)
+      {
+          // first event in a wave part must be extended.
+          if (ci == eventList.begin() && partType == Part::WavePartType)
+          {
+              auto waveEvent = (Event&)ci->second;
+              fprintf(stderr,"Adjusting event frame %d\n", waveEvent.spos());
+              if (waveEvent.spos() - startPosChange < 0) {
+                  startPosChange = waveEvent.spos();
+                  newPartStart = oldPartStart - startPosChange;
+              }
+              waveEvent.setSpos(waveEvent.spos() - startPosChange);
+              waveEvent.setLenFrame(waveEvent.lenFrame() + startPosChange);
           }
-          else {
-              printf("Adjusting event tick %d\n", ((Event&)ci->second).tick());
-              ((Event&)ci->second).setTick(((Event&)ci->second).tick() + startTickChange);
+          else
+          {
+              auto event = (Event&)ci->second;
+              event.setPosValue(event.posValue() - startPosChange);
           }
       }
-      printf("DID a resize start!\n");
+      _part->setPosValue(newPartStart);
+      _part->setLenValue(_part->lenValue()+startPosChange);
 
-      _part->setTick(_posLenVal);
-      _part->setLenTick(_part->lenTick()+startTickChange);
       flags |= SC_PART_MODIFIED;
       flags |= SC_EVENT_MODIFIED;
     }
