@@ -230,6 +230,7 @@ void GlobalSettingsConfig::updateSettings()
       vstInPlaceCheckBox->setChecked(MusEGlobal::config.vstInPlace);
       revertPluginNativeGUIScalingCheckBox->setChecked(MusEGlobal::config.noPluginScaling);
       openMDIWinMaximizedCheckBox->setChecked(MusEGlobal::config.openMDIWinMaximized);
+      keepTransportWindowOnTopCheckBox->setChecked(MusEGlobal::config.keepTransportWindowOnTop);
 
       deviceAudioBackendComboBox->setCurrentIndex(MusEGlobal::config.deviceAudioBackend);
 
@@ -467,6 +468,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.velocityPerNote = velocityPerNoteCheckBox->isChecked();
       MusEGlobal::config.noPluginScaling = revertPluginNativeGUIScalingCheckBox->isChecked();
       MusEGlobal::config.openMDIWinMaximized = openMDIWinMaximizedCheckBox->isChecked();
+      MusEGlobal::config.keepTransportWindowOnTop = keepTransportWindowOnTopCheckBox->isChecked();
 
       if (rangeMarkers1RadioButton->isChecked())
           MusEGlobal::config.rangeMarkersSet=MusEGlobal::CONF_SET_MARKERS_MID_RIGHT;

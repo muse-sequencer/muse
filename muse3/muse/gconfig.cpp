@@ -313,8 +313,6 @@ GlobalConfigValues config = {
       MusECore::DONT_REC_MUTED_OR_HIDDEN,
       true,                         // addHiddenTracks
       true,                         // unhideTracks
-// Obsolete. There is only 'New' drum tracks now.
-//       MusEGlobal::PREFER_NEW,       // drumTrackPreference
       true,                         // smartFocus
       20,                           // trackHeight
       true,                         // borderlessMouse
@@ -343,9 +341,10 @@ GlobalConfigValues config = {
       "",                           // mixdownPath
       true,                         // showNoteNamesInPianoRoll
       true,                         // showNoteTooltipsCheckBox
+      false,                        // selectionsUndoable Whether selecting parts or events is undoable.
       false,                        // noPluginScaling
       false,                        // openMDIWinMaximized
-      false                         // selectionsUndoable Whether selecting parts or events is undoable.
+      true                          // keepTransportWindowOnTop
     };
 
 } // namespace MusEGlobal

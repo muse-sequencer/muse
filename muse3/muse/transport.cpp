@@ -264,11 +264,14 @@ void TempoSig::setTimesig(int a, int b)
 //---------------------------------------------------------
 
 Transport::Transport(QWidget* parent, const char* name)
-  : QWidget(parent, Qt::Window | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint )  // Possibly also Qt::X11BypassWindowManagerHint
+  : QWidget(parent, Qt::Window | Qt::FramelessWindowHint )  // Possibly also Qt::X11BypassWindowManagerHint
       {
       setObjectName(name);
       setWindowTitle(QString("Muse: Transport"));
       setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+
+      if (MusEGlobal::config.keepTransportWindowOnTop)
+          setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
 
       QHBoxLayout* hbox = new QHBoxLayout;
       hbox->setContentsMargins(2, 2, 2, 2);

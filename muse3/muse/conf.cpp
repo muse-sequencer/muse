@@ -1245,6 +1245,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.noPluginScaling = xml.parseInt();
                         else if (tag == "openMDIWinMaximized")
                             MusEGlobal::config.openMDIWinMaximized = xml.parseInt();
+                        else if (tag == "keepTransportWindowOnTop")
+                            MusEGlobal::config.keepTransportWindowOnTop = xml.parseInt();
 
 
                         // ---- the following only skips obsolete entries ----
@@ -1906,6 +1908,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "showNoteTooltips", MusEGlobal::config.showNoteTooltips);
       xml.intTag(level, "noPluginScaling", MusEGlobal::config.noPluginScaling);
       xml.intTag(level, "openMDIWinMaximized", MusEGlobal::config.openMDIWinMaximized);
+      xml.intTag(level, "keepTransportWindowOnTop", MusEGlobal::config.keepTransportWindowOnTop);
 
       for (int i = 1; i < NUM_FONTS; ++i) {
 //          for (int i = 0; i < NUM_FONTS; ++i) {
