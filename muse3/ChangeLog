@@ -1,3 +1,5 @@
+18.04.2010
+    - New option in Global settings -> GUI tweaks to (not) keep transport window on top (kybos)
 13.04.2020
     - Fix regression from 12.04.2019: Midi controller cache not proper after loading song. (Tim)
       Since we now resolve track and instrument references AFTER a song file is FULLY loaded,
