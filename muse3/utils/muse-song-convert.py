@@ -22,6 +22,7 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
+from __future__ import print_function
 
 import sys
 import os
@@ -99,7 +100,7 @@ class MusEConvert:
 		# parse string and look for blocks to remove 
 		def findAndSkipBlock(self, theFile, currLine):
 				for line in blocks:
-					if string.find(currLine , line[0]) > -1:
+					if line[0] in currLine:
 						#print "Skipping %s"%line[0]
 						self.loopUntil(theFile, currLine, line[1])
 						return True
@@ -108,15 +109,15 @@ class MusEConvert:
 		# when a block has been found, loop until the end-tag.
 		def loopUntil(self, theFile, currLine, tagToFind):
 				loopEnd = False
-				if string.find(currLine , tagToFind) > -1:
+				if tagToFind in currLine:
 						loopEnd = True
 				while loopEnd == False:
 						line = inFile.readline()
-						if string.find(line, tagToFind) > -1:
+						if tagToFind in line:
 								loopEnd = True
 
 		def fixComma(self, theFile, currLine):
-					newStr = string.replace(currLine , ",",".")
+					newStr = currLine.replace(",",".")
 					return newStr
 						
 				
@@ -133,25 +134,25 @@ class MusEConvert:
 				stateInfo = []
 				line = theFile.readline()	
 				notFoundStateEnd= True
-				if string.find(line , "<midistate") > -1:
+				if "<midistate" in line:
 					notFoundStateEnd = True
 					line = theFile.readline()	
 					
 					while notFoundStateEnd:
-						if string.find(line , "<event") > -1:
+						if "<event" in line:
 							event = []
 							event.append(line)
 							notFoundEventEnd = True
-							if string.find(line , "/>") > -1:
+							if "/>" in line:
 								notFoundEventEnd = False 
 							line = theFile.readline()
 							while notFoundEventEnd:
-								if string.find(line , "</event") > -1:
+								if "</event" in line:
 									notFoundEventEnd = False
 								event.append(line)
 								line = theFile.readline()
 							stateInfo.append(event)
-						if string.find(line , "</midistate") > -1:
+						if "</midistate" in line:
 							notFoundStateEnd = False
 				
 				# got all events
@@ -191,59 +192,59 @@ class MusEConvert:
 				p2=[]
 				p3=[]
 				p4=[]
-				if string.find(line , "<plugin") > -1:
+				if "<plugin" in line:
 					notFoundPlugEnd = True
 					while notFoundPlugEnd:
 						p1.append(line)
 						line = theFile.readline() # <plugin 1
-						if string.find(line , "</plugin") > -1:
+						if "</plugin" in line:
 							p1.append(line)
 							notFoundPlugEnd = False
 				
 					line = theFile.readline() # <plugin 2
-					if string.find(line , "<plugin") > -1:
+					if "<plugin" in line:
 						notFoundPlugEnd = True
 						while notFoundPlugEnd:
 							p2.append(line)
 							line = theFile.readline() # <plugin 2
-							if string.find(line , "</plugin") > -1:
+							if "</plugin" in line:
 								p2.append(line)
 								notFoundPlugEnd = False
 						
 						line = theFile.readline() # <plugin 3
-						if string.find(line , "<plugin") > -1:
+						if "<plugin" in line:
 							notFoundPlugEnd = True
 							while notFoundPlugEnd:
 								p3.append(line)
 								line = theFile.readline() # <plugin 3
-								if string.find(line , "</plugin") > -1:
+								if "</plugin" in line:
 									p3.append(line)
 									notFoundPlugEnd = False
 
 							line = theFile.readline() # <plugin 4
-							if string.find(line , "<plugin") > -1:
+							if "<plugin" in line:
 								notFoundPlugEnd = True
 								while notFoundPlugEnd:
 									p4.append(line)
 									line = theFile.readline() # <plugin 4
-									if string.find(line , "</plugin") > -1:
+									if "</plugin" in line:
 										p3.append(line)
 										notFoundPlugEnd = False
 					
-				print "atype=", atype
-				print "p1=", p1
-				print "p2=", p2
-				print "p3=", p3
-				print "p4=", p4
+				print("atype=", atype)
+				print("p1=", p1)
+				print("p2=", p2)
+				print("p3=", p3)
+				print("p4=", p4)
 				
 				return([atype,name,idx,ch,conn,vol,pan,mute,solo,pre,off, p1,p2,p3,p4]) # add them together
 					
 		def checkAGroup(self, theFile, currLine):
-				if string.find(currLine , "<audiogroup") > -1:
-					print "AUDIOGROUP"
+				if "<audiogroup" in currLine:
+					print("AUDIOGROUP")
 					theFile.readline() # <audiogroup>
 					idx = self.getProperty(currLine, "idx")
-					print "idx=",idx
+					print("idx=",idx)
 					data = self.getAudio(theFile,currLine,"audiogroup", "Group %s"%(chr(int(idx)+65)),idx)
 					adata.append(data)
 					theFile.readline() # </audiogroup> 
@@ -252,11 +253,11 @@ class MusEConvert:
 					return False
 		
 		def checkSynth(self, theFile, currLine):
-				if string.find(currLine , "<synth") > -1:
-					print "SYNTH"
+				if "<synth" in currLine:
+					print("SYNTH")
 					synt = self.getSynth(theFile,currLine)
 					data = self.getAudio(theFile,currLine,"synth", synt[1], 0)
-					print "got synth, name=%s route=%s",synt[1], data[5]
+					print("got synth, name=%s route=%s",synt[1], data[5])
 					
 					theFile.readline() # </synth>
 					synths.append(synt)
@@ -267,8 +268,8 @@ class MusEConvert:
 					return False
 					
 		def checkAMaster(self, theFile, currLine):
-				if string.find(currLine , "<audiomaster") > -1:
-					print "AUDIOMASTER"
+				if "<audiomaster" in currLine:
+					print("AUDIOMASTER")
 					theFile.readline() # <audiomaster>
 					data = self.getAudio(theFile,currLine,"audiomaster", "Master",-1)
 					adata.append(data)
@@ -278,8 +279,8 @@ class MusEConvert:
 					return False
 		
 		def checkAInput(self, theFile, currLine):
-				if string.find(currLine , "<audioinput") > -1:
-					print "AUDIOINPUT"
+				if "<audioinput" in currLine:
+					print("AUDIOINPUT")
 					theFile.readline() # <audioinput>
 					idx = self.getProperty(currLine, "idx")
 					data = self.getAudio(theFile,currLine,"audioinput", "In 1",idx)
@@ -291,16 +292,16 @@ class MusEConvert:
 		
 		# returns the property
 		def getProperty(self, currLine, tag):
-				prePtr = string.find(currLine , tag)
+				prePtr = currLine.find(tag)
 				if prePtr == -1:
 					return -1
-				firstPtr = string.find(currLine[prePtr:] , "\"")
-				lastPtr = string.find(currLine[firstPtr+prePtr+1:] , "\"")
+				firstPtr = currLine[prePtr:].find('"')
+				lastPtr = currLine[firstPtr+prePtr+1:].find('"')
 				return currLine[firstPtr+prePtr+1:firstPtr+prePtr+lastPtr+1]
 				
 		def checkMGroup(self, theFile, currLine):
-				if string.find(currLine , "<midiport") > -1:
-					print "MIDIPORT"
+				if "<midiport" in currLine:
+					print("MIDIPORT")
 					idx = self.getProperty(currLine, "idx")
 					line = theFile.readline() # <instrument>
 					inst = self.getSimpleValue(line)
@@ -319,15 +320,15 @@ class MusEConvert:
 		# format is important, must be:
 		# <tag>value</tag>
 		def getSimpleValue(self, line):
-				firstPtr = string.find(line, ">") # find end of first tag
-				lastPtr = string.find(line, "</")
+				firstPtr = line.find(">") # find end of first tag
+				lastPtr = line.find("</")
 				outStr = line[firstPtr+1:lastPtr]
 				return outStr
 		
 		def checkClip(self, theFile, currLine):
-				if string.find(currLine , "<clip>") > -1:
+				if "<clip>" in currLine:
 					if self.insidePart == False:
-						print "CLIP"
+						print("CLIP")
 						line = theFile.readline() # <file>
 						fil = self.getSimpleValue(line)
 						line = theFile.readline() # <name>
@@ -338,7 +339,7 @@ class MusEConvert:
 						line = theFile.readline() # <len>
 						line = theFile.readline() # </clip>
 					else:
-						print "insertClip"
+						print("insertClip")
 						clipname = self.getSimpleValue(currLine)
 						for clip in clips:
 							if clip[0] == clipname:
@@ -351,45 +352,45 @@ class MusEConvert:
 
 
 		def checkPart(self, theFile, currLine):
-				if string.find(currLine , "<part>") > -1:
-					print "PART"
+				if "<part>" in currLine:
+					print("PART")
 					self.insidePart = True
-				elif string.find(currLine , "</part>") > -1:
-					print "/PART"
+				elif "</part>" in currLine:
+					print("/PART")
 					self.insidePart = False
 		
 		def checkWaveTrack(self, theFile, currLine):
-				if string.find(currLine , "</wavetrack>") > -1:
-					print "/WAVETRACK"
+				if "</wavetrack>" in currLine:
+					print("/WAVETRACK")
 					self.insideWaveTrack = False
 					return False
-				elif string.find(currLine , "<wavetrack>") > -1:
-					print "WAVETRACK"
+				elif "<wavetrack>" in currLine:
+					print("WAVETRACK")
 					self.insideWaveTrack = True
 					return False
 				
 				if self.insideWaveTrack: # create dummy adata for the routing
-					if string.find(currLine , "<connect>") > -1:
+					if "<connect>" in currLine:
 						con = self.getSimpleValue(currLine)
 						
 						#adata.append([atype,name,idx,ch,conn,vol,pan,mute,solo,pre,off, p1,p2,p3,p4])
-						print ["wavetrack", self.currWaveTrackName,0,0,con,0,0,0,0,0,0,0,0,0,0]
+						print(["wavetrack", self.currWaveTrackName,0,0,con,0,0,0,0,0,0,0,0,0,0])
 						adata.append(["wavetrack", self.currWaveTrackName,0,0,con,0,0,0,0,0,0,0,0,0,0])
 						
 						return True
 						
-					elif string.find(currLine , "<audionode") > -1:
-						print "AUDIONODE - in wave track"
+					elif "<audionode" in currLine:
+						print("AUDIONODE - in wave track")
 						return True
-					elif string.find(currLine , "</audionode") > -1:
-						print "AUDIONODE - in wave track"
+					elif "</audionode" in currLine:
+						print("AUDIONODE - in wave track")
 						return True
-					elif string.find(currLine , "<volume>") > -1:
+					elif "<volume>" in currLine:
 						vol = self.getSimpleValue(currLine)
 						outFile.write("        <controller id=\"0\" cur=\"%s\">\n"%vol)
 						outFile.write("          </controller>\n")
 						return True
-					elif string.find(currLine , "<pan>") > -1:
+					elif "<pan>" in currLine:
 						pan = self.getSimpleValue(currLine)
 						outFile.write("        <controller id=\"1\" cur=\"%s\">\n"%pan)
 						outFile.write("          </controller>\n")
@@ -398,17 +399,17 @@ class MusEConvert:
 
 		def getWaveTrackName(self, theFile, currLine):
 				if self.insideWaveTrack and not self.insidePart:
-					if string.find(currLine , "<name>") > -1:
-						print "WAVETRACK - NAME"
+					if "<name>" in currLine:
+						print("WAVETRACK - NAME")
 						self.currWaveTrackName = self.getSimpleValue(currLine)
-						print "self.currWaveTrackName =", self.currWaveTrackName
+						print("self.currWaveTrackName =", self.currWaveTrackName)
 				elif self.insideWaveTrack and self.insidePart:
 					pass
 				else:
 					self.currWaveTrackName = ""
 		
 		def checkTriggerForAdd(self, theFile, currLine):
-				if string.find(currLine , "<tempolist") > -1:
+				if "<tempolist" in currLine:
 					# we're in business, add ALL stored info:
 					# 1. AudioOutput
 					# 2. AudioInput
@@ -440,19 +441,19 @@ class MusEConvert:
 							outFile.write("        <controller id=\"1\" cur=\"%s\">\n"%line[6])
 							outFile.write("          </controller>\n")
 							if line[11] !=[]:
-								print "%s line[11] %s"%(line[1],line[11])
+								print("%s line[11] %s"%(line[1],line[11]))
 								for pl in line[11]:
 									outFile.write(pl)
 								if line[12] !=[]:
-									print "%s line[12] %s"%(line[1],line[12])
+									print("%s line[12] %s"%(line[1],line[12]))
 									for pl in line[12]:
 										outFile.write(pl)
 									if line[13] !=[]:
-										print "%s line[13] %s"%(line[1],line[13])
+										print("%s line[13] %s"%(line[1],line[13]))
 										for pl in line[13]:
 											outFile.write(pl)
 										if line[14] !=[]:
-											print "%s line[14] %s"%(line[1],line[14])
+											print("%s line[14] %s"%(line[1],line[14]))
 											for pl in line[14]:
 												outFile.write(pl)
 							outFile.write("      </AudioOutput>\n")
@@ -476,19 +477,19 @@ class MusEConvert:
 							outFile.write("        <controller id=\"1\" cur=\"%s\">\n"%line[6])
 							outFile.write("          </controller>\n")
 							if line[11] !=[]:
-								print "%s line[11] %s"%(line[1],line[11])
+								print("%s line[11] %s"%(line[1],line[11]))
 								for pl in line[11]:
 									outFile.write(pl)
 								if line[12] !=[]:
-									print "%s line[12] %s"%(line[1],line[12])
+									print("%s line[12] %s"%(line[1],line[12]))
 									for pl in line[12]:
 										outFile.write(pl)
 									if line[13] !=[]:
-										print "%s line[13] %s"%(line[1],line[13])
+										print("%s line[13] %s"%(line[1],line[13]))
 										for pl in line[13]:
 											outFile.write(pl)
 										if line[14] !=[]:
-											print "%s line[14] %s"%(line[1],line[14])
+											print("%s line[14] %s"%(line[1],line[14]))
 											for pl in line[14]:
 												outFile.write(pl)
 							outFile.write("      </AudioInput>\n")
@@ -512,19 +513,19 @@ class MusEConvert:
 							outFile.write("        <controller id=\"1\" cur=\"%s\">\n"%line[6])
 							outFile.write("          </controller>\n")
 							if line[11] !=[]:
-								print "%s line[11] %s"%(line[1],line[11])
+								print("%s line[11] %s"%(line[1],line[11]))
 								for pl in line[11]:
 									outFile.write(pl)
 								if line[12] !=[]:
-									print "%s line[12] %s"%(line[1],line[12])
+									print("%s line[12] %s"%(line[1],line[12]))
 									for pl in line[12]:
 										outFile.write(pl)
 									if line[13] !=[]:
-										print "%s line[13] %s"%(line[1],line[13])
+										print("%s line[13] %s"%(line[1],line[13]))
 										for pl in line[13]:
 											outFile.write(pl)
 										if line[14] !=[]:
-											print "%s line[14] %s"%(line[1],line[14])
+											print("%s line[14] %s"%(line[1],line[14]))
 											for pl in line[14]:
 												outFile.write(pl)
 							outFile.write("      </AudioGroup>\n")
@@ -581,13 +582,13 @@ class MusEConvert:
 					for line in adata:
 						for line2 in adata:
 								if line[4] == line2[1]:
-									print ">route %s line[4]=%s  %s line2[1]=%s"%(line[1],line[4],line2[1],line2[1])
+									print(">route %s line[4]=%s  %s line2[1]=%s"%(line[1],line[4],line2[1],line2[1]))
 									outFile.write("      <Route>\n")
 									outFile.write("        <srcNode>%s</srcNode>\n"%line[1])
 									outFile.write("        <dstNode>%s</dstNode>\n"%line2[1])
 									outFile.write("      </Route>\n")
 								else:
-									print "-route %s line[4]=%s  %s line2[1]=%s"%(line[1],line[4],line2[1],line2[1])
+									print("-route %s line[4]=%s  %s line2[1]=%s"%(line[1],line[4],line2[1],line2[1]))
 								
 					outFile.write("    <Route>\n")
 					outFile.write("      <srcNode>1:Master</srcNode>\n")
@@ -600,7 +601,7 @@ class MusEConvert:
 					
 		def processFluid(self, fluid):
 				# here we go
-				print "Fluidsynth!!"
+				print("Fluidsynth!!")
 				#for state in fluid[4]:
 				#	for evl in state:
 				#		outFile.write(evl)
@@ -614,7 +615,7 @@ class MusEConvert:
 				externalConnects2f=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 				for event in fluid[4]:
 					hexstr = self.convertEventToHexStr(event)
-					print hexstr
+					print(hexstr)
 					counter1 = 0
 					counter2 = 0
 					if hexstr[0] == "28":
@@ -679,29 +680,29 @@ class MusEConvert:
 
 
 def help():
-		print "Utility to convert MusE 0.6 songs to 0.7 or newer song format."
-		print "Usage: muse-convert <song file to convert>"
-		print ""
-		print "Please report any problems with this script to rj@spamatica.se"
-		print "Author: Robert Jonsson, 2005, Copylefted under the GPL"
+		print("Utility to convert MusE 0.6 songs to 0.7 or newer song format.")
+		print("Usage: muse-convert <song file to convert>")
+		print("")
+		print("Please report any problems with this script to rj@spamatica.se")
+		print("Author: Robert Jonsson, 2005, Copylefted under the GPL")
 		
 ########################
 # --- Main program --- #
 ########################
 		
-print "MusE Song converter %s"%version
-print ""
+print("MusE Song converter %s"%version)
+print("")
 
 if len(sys.argv) < 2:
 	help()
 	sys.exit("")
 	
-print "Processing file ", sys.argv[1]
-print ""
+print("Processing file ", sys.argv[1])
+print("")
 # step 1 - remove malformed data
-inFile = file(sys.argv[1])
+inFile = open(sys.argv[1], "r")
 
-outFile = file(sys.argv[1]+".tmp","w")
+outFile = open(sys.argv[1]+".tmp","w")
 fileEnd = False
 
 convert = MusEConvert()
@@ -709,8 +710,8 @@ convert = MusEConvert()
 #take care of first few lines:
 outFile.write(inFile.readline()) # <?xml
 line = inFile.readline() # <muse string
-if string.find(line, "<muse version=\"1.0\">") == -1:
-		print "Unable to confirm that this is a song file with the old format, aborting..."
+if "<muse version=\"1.0\">" not in line:
+		print("Unable to confirm that this is a song file with the old format, aborting...")
 		sys.exit("")
 outFile.write("<muse version=\"2.0\" comment=\"converted by muse converter v%s\">\n"%version)
 
@@ -726,8 +727,8 @@ inFile.close()
 outFile.close()
 
 #sys.exit("")
-inFile = file(sys.argv[1]+".tmp","r")
-outFile = file(sys.argv[1]+".converted","w")
+inFile = open(sys.argv[1]+".tmp","r")
+outFile = open(sys.argv[1]+".converted","w")
 fileEnd = False
 
 while fileEnd == False:
@@ -759,6 +760,6 @@ while fileEnd == False:
 		else:
 				outFile.write(line)
 
-print ""
-print "Converted!"
-print ""
+print("")
+print("Converted!")
+print("")
