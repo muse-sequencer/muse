@@ -1130,12 +1130,12 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
 //      fprintf(stderr,"newPartStart = %d oldPartStart = %d startTickChange=%d partType=%d\n",
 //              newPartStart, oldPartStart, startPosChange, _part->partType());
 
-      for (EventList::const_iterator ci = eventList.begin(); ci != eventList.end(); ci++)
+      for (EventList::iterator eventIterator = eventList.begin(); eventIterator != eventList.end(); eventIterator++)
       {
           // first event in a wave part must be extended.
-          if (ci == eventList.begin() && partType == Part::WavePartType)
+          if (eventIterator == eventList.begin() && partType == Part::WavePartType)
           {
-              auto waveEvent = (Event&)ci->second;
+              auto waveEvent = (Event&)eventIterator->second;
               fprintf(stderr,"Adjusting event frame %d\n", waveEvent.spos());
               if (waveEvent.spos() - startPosChange < 0) {
                   startPosChange = waveEvent.spos();
@@ -1146,12 +1146,18 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
           }
           else
           {
-              auto event = (Event&)ci->second;
-              event.setPosValue(event.posValue() - startPosChange);
+              auto event = (Event&)eventIterator->second;
+              auto posValue = event.posValue();
+              eventList.move(event, posValue + startPosChange);
+              event.setTick(posValue + startPosChange);
           }
       }
+      for (EventList::iterator eventIterator = eventList.begin(); eventIterator != eventList.end(); eventIterator++)
+      {
+        fprintf(stderr, "pos after =%d\n", eventIterator->first);
+      }
       _part->setPosValue(newPartStart);
-      _part->setLenValue(_part->lenValue()+startPosChange);
+      _part->setLenValue(_part->lenValue() + startPosChange);
 
       flags |= SC_PART_MODIFIED;
       flags |= SC_EVENT_MODIFIED;
