@@ -1125,7 +1125,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       int startPosChange = oldPartStart - newPartStart;
       auto partType = _part->partType();
 
-      EventList eventList = _part->events();
+      EventList& eventList = _part->nonconst_events();
 
 //      fprintf(stderr,"newPartStart = %d oldPartStart = %d startTickChange=%d partType=%d\n",
 //              newPartStart, oldPartStart, startPosChange, _part->partType());
@@ -1152,7 +1152,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
               event.setTick(posValue + startPosChange);
           }
       }
-      for (EventList::iterator eventIterator = eventList.begin(); eventIterator != eventList.end(); eventIterator++)
+      for (EventList::const_iterator eventIterator = eventList.cbegin(); eventIterator != eventList.cend(); eventIterator++)
       {
         fprintf(stderr, "pos after =%d\n", eventIterator->first);
       }
@@ -1172,11 +1172,11 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       if (_part->partType() == MusECore::Part::WavePartType) {
 
         // find the event that exists at the end of the part (if there is one) and extend it
-        auto eventList = _part->events();
+        EventList& eventList = _part->nonconst_events();
 
         // find event with largest framepos
         Event& lastEvent = eventList.begin()->second;
-        for (auto ci = eventList.begin(); ci != eventList.end(); ++ci) {
+        for (auto ci = eventList.cbegin(); ci != eventList.cend(); ++ci) {
           if ( ((Event&)ci->second).frame() > lastEvent.frame())
           {
               lastEvent = ci->second;
