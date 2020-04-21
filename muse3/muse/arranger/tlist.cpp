@@ -314,9 +314,6 @@ void TList::paint(const QRect& r)
                               bg = MusEGlobal::config.midiTrackBg;
                               break;
                         case MusECore::Track::DRUM:
-                              bg = MusEGlobal::config.drumTrackBg;
-                              break;
-                        case MusECore::Track::NEW_DRUM:
                               bg = MusEGlobal::config.newDrumTrackBg;
                               break;
                         case MusECore::Track::WAVE:
@@ -500,7 +497,8 @@ void TList::paint(const QRect& r)
                                     int col_ctrl_no=Arranger::custom_columns[section - COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
                                     MusECore::MidiTrack* mt=dynamic_cast<MusECore::MidiTrack*>(track);
                                     MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-                                    MusECore::MidiController* mctl = mp->midiController(col_ctrl_no);
+                                    const int chan = mt->outChannel();
+                                    MusECore::MidiController* mctl = mp->midiController(col_ctrl_no, chan);
                                     int val;
                                     if (Arranger::custom_columns[section - COL_CUSTOM_MIDICTRL_OFFSET].affected_pos ==
                                         Arranger::custom_col_t::AFFECT_BEGIN)
@@ -687,7 +685,8 @@ void TList::ctrlValueFinished()
     {
       int val = ctrl_edit->value();
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-      MusECore::MidiController* mctl = mp->midiController(ctrl_num);
+      const int chan = mt->outChannel();
+      MusECore::MidiController* mctl = mp->midiController(ctrl_num, chan);
 
       if (val==ctrl_edit->minimum())
         val=MusECore::CTRL_VAL_UNKNOWN;
@@ -1028,7 +1027,8 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                 
                 MusECore::MidiTrack* mt=(MusECore::MidiTrack*)t;
                 MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-                MusECore::MidiController* mctl = mp->midiController(ctrl_num);
+                const int chan = mt->outChannel();
+                MusECore::MidiController* mctl = mp->midiController(ctrl_num, chan);
 
                 if (ctrl_num!=MusECore::CTRL_PROGRAM)
                 {
@@ -1126,8 +1126,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
         return;
       }
       
-      
-      if (t->type() != MusECore::Track::MIDI && t->type() != MusECore::Track::DRUM && t->type() != MusECore::Track::NEW_DRUM)
+      if (t->type() != MusECore::Track::MIDI && t->type() != MusECore::Track::DRUM)
             return;
       int oPort      = ((MusECore::MidiTrack*)t)->outPort();
       MusECore::MidiPort* port = &MusEGlobal::midiPorts[oPort];
@@ -2063,7 +2062,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         p->addAction(QIcon(*track_commentIcon), tr("Track Comment"))->setData(1002);
                         p->addSeparator();
                         
-                        if (t->type()==MusECore::Track::NEW_DRUM)
+                        if (t->type()==MusECore::Track::DRUM)
                         {
                           QAction* tmp;
                           tmp=p->addAction(tr("Save track's drumlist"));
@@ -2220,7 +2219,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       int ctrl_num = Arranger::custom_columns[col-COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
                       
                       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-                      MusECore::MidiController* mctl = mp->midiController(ctrl_num);
+                      const int chan = mt->outChannel();
+                      MusECore::MidiController* mctl = mp->midiController(ctrl_num, chan);
                       
                       int minval=mctl->minVal()+mctl->bias();
                       int maxval=mctl->maxVal()+mctl->bias();
@@ -2459,7 +2459,7 @@ void TList::copyTrackDrummap(MusECore::MidiTrack* t, bool /*full*/)
   for(MusECore::iMidiTrack it = MusEGlobal::song->midis()->begin(); it != MusEGlobal::song->midis()->end(); ++it)
   {
     mt = *it;
-    if(mt == t || !mt->selected() || mt->type() != MusECore::Track::NEW_DRUM)
+    if(mt == t || !mt->selected() || mt->type() != MusECore::Track::DRUM)
       continue;
 
     // The allocated WorkingDrumMapPatchList wdmpl will become the new list and the
@@ -2714,7 +2714,7 @@ void TList::classesPopupMenu(MusECore::Track* tIn, int x, int y, bool allSelecte
   QMenu p;
   p.clear();
   p.addAction(QIcon(*addtrack_addmiditrackIcon), tr("Midi"))->setData(MusECore::Track::MIDI);
-  p.addAction(QIcon(*addtrack_newDrumtrackIcon), tr("Drum"))->setData(MusECore::Track::NEW_DRUM);
+  p.addAction(QIcon(*addtrack_newDrumtrackIcon), tr("Drum"))->setData(MusECore::Track::DRUM);
   QAction* act = p.exec(mapToGlobal(QPoint(x, y)), 0);
 
   if (!act)
@@ -2739,27 +2739,7 @@ void TList::classesPopupMenu(MusECore::Track* tIn, int x, int y, bool allSelecte
 
 void TList::changeTrackToType(MusECore::Track *t, MusECore::Track::TrackType trackType)
 {
-  if ((trackType == MusECore::Track::MIDI  ||  trackType == MusECore::Track::NEW_DRUM) && t->type() == MusECore::Track::DRUM)
-  {
-    //
-    //    Drum -> Midi
-    //
-    MusEGlobal::audio->msgIdle(true);
-    static_cast<MusECore::MidiTrack*>(t)->convertToType(trackType);
-    MusEGlobal::audio->msgIdle(false);
-    MusEGlobal::song->update(SC_EVENT_MODIFIED);
-  }
-  else if (trackType == MusECore::Track::DRUM && (t->type() == MusECore::Track::MIDI  ||  t->type() == MusECore::Track::NEW_DRUM))
-  {
-    //
-    //    Midi -> Drum
-    //
-    MusEGlobal::audio->msgIdle(true);
-    static_cast<MusECore::MidiTrack*>(t)->convertToType(trackType);
-    MusEGlobal::audio->msgIdle(false);
-    MusEGlobal::song->update(SC_EVENT_MODIFIED);
-  }
-  else // MIDI -> NEW_DRUM or vice versa. added by flo.
+  // MIDI -> NEW_DRUM or vice versa. added by flo.
   {
     MusEGlobal::audio->msgIdle(true);
     t->setType(trackType);

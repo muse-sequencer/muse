@@ -212,7 +212,6 @@ bool RouteTreeWidgetItem::setChannels()
               break;
               case MusECore::Track::MIDI:
               case MusECore::Track::DRUM:
-              case MusECore::Track::NEW_DRUM:
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
                 chans = _isInput ? MusECore::MUSE_MIDI_CHANNELS : rcaps._midiPortChannels._inChannels;
 #else                  
@@ -3036,7 +3035,6 @@ void RouteDialog::addItems()
       break;
       case MusECore::Track::MIDI:
       case MusECore::Track::DRUM:
-      case MusECore::Track::NEW_DRUM:
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
         src_chans = MusECore::MUSE_MIDI_CHANNELS;
 #else        

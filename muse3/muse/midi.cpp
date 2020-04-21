@@ -326,11 +326,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                   case ME_NOTEON:
                         e.setType(Note);
 
-                        if (track->type() == Track::DRUM) {
-                              int instr = MusEGlobal::drumInmap[ev.dataA()];
-                              e.setPitch(instr);
-                              }
-                        else if (track->type() == Track::NEW_DRUM) {
+                        if (track->isDrumTrack()) {
                               int instr = track->map_drum_in(ev.dataA());
                               e.setPitch(instr);
                               }
@@ -342,11 +338,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                         break;
                   case ME_NOTEOFF:
                         e.setType(Note);
-                        if (track->type() == Track::DRUM) {
-                              int instr = MusEGlobal::drumInmap[ev.dataA()];
-                              e.setPitch(instr);
-                              }
-                        else if (track->type() == Track::NEW_DRUM) {
+                        if (track->isDrumTrack()) {
                               int instr = track->map_drum_in(ev.dataA());
                               e.setPitch(instr);
                               }
@@ -450,15 +442,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                     int ctl = ev.dataA();
                                     e.setA(ctl);
 
-                                    if(track->type() == Track::DRUM)
-                                    {
-                                      // Is it a drum controller event, according to the track port's instrument?
-                                      MidiController *mc = MusEGlobal::midiPorts[track->outPort()].drumController(ctl);
-                                      if(mc)
-                                        // Store an index into the drum map.
-                                        e.setA((ctl & ~0xff) | MusEGlobal::drumInmap[ctl & 0x7f]);
-                                    }
-                                    else if(track->type() == Track::NEW_DRUM)
+                                    if(track->isDrumTrack())
                                     {
                                       // Is it a drum controller event, according to the track port's instrument?
                                       MidiController *mc = MusEGlobal::midiPorts[track->outPort()].drumController(ctl);
@@ -851,7 +835,7 @@ void Audio::seekMidi()
     used_ports[i] = 0;
 
   // Find all used channels on all used ports.
-  bool drum_found = false;
+//   bool drum_found = false;
   if(MusEGlobal::song->click() && 
      metro_settings->clickPort < MusECore::MIDI_PORTS &&
      metro_settings->clickChan < MusECore::MUSE_MIDI_CHANNELS)
@@ -885,23 +869,19 @@ void Audio::seekMidi()
     
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
     
-    if(mt->type() == MusECore::Track::DRUM)
+    if(mt->isDrumTrack())
     {
-      if(!drum_found)
+      for(int i = 0; i < DRUM_MAPSIZE; ++i)
       {
-        drum_found = true; 
-        for(int i = 0; i < DRUM_MAPSIZE; ++i)
-        {
-          // Default to track port if -1 and track channel if -1.
-          int mport = MusEGlobal::drumMap[i].port;
-          if(mport == -1)
-            mport = mt->outPort();
-          int mchan = MusEGlobal::drumMap[i].channel;
-          if(mchan == -1)
-            mchan = mt->outChannel();
-          if(mport >= 0 && mport < MusECore::MIDI_PORTS && mchan >= 0 && mchan < MusECore::MUSE_MIDI_CHANNELS)
-            used_ports[mport] |= (1 << mchan);
-        }
+        // Default to track port if -1 and track channel if -1.
+        int mport = mt->drummap()[i].port;
+        if(mport == -1)
+          mport = mt->outPort();
+        int mchan = mt->drummap()[i].channel;
+        if(mchan == -1)
+          mchan = mt->outChannel();
+        if(mport >= 0 && mport < MusECore::MIDI_PORTS && mchan >= 0 && mchan < MusECore::MUSE_MIDI_CHANNELS)
+          used_ports[mport] |= (1 << mchan);
       }
     }
     else
@@ -920,23 +900,19 @@ void Audio::seekMidi()
       {
         case MusECore::Route::MIDI_PORT_ROUTE:
         {
-          if(mt->type() == MusECore::Track::DRUM)
+          if(mt->isDrumTrack())
           {
-            if(!drum_found)
+            for(int i = 0; i < DRUM_MAPSIZE; ++i)
             {
-              drum_found = true; 
-              for(int i = 0; i < DRUM_MAPSIZE; ++i)
-              {
-                // Default to track port if -1 and track channel if -1.
-                int mport = MusEGlobal::drumMap[i].port;
-                if(mport == -1)
-                  mport = ir->midiPort;
-                int mchan = MusEGlobal::drumMap[i].channel;
-                if(mchan == -1)
-                  mchan = ir->channel;
-                if(mport >= 0 && mport < MIDI_PORTS && mchan >= 0 && mchan < MusECore::MUSE_MIDI_CHANNELS)
-                  used_ports[mport] |= (1 << mchan);
-              }
+              // Default to track port if -1 and track channel if -1.
+              int mport = mt->drummap()[i].port;
+              if(mport == -1)
+                mport = mt->outPort();
+              int mchan = mt->drummap()[i].channel;
+              if(mchan == -1)
+                mchan = mt->outChannel();
+              if(mport >= 0 && mport < MIDI_PORTS && mchan >= 0 && mchan < MusECore::MUSE_MIDI_CHANNELS)
+                used_ports[mport] |= (1 << mchan);
             }
           }
           else
@@ -1081,7 +1057,7 @@ void Audio::seekMidi()
           {
             if(Track* t = p->track())
             {
-              if(t->type() == MusECore::Track::NEW_DRUM)
+              if(t->type() == MusECore::Track::DRUM)
               {
                 MidiTrack* mt = static_cast<MidiTrack*>(t);
                 int v_idx = ctlnum & 0x7f;
@@ -1117,11 +1093,15 @@ void Audio::seekMidi()
       if(instr && md && !md->isSynti() && !values_found && 
          MusEGlobal::config.midiSendCtlDefaults && !MusEGlobal::song->record() && pos == 0)
       {
-        MidiControllerList* mcl = instr->controller();
-        ciMidiController imc = mcl->find(vl->num());
-        if(imc != mcl->end())
-        {
-          MidiController* mc = imc->second;
+          // NOTE: If this is a PROGRAM controller, this code is not as crazy as it looks.
+          //       (How can we ask for, and then set, an initial program when we are first asking
+          //        for the current program? Seems like a 'circular' conflict.)
+          //       Midnam does not contain a program controller, so the setHwCtrlState() below
+          //        has no effect on the current controller list since in midnam there's no
+          //        program controller which would make it patch-dependent. There is only our
+          //        instrument's global PROGRAM controller (does not care about channel or current patch).
+          const int patch = mp->hwCtrlState(chan, CTRL_PROGRAM);
+          const MidiController* mc = instr->findController(vl->num(), chan, patch);
           if(mc->initVal() != CTRL_VAL_UNKNOWN)
           {
             //fprintf(stderr, "Audio::seekMidi: !values_found: calling sendEvent: ctlnum:%d val:%d\n", ctlnum, mc->initVal() + mc->bias());
@@ -1131,7 +1111,6 @@ void Audio::seekMidi()
             mp->setHwCtrlState(ev);
             md->putEvent(ev, MidiDevice::NotLate);
           }
-        }
       }
       
       //---------------------------------------------------
@@ -1334,13 +1313,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
                   //
                   if (ev.type() == Meta)
                         continue;
-                  if (track->type() == Track::DRUM) {
-                        int instr = ev.pitch();
-                        // ignore muted drums
-                        if (ev.isNote() && MusEGlobal::drumMap[instr].mute)
-                              continue;
-                        }
-                  else if (track->type() == Track::NEW_DRUM) {
+                  if (track->isDrumTrack()) {
                         int instr = ev.pitch();
                         // ignore muted drums
                         if (ev.isNote() && track->drummap()[instr].mute)
@@ -1391,21 +1364,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
                               int pitch = ev.pitch();
                               int velo  = ev.velo();
                               int veloOff = ev.veloOff();
-                              if (track->type() == Track::DRUM)  {
-                                    // Map drum-notes to the drum-map values
-                                   int instr = ev.pitch();
-                                   pitch     = MusEGlobal::drumMap[instr].anote;
-                                   // Default to track port if -1 and track channel if -1.
-                                   port      = MusEGlobal::drumMap[instr].port; //This changes to non-default port
-                                   if(port == -1)
-                                     port = track->outPort();
-                                   channel   = MusEGlobal::drumMap[instr].channel;
-                                   if(channel == -1)
-                                     channel = track->outChannel();
-                                   velo      = int(double(velo) * (double(MusEGlobal::drumMap[instr].vol) / 100.0)) ;
-                                   veloOff   = int(double(veloOff) * (double(MusEGlobal::drumMap[instr].vol) / 100.0)) ;
-                                   }
-                              else if (track->type() == Track::NEW_DRUM)  {
+                              if (track->isDrumTrack())  {
                                     // Map drum-notes to the drum-map values
                                    int instr = ev.pitch();
                                    pitch     = track->drummap()[instr].anote;
@@ -1476,41 +1435,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
 
                         case Controller:
                               {
-                                if (track->type() == Track::DRUM)
-                                {
-                                  int ctl   = ev.dataA();
-                                  // Is it a drum controller event, according to the track port's instrument?
-                                  MusECore::MidiController *mc = MusEGlobal::midiPorts[defaultPort].drumController(ctl);
-                                  if(mc)
-                                  {
-                                    int instr = ctl & 0x7f;
-                                    ctl &=  ~0xff;
-                                    int pitch = MusEGlobal::drumMap[instr].anote & 0x7f;
-                                    // Default to track port if -1 and track channel if -1.
-                                    port      = MusEGlobal::drumMap[instr].port; //This changes to non-default port
-                                    if(port == -1)
-                                      port = track->outPort();
-                                    channel   = MusEGlobal::drumMap[instr].channel;
-                                    if(channel == -1)
-                                      channel = track->outChannel();
-
-                                    MusECore::MidiPlayEvent mpeAlt(frame, port, channel, 
-                                                                   MusECore::ME_CONTROLLER, 
-                                                                   ctl | pitch,
-                                                                   ev.dataB());
-                                    
-                                    MidiPort* mpAlt = &MusEGlobal::midiPorts[port];
-                                    // TODO Maybe grab the flag from the 'Optimize Controllers' Global Setting,
-                                    //       which so far was meant for (N)RPN stuff. For now, just force it.
-                                    // This is the audio thread. Just set directly.
-                                    mpAlt->setHwCtrlState(mpeAlt);
-                                    if(MidiDevice* mdAlt = mpAlt->device())
-                                      mdAlt->putEvent(mpeAlt, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
-                                    
-                                    break;  // Break out.
-                                  }
-                                }
-                                else if (track->type() == Track::NEW_DRUM)
+                                if (track->isDrumTrack())
                                 {
                                   int ctl   = ev.dataA();
                                   // Is it a drum controller event, according to the track port's instrument?
@@ -1951,22 +1876,7 @@ void Audio::processMidi(unsigned int frames)
                                       //
 
                                       //Apply drum inkey:
-                                      if (track->type() == Track::DRUM)
-                                      {
-                                            int pitch = event.dataA();
-                                            //Map note that is played according to MusEGlobal::drumInmap
-                                            drumRecPitch = MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].enote;
-                                            // Default to track port if -1 and track channel if -1.
-                                            devport = MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].port;
-                                            if(devport == -1)
-                                              devport = track->outPort();
-                                            event.setPort(devport);
-                                            int mapchan = MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].channel;
-                                            if(mapchan != -1)
-                                              event.setChannel(mapchan);
-                                            event.setA(MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].anote);
-                                      }
-                                      else if (track->type() == Track::NEW_DRUM)
+                                      if (track->isDrumTrack())
                                       {
                                         int pitch = event.dataA();
                                         int dmindex = track->map_drum_in(pitch);
@@ -2016,32 +1926,7 @@ void Audio::processMidi(unsigned int frames)
                                 }
                                 else if(event.type() == MusECore::ME_CONTROLLER)
                                 {
-                                  if(track->type() == Track::DRUM)
-                                  {
-                                    ctl = event.dataA();
-                                    // Regardless of what port the event came from, is it a drum controller event
-                                    //  according to the track port's instrument?
-                                    if(mp)
-                                      mc = mp->drumController(ctl);
-                                    if(mc)
-                                    {
-                                      int pitch = ctl & 0x7f;
-                                      ctl &= ~0xff;
-                                      int dmindex = MusEGlobal::drumInmap[pitch] & 0x7f;
-                                      //Map note that is played according to MusEGlobal::drumInmap
-                                      drumRecPitch = MusEGlobal::drumMap[dmindex].enote;
-                                      // Default to track port if -1 and track channel if -1.
-                                      devport = MusEGlobal::drumMap[dmindex].port;
-                                      if(devport == -1)
-                                        devport = track->outPort();
-                                      event.setPort(devport);
-                                      int mapchan = MusEGlobal::drumMap[dmindex].channel;
-                                      if(mapchan != -1)
-                                        event.setChannel(mapchan);
-                                      event.setA(ctl | MusEGlobal::drumMap[dmindex].anote);
-                                    }
-                                  }
-                                  else if (track->type() == Track::NEW_DRUM) //FINDMICHJETZT TEST
+                                  if (track->isDrumTrack()) //FINDMICHJETZT TEST
                                   {
                                     ctl = event.dataA();
                                     // Regardless of what port the event came from, is it a drum controller event
@@ -2293,7 +2178,7 @@ void Audio::processMidi(unsigned int frames)
                                     //  to the track port so buildMidiEventList will accept it. Even though
                                     //  the port may have no device "<none>".
                                     //
-                                    if (track->type() == Track::DRUM || track->type() == Track::NEW_DRUM)
+                                    if (track->isDrumTrack())
                                     {
                                       // Is it a drum controller event?
                                       if(mc)

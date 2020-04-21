@@ -23,7 +23,7 @@
 //=========================================================
 
 #include "poly.h"
-#include "muse/midictrl_consts.h"
+#include "midictrl_consts.h"
 
 //---------------------------------------------------------
 //   playNote

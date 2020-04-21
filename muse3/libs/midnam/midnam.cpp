@@ -1846,10 +1846,27 @@ bool MidiNamAvailableChannel::read(MusECore::Xml& xml)
 //----------------------------------------------------------------
 
 
-bool MidiNamAvailableForChannels::add(const MidiNamAvailableChannel& a)
+MidiNamAvailableForChannels::MidiNamAvailableForChannels(const MidiNamAvailableForChannels& m)
+  : std::map<int, MidiNamAvailableChannel*>()
 {
-  return insert(MidiNamAvailableForChannelsPair(a.channel(), a)).second;
+  for(const_iterator i = m.cbegin(); i != m.cend(); ++i)
+    add(new MidiNamAvailableChannel(*i->second));
 }
+
+MidiNamAvailableForChannels::~MidiNamAvailableForChannels()
+{
+  for(const_iterator i = cbegin(); i != cend(); ++i)
+  {
+    if(i->second)
+      delete i->second;
+  }
+}
+      
+bool MidiNamAvailableForChannels::add(MidiNamAvailableChannel* a)
+{
+  return insert(MidiNamAvailableForChannelsPair(a->channel(), a)).second;
+}
+
 
 void MidiNamAvailableForChannels::write(int level, MusECore::Xml& xml) const
 {
@@ -1857,7 +1874,7 @@ void MidiNamAvailableForChannels::write(int level, MusECore::Xml& xml) const
     return;
   xml.tag(level++, "AvailableForChannels");
   for(const_iterator i = cbegin(); i != cend(); ++i)
-    i->second.write(level, xml);
+    i->second->write(level, xml);
   xml.etag(--level, "AvailableForChannels");
 }
 
@@ -1873,9 +1890,9 @@ void MidiNamAvailableForChannels::read(MusECore::Xml& xml)
                   case MusECore::Xml::TagStart:
                         if (tag == "AvailableChannel")
                         {
-                          MidiNamAvailableChannel n;
-                          if(n.read(xml))
-                            add(n);
+                          MidiNamAvailableChannel* n = new MidiNamAvailableChannel();
+                          if(!n->read(xml) || !add(n))
+                            delete n;
                         }
                         else
                           xml.unknown("MidiNamAvailableForChannels");
@@ -1965,6 +1982,14 @@ const MidiNamPatchBankList* MidiNamChannelNameSetAssign::getPatchBanks(int chann
   return _p_ref->getPatchBanks(channel);
 }
 
+const MidiControllerList* MidiNamChannelNameSetAssign::getControllers(int channel, int patch) const
+{
+  // Go directly to the reference object.
+  if(!_p_ref)
+    return nullptr;
+  return _p_ref->getControllers(channel, patch);
+}
+
 bool MidiNamChannelNameSetAssign::getNoteSampleName(
   bool drum, int channel, int patch, int note, QString* name) const
 {
@@ -1979,9 +2004,26 @@ bool MidiNamChannelNameSetAssign::getNoteSampleName(
 
 //----------------------------------------------------------------
 
-bool MidiNamChannelNameSetAssignments::add(const MidiNamChannelNameSetAssign& a)
+MidiNamChannelNameSetAssignments::MidiNamChannelNameSetAssignments(const MidiNamChannelNameSetAssignments& m)
+  : std::map<int, MidiNamChannelNameSetAssign*>()
 {
-  return insert(MidiNamChannelNameSetAssignmentsPair(a.channel(), a)).second;
+  for(const_iterator i = m.cbegin(); i != m.cend(); ++i)
+    add(new MidiNamChannelNameSetAssign(*i->second));
+  _hasChannelNameSetAssignments = m._hasChannelNameSetAssignments;
+}
+
+MidiNamChannelNameSetAssignments::~MidiNamChannelNameSetAssignments()
+{
+  for(const_iterator i = cbegin(); i != cend(); ++i)
+  {
+    if(i->second)
+      delete i->second;
+  }
+}
+
+bool MidiNamChannelNameSetAssignments::add(MidiNamChannelNameSetAssign* a)
+{
+  return insert(MidiNamChannelNameSetAssignmentsPair(a->channel(), a)).second;
 }
 
 void MidiNamChannelNameSetAssignments::write(int level, MusECore::Xml& xml) const
@@ -1990,7 +2032,7 @@ void MidiNamChannelNameSetAssignments::write(int level, MusECore::Xml& xml) cons
     return;
   xml.tag(level++, "ChannelNameSetAssignments");
   for(const_iterator i = cbegin(); i != cend(); ++i)
-    i->second.write(level, xml);
+    i->second->write(level, xml);
   xml.etag(--level, "ChannelNameSetAssignments");
 }
 
@@ -2006,9 +2048,9 @@ void MidiNamChannelNameSetAssignments::read(MusECore::Xml& xml)
                   case MusECore::Xml::TagStart:
                         if (tag == "ChannelNameSetAssign")
                         {
-                          MidiNamChannelNameSetAssign n;
-                          if(n.read(xml))
-                            add(n);
+                          MidiNamChannelNameSetAssign* n = new MidiNamChannelNameSetAssign();
+                          if(!n->read(xml) || !add(n))
+                            delete n;
                         }
                         else
                           xml.unknown("MidiNamChannelNameSetAssignments");
@@ -2031,7 +2073,7 @@ void MidiNamChannelNameSetAssignments::read(MusECore::Xml& xml)
 bool MidiNamChannelNameSetAssignments::gatherReferences(MidNamReferencesList* refs) const
 {
   for(const_iterator i = cbegin(); i != cend(); ++i)
-    i->second.gatherReferences(refs);
+    i->second->gatherReferences(refs);
   return true;
 }
 
@@ -2044,8 +2086,8 @@ const MidiNamPatch* MidiNamChannelNameSetAssignments::findPatch(int channel, int
   if(ia == cend())
     return nullptr;
     
-  const MidiNamChannelNameSetAssign& cns = ia->second;
-  return cns.findPatch(channel, patch);
+  const MidiNamChannelNameSetAssign* cns = ia->second;
+  return cns->findPatch(channel, patch);
 }
 
 const MidiNamPatchBankList* MidiNamChannelNameSetAssignments::getPatchBanks(int channel) const
@@ -2057,8 +2099,21 @@ const MidiNamPatchBankList* MidiNamChannelNameSetAssignments::getPatchBanks(int 
   if(ia == cend())
     return nullptr;
     
-  const MidiNamChannelNameSetAssign& cns = ia->second;
-  return cns.getPatchBanks(channel);
+  const MidiNamChannelNameSetAssign* cns = ia->second;
+  return cns->getPatchBanks(channel);
+}
+
+const MidiControllerList* MidiNamChannelNameSetAssignments::getControllers(int channel, int patch) const
+{
+  if(!_hasChannelNameSetAssignments)
+    return nullptr;
+
+  const_iterator ia = find(channel);
+  if(ia == cend())
+    return nullptr;
+    
+  const MidiNamChannelNameSetAssign* cns = ia->second;
+  return cns->getControllers(channel, patch);
 }
 
 bool MidiNamChannelNameSetAssignments::getNoteSampleName(
@@ -2072,8 +2127,8 @@ bool MidiNamChannelNameSetAssignments::getNoteSampleName(
     const_iterator ia = find(channel);
     if(ia != cend())
     {
-      const MidiNamChannelNameSetAssign& cns = ia->second;
-      return cns.getNoteSampleName(drum, channel, patch, note, name);
+      const MidiNamChannelNameSetAssign* cns = ia->second;
+      return cns->getNoteSampleName(drum, channel, patch, note, name);
     }
   }
 
@@ -2131,12 +2186,30 @@ bool MidiNamNote::read(MusECore::Xml& xml)
 //----------------------------------------------------------------
 
 
-bool MidiNamNotes::add(const MidiNamNote& a)
+MidiNamNotes::MidiNamNotes(const MidiNamNotes& m)
+  : std::map<int, MidiNamNote*>()
 {
-  return insert(MidiNamNotesPair(a.number(), a)).second;
+  for(const_iterator i = m.cbegin(); i != m.cend(); ++i)
+    add(new MidiNamNote(*i->second));
+  _noteGroups = m._noteGroups;
 }
 
-bool MidiNamNotes::addNoteGroup(const MidiNamNoteGroup& a)
+MidiNamNotes::~MidiNamNotes()
+{
+  for(const_iterator i = cbegin(); i != cend(); ++i)
+  {
+    if(i->second)
+      delete i->second;
+  }
+}
+
+bool MidiNamNotes::add(MidiNamNote* a)
+{
+  return insert(MidiNamNotesPair(a->number(), a)).second;
+}
+
+
+bool MidiNamNotes::addNoteGroup(MidiNamNoteGroup* a)
 {
   return _noteGroups.add(a);
 }
@@ -2148,16 +2221,16 @@ void MidiNamNotes::write(int level, MusECore::Xml& xml) const
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     // If the note is part of a group, the group will take care of writing it instead.
-    const int note = i->second.number();
+    const int note = i->second->number();
     ciMidiNamNoteGroups ig = _noteGroups.cbegin();
     for( ; ig != _noteGroups.cend(); ++ig)
     {
-      if(ig->second.find(note) != ig->second.cend())
+      if(ig->second->find(note) != ig->second->cend())
         break;
     }
     if(ig != _noteGroups.cend())
       continue;
-    i->second.write(level, xml);
+    i->second->write(level, xml);
   }
 }
 
@@ -2175,7 +2248,7 @@ bool MidiNamNotes::getNoteSampleName(
     return true;
   }
 
-  *name = i->second.name();
+  *name = i->second->name();
 
   return true;
 }
@@ -2193,7 +2266,7 @@ void MidiNamNoteGroup::write(int level, MusECore::Xml& xml, const MidiNamNotes* 
     ciMidiNamNotes in = notes->find(*i);
     if(in == notes->cend())
       continue;
-    in->second.write(level, xml);
+    in->second->write(level, xml);
   }
   xml.etag(--level, "NoteGroup");
 }
@@ -2210,11 +2283,17 @@ void MidiNamNoteGroup::read(MusECore::Xml& xml, MidiNamNotes* notes)
                   case MusECore::Xml::TagStart:
                         if (tag == "Note")
                         {
-                          MidiNamNote n;
-                          if(n.read(xml))
+                          MidiNamNote* n = new MidiNamNote();
+                          if(n->read(xml))
                           {
                             if(notes->add(n))
-                              insert(n.number());
+                              insert(n->number());
+                            else
+                              delete n;
+                          }
+                          else
+                          {
+                            delete n;
                           }
                         }
                         else
@@ -2239,16 +2318,45 @@ void MidiNamNoteGroup::read(MusECore::Xml& xml, MidiNamNotes* notes)
 //----------------------------------------------------------------
 
 
-bool MidiNamNoteGroups::add(const MidiNamNoteGroup& a)
+MidiNamNoteGroups::MidiNamNoteGroups(const MidiNamNoteGroups& m)
+  : std::multimap<QString, MidiNamNoteGroup*>()
 {
-  insert(MidiNamNoteGroupsPair(a.name(), a));
+  for(const_iterator i = m.cbegin(); i != m.cend(); ++i)
+    add(new MidiNamNoteGroup(*i->second));
+}
+
+MidiNamNoteGroups& MidiNamNoteGroups::operator=(const MidiNamNoteGroups& m)
+{
+  for(const_iterator i = cbegin(); i != cend(); ++i)
+  {
+    if(i->second)
+      delete i->second;
+  }
+  clear();
+  for(const_iterator i = m.cbegin(); i != m.cend(); ++i)
+    add(new MidiNamNoteGroup(*i->second));
+  return *this;
+}
+
+MidiNamNoteGroups::~MidiNamNoteGroups()
+{
+  for(const_iterator i = cbegin(); i != cend(); ++i)
+  {
+    if(i->second)
+      delete i->second;
+  }
+}
+
+bool MidiNamNoteGroups::add(MidiNamNoteGroup* a)
+{
+  insert(MidiNamNoteGroupsPair(a->name(), a));
   return true;
 }
 
 void MidiNamNoteGroups::write(int level, MusECore::Xml& xml, const MidiNamNotes* notes) const
 {
   for(const_iterator i = cbegin(); i != cend(); ++i)
-    i->second.write(level, xml, notes);
+    i->second->write(level, xml, notes);
 }
 
 
@@ -2279,15 +2387,15 @@ bool MidNamNoteNameList::read(MusECore::Xml& xml)
               case MusECore::Xml::TagStart:
                     if (tag == "NoteGroup")
                     {
-                      MidiNamNoteGroup n;
-                      n.read(xml, &_noteList);
+                      MidiNamNoteGroup* n = new MidiNamNoteGroup();
+                      n->read(xml, &_noteList);
                       _noteList.addNoteGroup(n);
                     }
                     else if (tag == "Note")
                     {
-                      MidiNamNote n;
-                      if(n.read(xml))
-                        _noteList.add(n);
+                      MidiNamNote* n = new MidiNamNote();
+                      if(!n->read(xml) || !_noteList.add(n))
+                        delete n;
                     }
                     else
                       xml.unknown("MidNamNoteNameList");
@@ -2329,11 +2437,13 @@ bool MidNamNoteNameList::getNoteSampleName(
   if(!name)
     return false;
 
-  if(!_hasNoteNameList)
+  const MidNamNoteNameList* l = objectOrRef();
+  if(!l->hasNoteNameList())
     return false;
 
-  return _noteList.getNoteSampleName(drum, channel, patch, note, name);
+  return l->noteList().getNoteSampleName(drum, channel, patch, note, name);
 }
+
 
 
 //----------------------------------------------------------------
@@ -2385,6 +2495,46 @@ bool MidiNamVal::read(MusECore::Xml& xml)
 //----------------------------------------------------------------
 
 
+MidiNamValNames::MidiNamValNames(const MidiNamValNames& m)
+  : std::map<int, MidiNamVal*>()
+{
+  for(const_iterator i = m.cbegin(); i != m.cend(); ++i)
+    add(new MidiNamVal(*i->second));
+  _name = m._name;
+  _p_ref = m._p_ref;
+  _isReference = m._isReference;
+}
+
+MidiNamValNames& MidiNamValNames::operator=(const MidiNamValNames& m)
+{
+  for(const_iterator i = cbegin(); i != cend(); ++i)
+  {
+    if(i->second)
+      delete i->second;
+  }
+  clear();
+  for(const_iterator i = m.cbegin(); i != m.cend(); ++i)
+    add(new MidiNamVal(*i->second));
+  _name = m._name;
+  _p_ref = m._p_ref;
+  _isReference = m._isReference;
+  return *this;
+}
+
+MidiNamValNames::~MidiNamValNames()
+{
+  for(const_iterator i = cbegin(); i != cend(); ++i)
+  {
+    if(i->second)
+      delete i->second;
+  }
+}
+
+bool MidiNamValNames::add(MidiNamVal* a)
+{
+  return insert(MidiNamValNamesPair(a->number(), a)).second;
+}
+
 void MidiNamValNames::write(int level, MusECore::Xml& xml) const
 {
   if(isReference()) {
@@ -2393,7 +2543,7 @@ void MidiNamValNames::write(int level, MusECore::Xml& xml) const
   else {
     xml.tag(level++, "ValueNameList Name=\"%s\"", Xml::xmlString(_name).toLocal8Bit().constData());
     for(const_iterator i = cbegin(); i != cend(); ++i)
-      (*i).write(level, xml);
+      i->second->write(level, xml);
     xml.etag(--level, "ValueNameList");
   }
 }
@@ -2410,9 +2560,9 @@ void MidiNamValNames::read(MusECore::Xml& xml)
                   case MusECore::Xml::TagStart:
                         if (tag == "Value")
                         {
-                          MidiNamVal n;
-                          if(n.read(xml))
-                            insert(n);
+                          MidiNamVal* n = new MidiNamVal();
+                          if(!n->read(xml) || !add(n))
+                            delete n;
                         }
                         else
                           xml.unknown("MidiNamValNames");
@@ -2534,27 +2684,39 @@ bool MidiNamValues::read(MusECore::Xml& xml)
 //----------------------------------------------------------------
 
       
-void MidiNamCtrl::write(int level, MusECore::Xml& xml) const
+void MidiNamCtrl::writeMidnam(int level, MusECore::Xml& xml) const
 {
   const char* type_str = "7bit";
-  switch(_type)
+
+  // Strip off the type.
+  int number = _num & 0xffff;
+  switch(midiControllerType(_num))
   {
-    case SevenBit:
+    case MidiController::Controller7:
       type_str = "7bit";
+      number &= 0x7f;
     break;
-    case FourteenBit:
+    case MidiController::Controller14:
       type_str = "14bit";
+      // "ControlChange14's Control is MSB 0..31"
+      // We want our high number here.
+      number = (number >> 8) & 0x7f;
     break;
-    case RPN:
+    case MidiController::RPN:
       type_str = "RPN";
+      // "RPNN and NRPN are 0..16383"
+      number = ((number & 0x7f00) >> 1) | (number & 0x7f);
     break;
-    case NRPN:
+    case MidiController::NRPN:
       type_str = "NRPN";
+      number = ((number & 0x7f00) >> 1) | (number & 0x7f);
     break;
+    default:
+      return;
   }
   xml.nput(level, "<Control Type=\"%s\" Number=\"%d\" Name=\"%s\"",
           type_str,
-          _number,
+          number,
           Xml::xmlString(_name).toLocal8Bit().constData());
 
   if(_values.empty())
@@ -2571,9 +2733,9 @@ void MidiNamCtrl::write(int level, MusECore::Xml& xml) const
   }
 }
 
-bool MidiNamCtrl::read(MusECore::Xml& xml)
+bool MidiNamCtrl::readMidnam(MusECore::Xml& xml)
       {
-      Type type = SevenBit;
+      int type_offset = CTRL_7_OFFSET;
       int number = -1;
       QString name;
 
@@ -2598,13 +2760,13 @@ bool MidiNamCtrl::read(MusECore::Xml& xml)
                         if (tag == "Type") {
                               const QString& type_txt = xml.s2();
                               if(type_txt.compare("7bit", Qt::CaseInsensitive) == 0)
-                                type = SevenBit;
+                                type_offset = CTRL_7_OFFSET;
                               else if(type_txt.compare("14bit", Qt::CaseInsensitive) == 0)
-                                type = FourteenBit;
+                                type_offset = CTRL_14_OFFSET;
                               else if(type_txt.compare("RPN", Qt::CaseInsensitive) == 0)
-                                type = RPN;
+                                type_offset = CTRL_RPN_OFFSET;
                               else if(type_txt.compare("NRPN", Qt::CaseInsensitive) == 0)
-                                type = NRPN;
+                                type_offset = CTRL_NRPN_OFFSET;
                               }
                         else if (tag == "Number") {
                               number = xml.s2().toInt();
@@ -2618,9 +2780,31 @@ bool MidiNamCtrl::read(MusECore::Xml& xml)
                         {
                             if(number < 0 || name.isEmpty())
                               return false;
-                            _number = number;
+                            if(type_offset == CTRL_14_OFFSET)
+                            {
+                              if(number > 0x1f)
+                                return false;
+                              // Synthesize our high and low numbers.
+                              number = (number << 8) | (number + 0x20);
+                            }
+                            else if(type_offset == CTRL_RPN_OFFSET || type_offset == CTRL_NRPN_OFFSET)
+                            {
+                              if(number > 0x3fff)
+                                return false;
+                              // Synthesize our high and low numbers.
+                              number = ((number & 0x3f80) << 1) | (number & 0x7f);
+                            }
+                            else
+                            {
+                              if(number > 0x7f)
+                                return false;
+                            }
+                            _num = type_offset | number;
                             _name = name;
-                            _type = type;
+                            _minVal = _values.minVal();
+                            _maxVal = _values.maxVal();
+                            _initVal = _drumInitVal = _values.defaultVal();
+                            updateBias();
                             return true;
                         }
                   default:
@@ -2634,8 +2818,26 @@ bool MidiNamCtrl::read(MusECore::Xml& xml)
 
 //----------------------------------------------------------------
 
+MidiNamCtrls::MidiNamCtrls(const MidiNamCtrls& mcl) : MidiControllerList()
+{
+  for(const_iterator i = mcl.cbegin(); i != mcl.cend(); ++i)
+  {
+    MidiNamCtrl* mc = static_cast<MidiNamCtrl*>(i->second);
+    add(new MidiNamCtrl(*mc));
+  }  
+  update_RPN_Ctrls_Reserved();
+}
+
+MidiNamCtrls::~MidiNamCtrls()
+{
+  for(const_iterator i = cbegin(); i != cend(); ++i)
+  {
+    if(i->second)
+      delete i->second;
+  }
+}
       
-void MidiNamCtrls::write(int level, MusECore::Xml& xml) const
+void MidiNamCtrls::writeMidnam(int level, MusECore::Xml& xml) const
 {
   if(isReference()) {
     xml.put(level, "<UsesControlNameList Name=\"%s\" />", Xml::xmlString(_name).toLocal8Bit().constData());
@@ -2643,12 +2845,12 @@ void MidiNamCtrls::write(int level, MusECore::Xml& xml) const
   else {
     xml.tag(level++, "ControlNameList Name=\"%s\"", Xml::xmlString(_name).toLocal8Bit().constData());
     for(const_iterator i = cbegin(); i != cend(); ++i)
-      (*i).write(level, xml);
+      static_cast<MidiNamCtrl*>(i->second)->writeMidnam(level, xml);
     xml.etag(--level, "ControlNameList");
   }
 }
 
-void MidiNamCtrls::read(MusECore::Xml& xml)
+void MidiNamCtrls::readMidnam(MusECore::Xml& xml)
       {
       for (;;) {
             MusECore::Xml::Token token(xml.parse());
@@ -2660,9 +2862,9 @@ void MidiNamCtrls::read(MusECore::Xml& xml)
                   case MusECore::Xml::TagStart:
                         if (tag == "Control")
                         {
-                          MidiNamCtrl ctrl;
-                          if(ctrl.read(xml))
-                            insert(ctrl);
+                          MidiNamCtrl* ctrl = new MidiNamCtrl();
+                          if(!ctrl->readMidnam(xml) || !add(ctrl))
+                            delete ctrl;
                         }
                         else
                           xml.unknown("MidiNamCtrls");
@@ -2675,6 +2877,9 @@ void MidiNamCtrls::read(MusECore::Xml& xml)
                   case MusECore::Xml::TagEnd:
                         if (tag == "ControlNameList") {
                             _isReference = false;
+                            // This is an actual control name list,
+                            //  regardless if it is empty.
+                            _hasMidiNamCtrls = true;
                             return;
                         }
                         else if (tag == "UsesControlNameList") {
@@ -2691,6 +2896,15 @@ void MidiNamCtrls::read(MusECore::Xml& xml)
 bool MidiNamCtrls::gatherReferences(MidNamReferencesList* refs) const
 {
   return refs->ctrlsObjs.add(const_cast<MidiNamCtrls*>(this));
+}
+
+
+const MidiControllerList* MidiNamCtrls::getControllers(int /*channel*/, int /*patch*/) const
+{
+  const MidiNamCtrls* ctrls = objectOrRef();
+  if(ctrls && ctrls->hasMidiNamCtrls())
+    return ctrls;
+  return nullptr;
 }
 
 
@@ -2717,7 +2931,7 @@ void MidiNamPatch::write(int level, MusECore::Xml& xml) const
     _patchMIDICommands.write(level, xml);
     _channelNameSetAssignments.write(level, xml);
     _noteNameList.write(level, xml);
-    _controlNameList.write(level, xml);
+    _controlNameList.writeMidnam(level, xml);
 
     xml.etag(--level, "Patch");
   }
@@ -2759,9 +2973,9 @@ bool MidiNamPatch::read(MusECore::Xml& xml)
                       _noteNameList.read(xml);
 
                     else if (tag == "UsesControlNameList")
-                      _controlNameList.read(xml);
+                      _controlNameList.readMidnam(xml);
                     else if (tag == "ControlNameList")
-                      _controlNameList.read(xml);
+                      _controlNameList.readMidnam(xml);
 
                     else
                       xml.unknown("MidiNamPatch");
@@ -2806,6 +3020,18 @@ bool MidiNamPatch::gatherReferences(MidNamReferencesList* refs) const
   return true;
 }
 
+const MidiControllerList* MidiNamPatch::getControllers(int channel, int patch) const
+{
+  if(_channelNameSetAssignments.hasChannelNameSetAssignments())
+  {
+    return _channelNameSetAssignments.getControllers(channel, patch);
+  }
+  else
+  {
+    return controlNameList().getControllers(channel, patch);
+  }
+}
+
 bool MidiNamPatch::getNoteSampleName(
   bool drum, int channel, int patch, int note, QString* name) const
 {
@@ -2818,8 +3044,7 @@ bool MidiNamPatch::getNoteSampleName(
   }
   else
   {
-    const MidNamNoteNameList* n = noteNameList().objectOrRef();
-    return n->getNoteSampleName(drum, channel, patch, note, name);
+    return noteNameList().getNoteSampleName(drum, channel, patch, note, name);
   }
 }
 
@@ -2827,10 +3052,29 @@ bool MidiNamPatch::getNoteSampleName(
 //----------------------------------------------------------------
 
 
-bool MidiNamPatchNameList::add(const MidiNamPatch& a)
+MidiNamPatchNameList::MidiNamPatchNameList(const MidiNamPatchNameList& m) : std::map<int, MidiNamPatch*>()
 {
-  return insert(MidiNamPatchNameListPair(a.patchNumber(), a)).second;
+  for(const_iterator i = m.cbegin(); i != m.cend(); ++i)
+    add(new MidiNamPatch(*i->second));
+  _name = m._name;
+  _p_ref = m._p_ref;
+  _isReference = m._isReference;
 }
+
+MidiNamPatchNameList::~MidiNamPatchNameList()
+{
+  for(const_iterator i = cbegin(); i != cend(); ++i)
+  {
+    if(i->second)
+      delete i->second;
+  }
+}
+      
+bool MidiNamPatchNameList::add(MidiNamPatch* a)
+{
+  return insert(MidiNamPatchNameListPair(a->patchNumber(), a)).second;
+}
+
 
 void MidiNamPatchNameList::write(int level, MusECore::Xml& xml) const
 {
@@ -2840,7 +3084,7 @@ void MidiNamPatchNameList::write(int level, MusECore::Xml& xml) const
   else {
     xml.tag(level++, "PatchNameList Name=\"%s\"", Xml::xmlString(_name).toLocal8Bit().constData());
     for(const_iterator i = cbegin(); i != cend(); ++i)
-      i->second.write(level, xml);
+      i->second->write(level, xml);
     xml.etag(--level, "PatchNameList");
   }
 }
@@ -2857,9 +3101,9 @@ void MidiNamPatchNameList::read(MusECore::Xml& xml)
                   case MusECore::Xml::TagStart:
                         if (tag == "Patch")
                         {
-                          MidiNamPatch n;
-                          if(n.read(xml))
-                            add(n);
+                          MidiNamPatch* n = new MidiNamPatch();
+                          if(!n->read(xml) || !add(n))
+                            delete n;
                         }
                         else
                           xml.unknown("MidiNamPatchNameList");
@@ -2888,38 +3132,12 @@ void MidiNamPatchNameList::read(MusECore::Xml& xml)
 bool MidiNamPatchNameList::gatherReferences(MidNamReferencesList* refs) const
 {
   for(const_iterator i = cbegin(); i != cend(); ++i)
-    i->second.gatherReferences(refs);
+    i->second->gatherReferences(refs);
   return refs->patchNameListObjs.add(const_cast<MidiNamPatchNameList*>(this));
 }
 
 const MidiNamPatch* MidiNamPatchNameList::findPatch(int patch, int /*bankHL*/) const
 {
-//   const int bankH = (bankHL >> 8) & 0xff;
-//   const int bankL = bankHL & 0xff;
-// 
-//   const int patch_bankH = (patch >> 16) & 0xff;
-//   const int patch_bankL = (patch >> 8) & 0xff;
-//   const int patch_prog = patch & 0xff;
-// 
-//   for(const_iterator i = cbegin(); i != cend(); ++i)
-//   {
-//     const MidiNamPatch& p = i->second;
-//     const int p_num = p.patchNumber();
-//     // Replace the patch's bank high or low if bank high or low are given.
-//     const int p_bankH = bankH != 0xff ? bankH : ((p_num >> 16) & 0xff);
-//     const int p_bankL = bankL != 0xff ? bankL : ((p_num >> 8) & 0xff);
-//     const int p_prog = p_num & 0xff;
-// 
-//     // Are we looking for a grand default patch and the resulting patch number is CTRL_PROGRAM_VAL_DONT_CARE?
-//     // Or else does the resulting patch number match what we're looking for?
-//     if((patch == CTRL_VAL_UNKNOWN && p_bankH == 0xff && p_bankL == 0xff && p_prog == 0xff) ||
-//        (p_bankH == patch_bankH && p_bankL == patch_bankL && p_prog == patch_prog))
-//       return &i->second;
-//   }
-// 
-//   return nullptr;
-
-
   const MidiNamPatchNameList* n = objectOrRef();
   
   const_iterator i;
@@ -2963,7 +3181,7 @@ const MidiNamPatch* MidiNamPatchNameList::findPatch(int patch, int /*bankHL*/) c
   if(i == n->cend())
     return nullptr;
 
-  return &i->second;
+  return i->second;
 }
 
 bool MidiNamPatchNameList::getNoteSampleName(
@@ -3119,119 +3337,6 @@ bool MidiNamPatchBank::gatherReferences(MidNamReferencesList* refs) const
 
 const MidiNamPatch* MidiNamPatchBank::findPatch(int patch) const
 {
-//   const int bankH = (bankHL >> 8) & 0xff;
-//   const int bankL = bankHL & 0xff;
-// 
-//   const int patch_bankH = (patch >> 16) & 0xff;
-//   const int patch_bankL = (patch >> 8) & 0xff;
-//   const int patch_prog = patch & 0xff;
-// 
-//   for(const_iterator i = cbegin(); i != cend(); ++i)
-//   {
-//     const MidiNamPatch& p = i->second;
-//     const int p_num = p.patchNumber();
-//     // Replace the patch's bank high or low if bank high or low are given.
-//     const int p_bankH = bankH != 0xff ? bankH : ((p_num >> 16) & 0xff);
-//     const int p_bankL = bankL != 0xff ? bankL : ((p_num >> 8) & 0xff);
-//     const int p_prog = p_num & 0xff;
-// 
-//     // Are we looking for a grand default patch and the resulting patch number is CTRL_PROGRAM_VAL_DONT_CARE?
-//     // Or else does the resulting patch number match what we're looking for?
-//     if((patch == CTRL_VAL_UNKNOWN && p_bankH == 0xff && p_bankL == 0xff && p_prog == 0xff) ||
-//        (p_bankH == patch_bankH && p_bankL == patch_bankL && p_prog == patch_prog))
-//       return &i->second;
-//   }
-// 
-//   return nullptr;
-
-
-
-
-// //   const_iterator i;
-// 
-//   // Are we looking for a grand default patch?
-//   if(patch == CTRL_VAL_UNKNOWN)
-//   {
-//     // This bank not the grand default bank?
-//     if(_bankHL != 0xffff)
-//       return nullptr;
-//     // Pass on to the patch list.
-//     return _patchNameList.objectOrRef()->findPatch(patch);
-//   }
-//   else
-//   {
-//     // Try looking for the verbose patch number.
-//     i = find(patch);
-//     if(i == cend())
-//     {
-//       // Verbose patch number was not found. Try looking for defaults...
-//       const int bankH = (patch >> 16) & 0xff;
-//       const int bankL = (patch >> 8) & 0xff;
-//       const int prog  = patch & 0xff;
-// 
-//       // See if there are defaults for each individual member...
-//       if(bankH != 0xff)
-//         i = find(patch | 0xff0000);
-//       else if(bankL != 0xff)
-//         i = find(patch | 0xff00);
-//       else if(prog != 0xff)
-//         i = find(patch | 0xff);
-//       // See if there are defaults for combinations of individual members:
-//       else if(bankH != 0xff && bankL != 0xff)
-//         i = find(patch | 0xffff00);
-//       else if(bankH != 0xff && prog != 0xff)
-//         i = find(patch | 0xff00ff);
-//       else if(bankL != 0xff && prog != 0xff)
-//         i = find(patch | 0xffff);
-//       // And finally, see if there's a grand default patch.
-//       else
-//         i = find(CTRL_PROGRAM_VAL_DONT_CARE);
-//     }
-//   }
-// 
-//   if(i == cend())
-//     return nullptr;
-// 
-//   return &i->second;
-//   
-  
-  
-  
-  
-//   const bool has_bankH = _MIDICommands.hasBankH();
-//   const bool has_bankL = _MIDICommands.hasBankL();
-// 
-//   int fin_patch = patch;
-// 
-//   // Does the bank have its own bank number midi commands?
-//   if(has_bankH || has_bankL)
-//   {
-//     int patch_bank_hl;
-//     // Are we looking for a grand default patch?
-//     if(patch == CTRL_VAL_UNKNOWN)
-//     {
-//       patch_bank_hl = 0xffff;
-//       fin_patch = CTRL_PROGRAM_VAL_DONT_CARE;
-//     }
-//     else
-//     {
-//       patch_bank_hl = (patch >> 8) & 0xffff;
-//     }
-//     
-//     
-//     // If it is not the bank number we're looking for, return.
-//     if(patch_bank_hl != _bankHL)
-//       return false;
-//     // Set the bank high and low to 'unknown' (default) so that the _patchNameList can find it.
-//     // Patches can have their own midi controller commands, but if there are bank controller commands,
-//     //  in this case that would interfere with the bank number. So likely if patches have their
-//     //  own controller commands, they should not have bank controller commands, and therefore
-//     //  should all match on bank == 0xffff.
-//     fin_patch |= 0xffff00;
-//   }
-//   
-//   return _patchNameList.getNoteSampleName(drum, channel, fin_patch, note, name);
-  
   return _patchNameList.findPatch(patch);
 }
 
@@ -3288,54 +3393,42 @@ bool MidiNamPatchBank::getNoteSampleName(
 //----------------------------------------------------------------
 
 
-bool MidiNamPatchBankList::add(const MidiNamPatchBank& a)
+MidiNamPatchBankList::MidiNamPatchBankList(const MidiNamPatchBankList& m)
+  : std::map<int, MidiNamPatchBank*>()
 {
-  return insert(MidiNamPatchBankListPair(a.bankHL(), a)).second;
+  for(const_iterator i = m.cbegin(); i != m.cend(); ++i)
+    add(new MidiNamPatchBank(*i->second));
+}
+
+MidiNamPatchBankList::~MidiNamPatchBankList()
+{
+  for(const_iterator i = cbegin(); i != cend(); ++i)
+  {
+    if(i->second)
+      delete i->second;
+  }
+}
+      
+bool MidiNamPatchBankList::add(MidiNamPatchBank* a)
+{
+  return insert(MidiNamPatchBankListPair(a->bankHL(), a)).second;
 }
 
 void MidiNamPatchBankList::write(int level, MusECore::Xml& xml) const
 {
   for(const_iterator i = cbegin(); i != cend(); ++i)
-    i->second.write(level, xml);
+    i->second->write(level, xml);
 }
 
 bool MidiNamPatchBankList::gatherReferences(MidNamReferencesList* refs) const
 {
   for(const_iterator i = cbegin(); i != cend(); ++i)
-    i->second.gatherReferences(refs);
+    i->second->gatherReferences(refs);
   return true;
 }
 
 const MidiNamPatch* MidiNamPatchBankList::findPatch(int patch) const
 {
-//   const int patch_bankH = (patch >> 16) & 0xff;
-//   const int patch_bankL = (patch >> 8) & 0xff;
-//   const int patch_prog = patch & 0xff;
-// 
-//   for(const_iterator i = cbegin(); i != cend(); ++i)
-//   {
-//     const MidiNamPatchBank& p = i->second;
-//     const int bankHL = p.bankHL();
-//     const int bankH = (bankHL >> 8) & 0xff;
-//     const int bankL = bankHL & 0xff;
-// 
-//     const int p_num = p.patchNumber();
-//     // Replace the patch's bank high or low if bank high or low are given.
-//     const int p_bankH = bankH != 0xff ? bankH : ((p_num >> 16) & 0xff);
-//     const int p_bankL = bankL != 0xff ? bankL : ((p_num >> 8) & 0xff);
-//     const int p_prog = p_num & 0xff;
-// 
-//     // Are we looking for a grand default patch and the resulting patch number is CTRL_PROGRAM_VAL_DONT_CARE?
-//     // Or else does the resulting patch number match what we're looking for?
-//     if((patch == CTRL_VAL_UNKNOWN && p_bankH == 0xff && p_bankL == 0xff && p_prog == 0xff) ||
-//        (p_bankH == patch_bankH && p_bankL == patch_bankL && p_prog == patch_prog))
-//       return &i->second;
-//   }
-// 
-//   return nullptr;
-  
-  
-  
   const_iterator i;
 
   // Are we looking for a grand default patch?
@@ -3343,10 +3436,6 @@ const MidiNamPatch* MidiNamPatchBankList::findPatch(int patch) const
   {
     // See if this bank has a grand default bank.
     i = find(0xffff);
-//     if(_bankHL != 0xffff)
-//       return nullptr;
-//     // Pass on to the patch list.
-//     return _patchNameList.objectOrRef()->findPatch(patch);
   }
   else
   {
@@ -3373,7 +3462,7 @@ const MidiNamPatch* MidiNamPatchBankList::findPatch(int patch) const
   if(i == cend())
     return nullptr;
 
-  return i->second.findPatch(patch);
+  return i->second->findPatch(patch);
 }
 
 bool MidiNamPatchBankList::getNoteSampleName(
@@ -3411,7 +3500,7 @@ void MidNamChannelNameSet::write(int level, MusECore::Xml& xml) const
     _availableForChannels.write(level, xml);
 
     _noteNameList.write(level, xml);
-    _controlNameList.write(level, xml);
+    _controlNameList.writeMidnam(level, xml);
 
     _patchBankList.write(level, xml);
 
@@ -3435,9 +3524,9 @@ bool MidNamChannelNameSet::read(MusECore::Xml& xml)
                       _availableForChannels.read(xml);
                     else if (tag == "PatchBank")
                     {
-                      MidiNamPatchBank n;
-                      if(n.read(xml))
-                        _patchBankList.add(n);
+                      MidiNamPatchBank* n = new MidiNamPatchBank();
+                      if(!n->read(xml) || !_patchBankList.add(n))
+                        delete n;
                     }
 
                     else if (tag == "UsesNoteNameList")
@@ -3446,9 +3535,9 @@ bool MidNamChannelNameSet::read(MusECore::Xml& xml)
                       _noteNameList.read(xml);
 
                     else if (tag == "UsesControlNameList")
-                      _controlNameList.read(xml);
+                      _controlNameList.readMidnam(xml);
                     else if (tag == "ControlNameList")
-                      _controlNameList.read(xml);
+                      _controlNameList.readMidnam(xml);
 
                     else
                       xml.unknown("MidNamChannelNameSet");
@@ -3497,6 +3586,19 @@ const MidiNamPatchBankList* MidNamChannelNameSet::getPatchBanks(int channel) con
   return &_patchBankList;
 }
 
+const MidiControllerList* MidNamChannelNameSet::getControllers(int channel, int patch) const
+{
+  const MidiNamPatch* p = findPatch(channel, patch);
+  if(p)
+  {
+    const MidiControllerList* mcl = p->getControllers(channel, patch);
+    if(mcl)
+      return mcl;
+  }
+  
+  return _controlNameList.getControllers(channel, patch);
+}
+
 bool MidNamChannelNameSet::getNoteSampleName(
   bool drum, int channel, int patch, int note, QString* name) const
 {
@@ -3509,24 +3611,44 @@ bool MidNamChannelNameSet::getNoteSampleName(
   if(_patchBankList.getNoteSampleName(drum, channel, patch, note, name))
     return true;
   
-  const MidNamNoteNameList* n = _noteNameList.objectOrRef();
-  return n->getNoteSampleName(drum, channel, patch, note, name);
+  return _noteNameList.getNoteSampleName(drum, channel, patch, note, name);
 }
 
 
 //----------------------------------------------------------------
 
 
+MidiNamChannelNameSetList::MidiNamChannelNameSetList(const MidiNamChannelNameSetList& m)
+  : std::map<QString, MidNamChannelNameSet*>()
+{
+  for(const_iterator i = m.cbegin(); i != m.cend(); ++i)
+    add(new MidNamChannelNameSet(*i->second));
+}
+
+MidiNamChannelNameSetList::~MidiNamChannelNameSetList()
+{
+  for(const_iterator i = cbegin(); i != cend(); ++i)
+  {
+    if(i->second)
+      delete i->second;
+  }
+}
+      
+bool MidiNamChannelNameSetList::add(MidNamChannelNameSet* a)
+{
+  return insert(MidiNamChannelNameSetListPair(a->name(), a)).second;
+}
+
 void MidiNamChannelNameSetList::write(int level, MusECore::Xml& xml) const
 {
   for(const_iterator i = cbegin(); i != cend(); ++i)
-    (*i).write(level, xml);
+    i->second->write(level, xml);
 }
 
 bool MidiNamChannelNameSetList::gatherReferences(MidNamReferencesList* refs) const
 {
   for(const_iterator i = cbegin(); i != cend(); ++i)
-    i->gatherReferences(refs);
+    i->second->gatherReferences(refs);
   return true;
 }
 
@@ -3534,7 +3656,7 @@ const MidiNamPatch* MidiNamChannelNameSetList::findPatch(int channel, int patch)
 {
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
-    const MidiNamPatch* p = i->findPatch(channel, patch);
+    const MidiNamPatch* p = i->second->findPatch(channel, patch);
     if(p)
       return p;
   }
@@ -3545,11 +3667,19 @@ const MidiNamPatchBankList* MidiNamChannelNameSetList::getPatchBanks(int channel
 {
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
-    const MidiNamPatchBankList* p = i->getPatchBanks(channel);
+    const MidiNamPatchBankList* p = i->second->getPatchBanks(channel);
     if(p)
       return p;
   }
   return nullptr;
+}
+
+const MidiControllerList* MidiNamChannelNameSetList::getControllers(int channel, int patch) const
+{
+  const MidiNamPatch* p = findPatch(channel, patch);
+  if(!p)
+    return nullptr;
+  return p->getControllers(channel, patch);
 }
 
 bool MidiNamChannelNameSetList::getNoteSampleName(
@@ -3561,7 +3691,7 @@ bool MidiNamChannelNameSetList::getNoteSampleName(
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     // FIXME Whether to return or not... Need an enum return value.
-    if(i->getNoteSampleName(drum, channel, patch, note, name))
+    if(i->second->getNoteSampleName(drum, channel, patch, note, name))
       return true;
   }
   
@@ -3656,7 +3786,7 @@ void MidNamNameList::write(int level, MusECore::Xml& xml) const
 {
   _patchNameList.write(level, xml);
   _noteNameList.write(level, xml);
-  _controlNameList.write(level, xml);
+  _controlNameList.writeMidnam(level, xml);
   _valueNameList.write(level, xml);
 }
 
@@ -3668,7 +3798,7 @@ bool MidNamNameList::read(MusECore::Xml& xml)
   else if (tag == "NoteNameList")
     _noteNameList.read(xml);
   else if (tag == "ControlNameList")
-    _controlNameList.read(xml);
+    _controlNameList.readMidnam(xml);
   else if (tag == "ValueNameList")
     _valueNameList.read(xml);
   else
@@ -3743,9 +3873,9 @@ bool MidNamDeviceMode::read(MusECore::Xml& xml)
 
                     else if (tag == "ChannelNameSet")
                     {
-                      MidNamChannelNameSet n;
-                      if(n.read(xml))
-                        _channelNameSetList.insert(n);
+                      MidNamChannelNameSet* n = new MidNamChannelNameSet();
+                      if(!n->read(xml) || !_channelNameSetList.add(n))
+                        delete n;
                     }
 
                     // Special, different from other reads:
@@ -3807,13 +3937,14 @@ bool MidNamDeviceMode::gatherReferences(MidNamReferencesList* refs) const
 
 const MidiNamPatch* MidNamDeviceMode::findPatch(int channel, int patch) const
 {
-  ciMidiNamChannelNameSetAssignments ia = _channelNameSetAssignments.find(channel);
-  if(ia == _channelNameSetAssignments.cend())
+  const MidNamDeviceMode* dm = objectOrRef();
+  ciMidiNamChannelNameSetAssignments ia = dm->channelNameSetAssignments().find(channel);
+  if(ia == dm->channelNameSetAssignments().cend())
     return nullptr;
 
-  const MidiNamChannelNameSetAssign& cns = ia->second;
+  const MidiNamChannelNameSetAssign* cns = ia->second;
   // FIXME Whether to return or not... Need an enum return value.
-  const MidiNamPatch* p = cns.findPatch(channel, patch);
+  const MidiNamPatch* p = cns->findPatch(channel, patch);
   if(p)
     return p;
   
@@ -3825,18 +3956,38 @@ const MidiNamPatch* MidNamDeviceMode::findPatch(int channel, int patch) const
 
 const MidiNamPatchBankList* MidNamDeviceMode::getPatchBanks(int channel) const
 {
-  ciMidiNamChannelNameSetAssignments ia = _channelNameSetAssignments.find(channel);
-  if(ia == _channelNameSetAssignments.cend())
+  const MidNamDeviceMode* dm = objectOrRef();
+  ciMidiNamChannelNameSetAssignments ia = dm->channelNameSetAssignments().find(channel);
+  if(ia == dm->channelNameSetAssignments().cend())
     return nullptr;
 
-  const MidiNamChannelNameSetAssign& cns = ia->second;
+  const MidiNamChannelNameSetAssign* cns = ia->second;
   // FIXME Whether to return or not... Need an enum return value.
-  const MidiNamPatchBankList* p = cns.getPatchBanks(channel);
+  const MidiNamPatchBankList* p = cns->getPatchBanks(channel);
   if(p)
     return p;
   
   if(!_isCustomDeviceMode)
     return _channelNameSetList.getPatchBanks(channel);
+    
+  return nullptr;
+}
+
+const MidiControllerList* MidNamDeviceMode::getControllers(int channel, int patch) const
+{
+  const MidNamDeviceMode* dm = objectOrRef();
+  ciMidiNamChannelNameSetAssignments ia = dm->channelNameSetAssignments().find(channel);
+  if(ia == dm->channelNameSetAssignments().cend())
+    return nullptr;
+
+  const MidiNamChannelNameSetAssign* cns = ia->second;
+  // FIXME Whether to return or not... Need an enum return value.
+  const MidiControllerList* p = cns->getControllers(channel, patch);
+  if(p)
+    return p;
+  
+  if(!_isCustomDeviceMode)
+    return _channelNameSetList.getControllers(channel, patch);
     
   return nullptr;
 }
@@ -3847,13 +3998,14 @@ bool MidNamDeviceMode::getNoteSampleName(
   if(!name)
     return false;
 
-  ciMidiNamChannelNameSetAssignments ia = _channelNameSetAssignments.find(channel);
-  if(ia == _channelNameSetAssignments.cend())
+  const MidNamDeviceMode* dm = objectOrRef();
+  ciMidiNamChannelNameSetAssignments ia = dm->channelNameSetAssignments().find(channel);
+  if(ia == dm->channelNameSetAssignments().cend())
     return false;
 
-  const MidiNamChannelNameSetAssign& cns = ia->second;
+  const MidiNamChannelNameSetAssign* cns = ia->second;
   // FIXME Whether to return or not... Need an enum return value.
-  if(cns.getNoteSampleName(drum, channel, patch, note, name))
+  if(cns->getNoteSampleName(drum, channel, patch, note, name))
     return true;
   
   if(!_isCustomDeviceMode)
@@ -3866,16 +4018,37 @@ bool MidNamDeviceMode::getNoteSampleName(
 //----------------------------------------------------------------
 
 
+MidNamDeviceModeList::MidNamDeviceModeList(const MidNamDeviceModeList& m)
+  : std::map<QString, MidNamDeviceMode*>()
+{
+  for(const_iterator i = m.cbegin(); i != m.cend(); ++i)
+    add(new MidNamDeviceMode(*i->second));
+}
+
+MidNamDeviceModeList::~MidNamDeviceModeList()
+{
+  for(const_iterator i = cbegin(); i != cend(); ++i)
+  {
+    if(i->second)
+      delete i->second;
+  }
+}
+      
+bool MidNamDeviceModeList::add(MidNamDeviceMode* a)
+{
+  return insert(MidNamDeviceModeListPair(a->name(), a)).second;
+}
+
 void MidNamDeviceModeList::write(int level, MusECore::Xml& xml) const
 {
   for(const_iterator i = cbegin(); i != cend(); ++i)
-    (*i).write(level, xml);
+    i->second->write(level, xml);
 }
 
 bool MidNamDeviceModeList::gatherReferences(MidNamReferencesList* refs) const
 {
   for(const_iterator i = cbegin(); i != cend(); ++i)
-    i->gatherReferences(refs);
+    i->second->gatherReferences(refs);
   return true;
 }
 
@@ -3969,10 +4142,31 @@ bool MidNamModel::read(MusECore::Xml& xml)
 //----------------------------------------------------------------
 
 
+MidiNamModelList::MidiNamModelList(const MidiNamModelList& m)
+  : std::map<QString, MidNamModel*>()
+{
+  for(const_iterator i = m.cbegin(); i != m.cend(); ++i)
+    add(new MidNamModel(*i->second));
+}
+
+MidiNamModelList::~MidiNamModelList()
+{
+  for(const_iterator i = cbegin(); i != cend(); ++i)
+  {
+    if(i->second)
+      delete i->second;
+  }
+}
+      
+bool MidiNamModelList::add(MidNamModel* a)
+{
+  return insert(MidiNamModelListPair(a->model(), a)).second;
+}
+
 void MidiNamModelList::write(int level, MusECore::Xml& xml) const
 {
   for(const_iterator i = cbegin(); i != cend(); ++i)
-    (*i).write(level, xml);
+    i->second->write(level, xml);
 }
 
 
@@ -4078,9 +4272,9 @@ bool MidNamExtendingDeviceNames::read(MusECore::Xml& xml)
 
                     else if (tag == "Model")
                     {
-                      MidNamModel n;
-                      if(n.read(xml))
-                        _modelList.insert(n);
+                      MidNamModel* n = new MidNamModel();
+                      if(!n->read(xml) || !_modelList.add(n))
+                        delete n;
                     }
 
                     else if (tag == "Device")
@@ -4115,16 +4309,32 @@ bool MidNamExtendingDeviceNames::gatherReferences(MidNamReferencesList* refs) co
 //----------------------------------------------------------------
 
 
+MidNamExtendingDeviceNamesList::MidNamExtendingDeviceNamesList(const MidNamExtendingDeviceNamesList& m)
+  : std::list<MidNamExtendingDeviceNames*>()
+{
+  for(const_iterator i = m.cbegin(); i != m.cend(); ++i)
+    push_back(new MidNamExtendingDeviceNames(*(*i)));
+}
+
+MidNamExtendingDeviceNamesList::~MidNamExtendingDeviceNamesList()
+{
+  for(const_iterator i = cbegin(); i != cend(); ++i)
+  {
+    if(*i)
+      delete *i;
+  }
+}
+      
 void MidNamExtendingDeviceNamesList::write(int level, MusECore::Xml& xml) const
 {
   for(const_iterator i = cbegin(); i != cend(); ++i)
-    (*i).write(level, xml);
+    (*i)->write(level, xml);
 }
 
 bool MidNamExtendingDeviceNamesList::gatherReferences(MidNamReferencesList* refs) const
 {
   for(const_iterator i = cbegin(); i != cend(); ++i)
-    i->gatherReferences(refs);
+    (*i)->gatherReferences(refs);
   return true;
 }
 
@@ -4161,9 +4371,9 @@ bool MidNamMasterDeviceNames::read(MusECore::Xml& xml)
 
                     else if (tag == "Model")
                     {
-                      MidNamModel n;
-                      if(n.read(xml))
-                        _modelList.insert(n);
+                      MidNamModel* n = new MidNamModel();
+                      if(!n->read(xml) || !_modelList.add(n))
+                        delete n;
                     }
 
                     else if (tag == "Device")
@@ -4171,23 +4381,23 @@ bool MidNamMasterDeviceNames::read(MusECore::Xml& xml)
 
                     else if (tag == "CustomDeviceMode")
                     {
-                      MidNamDeviceMode n;
-                      if(n.read(xml))
-                        _deviceModeList.insert(n);
+                      MidNamDeviceMode* n = new MidNamDeviceMode();
+                      if(!n->read(xml) || !_deviceModeList.add(n))
+                        delete n;
                     }
 
                     else if (tag == "SupportsStandardDeviceMode")
                     {
-                      MidNamDeviceMode n;
-                      if(n.read(xml))
-                        _deviceModeList.insert(n);
+                      MidNamDeviceMode* n = new MidNamDeviceMode();
+                      if(!n->read(xml) || !_deviceModeList.add(n))
+                        delete n;
                     }
 
                     else if (tag == "ChannelNameSet")
                     {
-                      MidNamChannelNameSet n;
-                      if(n.read(xml))
-                        _channelNameSetList.insert(n);
+                      MidNamChannelNameSet* n = new MidNamChannelNameSet();
+                      if(!n->read(xml) || !_channelNameSetList.add(n))
+                        delete n;
                     }
 
                     // Special, different from other reads:
@@ -4224,8 +4434,8 @@ const MidiNamPatch* MidNamMasterDeviceNames::findPatch(int channel, int patch) c
   if(!deviceModeList()->empty())
   {
     // We currently can only deal with one list.
-    const MidNamDeviceMode& dm = *deviceModeList()->begin();
-    return dm.findPatch(channel, patch);
+    const MidNamDeviceMode* dm = deviceModeList()->cbegin()->second;
+    return dm->findPatch(channel, patch);
   }
   
   return _channelNameSetList.findPatch(channel, patch);
@@ -4236,8 +4446,8 @@ const MidiNamPatchBankList* MidNamMasterDeviceNames::getPatchBanks(int channel) 
   if(!deviceModeList()->empty())
   {
     // We currently can only deal with one list.
-    const MidNamDeviceMode& dm = *deviceModeList()->begin();
-    return dm.getPatchBanks(channel);
+    const MidNamDeviceMode* dm = deviceModeList()->begin()->second;
+    return dm->getPatchBanks(channel);
   }
   
   return _channelNameSetList.getPatchBanks(channel);
@@ -4252,8 +4462,8 @@ bool MidNamMasterDeviceNames::getNoteSampleName(
   if(!deviceModeList()->empty())
   {
     // We currently can only deal with one list.
-    const MidNamDeviceMode& dm = *deviceModeList()->begin();
-    return dm.getNoteSampleName(drum, channel, patch, note, name);
+    const MidNamDeviceMode* dm = deviceModeList()->begin()->second;
+    return dm->getNoteSampleName(drum, channel, patch, note, name);
   }
   
   return _channelNameSetList.getNoteSampleName(drum, channel, patch, note, name);
@@ -4263,17 +4473,33 @@ bool MidNamMasterDeviceNames::getNoteSampleName(
 //----------------------------------------------------------------
 
 
+MidNamMasterDeviceNamesList::MidNamMasterDeviceNamesList(const MidNamMasterDeviceNamesList& m)
+  : std::list<MidNamMasterDeviceNames*>()
+{
+  for(const_iterator i = m.cbegin(); i != m.cend(); ++i)
+    push_back(new MidNamMasterDeviceNames(*(*i)));
+}
+
+MidNamMasterDeviceNamesList::~MidNamMasterDeviceNamesList()
+{
+  for(const_iterator i = cbegin(); i != cend(); ++i)
+  {
+    if(*i)
+      delete *i;
+  }
+}
+      
 void MidNamMasterDeviceNamesList::write(int level, MusECore::Xml& xml) const
 {
   for(const_iterator i = cbegin(); i != cend(); ++i)
-    (*i).write(level, xml);
+    (*i)->write(level, xml);
 }
 
 
 bool MidNamMasterDeviceNamesList::gatherReferences(MidNamReferencesList* refs) const
 {
   for(const_iterator i = cbegin(); i != cend(); ++i)
-    i->gatherReferences(refs);
+    (*i)->gatherReferences(refs);
   return true;
 }
 
@@ -4443,23 +4669,27 @@ bool MidNamMIDINameDocument::read(MusECore::Xml& xml)
 
                     else if (tag == "MasterDeviceNames")
                     {
-                      MidNamMasterDeviceNames n;
-                      if(n.read(xml))
+                      MidNamMasterDeviceNames* n = new MidNamMasterDeviceNames();
+                      if(n->read(xml))
                         _masterDeviceNamesList.push_back(n);
+                      else
+                        delete n;
                     }
 
                     else if (tag == "ExtendingDeviceNames")
                     {
-                      MidNamExtendingDeviceNames n;
-                      if(n.read(xml))
+                      MidNamExtendingDeviceNames* n = new MidNamExtendingDeviceNames();
+                      if(n->read(xml))
                         _extendingDeviceNamesList.push_back(n);
+                      else
+                        delete n;
                     }
 
                     else if (tag == "StandardDeviceMode")
                     {
-                      MidNamDeviceMode n;
-                      if(n.read(xml))
-                        _standardDeviceModeList.insert(n);
+                      MidNamDeviceMode* n = new MidNamDeviceMode();
+                      if(!n->read(xml) || !_standardDeviceModeList.add(n))
+                        delete n;
                     }
 
                     else
@@ -4501,12 +4731,12 @@ const MidiNamPatch* MidNamMIDINameDocument::findPatch(int channel, int patch) co
   if(!_masterDeviceNamesList.empty())
   {
     // We currently can only deal with one list.
-    const MidNamMasterDeviceNames& mdn = _masterDeviceNamesList.front();
-    if(!mdn.deviceModeList()->empty())
+    const MidNamMasterDeviceNames* mdn = _masterDeviceNamesList.front();
+    if(!mdn->deviceModeList()->empty())
     {
       // We currently can only deal with one list.
-      const MidNamDeviceMode& dm = *mdn.deviceModeList()->begin();
-      return dm.findPatch(channel, patch);
+      const MidNamDeviceMode* dm = mdn->deviceModeList()->begin()->second;
+      return dm->findPatch(channel, patch);
     }
   }
   else if(!_extendingDeviceNamesList.empty())
@@ -4527,12 +4757,38 @@ const MidiNamPatchBankList* MidNamMIDINameDocument::getPatchBanks(int channel) c
   if(!_masterDeviceNamesList.empty())
   {
     // We currently can only deal with one list.
-    const MidNamMasterDeviceNames& mdn = _masterDeviceNamesList.front();
-    if(!mdn.deviceModeList()->empty())
+    const MidNamMasterDeviceNames* mdn = _masterDeviceNamesList.front();
+    if(!mdn->deviceModeList()->empty())
     {
       // We currently can only deal with one list.
-      const MidNamDeviceMode& dm = *mdn.deviceModeList()->begin();
-      return dm.getPatchBanks(channel);
+      const MidNamDeviceMode* dm = mdn->deviceModeList()->begin()->second;
+      return dm->getPatchBanks(channel);
+    }
+  }
+  else if(!_extendingDeviceNamesList.empty())
+  {
+    
+  }
+  else if(!_standardDeviceModeList.empty())
+  {
+    
+  }
+
+  return nullptr;
+}
+
+const MidiControllerList* MidNamMIDINameDocument::getControllers(int channel, int patch) const
+{
+  // Which of the three exclusively possible device lists is dominant (has stuff in it)?
+  if(!_masterDeviceNamesList.empty())
+  {
+    // We currently can only deal with one list.
+    const MidNamMasterDeviceNames* mdn = _masterDeviceNamesList.front();
+    if(!mdn->deviceModeList()->empty())
+    {
+      // We currently can only deal with one list.
+      const MidNamDeviceMode* dm = mdn->deviceModeList()->begin()->second;
+      return dm->getControllers(channel, patch);
     }
   }
   else if(!_extendingDeviceNamesList.empty())
@@ -4557,12 +4813,12 @@ bool MidNamMIDINameDocument::getNoteSampleName(
   if(!_masterDeviceNamesList.empty())
   {
     // We currently can only deal with one list.
-    const MidNamMasterDeviceNames& mdn = _masterDeviceNamesList.front();
-    if(!mdn.deviceModeList()->empty())
+    const MidNamMasterDeviceNames* mdn = _masterDeviceNamesList.front();
+    if(!mdn->deviceModeList()->empty())
     {
       // We currently can only deal with one list.
-      const MidNamDeviceMode& dm = *mdn.deviceModeList()->begin();
-      return dm.getNoteSampleName(drum, channel, patch, note, name);
+      const MidNamDeviceMode* dm = mdn->deviceModeList()->begin()->second;
+      return dm->getNoteSampleName(drum, channel, patch, note, name);
     }
   }
   else if(!_extendingDeviceNamesList.empty())
@@ -4638,6 +4894,11 @@ const MidiNamPatchBankList* MidNamMIDIName::getPatchBanks(int channel) const
   return _MIDINameDocument.getPatchBanks(channel);
 }
 
+const MidiControllerList* MidNamMIDIName::getControllers(int channel, int patch) const
+{
+  return _MIDINameDocument.getControllers(channel, patch);
+}
+
 bool MidNamMIDIName::getNoteSampleName(
   bool drum, int channel, int patch, int note, QString* name) const
 {
@@ -4673,7 +4934,6 @@ bool MidNamMIDINameDocumentList::read(MusECore::Xml& xml)
                     if (tag == "MIDINameDocument")
                     {
                       MidNamMIDINameDocument n;
-                      //MidNamMIDIName n;
                       if(n.read(xml))
                         push_back(n);
                     }

@@ -44,7 +44,7 @@
 
 #include "xml.h"
 #include "muse/midi_consts.h"
-#include "muse/midictrl_consts.h"
+#include "midictrl_consts.h"
 
 const char *vam_ctrl_names[] = {
   "DCO1_PITCHMOD", "DCO1_WAVEFORM", "DCO1_FM", "DCO1_PWM",

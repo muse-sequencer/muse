@@ -30,7 +30,7 @@
 #ifndef __MUSE_TESTO_COMMON_H__
 #define __MUSE_TESTO_COMMON_H__
 
-#include "muse/midictrl_consts.h"
+#include "midictrl_consts.h"
 #include <QString>
 
 #define SS_VERSIONSTRING "1.0"

@@ -1400,7 +1400,48 @@ overrideType
 
 }
 
+MidiController* MidiInstrument::findController(int num, int channel, int patch) const
+{
+#ifdef MIDNAM_SUPPORT
+  // Is there a midnam controller list for the given channel and patch?
+  const MidiControllerList* mcl = _midnamDocument.getControllers(channel, patch);
+  if(mcl)
+  {
+    // Is there a controller for the given num?
+    MidiController* mc = mcl->findController(num);
+    if(mc)
+      // Return that controller.
+      return mc;
+  }
+#endif
+  // No midnam controller was found. Does the instrument have the controller?
+  return controller()->findController(num);
+}
 
+
+void MidiInstrument::getControllers(MidiControllerList* dest, int channel, int patch) const
+{
+  ciMidiController imc;
+#ifdef MIDNAM_SUPPORT
+  // Is there a midnam controller list for the given channel and patch?
+  const MidiControllerList* mcl = _midnamDocument.getControllers(channel, patch);
+  if(mcl)
+  {
+    // Copy the midnam controller pointers directly to the destination.
+    // Defer the RPN update until after done.
+    for(imc = mcl->begin(); imc != mcl->end(); ++imc)
+      dest->add(imc->second, false);
+  }
+#endif
+  mcl = controller();
+  // Copy the instrument controller pointers directly to the destination.
+  // Defer the RPN update until after done.
+  for(imc = mcl->begin(); imc != mcl->end(); ++imc)
+    dest->add(imc->second, false);
+
+  // Be sure to call this since we deferred it above.
+  dest->update_RPN_Ctrls_Reserved();
+}
 
 #ifdef _USE_INSTRUMENT_OVERRIDES_
 int MidiInstrument::isWorkingMapItem(int patch, int index, int fields) const

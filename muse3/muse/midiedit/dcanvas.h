@@ -91,7 +91,6 @@ struct instrument_number_mapping_t //FINDMICH TODO move into a suitable namespac
 class DrumCanvas : public EventCanvas {
       Q_OBJECT
       
-      bool old_style_drummap_mode;
       MusECore::DrumMap* ourDrumMap;
       bool must_delete_our_drum_map; //FINDMICH really delete it!
       QVector<instrument_number_mapping_t> instrument_map;
@@ -155,15 +154,14 @@ class DrumCanvas : public EventCanvas {
       void setTool2(int);
       void setCurDrumInstrument(int);
       virtual void setStep(int);
-      void moveAwayUnused();
 
    public:
       enum {
-         CMD_CUT, CMD_COPY, CMD_COPY_RANGE, CMD_PASTE, CMD_PASTE_TO_CUR_PART, CMD_PASTE_DIALOG, CMD_SAVE, CMD_LOAD, CMD_RESET,
+         CMD_CUT, CMD_COPY, CMD_COPY_RANGE, CMD_PASTE, CMD_PASTE_TO_CUR_PART, CMD_PASTE_DIALOG,
          CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
          CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PREV_PART, CMD_SELECT_NEXT_PART, 
          CMD_DEL, CMD_FIXED_LEN, CMD_RIGHT, CMD_LEFT, CMD_RIGHT_NOSNAP, CMD_LEFT_NOSNAP, CMD_MODIFY_VELOCITY, CMD_CRESCENDO,
-         CMD_QUANTIZE, CMD_ERASE_EVENT, CMD_NOTE_SHIFT, CMD_DELETE_OVERLAPS, CMD_REORDER_LIST,
+         CMD_QUANTIZE, CMD_ERASE_EVENT, CMD_NOTE_SHIFT, CMD_DELETE_OVERLAPS,
          CMD_GROUP_NONE, CMD_GROUP_CHAN, CMD_GROUP_MAX
          };
       DrumCanvas(MidiEditor*, QWidget*, int, int,

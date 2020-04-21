@@ -31,7 +31,7 @@
 
 #include "xml.h"
 #include "mpevent.h"
-#include "midictrl_consts.h"
+#include "midi_controller.h"
 
 namespace MusECore {
 
@@ -93,16 +93,19 @@ class MidiNamAvailableChannel
 //-------------------------------------------------------------------
 
 
-class MidiNamAvailableForChannels : public std::map<int /* channel */, MidiNamAvailableChannel, std::less<int>>
+class MidiNamAvailableForChannels : public std::map<int /* channel */, MidiNamAvailableChannel*, std::less<int>>
 {
   public:
-    bool add(const MidiNamAvailableChannel& a);
+    MidiNamAvailableForChannels() { }
+    MidiNamAvailableForChannels(const MidiNamAvailableForChannels& m);
+    ~MidiNamAvailableForChannels();
+    bool add(MidiNamAvailableChannel* a);
     void write(int level, MusECore::Xml& xml) const;
     void read(MusECore::Xml& xml);
 };
 typedef MidiNamAvailableForChannels::iterator iMidiNamAvailableForChannels;
 typedef MidiNamAvailableForChannels::const_iterator ciMidiNamAvailableForChannels;
-typedef std::pair<int /* channel */, const MidiNamAvailableChannel&> MidiNamAvailableForChannelsPair;
+typedef std::pair<int /* channel */, MidiNamAvailableChannel*> MidiNamAvailableForChannelsPair;
 
 
 //-------------------------------------------------------------------
@@ -144,19 +147,25 @@ class MidiNamChannelNameSetAssign
 
     const MidiNamPatchBankList* getPatchBanks(int channel) const;
 
+    // Find the list of controllers for a channel and/or patch.
+    // If channel is -1 or patch is don't care, it looks for defaults.
+    const MidiControllerList* getControllers(int channel = -1, int patch = CTRL_PROGRAM_VAL_DONT_CARE) const;
+
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;
 };
 
-class MidiNamChannelNameSetAssignments : public std::map<int /* channel */, MidiNamChannelNameSetAssign, std::less<int>>
+class MidiNamChannelNameSetAssignments : public std::map<int /* channel */, MidiNamChannelNameSetAssign*, std::less<int>>
 {
   private:
     bool _hasChannelNameSetAssignments;
 
   public:
     MidiNamChannelNameSetAssignments() : _hasChannelNameSetAssignments(false) { }
+    MidiNamChannelNameSetAssignments(const MidiNamChannelNameSetAssignments& m);
+    ~MidiNamChannelNameSetAssignments();
     bool hasChannelNameSetAssignments() const { return _hasChannelNameSetAssignments; }
-    bool add(const MidiNamChannelNameSetAssign& a);
+    bool add(MidiNamChannelNameSetAssign* a);
     bool gatherReferences(MidNamReferencesList* refs) const;
     void write(int level, MusECore::Xml& xml) const;
     void read(MusECore::Xml& xml);
@@ -168,12 +177,16 @@ class MidiNamChannelNameSetAssignments : public std::map<int /* channel */, Midi
 
     const MidiNamPatchBankList* getPatchBanks(int channel) const;
 
+    // Find the list of controllers for a channel and/or patch.
+    // If channel is -1 or patch is don't care, it looks for defaults.
+    const MidiControllerList* getControllers(int channel = -1, int patch = CTRL_PROGRAM_VAL_DONT_CARE) const;
+
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;
 };
 typedef MidiNamChannelNameSetAssignments::iterator iMidiNamChannelNameSetAssignments;
 typedef MidiNamChannelNameSetAssignments::const_iterator ciMidiNamChannelNameSetAssignments;
-typedef std::pair<int /* channel */, const MidiNamChannelNameSetAssign&> MidiNamChannelNameSetAssignmentsPair;
+typedef std::pair<int /* channel */, MidiNamChannelNameSetAssign*> MidiNamChannelNameSetAssignmentsPair;
 
 
 //-------------------------------------------------------------------
@@ -201,15 +214,19 @@ typedef MidiNamNoteGroup::const_iterator ciMidiNamNoteGroup;
 typedef std::pair<iMidiNamNoteGroup, bool> MidiNamNoteGroupPair;
 
 // The note group name is optional, may be blank.
-class MidiNamNoteGroups : public std::multimap<QString /* name */, MidiNamNoteGroup, std::less<QString>>
+class MidiNamNoteGroups : public std::multimap<QString /* name */, MidiNamNoteGroup*, std::less<QString>>
 {
   public:
-    bool add(const MidiNamNoteGroup& a);
+    MidiNamNoteGroups() { }
+    MidiNamNoteGroups(const MidiNamNoteGroups& m);
+    ~MidiNamNoteGroups();
+    MidiNamNoteGroups& operator=(const MidiNamNoteGroups& m);
+    bool add(MidiNamNoteGroup* a);
     void write(int level, MusECore::Xml& xml, const MidiNamNotes* notes) const;
 };
 typedef MidiNamNoteGroups::iterator iMidiNamNoteGroups;
 typedef MidiNamNoteGroups::const_iterator ciMidiNamNoteGroups;
-typedef std::pair<QString /* name */, const MidiNamNoteGroup&> MidiNamNoteGroupsPair;
+typedef std::pair<QString /* name */, MidiNamNoteGroup*> MidiNamNoteGroupsPair;
 typedef std::pair<iMidiNamNoteGroups, iMidiNamNoteGroups> MidiNamNoteGroupsRange;
 
 
@@ -233,17 +250,20 @@ class MidiNamNote
     bool read(MusECore::Xml& xml);
 };
 
-class MidiNamNotes : public std::map<int /* number */, MidiNamNote, std::less<int>>
+class MidiNamNotes : public std::map<int /* number */, MidiNamNote*, std::less<int>>
 {
   private:
     MidiNamNoteGroups _noteGroups;
 
   public:
+    MidiNamNotes() { }
+    MidiNamNotes(const MidiNamNotes& m);
+    ~MidiNamNotes();
     MidiNamNoteGroups& noteGroups() { return _noteGroups; }
     const MidiNamNoteGroups& noteGroups() const { return _noteGroups; }
     bool isEmpty() const { return _noteGroups.empty() && empty(); }
-    bool add(const MidiNamNote& a);
-    bool addNoteGroup(const MidiNamNoteGroup& a);
+    bool add(MidiNamNote* a);
+    bool addNoteGroup(MidiNamNoteGroup* a);
     void write(int level, MusECore::Xml& xml) const;
 
     bool getNoteSampleName(
@@ -251,7 +271,7 @@ class MidiNamNotes : public std::map<int /* number */, MidiNamNote, std::less<in
 };
 typedef MidiNamNotes::iterator iMidiNamNotes;
 typedef MidiNamNotes::const_iterator ciMidiNamNotes;
-typedef std::pair<int /* number */, const MidiNamNote&> MidiNamNotesPair;
+typedef std::pair<int /* number */, MidiNamNote*> MidiNamNotesPair;
 typedef std::pair<iMidiNamNotes, bool> MidiNamNotesInsPair;
 
 
@@ -316,7 +336,7 @@ class MidiNamVal
     bool read(MusECore::Xml& xml);
 };
 
-class MidiNamValNames : public std::set<MidiNamVal>
+class MidiNamValNames : public std::map<int /* number */, MidiNamVal*, std::less<int>>
 {
   private:
     QString _name;
@@ -328,9 +348,13 @@ class MidiNamValNames : public std::set<MidiNamVal>
     MidiNamValNames() : _p_ref(nullptr), _isReference(false) {}
     MidiNamValNames(const QString& name) :
       _name(name), _p_ref(nullptr), _isReference(false) { }
+    MidiNamValNames(const MidiNamValNames& m);
+    MidiNamValNames& operator=(const MidiNamValNames& m);
+    ~MidiNamValNames();
     MidiNamValNames* objectOrRef() { return (_isReference && _p_ref) ? _p_ref : this; }
     void setObjectOrRef(MidiNamValNames* l) { _p_ref = l; }
     void resetObjectOrRef() { _p_ref = nullptr; }
+    bool add(MidiNamVal* a);
     bool gatherReferences(MidNamReferencesList* refs) const;
     bool isReference() const { return _isReference; }
     void setIsReference(bool v) { _isReference = v; }
@@ -341,7 +365,8 @@ class MidiNamValNames : public std::set<MidiNamVal>
 };
 typedef MidiNamValNames::iterator iMidiNamValNames;
 typedef MidiNamValNames::const_iterator ciMidiNamValNames;
-typedef std::pair<iMidiNamValNames, bool> MidiNamValNamesPair;
+typedef std::pair<int /* number */, MidiNamVal*> MidiNamValNamesPair;
+typedef std::pair<iMidiNamValNames, bool> MidiNamValNamesInsPair;
 
 
 class MidiNamValues
@@ -359,6 +384,16 @@ class MidiNamValues
     MidiNamValues(int min, int max, int def, int units, int mapping) :
                 _min(min), _max(max), _default(def), _units(units),
                 _mapping(mapping) {}
+    int minVal() const { return _min; }
+    void setMinVal(int v) { _min = v; }
+    int maxVal() const { return _max; }
+    void setMaxVal(int v) { _max = v; }
+    int defaultVal() const { return _default; }
+    void setDefaultVal(int v) { _default = v; }
+    int units() const { return _units; }
+    void setUnits(int v) { _units = v; }
+    int mapping() const { return _mapping; }
+    void setMapping(int v) { _mapping = v; }
     MidiNamValNames& valueNames() { return _valueNames; }
     bool empty() const { return _valueNames.empty(); }
     void write(int level, MusECore::Xml& xml) const;
@@ -369,27 +404,21 @@ class MidiNamValues
 //-------------------------------------------------------
 
 
-class MidiNamCtrl
+class MidiNamCtrl : public MidiController
 {
-  public:
-    enum Type { SevenBit=0, FourteenBit, RPN, NRPN };
-
   private:
-    Type _type;
-    int _number;
-    QString _name;
     MidiNamValues _values;
 
   public:
-    MidiNamCtrl() : _type(SevenBit), _number(0) {}
-    MidiNamCtrl(Type type, int number, const QString& name) :
-                _type(type), _number(number), _name(name) {}
-    bool operator<(const MidiNamCtrl& n) const { return _number < n._number; }
-    void write(int level, MusECore::Xml& xml) const;
-    bool read(MusECore::Xml& xml);
+    MidiNamCtrl() : MidiController() {}
+    MidiNamCtrl(int number, const QString& name) :
+                MidiController(name, number, 0, 127, 0, -1) {}
+    bool operator<(const MidiNamCtrl& n) const { return _num < n._num; }
+    void writeMidnam(int level, MusECore::Xml& xml) const;
+    bool readMidnam(MusECore::Xml& xml);
 };
 
-class MidiNamCtrls : public std::set<MidiNamCtrl>
+class MidiNamCtrls : public MidiControllerList
 {
   private:
     QString _name;
@@ -398,10 +427,19 @@ class MidiNamCtrls : public std::set<MidiNamCtrl>
     MidiNamCtrls* _p_ref;
     bool _isReference;
 
+    bool _hasMidiNamCtrls;
+
   public:
-    MidiNamCtrls() : _p_ref(nullptr), _isReference(false) {}
+    MidiNamCtrls() : _p_ref(nullptr), _isReference(false), _hasMidiNamCtrls(false) { }
     MidiNamCtrls(const QString& name) :
-      _name(name), _p_ref(nullptr), _isReference(false) { }
+      _name(name), _p_ref(nullptr), _isReference(false), _hasMidiNamCtrls(false) { }
+    MidiNamCtrls(const MidiNamCtrls& mcl);
+    // We require a destructor here because MidiControllerList
+    //  does not delete its contents.
+    ~MidiNamCtrls();
+
+    bool hasMidiNamCtrls() const { return _hasMidiNamCtrls; }
+    const MidiNamCtrls* objectOrRef() const { return (_isReference && _p_ref) ? _p_ref : this; }
     MidiNamCtrls* objectOrRef() { return (_isReference && _p_ref) ? _p_ref : this; }
     void setObjectOrRef(MidiNamCtrls* l) { _p_ref = l; }
     void resetObjectOrRef() { _p_ref = nullptr; }
@@ -410,12 +448,13 @@ class MidiNamCtrls : public std::set<MidiNamCtrl>
     void setName(const QString& name) { _name = name; }
     bool isReference() const { return _isReference; }
     void setIsReference(bool v) { _isReference = v; }
-    void write(int level, MusECore::Xml& xml) const;
-    void read(MusECore::Xml& xml);
+    void writeMidnam(int level, MusECore::Xml& xml) const;
+    void readMidnam(MusECore::Xml& xml);
+
+    // Find the list of controllers for a channel and/or patch.
+    // If channel is -1 or patch is don't care, it looks for defaults.
+    const MidiControllerList* getControllers(int channel = -1, int patch = CTRL_PROGRAM_VAL_DONT_CARE) const;
 };
-typedef MidiNamCtrls::iterator iMidiNamCtrl;
-typedef MidiNamCtrls::const_iterator ciMidiNamCtrl;
-typedef std::pair<iMidiNamCtrl, bool> MidiNamCtrlPair;
 
 
 //-----------------------------------------------------------------
@@ -455,11 +494,15 @@ class MidiNamPatch
     void write(int level, MusECore::Xml& xml) const;
     bool read(MusECore::Xml& xml);
 
+    // Find the list of controllers for a channel and/or patch.
+    // If channel is -1 or patch is don't care, it looks for defaults.
+    const MidiControllerList* getControllers(int channel = -1, int patch = CTRL_PROGRAM_VAL_DONT_CARE) const;
+
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;
 };
 
-class MidiNamPatchNameList : public std::map<int /* patchNumber */, MidiNamPatch, std::less<int>>
+class MidiNamPatchNameList : public std::map<int /* patchNumber */, MidiNamPatch*, std::less<int>>
 {
   private:
     // Optional.
@@ -473,7 +516,9 @@ class MidiNamPatchNameList : public std::map<int /* patchNumber */, MidiNamPatch
     MidiNamPatchNameList() : _p_ref(nullptr), _isReference(false) {}
     MidiNamPatchNameList(const QString& name) :
       _name(name), _p_ref(nullptr), _isReference(false) { }
-    bool add(const MidiNamPatch& a);
+    MidiNamPatchNameList(const MidiNamPatchNameList& m);
+    ~MidiNamPatchNameList();
+    bool add(MidiNamPatch* a);
     const MidiNamPatchNameList* objectOrRef() const { return (_isReference && _p_ref) ? _p_ref : this; }
     MidiNamPatchNameList* objectOrRef() { return (_isReference && _p_ref) ? _p_ref : this; }
     void setObjectOrRef(MidiNamPatchNameList* l) { _p_ref = l; }
@@ -497,7 +542,7 @@ class MidiNamPatchNameList : public std::map<int /* patchNumber */, MidiNamPatch
 };
 typedef MidiNamPatchNameList::iterator iMidiNamPatchNameList;
 typedef MidiNamPatchNameList::const_iterator ciMidiNamPatchNameList;
-typedef std::pair<int /* patchNumber */, const MidiNamPatch&> MidiNamPatchNameListPair;
+typedef std::pair<int /* patchNumber */, MidiNamPatch*> MidiNamPatchNameListPair;
 
 
 //-----------------------------------------------------------------
@@ -542,10 +587,13 @@ class MidiNamPatchBank
       bool drum, int channel, int patch, int note, QString* name) const;
 };
 
-class MidiNamPatchBankList : public std::map<int /* bankHL */, MidiNamPatchBank, std::less<int>>
+class MidiNamPatchBankList : public std::map<int /* bankHL */, MidiNamPatchBank*, std::less<int>>
 {
   public:
-    bool add(const MidiNamPatchBank& a);
+    MidiNamPatchBankList() { }
+    MidiNamPatchBankList(const MidiNamPatchBankList& m);
+    ~MidiNamPatchBankList();
+    bool add(MidiNamPatchBank* a);
     bool gatherReferences(MidNamReferencesList* refs) const;
     void write(int level, MusECore::Xml& xml) const;
 
@@ -559,7 +607,7 @@ class MidiNamPatchBankList : public std::map<int /* bankHL */, MidiNamPatchBank,
 };
 typedef MidiNamPatchBankList::iterator iMidiNamPatchBankList;
 typedef MidiNamPatchBankList::const_iterator ciMidiNamPatchBankList;
-typedef std::pair<int /* bankHL */, const MidiNamPatchBank&> MidiNamPatchBankListPair;
+typedef std::pair<int /* bankHL */, MidiNamPatchBank*> MidiNamPatchBankListPair;
 
 
 //-----------------------------------------------------------------
@@ -595,13 +643,21 @@ class MidNamChannelNameSet
 
     const MidiNamPatchBankList* getPatchBanks(int channel) const;
 
+    // Find the list of controllers for a channel and/or patch.
+    // If channel is -1 or patch is don't care, it looks for defaults.
+    const MidiControllerList* getControllers(int channel = -1, int patch = CTRL_PROGRAM_VAL_DONT_CARE) const;
+
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;
 };
 
-class MidiNamChannelNameSetList : public std::set<MidNamChannelNameSet>
+class MidiNamChannelNameSetList : public std::map<QString /* name */, MidNamChannelNameSet*, std::less<QString>>
 {
   public:
+    MidiNamChannelNameSetList() { }
+    MidiNamChannelNameSetList(const MidiNamChannelNameSetList& m);
+    ~MidiNamChannelNameSetList();
+    bool add(MidNamChannelNameSet* a);
     bool gatherReferences(MidNamReferencesList* refs) const;
     void write(int level, MusECore::Xml& xml) const;
 
@@ -612,12 +668,16 @@ class MidiNamChannelNameSetList : public std::set<MidNamChannelNameSet>
 
     const MidiNamPatchBankList* getPatchBanks(int channel) const;
 
+    // Find the list of controllers for a channel and/or patch.
+    // If channel is -1 or patch is don't care, it looks for defaults.
+    const MidiControllerList* getControllers(int channel = -1, int patch = CTRL_PROGRAM_VAL_DONT_CARE) const;
+
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;
 };
 typedef MidiNamChannelNameSetList::iterator iMidiNamChannelNameSetList;
 typedef MidiNamChannelNameSetList::const_iterator ciMidiNamChannelNameSetList;
-typedef std::pair<iMidiNamChannelNameSetList, bool> MidiNamChannelNameSetListPair;
+typedef std::pair<QString /* name */, MidNamChannelNameSet*> MidiNamChannelNameSetListPair;
 
 
 //-----------------------------------------------------------------
@@ -702,12 +762,23 @@ class MidNamDeviceMode
     MidNamDeviceMode(
       const QString& name) :
       _name(name), _isCustomDeviceMode(false), _p_ref(nullptr), _isReference(false) {}
+    const MidNamDeviceMode* objectOrRef() const { return (_isReference && _p_ref) ? _p_ref : this; }
     MidNamDeviceMode* objectOrRef() { return (_isReference && _p_ref) ? _p_ref : this; }
     void setObjectOrRef(MidNamDeviceMode* l) { _p_ref = l; }
     void resetObjectOrRef() { _p_ref = nullptr; }
     bool gatherReferences(MidNamReferencesList* refs) const;
     bool isCustomDeviceMode() const { return _isCustomDeviceMode; }
     void setCustomDeviceMode(bool v) { _isCustomDeviceMode = v; }
+    const MidNamDeviceModeEnable& deviceModeEnable() const { return _deviceModeEnable; }
+    MidNamDeviceModeEnable& deviceModeEnable() { return _deviceModeEnable; }
+    const MidNamDeviceModeDisable& deviceModeDisable() const { return _deviceModeDisable; }
+    MidNamDeviceModeDisable& deviceModeDisable() { return _deviceModeDisable; }
+    const MidiNamChannelNameSetAssignments& channelNameSetAssignments() const { return _channelNameSetAssignments; }
+    MidiNamChannelNameSetAssignments& channelNameSetAssignments() { return _channelNameSetAssignments; }
+    const MidNamNameList& nameList() const { return _nameList; }
+    MidNamNameList& nameList() { return _nameList; }
+    const MidiNamChannelNameSetList& channelNameSetList() const { return _channelNameSetList; }
+    MidiNamChannelNameSetList& channelNameSetList() { return _channelNameSetList; }
     const QString& name() const { return _name; }
     bool isReference() const { return _isReference; }
     void setIsReference(bool v) { _isReference = v; }
@@ -722,19 +793,27 @@ class MidNamDeviceMode
 
     const MidiNamPatchBankList* getPatchBanks(int channel) const;
 
+    // Find the list of controllers for a channel and/or patch.
+    // If channel is -1 or patch is don't care, it looks for defaults.
+    const MidiControllerList* getControllers(int channel = -1, int patch = CTRL_PROGRAM_VAL_DONT_CARE) const;
+
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;
 };
 
-class MidNamDeviceModeList : public std::set<MidNamDeviceMode>
+class MidNamDeviceModeList : public std::map<QString /* name */, MidNamDeviceMode*, std::less<QString>>
 {
   public:
+    MidNamDeviceModeList() { }
+    MidNamDeviceModeList(const MidNamDeviceModeList& m);
+    ~MidNamDeviceModeList();
+    bool add(MidNamDeviceMode* a);
     bool gatherReferences(MidNamReferencesList* refs) const;
     void write(int level, MusECore::Xml& xml) const;
 };
 typedef MidNamDeviceModeList::iterator iMidNamDeviceModeList;
 typedef MidNamDeviceModeList::const_iterator ciMidNamDeviceModeList;
-typedef std::pair<iMidNamDeviceModeList, bool> MidNamDeviceModeListPair;
+typedef std::pair<QString /* name */, MidNamDeviceMode*> MidNamDeviceModeListPair;
 
 
 //-----------------------------------------------------------------
@@ -776,14 +855,18 @@ class MidNamModel
     bool read(MusECore::Xml& xml);
 };
 
-class MidiNamModelList : public std::set<MidNamModel>
+class MidiNamModelList : public std::map<QString /* model */, MidNamModel*, std::less<QString>>
 {
   public:
+    MidiNamModelList() { }
+    MidiNamModelList(const MidiNamModelList& m);
+    ~MidiNamModelList();
+    bool add(MidNamModel* a);
     void write(int level, MusECore::Xml& xml) const;
 };
 typedef MidiNamModelList::iterator iMidiNamModelList;
 typedef MidiNamModelList::const_iterator ciMidiNamModelList;
-typedef std::pair<iMidiNamModelList, bool> MidiNamModelListPair;
+typedef std::pair<QString /* model */, MidNamModel*> MidiNamModelListPair;
 
 
 //-----------------------------------------------------------------
@@ -847,9 +930,12 @@ class MidNamExtendingDeviceNames
     bool read(MusECore::Xml& xml);
 };
 
-class MidNamExtendingDeviceNamesList : public std::list<MidNamExtendingDeviceNames>
+class MidNamExtendingDeviceNamesList : public std::list<MidNamExtendingDeviceNames*>
 {
   public:
+    MidNamExtendingDeviceNamesList() { }
+    MidNamExtendingDeviceNamesList(const MidNamExtendingDeviceNamesList& m);
+    ~MidNamExtendingDeviceNamesList();
     bool gatherReferences(MidNamReferencesList* refs) const;
     void write(int level, MusECore::Xml& xml) const;
 };
@@ -893,9 +979,12 @@ class MidNamMasterDeviceNames
       bool drum, int channel, int patch, int note, QString* name) const;
 };
 
-class MidNamMasterDeviceNamesList : public std::list<MidNamMasterDeviceNames>
+class MidNamMasterDeviceNamesList : public std::list<MidNamMasterDeviceNames*>
 {
   public:
+    MidNamMasterDeviceNamesList() { }
+    MidNamMasterDeviceNamesList(const MidNamMasterDeviceNamesList& m);
+    ~MidNamMasterDeviceNamesList();
     bool gatherReferences(MidNamReferencesList* refs) const;
     void write(int level, MusECore::Xml& xml) const;
 };
@@ -986,6 +1075,10 @@ class MidNamMIDINameDocument
 
     const MidiNamPatchBankList* getPatchBanks(int channel) const;
 
+    // Find the list of controllers for a channel and/or patch.
+    // If channel is -1 or patch is don't care, it looks for defaults.
+    const MidiControllerList* getControllers(int channel = -1, int patch = CTRL_PROGRAM_VAL_DONT_CARE) const;
+
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;
 };
@@ -1014,6 +1107,10 @@ class MidNamMIDIName
     const MidiNamPatch* findPatch(int channel, int patch) const;
 
     const MidiNamPatchBankList* getPatchBanks(int channel) const;
+
+    // Find the list of controllers for a channel and/or patch.
+    // If channel is -1 or patch is don't care, it looks for defaults.
+    const MidiControllerList* getControllers(int channel = -1, int patch = CTRL_PROGRAM_VAL_DONT_CARE) const;
 
     bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const;

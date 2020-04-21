@@ -360,7 +360,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
         for(iMidiTrack imt = mtlp->begin(); imt != mtlp->end(); ++imt)
         {
           mt = *imt;
-          if(mt->type() != Track::NEW_DRUM)
+          if(mt->type() != Track::DRUM)
             continue;
           if(mt->updateDrummap(false))
             flags |= (SC_DRUMMAP);
@@ -396,7 +396,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
         for(iMidiTrack imt = mtlp->begin(); imt != mtlp->end(); ++imt)
         {
           mt = *imt;
-          if(mt->type() != Track::NEW_DRUM)
+          if(mt->type() != Track::DRUM)
             continue;
           if(mt->updateDrummap(false))
             flags |= (SC_DRUMMAP);
@@ -564,7 +564,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       for(iMidiTrack imt = mtlp->begin(); imt != mtlp->end(); ++imt)
       {
         mt = *imt;
-        if(mt->type() != Track::NEW_DRUM)
+        if(mt->type() != Track::DRUM)
           continue;
         mt_port = mt->outPort();
         if(mt_port < 0 || mt_port >= MusECore::MIDI_PORTS)
@@ -639,7 +639,6 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
         {
               case Track::MIDI:
               case Track::DRUM:
-              case Track::NEW_DRUM:
                     static_cast<MidiTrackList*>(_void_track_list)->push_back(static_cast<MidiTrack*>(_track));
                     break;
               case Track::WAVE:
@@ -804,7 +803,6 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
         {
               case Track::MIDI:
               case Track::DRUM:
-              case Track::NEW_DRUM:
                     static_cast<MidiTrackList*>(_void_track_list)->erase(_track);
                     break;
               case Track::WAVE:
@@ -1125,6 +1123,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       auto partType = _part->partType();
 
       auto& eventList = _part->nonconst_events();
+      EventList eventsToMove;
 
       for (EventList::iterator eventIterator = eventList.begin(); eventIterator != eventList.end(); eventIterator++)
       {
@@ -1132,7 +1131,6 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
           if (eventIterator == eventList.begin() && partType == Part::WavePartType)
           {
               auto waveEvent = (Event&)eventIterator->second;
-              fprintf(stderr,"Adjusting event frame %d\n", waveEvent.spos());
               if (waveEvent.spos() - startPosChange < 0) {
                   startPosChange = waveEvent.spos();
                   newPartStart = oldPartStart - startPosChange;
@@ -1140,13 +1138,20 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
               waveEvent.setSpos(waveEvent.spos() - startPosChange);
               waveEvent.setLenFrame(waveEvent.lenFrame() + startPosChange);
           }
-          else
+          else // all other events are treated equally
           {
               auto event = (Event&)eventIterator->second;
               auto posValue = event.posValue();
-              eventList.move(event, posValue + startPosChange);
-              event.setTick(posValue + startPosChange);
+              event.setPosValue(posValue + startPosChange);
+              eventsToMove.add(event);
+              eventList.erase(eventIterator);
           }
+      }
+      for (auto& eventToMove : eventsToMove)
+      {
+        // if there are events to move we do it here
+        // doing it above will mess up the for loop
+        eventList.add(eventToMove.second);
       }
 
       _part->setPosValue(newPartStart);

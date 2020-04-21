@@ -628,14 +628,14 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
                               }
                         else if (tag == "drumtrack") { // Old drumtrack is obsolete.
                               MidiTrack* track = new MidiTrack();
-                              track->setType(Track::NEW_DRUM);
+                              track->setType(Track::DRUM);
                               track->read(xml);
-                              track->convertToType(Track::NEW_DRUM); // Convert the notes and controllers.
+                              track->convertToType(Track::DRUM); // Convert the notes and controllers.
                               insertTrack0(track, -1);
                               }
                         else if (tag == "newdrumtrack") {
                               MidiTrack* track = new MidiTrack();
-                              track->setType(Track::NEW_DRUM);
+                              track->setType(Track::DRUM);
                               track->read(xml);
                               insertTrack0(track, -1);
                               }
@@ -1153,6 +1153,10 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
 
                               // Now that the song file has been fully loaded, resolve any references in the file.
                               MusEGlobal::song->resolveSongfileReferences();
+
+                              // Now that all track and instrument references have been resolved,
+                              //  it is safe to add all the midi controller cache values.
+                              MusEGlobal::song->changeMidiCtrlCacheEvents(true, true, true, true, true);
 
                               MusEGlobal::audio->msgUpdateSoloStates();
                               // Inform the rest of the app that the song (may) have changed, using these flags.

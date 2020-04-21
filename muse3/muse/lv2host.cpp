@@ -4867,16 +4867,16 @@ void LV2SynthIF::populatePatchPopupMidNam(MusEGui::PopupMenu *menu, int channel,
 
     for(MidiNamPatchBankList::const_iterator ipbl = pbl->cbegin(); ipbl != pbl->cend(); ++ipbl)
     {
-        const MidiNamPatchBank& pb = ipbl->second;
-        const MidiNamPatchNameList& pnl = pb.patchNameList();
-        const int pb_bankHL = pb.bankHL();
+        const MidiNamPatchBank* pb = ipbl->second;
+        const MidiNamPatchNameList& pnl = pb->patchNameList();
+        const int pb_bankHL = pb->bankHL();
         const int pb_bankH = (pb_bankHL >> 8) & 0xff;
         const int pb_bankL = pb_bankHL & 0xff;
 
         for(MidiNamPatchNameList::const_iterator ipnl = pnl.cbegin(); ipnl != pnl.cend(); ++ipnl)
         {
-          const MidiNamPatch& mnp = ipnl->second;
-          const int mnp_patch = mnp.patchNumber();
+          const MidiNamPatch* mnp = ipnl->second;
+          const int mnp_patch = mnp->patchNumber();
           // Replace with patch bank high and/or low if they are valid.
           const int mnp_bankH = pb_bankH == 0xff ? ((mnp_patch >> 16) & 0xff) : pb_bankH;
           const int mnp_bankL = pb_bankL == 0xff ? ((mnp_patch >> 8) & 0xff) : pb_bankL;
@@ -4894,7 +4894,7 @@ void LV2SynthIF::populatePatchPopupMidNam(MusEGui::PopupMenu *menu, int channel,
           {
               // Use the parent stayOpen here.
               submenu = new MusEGui::PopupMenu(menu, menu->stayOpen());
-              const QString& pb_name = pb.name();
+              const QString& pb_name = pb->name();
               const QString& pnl_name = pnl.name();
               const QString fin_bank_name = 
                 pb_name.isEmpty() ? 
@@ -4906,7 +4906,7 @@ void LV2SynthIF::populatePatchPopupMidNam(MusEGui::PopupMenu *menu, int channel,
           }
 
           const int fin_mnp_patch = (fin_mnp_bankHL << 8) | mnp_prog;
-          QAction *act = submenu->addAction(mnp.name());
+          QAction *act = submenu->addAction(mnp->name());
           act->setData(fin_mnp_patch);
         }
     }

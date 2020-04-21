@@ -42,6 +42,7 @@
 #include "controlfifo.h"
 #include "latency_info.h"
 #include "transport_obj.h"
+#include "midiport.h"
 
 class QPixmap;
 class QColor;
@@ -71,7 +72,7 @@ typedef std::vector<double>::iterator iAuxSendValue;
 class Track {
    public:
       enum TrackType {
-         MIDI=0, DRUM, NEW_DRUM, WAVE, AUDIO_OUTPUT, AUDIO_INPUT, AUDIO_GROUP,
+         MIDI=0, DRUM, WAVE, AUDIO_OUTPUT, AUDIO_INPUT, AUDIO_GROUP,
          AUDIO_AUX, AUDIO_SOFTSYNTH
          };
       // NOTE: ASSIGN_DUPLICATE_PARTS ASSIGN_COPY_PARTS and ASSIGN_CLONE_PARTS are not allowed together - choose one. 
@@ -391,8 +392,8 @@ class Track {
       bool readProperty(Xml& xml, const QString& tag);
       int channels() const                { return _channels; }
       virtual void setChannels(int n);
-      bool isMidiTrack() const       { return type() == MIDI || type() == DRUM || type() == NEW_DRUM; }
-      bool isDrumTrack() const       { return type() == DRUM || type() == NEW_DRUM; }
+      bool isMidiTrack() const       { return type() == MIDI || type() == DRUM; }
+      bool isDrumTrack() const       { return type() == DRUM; }
       bool isSynthTrack() const      { return type() == AUDIO_SOFTSYNTH; }
       virtual bool canRecord() const { return false; }
       virtual bool canRecordMonitor() const { return false; }
@@ -524,6 +525,14 @@ class MidiTrack : public Track {
       int outPort() const             { return _outPort;     }
       int outChannel() const          { return _outChannel;  }
 
+      // Given ctrl, if ctrl is a drum (per-note) controller, fills the other parameters with the
+      //  mapped track ctrl, port, and channel from the drum map, and returns true.
+      // If ctrl is not a drum controller, port and channel are filled with the track's
+      //  port and channel (same as outPort() and outChannel()), and ctrl is not changed, and returns false.
+      // Port, mport, and channel can be null. Ctrl is the fully qualified number if any (low byte is note)
+      //  and if ctrl is a drum controller ctrl is filled the note mapped to the drum map 'anote'.
+      bool mappedPortChanCtrl(int *ctrl, int *port, MidiPort** mport, int *channel) const;
+
       virtual void setSolo(bool val);
       virtual void updateSoloStates(bool noDec);
       virtual void updateInternalSoloStates();
@@ -548,6 +557,7 @@ class MidiTrack : public Track {
       clefTypes getClef() { return clefType; }
       
       DrumMap* drummap() { return _drummap; }
+      const DrumMap* drummap() const { return _drummap; }
       int map_drum_in(int enote) { return drum_in_map[enote]; }
       void update_drum_in_map();
       void init_drum_ordering();
@@ -1252,8 +1262,8 @@ typedef tracklist<SynthI*>::iterator iSynthI;
 typedef tracklist<SynthI*>::const_iterator ciSynthI;
 typedef tracklist<SynthI*> SynthIList;
 
-extern void addPortCtrlEvents(MidiTrack* t);
-extern void removePortCtrlEvents(MidiTrack* t);
+extern void addPortCtrlEvents(MidiTrack* t, bool drum_ctls = true, bool non_drum_ctls = true);
+extern void removePortCtrlEvents(MidiTrack* t, bool drum_ctls = true, bool non_drum_ctls = true);
 extern void addPortCtrlEvents(Track* track, PendingOperationList& ops);
 extern void removePortCtrlEvents(Track* track, PendingOperationList& ops);
 } // namespace MusECore

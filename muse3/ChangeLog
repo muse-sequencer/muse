@@ -1,3 +1,25 @@
+18.04.2010
+    - New option in Global settings -> GUI tweaks to (not) keep transport window on top (kybos)
+13.04.2020
+    - Fix regression from 12.04.2019: Midi controller cache not proper after loading song. (Tim)
+      Since we now resolve track and instrument references AFTER a song file is FULLY loaded,
+       calling addPortCtrlEvents() on all tracks BEFORE doing the resolving had ill effect.
+      Now port midi control cache events are added on all tracks AFTER the resolving.
+    - Simplified several sections regarding adding/removing port midi control cache events.
+    - Removed ALL 'old-style drum track' code. Track type NEW_DRUM has been renamed DRUM.
+    - Simplified many drum controller (per-note) code sections to call a common function
+       in MidiTrack::mappedPortChanCtrl()
+    - Support midnam controllers (gmsynth.lv2 for example).
+      This was very difficult. Midnam supports per-channel AND per-patch controller lists.
+      Instead of adapting our own instrument and controller classes to NATIVELY support that,
+       which would be NICE but much more difficult and time-consuming, the instrument simply
+       'compounds' its own controller list and the midnam controller list together and
+       presents that to the outside code looking for a controller list.
+      But no changes to our own instrument definitions and structures were made.
+      This still required many changes to the outside code in order to pass the patch number.
+      TODO: Midnam supports enumerated controller values. Use them!
+    - Moved classes MidiController and MidiControllerList from midictrl module into a separate
+       midi_controller module (library in libs) so that our midnam library can use it.
 06.04.2020
     - Fixed bug 790 Crash when dragging parts to blank area. (Tim)
       Bonus: Now supports dragging parts from multiple non-contiguous tracks,

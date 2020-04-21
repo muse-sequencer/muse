@@ -23,37 +23,41 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
+from __future__ import print_function
+
 import os
 import string
 import shutil
+from six.moves import input
+import sys
 
 dirlist = os.listdir(".")
 
 wavs=[]
 
-print "muse-find-unused-wavs - check wav file usage in all *.med files in current dir."
-print ""
-print "This utility scans all med files in the current dir, maps their"
-print "wave file usage to what is currently available in current dir."
-print "The output is printed."
-print "Files no longer used are moved to the subdir 'unused'"
-print "Press enter to continue."
-print ""
-raw_input()
+print("muse-find-unused-wavs - check wav file usage in all *.med files in current dir.")
+print("")
+print("This utility scans all med files in the current dir, maps their")
+print("wave file usage to what is currently available in current dir.")
+print("The output is printed.")
+print("Files no longer used are moved to the subdir 'unused'")
+print("Press enter to continue.")
+print("")
+input()
 
 for line in dirlist:
         if (line.endswith( ".wav")):
                 #print "HA!", line
                 wavs.append(line)
-print "===================================================="
-print "===================================================="
-print " These wave files were found in current directory:\n"
+print("====================================================")
+print("====================================================")
+print(" These wave files were found in current directory:\n")
 if wavs == []:
-    print "No files were found."
+    print("No files were found.")
     sys.exit(0)
 else:
     for f in wavs:
-        print f
+        print(f)
 
 for line in dirlist:
         if (line.endswith( ".med") ):
@@ -65,16 +69,16 @@ for line in dirlist:
                                         #print "found %s removing %s"%(line, wav)
                                         wavs.remove(wav)
 
-print "===================================================="
-print " These wave files were unused:\n"
+print("====================================================")
+print(" These wave files were unused:\n")
 if wavs == []:
-    print "None"
+    print("None")
 else:
     for f in wavs:
-        print f
+        print(f)
 
-    print "moving to new subdir unused, press Enter to continue"
-    raw_input()
+    print("moving to new subdir unused, press Enter to continue")
+    input()
 
     try:
         os.mkdir('unused')
@@ -82,6 +86,6 @@ else:
         pass
     for f in wavs:
         shutil.move(f,'unused')
-print "===================================================="
-print "===================================================="
+print("====================================================")
+print("====================================================")
 

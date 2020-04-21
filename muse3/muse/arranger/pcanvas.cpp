@@ -289,7 +289,6 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
                   switch(track->type()) {
                         case MusECore::Track::MIDI:
                         case MusECore::Track::DRUM:
-                        case MusECore::Track::NEW_DRUM:
                               {
                               MusECore::MidiPart* part = new MusECore::MidiPart((MusECore::MidiTrack*)track);
                               part->setTick(pos[1]);
@@ -337,7 +336,6 @@ void PartCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, DragType dtype
   // Find out how many new track types we need, for the options dialog.
   int audio_found = 0;
   int midi_found = 0;
-  int drum_found = 0;
   int new_drum_found = 0;
   for(y_map_t::const_iterator ici = y_map.cbegin(); ici != y_map.cend(); ++ici)
   {
@@ -369,8 +367,6 @@ void PartCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, DragType dtype
           cur_new_track_idx = ntrack;
           
           if(type == MusECore::Track::DRUM)
-            ++drum_found;
-          else if(type == MusECore::Track::NEW_DRUM)
             ++new_drum_found;
           else if(type == MusECore::Track::MIDI)
             ++midi_found;
@@ -381,10 +377,10 @@ void PartCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, DragType dtype
   }
   
   int flags = MusECore::Track::ASSIGN_PROPERTIES;
-  if(audio_found != 0 || midi_found != 0 || drum_found != 0 || new_drum_found != 0)
+  if(audio_found != 0 || midi_found != 0 || new_drum_found != 0)
   {  
     MusEGui::DuplicateTracksDialog* dlg = new MusEGui::DuplicateTracksDialog(
-        audio_found, midi_found, drum_found, new_drum_found,
+        audio_found, midi_found, new_drum_found,
         nullptr, // parent
         false,   // copies
         true,    // allRoutes
@@ -727,7 +723,6 @@ CItem* PartCanvas::newItem(const QPoint& pos, int key_modifiers)
       switch(track->type()) {
             case MusECore::Track::MIDI:
             case MusECore::Track::DRUM:
-            case MusECore::Track::NEW_DRUM:
                   pa = new MusECore::MidiPart((MusECore::MidiTrack*)track);
                   pa->setTick(x);
                   pa->setLenTick(len);
@@ -793,7 +788,6 @@ void PartCanvas::newItem(CItem* i, bool noSnap)
           {
                 case MusECore::Track::MIDI:
                 case MusECore::Track::DRUM:
-                case MusECore::Track::NEW_DRUM:
                       new_part = new MusECore::MidiPart((MusECore::MidiTrack*)track);
                       break;
                 case MusECore::Track::WAVE:
@@ -929,8 +923,8 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   act_mexport->setData(OP_SAVEPARTTODISK);
                   }
                   break;
-            case MusECore::Track::NEW_DRUM:
-            case MusECore::Track::DRUM: {
+            case MusECore::Track::DRUM:
+            {
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startDrumEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
                   QAction *act_dexport = partPopup->addAction(tr("Save part to disk..."));
@@ -1636,7 +1630,6 @@ void PartCanvas::keyPress(QKeyEvent* event)
             //  else track is midi
 
             switch (track->type()) {
-                  case MusECore::Track::NEW_DRUM:
                   case MusECore::Track::DRUM:
                         type = 3;
                         break;
@@ -2237,7 +2230,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
       using std::pair;
 
       MusECore::ciEvent ito(events.lower_bound(to));
-      bool isdrum = (mt->type() == MusECore::Track::DRUM  ||  mt->type() == MusECore::Track::NEW_DRUM);
+      bool isdrum = mt->isDrumTrack();
 
       // draw controllers ------------------------------------------
       pen.setColor(QColor(192,192,color_brightness/2));

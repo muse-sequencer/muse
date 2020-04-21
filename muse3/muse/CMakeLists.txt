@@ -287,7 +287,7 @@ target_link_libraries(core
       master
       memory_module
       midiedit
-      midnam_module
+      midi_controller_module
       mixer
       mpevent_module
       mplugins
@@ -325,6 +325,10 @@ if(OSC_SUPPORT)
       target_link_libraries(core ${LIBLO_LIBRARIES})
 endif(OSC_SUPPORT)
 
+if(MIDNAM_SUPPORT)
+      target_link_libraries(core midnam_module)
+endif(MIDNAM_SUPPORT)
+
 # Certain warnings in lv2 headers are causing errors with recent gcc.
 # It seems there's no way to suppress -Werror from within code.
 # The slightest warning in some header file can now trigger an error.
@@ -361,7 +365,10 @@ if(LV2_SUPPORT)
       endif(HAVE_GTK2)
 
       target_link_libraries(lv2host_module ${QT_LIBRARIES})
-      target_link_libraries(lv2host_module midnam_module)
+      if(MIDNAM_SUPPORT)
+            target_link_libraries(lv2host_module midnam_module)
+      endif(MIDNAM_SUPPORT)
+      target_link_libraries(lv2host_module midi_controller_module)
       target_link_libraries(core lv2host_module)
 endif(LV2_SUPPORT)
 

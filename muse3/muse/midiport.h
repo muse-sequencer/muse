@@ -156,14 +156,14 @@ class MidiPort {
       MidiInstrument* instrument() const   { return _instrument; }
       void setInstrument(MidiInstrument* i) { _instrument = i; }
       void changeInstrument(MidiInstrument* i);
-      MidiController* midiController(int num, bool createIfNotFound = true) const;
+      MidiController* midiController(int num, int chan = -1, bool createIfNotFound = true) const;
       MidiCtrlValList* addManagedController(int channel, int ctrl);
       // To be called from realtime audio thread only.
       void tryCtrlInitVal(int chan, int ctl, int val);
-      int limitValToInstrCtlRange(int ctl, int val);
-      double limitValToInstrCtlRange(int ctl, double val);
-      int limitValToInstrCtlRange(MidiController* mc, int val);
-      double limitValToInstrCtlRange(MidiController* mc, double val);
+      int limitValToInstrCtlRange(int ctl, int val, int chan = -1);
+      double limitValToInstrCtlRange(int ctl, double val, int chan = -1);
+      int limitValToInstrCtlRange(const MidiController* mc, int val);
+      double limitValToInstrCtlRange(const MidiController* mc, double val);
       MidiController* drumController(int ctl);
       // Update drum maps when patch is known.
       // If audio is running (and not idle) this should only be called by the rt audio thread.

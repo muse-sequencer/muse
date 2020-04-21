@@ -36,7 +36,7 @@
 #include "libsynti/mess.h"
 #include "deicsonze.h"
 #include "libsimpleplugin/simpler_plugin.h"
-#include "muse/midictrl_consts.h"
+#include "midictrl_consts.h"
 
 #define ABS(x) (x>=0?x:-x)
 

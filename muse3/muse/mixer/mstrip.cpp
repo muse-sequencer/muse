@@ -116,7 +116,7 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
       if(chan < 0 || chan >= MusECore::MUSE_MIDI_CHANNELS || port < 0 || port >= MusECore::MIDI_PORTS)
         return;
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
-      MusECore::MidiController* mc = mp->midiController(midiCtrlNum); // Auto-create the controller if necessary.
+      MusECore::MidiController* mc = mp->midiController(midiCtrlNum, chan); // Auto-create the controller if necessary.
       if(!mc)
         return;
       min = mc->minVal();
@@ -513,7 +513,7 @@ void MidiComponentRack::scanControllerComponents()
             case CompactSliderComponentWidget:
             {
               // false = do not create the controller if not found.
-              MusECore::MidiController* mc = mp->midiController(cw._index, false);
+              MusECore::MidiController* mc = mp->midiController(cw._index, chan, false);
               if(mc)
                 setComponentText(cw, mc->name());
             }
@@ -626,7 +626,7 @@ void MidiComponentRack::updateComponents()
                   int max = 127;
                   int bias = 0;
                   int initval = 0;
-                  MusECore::MidiController* mc = mp->midiController(cw._index, false);
+                  MusECore::MidiController* mc = mp->midiController(cw._index, channel, false);
                   if(mc)
                   {
                     bias = mc->bias();
@@ -706,7 +706,7 @@ void MidiComponentRack::updateComponents()
                   int max = 127;
                   int bias = 0;
                   int initval = 0;
-                  MusECore::MidiController* mc = mp->midiController(cw._index, false);
+                  MusECore::MidiController* mc = mp->midiController(cw._index, channel, false);
                   if(mc)
                   {
                     bias = mc->bias();
@@ -1006,7 +1006,7 @@ void MidiComponentRack::controllerChanged(int v, int id)
     return;
   }
 
-  MusECore::MidiController* mc = mp->midiController(id, false);
+  MusECore::MidiController* mc = mp->midiController(id, channel, false);
   if(mc)
   {
     int ival = val;
@@ -1053,7 +1053,7 @@ void MidiComponentRack::controllerChanged(double val, bool off, int id, int scro
     return;
   }
   
-  MusECore::MidiController* mc = mp->midiController(id, false);
+  MusECore::MidiController* mc = mp->midiController(id, channel, false);
   if(mc)
   {
     int ival = lrint(val);
@@ -1500,8 +1500,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       //---------------------------------------------------
 
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[t->outPort()];
-      MusECore::MidiController* mc = mp->midiController(MusECore::CTRL_VOLUME); // Auto-create the controller if necessary.
-      int chan  = t->outChannel();
+      const int chan  = t->outChannel();
+      MusECore::MidiController* mc = mp->midiController(MusECore::CTRL_VOLUME, chan); // Auto-create the controller if necessary.
 
       slider = new Slider(0, "vol", Qt::Vertical, Slider::InsideVertical, 14, 
                           MusEGlobal::config.midiVolumeSliderColor, 
@@ -1992,7 +1992,8 @@ void MidiStrip::setupMidiVolume()
     const int num = MusECore::CTRL_VOLUME;
     MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(track);
     MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-    MusECore::MidiController* mc = mp->midiController(num, false);
+    const int chan = mt->outChannel();
+    MusECore::MidiController* mc = mp->midiController(num, chan, false);
     if(!mc)
       return;
     const int mn = mc->minVal();
@@ -2329,7 +2330,7 @@ void MidiStrip::volLabelDoubleClicked()
   const int outport = static_cast<MusECore::MidiTrack*>(track)->outPort();
   const int chan = static_cast<MusECore::MidiTrack*>(track)->outChannel();
   MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];
-  MusECore::MidiController* mc = mp->midiController(num, false);
+  MusECore::MidiController* mc = mp->midiController(num, chan, false);
   if(!mc)
     return;
   
@@ -2404,7 +2405,8 @@ void MidiStrip::heartBeat()
           MusECore::MidiTrack* t = static_cast<MusECore::MidiTrack*>(track);
           const int port = t->outPort();
           MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
-          MusECore::MidiController* mctl = mp->midiController(MusECore::CTRL_VOLUME, false);
+          const int chan = t->outChannel();
+          MusECore::MidiController* mctl = mp->midiController(MusECore::CTRL_VOLUME, chan, false);
           if(mctl)
             m_val = double(mctl->maxVal()) * muse_db2val(m_val / 2.0);
           
@@ -2470,7 +2472,7 @@ void MidiStrip::updateControls()
     double d_hwVal = mcvl->hwDVal();
     int max = 127;
     int bias = 0;
-    MusECore::MidiController* mc = mp->midiController(MusECore::CTRL_VOLUME, false);
+    MusECore::MidiController* mc = mp->midiController(MusECore::CTRL_VOLUME, channel, false);
     if(mc)
     {
       max = mc->maxVal();
@@ -2591,7 +2593,7 @@ void MidiStrip::ctrlChanged(double v, bool off, int num, int scrollMode)
       int port     = t->outPort();
       int chan  = t->outChannel();
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
-      MusECore::MidiController* mctl = mp->midiController(num, false);
+      MusECore::MidiController* mctl = mp->midiController(num, chan, false);
       if(mctl)
       {
         double m_val = v;
@@ -2695,7 +2697,7 @@ void MidiStrip::incVolume(int v)
   const int port     = t->outPort();
   const int chan  = t->outChannel();
   MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
-  MusECore::MidiController* mctl = mp->midiController(id, false);
+  MusECore::MidiController* mctl = mp->midiController(id, chan, false);
 
   if(mctl)
   {
@@ -2761,7 +2763,7 @@ void MidiStrip::incPan(int v)
   const int port     = t->outPort();
   const int chan  = t->outChannel();
   MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
-  MusECore::MidiController* mctl = mp->midiController(id, false);
+  MusECore::MidiController* mctl = mp->midiController(id, chan, false);
   if(mctl)
   {
     // Get the component's current value.

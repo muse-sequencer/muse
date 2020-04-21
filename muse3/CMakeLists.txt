@@ -602,6 +602,7 @@ if ( ENABLE_MIDNAM )
   # Can we get away with just generating the hxx/cxx and slapping only them into the project?
   # Or will we have to generate the hxx/cxx here for example (or in our midnam cmake file)
   #  for machine-specific differences?
+  # NOTE: Using our own xml parser for now...
   set(MIDNAM_SUPPORT ON)
 endif ( ENABLE_MIDNAM )
 
@@ -627,6 +628,7 @@ include_directories(
    ${PROJECT_SOURCE_DIR}
    ${PROJECT_SOURCE_DIR}/libs/evdata
    ${PROJECT_SOURCE_DIR}/libs/memory
+   ${PROJECT_SOURCE_DIR}/libs/midi_controller
    ${PROJECT_SOURCE_DIR}/libs/midnam
    ${PROJECT_SOURCE_DIR}/libs/mpevent
    ${PROJECT_SOURCE_DIR}/libs/plugin

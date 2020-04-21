@@ -367,7 +367,7 @@ def main():
               try:
                   ns = Pyro4.locateNS(host=ns_hostname, port=ns_port)
               except Pyro4.errors.NamingError:
-                  if i is 4:
+                  if i == 4:
                       print("...Pyro nameserver did not respond")
                       return 
                   time.sleep(1)

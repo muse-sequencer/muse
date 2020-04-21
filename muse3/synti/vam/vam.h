@@ -21,7 +21,7 @@
 #ifndef __VAM_H
 #define __VAM_H
 
-#include "muse/midictrl_consts.h"
+#include "midictrl_consts.h"
 
 #include <string>
 

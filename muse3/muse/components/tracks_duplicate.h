@@ -40,7 +40,7 @@ class DuplicateTracksDialog : public QDialog, public Ui::DuplicateTracksBase
 
   public:
     DuplicateTracksDialog(
-      bool audio, bool midi, bool drum, bool newdrum,
+      bool audio, bool midi, bool newdrum,
       QWidget* parent = 0,
       bool copies = true,
       bool allRoutes = true, bool defaultRoutes = true,

@@ -345,7 +345,13 @@ class Song : public QObject {
 
       void cmdChangeWave(const Event& original, const QString& tmpfile, unsigned sx, unsigned ex);
       void remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int newport); // called from GUI thread
-      void changeAllPortDrumCtrlEvents(bool add, bool drumonly = false); // called from GUI thread
+      // Adds or removes midi event controller cache values.
+      // Called from GUI thread
+      // add true: add events. false: remove events
+      // drum_tracks: Include drum tracks. midi_tracks: Include midi tracks.
+      // drum_ctls: Do drum (per-note) controller events. non_drum_ctls: Do non-drum controller events.
+      void changeMidiCtrlCacheEvents(
+        bool add, bool drum_tracks = true, bool midi_tracks = true, bool drum_ctls = true, bool non_drum_ctls = true);
       
       void addExternalTempo(const TempoRecEvent& e) { _tempoFifo.put(e); }
 

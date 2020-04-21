@@ -285,9 +285,6 @@ void initDrumMap()
 
 void resetGMDrumMap()
       {
-      MusEGlobal::audio->msgIdle(true);
-      MusEGlobal::song->changeAllPortDrumCtrlEvents(false); // Delete all port controller events.
-      
       for(int i = 0; i < DRUM_MAPSIZE; ++i) 
         MusEGlobal::drumMap[i] = idrumMap[i];
       memset(MusEGlobal::drumInmap, 0, sizeof(MusEGlobal::drumInmap));
@@ -296,9 +293,6 @@ void resetGMDrumMap()
             MusEGlobal::drumInmap[(unsigned int)(MusEGlobal::drumMap[i].enote)] = i;
             MusEGlobal::drumOutmap[(unsigned int)(MusEGlobal::drumMap[i].anote)] = i;
             }
-      
-      MusEGlobal::song->changeAllPortDrumCtrlEvents(true); // Add all port controller events.
-      MusEGlobal::audio->msgIdle(false);
       }
 
 //---------------------------------------------------------
@@ -486,9 +480,6 @@ static void readDrummapEntry(Xml& xml, DrumMap* dm)
 
 void readDrumMap(Xml& xml, bool external)
       {
-      MusEGlobal::audio->msgIdle(true);
-      MusEGlobal::song->changeAllPortDrumCtrlEvents(false); // Delete all port controller events.
-      
       if (external) {
             for (int i = 0; i < DRUM_MAPSIZE; ++i)
                   MusEGlobal::drumMap[i] = blankdm;
@@ -504,11 +495,13 @@ void readDrumMap(Xml& xml, bool external)
             switch (token) {
                   case Xml::Error:
                   case Xml::End:
-                            goto read_drummap_end;
+//                             goto read_drummap_end;
+                            return;
                   case Xml::TagStart:
                         if (tag == "entry") {
                               if(i >= DRUM_MAPSIZE)
-                                goto read_drummap_end;
+//                                 goto read_drummap_end;
+                                return;
                               readDrummapEntry(xml, external ? &MusEGlobal::drumMap[i] : 0);
                               ++i;
                               }
@@ -527,16 +520,13 @@ void readDrumMap(Xml& xml, bool external)
                                     MusEGlobal::drumInmap[(unsigned int)(MusEGlobal::drumMap[i].enote)] = i;
                                     MusEGlobal::drumOutmap[(unsigned int)(MusEGlobal::drumMap[i].anote)] = i;
                                     }
-                              goto read_drummap_end;
+//                               goto read_drummap_end;
+                              return;
                               }
                   default:
                         break;
                   }
             }
-
-read_drummap_end:
-            MusEGlobal::song->changeAllPortDrumCtrlEvents(true); // Add all port controller events.
-            MusEGlobal::audio->msgIdle(false);
       }
 
 } // namespace MusECore

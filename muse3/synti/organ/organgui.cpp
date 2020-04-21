@@ -35,7 +35,7 @@
 #include "common_defs.h"
 #include "organgui.h"
 #include "muse/midi_consts.h"
-#include "muse/midictrl_consts.h"
+#include "midictrl_consts.h"
 
 //#define ORGANGUI_DEBUG
 

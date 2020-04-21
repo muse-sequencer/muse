@@ -984,7 +984,6 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
   switch(t->type()) {
       case MusECore::Track::MIDI:
       case MusECore::Track::DRUM:
-      case MusECore::Track::NEW_DRUM:
       case MusECore::Track::AUDIO_SOFTSYNTH:
       {
             MusECore::MidiTrack* track = 0;
@@ -1326,7 +1325,7 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool /*evenIgn
 
         QAction* newdrum = addTrack->addAction(QIcon(*addtrack_newDrumtrackIcon),
                                           qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Drum Track")));
-        newdrum->setData(MusECore::Track::NEW_DRUM);
+        newdrum->setData(MusECore::Track::DRUM);
         grp->addAction(newdrum);
       }
       if (populateAll || MusECore::WaveTrack::visible()) {
@@ -1524,17 +1523,16 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)(cur_part->track());
       int channel      = track->outChannel();
       MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
-      bool isDrum      = track->type() == MusECore::Track::DRUM;
-      bool isNewDrum   = track->type() == MusECore::Track::NEW_DRUM;
+      bool isNewDrum   = track->type() == MusECore::Track::DRUM;
       bool isMidi      = track->type() == MusECore::Track::MIDI;
       MusECore::MidiInstrument* instr = port->instrument();
-      MusECore::MidiControllerList* mcl = instr->controller();
       MusECore::MidiCtrlValListList* cll = port->controller();
       const int min = channel << 24;
       const int max = min + 0x1000000;
       const int edit_ins = max + 3;
       const int velo = max + 0x101;
       int est_width = 0;  
+      const int patch = port->hwCtrlState(channel, MusECore::CTRL_PROGRAM);
       
       std::list<CI> sList;
       typedef std::list<CI>::iterator isList;
@@ -1542,19 +1540,14 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
 
       for (MusECore::iMidiCtrlValList it = cll->lower_bound(min); it != cll->lower_bound(max); ++it) {
             MusECore::MidiCtrlValList* cl = it->second;
-            MusECore::MidiController* c   = port->midiController(cl->num());
+            MusECore::MidiController* c   = port->midiController(cl->num(), channel);
             bool isDrumCtrl = (c->isPerNoteController());
             int show = c->showInTracks();
             int cnum = c->num();
             int num = cl->num();
             if (isDrumCtrl) {
                   // Only show controller for current pitch:
-                  if (isDrum)
-                  {
-                    if ((curDrumPitch < 0) || ((num & 0xff) != MusEGlobal::drumMap[curDrumPitch].anote))
-                          continue;
-                  }
-                  else if (isNewDrum)
+                  if (isNewDrum)
                   {
                     if ((curDrumPitch < 0) || ((num & 0xff) != track->drummap()[curDrumPitch].anote))
                           continue;
@@ -1589,8 +1582,8 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
                               {
                                 if((ctl_num & 0xff) != curDrumPitch)
                                   continue;
-                                if(isDrum)
-                                  ctl_num = (ctl_num & ~0xff) | MusEGlobal::drumMap[ctl_num & 0x7f].anote;
+                                if(isNewDrum)
+                                  ctl_num = (ctl_num & ~0xff) | track->drummap()[ctl_num & 0x7f].anote;
                               }
                               if(ctl_num == num)
                               {
@@ -1608,7 +1601,7 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
                      (((isDrumCtrl || isNewDrum) && !(show & MusECore::MidiController::ShowInDrum)) ||
                      (isMidi && !(show & MusECore::MidiController::ShowInMidi))))
                     continue;
-                  bool isinstr = mcl->find(cnum) != mcl->end();
+                  const bool isinstr = instr->findController(cnum, channel, patch) != nullptr;
                   // Need to distinguish between global default controllers and 
                   //  instrument defined controllers. Instrument takes priority over global
                   //  ie they 'overtake' definition of a global controller such that the
@@ -1662,19 +1655,20 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       if(fmw > est_width)
         est_width = fmw;
       PopupMenu * ctrlSubPop = new PopupMenu(stext, menu, true);  // true = enable stay open
+      MusECore::MidiControllerList* mcl = new MusECore::MidiControllerList();
+      instr->getControllers(mcl, channel, patch);
+
       for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
       {
           int show = ci->second->showInTracks();
-          if(((isDrum || isNewDrum) && !(show & MusECore::MidiController::ShowInDrum)) ||
+          if((isNewDrum && !(show & MusECore::MidiController::ShowInDrum)) ||
              (isMidi && !(show & MusECore::MidiController::ShowInMidi)))
             continue;
           int cnum = ci->second->num();
           int num = cnum;
           if(ci->second->isPerNoteController())
           {
-            if (isDrum && curDrumPitch >= 0)
-              num = (cnum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
-            else if (isNewDrum && curDrumPitch >= 0)
+            if (isNewDrum && curDrumPitch >= 0)
               num = (cnum & ~0xff) | track->drummap()[curDrumPitch].anote;
             else if (isMidi && curDrumPitch >= 0)
               num = (cnum & ~0xff) | curDrumPitch; //FINDMICH does this work?
@@ -1689,7 +1683,8 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
             already_added_nums.insert(num); //cnum);
           }
       }
-      
+      delete mcl;
+
       menu->addMenu(ctrlSubPop);
 
       menu->addSeparator();

@@ -277,7 +277,6 @@ bool AudioMixerApp::stripIsVisible(Strip* s)
       break;
     case MusECore::Track::MIDI:
     case MusECore::Track::DRUM:
-    case MusECore::Track::NEW_DRUM:
       if (!cfg->showMidiTracks)
         return false;
       break;
@@ -380,8 +379,7 @@ void AudioMixerApp::fillStripListTraditional()
   tli = tl->begin();
   for (; tli != tl->end(); ++tli) {
     if ((*tli)->type() == MusECore::Track::MIDI ||
-        (*tli)->type() == MusECore::Track::DRUM ||
-        (*tli)->type() == MusECore::Track::NEW_DRUM)
+        (*tli)->type() == MusECore::Track::DRUM)
       stripList.append(findStripForTrack(oldList,*tli));
   }
 
@@ -508,8 +506,7 @@ void AudioMixerApp::addStripsTraditionalLayout()
   si = stripList.begin();
   for (; si != stripList.end(); ++si) {
     if ((*si)->getTrack()->type() == MusECore::Track::MIDI ||
-        (*si)->getTrack()->type() == MusECore::Track::DRUM ||
-        (*si)->getTrack()->type() == MusECore::Track::NEW_DRUM)
+        (*si)->getTrack()->type() == MusECore::Track::DRUM)
       addStripToLayoutIfVisible(*si);
   }
 

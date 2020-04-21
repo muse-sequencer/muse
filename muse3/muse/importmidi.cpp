@@ -295,7 +295,7 @@ bool MusE::importMidi(const QString name, bool merge)
                         {
 // Obsolete. There is only 'New' drum tracks now.
 //                            if (MusEGlobal::config.importMidiNewStyleDrum)
-                              track->setType(MusECore::Track::NEW_DRUM);
+                              track->setType(MusECore::Track::DRUM);
 //                            else
 //                               track->setType(MusECore::Track::DRUM);
                         }
@@ -315,7 +315,7 @@ bool MusE::importMidi(const QString name, bool merge)
                         if(imp != usedPortMap->end() && imp->second._isStandardDrums && channel == 9) { // A bit HACKISH, see above
 // Obsolete. There is only 'New' drum tracks now.
 //                            if (MusEGlobal::config.importMidiNewStyleDrum)
-                              track->setType(MusECore::Track::NEW_DRUM);
+                              track->setType(MusECore::Track::DRUM);
 //                            else
 //                            {
 //                               track->setType(MusECore::Track::DRUM);
@@ -341,6 +341,7 @@ bool MusE::importMidi(const QString name, bool merge)
                         processTrack(track);
                         
                         MusEGlobal::song->insertTrack0(track, -1);
+                        MusECore::addPortCtrlEvents(track);
                 }
               }
 						}
@@ -356,6 +357,7 @@ bool MusE::importMidi(const QString name, bool merge)
                   buildMidiEventList(&track->events, el, track, division, true, false); // Do SysexMeta. Don't do loops.
                   processTrack(track);
                   MusEGlobal::song->insertTrack0(track, -1);
+                  MusECore::addPortCtrlEvents(track);
                   }
             }
             
@@ -528,24 +530,18 @@ void MusE::importController(int channel, MusECore::MidiPort* mport, int n)
       if (i != vll->end())
             return;           // controller does already exist
       MusECore::MidiController* ctrl = 0;
-      MusECore::MidiControllerList* mcl = instr->controller();
-      for (MusECore::iMidiController i = mcl->begin(); i != mcl->end(); ++i) {
-            MusECore::MidiController* mc = i->second;
-            int cn = mc->num();
-            if (cn == n) {
-                  ctrl = mc;
-                  break;
-                  }
-            // wildcard?
-            if (mc->isPerNoteController() && ((cn & ~0xff) == (n & ~0xff))) {
-                  ctrl = i->second;
-                  break;
-                  }
+
+      // Search the instrument's controller lists (including midnam controllers).
+      const int patch = mport->hwCtrlState(channel, MusECore::CTRL_PROGRAM);
+      if (instr) {
+            ctrl = instr->findController(n, channel, patch);
             }
+
       if (ctrl == 0) {
-            printf("controller 0x%x not defined for instrument %s, channel %d\n",
-               n, instr->iname().toLatin1().constData(), channel);
+            printf("controller 0x%x not defined for instrument %s, channel %d, patch:%d\n",
+               n, instr->iname().toLatin1().constData(), channel, patch);
             }
+
       MusECore::MidiCtrlValList* newValList = new MusECore::MidiCtrlValList(n);
       vll->add(channel, newValList);
       }

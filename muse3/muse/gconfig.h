@@ -408,6 +408,7 @@ struct GlobalConfigValues {
       bool noPluginScaling;
       // Open MDI windows maximized
       bool openMDIWinMaximized;
+      bool keepTransportWindowOnTop;
       };
 
 

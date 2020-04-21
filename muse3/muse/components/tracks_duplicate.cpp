@@ -25,7 +25,7 @@
 namespace MusEGui {
   
 DuplicateTracksDialog::DuplicateTracksDialog(
-  bool audio, bool /*midi*/, bool /*drum*/, bool newdrum,
+  bool audio, bool /*midi*/, bool newdrum,
   QWidget* parent,
   bool copies, bool allRoutes, bool defaultRoutes,
   bool noParts, bool duplicateParts, bool copyParts, bool cloneParts
