@@ -127,7 +127,6 @@ bool PendingOperationItem::isAllocationOp(const PendingOperationItem& op) const
 
 unsigned int PendingOperationItem::getIndex() const
 {
-    printf("GetIndex()\n");
   switch(_type)
   {
     case Uninitialized:
@@ -1125,10 +1124,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       int startPosChange = oldPartStart - newPartStart;
       auto partType = _part->partType();
 
-      EventList& eventList = _part->nonconst_events();
-
-//      fprintf(stderr,"newPartStart = %d oldPartStart = %d startTickChange=%d partType=%d\n",
-//              newPartStart, oldPartStart, startPosChange, _part->partType());
+      auto& eventList = _part->nonconst_events();
 
       for (EventList::iterator eventIterator = eventList.begin(); eventIterator != eventList.end(); eventIterator++)
       {
@@ -1152,10 +1148,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
               event.setTick(posValue + startPosChange);
           }
       }
-      for (EventList::const_iterator eventIterator = eventList.cbegin(); eventIterator != eventList.cend(); eventIterator++)
-      {
-        fprintf(stderr, "pos after =%d\n", eventIterator->first);
-      }
+
       _part->setPosValue(newPartStart);
       _part->setLenValue(_part->lenValue() + startPosChange);
 

@@ -1750,9 +1750,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 
       MusECore::Part* part = ((NPart*)item)->part();
 
-      for (auto &event : part->events()) {
-        fprintf(stderr,"Tickpos %d %d\n", event.first, event.second.tick());
-      }
       int pTick  = part->tick();
       vfrom      -= pTick;
       vto        -= pTick;

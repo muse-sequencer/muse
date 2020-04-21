@@ -1901,7 +1901,6 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_len_or_pos, u
 {
     assert(type_== ModifyPartLength || type_== MovePart || type_ == ModifyPartStart);
     assert(part_);
-    printf("UndoOp::UndoOp ModifyPartStart\n");
 
     type = type_;
     part = part_;
@@ -2456,13 +2455,12 @@ void Song::revertOperationGroup1(Undo& operations)
                         updateFlags |= SC_PART_MODIFIED;
                         break;
                   case UndoOp::ModifyPartStart:
-            {
-                printf("revertOperationGroup1 modifyPartStart\n");
+                        {
                         removePortCtrlEvents(editable_part, editable_part->track(), pendingOperations);
                         pendingOperations.add(PendingOperationItem(editable_part, i->old_partlen_or_pos, PendingOperationItem::ModifyPartStart));
                         addPortCtrlEvents(editable_part, editable_part->tick(), i->old_partlen_or_pos, editable_part->track(), pendingOperations);
                         updateFlags |= SC_PART_MODIFIED;
-            }
+                        }
                         break;
 
                   case UndoOp::MovePart:
@@ -3311,7 +3309,6 @@ void Song::executeOperationGroup1(Undo& operations)
 
                   case UndoOp::ModifyPartStart:
                       {
-                         printf("Song::executeOperationGroup1 - modifyPartStart\n");
                          removePortCtrlEvents(editable_part, editable_part->track(), pendingOperations);
                          pendingOperations.add(PendingOperationItem(editable_part, i->new_partlen_or_pos, PendingOperationItem::ModifyPartStart));
                          addPortCtrlEvents(editable_part, editable_part->posValue(), i->new_partlen_or_pos, editable_part->track(), pendingOperations);
