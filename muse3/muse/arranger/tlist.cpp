@@ -369,6 +369,11 @@ void TList::paint(const QRect& r)
                           case COL_TRACK_IDX:
                                 p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, QString::number(MusEGlobal::song->tracks()->index(track) + 1));
                                 break;
+                          case COL_FREEZE_TRACK:
+                                if (track->canFreeze()) {
+                                      (track->frozen() ? freezeTrackOnSVGIcon : freezeTrackOffSVGIcon)->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                      }
+                                break;
                           case COL_INPUT_MONITOR:
                                 if (track->canRecordMonitor()) {
                                       (track->recMonitor() ? monitorOnSVGIcon : monitorOffSVGIcon)->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
@@ -1766,7 +1771,26 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   }
                   break;
                 }
+      case COL_FREEZE_TRACK:
+          if (t->canFreeze())
+          {
+            if (t->frozen()){
+              if (QMessageBox::question(this, tr("Unfreeze"),
+                  tr("Do you want to unfreeze this track?"),
+                  QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok) {
+                t->setFreeze(false);
+              }
 
+            }
+            else {
+              if (QMessageBox::question(this, tr("Freeze"),
+                  tr("Do you want to freeze this track?"),
+                  QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok) {
+                t->setFreeze(true);
+              }
+            }
+          }
+          break;
       case COL_TRACK_IDX:
           mode = START_DRAG;  // Allow a track drag to start.
           if (button == Qt::LeftButton) {

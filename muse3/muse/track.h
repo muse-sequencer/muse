@@ -298,9 +298,15 @@ class Track {
       // Sets monitor.
       virtual void setRecMonitor(bool b) { if(canRecordMonitor()) _recMonitor = b; }
       // Returns true if monitored.
-      virtual bool recMonitor() const    { return _recMonitor; }
+      virtual bool recMonitor() const    { return _recMonitor;   }
 
-      virtual void preProcessAlways()    { }
+      virtual void preProcessAlways()    {                       }
+
+      // properties for derived track types that can be frozen,
+      // thus freeing up cpu for other uses.
+      virtual bool canFreeze()           { return false;         }
+      virtual bool frozen()              { return false;         }
+      virtual void setFreeze(bool)       {                       }
 
       TransportSource& transportSource() { return _transportSource; }
 //       // Returns true if the transport source is connected to any of the
@@ -632,6 +638,7 @@ class AudioTrack : public Track {
       bool _sendMetronome;
       AutomationType _automationType;
       double _gain;
+      bool _freezeState {false};
 
       void initBuffers();
       void internal_assign(const Track&, int flags);
@@ -773,6 +780,10 @@ class AudioTrack : public Track {
       void readVolume(Xml& xml);
 
       virtual void preProcessAlways();
+
+      virtual bool canFreeze()           { return true;         }
+      virtual bool frozen()              { return _freezeState; }
+      virtual void setFreeze(bool onoff) { _freezeState = onoff;}
 
       // Gathers this track's audio data and either copies or adds it to a supplied destination buffer.
       // If the per-channel 'addArray' is supplied, whether to copy or add each channel is given in the array,

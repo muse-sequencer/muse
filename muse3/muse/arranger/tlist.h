@@ -54,6 +54,7 @@ class ScrollScale;
 enum TrackColumn {
       COL_TRACK_IDX = 0,
       COL_INPUT_MONITOR,
+      COL_FREEZE_TRACK,
       COL_RECORD,
       COL_MUTE,
       COL_SOLO,

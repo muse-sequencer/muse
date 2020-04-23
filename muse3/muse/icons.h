@@ -213,6 +213,8 @@ extern QIcon* recArmOnSVGIcon;
 extern QIcon* monitorOffSVGIcon;
 extern QIcon* monitorOnSVGIcon;
 
+extern QIcon* freezeTrackOnSVGIcon;
+extern QIcon* freezeTrackOffSVGIcon;
 
 extern QIcon* soloSVGIcon;
 extern QIcon* soloProxySVGIcon;

@@ -332,6 +332,8 @@ QIcon* recArmOnSVGIcon;
 QIcon* monitorOffSVGIcon;
 QIcon* monitorOnSVGIcon;
 
+QIcon* freezeTrackOffSVGIcon;
+QIcon* freezeTrackOnSVGIcon;
 
 QIcon* soloSVGIcon;
 QIcon* soloProxySVGIcon;
@@ -620,6 +622,8 @@ void initIcons(int cursorSize)
       monitorOffSVGIcon = new QIcon(":/svg/monitor_off_default_col.svg");
       monitorOnSVGIcon = new QIcon(":/svg/monitor_on.svg");
 
+      freezeTrackOnSVGIcon = new QIcon(":/svg/snowflake_blue.svg");
+      freezeTrackOffSVGIcon = new QIcon(":/svg/snowflake_shadow.svg");
 
       soloSVGIcon = new QIcon(":/svg/headphones_off.svg");
       soloSVGIcon->addFile(":/svg/headphones_on.svg", QSize(), QIcon::Normal, QIcon::On);
@@ -926,6 +930,8 @@ void deleteIcons()
       delete monitorOffSVGIcon;
       delete monitorOnSVGIcon;
 
+      delete freezeTrackOnSVGIcon;
+      delete freezeTrackOffSVGIcon;
 
       delete soloSVGIcon;
       delete soloProxySVGIcon;

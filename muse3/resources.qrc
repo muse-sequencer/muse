@@ -21,6 +21,10 @@
         <file>svg/monitor_off_default_col.svg</file>
         <file>svg/monitor_off.svg</file>
         <file>svg/monitor_on.svg</file>
+
+        <file>svg/snowflake_blue.svg</file>
+        <file>svg/snowflake_shadow.svg</file>
+
         <file>svg/rec_arm_off.svg</file>
         <file>svg/rec_arm_off_default_col.svg</file>
         <file>svg/rec_arm_on.svg</file>

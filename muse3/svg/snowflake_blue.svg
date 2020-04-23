@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg3891"
+   sodipodi:docname="snowflake_blue.svg"
+   viewBox="0 0 64 64"
+   version="1.1"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)">
+  <defs
+     id="defs3893">
+    <radialGradient
+       id="radialGradient3924"
+       gradientUnits="userSpaceOnUse"
+       cy="487.31"
+       cx="388.41"
+       gradientTransform="matrix(0.11583,0,0,0.10097,-12.727,-16.889)"
+       r="267.21"
+       inkscape:collect="always">
+      <stop
+         id="stop3639"
+         style="stop-color:#94deec"
+         offset="0" />
+      <stop
+         id="stop4438"
+         style="stop-color:#7eeefe"
+         offset="0" />
+      <stop
+         id="stop4436"
+         style="stop-color:#3f98cb"
+         offset=".625" />
+      <stop
+         id="stop3641"
+         style="stop-color:#49bacd"
+         offset="1" />
+    </radialGradient>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     bordercolor="#666666"
+     inkscape:pageshadow="2"
+     inkscape:guide-bbox="true"
+     pagecolor="#ffffff"
+     inkscape:window-height="1011"
+     inkscape:grid-bbox="true"
+     inkscape:window-maximized="1"
+     inkscape:zoom="11.313709"
+     inkscape:window-x="0"
+     showgrid="true"
+     borderopacity="1.0"
+     inkscape:current-layer="layer1"
+     inkscape:cx="5.1335643"
+     inkscape:cy="37.243362"
+     showguides="true"
+     inkscape:window-y="0"
+     inkscape:window-width="1920"
+     inkscape:pageopacity="0.0"
+     inkscape:document-units="px" />
+  <g
+     id="layer1"
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer">
+    <path
+       inkscape:connector-curvature="0"
+       d="m 16.896,5.6557 -1.256,2.7474 3.6487,6.3417 -6.6458,-0.0181 -1.4624,2.8596 1.2922,2.2587 9.9107,0.2751 5.6359,9.784 -11.203,0.0072 -4.6948,-8.224 -3.236,-0.0036 -1.1366,2.3492 3.3627,5.8494 H 3.2134 l -1.5818,2.6351 1.5818,2.7546 h 7.4312 l -3.2179,5.0893 1.3429,2.722 3.0333,0.03982 4.7201,-7.8511 h 11.384 l -5.321,9.2375 -9.4691,-0.03982 -1.618,2.8016 1.4624,2.1573 6.7507,0.0072 -3.9491,6.8449 1.4913,2.6858 3.1745,0.0072 3.7174,-6.4394 2.798,5.3318 3.0297,0.19908 1.5529,-2.6098 -4.445,-8.014 5.5237,-9.5741 5.1508,8.9443 -4.7889,8.1697 1.6108,2.8089 2.5989,-0.18822 3.3953,-5.8313 3.9382,6.8485 3.0731,0.05792 1.5999,-2.7437 -3.7066,-6.4431 6.0159,0.25338 1.6904,-2.5229 -1.4768,-2.6496 L 42.5449,44.3938 37.3,35.2722 h 10.671 l 4.5282,7.8656 2.8306,-0.02172 1.5927,-2.494 -2.9863,-5.3499 h 7.1996 l 1.7556,-2.9283 -1.7556,-2.4614 -7.3154,0.0036 3.3265,-5.7553 -1.7483,-2.6894 -2.6026,-0.0072 -5.1762,8.4556 -10.414,0.0072 5.5924,-9.6899 9.0782,0.0072 1.3936,-2.4614 -1.361,-2.627 -6.129,-0.09 3.598,-6.2367 -1.657,-2.9827 -3.008,0.2896 -3.653,6.3418 -3.323,-5.759 -3.203,0.1701 -1.307,2.2515 4.735,8.7094 -5.354,9.291 -5.737,-9.979 4.565,-7.8513 -1.43,-2.4397 -2.954,-0.1375 -3.156,5.2555 -3.587,-6.2437 -3.414,-0.0616 z"
+       style="fill:url(#radialGradient3924);stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect2830" />
+    <path
+       inkscape:connector-curvature="0"
+       d="m 17.722,4.2537 -0.98578,2.3479 3.7087,6.6928 -6.9428,-0.01792 -1.3126,2.5417 1.1454,1.9468 9.9436,0.39649 5.9506,10.267 -11.916,0.04854 -4.6123,-8.2255 -2.8896,-0.04494 -1.0753,2.0364 3.5519,6.164 h -8.2559 l -1.3472,2.485 1.3886,2.3551 7.7972,0.08274 -3.3683,5.2045 1.1952,2.5297 2.6491,-0.0019 4.6786,-7.8563 h 12.053 l -5.4758,9.8081 -9.6338,0.04331 -1.3828,2.4844 1.2298,1.8465 7.1286,-0.0342 -4.0866,7.1496 1.3824,2.4111 2.6637,-0.0342 3.9831,-6.7068 2.9971,5.5687 2.6456,0.19712 1.3188,-2.2945 -4.5324,-7.9349 6.0472,-10.224 5.5155,9.6833 -4.8289,8.0062 1.4584,2.4088 2.0569,-0.06226 3.6252,-6.1461 4.1587,7.0291 2.7296,0.09871 1.4891,-2.4271 -4.0138,-6.669 6.4481,0.25088 1.3298,-2.2084 -1.4509,-2.6235 -8.7524,0.1967 -5.6493,-9.7762 11.435,-0.08273 4.4487,7.7879 2.5741,0.01986 1.3165,-2.1798 -3.2234,-5.628 7.6937,-0.04137 1.4352,-2.5271 -1.5593,-2.1061 -7.4766,-0.07916 3.3508,-5.9881 -1.5108,-2.4147 -2.2259,-0.04854 -5.2094,8.4549 -11.183,0.17264 6.032,-10.504 8.9602,0.04854 1.2864,-2.1889 -1.2957,-2.2674 -6.2688,-0.0896 3.616,-6.5508 -1.381,-2.6222 -2.748,0.2039 -3.754,6.6101 -3.637,-5.9089 -2.733,0.1684 -1.118,1.8156 4.734,8.7469 -5.798,9.945 -6.091,-10.584 4.65,-7.8981 -1.24,-2.0433 -2.653,-0.1776 -3.349,5.494 -3.607,-6.431 -3.2707,-0.060927 v -2.08e-5 l 0.04137,-0.041366 z"
+       style="fill:none"
+       sodipodi:nodetypes="ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+       id="rect2830-7" />
+  </g>
+  <metadata
+     id="metadata902">
+    <rdf:RDF>
+      <cc:Work>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/publicdomain/" />
+        <dc:publisher>
+          <cc:Agent
+             rdf:about="http://openclipart.org/">
+            <dc:title>Openclipart</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:title />
+        <dc:date>2010-03-10T14:58:58</dc:date>
+        <dc:description />
+        <dc:source>https://openclipart.org/detail/30829/snowflake-by-bocian</dc:source>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>bocian</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>cold</rdf:li>
+            <rdf:li>snow</rdf:li>
+            <rdf:li>snowflake</rdf:li>
+            <rdf:li>weather</rdf:li>
+            <rdf:li>winter</rdf:li>
+            <rdf:li>zima</rdf:li>
+            <rdf:li>?nieg</rdf:li>
+            <rdf:li>?nie?ynka</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/publicdomain/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>

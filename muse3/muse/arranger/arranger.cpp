@@ -168,6 +168,7 @@ Arranger::custom_col_t Arranger::readOneCustomColumn(MusECore::Xml& xml)
 void Arranger::setHeaderToolTips()
       {
       header->setToolTip(COL_TRACK_IDX,  tr("Track index"));
+      header->setToolTip(COL_FREEZE_TRACK,  tr("Freeze track"));
       header->setToolTip(COL_INPUT_MONITOR, tr("Enable input monitor"));
       header->setToolTip(COL_RECORD,     tr("Enable recording"));
       header->setToolTip(COL_MUTE,       tr("Mute/Off indicator"));
@@ -190,6 +191,7 @@ void Arranger::setHeaderToolTips()
 void Arranger::setHeaderWhatsThis()
       {
       header->setWhatsThis(COL_TRACK_IDX, tr("Track index"));
+      header->setWhatsThis(COL_FREEZE_TRACK, tr("Freeze the contents of this track and disable realtime processing"));
       header->setWhatsThis(COL_INPUT_MONITOR, tr("Enable input monitor. Click to toggle.\nPasses input through to output for monitoring.\n"
                                                  "See also Settings: Automatically Monitor On Record Arm."));
       header->setWhatsThis(COL_RECORD,   tr("Enable recording. Click to toggle.\n"
@@ -379,6 +381,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       header->setFixedHeight(31);
 
       header->setColumnLabel(tr("#"), COL_TRACK_IDX);
+      header->setColumnIcon(*freezeTrackOnSVGIcon, COL_FREEZE_TRACK);
       header->setColumnIcon(*monitorOnSVGIcon, COL_INPUT_MONITOR);
       header->setColumnIcon(*recArmOnSVGIcon, COL_RECORD);
       header->setColumnIcon(*muteOnSVGIcon, COL_MUTE);
@@ -396,6 +399,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
          header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET + i);
 
       header->setSectionResizeMode(COL_TRACK_IDX, QHeaderView::Interactive);
+      header->setSectionResizeMode(COL_FREEZE_TRACK, QHeaderView::Fixed);
       header->setSectionResizeMode(COL_INPUT_MONITOR, QHeaderView::Fixed);
       header->setSectionResizeMode(COL_RECORD, QHeaderView::Fixed);
       header->setSectionResizeMode(COL_MUTE, QHeaderView::Fixed);
@@ -606,7 +610,8 @@ void Arranger::setHeaderSizes()
 
     header->resizeSection(COL_TRACK_IDX, qMax(header->sectionSizeHint(COL_TRACK_IDX) + fw, 30));
 
-    header->resizeSection(COL_INPUT_MONITOR, header->sectionSizeHint(COL_INPUT_MONITOR));
+    header->resizeSection(COL_INPUT_MONITOR, header->sectionSizeHint(COL_FREEZE_TRACK));
+    header->resizeSection(COL_FREEZE_TRACK, header->sectionSizeHint(COL_INPUT_MONITOR));
     header->resizeSection(COL_RECORD, header->sectionSizeHint(COL_RECORD));
     header->resizeSection(COL_MUTE, header->sectionSizeHint(COL_MUTE));
     header->resizeSection(COL_SOLO, header->sectionSizeHint(COL_SOLO));
