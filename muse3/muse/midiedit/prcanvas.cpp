@@ -291,9 +291,11 @@ int PianoCanvas::y2pitch(int y) const
 //       }
 
 
-#if 0
+#if 1
 
 // Unmapped version works OK. But let's use the mapped version below for now...
+// The "mapped version" causes drawing artefacts, at least with HiDPI.
+// This one is OK, and probably faster too (kybos)
 //---------------------------------------------------------
 //   drawEvent
 //    draws a note
@@ -597,7 +599,7 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
 
 
 // This version uses the ViewRect and ViewCoordinate classes for a more 'agnostic' technique.
-#if 1
+#if 0
 
 //---------------------------------------------------------
 //   drawEvent
