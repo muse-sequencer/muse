@@ -1481,7 +1481,8 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
 
       QPen pen;
       pen.setCosmetic(true);
-      pen.setColor(Qt::black);
+      pen.setColor(MusEGlobal::config.midiDividerColor);
+//      pen.setColor(Qt::black);
       p.setPen(pen);
       
       //---------------------------------------------------

@@ -137,6 +137,9 @@ class DPitchEdit: public PitchEdit
 class DList : public View {
       Q_OBJECT
 
+      Q_PROPERTY(quint8 alphaOverlay READ alphaOverlay WRITE setAlphaOverlay)
+
+      int _alphaOverlay;
       MusEGui::DrumCanvas* dcanvas;
       MusECore::DrumMap* ourDrumMap;
       int ourDrumMapSize;
@@ -202,6 +205,8 @@ class DList : public View {
       virtual ~DList();
       int getSelectedInstrument();
 
+      quint8 alphaOverlay() { return _alphaOverlay; }
+      void setAlphaOverlay(quint8 i) { _alphaOverlay = i; }
       };
 
 } // namespace MusEGui

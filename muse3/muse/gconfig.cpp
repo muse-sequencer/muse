@@ -168,10 +168,14 @@ GlobalConfigValues config = {
       QColor(255, 255, 255),        // Midi editor canvas
       QColor(255, 255, 255),        // midiControllerViewBg
       QColor(255, 255, 255),        // drumListBg
+      Qt::black,                    // drumListFont
+      Qt::yellow,                   // drumListSel
+      Qt::black,                    // drumListSelFont
       QColor(255, 255, 255),        // rulerCurrent
       QColor(210, 210, 210),        // midiCanvasFineColor
       QColor(130, 130, 130),        // midiCanvasBeatColor
       Qt::black,                    // midiCanvasBarColor
+      Qt::gray,                     // midiDividerColor
       Qt::lightGray,                // waveNonselectedPart
       Qt::darkGray,                 // wavePeakColor
       Qt::black,                    // waveRmsColor
