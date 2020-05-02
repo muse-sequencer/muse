@@ -1069,10 +1069,20 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "midiCanvasBarColor")
                               MusEGlobal::config.midiCanvasBarColor = readColor(xml);
 
+                        else if (tag == "midiDividerColor")
+                            MusEGlobal::config.midiDividerColor = readColor(xml);
+
                         else if (tag == "midiControllerViewBackgroundColor")
                               MusEGlobal::config.midiControllerViewBg = readColor(xml);
+
                         else if (tag == "drumListBackgroundColor")
                               MusEGlobal::config.drumListBg = readColor(xml);
+                        else if (tag == "drumListFont")
+                            MusEGlobal::config.drumListFont = readColor(xml);
+                        else if (tag == "drumListSel")
+                            MusEGlobal::config.drumListSel = readColor(xml);
+                        else if (tag == "drumListSelFont")
+                            MusEGlobal::config.drumListSelFont = readColor(xml);
 
                         else if (tag == "maxAliasedPointSize")
 
@@ -1678,9 +1688,13 @@ void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames
       xml.colorTag(level, "midiCanvasFineColor", MusEGlobal::config.midiCanvasFineColor);
       xml.colorTag(level, "midiCanvasBeatColor", MusEGlobal::config.midiCanvasBeatColor);
       xml.colorTag(level, "midiCanvasBarColor", MusEGlobal::config.midiCanvasBarColor);
+      xml.colorTag(level, "midiDividerColor", MusEGlobal::config.midiDividerColor);
 
       xml.colorTag(level, "midiControllerViewBackgroundColor", MusEGlobal::config.midiControllerViewBg);
       xml.colorTag(level, "drumListBackgroundColor", MusEGlobal::config.drumListBg);
+      xml.colorTag(level, "drumListFont", MusEGlobal::config.drumListFont);
+      xml.colorTag(level, "drumListSel", MusEGlobal::config.drumListSel);
+      xml.colorTag(level, "drumListSelFont", MusEGlobal::config.drumListSelFont);
 }
       
 

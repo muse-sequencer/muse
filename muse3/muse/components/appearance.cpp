@@ -219,11 +219,14 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x41d, id, "Controller graph color");
            new IdListViewItem(0x423, id, "Controller graph background");
            new IdListViewItem(0x421, id, "Background");
-           new IdListViewItem(0x422, id, "Drum list");
            new IdListViewItem(0x429, id, "Raster beat");
            new IdListViewItem(0x42a, id, "Raster bar");
            new IdListViewItem(0x42e, id, "Raster fine");
-
+           new IdListViewItem(0x42f, id, "Divider line");
+           new IdListViewItem(0x422, id, "Drum list background");
+           new IdListViewItem(0x440, id, "Drum list font");
+           new IdListViewItem(0x441, id, "Drum list selection");
+           new IdListViewItem(0x442, id, "Drum list selection font");
 
       id = new IdListViewItem(0, itemList, "Wave Editor");
            new IdListViewItem(0x300, id, "Background");
@@ -405,6 +408,11 @@ QColor* Appearance::globalConfigColorFromId(int id) const
       case 0x42c: return &MusEGlobal::config.partCanvasCoarseRasterColor; break;
       case 0x42d: return &MusEGlobal::config.partCanvasFineRasterColor; break;
       case 0x42e: return &MusEGlobal::config.midiCanvasFineColor; break;
+      case 0x42f: return &MusEGlobal::config.midiDividerColor; break;
+
+      case 0x440: return &MusEGlobal::config.drumListFont; break;
+      case 0x441: return &MusEGlobal::config.drumListSel; break;
+      case 0x442: return &MusEGlobal::config.drumListSelFont; break;
 
       case 0x500: return &MusEGlobal::config.mixerBg;   break;
       case 0x501: return &MusEGlobal::config.midiTrackLabelBg;   break;

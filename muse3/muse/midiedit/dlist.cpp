@@ -268,9 +268,9 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
       //    Tracks
       //---------------------------------------------------
 
-      p.setPen(Qt::black);
+      p.setPen(MusEGlobal::config.drumListFont);
       QColor override_col(Qt::gray);
-      override_col.setAlpha(64);
+      override_col.setAlpha(_alphaOverlay);
 
       QFont fnt(p.font());
       QRect rtmp = map(QRect(0, 0, 0, TH));
@@ -284,8 +284,12 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
             if (yy > uy + uh)
                   break;
             MusECore::DrumMap* dm = &ourDrumMap[instrument];
-            if (dm == currentlySelected)
-                  p.fillRect(ux, yy, uw, TH, Qt::yellow);
+            if (dm == currentlySelected) {
+                  p.fillRect(ux, yy, uw, TH, MusEGlobal::config.drumListSel);
+                  p.setPen(MusEGlobal::config.drumListSelFont);
+            } else {
+                p.setPen(MusEGlobal::config.drumListFont);
+            }
 //            else
 //                  p.eraseRect(x, yy, w, TH); DELETETHIS?
             QHeaderView *h = header;
@@ -300,7 +304,7 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
                   int x   = h->sectionPosition(k);
                   int w   = h->sectionSize(k);
                   //QRect r = p.combinedTransform().mapRect(QRect(x+2, yy, w-4, TH));  // Gives inconsistent positions. Source shows wrong operation for our needs.
-                  QRect r = map(QRect(x+2, yy, w-4, TH));                              // Use our own map instead.
+                  QRect r = map(QRect(x, yy, w, TH));                              // Use our own map instead.
                   QString s;
                   int align = Qt::AlignVCenter | Qt::AlignHCenter;
 
@@ -373,7 +377,7 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
                                 if (!hidden && !shown)
                                   printf("THIS SHOULD NEVER HAPPEN: in DList::draw(): instrument %i's track group is empty. strange...\n", instrument);
 
-                                const QPixmap* pm = NULL;
+                                const QPixmap* pm = nullptr;
 
                                 if (shown && !hidden)
                                       pm = eyeIcon;
@@ -382,7 +386,7 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
                                 else if (shown && hidden)
                                       pm = eyeGrayIcon;
                                 else //if (!shown && !hidden)
-                                      pm = NULL;
+                                      pm = nullptr;
 
                                 if (pm)
                                 {
@@ -418,13 +422,13 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
                               if(isWorkingItem == MusECore::WorkingDrumMapEntry::NoOverride)
                                 p.fillRect(r, override_col);
                               if (dm->mute) {
-                                    p.setPen(Qt::red);
+//                                    p.setPen(Qt::red);
                                     const QPixmap& pm = *muteIcon;
                                     p.drawPixmap(
                                        r.x() + r.width()/2 - pm.width()/2,
                                        r.y() + r.height()/2 - pm.height()/2,
                                        pm);
-                                    p.setPen(Qt::black);
+//                                    p.setPen(Qt::black);
                                     }
                               break;
                         case COL_NAME:
@@ -628,7 +632,7 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
       //    horizontal lines
       //---------------------------------------------------
 
-      p.setPen(Qt::gray);
+      p.setPen(MusEGlobal::config.midiDividerColor);
       int yy  = (uy / TH) * TH;
       for (; yy < uy + uh; yy += TH) {
             p.drawLine(ux, yy, ux + uw, yy);
@@ -1744,10 +1748,10 @@ void DList::init(QHeaderView* h, QWidget* parent)
       connect(header, SIGNAL(sectionMoved(int, int,int)), SLOT(moved(int,int,int)));
       setFocusPolicy(Qt::StrongFocus);
       drag = NORMAL;
-      editor = 0;
-      val_editor = 0;
-      pitch_editor = 0;
-      editEntry = 0;
+      editor = nullptr;
+      val_editor = nullptr;
+      pitch_editor = nullptr;
+      editEntry = nullptr;
 
       if (ourDrumMapSize!=0)
       {
@@ -1756,7 +1760,7 @@ void DList::init(QHeaderView* h, QWidget* parent)
       }
       else
       {
-        currentlySelected = NULL;
+        currentlySelected = nullptr;
       }
       
       selectedColumn = -1;
@@ -1766,6 +1770,7 @@ void DList::init(QHeaderView* h, QWidget* parent)
 DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_)
    : MusEGui::View(parent, 1, ymag)
       {
+      _alphaOverlay = 64;
       dcanvas=dcanvas_;
       ourDrumMap=dcanvas->getOurDrumMap();
       ourDrumMapSize=dcanvas->getOurDrumMapSize();
@@ -1777,7 +1782,8 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_)
 DList::DList(QHeaderView* h, QWidget* parent, int ymag, MusECore::DrumMap* dm, int dmSize)
    : MusEGui::View(parent, 1, ymag)
       {
-      dcanvas=NULL;
+      _alphaOverlay = 64;
+      dcanvas = nullptr;
       ourDrumMap=dm;
       ourDrumMapSize=dmSize;
       

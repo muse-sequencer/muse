@@ -740,7 +740,7 @@ void DrumCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
 
       QPen pen;
       pen.setCosmetic(true);
-      pen.setColor(Qt::gray);
+      pen.setColor(MusEGlobal::config.midiDividerColor);
       p.setPen(pen);
       
       //---------------------------------------------------
