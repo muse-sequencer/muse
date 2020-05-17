@@ -226,7 +226,8 @@ class PluginGroups : public QMap< QPair<QString, QString>, QSet<int> >
 {
   public:
     QSet<int>& get(QString a, QString b) { return (*this)[(QPair<QString,QString>(a,b))]; }
-    QSet<int>& get(const Plugin *p) { return (*this)[(QPair<QString,QString>(p->lib(),p->label()))]; }
+    QSet<int>& get(const Plugin *p)
+      { return (*this)[(QPair<QString,QString>(p->uri().isEmpty() ? p->lib() : p->uri(), p->label()))]; }
 
     void shift_left(int first, int last);
     void shift_right(int first, int last);

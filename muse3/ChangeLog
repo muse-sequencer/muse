@@ -2,6 +2,7 @@
     - Popup menus: Changed the text '<More...>' in submenus, to the first item's text in the submenu. (Tim)
     - Oops, removed redundant addAction() in RoutePopupMenu::addMenuItem(), causing duplicate items
        at 'More...' menu breaks.
+    - Fixed regression at 03.02.2020: Plugin dialog user 'categories' not showing LV2 plugins.
 18.04.2010
     - New option in Global settings -> GUI tweaks to (not) keep transport window on top (kybos)
 13.04.2020
