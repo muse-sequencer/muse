@@ -33,6 +33,7 @@
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QStyle>
+#include <QFont>
 
 #include "popupmenu.h"
 #include "gconfig.h"
@@ -398,7 +399,7 @@ void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
 //       some callers might depend on all the items being in one menu (using ::actions or ::addActions).
 //      So try to avoid that. The overwhelming rule of thumb is that too-wide menus are bad design anyway.
 //------------------------------------------
-PopupMenu* PopupMenu::getMenu()
+PopupMenu* PopupMenu::getMenu(const QString& parentText)
 {  
    if(!_cur_menu)
      return 0;
@@ -423,8 +424,28 @@ PopupMenu* PopupMenu::getMenu()
    if((mh + 100) >= dh)
    {
       // This menu is too wide. So make a new one...
-      QString s(tr("<More...> %1").arg(_cur_menu_count));
+      QString s;
+      if(parentText.isEmpty())
+        s = (tr("<More...> %1").arg(_cur_menu_count));
+      else
+      {
+        // Try to avoid unnecessary influence on this menu's width from a long-named child item.
+        // FIXME: What width to use? More items may be added later, so we might not be able use the current width...
+        // But by fortunate coincidence, all these items are placed at the end of the menu,
+        //  so taking some current width should be OK.
+        // But how to get the current width of just the text area? For now, set at say, 100?
+        //QFontMetrics fm = fontMetrics();
+        //s = (QString("<%1>").arg(fm.elidedText(parentText, Qt::ElideMiddle, 100)));
+        // 
+        // Let's do the elide based on number of characters rather than a pixel width,
+        //  so that it is consistent at different fonts. Say, 20 characters?
+        s = QString("%1 ...").arg(parentText.left(20));
+      }
       _cur_menu = cloneMenu(s, this, _stayOpen, toolTipsVisible());
+      // Make the parent text stand out with bold.
+      QFont fnt = _cur_menu->font();
+      fnt.setBold(true);
+      _cur_menu->menuAction()->setFont(fnt);
       ++_cur_menu_count;
       QMenu::addMenu(_cur_menu);
    }
@@ -441,7 +462,7 @@ QAction* PopupMenu::addAction(const QString& text)
    {
       return QMenu::addAction(text);
    }
-   QAction* act = static_cast<QMenu*>(getMenu())->addAction(text);
+   QAction* act = static_cast<QMenu*>(getMenu(text))->addAction(text);
    return act;
 }
 
@@ -451,7 +472,7 @@ QAction* PopupMenu::addAction(const QIcon& icon, const QString& text)
    {
       return QMenu::addAction(icon, text);
    }
-   QAction* act = static_cast<QMenu*>(getMenu())->addAction(icon, text);
+   QAction* act = static_cast<QMenu*>(getMenu(text))->addAction(icon, text);
    return act;
 }
 
@@ -461,7 +482,7 @@ QAction* PopupMenu::addAction(const QString& text, const QObject* receiver, cons
    {
       return QMenu::addAction(text, receiver, member, shortcut);
    }
-   QAction* act = static_cast<QMenu*>(getMenu())->addAction(text, receiver, member, shortcut);
+   QAction* act = static_cast<QMenu*>(getMenu(text))->addAction(text, receiver, member, shortcut);
    return act;
 }
 
@@ -471,7 +492,7 @@ QAction* PopupMenu::addAction(const QIcon& icon, const QString& text, const QObj
    {
       return QMenu::addAction(icon, text, receiver, member, shortcut);
    }
-   QAction* act = static_cast<QMenu*>(getMenu())->addAction(icon, text, receiver, member, shortcut);
+   QAction* act = static_cast<QMenu*>(getMenu(text))->addAction(icon, text, receiver, member, shortcut);
    return act;
 }
 
@@ -481,7 +502,7 @@ void PopupMenu::addAction(QAction* action)
    {
       return QMenu::addAction(action);
    }
-   static_cast<QMenu*>(getMenu())->addAction(action);
+   static_cast<QMenu*>(getMenu(action->text()))->addAction(action);
 }
 
 QAction* PopupMenu::addMenu(QMenu* menu)
@@ -490,7 +511,7 @@ QAction* PopupMenu::addMenu(QMenu* menu)
    {
       return QMenu::addMenu(menu);
    }
-   return static_cast<QMenu*>(getMenu())->addMenu(menu);
+   return static_cast<QMenu*>(getMenu(menu->title()))->addMenu(menu);
 }
 
 QMenu* PopupMenu::addMenu(const QString &title)
@@ -499,7 +520,7 @@ QMenu* PopupMenu::addMenu(const QString &title)
    {
       return QMenu::addMenu(title);
    }
-   return static_cast<QMenu*>(getMenu())->addMenu(title);
+   return static_cast<QMenu*>(getMenu(title))->addMenu(title);
 }
 
 QMenu* PopupMenu::addMenu(const QIcon &icon, const QString &title)
@@ -508,7 +529,7 @@ QMenu* PopupMenu::addMenu(const QIcon &icon, const QString &title)
    {
       return QMenu::addMenu(icon, title);
    }
-   return static_cast<QMenu*>(getMenu())->addMenu(icon, title);
+   return static_cast<QMenu*>(getMenu(title))->addMenu(icon, title);
 }
 
 //----------------

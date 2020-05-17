@@ -70,7 +70,8 @@ Q_OBJECT
     void init();
     void showContextMenu(const QPoint&);
     // Auto-breakup a too-wide menu.
-    PopupMenu* getMenu();
+    // If a new menu is created, parentText will be used as the parent item's text.
+    PopupMenu* getMenu(const QString& parentText);
     
   private slots:
     void popHovered(QAction*);

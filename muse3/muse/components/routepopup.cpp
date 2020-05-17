@@ -217,8 +217,6 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
     if(!act->isChecked() && circ_route)  // If circular route exists, allow user to break it, otherwise forbidden.
       act->setEnabled(false);
     
-    lb->addAction(act);  
-    
 #else
     
     // It's not an omnibus route. Add the individual channels...
