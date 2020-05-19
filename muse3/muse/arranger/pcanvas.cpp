@@ -513,6 +513,9 @@ void PartCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, DragType dtype
         dpart->setTick(dtick);
         dpart->setTrack(dtrack);
 
+        spart->setSelected(false);
+        dpart->setSelected(true);
+
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
     }
   }
