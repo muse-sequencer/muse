@@ -1066,7 +1066,7 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
       //  so that the slider label will be a sensible place for focus to land.
       setFocusPolicy(Qt::NoFocus);
 
-      _focusYieldWidget = 0;
+      _focusYieldWidget = nullptr;
       _isEmbedded = isEmbedded;
       _broadcastChanges = false;
       _selected = false;
