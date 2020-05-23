@@ -1097,7 +1097,9 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
       _handle = nullptr;
       if(hasHandle)
       {
-        _handle = new ExpanderHandle();
+        _expanderWidth = 4;
+        ensurePolished();
+        _handle = new ExpanderHandle(nullptr, _expanderWidth);
         connect(_handle, SIGNAL(moved(int)), SLOT(changeUserWidth(int)));
         QHBoxLayout* hlayout = new QHBoxLayout(this);
         hlayout->setContentsMargins(0, 0, 0, 0);

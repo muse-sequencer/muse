@@ -670,8 +670,8 @@ class ExpanderHandle : public QFrame
 class Strip : public QFrame {
       Q_OBJECT
 
-    Q_PROPERTY( quint64 expanderWidth READ expanderWidth WRITE setExpanderWidth )
-    quint64 _expanderWidth;
+    Q_PROPERTY( int expanderWidth READ expanderWidth WRITE setExpanderWidth )
+    int _expanderWidth;
 
    private:
       // Embedded strips cannot be selected, moved, or hidden. For example arranger and pianoroll.
@@ -796,8 +796,8 @@ class Strip : public QFrame {
 
       void updateMuteIcon();
 
-      quint64 activeColor() const { return _expanderWidth; }
-      void setExpanderWidth(const quint64 i) { _expanderWidth = i; }
+      int expanderWidth() const { return _expanderWidth; }
+      void setExpanderWidth(const int i) { _expanderWidth = i; }
       };
 
 } // namespace MusEGui
