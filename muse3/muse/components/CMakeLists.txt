@@ -88,7 +88,7 @@ QT5_WRAP_CPP (components_mocs
 #       line_edit.h
 #       menutitleitem.h
 #       meter.h
-      meter_slider.h
+#      meter_slider.h
       metronome.h  
       midi_audio_control.h  
       midisyncimpl.h  

@@ -230,8 +230,11 @@ LCDPatchEdit::LCDPatchEdit(QWidget* parent,
 
   _orient = PatchHorizontal;
 
+  _style3d = true;
+  _radius = 2;
+
   _enableValueToolTips = true;
-  _editor = 0;
+  _editor = nullptr;
   _editMode = false;
   _curEditSection = 0;
 
@@ -313,11 +316,11 @@ void LCDPatchEdit::setReadoutOrientation(PatchOrientation orient)
   update();
 }
 
-void LCDPatchEdit::setReadoutColor(const QColor& c)
-{
-  _readoutColor = c;
-  update();
-}
+//void LCDPatchEdit::setReadoutColor(const QColor& c)
+//{
+//  _readoutColor = c;
+//  update();
+//}
 
 void LCDPatchEdit::setMaxAliasedPointSize(int sz)
 {
@@ -462,7 +465,8 @@ void LCDPatchEdit::paintEvent(QPaintEvent* e)
   {
     case PatchHorizontal:
       painter.setRenderHint(QPainter::Antialiasing, false);
-      ibp.drawBackground(&painter, rect(), pal);
+      ibp.drawBackground(&painter, rect(), pal, 1, 1, QRect(),
+                         _radius, _style3d, nullptr, _borderColor, _bgColor);
 
       painter.setPen(offCol);
       painter.drawPoint(colon1x, colon_y1);

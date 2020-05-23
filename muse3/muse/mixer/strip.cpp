@@ -234,6 +234,7 @@ void ComponentRack::newComponentWidget( ComponentDescriptor* desc, const Compone
         control->setEnabled(d->_enabled);
         control->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
         control->setContentsMargins(0, 0, 0, 0);
+
         if(d->_color.isValid())
           control->setBorderColor(d->_color);
         if(d->_barColor.isValid())
@@ -290,12 +291,23 @@ void ComponentRack::newComponentWidget( ComponentDescriptor* desc, const Compone
         control->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
         control->setContentsMargins(0, 0, 0, 0);
 
+//        if(d->_color.isValid())
+//        {
+//          pal.setColor(QPalette::Active, QPalette::Button, d->_color); // Border
+//          pal.setColor(QPalette::Inactive, QPalette::Button, d->_color); // Border
+//          control->setPalette(pal);
+//        }
+
+        if(d->_bgColor.isValid())
+            control->setBgColor(d->_bgColor);
+        if(d->_bgActiveColor.isValid())
+            control->setBgActiveColor(d->_bgActiveColor);
         if(d->_color.isValid())
-        {
-          pal.setColor(QPalette::Active, QPalette::Button, d->_color); // Border
-          pal.setColor(QPalette::Inactive, QPalette::Button, d->_color); // Border
-          control->setPalette(pal);
-        }
+            control->setBorderColor(d->_color);
+        if(d->_fontColor.isValid())
+            control->setFontColor(d->_fontColor);
+        if(d->_fontActiveColor.isValid())
+            control->setFontActiveColor(d->_fontActiveColor);
 
         switch(d->_componentType)
         {
@@ -818,11 +830,13 @@ void ComponentRack::configChanged()
 TrackNameLabel::TrackNameLabel(QWidget* parent, const char* name, Qt::WindowFlags f)
  : ElidedTextLabel(parent, name, f)
 {
+    _style3d = true;
 }
 
 TrackNameLabel::TrackNameLabel(const QString& text, QWidget* parent, const char* name, Qt::WindowFlags f)
  : ElidedTextLabel(text, parent, name, f)
 {
+    _style3d = true;
 }
 
 void TrackNameLabel::mouseDoubleClickEvent(QMouseEvent* ev)
@@ -957,7 +971,7 @@ void Strip::paintEvent(QPaintEvent * ev)
 //   updateStyleSheet
 //---------------------------------------------------------
 
-void Strip::updateStyleSheet()
+void Strip::updateLabelStyleSheet()
 {
   if(!track)
     return;
@@ -982,14 +996,20 @@ void Strip::updateStyleSheet()
 // //     label->setWordWrapMode(QTextOption::NoWrap);
 //     label->setWordWrap(false);
 
+  QString stxt;
   QColor c(track->labelColor());
-  QColor c2(c.lighter());
-  c.setAlpha(190);
-  c2.setAlpha(190);
 
-  QString stxt = QString("* { background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,"
-      "stop:0.263158 rgba(%1, %2, %3, %4), stop:0.7547368 rgba(%5, %6, %7, %8));")
-      .arg(c2.red()).arg(c2.green()).arg(c2.blue()).arg(c2.alpha()).arg(c.red()).arg(c.green()).arg(c.blue()).arg(c.alpha());
+  if (label->style3d()) {
+      QColor c2(c.lighter());
+      c.setAlpha(190);
+      c2.setAlpha(190);
+
+      stxt = QString("* { background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,"
+                     "stop:0.263158 rgba(%1, %2, %3, %4), stop:0.7547368 rgba(%5, %6, %7, %8));")
+              .arg(c2.red()).arg(c2.green()).arg(c2.blue()).arg(c2.alpha()).arg(c.red()).arg(c.green()).arg(c.blue()).arg(c.alpha());
+  } else {
+      stxt = "QWidget { background-color:" + c.name() + ";";
+  }
   //stxt += QString("color: rgb(0, 0, 0);");
   stxt += MusECore::font2StyleSheet(fnt) + "}";
   stxt += "QToolTip {font-size:" + QString::number(qApp->font().pointSize()) + "pt}";
@@ -1013,7 +1033,7 @@ void Strip::setLabelText()
           label->setTooltipText(QString(" \n") + s->uri());
       }
 
-      updateStyleSheet();
+      updateLabelStyleSheet();
 }
 
 //---------------------------------------------------------
@@ -1055,6 +1075,7 @@ void Strip::soloToggled(bool val)
 Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedded)
    : QFrame(parent)
       {
+      setObjectName("Strip");
       setMouseTracking(true);
       setAttribute(Qt::WA_DeleteOnClose);
       setFrameStyle(Panel | Raised);
@@ -1132,13 +1153,19 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
       label->setContentsMargins(0, 0, 0, 0);
       label->setAlignment(Qt::AlignCenter);
       label->setAutoFillBackground(true);
-      label->setLineWidth(2);
-      label->setFrameStyle(Sunken | StyledPanel);
-      label->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
-      //label->setWordWrap(true); // This is set dynamically.
+      label->ensurePolished();
+      if (label->style3d()) {
+          label->setLineWidth(2);
+          label->setFrameStyle(Sunken | StyledPanel);
+          label->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
+          //label->setWordWrap(true); // This is set dynamically.
+      } else {
+          label->setFixedHeight(16);
+          label->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed));
+      }
 
       setLabelText();
-      
+
       grid->addWidget(label, _curGridRow++, 0, 1, 3);
 
       connect(label, SIGNAL(doubleClicked()), SLOT(changeTrackName()));
@@ -1398,6 +1425,9 @@ void Strip::mousePressEvent(QMouseEvent* ev)
 QSize Strip::sizeHint() const
 {
   const QSize sz = QFrame::sizeHint();
+//  printf("*** Strip size hint width: %d ***\n", sz.width());
+//  const QSize szm = QFrame::minimumSizeHint();
+//  printf("*** Strip size minimum hint width: %d ***\n", szm.width());
   return QSize(sz.width() + _userWidth, sz.height());
 //   return QSize(_userWidth, sz.height());
 }

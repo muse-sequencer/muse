@@ -96,6 +96,8 @@ class CEvent : public CItem {
 class CtrlCanvas : public MusEGui::View {
       Q_OBJECT
 
+      Q_PROPERTY( quint8 bgAlpha READ bgAlpha WRITE setBgAlpha )
+
     public:
 
       //---------------------------------------------------------
@@ -140,6 +142,7 @@ class CtrlCanvas : public MusEGui::View {
       // This should always be one or zero, anything else is an error, but unforeseen 
       //  events might cause us to miss a decrement with QApplication::restoreOverrideCursor().
       int _cursorOverrideCount;
+      quint8 _bgAlpha;
 
       QPoint _curDragOffset;
       unsigned int _dragFirstXPos;
@@ -305,7 +308,10 @@ class CtrlCanvas : public MusEGui::View {
       // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
       // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
       void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
-      };
+
+      quint8 bgAlpha() const { return _bgAlpha; }
+      void setBgAlpha(const quint8 a) { _bgAlpha = a; }
+};
 
 } // namespace MusEGui
 

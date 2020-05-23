@@ -455,7 +455,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       QSizePolicy tipolicy, epolicy;
       hsplitter->setStretchFactor(hsplitter->indexOf(trackInfoWidget), 0);
-      tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+      tipolicy = QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
       tipolicy.setHorizontalStretch(0);
       tipolicy.setVerticalStretch(100);
       trackInfoWidget->setSizePolicy(tipolicy);

@@ -79,10 +79,10 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
 
       //setFocusPolicy(Qt::NoFocus);
 
-      _knob = 0;
-      _slider = 0;
-      _patchEdit = 0;
-      _veloPerNoteButton = 0;
+      _knob = nullptr;
+      _slider = nullptr;
+      _patchEdit = nullptr;
+      _veloPerNoteButton = nullptr;
 
       _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
       _showval = MusEGlobal::config.showControlValues;
@@ -151,25 +151,25 @@ void CtrlPanel::buildPanel()
   if(_veloPerNoteButton)
   {
     delete _veloPerNoteButton;
-    _veloPerNoteButton = 0;
+    _veloPerNoteButton = nullptr;
   }
 
   if(_slider)
   {
     delete _slider;
-    _slider = 0;
+    _slider = nullptr;
   }
 
   if(_knob)
   {
     delete _knob;
-    _knob = 0;
+    _knob = nullptr;
   }
 
   if(_patchEdit)
   {
     delete _patchEdit;
-    _patchEdit = 0;
+    _patchEdit = nullptr;
   }
 
   _patchEdit = new LCDPatchEdit(this);
@@ -208,7 +208,7 @@ void CtrlPanel::buildPanel()
     _knob->setHasOffMode(true);
     _knob->setOff(true);
     _knob->setValueDecimals(0);
-    _knob->setFaceColor(MusEGlobal::config.midiControllerSliderDefaultColor);
+    _knob->setFaceColor(MusEGlobal::config.midiControllerSliderColor);
     _knob->setStep(1.0);
     _knob->setShowLabel(false);
     _knob->setShowValue(true);
@@ -239,7 +239,7 @@ void CtrlPanel::buildPanel()
     _slider->setHasOffMode(true);
     _slider->setOff(true);
     _slider->setValueDecimals(0);
-    _slider->setBarColor(MusEGlobal::config.sliderDefaultColor);
+//    _slider->setBarColor(MusEGlobal::config.sliderBackgroundColor);
     _slider->setStep(1.0);
     _slider->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
     _slider->setEnableValueToolTips(false);      // FIXME: Tooltip just gets in the way!
@@ -836,7 +836,7 @@ void CtrlPanel::setControlColor()
   if(_dnum == -1)
     return;
   
-  QColor color = MusEGlobal::config.sliderDefaultColor;
+  QColor color = MusEGlobal::config.sliderBackgroundColor;
 
   switch(_dnum)
   {
@@ -849,7 +849,7 @@ void CtrlPanel::setControlColor()
     break;
 
     default:
-      color = MusEGlobal::config.midiControllerSliderDefaultColor;
+      color = MusEGlobal::config.midiControllerSliderColor;
     break;
   }
 
@@ -877,7 +877,7 @@ void CtrlPanel::setControlColor()
   if(_slider)
   {
     _slider->setBorderColor(color);
-    _slider->setBarColor(MusEGlobal::config.sliderBarDefaultColor);
+    _slider->setBarColor(MusEGlobal::config.sliderBarColor);
     style()->unpolish(_slider);
     style()->polish(_slider);
   }

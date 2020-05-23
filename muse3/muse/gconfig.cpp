@@ -135,6 +135,7 @@ GlobalConfigValues config = {
       QColor(84, 97, 114),          // trackBg;
       QColor(109, 174, 178),        // selected track Bg;
       QColor(0x00, 0x00, 0x00),     // selected track Fg;
+      QColor(90, 154, 158),         // current selected track Bg;
       Qt::gray,                     // trackSectionDividerColor;
       
       QColor(74, 150, 194),         // midiTrackLabelBg;   // Med blue
@@ -161,7 +162,8 @@ GlobalConfigValues config = {
       QColor(71, 71, 71),        // partCanvasCoarseRaster;
       QColor(130, 136, 168),     // partCanvasFineRaster;
       QColor(255, 170, 0),       // ctrlGraphFg;    Medium orange
-      QColor(0, 0, 0),           // mixerBg;
+      Qt::blue,                  // ctrlGraphSel;
+//      QColor(0, 0, 0),           // mixerBg;
 
       QColor(0xe0, 0xe0, 0xe0),     // Ruler background
       QColor(0, 0, 0),              // Ruler text
@@ -175,7 +177,11 @@ GlobalConfigValues config = {
       QColor(210, 210, 210),        // midiCanvasFineColor
       QColor(130, 130, 130),        // midiCanvasBeatColor
       Qt::black,                    // midiCanvasBarColor
+      Qt::blue,                     // midiItemColor
+      QColor(255, 170, 0),          // midiItemSelectedColor
+      Qt::gray,                     // dummyPartColor
       Qt::gray,                     // midiDividerColor
+
       Qt::lightGray,                // waveNonselectedPart
       Qt::darkGray,                 // wavePeakColor
       Qt::black,                    // waveRmsColor
@@ -188,20 +194,43 @@ GlobalConfigValues config = {
       QColor(200,200,200),          // partMidiLightEventColor
 
       QColor(0,181,241  ),          // sliderBarDefaultColor
-      QColor(228,203,36 ),          // sliderDefaultColor
+      Qt::gray,                     // sliderDefaultColor
+//    QColor(228,203,36 ),          // sliderDefaultColor
       QColor(78,172,35  ),          // panSliderColor
       QColor(209,86,86  ),          // gainSliderColor
       QColor(190,190,39 ),          // auxSliderColor
       QColor(154,135,124),          // audioVolumeSliderColor
       QColor(153,156,124),          // midiVolumeSliderColor
+      QColor(154,135,124),          // audioVolumeHandleColor
+      QColor(153,156,124),          // midiVolumeHandleColor
       QColor(37,121,255 ),          // audioControllerSliderDefaultColor
       QColor(220,77,255 ),          // audioPropertySliderDefaultColor
       QColor(37,121,255 ),          // midiControllerSliderDefaultColor
       QColor(220,77,255 ),          // midiPropertySliderDefaultColor
       QColor(100,255,255),          // midiPatchReadoutColor
+      Qt::gray,                     // knobFontColor
       QColor(0,221,255  ),          // audioMeterPrimaryColor
       QColor(0,221,255  ),          // midiMeterPrimaryColor
-      QColor(208,145,49 ),          // rackItemBackgroundColor
+      Qt::black,                    // meterBackgroundColor
+
+      Qt::gray,                       // rackItemBackgroundColor
+      QColor(0, 120, 200),            // rackItemBgActiveColor
+      Qt::black,                      // rackItemFontColor
+      Qt::white,                      // rackItemFontActiveColor
+      Qt::darkGray,                   // rackItemBorderColor
+      Qt::yellow,                     // rackItemBorderHoverColor
+
+      Qt::gray,                       // palSwitchBackgroundColor;
+      QColor(0, 120, 200),            // palSwitchBgActiveColor;
+      Qt::black,                      // palSwitchFontColor;
+      Qt::white,                      // palSwitchFontActiveColor;
+      Qt::darkGray,                   // palSwitchBorderColor;
+
+      Qt::gray,                       // midiInstrumentBackgroundColor;
+      QColor(0, 120, 200),            // midiInstrumentBgActiveColor;
+      Qt::black,                      // midiInstrumentFontColor;
+      Qt::white,                      // midiInstrumentFontActiveColor;
+      Qt::darkGray,                   // midiInstrumentBorderColor;
 
       MusEGlobal::WaveOutLine,      // waveDrawing
 

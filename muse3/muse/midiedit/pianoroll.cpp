@@ -345,7 +345,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       ctrl = new QPushButton("Ctrl", mainw);
       ctrl->setObjectName("Ctrl");
       ctrl->setFont(MusEGlobal::config.fonts[3]);
-      ctrl->setToolTip(tr("Add Controller View"));
+      ctrl->setToolTip(tr("Add controller view"));
       ctrl->setFocusPolicy(Qt::NoFocus);
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
       hscroll = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, _viewState.xscale(), 20000, Qt::Horizontal, mainw);
@@ -382,7 +382,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       hsplitter->addWidget(splitter_w);
           
       hsplitter->setStretchFactor(hsplitter->indexOf(trackInfoWidget), 0);
-      QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+      QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
       tipolicy.setHorizontalStretch(0);
       tipolicy.setVerticalStretch(100);
       trackInfoWidget->setSizePolicy(tipolicy);
@@ -518,16 +518,16 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
           hscroll->setOffset((int)pos);
       }
 
+      QList<int> mops;
+      mops.append(_trackInfoWidthInit);
+      mops.append(_canvasWidthInit);
+      hsplitter->setSizes(mops);
+
       if(canvas->track())
       {
         updateTrackInfo();
         toolbar->setSolo(canvas->track()->solo());
       }
-
-      QList<int> mops;
-      mops.append(_trackInfoWidthInit);
-      mops.append(_canvasWidthInit);
-      hsplitter->setSizes(mops);
     
       initTopwinState();
       finalizeInit();

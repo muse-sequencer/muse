@@ -258,8 +258,8 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       setFont(MusEGlobal::config.fonts[3]);  
       //_cursorShape = Qt::ArrowCursor;
       _mouseGrabbed = false;
-      curItem = NULL;
-      _movingItemUnderCursor = NULL;
+      curItem = nullptr;
+      _movingItemUnderCursor = nullptr;
       editor = e;
       _panel = pnl;
       drag   = DRAG_OFF;
@@ -270,6 +270,7 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       _dragFirstXPos = 0;
       line1x = line1y = line2x = line2y = 0;
       drawLineMode = false;
+      _bgAlpha = static_cast<quint8>(MusEGlobal::config.globalAlphaBlend / 2);
 
       // Initialize the position markers.
       pos[0] = MusEGlobal::song->cPos().tick();
@@ -2671,7 +2672,7 @@ void CtrlCanvas::pFillBackgrounds(QPainter& p, const QRect& rect, const MusECore
   int w = rect.width() + 2;
   int wh = height();
   QColor dark_gray_color = Qt::darkGray;
-  dark_gray_color.setAlpha(MusEGlobal::config.globalAlphaBlend / 2);
+  dark_gray_color.setAlpha(_bgAlpha);
   
   MusECore::MidiTrack* mt = part->track();
   MusECore::MidiPort* mp;
@@ -2781,7 +2782,9 @@ void CtrlCanvas::drawMoving(QPainter& p, const QRect& rect, const QRegion& /*reg
   int x = rect.x();   // compensate for 3 pixel line width
   int w = rect.width();
   int wh = height();
-  const QColor selection_color(0, 160, 255, MusEGlobal::config.globalAlphaBlend);
+//  const QColor selection_color(0, 160, 255, MusEGlobal::config.globalAlphaBlend);
+  QColor selection_color(MusEGlobal::config.ctrlGraphSel);
+  selection_color.setAlpha(MusEGlobal::config.globalAlphaBlend);
   QColor graph_fg_color = MusEGlobal::config.ctrlGraphFg;
   graph_fg_color.setAlpha(MusEGlobal::config.globalAlphaBlend);
   QColor gray_color = Qt::gray;
@@ -2891,7 +2894,9 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
   int x = rect.x() - 1;   // compensate for 3 pixel line width
   int w = rect.width() + 2;
   int wh = height();
-  const QColor selection_color(0, 160, 255, MusEGlobal::config.globalAlphaBlend);
+//  const QColor selection_color(0, 160, 255, MusEGlobal::config.globalAlphaBlend);
+  QColor selection_color(MusEGlobal::config.ctrlGraphSel);
+  selection_color.setAlpha(MusEGlobal::config.globalAlphaBlend);
   QColor graph_fg_color = MusEGlobal::config.ctrlGraphFg;
   graph_fg_color.setAlpha(MusEGlobal::config.globalAlphaBlend);
   QColor gray_color = Qt::gray;
@@ -2925,7 +2930,7 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
           //p.setPen(QPen(Qt::blue, 3));
           p.setPen(QPen(selection_color, 3));
         else
-          p.setPen(QPen(MusEGlobal::config.ctrlGraphFg, 3));
+          p.setPen(QPen(graph_fg_color, 3));
       }  
       else  
         p.setPen(QPen(Qt::darkGray, 3));

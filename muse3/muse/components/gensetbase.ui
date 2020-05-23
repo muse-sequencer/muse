@@ -818,8 +818,10 @@
                <item>
                 <widget class="QLabel" name="label_3">
                  <property name="text">
-                  <string>Directories where dssi-vst (if installed)
- looks for Wine vst plugins (*.dll files)</string>
+                  <string>Directories where dssi-vst (if installed) looks for Wine vst plugins (*.dll files)</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>

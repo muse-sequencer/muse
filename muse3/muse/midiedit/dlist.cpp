@@ -1783,7 +1783,7 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag, MusECore::DrumMap* dm, i
    : MusEGui::View(parent, 1, ymag)
       {
       _alphaOverlay = 64;
-      dcanvas = nullptr;
+      dcanvas=nullptr;
       ourDrumMap=dm;
       ourDrumMapSize=dmSize;
       

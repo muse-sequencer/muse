@@ -3516,7 +3516,7 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& mr, const QRegion& /*m
 //             fprintf(stderr, "\n...gradient in range. Drawing gradient at:\nmbr_gr.x:%8d\t\tmbr_gr.y:%8d\t\tmbr_gr.w:%8d\t\tmbr_gr.h:%8d\n\n",
 //                     mbr_gr.x(), mbr_gr.y(), mbr_gr.width(), mbr_gr.height());
           
-        QColor c(Qt::gray);
+        QColor c(MusEGlobal::config.dummyPartColor);
         c.setAlpha(MusEGlobal::config.globalAlphaBlend);
         QLinearGradient gradient(mbb_gr.x(), mbb_gr.y(), mbb_gr.x(), mbb_gr.y() + mbb_gr.height());    // Inside the border
         gradient.setColorAt(0, c);

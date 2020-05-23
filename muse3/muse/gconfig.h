@@ -194,6 +194,7 @@ struct GlobalConfigValues {
       QColor trackBg;
       QColor selectTrackBg;
       QColor selectTrackFg;
+      QColor selectTrackCurBg;
       QColor trackSectionDividerColor;
       
       QColor midiTrackLabelBg;
@@ -220,7 +221,8 @@ struct GlobalConfigValues {
       QColor partCanvasCoarseRasterColor;
       QColor partCanvasFineRasterColor;
       QColor ctrlGraphFg;
-      QColor mixerBg;
+      QColor ctrlGraphSel;
+//      QColor mixerBg;
 
       QColor rulerBg;
       QColor rulerFg;
@@ -234,6 +236,9 @@ struct GlobalConfigValues {
       QColor midiCanvasFineColor;
       QColor midiCanvasBeatColor;
       QColor midiCanvasBarColor;
+      QColor midiItemColor;
+      QColor midiItemSelectedColor;
+      QColor dummyPartColor;
       QColor midiDividerColor;
 
       QColor waveNonselectedPart;
@@ -247,23 +252,44 @@ struct GlobalConfigValues {
       QColor partMidiDarkEventColor;
       QColor partMidiLightEventColor;
 
-      QColor sliderBarDefaultColor;
-      QColor sliderDefaultColor;
+      QColor sliderBarColor;
+      QColor sliderBackgroundColor;
       QColor panSliderColor;
       QColor gainSliderColor;
       QColor auxSliderColor;
       QColor audioVolumeSliderColor;
       QColor midiVolumeSliderColor;
-      QColor audioControllerSliderDefaultColor;
-      QColor audioPropertySliderDefaultColor;
-      QColor midiControllerSliderDefaultColor;
-      QColor midiPropertySliderDefaultColor;
+      QColor audioVolumeHandleColor;
+      QColor midiVolumeHandleColor;
+      QColor audioControllerSliderColor;
+      QColor audioPropertySliderColor;
+      QColor midiControllerSliderColor;
+      QColor midiPropertySliderColor;
       QColor midiPatchReadoutColor;
+      QColor knobFontColor;
 
       QColor audioMeterPrimaryColor;
       QColor midiMeterPrimaryColor;
+      QColor meterBackgroundColor;
       
       QColor rackItemBackgroundColor;
+      QColor rackItemBgActiveColor;
+      QColor rackItemFontColor;
+      QColor rackItemFontActiveColor;
+      QColor rackItemBorderColor;
+      QColor rackItemFontColorHover;
+
+      QColor palSwitchBackgroundColor;
+      QColor palSwitchBgActiveColor;
+      QColor palSwitchFontColor;
+      QColor palSwitchFontActiveColor;
+      QColor palSwitchBorderColor;
+
+      QColor midiInstrumentBackgroundColor;
+      QColor midiInstrumentBgActiveColor;
+      QColor midiInstrumentFontColor;
+      QColor midiInstrumentFontActiveColor;
+      QColor midiInstrumentBorderColor;
 
       WaveDrawing waveDrawing;
 

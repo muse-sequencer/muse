@@ -70,6 +70,9 @@ ElidedLabel::ElidedLabel(QWidget* parent,
 
   _alignment = alignment;
 
+  _style3d = true;
+  _radius = 2;
+
   setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 //   updateSizeHint();
   _curFont = font();
@@ -129,20 +132,25 @@ void ElidedLabel::paintEvent(QPaintEvent* e)
   const QRect ar = r.adjusted(1, 1, -1, -1);
 
   ItemBackgroundPainter ibp;
-  ibp.setActiveColor(_activeColor);
-  ibp.drawBackground(&painter, r, palette(), 1, 1, !hasOffMode() || !isOff() ? r : QRect());
+  ibp.drawBackground(&painter, r, palette(), 1, 1,
+                     !hasOffMode() || !isOff() ? r : QRect(),
+                     _radius, _style3d, _bgActiveColor, _borderColor, _bgColor);
 
-  if (hasFocus())
-        {
-        if (_hovered)
-              painter.setPen(QPen(QColor(239,239,239)));
-        else
-              painter.setPen(QPen(Qt::white));
-        }
-  else if (_hovered)
-        painter.setPen(QPen(QColor(48,48,48)));
-  else
-        painter.setPen(QPen(Qt::black));
+//  if (hasFocus())
+//        {
+//        if (_hovered)
+//              painter.setPen(QPen(QColor(239,239,239)));
+//        else
+//              painter.setPen(QPen(Qt::white));
+//        }
+//  else if (_hovered)
+//        painter.setPen(QPen(QColor(48,48,48)));
+//  else
+//        painter.setPen(QPen(Qt::black));
+
+  painter.setPen((!hasOffMode() || !isOff()) ? _fontActiveColor : _fontColor);
+
+
 
   painter.setRenderHint(QPainter::Antialiasing);
 //   painter.setFont(_curFont);

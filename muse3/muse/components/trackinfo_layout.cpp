@@ -198,30 +198,36 @@ void TrackInfoLayout::setGeometry(const QRect &rect)
 //---------------------------------------------------------
 
 QSize TrackInfoLayout::sizeHint() const
-      {
-      return QSize(150, 100);
-      }
+{
+    int w = _stack->sizeHint().width();
+//    int w = _stack->minimumSizeHint().width();
+    if(_sb->isVisible())
+        w += _sbLi->sizeHint().width();
+    return QSize(qMax(w, 50), 50);
+
+    //        return QSize(150, 300);
+}
 
 //---------------------------------------------------------
 //   minimumSize
 //---------------------------------------------------------
 
-QSize TrackInfoLayout::minimumSize() const
-      {
-      int w = _stack->minimumSizeHint().width();
-      if(_sb->isVisible())
-        w += _sbLi->sizeHint().width();
-      return QSize(w, 50);
-      }
+//QSize TrackInfoLayout::minimumSize() const
+//      {
+//      int w = _stack->minimumSizeHint().width();
+//      if(_sb->isVisible())
+//        w += _sbLi->sizeHint().width();
+//      return QSize(w, 50);
+//      }
 
 //---------------------------------------------------------
 //   maximumSize
 //---------------------------------------------------------
 
-QSize TrackInfoLayout::maximumSize() const
-      {
-      return QSize(440, 100000);
-      }
+//QSize TrackInfoLayout::maximumSize() const
+//      {
+//      return QSize(440, 100000);
+//      }
 
       
 //---------------------------------------------------------
@@ -389,6 +395,8 @@ void TrackInfoWidget::raiseWidget(int idx)
   _stack->raiseWidget(idx);
   doResize(_stack->size());
   doMove();
+
+  _trackInfoLayout->invalidate();
   _trackInfoLayout->activate();
   _trackInfoLayout->update();
 }

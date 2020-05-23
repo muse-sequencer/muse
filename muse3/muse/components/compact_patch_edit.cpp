@@ -29,6 +29,7 @@
 #include "compact_patch_edit.h"
 #include "lcd_widgets.h"
 #include "elided_label.h"
+#include "gconfig.h"
 
 namespace MusEGui {
 
@@ -47,16 +48,21 @@ CompactPatchEdit::CompactPatchEdit(QWidget *parent,
   _id           = -1;
   _currentPatch = 0;
 
-  _patchNameLabel = new ElidedLabel(0, Qt::ElideNone);
+  _style3d = true;
+  _radius = 2;
+
+  _patchNameLabel = new ElidedLabel(nullptr, Qt::ElideNone);
   _patchNameLabel->setObjectName("CompactPatchEditLabel");
   _patchNameLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
   _patchNameLabel->setHasOffMode(true);
+  _patchNameLabel->setToolTip(tr("Patch name"));
+  _patchNameLabel->setContentsMargins(0, 0, 0, 0);
+
+//  _patchNameLabel->setBgColor(MusEGlobal::config.midiInstrumentBackgroundColor);
+//  _patchNameLabel->setBgActiveColor(MusEGlobal::config.midiInstrumentBgActiveColor);
+//  _patchNameLabel->setBorderColor(MusEGlobal::config.midiInstrumentBorderColor);
 
   _patchEdit = new LCDPatchEdit();
-
-  _patchNameLabel->setToolTip(tr("Patch name"));
-
-  _patchNameLabel->setContentsMargins(0, 0, 0, 0);
 
   QVBoxLayout* layout = new QVBoxLayout(this);
   layout->setSpacing(0);
@@ -154,13 +160,50 @@ void CompactPatchEdit::setReadoutColor(const QColor& c)
   // Colour was not updating with stylesheet colour.
   // This trick recommended by help. Tested OK.
   // Good demonstration of how to apply a stylesheet after a property has been changed.
-  if(style())
-  {
-    style()->unpolish(_patchEdit);
-    style()->polish(_patchEdit);
-  }
+//  if(style())
+//  {
+//    style()->unpolish(_patchEdit);
+//    style()->polish(_patchEdit);
+//  }
 
-   //update();
+//   update();
+}
+
+void CompactPatchEdit::setBgColor(const QColor& c)
+{
+    _patchNameLabel->setBgColor(c);
+    _patchEdit->setBgColor(c);
+}
+void CompactPatchEdit::setBgActiveColor(const QColor& c)
+{
+    _patchNameLabel->setBgActiveColor(c);
+//    _patchEdit->setBgActiveColor(c);
+}
+void CompactPatchEdit::setBorderColor(const QColor& c)
+{
+    _patchNameLabel->setBorderColor(c);
+    _patchEdit->setBorderColor(c);
+}
+void CompactPatchEdit::setFontColor(const QColor& c)
+{
+    _patchNameLabel->setFontColor(c);
+}
+void CompactPatchEdit::setFontActiveColor(const QColor& c)
+{
+    _patchNameLabel->setFontActiveColor(c);
+}
+
+void CompactPatchEdit::setStyle3d(const bool s)
+{
+    _style3d = s;
+    _patchNameLabel->setStyle3d(s);
+    _patchEdit->setStyle3d(s);
+}
+void CompactPatchEdit::setRadius(const int r)
+{
+    _radius = r;
+    _patchNameLabel->setRadius(r);
+    _patchEdit->setRadius(r);
 }
 
 void CompactPatchEdit::setReadoutOrientation(ReadoutOrientation orient)

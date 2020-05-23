@@ -182,18 +182,6 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            for(int i = 0; i < NUM_PARTCOLORS; ++i)
              new IdListViewItem(0x600 + i, id, MusEGlobal::config.partColorNames[i]);
            
-           new IdListViewItem(0x41c, aid, "Part canvas background");
-           new IdListViewItem(0x42c, aid, "Part canvas raster coarse");
-           new IdListViewItem(0x42d, aid, "Part canvas raster fine");
-
-           new IdListViewItem(0x41f, aid, "Ruler background");
-           new IdListViewItem(0x420, aid, "Ruler text");
-           new IdListViewItem(0x424, aid, "Ruler current marker space");
-           new IdListViewItem(0x425, aid, "Part wave peak");
-           new IdListViewItem(0x426, aid, "Part wave rms");
-           new IdListViewItem(0x427, aid, "Part midi event for light part color");
-           new IdListViewItem(0x428, aid, "Part midi event for dark part color");
-
       id = new IdListViewItem(0, aid, "Track List");
            new IdListViewItem(0x411, id, "Background");
            new IdListViewItem(0x412, id, "Midi background");
@@ -208,20 +196,41 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x419, id, "Synth background");
            new IdListViewItem(0x41a, id, "Selected track background");
            new IdListViewItem(0x41b, id, "Selected track foreground");
+           new IdListViewItem(0x430, id, "Last selected track background");
            new IdListViewItem(0x42b, id, "Section dividers");
            //   0x41c - 0x420 is already used (see above)
+
+      new IdListViewItem(0x41c, aid, "Part canvas background");
+      new IdListViewItem(0x42c, aid, "Part canvas raster coarse");
+      new IdListViewItem(0x42d, aid, "Part canvas raster fine");
+
+      new IdListViewItem(0x41f, aid, "Ruler background");
+      new IdListViewItem(0x420, aid, "Ruler text");
+      new IdListViewItem(0x424, aid, "Ruler current marker space");
+      new IdListViewItem(0x425, aid, "Part wave peak");
+      new IdListViewItem(0x426, aid, "Part wave rms");
+      new IdListViewItem(0x427, aid, "Part midi event for light part color");
+      new IdListViewItem(0x428, aid, "Part midi event for dark part color");
+      new IdListViewItem(0x433, aid, "Dummy part color");
+
       id = new IdListViewItem(0, itemList, "BigTime");
            new IdListViewItem(0x100, id, "Background");
            new IdListViewItem(0x101, id, "Foreground");
+
       id = new IdListViewItem(0, itemList, "Transport");
            new IdListViewItem(0x200, id, "Handle");
+
       id = new IdListViewItem(0, itemList, "Midi Editor");
-           new IdListViewItem(0x41d, id, "Controller graph color");
-           new IdListViewItem(0x423, id, "Controller graph background");
            new IdListViewItem(0x421, id, "Background");
-           new IdListViewItem(0x429, id, "Raster beat");
+           new IdListViewItem(0x431, id, "Item");
+           new IdListViewItem(0x432, id, "Item selected");
            new IdListViewItem(0x42a, id, "Raster bar");
+           new IdListViewItem(0x429, id, "Raster beat");
            new IdListViewItem(0x42e, id, "Raster fine");
+           new IdListViewItem(0x41d, id, "Controller graph");
+           new IdListViewItem(0x41e, id, "Controller graph selected");
+           new IdListViewItem(0x423, id, "Controller graph background");
+
            new IdListViewItem(0x42f, id, "Divider line");
            new IdListViewItem(0x422, id, "Drum list background");
            new IdListViewItem(0x440, id, "Drum list font");
@@ -236,34 +245,61 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x304, id, "Wave rms color selected");
            new IdListViewItem(0x305, id, "Wave nonselected part");
 
-      id = new IdListViewItem(0, itemList, "Mixer");
-           new IdListViewItem(0x500, id, "Background");
-           new IdListViewItem(0x501, id, "Midi label");
-           new IdListViewItem(0x502, id, "Drum label");
-           // Obsolete. There is only 'New' drum tracks now.
-           //new IdListViewItem(0x503, id, "New drum label");
-           new IdListViewItem(0x504, id, "Wave label");
-           new IdListViewItem(0x505, id, "Audio output label");
-           new IdListViewItem(0x506, id, "Audio input label");
-           new IdListViewItem(0x507, id, "Group label");
-           new IdListViewItem(0x508, id, "Aux label");
-           new IdListViewItem(0x509, id, "Synth label");
+      aid = new IdListViewItem(0, itemList, "Mixer");
+      id = new IdListViewItem(0, aid, "Track labels");
 
-           new IdListViewItem(0x50a, id, "Slider bar default");
-           new IdListViewItem(0x50b, id, "Slider default");
-           new IdListViewItem(0x50c, id, "Pan slider");
-           new IdListViewItem(0x50d, id, "Gain slider");
-           new IdListViewItem(0x50e, id, "Aux slider");
-           new IdListViewItem(0x50f, id, "Audio volume");
-           new IdListViewItem(0x510, id, "Midi volume");
-           new IdListViewItem(0x511, id, "Audio controller default");
-           new IdListViewItem(0x512, id, "Audio property default");
-           new IdListViewItem(0x513, id, "Midi controller default");
-           new IdListViewItem(0x514, id, "Midi property default");
-           new IdListViewItem(0x515, id, "Midi patch readout");
-           new IdListViewItem(0x516, id, "Audio meter primary");
-           new IdListViewItem(0x517, id, "Midi meter primary");
-           new IdListViewItem(0x518, id, "Rack item background");
+      new IdListViewItem(0x501, id, "Midi");
+      new IdListViewItem(0x502, id, "Drum");
+      new IdListViewItem(0x504, id, "Wave");
+      new IdListViewItem(0x505, id, "Audio output");
+      new IdListViewItem(0x506, id, "Audio input");
+      new IdListViewItem(0x507, id, "Group");
+      new IdListViewItem(0x508, id, "Aux");
+      new IdListViewItem(0x509, id, "Synth");
+
+      id = new IdListViewItem(0, aid, "Effect rack");
+      new IdListViewItem(0x530, id, "Slot background");
+      new IdListViewItem(0x531, id, "Slot active");
+      new IdListViewItem(0x532, id, "Font");
+      new IdListViewItem(0x533, id, "Font active");
+      new IdListViewItem(0x535, id, "Font mouse hover");
+      new IdListViewItem(0x534, id, "Border");
+
+      id = new IdListViewItem(0, aid, "Palette switcher");
+      new IdListViewItem(0x540, id, "Background");
+      new IdListViewItem(0x541, id, "Background active");
+      new IdListViewItem(0x542, id, "Font");
+      new IdListViewItem(0x543, id, "Font active");
+      new IdListViewItem(0x544, id, "Border");
+
+      id = new IdListViewItem(0, aid, "Midi instrument");
+      new IdListViewItem(0x550, id, "Background");
+      new IdListViewItem(0x551, id, "Background active");
+      new IdListViewItem(0x552, id, "Font");
+      new IdListViewItem(0x553, id, "Font active");
+      new IdListViewItem(0x554, id, "Border");
+      new IdListViewItem(0x555, id, "Patch LCD font");
+
+      id = new IdListViewItem(0, aid, "Sliders and knobs");
+      new IdListViewItem(0x50b, id, "Background");
+      new IdListViewItem(0x50a, id, "Slider bar (theme-dependent)");
+      new IdListViewItem(0x50c, id, "Pan slider");
+      new IdListViewItem(0x50d, id, "Gain slider");
+      new IdListViewItem(0x50e, id, "Aux slider");
+      new IdListViewItem(0x511, id, "Audio controller");
+      new IdListViewItem(0x512, id, "Audio property");
+      new IdListViewItem(0x513, id, "Midi controller");
+      new IdListViewItem(0x514, id, "Midi property");
+      new IdListViewItem(0x515, id, "Knob font (theme-dependent");
+
+//      new IdListViewItem(0x500, aid, "Mixer background");
+      new IdListViewItem(0x50f, aid, "Audio volume");
+      new IdListViewItem(0x510, aid, "Midi volume");
+      new IdListViewItem(0x518, aid, "Audio volume handle");
+      new IdListViewItem(0x519, aid, "Midi volume handle");
+      new IdListViewItem(0x516, aid, "Audio meter primary");
+      new IdListViewItem(0x517, aid, "Midi meter primary");
+      new IdListViewItem(0x520, aid, "Meter background (theme-dependent)");
 
       colorNameLineEdit->setEnabled(false);
 
@@ -361,89 +397,115 @@ QColor* Appearance::globalConfigColorFromId(int id) const
   {
     switch(id) 
     {
-      case 0x100: return &MusEGlobal::config.bigTimeBackgroundColor; break;
-      case 0x101: return &MusEGlobal::config.bigTimeForegroundColor; break;
-      case 0x200: return &MusEGlobal::config.transportHandleColor; break;
-      case 0x300: return &MusEGlobal::config.waveEditBackgroundColor; break;
-      case 0x301: return &MusEGlobal::config.wavePeakColor; break;
-      case 0x302: return &MusEGlobal::config.waveRmsColor; break;
-      case 0x303: return &MusEGlobal::config.wavePeakColorSelected; break;
-      case 0x304: return &MusEGlobal::config.waveRmsColorSelected; break;
-      case 0x305: return &MusEGlobal::config.waveNonselectedPart; break;
+      case 0x100: return &MusEGlobal::config.bigTimeBackgroundColor;
+      case 0x101: return &MusEGlobal::config.bigTimeForegroundColor;
+      case 0x200: return &MusEGlobal::config.transportHandleColor;
+      case 0x300: return &MusEGlobal::config.waveEditBackgroundColor;
+      case 0x301: return &MusEGlobal::config.wavePeakColor;
+      case 0x302: return &MusEGlobal::config.waveRmsColor;
+      case 0x303: return &MusEGlobal::config.wavePeakColorSelected;
+      case 0x304: return &MusEGlobal::config.waveRmsColorSelected;
+      case 0x305: return &MusEGlobal::config.waveNonselectedPart;
 
-      case 0x411: return &MusEGlobal::config.trackBg;       break;
-      case 0x412: return &MusEGlobal::config.midiTrackBg;   break;
+      case 0x411: return &MusEGlobal::config.trackBg;
+      case 0x412: return &MusEGlobal::config.midiTrackBg;
       // Obsolete. There is only 'New' drum tracks now.
-      //case 0x413: return &MusEGlobal::config.drumTrackBg;   break;
-      //case 0x41e: return &MusEGlobal::config.newDrumTrackBg;break;
-      case 0x413: return &MusEGlobal::config.newDrumTrackBg;   break;
-      case 0x414: return &MusEGlobal::config.waveTrackBg;   break;
-      case 0x415: return &MusEGlobal::config.outputTrackBg; break;
-      case 0x416: return &MusEGlobal::config.inputTrackBg;  break;
-      case 0x417: return &MusEGlobal::config.groupTrackBg;  break;
-      case 0x418: return &MusEGlobal::config.auxTrackBg;    break;
-      case 0x419: return &MusEGlobal::config.synthTrackBg;  break;
-      case 0x41a: return &MusEGlobal::config.selectTrackBg;  break;
-      case 0x41b: return &MusEGlobal::config.selectTrackFg;  break;
+      //case 0x413: return &MusEGlobal::config.drumTrackBg;
+      //case 0x41e: return &MusEGlobal::config.newDrumTrackBg;
+      case 0x413: return &MusEGlobal::config.newDrumTrackBg;
+      case 0x414: return &MusEGlobal::config.waveTrackBg;
+      case 0x415: return &MusEGlobal::config.outputTrackBg;
+      case 0x416: return &MusEGlobal::config.inputTrackBg;
+      case 0x417: return &MusEGlobal::config.groupTrackBg;
+      case 0x418: return &MusEGlobal::config.auxTrackBg;
+      case 0x419: return &MusEGlobal::config.synthTrackBg;
+      case 0x41a: return &MusEGlobal::config.selectTrackBg;
+      case 0x41b: return &MusEGlobal::config.selectTrackFg;
+      case 0x430: return &MusEGlobal::config.selectTrackCurBg;
 
-      case 0x41c: return &MusEGlobal::config.partCanvasBg; break;
-      case 0x41d: return &MusEGlobal::config.ctrlGraphFg; break;
+      case 0x41c: return &MusEGlobal::config.partCanvasBg;
+      case 0x41d: return &MusEGlobal::config.ctrlGraphFg;
+      case 0x41e: return &MusEGlobal::config.ctrlGraphSel;
 
       //   0x41e is already used (between 413 and 414)
 
-      case 0x41f: return &MusEGlobal::config.rulerBg; break;
-      case 0x420: return &MusEGlobal::config.rulerFg; break;
-      case 0x421: return &MusEGlobal::config.midiCanvasBg; break;
-      case 0x422: return &MusEGlobal::config.drumListBg; break;
-      case 0x423: return &MusEGlobal::config.midiControllerViewBg; break;
-      case 0x424: return &MusEGlobal::config.rulerCurrent; break;
-      case 0x425: return &MusEGlobal::config.partWaveColorPeak; break;
-      case 0x426: return &MusEGlobal::config.partWaveColorRms; break;
-      case 0x427: return &MusEGlobal::config.partMidiDarkEventColor; break;
-      case 0x428: return &MusEGlobal::config.partMidiLightEventColor; break;
-      case 0x429: return &MusEGlobal::config.midiCanvasBeatColor; break;
-      case 0x42a: return &MusEGlobal::config.midiCanvasBarColor; break;
-      case 0x42b: return &MusEGlobal::config.trackSectionDividerColor; break;
+      case 0x41f: return &MusEGlobal::config.rulerBg;
+      case 0x420: return &MusEGlobal::config.rulerFg;
+      case 0x421: return &MusEGlobal::config.midiCanvasBg;
+      case 0x422: return &MusEGlobal::config.drumListBg;
+      case 0x423: return &MusEGlobal::config.midiControllerViewBg;
+      case 0x424: return &MusEGlobal::config.rulerCurrent;
+      case 0x425: return &MusEGlobal::config.partWaveColorPeak;
+      case 0x426: return &MusEGlobal::config.partWaveColorRms;
+      case 0x427: return &MusEGlobal::config.partMidiDarkEventColor;
+      case 0x428: return &MusEGlobal::config.partMidiLightEventColor;
+      case 0x429: return &MusEGlobal::config.midiCanvasBeatColor;
+      case 0x42a: return &MusEGlobal::config.midiCanvasBarColor;
+      case 0x42b: return &MusEGlobal::config.trackSectionDividerColor;
+      case 0x42c: return &MusEGlobal::config.partCanvasCoarseRasterColor;
+      case 0x42d: return &MusEGlobal::config.partCanvasFineRasterColor;
+      case 0x42e: return &MusEGlobal::config.midiCanvasFineColor;
+      case 0x42f: return &MusEGlobal::config.midiDividerColor;
+      case 0x431: return &MusEGlobal::config.midiItemColor;
+      case 0x432: return &MusEGlobal::config.midiItemSelectedColor;
+      case 0x433: return &MusEGlobal::config.dummyPartColor;
 
-      case 0x42c: return &MusEGlobal::config.partCanvasCoarseRasterColor; break;
-      case 0x42d: return &MusEGlobal::config.partCanvasFineRasterColor; break;
-      case 0x42e: return &MusEGlobal::config.midiCanvasFineColor; break;
-      case 0x42f: return &MusEGlobal::config.midiDividerColor; break;
+      case 0x440: return &MusEGlobal::config.drumListFont;
+      case 0x441: return &MusEGlobal::config.drumListSel;
+      case 0x442: return &MusEGlobal::config.drumListSelFont;
 
-      case 0x440: return &MusEGlobal::config.drumListFont; break;
-      case 0x441: return &MusEGlobal::config.drumListSel; break;
-      case 0x442: return &MusEGlobal::config.drumListSelFont; break;
-
-      case 0x500: return &MusEGlobal::config.mixerBg;   break;
-      case 0x501: return &MusEGlobal::config.midiTrackLabelBg;   break;
+//      case 0x500: return &MusEGlobal::config.mixerBg;
+      case 0x501: return &MusEGlobal::config.midiTrackLabelBg;
       // Obsolete. There is only 'New' drum tracks now.
-      //case 0x502: return &MusEGlobal::config.drumTrackLabelBg;   break;
-      //case 0x503: return &MusEGlobal::config.newDrumTrackLabelBg;break;
-      case 0x502: return &MusEGlobal::config.newDrumTrackLabelBg;   break;
-      case 0x504: return &MusEGlobal::config.waveTrackLabelBg;   break;
-      case 0x505: return &MusEGlobal::config.outputTrackLabelBg; break;
-      case 0x506: return &MusEGlobal::config.inputTrackLabelBg;  break;
-      case 0x507: return &MusEGlobal::config.groupTrackLabelBg;  break;
-      case 0x508: return &MusEGlobal::config.auxTrackLabelBg;    break;
-      case 0x509: return &MusEGlobal::config.synthTrackLabelBg;  break;
+      //case 0x502: return &MusEGlobal::config.drumTrackLabelBg;
+      //case 0x503: return &MusEGlobal::config.newDrumTrackLabelBg;
+      case 0x502: return &MusEGlobal::config.newDrumTrackLabelBg;
+      case 0x504: return &MusEGlobal::config.waveTrackLabelBg;
+      case 0x505: return &MusEGlobal::config.outputTrackLabelBg;
+      case 0x506: return &MusEGlobal::config.inputTrackLabelBg;
+      case 0x507: return &MusEGlobal::config.groupTrackLabelBg;
+      case 0x508: return &MusEGlobal::config.auxTrackLabelBg;
+      case 0x509: return &MusEGlobal::config.synthTrackLabelBg;
       
-      case 0x50a: return &MusEGlobal::config.sliderBarDefaultColor;               break;
-      case 0x50b: return &MusEGlobal::config.sliderDefaultColor;                  break;
-      case 0x50c: return &MusEGlobal::config.panSliderColor;                      break;
-      case 0x50d: return &MusEGlobal::config.gainSliderColor;                     break;
-      case 0x50e: return &MusEGlobal::config.auxSliderColor;                      break;
-      case 0x50f: return &MusEGlobal::config.audioVolumeSliderColor;              break;
-      case 0x510: return &MusEGlobal::config.midiVolumeSliderColor;               break;
-      case 0x511: return &MusEGlobal::config.audioControllerSliderDefaultColor;   break;
-      case 0x512: return &MusEGlobal::config.audioPropertySliderDefaultColor;     break;
-      case 0x513: return &MusEGlobal::config.midiControllerSliderDefaultColor;    break;
-      case 0x514: return &MusEGlobal::config.midiPropertySliderDefaultColor;      break;
-      case 0x515: return &MusEGlobal::config.midiPatchReadoutColor;               break;
-      case 0x516: return &MusEGlobal::config.audioMeterPrimaryColor;              break;
-      case 0x517: return &MusEGlobal::config.midiMeterPrimaryColor;               break;
-      case 0x518: return &MusEGlobal::config.rackItemBackgroundColor;             break;
+      case 0x50a: return &MusEGlobal::config.sliderBarColor;
+      case 0x50b: return &MusEGlobal::config.sliderBackgroundColor;
+      case 0x50c: return &MusEGlobal::config.panSliderColor;
+      case 0x50d: return &MusEGlobal::config.gainSliderColor;
+      case 0x50e: return &MusEGlobal::config.auxSliderColor;
+      case 0x50f: return &MusEGlobal::config.audioVolumeSliderColor;
+      case 0x510: return &MusEGlobal::config.midiVolumeSliderColor;
+      case 0x511: return &MusEGlobal::config.audioControllerSliderColor;
+      case 0x512: return &MusEGlobal::config.audioPropertySliderColor;
+      case 0x513: return &MusEGlobal::config.midiControllerSliderColor;
+      case 0x514: return &MusEGlobal::config.midiPropertySliderColor;
+      case 0x515: return &MusEGlobal::config.knobFontColor;
+      case 0x516: return &MusEGlobal::config.audioMeterPrimaryColor;
+      case 0x517: return &MusEGlobal::config.midiMeterPrimaryColor;
+    case 0x518: return &MusEGlobal::config.audioVolumeHandleColor;
+    case 0x519: return &MusEGlobal::config.midiVolumeHandleColor;
+    case 0x520: return &MusEGlobal::config.meterBackgroundColor;
 
-      default:
+    case 0x530: return &MusEGlobal::config.rackItemBackgroundColor;
+    case 0x531: return &MusEGlobal::config.rackItemBgActiveColor;
+    case 0x532: return &MusEGlobal::config.rackItemFontColor;
+    case 0x533: return &MusEGlobal::config.rackItemFontActiveColor;
+    case 0x534: return &MusEGlobal::config.rackItemBorderColor;
+    case 0x535: return &MusEGlobal::config.rackItemFontColorHover;
+
+    case 0x540: return &MusEGlobal::config.palSwitchBackgroundColor;
+    case 0x541: return &MusEGlobal::config.palSwitchBgActiveColor;
+    case 0x542: return &MusEGlobal::config.palSwitchFontColor;
+    case 0x543: return &MusEGlobal::config.palSwitchFontActiveColor;
+    case 0x544: return &MusEGlobal::config.palSwitchBorderColor;
+
+    case 0x550: return &MusEGlobal::config.midiInstrumentBackgroundColor;
+    case 0x551: return &MusEGlobal::config.midiInstrumentBgActiveColor;
+    case 0x552: return &MusEGlobal::config.midiInstrumentFontColor;
+    case 0x553: return &MusEGlobal::config.midiInstrumentFontActiveColor;
+    case 0x554: return &MusEGlobal::config.midiInstrumentBorderColor;
+    case 0x555: return &MusEGlobal::config.midiPatchReadoutColor;
+
+    default:
             return nullptr;
     }
   }

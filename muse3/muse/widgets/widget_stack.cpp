@@ -115,10 +115,10 @@ QSize WidgetStack::minimumSizeHint() const
         QSize ss = stack[top]->minimumSizeHint();
         if (!ss.isValid())
         {
-              //fprintf(stderr, "WidgetStack::minimumSizeHint: minimumSizeHint invalid, getting minimumSize\n");
+//              fprintf(stderr, "WidgetStack::minimumSizeHint: minimumSizeHint invalid, getting minimumSize\n");
               ss = stack[top]->minimumSize();
         }
-        //fprintf(stderr, "WidgetStack::minimumSizeHint w:%d h:%d\n", ss.width(), ss.height());
+//        fprintf(stderr, "WidgetStack::minimumSizeHint w:%d h:%d\n", ss.width(), ss.height());
         return ss;
       }
       
