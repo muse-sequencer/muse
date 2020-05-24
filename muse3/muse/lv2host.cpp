@@ -3480,23 +3480,23 @@ bool LV2SynthIF::init(LV2Synth *s)
 
 }
 
-void LV2SynthIF::doSelectProgram(unsigned char channel, int bankH, int bankL, int prog)
+bool LV2SynthIF::doSelectProgram(unsigned char channel, int bankH, int bankL, int prog)
 {
 //    // Only if there's something to change...
 //    if(bankH >= 128 && bankL >= 128 && prog >= 128)
 //      return;
 
-    if(bankH > 127) // Map "dont care" to 0
-        bankH = 0;
-    if(bankL > 127)
-        bankL = 0;
-    if(prog > 127)
-        prog = 0;
-
-    const int bank = (bankH << 8) | bankL;
-
     if(_state && _state->prgIface && (_state->prgIface->select_program || _state->prgIface->select_program_for_channel))
     {
+        if(bankH > 127) // Map "dont care" to 0
+            bankH = 0;
+        if(bankL > 127)
+            bankL = 0;
+        if(prog > 127)
+            prog = 0;
+
+        const int bank = (bankH << 8) | bankL;
+
         if(_state->newPrgIface)
             _state->prgIface->select_program_for_channel(lilv_instance_get_handle(_state->handle), channel, (uint32_t)bank, (uint32_t)prog);
         else
@@ -3525,7 +3525,58 @@ void LV2SynthIF::doSelectProgram(unsigned char channel, int bankH, int bankL, in
         _state->uiBank = bank;
         _state->uiProg = prog;
         _state->uiDoSelectPrg = true;
+        
+        return true;
     }
+    
+  return false;
+}
+
+bool LV2SynthIF::doSendProgram(unsigned char channel, int bankH, int bankL, int prog, LV2EvBuf *evBuf, long frame)
+{
+//       _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
+      // don't output program changes for GM drum channel
+      //if (!(MusEGlobal::song->mtype() == MT_GM && chn == 9)) {
+            const int hb = bankH & 0xff;
+            const int lb = bankL & 0xff;
+            const int pr = prog & 0xff;
+
+  if(hb != 0xff || lb != 0xff || pr != 0xff)
+  {
+            if (hb != 0xff)
+            {
+                  sendLv2MidiEvent(evBuf, frame, 3, (ME_CONTROLLER | channel) & 0xff, CTRL_HBANK, hb & 0x7f);
+            }
+            if (lb != 0xff)
+            {
+                  sendLv2MidiEvent(evBuf, frame, 3, (ME_CONTROLLER | channel) & 0xff, CTRL_LBANK, lb & 0x7f);
+            }
+            if (pr != 0xff)
+            {
+                  sendLv2MidiEvent(evBuf, frame, 2, (ME_PROGRAM | channel) & 0xff, pr & 0x7f, 0);
+            }
+              
+      /*
+      * A plugin is permitted to re-write the values of its input
+      * control ports when select_program is called. The host should
+      * re-read the input control port values and update its own
+      * records appropriately. (This is the only circumstance in which
+      * a LV2 plugin is allowed to modify its own control-input ports.)
+      */
+      if(id() != -1)
+      {
+          for(unsigned long k = 0; k < _inportsControl; ++k)
+          {
+              // We're in the audio thread context: no need to send a message, just modify directly.
+              synti->setPluginCtrlVal(genACnum(id(), k), _controls[k].val);
+          }
+      }
+
+      return true;
+    }
+  //}
+      
+  return false;
 }
 
 void LV2SynthIF::sendLv2MidiEvent(LV2EvBuf *evBuf, long frame, int paramCount, uint8_t a, uint8_t b, uint8_t c)
@@ -4006,8 +4057,12 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
         int hb, lb;
         synti->currentProg(chn, NULL, &lb, &hb);
         synti->setCurrentProg(chn, a & 0xff, lb, hb);
-        doSelectProgram(chn, hb, lb, a);
-
+        if(doSelectProgram(chn, hb, lb, a))
+          // Event pointer not filled. Return false.
+          return false;
+        else if(doSendProgram(chn, hb, lb, a, evBuf, frame))
+          // Event pointer filled. Return true.
+          return true;
         // Event pointer not filled. Return false.
         return false;
     }
@@ -4034,8 +4089,12 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
             int lb = (b >> 8) & 0xff;
             int pr = b & 0xff;
             synti->setCurrentProg(chn, pr, lb, hb);
-            doSelectProgram(chn, hb, lb, pr);
-
+            if(doSelectProgram(chn, hb, lb, pr))
+              // Event pointer not filled. Return false.
+              return false;
+            else if(doSendProgram(chn, hb, lb, pr, evBuf, frame))
+              // Event pointer filled. Return true.
+              return true;
             // Event pointer not filled. Return false.
             return false;
         }
@@ -4045,7 +4104,12 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
             int lb, pr;
             synti->currentProg(chn, &pr, &lb, NULL);
             synti->setCurrentProg(chn, pr, lb, b & 0xff);
-            doSelectProgram(chn, b, lb, pr);
+            if(doSelectProgram(chn, b, lb, pr))
+              // Event pointer not filled. Return false.
+              return false;
+            else if(doSendProgram(chn, b, lb, pr, evBuf, frame))
+              // Event pointer filled. Return true.
+              return true;
             // Event pointer not filled. Return false.
             return false;
         }
@@ -4055,7 +4119,12 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
             int hb, pr;
             synti->currentProg(chn, &pr, NULL, &hb);
             synti->setCurrentProg(chn, pr, b & 0xff, hb);
-            doSelectProgram(chn, hb, b, pr);
+            if(doSelectProgram(chn, hb, b, pr))
+              // Event pointer not filled. Return false.
+              return false;
+            else if(doSendProgram(chn, hb, b, pr, evBuf, frame))
+              // Event pointer filled. Return true.
+              return true;
             // Event pointer not filled. Return false.
             return false;
         }

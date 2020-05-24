@@ -3,6 +3,8 @@
       Don't check out of bounds index in AudioInput/Output::registerPorts(). When it is called by
        Audio::msgSetChannels(), the new number of channels has not been set yet.
     - Added support for adjusting automation for Global structure cut/insert (rj)
+    - LV2: Fix plugins without 'programs extension' support: Send directly as midi events. (Tim)
+      Fixes plugins like gmsynth.lv2, which have midnam support but no programs extension support.
 23.05.2010
     * New - PianoRoll Speaker button has two selectable modes, single note and chords: (Tim)
 16.05.2010
