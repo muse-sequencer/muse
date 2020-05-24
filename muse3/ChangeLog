@@ -1,3 +1,7 @@
+24.05.2010
+    - Fix regression at 06.04.2020: Can't connect Jack ports to audio input/output tracks R chan. (Tim)
+      Don't check out of bounds index in AudioInput/Output::registerPorts(). When it is called by
+       Audio::msgSetChannels(), the new number of channels has not been set yet.
 23.05.2010
     * New - PianoRoll Speaker button has two selectable modes, single note and chords: (Tim)
 16.05.2010
