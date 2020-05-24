@@ -21,34 +21,21 @@
 //
 //=========================================================
 
-#include <QLayout>
+#include <QSplitter>
 #include <QSizeGrip>
 #include <QLabel>
-#include <QPushButton>
-#include <QToolButton>
 #include <QToolTip>
-#include <QMenu>
 #include <QMenuBar>
 #include <QWhatsThis>
 #include <QApplication>
 #include <QClipboard>
-#include <QDir>
-#include <QAction>
-#include <QKeySequence>
-#include <QKeyEvent>
 #include <QGridLayout>
-#include <QResizeEvent>
-#include <QCloseEvent>
 #include <QMimeData>
 #include <QScrollArea>
 #include <QSettings>
 #include <QCursor>
-#include <QPoint>
 #include <QRect>
-#include <QHBoxLayout>
-#include <QPainter>
 #include <QPixmap>
-#include <QPalette>
 
 #include <stdio.h>
 
@@ -117,6 +104,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       veloOffOffset = 0;
       lastSelections = 0;
       _playEvents    = true;
+      _playEventsMode = EventCanvas::PlayEventsSingleNote;
       colorMode      = colorModeInit;
       
       const MusECore::PartList* part_list = parts();
@@ -311,10 +299,21 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       speaker  = new QToolButton();
       speaker->setToolTip(tr("Play events"));
-      speaker->setIcon(*speakerSVGIcon);
+      speaker->setIcon(*speakerSingleNoteSVGIcon);
       speaker->setCheckable(true);
       speaker->setChecked(true);
       speaker->setFocusPolicy(Qt::NoFocus);
+      
+      QMenu* speakerPopupMenu = new QMenu(this);
+      speaker->setMenu(speakerPopupMenu);
+      speaker->setPopupMode(QToolButton::MenuButtonPopup);
+      speakerSingleNote = new QAction(*speakerSingleNoteSVGIcon, tr("Play single note"), this);
+      speakerChords = new QAction(*speakerChordsSVGIcon, tr("Play chords"), this);
+      speakerPopupMenu->addAction(speakerSingleNote);
+      speakerPopupMenu->addAction(speakerChords);
+      connect(speakerSingleNote, &QAction::triggered, [this](bool checked) { setSpeakerSingleNoteMode(checked); } );
+      connect(speakerChords, &QAction::triggered, [this](bool checked) { setSpeakerChordMode(checked); } );
+
       tools->addWidget(speaker);
 
       QAction* whatsthis = QWhatsThis::createAction(this);
@@ -518,16 +517,18 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
           hscroll->setOffset((int)pos);
       }
 
-      QList<int> mops;
-      mops.append(_trackInfoWidthInit);
-      mops.append(_canvasWidthInit);
-      hsplitter->setSizes(mops);
-
       if(canvas->track())
       {
         updateTrackInfo();
         toolbar->setSolo(canvas->track()->solo());
       }
+
+      setSpeakerMode(_playEventsMode);
+      
+      QList<int> mops;
+      mops.append(_trackInfoWidthInit);
+      mops.append(_canvasWidthInit);
+      hsplitter->setSizes(mops);
     
       initTopwinState();
       finalizeInit();
@@ -1335,6 +1336,7 @@ void PianoRoll::writeStatus(int level, MusECore::Xml& xml) const
       xml.intTag(level, "midiin", canvas->midiin());
       xml.intTag(level, "tool", int(canvas->tool()));
       xml.intTag(level, "playEvents", _playEvents);
+      xml.intTag(level, "playEventsMode", _playEventsMode);
       xml.intTag(level, "xmag", hscroll->mag());
       xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "ymag", vscroll->mag());
@@ -1382,8 +1384,11 @@ void PianoRoll::readStatus(MusECore::Xml& xml)
                               hsplitter->readStatus(xml);
                         else if (tag == "playEvents") {
                               _playEvents = xml.parseInt();
-                              canvas->playEvents(_playEvents);
+                              canvas->setPlayEvents(_playEvents);
                               speaker->setChecked(_playEvents);
+                              }
+                        else if (tag == "playEventsMode") {
+                              setSpeakerMode(EventCanvas::PlayEventsMode(xml.parseInt()));
                               }
                         else if (tag == "xmag")
                               hscroll->setMag(xml.parseInt());
@@ -1595,7 +1600,7 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
 
       }
       else if (key == shortcuts[SHRT_PLAY_EVENTS].key) {
-          canvas->playEvents(!speaker->isChecked());
+          canvas->setPlayEvents(!speaker->isChecked());
           speaker->setChecked(!speaker->isChecked());
           return;
       }
@@ -1689,8 +1694,34 @@ void PianoRoll::selectionChanged()
 void PianoRoll::setSpeaker(bool val)
       {
       _playEvents = val;
-      canvas->playEvents(_playEvents);
+      canvas->setPlayEvents(_playEvents);
       }
+
+void PianoRoll::setSpeakerSingleNoteMode(bool)
+{
+  setSpeakerMode(EventCanvas::PlayEventsSingleNote);
+}
+
+void PianoRoll::setSpeakerChordMode(bool)
+{
+  setSpeakerMode(EventCanvas::PlayEventsChords);
+}
+
+void PianoRoll::setSpeakerMode(EventCanvas::PlayEventsMode mode)
+{
+  _playEventsMode = mode;
+  canvas->setPlayEventsMode(_playEventsMode);
+  switch(_playEventsMode)
+  {
+    case EventCanvas::PlayEventsSingleNote:
+      speaker->setIcon(*speakerSingleNoteSVGIcon);
+    break;
+
+    case EventCanvas::PlayEventsChords:
+      speaker->setIcon(*speakerChordsSVGIcon);
+    break;
+  }
+}
 
 //---------------------------------------------------------
 //   initShortcuts

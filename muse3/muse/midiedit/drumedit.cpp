@@ -1120,7 +1120,7 @@ void DrumEdit::readStatus(MusECore::Xml& xml)
                               header->readStatus(xml);
                         else if (tag == "playEvents") {
                               _playEvents = xml.parseInt();
-                              canvas->playEvents(_playEvents);
+                              canvas->setPlayEvents(_playEvents);
                               speaker->setChecked(_playEvents);
                               }
                         else if (tag == "xmag")
@@ -1907,7 +1907,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
 
       }
       else if (key == shortcuts[SHRT_PLAY_EVENTS].key) {
-          canvas->playEvents(!speaker->isChecked());
+          canvas->setPlayEvents(!speaker->isChecked());
           speaker->setChecked(!speaker->isChecked());
           return;
       }
@@ -1942,7 +1942,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
 void DrumEdit::setSpeaker(bool val)
       {
       _playEvents = val;
-      canvas->playEvents(_playEvents);
+      canvas->setPlayEvents(_playEvents);
       }
 
 //---------------------------------------------------------

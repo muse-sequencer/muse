@@ -89,7 +89,8 @@ class PianoCanvas : public EventCanvas {
       virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void itemPressed(const CItem*);
       virtual void itemReleased(const CItem*, const QPoint&);
-      virtual void itemMoved(const CItem*, const QPoint&);
+      virtual void itemMoving(const CItem*, const QPoint& newMP) override;
+      virtual void itemMoved(const CItem*, const QPoint& oldMP);
       virtual void curPartChanged();
       virtual void resizeEvent(QResizeEvent*);
       void mouseMove(QMouseEvent* event) override;

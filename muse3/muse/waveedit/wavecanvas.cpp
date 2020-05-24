@@ -107,6 +107,8 @@ WEvent::WEvent(const MusECore::Event& e, MusECore::Part* p, int height) : EItem(
       if(e.frame() + e.lenFrame() >= p->lenFrame())
         len = p->lenFrame() - e.frame();
       setBBox(QRect(frame, 0, len, height));    
+      // Give the moving point an initial value.
+      setMp(pos());
       }
 
 //---------------------------------------------------------
@@ -3186,30 +3188,6 @@ void WaveCanvas::dragLeaveEvent(QDragLeaveEvent*)
       {
       //printf("drag leave\n");         DELETETHIS (whole function?)
       //event->acceptProposedAction();  
-      }
-
-//---------------------------------------------------------
-//   itemPressed
-//---------------------------------------------------------
-
-void WaveCanvas::itemPressed(const CItem*)
-      {
-      }
-
-//---------------------------------------------------------
-//   itemReleased
-//---------------------------------------------------------
-
-void WaveCanvas::itemReleased(const CItem*, const QPoint&)
-      {
-      }
-
-//---------------------------------------------------------
-//   itemMoved
-//---------------------------------------------------------
-
-void WaveCanvas::itemMoved(const CItem*, const QPoint&)
-      {
       }
 
 //---------------------------------------------------------

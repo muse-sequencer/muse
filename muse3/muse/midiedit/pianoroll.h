@@ -24,6 +24,16 @@
 #ifndef __PIANOROLL_H__
 #define __PIANOROLL_H__
 
+#include <QAction>
+#include <QMenu>
+#include <QPushButton>
+#include <QToolBar>
+#include <QToolButton>
+#include <QWidget>
+#include <QPoint>
+#include <QCloseEvent>
+#include <QKeyEvent>
+
 #include <limits.h>
 #include "type_defs.h"
 #include "noteinfo.h"
@@ -33,19 +43,7 @@
 #include "event.h"
 #include "midictrl.h"
 #include "part.h"
-
-class QSplitter;
-class QAction;
-class QMenu;
-class QPushButton;
-class QToolBar;
-class QToolButton;
-class QWidget;
-class QPoint;
-class QHBoxLayout;
-class QResizeEvent;
-class QCloseEvent;
-class QKeyEvent;
+#include "ecanvas.h"
 
 namespace MusECore {
 class Track;
@@ -56,7 +54,6 @@ class Xml;
 namespace MusEGui {
 
 class CtrlEdit;
-class PianoCanvas;
 class PitchLabel;
 class SNode;
 class ScrollScale;
@@ -104,7 +101,9 @@ class PianoRoll : public MidiEditor {
       QAction* funcSetFixedLenAction;
       QAction* funcDelOverlapsAction;
       
-      
+      QAction* speakerSingleNote;
+      QAction* speakerChords;
+
       int tickValue;
       int lenValue;
       int pitchValue;
@@ -144,6 +143,7 @@ class PianoRoll : public MidiEditor {
       MusECore::MidiPartViewState _viewState;
       
       bool _playEvents;
+      EventCanvas::PlayEventsMode _playEventsMode;
 
       void initShortcuts();
       void setupNewCtrl(CtrlEdit* ctrlEdit);
@@ -152,6 +152,8 @@ class PianoRoll : public MidiEditor {
 
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
+      
+      void setSpeakerMode(EventCanvas::PlayEventsMode mode);
 
    private slots:
       void setSelection(int /*tick*/, MusECore::Event&, MusECore::Part*, bool /*update*/);
@@ -165,6 +167,8 @@ class PianoRoll : public MidiEditor {
       void clipboardChanged(); // enable/disable "Paste"
       void selectionChanged(); // enable/disable "Copy" & "Paste"
       void setSpeaker(bool);
+      void setSpeakerSingleNoteMode(bool);
+      void setSpeakerChordMode(bool);
       void setTime(unsigned);
       void follow(int pos);
       void songChanged1(MusECore::SongChangedStruct_t);

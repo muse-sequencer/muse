@@ -84,6 +84,8 @@
         <file>svg/noscale3.svg</file>
         <file>svg/midiin.svg</file>
         <file>svg/speaker.svg</file>
+        <file>svg/speaker_single_note.svg</file>
+        <file>svg/speaker_chords.svg</file>
         <file>svg/steprec.svg</file>
         <file>svg/filesave.svg</file>
         <file>svg/filenew.svg</file>

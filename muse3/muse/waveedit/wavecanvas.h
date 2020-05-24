@@ -203,9 +203,6 @@ class WaveCanvas : public EventCanvas {
       inline int y2height(int) const { return height(); }
       inline int yItemOffset() const { return 0; }
       virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion());
-      virtual void itemPressed(const CItem*);
-      virtual void itemReleased(const CItem*, const QPoint&);
-      virtual void itemMoved(const CItem*, const QPoint&);
       virtual void curPartChanged();
       virtual void resizeEvent(QResizeEvent*);
       void adjustWaveOffset(); 

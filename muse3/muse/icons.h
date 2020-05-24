@@ -255,6 +255,8 @@ extern QIcon* redoSVGIcon;
 extern QIcon* midiinSVGIcon;
 extern QIcon* steprecSVGIcon;
 extern QIcon* speakerSVGIcon;
+extern QIcon* speakerSingleNoteSVGIcon;
+extern QIcon* speakerChordsSVGIcon;
 extern QIcon* filenewSVGIcon;
 extern QIcon* filetemplateSVGIcon;
 extern QIcon* fileopenSVGIcon;

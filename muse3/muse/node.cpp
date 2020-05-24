@@ -1743,7 +1743,7 @@ bool AudioInput::registerPorts(int idx)
       if (!MusEGlobal::checkAudioDevice()) return false;
       int b, e;
       if(idx < 0) { b = 0; e = channels(); }
-      else { if(idx >= channels()) return false; b = idx; e = idx + 1; }
+      else { /*if(idx >= channels()) return false;*/ b = idx; e = idx + 1; }
       bool res = false;
       for (int i = b; i < e; ++i) {
             if (!jackPorts[i]) {
@@ -2212,7 +2212,7 @@ bool AudioOutput::registerPorts(int idx)
       if (!MusEGlobal::checkAudioDevice()) return false;
       int b, e;
       if(idx < 0) { b = 0; e = channels(); }
-      else { if(idx >= channels()) return false; b = idx; e = idx + 1; }
+      else { /*if(idx >= channels()) return false;*/ b = idx; e = idx + 1; }
       bool res = false;
       for (int i = b; i < e; ++i) {
             if (!jackPorts[i]) {

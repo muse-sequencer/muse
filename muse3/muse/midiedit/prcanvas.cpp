@@ -66,6 +66,8 @@ NEvent::NEvent(const MusECore::Event& e, MusECore::Part* p, int y) : EItem(e, p)
       unsigned tick = e.tick() + p->tick();
       setPos(QPoint(tick, y));
       setBBox(QRect(tick, y, e.lenTick(), KH/2));
+      // Give the moving point an initial value.
+      setMp(pos());
       }
 
 
@@ -850,50 +852,52 @@ MusECore::Undo PianoCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, Dra
     MusECore::Part* opart = ip2c->first;
     if (opart->hasHiddenEvents())
     {
-            forbidden=true;
-            break;
-        }
-  }
+			forbidden=true;
+			break;
+		}
+  }    
 
+	
+	if (!forbidden)
+	{
+		std::vector< CItem* > doneList;
+		typedef std::vector< CItem* >::iterator iDoneList;
+		
+		for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
+		{
+		  CItem* ci = ici->second;
+			
+      const QPoint oldpos(ci->pos());
+			const int x = ci->pos().x();
+			const int y = ci->pos().y();
+			int nx = x + dx;
+			int ny = pitch2y(y2pitch(y) + dp);
+			QPoint newpos = QPoint(nx, ny);
+			if(rasterize)
+			  newpos = raster(newpos);
+			selectItem(ci, true);
+			
+			iDoneList idl;
+			for(idl = doneList.begin(); idl != doneList.end(); ++idl)
+				// This compares EventBase pointers to see if they're the same...
+				if((*idl)->event() == ci->event())
+					break;
+				
+			// Do not process if the event has already been processed (meaning it's an event in a clone part)...
+			if (idl == doneList.end())
+			{
+				moveItem(operations, ci, newpos, dtype, rasterize); // always returns true. if not, change is necessary here!
+				doneList.push_back(ci);
+			}
+			ci->move(newpos);
+						
+			itemReleased(ci, oldpos);
 
-    if (!forbidden)
-    {
-        std::vector< CItem* > doneList;
-        typedef std::vector< CItem* >::iterator iDoneList;
+			if(dtype == MOVE_COPY || dtype == MOVE_CLONE)
+						selectItem(ci, false);
+		}  
 
-        for(iCItem ici = items.begin(); ici != items.end(); ++ici)
-        {
-          CItem* ci = ici->second;
-
-            int x = ci->pos().x();
-            int y = ci->pos().y();
-            int nx = x + dx;
-            int ny = pitch2y(y2pitch(y) + dp);
-            QPoint newpos = QPoint(nx, ny);
-            if(rasterize)
-              newpos = raster(newpos);
-            selectItem(ci, true);
-
-            iDoneList idl;
-            for(idl = doneList.begin(); idl != doneList.end(); ++idl)
-                // This compares EventBase pointers to see if they're the same...
-                if((*idl)->event() == ci->event())
-                    break;
-
-            // Do not process if the event has already been processed (meaning it's an event in a clone part)...
-            if (idl == doneList.end())
-            {
-                moveItem(operations, ci, newpos, dtype, rasterize); // always returns true. if not, change is necessary here!
-                doneList.push_back(ci);
-            }
-            ci->move(newpos);
-
-            if(moving.size() == 1)
-                        itemReleased(curItem, newpos);
-
-            if(dtype == MOVE_COPY || dtype == MOVE_CLONE)
-                        selectItem(ci, false);
-        }
+		itemsReleased();
 
     for(MusECore::iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
     {
@@ -1211,11 +1215,16 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
         velocity = 127;
       else if(velocity <= 0)
         velocity = 1;
+      
+      // Stop all notes.
+      stopPlayEvents();
 
       // play note:
       if(_playEvents)
+      {
         startPlayEvent(pitch, velocity);
-
+      }
+      
       if (_steprec && curPart) // && pos[0] >= start_tick && pos[0] < end_tick [removed by flo93: this is handled in steprec->record]
                  steprec->record(curPart,pitch,editor->raster(),editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,shift, -1 /* anything which is != rcSteprecNote */);
       }
@@ -1228,7 +1237,7 @@ void PianoCanvas::pianoReleased(int /*pitch*/, bool)
       {
       // release key:
       if(_playEvents)
-        stopPlayEvent();
+        stopPlayEvents();
       }
 
 // NOTE Keep this for now in case we can get it to work...
@@ -1630,42 +1639,68 @@ void PianoCanvas::itemPressed(const CItem* item)
 //   itemReleased
 //---------------------------------------------------------
 
-void PianoCanvas::itemReleased(const CItem*, const QPoint&)
+void PianoCanvas::itemReleased(const CItem* item, const QPoint&)
       {
-      if (!_playEvents)
-              return;
-      stopPlayEvent();
+      if(!track())
+      {
+        // Stop all playing notes:
+        stopPlayEvents();
+        return;
       }
+
+      const int opitch = y2pitch(item->mp().y());
+      const int port = track()->outPort();
+      const int channel = track()->outChannel();
+      
+      // Stop any playing note:
+      stopStuckNote(port, channel, opitch);
+      }
+
+//---------------------------------------------------------
+//   itemMoving
+//---------------------------------------------------------
+
+void PianoCanvas::itemMoving(const CItem* item, const QPoint& newMP)
+{
+      if(!track())
+      {
+        // Stop all playing notes:
+        stopPlayEvents();
+        return;
+      }
+
+      const int opitch = y2pitch(item->mp().y());
+      const int npitch = y2pitch(newMP.y());
+      if(opitch == npitch)
+        return;
+
+      const int port = track()->outPort();
+      const int channel = track()->outChannel();
+      
+      // Stop any playing note:
+      stopStuckNote(port, channel, opitch);
+}
 
 //---------------------------------------------------------
 //   itemMoved
 //---------------------------------------------------------
 
-void PianoCanvas::itemMoved(const CItem* item, const QPoint& pos)
+void PianoCanvas::itemMoved(const CItem* item, const QPoint& oldMP)
       {
-      int npitch = y2pitch(pos.y());
-      if(!track())
-      {
-        // Stop any playing notes:
-        stopPlayEvent();
+      const int opitch = y2pitch(oldMP.y());
+      const int npitch = y2pitch(item->mp().y());
+      if(opitch == npitch)
         return;
-      }
-      const int port = track()->outPort();
-      const int channel = track()->outChannel();
-      // Ignore if the note is already playing.
-      if(stuckNoteExists(port, channel, npitch))
-        return;
-
-      // Stop any playing notes:
-      stopPlayEvent();
 
       if(_playEvents)
       {
-        if (moving.size() <= 1) { // items moving or curItem
+        if((_playEventsMode == PlayEventsSingleNote && item == curItem) ||
+           (_playEventsMode == PlayEventsChords && curItem && curItem->mp().x() == item->mp().x()))
+        {
             const MusECore::Event e = ((NEvent*)item)->event();
             // play note:
             startPlayEvent(npitch, e.velo());
-            }
+        }
       }
       }
 

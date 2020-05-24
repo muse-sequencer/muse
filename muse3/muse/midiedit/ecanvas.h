@@ -69,12 +69,17 @@ namespace MusEGui {
 
 class EventCanvas : public Canvas {
       Q_OBJECT
-      
+
+   public:
+     enum PlayEventsMode { PlayEventsSingleNote = 0, PlayEventsChords };
+
+   private:
       virtual void leaveEvent(QEvent*e);
       virtual void enterEvent(QEvent*e);
 
    protected:
       bool _playEvents;
+      PlayEventsMode _playEventsMode;
       MidiEditor* editor;
       unsigned start_tick, end_tick;
       int curVelo;
@@ -84,6 +89,8 @@ class EventCanvas : public Canvas {
       // Notes that are currently being played in the piano or drum list etc.
       QVector<MusECore::MidiPlayEvent> _stuckNotes;
       bool stuckNoteExists(int port, int channel, int pitch) const;
+      // Returns true if a note was actually stopped and removed from the stuck notes list.
+      bool stopStuckNote(int port, int channel, int pitch);
 
       bool itemSelectionsChanged(MusECore::Undo* operations = 0, bool deselectAll = false);
       virtual CItem* addItem(MusECore::Part*, const MusECore::Event&) = 0;
@@ -93,7 +100,7 @@ class EventCanvas : public Canvas {
       virtual void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true);
       virtual void startPlayEvent(int note, int velocity);
       virtual void startPlayEvent(int note, int velocity, int port, int channel);
-      virtual void stopPlayEvent();
+      virtual void stopPlayEvents();
       virtual void mouseMove(QMouseEvent* event);
 
 
@@ -119,7 +126,10 @@ class EventCanvas : public Canvas {
       virtual QString getCaption() const;
       virtual void songChanged(MusECore::SongChangedStruct_t);
       virtual void range(int* s, int* e) const { *s = start_tick; *e = end_tick; }
-      void playEvents(bool flag) { _playEvents = flag; }
+      bool playEvents() const { return _playEvents; }
+      PlayEventsMode playEventsMode() const { return _playEventsMode; }
+      void setPlayEvents(bool flag) { _playEvents = flag; }
+      void setPlayEventsMode(PlayEventsMode mode) { _playEventsMode = mode; }
       virtual void selectAtTick(unsigned int tick);
       virtual void viewDropEvent(QDropEvent* event);
       virtual void modifySelected(NoteInfo::ValType, int /*val*/, bool /*delta_mode*/ = true) {}
