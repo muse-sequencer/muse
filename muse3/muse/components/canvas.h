@@ -219,7 +219,19 @@ class Canvas : public View {
 
       virtual void itemPressed(const CItem*) {}
       virtual void itemReleased(const CItem*, const QPoint&) {}
-      virtual void itemMoved(const CItem*, const QPoint&) {}
+      virtual void itemsReleased() {}
+      // Called to inform before an item will be moved.
+      // When multiple items are moving, all itemMoving() are called before
+      //  all itemMoved(), rather than in pairs for each item. (That helps with
+      //  the note playing routines.) The current item will inform first before others.
+      // The item's current moving point contains the position before moving,
+      //  while newMP contains the position it will be moved to.
+      virtual void itemMoving(const CItem*, const QPoint& /*newMP*/) { }
+      // Called to inform that an item has just been moved.
+      // The item's current moving point contains the position after moving,
+      //  while oldMP contains the old position before it was moved.
+      virtual void itemMoved(const CItem*, const QPoint& /*oldMP*/) {}
+
       virtual void curPartChanged() { emit curPartHasChanged(curPart); }
 
       // If show is true, calls QApplication::restoreOverrideCursor() until _cursorOverrideCount-- is <= 0.

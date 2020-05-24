@@ -79,6 +79,8 @@ DEvent::DEvent(MusECore::Event e, MusECore::Part* p, int instr)
       int tick = e.tick() + p->tick();
       setPos(QPoint(tick, y));
       setBBox(QRect(-CARET2, -CARET2, CARET, CARET));
+      // Give the moving point an initial value.
+      setMp(pos());
       }
 
 //---------------------------------------------------------
@@ -276,6 +278,7 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, Drag
 		{
 			CItem* ci = ici->second;
 			
+      const QPoint oldpos(ci->pos());
 			int x = ci->pos().x();
 			int y = ci->pos().y();
 			int nx = x + dx;
@@ -303,12 +306,13 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, Drag
 			}
 			ci->move(newpos);
       
-			if(moving.size() == 1) 
-						itemReleased(curItem, newpos);
+			itemReleased(ci, oldpos);
 
 			if(dtype == MOVE_COPY || dtype == MOVE_CLONE)
 						selectItem(ci, false);
 		}  
+
+		itemsReleased();
 
 		for(MusECore::iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
 		{
@@ -593,39 +597,88 @@ void DrumCanvas::itemPressed(const CItem* item)
 //   itemReleased
 //---------------------------------------------------------
 
-void DrumCanvas::itemReleased(const CItem*, const QPoint&)
+void DrumCanvas::itemReleased(const CItem* item, const QPoint&)
       {
-      if (!_playEvents)
-              return;
-      stopPlayEvent();
+      const int oindex = y2pitch(item->mp().y());
+//       for (int i = 0; i < instrument_map.size(); ++i) {
+//           if (instrument_map.at(i).pitch == index) {
+//               index = i;
+//               break;
+//           }
+//       }
+
+      int opitch, oport, ochannel;
+      if(!index2Note(oindex, &oport, &ochannel, &opitch))
+      {
+        // Stop any playing notes:
+        stopPlayEvents();
+        return;
+      }
+      
+      // stop note:
+      stopStuckNote(oport, ochannel, opitch);
       }
 
+
+//---------------------------------------------------------
+//   itemMoving
+//---------------------------------------------------------
+
+void DrumCanvas::itemMoving(const CItem* item, const QPoint& newMP)
+{
+      const int oindex = y2pitch(item->mp().y());
+      const int index = y2pitch(newMP.y());
+      int opitch, oport, ochannel, pitch, port, channel;
+      if(!index2Note(oindex, &oport, &ochannel, &opitch))
+      {
+        // Stop any playing notes:
+        stopPlayEvents();
+        return;
+      }
+      if(!index2Note(index, &port, &channel, &pitch))
+      {
+        // Stop any playing notes:
+        stopPlayEvents();
+        return;
+      }
+      
+      if(port == oport && channel == ochannel && pitch == opitch)
+        return;
+
+      // Stop any playing note:
+      stopStuckNote(port, channel, opitch);
+}
 
 //---------------------------------------------------------
 //   itemMoved
 //---------------------------------------------------------
 
-void DrumCanvas::itemMoved(const CItem* item, const QPoint& pos)
+void DrumCanvas::itemMoved(const CItem* item, const QPoint& oldMP)
       {
-      int index = y2pitch(pos.y());
-      int pitch, port, channel;
+      const int oindex = y2pitch(oldMP.y());
+      const int index = y2pitch(item->mp().y());
+      int opitch, oport, ochannel, pitch, port, channel;
+      if(!index2Note(oindex, &oport, &ochannel, &opitch))
+      {
+        // Stop any playing notes:
+        stopPlayEvents();
+        return;
+      }
       if(!index2Note(index, &port, &channel, &pitch))
       {
         // Stop any playing notes:
-        stopPlayEvent();
+        stopPlayEvents();
         return;
       }
       
-      // Ignore if the note is already playing.
-      if(stuckNoteExists(port, channel, pitch))
+      if(port == oport && channel == ochannel && pitch == opitch)
         return;
-        
-      // Stop any playing notes:
-      stopPlayEvent();
 
       if(_playEvents)
       {
-        if (moving.size() <= 1) { // items moving or curItem
+        // Unlike with PianoRoll::itemMoved(), don't play multiple notes (no concept of chords).
+        if(item == curItem)
+        {
             const MusECore::Event e = ((DEvent*)item)->event();
             // play note:
             startPlayEvent(pitch, e.velo(), port, channel);
@@ -1015,6 +1068,9 @@ void DrumCanvas::keyPressed(int index, int velocity)
       else if(velocity <= 0)
         velocity = 1;
       
+      // Stop all notes.
+      stopPlayEvents();
+
       if ((index<0) || (index>=getOurDrumMapSize()))
         return;
       // called from DList - play event
@@ -1051,7 +1107,7 @@ void DrumCanvas::keyReleased(int, bool)
       {
       // release note:
       if(_playEvents)
-        stopPlayEvent();
+        stopPlayEvents();
       }
 
 //---------------------------------------------------------
@@ -1385,7 +1441,7 @@ void DrumCanvas::keyRelease(QKeyEvent* event)
           key == shortcuts[SHRT_ADDNOTE_4].key)
       {
         // Must stop note that was played.
-        stopPlayEvent();
+                stopPlayEvents();
         return;
       }
     }

@@ -374,6 +374,8 @@ QIcon* redoSVGIcon;
 QIcon* midiinSVGIcon;
 QIcon* steprecSVGIcon;
 QIcon* speakerSVGIcon;
+QIcon* speakerSingleNoteSVGIcon;
+QIcon* speakerChordsSVGIcon;
 QIcon* filenewSVGIcon;
 QIcon* filetemplateSVGIcon;
 QIcon* fileopenSVGIcon;
@@ -684,6 +686,8 @@ void initIcons(int cursorSize)
       midiinSVGIcon     = new QIcon(":/svg/midiin.svg");
       steprecSVGIcon    = new QIcon(":/svg/steprec.svg");
       speakerSVGIcon    = new QIcon(":/svg/speaker.svg");
+      speakerSingleNoteSVGIcon = new QIcon(":/svg/speaker_single_note.svg");
+      speakerChordsSVGIcon     = new QIcon(":/svg/speaker_chords.svg");
       whatsthisSVGIcon  = new QIcon(":/svg/whatsthis.svg");
       exitSVGIcon       = new QIcon(":/svg/exit.svg");
       noteSVGIcon       = new QIcon(":/svg/note.svg");
@@ -968,6 +972,8 @@ void deleteIcons()
       delete midiinSVGIcon;
       delete steprecSVGIcon;
       delete speakerSVGIcon;
+      delete speakerSingleNoteSVGIcon;
+      delete speakerChordsSVGIcon;
 
       delete filenewSVGIcon;
       delete filetemplateSVGIcon;

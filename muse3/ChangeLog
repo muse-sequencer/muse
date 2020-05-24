@@ -1,3 +1,5 @@
+23.05.2010
+    * New - PianoRoll Speaker button has two selectable modes, single note and chords: (Tim)
 16.05.2010
     - Popup menus: Changed the text '<More...>' in submenus, to the first item's text in the submenu. (Tim)
     - Oops, removed redundant addAction() in RoutePopupMenu::addMenuItem(), causing duplicate items

@@ -64,6 +64,7 @@ EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
       _steprec    = false;
       _midiin     = false;
       _playEvents = true;
+      _playEventsMode = PlayEventsSingleNote;
       _setCurPartIfOnlyOneEventIsSelected = true;
       curVelo     = 70;
 
@@ -79,7 +80,7 @@ EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
 EventCanvas::~EventCanvas()
 {
   if(_playEvents)
-    stopPlayEvent();
+        stopPlayEvents();
 }
       
 //---------------------------------------------------------
@@ -265,12 +266,40 @@ bool EventCanvas::stuckNoteExists(int port, int channel, int pitch) const
   const int sz = _stuckNotes.size();
   for(int i = 0; i < sz; ++i)
   {
-    MusECore::MidiPlayEvent s_ev(_stuckNotes.at(i));
+    const MusECore::MidiPlayEvent& s_ev(_stuckNotes.at(i));
     if(s_ev.type() == MusECore::ME_NOTEON &&
        port == s_ev.port() &&
        channel == s_ev.channel() &&
        pitch == s_ev.dataA())
       return true;
+  }
+  return false;
+}
+
+bool EventCanvas::stopStuckNote(int port, int channel, int pitch)
+{
+  int playedPitch = pitch;
+  // Apply track transposition, but only for midi tracks, not drum tracks.
+  if(track()->isMidiTrack() && !track()->isDrumTrack())
+    playedPitch += track()->transposition;
+  const int sz = _stuckNotes.size();
+  for(int i = 0; i < sz; ++i)
+  {
+    MusECore::MidiPlayEvent s_ev(_stuckNotes.at(i));
+    if(s_ev.type() == MusECore::ME_NOTEON &&
+       port == s_ev.port() &&
+       channel == s_ev.channel() &&
+       playedPitch == s_ev.dataA())
+    {
+      unsigned int frame = MusEGlobal::audio->curFrame();
+      s_ev.setType(MusECore::ME_NOTEOFF);
+      s_ev.setTime(frame);
+      if(s_ev.dataB() == 0)
+        s_ev.setB(64);
+      MusEGlobal::midiPorts[port].putEvent(s_ev);
+      _stuckNotes.remove(i);
+      return true;
+    }
   }
   return false;
 }
@@ -621,20 +650,21 @@ void EventCanvas::startPlayEvent(int note, int velocity, int port, int channel)
       if (MusEGlobal::debugMsg)
         fprintf(stderr, "EventCanvas::startPlayEvent %d %d %d %d\n", note, velocity, port, channel);
 
-      // Release any current note.
-      stopPlayEvent();
-      
       if(!track())
+      {
+        stopPlayEvents();
         return;
+      }
       
       int playedPitch        = note;
       // Apply track transposition, but only for midi tracks, not drum tracks.
       if(track()->isMidiTrack() && !track()->isDrumTrack())
         playedPitch += track()->transposition;
       
+      // Release any current note.
+      stopStuckNote(port, channel, note);
+
       // play note:
-      if(stuckNoteExists(port, channel, playedPitch))
-        return;
       const MusECore::MidiPlayEvent e(MusEGlobal::audio->curFrame(), port, channel, MusECore::ME_NOTEON, playedPitch, velocity);
       _stuckNotes.push_back(e);
       // Send to the port and device.
@@ -654,7 +684,7 @@ void EventCanvas::startPlayEvent(int note, int velocity)
 //   stopPlayEvent
 //---------------------------------------------------------
 
-void EventCanvas::stopPlayEvent()
+void EventCanvas::stopPlayEvents()
       {
       // Stop all currently playing notes.
       unsigned int frame = MusEGlobal::audio->curFrame();

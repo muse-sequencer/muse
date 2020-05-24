@@ -116,8 +116,9 @@ class DrumCanvas : public EventCanvas {
       virtual void newItem(CItem*, bool, bool replace );
       virtual bool deleteItem(CItem*);
       virtual void itemPressed(const CItem*);
-      virtual void itemReleased(const CItem*, const QPoint&);
-      virtual void itemMoved(const CItem*, const QPoint&);
+      virtual void itemReleased(const CItem*, const QPoint& /*oldpos*/);
+      virtual void itemMoving(const CItem*, const QPoint& newMP) override;
+      virtual void itemMoved(const CItem*, const QPoint& oldMP);
 
       CItem* newItem(int tick, int instrument, int velocity);
 
