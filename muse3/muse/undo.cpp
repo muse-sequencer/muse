@@ -3503,21 +3503,11 @@ void Song::executeOperationGroup1(Undo& operations)
                           // The Pending Operations system will take 'ownership' of this and delete it at the appropriate time.
                           CtrlList* new_list = new CtrlList(*icl->second, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
                           
-                          // Erase any items in the erase list...
-                          //if(i->_eraseCtrlList)
                           if(i->_eraseCtrlList && !i->_eraseCtrlList->empty())
                           {
-                            //const std::size_t sz = i->_eraseCtrlList->size();
-                            //if(sz != 0)
-                            //{
-                              //const CtrlList& cl_r = *i->_eraseCtrlList;
-                              // Both of these should be valid.
-                              //ciCtrl n_s = new_list->find(cl_r[0].frame);      // The first item to be erased.
-                              //ciCtrl n_e = new_list->find(cl_r[sz - 1].frame); // The last item to be erased.
                               iCtrl n_s = new_list->find(i->_eraseCtrlList->begin()->second.frame); // The first item to be erased.
                               ciCtrl e_e = i->_eraseCtrlList->end();
                               --e_e;
-                              //ciCtrl n_e = new_list->find((--i->_eraseCtrlList->end())->second.frame); // The last item to be erased.
                               iCtrl n_e = new_list->find(e_e->second.frame); // The last item to be erased.
                               if(n_s != new_list->end() && n_e != new_list->end())
                               {
@@ -3525,13 +3515,11 @@ void Song::executeOperationGroup1(Undo& operations)
                                 ++n_e;
                                 new_list->erase(n_s, n_e);
                               }
-                            //}
                           }
                           
                           // Add any items in the add list...
                           if(i->_addCtrlList && !i->_addCtrlList->empty())
                             new_list->insert(i->_addCtrlList->begin(), i->_addCtrlList->end());
-                            //new_list->insert(const_cast<CtrlList*>(i->_addCtrlList)->begin(), const_cast<CtrlList*>(i->_addCtrlList)->end());
                           
                           // The operation will quickly switch the list in the RT stage then the delete the old list in the non-RT stage.
                           pendingOperations.add(PendingOperationItem(icl, new_list, PendingOperationItem::ModifyAudioCtrlValList));
