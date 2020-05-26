@@ -24,7 +24,8 @@
 file(GLOB script_files
       DoNothing 
       RemoveShortEvents 
-      DoubleSpeed 
+      SpeedHalf
+      SpeedDouble
       ConstantLength 
       SwingQuantize1
       RandomQuantize1
