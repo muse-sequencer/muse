@@ -213,6 +213,10 @@ extern QIcon* recArmOnSVGIcon;
 extern QIcon* monitorOffSVGIcon;
 extern QIcon* monitorOnSVGIcon;
 
+extern QIcon* velocityPerNoteSVGIcon;
+extern QIcon* midiControllerNewSVGIcon;
+extern QIcon* midiControllerSelectSVGIcon;
+extern QIcon* midiControllerRemoveSVGIcon;
 
 extern QIcon* soloSVGIcon;
 extern QIcon* soloProxySVGIcon;

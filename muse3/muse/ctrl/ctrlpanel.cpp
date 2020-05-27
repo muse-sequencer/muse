@@ -27,12 +27,8 @@
 #include "ctrlpanel.h"
 #include "ctrlcanvas.h"
 
-#include <QAction>
-#include <QPushButton>
 #include <QSizePolicy>
-#include <QHBoxLayout>
 #include <QTimer>
-#include <QVBoxLayout>
 #include <QColor>
 
 #include "muse_math.h"
@@ -63,7 +59,6 @@
 #include "menutitleitem.h"
 #include "popupmenu.h"
 #include "helper.h"
-#include "pixmap_button.h"
 
 namespace MusEGui {
 
@@ -79,17 +74,17 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
 
       //setFocusPolicy(Qt::NoFocus);
 
-      _knob = 0;
-      _slider = 0;
-      _patchEdit = 0;
-      _veloPerNoteButton = 0;
+      _knob = nullptr;
+      _slider = nullptr;
+      _patchEdit = nullptr;
+      _veloPerNoteButton = nullptr;
 
       _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
       _showval = MusEGlobal::config.showControlValues;
       editor = e;
       ctrlcanvas = c;
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-      QVBoxLayout* vbox = new QVBoxLayout;
+      vbox = new QVBoxLayout;
       QHBoxLayout* bbox = new QHBoxLayout;
       bbox->setSpacing (0);
       vbox->addLayout(bbox);
@@ -102,32 +97,34 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       kbox->setContentsMargins(0, 0, 0, 0);
       vbox->setSpacing (0);
       kbox->setSpacing(0);
+      lspacer = nullptr;
+      rspacer = nullptr;
 
       //: Select controller
-      selCtrl = new QPushButton(tr("S"), this);
-      selCtrl->setContentsMargins(0, 0, 0, 0);
+      selCtrl = new CompactToolButton(this);
+      selCtrl->setIcon(*midiControllerSelectSVGIcon);
+      selCtrl->setIconSize(QSize(14, 14));
+      selCtrl->setHasFixedIconSize(true);
+      selCtrl->setContentsMargins(4, 4, 4, 4);
       selCtrl->setFocusPolicy(Qt::NoFocus);
-      selCtrl->setFont(MusEGlobal::config.fonts[3]);
-      selCtrl->setFixedHeight(20);
-      selCtrl->setSizePolicy(
-         QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
+      selCtrl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
       selCtrl->setToolTip(tr("Select controller"));
       
       //: Remove panel (destroy button)
-      QPushButton* destroy = new QPushButton(tr("X"), this);
-      destroy->setContentsMargins(0, 0, 0, 0);
+      CompactToolButton* destroy = new CompactToolButton(this);
+      destroy->setIcon(*midiControllerRemoveSVGIcon);
+      destroy->setIconSize(QSize(14, 14));
+      destroy->setHasFixedIconSize(true);
+      destroy->setContentsMargins(4, 4, 4, 4);
       destroy->setFocusPolicy(Qt::NoFocus);
-      destroy->setFont(MusEGlobal::config.fonts[3]);
-      destroy->setFixedHeight(20);
-      destroy->setSizePolicy(
-         QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
+      destroy->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
       destroy->setToolTip(tr("Remove panel"));
-      // Cursor Position
+
       connect(selCtrl, SIGNAL(clicked()), SLOT(ctrlPopup()));
       connect(destroy, SIGNAL(clicked()), SIGNAL(destroyPanel()));
       
-      _track = 0;
-      _ctrl = 0;
+      _track = nullptr;
+      _ctrl = nullptr;
       _dnum = -1;
       
       bbox->addStretch();
@@ -135,8 +132,6 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       bbox->addWidget(destroy);
       bbox->addStretch();
 
-      buildPanel();
-      setController();
       configChanged();
 
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
@@ -148,124 +143,184 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
 
 void CtrlPanel::buildPanel()
 {
-  if(_veloPerNoteButton)
+  if(!_track || !_ctrl)
   {
-    delete _veloPerNoteButton;
-    _veloPerNoteButton = 0;
+    if(_veloPerNoteButton)
+    { kbox->removeWidget(_veloPerNoteButton); _veloPerNoteButton->deleteLater(); _veloPerNoteButton = nullptr; }
+
+    if(_slider) { kbox->removeWidget(_slider); _slider->deleteLater(); _slider = nullptr; }
+
+    if(_knob) { kbox->removeWidget(_knob); _knob->deleteLater(); _knob = nullptr; }
+
+    if(_patchEdit) { kbox->removeWidget(_patchEdit); _patchEdit->deleteLater(); _patchEdit = nullptr; }
+
+    if(lspacer) { kbox->removeItem(lspacer); delete lspacer; lspacer = nullptr; }
+
+    if(rspacer) { kbox->removeItem(rspacer); delete rspacer; rspacer = nullptr; }
+
+    return;
   }
-
-  if(_slider)
+  
+  if(_dnum == MusECore::CTRL_VELOCITY)
   {
-    delete _slider;
-    _slider = 0;
-  }
+    if(_slider) { kbox->removeWidget(_slider); _slider->deleteLater(); _slider = nullptr; }
 
-  if(_knob)
-  {
-    delete _knob;
-    _knob = 0;
-  }
+    if(_knob) { kbox->removeWidget(_knob); _knob->deleteLater(); _knob = nullptr; }
 
-  if(_patchEdit)
-  {
-    delete _patchEdit;
-    _patchEdit = 0;
-  }
+    if(_patchEdit) { kbox->removeWidget(_patchEdit); _patchEdit->deleteLater(); _patchEdit = nullptr; }
 
-  _patchEdit = new LCDPatchEdit(this);
-  _patchEdit->setReadoutOrientation(LCDPatchEdit::PatchVertical);
-  _patchEdit->setValue(MusECore::CTRL_VAL_UNKNOWN);
-  _patchEdit->setFocusPolicy(Qt::NoFocus);
-  // Don't allow anything here, it interferes with the CompactPatchEdit which sets it's own controls' tooltips.
-  //control->setToolTip(d->_toolTipText);
-  _patchEdit->setEnabled(false);
-  _patchEdit->hide();
-  _patchEdit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-  _patchEdit->setContentsMargins(0, 0, 0, 0);
-
-  _patchEdit->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
-  if(_patchEdit->font() != MusEGlobal::config.fonts[1])
-  {
-    _patchEdit->setFont(MusEGlobal::config.fonts[1]);
-    _patchEdit->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
-  }
-
-  connect(_patchEdit, SIGNAL(valueChanged(int,int)), SLOT(patchCtrlChanged(int)));
-  connect(_patchEdit, SIGNAL(rightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
-
-  kbox->addWidget(_patchEdit);
-
-  if(_preferKnobs)
-  {
-    _knob = new CompactKnob(this, "CtrlPanelKnob", CompactKnob::Bottom);
-    _knob->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-    _knob->setToolTip(tr("Manual adjust (Ctrl-double-click on/off)"));
-    //_knob->setFocusPolicy(Qt::NoFocus);
-    _knob->setRange(0.0, 127.0, 1.0);
-    _knob->setValue(0.0);
-    _knob->setEnabled(false);
-    _knob->hide();
-    _knob->setHasOffMode(true);
-    _knob->setOff(true);
-    _knob->setValueDecimals(0);
-    _knob->setFaceColor(MusEGlobal::config.midiControllerSliderDefaultColor);
-    _knob->setStep(1.0);
-    _knob->setShowLabel(false);
-    _knob->setShowValue(true);
-    _knob->setEnableValueToolTips(false);      // FIXME: Tooltip just gets in the way!
-    _knob->setShowValueToolTipsOnHover(false); //
-
-    if(_knob->font() != MusEGlobal::config.fonts[1])
+    if(!lspacer)
     {
-      _knob->setFont(MusEGlobal::config.fonts[1]);
-      _knob->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
+      lspacer = new QSpacerItem(0, 0);
+      kbox->addSpacerItem(lspacer);
     }
 
-    connect(_knob, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(ctrlChanged(double,bool,int,int)));
-    connect(_knob, SIGNAL(sliderRightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
+    if(!_veloPerNoteButton)
+    {
+      _veloPerNoteButton = new CompactToolButton(this);
+      _veloPerNoteButton->setIcon(*velocityPerNoteSVGIcon);
+      _veloPerNoteButton->setIconSize(QSize(19, 19));
+      _veloPerNoteButton->setHasFixedIconSize(true);
+      _veloPerNoteButton->setContentsMargins(2, 2, 2, 2);
+      _veloPerNoteButton->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
 
-    kbox->addWidget(_knob);
+      _veloPerNoteButton->setFocusPolicy(Qt::NoFocus);
+      _veloPerNoteButton->setCheckable(true);
+      _veloPerNoteButton->setToolTip(tr("All/Per-note velocity mode"));
+      if(ctrlcanvas)
+        _veloPerNoteButton->setChecked(ctrlcanvas->perNoteVeloMode());
+
+      connect(_veloPerNoteButton, SIGNAL(clicked()), SLOT(velPerNoteClicked()));
+
+      kbox->addWidget(_veloPerNoteButton);
+    }
+
+    if(!rspacer)
+    {
+      rspacer = new QSpacerItem(0, 0);
+      kbox->addSpacerItem(rspacer);
+    }
   }
   else
   {
-    _slider = new CompactSlider(this, "CtrlPanelSlider");
-    _slider->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-    _slider->setToolTip(tr("Manual adjust (Ctrl-double-click on/off)"));
-    //_slider->setFocusPolicy(Qt::NoFocus);
-    _slider->setRange(0.0, 127.0, 1.0);
-    _slider->setValue(0.0);
-    _slider->setEnabled(false);
-    _slider->hide();
-    _slider->setHasOffMode(true);
-    _slider->setOff(true);
-    _slider->setValueDecimals(0);
-    _slider->setBarColor(MusEGlobal::config.sliderDefaultColor);
-    _slider->setStep(1.0);
-    _slider->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
-    _slider->setEnableValueToolTips(false);      // FIXME: Tooltip just gets in the way!
-    _slider->setShowValueToolTipsOnHover(false); //
+    if(lspacer) { kbox->removeItem(lspacer); delete lspacer; lspacer = nullptr; }
 
-    if(_slider->font() != MusEGlobal::config.fonts[1])
+    if(rspacer) { kbox->removeItem(rspacer); delete rspacer; rspacer = nullptr; }
+
+    if(_dnum == MusECore::CTRL_PROGRAM)
     {
-      _slider->setFont(MusEGlobal::config.fonts[1]);
-      _slider->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
+      if(_veloPerNoteButton)
+      { kbox->removeWidget(_veloPerNoteButton); _veloPerNoteButton->deleteLater(); _veloPerNoteButton = nullptr; }
+
+      if(_slider) { kbox->removeWidget(_slider); _slider->deleteLater(); _slider = nullptr; }
+
+      if(_knob) { kbox->removeWidget(_knob); _knob->deleteLater(); _knob = nullptr; }
+
+      if(!_patchEdit)
+      {
+        _patchEdit = new LCDPatchEdit(this);
+        _patchEdit->setReadoutOrientation(LCDPatchEdit::PatchVertical);
+        _patchEdit->setValue(MusECore::CTRL_VAL_UNKNOWN);
+        _patchEdit->setFocusPolicy(Qt::NoFocus);
+        // Don't allow anything here, it interferes with the CompactPatchEdit which sets it's own controls' tooltips.
+        //control->setToolTip(d->_toolTipText);
+        _patchEdit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+        _patchEdit->setContentsMargins(0, 0, 0, 0);
+
+        _patchEdit->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
+        if(_patchEdit->font() != MusEGlobal::config.fonts[1])
+        {
+          _patchEdit->setFont(MusEGlobal::config.fonts[1]);
+          _patchEdit->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
+        }
+
+        connect(_patchEdit, SIGNAL(valueChanged(int,int)), SLOT(patchCtrlChanged(int)));
+        connect(_patchEdit, SIGNAL(rightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
+
+        kbox->addWidget(_patchEdit);
+      }
     }
+    else
+    {
+      if(_preferKnobs)
+      {
+        if(_veloPerNoteButton)
+        { kbox->removeWidget(_veloPerNoteButton); _veloPerNoteButton->deleteLater(); _veloPerNoteButton = nullptr; }
 
-    connect(_slider, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(ctrlChanged(double,bool,int,int)));
-    connect(_slider, SIGNAL(sliderRightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
+        if(_slider) { kbox->removeWidget(_slider); _slider->deleteLater(); _slider = nullptr; }
 
-    kbox->addWidget(_slider);
+        if(_patchEdit) { kbox->removeWidget(_patchEdit); _patchEdit->deleteLater(); _patchEdit = nullptr; }
+
+        if(!_knob)
+        {
+          _knob = new CompactKnob(this, "CtrlPanelKnob", CompactKnob::Bottom);
+          _knob->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+          _knob->setToolTip(tr("Manual adjust (Ctrl-double-click on/off)"));
+          //_knob->setFocusPolicy(Qt::NoFocus);
+          _knob->setRange(0.0, 127.0, 1.0);
+          _knob->setValue(0.0);
+          _knob->setHasOffMode(true);
+          _knob->setOff(true);
+          _knob->setValueDecimals(0);
+          _knob->setFaceColor(MusEGlobal::config.midiControllerSliderDefaultColor);
+          _knob->setStep(1.0);
+          _knob->setShowLabel(false);
+          _knob->setShowValue(true);
+          _knob->setEnableValueToolTips(false);      // FIXME: Tooltip just gets in the way!
+          _knob->setShowValueToolTipsOnHover(false); //
+
+          if(_knob->font() != MusEGlobal::config.fonts[1])
+          {
+            _knob->setFont(MusEGlobal::config.fonts[1]);
+            _knob->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
+          }
+
+          connect(_knob, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(ctrlChanged(double,bool,int,int)));
+          connect(_knob, SIGNAL(sliderRightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
+
+          kbox->addWidget(_knob);
+        }
+      }
+      else
+      {
+        if(_veloPerNoteButton)
+        { kbox->removeWidget(_veloPerNoteButton); _veloPerNoteButton->deleteLater(); _veloPerNoteButton = nullptr; }
+
+        if(_knob) { kbox->removeWidget(_knob); _knob->deleteLater(); _knob = nullptr; }
+
+        if(_patchEdit) { kbox->removeWidget(_patchEdit); _patchEdit->deleteLater(); _patchEdit = nullptr; }
+
+        if(!_slider)
+        {
+          _slider = new CompactSlider(this, "CtrlPanelSlider");
+          _slider->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+          _slider->setToolTip(tr("Manual adjust (Ctrl-double-click on/off)"));
+          //_slider->setFocusPolicy(Qt::NoFocus);
+          _slider->setRange(0.0, 127.0, 1.0);
+          _slider->setValue(0.0);
+          _slider->setHasOffMode(true);
+          _slider->setOff(true);
+          _slider->setValueDecimals(0);
+          _slider->setBarColor(MusEGlobal::config.sliderDefaultColor);
+          _slider->setStep(1.0);
+          _slider->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
+          _slider->setEnableValueToolTips(false);      // FIXME: Tooltip just gets in the way!
+          _slider->setShowValueToolTipsOnHover(false); //
+
+          if(_slider->font() != MusEGlobal::config.fonts[1])
+          {
+            _slider->setFont(MusEGlobal::config.fonts[1]);
+            _slider->setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
+          }
+
+          connect(_slider, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(ctrlChanged(double,bool,int,int)));
+          connect(_slider, SIGNAL(sliderRightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
+
+          kbox->addWidget(_slider);
+        }
+      }
+    }
   }
-
-  _veloPerNoteButton = new PixmapButton(veloPerNote_OnIcon, veloPerNote_OffIcon, 2, this);  // Margin = 2
-  _veloPerNoteButton->setFocusPolicy(Qt::NoFocus);
-  _veloPerNoteButton->setCheckable(true);
-  _veloPerNoteButton->setToolTip(tr("All/Per-note velocity mode"));
-  _veloPerNoteButton->setEnabled(false);
-  _veloPerNoteButton->hide();
-  connect(_veloPerNoteButton, SIGNAL(clicked()), SLOT(velPerNoteClicked()));
-
-  kbox->addWidget(_veloPerNoteButton);
 }
 
 //---------------------------------------------------------
@@ -493,7 +548,6 @@ void CtrlPanel::configChanged()
   if(_preferKnobs != MusEGlobal::config.preferKnobsVsSliders)
   {
     _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
-    buildPanel();
     setController();
   }
 
@@ -602,23 +656,7 @@ void CtrlPanel::setController()
 {
   if(!_track || !_ctrl)
   {
-    if(_patchEdit)
-    {
-      _patchEdit->setEnabled(false);
-      _patchEdit->hide();
-    }
-
-    if(_knob)
-    {
-      _knob->setEnabled(false);
-      _knob->hide();
-    }
-
-    if(_slider)
-    {
-      _slider->setEnabled(false);
-      _slider->hide();
-    }
+    buildPanel();
     inHeartBeat = false;
     return;
   }
@@ -647,33 +685,13 @@ void CtrlPanel::setController()
     }
   }
 
+  buildPanel();
+
   if(_dnum == MusECore::CTRL_VELOCITY)
   {
-    if(_patchEdit)
-    {
-      _patchEdit->setEnabled(false);
-      _patchEdit->hide();
-    }
-
-    if(_knob)
-    {
-      _knob->setEnabled(false);
-      _knob->hide();
-    }
-
-    if(_slider)
-    {
-      _slider->setEnabled(false);
-      _slider->hide();
-    }
-    _veloPerNoteButton->setEnabled(true);
-    _veloPerNoteButton->show();
   }
   else
   {
-    _veloPerNoteButton->setEnabled(false);
-    _veloPerNoteButton->hide();
-
     MusECore::MidiCtrlValListList* mcvll = mp->controller();
 
     int mn; int mx; int v;
@@ -681,17 +699,6 @@ void CtrlPanel::setController()
     {
       if(_patchEdit)
       {
-        _patchEdit->setEnabled(true);
-        if(_knob)
-        {
-          _knob->setEnabled(false);
-          _knob->hide();
-        }
-        if(_slider)
-        {
-          _slider->setEnabled(false);
-          _slider->hide();
-        }
         MusECore::ciMidiCtrlValList imcvl = mcvll->find(ch, _dnum);
         if(imcvl != mcvll->end())
         {
@@ -705,23 +712,9 @@ void CtrlPanel::setController()
           _patchEdit->setValue(hwVal);
           _patchEdit->blockSignals(false);
         }
-        _patchEdit->show();
-        _patchEdit->update();
       }
       else
       {
-        if(_knob)
-        {
-          _knob->setEnabled(true);
-          if(_slider)
-          {
-            _slider->setEnabled(false);
-            _slider->hide();
-          }
-        }
-        else if(_slider)
-          _slider->setEnabled(true);
-
         mn = 1;
         mx = 128;
         v = mp->hwCtrlState(ch, _dnum);
@@ -757,36 +750,15 @@ void CtrlPanel::setController()
         if(_knob)
         {
           _knob->setValue(double(v));
-          _knob->show();
-          _knob->update();
         }
         else if(_slider)
         {
           _slider->setValue(double(v));
-          _slider->show();
-          _slider->update();
         }
       }
     }
     else
     {
-      if(_patchEdit)
-      {
-        _patchEdit->setEnabled(false);
-        _patchEdit->hide();
-      }
-      if(_knob)
-      {
-        _knob->setEnabled(true);
-        if(_slider)
-        {
-          _slider->setEnabled(false);
-          _slider->hide();
-        }
-      }
-      else if(_slider)
-        _slider->setEnabled(true);
-
       mn = _ctrl->minVal();
       mx = _ctrl->maxVal();
       v = mp->hwCtrlState(ch, _dnum);
@@ -816,14 +788,10 @@ void CtrlPanel::setController()
       if(_knob)
       {
         _knob->setValue(double(v));
-        _knob->show();
-        _knob->update();
       }
       else if(_slider)
       {
         _slider->setValue(double(v));
-        _slider->show();
-        _slider->update();
       }
     }
   }
@@ -859,8 +827,6 @@ void CtrlPanel::setControlColor()
     // Colours in these sections were not updating with stylesheet colours,
     //  because normally that's only done at creation, and we create these
     //  things once and keep them around waiting to be shown.
-    // TODO : Why create all three? Try dynamically and destroying only
-    //         what's needed when setController is called.
     // Anyway, this trick recommended by help. Tested OK.
     // Good demonstration of how to apply a stylesheet after a property has been changed.
     style()->unpolish(_patchEdit);
@@ -998,7 +964,7 @@ void CtrlPanel::ctrlRightClicked(const QPoint& p, int /*id*/)
 
 void CtrlPanel::velPerNoteClicked()
 {
-  if(ctrlcanvas && _veloPerNoteButton->isChecked() != ctrlcanvas->perNoteVeloMode())
+  if(ctrlcanvas && _veloPerNoteButton && _veloPerNoteButton->isChecked() != ctrlcanvas->perNoteVeloMode())
     ctrlcanvas->setPerNoteVeloMode(_veloPerNoteButton->isChecked());
 }
 
@@ -1008,8 +974,8 @@ void CtrlPanel::velPerNoteClicked()
 
 void CtrlPanel::setVeloPerNoteMode(bool v)
 {
-  if(v != _veloPerNoteButton->isChecked())
-    _veloPerNoteButton->setDown(v);
+  if(_veloPerNoteButton && v != _veloPerNoteButton->isChecked())
+    _veloPerNoteButton->setChecked(v);
 }
 
 } // namespace MusEGui

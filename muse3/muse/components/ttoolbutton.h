@@ -24,9 +24,8 @@
 #define __TTOOLBUTTON_H__
 
 #include <QToolButton>
-
-class QIcon;
-class QPaintEvent;
+#include <QIcon>
+#include <QPaintEvent>
 
 namespace MusEGui {
 

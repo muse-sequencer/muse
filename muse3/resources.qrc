@@ -110,5 +110,10 @@
         <file>qss/scrollbar_small_vertical.qss</file>
         <file>svg/audio_stretch.svg</file>
         <file>svg/audio_resample.svg</file>
+        <file>svg/velocity_per_note.svg</file>
+        <file>svg/velocity_all_notes.svg</file>
+        <file>svg/midi_controller_new.svg</file>
+        <file>svg/midi_controller_select.svg</file>
+        <file>svg/midi_controller_remove.svg</file>
     </qresource>
 </RCC>

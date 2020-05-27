@@ -21,25 +21,16 @@
 //
 //=========================================================
 
-#include <QAction>
 #include <QClipboard>
-#include <QCloseEvent>
 #include <QGridLayout>
 #include <QKeyEvent>
 #include <QList>
-#include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QPushButton>
-#include <QResizeEvent>
 #include <QSizeGrip>
-#include <QToolButton>
 #include <QWhatsThis>
 #include <QSettings>
-#include <QComboBox>
-#include <QLabel>
 #include <QCursor>
-#include <QPoint>
 #include <QRect>
 #include <QMimeData>
 
@@ -420,19 +411,21 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       genTrackInfo(trackInfoWidget);
       
       split1            = new MusEGui::Splitter(Qt::Vertical, mainw, "split1");
-      ctrl = new QToolButton(mainw);
-      ctrl->setText("Ctrl");
+      ctrl = new CompactToolButton(mainw);
+      ctrl->setIcon(*midiControllerNewSVGIcon);
+      ctrl->setIconSize(QSize(14, 14));
+      ctrl->setHasFixedIconSize(true);
+      ctrl->setContentsMargins(4, 4, 4, 4);
       ctrl->setObjectName("Ctrl");
-      ctrl->setFont(MusEGlobal::config.fonts[3]);
       ctrl->setFocusPolicy(Qt::NoFocus);
+      ctrl->setFixedWidth(40);
+      ctrl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
+      ctrl->setToolTip(tr("Add controller view"));
+
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
       hscroll           = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, _viewState.xscale(), 20000, Qt::Horizontal, mainw);
       hscroll->setFocusPolicy(Qt::NoFocus);
       hscroll->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-
-      ctrl->setFixedSize(40, hscroll->sizeHint().height());
-      ctrl->setToolTip(tr("Add controller view"));
-      //ctrl->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
       QSizeGrip* corner = new QSizeGrip(mainw);
       corner->setFixedHeight(hscroll->sizeHint().height());
