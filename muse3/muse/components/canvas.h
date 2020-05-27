@@ -100,11 +100,7 @@ class Canvas : public View {
       enum MenuIdBase {
             TOOLS_ID_BASE=10000
             };
-      enum ResizeDirection {
-            RESIZE_TO_THE_LEFT,
-            RESIZE_TO_THE_RIGHT
-      };
-            
+
       CItemMap items;
       CItemMap moving;
       CItem* newCItem;
@@ -121,7 +117,7 @@ class Canvas : public View {
       QPoint global_start;
       Tool _tool;
       unsigned pos[3];
-      ResizeDirection resizeDirection;
+      MusECore::ResizeDirection resizeDirection;
       
       HScrollDir hscrollDir;
       VScrollDir vscrollDir;

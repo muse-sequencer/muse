@@ -62,7 +62,7 @@ const char* UndoOp::typeName()
       static const char* name[] = {
             "AddRoute", "DeleteRoute", 
             "AddTrack", "DeleteTrack", 
-            "AddPart",  "DeletePart", "MovePart", "ModifyPartLength", "ModifyPartName", "SelectPart",
+            "AddPart",  "DeletePart", "MovePart", "ModifyPartStart", "ModifyPartLength", "ModifyPartName", "SelectPart",
             "AddEvent", "DeleteEvent", "ModifyEvent", "SelectEvent",
             "AddAudioCtrlVal", "DeleteAudioCtrlVal", "ModifyAudioCtrlVal", "ModifyAudioCtrlValList",
             "AddTempo", "DeleteTempo", "ModifyTempo", "SetTempo", "SetStaticTempo", "SetGlobalTempo", "EnableMasterTrack",
@@ -412,6 +412,9 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
     case UndoOp::ModifyPartName:
       fprintf(stderr, "Undo::insert: ModifyPartName\n");
     break;
+    case UndoOp::ModifyPartStart:
+      fprintf(stderr, "Undo::insert: ModifyPartStart\n");
+    break;
     case UndoOp::ModifyPartLength:
       fprintf(stderr, "Undo::insert: ModifyPartLength\n");
     break;
@@ -689,8 +692,17 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             return;  
           }
         break;
-        
-        case UndoOp::ModifyPartLength:
+
+      case UndoOp::ModifyPartStart:
+          if(uo.type == UndoOp::ModifyPartStart && uo.part == n_op.part)
+          {
+              printf("UndoOp::ModifyPartStart\n");
+              // Simply replace the new value.
+              uo.new_partlen_or_pos = n_op.new_partlen_or_pos;
+              return;
+          }
+          break;
+      case UndoOp::ModifyPartLength:
           if(uo.type == UndoOp::ModifyPartLength && uo.part == n_op.part)  
           {
             // Simply replace the new value.
@@ -1887,9 +1899,9 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, bool selected_, bool sel_old_,
 UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_len_or_pos, unsigned int new_len_or_pos,
                Pos::TType new_time_type_, const Track* oTrack, const Track* nTrack, bool noUndo)
 {
-    assert(type_== ModifyPartLength || type_== MovePart);
+    assert(type_== ModifyPartLength || type_== MovePart || type_ == ModifyPartStart);
     assert(part_);
-    
+
     type = type_;
     part = part_;
     _noUndo = noUndo;
@@ -2442,7 +2454,15 @@ void Song::revertOperationGroup1(Undo& operations)
                         addPortCtrlEvents(editable_part, editable_part->tick(), i->old_partlen_or_pos, editable_part->track(), pendingOperations);
                         updateFlags |= SC_PART_MODIFIED;
                         break;
-                        
+                  case UndoOp::ModifyPartStart:
+                        {
+                        removePortCtrlEvents(editable_part, editable_part->track(), pendingOperations);
+                        pendingOperations.add(PendingOperationItem(editable_part, i->old_partlen_or_pos, PendingOperationItem::ModifyPartStart));
+                        addPortCtrlEvents(editable_part, editable_part->tick(), i->old_partlen_or_pos, editable_part->track(), pendingOperations);
+                        updateFlags |= SC_PART_MODIFIED;
+                        }
+                        break;
+
                   case UndoOp::MovePart:
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:MovePart ** calling parts->movePartOperation\n");
@@ -3286,7 +3306,15 @@ void Song::executeOperationGroup1(Undo& operations)
                         pendingOperations.add(PendingOperationItem(editable_part, i->_newName, PendingOperationItem::ModifyPartName));
                         updateFlags |= SC_PART_MODIFIED;
                         break;
-                        
+
+                  case UndoOp::ModifyPartStart:
+                      {
+                         removePortCtrlEvents(editable_part, editable_part->track(), pendingOperations);
+                         pendingOperations.add(PendingOperationItem(editable_part, i->new_partlen_or_pos, PendingOperationItem::ModifyPartStart));
+                         addPortCtrlEvents(editable_part, editable_part->posValue(), i->new_partlen_or_pos, editable_part->track(), pendingOperations);
+                         updateFlags |= SC_PART_MODIFIED;
+                      }
+                      break;
                   case UndoOp::ModifyPartLength: 
                         {
                           unsigned p = Pos::convert(editable_part->posValue() + i->new_partlen_or_pos, editable_part->type(), Pos::TICKS);

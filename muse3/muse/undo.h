@@ -43,6 +43,11 @@ class CtrlListList;
 class CtrlList;
 struct CtrlVal;
 
+enum class ResizeDirection {
+      RESIZE_TO_THE_LEFT,
+      RESIZE_TO_THE_RIGHT
+};
+
 extern std::list<QString> temporaryWavFiles; //!< Used for storing all tmp-files, for cleanup on shutdown
 //---------------------------------------------------------
 //   UndoOp
@@ -52,7 +57,7 @@ struct UndoOp {
       enum UndoType {
             AddRoute, DeleteRoute,
             AddTrack, DeleteTrack,
-            AddPart,  DeletePart,  MovePart, ModifyPartLength, ModifyPartName, SelectPart,
+            AddPart,  DeletePart,  MovePart, ModifyPartStart, ModifyPartLength, ModifyPartName, SelectPart,
             AddEvent, DeleteEvent, ModifyEvent, SelectEvent,
             AddAudioCtrlVal, DeleteAudioCtrlVal, ModifyAudioCtrlVal, ModifyAudioCtrlValList,
             // Add, delete and modify operate directly on the list.
