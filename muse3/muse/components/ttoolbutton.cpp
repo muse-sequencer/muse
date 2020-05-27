@@ -59,6 +59,7 @@ CompactToolButton::CompactToolButton(QWidget* parent, const QIcon& icon, bool ha
 {
   setObjectName(name);
   _blinkPhase = false;
+  _scaleDownIcon = false;
 }
 
 QSize CompactToolButton::sizeHint() const
@@ -139,14 +140,15 @@ void CompactToolButton::paintEvent(QPaintEvent* ev)
 
   QPainter p(this);
   const QRect cont_r = contentsRect();
-  QRect r;
   if(_hasFixedIconSize)
   {
     const QSize sz = iconSize();
-    const int x = cont_r.x() + (cont_r.width() - sz.width()) / 2;
-    const int y = cont_r.y() + (cont_r.height() - sz.height()) / 2;
-    r = QRect(x, y, sz.width(), sz.height());
-    _icon.paint(&p, x, y, sz.width(), sz.height(), Qt::AlignCenter, mode, state);
+    // Scale the icon down if it doesn't fit.
+    const int iw = (_scaleDownIcon && sz.width() > cont_r.width()) ? cont_r.width() : sz.width();
+    const int ih = (_scaleDownIcon && sz.height() > cont_r.height()) ? cont_r.height() : sz.height();
+    const int x = cont_r.x() + (cont_r.width() - iw) / 2;
+    const int y = cont_r.y() + (cont_r.height() - ih) / 2;
+    _icon.paint(&p, x, y, iw, ih, Qt::AlignCenter, mode, state);
   }
   else
     _icon.paint(&p, cont_r, Qt::AlignCenter, mode, state);

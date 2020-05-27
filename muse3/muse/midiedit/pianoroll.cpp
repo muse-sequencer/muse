@@ -349,12 +349,12 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       ctrl->setContentsMargins(4, 4, 4, 4);
       ctrl->setObjectName("Ctrl");
       ctrl->setFocusPolicy(Qt::NoFocus);
-      ctrl->setFixedWidth(pianoWidth);
-      ctrl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
+      //ctrl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
       ctrl->setToolTip(tr("Add Controller View"));
       
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
       hscroll = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, _viewState.xscale(), 20000, Qt::Horizontal, mainw);
+      ctrl->setFixedSize(pianoWidth, hscroll->sizeHint().height());
 
       QSizeGrip* corner = new QSizeGrip(mainw);
 

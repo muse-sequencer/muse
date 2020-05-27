@@ -362,6 +362,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       trackInfoButton  = new CompactToolButton(this);
       trackInfoButton->setContentsMargins(0, 0, 0, 0);
       trackInfoButton->setIcon(*mixerstripSVGIcon);
+      trackInfoButton->setHasFixedIconSize(false);
       trackInfoButton->setToolTip(tr("Show mixer strip for current track"));
       trackInfoButton->setCheckable(true);
       trackInfoButton->setChecked(showTrackinfoFlag);

@@ -418,14 +418,15 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       ctrl->setContentsMargins(4, 4, 4, 4);
       ctrl->setObjectName("Ctrl");
       ctrl->setFocusPolicy(Qt::NoFocus);
-      ctrl->setFixedWidth(40);
-      ctrl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
+      //ctrl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
       ctrl->setToolTip(tr("Add controller view"));
 
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
       hscroll           = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, _viewState.xscale(), 20000, Qt::Horizontal, mainw);
       hscroll->setFocusPolicy(Qt::NoFocus);
       hscroll->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+
+      ctrl->setFixedSize(40, hscroll->sizeHint().height());
 
       QSizeGrip* corner = new QSizeGrip(mainw);
       corner->setFixedHeight(hscroll->sizeHint().height());
