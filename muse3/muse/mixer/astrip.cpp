@@ -1546,7 +1546,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       sliderGrid = new QGridLayout();
       sliderGrid->setContentsMargins(2, 2, 2, 2);
       sliderGrid->setSpacing(0);
-      sliderGrid->setHorizontalSpacing(2);
+//      sliderGrid->setHorizontalSpacing(2);
 
       /*-------------- clipper label -------------------*/
       _clipperLayout = new QHBoxLayout();
@@ -1602,7 +1602,12 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
             //meter[i]->setRange(MusEGlobal::config.minSlider, 10.0);
             meter[i]->setRange(MusEGlobal::config.minMeter, volSliderMax);
             meter[i]->setRefreshRate(MusEGlobal::config.guiRefresh);
-            meter[i]->setFixedWidth(_meterWidth);
+            if (meter[i]->vu3d()) {
+                meter[i]->setFixedWidth(_meterWidth);
+                meter[i]->setFrameStyle(QFrame::NoFrame);
+            }
+            else
+                meter[i]->setFixedWidth(_meterWidth / channel);
             meter[i]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
             meter[i]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
             connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetClipper()));
