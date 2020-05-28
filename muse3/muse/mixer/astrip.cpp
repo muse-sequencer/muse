@@ -1480,25 +1480,33 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       _upperRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
       _upperRack->setFocusPolicy(Qt::NoFocus);
 
-      int ch = 0;
-      for (; ch < channel; ++ch)
-      {
-            meter[ch] = new Meter(this, Meter::DBMeter, Qt::Vertical, MusEGlobal::config.minMeter, volSliderMax);
-            meter[ch]->setRefreshRate(MusEGlobal::config.guiRefresh);
-            meter[ch]->setFixedWidth(_meterWidth);
-            meter[ch]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-            _clipperLabel[ch] = new ClipperLabel(this);
-            _clipperLabel[ch]->setContentsMargins(0, 0, 0, 0);
-            _clipperLabel[ch]->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-            setClipperTooltip(ch);
-            connect(_clipperLabel[ch], SIGNAL(clicked()), SLOT(resetClipper()));
-
-      }
-      for (; ch < MusECore::MAX_CHANNELS; ++ch)
-      {
-            meter[ch] = nullptr;
-            _clipperLabel[ch] = nullptr;
-      }
+//      {
+//          int ch = 0;
+//          for (; ch < channel; ++ch)
+//          {
+//              //            meter[ch] = new Meter(this, Meter::DBMeter, Qt::Vertical, MusEGlobal::config.minMeter, volSliderMax);
+//              //            meter[ch]->setRefreshRate(MusEGlobal::config.guiRefresh);
+//              ////            meter[ch]->setFixedWidth(_meterWidth);
+//              //            if (meter[ch]->vu3d()) {
+//              //                meter[ch]->setFixedWidth(_meterWidth);
+//              //            }
+//              //            else {
+//              //                meter[ch]->setContentsMargins(0,0,0,0);
+//              //                meter[ch]->setFixedWidth(_meterWidth / channel);
+//              //            }
+//              //            meter[ch]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+//              _clipperLabel[ch] = new ClipperLabel(this);
+//              _clipperLabel[ch]->setContentsMargins(0, 0, 0, 0);
+//              _clipperLabel[ch]->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+//              setClipperTooltip(ch);
+//              connect(_clipperLabel[ch], SIGNAL(clicked()), SLOT(resetClipper()));
+//          }
+//          for (; ch < MusECore::MAX_CHANNELS; ++ch)
+//          {
+//              meter[ch] = nullptr;
+//              _clipperLabel[ch] = nullptr;
+//          }
+//      }
 
       //---------------------------------------------------
       //    plugin rack
@@ -1544,15 +1552,34 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //---------------------------------------------------
 
       sliderGrid = new QGridLayout();
-      sliderGrid->setContentsMargins(2, 2, 2, 2);
+      sliderGrid->setContentsMargins(2, 0, 2, 2);
       sliderGrid->setSpacing(0);
-//      sliderGrid->setHorizontalSpacing(2);
+      sliderGrid->setHorizontalSpacing(2);
 
       /*-------------- clipper label -------------------*/
       _clipperLayout = new QHBoxLayout();
       _clipperLayout->setSpacing(0);
-      for(int ch = 0; ch < channel; ++ch)
-        _clipperLayout->addWidget(_clipperLabel[ch]);
+
+      {
+          int ch = 0;
+          for (; ch < channel; ++ch)
+          {
+              _clipperLabel[ch] = new ClipperLabel(this);
+              _clipperLabel[ch]->setContentsMargins(0, 0, 0, 0);
+              _clipperLabel[ch]->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+              setClipperTooltip(ch);
+              connect(_clipperLabel[ch], SIGNAL(clicked()), SLOT(resetClipper()));
+              _clipperLayout->addWidget(_clipperLabel[ch]);
+          }
+          for (; ch < MusECore::MAX_CHANNELS; ++ch)
+          {
+              _clipperLabel[ch] = nullptr;
+              meter[ch] = nullptr;
+          }
+      }
+
+//      for(int ch = 0; ch < channel; ++ch)
+//        _clipperLayout->addWidget(_clipperLabel[ch]);
       sliderGrid->addLayout(_clipperLayout, 0, 0, 1, -1, Qt::AlignCenter);
       sliderGrid->addItem(new QSpacerItem(0, 1), 1, 0, 1, -1);
 
@@ -1599,21 +1626,20 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       sliderGrid->addWidget(slider, 2, 0, Qt::AlignHCenter);
 
       for (int i = 0; i < channel; ++i) {
-            //meter[i]->setRange(MusEGlobal::config.minSlider, 10.0);
-            meter[i]->setRange(MusEGlobal::config.minMeter, volSliderMax);
-            meter[i]->setRefreshRate(MusEGlobal::config.guiRefresh);
-            if (meter[i]->vu3d()) {
-                meter[i]->setFixedWidth(_meterWidth);
-                meter[i]->setFrameStyle(QFrame::NoFrame);
-            }
-            else
-                meter[i]->setFixedWidth(_meterWidth / channel);
-            meter[i]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-            meter[i]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
-            connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetClipper()));
-            sliderGrid->addWidget(meter[i], 2, i+1, Qt::AlignHCenter);
-            meter[i]->show();
-            }
+          meter[i] = new Meter(this, Meter::DBMeter, Qt::Vertical, MusEGlobal::config.minMeter, volSliderMax);
+          meter[i]->setRefreshRate(MusEGlobal::config.guiRefresh);
+          if (meter[i]->vu3d()) {
+              meter[i]->setFixedWidth(_meterWidth);
+          }
+          else {
+              meter[i]->setFixedWidth(_meterWidth / channel);
+          }
+          meter[i]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+          meter[i]->setRange(MusEGlobal::config.minMeter, volSliderMax);
+          meter[i]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
+          connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetClipper()));
+          sliderGrid->addWidget(meter[i], 2, i+1, Qt::AlignHCenter);
+      }
 
       addGridLayout(sliderGrid, _sliderPos);
 

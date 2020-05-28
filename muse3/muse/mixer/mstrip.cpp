@@ -1615,7 +1615,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       sliderGrid = new QGridLayout(); 
       sliderGrid->setSpacing(0);
       sliderGrid->setHorizontalSpacing(2);
-      sliderGrid->setContentsMargins(2, 2, 2, 2);
+      sliderGrid->setContentsMargins(2, 2, 4, 2);
       sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
       sliderGrid->addWidget(meter[0], 0, 1, Qt::AlignHCenter);
       
