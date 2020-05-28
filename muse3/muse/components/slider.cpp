@@ -98,7 +98,7 @@ Slider::Slider(QWidget *parent, const char *name,
       horizontal_hint = 40;
       vertical_hint = 40;
       
-      d_sliderRect.setRect(0, 0, 8, 8);
+      d_sliderRect.setRect(0, 0, 0, 0);
       setOrientation(orient);
       d_scale.setTextHighlightMode(textHighlightMode);
       }

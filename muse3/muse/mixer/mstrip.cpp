@@ -1394,6 +1394,25 @@ QWidget* MidiComponentRack::setupComponentTabbing(QWidget* previousWidget)
 
 
 //---------------------------------------------------------
+//   MidiStripProperties
+//---------------------------------------------------------
+
+MidiStripProperties::MidiStripProperties()
+{
+    _sliderRadius = 4;
+    _sliderRadiusHandle = 2;
+    _sliderHandleHeight = 16;
+    _sliderHandleWidth = 16;
+    _sliderFillOver = true;
+    _sliderUseGradient = true;
+    _sliderGrooveWidth = 14;
+    _sliderScalePos = Slider::InsideVertical;
+    _meterWidth = Strip::FIXED_METER_WIDTH;
+    ensurePolished();
+}
+
+
+//---------------------------------------------------------
 //   MidiStrip
 //---------------------------------------------------------
 
@@ -1415,23 +1434,25 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       // Start the layout in mode A (normal, racks on left).
       _isExpanded = false;
 
-      _sliderRadius = 4;
-      _sliderRadiusHandle = 2;
-      _sliderHandleHeight = 16;
-      _sliderHandleWidth = 16;
-      _sliderFillOver = true;
-      _sliderUseGradient = true;
-      _sliderGrooveWidth = 14;
-      _sliderScalePos = Slider::InsideVertical;
-      _meterWidth = FIXED_METER_WIDTH;
+      MidiStripProperties props;
+      //      _bgColor = props.bgColor();
+      _sliderRadius = props.sliderRadius();
+      _sliderRadiusHandle = props.sliderRadiusHandle();
+      _sliderHandleHeight = props.sliderHandleHeight();
+      _sliderHandleWidth = props.sliderHandleWidth();
+      _sliderGrooveWidth = props.sliderGrooveWidth();
+      _sliderFillOver = props.sliderFillOver();
+      _sliderUseGradient = props.sliderUseGradient();
+      _sliderScalePos = props.sliderScalePos();
+      _meterWidth = props.meterWidth();
       
       // Set the whole strip's font, except for the label.
       setFont(MusEGlobal::config.fonts[1]); // For some reason must keep this, the upper rack is too tall at first.
-      ensurePolished();
-      if (!_bgColor.isValid())
-          _bgColor = palette().window().color();
-      setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1])
-                    + "QWidget {background-color: " + _bgColor.name() + "}");
+//      ensurePolished();
+//      if (!_bgColor.isValid())
+//          _bgColor = palette().window().color();
+      setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
+//                    + "QWidget {background-color: " + _bgColor.name() + "}");
 
       // Clear so the meters don't start off by showing stale values.
       t->setActivity(0);

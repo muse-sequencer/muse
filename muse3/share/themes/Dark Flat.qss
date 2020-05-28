@@ -187,10 +187,7 @@ MusEGui--TList {
  * Slider scale position:
  * None = 0, Left = 1, Right = 2, InsideVertical = 6
  */
-MusEGui--AudioStrip {
-/*
-  qproperty-bgColor: Black;
-*/
+MusEGui--AudioStripProperties {
   qproperty-sliderRadius: 1;
   qproperty-sliderRadiusHandle: 1;
   qproperty-sliderHandleHeight: 26;
@@ -202,10 +199,7 @@ MusEGui--AudioStrip {
   qproperty-meterWidth: 10;
 }
 
-MusEGui--MidiStrip {
-/*
-  qproperty-bgColor: Black;
-*/
+MusEGui--MidiStripProperties {
   qproperty-sliderRadius: 1;
   qproperty-sliderRadiusHandle: 1;
   qproperty-sliderHandleHeight: 26;

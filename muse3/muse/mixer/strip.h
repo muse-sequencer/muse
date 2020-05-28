@@ -783,7 +783,7 @@ class Strip : public QFrame {
       bool getStripVisible() const { return _visible; }
       void setStripVisible(bool v) { _visible = v; }
 
-      static const int FIXED_METER_WIDTH;
+      static constexpr int FIXED_METER_WIDTH = 7;
       
       void setRecordFlag(bool flag);
       MusECore::Track* getTrack() const { return track; }
