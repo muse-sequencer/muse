@@ -37,7 +37,6 @@
 // #include "utils.h"
 #include "fastlog.h"
 #include "muse_math.h"
-#include "gconfig.h"
 
 // Just an experiment. Some undesirable effects, see below...
 //#define _USE_CLIPPER 1 
@@ -512,7 +511,7 @@ void Meter::setRefreshRate(int rate)
   _refreshRate = rate;
 }
 
-void Meter::setPrimaryColor(const QColor& color)
+void Meter::setPrimaryColor(const QColor& color, const QColor &bgColor)
 {
   _primaryColor = color; 
   int r = 0;
@@ -528,7 +527,7 @@ void Meter::setPrimaryColor(const QColor& color)
       darkGradGreen.setColorAt(1, dark_green_begin);
       darkGradGreen.setColorAt(0, dark_green_end);
   } else
-      _bgColor = MusEGlobal::config.meterBackgroundColor;
+      _bgColor = bgColor;
 
   light_green_begin = _primaryColor;
   light_green_end = light_green_begin;

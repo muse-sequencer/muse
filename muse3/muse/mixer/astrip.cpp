@@ -942,7 +942,8 @@ void AudioStrip::configChanged()
   for(int c = 0; c < channel; ++c)
   {
     meter[c]->setRange(MusEGlobal::config.minMeter, volSliderMax);
-    meter[c]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
+    meter[c]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor,
+                              MusEGlobal::config.meterBackgroundColor);
     meter[c]->setRefreshRate(MusEGlobal::config.guiRefresh);
   }
 
@@ -1335,7 +1336,8 @@ void AudioStrip::updateChannels()
                   meter[cc]->setRefreshRate(MusEGlobal::config.guiRefresh);
                   meter[cc]->setFixedWidth(_meterWidth);
                   meter[cc]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-                  meter[cc]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
+                  meter[cc]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor,
+                                             MusEGlobal::config.meterBackgroundColor);
                   connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetClipper()));
                   sliderGrid->addWidget(meter[cc], 2, cc+1, Qt::AlignLeft);
 //                  meter[cc]->show();
@@ -1643,7 +1645,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
           }
           meter[i]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
           meter[i]->setRange(MusEGlobal::config.minMeter, volSliderMax);
-          meter[i]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
+          meter[i]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor,
+                                    MusEGlobal::config.meterBackgroundColor);
           connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetClipper()));
           sliderGrid->addWidget(meter[i], 2, i+1, Qt::AlignHCenter);
       }

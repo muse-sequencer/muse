@@ -1609,7 +1609,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       meter[0]->setContentsMargins(0, 0, 0, 0);
       meter[0]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
       meter[0]->setFixedWidth(_meterWidth);
-      meter[0]->setPrimaryColor(MusEGlobal::config.midiMeterPrimaryColor);
+      meter[0]->setPrimaryColor(MusEGlobal::config.midiMeterPrimaryColor,
+                                MusEGlobal::config.meterBackgroundColor);
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
       
       sliderGrid = new QGridLayout(); 
@@ -2318,7 +2319,8 @@ void MidiStrip::configChanged()
   _lowerRack->configChanged();
   
   // Adjust meter and colour.
-  meter[0]->setPrimaryColor(MusEGlobal::config.midiMeterPrimaryColor);
+  meter[0]->setPrimaryColor(MusEGlobal::config.midiMeterPrimaryColor,
+                            MusEGlobal::config.meterBackgroundColor);
   meter[0]->setRefreshRate(MusEGlobal::config.guiRefresh);
 
   // If smart focus is on redirect strip focus to slider label.

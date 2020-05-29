@@ -146,7 +146,7 @@ class Meter : public QFrame, public ScaleIf {
             int refreshRate = 20);
       
       QColor primaryColor() const { return _primaryColor; }
-      void setPrimaryColor(const QColor& color);
+      void setPrimaryColor(const QColor& color, const QColor& bgColor = Qt::black);
       
       void setRange(double min, double max);
 
