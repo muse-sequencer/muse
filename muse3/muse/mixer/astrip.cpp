@@ -1338,7 +1338,7 @@ void AudioStrip::updateChannels()
                   meter[cc]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
                   connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetClipper()));
                   sliderGrid->addWidget(meter[cc], 2, cc+1, Qt::AlignLeft);
-                  meter[cc]->show();
+//                  meter[cc]->show();
                   }
             }
       else if (c < channel) {
@@ -1352,6 +1352,13 @@ void AudioStrip::updateChannels()
                   meter[cc] = nullptr;
                   }
             }
+
+      if (meter[0] && !meter[0]->vu3d()) {
+           for (int ch = 0; ch < c; ++ch) {
+               meter[ch]->setFixedWidth(_meterWidth / c);
+           }
+      }
+
       channel = c;
       stereo->blockSignals(true);
       stereo->setChecked(channel == 2);
