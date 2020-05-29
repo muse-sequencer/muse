@@ -24,6 +24,7 @@
 #include <QPaintEvent>
 #include <QStyle>
 #include <QStyleOption>
+#include <QMargins>
 
 #include "ttoolbutton.h"
 #include "gconfig.h"
@@ -58,25 +59,42 @@ CompactToolButton::CompactToolButton(QWidget* parent, const QIcon& icon, bool ha
 {
   setObjectName(name);
   _blinkPhase = false;
+  _scaleDownIcon = false;
 }
 
 QSize CompactToolButton::sizeHint() const
 {
-  // TODO Ask style for margins.
   const QSize isz = iconSize();
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
-  const int fmw = fontMetrics().horizontalAdvance(text());
-#else
-  const int fmw = fontMetrics().width(text());
-#endif
-  const int fmh = fontMetrics().lineSpacing() + 5;
+  
+  int rw, rh;
+  
+  // If there is text, use the font metrics to determine a size.
+  // Otherwise, grab the default size hint.
+  if(text().isEmpty())
+  {
+    rw = 14;
+    rh = 14;
+  }
+  else
+  {
+    // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+    #if QT_VERSION >= 0x050b00
+    rw = fontMetrics().horizontalAdvance(text());
+    #else
+    rw = fontMetrics().width(text());
+    #endif
 
-  const int iw = isz.width() + 2;
-  const int ih = isz.height() + 2;
+    rh = fontMetrics().lineSpacing() + 5;
+  }
 
-  const int w = (_hasFixedIconSize && iw > fmw) ? iw : fmw;
-  const int h = (_hasFixedIconSize && ih > fmh) ? ih : fmh;
+  const QMargins mg = contentsMargins();
+  const int iw = isz.width() + mg.left() + mg.right(); // + 2;
+  const int ih = isz.height() + mg.top() + mg.bottom(); // + 2;
+
+  // If we are using fixed icon size and the icon is bigger than the starting size,
+  //  use the icon size instead.
+  const int w = (_hasFixedIconSize && iw > rw) ? iw : rw;
+  const int h = (_hasFixedIconSize && ih > rh) ? ih : rh;
 
   return QSize(w, h);
 }
@@ -121,7 +139,20 @@ void CompactToolButton::paintEvent(QPaintEvent* ev)
   QIcon::State state = (isChecked() && (!_blinkPhase || !isEnabled())) ? QIcon::On : QIcon::Off;
 
   QPainter p(this);
-  _icon.paint(&p, rect(), Qt::AlignCenter, mode, state);
+  const QRect cont_r = contentsRect();
+  if(_hasFixedIconSize)
+  {
+    const QSize sz = iconSize();
+    // Scale the icon down if it doesn't fit.
+    const int iw = (_scaleDownIcon && sz.width() > cont_r.width()) ? cont_r.width() : sz.width();
+    const int ih = (_scaleDownIcon && sz.height() > cont_r.height()) ? cont_r.height() : sz.height();
+    const int x = cont_r.x() + (cont_r.width() - iw) / 2;
+    const int y = cont_r.y() + (cont_r.height() - ih) / 2;
+    _icon.paint(&p, x, y, iw, ih, Qt::AlignCenter, mode, state);
+  }
+  else
+    _icon.paint(&p, cont_r, Qt::AlignCenter, mode, state);
+
 
 // TODO Bah! Just want a mouse-over rectangle for flat mode but some styles do this or that but not the other thing.
 //   if(const QStyle* st = style())

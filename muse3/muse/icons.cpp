@@ -332,6 +332,10 @@ QIcon* recArmOnSVGIcon;
 QIcon* monitorOffSVGIcon;
 QIcon* monitorOnSVGIcon;
 
+QIcon* velocityPerNoteSVGIcon;
+QIcon* midiControllerNewSVGIcon;
+QIcon* midiControllerSelectSVGIcon;
+QIcon* midiControllerRemoveSVGIcon;
 
 QIcon* soloSVGIcon;
 QIcon* soloProxySVGIcon;
@@ -622,7 +626,14 @@ void initIcons(int cursorSize)
       monitorOffSVGIcon = new QIcon(":/svg/monitor_off_default_col.svg");
       monitorOnSVGIcon = new QIcon(":/svg/monitor_on.svg");
 
+      velocityPerNoteSVGIcon = new QIcon(":/svg/velocity_all_notes.svg");
+      velocityPerNoteSVGIcon->addFile(":/svg/velocity_per_note.svg", QSize(), QIcon::Normal, QIcon::On);
 
+      midiControllerNewSVGIcon = new QIcon(":/svg/midi_controller_new.svg");
+      midiControllerSelectSVGIcon = new QIcon(":/svg/midi_controller_select.svg");
+      midiControllerRemoveSVGIcon = new QIcon(":/svg/midi_controller_remove.svg");
+
+      
       soloSVGIcon = new QIcon(":/svg/headphones_off.svg");
       soloSVGIcon->addFile(":/svg/headphones_on.svg", QSize(), QIcon::Normal, QIcon::On);
       // TODO
@@ -930,7 +941,13 @@ void deleteIcons()
       delete monitorOffSVGIcon;
       delete monitorOnSVGIcon;
 
+      delete velocityPerNoteSVGIcon;
 
+      delete midiControllerNewSVGIcon;
+      delete midiControllerSelectSVGIcon;
+      delete midiControllerRemoveSVGIcon;
+
+      
       delete soloSVGIcon;
       delete soloProxySVGIcon;
       delete muteSVGIcon;

@@ -1,9 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# MusE external midi processing script
+# By: Staffan Melin
+# based on DoubleSpeed by Mathias Gyllengahm 2009
 #=============================================================================
 #  MusE
 #  Linux Music Editor
 #  $Id:$
 #
-#  Copyright (C) 1999-2011 by Werner Schweer and others
+#  Copyright (C) 2002-2011 by Werner Schweer and others
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License
@@ -21,22 +26,24 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-file(GLOB script_files
-      DoNothing 
-      RemoveShortEvents 
-      SpeedHalf
-      SpeedDouble
-      ConstantLength 
-      SwingQuantize1
-      RandomQuantize1
-      RandomPosition1
-      RandomizeVelocityRelative
-      RemoveAftertouch
-      Rhythm1
-      TempoDelay
-      )
+import sys,time
+testFile = open(sys.argv[1],"r")
+inputEvents = testFile.readlines()
+testFile.close()
 
-install (PROGRAMS ${script_files}
-      DESTINATION ${MusE_SHARE_DIR}/scripts
-      )
+outputEvents=[]
+#loop through events
+for line in inputEvents:
+      if line.startswith('NOTE'):
+            tag,tick,pitch,length,velocity = line.split(' ')
+            print (line)
+            newline = tag + " " + str(int(int(tick) / 2)) + " " + pitch + " " + str(int(int(length) / 2)) + " " + velocity
+            print (newline)
+            outputEvents.append(newline)
+      else:
+        outputEvents.append(line)
+
+testFile = open(sys.argv[1],"w")
+testFile.writelines(outputEvents)
+testFile.close()
 

@@ -25,12 +25,13 @@
 #define __CTRL_PANEL_H__
 
 #include <QWidget>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QSpacerItem>
+#include <QAction>
 
+#include "ttoolbutton.h"
 #include "type_defs.h"
-
-class QPushButton;
-class QAction;
-class QHBoxLayout;
 
 namespace MusECore {
 class MidiController;
@@ -41,7 +42,6 @@ class MidiTrack;
 namespace MusEGui {
 class MidiEditor;
 class CtrlCanvas;
-class PixmapButton;
 class CompactKnob;
 class CompactSlider;
 class LCDPatchEdit;
@@ -53,7 +53,7 @@ class LCDPatchEdit;
 class CtrlPanel: public QWidget {
       Q_OBJECT
     
-      QPushButton* selCtrl;
+      CompactToolButton* selCtrl;
       MidiEditor* editor;
       CtrlCanvas* ctrlcanvas;
       
@@ -62,7 +62,10 @@ class CtrlPanel: public QWidget {
       int _dnum;
       bool inHeartBeat;
 
+      QVBoxLayout* vbox;
       QHBoxLayout* kbox;
+      QSpacerItem* lspacer;
+      QSpacerItem* rspacer;
       CompactKnob* _knob;
       CompactSlider* _slider;
       LCDPatchEdit* _patchEdit;
@@ -71,7 +74,7 @@ class CtrlPanel: public QWidget {
       // Current local state of show values preference global setting.
       bool _showval;
 
-      PixmapButton* _veloPerNoteButton;
+      CompactToolButton* _veloPerNoteButton;
 
       void buildPanel();
       void setController();

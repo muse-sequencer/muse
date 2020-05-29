@@ -532,7 +532,11 @@ private:
     float **_audioInBuffers;
     float **_audioOutBuffers;
     float  *_audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
-    void doSelectProgram(unsigned char channel, int bankH, int bankL, int prog);
+    // For plugins that DO support the programs extension. Returns true if the selection succeeded
+    //  (ie the programs interface and functions exist).
+    bool doSelectProgram(unsigned char channel, int bankH, int bankL, int prog);
+    // For plugins that DO NOT support the programs extension. Sends as bankH/bankL/prog midi events.
+    bool doSendProgram(unsigned char channel, int bankH, int bankL, int prog, LV2EvBuf *evBuf, long frame);
     inline void sendLv2MidiEvent(LV2EvBuf *evBuf, long frame, int paramCount, uint8_t a, uint8_t b = 0, uint8_t c = 0);
     bool processEvent (const MidiPlayEvent &, LV2EvBuf *evBuf, long frame);
     bool lv2MidiControlValues ( size_t port, int ctlnum, int *min, int *max, int *def );

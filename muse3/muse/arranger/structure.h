@@ -27,9 +27,17 @@
 #include <set>
 
 namespace MusECore {
+enum OperationType
+{
+  cutOperation,
+  insertOperation,
+};
+
 Undo movePartsTotheRight(unsigned int startTick, unsigned int moveTick, bool only_selected=false, std::set<Track*>* tracklist=NULL);
 Undo partSplitter(unsigned int tick, bool onlySelectedTracks=false);
+void adjustAutomation(Undo &operations, Track *track, unsigned int lpos, unsigned int rpos, OperationType type);
 void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff);
+
 void globalCut(bool onlySelectedTracks=false);
 void globalInsert(bool onlySelectedTracks=false);
 void globalSplit(bool onlySelectedTracks=false);

@@ -239,6 +239,9 @@ void globalCut(bool onlySelectedTracks)
                           operations.push_back(UndoOp(UndoOp::MovePart, part, part->posValue(), nt - (rpos -lpos), Pos::TICKS ));
                         }
                   }
+
+                  adjustAutomation(operations, track, lpos, rpos, cutOperation);
+
             }
 
       MusEGlobal::song->applyOperationGroup(operations);
@@ -259,6 +262,62 @@ void globalInsert(bool onlySelectedTracks)
           MusEGlobal::song->rpos() - MusEGlobal::song->lpos() : MusEGlobal::song->lpos() - MusEGlobal::song->rpos(),
         onlySelectedTracks);
       MusEGlobal::song->applyOperationGroup(operations);
+}
+
+void adjustAutomation(Undo &operations, Track *track, unsigned int lpos, unsigned int rpos, OperationType type)
+{
+  if (!track->isMidiTrack())
+  {
+    auto *audioTrack = static_cast<AudioTrack *>(track);
+    auto controllerListList = audioTrack->controller();
+
+    auto lFrame = MusEGlobal::tempomap.tick2frame(lpos);
+    auto rFrame = MusEGlobal::tempomap.tick2frame(rpos);
+
+    // iterate through all indexes in map (all control types)
+    for (auto controllerList : *controllerListList)
+    {
+      // The Undo system will take 'ownership' of these and delete them at the appropriate time. (comment taken from other code)
+      CtrlList* removedEvents = new CtrlList(*controllerList.second, CtrlList::ASSIGN_PROPERTIES);
+      CtrlList* readdedEvents = new CtrlList(*controllerList.second, CtrlList::ASSIGN_PROPERTIES);
+
+      for (auto controller : *controllerList.second)
+      {
+        // iterate through all events and see if any appear after lpos
+        if (controller.first > lFrame)
+        {
+          removedEvents->add(controller.second.frame, controller.second.val);
+
+          if (type == cutOperation)
+          {
+            if (controller.first > rFrame)
+            {
+              auto diff = rFrame - lFrame;
+              auto newFramePos = controller.second.frame - diff;
+              readdedEvents->add(newFramePos, controller.second.val);
+            }
+          }
+          else if (type == insertOperation)
+          {
+            auto diff = rFrame - lFrame;
+            auto newFramePos = controller.second.frame + diff;
+            readdedEvents->add(newFramePos, controller.second.val);
+          }
+        }
+      }
+
+      if(removedEvents->empty() && readdedEvents->empty())
+      {
+        delete removedEvents;
+        delete readdedEvents;
+      }
+      else
+      {
+        auto undoOp = UndoOp( UndoOp::ModifyAudioCtrlValList, controllerListList, removedEvents, readdedEvents);
+        operations.push_back(undoOp);
+      }
+    }
+  }
 }
 
 Undo movePartsTotheRight(unsigned int startTicks, unsigned int moveTicks, bool only_selected, set<Track*>* tracklist)
@@ -302,6 +361,7 @@ Undo movePartsTotheRight(unsigned int startTicks, unsigned int moveTicks, bool o
                         operations.push_back(UndoOp(UndoOp::MovePart, part, part->posValue(), t + moveTicks, Pos::TICKS));
                         }
                   }
+            adjustAutomation(operations, track, MusEGlobal::song->lpos(), MusEGlobal::song->rpos(), insertOperation);
             }
 
       return operations;

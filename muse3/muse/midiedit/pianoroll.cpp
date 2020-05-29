@@ -67,6 +67,7 @@
 #include "shortcuts.h"
 
 #include "trackinfo_layout.h"
+#include "midi_editor_layout.h"
 
 namespace MusEGui {
 
@@ -341,15 +342,20 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       hsplitter->setChildrenCollapsible(true);
       //hsplitter->setHandleWidth(4);
       
-      ctrl = new QPushButton("Ctrl", mainw);
+      ctrl = new CompactToolButton(mainw);
+      ctrl->setIcon(*midiControllerNewSVGIcon);
+      ctrl->setIconSize(QSize(14, 14));
+      ctrl->setHasFixedIconSize(true);
+      ctrl->setContentsMargins(4, 4, 4, 4);
       ctrl->setObjectName("Ctrl");
-      ctrl->setFont(MusEGlobal::config.fonts[3]);
-      ctrl->setToolTip(tr("Add controller view"));
       ctrl->setFocusPolicy(Qt::NoFocus);
+      //ctrl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
+      ctrl->setToolTip(tr("Add controller view"));
+      
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
       hscroll = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, _viewState.xscale(), 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(pianoWidth, hscroll->sizeHint().height());
-      
+
       QSizeGrip* corner = new QSizeGrip(mainw);
 
       trackInfoWidget = new TrackInfoWidget(hsplitter);

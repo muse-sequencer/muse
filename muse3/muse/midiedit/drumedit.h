@@ -25,6 +25,16 @@
 #define __DRUM_EDIT_H__
 
 #include <QByteArray>
+#include <QAction>
+#include <QCloseEvent>
+#include <QLabel>
+#include <QMenu>
+#include <QKeyEvent>
+#include <QResizeEvent>
+#include <QToolButton>
+#include <QWidget>
+#include <QComboBox>
+#include <QPoint>
 
 #include <limits.h>
 #include "type_defs.h"
@@ -38,18 +48,7 @@
 #include "dcanvas.h"
 #include "midictrl.h"
 #include "part.h"
-
-class QAction;
-class QCloseEvent;
-class QLabel;
-class QMenu;
-class QKeyEvent;
-class QResizeEvent;
-class QToolButton;
-class QWidget;
-class QComboBox;
-class QPushButton;
-class QPoint;
+#include "ttoolbutton.h"
 
 namespace MusECore {
 class SNode;
@@ -114,7 +113,7 @@ class DrumEdit : public MidiEditor {
       MusEGui::Header* header;
       QToolBar* tools;
       QComboBox *stepLenWidget;
-      QToolButton* ctrl;
+      CompactToolButton* ctrl;
 
       static int _rasterInit;
       static int _trackInfoWidthInit;

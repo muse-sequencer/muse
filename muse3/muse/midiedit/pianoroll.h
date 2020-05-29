@@ -26,7 +26,6 @@
 
 #include <QAction>
 #include <QMenu>
-#include <QPushButton>
 #include <QToolBar>
 #include <QToolButton>
 #include <QWidget>
@@ -44,6 +43,7 @@
 #include "midictrl.h"
 #include "part.h"
 #include "ecanvas.h"
+#include "ttoolbutton.h"
 
 namespace MusECore {
 class Track;
@@ -126,7 +126,7 @@ class PianoRoll : public MidiEditor {
       MusEGui::Toolbar1* toolbar;
       MusEGui::Splitter* splitter;
       MusEGui::Splitter* hsplitter;
-      QPushButton* ctrl;
+      CompactToolButton* ctrl;
       
       QToolButton* speaker;
       QToolBar* tools;

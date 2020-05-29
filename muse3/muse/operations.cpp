@@ -185,6 +185,9 @@ unsigned int PendingOperationItem::getIndex() const
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
     
+    case ModifyPartStart:
+      return _part->posValue();
+
     case ModifyPartLength:
       return _part->posValue();
     
@@ -311,9 +314,9 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       
     case SetAudioConverterOfflineMode:
     {
-      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SetAudioConverterOfflineMode: "
-                                "sndFile:%p audio_converter:%p\n", 
-                                *_sndFile, _audio_converter);
+//      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SetAudioConverterOfflineMode: "
+//                                "sndFile:%p audio_converter:%p\n",
+//                                *_sndFile, _audio_converter);
 
       AudioConverterPluginI* cur_conv = _sndFileR.staticAudioConverter(AudioConverterSettings::RealtimeMode);
       //if(_audio_converter)
@@ -1108,18 +1111,70 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     }
     break;
 
+    case ModifyPartStart:
+    {
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyPartStart part:%p old_val:%d new_val:%u\n", _part, _part->frame(), _posLenVal);
+
+      // Go through all events and adjust their position from the new start of the part
+
+      int newPartStart = _posLenVal;
+      int oldPartStart = _part->posValue();
+      int startPosChange = oldPartStart - newPartStart;
+      auto partType = _part->partType();
+
+      auto& eventList = _part->nonconst_events();
+      EventList eventsToMove;
+
+      for (EventList::iterator eventIterator = eventList.begin(); eventIterator != eventList.end(); eventIterator++)
+      {
+          // first event in a wave part must be extended.
+          if (eventIterator == eventList.begin() && partType == Part::WavePartType)
+          {
+              auto waveEvent = (Event&)eventIterator->second;
+              if (waveEvent.spos() - startPosChange < 0) {
+                  startPosChange = waveEvent.spos();
+                  newPartStart = oldPartStart - startPosChange;
+              }
+              waveEvent.setSpos(waveEvent.spos() - startPosChange);
+              waveEvent.setLenFrame(waveEvent.lenFrame() + startPosChange);
+          }
+          else // all other events are treated equally
+          {
+              auto event = (Event&)eventIterator->second;
+              auto posValue = event.posValue();
+              event.setPosValue(posValue + startPosChange);
+              eventsToMove.add(event);
+              eventList.erase(eventIterator);
+          }
+      }
+      for (auto& eventToMove : eventsToMove)
+      {
+        // if there are events to move we do it here
+        // doing it above will mess up the for loop
+        eventList.add(eventToMove.second);
+      }
+
+      _part->setPosValue(newPartStart);
+      _part->setLenValue(_part->lenValue() + startPosChange);
+
+      flags |= SC_PART_MODIFIED;
+      flags |= SC_EVENT_MODIFIED;
+    }
+    break;
+
     case ModifyPartLength:
+    {
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyPartLength part:%p old_val:%d new_val:%u\n", _part, _part->lenValue(), _posLenVal);
 
       // If we are extending a wave part the underlying event (containing the wave file, also must be extended)
       if (_part->partType() == MusECore::Part::WavePartType) {
 
         // find the event that exists at the end of the part (if there is one) and extend it
-        auto eventList = _part->events();
+        EventList& eventList = _part->nonconst_events();
 
         // find event with largest framepos
         Event& lastEvent = eventList.begin()->second;
-        for (auto ci = eventList.begin(); ci != eventList.end(); ++ci) {
+        for (auto ci = eventList.cbegin(); ci != eventList.cend(); ++ci) {
           if ( ((Event&)ci->second).frame() > lastEvent.frame())
           {
               lastEvent = ci->second;
@@ -1132,6 +1187,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
 
       _part->setLenValue(_posLenVal);
       flags |= SC_PART_MODIFIED;
+    }
     break;
     
     case MovePart:

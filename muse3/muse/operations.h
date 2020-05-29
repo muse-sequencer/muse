@@ -158,7 +158,7 @@ struct PendingOperationItem
     AddTrack,          DeleteTrack,  MoveTrack,                   ModifyTrackName,
     SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff,
     ModifyTrackDrumMapItem, ReplaceTrackDrumMapPatchList,         UpdateDrumMaps,
-    AddPart,           DeletePart,   MovePart, SelectPart, ModifyPartLength,  ModifyPartName,
+    AddPart,           DeletePart,   MovePart, SelectPart, ModifyPartStart, ModifyPartLength,  ModifyPartName,
     AddEvent,          DeleteEvent,  SelectEvent,
     AddMidiCtrlVal,    DeleteMidiCtrlVal,     ModifyMidiCtrlVal,  AddMidiCtrlValList,
     RemapDrumControllers,
@@ -404,8 +404,8 @@ struct PendingOperationItem
   PendingOperationItem(Part* part, const QString* new_name, PendingOperationType type = ModifyPartName)
     { _type = type; _part = part; _name = new_name; }
     
-  // Type is ModifyPartLength or SelectPart, or some (likely) future boolean or int operation.
-  // For ModifyPartLength, v must already be in the part's time domain (ticks or frames).
+  // Type is ModifyPartLength, SelectPart, ModifyPartStart or some (likely) future boolean or int operation.
+  // For ModifyPartLength and ModifyPartStart, v must already be in the part's time domain (ticks or frames).
   PendingOperationItem(Part* part, unsigned int v, PendingOperationType type)
     { _type = type; _part = part; _posLenVal = v; }
   

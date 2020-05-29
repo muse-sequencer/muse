@@ -112,6 +112,8 @@ void CtrlEdit::setPerNoteVel(bool v)
 {
   if(canvas)
     canvas->setPerNoteVeloMode(v);
+  if(panel)
+    panel->setVeloPerNoteMode(v);
 }
 
 //---------------------------------------------------------
