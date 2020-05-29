@@ -797,6 +797,7 @@ AudioStripProperties::AudioStripProperties()
     _sliderHandleWidth = 16;
     _sliderFillOver = true;
     _sliderUseGradient = true;
+    _sliderBackbone = false;
     _sliderGrooveWidth = 14;
     _sliderScalePos = Slider::InsideVertical;
     _meterWidth = Strip::FIXED_METER_WIDTH;
@@ -1407,6 +1408,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       _sliderGrooveWidth = props.sliderGrooveWidth();
       _sliderFillOver = props.sliderFillOver();
       _sliderUseGradient = props.sliderUseGradient();
+      _sliderBackbone = props.sliderBackbone();
       _sliderScalePos = props.sliderScalePos();
       _meterWidth = props.meterWidth();
 
@@ -1606,7 +1608,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //slider->setScaleMaxMinor(5);
       slider->setScale(MusEGlobal::config.minSlider, volSliderMax, 6.0, false);
       slider->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
-      slider->setScaleBackBone(false);
+      slider->setScaleBackBone(_sliderBackbone);
       //slider->setFillThumb(false);
 
       slider->setRadius(_sliderRadius);

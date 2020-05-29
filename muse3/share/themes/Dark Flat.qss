@@ -196,6 +196,9 @@ MusEGui--AudioStripProperties {
   qproperty-sliderFillOver: true;
   qproperty-sliderUseGradient: false;
   qproperty-sliderScalePos: 2;
+/*
+  qproperty-sliderBackbone: true;
+*/
   qproperty-meterWidth: 10;
 }
 
@@ -208,6 +211,9 @@ MusEGui--MidiStripProperties {
   qproperty-sliderFillOver: true;
   qproperty-sliderUseGradient: false;
   qproperty-sliderScalePos: 2;
+/*
+  qproperty-sliderBackbone: true;
+*/
   qproperty-meterWidth: 10;
 }
 

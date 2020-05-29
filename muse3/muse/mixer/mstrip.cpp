@@ -1405,6 +1405,7 @@ MidiStripProperties::MidiStripProperties()
     _sliderHandleWidth = 16;
     _sliderFillOver = true;
     _sliderUseGradient = true;
+    _sliderBackbone = false;
     _sliderGrooveWidth = 14;
     _sliderScalePos = Slider::InsideVertical;
     _meterWidth = Strip::FIXED_METER_WIDTH;
@@ -1443,6 +1444,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       _sliderGrooveWidth = props.sliderGrooveWidth();
       _sliderFillOver = props.sliderFillOver();
       _sliderUseGradient = props.sliderUseGradient();
+      _sliderBackbone = props.sliderBackbone();
       _sliderScalePos = props.sliderScalePos();
       _meterWidth = props.meterWidth();
       
@@ -1590,7 +1592,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       slider->setContentsMargins(0, 0, 0, 0);
       slider->setCursorHoming(true);
       slider->setSpecialText(tr("off"));
-      slider->setScaleBackBone(false);
+      slider->setScaleBackBone(_sliderBackbone);
       //slider->setFillThumb(false);
 
       slider->setRadius(_sliderRadius);
