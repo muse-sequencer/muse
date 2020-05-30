@@ -130,6 +130,7 @@ class AudioStripProperties : QWidget {
     Q_PROPERTY(bool sliderBackbone READ sliderBackbone WRITE setSliderBackbone)
     Q_PROPERTY(int sliderScalePos READ sliderScalePos WRITE setSliderScalePos)
     Q_PROPERTY(int meterWidth READ meterWidth WRITE setMeterWidth)
+    Q_PROPERTY(bool meterWidthPerChannel READ meterWidthPerChannel WRITE setMeterWidthPerChannel)
 
 //    QColor _bgColor;
     int _sliderRadius;
@@ -142,6 +143,7 @@ class AudioStripProperties : QWidget {
     bool _sliderBackbone;
     int _sliderScalePos;
     int _meterWidth;
+    bool _meterWidthPerChannel;
 
 public:
     AudioStripProperties();
@@ -173,6 +175,8 @@ public:
 
     int meterWidth() const { return _meterWidth; }
     void setMeterWidth(int w) { _meterWidth = w; }
+    bool meterWidthPerChannel() const { return _meterWidthPerChannel; }
+    void setMeterWidthPerChannel(bool b) { _meterWidthPerChannel = b; }
 };
 
 //---------------------------------------------------------
@@ -221,6 +225,7 @@ class AudioStrip : public Strip {
       bool _sliderBackbone;
       int _sliderScalePos;
       int _meterWidth;
+      bool _meterWidthPerChannel;
 
       int channel;
       MusEGui::Slider* slider;

@@ -801,6 +801,7 @@ AudioStripProperties::AudioStripProperties()
     _sliderGrooveWidth = 14;
     _sliderScalePos = Slider::InsideVertical;
     _meterWidth = Strip::FIXED_METER_WIDTH;
+    _meterWidthPerChannel = false;
     ensurePolished();
 }
 
@@ -1356,7 +1357,7 @@ void AudioStrip::updateChannels()
                   }
             }
 
-      if (meter[0] && !meter[0]->vu3d()) {
+      if (meter[0] && !meter[0]->vu3d() && !_meterWidthPerChannel) {
            for (int ch = 0; ch < c; ++ch) {
                meter[ch]->setFixedWidth(_meterWidth / c);
            }
@@ -1411,6 +1412,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       _sliderBackbone = props.sliderBackbone();
       _sliderScalePos = props.sliderScalePos();
       _meterWidth = props.meterWidth();
+      _meterWidthPerChannel = props.meterWidthPerChannel();
 
       // Set the whole strip's font, except for the label.
       // May be good to keep this. In the midi strip without it the upper rack is too tall at first. So avoid trouble.
@@ -1639,7 +1641,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       for (int i = 0; i < channel; ++i) {
           meter[i] = new Meter(this, Meter::DBMeter, Qt::Vertical, MusEGlobal::config.minMeter, volSliderMax);
           meter[i]->setRefreshRate(MusEGlobal::config.guiRefresh);
-          if (meter[i]->vu3d()) {
+          if (meter[i]->vu3d() || _meterWidthPerChannel) {
               meter[i]->setFixedWidth(_meterWidth);
           }
           else {
