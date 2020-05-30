@@ -98,7 +98,12 @@ Slider::Slider(QWidget *parent, const char *name,
       horizontal_hint = 40;
       vertical_hint = 40;
       
-      d_sliderRect.setRect(0, 0, 0, 0);
+      // set to sane values to avoid erratic size hint
+      //  calculation -> drawing problems (kybos)
+      if (orient == Qt::Vertical)
+          d_sliderRect.setRect(0, 0, 20, 100);
+      else
+          d_sliderRect.setRect(0, 0, 100, 20);
       setOrientation(orient);
       d_scale.setTextHighlightMode(textHighlightMode);
       }

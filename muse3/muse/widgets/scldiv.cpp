@@ -239,6 +239,11 @@ bool ScaleDiv::rebuild(double x1, double x2, int maxMajSteps, int maxMinSteps,
    d_hBound = MusECore::qwtMax(x1, x2);
    d_log = log;
 
+//   printf("*** MajSteps %d / MinSteps %d / step %f / x1 %f / x2 %f \n",
+//          maxMajSteps, maxMinSteps, step, x1, x2);
+   if (step > (d_hBound - d_lBound))
+       step = 0.0;
+
    if (d_log)
       rv = buildLogDiv(maxMajSteps,maxMinSteps,step);
    else
