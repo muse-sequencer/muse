@@ -1834,6 +1834,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //---------------------------------------------------
 
       autoType = new CompactComboBox();
+      autoType->setObjectName("AudioAutoType");
       autoType->setContentsMargins(0, 0, 0, 0);
       autoType->setFocusPolicy(Qt::NoFocus);
       autoType->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
