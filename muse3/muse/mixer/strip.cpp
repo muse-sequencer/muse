@@ -1160,8 +1160,9 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
           label->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
           //label->setWordWrap(true); // This is set dynamically.
       } else {
-          label->setFixedHeight(16);
+          label->setFrameStyle(NoFrame);
           label->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed));
+          label->setFixedHeight(16);
       }
 
       setLabelText();
