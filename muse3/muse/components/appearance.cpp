@@ -773,6 +773,9 @@ bool Appearance::changeTheme()
 
     printf("Changing to theme %s\n", qPrintable(currentTheme) );
 
+    QDir dir(MusEGlobal::configPath + "/themes/");
+    if (!dir.exists())
+        dir.mkpath(MusEGlobal::configPath + "/themes/");
 
     QString lastColorPath = MusEGlobal::configPath + "/themes/" + lastTheme + ".cfc";
 
