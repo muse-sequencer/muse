@@ -495,6 +495,9 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(canvas, SIGNAL(muteSelectedTracks()), list, SLOT(muteSelectedTracksSlot()));
       connect(canvas, SIGNAL(soloSelectedTracks()), list, SLOT(soloSelectedTracksSlot()));
 
+      connect(canvas, SIGNAL(volumeSelectedTracks(int)), list, SLOT(volumeSelectedTracksSlot(int)));
+      connect(canvas, SIGNAL(panSelectedTracks(int)), list, SLOT(panSelectedTracksSlot(int)));
+
       connect(canvas, SIGNAL(horizontalZoom(bool, const QPoint&)), SLOT(horizontalZoom(bool, const QPoint&)));
       connect(canvas, SIGNAL(horizontalZoom(int, const QPoint&)), SLOT(horizontalZoom(int, const QPoint&)));
       connect(lenEntry,           SIGNAL(returnPressed()), SLOT(focusCanvas()));

@@ -159,6 +159,9 @@ class TList : public QWidget {
       void editTrackNameSlot();
       void muteSelectedTracksSlot();
       void soloSelectedTracksSlot();
+      void volumeSelectedTracksSlot(int);
+      void panSelectedTracksSlot(int);
+
       void setHeader(Header*);
 
    public:

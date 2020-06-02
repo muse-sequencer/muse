@@ -227,6 +227,10 @@ enum {
       SHRT_EDIT_TRACK_NAME,
       SHRT_MUTE_CURRENT_TRACKS,
       SHRT_SOLO_CURRENT_TRACKS,
+      SHRT_VOL_UP_CURRENT_TRACKS,
+      SHRT_VOL_DOWN_CURRENT_TRACKS,
+      SHRT_PAN_LEFT_CURRENT_TRACKS,
+      SHRT_PAN_RIGHT_CURRENT_TRACKS,
 
       //To be in arranger, pianoroll & drumeditor. p4.0.10 now globally handled, too.
       SHRT_SELECT_ALL, //Ctrl+A

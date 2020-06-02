@@ -783,6 +783,8 @@ class Strip : public QFrame {
       
       int userWidth() const { return _userWidth; }
       void setUserWidth(int w);
+      bool handleForwardedKeyPress(QKeyEvent* ev);
+
       
       virtual QSize sizeHint() const;
       bool isSelected() { return _selected; }

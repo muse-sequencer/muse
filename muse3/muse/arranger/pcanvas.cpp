@@ -1304,12 +1304,16 @@ void PartCanvas::keyPress(QKeyEvent* event)
           return;
       }
 
+      const int incrementValue = (event->modifiers() &  Qt::ShiftModifier) ? 5 : 1;
+
       if (event->modifiers() &  Qt::ShiftModifier)
             key +=  Qt::SHIFT;
       if (event->modifiers() &  Qt::AltModifier)
             key +=  Qt::ALT;
       if (event->modifiers() &  Qt::ControlModifier)
             key +=  Qt::CTRL;
+      if (event->modifiers() &  Qt::MetaModifier)
+            key +=  Qt::META;
 
       if (key == shortcuts[SHRT_DELETE].key) {
             if (getCurrentDrag())
@@ -1405,6 +1409,26 @@ void PartCanvas::keyPress(QKeyEvent* event)
       else if (key == shortcuts[SHRT_SOLO_CURRENT_TRACKS].key) {
             emit soloSelectedTracks();
             return;
+      }
+      if (key ==  shortcuts[SHRT_VOL_UP_CURRENT_TRACKS].key)
+      {
+          emit volumeSelectedTracks(incrementValue);
+          return;
+      }
+      else if (key ==  shortcuts[SHRT_VOL_DOWN_CURRENT_TRACKS].key)
+      {
+          emit volumeSelectedTracks(-incrementValue);
+          return;
+      }
+      else if (key ==  shortcuts[SHRT_PAN_LEFT_CURRENT_TRACKS].key)
+      {
+          emit panSelectedTracks(-incrementValue);
+          return;
+      }
+      else if (key ==  shortcuts[SHRT_PAN_RIGHT_CURRENT_TRACKS].key)
+      {
+          emit panSelectedTracks(incrementValue);
+          return;
       }
 
       // Shortcuts that require selected parts from here

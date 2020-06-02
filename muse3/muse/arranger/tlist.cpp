@@ -807,6 +807,60 @@ void TList::soloSelectedTracksSlot()
   update();
 }
 
+void TList::volumeSelectedTracksSlot(int incrementValue)
+{
+  MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+  for (auto t : *tracks)
+  {
+    if (t->type() == MusECore::Track::MIDI)
+    {
+
+    }
+    else
+    {
+      MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(t);
+      if (at->selected())
+      {
+        float vol = at->volume();
+        float dbVol = muse_val2dbr(vol);
+        float newVolume = dbVol + float(incrementValue)/10;
+        if (newVolume < MusEGlobal::config.minSlider)
+          newVolume = MusEGlobal::config.minSlider;
+        if (newVolume > 10.0)
+          newVolume = 10.0;
+        printf("track [%s] previous volume %f new volume %f\n", at->name().toLatin1().data(), at->volume(), newVolume);
+        at->setVolume(muse_db2val(newVolume));
+      }
+    }
+  }
+}
+void TList::panSelectedTracksSlot(int incrementValue)
+{
+  MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+  for (auto t : *tracks)
+  {
+    if (t->type() == MusECore::Track::MIDI)
+    {
+
+    }
+    else
+    {
+      MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(t);
+      if (at->selected())
+      {
+        float newPan = at->pan() + 0.01 * incrementValue;
+        if (newPan < -1.0)
+          newPan = -1.0;
+        if (newPan > 1.0)
+          newPan = 1.0;
+        at->setPan(newPan);
+      }
+    }
+  }
+//  update();
+}
+
+
 void TList::editTrackNameSlot()
 {
   MusECore::TrackList* tracks = MusEGlobal::song->tracks();

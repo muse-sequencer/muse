@@ -191,9 +191,14 @@ void initShortCuts()
       defShrt(SHRT_SEL_TRACK_ABOVE,       Qt::CTRL + Qt::Key_Up, QT_TRANSLATE_NOOP("shortcuts", "Select track above"), ARRANG_SHRT, "sel_track_above");
       defShrt(SHRT_SEL_TRACK_BELOW,       Qt::CTRL + Qt::Key_Down, QT_TRANSLATE_NOOP("shortcuts", "Select track below"), ARRANG_SHRT, "sel_track_below");
       defShrt(SHRT_EDIT_TRACK_NAME,       Qt::Key_F2, QT_TRANSLATE_NOOP("shortcuts", "Edit selected track name"), ARRANG_SHRT, "edit_track_name");
-      defShrt(SHRT_MUTE_CURRENT_TRACKS,       Qt::SHIFT + Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Mute all currently selected tracks"), ARRANG_SHRT, "mute_curren_tracks");
-      defShrt(SHRT_SOLO_CURRENT_TRACKS,       Qt::SHIFT + Qt::Key_S, QT_TRANSLATE_NOOP("shortcuts", "Solo all currently selected tracks"), ARRANG_SHRT, "solo_curren_tracks");
 
+      defShrt(SHRT_MUTE_CURRENT_TRACKS,   Qt::META + Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Mute all currently selected tracks"), ARRANG_SHRT, "mute_curren_tracks");
+      defShrt(SHRT_SOLO_CURRENT_TRACKS,   Qt::META + Qt::Key_S, QT_TRANSLATE_NOOP("shortcuts", "Solo all currently selected tracks"), ARRANG_SHRT, "solo_curren_tracks");
+
+      defShrt(SHRT_VOL_UP_CURRENT_TRACKS,   Qt::CTRL + Qt::SHIFT + Qt::Key_Up, QT_TRANSLATE_NOOP("shortcuts", "Volume up on all currently selected tracks"), ARRANG_SHRT, "vol_up_current_tracks");
+      defShrt(SHRT_VOL_DOWN_CURRENT_TRACKS, Qt::CTRL + Qt::SHIFT + Qt::Key_Down, QT_TRANSLATE_NOOP("shortcuts", "Volume down on all currently selected tracks"), ARRANG_SHRT, "vol_down_current_tracks");
+      defShrt(SHRT_PAN_LEFT_CURRENT_TRACKS, Qt::CTRL + Qt::SHIFT + Qt::Key_Left, QT_TRANSLATE_NOOP("shortcuts", "Pan left on all currently selected tracks"), ARRANG_SHRT, "pan_left_current_tracks");
+      defShrt(SHRT_PAN_RIGHT_CURRENT_TRACKS,Qt::CTRL + Qt::SHIFT + Qt::Key_Right, QT_TRANSLATE_NOOP("shortcuts", "Pan right on all currently selected tracks"), ARRANG_SHRT, "pan_right_current_tracks");
 
       //-----------------------------------------------------------
 

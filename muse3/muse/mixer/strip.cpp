@@ -57,6 +57,7 @@
 #include "compact_slider.h"
 #include "menutitleitem.h"
 #include "pixmap_button.h"
+#include "shortcuts.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_STRIP(dev, format, args...) // fprintf(dev, format, ##args);
@@ -349,6 +350,8 @@ void ComponentRack::newComponentWidget( ComponentDescriptor* desc, const Compone
     break;
   }
   
+  cw._widget->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+
   if(cw._widget)
     addComponentWidget(cw, before);
 }
@@ -1632,71 +1635,70 @@ void Strip::mouseMoveEvent(QMouseEvent* e)
       }
     }
   }
-  //QFrame::mouseMoveEvent(ev);
+}
+bool Strip::handleForwardedKeyPress(QKeyEvent* event)
+{
+  int key = event->key();
+  if (event->modifiers() &  Qt::ShiftModifier)
+        key +=  Qt::SHIFT;
+  if (event->modifiers() &  Qt::AltModifier)
+        key +=  Qt::ALT;
+  if (event->modifiers() &  Qt::ControlModifier)
+        key +=  Qt::CTRL;
+  if (event->modifiers() &  Qt::MetaModifier)
+        key +=  Qt::META;
+
+  const int incrementValue = 1;
+
+  if (key ==  shortcuts[SHRT_VOL_UP_CURRENT_TRACKS].key)
+  {
+    incVolume(incrementValue);
+    return true;
+  }
+  else if (key ==  shortcuts[SHRT_VOL_DOWN_CURRENT_TRACKS].key)
+  {
+    incVolume(-incrementValue);
+    return true;
+  }
+  else if (key ==  shortcuts[SHRT_PAN_LEFT_CURRENT_TRACKS].key)
+  {
+    incPan(-incrementValue);
+    return true;
+  }
+  else if (key ==  shortcuts[SHRT_PAN_RIGHT_CURRENT_TRACKS].key)
+  {
+      incPan(incrementValue);
+      return true;
+  }
+  else if (key ==  shortcuts[SHRT_MUTE_CURRENT_TRACKS].key)
+  {
+      mute->setChecked(!mute->isChecked());
+      return true;
+  }
+  else if (key == shortcuts[SHRT_SOLO_CURRENT_TRACKS].key)
+  {
+      solo->setChecked(!solo->isChecked());
+      return true;
+  }
+  return false;
 }
 
 void Strip::keyPressEvent(QKeyEvent* ev)
 {
-  const bool shift = ev->modifiers() & Qt::ShiftModifier;
-  const bool alt = ev->modifiers() & Qt::AltModifier;
-  const bool ctl = ev->modifiers() & Qt::ControlModifier;
-  const bool meta = ev->modifiers() & Qt::MetaModifier;
-  const int val = shift ? 5 : 1;
-
-  switch (ev->key())
+  if (ev->key() == Qt::Key_Escape)
   {
-    case Qt::Key_Escape:
-      //if(hasFocus() && _focusYieldWidget)
-      if(_focusYieldWidget)
+    if(_focusYieldWidget)
+    {
+      // Yield the focus to the given widget.
+      _focusYieldWidget->setFocus();
+      // Activate the window.
+      if(!_focusYieldWidget->isActiveWindow())
       {
-        ev->accept();
-        // Yield the focus to the given widget.
-        _focusYieldWidget->setFocus();
-        // Activate the window.
-        if(!_focusYieldWidget->isActiveWindow())
-          _focusYieldWidget->activateWindow();
-        return;
+        _focusYieldWidget->activateWindow();
       }
-    break;
-
-    case Qt::Key_Up:
-    if(alt && !ctl && !meta)
-    {
-      incVolume(val);
       ev->accept();
       return;
     }
-    break;
-
-    case Qt::Key_Down:
-    if(alt && !ctl && !meta)
-    {
-      incVolume(-val);
-      ev->accept();
-      return;
-    }
-    break;
-
-    case Qt::Key_Left:
-    if(alt && !ctl && !meta)
-    {
-      incPan(-val);
-      ev->accept();
-      return;
-    }
-    break;
-
-    case Qt::Key_Right:
-    if(alt && !ctl && !meta)
-    {
-      incPan(val);
-      ev->accept();
-      return;
-    }
-    break;
-
-    default:
-    break;
   }
 
   // Let mixer window or other higher up handle it.
