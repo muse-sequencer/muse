@@ -1,3 +1,8 @@
+04.06.2010
+    - Fixed blank mixers upon auto-restart. (Tim)
+    - Make MusE QMainWindow own the mixers. They had no owner, no deletion. Leak? Test OK so far.
+    - Reload the last song upon auto-restart. Templates included, and midi config loading choice.
+      Was tricky, possible wee corrections later...?
 27.05.2010
     - Midi controller panel: Replaced 'Ctrl', 'S', and 'X' button text with svg icons. (Tim)
     - Midi controller panel: Replaced 'per-note-velocity' bitmap with button and svg icon.

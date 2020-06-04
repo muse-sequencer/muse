@@ -64,7 +64,7 @@ void UnusedWaveFiles::findWaveFiles()
     // get med files
     QStringList medFiles;
     if (ui->currentProjRadioButton->isChecked()) {
-        medFiles.append(MusEGlobal::muse->projectName());
+        medFiles.append(MusEGlobal::muse->projectFileInfo().fileName());
     } else {
         //printf("get ALLL *.med files!\n");
         QStringList medFilter("*.med");

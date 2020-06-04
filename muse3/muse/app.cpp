@@ -27,17 +27,13 @@
 #include <QClipboard>
 #include <QMessageBox>
 #include <QShortcut>
-#include <QTimer>
 #include <QWhatsThis>
 #include <QSettings>
-#include <QProgressDialog>
 #include <QMdiArea>
 #include <QMdiSubWindow>
 #include <QSocketNotifier>
-#include <QString>
 #include <QStyleFactory>
 #include <QTextStream>
-#include <QToolButton>
 #include <QInputDialog>
 #include <QAction>
 #include <QStringList>
@@ -347,6 +343,8 @@ MusE::MusE() : QMainWindow()
       activeTopWin          = nullptr;
       currentMenuSharingTopwin = nullptr;
       waitingForTopwin      = nullptr;
+      _lastProjectWasTemplate = false;
+      _lastProjectLoadedConfig = true;
 
       appName               = PACKAGE_NAME;
       setWindowTitle(appName);
@@ -1117,13 +1115,17 @@ void MusE::setDirty()
 //               2  - load configured start song
 //---------------------------------------------------
 
-void MusE::loadDefaultSong(const QString& filename_override)
+void MusE::loadDefaultSong(const QString& filename_override, bool use_template, bool load_config)
 {
   QString name;
   bool useTemplate = false;
   bool loadConfig = true;
   if (!filename_override.isEmpty())
+  {
         name = filename_override;
+        useTemplate = use_template;
+        loadConfig = load_config;
+  }
   else if (MusEGlobal::config.startMode == 0) {
               name = !projectRecentList.isEmpty() ? projectRecentList.first() : MusEGui::getUniqueUntitledName();
         fprintf(stderr, "starting with last song %s\n", name.toLatin1().constData());
@@ -1319,6 +1321,11 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
             project.setFile(name);
             QDir::setCurrent(MusEGlobal::museProject);
             }
+
+      _lastProjectFilePath = name;
+      _lastProjectWasTemplate = songTemplate;
+      _lastProjectLoadedConfig = doReadMidiPorts;
+
       QString ex = fi.completeSuffix().toLower();
       QString mex = ex.section('.', -1, -1);
       if((mex == "gz") || (mex == "bz2"))
@@ -1335,6 +1342,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
                         QMessageBox::critical(this, QString("MusE"),
                            tr("File open error"));
                         setUntitledProject();
+                        _lastProjectFilePath = QString();
                         }
                   else
                         setConfigDefaults();
@@ -1430,18 +1438,23 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
                         QMessageBox::critical(this, QString("MusE"),
                            tr("File read error"));
                         setUntitledProject();
+                        _lastProjectFilePath = QString();
                         }
                   }
             }
       else if (mex == "mid" || mex == "kar") {
             setConfigDefaults();
             if (!importMidi(name, false))
+            {
                   setUntitledProject();
+                  _lastProjectFilePath = QString();
+            }
             }
       else {
             QMessageBox::critical(this, QString("MusE"),
                tr("Unknown File Format: %1").arg(ex));
             setUntitledProject();
+            _lastProjectFilePath = QString();
             }
       if (!songTemplate) {
             addProject(project.absoluteFilePath());
@@ -1532,6 +1545,10 @@ void MusE::fileClose()
   //QDir::setCurrent(QDir::homePath());
   QDir::setCurrent(MusEGlobal::museProject);
   project.setFile(name);
+  _lastProjectFilePath = QString();
+  _lastProjectWasTemplate = false;
+  _lastProjectLoadedConfig = true;
+
   setWindowTitle(projectTitle(name));
   
   //writeTopwinState=true;
@@ -2076,6 +2093,9 @@ bool MusE::saveAs()
             ok = save(name, true, writeTopwinState);
             if (ok) {
                   project.setFile(name);
+                  _lastProjectFilePath = name;
+                  _lastProjectWasTemplate = false;
+                  _lastProjectLoadedConfig = true;
                   setWindowTitle(projectTitle(project.absoluteFilePath()));
                   addProject(name);
                   }
@@ -3117,6 +3137,9 @@ MusE::lash_idle_cb ()
           int ok = save (ss.toLatin1(), false, true);
           if (ok) {
             project.setFile(ss.toLatin1());
+            _lastProjectFilePath = ss.toLatin1();
+            _lastProjectWasTemplate = false;
+            _lastProjectLoadedConfig = true;
             setWindowTitle(tr("MusE: Song: %1").arg(MusEGui::projectTitleFromFilename(project.absoluteFilePath())));
             addProject(ss.toLatin1());
             MusEGlobal::museProject = QFileInfo(ss.toLatin1()).absolutePath();
@@ -3474,7 +3497,7 @@ void MusE::bigtimeClosed()
 void MusE::showMixer1(bool on)
       {
       if (on && mixer1 == 0) {
-            mixer1 = new MusEGui::AudioMixerApp(NULL, &(MusEGlobal::config.mixer1));
+            mixer1 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer1));
             connect(mixer1, SIGNAL(closed()), SLOT(mixer1Closed()));
             mixer1->setGeometry(MusEGlobal::config.mixer1.geometry);
       }
@@ -3491,7 +3514,7 @@ void MusE::showMixer1(bool on)
 void MusE::showMixer2(bool on)
       {
       if (on && mixer2 == 0) {
-            mixer2 = new MusEGui::AudioMixerApp(NULL, &(MusEGlobal::config.mixer2));
+            mixer2 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer2));
             connect(mixer2, SIGNAL(closed()), SLOT(mixer2Closed()));
             mixer2->setGeometry(MusEGlobal::config.mixer2.geometry);
       }

@@ -31,6 +31,16 @@
 #include "script_delivery.h"
 
 #include <QFileInfo>
+#include <QCloseEvent>
+#include <QMainWindow>
+#include <QMenu>
+#include <QRect>
+#include <QString>
+#include <QToolBar>
+#include <QToolButton>
+#include <QProgressDialog>
+#include <QTimer>
+
 #include <list>
 #include <time.h>
 #include <sys/time.h>
@@ -38,17 +48,7 @@
 #include <unistd.h>
 #endif
 
-class QCloseEvent;
-class QMainWindow;
-class QMenu;
-class QPoint;
-class QRect;
-class QString;
-class QToolBar;
-class QToolButton;
-class QProgressDialog;
 class MuseMdiArea;
-class QTimer;
 
 namespace MusECore {
 class AudioOutput;
@@ -177,6 +177,9 @@ class MusE : public QMainWindow
       QString appName;
 
       QFileInfo project;
+      QString _lastProjectFilePath;
+      bool _lastProjectWasTemplate;
+      bool _lastProjectLoadedConfig;
       QToolBar *tools;
       CpuToolbar* cpuLoadToolbar;
 
@@ -413,7 +416,9 @@ class MusE : public QMainWindow
 
       void populateAddTrack();
 
-      void loadDefaultSong(const QString& filename_override);
+      // Loads a default song according to settings, or filename_override if not empty.
+      // If filename_override is not empty, use_template and load_config are used.
+      void loadDefaultSong(const QString& filename_override, bool use_template, bool load_config);
       bool loadConfigurationColors(QWidget* parent = 0);
       bool saveConfigurationColors(QWidget* parent = 0);
       // Whether to restart MusE (almost) from scratch when calling close().
@@ -438,7 +443,10 @@ class MusE : public QMainWindow
       void setHeartBeat();
       void stopHeartBeat();
       void importController(int, MusECore::MidiPort*, int);
-      QString projectName() { return project.fileName(); }
+      const QFileInfo& projectFileInfo() const { return project; }
+      QString lastProjectFilePath() const { return _lastProjectFilePath; };
+      bool lastProjectWasTemplate() const { return _lastProjectWasTemplate; }
+      bool lastProjectLoadedConfig() const { return _lastProjectLoadedConfig; }
       QString projectTitle() const;
       QString projectPath() const;
       QString projectExtension() const;

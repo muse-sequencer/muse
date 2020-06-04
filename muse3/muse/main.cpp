@@ -579,6 +579,9 @@ int main(int argc, char* argv[])
       #endif
 
 
+      QString last_project_filename;
+      bool last_project_was_template = false;
+      bool last_project_loaded_config = false;
       bool plugin_rescan_already_done = false;
       int rv = 0;
 
@@ -1534,7 +1537,16 @@ int main(int argc, char* argv[])
         //--------------------------------------------------
         // Load the default song.
         //--------------------------------------------------
-        MusEGlobal::muse->loadDefaultSong(open_filename);
+        // When restarting, override with the last project file name used.
+        if(last_project_filename.isEmpty())
+        {
+          MusEGlobal::muse->loadDefaultSong(open_filename, false, false);
+        }
+        else
+        {
+          MusEGlobal::muse->loadDefaultSong(
+            last_project_filename, last_project_was_template, last_project_loaded_config);
+        }
 
         QTimer::singleShot(100, MusEGlobal::muse, SLOT(showDidYouKnowDialogIfEnabled()));
 
@@ -1570,6 +1582,29 @@ int main(int argc, char* argv[])
 
         // Grab the restart flag before deleting muse.
         is_restarting = MusEGlobal::muse->restartingApp();
+        
+        {
+          // If the current project file name exists, set the last_project_filename
+          //  variable so that if restarting, it starts with that file.
+          // This should be OK since fresh untitled unsaved songs will not have a
+          //  file yet, they will have a unique file name that does not exist until
+          //  saved, so it will either use the existing open_filename, or default
+          //  to normal operation (template, last song, or blank).
+          const QString s = MusEGlobal::muse->lastProjectFilePath();
+          const QFileInfo fi(s);
+          if(fi.exists())
+          {
+            last_project_filename = s;
+            last_project_was_template = MusEGlobal::muse->lastProjectWasTemplate();
+            last_project_loaded_config = MusEGlobal::muse->lastProjectLoadedConfig();
+          }
+          else
+          {
+            last_project_filename.clear();
+            last_project_was_template = false;
+            last_project_loaded_config = false;
+          }
+        }
 
         // Now delete the application.
         delete MusEGlobal::muse;
@@ -1609,6 +1644,14 @@ int main(int argc, char* argv[])
           delete MusEGlobal::defaultAudioConverterSettings;
         MusEGlobal::defaultAudioConverterSettings = nullptr;
         MusEGlobal::audioConverterPluginList.clearDelete();
+        
+        // Clear the mixer configurations.
+        MusEGlobal::config.mixer1.stripOrder.clear();
+        MusEGlobal::config.mixer1.stripVisibility.clear();
+        MusEGlobal::config.mixer1.stripConfigList.clear();
+        MusEGlobal::config.mixer2.stripOrder.clear();
+        MusEGlobal::config.mixer2.stripVisibility.clear();
+        MusEGlobal::config.mixer2.stripConfigList.clear();
       }
 
       //============================================
