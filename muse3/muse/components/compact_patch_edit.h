@@ -40,7 +40,13 @@ class LCDPatchEdit;
 
 class CompactPatchEdit : public QFrame
 {
-  Q_OBJECT
+    Q_OBJECT
+
+    Q_PROPERTY( bool style3d READ style3d WRITE setStyle3d )
+    Q_PROPERTY( int radius READ radius WRITE setRadius )
+
+    bool _style3d;
+    int _radius;
 
   public:
     enum ReadoutOrientation { ReadoutHorizontal = 0, ReadoutVertical };
@@ -97,7 +103,19 @@ class CompactPatchEdit : public QFrame
     void setReadoutOrientation(ReadoutOrientation);
     void setShowPatchLabel(bool);
 
-    void setReadoutColor(const QColor&);
+    void setReadoutColor(const QColor& c);
+    void setBgColor(const QColor& c);
+    void setBgActiveColor(const QColor& c);
+    void setBorderColor(const QColor& c);
+    void setFontColor(const QColor& c);
+    void setFontActiveColor(const QColor& c);
+    void setStyle3d(const bool s);
+    void setRadius(const int r);
+
+    bool style3d() const { return _style3d; }
+//    void setStyle3d(const bool style3d) { _style3d = style3d; update(); }
+    int radius() const { return _radius; }
+//    void setRadius(const int radius) { _radius = radius; update(); }
 
     // At what point size to switch from aliased text to non-aliased text. Zero means always use anti-aliasing.
     // Here in CompactPatchEdit, this only affects the CompactSliders so far, not the patch label.

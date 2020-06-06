@@ -336,14 +336,14 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       
       trackInfoWidget = new TrackInfoWidget(split);
       split->setStretchFactor(split->indexOf(trackInfoWidget), 0);
-      QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+      QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
       tipolicy.setHorizontalStretch(0);
       tipolicy.setVerticalStretch(100);
       trackInfoWidget->setSizePolicy(tipolicy);
       
       tracklist = new QWidget(split);
       split->setStretchFactor(split->indexOf(tracklist), 0);
-      QSizePolicy tpolicy = QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
+      QSizePolicy tpolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
       tpolicy.setHorizontalStretch(0);
       tpolicy.setVerticalStretch(100);
       tracklist->setSizePolicy(tpolicy);
@@ -556,10 +556,10 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 void Arranger::setDefaultSplitterSizes()
 {
   QList<int> vallist;
-  vallist.append(trackInfoWidget->minimumSize().width());
-//  vallist.append(tlistLayout->sizeHint().width());
-  vallist.append(250);
-  vallist.append(300);
+  vallist.append(trackInfoWidget->sizeHint().width());
+  list->resize(250, 100);
+  vallist.append(tlistLayout->sizeHint().width());
+  vallist.append(1);
   split->setSizes(vallist);
 }
 

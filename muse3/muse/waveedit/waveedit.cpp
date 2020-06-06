@@ -354,7 +354,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       hsplitter->addWidget(splitter_w);
           
       hsplitter->setStretchFactor(hsplitter->indexOf(trackInfoWidget), 0);
-      QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+      QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
       tipolicy.setHorizontalStretch(0);
       tipolicy.setVerticalStretch(100);
       trackInfoWidget->setSizePolicy(tipolicy);
@@ -450,17 +450,17 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
         solo->setChecked(part->track()->solo());
       }
 
-      if(canvas->track())
-      {
-        updateTrackInfo();
-        //toolbar->setSolo(canvas->track()->solo());
-      }
-      
       QList<int> mops;
       mops.append(_trackInfoWidthInit);
       mops.append(_canvasWidthInit);
       hsplitter->setSizes(mops);
     
+      if(canvas->track())
+      {
+        updateTrackInfo();
+        //toolbar->setSolo(canvas->track()->solo());
+      }
+         
       initTopwinState();
       finalizeInit();
       }

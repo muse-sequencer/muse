@@ -48,7 +48,13 @@ namespace MusEGui {
 class EffectRack : public QListWidget {
       Q_OBJECT
     
-      Q_PROPERTY( QColor activeColor READ activeColor WRITE setActiveColor )
+      Q_PROPERTY( bool style3d READ style3d WRITE setStyle3d )
+      Q_PROPERTY( int radius READ radius WRITE setRadius )
+      Q_PROPERTY( bool customScrollbar READ customScrollbar WRITE setCustomScrollbar )
+
+      bool _style3d;
+      int _radius;
+      bool _customScrollbar;
     
       MusECore::AudioTrack* track;
       int itemheight;
@@ -86,10 +92,14 @@ class EffectRack : public QListWidget {
 
       MusECore::AudioTrack* getTrack() const { return track; } 
       QPoint getDragPos() const { return dragPos; }
-      QColor activeColor() const { return _activeColor; }
-      void setActiveColor(const QColor& c) { _activeColor = c; update(); }
       ItemBackgroundPainter* getBkgPainter() const { return _bkgPainter; }
 
+      bool style3d() const { return _style3d; }
+      void setStyle3d(const bool style3d) { _style3d = style3d; }
+      int radius() const { return _radius; }
+      void setRadius(const int radius) { _radius = radius; }
+      bool customScrollbar() const { return _customScrollbar; }
+      void setCustomScrollbar(const bool customScrollbar) { _customScrollbar = customScrollbar; }
       };
 
 } // namespace MusEGui

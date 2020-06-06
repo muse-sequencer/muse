@@ -213,7 +213,6 @@ void ScaleDraw::draw(QPainter *p, const QPalette& palette, double curValue)// co
         val = d_scldiv.majMark(i);
         drawLabel(p, palette, curValue, val, i == 0);
     }
-    p->setPen(palette.text().color());
     
     if (d_scldiv.logScale())
     {
@@ -472,6 +471,8 @@ void ScaleDraw::drawLabel(QPainter *p, const QPalette& palette, double curValue,
 	break;
     }
 
+    p->save();
+
   switch(d_textHighlightMode)
   {
     case TextHighlightNone:
@@ -527,6 +528,7 @@ void ScaleDraw::drawLabel(QPainter *p, const QPalette& palette, double curValue,
     break;
   }
 
+  p->restore();
 }
 
 //------------------------------------------------------------

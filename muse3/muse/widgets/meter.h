@@ -44,12 +44,20 @@ namespace MusEGui {
 
 class Meter : public QFrame, public ScaleIf {
     Q_OBJECT
+
+    Q_PROPERTY(int radius READ radius WRITE setRadius)
+    Q_PROPERTY(bool vu3d READ vu3d WRITE setVu3d)
+
+    int _radius;
+    int _vu3d;
+
    public:
       enum MeterType {DBMeter, LinMeter};
       enum ScalePos { None, Left, Right, Top, Bottom, InsideHorizontal, InsideVertical };
 
    private:
      QColor _primaryColor;
+     QColor _bgColor;
      
    protected:
       QLinearGradient darkGradRed;
@@ -84,7 +92,7 @@ class Meter : public QFrame, public ScaleIf {
 
       QColor separator_color;
       QColor peak_color;
-      int xrad, yrad;
+//      int xrad, yrad;
 
       virtual void resizeEvent(QResizeEvent*);
       virtual void paintEvent(QPaintEvent*);
@@ -138,7 +146,7 @@ class Meter : public QFrame, public ScaleIf {
             int refreshRate = 20);
       
       QColor primaryColor() const { return _primaryColor; }
-      void setPrimaryColor(const QColor& color);
+      void setPrimaryColor(const QColor& color, const QColor& bgColor = Qt::black);
       
       void setRange(double min, double max);
 
@@ -151,6 +159,11 @@ class Meter : public QFrame, public ScaleIf {
       void setOrientation(Qt::Orientation o) { _orient = o; update(); }
       
       virtual QSize sizeHint() const;
+
+      int radius() const { return _radius; }
+      void setRadius(int radius) { _radius = radius; }
+      int vu3d() const { return _vu3d; }
+      void setVu3d(int vu3d) { _vu3d = vu3d; }
       };
 
 } // namespace MusEGui

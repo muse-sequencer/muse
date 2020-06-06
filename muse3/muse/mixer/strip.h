@@ -562,6 +562,12 @@ class ElidedLabelComponentDescriptor : public ComponentDescriptor
     bool _ignoreHeight;
     bool _ignoreWidth;
 
+    // _color from base class seems to be used for border color
+    QColor _bgColor;
+    QColor _bgActiveColor;
+    QColor _fontColor;
+    QColor _fontActiveColor;
+
   public:        
     ElidedLabelComponentDescriptor() : 
       ComponentDescriptor(ComponentRack::ElidedLabelComponentWidget,
@@ -608,6 +614,10 @@ class TrackNameLabel : public ElidedTextLabel
 {
   Q_OBJECT
 
+    Q_PROPERTY(bool style3d READ style3d WRITE setStyle3d)
+
+    bool _style3d;
+
   protected:
     virtual void mouseDoubleClickEvent(QMouseEvent*);
 
@@ -617,6 +627,9 @@ class TrackNameLabel : public ElidedTextLabel
   public:
     TrackNameLabel(QWidget* parent = 0, const char* name = 0, Qt::WindowFlags f = 0);
     TrackNameLabel(const QString & text, QWidget* parent = 0, const char* name = 0, Qt::WindowFlags f = 0);
+
+    int style3d() const { return _style3d; }
+    void setStyle3d(int style3d) { _style3d = style3d; }
 };
 
 
@@ -770,13 +783,13 @@ class Strip : public QFrame {
       bool getStripVisible() const { return _visible; }
       void setStripVisible(bool v) { _visible = v; }
 
-      static const int FIXED_METER_WIDTH;
+      static constexpr int FIXED_METER_WIDTH = 7;
       
       void setRecordFlag(bool flag);
       MusECore::Track* getTrack() const { return track; }
       void setHighLight(bool highlight);
       QString getLabelText();
-      void updateStyleSheet();
+      void updateLabelStyleSheet();
       
       void addGridWidget(QWidget* w, const GridPosStruct& pos, Qt::Alignment alignment = 0);
       void addGridLayout(QLayout* l, const GridPosStruct& pos, Qt::Alignment alignment = 0);

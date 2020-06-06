@@ -100,19 +100,33 @@ Meter::Meter(QWidget* parent,
       setLineWidth(0);
       setMidLineWidth(0);
 
-      // rounding radii
-      xrad = 4;
-      yrad = 4;
+      _radius = 4;
+      _vu3d = true;
 
-      dark_red_end = QColor(0x8e0000);
-      dark_red_begin = QColor(0x8e3800);
+      ensurePolished();
 
-      dark_yellow_end = QColor(0x8e6800);
-      dark_yellow_center = QColor(0x8e8e00);
-      dark_yellow_begin = QColor(0x6a8400);
+      if (_vu3d) {
+          dark_red_end = QColor(0x8e0000);
+          dark_red_begin = QColor(0x8e3800);
 
-//       dark_green_end = QColor(0x467800);
-//       dark_green_begin = QColor(0x007000);
+          darkGradRed.setColorAt(1, dark_red_begin);
+          darkGradRed.setColorAt(0, dark_red_end);
+
+          dark_yellow_end = QColor(0x8e6800);
+          dark_yellow_center = QColor(0x8e8e00);
+          dark_yellow_begin = QColor(0x6a8400);
+
+          darkGradYellow.setColorAt(1, dark_yellow_begin);
+          darkGradYellow.setColorAt(0.5, dark_yellow_center);
+          darkGradYellow.setColorAt(0, dark_yellow_end);
+
+          mask_center = QColor(225, 225, 225, 64);
+          mask_edge = QColor(30, 30, 30, 64);
+
+          maskGrad.setColorAt(0, mask_edge);
+          maskGrad.setColorAt(0.5, mask_center);
+          maskGrad.setColorAt(1, mask_edge);
+      }
 
       light_red_end = QColor(0xff0000);
       light_red_begin = QColor(0xdd8800);
@@ -121,28 +135,6 @@ Meter::Meter(QWidget* parent,
       light_yellow_center = QColor(0xffff00);
       light_yellow_begin = QColor(0xddff00);
 
-//       light_green_end = QColor(0x88ff00);
-//       light_green_begin = QColor(0x00ff00);
-
-      mask_center = QColor(225, 225, 225, 64);
-      mask_edge = QColor(30, 30, 30, 64);
-
-      separator_color = QColor(0x666666);
-      peak_color = QColor(0xeeeeee);
-
-//       darkGradGreen.setColorAt(1, dark_green_begin);
-//       darkGradGreen.setColorAt(0, dark_green_end);
-
-      darkGradYellow.setColorAt(1, dark_yellow_begin);
-      darkGradYellow.setColorAt(0.5, dark_yellow_center);
-      darkGradYellow.setColorAt(0, dark_yellow_end);
-
-      darkGradRed.setColorAt(1, dark_red_begin);
-      darkGradRed.setColorAt(0, dark_red_end);
-
-//       lightGradGreen.setColorAt(1, light_green_begin);
-//       lightGradGreen.setColorAt(0, light_green_end);
-
       lightGradYellow.setColorAt(1, light_yellow_begin);
       lightGradYellow.setColorAt(0.5, light_yellow_center);
       lightGradYellow.setColorAt(0, light_yellow_end);
@@ -150,9 +142,8 @@ Meter::Meter(QWidget* parent,
       lightGradRed.setColorAt(1, light_red_begin);
       lightGradRed.setColorAt(0, light_red_end);
 
-      maskGrad.setColorAt(0, mask_edge);
-      maskGrad.setColorAt(0.5, mask_center);
-      maskGrad.setColorAt(1, mask_edge);
+      separator_color = QColor(0x666666);
+      peak_color = QColor(0xeeeeee);
 
       connect(&fallingTimer, SIGNAL(timeout()), this, SLOT(updateTargetMeterValue()));
 
@@ -520,27 +511,30 @@ void Meter::setRefreshRate(int rate)
   _refreshRate = rate;
 }
 
-void Meter::setPrimaryColor(const QColor& color)
+void Meter::setPrimaryColor(const QColor& color, const QColor &bgColor)
 {
   _primaryColor = color; 
   int r = 0;
-  
-  dark_green_begin = _primaryColor.darker(200);
-  dark_green_end = dark_green_begin;
-  r = dark_green_end.red() + 0x46;
-  if(r > 255)
-    r = 255;
-  dark_green_end.setRed(r);
-  
+
+  if (_vu3d) {
+      dark_green_begin = _primaryColor.darker(200);
+      dark_green_end = dark_green_begin;
+      r = dark_green_end.red() + 0x46;
+      if(r > 255)
+          r = 255;
+      dark_green_end.setRed(r);
+
+      darkGradGreen.setColorAt(1, dark_green_begin);
+      darkGradGreen.setColorAt(0, dark_green_end);
+  } else
+      _bgColor = bgColor;
+
   light_green_begin = _primaryColor;
   light_green_end = light_green_begin;
   r = light_green_end.red() + 0x88;
   if(r > 255)
     r = 255;
   light_green_end.setRed(r);
-  
-  darkGradGreen.setColorAt(1, dark_green_begin);
-  darkGradGreen.setColorAt(0, dark_green_end);
 
   lightGradGreen.setColorAt(1, light_green_begin);
   lightGradGreen.setColorAt(0, light_green_end);
@@ -634,7 +628,7 @@ void Meter::paintEvent(QPaintEvent* ev)
     else
       updatePath.addRect(rect.x(), rect.y(), rect.width(), rect.height());  // Update only the requested rectangle
     
-    drawingPath.addRoundedRect(fw, fw, w, h, xrad, yrad);  // The actual desired shape of the meter
+    drawingPath.addRoundedRect(fw, fw, w, h, _radius, _radius);  // The actual desired shape of the meter
     finalPath = drawingPath & updatePath;
 
     // Draw corners as normal background colour.
@@ -648,7 +642,7 @@ void Meter::paintEvent(QPaintEvent* ev)
     
     // Draw the red, green, and yellow sections.
     drawVU(p, rect, finalPath, cur_pixv);
-    
+
     // Draw the peak white line.
     //if(updFull || (cur_ymax >= rect.y() && cur_ymax < rect.height()))
     {
@@ -669,21 +663,22 @@ void Meter::paintEvent(QPaintEvent* ev)
         p.fillPath(path, QBrush(peak_color));
     }
     
-    // Draw the transparent layer on top of everything to give a 3d look
-    p.setRenderHint(QPainter::Antialiasing);  
-    maskGrad.setStart(QPointF(fw, fw));
-    if(_orient == Qt::Vertical)
-      maskGrad.setFinalStop(QPointF(w, fw));
-    else
-      maskGrad.setFinalStop(QPointF(fw, h));
-    
+    if (_vu3d) {
+        // Draw the transparent layer on top of everything to give a 3d look
+        p.setRenderHint(QPainter::Antialiasing);
+        maskGrad.setStart(QPointF(fw, fw));
+        if(_orient == Qt::Vertical)
+            maskGrad.setFinalStop(QPointF(w, fw));
+        else
+            maskGrad.setFinalStop(QPointF(fw, h));
 #ifdef _USE_CLIPPER
-    p.fillRect(rect, QBrush(maskGrad));
+        p.fillRect(rect, QBrush(maskGrad));
 #else
-    //QPainterPath path; path.addRect(fw, fw, w);
-    //p.fillPath(finalPath & path, QBrush(maskGrad));
-    p.fillPath(finalPath, QBrush(maskGrad));
+        //QPainterPath path; path.addRect(fw, fw, w);
+        //p.fillPath(finalPath & path, QBrush(maskGrad));
+        p.fillPath(finalPath, QBrush(maskGrad));
 #endif      
+    }
 
     if(_showText)
     {
@@ -745,12 +740,14 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
           int y1 = int((maxScale - redScale) * h / range);
           int y2 = int((maxScale - yellowScale) * h / range);
 
-          darkGradGreen.setStart(QPointF(fw, y2));
-          darkGradGreen.setFinalStop(QPointF(fw, h));
-          darkGradYellow.setStart(QPointF(fw, y1));
-          darkGradYellow.setFinalStop(QPointF(fw, y2));
-          darkGradRed.setStart(QPointF(fw, fw));
-          darkGradRed.setFinalStop(QPointF(fw, y1));
+          if (_vu3d) {
+              darkGradGreen.setStart(QPointF(fw, y2));
+              darkGradGreen.setFinalStop(QPointF(fw, h));
+              darkGradYellow.setStart(QPointF(fw, y1));
+              darkGradYellow.setFinalStop(QPointF(fw, y2));
+              darkGradRed.setStart(QPointF(fw, fw));
+              darkGradRed.setFinalStop(QPointF(fw, y1));
+          }
 
           lightGradGreen.setStart(QPointF(fw, y2));
           lightGradGreen.setFinalStop(QPointF(fw, h));
@@ -827,7 +824,7 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
             {
               QPainterPath path; path.addRect(fw, fw, w, pixv); path &= drawPath;
               if(!path.isEmpty())
-                p.fillPath(path, QBrush(darkGradRed));       // dark red
+                p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
             }
             {
               QPainterPath path; path.addRect(fw, pixv, w, y1-pixv); path &= drawPath;
@@ -856,14 +853,14 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
             {
               QPainterPath path; path.addRect(fw, fw, w, y1); path &= drawPath;
               if(!path.isEmpty())
-                p.fillPath(path, QBrush(darkGradRed));       // dark red
+                p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
             }
             
             // Yellow section:
             {
               QPainterPath path; path.addRect(fw, y1, w, pixv-y1); path &= drawPath;
               if(!path.isEmpty())
-                p.fillPath(path, QBrush(darkGradYellow));   // dark yellow
+                p.fillPath(path, _vu3d ? QBrush(darkGradYellow) : _bgColor);   // dark yellow
             }
             {
               QPainterPath path; path.addRect(fw, pixv, w, y2-pixv); path &= drawPath;
@@ -885,21 +882,21 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
             {
               QPainterPath path; path.addRect(fw, fw, w, y1); path &= drawPath;
               if(!path.isEmpty())
-                p.fillPath(path, QBrush(darkGradRed));       // dark red
+                p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
             }
             
             // Yellow section:
             {
               QPainterPath path; path.addRect(fw, y1, w, y2-y1); path &= drawPath;
               if(!path.isEmpty())
-                p.fillPath(path, QBrush(darkGradYellow));   // dark yellow
+                p.fillPath(path, _vu3d ? QBrush(darkGradYellow) : _bgColor);   // dark yellow
             }
             
             // Green section:
             {
               QPainterPath path; path.addRect(fw, y2, w, pixv-y2); path &= drawPath;
               if(!path.isEmpty())
-                p.fillPath(path, QBrush(darkGradGreen));   // dark green
+                p.fillPath(path, _vu3d ? QBrush(darkGradGreen) : _bgColor);   // dark green
             }
             {
               QPainterPath path; path.addRect(fw, pixv, w, h-pixv); path &= drawPath;
@@ -912,18 +909,20 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
           {
             QRect r(0, y1, w, 1); r &= rect;
             if(!r.isNull())
-              p.fillRect(r, separator_color);  
-          }  
+              p.fillRect(r, separator_color);
+          }
           {
             QRect r(0, y2, w, 1); r &= rect;
             if(!r.isNull())
-              p.fillRect(r, separator_color);  
-          }  
+              p.fillRect(r, separator_color);
+          }
         }  
         else      // Meter type is linear...
         {
-          darkGradGreen.setStart(QPointF(fw, fw));
-          darkGradGreen.setFinalStop(QPointF(fw, h));
+            if (_vu3d) {
+                darkGradGreen.setStart(QPointF(fw, fw));
+                darkGradGreen.setFinalStop(QPointF(fw, h));
+            }
 
           lightGradGreen.setStart(QPointF(fw, fw));
           lightGradGreen.setFinalStop(QPointF(fw, h));
@@ -931,7 +930,7 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
           {
             QPainterPath path; path.addRect(fw, fw, w, pixv); path &= drawPath;
             if(!path.isEmpty())
-              p.fillPath(path, QBrush(darkGradGreen));   // dark green
+              p.fillPath(path, _vu3d ? QBrush(darkGradGreen) : _bgColor);   // dark green
           }
           {
             QPainterPath path; path.addRect(fw, pixv, w, h-pixv); path &= drawPath;
@@ -952,12 +951,14 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
           int x1 = int(redScale * w / range);
           int x2 = int(yellowScale * w / range);
 
-          darkGradGreen.setStart(QPointF(x2, fw));
-          darkGradGreen.setFinalStop(QPointF(w, fw));
-          darkGradYellow.setStart(QPointF(x1, fw));
-          darkGradYellow.setFinalStop(QPointF(x2, fw));
-          darkGradRed.setStart(QPointF(fw, fw));
-          darkGradRed.setFinalStop(QPointF(x1, fw));
+          if (_vu3d) {
+              darkGradGreen.setStart(QPointF(x2, fw));
+              darkGradGreen.setFinalStop(QPointF(w, fw));
+              darkGradYellow.setStart(QPointF(x1, fw));
+              darkGradYellow.setFinalStop(QPointF(x2, fw));
+              darkGradRed.setStart(QPointF(fw, fw));
+              darkGradRed.setFinalStop(QPointF(x1, fw));
+          }
 
           lightGradGreen.setStart(QPointF(x2, fw));
           lightGradGreen.setFinalStop(QPointF(w, fw));
@@ -1034,7 +1035,7 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
             {
               QPainterPath path; path.addRect(fw, fw, pixv, h); path &= drawPath;
               if(!path.isEmpty())
-                p.fillPath(path, QBrush(darkGradRed));       // dark red
+                p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
             }
             {
               QPainterPath path; path.addRect(pixv, fw, x1-pixv, h); path &= drawPath;
@@ -1063,14 +1064,14 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
             {
               QPainterPath path; path.addRect(fw, fw, x1, h); path &= drawPath;
               if(!path.isEmpty())
-                p.fillPath(path, QBrush(darkGradRed));       // dark red
+                p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
             }
             
             // Yellow section:
             {
               QPainterPath path; path.addRect(x1, fw, pixv-x1, h); path &= drawPath;
               if(!path.isEmpty())
-                p.fillPath(path, QBrush(darkGradYellow));   // dark yellow
+                p.fillPath(path, _vu3d ? QBrush(darkGradYellow) : _bgColor);   // dark yellow
             }
             {
               QPainterPath path; path.addRect(pixv, fw, x2-pixv, h); path &= drawPath;
@@ -1092,21 +1093,21 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
             {
               QPainterPath path; path.addRect(fw, fw, x1, h); path &= drawPath;
               if(!path.isEmpty())
-                p.fillPath(path, QBrush(darkGradRed));       // dark red
+                p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
             }
             
             // Yellow section:
             {
               QPainterPath path; path.addRect(x1, fw, x2-x1, h); path &= drawPath;
               if(!path.isEmpty())
-                p.fillPath(path, QBrush(darkGradYellow));   // dark yellow
+                p.fillPath(path, _vu3d ? QBrush(darkGradYellow) : _bgColor);   // dark yellow
             }
             
             // Green section:
             {
               QPainterPath path; path.addRect(x2, fw, pixv-x2, h); path &= drawPath;
               if(!path.isEmpty())
-                p.fillPath(path, QBrush(darkGradGreen));   // dark green
+                p.fillPath(path, _vu3d ? QBrush(darkGradGreen) : _bgColor);   // dark green
             }
             {
               QPainterPath path; path.addRect(pixv, fw, w-pixv, h); path &= drawPath;
@@ -1129,8 +1130,10 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
         }  
         else      // Meter type is linear...
         {
-          darkGradGreen.setStart(QPointF(fw, fw));
-          darkGradGreen.setFinalStop(QPointF(w, fw));
+            if (_vu3d) {
+                darkGradGreen.setStart(QPointF(fw, fw));
+                darkGradGreen.setFinalStop(QPointF(w, fw));
+            }
 
           lightGradGreen.setStart(QPointF(fw, fw));
           lightGradGreen.setFinalStop(QPointF(w, fw));
@@ -1143,7 +1146,7 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
           {
             QPainterPath path; path.addRect(pixv, fw, w, h); path &= drawPath;
             if(!path.isEmpty())
-              p.fillPath(path, QBrush(darkGradGreen));   // dark green
+              p.fillPath(path, _vu3d ? QBrush(darkGradGreen) : _bgColor);   // dark green
           }
         }
 

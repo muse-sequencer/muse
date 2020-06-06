@@ -205,8 +205,8 @@ class DList : public View {
       virtual ~DList();
       int getSelectedInstrument();
 
-      quint8 alphaOverlay() { return _alphaOverlay; }
-      void setAlphaOverlay(quint8 i) { _alphaOverlay = i; }
+      quint8 alphaOverlay() const { return _alphaOverlay; }
+      void setAlphaOverlay(const quint8 i) { _alphaOverlay = i; }
       };
 
 } // namespace MusEGui

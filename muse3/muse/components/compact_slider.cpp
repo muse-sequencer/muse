@@ -112,13 +112,19 @@ CompactSlider::CompactSlider(QWidget *parent, const char *name,
 
       //_onPath = 0;
       //_offPath = 0;
-      _editor = 0;
+      _editor = nullptr;
       _editMode = false;
-      
+
+      _barSameColor = false;
+      _radius = 4;
+
       d_borderColor = borderColor;
       d_barColor = barColor;
       d_slotColor = slotColor;
       d_thumbColor = thumbColor;
+
+      if (_barSameColor)
+          d_barColor = borderColor;
 
       _maxAliasedPointSize = 8;
       
@@ -703,6 +709,9 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
   
   QPainter p(this);
   
+  if (_barSameColor)
+      d_barColor = d_borderColor;
+
   const QPalette& pal = palette();
 
   const int req_thumb_margin = d_thumbLength == 0 ? 0 : ((d_thumbHalf - d_xMargin) > 1 ? (d_thumbHalf - d_xMargin) : 1);
@@ -822,7 +831,7 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
   linearGrad_a.setColorAt(1, c1);
   
   QPainterPath onPath;
-  MusECore::addRoundedPath(&onPath, QRect (x1, y, w1, h), 4, 4, 
+  MusECore::addRoundedPath(&onPath, QRect (x1, y, w1, h), _radius, _radius,
     (MusECore::Corner) (MusECore::UpperRight | MusECore::LowerRight) );
   if(!onPath.isEmpty())
     p.fillPath(onPath, linearGrad_a);
@@ -836,7 +845,8 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
   offPath.addRect(d_sliderRect);
   offPath -= onPath;
   if(!offPath.isEmpty())
-    p.fillPath(offPath, linearGrad_a);
+//    p.fillPath(offPath, QBrush(d_slotColor));
+      p.fillPath(offPath, linearGrad_a);
     
     
   const double minV = minValue(ConvertNone);

@@ -115,5 +115,7 @@
         <file>svg/midi_controller_new.svg</file>
         <file>svg/midi_controller_select.svg</file>
         <file>svg/midi_controller_remove.svg</file>
+        <file>svg/down_arrow.svg</file>
+        <file>svg/up_arrow.svg</file>
     </qresource>
 </RCC>

@@ -341,7 +341,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       hsplitter = new MusEGui::Splitter(Qt::Horizontal, mainw, "hsplitter");
       hsplitter->setChildrenCollapsible(true);
       //hsplitter->setHandleWidth(4);
-      
+
       ctrl = new CompactToolButton(mainw);
       ctrl->setIcon(*midiControllerNewSVGIcon);
       ctrl->setIconSize(QSize(14, 14));
@@ -350,7 +350,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       ctrl->setObjectName("Ctrl");
       ctrl->setFocusPolicy(Qt::NoFocus);
       //ctrl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
-      ctrl->setToolTip(tr("Add Controller View"));
+      ctrl->setToolTip(tr("Add controller view"));
       
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
       hscroll = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, _viewState.xscale(), 20000, Qt::Horizontal, mainw);
@@ -387,7 +387,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       hsplitter->addWidget(splitter_w);
           
       hsplitter->setStretchFactor(hsplitter->indexOf(trackInfoWidget), 0);
-      QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+      QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
       tipolicy.setHorizontalStretch(0);
       tipolicy.setVerticalStretch(100);
       trackInfoWidget->setSizePolicy(tipolicy);
@@ -397,9 +397,14 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       epolicy.setHorizontalStretch(255);
       epolicy.setVerticalStretch(100);
       splitter->setSizePolicy(epolicy);
-      
+
       mainGrid->addWidget(hsplitter, 0, 0, 1, 1);
-      
+
+      QList<int> mops;
+      mops.append(_trackInfoWidthInit);
+      mops.append(_canvasWidthInit);
+      hsplitter->setSizes(mops);
+
       QWidget* split1     = new QWidget(splitter);
       split1->setObjectName("split1");
       QGridLayout* gridS1 = new QGridLayout(split1);
@@ -530,12 +535,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       }
 
       setSpeakerMode(_playEventsMode);
-      
-      QList<int> mops;
-      mops.append(_trackInfoWidthInit);
-      mops.append(_canvasWidthInit);
-      hsplitter->setSizes(mops);
-    
+
       initTopwinState();
       finalizeInit();
 

@@ -262,7 +262,7 @@ void CtrlPanel::buildPanel()
           _knob->setHasOffMode(true);
           _knob->setOff(true);
           _knob->setValueDecimals(0);
-          _knob->setFaceColor(MusEGlobal::config.midiControllerSliderDefaultColor);
+          _knob->setFaceColor(MusEGlobal::config.midiControllerSliderColor);
           _knob->setStep(1.0);
           _knob->setShowLabel(false);
           _knob->setShowValue(true);
@@ -301,7 +301,7 @@ void CtrlPanel::buildPanel()
           _slider->setHasOffMode(true);
           _slider->setOff(true);
           _slider->setValueDecimals(0);
-          _slider->setBarColor(MusEGlobal::config.sliderDefaultColor);
+          _slider->setBarColor(MusEGlobal::config.sliderBackgroundColor);
           _slider->setStep(1.0);
           _slider->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
           _slider->setEnableValueToolTips(false);      // FIXME: Tooltip just gets in the way!
@@ -804,7 +804,7 @@ void CtrlPanel::setControlColor()
   if(_dnum == -1)
     return;
   
-  QColor color = MusEGlobal::config.sliderDefaultColor;
+  QColor color = MusEGlobal::config.sliderBackgroundColor;
 
   switch(_dnum)
   {
@@ -817,7 +817,7 @@ void CtrlPanel::setControlColor()
     break;
 
     default:
-      color = MusEGlobal::config.midiControllerSliderDefaultColor;
+      color = MusEGlobal::config.midiControllerSliderColor;
     break;
   }
 
@@ -843,7 +843,7 @@ void CtrlPanel::setControlColor()
   if(_slider)
   {
     _slider->setBorderColor(color);
-    _slider->setBarColor(MusEGlobal::config.sliderBarDefaultColor);
+    _slider->setBarColor(MusEGlobal::config.sliderBarColor);
     style()->unpolish(_slider);
     style()->polish(_slider);
   }

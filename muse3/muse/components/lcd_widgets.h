@@ -68,7 +68,7 @@ class LCDPatchEdit : public QFrame
   Q_OBJECT
 
   //Q_PROPERTY(QString text READ text WRITE setText)
-  Q_PROPERTY( QColor readoutColor READ readoutColor WRITE setReadoutColor )
+//  Q_PROPERTY( QColor readoutColor READ readoutColor WRITE setReadoutColor )
 
   public:
     enum PatchSections { HBankSection, LBankSection, ProgSection };
@@ -88,6 +88,12 @@ class LCDPatchEdit : public QFrame
     int _lastValidProg;
 
     QColor _readoutColor;
+    QColor _bgColor;
+//    QColor _bgActiveColor;
+    QColor _borderColor;
+
+    bool _style3d;
+    int _radius;
 
     LCDPainter* _LCDPainter;
 
@@ -170,8 +176,11 @@ class LCDPatchEdit : public QFrame
 
     void setReadoutOrientation(PatchOrientation);
 
-    QColor readoutColor() const { return _readoutColor; }
-    void setReadoutColor(const QColor& c);
+    void setReadoutColor(const QColor& c) { _readoutColor = c; update(); }
+    void setBgColor(const QColor& c) { _bgColor = c; update(); }
+    void setBorderColor(const QColor& c) { _borderColor = c; update(); }
+    void setStyle3d(const bool s) { _style3d = s; }
+    void setRadius(const int r) { _radius = r; }
 
     int value() const;
     void setValue(int v);

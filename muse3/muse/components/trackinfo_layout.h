@@ -67,8 +67,8 @@ class TrackInfoLayout : public QHBoxLayout
       virtual ~TrackInfoLayout();
 
       virtual QSize sizeHint() const;
-      virtual QSize minimumSize() const;
-      virtual QSize maximumSize() const;
+//      virtual QSize minimumSize() const;
+//      virtual QSize maximumSize() const;
       
       virtual void setGeometry(const QRect &rect);
       };

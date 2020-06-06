@@ -89,7 +89,7 @@ CItem* PianoCanvas::addItem(MusECore::Part* part, const MusECore::Event& event)
       if (diff > 0)  {// too short part? extend it
             part->setLenTick(part->lenTick()+diff);
             }
-      
+
       return ev;
       }
 
@@ -104,9 +104,9 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
       for (int i=0;i<128;i++) noteHeldDown[i]=false;
       supportsResizeToTheLeft = true;
       supportsMultipleResize = true;
-      
+
       steprec=new MusECore::StepRec(noteHeldDown);
-      
+
       songChanged(SC_TRACK_INSERTED);
       connect(MusEGlobal::song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
       }
@@ -166,27 +166,27 @@ int PianoCanvas::y2pitch(int y) const
 // //   drawEvent
 // //    draws a note
 // //---------------------------------------------------------
-// 
+//
 // void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
 //    const QRect& rect)
 //       {
 //       QRect r = item->bbox();
 //       if(!virt())
 //         r.moveCenter(map(item->pos()));
-//       
+//
 //       //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
-//       QRect rr = map(rect);                      // Use our own map instead.        
-//       QRect mer = map(r);                              
-//       
+//       QRect rr = map(rect);                      // Use our own map instead.
+//       QRect mer = map(r);
+//
 //       QRect mr = rr & mer;
 //       if(mr.isNull())
 //         return;
-//       
+//
 //       p.setPen(Qt::black);
 //       struct Triple {
 //             int r, g, b;
 //             };
-// 
+//
 //       static Triple myColors [12] = {  // ddskrjp
 //             { 0xff, 0x3d, 0x39 },
 //             { 0x39, 0xff, 0x39 },
@@ -201,18 +201,18 @@ int PianoCanvas::y2pitch(int y) const
 //             { 0x7a, 0xbf, 0xff },
 //             { 0xff, 0xbf, 0x7a }
 //             };
-// 
+//
 //       QColor color;
 //       NEvent* nevent   = (NEvent*) item;
 //       MusECore::Event event = nevent->event();
 //       if (nevent->part() != curPart){
-//             if(item->isMoving()) 
+//             if(item->isMoving())
 //               color = Qt::gray;
-//             else if(item->isSelected()) 
+//             else if(item->isSelected())
 //               color = Qt::black;
-//             else  
+//             else
 //               color = Qt::lightGray;
-//       }      
+//       }
 //       else {
 //             if (item->isMoving()) {
 //                     color = Qt::gray;
@@ -243,7 +243,7 @@ int PianoCanvas::y2pitch(int y) const
 //                         }
 //                   }
 //             }
-//       
+//
 //       bool wmtxen = p.worldMatrixEnabled();
 //       p.setWorldMatrixEnabled(false);
 //       int mx = mr.x();
@@ -257,7 +257,7 @@ int PianoCanvas::y2pitch(int y) const
 //       color.setAlpha(MusEGlobal::config.globalAlphaBlend);
 //       QBrush brush(color);
 //       p.fillRect(mr, brush);
-// 
+//
 //       if(mex >= mx && mex <= mx + mw)
 //         p.drawLine(mex, my, mex, my + mh - 1);                       // The left edge
 //       if(mex + mew >= mx && mex + mew <= mx + mw)
@@ -266,29 +266,29 @@ int PianoCanvas::y2pitch(int y) const
 //         p.drawLine(mx, mey, mx + mw - 1, mey);                       // The top edge
 //       if(mey + meh >= my && mey + meh <= my + mh)
 //         p.drawLine(mx, mey + meh - 1, mx + mw - 1, mey + meh - 1);   // The bottom edge
-// 
+//
 //       // print note name on the drawn notes
 //       if (MusEGlobal::config.showNoteNamesInPianoRoll) {
 //         QFont f(MusEGlobal::config.fonts[1]);
-// 
+//
 //         f.setPointSize(f.pointSize() * 0.85);
 //         p.setFont(f);
-// 
+//
 //         if (color.lightnessF() > 0.6f) {
-// 
+//
 //           p.setPen(Qt::black);
-// 
+//
 //         } else {
-// 
+//
 //           p.setPen(Qt::white);
-// 
+//
 //         }
 //         QString noteStr = MusECore::pitch2string(event.pitch());
-// 
+//
 //         p.drawText(mer,Qt::AlignHCenter|Qt::AlignCenter, noteStr.toUpper());
 //       }
-// 
-// 
+//
+//
 //       p.setWorldMatrixEnabled(wmtxen);
 //       }
 
@@ -307,7 +307,7 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
    const QRect& mr, const QRegion&)
       {
       QRect ur = mapDev(mr).adjusted(0, 0, 0, 1);
-      
+
       // This is the update comparison rectangle. This would normally be the same as the item's bounding rectangle
       //  but in this case we have a one-pixel wide border. To accommodate for our border, expand the right edge right
       //  by one, and the bottom edge down by one. This way we catch the full
@@ -316,7 +316,7 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
       QRect ubbr = item->bbox().adjusted(0, 0, 0, -1);
       if(!virt())
         ubbr.moveCenter(map(item->pos()));
-      
+
       const QRect mbbr = map(ubbr); // Use our own map instead.
       QRect ubr = ur & ubbr;
       const int ux = ur.x();
@@ -325,7 +325,7 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
       const int uh = ur.height();
       const int ux_2 = ux + uw;
       const int uy_2 = uy + uh;
-      
+
       const int ubbx = ubbr.x();
       const int ubby = ubbr.y();
       const int ubbw = ubbr.width();
@@ -337,7 +337,7 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
       pen.setCosmetic(true);
       pen.setColor(Qt::black);
       p.setPen(pen);
-      
+
       struct Triple {
             int r, g, b;
             };
@@ -361,44 +361,45 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
       NEvent* nevent   = (NEvent*) item;
       MusECore::Event event = nevent->event();
       if (nevent->part() != curPart){
-            if(item->isMoving()) 
+          if(item->isMoving())
               color = Qt::gray;
-            else if(item->isSelected()) 
+          else if(item->isSelected())
               color = Qt::black;
-            else  
+          else
               color = Qt::lightGray;
-      }      
+      }
       else {
-            if (item->isMoving()) {
-                    color = Qt::gray;
-                }
-            else if (item->isSelected()) {
-                  color = Qt::black;
-                  }
-            else {
-                  color.setRgb(0, 0, 255);
-                  switch(colorMode) {
-                        case 0:
-                              break;
-                        case 1:     // pitch
-                              {
-                              Triple* c = &myColors[event.pitch() % 12];
-                              color.setRgb(c->r, c->g, c->b);
-                              }
-                              break;
-                        case 2:     // velocity
-                              {
-                              int velo = event.velo();
-                              if (velo < 64)
-                                    color.setRgb(velo*4, 0, 0xff);
-                              else
-                                    color.setRgb(0xff, 0, (127-velo) * 4);
-                              }
-                              break;
-                        }
-                  }
-            }
-      
+          if (item->isMoving()) {
+              color = Qt::gray;
+          }
+          else if (item->isSelected()) {
+              color = MusEGlobal::config.midiItemSelectedColor;
+              //                  color = Qt::black;
+          }
+          else {
+              color = MusEGlobal::config.midiItemColor;
+              switch(colorMode) {
+              case 0:
+                  break;
+              case 1:     // pitch
+              {
+                  Triple* c = &myColors[event.pitch() % 12];
+                  color.setRgb(c->r, c->g, c->b);
+              }
+                  break;
+              case 2:     // velocity
+              {
+                  int velo = event.velo();
+                  if (velo < 64)
+                      color.setRgb(velo*4, 0, 0xff);
+                  else
+                      color.setRgb(0xff, 0, (127-velo) * 4);
+              }
+                  break;
+              }
+          }
+      }
+
       color.setAlpha(MusEGlobal::config.globalAlphaBlend);
       QBrush brush(color);
       if(!ubr.isEmpty())
@@ -441,7 +442,7 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
 
       }
 
-#endif      
+#endif
 
 
 #if 0
@@ -455,7 +456,7 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
    const QRect& mr, const QRegion&)
       {
       QRect ur = mapDev(mr).adjusted(0, 0, 0, 1);
-      
+
       QRect ubbr = item->bbox();
       // This is the update comparison rectangle. This would normally be the same as the item's bounding rectangle
       //  but in this case we have a one-pixel wide border. To accommodate for our border, expand the right edge right
@@ -464,22 +465,22 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
       // Note that this is units of ticks.
       if(!virt())
         ubbr.moveCenter(map(item->pos()));
-      
+
       //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
       const QRect mbbr = map(ubbr).adjusted(0, 0, 0, -1);
 
       const QRect mbr = mr & mbbr;
-      
+
       const bool wmtxen = p.worldMatrixEnabled();
       p.setWorldMatrixEnabled(false);
-      
+
       const int ux = ur.x();
       const int uy = ur.y();
       const int uw = ur.width();
       const int uh = ur.height();
       const int ux_2 = ux + uw;
       const int uy_2 = uy + uh;
-      
+
       const int ubbx = ubbr.x();
       const int ubby = ubbr.y();
       const int ubbw = ubbr.width();
@@ -495,7 +496,7 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
       pen.setCosmetic(true);
       pen.setColor(Qt::black);
       p.setPen(pen);
-      
+
       struct Triple {
             int r, g, b;
             };
@@ -519,13 +520,13 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
       NEvent* nevent   = (NEvent*) item;
       MusECore::Event event = nevent->event();
       if (nevent->part() != curPart){
-            if(item->isMoving()) 
+            if(item->isMoving())
               color = Qt::gray;
-            else if(item->isSelected()) 
+            else if(item->isSelected())
               color = Qt::black;
-            else  
+            else
               color = Qt::lightGray;
-      }      
+      }
       else {
             if (item->isMoving()) {
                     color = Qt::gray;
@@ -556,7 +557,7 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
                         }
                   }
             }
-      
+
       color.setAlpha(MusEGlobal::config.globalAlphaBlend);
       QBrush brush(color);
       if(!mbr.isEmpty())
@@ -564,13 +565,13 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
 
       if(ubbx >= ux && ubbx < ux_2)
         p.drawLine(mbbx, mbby, mbbx, mbby_2 - 1);                       // The left edge
-        
+
       if(ubbx_2 >= ux && ubbx_2 <= ux_2)
         p.drawLine(mbbx_2, mbby, mbbx_2, mbby_2 - 1);           // The right edge
-        
+
       if(ubby >= uy && ubby < uy_2)
         p.drawLine(mbbx, mbby, mbbx_2, mbby);                       // The top edge
-        
+
       if(ubby_2 >= uy && ubby_2 <= uy_2)
         p.drawLine(mbbx, mbby_2 - 1, mbbx_2, mbby_2 - 1);   // The bottom edge
 
@@ -596,7 +597,7 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
 
       p.setWorldMatrixEnabled(wmtxen);
       }
-     
+
 #endif
 
 
@@ -614,57 +615,34 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
       QRect ubbr = item->bbox();
       if(!virt())
         ubbr.moveCenter(map(item->pos()));
-      
+
       //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
       const ViewRect vr(mr, true);
       const ViewRect vbbr(ubbr, false);
-      
+
       // This is the update comparison rectangle. This would normally be the same as the item's bounding rectangle
       //  but in this case we have a one-pixel wide border. To accommodate for our border, expand the right edge right
       //  by one, and the bottom edge down by one. This way we catch the full
       //  necessary drawing rectangle when checking the requested update rectangle.
       // Note that this is units of ticks.
       ViewRect vbbr_exp(item->bbox(), false);
-      adjustRect(vbbr_exp,
-                 ViewWCoordinate(0, true),
-                 ViewHCoordinate(0, true),
-                 ViewWCoordinate(0, true),
-                 // Normally we would use the y + h for our border, but here we need to
-                 //  use the bottom because of the uneven black/white key 6 - 7 - 6 height progressions.
-                 ViewHCoordinate(-1, true));
-      
+//      adjustRect(vbbr_exp,
+//                 ViewWCoordinate(0, true),
+//                 ViewHCoordinate(0, true),
+//                 ViewWCoordinate(0, true),
+//                 // Normally we would use the y + h for our border, but here we need to
+//                 //  use the bottom because of the uneven black/white key 6 - 7 - 6 height progressions.
+//                 ViewHCoordinate(-1, true));
+
       const ViewRect vbr = intersected(vr, vbbr);
       const QRect mbr = asQRectMapped(vbr);
-      const ViewRect vbr_exp = intersected(vr, vbbr_exp);
       const QRect mbbr_exp = asQRectMapped(vbbr_exp);
-      
-      const ViewXCoordinate vbx_exp = vbr_exp._x;
-      const ViewYCoordinate vby_exp = vbr_exp._y;
-      const ViewWCoordinate vbw_exp = vbr_exp._width;
-      const ViewHCoordinate vbh_exp = vbr_exp._height;
-      const ViewXCoordinate vbx_2exp = mathXCoordinates(vbx_exp, vbw_exp, MathAdd);
-      const ViewYCoordinate vby_2exp = mathYCoordinates(vby_exp, vbh_exp, MathAdd);
-      
-      const int mbx_exp  = asIntMapped(vbx_exp);
-      const int mbx_2exp = asIntMapped(vbx_2exp);
-      const int mby_exp  = asIntMapped(vby_exp);
-      const int mby_2exp = asIntMapped(vby_2exp);
-
-// For testing...
-//       fprintf(stderr, "\nPianoCanvas::drawItem:\nmr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
-//               mr.x(), mr.y(), mr.width(), mr.height());
-//       fprintf(stderr, "\nmbbr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
-//               mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height());
-//       vbbr.dump("vbbr:");
-//       vbbr_exp.dump("vbbr_exp:");
-//       vr.dump("vr:");
-//       vbr.dump("vbr:");
 
       QPen pen;
       pen.setCosmetic(true);
       pen.setColor(Qt::black);
       p.setPen(pen);
-      
+
       struct Triple {
             int r, g, b;
             };
@@ -688,22 +666,23 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
       NEvent* nevent   = (NEvent*) item;
       MusECore::Event event = nevent->event();
       if (nevent->part() != curPart){
-            if(item->isMoving()) 
+            if(item->isMoving())
               color = Qt::gray;
-            else if(item->isSelected()) 
+            else if(item->isSelected())
               color = Qt::black;
-            else  
+            else
               color = Qt::lightGray;
-      }      
+      }
       else {
             if (item->isMoving()) {
                     color = Qt::gray;
                 }
             else if (item->isSelected()) {
-                  color = Qt::black;
+                  color = MusEGlobal::config.midiItemSelectedColor;
+//                  color = Qt::black;
                   }
             else {
-                  color.setRgb(0, 0, 255);
+                  color = MusEGlobal::config.midiItemColor;
                   switch(colorMode) {
                         case 0:
                               break;
@@ -725,90 +704,17 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
                         }
                   }
             }
-      
+
       bool wmtxen = p.worldMatrixEnabled();
       p.setWorldMatrixEnabled(false);
-      const ViewXCoordinate& vx = vr._x;
-      const ViewYCoordinate& vy = vr._y;
-      const ViewWCoordinate& vw = vr._width;
-      const ViewHCoordinate& vh = vr._height;
-      const ViewXCoordinate vx_2(mathXCoordinates(vx, vw, MathAdd));
-      const ViewYCoordinate vy_2(mathYCoordinates(vy, vh, MathAdd));
-      
+
       const ViewWCoordinate vw1m(1, true);
       const ViewHCoordinate vh1m(1, true);
-      const ViewXCoordinate& vbbx_exp = vbbr_exp._x;
-      const ViewYCoordinate& vbby_exp = vbbr_exp._y;
-      // Ensure that the border RECTANGLE never shrinks below 2 pixels wide, so that users can at least see
-      //  that there is SOMETHING there, when placed on top of a grid line for example.
-      const ViewWCoordinate vbbw_exp = compareWCoordinates(vbbr_exp._width, vw1m, CompareLess) ? vw1m : vbbr_exp._width;
-      const ViewHCoordinate vbbh_exp = compareHCoordinates(vbbr_exp._height, vh1m, CompareLess) ? vh1m : vbbr_exp._height;
-      const ViewXCoordinate vbbx_2exp(mathXCoordinates(vbbx_exp, vbbw_exp, MathAdd));
-      const ViewYCoordinate vbby_2exp(mathYCoordinates(vbby_exp, vbbh_exp, MathAdd));
 
-      const int mbbx_exp  = asIntMapped(vbbx_exp);
-      const int mbby_exp  = asIntMapped(vbby_exp);
-      const int mbbx_2exp = asIntMapped(vbbx_2exp);
-      const int mbby_2exp = asIntMapped(vbby_2exp);
-      
       color.setAlpha(MusEGlobal::config.globalAlphaBlend);
       QBrush brush(color);
       p.fillRect(mbr, brush);
-
-      if(compareYCoordinates(vby_2exp, vby_exp, CompareGreaterEqual))
-      {
-// For testing...
-//         fprintf(stderr, "...checking left edge: vx:%d vx_2:%d vbbx_exp:%d\n", vx._value, vx_2._value, vbbx_exp._value);
-        
-        if(isXInRange(vbbx_exp, vx, vx_2))
-        {
-          
-// For testing...
-//           fprintf(stderr, "...left edge in range. Drawing left edge at mbbx:%d mbby_is:%d mbbx:%d mbby_2is:%d\n",
-//                   mbbx, mbby_is, mbbx, mbby_2is);
-          
-          p.drawLine(mbbx_exp, mby_exp, mbbx_exp, mby_2exp); // The left edge
-        }
-
-// For testing...
-//         fprintf(stderr, "...checking right edge: vx:%d vx_2:%d vbbx_2exp:%d\n", vx._value, vx_2._value, vbbx_2exp._value);
-        
-        if(isXInRange(vbbx_2exp, vx, vx_2))
-        {
-// For testing...
-//           fprintf(stderr, "...right edge in range. Drawing right edge at mbbx_2:%d mbby_is:%d mbbx_2:%d mbby_2is:%d\n", 
-//                   mbbx_2, mbby_is, mbbx_2, mbby_2is);
-          
-          p.drawLine(mbbx_2exp, mby_exp, mbbx_2exp, mby_2exp);  // The right edge
-        }
-      }
-
-      if(compareXCoordinates(vbx_2exp, vbx_exp, CompareGreaterEqual))
-      {
-// For testing...
-//         fprintf(stderr, "...checking top edge: vy:%d vy_2:%d vbby_exp:%d\n", vy._value, vy_2._value, vbby_exp._value);
-
-        if(isYInRange(vbby_exp, vy, vy_2))
-        {
-// For testing...
-//           fprintf(stderr, "...top edge in range. Drawing top edge at mbbx:%d mbby:%d mbbx_2:%d mbby:%d\n", 
-//                   mbbx, mbby, mbbx_2, mbby);
-          
-          p.drawLine(mbx_exp, mbby_exp, mbx_2exp, mbby_exp);  // The top edge
-        }
-        
-// For testing...
-//         fprintf(stderr, "...checking bottom edge: vy:%d vy_2:%d vbby_2exp:%d\n", vy._value, vy_2._value, vbby_2exp._value);
-        
-        if(isYInRange(vbby_2exp, vy, vy_2))
-        {
-// For testing...
-//           fprintf(stderr, "...bottom edge in range. Drawing bottom edge at mbbx:%d mbby_2:%d mbbx_2:%d mbby_2:%d\n", 
-//                   mbbx, mbby_2, mbbx_2, mbby_2);
-          
-          p.drawLine(mbx_exp, mbby_2exp, mbx_2exp, mbby_2exp);   // The bottom edge
-        }
-      }
+      p.drawRect(mbr);
 
       // print note name on the drawn notes
       if (MusEGlobal::config.showNoteNamesInPianoRoll) {
@@ -836,8 +742,8 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
 
       p.setWorldMatrixEnabled(wmtxen);
       }
-      
-#endif      
+
+#endif
 
 //---------------------------------------------------------
 //   drawTopItem
@@ -883,34 +789,34 @@ void PianoCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
 //---------------------------------------------------------
 
 MusECore::Undo PianoCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, DragType dtype, bool rasterize)
-{      
+{
   if(editor->parts()->empty())
     return MusECore::Undo(); //return empty list
-  
+
   MusECore::PartsToChangeMap parts2change;
-  MusECore::Undo operations;  
-  
+  MusECore::Undo operations;
+
   for(MusECore::iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip)
   {
     MusECore::Part* part = ip->second;
     if(!part)
       continue;
-    
+
     int npartoffset = 0;
-    for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
+    for(iCItem ici = items.begin(); ici != items.end(); ++ici)
     {
       CItem* ci = ici->second;
       ci->setMoving(false);
 
       if(ci->part() != part)
         continue;
-      
+
       int x = ci->pos().x() + dx;
       int y = pitch2y(y2pitch(ci->pos().y()) + dp);
       QPoint newpos = QPoint(x, y);
       if(rasterize)
         newpos = raster(newpos);
-      
+
       // Test moving the item...
       NEvent* nevent = (NEvent*) ci;
       MusECore::Event event    = nevent->event();
@@ -921,14 +827,14 @@ MusECore::Undo PianoCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, Dra
       if(ntick < 0)
         ntick = 0;
       int diff = ntick + event.lenTick() - part->lenTick();
-      
+
       // If moving the item would require a new part size...
       if(diff > npartoffset)
         npartoffset = diff;
     }
-        
+
     if(npartoffset > 0)
-    {    
+    {
       MusECore::iPartToChange ip2c = parts2change.find(part);
       if(ip2c == parts2change.end())
       {
@@ -939,7 +845,7 @@ MusECore::Undo PianoCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, Dra
         ip2c->second.xdiff = npartoffset;
     }
   }
-  
+
   bool forbidden=false;
   for(MusECore::iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
   {
@@ -997,18 +903,18 @@ MusECore::Undo PianoCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, Dra
     {
       MusECore::Part* opart = ip2c->first;
       int diff = ip2c->second.xdiff;
-      
+
       schedule_resize_all_same_len_clone_parts(opart, opart->lenTick() + diff, operations);
-    }    
-					
-  	return operations;
+    }
+
+    return operations;
   }
   else
   {
-		return MusECore::Undo(); //return empty list
-	}
+        return MusECore::Undo(); //return empty list
+    }
 }
-      
+
 //---------------------------------------------------------
 //   moveItem
 //    called after moving an object
@@ -1026,7 +932,7 @@ bool PianoCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint
       if (x < 0)
             x = 0;
       MusECore::Part* part = nevent->part();
-      
+
       newEvent.setPitch(npitch);
       int ntick = (rasterize ? editor->rasterVal(x) : x) - part->tick();
       if (ntick < 0)
@@ -1037,12 +943,12 @@ bool PianoCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint
       // don't check, whether the new event is within the part
       // at this place. with operation groups, the part isn't
       // resized yet. (flo93)
-      
+
       if (dtype == MOVE_COPY || dtype == MOVE_CLONE)
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, newEvent, part, false, false));
       else
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
-      
+
       return true;
 }
 
@@ -1095,26 +1001,26 @@ void PianoCanvas::newItem(CItem* item, bool noSnap)
       if (w == 0)
             w = editor->rasterStep(ptick);
       event.setLenTick(w);
-            
+
       event.setPitch(y2pitch(item->y()));
       event.setSelected(true);
 
       MusECore::Undo operations;
       int diff = event.endTick()-part->lenTick();
-      
+
       if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
       {
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent,event, part, false, false));
-        
+
         if (diff > 0)// part must be extended?
         {
               schedule_resize_all_same_len_clone_parts(part, event.endTick(), operations);
               printf("newItem: extending\n");
         }
-        
+
         MusEGlobal::song->applyOperationGroup(operations);
       }
-      else // forbid action by not applying it   
+      else // forbid action by not applying it
           songChanged(SC_EVENT_INSERTED); //this forces an update of the itemlist, which is necessary
                                           //to remove "forbidden" events from the list again
       }
@@ -1193,7 +1099,7 @@ bool PianoCanvas::deleteItem(CItem* item)
       NEvent* nevent = (NEvent*) item;
       if (nevent->part() == curPart) {
             MusECore::Event ev = nevent->event();
-            // Indicate do undo, and do not do port controller values and clone parts. 
+            // Indicate do undo, and do not do port controller values and clone parts.
             MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
                             ev, curPart, false, false));
             return true;
@@ -1211,11 +1117,11 @@ void PianoCanvas::pianoCmd(int cmd)
             case CMD_LEFT:
                   {
                   int spos = pos[0];
-                  if(spos > 0) 
+                  if(spos > 0)
                   {
                     spos -= 1;     // Nudge by -1, then snap down with raster1.
                     spos = MusEGlobal::sigmap.raster1(spos, editor->rasterStep(pos[0]));
-                  }  
+                  }
                   if(spos < 0)
                     spos = 0;
                   MusECore::Pos p(spos,true);
@@ -1262,11 +1168,11 @@ void PianoCanvas::pianoCmd(int cmd)
                         MusECore::Event event = *i;
                         MusECore::Event newEvent = event.clone();
                         newEvent.setTick(event.tick() + editor->raster());// - part->tick()); DELETETHIS
-                        // Do not do port controller values and clone parts. 
+                        // Do not do port controller values and clone parts.
                         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
                         }
                   MusEGlobal::song->applyOperationGroup(operations);
-                  
+
                   MusECore::Pos p(editor->rasterVal(pos[0] + editor->rasterStep(pos[0])), true);
                   MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, false, true);
                   }
@@ -1278,7 +1184,7 @@ void PianoCanvas::pianoCmd(int cmd)
                   MusECore::MidiPart* part = (MusECore::MidiPart*)curPart;
                   if (part == 0)
                         break;
-                  
+
                   MusECore::Undo operations;
                   std::list<MusECore::Event> elist;
                   for (MusECore::ciEvent e = part->events().lower_bound(pos[0]); e != part->events().end(); ++e)
@@ -1287,7 +1193,7 @@ void PianoCanvas::pianoCmd(int cmd)
                         MusECore::Event event = *i;
                         MusECore::Event newEvent = event.clone();
                         newEvent.setTick(event.tick() - editor->raster() - part->tick());
-                        // Do not do port controller values and clone parts. 
+                        // Do not do port controller values and clone parts.
                         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
                         }
                   MusEGlobal::song->applyOperationGroup(operations);
@@ -1320,7 +1226,7 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
       }
       
       if (_steprec && curPart) // && pos[0] >= start_tick && pos[0] < end_tick [removed by flo93: this is handled in steprec->record]
-				 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,shift, -1 /* anything which is != rcSteprecNote */);
+                 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,shift, -1 /* anything which is != rcSteprecNote */);
       }
 
 //---------------------------------------------------------
@@ -1343,14 +1249,14 @@ void PianoCanvas::pianoReleased(int /*pitch*/, bool)
 
 void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
       {
-        
+
       const ViewRect vr(mr, true);
       const ViewXCoordinate& vx = vr._x;
       const ViewYCoordinate& vy = vr._y;
       const ViewWCoordinate& vw = vr._width;
       const ViewHCoordinate& vh = vr._height;
       const ViewYCoordinate vy_2 = mathYCoordinates(vy, vh, MathAdd);
-      
+
       const ViewHCoordinate vkh(KH, false);
       const ViewYCoordinate vy0(0, false);
       const ViewYCoordinate vy3(3, false);
@@ -1361,21 +1267,21 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
 //       const ViewHCoordinate vh_m1(-1, false);
 //       const ViewHCoordinate vh_75(75, false);
       const ViewYCoordinate vy75(75, false);
-      
+
       int mx = mr.x();
 //       int y = mr.y();
       int mw = mr.width();
-      
+
 //       int h = mr.height();
 
       QPen pen;
       pen.setCosmetic(true);
       pen.setColor(Qt::black);
       p.setPen(pen);
-      
+
       bool wmtxen = p.worldMatrixEnabled();
       p.setWorldMatrixEnabled(false);
-      
+
       //---------------------------------------------------
       //  horizontal lines
       //---------------------------------------------------
@@ -1390,32 +1296,32 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
       fprintf(stderr, "PianoCanvas::drawCanvas: C vyy:%d map:%d\n", vyy._value, vyy.isMapped());
       mathRefYCoordinates(vyy, vkh, MathAdd);
       fprintf(stderr, "PianoCanvas::drawCanvas: D vyy:%d map:%d\n", vyy._value, vyy.isMapped());
-      
+
 //       int key = 75 - (yy / KH);
       const ViewYCoordinate vkeyy = mathYCoordinates(vyy, vkh, MathDivide);
       const ViewHCoordinate vkeyh(vkeyy._value, vkeyy.isMapped());
       ViewYCoordinate vkey = mathYCoordinates(vy75, vkeyh, MathSubtract);
-      
+
 //       for (; yy < y + h; yy += KH) {
 //             switch (key % 7) {
 //                   case 0:
 //                   case 3:
 // For testing...
 //                         fprintf(stderr, "PianoCanvas::drawCanvas: Drawing horizontal line at x:%d yy:%d x + w:%d yy:%d\n", x, yy, x + w, yy);
-// 
+//
 //                         p.drawLine(x, yy, x + w, yy);
 //                         break;
 //                   default:
 // For testing...
 //                         fprintf(stderr, "PianoCanvas::drawCanvas: Filling rectangle at x:%d yy - 3:%d w:%d h:%d\n", x, yy - 3, w, 6);
-// 
+//
 //                         p.fillRect(x, yy-3, w, 6, MusEGlobal::config.midiCanvasBg.darker(110));
 //                         break;
 //                   }
 //             --key;
-            
+
       const int myy = asIntMapped(vyy);
-      
+
 // For testing...
       fprintf(stderr, "PianoCanvas::drawCanvas: x:%d vy:%d map:%d vyy:%d map:%d mx + mw:%d vy_2:%d map:%d\n",
               mx,
@@ -1423,14 +1329,14 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
               vyy._value, vyy.isMapped(),
               mx + mw,
               vy_2._value, vy_2.isMapped());
-      
+
       for (; compareYCoordinates(vyy, vy_2, CompareLess); mathRefYCoordinates(vyy, vkh, MathAdd)) {
-        
+
             ViewYCoordinate vkey_md7 = mathYCoordinates(vkey, vh7, MathModulo);
-            
+
 // For testing...
             fprintf(stderr, "...Comparing y coordinates vkey_md7:%d vy0:%d vy3:%d\n", vkey_md7._value, vy0._value, vy3._value);
-            
+
             if(compareYCoordinates(vkey_md7, vy0, CompareEqual) ||
                compareYCoordinates(vkey_md7, vy3, CompareEqual))
             {
@@ -1447,22 +1353,22 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
 
               p.fillRect(asQRectMapped(vfr), MusEGlobal::config.midiCanvasBg.darker(110));
             }
-            
+
             mathRefYCoordinates(vkey, vh1, MathSubtract);
             }
-      
+
       p.setWorldMatrixEnabled(wmtxen);
-      
+
       //---------------------------------------------------
       // vertical lines
       //---------------------------------------------------
 
       drawTickRaster(p, mr, mrg, editor->raster(), false, false, false,
-                         MusEGlobal::config.midiCanvasBarColor, 
+                         MusEGlobal::config.midiCanvasBarColor,
                          MusEGlobal::config.midiCanvasBeatColor);
-      
+
       }
-      
+
 #endif
 
 //---------------------------------------------------------
@@ -1493,17 +1399,17 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
       pen.setColor(MusEGlobal::config.midiDividerColor);
 //      pen.setColor(Qt::black);
       p.setPen(pen);
-      
+
       //---------------------------------------------------
       //  horizontal lines
       //---------------------------------------------------
 
       int uyy  = ((uy-1) / KH) * KH + KH;
       int key = 75 - (uyy / KH);
-      
+
 // For testing...
 //       fprintf(stderr, "PianoCanvas::drawCanvas: x:%d y:%d yy:%d x + w:%d y + h:%d\n", x, y, yy, x + w, y + h);
-      
+
       for (; uyy < uy_2; uyy += KH) {
             switch (key % 7) {
                   case 0:
@@ -1522,7 +1428,7 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
                   }
             --key;
             }
-      
+
       //---------------------------------------------------
       // vertical lines
       //---------------------------------------------------
@@ -1532,7 +1438,7 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
                      MusEGlobal::config.midiCanvasBeatColor,
                      MusEGlobal::config.midiCanvasFineColor,
                      MusEGlobal::config.midiCanvasBarColor);
-      
+
       }
 
 //---------------------------------------------------------
@@ -1587,13 +1493,13 @@ void PianoCanvas::cmd(int cmd)
                     MusECore::Part* newpt = pt;
                     MusECore::PartList* pl = editor->parts();
                     for(MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip)
-                      if(ip->second == pt) 
+                      if(ip->second == pt)
                       {
                         if(ip == pl->begin())
                           ip = pl->end();
                         --ip;
                         newpt = ip->second;
-                        break;    
+                        break;
                       }
                     if(newpt != pt)
                       editor->setCurCanvasPart(newpt);
@@ -1605,13 +1511,13 @@ void PianoCanvas::cmd(int cmd)
                     MusECore::Part* newpt = pt;
                     MusECore::PartList* pl = editor->parts();
                     for(MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip)
-                      if(ip->second == pt) 
+                      if(ip->second == pt)
                       {
                         ++ip;
                         if(ip == pl->end())
                           ip = pl->begin();
                         newpt = ip->second;
-                        break;    
+                        break;
                       }
                     if(newpt != pt)
                       editor->setCurCanvasPart(newpt);
@@ -1658,12 +1564,12 @@ void PianoCanvas::midiNote(int pitch, int velo)
             printf("%i ",i);
         printf("\n");
       }
-      
+
       if (_midiin && _steprec && curPart
          && !MusEGlobal::audio->isPlaying() && velo && pos[0] >= start_tick
          /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */
          && !(MusEGlobal::globalKeyState & Qt::AltModifier)) {
-					 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velo,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier);
+                     steprec->record(curPart,pitch,editor->raster(),editor->raster(),velo,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier);
          }
       }
 
@@ -1816,7 +1722,7 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool 
       {
       QList< QPair<int,MusECore::Event> > already_done;
       MusECore::Undo operations;
-      
+
       for (iCItem i = items.begin(); i != items.end(); ++i) {
             if (!(i->second->isSelected()))
                   continue;
@@ -1826,10 +1732,10 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool 
                   continue;
 
             MusECore::MidiPart* part = (MusECore::MidiPart*)(e->part());
-            
+
             if (already_done.contains(QPair<int,MusECore::Event>(part->clonemaster_sn(), event)))
               continue;
-            
+
             MusECore::Event newEvent = event.clone();
 
             switch (type) {

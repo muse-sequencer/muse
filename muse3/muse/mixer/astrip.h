@@ -54,19 +54,19 @@ class IconButton;
 class AudioComponentRack : public ComponentRack
 {
   Q_OBJECT
-    
-  public:      
+
+  public:
       // Type of component.
       enum AStripComponentType { aStripAuxComponent = userComponent };
       // Possible widget types.
       //enum AStripComponentWidgetType { type = userComponentWidget };
       // Possible component properties.
       enum AStripComponentProperties { aStripGainProperty = userComponentProperty };
-      
+
   protected:
     MusECore::AudioTrack* _track;
     bool _manageAuxs;
-    
+
     // Creates a new component widget from the given desc. Called by newComponent().
     // Connects known widget types' signals to slots.
     //virtual void newComponentWidget( ComponentDescriptor* desc, const ComponentWidget& before = ComponentWidget() );
@@ -76,7 +76,7 @@ class AudioComponentRack : public ComponentRack
     void scanAuxComponents();
     // Set component colours upon config changed.
     void setComponentColors();
-    
+
   protected slots:
     virtual void controllerChanged(double val, bool isOff, int id, int scrollMode);
     virtual void controllerMoved(double, int, bool);
@@ -97,12 +97,12 @@ class AudioComponentRack : public ComponentRack
   public slots:
     virtual void configChanged();
     virtual void songChanged(MusECore::SongChangedStruct_t);
-    
+
   public:
     AudioComponentRack(MusECore::AudioTrack* track, int id = -1, bool _manageAuxs = false, QWidget* parent = 0, Qt::WindowFlags f = 0);
-    
+
     MusECore::AudioTrack* track() { return _track; }
-    // Adds a component to the layout and the list. Creates a new component using 
+    // Adds a component to the layout and the list. Creates a new component using
     //  the given desc values if the desc widget is not given.
     virtual void newComponent( ComponentDescriptor* desc, const ComponentWidget& before = ComponentWidget() );
     // Updates all the components, for example updating the values of sliders.
@@ -113,16 +113,83 @@ class AudioComponentRack : public ComponentRack
 
 
 //---------------------------------------------------------
+//   AudioStripProperties
+//---------------------------------------------------------
+
+class AudioStripProperties : QWidget {
+      Q_OBJECT
+
+//    Q_PROPERTY(QColor bgColor READ bgColor WRITE setBgColor)
+    Q_PROPERTY(int sliderRadius READ sliderRadius WRITE setSliderRadius)
+    Q_PROPERTY(int sliderRadiusHandle READ sliderRadiusHandle WRITE setSliderRadiusHandle)
+    Q_PROPERTY(int sliderHandleHeight READ sliderHandleHeight WRITE setSliderHandleHeight)
+    Q_PROPERTY(int sliderHandleWidth READ sliderHandleWidth WRITE setSliderHandleWidth)
+    Q_PROPERTY(int sliderGrooveWidth READ sliderGrooveWidth WRITE setSliderGrooveWidth)
+    Q_PROPERTY(bool sliderFillOver READ sliderFillOver WRITE setSliderFillOver)
+    Q_PROPERTY(bool sliderUseGradient READ sliderUseGradient WRITE setSliderUseGradient)
+    Q_PROPERTY(bool sliderBackbone READ sliderBackbone WRITE setSliderBackbone)
+    Q_PROPERTY(int sliderScalePos READ sliderScalePos WRITE setSliderScalePos)
+    Q_PROPERTY(int meterWidth READ meterWidth WRITE setMeterWidth)
+    Q_PROPERTY(bool meterWidthPerChannel READ meterWidthPerChannel WRITE setMeterWidthPerChannel)
+
+//    QColor _bgColor;
+    int _sliderRadius;
+    int _sliderRadiusHandle;
+    int _sliderHandleHeight;
+    int _sliderHandleWidth;
+    int _sliderGrooveWidth;
+    bool _sliderFillOver;
+    bool _sliderUseGradient;
+    bool _sliderBackbone;
+    int _sliderScalePos;
+    int _meterWidth;
+    bool _meterWidthPerChannel;
+
+public:
+    AudioStripProperties();
+
+//    QColor bgColor() const { return _bgColor; }
+//    void setBgColor(const QColor c) { _bgColor = c; }
+
+    int sliderRadius() const { return _sliderRadius; }
+    void setSliderRadius(int radius) { _sliderRadius = radius; }
+    int sliderRadiusHandle() const { return _sliderRadiusHandle; }
+    void setSliderRadiusHandle(int radiusHandle) { _sliderRadiusHandle = radiusHandle; }
+
+    int sliderHandleHeight() const { return _sliderHandleHeight; }
+    void setSliderHandleHeight(int h) { _sliderHandleHeight = h; }
+    int sliderHandleWidth() const { return _sliderHandleWidth; }
+    void setSliderHandleWidth(int w) { _sliderHandleWidth = w; }
+    int sliderGrooveWidth() const { return _sliderGrooveWidth; }
+    void setSliderGrooveWidth(int w) { _sliderGrooveWidth = w; }
+
+    bool sliderFillOver() const { return _sliderFillOver; }
+    void setSliderFillOver(bool b) { _sliderFillOver = b; }
+    bool sliderUseGradient() const { return _sliderUseGradient; }
+    void setSliderUseGradient(bool b) { _sliderUseGradient = b; }
+    bool sliderBackbone() const { return _sliderBackbone; }
+    void setSliderBackbone(bool b) { _sliderBackbone = b; }
+
+    int sliderScalePos() const { return _sliderScalePos; }
+    void setSliderScalePos(int p) { _sliderScalePos = p; }
+
+    int meterWidth() const { return _meterWidth; }
+    void setMeterWidth(int w) { _meterWidth = w; }
+    bool meterWidthPerChannel() const { return _meterWidthPerChannel; }
+    void setMeterWidthPerChannel(bool b) { _meterWidthPerChannel = b; }
+};
+
+//---------------------------------------------------------
 //   AudioStrip
 //---------------------------------------------------------
 
 class AudioStrip : public Strip {
       Q_OBJECT
-      
-  public:      
+
+  public:
       // ID numbers for each rack in this strip.
       enum AStripRacks { aStripUpperRack = 0, aStripInfoRack = 1, aStripLowerRack = 2 };
-      
+
   private:
       GridPosStruct _preScrollAreaPos_A;
       //GridPosStruct _preScrollAreaPos_B;
@@ -147,7 +214,19 @@ class AudioStrip : public Strip {
       GridPosStruct _automationPos;
       //GridPosStruct _rightSpacerPos;
       GridPosStruct _offMonRecPos;
-    
+
+      int _sliderRadius;
+      int _sliderRadiusHandle;
+      int _sliderHandleHeight;
+      int _sliderHandleWidth;
+      int _sliderGrooveWidth;
+      bool _sliderFillOver;
+      bool _sliderUseGradient;
+      bool _sliderBackbone;
+      int _sliderScalePos;
+      int _meterWidth;
+      bool _meterWidthPerChannel;
+
       int channel;
       MusEGui::Slider* slider;
       MusEGui::DoubleLabel* sl;
@@ -155,13 +234,13 @@ class AudioStrip : public Strip {
 
       AudioComponentRack* _upperRack;
       AudioComponentRack* _lowerRack;
-      AudioComponentRack* _infoRack;
-      
+//      AudioComponentRack* _infoRack;
+
       // Whether the layout is in mode A (normal, racks on left) or B (racks on right).
       bool _isExpanded;
       // Current local state of knobs versus sliders preference global setting.
       bool _preferKnobs;
-      
+
       IconButton* _recMonitor;
       IconButton* stereo;
       IconButton* pre;
@@ -174,7 +253,7 @@ class AudioStrip : public Strip {
       QHBoxLayout* _clipperLayout;
 
       void setClipperTooltip(int ch);
-      
+
       void updateOffState();
       void updateVolume();
       void updateChannels();
@@ -207,15 +286,15 @@ class AudioStrip : public Strip {
    public:
       AudioStrip(QWidget* parent, MusECore::AudioTrack*, bool hasHandle = false, bool isEmbedded = true);
       virtual ~AudioStrip();
-      
+
       static const double volSliderStep;
       static const double volSliderMax;
       static const int    volSliderPrec;
-      
+
       static const double auxSliderStep;
       static const double auxSliderMax;
       static const int    auxSliderPrec;
-      
+
       static const double gainSliderStep;
       static const double gainSliderMin;
       static const double gainSliderMax;

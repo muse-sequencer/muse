@@ -891,6 +891,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         
                         else if (tag == "partCanvasBg")
                               MusEGlobal::config.partCanvasBg = readColor(xml);
+                        else if (tag == "dummyPartColor")
+                            MusEGlobal::config.dummyPartColor = readColor(xml);
                         else if (tag == "partCanvasFineRaster")
                               MusEGlobal::config.partCanvasFineRasterColor = readColor(xml);
                         else if (tag == "partCanvasCoarseRaster")
@@ -901,10 +903,12 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.selectTrackBg = readColor(xml);
                         else if (tag == "selectTrackFg")
                               MusEGlobal::config.selectTrackFg = readColor(xml);
+                        else if (tag == "selectTrackCurBg")
+                            MusEGlobal::config.selectTrackCurBg = readColor(xml);
                         else if (tag == "trackSectionDividerColor")
                               MusEGlobal::config.trackSectionDividerColor = readColor(xml);
-                        else if (tag == "mixerBg")
-                              MusEGlobal::config.mixerBg = readColor(xml);
+//                        else if (tag == "mixerBg")
+//                              MusEGlobal::config.mixerBg = readColor(xml);
                         else if (tag == "midiTrackLabelBg")
                               MusEGlobal::config.midiTrackLabelBg = readColor(xml);
 // Obsolete. There is only 'New' drum tracks now.
@@ -929,6 +933,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.midiTrackBg = readColor(xml);
                         else if (tag == "ctrlGraphFg")
                               MusEGlobal::config.ctrlGraphFg = readColor(xml);
+                        else if (tag == "ctrlGraphSel")
+                            MusEGlobal::config.ctrlGraphSel = readColor(xml);
                         else if (tag == "drumTrackBg")
                               MusEGlobal::config.drumTrackBg = readColor(xml);
                         else if (tag == "newDrumTrackBg")
@@ -947,9 +953,9 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.synthTrackBg = readColor(xml);
 
                         else if (tag == "sliderBarDefaultColor")
-                              MusEGlobal::config.sliderBarDefaultColor = readColor(xml);
+                              MusEGlobal::config.sliderBarColor = readColor(xml);
                         else if (tag == "sliderDefaultColor2")
-                              MusEGlobal::config.sliderDefaultColor = readColor(xml);
+                              MusEGlobal::config.sliderBackgroundColor = readColor(xml);
                         else if (tag == "panSliderColor2")
                               MusEGlobal::config.panSliderColor = readColor(xml);
                         else if (tag == "gainSliderColor2")
@@ -960,22 +966,64 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.audioVolumeSliderColor = readColor(xml);
                         else if (tag == "midiVolumeSliderColor2")
                               MusEGlobal::config.midiVolumeSliderColor = readColor(xml);
+                        else if (tag == "audioVolumeHandleColor")
+                            MusEGlobal::config.audioVolumeHandleColor = readColor(xml);
+                        else if (tag == "midiVolumeHandleColor")
+                            MusEGlobal::config.midiVolumeHandleColor = readColor(xml);
                         else if (tag == "audioControllerSliderDefaultColor2")
-                              MusEGlobal::config.audioControllerSliderDefaultColor = readColor(xml);
+                              MusEGlobal::config.audioControllerSliderColor = readColor(xml);
                         else if (tag == "audioPropertySliderDefaultColor2")
-                              MusEGlobal::config.audioPropertySliderDefaultColor = readColor(xml);
+                              MusEGlobal::config.audioPropertySliderColor = readColor(xml);
                         else if (tag == "midiControllerSliderDefaultColor2")
-                              MusEGlobal::config.midiControllerSliderDefaultColor = readColor(xml);
+                              MusEGlobal::config.midiControllerSliderColor = readColor(xml);
                         else if (tag == "midiPropertySliderDefaultColor2")
-                              MusEGlobal::config.midiPropertySliderDefaultColor = readColor(xml);
+                              MusEGlobal::config.midiPropertySliderColor = readColor(xml);
                         else if (tag == "midiPatchReadoutColor")
                               MusEGlobal::config.midiPatchReadoutColor = readColor(xml);
+                        else if (tag == "knobFontColor")
+                            MusEGlobal::config.knobFontColor = readColor(xml);
+
                         else if (tag == "audioMeterPrimaryColor")
                               MusEGlobal::config.audioMeterPrimaryColor = readColor(xml);
                         else if (tag == "midiMeterPrimaryColor")
                               MusEGlobal::config.midiMeterPrimaryColor = readColor(xml);
+                        else if (tag == "meterBackgroundColor")
+                            MusEGlobal::config.meterBackgroundColor = readColor(xml);
+
                         else if (tag == "rackItemBackgroundColor")
-                              MusEGlobal::config.rackItemBackgroundColor = readColor(xml);
+                            MusEGlobal::config.rackItemBackgroundColor = readColor(xml);
+                        else if (tag == "rackItemBgActiveColor")
+                            MusEGlobal::config.rackItemBgActiveColor = readColor(xml);
+                        else if (tag == "rackItemFontColor")
+                            MusEGlobal::config.rackItemFontColor = readColor(xml);
+                        else if (tag == "rackItemFontActiveColor")
+                            MusEGlobal::config.rackItemFontActiveColor = readColor(xml);
+                        else if (tag == "rackItemBorderColor")
+                            MusEGlobal::config.rackItemBorderColor = readColor(xml);
+                        else if (tag == "rackItemFontColorHover")
+                            MusEGlobal::config.rackItemFontColorHover = readColor(xml);
+
+                        else if (tag == "palSwitchBackgroundColor")
+                            MusEGlobal::config.palSwitchBackgroundColor = readColor(xml);
+                        else if (tag == "palSwitchBgActiveColor")
+                            MusEGlobal::config.palSwitchBgActiveColor = readColor(xml);
+                        else if (tag == "palSwitchFontColor")
+                            MusEGlobal::config.palSwitchFontColor = readColor(xml);
+                        else if (tag == "palSwitchFontActiveColor")
+                            MusEGlobal::config.palSwitchFontActiveColor = readColor(xml);
+                        else if (tag == "palSwitchBorderColor")
+                            MusEGlobal::config.palSwitchBorderColor = readColor(xml);
+
+                        else if (tag == "midiInstrumentBackgroundColor")
+                            MusEGlobal::config.midiInstrumentBackgroundColor = readColor(xml);
+                        else if (tag == "midiInstrumentBgActiveColor")
+                            MusEGlobal::config.midiInstrumentBgActiveColor = readColor(xml);
+                        else if (tag == "midiInstrumentFontColor")
+                            MusEGlobal::config.midiInstrumentFontColor = readColor(xml);
+                        else if (tag == "midiInstrumentFontActiveColor")
+                            MusEGlobal::config.midiInstrumentFontActiveColor = readColor(xml);
+                        else if (tag == "midiInstrumentBorderColor")
+                            MusEGlobal::config.midiInstrumentBorderColor = readColor(xml);
 
                         else if (tag == "extendedMidi")
                               MusEGlobal::config.extendedMidi = xml.parseInt();
@@ -1068,6 +1116,11 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
 
                         else if (tag == "midiCanvasBarColor")
                               MusEGlobal::config.midiCanvasBarColor = readColor(xml);
+
+                        else if (tag == "midiItemColor")
+                            MusEGlobal::config.midiItemColor = readColor(xml);
+                        else if (tag == "midiItemSelectedColor")
+                            MusEGlobal::config.midiItemSelectedColor = readColor(xml);
 
                         else if (tag == "midiDividerColor")
                             MusEGlobal::config.midiDividerColor = readColor(xml);
@@ -1618,18 +1671,18 @@ void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames
       }
       
       xml.colorTag(level, "partCanvasBg",  MusEGlobal::config.partCanvasBg);
+      xml.colorTag(level, "dummyPartColor",  MusEGlobal::config.dummyPartColor);
       xml.colorTag(level, "partCanvasCoarseRaster",  MusEGlobal::config.partCanvasCoarseRasterColor);
       xml.colorTag(level, "partCanvasFineRaster",  MusEGlobal::config.partCanvasFineRasterColor);
 
       xml.colorTag(level, "trackBg",       MusEGlobal::config.trackBg);
       xml.colorTag(level, "selectTrackBg", MusEGlobal::config.selectTrackBg);
       xml.colorTag(level, "selectTrackFg", MusEGlobal::config.selectTrackFg);
+      xml.colorTag(level, "selectTrackCurBg", MusEGlobal::config.selectTrackCurBg);
       xml.colorTag(level, "trackSectionDividerColor", MusEGlobal::config.trackSectionDividerColor);
 
-      xml.colorTag(level, "mixerBg",            MusEGlobal::config.mixerBg);
+//      xml.colorTag(level, "mixerBg",            MusEGlobal::config.mixerBg);
       xml.colorTag(level, "midiTrackLabelBg",   MusEGlobal::config.midiTrackLabelBg);
-// Obsolete. There is only 'New' drum tracks now.
-//       xml.colorTag(level, "drumTrackLabelBg2",  MusEGlobal::config.drumTrackLabelBg);
       xml.colorTag(level, "newDrumTrackLabelBg2",MusEGlobal::config.newDrumTrackLabelBg);
       xml.colorTag(level, "waveTrackLabelBg",   MusEGlobal::config.waveTrackLabelBg);
       xml.colorTag(level, "outputTrackLabelBg", MusEGlobal::config.outputTrackLabelBg);
@@ -1640,6 +1693,7 @@ void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames
       
       xml.colorTag(level, "midiTrackBg",   MusEGlobal::config.midiTrackBg);
       xml.colorTag(level, "ctrlGraphFg",   MusEGlobal::config.ctrlGraphFg);
+      xml.colorTag(level, "ctrlGraphSel",  MusEGlobal::config.ctrlGraphSel);
       xml.colorTag(level, "drumTrackBg",   MusEGlobal::config.drumTrackBg);
       xml.colorTag(level, "newDrumTrackBg",MusEGlobal::config.newDrumTrackBg);
       xml.colorTag(level, "waveTrackBg",   MusEGlobal::config.waveTrackBg);
@@ -1649,21 +1703,43 @@ void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames
       xml.colorTag(level, "auxTrackBg",    MusEGlobal::config.auxTrackBg);
       xml.colorTag(level, "synthTrackBg",  MusEGlobal::config.synthTrackBg);
 
-      xml.colorTag(level, "sliderBarDefaultColor",  MusEGlobal::config.sliderBarDefaultColor);
-      xml.colorTag(level, "sliderDefaultColor2",  MusEGlobal::config.sliderDefaultColor);
+      xml.colorTag(level, "sliderBarDefaultColor",  MusEGlobal::config.sliderBarColor);
+      xml.colorTag(level, "sliderDefaultColor2",  MusEGlobal::config.sliderBackgroundColor);
       xml.colorTag(level, "panSliderColor2",  MusEGlobal::config.panSliderColor);
       xml.colorTag(level, "gainSliderColor2",  MusEGlobal::config.gainSliderColor);
       xml.colorTag(level, "auxSliderColor2",  MusEGlobal::config.auxSliderColor);
       xml.colorTag(level, "audioVolumeSliderColor2",  MusEGlobal::config.audioVolumeSliderColor);
       xml.colorTag(level, "midiVolumeSliderColor2",  MusEGlobal::config.midiVolumeSliderColor);
-      xml.colorTag(level, "audioControllerSliderDefaultColor2",  MusEGlobal::config.audioControllerSliderDefaultColor);
-      xml.colorTag(level, "audioPropertySliderDefaultColor2",  MusEGlobal::config.audioPropertySliderDefaultColor);
-      xml.colorTag(level, "midiControllerSliderDefaultColor2",  MusEGlobal::config.midiControllerSliderDefaultColor);
-      xml.colorTag(level, "midiPropertySliderDefaultColor2",  MusEGlobal::config.midiPropertySliderDefaultColor);
+      xml.colorTag(level, "audioVolumeHandleColor",  MusEGlobal::config.audioVolumeHandleColor);
+      xml.colorTag(level, "midiVolumeHandleColor",  MusEGlobal::config.midiVolumeHandleColor);
+      xml.colorTag(level, "audioControllerSliderDefaultColor2",  MusEGlobal::config.audioControllerSliderColor);
+      xml.colorTag(level, "audioPropertySliderDefaultColor2",  MusEGlobal::config.audioPropertySliderColor);
+      xml.colorTag(level, "midiControllerSliderDefaultColor2",  MusEGlobal::config.midiControllerSliderColor);
+      xml.colorTag(level, "midiPropertySliderDefaultColor2",  MusEGlobal::config.midiPropertySliderColor);
       xml.colorTag(level, "midiPatchReadoutColor",  MusEGlobal::config.midiPatchReadoutColor);
+      xml.colorTag(level, "knobFontColor",  MusEGlobal::config.knobFontColor);
       xml.colorTag(level, "audioMeterPrimaryColor",  MusEGlobal::config.audioMeterPrimaryColor);
       xml.colorTag(level, "midiMeterPrimaryColor",  MusEGlobal::config.midiMeterPrimaryColor);
+      xml.colorTag(level, "meterBackgroundColor",  MusEGlobal::config.meterBackgroundColor);
+
       xml.colorTag(level, "rackItemBackgroundColor",  MusEGlobal::config.rackItemBackgroundColor);
+      xml.colorTag(level, "rackItemBgActiveColor",  MusEGlobal::config.rackItemBgActiveColor);
+      xml.colorTag(level, "rackItemFontColor",  MusEGlobal::config.rackItemFontColor);
+      xml.colorTag(level, "rackItemFontActiveColor",  MusEGlobal::config.rackItemFontActiveColor);
+      xml.colorTag(level, "rackItemBorderColor",  MusEGlobal::config.rackItemBorderColor);
+      xml.colorTag(level, "rackItemFontColorHover",  MusEGlobal::config.rackItemFontColorHover);
+
+      xml.colorTag(level, "palSwitchBackgroundColor",  MusEGlobal::config.palSwitchBackgroundColor);
+      xml.colorTag(level, "palSwitchBgActiveColor",  MusEGlobal::config.palSwitchBgActiveColor);
+      xml.colorTag(level, "palSwitchFontColor",  MusEGlobal::config.palSwitchFontColor);
+      xml.colorTag(level, "palSwitchFontActiveColor",  MusEGlobal::config.palSwitchFontActiveColor);
+      xml.colorTag(level, "palSwitchBorderColor",  MusEGlobal::config.palSwitchBorderColor);
+
+      xml.colorTag(level, "midiInstrumentBackgroundColor",  MusEGlobal::config.midiInstrumentBackgroundColor);
+      xml.colorTag(level, "midiInstrumentBgActiveColor",  MusEGlobal::config.midiInstrumentBgActiveColor);
+      xml.colorTag(level, "midiInstrumentFontColor",  MusEGlobal::config.midiInstrumentFontColor);
+      xml.colorTag(level, "midiInstrumentFontActiveColor",  MusEGlobal::config.midiInstrumentFontActiveColor);
+      xml.colorTag(level, "midiInstrumentBorderColor",  MusEGlobal::config.midiInstrumentBorderColor);
 
       xml.colorTag(level, "transportHandleColor",  MusEGlobal::config.transportHandleColor);
       xml.colorTag(level, "bigtimeForegroundcolor", MusEGlobal::config.bigTimeForegroundColor);
@@ -1689,6 +1765,9 @@ void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames
       xml.colorTag(level, "midiCanvasBeatColor", MusEGlobal::config.midiCanvasBeatColor);
       xml.colorTag(level, "midiCanvasBarColor", MusEGlobal::config.midiCanvasBarColor);
       xml.colorTag(level, "midiDividerColor", MusEGlobal::config.midiDividerColor);
+
+      xml.colorTag(level, "midiItemColor", MusEGlobal::config.midiItemColor);
+      xml.colorTag(level, "midiItemSelectedColor", MusEGlobal::config.midiItemSelectedColor);
 
       xml.colorTag(level, "midiControllerViewBackgroundColor", MusEGlobal::config.midiControllerViewBg);
       xml.colorTag(level, "drumListBackgroundColor", MusEGlobal::config.drumListBg);
