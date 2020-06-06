@@ -1,29 +1,29 @@
-06.06.2010
+06.06.2020
     - Fixed regression at 23.05.2010: Crash in viewMouseReleaseEvent. Copy/paste typo. (Tim)
-04.06.2010
+04.06.2020
     - Fixed blank mixers upon auto-restart. (Tim)
     - Make MusE QMainWindow own the mixers. They had no owner, no deletion. Leak? Test OK so far.
     - Reload the last song upon auto-restart. Templates included, and midi config loading choice.
       Was tricky, possible wee corrections later...?
-27.05.2010
+27.05.2020
     - Midi controller panel: Replaced 'Ctrl', 'S', and 'X' button text with svg icons. (Tim)
     - Midi controller panel: Replaced 'per-note-velocity' bitmap with button and svg icon.
     - Midi Controller panel redesign: Create only required controls, not keep all 4 alive but hidden.
-24.05.2010
+24.05.2020
     - Fix regression at 06.04.2020: Can't connect Jack ports to audio input/output tracks R chan. (Tim)
       Don't check out of bounds index in AudioInput/Output::registerPorts(). When it is called by
        Audio::msgSetChannels(), the new number of channels has not been set yet.
     - Added support for adjusting automation for Global structure cut/insert (rj)
     - LV2: Fix plugins without 'programs extension' support: Send directly as midi events. (Tim)
       Fixes plugins like gmsynth.lv2, which have midnam support but no programs extension support.
-23.05.2010
+23.05.2020
     * New - PianoRoll Speaker button has two selectable modes, single note and chords: (Tim)
-16.05.2010
+16.05.2020
     - Popup menus: Changed the text '<More...>' in submenus, to the first item's text in the submenu. (Tim)
     - Oops, removed redundant addAction() in RoutePopupMenu::addMenuItem(), causing duplicate items
        at 'More...' menu breaks.
     - Fixed regression at 03.02.2020: Plugin dialog user 'categories' not showing LV2 plugins.
-18.04.2010
+18.04.2020
     - New option in Global settings -> GUI tweaks to (not) keep transport window on top (kybos)
 13.04.2020
     - Fix regression from 12.04.2019: Midi controller cache not proper after loading song. (Tim)
