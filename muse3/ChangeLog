@@ -1,3 +1,5 @@
+06.06.2010
+    - Fixed regression at 23.05.2010: Crash in viewMouseReleaseEvent. Copy/paste typo. (Tim)
 04.06.2010
     - Fixed blank mixers upon auto-restart. (Tim)
     - Make MusE QMainWindow own the mixers. They had no owner, no deletion. Leak? Test OK so far.

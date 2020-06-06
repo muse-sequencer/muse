@@ -1753,7 +1753,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                               curItem->move(start);
                               // Even though we only move the primary position here,
                               //  set the mp as well.
-                              newCItem->setMp(newCItem->pos());
+                              curItem->setMp(curItem->pos());
                           }
                       }
                       resizeItem(curItem, shift, ctrl);
