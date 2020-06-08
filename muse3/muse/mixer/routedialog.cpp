@@ -35,6 +35,7 @@
 #include <QLayout>
 #include <QFlags>
 #include <QVariant>
+#include <QPainterPath>
 
 #include "routedialog.h"
 #include "globaldefs.h"

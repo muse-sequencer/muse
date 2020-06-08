@@ -44,6 +44,7 @@
 #include <QImage>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QPainterPath>
 
 #include <stdio.h>
 #include "muse_math.h"

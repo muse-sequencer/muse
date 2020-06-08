@@ -26,6 +26,7 @@
 #include "mmath.h"
 
 #include <QPainter>
+#include <QPainterPath>
 #include <QResizeEvent>
 
 #include "utils.h"

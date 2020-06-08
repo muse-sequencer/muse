@@ -24,6 +24,7 @@
 
 #include <QMouseEvent>
 #include <QPainter>
+#include <QPainterPath>
 
 namespace Awl {
 

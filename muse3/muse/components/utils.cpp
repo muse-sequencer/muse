@@ -34,6 +34,7 @@
 #include <QLinearGradient>
 #include <QMimeData>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPointF>
 #include <QFileInfo>
 #include <QFont>
