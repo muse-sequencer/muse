@@ -26,17 +26,11 @@
 #include <sys/time.h>
 
 #include <QApplication>
-#include <QFrame>
 #include <QClipboard>
-#include <QColor>
-#include <QGradient>
-#include <QIcon>
 #include <QLinearGradient>
 #include <QMimeData>
 #include <QPainter>
-#include <QPointF>
 #include <QFileInfo>
-#include <QFont>
 
 #include "audio.h"
 #include "audiodev.h"

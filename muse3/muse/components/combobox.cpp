@@ -83,9 +83,19 @@ void ComboBox::wheelEvent(QWheelEvent* ev)
       const int i = l.indexOf(_currentItem);
       if(i >= 0)
       {
-        if (ev->delta() > 0 && i > 0)
+        const QPoint pixelDelta = ev->pixelDelta();
+        const QPoint angleDegrees = ev->angleDelta() / 8;
+        int delta = 0;
+        if(!pixelDelta.isNull())
+          delta = pixelDelta.y();
+        else if(!angleDegrees.isNull())
+          delta = angleDegrees.y() / 15;
+        else
+          return;
+
+        if (delta > 0 && i > 0)
               activatedIntern(l.at(i - 1));
-        else if (ev->delta() < 0 && i < len - 1)
+        else if (delta < 0 && i < len - 1)
               activatedIntern(l.at(i + 1));
       }
       else
@@ -191,9 +201,19 @@ void CompactComboBox::wheelEvent(QWheelEvent* ev)
       const int i = l.indexOf(_currentItem);
       if(i >= 0)
       {
-        if (ev->delta() > 0 && i > 0)
+        const QPoint pixelDelta = ev->pixelDelta();
+        const QPoint angleDegrees = ev->angleDelta() / 8;
+        int delta = 0;
+        if(!pixelDelta.isNull())
+          delta = pixelDelta.y();
+        else if(!angleDegrees.isNull())
+          delta = angleDegrees.y() / 15;
+        else
+          return;
+
+        if (delta > 0 && i > 0)
               activatedIntern(l.at(i - 1));
-        else if (ev->delta() < 0 && i < len - 1)
+        else if (delta < 0 && i < len - 1)
               activatedIntern(l.at(i + 1));
       }
       else

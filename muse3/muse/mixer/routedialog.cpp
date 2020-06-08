@@ -35,6 +35,7 @@
 #include <QLayout>
 #include <QFlags>
 #include <QVariant>
+#include <QPainterPath>
 
 #include "routedialog.h"
 #include "globaldefs.h"
@@ -1328,9 +1329,19 @@ void ConnectionsView::mouseMoveEvent(QMouseEvent* e)
 
 void ConnectionsView::wheelEvent(QWheelEvent* e)
 {
-  int delta = e->delta();
+  e->accept();
+  
+  const QPoint pixelDelta = e->pixelDelta();
+  const QPoint angleDegrees = e->angleDelta() / 8;
+  int delta = 0;
+  if(!pixelDelta.isNull())
+    delta = pixelDelta.y();
+  else if(!angleDegrees.isNull())
+    delta = angleDegrees.y() / 15;
+  else
+    return;
+
   DEBUG_PRST_ROUTES(stderr, "ConnectionsView::wheelEvent: delta:%d\n", delta); 
-  e->setAccepted(true);
   emit scrollBy(0, delta < 0 ? 1 : -1);
 }
 

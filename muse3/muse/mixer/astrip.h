@@ -99,7 +99,8 @@ class AudioComponentRack : public ComponentRack
     virtual void songChanged(MusECore::SongChangedStruct_t);
 
   public:
-    AudioComponentRack(MusECore::AudioTrack* track, int id = -1, bool _manageAuxs = false, QWidget* parent = 0, Qt::WindowFlags f = 0);
+    AudioComponentRack(MusECore::AudioTrack* track, int id = -1,
+                       bool _manageAuxs = false, QWidget* parent = 0, Qt::WindowFlags f = Qt::Widget);
 
     MusECore::AudioTrack* track() { return _track; }
     // Adds a component to the layout and the list. Creates a new component using

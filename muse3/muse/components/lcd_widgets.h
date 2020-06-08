@@ -156,7 +156,7 @@ class LCDPatchEdit : public QFrame
                          bool ignoreHeight = true, bool ignoreWidth = false,
                          const QString& text = QString(),
                          const QColor& readoutColor = QColor(0,255,255),
-                         Qt::WindowFlags flags = 0);
+                         Qt::WindowFlags flags = Qt::Widget);
 
     virtual ~LCDPatchEdit();
 

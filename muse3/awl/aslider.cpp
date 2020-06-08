@@ -116,11 +116,23 @@ void AbstractSlider::setScaleValueColor(const QColor& c)
 
 void AbstractSlider::wheelEvent(QWheelEvent* ev)
       {
+      ev->accept();
       double div = 120.0;
-      if (ev->modifiers() & Qt::ShiftModifier)
-            _value += (ev->delta() * pageStep()) / div;
+
+      const QPoint pixelDelta = ev->pixelDelta();
+      const QPoint angleDegrees = ev->angleDelta() / 8;
+      int delta = 0;
+      if(!pixelDelta.isNull())
+          delta = pixelDelta.y();
+      else if(!angleDegrees.isNull())
+          delta = angleDegrees.y() / 15;
       else
-            _value += (ev->delta() * lineStep()) / div;
+        return;
+
+      if (ev->modifiers() & Qt::ShiftModifier)
+            _value += (delta * pageStep()) / div;
+      else
+            _value += (delta * lineStep()) / div;
       if (_value < _minValue)
             _value = _minValue;
       else if (_value > _maxValue)

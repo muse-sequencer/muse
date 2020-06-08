@@ -1,3 +1,8 @@
+07.06.2020
+    - Fix Qt 5.14 / 5.15 deprecations (Tim)
+      QString::SplitBehavior > Qt::SplitBehavior, QTextStream::endl > Qt::endl, QTextStream::dec > Qt::dec,
+      Qt::WindowFlags f = 0 > Qt::WindowFlags f = Qt::Widget, QWheelEvent::delta > QWheelEvent::pixel/angleDelta,
+      QWheelEvent::globalPos > QWheelEvent::globalPosition::toPoint, QWheelEvent::pos > QWheelEvent::position.toPoint.
 06.06.2020
     - Fixed regression at 23.05.2020: Crash in viewMouseReleaseEvent. Copy/paste typo. (Tim)
 04.06.2020

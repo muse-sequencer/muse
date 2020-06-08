@@ -79,7 +79,7 @@ class MITPluginTranspose : public QWidget, public Ui::MITTransposeBase, public M
       void noteReceived();
 
    public:
-      MITPluginTranspose(QWidget* parent = 0, Qt::WindowFlags fl = 0);
+      MITPluginTranspose(QWidget* parent = 0, Qt::WindowFlags fl = Qt::Widget);
       virtual void process(MusECore::MEvent&);
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;

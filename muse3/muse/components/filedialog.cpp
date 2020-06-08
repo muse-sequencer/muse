@@ -55,7 +55,12 @@ MFileDialog::ViewType MFileDialog::lastViewUsed = GLOBAL_VIEW;
 static bool createDir(const QString& s)
       {
       QString sl("/");
+// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
+#if QT_VERSION >= 0x050e00
+      QStringList l = s.split(sl, Qt::SkipEmptyParts);
+#else
       QStringList l = s.split(sl, QString::SkipEmptyParts);
+#endif
       QString path(sl);
       QDir dir;
       for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {

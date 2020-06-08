@@ -138,7 +138,7 @@ class MidiTransformerDialog : public QDialog, public Ui::MidiTransformDialogBase
       void songChanged(MusECore::SongChangedStruct_t);
 
    public:
-      MidiTransformerDialog(QDialog* parent = 0, Qt::WindowFlags fl = 0);
+      MidiTransformerDialog(QDialog* parent = 0, Qt::WindowFlags fl = Qt::Widget);
       ~MidiTransformerDialog();
       };
 

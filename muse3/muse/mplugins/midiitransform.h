@@ -120,7 +120,7 @@ class MidiInputTransformDialog : public QDialog, public Ui::MidiInputTransformDi
       void songChanged(MusECore::SongChangedStruct_t);
 
    public:
-      MidiInputTransformDialog(QDialog* parent = 0, Qt::WindowFlags fl = 0);
+      MidiInputTransformDialog(QDialog* parent = 0, Qt::WindowFlags fl = Qt::Widget);
       };
 
 } // namespace MusEGui

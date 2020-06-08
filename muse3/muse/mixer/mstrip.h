@@ -115,7 +115,7 @@ class MidiComponentRack : public ComponentRack
     virtual void songChanged(MusECore::SongChangedStruct_t);
     
   public:
-    MidiComponentRack(MusECore::MidiTrack* track, int id = -1, QWidget* parent = 0, Qt::WindowFlags f = 0);
+    MidiComponentRack(MusECore::MidiTrack* track, int id = -1, QWidget* parent = 0, Qt::WindowFlags f = Qt::Widget);
     
     MusECore::MidiTrack* track() { return _track; }
     // Adds a component to the layout and the list. Creates a new component using 

@@ -845,7 +845,12 @@ int main(int argc, char* argv[])
           }
           else
           {
+// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
+#if QT_VERSION >= 0x050e00
+            MusEGlobal::config.pluginLadspaPathList = ladspa_path.split(list_separator, Qt::SkipEmptyParts);
+#else
             MusEGlobal::config.pluginLadspaPathList = ladspa_path.split(list_separator, QString::SkipEmptyParts);
+#endif
             found = true;
           }
         }
@@ -870,7 +875,12 @@ int main(int argc, char* argv[])
           }
           else
           {
+// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
+#if QT_VERSION >= 0x050e00
+            MusEGlobal::config.pluginDssiPathList = dssi_path.split(list_separator, Qt::SkipEmptyParts);
+#else
             MusEGlobal::config.pluginDssiPathList = dssi_path.split(list_separator, QString::SkipEmptyParts);
+#endif
             found = true;
           }
         }
@@ -899,7 +909,12 @@ int main(int argc, char* argv[])
           }
           else
           {
+// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
+#if QT_VERSION >= 0x050e00
+            MusEGlobal::config.pluginVstPathList = vst_path.split(list_separator, Qt::SkipEmptyParts);
+#else
             MusEGlobal::config.pluginVstPathList = vst_path.split(list_separator, QString::SkipEmptyParts);
+#endif
             found = true;
           }
         }
@@ -954,13 +969,23 @@ int main(int argc, char* argv[])
             }
             else
             {
+// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
+#if QT_VERSION >= 0x050e00
+              MusEGlobal::config.pluginLinuxVstPathList = vst_path.split(list_separator, Qt::SkipEmptyParts);
+#else
               MusEGlobal::config.pluginLinuxVstPathList = vst_path.split(list_separator, QString::SkipEmptyParts);
+#endif
               found = true;
             }
           }
           else
           {
+// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
+#if QT_VERSION >= 0x050e00
+            MusEGlobal::config.pluginLinuxVstPathList = lxvst_path.split(list_separator, Qt::SkipEmptyParts);
+#else
             MusEGlobal::config.pluginLinuxVstPathList = lxvst_path.split(list_separator, QString::SkipEmptyParts);
+#endif
             found = true;
           }
         }
@@ -987,7 +1012,12 @@ int main(int argc, char* argv[])
           }
           else
           {
+// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
+#if QT_VERSION >= 0x050e00
+            MusEGlobal::config.pluginLv2PathList = lv2_path.split(list_separator, Qt::SkipEmptyParts);
+#else
             MusEGlobal::config.pluginLv2PathList = lv2_path.split(list_separator, QString::SkipEmptyParts);
+#endif
             found = true;
           }
         }

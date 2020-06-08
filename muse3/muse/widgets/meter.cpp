@@ -26,9 +26,6 @@
 
 #include "muse_math.h"
 
-#include <QMouseEvent>
-#include <QPainter>
-#include <QResizeEvent>
 #include <QVector>
 #include <QLocale>
 #include <algorithm>

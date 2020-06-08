@@ -56,7 +56,7 @@ namespace MusEGui
       void updateText();
       
     public:
-      PaddedValueLabel(bool isFloat = false, QWidget* parent = 0, Qt::WindowFlags f = 0, 
+      PaddedValueLabel(bool isFloat = false, QWidget* parent = 0, Qt::WindowFlags f = Qt::Widget,
                        const QString& prefix = QString(), const QString& suffix = QString());
 
       void setFieldWidth(int val);

@@ -674,8 +674,17 @@ void Piano::setCurSelectedPitch(int pitch)
 void Piano::wheelEvent(QWheelEvent* ev)
 {
     if (ev->modifiers() & Qt::ControlModifier) {
-        QPoint delta = ev->angleDelta();
-        emit wheelStep(delta.y() > 0 ? true : false);
+        const QPoint pixelDelta = ev->pixelDelta();
+        const QPoint angleDegrees = ev->angleDelta() / 8;
+        int delta = 0;
+        if(!pixelDelta.isNull())
+            delta = pixelDelta.y();
+        else if(!angleDegrees.isNull())
+            delta = angleDegrees.y() / 15;
+        else
+          return;
+
+        emit wheelStep(delta > 0 ? true : false);
         return;
     }
 

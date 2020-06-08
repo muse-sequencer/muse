@@ -28,15 +28,15 @@
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
-class QFont;
-class QFrame;
-class QString;
-class QWidget;
-class QGradient;
-class QCanvas;
-class QPointF;
-class QColor;
-class QPainterPath;
+#include <QFont>
+#include <QFrame>
+#include <QString>
+#include <QWidget>
+#include <QGradient>
+#include <QPointF>
+#include <QColor>
+#include <QPainterPath>
+#include <QIcon>
 
 namespace MusECore {
 

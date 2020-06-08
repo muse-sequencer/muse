@@ -1038,7 +1038,11 @@ bool LCDPatchEdit::event(QEvent* e)
 
 void LCDPatchEdit::wheelEvent(QWheelEvent* e)
 {
+#if QT_VERSION >= 0x050e00
+  QPoint p = e->position().toPoint();
+#else
   QPoint p = e->pos();
+#endif
 
   bool doupd = false;
 
@@ -1080,14 +1084,18 @@ void LCDPatchEdit::wheelEvent(QWheelEvent* e)
   const int lastlboff = last_is_unk || lastlb > 127;
   const int lastproff = last_is_unk || lastpr > 127;
 
-//   const QPoint pixelDelta = e->pixelDelta();
+  const QPoint pixelDelta = e->pixelDelta();
   const QPoint angleDegrees = e->angleDelta() / 8;
   int delta = 0;
-//   if(!pixelDelta.isNull())
-//     delta = pixelDelta.y();
-//   else
-  if(!angleDegrees.isNull())
+  if(!pixelDelta.isNull())
+    delta = pixelDelta.y();
+  else if(!angleDegrees.isNull())
     delta = angleDegrees.y() / 15;
+  else
+  {
+    e->accept();
+    return;
+  }
 
   int section = -1;
   int new_val = _currentPatch;
@@ -1205,7 +1213,11 @@ void LCDPatchEdit::wheelEvent(QWheelEvent* e)
     setValue(new_val);
     // Show a handy tooltip value box.
     if(_enableValueToolTips)
+#if QT_VERSION >= 0x050e00
+      showValueToolTip(e->globalPosition().toPoint(), section);
+#else
       showValueToolTip(e->globalPos(), section);
+#endif
     emit valueChanged(value(), _id);
   }
   //fprintf(stderr, "LCDPatchEdit::wheelEvent _HBankHovered:%d _LBankHovered:%d _ProgHovered:%d\n", _HBankHovered, _LBankHovered, _ProgHovered);

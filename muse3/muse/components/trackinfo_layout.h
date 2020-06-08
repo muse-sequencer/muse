@@ -143,7 +143,7 @@ class TrackInfoWidget : public QWidget
     
     
   public:
-    TrackInfoWidget(QWidget* parent = 0, Qt::WindowFlags f = 0);
+    TrackInfoWidget(QWidget* parent = 0, Qt::WindowFlags f = Qt::Widget);
     
     // Wrappers/catchers for stack functions:
     void raiseWidget(int idx);

@@ -27,6 +27,18 @@
 #ifndef __SLIDER_H__
 #define __SLIDER_H__
 
+#include <QWidget>
+#include <QPainter>
+#include <QPaintEvent>
+#include <QString>
+#include <QResizeEvent>
+#include <QSize>
+#include <QPoint>
+#include <QColor>
+#include <QRect>
+#include <QBrush>
+#include <QFont>
+
 #include "sclif.h"
 #include "sliderbase.h"
 #include "scldraw.h"

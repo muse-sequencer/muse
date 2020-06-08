@@ -29,12 +29,10 @@
 
 #include <QFrame>
 #include <QTimer>
-
-class QResizeEvent;
-class QMouseEvent;
-class QPainter;
-class QPainterPath;
-
+#include <QResizeEvent>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QPainterPath>
 #include <QBitmap>
 
 #include "sclif.h"

@@ -24,9 +24,7 @@
 #include <QLayout>
 #include <QSizeGrip>
 #include <QLabel>
-#include <QScrollBar>
 #include <QPushButton>
-#include <QToolButton>
 #include <QToolTip>
 #include <QMenu>
 #include <QMenuBar>
@@ -34,16 +32,14 @@
 #include <QClipboard>
 #include <QDir>
 #include <QKeySequence>
-#include <QKeyEvent>
-#include <QGridLayout>
-#include <QResizeEvent>
-#include <QCloseEvent>
 #include <QMimeData>
 #include <QScrollArea>
 #include <QSettings>
 #include <QImage>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QTimer>
+#include <QPainterPath>
 
 #include <stdio.h>
 #include "muse_math.h"

@@ -25,8 +25,8 @@
 #include "muse_math.h"
 #include "mmath.h"
 
-#include <QPainter>
-#include <QResizeEvent>
+#include <QPainterPath>
+#include <QMouseEvent>
 
 #include "utils.h"
 #include "slider.h"
