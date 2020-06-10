@@ -1879,7 +1879,7 @@ void MusE::toggleMarker(bool checked)
 
 void MusE::showMarker(bool flag)
       {
-      if (markerView == 0) {
+      if (markerView == nullptr) {
             markerView = new MusEGui::MarkerView(this);
 
             connect(markerView, SIGNAL(closed()), SLOT(markerClosed()));
@@ -1891,7 +1891,7 @@ void MusE::showMarker(bool flag)
         viewMarkerAction->setChecked(flag);   // ??? TEST: Recursion? Does this call toggleMarker if called from menu?  No. Why? It should. REMOVE Tim. Or keep.
       if (!flag)
         if (currentMenuSharingTopwin == markerView)
-          setCurrentMenuSharingTopwin(NULL);
+          setCurrentMenuSharingTopwin(nullptr);
 
       updateWindowMenu();
       }

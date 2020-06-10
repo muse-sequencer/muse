@@ -269,6 +269,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   
   
   QMenu* menuSettings = menuBar()->addMenu(tr("&Display"));
+  menuSettings->addAction(tr("Toggle &Mixer Strip"), this, SLOT(toggleMixerStrip()),
+                          MusEGui::shortcuts[MusEGui::SHRT_HIDE_MIXER_STRIP].key);
   menuSettings->addAction(tr("Configure &Custom Columns..."), this, SLOT(configCustomColumns()));
   menuSettings->addSeparator();
   menuSettings->addAction(subwinAction);
@@ -991,6 +993,11 @@ void ArrangerView::configCustomColumns()
         arranger->updateHeaderCustomColumns();
     else
         Arranger::custom_columns = tmp;
+}
+
+void ArrangerView::toggleMixerStrip()
+{
+    arranger->toggleTrackInfo();
 }
 
 } // namespace MusEGui

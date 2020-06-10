@@ -81,8 +81,10 @@ class Arranger : public QWidget {
       ScrollScale* hscroll;
       QScrollBar* vscroll;
       QVBoxLayout* tlistLayout;
-      ArrangerCanvasLayout* egrid;
-      ArrangerHScrollLayout* bottomHLayout;
+      QGridLayout* egrid;
+//      ArrangerCanvasLayout* egrid;
+      QHBoxLayout* bottomHLayout;
+//      ArrangerHScrollLayout* bottomHLayout;
       TList* list;
       Header* header;
       MTScale* time;
@@ -94,7 +96,6 @@ class Arranger : public QWidget {
 
       MusECore::Track* selected;
 
-      CompactToolButton* trackInfoButton;
       int trackInfoType;
       Splitter* split;
       int songType;
@@ -192,6 +193,7 @@ class Arranger : public QWidget {
       void songIsClearing() { canvas->songIsClearing(); }
       void setDefaultSplitterSizes();
       void updateHeaderCustomColumns();
+      void toggleTrackInfo();
       
       unsigned cursorValue() { return cursVal; }
       

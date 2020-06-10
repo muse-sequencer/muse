@@ -74,50 +74,6 @@ class TrackInfoLayout : public QHBoxLayout
       };
 
 //---------------------------------------------------------
-//   ArrangerCanvasLayout
-//   For laying out a canvas as a last splitter widget and
-//    automatically adjusting the width of its corresponding
-//    horizontal scrollbar which is in another layout.
-//---------------------------------------------------------
-      
-class ArrangerCanvasLayout : public QGridLayout
-      {
-      Q_OBJECT
-      QHBoxLayout* _hBox;
-      
-    public:
-      ArrangerCanvasLayout(QWidget *parent, QHBoxLayout* hBox) : QGridLayout(parent), _hBox(hBox) { };
-      virtual void setGeometry(const QRect &rect);
-      };
-
-//---------------------------------------------------------
-//   ArrangerHScrollLayout
-//   For laying out the bottom buttons and hscroll in the arranger.
-//---------------------------------------------------------
-      
-class ArrangerHScrollLayout : public QHBoxLayout
-      {
-      Q_OBJECT
-      CompactToolButton* _trackinfoButton;
-      ScrollScale* _sb;
-      
-      // This is not actually in the layout, but used anyway.
-      QWidget* _editor;
-      
-      QWidgetItem* _trackinfoButtonLi;
-      QSpacerItem* _spacerLi;
-      QWidgetItem* _sbLi;
-      
-    public:
-      ArrangerHScrollLayout(QWidget *parent, 
-                            CompactToolButton* trackinfoButton, 
-                            ScrollScale* sb, 
-                            QWidget* editor);
-      ~ArrangerHScrollLayout();
-      virtual void setGeometry(const QRect &rect);
-      };
-
-//---------------------------------------------------------
 //   TrackInfoWidget
 //   Widget for containing a trackinfo layout.
 //---------------------------------------------------------
