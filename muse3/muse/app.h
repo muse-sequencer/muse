@@ -158,7 +158,11 @@ class MusE : public QMainWindow
       QAction *audioBounce2TrackAction, *audioBounce2FileAction, *audioRestartAction;
 
       // Automation Menu Actions
-      QAction *autoMixerAction, *autoSnapshotAction, *autoClearAction;
+      // REMOVE Tim. automation. Removed.
+      // Deprecated. MusEGlobal::automation is now fixed TRUE
+      //  for now until we decide what to do with it.
+//       QAction *autoMixerAction;
+      QAction *autoSnapshotAction, *autoClearAction;
 
       // Window Menu Actions
       QAction* windowsCascadeAction;

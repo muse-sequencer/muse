@@ -589,8 +589,11 @@ MusE::MusE() : QMainWindow()
       audioRestartAction = new QAction(QIcon(*MusEGui::audio_restartaudioIcon), tr("Restart Audio"), this);
 
       //-------- Automation Actions
-      autoMixerAction = new QAction(QIcon(*MusEGui::automation_mixerIcon), tr("Mixer Automation"), this);
-      autoMixerAction->setCheckable(true);
+// REMOVE Tim. automation. Removed.
+// Deprecated. MusEGlobal::automation is now fixed TRUE
+//   for now until we decide what to do with it.
+//       autoMixerAction = new QAction(QIcon(*MusEGui::automation_mixerIcon), tr("Mixer Automation"), this);
+//       autoMixerAction->setCheckable(true);
       autoSnapshotAction = new QAction(QIcon(*MusEGui::automation_take_snapshotIcon), tr("Take Snapshot"), this);
       autoClearAction = new QAction(QIcon(*MusEGui::automation_clear_dataIcon), tr("Clear Automation Data"), this);
 
@@ -690,7 +693,10 @@ MusE::MusE() : QMainWindow()
       connect(audioRestartAction, SIGNAL(triggered()), SLOT(seqRestart()));
 
       //-------- Automation connections
-      connect(autoMixerAction, SIGNAL(triggered()), SLOT(switchMixerAutomation()));
+// REMOVE Tim. automation. Removed.
+// Deprecated. MusEGlobal::automation is now fixed TRUE
+//   for now until we decide what to do with it.
+//       connect(autoMixerAction, SIGNAL(triggered()), SLOT(switchMixerAutomation()));
       connect(autoSnapshotAction, SIGNAL(triggered()), SLOT(takeAutomationSnapshot()));
       connect(autoClearAction, SIGNAL(triggered()), SLOT(clearAutomation()));
 
@@ -913,7 +919,10 @@ MusE::MusE() : QMainWindow()
       menu_audio->addSeparator();
       menu_audio->addAction(audioRestartAction);
       menu_audio->addSeparator();
-      menu_audio->addAction(autoMixerAction);
+// REMOVE Tim. automation. Removed.
+// Deprecated. MusEGlobal::automation is now fixed TRUE
+//   for now until we decide what to do with it.
+//       menu_audio->addAction(autoMixerAction);
       //menu_audio->addSeparator();
       menu_audio->addAction(autoSnapshotAction);
       menu_audio->addAction(autoClearAction);
@@ -1468,7 +1477,10 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       viewMarkerAction->setChecked(MusEGlobal::config.markerVisible);
       viewArrangerAction->setChecked(MusEGlobal::config.arrangerVisible);
 
-      autoMixerAction->setChecked(MusEGlobal::automation);
+// REMOVE Tim. automation. Removed.
+// Deprecated. MusEGlobal::automation is now fixed TRUE
+//   for now until we decide what to do with it.
+//       autoMixerAction->setChecked(MusEGlobal::automation);
 
       showBigtime(MusEGlobal::config.bigTimeVisible);
       
@@ -3304,7 +3316,10 @@ void MusE::switchMixerAutomation()
 
       MusEGlobal::audio->msgIdle(false);
 
-      autoMixerAction->setChecked(MusEGlobal::automation);
+// REMOVE Tim. automation. Removed.
+// Deprecated. MusEGlobal::automation is now fixed TRUE
+//   for now until we decide what to do with it.
+//       autoMixerAction->setChecked(MusEGlobal::automation);
       }
 
 //---------------------------------------------------------
@@ -3426,7 +3441,10 @@ void MusE::updateConfiguration()
       audioBounce2FileAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_AUDIO_BOUNCE_TO_FILE].key);
       audioRestartAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_AUDIO_RESTART].key);
 
-      autoMixerAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_MIXER_AUTOMATION].key);
+// REMOVE Tim. automation. Removed.
+// Deprecated. MusEGlobal::automation is now fixed TRUE
+//   for now until we decide what to do with it.
+//       autoMixerAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_MIXER_AUTOMATION].key);
       autoSnapshotAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_MIXER_SNAPSHOT].key);
       autoClearAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_MIXER_AUTOMATION_CLEAR].key);
 
