@@ -827,6 +827,8 @@ int main(int argc, char* argv[])
           MusEGlobal::config.startSong = "";
         }
 
+        app.instance()->setAttribute(Qt::AA_DontShowIconsInMenus, !MusEGlobal::config.showIconsInMenus);
+
         //=================
         //  LADSPA paths:
         //=================

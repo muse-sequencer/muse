@@ -243,6 +243,7 @@ GlobalConfigValues config = {
       18,                           // iconSize
       18,                           // cursorSize (for custom cursors)
       false,                        // cascadeStylesheets
+      true,                         // showIconsInMenus
       
       false,                        // enableAlsaMidiDriver Whether to enable the ALSA midi driver
       384,                          // division;

@@ -669,6 +669,7 @@ void Appearance::resetValues()
       cursorSizeSpin->blockSignals(false);
 
       cascadeStylesheetsCheckBox->setChecked(config->cascadeStylesheets);
+      cbShowIconsInMenus->setChecked(config->showIconsInMenus);
 
       // Grab all the colours.
       updateColorItems();
@@ -941,6 +942,11 @@ bool Appearance::apply()
       if (config->cascadeStylesheets != cascadeStylesheetsCheckBox->isChecked()) {
           restart_required = true;
           config->cascadeStylesheets = cascadeStylesheetsCheckBox->isChecked();
+      }
+
+      if (config->showIconsInMenus != cbShowIconsInMenus->isChecked()) {
+          restart_required = true;
+          config->showIconsInMenus = cbShowIconsInMenus->isChecked();
       }
 
       if (radioButtonDrawOutline->isChecked())
