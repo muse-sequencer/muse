@@ -38,7 +38,7 @@ QToolTip, QWhatsThat {
     font-size: 10pt;
 }   
     
-QMenu::item:selected {
+QMenu::item:selected, QMenuBar::item:selected {
     background-color: rgb(0,90,160);
 }
 
