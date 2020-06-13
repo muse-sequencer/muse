@@ -1,0 +1,27 @@
+Source: muse3master
+Maintainer: MusE Project
+Version: 3.1master                                                                                                                                                             
+Architecture: amd64
+Build-Depends:
+ cmake,
+ debhelper-compat (= 12),
+ dssi-dev,
+ libasound2-dev,
+ libdssialsacompat-dev [!linux-any],
+ libfluidsynth-dev,
+ libjack-dev,
+ liblilv-dev (>= 0.22),
+ liblo-dev,
+ libqt5svg5-dev,
+ libsamplerate0-dev,
+ libsndfile1-dev,
+ libsord-dev (>= 0.14),
+ lv2-dev (>= 1.12),
+ qtbase5-dev,
+ qttools5-dev
+Homepage: https://github.com/muse-sequencer/muse
+Package: muse3master
+Depends: python3
+Description: Qt-based audio/MIDI sequencer
+ MusE is a MIDI/audio sequencer with recording and editing capabilities.
+ This is the
