@@ -1757,7 +1757,8 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                               curItem->move(start);
                               // Even though we only move the primary position here,
                               //  set the mp as well.
-                              curItem->setMp(curItem->pos());
+                              // Removed. Interferes with PartCanvas::resizeItem wanting old mp.
+                              //curItem->setMp(curItem->pos());
                           }
                       }
                       resizeItem(curItem, shift, ctrl);
