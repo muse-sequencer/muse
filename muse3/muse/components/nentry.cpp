@@ -333,12 +333,22 @@ void Nentry::mouseDoubleClick(QMouseEvent* event)
 
 void Nentry::wheel(QWheelEvent* event)
       {
-      int n = event->delta();
-      if (n > 0)
-            incValue(n);
-      else
-            decValue(-n);
       event->accept();
+
+      const QPoint pixelDelta = event->pixelDelta();
+      const QPoint angleDegrees = event->angleDelta() / 8;
+      int delta = 0;
+      if(!pixelDelta.isNull())
+          delta = pixelDelta.y();
+      else if(!angleDegrees.isNull())
+          delta = angleDegrees.y() / 15;
+      else
+        return;
+
+      if (delta > 0)
+            incValue(delta);
+      else
+            decValue(-delta);
       }
 
 //---------------------------------------------------------

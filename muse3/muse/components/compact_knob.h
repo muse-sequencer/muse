@@ -80,6 +80,9 @@ class CompactKnob : public SliderBase, public ScaleIf
       Q_PROPERTY( QString offText READ offText WRITE setOffText )
       Q_PROPERTY( int valueDecimals READ valueDecimals WRITE setValueDecimals )
 
+      Q_PROPERTY( bool style3d READ style3d WRITE setStyle3d )
+      Q_PROPERTY( int radius READ radius WRITE setRadius )
+
    private:
       KnobLabelPos d_labelPos;
 
@@ -96,6 +99,9 @@ class CompactKnob : public SliderBase, public ScaleIf
       bool _showLabel;
       // Whether to display the value.
       bool _showValue;
+
+      bool _style3d;
+      int _radius;
 
       PopupDoubleSpinBox* _editor;
       bool _editMode;
@@ -262,6 +268,11 @@ class CompactKnob : public SliderBase, public ScaleIf
       void setMargins(int x, int y);
       void setXMargin(int x);
       void setYMargin(int y);
+
+      bool style3d() const { return _style3d; }
+      void setStyle3d(const bool style3d) { _style3d = style3d; }
+      int radius() const { return _radius; }
+      void setRadius(const int radius) { _radius = radius; }
 
       virtual QSize sizeHint() const;
       };

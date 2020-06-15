@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include "muse_math.h"
 #include "mmath.h"
+#include "gconfig.h"
 
 #include <QPalette>
 #include <QLinearGradient>
@@ -97,7 +98,7 @@ CompactKnob::CompactKnob(QWidget* parent, const char* name,
       _labelHovered = false;
       _knobHovered = false;
 
-      _editor = 0;
+      _editor = nullptr;
       _editMode = false;
 
       hasScale = false;
@@ -140,6 +141,9 @@ CompactKnob::CompactKnob(QWidget* parent, const char* name,
       d_offText = tr("off");
       _showLabel = true;
       _showValue = true;
+
+      _style3d = true;
+      _radius = 2;
 
       setUpdateTime(50);
       }
@@ -774,7 +778,10 @@ void CompactKnob::drawBackground(QPainter* painter)
                                   d_xMargin,
                                   d_yMargin,
                                   hasOffMode() && ! isOff() ? _labelRect : QRect(),
-                                  d_activeColor);
+                                  _radius, _style3d,
+                                  _style3d ? QColor() : MusEGlobal::config.sliderBackgroundColor,
+                                  _style3d ? QColor() : MusEGlobal::config.sliderBackgroundColor,
+                                  _style3d ? QColor() : MusEGlobal::config.sliderBackgroundColor);
     break;
 
     case Top:
@@ -799,7 +806,7 @@ void CompactKnob::drawBackground(QPainter* painter)
                                   d_xMargin,
                                   d_yMargin,
                                   hasOffMode() && ! isOff() ? _labelRect : QRect(), 
-                                  d_activeColor);
+                                  2);
     }
     break;
   }
@@ -830,10 +837,14 @@ void CompactKnob::drawKnob(QPainter* p, const QRect& r)
       // draw the rim
       //
 
-      QLinearGradient linearg(QPoint(r.x() + d_xMargin,r.y() + d_yMargin), QPoint(size, size));
-      linearg.setColorAt(1 - M_PI_4, d_faceColor.lighter(125));
-      linearg.setColorAt(M_PI_4, d_faceColor.darker(175));
-      p->setBrush(linearg);
+      if (_style3d) {
+          QLinearGradient linearg(QPoint(r.x() + d_xMargin,r.y() + d_yMargin), QPoint(size, size));
+          linearg.setColorAt(1 - M_PI_4, d_faceColor.lighter(125));
+          linearg.setColorAt(M_PI_4, d_faceColor.darker(175));
+          p->setBrush(linearg);
+      } else
+          p->setBrush(d_faceColor);
+
       p->setPen(Qt::NoPen);
       p->drawEllipse(r.x() + d_xMargin,r.y() + d_yMargin,size,size);
 
@@ -841,38 +852,46 @@ void CompactKnob::drawKnob(QPainter* p, const QRect& r)
       //
       // draw shiny surrounding
       //
+      if (_style3d) {
+          QPen pn;
+          pn.setCapStyle(Qt::FlatCap);
 
-      QPen pn;
-      pn.setCapStyle(Qt::FlatCap);
-
-      pn.setColor(d_shinyColor.lighter(l_const + fabs(value() * l_slope)));
-      pn.setWidth(d_shineWidth * 2);
-      p->setPen(pn);
-      p->drawArc(aRect, 0, 360 * 16);
+          pn.setColor(d_shinyColor.lighter(l_const + fabs(value() * l_slope)));
+          pn.setWidth(d_shineWidth * 2);
+          p->setPen(pn);
+          p->drawArc(aRect, 0, 360 * 16);
+      }
 
       //
       // draw button face
       //
 
-      QRadialGradient gradient(//aRect.x() + size/2,
-                               //aRect.y() + size/2,
-                               aRect.x(),
-                               aRect.y(),
-                               size-d_borderWidth,
-                               aRect.x() + size/2-d_borderWidth,
-                               aRect.y() + size/2-d_borderWidth);
-      gradient.setColorAt(0, d_curFaceColor.lighter(150));
-      gradient.setColorAt(1, d_curFaceColor.darker(150));
-      p->setBrush(gradient);
+      if (_style3d) {
+          QRadialGradient gradient(//aRect.x() + size/2,
+                                   //aRect.y() + size/2,
+                                   aRect.x(),
+                                   aRect.y(),
+                                   size-d_borderWidth,
+                                   aRect.x() + size/2-d_borderWidth,
+                                   aRect.y() + size/2-d_borderWidth);
+          gradient.setColorAt(0, d_curFaceColor.lighter(150));
+          gradient.setColorAt(1, d_curFaceColor.darker(150));
+          p->setBrush(gradient);
+      } else
+          p->setBrush(MusEGlobal::config.sliderBackgroundColor);
+
       p->setPen(Qt::NoPen);
       p->drawEllipse(aRect);
 
       //
       // draw marker
       //
-      drawMarker(p, d_angle, pal.currentColorGroup() == QPalette::Disabled ?
-                              pal.color(QPalette::Disabled, QPalette::WindowText) : d_markerColor);
-      }
+      if (_style3d)
+          drawMarker(p, d_angle, pal.currentColorGroup() == QPalette::Disabled ?
+                         pal.color(QPalette::Disabled, QPalette::WindowText) : d_markerColor);
+      else
+          drawMarker(p, d_angle, d_faceColor);
+}
 
 //------------------------------------------------------------
 //.-
@@ -946,18 +965,27 @@ void CompactKnob::drawLabel(QPainter* painter)
 
   const bool has_focus = hasFocus();
 
-  if (has_focus)
-        {
-        if (_hovered)
+  if (_style3d) {
+      if (has_focus)
+      {
+          if (_hovered)
               painter->setPen(QPen(QColor(239,239,239)));
-        else
+          else
               painter->setPen(QPen(Qt::white));
-        }
-  else if (_hovered)
-        painter->setPen(QPen(QColor(48,48,48)));
-  else
-        painter->setPen(QPen(Qt::black));
+      }
+      else if (_hovered)
+          painter->setPen(QPen(QColor(48,48,48)));
+      else
+          painter->setPen(QPen(Qt::black));
 
+  } else {
+      if (_hovered)
+          painter->setPen(MusEGlobal::config.knobFontColor.lighter());
+      else if (hasOffMode() && isOff())
+          painter->setPen(MusEGlobal::config.knobFontColor.darker());
+      else
+          painter->setPen(MusEGlobal::config.knobFontColor);
+  }
 
   int label_flags = 0;
   int value_flags = 0;

@@ -27,6 +27,18 @@
 #ifndef __SLIDER_H__
 #define __SLIDER_H__
 
+#include <QWidget>
+#include <QPainter>
+#include <QPaintEvent>
+#include <QString>
+#include <QResizeEvent>
+#include <QSize>
+#include <QPoint>
+#include <QColor>
+#include <QRect>
+#include <QBrush>
+#include <QFont>
+
 #include "sclif.h"
 #include "sliderbase.h"
 #include "scldraw.h"
@@ -44,7 +56,6 @@ class Slider : public SliderBase, public ScaleIf
   Q_PROPERTY( double pageStep READ pageStep WRITE setPageStep )
   Q_PROPERTY( Qt::Orientation orientation READ orientation WRITE setOrientation )
 
-
  public:
   enum ScalePos { None, Left, Right, Top, Bottom, InsideHorizontal, InsideVertical };
 
@@ -53,8 +64,13 @@ class Slider : public SliderBase, public ScaleIf
   ScalePos d_scalePos;
   int d_grooveWidth;
   QColor d_fillColor;
+  QColor d_handleColor;
   bool d_fillThumb;
   bool d_fillEmptySide;
+
+  int d_radius;
+  int d_radiusHandle;
+  bool d_useGradient;
 
   QRect d_sliderRect;
 
@@ -107,9 +123,10 @@ class Slider : public SliderBase, public ScaleIf
   Slider(QWidget *parent, const char *name = 0,
          Qt::Orientation orient = Qt::Vertical,
          ScalePos scalePos = None,
-         int grooveWidth = 8, 
-         QColor fillColor = QColor(), 
-         ScaleDraw::TextHighlightMode textHighlightMode = ScaleDraw::TextHighlightNone);
+         int grooveWidth = 8,
+         QColor fillColor = QColor(),
+         ScaleDraw::TextHighlightMode textHighlightMode = ScaleDraw::TextHighlightNone,
+         QColor handleColor = QColor());
   
   ~Slider();
   void setThumbLength(int l);
@@ -135,8 +152,9 @@ class Slider : public SliderBase, public ScaleIf
   int grooveWidth() const { return d_grooveWidth; }
   void setGrooveWidth(int w) { d_grooveWidth = w; update(); }
   
-  QColor fillColor() const { return d_fillColor; }
+//  QColor fillColor() const { return d_fillColor; }
   void setFillColor(const QColor& color) { d_fillColor = color; update(); }
+  void setHandleColor(const QColor& color) { d_handleColor = color; update(); }
   
   bool fillThumb() const { return d_fillThumb; }
   void setFillThumb(bool v) { d_fillThumb = v; update(); }
@@ -146,6 +164,13 @@ class Slider : public SliderBase, public ScaleIf
   
   virtual QSize sizeHint() const;
   void setSizeHint(uint w, uint h);
+
+  void setRadius(int r) { d_radius = r; update(); }
+  void setRadiusHandle(int r) { d_radiusHandle = r; update(); }
+  void setHandleHeight(int h) { d_thumbLength = h; update(); }
+  void setHandleWidth(int w) { d_thumbWidth = w; d_thumbHalf = d_thumbLength / 2; update(); }
+  void setUseGradient(bool b) { d_useGradient = b; update(); }
+  void setScalePos(ScalePos s) { d_scalePos = s; update(); }
       };
 
 } // namespace MusEGui

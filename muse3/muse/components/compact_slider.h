@@ -85,9 +85,8 @@ class CompactSlider : public SliderBase, public ScaleIf
       Q_PROPERTY( int xMargin READ xMargin WRITE setXMargin )
       Q_PROPERTY( int yMargin READ yMargin WRITE setYMargin )
 
-      Q_PROPERTY( QColor barColor READ barColor WRITE setBarColor )
-      Q_PROPERTY( QColor slotColor READ slotColor WRITE setSlotColor )
-      Q_PROPERTY( QColor thumbColor READ thumbColor WRITE setThumbColor )
+      Q_PROPERTY( bool barSameColor READ barSameColor WRITE setBarSameColor )
+      Q_PROPERTY( int radius READ radius WRITE setRadius )
 
       Q_PROPERTY( QString labelText READ labelText WRITE setLabelText )
       Q_PROPERTY( QString valPrefix READ valPrefix WRITE setValPrefix )
@@ -129,6 +128,8 @@ class CompactSlider : public SliderBase, public ScaleIf
     QColor d_barColor;
     QColor d_slotColor;
     QColor d_thumbColor;
+    bool _barSameColor;
+    int _radius;
     
     QString d_labelText;
     QString d_valPrefix;
@@ -255,14 +256,19 @@ class CompactSlider : public SliderBase, public ScaleIf
     void setLineStep(double);
     void setPageStep(double);
     
-    QColor borderColor() const { return d_borderColor; }
+//    QColor borderColor() const { return d_borderColor; }
     void setBorderColor(const QColor& c) { d_borderColor = c; update(); }
-    QColor barColor() const { return d_barColor; }
+//    QColor barColor() const { return d_barColor; }
     void setBarColor(const QColor& c) { d_barColor = c; update(); }
-    QColor slotColor() const { return d_slotColor; }
+//    QColor slotColor() const { return d_slotColor; }
     void setSlotColor(const QColor& c) { d_slotColor = c; update(); }
-    QColor thumbColor() const { return d_thumbColor; }
+//    QColor thumbColor() const { return d_thumbColor; }
     void setThumbColor(const QColor& c) { d_thumbColor = c; update(); }
+
+    bool barSameColor() const { return _barSameColor; }
+    void setBarSameColor(const bool barSameColor) { _barSameColor = barSameColor; }
+    int radius() const { return _radius; }
+    void setRadius(const int radius) { _radius = radius; }
 
     // Whether the user must click on the thumb or else anywhere in the control to move the value. 
     bool detectThumb() const { return _detectThumb; }

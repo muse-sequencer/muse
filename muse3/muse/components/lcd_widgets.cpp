@@ -230,8 +230,11 @@ LCDPatchEdit::LCDPatchEdit(QWidget* parent,
 
   _orient = PatchHorizontal;
 
+  _style3d = true;
+  _radius = 2;
+
   _enableValueToolTips = true;
-  _editor = 0;
+  _editor = nullptr;
   _editMode = false;
   _curEditSection = 0;
 
@@ -313,11 +316,11 @@ void LCDPatchEdit::setReadoutOrientation(PatchOrientation orient)
   update();
 }
 
-void LCDPatchEdit::setReadoutColor(const QColor& c)
-{
-  _readoutColor = c;
-  update();
-}
+//void LCDPatchEdit::setReadoutColor(const QColor& c)
+//{
+//  _readoutColor = c;
+//  update();
+//}
 
 void LCDPatchEdit::setMaxAliasedPointSize(int sz)
 {
@@ -462,7 +465,8 @@ void LCDPatchEdit::paintEvent(QPaintEvent* e)
   {
     case PatchHorizontal:
       painter.setRenderHint(QPainter::Antialiasing, false);
-      ibp.drawBackground(&painter, rect(), pal);
+      ibp.drawBackground(&painter, rect(), pal, 1, 1, QRect(),
+                         _radius, _style3d, nullptr, _borderColor, _bgColor);
 
       painter.setPen(offCol);
       painter.drawPoint(colon1x, colon_y1);
@@ -1034,7 +1038,11 @@ bool LCDPatchEdit::event(QEvent* e)
 
 void LCDPatchEdit::wheelEvent(QWheelEvent* e)
 {
+#if QT_VERSION >= 0x050e00
+  QPoint p = e->position().toPoint();
+#else
   QPoint p = e->pos();
+#endif
 
   bool doupd = false;
 
@@ -1076,14 +1084,18 @@ void LCDPatchEdit::wheelEvent(QWheelEvent* e)
   const int lastlboff = last_is_unk || lastlb > 127;
   const int lastproff = last_is_unk || lastpr > 127;
 
-//   const QPoint pixelDelta = e->pixelDelta();
+  const QPoint pixelDelta = e->pixelDelta();
   const QPoint angleDegrees = e->angleDelta() / 8;
   int delta = 0;
-//   if(!pixelDelta.isNull())
-//     delta = pixelDelta.y();
-//   else
-  if(!angleDegrees.isNull())
+  if(!pixelDelta.isNull())
+    delta = pixelDelta.y();
+  else if(!angleDegrees.isNull())
     delta = angleDegrees.y() / 15;
+  else
+  {
+    e->accept();
+    return;
+  }
 
   int section = -1;
   int new_val = _currentPatch;
@@ -1201,7 +1213,11 @@ void LCDPatchEdit::wheelEvent(QWheelEvent* e)
     setValue(new_val);
     // Show a handy tooltip value box.
     if(_enableValueToolTips)
+#if QT_VERSION >= 0x050e00
+      showValueToolTip(e->globalPosition().toPoint(), section);
+#else
       showValueToolTip(e->globalPos(), section);
+#endif
     emit valueChanged(value(), _id);
   }
   //fprintf(stderr, "LCDPatchEdit::wheelEvent _HBankHovered:%d _LBankHovered:%d _ProgHovered:%d\n", _HBankHovered, _LBankHovered, _ProgHovered);

@@ -75,6 +75,12 @@ enum TrackColumn {
 class TList : public QWidget {
       Q_OBJECT
 
+    Q_PROPERTY(bool sel3d READ sel3d WRITE setSel3d)
+    Q_PROPERTY(bool curSelBorder READ curSelBorder WRITE setCurSelBorder)
+
+    bool _sel3d;
+    bool _curSelBorder;
+
       int ypos;
       bool editMode;
       bool editJustFinished;
@@ -111,6 +117,8 @@ class TList : public QWidget {
       virtual void mouseReleaseEvent(QMouseEvent*);
       virtual void keyPressEvent(QKeyEvent* e);
       virtual void wheelEvent(QWheelEvent* e);
+      virtual QSize sizeHint() const override { return QSize(250, 100); }
+      virtual QSize minimumSizeHint() const override { return QSize(100, 100); }
 
       void oportPropertyPopupMenu(MusECore::Track*, int x, int y);
       void moveSelection(int n);
@@ -130,6 +138,7 @@ class TList : public QWidget {
 
    protected:
       bool event(QEvent *);
+
    private slots:
       void maybeUpdateVolatileCustomColumns(); // updates AFFECT_CPOS-columns when and only when the hwState has changed
       void returnPressed();
@@ -169,6 +178,10 @@ class TList : public QWidget {
       void setScroll(QScrollBar* s) { _scroll = s; }
       MusECore::Track* track() const { return editTrack; }
       void populateAddTrack();
+      bool sel3d() const { return _sel3d; }
+      void setSel3d(bool sel3d) { _sel3d = sel3d; }
+      bool curSelBorder() const { return _curSelBorder; }
+      void setCurSelBorder(bool curSelBorder) { _curSelBorder = curSelBorder; }
       };
 
 } // namespace MusEGui

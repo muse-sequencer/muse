@@ -267,6 +267,7 @@ Transport::Transport(QWidget* parent, const char* name)
   : QWidget(parent, Qt::Window | Qt::FramelessWindowHint )  // Possibly also Qt::X11BypassWindowManagerHint
       {
       setObjectName(name);
+      setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
       setWindowTitle(QString("Muse: Transport"));
       setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
 

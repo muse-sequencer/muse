@@ -62,8 +62,8 @@ namespace MusEGui
     p.begin(this);
     p.setPen(Qt::darkGray);
     p.drawRect(0, 0, width()-1, height()-1);
-    p.setPen(Qt::lightGray);
-    p.drawRect(1, 1, width()-1, height()-1);
+//    p.setPen(Qt::lightGray);
+//    p.drawRect(1, 1, width()-1, height()-1);
     p.end();
   }
 

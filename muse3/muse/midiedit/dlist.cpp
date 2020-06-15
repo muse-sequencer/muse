@@ -1783,7 +1783,7 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag, MusECore::DrumMap* dm, i
    : MusEGui::View(parent, 1, ymag)
       {
       _alphaOverlay = 64;
-      dcanvas = nullptr;
+      dcanvas=nullptr;
       ourDrumMap=dm;
       ourDrumMapSize=dmSize;
       
@@ -1879,8 +1879,14 @@ void DList::wheelEvent(QWheelEvent* ev)
   int keyState = ev->modifiers();
   //bool shift = keyState & Qt::ShiftModifier;
   bool ctrl = keyState & Qt::ControlModifier;
+#if QT_VERSION >= 0x050e00
+  const QPoint ev_pos = ev->position().toPoint();
+  int x = ev_pos.x();
+  int y = ev_pos.y();
+#else
   int x = ev->x();
   int y = ev->y();
+#endif
 
   DrumColumn col = DrumColumn(x2col(x));
 
@@ -1923,6 +1929,8 @@ void DList::wheelEvent(QWheelEvent* ev)
     delta = pixelDelta.y();
   else if(!angleDegrees.isNull())
     delta = angleDegrees.y() / 15;
+  else
+    return;
 
 
 

@@ -141,8 +141,22 @@ void SigLabel::incValue(bool zaehler, bool up, int& zz, int& nn)
 
 void SigLabel::wheelEvent(QWheelEvent* event)
       {
+#if QT_VERSION >= 0x050e00
+      bool zaehler = event->position().toPoint().x() < width() /2;
+#else
       bool zaehler = event->x() < width() /2;
-      int delta = event->delta();
+#endif
+
+      const QPoint pixelDelta = event->pixelDelta();
+      const QPoint angleDegrees = event->angleDelta() / 8;
+      int delta = 0;
+      if(!pixelDelta.isNull())
+          delta = pixelDelta.y();
+      else if(!angleDegrees.isNull())
+          delta = angleDegrees.y() / 15;
+      else
+        return;
+      
       int zz = z, nn = n;
 
       bool inc = delta >= 0;

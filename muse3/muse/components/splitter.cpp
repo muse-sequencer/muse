@@ -86,7 +86,12 @@ void Splitter::readStatus(MusECore::Xml& xml)
                   case MusECore::Xml::Text:
                         {
                         //QStringList sl = QStringList::split(' ', tag);
+// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
+#if QT_VERSION >= 0x050e00
+                        QStringList sl = tag.split(QString(" "), Qt::SkipEmptyParts);
+#else
                         QStringList sl = tag.split(QString(" "), QString::SkipEmptyParts);
+#endif
                         for (QStringList::Iterator it = sl.begin(); it != sl.end(); ++it) {
                               int val = (*it).toInt();
                               vl.append(val);

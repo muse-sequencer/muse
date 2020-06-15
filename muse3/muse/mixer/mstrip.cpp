@@ -246,7 +246,7 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
           break;
           
           default:
-            desc->_color = MusEGlobal::config.midiControllerSliderDefaultColor;
+            desc->_color = MusEGlobal::config.midiControllerSliderColor;
           break;
        }
       }
@@ -290,7 +290,7 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
           if(desc->_toolTipText.isEmpty())
             desc->_toolTipText = tr("Transpose notes up or down");
           if(!desc->_color.isValid())
-            desc->_color = MusEGlobal::config.midiPropertySliderDefaultColor;
+            desc->_color = MusEGlobal::config.midiPropertySliderColor;
         }
         break;
         
@@ -304,7 +304,7 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
           if(desc->_toolTipText.isEmpty())
             desc->_toolTipText = tr("Offset playback of notes before or after actual note");
           if(!desc->_color.isValid())
-            desc->_color = MusEGlobal::config.midiPropertySliderDefaultColor;
+            desc->_color = MusEGlobal::config.midiPropertySliderColor;
         }
         break;
         
@@ -318,7 +318,7 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
           if(desc->_toolTipText.isEmpty())
             desc->_toolTipText = tr("Change note length in percent of actual length");
           if(!desc->_color.isValid())
-            desc->_color = MusEGlobal::config.midiPropertySliderDefaultColor;
+            desc->_color = MusEGlobal::config.midiPropertySliderColor;
         }
         break;
         
@@ -336,7 +336,7 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
                                      " notes do not reach <br/>the combined velocity, note + "
                                      " Velocity.</span></p></body></html>");
           if(!desc->_color.isValid())
-            desc->_color = MusEGlobal::config.midiPropertySliderDefaultColor;
+            desc->_color = MusEGlobal::config.midiPropertySliderColor;
         }
         break;
         
@@ -350,7 +350,7 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
           if(desc->_toolTipText.isEmpty())
             desc->_toolTipText = tr("Compress the notes velocity range, in percent of actual velocity");
           if(!desc->_color.isValid())
-            desc->_color = MusEGlobal::config.midiPropertySliderDefaultColor;
+            desc->_color = MusEGlobal::config.midiPropertySliderColor;
         }
         break;
         
@@ -365,6 +365,12 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
     {
       ElidedLabelComponentDescriptor* d = static_cast<ElidedLabelComponentDescriptor*>(desc);
       
+      d->_color = MusEGlobal::config.midiInstrumentBorderColor;
+      d->_bgColor = MusEGlobal::config.midiInstrumentBackgroundColor;
+      d->_bgActiveColor = MusEGlobal::config.midiInstrumentBgActiveColor;
+      d->_fontColor = MusEGlobal::config.midiInstrumentFontColor;
+      d->_fontActiveColor = MusEGlobal::config.midiInstrumentFontActiveColor;
+
       // Adds a component. Creates a new component using the given desc values if the desc widget is not given.
       // Connects known widget types' signals to slots.
       newComponentWidget(d, before);
@@ -383,7 +389,7 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
       d->_isOff = off;
       d->_showValue = showval;
       if(!d->_color.isValid())
-        d->_color = MusEGlobal::config.sliderDefaultColor;
+        d->_color = MusEGlobal::config.sliderBackgroundColor;
 
       // Adds a component. Creates a new component using the given desc values if the desc widget is not given.
       // Connects known widget types' signals to slots.
@@ -402,12 +408,13 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
       d->_hasOffMode = hasOffMode;
       d->_isOff = off;
       d->_showValue = showval;
-      if(!d->_color.isValid())
-        d->_color = MusEGlobal::config.sliderDefaultColor;
-      // Set the bar color the same.
+
+      if(!d->_color.isValid()) // wrong color, but hopefully set before...
+          d->_color = MusEGlobal::config.sliderBackgroundColor;
       if(!d->_barColor.isValid())
-        //d->_barColor = d->_color;
-        d->_barColor = MusEGlobal::config.sliderBarDefaultColor;
+        d->_barColor = MusEGlobal::config.sliderBarColor;
+      if(!d->_slotColor.isValid())
+          d->_slotColor = MusEGlobal::config.sliderBackgroundColor;
 
       // Adds a component. Creates a new component using the given desc values if the desc widget is not given.
       // Connects known widget types' signals to slots.
@@ -440,7 +447,7 @@ void MidiComponentRack::newComponentWidget( ComponentDescriptor* desc, const Com
       CompactPatchEditComponentDescriptor* d = static_cast<CompactPatchEditComponentDescriptor*>(desc);
       if(!d->_compactPatchEdit)
       {
-        CompactPatchEdit* control = new CompactPatchEdit(0,
+        CompactPatchEdit* control = new CompactPatchEdit(nullptr,
                                                          d->_objName,
                                                          CompactSlider::None);
         d->_compactPatchEdit = control;
@@ -454,13 +461,19 @@ void MidiComponentRack::newComponentWidget( ComponentDescriptor* desc, const Com
 
         if(d->_color.isValid())
           control->setReadoutColor(d->_color);
+
+        control->setBgColor(MusEGlobal::config.midiInstrumentBackgroundColor);
+        control->setBgActiveColor(MusEGlobal::config.midiInstrumentBgActiveColor);
+        control->setBorderColor(MusEGlobal::config.midiInstrumentBorderColor);
+        control->setFontColor(MusEGlobal::config.midiInstrumentFontColor);
+        control->setFontActiveColor(MusEGlobal::config.midiInstrumentFontActiveColor);
         
         control->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
         
-          connect(d->_compactPatchEdit, SIGNAL(valueChanged(int,int)), SLOT(controllerChanged(int,int)));
-          connect(d->_compactPatchEdit, SIGNAL(patchValueRightClicked(QPoint,int)), SLOT(controllerRightClicked(QPoint,int)));
-          connect(d->_compactPatchEdit, SIGNAL(patchNameClicked(QPoint,int)), SLOT(patchEditNameClicked(QPoint,int)));
-          connect(d->_compactPatchEdit, SIGNAL(patchNameRightClicked(QPoint,int)), SLOT(controllerRightClicked(QPoint,int)));
+        connect(d->_compactPatchEdit, SIGNAL(valueChanged(int,int)), SLOT(controllerChanged(int,int)));
+        connect(d->_compactPatchEdit, SIGNAL(patchValueRightClicked(QPoint,int)), SLOT(controllerRightClicked(QPoint,int)));
+        connect(d->_compactPatchEdit, SIGNAL(patchNameClicked(QPoint,int)), SLOT(patchEditNameClicked(QPoint,int)));
+        connect(d->_compactPatchEdit, SIGNAL(patchNameRightClicked(QPoint,int)), SLOT(controllerRightClicked(QPoint,int)));
       }
       
       ComponentWidget cw = ComponentWidget(
@@ -1265,7 +1278,7 @@ void MidiComponentRack::setComponentColors()
     if(!cw._widget)
       continue;
     
-    QColor color = MusEGlobal::config.sliderDefaultColor;
+    QColor color = MusEGlobal::config.sliderBackgroundColor;
     switch(cw._componentType)
     {
       case controllerComponent:
@@ -1281,7 +1294,7 @@ void MidiComponentRack::setComponentColors()
           break;
           
           default:
-            color = MusEGlobal::config.midiControllerSliderDefaultColor;
+            color = MusEGlobal::config.midiControllerSliderColor;
           break;
         }
       }
@@ -1299,7 +1312,7 @@ void MidiComponentRack::setComponentColors()
           case mStripLenProperty:
           case mStripVeloProperty:
           case mStripComprProperty:
-            color = MusEGlobal::config.midiPropertySliderDefaultColor;
+            color = MusEGlobal::config.midiPropertySliderColor;
           break;
         }
       }
@@ -1319,8 +1332,8 @@ void MidiComponentRack::setComponentColors()
       {
         CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
         w->setBorderColor(color);
-        //w->setBarColor(color);
-        w->setBarColor(MusEGlobal::config.sliderBarDefaultColor);
+        w->setBarColor(MusEGlobal::config.sliderBarColor);
+        w->setSlotColor(MusEGlobal::config.sliderBackgroundColor);
       }
       break;
       
@@ -1328,9 +1341,26 @@ void MidiComponentRack::setComponentColors()
       {
         CompactPatchEdit* w = static_cast<CompactPatchEdit*>(cw._widget);
         w->setReadoutColor(color);
+        w->setBgColor(MusEGlobal::config.midiInstrumentBackgroundColor);
+        w->setBgActiveColor(MusEGlobal::config.midiInstrumentBgActiveColor);
+        w->setBorderColor(MusEGlobal::config.midiInstrumentBorderColor);
+        w->setFontColor(MusEGlobal::config.midiInstrumentFontColor);
+        w->setFontActiveColor(MusEGlobal::config.midiInstrumentFontActiveColor);
       }
       break;
-    }  
+
+    case ElidedLabelComponentWidget:
+    {
+        ElidedLabel* w = static_cast<ElidedLabel*>(cw._widget);
+
+        w->setBgColor(MusEGlobal::config.midiInstrumentBackgroundColor);
+        w->setBgActiveColor(MusEGlobal::config.midiInstrumentBgActiveColor);
+        w->setBorderColor(MusEGlobal::config.midiInstrumentBorderColor);
+        w->setFontColor(MusEGlobal::config.midiInstrumentFontColor);
+        w->setFontActiveColor(MusEGlobal::config.midiInstrumentFontActiveColor);
+    }
+        break;
+    }
   }
 }
 
@@ -1364,6 +1394,26 @@ QWidget* MidiComponentRack::setupComponentTabbing(QWidget* previousWidget)
 
 
 //---------------------------------------------------------
+//   MidiStripProperties
+//---------------------------------------------------------
+
+MidiStripProperties::MidiStripProperties()
+{
+    _sliderRadius = 4;
+    _sliderRadiusHandle = 2;
+    _sliderHandleHeight = 16;
+    _sliderHandleWidth = 16;
+    _sliderFillOver = true;
+    _sliderUseGradient = true;
+    _sliderBackbone = false;
+    _sliderGrooveWidth = 14;
+    _sliderScalePos = Slider::InsideVertical;
+    _meterWidth = Strip::FIXED_METER_WIDTH;
+    ensurePolished();
+}
+
+
+//---------------------------------------------------------
 //   MidiStrip
 //---------------------------------------------------------
 
@@ -1377,18 +1427,35 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
       _preferMidiVolumeDb = MusEGlobal::config.preferMidiVolumeDb;
 
-      slider        = 0;
-      sl            = 0;
-      off           = 0;
-      _recMonitor   = 0;
+      slider        = nullptr;
+      sl            = nullptr;
+      off           = nullptr;
+      _recMonitor   = nullptr;
 
       // Start the layout in mode A (normal, racks on left).
       _isExpanded = false;
+
+      MidiStripProperties props;
+      //      _bgColor = props.bgColor();
+      _sliderRadius = props.sliderRadius();
+      _sliderRadiusHandle = props.sliderRadiusHandle();
+      _sliderHandleHeight = props.sliderHandleHeight();
+      _sliderHandleWidth = props.sliderHandleWidth();
+      _sliderGrooveWidth = props.sliderGrooveWidth();
+      _sliderFillOver = props.sliderFillOver();
+      _sliderUseGradient = props.sliderUseGradient();
+      _sliderBackbone = props.sliderBackbone();
+      _sliderScalePos = props.sliderScalePos();
+      _meterWidth = props.meterWidth();
       
       // Set the whole strip's font, except for the label.
       setFont(MusEGlobal::config.fonts[1]); // For some reason must keep this, the upper rack is too tall at first.
+//      ensurePolished();
+//      if (!_bgColor.isValid())
+//          _bgColor = palette().window().color();
       setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
-      
+//                    + "QWidget {background-color: " + _bgColor.name() + "}");
+
       // Clear so the meters don't start off by showing stale values.
       t->setActivity(0);
       t->setLastActivity(0);
@@ -1421,8 +1488,10 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       //_rightSpacerPos      = GridPosStruct(_curGridRow + 9, 2, 1, 1);
 
 
-      _upperStackTabButtonA = new ElidedLabel();
-      _upperStackTabButtonB = new ElidedLabel();
+      _upperStackTabButtonA = new PaletteSwitcher();
+      _upperStackTabButtonB = new PaletteSwitcher();
+//      _upperStackTabButtonA = new ElidedLabel();
+//      _upperStackTabButtonB = new ElidedLabel();
       _upperStackTabButtonA->setContentsMargins(0, 0, 0, 0);
       _upperStackTabButtonB->setContentsMargins(0, 0, 0, 0);
       _upperStackTabButtonA->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -1431,18 +1500,29 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       _upperStackTabButtonB->setFocusPolicy(Qt::StrongFocus);
       _upperStackTabButtonA->setAlignment(Qt::AlignCenter);
       _upperStackTabButtonB->setAlignment(Qt::AlignCenter);
-      _upperStackTabButtonA->setToolTip(tr("Palette A"));
-      _upperStackTabButtonB->setToolTip(tr("Palette B"));
+      _upperStackTabButtonA->setToolTip(tr("Palette A: MIDI instrument / MIDI controllers"));
+      _upperStackTabButtonB->setToolTip(tr("Palette B: MIDI properties"));
       //: Palette A
-      _upperStackTabButtonA->setText(tr("A"));
+      _upperStackTabButtonA->setText("A");
       //: Palette B
-      _upperStackTabButtonB->setText(tr("B"));
+      _upperStackTabButtonB->setText("B");
       _upperStackTabButtonA->setHasOffMode(true);
       _upperStackTabButtonB->setHasOffMode(true);
       // Start with control rack palette 'A' showing.
       // TODO: Make this button class mutually exclusive capable.
       _upperStackTabButtonA->setOff(false);
       _upperStackTabButtonB->setOff(true);
+
+      _upperStackTabButtonA->setBgColor(MusEGlobal::config.palSwitchBackgroundColor);
+      _upperStackTabButtonB->setBgColor(MusEGlobal::config.palSwitchBackgroundColor);
+      _upperStackTabButtonA->setBgActiveColor(MusEGlobal::config.palSwitchBgActiveColor);
+      _upperStackTabButtonB->setBgActiveColor(MusEGlobal::config.palSwitchBgActiveColor);
+      _upperStackTabButtonA->setBorderColor(MusEGlobal::config.palSwitchBorderColor);
+      _upperStackTabButtonB->setBorderColor(MusEGlobal::config.palSwitchBorderColor);
+      _upperStackTabButtonA->setFontColor(MusEGlobal::config.palSwitchFontColor);
+      _upperStackTabButtonB->setFontColor(MusEGlobal::config.palSwitchFontColor);
+      _upperStackTabButtonA->setFontActiveColor(MusEGlobal::config.palSwitchFontActiveColor);
+      _upperStackTabButtonB->setFontActiveColor(MusEGlobal::config.palSwitchFontActiveColor);
 
       QHBoxLayout* upperStackTabLayout = new QHBoxLayout();
       upperStackTabLayout->setContentsMargins(0, 0, 0, 0);
@@ -1470,7 +1550,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       _infoRack = new MidiComponentRack(t, mStripInfoRack);
       //_infoRack->setVisible(false); // Not visible unless expanded.
-      // FIXME For some reason StyledPanel has trouble, intermittent sometimes panel is drawn, sometimes not. 
+      // FIXME For some reason StyledPanel has trouble, intermittent sometimes panel is drawn, sometimes not.
       //_infoRack->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
       _infoRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
       _infoRack->setLineWidth(rackFrameWidth);
@@ -1503,29 +1583,42 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       const int chan  = t->outChannel();
       MusECore::MidiController* mc = mp->midiController(MusECore::CTRL_VOLUME, chan); // Auto-create the controller if necessary.
 
-      slider = new Slider(0, "vol", Qt::Vertical, Slider::InsideVertical, 14, 
+      slider = new Slider(nullptr, "vol", Qt::Vertical, Slider::InsideVertical, 14,
                           MusEGlobal::config.midiVolumeSliderColor, 
-                          ScaleDraw::TextHighlightSplitAndShadow);
+                          ScaleDraw::TextHighlightSplitAndShadow,
+                          MusEGlobal::config.midiVolumeHandleColor);
       slider->setId(MusECore::CTRL_VOLUME);
       slider->setFocusPolicy(Qt::NoFocus);
       slider->setContentsMargins(0, 0, 0, 0);
       slider->setCursorHoming(true);
       slider->setSpecialText(tr("off"));
-      slider->setScaleBackBone(false);
+      slider->setScaleBackBone(_sliderBackbone);
       //slider->setFillThumb(false);
+
+      slider->setRadius(_sliderRadius);
+      slider->setRadiusHandle(_sliderRadiusHandle);
+      slider->setHandleHeight(_sliderHandleHeight);
+      slider->setHandleWidth(_sliderHandleWidth);
+      slider->setGrooveWidth(_sliderGrooveWidth);
+      slider->setFillEmptySide(_sliderFillOver);
+      slider->setUseGradient(_sliderUseGradient);
+      slider->setScalePos(static_cast<Slider::ScalePos>(_sliderScalePos));
+
       slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-      meter[0] = new Meter(0, Meter::LinMeter, Qt::Vertical, 0.0, 127.0);
+      meter[0] = new Meter(nullptr, Meter::LinMeter, Qt::Vertical, 0.0, 127.0);
       meter[0]->setRefreshRate(MusEGlobal::config.guiRefresh);
       meter[0]->setContentsMargins(0, 0, 0, 0);
       meter[0]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-      meter[0]->setFixedWidth(FIXED_METER_WIDTH);
-      meter[0]->setPrimaryColor(MusEGlobal::config.midiMeterPrimaryColor);
+      meter[0]->setFixedWidth(_meterWidth);
+      meter[0]->setPrimaryColor(MusEGlobal::config.midiMeterPrimaryColor,
+                                MusEGlobal::config.meterBackgroundColor);
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
       
       sliderGrid = new QGridLayout(); 
       sliderGrid->setSpacing(0);
-      sliderGrid->setContentsMargins(0, 0, 0, 0);
+      sliderGrid->setHorizontalSpacing(2);
+      sliderGrid->setContentsMargins(2, 2, 4, 2);
       sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
       sliderGrid->addWidget(meter[0], 0, 1, Qt::AlignHCenter);
       
@@ -1744,6 +1837,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       //---------------------------------------------------
 
       autoType = new CompactComboBox();
+      autoType->setObjectName("MidiAutoType");
       autoType->setContentsMargins(0, 0, 0, 0);
       autoType->setFocusPolicy(Qt::NoFocus);
       autoType->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -1758,8 +1852,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       //autoType->setCurrentItem(t->automationType());
       //autoType->setToolTip(tr("automation type"));      
       //connect(autoType, SIGNAL(activated(int)), SLOT(setAutomationType(int)));
-      autoType->addAction(" ", MusECore::AUTO_OFF);  // Just a dummy text to fix sizing problems. REMOVE later if full automation added.
-      autoType->setCurrentItem(MusECore::AUTO_OFF);    //
+//      autoType->addAction("", MusECore::AUTO_OFF);  // Just a dummy text to fix sizing problems. REMOVE later if full automation added.
+      autoType->addAction("n/a", MusECore::AUTO_OFF);
+      autoType->setCurrentItem(MusECore::AUTO_OFF);
 
       addGridWidget(autoType, _automationPos);
 
@@ -2201,6 +2296,18 @@ void MidiStrip::configChanged()
   setLabelText();
   
   slider->setFillColor(MusEGlobal::config.midiVolumeSliderColor);
+  slider->setHandleColor(MusEGlobal::config.midiVolumeHandleColor);
+
+  _upperStackTabButtonA->setBgColor(MusEGlobal::config.palSwitchBackgroundColor);
+  _upperStackTabButtonB->setBgColor(MusEGlobal::config.palSwitchBackgroundColor);
+  _upperStackTabButtonA->setBgActiveColor(MusEGlobal::config.palSwitchBgActiveColor);
+  _upperStackTabButtonB->setBgActiveColor(MusEGlobal::config.palSwitchBgActiveColor);
+  _upperStackTabButtonA->setBorderColor(MusEGlobal::config.palSwitchBorderColor);
+  _upperStackTabButtonB->setBorderColor(MusEGlobal::config.palSwitchBorderColor);
+  _upperStackTabButtonA->setFontColor(MusEGlobal::config.palSwitchFontColor);
+  _upperStackTabButtonB->setFontColor(MusEGlobal::config.palSwitchFontColor);
+  _upperStackTabButtonA->setFontActiveColor(MusEGlobal::config.palSwitchFontActiveColor);
+  _upperStackTabButtonB->setFontActiveColor(MusEGlobal::config.palSwitchFontActiveColor);
 
   // Enable special hack for line edits.
   if(sl->enableStyleHack() != MusEGlobal::config.lineEditStyleHack)
@@ -2214,7 +2321,8 @@ void MidiStrip::configChanged()
   _lowerRack->configChanged();
   
   // Adjust meter and colour.
-  meter[0]->setPrimaryColor(MusEGlobal::config.midiMeterPrimaryColor);
+  meter[0]->setPrimaryColor(MusEGlobal::config.midiMeterPrimaryColor,
+                            MusEGlobal::config.meterBackgroundColor);
   meter[0]->setRefreshRate(MusEGlobal::config.guiRefresh);
 
   // If smart focus is on redirect strip focus to slider label.

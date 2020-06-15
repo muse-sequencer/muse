@@ -25,17 +25,14 @@
 
 #include <QCloseEvent>
 #include <QResizeEvent>
-#include <QLabel>
 #include <QKeyEvent>
 #include <QPainter>
 #include <QPixmap>
-#include <QTimer>
 #include <QScrollBar>
 #include <QComboBox>
 #include <QAction>
 #include <QActionGroup>
 #include <QGridLayout>
-#include <QByteArray>
 #include <QToolButton>
 
 #include <limits.h>

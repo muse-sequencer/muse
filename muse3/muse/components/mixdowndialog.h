@@ -48,7 +48,7 @@ class MixdownFileDialog : public QDialog, public Ui::MixdownFileDialogBase {
 
    public:
       MixdownFileDialog(const MusECore::SndFile* f, QWidget* parent = 0,
-         Qt::WindowFlags fl = 0);
+         Qt::WindowFlags fl = Qt::Widget);
       MusECore::SndFile* sndFile() { return sf; }
       };
 

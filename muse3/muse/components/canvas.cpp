@@ -68,7 +68,7 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
       itemPopupMenu = 0;
       
       button = Qt::NoButton;
-      keyState = 0;
+      keyState = Qt::NoModifier;
       _mouseGrabbed = false;
 
       canScrollLeft = true;
@@ -613,7 +613,11 @@ void Canvas::wheelEvent(QWheelEvent* ev)
       else if(delta.y() != 0)
         d = delta.y();
       if(d != 0)
+#if QT_VERSION >= 0x050e00
+        emit horizontalZoom(d > 0, ev->globalPosition().toPoint());
+#else
         emit horizontalZoom(d > 0, ev->globalPos());
+#endif
       return;
     }
 
@@ -1753,7 +1757,8 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                               curItem->move(start);
                               // Even though we only move the primary position here,
                               //  set the mp as well.
-                              newCItem->setMp(newCItem->pos());
+                              // Removed. Interferes with PartCanvas::resizeItem wanting old mp.
+                              //curItem->setMp(curItem->pos());
                           }
                       }
                       resizeItem(curItem, shift, ctrl);

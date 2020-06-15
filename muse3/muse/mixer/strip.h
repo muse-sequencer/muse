@@ -288,7 +288,7 @@ class ComponentRack : public QFrame
       void componentReleased(int type, double val, int id);
 
   public:
-    ComponentRack(int id = -1, QWidget* parent = 0, Qt::WindowFlags f = 0);
+    ComponentRack(int id = -1, QWidget* parent = 0, Qt::WindowFlags f = Qt::Widget);
     
     int id() const { return _id; }
     ComponentWidgetList* components() { return &_components; }
@@ -562,6 +562,12 @@ class ElidedLabelComponentDescriptor : public ComponentDescriptor
     bool _ignoreHeight;
     bool _ignoreWidth;
 
+    // _color from base class seems to be used for border color
+    QColor _bgColor;
+    QColor _bgActiveColor;
+    QColor _fontColor;
+    QColor _fontActiveColor;
+
   public:        
     ElidedLabelComponentDescriptor() : 
       ComponentDescriptor(ComponentRack::ElidedLabelComponentWidget,
@@ -608,6 +614,10 @@ class TrackNameLabel : public ElidedTextLabel
 {
   Q_OBJECT
 
+    Q_PROPERTY(bool style3d READ style3d WRITE setStyle3d)
+
+    bool _style3d;
+
   protected:
     virtual void mouseDoubleClickEvent(QMouseEvent*);
 
@@ -615,8 +625,11 @@ class TrackNameLabel : public ElidedTextLabel
     void doubleClicked();
 
   public:
-    TrackNameLabel(QWidget* parent = 0, const char* name = 0, Qt::WindowFlags f = 0);
-    TrackNameLabel(const QString & text, QWidget* parent = 0, const char* name = 0, Qt::WindowFlags f = 0);
+    TrackNameLabel(QWidget* parent = 0, const char* name = 0, Qt::WindowFlags f = Qt::Widget);
+    TrackNameLabel(const QString & text, QWidget* parent = 0, const char* name = 0, Qt::WindowFlags f = Qt::Widget);
+
+    int style3d() const { return _style3d; }
+    void setStyle3d(int style3d) { _style3d = style3d; }
 };
 
 
@@ -660,7 +673,7 @@ class ExpanderHandle : public QFrame
     void moved(int xDelta);
     
   public:
-    ExpanderHandle(QWidget * parent = 0, int handleWidth = 4, Qt::WindowFlags f = 0);
+    ExpanderHandle(QWidget * parent = 0, int handleWidth = 4, Qt::WindowFlags f = Qt::Widget);
 };
 
 //---------------------------------------------------------
@@ -770,16 +783,22 @@ class Strip : public QFrame {
       bool getStripVisible() const { return _visible; }
       void setStripVisible(bool v) { _visible = v; }
 
-      static const int FIXED_METER_WIDTH;
+      static constexpr int FIXED_METER_WIDTH = 7;
       
       void setRecordFlag(bool flag);
       MusECore::Track* getTrack() const { return track; }
       void setHighLight(bool highlight);
       QString getLabelText();
-      void updateStyleSheet();
-      
+      void updateLabelStyleSheet();
+
+// Setting to zero is deprecated. Use default constructor, new in Qt 5.15.
+#if QT_VERSION >= 0x050f00
+      void addGridWidget(QWidget* w, const GridPosStruct& pos, Qt::Alignment alignment = Qt::Alignment());
+      void addGridLayout(QLayout* l, const GridPosStruct& pos, Qt::Alignment alignment = Qt::Alignment());
+#else
       void addGridWidget(QWidget* w, const GridPosStruct& pos, Qt::Alignment alignment = 0);
       void addGridLayout(QLayout* l, const GridPosStruct& pos, Qt::Alignment alignment = 0);
+#endif
       
       int userWidth() const { return _userWidth; }
       void setUserWidth(int w);

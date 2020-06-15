@@ -315,6 +315,9 @@ unsigned char rcRecordNote = 31;
 unsigned char rcGotoLeftMarkNote = 33;
 unsigned char rcPlayNote = 29;
 unsigned char rcSteprecNote = 36;
+// REMOVE Tim. automation. Remove this.
+// Deprecated. MusEGlobal::automation is now fixed TRUE
+//   for now until we decide what to do with it.
 bool automation = true;
 
 // Midi learn params. These will be initialized to -1 by any midi learn function, 

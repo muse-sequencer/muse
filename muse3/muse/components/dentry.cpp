@@ -119,7 +119,15 @@ void Dentry::wheelEvent(QWheelEvent* event)
       {
       event->accept();
       
-      int delta = event->delta();
+      const QPoint pixelDelta = event->pixelDelta();
+      const QPoint angleDegrees = event->angleDelta() / 8;
+      int delta = 0;
+      if(!pixelDelta.isNull())
+        delta = pixelDelta.y();
+      else if(!angleDegrees.isNull())
+        delta = angleDegrees.y() / 15;
+      else
+        return;
 
       if (delta < 0)
       {

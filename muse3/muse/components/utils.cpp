@@ -26,17 +26,11 @@
 #include <sys/time.h>
 
 #include <QApplication>
-#include <QFrame>
 #include <QClipboard>
-#include <QColor>
-#include <QGradient>
-#include <QIcon>
 #include <QLinearGradient>
 #include <QMimeData>
 #include <QPainter>
-#include <QPointF>
 #include <QFileInfo>
-#include <QFont>
 
 #include "audio.h"
 #include "audiodev.h"
@@ -977,8 +971,12 @@ bool getUniqueFileName(const QString& origFilepath, QString& newAbsFilePath)
 
 QString font2StyleSheetFull(const QFont& fnt)
 {
+//    QColor tt = qApp->palette().brush(QPalette::ToolTipBase).color();
     QString ss("* {" + MusECore::font2StyleSheet(fnt) + "}");
+//    ss += "* {background-color: " + QColor(MusEGlobal::config.mixerBg).name() + "}";
     ss += "QToolTip {font-size:" + QString::number(qApp->font().pointSize()) + "pt}";
+//    ss += "QToolTip {background-color: " + tt.name() + "}";
+//    ss += "QToolTip {font-size:" + QString::number(qApp->font().pointSize()) + "pt}";
     return ss;
 }
 

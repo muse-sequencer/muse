@@ -726,7 +726,8 @@ void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& mr, const Q
             }
       else if (item->isSelected())
       {
-            p.setBrush(Qt::black);
+            p.setBrush(MusEGlobal::config.midiItemSelectedColor);
+//            p.setBrush(Qt::black);
       }
       else
       {
@@ -740,7 +741,8 @@ void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& mr, const Q
             else if (velo < dm->lv3)
                   color.setRgb(170, 170, 255);
             else
-                  color.setRgb(0, 0, 255);
+                  color = MusEGlobal::config.midiItemColor;
+//            color.setRgb(0, 0, 255);
             p.setBrush(color);
       }
             

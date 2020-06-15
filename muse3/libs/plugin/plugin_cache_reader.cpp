@@ -423,7 +423,12 @@ QStringList pluginGetLadspaDirectories(const QString& museGlobalLib)
     ladspaPath = homePath + QString("/usr/local/lib64/ladspa:/usr/lib64/ladspa:/usr/local/lib/ladspa:/usr/lib/ladspa");
   }
   if(!ladspaPath.isEmpty())
+// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
+#if QT_VERSION >= 0x050e00
+    sl.append(ladspaPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive));
+#else
     sl.append(ladspaPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
+#endif
   return sl;
 }
 
@@ -450,7 +455,12 @@ QStringList pluginGetMessDirectories(const QString& museGlobalLib)
     messPath = homePath + QString("/usr/local/lib64/MESS:/usr/lib64/MESS:/usr/local/lib/MESS:/usr/lib/MESS");
   }
   if(!messPath.isEmpty())
+// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
+#if QT_VERSION >= 0x050e00
+    sl.append(messPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive));
+#else
     sl.append(messPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
+#endif
   return sl;
 }
 
@@ -474,7 +484,12 @@ QStringList pluginGetDssiDirectories()
     dssiPath = homePath + QString("/usr/local/lib64/dssi:/usr/lib64/dssi:/usr/local/lib/dssi:/usr/lib/dssi");
   }
   if(!dssiPath.isEmpty())
+// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
+#if QT_VERSION >= 0x050e00
+    sl.append(dssiPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive));
+#else
     sl.append(dssiPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
+#endif
   return sl;
 }
 
@@ -543,7 +558,12 @@ QStringList pluginGetLinuxVstDirectories()
     }
   }
   if(!vstPath.isEmpty())
+// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
+#if QT_VERSION >= 0x050e00
+    sl.append(vstPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive));
+#else
     sl.append(vstPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
+#endif
   return sl;
 }
 
@@ -576,7 +596,12 @@ QStringList pluginGetVstDirectories()
     vstPath = homePath;
   }
   if(!vstPath.isEmpty())
+// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
+#if QT_VERSION >= 0x050e00
+    sl.append(vstPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive));
+#else
     sl.append(vstPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
+#endif
   return sl;
 }
 
@@ -600,7 +625,12 @@ QStringList pluginGetLv2Directories()
     lv2Path = homePath + QString("/usr/local/lib64/lv2:/usr/lib64/lv2:/usr/local/lib/lv2:/usr/lib/lv2");
   }
   if(!lv2Path.isEmpty())
+// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
+#if QT_VERSION >= 0x050e00
+    sl.append(lv2Path.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive));
+#else
     sl.append(lv2Path.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
+#endif
   return sl;
 }
 

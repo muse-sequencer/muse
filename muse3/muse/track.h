@@ -1019,8 +1019,9 @@ class WaveTrack : public AudioTrack {
       bool getInputData(unsigned pos, int channels, unsigned nframes,
                         bool* usedInChannelArray, float** buffer);
       
-      // Return false if error.
-      bool getPrefetchData(bool have_data, sf_count_t framePos, int dstChannels, sf_count_t nframe, float** bp, bool do_overwrite);
+      // Return false if no data or error.
+      bool getPrefetchData(sf_count_t framePos, int dstChannels,
+        sf_count_t nframe, float** bp, bool do_overwrite);
       
    public:
 

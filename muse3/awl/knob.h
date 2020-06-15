@@ -23,6 +23,12 @@
 #ifndef __AWLKNOB_H__
 #define __AWLKNOB_H__
 
+#include <QPainterPath>
+#include <QPaintEvent>
+#include <QString>
+#include <QMouseEvent>
+#include <QSize>
+
 #include "aslider.h"
 // #include <QtDesigner/QDesignerExportWidget>
 

@@ -44,7 +44,10 @@ class ElidedLabel : public QFrame
   //Q_PROPERTY(QString text READ text WRITE setText)
 
   //Q_PROPERTY(Qt::TextElideMode elideMode READ elideMode WRITE setElideMode)
-  Q_PROPERTY( QColor activeColor READ activeColor WRITE setActiveColor )
+//  Q_PROPERTY( QColor activeColor READ activeColor WRITE setActiveColor )
+
+    Q_PROPERTY( bool style3d READ style3d WRITE setStyle3d )
+    Q_PROPERTY( int radius READ radius WRITE setRadius )
 
   private:
     int _id;
@@ -55,7 +58,14 @@ class ElidedLabel : public QFrame
     int _fontPointMin;
     bool _fontIgnoreHeight;
     bool _fontIgnoreWidth;
-    QColor _activeColor;
+    // leave defaults to background painter
+    QColor _bgActiveColor;
+    QColor _bgColor;
+    QColor _borderColor;
+    QColor _fontColor{Qt::black};
+    QColor _fontActiveColor{Qt::white};
+    bool _style3d;
+    int _radius;
     QString _text;
     QFont _curFont;
     // Whether the mouse is over the entire control.
@@ -88,7 +98,7 @@ class ElidedLabel : public QFrame
                          bool ignoreHeight = true, bool ignoreWidth = false,
                          const QString& text = QString(), 
                          const char* name = 0,
-                         Qt::WindowFlags flags = 0);
+                         Qt::WindowFlags flags = Qt::Widget);
   
     virtual QSize sizeHint() const;
     
@@ -115,8 +125,19 @@ class ElidedLabel : public QFrame
     QString text() const { return _text; }
     void setText(const QString& txt);
     
-    QColor activeColor() const { return _activeColor; }
-    void setActiveColor(const QColor& c) { _activeColor = c; update(); }
+//    QColor activeColor() const { return _activeColor; }
+//    void setActiveColor(const QColor& c) { _activeColor = c; update(); }
+
+    void setBgColor(const QColor& c) { _bgColor = c; update(); }
+    void setBgActiveColor(const QColor& c) { _bgActiveColor = c; update(); }
+    void setBorderColor(const QColor& c) { _borderColor = c; update(); }
+    void setFontColor(const QColor& c) { _fontColor = c; update(); }
+    void setFontActiveColor(const QColor& c) { _fontActiveColor = c; update(); }
+
+    bool style3d() const { return _style3d; }
+    void setStyle3d(const bool style3d) { _style3d = style3d; }
+    int radius() const { return _radius; }
+    void setRadius(const int radius) { _radius = radius; }
 
     int fontPointMin() const { return _fontPointMin; }
     void setFontPointMin(int point);
@@ -168,14 +189,14 @@ class ElidedTextLabel : public QFrame
     explicit ElidedTextLabel(
       QWidget* parent = 0,
       const char* name = 0,
-      Qt::WindowFlags flags = 0
+      Qt::WindowFlags flags = Qt::Widget
       );
   
     explicit ElidedTextLabel(
       const QString& text,
       QWidget* parent = 0,
       const char* name = 0,
-      Qt::WindowFlags flags = 0
+      Qt::WindowFlags flags = Qt::Widget
       );
   
     virtual QSize sizeHint() const;
@@ -207,6 +228,17 @@ class ElidedTextLabel : public QFrame
     QString tooltipText() const { return _tooltipText; }
     void setTooltipText(const QString& txt);
 };
+
+
+
+class PaletteSwitcher : public ElidedLabel
+{
+    Q_OBJECT
+
+    // derive own class so it can be customized from stylesheet...
+    // TODO: make real switcher with two mutually exclusive buttons
+};
+
 
 } // namespace MusEGui
 

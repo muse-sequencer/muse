@@ -118,6 +118,9 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
       ctrl_edit = nullptr;
       mode      = NORMAL;
 
+      _sel3d = true;
+      _curSelBorder = false;
+
       //setBackgroundMode(Qt::NoBackground); // ORCAN - FIXME. DELETETHIS?
       //setAttribute(Qt::WA_OpaquePaintEvent);
       resizeFlag = false;
@@ -299,14 +302,11 @@ void TList::paint(const QRect& r)
             //
             QColor bg;
             if (track->selected()) {
-                  if (track == cur_sel_track) {
-                        bg = MusEGlobal::config.selectTrackBg.darker(140);
-                        p.setPen(MusEGlobal::config.selectTrackFg.darker(140));
-                        }
-                  else {
+                  if (track == cur_sel_track)
+                        bg = MusEGlobal::config.selectTrackCurBg;
+                  else
                         bg = MusEGlobal::config.selectTrackBg;
-                        p.setPen(MusEGlobal::config.selectTrackFg);
-                        }
+                  p.setPen(MusEGlobal::config.selectTrackFg);
                   }
             else {	
                   switch(type) {
@@ -345,11 +345,11 @@ void TList::paint(const QRect& r)
                   }
             p.fillRect(x1, yy, w, trackHeight, bg);
 
-	    if (track->selected()) {
-                  mask.setStart(QPointF(0, yy));
-                  mask.setFinalStop(QPointF(0, yy + trackHeight));
-                  p.fillRect(x1, yy, w, trackHeight, mask);
-                  }
+            if (track->selected() && _sel3d) {
+                mask.setStart(QPointF(0, yy));
+                mask.setFinalStop(QPointF(0, yy + trackHeight));
+                p.fillRect(x1, yy, w, trackHeight, mask);
+            }
 
             int x = 0;
             for (int index = 0; index < header->count(); ++index) {
@@ -535,7 +535,7 @@ void TList::paint(const QRect& r)
                   }
                   x += header->sectionSize(section);
                   }
-            p.setPen(Qt::gray);
+            p.setPen(MusEGlobal::config.trackSectionDividerColor);
             p.drawLine(x1, yy, x2, yy);
             }
       p.drawLine(x1, yy, x2, yy);

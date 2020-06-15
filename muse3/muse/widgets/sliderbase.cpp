@@ -210,14 +210,28 @@ void SliderBase::wheelEvent(QWheelEvent *e)
       if(inc < step())
         inc = step();
       
-      if(e->delta() > 0)
+      const QPoint pixelDelta = e->pixelDelta();
+      const QPoint angleDegrees = e->angleDelta() / 8;
+      int delta = 0;
+      if(!pixelDelta.isNull())
+          delta = pixelDelta.y();
+      else if(!angleDegrees.isNull())
+          delta = angleDegrees.y() / 15;
+      else
+        return;
+
+      if(delta > 0)
             setValue(value(ConvertNone)+inc, ConvertNone);
       else
             setValue(value(ConvertNone)-inc, ConvertNone);
 
       // Show a handy tooltip value box.
       if(d_enableValueToolTips)
+#if QT_VERSION >= 0x050e00
+        showValueToolTip(e->globalPosition().toPoint());
+#else
         showValueToolTip(e->globalPos());
+#endif
       
      emit sliderMoved(value(), _id);
      emit sliderMoved(value(), _id, (bool)(e->modifiers() & Qt::ShiftModifier));

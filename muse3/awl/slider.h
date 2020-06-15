@@ -23,6 +23,13 @@
 #ifndef __AWLSLIDER_H__
 #define __AWLSLIDER_H__
 
+#include <QPainterPath>
+#include <QPaintEvent>
+#include <QString>
+#include <QMouseEvent>
+#include <QSize>
+#include <QPoint>
+
 #include "aslider.h"
 
 namespace Awl {

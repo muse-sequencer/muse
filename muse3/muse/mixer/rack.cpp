@@ -104,31 +104,26 @@ void EffectRackDelegate::paint ( QPainter * painter, const QStyleOptionViewItem 
 
       const QRect onrect = (tr->efxPipe() && tr->efxPipe()->isOn(index.row())) ? rr : QRect();
       ItemBackgroundPainter* ibp = er->getBkgPainter();
-      ibp->setActiveColor(er->activeColor());
       ibp->drawBackground(painter,
                           rr,
                           option.palette,
                           itemXMargin,
                           itemYMargin,
-                          onrect); //,
-                          // No, let the background painter handle the on colour.
-                          //tr->efxPipe()->isOn(index.row()) ? er->getActiveColor() : option.palette.dark();
+                          onrect,
+                          er->radius(),
+                          er->style3d(),
+                          MusEGlobal::config.rackItemBgActiveColor,
+                          MusEGlobal::config.rackItemBorderColor,
+                          MusEGlobal::config.rackItemBackgroundColor);
 
       QString name = tr->efxPipe() ? tr->efxPipe()->name(index.row()) : QString();
-      //if (name.length() > 11)
-      //      name = name.left(9) + "...";
   
-      if (option.state & QStyle::State_Selected)
-            {
-            if (option.state & QStyle::State_MouseOver)
-                  painter->setPen(QPen(QColor(239,239,239)));
-            else
-                  painter->setPen(QPen(Qt::white));
-            }
-      else if (option.state & QStyle::State_MouseOver)
-            painter->setPen(QPen(QColor(48,48,48)));
+      if (option.state & QStyle::State_MouseOver)
+          painter->setPen(MusEGlobal::config.rackItemFontColorHover);
+      else if (onrect.isNull())
+          painter->setPen(MusEGlobal::config.rackItemFontColor);
       else
-            painter->setPen(QPen(Qt::black));
+          painter->setPen(MusEGlobal::config.rackItemFontActiveColor);
 
       painter->drawText(cr.x() + itemTextXMargin, 
                         cr.y() + itemTextYMargin, 
@@ -157,7 +152,7 @@ class RackSlot : public QListWidgetItem {
 
 RackSlot::~RackSlot()
       {
-      node = 0;
+      node = nullptr;
       }
 
 //---------------------------------------------------------
@@ -188,54 +183,26 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
       //setFont(MusEGlobal::config.fonts[1]);
       //activeColor = QColor(74, 165, 49);
 
+      _style3d = true;
+      _radius = 2;
+      _customScrollbar = true;
+
       setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-      // Taken from help files, example custom stylesheets.
-      // Make a custom scrollbar. It seems this stuff can only be done with sylesheets.
-      // There doesn't seem to be style primitives or complex properites to set for all of this.
-      // Help warns that with complex controls like scrollbar, if you set one property, then ALL
-      //  properties must be set. Chopped down to a 'mini' compact size, just for the rack.
-//      verticalScrollBar()->setStyleSheet(
-//          "QScrollBar:vertical {"
-//              "border: 2px solid grey;"
-//              "background: #32CC99;"
-//              "width: 12px;"
-//              "margin: 10px 0 10px 0;"
-//          "}"
-//          "QScrollBar::handle:vertical {"
-//              "background: white;"
-//              "min-height: 8px;"
-//          "}"
-//          "QScrollBar::add-line:vertical {"
-//              "border: 2px solid grey;"
-//              "background: #32CC99;"
-//              "height: 8px;"
-//              "subcontrol-position: bottom;"
-//              "subcontrol-origin: margin;"
-//          "}"
-//          "QScrollBar::sub-line:vertical {"
-//          "    border: 2px solid grey;"
-//          "    background: #32CC99;"
-//          "    height: 8px;"
-//          "    subcontrol-position: top;"
-//          "    subcontrol-origin: margin;"
-//          "}"
-//          "QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {"
-//          "    border: 2px solid grey;"
-//          "    width: 3px;"
-//          "    height: 3px;"
-//          "    background: white;"
-//          "}"
-//          "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
-//          "    background: none;"
-//          "}"
-//      );
 
-      QFile file(":/qss/scrollbar_small_vertical.qss");
-      file.open(QFile::ReadOnly);
-      QString style = file.readAll();
-      verticalScrollBar()->setStyleSheet(style);
+      ensurePolished();
+
+      if (_customScrollbar) {
+          // FIXME: put into external stylesheet (but currently there is none for default theme)
+          QFile file(":/qss/scrollbar_small_vertical.qss");
+          file.open(QFile::ReadOnly);
+          QString style = file.readAll();
+          style.replace("darkgrey", MusEGlobal::config.rackItemBackgroundColor.name());
+          style.replace("lightgrey", MusEGlobal::config.rackItemBackgroundColor.lighter().name());
+          style.replace("grey", MusEGlobal::config.rackItemBackgroundColor.darker().name());
+          verticalScrollBar()->setStyleSheet(style);
+      }
 
       setSelectionMode(QAbstractItemView::SingleSelection);
 
@@ -249,8 +216,11 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
 
       EffectRackDelegate* er_delegate = new EffectRackDelegate(this, track);
       setItemDelegate(er_delegate);
+      viewport()->setAttribute( Qt::WA_Hover );
 
       setSpacing(0);
+//      setLineWidth(1);
+//      setFrameShape(QFrame::Box);
 
       setAcceptDrops(true);
       setFocusPolicy(Qt::NoFocus);
@@ -334,7 +304,7 @@ void EffectRack::choosePlugin(QListWidgetItem* it, bool replace)
                   }
             int idx = row(it);
 	    if (replace)
-                  MusEGlobal::audio->msgAddPlugin(track, idx, 0);
+                  MusEGlobal::audio->msgAddPlugin(track, idx, nullptr);
             MusEGlobal::audio->msgAddPlugin(track, idx, plugi);
             updateContents();
             }
@@ -346,7 +316,7 @@ void EffectRack::choosePlugin(QListWidgetItem* it, bool replace)
 
 void EffectRack::menuRequested(QListWidgetItem* it)
       {
-      if (it == 0 || track == 0)
+      if (it == nullptr || track == nullptr)
             return;
       RackSlot* curitem = (RackSlot*)it;
       int idx = row(curitem);
@@ -390,7 +360,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
       showNativeGuiAction->setChecked(pipe->nativeGuiVisible(idx));
 
 #ifdef LV2_SUPPORT
-      PopupMenu *mSubPresets = NULL;
+      PopupMenu *mSubPresets = nullptr;
 #endif
 
       if (pipe->empty(idx)) {
@@ -424,7 +394,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
             else
             {
                delete mSubPresets;
-               mSubPresets = NULL;
+               mSubPresets = nullptr;
             }
 #endif
             }
@@ -435,7 +405,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
       #endif
 
       QPoint pt = QCursor::pos();
-      QAction* act = menu->exec(pt, 0);
+      QAction* act = menu->exec(pt, nullptr);
 
       //delete menu;
       if (!act)
@@ -444,9 +414,9 @@ void EffectRack::menuRequested(QListWidgetItem* it)
         return;
       }      
 #ifdef LV2_SUPPORT
-      if (mSubPresets != NULL) {
+      if (mSubPresets != nullptr) {
          QWidget *mwidget = act->parentWidget();
-         if (mwidget != NULL) {
+         if (mwidget != nullptr) {
             if(mSubPresets == dynamic_cast<QMenu*>(mwidget)) {
                MusECore::PluginI *plugI = pipe->at(idx);
                static_cast<MusECore::LV2PluginWrapper *>(plugI->plugin())->applyPreset(plugI, act->data().value<void *>());
@@ -472,7 +442,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
                   break;
                   }
             case REMOVE:
-                  MusEGlobal::audio->msgAddPlugin(track, idx, 0);
+                  MusEGlobal::audio->msgAddPlugin(track, idx, nullptr);
                   break;
             case BYPASS:
                   {
@@ -519,7 +489,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
 
 void EffectRack::doubleClicked(QListWidgetItem* it)
       {
-      if (it == 0 || track == 0)
+      if (it == nullptr || track == nullptr)
             return;
 
       RackSlot* item = (RackSlot*)it;
@@ -562,7 +532,7 @@ void EffectRack::savePreset(int idx)
       //FILE* presetFp = fopen(name.ascii(),"w+");
       bool popenFlag;
       FILE* presetFp = MusEGui::fileOpen(this, name, QString(".pre"), "w", popenFlag, false, true);
-      if (presetFp == 0) {
+      if (presetFp == nullptr) {
             //fprintf(stderr, "EffectRack::savePreset() fopen failed: %s\n",
             //   strerror(errno));
             return;
@@ -570,7 +540,7 @@ void EffectRack::savePreset(int idx)
       MusECore::Xml xml(presetFp);
       MusECore::Pipeline* pipe = track->efxPipe();
       if (pipe) {
-            if ((*pipe)[idx] != NULL) {
+            if ((*pipe)[idx] != nullptr) {
                 xml.header();
                 xml.tag(0, "muse version=\"1.0\"");
                 (*pipe)[idx]->writeConfiguration(1, xml);
@@ -618,7 +588,7 @@ void EffectRack::startDragItem(int idx)
       }
       else
           tmp = tmpfile();
-      if (tmp == 0) {
+      if (tmp == nullptr) {
             fprintf(stderr, "EffectRack::startDrag fopen failed: %s\n",
                strerror(errno));
             return;
@@ -626,7 +596,7 @@ void EffectRack::startDragItem(int idx)
       MusECore::Xml xml(tmp);
       MusECore::Pipeline* pipe = track->efxPipe();
       if (pipe) {
-            if ((*pipe)[idx] != NULL) {
+            if ((*pipe)[idx] != nullptr) {
                 xml.header();
                 xml.tag(0, "muse version=\"1.0\"");
                 (*pipe)[idx]->writeConfiguration(1, xml);
@@ -683,7 +653,7 @@ void EffectRack::dropEvent(QDropEvent *event)
       MusECore::Pipeline* pipe = track->efxPipe();
       if (pipe) 
       {
-            if ((*pipe)[idx] != NULL) {
+            if ((*pipe)[idx] != nullptr) {
                 QWidget *sw = static_cast<QWidget *>(event->source());
                 if(sw)
                 {
@@ -704,7 +674,7 @@ void EffectRack::dropEvent(QDropEvent *event)
                 if(QMessageBox::question(this, tr("Replace effect"),tr("Do you really want to replace the effect %1?").arg(pipe->name(idx)),
                       QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
                       {
-                        MusEGlobal::audio->msgAddPlugin(track, idx, 0);
+                        MusEGlobal::audio->msgAddPlugin(track, idx, nullptr);
                         MusEGlobal::song->update(SC_RACK);
                       }
                 else {

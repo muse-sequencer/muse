@@ -84,7 +84,7 @@ protected:
     virtual void timerEvent(QTimerEvent * event);
 
 public:
-    VstNativeEditor(QWidget *parent, Qt::WindowFlags wflags = 0);
+    VstNativeEditor(QWidget *parent, Qt::WindowFlags wflags = Qt::Widget);
     ~VstNativeEditor();
 
     void open(MusECore::VstNativeSynthIF* sif, MusECore::VstNativePluginWrapper_State *state);

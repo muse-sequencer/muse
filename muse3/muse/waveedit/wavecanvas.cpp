@@ -769,21 +769,35 @@ void WaveCanvas::wheelEvent(QWheelEvent* ev)
   bool shift      = keyState & Qt::ShiftModifier;
   bool ctrl       = keyState & Qt::ControlModifier;
 
+  const QPoint pixelDelta = ev->pixelDelta();
+  const QPoint angleDegrees = ev->angleDelta() / 8;
+  int delta = 0;
+  if(!pixelDelta.isNull())
+      delta = pixelDelta.y();
+  else if(!angleDegrees.isNull())
+      delta = angleDegrees.y() / 15;
+  else
+    return;
+
   if (shift) { // scroll horizontally
-      int delta       = -ev->delta() / WHEEL_DELTA;
+      int d       = -delta / WHEEL_DELTA;
       int xpixelscale = 5*MusECore::fast_log10(rmapxDev(1));
       if (xpixelscale <= 0)
             xpixelscale = 1;
-      int scrollstep = WHEEL_STEPSIZE * (delta);
+      int scrollstep = WHEEL_STEPSIZE * ( d );
       scrollstep = scrollstep / 10;
       int newXpos = xpos + xpixelscale * scrollstep;
       if (newXpos < 0)
             newXpos = 0;
       emit horizontalScroll((unsigned)newXpos);
   } else if (ctrl) {  // zoom horizontally
-      emit horizontalZoom(ev->delta()>0, ev->globalPos());
+#if QT_VERSION >= 0x050e00
+      emit horizontalZoom(delta>0, ev->globalPosition().toPoint());
+#else
+      emit horizontalZoom(delta>0, ev->globalPos());
+#endif
   } else { // scroll horizontally
-      emit mouseWheelMoved(ev->delta() / 10);
+      emit mouseWheelMoved(delta / 10);
   }
 }
 

@@ -685,8 +685,11 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
                               readMarker(xml);
                         else if (tag == "globalPitchShift")
                               _globalPitchShift = xml.parseInt();
-                        else if (tag == "automation")
-                              MusEGlobal::automation = xml.parseInt();
+                        // REMOVE Tim. automation. Removed.
+                        // Deprecated. MusEGlobal::automation is now fixed TRUE
+                        //  for now until we decide what to do with it.
+                        //else if (tag == "automation")
+                        //      MusEGlobal::automation = xml.parseInt();
                         else if (tag == "cpos") {
                               int pos = xml.parseInt();
                               Pos p(pos, true);
@@ -737,7 +740,10 @@ void Song::write(int level, Xml& xml) const
       xml.tag(level++, "song");
       xml.strTag(level, "info", songInfoStr);
       xml.intTag(level, "showinfo", showSongInfo);
-      xml.intTag(level, "automation", MusEGlobal::automation);
+// REMOVE Tim. automation. Removed.
+// Deprecated. MusEGlobal::automation is now fixed TRUE
+//   for now until we decide what to do with it.
+//       xml.intTag(level, "automation", MusEGlobal::automation);
       xml.intTag(level, "cpos", MusEGlobal::song->cpos());
       xml.intTag(level, "rpos", MusEGlobal::song->rpos());
       xml.intTag(level, "lpos", MusEGlobal::song->lpos());

@@ -39,28 +39,24 @@ namespace MusEGui {
 //   ItemBackgroundPainter
 //---------------------------------------------------------
 
-// FIXME : To access this from a stylesheet, it must inherit QWidget !
 class ItemBackgroundPainter : public QObject
 {
   Q_OBJECT
 
-  Q_PROPERTY( QColor activeColor READ activeColor WRITE setActiveColor )
-
-  QColor _activeColor;
-
   public:
    ItemBackgroundPainter(QObject* parent = nullptr);
 
-   QColor activeColor() const { return _activeColor; }
-   void setActiveColor(const QColor& c) { _activeColor = c; }
-  
    void drawBackground(QPainter* painter,
                        const QRect& rect,
                        const QPalette& pal,
                        int xMargin = 1,
                        int yMargin = 1,
                        const QRect& onRect = QRect(),
-                       const QColor& activeColor = QColor());
+                       int radius = 2,
+                       bool style3d = true,
+                       QColor colSlotActive = QColor(),
+                       QColor colBorder = QColor(),
+                       QColor colSlot = QColor());
 };
 
 } // namespace MusEGui

@@ -318,7 +318,7 @@ bool WaveTrack::closeAllParts()
 }
 
 bool WaveTrack::getPrefetchData(
-     bool have_data, sf_count_t framePos, int dstChannels, sf_count_t nframe, float** bp, bool do_overwrite)
+     sf_count_t framePos, int dstChannels, sf_count_t nframe, float** bp, bool do_overwrite)
 {
   const bool use_latency_corr = useLatencyCorrection();
 
@@ -346,8 +346,7 @@ bool WaveTrack::getPrefetchData(
         pf_buf[i] = audioOutDummyBuf;
       // Indicate do not seek file before each read.
       fetchData(framePos, nframe, pf_buf, false, do_overwrite, i_correction);
-      // Just return whether we have input sources data.
-      return have_data;
+      return false;
     }
     else
     {
@@ -360,12 +359,12 @@ bool WaveTrack::getPrefetchData(
   }
   else
   {
-    bool ret_val = have_data;
+    bool ret_val = false;
     MuseCount_t pos;
     if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &pos))
     {
       fprintf(stderr, "WaveTrack::getPrefetchData(%s) (prefetch peek A) fifo underrun\n", name().toLocal8Bit().constData());
-      return have_data;
+      return false;
     }
 
     //fprintf(stderr, "WaveTrack::getData(%s) (prefetch peek A) pos:%d\n", name().toLocal8Bit().constData(), pos);
@@ -378,7 +377,7 @@ bool WaveTrack::getPrefetchData(
     if(corr_frame_end_pos <= pos)
     {
       // Allow the stream to RETARD. (That is, let our requested frame catch up to the stream.)
-      return have_data;
+      return false;
     }
     else
     {
@@ -391,14 +390,14 @@ bool WaveTrack::getPrefetchData(
         if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &pos))
         {
           fprintf(stderr, "WaveTrack::getPrefetchData(%s) (prefetch peek B) fifo underrun\n", name().toLocal8Bit().constData());
-          return have_data;
+          return false;
         }
 
         if(corr_frame_end_pos <= pos)
         {
           if(MusEGlobal::debugMsg)
             fprintf(stderr, "fifo get(%s) (A) error expected %ld, got %ld\n", name().toLocal8Bit().constData(), frame_pos, pos);
-          return have_data;
+          return false;
         }
       }
     }
@@ -466,14 +465,14 @@ bool WaveTrack::getPrefetchData(
       if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &pos))
       {
         fprintf(stderr, "WaveTrack::getPrefetchData(%s) (prefetch peek C) fifo underrun\n", name().toLocal8Bit().constData());
-        return have_data;
+        return false;
       }
       
       if(pos != expect_nextpos)
       {
         if(MusEGlobal::debugMsg)
           fprintf(stderr, "fifo get(%s) (B) error expected %ld, got %ld\n", name().toLocal8Bit().constData(), expect_nextpos, pos);
-        return have_data;
+        return false;
       }
 
       if(!isMute())
@@ -696,9 +695,10 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
   const bool do_overwrite = !have_data || !track_rec_monitor;
 
   // Set the return value.
-  have_data = !have_data || (track_rec_monitor && have_data);
+  // We only "have data" if we want to monitor it.
+  have_data = track_rec_monitor && have_data;
 
-  const bool have_pf_data = getPrefetchData(have_data, framePos, dstChannels, nframe, bp, do_overwrite);
+  const bool have_pf_data = getPrefetchData(framePos, dstChannels, nframe, bp, do_overwrite);
   return have_data || have_pf_data;
 }
 
