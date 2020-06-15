@@ -949,11 +949,6 @@ void AudioStrip::configChanged()
     meter[c]->setRefreshRate(MusEGlobal::config.guiRefresh);
   }
 
-  // If smart focus is on redirect strip focus to slider label.
-//   if(MusEGlobal::config.smartFocus)
-//     setFocusProxy(sl);
-//   else
-//     setFocusProxy(0);
 }
 
 //---------------------------------------------------------
@@ -2074,7 +2069,7 @@ void AudioStrip::oRoutePressed()
       oR->setDown(false);
 }
 
-void AudioStrip::incVolume(int v)
+void AudioStrip::incVolume(int increaseValue)
 {
   if(!track || track->isMidiTrack())
     return;
@@ -2086,7 +2081,7 @@ void AudioStrip::incVolume(int v)
   const double prev_val = slider->value();
   // Increment the slider. Do not allow signalling.
   slider->blockSignals(true);
-  slider->incValue(v);
+  slider->incValue(increaseValue);
   slider->blockSignals(false);
   // Now grab the control's new value.
   const double new_val = slider->value();
@@ -2114,7 +2109,7 @@ void AudioStrip::incVolume(int v)
                       false, id, Slider::ScrNone);
 }
 
-void AudioStrip::incPan(int v)
+void AudioStrip::incPan(int increaseValue)
 {
   if(!track || track->isMidiTrack())
     return;
@@ -2139,7 +2134,7 @@ void AudioStrip::incPan(int v)
   // Get the component's current value.
   const double prev_val = rack->componentValue(*cw);
   // Now increment the component. Do not allow signalling.
-  rack->incComponentValue(*cw, v, true);
+  rack->incComponentValue(*cw, increaseValue, true);
   // Now grab its value.
   const double d_new_val = rack->componentValue(*cw);
 

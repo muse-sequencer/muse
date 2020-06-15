@@ -1304,7 +1304,10 @@ void PartCanvas::keyPress(QKeyEvent* event)
           return;
       }
 
-      const int incrementValue = (event->modifiers() &  Qt::ShiftModifier) ? 5 : 1;
+      const int incrementValue = 1; //(event->modifiers() &  Qt::ShiftModifier) ? 5 : 1;
+                                    // ran into an issue, basically too many shortcuts
+                                    // so it's hard to find sensible shortcuts to allow
+                                    // the shift accelerator.. hard coding for now.
 
       if (event->modifiers() &  Qt::ShiftModifier)
             key +=  Qt::SHIFT;

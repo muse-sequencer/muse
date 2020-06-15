@@ -807,14 +807,56 @@ void TList::soloSelectedTracksSlot()
   update();
 }
 
+void TList::incrementController(MusECore::Track* t, int controllerType, int incrementValue)
+{
+  MusECore::MidiTrack* midiTrack = static_cast<MusECore::MidiTrack*>(t);
+  const int channel = midiTrack->outChannel();
+
+  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[midiTrack->outPort()];
+  MusECore::MidiCtrlValListList* mcvll = mp->controller();
+  MusECore::ciMidiCtrlValList imcvl = mcvll->find(channel, controllerType);
+  MusECore::MidiCtrlValList* mcvl = imcvl->second;
+
+  MusECore::MidiController* mc = mp->midiController(controllerType, channel, false);
+
+  int value = mcvl->lastValidHWVal();
+  int max = 127;
+  int min = 0;
+  int bias = 0;
+  if(mc)
+  {
+    max = mc->maxVal();
+    min = mc->minVal();
+    bias = mc->bias();
+
+    if (value == MusECore::CTRL_VAL_UNKNOWN)
+    {
+      value = mc->initVal() + bias;
+      //printf("Controller not yet set, resetting to default (%d)\n", value);
+    }
+  }
+
+  // checking ranges seems to need bias removed
+  value -= bias;
+  value += incrementValue;
+
+  if (value > max)
+    value = max;
+  if (value < min)
+    value = min;
+
+  value += bias;
+
+  mp->putControllerValue(midiTrack->outPort(), channel, controllerType, value, false);
+}
 void TList::volumeSelectedTracksSlot(int incrementValue)
 {
   MusECore::TrackList* tracks = MusEGlobal::song->tracks();
-  for (auto t : *tracks)
+  for (auto t: *tracks)
   {
     if (t->type() == MusECore::Track::MIDI)
     {
-
+      incrementController(t, MusECore::CTRL_VOLUME, incrementValue*2);
     }
     else
     {
@@ -823,12 +865,11 @@ void TList::volumeSelectedTracksSlot(int incrementValue)
       {
         float vol = at->volume();
         float dbVol = muse_val2dbr(vol);
-        float newVolume = dbVol + float(incrementValue)/10;
+        float newVolume = dbVol + float(incrementValue)/2;
         if (newVolume < MusEGlobal::config.minSlider)
           newVolume = MusEGlobal::config.minSlider;
         if (newVolume > 10.0)
           newVolume = 10.0;
-        printf("track [%s] previous volume %f new volume %f\n", at->name().toLatin1().data(), at->volume(), newVolume);
         at->setVolume(muse_db2val(newVolume));
       }
     }
@@ -841,7 +882,7 @@ void TList::panSelectedTracksSlot(int incrementValue)
   {
     if (t->type() == MusECore::Track::MIDI)
     {
-
+      incrementController(t, MusECore::CTRL_PANPOT, incrementValue);
     }
     else
     {
