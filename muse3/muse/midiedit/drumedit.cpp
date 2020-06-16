@@ -41,7 +41,6 @@
 #include "scrollscale.h"
 #include "xml.h"
 #include "dlist.h"
-#include "dcanvas.h"
 #include "ttoolbar.h"
 #include "tb1.h"
 #include "splitter.h"
@@ -1808,6 +1807,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             }
       else if (key == shortcuts[SHRT_TOOL_CURSOR].key) {
             tools2->set(MusEGui::CursorTool);
+            canvas->setFocus();
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_PAN].key) {
@@ -1838,13 +1838,6 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             hscroll->setPos(pos);
             return;
             }
-
-            /*
-      else if (key == shortcuts[SHRT_INSERT_AT_LOCATION].key) { DELETETHIS
-            pc->pianoCmd(CMD_INSERT);
-            return;
-            }
-            */
       else if (key == shortcuts[SHRT_SET_QUANT_1].key)
             val = rasterTable[8 + off];
       else if (key == shortcuts[SHRT_SET_QUANT_2].key)
@@ -1861,17 +1854,6 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             val = rasterTable[2 + off];
       else if (key == shortcuts[SHRT_TOGGLE_TRIOL].key)
             val = rasterTable[index + ((off == 0) ? 9 : 0)];
-            /*
-      else if (key == shortcuts[SHRT_EVENT_COLOR].key) { DELETETHIS
-            if (colorMode == 0)
-                  colorMode = 1;
-            else if (colorMode == 1)
-                  colorMode = 2;
-            else
-                  colorMode = 0;
-            setEventColorMode(colorMode);
-            return;
-            }*/
       else if (key == shortcuts[SHRT_TOGGLE_PUNCT].key)
             val = rasterTable[index + ((off == 18) ? 9 : 18)];
 
