@@ -276,7 +276,7 @@ MFileDialog::MFileDialog(const QString& dir,
                   switch (lastViewUsed) {
                            case GLOBAL_VIEW:
                            case PROJECT_VIEW:
-                                 buttons.globalButton->setChecked(true); // Let toggled be called. Don't block these...
+                                 buttons.projectButton->setChecked(true); // Let toggled be called. Don't block these...
                                  break;
 
                            case USER_VIEW:
@@ -383,7 +383,7 @@ QString getOpenFileName(const QString &startWith, const char** filters_chararray
 
 QString getSaveFileName(const QString &startWith,
    const char** filters_chararray, QWidget* parent,
-   const QString& name, bool* writeWinState)
+   const QString& name, bool* writeWinState, MFileDialog::ViewType viewType)
       {
       QStringList filters = localizedStringListFromCharArray(filters_chararray, "file_patterns");
 
@@ -397,6 +397,12 @@ QString getSaveFileName(const QString &startWith,
         dlg->buttons.writeWinStateGroup->setVisible(true);
         dlg->buttons.writeWinStateButton->setChecked(*writeWinState);
       }
+
+      // global view is inactive for saving
+      if (viewType == MFileDialog::PROJECT_VIEW)
+        dlg->buttons.projectButton->setChecked(true);
+      else if (viewType == MFileDialog::USER_VIEW)
+        dlg->buttons.userButton->setChecked(true);
 
       QStringList files;
       QString result;

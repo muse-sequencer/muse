@@ -1,3 +1,7 @@
+16.06.2010
+    - Replace invisible icons in file dialogs in new dark theme. (kybos)
+    - Unify colour configuration file naming. (kybos)
+    - Fix invalid Global area default in file save dialog. (kybos)
 12.06.2020
     - Menu: 'Mixer Automation' is deprecated, MusEGlobal::automation now fixed TRUE
        for now until we decide what to do with it. (Tim)
