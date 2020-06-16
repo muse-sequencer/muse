@@ -1862,7 +1862,7 @@ bool MusE::saveConfigurationColors(QWidget* parent)
   if(!parent)
     parent = this;
   QString file = MusEGui::getSaveFileName(QString("themes"), MusEGlobal::colors_config_file_pattern, this,
-                                               tr("Save configuration colors"));
+                                               tr("Save configuration colors"), NULL, MusEGui::MFileDialog::USER_VIEW);
 
   if(file.isEmpty())
     return false;

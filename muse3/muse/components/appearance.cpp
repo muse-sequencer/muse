@@ -346,7 +346,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
 
       QDir themeDir(MusEGlobal::museGlobalShare + QString("/themes"));
       QStringList fileTypes;
-      fileTypes.append("*.cfg");
+      fileTypes.append("*.qss");
       QFileInfoList list = themeDir.entryInfoList(fileTypes);
       for (auto item : list)
           colorSchemeComboBox->addItem(item.baseName());
@@ -817,7 +817,7 @@ bool Appearance::changeTheme()
 
     QString configColorPath = MusEGlobal::configPath + "/themes/" + currentTheme + ".cfc";
     if (!QFile::exists(configColorPath)) {
-        configColorPath = MusEGlobal::museGlobalShare + "/themes/" + currentTheme + ".cfg";
+        configColorPath = MusEGlobal::museGlobalShare + "/themes/" + currentTheme + ".cfc";
     }
 
     // We want the simple version, don't set the style or stylesheet yet.
