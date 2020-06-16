@@ -7,6 +7,15 @@ QWidget:!enabled {
     color: rgb(100,100,100);
 }
 
+* {
+	backward-icon: url(":/xpm/left-128.png");
+	forward-icon: url(":/xpm/right-128.png");
+	filedialog-new-directory-icon: url(":/xpm/newdirectory-128.png");
+	filedialog-parent-directory-icon: url(":/xpm/up-128.png");
+	filedialog-detailedview-icon: url(":/xpm/viewdetailed-128.png");
+	filedialog-listview-icon: url(":/xpm/viewlist-128.png");
+}
+
 QToolButton {
     border: 1px solid rgb(90,90,90);
     border-radius: 0px;
