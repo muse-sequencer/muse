@@ -1,3 +1,18 @@
+17.06.2010
+    - Fix main window being too small on large screens when MusE is started for the first time. 
+      The size and position are now adjusted dynamically for the current screen size. (kybos)
+    - Fix main window size/position set to random values when a project or template is opened.
+      The window is now only resized if the file contains explicit geometry information. (kybos)
+    - Fix progress bar not being displayed when opening files. (kybos)
+16.06.2010
+    - Replace invisible icons in file dialogs in new dark theme. (kybos)
+    - Unify colour configuration file naming. (kybos)
+    - Fix invalid Global area default in file save dialog. (kybos)
+    - Fixed some bugs with Cursor mode in drum editor (rj)
+    - Effects rack: Ensure updateGeometry is called if number of rack items changed. (Tim)
+      Was not required for at least suse, but required for at least mint cinnamon.
+13.06.2010
+    - Add option to hide menu icons. (kybos)
 12.06.2020
     - Menu: 'Mixer Automation' is deprecated, MusEGlobal::automation now fixed TRUE
        for now until we decide what to do with it. (Tim)

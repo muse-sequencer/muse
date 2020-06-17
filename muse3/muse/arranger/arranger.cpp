@@ -369,14 +369,13 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       trackInfoButton->setFocusPolicy(Qt::NoFocus);
       trackInfoButton->setFixedSize(20, 14);
       trackInfoButton->setDrawFlat(true);
-//      trackInfoButton->setShortcut(QKeySequence(Qt::Key_F5));
       trackInfoButton->setCursor(QCursor(Qt::PointingHandCursor));
       connect(trackInfoButton, SIGNAL(toggled(bool)), SLOT(showTrackInfo(bool)));
 
       genTrackInfo(trackInfoWidget);
 
       // set up the header
-      header = new Header(tracklist, "header");
+      header = new Header(tracklist, "TrackListHeader");
       header->setFixedHeight(31);
 
       header->setColumnLabel(tr("#"), COL_TRACK_IDX);

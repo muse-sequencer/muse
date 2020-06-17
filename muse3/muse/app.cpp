@@ -24,6 +24,7 @@
 
 #include <typeinfo>
 
+#include <QDesktopWidget>
 #include <QClipboard>
 #include <QMessageBox>
 #include <QShortcut>
@@ -1040,7 +1041,10 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::song->blockSignals(false);
 
       QSettings settings;
-      restoreGeometry(settings.value("MusE/geometry").toByteArray());
+      if (settings.contains("MusE/geometry"))
+          restoreGeometry(settings.value("MusE/geometry").toByteArray());
+      else
+          centerAndResize();
 
       MusEGlobal::song->update();
       updateWindowMenu();
@@ -1060,6 +1064,39 @@ MusE::MusE() : QMainWindow()
           MusEGlobal::config.fonts[5].setPointSize(qRound(fs * MusEGlobal::FntFac::F5));
           MusEGlobal::config.fonts[6].setPointSize(qRound(fs * MusEGlobal::FntFac::F6));
       }
+}
+
+//---------------------------------------------------------
+//   centerAndResize
+//---------------------------------------------------------
+
+void MusE::centerAndResize() {
+
+    // set sensible initial sizes/positions for mainwin/transport (kybos)
+
+    QSize screenSize = qApp->desktop()->availableGeometry().size();
+    int width = screenSize.width();
+    int height = screenSize.height();
+    width *= 0.9; // 90% of the screen size
+    height *= 0.9; // 90% of the screen size
+    QSize newSize( width, height );
+
+    setGeometry( QStyle::alignedRect(
+                     Qt::LeftToRight,
+                     Qt::AlignCenter,
+                     newSize,
+                     qApp->desktop()->availableGeometry()
+                     )
+               );
+
+    MusEGlobal::config.geometryMain = geometry();
+
+    if (MusEGlobal::config.transportVisible) {
+        QRect r( geometry().x() + (width / 2),
+                 geometry().y() + (height / 10),
+                 200, 100);
+        MusEGlobal::config.geometryTransport = r;
+    }
 }
 
 //---------------------------------------------------------
@@ -1220,30 +1257,9 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
       QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
       if(!progress)
-        progress = new QProgressDialog();
-      QString label = "loading project "+QFileInfo(name).fileName();
-        if (!songTemplate) {
-#ifdef _WIN32
-          switch (rand()%10) {
-#else
-          switch (random()%10) {
-#endif
-        case 0:
-            label.append("\nThe best song in the world?");
-          break;
-        case 1:
-            label.append("\nAwesome stuff!");
-          break;
-        case 2:
-            label.append("\nCool rhythms!");
-          break;
-        case 3:
-            label.append("\nA truly lovely song");
-          break;
-        default:
-          break;
-        }
-      }
+          progress = new QProgressDialog();
+
+      QString label = "Loading project " + QFileInfo(name).fileName();
       progress->setLabelText(label);
 //       progress->setWindowModality(Qt::WindowModal); // REMOVE Tim. Persistent routes. Removed for version warning dialog to take priority. FIXME
       progress->setCancelButton(0);
@@ -1254,6 +1270,7 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
       // stop audio threads if running
       //
       progress->setValue(0);
+      qApp->processEvents();
       bool restartSequencer = MusEGlobal::audio->isRunning();
       if (restartSequencer) {
             if (MusEGlobal::audio->isPlaying()) {
@@ -1267,19 +1284,22 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
             }
       microSleep(100000);
       progress->setValue(10);
+      qApp->processEvents();
       loadProjectFile1(name, songTemplate, doReadMidiPorts);
       microSleep(100000);
       progress->setValue(90);
+      qApp->processEvents();
       if (restartSequencer)
-            seqStart();
+          seqStart();
         // REMOVE Tim. Persistent routes. TESTING.
         //MusEGlobal::audio->msgIdle(false);
       //MusEGlobal::song->connectPorts();
 
       arrangerView->updateVisibleTracksButtons();
       progress->setValue(100);
+      qApp->processEvents();
       delete progress;
-      progress=0;
+      progress = nullptr;
 
       QApplication::restoreOverrideCursor();
 
@@ -1310,6 +1330,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       if (clearSong(doReadMidiPorts))  // Allow not touching things like midi ports.
             return;
       progress->setValue(20);
+      qApp->processEvents();
 
       QFileInfo fi(name);
       if (songTemplate)
@@ -1471,6 +1492,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
             }
       MusEGlobal::song->dirty = false;
       progress->setValue(30);
+      qApp->processEvents();
 
       viewTransportAction->setChecked(MusEGlobal::config.transportVisible);
       viewBigtimeAction->setChecked(MusEGlobal::config.bigTimeVisible);
@@ -1515,6 +1537,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       showTransport(MusEGlobal::config.transportVisible);
 
       progress->setValue(40);
+      qApp->processEvents();
 
       transport->setMasterFlag(MusEGlobal::tempomap.masterFlag());
       MusEGlobal::punchinAction->setChecked(MusEGlobal::song->punchin());
@@ -1528,6 +1551,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"
       arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
       progress->setValue(50);
+      qApp->processEvents();
 
       // Moved here from above due to crash with a song loaded and then File->New.
       // Marker view list was not updated, had non-existent items from marker list (cleared in ::clear()).
@@ -4625,6 +4649,11 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
    if (MusEGlobal::song->len() < endTick)
       MusEGlobal::song->setLen(endTick);
    return false;
+}
+
+void MusE::resizeEvent(QResizeEvent* event) {
+    QMainWindow::resizeEvent(event);
+    MusEGlobal::config.geometryMain = geometry();
 }
 
 } //namespace MusEGui

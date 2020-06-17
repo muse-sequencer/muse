@@ -261,7 +261,8 @@ class MusE : public QMainWindow
       void updateConfiguration();
       QString projectTitle(QString name);
       void toggleTrackArmSelectedTrack();
-
+      void centerAndResize();
+      void resizeEvent(QResizeEvent* event) override;
 
       QTimer *saveTimer;
       QTimer *blinkTimer;

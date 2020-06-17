@@ -1034,7 +1034,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
    {
       const MusECore::Part* part = item->part();
       bool popenFlag = false;
-      QString fn = getSaveFileName(QString(""), MusEGlobal::part_file_save_pattern, this, tr("MusE: save part"));
+      QString fn = getSaveFileName(QString(""), MusEGlobal::part_file_save_pattern, this, tr("MusE: Save part"));
       if (!fn.isEmpty()) {
          FILE* fp = fileOpen(this, fn, ".mpt", "w", popenFlag, false, false);
          if (fp) {

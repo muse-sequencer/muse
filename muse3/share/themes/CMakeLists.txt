@@ -21,7 +21,7 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-file (GLOB theme_files *.cfg *.qss *.cfc
+file (GLOB theme_files *.qss *.cfc
       )
 
 install( FILES ${theme_files}

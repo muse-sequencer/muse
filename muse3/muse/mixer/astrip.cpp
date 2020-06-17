@@ -938,6 +938,10 @@ void AudioStrip::configChanged()
   _upperRack->configChanged();
 //  _infoRack->configChanged();
   _lowerRack->configChanged();
+  
+  // Ensure updateGeometry is called in case the number of rack items changed.
+  // Not required for at least suse, but required for at least mint cinnamon.
+  rack->updateGeometry();
   rack->update();
 
   // Adjust minimum meter values, and colours.

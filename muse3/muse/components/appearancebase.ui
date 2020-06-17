@@ -1190,42 +1190,12 @@
               </property>
               <item>
                <property name="text">
+                <string>Fusion</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
                 <string>Windows</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>MusE</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Metal</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Norwegian Wood</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Platinum</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>CDE</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Motif</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Motif Plus</string>
                </property>
               </item>
              </widget>
@@ -1237,7 +1207,7 @@
             <item>
              <widget class="QLabel" name="label_6">
               <property name="text">
-               <string>MusE color scheme</string>
+               <string>MusE theme</string>
               </property>
              </widget>
             </item>
