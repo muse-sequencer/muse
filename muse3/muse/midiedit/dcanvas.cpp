@@ -1064,7 +1064,6 @@ void DrumCanvas::dragLeaveEvent(QDragLeaveEvent*)
 
 void DrumCanvas::keyPressed(int index, int velocity)
 {
-      // REMOVE Tim. Noteoff. Added. Zero note on vel is not allowed now.
       if(velocity > 127)
         velocity = 127;
       else if(velocity <= 0)
@@ -1328,18 +1327,27 @@ void DrumCanvas::curPartChanged()
 //   getNextStep - gets next tick in the chosen direction
 //                 when raster and stepSize are taken into account
 //---------------------------------------------------------
-int DrumCanvas::getNextStep(unsigned int pos, int basicStep, int stepSize)
+int DrumCanvas::getNextStep(unsigned int currentPos, int basicStep, int stepSize)
 {
-  int newPos = pos;
-  for (int i =0; i<stepSize;i++) {
-    if (basicStep > 0) { // moving right
-      newPos = MusEGlobal::sigmap.raster2(newPos + basicStep, editor->rasterStep(newPos));    // Nudge by +1, then snap up with raster2.
-      if (unsigned(newPos) > curPart->endTick()- editor->rasterStep(curPart->endTick()))
+  int newPos = currentPos; // newPos will be updated for every loop
+  for (int i = 0; i < stepSize; i++)
+  {
+    if (basicStep > 0) // moving right
+    {
+      // Nudge by +1, then snap up with raster2.
+      newPos = MusEGlobal::sigmap.raster2(newPos + basicStep, editor->rasterStep(newPos));
+      if (newPos > signed(curPart->endTick() - editor->rasterStep(curPart->endTick())))
+      {
         newPos = curPart->tick();
+      }
     }
-    else { // moving left
-      newPos = MusEGlobal::sigmap.raster1(newPos + basicStep, editor->rasterStep(newPos));    // Nudge by -1, then snap up with raster1.
-      if (unsigned(newPos) < curPart->tick() ) {
+    else // moving left
+    {
+      // Nudge by -1, then snap up with raster1.
+      newPos = MusEGlobal::sigmap.raster1(newPos + basicStep, editor->rasterStep(newPos));
+
+      if (newPos < signed(curPart->tick()))
+      {
         newPos = MusEGlobal::sigmap.raster1(curPart->endTick()-1, editor->rasterStep(curPart->endTick()));
       }
     }
@@ -1384,37 +1392,29 @@ void DrumCanvas::keyPress(QKeyEvent* event)
     }
     // NOTE: The inner NewItem may play the note. But let us not stop the note so shortly after playing it.
     //       So it is up to the corresponding keyRelease() to stop the note.
-    else if (key == shortcuts[SHRT_ADDNOTE_1].key) {
+    else if ( key == shortcuts[SHRT_ADDNOTE_1].key ||
+              key == shortcuts[SHRT_ADDNOTE_2].key ||
+              key == shortcuts[SHRT_ADDNOTE_3].key ||
+              key == shortcuts[SHRT_ADDNOTE_4].key)
+    {
+        if (key ==shortcuts[SHRT_ADDNOTE_1].key) {
           newItem(newItem(cursorPos.x(), cursorPos.y(), ourDrumMap[cursorPos.y()].lv1),false,true);
-          cursorPos.setX(getNextStep(cursorPos.x(),1, _stepSize));
-          selectCursorEvent(getEventAtCursorPos());
-          if (mapx(cursorPos.x()) < 0 || mapx(cursorPos.x()) > width())
-            emit followEvent(cursorPos.x());
-          return;
-    }
-    else if (key == shortcuts[SHRT_ADDNOTE_2].key) {
+        }
+        else if(key ==shortcuts[SHRT_ADDNOTE_2].key) {
           newItem(newItem(cursorPos.x(), cursorPos.y(), ourDrumMap[cursorPos.y()].lv2),false,true);
-          cursorPos.setX(getNextStep(cursorPos.x(),1, _stepSize));
-          selectCursorEvent(getEventAtCursorPos());
-          if (mapx(cursorPos.x()) < 0 || mapx(cursorPos.x()) > width())
-            emit followEvent(cursorPos.x());
-          return;
-    }
-    else if (key == shortcuts[SHRT_ADDNOTE_3].key) {
+        }
+        else if(key ==shortcuts[SHRT_ADDNOTE_3].key) {
           newItem(newItem(cursorPos.x(), cursorPos.y(), ourDrumMap[cursorPos.y()].lv3),false,true);
-          cursorPos.setX(getNextStep(cursorPos.x(),1, _stepSize));
-          selectCursorEvent(getEventAtCursorPos());
-          if (mapx(cursorPos.x()) < 0 || mapx(cursorPos.x()) > width())
-            emit followEvent(cursorPos.x());
-          return;
-    }
-    else if (key == shortcuts[SHRT_ADDNOTE_4].key) {
+        }
+        else if(key ==shortcuts[SHRT_ADDNOTE_4].key) {
           newItem(newItem(cursorPos.x(), cursorPos.y(), ourDrumMap[cursorPos.y()].lv4),false,true);
-          cursorPos.setX(getNextStep(cursorPos.x(),1, _stepSize));
-          selectCursorEvent(getEventAtCursorPos());
-          if (mapx(cursorPos.x()) < 0 || mapx(cursorPos.x()) > width())
-            emit followEvent(cursorPos.x());
-          return;
+        }
+
+        cursorPos.setX(getNextStep(cursorPos.x(),1, _stepSize));
+        selectCursorEvent(getEventAtCursorPos());
+        if (mapx(cursorPos.x()) < 0 || mapx(cursorPos.x()) > width())
+          emit followEvent(cursorPos.x());
+        return;
     }
   }
   EventCanvas::keyPress(event);

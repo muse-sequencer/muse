@@ -8,6 +8,9 @@
     - Replace invisible icons in file dialogs in new dark theme. (kybos)
     - Unify colour configuration file naming. (kybos)
     - Fix invalid Global area default in file save dialog. (kybos)
+    - Fixed some bugs with Cursor mode in drum editor (rj)
+    - Effects rack: Ensure updateGeometry is called if number of rack items changed. (Tim)
+      Was not required for at least suse, but required for at least mint cinnamon.
 13.06.2010
     - Add option to hide menu icons. (kybos)
 12.06.2020
