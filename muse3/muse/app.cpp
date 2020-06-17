@@ -24,6 +24,7 @@
 
 #include <typeinfo>
 
+#include <QDesktopWidget>
 #include <QClipboard>
 #include <QMessageBox>
 #include <QShortcut>
@@ -1040,7 +1041,10 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::song->blockSignals(false);
 
       QSettings settings;
-      restoreGeometry(settings.value("MusE/geometry").toByteArray());
+      if (settings.contains("MusE/geometry"))
+          restoreGeometry(settings.value("MusE/geometry").toByteArray());
+      else
+          centerAndResize();
 
       MusEGlobal::song->update();
       updateWindowMenu();
@@ -1060,6 +1064,39 @@ MusE::MusE() : QMainWindow()
           MusEGlobal::config.fonts[5].setPointSize(qRound(fs * MusEGlobal::FntFac::F5));
           MusEGlobal::config.fonts[6].setPointSize(qRound(fs * MusEGlobal::FntFac::F6));
       }
+}
+
+//---------------------------------------------------------
+//   centerAndResize
+//---------------------------------------------------------
+
+void MusE::centerAndResize() {
+
+    // set sensible initial sizes/positions for mainwin/transport (kybos)
+
+    QSize screenSize = qApp->desktop()->availableGeometry().size();
+    int width = screenSize.width();
+    int height = screenSize.height();
+    width *= 0.9; // 90% of the screen size
+    height *= 0.9; // 90% of the screen size
+    QSize newSize( width, height );
+
+    setGeometry( QStyle::alignedRect(
+                     Qt::LeftToRight,
+                     Qt::AlignCenter,
+                     newSize,
+                     qApp->desktop()->availableGeometry()
+                     )
+               );
+
+    MusEGlobal::config.geometryMain = geometry();
+
+    if (MusEGlobal::config.transportVisible) {
+        QRect r( geometry().x() + (width / 2),
+                 geometry().y() + (height / 10),
+                 200, 100);
+        MusEGlobal::config.geometryTransport = r;
+    }
 }
 
 //---------------------------------------------------------
@@ -1527,6 +1564,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       arrangerView->clipboardChanged(); // enable/disable "Paste"
       arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"
       arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
+      arrangerView->update(); // make sure arranger toolbars are displayed on first start
       progress->setValue(50);
 
       // Moved here from above due to crash with a song loaded and then File->New.
