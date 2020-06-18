@@ -92,6 +92,7 @@ class Arranger : public QWidget {
       bool showTrackinfoFlag;
       TrackInfoWidget* trackInfoWidget;
       AudioStrip* waveTrackInfo;
+      QScrollArea* tracklistScroll;
       QWidget* tracklist;
 
       MusECore::Track* selected;
@@ -112,6 +113,7 @@ class Arranger : public QWidget {
       void setHeaderToolTips();
       void setHeaderWhatsThis();
       void setHeaderSizes();
+      void initTracklistHeader();
 
    private slots:
       void rasterChanged(int);
@@ -128,6 +130,7 @@ class Arranger : public QWidget {
       void verticalScrollSetYpos(unsigned);
       void horizontalZoom(bool zoom_in, const QPoint& glob_pos);
       void horizontalZoom(int mag, const QPoint& glob_pos);
+      void updateTracklist();
       
    signals:
       void editPart(MusECore::Track*);
